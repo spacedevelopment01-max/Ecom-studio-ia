@@ -348,11 +348,17 @@ type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
  * images ne bougent pas. Le camion ou l'objet qui porte le logo est refait avec le logo gardé ; sans logo gardé, il ne
  * l'est pas. Devis par image refaite, accord du client avant.
  */
+/**
+ * Un logo refait emporte la maquette du site de sa planche, qui le porte dans son en-tête (retour du propriétaire du
+ * 16 novembre 2026, devant une maquette restée avec l'ancien logo : « c'est pas les bons logos »). Le prix annoncé
+ * avant l'accord compte donc la maquette.
+ */
+export const redoImages = <T extends string>(images: readonly T[]): T[] => { const l = [...new Set(images)]; return l.includes("logo" as T) && !l.includes("site" as T) ? [...l, "site" as T] : l; };
 const imagesTool: AgentTool<ImagesArgs> = {
   name: "identity.images", module: "marque", kind: "generate", needsProject: true,
-  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») d'une ou plusieurs planches déjà montrées, sans toucher au nom ni aux textes. À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
+  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») d'une ou plusieurs planches déjà montrées, sans toucher au nom ni aux textes. Un logo refait emporte toujours la maquette du site de sa planche (elle le porte dans son en-tête) : elle est refaite avec lui et comptée dans le prix. À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
   args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(3), guidance: z.string().max(1500).optional() }).strict(),
-  estimate: (_ctx, a) => ({ ...boardImagesQuote(a.keys.length, undefined, a.images as never), label: `${a.images.length} image${a.images.length > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}` }),
+  estimate: (_ctx, a) => { const n = redoImages(a.images).length; return { ...boardImagesQuote(a.keys.length, undefined, redoImages(a.images) as never), label: `${n} image${n > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}` }; },
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
@@ -360,7 +366,7 @@ const imagesTool: AgentTool<ImagesArgs> = {
     const keys = [...new Set(a.keys)].filter((k) => list.some((x) => x.key === k && !!x.board));
     if (!keys.length) return { ok: false, summary: L("Il n'y a pas encore de planche à reprendre.", "There is no board to redo yet."), hint: "Les images se refont sur des planches déjà montrées (identity.propose d'abord)." };
     if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Une création de marque est déjà en cours : attends-la.", "A brand job is already running.") };
-    const images = [...new Set(a.images)];
+    const images = redoImages(a.images);
     const quote = boardImagesQuote(keys.length, undefined, images as never);
     const job = enqueue({
       userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L(`Images refaites sur ${keys.length} planche${keys.length > 1 ? "s" : ""} (SINA)`, `Board images redone (SINA)`),

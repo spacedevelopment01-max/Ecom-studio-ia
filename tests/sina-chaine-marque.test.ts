@@ -595,6 +595,19 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect((await fr(() => threadView(t.user, t.cid))).journey.identities).toBeNull();
   });
 
+  it("maquette du site : sur une identité à fond sombre, le logo joint est sa version claire posée sur le foncé de la marque (retour du propriétaire : « le logo sombre sur un fond sombre, ça marche pas »)", async () => {
+    const { logoForGround } = await import("@/lib/syna-agent/brand-images");
+    const dark = await sharpLib({ create: { width: 120, height: 80, channels: 3, background: "#FFFFFF" } }).composite([{ input: await sharpLib({ create: { width: 60, height: 30, channels: 3, background: "#141414" } }).png().toBuffer() }]).png().toBuffer();
+    const palette = { dark: "#101820", primary: "#B5562B", secondary: "#EFE6D8", accent: "#7FB5A8", light: "#FAF6EF" };
+    expect(await logoForGround(dark, { ground: "blanc", palette } as never)).toBe(dark); // fond clair : le logo tel quel
+    expect(await logoForGround(null, { ground: "sombre", palette } as never)).toBeNull();
+    const out = await logoForGround(dark, { ground: "sombre", palette } as never);
+    const { data, info } = await sharpLib(out!).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const px = (x: number, y: number) => [...data.subarray((y * info.width + x) * 3, (y * info.width + x) * 3 + 3)];
+    expect(px(2, 2)).toEqual([0x10, 0x18, 0x20]); // le fond : le foncé de la marque
+    expect(px(Math.floor(info.width / 2), Math.floor(info.height / 2))).toEqual([255, 255, 255]); // le dessin foncé est devenu clair
+  });
+
   it("identity.images : SINA refait elle-même seulement certaines images d'une planche, avec devis (retour du propriétaire : « c'est à SINA d'y faire, pas à toi »)", async () => {
     const t = await thread();
     const tool = getTool("identity.images")!;
@@ -603,15 +616,18 @@ describe("SINA — chaîne de création de la marque", async () => {
     await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
     run("UPDATE jobs SET status='done' WHERE project_id=? AND type=?", t.pid, C.SINA_BRAND_JOB);
     const est = await tool.estimate!(t.ctx, { keys: ["A", "B"], images: ["logo", "hero"] } as never);
-    expect(est.label).toBe("2 images à refaire sur 2 planches");
-    expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["logo", "hero"]).maxMicro);
-    expect(est.maxMicro).toBeLessThan(C.boardImagesQuote(2).maxMicro);
+    // Un logo refait emporte la maquette du site de sa planche (retour du propriétaire du 16 novembre 2026 : « c'est pas
+    // les bons logos » sur une maquette restée avec l'ancien) : elle est comptée dans le prix annoncé avant l'accord.
+    expect(est.label).toBe("3 images à refaire sur 2 planches");
+    expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["logo", "hero", "site"]).maxMicro);
+    expect(est.maxMicro).toBeGreaterThan(C.boardImagesQuote(2, undefined, ["logo", "hero"]).maxMicro);
+    expect((await tool.estimate!(t.ctx, { keys: ["A"], images: ["hero"] } as never)).maxMicro).toBe(C.boardImagesQuote(1, undefined, ["hero"]).maxMicro);
     const r = await call("identity.images", t.ctx, { keys: ["A", "B"], images: ["logo", "hero"], guidance: "Le logo est trop chargé, je le veux plus simple." });
     expect(r.ok).toBe(true);
-    expect(r.summary).toMatch(/^Je refais 2 images sur « .+ » et « .+ » \(quelques minutes\) ; le reste des planches ne bouge pas\.$/);
+    expect(r.summary).toMatch(/^Je refais 3 images sur « .+ » et « .+ » \(quelques minutes\) ; le reste des planches ne bouge pas\.$/);
     const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs![0]);
     expect(job.type).toBe(C.SINA_BRAND_JOB);
-    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["logo", "hero"], guidance: "Le logo est trop chargé, je le veux plus simple.", capMicro: est.maxMicro });
+    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["logo", "hero", "site"], guidance: "Le logo est trop chargé, je le veux plus simple.", capMicro: est.maxMicro });
     // Avant le choix, une planche a son logo, sa grande scène et la maquette du haut de son site : ces trois images se
     // refont ici ; l'objet, les signes et les publications se créent (et se refont) pour l'identité choisie, avec brand.finish.
     for (const slot of ["logo", "hero", "site"]) expect(tool.args.safeParse({ keys: ["A"], images: [slot] }).success).toBe(true);
