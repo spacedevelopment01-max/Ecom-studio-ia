@@ -31,8 +31,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   façons retirées (ancien assistant, Pilote, formulaire, écrans de préparation), écran réglé (SINA en grand pendant la
   création, tableau de bord à côté) ; compte rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`. Lot 2 (la marque) fait le
   16 novembre 2026 : SINA a créé seule la marque de trois clients inventés, anciennes façons retirées ; compte rendu
-  et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Suite : 3 les
-  trois angles, 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
+  et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Lot 3 (les trois angles) construit le 16 novembre
+  2026 et testé avec une IA simulée ; **reste l'essai réel, puis le retrait des anciennes façons** : voir
+  `docs/studio/LOT-3-LES-TROIS-ANGLES.md`. Suite : 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
   publicités, 9 les vidéos.
 
 ## Avec le propriétaire
@@ -103,7 +104,8 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   « je veux un logo complètement différent ». Le favicon reprend le logo.
 - **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
   image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair.
-- **Trois angles** : un sûr, un d'émotion, un audacieux, avec celui que SINA recommande.
+- **Trois angles** : un sûr, un d'émotion, un audacieux, avec celui que SINA recommande. Le client en choisit un ;
+  les autres restent en réserve pour ses publications et ses publicités, sans nombre d'angles par forfait.
 - **Site** : SINA le conçoit pour cette marque, pas en copier-coller, et il doit être bon du premier coup. Des
   sections à la hauteur des meilleurs sites ; de la variété d'un client à l'autre (menus, boutons) ; un signe pris sur
   le produit ou le métier. Ouverture en grande photo pleine avec le titre dessus ; jamais deux parties de même

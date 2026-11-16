@@ -18,6 +18,7 @@ import {
 } from "./proposals";
 import {
   ANGLE_IDS,
+  SINA_ANGLE_IDS,
   type AngleId,
   type ActiveStrategy,
   type MarketingAngle,
@@ -107,7 +108,7 @@ export function assertStrategyChosen(projectId: string) {
     );
 }
 function canonicalAngle(value: string): AngleId {
-  if (!(ANGLE_IDS as readonly string[]).includes(value))
+  if (!(ANGLE_IDS as readonly string[]).includes(value) && !(SINA_ANGLE_IDS as readonly string[]).includes(value))
     throw new HttpError(
       400,
       "Cet angle ne fait pas partie des cinq propositions du projet.",
@@ -126,7 +127,9 @@ function quota(projectId: string, angleId: AngleId) {
   const used = all<{ angle_id: AngleId }>(
     "SELECT angle_id FROM marketing_strategy_used WHERE project_id=?",
     projectId,
-  ).map((r) => r.angle_id);
+  ).map((r) => r.angle_id)
+    // Les trois angles de SINA ne sont pas comptés par forfait : le client en voit trois et peut changer d'angle principal.
+    .filter((a) => !(SINA_ANGLE_IDS as readonly string[]).includes(a));
   const limit = PLANS[plan].marketingAngles;
   const active = activeStrategy(projectId);
   // No commercial reset on renewal or replacement subscription. Unspecified downgrade switching is frozen, history retained.
@@ -971,6 +974,31 @@ export function activateStrategy(
       "activated",
       prep.id,
     );
+    return active;
+  });
+}
+/**
+ * L'angle choisi par le client dans le fil de SINA (lot 3) devient l'angle actif du projet. L'angle vient de la chaîne
+ * de SINA (trois stratèges, un juge), pas de la recherche de l'ancienne préparation : il est enregistré tel quel, comme
+ * une nouvelle version. Aucun nombre d'angles par forfait ici : le client voit trois angles et en choisit un.
+ */
+export function activateSinaAngle(projectId: string, angle: MarketingAngle, idempotencyKey: string): ActiveStrategy {
+  schema();
+  if (!(SINA_ANGLE_IDS as readonly string[]).includes(angle.id) || !idempotencyKey.trim())
+    throw new HttpError(400, "Cet angle ne fait pas partie des trois angles du projet.", "strategy_angle_unknown");
+  return tx(() => {
+    const prior = one<any>("SELECT * FROM marketing_strategy_requests WHERE project_id=? AND idempotency_key=?", projectId, idempotencyKey);
+    if (prior) return version(one("SELECT * FROM marketing_strategy_versions WHERE id=?", prior.strategy_id))!;
+    if (one("SELECT id FROM posts WHERE project_id=? AND status='publishing' LIMIT 1", projectId))
+      throw new HttpError(409, "Une publication est en cours d’envoi. Attendez son résultat avant de changer d’angle.", "strategy_publication_in_flight");
+    const current = activeStrategy(projectId), digest = inputDigest(loadProject(projectId));
+    const active: ActiveStrategy = current && current.angleId === angle.id && current.inputDigest === digest && hash(current.angle) === hash(angle)
+      ? current
+      : { id: `strategy-${id()}`, projectId, version: (one<{ v: number }>("SELECT MAX(version) v FROM marketing_strategy_versions WHERE project_id=?", projectId)?.v ?? 0) + 1, angleId: angle.id, angle, inputDigest: digest, activatedAt: now() };
+    if (active !== current) run("INSERT INTO marketing_strategy_versions VALUES(?,?,?,?,?,?,?)", active.id, projectId, active.version, active.angleId, JSON.stringify(active.angle), active.inputDigest, active.activatedAt);
+    run("INSERT OR IGNORE INTO marketing_strategy_used VALUES(?,?,?)", projectId, active.angleId, now());
+    run("INSERT OR REPLACE INTO marketing_strategy_active VALUES(?,?)", projectId, active.id);
+    run("INSERT INTO marketing_strategy_requests VALUES(?,?,?,?)", projectId, idempotencyKey, active.angleId, active.id);
     return active;
   });
 }

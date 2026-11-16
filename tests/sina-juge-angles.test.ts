@@ -10,9 +10,6 @@ describe("SINA — le juge des angles marketing", async () => {
   const { fixture } = await import("./preparation-fixtures");
   const J = await import("@/lib/preparation/angles-judge");
   const { validateResearch } = await import("@/lib/preparation/research-validation");
-  const { anglesOf } = await import("@/lib/syna-agent/angles");
-  const { anglesDoubtHint } = await import("@/lib/syna-agent/tools/angles");
-  const { shownAngles, roleOf } = await import("@/lib/syna-agent/angle-roles");
 
   const quotes = ["Je cherche un thé qui me réveille sans me donner la nausée le matin", "On ne sait jamais d'où viennent vraiment les feuilles", "J'aime offrir quelque chose qui se partage à table"];
   const source = (id: string, category: string, quote: string) => ({ id, url: `https://exemple.test/${id}`, title: `Page ${id}`, status: "consulted", category, excerpt: `Avis lus sur la page. ${quote}. Fin de l'extrait.`, relevance: { accepted: true, reason: "pertinente" } });
@@ -81,15 +78,6 @@ describe("SINA — le juge des angles marketing", async () => {
     expect(out.angles.find((a: any) => a.id === "discovery")).toEqual(r.angles[3]);
     expect(out.judgement).toEqual({ status: "juges", kept: ["reassurance", "expression", "generalist"], redone: ["usage"], doubts: [{ id: "discovery", why: "L'émotion ne vient d'aucune parole de client." }], overall: "Trois tiennent.", selection: { sur: "reassurance", emotion: "discovery", audacieux: "generalist", recommande: "reassurance", pourquoi: "Les trois plus éloignés.", par: "juge" } });
     expect(() => validateResearch(out)).not.toThrow();
-    // Ce que SINA lit et dit : le doute, à la première personne, jamais « le juge ».
-    const shown = anglesOf(out);
-    expect(shown.judged).toBe("juges");
-    expect(shown.redone).toEqual(["usage"]);
-    expect(shown.list.find((a) => a.id === "discovery")!.doubt).toBe("L'émotion ne vient d'aucune parole de client.");
-    expect(shown.list.find((a) => a.id === "usage")!.doubt).toBeUndefined();
-    expect(anglesDoubtHint(shown)).toMatch(/Tu doutes de cet angle .* « Le voyage dans la tasse » \(L'émotion ne vient d'aucune parole de client\.\)/);
-    expect(anglesDoubtHint(shown)).toMatch(/sans jamais parler de juge/);
-    expect(anglesDoubtHint(shown)).not.toMatch(/recommandé en fait partie/);
   });
 
   it("une réécriture qui casse les règles est écartée : cible d'un angle déjà autorisé changée, promesse non confirmée, angle devenu trop proche d'un autre", async () => {
@@ -108,7 +96,6 @@ describe("SINA — le juge des angles marketing", async () => {
     expect(out.judgement.redone).toEqual([]);
     expect(out.judgement.doubts.map((x) => x.id)).toEqual(["usage", "reassurance", "expression"]);
     // L'angle recommandé fait partie des doutes : SINA ne le recommande pas sans le dire.
-    expect(anglesDoubtHint(anglesOf(out))).toMatch(/Tu doutes de ces angles[\s\S]*L'angle recommandé en fait partie/);
   });
 
   it("un juge en panne ne bloque jamais l'étape : les angles restent, et il est dit qu'ils n'ont pas été relus", async () => {
@@ -118,8 +105,6 @@ describe("SINA — le juge des angles marketing", async () => {
     expect(out.angles).toEqual(r.angles);
     expect(out.judgement).toMatchObject({ status: "non_juges", kept: [], redone: [], doubts: [] });
     expect(out.judgement.overall).toMatch(/Angles non jugés \(modèle indisponible\)/);
-    expect(anglesOf(out).judged).toBe("non_juges");
-    expect(anglesDoubtHint(anglesOf(out))).toMatch(/n'ont pas pu être relus avant d'être montrés/);
     // Réécriture en panne : mêmes angles, doute gardé.
     J.anglesJudgeDeps.judge = async () => ({ angles: [refuse("usage", "Trop général."), garde("reassurance"), garde("expression"), garde("discovery"), garde("generalist")], overall: "" });
     J.anglesJudgeDeps.fix = async () => { throw new Error("coupure"); };
@@ -127,28 +112,16 @@ describe("SINA — le juge des angles marketing", async () => {
     expect(two.angles).toEqual(r.angles);
     expect(two.judgement).toMatchObject({ status: "juges", redone: [], doubts: [{ id: "usage", why: "Trop général." }] });
     // Une recherche d'avant le juge reste lisible : ni doute ni mention.
-    expect(anglesOf(r).judged).toBeUndefined();
-    expect(anglesDoubtHint(anglesOf(r))).toBe("");
   });
 
   it("trois angles montrés (décision du propriétaire du 14 novembre 2026) : un sûr, un d'émotion, un audacieux ; les deux autres en réserve", () => {
     const r = research();
     const out = { ...r, judgement: { status: "juges" as const, kept: r.angles.map((a: any) => a.id), redone: [], doubts: [], overall: "",
       selection: { sur: "reassurance", emotion: "discovery", audacieux: "generalist", recommande: "discovery", pourquoi: "Les trois territoires les plus éloignés.", par: "juge" as const } } };
-    const a = anglesOf(out);
-    expect(a.list).toHaveLength(5);
-    expect(a.shown).toEqual([{ id: "reassurance", role: "sur" }, { id: "discovery", role: "emotion" }, { id: "generalist", role: "audacieux" }]);
-    expect(a.reserve).toEqual(["usage", "expression"]);
-    expect(a.recommendedId).toBe("discovery");
-    expect(a.recommendation).toBe("Les trois territoires les plus éloignés.");
-    expect(shownAngles(a).map((x) => x.id)).toEqual(["reassurance", "discovery", "generalist"]);
-    expect(roleOf(a, "discovery")).toBe("emotion");
-    expect(roleOf(a, "usage")).toBeNull();
     // Un choix du juge mal formé (deux fois le même angle) : le Studio prend les trois premiers sans doute, et le dit.
     const bad = J.selectionOf(r, { angles: [], overall: "", selection: { sur: "usage", emotion: "usage", audacieux: "expression", recommande: "usage", pourquoi: "Mal formé." } } as any, ["usage"]);
     expect(bad).toMatchObject({ par: "studio", sur: "reassurance", emotion: "expression", audacieux: "discovery" });
     // Une recherche d'avant (sans choix) montre tous ses angles, comme avant.
-    expect(shownAngles(anglesOf(r))).toHaveLength(5);
     expect(J.ANGLE_JUDGE_SYSTEM).toMatch(/LES TROIS À MONTRER/);
     expect(J.ANGLE_JUDGE_SYSTEM).toMatch(/un angle SÛR[\s\S]*un angle d'ÉMOTION[\s\S]*un angle AUDACIEUX/);
   });

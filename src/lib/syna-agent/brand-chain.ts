@@ -176,7 +176,7 @@ export function finishQuote(slots: readonly ImageSlot[] = FINISH_SLOTS, settings
 // ---------------------------------------------------------------- formes rendues par les spécialistes
 
 const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
-const StudySchema = z.object({
+export const StudySchema = z.object({
   quotes: z.array(z.object({ text: z.string().min(1).max(600), url: z.string().max(2000) })).max(60).default([]),
   competitors: z.array(z.object({ name: z.string().min(1).max(80), url: z.string().max(2000).default(""), codes: z.string().max(300).default("") })).max(20).default([]),
   mould: z.string().max(600).default(""),
@@ -235,7 +235,7 @@ const DraftSchema = IdentitySchema.pick({ name: true, slogan: true, promise: tru
 });
 type Draft = z.infer<typeof DraftSchema>;
 
-const ReaderSchema = z.object({ texts: z.array(z.object({ id: z.string().max(12), understood: z.string().max(400).default(""), clear: z.boolean().catch(true), why: z.string().max(300).default("") })).max(40).default([]) });
+export const ReaderSchema = z.object({ texts: z.array(z.object({ id: z.string().max(12), understood: z.string().max(400).default(""), clear: z.boolean().catch(true), why: z.string().max(300).default("") })).max(40).default([]) });
 /** Les phrases courtes d'une planche que lisent les clients de la marque (jamais un texte gardé mot pour mot du client). */
 export function readerTexts(x: Route, keptSlogan = false): { id: string; label: string; text: string }[] {
   const b = x.board;
