@@ -85,7 +85,21 @@ la planche, avec les sections en plusieurs dispositions : je veux que le premier
   permises sur l'accueil.
 - **Le thème unique, ses pièces seulement** : le concepteur ne reçoit plus les 208 anciennes sections (elles avaient
   leur allure à elles et ne partaient pas en boutique), seulement les pièces qui prennent l'allure de la marque.
-- **Les dispositions** : voir la liste des pièces qui se bâtissent maintenant de plusieurs façons, plus bas.
+- **Les dispositions** : 59 pièces sur 95 se bâtissent maintenant de plusieurs façons (49 avant). Vingt façons
+  nouvelles sur onze pièces parmi les plus utilisées, dessinées en feuille de style seulement (même contenu, autre mise
+  en page), relues en image sur téléphone et sur ordinateur dans trois allures (`docs/studio/lot-4/`) :
+  - l'ouverture : sept façons, dont cinq en grande photo pleine avec le titre dessus (titre en haut, au centre, en bas
+    à gauche, titre énorme en bas, bande pleine sur le bas de la photo) ; la photo créée sait où laisser la place du
+    titre selon la façon choisie ;
+  - les cartes produits (grille ; un produit vedette et les autres en petit ; liste, une ligne par produit) ;
+  - les atouts (lignes ; grands numéros ; cartes), les questions (filets ; deux colonnes ; cartes) ;
+  - l'appel final (bande sombre ; encadré ; phrase à gauche et bouton à droite), l'histoire (titre, photo, texte ;
+    colonne étroite avec lettrine ; deux colonnes), le contact (formulaire puis carte ; coordonnées en grand ; deux
+    colonnes) ;
+  - la bande de photo, la grande photo et sa phrase, les tarifs (tableau ; cartes), le pied de page simple.
+  Limites dites : 36 pièces n'ont encore qu'une façon (surtout des pièces propres à un genre de produit, le bloc
+  d'achat, le panier, le compte, les pages légales) ; les rendus dans une boutique Shopify n'ont pas été regardés pour
+  les nouvelles façons (le test automatique passe).
 - **Exemples retirés des consignes** (règle : aucun exemple tiré d'un projet d'essai) : l'exemple des bougies et la
   règle « thé, infusions, café » dans la consigne du concepteur, « pour du thé » dans celles des photos.
 
