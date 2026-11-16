@@ -202,6 +202,13 @@ const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
 type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
 const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : "je ne la montre pas";
+/** Planche des logos déjà créés dans la série (côte à côte sur blanc), donnée au dessinateur. Rien : null. */
+export async function logoSheet(logos: Buffer[]): Promise<Buffer | null> {
+  const tiles = (await Promise.all(logos.slice(-4).map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(512, 512, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
+  if (!tiles.length) return null;
+  return sharp({ create: { width: 512 * tiles.length, height: 512, channels: 3, background: "#FFFFFF" } }).composite(tiles.map((input, i) => ({ input, left: 512 * i, top: 0 }))).png().toBuffer();
+}
+
 /** Le logo que le client garde (sa propre image, déposée dans le Studio). */
 export type ClientLogo = { id: string; w: number; h: number; data: Buffer };
 export async function clientLogoOf(projectId: string): Promise<ClientLogo | null> {
@@ -244,6 +251,8 @@ export async function runBoardImages(o: {
   ctx: JobContext; ai: ChainAi; who: { userId: string; projectId: string }; brief: string; kind: "produits" | "services"; route: Route; round: number;
   /** Seulement ces images (les autres images déjà gardées restent telles quelles) ; par défaut, toutes. */
   slots?: ImageSlot[];
+  /** Logos déjà créés dans la même série pour ce client : donnés au dessinateur pour qu'il en fasse un complètement différent. */
+  madeLogos?: Buffer[];
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
   imagery?: Imagery;
   /** Logo GARDÉ par le client : jamais redessiné ; il est la marque de la planche et se pose sur ce qui le porte. */
@@ -262,11 +271,11 @@ export async function runBoardImages(o: {
   const made = new Map<ImageSlot, Made>();
   const bufferOf = (slot: ImageSlot): Buffer | null => { const m = made.get(slot), a = m ? getAsset(m.id) : undefined; return a ? assetData(a) : null; };
   let capped = false;
-  const make = async (slot: ImageSlot, refs: { logo?: Buffer | null; scene?: Buffer | null }, prompt: string) => {
+  const make = async (slot: ImageSlot, refs: { logo?: Buffer | null; scene?: Buffer | null; avoid?: Buffer | null }, prompt: string) => {
     if (capped) return;
     try {
       made.set(slot, await ctx.step(`brand:image:${round}:${key}:${slot}${pass}`, async (): Promise<Made> => {
-        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ?? null, scene: refs.scene ?? null });
+        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ?? null, scene: refs.scene ?? null, avoid: refs.avoid ?? null });
         const png = await sharp(data).png().toBuffer(), meta = await sharp(png).metadata();
         const asset = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-${slot}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "review", meta: { synaBoard: { key, slot, round, name: x.name } } });
         return { id: asset.id, w: meta.width ?? 1024, h: meta.height ?? 1024 };
@@ -288,9 +297,10 @@ export async function runBoardImages(o: {
   // relecture : un logo sur fond noir ou coloré n'est ni gardé ni posé sur l'objet.
   if (wanted.has("logo")) {
     ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
-    // Aucune image jointe (demande du propriétaire du 16 novembre 2026 : « ne joins pas d'autre logo, fais comme s'il
-    // repartait de base ») : jointe, une image est traitée par le modèle comme une retouche à reproduire.
-    await make("logo", {}, imagePrompt("logo", x, imagery));
+    // Le premier logo d'une série est créé avec les seules consignes de base ; chacun des suivants reçoit en plus ceux
+    // déjà créés dans la série, avec « je veux un logo complètement différent » (mots du propriétaire).
+    const already = o.madeLogos ?? [], shown = await logoSheet(already);
+    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery) + (shown ? `\nL'image jointe montre ${already.length > 1 ? `les ${Math.min(already.length, 4)} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${already.length > 1 ? "ceux-là" : "celui-là"}.` : ""));
     const drawn = bufferOf("logo");
     if (drawn && !(await logoOnWhite(drawn))) {
       const why = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background");
