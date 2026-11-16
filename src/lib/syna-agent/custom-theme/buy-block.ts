@@ -11,6 +11,7 @@ import { assetUrl } from "../../library";
 import { companyOf } from "../activity";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { galleryAssets } from "../../products/gallery-store";
+import { withTenueLooks, withTenueLots, withTenueSizes, withTenueVersions, type TenueLots, type TenueOption } from "./tenue-data";
 
 export type BuyData = {
   base: number;
@@ -149,5 +150,55 @@ export function withRealBuyBlock(html: string, d: BuyData | null): string {
   }
   // Repères sous le bouton : seulement les vrais (livraison offerte, retours) ; sinon rien.
   out = out.replace(/<div class="po-tr">[\s\S]*?<\/div>/, d.reassurance.length ? `<div class="po-tr">${d.reassurance.map((x) => `<span>${escText(x)}</span>`).join("")}</div>` : "");
+  return out;
+}
+
+/**
+ * Vraies données des pièces posées sous le bloc d'achat à tenue (thème unique, 16 novembre 2026) : les options du produit
+ * de la page (couleurs, tailles, stock de chaque valeur) et l'offre par quantité du client. Sans produit : null.
+ */
+export function achatFacts(projectId: string, handle?: string | null): { title: string; options: TenueOption[]; lots: TenueLots | null } | null {
+  const products = listProducts(projectId);
+  if (!products.length) return null;
+  const p = (handle && products.find((x) => x.handle === handle)) || products[0];
+  // Une valeur n'a plus de stock quand aucune de ses variantes ne peut se commander.
+  const out = (v: StudioProduct["variants"][number]) => v.stock !== null && v.stock <= 0 && v.stockPolicy !== "continue";
+  const options: TenueOption[] = p.data.options.map((o, i) => ({
+    name: o.name,
+    values: o.values.map((label) => {
+      const mine = p.variants.filter((v) => (v.options[i] ?? "").trim().toLowerCase() === label.trim().toLowerCase());
+      return { label, soldOut: mine.length > 0 && mine.every(out), teinte: /couleur|coloris|teinte|colou?r/i.test(o.name) ? hexOf(label) : null };
+    }),
+  }));
+  const cents = p.data.price ?? p.variants.find((v) => v.price != null)?.price ?? null;
+  let lots: TenueLots | null = null;
+  if (cents != null) {
+    const q = (() => { try { return decideBuyFeatures(p, loadShopOffers(projectId), { catalog: products.map((x) => x.data.title), freeShippingFrom: null, shippingDelay: null }).quantity; } catch { return null; } })();
+    const unit = unitOf(p.data.title) !== "article" ? unitOf(p.data.title) : unitOf(plain(p.data.description_html));
+    if (q?.kind === "lots") lots = { unit, cents, tiers: q.tiers.map((t) => ({ qty: t.qty, pct: t.pct })) };
+    if (q?.kind === "bogo") lots = { unit, cents, tiers: [{ qty: q.buy, free: q.free }] };
+  }
+  return { title: p.data.title, options, lots };
+}
+
+/**
+ * Pose ces données dans les pièces de la fiche produit qui les lisent : pastilles de version, guide des tailles, offres
+ * par quantité ; et retire du « look complet » le produit de la page (il ne se propose pas à lui-même). Une section qui
+ * ne porte aucun de ces repères est rendue telle quelle, sans lire le catalogue.
+ */
+export function withTenueAchat(html: string, projectId: string, handle?: string | null): string {
+  if (!/\sdata-tn-(?:versions|guide-tailles|lots|looks)\b/.test(html)) return html;
+  const f = (() => { try { return achatFacts(projectId, handle); } catch { return null; } })();
+  if (!f) return html;
+  let out = withTenueLots(withTenueSizes(withTenueVersions(html, f.options), f.options), f.lots);
+  // Le look : la carte du produit de la page s'en va quand il en reste au moins une autre.
+  if (/\sdata-tn-looks\b/.test(out)) {
+    const cards = out.match(/<a class="tn-carte-p[^"]*"[^>]*>[\s\S]*?<\/a>/g) ?? [];
+    const own = cards.find((c) => (/<b>([\s\S]*?)<\/b>/.exec(c)?.[1] ?? "").replace(/&amp;/g, "&").trim().toLowerCase() === f.title.trim().toLowerCase());
+    if (own && cards.length > 1) out = out.replace(own, "");
+    // Trois pièces au plus dans un look.
+    const left = cards.filter((c) => c !== own || cards.length <= 1);
+    for (const extra of left.slice(3)) out = out.replace(extra, "");
+  }
   return out;
 }

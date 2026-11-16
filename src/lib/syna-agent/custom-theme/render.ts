@@ -14,12 +14,12 @@ import { assetUrl } from "../../library";
 import { fontOf, fontsCss } from "../mockup-code/code-mockup";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { companyOf } from "../activity";
-import { buyBlockData, withRealBuyBlock } from "./buy-block";
+import { buyBlockData, withRealBuyBlock, withTenueAchat } from "./buy-block";
 import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
-import { allSections, sectionHtml, type CtPage, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
+import { allSections, drawerOf, sectionHtml, type CtPage, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
 import { TENUE_FILES, markMissing, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenueBuyBlock, withTenuePrestations, withTenueProducts, type TenueBuy, type TenuePrestation, type TenueProduct } from "./tenue";
 import { productPageKey, withMenu, type MenuProduct } from "./menu";
-import { withTenueSite, type TenueSite } from "./tenue-data";
+import { tenueMetiers, withTenueSite, type TenueSite } from "./tenue-data";
 import { factLine } from "../activity";
 
 /** Feuilles ou scripts des sections à tenue réellement présents dans public/sections (un module sans script n'en charge pas). */
@@ -179,7 +179,7 @@ const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 
 const BASE_CSS = `
 body{margin:0;background:#E7E3DC}
-.tb-wrap .frame>[data-ct-role="search"]:not(.zm18):not(:has(.zm18)):not(.ct-open){display:none}
+.tb-wrap .frame>[data-ct-role="search"]:not(.zm18):not(:has(.zm18)):not(.ct-open):not(.tn-recherche){display:none}
 .tb-bar{position:sticky;top:0;z-index:100;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;padding:9px 12px;background:#111;color:#fff;font:600 .8rem var(--f-ui)}
 .tb-bar span{opacity:.7;margin:0 4px 0 8px}
 .tb-bar button{border:1px solid rgba(255,255,255,.28);background:none;color:#fff;border-radius:999px;padding:6px 12px;font:700 .76rem var(--f-ui);cursor:pointer}
@@ -434,7 +434,7 @@ export function tenueSite(p: Pick<Project, "id"> & { services?: Project["service
   const families = shop ? names.map((name) => { const inside = products.filter((x) => (x.families ?? []).includes(name)); return { name, to: `${shop}:${name}`, image: inside.find((x) => x.image)?.image ?? null, products: inside.map((x) => x.title) }; }) : [];
   // Articles du journal : ceux qui sont prêts ou publiés (un brouillon n'est pas montré), nettoyés à la lecture.
   const articles = (() => { try { return all<{ title: string; excerpt: string; tags: string; cover_asset_id: string | null; body_html: string }>("SELECT title, excerpt, tags, cover_asset_id, body_html FROM blog_articles WHERE project_id = ? AND deleted_at IS NULL AND status != 'draft' ORDER BY updated_at DESC LIMIT 12", p.id).map((r) => ({ title: r.title, excerpt: r.excerpt, tag: ((() => { try { return (JSON.parse(r.tags || "[]") as string[])[0]; } catch { return null; } })()) ?? null, image: r.cover_asset_id ? assetUrl({ id: r.cover_asset_id }) : null, bodyHtml: sanitizeBlogHtml(r.body_html) })); } catch { return []; } })();
-  return { phone: sv?.phone || co.phone || null, address: sv?.address || co.address || null, hours: sv?.hours || null, area: sv?.area || null, shipping: co.shipping ?? null, returns: co.returns ?? null, families, prestations, products, articles };
+  return { phone: sv?.phone || co.phone || null, address: sv?.address || co.address || null, hours: sv?.hours || null, area: sv?.area || null, shipping: co.shipping ?? null, returns: co.returns ?? null, families, prestations, products, articles, freeFrom: freeShippingFrom(co.shipping), ...tenueMetiers(p.id) };
 }
 /** Le catalogue vu par le menu : repère, nom et familles de chaque produit. */
 export const menuProducts = (projectId: string): MenuProduct[] => { try { return listProducts(projectId).map((p) => ({ handle: p.handle, title: p.data.title, categories: p.data.categories })); } catch { return []; } };
@@ -494,6 +494,9 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const own = allSections(t).filter((x) => x.s.css).map((x) => x.s.css!).join("\n");
   const sampleTexts = allSections(t).some((x) => !x.s.clientTexts);
   const flags = siteFlags(buyFlags(featuresOf(p.id)), t.settings, (() => { try { return freeShippingFrom(companyOf(p.id).shipping); } catch { return null; } })());
+  // Tiroir de panier à tenue : c'est lui qui s'ouvre (l'ancien tiroir, qui déplaçait la page panier, ne s'en mêle pas).
+  const drawer = drawerOf(t);
+  if (drawer) flags.ctCart = "page";
   // Un site de services sans page panier : le bouton « Panier » de l'en-tête n'a rien à ouvrir, il ne s'affiche pas.
   if (p.business === "services" && !t.pages.some((pg) => pg.key === "cart")) flags.hdCart = "0";
   // Bloc d'achat : les vraies données du produit du client (jamais les prix et remises d'exemple de la bibliothèque).
@@ -508,11 +511,13 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const pre = `window.CT_PAY=${JSON.stringify(pay).replace(/</g, "\\u003c")};window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.flatMap((d) => [d, d.toUpperCase()]).map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
   const bar = t.pages.map((pg, i) => `<button type="button" data-pgb="${esc(pg.key)}" aria-pressed="${i === 0}">${esc(pg.label)}</button>`).join("");
   const address = projectAddress(p.id);
-  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${pg.sections.map((s) => realMap(withTenueSite(withTenuePrestations(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), buyOf(pg)), tnProducts), tnPrestations), site), address)).join("\n")}</main>`).join("\n");
+  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${pg.sections.map((s) => withTenueAchat(realMap(withTenueSite(withTenuePrestations(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), buyOf(pg)), tnProducts), tnPrestations), site), address), p.id, pg.product)).join("\n")}</main>`).join("\n");
   // Le menu calculé depuis le catalogue (proposé par SINA, corrigé par le client) remplace les liens d'exemple de l'en-tête.
-  const shell = (s: CtSection | null, place: string) => (s ? (place === "en-tête" ? withMenu(sectionMarkup(s, name, roleOf(place)), t.menu) : withTenueSite(sectionMarkup(s, name, roleOf(place)), site)) : "");
+  // En-têtes du thème unique : la forme du menu suit la construction, ses photos et ses produits sont ceux du catalogue ;
+  // le téléphone de l'en-tête de services est celui du client.
+  const shell = (s: CtSection | null, place: string) => (s ? (place === "en-tête" ? withTenueSite(withMenu(sectionMarkup(s, name, roleOf(place)), t.menu, { boutique: flags.hdCart !== "0" || p.business !== "services", families: site.families, products: tnProducts }), { phone: site.phone }) : withTenueSite(sectionMarkup(s, name, roleOf(place)), site)) : "");
   // Sections de tout le site : le bandeau au-dessus de l'en-tête ; les fenêtres (cookies, âge, discussion) posées en bas de l'écran.
-  const extras = (group: "bandeau" | "partout") => (t.extras ?? []).filter((s) => (tenueSection(s.id)?.group ?? "partout") === group).map((s) => withTenueSite(sectionMarkup(s, name, "page"), site)).join("\n");
+  const extras = (group: "bandeau" | "partout") => [...(t.extras ?? []), ...(drawer && !(t.extras ?? []).includes(drawer) ? [drawer] : [])].filter((s) => (tenueSection(s.id)?.group ?? "partout") === group).map((s) => withTenueSite(sectionMarkup(s, name, "page"), site)).join("\n");
   const windows = extras("partout");
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";

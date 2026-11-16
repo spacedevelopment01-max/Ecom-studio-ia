@@ -65,7 +65,7 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     expect(N.validConstruction("tn-ouverture", "titre-geant")).toBe("titre-geant");
     expect(N.validConstruction("tn-ouverture", "inconnue")).toBe("dans-la-photo"); // construction inconnue : la première
     expect(N.validConstruction("tn-pied", "x")).toBe("ligne"); // le pied de page simple a deux constructions depuis le 16 novembre 2026
-    expect(N.validConstruction("tn-achat", "x")).toBeNull(); // section sans construction
+    expect(N.validConstruction("tn-achat", "x")).toBe("simple"); // six façons (thème unique) : la première est le rendu d'origine
     const prompt = designPrompt({ brief: "FICHE", family: "classique", site: { business: "products", products: 1 }, has: [], lacks: [] });
     expect(prompt).toMatch(/- tn-ouverture · ouverture · À TENUE[^\n]*CONSTRUCTIONS au choix \(champ « construction »\) : « dans-la-photo » \(/);
     // Ce qui manque au dossier s'affiche en jaune, sans crochets ; rien d'autre n'est touché.

@@ -1,1 +1,669 @@
-/* Thème unique du Studio, module « achat » (lot 4). Chaque sélecteur commence par .ctw .tn-<nom>. */
+/*
+ * Thème unique du Studio, module « achat » (16 novembre 2026). Écrite à la main ; mêmes variables et mêmes attributs de
+ * tenue que tenue.css. Règles : docs/sina-savoir/sections-a-tenue.md. Chargée après les autres feuilles.
+ *
+ * 1) Le bloc d'achat en six façons, une par style de page produit. La première (« simple ») est le rendu d'origine :
+ *    aucune règle ne la cible. Les cinq autres rangent les mêmes éléments sur une grille : chaque élément a sa ligne
+ *    (la photo, le nom, le prix, le stock, les mentions, la phrase, la version, le bouton, les repères), dans l'aperçu
+ *    comme dans la boutique (où le bouton vit dans un vrai formulaire, avec le choix de la version).
+ * 2) Les pièces nouvelles de la fiche produit (pastilles de version, guide des tailles, offres par quantité, look
+ *    complet, allergènes, avant et après, repères en pictos).
+ * 3) Une façon de plus pour les pièces de la fiche produit qui n'en avaient qu'une.
+ */
+
+/* ══ 1. Bloc d'achat : ce que les cinq façons partagent ══ */
+.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"]){display:grid;grid-template-columns:minmax(0,1fr);align-items:start}
+/* le produit entier, toujours : la photo tient dans son cadre, et son fond blanc prend la teinte du cadre */
+.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"]) :is(.tn-grande,.tn-vignettes i){background-size:contain;background-position:center;background-blend-mode:multiply}
+.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-bt,.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>form>.tn-bt{justify-content:center}
+.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-prix:has(mark){font-family:var(--f-ui);font-size:16px;line-height:1.6}
+/* la barre d'achat qui reste en bas de l'écran : la vignette du produit, son nom, son prix, le bouton */
+.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre{left:0;right:0;bottom:0;max-width:none;margin:0;gap:12px;justify-content:flex-start;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--tn-fond);border-top:1.5px solid var(--tn-encre);border-radius:0;box-shadow:0 -10px 26px color-mix(in srgb,var(--tn-encre) 16%,transparent)}
+.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre .tn-vig{flex:none;width:46px;height:46px;background-color:var(--tn-sur-bouton);background-size:contain;background-blend-mode:multiply;border-radius:min(var(--tn-arrondi,0px),8px)}
+.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre b{flex:1 1 0;min-width:0;font-size:19px}
+.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre .tn-prix-b{flex:none;font-size:15px;font-weight:600;white-space:nowrap}
+.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre .tn-bt{flex:none;padding:13px 18px}
+
+/* ── « vente-directe » : achat serré ; le prix, les repères cochés et le bouton dans une carte ── */
+.ctw .tn-achat[data-tn-c="vente-directe"]{padding:6px 20px 30px}
+.ctw .tn-achat[data-tn-c="vente-directe"]::before{content:"";grid-column:1;grid-row:4/12;align-self:stretch;background-color:var(--tn-doux);border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-achat[data-tn-c="vente-directe"]::before{border-radius:22px}
+.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]::before{margin-right:6px;border:3px solid var(--tn-encre);border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-galerie{grid-row:1}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-galerie:has(.tn-vignettes){display:grid;grid-template-columns:minmax(0,1fr) 58px;gap:8px}
+.ctw .tn-achat[data-tn-c="vente-directe"] .tn-grande{height:300px}
+.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"] .tn-grande{margin:2px 6px 8px 2px}
+.ctw .tn-achat[data-tn-c="vente-directe"] .tn-vignettes{grid-template-columns:minmax(0,1fr);grid-auto-rows:minmax(0,1fr);gap:8px;margin-top:0}
+.ctw .tn-achat[data-tn-c="vente-directe"] .tn-vignettes i{height:auto;min-height:44px}
+.ctw .tn-achat[data-tn-c="vente-directe"] .tn-vignettes i:first-child{outline-offset:-1.5px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>small{grid-row:2;margin-top:18px;font-size:15.5px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>h1{grid-row:3;margin:3px 0 16px;font-size:calc(34px*var(--tn-k))}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-prix,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-rupture,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-pres-prix,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-option,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-bt,.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-choix,.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt,.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-rapide{grid-column:1;margin-left:16px;margin-right:16px}
+.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-prix,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-rupture,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-pres-prix,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-reperes,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-option,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-bt,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>form>.tn-choix,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>form>.tn-rapide{margin-left:19px;margin-right:25px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-prix{grid-row:4;margin-top:18px;font-family:var(--f-title);font-size:38px;line-height:1}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-rupture{grid-row:5}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-pres-prix{grid-row:6}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes{grid-row:7;display:grid;gap:9px;margin-top:16px;font-size:15px;line-height:1.35}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes li{position:relative;padding-left:30px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes li::before{content:"";position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background-color:var(--tn-encre)}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes li::after{content:"";position:absolute;left:6px;top:6px;width:8px;height:4px;border-left:2px solid var(--tn-sur-bouton);border-bottom:2px solid var(--tn-sur-bouton);transform:rotate(-45deg)}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-option{grid-row:8;margin-top:16px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-choix{grid-row:9;width:auto;background-color:var(--tn-fond)}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-bt,.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt{grid-row:10;margin-top:18px;margin-bottom:18px;padding:19px 20px;font-size:18px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-rapide{grid-row:11;margin-top:-8px;margin-bottom:18px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>p{grid-row:12;margin-top:18px;font-size:15.5px}
+
+/* ── « grandes-photos » : les photos d'un bord à l'autre, à faire glisser ; l'achat étroit et discret ── */
+.ctw .tn-achat[data-tn-c="grandes-photos"]{padding:0 20px 34px;text-align:center;overflow-x:clip}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-galerie{margin:0 -20px;display:flex;gap:4px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-galerie::-webkit-scrollbar{display:none}
+.ctw .tn-achat[data-tn-c="grandes-photos"] .tn-grande{flex:0 0 100%;height:auto;aspect-ratio:1/1;background-color:transparent;border:0;border-radius:0;box-shadow:none;transform:none;scroll-snap-align:start}
+/* une autre photo existe : elle se devine au bord, pour inviter à faire glisser */
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-galerie:has(.tn-vignettes i + i) .tn-grande{flex-basis:90%}
+.ctw .tn-achat[data-tn-c="grandes-photos"] .tn-vignettes{display:contents}
+.ctw .tn-achat[data-tn-c="grandes-photos"] .tn-vignettes i{flex:0 0 90%;height:auto;aspect-ratio:1/1;background-color:transparent;border-radius:0;scroll-snap-align:start}
+/* la première vignette est la grande photo : elle ne se montre pas deux fois */
+.ctw .tn-achat[data-tn-c="grandes-photos"] .tn-vignettes i:first-child{display:none}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-galerie{grid-row:1}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>small{grid-row:2;margin-top:28px}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>h1{grid-row:3;margin-top:6px;font-size:calc(40px*var(--tn-k))}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-prix{grid-row:4;margin-top:12px;font-size:17px;color:var(--tn-texte)}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-rupture{grid-row:5}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-pres-prix{grid-row:6;justify-items:center}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>p{grid-row:7;justify-self:center;max-width:34ch;margin-top:16px;font-size:16px}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-option{grid-row:8;justify-content:center;margin-top:20px}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>form>.tn-choix{grid-row:9}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-bt,.ctw .tn-achat[data-tn-c="grandes-photos"]>form>.tn-bt{grid-row:10;margin-top:22px}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>form>.tn-rapide{grid-row:11}
+.ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-reperes{grid-row:12;margin-top:18px;font-size:14px;line-height:1.75;color:var(--tn-sourd)}
+
+/* ── « technique » : le nom en tête, la photo bordée, puis des cases bordées ── */
+.ctw .tn-achat[data-tn-c="technique"]{padding:16px 20px 30px}
+.ctw .tn-achat[data-tn-c="technique"]>small{grid-row:1;margin-top:0;font-size:15px}
+.ctw .tn-achat[data-tn-c="technique"]>h1{grid-row:2;margin:4px 0 16px;font-size:calc(34px*var(--tn-k))}
+.ctw .tn-achat[data-tn-c="technique"]>.tn-galerie{grid-row:3}
+.ctw .tn-achat[data-tn-c="technique"] .tn-grande{height:auto;aspect-ratio:1/1;border:1.5px solid var(--tn-encre);border-radius:var(--tn-arrondi,0);box-shadow:none;transform:none}
+.ctw .tn-achat[data-tn-c="technique"] .tn-vignettes{gap:6px;margin-top:6px}
+.ctw .tn-achat[data-tn-c="technique"] .tn-vignettes i{height:62px;border:1.5px solid color-mix(in srgb,var(--tn-encre) 28%,transparent);border-radius:min(var(--tn-arrondi,0px),8px)}
+.ctw .tn-achat[data-tn-c="technique"] .tn-vignettes i:first-child{outline:0;border-color:var(--tn-encre);box-shadow:inset 0 0 0 1px var(--tn-encre)}
+.ctw .tn-achat[data-tn-c="technique"]>:is(.tn-prix,.tn-rupture,.tn-pres-prix,.tn-option,.tn-reperes){margin-top:-1.5px;padding:13px 16px;border:1.5px solid var(--tn-encre)}
+.ctw .tn-achat[data-tn-c="technique"]>.tn-prix{grid-row:4;margin-top:16px;font-family:var(--f-title);font-size:32px;line-height:1.05;font-variant-numeric:tabular-nums;border-radius:var(--tn-arrondi,0) var(--tn-arrondi,0) 0 0}
+.ctw .tn-achat[data-tn-c="technique"]>.tn-rupture{grid-row:5}
+.ctw .tn-achat[data-tn-c="technique"]>.tn-pres-prix{grid-row:6}
+.ctw .tn-achat[data-tn-c="technique"]>.tn-option{grid-row:7}
+.ctw .tn-achat[data-tn-c="technique"]>form>.tn-choix{grid-row:8;margin-top:-1.5px;border-radius:0}
+.ctw .tn-achat[data-tn-c="technique"]>.tn-reperes{grid-row:9;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:0;font-size:14px;line-height:1.45;border-radius:0 0 var(--tn-arrondi,0) var(--tn-arrondi,0)}
+.ctw .tn-achat[data-tn-c="technique"]>.tn-reperes li{padding:12px 14px}
+.ctw .tn-achat[data-tn-c="technique"]>.tn-reperes li + li{border-left:1.5px solid var(--tn-encre)}
+.ctw .tn-achat[data-tn-c="technique"]>.tn-bt,.ctw .tn-achat[data-tn-c="technique"]>form>.tn-bt{grid-row:10;margin-top:16px}
+.ctw .tn-achat[data-tn-c="technique"]>form>.tn-rapide{grid-row:11}
+.ctw .tn-achat[data-tn-c="technique"]>p{grid-row:12;margin-top:18px;font-size:15.5px}
+
+/* ── « fond-doux » : le produit posé sur un grand fond de couleur douce, tout centré ── */
+.ctw .tn-achat[data-tn-c="fond-doux"]{padding:10px 20px 34px;text-align:center}
+.ctw .tn-achat[data-tn-c="fond-doux"]>.tn-galerie{grid-row:1;overflow:hidden;padding:0 0 16px;background-color:color-mix(in srgb,var(--tn-accent) 17%,var(--tn-fond));border-radius:max(var(--tn-arrondi,0px),4px)}
+.ctw[data-tn-cadre="niche"] .tn-achat[data-tn-c="fond-doux"]>.tn-galerie{border-radius:175px 175px 26px 26px}
+.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="fond-doux"]>.tn-galerie{margin:2px 8px 8px 2px;border:3px solid var(--tn-encre);border-radius:22px;box-shadow:6px 7px 0 var(--tn-encre);transform:rotate(-1deg)}
+.ctw .tn-achat[data-tn-c="fond-doux"] .tn-grande{height:auto;aspect-ratio:1/1;background-color:transparent;border:0;border-radius:0;box-shadow:none;transform:none;mix-blend-mode:multiply}
+.ctw .tn-achat[data-tn-c="fond-doux"] .tn-vignettes{display:flex;justify-content:center;gap:10px;margin-top:16px}
+.ctw .tn-achat[data-tn-c="fond-doux"] .tn-vignettes i{flex:none;width:46px;height:46px;border-radius:50%;background-color:var(--tn-fond);background-size:cover}
+.ctw .tn-achat[data-tn-c="fond-doux"]>small{grid-row:2;margin-top:22px}
+.ctw .tn-achat[data-tn-c="fond-doux"]>h1{grid-row:3;margin-top:4px;font-size:calc(40px*var(--tn-k))}
+.ctw .tn-achat[data-tn-c="fond-doux"]>p{grid-row:4;justify-self:center;max-width:36ch;margin-top:12px;font-size:16px}
+.ctw .tn-achat[data-tn-c="fond-doux"]>.tn-prix{grid-row:5;margin-top:16px;font-family:var(--f-title);font-size:30px;line-height:1.05}
+.ctw .tn-achat[data-tn-c="fond-doux"]>.tn-rupture{grid-row:6}
+.ctw .tn-achat[data-tn-c="fond-doux"]>.tn-pres-prix{grid-row:7;justify-items:center}
+.ctw .tn-achat[data-tn-c="fond-doux"]>.tn-option{grid-row:8;justify-content:center}
+.ctw .tn-achat[data-tn-c="fond-doux"]>form>.tn-choix{grid-row:9}
+.ctw .tn-achat[data-tn-c="fond-doux"]>.tn-bt,.ctw .tn-achat[data-tn-c="fond-doux"]>form>.tn-bt{grid-row:10;margin-top:20px}
+.ctw .tn-achat[data-tn-c="fond-doux"]>form>.tn-rapide{grid-row:11}
+.ctw .tn-achat[data-tn-c="fond-doux"]>.tn-reperes{grid-row:12;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px;font-size:14px;line-height:1.3}
+.ctw .tn-achat[data-tn-c="fond-doux"]>.tn-reperes li{padding:9px 14px;border-radius:18px;background-color:var(--tn-doux)}
+.ctw[data-tn-bouton="droit"] .tn-achat[data-tn-c="fond-doux"]>.tn-reperes li{border-radius:0}
+.ctw[data-tn-bouton="etiquette"] .tn-achat[data-tn-c="fond-doux"]>.tn-reperes li{border-radius:3px}
+
+/* ── « portrait » : une grande photo en hauteur, les autres vues en bande ; le nom et le prix sur une ligne ── */
+.ctw .tn-achat[data-tn-c="portrait"]{grid-template-columns:minmax(0,1fr) auto;column-gap:14px;padding:0 20px 30px;overflow-x:clip}
+.ctw .tn-achat[data-tn-c="portrait"]>*,.ctw .tn-achat[data-tn-c="portrait"]>form>*{grid-column:1/-1}
+.ctw .tn-achat[data-tn-c="portrait"]>.tn-galerie{grid-row:1;margin:0 -20px}
+.ctw .tn-achat[data-tn-c="portrait"] .tn-grande{height:auto;aspect-ratio:4/5;background-color:transparent;border:0;border-radius:0;box-shadow:none;transform:none}
+.ctw .tn-achat[data-tn-c="portrait"] .tn-vignettes{display:flex;gap:6px;margin-top:6px;padding:0 20px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.ctw .tn-achat[data-tn-c="portrait"] .tn-vignettes::-webkit-scrollbar{display:none}
+.ctw .tn-achat[data-tn-c="portrait"] .tn-vignettes i{flex:0 0 23%;height:auto;aspect-ratio:4/5;background-color:transparent;border-radius:0;scroll-snap-align:start}
+.ctw .tn-achat[data-tn-c="portrait"] .tn-vignettes i:first-child{outline-offset:-1.5px}
+.ctw .tn-achat[data-tn-c="portrait"]>small{grid-row:2;margin-top:20px}
+.ctw .tn-achat[data-tn-c="portrait"]>h1{grid-row:3;grid-column:1;align-self:end;margin-top:4px;font-size:calc(32px*var(--tn-k))}
+.ctw .tn-achat[data-tn-c="portrait"]>.tn-prix{grid-row:3;grid-column:2;align-self:end;margin:0 0 2px;font-size:20px;font-weight:600;white-space:nowrap}
+/* un prix qui manque prend sa ligne, sous le nom */
+.ctw .tn-achat[data-tn-c="portrait"]>.tn-prix:has(mark){grid-row:4;grid-column:1/-1;margin:8px 0 0;font-weight:400;white-space:normal}
+.ctw .tn-achat[data-tn-c="portrait"]>.tn-rupture{grid-row:5}
+.ctw .tn-achat[data-tn-c="portrait"]>.tn-pres-prix{grid-row:6}
+.ctw .tn-achat[data-tn-c="portrait"]>.tn-option{grid-row:7;justify-self:start;min-height:48px;margin-top:18px;padding:8px 20px 8px 12px;border:1.5px solid var(--tn-encre);border-radius:999px;font-weight:600}
+.ctw[data-tn-bouton="droit"] .tn-achat[data-tn-c="portrait"]>.tn-option{border-radius:0}
+.ctw[data-tn-bouton="etiquette"] .tn-achat[data-tn-c="portrait"]>.tn-option{border-radius:3px}
+.ctw .tn-achat[data-tn-c="portrait"]>.tn-option i{outline:0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tn-encre) 30%,transparent)}
+.ctw .tn-achat[data-tn-c="portrait"]>form>.tn-choix{grid-row:8}
+.ctw .tn-achat[data-tn-c="portrait"]>.tn-bt,.ctw .tn-achat[data-tn-c="portrait"]>form>.tn-bt{grid-row:9;margin-top:16px}
+.ctw .tn-achat[data-tn-c="portrait"]>form>.tn-rapide{grid-row:10}
+.ctw .tn-achat[data-tn-c="portrait"]>.tn-reperes{grid-row:11;margin-top:18px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-size:14.5px;line-height:1.8}
+.ctw .tn-achat[data-tn-c="portrait"]>p{grid-row:12;margin-top:12px;font-size:16px}
+
+/* ══ 2. Pièces nouvelles de la fiche produit ══ */
+/* ── Tailles et couleurs en pastilles ── */
+.ctw .tn-versions{padding:8px 20px 0;display:grid;gap:20px}
+.ctw .tn-versions .tn-groupe-v small{font-size:15.5px}
+.ctw .tn-versions .tn-choix-v{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ctw .tn-versions .tn-choix-v :is(label,.tn-pastille){position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:58px;min-height:48px;padding:6px 18px;border:1.5px solid color-mix(in srgb,var(--tn-encre) 38%,transparent);border-radius:999px;font-size:15.5px;font-weight:600;line-height:1.2;cursor:pointer}
+.ctw[data-tn-bouton="droit"] .tn-versions .tn-choix-v :is(label,.tn-pastille){border-radius:0}
+.ctw[data-tn-bouton="etiquette"] .tn-versions .tn-choix-v :is(label,.tn-pastille){border-radius:3px}
+.ctw .tn-versions input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.ctw .tn-versions .tn-choix-v :is(label:has(input:checked),.tn-pastille.tn-on){border-color:var(--tn-encre);background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw[data-tn-bouton="ombre"] .tn-versions .tn-choix-v :is(label,.tn-pastille){border:2.5px solid var(--tn-encre)}
+.ctw[data-tn-bouton="ombre"] .tn-versions .tn-choix-v :is(label:has(input:checked),.tn-pastille.tn-on){box-shadow:3px 4px 0 var(--tn-accent)}
+.ctw .tn-versions .tn-choix-v label:has(input:focus-visible){outline:2px solid var(--tn-encre);outline-offset:2px}
+/* une version épuisée : barrée d'un trait, elle ne se choisit pas */
+.ctw .tn-versions .tn-choix-v .tn-off{border-style:dashed;color:var(--tn-sourd);cursor:default;background-image:linear-gradient(to top right,transparent calc(50% - .8px),color-mix(in srgb,var(--tn-encre) 45%,transparent) calc(50% - .8px) calc(50% + .8px),transparent calc(50% + .8px))}
+/* les couleurs : un rond de la teinte, son nom à côté ; la couleur choisie est cerclée */
+.ctw .tn-versions .tn-couleurs :is(label,.tn-pastille){justify-content:flex-start;padding:5px 18px 5px 5px}
+.ctw .tn-versions .tn-couleurs :is(label,.tn-pastille)::before{content:"";flex:none;width:36px;height:36px;border-radius:50%;background-color:var(--teinte,color-mix(in srgb,var(--tn-encre) 22%,var(--tn-fond)));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tn-encre) 28%,transparent)}
+.ctw[data-tn-bouton="droit"] .tn-versions .tn-couleurs :is(label,.tn-pastille)::before{border-radius:0}
+.ctw .tn-versions .tn-couleurs :is(label:has(input:checked),.tn-pastille.tn-on){background-color:transparent;color:inherit;box-shadow:inset 0 0 0 1px var(--tn-encre)}
+/* « lignes » : le nom de l'option à gauche, ses boutons à droite */
+.ctw .tn-versions[data-tn-c="lignes"]{gap:0;padding-top:0}
+.ctw .tn-versions[data-tn-c="lignes"] .tn-groupe-v{display:grid;grid-template-columns:78px minmax(0,1fr);column-gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-versions[data-tn-c="lignes"] .tn-groupe-v:first-child{border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-versions[data-tn-c="lignes"] .tn-choix-v{margin-top:0;gap:6px}
+.ctw .tn-versions[data-tn-c="lignes"] .tn-choix-v :is(label,.tn-pastille){min-width:46px;min-height:44px;padding:4px 12px;border-radius:min(var(--tn-arrondi,0px),8px);font-size:15px}
+.ctw .tn-versions[data-tn-c="lignes"] .tn-couleurs :is(label,.tn-pastille){padding:4px 12px 4px 4px}
+.ctw .tn-versions[data-tn-c="lignes"] .tn-couleurs :is(label,.tn-pastille)::before{width:30px;height:30px;border-radius:min(var(--tn-arrondi,0px),6px)}
+
+/* ── Guide des tailles ── */
+.ctw .tn-guide-tailles{padding:44px 20px 0}
+.ctw .tn-guide-tailles .tn-declic{display:none}
+.ctw .tn-guide-tailles input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.ctw .tn-guide-tailles h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-guide-tailles .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-guide-tailles .tn-table-g{margin-top:22px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-guide-tailles table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:14.5px;line-height:1.3}
+.ctw .tn-guide-tailles th,.ctw .tn-guide-tailles td{padding:13px 4px;text-align:center;font-weight:400;vertical-align:middle;overflow-wrap:anywhere;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-guide-tailles th:first-child{width:25%;padding-left:0;text-align:left}
+.ctw .tn-guide-tailles thead th{padding-top:10px;padding-bottom:10px;font-size:12.5px;color:var(--tn-sourd);vertical-align:bottom;border-bottom:1.5px solid var(--tn-encre)}
+.ctw .tn-guide-tailles tbody th{font-family:var(--f-title);font-size:22px;line-height:1.1}
+.ctw .tn-guide-tailles tbody tr:nth-child(even){background-color:color-mix(in srgb,var(--tn-doux) 55%,transparent)}
+.ctw .tn-guide-tailles table mark.tn-manque{font-size:12px;padding:1px 4px}
+.ctw .tn-guide-tailles ol{list-style:none;margin:24px 0 0;padding:0;counter-reset:tn-mesure}
+.ctw .tn-guide-tailles ol li{counter-increment:tn-mesure;display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:14px;row-gap:3px;padding:12px 0;border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-guide-tailles ol li:first-child{border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-guide-tailles ol li::before{content:counter(tn-mesure);grid-row:1/3;display:grid;place-items:center;width:26px;height:26px;margin-top:1px;border:1.5px solid var(--tn-encre);border-radius:50%;font-size:13px;font-weight:700}
+.ctw .tn-guide-tailles ol li b{grid-column:2;font-family:var(--f-title);font-weight:400;font-size:21px;line-height:1.15}
+.ctw .tn-guide-tailles ol li span{grid-column:2;font-size:15px;line-height:1.45;color:var(--tn-texte)}
+.ctw .tn-guide-tailles .tn-note{margin-top:4px;padding-top:14px;border-top:1.5px solid var(--tn-encre);font-size:14.5px;color:var(--tn-sourd)}
+/* « tiroir » : une ligne à toucher, le guide s'ouvre dessous */
+.ctw .tn-guide-tailles[data-tn-c="tiroir"]{padding-top:14px}
+.ctw .tn-guide-tailles[data-tn-c="tiroir"] .tn-declic{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:54px;padding:13px 0;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);font-family:var(--f-title);font-size:22px;line-height:1.15;cursor:pointer}
+.ctw .tn-guide-tailles[data-tn-c="tiroir"] .tn-declic::after{content:"+";font-family:var(--f-ui);font-size:22px}
+.ctw .tn-guide-tailles[data-tn-c="tiroir"] .tn-declic:has(input:checked)::after{content:"−"}
+.ctw .tn-guide-tailles[data-tn-c="tiroir"] .tn-declic:has(input:focus-visible){outline:2px solid var(--tn-encre);outline-offset:2px}
+.ctw .tn-guide-tailles[data-tn-c="tiroir"] .tn-declic:not(:has(input:checked)) + .tn-guide{display:none}
+.ctw .tn-guide-tailles[data-tn-c="tiroir"] .tn-guide{padding-top:22px}
+.ctw .tn-guide-tailles[data-tn-c="tiroir"] h2{font-size:calc(30px*var(--tn-k))}
+
+/* ── Offres par quantité ── */
+.ctw .tn-lots{padding:14px 20px 0}
+.ctw .tn-lots h2{font-size:calc(26px*var(--tn-k))}
+.ctw .tn-lots ul{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;margin-top:24px}
+.ctw .tn-lots li{display:flex;min-width:0}
+.ctw .tn-lots input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+.ctw .tn-lots label{position:relative;flex:1;min-width:0;display:grid;align-content:center;justify-items:center;gap:5px;min-height:112px;padding:24px 6px 16px;border:1.5px solid color-mix(in srgb,var(--tn-encre) 34%,transparent);border-radius:var(--tn-arrondi,0);text-align:center;cursor:pointer}
+.ctw[data-tn-cadre="niche"] .tn-lots label{border-radius:18px}
+.ctw[data-tn-cadre="penche"] .tn-lots label{border:2.5px solid var(--tn-encre);border-radius:14px}
+.ctw .tn-lots label:has(input:checked){border-color:var(--tn-encre);background-color:var(--tn-doux);box-shadow:inset 0 0 0 1.5px var(--tn-encre)}
+.ctw[data-tn-cadre="penche"] .tn-lots label:has(input:checked){box-shadow:4px 5px 0 var(--tn-encre)}
+.ctw .tn-lots label:has(input:focus-visible){outline:2px solid var(--tn-encre);outline-offset:2px}
+.ctw .tn-lots label b{font-family:var(--f-title);font-weight:400;font-size:21px;line-height:1.1}
+.ctw[data-tn-titres="gras"] .tn-lots label b{font-size:17px}
+.ctw[data-tn-titres="capitales"] .tn-lots label b{font-size:14px}
+.ctw .tn-lots label span{font-size:16.5px;font-weight:700}
+.ctw .tn-lots label i{font-style:normal;font-size:12.5px;line-height:1.3;color:var(--tn-sourd)}
+.ctw .tn-lots label em{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:999px;background-color:var(--tn-encre);color:var(--tn-sur-bouton);font-style:normal;font-size:12.5px;font-weight:700;line-height:1.2;white-space:nowrap}
+.ctw[data-tn-bouton="droit"] .tn-lots label em,.ctw[data-tn-bouton="etiquette"] .tn-lots label em{border-radius:0}
+.ctw .tn-lots label :is(b,span) mark.tn-manque{font-size:12.5px;padding:1px 4px}
+.ctw .tn-lots label em:has(mark){position:static;transform:none;padding:0;background:none;white-space:normal}
+.ctw .tn-lots label em mark.tn-manque{font-size:12px;padding:1px 4px}
+/* « lignes » : un rond à cocher, la quantité, le prix à droite */
+.ctw .tn-lots[data-tn-c="lignes"] ul{grid-auto-flow:row;gap:0;margin-top:14px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-lots[data-tn-c="lignes"] label{grid-template-columns:22px minmax(0,1fr) auto;justify-items:start;align-items:center;column-gap:12px;row-gap:3px;min-height:56px;padding:13px 12px;border:0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);border-radius:0;background-color:transparent;box-shadow:none;text-align:left}
+.ctw .tn-lots[data-tn-c="lignes"] label::before{content:"";grid-column:1;grid-row:1/3;box-sizing:border-box;width:22px;height:22px;border:1.5px solid var(--tn-encre);border-radius:50%}
+.ctw .tn-lots[data-tn-c="lignes"] label:has(input:checked)::before{background-color:var(--tn-encre);box-shadow:inset 0 0 0 4px var(--tn-fond)}
+.ctw .tn-lots[data-tn-c="lignes"] label b{grid-column:2;grid-row:1}
+.ctw .tn-lots[data-tn-c="lignes"] label i{grid-column:2;grid-row:2;font-size:13.5px}
+.ctw .tn-lots[data-tn-c="lignes"] label span{grid-column:3;grid-row:1;justify-self:end}
+.ctw .tn-lots[data-tn-c="lignes"] label em,.ctw .tn-lots[data-tn-c="lignes"] label em:has(mark){position:static;transform:none;grid-column:3;grid-row:2;justify-self:end}
+
+/* ── Le look complet ── */
+.ctw .tn-looks{padding:44px 20px 0}
+.ctw .tn-looks h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-looks .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-looks .tn-look{margin-top:24px}
+.ctw .tn-looks .tn-look>.tn-ph{height:420px}
+.ctw[data-tn-cadre="penche"] .tn-looks{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-looks .tn-look>.tn-ph{margin:0 10px 0 4px}
+.ctw .tn-looks .tn-cartes{margin-top:20px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-looks .tn-carte-p{display:grid;grid-template-columns:76px minmax(0,1fr) auto;column-gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-looks .tn-carte-p .tn-ph{height:94px;background-color:var(--tn-sur-bouton);background-size:contain;background-blend-mode:multiply;border-radius:min(var(--tn-arrondi,0px),10px)}
+.ctw .tn-looks .tn-carte-p b{font-family:var(--f-title);font-weight:400;font-size:22px;line-height:1.12;overflow-wrap:break-word}
+.ctw .tn-looks .tn-carte-p span{font-size:15.5px;white-space:nowrap}
+.ctw .tn-looks .tn-carte-p span:has(mark){max-width:104px;white-space:normal;text-align:right;font-size:13px}
+/* « bande » : la photo du look en bandeau, les pièces en cartes dessous */
+.ctw .tn-looks[data-tn-c="bande"] .tn-look>.tn-ph{height:240px}
+.ctw .tn-looks[data-tn-c="bande"] .tn-cartes{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:10px;margin-top:12px;border-top:0}
+.ctw .tn-looks[data-tn-c="bande"] .tn-carte-p{display:block;min-width:0;padding:0;border-bottom:0}
+.ctw .tn-looks[data-tn-c="bande"] .tn-carte-p .tn-ph{height:auto;aspect-ratio:1/1}
+.ctw .tn-looks[data-tn-c="bande"] .tn-carte-p b{display:block;margin-top:10px;font-size:18px}
+.ctw .tn-looks[data-tn-c="bande"] .tn-carte-p span,.ctw .tn-looks[data-tn-c="bande"] .tn-carte-p span:has(mark){display:block;max-width:none;margin-top:3px;white-space:normal;text-align:left}
+
+/* ── Allergènes ── */
+.ctw .tn-allergenes{padding:44px 20px 0}
+.ctw .tn-allergenes h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-allergenes ul{margin-top:20px;border-top:1.5px solid var(--tn-encre)}
+.ctw .tn-allergenes li{display:grid;grid-template-columns:minmax(0,36%) minmax(0,1fr);column-gap:14px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-size:15.5px;line-height:1.45}
+.ctw .tn-allergenes li b{font-weight:400;color:var(--tn-sourd)}
+.ctw .tn-allergenes li span{font-weight:600}
+.ctw .tn-allergenes .tn-note{margin-top:12px;font-size:14.5px;color:var(--tn-sourd)}
+.ctw .tn-allergenes .tn-note a{display:flex;align-items:center;min-height:44px;color:var(--tn-encre);font-weight:600;text-decoration:underline;text-underline-offset:4px}
+/* « encadre » : la mention au dos d'un paquet */
+.ctw .tn-allergenes[data-tn-c="encadre"]{padding:68px 40px 22px}
+.ctw .tn-allergenes[data-tn-c="encadre"]::before{content:"";position:absolute;inset:44px 20px 0;border:3px solid var(--tn-encre);border-radius:var(--tn-arrondi,0);pointer-events:none}
+.ctw .tn-allergenes[data-tn-c="encadre"] h2{font-size:calc(28px*var(--tn-k))}
+.ctw .tn-allergenes[data-tn-c="encadre"] ul{margin-top:14px}
+.ctw .tn-allergenes[data-tn-c="encadre"] li{display:block;padding:12px 0}
+.ctw .tn-allergenes[data-tn-c="encadre"] li b{display:block;font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.ctw .tn-allergenes[data-tn-c="encadre"] li span{display:block;margin-top:3px;font-size:17px;font-weight:700}
+.ctw .tb-pg>.tn-allergenes[data-tn-c="encadre"]:last-child{padding-bottom:86px}
+.ctw .tb-pg>.tn-allergenes[data-tn-c="encadre"]:last-child::before{bottom:64px}
+
+/* ── Avant et après, avec le produit ── */
+.ctw .tn-avant-apres-produit{padding:44px 20px 0}
+.ctw .tn-avant-apres-produit h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-avant-apres-produit .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
+.ctw .tn-avant-apres-produit .tn-paire{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:24px}
+.ctw .tn-avant-apres-produit figure{position:relative}
+.ctw .tn-avant-apres-produit .tn-ph{height:250px;border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-avant-apres-produit .tn-ph{border-radius:86px 86px 0 0}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres-produit{overflow-x:clip}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres-produit .tn-paire{gap:14px;padding:0 8px 0 2px}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres-produit .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres-produit .tn-avant .tn-ph{transform:rotate(-1.6deg)}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres-produit .tn-apres .tn-ph{transform:rotate(1.2deg)}
+.ctw .tn-avant-apres-produit figcaption{position:absolute;left:10px;bottom:10px;padding:5px 11px;background-color:var(--tn-fond);color:var(--tn-encre);font-size:14.5px;font-weight:600;line-height:1.2}
+.ctw .tn-avant-apres-produit ul{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin-top:20px;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre)}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres-produit ul{margin-top:30px}
+.ctw .tn-avant-apres-produit li{display:grid;gap:4px;align-content:start;padding:14px 12px 16px}
+.ctw .tn-avant-apres-produit li:first-child{padding-left:0}
+.ctw .tn-avant-apres-produit li + li{border-left:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-avant-apres-produit li span{font-size:14px;color:var(--tn-sourd)}
+.ctw .tn-avant-apres-produit li b{font-family:var(--f-title);font-weight:400;font-size:24px;line-height:1.1;overflow-wrap:anywhere}
+.ctw .tn-avant-apres-produit li b mark.tn-manque{font-size:13.5px;padding:1px 5px}
+.ctw .tn-avant-apres-produit .tn-note{margin-top:12px;font-size:14.5px;color:var(--tn-sourd)}
+/* « apres-en-grand » : l'après en grand, l'avant en vignette sur son coin */
+.ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-paire{display:block;position:relative;padding:0 0 44px}
+.ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-apres .tn-ph{height:330px}
+.ctw[data-tn-cadre="niche"] .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-apres .tn-ph{border-radius:175px 175px 0 0}
+.ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-avant{position:absolute;left:14px;bottom:0;z-index:1;width:42%}
+.ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-avant .tn-ph{height:134px;border:4px solid var(--tn-fond);border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="penche"] .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-avant .tn-ph{border:3px solid var(--tn-encre);border-radius:14px;box-shadow:4px 5px 0 var(--tn-encre);transform:rotate(-3deg)}
+.ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-avant figcaption{left:8px;bottom:8px;padding:3px 8px;font-size:13px}
+.ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-apres figcaption{left:auto;right:10px;bottom:10px}
+
+/* ── Repères en pictos ── */
+.ctw .tn-pictos{padding:44px 20px 0}
+.ctw .tn-pictos h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-pictos ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 12px;margin-top:26px;text-align:center}
+.ctw .tn-pictos li{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-content:start;gap:4px;min-width:0}
+.ctw .tn-pictos li:last-child:nth-child(odd){grid-column:1/-1}
+.ctw .tn-pictos svg{box-sizing:border-box;width:68px;height:68px;margin-bottom:8px;padding:18px;border-radius:50%;background-color:color-mix(in srgb,var(--tn-accent) 17%,var(--tn-fond));fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.ctw[data-tn-cadre="droit"] .tn-pictos svg{border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="penche"] .tn-pictos svg{border:2.5px solid var(--tn-encre);box-shadow:3px 4px 0 var(--tn-encre)}
+.ctw .tn-pictos li b{max-width:100%;font-family:var(--f-title);font-weight:400;font-size:22px;line-height:1.1;overflow-wrap:break-word}
+.ctw[data-tn-titres="gras"] .tn-pictos li b{font-size:19px}
+.ctw[data-tn-titres="capitales"] .tn-pictos li b{font-size:15px}
+.ctw .tn-pictos li span{font-size:14.5px;line-height:1.45;color:var(--tn-texte)}
+.ctw .tn-pictos li mark.tn-manque{font-size:13px;padding:1px 5px}
+/* « liste » : le picto à gauche, le nom et le fait à droite */
+.ctw .tn-pictos[data-tn-c="liste"] ul{grid-template-columns:minmax(0,1fr);gap:0;margin-top:20px;border-top:1.5px solid var(--tn-encre);text-align:left}
+.ctw .tn-pictos[data-tn-c="liste"] li{grid-template-columns:38px minmax(0,1fr);justify-items:start;align-items:center;column-gap:16px;row-gap:3px;padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-pictos[data-tn-c="liste"] svg{grid-row:1/3;width:34px;height:34px;margin:0;padding:0;border:0;border-radius:0;background-color:transparent;box-shadow:none}
+.ctw .tn-pictos[data-tn-c="liste"] li b,.ctw .tn-pictos[data-tn-c="liste"] li span{grid-column:2}
+
+.ctw .tb-pg>.tn-versions:last-child,.ctw .tb-pg>.tn-guide-tailles:last-child,.ctw .tb-pg>.tn-lots:last-child,.ctw .tb-pg>.tn-looks:last-child,.ctw .tb-pg>.tn-allergenes:last-child,.ctw .tb-pg>.tn-avant-apres-produit:last-child,.ctw .tb-pg>.tn-pictos:last-child{padding-bottom:64px}
+
+/* ══ 3. Une façon de plus pour les pièces de la fiche produit ══ */
+/* ── Description « encadre » : un encadré bordé, le titre en haut, les volets dedans ── */
+.ctw .tn-volets[data-tn-c="encadre"]{padding:66px 38px 8px}
+.ctw .tn-volets[data-tn-c="encadre"]::before{content:"";position:absolute;inset:44px 20px 0;border:1.5px solid var(--tn-encre);border-radius:var(--tn-arrondi,0);pointer-events:none}
+.ctw[data-tn-cadre="niche"] .tn-volets[data-tn-c="encadre"]::before{border-radius:24px}
+.ctw[data-tn-cadre="penche"] .tn-volets[data-tn-c="encadre"]::before{right:26px;border-width:3px;border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw .tn-volets[data-tn-c="encadre"] h2{margin:0 0 14px;font-size:calc(30px*var(--tn-k))}
+.ctw .tn-volets[data-tn-c="encadre"] details{padding:14px 0;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-volets[data-tn-c="encadre"] details:last-child{border-bottom:0}
+.ctw .tn-volets[data-tn-c="encadre"] summary{align-items:center;gap:12px;min-height:44px;font-size:22px;line-height:1.15}
+.ctw .tb-pg>.tn-volets[data-tn-c="encadre"]:last-child::before{bottom:56px}
+/* ── Description « numeros » : un grand numéro de couleur devant chaque volet ── */
+.ctw .tn-volets[data-tn-c="numeros"] .tn-liste{counter-reset:tn-volet;border-top:0}
+.ctw .tn-volets[data-tn-c="numeros"] details{counter-increment:tn-volet;position:relative;padding:14px 0 14px 60px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-volets[data-tn-c="numeros"] details::before{content:counter(tn-volet);position:absolute;left:0;top:12px;font-family:var(--f-title);font-size:50px;line-height:1;color:var(--tn-accent)}
+.ctw .tn-volets[data-tn-c="numeros"] summary{align-items:center;gap:12px;min-height:48px;font-size:24px;line-height:1.15}
+
+/* ── À l'échelle « carte-a-cheval » : la photo d'un bord à l'autre, les dimensions dans une carte à cheval ── */
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"]{padding:44px 0 0}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] h2{margin:0 20px}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] figure{position:relative;margin-top:22px}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] .tn-regle{padding:0}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] .tn-regle::before,.ctw .tn-echelle[data-tn-c="carte-a-cheval"] .tn-regle::after{display:none}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] .tn-ph{height:330px;border:0;border-radius:0;box-shadow:none;transform:none}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] figcaption{position:absolute;left:12px;top:12px;max-width:calc(100% - 24px);margin:0;padding:5px 10px;background-color:var(--tn-fond);color:var(--tn-encre);font-size:15px}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] ul{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin:-44px 20px 0;padding:0 14px;background-color:var(--tn-fond);border:1.5px solid var(--tn-encre);border-radius:var(--tn-arrondi,0)}
+.ctw[data-tn-cadre="niche"] .tn-echelle[data-tn-c="carte-a-cheval"] ul{border-radius:18px}
+.ctw[data-tn-cadre="penche"] .tn-echelle[data-tn-c="carte-a-cheval"] ul{margin-right:26px;border-width:3px;border-radius:16px;box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] li{grid-template-columns:minmax(0,1fr);align-items:start;padding:14px 10px 16px;border-bottom:0}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] li:first-child{padding-left:0}
+.ctw .tn-echelle[data-tn-c="carte-a-cheval"] li + li{border-left:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+
+/* ── Valeurs « bandes » : sans cadre, un tableau à bandes de couleur douce ── */
+.ctw .tn-valeurs[data-tn-c="bandes"] .tn-etiquette{padding:0;border:0;border-radius:0;background-color:transparent;color:inherit}
+.ctw .tn-valeurs[data-tn-c="bandes"] h2{font-size:calc(40px*var(--tn-k))}
+.ctw .tn-valeurs[data-tn-c="bandes"] .tn-tete p{font-size:16px;margin-top:10px}
+.ctw .tn-valeurs[data-tn-c="bandes"] table{margin-top:20px;border-top:1.5px solid var(--tn-encre);font-size:15px}
+.ctw .tn-valeurs[data-tn-c="bandes"] th,.ctw .tn-valeurs[data-tn-c="bandes"] td{padding:13px 10px}
+.ctw .tn-valeurs[data-tn-c="bandes"] th:first-child{padding-left:12px}
+.ctw .tn-valeurs[data-tn-c="bandes"] tbody tr.tn-dont th{padding-left:26px}
+.ctw .tn-valeurs[data-tn-c="bandes"] tbody tr:nth-child(odd){background-color:var(--tn-doux)}
+.ctw .tn-valeurs[data-tn-c="bandes"] tbody tr + tr th,.ctw .tn-valeurs[data-tn-c="bandes"] tbody tr + tr td{border-top:0}
+.ctw .tn-valeurs[data-tn-c="bandes"] .tn-source{border-top:1.5px solid var(--tn-encre)}
+
+/* ── La note « bandeau » : une bande sombre, la note en très grand ── */
+.ctw .tn-grade[data-tn-c="bandeau"] .tn-sceau{width:auto;min-width:0;max-width:none;aspect-ratio:auto;margin:0 -20px;padding:30px 20px 32px;display:grid;place-content:start;justify-items:start;gap:8px;text-align:left;border:0;border-radius:0;outline:0;box-shadow:none;transform:none;background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw .tn-grade[data-tn-c="bandeau"] .tn-sceau b{font-size:calc(72px*var(--tn-k));line-height:.95}
+.ctw .tn-grade[data-tn-c="bandeau"] .tn-sceau span{font-size:15px;color:inherit;opacity:.86}
+.ctw .tn-grade[data-tn-c="bandeau"] ul{border-top:0}
+.ctw .tn-grade[data-tn-c="bandeau"] li{border-bottom:0;border-top:1.5px solid var(--tn-encre)}
+
+/* ── Effets « cartes » : une carte par étape, de plus en plus colorée ── */
+.ctw .tn-effets[data-tn-c="cartes"] ol{display:grid;gap:8px;margin-top:24px}
+.ctw .tn-effets[data-tn-c="cartes"] li{padding:20px 18px 22px;border-radius:var(--tn-arrondi,0);background-color:color-mix(in srgb,var(--tn-accent) 11%,var(--tn-fond))}
+.ctw .tn-effets[data-tn-c="cartes"] li:last-child{padding-bottom:22px}
+.ctw .tn-effets[data-tn-c="cartes"] li:nth-child(2){background-color:color-mix(in srgb,var(--tn-accent) 24%,var(--tn-fond))}
+.ctw .tn-effets[data-tn-c="cartes"] li:nth-child(n+3){background-color:color-mix(in srgb,var(--tn-accent) 40%,var(--tn-fond))}
+.ctw[data-tn-cadre="niche"] .tn-effets[data-tn-c="cartes"] li{border-radius:22px}
+.ctw[data-tn-cadre="penche"] .tn-effets[data-tn-c="cartes"] li{border:3px solid var(--tn-encre);border-radius:16px}
+.ctw .tn-effets[data-tn-c="cartes"] li::before,.ctw .tn-effets[data-tn-c="cartes"] li::after{display:none}
+.ctw .tn-effets[data-tn-c="cartes"] li b{font-size:40px;line-height:1}
+.ctw .tn-effets[data-tn-c="cartes"] li small{color:var(--tn-texte)}
+
+/* ── Coût « panneau-sombre » : une ligne par chiffre, sur un panneau sombre ── */
+.ctw .tn-cout[data-tn-c="panneau-sombre"] ul{display:block;margin:24px 0 0;padding:4px 20px;clip-path:none;border-bottom:0;border-radius:var(--tn-arrondi,0);background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw[data-tn-cadre="niche"] .tn-cout[data-tn-c="panneau-sombre"] ul{border-radius:22px}
+.ctw[data-tn-cadre="penche"] .tn-cout[data-tn-c="panneau-sombre"] ul{margin-right:6px;border-radius:16px;box-shadow:5px 6px 0 var(--tn-accent)}
+.ctw .tn-cout[data-tn-c="panneau-sombre"] li{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 16px;min-width:0;padding:20px 0;border:0}
+.ctw .tn-cout[data-tn-c="panneau-sombre"] li + li{border-top:1px solid color-mix(in srgb,var(--tn-sur-bouton) 30%,transparent)}
+.ctw .tn-cout[data-tn-c="panneau-sombre"] li small{color:inherit;opacity:.86}
+.ctw .tn-cout[data-tn-c="panneau-sombre"] li b{margin-left:auto;text-align:right}
+.ctw .tn-cout[data-tn-c="panneau-sombre"] details{margin-top:6px}
+
+/* ── Ration « cartes » : une carte par gabarit, la gamelle au centre ── */
+.ctw .tn-ration[data-tn-c="cartes"] ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border-top:0}
+.ctw .tn-ration[data-tn-c="cartes"] li{grid-template-columns:minmax(0,1fr);grid-template-rows:76px auto auto auto;justify-items:center;row-gap:4px;column-gap:0;padding:18px 10px 18px;border-bottom:0;border-radius:var(--tn-arrondi,0);background-color:var(--tn-doux);text-align:center}
+.ctw[data-tn-cadre="niche"] .tn-ration[data-tn-c="cartes"] li{border-radius:999px 999px 18px 18px;padding-top:30px}
+.ctw[data-tn-cadre="penche"] .tn-ration[data-tn-c="cartes"] li{border:3px solid var(--tn-encre);border-radius:16px}
+.ctw .tn-ration[data-tn-c="cartes"] li i{grid-column:1;grid-row:1;align-self:end;width:calc(var(--tn-t)*1.9);height:calc(var(--tn-t)*.98);margin-bottom:10px}
+.ctw .tn-ration[data-tn-c="cartes"] li b{grid-column:1;grid-row:2;align-self:auto}
+.ctw .tn-ration[data-tn-c="cartes"] li span{grid-column:1;grid-row:3}
+.ctw .tn-ration[data-tn-c="cartes"] li em{grid-column:1;grid-row:4;max-width:none;margin-top:6px;text-align:center;font-size:17px}
+
+/* ── Transition « lignes » : une barre couchée par jour ── */
+.ctw .tn-transition[data-tn-c="lignes"] ol{grid-auto-flow:row;gap:8px;height:auto;padding:0}
+.ctw .tn-transition[data-tn-c="lignes"] ol li{height:30px;margin-left:42px}
+.ctw .tn-transition[data-tn-c="lignes"] ol li::before{top:0;right:auto;width:var(--part,0%);height:auto}
+.ctw .tn-transition[data-tn-c="lignes"] ol li::after{left:-42px;right:auto;top:0;width:34px;line-height:30px;text-align:left;font-size:14px}
+.ctw .tn-transition[data-tn-c="lignes"] ul{margin-top:18px}
+
+/* ── Semis « panneau-sombre » : le calendrier sur un panneau sombre ── */
+.ctw .tn-semis[data-tn-c="panneau-sombre"] .tn-annee{padding:18px 16px 6px;border-radius:var(--tn-arrondi,0);background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw[data-tn-cadre="niche"] .tn-semis[data-tn-c="panneau-sombre"] .tn-annee{border-radius:22px}
+.ctw[data-tn-cadre="penche"] .tn-semis[data-tn-c="panneau-sombre"] .tn-annee{margin-right:6px;border-radius:16px;box-shadow:5px 6px 0 var(--tn-accent)}
+.ctw .tn-semis[data-tn-c="panneau-sombre"] ol{color:inherit;border-bottom-color:color-mix(in srgb,var(--tn-sur-bouton) 45%,transparent)}
+.ctw .tn-semis[data-tn-c="panneau-sombre"] ul li{border-bottom-color:color-mix(in srgb,var(--tn-sur-bouton) 22%,transparent)}
+.ctw .tn-semis[data-tn-c="panneau-sombre"] ul li:last-child{border-bottom:0}
+.ctw .tn-semis[data-tn-c="panneau-sombre"] ul li::before{height:22px;background-color:color-mix(in srgb,var(--tn-sur-bouton) 9%,transparent);background-image:repeating-linear-gradient(90deg,color-mix(in srgb,var(--tn-sur-bouton) 30%,transparent) 0 1px,transparent 1px calc(100%/12))}
+.ctw .tn-semis[data-tn-c="panneau-sombre"] ul li i{height:22px;border-radius:min(var(--tn-arrondi,0px),5px);background-color:var(--tn-accent)}
+.ctw .tn-semis[data-tn-c="panneau-sombre"] ul li:nth-child(even) i{background-color:var(--tn-sur-bouton)}
+
+/* ── Essayer « carte » : une carte de couleur douce, la photo en bandeau en haut ── */
+.ctw .tn-essayer[data-tn-c="carte"]{--tn-r:var(--tn-arrondi,0px);display:flex;flex-direction:column;padding:44px 20px 0}
+.ctw[data-tn-cadre="niche"] .tn-essayer[data-tn-c="carte"]{--tn-r:24px}
+.ctw[data-tn-cadre="penche"] .tn-essayer[data-tn-c="carte"]{--tn-r:16px;padding-right:26px}
+.ctw .tn-essayer[data-tn-c="carte"]::before{content:"";position:absolute;z-index:0;inset:44px 20px 0;border-radius:var(--tn-r);background-color:var(--tn-doux)}
+.ctw[data-tn-cadre="penche"] .tn-essayer[data-tn-c="carte"]::before{right:26px;border:3px solid var(--tn-encre);box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw .tn-essayer[data-tn-c="carte"]>*{position:relative;z-index:1}
+.ctw .tn-essayer[data-tn-c="carte"] .tn-ph{order:-1;height:200px;margin:0;border:0;border-radius:var(--tn-r) var(--tn-r) 0 0;box-shadow:none;transform:none}
+.ctw[data-tn-cadre="penche"] .tn-essayer[data-tn-c="carte"] .tn-ph{margin:3px 3px 0;border-radius:12px 12px 0 0}
+.ctw .tn-essayer[data-tn-c="carte"] h2{margin:24px 20px 0;font-size:calc(32px*var(--tn-k))}
+.ctw .tn-essayer[data-tn-c="carte"] .tn-chapo{margin:10px 20px 0}
+.ctw .tn-essayer[data-tn-c="carte"] ul{margin:18px 20px 0}
+.ctw .tn-essayer[data-tn-c="carte"] .tn-bt{margin:20px 20px 24px;justify-content:center}
+.ctw .tb-pg>.tn-essayer[data-tn-c="carte"]:last-child::before{bottom:64px}
+
+/* ── Comparatif « colonne-vedette » : le premier produit dans une colonne sombre ── */
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-noms,.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere p{column-gap:0}
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-noms{padding-bottom:0;border-bottom:0}
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-noms a{padding:16px 10px 12px;background-color:var(--tn-doux)}
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-noms a:first-child{border-radius:var(--tn-arrondi,0) var(--tn-arrondi,0) 0 0;background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
+.ctw[data-tn-cadre="niche"] .tn-comparatif[data-tn-c="colonne-vedette"] .tn-noms a:first-child{border-radius:18px 18px 0 0}
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere{padding:0;border-bottom:0}
+/* le nom du critère : dans la colonne sombre, au-dessus de sa valeur */
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere small{padding:12px calc(50% + 10px) 0 10px;background-image:linear-gradient(90deg,var(--tn-encre) 50%,var(--tn-doux) 50%);color:var(--tn-sur-bouton);font-size:13.5px;border-top:1px solid color-mix(in srgb,var(--tn-sur-bouton) 26%,transparent)}
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere:has(span:nth-child(3)) small{padding-right:calc(66.667% + 10px);background-image:linear-gradient(90deg,var(--tn-encre) 33.333%,var(--tn-doux) 33.333%)}
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere p{margin-top:0}
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere span{padding:4px 10px 14px;background-color:var(--tn-doux)}
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere span:first-child{background-color:var(--tn-encre);color:var(--tn-sur-bouton);font-weight:600}
+.ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere:last-child span:first-child{border-radius:0 0 var(--tn-arrondi,0) var(--tn-arrondi,0)}
+
+/* ══ Écrans larges ══ */
+@media (min-width:760px){
+  /* Bloc d'achat : la photo à gauche sur toute la hauteur, l'achat dans la colonne de droite */
+  .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="technique"],[data-tn-c="fond-doux"]){grid-template-rows:repeat(12,auto) 1fr;column-gap:56px;padding:24px max(40px,calc(50% - 540px)) 56px}
+  .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"])>*,.ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"])>form>*{grid-column:2}
+  .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-galerie{grid-column:1;grid-row:1/14}
+  .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre b{font-size:24px}
+  .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre .tn-bt{padding:14px 34px}
+  /* vente directe */
+  .ctw .tn-achat[data-tn-c="vente-directe"]{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)}
+  .ctw .tn-achat[data-tn-c="vente-directe"]::before{grid-column:2}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-galerie:has(.tn-vignettes){grid-template-columns:minmax(0,1fr) 84px;gap:10px}
+  .ctw .tn-achat[data-tn-c="vente-directe"] .tn-grande{height:540px}
+  .ctw .tn-achat[data-tn-c="vente-directe"] .tn-vignettes{gap:10px}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>small{margin-top:6px}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>h1{margin-bottom:22px;font-size:calc(48px*var(--tn-k))}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-prix,  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-rupture,  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-pres-prix,  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes,  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-option,  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-bt,  .ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-choix,  .ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt,  .ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-rapide{grid-column:2;margin-left:28px;margin-right:28px}
+  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-prix,  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-rupture,  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-pres-prix,  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-reperes,  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-option,  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-bt,  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>form>.tn-choix,  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt,  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>form>.tn-rapide{margin-left:31px;margin-right:37px}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-prix{margin-top:28px;font-size:48px}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes{font-size:16px}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-bt,  .ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt{margin-top:22px;margin-bottom:28px;padding:21px 24px}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>p{font-size:16.5px}
+  /* grandes photos : les photos en colonne depuis le bord gauche, l'achat étroit à droite */
+  .ctw .tn-achat[data-tn-c="grandes-photos"]{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);grid-template-rows:1fr repeat(11,auto) 1fr;column-gap:72px;padding:0 max(40px,calc(50% - 600px)) 64px 0;text-align:left}
+  .ctw .tn-achat[data-tn-c="grandes-photos"]>:not(.tn-galerie):not(.tn-barre),.ctw .tn-achat[data-tn-c="grandes-photos"]>form>*{max-width:380px}
+  .ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-galerie{margin:0;display:block;overflow:visible}
+  .ctw .tn-achat[data-tn-c="grandes-photos"] .tn-vignettes{display:flex;gap:6px;margin-top:6px}
+  .ctw .tn-achat[data-tn-c="grandes-photos"] .tn-vignettes i{flex:1 1 0}
+  .ctw .tn-achat[data-tn-c="grandes-photos"]>small{margin-top:0}
+  .ctw .tn-achat[data-tn-c="grandes-photos"]>h1{font-size:calc(46px*var(--tn-k))}
+  .ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-pres-prix{justify-items:start}
+  .ctw .tn-achat[data-tn-c="grandes-photos"]>p{justify-self:start}
+  .ctw .tn-achat[data-tn-c="grandes-photos"]>.tn-option{justify-content:flex-start}
+  /* technique : les vignettes en colonne à gauche de la grande photo */
+  .ctw .tn-achat[data-tn-c="technique"]{grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);column-gap:48px;padding-top:28px}
+  .ctw .tn-achat[data-tn-c="technique"]>.tn-galerie:has(.tn-vignettes){display:grid;grid-template-columns:84px minmax(0,1fr);gap:10px;align-items:start}
+  .ctw .tn-achat[data-tn-c="technique"] .tn-vignettes{order:-1;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:0}
+  .ctw .tn-achat[data-tn-c="technique"] .tn-vignettes i{height:84px}
+  .ctw .tn-achat[data-tn-c="technique"]>h1{margin-bottom:22px;font-size:calc(46px*var(--tn-k))}
+  .ctw .tn-achat[data-tn-c="technique"]>.tn-prix{margin-top:0;font-size:40px}
+  .ctw .tn-achat[data-tn-c="technique"]>.tn-reperes{font-size:15px}
+  .ctw .tn-achat[data-tn-c="technique"]>.tn-reperes li{padding:14px 16px}
+  /* fond doux : le produit à gauche sur son fond, l'achat à droite, centré en hauteur */
+  .ctw .tn-achat[data-tn-c="fond-doux"]{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr repeat(11,auto) 1fr;column-gap:72px;text-align:left}
+  .ctw .tn-achat[data-tn-c="fond-doux"]>.tn-galerie{padding-bottom:22px}
+  .ctw[data-tn-cadre="niche"] .tn-achat[data-tn-c="fond-doux"]>.tn-galerie{border-radius:260px 260px 30px 30px}
+  .ctw .tn-achat[data-tn-c="fond-doux"] .tn-vignettes i{width:58px;height:58px}
+  .ctw .tn-achat[data-tn-c="fond-doux"]>small{margin-top:0}
+  .ctw .tn-achat[data-tn-c="fond-doux"]>h1{font-size:calc(54px*var(--tn-k))}
+  .ctw .tn-achat[data-tn-c="fond-doux"]>p{justify-self:start;max-width:42ch;font-size:17px}
+  .ctw .tn-achat[data-tn-c="fond-doux"]>.tn-prix{font-size:36px}
+  .ctw .tn-achat[data-tn-c="fond-doux"]>.tn-pres-prix{justify-items:start}
+  .ctw .tn-achat[data-tn-c="fond-doux"]>.tn-option{justify-content:flex-start}
+  .ctw .tn-achat[data-tn-c="fond-doux"]>.tn-bt,  .ctw .tn-achat[data-tn-c="fond-doux"]>form>.tn-bt{justify-self:start;min-width:320px}
+  .ctw .tn-achat[data-tn-c="fond-doux"]>.tn-reperes{justify-content:flex-start}
+  /* portrait : la grande photo en hauteur à gauche, ses vues dessous ; le nom et le prix sur une ligne à droite */
+  .ctw .tn-achat[data-tn-c="portrait"]{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;grid-template-rows:repeat(12,auto) 1fr;column-gap:16px;padding:24px max(40px,calc(50% - 540px)) 56px}
+  .ctw .tn-achat[data-tn-c="portrait"]>*,.ctw .tn-achat[data-tn-c="portrait"]>form>*{grid-column:2/-1}
+  .ctw .tn-achat[data-tn-c="portrait"]>.tn-galerie{margin:0 48px 0 0}
+  .ctw .tn-achat[data-tn-c="portrait"] .tn-grande{aspect-ratio:4/5}
+  .ctw .tn-achat[data-tn-c="portrait"] .tn-vignettes{padding:0;overflow:visible}
+  .ctw .tn-achat[data-tn-c="portrait"] .tn-vignettes i{flex:1 1 0}
+  .ctw .tn-achat[data-tn-c="portrait"]>small{margin-top:48px}
+  .ctw .tn-achat[data-tn-c="portrait"]>h1{grid-column:2;font-size:calc(46px*var(--tn-k))}
+  .ctw .tn-achat[data-tn-c="portrait"]>.tn-prix{grid-column:3;margin-bottom:5px;font-size:24px}
+  .ctw .tn-achat[data-tn-c="portrait"]>.tn-prix:has(mark){grid-column:2/-1}
+  .ctw .tn-achat[data-tn-c="portrait"]>.tn-option{margin-top:26px}
+  .ctw .tn-achat[data-tn-c="portrait"]>.tn-bt,  .ctw .tn-achat[data-tn-c="portrait"]>form>.tn-bt{margin-top:20px}
+
+  /* Pièces nouvelles : dans la colonne de texte, ou sur la largeur quand elles montrent des photos */
+  .ctw .tn-versions,.ctw .tn-lots,.ctw .tn-allergenes,.ctw .tn-pictos{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-guide-tailles,.ctw .tn-looks,.ctw .tn-avant-apres-produit{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-guide-tailles h2,.ctw .tn-looks h2,.ctw .tn-allergenes h2,.ctw .tn-avant-apres-produit h2,.ctw .tn-pictos h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-versions{padding-top:14px}
+  .ctw .tn-lots h2{font-size:calc(32px*var(--tn-k))}
+  .ctw .tn-lots ul{gap:14px}
+  .ctw .tn-lots label{padding:30px 14px 22px}
+  .ctw .tn-lots label b{font-size:26px}
+  .ctw .tn-lots label span{font-size:19px}
+  .ctw .tn-lots label i{font-size:13.5px}
+  .ctw .tn-lots[data-tn-c="lignes"] label{padding:16px 18px}
+  /* Guide des tailles : le tableau à gauche, comment se mesurer à droite */
+  .ctw .tn-guide-tailles .tn-guide{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);column-gap:64px;align-items:start}
+  .ctw .tn-guide-tailles .tn-guide>h2,.ctw .tn-guide-tailles .tn-guide>.tn-chapo,.ctw .tn-guide-tailles .tn-guide>.tn-note{grid-column:1/-1}
+  .ctw .tn-guide-tailles .tn-table-g{margin-top:28px}
+  .ctw .tn-guide-tailles table{font-size:16px}
+  .ctw .tn-guide-tailles thead th{font-size:14px}
+  .ctw .tn-guide-tailles tbody th{font-size:26px}
+  .ctw .tn-guide-tailles th,.ctw .tn-guide-tailles td{padding:16px 8px}
+  .ctw .tn-guide-tailles ol{margin-top:28px}
+  .ctw .tn-guide-tailles .tn-note{margin-top:24px}
+  .ctw .tn-guide-tailles[data-tn-c="tiroir"]{padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
+  .ctw .tn-guide-tailles[data-tn-c="tiroir"] .tn-guide{display:block}
+  .ctw .tn-guide-tailles[data-tn-c="tiroir"] h2{font-size:calc(36px*var(--tn-k))}
+  /* Le look : la photo à gauche, les pièces à droite */
+  .ctw .tn-looks .tn-look{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.92fr);column-gap:64px;align-items:center;margin-top:34px}
+  .ctw .tn-looks .tn-look>.tn-ph{height:600px}
+  .ctw .tn-looks .tn-cartes{margin-top:0}
+  .ctw .tn-looks .tn-carte-p{grid-template-columns:112px minmax(0,1fr) auto;column-gap:24px;padding:18px 0}
+  .ctw .tn-looks .tn-carte-p .tn-ph{height:138px}
+  .ctw .tn-looks .tn-carte-p b{font-size:30px}
+  .ctw .tn-looks .tn-carte-p span{font-size:17px}
+  .ctw .tn-looks[data-tn-c="bande"] .tn-look{display:block}
+  .ctw .tn-looks[data-tn-c="bande"] .tn-look>.tn-ph{height:440px}
+  .ctw .tn-looks[data-tn-c="bande"] .tn-cartes{gap:22px;margin-top:22px}
+  .ctw .tn-looks[data-tn-c="bande"] .tn-carte-p{padding:0}
+  .ctw .tn-looks[data-tn-c="bande"] .tn-carte-p .tn-ph{height:auto}
+  .ctw .tn-looks[data-tn-c="bande"] .tn-carte-p b{font-size:26px;margin-top:14px}
+  .ctw .tn-allergenes li{padding:16px 0;font-size:16.5px}
+  .ctw .tn-allergenes[data-tn-c="encadre"]{padding:82px max(76px,calc(50% - 344px)) 30px}
+  .ctw .tn-allergenes[data-tn-c="encadre"]::before{inset:44px max(40px,calc(50% - 380px)) 0}
+  .ctw .tn-allergenes[data-tn-c="encadre"] h2{font-size:calc(36px*var(--tn-k))}
+  .ctw .tn-allergenes[data-tn-c="encadre"] ul{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:28px}
+  .ctw .tn-allergenes[data-tn-c="encadre"] li{border-bottom:0}
+  .ctw .tb-pg>.tn-allergenes[data-tn-c="encadre"]:last-child{padding-bottom:94px}
+  .ctw .tn-avant-apres-produit .tn-paire{gap:14px;margin-top:34px}
+  .ctw .tn-avant-apres-produit .tn-ph{height:500px}
+  .ctw[data-tn-cadre="niche"] .tn-avant-apres-produit .tn-ph{border-radius:200px 200px 0 0}
+  .ctw .tn-avant-apres-produit figcaption{left:16px;bottom:16px;font-size:16px}
+  .ctw .tn-avant-apres-produit li{padding:18px 24px 20px}
+  .ctw .tn-avant-apres-produit li b{font-size:32px}
+  .ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-paire{padding-bottom:56px}
+  .ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-apres .tn-ph{height:580px}
+  .ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-avant{left:32px;width:28%}
+  .ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-avant .tn-ph{height:260px;border-width:6px}
+  .ctw .tn-avant-apres-produit[data-tn-c="apres-en-grand"] .tn-apres figcaption{right:16px;bottom:16px}
+  .ctw .tn-pictos ul{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:20px;margin-top:34px}
+  .ctw .tn-pictos li:last-child:nth-child(odd){grid-column:auto}
+  .ctw .tn-pictos svg{width:84px;height:84px;padding:23px}
+  .ctw .tn-pictos li b{font-size:26px}
+  .ctw[data-tn-titres="gras"] .tn-pictos li b{font-size:21px}
+  .ctw[data-tn-titres="capitales"] .tn-pictos li b{font-size:16px}
+  .ctw .tn-pictos[data-tn-c="liste"] ul{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row;column-gap:48px;row-gap:0}
+  .ctw .tn-pictos[data-tn-c="liste"] svg{width:34px;height:34px;padding:0}
+
+  /* Façons de plus */
+  .ctw .tn-volets[data-tn-c="encadre"]{padding:76px max(76px,calc(50% - 344px)) 14px}
+  .ctw .tn-volets[data-tn-c="encadre"]::before,.ctw[data-tn-cadre="penche"] .tn-volets[data-tn-c="encadre"]::before{inset:44px max(40px,calc(50% - 380px)) 0}
+  .ctw .tb-pg>.tn-volets[data-tn-c="encadre"]:last-child::before{bottom:56px}
+  .ctw .tn-volets[data-tn-c="encadre"] h2{font-size:calc(40px*var(--tn-k))}
+  .ctw .tn-volets[data-tn-c="encadre"] summary{font-size:26px}
+  .ctw .tn-volets[data-tn-c="numeros"]{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);column-gap:72px;align-items:start;padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-volets[data-tn-c="numeros"] h2{position:sticky;top:24px;margin:56px 0 24px;font-size:calc(64px*var(--tn-k))}
+  .ctw .tn-volets[data-tn-c="numeros"] .tn-liste{margin-top:48px}
+  .ctw .tn-volets[data-tn-c="numeros"] details{padding:20px 0 20px 88px}
+  .ctw .tn-volets[data-tn-c="numeros"] details::before{top:14px;font-size:68px}
+  .ctw .tn-volets[data-tn-c="numeros"] summary{font-size:28px}
+  .ctw .tn-volets[data-tn-c="numeros"] details p{font-size:17px}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"]{display:block;padding:44px max(40px,calc(50% - 540px)) 0}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] h2{margin:0}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] figure{margin-top:30px}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] .tn-ph{height:520px;border-radius:var(--tn-arrondi,0)}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] figcaption{left:18px;top:18px;font-size:16px}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] ul{max-width:680px;margin:-58px auto 0;padding:0 28px}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] li{padding:22px 22px 24px}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] li b{font-size:34px}
+  .ctw .tn-valeurs[data-tn-c="bandes"] .tn-etiquette{padding:0}
+  .ctw .tn-valeurs[data-tn-c="bandes"] h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-valeurs[data-tn-c="bandes"] table{margin-top:0;font-size:16px}
+  .ctw .tn-valeurs[data-tn-c="bandes"] th,.ctw .tn-valeurs[data-tn-c="bandes"] td{padding:15px 16px}
+  .ctw .tn-grade[data-tn-c="bandeau"]{display:block;padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-grade[data-tn-c="bandeau"] .tn-sceau{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 32px;min-width:0;max-width:none;margin:0;padding:48px 52px 52px;border-radius:var(--tn-arrondi,0)}
+  .ctw .tn-grade[data-tn-c="bandeau"] .tn-sceau b{font-size:calc(128px*var(--tn-k))}
+  .ctw .tn-grade[data-tn-c="bandeau"] .tn-sceau span{font-size:18px}
+  .ctw .tn-grade[data-tn-c="bandeau"] h2{margin-top:44px}
+  .ctw .tn-grade[data-tn-c="bandeau"] .tn-chapo{max-width:60ch;font-size:18px}
+  .ctw .tn-grade[data-tn-c="bandeau"] ul{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:32px;margin-top:30px}
+  .ctw .tn-grade[data-tn-c="bandeau"] li{align-content:start;padding:18px 0 22px}
+  .ctw .tn-grade[data-tn-c="bandeau"] li b{font-size:28px}
+  .ctw .tn-effets[data-tn-c="cartes"] ol{gap:12px;margin-top:34px}
+  .ctw .tn-effets[data-tn-c="cartes"] li,.ctw .tn-effets[data-tn-c="cartes"] li:last-child{padding:28px 24px 30px}
+  .ctw .tn-effets[data-tn-c="cartes"] li b{font-size:46px}
+  .ctw .tn-cout[data-tn-c="panneau-sombre"] ul{margin-left:0;padding:10px 40px}
+  .ctw .tn-cout[data-tn-c="panneau-sombre"] li{padding:28px 0}
+  .ctw .tn-cout[data-tn-c="panneau-sombre"] li small{font-size:19px}
+  .ctw .tn-ration[data-tn-c="cartes"] ul{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .ctw .tn-ration[data-tn-c="cartes"] li{grid-template-columns:minmax(0,1fr);padding:22px 12px 22px}
+  .ctw[data-tn-cadre="niche"] .tn-ration[data-tn-c="cartes"] li{padding-top:36px}
+  .ctw .tn-transition[data-tn-c="lignes"]{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);column-gap:64px;align-items:start;padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-transition[data-tn-c="lignes"]>:is(h2,.tn-chapo,ul,.tn-note){grid-column:1}
+  .ctw .tn-transition[data-tn-c="lignes"] ol{grid-column:2;grid-row:1/6;gap:10px;height:auto;margin-top:10px}
+  .ctw .tn-transition[data-tn-c="lignes"] ol li{height:40px;margin-left:52px}
+  .ctw .tn-transition[data-tn-c="lignes"] ol li::after{left:-52px;width:44px;line-height:40px;font-size:15px}
+  .ctw .tn-semis[data-tn-c="panneau-sombre"] .tn-annee{padding:28px 34px 12px}
+  .ctw .tn-essayer[data-tn-c="carte"]{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);grid-template-rows:1fr auto auto auto auto 1fr;column-gap:0;padding:44px max(40px,calc(50% - 540px)) 0}
+  .ctw .tn-essayer[data-tn-c="carte"]::before{inset:44px max(40px,calc(50% - 540px)) 0}
+  .ctw .tn-essayer[data-tn-c="carte"] .tn-ph{grid-column:2;grid-row:1/7;height:auto;min-height:480px;order:0;border-radius:0 var(--tn-r) var(--tn-r) 0}
+  .ctw[data-tn-cadre="penche"] .tn-essayer[data-tn-c="carte"] .tn-ph{margin:3px 3px 3px 0;border-radius:0 12px 12px 0}
+  .ctw .tn-essayer[data-tn-c="carte"]>:is(h2,.tn-chapo,ul,.tn-bt){grid-column:1;margin-left:52px;margin-right:52px}
+  .ctw .tn-essayer[data-tn-c="carte"] h2{margin-top:44px;font-size:calc(48px*var(--tn-k))}
+  .ctw .tn-essayer[data-tn-c="carte"] .tn-bt{justify-self:start;margin-top:26px;margin-bottom:44px}
+  .ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-noms{padding-left:0}
+  .ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-noms a{padding:24px 22px 16px}
+  .ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere{display:block;padding:0}
+  .ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere small{padding:16px calc(50% + 22px) 0 22px;font-size:15px}
+  .ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere:has(span:nth-child(3)) small{padding-right:calc(66.667% + 22px)}
+  .ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-critere span{padding:6px 22px 18px;font-size:17px}
+}

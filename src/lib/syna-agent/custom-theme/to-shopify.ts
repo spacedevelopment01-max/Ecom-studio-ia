@@ -24,9 +24,10 @@ import path from "node:path";
 import type { ThemeSpec, StorePage, StoreCollection, TemplateJson } from "../../theme/spec";
 import { LIBRARY_DIR, libSection } from "./library";
 import { TENUE_FILES, TENUE_SECTIONS, isTenueSection, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenuePrestations, type TenuePrestation } from "./tenue";
-import { withMenu } from "./menu";
+import { isHeaderRoot, withMenu } from "./menu";
 import { withTenueComparison, withTenueFamilies, withTenueSite, type TenueSite } from "./tenue-data";
-import { allSections, sectionHtml, type CtPage, type CtSection, type CustomTheme } from "./theme";
+import { allSections, drawerOf, sectionHtml, type CtPage, type CtSection, type CustomTheme } from "./theme";
+import { freeShippingFrom } from "../product-features";
 
 export type ExportProblem = { level: "bloquant" | "à savoir"; text: string };
 export type ExportProduct = { handle: string; title: string; categories: string[] };
@@ -132,6 +133,8 @@ export function templateOf(pg: Pick<CtPage, "key" | "product"> & { sections?: { 
   if (has("tn-journal")) return "blog";
   if (has("tn-article")) return "article";
   if (has("tn-resultats")) return "search";
+  // Boutique fermée : c'est la page « mot de passe » de la boutique.
+  if (has("tn-fermee") && pg.key !== "home") return "password";
   if (pg.key === "product") return "product";
   if (/^product-/.test(pg.key)) return `product.${suffixOf(pg)}`;
   if (pg.key === "shop") return "collection";
@@ -219,7 +222,7 @@ function missing(c: Ctx, html: string, where: string): string {
 }
 
 /** Inscription à la lettre : ces sections n'envoient qu'une adresse e-mail. */
-const NEWSLETTER = new Set(["tn-infolettre", "tn-infolettre-photo", "tn-pied-complet"]);
+const NEWSLETTER = new Set(["tn-infolettre", "tn-infolettre-photo", "tn-pied-complet", "tn-pied-lettre", "tn-fermee"]);
 /**
  * Un formulaire de l'aperçu devient un vrai formulaire de la boutique : l'inscription à la lettre (un client « newsletter »),
  * sinon un message de contact dont chaque champ porte son nom en clair (« Le jour souhaité », « La prestation »…), pour
@@ -288,7 +291,7 @@ function live(c: Ctx, html: string, root: string | null): string {
   } else if (/\sdata-tn-produits\b/.test(out)) {
     // Cartes de produits : la collection de la page (page boutique), sinon tout le catalogue.
     const shop = c.template === "collection";
-    out = out.replace(/<div class="tn-cartes">[\s\S]*<\/div>(?=<\/section>)/, shop ? `{%- paginate collection.products by 48 -%}${CARD("", "collection.products")}{%- if collection.products.size == 0 -%}<p class="tn-vide">Aucun produit ici pour l'instant.</p>{%- endif -%}{%- endpaginate -%}` : CARD("limit: 8", "collections.all.products"));
+    out = out.replace(/<div class="tn-cartes">[\s\S]*<\/div>(?=<\/section>)/, shop ? `{%- paginate collection.products by 48 -%}${CARD("", "collection.products")}{%- if collection.products.size == 0 -%}<p class="tn-vide">Aucun produit ici pour l'instant.</p>{%- endif -%}{%- endpaginate -%}` : CARD(root === "tn-404" ? "limit: 4" : "limit: 8", "collections.all.products"));
   }
   // Familles : chacune mène à sa collection, avec la photo de la collection (ou celle de son premier produit).
   if (/\sdata-tn-rayons\b/.test(out)) {
@@ -327,14 +330,50 @@ function live(c: Ctx, html: string, root: string | null): string {
     const co = c.input.company ?? {};
     out = out.replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${co.shipping ? literal(attr(co.shipping)) : "[À compléter]"}</li><li>Retours : ${co.returns ? literal(attr(co.returns)) : "[À compléter]"}</li></ul>`);
   }
-  // Panier : les vraies lignes, le vrai total, le bouton qui ouvre le paiement de Shopify.
+  // Pastilles de version (pièce posée sous le bloc d'achat) : les vraies options du produit ; chaque pastille mène à la
+  // version choisie, que le bloc d'achat reprend (prix, stock, choix du formulaire). Sans script.
+  if (/\sdata-tn-versions\b/.test(out)) out = out.replace(/(<section\b[^>]*\sdata-tn-versions\b[^>]*>)[\s\S]*(<\/section>)$/, `$1{%- unless product.has_only_default_variant -%}{%- for option in product.options_with_values -%}{%- assign nom = option.name | downcase -%}<div class="tn-groupe-v{% if nom contains 'coul' or nom contains 'color' or nom contains 'teinte' %} tn-couleurs{% endif %}"><small>{{ option.name }}</small><div class="tn-choix-v">{%- for value in option.values -%}<a class="tn-pastille{% if value.selected or option.selected_value == value %} tn-on{% endif %}{% if value.available == false %} tn-off{% endif %}" href="{% if value.variant %}{{ value.variant.url }}{% else %}{{ product.url }}{% endif %}"{% if value.swatch.color %} style="--teinte:{{ value.swatch.color }}"{% endif %}><span>{{ value }}</span></a>{%- endfor -%}</div></div>{%- endfor -%}{%- endunless -%}$2`);
+  // Le look complet : d'autres vrais produits de la boutique (trois au plus), jamais celui de la page.
+  if (/\sdata-tn-looks\b/.test(out)) out = out.replace(/<div class="tn-cartes">[\s\S]*?<\/div>(?=<\/div><\/section>)/, `<div class="tn-cartes">{%- assign vus = 0 -%}{%- for autre in collections.all.products limit: 12 -%}{%- if autre.id != product.id and vus < 3 -%}{%- assign vus = vus | plus: 1 -%}<a class="tn-carte-p{% unless autre.available %} tn-epuise{% endunless %}" href="{{ autre.url }}"><div class="tn-ph"{% if autre.featured_image %} style="background-image:url({{ autre.featured_image | image_url: width: 600 }})"{% endif %}></div><b>{{ autre.title }}</b><span>{% if autre.available %}{{ autre.price | money }}{% else %}Épuisé{% endif %}</span></a>{%- endif -%}{%- endfor -%}</div>`);
+  // Panier (la page et le tiroir) : les vraies lignes, les quantités, le vrai total, le bouton qui ouvre le paiement de
+  // Shopify. Aucun script : « − », « + » et « Retirer » sont des liens de la boutique (elle recharge le panier), la
+  // barre de livraison offerte est calculée par la boutique sur le seuil donné par le client.
+  const goal = Math.round((freeShippingFrom(c.input.company?.shipping) ?? 0) * 100);
+  const seuil = goal > 0 ? `{%- assign reste = ${goal} | minus: cart.total_price -%}<div class="tn-seuil"><p>{%- if reste > 0 -%}Plus que <b>{{ reste | money }}</b> pour la livraison offerte{%- else -%}La livraison est offerte{%- endif -%}</p><i style="--part:{{ cart.total_price | times: 100 | divided_by: ${goal} | at_most: 100 | at_least: 4 }}%"></i></div>` : "";
+  const lignes = `<div class="tn-lignes" data-tn-lignes>{%- for item in cart.items -%}<div class="tn-ligne"><div class="tn-ph"{% if item.image %} style="background-image:url({{ item.image | image_url: width: 300 }})"{% endif %}></div><div class="tn-quoi"><b>{{ item.product.title }}</b>{%- unless item.product.has_only_default_variant -%}<em>{{ item.variant.title }}</em>{%- endunless -%}<div class="tn-qte"><a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&amp;quantity={{ item.quantity | minus: 1 }}" aria-label="Retirer un exemplaire">−</a><span>{{ item.quantity }}</span><a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&amp;quantity={{ item.quantity | plus: 1 }}" aria-label="Ajouter un exemplaire">+</a></div><a class="tn-oter" href="{{ item.url_to_remove }}">Retirer</a></div><span class="tn-prix-l">{{ item.final_line_price | money }}</span></div>{%- endfor -%}</div>`;
   if (/\sdata-tn-panier\b/.test(out)) {
     const button = strip(/<a class="tn-bt"[^>]*>([\s\S]*?)<\/a>/.exec(out)?.[1] ?? "Passer commande"), total = strip(/<div class="tn-total"><span>([\s\S]*?)<\/span>/.exec(out)?.[1] ?? "Total");
-    out = out.replace(/<div class="tn-ligne">[\s\S]*?<a class="tn-bt"[^>]*>[\s\S]*?<\/a>/, `{%- if cart.item_count == 0 -%}<p class="tn-vide">${v ? "Votre" : "Ton"} panier est vide.</p><a class="tn-bt" href="{{ routes.all_products_collection_url }}">Voir la boutique</a>{%- else -%}<form class="tn-enveloppe" action="{{ routes.cart_url }}" method="post">{%- for item in cart.items -%}<div class="tn-ligne"><div class="tn-ph"{% if item.image %} style="background-image:url({{ item.image | image_url: width: 300 }})"{% endif %}></div><div><b>{{ item.product.title }}</b><span>Quantité : {{ item.quantity }}</span></div><span class="tn-prix-l">{{ item.final_line_price | money }}</span></div>{%- endfor -%}<div class="tn-total"><span>${total}</span><span class="tn-prix-t">{{ cart.total_price | money }}</span></div><button class="tn-bt" type="submit" name="checkout">${button}</button>{%- if additional_checkout_buttons -%}<div class="tn-rapide">{{ content_for_additional_checkout_buttons }}</div>{%- endif -%}</form>{%- endif -%}`);
+    out = out.replace(/<div class="tn-lignes" data-tn-lignes>[\s\S]*?<a class="tn-bt"[^>]*>[\s\S]*?<\/a>/, `{%- if cart.item_count == 0 -%}<div class="tn-recap"><p class="tn-vide">${v ? "Votre" : "Ton"} panier est vide.</p><a class="tn-bt" href="{{ routes.all_products_collection_url }}">Voir la boutique</a>{%- else -%}${lignes}<div class="tn-recap">${seuil}<form class="tn-enveloppe" action="{{ routes.cart_url }}" method="post"><div class="tn-total"><span>${total}</span><span class="tn-prix-t">{{ cart.total_price | money }}</span></div><button class="tn-bt" type="submit" name="checkout">${button}</button>{%- if additional_checkout_buttons -%}<div class="tn-rapide">{{ content_for_additional_checkout_buttons }}</div>{%- endif -%}</form>{%- endif -%}`);
   }
+  // Tiroir de panier : il s'ouvre par un lien vers lui (« #tn-tiroir », posé sur le panier de l'en-tête) et se ferme par
+  // un lien ; les produits à ajouter sont ceux du catalogue qui ne sont pas déjà dans le panier.
+  if (/\sdata-tn-tiroir\b/.test(out)) {
+    const text = (rx: RegExp, d: string) => strip(rx.exec(out)?.[1] ?? d);
+    const title = text(/<h2>([\s\S]*?)<\/h2>/, "Panier"), button = text(/<a class="tn-bt"[^>]*>([\s\S]*?)<\/a>/, "Passer commande"), total = text(/<div class="tn-total"><span>([\s\S]*?)<\/span>/, "Total");
+    const more = text(/<div class="tn-plus"[^>]*><b>([\s\S]*?)<\/b>/, ""), seeCart = text(/<a class="tn-lien"[^>]*data-go="cart"[^>]*>([\s\S]*?)<\/a>/, "Voir le panier");
+    const empty = text(/<div class="tn-vide"><p>([\s\S]*?)<\/p>/, "Le panier est vide."), seeShop = text(/<div class="tn-vide"><p>[\s\S]*?<\/p><a[^>]*>([\s\S]*?)<\/a>/, "Voir la boutique");
+    const svg = /<a class="tn-x"[^>]*>([\s\S]*?)<\/a>/.exec(out)?.[1] ?? "×";
+    const plus = more ? `<div class="tn-plus"><b>${more}</b><div class="tn-sugg">{%- assign montres = 0 -%}{%- for product in collections.all.products limit: 16 -%}{%- assign dedans = false -%}{%- for item in cart.items -%}{%- if item.product_id == product.id -%}{%- assign dedans = true -%}{%- endif -%}{%- endfor -%}{%- if dedans == false and product.available and montres < 4 -%}{%- assign montres = montres | plus: 1 -%}<a class="tn-s" href="{{ product.url }}"><div class="tn-ph"{% if product.featured_image %} style="background-image:url({{ product.featured_image | image_url: width: 300 }})"{% endif %}></div><span>{{ product.title }}</span><em>{{ product.price | money }}</em></a>{%- endif -%}{%- endfor -%}</div></div>` : "";
+    out = `<section class="tn tn-tiroir" id="tn-tiroir" data-tn-tiroir{% if cart.item_count == 0 %} data-tn-vide{% endif %}><a class="tn-voile" href="#tn-ferme" aria-label="Fermer le panier" tabindex="-1"></a><div class="tn-panneau" role="dialog" aria-label="${attr(title)}"><div class="tn-haut"><h2>${title}</h2><a class="tn-x" href="#tn-ferme" aria-label="Fermer le panier">${svg}</a></div>${seuil}${lignes}<div class="tn-vide"><p>${empty}</p><a class="tn-lien" href="{{ routes.all_products_collection_url }}">${seeShop}</a></div>${plus}<form class="tn-bas" action="{{ routes.cart_url }}" method="post"><div class="tn-total"><span>${total}</span><span class="tn-prix-t">{{ cart.total_price | money }}</span></div><button class="tn-bt" type="submit" name="checkout">${button}</button><a class="tn-lien" href="{{ routes.cart_url }}">${seeCart}</a></form></div></section>`;
+  }
+  // Recherche à tenue : le vrai champ de la boutique (valider mène aux résultats), ses produits, ses familles en raccourcis.
+  if (/\sdata-tn-recherche\b/.test(out)) {
+    const families = [...new Set(c.input.products.flatMap((p) => p.categories.map((x) => x.trim()).filter(Boolean)))];
+    out = out.replace(/<form class="tn-form" onsubmit="return false" role="search">/, `<form class="tn-form" action="{{ routes.search_url }}" method="get" role="search">`)
+      .replace(/(<input type="search" name="q")/, `$1 value="{{ search.terms | escape }}"`)
+      .replace(/(<div class="tn-res-l">)[\s\S]*?(<\/div>)<p class="tn-rien">[\s\S]*?<\/p>/, `$1{%- for product in collections.all.products limit: 6 -%}<a class="tn-r" href="{{ product.url }}"><div class="tn-ph"{% if product.featured_image %} style="background-image:url({{ product.featured_image | image_url: width: 300 }})"{% endif %}></div><b>{{ product.title }}</b><span>{% if product.available %}{{ product.price | money }}{% else %}Épuisé{% endif %}</span></a>{%- endfor -%}$2`)
+      .replace(/<a class="tn-x"[^>]*data-tn-fermer[^>]*>[\s\S]*?<\/a>/, "");
+    if (families.length >= 2) out = out.replace(/(<div class="tn-mots" data-tn-mots>)([\s\S]*?)(<\/div>)/, (_m, a: string, own: string, b: string) => `${a}${families.slice(0, 5).map((f) => `<a class="tn-mot" href="{{ routes.collections_url }}/${slug(f)}">${attr(f)}</a>`).join("")}${(own.match(/<a\b[\s\S]*?<\/a>/g) ?? []).filter((x) => !/data-go="shop"/.test(x)).slice(0, 2).join("")}${b}`);
+  }
+  // Boutique fermée : l'entrée par mot de passe est celle de la boutique (sur sa page « mot de passe » seulement).
+  if (root === "tn-fermee") out = c.template === "password"
+    ? out.replace(/<form class="tn-passe" onsubmit="return false">([\s\S]*?)<\/form>/, (_m, inner: string) => `{%- form 'storefront_password', class: 'tn-passe' -%}${inner.replace(/<input type="password"/, '<input type="password" name="password" aria-label="Mot de passe"')}{%- endform -%}`)
+    : out.replace(/<details class="tn-cle">[\s\S]*?<\/details>/, "");
   // En-tête : le nombre d'articles du vrai panier, le nom qui ramène à l'accueil, le logo s'il existe.
-  if (root === "tn-entete" && c.input.business === "services" && !c.t.pages.some((pg) => pg.key === "cart")) out = out.replace(/<button type="button" class="tn-pan"[^>]*>[\s\S]*?<\/button>/, "");
-  if (root === "tn-entete") {
+  if (isHeaderRoot(root) && c.input.business === "services" && !c.t.pages.some((pg) => pg.key === "cart")) out = out.replace(/<button type="button" class="tn-pan"[^>]*>[\s\S]*?<\/button>/, "");
+  if (isHeaderRoot(root)) {
+    // La loupe mène à la vraie recherche de la boutique.
+    out = out.replace(/<button type="button" class="tn-e-ic"([^>]*)>([\s\S]*?)<\/button>/, `<a class="tn-e-ic" href="{{ routes.search_url }}"$1>$2</a>`);
     out = out.replace(/<button type="button" class="tn-pan"([^>]*)>([\s\S]*?)<span>0<\/span>([\s\S]*?)<\/button>/, `<a class="tn-pan" href="{{ routes.cart_url }}"$1>$2<span>{{ cart.item_count }}</span>$3</a>`);
     if (c.input.logoAssetId) { const ext = c.input.assetExt(c.input.logoAssetId); if (ext) { const f = `tn-logo.${ext}`; c.files[f] = c.input.logoAssetId; out = out.replace(/(<span class="tn-nom lg">)[\s\S]*?(<\/span>)/, `$1<img src="{{ '${f}' | asset_url }}" alt="${attr(c.input.name)}" loading="eager">$2`); } }
   }
@@ -370,7 +409,10 @@ const SHOP_CSS = `.ctw .tn form.tn-enveloppe{display:contents}
 .ctw .tn .tn-pages a,.ctw .tn .tn-pages .current{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
 .ctw .tn .tn-pages .current{font-weight:700;border-bottom:1.5px solid var(--tn-encre)}
 .ctw .tn .tn-paiements{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}
-.ctw .tn .tn-paiements svg{height:22px;width:auto}`;
+.ctw .tn .tn-paiements svg{height:22px;width:auto}
+html body .shopify-section:has(>.ctw>.tn-ent:not([data-tn-c="sur-photo"])){position:sticky;top:0;z-index:60}
+@supports (animation-timeline:scroll()){html body .shopify-section:has(>.ctw>.tn-ent[data-tn-c="sur-photo"]){position:sticky;top:0;z-index:60}}
+@keyframes tn-e-plein{to{background-color:var(--tn-fond);background-image:none;color:var(--tn-encre);border-bottom-color:var(--tn-e-filet)}}`;
 
 /** Une section du thème → sa section Shopify (HTML en Liquid, sa part de la feuille, un schéma). */
 function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean } = {}): string | null {
@@ -380,9 +422,11 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean } = {}): stri
   const built = validConstruction(s.id, s.construction);
   let html = literal(sectionHtml(s));
   const root = rootOf(html);
-  if (o.header) html = withMenu(html, c.t.menu);
+  // En-têtes du thème unique : le menu prend la forme de la construction ; photos des familles et produits mis en avant
+  // sont lus dans la boutique (collections), jamais figés dans le thème.
+  if (o.header) html = withMenu(html, c.t.menu, { construction: built, boutique: !(c.input.business === "services" && !c.t.pages.some((pg) => pg.key === "cart")), shop: { collection: slug } });
   // Ce que le client a donné s'écrit dans la page : téléphone, adresse, horaires, zone, plan, livraison et retours.
-  html = withTenueSite(withTenuePrestations(html, c.input.prestations ?? []), { ...(c.input.site ?? {}), shipping: c.input.company?.shipping ?? null, returns: c.input.company?.returns ?? null, prestations: c.input.prestations ?? [] }).replace(/<mark class="tn-manque">([\s\S]*?)<\/mark>/g, "[$1]");
+  html = withTenueSite(withTenuePrestations(html, c.input.prestations ?? []), { ...(c.input.site ?? {}), shipping: c.input.company?.shipping ?? null, returns: c.input.company?.returns ?? null, prestations: c.input.prestations ?? [], live: true }, built).replace(/<mark class="tn-manque">([\s\S]*?)<\/mark>/g, "[$1]");
   // Les avis : sans application d'avis dans la boutique, rien ne peut en recevoir ; la section n'est envoyée que si de vrais avis y sont écrits.
   if (root === "tn-avis" && !/<ul data-tn-avis>\s*<li>/.test(html)) { c.problems.push({ level: "à savoir", text: `${where} : section non envoyée (aucun avis réel ; dans Shopify, les avis demandent une application d'avis)` }); return null; }
   html = live(c, html, root);
@@ -433,15 +477,25 @@ export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExpo
   const ctx = (page: CtPage | null, template: string | null): Ctx => ({ input, t, files, problems, page, template, roots });
   if (!t.header || !t.footer) problems.push({ level: "bloquant", text: "il manque l'en-tête ou le pied de page" });
   const bands = (t.extras ?? []).filter((s) => tenueSection(s.id)?.group === "bandeau");
-  for (const s of (t.extras ?? []).filter((x) => !bands.includes(x))) problems.push({ level: "à savoir", text: `« ${libSection(s.id)?.title ?? s.id} » n'est pas envoyée : Shopify a sa propre fenêtre pour cela (cookies, âge), à régler dans la boutique` });
+  // Le tiroir de panier part avec le pied de page (il est sur toutes les pages) ; la recherche à tenue, avec l'en-tête.
+  const drawer = input.business === "products" ? drawerOf(t) : null;
+  const search = t.search && rootOf(sectionHtml(t.search)) === "tn-recherche" ? t.search : null;
+  if (drawer) roots.add("tn-tiroir");
+  for (const s of (t.extras ?? []).filter((x) => !bands.includes(x) && x !== drawer)) problems.push({ level: "à savoir", text: `« ${libSection(s.id)?.title ?? s.id} » n'est pas envoyée : Shopify a sa propre fenêtre pour cela (cookies, âge), à régler dans la boutique` });
   // L'en-tête porte le socle de la feuille (couleurs, polices, formes) : il est sur toutes les pages.
-  const header = group([...bands.map((s) => add(ctx(null, null), s)), t.header ? add(ctx(null, null), t.header, { header: true }) : null], "header", "En-tête");
-  const footer = group([t.footer ? add(ctx(null, null), t.footer) : null], "footer", "Pied de page");
+  const header = group([...bands.map((s) => add(ctx(null, null), s)), t.header ? add(ctx(null, null), t.header, { header: true }) : null, search ? add(ctx(null, null), { ...search, construction: undefined }) : null], "header", "En-tête");
+  const footer = group([t.footer ? add(ctx(null, null), t.footer) : null, drawer ? add(ctx(null, null), drawer) : null], "footer", "Pied de page");
+  if (search && search.construction && search.construction !== validConstruction(search.id, null)) problems.push({ level: "à savoir", text: "La recherche est posée en barre sous l'en-tête : sans script, le panneau qui s'ouvre par la loupe ne part pas en boutique" });
+  if (drawer && footer.order.some((k) => footer.sections[k].type === `es-custom-${drawer.uid}`)) {
+    // Le panier de l'en-tête ouvre le tiroir (sauf sur la page panier elle-même) ; sans script, il ne s'ouvre pas tout seul après un ajout.
+    for (const x of Object.values(header.sections)) customSections[x.type].liquid = customSections[x.type].liquid.replace(/href="\{\{ routes\.cart_url \}\}"/g, `href="{% if template.name == 'cart' %}{{ routes.cart_url }}{% else %}#tn-tiroir{% endif %}"`);
+    problems.push({ level: "à savoir", text: "Tiroir de panier : dans Shopify, il s'ouvre au clic sur le panier de l'en-tête ; après un ajout au panier, la boutique montre la page panier (aucun script ne part)" });
+  }
   for (const [i, pg] of t.pages.entries()) {
     const key = templateOf(pg, i === 0);
     if (!key) { problems.push({ level: "à savoir", text: `« ${pg.label} » n'est pas envoyée : dans Shopify, le compte client est une page de Shopify` }); continue; }
     const c = ctx(pg, key), types = pg.sections.map((s) => add(c, s)).filter((x): x is string => !!x);
-    templates[key] = { sections: Object.fromEntries(types.map((x) => [x.replace(/^es-custom-/, "tn-"), { type: x, settings: {} }])), order: types.map((x) => x.replace(/^es-custom-/, "tn-")) };
+    templates[key] = { sections: Object.fromEntries(types.map((x) => [x.replace(/^es-custom-/, "tn-"), { type: x, settings: {} }])), order: types.map((x) => x.replace(/^es-custom-/, "tn-")), ...(key === "password" ? { layout: "password" } : {}) };
     if (key.startsWith("product.") && pg.product) productSuffixes[pg.product] = key.slice(8);
     if (templates[key] && ["blog", "article", "search"].includes(key)) problems.push({ level: "à savoir", text: `« ${pg.label} » : dans Shopify, cette page est remplie par la boutique (articles du journal, résultats de la recherche)` });
     if (key.startsWith("page.")) pages.push({ handle: pg.key, title: pg.label, template_suffix: key.slice(5), body_html: "", ...(pg.seo ? { seo: pg.seo } : {}) });
