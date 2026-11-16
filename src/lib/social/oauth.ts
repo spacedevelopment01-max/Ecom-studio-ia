@@ -108,11 +108,14 @@ export const PROVIDER_INFO: Record<ProviderKey, ProviderInfo> = {
     label: { fr: "Shopify", en: "Shopify" },
     networks: [],
     docs: "https://shopify.dev/docs/apps/build/authentication-authorization",
-    scopes: ["write_themes", "write_products", "write_content", "write_files", "write_online_store_navigation"],
+    // « write_discounts » : accord du propriétaire du 16 novembre 2026 (« Oui ajoute le droit remises »), pour que le
+    // Studio crée et vérifie lui-même les remises des lots et des packs (par quantité, cadeau offert). Une boutique
+    // reliée avant cette date n'a pas ce droit : le Studio le dit et demande au client de relier sa boutique à nouveau.
+    scopes: ["write_themes", "write_products", "write_content", "write_files", "write_online_store_navigation", "write_discounts"],
     needs: { fr: "Une application Shopify (Dev Dashboard) avec ces autorisations et l'adresse de retour du studio.", en: "A Shopify app (Dev Dashboard) with these permissions and the studio's redirect URL." },
     capabilities: {
-      fr: ["Installer le thème comme thème non publié", "Créer le produit, ses images et variantes", "Créer les pages (Notre histoire, FAQ, Contact, Livraison) et les menus"],
-      en: ["Install the theme as an unpublished theme", "Create the product, its images and variants", "Create the pages (Our story, FAQ, Contact, Shipping) and the menus"],
+      fr: ["Installer le thème comme thème non publié", "Créer le produit, ses images et variantes", "Créer les pages (Notre histoire, FAQ, Contact, Livraison) et les menus", "Créer et vérifier les remises des lots et des packs (par quantité, cadeau offert)"],
+      en: ["Install the theme as an unpublished theme", "Create the product, its images and variants", "Create the pages (Our story, FAQ, Contact, Shipping) and the menus", "Create and check the discounts for quantity offers and bundles (quantity breaks, free gift)"],
     },
     limits: {
       fr: ["L'installation du thème depuis le studio demande une adresse publique (Shopify télécharge le ZIP) ; sinon importez le ZIP manuellement", "La publication du thème reste une décision du marchand dans Shopify"],

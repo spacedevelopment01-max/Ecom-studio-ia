@@ -330,9 +330,9 @@ export async function pushBlogArticle(c: Connection, a: ShopifyArticleInput): Pr
  * Les remises RÉELLES de l'offre dans Shopify, créées par l'accès du client (API d'administration) : pour chaque
  * palier, une remise automatique « montant sur des produits » avec quantité minimale ; pour chaque cadeau, une remise
  * automatique « achetez X, recevez Y » à 100 %. Le thème ne calcule jamais une remise : c'est Shopify qui la tient.
- * Droits : « write_discounts » pour créer, « read_discounts » pour vérifier. L'autorisation du Studio ne les demande
- * PAS aujourd'hui (src/lib/social/oauth.ts) : sans eux, rien n'est tenté et SINA donne le guide pas à pas
- * (guideRemisesShopify). ÉCRIT, NON ESSAYÉ sur une vraie boutique : seulement des requêtes simulées.
+ * Droit : « write_discounts » (il donne aussi la lecture). L'autorisation du Studio le demande depuis le 16 novembre
+ * 2026 (src/lib/social/oauth.ts, accord du propriétaire). Une boutique reliée AVANT ne l'a pas : rien n'est tenté,
+ * SINA demande de relier la boutique à nouveau, ou donne le guide pas à pas (guideRemisesShopify). ÉCRIT, NON ESSAYÉ sur une vraie boutique : seulement des requêtes simulées.
  */
 export const DROITS_REMISES = ["write_discounts", "read_discounts"] as const;
 const droitsDe = (c: Connection): string[] => String((c as unknown as { scopes?: string | null }).scopes ?? "").split(/[\s,]+/).filter(Boolean);

@@ -353,6 +353,13 @@ describe("Shopify : les remises de l'offre par l'accès du client (requêtes sim
     return { mutations, f };
   }
 
+  it("l'autorisation Shopify du Studio demande le droit « remises » (accord du 16 novembre 2026)", async () => {
+    const { PROVIDER_INFO } = await import("@/lib/social/oauth");
+    expect(PROVIDER_INFO.shopify.scopes).toContain("write_discounts");
+    expect(S.droitsRemises(acces(PROVIDER_INFO.shopify.scopes.join(","))).ok).toBe(true);
+    expect(PROVIDER_INFO.shopify.capabilities.join(" ")).toMatch(/remises des lots et des packs|discounts for quantity offers/);
+  });
+
   it("sans le droit « remises », rien n'est tenté : SINA donne le pas à pas exact", async () => {
     const b = boutique();
     expect(S.droitsRemises(acces("write_themes,write_products"))).toEqual({ ok: false, manque: ["write_discounts"] });
