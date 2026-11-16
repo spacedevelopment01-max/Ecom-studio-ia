@@ -97,8 +97,6 @@ export async function runBrandFinish(o: {
     const r = await runBoardImages({
       ctx, ai, who, brief: o.brief, kind: o.kind, route, round, slots, clientLogo,
       imagery: mixed || o.guidance ? undefined : proposalImagery(j, route),
-      // Un autre logo : nettement différent de celui que le client n'a pas voulu.
-      otherLogos: slots.includes("logo") && before?.logoIdea ? [before.logoIdea] : [],
     });
     current = r.route; notes.push(...r.notes);
     // « Identité A : … » n'a plus de sens une fois l'identité choisie : c'est SA marque.

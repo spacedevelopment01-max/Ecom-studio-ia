@@ -148,9 +148,6 @@ const imageUnitMax = (aspect: ImageAspect, references: number) => photoRequestMa
  * Devis des images de planche SEULES (direction artistique, six images, relecture, par planche). Le coût probable
  * d'une image est sa borne sans la marge de réservation (un quart) ; une image refusée à la relecture est payée.
  */
-/** Idées de logo des autres planches de la série (déjà décidées) : le logo de la suivante doit en différer. */
-export const otherLogos = (list: { key: string; board?: { images?: { logoIdea?: string } } }[], key: string): string[] =>
-  list.filter((o) => o.key !== key).map((o) => o.board?.images?.logoIdea ?? "").filter(Boolean);
 
 export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[]): ChainQuote {
   const s = settings ?? chainSettings();
@@ -609,7 +606,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     let list = (j.identities?.list ?? []) as Route[];
     const said: string[] = [];
     for (const x of targets) {
-      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, otherLogos: otherLogos(list, x.key), clientLogo });
+      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo });
       list = list.map((o) => (o.key === x.key ? r.route : o));
       said.push(...r.issues); notes.push(...r.notes);
     }
@@ -866,7 +863,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, otherLogos: otherLogos(list, x.key), clientLogo });
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo });
         list = list.map((o) => (o.key === x.key ? r.route : o));
         remaining.push(...r.issues); notes.push(...r.notes);
       } catch (e) {

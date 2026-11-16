@@ -541,7 +541,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(log.ids).toEqual([`imagery-1-A${part}`, `image-1-A-logo${part}`, `image-1-A-object${part}`, `image-1-A-signs${part}`, `imagecheck-1-A${part}`, "symbol-1", "symbolcheck-1"]);
     expect(log.refs["symbol-1"]).toEqual({ logo: true, scene: false, aspect: "1:1" });
     expect(log.prompts[`imagery-1-A${part}`]).toMatch(/# Ce que le client demande pour cette nouvelle proposition \(ses mots\)\nPlus rond, avec une lune\./);
-    expect(log.prompts[`imagery-1-A${part}`]).toMatch(/# Logos déjà prévus pour les AUTRES propositions de cette série\n1\. Un logo net tiré de l'idée de la marque\.[\s\S]*conception NETTEMENT différente/);
+    // Rien des autres logos n'est transmis, ni en image ni en mots : chaque logo repart de zéro.
+    expect(log.prompts[`imagery-1-A${part}`]).not.toMatch(/Logos déjà prévus|AUTRES propositions|logos DÉJÀ/);
     expect(log.refs[`image-1-A-logo${part}`].logo).toBe(false);
     expect(log.refs[`image-1-A-object${part}`].logo).toBe(true);
     expect(out.created).toEqual(["logo", "object", "signs"]);

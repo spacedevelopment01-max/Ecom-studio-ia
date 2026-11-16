@@ -244,8 +244,6 @@ export async function runBoardImages(o: {
   ctx: JobContext; ai: ChainAi; who: { userId: string; projectId: string }; brief: string; kind: "produits" | "services"; route: Route; round: number;
   /** Seulement ces images (les autres images déjà gardées restent telles quelles) ; par défaut, toutes. */
   slots?: ImageSlot[];
-  /** Idées de logo des AUTRES planches de la série : le logo de celle-ci doit être une conception nettement différente. */
-  otherLogos?: string[];
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
   imagery?: Imagery;
   /** Logo GARDÉ par le client : jamais redessiné ; il est la marque de la planche et se pose sur ce qui le porte. */
@@ -257,9 +255,9 @@ export async function runBoardImages(o: {
   // Un nouvel essai d'une partie des images a sa propre étape (jamais la réponse en cache du premier essai).
   const pass = o.slots?.length ? `:${[...wanted].join("+")}` : "";
   const tag = (line: string) => L(`Identité ${key} : ${line}`, `Identity ${key}: ${line}`);
-  const others = (o.otherLogos ?? []).map((t) => t.trim()).filter(Boolean);
-  const othersBlock = others.length ? `\n\n# Logos déjà prévus pour les AUTRES propositions de cette série\n${others.map((t, i) => `${i + 1}. ${t.slice(0, 500)}`).join("\n")}\nLe logo de cette proposition est une conception NETTEMENT différente de ceux-là : autre forme, autre dessin de lettre, autre idée.` : "";
-  const imagery = o.imagery ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}${othersBlock}` }));
+  // Rien des autres logos n'est transmis, ni en image ni en mots (demande du propriétaire du 16 novembre 2026 : « ça doit
+  // repartir de 0 pour les logos, le seul truc qu'il a c'est le nom et l'identité de marque, et c'est tout »).
+  const imagery = o.imagery ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}` }));
 
   const made = new Map<ImageSlot, Made>();
   const bufferOf = (slot: ImageSlot): Buffer | null => { const m = made.get(slot), a = m ? getAsset(m.id) : undefined; return a ? assetData(a) : null; };

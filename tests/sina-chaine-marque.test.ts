@@ -1039,8 +1039,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(first.prompts[`image-1-A-logo${FIRST}`]).toMatch(/Tu es totalement libre du dessin/);
     expect((first as any).refs[`image-1-A-logo${FIRST}`].logo).toBe(false);
     expect(first.prompts[`imagery-1-A${FIRST}`]).not.toMatch(/Logos déjà prévus/);
-    expect(first.prompts[`imagery-1-B${FIRST}`]).toMatch(/# Logos déjà prévus pour les AUTRES propositions de cette série\n1\. Un logo net/);
-    expect(first.prompts[`imagery-1-C${FIRST}`]).toMatch(/\n2\. Un logo net[\s\S]*conception NETTEMENT différente/);
+    // Rien des autres logos n'est transmis, ni en image ni en mots : chaque logo repart de zéro.
+    expect(first.prompts[`imagery-1-B${FIRST}`]).not.toMatch(/Logos déjà prévus|AUTRES propositions|logos DÉJÀ/);
+    expect(first.prompts[`imagery-1-C${FIRST}`]).not.toMatch(/Logos déjà prévus|conception NETTEMENT différente/);
     expect(first.prompts[`imagecheck-1-B${FIRST}`]).not.toContain(`slot "logo"`);
     expect(first.ids.some((id) => /-(object|signs|post\d)/.test(id))).toBe(false); // l'objet et le reste : pour l'identité choisie
     {
@@ -1074,7 +1075,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.prompts["imagery-1-A"]).toMatch(/Signes de la marque \(hors lettrage : le logo ne reprend rien du nom composé par le Studio\)/);
     // Les idées de logo des planches déjà faites sont données à la suivante : son logo doit en différer.
     // (Vérifié plus haut sur la proposition ; au second passage, chaque planche connaît déjà les logos des deux autres.)
-    expect(log.prompts["imagery-1-A"]).toMatch(/# Logos déjà prévus pour les AUTRES propositions de cette série\n1\. Un logo net[\s\S]*\n2\. Un logo net/);
+    // Rien des autres logos n'est transmis, ni en image ni en mots : chaque logo repart de zéro.
+    expect(log.prompts["imagery-1-A"]).not.toMatch(/Logos déjà prévus|AUTRES propositions|logos DÉJÀ/);
     // B : logo sur fond noir, refusé sans IA avant la relecture ; l'objet ne le porte pas ; c'est dit au client.
     expect(log.prompts["imagecheck-1-B"]).not.toContain(`slot "logo"`);
     expect((log as any).refs["image-1-B-object"].logo).toBe(false);
