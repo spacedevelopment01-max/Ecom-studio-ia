@@ -601,6 +601,14 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
     - *la constellation à la une* chaque semaine sur la page d'accueil, parmi les projets ouverts aux visites ;
     - *la galaxie du client* qui a plusieurs projets ;
     - *la comète des nouveautés* du Studio, montrée une fois.
+    - pris ensuite (« La 2 3 4 7 8 9 10 11 ») : *elle brille avec l'activité* (plus le site est visité, plus elle
+      brille, vrais chiffres seulement) ; *le badge sur le site du client* (petite constellation « Fait avec E-COM
+      STUDIO IA » qui mène à son projet s'il l'a ouvert) ; *le ciel suit l'heure* (aube quand « ta journée est
+      prête », nuit le soir) ; *une comète quand quelqu'un regarde* un projet ouvert ; *la grande constellation du
+      mois* allumée par les clients qui atteignent leur objectif ; *le ciel qui chante* (une note douce par
+      constellation, son allumé par le client) ; *les projets en pause s'endorment* en nébuleuse et se rallument au
+      retour ; *l'affiche du premier anniversaire* à imprimer (l'envoi imprimé coûterait : à décider avec lui).
+      Pas prises : les clients en étoiles, les étoiles-souvenirs, remonter le temps.
 
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
