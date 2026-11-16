@@ -536,7 +536,7 @@ describe.runIf(!!process.env.VENTE_OUT)("thème unique, vente : captures de chaq
           }
           // La coque d'une page d'arrivée : bandeau, en-tête, barre collée, pied, dans chacune de leurs façons.
           if (!only.length || only.some((x) => SHELL.includes(x))) {
-            await page.evaluate((el) => el.remove(), hide);
+            await page.evaluate((el: any) => el.remove(), hide);
             await page.evaluate(() => { (window as any).ctGo("arrivee"); });
             for (let i = 0; i < 3; i++) {
               await page.evaluate((n) => { for (const [sel, keys] of [[".tn-messages", ["defilent", "tour-a-tour", "rangee"]], [".tn-entete-arrivee", ["nom-a-gauche", "nom-au-centre", "nom-a-gauche"]], [".tn-barre-produit", ["barre", "carte-flottante", "barre"]], [".tn-pied-arrivee", ["centre", "ligne", "centre"]]] as [string, string[]][]) document.querySelector(sel)!.setAttribute("data-tn-c", keys[n]); }, i);
