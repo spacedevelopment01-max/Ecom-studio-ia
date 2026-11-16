@@ -500,6 +500,9 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
     avantages, avant et après, questions, barre d'achat qui reste visible ; jamais de fausse urgence ni de faux avis) ;
     haut de gamme (grandes photos, récit, matières) ; technique (caractéristiques, vue sous tous les angles, comparatif) ;
     alimentaire et soin (ingrédients, composition, utilisation, allergènes) ; mode (tailles, couleurs, looks associés).
+    Précision du propriétaire, 16 novembre 2026 : « Si une section manque ou ne convient pas au style dropshipping,
+    crée-la ou adapte-la. » Le style « vente directe » est ce style dropshipping : il doit avoir toutes ses pièces, au
+    niveau des meilleures boutiques de ce genre, sans jamais mentir (ni fausse urgence, ni faux avis).
   - **Pages de services : 6 styles** : prestation simple ; rendez-vous complet (prestation, intervenant, créneau) ; devis
     d'artisan (étapes, réalisations, formulaire détaillé) ; fiche de bien immobilier (galerie, caractéristiques,
     étiquette énergie, demande de visite) ; restaurant (carte, réservation de table) ; atelier ou cours (dates, places,
