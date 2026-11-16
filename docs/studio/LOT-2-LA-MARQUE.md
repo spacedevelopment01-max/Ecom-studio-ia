@@ -68,7 +68,7 @@ logo », les trois logos libres et le logo redessiné (`logos.ts`, `tools/logo.t
 
 ## L'essai réel (15 et 16 novembre 2026)
 
-Accord du propriétaire : « Oui », plafond de 25 €. **Dépensé au 16 novembre au soir : 36,58 €** ; le dépassement vient d'essais qu'il a
+Accord du propriétaire : « Oui », plafond de 25 €. **Dépensé au 17 novembre : 39,96 €** ; le dépassement vient d'essais qu'il a
 demandés (logos refaits plusieurs fois, maquettes refaites). SINA a travaillé seule ; Claude n'a joué que les clients.
 
 Vu avec la vraie IA :
@@ -102,6 +102,13 @@ Ce que le propriétaire a décidé pendant l'essai, et qui est dans le code :
   les mots exacts. Écrit et testé avec une IA simulée ; pas encore vu avec la vraie IA.
 - **Logo sur fond sombre** (« sur fond sombre, le logo soit clair tout le temps ») : tout ce qui est foncé dans le
   logo passe en clair, même une couleur foncée de la marque ; vu avec la vraie IA sur une planche.
+- **Clair d'abord, beau ensuite** (« ça fait plusieurs fois qu'il y a des textes comme ça, un peu difficiles à
+  comprendre ») : règle placée au-dessus des autres pour tout texte lu par les clients de la marque. Un lecteur qui
+  ne sait rien lit les phrases courtes de chaque planche (signature, titre et bouton du site, publications) sans rien
+  connaître de la marque ; ce qu'il ne comprend pas du premier coup est repris avant les images. Écrit et testé avec
+  une IA simulée ; pas encore vu avec la vraie IA.
+- **Logo joint à une demande d'image** : toujours sur fond blanc plein. Le logo détouré faisait rendre à OpenAI des
+  images aux bords troués ; vu corrigé avec la vraie IA.
 - **Écran « Marque ».** Plus d'encadré des angles, plus de bulle posée sur la marque, logo vectoriel montré.
 - **Sa consigne de travail** : « arrête de prendre des initiatives qui nous font perdre du temps et de l'argent ».
   Faire ce qu'il demande, avec ses mots ; une idée se dit en une phrase et attend son oui ; le plus petit essai avant

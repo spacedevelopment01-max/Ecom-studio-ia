@@ -76,6 +76,8 @@ const CALLS = {
   review: { tier: "strong", input: 26_000, output: 6_000, max: 10_000 },
   fix: { tier: "strong", input: 22_000, output: 10_000, max: 18_000 },
   recheck: { tier: "strong", input: 30_000, output: 4_000, max: 8_000 },
+  // Le lecteur qui ne sait rien : il ne lit que les phrases courtes des planches (très peu de texte).
+  reader: { tier: "strong", input: 2_500, output: 2_500, max: 5_000 },
   // L'illustratrice : une dizaine de dessins par planche (le gros de sa réponse est du SVG).
   art: { tier: "craft", input: 9_000, output: 16_000, max: 26_000 },
   // Images de la planche (réglage `sina.brand_images`) : la direction artistique écrit les consignes ; un modèle
@@ -93,7 +95,7 @@ const MAX_PAGES_REREAD = 16;
 /** Nombre d'appels de chaque sorte selon le travail demandé (série complète, ou reprise de quelques routes). */
 function callCounts(routes: number, teams: number, fresh: boolean, images = false): Record<CallId, number> {
   // strategy : un second tour d'idées quand trop peu passent les deux épreuves ; fix : une reprise OU un remplacement par route.
-  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, art: 0, imagery: images ? routes : 0, look: images ? routes : 0 };
+  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, reader: 1, art: 0, imagery: images ? routes : 0, look: images ? routes : 0 };
 }
 
 export type ChainQuote = { maxMicro: number; probableMicro?: number };
@@ -236,6 +238,16 @@ const DraftSchema = IdentitySchema.pick({ name: true, slogan: true, promise: tru
 });
 type Draft = z.infer<typeof DraftSchema>;
 
+const ReaderSchema = z.object({ texts: z.array(z.object({ id: z.string().max(12), understood: z.string().max(400).default(""), clear: z.boolean().catch(true), why: z.string().max(300).default("") })).max(40).default([]) });
+/** Les phrases courtes d'une planche que lisent les clients de la marque (jamais un texte gardé mot pour mot du client). */
+export function readerTexts(x: Route, keptSlogan = false): { id: string; label: string; text: string }[] {
+  const b = x.board;
+  return [
+    ...(keptSlogan ? [] : [{ id: `${x.key}-s`, label: "la signature", text: x.slogan }]),
+    { id: `${x.key}-t`, label: "le titre du site", text: b.site.headline }, { id: `${x.key}-b`, label: "le bouton du site", text: b.site.button },
+    ...b.posts.map((q, i) => ({ id: `${x.key}-p${i + 1}`, label: `la publication ${i + 1}`, text: q.text })),
+  ].filter((t) => t.text?.trim());
+}
 const ReviewSchema = z.object({
   routes: z.array(z.object({
     key: z.string().max(2), score: z.number().min(0).max(10).default(0), verdict: z.enum(["garder", "reprendre"]).catch("reprendre"), fixes: z.array(z.string().max(400)).max(10).default([]),
@@ -795,7 +807,19 @@ export async function runSinaBrandJob(ctx: JobContext) {
   }
   const assemble = (fresh: Route[]) => keys.map((k) => fresh.find((x) => x.key === k) ?? kept.find((x) => x.key === k)).filter((x): x is Route => !!x);
   let list = assemble(drafted);
-  const firstIssues = [...routeIssues(list, j, keys.length), ...layoutIssues(list)];
+  // Le lecteur qui ne sait rien lit les phrases courtes des planches neuves, sans rien connaître de la marque : ce qu'il
+  // ne comprend pas du premier coup est repris avant la création des images. Sans réponse, la création continue.
+  const readerIssues: string[] = [];
+  if (drafted.length) try {
+    const asked = drafted.flatMap((x) => readerTexts(x, !!keptSlogan).map((t) => ({ ...t, key: x.key, sells: x.board.descriptor || "" })));
+    const read = await ctx.step(`brand:reader:${round}`, () => ai.ask(`reader-${round}`, { kind: "reader", system: P.readerSystem(), schema: ReaderSchema, prompt: asked.map((t) => `- id ${t.id} | l'entreprise vend : ${t.sells || "non précisé"} | phrase : « ${t.text} »`).join("\n") }));
+    for (const r of read.texts.filter((v) => !v.clear)) {
+      const t = asked.find((a) => a.id === r.id); if (!t) continue;
+      readerIssues.push(`Identité ${t.key} : ${t.label} « ${t.text} » n'est pas comprise du premier coup par quelqu'un qui ne connaît pas la marque (${(r.why || "pas claire").replace(/\.+$/, "")} ; il comprend : « ${r.understood.replace(/\.+$/, "") || "rien"} »). Réécris-la : claire d'abord, belle ensuite.`);
+    }
+    if (readerIssues.length) notes.push(`lecteur qui ne sait rien : ${readerIssues.length} phrase(s) à reprendre`);
+  } catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`lecture des phrases impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
+  const firstIssues = [...routeIssues(list, j, keys.length), ...layoutIssues(list), ...readerIssues];
 
   // Le directeur de création relit, exige une reprise, puis relit la reprise. Plafond atteint : dit, jamais caché.
   const remaining: string[] = [];

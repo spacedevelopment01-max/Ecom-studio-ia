@@ -64,7 +64,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - Si un modèle n'arrive pas à écrire un mot dans une image, changer la phrase plutôt que repayer des essais.
 - Dépensé en essais réels avant le lot 2 : environ 19,14 € comptés par le Studio (dont 2,94 € pour l'essai du lot 1,
   sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €). Essai du lot 2, au 16 novembre 2026 :
-  36,58 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés).
+  39,96 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés).
 - **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
 - **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni
   engagement ; budget d'IA à 50 % du prix hors taxes le premier mois, puis 40 % ; par forfait : 2, 3 et 4 identités
@@ -84,6 +84,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 
 ## Ses goûts, en règles générales
 
+- **Clair d'abord, beau ensuite.** Un texte est compris à la première lecture par quelqu'un qui ne connaît ni la
+  marque ni le métier : aucun mot d'initié, aucune phrase à double sens, aucune devinette. L'émotion ne passe jamais
+  avant le sens.
 - **L'émotion.** Tout texte fait ressentir (une scène, un moment, une sensation), jamais une simple description. Les
   boutons qui vendent portent le désir. Aucune accroche répétée, aucun ordre donné au lecteur.
 - **Des images magnifiques**, du niveau d'une campagne haut de gamme : vraie scène, lumière travaillée, vrai produit

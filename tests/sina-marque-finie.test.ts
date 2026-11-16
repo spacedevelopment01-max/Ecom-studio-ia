@@ -114,6 +114,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
   const fakeAi = (log: Log, s: Script = {}) => () => ({
     research: async (id: string) => { log.ids.push(`web:${id}`); return id === "paroles" ? [{ url: PAGE, title: "Avis", category: "customers", excerpt: REAL.map((q) => `« ${q} »`).join(" ") }] : id.startsWith("verify") ? [{ url: "https://annuaire.example/boissons", title: "Marques", category: "competitors", excerpt: "Annuaire des marques de boissons." }] : []; },
     ask: async (id: string, c: any) => {
+      // Le lecteur qui ne sait rien : par défaut il comprend tout, et son appel n'encombre pas les suites d'appels vérifiées.
+      if (c.kind === "reader" && !(s as any).reader) return c.schema.parse({ texts: [] });
       log.ids.push(id); log.prompts[id] = c.prompt;
       const raw: any = (() => {
         if (c.kind === "study") return { quotes: REAL.map((text) => ({ text, url: PAGE })), competitors: [], mould: "Des noms de fruits.", substitutes: [], facts: [], notFound: [] };

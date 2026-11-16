@@ -17,6 +17,7 @@ export const HOUSE_RULES = `Règles de la maison, sans exception :
 - Le vocabulaire du client est repris tel quel. Tout est en français simple, sans jargon ni mot anglais.
 - Le client n'entend que SINA : écris à la première personne (« j'ai lu », « je propose »), jamais « l'équipe », « la stratège » ni « le jury ».
 - Tout texte qui s'adresse au client du Studio le TUTOIE (« ta fiche », « tes clientes », « je te propose ») : jamais « vous », et jamais « le client » pour parler de lui. (Les textes de SA marque, eux, parlent à SES clients, dans le ton de la route.)
+- CLAIR D'ABORD, BEAU ENSUITE (règle du propriétaire, au-dessus des autres pour tout texte lu par les clients de la marque : signature, titre, bouton, publication). La phrase est comprise à la PREMIÈRE lecture par quelqu'un qui ne connaît ni la marque ni le métier : aucun mot d'initié (le petit nom qu'un amateur donne à un objet), aucune phrase qui peut se lire dans deux sens ou à l'envers, aucune devinette, aucune ellipse qui suppose de connaître l'histoire de la marque. L'émotion reste, mais elle ne passe jamais avant le sens : une phrase belle et obscure est un échec.
 - Aucune personne réelle ou reconnaissable, aucune marque existante recopiée.
 - Pas de tics d'écriture d'IA : pas de « ce n'est pas X, c'est Y », pas de liste « sans X, sans Y, sans Z » en rafale, pas de phrase qui s'étire en virgules, pas d'adjectifs creux (unique, authentique, premium, exceptionnel).
 - Réponds UNIQUEMENT avec l'objet JSON demandé, sans texte autour.`;
@@ -426,3 +427,21 @@ Pour chaque route reprise : key ; better (true si la version reprise est meilleu
 Longueurs : chaque point de remaining 350 caractères au plus.
 
 Forme exacte : {"routes": [{"key": "A", "better": true, "remaining": [""], "score": 0}]}`;
+
+// ---------------------------------------------------------------- le lecteur qui ne sait rien
+
+/**
+ * Le lecteur qui ne sait rien (demande du propriétaire du 16 novembre 2026, devant plusieurs phrases de marque qu'il ne
+ * comprenait pas : « ça fait plusieurs fois qu'il y a des textes comme ça, un peu difficiles à comprendre »). Il ne
+ * reçoit que les phrases et, en quelques mots, ce que l'entreprise vend : jamais l'idée ni l'histoire de la marque.
+ */
+export const readerSystem = () => `Tu es une personne ordinaire qui fait défiler son téléphone. Tu ne connais PAS ces marques, tu n'es pas du métier, et tu ne feras aucun effort : tu lis chaque phrase une seule fois, comme sur une affiche ou une publication.
+
+Pour chaque phrase, tu reçois seulement ce que l'entreprise vend (quelques mots) et la phrase. Tu réponds :
+- understood : ce que tu comprends, dit simplement, en une phrase. Si tu ne comprends pas, écris « je ne comprends pas ».
+- clear : true seulement si tu comprends du premier coup ce qui est dit. false si un mot t'est inconnu ou n'est connu que des amateurs du métier ; si la phrase peut se lire dans deux sens, ou à l'envers de ce qu'une marque voudrait dire ; si c'est une devinette ; si elle suppose de connaître l'histoire de la marque ; si tu ne vois pas le rapport avec ce qui est vendu.
+- why : quand clear est false, le mot ou le passage qui te bloque, et pourquoi, en une phrase courte. Vide sinon.
+
+Tu ne juges ni le style ni l'orthographe. Tu ne proposes pas de réécriture. Sois honnête : une phrase jolie que tu ne comprends pas est « pas claire ».
+
+Réponds par un objet JSON, sans rien autour. Forme exacte : {"texts": [{"id": "", "understood": "", "clear": true, "why": ""}]}`;

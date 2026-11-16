@@ -114,6 +114,8 @@ describe("SINA — chaîne de création de la marque", async () => {
   const fakeAi = (log: { ids: string[]; prompts: Record<string, string>; systems: Record<string, string> }, s: Script = {}) => () => ({
     research: async (id: string, _query: string) => { log.ids.push(`web:${id}`); return s.web ? s.web(id) : id.startsWith("verify") ? [{ url: "https://annuaire.example/boissons", title: "Marques de boissons", category: "competitors", excerpt: "Annuaire des marques de boissons aux fruits." }] : pages(id); },
     ask: async (id: string, c: any) => {
+      // Le lecteur qui ne sait rien : par défaut il comprend tout, et son appel n'encombre pas les suites d'appels vérifiées.
+      if (c.kind === "reader" && !(s as any).reader) return c.schema.parse({ texts: [] });
       log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system;
       const raw: any = (() => {
         if (c.kind === "study") return { quotes: [...REAL.map((text) => ({ text, url: PAGE })), { text: "Cette boisson a changé ma vie, je la recommande à tous.", url: PAGE }, { text: REAL[0], url: "https://inconnu.example/page" }], competitors: [{ name: "Fruits Givrés", url: RIVAL, codes: "pastels, fraîcheur" }], mould: "Des noms de fruits et de fraîcheur, des pastels.", substitutes: ["le soda de l'après-midi"], facts: [{ text: "Une infusion à froid demande au moins une heure au frais.", url: USAGE }, { text: "Fait sans page.", url: "https://inconnu.example/fait" }], notFound: [] };
@@ -132,6 +134,7 @@ describe("SINA — chaîne de création de la marque", async () => {
           return { ...draftOf(base, name ?? base.name, c.kind === "fix" && s.fix ? s.fix(base.key) : {}), ...(c.kind === "fix" && s.fixTop ? s.fixTop(base.key) : {}) };
         }
         if (c.kind === "review") return s.review ? s.review(c.prompt) : { routes: [{ key: "A", score: 8, verdict: "garder", fixes: [] }, { key: "B", score: 6, verdict: "reprendre", fixes: ["« Si c'est fade, remets-en. » est un ordre donné au lecteur : réécris cette phrase."] }, { key: "C", score: 8, verdict: "garder", fixes: [] }], series: "" };
+        if (c.kind === "reader") return (s as any).reader(c.prompt);
         if (c.kind === "recheck") return s.recheck ?? { routes: [{ key: "B", better: true, remaining: [], score: 8 }] };
         if (c.kind === "art") return s.art ? s.art(id) : DRAWN;
         if (c.kind === "imagery") return { look: "Lumière de fin d'après-midi, rasante, sur une table claire.", logo: "Un logo net tiré du nom composé.", signs: "Photographie des signes de la marque brodés sur un tablier et imprimés sur une serviette.", hero: "Photographie d'une carafe pleine de morceaux de fruits.", object: "Le sachet posé sur la table.", site: "Le haut de la page d'accueil.", posts: ["Une scène.", "Un gros plan.", "Un aplat."] };
@@ -643,6 +646,28 @@ describe("SINA — chaîne de création de la marque", async () => {
     const src = (await import("node:fs")).readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(src).toContain("logo: refs.logo ? await onWhite(refs.logo) : null");
     expect((await import("node:fs")).readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8")).toContain("logo: await onWhite(logoPng)");
+  });
+
+  it("le lecteur qui ne sait rien : il ne reçoit que les phrases courtes et ce qui est vendu ; une phrase qu'il ne comprend pas est reprise avant les images (retour du propriétaire : « des textes un peu difficiles à comprendre »)", async () => {
+    const t = await thread();
+    let seen = "";
+    const { log } = await chain(t, {}, {
+      reader: (prompt: string) => { seen = prompt; const id = /id (B-p2) /.exec(prompt)![1]; return { texts: [{ id, understood: "Le café est vieux de plusieurs jours", clear: false, why: "« quelques jours » se lit comme un café pas frais." }, { id: "A-s", understood: "ok", clear: true, why: "" }] }; },
+      review: () => ({ routes: [], series: "" }),
+    } as never);
+    // Il lit la signature, le titre et le bouton du site, et les trois publications de chaque planche ; rien de l'idée.
+    for (const k of ["A", "B", "C"]) for (const f of ["s", "t", "b", "p1", "p2", "p3"]) expect(seen).toContain(`id ${k}-${f} | l'entreprise vend : `);
+    expect(seen).not.toMatch(/confession|territoire|Ce que ton client pense/i);
+    expect(log.systems["reader-1"]).toMatch(/Tu ne connais PAS ces marques, tu n'es pas du métier/);
+    // La phrase relevée arrive chez le directeur de création et dans la reprise de SA planche seulement.
+    const line = /- Identité B : la publication 2 « .+ » n'est pas comprise du premier coup par quelqu'un qui ne connaît pas la marque \(« quelques jours » se lit comme un café pas frais ; il comprend : « Le café est vieux de plusieurs jours »\)\. Réécris-la : claire d'abord, belle ensuite\./;
+    expect(log.prompts["review-1"]).toMatch(line);
+    expect(log.prompts["fix-1-B"]).toMatch(line);
+    expect(log.ids).not.toContain("fix-1-A");
+    // La règle est écrite pour celle qui rédige, et le lecteur compte dans le devis.
+    const P3 = await import("@/lib/syna-agent/brand-prompts");
+    expect(P3.HOUSE_RULES).toMatch(/CLAIR D'ABORD, BEAU ENSUITE[\s\S]*comprise à la PREMIÈRE lecture par quelqu'un qui ne connaît ni la marque ni le métier/);
+    expect(C.readerTexts(J.journeyOf(t.cid).identities!.list[0] as never, true).some((x) => x.id === "A-s")).toBe(false); // une signature gardée du client n'est pas relue
   });
 
   it("identity.images : SINA refait elle-même seulement certaines images d'une planche, avec devis (retour du propriétaire : « c'est à SINA d'y faire, pas à toi »)", async () => {
