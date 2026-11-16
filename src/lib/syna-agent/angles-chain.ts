@@ -85,14 +85,30 @@ export function anglesQuote(o: { listen?: boolean; settings?: ChainSettings } = 
 
 const txt = (max: number) => z.string().min(1).max(max);
 export const SegmentSchema = z.object({
-  id: z.string().min(1).max(8), name: txt(120), who: txt(320), wants: txt(320), needs: txt(320), showcase: z.string().max(400).default(""),
+  id: z.string().min(1).max(8), name: txt(120), who: txt(320), wants: txt(320), needs: txt(320), before: z.string().max(320).default(""), featured: z.string().max(240).default(""), showcase: z.string().max(400).default(""),
   quotes: z.array(z.number().int().min(0)).max(8).default([]), proven: z.boolean().catch(true),
 });
 export type Segment = z.infer<typeof SegmentSchema>;
-const SegmentsSchema = z.object({ segments: z.array(SegmentSchema).min(3).max(8) });
+const SegmentsSchema = z.object({ segments: z.array(SegmentSchema).min(3).max(8), targets: z.array(z.string().max(8)).max(6).default([]), why: z.string().max(500).default("") });
+
+/**
+ * Les TROIS clientèles que les angles viseront, choisies AVANT d'écrire (avis du propriétaire du 16 novembre 2026 :
+ * « bien différencier la clientèle type sur angles différents »). Le choix de la stratège est gardé s'il désigne trois
+ * types de clients différents de la liste ; sinon le Studio complète avec les premiers types prouvés.
+ */
+export function targetsOf(segments: Segment[], chosen: string[]): Segment[] {
+  const out: Segment[] = [];
+  const add = (g?: Segment) => { if (g && !out.includes(g) && out.length < 3) out.push(g); };
+  for (const id of chosen) add(segments.find((g) => g.id === id));
+  for (const g of segments.filter((x) => x.proven)) add(g);
+  for (const g of segments) add(g);
+  return out;
+}
 export const AngleDraftSchema = z.object({
   /** Le type de client visé (id de la liste) et ce qu'on met en avant de l'offre pour lui. */
   segment: z.string().max(8).default(""), showcase: z.string().max(500).default(""),
+  /** Le produit ou la prestation vedette pour cette clientèle, et l'argument principal de l'angle. */
+  featured: z.string().max(300).default(""), argument: z.string().max(200).default(""),
   title: txt(90), person: txt(320), moment: txt(320), before: txt(400), after: txt(400), emotion: txt(120), promise: txt(260), hook: txt(160),
   site: z.object({ title: txt(120), text: txt(360), button: txt(48) }),
   post: z.object({ title: txt(120), text: txt(700) }),
@@ -156,11 +172,11 @@ export function brandBlock(j: Journey, projectId: string): string {
   ].filter(Boolean).join("\n");
 }
 
-const segmentLine = (g: Segment) => `- ${g.id} : ${g.name}. ${g.who} Envie : ${g.wants} Besoin : ${g.needs}${g.showcase ? ` À mettre en avant pour lui : ${g.showcase}` : ""}${g.proven ? "" : " (type de client supposé : ni le client ni un acheteur ne l'a nommé)"}`;
-function dossier(o: { facts: string; brand: string; study: Study; segments?: Segment[]; guidance?: string; shown?: SinaAngle[] }): string {
+const segmentLine = (g: Segment) => `- ${g.id} : ${g.name}. ${g.who} Envie : ${g.wants} Besoin : ${g.needs}${g.before ? ` Avant, ou à la place : ${g.before}` : ""}${g.featured ? ` Produit ou prestation vedette pour lui : ${g.featured}` : ""}${g.showcase ? ` À mettre en avant pour lui : ${g.showcase}` : ""}${g.proven ? "" : " (type de client supposé : ni le client ni un acheteur ne l'a nommé)"}`;
+function dossier(o: { facts: string; brand: string; study: Study; segments?: Segment[]; targets?: boolean; guidance?: string; shown?: SinaAngle[] }): string {
   const st = o.study;
   return [
-    ...(o.segments?.length ? ["# Les types de clients (chaque angle en vise un ; segment = son id)", ...o.segments.map(segmentLine), ""] : []),
+    ...(o.segments?.length ? [o.targets ? "# Les trois clientèles choisies (une proposition pour chacune ; segment = son id)" : "# Les types de clients (chaque angle en vise un ; segment = son id)", ...o.segments.map(segmentLine), ""] : []),
     "# Les faits du client (la seule source de vérité sur son produit ou sa prestation)", o.facts || "Aucun fait donné.", "",
     "# Sa marque", o.brand, "",
     `# Paroles réelles d'acheteurs (${st.quotes.length}, mot pour mot, lues sur le web)`, st.quotes.length ? numbered(st.quotes.map((q) => `« ${q.text} »`)) : "Aucune trouvée : n'invente aucune parole, et laisse quotes vide.", "",
@@ -191,12 +207,12 @@ export function draftIssues(a: AngleDraft, facts: string): string[] {
 }
 
 /** Range les propositions d'une stratège : identifiants, paroles citées qui existent, contrôles du Studio. */
-export function candidatesOf(role: AngleRole, drafts: AngleDraft[], o: { facts: string; quotes: number; from?: number; hooks?: string[]; segments?: string[] }): Candidate[] {
+export function candidatesOf(role: AngleRole, drafts: AngleDraft[], o: { facts: string; quotes: number; from?: number; hooks?: string[]; segments?: string[]; /** Reprise : plusieurs idées pour la même clientèle libre sont permises. */ repeat?: boolean }): Candidate[] {
   const seen = new Set((o.hooks ?? []).map(normText)), mine = new Set<string>();
   return drafts.map((d, i) => {
     const issues = draftIssues(d, o.facts), key = normText(d.hook);
     if (o.segments && !o.segments.includes(d.segment)) issues.push("ne vise aucun type de client de la liste");
-    else if (o.segments && mine.has(d.segment)) issues.push("vise le même type de client qu'une autre proposition de la même stratège");
+    else if (o.segments && !o.repeat && mine.has(d.segment)) issues.push("vise le même type de client qu'une autre proposition de la même stratège");
     mine.add(d.segment);
     if (seen.has(key)) issues.push("accroche déjà écrite pour une autre proposition");
     seen.add(key);
@@ -227,14 +243,14 @@ export function pickThree(list: Candidate[], notes: Map<string, { note: number }
   for (const a of of("sur")) for (const b of of("emotion")) for (const c of of("audacieux")) {
     const trio = [a, b, c];
     if (distinct && new Set(trio.map((x) => x.segment || x.id)).size < 3) continue;
-    const score = trio.filter((x) => n(x) >= KEPT_NOTE).length * 1000 + trio.reduce((t, x) => t + n(x), 0) * 10 + trio.filter((x) => preferred[x.role] === x.id).length;
+    const score = trio.filter((x) => n(x) >= KEPT_NOTE).length * 1000 + trio.reduce((t, x) => t + n(x), 0) * 10 + trio.filter((x) => preferred[x.role] === x.id).length * 7;
     if (!best || score > best.score) best = { trio, score };
   }
   if (!best) return distinct ? pickThree(list, notes, preferred, false) : new Map();
   return new Map(ANGLE_ROLES.map((r, i) => [r, best!.trio[i]]));
 }
 
-const judgeView = (c: Candidate) => ({ id: c.id, entree: c.role, segment: c.segment, showcase: c.showcase, title: c.title, person: c.person, moment: c.moment, before: c.before, after: c.after, emotion: c.emotion, promise: c.promise, hook: c.hook, site: c.site, post: c.post, show: c.show, quotes: c.quotes, toConfirm: c.toConfirm, ...(c.issues.length ? { controleDuStudio: c.issues } : {}) });
+const judgeView = (c: Candidate) => ({ id: c.id, entree: c.role, segment: c.segment, featured: c.featured, argument: c.argument, showcase: c.showcase, title: c.title, person: c.person, moment: c.moment, before: c.before, after: c.after, emotion: c.emotion, promise: c.promise, hook: c.hook, site: c.site, post: c.post, show: c.show, quotes: c.quotes, toConfirm: c.toConfirm, ...(c.issues.length ? { controleDuStudio: c.issues } : {}) });
 
 const host = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url.slice(0, 60); } };
 
@@ -249,6 +265,7 @@ export function sinaAngleOf(c: Candidate, id: string, study: Study, v?: Verdict,
     goal: "", why: c.why, story: `${c.person} ${c.moment}`.trim(), show: c.show, organicExample: c.post.text, cta: c.site.button,
     person: c.person, moment: c.moment, before: c.before, after: c.after, promise: c.promise, tone: c.tone, site: c.site, post: c.post,
     ...(g ? { client: { name: g.name, who: g.who, wants: g.wants, needs: g.needs } } : {}), ...(c.showcase ? { showcase: c.showcase } : {}),
+    ...(c.featured || g?.featured ? { featured: c.featured || g!.featured } : {}), ...(c.argument ? { argument: c.argument } : {}),
     objections: c.objections, quotes: quotes.slice(0, 4), ...(v ? { note: v.note } : {}), ...(doubt ? { doubt } : {}),
   };
 }
@@ -310,14 +327,16 @@ export async function runSinaAnglesJob(ctx: JobContext) {
 
   // 2. Les types de clients, avant les stratèges : chaque angle en visera un, et les trois montrés en viseront trois.
   ctx.progress(0.12, L("Je cherche qui sont tes différents clients", "Finding your different kinds of customers"));
-  const segments: Segment[] = await ctx.step(`angles:segments:${round}`, async () => {
+  const mapped = await ctx.step(`angles:segments:${round}`, async () => {
     const raw = await ai.ask(`segments-${round}`, { kind: "segments", system: withAnglesLesson(P.SEGMENTS_SYSTEM), schema: SegmentsSchema, prompt: dossier({ facts, brand, study, guidance: a.guidance }) });
     const ids = new Set<string>();
-    return raw.segments.filter((g) => !ids.has(g.id) && !!ids.add(g.id)).map((g) => ({ ...g, quotes: g.quotes.filter((n) => n < study.quotes.length) })).slice(0, 6);
+    return { segments: raw.segments.filter((g) => !ids.has(g.id) && !!ids.add(g.id)).map((g) => ({ ...g, quotes: g.quotes.filter((n) => n < study.quotes.length) })).slice(0, 6), targets: raw.targets, why: raw.why };
   });
+  const segments: Segment[] = mapped.segments;
   if (segments.length < 3) throw new UserFacingError(L("Je n'ai pas réussi à distinguer trois types de clients différents pour ton activité. Dis-moi qui sont tes clients, et je relance.", "Three different kinds of customers could not be found."));
-  const segmentIds = segments.map((g) => g.id);
-  const file = dossier({ facts, brand, study, segments, guidance: a.guidance, shown: before });
+  // Les trois clientèles sont choisies AVANT d'écrire : chaque stratège écrit une proposition pour chacune.
+  const targets = targetsOf(segments, mapped.targets), segmentIds = targets.map((g) => g.id);
+  const file = dossier({ facts, brand, study, segments: targets, targets: true, guidance: a.guidance, shown: before });
 
   // 2. Trois stratèges séparées, en même temps : elles ne se voient pas.
   ctx.progress(0.2, L("Je cherche tes trois angles", "Looking for your three angles"));
@@ -334,7 +353,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
   ctx.progress(0.5, L("Je relis chaque angle sévèrement", "Reviewing each angle"));
   const judgeFile = (list: Candidate[], keptOthers: Candidate[] = []) => JSON.stringify({
     faitsDuClient: facts.split("\n"), marque: brand.split("\n"), parolesDAcheteurs: study.quotes.map((q, n) => `${n}. ${q.text}`),
-    concurrents: study.competitors.map((c) => c.name), mouleDeLaCategorie: study.mould, typesDeClients: segments.map(segmentLine),
+    concurrents: study.competitors.map((c) => c.name), mouleDeLaCategorie: study.mould, lesTroisClientelesChoisies: targets.map(segmentLine),
     ...(keptOthers.length ? { anglesDejaRetenusPourLesAutresEntrees: keptOthers.map(judgeView) } : {}),
     propositions: list.map(judgeView),
   });
@@ -366,7 +385,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
         catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`reprise « ${role} » sans réponse`); return [] as AngleDraft[]; }
       })));
       const fresh: Candidate[] = [];
-      for (const [i, role] of weak.entries()) fresh.push(...candidatesOf(role, again[i], { facts, quotes: study.quotes.length, from: CANDIDATES, hooks: [...all, ...fresh].map((c) => c.hook), segments: segmentIds }));
+      for (const [i, role] of weak.entries()) fresh.push(...candidatesOf(role, again[i], { facts, quotes: study.quotes.length, from: CANDIDATES, hooks: [...all, ...fresh].map((c) => c.hook), segments: segmentIds, repeat: true }));
       if (fresh.length) {
         all = [...all, ...fresh];
         try {
@@ -437,6 +456,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
     recommendation: sel && sel.recommande === recommended ? sel.pourquoi.trim().slice(0, 600) : "",
     sourceCount: study.sources, quoteCount: study.quotes.length, at: Date.now(), judged, redone, issues: [...new Set(issues)], round, chainJobId: ctx.job.id,
     ...(a.guidance ? { guidance: a.guidance } : {}),
+    clients: { why: mapped.why.trim().slice(0, 500), others: segments.filter((g) => !targets.includes(g)).map((g) => g.name) },
   };
   updateJourney(a.conversationId, (x) => {
     x.angles = result;
@@ -445,7 +465,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
     setStep(x, 4, "review");
   });
   return {
-    clients: segments.map((g) => `${g.id} ${g.name}`),
+    clients: segments.map((g) => `${g.id} ${g.name}`), clientelesChoisies: targets.map((g) => g.id), pourquoiCesTrois: mapped.why,
     angles: ANGLE_ROLES.map((r) => ({ id: r, client: picked.get(r)!.segment, titre: picked.get(r)!.title, accroche: picked.get(r)!.hook, note: notesOf.get(picked.get(r)!.id)?.note ?? null, ...(doubts.has(r) ? { doute: doubts.get(r) } : {}) })),
     recommande: recommended, reserve: reserveOf.length, ecrits: all.length, reprises: redone, paroles: study.quotes.length, sources: study.sources, issues: result.issues, notes,
   };

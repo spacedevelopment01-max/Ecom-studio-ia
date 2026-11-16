@@ -9,9 +9,9 @@ import { useT } from "../i18n";
 
 export type Angles = {
   list: { id: string; title: string; audience: string; message: string; emotion: string; why?: string; show?: string; proofsToConfirm: string[]; doubt?: string;
-    client?: { name: string; who: string; wants: string; needs: string }; showcase?: string;
+    client?: { name: string; who: string; wants: string; needs: string }; showcase?: string; featured?: string; argument?: string;
     person?: string; moment?: string; before?: string; after?: string; promise?: string; site?: { title: string; text: string; button: string }; post?: { title: string; text: string }; quotes?: { text: string; url: string }[] }[];
-  roles?: Record<string, "sur" | "emotion" | "audacieux">; recommendedId: string | null; recommendation?: string; quoteCount?: number; sourceCount: number; chosen: string | null;
+  roles?: Record<string, "sur" | "emotion" | "audacieux">; recommendedId: string | null; recommendation?: string; clients?: { why: string; others: string[] } | null; quoteCount?: number; sourceCount: number; chosen: string | null;
 };
 
 const ROLE_LABEL = { sur: ["L'angle sûr", "The safe angle"], emotion: ["L'angle d'émotion", "The emotional angle"], audacieux: ["L'angle audacieux", "The bold angle"] } as const;
@@ -27,6 +27,21 @@ export function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: b
   return (
     <div className="@container mt-2 space-y-2" data-syna-angles>
       <p className="text-xs text-muted">{t(`Tes trois angles${angles.quoteCount ? `, écrits à partir de ce que tu m'as dit et de ${angles.quoteCount} paroles réelles d'acheteurs lues sur le web` : ", écrits à partir de ce que tu m'as dit"}. Chacun parle à un type de client différent. Choisis celui que tu veux aller chercher en premier : il guidera ton site, tes publications et tes publicités.`, "Your three angles. Pick the one that feels like you.")}</p>
+      {/* Les trois clientèles d'un coup d'œil, côte à côte, avant le détail : à qui on parle, son envie, ce qu'on lui montre en premier. */}
+      {angles.list.every((a) => a.client) && <section className="rounded-2xl border border-line bg-card p-3" data-angle-clients>
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted">{t("Trois clientèles différentes, le même produit", "Three different customers, the same product")}</p>
+        <div className="mt-2 grid grid-cols-1 gap-2 @2xl:grid-cols-3">
+          {angles.list.map((a) => { const role = angles.roles?.[a.id] ?? "sur", band = ROLE_BAND[role]; return (
+            <div key={a.id} className="rounded-xl px-3 py-2 text-xs" style={{ background: `${band}12` }} data-angle-client-summary={a.id}>
+              <p className="text-sm font-bold leading-tight" style={{ color: band }}>{a.client!.name}</p>
+              <p className="mt-1 text-ink/85"><span className="font-semibold">{t("Son envie", "Wants")} : </span>{a.client!.wants}</p>
+              {!!a.featured && <p className="mt-1 text-ink/85"><span className="font-semibold">{t("On lui montre d'abord", "Shown first")} : </span>{a.featured}</p>}
+              {!!a.argument && <p className="mt-1 text-ink/85"><span className="font-semibold">{t("L'argument", "The argument")} : </span>{a.argument}</p>}
+            </div>); })}
+        </div>
+        {!!angles.clients?.why && <p className="mt-2 text-[11px] text-muted">{angles.clients.why}</p>}
+        {!!angles.clients?.others.length && <p className="mt-1 text-[11px] text-muted">{t("Autres clientèles repérées, pas visées cette fois", "Other customers spotted, not targeted this time")} : {angles.clients.others.join(" · ")}.</p>}
+      </section>}
       <div className="grid grid-cols-1 gap-3 @4xl:grid-cols-3">
         {angles.list.map((a) => {
           const role = angles.roles?.[a.id] ?? "sur", band = ROLE_BAND[role];
@@ -48,6 +63,7 @@ export function AngleCards({ angles, busy, onChoose }: { angles: Angles; busy: b
                   {part(t("Ce client", "This customer"), a.client.who)}
                   {part(t("Son envie", "What they want"), a.client.wants)}
                   {part(t("Son besoin", "What they need"), a.client.needs)}
+                  {part(t("Le produit ou la prestation vedette", "The featured product or service"), a.featured)}
                   {part(t("Ce qu'on met en avant pour lui", "What we put forward for them"), a.showcase)}
                 </dl>}
                 <dl className="space-y-2">

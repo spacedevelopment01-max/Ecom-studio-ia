@@ -33,6 +33,8 @@ export type SinaAngle = {
   quotes?: { text: string; url: string }[];
   /** Le type de client visé (règle du propriétaire : un angle = un type de client), et ce qu'on met en avant pour lui. */
   client?: { name: string; who: string; wants: string; needs: string }; showcase?: string;
+  /** Le produit ou la prestation vedette pour cette clientèle, et l'argument principal de l'angle. */
+  featured?: string; argument?: string;
   /** Note du juge, sur 10. */
   note?: number;
 };
@@ -49,6 +51,8 @@ export type SinaAngles = {
   issues?: string[];
   /** Numéro de la proposition, tâche qui l'a faite, paroles d'acheteurs lues, et la demande du client pour une nouvelle proposition. */
   round?: number; chainJobId?: string; quoteCount?: number; guidance?: string;
+  /** Pourquoi ces trois clientèles ont été choisies, et les autres types de clients repérés (non visés cette fois). */
+  clients?: { why: string; others: string[] };
 };
 export { ANGLE_ROLE_LABEL, roleOf, shownAngles, type AngleRole } from "./angle-roles";
 
@@ -61,7 +65,7 @@ export function anglesViewOf(j: Journey) {
   if (!a?.shown?.length) return null;
   return {
     list: shownAngles(a), roles: Object.fromEntries(a.shown.map((x) => [x.id, x.role])) as Record<string, AngleRole>,
-    recommendedId: a.recommendedId, recommendation: a.recommendation ?? "", quoteCount: a.quoteCount ?? 0, sourceCount: a.sourceCount, chosen: j.angleChoice?.id ?? null,
+    recommendedId: a.recommendedId, recommendation: a.recommendation ?? "", clients: a.clients ?? null, quoteCount: a.quoteCount ?? 0, sourceCount: a.sourceCount, chosen: j.angleChoice?.id ?? null,
   };
 }
 export type AnglesView = NonNullable<ReturnType<typeof anglesViewOf>>;
