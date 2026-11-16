@@ -74,11 +74,17 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 ## Ce que SINA doit être
 
 - Le client n'entend qu'elle ; ses spécialistes restent en coulisses. Elle le tutoie.
+- Son visage (pour le design, à faire plus tard) : la constellation du projet, jamais symétrique ; après la livraison,
+  SINA va sur l'étoile de ce qu'elle fait ; détail dans la référence, partie 15. Son nom reste SINA pour l'instant.
 - Ses mots : « une superintelligence qui prend son rôle à cœur » ; elle pose toutes les questions dont elle a besoin,
   au moment où elle en a besoin, pour réussir du premier coup ; elle prend les devants, conseille, et reste
   l'interlocutrice après la livraison (publications, publicités, améliorations).
 - Elle réfléchit avec le modèle le plus fort, pour tous les forfaits. Celui qui fait n'est jamais celui qui juge ;
   rien n'est montré sans avoir été relu ; elle regarde ce qu'elle a fait et le corrige avant de le montrer.
+- Chaque mois, le client doit voir ce que son abonnement lui apporte : dix-sept engagements (dont le point du mois,
+  « ta journée est prête », la boîte des demandes, le carnet de clients, l'objectif du mois et le bras droit), détaillés
+  dans la référence, partie 14. Condition du propriétaire : « ça doit vraiment faire ce que tu as dit
+  c'est impératif » ; un engagement à moitié fait n'est pas fini.
 - Elle propose, le client décide. Elle n'agit seule que là où il l'a autorisé par écrit, dans son plafond.
 - Aucun réglage du Studio en ligne n'est changé sans la demande du propriétaire.
 
@@ -131,7 +137,23 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - Interface et contenus en français et en anglais (`L("fr", "en")`, `src/lib/i18n-server.ts` ; dans le thème, chaque
   libellé a sa traduction).
 - Les coordonnées saisies à la création d'un projet ne sont jamais redemandées ni effacées.
-- Les 15 thèmes proposés : fraise, onde, rive, sillon, noctil, traverse, heuren, museau-club, souple, table-saison,
+- **Aucune fonction qui oblige à attendre des semaines qu'une plateforme valide le Studio** (« Je veux aucune
+  proposition qui doivent nous faire attendre des semaines pour que les plateformes valides de travailler avec nous »,
+  15 novembre 2026). Ce qui en dépendrait se fait sans elle, ou ne se fait pas.
+- **Les branchements aux plateformes (Meta, TikTok, Google, Pinterest) sont mis de côté** : « Je mettrai en place toute
+  l'automatisation avec les autres plateformes mais pour l'instant c'est pas le cas donc on fait sans et on y met de
+  côté » (15 novembre 2026). Tout se conçoit sans eux : SINA prépare, le client publie d'un geste.
+- **Modifier en cliquant sur l'aperçu** : sur l'aperçu de son site, le client clique sur n'importe quel élément de
+  n'importe quelle section (un titre, un texte, une photo, un bouton, un détail) et demande le changement à SINA.
+  « ça c'est obligatoire et pour chaque détail des sections » (15 novembre 2026). L'ancien assistant savait désigner
+  un élément ; cette fonction est partie avec lui au lot 1 et revient pour SINA au lot 4.
+- **Pas de création gratuite** : l'idée « créer et voir gratuitement, payer pour publier » est refusée (« Pas envie
+  de faire comme ça », 15 novembre 2026) ; la règle « aucun appel à l'IA sans abonnement » reste.
+- **Le thème unique du Studio** (15 novembre 2026, « Oui écris le ») : SINA monte chaque site avec un seul thème très riche
+  (8 en-têtes dont deux méga menus avec leur version téléphone, 6 pieds de page, 6 pages produit, 6 pages de services,
+  pages simples en 2 ou 3 mises en page, environ 60 sections, 6 familles en coulisses jamais montrées au client) ; douze
+  démonstrations, dont six à la sortie. Détail : référence, partie 15. À construire au lot 4.
+- Les 15 thèmes proposés (jusqu'à ce que le thème unique ait fait ses preuves) : fraise, onde, rive, sillon, noctil, traverse, heuren, museau-club, souple, table-saison,
   atelier-nuance, parenthese, phase, maison-horizon, aplat. Leurs démonstrations sont des reproductions de maquettes
   validées : ne pas les recomposer ni les simplifier.
 
