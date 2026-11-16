@@ -837,7 +837,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.ids.some((i) => i.startsWith("imagereread"))).toBe(false);
     expect(log.prompts["image-1-A-post1"]).toContain(`« ${a.board!.posts[1].text} »`);
     expect(log.prompts["image-1-A-hero"]).toMatch(/Aucun texte, aucune lettre/);
-    for (const sl of SLOTS) expect(log.prompts[`image-1-A-${sl}`]).toMatch(sl === "logo" ? /ni personne/ : /[Aa]ucune personne/);
+    // Le logo n'a plus la mention « ni personne » (retirée à la demande du propriétaire le 16 novembre 2026).
+    for (const sl of SLOTS) if (sl === "logo") expect(log.prompts[`image-1-A-${sl}`]).not.toMatch(/personne/); else expect(log.prompts[`image-1-A-${sl}`]).toMatch(/[Aa]ucune personne/);
     expect(log.prompts["image-1-A-hero"]).toMatch(/^Direction artistique : Lumière de fin d'après-midi/);
     // La relecture reçoit les textes attendus de chaque image.
     expect(log.prompts["imagecheck-1-A"]).toContain(`slot "object"`);
@@ -1058,7 +1059,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     // La consigne du logo : le nom épelé, une conception propre à la marque, aucun modèle envoyé.
     expect(log.prompts["image-1-A-logo"]).toContain(`lettre par lettre : ${I.spell(ra.name)}`);
     expect(log.prompts["image-1-A-logo"]).toMatch(/Tu es totalement libre du dessin/);
-    expect(log.prompts["image-1-A-logo"]).toMatch(/Ni maquette, ni photo, ni personne/); // un logo, jamais une scène avec une personne
+    expect(log.prompts["image-1-A-logo"]).toMatch(/Ni maquette, ni photo, ni cadre, ni ombre portée\./);
     expect(P.imagerySystem("services")).toMatch(/Tu ne décris PAS le logo/);
     // Le vrai matériel du métier (retour du propriétaire : « le camion n'est pas assez grand pour faire du toilettage »).
     expect(P.imagerySystem("services")).toMatch(/LE VRAI MATÉRIEL DU MÉTIER[\s\S]*Un véhicule de travail, un atelier ou un outil trop petit ou mal équipé pour le travail annoncé est une faute\./);
