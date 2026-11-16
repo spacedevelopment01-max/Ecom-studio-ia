@@ -118,7 +118,7 @@ export default function TabMarque() {
         <SectionTitle title={t("Ta charte et tes fichiers", "Your guidelines and files")} action={s.kit.book ? <a href={s.kit.book} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-paper" data-brand-book><Download className="size-4" />{t(`Ta charte (PDF, ${s.kit.pages} pages)`, `Your guidelines (PDF, ${s.kit.pages} pages)`)}</a> : undefined} />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" data-brand-kit>
           {s.kit.items.map((x) => <figure key={x.key} className="overflow-hidden rounded-2xl border border-line">
-            <div className="flex h-28 items-center justify-center p-3" style={{ background: x.dark ? dark : "#FFFFFF" }}>{x.downloadHref && !/\.(png|jpe?g|webp|svg)/i.test(x.href) ? <Download className="size-6 opacity-50" /> : <img src={x.href} alt={x.label} className="max-h-full max-w-full object-contain" loading="lazy" />}</div>
+            <div className="flex h-28 items-center justify-center p-3" style={{ background: x.dark ? dark : "#FFFFFF" }}>{x.downloadHref && x.key !== "svg" && !/\.(png|jpe?g|webp|svg)/i.test(x.href) ? <Download className="size-6 opacity-50" /> : <img src={x.href} alt={x.label} className="max-h-full max-w-full object-contain" loading="lazy" />}</div>
             <figcaption className="flex items-center justify-between gap-2 border-t border-line bg-card px-3 py-2 text-xs"><span>{x.label}</span><a href={x.downloadHref ?? x.href} target="_blank" rel="noreferrer" className="underline" aria-label={`${t("Télécharger", "Download")} : ${x.label}`}><Download className="size-3.5" /></a></figcaption>
           </figure>)}
         </div>

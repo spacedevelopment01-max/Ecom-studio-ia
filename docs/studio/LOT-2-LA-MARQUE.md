@@ -1,7 +1,8 @@
 # Lot 2 : la marque
 
-Compte rendu du 15 novembre 2026. Accord du propriétaire pour construire : « Oui ». **L'essai réel n'est pas encore
-fait** : son prix est annoncé juste avant, et rien de payant ne part sans son « oui ».
+Compte rendu du 15 novembre 2026, complété le 16. Accord du propriétaire pour construire : « Oui ». **L'essai réel
+est en cours** (voir « L'essai réel » plus bas) : le lot n'est pas encore fini, les anciennes façons ne sont pas encore
+retirées.
 
 ## Ce qui est construit
 
@@ -65,9 +66,51 @@ logo », les trois logos libres et le logo redessiné (`logos.ts`, `tools/logo.t
 - Le devis comptait deux fois la direction artistique et la relecture des images (plafond gonflé d'environ 1 €).
 - Avec l'ancienne création en un appel, une fin de marque était mise en file sans pouvoir aboutir : elle ne part plus.
 
+## L'essai réel (15 et 16 novembre 2026)
+
+Accord du propriétaire : « Oui », plafond de 25 €. **Dépensé : 30,77 €** ; le dépassement vient d'essais qu'il a
+demandés (logos refaits plusieurs fois, maquettes refaites). SINA a travaillé seule ; Claude n'a joué que les clients.
+
+Vu avec la vraie IA :
+- la conversation pour connaître le client, les résumés, les cartes de prix, les noms, les planches ;
+- le différé : environ 25 % moins cher et deux fois plus long (3,36 € en 15 minutes en direct, 2,53 € en 30 minutes) ;
+- parler à SINA pendant une création ;
+- une marque finie et validée pour un premier client, puis finie pour un second (identité choisie parmi quatre) :
+  logo adopté, symbole et favicon tirés du logo, signes, publications, charte de 11 pages, écran « Marque ».
+
+Ce que le propriétaire a décidé pendant l'essai, et qui est dans le code :
+- **Logos.** OpenAI est libre du dessin : aucune direction imposée (« si tu donnes une direction artistique tout le
+  monde aura le même résultat »). Il reçoit le métier, les couleurs, la typographie et la direction artistique de la
+  marque. Dans une série, le premier logo est créé seul ; chacun des suivants reçoit ceux déjà faits avec « je veux un
+  logo complètement différent de celui-là ». Sa réaction devant le résultat : « Voilà ».
+- **Maquette du site.** Créée par OpenAI, sur un téléphone et dans le téléphone, belle, différente d'un client à
+  l'autre, à l'identité de la planche ; inspirée (jamais recopiée) de son document « 50 accueils mobiles » : cahier
+  `docs/sina-savoir/maquettes-accueil-mobile.md`. Un logo refait emporte sa maquette, comptée dans le prix annoncé.
+  Sur une identité à fond sombre, la maquette reçoit le logo dans sa version claire.
+- **Favicon.** Il reprend le logo (« un vrai favicon qui a une corrélation avec le logo ») : le symbole est tiré du
+  logo adopté.
+- **Publications.** Chacune se comprend seule par quelqu'un qui ne connaît pas la marque ; la première dit l'offre en
+  clair ; chacune porte le logo en petit (« j'ai pas compris l'angle marketing des images »). Écrit et testé avec une
+  IA simulée ; **pas encore vu avec la vraie IA**.
+- **Relecture des images.** Un titre dessiné sur plusieurs lignes est reconnu ; une date à remplir faite de tirets
+  aussi ; le logo d'une maquette est comparé à celui de la planche ; une maquette dont la première lecture a trouvé
+  tous les textes n'est plus jetée quand la seconde ne répond pas.
+- **Écran « Marque ».** Plus d'encadré des angles, plus de bulle posée sur la marque, logo vectoriel montré.
+- **Sa consigne de travail** : « arrête de prendre des initiatives qui nous font perdre du temps et de l'argent ».
+  Faire ce qu'il demande, avec ses mots ; une idée se dit en une phrase et attend son oui ; le plus petit essai avant
+  toute dépense ; montrer les images tout de suite, y compris celles que SINA refuse.
+
+Défauts connus, dits au propriétaire, pas corrigés :
+- la relecture vérifie qu'un mot est dans l'image, pas qu'il est dans le bouton (une maquette gardée avec un bouton vide) ;
+- la relecture refuse un logo dont le signe contient une initiale ;
+- deux noms déjà pris dans le métier ont été montrés à un client ;
+- la consigne du logo reçoit aussi le texte de l'ambiance photo ;
+- le devis de fin de marque compte toujours le prix du symbole ; `PhoneSite` est du code mort.
+
+Reste à faire pour finir le lot : une marque créée de zéro pour un nouveau client inventé avec toutes ces règles,
+puis le retrait des anciennes façons.
+
 ## Vérifié, pas vérifié
 
-- Vérifié : la compilation sans erreur ; les tests de SINA, des logos et du différé (71 fichiers, 759 tests passés) ;
-  la construction de l'application (avant les derniers changements d'écran).
-- Pas encore vérifié : la suite complète après les dernières corrections (en cours), l'essai réel, les écrans en
-  capture, le différé chez le vrai fournisseur (simulé dans les tests).
+- Vérifié le 16 novembre : la compilation sans erreur ; les tests de SINA, des logos et du différé (63 fichiers verts).
+- Pas vérifié le 16 novembre : la suite complète des tests ; les règles des publications avec la vraie IA.
