@@ -4,7 +4,7 @@
  *
  * Les pièces d'achat du site (bloc d'achat, tailles et couleurs, lots, packs, barre d'achat) sont écrites une seule
  * fois, en Liquid, avec les objets de Shopify (« product », « variant »). Ici, le produit RÉEL de la plateforme
- * (WooCommerce, PrestaShop) prend la forme de ces objets : prix, versions, stock et identifiants viennent de la
+ * (celui de la boutique) prend la forme de ces objets : prix, versions, stock et identifiants viennent de la
  * boutique à chaque affichage, jamais de valeurs figées à l'export.
  *
  * La plateforme donne un tableau neutre (es_fiche_objet) :

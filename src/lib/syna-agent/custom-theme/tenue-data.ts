@@ -629,7 +629,7 @@ export function withVenteGuide(html: string, d: TenueSite, built?: string | null
     i++;
     if (p === null) return "";
     const body = p ? inner.replace(/<div class="tn-ph"[^>]*><\/div>/, `<div class="tn-ph"${pic(p.image)}></div>`).replace(/(<b data-tn-produit>)[\s\S]*?(<\/b>)/, `$1${esc(p.title)}$2`)
-      .replace(/(<span class="tn-v-prix">)[\s\S]*?(<\/span>)/, `$1${p.price ? esc(p.price) : "[À compléter : prix]"}$2`).replace(/data-go="product"/, `data-go="${esc(p.go ?? "product")}"`) : inner;
+      .replace(/(<span class="tn-v-prix">)[\s\S]*?(<\/span>)/, `$1${d.vitrine?.produits?.[p.title]?.des ? `dès ${esc(d.vitrine.produits[p.title].des!)}` : p.price ? esc(p.price) : "[À compléter : prix]"}$2`).replace(/data-go="product"/, `data-go="${esc(p.go ?? "product")}"`) : inner;
     return `<details class="tn-v-besoin"${cartes || kept++ === 0 ? " open" : ""}>${body}</details>`;
   });
   return products.length ? markMissing(out) : out;
@@ -768,7 +768,7 @@ export function venteBoutique(html: string, o: { root: string | null; built?: st
       if (!h) return "";
       const v = `choix${i}`;
       return `<details class="tn-v-besoin"${o.built === "cartes" || kept++ === 0 ? " open" : ""}>{%- assign ${v} = all_products['${h}'] -%}${inner.replace(/<div class="tn-ph"[^>]*><\/div>/, `<div class="tn-ph"${img(v, 600)}></div>`).replace(/(<b data-tn-produit>)[\s\S]*?(<\/b>)/, `$1{{ ${v}.title }}$2`)
-        .replace(/(<span class="tn-v-prix">)[\s\S]*?(<\/span>)/, `$1{{ ${v}.price | money }}$2`).replace(/<a class="tn-v-lien"[^>]*>([\s\S]*?)<\/a>/, `<a class="tn-v-lien" href="{{ ${v}.url }}">$1</a>`)}</details>`;
+        .replace(/(<span class="tn-v-prix">)[\s\S]*?(<\/span>)/, `$1{% if ${v}.price_varies %}dès {% endif %}{{ ${v}.price_min | money }}$2`).replace(/<a class="tn-v-lien"[^>]*>([\s\S]*?)<\/a>/, `<a class="tn-v-lien" href="{{ ${v}.url }}">$1</a>`)}</details>`;
     });
   }
   if (/\sdata-tn-(?:arrivee|barre-produit)\b/.test(out) && o.first) {

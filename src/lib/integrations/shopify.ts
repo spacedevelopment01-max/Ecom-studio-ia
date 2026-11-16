@@ -15,6 +15,7 @@ import { storeProducts, type StoreProduct, type ThemeSpec } from "../theme/spec"
 import type { Connection } from "../social/publish";
 import { L } from "../i18n-server";
 import { sanitizeBlogHtml } from "../blog-html";
+import { offreVide, titreRemise, type OffreBoutique, type PreuveRemises } from "../syna-agent/custom-theme/remises";
 
 const version = () => getSetting("shopify.apiVersion") || "2025-07";
 
@@ -321,4 +322,100 @@ export async function pushBlogArticle(c: Connection, a: ShopifyArticleInput): Pr
   const art = r.d[r.key].article as { id: string; handle: string; blog?: { handle: string } | null };
   const handle = art.blog?.handle ?? blogHandle ?? (blog as { handle: string } | null)?.handle ?? (await blogFor()).handle;
   return { ref: art.id, url: `https://${c.external_id}/blogs/${handle}/${art.handle}`, published: a.publish };
+}
+
+// ---------------------------------------------------------------- remises de l'offre (chantier « plateformes »)
+
+/**
+ * Les remises RÉELLES de l'offre dans Shopify, créées par l'accès du client (API d'administration) : pour chaque
+ * palier, une remise automatique « montant sur des produits » avec quantité minimale ; pour chaque cadeau, une remise
+ * automatique « achetez X, recevez Y » à 100 %. Le thème ne calcule jamais une remise : c'est Shopify qui la tient.
+ * Droits : « write_discounts » pour créer, « read_discounts » pour vérifier. L'autorisation du Studio ne les demande
+ * PAS aujourd'hui (src/lib/social/oauth.ts) : sans eux, rien n'est tenté et SINA donne le guide pas à pas
+ * (guideRemisesShopify). ÉCRIT, NON ESSAYÉ sur une vraie boutique : seulement des requêtes simulées.
+ */
+export const DROITS_REMISES = ["write_discounts", "read_discounts"] as const;
+const droitsDe = (c: Connection): string[] => String((c as unknown as { scopes?: string | null }).scopes ?? "").split(/[\s,]+/).filter(Boolean);
+/** L'accès du client permet-il de créer et de vérifier des remises ? Sinon : les droits qui manquent. */
+export function droitsRemises(c: Connection): { ok: boolean; manque: string[] } {
+  const have = droitsDe(c);
+  // « write_x » donne aussi la lecture.
+  const manque = have.includes("write_discounts") ? [] : ["write_discounts"];
+  return { ok: manque.length === 0, manque };
+}
+
+type RemiseShopify = { titre: string; statut: string };
+async function remisesDuStudio(c: Connection): Promise<RemiseShopify[]> {
+  const d = await gql(c, `query{ automaticDiscountNodes(first: 100, query: "title:Studio*"){ nodes{ automaticDiscount{ __typename ... on DiscountAutomaticBasic{ title status } ... on DiscountAutomaticBxgy{ title status } } } } }`);
+  return ((d?.automaticDiscountNodes?.nodes ?? []) as { automaticDiscount?: { title?: string; status?: string } }[]).map((n) => ({ titre: String(n.automaticDiscount?.title ?? ""), statut: String(n.automaticDiscount?.status ?? "") })).filter((x) => x.titre);
+}
+async function produitShopify(c: Connection, handle: string): Promise<{ id: string; variants: { id: string; sku: string }[] } | null> {
+  const d = await gql(c, `query($q: String!){ products(first: 1, query: $q){ nodes{ id handle variants(first: 100){ nodes{ id sku } } } } }`, { q: `handle:${handle}` });
+  const p = (d?.products?.nodes ?? []).find((x: { handle: string }) => x.handle === handle);
+  return p ? { id: p.id, variants: (p.variants?.nodes ?? []).map((v: { id: string; sku: string | null }) => ({ id: v.id, sku: v.sku ?? "" })) } : null;
+}
+/** Les remises attendues pour une offre : leur nom (le même à la création, à la vérification et dans le guide). */
+export function remisesAttenduesShopify(offre: OffreBoutique): string[] {
+  return Object.entries(offre.produits).flatMap(([handle, r]) => [...r.paliers.map((p) => titreRemise(handle, p)), ...r.cadeaux.map((k) => titreRemise(handle, { des: k.des, cadeau: k.handle }))]);
+}
+
+/**
+ * Crée dans Shopify les remises automatiques de l'offre qui n'y sont pas encore (jamais deux fois la même : reconnues
+ * à leur nom). Rien n'est supprimé ni modifié. Rend ce qui a été créé, ce qui existait, et ce qui a manqué.
+ */
+export async function creerRemisesShopify(c: Connection, offre: OffreBoutique, maintenant = new Date()): Promise<{ creees: string[]; existantes: string[]; manque: string[] }> {
+  const droits = droitsRemises(c);
+  if (!droits.ok) return { creees: [], existantes: [], manque: [`droit manquant sur la boutique : ${droits.manque.join(", ")}`] };
+  const out = { creees: [] as string[], existantes: [] as string[], manque: [] as string[] };
+  if (offreVide(offre)) return out;
+  const deja = new Map((await remisesDuStudio(c)).map((r) => [r.titre, r.statut]));
+  const produits = new Map<string, Awaited<ReturnType<typeof produitShopify>>>();
+  const produit = async (h: string) => { if (!produits.has(h)) produits.set(h, await produitShopify(c, h)); return produits.get(h)!; };
+  const startsAt = maintenant.toISOString();
+  // Deux remises de produits ne s'appliquent ensemble (prix du pack ET cadeau) que si chacune l'autorise.
+  const combinesWith = { productDiscounts: true, orderDiscounts: false, shippingDiscounts: true };
+  for (const [handle, r] of Object.entries(offre.produits)) {
+    const p = await produit(handle);
+    if (!p) { out.manque.push(`produit « ${handle} » introuvable dans la boutique`); continue; }
+    for (const palier of r.paliers) {
+      const title = titreRemise(handle, palier);
+      if (deja.has(title)) { (deja.get(title) === "ACTIVE" ? out.existantes : out.manque).push(deja.get(title) === "ACTIVE" ? title : `« ${title} » existe mais n'est pas active`); continue; }
+      const d = await gql(c, `mutation($d: DiscountAutomaticBasicInput!){ discountAutomaticBasicCreate(automaticBasicDiscount: $d){ automaticDiscountNode{ id } userErrors{ field message } } }`, {
+        d: { title, startsAt, combinesWith, minimumRequirement: { quantity: { greaterThanOrEqualToQuantity: String(palier.quantite) } }, customerGets: { value: { percentage: Math.round(palier.pourcent * 100) / 10000 }, items: { products: { productsToAdd: [p.id] } } } },
+      });
+      userErrors(d, "discountAutomaticBasicCreate");
+      out.creees.push(title);
+    }
+    for (const k of r.cadeaux) {
+      const title = titreRemise(handle, { des: k.des, cadeau: k.handle });
+      if (deja.has(title)) { (deja.get(title) === "ACTIVE" ? out.existantes : out.manque).push(deja.get(title) === "ACTIVE" ? title : `« ${title} » existe mais n'est pas active`); continue; }
+      const g = await produit(k.handle);
+      const version = g && k.sku ? g.variants.find((v) => v.sku === k.sku) : null;
+      if (!g || (k.sku && !version)) { out.manque.push(`cadeau « ${k.handle} » introuvable dans la boutique`); continue; }
+      const d = await gql(c, `mutation($d: DiscountAutomaticBxgyInput!){ discountAutomaticBxgyCreate(automaticBxgyDiscount: $d){ automaticDiscountNode{ id } userErrors{ field message } } }`, {
+        d: {
+          title, startsAt, combinesWith, usesPerOrderLimit: "1",
+          customerBuys: { value: { quantity: String(k.des) }, items: { products: { productsToAdd: [p.id] } } },
+          customerGets: { value: { discountOnQuantity: { quantity: String(k.quantite), effect: { percentage: 1 } } }, items: { products: version ? { productVariantsToAdd: [version.id] } : { productsToAdd: [g.id] } } },
+        },
+      });
+      userErrors(d, "discountAutomaticBxgyCreate");
+      out.creees.push(title);
+    }
+  }
+  return out;
+}
+
+/**
+ * Les remises de l'offre sont-elles en place dans Shopify ? Lu dans la boutique : chaque remise attendue doit exister
+ * sous son nom et être active. La preuve rendue se passe à `remisesConfirmees` (remises.ts).
+ */
+export async function etatRemisesShopify(c: Connection, offre: OffreBoutique, maintenant = Date.now()): Promise<PreuveRemises> {
+  const non = (manque: string[]): PreuveRemises => ({ plateforme: "shopify", empreinte: null, actif: false, manque, luLe: maintenant });
+  if (!droitsDe(c).some((x) => x === "read_discounts" || x === "write_discounts")) return non(["droit manquant sur la boutique : read_discounts (les remises ne peuvent pas être vérifiées par le Studio)"]);
+  let vues: RemiseShopify[];
+  try { vues = await remisesDuStudio(c); } catch (e) { return non([redact(e instanceof Error ? e.message : "Shopify ne répond pas")]); }
+  const actives = new Set(vues.filter((r) => r.statut === "ACTIVE").map((r) => r.titre));
+  const manque = remisesAttenduesShopify(offre).filter((t) => !actives.has(t)).map((t) => `remise absente ou inactive : « ${t} »`);
+  return { plateforme: "shopify", empreinte: manque.length ? null : offre.empreinte, actif: manque.length === 0, manque, luLe: maintenant };
 }

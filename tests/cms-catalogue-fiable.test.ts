@@ -31,7 +31,9 @@ describe("exports catalogue fiables", () => {
   it("Presta livre son module actualisable séparément sans effacer les correspondances", async () => {
     const e=await cmsExport('prestashop',multiAxisSpec(),()=>null);const files=unzipSync(e.zip);
     const module=unzipSync(files['import/module-esstudio.zip']);
-    expect(strFromU8(module['esstudio/esstudio.php'])).toContain("$this->version = '1.1.0'");
+    // 1.2.0 : la fiche produit du site et l'achat (chantier « plateformes ») ; la mise à niveau n'efface rien.
+    expect(strFromU8(module['esstudio/esstudio.php'])).toContain("$this->version = '1.2.0'");
+    expect(strFromU8(module['esstudio/upgrade/upgrade-1.2.0.php'])).toContain("registerHook('displayEsFiche')");
     expect(strFromU8(module['esstudio/catalog-import.php'])).toContain('catalog_image_shop_detach');
     expect(module['esstudio/catalogue.json']).toEqual(files['config/es-catalogue.json']);
   });

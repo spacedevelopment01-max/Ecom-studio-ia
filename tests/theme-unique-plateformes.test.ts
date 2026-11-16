@@ -173,7 +173,7 @@ describe("exports WooCommerce et PrestaShop d'un site monté par SINA", async ()
   const { spec, problemes } = await siteEssai();
   const offre = OFFRE_ESSAI();
   const out = process.env.PLATEFORMES_OUT;
-  const exp = { woo: await cmsExport("woocommerce", spec, async () => null, { offre }), ps: await cmsExport("prestashop", spec, async () => null, { offre }) };
+  const exp = { woo: await cmsExport("woocommerce", spec, () => null, { offre }), ps: await cmsExport("prestashop", spec, () => null, { offre }) };
   const z = { woo: unzipSync(new Uint8Array(exp.woo.zip)), ps: unzipSync(new Uint8Array(exp.ps.zip)) };
   const racine = Object.keys(z.woo)[0].split("/")[0];
   if (out) { fs.mkdirSync(out, { recursive: true }); fs.writeFileSync(path.join(out, "woocommerce.zip"), exp.woo.zip); fs.writeFileSync(path.join(out, "prestashop.zip"), exp.ps.zip); fs.writeFileSync(path.join(out, "offre.json"), JSON.stringify(offre, null, 1)); }
@@ -241,7 +241,7 @@ describe("exports WooCommerce et PrestaShop d'un site monté par SINA", async ()
   });
 
   it("sans offre donnée, aucune donnée d'offre ne part ; un site sans pièce à tenue garde sa fiche native", async () => {
-    const sans = await cmsExport("woocommerce", spec, async () => null, { offre: null });
+    const sans = await cmsExport("woocommerce", spec, () => null, { offre: null });
     const zs = unzipSync(new Uint8Array(sans.zip));
     expect(zs[`${racine}/inc/offre.json`]).toBeUndefined();
     expect(zs[`${racine}/inc/es-achat.php`]).toBeTruthy();
@@ -330,5 +330,75 @@ describe("script commun : « plus que N » seulement avec le vrai stock", () => 
     // La règle est écrite dans le contrat du script, et son code ne lit que le « stock » numérique de la version.
     expect(src).toMatch(/data-tn-stock \+ data-tn-seuil[^\n]*seulement si la version a un « stock » numérique/);
     expect(src).toMatch(/typeof [\w.]+\.stock (?:===|!==) "number"/);
+  });
+});
+
+describe("Shopify : les remises de l'offre par l'accès du client (requêtes simulées, jamais essayé sur une vraie boutique)", async () => {
+  const S = await import("@/lib/integrations/shopify");
+  const { encrypt } = await import("@/lib/secrets");
+  const offre = R.offreBoutique({ produits: [{ handle: "tee-essai", lots: [{ quantite: 2, pourcent: 10 }], packs: [{ id: "trio", titre: "Le trio", quantite: 3, pourcent: 20, cadeau: { handle: "chaussettes-essai", quantite: 1, titre: "Chaussettes d'essai" } }] }] });
+  const acces = (scopes: string) => ({ id: "c", user_id: "u", provider: "shopify", external_id: "essai.myshopify.com", name: "Essai", access_token: encrypt("jeton"), refresh_token: null, expires_at: null, scopes, status: "active" }) as never;
+  /** Fausse API d'administration : répond aux requêtes GraphQL, garde les mutations. */
+  function boutique(existantes: { title: string; status: string }[] = []) {
+    const mutations: { nom: string; d: any }[] = [];
+    const f = vi.fn(async (url: string, o: { body: string; headers: Record<string, string> }) => {
+      const { query, variables } = JSON.parse(o.body);
+      let data: unknown = {};
+      if (/automaticDiscountNodes/.test(query)) data = { automaticDiscountNodes: { nodes: existantes.map((e) => ({ automaticDiscount: e })) } };
+      else if (/products\(first: 1/.test(query)) { const h = String(variables.q).replace("handle:", ""); data = { products: { nodes: h === "absent" ? [] : [{ id: `gid://shopify/Product/${h}`, handle: h, variants: { nodes: [{ id: `gid://shopify/ProductVariant/${h}-1`, sku: "" }] } }] } }; }
+      else { const nom = /discountAutomatic(Basic|Bxgy)Create/.exec(query)![0]; mutations.push({ nom, d: variables.d }); existantes.push({ title: variables.d.title, status: "ACTIVE" }); data = { [nom]: { automaticDiscountNode: { id: "gid://x" }, userErrors: [] } }; }
+      return { status: 200, json: async () => ({ data }), url, headers: o.headers };
+    });
+    vi.stubGlobal("fetch", f);
+    return { mutations, f };
+  }
+
+  it("sans le droit « remises », rien n'est tenté : SINA donne le pas à pas exact", async () => {
+    const b = boutique();
+    expect(S.droitsRemises(acces("write_themes,write_products"))).toEqual({ ok: false, manque: ["write_discounts"] });
+    expect(await S.creerRemisesShopify(acces("write_themes,write_products"), offre)).toEqual({ creees: [], existantes: [], manque: ["droit manquant sur la boutique : write_discounts"] });
+    expect(b.f).not.toHaveBeenCalled();
+    const preuve = await S.etatRemisesShopify(acces("write_themes"), offre, 1);
+    expect(R.remisesConfirmees(offre, preuve, { maintenant: 1 }).ok).toBe(false);
+    const guide = R.guideRemisesShopify(offre, { "tee-essai": "Tee d'essai", "chaussettes-essai": "Chaussettes d'essai" });
+    expect(guide).toHaveLength(4);
+    expect(guide[0]).toContain("« Quantité minimale d'articles », 2");
+    expect(guide[1]).toContain("pourcentage, 20 %");
+    expect(guide[2]).toMatch(/« Achetez X, recevez Y »[^]*Quantité minimale d'articles », 3[^]*Chaussettes d'essai[^]*« Gratuit »/);
+    expect(guide[3]).toContain("ton site n'affiche ni prix de lot ni cadeau");
+    vi.unstubAllGlobals();
+  });
+
+  it("avec le droit : une remise automatique par palier (quantité minimale, pourcentage) et un « achetez 3, recevez 1 » à 100 % ; jamais deux fois", async () => {
+    const b = boutique();
+    const c = acces("write_themes,write_products,write_discounts");
+    const r = await S.creerRemisesShopify(c, offre, new Date("2026-11-16T00:00:00Z"));
+    expect(r.manque).toEqual([]);
+    expect(r.creees).toEqual(["Studio · tee-essai · dès 2 : −10 %", "Studio · tee-essai · dès 3 : −20 %", "Studio · tee-essai · cadeau dès 3 (chaussettes-essai)"]);
+    expect(b.mutations.map((m) => m.nom)).toEqual(["discountAutomaticBasicCreate", "discountAutomaticBasicCreate", "discountAutomaticBxgyCreate"]);
+    expect(b.mutations[1].d).toMatchObject({ minimumRequirement: { quantity: { greaterThanOrEqualToQuantity: "3" } }, customerGets: { value: { percentage: 0.2 }, items: { products: { productsToAdd: ["gid://shopify/Product/tee-essai"] } } }, combinesWith: { productDiscounts: true } });
+    expect(b.mutations[2].d).toMatchObject({ usesPerOrderLimit: "1", customerBuys: { value: { quantity: "3" }, items: { products: { productsToAdd: ["gid://shopify/Product/tee-essai"] } } }, customerGets: { value: { discountOnQuantity: { quantity: "1", effect: { percentage: 1 } } }, items: { products: { productsToAdd: ["gid://shopify/Product/chaussettes-essai"] } } } });
+    // La boutique est relue : les remises y sont, sous leur nom, actives → confirmées.
+    const preuve = await S.etatRemisesShopify(c, offre, 10);
+    expect(preuve).toMatchObject({ plateforme: "shopify", actif: true, empreinte: offre.empreinte });
+    expect(R.remisesConfirmees(offre, preuve, { maintenant: 10 }).ok).toBe(true);
+    // Un second passage ne crée rien.
+    const encore = await S.creerRemisesShopify(c, offre);
+    expect(encore.creees).toEqual([]);
+    expect(encore.existantes).toHaveLength(3);
+    expect(b.mutations).toHaveLength(3);
+    vi.unstubAllGlobals();
+  });
+
+  it("une remise désactivée dans Shopify, ou un produit absent : pas confirmé, et c'est dit", async () => {
+    boutique([{ title: "Studio · tee-essai · dès 2 : −10 %", status: "EXPIRED" }, { title: "Studio · tee-essai · dès 3 : −20 %", status: "ACTIVE" }]);
+    const preuve = await S.etatRemisesShopify(acces("read_discounts"), offre, 5);
+    expect(preuve.actif).toBe(false);
+    expect(preuve.manque).toEqual(["remise absente ou inactive : « Studio · tee-essai · dès 2 : −10 % »", "remise absente ou inactive : « Studio · tee-essai · cadeau dès 3 (chaussettes-essai) »"]);
+    vi.unstubAllGlobals();
+    boutique();
+    const absent = R.offreBoutique({ produits: [{ handle: "absent", lots: [{ quantite: 2, pourcent: 10 }] }] });
+    expect((await S.creerRemisesShopify(acces("write_discounts"), absent)).manque).toEqual(["produit « absent » introuvable dans la boutique"]);
+    vi.unstubAllGlobals();
   });
 });

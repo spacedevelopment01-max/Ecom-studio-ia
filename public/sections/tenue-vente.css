@@ -13,7 +13,7 @@
 @keyframes tn-v-defile{to{transform:translateX(-100%)}}
 /* un seul message à la fois */
 .ctw .tn-messages[data-tn-c="tour-a-tour"]{display:block;background-color:var(--tn-accent);text-align:center}
-.ctw .tn-messages[data-tn-c="tour-a-tour"] .tn-v-bis,.ctw .tn-messages[data-tn-c="rangee"] .tn-v-bis{display:none}
+.ctw .tn-messages[data-tn-c="tour-a-tour"] .tn-v-fil.tn-v-bis,.ctw .tn-messages[data-tn-c="rangee"] .tn-v-fil.tn-v-bis{display:none}
 .ctw .tn-messages[data-tn-c="tour-a-tour"] .tn-v-fil{display:grid;min-width:0;animation:none}
 .ctw .tn-messages[data-tn-c="tour-a-tour"] li{grid-area:1/1;justify-content:center;padding:11px 20px;white-space:normal;opacity:0;animation:tn-v-tour-3 12s infinite both;animation-delay:calc(var(--i,0)*4s)}
 .ctw .tn-messages[data-tn-c="tour-a-tour"] li::before{display:none}
@@ -38,7 +38,7 @@
 .ctw .tn-messages[data-tn-c="rangee"] li::before{width:11px;height:6px;margin-top:-3px;border-radius:0;background-color:transparent;border-left:2px solid var(--tn-accent);border-bottom:2px solid var(--tn-accent);transform:rotate(-45deg)}
 @media (prefers-reduced-motion:reduce){
   .ctw .tn-messages .tn-v-fil{animation:none;flex:1;min-width:0;flex-wrap:wrap;justify-content:center}
-  .ctw .tn-messages .tn-v-bis{display:none}
+  .ctw .tn-messages .tn-v-fil.tn-v-bis{display:none}
   .ctw .tn-messages li{white-space:normal;padding:7px 14px 7px 0}
   .ctw .tn-messages[data-tn-c="tour-a-tour"] .tn-v-fil{display:block}
   .ctw .tn-messages[data-tn-c="tour-a-tour"] li{opacity:1;animation:none;padding:7px 20px}
@@ -56,7 +56,7 @@
 .ctw .tn-ouverture-vente .tn-v-mots{grid-area:1/1;position:relative;z-index:1;align-self:end;padding:120px 20px 34px}
 .ctw .tn-ouverture-vente small{color:color-mix(in srgb,var(--tn-sur-bouton) 90%,transparent);font-size:16px}
 .ctw .tn-ouverture-vente h1{margin-top:10px;font-size:calc(46px*var(--tn-k));line-height:1.02}
-.ctw .tn-ouverture-vente h1 em{font-style:normal;color:color-mix(in srgb,var(--tn-accent) 62%,var(--tn-sur-bouton))}
+.ctw .tn-ouverture-vente h1 em{font-style:normal;color:color-mix(in srgb,var(--tn-accent) 38%,var(--tn-sur-bouton))}
 .ctw .tn-ouverture-vente .tn-v-mots p{margin-top:14px;max-width:34em;font-size:16.5px;line-height:1.5}
 .ctw .tn-ouverture-vente .tn-v-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;margin-top:22px}
 .ctw .tn-ouverture-vente .tn-v-lien{display:inline-flex;align-items:center;min-height:44px;font-size:15.5px;font-weight:600;text-decoration:underline;text-underline-offset:5px}
@@ -107,7 +107,7 @@
 .ctw[data-tn-bouton="droit"] .tn-produits-vente .tn-v-offre,.ctw[data-tn-bouton="etiquette"] .tn-produits-vente .tn-v-offre{border-radius:0}
 /* un produit seul en bas de grille prend toute la largeur, la photo à gauche */
 .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:last-child:nth-child(odd){grid-column:1/-1;display:grid;grid-template-columns:44% minmax(0,1fr);grid-auto-rows:min-content;align-content:center;justify-items:center;padding-bottom:0}
-.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:last-child:nth-child(odd) .tn-ph{grid-column:1;grid-row:1/8;height:100%;min-height:190px;aspect-ratio:auto}
+.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:last-child:nth-child(odd) .tn-ph{grid-column:1;grid-row:1/8;justify-self:stretch;height:100%;min-height:190px;aspect-ratio:auto}
 .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:last-child:nth-child(odd)>:not(.tn-ph){grid-column:2}
 .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:last-child:nth-child(odd) .tn-v-voir{margin-bottom:16px}
 /* une file de grandes cartes */
@@ -145,6 +145,7 @@
 .ctw .tn-difference .tn-v-fig .tn-ph{aspect-ratio:4/3;border-radius:var(--tn-arrondi,0)}
 .ctw[data-tn-cadre="niche"] .tn-difference .tn-v-fig .tn-ph{border-radius:18px}
 .ctw[data-tn-cadre="penche"] .tn-difference .tn-v-fig .tn-ph{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:6px 7px 0 var(--tn-encre);transform:rotate(-1.2deg)}
+.ctw[data-tn-cadre="penche"] .tn-difference figcaption{margin-top:18px}
 .ctw .tn-difference figcaption{margin-top:10px;font-size:12.5px;line-height:1.4;opacity:.86}
 .ctw .tn-difference .tn-v-mots{margin-top:30px}
 .ctw .tn-difference small{font-family:var(--f-ui);font-style:normal;font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:inherit}
@@ -247,7 +248,7 @@
 .ctw .tn-ouverture-arrivee .tn-v-vue{position:relative;margin:26px 0 0}
 .ctw .tn-ouverture-arrivee .tn-v-vue .tn-ph{aspect-ratio:4/5}
 .ctw[data-tn-cadre="penche"] .tn-ouverture-arrivee .tn-v-vue{margin-right:8px}
-.ctw .tn-ouverture-arrivee .tn-v-pose{position:relative;z-index:1;margin:-84px 12px 0;padding:18px 18px 16px;background-color:var(--tn-sur-bouton);color:var(--tn-encre);border-radius:min(max(var(--tn-arrondi,0px),0px),16px);box-shadow:0 14px 34px color-mix(in srgb,var(--tn-encre) 18%,transparent)}
+.ctw .tn-ouverture-arrivee .tn-v-pose{position:relative;z-index:1;margin:-58px 12px 0;padding:18px 18px 16px;background-color:var(--tn-sur-bouton);color:var(--tn-encre);border-radius:min(max(var(--tn-arrondi,0px),0px),16px);box-shadow:0 14px 34px color-mix(in srgb,var(--tn-encre) 18%,transparent)}
 .ctw[data-tn-cadre="niche"] .tn-ouverture-arrivee .tn-v-pose{border-radius:16px}
 .ctw[data-tn-cadre="penche"] .tn-ouverture-arrivee .tn-v-pose{border:3px solid var(--tn-encre);border-radius:16px;box-shadow:5px 6px 0 var(--tn-encre)}
 .ctw .tn-ouverture-arrivee .tn-v-pose p{margin-top:8px;font-family:var(--f-title);font-size:19px;line-height:1.3}
@@ -534,21 +535,27 @@
   .ctw .tn-produits-vente{padding:64px max(40px,calc(50% - 540px)) 0}
   .ctw .tn-produits-vente h2{font-size:calc(54px*var(--tn-k))}
   .ctw .tn-produits-vente .tn-v-tete p{margin-top:16px;font-size:18px}
-  .ctw .tn-produits-vente .tn-v-cartes{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;margin-top:40px}
+  .ctw .tn-produits-vente .tn-v-cartes{grid-template-columns:repeat(12,minmax(0,1fr));gap:22px;margin-top:40px}
+  .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte{grid-column:span 3}
+  /* aucune carte seule sur sa rangée : le nombre de produits décide du partage (1, 2, 3, 5, 6 ou 7 produits) */
+  .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(2),.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(2) ~ .tn-v-carte,.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(5) ~ .tn-v-carte:nth-child(n+4){grid-column:span 6}
+  .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(3),.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(3) ~ .tn-v-carte,.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(5),.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(5) ~ .tn-v-carte:nth-child(-n+3),.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(6),.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(6) ~ .tn-v-carte,.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(7) ~ .tn-v-carte:nth-child(n+5){grid-column:span 4}
+  .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:only-child{grid-column:4/10}
+  .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(2) .tn-ph,.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(2) ~ .tn-v-carte .tn-ph,.ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:first-child:nth-last-child(5) ~ .tn-v-carte:nth-child(n+4) .tn-ph{aspect-ratio:3/2}
   .ctw .tn-produits-vente .tn-v-carte{padding-bottom:26px}
   .ctw .tn-produits-vente .tn-v-carte small{margin-top:20px;font-size:11.5px}
   .ctw .tn-produits-vente .tn-v-carte b{font-size:26px}
   .ctw .tn-produits-vente .tn-v-envie{font-size:15px}
   .ctw .tn-produits-vente .tn-v-prix{padding-top:16px;font-size:17px}
   .ctw .tn-produits-vente .tn-v-voir{min-height:44px;margin-top:16px;padding:0 26px;font-size:15px}
-  .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:last-child:nth-child(odd){grid-column:auto;display:flex;padding-bottom:26px}
+  .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:last-child:nth-child(odd){display:flex;padding-bottom:26px}
   .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:last-child:nth-child(odd) .tn-ph{height:auto;min-height:0;aspect-ratio:1/1}
   .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte:last-child:nth-child(odd) .tn-v-voir{margin-bottom:0}
   .ctw .tn-produits-vente[data-tn-c="file"] .tn-v-cartes{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);grid-template-columns:none;gap:24px;margin:40px 0 0;padding:0;overflow:visible}
   .ctw .tn-produits-vente[data-tn-c="file"] .tn-v-carte{width:auto;max-width:none}
   .ctw .tn-produits-vente[data-tn-c="file"] .tn-v-carte :is(small,b,.tn-v-envie,.tn-v-prix,.tn-v-voir){margin-left:24px;margin-right:24px}
   .ctw .tn-produits-vente[data-tn-c="file"] .tn-v-carte b{font-size:30px}
-  .ctw .tn-produits-vente[data-tn-c="lignes"] .tn-v-cartes{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px;margin-top:36px}
+  .ctw .tn-produits-vente[data-tn-c="lignes"] .tn-v-cartes{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:48px;row-gap:0;margin-top:36px}
   .ctw .tn-produits-vente[data-tn-c="lignes"] .tn-v-carte,.ctw[data-tn-cadre] .tn-produits-vente[data-tn-c="lignes"] .tn-v-carte{grid-template-columns:42% minmax(0,1fr);column-gap:26px;padding:26px 0}
   .ctw .tn-produits-vente[data-tn-c="lignes"] .tn-v-carte:last-child:nth-child(odd){grid-column:1/-1;grid-template-columns:30% minmax(0,1fr)}
   .ctw .tn-produits-vente[data-tn-c="lignes"] .tn-v-carte b{font-size:32px}
@@ -570,7 +577,7 @@
   .ctw .tn-difference[data-tn-c="photo-a-cote"] details p{padding:0 0 26px 100px}
 
   .ctw .tn-guide-choix{padding:64px max(40px,calc(50% - 540px)) 0}
-  .ctw .tn-guide-choix .tn-v-in{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);column-gap:64px;align-content:center;padding:60px 56px}
+  .ctw .tn-guide-choix .tn-v-in{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-rows:1fr auto 1fr;column-gap:64px;padding:60px 56px}
   .ctw .tn-guide-choix .tn-v-in>*{grid-column:1}
   .ctw .tn-guide-choix small{align-self:end}
   .ctw .tn-guide-choix h2{font-size:calc(52px*var(--tn-k))}
@@ -731,9 +738,9 @@
   .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p .tn-ph,.ctw[data-tn-cadre] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p .tn-ph{aspect-ratio:1/1;max-height:none}
   .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b,.ctw[data-tn-cadre] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b{margin-top:18px;font-size:23px}
   .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-ajout{width:calc(100% - 40px);margin:16px 20px 0;font-size:15px}
-  .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd):not(:only-child){display:flex}
+  .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd):not(:only-child){grid-column:auto;display:flex}
   .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd):not(:only-child) .tn-v-vers{grid-template-columns:minmax(0,1fr);grid-template-rows:none;justify-items:center;text-align:center}
   .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd):not(:only-child) .tn-v-vers>*{grid-column:1;grid-row:auto}
-  .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd):not(:only-child) .tn-ph,.ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd):not(:only-child) em{grid-row:1}
+  .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd):not(:only-child) .tn-v-vers>.tn-ph,.ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd):not(:only-child) .tn-v-vers>em{grid-row:1}
   .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p:last-child:nth-child(odd):not(:only-child) .tn-v-vers>:not(.tn-ph,em){margin-left:10px}
 }

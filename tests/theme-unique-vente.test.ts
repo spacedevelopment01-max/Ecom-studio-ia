@@ -225,7 +225,7 @@ describe("thème unique, vente : les vraies données, depuis un catalogue d'essa
     expect((out.match(/<details class="tn-v-besoin"/g) ?? []).length).toBe(2);
     expect(out).toContain('<details class="tn-v-besoin" open><summary>Je veux le plus simple</summary><div class="tn-v-rep"><div class="tn-ph" style="background-image:url(/api/files/g3)"></div>');
     expect(out).toContain('<b data-tn-produit>Bouchon sport</b><span class="tn-v-prix">9 €</span><a class="tn-v-lien" href="#" onclick="return false" data-go="product">Découvrir</a>');
-    expect(out).toContain('<b data-tn-produit>Gourde Halte</b><span class="tn-v-prix">34 €</span><a class="tn-v-lien" href="#" onclick="return false" data-go="product-gourde-halte">');
+    expect(out).toContain('<b data-tn-produit>Gourde Halte</b><span class="tn-v-prix">dès 34 €</span><a class="tn-v-lien" href="#" onclick="return false" data-go="product-gourde-halte">');
     expect(out).not.toMatch(/n'existe pas|photos\//);
     // Aucune envie ne nomme un produit (exemple de la bibliothèque) : elles suivent le catalogue, sans produit épuisé.
     const ordre = D.withVenteGuide(html("tn-guide-choix"), site);
@@ -408,7 +408,7 @@ describe("thème unique, vente : dans l'aperçu du Studio et dans Shopify", asyn
     // Guide de choix : l'envie qui nomme un produit mène à lui ; les autres, qui n'en nomment aucun du catalogue, sont retirées.
     const guide = liquid("tn-guide-choix");
     expect(guide).toContain(`<details class="tn-v-besoin" open>{%- assign choix1 = all_products['bouchon-sport'] -%}<summary>Je veux le plus simple</summary>`);
-    expect(guide).toContain('<b data-tn-produit>{{ choix1.title }}</b><span class="tn-v-prix">{{ choix1.price | money }}</span><a class="tn-v-lien" href="{{ choix1.url }}">Découvrir</a>');
+    expect(guide).toContain('<b data-tn-produit>{{ choix1.title }}</b><span class="tn-v-prix">{% if choix1.price_varies %}dès {% endif %}{{ choix1.price_min | money }}</span><a class="tn-v-lien" href="{{ choix1.url }}">Découvrir</a>');
     expect((guide.match(/<details class="tn-v-besoin"/g) ?? []).length).toBe(1);
     // Page d'arrivée : l'en-tête et la barre portent le produit, lu dans la boutique.
     expect(liquid("tn-entete-arrivee")).toContain(`{%- assign vedette = all_products['gourde-halte'] -%}`);
@@ -556,6 +556,128 @@ describe.runIf(!!process.env.VENTE_OUT)("thème unique, vente : captures de chaq
             // Zones à toucher : 44 px au moins pour les liens et boutons du module.
             const small = await page.evaluate(() => [...document.querySelectorAll(".tn-entete-arrivee a,.tn-pied-arrivee a,.tn-barre-produit a")].map((x) => ({ t: (x.textContent || "").trim().slice(0, 30), h: Math.round(x.getBoundingClientRect().height) })).filter((x) => x.h < 44));
             expect(small, "zones à toucher").toEqual([]);
+          }
+          await context.close();
+        }
+      }
+    } finally { await browser.close().catch(() => {}); }
+    expect(overflow, "rien ne dépasse de l'écran en largeur").toEqual([]);
+  }, 900_000);
+});
+
+// ════════════════════════════════════════════════════════════════ deux pages entières d'un client inventé (à la demande)
+
+/**
+ * « Courbe » : client INVENTÉ pour l'essai (aucun client réel), des sacs en cuir en forme de demi-lune. Quatre produits,
+ * deux familles. Ses photos sont des photos de la bibliothèque du Studio ; ses avis sont des avis d'essai, dits tels.
+ */
+const COURBE = {
+  name: "Courbe", nameStatus: "validated", alternatives: [], tagline: "Le sac qui suit ton épaule.", positioning: "Des sacs en cuir en forme de demi-lune, qui épousent l'épaule.", audience: "", personality: ["chaleureuse", "soignée"],
+  tone: { voice: "Tutoiement, phrases courtes.", do: [], dont: [] },
+  palette: { primary: "#A64B24", secondary: "#EFE2CE", accent: "#3A281D", light: "#F8F2E8", dark: "#2B1C13" },
+  fonts: { heading: "instrument_serif", body: "dm_sans" }, logo: { concept: "", status: "proposed" },
+} as const;
+
+describe.runIf(!!process.env.VENTE_DEMO)("thème unique, vente : deux pages entières d'un client inventé, téléphone et ordinateur", () => {
+  it("l'accueil d'une boutique de vente directe et une page d'arrivée « cinq raisons » sont montés et capturés", async () => {
+    const { account, project } = await import("./conversation209-fixtures");
+    const { saveBrand, loadProject } = await import("@/lib/projects");
+    const { saveCompany } = await import("@/lib/syna-agent/activity");
+    const { saveAsset, assetUrl } = await import("@/lib/library");
+    const { createProduct } = await import("@/lib/products/catalog");
+    const { chromiumPath } = await import("@/lib/theme/snapshot");
+    const S = await import("@/lib/syna-agent/custom-theme/theme");
+    const { renderCustomTheme } = await import("@/lib/syna-agent/custom-theme/render");
+    const { chromium } = await import("playwright");
+    const out = process.env.VENTE_DEMO!;
+    fs.mkdirSync(out, { recursive: true });
+    const user = await account();
+    const pid = await project(user);
+    saveBrand(pid, COURBE as any);
+    const PHOTOS = path.join(DIR, "photos");
+    const put = async (file: string, crop?: [number, number, number, number]) => assetUrl({ id: (await saveAsset({ projectId: pid, userId: user.id, data: await F.photo(file, crop, PHOTOS), name: file.replace(".webp", ".jpg"), mime: "image/jpeg", role: "original", origin: "upload" })).id });
+    const idOf = (url: string) => url.split("/").pop()!;
+    const P = { cognac: await put("sl-b2.webp"), noir: await put("mo-s1.webp"), ivoire: await put("mo-s2.webp"), lunettes: await put("sl-b1.webp") };
+    const SC = { cuir: await put("mo-s4.webp"), lin: await put("md-z1.webp"), atelier: await put("md-a1.webp"), valise: await put("md-j2.webp"), piscine: await put("md-w1.webp", [0, 0.2, 1, 0.87]), plage: await put("mo-p1.webp") };
+    createProduct(pid, { title: "Le Demi-lune cognac", images: [{ assetId: idOf(P.cognac) }], price: 18900, productType: "Sac en cuir", categories: ["Les sacs"], options: [{ name: "Taille", values: ["Petit", "Grand"] }], variants: [{ options: ["Petit"], price: 14900 }, { options: ["Grand"], price: 18900 }] } as any);
+    createProduct(pid, { title: "Le Demi-lune noir", images: [{ assetId: idOf(P.noir) }], price: 18900, productType: "Sac en cuir", categories: ["Les sacs"] } as any);
+    createProduct(pid, { title: "Le Demi-lune ivoire", images: [{ assetId: idOf(P.ivoire) }], price: 16900, compareAt: 18900, productType: "Sac en cuir", categories: ["Les sacs"] } as any);
+    createProduct(pid, { title: "Les lunettes écaille", images: [{ assetId: idOf(P.lunettes) }], price: 7900, productType: "Accessoire", categories: ["Les accessoires"] } as any);
+    saveCompany(pid, { shipping: "Offerte en France, sous 48 h", returns: "30 jours pour changer d'avis" });
+
+    const bg = (u: string) => `style="background-image:url(${u})"`;
+    const L = (texte: string, go: string, classe: string) => `<a class="${classe}" href="#" onclick="return false" data-go="${go}">${texte}</a>`;
+    const volet = (q: string, a: string, open = false) => `<details${open ? " open" : ""}><summary>${q}</summary><p>${a}</p></details>`;
+    /** Les textes écrits pour Courbe, pièce par pièce (comme le rédacteur de SINA les écrirait). */
+    const TEXTES: Record<string, string> = {
+      "tn-messages": `<section class="tn tn-messages" aria-label="Informations pratiques"><ul class="tn-v-fil" data-tn-messages><li data-tn-cle="livraison">Livraison : [À compléter : délai et prix]</li><li data-tn-cle="retours">Retours : [À compléter : délai et conditions]</li><li data-tn-cle="paiement">Paiement par carte ou en trois fois</li><li>Cuir tanné et cousu en Europe</li></ul></section>`,
+      "tn-ouverture-vente": `<section class="tn tn-ouverture-vente"><div class="tn-v-vue"><div class="tn-ph" ${bg(SC.cuir)}></div><div class="tn-v-macaron" data-tn-macaron><b>+ 1 200</b><span>clientes d'essai</span></div></div><div class="tn-v-mots"><small>Sacs en cuir, forme demi-lune</small><h1>Il suit ton épaule. <em>Toute la journée.</em></h1><p>Un sac qui ne glisse pas, ne pèse pas, et se patine avec toi. Tu l'enfiles le matin, tu l'oublies jusqu'au soir.</p><div class="tn-v-actions">${L("Découvrir le Demi-lune", "product", "tn-bt")}${L("Voir toute la boutique", "shop", "tn-v-lien")}</div></div></section>`,
+      "tn-garanties": `<section class="tn tn-garanties"><h2>Sans mauvaise surprise.</h2><ul data-tn-garanties><li data-tn-cle="livraison"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/></svg><b>Livraison</b><span>[À compléter : délai et prix]</span></li><li data-tn-cle="retours"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 4 9l4 4"/><path d="M4 9h10.5a5 5 0 0 1 0 10H9"/></svg><b>Retours</b><span>[À compléter : délai et conditions]</span></li><li data-tn-cle="paiement"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3 10h18M6.5 15h4"/></svg><b>Paiement</b><span>Par carte, ou en trois fois</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5c0-4 3-7 7-7s7 3 7 7"/><path d="M5 12.5v3.5h3v-4H5zM19 12.5v3.5h-3v-4h3z"/></svg><b>Une vraie personne</b><span>Elle te répond du lundi au samedi</span></li></ul>${L("Toutes les réponses dans l'aide", "aide", "")}</section>`,
+      "tn-produits-vente": `<section class="tn tn-produits-vente" data-tn-cartes-vente><div class="tn-v-tete"><h2>Trois cuirs, <em>une seule courbe.</em></h2><p>Le même sac, pensé pour l'épaule, dans la couleur qui te ressemble.</p></div><div class="tn-v-cartes"><a class="tn-v-carte" href="#" onclick="return false" data-go="product"><div class="tn-ph"></div><b>Le Demi-lune cognac</b><span class="tn-v-envie">Celui qui se patine le plus joliment.</span><span class="tn-v-prix">[À compléter : prix]</span><i class="tn-v-voir">Découvrir</i></a><a class="tn-v-carte" href="#" onclick="return false" data-go="product"><div class="tn-ph"></div><b>Le Demi-lune noir</b><span class="tn-v-envie">Du bureau au dîner, sans changer de sac.</span><span class="tn-v-prix">[À compléter : prix]</span><i class="tn-v-voir">Découvrir</i></a><a class="tn-v-carte" href="#" onclick="return false" data-go="product"><div class="tn-ph"></div><b>Le Demi-lune ivoire</b><span class="tn-v-envie">La touche claire des beaux jours.</span><span class="tn-v-prix">[À compléter : prix]</span><i class="tn-v-voir">Découvrir</i></a><a class="tn-v-carte" href="#" onclick="return false" data-go="product"><div class="tn-ph"></div><b>Les lunettes écaille</b><span class="tn-v-envie">Elles se glissent dans la poche du sac.</span><span class="tn-v-prix">[À compléter : prix]</span><i class="tn-v-voir">Découvrir</i></a></div></section>`,
+      "tn-difference": `<section class="tn tn-difference"><div class="tn-v-in"><figure class="tn-v-fig"><div class="tn-ph" ${bg(SC.lin)}></div><figcaption>La doublure en lin, et son fil cuivre cousu à la main.</figcaption></figure><div class="tn-v-mots"><small>La différence Courbe</small><h2>Tout se joue <em>dans la courbe.</em></h2><p>Un sac droit tire sur l'épaule. Le nôtre en reprend la forme : c'est pour ça que tu l'oublies.</p><div class="tn-v-volets">${volet("Une anse qui ne glisse pas", "Large et doublée, elle se pose sur l'épaule et y reste, même quand tu cours après le bus.", true)}${volet("Un cuir qui se patine", "Un cuir pleine fleur, tanné lentement : il fonce un peu et s'assouplit à mesure que tu le portes.")}${volet("Une doublure qui se nettoie", "Du lin épais, cousu d'un fil cuivre : un coup d'éponge, et elle est comme neuve.")}</div>${L("Découvrir le Demi-lune", "product", "tn-bt")}</div></div></section>`,
+      "tn-atouts": `<section class="tn tn-atouts"><ul><li><b>Léger sur l'épaule</b><span>Tu le portes des heures sans y penser.</span></li><li><b>Tout sous la main</b><span>Une grande poche, une petite, et tes clés ne se perdent plus.</span></li><li><b>Fermé d'un geste</b><span>Un zip sur toute la longueur, rien ne tombe.</span></li><li><b>Fait pour durer</b><span>Des coutures doublées, des boucles en laiton.</span></li></ul></section>`,
+      "tn-texte-photo": `<section class="tn tn-texte-photo"><div class="tn-ph tn-cadre" ${bg(SC.atelier)}></div><div class="tn-txt"><h2>Une table, du cuir,<br>et du temps.</h2><p>Courbe est né d'un sac qui glissait sans cesse. On a redessiné la forme jusqu'à ce qu'elle tienne toute seule. Depuis, chaque sac est coupé et cousu sur la même table, sans se presser.</p>${L("Lire notre histoire", "about", "tn-lien")}</div></section>`,
+      "tn-mur-avis": `<section class="tn tn-mur-avis"><h2>Elles le portent tous les jours.</h2><ul data-tn-avis><li><blockquote>Avis d'essai : je ne le sens plus sur l'épaule, c'est tout ce que je demandais.</blockquote><span>Cliente d'essai A, 5 novembre 2026</span></li><li><blockquote>Avis d'essai : le cuir est encore plus beau qu'en photo.</blockquote><span>Cliente d'essai B, 2 novembre 2026</span></li><li><blockquote>Avis d'essai : tout tient dedans, et je retrouve enfin mes clés.</blockquote><span>Cliente d'essai C, 28 octobre 2026</span></li><li><blockquote>Avis d'essai : reçu en deux jours, très bien emballé.</blockquote><span>Cliente d'essai D, 20 octobre 2026</span></li></ul><p class="tn-note">Avis d'essai, écrits pour cette démonstration : aucun n'est un vrai avis.</p></section>`,
+      "tn-guide-choix": `<section class="tn tn-guide-choix" data-tn-guide><div class="tn-v-in"><small>À chaque envie, le sien</small><h2>Lequel est fait <em>pour toi&nbsp;?</em></h2><p class="tn-v-chapo">Pars de ce qui compte le plus pour toi.</p><div class="tn-v-besoins"><details class="tn-v-besoin" open><summary>Je veux un sac pour tous les jours</summary><div class="tn-v-rep"><div class="tn-ph"></div><div class="tn-v-quoi"><p>Le cognac va avec tout, et se patine un peu plus chaque saison.</p><b data-tn-produit>Le Demi-lune cognac</b><span class="tn-v-prix">[À compléter : prix]</span>${L("Découvrir", "product", "tn-v-lien")}</div></div></details><details class="tn-v-besoin"><summary>Je veux un sac qui s'habille</summary><div class="tn-v-rep"><div class="tn-ph"></div><div class="tn-v-quoi"><p>Le noir passe du bureau au dîner sans que tu aies à y penser.</p><b data-tn-produit>Le Demi-lune noir</b><span class="tn-v-prix">[À compléter : prix]</span>${L("Découvrir", "product", "tn-v-lien")}</div></div></details><details class="tn-v-besoin"><summary>Je veux compléter mon sac</summary><div class="tn-v-rep"><div class="tn-ph"></div><div class="tn-v-quoi"><p>Les lunettes écaille ont leur poche dans chaque Demi-lune.</p><b data-tn-produit>Les lunettes écaille</b><span class="tn-v-prix">[À compléter : prix]</span>${L("Découvrir", "product", "tn-v-lien")}</div></div></details></div></div></section>`,
+      "tn-garantie": `<section class="tn tn-garantie" data-tn-garantie><div class="tn-sceau-g"><b>Retours</b><span>[À compléter : délai de retour]</span></div><h2>Porte-le chez toi. Décide ensuite.</h2><p class="tn-conditions">[À compléter : conditions de retour]</p>${L("Lire les conditions de retour", "aide", "")}</section>`,
+      "tn-questions": `<section class="tn tn-volets"><h2>Avant de choisir.</h2><div class="tn-liste">${volet("Quelle taille prendre&nbsp;?", "Le petit porte l'essentiel : téléphone, portefeuille, clés, lunettes. Le grand ajoute un livre et une petite gourde.", true)}${volet("Le cuir craint-il la pluie&nbsp;?", "Quelques gouttes ne lui font rien. Après une averse, essuie-le et laisse-le sécher loin du radiateur.")}${volet("Et s'il ne me plaît pas&nbsp;?", "Tu as 30 jours pour changer d'avis : tu nous le renvoies, on te rembourse.")}${volet("Comment l'entretenir&nbsp;?", "Un chiffon doux, et un peu de lait pour cuir deux fois par an.")}</div></section>`,
+      "tn-final": `<section class="tn tn-final tn-sombre"><h2>Une question&nbsp;?<br>On te répond.</h2>${L("Nous écrire", "contact", "tn-bt")}</section>`,
+      // ── la page d'arrivée
+      "tn-entete-arrivee": `<section class="tn tn-entete-arrivee" data-tn-arrivee><a class="tn-v-marque" href="#" onclick="return false" data-go="home"><span class="tn-nom lg">Courbe</span></a><a class="tn-v-vers" href="#" onclick="return false" data-go="product">Découvrir <span data-tn-produit-nom>le Demi-lune</span></a></section>`,
+      "tn-ouverture-arrivee": `<section class="tn tn-ouverture-arrivee" data-tn-avis-pose><div class="tn-v-mots"><small>Le Demi-lune · sac en cuir</small><h1>Encore un sac qui glisse de l'épaule&nbsp;? <em>Cinq raisons de passer au sac demi-lune.</em></h1><p class="tn-v-chapo">Pour celles qui aiment avoir les mains libres, et qui en ont assez de remonter leur anse dix fois par jour.</p></div><figure class="tn-v-vue"><div class="tn-ph tn-cadre" ${bg(P.cognac)}></div><blockquote class="tn-v-pose"><p>«&nbsp;Avis d'essai : je ne le sens plus sur l'épaule.&nbsp;»</p><cite>Cliente d'essai A · 5 novembre 2026</cite><small>Avis d'essai, écrit pour cette démonstration</small></blockquote></figure></section>`,
+      "tn-raisons": `<section class="tn tn-raisons"><ol class="tn-v-liste"><li><h2>Il épouse l'épaule au lieu de la quitter.</h2><div class="tn-ph tn-cadre" ${bg(P.noir)}></div><div class="tn-v-texte"><p>Un sac droit pend au bout de son anse&nbsp;: au premier pas pressé, il glisse, et tu le remontes sans même y penser.</p><p>Le Demi-lune reprend la courbe de ton épaule. <b>Il se cale contre toi et il y reste</b>, que tu marches, que tu coures ou que tu te penches.</p><blockquote class="tn-v-encadre">Tu gardes les deux mains libres, du matin au soir.</blockquote></div></li><li><h2>Tout ton essentiel tient dedans, et tu le retrouves d'une main.</h2><div class="tn-ph tn-cadre" ${bg(SC.piscine)}></div><div class="tn-v-texte"><p>Téléphone, portefeuille, clés, lunettes&nbsp;: chaque chose a sa place, et la grande ouverture te laisse tout voir d'un coup d'œil.</p>${L("Découvrir le Demi-lune", "product", "tn-bt")}</div></li><li><h2>Il s'entretient en trois gestes.</h2><ol class="tn-v-temps"><li><b>Essuyer</b><span>Un chiffon doux</span></li><li><b>Nourrir</b><span>Un lait pour cuir</span></li><li><b>Ranger</b><span>Dans sa housse</span></li></ol><div class="tn-v-texte"><p>Pas de produit compliqué, pas de cordonnier&nbsp;: deux fois par an, cinq minutes suffisent.</p><p class="tn-v-note">Bon à savoir&nbsp;: un cuir pleine fleur fonce un peu avec le temps. C'est sa patine, pas un défaut.</p></div></li><li><h2>Un seul sac, du matin au soir.</h2><div class="tn-v-somme"><p><span>Le sac de jour</span><i aria-hidden="true">+</i><span>La pochette du soir</span></p><b>Un seul sac.</b></div><div class="tn-v-texte"><p>Assez grand pour la journée, assez fin pour le dîner&nbsp;: tu n'as plus à transvaser tes affaires avant de sortir.</p></div></li><li><h2>Il part en week-end sans prendre de place.</h2><div class="tn-ph tn-cadre" ${bg(SC.valise)}></div><div class="tn-v-texte"><p>Souple, il se glisse à plat dans la valise. À l'arrivée, il reprend sa forme tout seul.</p></div></li></ol></section>`,
+      "tn-temoignages": `<section class="tn tn-temoignages" data-tn-temoignages><small>Elles en parlent</small><h2>«&nbsp;Je ne le sens plus sur l'épaule.&nbsp;»</h2><p class="tn-v-chapo">Quelques retours, tels qu'ils ont été écrits.</p><ul class="tn-v-avis-l"><li><blockquote>Avis d'essai : je ne le sens plus sur l'épaule, c'est tout ce que je demandais.</blockquote><b>Cliente d'essai A</b><span>5 novembre 2026 · Note donnée : 5/5</span></li><li><blockquote>Avis d'essai : tout tient dedans, et je retrouve enfin mes clés.</blockquote><b>Cliente d'essai C</b><span>28 octobre 2026 · Note donnée : 5/5</span></li></ul><div class="tn-v-nuance"><b>Et la taille&nbsp;? Les avis diffèrent.</b><blockquote>Avis d'essai : très beau, mais le petit modèle est un peu juste pour moi.</blockquote><span>Cliente d'essai E · 14 octobre 2026 · Note donnée : 4/5</span></div><p class="tn-v-source">Avis d'essai, écrits pour cette démonstration : aucun n'est un vrai avis.</p><div class="tn-v-premier"><p>Personne n'a encore donné son avis ici.</p>${L("Donner le premier avis", "contact", "tn-v-lien")}</div></section>`,
+      "tn-appel-produit": `<section class="tn tn-appel-produit" data-tn-appel-produit><div class="tn-ph"></div><div class="tn-corps-a"><h2>La prochaine fois, laisse-le faire.</h2><b class="tn-nom-a">[À compléter : nom du produit]</b><div class="tn-prix">[À compléter : prix]</div>${L("Voir le Demi-lune", "product", "tn-bt")}<ul class="tn-reperes"><li>Livraison : [À compléter]</li><li>Retours : [À compléter]</li></ul></div></section>`,
+      "tn-barre-produit": `<section class="tn tn-barre-produit" data-tn-barre-produit aria-label="Le produit de cette page"><div class="tn-v-colle"><div class="tn-ph"></div><p><b data-tn-produit-nom>Le Demi-lune</b><span>Le sac en cuir qui suit ton épaule</span></p>${L("Découvrir", "product", "tn-bt")}</div></section>`,
+      "tn-pied-arrivee": `<footer class="tn tn-pied-arrivee"><span class="tn-nom lg">Courbe</span><p>Le sac qui suit ton épaule.</p><nav aria-label="Informations">${L("Mentions légales", "legal", "tn-v-lien")}${L("Livraison et retours", "aide", "tn-v-lien")}${L("Nous écrire", "contact", "tn-v-lien")}</nav></footer>`,
+    };
+    const tenue = { titres: "fins", bouton: "pilule", cadre: "niche", fond: "uni", petits: "normal", signe: "la demi-lune" } as const;
+    const empty = () => ({ version: 1, family: "classique", style: "classique", header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now() }) as any;
+    /** Monte un site : ses pièces dans l'ordre, chacune avec les textes écrits pour Courbe. */
+    const build = (ops: any[]) => {
+      const t = S.applyStructure(empty(), [...ops, { op: "tenue", tenue }]);
+      const write = (s: any) => { if (s && TEXTES[s.id]) { s.html = TEXTES[s.id]; s.clientTexts = true; } };
+      for (const pg of t.pages) pg.sections.forEach(write);
+      [t.header, t.footer, ...(t.extras ?? [])].forEach(write);
+      return t;
+    };
+    const add = (page: string, section: string, construction?: string) => ({ op: "add", page, section, ...(construction ? { construction } : {}) });
+    const accueil = build([{ op: "page", key: "home", label: "Accueil" },
+      add("home", "tn-ouverture-vente", "photo-pleine"), add("home", "tn-garanties", "cases"), add("home", "tn-produits-vente", "cartes"), add("home", "tn-difference", "panneau"), add("home", "tn-atouts", "ronds"),
+      add("home", "tn-texte-photo", "photo-droite"), add("home", "tn-mur-avis", "file"), add("home", "tn-guide-choix", "volets"), add("home", "tn-garantie", "sceau"), add("home", "tn-questions", "filets"), add("home", "tn-final", "encadre"),
+      { op: "page", key: "shop", label: "Boutique" }, add("shop", "tn-catalogue", "ajout-rapide"),
+      { op: "shell", slot: "header", section: "tn-entete-liens" }, { op: "shell", slot: "footer", section: "tn-pied" }, { op: "extra", section: "tn-messages", construction: "defilent" }]);
+    const arrivee = build([{ op: "page", key: "raisons", label: "Cinq raisons" },
+      add("raisons", "tn-ouverture-arrivee", "colonne"), add("raisons", "tn-raisons", "colonne"), add("raisons", "tn-temoignages", "cartes"), add("raisons", "tn-questions", "filets"), add("raisons", "tn-appel-produit", "carte"), add("raisons", "tn-barre-produit", "barre"),
+      { op: "shell", slot: "header", section: "tn-entete-arrivee" }, { op: "shell", slot: "footer", section: "tn-pied-arrivee" }]);
+    const overflow: string[] = [];
+    const browser = await chromium.launch({ executablePath: chromiumPath() ?? process.env.CHROMIUM, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
+    try {
+      for (const [what, t, pages] of [["accueil", accueil, ["home", "shop"]], ["arrivee", arrivee, ["raisons"]]] as [string, any, string[]][]) {
+        const rendered = renderCustomTheme(loadProject(pid), t, { embed: true });
+        expect([...rendered.matchAll(/.{0,90}<mark class="tn-manque">.{0,60}/g)].map((m) => m[0]), `${what} : rien ne reste « à compléter »`).toEqual([]);
+        for (const view of VUES) {
+          const context = await browser.newContext({ viewport: { width: view.width, height: view.height }, deviceScaleFactor: view.key === "tel" ? 2 : 1 });
+          const page = await context.newPage();
+          await serve(page, rendered);
+          await page.goto(`${ORIGIN}/`, { waitUntil: "load", timeout: 45_000 });
+          for (const key of pages) {
+            await page.evaluate((k) => { (window as any).ctGo(k); scrollTo(0, 0); }, key);
+            await page.waitForTimeout(400);
+            // La barre collée se juge à part, au bas de l'écran ; elle ne se répète pas dans la capture de la page entière.
+            if (what === "arrivee") {
+              await page.evaluate(() => scrollTo(0, 1500));
+              await page.waitForTimeout(500);
+              fs.writeFileSync(path.join(out, `${what}-${key}__ecran__${view.key}.jpg`), await page.screenshot({ type: "jpeg", quality: 88 }));
+              await page.evaluate(() => scrollTo(0, 0));
+              await page.addStyleTag({ content: "html .ctw .tn-barre-produit .tn-v-colle{display:none}" });
+            }
+            // Le bandeau est figé pour la capture (ses messages défilent à l'écran).
+            await page.addStyleTag({ content: ".tn-messages .tn-v-fil{animation-play-state:paused}" });
+            const h = await page.evaluate(() => document.documentElement.scrollHeight);
+            fs.writeFileSync(path.join(out, `${what}-${key}__${view.key}.jpg`), await page.screenshot({ type: "jpeg", quality: 86, fullPage: true, clip: { x: 0, y: 0, width: view.width, height: h } }));
+            const m = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, vw: innerWidth }));
+            if (m.w - m.vw > 1) overflow.push(`${what} ${key} · ${view.key} : dépasse de ${m.w - m.vw} px`);
           }
           await context.close();
         }

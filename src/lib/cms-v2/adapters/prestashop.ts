@@ -87,6 +87,8 @@ export function toSmarty(html: string, themeName = "", bundled: ReadonlySet<stri
   s = s.replace(/(<ul class="es-footer__payment"[^>]*>)[\s\S]*?(<\/ul>)/g, "$1$2");
   // Compteur du panier de l'en-tête.
   s = s.replace(/<span class="es-cart-count" data-cart-count( hidden)?>\d*<\/span>/g, () => `<span class="es-cart-count" data-cart-count${dyn("{if $cart.products_count == 0} hidden{/if}")}>${dyn("{$cart.products_count}")}</span>`);
+  // En-tête à tenue (site monté par SINA) : le nombre d'articles du vrai panier (le rendu du Studio y écrit « 0 »).
+  s = s.replace(/(<a class="tn-pan"[^>]*>(?:(?!<\/a>)[\s\S])*?<span>)\d+(<\/span>)/g, (_m, a: string, b: string) => `${a}${dyn("{$cart.products_count}")}${b}`);
   return `{literal}${s}{/literal}`.replace(/\{literal\}\{\/literal\}/g, "");
 }
 

@@ -53,9 +53,13 @@ async function panierPlateforme(page) {
       const cadeau = !!li.querySelector(".gift, .gift-quantity") || /offert|gift|cadeau/i.test(total);
       return { nom: t(".product-line-info a.label, .product-line-info .label"), versions: [...li.querySelectorAll(".product-line-info .value")].map((e) => e.textContent.trim()).filter((x) => !/€/.test(x)).join(" / "), quantite: q ? Number(q.value) : Number((t(".gift-quantity") || "1").replace(/\D/g, "")) || 1, ligne: cadeau ? 0 : cents(total), cadeau, brut: total };
     });
+    // La page panier native de PrestaShop écrit le cadeau comme une ligne à son prix, annulée par la règle de panier
+    // « Cadeau : … » du récapitulatif (même montant) : la ligne offerte est celle-là.
+    const regles = [...document.querySelectorAll(".promo-name li")].map((li) => ({ nom: (li.querySelector(".label") || li).textContent.replace(/\s+/g, " ").trim(), montant: cents(li.textContent.replace(/^[^-−]*/, "")) }));
+    for (const r of regles) { const l = lignes.find((x) => !x.cadeau && r.nom.toLowerCase().includes(x.nom.toLowerCase()) && x.ligne === r.montant); if (l) { l.cadeau = true; l.regle = r.nom; l.ligne = 0; } }
     const tot = document.querySelector(".cart-summary-totals .cart-total .value, .cart-total .value");
     const remise = document.querySelector(".cart-summary-line.cart-discount .value, #cart-subtotal-discount .value");
-    return { source: "PrestaShop, page panier native", lignes, totalAffiche: tot ? tot.textContent.trim() : null, total: tot ? cents(tot.textContent) : null, remise: remise ? remise.textContent.trim() : null, nombre: lignes.reduce((n, l) => n + l.quantite, 0) };
+    return { source: "PrestaShop, page panier native", regles, lignes, totalAffiche: tot ? tot.textContent.trim() : null, total: tot ? cents(tot.textContent) : null, remise: remise ? remise.textContent.trim() : null, nombre: lignes.reduce((n, l) => n + l.quantite, 0) };
   });
   await p.close();
   return out;
@@ -93,7 +97,8 @@ async function sansRemises() {
   const page = await ctx.newPage();
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(String(e.message || e)));
-  page.on("console", (m) => { if (m.type() === "error") erreurs.push(m.text()); });
+  // (Une ressource extérieure injoignable depuis cette machine sans réseau n'est pas une erreur de script.)
+  page.on("console", (m) => { if (m.type() === "error" && !/ERR_NAME_NOT_RESOLVED|ERR_INTERNET_DISCONNECTED/.test(m.text())) erreurs.push(m.text()); });
 
   // ---- 1. la fiche produit
   await page.goto(FICHE, { waitUntil: "networkidle" });
