@@ -944,6 +944,11 @@ describe("SINA — chaîne de création de la marque", async () => {
     // Un titre dessiné sur deux lignes et recopié ligne par ligne est bien le titre attendu (essai réel du 16 novembre 2026).
     expect(I.textCheck(["Atelier Vasco", "Cousu ici. Recousu ici.", "Voir le cuir de près"], ["9:41", "Atelier Vasco", "Cousu ici.", "Recousu ici.", "Voir le cuir de près"], "Atelier Vasco").missing).toEqual([]);
     expect(I.textCheck(["Cousu ici. Recousu ici."], ["Cousu ici.", "Recousu la."], "Atelier Vasco").missing).toEqual(["Cousu ici. Recousu ici."]);
+    // Une date à remplir, faite de tirets : le nombre de tirets et les espaces ne comptent pas ; un texte dessiné sur
+    // deux lignes n'est pas « en trop » (essai réel du 16 novembre 2026 : une publication juste, refusée à tort).
+    expect(I.textCheck(["__ / __ / ____ : à vous de l'écrire."], ["___ / ___ / _____ :", "à vous de l'écrire."], "Atelier Vasco")).toEqual({ missing: [], extra: [] });
+    expect(I.textCheck(["Ce jour-là :", "__ / __ / ____"], ["Ce jour-là :", "____/____/______", "Bordeaux"], "Atelier Vasco")).toEqual({ missing: [], extra: ["Bordeaux"] });
+    expect(I.textCheck(["__ / __ / ____"], ["Ce jour-là"], "Atelier Vasco").missing).toEqual(["__ / __ / ____"]);
     expect(I.textCheck([], ["Offre spéciale"], "Pulpe").extra).toEqual(["Offre spéciale"]);
 
     const t = await thread();

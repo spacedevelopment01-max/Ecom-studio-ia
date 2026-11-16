@@ -319,7 +319,14 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // L'objet et les signes portent le logo de la planche, joint à la relecture pour comparer.
     expect(log.refs[`image-1-A-object${REST}`]).toEqual({ logo: true, scene: false, aspect: "1:1" });
     expect(log.refs[`image-1-A-signs${REST}`]).toEqual({ logo: true, scene: false, aspect: "1:1" });
-    expect(log.refs[`image-1-A-post1${REST}`]).toEqual({ logo: false, scene: false, aspect: "4:5" });
+    // Chaque publication est signée : elle reçoit le logo, posé en petit (retour du propriétaire du 16 novembre 2026 :
+    // « j'ai pas compris l'angle marketing des images », devant trois publications sans nom de marque).
+    expect(log.refs[`image-1-A-post1${REST}`]).toEqual({ logo: true, scene: false, aspect: "4:5" });
+    expect(log.prompts[`image-1-A-post1${REST}`]).toContain("Le logo est posé en PETIT dans un coin calme de l'image, entier, net et lisible, sans gêner le texte.");
+    const BP = await import("@/lib/syna-agent/brand-prompts");
+    expect(BP.directionSystem("produits")).toMatch(/Chaque publication est lue par quelqu'un qui ne connaît PAS la marque : elle se comprend seule\. La PREMIÈRE dit l'offre en clair/);
+    expect(BP.imagerySystem("produits")).toMatch(/La PREMIÈRE publication montre clairement ce qui est vendu/);
+    expect(BP.reviewSystem("produits")).toMatch(/des publications qu'une personne qui ne connaît pas la marque ne comprendrait pas seule/);
     expect(log.ids.some((i) => i.includes("-site"))).toBe(false); // la maquette de la planche est gardée, jamais repayée
     expect(log.prompts[`imagecheck-1-A${REST}`]).toMatch(/La dernière image jointe \(6\) est seulement le logo de la marque, pour comparer : ne la juge pas\./);
     expect(out).toMatchObject({ finished: true, name: "Bain de Minuit", created: I.FINISH_SLOTS, issues: [], kit: true });

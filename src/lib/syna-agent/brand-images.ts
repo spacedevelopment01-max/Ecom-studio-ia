@@ -52,7 +52,7 @@ export type ImageAspect = "1:1" | "16:9" | "9:16" | "4:5";
 /** Format demandé pour chaque image (le modèle rend du carré, du paysage 3:2 ou du portrait 2:3). */
 export const SLOT_ASPECT: Record<ImageSlot, ImageAspect> = { logo: "1:1", hero: "16:9", object: "1:1", signs: "1:1", site: "9:16", post0: "4:5", post1: "4:5", post2: "4:5" };
 /** Images de référence envoyées avec chaque demande (le logo pour l'objet et le site ; aucun modèle pour le logo lui-même). */
-export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 1, hero: 0, object: 1, signs: 1, site: 2, post0: 0, post1: 0, post2: 0 };
+export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 1, hero: 0, object: 1, signs: 1, site: 2, post0: 1, post1: 1, post2: 1 };
 
 /**
  * Les images d'une planche se créent en DEUX temps (lot 2, 15 novembre 2026 : « images complètes pour la seule identité
@@ -86,7 +86,7 @@ export const ImageReviewSchema = z.object({
 export const ImageRereadSchema = z.object({ images: z.array(z.object({ slot: z.string().max(12), read: z.array(z.string().max(400)).max(14).default([]) })).max(8).default([]) });
 
 /** Même texte, à la casse, aux espaces, au type d'apostrophe et au point final près ; jamais aux lettres ni aux accents. */
-const plain = (t: string) => t.normalize("NFC").replace(/[’ʼ`´]/g, "'").replace(/[«»“”"]/g, " ").replace(/\s+/g, " ").trim().replace(/[.\s]+$/, "").toLowerCase();
+const plain = (t: string) => t.normalize("NFC").replace(/[’ʼ`´]/g, "'").replace(/[«»“”"]/g, " ").replace(/[_＿]+|[—–]{2,}/g, "_").replace(/\s*\/\s*/g, "/").replace(/\s+([:;!?])/g, "$1").replace(/\s+/g, " ").trim().replace(/[.\s]+$/, "").toLowerCase();
 
 /**
  * Le Studio compare lui-même ce que le relecteur a LU avec ce que l'image devait porter (essai réel du 13 novembre
@@ -99,17 +99,21 @@ export function textCheck(expected: string[], read: string[], name: string): { m
   // Un titre dessiné sur plusieurs lignes est souvent recopié ligne par ligne : il est cherché aussi dans la suite des
   // mots lus, sans la ponctuation (essai réel du 16 novembre 2026 : « Cousu ici. Recousu ici. » lu en deux blocs).
   const words = (t: string) => t.replace(/[^\p{L}\p{N}']+/gu, " ").trim(), run = ` ${words(all)} `;
-  const missing = expected.filter((t) => { const p = plain(t); return !!p && !got.includes(p) && !all.includes(p) && !run.includes(` ${words(p)} `); });
+  const missing = expected.filter((t) => { const p = plain(t); return !!p && !got.includes(p) && !all.includes(p) && !(words(p) && run.includes(` ${words(p)} `)); });
   // Un bloc lu peut réunir plusieurs textes attendus : ce qu'il en reste une fois ces textes retirés est en trop.
   const known = [...want, plain(name)].filter(Boolean).sort((a, b) => b.length - a.length);
-  const extra = read.filter((t) => { let p = plain(t); if (!p) return false; for (const w of known) p = p.split(w).join(" "); return /[\p{L}\p{N}]/u.test(p); });
+  // Un bloc lu qui n'est qu'un morceau d'un texte attendu (un texte dessiné sur deux lignes) n'est pas en trop.
+  const wanted = ` ${words(want.join(" "))} `;
+  const extra = read.filter((t) => { let p = plain(t); if (!p) return false; if (words(p) && wanted.includes(` ${words(p)} `)) return false; for (const w of known) p = p.split(w).join(" "); return /[\p{L}\p{N}]/u.test(p); });
   return { missing, extra };
 }
 
 const same = (a: string, b: string) => normText(a) === normText(b);
 /** Les textes que chaque image doit porter, lettre pour lettre (ils viennent de la planche, jamais du modèle). */
 export function slotTexts(x: Route): Record<ImageSlot, string[]> {
-  const b = x.board, front = b.object.front.filter((l) => !same(l, x.name)).slice(0, 2);
+  // Trois lignes au plus sont écrites sur l'objet : une ligne prévue mais non donnée était inventée par le modèle
+  // (essai réel du 16 novembre 2026 : une autre ville que celle de la cliente).
+  const b = x.board, front = b.object.front.filter((l) => !same(l, x.name)).slice(0, 3);
   return {
     logo: [x.name], hero: [], object: [x.name, ...front], signs: [], site: [x.name, b.site.headline, b.site.button],
     post0: [b.posts[0].text], post1: [b.posts[1].text], post2: [b.posts[2].text],
@@ -173,7 +177,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
-  const withLogo = (slot === "object" || slot === "site" || slot === "signs") && o.logo;
+  const post = slot.startsWith("post"), withLogo = (slot === "object" || slot === "site" || slot === "signs" || post) && o.logo;
   // Le nom est porté par le logo fourni ; sans logo, il est écrit comme les autres textes.
   const written = slot === "hero" ? [] : texts.filter((t) => !withLogo || !same(t, x.name)).filter((t, i) => slot === "object" || slot === "site" || i === 0);
   // La maquette du site : ses mots sont le titre, le bouton et les entrées du menu ; rien d'autre n'est écrit.
@@ -182,7 +186,10 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
     withLogo ? "Le logo fourni en image de référence est reproduit tel quel, à la place indiquée : il n'est ni redessiné, ni recoloré, et aucune de ses lettres ne change." : "",
     slot === "site" ? "Maquette de présentation d'un site, au niveau des plus beaux sites primés de 2026 : UN téléphone récent, entier, vu bien de face, posé sur un fond uni très doux, avec une ombre légère ; son écran montre le haut de la page d'accueil décrit ci-dessus (l'heure et les signes du téléphone en haut, puis l'en-tête du site). Le titre est TRÈS grand et occupe une vraie place sur l'écran ; un seul bouton ; très peu de mots. Le logo de l'en-tête est GRAND et net (au moins un tiers de la largeur de l'écran), recopié tel quel depuis l'image de référence, chaque lettre du nom lisible. Mise en page nette et précise : typographie soignée, alignements exacts, de l'air. Rien autour du téléphone : ni main, ni table, ni décor." : "",
     slot === "site" ? `Si la maquette montre des tuiles, des pastilles ou des entrées de menu, elles ne portent QUE ces mots, écrits tels quels : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucun (pas de tuile ni de pastille)"}. N'invente aucune prestation, aucune catégorie, aucune offre.` : "",
-    slot.startsWith("post") ? "Visuel de publication pour un réseau social, en portrait, bord à bord : aucun cadre d'application, aucun bouton, aucun pseudonyme." : "",
+    post ? "Visuel de publication pour un réseau social, en portrait, bord à bord : aucun cadre d'application, aucun bouton, aucun pseudonyme." : "",
+    // Une publication est vue par quelqu'un qui ne connaît pas la marque : elle la signe (retour du propriétaire du
+    // 16 novembre 2026, devant trois publications sans nom : « j'ai pas compris l'angle marketing des images »).
+    post && withLogo ? "Le logo est posé en PETIT dans un coin calme de l'image, entier, net et lisible, sans gêner le texte." : "",
     slot === "signs" ? SIGNS_LINE : "",
     (slot === "object" || slot === "site") && !withLogo ? NO_INVENTED_MARK : "",
     slot === "signs" ? (withLogo ? "Aucun autre texte que le logo : aucune lettre, aucun chiffre, aucun mot, aucun filigrane." : NO_TEXT) : written.length ? exact(written) : NO_TEXT, NO_PERSON, NO_OTHER_BRAND,
@@ -208,7 +215,7 @@ const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
 };
 const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
   logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Le logo de l'en-tête est CELUI de la marque (compare-le à l'image « logo » fournie avec les autres) : même signe, même dessin de lettres ; sur un écran sombre, il peut être dans sa version claire. Un autre signe à la place du sien est un défaut (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
-  post0: "une publication", post1: "une publication", post2: "une publication",
+  post0: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post1: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post2: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)",
 };
 
 type Made = { id: string; w: number; h: number };
@@ -346,7 +353,7 @@ export async function runBoardImages(o: {
   }
   if (wanted.has("object") && !skipCarriers) await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo }));
   if (wanted.has("signs") && !skipCarriers && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo }));
-  for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, {}, imagePrompt(slot, x, imagery));
+  for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, { logo }, imagePrompt(slot, x, imagery, { logo: !!logo }));
 
   // 3. La relecture : aucune image n'est montrée sans avoir été regardée.
   const slots = IMAGE_SLOTS.filter((s) => made.has(s));
@@ -365,7 +372,7 @@ export async function runBoardImages(o: {
     // Un logo à fond transparent est montré au relecteur posé sur du blanc, comme le client le verra.
     const seen = await Promise.all(slots.map(async (s) => ({ data: s === "logo" ? await onWhite(bufferOf(s)!) : bufferOf(s)!, label: s })));
     // Un objet qui porte un logo gardé d'avant : ce logo est joint, en dernier, pour que le relecteur compare.
-    const reference = !slots.includes("logo") && logo && slots.some((s) => s === "object" || s === "signs" || s === "site") ? await onWhite(logo) : null;
+    const reference = !slots.includes("logo") && logo && slots.some((s) => s !== "hero") ? await onWhite(logo) : null;
     if (reference) seen.push({ data: reference, label: "logo" });
     if (capped) unreviewed();
     else try {
