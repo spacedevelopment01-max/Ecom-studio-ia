@@ -41,6 +41,7 @@ import { built, cardOf, cardOfTheme, conceptGaps, registryGaps, type ThemeCard }
 import { educated, knowledgeCapMicro, knowledgeTypicalMicro, themeKnowledgeReady } from "./knowledge";
 import { proposeMenu, validMenu } from "./menu";
 import { familleGaps, fitFamille } from "./familles";
+import { fitStyle, styleGaps } from "./styles-de-page";
 import { dataGaps } from "./tenue-data";
 import { installCustomTheme } from "./install";
 import { menuProducts } from "./render";
@@ -278,6 +279,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     t = applyStructure(t, d.pages.flatMap((pg) => [{ op: "page", key: pg.key, label: pg.label } as StructureOp, ...pg.sections.map((s) => ({ op: "add", page: pg.key, section: ref(s.section), ...(s.construction ? { construction: s.construction } : {}) }) as StructureOp)]));
     t = applyStructure(t, [{ op: "shell", slot: "header", section: ref(d.header), ...(d.headerConstruction ? { construction: d.headerConstruction } : {}) }, { op: "shell", slot: "footer", section: ref(d.footer), ...(d.footerConstruction ? { construction: d.footerConstruction } : {}) }]);
     if (d.famille) { t.famille = d.famille; t.familleWhy = d.familleWhy ?? null; }
+    if (d.pageStyle) t.pageStyle = d.pageStyle;
     // La tenue de la marque (sections à tenue) : choisie par le concepteur, gardée dans le thème.
     if (d.tenue) t = applyStructure(t, [{ op: "tenue", tenue: d.tenue }]);
     if (d.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(d.search) }]);
@@ -303,6 +305,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     // Lot 4 : la conception reste dans les choix de la famille du Studio qu'elle annonce (contrôle sans IA) ; et le site
     // n'est fait que des pièces du thème unique.
     g.pages.push(...familleGaps(d));
+    if (mode.kind !== "concept") g.pages.push(...styleGaps(d, site.business));
     const foreign = [d.header, d.footer, ...d.pages.flatMap((pg) => pg.sections.map((x) => x.section))].filter((id) => { const l = sectionByRef(id); return !!l && !isTenueSection(l); });
     if (foreign.length) g.pages.push(`pièces hors du thème du Studio, à remplacer par une pièce de la bibliothèque donnée : ${[...new Set(foreign)].join(", ")}`);
     const objections = mode.kind === "concept" ? g.blocking.filter((x) => keys.some((k) => x.includes(`page « ${k} »`))) : g.blocking;
@@ -347,6 +350,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   }
   // Dernier recours sans IA : ce qui sort encore des choix de la famille y est ramené ; le site est fait dans son style.
   { const fit = fitFamille(d); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+  { const fit = fitStyle(d, site.business); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   if (c.rules.length || !c.t) return { ok: false, result: { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." } };
   // Conception gardée dans le thème : parcours de chaque page et intention de chaque section.
   for (const pg of c.t.pages) {

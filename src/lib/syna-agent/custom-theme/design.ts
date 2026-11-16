@@ -15,6 +15,7 @@
  * thème (`concept`, `journey` de chaque page, `intent` de chaque section) et sert au plan des textes et au rédacteur.
  */
 import { FamillePick, famillesBrief } from "./familles";
+import { StylePick, stylesBrief } from "./styles-de-page";
 import { z } from "zod";
 import { FEATURED_ROLE, familySections, isCardSection, libSection, onlyFor, sectionTraits } from "./library";
 import { TENUE_CHOICES, TenuePickSchema, constructionsOf, isTenueSection, tenueSection } from "./tenue";
@@ -38,6 +39,9 @@ export const DesignSchema = z.object({
   /** Lot 4 : la famille du Studio choisie d'après la planche de marque (en coulisses), et ce qui l'a décidée. */
   famille: FamillePick.optional(),
   familleWhy: z.string().max(600).nullable().optional(),
+  /** Lot 4 : le style de la page qui vend (page produit ou page de services), en coulisses, et ce qui l'a décidé. */
+  pageStyle: StylePick.optional(),
+  pageStyleWhy: z.string().max(600).nullable().optional(),
   search: z.string().max(80).nullable(),
   /** La tenue de la marque (sections à tenue) : titres, boutons, cadre des photos, fond, petits textes, signe. */
   tenue: TenuePickSchema.nullable().optional(),
@@ -143,7 +147,7 @@ Cherche, page par page : où le visiteur décroche ; chaque objection sans répo
 Puis rends la conception CORRIGÉE et complète (même format, toutes les pages), en gardant ce qui est bon, et liste dans corrections ce que tu as changé et pourquoi (une ligne par changement).
 Vérifie aussi l'ordre des pages des thèmes qui se vendent (ci-dessous) : produits tôt sur l'accueil, preuves après les produits, fin jamais sur des produits, fiche qui commence par l'achat et finit par les autres produits, collection et panier courts.
 ${PAGE_PATTERNS}
-FAMILLE : vérifie que la famille choisie (champ « famille ») est bien celle que dit la PLANCHE DE MARQUE (couleurs, polices, direction artistique, voix), pas seulement le métier ; si une autre famille lui va mieux, change-la, dis pourquoi dans corrections, et remets l'allure, l'en-tête, le pied de page, l'ouverture et les photos dans les choix de la nouvelle famille. Garde les champs « famille », « familleWhy », « headerConstruction » et « footerConstruction ».
+FAMILLE : vérifie que la famille choisie (champ « famille ») est bien celle que dit la PLANCHE DE MARQUE (couleurs, polices, direction artistique, voix), pas seulement le métier ; si une autre famille lui va mieux, change-la, dis pourquoi dans corrections, et remets l'allure, l'en-tête, le pied de page, l'ouverture et les photos dans les choix de la nouvelle famille. Garde les champs « famille », « familleWhy », « pageStyle », « pageStyleWhy », « headerConstruction » et « footerConstruction ». Vérifie de même que le style de la page qui vend (« pageStyle ») est celui que demande ce que le client vend vraiment.
 Mêmes exigences que le concepteur (pages riches, aucune section sans contenu réel, une section de cartes par page, « Produit vedette » en haut de la fiche, jamais la même section deux fois, jamais deux sections de même rôle à la suite, pages obligatoires, identifiants de la liste uniquement).
 Réponse : uniquement le JSON demandé.`;
 
@@ -208,6 +212,8 @@ export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKin
     "",
     o.references ?? "",
     famillesBrief(),
+    "",
+    stylesBrief(o.site.business === "services" ? "services" : "products"),
     "",
     o.overused?.length ? `SECTIONS DÉJÀ PRISES DANS LES DERNIERS THÈMES DU STUDIO (pour d'autres marques) : ${o.overused.join(", ")}. Ne les reprends pas par habitude : seulement si, pour CE moment de CETTE marque, aucune autre section ne fait mieux (dis-le dans why).` : "",
     `BIBLIOTHÈQUE DE LA FAMILLE (dans un ordre propre à ce projet : l'ordre ne dit rien de la qualité ; identifiant · rôle · fond · densité · photos · titre : ce qu'elle fait) :`,

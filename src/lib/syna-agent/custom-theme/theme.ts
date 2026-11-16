@@ -73,6 +73,8 @@ export type CustomTheme = {
   /** Lot 4 : la famille du Studio dans laquelle le site est conçu (en coulisses, jamais dite au client), et ce qui l'a décidée. */
   famille?: string | null;
   familleWhy?: string | null;
+  /** Lot 4 : le style de la page qui vend (en coulisses). */
+  pageStyle?: string | null;
   version: 1;
   family: FamilyId;
   style: string;
