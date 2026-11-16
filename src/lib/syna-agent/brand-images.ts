@@ -96,7 +96,10 @@ const plain = (t: string) => t.normalize("NFC").replace(/[’ʼ`´]/g, "'").repl
  */
 export function textCheck(expected: string[], read: string[], name: string): { missing: string[]; extra: string[] } {
   const want = expected.map(plain).filter(Boolean), got = read.map(plain).filter(Boolean), all = got.join(" ");
-  const missing = expected.filter((t) => { const p = plain(t); return !!p && !got.includes(p) && !all.includes(p); });
+  // Un titre dessiné sur plusieurs lignes est souvent recopié ligne par ligne : il est cherché aussi dans la suite des
+  // mots lus, sans la ponctuation (essai réel du 16 novembre 2026 : « Cousu ici. Recousu ici. » lu en deux blocs).
+  const words = (t: string) => t.replace(/[^\p{L}\p{N}']+/gu, " ").trim(), run = ` ${words(all)} `;
+  const missing = expected.filter((t) => { const p = plain(t); return !!p && !got.includes(p) && !all.includes(p) && !run.includes(` ${words(p)} `); });
   // Un bloc lu peut réunir plusieurs textes attendus : ce qu'il en reste une fois ces textes retirés est en trop.
   const known = [...want, plain(name)].filter(Boolean).sort((a, b) => b.length - a.length);
   const extra = read.filter((t) => { let p = plain(t); if (!p) return false; for (const w of known) p = p.split(w).join(" "); return /[\p{L}\p{N}]/u.test(p); });
@@ -204,7 +207,7 @@ const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
 const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
-  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
+  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Le logo de l'en-tête est CELUI de la marque (compare-le à l'image « logo » fournie avec les autres) : même signe, même dessin de lettres ; sur un écran sombre, il peut être dans sa version claire. Un autre signe à la place du sien est un défaut (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
   post0: "une publication", post1: "une publication", post2: "une publication",
 };
 
@@ -362,7 +365,7 @@ export async function runBoardImages(o: {
     // Un logo à fond transparent est montré au relecteur posé sur du blanc, comme le client le verra.
     const seen = await Promise.all(slots.map(async (s) => ({ data: s === "logo" ? await onWhite(bufferOf(s)!) : bufferOf(s)!, label: s })));
     // Un objet qui porte un logo gardé d'avant : ce logo est joint, en dernier, pour que le relecteur compare.
-    const reference = !slots.includes("logo") && logo && slots.some((s) => s === "object" || s === "signs") ? await onWhite(logo) : null;
+    const reference = !slots.includes("logo") && logo && slots.some((s) => s === "object" || s === "signs" || s === "site") ? await onWhite(logo) : null;
     if (reference) seen.push({ data: reference, label: "logo" });
     if (capped) unreviewed();
     else try {
@@ -374,11 +377,12 @@ export async function runBoardImages(o: {
       // Le Studio compare la lecture du relecteur aux textes attendus. Quand son jugement et sa propre lecture se
       // contredisent (refus « texte » alors qu'il a tout recopié sans faute, ou accord alors qu'il a lu un texte en
       // trop), l'image est RELUE une seconde fois, seulement recopiée, et c'est la comparaison du Studio qui tranche.
-      const doubt: ImageSlot[] = [];
+      const doubt: ImageSlot[] = [], complete = new Set<ImageSlot>();
       for (const s of slots) {
         const v = review.images.find((r) => r.slot === s);
         if (!v) { drop(s, L("elle n'a pas pu être relue", "it could not be reviewed")); continue; }
         const c = textCheck(texts[s], v.read, x.name), exact = !c.missing.length && (s === "site" || !c.extra.length);
+        if (s === "site" && !c.missing.length) complete.add(s);
         if (!v.ok) {
           if (v.defect === "texte" && exact) doubt.push(s);
           else drop(s, v.defect === "texte" && (c.missing.length || c.extra.length) && v.read.length ? textReason(c) : v.why || L("elle ne passe pas ma relecture", "it does not pass my review"));
@@ -402,6 +406,9 @@ export async function runBoardImages(o: {
         for (const s of doubt) {
           const r = second?.images.find((y) => y.slot === s);
           // Jamais montrée sans vérification : pas de seconde lecture, pas d'image.
+          // La maquette dont la première lecture a trouvé le nom, le titre et le bouton est gardée, même si la seconde
+          // lecture n'a rien rendu (essai réel du 16 novembre 2026 : une bonne maquette jetée pour cette seule raison).
+          if (!r && complete.has(s)) { notes.push(`${SLOT_LABEL[s].fr} de ${key} : seconde lecture sans réponse ; gardé(e), la première lecture avait trouvé tous ses textes`); continue; }
           if (!r) { drop(s, L("je n'ai pas pu la vérifier une seconde fois", "I could not verify it a second time")); continue; }
           const c = textCheck(texts[s], r.read, x.name);
           if (c.missing.length || (s !== "site" && c.extra.length)) drop(s, textReason(c));

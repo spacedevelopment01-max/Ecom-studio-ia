@@ -608,6 +608,23 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(px(Math.floor(info.width / 2), Math.floor(info.height / 2))).toEqual([255, 255, 255]); // le dessin foncé est devenu clair
   });
 
+  it("maquette du site : comparée au logo de la planche, et gardée quand la seconde lecture ne rend rien alors que la première avait tout trouvé", async () => {
+    const t = await thread();
+    const expected = (prompt: string, slot: string) => [...(new RegExp(`slot "${slot}" : [^\\n]*Textes attendus : ([^\\n]*)`).exec(prompt)?.[1] ?? "").matchAll(/« (.+?) »/g)].map((m) => m[1]);
+    await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
+    const { log } = await chain(t, { imagesOnly: true, slots: ["site"], redo: ["A"] }, {
+      look: (id, c) => {
+        if (id.startsWith("imagereread")) return { images: [] }; // la seconde lecture ne rend rien
+        // Refusée « texte » alors que tous ses textes sont recopiés sans faute : le doute, donc une seconde lecture.
+        return { images: c.images.filter((i: any) => i.label === "site").map(() => ({ slot: "site", ok: false, defect: "texte", read: expected(c.prompt, "site"), why: "Le titre est mal écrit." })) };
+      },
+    });
+    const check = Object.keys(log.prompts).find((k) => k.startsWith("imagecheck-1-A"))!;
+    expect(log.prompts[check]).toMatch(/Le logo de l'en-tête est CELUI de la marque \(compare-le à l'image « logo » fournie avec les autres\)[^\n]*Un autre signe à la place du sien est un défaut/);
+    expect(log.ids.some((x) => x.startsWith("imagereread-1-A"))).toBe(true);
+    expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.site).toBeTruthy();
+  });
+
   it("identity.images : SINA refait elle-même seulement certaines images d'une planche, avec devis (retour du propriétaire : « c'est à SINA d'y faire, pas à toi »)", async () => {
     const t = await thread();
     const tool = getTool("identity.images")!;
@@ -924,6 +941,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(I.textCheck(["Pêche-verveine"], ["Peche-verveine"], "Pulpe")).toEqual({ missing: ["Pêche-verveine"], extra: ["Peche-verveine"] });
     expect(I.textCheck(["Goûter les six recettes"], ["PULPE Goûter les six recettes"], "Pulpe")).toEqual({ missing: [], extra: [] }); // un bloc lu d'un trait
     expect(I.textCheck([], [], "Pulpe")).toEqual({ missing: [], extra: [] });
+    // Un titre dessiné sur deux lignes et recopié ligne par ligne est bien le titre attendu (essai réel du 16 novembre 2026).
+    expect(I.textCheck(["Atelier Vasco", "Cousu ici. Recousu ici.", "Voir le cuir de près"], ["9:41", "Atelier Vasco", "Cousu ici.", "Recousu ici.", "Voir le cuir de près"], "Atelier Vasco").missing).toEqual([]);
+    expect(I.textCheck(["Cousu ici. Recousu ici."], ["Cousu ici.", "Recousu la."], "Atelier Vasco").missing).toEqual(["Cousu ici. Recousu ici."]);
     expect(I.textCheck([], ["Offre spéciale"], "Pulpe").extra).toEqual(["Offre spéciale"]);
 
     const t = await thread();
@@ -1167,7 +1187,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     const fourth = await chain(t, { imagesOnly: true, redo: ["A"], slots: ["site"] }, { draw: async () => square("#883311", 128, 128) });
     expect(fourth.log.ids).toEqual(["imagery-1-A:site", "image-1-A-site:site", "imagecheck-1-A:site"]);
     expect((fourth.log as any).refs["image-1-A-site:site"]).toEqual({ logo: true, scene: true, aspect: "9:16" });
-    expect(fourth.log.prompts["imagecheck-1-A:site"]).not.toMatch(/La dernière image jointe/);
+    // Le logo gardé est joint à la relecture de la maquette, pour comparer (essai réel du 16 novembre 2026 : une maquette
+    // gardée avec un autre signe que celui du logo de la planche).
+    expect(fourth.log.prompts["imagecheck-1-A:site"]).toMatch(/La dernière image jointe \(2\) est seulement le logo de la marque, pour comparer : ne la juge pas\./);
     const moved = J.journeyOf(t.cid).identities!.list[0].board!.images!;
     expect(moved.site!.id).not.toBe(held.site!.id);
     expect({ ...moved, site: undefined }).toEqual({ ...held, site: undefined });
