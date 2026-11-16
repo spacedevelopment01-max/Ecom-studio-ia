@@ -13,6 +13,7 @@ import { currentTheme, loadProject, saveThemeVersion } from "../../projects";
 import { validateCustomSection, validateSpec } from "../../theme/ops";
 import { linkMap, priceNotes, tenuePrestations, titleWeight } from "./render";
 import { loadCustomTheme } from "./theme";
+import { tenueMetiers } from "./tenue-data";
 import { customThemeSpec, type ExportProblem, type ShopifyExport } from "./to-shopify";
 
 const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "image/svg+xml": "svg" };
@@ -29,7 +30,9 @@ export function customThemeExport(projectId: string, o: { dropMissing?: boolean 
     products: products.map((x) => ({ handle: x.handle, title: x.data.title, categories: x.data.categories })),
     prestations: tenuePrestations(projectId), company: { shipping: company.shipping?.trim() || null, returns: company.returns?.trim() || null },
     priceNotes: priceNotes(projectId), titleWeight: titleWeight(p.brand?.fonts?.heading, t.tenue?.titres),
-    site: { phone: p.services?.phone || company.phone || null, address: p.services?.address || company.address || null, hours: p.services?.hours || null, area: p.services?.area || null },
+    site: { phone: p.services?.phone || company.phone || null, address: p.services?.address || company.address || null, hours: p.services?.hours || null, area: p.services?.area || null,
+      // Métiers : les vrais biens publiés et la vraie carte du client partent avec le site (jamais une ligne d'exemple).
+      ...tenueMetiers(projectId) },
     assetExt: (id) => { const a = getAsset(id); return a && a.project_id === projectId ? EXT[a.mime] ?? null : null; },
     linkMap: linkMap(t), logoAssetId: p.brand?.logo?.assetId ?? null, dropMissing: o.dropMissing, base: currentTheme(projectId)?.spec ?? null,
   });

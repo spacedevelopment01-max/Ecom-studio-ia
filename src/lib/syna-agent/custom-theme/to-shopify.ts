@@ -44,7 +44,7 @@ export type ExportInput = {
   /** Mentions vraies à dire près du prix (indice de réparabilité, paiement en plusieurs fois), confirmées par le client. */
   priceNotes?: string[];
   /** Coordonnées, horaires et zone du client : écrits tels quels dans les pages (téléphone, adresse, plan). */
-  site?: Pick<TenueSite, "phone" | "address" | "hours" | "area">;
+  site?: Pick<TenueSite, "phone" | "address" | "hours" | "area"> & Partial<Pick<TenueSite, "biens" | "carte">>;
   /** Extension du fichier d'un média de la bibliothèque (« jpg », « png »), ou null s'il n'existe plus. */
   assetExt: (assetId: string) => string | null;
   /** Texte de bouton ou de lien → clé de page (les liens écrits pour la marque, comme dans l'aperçu). */

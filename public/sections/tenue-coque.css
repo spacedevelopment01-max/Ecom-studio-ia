@@ -168,6 +168,12 @@
   .ctw .tn-ent:not([data-tn-c="plein-ecran"]) .tn-e-liens .tn-e-t{pointer-events:none}
 }
 
+/* ══ 5 et 6 · Les deux grands menus : leur forme vient du menu calculé (colonnes illustrées, vitrine de produits) ;
+   ici, le fond de leurs photos, et le panneau qui ne dépasse jamais l'écran ══ */
+.ctw .tn-ent[data-tn-c="mega-colonnes"] .tn-e-col .tn-ph{background-color:var(--tn-doux)}
+.ctw .tn-ent[data-tn-c="mega-produits"] .tn-e-carte .tn-ph{background-color:var(--tn-doux)}
+.ctw .tn-ent[data-tn-c="mega-colonnes"] .tn-e-cols,.ctw .tn-ent[data-tn-c="mega-produits"] .tn-e-vitrine{min-width:0}
+
 /* ══ 2 · Logo centré ══ */
 .ctw .tn-ent[data-tn-c="logo-centre"] .tn-e-barre{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);padding:0 8px}
 .ctw .tn-ent[data-tn-c="logo-centre"] .tn-e-burger{order:0;justify-self:start}

@@ -628,14 +628,14 @@
   .ctw .tn-biens h2{font-size:calc(56px*var(--tn-k))}
   .ctw .tn-biens>p{max-width:560px;font-size:18px}
   /* une rangée se remplit toujours : trois par ligne, deux ou un bien en fin de liste prennent la place */
-  .ctw .tn-biens .tn-cartes-b{grid-template-columns:repeat(6,minmax(0,1fr));gap:48px 24px;margin-top:40px}
-  .ctw .tn-biens .tn-bien{grid-column:span 2}
-  .ctw .tn-biens .tn-bien:nth-last-child(2):nth-child(3n+1),.ctw .tn-biens .tn-bien:last-child:nth-child(3n+2){grid-column:span 3}
+  .ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-cartes-b{grid-template-columns:repeat(6,minmax(0,1fr));gap:48px 24px;margin-top:40px}
+  .ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien{grid-column:span 2}
+  .ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:nth-last-child(2):nth-child(3n+1),.ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:last-child:nth-child(3n+2){grid-column:span 3}
   /* un bien seul en fin de liste : les quatre derniers se rangent deux par deux ; un seul bien en tout prend la largeur */
-  .ctw .tn-biens .tn-bien:nth-last-child(4):nth-child(3n+1),.ctw .tn-biens .tn-bien:nth-last-child(4):nth-child(3n+1)~.tn-bien{grid-column:span 3}
-  .ctw .tn-biens .tn-bien:only-child{grid-column:1/-1}
-  .ctw .tn-biens .tn-bien:nth-last-child(2):nth-child(3n+1) .tn-ph,.ctw .tn-biens .tn-bien:last-child:nth-child(3n+2) .tn-ph,.ctw .tn-biens .tn-bien:nth-last-child(4):nth-child(3n+1) .tn-ph,.ctw .tn-biens .tn-bien:nth-last-child(4):nth-child(3n+1)~.tn-bien .tn-ph{height:380px}
-  .ctw .tn-biens .tn-bien:only-child .tn-ph{height:460px}
+  .ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:nth-last-child(4):nth-child(3n+1),.ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:nth-last-child(4):nth-child(3n+1)~.tn-bien{grid-column:span 3}
+  .ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:only-child{grid-column:1/-1}
+  .ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:nth-last-child(2):nth-child(3n+1) .tn-ph,.ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:last-child:nth-child(3n+2) .tn-ph,.ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:nth-last-child(4):nth-child(3n+1) .tn-ph,.ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:nth-last-child(4):nth-child(3n+1)~.tn-bien .tn-ph{height:380px}
+  .ctw .tn-biens:not([data-tn-c="liste"],[data-tn-c="vedette"]) .tn-bien:only-child .tn-ph{height:460px}
   .ctw .tn-biens .tn-suite{margin-top:34px}
   .ctw .tn-biens[data-tn-c="liste"]{padding-left:max(40px,calc(50% - 480px));padding-right:max(40px,calc(50% - 480px))}
   .ctw .tn-biens[data-tn-c="liste"] .tn-cartes-b{display:block;margin-top:36px}

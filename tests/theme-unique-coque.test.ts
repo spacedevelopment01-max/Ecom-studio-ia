@@ -67,7 +67,7 @@ describe("la coque : huit en-têtes et six pieds de page, une clé chacun", () =
     const has = (sel: string) => RULES.includes(sel);
     // la première construction de l'en-tête à menu visible est son rendu de base : aucune règle à elle
     expect(has('[data-tn-c="classique"]')).toBe(false);
-    for (const key of ["logo-centre", "sur-photo", "mega-colonnes", "mega-produits", "plein-ecran"].filter((k) => !k.startsWith("mega"))) expect(has(`.tn-ent[data-tn-c="${key}"]`), key).toBe(true);
+    for (const key of ["logo-centre", "sur-photo", "mega-colonnes", "mega-produits", "plein-ecran"]) expect(has(`.tn-ent[data-tn-c="${key}"]`), key).toBe(true);
     // les deux grands menus sont dessinés par la forme du menu calculé (colonnes illustrées, vitrine de produits)
     for (const cls of [".tn-e-sous[data-tn-m]", ".tn-e-cols", ".tn-e-col", ".tn-e-h", ".tn-e-vitrine", ".tn-e-onglets", ".tn-e-rayon", ".tn-e-carte", ".tn-e-voir"]) expect(has(cls), cls).toBe(true);
     for (const root of [".ctw .tn-entete-liens", ".ctw .tn-entete-annonce .tn-e-msg", ".ctw .tn-entete-services .tn-e-tel", ".ctw .tn-pied-lettre .tn-form", ".ctw .tn-pied-services .tn-p-tel", ".ctw .tn-pied-services ul[data-tn-zone]", ".ctw .tn-pied-reassurance .tn-p-gar"]) expect(has(root), root).toBe(true);

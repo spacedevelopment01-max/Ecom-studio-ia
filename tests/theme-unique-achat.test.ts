@@ -277,9 +277,9 @@ describe.runIf(!!process.env.ACHAT_OUT)("module achat : planches en image, trois
     const single = [...Object.entries(ACHAT_FACONS).flatMap(([id, list]) => list.slice(id === "tn-achat" ? 0 : 1).map((c) => ({ id, c: c.key }))), ...ACHAT_SECTIONS.flatMap((s) => s.constructions.map((c) => ({ id: s.id, c: c.key })))]
       .map((x) => ({ key: `${x.id.slice(3)}--${x.c}`.slice(0, 44), sections: [x] }));
     const styles = [
-      { key: "style-1-simple", sections: [{ id: "tn-achat", c: "simple" }, { id: "tn-description", c: "sans-titre" }] },
+      { key: "style-1-simple", sections: [{ id: "tn-achat", c: "simple" }] },
       { key: "style-2-vente-directe", sections: [{ id: "tn-achat", c: "vente-directe" }, { id: "tn-lots", c: "cartes" }] },
-      { key: "style-3-haut-de-gamme", sections: [{ id: "tn-achat", c: "grandes-photos" }, { id: "tn-description", c: "encadre" }] },
+      { key: "style-3-haut-de-gamme", sections: [{ id: "tn-achat", c: "grandes-photos" }] },
       { key: "style-4-technique", sections: [{ id: "tn-achat", c: "technique" }, { id: "tn-versions", c: "lignes" }] },
       { key: "style-5-soin", sections: [{ id: "tn-achat", c: "fond-doux" }, { id: "tn-pictos", c: "rangee" }] },
       { key: "style-6-mode", sections: [{ id: "tn-achat", c: "portrait" }, { id: "tn-versions", c: "pastilles" }, { id: "tn-guide-tailles", c: "tiroir" }] },
@@ -320,4 +320,59 @@ describe.runIf(!!process.env.ACHAT_OUT)("module achat : planches en image, trois
     }
     expect(overflow, "rien ne dépasse de l'écran en largeur").toEqual([]);
   }, 900_000);
+
+  // Écran étroit (320 px) et barre d'achat : une page statique, sans le Studio. Les polices de la marque n'y sont pas
+  // chargées : des polices larges du système les remplacent, pour juger les débordements au plus serré.
+  it("à 320 px rien ne déborde ; la barre d'achat reprend la vignette et le prix du bloc", async () => {
+    const { chromium } = await import("playwright");
+    const { chromiumPath } = await import("@/lib/theme/snapshot");
+    const { markMissing } = await import("@/lib/syna-agent/custom-theme/tenue");
+    const out = process.env.ACHAT_OUT!;
+    fs.mkdirSync(out, { recursive: true });
+    const dir = path.join(process.cwd(), "public", "sections");
+    const css = ["tenue.css", "tenue-produit.css", "tenue-achat.css"].map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n");
+    const js = ["tenue.js", "tenue-achat.js"].map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n");
+    const img = (f: string) => `file://${path.join(process.cwd(), "public", "theme-assets", f)}`;
+    const list = [...Object.entries(ACHAT_FACONS).flatMap(([id, l]) => l.map((c) => [id, c.key] as const)), ...ACHAT_SECTIONS.flatMap((x) => x.constructions.map((c) => [x.id, c.key] as const))];
+    const fill = (id: string) => {
+      let h = tenueSection(id)!.html.replace(/photos\//g, `file://${dir}/photos/`);
+      if (id === "tn-achat") h = withTenueBuyBlock(h.replace(">Thé vert jasmin</h1>", ">Collier Museau</h1>"), { images: [1, 2, 3, 4, 5].map((n) => img(`museau-club/collier-0${n}.webp`)), price: "29 €", shipping: "Chez toi en 2 à 4 jours, 4,90 €", returns: "30 jours pour changer d'avis", notes: ["Indice de réparabilité : 8,2 sur 10"] });
+      if (id === "tn-versions") h = D.withTenueVersions(h, [{ name: "Couleur", values: [{ label: "Bleu électrique", teinte: "#2f5aa8" }, { label: "Rouge", teinte: "#b3262e" }, { label: "Jaune moutarde", teinte: "#d1a23a", soldOut: true }] }, { name: "Taille", values: ["XS", "S", "M", "L", "XL", "XXL"].map((label) => ({ label })) }]);
+      if (id === "tn-lots") h = D.withTenueLots(h, { unit: "bouteille", cents: 124900, tiers: [{ qty: 2, pct: 10 }, { qty: 3, pct: 15 }] });
+      return markMissing(h);
+    };
+    const tenues = [["fins", "pilule", "niche", "uni", "normal", "Georgia,serif"], ["gras", "etiquette", "droit", "toile", "machine", "'Arial Black',Impact,sans-serif"], ["capitales", "ombre", "penche", "uni", "normal", "'Arial Black',Impact,sans-serif"]];
+    const body = tenues.map((t) => `<div class="ctw" data-tn-titres="${t[0]}" data-tn-bouton="${t[1]}" data-tn-cadre="${t[2]}" data-tn-fond="${t[3]}" data-tn-petits="${t[4]}" style="--f-title:${t[5]};--tn-arrondi:${t[2] === "droit" ? "0px" : "14px"}"><div class="frame"><main class="tb-pg">${list.map(([id, key]) => fill(id).replace(/^<section\b/, `<section data-essai="${id} ${key} (${t[0]})" data-tn-c="${key}"`)).join("\n")}</main></div></div>`).join("\n");
+    const file = path.join(out, "statique.html");
+    fs.writeFileSync(file, `<!doctype html><html data-po-barre="1"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}.ctw{--tn-fond:#F6F1E7;--tn-encre:#1F1B16;--tn-accent:#B4532A;--tn-doux:#E9D8B8;--tn-texte:#2c2620;--tn-sourd:#6d655c;--tn-bouton:#1F1B16;--tn-sur-bouton:#fbf8f2;--f-ui:Arial,sans-serif}${css}</style><body>${body}<script>${js}</script></body></html>`);
+    const browser = await chromium.launch({ executablePath: chromiumPath() ?? undefined });
+    try {
+      const over: string[] = [];
+      for (const width of [320, 390, 1280]) {
+        const page = await browser.newPage({ viewport: { width, height: 800 } });
+        await page.goto(`file://${file}`);
+        over.push(...await page.evaluate((w) => [...document.querySelectorAll("section[data-essai]")].flatMap((sec) => {
+          const wide = [...sec.querySelectorAll("*")].filter((el) => { const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 0 && cs.position !== "fixed" && !el.closest(".tn-galerie,.tn-vignettes,.tn-barre") && r.right > w + 1.5 && getComputedStyle(sec).overflowX !== "clip"; });
+          return document.documentElement.scrollWidth > w + 1 && wide.length ? [`${w} px · ${sec.getAttribute("data-essai")} : ${wide[0].tagName}.${wide[0].className}`] : [];
+        }), width));
+        if (width === 320) expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(321);
+        // La barre d'achat : le bouton du bloc sorti de l'écran, elle monte avec la vignette et le prix.
+        if (width !== 320) {
+          const bar = page.locator('.tn-achat[data-tn-c="vente-directe"] > .tn-barre').first();
+          expect(await bar.locator(".tn-vig").count()).toBe(1);
+          expect(await bar.locator(".tn-prix-b").textContent()).toBe("29 €");
+          expect(await page.locator('.tn-achat[data-tn-c="simple"] > .tn-barre .tn-vig').count()).toBe(0); // la façon d'origine n'est pas touchée
+          // (Le bouton passe d'abord à l'écran, comme quand on fait défiler : la barre ne se décide qu'à ce moment-là.)
+          await page.evaluate(() => { const b = document.querySelector('.tn-achat[data-tn-c="vente-directe"] > .tn-bt')!; scrollTo(0, b.getBoundingClientRect().top + scrollY - 300); });
+          await page.waitForTimeout(300);
+          await page.evaluate(() => { const b = document.querySelector('.tn-achat[data-tn-c="vente-directe"] > .tn-bt')!; scrollTo(0, b.getBoundingClientRect().bottom + scrollY + 40); });
+          await page.waitForTimeout(700);
+          expect(await bar.evaluate((el) => el.classList.contains("tn-on"))).toBe(true);
+          fs.writeFileSync(path.join(out, `barre-achat__${width === 390 ? "tel" : "ordi"}.jpg`), await page.screenshot({ type: "jpeg", quality: 86 }));
+        }
+        await page.close();
+      }
+      expect(over, "rien ne dépasse").toEqual([]);
+    } finally { await browser.close(); }
+  }, 300_000);
 });

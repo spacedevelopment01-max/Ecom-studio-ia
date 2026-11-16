@@ -42,7 +42,7 @@ import { educated, knowledgeCapMicro, knowledgeTypicalMicro, themeKnowledgeReady
 import { proposeMenu, validMenu } from "./menu";
 import { familleGaps, fitFamille } from "./familles";
 import { fitStyle, styleGaps } from "./styles-de-page";
-import { dataGaps } from "./tenue-data";
+import { dataGaps, tenueMetiers } from "./tenue-data";
 import { installCustomTheme } from "./install";
 import { menuProducts } from "./render";
 import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_SYSTEM, ORIGINALITY_TYPICAL_MICRO, OriginalitySchema, originalityNote, originalityPrompt, type Originality, type OriginalityOutcome } from "./originality";
@@ -289,7 +289,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     // Un concept n'a que deux pages : les autres pages obligatoires viennent après le choix du client.
     .filter((x) => mode.kind !== "concept" || !/^page « .* » absente/.test(x));
   const research = (() => { try { return j ? activityPlan(p.id, j).objections.map((o) => o.objection) : []; } catch { return []; } })();
-  const catalogueFacts = (() => { try { const list = listProducts(p.id); return { products: list.length, families: new Set(list.flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size }; } catch { return { products: 0, families: 0 }; } })();
+  const catalogueFacts = (() => { try { const list = listProducts(p.id); const m = (() => { try { return tenueMetiers(p.id); } catch { return {}; } })() as { biens?: unknown[]; carte?: { plats?: unknown[] }[] }; return { products: list.length, families: new Set(list.flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size, biens: m.biens?.length ?? 0, plats: (m.carte ?? []).reduce((n, r) => n + (r.plats?.length ?? 0), 0) }; } catch { return { products: 0, families: 0 }; } })();
   const check = (d: Design) => {
     let t: CustomTheme | null = null, rules: string[];
     try { t = build(d); rules = blocking(t); } catch (e) { rules = [(e as Error).message]; }
