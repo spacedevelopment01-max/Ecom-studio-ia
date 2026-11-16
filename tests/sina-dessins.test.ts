@@ -1,7 +1,7 @@
 /**
  * SINA — dessins en code (la lettre remplacée du nom dessiné, et les dessins des planches enregistrées avant le lot 2) :
  * un dessin n'arrive jamais tel quel à l'écran. Il passe par une liste blanche stricte et devient un arbre de données
- * sûr, que le Studio redessine. L'illustratrice qui écrivait ces dessins a été retirée le 17 novembre 2026 : plus
+ * sûr, que le Studio redessine. L'illustratrice qui écrivait ces dessins a été retirée le 16 novembre 2026 : plus
  * aucun dessin en code n'est créé pour une planche. Aucun appel d'IA.
  */
 import { describe, expect, it } from "vitest";

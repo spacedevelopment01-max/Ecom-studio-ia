@@ -4,7 +4,7 @@
  *
  * La création passe par la CHAÎNE de `brand-chain.ts` (tâche de fond : étude du marché, idées, noms par équipes,
  * planches, directeur de création) et propose 2, 3 ou 4 identités selon le forfait. C'est la seule façon de faire :
- * l'ancienne création en un seul appel a été retirée le 17 novembre 2026. Le choix est gratuit et enregistre la marque
+ * l'ancienne création en un seul appel a été retirée le 16 novembre 2026. Le choix est gratuit et enregistre la marque
  * du projet (nom, slogan, promesse, palette, polices, ton).
  */
 import { z } from "zod";
@@ -91,7 +91,7 @@ export const identityView = (x: Identity) => ({
 
 const proposeTool: AgentTool<ProposeArgs> = {
   name: "identity.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 1 : crée les identités de marque du client, VRAIMENT différentes : 2, 3 ou 4 selon son forfait (le Studio le sait). Chaque identité est une PLANCHE de marque : l'idée, le nom et sa logique, la signature, les signes, l'objet, le site sur téléphone, des publications, la voix, ce qui reste à prouver ; couleurs, polices et ton compris (le logo est dessiné à l'étape 2). Tu étudies d'abord son marché sur le web (paroles réelles de clients avec leur page), tu cherches l'idée et les noms, puis tu relis tout : tâche de fond de plusieurs minutes. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les phrases (couleurs, polices et le reste gardés). Les planches s'affichent dans le fil.",
+  description: "Étape 1 : crée les identités de marque du client, VRAIMENT différentes : 2, 3 ou 4 selon son forfait (le Studio le sait). Chaque identité est une PLANCHE de marque : l'idée, le nom et sa logique, la signature, les signes, l'objet, le site sur téléphone, des publications, la voix, ce qui reste à prouver ; couleurs, polices et ton compris (chaque planche porte son logo, sa grande image et le haut de son site sur téléphone ; l'objet, les signes en photo et les publications en images sont créés pour l'identité choisie). Tu étudies d'abord son marché sur le web (paroles réelles de clients avec leur page), tu cherches l'idée et les noms, puis tu relis tout : tâche de fond de plusieurs minutes. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les phrases (couleurs, polices et le reste gardés). Les planches s'affichent dans le fil.",
   args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(4).optional(), only: z.enum(["noms"]).optional() }).strict(),
   estimate: (ctx, a) => {
     const w = chainWork(ctx, a);
@@ -163,7 +163,7 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
     fonts: x.fonts,
     logo: logoAssetId
       ? { ...base.logo, assetId: logoAssetId, status: "provided", concept: x.logoIdea }
-      : { concept: "", status: "proposed" }, // le logo est dessiné à l'étape 2, en carte blanche
+      : { concept: "", status: "proposed" }, // le logo vient de la planche choisie
     // Le « pourquoi » s'adresse au client (tutoiement) : ce n'est pas l'histoire de la marque (la charte affiche « [À
     // écrire à partir de faits réels…] » tant qu'elle n'est pas donnée).
     story: base.story,

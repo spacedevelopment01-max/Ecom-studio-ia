@@ -29,9 +29,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - Une conversation par lot ; elle commence par la lecture des deux documents ci-dessus.
 - Où on en est : lot 0 (ménage) fait le 15 novembre 2026. Lot 1 fait le même jour : SINA essayée pour de vrai, anciennes
   façons retirées (ancien assistant, Pilote, formulaire, écrans de préparation), écran réglé (SINA en grand pendant la
-  création, tableau de bord à côté) ; compte rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`. Lot 2 (la marque) :
-  construit, essai réel en cours au 16 novembre, pas encore fini ni fusionné, anciennes façons pas encore retirées ;
-  compte rendu et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Suite : 3 les
+  création, tableau de bord à côté) ; compte rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`. Lot 2 (la marque) fait le
+  16 novembre 2026 : SINA a créé seule la marque de trois clients inventés, anciennes façons retirées ; compte rendu
+  et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Suite : 3 les
   trois angles, 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
   publicités, 9 les vidéos.
 
@@ -64,7 +64,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - Si un modèle n'arrive pas à écrire un mot dans une image, changer la phrase plutôt que repayer des essais.
 - Dépensé en essais réels avant le lot 2 : environ 19,14 € comptés par le Studio (dont 2,94 € pour l'essai du lot 1,
   sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €). Essai du lot 2, au 16 novembre 2026 :
-  39,96 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés).
+  40,06 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés).
 - **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
 - **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni
   engagement ; budget d'IA à 50 % du prix hors taxes le premier mois, puis 40 % ; par forfait : 2, 3 et 4 identités

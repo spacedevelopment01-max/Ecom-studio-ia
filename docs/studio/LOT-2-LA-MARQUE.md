@@ -1,8 +1,9 @@
 # Lot 2 : la marque
 
-Compte rendu du 15 novembre 2026, complété le 16. Accord du propriétaire pour construire : « Oui ». **L'essai réel
-est en cours** (voir « L'essai réel » plus bas). Les anciennes façons ont été retirées le 17 novembre 2026 (voir plus
-bas).
+Compte rendu des 15 et 16 novembre 2026. Accord du propriétaire pour construire : « Oui ». **Lot fini le 16 novembre
+2026** : SINA a créé seule, avec la vraie IA, la marque de trois clients inventés (un réparateur de vélos, une
+maroquinière, une torréfactrice), de la première question à la marque finie. Les anciennes façons sont retirées. Fusion
+demandée par le propriétaire (« Lance la fusion juste après »).
 
 ## Ce qui est construit
 
@@ -51,7 +52,7 @@ bas).
 Repère : le dernier essai réel d'avant (trois identités, dix-huit images) avait coûté 5,25 € pour un devis de 7,92 €.
 Le différé retire encore la moitié du prix des textes servis ainsi ; ce que cela donne vraiment sera mesuré à l'essai.
 
-## Anciennes façons retirées le 17 novembre 2026
+## Anciennes façons retirées le 16 novembre 2026
 
 Il ne reste qu'une façon de créer une marque : la chaîne (`syna.brand`), le choix du client (`identity.choose`), puis la
 fin de marque (`brand.finish`) et sa validation (`brand.kit_validate`).
@@ -103,7 +104,7 @@ fin de marque (`brand.finish`) et sa validation (`brand.kit_validate`).
 
 ## L'essai réel (15 et 16 novembre 2026)
 
-Accord du propriétaire : « Oui », plafond de 25 €. **Dépensé au 17 novembre : 39,96 €** ; le dépassement vient d'essais qu'il a
+Accord du propriétaire : « Oui », plafond de 25 €. **Dépensé : 40,06 €** ; le dépassement vient d'essais qu'il a
 demandés (logos refaits plusieurs fois, maquettes refaites). SINA a travaillé seule ; Claude n'a joué que les clients.
 
 Vu avec la vraie IA :
@@ -156,8 +157,9 @@ Défauts connus, dits au propriétaire, pas corrigés :
 - la consigne du logo reçoit aussi le texte de l'ambiance photo ;
 - le devis de fin de marque compte toujours le prix du symbole ; `PhoneSite` est du code mort.
 
-Reste à faire pour finir le lot : une marque créée de zéro pour un nouveau client inventé avec toutes ces règles,
-puis le retrait des anciennes façons.
+Pas encore vu avec la vraie IA au moment de la fusion : la réécriture des phrases par SINA après les remarques du
+lecteur qui ne sait rien (le lecteur lui-même a été essayé pour de vrai sur 60 phrases : 34 renvoyées, dont celles que
+le propriétaire n'avait pas comprises), et la forme corrigée de la consigne d'image.
 
 ## Vérifié, pas vérifié
 

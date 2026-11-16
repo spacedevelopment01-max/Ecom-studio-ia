@@ -305,7 +305,7 @@ export async function runBoardImages(o: {
   // « on ne peut pas donner une identité de marque incomplète »).
   const dropped = new Map<ImageSlot, string>();
   // Ce qui est DIT au client pour une image non gardée : une phrase simple du Studio, jamais les mots du relecteur
-  // (retour du 17 novembre 2026 : « blocs de pixels visibles » affiché à une cliente). La raison détaillée du relecteur
+  // (retour du 16 novembre 2026 : « blocs de pixels visibles » affiché à une cliente). La raison détaillée du relecteur
   // sert seulement à refaire l'image.
   const saidWhy = new Map<ImageSlot, string>();
   const SAID: Record<string, string> = { texte: L("un texte y est mal écrit", "a text is misspelt"), personne: L("une personne y apparaît", "a person appears"), coupe: L("le sujet y est coupé", "the subject is cropped"), abime: L("l'image est abîmée", "the image is damaged"), autre: L("elle n'est pas au niveau", "it is not good enough") };

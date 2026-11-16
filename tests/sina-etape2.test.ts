@@ -2,7 +2,7 @@
  * SINA — le logo et la charte de la marque (repère 2 et 3 du parcours) : ce que SINA doit faire après le choix de
  * l'identité, la charte et ses favicons, et les règles de relecture des logos du moteur (rendus interdits, notes de
  * référence du propriétaire). Les trois logos libres, le logo redessiné et l'outil `brand.kit` ont été retirés le
- * 17 novembre 2026 : la fin de marque a ses tests dans `sina-marque-finie.test.ts`. Aucun appel d'IA.
+ * 16 novembre 2026 : la fin de marque a ses tests dans `sina-marque-finie.test.ts`. Aucun appel d'IA.
  */
 import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 import { describe, expect, it } from "vitest";

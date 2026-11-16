@@ -5,7 +5,7 @@
  * planche comme proposition du moteur de logos (`saveBoardLogo`) et, en secours quand aucun logo n'est validé, le nom
  * dessiné par le Studio, exact à la lettre (`savePlancheLogo`).
  *
- * Les trois logos libres, le logo redessiné et la tâche de fond « syna.logos » ont été retirés le 17 novembre 2026.
+ * Les trois logos libres, le logo redessiné et la tâche de fond « syna.logos » ont été retirés le 16 novembre 2026.
  */
 import { contrast } from "../color";
 import { L } from "../i18n-server";

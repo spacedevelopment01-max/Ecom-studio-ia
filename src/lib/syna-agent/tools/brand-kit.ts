@@ -1,7 +1,7 @@
 /**
  * Étape « La marque » du parcours SINA : la validation de sa marque complète par le client. La charte elle-même est
  * préparée par la fin de marque (`brand-finish.ts`, qui appelle `buildBrandKit` de ../brand-kit.ts) ; l'ancien outil
- * `brand.kit` appelé à la main a été retiré le 17 novembre 2026.
+ * `brand.kit` appelé à la main a été retiré le 16 novembre 2026.
  */
 import { z } from "zod";
 import { L } from "../../i18n-server";

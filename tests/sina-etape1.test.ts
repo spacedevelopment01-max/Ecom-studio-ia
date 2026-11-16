@@ -2,7 +2,7 @@
  * SINA — les identités de marque : ce qui se mesure sans IA (palettes et contrastes, couleurs refusées, polices), les
  * références du propriétaire, le choix du client (avec mélange et retouches mot pour mot) enregistré comme marque du
  * projet, la refonte respectée (nom, slogan, logo gardés). L'ancienne création en un seul appel a été retirée le
- * 17 novembre 2026 : la création par la chaîne a ses tests (sina-chaine-marque, sina-routes-de-marque). Les identités
+ * 16 novembre 2026 : la création par la chaîne a ses tests (sina-chaine-marque, sina-routes-de-marque). Les identités
  * de ces tests sont posées dans le parcours telles quelles. Aucun appel d'IA.
  */
 import { describe, expect, it } from "vitest";

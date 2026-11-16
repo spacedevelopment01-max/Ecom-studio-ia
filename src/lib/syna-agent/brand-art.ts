@@ -1,7 +1,7 @@
 /**
  * Liste blanche des dessins en code (SVG) : la forme sûre d'un dessin gardé dans une planche de marque.
  *
- * L'illustratrice qui écrivait ces dessins (scène, objet, signes, publications) a été retirée le 17 novembre 2026 :
+ * L'illustratrice qui écrivait ces dessins (scène, objet, signes, publications) a été retirée le 16 novembre 2026 :
  * une planche ne reçoit plus de dessin en code, ses images sont créées à part (`brand-images.ts`). Ce fichier reste
  * pour ce qui en dépend encore : la forme des planches enregistrées (`brand-board.ts`), le nom dessiné quand une lettre
  * y est remplacée par un dessin (`brand-wordmark.ts`, le secours quand aucun logo n'est validé) et l'écran, qui ne

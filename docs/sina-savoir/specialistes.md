@@ -75,7 +75,7 @@ Rien de cela n'est construit. À placer dans l'ordre avec le propriétaire.
 
 1. **Finir la marque** : le logo de la planche choisie devient le logo du projet ; la relecture des dessins en image.
    **Fait le 13 novembre 2026** (`logos.ts` : `saveBoardLogo`), puis repris au lot 2 : le logo est adopté par la fin de
-   marque (`brand-finish.ts`). La relecture des dessins en image a été retirée le 17 novembre 2026 avec l'illustratrice :
+   marque (`brand-finish.ts`). La relecture des dessins en image a été retirée le 16 novembre 2026 avec l'illustratrice :
    une planche ne porte plus de dessin en code.
 2. **Les textes et les photos du thème sur mesure** : directeur de création des textes, directrice artistique des photos.
    **Fait le 13 novembre 2026**, testé avec une IA simulée (`custom-theme/brand.ts` : `COPY_REVIEW_SYSTEM`, étapes

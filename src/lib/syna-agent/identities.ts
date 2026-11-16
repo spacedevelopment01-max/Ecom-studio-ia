@@ -2,7 +2,7 @@
  * Ce qu'est une identité de marque pour SINA : sa forme (nom, signature, fond, palette, polices, ton, planche), les
  * polices proposables et leur caractère, et les contrôles gratuits qui se mesurent (palette et contrastes, couleurs
  * refusées par le client, polices de texte). La création elle-même passe par la chaîne (`brand-chain.ts`) ; l'ancienne
- * création en un seul appel a été retirée le 17 novembre 2026.
+ * création en un seul appel a été retirée le 16 novembre 2026.
  */
 import { z } from "zod";
 import { FONT_FILES, FONT_HANDLES } from "../theme/render";
