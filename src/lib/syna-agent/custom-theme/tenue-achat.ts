@@ -81,6 +81,65 @@ export const ACHAT_SECTIONS: TenueSection[] = [
   }),
 ];
 
+/** Pièces du style « vente directe » (un produit vendu sur sa promesse, à un visiteur venu d'une publicité, sur téléphone). Tout fait vient du client. */
+const PAIRE = () => `<li><span>${M("une gêne que ton client vit, avec ses mots")}</span><b>${M("ce que le produit y change, un fait vrai")}</b></li>`;
+const CRITERE = () => `<li><span>${M("un critère qui compte")}</span><p><i>Oui</i><i>Non</i></p></li>`;
+const AVANTAGE = (file: string) => `<li><div class="tn-ph tn-cadre" ${ph(file)}></div><div><b>${M("un avantage, en quelques mots")}</b><span>${M("ce que ça change, concrètement")}</span></div></li>`;
+const AVIS_MUR = (file?: string) => `<li>${file ? `<div class="tn-ph" ${ph(file)}></div>` : ""}<blockquote>${M("avis d'un client")}</blockquote><span>${M("prénom et date")}</span></li>`;
+
+const DIRECT_SECTIONS: TenueSection[] = [
+  sec({
+    id: "tn-probleme-reponse", title: "Le problème, puis la réponse", kind: "Promesse · fiche produit et accueil", role: "produit",
+    does: "Ce que vit le visiteur aujourd'hui, puis ce que le produit y change, ligne à ligne : deux temps très lisibles, juste sous l'achat. Chaque gêne est dite avec les mots du client ; chaque réponse est un fait vrai du produit, jamais une promesse de résultat. Trois paires au plus ; une paire sans fait confirmé ne se pose pas.",
+    constructions: [{ key: "deux-temps", label: "deux blocs l'un après l'autre : « aujourd'hui » en clair et barré d'un trait, puis « avec lui » sur un panneau sombre, coché" }, { key: "face-a-face", label: "un tableau à deux colonnes : chaque gêne à gauche, sa réponse en face à droite, sur fond de couleur" }],
+    trait: { fond: "clair", densite: "moyenne", photos: 0, hauteur: 520 },
+    html: `<section class="tn tn-probleme-reponse"><h2>Ce qui change.</h2><div class="tn-deux-temps"><small class="tn-t-avant tn-avec-lignes">Aujourd'hui</small><small class="tn-t-apres tn-avec-lignes">Avec lui</small><ul>${PAIRE()}${PAIRE()}${PAIRE()}</ul></div></section>`,
+  }),
+  sec({
+    id: "tn-nous-et-autres", title: "Nous et les autres", kind: "Comparaison · fiche produit", role: "comparatif",
+    does: "Le produit comparé à la solution habituelle, critère par critère, avec un oui ou un non dans chaque case. Seulement des faits que le client confirme et peut prouver ; jamais une marque concurrente nommée, jamais un critère choisi pour tromper. Quatre critères au plus. Ce n'est pas le comparatif de la gamme (tn-comparatif), qui compare les produits du client entre eux.",
+    constructions: [{ key: "tableau", label: "un tableau : les critères en lignes, le produit dans une colonne sombre à coches, la solution habituelle à côté" }, { key: "lignes", label: "une ligne par critère en grand ; dessous deux pastilles, la pleine pour le produit, la bordée pour la solution habituelle" }],
+    trait: { fond: "clair", densite: "dense", photos: 0, hauteur: 520 }, data: "les faits confirmés par le client",
+    html: `<section class="tn tn-nous-et-autres" data-tn-face><h2>Ce qui fait la différence.</h2><div class="tn-tetes tn-avec-lignes"><span></span><b>Ce produit</b><span>${M("la solution habituelle")}</span></div><ul>${CRITERE()}${CRITERE()}${CRITERE()}${CRITERE()}</ul><p class="tn-note">${M("d'où viennent ces faits")}</p></section>`,
+  }),
+  sec({
+    id: "tn-appel-produit", title: "Le produit, son prix, son bouton", kind: "Appel à acheter · accueil et fin de fiche", role: "conversion", pour: "produits",
+    does: "La vraie photo du produit, son nom, son vrai prix, le bouton d'achat et, en une ligne, la livraison et les retours du client. En bas d'une fiche produit, pour acheter sans remonter ; ou sur l'accueil d'une boutique à un seul produit, juste sous l'ouverture. Tout est lu au catalogue et dans la fiche de l'entreprise : sans prix, « [À compléter] » ; un produit épuisé le dit et ne se commande pas.",
+    constructions: [{ key: "bande-sombre", label: "une bande sombre d'un bord à l'autre : la photo du produit, puis la phrase, le nom, le prix et le bouton (côte à côte sur grand écran)" }, { key: "carte", label: "une carte de couleur douce, tout centré : la photo en haut, le nom, le prix en grand, le bouton, les repères en pastilles" }],
+    trait: { fond: "sombre", densite: "moyenne", photos: 1, hauteur: 640 }, data: "le produit de la page (ou le premier du catalogue), son prix, son stock, la livraison et les retours du client",
+    html: `<section class="tn tn-appel-produit" data-tn-appel-produit><div class="tn-ph" ${ph("md-o4.webp")}></div><div class="tn-corps-a"><h2>Prêt à l'essayer&nbsp;?</h2><b class="tn-nom-a">${M("nom du produit")}</b><div class="tn-prix">${M("prix")}</div><a class="tn-bt" ${A("product")}>Ajouter au panier</a><ul class="tn-reperes"><li>Livraison : ${M()}</li><li>Retours : ${M()}</li></ul></div></section>`,
+  }),
+  sec({
+    id: "tn-livraison", title: "La livraison, étape par étape", kind: "Confiance · fiche produit et aide", role: "confiance", pour: "produits",
+    does: "De la commande à la réception, en quatre étapes : la confirmation, la préparation, le départ du colis avec son transporteur et son suivi, la réception. En tête, la livraison telle que le client l'a donnée. C'est ici qu'une boutique gagne ou perd la confiance : un délai, un transporteur ou un pays d'expédition que le client n'a pas donnés s'écrivent « [À compléter] », jamais un délai flatteur.",
+    constructions: [{ key: "frise", label: "une frise : une pastille numérotée par étape, reliées d'un trait (debout sur téléphone, couchée sur grand écran)" }, { key: "cartes", label: "une carte de couleur douce par étape, deux de front, le grand numéro en haut" }],
+    trait: { fond: "clair", densite: "moyenne", photos: 0, hauteur: 560 }, data: "la livraison saisie par le client",
+    html: `<section class="tn tn-livraison"><h2>De ta commande à ta porte.</h2><p class="tn-vrai" data-tn-livraison>${M("délai et prix de livraison")}</p><ol><li><b>Tu commandes</b><span>Tu reçois un e-mail de confirmation.</span></li><li><b>Nous préparons</b><span>${M("délai de préparation")}</span></li><li><b>Le colis part</b><span>${M("transporteur et suivi")}</span></li><li><b>Tu le reçois</b><span>${M("délai de livraison")}</span></li></ol><a ${A("aide")}>Suivre une commande</a></section>`,
+  }),
+  sec({
+    id: "tn-garantie", title: "La garantie de retour, mise en avant", kind: "Confiance · fiche produit et accueil", role: "confiance", pour: "produits",
+    does: "Les vraies conditions de retour du client, dites en grand pour lever la dernière crainte avant l'achat : un sceau avec le délai, une phrase, les conditions telles qu'il les a écrites, et le lien vers la page des retours. Seulement ce que le client s'engage vraiment à faire : sans conditions de retour, tout reste « [À compléter] » ; jamais un « satisfait ou remboursé » qu'il n'a pas écrit.",
+    constructions: [{ key: "sceau", label: "tout centré : un sceau rond avec le délai de retour, la phrase en grand, les conditions dessous" }, { key: "bande", label: "une bande de couleur douce d'un bord à l'autre : le sceau à gauche, la phrase et les conditions à droite" }],
+    trait: { fond: "clair", densite: "aérée", photos: 0, hauteur: 420 }, data: "les retours saisis par le client",
+    html: `<section class="tn tn-garantie" data-tn-garantie><div class="tn-sceau-g"><b>Retours</b><span>${M("délai de retour")}</span></div><h2>Et s'il ne te convient pas&nbsp;?</h2><p class="tn-conditions">${M("conditions de retour")}</p><a ${A("aide")}>Lire les conditions de retour</a></section>`,
+  }),
+  sec({
+    id: "tn-mur-avis", title: "Le mur d'avis", kind: "Avis · fiche produit et accueil", role: "confiance", authentic: "les avis et les photos de tes clients",
+    does: "Les vrais avis des clients en mosaïque, chacun avec son prénom, sa date et, quand elle existe, la photo que le client a envoyée. Aucun avis, aucune note, aucune photo d'exemple : sans vrais avis, la pièce ne se pose pas. Une ligne dit d'où viennent les avis et s'ils sont vérifiés. Dans la boutique, elle ne part que si de vrais avis y sont écrits.",
+    constructions: [{ key: "mosaique", label: "une mosaïque de cartes de hauteurs inégales, sur deux colonnes (trois sur grand écran)" }, { key: "file", label: "une file de cartes à faire glisser, de même hauteur" }],
+    trait: { fond: "clair", densite: "dense", photos: 2, hauteur: 640 }, data: "les vrais avis saisis par le client", anim: "Dans la construction en file, les cartes glissent du doigt.",
+    html: `<section class="tn tn-mur-avis"><h2>Ce qu'ils en disent.</h2><ul data-tn-avis>${AVIS_MUR("md-z1.webp")}${AVIS_MUR()}${AVIS_MUR("md-b1.webp")}${AVIS_MUR()}</ul><p class="tn-note">${M("d'où viennent ces avis, et s'ils sont vérifiés")}</p></section>`,
+  }),
+  sec({
+    id: "tn-avantages", title: "Les avantages, un par un", kind: "Avantages · fiche produit et accueil", role: "produit",
+    does: "Trois avantages du produit, chacun montré par une photo de scène et dit en un titre court et une phrase : ce que ça change, concrètement, dans la journée du client. Les photos montrent le vrai produit en usage. Un avantage est un fait du produit, jamais un chiffre ni un résultat que le dossier ne donne pas.",
+    constructions: [{ key: "alternes", label: "un avantage par rang, la photo tantôt à gauche, tantôt à droite, le titre en grand" }, { key: "cartes", label: "des cartes à faire glisser sur téléphone, côte à côte sur grand écran : la photo en haut, le texte dessous" }],
+    trait: { fond: "clair", densite: "moyenne", photos: 3, hauteur: 900 },
+    html: `<section class="tn tn-avantages"><h2>Ce qu'il change pour toi.</h2><ul>${AVANTAGE("md-j3.webp")}${AVANTAGE("md-b1.webp")}${AVANTAGE("md-z1.webp")}</ul></section>`,
+  }),
+];
+ACHAT_SECTIONS.push(...DIRECT_SECTIONS);
+
 /** Rendu d'origine d'une pièce, sous une clé que rien ne cible. */
 const o = (key: string, label: string): Construction => ({ key, label });
 
@@ -135,6 +194,11 @@ export const ACHAT_FACONS: Record<string, Construction[]> = {
   "tn-essayer": [
     o("photo-puis-liste", "le titre, la photo dans le cadre de la marque, les façons d'essayer en lignes, le bouton (la photo à gauche sur grand écran)"),
     { key: "carte", label: "une carte de couleur douce : la photo en bandeau en haut, les façons d'essayer et le bouton dedans (la photo à droite sur grand écran)" },
+  ],
+  // Trois atouts (socle) : ses trois façons d'origine, puis une liste cochée pour la vente directe.
+  "tn-atouts": [
+    { key: "lignes", label: "trois lignes l'une sous l'autre, séparées par des filets" }, { key: "numeros", label: "un grand numéro devant chaque fait ; trois colonnes sur grand écran" }, { key: "cartes", label: "une carte de couleur douce par fait, côte à côte sur grand écran" },
+    { key: "coches", label: "une liste cochée dans une seule carte de couleur douce : une coche ronde et sombre devant chaque fait, le fait en grand" },
   ],
   "tn-comparatif": [
     o("lignes", "le critère au-dessus, une valeur par produit, des filets entre les critères"),

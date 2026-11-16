@@ -157,7 +157,7 @@ export function withRealBuyBlock(html: string, d: BuyData | null): string {
  * Vraies données des pièces posées sous le bloc d'achat à tenue (thème unique, 16 novembre 2026) : les options du produit
  * de la page (couleurs, tailles, stock de chaque valeur) et l'offre par quantité du client. Sans produit : null.
  */
-export function achatFacts(projectId: string, handle?: string | null): { title: string; options: TenueOption[]; lots: TenueLots | null } | null {
+export function achatFacts(projectId: string, handle?: string | null): { title: string; options: TenueOption[]; lots: TenueLots | null; image: string | null; price: string | null; soldOut: boolean } | null {
   const products = listProducts(projectId);
   if (!products.length) return null;
   const p = (handle && products.find((x) => x.handle === handle)) || products[0];
@@ -178,7 +178,8 @@ export function achatFacts(projectId: string, handle?: string | null): { title: 
     if (q?.kind === "lots") lots = { unit, cents, tiers: q.tiers.map((t) => ({ qty: t.qty, pct: t.pct })) };
     if (q?.kind === "bogo") lots = { unit, cents, tiers: [{ qty: q.buy, free: q.free }] };
   }
-  return { title: p.data.title, options, lots };
+  const price = cents == null ? null : `${(Math.round(cents) / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",")} €`;
+  return { title: p.data.title, options, lots, image: imageOf(p), price, soldOut: p.variants.length > 0 && p.variants.every(out) };
 }
 
 /**
@@ -187,10 +188,21 @@ export function achatFacts(projectId: string, handle?: string | null): { title: 
  * ne porte aucun de ces repères est rendue telle quelle, sans lire le catalogue.
  */
 export function withTenueAchat(html: string, projectId: string, handle?: string | null): string {
-  if (!/\sdata-tn-(?:versions|guide-tailles|lots|looks)\b/.test(html)) return html;
+  if (!/\sdata-tn-(?:versions|guide-tailles|lots|looks|appel-produit)\b/.test(html)) return html;
   const f = (() => { try { return achatFacts(projectId, handle); } catch { return null; } })();
   if (!f) return html;
   let out = withTenueLots(withTenueSizes(withTenueVersions(html, f.options), f.options), f.lots);
+  // « Le produit, son prix, son bouton » : la vraie photo, le vrai nom, le vrai prix, le stock, la livraison et les retours du client.
+  if (/\sdata-tn-appel-produit\b/.test(out)) {
+    const co = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string }; } catch { return {}; } })() as { shipping?: string; returns?: string };
+    const line = (v: string | undefined) => (v && v.trim() ? escText(v.trim().slice(0, 120)) : "[À compléter]");
+    if (f.image) out = out.replace(/(<div class="tn-ph")[^>]*(><\/div>)/, `$1 style="background-image:url(${escAttr(f.image)})"$2`);
+    out = out.replace(/(<b class="tn-nom-a">)[\s\S]*?(<\/b>)/, `$1${escText(f.title)}$2`)
+      .replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${line(co.shipping)}</li><li>Retours : ${line(co.returns)}</li></ul>`);
+    if (f.price) out = out.replace(/<div class="tn-prix">[\s\S]*?<\/div>/, `<div class="tn-prix">${f.price}</div>${f.soldOut ? '<div class="tn-rupture">Épuisé pour l\'instant.</div>' : ""}`);
+    if (f.soldOut) out = out.replace(/<a class="tn-bt"/, '<a class="tn-bt tn-off" aria-disabled="true"');
+    out = out.replace(/\[À compléter(?:\s*:\s*([^\]<]{1,80}))?\]/g, (_m, what: string | undefined) => `<mark class="tn-manque">À compléter${what ? ` : ${what.trim()}` : ""}</mark>`);
+  }
   // Le look : la carte du produit de la page s'en va quand il en reste au moins une autre.
   if (/\sdata-tn-looks\b/.test(out)) {
     const cards = out.match(/<a class="tn-carte-p[^"]*"[^>]*>[\s\S]*?<\/a>/g) ?? [];

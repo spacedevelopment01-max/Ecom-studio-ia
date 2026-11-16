@@ -226,6 +226,25 @@ export function withTenueLooks(html: string, products: TenueProduct[], current?:
   return markMissing(html.replace(/(<div class="tn-cartes">)[\s\S]*?<\/div>(?=<\/div><\/section>)/, (_m, a: string) => `${a}${others.map(card).join("")}</div>`));
 }
 
+/**
+ * Pièces de la vente directe qui lisent la fiche de l'entreprise : la livraison en tête de « la livraison, étape par
+ * étape » (« data-tn-livraison »), les retours de « la garantie mise en avant » (« data-tn-garantie » : les conditions
+ * telles que le client les a écrites ; le délai du sceau seulement s'il y figure) ; et les cases de « nous et les
+ * autres » (« data-tn-face ») : une case « Oui » reçoit sa coche, une case « Non » sa croix, toute autre reste écrite.
+ */
+export function withTenueDirect(html: string, d: TenueSite): string {
+  let out = html;
+  const shipping = clean(d.shipping, 200), returns = clean(d.returns, 240);
+  if (shipping && /\sdata-tn-livraison\b/.test(out)) out = out.replace(/(<p\b[^>]*\sdata-tn-livraison\b[^>]*>)[\s\S]*?(<\/p>)/, (_m, a: string, b: string) => `${a}${esc(shipping)}${b}`);
+  if (returns && /\sdata-tn-garantie\b/.test(out)) {
+    const days = /(\d{1,3})\s*jours?/.exec(returns)?.[1];
+    out = out.replace(/(<p class="tn-conditions">)[\s\S]*?(<\/p>)/, (_m, a: string, b: string) => `${a}${esc(returns)}${b}`)
+      .replace(/(<div class="tn-sceau-g"><b>[\s\S]*?<\/b>)<span>[\s\S]*?<\/span>/, (_m, a: string) => `${a}${days ? `<span>${days}\u00a0jours</span>` : ""}`);
+  }
+  if (/\sdata-tn-face\b/.test(out)) out = out.replace(/<i(?:\sclass="[^"]*")?>([^<]*)<\/i>/g, (_m, t: string) => `<i${/^\s*oui\b/i.test(t) ? ' class="tn-oui"' : /^\s*non\b/i.test(t) ? ' class="tn-non"' : ""}>${t}</i>`);
+  return out === html ? html : markMissing(out);
+}
+
 // ---------------------------------------------------------------- journal
 
 /** Les articles écrits dans le Studio : la liste du journal, puis la page de l'article (le premier). */
@@ -507,6 +526,7 @@ export function withTenueSite(html: string, d: TenueSite, built?: string | null)
   out = withTenueFamilies(out, d.families ?? []);
   out = withTenueComparison(out, d.products ?? []);
   out = withTenueLooks(out, d.products ?? []);
+  out = withTenueDirect(out, d);
   out = withTenueGuarantees(out, d);
   out = withTenueReviews(out);
   out = withTenueBienFiche(withTenueBiens(out, d.biens ?? []), d.biens ?? []);
