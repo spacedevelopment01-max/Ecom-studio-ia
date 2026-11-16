@@ -13,12 +13,15 @@
  *   4. retire un article : le cadeau doit partir, la remise redescendre au palier du lot ;
  *   5. vérifie la barre d'achat qui reste visible, « plus que N » avec le vrai stock, le refus au-delà du stock.
  * Il rend un compte rendu JSON (résultats.json) et s'arrête en erreur si un contrôle échoue.
+ *
+ * Avec « sans-remises » en quatrième argument, après avoir coupé ou retiré les remises dans la boutique : la boutique
+ * doit le dire, la pièce des packs ne doit plus s'afficher, et trois articles doivent être au plein prix, sans cadeau.
  */
 const fs = require("node:fs");
 const path = require("node:path");
 const { chromium } = require("playwright");
 
-const [plateforme, base, dossier] = process.argv.slice(2);
+const [plateforme, base, dossier, mode] = process.argv.slice(2);
 if (!["woocommerce", "prestashop"].includes(plateforme) || !base || !dossier) { console.error("usage : node scripts/plateformes-essai.cjs <woocommerce|prestashop> <adresse> <dossier>"); process.exit(2); }
 fs.mkdirSync(dossier, { recursive: true });
 const racine = base.replace(/\/+$/, "");
@@ -58,7 +61,30 @@ async function panierPlateforme(page) {
   return out;
 }
 
+/** Remises coupées ou retirées dans la boutique : rien ne doit s'afficher que le panier ne tient pas. */
+async function sansRemises() {
+  const etat = await (await fetch(ETAT)).json();
+  note("la boutique dit que ses remises ne sont PAS en place", etat.actif === false && etat.manque.length > 0, etat);
+  const browser = await chromium.launch();
+  const page = await (await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: "fr-FR" })).newPage();
+  await page.goto(FICHE, { waitUntil: "networkidle" });
+  await capture(page, "6-sans-remises-fiche", { fullPage: true });
+  const vu = await page.evaluate(() => ({ packs: document.querySelectorAll("[data-tn-packs], [data-tn-lots]").length, prix: (document.querySelector(".tn-achat .tn-prix") || {}).textContent, achat: !!document.querySelector(".tn-achat select[name=id]"), offre: window.tnBoutiqueConfig.offre, ids: [...document.querySelectorAll(".tn-achat select[name=id] option")].map((o) => o.value) }));
+  note("sans remises : ni packs ni prix de lot sur la fiche ; le bloc d'achat reste, au vrai prix", vu.packs === 0 && vu.achat && /29/.test(vu.prix || "") && vu.offre === null, { packs: vu.packs, prix: vu.prix, offre: vu.offre });
+  await page.evaluate((ids) => window.tnBoutique.ajouter([{ id: ids[0], quantite: 1 }, { id: ids[1], quantite: 1 }, { id: ids[5], quantite: 1 }]), vu.ids);
+  const p = await panierPlateforme(page);
+  note("sans remises : trois articles au plein prix (87 €), aucun cadeau", p.total === 8700 && p.lignes.filter((l) => l.cadeau).length === 0 && p.lignes.length === 3, p);
+  await page.goto(await page.evaluate(() => window.tnBoutiqueConfig.panier), { waitUntil: "networkidle" });
+  await capture(page, "7-sans-remises-panier", { fullPage: true });
+  await browser.close();
+  fs.writeFileSync(path.join(dossier, `${plateforme}-sans-remises-resultats.json`), JSON.stringify({ plateforme, base: racine, date: new Date().toISOString(), controles }, null, 1));
+  const rates = controles.filter((c) => !c.ok);
+  console.log(`\n${controles.length - rates.length} contrôle(s) réussi(s) sur ${controles.length}.`);
+  process.exit(rates.length ? 1 : 0);
+}
+
 (async () => {
+  if (mode === "sans-remises") return sansRemises();
   const etat0 = await (await fetch(ETAT)).json();
   note("la boutique dit ses remises en place", etat0.actif === true, etat0);
 

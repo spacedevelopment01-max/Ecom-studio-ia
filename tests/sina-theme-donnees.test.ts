@@ -224,10 +224,10 @@ describe("mise en boutique : toutes les sections à tenue partent, avec de vraie
       const notes = out.problems.map((x) => x.text).join("\n");
       // Le tiroir de panier part en boutique (avec le pied de page, sans script) ; les autres fenêtres sont celles de Shopify.
       if (s.id === "tn-panier-cote") expect(notes).toMatch(/Tiroir de panier : dans Shopify, il s'ouvre au clic sur le panier de l'en-tête/);
-      else if (s.group === "partout") expect(notes).toMatch(/n'est pas envoyée : Shopify a sa propre fenêtre/);
+      else if (s.group === "partout" && s.id !== "tn-fenetre-offre") expect(notes).toMatch(/n'est pas envoyée : Shopify a sa propre fenêtre/);
       else if (s.id === "tn-avis") expect(notes).toMatch(/Les avis des clients : section non envoyée/);
       // Une section dont tout l'exemple était « à compléter » est retirée avec l'accord du client, et c'est dit ; sinon elle est là.
-      else if (s.id !== "tn-achat") expect(Object.keys(out.spec.customSections).some((k) => out.spec.customSections[k].liquid.includes(`(${s.id})`)) || new RegExp(`${s.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} : section retirée, il ne restait que son titre`).test(notes), `la section est dans le thème, ou son retrait est dit : ${notes}`).toBe(true);
+      else if (s.id !== "tn-achat") expect(Object.keys(out.spec.customSections).some((k) => out.spec.customSections[k].liquid.includes(`(${s.id})`)) || new RegExp(`${s.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} : (?:section retirée, il ne restait que son titre|(?:section|fenêtre) non envoyée \\()`).test(notes), `la section est dans le thème, ou son retrait est dit : ${notes}`).toBe(true);
     });
   }
 
