@@ -140,6 +140,7 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
 
   it("trois stratèges séparées, un juge à part, trois angles montrés avec celui que SINA recommande ; le reste en réserve", async () => {
     const t = await atAngles();
+    expect((await call("memory.note", t.ctx, { kind: "fact", key: "paiement", value: "Par carte le soir, ou par virement." })).ok).toBe(true);
     const { log, result, angles } = await create(t);
     // L'étude de la marque suffit : aucune recherche repayée. Trois stratèges, un juge, un lecteur ; ni reprise ni réécriture.
     expect(log.ids[0]).toBe("segments-1");
@@ -161,6 +162,8 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
     const file = log.prompts["strategist-1-sur"];
     expect(file).toMatch(/# Les faits du client[\s\S]*l'anse laisse passer trois doigts/);
     expect(file).toContain(`Nom : ${series(3)[0].name}`);
+    // Ce que SINA a noté dans la mémoire du projet fait partie des faits : jamais redemandé dans « à confirmer ».
+    expect(file).toContain("paiement : Par carte le soir, ou par virement.");
     expect(file).toContain(`0. « ${QUOTES[0]} »`);
     expect(file).toMatch(/Concurrents : Terre & Feu ; Maison Argile/);
     // Le juge voit les neuf propositions, avec leur entrée.

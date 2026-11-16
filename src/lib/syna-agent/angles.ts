@@ -5,7 +5,7 @@
  * sait rien). Ici : ce qui est gardé dans le parcours, et l'enregistrement de l'angle que le client choisit comme
  * angle actif du projet (le fil conducteur que lisent le site, les publications et les publicités).
  */
-import { json as parseJson } from "../db";
+import { all, json as parseJson } from "../db";
 import { getJob } from "../jobs";
 import { loadProject } from "../projects";
 import { activateSinaAngle, type MarketingAngle } from "../marketing-strategy";
@@ -80,6 +80,9 @@ export function angleFacts(j: Journey, projectId: string): string {
     for (const f of p.product?.facts ?? []) if (f.status === "confirmed") lines.push(`${f.label} : ${f.value}`);
     if (p.business === "services") for (const x of p.services?.services ?? []) lines.push([x.name, x.description, x.price, x.duration].filter(Boolean).join(" · "));
   } catch { /* projet illisible : la fiche suffit */ }
+  // Ce que SINA a noté dans la mémoire du projet comme confirmé par le client (essai réel du 16 novembre 2026 : sa façon
+  // d'être payé, déjà dite, lui était redemandée dans « à confirmer »).
+  try { for (const m of all<{ key: string; value: string }>("SELECT key, value FROM memory WHERE project_id=? AND key LIKE 'syna.%' AND origin='user' ORDER BY rowid", projectId)) lines.push(`${m.key.replace(/^syna\./, "")} : ${m.value}`); } catch { /* mémoire absente */ }
   return [...new Set(lines.map((l) => l.trim()).filter(Boolean))].join("\n");
 }
 

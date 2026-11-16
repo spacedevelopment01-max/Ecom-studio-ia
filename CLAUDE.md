@@ -31,9 +31,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   façons retirées (ancien assistant, Pilote, formulaire, écrans de préparation), écran réglé (SINA en grand pendant la
   création, tableau de bord à côté) ; compte rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`. Lot 2 (la marque) fait le
   16 novembre 2026 : SINA a créé seule la marque de trois clients inventés, anciennes façons retirées ; compte rendu
-  et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Lot 3 (les trois angles) construit le 16 novembre
-  2026 et testé avec une IA simulée ; **reste l'essai réel, puis le retrait des anciennes façons** : voir
-  `docs/studio/LOT-3-LES-TROIS-ANGLES.md`. Suite : 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
+  et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Lot 3 (les trois angles) construit et essayé avec la vraie IA
+  le 16 novembre 2026 sur deux clients repris du lot 2 (branche `essai-lot2-donnees`) ; **restent son avis sur les
+  angles, puis le retrait des anciennes façons** : voir `docs/studio/LOT-3-LES-TROIS-ANGLES.md`. Suite : 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
   publicités, 9 les vidéos.
 
 ## Avec le propriétaire
@@ -65,7 +65,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - Si un modèle n'arrive pas à écrire un mot dans une image, changer la phrase plutôt que repayer des essais.
 - Dépensé en essais réels avant le lot 2 : environ 19,14 € comptés par le Studio (dont 2,94 € pour l'essai du lot 1,
   sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €). Essai du lot 2, au 16 novembre 2026 :
-  40,06 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés).
+  40,06 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés). Essai du lot 3 : 5,04 €.
 - **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
 - **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni
   engagement ; budget d'IA à 50 % du prix hors taxes le premier mois, puis 40 % ; par forfait : 2, 3 et 4 identités
