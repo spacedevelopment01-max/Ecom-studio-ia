@@ -37,7 +37,7 @@ export type Famille = {
   rythme: string;
   /** Les réglages de l'allure permis dans la famille (le premier de chaque liste est le plus typique). */
   tenue: TenueChoix;
-  /** Constructions de l'en-tête permises. */
+  /** En-têtes permis (« section » ou « section:construction »), parmi les huit du thème et l'en-tête d'origine. */
   entete: string[];
   /** Pieds de page permis (« section » ou « section:construction »). */
   pied: string[];
@@ -60,7 +60,7 @@ export const FAMILLES: Famille[] = [
     couleurs: "celles de la photo (bois, lin, ocre) ; une couleur profonde réservée aux boutons",
     rythme: "ample et calme : grandes photos pleine largeur, sections aérées, une bande de couleur douce pour les promesses, un moment sombre au plus par page",
     tenue: { titres: ["fins"], bouton: ["pilule", "droit"], cadre: ["niche", "droit"], fond: ["uni", "toile"], petits: ["normal"] },
-    entete: ["centre"], pied: ["tn-pied-complet:colonnes", "tn-pied-complet:grand-nom"],
+    entete: ["tn-entete-liens:logo-centre", "tn-entete-liens:mega-colonnes", "tn-entete-annonce", "tn-entete:centre"], pied: ["tn-pied-complet:colonnes", "tn-pied-lettre", "tn-pied-reassurance", "tn-pied-complet:grand-nom"],
     ouvertures: ["tn-ouverture:titre-centre", "tn-ouverture:dans-la-photo", "tn-ouverture-carte"],
     cles: "les gammes en tuiles photo juste sous l'ouverture, les produits avec leurs points clés, la bande des promesses vraies, les avis s'il y en a, l'histoire de l'atelier",
   },
@@ -73,7 +73,7 @@ export const FAMILLES: Famille[] = [
     couleurs: "blanc, gris pierre, noir ; une seule couleur discrète tirée de la marque",
     rythme: "beaucoup d'air et peu de sections denses : deux photos côte à côte, une grille vitrine, une phrase seule sur toute la largeur ; aucun fond de couleur vive",
     tenue: { titres: ["fins", "capitales"], bouton: ["droit"], cadre: ["droit"], fond: ["uni"], petits: ["normal"] },
-    entete: ["gauche", "centre"], pied: ["tn-pied", "tn-pied-complet:centre"],
+    entete: ["tn-entete-liens:plein-ecran", "tn-entete-liens:sur-photo", "tn-entete-liens:logo-centre", "tn-entete:gauche"], pied: ["tn-pied-complet:centre-minimal", "tn-pied-complet:grand-nom", "tn-pied"],
     ouvertures: ["tn-ouverture:titre-en-bas", "tn-ouverture:dans-la-photo"],
     cles: "deux photos côte à côte, les produits en grille vitrine, une phrase de la personne qui crée, le savoir-faire montré de près",
   },
@@ -86,7 +86,7 @@ export const FAMILLES: Famille[] = [
     couleurs: "deux ou trois tons tirés des ingrédients ; des fonds colorés doux qui alternent",
     rythme: "généreux et régulier : les fonds de couleur douce alternent avec le clair, chaque section raconte une chose, les preuves viennent du geste et de la matière",
     tenue: { titres: ["fins"], bouton: ["pilule", "etiquette"], cadre: ["niche", "droit"], fond: ["toile", "uni"], petits: ["normal"] },
-    entete: ["centre", "gauche"], pied: ["tn-pied-complet:colonnes", "tn-pied-complet:centre"],
+    entete: ["tn-entete-liens:classique", "tn-entete-annonce", "tn-entete-liens:logo-centre", "tn-entete:centre"], pied: ["tn-pied-lettre", "tn-pied-complet:colonnes", "tn-pied-complet:centre"],
     ouvertures: ["tn-ouverture-carte", "tn-ouverture:dans-la-photo", "tn-ouverture:titre-centre"],
     cles: "les engagements vrais juste sous l'ouverture, le produit raconté, ce qu'il contient, l'atelier et la fabrication, les avis s'il y en a",
   },
@@ -99,7 +99,7 @@ export const FAMILLES: Famille[] = [
     couleurs: "une couleur vedette très franche, deux couleurs d'appoint ; des aplats pleins",
     rythme: "vif : les fonds changent souvent, les blocs sont encadrés, un moment qui fait sourire toutes les deux ou trois sections",
     tenue: { titres: ["capitales", "gras"], bouton: ["ombre", "pilule"], cadre: ["penche", "niche"], fond: ["uni"], petits: ["normal"] },
-    entete: ["gauche", "centre"], pied: ["tn-pied-complet:grand-nom", "tn-pied-complet:centre"],
+    entete: ["tn-entete-annonce", "tn-entete-liens:mega-produits", "tn-entete-liens:classique", "tn-entete:gauche"], pied: ["tn-pied-complet:grand-nom", "tn-pied-lettre", "tn-pied-reassurance"],
     ouvertures: ["tn-ouverture:titre-massif", "tn-ouverture-carte", "tn-ouverture:bandeau"],
     cles: "les produits en cartes encadrées, la mission de la marque dite en grand, les coulisses de la fabrication",
   },
@@ -112,7 +112,7 @@ export const FAMILLES: Famille[] = [
     couleurs: "un fond sombre et sérieux, du clair pour lire, une couleur chaude réservée au bouton",
     rythme: "net et ordonné : une promesse, puis une réponse par peur du client, des étapes numérotées, le moyen d'agir (téléphone, devis) qui revient souvent",
     tenue: { titres: ["gras"], bouton: ["droit", "pilule"], cadre: ["droit"], fond: ["uni"], petits: ["machine", "normal"] },
-    entete: ["gauche", "sangle"], pied: ["tn-pied", "tn-pied-complet:colonnes"],
+    entete: ["tn-entete-liens:classique", "tn-entete:sangle", "tn-entete-annonce"], pied: ["tn-pied-reassurance", "tn-pied-complet:colonnes", "tn-pied"],
     ouvertures: ["tn-ouverture:bandeau", "tn-ouverture:dans-la-photo"],
     cles: "les engagements vrais, comment ça se passe en étapes, les prestations et leurs prix, les réalisations, les avis s'il y en a, la zone d'intervention, la demande de devis ou de rendez-vous",
   },
@@ -125,11 +125,23 @@ export const FAMILLES: Famille[] = [
     couleurs: "noir et blanc, une couleur vive réservée à l'action",
     rythme: "en grands plans : des photos pleine largeur qui s'enchaînent, peu de texte, des chiffres vrais montrés en grand",
     tenue: { titres: ["capitales", "gras"], bouton: ["droit", "pilule"], cadre: ["droit"], fond: ["uni"], petits: ["machine", "normal"] },
-    entete: ["sangle", "gauche"], pied: ["tn-pied-complet:grand-nom", "tn-pied"],
+    entete: ["tn-entete-liens:sur-photo", "tn-entete-liens:mega-produits", "tn-entete-liens:plein-ecran", "tn-entete:sangle"], pied: ["tn-pied-complet:grand-nom", "tn-pied-reassurance", "tn-pied"],
     ouvertures: ["tn-ouverture:titre-massif", "tn-ouverture:titre-en-bas"],
     cles: "les grandes entrées par public ou par usage, le produit vu de près sous tous les angles, ses caractéristiques vraies en chiffres, une galerie",
   },
 ];
+
+/** Site de services : son en-tête (téléphone et rendez-vous toujours visibles) et son pied de page, permis dans toutes les familles. */
+export const ENTETE_SERVICES = "tn-entete-services";
+export const PIED_SERVICES = "tn-pied-services";
+const MEGA = ["mega-colonnes", "mega-produits"];
+/** Ce que le site est, pour les choix qui en dépendent : boutique ou services, nombre de familles de produits. */
+export type FamilleFacts = { business?: "products" | "services"; families?: number };
+const headersOf = (f: Famille, o: FamilleFacts) => {
+  if (o.business === "services") return [ENTETE_SERVICES];
+  return f.entete.filter((r) => !MEGA.includes(r.split(":")[1] ?? "") || o.families == null || o.families >= 3);
+};
+const footersOf = (f: Famille, o: FamilleFacts) => (o.business === "services" ? [PIED_SERVICES, ...f.pied.filter((r) => r !== "tn-pied-reassurance")] : f.pied);
 
 const BY_ID = new Map(FAMILLES.map((f) => [f.id, f]));
 export const familleOf = (id: string | null | undefined): Famille | null => (id ? BY_ID.get(id as FamilleId) ?? null : null);
@@ -156,10 +168,12 @@ export function famillesBrief(): string {
       `  Photos (champ « photos » de chaque section) : ${f.photos}.`,
       `  Rythme : ${f.rythme}.`,
       `  Allure permise (champ « tenue ») : ${tenue(f.tenue)}.`,
-      `  En-tête (headerConstruction) : ${f.entete.join(" ou ")}. Pied de page : ${f.pied.join(" ou ")}. Ouverture de l'accueil : ${f.ouvertures.join(" ou ")}.`,
+      `  En-tête (header et headerConstruction, écrits « pièce:construction ») : ${f.entete.join(" ou ")}. Pied de page (footer et footerConstruction) : ${f.pied.join(" ou ")}. Ouverture de l'accueil : ${f.ouvertures.join(" ou ")}.`,
       `  Ses moments forts, quand la marque a de quoi les remplir : ${f.cles}.`,
     ].join("\n")),
     "L'accueil s'ouvre TOUJOURS par une grande photo pleine avec le titre posé dessus : seules les ouvertures données pour la famille sont permises.",
+    `POUR UN SITE DE SERVICES, quelle que soit la famille : l'en-tête est « ${ENTETE_SERVICES} » (le téléphone et le bouton de rendez-vous ou de devis toujours visibles ; jamais de panier) et le pied de page « ${PIED_SERVICES} » (téléphone, adresse, horaires, zone) est permis en plus de ceux de la famille ; le pied « tn-pied-reassurance » (livraison, retours, paiement) est réservé aux boutiques.`,
+    "LES GRANDS MENUS (« tn-entete-liens:mega-colonnes », « tn-entete-liens:mega-produits ») ne se prennent que pour une boutique dont le catalogue a au moins trois familles de produits ; sinon, un autre en-tête de la famille.",
   ].join("\n");
 }
 
@@ -170,7 +184,7 @@ const allows = (list: readonly string[], id: string, construction?: string | nul
  * Contrôle du Studio, sans IA : la conception tient-elle dans les choix de la famille qu'elle annonce ? Chaque écart est
  * rendu au concepteur pour sa seule reprise. Une famille absente ou inconnue est un écart.
  */
-export function familleGaps(d: Pick<Design, "pages" | "header" | "headerConstruction" | "footer" | "tenue"> & { famille?: string | null; footerConstruction?: string | null }): string[] {
+export function familleGaps(d: Pick<Design, "pages" | "header" | "headerConstruction" | "footer" | "tenue"> & { famille?: string | null; footerConstruction?: string | null }, o: FamilleFacts = {}): string[] {
   const f = familleOf(d.famille);
   if (!f) return [`famille manquante ou inconnue : choisis une des six familles d'après la planche de marque (${FAMILLE_IDS.join(", ")})`];
   const out: string[] = [];
@@ -179,8 +193,9 @@ export function familleGaps(d: Pick<Design, "pages" | "header" | "headerConstruc
   else for (const k of ["titres", "bouton", "cadre", "fond", "petits"] as const) {
     if (!(f.tenue[k] as string[]).includes(t[k])) out.push(`famille ${f.id} : ${k} « ${t[k]} » n'est pas dans ses choix (${f.tenue[k].join(" ou ")})`);
   }
-  if (d.header === "tn-entete" && d.headerConstruction && !f.entete.includes(d.headerConstruction)) out.push(`famille ${f.id} : l'en-tête « ${d.headerConstruction} » n'est pas dans ses choix (${f.entete.join(" ou ")})`);
-  if (!allows(f.pied, d.footer, d.footerConstruction)) out.push(`famille ${f.id} : le pied de page « ${built(d.footer, d.footerConstruction)} » n'est pas dans ses choix (${f.pied.join(" ou ")})`);
+  const heads = headersOf(f, o), feet = footersOf(f, o);
+  if (!allows(heads, d.header, d.headerConstruction)) out.push(`famille ${f.id}${o.business === "services" ? ", site de services" : ""} : l'en-tête « ${built(d.header, d.headerConstruction)} » n'est pas dans ses choix (${heads.join(" ou ")})`);
+  if (!allows(feet, d.footer, d.footerConstruction)) out.push(`famille ${f.id} : le pied de page « ${built(d.footer, d.footerConstruction)} » n'est pas dans ses choix (${feet.join(" ou ")})`);
   const first = d.pages.find((p) => p.key === "home")?.sections[0];
   if (first && !allows(f.ouvertures, first.section, first.construction)) out.push(`famille ${f.id} : l'accueil s'ouvre par « ${built(first.section, first.construction)} », qui n'est pas dans ses ouvertures (${f.ouvertures.join(" ou ")}) : grande photo pleine, le titre posé dessus`);
   return out;
@@ -194,7 +209,7 @@ export const famillePhotoLine = (id: string | null | undefined): string => { con
  * ramené (le réglage le plus typique de la famille). Le site est ainsi toujours fait dans son style, sans appel de plus.
  * Rend la conception ajustée et ce qui a été changé.
  */
-export function fitFamille<D extends Pick<Design, "pages" | "header" | "headerConstruction" | "footer" | "tenue"> & { famille?: string | null; footerConstruction?: string | null }>(d: D): { d: D; changed: string[] } {
+export function fitFamille<D extends Pick<Design, "pages" | "header" | "headerConstruction" | "footer" | "tenue"> & { famille?: string | null; footerConstruction?: string | null }>(d: D, o: FamilleFacts = {}): { d: D; changed: string[] } {
   const f = familleOf(d.famille);
   if (!f) return { d, changed: [] };
   const out: D = JSON.parse(JSON.stringify(d));
@@ -202,8 +217,9 @@ export function fitFamille<D extends Pick<Design, "pages" | "header" | "headerCo
   if (out.tenue) for (const k of ["titres", "bouton", "cadre", "fond", "petits"] as const) {
     if (!(f.tenue[k] as string[]).includes(out.tenue[k])) { changed.push(`${k} : ${out.tenue[k]} → ${f.tenue[k][0]}`); (out.tenue as Record<string, string>)[k] = f.tenue[k][0]; }
   }
-  if (out.header === "tn-entete" && !f.entete.includes(out.headerConstruction ?? "")) { changed.push(`en-tête : ${out.headerConstruction ?? "par défaut"} → ${f.entete[0]}`); out.headerConstruction = f.entete[0]; }
-  if (!allows(f.pied, out.footer, out.footerConstruction)) { const [id, c] = f.pied[0].split(":"); changed.push(`pied de page : ${built(out.footer, out.footerConstruction)} → ${f.pied[0]}`); out.footer = id; out.footerConstruction = c ?? null; }
+  const heads = headersOf(f, o), feet = footersOf(f, o);
+  if (!allows(heads, out.header, out.headerConstruction)) { const [id, c] = heads[0].split(":"); changed.push(`en-tête : ${built(out.header, out.headerConstruction)} → ${heads[0]}`); out.header = id; out.headerConstruction = c ?? null; }
+  if (!allows(feet, out.footer, out.footerConstruction)) { const [id, c] = feet[0].split(":"); changed.push(`pied de page : ${built(out.footer, out.footerConstruction)} → ${feet[0]}`); out.footer = id; out.footerConstruction = c ?? null; }
   const home = out.pages.find((p) => p.key === "home"), first = home?.sections[0];
   if (first && !allows(f.ouvertures, first.section, first.construction)) { const [id, c] = f.ouvertures[0].split(":"); changed.push(`ouverture : ${built(first.section, first.construction)} → ${f.ouvertures[0]}`); first.section = id; first.construction = c ?? null; }
   return { d: out, changed };

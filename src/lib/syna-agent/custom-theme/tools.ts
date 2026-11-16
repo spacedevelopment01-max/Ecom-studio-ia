@@ -304,7 +304,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     if (mode.kind === "concept" && mode.other) g.pages.push(...conceptGaps(designCard(mode.other), card));
     // Lot 4 : la conception reste dans les choix de la famille du Studio qu'elle annonce (contrôle sans IA) ; et le site
     // n'est fait que des pièces du thème unique.
-    g.pages.push(...familleGaps(d));
+    g.pages.push(...familleGaps(d, { business: site.business, families: catalogueFacts.families }));
     if (mode.kind !== "concept") g.pages.push(...styleGaps(d, site.business));
     const foreign = [d.header, d.footer, ...d.pages.flatMap((pg) => pg.sections.map((x) => x.section))].filter((id) => { const l = sectionByRef(id); return !!l && !isTenueSection(l); });
     if (foreign.length) g.pages.push(`pièces hors du thème du Studio, à remplacer par une pièce de la bibliothèque donnée : ${[...new Set(foreign)].join(", ")}`);
@@ -349,7 +349,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     return { ok: false, result: { ok: false, summary: L(`Conception non faite (${calls} passage(s) réussi(s) ; coût réel : ${budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget")}) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." } };
   }
   // Dernier recours sans IA : ce qui sort encore des choix de la famille y est ramené ; le site est fait dans son style.
-  { const fit = fitFamille(d); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+  { const fit = fitFamille(d, { business: site.business, families: catalogueFacts.families }); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   { const fit = fitStyle(d, site.business); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   if (c.rules.length || !c.t) return { ok: false, result: { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." } };
   // Conception gardée dans le thème : parcours de chaque page et intention de chaque section.

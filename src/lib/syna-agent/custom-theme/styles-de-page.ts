@@ -27,7 +27,44 @@ export type StyleDePage = {
 };
 
 export const STYLES_PRODUIT: StyleDePage[] = [];
-export const STYLES_SERVICES: StyleDePage[] = [];
+export const STYLES_SERVICES: StyleDePage[] = [
+  {
+    id: "prestation-simple", nom: "Prestation simple", pour: "un métier qui vend quelques prestations claires, sur rendez-vous ou sur appel",
+    moments: "ce qu'on fait et pour qui → les prestations et leurs vrais prix → comment ça se passe → des réalisations (seulement si le client en a) → où et quand → le moyen de prendre rendez-vous ou d'appeler",
+    metier: ["tn-prestations"], pieces: ["tn-prestations", "tn-deroule", "tn-realisations", "tn-acces", "tn-rdv", "tn-urgence"],
+    jamais: "une équipe, un avis ou un prix que le client n'a pas donnés",
+  },
+  {
+    id: "rendez-vous-complet", nom: "Rendez-vous complet", pour: "un salon, un cabinet, un institut : on choisit sa prestation, la personne, puis le créneau",
+    moments: "les prestations et leurs prix → le rendez-vous en trois temps (la prestation, la personne, le créneau) → l'équipe réelle → les tarifs détaillés s'il y en a → l'accès et les horaires",
+    metier: ["tn-rdv-complet", "tn-rdv"], pieces: ["tn-prestations", "tn-rdv-complet", "tn-equipe", "tn-tarifs", "tn-acces"],
+    jamais: "une personne de l'équipe inventée : sans équipe donnée par le client, le rendez-vous simple (tn-rdv) remplace le rendez-vous en trois temps",
+  },
+  {
+    id: "devis-artisan", nom: "Devis d'artisan", pour: "un artisan du bâtiment, de la réparation ou de la rénovation, qui chiffre chaque chantier",
+    moments: "la promesse et le numéro → comment se passe un chantier, étape par étape → les réalisations et l'avant, après → des exemples de prix vrais → les aides et les garanties s'il y en a → la zone d'intervention → la demande de devis détaillée → l'urgence",
+    metier: ["tn-devis"], pieces: ["tn-deroule", "tn-realisations", "tn-avant-apres", "tn-exemples-prix", "tn-aides", "tn-labels", "tn-zone", "tn-devis", "tn-urgence"],
+    jamais: "un chantier, un prix d'exemple ou un label que le client n'a pas",
+  },
+  {
+    id: "bien-immobilier", nom: "Fiche de bien immobilier", pour: "une agence immobilière : des biens à vendre ou à louer",
+    moments: "page d'un bien (clé « bien ») : la galerie et le prix → les caractéristiques → les étiquettes énergie → le quartier → la demande de visite → les autres biens ; page des biens (clé « biens ») : la recherche et la liste ; sur l'accueil : un bien vedette",
+    metier: ["tn-bien-galerie", "tn-biens", "tn-recherche-biens"], pieces: ["tn-bien-galerie", "tn-bien-caracteristiques", "tn-bien-energie", "tn-bien-quartier", "tn-bien-visite", "tn-biens", "tn-recherche-biens", "tn-vendus"],
+    jamais: "un bien inventé : sans bien publié par le client, aucune pièce de biens n'est posée ; une étiquette énergie absente s'affiche « non communiquée »",
+  },
+  {
+    id: "restaurant", nom: "Restaurant", pour: "un restaurant, un café, un traiteur, une boulangerie",
+    moments: "le lieu et l'envie → la carte et ses vrais prix (ou la vitrine du jour) → d'où viennent les produits → la réservation de table → la vente à emporter s'il y en a → l'accès et les horaires",
+    metier: ["tn-carte", "tn-table", "tn-vitrine"], pieces: ["tn-carte", "tn-origines", "tn-table", "tn-retrait", "tn-vitrine", "tn-acces"],
+    jamais: "un plat, un prix ou un allergène que le client n'a pas saisi",
+  },
+  {
+    id: "atelier-cours", nom: "Atelier ou cours", pour: "des ateliers, des cours, des stages : des dates, des places, une inscription",
+    moments: "ce qu'on y apprend et l'envie → les prochaines dates et les places → le planning de la semaine pour des cours réguliers → comment se passe une séance → les tarifs → l'inscription → l'accès",
+    metier: ["tn-agenda", "tn-planning", "tn-inscription"], pieces: ["tn-agenda", "tn-planning", "tn-deroule", "tn-tarifs", "tn-inscription", "tn-acces"],
+    jamais: "une date ou un nombre de places inventés",
+  },
+];
 
 const plain = (v: unknown) => (typeof v === "string" ? v.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]+/g, "-").replace(/^-+|-+$/g, "") : "");
 /** Lecture indulgente du style rendu par le concepteur (clé ou nom) : jamais un appel payé perdu. */
@@ -61,7 +98,7 @@ export function stylesBrief(business: "products" | "services"): string {
 }
 
 type PageLike = { key: string; sections: { section: string; construction?: string | null }[] };
-const sellingPages = (pages: PageLike[], business: "products" | "services") => pages.filter((p) => (business === "services" ? /^(prestations|reservation|devis|biens|bien|carte|ateliers)/.test(p.key) || p.key === "home" : /^product/.test(p.key)));
+const sellingPages = (pages: PageLike[], business: "products" | "services") => pages.filter((p) => (business === "services" ? /^(prestations|reservation|devis|biens|bien|visite|carte|ateliers|inscription)/.test(p.key) || p.key === "home" : /^product/.test(p.key)));
 
 /** Contrôle du Studio, sans IA : la page qui vend tient-elle dans le style annoncé ? */
 export function styleGaps(d: { pageStyle?: string | null; pages: PageLike[] }, business: "products" | "services"): string[] {

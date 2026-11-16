@@ -268,7 +268,7 @@ export function requiredPages(k: SiteKind): { keys: string[]; label: string }[] 
     { keys: ["legal"], label: "Informations légales (mentions, conditions, confidentialité, cookies)" },
     { keys: ["404"], label: "Page introuvable (404)" },
   ];
-  if (k.business === "services") return [...common.slice(0, 1), { keys: ["prestations"], label: "Prestations (et leurs tarifs)" }, { keys: ["reservation", "devis"], label: "Prise de rendez-vous ou demande de devis" }, ...common.slice(1)];
+  if (k.business === "services") return [...common.slice(0, 1), { keys: ["prestations", "biens", "carte", "ateliers"], label: "Prestations et leurs tarifs (ou, selon le métier : les biens d'une agence, clé « biens » ; la carte d'un restaurant, clé « carte » ; les ateliers et leurs dates, clé « ateliers »)" }, { keys: ["reservation", "devis", "visite", "inscription"], label: "Prise de rendez-vous ou demande de devis (ou, selon le métier : demande de visite, clé « visite » ; réservation de table, clé « reservation » ; inscription, clé « inscription »)" }, ...common.slice(1)];
   return [
     common[0],
     ...(k.products > 1 ? [{ keys: ["shop"], label: "Boutique (tous les produits)" }] : []),
