@@ -122,8 +122,10 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Site** : SINA le conçoit pour cette marque, pas en copier-coller, et il doit être bon du premier coup. Des
   sections à la hauteur des meilleurs sites ; de la variété d'un client à l'autre (menus, boutons) ; un signe pris sur
   le produit ou le métier. Ouverture en grande photo pleine avec le titre dessus ; jamais deux parties de même
-  disposition à la suite ; aucun vide ; jamais une photo en doublon ; accueil d'au moins 8 sections, fiche produit
-  d'au moins 7 ; une seule section « Produit vedette » par page, remplie avec les vraies données. Jamais une
+  disposition à la suite ; aucun vide ; jamais une photo en doublon ; au moins 10 sections sur chaque page
+  importante (accueil, fiches produit, prestations, collections, réalisations, à propos, contact, questions ; mots du
+  propriétaire du 16 novembre 2026 : « Il y a minimum 10 sections par page »), jamais une section de remplissage ; ordre
+  réglé par des règles d'or et plusieurs partitions par page (référence, partie 15) ; une seule section « Produit vedette » par page, remplie avec les vraies données. Jamais une
   coordonnée, un avis ou un prix d'exemple. Le client ne lit jamais le mot « maquette ». Pour Shopify, pas de page de
   commande dans le thème.
 - **Photos** : les photos produit du client restent sur les emplacements produit ; l'ouverture est une scène créée

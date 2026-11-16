@@ -484,6 +484,23 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
   lot 4 (l'ancien assistant savait désigner un élément ; la fonction est partie avec lui au lot 1).
 - **Pas de création gratuite** : l'idée vue chez Scale Ova (« créer et voir gratuitement, payer pour publier ») est
   refusée. Ses mots : « Pas envie de faire comme ça ».
+- **L'ordre et le nombre des sections** (le propriétaire, 16 novembre 2026, après l'accueil de Bécane où une formule
+  abstraite venait en deuxième et « tu viens jusque chez moi ? » en huitième : « elle doit avoir plusieurs règles d'or
+  pour avoir plusieurs disposition possible des section pour que l'armoni soit au max », « toutes les pages
+  importantes pas que l'accueil », « Il y a minimum 10 sections par page »).
+  - **Au moins 10 sections** sur chaque page importante : accueil, fiches produit, pages de prestation, collections,
+    réalisations, à propos, contact, questions. Chacune répond à une vraie question du visiteur, aucune ne sert à
+    remplir. Les pages utilitaires (panier, page introuvable, mentions légales, recherche, remerciement) restent courtes.
+  - **Dix règles d'or pour toutes les pages** : le premier écran dit quoi, pour qui ou où, et l'action ; la question
+    qui bloque la décision au plus tard en 3e position (« tu viens chez moi ? », le prix, la livraison) ; l'offre au
+    plus tard en 3e ; une vraie preuve avant la 5e, jamais la marque qui se cite ; le concret avant l'abstrait ; le
+    rythme alterne, jamais deux dispositions pareilles à la suite ; chaque rôle une seule fois ; les doutes levés
+    juste avant la fin ; la page finit par l'action ; chaque section répond à une question.
+  - **Plusieurs partitions par page**, choisies selon le métier et le style de la page, puis ajustées par l'angle
+    (le sûr fait monter les garanties, l'émotion le moment de vie, l'audace « nous et les autres ») : pour l'accueil,
+    service de proximité, rendez-vous, devis, produit héros, marque de créateur, catalogue, lieu ; pour la fiche
+    produit, les six styles ; pour la prestation, les six styles ; et un ordre propre aux collections, réalisations,
+    à propos, contact et questions. Un juge de l'ordre, séparé, vérifie chaque page avant toute image.
 - **Que du sur mesure, adaptable partout** (le propriétaire, 16 novembre 2026 : « On doit fait que du sur mesure et
   adaptable shopify woocommerce prestashop »). Chaque site est monté sur mesure par SINA pour son client, et le même
   site part vers Shopify, WooCommerce ou PrestaShop. L'ancien « sur mesure » sur un second moteur, qui ne part pas
