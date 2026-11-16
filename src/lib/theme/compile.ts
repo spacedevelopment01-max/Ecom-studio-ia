@@ -96,6 +96,8 @@ export function compileTheme(spec: ThemeSpec): ThemeFiles {
   // Thème importé : ses fichiers (et ses textes) restent ceux du client, sans traduction.
   const files = imp ? new Map([...importedArchive(imp).arc.text].filter(([p]) => !/^templates\/.+\.json$/.test(p))) : new Map(localizedBaseFiles(lang));
   for (const [type, s] of Object.entries(spec.customSections ?? {})) files.set(`sections/${type}.liquid`, s.liquid);
+  // Thème unique : les deux scripts du Studio (achat pour de vrai, contrat tnBoutique) partent dans « assets » dès qu'une section les charge.
+  for (const name of ["tenue-achat.js", "boutique-shopify.js"]) if (Object.values(spec.customSections ?? {}).some((x) => x.liquid.includes(`'${name}' | asset_url`))) files.set(`assets/${name}`, fs.readFileSync(path.join(process.cwd(), "public", "sections", name), "utf8"));
   for (const [key, t] of Object.entries(spec.templates)) {
     const template = structuredClone(t);
     for(const [id,s] of Object.entries(template.sections))template.sections[id]=sharedPurchaseSection(spec,s);

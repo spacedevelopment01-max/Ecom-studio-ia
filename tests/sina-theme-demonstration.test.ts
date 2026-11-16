@@ -322,8 +322,27 @@ describe("démonstration : deux sites complets montés avec les sections à tenu
     const x = shopify(m, YOGA, { company: co });
     expect(x.problems.filter((q) => q.level === "bloquant").map((q) => q.text)).toEqual([]);
     expect(validateSpec(x.spec)).toEqual([]);
-    expect(Object.keys(x.spec.templates)).toEqual(expect.arrayContaining(["index", "product", "collection", "cart", "blog", "article", "page.about", "page.aide"]));
+    expect(Object.keys(x.spec.templates)).toEqual(expect.arrayContaining(["index", "product", "collection", "cart", "blog", "article", "page.a-propos", "page.aide"]));
     expect(x.spec.store.collections!.map((c) => [c.handle, c.products.length])).toEqual([["tapis", 1], ["accessoires", 3]]);
+    // Demande du propriétaire (16 novembre 2026) : Shopify range les modèles par catégorie ; chaque modèle a un nom clair
+    // et se retrouve dans la bonne catégorie (Produits, Collections, Pages) ; chaque produit et chaque page sait le sien.
+    const names = Object.keys(x.spec.templates);
+    expect(names.filter((k) => k.startsWith("product.")).every((k) => /^product\.fiche-[a-z0-9-]+$/.test(k))).toBe(true);
+    expect(names.filter((k) => k.startsWith("product.")).length).toBe(Object.keys(x.productSuffixes).length);
+    for (const pg of x.spec.store.pages) expect(names, pg.handle).toContain(`page.${pg.template_suffix}`);
+    expect(x.spec.store.pages.map((pg) => pg.handle)).toEqual(expect.arrayContaining(["a-propos", "aide"]));
+    expect(names.some((k) => /^page\.(about|legal)$/.test(k))).toBe(false); // plus de nom technique en anglais
+    expect(x.spec.store.collections!.every((c) => c.template_suffix === undefined)).toBe(true); // une seule page boutique : le modèle commun
+    // Quand SINA dessine une page de collection pour UNE famille (clé « shop-<famille> »), elle devient le modèle de cette
+    // collection, relié à elle ; les autres familles gardent le modèle commun.
+    const shopPage = m.t.pages.find((pg: any) => pg.key === "shop")!;
+    const own = { ...m, t: { ...m.t, pages: [...m.t.pages, { ...JSON.parse(JSON.stringify(shopPage)), key: "shop-tapis", label: "Les tapis", sections: JSON.parse(JSON.stringify(shopPage.sections)).map((sec: any, i: number) => ({ ...sec, uid: `s${(0xabc000 + i).toString(16).padStart(8, "0")}` })) }] } };
+    const y = shopify(own, YOGA, { company: co });
+    expect(y.problems.filter((q) => q.level === "bloquant").map((q) => q.text)).toEqual([]);
+    expect(Object.keys(y.spec.templates)).toEqual(expect.arrayContaining(["collection", "collection.tapis"]));
+    expect(y.spec.store.collections!.map((c) => [c.handle, c.template_suffix ?? null])).toEqual([["tapis", "tapis"], ["accessoires", null]]);
+    expect(y.spec.store.pages.some((pg) => /shop/.test(pg.handle))).toBe(false); // une page de collection n'est jamais rangée dans Pages
+    expect(validateSpec(y.spec)).toEqual([]);
     // Par le chemin du Studio (étape 7 de SINA) : une version de thème prête pour Shopify, NON activée, sans rien retirer.
     const I = await import("@/lib/syna-agent/custom-theme/install");
     S.saveCustomTheme(m.pid, m.t);

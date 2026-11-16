@@ -219,7 +219,7 @@ describe("mise en boutique : toutes les sections à tenue partent, avec de vraie
       expect(blocking, blocking.join("\n")).toEqual([]);
       for (const [type, c] of Object.entries(out.spec.customSections)) {
         expect(validateCustomSection(c.liquid), `${type} : contrôle du Studio`).toBeNull();
-        expect(c.liquid, type).not.toMatch(/À compléter|photos\/|onclick=|onsubmit=|data-go=|href="#"|\/api\/files\/|<script/);
+        expect(c.liquid, type).not.toMatch(/À compléter|photos\/|onclick=|onsubmit=|data-go=|href="#"|\/api\/files\/|<script(?! type="application\/json" data-tn-versions| src="\{\{ '(?:tenue-achat|boutique-shopify)\.js' \| asset_url \}\}" defer>)/); // seuls scripts permis : la table des versions et les deux fichiers du Studio (achat pour de vrai)
       }
       const notes = out.problems.map((x) => x.text).join("\n");
       // Le tiroir de panier part en boutique (avec le pied de page, sans script) ; les autres fenêtres sont celles de Shopify.

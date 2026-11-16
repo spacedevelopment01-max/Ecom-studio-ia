@@ -9,6 +9,7 @@
 if (!defined('_PS_VERSION_')) {
     exit;
 }
+require_once __DIR__ . '/achat.php';
 
 class EsStudio extends Module
 {
@@ -16,7 +17,7 @@ class EsStudio extends Module
     {
         $this->name = 'esstudio';
         $this->tab = 'front_office_features';
-        $this->version = '1.1.0';
+        $this->version = '1.2.0';
         $this->author = 'E-COM STUDIO IA';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '8.0.0', 'max' => _PS_VERSION_];
@@ -31,7 +32,10 @@ class EsStudio extends Module
         return parent::install()
             && $this->registerHook('moduleRoutes')
             && $this->registerHook('displayFooterProduct')
-            && $this->registerHook('displayAfterBodyOpeningTag');
+            && $this->registerHook('displayAfterBodyOpeningTag')
+            && $this->registerHook('displayEsFiche')
+            && $this->registerHook('displayEsPiece')
+            && $this->registerHook('actionFrontControllerSetMedia');
     }
 
     /** Données du site générées par le studio (pages, produit, adresses). */
@@ -75,6 +79,32 @@ class EsStudio extends Module
         return $this->context->smarty->fetch($file);
     }
 
+    /** Fiche produit d'un site monté par SINA : ses pièces d'achat, rendues avec le vrai produit (achat.php). */
+    public function hookDisplayEsFiche($params)
+    {
+        $product = $params['product'] ?? null;
+        $id = is_array($product) || $product instanceof ArrayAccess ? (int) ($product['id_product'] ?? 0) : (is_object($product) ? (int) ($product->id ?? 0) : 0);
+        return $id ? EsAchat::rendreFiche($id) : '';
+    }
+
+    /** Pièce d'une page du site qui lit la boutique (prix, stock, bouton d'achat) : rendue ici, jamais figée. */
+    public function hookDisplayEsPiece($params)
+    {
+        return EsAchat::rendrePiece((string) ($params['type'] ?? ''), (string) ($params['id'] ?? ''));
+    }
+
+    /** Réglages de l'adaptateur du panier (contrat « tnBoutique ») : adresses, jeton, monnaie, offre si elle est en place. */
+    public function hookActionFrontControllerSetMedia()
+    {
+        $link = $this->context->link;
+        $etat = EsAchat::etat();
+        Media::addJsDef(['tnBoutiqueConfig' => [
+            'ajout' => $link->getPageLink('cart'), 'lecture' => $link->getModuleLink('esstudio', 'panier'), 'jeton' => Tools::getToken(false),
+            'panier' => $link->getPageLink('cart', null, null, ['action' => 'show']), 'argent' => EsAchat::argent(),
+            'offre' => $etat['actif'] ? EsAchat::offre() : null,
+        ]]);
+    }
+
     /** Message après l'envoi d'un formulaire de section. */
     public function hookDisplayAfterBodyOpeningTag()
     {
@@ -99,9 +129,21 @@ class EsStudio extends Module
                     require_once __DIR__ . '/catalog-import.php';
                     $imported = es_ps_catalog_import();
                     $catalogHtml .= $this->displayConfirmation(count($imported) . ' produits importés ou mis à jour. Vérifiez puis activez les nouveaux produits dans Catalogue.');
+                    // Les remises de l'offre suivent le catalogue : posées (ou mises à jour) dès que les produits existent.
+                    if (EsAchat::offre()) { $pose = EsAchat::poser(); $catalogHtml .= $pose['ok'] ? $this->displayConfirmation('Remises de l\'offre posées : ' . $pose['prix'] . ' prix par quantité, ' . $pose['regles'] . ' règle(s) de panier (cadeau).') : $this->displayWarning('Remises de l\'offre non posées : ' . implode(' ; ', $pose['manque'])); }
                 } catch (Throwable $e) { $catalogHtml .= $this->displayError($e->getMessage()); }
             }
             $catalogHtml .= '<div class="panel"><h3>Catalogue</h3><p>Import local des fichiers livrés. Nouveaux produits désactivés ; éléments reliés mis à jour. Aucun prix ni stock inconnu inventé. Vérifiez les taxes, stocks et produits avant publication.</p><form method="post"><input type="hidden" name="token" value="' . htmlspecialchars(Tools::getAdminTokenLite('AdminModules'), ENT_QUOTES) . '"><button class="btn btn-default" name="es_catalog_import" value="1">Importer / mettre à jour le catalogue</button></form></div>';
+        }
+        // Remises de l'offre : posées en natif (prix spécifiques par quantité, règles de panier), vérifiables et retirables.
+        if (EsAchat::offre()) {
+            $jeton = Tools::getAdminTokenLite('AdminModules');
+            if ((Tools::isSubmit('es_offre_poser') || Tools::isSubmit('es_offre_retirer')) && hash_equals($jeton, (string) Tools::getValue('token'))) {
+                if (Tools::isSubmit('es_offre_retirer')) { EsAchat::retirer(); $catalogHtml .= $this->displayConfirmation('Remises de l\'offre retirées.'); }
+                else { $pose = EsAchat::poser(); $catalogHtml .= $pose['ok'] ? $this->displayConfirmation('Remises posées : ' . $pose['prix'] . ' prix par quantité, ' . $pose['regles'] . ' règle(s) de panier (cadeau). Le réglage « remises par quantité » compte désormais tous les articles du produit, quelle que soit la déclinaison.') : $this->displayError('Remises non posées : ' . implode(' ; ', $pose['manque'])); }
+            }
+            $etat = EsAchat::etat();
+            $catalogHtml .= '<div class="panel"><h3>Remises de l\'offre</h3><p>' . ($etat['actif'] ? 'En place : prix par quantité et cadeau sont tenus par PrestaShop (Catalogue › Réductions).' : 'Pas en place : ' . htmlspecialchars(implode(' ; ', $etat['manque'])) . '. Tant que ce n\'est pas fait, le site n\'affiche ni prix de lot ni cadeau.') . '</p><form method="post"><input type="hidden" name="token" value="' . htmlspecialchars($jeton, ENT_QUOTES) . '"><button class="btn btn-default" name="es_offre_poser" value="1">Poser / mettre à jour les remises</button> <button class="btn btn-default" name="es_offre_retirer" value="1">Retirer les remises</button></form></div>';
         }
         $rows = json_decode((string) Configuration::get('ES_FORM_ENTRIES'), true) ?: [];
         $html = '<div class="panel"><h3>' . htmlspecialchars($this->trans('Messages du site', [], 'Modules.Esstudio.Admin')) . '</h3>';

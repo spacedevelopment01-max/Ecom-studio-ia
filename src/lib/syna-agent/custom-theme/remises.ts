@@ -85,16 +85,51 @@ export function offreBoutique(saisie: { devise?: string; produits: OffreProduitS
 /** Une offre sans aucune règle n'est pas une offre : rien à exporter, rien à confirmer. */
 export const offreVide = (o: OffreBoutique | null | undefined): boolean => !o || Object.keys(o.produits).length === 0;
 
+/** Ce que la rubrique des offres du Studio enregistre (product-features.ts), pour ce qui devient une règle de boutique. */
+export type OffresSaisies = {
+  quantity?: { kind: "lots"; tiers: { qty: number; pct: number }[] } | { kind: "bogo"; buy: number; free: number } | null;
+  packs?: { quantite: number; nom: string; remisePct?: number; prixCentimes?: number; cadeauHandle?: string; populaire?: boolean }[];
+};
+const cle = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "pack";
+
 /**
- * Des offres saisies par le client (rubrique des offres du Studio) aux règles de la boutique : les lots dégressifs
- * valent pour chaque produit donné. « N achetés, M offerts » n'est PAS converti : en pourcentage, il serait trop
- * généreux hors des multiples exacts ; il est rendu dans `nonTenu`, et ne doit donc pas s'afficher.
+ * Des offres saisies par le client aux règles de la boutique. Les lots dégressifs et les packs valent pour chaque
+ * produit donné (un produit n'est jamais son propre cadeau). Un pack à prix fixe devient le pourcentage qui donne ce
+ * prix sur le prix du produit. Ce qu'aucune règle identique ne tient sur les trois plateformes est rendu dans
+ * `nonTenu`, et ne doit donc pas s'afficher : « N achetés, M offerts » (en pourcentage, il serait trop généreux hors
+ * des multiples exacts), un pack à prix fixe sur un produit sans prix.
  */
-export function offreDepuisLots(quantity: { kind: "lots"; tiers: { qty: number; pct: number }[] } | { kind: "bogo"; buy: number; free: number } | null | undefined, handles: string[], packs: Record<string, OffrePack[]> = {}, devise = "EUR"): { offre: OffreBoutique; nonTenu: string[] } {
+export function offreDepuisOffres(saisies: OffresSaisies | null | undefined, produits: { handle: string; centimes?: number | null; titre?: string }[], devise = "EUR"): { offre: OffreBoutique; nonTenu: string[] } {
   const nonTenu: string[] = [];
+  const q = saisies?.quantity ?? null;
+  const lots = q?.kind === "lots" ? q.tiers.map((t) => ({ quantite: t.qty, pourcent: t.pct })) : [];
+  if (q?.kind === "bogo") nonTenu.push(`« ${q.buy} achetés, ${q.free} offert${q.free > 1 ? "s" : ""} » : aucune règle automatique identique sur les trois plateformes ; à poser à la main, ou à donner en lot (« ${q.buy + q.free} articles, tant de % »).`);
+  const titres = new Map(produits.map((p) => [p.handle, p.titre ?? p.handle]));
+  const out: OffreProduitSaisie[] = [];
+  for (const p of produits) {
+    const packs: OffrePack[] = [];
+    const ids = new Set<string>();
+    for (const k of saisies?.packs ?? []) {
+      let pourcent = k.remisePct ?? 0;
+      if (k.prixCentimes != null) {
+        if (!(p.centimes && p.centimes > 0)) { nonTenu.push(`Pack « ${k.nom} » à prix fixe : le produit « ${p.handle} » n'a pas de prix.`); continue; }
+        pourcent = Math.max(0, Math.round((1 - k.prixCentimes / (k.quantite * p.centimes)) * 1_000_000) / 10_000);
+      }
+      let id = cle(k.nom); for (let n = 2; ids.has(id); n++) id = `${cle(k.nom).slice(0, 36)}-${n}`;
+      ids.add(id);
+      const cadeau = k.cadeauHandle && k.cadeauHandle !== p.handle && titres.has(k.cadeauHandle) ? { handle: k.cadeauHandle, quantite: 1, titre: titres.get(k.cadeauHandle)! } : null;
+      if (k.cadeauHandle && !cadeau && k.cadeauHandle !== p.handle) nonTenu.push(`Pack « ${k.nom} » : le cadeau « ${k.cadeauHandle} » n'est pas au catalogue.`);
+      packs.push({ id, titre: k.nom, quantite: k.quantite, pourcent, ...(k.populaire ? { populaire: true } : {}), cadeau });
+    }
+    out.push({ handle: p.handle, lots, packs });
+  }
+  return { offre: offreBoutique({ devise, produits: out }), nonTenu: [...new Set(nonTenu)] };
+}
+/** Raccourci : seulement des lots (et des packs déjà écrits pour la boutique), pour une liste d'adresses de produits. */
+export function offreDepuisLots(quantity: OffresSaisies["quantity"], handles: string[], packs: Record<string, OffrePack[]> = {}, devise = "EUR"): { offre: OffreBoutique; nonTenu: string[] } {
+  const base = offreDepuisOffres({ quantity }, handles.map((handle) => ({ handle })), devise);
   const lots = quantity?.kind === "lots" ? quantity.tiers.map((t) => ({ quantite: t.qty, pourcent: t.pct })) : [];
-  if (quantity?.kind === "bogo") nonTenu.push(`« ${quantity.buy} achetés, ${quantity.free} offert${quantity.free > 1 ? "s" : ""} » : aucune règle automatique identique sur les trois plateformes ; à poser à la main, ou à donner en lot (« ${quantity.buy + quantity.free} articles, tant de % »).`);
-  return { offre: offreBoutique({ devise, produits: handles.map((handle) => ({ handle, lots, packs: packs[handle] ?? [] })) }), nonTenu };
+  return { offre: offreBoutique({ devise, produits: handles.map((handle) => ({ handle, lots, packs: packs[handle] ?? [] })) }), nonTenu: base.nonTenu };
 }
 
 // ---------------------------------------------------------------- le panier attendu (référence)

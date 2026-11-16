@@ -23,7 +23,22 @@ export const shopOffersSchema = z.object({
   /** Cadeaux par paliers de panier (en euros). La livraison offerte s'y ajoute d'elle-même si elle est connue. */
   gifts: z.array(z.object({ at: z.number().min(1).max(10_000), label: z.string().min(2).max(80) })).max(4).default([]),
   /** Promotion limitée dans le temps (fin réelle, sinon aucune promotion affichée). */
-  promo: z.object({ pct: z.number().min(1).max(80), endsAt: z.number().int() }).nullable().default(null),
+  promo: z.object({ pct: z.number().min(1).max(80), endsAt: z.number().int(),
+    /** « L'offre du moment » de la fiche produit : le nom que le client donne à sa promotion, et le cadeau qui va avec (un produit de son catalogue). */
+    nom: z.string().min(2).max(60).optional(), cadeauHandle: z.string().min(1).max(160).optional() }).nullable().default(null),
+  /** Packs de la fiche produit (vente directe) : seulement ceux que le client donne. Le prix vient de « prixCentimes », sinon de « remisePct » sur le prix du produit. */
+  packs: z.array(z.object({ quantite: z.number().int().min(1).max(12), nom: z.string().min(1).max(60), remisePct: z.number().min(0).max(80).optional(), prixCentimes: z.number().int().min(1).optional(),
+    cadeauHandle: z.string().min(1).max(160).optional(), populaire: z.boolean().optional() })).max(4).default([]),
+  /** Stock restant : « Plus que N » ne s'écrit que sous ce seuil, fixé par le client, et seulement avec le vrai stock suivi. */
+  seuilStock: z.number().int().min(1).max(999).nullable().default(null),
+  /** Quantité de départ du lot mis en vente, saisie par le client : avec le vrai stock suivi, elle donne la jauge « x % vendu ». */
+  stockDepart: z.number().int().min(1).max(1_000_000).nullable().default(null),
+  /** Délai de livraison tel que le client le dit (« 3 à 5 jours ouvrés »), écrit sous le bouton d'achat. */
+  delaiLivraison: z.string().min(2).max(80).nullable().default(null),
+  /** Fenêtre d'offre : une vraie offre du client, avec le code de réduction qu'IL a créé dans sa boutique. */
+  fenetreOffre: z.object({ titre: z.string().min(2).max(80), texte: z.string().min(2).max(240), code: z.string().min(2).max(40) }).nullable().default(null),
+  /** Vrai seulement quand les remises automatiques (par quantité, cadeau) existent dans la boutique du client : sans cela, aucun prix remisé ne part en boutique. */
+  remisesConfirmees: z.boolean().default(false),
   /** Délai de livraison réel (jours ouvrés) et heure limite de commande du jour. Sinon lu dans la réponse « Livraison ». */
   delivery: z.object({ minDays: z.number().int().min(0).max(60), maxDays: z.number().int().min(0).max(90), cutoffHour: z.number().int().min(0).max(23).nullable().default(null) })
     .refine((d) => d.maxDays >= d.minDays, "maxDays doit être au moins minDays").nullable().default(null),

@@ -46,7 +46,7 @@ export type StoreProduct = {
 };
 
 /** Collection de la boutique : liste ordonnée de produits (par identifiant « handle »). */
-export type StoreCollection = { handle: string; title: string; description: string; image?: string; products: string[] };
+export type StoreCollection = { handle: string; title: string; description: string; image?: string; products: string[]; /** Modèle propre à cette collection (« collection.<suffixe> ») ; absent : le modèle commun. */ template_suffix?: string };
 
 export { storeProducts } from "./store-products";
 

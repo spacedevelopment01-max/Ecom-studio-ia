@@ -265,8 +265,8 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     expect(done.notes.join("\n")).toMatch(/Questions en volets : section retirée, il ne restait que son titre/);
     expect(done.notes.join("\n")).toMatch(/Mon compte[^\n]*compte client est une page de Shopify/);
     const spec = themeVersion(pid, done.versionId)!.spec;
-    expect(Object.keys(spec.templates)).toEqual(expect.arrayContaining(["index", "product", "cart", "404", "page.contact", "page.about", "page.aide", "page.legal", "collection", "search", "page", "list-collections"]));
-    expect(spec.store.pages.map((x) => [x.handle, x.template_suffix])).toEqual(expect.arrayContaining([["contact", "contact"], ["about", "about"], ["legal", "legal"]]));
+    expect(Object.keys(spec.templates)).toEqual(expect.arrayContaining(["index", "product", "cart", "404", "page.contact", "page.a-propos", "page.aide", "page.informations-legales", "collection", "search", "page", "list-collections"]));
+    expect(spec.store.pages.map((x) => [x.handle, x.template_suffix])).toEqual(expect.arrayContaining([["contact", "contact"], ["a-propos", "a-propos"], ["informations-legales", "informations-legales"]]));
     const all = Object.values(spec.customSections).map((s) => s.liquid).join("\n");
     // Rien d'exemple, rien d'inventé, aucun geste de l'aperçu.
     expect(all).not.toMatch(/À compléter|photos\/|onclick=|data-go=|href="#"|\/api\/files\//);
@@ -288,7 +288,7 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     expect(done.notes.join("\n")).toMatch(/le lien « M'y installer » n'a pas de destination/);
     // Un lien dont la destination est connue mène à la vraie page.
     expect(spec.customSections[type("404", 0)].liquid).toContain('<a class="tn-bt" href="{{ routes.root_url }}">Revenir à l\'accueil</a>');
-    expect(spec.customSections[spec.groups.footer.sections[spec.groups.footer.order[0]].type].liquid).toContain('href="{{ routes.root_url }}pages/legal">Mentions légales</a>');
+    expect(spec.customSections[spec.groups.footer.sections[spec.groups.footer.order[0]].type].liquid).toContain('href="{{ routes.root_url }}pages/informations-legales">Mentions légales</a>');
     expect(home).toMatch(/style="background-image:url\(\{\{ 'tn-[\w-]+\.(?:jpg|png)' \| asset_url \}\}\)"/);
     // L'en-tête porte les couleurs, les polices et le socle de la feuille ; chaque section porte sa propre part.
     const header = spec.customSections[spec.groups.header.sections[spec.groups.header.order[0]].type].liquid;

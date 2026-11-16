@@ -20,6 +20,8 @@ import { designLayer, exportStylesheet } from "../design";
 import { flatStrings, fontSettingsAsObjects, normalizedSection, phpTemplates, sectionJavascript, sectionSchemaOf, specSectionTypes, themeSettings, type SectionSchema } from "../liquid";
 import type { ExportIssue, PlatformExport } from "../types";
 import { exportProductHandle } from "../catalog";
+import { FEUILLE_ACHAT, aDesPiecesTenue, fichesTenue, offrePourExport, pieceHorsShopify, scriptsAchat } from "../achat";
+import type { OffreBoutique } from "../../syna-agent/custom-theme/remises";
 
 const ROOT = process.cwd();
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "site";
@@ -47,7 +49,7 @@ const part = (slugName: string) => `<!-- wp:template-part {"slug":"${slugName}",
 const main = (inner: string, cls = "es-main") => `<!-- wp:group {"tagName":"main","className":"${cls}","layout":{"type":"default"}} -->\n<main class="wp-block-group ${cls}" id="MainContent">${inner}</main>\n<!-- /wp:group -->`;
 const page = (inner: string, cls = "es-main") => `${part("header")}\n${main(inner, cls)}\n${part("footer")}\n`;
 
-export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promise<PlatformExport> {
+export async function exportWordPress(spec: ThemeSpec, load: AssetLoader, o: { offre?: OffreBoutique | null } = {}): Promise<PlatformExport> {
   const lang = themeLang(spec);
   const t = (fr: string, en: string) => pick(lang, fr, en);
   const files = compileTheme(spec);
@@ -129,8 +131,10 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
   // Brouillons du studio : pas créés dans WordPress (ils n'apparaissent pas sur le site publié).
   const drafts = spec.store.pages.filter((p) => p.status === "draft");
   if (drafts.length) issues.push({ code: "draft_pages_skipped", severity: "warning", detail: t(`pages en brouillon non exportées : ${drafts.map((p) => p.title).join(", ")}`, `draft pages not exported: ${drafts.map((p) => p.title).join(", ")}`) });
+  // Site monté par SINA : sa fiche produit est faite de pièces à tenue, elle part telle quelle (voir plus bas).
+  const tenue = fichesTenue(spec);
   const custom = storeProductsOf(spec).filter((p) => p.template_suffix && spec.templates[`product.${p.template_suffix}`]);
-  if (custom.length && !services) issues.push({ code: "product_layouts_shared", severity: "warning", detail: t(`WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à ${custom.map((p) => p.title).join(", ")} ne sont pas reprises (elles le sont dans l'export Shopify)`, `WooCommerce: one product page for all products; the layouts specific to ${custom.map((p) => p.title).join(", ")} aren't carried over (they are in the Shopify export)`) });
+  if (custom.length && !services && !tenue) issues.push({ code: "product_layouts_shared", severity: "warning", detail: t(`WooCommerce : une seule fiche produit pour tous les produits ; les mises en page propres à ${custom.map((p) => p.title).join(", ")} ne sont pas reprises (elles le sont dans l'export Shopify)`, `WooCommerce: one product page for all products; the layouts specific to ${custom.map((p) => p.title).join(", ")} aren't carried over (they are in the Shopify export)`) });
   const pages = spec.store.pages.filter((p) => p.status !== "draft").map((p) => ({ handle: p.handle, title: p.title, body_html: p.template_suffix ? "" : p.body_html, template: p.template_suffix ? `page.${p.template_suffix}` : "page" }));
   for (const p of pages) {
     if (p.template === "page") continue;
@@ -147,16 +151,29 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
   put("templates/index.html", page(`<!-- wp:group {"className":"es-page","layout":{"type":"default"}} -->\n<div class="wp-block-group es-page"><!-- wp:query-title {"type":"archive"} /--><!-- wp:query {"queryId":1,"query":{"inherit":true}} --><div class="wp-block-query"><!-- wp:post-template --><!-- wp:post-title {"isLink":true,"level":2} /--><!-- wp:post-excerpt /--><!-- /wp:post-template --><!-- wp:query-pagination /--></div><!-- /wp:query --></div>\n<!-- /wp:group -->`));
   put("templates/404.html", page(`<!-- wp:group {"className":"es-page","layout":{"type":"default"}} -->\n<div class="wp-block-group es-page"><!-- wp:heading {"level":1} -->\n<h1 class="wp-block-heading">${t("Cette page est introuvable.", "This page could not be found.")}</h1>\n<!-- /wp:heading --><!-- wp:search {"label":"${t("Rechercher", "Search")}","buttonText":"${t("Rechercher", "Search")}"} /--></div>\n<!-- /wp:group -->`));
 
+  if (!services && tenue) {
+    // Fiche produit d'un site monté par SINA : SES pièces d'achat (bloc d'achat, tailles et couleurs, lots, packs, barre
+    // d'achat), rendues par le moteur PHP avec le VRAI produit WooCommerce (prix, déclinaisons, stock, identifiants :
+    // inc/es-achat.php). La fiche commune va à tous les produits, sauf ceux qui ont leur fiche propre.
+    const sauf = tenue.propres.map((p) => p.handle);
+    const blocs = (list: { id: string; section: SectionInstance }[], onlyFor: string) => list.map(({ id, section }) => {
+      const schema = schemaOf(section.type);
+      if (!schema) { issues.push({ code: "section_not_exported", severity: "blocking", detail: `fiche produit : section « ${section.type} » sans gabarit exportable` }); return ""; }
+      return sectionBlock(id, section, schema, onlyFor);
+    }).filter(Boolean).join("\n");
+    const fiche = [`<!-- wp:woocommerce/store-notices /-->`, blocs(tenue.commune.sections, sauf.length ? `!${sauf.join(",")}` : ""), ...tenue.propres.map((p) => blocs(p.fiche.sections, p.handle))].filter(Boolean).join("\n");
+    put("templates/single-product.html", page(fiche, "es-main es-product es-fiche-tenue"));
+  }
   if (!services) {
     // Fiche produit : blocs natifs de WooCommerce (prix, déclinaisons, stock, ajout au panier réels) + sections V2
     // propres au produit (caractéristiques, questions) affichées sur sa fiche seulement.
     const extra = spec.templates.product ? render(spec.templates.product, "fiche produit", (s) => s.type.startsWith("v2-"), spec.store.product.handle) : "";
-    put("templates/single-product.html", page(`<!-- wp:group {"className":"es-wc product","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc product"><!-- wp:columns {"align":"wide"} -->\n<div class="wp-block-columns alignwide"><!-- wp:column {"width":"55%"} -->\n<div class="wp-block-column" style="flex-basis:55%"><!-- wp:woocommerce/product-image-gallery /--></div>\n<!-- /wp:column --><!-- wp:column -->\n<div class="wp-block-column"><!-- wp:post-title {"level":1,"__woocommerceNamespace":"woocommerce/product-query/product-title"} /--><!-- wp:woocommerce/product-price /--><!-- wp:post-excerpt {"__woocommerceNamespace":"woocommerce/product-query/product-summary"} /--><!-- wp:woocommerce/add-to-cart-form /--><!-- wp:woocommerce/product-meta /--></div>\n<!-- /wp:column --></div>\n<!-- /wp:columns --><!-- wp:woocommerce/product-details {"align":"wide"} /--></div>\n<!-- /wp:group -->\n${extra}\n<!-- wp:group {"className":"es-wc","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc"><!-- wp:woocommerce/related-products {"align":"wide"} /--></div>\n<!-- /wp:group -->`, "es-main es-product"));
+    if (!tenue) put("templates/single-product.html", page(`<!-- wp:group {"className":"es-wc product","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc product"><!-- wp:columns {"align":"wide"} -->\n<div class="wp-block-columns alignwide"><!-- wp:column {"width":"55%"} -->\n<div class="wp-block-column" style="flex-basis:55%"><!-- wp:woocommerce/product-image-gallery /--></div>\n<!-- /wp:column --><!-- wp:column -->\n<div class="wp-block-column"><!-- wp:post-title {"level":1,"__woocommerceNamespace":"woocommerce/product-query/product-title"} /--><!-- wp:woocommerce/product-price /--><!-- wp:post-excerpt {"__woocommerceNamespace":"woocommerce/product-query/product-summary"} /--><!-- wp:woocommerce/add-to-cart-form /--><!-- wp:woocommerce/product-meta /--></div>\n<!-- /wp:column --></div>\n<!-- /wp:columns --><!-- wp:woocommerce/product-details {"align":"wide"} /--></div>\n<!-- /wp:group -->\n${extra}\n<!-- wp:group {"className":"es-wc","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc"><!-- wp:woocommerce/related-products {"align":"wide"} /--></div>\n<!-- /wp:group -->`, "es-main es-product"));
     put("templates/archive-product.html", page(`<!-- wp:group {"className":"es-wc","layout":{"type":"default"}} -->\n<div class="wp-block-group es-wc"><!-- wp:query-title {"type":"archive"} /--><!-- wp:woocommerce/product-collection {"query":{"perPage":12,"pages":0,"offset":0,"postType":"product","order":"asc","orderBy":"title","search":"","exclude":[],"inherit":true,"taxQuery":{},"isProductCollectionBlock":true,"woocommerceAttributes":[],"woocommerceStockStatus":["instock","outofstock","onbackorder"]},"displayLayout":{"type":"flex","columns":3}} -->\n<div class="wp-block-woocommerce-product-collection"><!-- wp:woocommerce/product-template -->\n<!-- wp:woocommerce/product-image /--><!-- wp:post-title {"textAlign":"center","level":3,"isLink":true,"__woocommerceNamespace":"woocommerce/product-collection/product-title"} /--><!-- wp:woocommerce/product-price {"isDescendentOfQueryLoop":true,"textAlign":"center"} /--><!-- wp:woocommerce/product-button {"isDescendentOfQueryLoop":true,"textAlign":"center"} /-->\n<!-- /wp:woocommerce/product-template --></div>\n<!-- /wp:woocommerce/product-collection --></div>\n<!-- /wp:group -->`));
   }
 
   // ------------------------------------------------------------ gabarits Liquid + moteur PHP
-  for (const [p, src] of phpTemplates(files, [...used])) put(`inc/${p}`, src);
+  for (const [p, src] of phpTemplates(files, [...used])) put(`inc/${p}`, /^sections\/es-custom-/.test(p) ? pieceHorsShopify(src) : src);
   const phpDir = path.join(ROOT, "assets/cms/php");
   const walk = (dir: string, rel: string) => {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -172,6 +189,24 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
     put("inc/es-catalog-import.php", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-catalog-import.php")));
     put("assets/js/es-woo.js", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-woo.js")));
     put("assets/css/es-woo.css", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-woo.css")));
+  }
+  // Achat d'un site monté par SINA : le vrai produit dans les pièces, le script commun des pièces d'achat, l'adaptateur
+  // du contrat « tnBoutique » (API de la boutique WooCommerce) et les remises RÉELLES de l'offre, appliquées par le thème
+  // dans le panier de WooCommerce d'après le fichier de données exporté (inc/offre.json).
+  // Fiche à tenue : le contenu va d'un bord à l'autre, comme dans le Studio (les pièces portent leurs marges).
+  if (tenue && !services) put("assets/css/es-woo.css", `${new TextDecoder().decode(out["assets/css/es-woo.css"])}\n/* Fiche produit d'un site monté par SINA : pièces à tenue pleine largeur. */\n.es-fiche-tenue{max-width:none;padding:0;margin:0}\n.es-fiche-tenue>.wc-block-store-notices{max-width:1100px;margin:0 auto;padding:0 20px}\n`);
+  const offre = services ? { offre: null, ecartes: [] as string[] } : offrePourExport(o.offre, spec);
+  if (!services && (aDesPiecesTenue(spec) || offre.offre)) {
+    const scripts = scriptsAchat("woocommerce");
+    put("inc/es-achat.php", fs.readFileSync(path.join(ROOT, "assets/cms/wordpress/es-achat.php")));
+    put("assets/css/es-woo.css", `${new TextDecoder().decode(out["assets/css/es-woo.css"])}\n${FEUILLE_ACHAT}`);
+    put("assets/js/boutique-woocommerce.js", scripts.adaptateur);
+    if (scripts.commun) put("assets/js/tenue-achat.js", scripts.commun);
+    if (offre.offre) {
+      put("inc/offre.json", JSON.stringify(offre.offre, null, 1));
+      issues.push({ code: "offer_rules_delivered", severity: "warning", detail: t(`Remises de l'offre livrées dans le thème (inc/offre.json, appliquées dans le panier WooCommerce par inc/es-achat.php) : après l'import et la publication des produits, vérifiez l'état à l'adresse /?rest_route=/es/v1/offre et faites un achat d'essai.`, `Offer discounts delivered in the theme (inc/offre.json, applied in the WooCommerce cart by inc/es-achat.php): after importing and publishing products, check /?rest_route=/es/v1/offre and place a test order.`) });
+    }
+    for (const e of offre.ecartes) issues.push({ code: "offer_rule_dropped", severity: "warning", detail: t(`Offre : règle non livrée (${e}).`, `Offer: rule not delivered (${e}).`) });
   }
 
   // ------------------------------------------------------------ design (mêmes feuilles que Shopify)

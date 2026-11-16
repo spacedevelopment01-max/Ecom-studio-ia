@@ -190,7 +190,7 @@ export async function pushCatalog(c: Connection, spec: ThemeSpec, onProgress?: (
   for (const col of spec.store.collections ?? []) {
     const productIds = col.products.map((h) => ids.get(h)).filter(Boolean);
     const d = await gql(c, `mutation($input: CollectionInput!){ collectionCreate(input: $input){ collection{ id handle } userErrors{ field message } } }`, {
-      input: { title: col.title, handle: col.handle, descriptionHtml: col.description ? `<p>${col.description}</p>` : "", products: productIds },
+      input: { title: col.title, handle: col.handle, descriptionHtml: col.description ? `<p>${col.description}</p>` : "", products: productIds, ...(col.template_suffix && spec.templates[`collection.${col.template_suffix}`] ? { templateSuffix: col.template_suffix } : {}) },
     });
     const errs = d?.collectionCreate?.userErrors ?? [];
     if (errs.length && !errs.some((e: any) => /taken|already/i.test(e.message))) throw new Error(L(`Collection ${col.title} : ${errs.map((e: any) => e.message).join(" ; ")}`, `Collection ${col.title}: ${errs.map((e: any) => e.message).join("; ")}`));

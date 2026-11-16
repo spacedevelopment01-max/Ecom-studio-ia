@@ -22,6 +22,7 @@ import { assetUrl } from "../../library";
 import { listBiens, VISIBLE_STATUSES } from "../../biens";
 import { carteprice, listCarte } from "../../contenus/carte";
 import { QUANTITE } from "./tenue-pages";
+import { listProducts } from "../../products/catalog";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const clean = (v: string | null | undefined, max = 200) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null);
@@ -42,6 +43,8 @@ export type TenueSite = {
   freeFrom?: number | null;
   /** Mise en boutique : les produits sont lus en direct par la boutique ; les emplacements sont posés, sans produit écrit. */
   live?: boolean;
+  /** Vente directe (module « vente ») : genre et prix de comparaison des produits, offre réelle, avis d'une vraie source, macaron. */
+  vitrine?: TenueVitrine;
 };
 
 // ---------------------------------------------------------------- coordonnées, horaires, zone, plan
@@ -514,6 +517,287 @@ export function withTenueRdvSteps(html: string, prestations: TenuePrestation[], 
   return markMissing(out);
 }
 
+// ════════════════════════════════════════════════════════════════ vente directe (module « vente », thème unique) : début
+// Pièces de tenue-vente.ts : bandeau à plusieurs messages, ouverture au macaron, cartes de vente, guide de choix, page
+// d'arrivée de publicité (en-tête, ouverture, témoignages, barre du produit), page des avis, collection en ajout rapide.
+// Règle : rien d'exemple ne reste. Un avis, une note, un prix barré, une offre ou un macaron n'existent que s'ils
+// viennent d'une vraie donnée ; ce qui est facultatif et manque est retiré, jamais montré « à compléter ».
+
+/** Un avis d'une vraie source d'avis (ou donné par le client) : ses mots exacts, jamais réécrits. */
+export type TenueAvisVente = { text: string; name: string; /** Date de l'avis, « AAAA-MM-JJ ». */ date?: string | null; /** Note donnée, de 1 à 5. */ rating?: number | null; /** La source dit que l'achat est vérifié. */ verified?: boolean; /** Photos envoyées par le client. */ photos?: string[]; /** Nom du produit concerné. */ product?: string | null; /** Réponse publiée par la marque. */ reply?: string | null };
+/** Ce que la vente directe demande de plus au Studio. Tout est facultatif : ce qui manque n'est pas montré. */
+export type TenueVitrine = {
+  /** Par produit (son nom) : son genre, son vrai prix de comparaison, son plus petit prix (« dès … ») quand ses versions n'ont pas le même prix, son nombre de versions. */
+  produits?: Record<string, { genre?: string | null; compare?: string | null; des?: string | null; versions?: number }>;
+  /** La promotion réelle du moment : son libellé, sa date de fin (« AAAA-MM-JJ »), les produits concernés (tous si absent). */
+  offre?: { label: string; fin: string; produits?: string[] } | null;
+  /** Les avis d'une vraie source : son nom, si elle vérifie les achats, les avis. */
+  avis?: { source: string; verifies?: boolean; liste: TenueAvisVente[] } | null;
+  /** Le chiffre vrai du macaron de l'ouverture, donné par le client. */
+  macaron?: { chiffre: string; quoi: string } | null;
+  /** D'autres messages vrais du bandeau, écrits par le client. */
+  messages?: string[];
+};
+
+const manque = (x: string) => /\[À compléter|<mark class="tn-manque">/.test(x);
+const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+/** « 2026-11-05 » → « 5 novembre 2026 » ; une date écrite autrement reste telle quelle. */
+export const dateFr = (iso: string): string => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso.trim()); return m && MOIS[+m[2] - 1] ? `${+m[3] === 1 ? "1er" : +m[3]} ${MOIS[+m[2] - 1]} ${m[1]}` : iso.trim(); };
+const note = (n: number) => String(Math.round(n * 10) / 10).replace(".", ",");
+const valid = (r: number | null | undefined): r is number => typeof r === "number" && r >= 1 && r <= 5;
+/** Une note en étoiles, dessinée par la feuille (jamais des étoiles écrites) : seulement pour une vraie note. */
+export const etoiles = (n: number) => `<i class="tn-v-etoiles" style="--note:${Math.round(n * 10) / 10}" role="img" aria-label="Note : ${note(n)} sur 5"></i>`;
+/** L'offre du client vaut encore : sa date de fin n'est pas passée (une offre sans date de fin lisible n'est jamais montrée). */
+export function offreActive(o: TenueVitrine["offre"], now = Date.now()): o is NonNullable<TenueVitrine["offre"]> {
+  if (!o || !o.label?.trim()) return false;
+  const end = Date.parse(`${o.fin}T23:59:59`);
+  return Number.isFinite(end) && end >= now;
+}
+const avisReels = (d: TenueSite): TenueAvisVente[] => (d.vitrine?.avis?.liste ?? []).filter((a) => a.text?.trim() && a.name?.trim());
+const sameName = (a: string, b: string) => a.trim().toLocaleLowerCase("fr-FR") === b.trim().toLocaleLowerCase("fr-FR");
+const signature = (a: TenueAvisVente, avecNote = true) => [a.date ? esc(dateFr(a.date)) : "", avecNote && valid(a.rating) ? `Note donnée : ${note(a.rating)}/5` : ""].filter(Boolean).join(" · ");
+const sourceLine = (d: TenueSite) => { const s = clean(d.vitrine?.avis?.source, 80); return s ? `Avis recueillis par ${esc(s)}${d.vitrine?.avis?.verifies ? ", qui vérifie les achats" : ""}. Ils sont repris tels qu'ils ont été écrits.` : null; };
+
+/**
+ * Bandeau à plusieurs messages : la livraison et les retours du client, son offre réelle (si sa date de fin n'est pas
+ * passée), ses autres messages. Le paiement et l'offre, facultatifs, sont retirés quand ils manquent. La liste est
+ * doublée (la copie n'est pas lue) pour un défilement sans fin ; chaque message porte son rang pour le relais.
+ */
+export function withVenteMessages(html: string, d: TenueSite, now = Date.now()): string {
+  if (!/\sdata-tn-messages\b/.test(html) || /class="tn-v-fil tn-v-bis"/.test(html)) return html;
+  const shipping = clean(d.shipping, 120), returns = clean(d.returns, 120), offre = offreActive(d.vitrine?.offre, now) ? d.vitrine!.offre! : null;
+  return markMissing(html.replace(/<ul class="tn-v-fil" data-tn-messages>([\s\S]*?)<\/ul>/, (_m, lines: string) => {
+    const out: string[] = [];
+    for (const li of lines.match(/<li\b[^>]*>[\s\S]*?<\/li>/g) ?? []) {
+      const key = /\sdata-tn-cle="([a-z]+)"/.exec(li)?.[1] ?? null, text = li.replace(/^<li\b[^>]*>|<\/li>$/g, "");
+      if (key === "livraison") out.push(shipping ? `Livraison : ${esc(shipping)}` : text);
+      else if (key === "retours") out.push(returns ? `Retours : ${esc(returns)}` : text);
+      else if (key === "offre") { if (offre) out.push(`${esc(offre.label.trim())}, jusqu'au ${esc(dateFr(offre.fin))}`); else if (!manque(text)) out.push(text); }
+      else if (!manque(text)) out.push(text);
+    }
+    for (const m of d.vitrine?.messages ?? []) { const t = clean(m, 120); if (t && !out.includes(esc(t))) out.push(esc(t)); }
+    const list = out.slice(0, 6), items = list.map((t, i) => `<li style="--i:${i}">${t}</li>`).join("");
+    return `<ul class="tn-v-fil" data-tn-messages data-tn-n="${list.length}">${items}</ul><ul class="tn-v-fil tn-v-bis" aria-hidden="true">${items}</ul>`;
+  }));
+}
+
+/** Le macaron de l'ouverture : le chiffre vrai du client, sinon pas de macaron (jamais un chiffre « à compléter » sur la photo). */
+export function withVenteMacaron(html: string, d: TenueSite): string {
+  if (!/\sdata-tn-macaron\b/.test(html)) return html;
+  const m = d.vitrine?.macaron, chiffre = clean(m?.chiffre, 14), quoi = clean(m?.quoi, 40);
+  return html.replace(/<div class="tn-v-macaron" data-tn-macaron>([\s\S]*?)<\/div>/, (all, inner: string) => (chiffre && quoi ? `<div class="tn-v-macaron" data-tn-macaron><b>${esc(chiffre)}</b><span>${esc(quoi)}</span></div>` : manque(inner) ? "" : all));
+}
+
+/** Ce qui est écrit sur une carte de vente pour un produit nommé : son genre, sa ligne d'envie, le mot du bouton. */
+function cartesEcrites(html: string) {
+  const cards = html.match(/<a class="tn-v-carte[\s\S]*?<\/a>/g) ?? [];
+  const pick = (c: string, rx: RegExp) => { const v = rx.exec(c)?.[1]?.trim() ?? ""; return v && !manque(v) ? v : null; };
+  return { voir: pick(cards[0] ?? "", /<i class="tn-v-voir">([\s\S]*?)<\/i>/) ?? "Découvrir", par: new Map(cards.map((c) => [(pick(c, /<b>([\s\S]*?)<\/b>/) ?? "").toLocaleLowerCase("fr-FR"), { genre: pick(c, /<small>([\s\S]*?)<\/small>/), envie: pick(c, /<span class="tn-v-envie">([\s\S]*?)<\/span>/) }] as const)) };
+}
+/**
+ * Cartes de vente : les vrais produits (huit au plus). Le genre vient du catalogue, sinon de la carte écrite pour ce
+ * produit ; la ligne d'envie est celle écrite pour CE produit (jamais celle d'un autre) ; « dès » et le prix barré
+ * viennent du catalogue ; l'étiquette d'offre, de la promotion réelle du client.
+ */
+export function withVenteCartes(html: string, d: TenueSite, now = Date.now()): string {
+  const products = d.products ?? [];
+  if (!products.length || !/\sdata-tn-cartes-vente\b/.test(html)) return html;
+  const ecrit = cartesEcrites(html), offre = offreActive(d.vitrine?.offre, now) ? d.vitrine!.offre! : null;
+  const card = (p: TenueProduct) => {
+    const x = d.vitrine?.produits?.[p.title] ?? {}, w = ecrit.par.get(p.title.trim().toLocaleLowerCase("fr-FR"));
+    const genre = clean(x.genre, 40), tag = offre && (!offre.produits?.length || offre.produits.some((t) => sameName(t, p.title))) && !p.soldOut ? `<em class="tn-v-offre">${esc(offre.label.trim().slice(0, 30))}</em>` : "";
+    const prix = p.soldOut ? "Épuisé" : p.price ? `${x.des ? `dès ${esc(x.des)}` : esc(p.price)}${x.compare ? ` <s>${esc(x.compare)}</s>` : ""}` : "[À compléter : prix]";
+    return `<a class="tn-v-carte${p.soldOut ? " tn-epuise" : ""}" href="#" onclick="return false" data-go="${esc(p.go ?? "product")}"><div class="tn-ph"${pic(p.image)}>${tag}</div>${genre ? `<small>${esc(genre)}</small>` : w?.genre ? `<small>${w.genre}</small>` : ""}<b>${esc(p.title)}</b>${w?.envie ? `<span class="tn-v-envie">${w.envie}</span>` : ""}<span class="tn-v-prix">${prix}</span><i class="tn-v-voir">${ecrit.voir}</i></a>`;
+  };
+  return markMissing(html.replace(/(<div class="tn-v-cartes">)[\s\S]*<\/div>(?=<\/section>)/, (_m, a: string) => `${a}${products.slice(0, 8).map(card).join("")}</div>`));
+}
+
+/**
+ * Guide de choix : chaque envie mène au produit du catalogue qu'elle nomme (sa vraie photo, son vrai prix, sa fiche).
+ * Quand aucune envie ne nomme un produit du catalogue, elles suivent l'ordre du catalogue ; une envie sans produit est
+ * retirée. Façon « cartes » : toutes les envies sont ouvertes ; sinon, seule la première.
+ */
+export function withVenteGuide(html: string, d: TenueSite, built?: string | null): string {
+  if (!/\sdata-tn-guide\b/.test(html)) return html;
+  const products = (d.products ?? []).filter((p) => !p.soldOut), cartes = builtOf(html, built) === "cartes";
+  const blocks = html.match(/<details class="tn-v-besoin"[\s\S]*?<\/details>/g) ?? [];
+  const named = blocks.map((b) => { const n = (/<b data-tn-produit>([\s\S]*?)<\/b>/.exec(b)?.[1] ?? "").replace(/<[^>]+>/g, "").trim(); return products.find((p) => sameName(p.title, n)) ?? null; });
+  const some = named.some(Boolean);
+  let i = 0, kept = 0;
+  const out = html.replace(/<details class="tn-v-besoin"(?: open)?>([\s\S]*?)<\/details>/g, (_m, inner: string) => {
+    const p = products.length ? (some ? named[i] : products[i] ?? null) : undefined;
+    i++;
+    if (p === null) return "";
+    const body = p ? inner.replace(/<div class="tn-ph"[^>]*><\/div>/, `<div class="tn-ph"${pic(p.image)}></div>`).replace(/(<b data-tn-produit>)[\s\S]*?(<\/b>)/, `$1${esc(p.title)}$2`)
+      .replace(/(<span class="tn-v-prix">)[\s\S]*?(<\/span>)/, `$1${p.price ? esc(p.price) : "[À compléter : prix]"}$2`).replace(/data-go="product"/, `data-go="${esc(p.go ?? "product")}"`) : inner;
+    return `<details class="tn-v-besoin"${cartes || kept++ === 0 ? " open" : ""}>${body}</details>`;
+  });
+  return products.length ? markMissing(out) : out;
+}
+
+/** Le produit d'une page d'arrivée : le premier produit en stock du catalogue (son nom dans l'en-tête et la barre, sa photo, sa fiche). */
+export function withVenteArrivee(html: string, d: TenueSite): string {
+  if (!/\sdata-tn-(?:arrivee|barre-produit)\b/.test(html)) return html;
+  const p = (d.products ?? []).find((x) => !x.soldOut) ?? (d.products ?? [])[0];
+  if (!p) return html;
+  return html.replace(/(<(?:span|b) data-tn-produit-nom>)[\s\S]*?(<\/(?:span|b)>)/g, `$1${esc(p.title)}$2`).replace(/data-go="product"/g, `data-go="${esc(p.go ?? "product")}"`)
+    .replace(/(<div class="tn-v-colle">)<div class="tn-ph"[^>]*><\/div>/, `$1<div class="tn-ph"${pic(p.image)}></div>`);
+}
+
+/** L'avis posé sur la photo d'une ouverture d'arrivée : le mieux noté des vrais avis courts ; sans vrai avis, rien n'est posé. */
+export function withVenteAvisPose(html: string, d: TenueSite): string {
+  if (!/\sdata-tn-avis-pose\b/.test(html)) return html;
+  const best = avisReels(d).filter((a) => a.text.trim().length <= 180).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || a.text.length - b.text.length)[0];
+  return html.replace(/<blockquote class="tn-v-pose">([\s\S]*?)<\/blockquote>/, (all, inner: string) => {
+    if (best) { const src = clean(d.vitrine?.avis?.source, 80); return `<blockquote class="tn-v-pose">${valid(best.rating) ? etoiles(best.rating) : ""}<p>«&nbsp;${esc(best.text.trim())}&nbsp;»</p><cite>${esc(best.name.trim())}${best.date ? ` · ${esc(dateFr(best.date))}` : ""}</cite>${src ? `<small>Avis recueilli par ${esc(src)}</small>` : ""}</blockquote>`; }
+    // Un vrai avis écrit dans la pièce reste ; ses lignes encore à compléter s'en vont.
+    return manque(/<p>([\s\S]*?)<\/p>/.exec(inner)?.[1] ?? "[À compléter") ? "" : all.replace(/<(cite|small)>(?:(?!<\/\1>)[\s\S])*?(?:\[À compléter|<mark class="tn-manque">)[\s\S]*?<\/\1>/g, "");
+  });
+}
+
+/**
+ * Témoignages datés : avec une source d'avis, les trois mieux notés et, quand les notes diffèrent, l'avis le moins bien
+ * noté montré à part ; sinon seuls les vrais avis écrits dans la pièce restent. Sans aucun avis, il ne reste que
+ * l'invitation à donner le premier (la pièce ne se pose pas).
+ */
+export function withVenteTemoignages(html: string, d: TenueSite): string {
+  if (!/\sdata-tn-temoignages\b/.test(html)) return html;
+  const reels = avisReels(d);
+  const line = (a: TenueAvisVente) => `<li><blockquote>${esc(a.text.trim())}</blockquote><b>${esc(a.name.trim())}</b>${signature(a) ? `<span>${signature(a)}</span>` : ""}</li>`;
+  let out = html;
+  if (reels.length) {
+    const notes = reels.map((a) => a.rating).filter(valid), low = notes.length && Math.min(...notes) < Math.max(...notes) ? Math.min(...notes) : null;
+    const reserve = low == null ? null : reels.filter((a) => a.rating === low).sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))[0];
+    const top = reels.filter((a) => a !== reserve).sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || (b.date ?? "").localeCompare(a.date ?? "")).slice(0, 3);
+    out = out.replace(/(<ul class="tn-v-avis-l">)[\s\S]*?(<\/ul>)/, `$1${top.map(line).join("")}$2`)
+      .replace(/<div class="tn-v-nuance">(<b>[\s\S]*?<\/b>)[\s\S]*?<\/div>/, (_m, title: string) => (reserve ? `<div class="tn-v-nuance">${title}<blockquote>${esc(reserve.text.trim())}</blockquote><span>${[esc(reserve.name.trim()), signature(reserve)].filter(Boolean).join(" · ")}</span></div>` : ""));
+    const src = sourceLine(d);
+    if (src) out = out.replace(/(<p class="tn-v-source">)[\s\S]*?(<\/p>)/, `$1${src}$2`);
+  } else {
+    out = out.replace(/(<ul class="tn-v-avis-l">)([\s\S]*?)(<\/ul>)/, (_m, a: string, lines: string, b: string) => `${a}${(lines.match(/<li>[\s\S]*?<\/li>/g) ?? []).filter((li) => !manque(/<blockquote>([\s\S]*?)<\/blockquote>/.exec(li)?.[1] ?? "[À compléter")).map((li) => li.replace(/<(b|span)>(?:(?!<\/\1>)[\s\S])*?(?:\[À compléter|<mark class="tn-manque">)[\s\S]*?<\/\1>/g, "")).join("")}${b}`)
+      .replace(/<div class="tn-v-nuance">[\s\S]*?<\/div>/, (m) => (manque(/<blockquote>([\s\S]*?)<\/blockquote>/.exec(m)?.[1] ?? "[À compléter") ? "" : m));
+  }
+  // Aucun avis : ni phrase d'introduction, ni source, ni avis réservé ; seulement l'invitation.
+  if (!/<ul class="tn-v-avis-l">\s*<li>/.test(out)) out = out.replace(/<p class="tn-v-(?:chapo|source)">[\s\S]*?<\/p>/g, "").replace(/<div class="tn-v-nuance">[\s\S]*?<\/div>/, "");
+  return out;
+}
+
+/**
+ * Page des avis : TOUT vient de la source d'avis. La note moyenne, le nombre d'avis et la répartition sont calculés ;
+ * la liste part du plus récent ; « Achat vérifié » n'apparaît que si la source le dit ; un avis mène à son produit
+ * quand il est au catalogue. Sans source, il ne reste que le titre et l'invitation à donner le premier avis.
+ */
+export function withVenteAvisPage(html: string, d: TenueSite): string {
+  if (!/\sdata-tn-avis-page\b/.test(html)) return html;
+  const reels = avisReels(d).sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "")).slice(0, 60), notes = reels.map((a) => a.rating).filter(valid);
+  if (!reels.length) return html.replace(/<div class="tn-v-resume">[\s\S]*?<\/ul><\/div>/, "").replace(/<div class="tn-v-tri">[\s\S]*?<\/div>/, "").replace(/(<ul class="tn-v-avis-l" data-tn-avis-liste>)[\s\S]*?(<\/ul>)/, "$1$2").replace(/<p class="tn-v-source">[\s\S]*?<\/p>/, "");
+  const avg = notes.length ? notes.reduce((n, x) => n + x, 0) / notes.length : null;
+  const NOMS = ["Cinq étoiles", "Quatre étoiles", "Trois étoiles", "Deux étoiles", "Une étoile"];
+  const bars = NOMS.map((nom, i) => { const n = notes.filter((x) => Math.round(x) === 5 - i).length; return `<li><span>${nom}</span><i style="--part:${notes.length ? Math.round((n / notes.length) * 100) : 0}%"></i><em>${n}</em></li>`; }).join("");
+  const resume = avg == null ? "" : `<div class="tn-v-resume"><div class="tn-v-moyenne"><b>${note(avg)}</b>${etoiles(avg)}<span>${reels.length} avis</span></div><ul class="tn-v-barres">${bars}</ul></div>`;
+  const line = (a: TenueAvisVente) => {
+    const p = a.product ? (d.products ?? []).find((x) => sameName(x.title, a.product!)) : null;
+    return `<li${a.date ? ` data-tn-date="${esc(a.date)}"` : ""}${valid(a.rating) ? ` data-tn-note="${a.rating}"` : ""}><div class="tn-v-qui">${valid(a.rating) ? etoiles(a.rating) : ""}${a.date ? `<span>${esc(dateFr(a.date))}</span>` : ""}</div><b>${esc(a.name.trim())}</b>${a.verified ? '<em class="tn-v-verifie">Achat vérifié</em>' : ""}<blockquote>${esc(a.text.trim())}</blockquote>`
+      + `${(a.photos ?? []).length ? `<div class="tn-v-photos">${a.photos!.slice(0, 4).map((u) => `<div class="tn-ph"${pic(u)} role="img" aria-label="Photo envoyée par ${esc(a.name.trim())}"></div>`).join("")}</div>` : ""}`
+      + `${p ? `<a class="tn-v-produit" href="#" onclick="return false" data-go="${esc(p.go ?? "product")}"><i class="tn-ph"${pic(p.image)}></i><span>${esc(p.title)}</span></a>` : a.product?.trim() ? `<span class="tn-v-produit"><span>${esc(a.product.trim())}</span></span>` : ""}`
+      + `${a.reply?.trim() ? `<div class="tn-v-reponse"><small>La réponse de la marque</small><p>${esc(a.reply.trim())}</p></div>` : ""}</li>`;
+  };
+  return html.replace(/<div class="tn-v-resume">[\s\S]*?<\/ul><\/div>/, resume)
+    .replace(/(<ul class="tn-v-avis-l" data-tn-avis-liste>)[\s\S]*?(<\/ul>)/, `$1${reels.map(line).join("")}$2`)
+    .replace(/(<p class="tn-v-source">)[\s\S]*?(<\/p>)/, (_m, a: string, b: string) => `${a}${sourceLine(d) ?? "[À compléter : d'où viennent ces avis]"}${b}`);
+}
+
+/**
+ * Collection, façon « ajout rapide » : chaque carte devient un cadre avec son lien vers la fiche et, dessous, son
+ * bouton : « Ajouter au panier » quand le produit n'a qu'une version, « Choisir des options » sinon (il mène à la
+ * fiche) ; rien pour un produit épuisé. La note en étoiles n'apparaît que pour un produit qui a de vrais avis notés.
+ */
+export function withVenteCatalogue(html: string, d: TenueSite, built?: string | null): string {
+  if (d.live || !/class="tn tn-catalogue/.test(html) || builtOf(html, built) !== "ajout-rapide" || /class="tn-v-ajout/.test(html)) return html;
+  const reels = avisReels(d);
+  return html.replace(/<a class="(tn-carte-p[^"]*)" href="#" onclick="return false" data-go="([^"]*)"([^>]*)>([\s\S]*?)<\/a>/g, (_m, cls: string, go: string, data: string, inner: string) => {
+    const title = (/<b>([\s\S]*?)<\/b>/.exec(inner)?.[1] ?? "").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').trim();
+    const x = Object.entries(d.vitrine?.produits ?? {}).find(([t]) => sameName(t, title))?.[1], notes = reels.filter((a) => a.product && sameName(a.product, title)).map((a) => a.rating).filter(valid);
+    const stars = notes.length ? `<span class="tn-v-note">${etoiles(notes.reduce((n, r) => n + r, 0) / notes.length)}<u>(${notes.length})</u></span>` : "";
+    const button = /tn-epuise/.test(cls) ? "" : x?.versions === 1
+      ? `<a class="tn-v-ajout" href="#" onclick="return false" role="button" data-pogo>Ajouter au panier</a>`
+      : `<a class="tn-v-ajout" href="#" onclick="return false" data-go="${go}">Choisir des options</a>`;
+    return `<div class="${cls}"${data}><a class="tn-v-vers" href="#" onclick="return false" data-go="${go}">${inner.replace(/(<\/b>)/, `$1${stars}`)}</a>${button}</div>`;
+  });
+}
+
+/** Toutes les vraies données des pièces de la vente directe, en une passe. */
+export function withTenueVitrine(html: string, d: TenueSite, built?: string | null): string {
+  if (!/\sdata-tn-(?:messages|macaron|cartes-vente|guide|arrivee|barre-produit|avis-pose|temoignages|avis-page)\b|class="tn tn-catalogue/.test(html)) return html;
+  let out = withVenteMessages(html, d);
+  out = withVenteMacaron(out, d);
+  out = withVenteCartes(out, d);
+  out = withVenteGuide(out, d, built);
+  out = withVenteArrivee(out, d);
+  out = withVenteAvisPose(out, d);
+  out = withVenteTemoignages(out, d);
+  out = withVenteAvisPage(out, d);
+  return withVenteCatalogue(out, d, built);
+}
+
+/**
+ * Mise en boutique Shopify des pièces de la vente directe (appelée par to-shopify.ts, après les sections « en direct ») :
+ * les cartes de vente, le guide de choix, l'en-tête et la barre d'une page d'arrivée lisent la boutique (photo, nom,
+ * prix, prix de comparaison, stock) ; l'ajout rapide de la collection devient un vrai formulaire d'achat. Aucun script.
+ */
+export function venteBoutique(html: string, o: { root: string | null; built?: string | null; products: { handle: string; title: string }[]; first?: string | null }): string {
+  const img = (v: string, w: number) => `{% if ${v}.featured_image %} role="img" aria-label="{{ ${v}.title | escape }}" style="background-image:url({{ ${v}.featured_image | image_url: width: ${w} }})"{% endif %}`;
+  const handleOf = (title: string) => o.products.find((p) => sameName(p.title, title))?.handle ?? null;
+  let out = html;
+  // Le bandeau : ses mouvements (la feuille de la boutique ne garde pas les « @keyframes »).
+  if (o.root === "tn-messages") out = out.replace(/^(<section\b[^>]*>)/, `$1<style>@keyframes tn-v-defile{to{transform:translateX(-50%)}}@keyframes tn-v-tour-2{0%{opacity:0;transform:translateY(5px)}4%,46%{opacity:1;transform:none}50%,100%{opacity:0}}@keyframes tn-v-tour-3{0%{opacity:0;transform:translateY(5px)}3%,30%{opacity:1;transform:none}33.3%,100%{opacity:0}}@keyframes tn-v-tour-4{0%{opacity:0;transform:translateY(5px)}2.5%,22%{opacity:1;transform:none}25%,100%{opacity:0}}@keyframes tn-v-tour-5{0%{opacity:0;transform:translateY(5px)}2%,17.5%{opacity:1;transform:none}20%,100%{opacity:0}}@keyframes tn-v-tour-6{0%{opacity:0;transform:translateY(5px)}2%,14.5%{opacity:1;transform:none}16.6%,100%{opacity:0}}</style>`);
+  if (/\sdata-tn-cartes-vente\b/.test(out)) {
+    const ecrit = cartesEcrites(out), envies = [...ecrit.par.entries()].map(([name, w]) => ({ handle: handleOf(name), envie: w.envie })).filter((x) => x.handle && x.envie);
+    const envie = envies.length ? `{%- case product.handle -%}${envies.map((x) => `{%- when '${x.handle}' -%}<span class="tn-v-envie">${x.envie}</span>`).join("")}{%- endcase -%}` : "";
+    out = out.replace(/(<div class="tn-v-cartes">)[\s\S]*<\/div>(?=<\/section>)/, `$1{%- for product in collections.all.products limit: 8 -%}<a class="tn-v-carte{% unless product.available %} tn-epuise{% endunless %}" href="{{ product.url }}"><div class="tn-ph"{% if product.featured_image %} style="background-image:url({{ product.featured_image | image_url: width: 800 }})"{% endif %}></div>{%- if product.type != blank -%}<small>{{ product.type }}</small>{%- endif -%}<b>{{ product.title }}</b>${envie}<span class="tn-v-prix">{%- if product.available -%}{%- if product.price_varies -%}dès {% endif -%}{{ product.price_min | money }}{%- if product.compare_at_price_min > product.price_min %} <s>{{ product.compare_at_price_min | money }}</s>{%- endif -%}{%- else -%}Épuisé{%- endif -%}</span><i class="tn-v-voir">${ecrit.voir}</i></a>{%- endfor -%}</div>`);
+  }
+  if (/\sdata-tn-guide\b/.test(out) && o.products.length) {
+    const blocks = out.match(/<details class="tn-v-besoin"[\s\S]*?<\/details>/g) ?? [];
+    const named = blocks.map((b) => handleOf((/<b data-tn-produit>([\s\S]*?)<\/b>/.exec(b)?.[1] ?? "").replace(/<[^>]+>/g, "")));
+    const some = named.some(Boolean);
+    let i = 0, kept = 0;
+    out = out.replace(/<details class="tn-v-besoin"(?: open)?>([\s\S]*?)<\/details>/g, (_m, inner: string) => {
+      const h = some ? named[i] : o.products[i]?.handle ?? null;
+      i++;
+      if (!h) return "";
+      const v = `choix${i}`;
+      return `<details class="tn-v-besoin"${o.built === "cartes" || kept++ === 0 ? " open" : ""}>{%- assign ${v} = all_products['${h}'] -%}${inner.replace(/<div class="tn-ph"[^>]*><\/div>/, `<div class="tn-ph"${img(v, 600)}></div>`).replace(/(<b data-tn-produit>)[\s\S]*?(<\/b>)/, `$1{{ ${v}.title }}$2`)
+        .replace(/(<span class="tn-v-prix">)[\s\S]*?(<\/span>)/, `$1{{ ${v}.price | money }}$2`).replace(/<a class="tn-v-lien"[^>]*>([\s\S]*?)<\/a>/, `<a class="tn-v-lien" href="{{ ${v}.url }}">$1</a>`)}</details>`;
+    });
+  }
+  if (/\sdata-tn-(?:arrivee|barre-produit)\b/.test(out) && o.first) {
+    out = out.replace(/^(<section\b[^>]*>)/, `$1{%- assign vedette = all_products['${o.first}'] -%}`).replace(/(<(?:span|b) data-tn-produit-nom>)[\s\S]*?(<\/(?:span|b)>)/g, "$1{{ vedette.title }}$2")
+      .replace(/(<div class="tn-v-colle">)<div class="tn-ph"[^>]*><\/div>/, `$1<div class="tn-ph"${img("vedette", 300)}></div>`).replace(/<a ([^>]*?)href="#"([^>]*?)\sdata-go="product"([^>]*)>/g, `<a $1href="{{ vedette.url }}"$2$3>`);
+  }
+  // Collection en ajout rapide : la carte de la boutique, puis un vrai formulaire d'achat (une seule version) ou le lien vers la fiche.
+  if (o.root === "tn-catalogue" && o.built === "ajout-rapide") out = out.replace(/<a class="(tn-carte-p\{% unless product\.available %\} tn-epuise\{% endunless %\})" href="\{\{ product\.url \}\}">([\s\S]*?)<\/a>(?=\{%- endfor -%\})/, (_m, cls: string, inner: string) => `<div class="${cls}"><a class="tn-v-vers" href="{{ product.url }}">${inner}</a>{%- if product.available -%}{%- if product.has_only_default_variant -%}{%- form 'product', product, class: 'tn-v-achat' -%}<input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}"><button class="tn-v-ajout" type="submit" name="add">Ajouter au panier</button>{%- endform -%}{%- else -%}<a class="tn-v-ajout" href="{{ product.url }}">Choisir des options</a>{%- endif -%}{%- endif -%}</div>`);
+  return out;
+}
+
+/**
+ * Ce que le catalogue sait de plus pour la vente directe (lecture de la base, comme « tenueMetiers ») : le genre de
+ * chaque produit, son vrai prix de comparaison (seulement s'il dépasse le prix), « dès » quand ses versions n'ont pas
+ * le même prix, son nombre de versions. Avis, offre datée et chiffre du macaron n'ont pas encore de source dans le
+ * Studio : ils restent vides, donc rien ne s'affiche.
+ */
+export function tenueVitrine(projectId: string): TenueVitrine {
+  try {
+    const produits: NonNullable<TenueVitrine["produits"]> = {};
+    for (const p of listProducts(projectId)) {
+      const prices = p.variants.map((v) => v.price ?? p.data.price).filter((x): x is number => x != null), price = p.data.price ?? prices[0] ?? null;
+      const low = prices.length ? Math.min(...prices) : price, compare = p.data.compareAt ?? p.variants.find((v) => v.compareAt != null)?.compareAt ?? null;
+      produits[p.data.title] = { genre: p.data.productType.trim() || null, compare: compare != null && low != null && compare > low ? euros(compare) : null, des: new Set(prices).size > 1 && low != null ? euros(low) : null, versions: Math.max(1, p.variants.length) };
+    }
+    return { produits };
+  } catch { return {}; }
+}
+// ════════════════════════════════════════════════════════════════ vente directe : fin
+
 /**
  * Toutes les vraies données d'une section à tenue, en une passe (l'ordre ne compte pas : chaque pose a son attribut).
  * « built » : la construction de la section, quand elle n'est pas encore écrite sur sa racine (mise en boutique).
@@ -536,6 +820,7 @@ export function withTenueSite(html: string, d: TenueSite, built?: string | null)
   out = withTenue404(out, d, built);
   out = withTenueLegal(out, built);
   out = withTenueSearch(out, d);
+  out = withTenueVitrine(out, d, built); // vente directe (module « vente »)
   return withTenueArticles(out, d.articles ?? []);
 }
 
@@ -552,6 +837,8 @@ export function dataGaps(ids: string[], facts: { products: number; families: num
   if (facts.biens === 0 && immo.length) out.push(`Les pièces de biens immobiliers (${immo.join(", ")}) demandent au moins un bien publié dans la rubrique Biens du client (il n'en a aucun) : retire-les, ou attends qu'il en publie un`);
   if (facts.plats === 0 && ids.includes("tn-carte")) out.push("« La carte du restaurant » (tn-carte) demande au moins un plat publié dans la rubrique Carte du client (il n'en a aucun) : retire-la, ou prends « Les prestations et leurs prix »");
   if (ids.includes("tn-comparatif") && facts.products < 2) out.push(`« Comparer les produits de la gamme » (tn-comparatif) demande au moins deux produits dans le catalogue du client (il en a ${facts.products}) : retire-la`);
+  // Vente directe (module « vente ») : le guide de choix mène à de vrais produits.
+  if (ids.includes("tn-guide-choix") && facts.products < 2) out.push(`« Lequel est fait pour toi ? » (tn-guide-choix) demande au moins deux produits dans le catalogue du client (il en a ${facts.products}) : retire-la`);
   return out;
 }
 
@@ -562,7 +849,7 @@ export function dataGaps(ids: string[], facts: { products: number; families: num
  * bien retiré) et la carte publiée de son restaurant (jamais un plat en brouillon, retiré ou indisponible). Une lecture
  * qui échoue rend une liste vide : la pièce garde alors son exemple, annoncé « À compléter ».
  */
-export function tenueMetiers(projectId: string): Pick<TenueSite, "biens" | "carte"> {
+export function tenueMetiers(projectId: string): Pick<TenueSite, "biens" | "carte" | "vitrine"> {
   const url = (assetId: string) => assetUrl({ id: assetId });
   const biens = (() => {
     try {
@@ -584,5 +871,79 @@ export function tenueMetiers(projectId: string): Pick<TenueSite, "biens" | "cart
       return categories.map((c): TenueRubrique => ({ title: c.title, items: items.filter((i) => i.categoryId === c.id && i.status === "published" && i.available).map((i) => ({ name: i.name, description: i.description, price: carteprice(i) || null, allergens: i.allergens, vegetarian: i.vegetarian })) })).filter((r) => r.items.length);
     } catch { return []; }
   })();
-  return { biens, carte };
+  // Vente directe (module « vente ») : ce que le catalogue sait de plus, lu ici parce que le rendu étale déjà cette lecture dans le site.
+  return { biens, carte, vitrine: tenueVitrine(projectId) };
+}
+
+// ---------------------------------------------------------------- achat, suite : packs, sous le bouton, offres datées
+
+/** Une version du produit, telle que le script commun la lit : « stock » n'existe que si le stock est suivi. Prix en centimes. */
+export type TenueVersion = { id: string; options: string[]; disponible: boolean; stock?: number; prix: number; compare?: number | null };
+export type TenueCadeau = { id: string; titre: string; image: string | null };
+/** Tout ce que la fiche « vente directe » lit de vrai : le catalogue, l'offre saisie par le client, sa fiche d'entreprise. */
+export type TenueAchatVrai = {
+  titre: string; noms: string[]; versions: TenueVersion[];
+  packs: { quantite: number; nom: string; prix: number; populaire?: boolean; cadeau?: TenueCadeau | null }[];
+  seuilStock: number | null; stockDepart: number | null; delai: string | null;
+  promo: { nom: string | null; pct: number; fin: number; cadeau?: TenueCadeau | null } | null;
+  fenetre: { titre: string; texte: string; code: string } | null;
+  /** Moyens de paiement réellement acceptés (noms), sinon vide : jamais un logo présumé. */
+  paiements: string[];
+  livraison: string | null; retours: string | null;
+};
+const jsonScript = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c");
+/** Remise calculée entre un prix et son vrai prix de comparaison (jamais saisie) : « −20 % », ou rien. */
+export const moins = (prix: number, compare: number | null | undefined) => (compare && compare > prix && prix > 0 ? `−${Math.round((1 - prix / compare) * 100)} %` : "");
+const jourFin = (fin: number, now: number) => { const a = new Date(fin), b = new Date(now); return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate() ? "Aujourd'hui seulement" : `Jusqu'au ${a.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`; };
+const cadeauHtml = (c: TenueCadeau, cls: string) => `<div class="${cls}"><i class="tn-ph"${pic(c.image)}></i><span>${esc(c.titre)}</span><em>Offert</em></div>`;
+
+/**
+ * Pose les vraies données d'achat (« v ») dans les pièces qui les lisent : la table des versions et le prix barré dans le
+ * bloc d'achat, les packs, les quantités des lots, le dessous du bouton, l'offre du moment, la fenêtre d'offre. Une pièce
+ * dont la vraie donnée manque ne s'affiche pas (offre du moment, fenêtre d'offre) ou garde ses « [À compléter] ».
+ */
+export function withTenueAchatVrai(html: string, v: TenueAchatVrai, now = Date.now()): string {
+  let out = html;
+  const base = v.versions.find((x) => x.disponible) ?? v.versions[0];
+  if (/<section\b[^>]*\sdata-tn-achat\b/.test(out) && v.versions.length) {
+    if (!/<script[^>]*data-tn-versions/.test(out)) out = out.replace(/<\/section>\s*$/, `<script type="application/json" data-tn-versions data-tn-titre="${esc(v.titre)}" data-tn-noms="${esc(v.noms.join("|"))}">${jsonScript(v.versions)}</script></section>`);
+    const tag = base ? moins(base.prix, base.compare) : "";
+    if (tag && base?.compare) out = out.replace(/<div class="tn-prix">([^<]*)<\/div>/, (_m, p: string) => `<div class="tn-prix"><s>${money(base.compare!)}</s> ${p} <em class="tn-moins">${tag}</em></div>`);
+  }
+  if (/\sdata-tn-lots\b/.test(out)) out = out.replace(/<li>(<label><input type="radio" name="tn-lot"[^>]*><b>(\d+))/g, `<li data-tn-quantite="$2">$1`);
+  if (/\sdata-tn-packs\b/.test(out) && v.packs.length && base) {
+    const one = (p: TenueAchatVrai["packs"][number], on: boolean) => {
+      const plein = base.compare && base.compare > base.prix ? base.compare * p.quantite : null, tag = moins(p.prix, plein);
+      return `<li class="tn-pack${on ? " tn-on" : ""}" data-tn-pack data-tn-quantite="${p.quantite}" data-tn-prix="${Math.round(p.prix)}"${p.cadeau ? ` data-tn-cadeau="${esc(p.cadeau.id)}" data-tn-cadeau-nom="${esc(p.cadeau.titre)}"` : ""}>${p.populaire ? '<em class="tn-pack-etiquette">Le plus populaire</em>' : ""}<label><input type="radio" name="tn-pack"${on ? " checked" : ""}><b>${esc(p.nom)}</b><span class="tn-pack-prix">${plein && tag ? `<s>${money(plein)}</s> ` : ""}${money(p.prix)}${tag ? ` <em class="tn-moins">${tag}</em>` : ""}</span>${p.quantite > 1 ? `<i>soit ${money(p.prix / p.quantite)} l'unité</i>` : ""}</label>${p.cadeau ? cadeauHtml(p.cadeau, "tn-pack-cadeau") : ""}<div class="tn-pack-lignes" data-tn-pack-lignes></div></li>`;
+    };
+    const list = v.packs.slice(0, 4), first = Math.max(0, list.findIndex((p) => p.populaire));
+    out = out.replace(/(<ul class="tn-pack-liste">)[\s\S]*?(<\/ul>)(?=<button)/, (_m, a: string, b: string) => `${a}${list.map((p, i) => one(p, i === first)).join("")}${b}`);
+  }
+  if (/\sdata-tn-sous-bouton\b/.test(out)) {
+    const jauge = v.stockDepart && v.versions.some((x) => typeof x.stock === "number") ? `<div class="tn-jauge" data-tn-jauge data-tn-depart="${v.stockDepart}" role="img" hidden><i><b></b></i><span></span><span></span></div>` : "";
+    const stock = v.seuilStock && v.versions.some((x) => typeof x.stock === "number") ? `<p class="tn-stock" data-tn-stock data-tn-seuil="${v.seuilStock}" aria-live="polite" hidden></p>` : "";
+    out = out.replace(/(<section\b[^>]*\sdata-tn-sous-bouton\b[^>]*>)/, `$1${jauge}${stock}`)
+      .replace(/<p class="tn-delai"[^>]*>[\s\S]*?<\/p>/, v.delai ? `<p class="tn-delai" data-tn-delai>Chez toi en ${esc(v.delai.replace(/^(?:chez toi )?en\s+/i, ""))}</p>` : "")
+      .replace(/<div class="tn-paiements-sb"[^>]*>[\s\S]*?<\/div>/, v.paiements.length ? `<div class="tn-paiements-sb" data-tn-paiements-sb aria-label="Moyens de paiement acceptés">${v.paiements.slice(0, 8).map((p) => `<span>${esc(p)}</span>`).join("")}</div>` : "");
+    if (v.livraison) out = out.replace(/(<li data-tn-g="livraison">[\s\S]*?<span>)[\s\S]*?(<\/span>)/, (_m, a: string, b: string) => `${a}${esc(v.livraison!.slice(0, 90))}${b}`);
+    if (v.retours) out = out.replace(/(<li data-tn-g="retours">[\s\S]*?<span>)[\s\S]*?(<\/span>)/, (_m, a: string, b: string) => `${a}${esc(v.retours!.slice(0, 90))}${b}`);
+    // Sans taille au catalogue, pas de lien « Quelle taille me faut-il ? ».
+    if (!v.noms.some(isSize)) out = out.replace(/<details class="tn-tailles-sb"[\s\S]*?<\/details>(?=<details|<p|<div|<ul)/, "");
+  }
+  if (/\sdata-tn-offre-moment\b/.test(out)) {
+    const p = v.promo && v.promo.fin > now ? v.promo : null;
+    if (!p) return "";
+    out = out.replace(/(<section\b[^>]*\sdata-tn-offre-moment\b)/, `$1 data-tn-fin="${p.fin}"`)
+      .replace(/(<b class="tn-om-nom">)[\s\S]*?(<\/b>)/, (_m, a: string, b: string) => (p.nom ? `${a}${esc(p.nom)}${b}` : ""))
+      .replace(/(<em class="tn-om-remise">)[\s\S]*?(<\/em>)/, `$1−${String(p.pct).replace(".", ",")} %$2`)
+      .replace(/<div class="tn-om-cadeau">[\s\S]*?<\/div>/, p.cadeau ? cadeauHtml(p.cadeau, "tn-om-cadeau") : "")
+      .replace(/(<p class="tn-om-fin"[^>]*>)[\s\S]*?(<\/p>)/, `$1${jourFin(p.fin, now)}$2`);
+  }
+  if (/\sdata-tn-fenetre-offre\b/.test(out)) {
+    if (!v.fenetre) return "";
+    out = out.replace(/(<h2 id="tn-fo-titre">)[\s\S]*?(<\/h2>)/, (_m, a: string, b: string) => `${a}${esc(v.fenetre!.titre)}${b}`)
+      .replace(/(<p class="tn-fo-texte">)[\s\S]*?(<\/p>)/, (_m, a: string, b: string) => `${a}${esc(v.fenetre!.texte)}${b}`)
+      .replace(/(<div class="tn-fo-code"[^>]*><span>[\s\S]*?<\/span><b>)[\s\S]*?(<\/b>)/, (_m, a: string, b: string) => `${a}${esc(v.fenetre!.code)}${b}`);
+  }
+  return out === html ? html : markMissing(out);
 }

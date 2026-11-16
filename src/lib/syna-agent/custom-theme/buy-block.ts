@@ -11,7 +11,7 @@ import { assetUrl } from "../../library";
 import { companyOf } from "../activity";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { galleryAssets } from "../../products/gallery-store";
-import { withTenueLooks, withTenueLots, withTenueSizes, withTenueVersions, type TenueLots, type TenueOption } from "./tenue-data";
+import { withTenueLooks, withTenueLots, withTenueSizes, withTenueAchatVrai, withTenueVersions, type TenueCadeau, type TenueLots, type TenueOption, type TenueAchatVrai } from "./tenue-data";
 
 export type BuyData = {
   base: number;
@@ -188,10 +188,15 @@ export function achatFacts(projectId: string, handle?: string | null): { title: 
  * ne porte aucun de ces repères est rendue telle quelle, sans lire le catalogue.
  */
 export function withTenueAchat(html: string, projectId: string, handle?: string | null): string {
-  if (!/\sdata-tn-(?:versions|guide-tailles|lots|looks|appel-produit)\b/.test(html)) return html;
+  if (!/\sdata-tn-(?:versions|guide-tailles|lots|looks|appel-produit|achat|packs|sous-bouton|offre-moment|fenetre-offre)\b/.test(html)) return html;
   const f = (() => { try { return achatFacts(projectId, handle); } catch { return null; } })();
-  if (!f) return html;
+  if (!f) return /\sdata-tn-(?:offre-moment|fenetre-offre)\b/.test(html) ? "" : html;
   let out = withTenueLots(withTenueSizes(withTenueVersions(html, f.options), f.options), f.lots);
+  // Achat, suite : table des versions, prix barré, packs, dessous du bouton, offre datée, fenêtre d'offre.
+  const v = (() => { try { return venteFacts(projectId, handle); } catch { return null; } })();
+  if (v) out = withTenueAchatVrai(out, v);
+  else if (/\sdata-tn-(?:offre-moment|fenetre-offre)\b/.test(out)) return "";
+  if (!out) return out;
   // « Le produit, son prix, son bouton » : la vraie photo, le vrai nom, le vrai prix, le stock, la livraison et les retours du client.
   if (/\sdata-tn-appel-produit\b/.test(out)) {
     const co = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string }; } catch { return {}; } })() as { shipping?: string; returns?: string };
@@ -213,4 +218,36 @@ export function withTenueAchat(html: string, projectId: string, handle?: string 
     for (const extra of left.slice(3)) out = out.replace(extra, "");
   }
   return out;
+}
+
+/**
+ * Les vraies données de la fiche « vente directe » pour le produit de la page : versions (identifiant, options, stock
+ * seulement s'il est suivi, prix et prix de comparaison du catalogue), packs, seuil, quantité de départ, délai, promotion
+ * datée et fenêtre d'offre saisis par le client (shop.offers). Rien n'est déduit : ce qui n'est pas donné reste absent.
+ */
+export function venteFacts(projectId: string, handle?: string | null, now = Date.now()): TenueAchatVrai | null {
+  const products = listProducts(projectId);
+  if (!products.length) return null;
+  const p = (handle && products.find((x) => x.handle === handle)) || products[0];
+  const o = loadShopOffers(projectId);
+  const co = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string }; } catch { return {}; } })() as { shipping?: string; returns?: string };
+  const versions = p.variants.map((x) => {
+    const prix = x.price ?? p.data.price ?? null;
+    if (prix == null) return null;
+    const suivi = x.stock !== null && x.stock !== undefined, compare = x.compareAt ?? p.data.compareAt ?? null;
+    return { id: x.id, options: (x.options ?? []).map(String), disponible: !(suivi && x.stock! <= 0 && x.stockPolicy !== "continue"), ...(suivi ? { stock: x.stock! } : {}), prix, ...(compare && compare > prix ? { compare } : {}) };
+  }).filter((x): x is NonNullable<typeof x> => !!x);
+  if (!versions.length) return null;
+  const cadeau = (h: string | undefined): TenueCadeau | null => {
+    const g = h ? products.find((x) => x.handle === h || x.data.title.trim().toLowerCase() === h.trim().toLowerCase()) : null;
+    return g && g.variants[0] ? { id: g.variants[0].id, titre: g.data.title, image: imageOf(g) } : null;
+  };
+  const prix = (versions.find((x) => x.disponible) ?? versions[0]).prix;
+  return {
+    titre: p.data.title, noms: p.data.options.map((x) => x.name), versions,
+    packs: o.packs.map((k) => ({ quantite: k.quantite, nom: k.nom, prix: k.prixCentimes ?? Math.round(prix * k.quantite * (1 - (k.remisePct ?? 0) / 100)), populaire: !!k.populaire, cadeau: cadeau(k.cadeauHandle) })),
+    seuilStock: o.seuilStock, stockDepart: o.stockDepart, delai: o.delaiLivraison,
+    promo: o.promo && o.promo.endsAt > now ? { nom: o.promo.nom ?? null, pct: o.promo.pct, fin: o.promo.endsAt, cadeau: cadeau(o.promo.cadeauHandle) } : null,
+    fenetre: o.fenetreOffre, paiements: [], livraison: co.shipping?.trim() || null, retours: co.returns?.trim() || null,
+  };
 }

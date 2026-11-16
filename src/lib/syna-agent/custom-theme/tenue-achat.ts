@@ -140,6 +140,48 @@ const DIRECT_SECTIONS: TenueSection[] = [
 ];
 ACHAT_SECTIONS.push(...DIRECT_SECTIONS);
 
+/** Achat, suite (vente directe) : packs, dessous du bouton, offre du moment, fenêtre d'offre. Tout est branché sur du vrai. */
+const PACK = (on = false) => `<li class="tn-pack${on ? " tn-on" : ""}" data-tn-pack data-tn-quantite="1"><label><input type="radio" name="tn-pack"${on ? " checked" : ""}><b>${M("nom du pack")}</b><span class="tn-pack-prix">${M("prix du pack")}</span></label><div class="tn-pack-cadeau"><i class="tn-ph" ${ph("md-o4.webp")}></i><span>${M("le cadeau compris")}</span><em>Offert</em></div><div class="tn-pack-lignes" data-tn-pack-lignes></div></li>`;
+const GARDE = (cle: string, svg: string, nom: string, what: string) => `<li data-tn-g="${cle}">${svg}<b>${nom}</b><span>${M(what)}</span></li>`;
+const QUESTION = () => `<details><summary>${M("une vraie question de tes clients")}</summary><p>${M("ta réponse")}</p></details>`;
+const SIGNE = {
+  colis: TRAIT(`<path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/>`),
+  cadenas: TRAIT(`<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>`),
+  retour: TRAIT(`<path d="M4 9.5h11a5 5 0 0 1 0 10H8"/><path d="M8 5.5 4 9.5l4 4"/>`),
+  bulle: TRAIT(`<path d="M4 5.5h16v11H10l-4.5 4v-4H4z"/>`),
+};
+const VENTE_SECTIONS: TenueSection[] = [
+  sec({
+    id: "tn-packs", title: "Les packs", kind: "Offre · fiche produit", role: "produit", pour: "produits",
+    does: "Les vrais packs du client, juste sous le bloc d'achat : une carte par pack avec son nom, son prix, le cadeau compris avec sa photo et le mot « offert », et l'étiquette « Le plus populaire » sur le seul pack que le client désigne. Le pack choisi déplie une ligne par article, chacun avec sa couleur et sa taille ; le bouton ajoute tout au panier, le cadeau compris. Un prix barré ne s'écrit qu'à partir du vrai prix de comparaison du catalogue. Seulement si le client a donné ses packs ; les remises doivent exister dans sa boutique.",
+    constructions: [{ key: "empilees", label: "des cartes l'une sous l'autre, un rond à cocher à gauche, le prix à droite ; la carte choisie s'encadre et déplie ses articles" }, { key: "cote-a-cote", label: "des cartes côte à côte, le rond à cocher en haut, le prix en grand au centre ; les articles du pack choisi dans un cadre sous les cartes" }],
+    trait: { fond: "clair", densite: "dense", photos: 1, hauteur: 520 }, data: "les packs saisis par le client, les versions et le prix du produit, le cadeau au catalogue", anim: "Le pack choisi s'encadre et déplie ses articles.",
+    html: `<section class="tn tn-packs" data-tn-packs><h2>Choisis ton pack.</h2><form class="tn-packs-f" data-tn-achat-form><ul class="tn-pack-liste">${PACK(true)}${PACK()}${PACK()}</ul><button class="tn-bt" type="submit" data-tn-acheter>Ajouter au panier</button><p class="tn-erreur" data-tn-erreur role="alert" hidden></p></form></section>`,
+  }),
+  sec({
+    id: "tn-sous-bouton", title: "Sous le bouton d'achat", kind: "Confiance · fiche produit", role: "confiance", pour: "produits",
+    does: "Tout ce qui rassure, juste sous le bouton, dans cet ordre : « Quelle taille me faut-il ? » qui ouvre le guide des tailles en fenêtre, « Ce que tu reçois » en volet, le vrai délai de livraison, les moyens de paiement réellement acceptés par la boutique, quatre repères (livraison, paiement, retours, service client) et les vraies questions en accordéon. La jauge « vendu, restant » et le stock restant n'apparaissent qu'avec le vrai stock suivi par la boutique. Ce que le client n'a pas donné ne s'écrit pas.",
+    constructions: [{ key: "liste", label: "tout en lignes séparées par des filets, les quatre repères en deux colonnes avec leur petit dessin" }, { key: "cartes", label: "une carte de couleur douce : les repères en quatre pastilles rondes côte à côte, les volets dans des cases bordées" }],
+    trait: { fond: "clair", densite: "dense", photos: 0, hauteur: 620 }, data: "le délai, la livraison et les retours du client, les tailles du catalogue, les moyens de paiement de la boutique, le stock suivi", anim: "Les volets s'ouvrent au toucher ; le guide des tailles s'ouvre en fenêtre.",
+    html: `<section class="tn tn-sous-bouton" data-tn-sous-bouton><details class="tn-tailles-sb" data-tn-fen data-tn-guide-tailles><summary>Quelle taille me faut-il&nbsp;?</summary><div class="tn-fen"><div class="tn-fen-boite" role="dialog" aria-label="Guide des tailles"><button type="button" class="tn-fen-fermer" data-tn-fermer aria-label="Fermer">×</button><div class="tn-fen-corps"><h2>Trouver ta taille.</h2><div class="tn-table-g"><table><thead><tr><th>Taille</th><th>Tour de poitrine</th><th>Tour de taille</th><th>Tour de hanches</th></tr></thead><tbody>${TAILLE()}${TAILLE()}${TAILLE()}</tbody></table></div></div></div></div></details><details class="tn-recois"><summary>Ce que tu reçois</summary><ul><li>${M("ce que contient le colis, pièce par pièce")}</li></ul></details><p class="tn-delai" data-tn-delai>Chez toi en ${M("délai de livraison")}</p><div class="tn-paiements-sb" data-tn-paiements-sb></div><ul class="tn-quatre">${GARDE("livraison", SIGNE.colis, "Livraison", "prix et délai")}${GARDE("paiement", SIGNE.cadenas, "Paiement", "comment il est protégé")}${GARDE("retours", SIGNE.retour, "Retours", "délai de retour")}${GARDE("service", SIGNE.bulle, "Service client", "comment te joindre")}</ul><div class="tn-questions-sb">${QUESTION()}${QUESTION()}${QUESTION()}</div></section>`,
+  }),
+  sec({
+    id: "tn-offre-moment", title: "L'offre du moment", kind: "Offre datée · fiche produit", role: "produit", pour: "produits",
+    does: "La vraie promotion du client, avec SA date de fin : le nom de l'offre, la remise, le cadeau compris avec sa photo, et « Jusqu'au … » (ou « Aujourd'hui seulement » le dernier jour, et ce jour-là seulement). Un décompte tourne vers cette vraie date de fin, la même pour tous les visiteurs. La date passée, la pièce disparaît d'elle-même. Sans promotion saisie avec sa date de fin, elle ne se pose pas.",
+    constructions: [{ key: "encadre", label: "un encadré à tirets de la couleur de la marque : la remise en grand dans une pastille, le nom, le cadeau avec sa photo, la date de fin et le décompte en cases" }, { key: "bandeau", label: "un bandeau plein de la couleur de la marque, d'un bord à l'autre : la remise et le nom sur une ligne, la date de fin et le décompte à droite" }],
+    trait: { fond: "couleur", densite: "moyenne", photos: 1, hauteur: 260 }, data: "la promotion saisie par le client (nom, remise, date de fin, cadeau)", anim: "Le décompte avance jusqu'à la date de fin.",
+    html: `<section class="tn tn-offre-moment" data-tn-offre-moment><div class="tn-om"><em class="tn-om-remise">${M("ta remise")}</em><div class="tn-om-mots"><small>L'offre du moment</small><b class="tn-om-nom">${M("le nom de ton offre")}</b><p class="tn-om-fin" data-tn-fin-texte>${M("la date de fin de ton offre")}</p></div><div class="tn-om-cadeau"><i class="tn-ph" ${ph("md-o4.webp")}></i><span>${M("le cadeau compris")}</span><em>Offert</em></div><div class="tn-om-decompte" data-tn-decompte aria-hidden="true" hidden></div></div></section>`,
+  }),
+  sec({
+    id: "tn-fenetre-offre", title: "Fenêtre d'offre", kind: "Fenêtre · tout le site", role: "conversion", group: "partout", pour: "produits",
+    does: "Une fenêtre qui propose la vraie offre du client contre une inscription à sa lettre : son titre, sa phrase, un champ e-mail avec la mention de consentement, puis le code de réduction qu'IL a créé dans sa boutique, montré seulement après l'inscription. Elle ne s'ouvre jamais à l'arrivée : après un délai, ou quand le visiteur s'apprête à partir ; une seule fois par visiteur ; elle se ferme à la croix, à côté et au clavier. Sans offre donnée par le client, elle ne se pose pas.",
+    constructions: [{ key: "plein-ecran", label: "plein écran : une grande photo en haut (à gauche sur grand écran), le titre en grand, le champ e-mail et le bouton dessous" }, { key: "carte-en-bas", label: "une carte posée en bas de l'écran, sans photo, qui laisse voir la page : le titre, le champ e-mail et le bouton sur une ligne" }],
+    trait: { fond: "clair", densite: "moyenne", photos: 1, hauteur: 560 }, data: "l'offre donnée par le client (titre, texte, code de réduction)", anim: "S'ouvre après un délai ou à l'intention de sortie ; une fois par visiteur.",
+    html: `<section class="tn tn-fenetre-offre" data-tn-fenetre-offre role="dialog" aria-modal="true" aria-labelledby="tn-fo-titre"><div class="tn-fo-boite"><div class="tn-ph" ${ph("md-j3.webp")}></div><div class="tn-fo-corps"><button type="button" class="tn-fo-fermer" data-tn-fermer aria-label="Fermer">×</button><h2 id="tn-fo-titre">${M("le titre de ton offre")}</h2><p class="tn-fo-texte">${M("ton offre, en une phrase")}</p><form class="tn-fo-form" data-tn-fo-form><label>Ton e-mail<input type="email" name="email" required autocomplete="email"></label><button class="tn-bt" type="submit">Recevoir mon code</button><small>En t'inscrivant, tu acceptes de recevoir nos e-mails. Tu te désinscris quand tu veux.</small></form><div class="tn-fo-code" data-tn-fo-code hidden><span>Ton code</span><b>${M("ton code de réduction")}</b></div><button type="button" class="tn-fo-non" data-tn-fermer>Non merci</button></div></div></section>`,
+  }),
+];
+ACHAT_SECTIONS.push(...VENTE_SECTIONS);
+
 /** Rendu d'origine d'une pièce, sous une clé que rien ne cible. */
 const o = (key: string, label: string): Construction => ({ key, label });
 

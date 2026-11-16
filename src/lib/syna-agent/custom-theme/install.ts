@@ -6,6 +6,7 @@
  * retirer), une photo d'exemple, une section qui n'est pas à la tenue, une section que le contrôle du Studio refuse.
  * La version créée n'est PAS activée : le thème sur mesure reste celui que le client voit dans l'onglet Boutique.
  */
+import { loadShopOffers } from "../product-features";
 import { companyOf } from "../activity";
 import { getAsset } from "../../library";
 import { listProducts, updateProduct } from "../../products/catalog";
@@ -35,6 +36,7 @@ export function customThemeExport(projectId: string, o: { dropMissing?: boolean 
       ...tenueMetiers(projectId) },
     assetExt: (id) => { const a = getAsset(id); return a && a.project_id === projectId ? EXT[a.mime] ?? null : null; },
     linkMap: linkMap(t), logoAssetId: p.brand?.logo?.assetId ?? null, dropMissing: o.dropMissing, base: currentTheme(projectId)?.spec ?? null,
+    offres: (() => { try { return loadShopOffers(projectId); } catch { return null; } })(),
   });
   // Contrôles du Studio : chaque section (Liquid, schéma, aucun script extérieur), puis le thème entier.
   const problems: ExportProblem[] = [...out.problems];

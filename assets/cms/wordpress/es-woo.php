@@ -6,6 +6,9 @@
  */
 defined('ABSPATH') || exit;
 
+// Achat d'un site monté par SINA : fiche produit réelle, panier, remises de l'offre (présent quand le site en a besoin).
+if (is_file(ES_INC . '/es-achat.php')) require_once ES_INC . '/es-achat.php';
+
 add_action('after_setup_theme', function () {
 	add_theme_support('woocommerce');
 	add_theme_support('wc-product-gallery-zoom');

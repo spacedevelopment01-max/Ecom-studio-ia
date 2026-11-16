@@ -25,9 +25,9 @@ import type { ThemeSpec, StorePage, StoreCollection, TemplateJson } from "../../
 import { LIBRARY_DIR, libSection } from "./library";
 import { TENUE_FILES, TENUE_SECTIONS, isTenueSection, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenuePrestations, type TenuePrestation } from "./tenue";
 import { isHeaderRoot, withMenu } from "./menu";
-import { withTenueComparison, withTenueFamilies, withTenueSite, type TenueSite } from "./tenue-data";
+import { venteBoutique, withTenueComparison, withTenueFamilies, withTenueSite, type TenueSite } from "./tenue-data";
 import { allSections, drawerOf, sectionHtml, type CtPage, type CtSection, type CustomTheme } from "./theme";
-import { freeShippingFrom } from "../product-features";
+import { freeShippingFrom, type ShopOffers } from "../product-features";
 
 export type ExportProblem = { level: "bloquant" | "à savoir"; text: string };
 export type ExportProduct = { handle: string; title: string; categories: string[] };
@@ -53,6 +53,8 @@ export type ExportInput = {
   logoAssetId?: string | null;
   /** Avec l'accord du client : les informations encore « [À compléter] » sont retirées au lieu de bloquer. */
   dropMissing?: boolean;
+  /** Offres saisies par le client (shop.offers) : packs, lots, seuil de stock, promotion datée, fenêtre d'offre, remises confirmées. */
+  offres?: ShopOffers | null;
   /** Thème du projet déjà en place : ses réglages et sa boutique servent de base. */
   base?: ThemeSpec | null;
 };
@@ -126,6 +128,15 @@ const strip = (s: string) => s.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").tri
 const attr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
 /** Modèle Shopify d'une page du thème, ou null (page tenue par Shopify : le compte client). */
+/**
+ * Noms clairs des modèles (demande du propriétaire, 16 novembre 2026 : Shopify range les modèles par catégorie — Produits,
+ * Collections, Pages — et montre leur nom dans son éditeur et dans « Modèle de thème » de chaque produit, page ou
+ * collection). Une clé de page interne devient un nom en français simple, qui sert aussi d'adresse de la page.
+ */
+const PAGE_NAMES: Record<string, string> = { about: "a-propos", legal: "informations-legales", faq: "questions", aide: "aide", contact: "contact", prestations: "prestations", reservation: "reservation", devis: "devis", journal: "journal", biens: "nos-biens", bien: "fiche-bien", visite: "demande-de-visite", carte: "la-carte", ateliers: "ateliers", inscription: "inscription", "bien-recu": "bien-recu" };
+export const pageName = (key: string): string => PAGE_NAMES[key] ?? key;
+/** Page de collection dessinée pour UNE famille de produits : clé « shop-<famille> » → modèle « collection.<famille> ». */
+export const collectionOf = (key: string): string | null => (/^shop-[a-z0-9-]{1,40}$/.test(key) ? key.slice(5) : null);
 export function templateOf(pg: Pick<CtPage, "key" | "product"> & { sections?: { id: string }[] }, first: boolean): string | null {
   const has = (id: string) => (pg.sections ?? []).some((s) => s.id === id);
   if (pg.key === "home") return "index";
@@ -138,11 +149,12 @@ export function templateOf(pg: Pick<CtPage, "key" | "product"> & { sections?: { 
   if (pg.key === "product") return "product";
   if (/^product-/.test(pg.key)) return `product.${suffixOf(pg)}`;
   if (pg.key === "shop") return "collection";
+  if (collectionOf(pg.key)) return `collection.${collectionOf(pg.key)}`;
   if (pg.key === "cart") return "cart";
   if (pg.key === "404") return "404";
   if (pg.key === "compte") return null;
   void first;
-  return `page.${pg.key}`;
+  return `page.${pageName(pg.key)}`;
 }
 /** Suffixe du modèle de la fiche propre à un produit (« product.<suffixe> »). */
 export const suffixOf = (pg: Pick<CtPage, "key" | "product">) => `fiche-${slug(pg.product ?? pg.key.replace(/^product-/, ""))}`.slice(0, 50).replace(/-+$/, "");
@@ -163,7 +175,8 @@ function urlOf(c: Ctx, to: string): string {
   if (pg && templateOf(pg, false) === "search") return "{{ routes.search_url }}";
   if (key === "product") { const h = pg?.product ?? c.input.products[0]?.handle; return h ? `{{ routes.root_url }}products/${h}` : "{{ routes.all_products_collection_url }}"; }
   if (pg?.product) return `{{ routes.root_url }}products/${pg.product}`;
-  if (pg && key !== "404") return `{{ routes.root_url }}pages/${key}`;
+  if (pg && collectionOf(key)) return `{{ routes.collections_url }}/${collectionOf(key)}`;
+  if (pg && key !== "404") return `{{ routes.root_url }}pages/${pageName(key)}`;
   return "{{ routes.root_url }}";
 }
 
@@ -322,9 +335,12 @@ function live(c: Ctx, html: string, root: string | null): string {
     const label = strip(/<a class="tn-bt"[^>]*data-pogo[^>]*>([\s\S]*?)<\/a>/.exec(out)?.[1] ?? "Ajouter au panier");
     out = out
       .replace(/<div class="tn-galerie">[\s\S]*?<\/div><\/div>/, `<div class="tn-galerie">{%- if product.featured_image -%}<div class="tn-grande tn-ph" role="img" aria-label="{{ product.featured_image.alt | default: product.title | escape }}" style="background-image:url({{ product.featured_image | image_url: width: 1400 }})"></div>{%- endif -%}{%- if product.images.size > 1 -%}<div class="tn-vignettes">{%- for image in product.images limit: 5 -%}<i class="tn-ph" style="background-image:url({{ image | image_url: width: 300 }})"></i>{%- endfor -%}</div>{%- endif -%}</div>`)
-      .replace(/<div class="tn-prix">[\s\S]*?<\/div>(?:<div class="tn-rupture">[\s\S]*?<\/div>)?/, `<div class="tn-prix">{{ product.selected_or_first_available_variant.price | money }}</div>{%- unless product.available -%}<div class="tn-rupture">Épuisé pour l'instant.</div>{%- endunless -%}`)
+      .replace(/<div class="tn-prix">[\s\S]*?<\/div>(?:<div class="tn-rupture">[\s\S]*?<\/div>)?/, `<div class="tn-prix">${PRIX_BARRE}{{ product.selected_or_first_available_variant.price | money }}${MOINS}</div>{%- unless product.available -%}<div class="tn-rupture">Épuisé pour l'instant.</div>{%- endunless -%}`)
       .replace(/<a class="tn-bt[^"]*"[^>]*data-pogo[^>]*>[\s\S]*?<\/a>(?=<ul|<\/section>|<div class="tn-barre">)/, `{%- form 'product', product, class: 'tn-enveloppe' -%}{%- if product.has_only_default_variant -%}<input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">{%- else -%}<select class="tn-choix" name="id" aria-label="Choisir une version">{%- for variant in product.variants -%}<option value="{{ variant.id }}"{% if variant == product.selected_or_first_available_variant %} selected{% endif %}{% unless variant.available %} disabled{% endunless %}>{{ variant.title }} · {{ variant.price | money }}</option>{%- endfor -%}</select>{%- endif -%}<button class="tn-bt" type="submit" name="add"{% unless product.available %} disabled{% endunless %}>${label}</button>{%- if product.available -%}<div class="tn-rapide">{{ form | payment_button }}</div>{%- endif -%}{%- endform -%}`)
-      .replace(/<div class="tn-barre">[\s\S]*?<\/div>(?=<\/section>)/, "");
+      // La barre d'achat part en boutique : cachée tant que le script commun n'a pas démarré (sans lui, elle n'achèterait rien).
+      .replace(/<div class="tn-barre">[\s\S]*?<\/div>(?=<\/section>)/, `<div class="tn-barre" data-tn-barre hidden><b>{{ product.title }}</b><button class="tn-bt" type="button" data-tn-acheter{% unless product.available %} disabled{% endunless %}>${label}</button></div>`)
+      // La table des versions du produit et les deux scripts du Studio (contrat tnBoutique) : fichiers du thème.
+      .replace(/<\/section>\s*$/, `${TABLE_VERSIONS}${SCRIPTS_ACHAT}</section>`);
     if (c.input.priceNotes?.length) out = out.replace(/(<div class="tn-prix">[\s\S]*?<\/div>(?:\{%- unless product\.available -%\}[\s\S]*?\{%- endunless -%\})?)/, `$1<ul class="tn-pres-prix">${c.input.priceNotes.slice(0, 3).map((n) => `<li>${literal(attr(n))}</li>`).join("")}</ul>`);
     // Livraison et retours : ceux du client, tels qu'il les a donnés.
     const co = c.input.company ?? {};
@@ -430,6 +446,97 @@ html body .shopify-section:has(>.ctw>.tn-ent:not([data-tn-c="sur-photo"])){posit
 @supports (animation-timeline:scroll()){html body .shopify-section:has(>.ctw>.tn-ent[data-tn-c="sur-photo"]){position:sticky;top:0;z-index:60}}
 @keyframes tn-e-plein{to{background-color:var(--tn-fond);background-image:none;color:var(--tn-encre);border-bottom-color:var(--tn-e-filet)}}`;
 
+/** Prix barré et étiquette « −X % » : seulement à partir du vrai prix de comparaison de la version, le pourcentage calculé. */
+const PRIX_BARRE = `{%- assign tn_v = product.selected_or_first_available_variant -%}{%- if tn_v.compare_at_price > tn_v.price -%}<s>{{ tn_v.compare_at_price | money }}</s> {% endif -%}`;
+const MOINS = `{%- if tn_v.compare_at_price > tn_v.price %} <em class="tn-moins">−{{ tn_v.compare_at_price | minus: tn_v.price | times: 100.0 | divided_by: tn_v.compare_at_price | round }}&nbsp;%</em>{%- endif -%}`;
+/** Table des versions lue par le script commun : le stock n'y figure que s'il est suivi par Shopify. */
+const TABLE_VERSIONS = `<script type="application/json" data-tn-versions data-tn-titre="{{ product.title | escape }}" data-tn-noms="{{ product.options | join: '|' | escape }}">[{%- for variant in product.variants -%}{"id":"{{ variant.id }}","options":{{ variant.options | json }},"disponible":{{ variant.available | json }},{%- if variant.inventory_management == 'shopify' -%}"stock":{{ variant.inventory_quantity | json }},{%- endif -%}{%- if variant.compare_at_price > variant.price -%}"compare":{{ variant.compare_at_price | json }},{%- endif -%}"prix":{{ variant.price | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]</script>`;
+/** Les deux fichiers du Studio envoyés dans le dossier « assets » du thème (voir STUDIO_SCRIPTS dans theme/compile.ts). */
+export const SCRIPT_COMMUN = `<script src="{{ 'tenue-achat.js' | asset_url }}" defer></script>`;
+const SCRIPTS_ACHAT = `<script src="{{ 'boutique-shopify.js' | asset_url }}" defer></script>${SCRIPT_COMMUN}`;
+const pctTxt = (n: number) => String(n).replace(".", ",");
+/** Un pack ou un lot porte-t-il un prix remisé ou un cadeau (donc une remise automatique à créer dans la boutique) ? */
+const packRemise = (k: ShopOffers["packs"][number]) => (k.remisePct ?? 0) > 0 || k.prixCentimes != null || !!k.cadeauHandle;
+/** Ce que le client doit avoir dans sa boutique pour que les prix affichés soient les prix payés : dit tel quel. */
+export function remisesAttendues(o: ShopOffers | null | undefined): string[] {
+  if (!o) return [];
+  const out: string[] = [];
+  if (o.quantity?.kind === "lots") for (const t of o.quantity.tiers) out.push(`remise automatique par quantité : ${t.qty} articles achetés, −${pctTxt(t.pct)} %`);
+  if (o.quantity?.kind === "bogo") out.push(`remise automatique « achetez ${o.quantity.buy}, recevez ${o.quantity.free} » sur le même produit`);
+  for (const k of o.packs) {
+    if ((k.remisePct ?? 0) > 0) out.push(`remise automatique par quantité : ${k.quantite} articles achetés, −${pctTxt(k.remisePct!)} % (pack « ${k.nom} »)`);
+    else if (k.prixCentimes != null) out.push(`remise automatique par quantité : ${k.quantite} articles pour ${(k.prixCentimes / 100).toFixed(2).replace(".", ",")} € (pack « ${k.nom} »)`);
+    if (k.cadeauHandle) out.push(`remise automatique « achetez ${k.quantite}, recevez 1 » : le produit « ${k.cadeauHandle} » offert à 100 % (pack « ${k.nom} »)`);
+  }
+  return [...new Set(out)];
+}
+const CADEAU = (h: string, cls: string) => `{%- assign tn_cadeau = all_products['${h}'] -%}{%- if tn_cadeau.available -%}<div class="${cls}"><i class="tn-ph"{% if tn_cadeau.featured_image %} style="background-image:url({{ tn_cadeau.featured_image | image_url: width: 200 }})"{% endif %}></i><span>{{ tn_cadeau.title }}</span><em>Offert</em></div>{%- endif -%}`;
+
+/** Achat, suite, en Liquid : offres par quantité, packs, dessous du bouton, offre du moment, fenêtre d'offre. Rend null : la pièce ne part pas (c'est dit). */
+function vente(c: Ctx, html: string, root: string | null, where: string): string | null {
+  const o = c.input.offres ?? null, note = (text: string) => { c.problems.push({ level: "à savoir", text: `${where} : ${text}` }); return null; };
+  const attendues = remisesAttendues(o);
+  let out = html;
+  if (root === "tn-lots") {
+    const q = o?.quantity;
+    if (!q) return note("section non envoyée (aucune offre par quantité saisie)");
+    if (!o.remisesConfirmees) return note(`section non envoyée : le thème ne calcule aucune remise. Crée d'abord dans ta boutique : ${attendues.filter((x) => !/pack «/.test(x)).join(" ; ")}. Puis confirme-le à SINA`);
+    const p = "product.selected_or_first_available_variant.price";
+    const line = (n: number, prix: string, tag: string, on: boolean) => `<li data-tn-quantite="${n}"><label><input type="radio" name="tn-lot"${on ? " checked" : ""}><b>${n} {% if ${n} > 1 %}articles{% else %}article{% endif %}</b><span>{{ ${prix} | money }}</span>${n > 1 ? `<i>soit {{ ${prix} | divided_by: ${n} | money }} l'unité</i>` : ""}${tag ? `<em>${tag}</em>` : ""}</label></li>`;
+    const rows = q.kind === "lots" ? q.tiers.slice(0, 4).map((t) => line(t.qty, `${p} | times: ${t.qty} | times: ${100 - t.pct} | divided_by: 100.0 | round`, `−${pctTxt(t.pct)} %`, false)) : [line(q.buy + q.free, `${p} | times: ${q.buy}`, `${q.free} offert${q.free > 1 ? "s" : ""}`, false)];
+    out = out.replace(/(<ul>)[\s\S]*?(<\/ul>)/, `$1${line(1, p, "", true)}${rows.join("")}$2`);
+  }
+  if (root === "tn-packs") {
+    const packs = o?.packs ?? [];
+    if (!packs.length) return note("section non envoyée (aucun pack saisi)");
+    if (!o!.remisesConfirmees && packs.some(packRemise)) return note(`section non envoyée : le thème ne calcule aucune remise. Crée d'abord dans ta boutique : ${attendues.filter((x) => /pack «/.test(x)).join(" ; ")}. Puis confirme-le à SINA`);
+    const first = Math.max(0, packs.findIndex((k) => k.populaire));
+    const one = (k: ShopOffers["packs"][number], i: number) => {
+      const prix = k.prixCentimes != null ? String(k.prixCentimes) : `tn_v.price | times: ${k.quantite} | times: ${100 - (k.remisePct ?? 0)} | divided_by: 100.0 | round`;
+      return `{%- assign tn_pp = ${prix} -%}{%- assign tn_plein = tn_v.compare_at_price | default: 0 | times: ${k.quantite} -%}<li class="tn-pack" data-tn-pack data-tn-quantite="${k.quantite}" data-tn-prix="{{ tn_pp }}"${k.cadeauHandle ? `{% if all_products['${k.cadeauHandle}'].available %} data-tn-cadeau="{{ all_products['${k.cadeauHandle}'].selected_or_first_available_variant.id }}" data-tn-cadeau-nom="{{ all_products['${k.cadeauHandle}'].title | escape }}"{% endif %}` : ""}>${k.populaire ? '<em class="tn-pack-etiquette">Le plus populaire</em>' : ""}<label><input type="radio" name="tn-pack"${i === first ? " checked" : ""}><b>${literal(attr(k.nom))}</b><span class="tn-pack-prix">{%- if tn_plein > tn_pp -%}<s>{{ tn_plein | money }}</s> {% endif -%}{{ tn_pp | money }}{%- if tn_plein > tn_pp %} <em class="tn-moins">−{{ tn_plein | minus: tn_pp | times: 100.0 | divided_by: tn_plein | round }}&nbsp;%</em>{%- endif -%}</span>${k.quantite > 1 ? `<i>soit {{ tn_pp | divided_by: ${k.quantite} | money }} l'unité</i>` : ""}</label>${k.cadeauHandle ? CADEAU(k.cadeauHandle, "tn-pack-cadeau") : ""}<div class="tn-pack-lignes" data-tn-pack-lignes></div></li>`;
+    };
+    out = out.replace(/<form class="tn-packs-f"[^>]*>[\s\S]*<\/form>/, (m) => {
+      const label = strip(/<button class="tn-bt"[^>]*>([\s\S]*?)<\/button>/.exec(m)?.[1] ?? "Ajouter au panier");
+      return `{%- assign tn_v = product.selected_or_first_available_variant -%}{%- form 'product', product, class: 'tn-packs-f', data-tn-achat-form: 'oui' -%}<input type="hidden" name="id" value="{{ tn_v.id }}"><ul class="tn-pack-liste">${packs.slice(0, 4).map(one).join("")}</ul><button class="tn-bt" type="submit" name="add" data-tn-acheter{% unless product.available %} disabled{% endunless %}>${label}</button><p class="tn-erreur" data-tn-erreur role="alert" hidden></p>{%- endform -%}`;
+    });
+  }
+  if (root === "tn-sous-bouton") {
+    const drop = (h: string) => (/\[À compléter/.test(h) ? "" : h);
+    out = out.replace(/(<section\b[^>]*>)/, `$1${o?.stockDepart ? `<div class="tn-jauge" data-tn-jauge data-tn-depart="${o.stockDepart}" role="img" hidden><i><b></b></i><span></span><span></span></div>` : ""}${o?.seuilStock ? `<p class="tn-stock" data-tn-stock data-tn-seuil="${o.seuilStock}" aria-live="polite" hidden></p>` : ""}`)
+      .replace(/<p class="tn-delai"[^>]*>[\s\S]*?<\/p>/, o?.delaiLivraison ? `<p class="tn-delai" data-tn-delai>Chez toi en ${literal(attr(o.delaiLivraison.replace(/^(?:chez toi )?en\s+/i, "")))}</p>` : "")
+      // Moyens de paiement : ceux que la boutique accepte vraiment, dessinés par Shopify.
+      .replace(/<div class="tn-paiements-sb"[^>]*>[\s\S]*?<\/div>/, `<div class="tn-paiements-sb" data-tn-paiements-sb aria-label="Moyens de paiement acceptés">{%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}</div>`);
+    const co = c.input.company ?? {};
+    for (const [cle, val] of [["livraison", co.shipping], ["retours", co.returns]] as const) if (val) out = out.replace(new RegExp(`(<li data-tn-g="${cle}">[\\s\\S]*?<span>)[\\s\\S]*?(<\\/span>)`), (_m, a: string, b: string) => `${a}${literal(attr(val.slice(0, 90)))}${b}`);
+    // Ce qui n'a pas été écrit pour ce client ne part pas : volet, repère ou question encore « à compléter ».
+    if (c.input.dropMissing) out = out.replace(/<details class="tn-tailles-sb"[\s\S]*?<\/details>(?=<details|<p|<div|<ul)/, drop).replace(/<details class="tn-recois">[\s\S]*?<\/details>/, drop)
+      .replace(/<li data-tn-g="[a-z]+">[\s\S]*?<\/li>/g, drop).replace(/<details><summary>[\s\S]*?<\/details>/g, drop);
+  }
+  if (root === "tn-offre-moment") {
+    const p = o?.promo && o.promo.endsAt > Date.now() ? o.promo : null;
+    if (!p) return note("section non envoyée (aucune promotion saisie avec sa date de fin, ou date passée)");
+    const fin = new Date(p.endsAt), jour = `${fin.getFullYear()}-${String(fin.getMonth() + 1).padStart(2, "0")}-${String(fin.getDate()).padStart(2, "0")}`;
+    // La date passée, la pièce se cache d'elle-même (la boutique, puis le script) ; le décompte vise cette seule date.
+    out = out.replace(/(<section\b[^>]*\sdata-tn-offre-moment\b)/, `$1 data-tn-fin="${p.endsAt}"{% assign tn_now = 'now' | date: '%s' | plus: 0 %}{% if tn_now >= ${Math.floor(p.endsAt / 1000)} %} hidden{% endif %}`)
+      .replace(/(<b class="tn-om-nom">)[\s\S]*?(<\/b>)/, (_m, a: string, b: string) => (p.nom ? `${a}${literal(attr(p.nom))}${b}` : ""))
+      .replace(/(<em class="tn-om-remise">)[\s\S]*?(<\/em>)/, `$1−${pctTxt(p.pct)}&nbsp;%$2`)
+      .replace(/<div class="tn-om-cadeau">[\s\S]*?<\/div>/, p.cadeauHandle ? CADEAU(p.cadeauHandle, "tn-om-cadeau") : "")
+      .replace(/(<p class="tn-om-fin"[^>]*>)[\s\S]*?(<\/p>)/, `$1{%- assign tn_jour = 'now' | date: '%Y-%m-%d' -%}{%- if tn_jour == '${jour}' -%}Aujourd'hui seulement{%- else -%}Jusqu'au ${fin.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}{%- endif -%}$2`)
+      .replace(/<\/section>\s*$/, `${SCRIPT_COMMUN}</section>`);
+    c.problems.push({ level: "à savoir", text: `${where} : la remise de −${pctTxt(p.pct)} % doit exister dans ta boutique jusqu'à la même date (prix de comparaison ou remise automatique) ; le thème ne change aucun prix, et la date passée, la pièce disparaît` });
+  }
+  if (root === "tn-fenetre-offre") {
+    const f = o?.fenetreOffre;
+    if (!f) return note("fenêtre non envoyée (aucune offre donnée avec son code de réduction)");
+    out = out.replace(/(<h2 id="tn-fo-titre">)[\s\S]*?(<\/h2>)/, (_m, a: string, b: string) => `${a}${literal(attr(f.titre))}${b}`)
+      .replace(/(<p class="tn-fo-texte">)[\s\S]*?(<\/p>)/, (_m, a: string, b: string) => `${a}${literal(attr(f.texte))}${b}`)
+      // L'e-mail part dans la liste de clients de la boutique (formulaire d'inscription de Shopify) ; le code n'est écrit dans la page qu'après l'inscription.
+      .replace(/<form class="tn-fo-form"[^>]*>([\s\S]*?)<\/form><div class="tn-fo-code"[^>]*>([\s\S]*?)<b>[\s\S]*?<\/b><\/div>/, (_m, inner: string, tete: string) => `{%- form 'customer', class: 'tn-fo-form' -%}{%- if form.posted_successfully? -%}<div class="tn-fo-code" data-tn-fo-code data-tn-recu>${tete}<b>${literal(attr(f.code))}</b></div>{%- else -%}<input type="hidden" name="contact[tags]" value="newsletter">${inner.replace('name="email"', 'name="contact[email]"')}{%- if form.errors -%}<p class="tn-erreur" role="alert">{{ form.errors | default_errors }}</p>{%- endif -%}{%- endif -%}{%- endform -%}`)
+      .replace(/<\/section>\s*$/, `${SCRIPT_COMMUN}</section>`);
+  }
+  return out;
+}
+
 /** Une section du thème → sa section Shopify (HTML en Liquid, sa part de la feuille, un schéma). */
 function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean } = {}): string | null {
   const l = libSection(s.id);
@@ -446,6 +553,11 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean } = {}): stri
   // Les avis : sans application d'avis dans la boutique, rien ne peut en recevoir ; la section n'est envoyée que si de vrais avis y sont écrits.
   if (root === "tn-avis" && !/<ul data-tn-avis>\s*<li>/.test(html)) { c.problems.push({ level: "à savoir", text: `${where} : section non envoyée (aucun avis réel ; dans Shopify, les avis demandent une application d'avis)` }); return null; }
   html = live(c, html, root);
+  // Vente directe (module « vente ») : cartes de vente, guide de choix, page d'arrivée, ajout rapide de la collection.
+  html = venteBoutique(html, { root, built, products: c.input.products, first: c.page?.product ?? c.input.products[0]?.handle ?? null });
+  const sold = vente(c, html, root, where);
+  if (sold === null) return null;
+  html = sold;
   const before = /\[À compléter/.test(html);
   html = missing(c, html, where);
   // Une section vidée de ses informations ne garde pas un titre seul : elle est retirée, et c'est dit.
@@ -497,10 +609,15 @@ export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExpo
   const drawer = input.business === "products" ? drawerOf(t) : null;
   const search = t.search && rootOf(sectionHtml(t.search)) === "tn-recherche" ? t.search : null;
   if (drawer) roots.add("tn-panier-cote");
-  for (const s of (t.extras ?? []).filter((x) => !bands.includes(x) && x !== drawer)) problems.push({ level: "à savoir", text: `« ${libSection(s.id)?.title ?? s.id} » n'est pas envoyée : Shopify a sa propre fenêtre pour cela (cookies, âge), à régler dans la boutique` });
+  // La fenêtre d'offre part avec le pied de page (elle est sur toutes les pages), seulement si le client a donné son offre.
+  const offre = (t.extras ?? []).find((s) => rootOf(sectionHtml(s)) === "tn-fenetre-offre") ?? null;
+  for (const s of (t.extras ?? []).filter((x) => !bands.includes(x) && x !== drawer && x !== offre)) problems.push({ level: "à savoir", text: `« ${libSection(s.id)?.title ?? s.id} » n'est pas envoyée : Shopify a sa propre fenêtre pour cela (cookies, âge), à régler dans la boutique` });
   // L'en-tête porte le socle de la feuille (couleurs, polices, formes) : il est sur toutes les pages.
   const header = group([...bands.map((s) => add(ctx(null, null), s)), t.header ? add(ctx(null, null), t.header, { header: true }) : null, search ? add(ctx(null, null), { ...search, construction: undefined }) : null], "header", "En-tête");
-  const footer = group([t.footer ? add(ctx(null, null), t.footer) : null, drawer ? add(ctx(null, null), drawer) : null], "footer", "Pied de page");
+  const footer = group([t.footer ? add(ctx(null, null), t.footer) : null, drawer ? add(ctx(null, null), drawer) : null, offre ? add(ctx(null, null), offre) : null], "footer", "Pied de page");
+  // Remises : le thème n'en calcule aucune. La liste exacte de ce que la boutique doit porter, dite au client.
+  const attendues = remisesAttendues(input.offres);
+  if (attendues.length && allSections(t).some((x) => ["tn-lots", "tn-packs"].includes(rootOf(sectionHtml(x.s)) ?? ""))) problems.push({ level: "à savoir", text: `Remises : le thème affiche les prix de tes offres mais n'en calcule aucune ; le prix payé est celui de ta boutique. ${input.offres?.remisesConfirmees ? "Tu as confirmé avoir créé" : "À créer dans ta boutique (Réductions › Réduction automatique)"} : ${attendues.join(" ; ")}` });
   if (search && search.construction && search.construction !== validConstruction(search.id, null)) problems.push({ level: "à savoir", text: "La recherche est posée en barre sous l'en-tête : sans script, le panneau qui s'ouvre par la loupe ne part pas en boutique" });
   if (drawer && footer.order.some((k) => footer.sections[k].type === `es-custom-${drawer.uid}`)) {
     // Le panier de l'en-tête ouvre le tiroir (sauf sur la page panier elle-même) ; sans script, il ne s'ouvre pas tout seul après un ajout.
@@ -514,7 +631,7 @@ export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExpo
     templates[key] = { sections: Object.fromEntries(types.map((x) => [x.replace(/^es-custom-/, "tn-"), { type: x, settings: {} }])), order: types.map((x) => x.replace(/^es-custom-/, "tn-")), ...(key === "password" ? { layout: "password" } : {}) };
     if (key.startsWith("product.") && pg.product) productSuffixes[pg.product] = key.slice(8);
     if (templates[key] && ["blog", "article", "search"].includes(key)) problems.push({ level: "à savoir", text: `« ${pg.label} » : dans Shopify, cette page est remplie par la boutique (articles du journal, résultats de la recherche)` });
-    if (key.startsWith("page.")) pages.push({ handle: pg.key, title: pg.label, template_suffix: key.slice(5), body_html: "", ...(pg.seo ? { seo: pg.seo } : {}) });
+    if (key.startsWith("page.")) pages.push({ handle: pageName(pg.key), title: pg.label, template_suffix: key.slice(5), body_html: "", ...(pg.seo ? { seo: pg.seo } : {}) });
     // Une fiche produit vend : elle garde un vrai formulaire d'achat.
     if (/^product/.test(key) && !types.some((x) => /\{%-?\s*form 'product'/.test(customSections[x].liquid))) problems.push({ level: "bloquant", text: `« ${pg.label} » n'a pas de bloc d'achat : une fiche produit doit permettre d'acheter` });
   }
@@ -524,7 +641,10 @@ export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExpo
   if (input.business === "products") { templates.index ?? problems.push({ level: "bloquant", text: "il manque la page d'accueil" }); if (!templates.product) problems.push({ level: "bloquant", text: "il manque la fiche produit" }); }
   // Familles de produits → collections de la boutique (celles du menu et de la page boutique).
   const families = [...new Set(input.products.flatMap((p) => p.categories.map((x) => x.trim()).filter(Boolean)))];
-  const collections: StoreCollection[] = families.map((f) => ({ handle: slug(f), title: f, description: "", products: input.products.filter((p) => p.categories.includes(f)).map((p) => p.handle) }));
+  // Une famille dont SINA a dessiné la page de collection reçoit SON modèle (« collection.<famille> ») ; les autres gardent
+  // le modèle commun. Un modèle de collection sans famille au catalogue est dit au client : il ne serait relié à rien.
+  const collections: StoreCollection[] = families.map((f) => ({ handle: slug(f), title: f, description: "", products: input.products.filter((p) => p.categories.includes(f)).map((p) => p.handle), ...(templates[`collection.${slug(f)}`] ? { template_suffix: slug(f) } : {}) }));
+  for (const k of Object.keys(templates)) if (k.startsWith("collection.") && !families.some((f) => slug(f) === k.slice(11))) problems.push({ level: "à savoir", text: `Le modèle de collection « ${k.slice(11)} » ne correspond à aucune famille de ton catalogue : il part dans le thème, mais aucune collection ne l'utilise` });
   const base = input.base;
   const font = (id: string | null | undefined, fallback: string, weight?: number | null) => (id ? (/_[ni]\d$/.test(id) && !weight ? id : `${id.replace(/_[ni]\d$/, "")}_n${weight ? Math.round(weight / 100) : 4}`) : fallback);
   const spec: ThemeSpec = {

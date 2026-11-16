@@ -18,6 +18,7 @@
     },
     panier: function () { return Promise.resolve(etat()); },
     argent: function (centimes) { return (Math.round(centimes) / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",") + "\u00a0€"; },
-    allerAuPanier: function () { if (window.ctGo) window.ctGo("cart"); },
+    /* Dans l'aperçu, le panier de côté (s'il est posé sur la page) s'ouvre de lui-même au clic sur le bouton d'achat. */
+    allerAuPanier: function () { if (window.ctGo && !document.querySelector(".tn-panier-cote")) window.ctGo("cart"); },
   };
 })();

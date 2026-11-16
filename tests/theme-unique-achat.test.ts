@@ -115,7 +115,7 @@ describe("bloc d'achat : six façons, une par style de page produit", () => {
 describe("pièces nouvelles de la fiche produit", () => {
   const visible = (html: string) => html.replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ");
   it("elles sont rangées dans la banque, sans doublon avec une pièce existante", () => {
-    expect(ACHAT_SECTIONS.map((s) => s.id)).toEqual(["tn-versions", "tn-guide-tailles", "tn-lots", "tn-looks", "tn-allergenes", "tn-avant-apres-produit", "tn-pictos", "tn-probleme-reponse", "tn-nous-et-autres", "tn-appel-produit", "tn-livraison", "tn-garantie", "tn-mur-avis", "tn-avantages"]);
+    expect(ACHAT_SECTIONS.map((s) => s.id)).toEqual(["tn-versions", "tn-guide-tailles", "tn-lots", "tn-looks", "tn-allergenes", "tn-avant-apres-produit", "tn-pictos", "tn-probleme-reponse", "tn-nous-et-autres", "tn-appel-produit", "tn-livraison", "tn-garantie", "tn-mur-avis", "tn-avantages", "tn-packs", "tn-sous-bouton", "tn-offre-moment", "tn-fenetre-offre"]);
     for (const s of ACHAT_SECTIONS) expect(TENUE_SECTIONS.filter((x) => x.id === s.id || x.title === s.title).length, s.id).toBe(1);
   });
 
@@ -279,7 +279,7 @@ describe("pièces nouvelles de la fiche produit", () => {
       expect(out.problems.filter((x) => x.level === "bloquant").map((x) => x.text), `${id} ${key}`).toEqual([]);
       for (const [type, c] of Object.entries(out.spec.customSections)) {
         expect(validateCustomSection(c.liquid), `${id} ${key} ${type}`).toBeNull();
-        expect(c.liquid, `${id} ${key} ${type}`).not.toMatch(/À compléter|photos\/|onclick=|data-go=|href="#"|\/api\/files\/|<script/);
+        expect(c.liquid, `${id} ${key} ${type}`).not.toMatch(/À compléter|photos\/|onclick=|data-go=|href="#"|\/api\/files\/|<script(?! type="application\/json" data-tn-versions| src="\{\{ '(?:tenue-achat|boutique-shopify)\.js' \| asset_url \}\}" defer>)/);
       }
       const mine = out.spec.customSections["es-custom-s1"]?.liquid;
       if (mine) expect(mine, `${id} ${key}`).toContain(`data-tn-c="${key}"`);
@@ -491,4 +491,414 @@ describe.runIf(!!process.env.ACHAT_OUT)("module achat : planches en image, trois
       expect(over, "rien ne dépasse").toEqual([]);
     } finally { await browser.close(); }
   }, 300_000);
+});
+
+
+// ══ Achat, suite : packs, dessous du bouton, offre datée, fenêtre d'offre, et l'achat pour de vrai ══
+// Client inventé pour l'essai (colliers pour chiens). Rien n'est vendu : panier d'essai de l'aperçu, faux fetch pour Shopify.
+const JOUR = 86_400_000;
+const COULEURS = ["Bleu", "Rouge", "Jaune"], TAILLES = ["S", "M", "L"];
+const versionsEssai = (o: { stock?: boolean; compare?: boolean } = {}): D.TenueVersion[] => COULEURS.flatMap((c, i) => TAILLES.map((t, j) => {
+  const stock = c === "Jaune" && t === "L" ? 0 : c === "Bleu" && t === "S" ? 4 : 7;
+  return { id: `v-${c}-${t}`.toLowerCase(), options: [c, t], disponible: stock > 0, ...(o.stock === false ? {} : { stock }), prix: 3000, ...(o.compare === false ? {} : { compare: 4000 }) };
+}));
+const venteEssai = (o: Partial<D.TenueAchatVrai> & { stock?: boolean; compare?: boolean } = {}, now = Date.now()): D.TenueAchatVrai => ({
+  titre: "Collier Museau", noms: ["Couleur", "Taille"], versions: versionsEssai(o),
+  packs: [{ quantite: 1, nom: "Un collier", prix: 3000 }, { quantite: 2, nom: "Le duo", prix: 5400 }, { quantite: 3, nom: "Le trio", prix: 7650, populaire: true, cadeau: { id: "v-laisse", titre: "La laisse Museau", image: null } }],
+  seuilStock: 5, stockDepart: 200, delai: "2 à 4 jours ouvrés",
+  promo: { nom: "Les jours Museau", pct: 25, fin: now + 2 * JOUR + 5 * 3_600_000, cadeau: null },
+  fenetre: { titre: "Dix pour cent sur ta première commande", texte: "Inscris-toi à la lettre de Museau : ton code arrive tout de suite.", code: "MUSEAU10" },
+  paiements: [], livraison: "Chez toi en 2 à 4 jours, 4,90 €", retours: "30 jours pour changer d'avis", ...o,
+});
+const piece = (id: string) => tenueSection(id)!.html;
+
+describe("achat, suite : rien ne s'affiche sans sa vraie donnée", () => {
+  const NOW = new Date(2026, 10, 16, 10, 0, 0).getTime();
+  it("prix barré et étiquette : seulement avec le vrai prix de comparaison, le pourcentage calculé", () => {
+    const bloc = piece("tn-achat").replace(/<div class="tn-prix">[^<]*<\/div>/, '<div class="tn-prix">30 €</div>');
+    const avec = D.withTenueAchatVrai(bloc, venteEssai({}, NOW), NOW);
+    expect(sp(avec)).toContain('<div class="tn-prix"><s>40 €</s> 30 € <em class="tn-moins">−25 %</em></div>');
+    expect(avec).toMatch(/<script type="application\/json" data-tn-versions data-tn-titre="Collier Museau" data-tn-noms="Couleur\|Taille">\[\{"id":"v-bleu-s","options":\["Bleu","S"\],"disponible":true,"stock":4,"prix":3000,"compare":4000\}/);
+    const sans = D.withTenueAchatVrai(bloc, venteEssai({ compare: false }, NOW), NOW);
+    expect(sans).toContain('<div class="tn-prix">30 €</div>');
+    expect(sans).not.toMatch(/<s>|tn-moins/);
+    // Les packs : prix barré et « −X % » calculés sur le prix de comparaison × la quantité ; sans lui, le prix du pack seul.
+    const packs = sp(D.withTenueAchatVrai(piece("tn-packs"), venteEssai({}, NOW), NOW));
+    expect(packs).toContain('data-tn-quantite="3" data-tn-prix="7650" data-tn-cadeau="v-laisse"');
+    expect(packs).toContain('<s>120 €</s> 76,50 € <em class="tn-moins">−36 %</em>');
+    expect(packs).toContain("<span>La laisse Museau</span><em>Offert</em>");
+    expect((packs.match(/Le plus populaire/g) ?? []).length).toBe(1);
+    const packsSans = D.withTenueAchatVrai(piece("tn-packs"), venteEssai({ compare: false, packs: [{ quantite: 2, nom: "Le duo", prix: 5400 }] }, NOW), NOW);
+    expect(packsSans).not.toMatch(/<s>|tn-moins|Le plus populaire|tn-pack-cadeau/);
+    // Sans pack saisi : la pièce garde ses « à compléter », aucun prix d'exemple.
+    expect(D.withTenueAchatVrai(piece("tn-packs"), venteEssai({ packs: [] }, NOW), NOW)).not.toMatch(/€/);
+  });
+
+  it("stock restant et jauge : seulement avec le stock suivi, le seuil et la quantité de départ du client", () => {
+    const sb = piece("tn-sous-bouton");
+    const avec = D.withTenueAchatVrai(sb, venteEssai({}, NOW), NOW);
+    expect(avec).toContain('<div class="tn-jauge" data-tn-jauge data-tn-depart="200" role="img" hidden>');
+    expect(avec).toContain('<p class="tn-stock" data-tn-stock data-tn-seuil="5" aria-live="polite" hidden></p>');
+    expect(avec).toContain("Chez toi en 2 à 4 jours ouvrés</p>");
+    for (const sans of [venteEssai({ stock: false }, NOW), venteEssai({ seuilStock: null, stockDepart: null }, NOW)]) expect(D.withTenueAchatVrai(sb, sans, NOW)).not.toMatch(/data-tn-jauge|data-tn-stock/);
+    // Sans délai donné : aucune ligne « Chez toi en … » ; sans moyen de paiement connu : aucun logo.
+    const nu = D.withTenueAchatVrai(sb, venteEssai({ delai: null }, NOW), NOW);
+    expect(nu).not.toMatch(/class="tn-delai"|tn-paiements-sb/);
+    expect(D.withTenueAchatVrai(sb, venteEssai({ paiements: ["Visa"] }, NOW), NOW)).toContain("<span>Visa</span>");
+    // Le lien des tailles ne reste que si le produit a de vraies tailles.
+    expect(D.withTenueAchatVrai(sb, venteEssai({ noms: ["Couleur"] }, NOW), NOW)).not.toContain("Quelle taille");
+  });
+
+  it("offre du moment : la promotion datée du client ; « Aujourd'hui seulement » le dernier jour ; passée la date, rien", () => {
+    const om = piece("tn-offre-moment");
+    const fin = new Date(2026, 10, 28, 23, 59, 0).getTime();
+    const avec = sp(D.withTenueAchatVrai(om, venteEssai({ promo: { nom: "Les jours Museau", pct: 25, fin, cadeau: { id: "v-laisse", titre: "La laisse Museau", image: null } } }, NOW), NOW));
+    expect(avec).toContain(`data-tn-offre-moment data-tn-fin="${fin}"`);
+    expect(avec).toContain('<em class="tn-om-remise">−25 %</em>');
+    expect(avec).toContain("Jusqu'au 28 novembre</p>");
+    expect(avec).not.toMatch(/Aujourd'hui seulement|À compléter/);
+    const dernier = D.withTenueAchatVrai(om, venteEssai({ promo: { nom: null, pct: 25, fin: new Date(2026, 10, 16, 23, 0, 0).getTime(), cadeau: null } }, NOW), NOW);
+    expect(dernier).toContain("Aujourd'hui seulement</p>");
+    expect(dernier).not.toMatch(/tn-om-nom|tn-om-cadeau/);
+    expect(D.withTenueAchatVrai(om, venteEssai({ promo: null }, NOW), NOW)).toBe("");
+    expect(D.withTenueAchatVrai(om, venteEssai({ promo: { nom: "Finie", pct: 25, fin: NOW - 1000, cadeau: null } }, NOW), NOW)).toBe("");
+    // La fenêtre d'offre ne se pose pas sans offre ; avec, elle porte le titre, la phrase et le code du client.
+    expect(D.withTenueAchatVrai(piece("tn-fenetre-offre"), venteEssai({ fenetre: null }, NOW), NOW)).toBe("");
+    const fen = D.withTenueAchatVrai(piece("tn-fenetre-offre"), venteEssai({}, NOW), NOW);
+    expect(fen).toContain("<b>MUSEAU10</b>");
+    expect(fen).toMatch(/data-tn-fo-code hidden>/);
+    expect(fen).not.toMatch(/À compléter/);
+  });
+
+  it("l'offre du client accepte les champs nouveaux, et seulement eux", async () => {
+    const { shopOffersSchema } = await import("@/lib/syna-agent/product-features");
+    const o = shopOffersSchema.parse({ packs: [{ quantite: 3, nom: "Le trio", remisePct: 15, cadeauHandle: "laisse-museau", populaire: true }], seuilStock: 5, stockDepart: 200, delaiLivraison: "2 à 4 jours ouvrés", fenetreOffre: { titre: "Dix pour cent", texte: "Sur ta première commande.", code: "MUSEAU10" }, promo: { pct: 25, endsAt: NOW + JOUR, nom: "Les jours Museau" } });
+    expect(o.remisesConfirmees).toBe(false);
+    expect(shopOffersSchema.parse({})).toMatchObject({ packs: [], seuilStock: null, stockDepart: null, delaiLivraison: null, fenetreOffre: null, remisesConfirmees: false });
+    expect(shopOffersSchema.safeParse({ packs: [{ quantite: 3, nom: "Le trio", urgence: "vite" }] }).success).toBe(true); // un champ inconnu d'un pack est ignoré, jamais affiché
+    expect(shopOffersSchema.safeParse({ fausseUrgence: true }).success).toBe(false);
+  });
+});
+
+describe("achat, suite, en boutique Shopify (Liquid contrôlé par le Studio ; pas une vraie boutique)", () => {
+  const sec = (id: string, uid: string, construction?: string) => ({ uid, id, clientTexts: true, ...(construction ? { construction } : {}), html: tenueSection(id)!.html.replace(/photos\/[\w.-]+/g, "/api/files/a1") });
+  const theme = (extras: any[] = []) => ({ version: 1, family: "classique", style: "classique", header: sec("tn-entete", "h"), footer: sec("tn-pied", "f"), search: null, rev: 0, at: 0, extras, pages: [{ key: "home", label: "Accueil", sections: [] }, { key: "product", label: "Fiche produit", sections: [sec("tn-achat", "buy", "vente-directe"), sec("tn-offre-moment", "om"), sec("tn-lots", "lots"), sec("tn-packs", "packs"), sec("tn-sous-bouton", "sb")] }] }) as any;
+  const offres = async (over: Record<string, unknown> = {}) => (await import("@/lib/syna-agent/product-features")).shopOffersSchema.parse({ quantity: { kind: "lots", tiers: [{ qty: 2, pct: 10 }] }, packs: [{ quantite: 1, nom: "Un collier" }, { quantite: 3, nom: "Le trio", remisePct: 15, cadeauHandle: "laisse-museau", populaire: true }], seuilStock: 5, stockDepart: 200, delaiLivraison: "2 à 4 jours ouvrés", promo: { pct: 25, endsAt: Date.now() + 2 * JOUR, nom: "Les jours Museau" }, fenetreOffre: { titre: "Dix pour cent", texte: "Sur ta première commande.", code: "MUSEAU10" }, ...over });
+  const input = (o: unknown) => ({ name: "Museau", business: "products", products: [{ handle: "collier-museau", title: "Collier Museau", categories: [] }, { handle: "laisse-museau", title: "Laisse Museau", categories: [] }], company: { shipping: "Chez toi en 2 à 4 jours", returns: "30 jours" }, assetExt: () => "jpg", linkMap: {}, dropMissing: true, base: null, offres: o }) as any;
+
+  it("le bloc d'achat charge les deux scripts du Studio, pose la table des versions et garde la barre d'achat", async () => {
+    const { customThemeSpec } = await import("@/lib/syna-agent/custom-theme/to-shopify");
+    const { validateCustomSection } = await import("@/lib/theme/ops");
+    const { compileTheme } = await import("@/lib/theme/compile");
+    const out = customThemeSpec(theme(), input(await offres({ remisesConfirmees: true })));
+    expect(out.problems.filter((x) => x.level === "bloquant").map((x) => x.text)).toEqual([]);
+    for (const [type, c] of Object.entries(out.spec.customSections)) expect(validateCustomSection(c.liquid), type).toBeNull();
+    const buy = out.spec.customSections["es-custom-buy"].liquid;
+    expect(buy).toContain(`<script src="{{ 'boutique-shopify.js' | asset_url }}" defer></script><script src="{{ 'tenue-achat.js' | asset_url }}" defer></script>`);
+    expect(buy).toContain(`<script type="application/json" data-tn-versions data-tn-titre="{{ product.title | escape }}" data-tn-noms="{{ product.options | join: '|' | escape }}">[{%- for variant in product.variants -%}{"id":"{{ variant.id }}","options":{{ variant.options | json }},"disponible":{{ variant.available | json }},{%- if variant.inventory_management == 'shopify' -%}"stock":{{ variant.inventory_quantity | json }},{%- endif -%}`);
+    expect(buy).toContain(`"prix":{{ variant.price | json }}}`);
+    // Prix barré : seulement si la boutique porte un vrai prix de comparaison.
+    expect(buy).toContain("{%- if tn_v.compare_at_price > tn_v.price -%}<s>{{ tn_v.compare_at_price | money }}</s>");
+    expect(buy).toMatch(/<div class="tn-barre" data-tn-barre hidden><b>\{\{ product\.title \}\}<\/b><button class="tn-bt" type="button" data-tn-acheter/);
+    // Les deux fichiers partent dans le dossier « assets » du thème, tels qu'ils sont dans le Studio.
+    const files = compileTheme(out.spec);
+    for (const f of ["tenue-achat.js", "boutique-shopify.js"]) expect(files.get(`assets/${f}`), f).toBe(fs.readFileSync(path.join(process.cwd(), "public", "sections", f), "utf8"));
+    // Lots et packs partent, avec les quantités, le cadeau lu dans la boutique, et un vrai formulaire sans script.
+    const lots = out.spec.customSections["es-custom-lots"].liquid, packs = out.spec.customSections["es-custom-packs"].liquid;
+    expect(lots).toContain('<li data-tn-quantite="2"><label><input type="radio" name="tn-lot">');
+    expect(lots).toContain("| times: 2 | times: 90 | divided_by: 100.0 | round | money }}");
+    expect(packs).toContain(`{%- form 'product', product, class: 'tn-packs-f', data-tn-achat-form: 'oui' -%}<input type="hidden" name="id" value="{{ tn_v.id }}">`);
+    expect(packs).toContain(`data-tn-cadeau="{{ all_products['laisse-museau'].selected_or_first_available_variant.id }}"`);
+    expect(packs).toContain('data-tn-quantite="3" data-tn-prix="{{ tn_pp }}"');
+    expect(packs).toContain("{%- if tn_plein > tn_pp -%}<s>{{ tn_plein | money }}</s>");
+    expect((packs.match(/Le plus populaire/g) ?? []).length).toBe(1);
+    // Sous le bouton : jauge et stock attendent le vrai stock ; les moyens de paiement sont ceux de la boutique.
+    const sb = out.spec.customSections["es-custom-sb"].liquid;
+    expect(sb).toContain('data-tn-jauge data-tn-depart="200"');
+    expect(sb).toContain('data-tn-stock data-tn-seuil="5"');
+    expect(sb).toContain("{%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}");
+    expect(sb).toContain("Chez toi en 2 à 4 jours ouvrés");
+    expect(sb).not.toMatch(/À compléter|Quelle taille/);
+    // L'offre du moment : la date de fin du client, cachée par la boutique une fois passée.
+    const om = out.spec.customSections["es-custom-om"].liquid;
+    expect(om).toMatch(/data-tn-fin="\d{13}"\{% assign tn_now = 'now' \| date: '%s' \| plus: 0 %\}\{% if tn_now >= \d{10} %\} hidden\{% endif %\}/);
+    expect(om).toContain("Les jours Museau");
+    expect(out.problems.map((x) => x.text).join("\n")).toMatch(/Remises : le thème affiche les prix de tes offres mais n'en calcule aucune.*Tu as confirmé avoir créé : remise automatique par quantité : 2 articles achetés, −10 % ; remise automatique par quantité : 3 articles achetés, −15 % \(pack « Le trio »\) ; remise automatique « achetez 3, recevez 1 » : le produit « laisse-museau » offert à 100 %/);
+  });
+
+  it("sans « remisesConfirmees », lots et packs ne partent pas avec un prix remisé, et la note dit quoi créer", async () => {
+    const { customThemeSpec } = await import("@/lib/syna-agent/custom-theme/to-shopify");
+    const out = customThemeSpec(theme(), input(await offres()));
+    expect(out.spec.customSections["es-custom-lots"]).toBeUndefined();
+    expect(out.spec.customSections["es-custom-packs"]).toBeUndefined();
+    const notes = out.problems.map((x) => x.text).join("\n");
+    expect(notes).toMatch(/Offres par quantité : section non envoyée : le thème ne calcule aucune remise\. Crée d'abord dans ta boutique : remise automatique par quantité : 2 articles achetés, −10 %/);
+    expect(notes).toMatch(/Les packs : section non envoyée : le thème ne calcule aucune remise\. Crée d'abord dans ta boutique : .*« achetez 3, recevez 1 »/);
+    expect(notes).toContain("À créer dans ta boutique (Réductions › Réduction automatique)");
+    expect(Object.values(out.spec.customSections).map((c) => c.liquid).join("\n")).not.toMatch(/times: 90|times: 85|<ul class="tn-pack-liste"/);
+    // Des packs sans remise ni cadeau partent sans confirmation : aucun prix remisé n'est affiché.
+    const simples = customThemeSpec(theme(), input(await offres({ quantity: null, packs: [{ quantite: 1, nom: "Un collier" }, { quantite: 2, nom: "Deux colliers" }] })));
+    expect(simples.spec.customSections["es-custom-packs"].liquid).toContain("| times: 2 | times: 100 | divided_by: 100.0 | round");
+    // Sans offre du tout : ni lots, ni packs, ni offre du moment ; la fiche garde son bloc d'achat.
+    const rien = customThemeSpec(theme(), input(null));
+    expect(Object.keys(rien.spec.customSections).sort()).toEqual(["es-custom-buy", "es-custom-f", "es-custom-h", "es-custom-sb"]);
+    expect(rien.spec.customSections["es-custom-sb"].liquid).not.toMatch(/data-tn-jauge|data-tn-stock|class="tn-delai"/);
+  });
+
+  it("la fenêtre d'offre ne part qu'avec la vraie offre : inscription à la liste de la boutique, code écrit après l'inscription", async () => {
+    const { customThemeSpec } = await import("@/lib/syna-agent/custom-theme/to-shopify");
+    const { validateCustomSection } = await import("@/lib/theme/ops");
+    const sans = customThemeSpec(theme([sec("tn-fenetre-offre", "fo")]), input(await offres({ fenetreOffre: null })));
+    expect(sans.spec.customSections["es-custom-fo"]).toBeUndefined();
+    expect(sans.problems.map((x) => x.text).join("\n")).toContain("fenêtre non envoyée (aucune offre donnée avec son code de réduction)");
+    const avec = customThemeSpec(theme([sec("tn-fenetre-offre", "fo", "carte-en-bas")]), input(await offres()));
+    const fo = avec.spec.customSections["es-custom-fo"].liquid;
+    expect(validateCustomSection(fo)).toBeNull();
+    expect(avec.spec.groups.footer.order).toContain("tn-fo");
+    expect(fo).toMatch(/\{%- form 'customer', class: 'tn-fo-form' -%\}\{%- if form\.posted_successfully\? -%\}<div class="tn-fo-code" data-tn-fo-code data-tn-recu><span>Ton code<\/span><b>MUSEAU10<\/b><\/div>\{%- else -%\}<input type="hidden" name="contact\[tags\]" value="newsletter">/);
+    expect(fo).toContain('name="contact[email]" required');
+    expect(fo.split("MUSEAU10").length).toBe(2); // le code n'est écrit qu'une fois, dans la branche « inscription reçue »
+    expect(fo).toContain(`<script src="{{ 'tenue-achat.js' | asset_url }}" defer></script>`);
+  });
+});
+
+// ── La fiche « vente directe » complète, en page statique (feuilles et scripts du Studio, panier d'essai de l'aperçu) ──
+const SUITE = ["tn-achat", "tn-offre-moment", "tn-packs", "tn-sous-bouton", "tn-atouts", "tn-probleme-reponse", "tn-avantages", "tn-mur-avis", "tn-nous-et-autres", "tn-livraison", "tn-garantie", "tn-questions", "tn-appel-produit"];
+const FACONS: Record<string, string[]> = { "tn-achat": ["vente-directe", "vente-directe"], "tn-offre-moment": ["encadre", "bandeau"], "tn-packs": ["empilees", "cote-a-cote"], "tn-sous-bouton": ["liste", "cartes"], "tn-atouts": ["coches", "coches"], "tn-probleme-reponse": ["deux-temps", "face-a-face"], "tn-avantages": ["alternes", "cartes"], "tn-mur-avis": ["mosaique", "file"], "tn-nous-et-autres": ["tableau", "lignes"], "tn-livraison": ["frise", "cartes"], "tn-garantie": ["bande", "sceau"], "tn-questions": ["cartes", "cartes"], "tn-appel-produit": ["bande-sombre", "carte"], "tn-fenetre-offre": ["plein-ecran", "carte-en-bas"], "tn-versions": ["pastilles", "lignes"] };
+const ALLURES = [
+  { key: "vive", palette: VIF.palette, tenue: { titres: "capitales", bouton: "ombre", cadre: "penche", fond: "uni", petits: "normal" }, titre: "Bricolage", arrondi: "14px" },
+  { key: "calme", palette: { primary: "#2F5D50", secondary: "#E4E9DD", accent: "#2F5D50", light: "#FAF7F0", dark: "#1C2420" }, tenue: { titres: "fins", bouton: "pilule", cadre: "niche", fond: "uni", petits: "normal" }, titre: "Instrument", arrondi: "16px" },
+];
+async function ficheStatique(o: { vente?: D.TenueAchatVrai; allure?: number; sections?: string[]; fenetre?: boolean } = {}): Promise<string> {
+  const { tenueCss, markMissing } = await import("@/lib/syna-agent/custom-theme/tenue");
+  const { TENUE_FILES } = await import("@/lib/syna-agent/custom-theme/tenue");
+  const dir = path.join(process.cwd(), "public", "sections"), a = ALLURES[o.allure ?? 0], v = o.vente ?? venteEssai();
+  const img = (f: string) => `file://${path.join(ASSETS, "museau-club", f)}`;
+  const seq = (h: string, list: string[]) => { let i = 0; return h.replace(/\[À compléter[^\]]*\]/g, (m) => list[i++] ?? m); };
+  const pics = (h: string, list: string[]) => { let n = 0; return h.replace(/photos\/[\w.-]+/g, () => img(list[n++ % list.length])); };
+  const cadeau = { id: "v-laisse", titre: "La laisse Museau", image: img("laisse-01.webp") };
+  const vrai: D.TenueAchatVrai = { ...v, packs: v.packs.map((p) => (p.cadeau ? { ...p, cadeau } : p)), promo: v.promo ? { ...v.promo, cadeau } : null };
+  const options: D.TenueOption[] = [{ name: "Couleur", values: [{ label: "Bleu", teinte: "#2f5aa8" }, { label: "Rouge", teinte: "#b3262e" }, { label: "Jaune", teinte: "#f2c94c" }] }, { name: "Taille", values: TAILLES.map((label) => ({ label })) }];
+  const fill = (id: string): string => {
+    let h = piece(id);
+    if (id === "tn-achat") h = withTenueBuyBlock(h.replace("<small>Le thé</small>", "<small>Le collier</small>").replace(">Thé vert jasmin</h1>", ">Collier Museau</h1>").replace(/<p>[\s\S]*?<\/p>/, "<p>Doux contre le cou, solide à la boucle. Il se règle en deux gestes et ne bouge plus.</p>").replace(/<div class="tn-option">[\s\S]*?<\/div>/, "").replace(/>Ajouter au panier<\/a>/g, ">Je le prends</a>"), { images: [1, 2, 3, 4, 5].map((n) => img(`collier-0${n}.webp`)), price: "30 €", shipping: v.livraison ?? undefined, returns: v.retours ?? undefined } as any);
+    if (id === "tn-versions") h = D.withTenueVersions(h, options);
+    if (id === "tn-packs") h = h.replace("Choisis ton pack.", "Un, deux ou trois&nbsp;?").replace(">Ajouter au panier<", ">Ajouter mon pack au panier<");
+    if (id === "tn-sous-bouton") h = seq(h, ["S", "28 à 34 cm", "1,5 cm", "Petits chiens", "M", "34 à 42 cm", "2 cm", "Chiens moyens", "L", "42 à 52 cm", "2,5 cm", "Grands chiens", "Ton collier, sa médaille à graver et un sachet en coton pour le ranger.", "", "", "Carte ou PayPal, sur une page protégée.", "", "Une vraie personne te répond sous un jour ouvré.", "Quelle taille pour mon chien ?", "Mesure son tour de cou et ajoute deux doigts : le guide des tailles donne la taille en face.", "Est-ce qu'il passe en machine ?", "Oui, à 30 degrés, dans un filet. Il sèche en une nuit.", "Et s'il ne lui va pas ?", "Tu as 30 jours pour nous le renvoyer."]).replace("Tour de poitrine", "Tour de cou").replace("Tour de taille", "Largeur").replace("Tour de hanches", "Pour qui");
+    if (id === "tn-atouts") h = h.replace("Tout est bio", "Doublé de maille douce").replace("Du thé, des fleurs, rien d'autre.", "Rien ne frotte, rien ne gratte.").replace("Assemblé à la main", "Boucle testée à la traction").replace("Par petites quantités, à la commande.", "Elle tient quand il tire.").replace("En vrac", "Lavable en machine").replace("Dans un sachet qui se referme.", "Il sèche en une nuit.");
+    if (id === "tn-probleme-reponse") h = seq(h, ["Un collier qui frotte et qui laisse une marque.", "Un intérieur doublé de maille douce.", "Une boucle qui lâche quand il tire.", "Une boucle testée à la traction, que tu fermes d'un clic.", "Un réglage qui glisse à chaque balade.", "Une sangle qui garde son réglage."]);
+    if (id === "tn-avantages") h = pics(seq(h, ["Doux contre le cou", "Une maille aérée, sans couture qui gratte.", "Fermé d'un clic", "Une boucle large, facile à saisir avec des gants.", "Lavé, séché, reparti", "Il passe en machine et sèche en une nuit."]), ["ambiance-02.webp", "collier-03.webp", "ambiance-05.webp"]);
+    if (id === "tn-mur-avis") h = pics(seq(h, ["Enfin un collier qui ne lui pèle pas le cou. On a pris la laisse dans la foulée.", "Camille, février", "Solide, et le bleu est encore plus beau en vrai.", "Théo, janvier", "La boucle se ferme d'une main, c'est tout ce que je demandais.", "Sonia, mars", "Lavé dix fois, il n'a pas bougé.", "Marc, mars", "Avis reçus par e-mail après l'achat, publiés tels quels."]), ["ambiance-07.webp", "ambiance-09.webp"]);
+    if (id === "tn-nous-et-autres") h = D.withTenueDirect(seq(h, ["un collier d'entrée de gamme", "Doublure en maille douce", "Boucle testée à la traction", "Lavable en machine", "Réparé par la marque", "Fiches de la marque et essais de traction du fabricant."]), {} as any);
+    if (id === "tn-livraison") h = seq(h, ["", "Chaque commande part de notre atelier sous deux jours ouvrés.", "Colissimo suivi : tu reçois le lien de suivi par e-mail.", "Deux à quatre jours après le départ, dans ta boîte aux lettres."]);
+    if (id === "tn-questions") h = h.replace("Avant de choisir.", "Avant de commander.").replace("Combien de tasses dans un sachet ?", "Il existe pour les chiots ?").replace("[À compléter : nombre de tasses]", "Oui : la taille S se règle dès 28 cm de tour de cou.").replace("Et s'il ne me plaît pas ?", "La médaille est comprise ?").replace("[À compléter : retours]", "Oui, à graver chez un cordonnier ou par nos soins.").replace("Comment le conserver ?", "Comment l'entretenir ?").replace("À l'abri de la lumière, dans son sachet refermé.", "En machine à 30 degrés, dans un filet.");
+    if (id === "tn-appel-produit") h = pics(h, ["collier-02.webp"]).replace("Prêt à l'essayer&nbsp;?", "Prêt pour la prochaine balade&nbsp;?").replace(/(<b class="tn-nom-a">)[\s\S]*?(<\/b>)/, "$1Collier Museau$2").replace(/(<div class="tn-prix">)[\s\S]*?(<\/div>)/, "$130 €$2").replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${v.livraison}</li><li>Retours : ${v.retours}</li></ul>`).replace(">Ajouter au panier<", ">Je le prends<");
+    if (id === "tn-fenetre-offre") h = pics(h, ["ambiance-03.webp"]);
+    h = D.withTenueAchatVrai(D.withTenueDirect(D.withTenueSizes(h, options), { shipping: v.livraison, returns: v.retours } as any), vrai);
+    return h ? markMissing(pics(h, ["collier-04.webp"])).replace(/^<section\b/, `<section data-essai="${id}" data-tn-c="${FACONS[id]?.[o.allure ?? 0] ?? ""}"`) : "";
+  };
+  const css = TENUE_FILES.css.map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n").replace(/url\(photos\//g, `url(file://${dir}/photos/`);
+  const js = ["boutique-apercu.js", "tenue.js", "tenue-achat.js"].map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n;");
+  const fonts = [["Bricolage", "bricolage.woff2"], ["Instrument", "instrument.woff2"], ["Inter", "inter.woff2"]].map(([n, f]) => `@font-face{font-family:"${n}";src:url("file://${path.join(process.cwd(), "public", "fonts", f)}");font-weight:100 900}`).join("");
+  const attrs = Object.entries(a.tenue).map(([k, val]) => ` data-tn-${k}="${val}"`).join("");
+  const ids = o.sections ?? SUITE;
+  return `<!doctype html><html lang="fr" data-po-barre="1"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${fonts}body{margin:0;background:${a.palette.light}}${tenueCss(a.palette as any, a.tenue as any)}${css}.ctw{--f-title:"${a.titre}",Georgia,serif;--f-ui:"Inter",Arial,sans-serif;--tn-arrondi:${a.arrondi};font-family:var(--f-ui)}</style><body><div class="ctw"${attrs}><div class="frame"><main class="tb-pg">${ids.map(fill).join("\n")}</main>${o.fenetre === false ? "" : fill("tn-fenetre-offre")}</div></div><script>${js}</script></body></html>`;
+}
+
+describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite : ça marche pour de vrai dans l'aperçu (Playwright, panier d'essai)", () => {
+  const tmp = path.join(process.env.ACHAT_OUT ?? path.join(process.cwd(), "node_modules", ".cache", "achat-suite"));
+  const ouvre = async (html: string, width = 390, name = "page") => {
+    const { chromium } = await import("playwright");
+    const { chromiumPath } = await import("@/lib/theme/snapshot");
+    fs.mkdirSync(tmp, { recursive: true });
+    const file = path.join(tmp, `${name}.html`);
+    fs.writeFileSync(file, html);
+    const browser = await chromium.launch({ executablePath: chromiumPath() ?? undefined });
+    const page = await browser.newPage({ viewport: { width, height: 844 } });
+    await page.goto(`file://${file}`);
+    return { browser, page };
+  };
+  const panier = (page: any) => page.evaluate(() => (window as any).tnBoutique.panier());
+  const choisirTrio = async (page: any) => {
+    await page.locator('[data-tn-pack][data-tn-quantite="3"] label').click();
+    const lignes = page.locator('[data-tn-pack][data-tn-quantite="3"] [data-tn-article]');
+    expect(await lignes.count()).toBe(3);
+    for (const [i, [c, t]] of ([["Bleu", "S"], ["Rouge", "M"], ["Jaune", "S"]] as const).entries()) { await lignes.nth(i).locator("select").nth(0).selectOption(c); await lignes.nth(i).locator("select").nth(1).selectOption(t); }
+    return lignes;
+  };
+  const QUATRE = [{ id: "v-bleu-s", quantite: 1, cadeau: false }, { id: "v-rouge-m", quantite: 1, cadeau: false }, { id: "v-jaune-s", quantite: 1, cadeau: false }, { id: "v-laisse", quantite: 1, cadeau: true }];
+
+  it("le pack de trois en trois versions, puis le bouton : quatre lignes au panier (trois articles et le cadeau) ; la barre d'achat ajoute la même chose", async () => {
+    const { browser, page } = await ouvre(await ficheStatique(), 390, "pack");
+    try {
+      // Le pack désigné par le client est choisi d'avance et déplie ses lignes ; une version épuisée ne se choisit pas.
+      const lignes = await choisirTrio(page);
+      await lignes.nth(2).locator("select").nth(0).selectOption("Jaune");
+      expect(await lignes.nth(2).locator('select >> nth=1').locator('option[value="L"]').isDisabled()).toBe(true);
+      await page.locator("[data-tn-packs] [data-tn-acheter]").click();
+      const p1 = await panier(page);
+      expect(p1.lignes.map((l: any) => ({ id: l.id, quantite: l.quantite, cadeau: l.cadeau }))).toEqual(QUATRE);
+      expect(p1.nombre).toBe(4);
+      expect(p1.total).toBe(7650); // le prix du pack ; le cadeau ne compte pas
+      // La barre d'achat : même achat que le bouton (le pack choisi).
+      await page.locator(".tn-achat > .tn-barre [data-pogo]").evaluate((el: HTMLElement) => el.click());
+      const p2 = await panier(page);
+      expect(p2.lignes.map((l: any) => ({ id: l.id, quantite: l.quantite, cadeau: l.cadeau }))).toEqual(QUATRE.map((l) => ({ ...l, quantite: 2 })));
+      // Le bouton du bloc d'achat aussi.
+      await page.locator(".tn-achat > a.tn-bt[data-pogo]").first().evaluate((el: HTMLElement) => el.click());
+      expect((await panier(page)).nombre).toBe(12);
+    } finally { await browser.close(); }
+  }, 120_000);
+
+  it("offre par quantité : le bouton ajoute la quantité choisie de la version choisie ; sans taille choisie, il le dit et n'ajoute rien", async () => {
+    const lots = D.withTenueLots(piece("tn-lots"), { unit: "collier", cents: 3000, tiers: [{ qty: 2, pct: 10 }, { qty: 3, pct: 15 }] });
+    const html = (await ficheStatique({ sections: ["tn-achat", "tn-versions", "tn-sous-bouton"], fenetre: false })).replace(/(<section data-essai="tn-sous-bouton")/, `${D.withTenueAchatVrai(lots, venteEssai())}$1`);
+    const { browser, page } = await ouvre(html, 390, "lots");
+    try {
+      const bouton = page.locator(".tn-achat > a.tn-bt[data-pogo]").first();
+      await bouton.evaluate((el: HTMLElement) => el.click());
+      expect((await panier(page)).nombre).toBe(0);
+      expect(await page.locator("[data-tn-erreur]").first().textContent()).toBe("Choisis d'abord : taille.");
+      await page.locator(".tn-versions .tn-groupe-v").nth(1).locator("label", { hasText: "M" }).click();
+      await page.locator('[data-tn-lots] li[data-tn-quantite="3"] label').click();
+      await bouton.evaluate((el: HTMLElement) => el.click());
+      expect((await panier(page)).lignes.map((l: any) => [l.id, l.quantite])).toEqual([["v-bleu-m", 3]]);
+      // Stock restant : Bleu M a 7 en stock, au-dessus du seuil de 5 : rien. Bleu S en a 4 : « Plus que 4 ».
+      const stock = page.locator("[data-tn-stock]");
+      expect(await stock.isHidden()).toBe(true);
+      await page.locator(".tn-versions .tn-groupe-v").nth(1).locator("label", { hasText: "S" }).click();
+      expect(await stock.textContent()).toBe("Plus que 4 en stock");
+      expect(await stock.isVisible()).toBe(true);
+      // La jauge : 4 restants sur un lot de départ de 200 pour cette version.
+      expect((await page.locator("[data-tn-jauge]").textContent())!.replace(/ /g, " ")).toBe("98 % vendu2 % restant");
+    } finally { await browser.close(); }
+  }, 120_000);
+
+  it("sans stock suivi, ni « plus que », ni jauge ; une plateforme qui refuse : le message se lit, rien ne part au panier", async () => {
+    const { browser, page } = await ouvre(await ficheStatique({ vente: venteEssai({ stock: false }), sections: ["tn-achat", "tn-versions", "tn-packs", "tn-sous-bouton"], fenetre: false }), 390, "sans-stock");
+    try {
+      await page.locator(".tn-versions .tn-groupe-v").nth(1).locator("label", { hasText: "S" }).click();
+      expect(await page.locator("[data-tn-stock], [data-tn-jauge]").count()).toBe(0);
+      expect(await page.locator("text=/Plus que|% vendu/").count()).toBe(0);
+      await page.evaluate(() => { (window as any).tnBoutique.ajouter = () => Promise.reject(new Error("Il n'en reste que 2 en stock.")); });
+      await page.locator("[data-tn-packs] [data-tn-acheter]").click();
+      expect(await page.locator("[data-tn-packs] [data-tn-erreur]").textContent()).toBe("Il n'en reste que 2 en stock.");
+    } finally { await browser.close(); }
+  }, 120_000);
+
+  it("offre du moment : le décompte vise la date de fin saisie ; la date passée, la pièce disparaît d'elle-même", async () => {
+    const fin = Date.now() + 2 * JOUR + 5 * 3_600_000 + 90_000;
+    const { browser, page } = await ouvre(await ficheStatique({ vente: venteEssai({ promo: { nom: "Les jours Museau", pct: 25, fin, cadeau: null } }), sections: ["tn-achat", "tn-offre-moment"], fenetre: false }), 390, "offre");
+    try {
+      const om = page.locator("[data-tn-offre-moment]");
+      expect(await om.getAttribute("data-tn-fin")).toBe(String(fin));
+      expect((await om.locator("[data-tn-decompte]").textContent())!.slice(0, 9)).toBe("02j05h01m");
+      expect(await om.locator("[data-tn-fin-texte]").textContent()).toMatch(/^Jusqu'au \d{1,2} \S+$/);
+      // Le dernier jour, et ce jour-là seulement : « Aujourd'hui seulement ».
+      await page.evaluate(() => document.querySelector("[data-tn-offre-moment]")!.setAttribute("data-tn-fin", String(new Date().setHours(23, 59, 59, 0))));
+      await page.waitForTimeout(1200);
+      expect(await om.locator("[data-tn-fin-texte]").textContent()).toBe("Aujourd'hui seulement");
+      await page.evaluate(() => document.querySelector("[data-tn-offre-moment]")!.setAttribute("data-tn-fin", String(Date.now() - 1000)));
+      await page.waitForTimeout(1200);
+      expect(await om.isHidden()).toBe(true);
+    } finally { await browser.close(); }
+  }, 120_000);
+
+  it("fenêtre d'offre : fermée à l'arrivée, une fois par visiteur, se ferme au clavier, à la croix et à côté ; le code après l'inscription", async () => {
+    const { browser, page } = await ouvre(await ficheStatique({ sections: ["tn-achat"] }), 390, "fenetre");
+    try {
+      const f = page.locator("[data-tn-fenetre-offre]");
+      expect(await f.isHidden()).toBe(true);
+      await page.waitForTimeout(1500);
+      expect(await f.isHidden(), "jamais à l'arrivée").toBe(true);
+      await f.evaluate((el: any) => el.tnOuvre());
+      expect(await f.isVisible()).toBe(true);
+      expect(await f.locator("[data-tn-fo-code]").isHidden(), "le code attend l'inscription").toBe(true);
+      await page.keyboard.press("Escape");
+      expect(await f.isHidden()).toBe(true);
+      await f.evaluate((el: any) => el.tnOuvre());
+      expect(await f.isHidden(), "une seule fois par visiteur").toBe(true);
+      // Un autre visiteur : il s'inscrit, le code se montre ; la croix ferme.
+      await page.evaluate(() => localStorage.clear());
+      await f.evaluate((el: any) => el.tnOuvre());
+      await f.locator("input[type=email]").fill("camille@example.com");
+      await f.locator("form .tn-bt").click();
+      expect(await f.locator("[data-tn-fo-code] b").textContent()).toBe("MUSEAU10");
+      expect(await f.locator("[data-tn-fo-code]").isVisible()).toBe(true);
+      await f.locator(".tn-fo-fermer").click();
+      expect(await f.isHidden()).toBe(true);
+    } finally { await browser.close(); }
+  }, 120_000);
+
+  it.runIf(!!process.env.ACHAT_OUT)("captures de la fiche complète, deux allures, téléphone et ordinateur ; rien ne déborde à 320 px ; la planche du propriétaire", async () => {
+    const sharp = (await import("sharp")).default;
+    const out = process.env.ACHAT_OUT!;
+    const shots: Record<string, Buffer> = {}, cuts: Record<string, number[]> = {};
+    for (const [n, a] of ALLURES.entries()) for (const width of [320, 390, 1280]) {
+      const { browser, page } = await ouvre(await ficheStatique({ allure: n }), width, `fiche-${a.key}`);
+      try {
+        await page.waitForTimeout(500);
+        const large = await page.evaluate((w) => [...document.querySelectorAll("section[data-essai] *")].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && getComputedStyle(el).position !== "fixed" && !el.closest(".tn-galerie,.tn-vignettes,.tn-barre,.tn-pack-liste,.tn-mur-avis,.tn-avantages") && r.right > w + 1.5; }).map((el) => `${el.closest("section")!.getAttribute("data-essai")} ${el.tagName}.${el.className}`).slice(0, 3), width);
+        expect(large, `${a.key} ${width} px : rien ne dépasse`).toEqual([]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth), `${a.key} ${width}`).toBeLessThanOrEqual(width + 1);
+        if (width === 320) continue;
+        const key = `${a.key}-${width === 390 ? "tel" : "ordi"}`;
+        // La barre d'achat est une pièce fixe : on la retire de la capture entière, elle a sa propre capture.
+        await page.evaluate(() => document.querySelectorAll(".tn-barre").forEach((b) => ((b as HTMLElement).style.visibility = "hidden")));
+        shots[key] = await page.screenshot({ type: "png", fullPage: true });
+        cuts[key] = await page.evaluate(() => [...document.querySelectorAll("section[data-essai]")].map((s) => Math.round(s.getBoundingClientRect().top + scrollY)));
+        fs.writeFileSync(path.join(out, `fiche__${key}.jpg`), await sharp(shots[key]).jpeg({ quality: 84 }).toBuffer());
+        if (width === 390) {
+          await page.evaluate(() => document.querySelectorAll(".tn-barre").forEach((b) => ((b as HTMLElement).style.visibility = "")));
+          await page.evaluate(() => { const b = document.querySelector(".tn-achat > .tn-bt")!; scrollTo(0, b.getBoundingClientRect().top + scrollY - 300); });
+          await page.waitForTimeout(300);
+          await page.evaluate(() => scrollTo(0, document.querySelector('[data-essai="tn-atouts"]')!.getBoundingClientRect().top + scrollY - 200));
+          await page.waitForTimeout(800);
+          shots[`${a.key}-barre`] = await page.screenshot({ type: "png" });
+          fs.writeFileSync(path.join(out, `barre__${a.key}.jpg`), await sharp(shots[`${a.key}-barre`]).jpeg({ quality: 84 }).toBuffer());
+          await page.evaluate(() => { scrollTo(0, 0); (document.querySelector("[data-tn-fenetre-offre]") as any).tnOuvre(); });
+          await page.waitForTimeout(300);
+          shots[`${a.key}-fenetre`] = await page.screenshot({ type: "png" });
+          fs.writeFileSync(path.join(out, `fenetre__${a.key}.jpg`), await sharp(shots[`${a.key}-fenetre`]).jpeg({ quality: 84 }).toBuffer());
+        }
+      } finally { await browser.close(); }
+    }
+    // La planche : la fiche sur téléphone en colonnes, la fenêtre d'offre et la barre d'achat à part, puis l'ordinateur.
+    const W = 2400, M = 40, G = 24, fond = "#F3EFE8", encre = "#1D1A3A";
+    const colonnes = async (key: string, n: number, largeur: number) => {
+      const meta = await sharp(shots[key]).metadata(), H = meta.height!, w = meta.width!, tops = cuts[key];
+      const bornes = [0];
+      for (let i = 1; i < n; i++) { const ideal = (H * i) / n; bornes.push(tops.reduce((b, t) => (Math.abs(t - ideal) < Math.abs(b - ideal) ? t : b), tops[0])); }
+      bornes.push(H);
+      const parts: Buffer[] = [];
+      for (let i = 0; i < n; i++) if (bornes[i + 1] > bornes[i]) parts.push(await sharp(shots[key]).extract({ left: 0, top: bornes[i], width: w, height: bornes[i + 1] - bornes[i] }).resize({ width: largeur }).png().toBuffer());
+      return parts;
+    };
+    const texte = (t: string, size: number, w: number, bold = true) => Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${Math.round(size * 1.5)}"><text x="0" y="${size}" font-family="Inter, Arial, sans-serif" font-size="${size}" font-weight="${bold ? 700 : 400}" fill="${encre}">${t.replace(/&/g, "&amp;")}</text></svg>`);
+    const layers: { input: Buffer; left: number; top: number }[] = [];
+    let y = M;
+    layers.push({ input: texte("La fiche produit « vente directe », complète — client et prix inventés pour l'essai", 40, W - 2 * M), left: M, top: y }); y += 66;
+    layers.push({ input: texte("Tout est branché sur du vrai : promotion datée du client, stock suivi par la boutique, prix de comparaison du catalogue, packs et cadeau saisis par le client.", 24, W - 2 * M, false), left: M, top: y }); y += 60;
+    layers.push({ input: texte("Sur téléphone, de haut en bas (se lit colonne après colonne)", 28, 1700), left: M, top: y });
+    layers.push({ input: texte("La fenêtre d'offre et la barre d'achat", 28, 600), left: M + 4 * (390 + G) + 20, top: y }); y += 50;
+    const tel = await colonnes("vive-tel", 4, 390);
+    let bas = y;
+    for (const [i, p] of tel.entries()) { layers.push({ input: p, left: M + i * (390 + G), top: y }); bas = Math.max(bas, y + (await sharp(p).metadata()).height!); }
+    const xd = M + 4 * (390 + G) + 20, wd = 330;
+    let yd = y;
+    for (const [k, label] of [["vive-fenetre", "La fenêtre d'offre, ouverte (jamais à l'arrivée)"], ["calme-fenetre", "Son autre façon : une carte en bas de l'écran"], ["vive-barre", "La barre d'achat reste visible quand on descend"]] as const) {
+      const im = await sharp(shots[k]).resize({ width: wd }).png().toBuffer();
+      layers.push({ input: texte(label, 17, 700), left: xd, top: yd }); yd += 30;
+      layers.push({ input: im, left: xd, top: yd }); yd += (await sharp(im).metadata()).height! + 26;
+    }
+    const xe = xd + wd + G;
+    if (W - M - xe >= 300) { const im = await sharp(shots["calme-barre"]).resize({ width: Math.min(330, W - M - xe) }).png().toBuffer(); layers.push({ input: texte("Une autre allure, même fiche", 17, 330), left: xe, top: y }); layers.push({ input: im, left: xe, top: y + 30 }); }
+    y = Math.max(bas, yd) + 50;
+    layers.push({ input: texte("Sur ordinateur (se lit colonne après colonne)", 28, 1700), left: M, top: y }); y += 50;
+    const ordi = await colonnes("vive-ordi", 3, Math.floor((W - 2 * M - 2 * G) / 3));
+    let bas2 = y;
+    for (const [i, p] of ordi.entries()) { layers.push({ input: p, left: M + i * (Math.floor((W - 2 * M - 2 * G) / 3) + G), top: y }); bas2 = Math.max(bas2, y + (await sharp(p).metadata()).height!); }
+    const board = await sharp({ create: { width: W, height: bas2 + M, channels: 3, background: fond } }).composite(layers).jpeg({ quality: 82 }).toBuffer();
+    fs.writeFileSync(path.join(out, "fiche-complete.jpg"), board);
+  }, 600_000);
 });

@@ -151,6 +151,24 @@ ne s'inventent jamais.
   les pièces nouvelles ont des textes neutres. À neutraliser pour toute la bibliothèque.
 - Le cahier `docs/sina-savoir/sections-a-tenue.md` ne décrit pas encore les quatre nouveaux modules.
 
+## Les modèles dans Shopify (demande du propriétaire, 16 novembre 2026)
+
+Ses mots : « Shopify range les modèles par catégorie : une fiche n'est proposée pour un produit que si elle est dans la
+catégorie Produits, et c'est pareil pour les pages et les collections. Au temps 5, sur la boutique d'essai, montre-moi en
+captures l'éditeur de Shopify : chaque fiche dans Produits, chaque page dans Pages, et dans la page d'un produit, sa
+fiche choisie dans "Modèle de thème". Ajoute un modèle par collection quand SINA dessine des pages de collection
+différentes, relié à sa collection, et donne des noms clairs à tous les modèles. »
+
+- **Fait dans la mise en boutique** (`to-shopify.ts`, `integrations/shopify.ts`) : chaque fiche est un modèle de la
+  catégorie Produits (`product.fiche-<produit>`), notée sur son produit ; chaque page est un modèle de la catégorie Pages
+  avec un nom en français simple (`page.a-propos`, `page.informations-legales`, `page.questions`…, qui sert aussi
+  d'adresse) ; une page de collection dessinée pour une famille (clé « shop-<famille> ») devient le modèle
+  `collection.<famille>`, noté sur sa collection à l'envoi ; les autres familles gardent le modèle commun. Le concepteur
+  sait qu'il peut dessiner une page de collection propre à une famille, seulement quand cela sert le visiteur.
+- **À prouver au temps 5, sur la boutique d'essai du propriétaire, en captures de l'éditeur de Shopify** : chaque fiche
+  dans Produits, chaque page dans Pages, chaque modèle de collection dans Collections, et dans la page d'un produit, sa
+  fiche choisie dans « Modèle de thème ». Rien de cela n'a encore été vu dans un vrai Shopify.
+
 ## Le devis (calculé le 16 novembre 2026 avec les tarifs vérifiés, pas encore mesuré)
 
 | | Coût probable | Plafond jamais dépassé |

@@ -24,6 +24,8 @@ import type { CmsPlatform, PlatformExport } from "./types";
 import { catalogSnapshot } from "./catalog";
 import { verifyAdaptationFiles } from "../theme/client-adaptation";
 import { loadProject } from "../projects";
+import { aDesPiecesTenue, offreDuProjet } from "./achat";
+import type { OffreBoutique } from "../syna-agent/custom-theme/remises";
 
 export const CMS_PLATFORMS: CmsPlatform[] = ["shopify", "woocommerce", "prestashop", "wix", "squarespace"];
 
@@ -35,7 +37,11 @@ export function safeFileName(name: string): string {
 }
 
 /** Génère l'export d'une plateforme. Les médias refusés ou fatals ne sont JAMAIS exportés. */
-export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: AssetLoader, opts: { projectId?: string } = {}): Promise<PlatformExport> {
+/**
+ * `offre` : les remises réelles de la boutique (lots, packs, cadeaux) livrées avec le thème WooCommerce ou PrestaShop,
+ * qui les applique dans son panier. Absente : celle du projet (offres saisies par le client), s'il y en a une.
+ */
+export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: AssetLoader, opts: { projectId?: string; offre?: OffreBoutique | null } = {}): Promise<PlatformExport> {
   assertSafeThemeContent(spec0);
   assertImportedExportAccess(spec0);
   const guardedOffers = guardPurchaseExport(spec0, platform);
@@ -49,9 +55,10 @@ export async function cmsExport(platform: CmsPlatform, spec0: ThemeSpec, load: A
   for (const file of forbidden) delete spec.files[file];
   const guarded: AssetLoader = (id) => (blockedIds.has(id) ? null : load(id));
   let exp: PlatformExport;
+  const offre = platform === "woocommerce" || platform === "prestashop" ? (opts.offre !== undefined ? opts.offre : aDesPiecesTenue(spec) ? await offreDuProjet(opts.projectId, spec) : null) : null;
   if (platform === "shopify") exp = await exportShopify(spec, guarded);
-  else if (platform === "woocommerce") exp = await exportWordPress(spec, guarded);
-  else if (platform === "prestashop") exp = await exportPrestaShop(spec, guarded);
+  else if (platform === "woocommerce") exp = await exportWordPress(spec, guarded, { offre });
+  else if (platform === "prestashop") exp = await exportPrestaShop(spec, guarded, { offre });
   else {
     const k = await exportKit(spec, guarded, platform);
     exp = { platform, zip: k.zip, name: k.name, kind: "kit", files: [], issues: [], sections: [], media: Object.keys(spec.files).filter((f) => !forbidden.has(f)) };

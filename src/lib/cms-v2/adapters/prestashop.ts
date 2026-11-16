@@ -20,7 +20,9 @@ import { pick } from "../../i18n";
 import { designLayer, exportStylesheet } from "../design";
 import type { ExportIssue, PlatformExport } from "../types";
 import { exportProductHandle } from "../catalog";
-import { sectionJavascript, specSectionTypes } from "../liquid";
+import { phpTemplates, sectionJavascript, specSectionTypes } from "../liquid";
+import { FEUILLE_ACHAT, aDesPiecesTenue, accesParAdresse, fichesTenue, offrePourExport, pieceVivante, scriptsAchat } from "../achat";
+import type { OffreBoutique } from "../../syna-agent/custom-theme/remises";
 
 const ROOT = process.cwd();
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "") || "site";
@@ -88,7 +90,7 @@ export function toSmarty(html: string, themeName = "", bundled: ReadonlySet<stri
   return `{literal}${s}{/literal}`.replace(/\{literal\}\{\/literal\}/g, "");
 }
 
-export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Promise<PlatformExport> {
+export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader, o: { offre?: OffreBoutique | null } = {}): Promise<PlatformExport> {
   const lang = themeLang(spec0);
   const t = (fr: string, en: string) => pick(lang, fr, en);
   // Panier de PrestaShop (pas de tiroir Shopify) ; le reste du design est identique.
@@ -129,12 +131,21 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   const put = (p: string, data: string | Uint8Array | Buffer) => (out[p] = typeof data === "string" ? strToU8(data) : new Uint8Array(data));
   const render = async (p: string) => (await renderPage({ spec, base: "", files, cart: [] }, p, new URLSearchParams())).html;
 
+  // ------------------------------------------------------------ pièces « vivantes » d'un site monté par SINA
+  // Une pièce qui lit la boutique (prix, stock, produits, bouton d'achat) n'est jamais figée dans une page : le module
+  // la rend à l'affichage, avec le vrai produit PrestaShop (crochet « displayEsPiece », achat.php).
+  const vivantes = new Set(Object.entries(spec.customSections ?? {}).filter(([type, c]) => /^es-custom-/.test(type) && pieceVivante(c.liquid)).map(([type]) => type));
+  const marque = (type: string, id: string) => `@@ES-PIECE:${type}:${id}@@`;
+  const vivant = (main: string) => (services || !vivantes.size ? main : topSections(main).reduce((html, x) => (vivantes.has(x.type) ? html.replace(x.html, marque(x.type, (/^<div id="shopify-section-([\w-]+)"/.exec(x.html) ?? [])[1] ?? x.type)) : html), main));
+  const versSmarty = (main: string) => toSmarty(vivant(main), name, bundled).replace(/@@ES-PIECE:([a-z0-9-]+):([\w-]+)@@/g, (_m, type: string, id: string) => `{/literal}{hook h='displayEsPiece' type='${type}' id='${id}'}{literal}`).replace(/\{literal\}\{\/literal\}/g, "");
+  const tenue = fichesTenue(spec);
+
   // ------------------------------------------------------------ accueil, en-tête, pied de page (rendus du studio)
   const home = pageZones(await render("/"));
   if (!home.main) issues.push({ code: "empty_home", severity: "blocking", detail: "accueil vide" });
   put("templates/es/header.tpl", toSmarty(home.header, name, bundled));
   put("templates/es/footer.tpl", toSmarty(home.footer, name, bundled));
-  put("templates/es/home.tpl", toSmarty(home.main, name, bundled));
+  put("templates/es/home.tpl", versSmarty(home.main));
   const sections = new Set(topSections(home.main).map((x) => x.type));
 
   // ------------------------------------------------------------ pages du site (module : /pages/<adresse>)
@@ -143,7 +154,7 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   const drafts = spec.store.pages.filter((p) => p.status === "draft");
   if (drafts.length) issues.push({ code: "draft_pages_skipped", severity: "warning", detail: t(`pages en brouillon non exportées : ${drafts.map((p) => p.title).join(", ")}`, `draft pages not exported: ${drafts.map((p) => p.title).join(", ")}`) });
   const custom = storeProductsOf(spec).filter((p) => p.template_suffix && spec.templates[`product.${p.template_suffix}`]);
-  if (custom.length && !services) issues.push({ code: "product_layouts_shared", severity: "warning", detail: t(`PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à ${custom.map((p) => p.title).join(", ")} ne sont pas reprises (elles le sont dans l'export Shopify)`, `PrestaShop: one product page for all products; the layouts specific to ${custom.map((p) => p.title).join(", ")} aren't carried over (they are in the Shopify export)`) });
+  if (custom.length && !services && !tenue) issues.push({ code: "product_layouts_shared", severity: "warning", detail: t(`PrestaShop : une seule fiche produit pour tous les produits ; les mises en page propres à ${custom.map((p) => p.title).join(", ")} ne sont pas reprises (elles le sont dans l'export Shopify)`, `PrestaShop: one product page for all products; the layouts specific to ${custom.map((p) => p.title).join(", ")} aren't carried over (they are in the Shopify export)`) });
   for (const p of spec.store.pages.filter((x) => x.status !== "draft")) {
     const r = await renderPage({ spec, base: "", files, cart: [] }, `/pages/${p.handle}`, new URLSearchParams());
     if (r.status !== 200) {
@@ -152,8 +163,8 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
     }
     const z = pageZones(r.html);
     for (const x of topSections(z.main)) sections.add(x.type);
-    put(`${mod}/views/templates/pages/${p.handle}.tpl`, toSmarty(z.main, name, bundled));
-    put(`templates/es/pages/${p.handle}.tpl`, toSmarty(z.main, name, bundled));
+    put(`${mod}/views/templates/pages/${p.handle}.tpl`, versSmarty(z.main));
+    put(`templates/es/pages/${p.handle}.tpl`, versSmarty(z.main));
     pages.push({ handle: p.handle, title: p.title });
   }
   const policies: { handle: string; title: string }[] = [];
@@ -165,7 +176,7 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
     policies.push({ handle: p.handle, title: p.title });
   }
   // Sections propres à la fiche produit (caractéristiques, questions) : ajoutées sous la fiche native.
-  if (!services && spec.templates.product) {
+  if (!services && spec.templates.product && !tenue) {
     const pz = pageZones(await render(`/products/${spec.store.product.handle}`));
     const v2 = topSections(pz.main).filter((x) => x.type.startsWith("v2-"));
     if (v2.length) {
@@ -184,6 +195,42 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
     }
   };
   walk(modDir, "");
+  // ------------------------------------------------------------ achat d'un site monté par SINA
+  // La fiche produit du site (ses pièces d'achat) est rendue par le module avec le VRAI produit PrestaShop : le moteur
+  // des gabarits, les gabarits des pièces, le plan des fiches. Le script commun des pièces d'achat et l'adaptateur du
+  // contrat « tnBoutique » partent avec le thème. Les remises de l'offre sont posées en natif par le module
+  // (prix spécifiques par quantité, règles de panier pour le cadeau), d'après le fichier de données exporté.
+  const achat = !services && (aDesPiecesTenue(spec) || !!o.offre);
+  const offre = services ? { offre: null, ecartes: [] as string[] } : offrePourExport(o.offre, spec);
+  const scriptsJs: { id: string; path: string }[] = [];
+  if (achat) {
+    const phpDir = path.join(ROOT, "assets/cms/php");
+    const walkPhp = (dir: string, rel: string) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (e.isDirectory()) walkPhp(path.join(dir, e.name), `${rel}/${e.name}`);
+        else if (e.name !== "render-cli.php") put(`${mod}/php${rel}/${e.name}`, fs.readFileSync(path.join(dir, e.name)));
+      }
+    };
+    walkPhp(phpDir, "");
+    const ficheTypes = tenue ? [...tenue.commune.sections, ...tenue.propres.flatMap((p) => p.fiche.sections)].map((x) => x.section.type) : [];
+    for (const [file, src] of phpTemplates(files, [...new Set([...ficheTypes, ...vivantes])])) { put(`${mod}/liquid/${file}`, accesParAdresse(src)); put(`config/es-liquid/${file}`, accesParAdresse(src)); }
+    const plan = JSON.stringify({
+      commune: tenue ? tenue.commune.sections.map((x) => ({ type: x.section.type, id: x.id })) : [],
+      propres: tenue ? Object.fromEntries(tenue.propres.map((p) => [p.handle, p.fiche.sections.map((x) => ({ type: x.section.type, id: x.id }))])) : {},
+      vivantes: [...vivantes].sort(),
+    }, null, 1);
+    put(`${mod}/fiche.json`, plan); put("config/es-fiche.json", plan);
+    if (tenue) put("templates/catalog/product.tpl", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/templates/catalog/product.tpl")));
+    const scripts = scriptsAchat("prestashop");
+    put("assets/js/boutique-prestashop.js", scripts.adaptateur); scriptsJs.push({ id: "es-boutique-js", path: "assets/js/boutique-prestashop.js" });
+    if (scripts.commun) { put("assets/js/tenue-achat.js", scripts.commun); scriptsJs.push({ id: "es-tenue-achat-js", path: "assets/js/tenue-achat.js" }); }
+    if (offre.offre) {
+      const data = JSON.stringify(offre.offre, null, 1);
+      put(`${mod}/offre.json`, data); put("config/es-offre.json", data);
+      issues.push({ code: "offer_rules_delivered", severity: "warning", detail: t(`Remises de l'offre livrées avec le module (offre.json) : elles sont posées en natif à l'import du catalogue, ou par Modules › E-COM STUDIO IA › Configurer › « Poser les remises ». Vérifiez l'état puis faites un achat d'essai.`, `Offer discounts delivered with the module (offre.json): they are created natively on catalog import, or via Modules › E-COM STUDIO IA › Configure. Check the status, then place a test order.`) });
+    }
+    for (const e of offre.ecartes) issues.push({ code: "offer_rule_dropped", severity: "warning", detail: t(`Offre : règle non livrée (${e}).`, `Offer: rule not delivered (${e}).`) });
+  }
   put(`${mod}/catalog-validation.php`, fs.readFileSync(path.join(ROOT, "assets/cms/php/es-catalog.php")));
   put(`${mod}/site.json`, JSON.stringify({ shopName: spec.store.shopName, lang, business: services ? "services" : "products", pages, policies, product: services ? null : { handle: spec.store.product.handle } }, null, 1));
 
@@ -191,7 +238,9 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
   const layoutSrc = fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/templates/layouts/layout-full-width.tpl"), "utf8")
     .replace("{$es_ds|default:'none'}", design.body.ds)
     .replace("{$es_density|default:'balanced'}", design.body.density)
-    .replace("{$es_body_classes|default:''}", design.body.classes.join(" "));
+    .replace("{$es_body_classes|default:''}", design.body.classes.join(" "))
+    // Fiche produit d'un site monté par SINA : pleine largeur, comme l'accueil (ses pièces portent leurs marges).
+    .replace("$page.page_name == 'module-esstudio-page')", tenue ? "$page.page_name == 'module-esstudio-page' || $page.page_name == 'product')" : "$page.page_name == 'module-esstudio-page')");
   put("templates/layouts/layout-full-width.tpl", layoutSrc);
   for (const l of ["layout-left-column", "layout-right-column", "layout-both-columns"]) put(`templates/layouts/${l}.tpl`, `{** E-COM STUDIO IA : même mise en page que le reste du site. *}\n{extends file='layouts/layout-full-width.tpl'}\n`);
   put("templates/index.tpl", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/templates/index.tpl")));
@@ -207,7 +256,7 @@ export async function exportPrestaShop(spec0: ThemeSpec, load: AssetLoader): Pro
     css.push({ id: `es-${sheet.replace(/\.css$/, "")}`, path: `assets/css/es-${sheet}` });
   }
   put("assets/css/es-design.css", `/* ${spec.store.shopName.replace(/\*\//g, "")} — design extrait du studio (E-COM STUDIO IA) */\n${exportStylesheet(design.css)}\n`);
-  put("assets/css/es-ps.css", fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/assets/es-ps.css")));
+  put("assets/css/es-ps.css", `${fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/assets/es-ps.css"), "utf8")}${achat ? `\n${FEUILLE_ACHAT}` : ""}`);
   css.push({ id: "es-design", path: "assets/css/es-design.css" }, { id: "es-ps", path: "assets/css/es-ps.css" });
   // Mêmes scripts que la mise en page Shopify (dont family.js et conversion.js), dans le même ordre, puis ceux des sections.
   const js = [...design.scripts.map((name) => files.get(`assets/${name}`)), sectionJavascript(files, specSectionTypes(spec))].filter(Boolean).join("\n;\n");
@@ -260,7 +309,7 @@ ${css.map((c, i) => `      - id: ${c.id}\n        path: ${c.path}\n        media
       - id: es-ps-js
         path: assets/js/es-ps.js
         priority: 910
-${fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/global_settings.yml"), "utf8")}
+${scriptsJs.map((x, i) => `      - id: ${x.id}\n        path: ${x.path}\n        priority: ${920 + i * 10}\n`).join("")}${fs.readFileSync(path.join(ROOT, "assets/cms/prestashop/theme/global_settings.yml"), "utf8")}
 theme_settings:
   default_layout: layout-full-width
   layouts:

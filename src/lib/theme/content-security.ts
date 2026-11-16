@@ -3,7 +3,8 @@ import { parseDocument } from "htmlparser2";
 import type { ThemeSpec } from "./spec";
 import { HttpError } from "../auth";
 
-const nativeScripts=new Set(["theme.js","editorial.js","purchase-offers.js"]);
+// « tenue-achat.js » et « boutique-shopify.js » : les deux scripts du Studio du thème unique (public/sections), envoyés par compile.ts.
+const nativeScripts=new Set(["theme.js","editorial.js","purchase-offers.js","tenue-achat.js","boutique-shopify.js"]);
 const badUrl=(v:string)=>/^(?:javascript|vbscript|data|file|blob):/i.test(v.replace(/[\u0000-\u0020\u007f]/g,""));
 export function unsafeContentReason(html:string,liquid=false):string|null{
   let unsafe=false;

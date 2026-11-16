@@ -20,7 +20,9 @@
       return mineur === 2 ? n : Math.round(n * Math.pow(10, 2 - mineur));
     }
     function texte(html) {
-      return String(html == null ? "" : html).replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&#0?39;|&rsquo;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, " ").trim();
+      return String(html == null ? "" : html).replace(/<[^>]*>/g, "")
+        .replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(Number(n)); }).replace(/&#x([0-9a-f]+);/gi, function (m, n) { return String.fromCharCode(parseInt(n, 16)); })
+        .replace(/&nbsp;/g, " ").replace(/&rsquo;/g, "\u2019").replace(/&quot;/g, '"').replace(/&eacute;/g, "é").replace(/&egrave;/g, "è").replace(/&agrave;/g, "à").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
     }
     function appel(chemin, corps) {
       if (!requete) return Promise.reject(new Error("Le panier n'est pas disponible."));
@@ -88,7 +90,7 @@
     };
   }
 
-  /** Après un ajout : le compteur du panier de l'en-tête, et les morceaux de page que WooCommerce tient à jour. */
+  /** Après un ajout (l'événement « tn:panier » est lancé par le script commun, pas ici) : le compteur du panier de l'en-tête, et les morceaux de page que WooCommerce tient à jour. */
   function surPanier(p) {
     var d = racine.document;
     if (!d) return;
@@ -97,7 +99,6 @@
       if (el.hasAttribute("data-cart-count")) { if (p.nombre > 0) el.removeAttribute("hidden"); else el.setAttribute("hidden", ""); }
     });
     if (racine.jQuery) racine.jQuery(d.body).trigger("wc_fragment_refresh");
-    try { d.dispatchEvent(new CustomEvent("tn:panier", { detail: p })); } catch (e) { /* navigateur ancien : sans effet */ }
   }
 
   if (typeof module !== "undefined" && module.exports) module.exports = { creer: creer };

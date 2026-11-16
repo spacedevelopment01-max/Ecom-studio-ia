@@ -517,7 +517,7 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   // le téléphone de l'en-tête de services est celui du client.
   const shell = (s: CtSection | null, place: string) => (s ? (place === "en-tête" ? withTenueSite(withMenu(sectionMarkup(s, name, roleOf(place)), t.menu, { boutique: flags.hdCart !== "0" || p.business !== "services", families: site.families, products: tnProducts }), { phone: site.phone }) : withTenueSite(sectionMarkup(s, name, roleOf(place)), site)) : "");
   // Sections de tout le site : le bandeau au-dessus de l'en-tête ; les fenêtres (cookies, âge, discussion) posées en bas de l'écran.
-  const extras = (group: "bandeau" | "partout") => [...(t.extras ?? []), ...(drawer && !(t.extras ?? []).includes(drawer) ? [drawer] : [])].filter((s) => (tenueSection(s.id)?.group ?? "partout") === group).map((s) => withTenueSite(sectionMarkup(s, name, "page"), site)).join("\n");
+  const extras = (group: "bandeau" | "partout") => [...(t.extras ?? []), ...(drawer && !(t.extras ?? []).includes(drawer) ? [drawer] : [])].filter((s) => (tenueSection(s.id)?.group ?? "partout") === group).map((s) => withTenueAchat(withTenueSite(sectionMarkup(s, name, "page"), site), p.id)).join("\n");
   const windows = extras("partout");
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";

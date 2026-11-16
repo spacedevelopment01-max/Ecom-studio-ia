@@ -55,7 +55,7 @@ add_action('template_redirect', function () {
 });
 
 /** Destination des formulaires des sections (inscription, contact) : traités par le thème, voir es_handle_form. */
-function es_form_action($type) { return admin_url('admin-post.php'); }
+function es_form_action($type) { return apply_filters('es_form_action', admin_url('admin-post.php'), $type); }
 
 /** Menus : ceux de WordPress (emplacements « main-menu », « footer »), sinon ceux du site d'origine. */
 function es_linklists() {
@@ -108,6 +108,8 @@ function es_globals() {
 		'request' => ['page_type' => is_front_page() ? 'index' : apply_filters('es_page_type', 'page'), 'locale' => ['iso_code' => $site['lang'] ?? 'fr'], 'design_mode' => false],
 		'customer' => null,
 	];
+	// Boutique : le produit réel de la page et le catalogue, pour les pièces d'achat (inc/es-achat.php).
+	$g = apply_filters('es_liquid_globals', $g);
 	return $g;
 }
 
@@ -153,6 +155,10 @@ function es_render_section_block($attrs) {
 	} catch (\Throwable $e) {
 		return current_user_can('edit_theme_options') ? '<p class="es-render-error">' . esc_html(sprintf(__('Section « %s » : %s', 'es-theme'), $type, $e->getMessage())) . '</p>' : '';
 	}
+	// Pièces d'offre (prix de lot, pack, cadeau) : rendues seulement si la boutique tient ces remises (inc/es-achat.php).
+	$rendu = $html;
+	$html = (string) apply_filters('es_section_html', $html, $type);
+	if ($html === '' && $rendu !== '') return '';
 	$cls = trim('shopify-section ' . ($schema['class'] ?? ''));
 	return '<div id="shopify-section-' . esc_attr($id) . '" class="' . esc_attr($cls) . '" data-es-type="' . esc_attr($type) . '">' . es_rewrite_links($html) . '</div>';
 }
