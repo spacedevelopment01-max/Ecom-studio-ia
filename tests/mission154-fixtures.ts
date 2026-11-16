@@ -74,6 +74,6 @@ export async function clientFixture(options: {
     saveBrand(pid, { ...brand, logo: { ...brand.logo, assetId: logo.id, status: 'provided' } } as never);
     const subscription = grantProjectPlan(pid, options.plan ?? 'dominer');
     acquiredChoicesForTest(pid);
-    if(options.strategy!==null)chooseAngleForTest(pid,options.strategy??'generalist');
+    if(options.strategy!==null)chooseAngleForTest(pid,(options.strategy??'generalist') as Parameters<typeof chooseAngleForTest>[1]);
     return { user: { ...user, role: 'client' as const }, pid, brand: brandName, copy, assets, subscription, project: loadProject(pid) };
 }

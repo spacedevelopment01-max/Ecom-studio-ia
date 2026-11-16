@@ -110,9 +110,11 @@ describe("SINA — déroulement du parcours (audit du 10 novembre 2026)", async 
   it("pendant le parcours, les anciens raccourcis ne sont ni proposés ni exécutables ; anciennes maquettes réservées aux projets commencés avec elles", async () => {
     const { toolVisible, toolCatalog } = await import("@/lib/syna-agent/registry");
     const scope = { inJourney: true, legacyMockups: false };
-    for (const n of ["site.mockups", "site.mockup_images", "site.build", "strategy.choose", "pilot.run", "project.create", "mockup.copy", "site.code_from_mockup"]) expect(toolVisible(n, scope), n).toBe(false);
+    for (const n of ["site.mockups", "site.mockup_images", "site.build", "project.create", "mockup.copy", "site.code_from_mockup"]) expect(toolVisible(n, scope), n).toBe(false);
     // Lot 2 : une seule façon de faire la marque, le logo et la charte (identity.propose, brand.finish) ; les anciens outils n'existent plus.
     for (const n of ["brand.create", "logo.propose", "logo.choose", "brand.kit"]) expect((await import("@/lib/syna-agent/registry")).getTool(n), n).toBeUndefined();
+    // Lot 3 : une seule façon de faire les angles (angles.propose, angles.choose) ; les outils du Pilote et des cinq angles n'existent plus.
+    for (const n of ["pilot.state", "pilot.run", "pilot.answer", "pilot.approve", "strategy.read", "research.read", "strategy.choose"]) expect((await import("@/lib/syna-agent/registry")).getTool(n), n).toBeUndefined();
     for (const n of ["identity.propose", "identity.choose", "identity.images", "brand.finish", "brand.kit_validate", "custom.compose", "custom.edit", "theme.choose", "theme.brand"]) expect(toolVisible(n, scope), n).toBe(true);
     expect(toolVisible("mockup.copy", { inJourney: false, legacyMockups: true })).toBe(true);
     expect(toolVisible("site.build", { inJourney: false, legacyMockups: false })).toBe(true); // hors parcours : outils habituels

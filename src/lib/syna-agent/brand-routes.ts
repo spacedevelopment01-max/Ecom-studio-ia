@@ -128,12 +128,20 @@ const digits = (s: string) => s.replace(/[^0-9]/g, "");
  * départ, ou s'ils sont annoncés dans « ce qui reste à prouver ».
  */
 export function unprovenClaims(x: Route, facts: string): string[] {
+  return unprovenIn(routeTexts(x), facts, x.board.toProve.join(" "));
+}
+
+/**
+ * Le même contrôle pour n'importe quels textes (planche de marque, angles) : chiffres et mots de garantie qui ne sont
+ * ni dans les faits du client (`facts`), ni annoncés comme restant à confirmer (`owned`).
+ */
+export function unprovenIn(texts: string[], facts: string, owned = ""): string[] {
   const known = facts.toLowerCase(), knownDigits = new Set((facts.match(NUMBERS) ?? []).map(digits));
-  const owned = x.board.toProve.join(" ").toLowerCase(), ownedDigits = new Set((owned.match(NUMBERS) ?? []).map(digits));
+  const mine = owned.toLowerCase(), ownedDigits = new Set((mine.match(NUMBERS) ?? []).map(digits));
   const out = new Set<string>();
-  for (const t of routeTexts(x)) {
+  for (const t of texts) {
     for (const m of t.match(NUMBERS) ?? []) { const d = digits(m); if (d && !knownDigits.has(d) && !ownedDigits.has(d)) out.add(m.trim()); }
-    for (const m of t.match(CLAIM_WORDS) ?? []) { const w = m.toLowerCase(); if (!known.includes(w) && !owned.includes(w)) out.add(m.trim()); }
+    for (const m of t.match(CLAIM_WORDS) ?? []) { const w = m.toLowerCase(); if (!known.includes(w) && !mine.includes(w)) out.add(m.trim()); }
   }
   return [...out];
 }

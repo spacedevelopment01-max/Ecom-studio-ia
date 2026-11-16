@@ -1,213 +1,133 @@
 /**
- * Étape 4 du parcours SINA (#492) : 3 ANGLES MARKETING montrés au client (cinq écrits et jugés, les trois plus éloignés gardés : sûr, émotion, audacieux ; décision du 14 novembre 2026), recherche web, places de marché exclues, sources réelles,
- * preuves à confirmer), puis le choix du client.
+ * Les trois angles de SINA (lot 3, 16 novembre 2026) : la forme d'un angle, ce que le client voit, et son choix.
  *
- * Le moteur existe déjà (Pilote : analyse de la fiche puis recherche « research/generate » ; stratégie marketing :
- * activation de l'angle). Ce module l'enchaîne pour le parcours, comme un automate qu'on rappelle après chaque tâche :
- * fiche à analyser → questions éventuelles au client → fiche validée (le client a confirmé son résumé à l'étape 0) →
- * recherche → angles affichés → choix du client. Aucune étape n'est payée deux fois : chaque appel reprend où on en est.
+ * Les angles sont créés par la chaîne de `angles-chain.ts` (trois stratèges séparées, un juge à part, un lecteur qui ne
+ * sait rien). Ici : ce qui est gardé dans le parcours, et l'enregistrement de l'angle que le client choisit comme
+ * angle actif du projet (le fil conducteur que lisent le site, les publications et les publicités).
  */
-import { all, tx } from "../db";
-import { L } from "../i18n-server";
+import { all, json as parseJson } from "../db";
+import { getJob } from "../jobs";
 import { loadProject } from "../projects";
-import { approve, editBrief, queuePreparation } from "../preparation/engine";
-import { stateOf } from "../preparation/store";
-import { analyzed } from "../preparation/understanding";
-import { analysisCostPlan } from "../preparation/inspect";
-import { createQuote, quoteOf } from "../preparation/quote";
-import { webSearchQuoteMicro } from "../ai/web-search";
-import { activateStrategy, getStrategyState, prepareStrategyChange, proposeStrategies, stageStrategyModule } from "../marketing-strategy";
+import { activateSinaAngle, type MarketingAngle } from "../marketing-strategy";
+import type { Study } from "./brand-chain";
+import { clientFacts } from "./brand-routes";
+import type { Journey } from "./journey";
+import { shownAngles, type AngleRole } from "./angle-roles";
 
 export type SinaAngle = {
   id: string; title: string; audience: string; motivation: string; message: string; emotion: string;
   proofsToConfirm: string[]; arguments: string[]; sources: { title: string; url: string }[];
-  /** Format du propriétaire (guide du 7 novembre 2026) : objectif, pourquoi, récit, scènes, publication, appel. */
   goal: string; why: string; story: string; show: string; organicExample: string; cta: string;
-  /** Doute du juge des angles sur cet angle (refusé, et sa réécriture n'a pas tenu) : dit franchement au client. */
+  /** Doute de SINA sur cet angle (sa relecture ne l'a pas noté 8 sur 10, même après une reprise) : dit franchement au client. */
   doubt?: string;
+  /** L'entrée de la stratège qui l'a écrit. */
+  role?: AngleRole;
+  /** La scène : qui, quand, avant, après. */
+  person?: string; moment?: string; before?: string; after?: string;
+  promise?: string; tone?: string;
+  /** Le haut du site en mots, et une publication d'exemple. */
+  site?: { title: string; text: string; button: string };
+  post?: { title: string; text: string };
+  objections?: { objection: string; answer: string }[];
+  /** Paroles réelles d'acheteurs sur lesquelles l'angle s'appuie (mot pour mot, avec leur page). */
+  quotes?: { text: string; url: string }[];
+  /** Le type de client visé (règle du propriétaire : un angle = un type de client), et ce qu'on met en avant pour lui. */
+  client?: { name: string; who: string; wants: string; needs: string }; showcase?: string;
+  /** Le produit ou la prestation vedette pour cette clientèle, et l'argument principal de l'angle. */
+  featured?: string; argument?: string;
+  /** Note du juge, sur 10. */
+  note?: number;
 };
 export type SinaAngles = {
   list: SinaAngle[]; recommendedId: string | null; recommendation: string; sourceCount: number; at: number;
-  /** juges : relus par le juge des angles ; non_juges : il n'a pas pu les relire (dit au client) ; absent : recherche d'avant. */
+  /** juges : relus par le juge des angles ; non_juges : il n'a pas pu les relire (dit au client). */
   judged?: "juges" | "non_juges";
-  /** Angles réécrits après l'avis du juge (pour information). */
   redone?: string[];
-  /**
-   * Les TROIS angles montrés au client (décision du propriétaire du 14 novembre 2026), avec leur rôle : sûr, émotion,
-   * audacieux. Absent : recherche d'avant, les angles de « list » sont tous montrés.
-   */
+  /** Les TROIS angles montrés au client, avec leur rôle : sûr, émotion, audacieux. */
   shown?: { id: string; role: AngleRole }[];
-  /** Angles écrits et jugés, gardés pour les publications et les publicités, jamais montrés comme choix. */
+  /** Angles écrits et gardés par le juge, en réserve pour les publications et les publicités, jamais montrés comme choix. */
   reserve?: string[];
+  /** Ce que le contrôle n'a pas pu valider (dit honnêtement au client). */
+  issues?: string[];
+  /** Numéro de la proposition, tâche qui l'a faite, paroles d'acheteurs lues, et la demande du client pour une nouvelle proposition. */
+  round?: number; chainJobId?: string; quoteCount?: number; guidance?: string;
+  /** Pourquoi ces trois clientèles ont été choisies, et les autres types de clients repérés (non visés cette fois). */
+  clients?: { why: string; others: string[] };
 };
 export { ANGLE_ROLE_LABEL, roleOf, shownAngles, type AngleRole } from "./angle-roles";
-import type { AngleRole } from "./angle-roles";
 
-/** Où en est l'étape 4 (lecture seule, sans frais). */
-export type AnglesPhase =
-  | { kind: "analyze" } // la fiche du client doit être comprise par l'IA (payant)
-  | { kind: "questions"; questions: { id: string; question: string; required: boolean }[]; missing: string[] }
-  | { kind: "approve_brief" } // fiche comprise et complète : à valider (gratuit)
-  | { kind: "research" } // recherche web, 5 angles écrits et jugés, 3 montrés (payant)
-  | { kind: "running" } // une préparation tourne déjà
-  | { kind: "ready"; angles: SinaAngles };
-
-const s = (v: unknown, max = 400) => String(v ?? "").trim().slice(0, max);
-
-export function anglesPhase(projectId: string, running = false): AnglesPhase {
-  if (running) return { kind: "running" };
-  const st = stateOf(projectId);
-  const brief: any = (st?.stages as any)?.brief;
-  if (!st || !brief) return { kind: "analyze" };
-  if (brief.status !== "approved") {
-    const b = brief.data;
-    if (!analyzed(b)) return { kind: "analyze" };
-    const questions = (b.profile?.questions ?? []).filter((q: any) => q.required && !q.answer && !q.later).map((q: any) => ({ id: q.id, question: q.question, required: true }));
-    if (questions.length || b.missing?.length) return { kind: "questions", questions, missing: b.missing ?? [] };
-    return { kind: "approve_brief" };
-  }
-  const r: any = (st.stages as any).research;
-  if (!r?.data?.angles?.length || r.status === "stale") return { kind: "research" };
-  return { kind: "ready", angles: anglesOf(r.data) };
-}
-
-/** Les angles écrits (cinq) et les TROIS qu'on montre au client : cible, motivation, accroche, émotion, preuves à confirmer, sources. */
-export function anglesOf(d: any): SinaAngles {
-  const byId = new Map<string, any>((d.sources ?? []).map((x: any) => [x.id, x]));
-  const list: SinaAngle[] = (d.angles ?? []).map((a: any) => ({
-    id: s(a.id, 40), title: s(a.title, 120), audience: s(a.audience), motivation: s(a.motivation), message: s(a.message), emotion: s(a.emotion, 120),
-    proofsToConfirm: (a.proofsToConfirm ?? []).slice(0, 4).map((x: string) => s(x, 200)),
-    arguments: (a.arguments ?? []).slice(0, 3).map((x: string) => s(x, 200)),
-    goal: s(a.goal, 100), why: s(a.reason, 500), story: s(a.story ?? a.communicationChange ?? a.positioning, 700),
-    show: s(a.show ?? a.visualDirection, 600), organicExample: s(a.organicExample, 400), cta: s(a.cta, 80),
-    sources: (a.sourceIds ?? []).map((id: string) => byId.get(id)).filter((x: any) => x?.url).slice(0, 4).map((x: any) => ({ title: s(x.title || x.url, 120), url: s(x.url, 500) })),
-    ...((d.judgement?.doubts ?? []).some((x: any) => x.id === a.id) ? { doubt: s((d.judgement.doubts as any[]).find((x) => x.id === a.id).why, 320) } : {}),
-  }));
-  const used = (d.sources ?? []).filter((x: any) => x.status === "consulted" && x.relevance?.accepted !== false).length;
-  const judged = d.judgement?.status === "juges" || d.judgement?.status === "non_juges" ? d.judgement.status : undefined;
-  const sel = d.judgement?.selection, ids = list.map((x) => x.id);
-  const trio = sel ? ([["sur", sel.sur], ["emotion", sel.emotion], ["audacieux", sel.audacieux]] as [AngleRole, string][]).filter(([, id]) => ids.includes(id)) : [];
-  const shown = trio.length === 3 && new Set(trio.map(([, id]) => id)).size === 3 ? trio.map(([role, id]) => ({ id, role })) : null;
-  const recommendedId = shown ? (shown.some((x) => x.id === sel.recommande) ? sel.recommande : shown[0].id) : d.recommendedId ?? null;
+/**
+ * Ce que le client voit de ses angles, dans le fil de SINA et sur l'écran « Angles » : les trois montrés (jamais la
+ * réserve), celui que SINA recommande, et celui qu'il a choisi.
+ */
+export function anglesViewOf(j: Journey) {
+  const a = j.angles;
+  if (!a?.shown?.length) return null;
   return {
-    list, recommendedId, recommendation: s(shown && sel.pourquoi ? sel.pourquoi : d.recommendation, 600), sourceCount: used, at: Date.now(),
-    ...(judged ? { judged, redone: (d.judgement.redone ?? []).map((x: string) => s(x, 40)) } : {}),
-    ...(shown ? { shown, reserve: ids.filter((id) => !shown.some((x) => x.id === id)) } : {}),
+    list: shownAngles(a), roles: Object.fromEntries(a.shown.map((x) => [x.id, x.role])) as Record<string, AngleRole>,
+    recommendedId: a.recommendedId, recommendation: a.recommendation ?? "", clients: a.clients ?? null, quoteCount: a.quoteCount ?? 0, sourceCount: a.sourceCount, chosen: j.angleChoice?.id ?? null,
   };
 }
+export type AnglesView = NonNullable<ReturnType<typeof anglesViewOf>>;
 
-/** Pourcentage lisible (« 8 % », « 4,5 % ») : jamais « 7.994748837209302 % » (essai réel du 7 novembre). */
+/** Pourcentage lisible (« 8 % », « 4,5 % »). */
 export const pct = (x: number | null | undefined) => (x == null ? "?" : `${String(Math.round(x * 10) / 10).replace(".", ",")} %`);
 
 /**
- * Dernier échec de la recherche (le Pilote le garde) avec ce qu'il a RÉELLEMENT coûté (appels enregistrés) : SINA ne
- * dit jamais « rien n'a été débité » sans ce chiffre (essai réel : la recherche web avait coûté 0,29 €).
+ * Tout ce que le client a dit de son produit ou de sa prestation : sa fiche de départ, ce qu'il a ajouté en parlant
+ * avec SINA, et les faits confirmés du projet. Seule source de vérité des angles.
  */
-export function researchFailure(projectId: string): { message: string; costMicro: number } | null {
-  const e: any = stateOf(projectId)?.error;
-  if (!e || e.step !== "research") return null;
-  const costMicro = e.jobId ? all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", e.jobId)[0]?.c ?? 0 : 0;
-  return { message: String(e.message ?? ""), costMicro };
-}
-
-/** Coût maximal de la prochaine étape payante (analyse de la fiche ou recherche), sans rien créer. */
-export function anglesMaxMicro(projectId: string, redo?: string): number {
-  const ph = anglesPhase(projectId);
-  // Lire des angles prêts, poser des questions : gratuit (essai réel : le devis d'une recherche bloquait la lecture).
-  if (ph.kind === "ready" && redo) return 1_000_000 + (webSearchQuoteMicro() ?? 0);
-  if (ph.kind === "ready" || ph.kind === "questions" || ph.kind === "running") return 0;
-  const research = 1_000_000 + (webSearchQuoteMicro() ?? 0);
-  // Fiche encore à analyser : le devis couvre TOUTE l'étape, analyse puis recherche (essai réel du 7 novembre : « au
-  // plus 2,3 % » annoncé, puis l'analyse lancée « au plus 8 % »). Plafond calculé sans créer de devis.
-  if (ph.kind === "analyze") {
-    try {
-      const plan = analysisCostPlan(loadProject(projectId), (stateOf(projectId)!.stages as any).brief.data);
-      return (plan?.maxMicro ?? 1_000_000) + research;
-    } catch { return 1_000_000 + research; }
-  }
-  return research;
-}
-
-/**
- * Avance d'un cran. La fiche reprend d'abord le nom choisi à l'étape 1 (la recherche cherche les concurrents de CETTE
- * marque). Renvoie la tâche lancée, les questions à poser, ou les angles prêts.
- */
-export function advanceAngles(projectId: string, redo?: string): { phase: AnglesPhase; jobId?: string; maxPct?: number } {
-  const p = loadProject(projectId);
-  let ph = anglesPhase(projectId);
-  // Nouvelle proposition demandée par le client (ses mots) alors que des angles sont prêts : nouvelle recherche, avec sa
-  // demande comme correction (le moteur l'exige pour un nouvel essai) ; les angles précédents restent conservés.
-  if (ph.kind === "ready" && redo && redo.trim().length >= 8) return queue(projectId, "research", "generate", { kind: "research" }, redo.trim().slice(0, 1900));
-  const st = () => stateOf(projectId)!;
-  if (ph.kind === "analyze") {
-    const input = (st().stages as any).brief.data.input;
-    if (p.brand?.name && input.brandName !== p.brand.name) editBrief(projectId, st().revision, { ...input, brandName: p.brand.name, offerName: input.offerName?.replace(/\s*\(provisoire\)\s*$/, "") || input.offerName });
-    return queue(projectId, "brief", "analyze", ph);
-  }
-  if (ph.kind === "approve_brief") {
-    approve(projectId, st().revision, "brief", {} as any);
-    ph = anglesPhase(projectId);
-  }
-  if (ph.kind === "research") {
-    // Nouvel essai après un échec : le moteur exige de dire ce qu'il faut corriger (deux essais au plus pour les
-    // mêmes données) — la raison de l'échec précédent, mot pour mot.
-    const failed = researchFailure(projectId);
-    return queue(projectId, "research", "generate", ph, failed ? L(`Nouvel essai après l'échec précédent : ${failed.message}`, `New attempt after: ${failed.message}`).slice(0, 1900) : undefined);
-  }
-  return { phase: ph };
-}
-
-function queue(projectId: string, step: "brief" | "research", action: "analyze" | "generate", phase: AnglesPhase, correction?: string) {
-  const created = createQuote(projectId, step, action, undefined, correction) as any;
-  const q = quoteOf(projectId, created.id, correction) as any;
-  const r: any = queuePreparation(projectId, stateOf(projectId)!.revision, step, action, { capMicro: q.capMicro, paid: q.paid, slot: q.slot, correction: q.correction, analysisFingerprint: q.analysisFingerprint });
-  const jobId = r?.jobId ?? r?.job?.id ?? stateOf(projectId)?.pending?.jobId;
-  return { phase, jobId, maxPct: created.maxBudgetPct };
-}
-
-/** Nombre d'angles que le forfait du client permet d'utiliser (1, 2 ou 5). */
-export function angleLimit(projectId: string): number {
-  return getStrategyState(projectId).limit || 1;
-}
-
-function activate(projectId: string, angleId: string, idempotencyKey: string) {
-  const prep = prepareStrategyChange(projectId, angleId);
-  for (const c of prep.contents.filter((c: any) => !c.aligned && !c.published)) stageStrategyModule(projectId, prep.id, c.module, { contentIds: [], retainedContentIds: [c.contentId] });
-  activateStrategy(projectId, { angleId, preparationId: prep.id, idempotencyKey, confirmed: true, retainUnaligned: true });
-}
-
-/**
- * Choix du client, UN OU PLUSIEURS angles (demande du propriétaire du 7 novembre : « le client doit pouvoir en choisir
- * plusieurs ») : le PREMIER est l'angle principal (fil conducteur du site, stratégie active) ; les autres sont retenus
- * pour les publications et les publicités (un angle principal par contenu). Le forfait fixe le nombre d'angles.
- */
-export function chooseAngles(projectId: string, angleIds: string[], idempotencyKey: string) {
-  try { proposeStrategies(projectId); } catch { /* état déjà à jour */ }
-  const [principal, ...others] = angleIds;
-  // Tout ou rien (audit du 10 novembre 2026) : un angle activé compte pour toujours dans le forfait ; si un des angles
-  // ne peut pas l'être, aucun ne l'est et le quota du client reste intact.
+export function angleFacts(j: Journey, projectId: string): string {
+  const lines = [clientFacts(j), ...(j.notes ?? []).map((n) => `${n.sujet} : ${n.value}`)];
   try {
-    return tx(() => {
-      // Les angles retenus en plus sont activés d'abord (ils comptent dans le forfait), l'angle principal en dernier : il
-      // reste l'angle actif.
-      for (const id of others) activate(projectId, id, `${idempotencyKey}-${id}`);
-      activate(projectId, principal, `${idempotencyKey}-${principal}`);
-      const s0 = stateOf(projectId)!;
-      if ((s0.stages as any).research?.status !== "approved") approve(projectId, s0.revision, "research", { choiceId: principal } as any);
-      const active = getStrategyState(projectId).active?.angleId ?? null;
-      const approved = (stateOf(projectId)!.stages as any).research?.status === "approved";
-      if (active !== principal || !approved) throw new AnglesNotSaved(active, approved);
-      return { active, approved, ok: true as boolean, error: undefined as string | undefined };
-    });
-  } catch (e) {
-    if (e instanceof AnglesNotSaved) return { active: e.active, approved: e.approved, ok: false, error: undefined };
-    return { active: getStrategyState(projectId).active?.angleId ?? null, approved: false, ok: false, error: e instanceof Error ? e.message : String(e) };
+    const p = loadProject(projectId);
+    for (const f of p.product?.facts ?? []) if (f.status === "confirmed") lines.push(`${f.label} : ${f.value}`);
+    if (p.business === "services") for (const x of p.services?.services ?? []) lines.push([x.name, x.description, x.price, x.duration].filter(Boolean).join(" · "));
+  } catch { /* projet illisible : la fiche suffit */ }
+  // Ce que SINA a noté dans la mémoire du projet comme confirmé par le client (essai réel du 16 novembre 2026 : sa façon
+  // d'être payé, déjà dite, lui était redemandée dans « à confirmer »).
+  try { for (const m of all<{ key: string; value: string }>("SELECT key, value FROM memory WHERE project_id=? AND key LIKE 'syna.%' AND origin='user' ORDER BY rowid", projectId)) lines.push(`${m.key.replace(/^syna\./, "")} : ${m.value}`); } catch { /* mémoire absente */ }
+  return [...new Set(lines.map((l) => l.trim()).filter(Boolean))].join("\n");
+}
+
+/** L'étude du marché faite pour la marque (paroles d'acheteurs, concurrents) : reprise telle quelle, jamais repayée. */
+export function brandStudyOf(j: Journey): Study | null {
+  const id = j.identities?.chainJobId;
+  if (id) {
+    try {
+      const st = parseJson<Record<string, any>>(getJob(id)?.checkpoint ?? "{}", {})["brand:study"];
+      if (st && Array.isArray(st.quotes)) return st as Study;
+    } catch { /* tâche introuvable : on prend le résumé gardé dans le parcours */ }
   }
-}
-class AnglesNotSaved extends Error { constructor(readonly active: string | null, readonly approved: boolean) { super("angles non enregistrés"); } }
-
-/** Angles déjà utilisés par le projet (ils comptent pour toujours dans le forfait). */
-export function usedAngles(projectId: string): string[] {
-  try { return getStrategyState(projectId).usedAngleIds as string[]; } catch { return []; }
+  const s = j.identities?.study;
+  if (!s) return null;
+  return { quotes: s.quotes, competitors: s.competitors.map((name) => ({ name, url: "", codes: "" })), mould: s.mould, substitutes: s.substitutes, facts: [], notFound: s.notFound, sources: s.sources, dropped: 0 };
 }
 
+const host = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url.slice(0, 60); } };
+
+/** L'angle tel que le lisent le site, les publications et les publicités (l'angle actif du projet). */
+export function marketingAngleOf(a: SinaAngle, role: AngleRole, facts: string): MarketingAngle {
+  return {
+    id: role, title: a.title, audience: a.client ? `${a.client.name} : ${a.person || a.audience}` : a.person || a.audience, situation: a.moment ?? "", notPriority: "",
+    tension: a.before ?? "", motivation: a.after || a.motivation, benefit: a.after ?? "", promise: a.promise || a.message, rationale: a.why,
+    proofs: facts.split("\n").filter(Boolean).slice(0, 40), objections: a.objections ?? [], limits: a.proofsToConfirm,
+    tone: a.tone ?? "", messages: [a.message], exclusions: [], visualDirection: a.show,
+    examples: { hero: a.site?.title || a.message, subtext: a.site?.text ?? "", cta: a.site?.button || a.cta, advertisement: a.post?.text || a.organicExample },
+    source: "creative_hypothesis",
+    sources: (a.quotes ?? []).map((q) => ({ kind: "dated_source" as const, label: host(q.url), value: q.text, ref: q.url })),
+  };
+}
+
+/**
+ * Le choix du client : UN angle principal, parmi les trois montrés. Il devient l'angle actif du projet. Les autres
+ * angles gardés par le juge restent en réserve pour les publications et les publicités.
+ */
+export function chooseAngle(projectId: string, j: Journey, angleId: string, idempotencyKey: string): { ok: boolean; error?: string } {
+  const a = j.angles?.list.find((x) => x.id === angleId), role = j.angles?.shown?.find((x) => x.id === angleId)?.role;
+  if (!a || !role) return { ok: false, error: "angle inconnu" };
+  try {
+    const active = activateSinaAngle(projectId, marketingAngleOf(a, role, angleFacts(j, projectId)), idempotencyKey);
+    return { ok: active.angleId === role };
+  } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+}

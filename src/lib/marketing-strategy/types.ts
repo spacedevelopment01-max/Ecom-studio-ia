@@ -6,7 +6,9 @@ export const ANGLE_IDS = [
   "discovery",
   "generalist",
 ] as const;
-export type AngleId = (typeof ANGLE_IDS)[number];
+/** Les trois angles de SINA (lot 3, 16 novembre 2026) : un sûr, un d'émotion, un audacieux. */
+export const SINA_ANGLE_IDS = ["sur", "emotion", "audacieux"] as const;
+export type AngleId = (typeof ANGLE_IDS)[number] | (typeof SINA_ANGLE_IDS)[number];
 export type StrategySource = {
   kind: "client" | "confirmed_fact" | "dated_source" | "creative_hypothesis";
   label: string;

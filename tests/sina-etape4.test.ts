@@ -1,229 +1,402 @@
 /**
- * SINA (#492) — étape 4 du parcours : 5 angles marketing. Le moteur du Pilote (analyse de la fiche, recherche web,
- * angles) tourne avec ses dépendances SIMULÉES (aucun appel réel, aucun réseau) ; SINA l'enchaîne, montre les angles
- * avec leurs sources et enregistre le choix du client.
+ * SINA — étape des angles (lot 3, 16 novembre 2026) : trois stratèges séparées, un juge à part, un lecteur qui ne sait
+ * rien ; trois angles montrés (un sûr, un d'émotion, un audacieux), le client en choisit un. Aucun appel d'IA : les
+ * spécialistes et la recherche sont simulés.
  */
-import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 import fs from "node:fs";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { series } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
-vi.mock("@/lib/ai/config", async (orig) => ({ ...(await orig()) as object, activeProviderKey: () => "FAKE-NOT-A-SECRET" }));
 
-describe("SINA — étape 4 : 5 angles marketing", async () => {
+describe("SINA — étape des angles : trois stratèges, un juge, trois angles", async () => {
   const { one } = await import("@/lib/db");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { claimNext, completeJob, JobContext } = await import("@/lib/jobs");
-  const { runPreparation } = await import("@/lib/preparation/engine");
-  const { withTrace } = await import("@/lib/ai/trace");
-  const { runForUser } = await import("@/lib/ai/access");
-  const { stateOf } = await import("@/lib/preparation/store");
-  const { getStrategyState } = await import("@/lib/marketing-strategy");
-  const { researchOfferDigest } = await import("@/lib/marketing-strategy/proposals");
-  const { simulatedDependencies } = await import("./preparation-fixtures");
-  const { seedSourcedAnglesForTest } = await import("./sourced-strategy-fixture");
+  const { activeStrategy } = await import("@/lib/marketing-strategy");
   const { account } = await import("./conversation209-fixtures");
   const { threadFor } = await import("@/lib/syna-agent/thread");
   const { getTool } = await import("@/lib/syna-agent/registry");
-  const { threadView, modelFor } = await import("@/lib/syna-agent/loop");
+  const { threadView } = await import("@/lib/syna-agent/loop");
   const J = await import("@/lib/syna-agent/journey");
-  const A = await import("@/lib/syna-agent/angles");
+  const C = await import("@/lib/syna-agent/angles-chain");
+  const P = await import("@/lib/syna-agent/angles-prompts");
+  const K = await import("@/lib/syna-agent/angles-knowledge");
+  const B = await import("@/lib/syna-agent/brand-chain");
+  const { anglesDoubtHint } = await import("@/lib/syna-agent/tools/angles");
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
-  const call = async (name: string, ctx: any, args: unknown) => {
-    ctx.projectId = one<{ project_id: string | null }>("SELECT project_id FROM agent_conversations WHERE id=?", ctx.conversationId)?.project_id ?? null;
-    return fr(() => getTool(name)!.run(ctx, getTool(name)!.args.parse(args)));
-  };
-  beforeEach(() => { vi.stubGlobal("fetch", vi.fn(() => { throw new Error("Aucun réseau dans les tests"); })); });
-  afterEach(() => { vi.unstubAllGlobals(); });
+  const tool = (name: string) => getTool(name)!;
+  const ctxFor = (ctx: any) => { ctx.projectId = one<{ project_id: string | null }>("SELECT project_id FROM agent_conversations WHERE id=?", ctx.conversationId)?.project_id ?? null; return ctx; };
+  const call = async (name: string, ctx: any, args: unknown) => fr(() => tool(name).run(ctxFor(ctx), tool(name).args.parse(args)));
+  const estimate = async (ctx: any, args: unknown = {}) => fr(() => tool("angles.propose").estimate!(ctxFor(ctx), args as never));
+  afterEach(() => { C.anglesChainDeps.ai = undefined; B.brandPageDeps.read = undefined; });
 
-  /** Tâche du Pilote exécutée avec les dépendances simulées. */
-  async function execute() {
-    const j = claimNext(["project.prepare"])!;
-    expect(j).toBeTruthy();
-    const deps = { ...simulatedDependencies, research: async (...args: Parameters<typeof simulatedDependencies.research>) => ({ ...(await simulatedDependencies.research(...args)), offerDigest: researchOfferDigest(args[0]) }) };
-    const result = await fr(() => runForUser(j.user_id, () => withTrace({ jobId: j.id, projectId: j.project_id }, () => runPreparation(new JobContext(j), deps)), "normal", j.project_id));
-    completeJob(j.id, result);
-  }
+  const PAGE = "https://avis.example/tasses";
+  const QUOTES = [
+    "Ma tasse du matin, personne n'a le droit d'y toucher", "J'en ai assez des mugs qui se ressemblent tous", "Je cherchais un cadeau qui ne finisse pas au fond d'un placard",
+    "L'anse est trop petite, je me brûle les doigts", "Je bois mon café debout, alors la tasse compte", "On voit tout de suite que c'est fait à la main",
+    "J'ai peur que ça casse au premier lavage", "C'est le seul objet que j'ai emporté au bureau", "Je voulais quelque chose qui dure plus qu'une saison",
+  ];
+  const study = (n = QUOTES.length) => ({ quotes: QUOTES.slice(0, n).map((text) => ({ text, url: PAGE })), quoteCount: n, sources: 12, competitors: ["Terre & Feu", "Maison Argile"], mould: "Tous parlent d'authenticité et de savoir-faire.", substitutes: ["Acheter un mug en grande surface"], notFound: [] });
 
-  /** Fil à l'étape 4 : fiche de départ confirmée, étapes 1 à 3 validées. */
-  async function stepFour() {
+  /** Fil à l'étape des angles : fiche de départ confirmée, marque choisie et validée (étapes 1 à 3), étude de la marque gardée. */
+  async function atAngles(quotes = QUOTES.length) {
     const user = await account();
-    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}`, projectId: null, attachment: () => null };
-    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des confitures artisanales cuites au chaudron en cuivre, avec des fruits de la Drôme." }] });
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}-${Math.random()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des tasses en grès tournées à la main dans mon atelier, émaillées une par une." }] });
     await call("start.answer", ctx, { answers: [
-      { field: "existing", value: "Rien, je pars de zéro." }, { field: "audience", value: "Des gourmands de 30 à 60 ans qui aiment offrir." }, { field: "image", value: "Gourmand, authentique, solaire." },
-      { field: "setup", value: "4 produits" }, { field: "market", value: "En ligne, France." }, { field: "price", value: "7,90 € le pot de 250 g" }, { field: "difference", value: "Cuisson lente au chaudron, 65 % de fruits." },
+      { field: "existing", value: "Rien, je pars de zéro." }, { field: "audience", value: "Des adultes qui aiment les beaux objets du quotidien." }, { field: "image", value: "Simple, chaleureux." },
+      { field: "setup", value: "5 produits" }, { field: "market", value: "En ligne, France." }, { field: "price", value: "32 € la tasse" }, { field: "difference", value: "Chaque tasse est tournée à la main ; l'anse laisse passer trois doigts." },
       { field: "taste", status: "none" }, { field: "photos", value: "Pas de photos pour l'instant." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
     expect((await call("start.confirm", ctx, {})).ok).toBe(true);
-    J.updateJourney(cid, (x) => { for (const n of [1, 2, 3]) J.setStep(x, n, "done"); J.setStep(x, 4, "todo"); });
+    J.updateJourney(cid, (x) => {
+      x.identities = { list: series(3), issues: [], comparison: "", at: Date.now(), round: 1, study: study(quotes) };
+      x.identityChoice = { key: "A", mix: {}, at: Date.now() };
+      for (const n of [1, 2, 3]) J.setStep(x, n, "done");
+      J.setStep(x, 4, "todo");
+    });
     return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
-  it("parcours complet : analyse de la fiche, recherche, 5 angles avec sources, choix du client", async () => {
-    const { user, cid, ctx, pid } = await stepFour();
-    expect(J.READY_STEPS).toContain(4);
-    expect(J.currentStep(J.journeyOf(cid))).toBe(4);
-    expect(modelFor(4)?.model).toBe(DEFAULT_MODELS.strong.model);
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 4 \(3 angles marketing\)[^]*PAYANT[^]*angles\.propose/);
-    // Essai réel : SINA avait lu les angles avec research.read (lecture tronquée, aucune carte).
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/n'utilise jamais research\.read ni strategy\.read à cette étape/);
-    expect((await getTool("angles.propose")!.estimate!(ctx, {})).maxMicro).toBeGreaterThan(0);
-    // Pendant l'étape 4, les vieilles lectures renvoient vers angles.propose (cartes et sources).
-    const guard = await call("research.read", ctx, {});
-    expect(guard.hint).toMatch(/utilise angles\.propose/); // consigne pour SINA seule
-    expect(guard.summary).not.toMatch(/angles\.propose/); // jamais un nom d'outil montré au client
-    const { serialize } = await import("@/lib/syna-agent/loop");
-    expect(serialize([{ seq: 1, role: "tool", content: { tool: "research.read", ok: false, summary: guard.summary, hint: guard.hint } } as any])).toMatch(/consigne \(pour toi seule\) : Pendant l'étape 4/);
-    expect((await call("strategy.read", ctx, {})).ok).toBe(false);
-    const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
-    expect(SYNA_SYSTEM).toMatch(/TOUTE action payante passe par une carte d'accord[^]*rien ne part avant qu'il clique « Confirmer »/);
-    expect(SYNA_SYSTEM).toMatch(/tu le dis UNE fois, brièvement,[^.]*seulement pour sa dernière réponse/);
-    expect(SYNA_SYSTEM).toMatch(/ne répète pas la question et ne l'annonce pas \(« il me reste à savoir… »/);
-    expect(SYNA_SYSTEM).toMatch(/celles qui te sont jointes \(logos, planche de marque, captures de son site\), tu les regardes avant d'en parler[^]*Une image qui ne t'est pas jointe, tu ne la décris pas/);
-    expect(SYNA_SYSTEM).toMatch(/Tu parles de toi à la première personne/); // jamais « SINA va chercher… » (essai réel du 7 novembre)
-    expect(fs.readFileSync("src/lib/syna-agent/journey.ts", "utf8")).not.toMatch(/que SINA va chercher/);
-    // 1) La fiche doit être comprise : tâche d'analyse (payante, devis du Pilote).
-    expect(A.anglesPhase(pid).kind).toBe("analyze");
-    // Devis de l'étape (essai réel du 7 novembre) : analyse de la fiche PUIS recherche, jamais la recherche seule.
-    const { webSearchQuoteMicro } = await import("@/lib/ai/web-search");
-    const researchOnly = 1_000_000 + (webSearchQuoteMicro() ?? 0);
-    expect(A.anglesMaxMicro(pid)).toBeGreaterThan(researchOnly);
-    const r1 = await call("angles.propose", ctx, {});
-    expect(r1.ok).toBe(true);
-    expect(r1.jobs).toHaveLength(1);
-    expect(J.journeyOf(cid).steps[4].status).toBe("doing");
-    // Une préparation en cours : jamais une seconde tâche.
-    expect((await call("angles.propose", ctx, {})).jobs ?? []).toHaveLength(0);
-    await execute();
-    // 2) Fiche comprise : validée (le client a confirmé son résumé à l'étape 0) et recherche lancée.
-    expect(A.anglesMaxMicro(pid)).toBe(researchOnly); // fiche comprise : reste la recherche seule
-    const r2 = await call("angles.propose", ctx, {});
-    expect(r2.ok).toBe(true);
-    expect(r2.jobs).toHaveLength(1);
-    expect(stateOf(pid)!.stages.brief!.status).toBe("approved");
-    await execute();
-    expect(stateOf(pid)!.stages.research?.data?.angles?.length).toBe(5);
-    // Les dépendances simulées du Pilote rendent une recherche à l'ancien format ; la recherche acquise au format
-    // actuel (sources réelles, reçu d'appel) est posée par la fixture commune des angles sourcés.
-    seedSourcedAnglesForTest(pid);
-    // 3) Les 5 angles sont prêts : rangés dans le parcours, affichés avec leurs sources.
-    expect(A.anglesMaxMicro(pid)).toBe(0); // les lire est gratuit : jamais de devis ni d'accord de dépense
-    // Nouvelle proposition demandée par le client (ses mots) : payante, annoncée ; la lecture reste gratuite.
-    expect(A.anglesMaxMicro(pid, "Je voudrais une nouvelle proposition d'angles.")).toBeGreaterThan(0);
-    expect(await getTool("angles.propose")!.preview!(ctx, { redo: "Je voudrais une nouvelle proposition d'angles." })).toMatch(/^Nouvelle recherche web et 3 nouveaux angles, d'après ta demande/);
-    const r3 = await call("angles.propose", ctx, {});
-    expect(r3.ok).toBe(true);
-    // Essai réel du 7 novembre : « usage », « reassurance »… (identifiants internes) montrés au client.
-    const angleIds = J.journeyOf(cid).angles!.list.map((a) => a.id);
-    for (const id of angleIds) expect(r3.summary).not.toMatch(new RegExp(`(^|[ :;])${id}( |$)`));
-    expect(r3.hint).toMatch(new RegExp(`${angleIds[0]} = «`));
-    const j = J.journeyOf(cid);
-    expect(j.angles!.list).toHaveLength(5);
-    expect(j.steps[4].status).toBe("review");
-    expect(J.journeyContext(j)).toMatch(/Étape 4 — 5 angles prêts[^]*angles\.choose/);
-    const view = await fr(() => threadView(user, cid));
-    expect(view.journey.angles!.list).toHaveLength(5);
-    expect(view.journey.angles!.chosen).toBeNull();
-    // 4) Choix du client : angle actif (fil conducteur) et recherche validée ; étape 5 ouverte.
-    expect((await call("angles.choose", ctx, { angleIds: ["inconnu"] })).ok).toBe(false);
-    // Plusieurs angles (demande du propriétaire), dans la limite du forfait ; le premier est l'angle principal.
-    const limit = A.angleLimit(pid);
-    const ids = j.angles!.list.map((x) => x.id);
-    const tooMany = await call("angles.choose", ctx, { angleIds: ids.slice(0, Math.min(5, limit + 1)) });
-    if (limit < 5) { expect(tooMany.ok).toBe(false); expect(tooMany.summary).toMatch(new RegExp(`forfait du client permet ${limit} angle`)); }
-    const pickIds = ids.slice(0, Math.min(2, limit));
-    const c = limit >= 5 ? tooMany : await call("angles.choose", ctx, { angleIds: pickIds });
-    expect(c.ok).toBe(true);
-    const principal = (limit >= 5 ? ids.slice(0, 5) : pickIds)[0];
-    expect(getStrategyState(pid).active?.angleId).toBe(principal);
-    expect(J.journeyOf(cid).angleChoice!.ids![0]).toBe(principal);
-    expect((await fr(() => threadView(user, cid))).journey.angles!.chosen![0]).toBe(principal);
-    expect(stateOf(pid)!.stages.research!.status).toBe("approved");
-    expect(J.journeyOf(cid).steps[4].status).toBe("done");
-    expect(J.currentStep(J.journeyOf(cid))).toBe(5);
-    expect((await call("angles.propose", ctx, {})).ok).toBe(false); // déjà choisi
-    // Nouveau choix plus tard : les angles déjà utilisés comptent pour toujours dans le forfait (audit du 10 novembre).
-    expect(A.usedAngles(pid)).toEqual(expect.arrayContaining(limit >= 5 ? ids.slice(0, 5) : pickIds));
-    {
-      // Le client passe au forfait à 2 angles : ceux déjà utilisés occupent déjà ses places.
-      const { grantProjectPlan } = await import("@/lib/project-subscriptions");
-      grantProjectPlan(pid, "vendre");
-      expect(A.angleLimit(pid)).toBe(2);
-      J.updateJourney(cid, (x) => J.setStep(x, 4, "review"));
-      const before = A.usedAngles(pid), others = [ids[0]];
-      const over = await call("angles.choose", ctx, { angleIds: others });
-      expect(over.ok).toBe(false);
-      expect(over.summary).toMatch(/en tout, et \d+ (?:est|sont) déjà utilisé/);
-      expect(A.usedAngles(pid)).toEqual(before); // rien de compté pour rien
+  // ---------------------------------------------------------------- spécialistes simulés
+
+  const OFFSET: Record<string, number> = { sur: 0, emotion: 1, audacieux: 2 };
+  /** Par défaut, chaque stratège écrit pour les trois clientèles choisies (c1 à c3), dans un ordre décalé d'une entrée à l'autre. */
+  const draft = (role: string, n: number, over: Record<string, unknown> = {}) => ({
+    segment: `c${((n - 1 + (OFFSET[role] ?? 0)) % 3) + 1}`, featured: `Vedette ${role} ${n}`, argument: `Argument ${role} ${n}`, showcase: "L'anse où passent trois doigts.",
+    title: `Angle ${role} ${n}`, person: `Une personne précise (${role} ${n}) qui boit son café avant de partir.`, moment: "Le matin, dans sa cuisine, avant le bruit.",
+    before: "Elle prend le premier mug venu.", after: "Elle a sa tasse à elle, qu'elle reconnaît les yeux fermés.", emotion: "le plaisir d'un objet à soi",
+    promise: "Une tasse tournée à la main, faite pour ta main.", hook: `Accroche ${role} ${n} : ta tasse, pas une autre.`,
+    site: { title: `Titre du site ${role} ${n}`, text: "Chaque tasse est tournée à la main dans l'atelier.", button: "Trouver ma tasse" },
+    post: { title: `Publication ${role} ${n}`, text: "Des tasses en grès tournées à la main. Celle-ci attend son café." },
+    show: "Des mains autour d'une tasse, la vapeur, le bord de l'évier.", arguments: ["Chaque tasse est tournée à la main"], objections: [{ objection: "Et si elle casse ?", answer: "Le grès est épais." }],
+    quotes: [0, 99], toConfirm: ["Passe-t-elle au lave-vaisselle ?"], why: "Tes acheteurs parlent de LEUR tasse.", tone: "simple et chaleureux", ...over,
+  });
+  type Script = {
+    drafts?: (role: string, n: number) => Record<string, unknown>;
+    note?: (id: string) => number;
+    judge?: (ids: string[]) => any;
+    reader?: (prompt: string, second: boolean) => any;
+    clarify?: (prompt: string) => any;
+    web?: () => any[];
+    targets?: string[];
+    fail?: string[];
+  };
+  const fakeAi = (log: { ids: string[]; prompts: Record<string, string>; systems: Record<string, string> }, s: Script = {}) => () => ({
+    research: async (id: string) => { log.ids.push(`web:${id}`); return s.web ? s.web() : []; },
+    ask: async (id: string, c: any) => {
+      log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system;
+      if (s.fail?.some((f) => id.startsWith(f))) throw new Error("coupure");
+      const raw: any = (() => {
+        if (c.kind === "listen") return { quotes: [{ text: "Je veux une tasse qui tienne chaud longtemps", url: PAGE }, { text: "Parole inventée par le modèle", url: PAGE }], competitors: [], mould: "", substitutes: [], facts: [], notFound: [] };
+        if (c.kind === "segments") return { segments: [1, 2, 3, 4].map((k) => ({ id: `c${k}`, name: `Type de client ${k}`, who: `Situation ${k}.`, wants: `Envie ${k}.`, needs: `Besoin ${k}.`, before: `Avant ${k}.`, featured: `Produit vedette ${k}`, showcase: "Tournée à la main.", quotes: [k, 99], proven: k < 4 })), targets: s.targets ?? ["c1", "c2", "c3"], why: "Ce sont tes trois clientèles les plus éloignées." };
+        if (c.kind === "strategist" || c.kind === "rework") {
+          const role = id.split("-").pop()!, count = c.kind === "rework" ? C.REWORKED : C.CANDIDATES, from = c.kind === "rework" ? C.CANDIDATES : 0;
+          return { angles: Array.from({ length: count }, (_, i) => draft(role, from + i + 1, s.drafts?.(role, from + i + 1) ?? {})) };
+        }
+        if (c.kind === "judge" || c.kind === "recheck") {
+          const ids = (JSON.parse(c.prompt).propositions as { id: string }[]).map((x) => x.id);
+          return s.judge ? s.judge(ids) : { angles: ids.map((x) => ({ id: x, note: s.note ? s.note(x) : x.endsWith("-1") ? 9 : x.endsWith("-2") ? 8 : 6, why: `Avis sur ${x}.`, fixes: [] })), selection: { sur: "sur-1", emotion: "emotion-1", audacieux: "audacieux-1", recommande: "emotion", pourquoi: "C'est celui qui te ressemble le plus aujourd'hui." }, overall: "Série solide." };
+        }
+        if (c.kind === "reader") return s.reader ? s.reader(c.prompt, id.endsWith("-2")) : { texts: [] };
+        if (c.kind === "clarify") return s.clarify ? s.clarify(c.prompt) : { texts: [] };
+        throw new Error(`appel inattendu : ${id}`);
+      })();
+      return c.schema.parse(raw);
+    },
+  });
+  const newLog = () => ({ ids: [] as string[], prompts: {} as Record<string, string>, systems: {} as Record<string, string> });
+
+  /** Lance l'outil (comme après l'accord du client), puis exécute la tâche de fond avec les spécialistes simulés. */
+  async function create(t: Awaited<ReturnType<typeof atAngles>>, s: Script = {}, args: unknown = {}) {
+    const log = newLog();
+    C.anglesChainDeps.ai = fakeAi(log, s) as never;
+    const started = await call("angles.propose", t.ctx, args);
+    expect(started.ok, started.summary).toBe(true);
+    expect(started.jobs).toHaveLength(1);
+    const job = claimNext([C.SINA_ANGLES_JOB])!;
+    expect(job.id).toBe(started.jobs![0]);
+    const result = await fr(() => C.runSinaAnglesJob(new JobContext(job)));
+    completeJob(job.id, result);
+    return { log, result, angles: J.journeyOf(t.cid).angles! };
+  }
+
+  // ---------------------------------------------------------------- le parcours
+
+  it("refusé tant que la marque n'est pas validée ; payant avec un seul accord, puis lecture gratuite", async () => {
+    const t = await atAngles();
+    J.updateJourney(t.cid, (x) => J.setStep(x, 3, "review"));
+    expect((await call("angles.propose", t.ctx, {})).summary).toMatch(/marque doit être validée/);
+    J.updateJourney(t.cid, (x) => J.setStep(x, 3, "done"));
+    const quote = await estimate(t.ctx);
+    expect(quote.maxMicro).toBeGreaterThan(0);
+    expect(quote.probableMicro!).toBeLessThan(quote.maxMicro);
+    // L'écoute du web n'est comptée comme probable que s'il manque des paroles d'acheteurs.
+    expect(C.anglesQuote({ listen: true }).probableMicro!).toBeGreaterThan(C.anglesQuote().probableMicro!);
+    expect(C.anglesQuote({ listen: true }).maxMicro).toBe(C.anglesQuote().maxMicro);
+    await create(t);
+    expect((await estimate(t.ctx)).maxMicro).toBe(0);
+    expect((await estimate(t.ctx, { redo: "Je veux des angles plus drôles." })).maxMicro).toBeGreaterThan(0);
+  });
+
+  it("trois stratèges séparées, un juge à part, trois angles montrés avec celui que SINA recommande ; le reste en réserve", async () => {
+    const t = await atAngles();
+    expect((await call("memory.note", t.ctx, { kind: "fact", key: "paiement", value: "Par carte le soir, ou par virement." })).ok).toBe(true);
+    const { log, result, angles } = await create(t);
+    // L'étude de la marque suffit : aucune recherche repayée. Trois stratèges, un juge, un lecteur ; ni reprise ni réécriture.
+    expect(log.ids[0]).toBe("segments-1");
+    expect([...log.ids].sort()).toEqual(["judge-1", "reader-1", "segments-1", "strategist-1-audacieux", "strategist-1-emotion", "strategist-1-sur"]);
+    // Les types de clients sont dressés AVANT les stratèges, avec la définition du propriétaire ; chaque stratège les reçoit.
+    // Celle qui dresse les types de clients, les stratèges et le juge reçoivent la leçon.
+    for (const id of ["segments-1", "strategist-1-sur", "strategist-1-emotion", "strategist-1-audacieux", "judge-1"]) expect(log.systems[id]).toMatch(/# Ta leçon sur les angles marketing[\s\S]*Ce qu'est un vrai type de client/);
+    expect(log.systems["reader-1"]).not.toMatch(/Ta leçon sur les angles/);
+    expect(log.systems["segments-1"]).toMatch(/UN TYPE DE CLIENT différent, avec ses envies et ses besoins à lui, qui cherche le même produit/);
+    // Les trois clientèles sont choisies AVANT d'écrire : les stratèges ne reçoivent qu'elles, avec leur produit vedette.
+    expect(log.prompts["segments-1"]).not.toMatch(/# Les trois clientèles choisies/);
+    expect(log.systems["segments-1"]).toMatch(/targets : les TROIS clientèles[\s\S]*les trois plus ÉLOIGNÉES/);
+    expect(log.prompts["strategist-1-sur"]).toMatch(/# Les trois clientèles choisies \(une proposition pour chacune ; segment = son id\)\n- c1 : Type de client 1\. Situation 1\. Envie : Envie 1\. Besoin : Besoin 1\. Avant, ou à la place : Avant 1\. Produit ou prestation vedette pour lui : Produit vedette 1/);
+    expect(log.prompts["strategist-1-sur"]).not.toMatch(/- c4 :/);
+    expect(log.systems["strategist-1-sur"]).toMatch(/Tu écris UNE proposition pour CHACUNE[\s\S]*trois arguments DIFFÉRENTS[\s\S]*L'épreuve de l'échange/);
+    expect(JSON.parse(log.prompts["judge-1"]).lesTroisClientelesChoisies).toHaveLength(3);
+    expect(JSON.parse(log.prompts["judge-1"]).propositions[0]).toMatchObject({ segment: "c1", featured: "Vedette sur 1", argument: "Argument sur 1" });
+    expect(angles.clients).toEqual({ why: "Ce sont tes trois clientèles les plus éloignées.", others: ["Type de client 4"] });
+    // Chacune a son entrée, et ne voit pas les propositions des autres.
+    expect(log.systems["strategist-1-sur"]).toMatch(/l'angle SÛR[\s\S]*le métier et les faits du client/);
+    expect(log.systems["strategist-1-emotion"]).toMatch(/l'angle d'ÉMOTION[\s\S]*paroles réelles des acheteurs/);
+    expect(log.systems["strategist-1-audacieux"]).toMatch(/l'angle AUDACIEUX[\s\S]*ce que personne n'ose dire/);
+    for (const role of P.ANGLE_ROLES) {
+      expect(log.prompts[`strategist-1-${role}`]).toBe(log.prompts["strategist-1-sur"]);
+      expect(log.prompts[`strategist-1-${role}`]).not.toMatch(/Accroche (sur|emotion|audacieux)/);
     }
+    // Le dossier : les faits du client, sa marque choisie, les paroles réelles de l'étude, les concurrents.
+    const file = log.prompts["strategist-1-sur"];
+    expect(file).toMatch(/# Les faits du client[\s\S]*l'anse laisse passer trois doigts/);
+    expect(file).toContain(`Nom : ${series(3)[0].name}`);
+    // Ce que SINA a noté dans la mémoire du projet fait partie des faits : jamais redemandé dans « à confirmer ».
+    expect(file).toContain("paiement : Par carte le soir, ou par virement.");
+    expect(file).toContain(`0. « ${QUOTES[0]} »`);
+    expect(file).toMatch(/Concurrents : Terre & Feu ; Maison Argile/);
+    // Le juge voit les neuf propositions, avec leur entrée.
+    const judged = JSON.parse(log.prompts["judge-1"]);
+    expect(judged.propositions.map((x: any) => x.id)).toEqual(["sur-1", "sur-2", "sur-3", "emotion-1", "emotion-2", "emotion-3", "audacieux-1", "audacieux-2", "audacieux-3"]);
+    expect(judged.propositions[3].entree).toBe("emotion");
+    // Trois montrés, identifiés par leur entrée ; les autres angles notés 8 restent en réserve ; ceux sous 8 sont écartés.
+    expect(angles.shown).toEqual([{ id: "sur", role: "sur" }, { id: "emotion", role: "emotion" }, { id: "audacieux", role: "audacieux" }]);
+    expect(angles.reserve).toEqual(["reserve-sur-2", "reserve-emotion-2", "reserve-audacieux-2"]);
+    expect(angles.list.map((a) => a.id)).toEqual(["sur", "emotion", "audacieux", "reserve-sur-2", "reserve-emotion-2", "reserve-audacieux-2"]);
+    expect(angles.recommendedId).toBe("emotion");
+    expect(angles.recommendation).toMatch(/te ressemble/);
+    expect(angles.judged).toBe("juges");
+    expect(angles.issues).toEqual([]);
+    const emotion = angles.list[1];
+    // Trois angles, trois types de clients différents, montrés avec leur envie et leur besoin.
+    expect(angles.list.slice(0, 3).map((a) => a.client!.name)).toEqual(["Type de client 1", "Type de client 2", "Type de client 3"]);
+    expect(emotion.client).toEqual({ name: "Type de client 2", who: "Situation 2.", wants: "Envie 2.", needs: "Besoin 2." });
+    expect(emotion.showcase).toBe("L'anse où passent trois doigts.");
+    expect(emotion).toMatchObject({ featured: "Vedette emotion 1", argument: "Argument emotion 1" });
+    expect(emotion).toMatchObject({ role: "emotion", title: "Angle emotion 1", message: "Accroche emotion 1 : ta tasse, pas une autre.", note: 9, proofsToConfirm: ["Passe-t-elle au lave-vaisselle ?"] });
+    expect(emotion.site!.button).toBe("Trouver ma tasse");
+    // Une parole citée qui n'existe pas (numéro 99) est retirée ; celle qui existe garde sa page.
+    expect(emotion.quotes).toEqual([{ text: QUOTES[0], url: PAGE }]);
+    expect(emotion.sources).toEqual([{ title: "avis.example", url: PAGE }]);
+    expect(result).toMatchObject({ recommande: "emotion", ecrits: 9, reserve: 3, reprises: [] });
+    expect(J.journeyOf(t.cid).steps[4].status).toBe("review");
+    // SINA relit ses angles gratuitement ; le fil montre trois cartes, jamais la réserve.
+    const read = await call("angles.propose", t.ctx, {});
+    expect(read).toMatchObject({ ok: true });
+    expect(read.jobs).toBeUndefined();
+    expect((read.data as any).angles.map((a: any) => a.id)).toEqual(["sur", "emotion", "audacieux"]);
+    expect(read.hint).toMatch(/3 autre\(s\) angle\(s\) gardé\(s\) restent en réserve/);
+    const view: any = await fr(() => threadView(t.user, t.cid));
+    expect(view.journey.angles.list.map((a: any) => a.id)).toEqual(["sur", "emotion", "audacieux"]);
+    expect(view.journey.angles).toMatchObject({ recommendedId: "emotion", quoteCount: QUOTES.length, chosen: null, clients: { others: ["Type de client 4"] } });
+    // La consigne de l'étape : SINA présente, recommande, et ne choisit jamais à la place du client.
+    const said = J.anglesStepContext(J.journeyOf(t.cid)).join("\n");
+    expect(said).toMatch(/Celui que tu recommandes : emotion/);
+    expect(said).toMatch(/Ne choisis jamais à sa place/);
   });
 
-  it("sources : les places de marché (AliExpress, Amazon, eBay, Cdiscount, Etsy…) sont exclues, consigne du propriétaire", async () => {
-    const { isMarketplace } = await import("@/lib/ai/web-search");
-    for (const u of ["https://fr.aliexpress.com/item/1", "https://www.amazon.fr/dp/B0", "https://www.ebay.fr/itm/1", "https://www.cdiscount.com/x", "https://www.etsy.com/fr/listing/1", "https://fr.shopping.rakuten.com/x", "https://www.manomano.fr/p", "https://www.leboncoin.fr/x", "https://www.temu.com/x"]) expect(isMarketplace(u), u).toBe(true);
-    for (const u of ["https://www.marmiton.org/recettes", "https://www.60millions-mag.com/x", "https://www.reddit.com/r/cuisine", "https://confiturerie-exemple.fr/"]) expect(isMarketplace(u), u).toBe(false);
+  it("le client choisit UN angle : il devient l'angle actif du projet ; il peut changer d'avis", async () => {
+    const t = await atAngles();
+    await create(t);
+    expect((await call("angles.choose", t.ctx, { angleId: "reserve-sur-2" })).summary).toMatch(/Angle inconnu/);
+    const chosen = await call("angles.choose", t.ctx, { angleId: "emotion" });
+    expect(chosen.ok, chosen.summary).toBe(true);
+    expect(chosen.hint).toMatch(/informations à confirmer : Passe-t-elle au lave-vaisselle/);
+    const j = J.journeyOf(t.cid);
+    expect(j.angleChoice).toMatchObject({ id: "emotion", ids: ["emotion"] });
+    expect(j.steps[4].status).toBe("done");
+    expect(j.steps[5].status).toBe("todo");
+    const active = activeStrategy(t.pid)!;
+    expect(active.angleId).toBe("emotion");
+    expect(active.angle).toMatchObject({ title: "Angle emotion 1", promise: "Une tasse tournée à la main, faite pour ta main.", messages: ["Accroche emotion 1 : ta tasse, pas une autre."], limits: ["Passe-t-elle au lave-vaisselle ?"] });
+    expect(active.angle.examples).toMatchObject({ hero: "Titre du site emotion 1", cta: "Trouver ma tasse" });
+    expect(active.angle.sources[0]).toMatchObject({ value: QUOTES[0], ref: PAGE });
+    // Il change d'avis : l'autre angle devient l'angle actif, sans limite par forfait.
+    t.ctx.runId = `run-autre-${Date.now()}`;
+    expect((await call("angles.choose", t.ctx, { angleId: "audacieux" })).ok).toBe(true);
+    expect(activeStrategy(t.pid)!.angleId).toBe("audacieux");
+    expect(((await fr(() => threadView(t.user, t.cid))) as any).journey.angles.chosen).toBe("audacieux");
   });
 
-  it("refusé avant l'image de marque validée", async () => {
-    const { cid, ctx } = await stepFour();
-    J.updateJourney(cid, (x) => J.setStep(x, 3, "review"));
-    const r = await call("angles.propose", ctx, {});
-    expect(r.ok).toBe(false);
-    expect(r.summary).toMatch(/étape 3/);
+  // ---------------------------------------------------------------- le juge, la reprise, le doute
+
+  it("une entrée sans angle à 8 est reprise UNE fois par sa stratège, puis rejugée ; la reprise réussie est montrée", async () => {
+    const t = await atAngles();
+    const { log, angles, result } = await create(t, { note: (id) => (id.startsWith("audacieux") ? (id.endsWith("-4") ? 8 : 5) : id.endsWith("-1") ? 9 : 6), drafts: (role, n) => (role === "audacieux" && n > 3 ? { segment: "c3" } : {}) });
+    expect(log.ids.filter((x) => x.startsWith("rework"))).toEqual(["rework-1-audacieux"]);
+    expect(log.ids).toContain("recheck-1");
+    // La stratège reçoit les remarques du juge et les angles retenus des autres entrées.
+    expect(log.prompts["rework-1-audacieux"]).toMatch(/refusées par le juge[\s\S]*« Angle audacieux 1 »[\s\S]*5 sur 10/);
+    expect(log.prompts["rework-1-audacieux"]).toMatch(/Angles déjà retenus pour les autres entrées[\s\S]*Angle sur 1[\s\S]*Angle emotion 1/);
+    expect(log.prompts["rework-1-audacieux"]).toMatch(/# Types de clients déjà pris \(n'en vise aucun\)\nc1, c2\n\n# Types de clients encore libres[^\n]*\nc3$/);
+    expect(log.systems["rework-1-audacieux"]).toMatch(/Tu ne reformules pas une proposition refusée/);
+    // Le juge ne relit que la reprise.
+    expect(JSON.parse(log.prompts["recheck-1"]).propositions.map((x: any) => x.id)).toEqual(["audacieux-4", "audacieux-5"]);
+    expect(angles.list[2]).toMatchObject({ id: "audacieux", title: "Angle audacieux 4", note: 8 });
+    expect(angles.list[2].doubt).toBeUndefined();
+    expect(result.reprises).toEqual(["audacieux"]);
   });
 
-  it("format du guide du propriétaire (7 novembre) : titre court, objectif, pourquoi, accroche, récit, scènes, publication, appel, à confirmer", async () => {
-    const R = await import("@/lib/preparation/research-ai");
-    expect(R.OWNER_ANGLE_FORMAT).toMatch(/title = un titre COURT et clair de 2 à 6 mots/);
-    expect(R.OWNER_ANGLE_FORMAT).toMatch(/« Le goût du fruit », « Le savoir-faire du producteur », « L'origine et la saison », « Le plaisir au quotidien », « Le cadeau gourmand »/);
-    expect(R.OWNER_ANGLE_FORMAT).toMatch(/jamais comme des questions au vouvoiement/);
-    // Essai réel : « Des clientes saluent déjà… » (avis d'une autre marque) et « étiquette rétro » (détail inventé).
-    expect(R.OWNER_ANGLE_FORMAT).toMatch(/clients d'AUTRES marques[^]*jamais « des clientes saluent déjà »/);
-    expect(R.OWNER_ANGLE_FORMAT).toMatch(/aucun détail du produit qui n'est pas dans les faits confirmés ou les photos \(forme ou style d'étiquette/);
-    const a = A.anglesOf({ sources: [], angles: [{ id: "usage", title: "Le goût du fruit", goal: "Donner envie de goûter", reason: "Le client cherche un parfum qu'il aime.", message: "Ferme les yeux. Retrouve le goût de la fraise.", story: "Décris le goût de chaque recette.", show: "Un fruit ouvert, puis une tartine.", organicExample: "« Plutôt lisse ou avec des morceaux ? »", cta: "Découvre les parfums.", proofsToConfirm: ["Parfums disponibles, ingrédients"], sourceIds: [] }] }).list[0];
-    expect(a).toMatchObject({ title: "Le goût du fruit", goal: "Donner envie de goûter", why: "Le client cherche un parfum qu'il aime.", story: "Décris le goût de chaque recette.", show: "Un fruit ouvert, puis une tartine.", organicExample: "« Plutôt lisse ou avec des morceaux ? »", cta: "Découvre les parfums." });
-    // Ancienne recherche (sans ces champs) : rien d'inventé, on reprend ce qui existe.
-    const old = A.anglesOf({ sources: [], angles: [{ id: "usage", title: "T", reason: "R", visualDirection: "Scènes", communicationChange: "Récit", sourceIds: [] }] }).list[0];
-    expect(old).toMatchObject({ goal: "", show: "Scènes", story: "Récit", cta: "", organicExample: "" });
+  it("trois angles = trois types de clients différents : le Studio le garantit, même quand le juge choisit deux angles pour le même client", async () => {
+    const t = await atAngles();
+    // Les trois stratèges écrivent dans le même ordre : les trois propositions notées 9 visent toutes la clientèle c1.
+    const { angles, result } = await create(t, { drafts: (_role, n) => ({ segment: `c${n}` }) });
+    const shown = angles.list.slice(0, 3);
+    expect(new Set(shown.map((a) => a.client!.name)).size).toBe(3);
+    // Une clientèle par angle : une seule entrée garde sa proposition à 9, une autre prend celle à 8, la troisième est reprise.
+    expect(result.clientelesChoisies).toEqual(["c1", "c2", "c3"]);
+    expect(shown.map((a) => a.client!.name).sort()).toEqual(["Type de client 1", "Type de client 2", "Type de client 3"]);
+    // Le choix de la stratège est gardé s'il désigne trois types de la liste ; sinon le Studio complète avec les types prouvés.
+    const four = [1, 2, 3, 4].map((k) => C.SegmentSchema.parse({ id: `c${k}`, name: `T${k}`, who: "w", wants: "e", needs: "b", proven: k !== 2 }));
+    expect(C.targetsOf(four, ["c4", "c2", "c1"]).map((g) => g.id)).toEqual(["c4", "c2", "c1"]);
+    expect(C.targetsOf(four, ["c4", "zz", "c4"]).map((g) => g.id)).toEqual(["c4", "c1", "c3"]);
+    expect(C.targetsOf(four, []).map((g) => g.id)).toEqual(["c1", "c3", "c4"]);
+    // Une proposition qui ne vise aucun type de client de la liste est plafonnée : elle n'est jamais gardée telle quelle.
+    const stray = C.candidatesOf("sur", [C.AngleDraftSchema.parse(draft("sur", 1, { segment: "zz" })), C.AngleDraftSchema.parse(draft("sur", 2, { segment: "c2" })), C.AngleDraftSchema.parse(draft("sur", 3, { segment: "c2", hook: "Autre accroche." }))], { facts: "", quotes: 9, segments: ["c1", "c2"] });
+    expect(stray.map((c) => c.issues.join())).toEqual(["ne vise aucun type de client de la liste", "", "vise le même type de client qu'une autre proposition de la même stratège"]);
+    // Le choix sans IA : jamais deux fois le même client, même si la somme des notes baisse.
+    const notes = new Map(stray.map((c) => [c.id, { note: 9 }]));
+    expect(C.pickThree([...stray, ...C.candidatesOf("emotion", [C.AngleDraftSchema.parse(draft("emotion", 1, { segment: "c2", hook: "E." }))], { facts: "", quotes: 9 }), ...C.candidatesOf("audacieux", [C.AngleDraftSchema.parse(draft("audacieux", 1, { segment: "c9", hook: "A." }))], { facts: "", quotes: 9 })], new Map([...notes, ["emotion-1", { note: 9 }], ["audacieux-1", { note: 9 }]])).get("sur")!.id).toBe("sur-1");
   });
 
-  it("angles montrés au client : sources réelles (titre, lien), preuves à confirmer, jamais plus de 4 sources par angle", () => {
-    const d = { recommendedId: "b", recommendation: "Le plus proche de ta clientèle.", sources: [
-      { id: "s1", title: "Blog confitures", url: "https://exemple.fr/a", status: "consulted" },
-      { id: "s2", title: "", url: "https://exemple.fr/b", status: "consulted", relevance: { accepted: false } },
-    ], angles: [{ id: "b", title: "Le cadeau gourmand", audience: "Ceux qui offrent", motivation: "Faire plaisir", message: "Offre l'été en pot", emotion: "fierté", proofsToConfirm: ["Fruits de la Drôme"], arguments: ["a", "b", "c", "d"], sourceIds: ["s1", "s2", "zz"] }] };
-    const a = A.anglesOf(d);
-    expect(a.sourceCount).toBe(1);
-    expect(a.list[0].sources).toEqual([{ title: "Blog confitures", url: "https://exemple.fr/a" }, { title: "https://exemple.fr/b", url: "https://exemple.fr/b" }]);
-    expect(a.list[0].proofsToConfirm).toEqual(["Fruits de la Drôme"]);
-    expect(a.list[0].arguments).toHaveLength(3);
+  it("un angle qui reste sous 8 après la reprise est montré avec le doute de SINA, et n'est jamais recommandé", async () => {
+    const t = await atAngles();
+    const { angles } = await create(t, { judge: (ids) => ({ angles: ids.map((x) => ({ id: x, note: x.startsWith("emotion") ? 6 : 9, why: x.startsWith("emotion") ? "On ne voit personne." : "Solide.", fixes: x.startsWith("emotion") ? ["Montre une personne."] : [] })), selection: { sur: "sur-1", emotion: "emotion-1", audacieux: "audacieux-1", recommande: "emotion", pourquoi: "Parce que." }, overall: "" }) });
+    const emotion = angles.list.find((a) => a.id === "emotion")!;
+    expect(emotion.doubt).toBe("On ne voit personne.");
+    expect(emotion.note).toBe(6);
+    expect(angles.recommendedId).toBe("sur");
+    expect(angles.recommendation).toBe("");
+    expect(anglesDoubtHint(angles)).toMatch(/Tu doutes de cet angle[\s\S]*sans jamais parler de juge[\s\S]*On ne voit personne/);
+    expect(J.anglesStepContext(J.journeyOf(t.cid)).join("\n")).toMatch(/TON DOUTE : On ne voit personne/);
   });
-  it("essai réel du 7 novembre : pourcentages lisibles, accord lisible, coût réel d'un échec dit au client, relance seulement à sa demande", async () => {
-    const { run, id, now } = await import("@/lib/db");
-    const { commitState } = await import("@/lib/preparation/store");
-    const T = await import("@/lib/syna-agent/tools/angles");
-    expect(A.pct(7.994748837209302)).toBe("8 %");
-    expect(A.pct(4.4757162790697675)).toBe("4,5 %");
-    expect(T.questionList([{ id: "s-ingr", question: "Ingrédients ?" }], ["Ingrédients ?", "Autre point"])).toBe("[s-ingr] Ingrédients ? ; Autre point");
-    const { user, ctx, pid } = await stepFour();
-    // Demande d'accord : une phrase pour le client, jamais « angles.propose {} ».
-    expect(await getTool("angles.propose")!.preview!(ctx, {})).toMatch(/^Analyse de ta fiche de départ par l'IA, avant la recherche : au plus \d+(,\d)? % du budget IA du mois\.$/);
-    await call("angles.propose", ctx, {});
-    await execute();
-    await call("angles.propose", ctx, {}); // fiche validée, recherche lancée
-    expect(await getTool("angles.propose")!.preview!(ctx, {})).toMatch(/^Recherche web sur ton marché et 3 angles marketing/);
-    const jobId = claimNext(["project.prepare"])!.id;
-    // La recherche échoue après un appel payant (pages non lues) : 0,29 € réellement dépensés.
-    run("INSERT INTO ai_calls(id,created_at,user_id,project_id,job_id,task,provider,requested_model,unit,cost,status) VALUES(?,?,?,?,?,?,?,?,?,?,?)", id(), now(), user.id, pid, jobId, "strategy", "anthropic", "test", "request", 290_365, "ok");
-    completeJob(jobId, {});
-    commitState(pid, stateOf(pid)!.revision, (st) => { (st as any).error = { step: "research", jobId, revision: st.revision, message: "Recherche Internet incomplète : compléter les pages pertinentes avant de payer une analyse d’angles.", at: Date.now() }; (st.stages as any).research = undefined; });
-    const r = await call("angles.propose", ctx, {});
-    expect(r.ok).toBe(false);
-    expect(r.jobs ?? []).toHaveLength(0); // jamais relancée (payante) sans la demande du client
-    expect(r.summary).toMatch(/Elle a coûté \d+(,\d)? % du budget \(appels réellement faits\)/);
-    expect((r.data as any).coutPct).toBeGreaterThan(0);
-    const again = await call("angles.propose", ctx, { retry: true });
-    expect(again.jobs).toHaveLength(1);
+
+  it("contrôle du Studio : un chiffre ou une garantie que le client n'a pas dits plafonne la note à 5, quoi qu'en dise le juge", async () => {
+    const t = await atAngles();
+    const { log, angles } = await create(t, {
+      drafts: (role, n) => (role === "sur" && n <= 3 ? { hook: `Garantie à vie, tasse ${n}.`, site: { title: `Titre du site sur ${n}`, text: "Livrée en 2 jours.", button: "Trouver ma tasse" } } : {}),
+      note: (id) => (id.endsWith("-1") || id.endsWith("-4") ? 9 : 6),
+    });
+    // Le juge est prévenu de ce que le Studio a relevé.
+    expect(JSON.parse(log.prompts["judge-1"]).propositions[0].controleDuStudio[0]).toMatch(/affirme sans que le client l'ait dit : .*2 jours/);
+    // Noté 9 par le juge, mais plafonné : l'entrée est reprise, et la reprise honnête est montrée.
+    expect(log.ids).toContain("rework-1-sur");
+    expect(log.prompts["rework-1-sur"]).toMatch(/Retire ce que le client n'a pas dit/);
+    expect(angles.list[0]).toMatchObject({ id: "sur", title: "Angle sur 4" });
+    // Un chiffre donné par le client (son prix) et une information rangée « à confirmer » ne sont pas des fautes.
+    expect(C.draftIssues(C.AngleDraftSchema.parse(draft("sur", 1, { hook: "32 € la tasse, et elle te suit partout." })), "Prix : 32 € la tasse")).toEqual([]);
+    expect(C.draftIssues(C.AngleDraftSchema.parse(draft("sur", 1, { hook: "Garantie 2 ans." })), "")).toHaveLength(1);
+    // Une heure de la journée fait partie de la scène : ce n'est pas une promesse.
+    expect(C.draftIssues(C.AngleDraftSchema.parse(draft("sur", 1, { hook: "7 h. La cuisine est encore sombre." })), "")).toEqual([]);
+  });
+
+  it("le juge en panne ne bloque pas l'étape : les angles sont montrés, et SINA dit qu'elle n'a pas pu les relire", async () => {
+    const t = await atAngles();
+    const { angles } = await create(t, { fail: ["judge"] });
+    expect(angles.judged).toBe("non_juges");
+    expect(angles.shown).toHaveLength(3);
+    expect(angles.issues!.join(" ")).toMatch(/pas pu relire ces angles aussi sévèrement/);
+    expect(anglesDoubtHint(angles)).toMatch(/À dire honnêtement au client/);
+  });
+
+  // ---------------------------------------------------------------- écouter les acheteurs, lire comme quelqu'un qui ne sait rien
+
+  it("trop peu de paroles d'acheteurs : SINA retourne les écouter, et ne garde que celles qu'elle relit sur leur page", async () => {
+    const t = await atAngles(2);
+    B.brandPageDeps.read = async () => "Avis clients. Je veux une tasse qui tienne chaud longtemps. Merci.";
+    const { log, angles } = await create(t, { web: () => [{ url: PAGE, title: "Avis sur les tasses", category: "customers", excerpt: "« Je veux une tasse qui tienne chaud longtemps »" }] });
+    expect(log.ids.slice(0, 2)).toEqual(["web:paroles", "listen"]);
+    // La parole inventée par le modèle n'est pas dans la page : elle n'est pas gardée.
+    expect(log.prompts["strategist-1-sur"]).toContain("2. « Je veux une tasse qui tienne chaud longtemps »");
+    expect(log.prompts["strategist-1-sur"]).not.toContain("Parole inventée");
+    expect(angles.quoteCount).toBe(3);
+    // Toujours moins de huit : c'est dit au client.
+    expect(angles.issues!.join(" ")).toMatch(/que 3 paroles réelles d'acheteurs/);
+  });
+
+  it("clair d'abord : une phrase que le lecteur ne comprend pas est réécrite puis relue ; une réécriture qui invente est écartée", async () => {
+    const t = await atAngles();
+    const { log, angles } = await create(t, {
+      reader: (_p, second) => (second ? { texts: [{ id: "e-hook", understood: "Une tasse rien qu'à moi.", clear: true, why: "" }] } : { texts: [{ id: "e-hook", understood: "je ne comprends pas", clear: false, why: "« pas une autre » : autre quoi ?" }, { id: "s-btn", understood: "?", clear: false, why: "Trouver quoi ?" }] }),
+      clarify: () => ({ texts: [{ id: "e-hook", text: "Ta tasse du matin, celle que personne ne te prend." }, { id: "s-btn", text: "Garantie 10 ans" }] }),
+    });
+    expect(log.ids.filter((x) => /reader|clarify/.test(x))).toEqual(["reader-1", "clarify-1", "reader-1-2"]);
+    expect(log.prompts["reader-1"].split("\n")).toHaveLength(12);
+    expect(log.prompts["clarify-1"]).toMatch(/id e-hook \| angle « Angle emotion 1 » \| l'accroche : « Accroche emotion 1[\s\S]*ce qui bloque : « pas une autre » : autre quoi \?/);
+    // Seule la réécriture gardée est relue.
+    expect(log.prompts["reader-1-2"]).toMatch(/^- id e-hook .*celle que personne ne te prend/);
+    expect(log.prompts["reader-1-2"]).not.toMatch(/s-btn/);
+    expect(angles.list[1].message).toBe("Ta tasse du matin, celle que personne ne te prend.");
+    // La réécriture qui affirme une garantie est écartée : le bouton d'origine reste, et c'est dit.
+    expect(angles.list[0].site!.button).toBe("Trouver ma tasse");
+    expect(angles.issues!.join(" ")).toMatch(/Angle « Angle sur 1 » : le bouton du site \(« Trouver ma tasse »\) peut ne pas être comprise/);
+  });
+
+  it("nouvelle proposition avec les mots du client : payante, les angles déjà montrés ne sont pas refaits, l'ancien choix tombe", async () => {
+    const t = await atAngles();
+    await create(t);
+    expect((await call("angles.choose", t.ctx, { angleId: "sur" })).ok).toBe(true);
+    expect((await call("angles.propose", t.ctx, {})).jobs).toBeUndefined();
+    t.ctx.runId = `run-redo-${Date.now()}`;
+    const { log, angles } = await create(t, {}, { redo: "Je veux des angles plus drôles." });
+    expect(log.prompts["strategist-2-sur"]).toMatch(/# Ce que le client demande pour cette nouvelle proposition \(ses mots\)\nJe veux des angles plus drôles\./);
+    expect(log.prompts["strategist-2-sur"]).toMatch(/# Angles déjà montrés au client[\s\S]*- Angle sur 1 : « Accroche sur 1/);
+    expect(angles.round).toBe(2);
+    expect(J.journeyOf(t.cid).angleChoice).toBeUndefined();
+    expect(J.journeyOf(t.cid).steps[4].status).toBe("review");
+    // L'angle actif du projet reste celui d'avant jusqu'au nouveau choix.
+    expect(activeStrategy(t.pid)!.angleId).toBe("sur");
+  });
+
+  // ---------------------------------------------------------------- les consignes
+
+  it("consignes : aucune trace des projets d'essai, les règles du propriétaire y sont, SINA demande d'abord ce que le client seul sait", () => {
+    const sent = [P.SEGMENTS_SYSTEM, P.strategistSystem("sur", 3), P.strategistSystem("emotion", 3), P.strategistSystem("audacieux", 3), P.reworkSystem("sur", 2), P.JUDGE_SYSTEM, P.CLARIFY_SYSTEM].join("\n");
+    expect(sent).not.toMatch(/pulpe|infusion|tisane|\bthé\b|confiture|toilett|arven|sonore|paysagiste|fraise|sachet/i);
+    expect(sent).toMatch(/CLAIR D'ABORD, BEAU ENSUITE/);
+    expect(P.JUDGE_SYSTEM).toMatch(/TROIS TYPES DE CLIENTS DIFFÉRENTS, sans exception/);
+    // La leçon du propriétaire (cahier des angles) : lue par le code, sans ses sources, sans trace des projets d'essai.
+    const lesson = K.anglesLesson();
+    expect(lesson).toMatch(/^## 1\. Ce qu'est un angle/);
+    expect(lesson).toMatch(/un type de\s+client différent/);
+    expect(lesson).toMatch(/jamais par une crainte ou une qualité que tous les\s+clients partagent/);
+    expect(lesson).toMatch(/L'épreuve de l'échange/);
+    expect(lesson).not.toMatch(/https?:\/\/|## Sources/);
+    expect(lesson).not.toMatch(/pulpe|infusion|tisane|\bthé\b|confiture|toilett|arven|bécane|vasco|braise/i);
+    expect(K.withAnglesLesson("Consigne.")).toMatch(/^Consigne\.\n\n# Ta leçon sur les angles marketing[\s\S]*## 7\. Les fautes à ne pas faire/);
+    expect(sent).toMatch(/Aucun ordre donné au lecteur/);
+    expect(sent).toMatch(/Jamais de personne dont le client n'a pas fourni la photo/);
+    expect(P.JUDGE_SYSTEM).toMatch(/8 = tu la montrerais telle quelle/);
+    expect(P.JUDGE_SYSTEM).toMatch(/Un concurrent du même métier pourrait-il la signer/);
+    const before = J.anglesStepContext(J.emptyJourney()).join("\n");
+    expect(before).toMatch(/AVANT de lancer, vérifie que tu sais ce que LUI SEUL peut savoir/);
+    expect(before).toMatch(/ne redemande JAMAIS ce que tu sais/);
+    expect(before).toMatch(/un seul accord pour toute l'étape/);
+    // Une seule façon de faire : l'outil de SINA ne passe plus par l'ancien moteur de préparation.
+    const src = fs.readFileSync("src/lib/syna-agent/tools/angles.ts", "utf8") + fs.readFileSync("src/lib/syna-agent/angles.ts", "utf8") + fs.readFileSync("src/lib/syna-agent/angles-chain.ts", "utf8");
+    expect(src).not.toMatch(/preparation\//);
+    expect(fs.readFileSync("worker/handlers.ts", "utf8")).toMatch(/"syna\.angles"/);
   });
 });

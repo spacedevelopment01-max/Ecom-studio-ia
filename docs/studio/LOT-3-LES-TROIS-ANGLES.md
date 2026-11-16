@@ -1,0 +1,176 @@
+# Lot 3 : les trois angles
+
+Compte rendu du 16 novembre 2026. Accord du propriétaire pour construire : « Oui, on construit comme ça ».
+**Lot fini le 16 novembre 2026** : SINA a créé seule, avec la vraie IA, les trois angles de deux clients inventés ;
+le propriétaire a validé les angles (« Parfait ») ; les anciennes façons sont retirées.
+
+## Ce qui est construit
+
+- **Une seule façon de créer les angles** : la chaîne de `syna-agent/angles-chain.ts`, en tâche de fond
+  (`syna.angles`). L'outil de SINA (`angles.propose`) ne passe plus par l'ancien moteur de préparation : plus
+  d'« analyse de la fiche » payante, plus de seconde recherche sur le web.
+- **SINA part de ce qu'elle sait.** Le dossier est monté sans IA : les faits du client (sa fiche, ce qu'il a dit à
+  SINA, les faits confirmés du projet), sa marque choisie (nom, idée, adversaire, voix), et l'étude du marché faite
+  pour la marque (paroles réelles d'acheteurs, concurrents), reprise sans être repayée. Elle ne retourne écouter le web
+  que s'il y a moins de huit paroles d'acheteurs ; chaque parole gardée est relue sur sa page.
+- **Les questions avant les stratèges.** La consigne de l'étape demande à SINA de vérifier d'abord ce que le client
+  seul peut savoir (ce que ses clients lui disent, le moment de l'achat, ce qu'on ressent, ce qu'il refuse de faire, ce
+  qui fait revenir), sans jamais redemander ce qu'elle sait, et de noter chaque réponse.
+- **Les types de clients d'abord** (règle du propriétaire, voir l'essai) : SINA dresse la liste des types de clients
+  différents du commerce, chacun avec son envie et son besoin ; chaque proposition en vise un ; les trois angles
+  montrés visent trois types de clients différents, et c'est le Studio qui le garantit, pas le juge.
+- **Trois stratèges séparées**, en même temps, qui ne se voient pas : l'angle sûr part des faits du client, l'angle
+  d'émotion part des paroles d'acheteurs, l'angle audacieux part des concurrents et du moule de la catégorie. Chacune
+  écrit trois propositions. Chaque angle est une scène (qui, quand, avant, après), avec son accroche, le haut du site
+  en mots, une publication d'exemple, ce qu'on montre, et les informations à confirmer.
+- **Le contrôle du Studio, sans IA** : un prix, un poids, une durée, un pourcentage ou un mot de garantie que le
+  client n'a pas dit plafonne la note de l'angle à 5 ; une accroche déjà écrite est signalée. Une heure de la journée
+  dans une scène n'est pas une promesse.
+- **Un juge à part** note chaque proposition sur 10 (un concurrent pourrait-il la signer ; une promesse absente des
+  faits ; l'accroche lue seule fait-elle voir quelqu'un ; l'émotion vient-elle d'une vraie parole ; clair d'abord) et
+  choisit les trois à montrer, avec celui qu'il recommande. Sous 8, l'entrée est reprise une fois par sa stratège
+  (deux nouvelles propositions, avec les remarques du juge), puis rejugée. Un angle qui reste sous 8 est montré avec le
+  doute de SINA, et n'est jamais recommandé. Un juge en panne ne bloque pas l'étape : c'est dit au client.
+- **Le lecteur qui ne sait rien** lit l'accroche, le titre et le bouton du site, et le titre de la publication des
+  trois angles. Ce qu'il ne comprend pas du premier coup est réécrit, puis relu. Une réécriture qui affirme ce que le
+  client n'a pas dit est écartée.
+- **Trois cartes dans le fil** (`angle-cards.tsx`), affichées dès la fin de la tâche : l'entrée, l'accroche en grand,
+  la scène, la promesse, le haut du site en mots, la publication d'exemple, les paroles d'acheteurs avec leur page, les
+  informations à confirmer, le doute éventuel. Aucune image n'est payée à cette étape.
+- **Le client choisit un angle** (`angles.choose`). Il devient l'angle actif du projet, celui que lisent le site, les
+  publications et les publicités (`activateSinaAngle`). Les autres angles notés 8 ou plus restent en réserve. Il peut
+  changer d'avis : aucun nombre d'angles par forfait n'est compté pour ces trois angles.
+- **L'écran « Angles »** (`tab-strategie.tsx`, `/api/projects/[id]/angles`) : un écran pour relire ses trois angles et
+  dire son choix à SINA ; plus de cinq angles ni de révision payante sur cet écran.
+- **Un seul accord du client pour toute l'étape** ; relire des angles prêts est gratuit. Une nouvelle proposition se
+  demande avec ses mots (`redo`) : elle est payante, annoncée, et ne refait pas les angles déjà montrés.
+- **En direct, pas en différé** : le client attend ses angles devant l'écran, et le différé n'y ferait gagner que
+  quelques centimes.
+
+## Devis calculé par le Studio (tarifs prudents du 6 novembre 2026)
+
+| | Coût probable | Plafond jamais dépassé |
+|---|---|---|
+| Les trois angles, étude de la marque suffisante | 0,94 € | 2,90 € |
+| Les trois angles, avec une écoute du web en plus | 1,02 € | 2,90 € |
+
+Ce sont des devis, pas des mesures : le coût réel sera relevé à l'essai.
+
+## L'essai réel (16 novembre 2026)
+
+Clients repris de l'essai du lot 2 (copie sans clé sur la branche `essai-lot2-donnees`, jamais fusionnée) : le
+réparateur de vélos « Bécane » et la maroquinière « Atelier Vasco ». SINA a travaillé seule ; Claude n'a joué que les
+clients. **Dépensé : 5,04 €** comptés par le Studio (accords : 4 €, puis 6 € pour la suite). Faute de Claude, dite au
+propriétaire : les cinq premiers échanges (0,47 €) sont partis avant son oui sur le prix.
+
+| | Création des angles | Devis probable | Durée |
+|---|---|---|---|
+| Bécane, premier essai (écoute du web comprise) | 0,90 € | 1,02 € | 4 minutes |
+| Bécane, après la règle des types de clients (une entrée reprise) | 1,24 € | 1,08 € | 6 minutes |
+| Atelier Vasco (étude suffisante, aucune reprise) | 0,72 € | 1,00 € | 3 minutes |
+
+Vu avec la vraie IA :
+- SINA pose ses questions avant de créer, une à la fois, les note, et relève une contradiction avec ce que le client
+  avait dit (le délai de retour du vélo) ; elle demande à la maroquinière qui sont ses différents types de clientes ;
+- l'écoute du web quand l'étude n'a aucune parole d'acheteur (4 paroles gardées, relues sur leur page, et dit au client) ;
+- les types de clients dressés avant les stratèges (5 pour Bécane, 6 pour Atelier Vasco) ;
+- les trois stratèges, le juge, une reprise d'entrée (l'émotion de Bécane), le lecteur qui ne sait rien (3 à 4 phrases
+  reprises par création), une phrase encore peu claire dite au client ;
+- rien d'inventé : les prix et les faits sont ceux du client, le délai est écrit « le plus souvent le soir même » ;
+- le choix d'un angle, enregistré comme angle actif du projet ; une nouvelle proposition demandée avec ses mots ;
+- SINA dit d'elle-même son doute sur un angle noté 8 par le juge (l'audacieux d'Atelier Vasco contredit la signature).
+
+**Décision du propriétaire pendant l'essai** (ses mots) : « un angle marketing c'est le fait d'aller chercher une
+typologie de client différente, avec des envies et besoins différents, mais qui recherche le même produit ; c'est juste
+qu'il n'est pas mis en avant et en valeur de la même façon sur le site et la communication ». Le premier essai montrait
+deux angles pour le même client (le vieux vélo au garage). Construit et revu avec la vraie IA : la liste des types de
+clients avant les stratèges, un type de client par proposition, trois angles = trois types de clients différents
+garantis par le Studio (`pickThree`), le type de client en tête de chaque carte.
+
+Corrigé après l'essai, testé avec une IA simulée seulement : ce que SINA note dans la mémoire du projet fait partie des
+faits (une question déjà répondue revenait dans « à confirmer ») ; les questions « à confirmer » sont au tutoiement.
+
+Pas vu avec la vraie IA : un angle montré avec le doute du juge (aucun n'est resté sous 8) ; un troisième client.
+**Le propriétaire n'a pas encore dit si les angles lui conviennent** : le lot n'est pas fini sans son avis.
+
+## La leçon des angles (16 novembre 2026, après l'essai)
+
+Avis du propriétaire sur les angles de l'essai : « on peut mieux faire et bien différencier la clientèle type sur
+angles différents ». Puis sa demande : aller voir sur internet comment faire comprendre à SINA ce qu'est un angle,
+lui en faire une leçon, et lui en rendre compte.
+
+- Lu : sept pages (agences de publicité, un spécialiste français, Mailchimp, Strategyn), plus des résumés du livre
+  d'Eugene Schwartz et de la méthode Strategyzer. Retour au propriétaire, avec les captures :
+  https://claude.ai/artifact/EdYHvAQAnTzKxcBfpuudYV
+- Écrit : le cahier `docs/sina-savoir/angles-marketing.md` (sa définition d'abord ; ce qu'est un vrai type de client,
+  c'est-à-dire une situation, jamais un âge ni une crainte partagée par tous ; ce qui change d'un angle à l'autre ; les
+  règles, dont l'épreuve de l'échange ; les fautes).
+- Branché : le cahier est lu à chaque création (`angles-knowledge.ts`) par celle qui dresse les types de clients, les
+  trois stratèges et le juge ; SINA pose au commerçant les questions de la leçon.
+- Constat sur l'essai : deux « types de clients » montrés n'en étaient pas (« ceux qui craignent la mauvaise surprise
+  sur la facture », « celle qui veut voir le travail de près »).
+- Accepté (« Oui ») et construit le même jour : les trois clientèles sont choisies AVANT d'écrire (`targetsOf` : les
+  trois plus éloignées, dont celle que le commerçant veut voir venir) ; chaque stratège écrit une proposition pour
+  chacune ; chaque angle porte son produit ou sa prestation vedette et son argument ; le juge applique l'épreuve de
+  l'échange et « trois angles, trois arguments » ; les trois clientèles se lisent côte à côte en haut de l'écran.
+- Revu avec la vraie IA sur les deux mêmes clients (3,32 € sur 4 € accordés ; création : 0,94 € et 1,60 €) :
+  - Atelier Vasco : l'homme qui offre (la besace Sillon, en cadeau), la femme qui travaille (le cabas Lune et son
+    ordinateur, recommandé), la cliente qui revient (la pochette Pli en deuxième sac). Trois sacs, trois arguments.
+  - Bécane : ceux qui ressortent le vélo du garage (la remise en état à 70 €, recommandé), ceux qui vont au travail à
+    vélo (le réglage des freins à 25 €), les entreprises (le passage mensuel au bureau). L'angle d'émotion est resté à
+    7 après sa reprise : il est montré avec le doute de SINA, qui a relevé d'elle-même une promesse de délai cachée
+    dans un titre et une parole venue des clients d'un autre atelier.
+- Total dépensé pour les essais du lot 3 : 8,36 €.
+- Défauts vus : une parole d'acheteur d'un autre atelier peut être citée comme si elle venait des clients du
+  commerçant ; une reprise coûte cher quand une seule clientèle reste libre (Bécane : 1,60 €).
+
+## Anciennes façons retirées le 16 novembre 2026
+
+Avis du propriétaire sur les angles refaits avec la leçon : « Parfait ». Il ne reste qu'une façon de créer et de
+choisir des angles : la chaîne de SINA (`syna.angles`), puis le choix du client (`angles.choose`).
+
+**Retiré**
+
+- **Les outils du Pilote et des cinq angles dans SINA** (`tools/project.ts`) : `pilot.state`, `pilot.run`,
+  `pilot.answer`, `pilot.approve`, `strategy.read`, `research.read`, `strategy.choose`.
+- **L'ancien écran des cinq angles** : `marketing-strategy.tsx`, `marketing-angle-cards.tsx`, et son encadré dans la
+  galerie des thèmes (`theme-gallery.tsx`). L'écran « Angles » est celui de SINA (`tab-strategie.tsx`).
+- **La recherche payante et les révisions payantes par l'ancienne route** : `/api/projects/[id]/marketing-strategy`
+  ne fait plus que lire l'angle actif (plus d'action « rechercher », « préparer », « activer », « réviser »).
+- **L'ancien juge des cinq angles** : `preparation/angles-judge.ts` et son appel dans la recherche.
+- **Les bancs d'essai des anciens angles** : `scripts/syna-recette/banc-angles.mts`, `scripts/angles/`.
+- **Les tests qui ne portaient que sur ces façons** : `sina-juge-angles.test.ts`, `angles-sources.test.ts`,
+  `mission160-api.test.ts`. Les autres ont été adaptés.
+- **Le texte « les cinq propositions »** du bandeau d'angle des écrans (`strategy-status.tsx`).
+
+**Gardé, et pourquoi**
+
+- **`marketing-strategy/`** (pile A de l'inventaire) : il range l'angle actif, que lisent le site, les publications,
+  les publicités et les vidéos. L'angle choisi dans le fil de SINA y entre par `activateSinaAngle`. Ses fonctions de
+  changement d'angle avec révisions (`prepareStrategyChange`, `activateStrategy`, `bundle.ts`) ne sont plus appelées par
+  aucun écran ; elles se décident avec les lots des publications et du site, qui lisent leurs tables.
+- **Le moteur de préparation** (`preparation/`) et sa tâche `project.prepare` : plus aucun outil ni aucune route ne
+  lance sa recherche d'angles, mais la fiche de départ de SINA l'alimente encore (`start.ts`, `project.create`), le
+  moteur des thèmes lit son état, et une soixantaine de tests s'y appuient. Il part avec le lot du site.
+- **Le sélecteur d'angle des écrans de publications, de publicités et de vidéos** (`communication-angle.tsx`) : il lit
+  l'angle actif ; il se revoit aux lots correspondants.
+- **Le nombre d'angles par forfait** (`plans.ts`, 1, 2 et 5) : il ne compte plus pour les trois angles de SINA ; il se
+  décide au lot des forfaits.
+- **La branche `essai-lot2-donnees`** : les clients d'essai (Bécane, Atelier Vasco, Braise, Trempe) peuvent resservir
+  au lot du site. À supprimer quand ils ne servent plus.
+
+## Défauts connus, pas corrigés
+
+- Le nombre d'angles par forfait (1, 2 et 5) est encore dans `plans.ts` : il ne compte plus pour les trois angles de
+  SINA, et se décide au lot des forfaits.
+- L'angle actif est lié à l'offre du projet au moment du choix : si l'offre change beaucoup à l'étape de l'activité,
+  les publications peuvent demander de le choisir à nouveau. À regarder au lot des publications.
+
+## Vérifié, pas vérifié
+
+- Vérifié le 16 novembre 2026 : la compilation sans erreur ; la suite complète des tests : 557 fichiers passés sur
+  560, 2 ignorés, 1 en échec (4 987 tests passés, 1 échec, 6 ignorés ; 25 minutes). L'échec
+  (`tests/theme211-render-evidence.test.ts`) est celui déjà connu : le test exige un navigateur à `/usr/bin/chromium`,
+  absent de la machine de travail. 11 nouveaux tests pour la chaîne des angles (`tests/sina-etape4.test.ts`).
+  L'écran des trois cartes a été regardé dans le Studio privé, avec des angles d'exemple posés à la main (sans IA).
+- Pas vérifié : la chaîne avec la vraie IA ; la qualité réelle des angles.

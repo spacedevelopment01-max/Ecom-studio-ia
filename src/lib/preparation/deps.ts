@@ -32,7 +32,6 @@ import type { Brief, Research, Identity, Contents, VisualSlot } from "./types";
 import { researchProject } from "./research";
 import { webResearch, webSearchRoute } from "../ai/web-search";
 import { analyzeResearch, authorizedAngleIdentities } from "./research-ai";
-import { judgeAngles } from "./angles-judge";
 import { sitePlan } from "./plan";
 import { latestContent } from "../seo-v2/store";
 import { remember } from "../projects";
@@ -79,10 +78,8 @@ export const realDependencies: Dependencies = {
     const web = webSearchRoute() ? async (query: string) => (await webResearch({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:research-web` }, query)).findings : null;
     const r = await ctx.step("research-pages-v4",()=>researchProject(p, b, undefined, undefined, web));
     remember(p.id,{kind:"artifact",key:"marketing.research.pages",value:JSON.stringify(r),source:"local"});
-    // La stratège écrit les cinq angles ; un juge séparé les juge, et ceux qu'il refuse sont réécrits une fois
-    // (carte des spécialistes de SINA, lot 4). Un juge en panne ne bloque jamais la recherche.
-    const written = await analyzeResearch(p, ctx, r);
-    return judgeAngles(p, ctx, written, { locked: authorizedAngleIdentities(p.id).map((x) => x.id) });
+    // Ancienne recherche (plus appelée par SINA depuis le lot 3 : ses angles viennent de syna-agent/angles-chain.ts).
+    return analyzeResearch(p, ctx, r);
   },
   async identity(p, ctx, paid) {
     const provided = stateOf(p.id)?.stages.brief?.data.input.brandName;
