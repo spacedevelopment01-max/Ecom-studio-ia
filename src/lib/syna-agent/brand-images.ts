@@ -152,9 +152,15 @@ const exact = (texts: string[]) => `Textes à écrire dans l'image, lettre pour 
  * la marque (retour du propriétaire du 16 novembre 2026 : « le logo sombre sur un fond sombre, ça marche pas ») :
  * OpenAI recopie le logo tel qu'il le reçoit. Gratuit, sans IA ; en cas d'échec, le logo d'origine est joint.
  */
+/**
+ * Le logo de la planche pour un fond sombre : TOUT ce qui est foncé passe en clair, même une couleur foncée de la
+ * marque (essai réel du 16 novembre 2026 : un nom brun, gardé brun avec un simple liseré, restait illisible sur le
+ * fond sombre de sa planche et de sa maquette) ; les couleurs vives du dessin sont gardées. Gratuit, sans IA.
+ */
+export const lightLogo = (png: Buffer, light = "#FBF8F2"): Promise<Buffer> => onDarkVersion(png, null, light);
 export async function logoForGround(logo: Buffer | null, x: Pick<Route, "ground" | "palette">): Promise<Buffer | null> {
   if (!logo || x.ground !== "sombre") return logo;
-  try { return await sharp(await onDarkVersion(await cleanArtwork(logo))).flatten({ background: /^#[0-9a-f]{6}$/i.test(x.palette.dark) ? x.palette.dark : "#16161A" }).png().toBuffer(); } catch { return logo; }
+  try { return await sharp(await lightLogo(await cleanArtwork(logo))).flatten({ background: /^#[0-9a-f]{6}$/i.test(x.palette.dark) ? x.palette.dark : "#16161A" }).png().toBuffer(); } catch { return logo; }
 }
 const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`;
 
@@ -214,7 +220,7 @@ const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
 const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
-  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Le logo de l'en-tête est CELUI de la marque (compare-le à l'image « logo » fournie avec les autres) : même signe, même dessin de lettres ; sur un écran sombre, il peut être dans sa version claire. Un autre signe à la place du sien est un défaut (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
+  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Le logo de l'en-tête est CELUI de la marque (compare-le à l'image « logo » fournie avec les autres) : même signe, même dessin de lettres ; sur un écran sombre, il est dans sa version claire (ses parties foncées en clair), et une nuance de couleur différente n'est pas un défaut. Seul un AUTRE signe ou un autre dessin du nom à la place du sien est un défaut (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
   post0: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post1: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post2: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)",
 };
 
@@ -445,9 +451,22 @@ export async function runBoardImages(o: {
       // Point de reprise : une relance de la tâche ne range pas ces deux fichiers une seconde fois.
       marks = await ctx.step(`brand:marks:${round}:${key}${pass}:${logoMade.id}`, async () => {
         const clear = await cleanArtwork(logoPng);
-        return { mark: await save(clear, "mark"), markDark: await save(await onDarkVersion(clear), "markDark") };
+        return { mark: await save(clear, "mark"), markDark: await save(await lightLogo(clear), "markDark") };
       });
     } catch (e) { notes.push(`logo de ${key} gardé, mais sans version détourée : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
+  }
+
+  // Une planche à fond sombre dont le logo est gardé : sa version claire est refaite (gratuit, sans IA) quand une de
+  // ses images est reprise, pour qu'une planche créée avant la règle du logo clair en profite aussi.
+  let lightKept: Made | undefined;
+  if (!logoMade && !o.clientLogo && x.ground === "sombre" && kept) {
+    try {
+      lightKept = await ctx.step(`brand:marklight:${round}:${key}${pass}:${kept.id}`, async () => {
+        const png = await lightLogo(await cleanArtwork(keptBuffer()!)), meta = await sharp(png).metadata();
+        const a = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-markDark.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { synaBoard: { key, slot: "markDark", round, name: x.name, from: kept.id } } });
+        return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024 };
+      });
+    } catch { /* l'ancienne version reste */ }
   }
 
   // Les images gardées d'avant restent quand seule une partie est refaite ; une image refaite et refusée ne garde
@@ -459,7 +478,7 @@ export async function runBoardImages(o: {
   const posts = (["post0", "post1", "post2"] as const).map((s, i) => (wanted.has(s) ? made.get(s) : before.posts?.[i]) ?? null);
   const logoNow = keep("logo");
   const own = o.clientLogo ? { id: o.clientLogo.id, w: o.clientLogo.w, h: o.clientLogo.h } : null;
-  const markNow = own ? { mark: own, markDark: own } : wanted.has("logo") && !skipCarriers ? marks : { mark: before.mark, markDark: before.markDark };
+  const markNow = own ? { mark: own, markDark: own } : wanted.has("logo") && !skipCarriers ? marks : { mark: before.mark, markDark: lightKept ?? before.markDark };
   const images = {
     ...(logoNow ? { logo: logoNow } : {}), ...(keep("hero") ? { hero: keep("hero")! } : {}),
     ...(keep("object") ? { object: keep("object")! } : {}), ...(keep("site") ? { site: keep("site")! } : {}), ...(keep("signs") ? { signs: keep("signs")! } : {}),

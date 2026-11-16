@@ -605,7 +605,13 @@ describe("SINA — chaîne de création de la marque", async () => {
     const { data, info } = await sharpLib(out!).removeAlpha().raw().toBuffer({ resolveWithObject: true });
     const px = (x: number, y: number) => [...data.subarray((y * info.width + x) * 3, (y * info.width + x) * 3 + 3)];
     expect(px(2, 2)).toEqual([0x10, 0x18, 0x20]); // le fond : le foncé de la marque
-    expect(px(Math.floor(info.width / 2), Math.floor(info.height / 2))).toEqual([255, 255, 255]); // le dessin foncé est devenu clair
+    expect(px(Math.floor(info.width / 2), Math.floor(info.height / 2))).toEqual([0xfb, 0xf8, 0xf2]); // le dessin foncé est devenu clair
+    // Une couleur FONCÉE de la marque (un nom brun) passe en clair elle aussi ; une couleur vive est gardée (essai réel
+    // du 16 novembre 2026 : nom brun illisible sur le fond sombre de sa planche).
+    const { lightLogo } = await import("@/lib/syna-agent/brand-images");
+    const one = async (hex: string) => { const o = await sharpLib(await lightLogo(await sharpLib({ create: { width: 8, height: 8, channels: 4, background: hex } }).png().toBuffer())).raw().toBuffer(); return [o[0], o[1], o[2]]; };
+    expect(await one("#4A2A1C")).toEqual([0xfb, 0xf8, 0xf2]);
+    expect(await one("#F26A4B")).toEqual([0xf2, 0x6a, 0x4b]);
   });
 
   it("maquette du site : comparée au logo de la planche, et gardée quand la seconde lecture ne rend rien alors que la première avait tout trouvé", async () => {
@@ -620,7 +626,7 @@ describe("SINA — chaîne de création de la marque", async () => {
       },
     });
     const check = Object.keys(log.prompts).find((k) => k.startsWith("imagecheck-1-A"))!;
-    expect(log.prompts[check]).toMatch(/Le logo de l'en-tête est CELUI de la marque \(compare-le à l'image « logo » fournie avec les autres\)[^\n]*Un autre signe à la place du sien est un défaut/);
+    expect(log.prompts[check]).toMatch(/Le logo de l'en-tête est CELUI de la marque \(compare-le à l'image « logo » fournie avec les autres\)[^\n]*une nuance de couleur différente n'est pas un défaut\. Seul un AUTRE signe/);
     expect(log.ids.some((x) => x.startsWith("imagereread-1-A"))).toBe(true);
     expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.site).toBeTruthy();
   });
@@ -1197,7 +1203,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(fourth.log.prompts["imagecheck-1-A:site"]).toMatch(/La dernière image jointe \(2\) est seulement le logo de la marque, pour comparer : ne la juge pas\./);
     const moved = J.journeyOf(t.cid).identities!.list[0].board!.images!;
     expect(moved.site!.id).not.toBe(held.site!.id);
-    expect({ ...moved, site: undefined }).toEqual({ ...held, site: undefined });
+    // La version claire du logo gardé est refaite au passage (planche à fond sombre) : gratuit, sans IA.
+    expect(moved.markDark!.id).not.toBe(held.markDark!.id);
+    expect({ ...moved, site: undefined, markDark: undefined }).toEqual({ ...held, site: undefined, markDark: undefined });
     const two = C.boardImagesQuote(1, undefined, ["logo", "object"]), all6 = C.boardImagesQuote(1);
     expect(two.maxMicro).toBeLessThan(all6.maxMicro);
     expect(two.maxMicro).toBeGreaterThan(0);

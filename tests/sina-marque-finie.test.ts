@@ -615,7 +615,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(third.log.refs["image-1-A-site:site"]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     const last = J.journeyOf(t.cid).brandFinish!.images!;
     expect(last.site!.id).not.toBe(after.brandFinish!.images!.site!.id);
-    expect({ ...last, site: undefined }).toEqual({ ...after.brandFinish!.images!, site: undefined });
+    expect({ ...last, site: undefined, markDark: undefined }).toEqual({ ...after.brandFinish!.images!, site: undefined, markDark: undefined });
     expect(J.journeyOf(t.cid).logoChoice).toEqual(j.logoChoice);
     expect(keptSymbols(t.pid)).toHaveLength(2);
     // Avant le choix d'une identité, rien à finir.
