@@ -59,6 +59,8 @@ export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 1, hero: 0, ob
  * choisie ») : chaque identité proposée reçoit son logo et sa grande scène ; l'objet, les signes et les trois
  * publications ne sont créés que pour l'identité que le client choisit (deux tiers des images ne servaient jamais).
  */
+/** Reprises d'une image refusée à la relecture, avant de montrer la planche (jamais une planche incomplète). */
+export const MAX_IMAGE_RETRIES = 2;
 export const PROPOSAL_SLOTS: ImageSlot[] = ["logo", "hero", "site"];
 export const FINISH_SLOTS: ImageSlot[] = ["object", "signs", "post0", "post1", "post2"];
 /** Les images de planche sont toujours créées par OpenAI (plus aucun dessin en code à leur place). */
@@ -220,7 +222,7 @@ const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
 const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
-  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Le logo de l'en-tête est CELUI de la marque (compare-le à l'image « logo » fournie avec les autres) : même signe, même dessin de lettres ; sur un écran sombre, il est dans sa version claire (ses parties foncées en clair), et une nuance de couleur différente n'est pas un défaut. Seul un AUTRE signe ou un autre dessin du nom à la place du sien est un défaut (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
+  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Le bouton principal porte son texte, écrit DANS le bouton : un bouton vide, avec seulement une flèche, est un défaut (defect « autre »). Le logo de l'en-tête est CELUI de la marque (compare-le à l'image « logo » fournie avec les autres) : même signe, même dessin de lettres ; sur un écran sombre, il est dans sa version claire (ses parties foncées en clair), et une nuance de couleur différente n'est pas un défaut. Seul un AUTRE signe ou un autre dessin du nom à la place du sien est un défaut (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
   post0: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post1: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post2: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)",
 };
 
@@ -296,11 +298,18 @@ export async function runBoardImages(o: {
   const made = new Map<ImageSlot, Made>();
   const bufferOf = (slot: ImageSlot): Buffer | null => { const m = made.get(slot), a = m ? getAsset(m.id) : undefined; return a ? assetData(a) : null; };
   let capped = false;
-  const make = async (slot: ImageSlot, refs: { logo?: Buffer | null; scene?: Buffer | null; avoid?: Buffer | null }, prompt: string) => {
+  type Refs = { logo?: Buffer | null; scene?: Buffer | null; avoid?: Buffer | null };
+  // Ce qui a servi à créer chaque image : repris tel quel pour la refaire quand la relecture la refuse.
+  const calls = new Map<ImageSlot, { refs: Refs; prompt: string }>();
+  // Les images refusées, avec la raison : refaites avant d'être montrées (règle du propriétaire du 16 novembre 2026 :
+  // « on ne peut pas donner une identité de marque incomplète »).
+  const dropped = new Map<ImageSlot, string>();
+  const make = async (slot: ImageSlot, refs: Refs, prompt: string, retry = "") => {
     if (capped) return;
+    if (!retry) calls.set(slot, { refs, prompt });
     try {
-      made.set(slot, await ctx.step(`brand:image:${round}:${key}:${slot}${pass}`, async (): Promise<Made> => {
-        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ?? null, scene: refs.scene ?? null, avoid: refs.avoid ?? null });
+      made.set(slot, await ctx.step(`brand:image:${round}:${key}:${slot}${pass}${retry}`, async (): Promise<Made> => {
+        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ?? null, scene: refs.scene ?? null, avoid: refs.avoid ?? null });
         const png = await sharp(data).png().toBuffer(), meta = await sharp(png).metadata();
         const asset = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-${slot}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "review", meta: { synaBoard: { key, slot, round, name: x.name } } });
         return { id: asset.id, w: meta.width ?? 1024, h: meta.height ?? 1024 };
@@ -329,9 +338,8 @@ export async function runBoardImages(o: {
     const drawn = bufferOf("logo");
     if (drawn && !(await logoOnWhite(drawn))) {
       const why = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background");
-      mark(made.get("logo")!.id, "rejected", why); made.delete("logo"); rejected++;
+      mark(made.get("logo")!.id, "rejected", why); made.delete("logo"); dropped.set("logo", why);
       notes.push(`logo de ${key} refusé par le contrôle du fond (sans IA)`);
-      issues.push(tag(L(`je n'ai pas gardé le logo (${why}) ; tu vois mon nom dessiné à la place.`, `I did not keep the logo (${why}); you see my drawn name instead.`)));
     }
   }
   // Le logo à poser sur l'objet : celui qui vient d'être créé, sinon celui déjà gardé sur la planche.
@@ -362,17 +370,20 @@ export async function runBoardImages(o: {
   for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, { logo }, imagePrompt(slot, x, imagery, { logo: !!logo }));
 
   // 3. La relecture : aucune image n'est montrée sans avoir été regardée.
-  const slots = IMAGE_SLOTS.filter((s) => made.has(s));
-  if (slots.length) {
+  let blind = false;
+  const currentLogo = () => o.clientLogo?.data ?? bufferOf("logo") ?? logo;
+  const review = async (slots: ImageSlot[], rt = "") => {
+    if (!slots.length) return;
+    const logo = currentLogo();
     const texts = slotTexts(x);
-    const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`))); };
+    const drop = (slot: ImageSlot, why: string) => { mark(made.get(slot)!.id, "rejected", why); made.delete(slot); dropped.set(slot, why); };
     // Raison écrite par le Studio d'après la lecture (jamais une phrase confuse du relecteur montrée au client).
     // Un texte attendu qui manque est dit en premier : pour la maquette du site, un petit mot en trop n'est pas un défaut.
     const textReason = (c: { missing: string[]; extra: string[] }) => c.extra.length && !c.missing.length ? L(`un texte non demandé y apparaît : « ${c.extra[0].slice(0, 60)} »`, `an unrequested text appears: "${c.extra[0].slice(0, 60)}"`) : L(`le texte « ${c.missing[0].slice(0, 60)} » n'y est pas écrit exactement`, `the text "${c.missing[0].slice(0, 60)}" is not written exactly`);
     // Relecture impossible (plafond, appel en échec) : des images non relues ne sont jamais montrées.
     const unreviewed = () => {
       for (const s of slots) { const m = made.get(s); if (m) mark(m.id, "rejected", "non relue"); made.delete(s); }
-      rejected += slots.length;
+      rejected += slots.length; blind = true;
       issues.push(tag(L("je n'ai pas pu relire ses images, donc je ne te les montre pas.", "I could not review its images, so I am not showing them.")));
     };
     // Un logo à fond transparent est montré au relecteur posé sur du blanc, comme le client le verra.
@@ -382,7 +393,7 @@ export async function runBoardImages(o: {
     if (reference) seen.push({ data: reference, label: "logo" });
     if (capped) unreviewed();
     else try {
-      const review = await ctx.step(`brand:imagecheck:${round}:${key}${pass}`, () => ai.look(`imagecheck-${round}-${key}${pass}`, {
+      const review = await ctx.step(`brand:imagecheck:${round}:${key}${pass}${rt}`, () => ai.look(`imagecheck-${round}-${key}${pass}${rt}`, {
         system: P.imageReviewSystem(), schema: ImageReviewSchema,
         prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` La dernière image jointe (${slots.length + 1}) est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`, ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
         images: seen,
@@ -410,7 +421,7 @@ export async function runBoardImages(o: {
       if (doubt.length) {
         let second: z.infer<typeof ImageRereadSchema> | null = null;
         try {
-          second = await ctx.step(`brand:imagereread:${round}:${key}${pass}`, () => ai.look(`imagereread-${round}-${key}${pass}`, {
+          second = await ctx.step(`brand:imagereread:${round}:${key}${pass}${rt}`, () => ai.look(`imagereread-${round}-${key}${pass}${rt}`, {
             system: P.imageRereadSystem(), schema: ImageRereadSchema,
             prompt: [`Voici ${doubt.length} image(s), dans l'ordre.`, ...doubt.map((s, i) => `Image ${i + 1} — slot "${s}".`)].join("\n"),
             images: doubt.map((s) => ({ data: bufferOf(s)!, label: s })),
@@ -433,7 +444,41 @@ export async function runBoardImages(o: {
       else notes.push(`relecture des images de ${key} impossible : ${String((e as Error)?.message ?? e).slice(0, 140)}`);
       unreviewed();
     }
+  };
+  await review(IMAGE_SLOTS.filter((s) => made.has(s)));
+
+  // 3 bis. Une image refusée est refaite avant d'être montrée : deux reprises au plus, avec la raison du refus donnée au
+  // modèle ; à la seconde, la consigne est simplifiée. Les reprises restent dans le plafond déjà accepté par le client.
+  // Un logo refait emporte ce qui le porte (créé avec le logo refusé).
+  const CARRIERS: ImageSlot[] = ["site", "object", "signs", "post0", "post1", "post2"];
+  for (let attempt = 1; attempt <= MAX_IMAGE_RETRIES && dropped.size && !capped && !blind; attempt++) {
+    const again = IMAGE_SLOTS.filter((s) => dropped.has(s) && calls.has(s));
+    if (!again.length) break;
+    ctx.progress(0.97, L(`Je reprends ${again.length > 1 ? "des images" : "une image"} de la planche ${key}`, `Redoing images of board ${key}`));
+    const fix = (why: string) => `\nCORRECTION : une première image a été refusée pour cette raison : « ${why.replace(/\s+/g, " ").slice(0, 300)} ». Refais l'image en corrigeant ce point.${attempt > 1 ? "\nFais plus simple : retire de l'image tout élément qui porte une écriture non demandée (étiquette, emballage, enseigne, écran) ou laisse-le vierge." : ""}`;
+    const redone: ImageSlot[] = [];
+    if (again.includes("logo")) {
+      const c = calls.get("logo")!, why = dropped.get("logo")!; dropped.delete("logo");
+      await make("logo", c.refs, c.prompt + fix(why), `:r${attempt}`);
+      const drawn = bufferOf("logo");
+      if (drawn && !(await logoOnWhite(drawn))) { const w = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background"); mark(made.get("logo")!.id, "rejected", w); made.delete("logo"); dropped.set("logo", w); }
+      else if (drawn) {
+        await review(["logo"], `:r${attempt}`);
+        // Le nouveau logo est gardé : ce qui portait l'ancien est refait avec lui.
+        if (made.has("logo")) for (const s of CARRIERS) if (made.has(s) && calls.has(s) && !o.clientLogo) { mark(made.get(s)!.id, "rejected", "logo refait"); made.delete(s); dropped.set(s, L("le logo de la marque a été refait : reprends l'image avec le logo fourni", "the brand logo was redone")); }
+      } else dropped.set("logo", why);
+    }
+    for (const s of IMAGE_SLOTS.filter((v) => v !== "logo" && dropped.has(v) && calls.has(v))) {
+      if (attempt === 1 && !again.includes(s)) continue; // porteur d'un logo refait à l'instant : repris au tour suivant
+      const c = calls.get(s)!, why = dropped.get(s)!; dropped.delete(s);
+      const now = currentLogo(), refs = c.refs.logo ? { ...c.refs, logo: s === "site" ? await logoForGround(now, x) : now } : c.refs;
+      await make(s, refs, c.prompt + fix(why), `:r${attempt}`);
+      if (made.has(s)) redone.push(s); else dropped.set(s, why);
+    }
+    await review(redone, `:r${attempt}`);
   }
+  // Ce qui reste refusé après les reprises est dit au client, sans image fausse à la place.
+  for (const [slot, why] of dropped) { rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`))); }
 
   for (const m of made.values()) mark(m.id, "ready");
 

@@ -811,7 +811,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     // logo, la grande scène, la maquette du haut du site, puis UNE relecture. Rien d'autre : ni objet, ni signes, ni
     // publications, ni illustratrice.
     const first = await chain(t, { images: true }, script);
-    expect(first.log.ids.slice(first.log.ids.indexOf("review-1") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, `imagecheck-1-${k}${FIRST}`]));
+    expect(first.log.ids.slice(first.log.ids.indexOf("review-1") + 1).filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, `imagecheck-1-${k}${FIRST}`]));
     expect(first.log.ids.some((i) => /-(object|signs|post\d)/.test(i))).toBe(false);
     // La maquette : en portrait, avec le logo et la grande scène de sa planche en références.
     for (const k of ["A", "B", "C"]) expect((first.log as any).refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
@@ -830,19 +830,20 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(Object.keys(pc.board!.images!).sort()).toEqual(["hero", "logoIdea", "look", "site"]);
     expect(J.journeyOf(t.cid).identities!.issues).toContain("Identité C : je n'ai pas gardé le logo (le nom n'y est pas écrit exactement) ; tu vois ton nom dessiné à la place.");
     const count = () => Object.fromEntries(all<{ s: string; n: number }>("SELECT status s, COUNT(*) n FROM assets WHERE project_id=? AND role='brand-board' GROUP BY status", t.pid).map((r) => [r.s, r.n]));
-    // 8 images gardées (3 + 3 + 2), plus le logo détouré de A et de B et sa version pour fond sombre ; le logo de C refusé.
-    expect(count()).toEqual({ ready: 12, rejected: 1 });
+    // 8 images gardées (3 + 3 + 2), plus le logo détouré de A et de B et sa version pour fond sombre ; le logo de C refusé, puis
+    // repris deux fois et refusé encore (jamais une planche incomplète sans avoir réessayé).
+    expect(count()).toEqual({ ready: 12, rejected: 3 });
     // Reprise de la tâche : aucun appel n'est refait ni repayé, et les images des planches restent les mêmes.
     const shownBefore = JSON.stringify(J.journeyOf(t.cid).identities!.list.map((x) => [x.board!.images!.logo, x.board!.images!.hero]));
     expect((await chain(t, {}, {}, reload(first.job))).log.ids).toEqual([]);
     expect(JSON.stringify(J.journeyOf(t.cid).identities!.list.map((x) => [x.board!.images!.logo, x.board!.images!.hero]))).toBe(shownBefore);
     const kept = count();
-    expect(kept.rejected).toBe(1);
+    expect(kept.rejected).toBe(3);
 
     // Toutes les images d'une planche (ici demandées sur les planches déjà écrites) : les consignes, les huit images
     // dans l'ordre, puis UNE relecture.
     const { log, out, job } = await chain(t, { imagesOnly: true }, script);
-    expect(log.ids).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, ...SLOTS.map((sl) => `image-1-${k}-${sl}`), `imagecheck-1-${k}`]));
+    expect(log.ids.filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, ...SLOTS.map((sl) => `image-1-${k}-${sl}`), `imagecheck-1-${k}`]));
     const refs = (log as any).refs;
     // Le logo est conçu par OpenAI à partir de la marque, sans modèle (retour du propriétaire du 14 novembre 2026 :
     // le nom composé envoyé en modèle portait la vague de « Pulpe », et chaque logo la recopiait).
@@ -900,8 +901,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect((out as any).routes).toHaveLength(3);
     // Bibliothèque du client : les images gardées sont prêtes, l'image refusée y est marquée refusée avec sa raison.
     // Ce second passage ajoute 22 images gardées (dont l'image des signes et la maquette du site de chaque planche),
-    // plus le logo détouré de A et de B et sa version pour fond sombre (C : logo refusé, aucune), et deux images refusées.
-    expect(count()).toEqual({ ready: kept.ready + 26, rejected: 1 + 2 });
+    // plus le logo détouré de A et de B et sa version pour fond sombre (C : logo refusé, aucune), et deux images refusées,
+    // chacune reprise deux fois avant d'être dite (trois essais refusés par image).
+    expect(count()).toEqual({ ready: kept.ready + 26, rejected: 3 + 6 });
     // Les signes : une vraie photo, le logo posé dessus, aucun autre texte, jamais un pictogramme.
     const I = await import("@/lib/syna-agent/brand-images");
     expect(log.prompts["image-1-A-signs"]).toContain(I.SIGNS_LINE);
@@ -987,18 +989,19 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.systems["imagereread-1-A"]).toMatch(/Tu ne juges rien et tu ne corriges rien/);
     const a = J.journeyOf(t.cid).identities!.list[0];
     expect(a.board!.images!.posts![0]).toBeTruthy(); // gardée : sa lecture était exacte, deux fois
-    expect(a.board!.images!.posts![1]).toBeNull();
-    expect(a.board!.images!.posts![2]).toBeNull();
-    expect(a.board!.images!.object).toBeUndefined();
+    // Les trois images refusées sont REFAITES avant d'être montrées (règle du propriétaire du 16 novembre 2026 : « on ne
+    // peut pas donner une identité de marque incomplète »), avec la raison du refus donnée au modèle d'images.
+    expect(log.ids.filter((x) => /^image-1-A-.*:r1$/.test(x))).toEqual(["image-1-A-object:r1", "image-1-A-post1:r1", "image-1-A-post2:r1"]);
+    expect(log.prompts["image-1-A-object:r1"]).toMatch(/CORRECTION : une première image a été refusée pour cette raison : « Une main apparaît\. »\. Refais l'image en corrigeant ce point\.$/);
+    expect(log.prompts["image-1-A-post2:r1"]).toMatch(/refusée pour cette raison : « un texte non demandé y apparaît : « 250 g » »/);
+    expect(log.ids).toContain("imagecheck-1-A:r1");
+    expect(log.ids.some((x) => x.endsWith(":r2"))).toBe(false); // la première reprise a suffi
+    expect(a.board!.images!.posts![1]).toBeTruthy();
+    expect(a.board!.images!.posts![2]).toBeTruthy();
+    expect(a.board!.images!.object).toBeTruthy();
     expect(a.board!.images!.hero).toBeTruthy();
     const issues = J.journeyOf(t.cid).identities!.issues.filter((x) => x.startsWith("Identité A")).join("\n");
-    expect(issues).not.toMatch(/première publication/);
-    expect(issues).toMatch(/je n'ai pas gardé la troisième publication \(un texte non demandé y apparaît : « 250 g »\)/);
-    expect(issues).toMatch(/je n'ai pas gardé l'image de l'objet \(Une main apparaît\)/);
-    expect(issues).toMatch(/je n'ai pas gardé la deuxième publication \(Elle ne va pas\)/);
-    // Le message dit vrai : aucun dessin ne prend la place d'une image non gardée ; elle n'est pas montrée.
-    expect(issues).toMatch(/l'image de l'objet \([^)]*\) ; je ne la montre pas\./);
-    expect(issues).toMatch(/la troisième publication \([^)]*\) ; je ne la montre pas\./);
+    expect(issues).not.toMatch(/je n'ai pas gardé/);
     expect(issues).not.toMatch(/mon dessin|forme simple de la planche/);
     // La consigne du relecteur : recopier sans corriger, nommer la nature du défaut, relire sa lecture avant de refuser.
     expect(log.systems["imagecheck-1-A"]).toMatch(/recopiés lettre par lettre tels qu'ils sont dessinés, fautes comprises/);
@@ -1097,7 +1100,7 @@ describe("SINA — chaîne de création de la marque", async () => {
       expect(b.board!.images!.logo).toBeUndefined();
       expect(b.board!.images!.mark).toBeUndefined();
       expect(b.board!.images!.hero).toBeTruthy();
-      expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité B : je n'ai pas gardé le logo \(il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports\) ; tu vois mon nom dessiné à la place\./);
+      expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité B : je n'ai pas gardé le logo \(il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports\) ; tu vois ton nom dessiné à la place\./);
     }
     // Puis toutes les images de chaque planche (l'objet et les signes portent le logo gardé, quand il y en a un).
     const { log } = await chain(t, { imagesOnly: true }, { draw });
@@ -1134,7 +1137,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(log.prompts["imagecheck-1-B"]).toMatch(/slot "object" : l'objet ou les signes de la marque SANS logo fourni/);
     expect(rb.board!.images!.logo).toBeUndefined();
     expect(rb.board!.images!.mark).toBeUndefined();
-    expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité B : je n'ai pas gardé le logo \(il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports\) ; tu vois mon nom dessiné à la place\./);
+    expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité B : je n'ai pas gardé le logo \(il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports\) ; tu vois ton nom dessiné à la place\./);
     expect(one<{ w: string }>("SELECT json_extract(meta,'$.synaBoard.review.why') w FROM assets WHERE project_id=? AND status='rejected' AND name LIKE '%-B-logo%'", t.pid)?.w).toMatch(/fond blanc net/);
     // A : le logo gardé devient la marque de la planche, fond retiré (transparent aux bords), et sa version sombre.
     const mark = getAsset(ra.board!.images!.mark!.id)!, dark = getAsset(ra.board!.images!.markDark!.id)!;
@@ -1177,7 +1180,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     // et l'ancien logo reste avec l'ancien objet qui le porte (retour du propriétaire du 14 novembre 2026 : « les logos
     // ne sont pas les mêmes entre le logo et sur le camion »).
     const again = await chain(t, { imagesOnly: true, redo: ["A"], slots: ["logo", "object"] }, { draw: async (id) => (id.includes("-logo") ? square("#050505", 128, 128) : square("#224466", 128, 128)) });
-    expect(again.log.ids.filter((id) => id.startsWith("image-"))).toEqual(["image-1-A-logo:logo+object"]);
+    // Le logo refusé est repris deux fois (jamais une planche incomplète sans avoir réessayé), puis c'est dit.
+    expect(again.log.ids.filter((id) => id.startsWith("image-"))).toEqual(["image-1-A-logo:logo+object", "image-1-A-logo:logo+object:r1", "image-1-A-logo:logo+object:r2"]);
     const kept = J.journeyOf(t.cid).identities!.list[0].board!.images!;
     expect(kept.logo).toEqual(after.logo);
     expect(kept.object).toEqual(after.object);

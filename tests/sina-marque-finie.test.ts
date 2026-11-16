@@ -646,7 +646,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(r.ok).toBe(true);
     // Le nouveau logo est refusé par la relecture (une faute dans le nom).
     const { log, out } = await runJob(r.jobs![0], { look: (_id, c) => ({ images: c.images.map((i: any) => (i.label === "logo" ? { slot: "logo", ok: false, defect: "texte", read: ["Bain de Minut"], why: "Le nom est mal écrit." } : { slot: i.label, ok: true, read: [], why: "" })) }) });
-    expect(log.ids.filter((i) => i.startsWith("image-1-A-logo"))).toHaveLength(1); // jamais relancé seul
+    expect(log.ids.filter((i) => i.startsWith("image-1-A-logo"))).toHaveLength(3); // refusé, puis repris deux fois avant d'être dit
     // Le nom dessiné de secours n'est pas un logo dont on tire un symbole : aucune création, aucune relecture, rien de gardé.
     expect(symbolCalls(log)).toEqual([]);
     expect(keptSymbols(t.pid)).toEqual([]);
@@ -877,7 +877,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(c.board!.site.headline).toBe(route("C").board.site.headline);
     // A : gardée SANS seconde lecture, ses textes en trop ne sont pas un défaut. B : refusée par le jugement. C : il lui
     // manque son titre, une seconde lecture tranche : le titre n'y est pas, l'image n'est pas gardée.
-    expect(log.ids.filter((i) => i.startsWith("imagereread"))).toEqual([`imagereread-1-C${FIRST}`]);
+    expect(log.ids.filter((i) => i.startsWith("imagereread") && !/:r\d$/.test(i))).toEqual([`imagereread-1-C${FIRST}`]);
     expect(log.prompts[`imagereread-1-C${FIRST}`]).toMatch(/Voici 1 image\(s\), dans l'ordre\.\nImage 1 — slot "site"\./);
     expect(a.board!.images!.site).toBeTruthy();
     expect(b.board!.images!.site).toBeUndefined();
@@ -895,8 +895,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(status("A")).toMatchObject({ status: "ready" });
     expect(status("B")).toEqual({ status: "rejected", why: "La mise en page est vide et banale." });
     expect(status("C")).toMatchObject({ status: "rejected", why: expect.stringContaining("n'y est pas écrit exactement") });
-    // Aucune maquette n'est relancée seule.
-    for (const k of ["A", "B", "C"]) expect(log.ids.filter((i) => i.startsWith(`image-1-${k}-site`))).toHaveLength(1);
+    // Une maquette gardée n'est jamais refaite ; une maquette refusée est reprise, deux fois au plus.
+    for (const k of ["A", "B", "C"]) { const n = log.ids.filter((i) => i.startsWith(`image-1-${k}-site`)).length; expect(n === 1 || n === 3, `${k} : ${n}`).toBe(true); }
     // SINA ne regarde que la maquette gardée.
     const seen = (await journeyImages(j)).map((x) => x.label ?? "");
     expect(seen.filter((l) => /la maquette du haut de son site/.test(l))).toEqual([`Identité A « ${a.name} » — la maquette du haut de son site, sur téléphone, montré au client sur sa planche`]);
@@ -930,7 +930,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     const j = J.journeyOf(t.cid), [a, b, c] = j.identities!.list;
     expect(route("B").board.site.headline).toContain("pétille");
     // Une seconde lecture pour A et pour B (un texte attendu manquait) ; aucune pour C.
-    expect(log.ids.filter((i) => i.startsWith("imagereread"))).toEqual([`imagereread-1-A${FIRST}`, `imagereread-1-B${FIRST}`]);
+    expect(log.ids.filter((i) => i.startsWith("imagereread") && !/:r\d$/.test(i))).toEqual([`imagereread-1-A${FIRST}`, `imagereread-1-B${FIRST}`]);
     for (const k of ["A", "B"]) expect(log.prompts[`imagereread-1-${k}${FIRST}`]).toMatch(/Voici 1 image\(s\), dans l'ordre\.\nImage 1 — slot "site"\./);
     // A : gardée, son titre y est bien, et ses petits mots en trop ne comptent pas. B : son titre n'y est pas écrit
     // exactement (un accent manque), refusée, et c'est dit. C : gardée.
@@ -943,8 +943,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     for (const x of [a, b, c]) { expect(x.board!.images!.logo).toBeTruthy(); expect(x.board!.images!.hero).toBeTruthy(); }
     const status = (key: string) => one<{ status: string }>("SELECT status FROM assets WHERE project_id=? AND name=?", t.pid, `planche-${key}-site.png`)!.status;
     expect([status("A"), status("B"), status("C")]).toEqual(["ready", "rejected", "ready"]);
-    // Aucune maquette n'est relancée seule.
-    for (const k of ["A", "B", "C"]) expect(log.ids.filter((i) => i.startsWith(`image-1-${k}-site`))).toHaveLength(1);
+    // Une maquette gardée n'est jamais refaite ; une maquette refusée est reprise, deux fois au plus.
+    for (const k of ["A", "B", "C"]) { const n = log.ids.filter((i) => i.startsWith(`image-1-${k}-site`)).length; expect(n === 1 || n === 3, `${k} : ${n}`).toBe(true); }
   });
 
   it("maquette du site : la direction artistique doit rendre sa consigne (essai réel du 15 novembre 2026 : rendue vide, la maquette n'était pas créée et rien n'était dit)", () => {

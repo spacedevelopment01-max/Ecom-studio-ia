@@ -64,7 +64,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - Si un modèle n'arrive pas à écrire un mot dans une image, changer la phrase plutôt que repayer des essais.
 - Dépensé en essais réels avant le lot 2 : environ 19,14 € comptés par le Studio (dont 2,94 € pour l'essai du lot 1,
   sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €). Essai du lot 2, au 16 novembre 2026 :
-  30,77 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés).
+  36,58 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés).
 - **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
 - **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni
   engagement ; budget d'IA à 50 % du prix hors taxes le premier mois, puis 40 % ; par forfait : 2, 3 et 4 identités
@@ -98,7 +98,8 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   fond retiré, pas de carré autour. OpenAI est libre du dessin : il reçoit le métier, les couleurs, la typographie et la
   direction artistique de la marque, jamais un style imposé. Dans une série, chaque logo reçoit ceux déjà faits avec
   « je veux un logo complètement différent ». Le favicon reprend le logo.
-- **Identité** : montrée en planche de marque complète, jamais en simple fiche.
+- **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
+  image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair.
 - **Trois angles** : un sûr, un d'émotion, un audacieux, avec celui que SINA recommande.
 - **Site** : SINA le conçoit pour cette marque, pas en copier-coller, et il doit être bon du premier coup. Des
   sections à la hauteur des meilleurs sites ; de la variété d'un client à l'autre (menus, boutons) ; un signe pris sur

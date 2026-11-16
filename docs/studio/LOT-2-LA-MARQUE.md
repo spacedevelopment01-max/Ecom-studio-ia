@@ -68,7 +68,7 @@ logo », les trois logos libres et le logo redessiné (`logos.ts`, `tools/logo.t
 
 ## L'essai réel (15 et 16 novembre 2026)
 
-Accord du propriétaire : « Oui », plafond de 25 €. **Dépensé : 30,77 €** ; le dépassement vient d'essais qu'il a
+Accord du propriétaire : « Oui », plafond de 25 €. **Dépensé au 16 novembre au soir : 36,58 €** ; le dépassement vient d'essais qu'il a
 demandés (logos refaits plusieurs fois, maquettes refaites). SINA a travaillé seule ; Claude n'a joué que les clients.
 
 Vu avec la vraie IA :
@@ -95,6 +95,13 @@ Ce que le propriétaire a décidé pendant l'essai, et qui est dans le code :
 - **Relecture des images.** Un titre dessiné sur plusieurs lignes est reconnu ; une date à remplir faite de tirets
   aussi ; le logo d'une maquette est comparé à celui de la planche ; une maquette dont la première lecture a trouvé
   tous les textes n'est plus jetée quand la seconde ne répond pas.
+- **Jamais une planche incomplète** (« on ne peut pas donner une identité de marque incomplète ») : une image refusée
+  à la relecture est refaite avant d'être montrée, deux fois au plus, avec la raison du refus donnée à OpenAI ; à la
+  seconde reprise la consigne est simplifiée ; un logo refait emporte ce qui le porte. Les reprises restent dans le
+  plafond accepté par le client. SINA ne commande jamais un texte, une date ou un chiffre dans une image sans donner
+  les mots exacts. Écrit et testé avec une IA simulée ; pas encore vu avec la vraie IA.
+- **Logo sur fond sombre** (« sur fond sombre, le logo soit clair tout le temps ») : tout ce qui est foncé dans le
+  logo passe en clair, même une couleur foncée de la marque ; vu avec la vraie IA sur une planche.
 - **Écran « Marque ».** Plus d'encadré des angles, plus de bulle posée sur la marque, logo vectoriel montré.
 - **Sa consigne de travail** : « arrête de prendre des initiatives qui nous font perdre du temps et de l'argent ».
   Faire ce qu'il demande, avec ses mots ; une idée se dit en une phrase et attend son oui ; le plus petit essai avant
