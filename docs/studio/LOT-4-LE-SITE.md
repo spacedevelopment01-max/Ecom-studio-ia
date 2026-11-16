@@ -103,9 +103,53 @@ la planche, avec les sections en plusieurs dispositions : je veux que le premier
 - **Exemples retirés des consignes** (règle : aucun exemple tiré d'un projet d'essai) : l'exemple des bougies et la
   règle « thé, infusions, café » dans la consigne du concepteur, « pour du thé » dans celles des photos.
 
-Pas encore fait, dit clairement : les huit en-têtes de la référence (il y en a trois façons aujourd'hui ; les deux
-méga menus, la bande d'annonce intégrée et l'en-tête de services avec téléphone toujours visible restent à construire
-au temps 4), les six pages produit et les six pages de services comme styles nommés.
+## Le thème complet de la référence (demande du propriétaire, 16 novembre 2026)
+
+Sa demande : « Construis tout ça avant l'essai payant, en reprenant les meilleures pièces existantes. Montre-moi les
+en-têtes et les pieds de page en images dès qu'ils sont faits. » Construit en quatre chantiers menés en même temps,
+sans IA ; planches montrées au propriétaire (`docs/studio/lot-4/`).
+
+Le thème compte maintenant **124 pièces, dont 114 se bâtissent de deux façons ou plus**. Quatre modules de plus
+(`tenue-coque`, `tenue-achat`, `tenue-metiers`, `tenue-pages`), chacun avec sa feuille.
+
+| Décidé (référence, partie 15) | Construit | Où |
+|---|---|---|
+| 8 en-têtes, dont 2 méga menus avec leur version téléphone | Les 8 : classique, logo centré, transparent sur la photo, bande d'annonce, grand menu à colonnes avec images, grand menu avec produits mis en avant, services (téléphone et rendez-vous toujours visibles), menu plein écran. Les trois façons d'origine restent en plus. | `tenue-coque.ts` (`ENTETES`), `menu.ts` |
+| 6 pieds de page | Les 6 : complet en colonnes, centré et minimal, lettre d'information, services, grand logo, réassurance et paiement | `tenue-coque.ts` (`PIEDS`) |
+| 6 pages produit | Le bloc d'achat en 6 façons et 6 styles de page (simple, vente directe, haut de gamme, technique, alimentaire et soin, mode) ; 7 pièces nouvelles (tailles et couleurs, guide des tailles, offres par quantité, look complet, allergènes, avant et après, repères en pictos) | `tenue-achat.ts`, `styles-de-page.ts` |
+| 6 pages de services | 6 styles (prestation simple, rendez-vous complet, devis d'artisan, fiche de bien, restaurant, atelier ou cours) ; 11 pièces nouvelles (biens, recherche de biens, fiche de bien en cinq pièces dont les étiquettes énergie, carte, réservation de table, rendez-vous en trois temps, inscription) | `tenue-metiers.ts`, `styles-de-page.ts` |
+| Pages simples en 2 ou 3 mises en page | Contact, à propos, questions (liste et rubriques), 404, légales (volets, sommaire), blog, article, recherche, « bien reçu », boutique fermée, compte | `tenue-pages.ts` |
+| Panier en 2 versions (tiroir et page) | Tiroir (étroit ; large avec livraison offerte et produits à ajouter) et page (empilée ; deux colonnes) | `tenue-pages.ts` |
+| Chaque section en 2 à 4 dispositions | 114 pièces sur 124. Les 10 autres : cinq ouvertures sans photo pleine (non permises sur l'accueil, sauf la carte posée sur la photo), deux en-têtes et trois pieds de page qui sont eux-mêmes une des façons décidées | |
+| 6 familles en coulisses | Faites ; les en-têtes et les pieds de page y sont reliés. Un site de services prend toujours l'en-tête de services ; les grands menus demandent au moins trois familles de produits | `familles.ts` |
+
+**Les styles de page** fonctionnent comme les familles : le concepteur en choisit un d'après ce que le client vend, le
+relecteur le vérifie, le Studio contrôle sans IA la façon du bloc d'achat et la pièce de métier, et ramène le bloc
+d'achat dans le style en dernier recours. Pour un site de services, les pages du métier (biens, carte, ateliers,
+visite, inscription) comptent comme pages obligatoires.
+
+**Vraies données** : biens (rubrique Biens), carte du restaurant, prestations, horaires, téléphone, adresse, zone,
+catalogue, offres par quantité, seuil de livraison offerte. Sans donnée, « à compléter » ; un bien, une équipe, un avis
+ne s'inventent jamais.
+
+**Ce qui n'est pas fait ou pas vérifié, dit clairement**
+- Rien de nouveau n'a été regardé dans une vraie boutique Shopify, WooCommerce ou PrestaShop. Le contrôle automatique de
+  la conversion passe ; l'en-tête transparent et l'en-tête collé y reposent sur des règles jamais vues en vrai.
+- Dans Shopify, aucun script ne part : le tiroir de panier ne s'ouvre pas seul après un ajout, la recherche de biens
+  devient une demande à l'agence, les offres par quantité ne partent pas (aucune donnée), la barre d'achat collée non
+  plus.
+- Une seule fiche de bien (le bien mis en avant), pas encore une page par bien.
+- L'équipe, les ateliers, les fournées, les réalisations n'ont pas de rubrique dans le Studio : le rédacteur les écrit
+  avec les faits du client.
+- Les moyens de paiement n'ont aucune source : « à compléter » dans l'aperçu.
+- Les couleurs des étiquettes énergie sont écrites de mémoire : à vérifier contre la norme.
+- « Bien reçu » n'est relié à aucun formulaire.
+- Les largeurs de 320 px sont mesurées (rien ne déborde) mais peu regardées à l'œil.
+- Défaut connu : sur l'en-tête transparent, la barre reste sans fond au-dessus du sous-menu ouvert en haut de page.
+- Défaut d'origine non corrigé : le bloc d'achat « simple » sur ordinateur, quand il a plus de huit éléments.
+- Les textes et les photos d'exemple de la bibliothèque sont encore ceux d'une maison de thé (remplacés au montage) ;
+  les pièces nouvelles ont des textes neutres. À neutraliser pour toute la bibliothèque.
+- Le cahier `docs/sina-savoir/sections-a-tenue.md` ne décrit pas encore les quatre nouveaux modules.
 
 ## Le devis (calculé le 16 novembre 2026 avec les tarifs vérifiés, pas encore mesuré)
 
