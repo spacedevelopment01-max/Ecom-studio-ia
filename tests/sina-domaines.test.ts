@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde le nom", async () => {
   const D = await import("@/lib/syna-agent/brand-domains");
-  const { NAME_RATINGS, NAME_REFUSALS, NAME_KEEP_SCORE } = await import("@/lib/syna-agent/brand-references");
+  const { NAME_REFUSALS, NAME_KEEP_SCORE } = await import("@/lib/syna-agent/brand-references");
   const P = await import("@/lib/syna-agent/brand-prompts");
   const { mixIdentity } = await import("@/lib/syna-agent/tools/identity");
   const J = await import("@/lib/syna-agent/journey");
@@ -80,19 +80,34 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     expect(ctx).toMatch(/Noms de domaine \(contrôlés à l'instant dans le registre[^)]*ne promets jamais une adresse[^)]*\) : A « Pulpe » : pulpe\.fr et pulpe\.com sont déjà pris ; libre aujourd'hui : pulpefrance\.fr/);
   });
 
-  it("le haut du site sur téléphone (rendu par le Studio) ne montre que des mots vrais de la planche", async () => {
-    const S = await import("@/lib/syna-agent/brand-site-preview");
-    expect(S.sitePoints(["Sans sucres ajoutés, sans arôme artificiel.", "[À compléter : dose] pour [À compléter : volume d'eau] d'eau froide.", "Au frais [À compléter : durée d'infusion], puis sers bien froid."])).toEqual(["Sans sucres ajoutés", "Sans arôme artificiel"]);
-    expect(S.sitePoints(["De vrais morceaux. De vrais morceaux ; fabriqué en France, un texte beaucoup trop long pour tenir dans une pastille"])).toEqual(["De vrais morceaux", "Fabriqué en France"]);
-    expect(S.sitePoints([])).toEqual([]);
-    expect(S.firstProduct(["Pulpe", "Pêche-verveine", "Infusion de fruits à boire froide"], "PULPE")).toBe("Pêche-verveine");
-    expect(S.firstProduct(["Pulpe", "[À compléter : nom de la recette]"], "Pulpe")).toBeNull(); // jamais un faux produit
-    // L'image du site n'est plus créée par le modèle d'images : une image payée de moins par planche.
+  it("le haut du site sur téléphone : une maquette créée en image pour chaque identité", async () => {
+    // Retour du propriétaire du 15 novembre 2026 : la maquette du haut de l'accueil est de nouveau une image créée par
+    // le modèle d'images, sur écran de téléphone, en portrait ; elle fait partie de la proposition de chaque identité.
     const I = await import("@/lib/syna-agent/brand-images");
-    expect(I.CREATED_SLOTS).toEqual(["logo", "hero", "object", "signs", "post0", "post1", "post2"]); // les signes en vraie photo (14 novembre 2026)
-    expect(I.IMAGE_SLOTS).toContain("site"); // les planches faites avant restent lisibles
-    expect(P.imagerySystem("produits")).toMatch(/Le haut du site sur téléphone n'est plus une image : le Studio le rend lui-même/);
-    expect(P.imagerySystem("produits")).not.toMatch(/"site": ""/);
+    expect(I.CREATED_SLOTS).toEqual(["logo", "hero", "object", "signs", "site", "post0", "post1", "post2"]); // les signes en vraie photo (14 novembre 2026)
+    expect(I.CREATED_SLOTS).toEqual([...I.IMAGE_SLOTS]);
+    expect(I.PROPOSAL_SLOTS).toEqual(["logo", "hero", "site"]);
+    expect(I.SLOT_ASPECT.site).toBe("9:16");
+    expect(I.SLOT_REFERENCES.site).toBe(2); // le logo et la grande scène, comptés dans le devis
+    for (const k of ["produits", "services"] as const) {
+      const t = P.imagerySystem(k);
+      // 15 novembre 2026 (document « 50 accueils mobiles ») : la maquette suit son cahier de métier ; la consigne décrit
+      // le téléphone entier sur son fond uni, l'en-tête, la manière d'ouvrir de CETTE identité, le titre très grand.
+      expect(t).toMatch(/- site : la MAQUETTE du haut de la page d'accueil du site sur téléphone\. Suis le cahier « La maquette du haut de l'accueil » ci-dessous : c'est le niveau attendu\./);
+      expect(t).toMatch(/le téléphone entier vu de face sur son fond uni doux \(dis la teinte\)/);
+      expect(t).toMatch(/la manière d'ouvrir choisie pour cette identité \(reprends-la telle quelle, et décris où va chaque élément\)/);
+      expect(t).toMatch(/le caractère exact du titre \([^)]*sa taille : très grand\)/);
+      expect(t).toMatch(/Le logo est fourni en référence : il est posé tel quel dans l'en-tête\. Format portrait\./);
+      expect(t).toMatch(/# Cahier : la maquette du haut de l'accueil, sur téléphone\n# La maquette du haut de l'accueil, sur téléphone/);
+      // Le Studio ne pose plus de cadre autour : le téléphone est dans l'image.
+      expect(t).not.toMatch(/le Studio la montre dans le cadre d'un téléphone/);
+      expect(t).not.toMatch(/Le haut du site sur téléphone n'est plus une image/);
+    }
+    expect(P.imagerySystem("produits")).toMatch(/selon une boutique : menu replié, logo au centre, panier/);
+    expect(P.imagerySystem("produits")).toMatch(/le vrai produit du client, très grand, cadré avec audace/);
+    expect(P.imagerySystem("services")).toMatch(/selon un service : le logo à gauche, la pastille d'action et le menu replié à droite/);
+    expect(P.imagerySystem("services")).toMatch(/le lieu, les outils ou le résultat du métier, sans personne/);
+    expect(P.imagerySystem("produits")).toMatch(/"site": ""/); // la consigne de la maquette est demandée dans la forme de la réponse
     // Retour du propriétaire du 14 novembre 2026 : « 3 images de la même couleur qui représentent la même chose, les
     // clients veulent voir 3 publications différentes possibles ».
     for (const k of ["produits", "services"] as const) {
@@ -106,13 +121,28 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     expect(POSTS_PLAN_SYSTEM).toMatch(/jamais trois variantes d'une même scène ni trois images de la même couleur/);
   });
 
-  it("les notes du propriétaire du 13 novembre : « Zeste » 8/10 ; « Gorgée » et « Fruit Nu » refusés, et l'épreuve du sous-entendu", () => {
-    expect(NAME_RATINGS.find((r) => r.name === "Zeste")?.score).toBe(8);
-    expect(NAME_RATINGS.find((r) => r.name === "Zeste")!.score).toBeGreaterThanOrEqual(NAME_KEEP_SCORE);
+  it("la mesure du propriétaire est écrite en règles générales : aucun nom ni exemple des projets d'essai dans les consignes ; les noms refusés restent écartés par le code", () => {
+    // La liste des noms refusés reste lue par le code (ils ne sont jamais reproposés), avec ses mots.
     for (const n of ["Gorgée", "Fruit Nu"]) expect(NAME_REFUSALS.find((r) => r.name === n)?.words).toBe("ça fait très porno");
-    expect(P.NAME_TRIALS).toMatch(/8\. Le sous-entendu : [\s\S]*« Gorgée » et « Fruit Nu »[\s\S]*« ça fait très porno »[\s\S]*un mot sensuel n'est pas un mot équivoque/);
-    expect(P.nameYardstick("produits")).toMatch(/« Zeste » 8\/10/);
-    expect(P.nameYardstick("produits")).toMatch(/Il a refusé « Gorgée » et « Fruit Nu » \(« ça fait très porno »\)/);
-    expect(P.nameJudgeSystem("produits")).toMatch(/Le sous-entendu/);
+    expect(NAME_REFUSALS.some((r) => r.name === "Tintamarre")).toBe(true);
+    expect(NAME_KEEP_SCORE).toBe(8);
+    // L'épreuve du sous-entendu reste, sans citer de nom.
+    expect(P.NAME_TRIALS).toMatch(/8\. Le sous-entendu : [\s\S]*\(sexuel, grivois, vulgaire, moqueur\) \? Cherche aussi les expressions courantes où ce mot prend un sens négatif ou moqueur \([^)]+\)\. Au moindre doute, le nom est écarté : un mot sensuel n'est pas un mot équivoque/);
+    expect(P.nameYardstick("produits")).toMatch(/Il refuse un nom qui peut s'entendre de travers \(sexuel, grivois, vulgaire, moqueur\), même s'il est court et beau/);
+    expect(P.nameYardstick("produits")).toMatch(/tu appellerais ton site comme ça, toi \?/);
+    expect(P.nameYardstick("produits")).toMatch(new RegExp(`Ce qu'il note le plus haut \\(${NAME_KEEP_SCORE} sur 10 et plus\\) : UN MOT SIMPLE ET FORT`));
+    // Le juge cherche aussi les sens négatifs du mot dans les expressions de tous les jours, et le dit à voix haute.
+    for (const k of ["produits", "services"] as const) expect(P.nameJudgeSystem(k)).toMatch(/4\. Le sous-entendu : [\s\S]*Cherche aussi les expressions courantes où ce mot prend un sens négatif ou moqueur \([^)]+\) : dis-le à voix haute dans trois phrases de tous les jours avant de répondre\. Au moindre doute, c'est NON/);
+    // Aucune consigne envoyée à l'IA ne porte un exemple tiré des projets d'essai (ni la liste des noms refusés).
+    const sent: Record<string, string> = { NAME_TRIALS: P.NAME_TRIALS, STUDY: P.STUDY_SYSTEM, VERIFY: P.VERIFY_SYSTEM, strategy: P.strategySystem(), imageReview: P.imageReviewSystem(), imageReread: P.imageRereadSystem() };
+    for (const k of ["produits", "services"] as const) {
+      Object.assign(sent, { [`yardstick-${k}`]: P.nameYardstick(k), [`judge-${k}`]: P.nameJudgeSystem(k), [`shortlist-${k}`]: P.shortlistSystem(k, 3), [`direction-${k}`]: P.directionSystem(k), [`imagery-${k}`]: P.imagerySystem(k), [`review-${k}`]: P.reviewSystem(k), [`fix-${k}`]: P.fixSystem(k), [`recheck-${k}`]: P.recheckSystem(k) });
+      for (const path of P.teamPathsFor(k, 4)) sent[`team-${k}-${path.id}`] = P.teamSystem(k, path);
+    }
+    for (const [who, text] of Object.entries(sent)) {
+      expect(text, who).not.toMatch(/Tintamarre|Morceaux Choisis|Gorgée|Fruit Nu|Pulpe|Zeste|Éclat de thé|Pelage|toilettage|fourgon|ça fait très porno/);
+      // Les mots du propriétaire sur les noms refusés des projets d'essai ne partent plus à l'IA.
+      for (const r of NAME_REFUSALS.filter((x) => /infusions/.test(x.activity))) expect(text, `${who} : ${r.name}`).not.toContain(r.name);
+    }
   });
 });

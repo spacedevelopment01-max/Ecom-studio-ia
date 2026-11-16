@@ -20,6 +20,7 @@ import { domainDeps, domainLine, findDomains, type NameDomains } from "./brand-d
 import { UserFacingError, getJob, type JobContext } from "../jobs";
 import { L } from "../i18n-server";
 import { loadProject } from "../projects";
+import { assetData, getAsset } from "../library";
 import { getJsonSetting } from "../settings";
 import { callCostBoundMicro, estimateCallMicro, llmJson } from "../ai/llm";
 import { aiSiteImageHd, photoRequestMaxMicro, withQuotedImageRoute } from "../ai/media-providers";
@@ -29,14 +30,12 @@ import { sanitizeSymbolSvg } from "../media/logo-symbol";
 import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
-import { MAX_ART_CHARS, sanitizeArt } from "./brand-art";
-import { reviewBoardArt } from "./brand-art-review";
-import { CREATED_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
-import { BoardSchema, PALETTE_ROLES, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
+import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, clientLogoOf, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
+import { BoardSchema, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
 import { NAME_REFUSALS } from "./brand-references";
-import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, unprovenClaims, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
+import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
 import { IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 
@@ -76,10 +75,10 @@ const CALLS = {
   review: { tier: "strong", input: 26_000, output: 6_000, max: 10_000 },
   fix: { tier: "strong", input: 22_000, output: 10_000, max: 18_000 },
   recheck: { tier: "strong", input: 30_000, output: 4_000, max: 8_000 },
-  // L'illustratrice : une dizaine de dessins par planche (le gros de sa réponse est du SVG).
-  art: { tier: "craft", input: 9_000, output: 16_000, max: 26_000 },
+  // Le lecteur qui ne sait rien : il ne lit que les phrases courtes des planches (très peu de texte).
+  reader: { tier: "strong", input: 2_500, output: 2_500, max: 5_000 },
   // Images de la planche (réglage `sina.brand_images`) : la direction artistique écrit les consignes ; un modèle
-  // qui voit relit les six images d'une planche. Le même relit, toujours, les dessins de l'illustratrice.
+  // qui voit relit les images d'une planche.
   imagery: { tier: "strong", input: 7_000, output: 6_000, max: 10_000 },
   look: { tier: "craft", input: 14_000, output: 1_500, max: 4_000 },
 } as const satisfies Record<string, { tier: Tier; input: number; output: number; max: number }>;
@@ -93,7 +92,7 @@ const MAX_PAGES_REREAD = 16;
 /** Nombre d'appels de chaque sorte selon le travail demandé (série complète, ou reprise de quelques routes). */
 function callCounts(routes: number, teams: number, fresh: boolean, images = false): Record<CallId, number> {
   // strategy : un second tour d'idées quand trop peu passent les deux épreuves ; fix : une reprise OU un remplacement par route.
-  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, art: routes, imagery: images ? routes : 0, look: routes + (images ? routes : 0) };
+  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, reader: 1, imagery: images ? routes : 0, look: images ? routes : 0 };
 }
 
 export type ChainQuote = { maxMicro: number; probableMicro?: number };
@@ -105,6 +104,8 @@ export type ChainQuote = { maxMicro: number; probableMicro?: number };
 export function chainQuote(o: { routes: number; fresh?: boolean; settings?: ChainSettings; images?: boolean; /** Noms choisis par le client : ni recherche, ni juge. */ imposed?: boolean }): ChainQuote {
   const s = o.settings ?? chainSettings(), fresh = o.fresh !== false, images = o.images ?? brandImagesOn(), n = callCounts(o.routes, s.teams, fresh, images);
   if (o.imposed) { n.team = 0; n.judge = 0; }
+  // La direction artistique et la relecture des images sont comptées avec les images (boardImagesQuote), une seule fois.
+  if (images) { n.imagery = 0; n.look = 0; }
   // Recherches sur le web : faites par le modèle « métier » (réglage économe), pas par le modèle le plus fort.
   const search = webSearchQuoteMicro(s.craft) ?? 0, searches = (fresh ? RESEARCHES : 0) + 1;
   // Coût probable d'une recherche : la moitié de son maximum (essai réel du 12 novembre 2026 : 0,16 à 0,45 € pour 0,50 € au plus).
@@ -120,7 +121,7 @@ export function chainQuote(o: { routes: number; fresh?: boolean; settings?: Chai
   }
   // Second tour de noms (une fois au plus, quand trop peu de noms passent le juge) : compté dans le plafond seulement.
   if (!o.imposed) max += boundOf.team * s.teams + boundOf.judge;
-  if (images) { const q = boardImagesQuote(o.routes, s); max += q.maxMicro; probable = probable == null || q.probableMicro == null ? null : probable + q.probableMicro; }
+  if (images) { const q = boardImagesQuote(o.routes, s, PROPOSAL_SLOTS); max += q.maxMicro; probable = probable == null || q.probableMicro == null ? null : probable + q.probableMicro; }
   return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
 }
 
@@ -146,9 +147,6 @@ const imageUnitMax = (aspect: ImageAspect, references: number) => photoRequestMa
  * Devis des images de planche SEULES (direction artistique, six images, relecture, par planche). Le coût probable
  * d'une image est sa borne sans la marge de réservation (un quart) ; une image refusée à la relecture est payée.
  */
-/** Idées de logo des autres planches de la série (déjà décidées) : le logo de la suivante doit en différer. */
-export const otherLogos = (list: { key: string; board?: { images?: { logoIdea?: string } } }[], key: string): string[] =>
-  list.filter((o) => o.key !== key).map((o) => o.board?.images?.logoIdea ?? "").filter(Boolean);
 
 export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[]): ChainQuote {
   const s = settings ?? chainSettings();
@@ -161,6 +159,18 @@ export function boardImagesQuote(routes: number, settings?: ChainSettings, slots
     probable = probable == null || usual == null ? null : probable + usual * routes;
   }
   return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
+}
+
+/**
+ * Devis de la marque FINIE pour l'identité choisie : les images qui lui manquent (par défaut l'objet, les signes et les
+ * trois publications), leur relecture, et la direction artistique si elle doit être réécrite. Le logo adopté, ses
+ * déclinaisons et la charte sont rendus par le Studio, sans IA.
+ */
+export function finishQuote(slots: readonly ImageSlot[] = FINISH_SLOTS, settings?: ChainSettings): ChainQuote {
+  const q = boardImagesQuote(1, settings, slots);
+  // Le symbole seul, tiré du logo : une image carrée avec le logo en référence (sa relecture est déjà comptée avec celle des images).
+  const unit = imageUnitMax("1:1", 1);
+  return { maxMicro: q.maxMicro + unit, ...(q.probableMicro ? { probableMicro: Math.ceil(q.probableMicro + unit / 1.25) } : {}) };
 }
 
 // ---------------------------------------------------------------- formes rendues par les spécialistes
@@ -196,7 +206,7 @@ const ShortlistSchema = z.object({
     idea: z.string().min(1).max(8), name: z.string().min(1).max(40), detail: z.string().max(240).default(""), second: z.string().max(240).default(""),
     why: z.string().max(400).default(""), trials: z.string().max(400).default(""), risks: z.array(z.string().max(240)).max(5).default([]),
     tone: z.string().max(160).default(""), ground: z.enum(GROUNDS), hue: z.string().max(60).default(""), type: z.string().max(80).default(""), reserve: z.boolean().default(false),
-  })).min(1).max(8),
+  })).min(1).max(10),
 });
 type Pick = z.infer<typeof ShortlistSchema>["routes"][number];
 const JudgeSchema = z.object({
@@ -210,7 +220,7 @@ const VerifySchema = z.object({ checks: z.array(z.object({ name: z.string().max(
 const DraftBoard = BoardSchema.omit({ nameCheck: true, domains: true, signs: true, wordmark: true, idea: true, hero: true, object: true, site: true, posts: true, images: true }).extend({
   idea: BoardSchema.shape.idea.omit({ confessionSupport: true }),
   signs: z.array(BoardSchema.shape.signs.element.omit({ symbol: true, art: true }).extend({ symbolSvg: z.string().max(6000).default("") })).min(3).max(5),
-  // Les dessins (lettre remplacée comprise) viennent de l'illustratrice, dans un appel à part : jamais de ce brouillon.
+  // Aucun dessin en code dans ce brouillon (lettre remplacée comprise) : les images de la planche sont créées à part.
   // « cut » (la vague qui coupe le nom) est le geste de « Pulpe » : jamais redonné à une nouvelle marque (retour du
   // propriétaire du 14 novembre 2026 : « Pelage et Coussinet, le logo c'est la même conception que Pulpe »).
   wordmark: WordmarkSchema.omit({ symbol: true, swap: true, cut: true }).extend({ symbolSvg: z.string().max(6000).default("") }),
@@ -225,6 +235,16 @@ const DraftSchema = IdentitySchema.pick({ name: true, slogan: true, promise: tru
 });
 type Draft = z.infer<typeof DraftSchema>;
 
+const ReaderSchema = z.object({ texts: z.array(z.object({ id: z.string().max(12), understood: z.string().max(400).default(""), clear: z.boolean().catch(true), why: z.string().max(300).default("") })).max(40).default([]) });
+/** Les phrases courtes d'une planche que lisent les clients de la marque (jamais un texte gardé mot pour mot du client). */
+export function readerTexts(x: Route, keptSlogan = false): { id: string; label: string; text: string }[] {
+  const b = x.board;
+  return [
+    ...(keptSlogan ? [] : [{ id: `${x.key}-s`, label: "la signature", text: x.slogan }]),
+    { id: `${x.key}-t`, label: "le titre du site", text: b.site.headline }, { id: `${x.key}-b`, label: "le bouton du site", text: b.site.button },
+    ...b.posts.map((q, i) => ({ id: `${x.key}-p${i + 1}`, label: `la publication ${i + 1}`, text: q.text })),
+  ].filter((t) => t.text?.trim());
+}
 const ReviewSchema = z.object({
   routes: z.array(z.object({
     key: z.string().max(2), score: z.number().min(0).max(10).default(0), verdict: z.enum(["garder", "reprendre"]).catch("reprendre"), fixes: z.array(z.string().max(400)).max(10).default([]),
@@ -243,7 +263,7 @@ export type ChainAi = {
   /** Appel d'un spécialiste, réponse contrôlée par son schéma. */
   ask: <S extends z.ZodType>(id: string, call: { system: string; prompt: string; schema: S; kind: CallId; prepare?: (raw: unknown) => unknown }) => Promise<z.infer<S>>;
   /** Création d'UNE image par le modèle d'images du Studio (route des images de SINA), avec ses images de référence. */
-  draw: (id: string, call: { prompt: string; aspect: ImageAspect; logo?: Buffer | null; scene?: Buffer | null }) => Promise<Buffer>;
+  draw: (id: string, call: { prompt: string; aspect: ImageAspect; logo?: Buffer | null; scene?: Buffer | null; /** Image montrée pour ne pas la refaire. */ avoid?: Buffer | null }) => Promise<Buffer>;
   /** Relecture par un modèle qui voit : des images et une consigne, réponse contrôlée par son schéma. */
   look: <S extends z.ZodType>(id: string, call: { system: string; prompt: string; schema: S; images: { data: Buffer; label?: string }[] }) => Promise<z.infer<S>>;
 };
@@ -251,20 +271,30 @@ export const brandChainDeps: { ai?: (ctx: JobContext) => ChainAi } = {};
 /** Le contrôle des noms de domaine interroge le registre : sous une IA simulée (essais), seulement si le test fournit aussi le registre. */
 const domainsOn = () => !brandChainDeps.ai || !!domainDeps.lookup;
 
-function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: ChainSettings, capMicro: number): ChainAi {
+/**
+ * Travail en différé pour les textes de la chaîne (lot 2) : moitié prix chez Anthropic, avec une attente bornée (voir
+ * `ai/llm.ts`). Les images n'en profitent pas : le modèle d'images n'a pas de tarif différé. Réglage `sina.differe`
+ * (allumé par défaut ; « false » pour comparer avec le direct pendant un essai).
+ */
+export const deferredOn = (): boolean => getJsonSetting<boolean>("sina.differe", true) !== false;
+
+function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: ChainSettings, capMicro: number, direct = false): ChainAi {
   const scope = (step: string) => ({ jobId: ctx.job.id, projectId: who.projectId, step, costCapMicro: capMicro });
+  // Une retouche ou la fin de la marque part en direct : le client attend devant, et le différé n'y fait gagner que
+  // quelques centimes pour un quart d'heure d'attente (essai réel : vingt minutes pour quatre logos).
+  const deferred = deferredOn() && !direct;
   return {
     research: async (id, query) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft }, query))).findings,
     ask: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, promptKey: `syna-brand-${c.kind}-1`,
-      prepare: c.prepare, maxTokens: CALLS[c.kind].max, maxOutputTokens: CALLS[c.kind].max + 6000, usageKey: `${ctx.job.id}:brand:${id}`,
+      prepare: c.prepare, maxTokens: CALLS[c.kind].max, maxOutputTokens: CALLS[c.kind].max + 6000, usageKey: `${ctx.job.id}:brand:${id}`, deferred,
       routing: { difficulty: CALLS[c.kind].tier === "strong" ? "complex" : "standard", prefer: s[CALLS[c.kind].tier] },
     }, c.schema)),
     // Route imposée (celle du devis), aucun relais vers un autre modèle ; le plafond de la tâche vaut aussi pour les images.
-    draw: (id, c) => withTrace(scope(`brand-${id}`), () => withQuotedImageRoute(boardImageRoute(), () => aiSiteImageHd({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, { prompt: c.prompt, aspect: c.aspect, logo: c.logo ?? null, scene: c.scene ?? null }))),
+    draw: (id, c) => withTrace(scope(`brand-${id}`), () => withQuotedImageRoute(boardImageRoute(), () => aiSiteImageHd({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, { prompt: c.prompt, aspect: c.aspect, logo: c.logo ?? null, scene: c.scene ?? null, avoid: c.avoid ?? null }))),
     look: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "quality_control", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, images: c.images, promptKey: "syna-brand-look-1",
-      maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, routing: { difficulty: "standard", prefer: s.craft },
+      maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, deferred, routing: { difficulty: "standard", prefer: s.craft },
     }, c.schema)),
   };
 }
@@ -388,8 +418,8 @@ const prepareDraft = (raw: any) => { const one = prepareIdentities({ identities:
 
 /**
  * Champs facultatifs rendus vides par le modèle (« note »: "", « tilt »: []) : retirés, pour qu'un geste non utilisé
- * ne fasse pas refuser toute la planche. Les dessins éventuels du brouillon sont retirés aussi : ils ne viennent que
- * de l'illustratrice, après filtrage.
+ * ne fasse pas refuser toute la planche. Les dessins éventuels du brouillon sont retirés aussi : une planche ne porte
+ * plus de dessin en code, ses images sont créées à part (`brand-images.ts`).
  */
 export function pruneDraft(raw: any): any {
   const b = raw?.board;
@@ -439,69 +469,21 @@ const routeText = (x: Route) => JSON.stringify({ ...x, board: (({ hero: _h, imag
   object: (({ art: _a, ...o }) => o)(b.object), site: (({ art: _a, ...o }) => o)(b.site), posts: b.posts.map(({ art: _a, ...q }) => q),
 }))(x.board) });
 
-// ---------------------------------------------------------------- les dessins de la planche
-
-// Forme large : un dessin trop lourd ou mal formé est refusé ensuite, un par un, par le filtre (jamais toute la réponse).
-const svgText = z.string().max(4 * MAX_ART_CHARS).default("");
-const ArtDraftSchema = z.object({
-  hero: svgText, object: svgText, site: svgText,
-  signs: z.array(z.object({ index: z.number().int().min(0).max(4), svg: svgText, ground: z.enum(PALETTE_ROLES).optional(), sample: z.string().max(48).optional(), hand: z.boolean().optional() })).max(5).default([]),
-  posts: z.array(z.object({ index: z.number().int().min(0).max(2), svg: svgText, ground: z.enum(PALETTE_ROLES).optional() })).max(3).default([]),
-  swap: z.object({ letter: z.number().int().min(0).max(39), svg: svgText }).optional(),
-});
 /**
- * Tolérance de forme de la réponse de l'illustratrice : un rang hors liste, une couleur inconnue, un texte vide ou une
- * lettre mal donnée retirent CE détail, jamais toute la planche (un appel ne se repaie pas pour une virgule).
+ * Contrôle gratuit : deux identités d'une série n'ont jamais le même haut de site (même place du titre, même menu et
+ * même suite). La seconde est reprise ; une identité sans composition choisie est reprise aussi.
  */
-export function prepareArt(raw: any): any {
-  if (!raw || typeof raw !== "object") return raw;
-  const text = (v: unknown) => (typeof v === "string" ? v : "");
-  const role = (v: unknown) => ((PALETTE_ROLES as readonly string[]).includes(v as string) ? { ground: v } : {});
-  const rank = (v: unknown, max: number) => (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= max ? Number(v) : null);
-  const list = (v: unknown) => (Array.isArray(v) ? v.filter((x) => x && typeof x === "object") : []);
-  const signs = list(raw.signs).map((g: any) => ({ index: rank(g.index, 4), svg: text(g.svg), ...role(g.ground), ...(text(g.sample).trim() ? { sample: text(g.sample).trim().slice(0, 48), ...(g.hand === true ? { hand: true } : {}) } : {}) })).filter((g) => g.index != null).slice(0, 5);
-  const posts = list(raw.posts).map((q: any) => ({ index: rank(q.index, 2), svg: text(q.svg), ...role(q.ground) })).filter((q) => q.index != null).slice(0, 3);
-  const letter = raw.swap && typeof raw.swap === "object" ? rank(raw.swap.letter, 39) : null;
-  return { hero: text(raw.hero), object: text(raw.object), site: text(raw.site), signs, posts, ...(letter != null && text(raw.swap.svg).trim() ? { swap: { letter, svg: text(raw.swap.svg) } } : {}) };
-}
-export type ArtDraft = z.infer<typeof ArtDraftSchema>;
-
-/** Ce que l'illustratrice reçoit d'une route : l'idée, le nom, la palette, et chaque emplacement à dessiner. */
-const artBrief = (x: Route) => [
-  `Nom : ${x.name}`, `Signature : ${x.slogan}`, `Territoire : ${x.territory}`, `Ce que croit la marque : ${x.board.idea.belief}`, `La preuve, dans l'objet : ${x.board.idea.proof}`,
-  `Fond de page : ${x.ground}${x.gradient ? ` (${x.gradient.from} → ${x.gradient.to})` : ""}`,
-  `Palette : dark ${x.palette.dark}, primary ${x.palette.primary}, secondary ${x.palette.secondary}, accent ${x.palette.accent}, light ${x.palette.light}`,
-  `Nom dessiné : ${(x.board.wordmark.lines ?? [x.name]).join(" / ")}${x.board.wordmark.cut ? " (coupé par une ligne ondulée)" : ""}`,
-  `Objet : ${x.board.object.kind} — devant : ${x.board.object.front.join(" · ")}`,
-  `Site : ${x.board.site.headline}`,
-  "Signes :", ...x.board.signs.map((g, i) => `  ${i}. [${g.kind}] ${g.title} — ${g.text}`),
-  "Publications :", ...x.board.posts.map((q, i) => `  ${i}. ${q.text}`),
-].join("\n");
-
-/**
- * Pose les dessins de l'illustratrice sur une route. Chaque dessin passe par la liste blanche du Studio ; un dessin
- * refusé est simplement absent (la planche garde sa forme). Rend la route et le nombre de dessins posés et refusés.
- */
-export function withArt(route: Route, draft: ArtDraft, facts: string): { route: Route; placed: number; refused: number } {
-  let placed = 0, refused = 0;
-  const clean = (svg: string | undefined) => { if (!svg?.trim()) return undefined; const r = sanitizeArt(svg); if (r.ok) { placed++; return r.art; } refused++; return undefined; };
-  const b = route.board, hero = clean(draft.hero), objectArt = clean(draft.object), siteArt = clean(draft.site);
-  const signs = b.signs.map((g, i) => {
-    const d = draft.signs.find((x) => x.index === i);
-    if (!d || g.kind === "lettrage") return g;
-    const art = clean(d.svg), sample = !art && d.sample?.trim() ? d.sample.trim() : undefined;
-    return { ...g, ...(art ? { art } : {}), ...(sample ? { sample, ...(d.hand ? { hand: true } : {}) } : {}), ...(d.ground && (art || sample) ? { ground: d.ground } : {}) };
-  });
-  const posts = b.posts.map((q, i) => { const d = draft.posts.find((x) => x.index === i); if (!d) return q; const art = clean(d.svg); return { ...q, ...(art ? { art } : {}), ...(d.ground ? { ground: d.ground } : {}) }; });
-  const swapArt = draft.swap ? clean(draft.swap.svg) : undefined;
-  const wordmark = safeWordmark({ ...b.wordmark, ...(swapArt && draft.swap ? { swap: { letter: draft.swap.letter, art: swapArt } } : {}) }, route.name);
-  // Lettre que le Studio ne laisse pas remplacer (ce n'est pas un O, ou elle est hors du nom) : le dessin n'est pas posé.
-  if (swapArt && !wordmark.swap) placed--;
-  let next: Route = { ...route, board: { ...b, ...(hero ? { hero } : {}), signs, posts, wordmark, object: { ...b.object, ...(objectArt ? { art: objectArt } : {}) }, site: { ...b.site, ...(siteArt ? { art: siteArt } : {}) } } };
-  // Les quelques mots ajoutés par l'illustratrice ne portent ni chiffre ni garantie absents de la fiche du client.
-  if (unprovenClaims(next, facts).length > unprovenClaims(route, facts).length) next = { ...next, board: { ...next.board, signs: next.board.signs.map(({ sample: _s, hand: _h, ...g }) => g) } };
-  const safe = RouteSchema.safeParse(next);
-  return safe.success ? { route: safe.data, placed, refused } : { route, placed: 0, refused: placed + refused };
+export function layoutIssues(list: Route[]): string[] {
+  const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+  // La manière d'ouvrir en mots libres ; à défaut (planches d'avant), la place du titre, le menu et la suite.
+  const sig = (x: Route) => { const l = x.board.site.layout; return !l ? "" : l.opening ? norm(l.opening) : l.title && l.menu && l.next ? `${l.title}|${l.menu}|${l.next}` : ""; };
+  const out: string[] = [];
+  for (const [i, x] of list.entries()) {
+    if (!sig(x)) { out.push(`Identité ${x.key} : la manière d'ouvrir le haut de son site (board.site.layout.opening) n'est pas choisie ; choisis-la d'après sa planche.`); continue; }
+    const twin = list.slice(0, i).find((o) => sig(o) === sig(x));
+    if (twin) out.push(`Identité ${x.key} : le haut de son site s'ouvre de la même manière que celui de ${twin.key} ; choisis une autre manière d'ouvrir, d'après sa planche.`);
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------- la tâche
@@ -523,6 +505,8 @@ const Payload = z.object({
   imagesOnly: z.boolean().optional(),
   /** Avec `imagesOnly` : seulement ces images (ex. le logo et l'objet qui le porte) ; les autres images gardées restent. */
   slots: z.array(z.enum(CREATED_SLOTS)).min(1).optional(),
+  /** La marque finie de l'identité CHOISIE : logo adopté, images manquantes (ou `slots` à refaire), charte. */
+  finish: z.boolean().optional(),
 });
 export type BrandJobPayload = z.infer<typeof Payload>;
 
@@ -533,7 +517,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const ready = brandKnowledgeReady();
   if (!ready.ok) throw new UserFacingError(L("La création de la marque ne peut pas commencer : un cahier de métier de SINA manque. Rien n'a été décompté.", "Brand creation cannot start: a knowledge file is missing. Nothing was charged."));
   const settings = chainSettings();
-  const ai = brandChainDeps.ai ? brandChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id }, settings, a.capMicro);
+  const ai = brandChainDeps.ai ? brandChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id }, settings, a.capMicro, !!a.imagesOnly || !!a.finish);
   const kind = nameKindsFor(j), keys = routeKeys(a.count), notes: string[] = [];
   // Refonte : le nom ou le slogan gardés par le client sont repris mot pour mot, quoi que rende un spécialiste.
   const keptName = j.keep.includes("nom") ? (j.keptValues?.name || j.imported[0]?.name || "").trim() : "";
@@ -554,14 +538,21 @@ export async function runSinaBrandJob(ctx: JobContext) {
   }
   const brief = briefBlock(j, a.guidance);
 
+  // La marque finie de l'identité choisie (second temps) : rien d'autre n'est refait.
+  if (a.finish) return (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: a.slots, guidance: a.guidance });
+  // Logo gardé par le client : jamais redessiné ; il est posé tel quel sur ce qui le porte.
+  const clientLogo = j.keep.includes("logo") ? await clientLogoOf(p.id) : null;
+
   // Seulement les images : les planches déjà écrites sont gardées telles quelles, chacune reçoit ses images.
   if (a.imagesOnly) {
     if (!previous.length) throw new UserFacingError(L("Il n'y a pas encore de planche à mettre en images. Rien n'a été décompté.", "There is no board to illustrate yet. Nothing was charged."));
     const targets = a.redo?.length ? previous.filter((x) => a.redo!.includes(x.key)) : previous, round = j.identities?.round ?? 1;
     let list = (j.identities?.list ?? []) as Route[];
-    const said: string[] = [];
+    const said: string[] = [], redoneLogos: Buffer[] = [];
     for (const x of targets) {
-      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, otherLogos: otherLogos(list, x.key) });
+      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos] });
+      const fresh = (a.slots ?? CREATED_SLOTS).includes("logo") && r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
+      if (fresh) { try { redoneLogos.push(assetData(fresh)); } catch { /* fichier absent */ } }
       list = list.map((o) => (o.key === x.key ? r.route : o));
       said.push(...r.issues); notes.push(...r.notes);
     }
@@ -611,10 +602,11 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // 4. Les noms : une équipe par chemin, chacune seule (elle ne voit pas le travail des autres).
   const paths = P.teamPathsFor(kind, settings.teams), teams: { team: string; names: z.infer<typeof TeamSchema>["names"] }[] = [];
   const teamPrompt = `${brief}\n\n# Idées de marque\n${ideas.map((i) => ideaBlock(i, strategy)).join("\n")}\n\n# Le moule de la catégorie (à ne pas refaire)\n${study.mould || "non trouvé"}\n\n# Noms des concurrents (jamais repris)\n${study.competitors.map((c) => c.name).join(", ") || "non trouvé"}`;
-  if (!j.keep.includes("nom") && !imposed.length) for (const [i, path] of paths.entries()) {
-    ctx.progress(0.3 + (0.2 * i) / paths.length, L(`Je cherche des noms (${i + 1} sur ${paths.length})`, `Looking for names (${i + 1} of ${paths.length})`));
-    const r = await ctx.step(`brand:team:${path.id}`, () => ai.ask(`team-${path.id}`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: teamPrompt }));
-    teams.push({ team: path.id, names: r.names });
+  // Les équipes ne se voient pas : elles cherchent en même temps (une seule attente au lieu de quatre).
+  if (!j.keep.includes("nom") && !imposed.length) {
+    ctx.progress(0.3, L("Je cherche des noms", "Looking for names"));
+    const found = await Promise.all(paths.map((path) => ctx.step(`brand:team:${path.id}`, () => ai.ask(`team-${path.id}`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: teamPrompt }))));
+    for (const [i, path] of paths.entries()) teams.push({ team: path.id, names: found[i].names });
   }
   // Noms déjà montrés AVANT cette tâche, fixés une fois : une relance après coup n'écarte pas ses propres noms.
   const shown = await ctx.step("brand:shown", async () => [...new Set((j.identities?.shownNames ?? []).concat(previous.map((x) => x.name)))]);
@@ -653,10 +645,8 @@ export async function runSinaBrandJob(ctx: JobContext) {
       const level = judged.length ? `Noms gardés par le juge (le niveau à atteindre, à ne pas redonner) : ${judged.map((k) => k.name).join(", ")}` : "Le juge n'a gardé AUCUN nom du premier tour.";
       const near = almost.length ? `\nPresque gardés, avec ce qui leur manque :\n${almost.map((k) => `- ${k.name} : ${k.why}`).join("\n")}` : "";
       const more: typeof teams = [];
-      for (const path of paths) {
-        const r = await ctx.step(`brand:team:${path.id}:${round}:2`, () => ai.ask(`team-${path.id}-2`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: `${teamPrompt}\n\n# Second tour\nLes noms du premier tour n'ont pas suffi. ${level}${near}\n\nCette fois, chaque nom doit tenir SEUL sur l'objet : on doit voir le produit ou son moment sans aucune explication, et le fondateur doit avoir envie de le porter.\n\nNoms déjà trouvés par les équipes (ne les redonne pas) : ${pool.slice(0, 260).map((n) => n.name).join(", ")}` }));
-        more.push({ team: path.id, names: r.names });
-      }
+      const again = await Promise.all(paths.map((path) => ctx.step(`brand:team:${path.id}:${round}:2`, () => ai.ask(`team-${path.id}-2`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: `${teamPrompt}\n\n# Second tour\nLes noms du premier tour n'ont pas suffi. ${level}${near}\n\nCette fois, chaque nom doit tenir SEUL sur l'objet : on doit voir le produit ou son moment sans aucune explication, et le fondateur doit avoir envie de le porter.\n\nNoms déjà trouvés par les équipes (ne les redonne pas) : ${pool.slice(0, 260).map((n) => n.name).join(", ")}` }))));
+      for (const [i, path] of paths.entries()) more.push({ team: path.id, names: again[i].names });
       second = namePool(more, { competitors: study.competitors.map((c) => c.name), shown: [...shown, ...pool.map((n) => n.name)] }).filter((n) => freeName(n.name));
       searched += second.length;
       await judge(":2", second);
@@ -684,7 +674,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     ...(kept.length ? ["", `# Routes GARDÉES par le client (ne les refais pas ; les nouvelles doivent en différer : autre idée, autre moule de nom, autre fond, autre teinte, autre police)`, ...kept.map((x) => `- ${x.key} « ${x.name} » : ${x.board.idea.belief} (fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading})`)] : []),
     ...(namesOnly ? ["", "# Le client veut SEULEMENT de nouveaux noms : garde l'idée de chaque route, change le nom.", ...previous.filter((x) => todo.includes(x.key)).map((x) => `- ${x.key} : idée « ${x.board.idea.belief} », fond ${x.ground} ; ancien nom « ${x.name} » (à ne pas reproposer)`)] : []),
     ...(imposed.length ? ["", `# Noms CHOISIS par le client : compose une route par nom, dans cet ordre, en reprenant chaque nom lettre pour lettre (trouve à chacun son détail réel et sa deuxième lecture) ; aucune réserve : ${imposed.map((n) => `« ${n} »`).join(", ")}`] : shown.length ? ["", `# Noms déjà montrés au client (jamais reproposés) : ${[...new Set(shown)].join(", ")}`] : []),
-    "", `Compose ${todo.length} route(s) pour ${todo.length > 1 ? "les clés" : "la clé"} ${todo.join(", ")}, dans cet ordre, puis jusqu'à 4 réserves (autant que les noms permis le permettent).`,
+    "", `Compose ${todo.length} route(s) pour ${todo.length > 1 ? "les clés" : "la clé"} ${todo.join(", ")}, dans cet ordre, puis jusqu'à 6 réserves (autant que les noms permis le permettent).`,
   ].join("\n");
   const shortlist = await ctx.step(`brand:shortlist:${round}`, () => ai.ask("shortlist", { kind: "shortlist", system: P.shortlistSystem(kind, todo.length), schema: ShortlistSchema, prompt: shortlistPromptFor(allowed) }));
   // Un nom que la composition aurait pris hors des noms permis est écarté : aucune planche sur un nom non gardé.
@@ -729,7 +719,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // 6 et 7. La voix, les signes, les situations : la planche de chaque route.
   const ideaOf = (r: Pick) => strategy.ideas.find((i) => i.id === r.idea) ?? ideas[0];
   /** Ce qu'une route doit savoir des autres pour s'en écarter (couleurs, police, phrases, bouton). */
-  const seen = (x: Route) => `- ${x.key} « ${x.name} » : fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading} (police de titres déjà prise), signature « ${x.slogan} », titre du site « ${x.board.site.headline} », bouton du site « ${x.board.site.button} »`;
+  const seen = (x: Route) => `- ${x.key} « ${x.name} » : fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading} (police de titres déjà prise), signature « ${x.slogan} », titre du site « ${x.board.site.headline} », bouton du site « ${x.board.site.button} »${x.board.site.layout?.opening ? `, manière d'ouvrir son site : ${x.board.site.layout.opening} (la tienne doit en différer)` : ""}`;
   const routePrompt = (r: Pick, idea: Strategy["ideas"][number], others: Route[], old?: Route) => [
     brief, "", "# Étude", studyDigest(study), "", "# La route à mettre en planche",
     `Nom : ${r.name}${j.keep.includes("nom") ? " (nom gardé par le client)" : ""}`, `Détail réel : ${r.detail}`, `Deuxième lecture : ${r.second}`, `Logique dite au client : ${r.why}`, `Risques connus : ${r.risks.join(" ; ") || "aucun relevé"}`,
@@ -749,7 +739,19 @@ export async function runSinaBrandJob(ctx: JobContext) {
   }
   const assemble = (fresh: Route[]) => keys.map((k) => fresh.find((x) => x.key === k) ?? kept.find((x) => x.key === k)).filter((x): x is Route => !!x);
   let list = assemble(drafted);
-  const firstIssues = routeIssues(list, j, keys.length);
+  // Le lecteur qui ne sait rien lit les phrases courtes des planches neuves, sans rien connaître de la marque : ce qu'il
+  // ne comprend pas du premier coup est repris avant la création des images. Sans réponse, la création continue.
+  const readerIssues: string[] = [];
+  if (drafted.length) try {
+    const asked = drafted.flatMap((x) => readerTexts(x, !!keptSlogan).map((t) => ({ ...t, key: x.key, sells: x.board.descriptor || "" })));
+    const read = await ctx.step(`brand:reader:${round}`, () => ai.ask(`reader-${round}`, { kind: "reader", system: P.readerSystem(), schema: ReaderSchema, prompt: asked.map((t) => `- id ${t.id} | l'entreprise vend : ${t.sells || "non précisé"} | phrase : « ${t.text} »`).join("\n") }));
+    for (const r of read.texts.filter((v) => !v.clear)) {
+      const t = asked.find((a) => a.id === r.id); if (!t) continue;
+      readerIssues.push(`Identité ${t.key} : ${t.label} « ${t.text} » n'est pas comprise du premier coup par quelqu'un qui ne connaît pas la marque (${(r.why || "pas claire").replace(/\.+$/, "")} ; il comprend : « ${r.understood.replace(/\.+$/, "") || "rien"} »). Réécris-la : claire d'abord, belle ensuite.`);
+    }
+    if (readerIssues.length) notes.push(`lecteur qui ne sait rien : ${readerIssues.length} phrase(s) à reprendre`);
+  } catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`lecture des phrases impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
+  const firstIssues = [...routeIssues(list, j, keys.length), ...layoutIssues(list), ...readerIssues];
 
   // Le directeur de création relit, exige une reprise, puis relit la reprise. Plafond atteint : dit, jamais caché.
   const remaining: string[] = [];
@@ -813,35 +815,19 @@ export async function runSinaBrandJob(ctx: JobContext) {
     notes.push("plafond de dépense atteint avant la fin de la relecture");
     remaining.push(L("Je n'ai pas pu finir ma relecture : le plafond annoncé était atteint. Regarde ces propositions d'un œil critique.", "I could not finish my review: the announced cap was reached."));
   }
-  // Les dessins : l'illustratrice dessine chaque planche neuve, une fois les textes arrêtés. Un appel qui échoue n'est
-  // jamais relancé seul : la planche reste sans dessins (elle garde sa forme), et c'est noté.
-  const facts = clientFacts(j), fresh = list.filter((x) => todo.includes(x.key));
-  try {
-    for (const [n, x] of fresh.entries()) {
-      ctx.progress(0.95 + (0.04 * n) / fresh.length, L(`Je dessine la planche ${x.key}`, `Drawing board ${x.key}`));
-      let drawn: ArtDraft | null = null;
-      try { drawn = await ctx.step(`brand:art:${round}:${x.key}`, () => ai.ask(`art-${round}-${x.key}`, { kind: "art", system: P.artSystem(kind), schema: ArtDraftSchema, prepare: prepareArt, prompt: `${brief}\n\n# La route à dessiner\n${artBrief(x)}` })); }
-      catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`dessins de ${x.key} non faits : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
-      if (!drawn) continue;
-      const r = withArt(x, drawn, facts);
-      // Les dessins posés sont regardés EN IMAGE : un dessin raté est retiré avant que le client ne le voie.
-      const seen = await reviewBoardArt({ ctx, ai, route: r.route, round });
-      list = list.map((o) => (o.key === x.key ? seen.route : o));
-      notes.push(...seen.notes);
-      if (r.refused) notes.push(`${r.refused} dessin(s) de ${x.key} refusé(s) par le contrôle`);
-      if (!r.placed) notes.push(`planche ${x.key} sans dessin`);
-    }
-  } catch (e) {
-    if (!(e instanceof CostCapReached)) throw e;
-    notes.push("plafond de dépense atteint avant la fin des dessins");
-  }
-
-  // Les images qui finissent la planche (logo, scène, objet, site, publications) : seulement si le réglage ou la
-  // demande les prévoit. Chaque image est relue ; une image non gardée laisse le dessin de SINA, et c'est dit.
+  // Premier temps des images : le logo et la grande scène de chaque planche neuve, créés par OpenAI et relus. Une
+  // image non gardée n'est pas montrée, et c'est dit. Le reste (objet, signes, publications) est créé pour la seule
+  // identité que le client choisit (`brand-finish.ts`).
+  // Les logos créés dans CETTE série, dans l'ordre (demande du propriétaire du 16 novembre 2026) : une fois le premier
+  // créé, il est donné au dessinateur avec « je veux un logo complètement différent de celui-là » ; le troisième reçoit
+  // les deux premiers, et ainsi de suite, avec les mêmes consignes de base. Jamais les logos d'avant.
+  const seriesLogos: Buffer[] = [];
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, otherLogos: otherLogos(list, x.key) });
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos] });
+        const fresh = r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
+        if (fresh) { try { seriesLogos.push(assetData(fresh)); } catch { /* fichier absent : rien à montrer */ } }
         list = list.map((o) => (o.key === x.key ? r.route : o));
         remaining.push(...r.issues); notes.push(...r.notes);
       } catch (e) {
@@ -876,6 +862,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
       ...(firstIssues.length ? { corrected: firstIssues } : {}), ...(a.guidance ? { guidance: a.guidance } : {}),
     };
     setStep(x, 1, "review");
+    // Nouvelle proposition demandée APRÈS un choix : l'ancien choix ne désigne plus ces planches. Tout ce qui en
+    // dépendait (images de la marque, logo, charte) repart ; la marque du projet reste jusqu'au nouveau choix.
+    if (x.identityChoice) { x.identityChoice = undefined; x.brandFinish = { prepaidMicro: 0 }; x.logos = undefined; x.logoChoice = undefined; x.brandKit = undefined; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "todo"); setStep(x, 3, "todo"); }
   });
   return { routes: list.map((x) => ({ key: x.key, name: x.name, slogan: x.slogan })), issues, notes, quotes: study.quotes.length, sources: study.sources, facts: clientFacts(j).length > 0 };
 }

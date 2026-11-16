@@ -29,7 +29,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - Une conversation par lot ; elle commence par la lecture des deux documents ci-dessus.
 - Où on en est : lot 0 (ménage) fait le 15 novembre 2026. Lot 1 fait le même jour : SINA essayée pour de vrai, anciennes
   façons retirées (ancien assistant, Pilote, formulaire, écrans de préparation), écran réglé (SINA en grand pendant la
-  création, tableau de bord à côté) ; compte rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`. Suite : 2 la marque, 3 les
+  création, tableau de bord à côté) ; compte rendu : `docs/studio/LOT-1-SINA-UNE-SEULE-PORTE.md`. Lot 2 (la marque) fait le
+  16 novembre 2026 : SINA a créé seule la marque de trois clients inventés, anciennes façons retirées ; compte rendu
+  et décisions de l'essai : `docs/studio/LOT-2-LA-MARQUE.md`. Suite : 3 les
   trois angles, 4 le site, 5 les publications automatiques, 6 les forfaits, 7 SINA prend les devants, 8 les
   publicités, 9 les vidéos.
 
@@ -43,6 +45,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   lui demander que ce que lui seul peut savoir ou engager : son argent, son goût, sa responsabilité, ce qui ne se
   rattrape pas. Jamais « tu préfères A ou B ? » sur une question de métier.
 - **Prendre les devants, mais expliquer avant de construire** et attendre son accord. Il veut que ça avance.
+- **Pas d'initiative qui coûte** (16 novembre : « arrête de prendre des initiatives qui nous font perdre du temps et
+  de l'argent ») : faire ce qu'il demande, avec ses mots ; une idée se dit en une phrase et attend son oui ; le plus
+  petit essai avant toute dépense ; lui montrer les images tout de suite, y compris celles que SINA refuse.
 - **Prendre ses paroles au sérieux** : ce qu'il a dit une fois vaut pour toujours et ne se redemande pas.
 - **Honnêteté** : ne rien inventer (chiffres, avis, délais, résultats). Un manque s'écrit « [À compléter : …] ». Dire
   ce qui a été vérifié et ce qui ne l'a pas été. Une faute se dit.
@@ -57,8 +62,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   « oui ». Le budget d'un essai se décide avec lui juste avant de le lancer. Un appel au résultat incertain (erreur du
   fournisseur) n'est jamais relancé tout seul. Aucun fournisseur payant ajouté sans son accord.
 - Si un modèle n'arrive pas à écrire un mot dans une image, changer la phrase plutôt que repayer des essais.
-- Dépensé en essais réels au 15 novembre 2026 : environ 19,14 € comptés par le Studio (dont 2,94 € pour l'essai du
-  lot 1, sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €).
+- Dépensé en essais réels avant le lot 2 : environ 19,14 € comptés par le Studio (dont 2,94 € pour l'essai du lot 1,
+  sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €). Essai du lot 2, au 16 novembre 2026 :
+  40,06 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés).
 - **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
 - **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni
   engagement ; budget d'IA à 50 % du prix hors taxes le premier mois, puis 40 % ; par forfait : 2, 3 et 4 identités
@@ -78,6 +84,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 
 ## Ses goûts, en règles générales
 
+- **Clair d'abord, beau ensuite.** Un texte est compris à la première lecture par quelqu'un qui ne connaît ni la
+  marque ni le métier : aucun mot d'initié, aucune phrase à double sens, aucune devinette. L'émotion ne passe jamais
+  avant le sens.
 - **L'émotion.** Tout texte fait ressentir (une scène, un moment, une sensation), jamais une simple description. Les
   boutons qui vendent portent le désir. Aucune accroche répétée, aucun ordre donné au lecteur.
 - **Des images magnifiques**, du niveau d'une campagne haut de gamme : vraie scène, lumière travaillée, vrai produit
@@ -89,8 +98,11 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   appellerais ton site comme ça, toi ? ») ; aucun sous-entendu ; le juge ne garde qu'un nom qu'il noterait 8 sur 10 ;
   l'adresse sur Internet est contrôlée, et jamais promise.
 - **Logo** : créé par OpenAI pour cette marque-là, jamais repris d'une autre ; aucun pictogramme dessiné en code ;
-  fond retiré, pas de carré autour.
-- **Identité** : montrée en planche de marque complète, jamais en simple fiche.
+  fond retiré, pas de carré autour. OpenAI est libre du dessin : il reçoit le métier, les couleurs, la typographie et la
+  direction artistique de la marque, jamais un style imposé. Dans une série, chaque logo reçoit ceux déjà faits avec
+  « je veux un logo complètement différent ». Le favicon reprend le logo.
+- **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
+  image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair.
 - **Trois angles** : un sûr, un d'émotion, un audacieux, avec celui que SINA recommande.
 - **Site** : SINA le conçoit pour cette marque, pas en copier-coller, et il doit être bon du premier coup. Des
   sections à la hauteur des meilleurs sites ; de la variété d'un client à l'autre (menus, boutons) ; un signe pris sur
@@ -102,7 +114,10 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Photos** : les photos produit du client restent sur les emplacements produit ; l'ouverture est une scène créée
   avec son vrai produit. SINA n'invente jamais l'équipe ni les biens à vendre. Les réalisations d'artisans sont créées
   quand le client n'en a pas assez (règle maintenue le 14 novembre, « on verra plus tard si on change »).
-- **Publications** : le niveau des meilleurs community managers avec Canva ; pour les vidéos, celui de CapCut.
+- **Maquette du site sur la planche** : créée par OpenAI, sur un téléphone et dans le téléphone, belle, différente
+  d'un client à l'autre, à l'identité de la planche, avec le bon logo (clair sur fond sombre).
+- **Publications** : chacune se comprend seule par quelqu'un qui ne connaît pas la marque, la première dit l'offre en
+  clair, chacune porte le logo ; le niveau des meilleurs community managers avec Canva ; pour les vidéos, celui de CapCut.
   Toujours une vraie image. Les exemples montrés à un client sont très différents les uns des autres (couleur, sujet,
   cadrage, rôle). Une métaphore juste qui fait sourire lui plaît.
 - **Publicités** : le Studio prépare et guide ; il n'engage aucune dépense de diffusion.

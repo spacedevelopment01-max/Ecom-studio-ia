@@ -58,6 +58,7 @@ export const STATUS: Record<string, { label: string; labelEn: string; tone: any 
   error: { label: "À reprendre", labelEn: "Needs attention", tone: "bad" },
   paused: { label: "En pause", labelEn: "Paused", tone: "warn" },
   draft: { label: "À démarrer", labelEn: "Not started", tone: "neutral" },
+  building: { label: "En création avec SINA", labelEn: "Being created with SINA", tone: "info" },
 };
 
 export function ProjectSwitcher({ current }: { current: string }) {

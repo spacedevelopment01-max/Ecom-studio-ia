@@ -32,5 +32,5 @@ const MAP: Record<string, React.ComponentType> = {
 
 export function TabView({ tab }: { tab: string }) {
   const C = MAP[tab];
-  return C ? <>{tab!=="strategie"&&<StrategyStatus/>}<C /></> : null;
+  return C ? <>{/* L'écran « Marque » est celui de SINA : l'encadré des angles (lot 3) n'y a pas sa place. */}{tab!=="strategie"&&tab!=="marque"&&<StrategyStatus/>}<C /></> : null;
 }

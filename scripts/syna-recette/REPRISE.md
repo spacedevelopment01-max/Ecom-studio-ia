@@ -28,7 +28,7 @@ paragraphe et `CLAUDE.md` l'emportent**. Les exigences du propriétaire, numéro
 - **Étape 8** (thème du Studio) : textes réécrits avec les mêmes règles d'écriture que le sur mesure ; jamais de
   fausses réalisations ni de fausse carte.
 - **Anciennes maquettes** (`mockup.*`) : seulement pour les projets déjà commencés avec elles ; leurs outils sont
-  cachés aux nouveaux parcours, comme les anciens raccourcis (`brand.create`, `site.build`, `pilot.run`…).
+  cachés aux nouveaux parcours, comme les anciens raccourcis (`site.build`, `pilot.run`…).
 - **Décidé le 10 novembre** : photos du thème sur mesure par OpenAI ; photos de l'ouverture Moderne détourées par le
   Studio (gratuit).
 - **Restent ouverts** : ambiance claire / sombre gardée dans le thème ; mise en

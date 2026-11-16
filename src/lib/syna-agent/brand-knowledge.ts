@@ -13,6 +13,8 @@ export const BRAND_BOOKS = {
   idee: "idee-de-marque.md",
   voix: "slogans-et-ton.md",
   signes: "identite-visuelle.md",
+  // La maquette du haut de l'accueil sur téléphone (document « 50 accueils mobiles » du propriétaire, 15 novembre 2026).
+  maquette: "maquettes-accueil-mobile.md",
 } as const;
 export type BrandBook = keyof typeof BRAND_BOOKS;
 
