@@ -568,6 +568,26 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
   - **précautions** : une version allégée pour les téléphones modestes, essayée sur de vrais téléphones ; ouvrir son
     projet aux visites est un choix du client ; chaque client sait dès l'inscription que sa constellation apparaît
     dans le ciel commun ; ce chantier ne retarde pas les lots qui font fonctionner SINA.
+  - **idées prises par le propriétaire pour ce ciel** (16 novembre 2026, « Je prends tout » puis « Je prend tout
+    aussi ») ; toutes avec de vrais évènements seulement, jamais de faux :
+    - *ta future constellation* : sur la page d'accueil, le visiteur écrit son idée en une phrase et sa constellation
+      naît, forme tirée de ses mots, faite par le Studio sans appel à l'IA ;
+    - *la visite guidée par SINA* : le ciel vole d'un exemple à l'autre, une phrase courte à chacun ;
+    - *partager sa constellation* : image ou courte vidéo avec le nom de sa marque, pour ses réseaux ;
+    - *le ciel qui s'allume en direct* : une étape finie quelque part allume une étoile, sans nom ;
+    - *des amas par métier* (« l'amas des artisans »…) et une recherche des projets proches ;
+    - *la constellation qui grandit* : chaque mois de travail ajoute de petites étoiles ;
+    - *une musique d'espace douce*, à allumer d'un bouton, jamais au démarrage ;
+    - *entrer dans une étoile en zoomant* : de près, la partie du projet apparaît dedans ;
+    - *les produits deviennent des étoiles* autour de « L'activité », un clic ouvre la fiche ;
+    - *rejouer la naissance* du projet en trente secondes ;
+    - *une aurore boréale pour les grands moments* (mise en ligne, première vente si le client le veut) ;
+    - *le ciel des saisons*, avec la campagne de la saison déjà prête par SINA ; idée du propriétaire : « des rappel
+      des grand moment avec le père noel qui vole dans la voie lactée pour le mois de décembre », tout dessiné en
+      lumière, dans le style du ciel ;
+    - *des ponts de lumière entre partenaires* qui travaillent ensemble ;
+    - *sa constellation en fond d'écran* de téléphone ;
+    - *le mode planétarium* : ciel en plein écran et visite guidée en boucle, pour un salon ou une vitrine.
 
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
