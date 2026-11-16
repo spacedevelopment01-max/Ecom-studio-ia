@@ -215,7 +215,9 @@ export const customDesignDeps: { call?: (system: string, prompt: string, usageKe
 function brandAssets(projectId: string): { has: string[]; lacks: string[] } {
   const has: string[] = [], lacks: string[] = ["avis clients et note", "parutions dans la presse", "photos publiées par des clients", "vidéo"];
   try { const n = listProducts(projectId).length; if (n) has.push(`${n} produit(s) avec leurs vraies photos`); } catch { /* catalogue absent */ }
-  try { const c = companyOf(projectId) as Record<string, string | undefined>; if (c.shipping) has.push(`livraison : ${c.shipping}`); if (c.returns) has.push(`retours : ${c.returns}`); if (c.address) has.push(`adresse : ${c.address}`); } catch { /* fiche absente */ }
+  try { const c = companyOf(projectId); if (c.shipping) has.push(`livraison : ${c.shipping}`); if (c.returns) has.push(`retours : ${c.returns}`);
+    // Adresse discrète (demande du client) : aucune pièce qui la mette en avant (accès, plan, itinéraire).
+    if (c.address && c.addressDiscreet === true) lacks.push("adresse à montrer (le client la veut seulement dans les informations légales : aucune pièce d'accès, de plan ni d'itinéraire ; sa zone desservie à la place)"); else if (c.address) has.push(`adresse : ${c.address}`); } catch { /* fiche absente */ }
   const o = loadShopOffers(projectId);
   const offers = [o.quantity ? "offre sur la quantité" : "", o.subscription ? "abonnement" : "", o.bundle ? "lot à compléter" : "", (o as { gifts?: unknown[] }).gifts?.length ? "cadeaux par paliers" : ""].filter(Boolean);
   if (offers.length) has.push(`offres : ${offers.join(", ")} (fonctions du bloc d'achat)`); else lacks.push("offres (lots, quantités, abonnement, promotions)");
@@ -830,7 +832,7 @@ const chooseTool: AgentTool<Record<string, never>> = {
   name: "custom.choose", module: "site", kind: "write", needsProject: true,
   description: "Étape 6 (gratuit) : enregistre que le client CHOISIT ce thème sur mesure (seulement s'il le dit ; jamais à sa place). Refusé tant qu'un point bloquant reste.",
   args: z.object({}).strict(),
-  preview: () => "Thème sur mesure choisi par le client.",
+  preview: () => "Ton site, validé par toi.",
   run: (ctx) => {
     const p = project(ctx), t = loadCustomTheme(p.id);
     if (!t) return { ok: false, summary: L("Aucun site encore : il faut d'abord le créer (site.create).", "No custom theme yet.") };

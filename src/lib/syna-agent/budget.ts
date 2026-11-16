@@ -25,6 +25,31 @@ export function conversationSpentMicro(conversationId: string, kind?: "agent" | 
   return all<{ job_id: string }>(`SELECT job_id FROM syna_jobs WHERE conversation_id=?${kind ? " AND kind=?" : ""}`, ...(kind ? [conversationId, kind] : [conversationId])).reduce((s, j) => s + jobSpentMicro(j.job_id), 0);
 }
 
+/**
+ * Le reste d'un accord donné sur la carte (essai réel du 16 novembre 2026 : juste après un site payé avec l'accord du
+ * client, « Budget des réponses de SINA atteint » ; elle n'a pu ni présenter son site ni dire ses défauts).
+ * Le client a accepté par écrit une dépense « au plus » : ce que la création n'a pas dépensé de ce plafond sert à en
+ * rendre compte, dans la même demande, et rien d'autre. Création + compte rendu ne dépassent donc jamais le plafond
+ * accepté ; aucune dépense non accordée n'est permise (sans carte acceptée dans la demande, le reste est nul).
+ */
+export function approvedRemainderMicro(conversationId: string, runId: string): number {
+  const events = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND run_id=? AND role='event'", conversationId, runId)
+    .map((m) => { try { return JSON.parse(m.content_json) as { kind?: string; pendingId?: string; pending?: { id?: string; reason?: string; costMaxMicro?: number } }; } catch { return {}; } });
+  const approved = new Set(events.filter((e) => e.kind === "approved" && e.pendingId).map((e) => e.pendingId!));
+  const ceiling = events.filter((e) => e.kind === "confirmation" && e.pending?.reason === "cost" && e.pending.id && approved.has(e.pending.id)).reduce((s, e) => s + Math.max(0, Number(e.pending!.costMaxMicro) || 0), 0);
+  if (!ceiling) return 0;
+  const spentOf = (kind: "agent" | "native") => all<{ job_id: string }>("SELECT job_id FROM syna_jobs WHERE conversation_id=? AND run_id=? AND kind=?", conversationId, runId, kind).reduce((s, j) => s + jobSpentMicro(j.job_id), 0);
+  // Ce que les réponses ont déjà pris au-delà du budget des réponses (donc sur ce reste), compté une seule fois.
+  const authorized = authorizedBudget(conversationId) ?? 0;
+  const beyond = Math.min(spentOf("agent"), Math.max(0, conversationSpentMicro(conversationId, "agent") - authorized));
+  return Math.max(0, ceiling - spentOf("native") - beyond);
+}
+
+/** Ce que SINA peut encore dépenser pour répondre dans cette demande : le budget des réponses, plus le reste d'un accord. */
+export function replyAllowanceMicro(userId: string, projectId: string | null, conversationId: string, runId: string): number {
+  return budgetState(userId, projectId, conversationId).remainingMicro + approvedRemainderMicro(conversationId, runId);
+}
+
 /** Budget par défaut des réponses de SINA : 10 % du budget IA du forfait, modifiable par le client dans le fil. */
 export const DEFAULT_BUDGET_PCT = 10;
 

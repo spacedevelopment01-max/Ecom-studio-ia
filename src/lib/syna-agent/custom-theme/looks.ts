@@ -12,10 +12,19 @@
  */
 import { z } from "zod";
 
+/**
+ * Lecture tolérante (essai réel du 16 novembre 2026 : « directeurArtistique.note » absent, tout le regard sautait et le
+ * site partait sans avoir été regardé). Une note absente ou illisible vaut « inconnue » (null), jamais une note inventée ;
+ * un avis trop long est coupé ; un problème mal formé est écarté seul ; le reste de l'avis est gardé.
+ */
+const note = z.preprocess((v) => (typeof v === "string" && v.trim() && Number.isFinite(Number(v.replace(",", "."))) ? Number(v.replace(",", ".")) : v), z.number().min(0).max(10).nullable().catch(null));
+const oui = z.boolean().nullable().catch(null);
+const avis = z.preprocess((v) => (typeof v === "string" ? v.slice(0, 500) : ""), z.string());
+const part = <T extends z.ZodType>(shape: T) => z.preprocess((v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {}), shape);
 export const LookSchema = z.object({
-  cliente: z.object({ comprend: z.boolean(), envie: z.number().min(0).max(10), saitOuToucher: z.boolean(), avis: z.string().max(500).default("") }),
-  directeurArtistique: z.object({ note: z.number().min(0).max(10), avis: z.string().max(500).default("") }),
-  problemes: z.array(z.string().min(6).max(300)).max(6).default([]),
+  cliente: part(z.object({ comprend: oui, envie: note, saitOuToucher: oui, avis })),
+  directeurArtistique: part(z.object({ note, avis })),
+  problemes: z.preprocess((v) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").map((x) => x.trim().slice(0, 300)).filter((x) => x.length >= 6).slice(0, 6) : []), z.array(z.string())),
 });
 export type Look = z.infer<typeof LookSchema>;
 
@@ -35,7 +44,8 @@ problemes : ce qui doit être corrigé, du plus grave au moins grave, six au plu
 
 Une page sobre peut donner envie : ne demande jamais d'en rajouter pour remplir. Tu ne juges pas les faits (prix, délais, promesses) : d'autres le font. Tu ne cites aucune autre marque.
 
-Réponse : uniquement le JSON demandé.`;
+Réponse : uniquement ce JSON, avec exactement ces clés (chaque note est un nombre de 0 à 10, jamais un texte) :
+{"cliente":{"comprend":true,"envie":0,"saitOuToucher":true,"avis":"…"},"directeurArtistique":{"note":0,"avis":"…"},"problemes":["…"]}`;
 
 export function lookPrompt(o: { brand: string; sells: string; page: string; concept?: string | null }): string {
   return [
@@ -45,11 +55,12 @@ export function lookPrompt(o: { brand: string; sells: string; page: string; conc
   ].filter(Boolean).join("\n");
 }
 
-export type LooksReport = { pages: { page: string; envie: number; beau: number; avis: string }[]; problemes: number };
+/** envie, beau : null quand le regard n'a pas donné cette note (jamais une note inventée). */
+export type LooksReport = { pages: { page: string; envie: number | null; beau: number | null; avis: string }[]; problemes: number };
 /** Lignes du compte rendu pour une page regardée (au plus quatre problèmes par page). */
 export function lookProblems(page: string, l: Look): string[] {
   const out = l.problemes.slice(0, 4).map((x) => `${page}, vue sur téléphone : ${x}`);
-  if (!l.cliente.comprend) out.unshift(`${page}, vue sur téléphone : on ne comprend pas en cinq secondes ce qui est vendu`);
-  if (l.cliente.envie < LOOK_MIN_DESIRE && !out.length) out.push(`${page}, vue sur téléphone : ne donne pas encore assez envie (${l.cliente.avis.slice(0, 160) || "sans raison donnée"})`);
+  if (l.cliente.comprend === false) out.unshift(`${page}, vue sur téléphone : on ne comprend pas en cinq secondes ce qui est vendu`);
+  if (l.cliente.envie != null && l.cliente.envie < LOOK_MIN_DESIRE && !out.length) out.push(`${page}, vue sur téléphone : ne donne pas encore assez envie (${l.cliente.avis.slice(0, 160) || "sans raison donnée"})`);
   return out;
 }

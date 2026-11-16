@@ -15,7 +15,7 @@ import { GALLERY_ADVISED, GALLERY_JOB, GALLERY_KINDS, GALLERY_ORDER, galleryEsti
 
 const planTool: AgentTool<Record<string, never>> = {
   name: "gallery.plan", module: "site", kind: "read", needsProject: true,
-  description: "Étape 6 (gratuit), JUSTE APRÈS le choix du thème (Studio ou sur mesure) : prépare la GALERIE de la fiche produit de CHAQUE produit (série d'images créées d'après sa vraie photo : produit seul, flèches vers ses points forts, promesse, moment de vie, contenu, explication, liste de caractéristiques, chez soi), posée uniquement dans le « Produit vedette » de la fiche produit. Donne pour chaque produit ses photos, les genres d'images et les questions à poser au client.",
+  description: "Étape 6 (gratuit), JUSTE APRÈS la création du site : prépare la GALERIE de la fiche produit de CHAQUE produit (série d'images créées d'après sa vraie photo : produit seul, flèches vers ses points forts, promesse, moment de vie, contenu, explication, liste de caractéristiques, chez soi), posée uniquement dans le « Produit vedette » de la fiche produit. Donne pour chaque produit ses photos, les genres d'images et les questions à poser au client.",
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx);

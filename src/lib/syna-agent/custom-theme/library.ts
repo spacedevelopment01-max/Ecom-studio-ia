@@ -194,6 +194,35 @@ export function sectionPhotoUses(html: string): string[] {
  * ses espaces.
  */
 export const DEMO_BRANDS = ["Atelier Nuance", "Brindi", "Solstice", "Rupture"];
+/**
+ * Filet (essai réel du 16 novembre 2026 : une photo n'avait pas pu être créée, et la photo d'exemple de la bibliothèque,
+ * celle d'un tout autre métier, est restée sur l'accueil du client). Une photo d'exemple (« photos/… ») n'est JAMAIS
+ * montrée dans le site d'un client : à sa place, un cadre neutre, uni, à la couleur douce de la marque, sans aucun mot
+ * (un visiteur peut le voir). Vaut pour l'aperçu et pour la mise en boutique, y compris pour un site déjà enregistré.
+ */
+const EXAMPLE_PHOTO = /(?:\/sections\/|\.\/)?photos\/[\w.-]+\.(?:webp|png|jpe?g)/g;
+const hex = (v: string | null | undefined) => (typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v.trim()) ? v.trim() : null);
+/** Couleur douce de la marque : son fond clair à peine teinté de sa couleur ; sans palette, un ton neutre. */
+export function softBrandColor(pal?: { light?: string | null; primary?: string | null } | null): string {
+  const light = hex(pal?.light), primary = hex(pal?.primary);
+  if (!light) return "#EEEAE3";
+  if (!primary) return light;
+  const ch = (c: string, i: number) => parseInt(c.slice(1 + 2 * i, 3 + 2 * i), 16);
+  return `#${[0, 1, 2].map((i) => Math.round(ch(light, i) * 0.86 + ch(primary, i) * 0.14).toString(16).padStart(2, "0")).join("")}`;
+}
+/** Le cadre neutre (image unie, sans mot), utilisable partout où une source d'image est attendue. */
+export function neutralFrame(pal?: { light?: string | null; primary?: string | null } | null): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" fill="${softBrandColor(pal)}"/></svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+}
+export const hasExamplePhoto = (html: string) => new RegExp(EXAMPLE_PHOTO.source).test(html);
+/** Remplace toute photo d'exemple restante par le cadre neutre de la marque. */
+export function withoutExamplePhotos(html: string, pal?: { light?: string | null; primary?: string | null } | null): string {
+  if (!hasExamplePhoto(html)) return html;
+  const frame = neutralFrame(pal);
+  return html.replace(EXAMPLE_PHOTO, frame);
+}
+
 const escHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 export function withBrandName(html: string, name: string): string {
   const n = escHtml(name.trim());

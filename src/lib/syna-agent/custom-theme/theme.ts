@@ -116,7 +116,42 @@ const HISTORY_KEY = "syna.custom_theme.history";
 const HISTORY_MAX = 15;
 
 export const newUid = () => "s" + crypto.randomBytes(4).toString("hex");
-export const sectionHtml = (s: CtSection): string => { const h = inlineBackgrounds(s.html ?? libSection(s.id)?.html ?? ""); return s.id === "scene-achetable" ? sceneGrid(h) : h; };
+export const sectionHtml = (s: CtSection): string => { const h = withSectionLinks(inlineBackgrounds(s.html ?? libSection(s.id)?.html ?? ""), s.links); return s.id === "scene-achetable" ? sceneGrid(h) : h; };
+
+const linkText = (inner: string) => inner.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&#39;|&rsquo;/g, "'").replace(/[→↗]/g, "").replace(/\s+/g, " ").trim();
+/**
+ * La table des liens d'une section (écrite par le rédacteur : texte du bouton → page) s'impose à l'attribut « data-go »
+ * de ses boutons. Essai réel du 16 novembre 2026 : le rédacteur ne touche pas aux attributs, et l'aperçu comme la mise
+ * en boutique lisaient d'abord l'attribut d'exemple ; « Réserver mon matin » menait à une boutique qui n'existait pas
+ * alors que sa table disait « reservation ». Appliquée à chaque lecture de la section : l'aperçu, la mise en boutique,
+ * le contrôle et le rédacteur voient le même lien.
+ */
+export function withSectionLinks(html: string, links: Record<string, string> | undefined): string {
+  if (!links || !/\sdata-go="/.test(html)) return html;
+  const table = new Map(Object.entries(links).map(([k, v]) => [linkText(k), v] as const));
+  if (!table.size) return html;
+  return html.replace(/<(a|button)\b([^>]*\sdata-go="[^"]*"[^>]*)>([\s\S]*?)<\/\1>/g, (m, tag: string, attrs: string, inner: string) => {
+    const to = table.get(linkText(inner));
+    return to ? `<${tag}${attrs.replace(/\sdata-go="[^"]*"/, ` data-go="${to.replace(/"/g, "&quot;")}"`)}>${inner}</${tag}>` : m;
+  });
+}
+/**
+ * Boutons et liens d'une page ou du pied qui mènent à une page absente du site (l'en-tête n'est pas lu : son menu est
+ * recalculé depuis le catalogue). Un bouton ne mène jamais nulle part : c'est dit au contrôle et au compte rendu.
+ */
+export function deadLinks(t: CustomTheme): { uid: string; place: string; title: string; text: string; to: string }[] {
+  const keys = new Set(t.pages.map((p) => p.key));
+  const alive = (to: string) => { const k = to.split(":")[0]; return keys.has(k) || k === "p" || k === "article" || (k === "product" && t.pages.some((p) => /^product/.test(p.key))); };
+  const out: { uid: string; place: string; title: string; text: string; to: string }[] = [];
+  for (const x of allSections(t)) {
+    if (x.place === "en-tête" || x.place === "recherche") continue;
+    for (const m of sectionHtml(x.s).matchAll(/<(a|button)\b[^>]*\sdata-go="([^"]*)"[^>]*>([\s\S]*?)<\/\1>/g)) {
+      const text = linkText(m[3]);
+      if (text && !/\[À compléter/.test(text) && !alive(m[2]) && !out.some((o) => o.uid === x.s.uid && o.text === text)) out.push({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, text: text.slice(0, 60), to: m[2] });
+    }
+  }
+  return out;
+}
 
 /**
  * Scène achetable : la grande photo laisse la place à la grille des vraies photos des produits de la liste (décision du
@@ -388,6 +423,12 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     if (page.key === "home" && first && first.role !== "ouverture") warn(`l'accueil commence par « ${first.title} » : l'ouverture de l'accueil est une grande photo pleine avec le titre dessus`);
   }
   if (featuredHome > 1) bad("plus d'une section « Produit vedette » sur l'accueil");
+  // Liens : un bouton écrit pour le client ne mène jamais à une page que le site n'a pas.
+  {
+    const dead = deadLinks(t).filter((d) => allSections(t).find((x) => x.s.uid === d.uid)?.s.clientTexts);
+    for (const d of dead.slice(0, 8)) warn(`« ${d.title} » (${d.place}) : le bouton « ${d.text} » mène à une page qui n'existe pas dans ce site (${d.to}) : donne-lui une page du site, ou retire-le`);
+    if (dead.length > 8) warn(`${dead.length - 8} autre(s) bouton(s) vers une page qui n'existe pas`);
+  }
   // Sections à tenue : un site les prend en entier (elles s'habillent à la marque ; les autres ont déjà leur allure).
   {
     const kinds = allSections(t).filter((x) => x.place !== "recherche").map((x) => ({ x, tenue: isTenueSection(lib(x.s)) }));

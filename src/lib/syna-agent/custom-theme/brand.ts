@@ -19,26 +19,28 @@ import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
 import { llmJson, type LlmCall } from "../../ai/llm";
 import { lintClaims } from "../../ai/tasks";
 import { withTrace } from "../../ai/trace";
-import { aiSiteImageHd, withQuotedImageRoute } from "../../ai/media-providers";
+import { aiSiteImageHd, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
 import { loadWordingRules, wordingPromptLine } from "../../client-wording";
 import { listProducts } from "../../products/catalog";
 import { peopleAllowed } from "../../people-policy";
 import { loadFamilyChoice, siteArtUniverse, type FamilyUniverse } from "../section-families";
 import { activityPlan } from "../activity";
+import { clientNotesBrief, factFlags, shownFacts, siteFacts } from "./site-facts";
 import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
+import { jobSpentMicro } from "../budget";
 import { angleDetails, COPY_MODEL } from "../mockup-code/copy";
 import { codePhotoPrompt } from "../mockup-code/code-mockup";
 import { hdAspect } from "../mockup-code/prompts";
 import { mockupImageRoute } from "../mockup-code/tools";
 import { authenticSection, isCutoutPhoto, isProductPhotoSection, libSection, withBrandName, type LibSection } from "./library";
 import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
-import { checkCreatedImage, galleryDeps } from "./gallery";
+import { checkCreatedImage, galleryCheckMaxMicro, galleryDeps } from "./gallery";
 import { CHECK_MODEL } from "../mockup-code/check";
 import { customThemePageShots } from "./shots";
 import { LOOK_PAGES_MAX, LOOK_SYSTEM, LookSchema, lookProblems, lookPrompt, type LooksReport } from "./looks";
 import { educated } from "./knowledge";
 import { riskCount } from "./risk";
-import { allSections, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
+import { allSections, deadLinks, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
 
 export const CUSTOM_BRAND_JOB = "syna.custom.brand";
 /**
@@ -65,6 +67,13 @@ export function siteCopyModel(): { provider: "anthropic" | "openai" | "google"; 
 /** Plafond du plan des textes de tout le site (un appel par montage). */
 export const SITE_PLAN_CAP_MICRO = 250_000;
 const RATIOS = ["1:1", "4:5", "2:3", "16:9", "9:16"] as const;
+/**
+ * Règle du propriétaire : jamais de personne dans une image sans photo fournie par le client ou accord écrit. Essai réel
+ * du 16 novembre 2026 : les descriptions demandaient un geste fait par des mains ; le contrôle refusait ensuite chaque
+ * photo, et la photo d'exemple restait sur le site. La règle est donc dite à celui qui décrit les photos (ici), rappelée
+ * dans le dossier de chaque montage (peopleBriefLine), et tenue sans IA juste avant la création (briefWithoutPeople).
+ */
+export const NO_PEOPLE_PHOTO_RULE = "PERSONNES : aucune personne, aucune main, aucun visage, aucune silhouette, aucune partie du corps dans une photo, sauf si le dossier dit en toutes lettres que les personnes sont autorisées (photo de personne fournie par le client, ou son accord écrit). Sans cela, un geste ne se montre jamais par celui qui le fait : il se montre par l'outil posé, l'objet en cours, la trace du travail.";
 
 export const SectionWriteSchema = z.object({
   edits: z.array(z.object({ find: z.string().min(1).max(4000), replace: z.string().max(8000) })).max(80),
@@ -102,10 +111,12 @@ ${COPY_CRAFT}
 - LIENS : pour CHAQUE bouton ou lien de la section dont tu écris le texte (sauf « Ajouter au panier », les flèches et les onglets), dis où il mène dans links : text = son texte exact tel que tu l'écris, to = la clé d'une page du site (liste fournie), « legal:mentions », « legal:cgv » ou « shop:Nom de famille ». Un bouton ne mène jamais nulle part : s'il n'a pas de destination logique, ce n'est pas un bouton.
 - Les coordonnées de la marque (raison sociale, adresse, e-mail, téléphone) et les mentions légales présentes dans la section restent TOUJOURS, écrites exactement, même si le plan ne les cite pas.
 - Noms et prix de produits : seulement ceux de la liste fournie, écrits exactement.
+- EMPLACEMENTS AUTOMATIQUES : quand la consigne dit « CE QUE LE STUDIO AFFICHERA LUI-MÊME DANS CETTE SECTION », ces faits (liste entière des prestations ou des produits, horaires, zone, téléphone, adresse) seront posés tels quels à la place des emplacements d'exemple. Le titre et le texte ne donnent jamais un nombre qui contredit ce qui s'affiche (jamais « trois formules » devant une liste de cinq), et tu n'écris jamais « [À compléter : …] » pour un fait présent dans le dossier ou dans « CE QUE LE CLIENT A DIT ».
+- ADRESSE DISCRÈTE : quand le dossier dit que l'adresse ne s'écrit que dans les informations légales, tu ne l'écris nulle part ailleurs (ni pied de page, ni contact, ni « venir nous voir ») : tu parles de la zone où le client se déplace.
 - Le vocabulaire imposé par le client est respecté.
 - Tu ne touches ni aux balises, ni aux classes, ni aux attributs (sauf alt et les textes) : chaque modification est un remplacement { find, replace } où find est un passage EXACT du HTML fourni, présent une seule fois (prends assez de contexte pour qu'il soit unique), et replace le même passage avec les nouveaux textes.
 - Cartes de produits : une carte par produit de la liste, jamais de carte « [À compléter : produit] ». S'il y a plus de cartes que de produits, retire les cartes en trop : find = la carte entière (de sa balise ouvrante à sa balise fermante), replace = "" ; et ne décris pas leurs photos.
-- Pour CHAQUE image de la section dont la source commence par « photos/ », décris TOUJOURS la photo à créer pour la marque (même si le client a dit de ne pas créer de photo maintenant : la description sert au montage des photos, plus tard) : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit » : sa vraie photo y est posée telle quelle. Une scène peut montrer le produit (sa vraie photo sert de modèle ; UN seul paquet, jamais plusieurs produits ni plusieurs paquets dans la même photo ; ne décris JAMAIS son emballage ni son étiquette, écris seulement « le sachet » + son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas l'emballage), mais pas toutes : les autres photos d'ambiance montrent l'univers de la marque SANS le produit (ce qui l'entoure dans la vraie vie : les objets, les matières, le lieu et le moment où l'on s'en sert), toujours en accord avec le texte d'en face ; jamais deux fois la même scène. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni.
+- Pour CHAQUE image de la section dont la source commence par « photos/ », décris TOUJOURS la photo à créer pour la marque (même si le client a dit de ne pas créer de photo maintenant : la description sert au montage des photos, plus tard) : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit » : sa vraie photo y est posée telle quelle. Une scène peut montrer le produit (sa vraie photo sert de modèle ; UN seul paquet, jamais plusieurs produits ni plusieurs paquets dans la même photo ; ne décris JAMAIS son emballage ni son étiquette, écris seulement « le sachet » + son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas l'emballage), mais pas toutes : les autres photos d'ambiance montrent l'univers de la marque SANS le produit (ce qui l'entoure dans la vraie vie : les objets, les matières, le lieu et le moment où l'on s'en sert), toujours en accord avec le texte d'en face ; jamais deux fois la même scène. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni. ${NO_PEOPLE_PHOTO_RULE}
 Réponse : uniquement le JSON demandé.`;
 
 /** Faits de la marque donnés à chaque écriture (les mêmes pour toutes les sections). */
@@ -133,7 +144,17 @@ export function brandBrief(p: Project, j: Journey | null): string {
     plan?.company.shipping ? `Livraison : ${plan.company.shipping}.` : "",
     plan?.company.returns ? `Retours : ${plan.company.returns}.` : "",
     ((c) => (c.length ? `Coordonnées : ${c.join(" · ")}.` : ""))([plan?.company.legalName, plan?.company.email, plan?.company.address, plan?.company.phone].filter((x): x is string => !!x)),
+    plan?.company.addressDiscreet === true && plan.company.address ? "ADRESSE DISCRÈTE (demande du client) : son adresse ne s'écrit QUE dans les informations légales, jamais ailleurs sur le site (ni pied de page, ni contact, ni carte, ni itinéraire) ; ailleurs, on dit la zone où il se déplace." : "",
+    // Entreprise de services : ce que le profil sait et que les pièces afficheront telles quelles (essai réel du 16
+    // novembre 2026 : le rédacteur ne recevait ni les prestations, ni les horaires, ni la zone).
+    ...(p.business === "services" ? ((sv) => [
+      sv?.services?.length ? `Prestations (noms, durées et prix exacts ; il y en a ${sv.services.length}, toutes affichées dans les listes de prestations) : ${sv.services.map((x) => `${x.name}${x.duration?.trim() || x.price?.trim() ? ` (${[x.duration?.trim(), x.price?.trim()].filter(Boolean).join(", ")})` : ""}`).join(" ; ")}.` : "",
+      sv?.hours?.trim() ? `Horaires (donnés par le client) : ${sv.hours.trim()}.` : "",
+      sv?.area?.trim() ? `Zone desservie (donnée par le client) : ${sv.area.trim()}.` : "",
+      sv?.phone?.trim() && sv.phone.trim() !== plan?.company.phone ? `Téléphone : ${sv.phone.trim()}.` : "",
+    ])(p.services) : []),
     wording,
+    clientNotesBrief(p.id),
   ].filter(Boolean).join("\n");
 }
 
@@ -162,7 +183,29 @@ Réponse : uniquement le JSON demandé.`;
 
 /** Descriptions des photos d'une section déjà écrite (montage en deux fois sans descriptions). */
 export const PhotoBriefSchema = z.object({ photos: SectionWriteSchema.shape.photos });
-export const PHOTO_BRIEF_SYSTEM = `Tu es le directeur artistique d'une petite marque. Pour une section de son site dont les textes sont déjà écrits, tu décris chaque photo à créer, en français, en accord avec le texte d'en face et l'émotion de l'angle : find = la source exacte donnée ; description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé (le texte se pose sur la partie calme) ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format ; product = le nom exact d'un produit dès que la photo le montre, sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit ». Une partie des scènes montre le vrai produit (UN seul paquet par photo, jamais plusieurs produits ; ne décris JAMAIS son emballage ni son étiquette, écris seulement « le sachet » + son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas l'emballage), les autres l'univers de la marque SANS lui ; jamais deux fois la même scène ; jamais une personne sauf si le texte en parle et que c'est autorisé. Réponse : uniquement le JSON demandé.`;
+/** Ligne du dossier donné à tous ceux qui écrivent, décrivent ou relisent les photos de ce montage. */
+export const peopleBriefLine = (allowed: boolean) => allowed
+  ? "PERSONNES DANS LES PHOTOS : autorisées pour ce client (photo de personne fournie par lui, ou son accord écrit)."
+  : "PERSONNES DANS LES PHOTOS : NON autorisées (le dossier ne contient ni photo de personne fournie par le client, ni son accord écrit). Aucune personne, aucune main, aucun visage, aucune silhouette dans les photos à créer : un geste se montre par l'outil posé, l'objet en cours, la trace du travail.";
+/** Mots qui désignent une personne ou une partie du corps dans une description de photo (contrôle sans IA). */
+const PEOPLE_WORDS = /(?<!\p{L})(personnes?|personnages?|gens|quelqu['’]un|humaine?s?|hommes?|femmes?|enfants?|b[ée]b[ée]s?|filles?|gar[çc]ons?|adultes?|couples?|familles?|mains?|doigts?|paumes?|poings?|poignets?|ongles?|bras|avant-bras|coudes?|[ée]paules?|jambes?|genoux?|visages?|sourires?|regards?|yeux|l[èe]vres|cheveux|peau|corps|torses?|dos|nuques?|silhouettes?|mannequins?|portraits?|artisan(?:e|s|es)?|client(?:e|s|es)?|[ée]quipes?|passant(?:e|s|es)?|visiteu(?:r|rs|se|ses))(?!\p{L})/iu;
+/** Ce qui écarte déjà la personne (« aucune main », « sans personne », « ni visage ») : jamais compté comme une personne demandée. */
+const PEOPLE_DENIED = /(?<!\p{L})(?:aucune?|sans|ni|pas d['’]|pas de|jamais d['’]|jamais de)\s*(?:autres?\s+)?(?:(?:personnes?|mains?|visages?|silhouettes?|doigts?|corps|pr[ée]sence humaine|humaine?s?)(?:\s*(?:,|ni|et|ou)\s*(?:aucune?\s+|d['’]|de\s+)?)?)+/giu;
+/** La description demande-t-elle une personne ou une partie du corps ? (sans IA) */
+export const briefShowsPeople = (description: string) => PEOPLE_WORDS.test(description.replace(PEOPLE_DENIED, " "));
+/** Phrase posée en tête d'une description qui demande une personne sans y être autorisée. */
+export const NO_PEOPLE_PREFIX = "Aucune personne, aucune main, aucun visage, aucune silhouette dans l'image : tout geste décrit ci-dessous se montre SANS celui qui le fait, par l'outil posé, l'objet en cours, la trace du travail.";
+/**
+ * Description envoyée à la création d'une photo : si elle demande une personne ou une partie du corps alors que rien ne
+ * l'autorise, elle n'est jamais envoyée telle quelle. force : pour la reprise après un refus du contrôle.
+ */
+export function briefWithoutPeople(description: string, allowed: boolean, force = false): string {
+  if (allowed || description.startsWith(NO_PEOPLE_PREFIX) || !(force || briefShowsPeople(description))) return description;
+  return `${NO_PEOPLE_PREFIX} ${description}`;
+}
+/** Le contrôle d'une image créée a-t-il refusé la photo pour une personne ou une main sans accord ? */
+export const refusedForPeople = (problems: string[]) => problems.some((x) => /une personne ou une main apparaît sans accord/.test(x));
+export const PHOTO_BRIEF_SYSTEM = `Tu es le directeur artistique d'une petite marque. Pour une section de son site dont les textes sont déjà écrits, tu décris chaque photo à créer, en français, en accord avec le texte d'en face et l'émotion de l'angle : find = la source exacte donnée ; description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé (le texte se pose sur la partie calme) ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format ; product = le nom exact d'un produit dès que la photo le montre, sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit ». Une partie des scènes montre le vrai produit (UN seul paquet par photo, jamais plusieurs produits ; ne décris JAMAIS son emballage ni son étiquette, écris seulement « le sachet » + son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas l'emballage), les autres l'univers de la marque SANS lui ; jamais deux fois la même scène. ${NO_PEOPLE_PHOTO_RULE} Réponse : uniquement le JSON demandé.`;
 
 /** Référencement seul (pages déjà écrites) : titre et description de chaque page. */
 export const SeoSchema = z.object({ seo: SitePlanSchema.shape.seo });
@@ -219,12 +262,14 @@ export function sectionReadableTexts(html: string): string[] {
 }
 
 /** Ce que le directeur de création reçoit : le dossier du client, puis chaque section avec ses textes, page par page. */
-export function copyReviewPrompt(brief: string, sections: { uid: string; place: string; title: string; html: string }[], flags: Record<string, string[]> = {}): string {
+export function copyReviewPrompt(brief: string, sections: { uid: string; place: string; title: string; html: string }[], flags: Record<string, string[]> = {}, facts: Record<string, string[]> = {}): string {
   return [
     brief, "", `TEXTES DU SITE À RELIRE (${sections.length} sections, dans l'ordre des pages) :`,
     ...sections.map((x) => [`## ${x.uid} · ${x.place} · ${x.title}`, ...sectionReadableTexts(x.html),
       // Le gardien des faits (contrôle du Studio, sans IA) : ce que la fiche du client ne confirme pas.
-      ...(flags[x.uid]?.length ? [`SIGNALÉ PAR LE STUDIO, à faire corriger si la fiche ne le confirme pas : ${flags[x.uid].join(" ; ")}`] : [])].join("\n")),
+      ...(flags[x.uid]?.length ? [`SIGNALÉ PAR LE STUDIO, à faire corriger si la fiche ne le confirme pas : ${flags[x.uid].join(" ; ")}`] : []),
+      // Le contrôle des faits (sans IA) : un nombre qui contredit la liste affichée, un « À compléter » pour un fait connu, une adresse à ne pas montrer.
+      ...(facts[x.uid]?.length ? [`CONTREDIT LE DOSSIER DU CLIENT (contrôle du Studio), à faire corriger : ${facts[x.uid].join(" ; ")}`] : [])].join("\n")),
   ].join("\n\n");
 }
 
@@ -245,9 +290,28 @@ export const PHOTO_REVIEW_CAP_MICRO = 200_000;
 export const MAX_PHOTO_FIXES = 5;
 /** En dessous, pas de relecture : une photo seule ne peut ni se répéter ni déséquilibrer le site. */
 export const MIN_PHOTOS_TO_REVIEW = 2;
+/**
+ * Ce que le fournisseur reçoit comme format (sortie structurée) : la même forme, SANS longueur maximale. Essai réel du
+ * 16 novembre 2026 : une seule correction de plus de 400 signes faisait refuser toute la réponse (« too_big »), et
+ * aucune description n'était relue.
+ */
+export const PhotoReviewWireSchema = z.object({
+  photos: z.array(z.object({ uid: z.string(), find: z.string(), fixes: z.array(z.string()) })),
+  site: z.string(),
+});
+const PhotoReviewEntry = z.object({ uid: z.string().min(1).max(40), find: z.string().min(1).max(200), fixes: z.array(z.string().min(8)).min(1) });
+/**
+ * Lecture tolérante de la relecture des photos : un texte trop long est coupé (jamais refusé), une correction trop
+ * courte est écartée, et une entrée mal formée est ignorée seule : elle ne fait plus tomber toute la relecture.
+ */
 export const PhotoReviewSchema = z.object({
-  photos: z.array(z.object({ uid: z.string().max(40), find: z.string().max(200), fixes: z.array(z.string().min(8).max(400)).min(1).max(4) })).max(30).default([]),
-  site: z.string().max(600).default(""),
+  photos: z.preprocess((v) => (Array.isArray(v) ? v : []), z.array(z.unknown())).transform((list) => list.flatMap((x) => {
+    const o = x && typeof x === "object" ? x as Record<string, unknown> : {};
+    const r = PhotoReviewEntry.safeParse({ uid: typeof o.uid === "string" ? o.uid.trim() : o.uid, find: typeof o.find === "string" ? o.find.trim() : o.find,
+      fixes: Array.isArray(o.fixes) ? o.fixes.filter((f): f is string => typeof f === "string").map((f) => f.trim()).filter((f) => f.length >= 8) : o.fixes });
+    return r.success ? [{ uid: r.data.uid, find: r.data.find, fixes: r.data.fixes.slice(0, 4).map((f) => f.slice(0, 400)) }] : [];
+  }).slice(0, 30)),
+  site: z.preprocess((v) => (typeof v === "string" ? v.slice(0, 600) : ""), z.string()),
 });
 /**
  * La directrice artistique des photos (carte des spécialistes, lot 2) : le rédacteur décrit les photos section par
@@ -310,7 +374,7 @@ export function sectionSkeleton(html: string): string {
   return [...new Set(bits)].slice(0, 14).join(" | ") || "(aucun titre)";
 }
 
-export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string; /** Fiche d'UN produit du catalogue : ses faits. */ product?: string | null }): string {
+export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string; /** Fiche d'UN produit du catalogue : ses faits. */ product?: string | null; /** Ce que le Studio posera lui-même dans la section (faits exacts). */ shown?: string }): string {
   const mine = plan?.site.sections.find((x) => x.uid === plan.uid);
   const others = plan ? plan.site.sections.filter((x) => x.uid !== plan.uid && x.titre).map((x) => `« ${x.titre} »`) : [];
   const planText = plan ? [
@@ -319,7 +383,7 @@ export function sectionWritePrompt(brief: string, place: string, title: string, 
     mine ? `CETTE section : message : ${mine.message}${mine.titre ? ` ; titre : « ${mine.titre} »` : ""}${mine.bouton ? ` ; bouton : « ${mine.bouton} »` : ""} ; faits à utiliser ici (et aucun autre chiffre) : ${mine.faits.length ? mine.faits.join(" ; ") : "aucun"}.` : "",
     others.length ? `Titres des autres sections (ne les répète pas) : ${others.join(", ")}.` : "",
   ].filter(Boolean).join("\n") : "";
-  const designText = [design?.pages ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${design.product}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : ""].filter(Boolean).join("\n");
+  const designText = [design?.pages ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${design.product}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : "", design?.shown ?? ""].filter(Boolean).join("\n");
   return [brief, "", ...(planText ? [planText, ""] : []), ...(designText ? [designText, ""] : []), `Section à adapter : « ${title} » (${place}). Ce qu'elle fait : ${does}`, "HTML actuel de la section (textes de démonstration à remplacer) :", html].join("\n");
 }
 
@@ -486,26 +550,41 @@ export const customBrandDeps: {
   photo?: (prompt: string, product: Buffer | null, aspect: string, usageKey: string) => Promise<Buffer>;
   /** Regard en image sur une page montée (essais sans IA : seulement si le test le fournit). */
   look?: (prompt: string, image: Buffer, usageKey: string) => Promise<z.input<typeof LookSchema>>;
+  /** Prix le plus haut d'une photo créée (essais sans IA). */
+  photoUnit?: () => number | null;
 } = {};
+/**
+ * Prix le plus haut de la reprise d'une photo (la photo et son contrôle), même calcul que le devis du montage. Null :
+ * prix inconnu, donc aucune reprise.
+ */
+function retryCost(): number | null {
+  const unit = (customBrandDeps.photoUnit ?? (() => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: 2, aspect: "2:3", quality: "high" }); } catch { return null; } }))();
+  return unit == null ? null : unit + galleryCheckMaxMicro();
+}
 
 export async function runCustomBrandJob(ctx: JobContext) {
   const a = ctx.payload as CustomBrandPayload;
   const p = loadProject(a.projectId);
   let t = loadCustomTheme(p.id);
-  if (!t) throw new UserFacingError(L("Aucun thème sur mesure à monter : choisis d'abord ta famille (Classique ou Moderne), puis SINA monte les pages.", "No custom theme yet."));
+  if (!t) throw new UserFacingError(L("Aucun site à monter pour l'instant : SINA le conçoit d'abord, puis elle le monte à ta marque.", "No custom theme yet."));
   const j = a.conversationId ? (() => { try { return journeyOf(a.conversationId!); } catch { return null; } })() : null;
   // Demande du client pour ses textes (essai Heure Dorée : « le matin d'hiver où l'été revient » n'arrivait pas au rédacteur).
-  const brief = [brandBrief(p, j), a.consigne ? `DEMANDE DU CLIENT POUR SES TEXTES (prioritaire, à suivre dans tout le site, ses mots) : « ${a.consigne} »` : ""].filter(Boolean).join("\n");
+  const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });
+  // Personnes dans les photos créées : seulement si le client l'autorise (photo de personne fournie ou accord écrit).
+  const photoPeople = !!fu && people;
+  const brief = [brandBrief(p, j), peopleBriefLine(photoPeople), a.consigne ? `DEMANDE DU CLIENT POUR SES TEXTES (prioritaire, à suivre dans tout le site, ses mots) : « ${a.consigne} »` : ""].filter(Boolean).join("\n");
   const name = p.brand?.name ?? p.name;
   const products = (() => { try { return listProducts(p.id); } catch { return []; } })();
-  const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });
+  // Ce que le Studio posera lui-même dans les pièces (prestations, horaires, zone, adresse) et ce que le client a dit :
+  // dit au rédacteur section par section, puis contrôlé sans IA après l'écriture.
+  const facts = siteFacts(p, t);
   // Lot 4 : les photos suivent la façon de photographier de la famille du Studio choisie d'après la planche (et non plus
   // un univers commun à tous les sites).
   const direction = familleArtDirection(p, t.famille, j) ?? siteArtDirection(p, fu, j);
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, regards: null as null | LooksReport, problems: [] as string[] };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, photosReprises: 0, regardNonFait: null as null | string, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, regards: null as null | LooksReport, problems: [] as string[] };
   const briefs: Record<string, SectionWrite["photos"]> = {};
 
   // Un seul point d'annulation pour tout le montage : « Annuler » revient au thème d'avant le montage.
@@ -563,7 +642,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
     try {
       const w = await ctx.step(`text:${x.s.uid}`, async () => {
         const html = withBrandName(sectionHtml(x.s), name);
-        const prompt = sectionWritePrompt(brief, x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · ") });
+        const prompt = sectionWritePrompt(brief, x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(html, facts) });
         const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
         return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
           : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
@@ -577,7 +656,9 @@ export async function runCustomBrandJob(ctx: JobContext) {
         if (!cur) return null;
         const out = applyWrite(withBrandName(sectionHtml(cur.s), name), w);
         // « Textes du client » seulement si la section a VRAIMENT été réécrite (une réponse vide ne compte pas).
-        cur.s.html = out.html; cur.s.clientTexts = out.failed === 0 && out.applied > 0;
+        // Une pièce sans aucun texte (une bande de photo) n'a rien à réécrire : elle n'est plus « d'exemple ».
+        const wordless = !w.edits.length && !sectionReadableTexts(out.html).length && !sectionSkeleton(out.html).replace("(aucun titre)", "");
+        cur.s.html = out.html; cur.s.clientTexts = out.failed === 0 && (out.applied > 0 || wordless);
         // Liens : seulement vers une page du site, et seulement pour un texte réellement écrit dans la section.
         const keys = new Set(t.pages.map((pg) => pg.key)), text = decodeEntities(out.html.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ");
         const clean = (v: string) => v.replace(/[→↗]/g, "").replace(/\s+/g, " ").trim();
@@ -588,7 +669,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         if (Object.keys(links).length) cur.s.links = links;
         cur.s.photoBriefs = w.photos.length ? w.photos : undefined;
         t = saveCustomTheme(p.id, t, { history: false });
-        return { failed: out.failed, applied: out.applied, dead, lost };
+        return { failed: out.failed, applied: out.applied, dead, lost, wordless };
       });
       if (!r) continue;
       // Accroche d'exemple gardée mot pour mot (essai Éclat de thé : « Pose ton écran. Ces quelques minutes sont à toi. »
@@ -600,7 +681,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
       briefs[x.s.uid] = w.photos;
       report.sections++; report.failedEdits += r.failed;
       if (r.failed) report.problems.push(`${l?.title} : ${r.failed} texte(s) non remplacé(s)`);
-      if (!r.applied) report.problems.push(`${l?.title} : aucun texte réécrit, les textes d'exemple restent`);
+      // Jamais signalé pour une pièce qui n'a aucun texte (essai réel du 16 novembre 2026 : « Bande de photo »).
+      if (!r.applied && !r.wordless) report.problems.push(`${l?.title} : aucun texte réécrit, les textes d'exemple restent`);
     } catch (e) { report.problems.push(`${l?.title ?? x.s.id} : textes non écrits (${(e as Error).message.slice(0, 120)})`); }
   }
 
@@ -612,7 +694,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
       const review = await ctx.step("text-review", async () => {
         const all = allSections(loadCustomTheme(p.id)!).filter((x) => x.s.clientTexts || sections.some((y) => y.s.uid === x.s.uid));
         const flags = Object.fromEntries(all.map((x) => [x.s.uid, unconfirmedClaims(p, withBrandName(sectionHtml(x.s), name))] as const).filter(([, list]) => list.length));
-        const prompt = copyReviewPrompt(brief, all.map((x) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, html: withBrandName(sectionHtml(x.s), name) })), flags);
+        const contradictions = Object.fromEntries(all.map((x) => [x.s.uid, factFlags(withBrandName(sectionHtml(x.s), name), facts, x.page?.key)] as const).filter(([, list]) => list.length));
+        const prompt = copyReviewPrompt(brief, all.map((x) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, html: withBrandName(sectionHtml(x.s), name) })), flags, contradictions);
         const usageKey = `${ctx.job.id}:text-review`;
         return CopyReviewSchema.parse(customBrandDeps.review ? await customBrandDeps.review(prompt, usageKey)
           : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-review", costCapMicro: a.capMicro }, () =>
@@ -628,7 +711,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         try {
           const w = await ctx.step(`text-fix:${f.uid}`, async () => {
             const cur = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === f.uid) ?? x;
-            const prompt = `${sectionWritePrompt(brief, cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, product: productFacts(p.id, cur.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · ") })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
+            const prompt = `${sectionWritePrompt(brief, cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, product: productFacts(p.id, cur.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(sectionHtml(cur.s), facts) })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
             const usageKey = `${ctx.job.id}:text-fix:${f.uid}`;
             return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
               : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-fix", costCapMicro: a.capMicro }, () =>
@@ -643,6 +726,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
             cur.s.html = out.html;
             // Photos redécrites par la reprise : elles remplacent les anciennes descriptions ; sinon rien ne bouge.
             if (w.photos.length) { cur.s.photoBriefs = w.photos; briefs[f.uid] = w.photos; }
+            // Liens redonnés par la reprise (un bouton réécrit garde une destination) : seulement vers une page du site.
+            if (w.links.length) { const keys = new Set(t.pages.map((pg) => pg.key)); const more = Object.fromEntries(w.links.filter((k) => keys.has(k.to.split(":")[0])).map((k) => [k.text.replace(/[→↗]/g, "").replace(/\s+/g, " ").trim(), k.to])); if (Object.keys(more).length) cur.s.links = { ...(cur.s.links ?? {}), ...more }; }
             t = saveCustomTheme(p.id, t, { history: false });
             return { applied: out.applied, failed: out.failed };
           });
@@ -657,6 +742,21 @@ export async function runCustomBrandJob(ctx: JobContext) {
       for (const y of left.slice(0, 6)) report.problems.push(`${libSection(y.x.s.id)?.title ?? y.x.s.id} (${y.x.page?.label ?? y.x.place}) : à confirmer par toi ou à retirer : ${y.claims.join(" ; ")}`);
       if (left.length > 6) report.problems.push(`${left.length - 6} autre(s) section(s) avec une promesse à confirmer`);
     } catch (e) { report.problems.push(`relecture des textes non faite (${(e as Error).message.slice(0, 120)}) : les textes n'ont pas été relus`); }
+  }
+
+  // 1 ter) Contrôle des faits, sans IA, sur les textes tels qu'ils restent (avec ou sans relecture) : un nombre qui
+  // contredit la liste affichée, un « À compléter » pour un fait donné, une adresse à ne pas montrer, un bouton vers
+  // une page absente. Dit dans le compte rendu, jamais laissé en silence.
+  if (report.sections) {
+    try {
+      const now = loadCustomTheme(p.id)!, wrote = new Set(sections.map((y) => y.s.uid));
+      const seen = allSections(now).filter((x) => x.s.clientTexts || wrote.has(x.s.uid));
+      const found = seen.flatMap((x) => factFlags(withBrandName(sectionHtml(x.s), name), facts, x.page?.key).map((f) => `${libSection(x.s.id)?.title ?? x.s.id} (${x.page?.label ?? x.place}) : ${f}`));
+      for (const f of found.slice(0, 8)) report.problems.push(f);
+      if (found.length > 8) report.problems.push(`${found.length - 8} autre(s) texte(s) qui contredisent le dossier du client`);
+      const dead = deadLinks(now).filter((d) => seen.some((x) => x.s.uid === d.uid));
+      for (const d of dead.slice(0, 6)) report.problems.push(`${d.title} (${d.place}) : le bouton « ${d.text} » mène à une page qui n'existe pas dans ce site (${d.to})`);
+    } catch { /* contrôle des faits indisponible : le montage continue */ }
   }
 
   // 2) Photos : vraie photo du produit, sinon photo créée dans la direction artistique de la marque.
@@ -729,7 +829,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
             const usageKey = `${ctx.job.id}:photo-review`;
             return PhotoReviewSchema.parse(customBrandDeps.photoReview ? await customBrandDeps.photoReview(prompt, usageKey)
               : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo-review", costCapMicro: a.capMicro }, () =>
-                  llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_REVIEW_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-review-2", prompt, maxTokens: 7000, maxOutputTokens: 14000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewSchema, { strict: true })));
+                  llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_REVIEW_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-review-2", prompt, maxTokens: 7000, maxOutputTokens: 14000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewWireSchema, { strict: true })));
           });
           // Seules les photos réellement relues comptent (une section ou une source inconnue est ignorée).
           const refused = review.photos.filter((f, i, list) => seen.some((x) => x.y.s.uid === f.uid && x.photos.some((b) => b.find === f.find)) && list.findIndex((g) => g.uid === f.uid && g.find === f.find) === i);
@@ -801,14 +901,16 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // Montage en deux fois (newPhotos:false) : rien de créé, la photo d'exemple attend le second montage.
         if (!real && !mine && a.newPhotos === false) { report.photosLeft++; continue; }
         if (!real && !mine && mode === "client") { report.problems.push(`photo ${file} : aucune image du client pour cet emplacement`); continue; }
-        const assetId = real ? real : mine ? mine : await ctx.step(`photo:${uid}:${file}`, async () => {
+        // Une photo créée : la description ne part jamais avec une personne ou une main que rien n'autorise (contrôle sans
+        // IA) ; « retry » : la seule reprise permise, après un refus du contrôle pour une personne, description durcie.
+        const create = (retry: boolean) => ctx.step(`${retry ? "photo-retry" : "photo"}:${uid}:${file}`, async () => {
           const prodRef = ph.product && showsPackaging(ph.description) ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
           const ref = prodRef ? getAsset(prodRef) : undefined;
           const place = textPlacementLine(sectionHtml(here.s), ph.find, libSection(here.s.id)?.does ?? "", here.s.construction);
           // Photo d'exemple détourée (ouverture Moderne) : créée sur fond uni, puis détourée (gratuit).
           const cut = isCutoutPhoto(file);
-          const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: [ph.description, place].filter(Boolean).join("\n"), ratio: ph.ratio, product: !!ph.product, ...(cut ? { background: FOND_A_DETOURER } : {}) }, { name, logo: false, product: !!ref, direction, people: !!fu && people });
-          const usageKey = `${ctx.job.id}:photo:${uid}:${file}`;
+          const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: [briefWithoutPeople(ph.description, photoPeople, retry), place].filter(Boolean).join("\n"), ratio: ph.ratio, product: !!ph.product, ...(cut ? { background: FOND_A_DETOURER } : {}) }, { name, logo: false, product: !!ref, direction, people: photoPeople });
+          const usageKey = `${ctx.job.id}:${retry ? "photo-retry" : "photo"}:${uid}:${file}`;
           const made = customBrandDeps.photo ? await customBrandDeps.photo(prompt, ref ? assetData(ref) : null, ph.ratio, usageKey)
             : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo", costCapMicro: a.capMicro }, () => withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey }, { prompt, product: ref ? assetData(ref) : null, aspect: hdAspect(ph.ratio) })));
           const done = cut ? await cutoutPhoto(made) : { data: made, cut: false };
@@ -817,12 +919,29 @@ export async function runCustomBrandJob(ctx: JobContext) {
           const asset = await saveAsset({ projectId: p.id, userId: p.userId, data, name: sitePhotoName(here.page?.label ?? here.place, ph.description), mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: ph.description, ratio: ph.ratio, direction: "custom", product: !!ph.product, replaced: file } } });
           return asset.id;
         });
+        let assetId = real ? real : mine ? mine : await create(false);
         // Chaque photo créée est contrôlée (décision du propriétaire du 10 novembre 2026) : une photo ratée n'est jamais
         // posée comme bonne ; elle est signalée et ne sera refaite qu'avec l'accord du client.
         if (!real && !mine && (!customBrandDeps.photo || galleryDeps.check)) {
           const prodRef = ph.product && showsPackaging(ph.description) ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
-          const problems = await ctx.step(`photo-check:${uid}:${file}`, async () => checkCreatedImage({ jobId: ctx.job.id, projectId: p.id, userId: p.userId, usageKey: `${ctx.job.id}:photo-check:${uid}:${file}`, capMicro: a.capMicro }, assetData(getAsset(assetId)!), prodRef && getAsset(prodRef) ? assetData(getAsset(prodRef)!) : null, [], people, ph.product ?? undefined));
-          if (problems.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle (${problems.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord`); continue; }
+          const check = (id: string, retry: boolean) => ctx.step(`${retry ? "photo-recheck" : "photo-check"}:${uid}:${file}`, async () => checkCreatedImage({ jobId: ctx.job.id, projectId: p.id, userId: p.userId, usageKey: `${ctx.job.id}:${retry ? "photo-recheck" : "photo-check"}:${uid}:${file}`, capMicro: a.capMicro }, assetData(getAsset(id)!), prodRef && getAsset(prodRef) ? assetData(getAsset(prodRef)!) : null, [], people, ph.product ?? undefined));
+          let problems = await check(assetId, false);
+          // Refus pour une personne ou une main sans accord (essai réel du 16 novembre 2026 : quatre photos refusées ainsi,
+          // l'accueil gardait une photo d'exemple) : UNE seule nouvelle création, description durcie, et seulement si le
+          // prix le plus haut d'une photo et de son contrôle tient dans ce qui reste du plafond accordé. Une erreur du
+          // fournisseur n'est jamais relancée : elle sort par le « catch » plus bas, sans reprise.
+          if (problems.length && refusedForPeople(problems)) {
+            // Décision gardée (point de reprise) : à la reprise de la tâche, une reprise déjà payée n'est pas recomptée.
+            const go = await ctx.step(`photo-retry-ok:${uid}:${file}`, async () => { const cost = retryCost(); return cost == null ? "inconnu" as const : cost <= a.capMicro - jobSpentMicro(ctx.job.id) ? "oui" as const : "plafond" as const; });
+            if (go === "oui") {
+              report.photosReprises++;
+              assetId = await create(true);
+              const again = await check(assetId, true);
+              if (again.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle deux fois, reprise comprise (${again.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); continue; }
+              problems = [];
+            } else problems = [...problems, go === "inconnu" ? "reprise non tentée : prix d'une photo inconnu" : "reprise non tentée : le plafond accordé ne le permettait pas"];
+          }
+          if (problems.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle (${problems.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); continue; }
         }
         if (real) report.photosReal++; else if (mine) report.photosClient++; else report.photosMade++;
         t = loadCustomTheme(p.id)!;
@@ -843,30 +962,37 @@ export async function runCustomBrandJob(ctx: JobContext) {
   //    modèle qui voit (« est-ce que ça donne envie ? »). Rien n'est corrigé tout seul : c'est dit au client. Seulement sur
   //    le montage qui pose les photos (le site fini) : un montage de textes seuls, ou sans photo créée, n'est pas regardé.
   if (a.photos !== false && a.newPhotos !== false && (!customBrandDeps.write || customBrandDeps.look)) {
+    const missed: string[] = [];
     try {
       const now = loadCustomTheme(p.id)!;
       const sell = now.pages.find((x) => /^product/.test(x.key))?.key ?? now.pages.find((x) => x.key === "prestations")?.key;
       const shots = await customThemePageShots(p.id, ["home", ...(sell ? [sell] : [])].slice(0, LOOK_PAGES_MAX));
-      if (!shots.length) report.problems.push("pages non regardées en image (aucun navigateur pour les capturer) : regarde-les sur ton téléphone");
-      const seen: LooksReport = { pages: [], problemes: 0 };
+      if (!shots.length) { missed.push("aucun navigateur pour capturer les pages"); report.problems.push("pages non regardées en image (aucun navigateur pour les capturer) : regarde-les sur ton téléphone"); }
+      const seen: LooksReport = { pages: [], problemes: 0 }, failed: { page: string; why: string }[] = [];
       const sells = products.length ? products.slice(0, 6).map((x) => x.data.title).join(", ") : (p.product?.name ?? p.product?.category ?? "");
       for (const s of shots) {
-        const look = await ctx.step(`look:${now.rev}:${s.key}`, async () => {
-          const prompt = lookPrompt({ brand: name, sells, page: s.label, concept: now.concept }), usageKey = `${ctx.job.id}:look:${s.key}`;
-          return LookSchema.parse(customBrandDeps.look ? await customBrandDeps.look(prompt, s.data, usageKey)
-            : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-look", costCapMicro: a.capMicro }, () => llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey, promptKey: "syna-custom-look-1", system: LOOK_SYSTEM, prompt, images: [{ data: s.data, label: `page ${s.label} sur téléphone` }], maxTokens: 1500, maxOutputTokens: 3000, routing: { difficulty: "standard", prefer: CHECK_MODEL } } as LlmCall, LookSchema)));
-        });
-        seen.pages.push({ page: s.label, envie: look.cliente.envie, beau: look.directeurArtistique.note, avis: [look.cliente.avis, look.directeurArtistique.avis].filter(Boolean).join(" ").slice(0, 400) });
-        const found = lookProblems(s.label, look);
-        seen.problemes += found.length;
-        report.problems.push(...found);
+        // Une page dont le regard échoue ne fait plus tomber celui de l'autre page.
+        try {
+          const look = await ctx.step(`look:${now.rev}:${s.key}`, async () => {
+            const prompt = lookPrompt({ brand: name, sells, page: s.label, concept: now.concept }), usageKey = `${ctx.job.id}:look:${s.key}`;
+            return LookSchema.parse(customBrandDeps.look ? await customBrandDeps.look(prompt, s.data, usageKey)
+              : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-look", costCapMicro: a.capMicro }, () => llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey, promptKey: "syna-custom-look-1", system: LOOK_SYSTEM, prompt, images: [{ data: s.data, label: `page ${s.label} sur téléphone` }], maxTokens: 1500, maxOutputTokens: 3000, routing: { difficulty: "standard", prefer: CHECK_MODEL } } as LlmCall, LookSchema)));
+          });
+          seen.pages.push({ page: s.label, envie: look.cliente.envie, beau: look.directeurArtistique.note, avis: [look.cliente.avis, look.directeurArtistique.avis].filter(Boolean).join(" ").slice(0, 400) });
+          const found = lookProblems(s.label, look);
+          seen.problemes += found.length;
+          report.problems.push(...found);
+        } catch (e) { failed.push({ page: s.label, why: (e as Error).message.slice(0, 120) }); }
       }
+      if (failed.length) { missed.push(...failed.map((f) => `${f.page} : ${f.why}`)); report.problems.push(`pages non regardées en image (${failed[0].why}) : ${failed.map((f) => f.page).join(", ")}`); }
       if (seen.pages.length) report.regards = seen;
-    } catch (e) { report.problems.push(`pages non regardées en image (${(e as Error).message.slice(0, 120)})`); }
+    } catch (e) { missed.push((e as Error).message.slice(0, 120)); report.problems.push(`pages non regardées en image (${(e as Error).message.slice(0, 120)})`); }
+    // Dit à part, en clair (la liste des problèmes est coupée dans le compte rendu : ce point ne doit jamais s'y perdre).
+    if (missed.length) report.regardNonFait = `${report.regards ? "une partie des pages n'a pas pu être regardée en image" : "je n'ai pas pu regarder le site en image"} (${missed.join(" ; ").slice(0, 300)})`;
   }
   ctx.progress(1, L("Thème monté à ta marque", "Theme built for your brand"));
-  if (a.conversationId) { try { updateJourney(a.conversationId, (x) => setStep(x, 6, "review", L("thème sur mesure monté à la marque, à voir dans la Boutique", "custom theme built"))); } catch { /* fil supprimé */ } }
-  notify(p.userId, p.id, report.problems.length ? L("Ton thème sur mesure est monté : des points restent à voir", "Your custom theme is built: some points remain") : L("Ton thème sur mesure est monté à ta marque", "Your custom theme is built"), L("Il est en place dans l'onglet Boutique.", "It is in the Boutique tab."), report.problems.length ? "warning" : "success");
+  if (a.conversationId) { try { updateJourney(a.conversationId, (x) => setStep(x, 6, "review", L("site monté à la marque, à voir dans la Boutique", "custom theme built"))); } catch { /* fil supprimé */ } }
+  notify(p.userId, p.id, report.problems.length ? L("Ton site est monté : des points restent à voir", "Your custom theme is built: some points remain") : L("Ton site est monté à ta marque", "Your custom theme is built"), L("Il est en place dans l'onglet Boutique.", "It is in the Boutique tab."), report.problems.length ? "warning" : "success");
   return { ...report, version: loadCustomTheme(p.id)?.rev ?? null };
 }
 

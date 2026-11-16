@@ -28,7 +28,7 @@ import type { AgentTool, ToolContext, ToolResult } from "./types";
 import { planOfProject } from "../plan-gates";
 import { routeCountFor } from "./brand-routes";
 import { authorizedBudget, addMessage, createRun, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
-import { budgetState, jobSpentMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGET_PCT } from "./budget";
+import { budgetState, jobSpentMicro, replyAllowanceMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGET_PCT } from "./budget";
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
@@ -338,7 +338,30 @@ async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: Too
   return { runId: r.id, waiting: "confirmation" };
 }
 
+/**
+ * Budget des réponses atteint juste après une création que le client a payée : SINA ne reste jamais muette sur un travail
+ * payé. Sans IA (rien n'est dépensé), elle dit ce qui est fait, où le voir, et ce qui l'empêche d'en dire plus. Une seule
+ * fois par demande.
+ */
+function reportWithoutAi(r: SynaRun) {
+  const msgs = all<{ role: string; content_json: string }>("SELECT role, content_json FROM syna_messages WHERE conversation_id=? AND run_id=? ORDER BY seq", r.conversation_id, r.id).map((m) => ({ role: m.role, c: json<any>(m.content_json, {}) }));
+  if (msgs.some((m) => m.role === "assistant" && m.c.sansIa)) return;
+  const waits = msgs.filter((m) => m.role === "tool" && m.c.tool === "jobs.wait");
+  const last = waits[waits.length - 1];
+  // Rien de créé dans cette demande, ou SINA a déjà parlé depuis : rien à ajouter.
+  if (!last || msgs.slice(msgs.indexOf(last) + 1).some((m) => m.role === "assistant")) return;
+  const results = (Array.isArray(last.c.data) ? last.c.data : []) as { type?: string; status?: string; coutReel?: string | null }[];
+  const done = results.length > 0 && results.every((x) => x.status === "done");
+  const site = results.some((x) => x.type === "syna.site") ? (() => { try { return journeyOf(r.conversation_id).site?.report ?? null; } catch { return null; } })() : null;
+  const what = site
+    ? L(`Ton site est créé : ${site.pages.length} page(s), à regarder dans l'onglet Boutique, sur ordinateur et sur téléphone.${site.aCompleter.length ? ` Il y reste ${site.aCompleter.length} information(s) « À compléter », que je te demanderai.` : ""}`, "Your site is created: see the Boutique tab.")
+    : done ? L("Ce que tu m'as demandé de créer est terminé et enregistré dans ton projet.", "What you asked me to create is finished and saved in your project.")
+    : L(`La création s'est arrêtée avant la fin.${results.some((x) => x.coutReel) ? ` Ce qu'elle a réellement dépensé : ${results.map((x) => x.coutReel).filter(Boolean).join(", ")}.` : ""}`, "The creation stopped before the end.");
+  addMessage(r.conversation_id, "assistant", { message: L(`${what} Le budget de mes réponses est atteint : je ne peux pas encore te présenter ce travail ni te dire ce que j'y reprendrais. Relève-le juste en dessous, et je te fais le compte rendu tout de suite.`, `${what} My reply budget is used up: raise it below and I will report on this work right away.`), actions: [], done: false, sansIa: true }, r.id);
+}
+
 function askBudget(r: SynaRun) {
+  try { reportWithoutAi(r); } catch { /* le compte rendu sans IA ne bloque jamais la carte du budget */ }
   const p: PendingAction = { id: newId(), tool: "budget.raise", args: {}, reason: "budget", preview: L("Le budget autorisé pour SINA est atteint. Augmente-le pour qu'elle continue.", "SINA's authorised budget is used up. Raise it to continue."), createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p), step: Math.max(0, r.step - 1) });
   addMessage(r.conversation_id, "event", { kind: "confirmation", pending: p, budget: budgetState(r.user_id, r.project_id, r.conversation_id) }, r.id);
@@ -502,7 +525,8 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   };
   sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Identité|Marque du client|Maquette|Site codé|Thème sur mesure)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
-  const cap = b.remainingMicro + jobSpentMicro(jobId);
+  // Budget des réponses, plus le reste d'un accord donné sur la carte dans cette demande (pour en rendre compte).
+  const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);
   return withTrace({ jobId, projectId: r.project_id, step: "syna", costCapMicro: cap }, () => llmJson(call, StepSchema));
 }
 
@@ -526,7 +550,7 @@ async function reviewedReply(user: User, r: SynaRun, jobId: string, step: number
       prompt: replyReviewPrompt({ moment, stepLabel: JOURNEY_STEPS.find((s) => s.n === n)?.fr, client: String(history[lastUser]?.content?.text ?? ""), facts: serialize(history.slice(lastUser + 1)), draft, wording, quote: await stepQuote(user, r) }),
       maxTokens: 3000, maxOutputTokens: 6000, usageKey: `syna:${r.id}:${step}:relecture`, routing: { difficulty: "standard", prefer: { ...modelFor(0)!, effort: "medium" } },
     };
-    const cap = budgetState(user.id, r.project_id, r.conversation_id).remainingMicro + jobSpentMicro(jobId);
+    const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);
     const review = ReplyReviewSchema.parse(deps.review ? await deps.review(call) : await withTrace({ jobId, projectId: r.project_id, step: "syna-relecture", costCapMicro: cap }, () => llmJson(call, ReplyReviewSchema)));
     if (review.verdict !== "reprendre" || !review.issues.length) return { out: draft, relu: "ok" };
     return { out: await reason(user, r, jobId, step, deps, reviewNote(draft, review.issues)), relu: "repris" };

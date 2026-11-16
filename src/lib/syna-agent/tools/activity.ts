@@ -34,13 +34,14 @@ const planTool: AgentTool<Record<string, never>> = {
   },
 };
 
-const companyTool: AgentTool<{ fields?: Record<string, string | undefined>; later?: string[]; none?: string[] }> = {
+const companyTool: AgentTool<{ fields?: Record<string, string | undefined>; later?: string[]; none?: string[]; addressDiscreet?: boolean }> = {
   name: "activity.company", module: "activité", kind: "write", needsProject: true,
-  description: `Étape 5 : enregistre les coordonnées de l'entreprise données PAR LE CLIENT, recopiées MOT POUR MOT (rien d'ajouté : ni précision entre parenthèses, ni statut, ni reformulation ; essai réel : « Camille Martin, EI » enregistré « Camille Martin, EI (micro-entrepreneuse) ») (champs : ${COMPANY_FIELDS.map((f) => `${f.key} = ${f.label}`).join(", ")}). later = champs facultatifs qu'il préfère donner plus tard (jamais un champ obligatoire) ; none = champs facultatifs qu'il ne veut PAS sur le site (« pas de téléphone »), à ne plus demander. Rien n'est inventé. Gratuit.`,
-  args: z.object({ fields: z.object(Object.fromEntries(COMPANY_FIELDS.map((f) => [f.key, z.string().min(1).max(600).optional()])) as Record<string, z.ZodOptional<z.ZodString>>).strict().optional(), later: z.array(z.enum(COMPANY_FIELDS.map((f) => f.key) as [string, ...string[]])).max(7).optional(), none: z.array(z.enum(COMPANY_FIELDS.map((f) => f.key) as [string, ...string[]])).max(7).optional() }).strict(),
+  description: `Étape 5 : enregistre les coordonnées de l'entreprise données PAR LE CLIENT, recopiées MOT POUR MOT (rien d'ajouté : ni précision entre parenthèses, ni statut, ni reformulation ; essai réel : « Camille Martin, EI » enregistré « Camille Martin, EI (micro-entrepreneuse) ») (champs : ${COMPANY_FIELDS.map((f) => `${f.key} = ${f.label}`).join(", ")}). later = champs facultatifs qu'il préfère donner plus tard (jamais un champ obligatoire) ; none = champs facultatifs qu'il ne veut PAS sur le site (« pas de téléphone »), à ne plus demander. addressDiscreet = « adresse discrète » : true quand le client ne veut PAS que son adresse soit mise en avant (elle ne s'écrit alors que dans les informations légales : ni pied de page, ni contact, ni carte, ni itinéraire ; le site montre la zone où il se déplace) ; false quand il reçoit du public à cette adresse et veut qu'on la trouve. Un métier sans local qui reçoit du public (il travaille chez lui et se déplace) : demande-lui si son adresse doit s'afficher, et sans réponse claire pose true (discrète). Ce qu'il a dit une fois sur son adresse vaut pour tout le site. Rien n'est inventé. Gratuit.`,
+  args: z.object({ fields: z.object(Object.fromEntries(COMPANY_FIELDS.map((f) => [f.key, z.string().min(1).max(600).optional()])) as Record<string, z.ZodOptional<z.ZodString>>).strict().optional(), later: z.array(z.enum(COMPANY_FIELDS.map((f) => f.key) as [string, ...string[]])).max(7).optional(), none: z.array(z.enum(COMPANY_FIELDS.map((f) => f.key) as [string, ...string[]])).max(7).optional(), addressDiscreet: z.boolean().optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
-    const saved = a.fields ? saveCompany(p.id, a.fields as any) : null;
+    const saved = a.fields || typeof a.addressDiscreet === "boolean" ? saveCompany(p.id, { ...(a.fields ?? {}), ...(typeof a.addressDiscreet === "boolean" ? { addressDiscreet: a.addressDiscreet } : {}) } as any) : null;
+    const discreet = typeof a.addressDiscreet === "boolean" ? (a.addressDiscreet ? "adresse discrète : elle ne s'écrit que dans les informations légales" : "adresse affichée sur le site") : "";
     // Libellés du client (essai réel du 7 novembre : « legalName, email » affiché tel quel).
     // Minuscule en tête de phrase seulement, jamais sur un sigle (« SIRET »).
     const label = (k: string) => (COMPANY_FIELDS.find((f) => f.key === k)?.label ?? k).replace(/^(\p{Lu})(?!\p{Lu})/u, (c) => c.toLocaleLowerCase("fr-FR"));
@@ -49,15 +50,16 @@ const companyTool: AgentTool<{ fields?: Record<string, string | undefined>; late
     const refused = [...(a.later ?? []).filter((k) => !postponed.includes(k as any)), ...(a.none ?? []).filter((k) => !declined.includes(k as any))];
     return {
       ok: !refused.length,
-      summary: L(`${[Object.keys(a.fields ?? {}).length ? `Coordonnées enregistrées : ${Object.keys(a.fields ?? {}).map(label).join(", ")}` : "", postponed.length ? `à donner plus tard : ${postponed.map(label).join(", ")}` : "", declined.length ? `pas sur le site (ton choix) : ${declined.map(label).join(", ")}` : ""].filter(Boolean).join(" ; ").replace(/^./, (c) => c.toUpperCase()) || "Rien d'enregistré"}${refused.length ? ` ; impossible (obligatoire pour le site) : ${refused.map(label).join(", ")}` : ""}.`, "Company details saved."), hint: "Rappelle activity.plan pour mettre la carte à jour.",
-      changes: Object.entries(a.fields ?? {}).filter((e): e is [string, string] => typeof e[1] === "string").map(([k, v]) => ({ module: "activité", object: COMPANY_FIELDS.find((f) => f.key === k)!.label, summary: v, after: saved?.[k as keyof typeof saved] ?? null, verified: saved?.[k as keyof typeof saved] === v.trim() })),
+      summary: L(`${[Object.keys(a.fields ?? {}).length ? `Coordonnées enregistrées : ${Object.keys(a.fields ?? {}).map(label).join(", ")}` : "", postponed.length ? `à donner plus tard : ${postponed.map(label).join(", ")}` : "", declined.length ? `pas sur le site (ton choix) : ${declined.map(label).join(", ")}` : "", discreet].filter(Boolean).join(" ; ").replace(/^./, (c) => c.toUpperCase()) || "Rien d'enregistré"}${refused.length ? ` ; impossible (obligatoire pour le site) : ${refused.map(label).join(", ")}` : ""}.`, "Company details saved."), hint: "Rappelle activity.plan pour mettre la carte à jour.",
+      changes: [...Object.entries(a.fields ?? {}).filter((e): e is [string, string] => typeof e[1] === "string").map(([k, v]) => ({ module: "activité", object: COMPANY_FIELDS.find((f) => f.key === k)!.label, summary: v, after: saved?.[k as keyof typeof saved] ?? null, verified: saved?.[k as keyof typeof saved] === v.trim() })),
+        ...(typeof a.addressDiscreet === "boolean" ? [{ module: "activité", object: L("Adresse sur le site", "Address on the site"), summary: discreet, after: saved?.addressDiscreet ?? null, verified: saved?.addressDiscreet === a.addressDiscreet }] : [])],
     };
   },
 };
 
 const validateTool: AgentTool<Record<string, never>> = {
   name: "activity.validate", module: "activité", kind: "write", needsProject: true,
-  description: "Étape 5 : enregistre la validation du plan de l'activité PAR LE CLIENT (jamais à sa place). Refusé s'il manque une coordonnée obligatoire, un produit ou un prix : dis-le au client. Ouvre l'étape 6 (thème du Studio ou thème sur mesure). Gratuit.",
+  description: "Étape 5 : enregistre la validation du plan de l'activité PAR LE CLIENT (jamais à sa place). Refusé s'il manque une coordonnée obligatoire, un produit ou un prix : dis-le au client. Ouvre l'étape 6 (son site). Gratuit.",
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx);
@@ -66,7 +68,7 @@ const validateTool: AgentTool<Record<string, never>> = {
     const gaps = activityGaps(plan);
     if (gaps.length) return { ok: false, summary: L(`Impossible de valider : ${gaps.join(" ; ")}.`, "Cannot validate yet.") };
     updateJourney(ctx.conversationId, (x) => { x.activity = plan; setStep(x, 5, "done"); setStep(x, 6, "todo"); });
-    return { ok: true, summary: L("Activité complète validée. Étape 5 terminée. Prochaine étape : ton site, dans un thème du Studio ou un thème sur mesure.", "Activity validated."), changes: [{ module: "activité", object: L("plan de l'activité", "activity plan"), summary: L("validé par le client", "validated"), verified: true }] };
+    return { ok: true, summary: L("Activité complète validée. Étape 5 terminée. Prochaine étape : ton site.", "Activity validated."), changes: [{ module: "activité", object: L("plan de l'activité", "activity plan"), summary: L("validé par le client", "validated"), verified: true }] };
   },
 };
 

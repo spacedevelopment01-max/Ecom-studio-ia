@@ -22,7 +22,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { ThemeSpec, StorePage, StoreCollection, TemplateJson } from "../../theme/spec";
-import { LIBRARY_DIR, libSection } from "./library";
+import { LIBRARY_DIR, libSection, withoutExamplePhotos } from "./library";
 import { TENUE_FILES, TENUE_SECTIONS, isTenueSection, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenuePrestations, type TenuePrestation } from "./tenue";
 import { isHeaderRoot, withMenu } from "./menu";
 import { venteBoutique, withAchatId, withTenueComparison, withTenueFamilies, withTenueSite, type TenueSite } from "./tenue-data";
@@ -44,7 +44,7 @@ export type ExportInput = {
   /** Mentions vraies à dire près du prix (indice de réparabilité, paiement en plusieurs fois), confirmées par le client. */
   priceNotes?: string[];
   /** Coordonnées, horaires et zone du client : écrits tels quels dans les pages (téléphone, adresse, plan). */
-  site?: Pick<TenueSite, "phone" | "address" | "hours" | "area"> & Partial<Pick<TenueSite, "biens" | "carte" | "vitrine">>;
+  site?: Pick<TenueSite, "phone" | "address" | "hours" | "area"> & Partial<Pick<TenueSite, "addressDiscreet">> & Partial<Pick<TenueSite, "biens" | "carte" | "vitrine">>;
   /** Extension du fichier d'un média de la bibliothèque (« jpg », « png »), ou null s'il n'existe plus. */
   assetExt: (assetId: string) => string | null;
   /** Texte de bouton ou de lien → clé de page (les liens écrits pour la marque, comme dans l'aperçu). */
@@ -212,7 +212,7 @@ function photos(c: Ctx, html: string, where: string): string {
     const file = `tn-${id}.${ext}`; c.files[file] = id;
     return `{{ '${file}' | asset_url }}`;
   });
-  if (/photos\/[\w.-]+\.(?:webp|png|jpe?g)/.test(out)) { c.problems.push({ level: "bloquant", text: `${where} : il reste une photo d'exemple (aucune ne part en boutique)` }); out = out.replace(/\s?style="background-image:url\(photos\/[^)]*\)"/g, ""); }
+  if (/photos\/[\w.-]+\.(?:webp|png|jpe?g)/.test(out)) { c.problems.push({ level: "bloquant", text: `${where} : il reste une photo d'exemple (aucune ne part en boutique)` }); out = withoutExamplePhotos(out, c.input.palette); }
   return out;
 }
 

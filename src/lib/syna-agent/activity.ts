@@ -15,8 +15,15 @@ import type { Journey } from "./journey";
 import { replaceInCustomTheme } from "./custom-theme/theme";
 
 /** Fiche de l'entreprise (coordonnées du site et de ses pages légales), avec les mots du client. */
-export type Company = { legalName?: string; email?: string; phone?: string; address?: string; siret?: string; shipping?: string; returns?: string };
-export const COMPANY_FIELDS: { key: keyof Company; label: string; question: string; required: boolean }[] = [
+/**
+ * « addressDiscreet » (adresse discrète) : le client ne veut PAS que son adresse soit mise en avant (il travaille chez lui
+ * et se déplace). L'adresse reste dans la fiche et ne s'écrit alors que dans les informations légales : ni pied de page,
+ * ni contact, ni carte, ni « Voir l'itinéraire ».
+ */
+export type Company = { legalName?: string; email?: string; phone?: string; address?: string; siret?: string; shipping?: string; returns?: string; addressDiscreet?: boolean };
+/** Champs de texte de la fiche (tout sauf le réglage « adresse discrète »). */
+export type CompanyField = Exclude<keyof Company, "addressDiscreet">;
+export const COMPANY_FIELDS: { key: CompanyField; label: string; question: string; required: boolean }[] = [
   { key: "legalName", label: "Nom de l'entreprise", question: "Quel est le nom officiel de ton entreprise (raison sociale, ou ton nom si tu es micro-entrepreneur) ?", required: true },
   { key: "email", label: "E-mail de contact", question: "Quelle adresse e-mail tes clients peuvent-ils utiliser pour te contacter ?", required: true },
   { key: "phone", label: "Téléphone", question: "Veux-tu afficher un numéro de téléphone sur le site ? Si oui, lequel ?", required: false },
@@ -30,13 +37,18 @@ export function companyOf(projectId: string): Company {
   const p = loadProject(projectId);
   return (p.settings as any).company ?? {};
 }
+/** L'adresse du client ne doit s'afficher que dans les informations légales (réglage « adresse discrète » de la fiche). */
+export function addressDiscreet(projectId: string): boolean {
+  try { return companyOf(projectId).addressDiscreet === true; } catch { return false; }
+}
 
 /** Enregistre les coordonnées dans les réglages du projet (jamais effacées : un champ absent reste tel quel). */
 export function saveCompany(projectId: string, fields: Company): Company {
   const p = loadProject(projectId);
   const clean = Object.fromEntries(Object.entries(fields).filter(([, v]) => typeof v === "string" && v.trim()).map(([k, v]) => [k, (v as string).trim().slice(0, 600)]));
   const before = companyOf(projectId);
-  const company = { ...before, ...clean };
+  // Le réglage « adresse discrète » est un oui ou un non : il ne change que si l'appelant le donne.
+  const company: Company = { ...before, ...clean, ...(typeof fields.addressDiscreet === "boolean" ? { addressDiscreet: fields.addressDiscreet } : {}) };
   run("UPDATE projects SET settings_json=?, updated_at=? WHERE id=?", JSON.stringify({ ...json<Record<string, unknown>>(p.row.settings_json, {}), company }), Date.now(), projectId);
   // Site déjà écrit : l'ancien e-mail, téléphone ou adresse y est remplacé par le nouveau (jamais deux coordonnées).
   const changed = (["email", "phone", "address"] as const).filter((k) => before[k] && company[k] && before[k] !== company[k]).map((k) => [before[k]!, company[k]!] as [string, string]);
@@ -63,8 +75,8 @@ export function companyFromText(text: string): Company {
 export type ActivityPlan = {
   company: Company;
   /** Coordonnées facultatives que le client ne veut PAS sur le site (« pas de téléphone »), à ne plus demander. */
-  none: (keyof Company)[];
-  missing: { key: keyof Company; question: string; required: boolean }[];
+  none: CompanyField[];
+  missing: { key: CompanyField; question: string; required: boolean }[];
   angle: { id: string; title: string; goal: string; message: string; story: string; show: string; cta: string; others: string[] } | null;
   keyMessages: string[];
   objections: { objection: string; answer: string }[];
@@ -76,7 +88,7 @@ export type ActivityPlan = {
 };
 
 /** Coordonnées sans objet pour une entreprise de services (rien n'est livré ni retourné). */
-const NOT_FOR_SERVICES: (keyof Company)[] = ["shipping", "returns"];
+const NOT_FOR_SERVICES: CompanyField[] = ["shipping", "returns"];
 
 /**
  * Un fait de l'offre en une ligne lisible : son libellé court, ou la réponse seule quand le libellé est la question posée
@@ -103,7 +115,7 @@ export function activityPlan(projectId: string, j: Journey): ActivityPlan {
   const p = loadProject(projectId);
   const company = companyOf(projectId);
   const later = new Set<string>(((p.settings as any).companyLater ?? []) as string[]);
-  const none = (((p.settings as any).companyNone ?? []) as (keyof Company)[]).filter((k) => !company[k]);
+  const none = (((p.settings as any).companyNone ?? []) as CompanyField[]).filter((k) => !company[k]);
   const services = p.business === "services";
   const missing = COMPANY_FIELDS.filter((f) => !company[f.key] && !later.has(f.key) && !none.includes(f.key) && !(services && NOT_FOR_SERVICES.includes(f.key))).map(({ key, question, required }) => ({ key, question, required }));
   const ids = j.angleChoice?.ids ?? (j.angleChoice ? [j.angleChoice.id] : []);
@@ -140,7 +152,7 @@ export function activityGaps(plan: ActivityPlan): string[] {
  * Le client ne veut PAS d'une coordonnée facultative sur le site (« pas de téléphone ») : ce n'est pas « plus tard »
  * (essai réel du 7 novembre : « pas de téléphone » enregistré comme à donner plus tard). Jamais une coordonnée obligatoire.
  */
-export function companyNone(projectId: string, keys: (keyof Company)[]) {
+export function companyNone(projectId: string, keys: CompanyField[]) {
   const p = loadProject(projectId);
   const s = json<Record<string, unknown>>(p.row.settings_json, {});
   const allowed = keys.filter((k) => !COMPANY_FIELDS.find((f) => f.key === k)?.required);
@@ -149,7 +161,7 @@ export function companyNone(projectId: string, keys: (keyof Company)[]) {
 }
 
 /** Le client préfère donner une coordonnée facultative plus tard (jamais une coordonnée obligatoire du site). */
-export function companyLater(projectId: string, keys: (keyof Company)[]) {
+export function companyLater(projectId: string, keys: CompanyField[]) {
   const p = loadProject(projectId);
   const s = json<Record<string, unknown>>(p.row.settings_json, {});
   const allowed = keys.filter((k) => !COMPANY_FIELDS.find((f) => f.key === k)?.required);

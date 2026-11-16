@@ -103,6 +103,11 @@ export const siteJobDeps: { design?: (ctx: ToolContext, a: { consigne?: string; 
 
 /** Compte rendu de la création du site, gardé dans le parcours (SINA le relit en entier) ; la tâche en rend l'essentiel. */
 export type SiteReport = {
+  /**
+   * En tête du compte rendu, seulement quand SINA n'a PAS pu regarder son site en image avant de le montrer (ou pas en
+   * entier) : elle doit le dire au client, avec ces mots simples, avant tout le reste.
+   */
+  siteNonRegarde?: string;
   pages: string[];
   concept: string | null;
   signe: string | null;
@@ -120,7 +125,7 @@ const short = (v: unknown, n: number) => (typeof v === "string" ? v.slice(0, n) 
 function montageSummary(m: unknown): Record<string, unknown> | null {
   if (!m || typeof m !== "object") return null;
   const r = m as Record<string, unknown>, out: Record<string, unknown> = {};
-  for (const k of ["sections", "failedEdits", "photosMade", "photosReal", "photosClient", "photosToProvide", "photosLeft", "photosFailed", "relecture", "relecturePhotos", "regards"]) if (r[k] != null) out[k] = r[k];
+  for (const k of ["sections", "failedEdits", "photosMade", "photosReal", "photosClient", "photosToProvide", "photosLeft", "photosFailed", "photosReprises", "relecture", "relecturePhotos", "regards", "regardNonFait"]) if (r[k] != null) out[k] = r[k];
   if (Array.isArray(r.problems) && r.problems.length) out.problems = r.problems.slice(0, 12).map((x) => short(x, 220));
   return out;
 }
@@ -185,7 +190,12 @@ export async function runSinaSiteJob(ctx: JobContext) {
     catch (e) { return { ok: false as const, blocking: [(e as Error).message.slice(0, 200)] }; }
   });
   const t = loadCustomTheme(p.id)!;
+  // Le regard en image : fait, fait en partie, ou pas fait du tout (montage arrêté avant, navigateur absent, réponse
+  // illisible). Ce n'est jamais passé sous silence : c'est la première ligne du compte rendu que SINA relit.
+  const seen = montageSummary(montage) as { regards?: { pages?: unknown[] } | null; regardNonFait?: string | null } | null;
+  const unseen = seen?.regardNonFait ? seen.regardNonFait : seen?.regards?.pages?.length ? null : L("je n'ai pas pu regarder le site en image", "I could not look at the site as an image");
   const report: SiteReport = {
+    ...(unseen ? { siteNonRegarde: L(`${unseen} : à dire au client en premier, et à lui proposer de le regarder ensemble sur son téléphone`, `${unseen}: tell the client first`) } : {}),
     pages: t.pages.map((pg) => `${pg.label} (${pg.sections.length})`),
     concept: short(designed.concept, 400) as string | null, signe: designed.signe, aRevoir: designed.left.slice(0, 8).map((x) => x.slice(0, 220)), montage: montageSummary(montage),
     styleEnCoulisses: { famille: designed.famille, pourquoi: short(designed.familleWhy, 300) as string | null },

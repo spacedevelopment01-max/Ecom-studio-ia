@@ -67,7 +67,7 @@ export function customThemeExport(projectId: string, o: { dropMissing?: boolean 
   if (!t) throw new Error("Aucun thème sur mesure à mettre en boutique.");
   const business = p.business === "services" ? "services" as const : "products" as const;
   const products = business === "services" ? [] : (() => { try { return listProducts(projectId).filter((x) => x.status === "active"); } catch { return []; } })();
-  const company = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string; phone?: string; address?: string }; } catch { return {}; } })();
+  const company = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string; phone?: string; address?: string; addressDiscreet?: boolean }; } catch { return {}; } })();
   // Remises : l'indicateur vient de la preuve lue dans la boutique quand elle existe, sinon de la déclaration du client.
   const base = currentTheme(projectId)?.spec ?? null;
   const saisies = (() => { try { return loadShopOffers(projectId); } catch { return null; } })();
@@ -77,7 +77,7 @@ export function customThemeExport(projectId: string, o: { dropMissing?: boolean 
     products: products.map((x) => ({ handle: x.handle, title: x.data.title, categories: x.data.categories })),
     prestations: tenuePrestations(projectId), company: { shipping: company.shipping?.trim() || null, returns: company.returns?.trim() || null },
     priceNotes: priceNotes(projectId), titleWeight: titleWeight(p.brand?.fonts?.heading, t.tenue?.titres),
-    site: { phone: p.services?.phone || company.phone || null, address: p.services?.address || company.address || null, hours: p.services?.hours || null, area: p.services?.area || null,
+    site: { phone: p.services?.phone || company.phone || null, address: company.addressDiscreet === true ? null : p.services?.address || company.address || null, addressDiscreet: company.addressDiscreet === true, hours: p.services?.hours || null, area: p.services?.area || null,
       // Métiers : les vrais biens publiés et la vraie carte du client partent avec le site (jamais une ligne d'exemple).
       ...tenueMetiers(projectId),
       // Vente directe : ce que le catalogue sait de plus (genre, prix de comparaison, « dès », versions).

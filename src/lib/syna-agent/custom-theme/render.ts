@@ -15,7 +15,7 @@ import { fontOf, fontsCss } from "../mockup-code/code-mockup";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { companyOf } from "../activity";
 import { buyBlockData, withRealBuyBlock, withTenueAchat } from "./buy-block";
-import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
+import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName, withoutExamplePhotos } from "./library";
 import { allSections, drawerOf, hasCoque, sectionHtml, type CtPage, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
 import { TENUE_FILES, markMissing, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenueBuyBlock, withTenuePrestations, withTenueProducts, type TenueBuy, type TenuePrestation, type TenueProduct } from "./tenue";
 import { productPageKey, withMenu, type MenuProduct } from "./menu";
@@ -430,14 +430,14 @@ export function tenueProducts(projectId: string, t?: CustomTheme): TenueProduct[
  * biens et carte des métiers, et ce que le catalogue sait de plus pour la vente directe (« vitrine »).
  */
 export function tenueSite(p: Pick<Project, "id"> & { services?: Project["services"] }, t: CustomTheme, products: TenueProduct[], prestations: TenuePrestation[]): TenueSite {
-  const co = (() => { try { return companyOf(p.id); } catch { return {}; } })() as { phone?: string; address?: string; shipping?: string; returns?: string };
+  const co = (() => { try { return companyOf(p.id); } catch { return {}; } })() as { phone?: string; address?: string; shipping?: string; returns?: string; addressDiscreet?: boolean };
   const sv = p.services ?? (() => { try { return loadProject(p.id).services; } catch { return null; } })();
   const shop = t.pages.find((x) => x.key === "shop")?.key ?? null;
   const names = [...new Set(products.flatMap((x) => x.families ?? []))];
   const families = shop ? names.map((name) => { const inside = products.filter((x) => (x.families ?? []).includes(name)); return { name, to: `${shop}:${name}`, image: inside.find((x) => x.image)?.image ?? null, products: inside.map((x) => x.title) }; }) : [];
   // Articles du journal : ceux qui sont prêts ou publiés (un brouillon n'est pas montré), nettoyés à la lecture.
   const articles = (() => { try { return all<{ title: string; excerpt: string; tags: string; cover_asset_id: string | null; body_html: string }>("SELECT title, excerpt, tags, cover_asset_id, body_html FROM blog_articles WHERE project_id = ? AND deleted_at IS NULL AND status != 'draft' ORDER BY updated_at DESC LIMIT 12", p.id).map((r) => ({ title: r.title, excerpt: r.excerpt, tag: ((() => { try { return (JSON.parse(r.tags || "[]") as string[])[0]; } catch { return null; } })()) ?? null, image: r.cover_asset_id ? assetUrl({ id: r.cover_asset_id }) : null, bodyHtml: sanitizeBlogHtml(r.body_html) })); } catch { return []; } })();
-  return { phone: sv?.phone || co.phone || null, address: sv?.address || co.address || null, hours: sv?.hours || null, area: sv?.area || null, shipping: co.shipping ?? null, returns: co.returns ?? null, families, prestations, products, articles, freeFrom: freeShippingFrom(co.shipping), ...tenueMetiers(p.id), vitrine: tenueVitrine(p.id) };
+  return { phone: sv?.phone || co.phone || null, address: co.addressDiscreet === true ? null : sv?.address || co.address || null, addressDiscreet: co.addressDiscreet === true, hours: sv?.hours || null, area: sv?.area || null, shipping: co.shipping ?? null, returns: co.returns ?? null, families, prestations, products, articles, freeFrom: freeShippingFrom(co.shipping), ...tenueMetiers(p.id), vitrine: tenueVitrine(p.id) };
 }
 /** Le catalogue vu par le menu : repère, nom et familles de chaque produit. */
 export const menuProducts = (projectId: string): MenuProduct[] => { try { return listProducts(projectId).map((p) => ({ handle: p.handle, title: p.data.title, categories: p.data.categories })); } catch { return []; } };
@@ -524,6 +524,11 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   // Sections de tout le site : le bandeau au-dessus de l'en-tête ; les fenêtres (cookies, âge, discussion) posées en bas de l'écran.
   const extras = (group: "bandeau" | "partout") => [...(t.extras ?? []), ...(drawer && !(t.extras ?? []).includes(drawer) ? [drawer] : [])].filter((s) => (tenueSection(s.id)?.group ?? "partout") === group).map((s) => withTenueAchat(withTenueSite(sectionMarkup(s, name, "page"), site), p.id)).join("\n");
   const windows = extras("partout");
+  // Filet : dès que le site est monté à la marque (au moins une pièce écrite pour le client), aucune photo d'exemple de
+  // la bibliothèque n'est montrée ; celle qui n'a pas pu être remplacée laisse un cadre neutre à la couleur de la marque.
+  // Fait ici, au rendu, après toutes les vraies données : vaut pour tout site, y compris déjà enregistré.
+  const mounted = allSections(t).some((x) => x.s.clientTexts);
+  const clean = (html: string) => (mounted ? withoutExamplePhotos(html, p.brand?.palette) : html);
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><base href="/sections/"><title>${esc(title)}</title>
@@ -537,14 +542,14 @@ ${tenueCss(p.brand?.palette, t.tenue, MONO_CSS(), titleWeight(p.brand?.fonts?.he
 ${own}</style></head><body>
 <script${n}>${pre}</script>
 <div class="tb-bar"><span>${esc(name)} ·</span>${bar}<span class="tb-vw">Voir en</span><button class="tb-vw" type="button" data-vw="desk" aria-pressed="true">Ordinateur</button><button class="tb-vw" type="button" data-vw="phone" aria-pressed="false">Téléphone</button></div>
-<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${t.pages[0] && hasCoque(t.pages[0]) ? " data-coque" : ""}${tenueAttrs(t.tenue)}><div class="frame">${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
+<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${t.pages[0] && hasCoque(t.pages[0]) ? " data-coque" : ""}${tenueAttrs(t.tenue)}><div class="frame">${clean(`${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
 ${body}
-${shell(t.footer, "pied de page")}${windows ? `<div class="tn-fixes">${windows}</div>` : ""}</div></div>
-${withBrandName(templates, name)}
+${shell(t.footer, "pied de page")}${windows ? `<div class="tn-fixes">${windows}</div>` : ""}`)}</div></div>
+${clean(withBrandName(templates, name))}
 <script${n} src="/sections/library.js"></script>
 ${tenueFiles("js").map((f) => `<script${n} src="/sections/${f}"></script>`).join("\n")}
 <script${n}>${NAV_JS}</script><script${n}>${CART_JS}</script><script${n}>${SETTINGS_JS}</script>
 ${o.embed ? `<style>.tb-bar{display:none}.tb-wrap .zm18,.bh,.mz1,.mz2{top:0!important}.ctw-note{top:10px;bottom:auto;left:auto;right:10px;max-width:300px;font-size:11px}</style>` : ""}
-${o.studio ? `${sampleTexts ? `<div class="ctw-note" aria-hidden="true">Thème sur mesure · textes et photos d'exemple encore présents : SINA les remplace par les tiens</div>` : ""}<script${n}>${PICK_JS}</script>` : ""}
+${o.studio ? `${sampleTexts ? `<div class="ctw-note" aria-hidden="true">Ton site · textes et photos d'exemple encore présents : SINA les remplace par les tiens</div>` : ""}<script${n}>${PICK_JS}</script>` : ""}
 </body></html>`;
 }

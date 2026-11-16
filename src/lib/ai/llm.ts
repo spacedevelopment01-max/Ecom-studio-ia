@@ -810,7 +810,14 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
     for (;;) {
       const r = await rawCall({ ...call, maxTokens: budget }, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text}, attempt ? `:fix${attempt}` : "", attempt);
       if (r.stop === "max_tokens" && budget < cap) { budget = Math.min(cap, budget * 2); attempt++; continue; }
-      return schema.parse(JSON.parse(r.text));
+      // Un écart de pure forme (un texte un peu trop long, une liste trop longue) ne fait plus perdre un appel
+      // payé : il est réparé comme en JSON libre (essai réel du 16 novembre 2026 : une correction de plus de
+      // 400 signes avait fait sauter toute une relecture). Un écart de fond lève toujours l'erreur du schéma.
+      const data = JSON.parse(r.text), direct = schema.safeParse(data);
+      if (direct.success) return direct.data;
+      const repaired = salvage(schema as z.ZodType<unknown>, data);
+      if (repaired.ok) return repaired.data as z.infer<S>;
+      return schema.parse(data);
     }
   }
   messages[0].content = [

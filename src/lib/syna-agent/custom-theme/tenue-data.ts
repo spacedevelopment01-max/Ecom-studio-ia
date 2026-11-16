@@ -35,6 +35,8 @@ export type TenueArticle = { title: string; excerpt: string; tag: string | null;
 /** Ce que le Studio sait du client, pour toutes les sections à tenue d'un site. */
 export type TenueSite = {
   phone?: string | null; address?: string | null; hours?: string | null; area?: string | null;
+  /** Adresse discrète (fiche de l'entreprise) : elle ne s'écrit que dans les informations légales ; ici, ni adresse, ni carte, ni itinéraire. */
+  addressDiscreet?: boolean;
   shipping?: string | null; returns?: string | null;
   families?: TenueFamily[]; prestations?: TenuePrestation[]; products?: TenueProduct[]; articles?: TenueArticle[];
   /** Métiers : les biens visibles de la rubrique Biens, la carte publiée du restaurant, l'équipe donnée par le client. */
@@ -68,15 +70,34 @@ export function zoneCities(area: string): string[] {
 const OSM = "https://www.openstreetmap.org";
 
 /**
+ * Adresse discrète (le client travaille chez lui et se déplace : son adresse ne s'écrit que dans les informations
+ * légales). Aucun remplissage automatique ne la montre : le bouton d'itinéraire et la carte s'en vont ; le bloc de
+ * l'adresse montre la zone desservie quand la section ne la montre pas déjà, sinon il se retire en entier (jamais un
+ * trou, jamais « À compléter : adresse », jamais « Voir l'itinéraire » sans adresse).
+ */
+export function withoutAddress(html: string, area: string | null): string {
+  let out = html.replace(/<a\b[^>]*\sdata-tn-itineraire(?=[\s>])[^>]*>[\s\S]*?<\/a>/g, "");
+  const zone = area && !/\sdata-tn-zone=/.test(out) ? esc(area) : null;
+  const fill = (m: string) => m.replace(/(<([a-z]+)\b[^>]*\sdata-tn-adresse(?=[\s>])[^>]*>)[\s\S]*?(<\/\2>)/, `$1${zone}$3`);
+  // Bloc qui ne porte que l'adresse (pied de page de services, repères de l'ouverture) : son libellé suit, ou il se retire.
+  out = out.replace(/<(div|li) class="(?:tn-p-bloc|tn-adr)">(?:(?!<\/\1>)[\s\S])*?\sdata-tn-adresse(?=[\s>])(?:(?!<\/\1>)[\s\S])*<\/\1>/g, (m) => (zone ? fill(m).replace(/<small>[\s\S]*?<\/small>/, "<small>Zone desservie</small>") : ""));
+  // Adresse posée seule (accès, réservation) : la zone à sa place, sinon rien.
+  out = out.replace(/<([a-z]+)\b[^>]*\sdata-tn-adresse(?=[\s>])[^>]*>[\s\S]*?<\/\1>/g, (m) => (zone ? fill(m) : ""));
+  // La carte : jamais ouverte sur une adresse que le client ne veut pas montrer.
+  return out.replace(/<div class="tn-ph([^"]*)" style="background-image:url\(photos\/(?:carte|map|plan)-[\w.-]+\)"><\/div>/g, (_m, cls: string) => (area ? `<div class="tn-ph tn-plan${cls}"><i aria-hidden="true"></i><b>${esc(area)}</b></div>` : ""));
+}
+
+/**
  * Pose le téléphone, l'adresse, les horaires, la zone et l'itinéraire du client. Le plan n'est jamais une image (essai
  * réel du 9 novembre 2026 : un plan de quartier dessiné par l'IA, montré comme la vraie carte) : c'est un cadre qui ouvre
  * la vraie carte à l'adresse du client, ou « [À compléter : adresse] ».
  */
 export function withTenueContact(html: string, d: TenueSite): string {
   if (!/\sdata-tn-(?:tel|adresse|horaires|zone|itineraire)\b|photos\/(?:carte|map|plan)-/.test(html)) return html;
-  const phone = clean(d.phone, 40), address = clean(d.address), hours = clean(d.hours, 400), area = clean(d.area, 400);
+  const discreet = d.addressDiscreet === true;
+  const phone = clean(d.phone, 40), address = discreet ? null : clean(d.address), hours = clean(d.hours, 400), area = clean(d.area, 400);
   const inner = (attr: string, fill: (tag: string) => string | null) => (h: string) => h.replace(new RegExp(`<([a-z]+)\\b([^>]*\\s${attr}(?=[\\s>])[^>]*)>[\\s\\S]*?<\\/\\1>`, "g"), (m, tag: string, attrs: string) => { const v = fill(tag); return v == null ? m : `<${tag}${attrs}>${v}</${tag}>`; });
-  let out = html;
+  let out = discreet ? withoutAddress(html, area) : html;
   if (phone) out = out.replace(/<a\b([^>]*\sdata-tn-tel\b[^>]*)>[\s\S]*?<\/a>/g, (_m, attrs: string) => `<a${attrs.replace(/\sonclick="return false"/, "").replace(/href="#"/, `href="tel:${esc(phone.replace(/[^\d+]/g, ""))}"`)}>${esc(phone)}</a>`);
   if (address) out = inner("data-tn-adresse", () => esc(address))(out);
   if (hours) {
