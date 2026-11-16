@@ -546,6 +546,28 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
   - sur la page d'accueil, elle remplace l'orbe en ouverture : un projet naît en une vingtaine de secondes, et chaque
     étoile fait apparaître ce que SINA a créé ; chaque démonstration a sa propre constellation, tirée du projet ;
   - écartés : un visage ou un personnage. Planche : https://claude.ai/artifact/Ej7Dy3oXCZEUGEfCCKgPXF
+- **La constellation, porte du projet, et le ciel partagé** (idées du propriétaire du 16 novembre 2026, notées à sa
+  demande : « Oui écris le »). Direction du design, rien n'est construit. Ébauche vivante :
+  https://claude.ai/artifact/BLLUXHPxJ6vCvEhEPk1RoQ
+  - **porte du projet** : chaque étoile s'ouvre sur sa partie (la marque, le site, les publications…). Le nom et l'état
+    de chaque étoile restent toujours écrits ; le menu classique reste ; « ta journée est prête » reste à un clic ;
+  - **vivante en permanence** : SINA va d'étoile en étoile là où elle travaille, une phrase dit ce qu'elle fait ;
+  - **on la manipule** : la faire pivoter, zoomer, dézoomer (« On doit pouvoir la faire pivoter zoomer dezoomer ») ;
+  - **un vrai ciel** (« presque faire un vrai univers avec de vrai étoile, rend ça presque reel ») : étoiles de vraies
+    couleurs avec halo et reflets, voie lactée, nébuleuses, galaxies lointaines, profondeur quand on se déplace ; le
+    cœur de chaque projet est un soleil aux couleurs de sa marque ;
+  - **on s'y promène** parmi toutes les constellations : les siennes ; une constellation éteinte pour créer un nouveau
+    projet ; les exemples du Studio ; les projets que des clients choisissent d'ouvrir aux visites (on regarde, on ne
+    modifie rien) ; les projets des autres, visibles mais marqués « Accès verrouillé par le propriétaire », sans nom,
+    sans couleurs, sans avancement ;
+  - **aucune constellation ne se ressemble** (« Bien sûr aucune constellation se ressemblent ») : la forme de chaque
+    projet est tirée du projet, puis comparée à toutes les autres et refaite si elle ressemble trop à l'une d'elles ;
+  - **en trois étapes** : 1. la constellation du projet, avec le design (porte d'entrée et carte du tableau de bord) ;
+    2. le ciel partagé ensuite, quand il y aura assez de clients, en commençant par les douze démonstrations ;
+    3. ce ciel en ouverture de la page d'accueil publique, où le visiteur se promène parmi les exemples ;
+  - **précautions** : une version allégée pour les téléphones modestes, essayée sur de vrais téléphones ; ouvrir son
+    projet aux visites est un choix du client ; chaque client sait dès l'inscription que sa constellation apparaît
+    dans le ciel commun ; ce chantier ne retarde pas les lots qui font fonctionner SINA.
 
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
