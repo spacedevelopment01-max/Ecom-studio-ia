@@ -33,6 +33,7 @@ import { briefFromJourney, normText } from "./identities";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 import { chosenRoute } from "./logos";
 import * as P from "./angles-prompts";
+import { anglesKnowledgeReady, withAnglesLesson } from "./angles-knowledge";
 import { ANGLE_ROLES, type AngleRole } from "./angles-prompts";
 import { angleFacts, brandStudyOf, type SinaAngle, type SinaAngles } from "./angles";
 
@@ -50,11 +51,11 @@ export const MIN_QUOTES = 8;
 type Tier = "strong" | "craft";
 const CALLS = {
   listen: { tier: "craft", input: 18_000, output: 5_000, max: 9_000 },
-  segments: { tier: "strong", input: 6_000, output: 3_000, max: 6_000 },
-  strategist: { tier: "strong", input: 9_000, output: 7_000, max: 12_000 },
-  judge: { tier: "strong", input: 16_000, output: 4_000, max: 8_000 },
-  rework: { tier: "strong", input: 11_000, output: 5_500, max: 10_000 },
-  recheck: { tier: "strong", input: 14_000, output: 2_500, max: 6_000 },
+  segments: { tier: "strong", input: 9_000, output: 3_000, max: 6_000 },
+  strategist: { tier: "strong", input: 12_500, output: 7_000, max: 12_000 },
+  judge: { tier: "strong", input: 19_500, output: 4_000, max: 8_000 },
+  rework: { tier: "strong", input: 14_500, output: 5_500, max: 10_000 },
+  recheck: { tier: "strong", input: 17_500, output: 2_500, max: 6_000 },
   reader: { tier: "strong", input: 2_500, output: 2_000, max: 5_000 },
   clarify: { tier: "strong", input: 5_000, output: 2_000, max: 5_000 },
 } as const satisfies Record<string, { tier: Tier; input: number; output: number; max: number }>;
@@ -274,6 +275,8 @@ export async function runSinaAnglesJob(ctx: JobContext) {
   const a = Payload.parse(ctx.payload);
   const p = loadProject(a.projectId);
   const j = journeyOf(a.conversationId);
+  const ready = anglesKnowledgeReady();
+  if (!ready.ok) throw new UserFacingError(L("La création de tes angles ne peut pas commencer : un cahier de métier de SINA manque. Rien n'a été décompté.", "Angle creation cannot start: a knowledge file is missing. Nothing was charged."));
   const settings = chainSettings();
   const ai = anglesChainDeps.ai ? anglesChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id }, settings, a.capMicro);
   const notes: string[] = [], issues: string[] = [];
@@ -308,7 +311,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
   // 2. Les types de clients, avant les stratèges : chaque angle en visera un, et les trois montrés en viseront trois.
   ctx.progress(0.12, L("Je cherche qui sont tes différents clients", "Finding your different kinds of customers"));
   const segments: Segment[] = await ctx.step(`angles:segments:${round}`, async () => {
-    const raw = await ai.ask(`segments-${round}`, { kind: "segments", system: P.SEGMENTS_SYSTEM, schema: SegmentsSchema, prompt: dossier({ facts, brand, study, guidance: a.guidance }) });
+    const raw = await ai.ask(`segments-${round}`, { kind: "segments", system: withAnglesLesson(P.SEGMENTS_SYSTEM), schema: SegmentsSchema, prompt: dossier({ facts, brand, study, guidance: a.guidance }) });
     const ids = new Set<string>();
     return raw.segments.filter((g) => !ids.has(g.id) && !!ids.add(g.id)).map((g) => ({ ...g, quotes: g.quotes.filter((n) => n < study.quotes.length) })).slice(0, 6);
   });
@@ -319,7 +322,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
   // 2. Trois stratèges séparées, en même temps : elles ne se voient pas.
   ctx.progress(0.2, L("Je cherche tes trois angles", "Looking for your three angles"));
   const written = await Promise.all(ANGLE_ROLES.map((role) => ctx.step(`angles:strategist:${round}:${role}`, async () => {
-    try { return (await ai.ask(`strategist-${round}-${role}`, { kind: "strategist", system: P.strategistSystem(role, CANDIDATES), schema: StrategistSchema, prompt: file })).angles.slice(0, CANDIDATES); }
+    try { return (await ai.ask(`strategist-${round}-${role}`, { kind: "strategist", system: withAnglesLesson(P.strategistSystem(role, CANDIDATES)), schema: StrategistSchema, prompt: file })).angles.slice(0, CANDIDATES); }
     catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`stratège « ${role} » sans réponse : ${String((e as Error)?.message ?? e).slice(0, 120)}`); return [] as AngleDraft[]; }
   })));
   let all: Candidate[] = [];
@@ -337,7 +340,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
   });
   let judged: "juges" | "non_juges" = "juges";
   let verdict: Judge | null = null;
-  try { verdict = await ctx.step(`angles:judge:${round}`, () => ai.ask(`judge-${round}`, { kind: "judge", system: P.JUDGE_SYSTEM, schema: JudgeSchema, prompt: judgeFile(all) })); }
+  try { verdict = await ctx.step(`angles:judge:${round}`, () => ai.ask(`judge-${round}`, { kind: "judge", system: withAnglesLesson(P.JUDGE_SYSTEM), schema: JudgeSchema, prompt: judgeFile(all) })); }
   catch (e) { if (e instanceof CostCapReached) throw e; judged = "non_juges"; notes.push(`juge sans réponse : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
 
   const notesOf = verdict ? verdictsOf(verdict, all) : new Map<string, Verdict>();
@@ -359,7 +362,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
         const mine = all.filter((c) => c.role === role);
         const remarks = mine.map((c) => { const v = notesOf.get(c.id)!; return `- « ${c.title} » (accroche : « ${c.hook} ») : ${v.note} sur 10. ${v.why}${v.fixes.length ? ` À corriger : ${v.fixes.join(" ; ")}` : ""}`; }).join("\n");
         const prompt = `${file}\n\n# Tes premières propositions, refusées par le juge\n${remarks}\n\n# Angles déjà retenus pour les autres entrées\n${strong.map((c) => `- ${c.title} (type de client ${c.segment}) : ${c.person} | ${c.moment} | ${c.emotion} | « ${c.hook} »`).join("\n") || "aucun pour l'instant"}\n\n# Types de clients déjà pris (n'en vise aucun)\n${strong.map((c) => c.segment).filter(Boolean).join(", ") || "aucun"}\n\n# Types de clients encore libres (choisis parmi eux, un par proposition)\n${segmentIds.filter((id) => !strong.some((c) => c.segment === id)).join(", ")}`;
-        try { return (await ai.ask(`rework-${round}-${role}`, { kind: "rework", system: P.reworkSystem(role, REWORKED), schema: StrategistSchema, prompt })).angles.slice(0, REWORKED); }
+        try { return (await ai.ask(`rework-${round}-${role}`, { kind: "rework", system: withAnglesLesson(P.reworkSystem(role, REWORKED)), schema: StrategistSchema, prompt })).angles.slice(0, REWORKED); }
         catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`reprise « ${role} » sans réponse`); return [] as AngleDraft[]; }
       })));
       const fresh: Candidate[] = [];
@@ -367,7 +370,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
       if (fresh.length) {
         all = [...all, ...fresh];
         try {
-          const second = await ctx.step(`angles:recheck:${round}`, () => ai.ask(`recheck-${round}`, { kind: "recheck", system: P.JUDGE_SYSTEM, schema: JudgeSchema, prompt: judgeFile(fresh, strong) }));
+          const second = await ctx.step(`angles:recheck:${round}`, () => ai.ask(`recheck-${round}`, { kind: "recheck", system: withAnglesLesson(P.JUDGE_SYSTEM), schema: JudgeSchema, prompt: judgeFile(fresh, strong) }));
           for (const [id, v] of verdictsOf(second, fresh)) notesOf.set(id, v);
         } catch (e) { if (e instanceof CostCapReached) throw e; notes.push("reprise non relue par le juge : elle n'est pas montrée"); }
       }

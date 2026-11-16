@@ -93,6 +93,27 @@ faits (une question déjà répondue revenait dans « à confirmer ») ; les que
 Pas vu avec la vraie IA : un angle montré avec le doute du juge (aucun n'est resté sous 8) ; un troisième client.
 **Le propriétaire n'a pas encore dit si les angles lui conviennent** : le lot n'est pas fini sans son avis.
 
+## La leçon des angles (16 novembre 2026, après l'essai)
+
+Avis du propriétaire sur les angles de l'essai : « on peut mieux faire et bien différencier la clientèle type sur
+angles différents ». Puis sa demande : aller voir sur internet comment faire comprendre à SINA ce qu'est un angle,
+lui en faire une leçon, et lui en rendre compte.
+
+- Lu : sept pages (agences de publicité, un spécialiste français, Mailchimp, Strategyn), plus des résumés du livre
+  d'Eugene Schwartz et de la méthode Strategyzer. Retour au propriétaire, avec les captures :
+  https://claude.ai/artifact/EdYHvAQAnTzKxcBfpuudYV
+- Écrit : le cahier `docs/sina-savoir/angles-marketing.md` (sa définition d'abord ; ce qu'est un vrai type de client,
+  c'est-à-dire une situation, jamais un âge ni une crainte partagée par tous ; ce qui change d'un angle à l'autre ; les
+  règles, dont l'épreuve de l'échange ; les fautes).
+- Branché : le cahier est lu à chaque création (`angles-knowledge.ts`) par celle qui dresse les types de clients, les
+  trois stratèges et le juge ; SINA pose au commerçant les questions de la leçon.
+- Constat sur l'essai : deux « types de clients » montrés n'en étaient pas (« ceux qui craignent la mauvaise surprise
+  sur la facture », « celle qui veut voir le travail de près »).
+- Proposé, pas encore accepté ni construit : choisir les trois clientèles AVANT d'écrire, chaque stratège écrivant
+  pour ces trois-là ; un produit ou une prestation vedette différente par angle ; les trois clientèles côte à côte en
+  haut de l'écran.
+- Pas vérifié : la leçon avec la vraie IA.
+
 ## Ce qui reste à faire pour finir le lot
 
 1. **L'avis du propriétaire** sur les angles de Bécane et d'Atelier Vasco.

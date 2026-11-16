@@ -21,6 +21,7 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
   const J = await import("@/lib/syna-agent/journey");
   const C = await import("@/lib/syna-agent/angles-chain");
   const P = await import("@/lib/syna-agent/angles-prompts");
+  const K = await import("@/lib/syna-agent/angles-knowledge");
   const B = await import("@/lib/syna-agent/brand-chain");
   const { anglesDoubtHint } = await import("@/lib/syna-agent/tools/angles");
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
@@ -146,6 +147,9 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
     expect(log.ids[0]).toBe("segments-1");
     expect([...log.ids].sort()).toEqual(["judge-1", "reader-1", "segments-1", "strategist-1-audacieux", "strategist-1-emotion", "strategist-1-sur"]);
     // Les types de clients sont dressés AVANT les stratèges, avec la définition du propriétaire ; chaque stratège les reçoit.
+    // Celle qui dresse les types de clients, les stratèges et le juge reçoivent la leçon.
+    for (const id of ["segments-1", "strategist-1-sur", "strategist-1-emotion", "strategist-1-audacieux", "judge-1"]) expect(log.systems[id]).toMatch(/# Ta leçon sur les angles marketing[\s\S]*Ce qu'est un vrai type de client/);
+    expect(log.systems["reader-1"]).not.toMatch(/Ta leçon sur les angles/);
     expect(log.systems["segments-1"]).toMatch(/UN TYPE DE CLIENT différent, avec ses envies et ses besoins à lui, qui cherche le même produit/);
     expect(log.prompts["strategist-1-sur"]).toMatch(/# Les types de clients[\s\S]*- c1 : Type de client 1\. Situation 1\. Envie : Envie 1\. Besoin : Besoin 1\./);
     expect(log.prompts["strategist-1-sur"]).toMatch(/- c4 : .*type de client supposé/);
@@ -362,6 +366,15 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
     expect(sent).not.toMatch(/pulpe|infusion|tisane|\bthé\b|confiture|toilett|arven|sonore|paysagiste|fraise|sachet/i);
     expect(sent).toMatch(/CLAIR D'ABORD, BEAU ENSUITE/);
     expect(P.JUDGE_SYSTEM).toMatch(/TROIS TYPES DE CLIENTS DIFFÉRENTS, sans exception/);
+    // La leçon du propriétaire (cahier des angles) : lue par le code, sans ses sources, sans trace des projets d'essai.
+    const lesson = K.anglesLesson();
+    expect(lesson).toMatch(/^## 1\. Ce qu'est un angle/);
+    expect(lesson).toMatch(/un type de\s+client différent/);
+    expect(lesson).toMatch(/jamais par une crainte ou une qualité que tous les\s+clients partagent/);
+    expect(lesson).toMatch(/L'épreuve de l'échange/);
+    expect(lesson).not.toMatch(/https?:\/\/|## Sources/);
+    expect(lesson).not.toMatch(/pulpe|infusion|tisane|\bthé\b|confiture|toilett|arven|bécane|vasco|braise/i);
+    expect(K.withAnglesLesson("Consigne.")).toMatch(/^Consigne\.\n\n# Ta leçon sur les angles marketing[\s\S]*## 7\. Les fautes à ne pas faire/);
     expect(sent).toMatch(/Aucun ordre donné au lecteur/);
     expect(sent).toMatch(/Jamais de personne dont le client n'a pas fourni la photo/);
     expect(P.JUDGE_SYSTEM).toMatch(/8 = tu la montrerais telle quelle/);
