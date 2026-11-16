@@ -345,16 +345,16 @@ function live(c: Ctx, html: string, root: string | null): string {
     const button = strip(/<a class="tn-bt"[^>]*>([\s\S]*?)<\/a>/.exec(out)?.[1] ?? "Passer commande"), total = strip(/<div class="tn-total"><span>([\s\S]*?)<\/span>/.exec(out)?.[1] ?? "Total");
     out = out.replace(/<div class="tn-lignes" data-tn-lignes>[\s\S]*?<a class="tn-bt"[^>]*>[\s\S]*?<\/a>/, `{%- if cart.item_count == 0 -%}<div class="tn-recap"><p class="tn-vide">${v ? "Votre" : "Ton"} panier est vide.</p><a class="tn-bt" href="{{ routes.all_products_collection_url }}">Voir la boutique</a>{%- else -%}${lignes}<div class="tn-recap">${seuil}<form class="tn-enveloppe" action="{{ routes.cart_url }}" method="post"><div class="tn-total"><span>${total}</span><span class="tn-prix-t">{{ cart.total_price | money }}</span></div><button class="tn-bt" type="submit" name="checkout">${button}</button>{%- if additional_checkout_buttons -%}<div class="tn-rapide">{{ content_for_additional_checkout_buttons }}</div>{%- endif -%}</form>{%- endif -%}`);
   }
-  // Tiroir de panier : il s'ouvre par un lien vers lui (« #tn-tiroir », posé sur le panier de l'en-tête) et se ferme par
+  // Tiroir de panier : il s'ouvre par un lien vers lui (« #tn-panier-cote », posé sur le panier de l'en-tête) et se ferme par
   // un lien ; les produits à ajouter sont ceux du catalogue qui ne sont pas déjà dans le panier.
-  if (/\sdata-tn-tiroir\b/.test(out)) {
+  if (/\sdata-tn-panier-cote\b/.test(out)) {
     const text = (rx: RegExp, d: string) => strip(rx.exec(out)?.[1] ?? d);
     const title = text(/<h2>([\s\S]*?)<\/h2>/, "Panier"), button = text(/<a class="tn-bt"[^>]*>([\s\S]*?)<\/a>/, "Passer commande"), total = text(/<div class="tn-total"><span>([\s\S]*?)<\/span>/, "Total");
     const more = text(/<div class="tn-plus"[^>]*><b>([\s\S]*?)<\/b>/, ""), seeCart = text(/<a class="tn-lien"[^>]*data-go="cart"[^>]*>([\s\S]*?)<\/a>/, "Voir le panier");
     const empty = text(/<div class="tn-vide"><p>([\s\S]*?)<\/p>/, "Le panier est vide."), seeShop = text(/<div class="tn-vide"><p>[\s\S]*?<\/p><a[^>]*>([\s\S]*?)<\/a>/, "Voir la boutique");
     const svg = /<a class="tn-x"[^>]*>([\s\S]*?)<\/a>/.exec(out)?.[1] ?? "×";
     const plus = more ? `<div class="tn-plus"><b>${more}</b><div class="tn-sugg">{%- assign montres = 0 -%}{%- for product in collections.all.products limit: 16 -%}{%- assign dedans = false -%}{%- for item in cart.items -%}{%- if item.product_id == product.id -%}{%- assign dedans = true -%}{%- endif -%}{%- endfor -%}{%- if dedans == false and product.available and montres < 4 -%}{%- assign montres = montres | plus: 1 -%}<a class="tn-s" href="{{ product.url }}"><div class="tn-ph"{% if product.featured_image %} style="background-image:url({{ product.featured_image | image_url: width: 300 }})"{% endif %}></div><span>{{ product.title }}</span><em>{{ product.price | money }}</em></a>{%- endif -%}{%- endfor -%}</div></div>` : "";
-    out = `<section class="tn tn-tiroir" id="tn-tiroir" data-tn-tiroir{% if cart.item_count == 0 %} data-tn-vide{% endif %}><a class="tn-voile" href="#tn-ferme" aria-label="Fermer le panier" tabindex="-1"></a><div class="tn-panneau" role="dialog" aria-label="${attr(title)}"><div class="tn-haut"><h2>${title}</h2><a class="tn-x" href="#tn-ferme" aria-label="Fermer le panier">${svg}</a></div>${seuil}${lignes}<div class="tn-vide"><p>${empty}</p><a class="tn-lien" href="{{ routes.all_products_collection_url }}">${seeShop}</a></div>${plus}<form class="tn-bas" action="{{ routes.cart_url }}" method="post"><div class="tn-total"><span>${total}</span><span class="tn-prix-t">{{ cart.total_price | money }}</span></div><button class="tn-bt" type="submit" name="checkout">${button}</button><a class="tn-lien" href="{{ routes.cart_url }}">${seeCart}</a></form></div></section>`;
+    out = `<section class="tn tn-panier-cote" id="tn-panier-cote" data-tn-panier-cote{% if cart.item_count == 0 %} data-tn-vide{% endif %}><a class="tn-voile" href="#tn-ferme" aria-label="Fermer le panier" tabindex="-1"></a><div class="tn-panneau" role="dialog" aria-label="${attr(title)}"><div class="tn-haut"><h2>${title}</h2><a class="tn-x" href="#tn-ferme" aria-label="Fermer le panier">${svg}</a></div>${seuil}${lignes}<div class="tn-vide"><p>${empty}</p><a class="tn-lien" href="{{ routes.all_products_collection_url }}">${seeShop}</a></div>${plus}<form class="tn-bas" action="{{ routes.cart_url }}" method="post"><div class="tn-total"><span>${total}</span><span class="tn-prix-t">{{ cart.total_price | money }}</span></div><button class="tn-bt" type="submit" name="checkout">${button}</button><a class="tn-lien" href="{{ routes.cart_url }}">${seeCart}</a></form></div></section>`;
   }
   // Recherche à tenue : le vrai champ de la boutique (valider mène aux résultats), ses produits, ses familles en raccourcis.
   if (/\sdata-tn-recherche\b/.test(out)) {
@@ -480,7 +480,7 @@ export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExpo
   // Le tiroir de panier part avec le pied de page (il est sur toutes les pages) ; la recherche à tenue, avec l'en-tête.
   const drawer = input.business === "products" ? drawerOf(t) : null;
   const search = t.search && rootOf(sectionHtml(t.search)) === "tn-recherche" ? t.search : null;
-  if (drawer) roots.add("tn-tiroir");
+  if (drawer) roots.add("tn-panier-cote");
   for (const s of (t.extras ?? []).filter((x) => !bands.includes(x) && x !== drawer)) problems.push({ level: "à savoir", text: `« ${libSection(s.id)?.title ?? s.id} » n'est pas envoyée : Shopify a sa propre fenêtre pour cela (cookies, âge), à régler dans la boutique` });
   // L'en-tête porte le socle de la feuille (couleurs, polices, formes) : il est sur toutes les pages.
   const header = group([...bands.map((s) => add(ctx(null, null), s)), t.header ? add(ctx(null, null), t.header, { header: true }) : null, search ? add(ctx(null, null), { ...search, construction: undefined }) : null], "header", "En-tête");
@@ -488,7 +488,7 @@ export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExpo
   if (search && search.construction && search.construction !== validConstruction(search.id, null)) problems.push({ level: "à savoir", text: "La recherche est posée en barre sous l'en-tête : sans script, le panneau qui s'ouvre par la loupe ne part pas en boutique" });
   if (drawer && footer.order.some((k) => footer.sections[k].type === `es-custom-${drawer.uid}`)) {
     // Le panier de l'en-tête ouvre le tiroir (sauf sur la page panier elle-même) ; sans script, il ne s'ouvre pas tout seul après un ajout.
-    for (const x of Object.values(header.sections)) customSections[x.type].liquid = customSections[x.type].liquid.replace(/href="\{\{ routes\.cart_url \}\}"/g, `href="{% if template.name == 'cart' %}{{ routes.cart_url }}{% else %}#tn-tiroir{% endif %}"`);
+    for (const x of Object.values(header.sections)) customSections[x.type].liquid = customSections[x.type].liquid.replace(/href="\{\{ routes\.cart_url \}\}"/g, `href="{% if template.name == 'cart' %}{{ routes.cart_url }}{% else %}#tn-panier-cote{% endif %}"`);
     problems.push({ level: "à savoir", text: "Tiroir de panier : dans Shopify, il s'ouvre au clic sur le panier de l'en-tête ; après un ajout au panier, la boutique montre la page panier (aucun script ne part)" });
   }
   for (const [i, pg] of t.pages.entries()) {

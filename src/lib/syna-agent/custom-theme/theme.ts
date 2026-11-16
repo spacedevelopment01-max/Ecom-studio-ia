@@ -228,8 +228,8 @@ export function allSections(t: CustomTheme): { place: string; page?: CtPage; ind
   return out;
 }
 export const findSection = (t: CustomTheme, uid: string) => allSections(t).find((x) => x.s.uid === uid) ?? null;
-/** Le tiroir de panier à tenue (« tn-tiroir »), pièce de tout le site. */
-export const DRAWER_ID = "tn-tiroir";
+/** Le tiroir de panier à tenue (« tn-panier-cote »), pièce de tout le site. */
+export const DRAWER_ID = "tn-panier-cote";
 /**
  * Le tiroir de panier d'un site : celui que SINA a posé sur tout le site ; sinon, quand le client a coché « panier sur
  * le côté » et que le site est à tenue (son en-tête l'est), le tiroir à tenue dans sa première façon.

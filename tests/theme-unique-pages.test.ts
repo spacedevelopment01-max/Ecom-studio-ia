@@ -27,7 +27,7 @@ const sp = (x: string) => x.replace(/ /g, " ");
 /** Toutes les façons attendues : la première est le rendu d'origine. */
 const FACONS: Record<string, string[]> = {
   // pièces nouvelles
-  "tn-tiroir": ["etroit", "large"],
+  "tn-panier-cote": ["etroit", "large"],
   "tn-recherche": ["barre", "panneau"],
   "tn-questions-rubriques": ["empilees", "cartes"],
   "tn-merci": ["centre", "deux-colonnes"],
@@ -70,7 +70,7 @@ const PRODUITS: TenueProduct[] = [
 
 describe("thème unique, pages : chaque pièce a ses façons, dessinées dans la feuille du module", () => {
   it("les pièces nouvelles sont dans la bibliothèque, avec des textes d'exemple neutres", () => {
-    expect(PAGES_SECTIONS.map((s) => s.id)).toEqual(["tn-tiroir", "tn-recherche", "tn-questions-rubriques", "tn-merci", "tn-fermee"]);
+    expect(PAGES_SECTIONS.map((s) => s.id)).toEqual(["tn-panier-cote", "tn-recherche", "tn-questions-rubriques", "tn-merci", "tn-fermee"]);
     for (const s of PAGES_SECTIONS) {
       expect(TENUE_SECTIONS.some((x) => x.id === s.id), s.id).toBe(true);
       // Aucun texte tiré d'un projet d'essai ni d'un métier : rien sur le thé, aucun chiffre, aucun prix, aucune coordonnée.
@@ -120,7 +120,7 @@ describe("thème unique, pages : chaque pièce a ses façons, dessinées dans la
       if (size) expect(size, `${sel.trim().slice(0, 70)}`).toContain("var(--tn-k)");
     }
     // Les pièces qui s'ouvrent ont leur forme sans script : un lien vers elles suffit.
-    expect(css).toContain(".ctw .tn-tiroir:target .tn-panneau{transform:none}");
+    expect(css).toContain(".ctw .tn-panier-cote:target .tn-panneau{transform:none}");
     expect(css).toMatch(/\.tn-recherche\[data-tn-c="panneau"\]:target\{display:block/);
   });
 });
@@ -129,7 +129,7 @@ describe("thème unique, pages : le panier (page et tiroir) et les vraies donné
   const site = (over: Partial<D.TenueSite> = {}): D.TenueSite => ({ products: PRODUITS, freeFrom: 200, ...over });
 
   it("le tiroir : deux produits du catalogue d'essai, quantités, total, bouton de commande, lien vers la page panier", () => {
-    const html = sp(D.withTenueSite(tenueSection("tn-tiroir")!.html, site()));
+    const html = sp(D.withTenueSite(tenueSection("tn-panier-cote")!.html, site()));
     expect(html.match(/<div class="tn-ligne"/g)).toHaveLength(2);
     expect(html).toContain('<div class="tn-ligne" data-tn-cents="14900"><div class="tn-ph" style="background-image:url(/api/files/a1)"></div><div class="tn-quoi"><b>Premier produit</b><div class="tn-qte">');
     expect(html.match(/data-tn-moins/g)).toHaveLength(2);
@@ -144,19 +144,19 @@ describe("thème unique, pages : le panier (page et tiroir) et les vraies donné
   });
 
   it("livraison offerte : le seuil du client, sinon rien ; produits à ajouter : les vrais, jamais ceux du panier ni un produit épuisé", () => {
-    const html = sp(D.withTenueSite(tenueSection("tn-tiroir")!.html, site()));
+    const html = sp(D.withTenueSite(tenueSection("tn-panier-cote")!.html, site()));
     expect(html).toContain('<div class="tn-seuil" data-tn-seuil="20000"><p>Plus que <b>12 €</b> pour la livraison offerte</p><i style="--part:94%"></i></div>');
-    expect(sp(D.withTenueSite(tenueSection("tn-tiroir")!.html, site({ freeFrom: 150 })))).toContain("<p>La livraison est offerte</p>");
-    const none = D.withTenueSite(tenueSection("tn-tiroir")!.html, site({ freeFrom: null }));
+    expect(sp(D.withTenueSite(tenueSection("tn-panier-cote")!.html, site({ freeFrom: 150 })))).toContain("<p>La livraison est offerte</p>");
+    const none = D.withTenueSite(tenueSection("tn-panier-cote")!.html, site({ freeFrom: null }));
     expect(none).not.toMatch(/tn-seuil|livraison offerte|À compléter/);
     const more = /<div class="tn-sugg">([\s\S]*?)<\/div><\/div><div class="tn-bas">/.exec(html)![1];
     expect(more.match(/<a class="tn-s"/g)).toHaveLength(1);
     expect(more).toContain("Troisième produit");
     expect(more).not.toMatch(/Premier produit|Deuxième produit|Produit épuisé/);
     // Deux produits en tout : rien d'autre à proposer, le bloc s'en va.
-    expect(D.withTenueSite(tenueSection("tn-tiroir")!.html, site({ products: PRODUITS.slice(0, 2) }))).not.toContain('class="tn-plus"');
+    expect(D.withTenueSite(tenueSection("tn-panier-cote")!.html, site({ products: PRODUITS.slice(0, 2) }))).not.toContain('class="tn-plus"');
     // Sans catalogue : la pièce garde son exemple, annoncé en jaune ; aucun seuil d'exemple.
-    const bare = D.withTenueSite(tenueSection("tn-tiroir")!.html, {});
+    const bare = D.withTenueSite(tenueSection("tn-panier-cote")!.html, {});
     expect(bare).toContain('<mark class="tn-manque">À compléter : prix</mark>');
     expect(bare).not.toContain("tn-seuil");
   });
@@ -257,11 +257,11 @@ describe("thème unique, pages : aucune page de commande dans le thème, et la m
 
   it("tiroir dans Shopify : envoyé avec le pied de page, ouvert par le panier de l'en-tête, sans aucun script", () => {
     for (const construction of ["etroit", "large"]) {
-      const out = customThemeSpec(theme([{ key: "cart", label: "Panier", sections: [sec("tn-panier", "c")] }], { extras: [sec("tn-tiroir", "x1", construction)] }), input());
+      const out = customThemeSpec(theme([{ key: "cart", label: "Panier", sections: [sec("tn-panier", "c")] }], { extras: [sec("tn-panier-cote", "x1", construction)] }), input());
       expect(blocking(out)).toEqual([]);
-      const l = liquid(out, "tn-tiroir");
+      const l = liquid(out, "tn-panier-cote");
       expect(out.spec.groups.footer!.order).toContain("tn-x1");
-      expect(l).toContain(`<section data-tn-c="${construction}" class="tn tn-tiroir" id="tn-tiroir" data-tn-tiroir{% if cart.item_count == 0 %} data-tn-vide{% endif %}>`);
+      expect(l).toContain(`<section data-tn-c="${construction}" class="tn tn-panier-cote" id="tn-panier-cote" data-tn-panier-cote{% if cart.item_count == 0 %} data-tn-vide{% endif %}>`);
       expect(l).toContain('<a class="tn-x" href="#tn-ferme" aria-label="Fermer le panier">');
       expect(l).toContain("{%- for item in cart.items -%}");
       expect(l).toContain("{{ item.quantity }}");
@@ -270,17 +270,17 @@ describe("thème unique, pages : aucune page de commande dans le thème, et la m
       expect(l).not.toMatch(/<script|onclick=|href="#"|À compléter/);
       expect(validateCustomSection(l)).toBeNull();
       // Le panier de l'en-tête ouvre le tiroir, sauf sur la page panier.
-      expect(liquid(out, "tn-entete")).toContain(`href="{% if template.name == 'cart' %}{{ routes.cart_url }}{% else %}#tn-tiroir{% endif %}"`);
+      expect(liquid(out, "tn-entete")).toContain(`href="{% if template.name == 'cart' %}{{ routes.cart_url }}{% else %}#tn-panier-cote{% endif %}"`);
       expect(out.problems.map((x) => x.text).join("\n")).toMatch(/après un ajout au panier, la boutique montre la page panier/);
       // Sa feuille part avec l'en-tête, forme sans script comprise.
-      expect(liquid(out, "tn-entete")).toContain(".ctw .tn-tiroir:target .tn-panneau{transform:none}");
+      expect(liquid(out, "tn-entete")).toContain(".ctw .tn-panier-cote:target .tn-panneau{transform:none}");
     }
     // « Panier sur le côté » coché par le client, sans tiroir posé : le tiroir à tenue part quand même.
     const auto = customThemeSpec(theme([{ key: "cart", label: "Panier", sections: [sec("tn-panier", "c")] }], { settings: { cart: "drawer" } }), input());
-    expect(liquid(auto, "tn-tiroir")).toContain('data-tn-c="etroit"');
+    expect(liquid(auto, "tn-panier-cote")).toContain('data-tn-c="etroit"');
     // Un site de services n'a pas de panier : pas de tiroir.
-    const services = customThemeSpec(theme([], { extras: [sec("tn-tiroir", "x1")] }), input({ business: "services", products: [] }));
-    expect(Object.values(services.spec.customSections).some((c) => c.liquid.includes("(tn-tiroir)"))).toBe(false);
+    const services = customThemeSpec(theme([], { extras: [sec("tn-panier-cote", "x1")] }), input({ business: "services", products: [] }));
+    expect(Object.values(services.spec.customSections).some((c) => c.liquid.includes("(tn-panier-cote)"))).toBe(false);
   });
 
   it("recherche, page introuvable, textes légaux, boutique fermée, « bien reçu », questions par rubriques : Shopify les accepte", () => {
@@ -339,14 +339,14 @@ describe("thème unique, pages : dans l'aperçu du Studio", async () => {
     t = S.applyStructure(t, [{ op: "page", key: "home", label: "Accueil" }, { op: "add", page: "home", section: "tn-produits" }, { op: "page", key: "cart", label: "Panier" }, { op: "add", page: "cart", section: "tn-panier", construction: "deux-colonnes" },
       { op: "shell", slot: "header", section: "tn-entete" }, { op: "shell", slot: "footer", section: "tn-pied" }, { op: "shell", slot: "search", section: "tn-recherche", construction: "panneau" }, { op: "tenue", tenue: F.FAUTEUIL_TENUE }]);
     // Sans tiroir : la page panier seule.
-    expect(renderCustomTheme(loadProject(pid), t)).not.toContain('class="tn tn-tiroir"');
+    expect(renderCustomTheme(loadProject(pid), t)).not.toContain('class="tn tn-panier-cote"');
     // Le client coche « panier sur le côté » : le tiroir à tenue s'ajoute, l'ancien tiroir ne s'en mêle pas.
     const checked = sp(renderCustomTheme(loadProject(pid), S.applyStructure(t, [{ op: "settings", cart: "drawer" }])));
-    expect(checked).toMatch(/<div class="tn-fixes"><section data-ct="tiroir" data-ct-role="page" data-tn-c="etroit" class="tn tn-tiroir"/);
+    expect(checked).toMatch(/<div class="tn-fixes"><section data-ct="tiroir" data-ct-role="page" data-tn-c="etroit" class="tn tn-panier-cote"/);
     expect(checked).toContain('"ctCart":"page"');
     // SINA le pose sur tout le site, dans sa façon large.
-    const placed = sp(renderCustomTheme(loadProject(pid), S.applyStructure(t, [{ op: "extra", section: "tn-tiroir", construction: "large" }])));
-    expect(placed).toMatch(/data-tn-c="large" class="tn tn-tiroir"/);
+    const placed = sp(renderCustomTheme(loadProject(pid), S.applyStructure(t, [{ op: "extra", section: "tn-panier-cote", construction: "large" }])));
+    expect(placed).toMatch(/data-tn-c="large" class="tn tn-panier-cote"/);
     expect(placed).toContain('<div class="tn-seuil" data-tn-seuil="20000"><p>Plus que <b>12 €</b> pour la livraison offerte</p>');
     expect(placed).toContain('<span class="tn-prix-t">188 €</span>');
     expect(placed).toContain('<script src="/sections/tenue-pages.js"></script>');
@@ -354,7 +354,7 @@ describe("thème unique, pages : dans l'aperçu du Studio", async () => {
     expect(placed).toMatch(/data-tn-c="deux-colonnes" class="tn tn-panier" data-tn-panier>[\s\S]*?<div class="tn-recap"><div class="tn-seuil" data-tn-seuil="20000">/);
     // La recherche à tenue tient l'emplacement « recherche » du site.
     expect(placed).toMatch(/data-ct-role="search" data-tn-c="panneau" class="tn tn-recherche"/);
-    expect(S.checkCustomTheme(S.applyStructure(t, [{ op: "extra", section: "tn-tiroir" }])).filter((x) => x.level === "bloquant").map((x) => x.text).join("\n")).not.toMatch(/tiroir|recherche/i);
+    expect(S.checkCustomTheme(S.applyStructure(t, [{ op: "extra", section: "tn-panier-cote" }])).filter((x) => x.level === "bloquant").map((x) => x.text).join("\n")).not.toMatch(/tiroir|recherche/i);
   });
 });
 
@@ -387,7 +387,7 @@ describe.runIf(!!process.env.PAGES_OUT)("thème unique, pages : captures de chaq
     fs.mkdirSync(out, { recursive: true });
     const only = (process.env.PAGES_ONLY ?? "").split(",").map((x) => x.trim()).filter(Boolean);
     const allures = ALLURES.filter((a) => !process.env.PAGES_ALLURES || process.env.PAGES_ALLURES.split(",").includes(a.key));
-    const ids = Object.keys(FACONS).filter((id) => !["tn-tiroir", "tn-recherche"].includes(id) && (!only.length || only.includes(id)));
+    const ids = Object.keys(FACONS).filter((id) => !["tn-panier-cote", "tn-recherche"].includes(id) && (!only.length || only.includes(id)));
     const pages = ids.flatMap((id) => FACONS[id].map((c) => ({ key: `${id.slice(3)}--${c}`.slice(0, 40), id, construction: c })));
     const overflow: string[] = [];
     const ORIGIN = "http://theme.sina";
@@ -408,7 +408,7 @@ describe.runIf(!!process.env.PAGES_OUT)("thème unique, pages : captures de chaq
           { op: "page", key: "accueil", label: "Accueil" }, { op: "add", page: "accueil", section: "tn-ouverture", construction: "titre-en-bas" }, { op: "add", page: "accueil", section: "tn-produits" },
           ...pages.flatMap((p) => [{ op: "page", key: p.key, label: p.key } as const, { op: "add", page: p.key, section: p.id, construction: p.construction } as const]),
           { op: "shell", slot: "header", section: "tn-entete" }, { op: "shell", slot: "footer", section: "tn-pied" }, { op: "shell", slot: "search", section: "tn-recherche", construction: "barre" },
-          { op: "extra", section: "tn-tiroir", construction: "etroit" }, { op: "tenue", tenue: a.tenue },
+          { op: "extra", section: "tn-panier-cote", construction: "etroit" }, { op: "tenue", tenue: a.tenue },
         ]);
         const html = renderCustomTheme(loadProject(pid), t, { embed: true });
         for (const view of [{ key: "tel", width: 390, height: 844 }, { key: "ordi", width: 1280, height: 860 }]) {
@@ -435,32 +435,32 @@ describe.runIf(!!process.env.PAGES_OUT)("thème unique, pages : captures de chaq
             fs.writeFileSync(name(p.key), await page.screenshot({ type: "jpeg", quality: 82, fullPage: true, clip: { x: 0, y: 0, width: view.width, height: Math.min(h, 2400) } }));
             await wide(p.key);
           }
-          if (!only.length || only.includes("tn-tiroir") || only.includes("tn-recherche")) {
+          if (!only.length || only.includes("tn-panier-cote") || only.includes("tn-recherche")) {
             // Le tiroir : ouvert par le panier de l'en-tête, dans ses deux façons ; puis une quantité changée, puis fermé au clavier.
             await page.evaluate(() => { (window as any).ctGo("accueil"); scrollTo(0, 0); });
-            for (const c of FACONS["tn-tiroir"]) {
-              await page.evaluate((k) => document.querySelector(".tn-tiroir")!.setAttribute("data-tn-c", k), c);
+            for (const c of FACONS["tn-panier-cote"]) {
+              await page.evaluate((k) => document.querySelector(".tn-panier-cote")!.setAttribute("data-tn-c", k), c);
               await page.click(".tn-entete .tn-pan");
               await page.waitForTimeout(520);
-              expect(await page.evaluate(() => document.querySelector(".tn-tiroir")!.hasAttribute("data-tn-ouvert")), "le tiroir s'ouvre au clic sur le panier").toBe(true);
-              expect(await page.evaluate(() => !!document.activeElement?.closest(".tn-tiroir")), "le clavier entre dans le tiroir").toBe(true);
+              expect(await page.evaluate(() => document.querySelector(".tn-panier-cote")!.hasAttribute("data-tn-ouvert")), "le tiroir s'ouvre au clic sur le panier").toBe(true);
+              expect(await page.evaluate(() => !!document.activeElement?.closest(".tn-panier-cote")), "le clavier entre dans le tiroir").toBe(true);
               fs.writeFileSync(name(`tiroir--${c}`), await page.screenshot({ type: "jpeg", quality: 84 }));
               await wide(`tiroir--${c}`);
               if (c === "large") {
-                await page.click(".tn-tiroir .tn-ligne [data-tn-plus]");
-                expect((await page.textContent(".tn-tiroir .tn-prix-t"))!.replace(/\s/g, " ")).toBe("337 €");
-                expect(await page.textContent(".tn-tiroir .tn-seuil p")).toBe("La livraison est offerte");
-                await page.click(".tn-tiroir .tn-ligne [data-tn-moins]");
+                await page.click(".tn-panier-cote .tn-ligne [data-tn-plus]");
+                expect((await page.textContent(".tn-panier-cote .tn-prix-t"))!.replace(/\s/g, " ")).toBe("337 €");
+                expect(await page.textContent(".tn-panier-cote .tn-seuil p")).toBe("La livraison est offerte");
+                await page.click(".tn-panier-cote .tn-ligne [data-tn-moins]");
               }
               await page.keyboard.press("Escape");
               await page.waitForTimeout(450);
-              expect(await page.evaluate(() => document.querySelector(".tn-tiroir")!.hasAttribute("data-tn-ouvert")), "Échap ferme le tiroir").toBe(false);
+              expect(await page.evaluate(() => document.querySelector(".tn-panier-cote")!.hasAttribute("data-tn-ouvert")), "Échap ferme le tiroir").toBe(false);
               expect(await page.evaluate(() => document.activeElement?.classList.contains("tn-pan")), "le clavier revient sur le panier").toBe(true);
             }
             // Sans script : le tiroir s'ouvre par un lien vers lui (forme envoyée dans Shopify).
-            await page.evaluate(() => { location.hash = "tn-tiroir"; });
+            await page.evaluate(() => { location.hash = "tn-panier-cote"; });
             await page.waitForTimeout(450);
-            expect(await page.evaluate(() => getComputedStyle(document.querySelector(".tn-tiroir .tn-panneau")!).transform), "le lien « #tn-tiroir » ouvre le tiroir sans script").toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
+            expect(await page.evaluate(() => getComputedStyle(document.querySelector(".tn-panier-cote .tn-panneau")!).transform), "le lien « #tn-panier-cote » ouvre le tiroir sans script").toMatch(/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
             await page.evaluate(() => { location.hash = "tn-ferme"; });
             // La recherche : la barre sous l'en-tête, puis le panneau ouvert, un mot tapé.
             await page.waitForTimeout(300);

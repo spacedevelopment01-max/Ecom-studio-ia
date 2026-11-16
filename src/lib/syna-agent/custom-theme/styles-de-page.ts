@@ -26,7 +26,43 @@ export type StyleDePage = {
   jamais?: string;
 };
 
-export const STYLES_PRODUIT: StyleDePage[] = [];
+export const STYLES_PRODUIT: StyleDePage[] = [
+  {
+    id: "simple", nom: "Simple", pour: "un créateur, un artisan, un objet qui se présente de lui-même", achat: "simple",
+    moments: "la photo, le nom, le prix et le bouton → la description racontée → le produit vu de près → une grande image d'émotion → le produit en situation ou ses mesures → les garanties → les vraies questions → l'appel final",
+    pieces: ["tn-description", "tn-de-pres", "tn-emotion", "tn-places", "tn-mesures", "tn-garanties", "tn-questions", "tn-final"],
+  },
+  {
+    id: "vente-directe", nom: "Vente directe", pour: "un produit qui se vend sur sa promesse, souvent seul ou presque seul au catalogue, à un visiteur venu d'une publicité", achat: "vente-directe",
+    moments: "l'achat serré (prix en grand, livraison et retours cochés, gros bouton) → les offres par quantité si le client en a → les avantages → les vrais avis s'il y en a → pour qui c'est fait → l'avant et l'après (vraies photos seulement) → le prix rapporté à l'usage → les garanties → les questions → l'appel final ; la barre d'achat reste visible",
+    pieces: ["tn-lots", "tn-atouts", "tn-avis", "tn-pour-qui", "tn-avant-apres-produit", "tn-cout", "tn-garanties", "tn-questions", "tn-final"],
+    jamais: "une fausse urgence, un compte à rebours, un stock inventé, un prix barré inventé, un faux avis",
+  },
+  {
+    id: "haut-de-gamme", nom: "Haut de gamme", pour: "un bel objet, une pièce chère, une matière : on prend le temps de regarder", achat: "grandes-photos",
+    moments: "de très grandes photos, l'achat étroit et discret → une grande image et sa phrase → le récit du produit → les matières, une à une → le produit vu de près → son échelle → le prix expliqué → les garanties → l'appel final",
+    pieces: ["tn-emotion", "tn-description", "tn-composition", "tn-de-pres", "tn-echelle", "tn-prix-explique", "tn-garanties", "tn-final"],
+    jamais: "une promotion criarde, une offre par quantité, une accumulation de pictos",
+  },
+  {
+    id: "technique", nom: "Technique", pour: "du matériel, un outil, un équipement : on compare des caractéristiques avant d'acheter", achat: "technique",
+    moments: "le nom, la photo et ses vues, le prix et les repères en cases → le choix de la version → les caractéristiques vraies → le produit vu sous tous les angles → ses mesures → ce qu'il y a dans le colis → le comparatif de la gamme (s'il y a au moins deux produits) → les documents → les garanties → les questions",
+    pieces: ["tn-versions", "tn-fiche-technique", "tn-de-pres", "tn-mesures", "tn-colis", "tn-comparatif", "tn-documents", "tn-garanties", "tn-questions", "tn-final"],
+    jamais: "une caractéristique ou une mesure que le client n'a pas donnée",
+  },
+  {
+    id: "alimentaire-soin", nom: "Alimentaire et soin", pour: "ce qui se mange, se boit ou se met sur la peau : on veut savoir ce qu'il y a dedans et comment s'en servir", achat: "fond-doux",
+    moments: "le produit entier sur un fond de couleur douce → ses repères en un coup d'œil → ce qu'il contient → les allergènes → comment s'en servir ou le préparer → les valeurs nutritionnelles (alimentaire) ou les effets attendus avec leurs preuves (soin) → les preuves → les vrais avis s'il y en a → les questions",
+    pieces: ["tn-pictos", "tn-composition", "tn-allergenes", "tn-preparation", "tn-valeurs", "tn-effets", "tn-preuves", "tn-avis", "tn-questions", "tn-final"],
+    jamais: "une promesse de santé, un ingrédient, un allergène ou une valeur que le client n'a pas donnés",
+  },
+  {
+    id: "mode", nom: "Mode", pour: "un vêtement, une chaussure, un accessoire porté : la taille, la couleur et l'allure décident", achat: "portrait",
+    moments: "une grande photo en hauteur, le nom et le prix → les tailles et les couleurs en pastilles → le guide des tailles → la description → le look complet avec d'autres vrais produits (s'il y en a au moins deux) → la matière → la livraison et les retours → les vrais avis s'il y en a",
+    pieces: ["tn-versions", "tn-guide-tailles", "tn-description", "tn-looks", "tn-composition", "tn-garanties", "tn-avis", "tn-final"],
+    jamais: "une personne dans une image sans photo fournie par le client ou son accord écrit ; une taille ou une couleur qui n'est pas au catalogue",
+  },
+];
 export const STYLES_SERVICES: StyleDePage[] = [
   {
     id: "prestation-simple", nom: "Prestation simple", pour: "un métier qui vend quelques prestations claires, sur rendez-vous ou sur appel",
@@ -55,7 +91,7 @@ export const STYLES_SERVICES: StyleDePage[] = [
   {
     id: "restaurant", nom: "Restaurant", pour: "un restaurant, un café, un traiteur, une boulangerie",
     moments: "le lieu et l'envie → la carte et ses vrais prix (ou la vitrine du jour) → d'où viennent les produits → la réservation de table → la vente à emporter s'il y en a → l'accès et les horaires",
-    metier: ["tn-carte", "tn-table", "tn-vitrine"], pieces: ["tn-carte", "tn-origines", "tn-table", "tn-retrait", "tn-vitrine", "tn-acces"],
+    metier: ["tn-carte", "tn-reserver-table", "tn-vitrine"], pieces: ["tn-carte", "tn-origines", "tn-reserver-table", "tn-retrait", "tn-vitrine", "tn-acces"],
     jamais: "un plat, un prix ou un allergène que le client n'a pas saisi",
   },
   {

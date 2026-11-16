@@ -39,7 +39,7 @@ const NOUVELLES: Record<string, string[]> = {
   "tn-bien-quartier": ["photo", "reperes"],
   "tn-bien-visite": ["fiche", "encadre"],
   "tn-carte": ["colonnes", "conduite", "cartes"],
-  "tn-table": ["photo", "encadre", "horaires"],
+  "tn-reserver-table": ["photo", "encadre", "horaires"],
   "tn-rdv-complet": ["etapes", "colonnes"],
   "tn-inscription": ["billet", "photo"],
 };
@@ -286,7 +286,7 @@ describe("thème unique, métiers : les vraies données du client d'essai", () =
 
   it("en une passe : la réservation de table lit les horaires, l'adresse et le téléphone du projet", () => {
     const site: D.TenueSite = { phone: "04 67 00 00 00", address: "3 quai de la Marine, 34200 Sète", hours: "Du mardi au samedi 12 h – 14 h ; du mardi au samedi 19 h 30 – 22 h", biens: BIENS, carte: CARTE, prestations: PRESTATIONS, equipe: EQUIPE };
-    const t = sp(D.withTenueSite(html("tn-table"), site));
+    const t = sp(D.withTenueSite(html("tn-reserver-table"), site));
     expect(t).toContain('<table data-tn-horaires="jours"><tbody><tr><th>Du mardi au samedi</th><td>12 h – 14 h</td></tr>');
     expect(t).toContain("<address data-tn-adresse>3 quai de la Marine, 34200 Sète</address>");
     expect(t).toContain('href="tel:0467000000" data-tn-tel>04 67 00 00 00</a>');
@@ -321,7 +321,7 @@ describe("thème unique, métiers : les vraies données du client d'essai", () =
     expect(lu.carte!.map((r) => `${r.title} ${r.items.length}`)).toEqual(["Les entrées 2", "Les plats 3", "Les desserts 2"]);
     expect(lu.carte![1].items.map((i) => i.price)).toEqual(["24 €", "26 €", "selon arrivage"]);
     let t: any = { version: 1, family: "classique", style: "classique", header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now() };
-    t = S.applyStructure(t, [{ op: "page", key: "home", label: "Accueil" }, ...["tn-biens", "tn-bien-galerie", "tn-bien-energie", "tn-carte", "tn-table", "tn-rdv-complet"].map((section) => ({ op: "add", page: "home", section }) as const),
+    t = S.applyStructure(t, [{ op: "page", key: "home", label: "Accueil" }, ...["tn-biens", "tn-bien-galerie", "tn-bien-energie", "tn-carte", "tn-reserver-table", "tn-rdv-complet"].map((section) => ({ op: "add", page: "home", section }) as const),
       { op: "shell", slot: "header", section: "tn-entete" }, { op: "shell", slot: "footer", section: "tn-pied" }] as any);
     saveServices(pid, { ...loadProject(pid).services, services: PRESTATIONS.map((p) => ({ name: p.name, price: p.price ?? "", duration: p.duration ?? "" })) as any, phone: "04 67 00 00 00", address: "3 quai de la Marine, 34200 Sète", hours: "Du mardi au samedi 12 h – 14 h" });
     const out = sp(renderCustomTheme(loadProject(pid), t, { embed: true }));
@@ -346,7 +346,7 @@ describe("thème unique, métiers : la mise en boutique ne refuse aucune pièce"
   });
   const sec = (id: string, uid: string, construction?: string) => ({ uid, id, clientTexts: true, ...(construction ? { construction } : {}), html: tenueSection(id)!.html.replace(/photos\/(?!(?:carte|map|plan)-)[\w.-]+/g, "/api/files/a1") });
   const theme = (id: string, construction?: string) => ({ version: 1, family: "classique", style: "classique", header: sec("tn-entete", "h"), footer: sec("tn-pied", "f"), search: null, rev: 0, at: 0,
-    pages: [{ key: "home", label: "Accueil", sections: [sec(id, "s1", construction)] }, { key: "visite", label: "Demander une visite", sections: [sec("tn-bien-visite", "v1")] }, { key: "reservation", label: "Réserver", sections: [sec("tn-table", "r1")] }] }) as any;
+    pages: [{ key: "home", label: "Accueil", sections: [sec(id, "s1", construction)] }, { key: "visite", label: "Demander une visite", sections: [sec("tn-bien-visite", "v1")] }, { key: "reservation", label: "Réserver", sections: [sec("tn-reserver-table", "r1")] }] }) as any;
   const liquidOf = (id: string, construction?: string, over: Record<string, unknown> = {}) => {
     const out = customThemeSpec(theme(id, construction), input(over));
     const blocking = out.problems.filter((x) => x.level === "bloquant").map((x) => x.text);
@@ -378,7 +378,7 @@ describe("thème unique, métiers : la mise en boutique ne refuse aucune pièce"
   });
 
   it("formulaires : de vrais formulaires de contact, chaque champ nommé en clair, les choix groupés", () => {
-    const table = liquidOf("tn-table");
+    const table = liquidOf("tn-reserver-table");
     expect(table).toMatch(/\{%- form 'contact' -%\}/);
     for (const name of ["La date", "L'heure", "Couverts", "Votre nom", "Votre téléphone", "Une précision (facultatif)"]) expect(table, name).toContain(`name="contact[${name}]"`);
     expect(table).toContain('name="contact[email]"');

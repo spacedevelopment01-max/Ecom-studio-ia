@@ -5,7 +5,7 @@
       offerte (le panier de l'aperçu est un panier d'essai).
    3) La recherche : les produits se trient pendant la frappe ; le sommaire des textes légaux mène à son texte.
    Écrit à la main, sans dépendance ; chargé deux fois, il ne fait rien de plus. Aucun script ne part dans Shopify : là,
-   le tiroir s'ouvre par un lien (« #tn-tiroir »), les quantités sont des liens de la boutique, la recherche un vrai
+   le tiroir s'ouvre par un lien (« #tn-panier-cote »), les quantités sont des liens de la boutique, la recherche un vrai
    formulaire. Sans ce script, chaque pièce reste lisible. */
 (function () {
   if (window.tnPages) return;
@@ -46,7 +46,7 @@
     if (!t.closest || window.ctPicking) return;
     var bt = t.closest("button[data-tn-plus],button[data-tn-moins],button[data-tn-oter]");
     if (!bt) return;
-    var line = bt.closest(".tn-ligne"), box = bt.closest(".tn-panier,.tn-tiroir");
+    var line = bt.closest(".tn-ligne"), box = bt.closest(".tn-panier,.tn-panier-cote");
     if (!line || !box) return;
     e.preventDefault();
     var n = line.querySelector(".tn-qte span"), q = parseInt(n && n.textContent, 10) || 1;
@@ -64,7 +64,7 @@
   var before = null;
   function drawer() {
     // Le tiroir du site (posé hors des pages), sinon celui de la page montrée.
-    return all(doc, ".tn-tiroir").filter(function (d) { var pg = d.closest(".tb-pg"); return !pg || !pg.hidden; })[0] || null;
+    return all(doc, ".tn-panier-cote").filter(function (d) { var pg = d.closest(".tb-pg"); return !pg || !pg.hidden; })[0] || null;
   }
   function isOpen(d) { return !!d && d.hasAttribute("data-tn-ouvert"); }
   function focusables(d) { return all(d, ".tn-panneau a[href],.tn-panneau button:not([disabled]),.tn-panneau input,.tn-panneau select").filter(function (x) { return x.offsetParent !== null; }); }
@@ -89,10 +89,10 @@
     if (!t.closest || window.ctPicking) return;
     var d = drawer();
     if (!d) return;
-    if (t.closest(".tn-tiroir [data-tn-fermer]")) { e.preventDefault(); close(d); return; }
-    if (t.closest(".tn-tiroir")) return; // « Voir le panier », un produit à ajouter : le lien fait son chemin
+    if (t.closest(".tn-panier-cote [data-tn-fermer]")) { e.preventDefault(); close(d); return; }
+    if (t.closest(".tn-panier-cote")) return; // « Voir le panier », un produit à ajouter : le lien fait son chemin
     if (d.closest(".tb-pg")) return; // tiroir posé dans une page (planche de contrôle) : il ne prend pas les clics du site
-    var cart = t.closest('[data-go="cart"],.tn-pan,button[aria-label="Panier"],a[href="#tn-tiroir"]');
+    var cart = t.closest('[data-go="cart"],.tn-pan,button[aria-label="Panier"],a[href="#tn-panier-cote"]');
     if (cart) { e.preventDefault(); e.stopImmediatePropagation(); open(d); return; }
     // À l'ajout au panier : le tiroir s'ouvre, le petit message d'ajout n'a plus lieu d'être.
     if (t.closest("[data-pogo]") && !t.closest(".tn-off")) setTimeout(function () { open(d); var toast = doc.querySelector(".tb-toast"); if (toast) toast.classList.remove("on"); }, 0);

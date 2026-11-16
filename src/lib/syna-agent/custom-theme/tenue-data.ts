@@ -264,7 +264,7 @@ export function freeShippingBar(freeFrom: number, totalCents: number | null): st
  * charpente que le tiroir (lignes, quantité, « Retirer », récapitulatif) : ses deux façons se dessinent sur elle.
  */
 export function withTenueCart(html: string, d: TenueSite): string {
-  const page = /\sdata-tn-panier\b/.test(html), drawer = /\sdata-tn-tiroir\b/.test(html);
+  const page = /\sdata-tn-panier\b/.test(html), drawer = /\sdata-tn-panier-cote\b/.test(html);
   if (!page && !drawer) return html;
   const stock = (d.products ?? []).filter((p) => !p.soldOut), inCart = stock.slice(0, 2);
   const total = inCart.length && inCart.every((p) => p.cents != null) ? inCart.reduce((n, p) => n + Math.round(p.cents!), 0) : null;
