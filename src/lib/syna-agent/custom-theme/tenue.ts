@@ -25,6 +25,7 @@ import { COQUE_FACONS, COQUE_SECTIONS } from "./tenue-coque";
 import { ACHAT_FACONS, ACHAT_SECTIONS } from "./tenue-achat";
 import { METIERS_FACONS, METIERS_SECTIONS } from "./tenue-metiers";
 import { PAGES_FACONS, PAGES_SECTIONS } from "./tenue-pages";
+import { VENTE_FACONS, VENTE_SECTIONS } from "./tenue-vente";
 
 export { TENUE_TAG, type Construction, type TenueSection } from "./tenue-base";
 
@@ -234,12 +235,14 @@ const SOCLE_SECTIONS: TenueSection[] = [
  * « FACONS », les façons de bâtir qu'il ajoute à des pièces d'autres modules : elles remplacent la liste de la pièce
  * (la première reste son rendu d'origine). Une clé inconnue du registre est une erreur d'écriture, dite tout de suite.
  */
-const FACONS: Record<string, Construction[]> = { ...COQUE_FACONS, ...ACHAT_FACONS, ...METIERS_FACONS, ...PAGES_FACONS };
-const BASE_SECTIONS: TenueSection[] = [...SOCLE_SECTIONS, ...PRODUIT_SECTIONS, ...SERVICES_SECTIONS, ...RECIT_SECTIONS, ...COQUE_SECTIONS, ...ACHAT_SECTIONS, ...METIERS_SECTIONS, ...PAGES_SECTIONS];
+/** Une pièce peut recevoir des façons de plusieurs modules : les listes s'ajoutent, sans doublon de clé, la première liste d'abord. */
+const mergeFacons = (...lists: Record<string, Construction[]>[]) => { const out: Record<string, Construction[]> = {}; for (const l of lists) for (const [id, cs] of Object.entries(l)) { const cur = out[id] ?? []; out[id] = [...cur, ...cs.filter((c) => !cur.some((x) => x.key === c.key))]; } return out; };
+const FACONS: Record<string, Construction[]> = mergeFacons(COQUE_FACONS, ACHAT_FACONS, METIERS_FACONS, PAGES_FACONS, VENTE_FACONS);
+const BASE_SECTIONS: TenueSection[] = [...SOCLE_SECTIONS, ...PRODUIT_SECTIONS, ...SERVICES_SECTIONS, ...RECIT_SECTIONS, ...COQUE_SECTIONS, ...ACHAT_SECTIONS, ...METIERS_SECTIONS, ...PAGES_SECTIONS, ...VENTE_SECTIONS];
 for (const id of Object.keys(FACONS)) if (!BASE_SECTIONS.some((s) => s.id === id)) throw new Error(`Façons de bâtir pour une pièce inconnue : ${id}`);
 export const TENUE_SECTIONS: TenueSection[] = BASE_SECTIONS.map((s) => (FACONS[s.id] ? { ...s, constructions: FACONS[s.id] } : s));
 /** Feuilles et scripts des sections à tenue, dans l'ordre de chargement (un fichier absent est ignoré). */
-export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css", "tenue-coque.css", "tenue-achat.css", "tenue-metiers.css", "tenue-pages.css"], js: ["tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js", "tenue-coque.js", "tenue-achat.js", "tenue-metiers.js", "tenue-pages.js"] };
+export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css", "tenue-coque.css", "tenue-achat.css", "tenue-metiers.css", "tenue-pages.css", "tenue-vente.css"], js: ["tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js", "tenue-coque.js", "tenue-achat.js", "tenue-metiers.js", "tenue-pages.js", "tenue-vente.js"] };
 
 const BY_ID = new Map(TENUE_SECTIONS.map((s) => [s.id, s]));
 export const tenueSection = (id: string): TenueSection | null => BY_ID.get(id) ?? null;

@@ -233,7 +233,8 @@ export async function exportWordPress(spec: ThemeSpec, load: AssetLoader): Promi
     themeStrings: { addToCart: t("Ajouter au panier", "Add to cart"), soldOut: t("Épuisé", "Sold out"), unavailable: t("Indisponible", "Unavailable"), added: t("Ajouté", "Added"), error: t("Une erreur est survenue", "Something went wrong") },
   };
   put("inc/site.json", JSON.stringify(site, null, 1));
-  const s1 = (spec.settings.color_schemes as Record<string, { settings: Record<string, string> }>)["scheme-1"]?.settings ?? {};
+  // (Un site monté par SINA sans thème de départ n'a pas de schémas de couleurs : la palette vient alors de sa tenue.)
+  const s1 = (spec.settings.color_schemes as Record<string, { settings: Record<string, string> }> | undefined)?.["scheme-1"]?.settings ?? {};
   put("theme.json", JSON.stringify({
     $schema: "https://schemas.wp.org/wp/6.6/theme.json",
     version: 3,

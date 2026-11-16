@@ -57,7 +57,8 @@ describe("sections à tenue : règles d'écriture (sans IA, sans navigateur)", (
     for (const [id, keys] of Object.entries(CONSTRUCTIONS_ATTENDUES)) {
       const s = TENUE_SECTIONS.find((x) => x.id === id)!;
       expect(s, id).toBeTruthy();
-      expect(s.constructions.map((c) => c.key), id).toEqual(keys);
+      // (Un module du thème unique peut ajouter des façons à la suite, dans sa propre feuille : tn-atouts « coches », module achat.)
+      expect(s.constructions.map((c) => c.key).slice(0, keys.length), id).toEqual(keys);
       const root = /class="tn (tn-[a-z0-9-]+)/.exec(s.html)![1];
       const sheet = fs.readFileSync(path.join(DIR, moduleOf(s) === "services" ? "tenue-services.css" : "tenue.css"), "utf8");
       const rules = sheet.replace(/\/\*[\s\S]*?\*\//g, "").split("}").map((r) => r.split("{")[0]);

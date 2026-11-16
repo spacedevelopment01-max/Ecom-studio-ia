@@ -345,6 +345,8 @@ function live(c: Ctx, html: string, root: string | null): string {
   }
   // Une pièce dont toutes les lignes sont encore « à compléter » ne garde pas ses en-têtes seuls : elle part avec ses lignes.
   if (c.input.dropMissing && /tn-avec-lignes/.test(out) && !(out.match(/<li\b[^>]*>[\s\S]*?<\/li>/g) ?? []).some((li) => !/\[À compléter/.test(li))) out = out.replace(/<(small|div)\b[^>]*class="[^"]*tn-avec-lignes[^"]*"[^>]*>[\s\S]*?<\/\1>/g, "");
+  // Les avantages : un avantage pas encore écrit ne part pas avec sa seule photo.
+  if (root === "tn-avantages" && c.input.dropMissing) out = out.replace(/<li><div class="tn-ph[^>]*><\/div>(<div><b>\s*\[À compléter)/g, "<li>$1");
   // Le mur d'avis : seuls de vrais avis écrits restent (aucune application d'avis ne le remplit).
   if (root === "tn-mur-avis" && !/<ul data-tn-avis>\s*<li>/.test(out)) out = out.replace(/<ul data-tn-avis>\s*<\/ul>/, "");
   // Le look complet : d'autres vrais produits de la boutique (trois au plus), jamais celui de la page.

@@ -40,7 +40,8 @@ describe("bloc d'achat : six façons, une par style de page produit", () => {
       const root = rootOf(id);
       expect(list.length, id).toBeGreaterThanOrEqual(2);
       expect(list.length, id).toBeLessThanOrEqual(6);
-      for (const c of list.slice(1)) {
+      // (tn-atouts garde ses trois façons d'origine, dessinées dans tenue.css : seule la quatrième est du module.)
+      for (const c of list.slice(id === "tn-atouts" ? 3 : 1)) {
         const mine = SELECTORS.filter((sel) => sel.includes(`.ctw`) && sel.includes(`.${root}`) && sel.includes(`[data-tn-c="${c.key}"]`));
         expect(mine.length, `${id} : règles pour « ${c.key} »`).toBeGreaterThanOrEqual(3);
         // Une vraie autre mise en page : elle a aussi ses règles d'écran large.
@@ -114,7 +115,7 @@ describe("bloc d'achat : six façons, une par style de page produit", () => {
 describe("pièces nouvelles de la fiche produit", () => {
   const visible = (html: string) => html.replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ");
   it("elles sont rangées dans la banque, sans doublon avec une pièce existante", () => {
-    expect(ACHAT_SECTIONS.map((s) => s.id)).toEqual(["tn-versions", "tn-guide-tailles", "tn-lots", "tn-looks", "tn-allergenes", "tn-avant-apres-produit", "tn-pictos"]);
+    expect(ACHAT_SECTIONS.map((s) => s.id)).toEqual(["tn-versions", "tn-guide-tailles", "tn-lots", "tn-looks", "tn-allergenes", "tn-avant-apres-produit", "tn-pictos", "tn-probleme-reponse", "tn-nous-et-autres", "tn-appel-produit", "tn-livraison", "tn-garantie", "tn-mur-avis", "tn-avantages"]);
     for (const s of ACHAT_SECTIONS) expect(TENUE_SECTIONS.filter((x) => x.id === s.id || x.title === s.title).length, s.id).toBe(1);
   });
 
@@ -129,6 +130,7 @@ describe("pièces nouvelles de la fiche produit", () => {
     // Les photos qui ne s'inventent pas : jamais posées sans celles du client.
     expect(tenueSection("tn-looks")!.authentic).toBeTruthy();
     expect(tenueSection("tn-avant-apres-produit")!.authentic).toBeTruthy();
+    expect(tenueSection("tn-mur-avis")!.authentic).toBeTruthy();
     // Jamais de fausse urgence ni de faux avis, dans aucune pièce du module.
     for (const s of ACHAT_SECTIONS) expect(visible(s.html), s.id).not.toMatch(/plus que|derni[eè]res? pi[eè]ces?|vite|se termine|compte à rebours|étoiles?|avis vérifi/i);
   });
@@ -211,6 +213,61 @@ describe("pièces nouvelles de la fiche produit", () => {
     expect(looks).not.toContain("Robe Midi");
   });
 
+  it("vente directe : livraison et retours du client, coches tirées du texte, produit et prix réels dans l'appel", async () => {
+    const liv = D.withTenueDirect(tenueSection("tn-livraison")!.html, { shipping: "Colissimo suivi, 4,90 €" });
+    expect(liv).toContain('data-tn-livraison>Colissimo suivi, 4,90 €</p>');
+    expect(liv).toContain('<mark class="tn-manque">À compléter : délai de préparation</mark>'); // jamais un délai inventé
+    const gar = sp(D.withTenueDirect(tenueSection("tn-garantie")!.html, { returns: "30 jours pour changer d'avis, produit non utilisé" }));
+    expect(gar).toContain('<div class="tn-sceau-g"><b>Retours</b><span>30 jours</span></div>');
+    expect(gar).toContain('<p class="tn-conditions">30 jours pour changer d&#39;avis'.replace("&#39;", "'"));
+    expect(D.withTenueDirect(tenueSection("tn-garantie")!.html, { returns: "Échange possible, écris-nous" })).toContain('<div class="tn-sceau-g"><b>Retours</b></div>'); // pas de délai écrit : aucun délai affiché
+    expect(D.withTenueDirect(tenueSection("tn-garantie")!.html, {})).toBe(tenueSection("tn-garantie")!.html);
+    const face = D.withTenueDirect(tenueSection("tn-nous-et-autres")!.html.replace("<i>Oui</i><i>Non</i>", "<i>Oui</i><i>Parfois</i>"), {});
+    expect(face).toContain('<i class="tn-oui">Oui</i><i>Parfois</i>');
+    expect(face).toContain('<i class="tn-oui">Oui</i><i class="tn-non">Non</i>');
+    // L'appel avec le produit : dans le Studio, le produit de la page ; épuisé, il le dit et ne se commande pas.
+    const { account, project } = await import("./conversation209-fixtures");
+    const { createProduct } = await import("@/lib/products/catalog");
+    const { saveCompany } = await import("@/lib/syna-agent/activity");
+    const { withTenueAchat } = await import("@/lib/syna-agent/custom-theme/buy-block");
+    const user = await account(), pid = await project(user);
+    createProduct(pid, { title: "Lampe Halo", price: 5900, variants: [{ options: [], stock: 0 }] } as any);
+    saveCompany(pid, { shipping: "Chez toi en 3 à 5 jours", returns: "30 jours" });
+    const out = withTenueAchat(tenueSection("tn-appel-produit")!.html, pid);
+    expect(out).toContain('<b class="tn-nom-a">Lampe Halo</b><div class="tn-prix">59 €</div><div class="tn-rupture">Épuisé pour l\'instant.</div><a class="tn-bt tn-off" aria-disabled="true"');
+    expect(out).toContain("<li>Livraison : Chez toi en 3 à 5 jours</li><li>Retours : 30 jours</li>");
+  });
+
+  it("vente directe en boutique : un vrai formulaire d'achat dans l'appel, et rien d'exemple ne part", async () => {
+    const { customThemeSpec } = await import("@/lib/syna-agent/custom-theme/to-shopify");
+    const sec = (id: string, uid: string, html?: string) => ({ uid, id, clientTexts: true, html: (html ?? tenueSection(id)!.html).replace(/photos\/[\w.-]+/g, "/api/files/a1") });
+    const ids = ["tn-probleme-reponse", "tn-nous-et-autres", "tn-appel-produit", "tn-livraison", "tn-garantie", "tn-mur-avis", "tn-avantages"];
+    const theme = (extra: any[] = []) => ({ version: 1, family: "classique", style: "classique", header: sec("tn-entete", "h"), footer: sec("tn-pied", "f"), search: null, rev: 0, at: 0, pages: [{ key: "home", label: "Accueil", sections: [sec("tn-appel-produit", "home1")] }, { key: "product", label: "Fiche produit", sections: [sec("tn-achat", "buy"), ...ids.map((id, i) => sec(id, `d${i}`)), ...extra] }] }) as any;
+    const input = (over: Record<string, unknown> = {}) => ({ name: "Essai", business: "products", products: [{ handle: "lampe-halo", title: "Lampe Halo", categories: [] }], company: { shipping: "Chez toi en 3 à 5 jours", returns: "30 jours" }, assetExt: () => "jpg", linkMap: {}, dropMissing: true, base: null, ...over }) as any;
+    const out = customThemeSpec(theme(), input());
+    expect(out.problems.filter((x) => x.level === "bloquant").map((x) => x.text)).toEqual([]);
+    const all = Object.values(out.spec.customSections).map((c) => c.liquid).join("\n");
+    expect(all).not.toMatch(/À compléter|photos\/|href="#"|onclick=/);
+    const notes = out.problems.map((x) => x.text).join("\n");
+    // Les pièces dont tout l'exemple était « à compléter » sont retirées, et c'est dit ; aucune ne part avec ses seuls en-têtes.
+    for (const t of ["Le problème, puis la réponse", "Nous et les autres", "Le mur d'avis", "Les avantages, un par un"]) expect(notes, t).toContain(`${t} : section retirée, il ne restait que son titre`);
+    expect(all).not.toMatch(/Aujourd'hui<\/small>|Ce produit<\/b>/);
+    // L'appel : le produit de la page, ou le premier du catalogue sur l'accueil ; un vrai formulaire.
+    const home = out.spec.customSections["es-custom-home1"].liquid;
+    expect(home).toContain("{%- assign vedette = product -%}{%- unless vedette -%}{%- assign vedette = all_products['lampe-halo'] -%}{%- endunless -%}");
+    expect(home).toMatch(/\{%- form 'product', vedette, class: 'tn-enveloppe' -%\}<input type="hidden" name="id" value="\{\{ vedette\.selected_or_first_available_variant\.id \}\}"><button class="tn-bt" type="submit" name="add"/);
+    expect(home).toContain("<li>Livraison : Chez toi en 3 à 5 jours</li><li>Retours : 30 jours</li>");
+    // La garantie et la livraison portent ce que le client a donné ; sans ses conditions, l'accord du client manquant bloque.
+    expect(all).toContain('<p class="tn-conditions">30 jours</p>');
+    const strict = customThemeSpec(theme(), input({ dropMissing: false, company: {} }));
+    expect(strict.problems.filter((x) => x.level === "bloquant").map((x) => x.text).join("\n")).toMatch(/La garantie de retour, mise en avant : à compléter : délai de retour, conditions de retour/);
+    // Un mur d'avis écrit avec de vrais avis part ; les lignes restées vides s'en vont.
+    const real = tenueSection("tn-mur-avis")!.html.replace("[À compléter : avis d'un client]", "Il ne quitte plus mon bureau.").replace("[À compléter : prénom et date]", "Inès, mars").replace("[À compléter : d'où viennent ces avis, et s'ils sont vérifiés]", "Avis reçus par e-mail après l'achat.");
+    const mur = customThemeSpec(theme([sec("tn-mur-avis", "mur", real)]), input()).spec.customSections["es-custom-mur"].liquid;
+    expect((mur.match(/<li>/g) ?? []).length).toBe(1);
+    expect(mur).toContain("Il ne quitte plus mon bureau.");
+  });
+
   it("la mise en boutique accepte chaque pièce nouvelle et chaque façon ajoutée", async () => {
     const { customThemeSpec } = await import("@/lib/syna-agent/custom-theme/to-shopify");
     const { validateCustomSection } = await import("@/lib/theme/ops");
@@ -229,6 +286,50 @@ describe("pièces nouvelles de la fiche produit", () => {
       // La feuille de la boutique porte les règles de la façon choisie.
       if (mine && key !== tenueSection(id)!.constructions[0].key) expect(Object.values(out.spec.customSections).map((c) => c.liquid).join("\n"), `${id} ${key} : feuille`).toContain(`[data-tn-c="${key}"]`);
     }
+  });
+});
+
+describe("contrat de boutique : le script du Studio ne parle qu'à « window.tnBoutique »", () => {
+  const read = (f: string) => fs.readFileSync(path.join(process.cwd(), "public", "sections", f), "utf8");
+  const run = async (file: string, sandbox: Record<string, unknown>) => { const vm = await import("node:vm"); const w: any = { ...sandbox }; w.window = w; vm.runInNewContext(read(file), w); return w; };
+
+  it("le script commun n'appelle aucune plateforme : ni adresse de panier, ni fetch", () => {
+    const js = read("tenue-achat.js").replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(js).not.toMatch(/fetch\(|XMLHttpRequest|cart\/add|cart\.js|wc-ajax|prestashop|Shopify/i);
+    expect(read("tenue-achat.js")).toContain("tnBoutique.ajouter(lignes, options) → Promise<Panier>");
+  });
+
+  it("un pack de trois articles en trois versions, avec son cadeau, ajoute quatre lignes ; deux fois la même version s'additionne", async () => {
+    const w = await run("tenue-achat.js", { document: { querySelectorAll: () => [] } });
+    expect(JSON.parse(JSON.stringify(w.tnAchat.lignes({ articles: ["11", "12", "13"], cadeau: "99" })))).toEqual([{ id: "11", quantite: 1 }, { id: "12", quantite: 1 }, { id: "13", quantite: 1 }, { id: "99", quantite: 1, cadeau: true }]);
+    expect(JSON.parse(JSON.stringify(w.tnAchat.lignes({ articles: ["11", "11", "13"] })))).toEqual([{ id: "11", quantite: 2 }, { id: "13", quantite: 1 }]);
+  });
+
+  it("l'adaptateur Shopify construit les bonnes requêtes (faux fetch, pas une vraie boutique)", async () => {
+    const calls: { url: string; init?: any }[] = [];
+    const fetch = async (url: string, init?: any) => { calls.push({ url, init }); return url.endsWith("cart/add.js") ? { ok: true, json: async () => ({ items: [] }) } : { ok: true, json: async () => ({ item_count: 4, total_price: 8700, items: [{ variant_id: 11, quantity: 1, title: "Collier — Bleu / S", final_line_price: 2900 }] }) }; };
+    const w = await run("boutique-shopify.js", { fetch, Shopify: { routes: { root: "/fr/" }, currency: { active: "EUR" } }, document: { documentElement: { lang: "fr" } }, Intl, location: {} });
+    const cart = await w.tnBoutique.ajouter([{ id: "11", quantite: 1 }, { id: "12", quantite: 1 }, { id: "13", quantite: 1 }, { id: "99", quantite: 1, cadeau: true }]);
+    expect(calls[0].url).toBe("/fr/cart/add.js");
+    expect(calls[0].init.method).toBe("POST");
+    expect(JSON.parse(calls[0].init.body)).toEqual({ items: [{ id: 11, quantity: 1 }, { id: 12, quantity: 1 }, { id: 13, quantity: 1 }, { id: 99, quantity: 1, properties: { _cadeau: "oui" } }] });
+    expect(calls[1].url).toBe("/fr/cart.js");
+    expect(JSON.parse(JSON.stringify(cart))).toEqual({ nombre: 4, total: 8700, lignes: [{ id: "11", quantite: 1, titre: "Collier — Bleu / S", prix: 2900 }] });
+    expect(w.tnBoutique.argent(2900).replace(/\s/g, " ")).toBe("29,00 €");
+    // Un refus de la boutique (stock) remonte tel quel ; rien à ajouter : aucune requête.
+    const refus = await run("boutique-shopify.js", { fetch: async () => ({ ok: false, json: async () => ({ description: "Il ne reste que 2 articles." }) }), document: { documentElement: {} }, Intl, location: {} });
+    await expect(refus.tnBoutique.ajouter([{ id: "11", quantite: 3 }])).rejects.toThrow("Il ne reste que 2 articles.");
+    const n = calls.length;
+    await expect(w.tnBoutique.ajouter([])).rejects.toThrow();
+    expect(calls.length).toBe(n);
+  });
+
+  it("l'adaptateur de l'aperçu tient un panier d'essai : le cadeau ne compte pas dans le total", async () => {
+    const w = await run("boutique-apercu.js", { document: { dispatchEvent: () => true }, CustomEvent: class { constructor(public type: string, public init: unknown) {} } });
+    await w.tnBoutique.ajouter([{ id: "a", quantite: 2 }, { id: "g", quantite: 1, cadeau: true }], { prix: { a: 2900, g: 1900 } });
+    const cart = JSON.parse(JSON.stringify(await w.tnBoutique.panier()));
+    expect([cart.nombre, cart.total]).toEqual([3, 5800]);
+    expect(w.tnBoutique.argent(5800).replace(/\s/g, " ")).toBe("58 €");
   });
 });
 
@@ -282,6 +383,8 @@ describe.runIf(!!process.env.ACHAT_OUT)("module achat : planches en image, trois
       { key: "style-3-haut-de-gamme", sections: [{ id: "tn-achat", c: "grandes-photos" }] },
       { key: "style-4-technique", sections: [{ id: "tn-achat", c: "technique" }, { id: "tn-versions", c: "lignes" }] },
       { key: "style-5-soin", sections: [{ id: "tn-achat", c: "fond-doux" }, { id: "tn-pictos", c: "rangee" }] },
+      { key: "page-vente-directe", sections: [{ id: "tn-achat", c: "vente-directe" }, { id: "tn-lots", c: "cartes" }, { id: "tn-atouts", c: "coches" }, { id: "tn-probleme-reponse", c: "deux-temps" }, { id: "tn-avantages", c: "alternes" }, { id: "tn-mur-avis", c: "mosaique" }, { id: "tn-nous-et-autres", c: "tableau" }, { id: "tn-livraison", c: "frise" }, { id: "tn-garantie", c: "bande" }, { id: "tn-questions", c: "cartes" }, { id: "tn-appel-produit", c: "bande-sombre" }] },
+      { key: "accueil-un-produit", sections: [{ id: "tn-ouverture", c: "titre-en-bas" }, { id: "tn-appel-produit", c: "carte" }, { id: "tn-atouts", c: "coches" }, { id: "tn-garantie", c: "sceau" }] },
       { key: "style-6-mode", sections: [{ id: "tn-achat", c: "portrait" }, { id: "tn-versions", c: "pastilles" }, { id: "tn-guide-tailles", c: "tiroir" }] },
     ];
     const pages = [...styles, ...single].filter((p) => !only.length || only.some((o) => p.key.includes(o)));
@@ -303,14 +406,27 @@ describe.runIf(!!process.env.ACHAT_OUT)("module achat : planches en image, trois
         let h = tenueSection(id)!.html;
         if (id === "tn-achat") h = h.replace("<small>Le thé</small>", `<small>${e.product.small}</small>`).replace(">Thé vert jasmin</h1>", `>${e.product.title}</h1>`).replace(/<p>[\s\S]*?<\/p>/, `<p>${e.product.phrase}</p>`).replace("Sachet de 100 g", e.product.option).replace(">Ajouter au panier</a><ul", `>${e.product.bouton}</a><ul`);
         if (id === "tn-looks") h = h.replace("photos/md-j2.webp", `/api/files/${look}`);
+        // Textes d'un client inventé pour l'essai (tenue « vive ») : la page se juge remplie.
+        if (e.key === "vive") {
+          const seq = (list: string[]) => { let i = 0; h = h.replace(/\[À compléter[^\]]*\]/g, (m) => list[i++] ?? m); };
+          if (id === "tn-probleme-reponse") seq(["Un collier qui frotte et qui laisse une marque.", "Un intérieur doublé de maille douce.", "Une boucle qui lâche quand il tire.", "Une boucle testée à la traction, que tu fermes d'un clic.", "Un réglage qui glisse à chaque balade.", "Une sangle qui garde son réglage."]);
+          if (id === "tn-nous-et-autres") { seq(["un collier d'entrée de gamme", "Doublure en maille douce", "Boucle testée à la traction", "Lavable en machine", "Réparé par la marque", "Fiches de la marque et essais de traction du fabricant."]); h = h.replace(/(Lavable en machine<\/span><p><i>Oui<\/i><i>)Non/, "$1Oui"); }
+          if (id === "tn-avantages") { seq(["Doux contre le cou", "Une maille aérée, sans couture qui gratte.", "Fermé d'un clic", "Une boucle large, facile à saisir avec des gants.", "Lavé, séché, reparti", "Il passe en machine et sèche en une nuit."]); let n = 0; h = h.replace(/photos\/[\w.-]+/g, () => `/api/files/${[images[1], images[2], images[4]][n++ % 3].assetId}`); }
+          if (id === "tn-mur-avis") { seq(["Enfin un collier qui ne lui pèle pas le cou. On a pris le harnais dans la foulée.", "Camille, février", "Solide, et le bleu est encore plus beau en vrai.", "Théo, janvier", "La boucle se ferme d'une main, c'est tout ce que je demandais.", "Sonia, mars", "Lavé dix fois, il n'a pas bougé.", "Marc, mars", "Avis reçus par e-mail après l'achat, publiés tels quels."]); let n = 0; h = h.replace(/photos\/[\w.-]+/g, () => `/api/files/${[images[3], images[4]][n++ % 2].assetId}`); }
+          if (id === "tn-livraison") seq(["", "Chaque commande part de notre atelier sous deux jours ouvrés.", "Colissimo suivi : tu reçois le lien de suivi par e-mail.", "Deux à quatre jours après le départ, dans ta boîte aux lettres."]);
+          if (id === "tn-atouts") h = h.replace("Tout est bio", "Doublé de maille douce").replace("Du thé, des fleurs, rien d'autre.", "Rien ne frotte, rien ne gratte.").replace("Assemblé à la main", "Boucle testée à la traction").replace("Par petites quantités, à la commande.", "Elle tient quand il tire.").replace("En vrac", "Lavable en machine").replace("Dans un sachet qui se referme.", "Il sèche en une nuit.");
+          if (id === "tn-questions") h = h.replace("Avant de choisir.", "Avant de commander.").replace("Combien de tasses dans un sachet ?", "Quelle taille pour mon chien ?").replace("[À compléter : nombre de tasses]", "Mesure son tour de cou et ajoute deux doigts : le guide des tailles donne la taille en face.").replace("Et s'il ne me plaît pas ?", "Et s'il ne lui va pas ?").replace("[À compléter : retours]", "Tu as 30 jours pour nous le renvoyer.").replace("Comment le conserver ?", "Comment le laver ?").replace("À l'abri de la lumière, dans son sachet refermé.", "En machine, à basse température, dans un filet.");
+          if (id === "tn-ouverture") h = h.replace("Thés et infusions bio", "Colliers pour chiens").replace("Le thé vert au jasmin", "Le collier Museau").replace("Pose ton écran.<br>Respire.", "Il tire.<br>Rien ne lâche.").replace("Quelques minutes, une tasse chaude, plus rien d'autre. Le reste de la journée attendra.", "Un collier doux contre son cou, solide à la boucle, qui passe en machine.").replace("Choisir mon mélange", "Voir le collier").replace("photos/hero.jpg", `/api/files/${look}`);
+          if (id === "tn-appel-produit") h = h.replace("Prêt à l'essayer&nbsp;?", "Prêt pour la prochaine balade&nbsp;?");
+        }
         return h;
       };
       const t: any = { version: 1, family: "classique", style: "classique", search: null, rev: 0, at: Date.now(), tenue: e.tenue,
         header: { uid: "h", id: "tn-entete", html: tenueSection("tn-entete")!.html }, footer: { uid: "f", id: "tn-pied", html: tenueSection("tn-pied")!.html },
-        pages: pages.map((p, i) => ({ key: p.key, label: p.key, sections: p.sections.map((s, j) => ({ uid: `s${i}x${j}`, id: s.id, construction: s.c, html: html(s.id), ...(s.id === "tn-achat" ? { clientTexts: true } : {}) })) })) };
+        pages: pages.map((p, i) => ({ key: p.key, label: p.key, sections: p.sections.map((s, j) => ({ uid: `s${i}x${j}`, id: s.id, construction: s.c, html: html(s.id), ...(s.id === "tn-achat" || e.key === "vive" ? { clientTexts: true } : {}) })) })) };
       const page = renderCustomTheme(loadProject(pid), t, { embed: true });
       for (const view of ["téléphone", "ordinateur"] as const) {
-        const shots = await shootPages(page, pages.map((p) => p.key), { view, maxHeight: 3000, quality: 86 });
+        const shots = await shootPages(page, pages.map((p) => p.key), { view, maxHeight: 14000, quality: 86 });
         expect(shots, "Chromium présent").not.toBeNull();
         for (const s of shots!) {
           fs.writeFileSync(path.join(out, `${s.key}__${e.key}__${view === "téléphone" ? "tel" : "ordi"}.jpg`), s.data);
