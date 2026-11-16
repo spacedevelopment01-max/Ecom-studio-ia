@@ -19,7 +19,7 @@ des règles.
   demande un contenu que le client n'a pas (avis, presse, chiffres, photos de clients).
 - Les **pages utilitaires** restent courtes : panier, page introuvable, mentions légales, recherche, remerciement.
 
-## 2. Les vingt règles d'or (toutes les pages, tous les sites)
+## 2. Les dix règles d'or (toutes les pages, tous les sites)
 
 Elles garantissent la qualité. Elles sont les mêmes pour tous : ce ne sont pas elles qui rendent les sites différents.
 
@@ -38,20 +38,8 @@ Elles garantissent la qualité. Elles sont les mêmes pour tous : ce ne sont pas
 8. **Les doutes sont levés juste avant la fin** : questions, garantie.
 9. **La page finit par l'action** : réserver, demander un devis ou acheter, avec les coordonnées.
 10. **Chaque section répond à une question du visiteur**, dans un ordre qui suit son raisonnement.
-11. **Une seule action principale par page**, toujours avec le même texte de bouton, en haut, au milieu et en bas.
-12. **Sur une page longue, le bouton d'action revient toutes les trois ou quatre sections**, sans jamais être deux fois
-    dans la même section.
-13. **Chaque promesse forte est suivie de sa preuve**, dans la même section ou dans la suivante.
-14. **Une image forte au moins toutes les trois sections** ; jamais plus de deux sections de texte seul à la suite.
-15. **Un moment d'émotion entre la 4e et la 7e section** (une scène de vie, une réalisation, une photo pleine), pour
-    relancer l'attention au milieu de la page.
-16. **Les sections denses** (tableaux, comparatifs, longues listes) ne viennent jamais au début, ni deux à la suite.
-17. **Les prix ne sont jamais cachés** : si le client a des prix, ils apparaissent avant la moitié de la page.
-18. **Chaque section prépare la suivante** : la fin de l'une appelle la question à laquelle l'autre répond. Le
-    visiteur ne doit jamais se demander pourquoi cette section est là.
-19. **Rien n'emmène le visiteur hors du site avant l'action** : les réseaux sociaux et les liens extérieurs vont en bas.
-20. **Sur téléphone, chaque section se lit d'un coup d'œil** : un titre, une idée, une image ou une action. Ce qui est
-    trop long se replie (volets, onglets) au lieu d'allonger la page.
+
+Le propriétaire, 16 novembre 2026 : « on va laisser a 10 et on verra ».
 
 ## 3. Les partitions de l'accueil
 
@@ -185,12 +173,11 @@ compte et suivi › « encore une question ? » avec le contact.
 
 ## 6. Les juges
 
-- **Le juge de l'ordre** (le directeur commercial actuel, renforcé) vérifie chaque page importante contre les vingt
+- **Le juge de l'ordre** (le directeur commercial actuel, renforcé) vérifie chaque page importante contre les dix
   règles d'or, la partition de la page et le minimum de 10 sections. Il connaît les services autant que les boutiques.
 - **Les contrôles automatiques**, sans IA, pour ce qui se compte : l'offre au plus tard en 3e position, la question qui
   bloque au plus tard en 3e, une preuve avant la 5e, jamais deux dispositions pareilles à la suite, 10 sections au
-  moins, le bouton toutes les trois ou quatre sections, une image forte toutes les trois sections, jamais deux
-  sections denses à la suite, les prix avant la moitié de la page, les règles de variété 2, 5, 6 et 7.
+  moins, les règles de variété 2, 5, 6 et 7.
 - **Un second regard séparé** revérifie la page après la correction : celui qui corrige n'est jamais celui qui valide.
 - **Le juge de l'originalité** (déjà en place) refuse tout ce qui ne respecte pas les règles de variété.
 - Une page qui enfreint une règle est refaite **avant toute image**.
