@@ -38,6 +38,35 @@ describe("sections à tenue : règles d'écriture (sans IA, sans navigateur)", (
     expect(new Set(TENUE_SECTIONS.map((s) => s.title)).size).toBe(TENUE_SECTIONS.length);
   });
 
+  // Constructions ajoutées le 16 novembre 2026 : onze sections du socle et des services se bâtissent de plusieurs façons.
+  // La première clé est le rendu d'origine (aucune règle ne la cible) ; chaque autre clé est dessinée dans la feuille du module.
+  const CONSTRUCTIONS_ATTENDUES: Record<string, string[]> = {
+    "tn-ouverture": ["dans-la-photo", "titre-puis-cadre", "titre-geant", "titre-centre", "titre-en-bas", "titre-massif", "bandeau"],
+    "tn-produits": ["grille", "vedette", "liste"],
+    "tn-atouts": ["lignes", "numeros", "cartes"],
+    "tn-questions": ["filets", "deux-colonnes", "cartes"],
+    "tn-final": ["sombre-centre", "encadre", "gauche-droite"],
+    "tn-histoire": ["titre-photo-texte", "lettrine", "deux-colonnes"],
+    "tn-contact": ["formulaire-puis-carte", "coordonnees-en-grand", "deux-colonnes"],
+    "tn-bande": ["pleine-largeur", "encadree"],
+    "tn-emotion": ["phrase-sur-photo", "phrase-dessous"],
+    "tn-tarifs": ["tableau", "cartes"],
+    "tn-pied": ["ligne", "liens-en-grand"],
+  };
+  it("les onze sections enrichies ont leurs constructions, chacune dessinée dans la feuille de son module", () => {
+    for (const [id, keys] of Object.entries(CONSTRUCTIONS_ATTENDUES)) {
+      const s = TENUE_SECTIONS.find((x) => x.id === id)!;
+      expect(s, id).toBeTruthy();
+      expect(s.constructions.map((c) => c.key), id).toEqual(keys);
+      const root = /class="tn (tn-[a-z0-9-]+)/.exec(s.html)![1];
+      const sheet = fs.readFileSync(path.join(DIR, moduleOf(s) === "services" ? "tenue-services.css" : "tenue.css"), "utf8");
+      const rules = sheet.replace(/\/\*[\s\S]*?\*\//g, "").split("}").map((r) => r.split("{")[0]);
+      for (const key of keys.slice(1)) expect(rules.some((sel) => sel.includes(`.ctw .${root}`) && sel.includes(`[data-tn-c="${key}"]`)), `${id} : règle [data-tn-c="${key}"] sur .${root}`).toBe(true);
+      // La construction d'origine n'a aucune règle à elle : son rendu reste celui d'avant.
+      if (id !== "tn-ouverture") expect(rules.some((sel) => sel.includes(`.${root}`) && sel.includes(`[data-tn-c="${keys[0]}"]`)), `${id} : aucune règle pour « ${keys[0]} »`).toBe(false);
+    }
+  });
+
   for (const s of TENUE_SECTIONS) {
     it(`${s.id} (${moduleOf(s)}) respecte les règles`, async () => {
       const { sectionGroup } = await import("@/lib/syna-agent/custom-theme/section-groups");

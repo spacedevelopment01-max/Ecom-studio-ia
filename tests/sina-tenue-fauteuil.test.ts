@@ -61,10 +61,11 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
 
   it("les sections à tenue vont avec les deux familles, ont leurs constructions, et le concepteur les voit", () => {
     for (const family of ["classique", "moderne"] as const) expect(familySections(family).filter((s) => N.isTenueSection(s)).length).toBe(N.TENUE_SECTIONS.length);
-    expect(N.constructionsOf("tn-ouverture").map((c) => c.key)).toEqual(["dans-la-photo", "titre-puis-cadre", "titre-geant"]);
+    expect(N.constructionsOf("tn-ouverture").map((c) => c.key)).toEqual(["dans-la-photo", "titre-puis-cadre", "titre-geant", "titre-centre", "titre-en-bas", "titre-massif", "bandeau"]);
     expect(N.validConstruction("tn-ouverture", "titre-geant")).toBe("titre-geant");
     expect(N.validConstruction("tn-ouverture", "inconnue")).toBe("dans-la-photo"); // construction inconnue : la première
-    expect(N.validConstruction("tn-pied", "x")).toBeNull();
+    expect(N.validConstruction("tn-pied", "x")).toBe("ligne"); // le pied de page simple a deux constructions depuis le 16 novembre 2026
+    expect(N.validConstruction("tn-achat", "x")).toBeNull(); // section sans construction
     const prompt = designPrompt({ brief: "FICHE", family: "classique", site: { business: "products", products: 1 }, has: [], lacks: [] });
     expect(prompt).toMatch(/- tn-ouverture · ouverture · À TENUE[^\n]*CONSTRUCTIONS au choix \(champ « construction »\) : « dans-la-photo » \(/);
     // Ce qui manque au dossier s'affiche en jaune, sans crochets ; rien d'autre n'est touché.
@@ -322,7 +323,7 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     expect(designed.family).toBe("moderne"); // les sections à tenue vont avec les deux familles
     expect(designed.tenue).toMatchObject({ titres: "gras", bouton: "etiquette", cadre: "droit", fond: "toile", petits: "machine" });
     expect(designed.header).toMatchObject({ id: "tn-entete", construction: "sangle" });
-    expect(designed.pages.find((x) => x.key === "home")!.sections.slice(0, 2).map((s) => [s.id, s.construction ?? null])).toEqual([["tn-ouverture", "titre-geant"], ["tn-bande", null]]);
+    expect(designed.pages.find((x) => x.key === "home")!.sections.slice(0, 2).map((s) => [s.id, s.construction ?? null])).toEqual([["tn-ouverture", "titre-geant"], ["tn-bande", "pleine-largeur"]]);
     expect(S.checkCustomTheme(designed, site).filter((x) => x.level === "bloquant").map((x) => x.text)).toEqual([]);
     const t = S.loadCustomTheme(pid)!;
     const page = renderCustomTheme(loadProject(pid), t, { embed: true });

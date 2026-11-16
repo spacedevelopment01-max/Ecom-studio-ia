@@ -953,3 +953,55 @@
 @supports (color:oklch(from red l c h)){
   .ctw .tn-deroule[data-tn-c="frise"] .tn-etapes li::before{background:var(--tn-accent);color:oklch(from var(--tn-accent) clamp(.17,(.62 - l)*100,.97) .03 h)}
 }
+
+/* ══ Tarifs « cartes » (16 novembre 2026) : une carte de couleur douce par prestation, ses prix dedans. Un tableau de
+   cinq colonnes et plus garde, sur téléphone, son défilement d'origine. ══ */
+.ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(thead th:nth-child(5))) thead tr{padding:0 18px 10px;border-bottom:0}
+.ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(thead th:nth-child(5))) tbody{display:grid;gap:10px}
+.ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(thead th:nth-child(5))) tbody tr{padding:18px 18px 20px;border-bottom:0;background-color:var(--tn-doux);border-radius:var(--tn-arrondi,0)}
+.ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(thead th:nth-child(5))) tbody th{padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 26%,transparent)}
+.ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(thead th:nth-child(5))) tbody td{font-weight:600}
+.ctw[data-tn-cadre="niche"] .tn-tarifs[data-tn-c="cartes"]:not(:has(thead th:nth-child(5))) tbody tr{border-radius:22px}
+.ctw[data-tn-cadre="penche"] .tn-tarifs[data-tn-c="cartes"]:not(:has(thead th:nth-child(5))) tbody{gap:16px}
+.ctw[data-tn-cadre="penche"] .tn-tarifs[data-tn-c="cartes"]:not(:has(thead th:nth-child(5))) tbody tr{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
+.ctw[data-tn-cadre="penche"] .tn-tarifs[data-tn-c="cartes"]{overflow-x:clip}
+@media (min-width:760px){
+  .ctw .tn-tarifs[data-tn-c="cartes"],.ctw .tn-tarifs[data-tn-c="cartes"]:has(thead th:nth-child(5)){padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-tarifs[data-tn-c="cartes"] .tn-defile{margin-top:34px;padding-right:0;overflow:visible}
+  /* jusqu'à quatre prestations : une colonne par prestation (le tableau est retourné), les critères en marge à gauche */
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) table{display:grid;grid-template-columns:minmax(0,.62fr);grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:18px;width:100%}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead,tbody,tr){display:contents}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead th,tbody th,tbody td){display:flex;align-items:center;position:static;width:auto;min-width:0;max-width:none;margin:0;padding:18px 26px;border:0;background:none;text-align:left;white-space:normal}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead th,tbody th,tbody td):nth-child(1){grid-row:1}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead th,tbody th,tbody td):nth-child(2){grid-row:2}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead th,tbody th,tbody td):nth-child(3){grid-row:3}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead th,tbody th,tbody td):nth-child(4){grid-row:4}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead th,tbody th,tbody td):nth-child(5){grid-row:5}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead th,tbody th,tbody td):nth-child(6){grid-row:6}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead th,tbody th,tbody td):nth-child(7){grid-row:7}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) :is(thead th,tbody th,tbody td):nth-child(8){grid-row:8}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) thead th:nth-child(n){padding-left:0;padding-right:8px}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) thead th:nth-child(n+2){border-top:1px solid color-mix(in srgb,var(--tn-encre) 26%,transparent)}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) thead th:first-child{align-items:flex-end;padding-bottom:22px}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) thead th:nth-child(n+2):last-child{padding-bottom:26px}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) tbody :is(th,td):nth-child(n){background-color:var(--tn-doux)}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) tbody th:nth-child(n){align-items:flex-end;padding-top:34px;padding-bottom:22px;font-size:28px;line-height:1.1;border-radius:var(--tn-arrondi,0) var(--tn-arrondi,0) 0 0}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) tbody td:nth-child(n){font-size:19px;font-weight:600;border-top:1px solid color-mix(in srgb,var(--tn-encre) 26%,transparent)}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) tbody td:last-child{padding-bottom:26px;border-radius:0 0 var(--tn-arrondi,0) var(--tn-arrondi,0)}
+  .ctw[data-tn-cadre="niche"] .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) tbody th:nth-child(n){border-radius:22px 22px 0 0}
+  .ctw[data-tn-cadre="niche"] .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) tbody td:last-child{border-radius:0 0 22px 22px}
+  .ctw[data-tn-cadre="penche"] .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) tbody th:nth-child(n){border:3px solid var(--tn-encre);border-bottom:0;border-radius:18px 18px 0 0}
+  .ctw[data-tn-cadre="penche"] .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) tbody td:nth-child(n){border-left:3px solid var(--tn-encre);border-right:3px solid var(--tn-encre)}
+  .ctw[data-tn-cadre="penche"] .tn-tarifs[data-tn-c="cartes"]:not(:has(tbody tr:nth-child(5))) tbody td:last-child{border-bottom:3px solid var(--tn-encre);border-radius:0 0 18px 18px}
+  /* cinq prestations et plus : une carte couchée par prestation, les critères alignés au-dessus */
+  .ctw .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) :is(table,thead){display:block;width:100%}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) tbody{display:grid;gap:10px}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) tr{display:flex;flex-wrap:nowrap;align-items:center;column-gap:20px}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) :is(thead th,tbody th,tbody td):nth-child(n){display:block;flex:1 1 0;position:static;width:auto;min-width:0;max-width:none;margin:0;padding:0;border:0;background:none;text-align:right;white-space:normal}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) :is(thead th,tbody th):first-child{flex:2 1 0;text-align:left}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) thead tr{padding:0 28px 12px;border-bottom:0}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) tbody tr{padding:20px 28px;border-bottom:0;background-color:var(--tn-doux);border-radius:var(--tn-arrondi,0)}
+  .ctw .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) tbody td:nth-child(n){font-weight:600}
+  .ctw[data-tn-cadre="niche"] .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) tbody tr{border-radius:22px}
+  .ctw[data-tn-cadre="penche"] .tn-tarifs[data-tn-c="cartes"]:has(tbody tr:nth-child(5)) tbody tr{border:3px solid var(--tn-encre);border-radius:18px}
+}

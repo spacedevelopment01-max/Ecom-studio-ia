@@ -97,14 +97,15 @@ const SOCLE_SECTIONS: TenueSection[] = [
   }),
   sec({
     id: "tn-ouverture", title: "Ouverture à la tenue de la marque", kind: "Ouverture · accueil", role: "ouverture",
-    does: "Le premier écran de l'accueil : une grande photo, un titre, une phrase et un seul bouton. Trois constructions selon la photo et le tempérament de la marque.",
-    constructions: [{ key: "dans-la-photo", label: "photo pleine, le titre posé dans la partie calme du HAUT de la photo, le texte et le bouton dessous (la photo garde son sujet en bas)" }, { key: "titre-puis-cadre", label: "le grand titre d'abord, puis la photo dans le cadre de la marque, le bouton à cheval sur la photo" }, { key: "titre-geant", label: "une petite étiquette, un titre très grand, puis la photo sur toute la largeur, le bouton à cheval sur la photo" }],
+    does: "Le premier écran de l'accueil : une grande photo, un titre, une phrase et un seul bouton. Sept constructions selon la photo et le tempérament de la marque.",
+    constructions: [{ key: "dans-la-photo", label: "photo pleine, le titre posé dans la partie calme du HAUT de la photo, le texte et le bouton dessous (la photo garde son sujet en bas)" }, { key: "titre-puis-cadre", label: "le grand titre d'abord, puis la photo dans le cadre de la marque, le bouton à cheval sur la photo" }, { key: "titre-geant", label: "une petite étiquette, un titre très grand, puis la photo sur toute la largeur, le bouton à cheval sur la photo" }, { key: "titre-centre", label: "photo pleine sur tout l'écran, le titre fin, la phrase et le bouton centrés au milieu de la photo, sur un voile léger" }, { key: "titre-en-bas", label: "photo pleine sur tout l'écran, le titre, la phrase et le bouton en bas à gauche, sur un voile sombre qui monte du bas ; beaucoup d'air" }, { key: "titre-massif", label: "photo pleine sur tout l'écran, un titre énorme de deux ou trois mots sur toute la largeur en bas, le bouton à droite sur grand écran" }, { key: "bandeau", label: "photo pleine sur tout l'écran, une bande pleine et sombre posée sur le bas de la photo, avec le titre, la phrase et le bouton dedans" }],
     trait: { fond: "photo", densite: "aérée", photos: 1, hauteur: 710 },
     html: `<section class="tn tn-ouverture"><div class="tn-ph" ${ph("hero.jpg")}></div><div class="tn-in"><span class="tn-etq">Thés et infusions bio</span><small>Le thé vert au jasmin</small><h1>Pose ton écran.<br>Respire.</h1></div><div class="tn-bas"><p>Quelques minutes, une tasse chaude, plus rien d'autre. Le reste de la journée attendra.</p><a class="tn-bt" href="#" onclick="return false">Choisir mon mélange</a></div></section>`,
   }),
   sec({
     id: "tn-bande", title: "Bande de photo", kind: "Respiration · toutes les pages", role: "mise en avant",
     does: "Un détail du produit ou du lieu, en bande étroite sur toute la largeur, sans texte : une respiration entre deux parties.",
+    constructions: [{ key: "pleine-largeur", label: "une bande étroite de photo, d'un bord à l'autre de l'écran" }, { key: "encadree", label: "une photo plus haute, dans le cadre de la marque, avec des marges autour" }],
     trait: { fond: "photo", densite: "aérée", photos: 1, hauteur: 92 },
     html: `<section class="tn tn-bande"><div class="tn-ph" ${ph("infusion.jpg")}></div></section>`,
   }),
@@ -130,6 +131,7 @@ const SOCLE_SECTIONS: TenueSection[] = [
   sec({
     id: "tn-emotion", title: "Grande photo et sa phrase", kind: "Émotion · toutes les pages", role: "mise en avant",
     does: "Une grande photo de scène sur toute la largeur, avec une seule phrase posée sur sa partie calme du haut. Le moment d'émotion de la page.",
+    constructions: [{ key: "phrase-sur-photo", label: "la phrase posée sur le haut de la photo, en clair sur un voile sombre" }, { key: "phrase-dessous", label: "la photo seule d'abord, puis la phrase en très grand dessous, sur le fond de la page" }],
     trait: { fond: "photo", densite: "aérée", photos: 1, hauteur: 514 },
     html: `<section class="tn tn-emotion"><div class="tn-ph" ${ph("fenetre.jpg")}></div><h2>La journée s'arrête<br>à la première gorgée.</h2></section>`,
   }),
@@ -149,12 +151,14 @@ const SOCLE_SECTIONS: TenueSection[] = [
   sec({
     id: "tn-questions", title: "Questions en volets", kind: "Questions · toutes les pages", role: "aide",
     does: "Les vraies questions avant l'achat, en volets, sous un titre court. Une réponse que le dossier ne donne pas s'écrit « [À compléter] ».",
+    constructions: [{ key: "filets", label: "le titre, puis les questions l'une sous l'autre, séparées par des filets" }, { key: "deux-colonnes", label: "des questions numérotées ; sur grand écran, le titre reste à gauche et les questions sont à droite" }, { key: "cartes", label: "une carte de couleur douce par question, le titre centré au-dessus" }],
     trait: { fond: "clair", densite: "moyenne", photos: 0, hauteur: 330 },
     html: `<section class="tn tn-volets"><h2>Avant de choisir.</h2><div class="tn-liste">${VOLET("Combien de tasses dans un sachet ?", "[À compléter : nombre de tasses]", true)}${VOLET("Et s'il ne me plaît pas ?", "[À compléter : retours]")}${VOLET("Comment le conserver ?", "À l'abri de la lumière, dans son sachet refermé.")}</div></section>`,
   }),
   sec({
     id: "tn-final", title: "Appel final", kind: "Appel à agir · fin de page", role: "conversion",
     does: "Une bande sombre en fin de page : une dernière phrase et le bouton d'achat. La page ne finit jamais sans un moyen d'agir.",
+    constructions: [{ key: "sombre-centre", label: "une bande sombre, la phrase et le bouton centrés" }, { key: "encadre", label: "un encadré clair bordé d'un double filet, la phrase et le bouton centrés dedans" }, { key: "gauche-droite", label: "une bande sombre, la phrase en très grand à gauche, le bouton à droite sur grand écran (dessous sur téléphone)" }],
     trait: { fond: "sombre", densite: "aérée", photos: 0, hauteur: 250 },
     html: `<section class="tn tn-final tn-sombre"><h2>Cinq minutes.<br>Rien que pour toi.</h2><a class="tn-bt" href="#" onclick="return false">Choisir mon mélange</a></section>`,
   }),
@@ -167,24 +171,28 @@ const SOCLE_SECTIONS: TenueSection[] = [
   sec({
     id: "tn-contact", title: "Contact à la tenue de la marque", kind: "Page · contact", role: "contact",
     does: "Un grand titre, une phrase, le formulaire (nom, e-mail, message) et les coordonnées du client dans le cadre de la marque. Les coordonnées viennent du projet ; ce qui manque s'écrit « [À compléter] ».",
+    constructions: [{ key: "formulaire-puis-carte", label: "le titre, le formulaire, puis les coordonnées dans une carte de couleur douce en bas" }, { key: "coordonnees-en-grand", label: "les coordonnées en grandes lettres entre deux filets, juste sous le titre, le formulaire ensuite" }, { key: "deux-colonnes", label: "le formulaire dans une carte de couleur douce ; sur grand écran, le titre et les coordonnées à gauche, la carte à droite" }],
     trait: { fond: "clair", densite: "moyenne", photos: 0, hauteur: 730 },
     html: `<section class="tn tn-contact"><h1>Écris-nous.</h1><p>Une question sur un mélange, une commande en cours : nous lisons tout.<br>Réponse sous [À compléter : délai]</p><form onsubmit="return false"><label>Ton nom</label><label>Ton e-mail</label><label class="tn-haut">Ton message</label><a class="tn-bt" href="#" onclick="return false">Envoyer</a></form><div class="tn-infos"><b>Nous joindre</b>E-mail : [À compléter : e-mail]<br>Horaires : [À compléter]</div></section>`,
   }),
   sec({
     id: "tn-atouts", title: "Trois atouts vrais", kind: "Atouts · accueil et fiche produit", role: "confiance",
     does: "Trois faits vrais et courts sur le produit ou le métier, l'un sous l'autre, chacun avec une ligne. Jamais un chiffre ni une promesse que le dossier ne donne pas.",
+    constructions: [{ key: "lignes", label: "trois lignes l'une sous l'autre, séparées par des filets" }, { key: "numeros", label: "un grand numéro devant chaque fait ; trois colonnes sur grand écran" }, { key: "cartes", label: "une carte de couleur douce par fait, côte à côte sur grand écran" }],
     trait: { fond: "clair", densite: "moyenne", photos: 0, hauteur: 300 },
     html: `<section class="tn tn-atouts"><ul><li><b>Tout est bio</b><span>Du thé, des fleurs, rien d'autre.</span></li><li><b>Assemblé à la main</b><span>Par petites quantités, à la commande.</span></li><li><b>En vrac</b><span>Dans un sachet qui se referme.</span></li></ul></section>`,
   }),
   sec({
     id: "tn-produits", title: "Les produits en cartes", kind: "Produits · accueil et boutique", role: "produits",
     does: "Les vrais produits du catalogue en cartes : la vraie photo de chacun dans le cadre de la marque, son nom, son vrai prix. Chaque carte mène à la fiche du produit. Rien d'affiché pour un produit sans prix : « [À compléter] ».",
+    constructions: [{ key: "grille", label: "des cartes égales en grille, deux de front sur téléphone, quatre sur grand écran" }, { key: "vedette", label: "le premier produit en grande carte, les autres en petit à côté ou dessous" }, { key: "liste", label: "une ligne par produit : la photo à gauche, le nom et le prix à droite, un filet entre les lignes" }],
     trait: { fond: "clair", densite: "moyenne", photos: 2, hauteur: 420 },
     html: `<section class="tn tn-produits" data-tn-produits><h2>Les mélanges.</h2><div class="tn-cartes"><a class="tn-carte-p" href="#" onclick="return false" data-go="product"><div class="tn-ph" ${ph("sachet.jpg")}></div><b>Thé vert jasmin</b><span>[À compléter : prix]</span></a><a class="tn-carte-p" href="#" onclick="return false" data-go="product"><div class="tn-ph" ${ph("sachet-ouvert.jpg")}></div><b>Rooibos vanille</b><span>[À compléter : prix]</span></a></div></section>`,
   }),
   sec({
     id: "tn-histoire", title: "L'histoire de la marque", kind: "Page · à propos", role: "à propos",
     does: "La page de la marque : un grand titre, une photo dans son cadre, l'histoire vraie en deux paragraphes et la signature de la personne. Aucun chiffre ni date que le dossier ne donne pas.",
+    constructions: [{ key: "titre-photo-texte", label: "le grand titre, la grande photo dans le cadre de la marque, puis le texte" }, { key: "lettrine", label: "tout centré en colonne étroite : le titre, une petite photo, puis le texte qui commence par une très grande lettre" }, { key: "deux-colonnes", label: "la photo d'abord ; sur grand écran, la photo à gauche sur toute la hauteur, le titre et le texte à droite" }],
     trait: { fond: "clair", densite: "moyenne", photos: 1, hauteur: 900 },
     html: `<section class="tn tn-histoire"><h1>D'où ça vient.</h1><div class="tn-ph" ${ph("bureau.jpg")}></div><p>Brindi est né d'une envie simple : une vraie pause, sans écran, avec quelque chose de bon dans la tasse.</p><p>[À compléter : l'histoire de la personne, son métier, son lieu]</p><small>[À compléter : prénom de la personne]</small></section>`,
   }),
@@ -209,6 +217,7 @@ const SOCLE_SECTIONS: TenueSection[] = [
   sec({
     id: "tn-pied", title: "Pied de page à la tenue de la marque", kind: "Pied de page · tout le site", role: "pied de page",
     does: "Une bande sombre et sobre en bas de toutes les pages : les liens utiles, rien de plus.",
+    constructions: [{ key: "ligne", label: "les liens en petit, centrés sur une ligne" }, { key: "liens-en-grand", label: "les liens en grandes lettres, l'un sous l'autre avec une flèche et un filet (côte à côte sur grand écran)" }],
     trait: { fond: "sombre", densite: "aérée", photos: 0, hauteur: 62 },
     html: `<footer class="tn tn-pied tn-sombre"><a href="#" onclick="return false">Livraison</a><a href="#" onclick="return false">Retours</a><a href="#" onclick="return false">Mentions légales</a></footer>`,
   }),
