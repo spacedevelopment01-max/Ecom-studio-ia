@@ -631,6 +631,20 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.site).toBeTruthy();
   });
 
+  it("logo joint à une demande d'image : toujours sur un fond blanc plein, jamais transparent (essai réel du 16 novembre 2026 : le logo détouré de la marque finie faisait rendre à OpenAI des images aux bords transparents, refusées « abîmées »)", async () => {
+    const I = await import("@/lib/syna-agent/brand-images");
+    const clear = await sharpLib({ create: { width: 40, height: 40, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: await square("#4A2A1C", 20, 20) }]).png().toBuffer();
+    expect((await sharpLib(clear).metadata()).hasAlpha).toBe(true);
+    const flat = await I.onWhite(clear), meta = await sharpLib(flat).metadata();
+    expect(meta.hasAlpha).toBe(false);
+    const px = await sharpLib(flat).raw().toBuffer();
+    expect([px[0], px[1], px[2]]).toEqual([255, 255, 255]); // le coin transparent est devenu blanc
+    // La création d'une image passe son logo par là.
+    const src = (await import("node:fs")).readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(src).toContain("logo: refs.logo ? await onWhite(refs.logo) : null");
+    expect((await import("node:fs")).readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8")).toContain("logo: await onWhite(logoPng)");
+  });
+
   it("identity.images : SINA refait elle-même seulement certaines images d'une planche, avec devis (retour du propriétaire : « c'est à SINA d'y faire, pas à toi »)", async () => {
     const t = await thread();
     const tool = getTool("identity.images")!;

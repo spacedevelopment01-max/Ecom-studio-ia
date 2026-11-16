@@ -136,7 +136,7 @@ export async function runBrandFinish(o: {
     try {
       const made = await ctx.step(`brand:symbol:${round}:${mainLogo.id}`, async () => {
         const logoPng = await onWhite(assetData(mainLogo));
-        const data = await ai.draw(`symbol-${round}`, { prompt: symbolPrompt(current), aspect: "1:1", logo: logoPng });
+        const data = await ai.draw(`symbol-${round}`, { prompt: symbolPrompt(current), aspect: "1:1", logo: await onWhite(logoPng) });
         const png = await sharp(data).png().toBuffer();
         if (!(await logoOnWhite(png))) return { ok: false as const, why: L("il n'est pas sur un fond blanc net", "it is not on a clean white background") };
         const seen = await ai.look(`symbolcheck-${round}`, { system: SYMBOL_REVIEW, schema: SymbolReviewSchema, prompt: `Marque : « ${current.name} ». Image 1 : le symbole proposé. Image 2 : le logo de la marque.`, images: [{ data: png, label: "symbole" }, { data: logoPng, label: "logo" }] });

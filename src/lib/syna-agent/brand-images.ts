@@ -197,7 +197,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
     post ? "Visuel de publication pour un réseau social, en portrait, bord à bord : aucun cadre d'application, aucun bouton, aucun pseudonyme." : "",
     // Une publication est vue par quelqu'un qui ne connaît pas la marque : elle la signe (retour du propriétaire du
     // 16 novembre 2026, devant trois publications sans nom : « j'ai pas compris l'angle marketing des images »).
-    post && withLogo ? "Le logo est posé en PETIT dans un coin calme de l'image, entier, net et lisible, sans gêner le texte." : "",
+    post && withLogo ? "Le logo est posé en PETIT dans un coin calme de l'image, entier, net et lisible, sans gêner le texte. Sur une zone foncée de l'image, il est dans sa version claire (ses parties foncées en clair) : jamais un logo foncé sur du foncé." : "",
     slot === "signs" ? SIGNS_LINE : "",
     (slot === "object" || slot === "site") && !withLogo ? NO_INVENTED_MARK : "",
     slot === "signs" ? (withLogo ? "Aucun autre texte que le logo : aucune lettre, aucun chiffre, aucun mot, aucun filigrane." : NO_TEXT) : written.length ? exact(written) : NO_TEXT, NO_PERSON, NO_OTHER_BRAND,
@@ -309,7 +309,7 @@ export async function runBoardImages(o: {
     if (!retry) calls.set(slot, { refs, prompt });
     try {
       made.set(slot, await ctx.step(`brand:image:${round}:${key}:${slot}${pass}${retry}`, async (): Promise<Made> => {
-        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ?? null, scene: refs.scene ?? null, avoid: refs.avoid ?? null });
+        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, avoid: refs.avoid ?? null });
         const png = await sharp(data).png().toBuffer(), meta = await sharp(png).metadata();
         const asset = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-${slot}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "review", meta: { synaBoard: { key, slot, round, name: x.name } } });
         return { id: asset.id, w: meta.width ?? 1024, h: meta.height ?? 1024 };

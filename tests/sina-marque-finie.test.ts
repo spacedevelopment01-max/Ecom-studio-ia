@@ -322,7 +322,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Chaque publication est signée : elle reçoit le logo, posé en petit (retour du propriétaire du 16 novembre 2026 :
     // « j'ai pas compris l'angle marketing des images », devant trois publications sans nom de marque).
     expect(log.refs[`image-1-A-post1${REST}`]).toEqual({ logo: true, scene: false, aspect: "4:5" });
-    expect(log.prompts[`image-1-A-post1${REST}`]).toContain("Le logo est posé en PETIT dans un coin calme de l'image, entier, net et lisible, sans gêner le texte.");
+    expect(log.prompts[`image-1-A-post1${REST}`]).toContain("Le logo est posé en PETIT dans un coin calme de l'image, entier, net et lisible, sans gêner le texte. Sur une zone foncée de l'image, il est dans sa version claire (ses parties foncées en clair) : jamais un logo foncé sur du foncé.");
     const BP = await import("@/lib/syna-agent/brand-prompts");
     expect(BP.directionSystem("produits")).toMatch(/Chaque publication est lue par quelqu'un qui ne connaît PAS la marque : elle se comprend seule\. La PREMIÈRE dit l'offre en clair/);
     expect(BP.imagerySystem("produits")).toMatch(/La PREMIÈRE publication montre clairement ce qui est vendu/);
