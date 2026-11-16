@@ -610,9 +610,13 @@ export async function runSinaBrandJob(ctx: JobContext) {
     if (!previous.length) throw new UserFacingError(L("Il n'y a pas encore de planche à mettre en images. Rien n'a été décompté.", "There is no board to illustrate yet. Nothing was charged."));
     const targets = a.redo?.length ? previous.filter((x) => a.redo!.includes(x.key)) : previous, round = j.identities?.round ?? 1;
     let list = (j.identities?.list ?? []) as Route[];
-    const said: string[] = [];
+    const said: string[] = [], redoneKeys = new Set<string>();
     for (const x of targets) {
-      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, otherLogos: otherLogos(list, x.key), otherLogoImages: logoBuffers(list, x.key), clientLogo });
+      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, otherLogos: otherLogos(list, x.key),
+        // Plusieurs logos refaits d'un coup : chacun ne voit que ceux déjà refaits dans cette reprise (et ceux des identités
+        // qu'on ne touche pas), jamais les anciens logos qu'on est justement en train de remplacer.
+        otherLogoImages: logoBuffers(list.filter((o2) => !targets.some((t2) => t2.key === o2.key) || redoneKeys.has(o2.key)), x.key), clientLogo });
+      redoneKeys.add(x.key);
       list = list.map((o) => (o.key === x.key ? r.route : o));
       said.push(...r.issues); notes.push(...r.notes);
     }

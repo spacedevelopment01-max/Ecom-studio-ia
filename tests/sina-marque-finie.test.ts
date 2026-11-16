@@ -193,8 +193,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       // Le premier logo de la série est créé sans rien voir ; les suivants reçoivent la planche des logos déjà faits pour ce
       // client, à ne pas refaire (essai réel du 15 novembre 2026 : trois logos sur quatre avec le même pictogramme).
       expect(log.refs[`image-1-${k}-logo${FIRST}`]).toEqual({ logo: false, scene: k !== "A", aspect: "1:1" });
-      if (k !== "A") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/logos DÉJÀ proposés à ce client pour d'autres identités : ne les reproduis pas\. Le tien est d'une conception nettement différente/);
-      else expect(log.prompts[`image-1-${k}-logo${FIRST}`]).not.toMatch(/logos DÉJÀ proposés/);
+      if (k !== "A") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/logos DÉJÀ faits pour ce client\. Elle n'est PAS un modèle : regarde-les, puis fais un logo qui n'a RIEN en commun avec eux/);
+      else expect(log.prompts[`image-1-${k}-logo${FIRST}`]).not.toMatch(/logos DÉJÀ faits/);
       expect(log.refs[`image-1-${k}-hero${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "16:9" });
       expect(log.refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     }

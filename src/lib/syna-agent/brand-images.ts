@@ -302,7 +302,7 @@ export async function runBoardImages(o: {
   if (wanted.has("logo")) {
     ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
     const seenLogos = await logoSheet(o.otherLogoImages ?? []);
-    await make("logo", seenLogos ? { scene: seenLogos } : {}, imagePrompt("logo", x, imagery) + (seenLogos ? "\nL'image de référence montre les logos DÉJÀ proposés à ce client pour d'autres identités : ne les reproduis pas. Le tien est d'une conception nettement différente : un autre genre de logo, une autre construction, un autre dessin de lettres, un autre signe (ou pas de signe du tout)." : ""));
+    await make("logo", seenLogos ? { scene: seenLogos } : {}, imagePrompt("logo", x, imagery) + (seenLogos ? "\nL'image de référence montre les logos DÉJÀ faits pour ce client. Elle n'est PAS un modèle : regarde-les, puis fais un logo qui n'a RIEN en commun avec eux. Ni la même construction, ni le même signe, ni le même dessin de lettres, ni les mêmes traits ou ornements. Quelqu'un qui verrait tous ces logos côte à côte ne doit pas croire qu'ils viennent de la même main." : ""));
     const drawn = bufferOf("logo");
     if (drawn && !(await logoOnWhite(drawn))) {
       const why = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background");
