@@ -21,7 +21,7 @@ process.env.STUDIO_SYNA_AGENT = "1";
 
 const SHEET = fs.readFileSync(path.join(process.cwd(), "public", "sections", "tenue-achat.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 /** Sélecteurs de la feuille (ceux des règles sous @media compris). */
-const SELECTORS = SHEET.replace(/@media[^{]*\{/g, "").split("}").map((r) => r.split("{")[0].trim()).filter(Boolean);
+const SELECTORS = SHEET.replace(/@supports[^{]*\{/g, "").replace(/@media[^{]*\{/g, "").split("}").map((r) => r.split("{")[0].trim()).filter(Boolean);
 const rootOf = (id: string) => /class="tn (tn-[a-z0-9-]+)/.exec(tenueSection(id)!.html)![1];
 const STYLES = ["simple", "vente-directe", "grandes-photos", "technique", "fond-doux", "portrait"];
 const sp = (s: string) => s.replace(/ /g, " ");
@@ -36,6 +36,8 @@ describe("bloc d'achat : six façons, une par style de page produit", () => {
   });
 
   it("chaque clé nouvelle a ses règles dans la feuille du module ; aucune règle ne cible une clé d'origine", () => {
+    // Un sélecteur « nu » : sans les listes de « :is(…) » et de « :not(…) », qui nomment d'autres pièces que celle visée.
+    const nu = (sel: string) => sel.replace(/:(?:is|not)\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)/g, "");
     for (const [id, list] of Object.entries(ACHAT_FACONS)) {
       const root = rootOf(id);
       expect(list.length, id).toBeGreaterThanOrEqual(2);
@@ -47,20 +49,20 @@ describe("bloc d'achat : six façons, une par style de page produit", () => {
         // Une vraie autre mise en page : elle a aussi ses règles d'écran large.
         expect(new RegExp(`@media \\(min-width:760px\\)\\{[\\s\\S]*\\.${root}[^{]*\\[data-tn-c="${c.key}"\\]`).test(SHEET), `${id} : « ${c.key} » sur grand écran`).toBe(true);
       }
-      expect(SELECTORS.some((sel) => sel.includes(`.${root}`) && sel.includes(`[data-tn-c="${list[0].key}"]`)), `${id} : aucune règle pour « ${list[0].key} »`).toBe(false);
+      expect(SELECTORS.map(nu).some((sel) => sel.includes(`.${root}`) && sel.includes(`[data-tn-c="${list[0].key}"]`)), `${id} : aucune règle pour « ${list[0].key} »`).toBe(false);
     }
     // Les pièces nouvelles : deux façons au moins, la seconde dessinée.
     for (const s of ACHAT_SECTIONS) {
       expect(s.constructions.length, s.id).toBeGreaterThanOrEqual(2);
       for (const c of s.constructions.slice(1)) expect(SELECTORS.some((sel) => sel.includes(`.ctw .${rootOf(s.id)}[data-tn-c="${c.key}"]`)), `${s.id} : « ${c.key} »`).toBe(true);
-      expect(SELECTORS.some((sel) => sel.includes(`[data-tn-c="${s.constructions[0].key}"]`) && sel.includes(`.${rootOf(s.id)}`)), `${s.id} : aucune règle pour sa première façon`).toBe(false);
+      expect(SELECTORS.map(nu).some((sel) => sel.includes(`[data-tn-c="${s.constructions[0].key}"]`) && sel.includes(`.${rootOf(s.id)}`)), `${s.id} : aucune règle pour sa première façon`).toBe(false);
     }
   });
 
   it("la feuille suit les règles : sélecteurs « .ctw .tn-… », aucune couleur en dur, aucun « !important »", () => {
     expect(SHEET).not.toMatch(/!important/);
     expect(SHEET.replace(/url\("data:[^"]*"\)/g, "")).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i);
-    for (const sel of SELECTORS) for (const one of sel.split(/,(?![^(]*\))/)) expect(one.trim(), one).toMatch(/^\.ctw(?:\[data-tn-[a-z]+="[a-z]+"\])? \.(?:tn-|tb-pg>\.tn-)/);
+    for (const sel of SELECTORS) for (const one of sel.split(/,(?![^(]*\))/)) expect(one.trim(), one).toMatch(/^\.ctw(?:\[data-tn-[a-z]+="[a-z]+"\])? \.(?:tn-|tb-pg>\.tn-|tb-pg:not\(\[hidden\]\):has\(>\.tn-)/);
     // Toute taille de titre suit l'échelle de la tenue.
     for (const r of SHEET.split("}")) { const [sel, body] = r.split("{").slice(-2); if (/ h[12](?:,|$)|>h[12](?:,|$)/.test(sel ?? "") && /font-size:/.test(body ?? "")) expect(body, sel).toMatch(/font-size:calc\([\d.]+px\*var\(--tn-k\)\)/); }
   });
@@ -115,7 +117,7 @@ describe("bloc d'achat : six façons, une par style de page produit", () => {
 describe("pièces nouvelles de la fiche produit", () => {
   const visible = (html: string) => html.replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ");
   it("elles sont rangées dans la banque, sans doublon avec une pièce existante", () => {
-    expect(ACHAT_SECTIONS.map((s) => s.id)).toEqual(["tn-versions", "tn-guide-tailles", "tn-lots", "tn-looks", "tn-allergenes", "tn-avant-apres-produit", "tn-pictos", "tn-probleme-reponse", "tn-nous-et-autres", "tn-appel-produit", "tn-livraison", "tn-garantie", "tn-mur-avis", "tn-avantages", "tn-packs", "tn-sous-bouton", "tn-offre-moment", "tn-fenetre-offre"]);
+    expect(ACHAT_SECTIONS.map((s) => s.id)).toEqual(["tn-versions", "tn-guide-tailles", "tn-lots", "tn-looks", "tn-allergenes", "tn-avant-apres-produit", "tn-pictos", "tn-probleme-reponse", "tn-nous-et-autres", "tn-appel-produit", "tn-livraison", "tn-garantie", "tn-mur-avis", "tn-avantages", "tn-packs", "tn-sous-bouton", "tn-offre-moment", "tn-fenetre-offre", "tn-rappel-achat", "tn-coloris"]);
     for (const s of ACHAT_SECTIONS) expect(TENUE_SECTIONS.filter((x) => x.id === s.id || x.title === s.title).length, s.id).toBe(1);
   });
 
@@ -464,7 +466,7 @@ describe.runIf(!!process.env.ACHAT_OUT)("module achat : planches en image, trois
     const browser = await chromium.launch({ executablePath: chromiumPath() ?? undefined });
     try {
       const over: string[] = [];
-      for (const width of [320, 390, 1280]) {
+      for (const width of [320, 390, 1000, 1280]) {
         const page = await browser.newPage({ viewport: { width, height: 800 } });
         await page.goto(`file://${file}`);
         over.push(...await page.evaluate((w) => [...document.querySelectorAll("section[data-essai]")].flatMap((sec) => {
@@ -580,6 +582,88 @@ describe("achat, suite : rien ne s'affiche sans sa vraie donnée", () => {
   });
 });
 
+describe("finitions de la fiche : note et avis, rappel vers l'achat, coloris en scène", () => {
+  const vd = (h: string) => h.replace(/^<section\b/, '<section data-tn-c="vente-directe"');
+  it("note et ligne d'avis : seulement avec de vrais avis de ce produit ; sans avis, ni étoiles ni « 0 avis »", () => {
+    const sans = D.withTenueAchatVrai(vd(piece("tn-achat")), venteEssai());
+    expect(sans).not.toMatch(/tn-note-a|tn-avis-a|tn-etoiles-a/);
+    expect(D.avisAchat(null, "Collier Museau")).toBeNull();
+    expect(D.avisAchat({ source: "x", liste: [] }, "Collier Museau")).toBeNull();
+    // L'avis d'un autre produit ne compte pas ; l'avis sans produit compte ; la ligne est l'avis court le mieux noté, mot pour mot.
+    const a = D.avisAchat(AVIS_ESSAI, "Collier Museau")!;
+    expect(a.nombre).toBe(3);
+    expect(Math.round(a.note! * 100)).toBe(467);
+    expect(a.ligne).toEqual({ text: "Lavé dix fois, il n'a pas bougé.", name: "Marc" });
+    const avec = D.withTenueAchatVrai(vd(piece("tn-achat")), venteEssai({ avis: a }));
+    expect(avec).toMatch(/<\/h1><div class="tn-note-a" data-tn-note><i class="tn-etoiles-a" style="--note:4\.7" role="img" aria-label="Note : 4,7 sur 5"><\/i><b>4,7<\/b><span>3 avis<\/span><\/div>/);
+    expect(avec).toMatch(/<\/ul><blockquote class="tn-avis-a" data-tn-avis-a><p>«&nbsp;Lavé dix fois, il n'a pas bougé\.&nbsp;»<\/p><cite>Marc<\/cite><\/blockquote>/);
+    // Des avis sans note : pas d'étoiles, la ligne reste. Une autre façon du bloc : rien (seule la vente directe les range).
+    const sansNote = D.withTenueAchatVrai(vd(piece("tn-achat")), venteEssai({ avis: D.avisAchat({ source: "x", liste: [{ text: "Très bien.", name: "Léa" }] }, "Collier Museau") }));
+    expect(sansNote).not.toMatch(/tn-note-a|tn-etoiles-a/);
+    expect(sansNote).toContain("<cite>Léa</cite>");
+    expect(D.withTenueAchatVrai(piece("tn-achat"), venteEssai({ avis: a }))).not.toMatch(/tn-note-a|tn-avis-a/);
+  });
+
+  it("le bloc d'achat porte l'identifiant « tn-achat » ; les coloris ne se posent qu'avec deux couleurs qui ont leur photo", () => {
+    expect(D.withTenueAchatVrai(piece("tn-achat"), venteEssai())).toMatch(/^<section class="tn tn-achat" data-tn-achat id="tn-achat">/);
+    expect(D.withAchatId(D.withAchatId(piece("tn-achat"))).match(/id="tn-achat"/g)!.length).toBe(1);
+    expect(D.withAchatId(piece("tn-packs"))).toBe(piece("tn-packs"));
+    const deux = D.withTenueColoris(piece("tn-coloris"), [{ nom: "Bleu", teinte: "#2f5aa8", image: "/api/files/a1" }, { nom: "Rouge", teinte: null, image: "/api/files/a2" }, { nom: "Jaune", teinte: null, image: "" }]);
+    expect(deux.match(/<li>/g)!.length).toBe(2);
+    expect(deux).toContain('data-tn-rappel data-tn-couleur="Bleu"><div class="tn-ph tn-cadre" style="background-image:url(/api/files/a1)"></div><span><i style="--teinte:#2f5aa8"></i>Bleu</span>');
+    expect(deux).not.toMatch(/À compléter|Jaune|md-o/);
+    expect(D.withTenueColoris(piece("tn-coloris"), [{ nom: "Bleu", teinte: null, image: "/api/files/a1" }])).toBe("");
+    expect(D.withTenueColoris(piece("tn-coloris"), [])).toBe("");
+    expect(D.dataGaps(["tn-coloris"], { products: 1, families: 0, couleurs: 1 }).join(" ")).toMatch(/tn-coloris.*deux couleurs avec la photo/);
+    expect(D.dataGaps(["tn-coloris"], { products: 1, families: 0, couleurs: 3 })).toEqual([]);
+    expect(D.dataGaps(["tn-coloris"], { products: 1, families: 0 })).toEqual([]);
+  });
+
+  it("le Studio pose ces données depuis le catalogue : identifiant, rappel (nom, prix), coloris avec la photo de chaque version", async () => {
+    const { account, project } = await import("./conversation209-fixtures");
+    const { createProduct } = await import("@/lib/products/catalog");
+    const { saveAsset } = await import("@/lib/library");
+    const { withTenueAchat } = await import("@/lib/syna-agent/custom-theme/buy-block");
+    const sharp = (await import("sharp")).default;
+    const user = await account(), pid = await project(user);
+    const photo = async (n: string, r: number) => (await saveAsset({ projectId: pid, userId: user.id, data: await sharp({ create: { width: 60, height: 60, channels: 3, background: { r, g: 90, b: 160 } } }).jpeg().toBuffer(), name: n, mime: "image/jpeg", role: "product", origin: "upload" })).id;
+    const [bleu, rouge] = [await photo("bleu.jpg", 40), await photo("rouge.jpg", 200)];
+    createProduct(pid, { title: "Collier Museau", price: 3000, images: [{ assetId: bleu }, { assetId: rouge }], options: [{ name: "Couleur", values: ["Bleu", "Rouge", "Jaune"] }], variants: [{ options: ["Bleu"], price: 3000, image: bleu }, { options: ["Rouge"], price: 3000, image: rouge }, { options: ["Jaune"], price: 3000 }] } as any);
+    createProduct(pid, { title: "Médaille", price: 900 } as any);
+    expect(withTenueAchat(piece("tn-achat"), pid)).toMatch(/^<section class="tn tn-achat" data-tn-achat id="tn-achat">/);
+    const rappel = withTenueAchat(piece("tn-rappel-achat"), pid);
+    expect(rappel).toContain('<b class="tn-ra-nom">Collier Museau</b><span class="tn-ra-prix">30 €</span>');
+    expect(rappel).not.toContain("À compléter");
+    const coloris = withTenueAchat(piece("tn-coloris"), pid);
+    expect(coloris.match(/data-tn-couleur="[^"]+"/g)).toEqual(['data-tn-couleur="Bleu"', 'data-tn-couleur="Rouge"']);
+    expect(coloris).toContain(`/api/files/${bleu}`);
+    // Un produit sans couleur : la pièce ne se pose pas. Sans vrais avis au Studio : ni note ni ligne d'avis.
+    expect(withTenueAchat(piece("tn-coloris"), pid, "medaille")).toBe("");
+    expect(withTenueAchat(vd(piece("tn-achat")), pid)).not.toMatch(/tn-note-a|tn-avis-a/);
+    // Moyens de paiement : aucune source remplie par le client dans le Studio : rien ne s'affiche dans l'aperçu.
+    expect(withTenueAchat(piece("tn-sous-bouton"), pid)).not.toMatch(/tn-paiements-sb/);
+  });
+
+  it("en boutique Shopify : l'identifiant du bloc, une vraie ancre pour le rappel, les coloris lus dans les options (Liquid contrôlé, pas une vraie boutique)", async () => {
+    const { customThemeSpec } = await import("@/lib/syna-agent/custom-theme/to-shopify");
+    const { validateCustomSection } = await import("@/lib/theme/ops");
+    const sec = (id: string, uid: string, construction?: string) => ({ uid, id, clientTexts: true, ...(construction ? { construction } : {}), html: tenueSection(id)!.html.replace(/photos\/[\w.-]+/g, "/api/files/a1") });
+    const theme = { version: 1, family: "classique", style: "classique", header: sec("tn-entete", "h"), footer: sec("tn-pied", "f"), search: null, rev: 0, at: 0, extras: [], pages: [{ key: "home", label: "Accueil", sections: [] }, { key: "product", label: "Fiche produit", sections: [sec("tn-achat", "buy", "vente-directe"), sec("tn-rappel-achat", "ra", "bande"), sec("tn-coloris", "col", "file")] }] } as any;
+    const out = customThemeSpec(theme, { name: "Museau", business: "products", products: [{ handle: "collier-museau", title: "Collier Museau", categories: [] }], company: { shipping: "Chez toi en 2 à 4 jours", returns: "30 jours" }, assetExt: () => "jpg", linkMap: {}, dropMissing: true, base: null, offres: null } as any);
+    expect(out.problems.filter((x) => x.level === "bloquant").map((x) => x.text)).toEqual([]);
+    for (const [type, c] of Object.entries(out.spec.customSections)) expect(validateCustomSection(c.liquid), type).toBeNull();
+    expect(out.spec.customSections["es-custom-buy"].liquid).toContain('<section data-tn-c="vente-directe" class="tn tn-achat" data-tn-achat id="tn-achat">');
+    const ra = out.spec.customSections["es-custom-ra"].liquid;
+    expect(ra).toContain(`<a class="tn-bt" href="{% unless product %}{{ vedette.url }}{% endunless %}#tn-achat">Choisir le mien</a>`);
+    expect(ra).toContain(`<b class="tn-ra-nom">{{ vedette.title }}</b><span class="tn-ra-prix">{{ vedette.selected_or_first_available_variant.price | money }}</span>`);
+    expect(ra).not.toMatch(/À compléter|data-tn-rappel[\s>]|onclick/);
+    const col = out.spec.customSections["es-custom-col"].liquid;
+    expect(col).toContain(`{%- if value.variant.featured_image -%}<li><a class="tn-col" href="{{ value.variant.url }}#tn-achat"><div class="tn-ph tn-cadre" role="img" aria-label="{{ value | escape }}" style="background-image:url({{ value.variant.featured_image | image_url: width: 900 }})"></div>`);
+    expect(col).toContain("{% if tn_nb == 0 or tn_nb == 1 %} hidden{% endif %}");
+    expect(col).not.toMatch(/À compléter|\/api\/files|data-tn-rappel[\s>]/);
+  });
+});
+
 describe("achat, suite, en boutique Shopify (Liquid contrôlé par le Studio ; pas une vraie boutique)", () => {
   const sec = (id: string, uid: string, construction?: string) => ({ uid, id, clientTexts: true, ...(construction ? { construction } : {}), html: tenueSection(id)!.html.replace(/photos\/[\w.-]+/g, "/api/files/a1") });
   const theme = (extras: any[] = []) => ({ version: 1, family: "classique", style: "classique", header: sec("tn-entete", "h"), footer: sec("tn-pied", "f"), search: null, rev: 0, at: 0, extras, pages: [{ key: "home", label: "Accueil", sections: [] }, { key: "product", label: "Fiche produit", sections: [sec("tn-achat", "buy", "vente-directe"), sec("tn-offre-moment", "om"), sec("tn-lots", "lots"), sec("tn-packs", "packs"), sec("tn-sous-bouton", "sb")] }] }) as any;
@@ -664,12 +748,19 @@ describe("achat, suite, en boutique Shopify (Liquid contrôlé par le Studio ; p
 
 // ── La fiche « vente directe » complète, en page statique (feuilles et scripts du Studio, panier d'essai de l'aperçu) ──
 const SUITE = ["tn-achat", "tn-offre-moment", "tn-packs", "tn-sous-bouton", "tn-atouts", "tn-probleme-reponse", "tn-avantages", "tn-mur-avis", "tn-nous-et-autres", "tn-livraison", "tn-garantie", "tn-questions", "tn-appel-produit"];
-const FACONS: Record<string, string[]> = { "tn-achat": ["vente-directe", "vente-directe"], "tn-offre-moment": ["encadre", "bandeau"], "tn-packs": ["empilees", "cote-a-cote"], "tn-sous-bouton": ["liste", "cartes"], "tn-atouts": ["coches", "coches"], "tn-probleme-reponse": ["deux-temps", "face-a-face"], "tn-avantages": ["alternes", "cartes"], "tn-mur-avis": ["mosaique", "file"], "tn-nous-et-autres": ["tableau", "lignes"], "tn-livraison": ["frise", "cartes"], "tn-garantie": ["bande", "sceau"], "tn-questions": ["cartes", "cartes"], "tn-appel-produit": ["bande-sombre", "carte"], "tn-fenetre-offre": ["plein-ecran", "carte-en-bas"], "tn-versions": ["pastilles", "lignes"] };
+const FACONS: Record<string, string[]> = { "tn-achat": ["vente-directe", "vente-directe"], "tn-offre-moment": ["encadre", "bandeau"], "tn-packs": ["empilees", "cote-a-cote"], "tn-sous-bouton": ["liste", "cartes"], "tn-atouts": ["coches", "coches"], "tn-probleme-reponse": ["deux-temps", "face-a-face"], "tn-avantages": ["alternes", "cartes"], "tn-mur-avis": ["mosaique", "file"], "tn-nous-et-autres": ["tableau", "lignes"], "tn-livraison": ["frise", "cartes"], "tn-garantie": ["bande", "sceau"], "tn-questions": ["cartes", "cartes"], "tn-appel-produit": ["bande-sombre", "carte"], "tn-fenetre-offre": ["plein-ecran", "carte-en-bas"], "tn-versions": ["pastilles", "lignes"], "tn-rappel-achat": ["bande", "bouton"], "tn-coloris": ["mosaique", "file"] };
+/** Vrais avis inventés pour l'essai (module « vente » : TenueVitrine.avis). */
+const AVIS_ESSAI: D.TenueVitrine["avis"] = { source: "Avis vérifiés", verifies: true, liste: [
+  { text: "Enfin un collier qui ne lui pèle pas le cou.", name: "Camille", date: "2026-02-11", rating: 5, product: "Collier Museau" },
+  { text: "Solide, et le bleu est encore plus beau en vrai. La boucle est un peu dure les premiers jours, puis elle se fait très bien à la main.", name: "Théo", date: "2026-01-20", rating: 4, product: "Collier Museau" },
+  { text: "Lavé dix fois, il n'a pas bougé.", name: "Marc", date: "2026-03-02", rating: 5 },
+  { text: "La laisse est trop courte pour moi.", name: "Inès", date: "2026-03-05", rating: 2, product: "La laisse Museau" },
+] };
 const ALLURES = [
   { key: "vive", palette: VIF.palette, tenue: { titres: "capitales", bouton: "ombre", cadre: "penche", fond: "uni", petits: "normal" }, titre: "Bricolage", arrondi: "14px" },
   { key: "calme", palette: { primary: "#2F5D50", secondary: "#E4E9DD", accent: "#2F5D50", light: "#FAF7F0", dark: "#1C2420" }, tenue: { titres: "fins", bouton: "pilule", cadre: "niche", fond: "uni", petits: "normal" }, titre: "Instrument", arrondi: "16px" },
 ];
-async function ficheStatique(o: { vente?: D.TenueAchatVrai; allure?: number; sections?: string[]; fenetre?: boolean } = {}): Promise<string> {
+async function ficheStatique(o: { vente?: D.TenueAchatVrai; allure?: number; sections?: string[]; fenetre?: boolean; tiroir?: boolean; facons?: Record<string, string> } = {}): Promise<string> {
   const { tenueCss, markMissing } = await import("@/lib/syna-agent/custom-theme/tenue");
   const { TENUE_FILES } = await import("@/lib/syna-agent/custom-theme/tenue");
   const dir = path.join(process.cwd(), "public", "sections"), a = ALLURES[o.allure ?? 0], v = o.vente ?? venteEssai();
@@ -694,15 +785,19 @@ async function ficheStatique(o: { vente?: D.TenueAchatVrai; allure?: number; sec
     if (id === "tn-questions") h = h.replace("Avant de choisir.", "Avant de commander.").replace("Combien de tasses dans un sachet ?", "Il existe pour les chiots ?").replace("[À compléter : nombre de tasses]", "Oui : la taille S se règle dès 28 cm de tour de cou.").replace("Et s'il ne me plaît pas ?", "La médaille est comprise ?").replace("[À compléter : retours]", "Oui, à graver chez un cordonnier ou par nos soins.").replace("Comment le conserver ?", "Comment l'entretenir ?").replace("À l'abri de la lumière, dans son sachet refermé.", "En machine à 30 degrés, dans un filet.");
     if (id === "tn-appel-produit") h = pics(h, ["collier-02.webp"]).replace("Prêt à l'essayer&nbsp;?", "Prêt pour la prochaine balade&nbsp;?").replace(/(<b class="tn-nom-a">)[\s\S]*?(<\/b>)/, "$1Collier Museau$2").replace(/(<div class="tn-prix">)[\s\S]*?(<\/div>)/, "$130 €$2").replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${v.livraison}</li><li>Retours : ${v.retours}</li></ul>`).replace(">Ajouter au panier<", ">Je le prends<");
     if (id === "tn-fenetre-offre") h = pics(h, ["ambiance-03.webp"]);
+    if (id === "tn-coloris") h = D.withTenueColoris(h, [{ nom: "Bleu", teinte: "#2f5aa8", image: img("collier-01.webp") }, { nom: "Rouge", teinte: "#b3262e", image: img("ambiance-02.webp") }, { nom: "Jaune", teinte: "#f2c94c", image: img("ambiance-05.webp") }]);
+    if (id === "tn-rappel-achat") h = h.replace(/(<b class="tn-ra-nom">)[\s\S]*?(<\/b>)/, "$1Collier Museau$2").replace(/(<span class="tn-ra-prix">)[\s\S]*?(<\/span>)/, "$130 €$2").replace(">Choisir le mien<", ">Choisir mon collier<");
+    // La construction s'écrit sur la racine avant les données, comme dans l'aperçu du Studio.
+    h = h.replace(/^<section\b/, `<section data-essai="${id}" data-tn-c="${o.facons?.[id] ?? FACONS[id]?.[o.allure ?? 0] ?? ""}"`);
     h = D.withTenueAchatVrai(D.withTenueDirect(D.withTenueSizes(h, options), { shipping: v.livraison, returns: v.retours } as any), vrai);
-    return h ? markMissing(pics(h, ["collier-04.webp"])).replace(/^<section\b/, `<section data-essai="${id}" data-tn-c="${FACONS[id]?.[o.allure ?? 0] ?? ""}"`) : "";
+    return h ? markMissing(pics(h, ["collier-04.webp"])) : "";
   };
   const css = TENUE_FILES.css.map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n").replace(/url\(photos\//g, `url(file://${dir}/photos/`);
-  const js = ["boutique-apercu.js", "tenue.js", "tenue-achat.js"].map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n;");
+  const js = ["boutique-apercu.js", "tenue.js", "tenue-achat.js", "tenue-pages.js"].map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n;");
   const fonts = [["Bricolage", "bricolage.woff2"], ["Instrument", "instrument.woff2"], ["Inter", "inter.woff2"]].map(([n, f]) => `@font-face{font-family:"${n}";src:url("file://${path.join(process.cwd(), "public", "fonts", f)}");font-weight:100 900}`).join("");
   const attrs = Object.entries(a.tenue).map(([k, val]) => ` data-tn-${k}="${val}"`).join("");
   const ids = o.sections ?? SUITE;
-  return `<!doctype html><html lang="fr" data-po-barre="1"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${fonts}body{margin:0;background:${a.palette.light}}${tenueCss(a.palette as any, a.tenue as any)}${css}.ctw{--f-title:"${a.titre}",Georgia,serif;--f-ui:"Inter",Arial,sans-serif;--tn-arrondi:${a.arrondi};font-family:var(--f-ui)}</style><body><div class="ctw"${attrs}><div class="frame"><main class="tb-pg">${ids.map(fill).join("\n")}</main>${o.fenetre === false ? "" : fill("tn-fenetre-offre")}</div></div><script>${js}</script></body></html>`;
+  return `<!doctype html><html lang="fr" data-po-barre="1"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${fonts}body{margin:0;background:${a.palette.light}}${tenueCss(a.palette as any, a.tenue as any)}${css}.ctw{--f-title:"${a.titre}",Georgia,serif;--f-ui:"Inter",Arial,sans-serif;--tn-arrondi:${a.arrondi};font-family:var(--f-ui)}</style><body><div class="ctw"${attrs}><div class="frame"><main class="tb-pg">${ids.map(fill).join("\n")}</main>${o.fenetre === false ? "" : fill("tn-fenetre-offre")}${o.tiroir ? `<div class="tn-fixes">${markMissing(piece("tn-panier-cote"))}</div>` : ""}</div></div><script>${js}</script></body></html>`;
 }
 
 describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite : ça marche pour de vrai dans l'aperçu (Playwright, panier d'essai)", () => {
@@ -830,11 +925,109 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
     } finally { await browser.close(); }
   }, 120_000);
 
+  it("le panier de côté s'ouvre après un ajout, rempli avec le panier reçu ; un refus de la boutique ne l'ouvre pas", async () => {
+    const { browser, page } = await ouvre(await ficheStatique({ tiroir: true, fenetre: false }), 390, "tiroir");
+    try {
+      const tiroir = page.locator(".tn-panier-cote");
+      await page.evaluate(() => { (window as any).allers = 0; (window as any).tnBoutique.allerAuPanier = () => { (window as any).allers++; }; });
+      expect(await tiroir.getAttribute("data-tn-ouvert")).toBeNull();
+      // Un refus (stock) : le message se lit, le tiroir reste fermé.
+      await page.evaluate(() => { const b = (window as any).tnBoutique; b.vrai = b.ajouter; b.ajouter = () => Promise.reject(new Error("Il n'en reste que 2 en stock.")); });
+      await page.locator("[data-tn-packs] [data-tn-acheter]").click();
+      expect(await page.locator("[data-tn-packs] [data-tn-erreur]").textContent()).toBe("Il n'en reste que 2 en stock.");
+      expect(await tiroir.getAttribute("data-tn-ouvert")).toBeNull();
+      await page.evaluate(() => { const b = (window as any).tnBoutique; b.ajouter = b.vrai; });
+      await choisirTrio(page);
+      await page.locator("[data-tn-packs] [data-tn-acheter]").click();
+      await page.waitForSelector(".tn-panier-cote[data-tn-ouvert]");
+      const lignes = await tiroir.locator(".tn-lignes .tn-ligne").evaluateAll((els) => els.map((l) => [l.getAttribute("data-tn-id"), l.querySelector(".tn-quoi b")!.textContent, l.querySelector(".tn-qte span")!.textContent, l.querySelector(".tn-prix-l")!.textContent!.replace(/\u00a0/g, " ")]));
+      expect(lignes).toEqual([["v-bleu-s", "Collier Museau, Bleu · S", "1", "25,50 €"], ["v-rouge-m", "Collier Museau, Rouge · M", "1", "25,50 €"], ["v-jaune-s", "Collier Museau, Jaune · S", "1", "25,50 €"], ["v-laisse", "La laisse Museau", "1", "Offert"]]);
+      expect((await tiroir.locator(".tn-prix-t").textContent())!.replace(/\u00a0/g, " ")).toBe("76,50 €");
+      expect(await tiroir.getAttribute("data-tn-vide")).toBeNull();
+      // Aucune ligne d'exemple ne reste ; la photo du cadeau est celle du pack ; le script d'achat n'a pas changé de page.
+      expect(await tiroir.locator(".tn-lignes").textContent()).not.toMatch(/Nom du premier|À compléter/);
+      expect(await tiroir.locator('.tn-ligne[data-tn-id="v-laisse"] .tn-ph').evaluate((el: HTMLElement) => el.style.backgroundImage)).toContain("laisse-01.webp");
+      expect(await page.evaluate(() => (window as any).allers)).toBe(0);
+      // Fermé à la croix, puis un deuxième ajout par le bouton du bloc : il se rouvre avec les quantités à jour.
+      await tiroir.locator(".tn-x").click();
+      expect(await tiroir.getAttribute("data-tn-ouvert")).toBeNull();
+      await page.locator(".tn-achat > a.tn-bt[data-pogo]").first().evaluate((el: HTMLElement) => el.click());
+      await page.waitForSelector(".tn-panier-cote[data-tn-ouvert]");
+      expect(await tiroir.locator(".tn-lignes .tn-qte span").allTextContents()).toEqual(["2", "2", "2", "2"]);
+      if (process.env.ACHAT_OUT) { await page.waitForTimeout(400); fs.writeFileSync(path.join(process.env.ACHAT_OUT, "tiroir__vive.png"), await page.screenshot({ type: "png" })); }
+    } finally { await browser.close(); }
+  }, 120_000);
+
+  it("rappel vers l'achat et coloris en scène : le bouton ramène au bloc d'achat ; une couleur touchée se choisit dans le pack et se voit sur la grande photo", async () => {
+    const suite = ["tn-achat", "tn-packs", "tn-sous-bouton", "tn-atouts", "tn-rappel-achat", "tn-avantages", "tn-coloris", "tn-livraison"];
+    for (const width of [390, 1280]) {
+      const { browser, page } = await ouvre(await ficheStatique({ sections: suite, fenetre: false }), width, "rappel");
+      try {
+        expect(await page.locator("section#tn-achat[data-tn-achat]").count()).toBe(1);
+        const bouton = page.locator("[data-tn-rappel-achat] a[data-tn-rappel]");
+        await bouton.scrollIntoViewIfNeeded();
+        expect(await page.evaluate(() => scrollY)).toBeGreaterThan(600);
+        await bouton.click();
+        await page.waitForFunction(() => { const r = document.querySelector(".tn-achat h1")!.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }, null, { timeout: 5000 });
+        // Les coloris : trois couleurs avec leur photo ; « Rouge » passe dans les trois articles du pack et sur la grande photo.
+        const rouge = page.locator('[data-tn-coloris] a[data-tn-couleur="Rouge"]');
+        expect(await page.locator("[data-tn-coloris] a[data-tn-couleur]").count()).toBe(3);
+        await rouge.scrollIntoViewIfNeeded();
+        await rouge.click();
+        expect(await page.locator('[data-tn-pack][data-tn-quantite="3"] [data-tn-article] select:first-of-type').evaluateAll((els) => els.map((x) => (x as HTMLSelectElement).value))).toEqual(["Rouge", "Rouge", "Rouge"]);
+        expect(await page.locator(".tn-achat .tn-grande").evaluate((el: HTMLElement) => el.style.backgroundImage)).toContain("ambiance-02.webp");
+        await page.waitForFunction(() => { const r = document.querySelector(".tn-achat h1")!.getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }, null, { timeout: 5000 });
+        await page.locator("[data-tn-packs] [data-tn-acheter]").click();
+        expect((await panier(page)).lignes.map((l: any) => [l.id, l.quantite])).toEqual([["v-rouge-s", 3], ["v-laisse", 1]]);
+      } finally { await browser.close(); }
+    }
+  }, 120_000);
+
+  it("sur ordinateur, la fiche tient en deux colonnes : la galerie reste visible pendant que la colonne d'achat défile, puis le récit reprend toute la largeur", async () => {
+    for (const [n, a] of ALLURES.entries()) for (const width of [1000, 1280]) {
+      const { browser, page } = await ouvre(await ficheStatique({ allure: n, fenetre: false }), width, `colonnes-${a.key}`);
+      try {
+        const boite = (sel: string) => page.evaluate((q) => { const r = document.querySelector(q)!.getBoundingClientRect(); return { x: Math.round(r.left), d: Math.round(r.right), y: Math.round(r.top + scrollY), h: Math.round(r.height), haut: Math.round(r.top) }; }, sel);
+        const titre = await boite(".tn-achat h1"), gal = await boite(".tn-achat .tn-galerie");
+        expect(gal.d, "la galerie est à gauche de la colonne d'achat").toBeLessThan(titre.x);
+        // Les pièces d'achat : même bord gauche et même largeur que la colonne (l'offre en bandeau comprise), l'une sous l'autre, dans l'ordre.
+        let bas = titre.y;
+        for (const id of ["tn-offre-moment", "tn-packs", "tn-sous-bouton"]) {
+          const b = await boite(`[data-essai="${id}"]`);
+          expect(Math.abs(b.x - titre.x), `${a.key} ${width} ${id} : aligné sur la colonne d'achat`).toBeLessThanOrEqual(1);
+          expect(Math.abs(b.d - titre.d), `${a.key} ${width} ${id} : largeur de la colonne`).toBeLessThanOrEqual(1);
+          expect(b.y, `${id} sous la pièce d'avant`).toBeGreaterThan(bas);
+          bas = b.y;
+        }
+        // Le récit : pleine largeur, sous la colonne.
+        const recit = await boite('[data-essai="tn-atouts"]'), sb = await boite('[data-essai="tn-sous-bouton"]');
+        expect(recit.x).toBe(0);
+        expect(recit.d).toBe(width);
+        expect(recit.y).toBeGreaterThanOrEqual(sb.y + sb.h);
+        // La galerie reste à l'écran quand on descend jusqu'au dessous du bouton, puis s'en va avec le récit.
+        await page.evaluate(() => scrollTo(0, document.querySelector('[data-essai="tn-sous-bouton"]')!.getBoundingClientRect().top + scrollY - 200));
+        const pendant = await boite(".tn-achat .tn-grande");
+        expect(pendant.haut, `${a.key} ${width} : galerie collante`).toBeGreaterThanOrEqual(0);
+        expect(pendant.haut).toBeLessThanOrEqual(40);
+        if (process.env.ACHAT_OUT && n === 0) fs.writeFileSync(path.join(process.env.ACHAT_OUT, `colle__${width}.png`), await page.screenshot({ type: "png" }));
+        await page.evaluate(() => scrollTo(0, document.querySelector('[data-essai="tn-probleme-reponse"]')!.getBoundingClientRect().top + scrollY));
+        const apres = await boite(".tn-achat .tn-grande");
+        expect(apres.haut + apres.h, `${a.key} ${width} : la photo part avec la colonne d'achat`).toBeLessThan(0);
+      } finally { await browser.close(); }
+    }
+    // Sur téléphone, rien ne change : tout l'un sous l'autre, sur toute la largeur.
+    const { browser, page } = await ouvre(await ficheStatique({ fenetre: false }), 390, "colonnes-tel");
+    try {
+      expect(await page.evaluate(() => getComputedStyle(document.querySelector("main")!).display)).toBe("block");
+      expect(await page.evaluate(() => getComputedStyle(document.querySelector(".tn-achat")!).display)).toBe("grid");
+    } finally { await browser.close(); }
+  }, 180_000);
+
   it.runIf(!!process.env.ACHAT_OUT)("captures de la fiche complète, deux allures, téléphone et ordinateur ; rien ne déborde à 320 px ; la planche du propriétaire", async () => {
     const sharp = (await import("sharp")).default;
     const out = process.env.ACHAT_OUT!;
     const shots: Record<string, Buffer> = {}, cuts: Record<string, number[]> = {};
-    for (const [n, a] of ALLURES.entries()) for (const width of [320, 390, 1280]) {
+    for (const [n, a] of ALLURES.entries()) for (const width of [320, 390, 1000, 1280]) {
       const { browser, page } = await ouvre(await ficheStatique({ allure: n }), width, `fiche-${a.key}`);
       try {
         await page.waitForTimeout(500);
@@ -842,7 +1035,7 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
         expect(large, `${a.key} ${width} px : rien ne dépasse`).toEqual([]);
         expect(await page.evaluate(() => document.documentElement.scrollWidth), `${a.key} ${width}`).toBeLessThanOrEqual(width + 1);
         if (width === 320) continue;
-        const key = `${a.key}-${width === 390 ? "tel" : "ordi"}`;
+        const key = `${a.key}-${width === 390 ? "tel" : width === 1000 ? "moyen" : "ordi"}`;
         // La barre d'achat est une pièce fixe : on la retire de la capture entière, elle a sa propre capture.
         await page.evaluate(() => document.querySelectorAll(".tn-barre").forEach((b) => ((b as HTMLElement).style.visibility = "hidden")));
         shots[key] = await page.screenshot({ type: "png", fullPage: true });

@@ -47,7 +47,7 @@ import { installCustomTheme } from "./install";
 import { menuProducts } from "./render";
 import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_SYSTEM, ORIGINALITY_TYPICAL_MICRO, OriginalitySchema, originalityNote, originalityPrompt, type Originality, type OriginalityOutcome } from "./originality";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
-import { TenueSchema, constructionsOf, isTenueSection } from "./tenue";
+import { TenueSchema, constructionsOf, isTenueSection, sansArche } from "./tenue";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
 import { jobSpentMicro } from "../budget";
@@ -281,7 +281,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     if (d.famille) { t.famille = d.famille; t.familleWhy = d.familleWhy ?? null; }
     if (d.pageStyle) t.pageStyle = d.pageStyle;
     // La tenue de la marque (sections à tenue) : choisie par le concepteur, gardée dans le thème.
-    if (d.tenue) t = applyStructure(t, [{ op: "tenue", tenue: d.tenue }]);
+    if (d.tenue) t = applyStructure(t, [{ op: "tenue", tenue: { ...d.tenue, cadre: sansArche(d.tenue.cadre) } }]); // jamais de photo dans une arche (goût du propriétaire)
     if (d.search) t = applyStructure(t, [{ op: "shell", slot: "search", section: ref(d.search) }]);
     return t;
   };

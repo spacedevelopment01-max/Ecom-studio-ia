@@ -25,8 +25,8 @@ import type { ThemeSpec, StorePage, StoreCollection, TemplateJson } from "../../
 import { LIBRARY_DIR, libSection } from "./library";
 import { TENUE_FILES, TENUE_SECTIONS, isTenueSection, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenuePrestations, type TenuePrestation } from "./tenue";
 import { isHeaderRoot, withMenu } from "./menu";
-import { venteBoutique, withTenueComparison, withTenueFamilies, withTenueSite, type TenueSite } from "./tenue-data";
-import { allSections, drawerOf, sectionHtml, type CtPage, type CtSection, type CustomTheme } from "./theme";
+import { venteBoutique, withAchatId, withTenueComparison, withTenueFamilies, withTenueSite, type TenueSite } from "./tenue-data";
+import { allSections, drawerOf, hasCoque, sectionHtml, type CtPage, type CtSection, type CustomTheme } from "./theme";
 import { freeShippingFrom, type ShopOffers } from "../product-features";
 
 export type ExportProblem = { level: "bloquant" | "à savoir"; text: string };
@@ -44,7 +44,7 @@ export type ExportInput = {
   /** Mentions vraies à dire près du prix (indice de réparabilité, paiement en plusieurs fois), confirmées par le client. */
   priceNotes?: string[];
   /** Coordonnées, horaires et zone du client : écrits tels quels dans les pages (téléphone, adresse, plan). */
-  site?: Pick<TenueSite, "phone" | "address" | "hours" | "area"> & Partial<Pick<TenueSite, "biens" | "carte">>;
+  site?: Pick<TenueSite, "phone" | "address" | "hours" | "area"> & Partial<Pick<TenueSite, "biens" | "carte" | "vitrine">>;
   /** Extension du fichier d'un média de la bibliothèque (« jpg », « png »), ou null s'il n'existe plus. */
   assetExt: (assetId: string) => string | null;
   /** Texte de bouton ou de lien → clé de page (les liens écrits pour la marque, comme dans l'aperçu). */
@@ -109,6 +109,26 @@ export function tenueSheets() {
 }
 /** La feuille d'un thème : le socle et les règles des seules sections qu'il utilise, dans l'ordre d'origine. */
 export const themeCss = (roots: Set<string>) => cssText(tenueSheets().filter((x) => x.root === null || roots.has(x.root)).map((x) => x.rule));
+/**
+ * La feuille d'un thème en morceaux, coupée entre deux règles, dans l'ordre d'origine : le premier d'au plus « first »
+ * caractères, les suivants d'au plus « max ». Une section de Shopify ne dépasse pas 256 Ko, et le contrôle du Studio
+ * refuse une section de plus de 200 000 caractères : un site complet (plus de vingt pièces différentes) a une feuille
+ * plus longue que cela. Un seul morceau : toute la feuille tient dans l'en-tête.
+ */
+export function themeCssParts(roots: Set<string>, first: number, max: number): string[] {
+  const rules = tenueSheets().filter((x) => x.root === null || roots.has(x.root)).map((x) => x.rule);
+  const out: string[] = [];
+  let cur: Rule[] = [], size = 0, limit = Math.max(first, 1), media: string | null = null;
+  for (const r of rules) {
+    const n = r.selector.length + r.body.length + 3 + (r.media && (r.media !== media || !cur.length) ? r.media.length + 6 : 0);
+    if (cur.length && size + n > limit) { out.push(cssText(cur)); cur = []; size = 0; limit = max; }
+    cur.push(r); size += n; media = r.media;
+  }
+  if (cur.length || !out.length) out.push(cssText(cur));
+  return out;
+}
+/** Taille de la feuille portée par une seule section (l'en-tête, puis chaque section de suite). */
+export const FEUILLE_MAX = 150_000;
 /** Règles réécrites en texte, les @media regroupés à la suite, dans l'ordre d'origine. */
 export function cssText(rules: Rule[]): string {
   const out: string[] = [];
@@ -159,7 +179,7 @@ export function templateOf(pg: Pick<CtPage, "key" | "product"> & { sections?: { 
 /** Suffixe du modèle de la fiche propre à un produit (« product.<suffixe> »). */
 export const suffixOf = (pg: Pick<CtPage, "key" | "product">) => `fiche-${slug(pg.product ?? pg.key.replace(/^product-/, ""))}`.slice(0, 50).replace(/-+$/, "");
 
-type Ctx = { input: ExportInput; t: CustomTheme; files: Record<string, string>; problems: ExportProblem[]; page: CtPage | null; template: string | null; /** Classes racines des sections du thème (leur feuille part avec l'en-tête). */ roots: Set<string> };
+type Ctx = { input: ExportInput; t: CustomTheme; files: Record<string, string>; problems: ExportProblem[]; page: CtPage | null; template: string | null; /** Suite de la feuille du site, quand elle ne tient pas dans l'en-tête (remplie en convertissant l'en-tête). */ suite: string[]; /** Classes racines des sections du thème (leur feuille part avec l'en-tête). */ roots: Set<string> };
 
 /** Adresse réelle d'une destination de l'aperçu (clé de page, « shop:Famille », « legal:cgv »). */
 function urlOf(c: Ctx, to: string): string {
@@ -332,6 +352,7 @@ function live(c: Ctx, html: string, root: string | null): string {
   out = out.replace(/<span data-tn-paiements>[\s\S]*?<\/span>/, `<span class="tn-paiements" data-tn-paiements>{%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}</span>`);
   // Bloc d'achat : photos, prix, stock et ajout au panier du produit de la page.
   if (/\sdata-tn-achat\b/.test(out)) {
+    out = withAchatId(out); // la cible des boutons de rappel (« #tn-achat »)
     const label = strip(/<a class="tn-bt"[^>]*data-pogo[^>]*>([\s\S]*?)<\/a>/.exec(out)?.[1] ?? "Ajouter au panier");
     out = out
       .replace(/<div class="tn-galerie">[\s\S]*?<\/div><\/div>/, `<div class="tn-galerie">{%- if product.featured_image -%}<div class="tn-grande tn-ph" role="img" aria-label="{{ product.featured_image.alt | default: product.title | escape }}" style="background-image:url({{ product.featured_image | image_url: width: 1400 }})"></div>{%- endif -%}{%- if product.images.size > 1 -%}<div class="tn-vignettes">{%- for image in product.images limit: 5 -%}<i class="tn-ph" style="background-image:url({{ image | image_url: width: 300 }})"></i>{%- endfor -%}</div>{%- endif -%}</div>`)
@@ -358,6 +379,22 @@ function live(c: Ctx, html: string, root: string | null): string {
       .replace(/<div class="tn-prix">[\s\S]*?<\/div>(?:<div class="tn-rupture">[\s\S]*?<\/div>)?/, `<div class="tn-prix">{{ vedette.selected_or_first_available_variant.price | money }}</div>{%- unless vedette.available -%}<div class="tn-rupture">Épuisé pour l'instant.</div>{%- endunless -%}`)
       .replace(/<a class="tn-bt[^"]*"[^>]*>[\s\S]*?<\/a>/, `{%- form 'product', vedette, class: 'tn-enveloppe' -%}<input type="hidden" name="id" value="{{ vedette.selected_or_first_available_variant.id }}"><button class="tn-bt" type="submit" name="add"{% unless vedette.available %} disabled{% endunless %}>${label}</button>{%- endform -%}`)
       .replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${co.shipping ? literal(attr(co.shipping)) : "[À compléter]"}</li><li>Retours : ${co.returns ? literal(attr(co.returns)) : "[À compléter]"}</li></ul>`);
+  }
+  // Rappel vers l'achat : une vraie ancre vers le bloc d'achat de la fiche (sans script) ; ailleurs, vers la fiche du produit.
+  if (/\sdata-tn-rappel-achat\b/.test(out)) {
+    const first = c.page?.product ?? c.input.products[0]?.handle ?? "";
+    out = out.replace(/^(<section\b[^>]*>)/, `$1{%- assign vedette = product -%}{%- unless vedette -%}{%- assign vedette = all_products['${first}'] -%}{%- endunless -%}`)
+      .replace(/(<b class="tn-ra-nom">)[\s\S]*?(<\/b>)/, `$1{{ vedette.title }}$2`)
+      .replace(/(<span class="tn-ra-prix">)[\s\S]*?(<\/span>)/, `$1{{ vedette.selected_or_first_available_variant.price | money }}$2`)
+      .replace(/<a class="tn-bt"[^>]*\sdata-tn-rappel[^>]*>/, `<a class="tn-bt" href="{% unless product %}{{ vedette.url }}{% endunless %}#tn-achat">`);
+  }
+  // Les coloris en scène : les couleurs lues dans les options du produit, la photo de chaque version ; un toucher mène à
+  // la fiche sur cette version. Moins de deux couleurs avec photo : la pièce reste cachée (rien d'exemple ne part).
+  if (/\sdata-tn-coloris\b/.test(out)) {
+    const first = c.page?.product ?? c.input.products[0]?.handle ?? "";
+    const couleurs = (inner: string) => `{%- for option in vedette.options_with_values -%}{%- assign tn_nom = option.name | downcase -%}{%- if tn_nom contains 'coul' or tn_nom contains 'color' or tn_nom contains 'teinte' -%}{%- for value in option.values -%}{%- if value.variant.featured_image -%}${inner}{%- endif -%}{%- endfor -%}{%- endif -%}{%- endfor -%}`;
+    out = out.replace(/^<section\b([^>]*)>/, (_m, a: string) => `<section${a}{%- assign vedette = product -%}{%- unless vedette -%}{%- assign vedette = all_products['${first}'] -%}{%- endunless -%}{%- assign tn_nb = 0 -%}${couleurs("{%- assign tn_nb = tn_nb | plus: 1 -%}")}{% if tn_nb == 0 or tn_nb == 1 %} hidden{% endif %}>`)
+      .replace(/(<ul class="tn-col-liste">)[\s\S]*?(<\/ul>)/, (_m, a: string, b: string) => `${a}${couleurs(`<li><a class="tn-col" href="{{ value.variant.url }}#tn-achat"><div class="tn-ph tn-cadre" role="img" aria-label="{{ value | escape }}" style="background-image:url({{ value.variant.featured_image | image_url: width: 900 }})"></div><span><i{% if value.swatch.color %} style="--teinte:{{ value.swatch.color }}"{% endif %}></i>{{ value }}</span></a></li>`)}${b}`);
   }
   // Une pièce dont toutes les lignes sont encore « à compléter » ne garde pas ses en-têtes seuls : elle part avec ses lignes.
   if (c.input.dropMissing && /tn-avec-lignes/.test(out) && !(out.match(/<li\b[^>]*>[\s\S]*?<\/li>/g) ?? []).some((li) => !/\[À compléter/.test(li))) out = out.replace(/<(small|div)\b[^>]*class="[^"]*tn-avec-lignes[^"]*"[^>]*>[\s\S]*?<\/\1>/g, "");
@@ -409,6 +446,8 @@ function live(c: Ctx, html: string, root: string | null): string {
     out = out.replace(/<button type="button" class="tn-pan"([^>]*)>([\s\S]*?)<span>0<\/span>([\s\S]*?)<\/button>/, `<a class="tn-pan" href="{{ routes.cart_url }}"$1>$2<span>{{ cart.item_count }}</span>$3</a>`);
     if (c.input.logoAssetId) { const ext = c.input.assetExt(c.input.logoAssetId); if (ext) { const f = `tn-logo.${ext}`; c.files[f] = c.input.logoAssetId; out = out.replace(/(<span class="tn-nom lg">)[\s\S]*?(<\/span>)/, `$1<img src="{{ '${f}' | asset_url }}" alt="${attr(c.input.name)}" loading="eager">$2`); } }
   }
+  // En-tête d'une page d'arrivée (coque propre à la page) : le logo s'il existe, comme l'en-tête du site.
+  if (root === "tn-entete-arrivee" && c.input.logoAssetId) { const ext = c.input.assetExt(c.input.logoAssetId); if (ext) { const f = `tn-logo.${ext}`; c.files[f] = c.input.logoAssetId; out = out.replace(/(<span class="tn-nom lg">)[\s\S]*?(<\/span>)/, `$1<img src="{{ '${f}' | asset_url }}" alt="${attr(c.input.name)}" loading="eager">$2`); } }
   // Recherche de la page introuvable : un vrai champ.
   out = out.replace(/<div class="tn-champ"><span>([^<]*)<\/span>(<svg[\s\S]*?<\/svg>)<\/div>/, (_m, label: string, svg: string) => `<form class="tn-champ" action="{{ routes.search_url }}" method="get" role="search"><input type="search" name="q" placeholder="${attr(label)}" aria-label="${attr(label)}"><button type="submit" aria-label="Chercher">${svg}</button></form>`);
   return out;
@@ -538,7 +577,7 @@ function vente(c: Ctx, html: string, root: string | null, where: string): string
 }
 
 /** Une section du thème → sa section Shopify (HTML en Liquid, sa part de la feuille, un schéma). */
-function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean } = {}): string | null {
+function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean; /** Pièce de la coque propre à une page : traitée comme un en-tête ou un pied, sans la feuille du site. */ coque?: "header" | "footer" } = {}): string | null {
   const l = libSection(s.id);
   const where = `${c.page?.label ?? (o.header ? "En-tête" : "Site")} › ${l?.title ?? s.id}`;
   if (!isTenueSection(l)) { c.problems.push({ level: "bloquant", text: `${where} : cette section n'est pas à la tenue de la marque, elle ne part pas encore en boutique` }); return null; }
@@ -547,7 +586,7 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean } = {}): stri
   const root = rootOf(html);
   // En-têtes du thème unique : le menu prend la forme de la construction ; photos des familles et produits mis en avant
   // sont lus dans la boutique (collections), jamais figés dans le thème.
-  if (o.header) html = withMenu(html, c.t.menu, { construction: built, boutique: !(c.input.business === "services" && !c.t.pages.some((pg) => pg.key === "cart")), shop: { collection: slug } });
+  if (o.header || o.coque === "header") html = withMenu(html, c.t.menu, { construction: built, boutique: !(c.input.business === "services" && !c.t.pages.some((pg) => pg.key === "cart")), shop: { collection: slug } });
   // Ce que le client a donné s'écrit dans la page : téléphone, adresse, horaires, zone, plan, livraison et retours.
   html = withTenueSite(withTenuePrestations(html, c.input.prestations ?? []), { ...(c.input.site ?? {}), shipping: c.input.company?.shipping ?? null, returns: c.input.company?.returns ?? null, prestations: c.input.prestations ?? [], live: true }, built).replace(/<mark class="tn-manque">([\s\S]*?)<\/mark>/g, "[$1]");
   // Les avis : sans application d'avis dans la boutique, rien ne peut en recevoir ; la section n'est envoyée que si de vrais avis y sont écrits.
@@ -561,7 +600,7 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean } = {}): stri
   const before = /\[À compléter/.test(html);
   html = missing(c, html, where);
   // Une section vidée de ses informations ne garde pas un titre seul : elle est retirée, et c'est dit.
-  if (before && c.input.dropMissing && !o.header) {
+  if (before && c.input.dropMissing && !o.header && !o.coque) {
     const text = (h: string) => strip(h.replace(/<svg[\s\S]*?<\/svg>/g, " "));
     const titles = [...html.matchAll(/<h[12]\b[^>]*>([\s\S]*?)<\/h[12]>/g)].map((m) => strip(m[1])).join(" ");
     // (Une phrase entière écrite en titre, une citation par exemple, est un contenu : elle reste.)
@@ -569,17 +608,36 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean } = {}): stri
   }
   html = forms(html, root);
   html = links(c, photos(c, html, where), where);
-  html = html.replace(/\sonclick="return false"/g, "").replace(/^<(section|footer|aside|div)\b/, `<$1${built ? ` data-tn-c="${built}"` : ""}`);
+  html = html.replace(/\sonclick="return false"/g, "").replace(/^<(section|footer|aside|div)\b/, `<$1${built ? ` data-tn-c="${built}"` : ""}${o.coque ? " data-tn-coque" : ""}`);
   // Toute la feuille part avec l'en-tête (il est sur toutes les pages), dans l'ordre d'origine : couleurs et polices
   // de la marque, fond de page, socle, règles des sections utilisées, puis les règles propres à la boutique.
   const fond = c.input.palette?.light ?? "#F6F1E7";
-  const css = o.header ? [tenueCss(c.input.palette, c.t.tenue, "", c.input.titleWeight ?? null).trim(), ".ctw{--f-title:var(--font-heading);--f-ui:var(--font-body)}",
-    `html body:has(.ctw),html body:has(.ctw) .es-main,html body:has(.ctw) .shopify-section{background-color:${fond}}`,
-    `html body:has(.ctw[data-tn-fond="toile"]){background-image:repeating-linear-gradient(0deg,color-mix(in srgb,var(--tn-encre) 3.5%,transparent) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,color-mix(in srgb,var(--tn-encre) 3%,transparent) 0 1px,transparent 1px 3px)}`,
-    `html body:has(.ctw[data-tn-fond="toile"]) .es-main,html body:has(.ctw[data-tn-fond="toile"]) .shopify-section{background-color:transparent}`,
-    themeCss(c.roots), SHOP_CSS].join("\n") : "";
+  // Une feuille trop longue pour une seule section est coupée entre deux règles : le début reste dans l'en-tête, la
+  // suite part dans des sections de suite du groupe d'en-tête (voir customThemeSpec), dans le même ordre.
+  let css = "";
+  if (o.header) {
+    const tete = [tenueCss(c.input.palette, c.t.tenue, "", c.input.titleWeight ?? null).trim(), ".ctw{--f-title:var(--font-heading);--f-ui:var(--font-body)}",
+      `html body:has(.ctw),html body:has(.ctw) .es-main,html body:has(.ctw) .shopify-section{background-color:${fond}}`,
+      `html body:has(.ctw[data-tn-fond="toile"]){background-image:repeating-linear-gradient(0deg,color-mix(in srgb,var(--tn-encre) 3.5%,transparent) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,color-mix(in srgb,var(--tn-encre) 3%,transparent) 0 1px,transparent 1px 3px)}`,
+      `html body:has(.ctw[data-tn-fond="toile"]) .es-main,html body:has(.ctw[data-tn-fond="toile"]) .shopify-section{background-color:transparent}`].join("\n");
+    const parts = themeCssParts(c.roots, FEUILLE_MAX - tete.length - html.length - SHOP_CSS.length, FEUILLE_MAX - SHOP_CSS.length);
+    css = [tete, parts[0], ...(parts.length === 1 ? [SHOP_CSS] : [])].join("\n");
+    c.suite.push(...parts.slice(1).map((x, i, all) => (i === all.length - 1 ? `${x}\n${SHOP_CSS}` : x)));
+  }
   const name = (l?.title ?? s.id).replace(/ à la tenue de la marque/, "").slice(0, 25);
   return `{%- comment -%} E-COM STUDIO IA : section du thème sur mesure (${s.id}). {%- endcomment -%}\n<div class="ctw ctw-${c.t.family}"${tenueAttrs(c.t.tenue)}>${html}</div>\n${css ? `{% stylesheet %}\n${css}\n{% endstylesheet %}\n` : ""}{% schema %}\n${JSON.stringify({ name, settings: [] })}\n{% endschema %}\n`;
+}
+
+/** Type des sections de suite de la feuille du site (« es-custom-feuille-1 »…). */
+const FEUILLE_TYPE = "es-custom-feuille-";
+/** Le modèle d'une page tel que Shopify le nomme, « nom.suffixe » (« page.arrivee », « index. » sans suffixe). */
+export const coqueModele = (key: string) => (key.includes(".") ? key : `${key}.`);
+/**
+ * Une section d'un groupe du site (en-tête ou pied) qui ne rend rien sur les modèles des pages à coque propre : son
+ * HTML est mis sous condition (« sauf » : la condition Liquid des modèles concernés), sa feuille et son schéma restent.
+ */
+export function sansCoque(liquid: string, sauf: string): string {
+  return liquid.replace(/(\{%- endcomment -%\}\n)([\s\S]*?)(\n(?:\{% stylesheet %\}|\{% schema %\}))/, (_m, a: string, body: string, b: string) => `${a}{%- assign tn_modele = template.name | append: '.' | append: template.suffix -%}{%- unless ${sauf} -%}${body}{%- endunless -%}${b}`);
 }
 
 /** Gabarits que Shopify exige et que le thème sur mesure ne dessine pas : ceux du thème de base du Studio. */
@@ -599,10 +657,11 @@ const BASE_TEMPLATES: Record<string, TemplateJson> = {
 export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExport {
   const problems: ExportProblem[] = [], files: Record<string, string> = {};
   const customSections: ThemeSpec["customSections"] = {}, templates: Record<string, TemplateJson> = {}, pages: StorePage[] = [], productSuffixes: Record<string, string> = {};
-  const add = (c: Ctx, s: CtSection, o: { header?: boolean } = {}): string | null => { const liquid = sectionLiquid(c, s, o); if (!liquid) return null; const type = `es-custom-${s.uid}`; customSections[type] = { name: (libSection(s.id)?.title ?? s.id).slice(0, 25), liquid }; return type; };
+  const add = (c: Ctx, s: CtSection, o: { header?: boolean; coque?: "header" | "footer" } = {}): string | null => { const liquid = sectionLiquid(c, s, o); if (!liquid) return null; const type = `es-custom-${s.uid}`; customSections[type] = { name: (libSection(s.id)?.title ?? s.id).slice(0, 25), liquid }; return type; };
   const group = (list: (string | null)[], type: "header" | "footer", name: string) => { const ok = list.filter((x): x is string => !!x); return { type, name, sections: Object.fromEntries(ok.map((x) => [x.replace(/^es-custom-/, "tn-"), { type: x, settings: {} }])), order: ok.map((x) => x.replace(/^es-custom-/, "tn-")) }; };
   const roots = new Set(allSections(t).map((x) => rootOf(sectionHtml(x.s))).filter((x): x is string => !!x));
-  const ctx = (page: CtPage | null, template: string | null): Ctx => ({ input, t, files, problems, page, template, roots });
+  const suite: string[] = [];
+  const ctx = (page: CtPage | null, template: string | null): Ctx => ({ input, t, files, problems, page, template, suite, roots });
   if (!t.header || !t.footer) problems.push({ level: "bloquant", text: "il manque l'en-tête ou le pied de page" });
   const bands = (t.extras ?? []).filter((s) => tenueSection(s.id)?.group === "bandeau");
   // Le tiroir de panier part avec le pied de page (il est sur toutes les pages) ; la recherche à tenue, avec l'en-tête.
@@ -615,6 +674,14 @@ export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExpo
   // L'en-tête porte le socle de la feuille (couleurs, polices, formes) : il est sur toutes les pages.
   const header = group([...bands.map((s) => add(ctx(null, null), s)), t.header ? add(ctx(null, null), t.header, { header: true }) : null, search ? add(ctx(null, null), { ...search, construction: undefined }) : null], "header", "En-tête");
   const footer = group([t.footer ? add(ctx(null, null), t.footer) : null, drawer ? add(ctx(null, null), drawer) : null, offre ? add(ctx(null, null), offre) : null], "footer", "Pied de page");
+  // La suite de la feuille du site (site complet : elle ne tient pas dans la seule section de l'en-tête) : des sections
+  // du groupe d'en-tête qui ne portent que des règles, écrites dans la page pour garder l'ordre d'origine (la feuille
+  // de l'en-tête est chargée d'abord, puis chaque suite, dans l'ordre du groupe).
+  suite.forEach((part, i) => {
+    const type = `${FEUILLE_TYPE}${i + 1}`;
+    customSections[type] = { name: `Feuille du site ${i + 2}`, liquid: `{%- comment -%} E-COM STUDIO IA : suite de la feuille du site (elle ne tient pas dans une seule section). {%- endcomment -%}\n<style>${/\{\{|\{%/.test(part) ? `{% raw %}${part}{% endraw %}` : part}</style>\n{% schema %}\n${JSON.stringify({ name: `Feuille du site ${i + 2}`, settings: [] })}\n{% endschema %}\n` };
+    header.sections[`tn-feuille-${i + 1}`] = { type, settings: {} }; header.order.push(`tn-feuille-${i + 1}`);
+  });
   // Remises : le thème n'en calcule aucune. La liste exacte de ce que la boutique doit porter, dite au client.
   const attendues = remisesAttendues(input.offres);
   if (attendues.length && allSections(t).some((x) => ["tn-lots", "tn-packs"].includes(rootOf(sectionHtml(x.s)) ?? ""))) problems.push({ level: "à savoir", text: `Remises : le thème affiche les prix de tes offres mais n'en calcule aucune ; le prix payé est celui de ta boutique. ${input.offres?.remisesConfirmees ? "Tu as confirmé avoir créé" : "À créer dans ta boutique (Réductions › Réduction automatique)"} : ${attendues.join(" ; ")}` });
@@ -624,16 +691,31 @@ export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExpo
     for (const x of Object.values(header.sections)) customSections[x.type].liquid = customSections[x.type].liquid.replace(/href="\{\{ routes\.cart_url \}\}"/g, `href="{% if template.name == 'cart' %}{{ routes.cart_url }}{% else %}#tn-panier-cote{% endif %}"`);
     problems.push({ level: "à savoir", text: "Tiroir de panier : dans Shopify, il s'ouvre au clic sur le panier de l'en-tête ; après un ajout au panier, la boutique montre la page panier (aucun script ne part)" });
   }
+  const coques: { key: string; label: string }[] = [];
   for (const [i, pg] of t.pages.entries()) {
     const key = templateOf(pg, i === 0);
     if (!key) { problems.push({ level: "à savoir", text: `« ${pg.label} » n'est pas envoyée : dans Shopify, le compte client est une page de Shopify` }); continue; }
-    const c = ctx(pg, key), types = pg.sections.map((s) => add(c, s)).filter((x): x is string => !!x);
+    // Coque propre à la page : SON en-tête est la première section du modèle, SON pied la dernière.
+    const c = ctx(pg, key), types = [pg.coque?.header ? add(c, pg.coque.header, { coque: "header" }) : null, ...pg.sections.map((s) => add(c, s)), pg.coque?.footer ? add(c, pg.coque.footer, { coque: "footer" }) : null].filter((x): x is string => !!x);
+    if (hasCoque(pg)) coques.push({ key, label: pg.label });
     templates[key] = { sections: Object.fromEntries(types.map((x) => [x.replace(/^es-custom-/, "tn-"), { type: x, settings: {} }])), order: types.map((x) => x.replace(/^es-custom-/, "tn-")), ...(key === "password" ? { layout: "password" } : {}) };
     if (key.startsWith("product.") && pg.product) productSuffixes[pg.product] = key.slice(8);
     if (templates[key] && ["blog", "article", "search"].includes(key)) problems.push({ level: "à savoir", text: `« ${pg.label} » : dans Shopify, cette page est remplie par la boutique (articles du journal, résultats de la recherche)` });
     if (key.startsWith("page.")) pages.push({ handle: pageName(pg.key), title: pg.label, template_suffix: key.slice(5), body_html: "", ...(pg.seo ? { seo: pg.seo } : {}) });
     // Une fiche produit vend : elle garde un vrai formulaire d'achat.
     if (/^product/.test(key) && !types.some((x) => /\{%-?\s*form 'product'/.test(customSections[x].liquid))) problems.push({ level: "bloquant", text: `« ${pg.label} » n'a pas de bloc d'achat : une fiche produit doit permettre d'acheter` });
+  }
+  // Pages à coque propre (page d'arrivée d'une publicité) : Shopify n'a qu'un groupe d'en-tête et un groupe de pied par
+  // thème. Sur le modèle de ces pages, les sections des deux groupes (bandeau, en-tête, recherche, pied, panier de côté,
+  // fenêtre d'offre) ne rendent rien ; leur feuille et leur schéma restent (la feuille du site part avec l'en-tête).
+  if (coques.length) {
+    const sauf = coques.map((x) => `tn_modele == '${coqueModele(x.key)}'`).join(" or ");
+    for (const g of [header, footer]) for (const x of Object.values(g.sections)) if (!x.type.startsWith(FEUILLE_TYPE)) customSections[x.type].liquid = sansCoque(customSections[x.type].liquid, sauf);
+    // Hors de Shopify (WooCommerce, PrestaShop), l'en-tête et le pied du site sont posés une fois pour toutes les pages :
+    // là, c'est la feuille du site qui les retire des pages qui portent leur coque (chaque section y garde son repère « data-es-type »).
+    const duSite = [header, footer].flatMap((g) => Object.values(g.sections).filter((x) => !x.type.startsWith(FEUILLE_TYPE)).map((x) => `[data-es-type="${x.type}"]`));
+    if (t.header && customSections[`es-custom-${t.header.uid}`] && duSite.length) customSections[`es-custom-${t.header.uid}`].liquid = customSections[`es-custom-${t.header.uid}`].liquid.replace(/\n\{% endstylesheet %\}/, () => `\nhtml body:has([data-tn-coque]) :is(${duSite.join(",")}){display:none!important}\n{% endstylesheet %}`);
+    problems.push({ level: "à savoir", text: `${coques.map((x) => `« ${x.label} »`).join(", ")} : cette page a son propre en-tête et son propre pied ; l'en-tête, le pied et les fenêtres du site ne s'y affichent pas` });
   }
   for (const [k, v] of Object.entries(BASE_TEMPLATES)) templates[k] ??= structuredClone(v);
   // Un site de services ne dessine pas de fiche produit : Shopify en exige une, c'est celle du thème de base.

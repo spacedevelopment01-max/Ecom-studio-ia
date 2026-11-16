@@ -201,6 +201,16 @@ export function remisesConfirmees(offre: OffreBoutique | null | undefined, preuv
   return { ok: true, pourquoi: "Les remises de l'offre sont en place dans la boutique." };
 }
 
+/**
+ * L'indicateur passé à la mise en boutique (« les prix de lot et de pack peuvent-ils s'afficher ? ») : il vient de la
+ * PREUVE lue dans la boutique quand elle existe (oui seulement si elle est bonne, récente et pour ces règles-là),
+ * sinon de ce que le client a déclaré (« j'ai créé mes remises »). Une preuve qui dit non l'emporte sur la déclaration.
+ */
+export function indicateurRemises(offre: OffreBoutique | null | undefined, preuve: PreuveRemises | null | undefined, declare: boolean, o: { maintenant?: number; validiteMs?: number } = {}): { ok: boolean; source: "preuve" | "declaration"; pourquoi: string } {
+  if (!preuve || offreVide(offre)) return { ok: !!declare, source: "declaration", pourquoi: declare ? "Le client a déclaré avoir créé ses remises ; la boutique n'a pas été interrogée." : "Le client n'a pas confirmé ses remises, et la boutique n'a pas été interrogée." };
+  return { ...remisesConfirmees(offre, preuve, o), source: "preuve" };
+}
+
 /** Adresse où la boutique dit l'état de ses remises (WooCommerce : le thème du Studio ; PrestaShop : le module « esstudio »). */
 export function adressePreuve(plateforme: "woocommerce" | "prestashop", boutique: string): string {
   const base = boutique.replace(/\/+$/, "");

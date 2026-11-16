@@ -33,6 +33,9 @@
      data-tn-offre-moment + data-tn-fin (millisecondes) › [data-tn-fin-texte], [data-tn-decompte] : l'offre datée.
      data-tn-fenetre-offre (+ data-tn-delai-s) › [data-tn-fermer], [data-tn-fo-form], [data-tn-fo-code] : fenêtre d'offre.
      data-tn-fen : volet qui s'ouvre en fenêtre (guide des tailles sous le bouton).
+     data-tn-rappel (+ data-tn-couleur = nom d'une couleur) : lien de rappel vers le bloc d'achat de la page (bouton de
+        rappel, coloris en scène). S'il y a un bloc d'achat dans la page, le script y mène (et choisit la couleur) ; sinon
+        le lien suit son chemin. En boutique Shopify, c'est une vraie ancre « #tn-achat », sans cet attribut.
    APRÈS UN AJOUT : l'événement « tn:panier » part sur document (detail = Panier, annulable). Un panier de côté qui
    s'ouvre lui-même appelle preventDefault() ; sinon ce script appelle tnBoutique.allerAuPanier(). */
 (function () {
@@ -199,6 +202,35 @@
     if (!f || !f.matches || !f.matches("[data-tn-achat] form, form[data-tn-achat-form]") || !f.querySelector("[name=add], [data-tn-acheter]")) return;
     var rapide = e.submitter && e.submitter.closest && e.submitter.closest(".tn-rapide");
     if (!rapide) acheter(e.submitter || f.querySelector("[name=add], [data-tn-acheter]"), e);
+  }, true);
+
+  /* Rappel vers le bloc d'achat de la page ; une couleur touchée (coloris en scène) se choisit dans les pastilles et
+     dans les articles du pack, et la grande photo montre cette version. */
+  function couleur(z, nom, lien) {
+    var t = table(z), i = -1;
+    if (t) t.noms.forEach(function (n, k) { if (i < 0 && /couleur|coloris|teinte|colou?r/i.test(n)) i = k; });
+    all(z, "[data-tn-versions] .tn-couleurs label").forEach(function (l) {
+      var input = l.querySelector("input");
+      if (input && !input.disabled && meme(txt(l), nom) && !input.checked) { input.checked = true; input.dispatchEvent(new Event("change", { bubbles: true })); }
+    });
+    if (i >= 0) all(z, "[data-tn-article]").forEach(function (ligne) {
+      var sel = all(ligne, "select")[i], o = sel && [].filter.call(sel.options, function (x) { return meme(x.value, nom); })[0];
+      if (o && sel.value !== o.value) { sel.value = o.value; trie(ligne, t); }
+    });
+    var ph = lien.querySelector(".tn-ph"), grande = z.querySelector("[data-tn-achat] .tn-grande");
+    if (ph && grande && ph.style.backgroundImage) grande.style.backgroundImage = ph.style.backgroundImage;
+  }
+  doc.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("[data-tn-rappel]");
+    if (!a || window.ctPicking) return;
+    var z = zone(a), bloc = z.querySelector("[data-tn-achat]");
+    if (!bloc) return; // pas de bloc d'achat ici (accueil) : le lien mène à la fiche
+    e.preventDefault(); e.stopPropagation();
+    var nom = a.getAttribute("data-tn-couleur");
+    if (nom) { couleur(z, nom, a); stock(z); }
+    var cible = bloc.querySelector("h1") || bloc.querySelector(".tn-prix") || bloc;
+    var calme = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+    if (cible.scrollIntoView) cible.scrollIntoView({ block: "start", behavior: calme ? "auto" : "smooth" });
   }, true);
 
   /* Stock restant et jauge : seulement avec le vrai stock suivi de la version choisie. */

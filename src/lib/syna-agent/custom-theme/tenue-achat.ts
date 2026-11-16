@@ -150,6 +150,8 @@ const SIGNE = {
   retour: TRAIT(`<path d="M4 9.5h11a5 5 0 0 1 0 10H8"/><path d="M8 5.5 4 9.5l4 4"/>`),
   bulle: TRAIT(`<path d="M4 5.5h16v11H10l-4.5 4v-4H4z"/>`),
 };
+/** Une couleur du produit : la photo de la version, la pastille de sa teinte, son nom. */
+const COLORIS = (file: string) => `<li><a class="tn-col" ${A("product")} data-tn-rappel><div class="tn-ph tn-cadre" ${ph(file)}></div><span><i></i>${M("couleur")}</span></a></li>`;
 const VENTE_SECTIONS: TenueSection[] = [
   sec({
     id: "tn-packs", title: "Les packs", kind: "Offre · fiche produit", role: "produit", pour: "produits",
@@ -178,6 +180,20 @@ const VENTE_SECTIONS: TenueSection[] = [
     constructions: [{ key: "plein-ecran", label: "plein écran : une grande photo en haut (à gauche sur grand écran), le titre en grand, le champ e-mail et le bouton dessous" }, { key: "carte-en-bas", label: "une carte posée en bas de l'écran, sans photo, qui laisse voir la page : le titre, le champ e-mail et le bouton sur une ligne" }],
     trait: { fond: "clair", densite: "moyenne", photos: 1, hauteur: 560 }, data: "l'offre donnée par le client (titre, texte, code de réduction)", anim: "S'ouvre après un délai ou à l'intention de sortie ; une fois par visiteur.",
     html: `<section class="tn tn-fenetre-offre" data-tn-fenetre-offre role="dialog" aria-modal="true" aria-labelledby="tn-fo-titre"><div class="tn-fo-boite"><div class="tn-ph" ${ph("md-j3.webp")}></div><div class="tn-fo-corps"><button type="button" class="tn-fo-fermer" data-tn-fermer aria-label="Fermer">×</button><h2 id="tn-fo-titre">${M("le titre de ton offre")}</h2><p class="tn-fo-texte">${M("ton offre, en une phrase")}</p><form class="tn-fo-form" data-tn-fo-form><label>Ton e-mail<input type="email" name="email" required autocomplete="email"></label><button class="tn-bt" type="submit">Recevoir mon code</button><small>En t'inscrivant, tu acceptes de recevoir nos e-mails. Tu te désinscris quand tu veux.</small></form><div class="tn-fo-code" data-tn-fo-code hidden><span>Ton code</span><b>${M("ton code de réduction")}</b></div><button type="button" class="tn-fo-non" data-tn-fermer>Non merci</button></div></div></section>`,
+  }),
+  sec({
+    id: "tn-rappel-achat", title: "Rappel vers l'achat", kind: "Appel à acheter · fiche produit", role: "conversion", pour: "produits",
+    does: "Un bouton qui ramène au bloc d'achat de la page, à poser entre deux sections de récit d'une longue fiche : le visiteur convaincu en cours de lecture n'a pas à remonter seul. Le mot du bouton dit ce qu'il va choisir (« Choisir mon … »). Dans la bande, le vrai nom et le vrai prix du produit, lus au catalogue ; un prix inconnu ne s'écrit pas. Deux rappels au plus par fiche, jamais deux à la suite ; il ne remplace pas « Le produit, son prix, son bouton » en fin de page.",
+    constructions: [{ key: "bouton", label: "un seul gros bouton centré, rien d'autre" }, { key: "bande", label: "une bande de couleur douce : le nom du produit et son prix à gauche, le bouton à droite (l'un sous l'autre sur téléphone)" }],
+    trait: { fond: "clair", densite: "aérée", photos: 0, hauteur: 130 }, data: "le nom et le prix du produit de la page", anim: "Le bouton mène au bloc d'achat de la page.",
+    html: `<section class="tn tn-rappel-achat" data-tn-rappel-achat><div class="tn-ra"><div class="tn-ra-mots"><b class="tn-ra-nom">${M("nom du produit")}</b><span class="tn-ra-prix">${M("prix")}</span></div><a class="tn-bt" ${A("product")} data-tn-rappel>Choisir le mien</a></div></section>`,
+  }),
+  sec({
+    id: "tn-coloris", title: "Les coloris en scène", kind: "Versions · fiche produit et accueil", role: "produit", pour: "produits",
+    does: "Chaque couleur du produit montrée par SA photo, côte à côte, avec son nom : on choisit en voyant. Un toucher mène à la fiche sur cette couleur (sur la fiche elle-même : la couleur se choisit et la page revient au bloc d'achat). Les couleurs sont lues dans les vraies options du produit, chaque photo est celle de la version au catalogue ; une couleur sans photo n'est pas montrée. Seulement pour un produit qui a au moins deux couleurs avec leur photo : sinon la pièce ne se pose pas.",
+    constructions: [{ key: "mosaique", label: "une mosaïque : deux photos de front sur téléphone, jusqu'à quatre sur grand écran, le nom de la couleur et sa pastille dessous" }, { key: "file", label: "une file de grandes photos en hauteur à faire glisser, le nom de la couleur sur une étiquette posée en bas de la photo" }],
+    trait: { fond: "clair", densite: "moyenne", photos: 3, hauteur: 560 }, data: "les couleurs du produit au catalogue et la photo de chaque version", anim: "Dans la construction en file, les photos glissent du doigt.",
+    html: `<section class="tn tn-coloris" data-tn-coloris><h2>Lequel est le tien&nbsp;?</h2><ul class="tn-col-liste">${COLORIS("md-o1.webp")}${COLORIS("md-o3.webp")}${COLORIS("md-o5.webp")}</ul></section>`,
   }),
 ];
 ACHAT_SECTIONS.push(...VENTE_SECTIONS);

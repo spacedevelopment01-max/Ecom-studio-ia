@@ -124,7 +124,7 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       expect(loadFamilyChoice(pid)?.family).toBe("classique");
       const t = S.loadCustomTheme(pid)!;
       expect(t.pages.map((p) => p.key)).toEqual(F.SITE.map((p) => p.key));
-      expect(t.tenue).toMatchObject(F.FAUTEUIL_TENUE);
+      expect(t.tenue).toMatchObject({ ...F.FAUTEUIL_TENUE, cadre: "droit" }); // jamais de photo dans une arche : le cadre « niche » devient droit
       expect(t.chosen).toBeFalsy();
       // Le site est fait dans SA famille : le concepteur (simulé) avait gardé un pied de page hors de ses choix, même
       // après sa reprise ; le Studio l'y ramène sans appel de plus. La famille est gardée avec le site.

@@ -106,7 +106,7 @@ describe("les six familles du Studio (en coulisses)", () => {
     expect(fit.d).toMatchObject({ header: "tn-entete-services", headerConstruction: null, footer: "tn-pied-services" });
     expect(M.familleGaps(fit.d, { business: "services" })).toEqual([]);
     // Grands menus : seulement pour une boutique qui a au moins trois familles de produits.
-    const mega = { famille: "maison-chaleureuse", header: "tn-entete-liens", headerConstruction: "mega-colonnes", footer: "tn-pied-lettre", tenue: tenue({ titres: "fins", bouton: "pilule", cadre: "niche", fond: "uni", petits: "normal" }), pages: page({ section: "tn-ouverture", construction: "titre-centre" }) };
+    const mega = { famille: "maison-chaleureuse", header: "tn-entete-liens", headerConstruction: "mega-colonnes", footer: "tn-pied-lettre", tenue: tenue({ titres: "fins", bouton: "pilule", cadre: "droit", fond: "uni", petits: "normal" }), pages: page({ section: "tn-ouverture", construction: "titre-centre" }) };
     expect(M.familleGaps(mega, { business: "products", families: 4 })).toEqual([]);
     expect(M.familleGaps(mega, { business: "products", families: 1 })).toEqual([expect.stringMatching(/l'en-tête « tn-entete-liens:mega-colonnes »/)]);
     expect(M.fitFamille(mega, { business: "products", families: 1 }).d).toMatchObject({ header: "tn-entete-liens", headerConstruction: "logo-centre" });

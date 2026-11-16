@@ -61,7 +61,19 @@ export type CtPage = {
   seo?: { title: string; description: string };
   /** Fiche d'un produit du catalogue (son repère) : la page est écrite pour LUI, son bloc d'achat montre SES photos et SON prix. */
   product?: string;
+  /**
+   * La coque propre à CETTE page (page d'arrivée d'une publicité) : sur elle, son en-tête et son pied remplacent ceux du
+   * site, et rien d'autre du site ne s'y pose (bandeau, recherche, panier de côté, fenêtres). Un seul des deux suffit :
+   * l'autre emplacement reste alors vide sur cette page. Posée par l'opération « page_shell ».
+   */
+  coque?: PageCoque;
 };
+/** La coque d'une page : seulement des pièces de rôle « en-tête » et « pied de page ». */
+export type PageCoque = { header?: CtSection; footer?: CtSection };
+/** La page porte-t-elle sa propre coque (au moins un en-tête ou un pied à elle) ? */
+export const hasCoque = (pg: Pick<CtPage, "coque">): boolean => !!(pg.coque?.header || pg.coque?.footer);
+/** Place d'une pièce de coque dans « allSections » (« coque de arrivee »). */
+export const coquePlace = (key: string) => `coque de ${key}`;
 /**
  * Une entrée du menu principal : où elle mène (clé de page, ou « shop:Famille »), son sous-menu, et pour un grand menu
  * (un panneau large, une colonne par famille) quelques produits sous chaque famille.
@@ -217,11 +229,19 @@ export function undoCustomTheme(projectId: string): CustomTheme | null {
   return back;
 }
 
-/** Toutes les sections du thème, avec leur place (page ou structure). */
+/**
+ * Toutes les sections du thème, avec leur place (page ou structure). Les pièces de la coque d'une page y sont, avant et
+ * après les sections de leur page, à la place « coque de <clé> » et avec l'index -1 (elles ne sont pas dans la liste
+ * des sections de la page) : elles s'écrivent, se lisent et se retouchent comme les autres.
+ */
 export function allSections(t: CustomTheme): { place: string; page?: CtPage; index: number; s: CtSection }[] {
   const out: { place: string; page?: CtPage; index: number; s: CtSection }[] = [];
   if (t.header) out.push({ place: "en-tête", index: 0, s: t.header });
-  for (const page of t.pages) page.sections.forEach((s, index) => out.push({ place: page.key, page, index, s }));
+  for (const page of t.pages) {
+    if (page.coque?.header) out.push({ place: coquePlace(page.key), page, index: -1, s: page.coque.header });
+    page.sections.forEach((s, index) => out.push({ place: page.key, page, index, s }));
+    if (page.coque?.footer) out.push({ place: coquePlace(page.key), page, index: -1, s: page.coque.footer });
+  }
   if (t.footer) out.push({ place: "pied de page", index: 0, s: t.footer });
   if (t.search) out.push({ place: "recherche", index: 0, s: t.search });
   (t.extras ?? []).forEach((s, index) => out.push({ place: "tout le site", index, s }));
@@ -340,6 +360,11 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
     if (keys.has(page.key)) bad(`page « ${page.label} » en double`);
     keys.add(page.key);
     if (!page.sections.length) bad(`la page « ${page.label} » est vide`);
+    // Coque propre à la page : seulement un en-tête à la place de l'en-tête, un pied de page à la place du pied.
+    for (const [slot, role, label] of [["header", SHELL_ROLES.header, "un en-tête"], ["footer", SHELL_ROLES.footer, "un pied de page"]] as const) {
+      const own = page.coque?.[slot], l = own ? lib(own) : null;
+      if (l && l.role !== role) bad(`« ${l.title} » n'est pas ${label} : la coque de « ${page.label} » ne reçoit qu'un en-tête et un pied de page`);
+    }
     const libs = page.sections.map(lib);
     libs.forEach((l, i) => {
       if (!l) return;
@@ -423,6 +448,8 @@ export type StructureOp =
   /** Section de tout le site (bandeau du haut, fenêtre) : posée, ou retirée par son uid. */
   | { op: "extra"; section?: string; uid?: string; construction?: string }
   | { op: "shell"; slot: "header" | "footer" | "search"; section: string | null; construction?: string }
+  /** Coque propre à UNE page (page d'arrivée de publicité) : son en-tête ou son pied, à la place de ceux du site ; null la retire. */
+  | { op: "page_shell"; page: string; slot: "header" | "footer"; section: string | null; construction?: string }
   | { op: "page"; key: string; label: string; at?: number }
   | { op: "drop_page"; key: string }
   | { op: "rename_page"; key: string; label: string }
@@ -441,6 +468,8 @@ export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme 
     for (const p of next.pages) { const i = p.sections.findIndex((s) => s.uid === uid); if (i >= 0) return { p, i }; }
     throw new Error(`section ${uid} introuvable dans les pages`);
   };
+  /** Une pièce de la coque d'une page, par son uid. */
+  const coque = (uid: string) => { for (const p of next.pages) for (const k of ["header", "footer"] as const) if (p.coque?.[k]?.uid === uid) return { c: p.coque, k }; return null; };
   for (const o of ops) {
     // Section à tenue : sa construction (celle demandée si elle existe, sinon la première).
     const made = (id: string, construction?: string): CtSection => { const c = validConstruction(known(id), construction); return { uid: newUid(), id, ...(c ? { construction: c } : {}) }; };
@@ -449,13 +478,24 @@ export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme 
     else if (o.op === "move") { const { p, i } = locate(o.uid); const [s] = p.sections.splice(i, 1); const to = o.page ? pageOf(o.page) : p; to.sections.splice(Math.min(o.at, to.sections.length), 0, s); }
     else if (o.op === "replace") {
       const shell = (["header", "footer", "search"] as const).find((k) => next[k]?.uid === o.uid);
+      const own = shell ? null : coque(o.uid);
       if (shell) next[shell] = made(o.section, o.construction);
+      else if (own) own.c[own.k] = made(o.section, o.construction);
       else { const { p, i } = locate(o.uid); p.sections[i] = made(o.section, o.construction); }
     }
     else if (o.op === "shell") next[o.slot] = o.section ? made(o.section, o.construction) : null;
+    else if (o.op === "page_shell") {
+      const p = pageOf(o.page);
+      if (o.section) {
+        const role = libSection(known(o.section))!.role, want = SHELL_ROLES[o.slot];
+        if (role !== want) throw new Error(`« ${o.section} » n'est pas ${o.slot === "header" ? "un en-tête" : "un pied de page"} (rôle « ${role} ») : la coque d'une page ne reçoit qu'un en-tête et un pied de page`);
+        p.coque = { ...p.coque, [o.slot]: made(o.section, o.construction) };
+      } else if (p.coque) { delete p.coque[o.slot]; if (!hasCoque(p)) delete p.coque; }
+    }
     else if (o.op === "construction") {
       const shell = (["header", "footer", "search"] as const).find((k) => next[k]?.uid === o.uid);
-      const sec = shell ? next[shell]! : (next.extras ?? []).find((s) => s.uid === o.uid) ?? (() => { const { p, i } = locate(o.uid); return p.sections[i]; })();
+      const own = coque(o.uid);
+      const sec = shell ? next[shell]! : own ? own.c[own.k]! : (next.extras ?? []).find((s) => s.uid === o.uid) ?? (() => { const { p, i } = locate(o.uid); return p.sections[i]; })();
       if (!constructionsOf(sec.id).some((c) => c.key === o.construction)) throw new Error(`construction « ${o.construction} » inconnue pour cette section (possibles : ${constructionsOf(sec.id).map((c) => c.key).join(", ") || "aucune"})`);
       sec.construction = o.construction;
     }
@@ -489,7 +529,8 @@ export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme 
     else if (o.op === "rename_page") pageOf(o.key).label = o.label;
     else if (o.op === "layout") {
       const shell = (["header", "footer", "search"] as const).find((k) => next[k]?.uid === o.uid);
-      const sec = shell ? next[shell]! : (() => { const { p, i } = locate(o.uid); return p.sections[i]; })();
+      const own = coque(o.uid);
+      const sec = shell ? next[shell]! : own ? own.c[own.k]! : (() => { const { p, i } = locate(o.uid); return p.sections[i]; })();
       const { op: _op, uid: _uid, ...lay } = o;
       sec.layout = { ...sec.layout, ...lay };
     }

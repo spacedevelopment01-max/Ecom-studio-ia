@@ -16,10 +16,10 @@ import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type
 import { companyOf } from "../activity";
 import { buyBlockData, withRealBuyBlock, withTenueAchat } from "./buy-block";
 import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName } from "./library";
-import { allSections, drawerOf, sectionHtml, type CtPage, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
+import { allSections, drawerOf, hasCoque, sectionHtml, type CtPage, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
 import { TENUE_FILES, markMissing, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenueBuyBlock, withTenuePrestations, withTenueProducts, type TenueBuy, type TenuePrestation, type TenueProduct } from "./tenue";
 import { productPageKey, withMenu, type MenuProduct } from "./menu";
-import { tenueMetiers, withTenueSite, type TenueSite } from "./tenue-data";
+import { tenueMetiers, tenueVitrine, withTenueSite, withVenteArrivee, type TenueSite } from "./tenue-data";
 import { factLine } from "../activity";
 
 /** Feuilles ou scripts des sections à tenue réellement présents dans public/sections (un module sans script n'en charge pas). */
@@ -188,6 +188,8 @@ body{margin:0;background:#E7E3DC}
 .tb-wrap>.frame{position:relative;margin:0 auto;transition:width .4s}
 .tb-wrap.phone>.frame{width:390px;max-width:100%;border:10px solid #111;border-radius:34px;overflow:clip;margin-top:18px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
 .tb-pg[hidden]{display:none}
+/* page qui porte sa propre coque (page d'arrivée) : rien du site ne s'y pose, ni en-tête, ni pied, ni bandeau, ni recherche, ni panier de côté, ni fenêtre */
+.tb-wrap[data-coque]>.frame>:not(.tb-pg){display:none!important}
 .tb-bump{animation:tbBump .5s}
 @keyframes tbBump{40%{transform:scale(1.6)}}
 .tb-toast{position:fixed;left:12px;right:12px;bottom:16px;margin:0 auto;max-width:440px;box-sizing:border-box;z-index:9500;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 10px 10px 10px;background:var(--tb-tbg,#111);color:var(--tb-tfg,#fff);border:1px solid color-mix(in srgb,var(--tb-ac,#E8622C) 60%,transparent);border-radius:var(--tb-r,16px);box-shadow:0 18px 44px rgba(0,0,0,.38);font-family:var(--tb-font,system-ui,sans-serif);transform:translateY(calc(100% + 30px));opacity:0;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s}
@@ -329,7 +331,7 @@ const NAV_JS = `(function(){
   var wrap=document.querySelector(".tb-wrap"),pages=[].slice.call(document.querySelectorAll(".tb-pg"));
   var bar=document.querySelector(".tb-bar");function barH(){if(bar)document.documentElement.style.setProperty("--tb-h",bar.offsetHeight+"px")}barH();addEventListener("resize",barH);
   // « shop:Femme » filtre la grille, « legal:cgv » ouvre l'onglet, « article:lin » montre cet article
-  function go(p){var a=String(p).split(":"),k=a[0],arg=a.slice(1).join(":");var pg=document.querySelector('.tb-pg[data-pg="'+k+'"]');if(!pg)return;pages.forEach(function(x){x.hidden=x.dataset.pg!==k});if(pg.dataset.seoTitle){document.title=pg.dataset.seoTitle;var md=document.querySelector('meta[name="description"]');if(!md){md=document.createElement("meta");md.name="description";document.head.appendChild(md)}md.content=pg.dataset.seoDesc||""}
+  function go(p){var a=String(p).split(":"),k=a[0],arg=a.slice(1).join(":");var pg=document.querySelector('.tb-pg[data-pg="'+k+'"]');if(!pg)return;pages.forEach(function(x){x.hidden=x.dataset.pg!==k});if(wrap){if(pg.hasAttribute("data-coque"))wrap.setAttribute("data-coque","");else wrap.removeAttribute("data-coque")}if(pg.dataset.seoTitle){document.title=pg.dataset.seoTitle;var md=document.querySelector('meta[name="description"]');if(!md){md=document.createElement("meta");md.name="description";document.head.appendChild(md)}md.content=pg.dataset.seoDesc||""}
     document.querySelectorAll("[data-pgb]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.pgb===k))});
     var arts=pg.querySelectorAll("[data-tbart]");if(arts.length){var want=arg||arts[0].dataset.tbart;[].forEach.call(arts,function(x){x.hidden=x.dataset.tbart!==want})}
     window.scrollTo(0,0);try{parent.postMessage({source:"ct-preview",type:"page",page:k},"*")}catch(e){}
@@ -424,7 +426,8 @@ export function tenueProducts(projectId: string, t?: CustomTheme): TenueProduct[
 }
 /**
  * Tout ce que le Studio sait du client pour les sections à tenue : coordonnées, horaires et zone (profil des services,
- * sinon fiche de l'entreprise), livraison et retours, familles du catalogue, prestations, articles prêts ou publiés.
+ * sinon fiche de l'entreprise), livraison et retours, familles du catalogue, prestations, articles prêts ou publiés,
+ * biens et carte des métiers, et ce que le catalogue sait de plus pour la vente directe (« vitrine »).
  */
 export function tenueSite(p: Pick<Project, "id"> & { services?: Project["services"] }, t: CustomTheme, products: TenueProduct[], prestations: TenuePrestation[]): TenueSite {
   const co = (() => { try { return companyOf(p.id); } catch { return {}; } })() as { phone?: string; address?: string; shipping?: string; returns?: string };
@@ -434,7 +437,7 @@ export function tenueSite(p: Pick<Project, "id"> & { services?: Project["service
   const families = shop ? names.map((name) => { const inside = products.filter((x) => (x.families ?? []).includes(name)); return { name, to: `${shop}:${name}`, image: inside.find((x) => x.image)?.image ?? null, products: inside.map((x) => x.title) }; }) : [];
   // Articles du journal : ceux qui sont prêts ou publiés (un brouillon n'est pas montré), nettoyés à la lecture.
   const articles = (() => { try { return all<{ title: string; excerpt: string; tags: string; cover_asset_id: string | null; body_html: string }>("SELECT title, excerpt, tags, cover_asset_id, body_html FROM blog_articles WHERE project_id = ? AND deleted_at IS NULL AND status != 'draft' ORDER BY updated_at DESC LIMIT 12", p.id).map((r) => ({ title: r.title, excerpt: r.excerpt, tag: ((() => { try { return (JSON.parse(r.tags || "[]") as string[])[0]; } catch { return null; } })()) ?? null, image: r.cover_asset_id ? assetUrl({ id: r.cover_asset_id }) : null, bodyHtml: sanitizeBlogHtml(r.body_html) })); } catch { return []; } })();
-  return { phone: sv?.phone || co.phone || null, address: sv?.address || co.address || null, hours: sv?.hours || null, area: sv?.area || null, shipping: co.shipping ?? null, returns: co.returns ?? null, families, prestations, products, articles, freeFrom: freeShippingFrom(co.shipping), ...tenueMetiers(p.id) };
+  return { phone: sv?.phone || co.phone || null, address: sv?.address || co.address || null, hours: sv?.hours || null, area: sv?.area || null, shipping: co.shipping ?? null, returns: co.returns ?? null, families, prestations, products, articles, freeFrom: freeShippingFrom(co.shipping), ...tenueMetiers(p.id), vitrine: tenueVitrine(p.id) };
 }
 /** Le catalogue vu par le menu : repère, nom et familles de chaque produit. */
 export const menuProducts = (projectId: string): MenuProduct[] => { try { return listProducts(projectId).map((p) => ({ handle: p.handle, title: p.data.title, categories: p.data.categories })); } catch { return []; } };
@@ -511,11 +514,13 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const pre = `window.CT_PAY=${JSON.stringify(pay).replace(/</g, "\\u003c")};window.TB_MAP=${JSON.stringify(linkMap(t))};window.CT_NAME=${JSON.stringify(name)};window.CT_DEMO=${JSON.stringify(DEMO_BRANDS.flatMap((d) => [d, d.toUpperCase()]).map((d) => d.replace(/\s+/g, "\\s+")))};window.CT_LOGO=${JSON.stringify(p.brand?.logo?.assetId ? assetUrl({ id: p.brand.logo.assetId }) : null)};(function(D){var F=${JSON.stringify(flags)};for(var k in F)D[k]=F[k]})(document.documentElement.dataset);`;
   const bar = t.pages.map((pg, i) => `<button type="button" data-pgb="${esc(pg.key)}" aria-pressed="${i === 0}">${esc(pg.label)}</button>`).join("");
   const address = projectAddress(p.id);
-  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${pg.sections.map((s) => withTenueAchat(realMap(withTenueSite(withTenuePrestations(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), buyOf(pg)), tnProducts), tnPrestations), site), address), p.id, pg.product)).join("\n")}</main>`).join("\n");
   // Le menu calculé depuis le catalogue (proposé par SINA, corrigé par le client) remplace les liens d'exemple de l'en-tête.
   // En-têtes du thème unique : la forme du menu suit la construction, ses photos et ses produits sont ceux du catalogue ;
-  // le téléphone de l'en-tête de services est celui du client.
-  const shell = (s: CtSection | null, place: string) => (s ? (place === "en-tête" ? withTenueSite(withMenu(sectionMarkup(s, name, roleOf(place)), t.menu, { boutique: flags.hdCart !== "0" || p.business !== "services", families: site.families, products: tnProducts }), { phone: site.phone }) : withTenueSite(sectionMarkup(s, name, roleOf(place)), site)) : "");
+  // le téléphone de l'en-tête de services est celui du client. En-tête d'une page d'arrivée : le nom du vrai produit.
+  const shell = (s: CtSection | null | undefined, place: string) => (s ? (place === "en-tête" ? withVenteArrivee(withTenueSite(withMenu(sectionMarkup(s, name, roleOf(place)), t.menu, { boutique: flags.hdCart !== "0" || p.business !== "services", families: site.families, products: tnProducts }), { phone: site.phone }), site) : withTenueSite(sectionMarkup(s, name, roleOf(place)), site)) : "");
+  // Une page qui porte sa propre coque (page d'arrivée d'une publicité) : SON en-tête ouvre la page, SON pied la ferme ;
+  // quand elle est affichée, rien du site ne se pose autour (règle « data-coque » de la feuille, posée par la navigation).
+  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${hasCoque(pg) ? " data-coque" : ""}${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${hasCoque(pg) ? `${shell(pg.coque!.header, "en-tête")}\n` : ""}${pg.sections.map((s) => withTenueAchat(realMap(withTenueSite(withTenuePrestations(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), buyOf(pg)), tnProducts), tnPrestations), site), address), p.id, pg.product)).join("\n")}${hasCoque(pg) ? `\n${shell(pg.coque!.footer, "pied de page")}` : ""}</main>`).join("\n");
   // Sections de tout le site : le bandeau au-dessus de l'en-tête ; les fenêtres (cookies, âge, discussion) posées en bas de l'écran.
   const extras = (group: "bandeau" | "partout") => [...(t.extras ?? []), ...(drawer && !(t.extras ?? []).includes(drawer) ? [drawer] : [])].filter((s) => (tenueSection(s.id)?.group ?? "partout") === group).map((s) => withTenueAchat(withTenueSite(sectionMarkup(s, name, "page"), site), p.id)).join("\n");
   const windows = extras("partout");
@@ -532,7 +537,7 @@ ${tenueCss(p.brand?.palette, t.tenue, MONO_CSS(), titleWeight(p.brand?.fonts?.he
 ${own}</style></head><body>
 <script${n}>${pre}</script>
 <div class="tb-bar"><span>${esc(name)} ·</span>${bar}<span class="tb-vw">Voir en</span><button class="tb-vw" type="button" data-vw="desk" aria-pressed="true">Ordinateur</button><button class="tb-vw" type="button" data-vw="phone" aria-pressed="false">Téléphone</button></div>
-<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${tenueAttrs(t.tenue)}><div class="frame">${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
+<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${t.pages[0] && hasCoque(t.pages[0]) ? " data-coque" : ""}${tenueAttrs(t.tenue)}><div class="frame">${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
 ${body}
 ${shell(t.footer, "pied de page")}${windows ? `<div class="tn-fixes">${windows}</div>` : ""}</div></div>
 ${withBrandName(templates, name)}

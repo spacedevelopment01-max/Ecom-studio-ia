@@ -56,13 +56,14 @@ const pick = <const T extends readonly [string, ...string[]]>(values: T, fallbac
 export const TenuePickSchema = z.object({
   titres: pick(["fins", "gras", "capitales"], "fins"),
   bouton: pick(["pilule", "droit", "etiquette", "ombre"], "pilule"),
-  cadre: pick(["niche", "droit", "penche"], "droit"),
+  // « niche » (arche) n'est plus un choix : une réponse « niche » du concepteur devient « droit ».
+  cadre: z.preprocess((v) => (plain(v) === "niche" ? "droit" : v), pick(["droit", "penche"], "droit")) as unknown as z.ZodType<"niche" | "droit" | "penche">,
   fond: pick(["uni", "toile"], "uni"),
   petits: pick(["normal", "machine"], "normal"),
   signe: z.preprocess((v) => (typeof v === "string" ? v.trim().slice(0, 120) : ""), z.string()),
 });
 
-export const TENUE_CHOICES = `titres : « fins » (lettres fines et serrées, pour une marque calme ou soignée), « gras » (très gras, très serrés, pour une marque franche, brute, de terrain), « capitales » (tout en capitales, pour une marque joyeuse ou sportive) ; bouton : « pilule » (arrondi plein), « droit » (angles vifs), « etiquette » (une étiquette cousue, pour ce qui est fabriqué, cousu, d'atelier), « ombre » (rond à ombre dure, joueur) ; cadre : « niche » (photos arrondies en haut, comme une niche ou une arche), « droit », « penche » (photo penchée, bordée, joueuse) ; fond : « uni » ou « toile » (trame fine, pour le textile, le papier, l'artisanat) ; petits : « normal » ou « machine » (petits textes à la machine à écrire, pour l'outil, le technique) ; signe : en quelques mots, le signe pris sur le produit ou le métier de CETTE marque et repris à plusieurs endroits (la niche du mur, l'étiquette cousue, la sangle).`;
+export const TENUE_CHOICES = `titres : « fins » (lettres fines et serrées, pour une marque calme ou soignée), « gras » (très gras, très serrés, pour une marque franche, brute, de terrain), « capitales » (tout en capitales, pour une marque joyeuse ou sportive) ; bouton : « pilule » (arrondi plein), « droit » (angles vifs), « etiquette » (une étiquette cousue, pour ce qui est fabriqué, cousu, d'atelier), « ombre » (rond à ombre dure, joueur) ; cadre : « droit » (photos aux coins nets ou à peine adoucis) ou « penche » (photo penchée, bordée, joueuse) ; jamais de photo dans une arche ni dans une demi-lune ; fond : « uni » ou « toile » (trame fine, pour le textile, le papier, l'artisanat) ; petits : « normal » ou « machine » (petits textes à la machine à écrire, pour l'outil, le technique) ; signe : en quelques mots, le signe pris sur le produit ou le métier de CETTE marque et repris à plusieurs endroits (une couture, une forme, une matière du produit ou du métier).`;
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 type Palette = { dark?: string; primary?: string; secondary?: string; accent?: string; light?: string };
@@ -82,9 +83,15 @@ export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | nul
   return `${monoFontCss}\n.ctw{${Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(";")}}`;
 }
 /** Attributs posés sur le thème : chaque section à tenue les lit. */
+/**
+ * Goût du propriétaire (16 novembre 2026, devant une photo posée dans une arche) : « L'arrière plan en lune c'est pas
+ * beau je veux plus ça ». Le cadre en arche (« niche ») n'est donc plus jamais posé : ni proposé au concepteur, ni permis
+ * dans une famille, et un site qui l'avait prend le cadre droit. La valeur reste lisible pour les sites déjà enregistrés.
+ */
+export const sansArche = <T extends string>(cadre: T): T | "droit" => (cadre === "niche" ? "droit" : cadre);
 export function tenueAttrs(tenue: Tenue | null | undefined): string {
   const t = tenue ?? DEFAULT_TENUE;
-  return ` data-tn-titres="${t.titres}" data-tn-bouton="${t.bouton}" data-tn-cadre="${t.cadre}" data-tn-fond="${t.fond}" data-tn-petits="${t.petits}"`;
+  return ` data-tn-titres="${t.titres}" data-tn-bouton="${t.bouton}" data-tn-cadre="${sansArche(t.cadre)}" data-tn-fond="${t.fond}" data-tn-petits="${t.petits}"`;
 }
 /** Ce qui manque au dossier s'affiche en jaune dans l'aperçu du Studio, sans crochets : « [À compléter : délai] ». */
 export const markMissing = (html: string): string => html.replace(/\[À compléter(?:\s*:\s*([^\]<]{1,80}))?\]/g, (_m, what: string | undefined) => `<mark class="tn-manque">À compléter${what ? ` : ${what.trim()}` : ""}</mark>`);

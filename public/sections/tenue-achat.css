@@ -26,7 +26,7 @@
 
 /* ── « vente-directe » : achat serré ; le prix, les repères cochés et le bouton dans une carte ── */
 .ctw .tn-achat[data-tn-c="vente-directe"]{padding:6px 20px 30px}
-.ctw .tn-achat[data-tn-c="vente-directe"]::before{content:"";grid-column:1;grid-row:4/12;align-self:stretch;background-color:var(--tn-doux);border-radius:var(--tn-arrondi,0)}
+.ctw .tn-achat[data-tn-c="vente-directe"]::before{content:"";grid-column:1;grid-row:5/14;align-self:stretch;background-color:var(--tn-doux);border-radius:var(--tn-arrondi,0)}
 .ctw[data-tn-cadre="niche"] .tn-achat[data-tn-c="vente-directe"]::before{border-radius:22px}
 .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]::before{margin-right:6px;border:3px solid var(--tn-encre);border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
 .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-galerie{grid-row:1}
@@ -40,18 +40,18 @@
 .ctw .tn-achat[data-tn-c="vente-directe"]>h1{grid-row:3;margin:3px 0 16px;font-size:calc(34px*var(--tn-k))}
 .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-prix,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-rupture,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-pres-prix,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-option,.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-bt,.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-choix,.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt,.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-rapide{grid-column:1;margin-left:16px;margin-right:16px}
 .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-prix,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-rupture,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-pres-prix,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-reperes,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-option,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-bt,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>form>.tn-choix,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt,.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>form>.tn-rapide{margin-left:19px;margin-right:25px}
-.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-prix{grid-row:4;margin-top:18px;font-family:var(--f-title);font-size:38px;line-height:1}
-.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-rupture{grid-row:5}
-.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-pres-prix{grid-row:6}
-.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes{grid-row:7;display:grid;gap:9px;margin-top:16px;font-size:15px;line-height:1.35}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-prix{grid-row:5;margin-top:18px;font-family:var(--f-title);font-size:38px;line-height:1}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-rupture{grid-row:6}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-pres-prix{grid-row:7}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes{grid-row:8;display:grid;gap:9px;margin-top:16px;font-size:15px;line-height:1.35}
 .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes li{position:relative;padding-left:30px}
 .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes li::before{content:"";position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background-color:var(--tn-encre)}
 .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-reperes li::after{content:"";position:absolute;left:6px;top:6px;width:8px;height:4px;border-left:2px solid var(--tn-sur-bouton);border-bottom:2px solid var(--tn-sur-bouton);transform:rotate(-45deg)}
-.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-option{grid-row:8;margin-top:16px}
-.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-choix{grid-row:9;width:auto;background-color:var(--tn-fond)}
-.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-bt,.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt{grid-row:10;margin-top:18px;margin-bottom:18px;padding:19px 20px;font-size:18px}
-.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-rapide{grid-row:11;margin-top:-8px;margin-bottom:18px}
-.ctw .tn-achat[data-tn-c="vente-directe"]>p{grid-row:12;margin-top:18px;font-size:15.5px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-option{grid-row:10;margin-top:16px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-choix{grid-row:11;width:auto;background-color:var(--tn-fond)}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-bt,.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-bt{grid-row:12;margin-top:18px;margin-bottom:18px;padding:19px 20px;font-size:18px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>form>.tn-rapide{grid-row:13;margin-top:-8px;margin-bottom:18px}
+.ctw .tn-achat[data-tn-c="vente-directe"]>p{grid-row:14;margin-top:18px;font-size:15.5px}
 
 /* ── « grandes-photos » : les photos d'un bord à l'autre, à faire glisser ; l'achat étroit et discret ── */
 .ctw .tn-achat[data-tn-c="grandes-photos"]{padding:0 20px 34px;text-align:center;overflow-x:clip}
@@ -479,7 +479,8 @@
   .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre b{font-size:24px}
   .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"],[data-tn-c="portrait"])>.tn-barre .tn-bt{padding:14px 34px}
   /* vente directe */
-  .ctw .tn-achat[data-tn-c="vente-directe"]{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)}
+  .ctw .tn-achat[data-tn-c="vente-directe"]{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);grid-template-rows:repeat(14,auto) 1fr}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-galerie{grid-row:1/16}
   .ctw .tn-achat[data-tn-c="vente-directe"]::before{grid-column:2}
   .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-galerie:has(.tn-vignettes){grid-template-columns:minmax(0,1fr) 84px;gap:10px}
   .ctw .tn-achat[data-tn-c="vente-directe"] .tn-grande{height:540px}
@@ -1136,4 +1137,106 @@
   .ctw .tn-fenetre-offre[data-tn-c="carte-en-bas"][data-tn-ouverte]{justify-items:end;padding:0 24px 24px}
   .ctw .tn-fenetre-offre[data-tn-c="carte-en-bas"] .tn-fo-boite{display:block;width:auto;max-width:420px;min-height:0}
   .ctw .tn-fenetre-offre[data-tn-c="carte-en-bas"] .tn-fo-corps{padding:22px 20px 10px}
+}
+
+/* ══ La fiche « vente directe » sur grand écran (finitions du 16 novembre 2026) ══
+   Les pièces de la fiche sont des sections séparées : pour une vraie colonne commune, la PAGE devient la grille. Le bloc
+   d'achat (première pièce de la page) s'efface (display:contents) et ses morceaux se rangent dans la grille de la page :
+   la galerie à gauche, collante sur toute la hauteur de la colonne d'achat ; à droite le nom, le prix, les promesses, le
+   bouton, puis les pièces d'achat qui le suivent sans interruption (versions, guide des tailles en tiroir, lots, offre du
+   moment, packs, dessous du bouton). La première pièce de récit et les suivantes reprennent toute la largeur.
+   Sans « :has » (vieux navigateur) ou si le bloc d'achat n'est pas la première pièce : la mise en page d'avant. */
+@supports selector(:has(*)){
+@media (min-width:760px){
+  .ctw .tb-pg:not([hidden]):has(>.tn-achat[data-tn-c="vente-directe"]:first-child){display:grid;grid-template-columns:[bord] max(32px,calc(50% - 540px)) [photo] minmax(0,1fr) 32px [achat] minmax(0,1fr) [fin] max(32px,calc(50% - 540px)) [bout];grid-template-rows:repeat(39,auto) minmax(56px,1fr);align-items:start;padding-top:24px;background-color:var(--tn-fond)}
+  .ctw .tb-pg:not([hidden]):has(>.tn-achat[data-tn-c="vente-directe"]:first-child)>*{grid-column:1/-1;min-width:0}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child{display:contents}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>*{grid-column:achat}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child::before{grid-column:achat}
+  /* une case vide tient la colonne d'achat jusqu'au bas du bloc : les pièces suivantes se rangent dessous, dans l'ordre */
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child::after{content:"";grid-column:achat;grid-row:1/16;align-self:stretch;pointer-events:none}
+  /* la galerie occupe toute la hauteur de la colonne d'achat ; la photo et ses vignettes y restent collées en haut de l'écran */
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>.tn-galerie{grid-column:photo;grid-row:1/41;align-self:stretch;align-items:start}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>.tn-galerie>*{position:sticky;top:24px}
+  /* sous un en-tête (collant, 56 à 76 px de haut) : la photo s'arrête juste dessous */
+  .ctw .tn-ent~.tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>.tn-galerie>*{top:calc(var(--tb-h,0px) + 84px)}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child :is(.tn-grande,.tn-vignettes){height:420px}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>.tn-erreur{grid-column:achat;margin:10px 0 0}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child~:is(.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton):not(.tb-pg>:not(.tn-achat,.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton)~*){grid-column:achat;max-width:none;margin-left:0;margin-right:0;padding-left:0;padding-right:0}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child~:is(.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton):not(.tb-pg>:not(.tn-achat,.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton)~*)>*,.ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child~:is(.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton):not(.tb-pg>:not(.tn-achat,.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton)~*) .tn-om{max-width:none;margin-left:0}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child~.tn-sous-bouton[data-tn-c="cartes"]:not(.tb-pg>:not(.tn-achat,.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton)~*){margin:22px 0 0;padding:22px}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child~:is(.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton):not(.tb-pg>:not(.tn-achat,.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton)~*)[data-tn-c="bandeau"] .tn-om{grid-template-columns:auto minmax(0,1fr);padding:16px 20px;border-radius:var(--tn-arrondi,0)}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child~:is(.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton):not(.tb-pg>:not(.tn-achat,.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton)~*)[data-tn-c="bandeau"] :is(.tn-om-cadeau,.tn-om-decompte){grid-column:1/-1}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child~:is(.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton):not(.tb-pg>:not(.tn-achat,.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton)~*)[data-tn-c="tiroir"] h2{font-size:calc(26px*var(--tn-k))}
+}
+@media (min-width:1000px){
+  .ctw .tb-pg:not([hidden]):has(>.tn-achat[data-tn-c="vente-directe"]:first-child){grid-template-columns:[bord] max(40px,calc(50% - 540px)) [photo] minmax(0,1.08fr) 56px [achat] minmax(0,.92fr) [fin] max(40px,calc(50% - 540px)) [bout]}
+  .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child :is(.tn-grande,.tn-vignettes){height:540px}
+}
+}
+
+/* ══ Compléments de la fiche (16 novembre 2026) : note et avis dans le bloc d'achat, rappel vers l'achat, coloris en scène ══ */
+/* ── Sous le nom : la note en étoiles et le nombre d'avis (seulement avec de vrais avis) ── */
+.ctw .tn-achat .tn-note-a{display:flex;align-items:center;gap:8px;font-size:14.5px;line-height:1.2}
+.ctw .tn-achat .tn-note-a b{font-weight:700}
+.ctw .tn-achat .tn-note-a span{color:var(--tn-sourd)}
+.ctw .tn-achat .tn-etoiles-a{--tn-a-e:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 15l-5.2 2.8 1-5.9L1.5 7.8l5.9-.8z'/%3E%3C/svg%3E");display:inline-block;flex:none;width:5.4em;height:1.08em;font-size:16px;background-image:linear-gradient(90deg,var(--tn-accent) calc(var(--note,0)*20%),color-mix(in srgb,var(--tn-encre) 20%,transparent) 0);-webkit-mask:var(--tn-a-e) left center/1.08em 1.08em repeat-x;mask:var(--tn-a-e) left center/1.08em 1.08em repeat-x}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-note-a{grid-row:4;margin:-8px 0 16px}
+/* ── Sous les promesses : un avis court, mot pour mot, et le prénom ── */
+.ctw .tn-achat .tn-avis-a{font-size:14.5px;line-height:1.4}
+.ctw .tn-achat .tn-avis-a p{margin:0;font-size:inherit;font-style:italic;color:var(--tn-encre)}
+.ctw .tn-achat .tn-avis-a cite{display:block;margin-top:4px;font-size:13px;font-style:normal;font-weight:700}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-avis-a{grid-row:9;margin:14px 16px 0;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--tn-encre) 20%,transparent)}
+.ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-avis-a{margin-left:19px;margin-right:25px}
+.ctw .tn-achat>h1{scroll-margin-top:150px}
+
+/* ── Rappel vers l'achat ── */
+.ctw .tn-rappel-achat{padding:36px 20px 0}
+.ctw .tn-rappel-achat .tn-ra{display:grid;justify-items:center}
+.ctw .tn-rappel-achat .tn-ra-mots{display:none}
+.ctw .tn-rappel-achat .tn-bt{display:block;box-sizing:border-box;width:100%;max-width:420px;min-height:54px;padding:17px 24px;font-size:17px;text-align:center}
+/* « bande » : le nom et le prix, puis le bouton, sur une bande de couleur douce */
+.ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra{justify-items:stretch;gap:14px;padding:18px;border-radius:var(--tn-arrondi,0);background-color:var(--tn-doux)}
+.ctw[data-tn-cadre="niche"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra{border-radius:22px}
+.ctw[data-tn-cadre="penche"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra{border:2.5px solid var(--tn-encre);border-radius:14px}
+.ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra-mots{display:grid;gap:3px;min-width:0}
+.ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-family:var(--f-title);font-weight:400;font-size:23px;line-height:1.15;overflow-wrap:anywhere}
+.ctw[data-tn-titres="gras"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-weight:800;font-size:20px}
+.ctw[data-tn-titres="capitales"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-size:16px;letter-spacing:.07em;text-transform:uppercase}
+.ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra-prix{font-size:17px;font-weight:700}
+.ctw .tn-rappel-achat[data-tn-c="bande"] .tn-bt{max-width:none}
+
+/* ── Les coloris en scène ── */
+.ctw .tn-coloris{padding:44px 20px 0}
+.ctw .tn-coloris[hidden]{display:none}
+.ctw .tn-coloris h2{font-size:calc(30px*var(--tn-k))}
+.ctw .tn-coloris .tn-col-liste{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px;margin:22px 0 0;padding:0;list-style:none}
+.ctw .tn-coloris .tn-col{display:grid;gap:10px;color:inherit;text-decoration:none}
+.ctw .tn-coloris .tn-col .tn-ph{aspect-ratio:1;background-size:cover;background-position:center;background-color:var(--tn-doux)}
+.ctw .tn-coloris .tn-col span{display:flex;align-items:center;gap:9px;font-size:15.5px;font-weight:600;line-height:1.2}
+.ctw .tn-coloris .tn-col i{flex:none;width:16px;height:16px;margin-left:3px;border-radius:50%;background-color:var(--teinte,var(--tn-accent));outline:1.5px solid color-mix(in srgb,var(--tn-encre) 40%,transparent);outline-offset:2px}
+.ctw .tn-coloris .tn-col:focus-visible{outline:2px solid var(--tn-encre);outline-offset:4px}
+/* « file » : de grandes photos en hauteur à faire glisser, le nom sur une étiquette posée en bas */
+.ctw .tn-coloris[data-tn-c="file"] .tn-col-liste{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:66%;gap:12px;margin-right:-20px;padding:4px 20px 8px 0;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.ctw .tn-coloris[data-tn-c="file"] li{scroll-snap-align:start;min-width:0}
+.ctw .tn-coloris[data-tn-c="file"] .tn-col{position:relative;display:block}
+.ctw .tn-coloris[data-tn-c="file"] .tn-col .tn-ph{aspect-ratio:3/4}
+.ctw .tn-coloris[data-tn-c="file"] .tn-col span{position:absolute;left:10px;bottom:10px;max-width:calc(100% - 20px);box-sizing:border-box;padding:8px 14px 8px 9px;border-radius:999px;background-color:var(--tn-fond);font-size:14px}
+
+@media (min-width:760px){
+  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-note-a{margin:-12px 0 22px;font-size:15.5px}
+  .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-avis-a{margin:16px 28px 0;font-size:15px}
+  .ctw[data-tn-cadre="penche"] .tn-achat[data-tn-c="vente-directe"]>.tn-avis-a{margin-left:31px;margin-right:37px}
+  .ctw .tn-rappel-achat{padding:56px max(40px,calc(50% - 380px)) 0}
+  .ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px;padding:22px 28px}
+  .ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-size:28px}
+  .ctw[data-tn-titres="gras"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-size:24px}
+  .ctw[data-tn-titres="capitales"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-size:19px}
+  .ctw .tn-rappel-achat[data-tn-c="bande"] .tn-bt{width:auto;min-width:260px}
+  .ctw .tn-coloris{padding:72px max(40px,calc(50% - 540px)) 0}
+  .ctw .tn-coloris h2{font-size:calc(52px*var(--tn-k))}
+  .ctw .tn-coloris .tn-col-liste{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:28px 20px;margin-top:34px}
+  .ctw .tn-coloris .tn-col span{font-size:17px}
+  .ctw .tn-coloris[data-tn-c="file"] .tn-col-liste{grid-auto-columns:minmax(260px,1fr);gap:20px;margin-right:0;padding-right:0}
+  .ctw .tn-coloris[data-tn-c="file"] .tn-col span{left:14px;bottom:14px;font-size:15px}
 }

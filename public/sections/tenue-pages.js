@@ -95,7 +95,8 @@
     var cart = t.closest('[data-go="cart"],.tn-pan,button[aria-label="Panier"],a[href="#tn-panier-cote"]');
     if (cart) { e.preventDefault(); e.stopImmediatePropagation(); open(d); return; }
     // À l'ajout au panier : le tiroir s'ouvre, le petit message d'ajout n'a plus lieu d'être.
-    if (t.closest("[data-pogo]") && !t.closest(".tn-off")) setTimeout(function () { open(d); var toast = doc.querySelector(".tb-toast"); if (toast) toast.classList.remove("on"); }, 0);
+    // (Un bouton du bloc d'achat branché sur la boutique attend la réponse du panier : voir « tn:panier » plus bas.)
+    if (t.closest("[data-pogo]") && !t.closest(".tn-off") && !(window.tnBoutique && window.tnAchat && window.tnAchat.pret && t.closest("[data-tn-achat]"))) setTimeout(function () { open(d); var toast = doc.querySelector(".tb-toast"); if (toast) toast.classList.remove("on"); }, 0);
   }, true);
   window.addEventListener("tn-go", function () { var d = drawer(); if (d) close(d, false); all(doc, ".tn-recherche.ct-open").forEach(function (s) { s.classList.remove("ct-open"); }); });
   doc.addEventListener("keydown", function (e) {
@@ -108,6 +109,49 @@
     if (!d.contains(doc.activeElement)) { e.preventDefault(); first.focus(); }
     else if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  /* Après un vrai ajout (tenue-achat.js envoie « tn:panier » sur le document, detail = Panier du contrat tnBoutique :
+     { nombre, total, lignes: [{ id, quantite, titre, prix }] }) : le tiroir se remplit avec ce panier et s'ouvre ; il le
+     dit (preventDefault) pour que le script d'achat ne change pas de page. Sans tiroir sur le site, rien n'est retenu. */
+  function photoDe(id) {
+    // La photo n'est pas dans le contrat : celle du cadeau du pack, sinon celle de la fiche si la version est la sienne.
+    var k = all(doc, "[data-tn-cadeau]").filter(function (x) { return x.getAttribute("data-tn-cadeau") === id; })[0], ph = k && k.querySelector(".tn-pack-cadeau .tn-ph");
+    if (ph && ph.style.backgroundImage) return ph.style.backgroundImage;
+    var table = all(doc, "script[data-tn-versions]").filter(function (x) { var pg = x.closest(".tb-pg"); return (!pg || !pg.hidden) && x.textContent.indexOf('"id":"' + id + '"') >= 0; })[0];
+    var grande = table && (table.closest("main") || doc).querySelector(".tn-achat .tn-grande");
+    return grande ? grande.style.backgroundImage : "";
+  }
+  function remplir(d, panier) {
+    var list = d.querySelector(".tn-lignes");
+    if (!list || !panier || !panier.lignes) return;
+    var qte = function () { var q = doc.createElement("div"); q.className = "tn-qte"; q.innerHTML = '<button type="button" data-tn-moins aria-label="Retirer un exemplaire">−</button><span>1</span><button type="button" data-tn-plus aria-label="Ajouter un exemplaire">+</button>'; return q; };
+    list.innerHTML = "";
+    panier.lignes.forEach(function (l) {
+      var n = Math.max(1, parseInt(l.quantite, 10) || 1), prix = Math.max(0, +l.prix || 0);
+      var line = doc.createElement("div"), ph = doc.createElement("div"), quoi = doc.createElement("div"), b = doc.createElement("b"), q = qte(), oter = doc.createElement("button"), p = doc.createElement("span");
+      line.className = "tn-ligne"; line.setAttribute("data-tn-id", String(l.id)); line.setAttribute("data-tn-cents", String(Math.round(prix / n)));
+      ph.className = "tn-ph"; var img = photoDe(String(l.id)); if (img) ph.style.backgroundImage = img;
+      quoi.className = "tn-quoi"; b.textContent = l.titre || "Article";
+      q.querySelector("span").textContent = String(n);
+      oter.type = "button"; oter.className = "tn-oter"; oter.setAttribute("data-tn-oter", ""); oter.textContent = "Retirer";
+      p.className = "tn-prix-l"; p.textContent = money(prix);
+      quoi.appendChild(b); quoi.appendChild(q); quoi.appendChild(oter);
+      line.appendChild(ph); line.appendChild(quoi); line.appendChild(p);
+      list.appendChild(line);
+    });
+    refresh(d);
+    // Le total est celui que la boutique rend (remises comprises) ; une ligne offerte le dit.
+    var t = d.querySelector(".tn-prix-t");
+    if (t && typeof panier.total === "number") t.textContent = money(panier.total);
+    all(list, '.tn-ligne[data-tn-cents="0"] .tn-prix-l').forEach(function (x) { x.textContent = "Offert"; });
+  }
+  doc.addEventListener("tn:panier", function (e) {
+    var d = drawer();
+    if (!d || d.closest(".tb-pg")) return;
+    e.preventDefault();
+    remplir(d, e.detail);
+    var toast = doc.querySelector(".tb-toast"); if (toast) toast.classList.remove("on");
+    open(d);
   });
   window.tnTiroir = { ouvrir: function () { open(drawer()); }, fermer: function () { close(drawer()); } };
 

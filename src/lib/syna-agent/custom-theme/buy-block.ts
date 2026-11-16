@@ -11,7 +11,7 @@ import { assetUrl } from "../../library";
 import { companyOf } from "../activity";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { galleryAssets } from "../../products/gallery-store";
-import { withTenueLooks, withTenueLots, withTenueSizes, withTenueAchatVrai, withTenueVersions, type TenueCadeau, type TenueLots, type TenueOption, type TenueAchatVrai } from "./tenue-data";
+import { avisAchat, tenueVitrine, withAchatId, withTenueColoris, withTenueLooks, withTenueLots, withTenueSizes, withTenueAchatVrai, withTenueVersions, type TenueCadeau, type TenueColoris, type TenueLots, type TenueOption, type TenueAchatVrai } from "./tenue-data";
 
 export type BuyData = {
   base: number;
@@ -157,7 +157,7 @@ export function withRealBuyBlock(html: string, d: BuyData | null): string {
  * Vraies données des pièces posées sous le bloc d'achat à tenue (thème unique, 16 novembre 2026) : les options du produit
  * de la page (couleurs, tailles, stock de chaque valeur) et l'offre par quantité du client. Sans produit : null.
  */
-export function achatFacts(projectId: string, handle?: string | null): { title: string; options: TenueOption[]; lots: TenueLots | null; image: string | null; price: string | null; soldOut: boolean } | null {
+export function achatFacts(projectId: string, handle?: string | null): { title: string; handle: string; options: TenueOption[]; lots: TenueLots | null; image: string | null; price: string | null; soldOut: boolean; /** Les couleurs du produit qui ont la photo de leur version. */ coloris: TenueColoris[] } | null {
   const products = listProducts(projectId);
   if (!products.length) return null;
   const p = (handle && products.find((x) => x.handle === handle)) || products[0];
@@ -179,7 +179,13 @@ export function achatFacts(projectId: string, handle?: string | null): { title: 
     if (q?.kind === "bogo") lots = { unit, cents, tiers: [{ qty: q.buy, free: q.free }] };
   }
   const price = cents == null ? null : `${(Math.round(cents) / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",")} €`;
-  return { title: p.data.title, options, lots, image: imageOf(p), price, soldOut: p.variants.length > 0 && p.variants.every(out) };
+  // Les coloris en scène : chaque couleur avec la photo d'une de ses versions (champ « image » de la variante) ; sans photo, pas montrée.
+  const ci = p.data.options.findIndex((o) => /couleur|coloris|teinte|colou?r/i.test(o.name));
+  const coloris: TenueColoris[] = ci < 0 ? [] : p.data.options[ci].values.flatMap((nom) => {
+    const image = p.variants.find((v) => (v.options[ci] ?? "").trim().toLowerCase() === nom.trim().toLowerCase() && v.image)?.image;
+    return image ? [{ nom, teinte: hexOf(nom), image: assetUrl({ id: image }) }] : [];
+  });
+  return { title: p.data.title, handle: p.handle, options, lots, image: imageOf(p), price, soldOut: p.variants.length > 0 && p.variants.every(out), coloris };
 }
 
 /**
@@ -188,13 +194,22 @@ export function achatFacts(projectId: string, handle?: string | null): { title: 
  * ne porte aucun de ces repères est rendue telle quelle, sans lire le catalogue.
  */
 export function withTenueAchat(html: string, projectId: string, handle?: string | null): string {
-  if (!/\sdata-tn-(?:versions|guide-tailles|lots|looks|appel-produit|achat|packs|sous-bouton|offre-moment|fenetre-offre)\b/.test(html)) return html;
+  if (!/\sdata-tn-(?:versions|guide-tailles|lots|looks|appel-produit|achat|packs|sous-bouton|offre-moment|fenetre-offre|rappel-achat|coloris)\b/.test(html)) return html;
   const f = (() => { try { return achatFacts(projectId, handle); } catch { return null; } })();
-  if (!f) return /\sdata-tn-(?:offre-moment|fenetre-offre)\b/.test(html) ? "" : html;
-  let out = withTenueLots(withTenueSizes(withTenueVersions(html, f.options), f.options), f.lots);
+  // Sans produit : ni offre, ni fenêtre, ni coloris (une pièce qui ne montrerait que son exemple ne se pose pas).
+  if (!f) return /\sdata-tn-(?:offre-moment|fenetre-offre|coloris)\b/.test(html) ? "" : html;
+  let out = withTenueLots(withTenueSizes(withTenueVersions(withAchatId(html), f.options), f.options), f.lots);
+  // Les coloris en scène : seulement avec au moins deux couleurs qui ont leur photo.
+  out = withTenueColoris(out, f.coloris);
+  if (!out) return out;
   // Achat, suite : table des versions, prix barré, packs, dessous du bouton, offre datée, fenêtre d'offre.
   const v = (() => { try { return venteFacts(projectId, handle); } catch { return null; } })();
   if (v) out = withTenueAchatVrai(out, v);
+  // Rappel vers l'achat : le vrai nom, le vrai prix (un prix inconnu ne s'écrit pas) ; avec des packs, le bouton le dit.
+  if (/\sdata-tn-rappel-achat\b/.test(out)) {
+    out = out.replace(/(<b class="tn-ra-nom">)[\s\S]*?(<\/b>)/, `$1${escText(f.title)}$2`).replace(/<span class="tn-ra-prix">[\s\S]*?<\/span>/, f.price ? `<span class="tn-ra-prix">${f.price}</span>` : "");
+    if (v?.packs.length) out = out.replace(/>Choisir le mien<\/a>/, ">Choisir mon pack</a>");
+  }
   else if (/\sdata-tn-(?:offre-moment|fenetre-offre)\b/.test(out)) return "";
   if (!out) return out;
   // « Le produit, son prix, son bouton » : la vraie photo, le vrai nom, le vrai prix, le stock, la livraison et les retours du client.
@@ -248,6 +263,9 @@ export function venteFacts(projectId: string, handle?: string | null, now = Date
     packs: o.packs.map((k) => ({ quantite: k.quantite, nom: k.nom, prix: k.prixCentimes ?? Math.round(prix * k.quantite * (1 - (k.remisePct ?? 0) / 100)), populaire: !!k.populaire, cadeau: cadeau(k.cadeauHandle) })),
     seuilStock: o.seuilStock, stockDepart: o.stockDepart, delai: o.delaiLivraison,
     promo: o.promo && o.promo.endsAt > now ? { nom: o.promo.nom ?? null, pct: o.promo.pct, fin: o.promo.endsAt, cadeau: cadeau(o.promo.cadeauHandle) } : null,
+    // Moyens de paiement : le Studio n'a aucune source remplie par le client (ni fiche de l'entreprise, ni réglage) : vide, jamais un logo présumé.
     fenetre: o.fenetreOffre, paiements: [], livraison: co.shipping?.trim() || null, retours: co.returns?.trim() || null,
+    // Avis : lus là où le module « vente » les range (TenueVitrine.avis) ; tant qu'il n'y a pas de source, rien.
+    avis: (() => { try { return avisAchat(tenueVitrine(projectId).avis, p.data.title); } catch { return null; } })(),
   };
 }

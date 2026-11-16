@@ -344,7 +344,9 @@ describe("thème unique, vente : dans l'aperçu du Studio et dans Shopify", asyn
     expect(v.produits!["Gourde Halte"]).toEqual({ genre: "Gourde isotherme", compare: "45 €", des: "34 €", versions: 2 });
     // Un prix de comparaison égal au prix n'est pas un prix barré.
     expect(v.produits!["Bouchon sport"]).toEqual({ genre: null, compare: null, des: null, versions: 1 });
-    expect(JSON.parse(sp(JSON.stringify(D.tenueMetiers(pid).vitrine)))).toEqual(v);
+    // La lecture du catalogue de vente est à sa place : dans les données du site (« tenueSite »), plus dans « tenueMetiers ».
+    expect(D.tenueMetiers(pid)).not.toHaveProperty("vitrine");
+    expect(JSON.parse(sp(JSON.stringify((await import("@/lib/syna-agent/custom-theme/render")).tenueSite({ id: pid }, { pages: [] } as any, [], []).vitrine)))).toEqual(v);
     expect(v.avis ?? null, "aucune source d'avis dans le Studio pour l'instant").toBeNull();
     let t: any = { version: 1, family: "classique", style: "classique", header: null, footer: null, search: null, pages: [], rev: 0, at: Date.now() };
     t = S.applyStructure(t, [{ op: "page", key: "home", label: "Accueil" }, { op: "add", page: "home", section: "tn-ouverture-vente" }, { op: "add", page: "home", section: "tn-produits-vente" }, { op: "add", page: "home", section: "tn-guide-choix", construction: "cartes" }, { op: "add", page: "home", section: "tn-avis-page" }, { op: "add", page: "home", section: "tn-barre-produit" },
@@ -425,8 +427,9 @@ describe("thème unique, vente : dans l'aperçu du Studio et dans Shopify", asyn
     expect(cat).toContain('data-tn-c="ajout-rapide"');
     expect(cat).toContain(`<div class="tn-carte-p{% unless product.available %} tn-epuise{% endunless %}"><a class="tn-v-vers" href="{{ product.url }}">`);
     expect(cat).toContain(`{%- if product.available -%}{%- if product.has_only_default_variant -%}{%- form 'product', product, class: 'tn-v-achat' -%}<input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}"><button class="tn-v-ajout" type="submit" name="add">Ajouter au panier</button>{%- endform -%}{%- else -%}<a class="tn-v-ajout" href="{{ product.url }}">Choisir des options</a>{%- endif -%}{%- endif -%}</div>{%- endfor -%}`);
-    // La feuille de chaque pièce part avec l'en-tête.
-    const head = liquid("tn-entete-arrivee");
+    // La feuille de chaque pièce part avec le groupe d'en-tête : dans l'en-tête, puis, pour un site complet dont la
+    // feuille ne tient pas dans une seule section, dans ses sections de suite (« es-custom-feuille-… »).
+    const head = Object.values(out.spec.groups.header!.sections).map((x) => out.spec.customSections[x.type].liquid).join("\n");
     for (const root of ["tn-raisons", "tn-difference", "tn-equation", "tn-barre-produit"]) expect(head, root).toContain(`.ctw .${root}`);
     expect(head).toContain('.ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-ajout');
   });

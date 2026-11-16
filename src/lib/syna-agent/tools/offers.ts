@@ -11,6 +11,14 @@ import type { AgentTool } from "../types";
 import { companyOf } from "../activity";
 import { loadShopOffers, projectBuyFeatures, saveShopOffers, shopOffersSchema, type BuyFeatures, type ShopOffers } from "../product-features";
 import { project } from "./common";
+import { currentTheme } from "../../projects";
+import { listProducts } from "../../products/catalog";
+import { listStores } from "../../products/sync";
+import { storeFetch } from "../../products/connectors/transport";
+import { assertStoreUrl } from "../../products/connectors/types";
+import { droitsRemises, etatRemisesShopify, shopifyConnection } from "../../integrations/shopify";
+import { gardePreuveRemises, offreDuSite } from "../custom-theme/install";
+import { guideRemisesShopify, lirePreuveRemises, remisesConfirmees, type PreuveRemises } from "../custom-theme/remises";
 
 function describe(f: BuyFeatures): string {
   const on: string[] = [];
@@ -59,4 +67,60 @@ const offersTool: AgentTool<Partial<ShopOffers>> = {
   },
 };
 
-export const offersTools: AgentTool[] = [featuresTool, offersTool];
+/** Ce que l'outil appelle au-dehors (remplacé dans les tests : aucun appel réel). */
+export const discountsDeps = {
+  /** Interroge une boutique WooCommerce ou PrestaShop (adresse contrôlée, aucune clé envoyée). */
+  preuve: async (plateforme: "woocommerce" | "prestashop", url: string): Promise<PreuveRemises> => { const u = await assertStoreUrl(url); return lirePreuveRemises(plateforme, `${u.origin}${u.pathname.replace(/\/+$/, "")}`, storeFetch()); },
+  shopify: etatRemisesShopify,
+};
+const NOMS: Record<string, string> = { shopify: "Shopify", woocommerce: "WooCommerce", prestashop: "PrestaShop" };
+
+const discountsTool: AgentTool<Record<string, never>> = {
+  name: "shop.discounts_check", module: "commerce", kind: "read", needsProject: true,
+  description: "Gratuit, sans IA : interroge la BOUTIQUE RELIÉE du client (Shopify, WooCommerce ou PrestaShop) pour savoir si les remises de son offre (lots par quantité, packs, cadeaux saisis avec shop.offers) y sont vraiment en place, et dit en mots simples ce qui manque. Le site n'affiche un prix de lot ou de pack que si la boutique le tient : la réponse de la boutique est gardée et l'emporte ensuite sur ce que le client a déclaré. À appeler après l'envoi du site en boutique, et chaque fois que le client dit avoir créé ou changé ses remises. Pour Shopify, quand l'accès du Studio ne permet pas de créer les remises, rend le pas à pas exact à donner au client (data.guide).",
+  args: z.object({}).strict(),
+  run: async (ctx) => {
+    const p = project(ctx);
+    if (p.business === "services") return { ok: true, summary: L("Un site de services n'a pas de remises de boutique à vérifier.", "A services site has no shop discounts to check.") };
+    const saisies = (() => { try { return loadShopOffers(p.id); } catch { return null; } })();
+    const offre = offreDuSite(p.id, saisies, currentTheme(p.id)?.spec ?? null);
+    if (!offre) return { ok: true, summary: L("Aucune remise dans les offres du client (ni lot par quantité, ni pack remisé, ni cadeau) : rien à vérifier dans la boutique.", "No discount in the offers: nothing to check."), data: { remises: 0 } };
+    const plateforme = (["shopify", "woocommerce", "prestashop"].includes(p.platform) ? p.platform : "shopify") as "shopify" | "woocommerce" | "prestashop";
+    const titres = Object.fromEntries((() => { try { return listProducts(p.id).map((x) => [x.handle, x.data.title] as const); } catch { return []; } })());
+    const guide = plateforme === "shopify" ? guideRemisesShopify(offre, titres) : [];
+    let preuve: PreuveRemises;
+    if (plateforme === "shopify") {
+      const c = shopifyConnection(ctx.user.id, p.id);
+      if (!c) return { ok: true, summary: L("La boutique Shopify du client n'est pas reliée au Studio : les remises ne peuvent pas être vérifiées. Elles sont à créer dans Shopify, pas à pas.", "The Shopify store is not connected."), data: { confirmees: false, relie: false, guide }, hint: "Donne au client le pas à pas (data.guide), une étape à la fois, avec ses mots. Tant que ce n'est pas vérifié, le site n'affiche ni prix de lot ni cadeau." };
+      const droits = droitsRemises(c);
+      preuve = await discountsDeps.shopify(c, offre);
+      gardePreuveRemises(p.id, preuve);
+      const v = remisesConfirmees(offre, preuve);
+      if (v.ok) return { ok: true, summary: L("Les remises de l'offre sont en place dans la boutique Shopify : les prix de lot et de pack peuvent s'afficher.", "Discounts are in place."), data: { confirmees: true, plateforme, luLe: preuve.luLe } };
+      return {
+        ok: true,
+        summary: L(`Les remises ne sont pas encore en place dans la boutique Shopify : ${(preuve.manque ?? []).slice(0, 6).join(" ; ") || v.pourquoi}`, "Discounts are not in place yet."),
+        data: { confirmees: false, plateforme, manque: preuve.manque ?? [], droitsManquants: droits.manque, guide },
+        hint: droits.ok
+          ? "Dis au client ce qui manque, simplement. Tant que ce n'est pas en place, le site n'affiche ni prix de lot ni cadeau."
+          : "L'accès du Studio à sa boutique ne permet pas de créer les remises à sa place : donne-lui le pas à pas (data.guide), une étape à la fois, avec ses mots, puis rappelle cet outil. Ne lui parle pas de droits ni d'autorisations techniques.",
+      };
+    }
+    const store = (() => { try { return listStores(p.id).find((x) => x.platform === plateforme && x.status === "active") ?? null; } catch { return null; } })();
+    if (!store) return { ok: true, summary: L(`La boutique ${NOMS[plateforme]} du client n'est pas reliée au Studio : les remises ne peuvent pas être vérifiées.`, "The store is not connected."), data: { confirmees: false, relie: false }, hint: "Propose au client de relier sa boutique (onglet Produits), puis rappelle cet outil. Tant que ce n'est pas vérifié, le site n'affiche ni prix de lot ni cadeau." };
+    try { preuve = await discountsDeps.preuve(plateforme, store.url); }
+    catch (e) { preuve = { plateforme, empreinte: null, actif: false, manque: [e instanceof Error ? e.message : "la boutique ne répond pas"], luLe: Date.now() }; }
+    gardePreuveRemises(p.id, preuve);
+    const v = remisesConfirmees(offre, preuve);
+    if (v.ok) return { ok: true, summary: L(`Les remises de l'offre sont en place dans la boutique ${NOMS[plateforme]} : les prix de lot et de pack peuvent s'afficher.`, "Discounts are in place."), data: { confirmees: true, plateforme, luLe: preuve.luLe } };
+    return {
+      ok: true, summary: L(`Les remises ne sont pas encore en place dans la boutique ${NOMS[plateforme]} : ${v.pourquoi}`, "Discounts are not in place yet."),
+      data: { confirmees: false, plateforme, manque: preuve.manque ?? [] },
+      hint: plateforme === "woocommerce"
+        ? "Les remises partent avec le site : il faut que la dernière version du site soit installée dans WooCommerce et que les produits y soient publiés. Dis-le simplement, puis rappelle cet outil."
+        : "Les remises partent avec le site : dans PrestaShop, elles se posent à l'import du catalogue, ou par Modules › E-COM STUDIO IA › Configurer › « Poser les remises ». Dis-le simplement, puis rappelle cet outil.",
+    };
+  },
+};
+
+export const offersTools: AgentTool[] = [featuresTool, offersTool, discountsTool];

@@ -167,7 +167,7 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
 
   it("le fauteuil : conception, textes et photos par SINA, le Studio fabrique les écrans envoyés au propriétaire", async () => {
     const { ctx, pid, prod, designed, site } = await mount(FAUTEUIL);
-    expect(designed.tenue).toMatchObject({ titres: "fins", bouton: "pilule", cadre: "niche", signe: "la niche du mur" });
+    expect(designed.tenue).toMatchObject({ titres: "fins", bouton: "pilule", cadre: "droit", signe: "la niche du mur" });
     expect(designed.header).toMatchObject({ id: "tn-entete", construction: "centre" });
     expect(designed.pages.find((x) => x.key === "home")!.sections.slice(0, 2).map((s) => [s.id, s.construction])).toEqual([["tn-ouverture", "dans-la-photo"], ["tn-de-pres", "sans-titre"]]);
     expect(designed.pages.find((x) => x.key === "product")!.sections.map((s) => s.id)).toEqual(["tn-achat", "tn-description", "tn-de-pres", "tn-emotion", "tn-places", "tn-mesures", "tn-questions", "tn-final"]);
@@ -182,7 +182,7 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     t = S.loadCustomTheme(pid)!;
     const page = renderCustomTheme(loadProject(pid), t, { embed: true });
     expect(page).toContain('<link rel="stylesheet" href="/sections/tenue.css">');
-    expect(page).toMatch(/class="tb-wrap ctw ctw-classique [^"]*" data-tn-titres="fins" data-tn-bouton="pilule" data-tn-cadre="niche" data-tn-fond="uni" data-tn-petits="normal"/);
+    expect(page).toMatch(/class="tb-wrap ctw ctw-classique [^"]*" data-tn-titres="fins" data-tn-bouton="pilule" data-tn-cadre="droit" data-tn-fond="uni" data-tn-petits="normal"/);
     expect(page).toMatch(/--tn-fond:#F1E5D1;--tn-encre:#38231A/);
     expect(page).toMatch(/<section data-ct="s[0-9a-f]{8}" data-ct-role="page" data-ct-own data-tn-c="dans-la-photo" class="tn tn-ouverture">/);
     expect(page).toMatch(/<section data-ct="s[0-9a-f]{8}" data-ct-role="header" data-ct-own data-tn-c="centre" class="tn tn-entete">[^]*?<span class="tn-nom lg">Alcôve<\/span>/);
@@ -295,7 +295,7 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     expect(home).toMatch(/style="background-image:url\(\{\{ 'tn-[\w-]+\.(?:jpg|png)' \| asset_url \}\}\)"/);
     // L'en-tête porte les couleurs, les polices et le socle de la feuille ; chaque section porte sa propre part.
     const header = spec.customSections[spec.groups.header.sections[spec.groups.header.order[0]].type].liquid;
-    expect(header).toMatch(/<div class="ctw ctw-classique" data-tn-titres="fins" data-tn-bouton="pilule" data-tn-cadre="niche"/);
+    expect(header).toMatch(/<div class="ctw ctw-classique" data-tn-titres="fins" data-tn-bouton="pilule" data-tn-cadre="droit"/);
     expect(header).toMatch(/\{% stylesheet %\}[^]*--tn-fond:#F1E5D1[^]*--f-title:var\(--font-heading\)[^]*\.ctw \.tn-entete\{/);
     expect(header).toContain('<a class="tn-pan" href="{{ routes.cart_url }}" aria-label="Panier">Panier <u>(</u><span>{{ cart.item_count }}</span><u>)</u></a>');
     // Toute la feuille part avec l'en-tête, dans l'ordre d'origine (à force égale la dernière règle gagne : la bande
