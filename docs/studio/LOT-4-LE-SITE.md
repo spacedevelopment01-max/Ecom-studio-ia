@@ -60,6 +60,39 @@ le propriétaire, après le devis de SINA et son « oui ».
 - **Les mots du client** : « ton site », jamais « thème sur mesure » ni « maquette », dans les cartes, les comptes
   rendus et les écrans touchés.
 
+## Les six familles et les dispositions (demande du propriétaire, 16 novembre 2026)
+
+Sa demande, avant l'essai payant : « construis les six familles en coulisses et le choix de la famille par SINA d'après
+la planche, avec les sections en plusieurs dispositions : je veux que le premier vrai site soit fait avec son style ».
+
+- **Les six familles** (`custom-theme/familles.ts`) : Maison chaleureuse, Épuré et éditorial, Naturel et sincère,
+  Gourmand et joyeux, Confiance et savoir-faire, Spectaculaire. Chacune dit, d'après sa page « Six styles d'après les
+  meilleurs sites » : à quoi on la reconnaît sur une planche, ce que font les meilleurs sites de cette allure, sa façon
+  de photographier, son rythme, et ses choix permis (titres, boutons, cadres des photos, fond, petits textes, en-tête,
+  pied de page, ouverture de l'accueil). Aucun nom de site ni de marque n'est donné à l'IA.
+- **Le choix par SINA** : le concepteur reçoit les six familles et en choisit une en partant de la planche de marque
+  (couleurs, polices, direction artistique, voix) ; le métier n'est qu'un indice. Il dit ce qui a décidé. Le directeur
+  commercial, qui relit, vérifie ce choix contre la planche et le change s'il le faut : celui qui choisit n'est pas
+  celui qui juge. Aucun appel de plus : le choix se fait dans la conception déjà prévue au devis.
+- **Le contrôle du Studio, sans IA** : chaque écart aux choix de la famille est rendu au concepteur pour sa seule
+  reprise ; ce qui en sort encore est ramené dans la famille (le réglage le plus typique), sans appel de plus. Le site
+  est donc toujours fait dans son style.
+- **Les photos** suivent la façon de photographier de la famille (avant : un même univers pour tous les sites).
+- **En coulisses** : le client ne voit ni n'entend jamais le nom d'une famille ; SINA lui explique l'allure de son site
+  en partant de sa planche.
+- **L'ouverture** : règle du propriétaire, « grande photo pleine avec le titre dessus ». Chaque famille n'a que des
+  ouvertures qui la respectent ; les ouvertures sans photo pleine (nom géant, collage, formes, lueurs) ne sont plus
+  permises sur l'accueil.
+- **Le thème unique, ses pièces seulement** : le concepteur ne reçoit plus les 208 anciennes sections (elles avaient
+  leur allure à elles et ne partaient pas en boutique), seulement les pièces qui prennent l'allure de la marque.
+- **Les dispositions** : voir la liste des pièces qui se bâtissent maintenant de plusieurs façons, plus bas.
+- **Exemples retirés des consignes** (règle : aucun exemple tiré d'un projet d'essai) : l'exemple des bougies et la
+  règle « thé, infusions, café » dans la consigne du concepteur, « pour du thé » dans celles des photos.
+
+Pas encore fait, dit clairement : les huit en-têtes de la référence (il y en a trois façons aujourd'hui ; les deux
+méga menus, la bande d'annonce intégrée et l'en-tête de services avec téléphone toujours visible restent à construire
+au temps 4), les six pages produit et les six pages de services comme styles nommés.
+
 ## Le devis (calculé le 16 novembre 2026 avec les tarifs vérifiés, pas encore mesuré)
 
 | | Coût probable | Plafond jamais dépassé |

@@ -109,6 +109,8 @@ export type SiteReport = {
   aRevoir: string[];
   montage: Record<string, unknown> | null;
   /** Le site est-il devenu la version active du moteur des thèmes (prête à être mise en ligne ou envoyée en boutique) ? */
+  /** En coulisses seulement : la famille du Studio choisie d'après la planche. SINA n'en dit jamais le nom au client. */
+  styleEnCoulisses?: { famille: string | null; pourquoi: string | null };
   pret: boolean;
   aCompleter: string[];
   photosPagesLimitees: string[] | null;
@@ -140,7 +142,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
   const designed = await ctx.step("site:design", async () => {
     const r = await (siteJobDeps.design ?? ((c, x) => runDesign(c, x, { kind: "full" })))(tc, { consigne: a.consigne ?? undefined, jobId: ctx.job.id });
     if (!r.ok) return { ok: false as const, why: r.result.summary };
-    return { ok: true as const, t: r.t, concept: r.d.concept ?? null, signe: r.d.tenue?.signe ?? null, left: r.left };
+    return { ok: true as const, t: r.t, concept: r.d.concept ?? null, signe: r.d.tenue?.signe ?? null, left: r.left, famille: r.d.famille ?? null, familleWhy: r.d.familleWhy ?? null };
   });
   if (!designed.ok) return fail(designed.why);
 
@@ -186,6 +188,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
   const report: SiteReport = {
     pages: t.pages.map((pg) => `${pg.label} (${pg.sections.length})`),
     concept: short(designed.concept, 400) as string | null, signe: designed.signe, aRevoir: designed.left.slice(0, 8).map((x) => x.slice(0, 220)), montage: montageSummary(montage),
+    styleEnCoulisses: { famille: designed.famille, pourquoi: short(designed.familleWhy, 300) as string | null },
     pret: install.ok, aCompleter: install.ok ? [] : install.blocking.slice(0, 30).map((x) => x.slice(0, 200)),
     photosPagesLimitees: tight ? sub.pages! : null,
   };

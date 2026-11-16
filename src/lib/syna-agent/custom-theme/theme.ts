@@ -70,6 +70,9 @@ export type MenuItem = { label: string; to: string; grand?: boolean; children?: 
 /** Au-delà, les fiches produit partagent la fiche commune : une page écrite par produit coûterait trop au client. */
 export const MAX_PRODUCT_PAGES = 12;
 export type CustomTheme = {
+  /** Lot 4 : la famille du Studio dans laquelle le site est conçu (en coulisses, jamais dite au client), et ce qui l'a décidée. */
+  famille?: string | null;
+  familleWhy?: string | null;
   version: 1;
   family: FamilyId;
   style: string;

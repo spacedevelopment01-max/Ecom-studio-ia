@@ -15,6 +15,8 @@ const DESIGN: Design = {
   visitor: "Une personne qui veut un coin à elle pour lire.", levers: ["ce que le produit change dans la journée", "sa silhouette"], objections: [],
   concept: "Le fauteuil dans sa niche : tout le site reprend l'arrondi du mur.", header: F.HEADER.id, headerConstruction: F.HEADER.construction, footer: F.FOOTER.id, search: null, corrections: [],
   tenue: { ...F.FAUTEUIL_TENUE },
+  // La famille du Studio choisie d'après la planche (en coulisses). Le pied de page simple n'est pas dans ses choix.
+  famille: "maison-chaleureuse", familleWhy: "Les tons chauds de la planche et sa police de titre fine.",
   pages: F.SITE.map((pg) => ({ key: pg.key, label: pg.label, journey: "Le visiteur arrive, comprend, ressent, puis agit sans hésiter.", sections: pg.sections.map(pick) })),
 } as Design;
 
@@ -124,6 +126,11 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       expect(t.pages.map((p) => p.key)).toEqual(F.SITE.map((p) => p.key));
       expect(t.tenue).toMatchObject(F.FAUTEUIL_TENUE);
       expect(t.chosen).toBeFalsy();
+      // Le site est fait dans SA famille : le concepteur (simulé) avait gardé un pied de page hors de ses choix, même
+      // après sa reprise ; le Studio l'y ramène sans appel de plus. La famille est gardée avec le site.
+      expect(t.famille).toBe("maison-chaleureuse");
+      expect(t.footer).toMatchObject({ id: "tn-pied-complet", construction: "colonnes" });
+      expect(t.header).toMatchObject({ id: "tn-entete", construction: "centre" });
       // Montage : toutes les pages, dans ce qui reste du plafond ; la création se fait SINA + photos (aucune image du client hors produit).
       expect(builds).toHaveLength(1);
       expect(builds[0]).toMatchObject({ projectId: pid, conversationId: cid, photos: true, newPhotos: true, pages: null, rewrite: false });
@@ -133,6 +140,9 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       expect(j.steps[6].status).toBe("review");
       expect(j.site!.report.concept).toMatch(/niche/);
       expect(j.site!.report.signe).toBe(F.FAUTEUIL_TENUE.signe);
+      // Le compte rendu garde la famille en coulisses, et la consigne interdit à SINA d'en dire le nom.
+      expect(j.site!.report.styleEnCoulisses).toEqual({ famille: "maison-chaleureuse", pourquoi: "Les tons chauds de la planche et sa police de titre fine." });
+      expect(J.STEP_GUIDES[6]).toMatch(/le nom de la famille est un mot de coulisses, tu ne le dis JAMAIS/);
       expect(j.site!.report.montage).toMatchObject({ sections: 9, photosMade: 2, photosFailed: 1, problems: ["photo de l'accueil : aucun visuel validé"] });
       // Rien d'exemple ne part : le montage simulé a laissé les textes et les photos d'exemple, le site n'est donc PAS
       // devenu la version du moteur, et ce qui manque est listé.

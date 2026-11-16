@@ -8,6 +8,7 @@
  *     d'images des sites, dans la direction artistique de la famille choisie (personnes seulement si autorisées).
  * Le thème est ensuite en place dans l'onglet Boutique, où le client demande ses changements.
  */
+import { famillePhotoLine } from "./familles";
 import { z } from "zod";
 import { L } from "../../i18n-server";
 import { UserFacingError, type JobContext } from "../../jobs";
@@ -104,7 +105,7 @@ ${COPY_CRAFT}
 - Le vocabulaire imposé par le client est respecté.
 - Tu ne touches ni aux balises, ni aux classes, ni aux attributs (sauf alt et les textes) : chaque modification est un remplacement { find, replace } où find est un passage EXACT du HTML fourni, présent une seule fois (prends assez de contexte pour qu'il soit unique), et replace le même passage avec les nouveaux textes.
 - Cartes de produits : une carte par produit de la liste, jamais de carte « [À compléter : produit] ». S'il y a plus de cartes que de produits, retire les cartes en trop : find = la carte entière (de sa balise ouvrante à sa balise fermante), replace = "" ; et ne décris pas leurs photos.
-- Pour CHAQUE image de la section dont la source commence par « photos/ », décris TOUJOURS la photo à créer pour la marque (même si le client a dit de ne pas créer de photo maintenant : la description sert au montage des photos, plus tard) : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit » : sa vraie photo y est posée telle quelle. Une scène peut montrer le produit (sa vraie photo sert de modèle ; UN seul paquet, jamais plusieurs produits ni plusieurs paquets dans la même photo ; ne décris JAMAIS son emballage ni son étiquette, écris seulement « le sachet » + son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas l'emballage), mais pas toutes : les autres photos d'ambiance montrent l'univers de la marque SANS le produit (pour du thé : théière, tasse fumante, feuilles, fleurs, fruits, plantes), toujours en accord avec le texte d'en face ; jamais deux fois la même scène. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni.
+- Pour CHAQUE image de la section dont la source commence par « photos/ », décris TOUJOURS la photo à créer pour la marque (même si le client a dit de ne pas créer de photo maintenant : la description sert au montage des photos, plus tard) : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit » : sa vraie photo y est posée telle quelle. Une scène peut montrer le produit (sa vraie photo sert de modèle ; UN seul paquet, jamais plusieurs produits ni plusieurs paquets dans la même photo ; ne décris JAMAIS son emballage ni son étiquette, écris seulement « le sachet » + son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas l'emballage), mais pas toutes : les autres photos d'ambiance montrent l'univers de la marque SANS le produit (ce qui l'entoure dans la vraie vie : les objets, les matières, le lieu et le moment où l'on s'en sert), toujours en accord avec le texte d'en face ; jamais deux fois la même scène. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni.
 Réponse : uniquement le JSON demandé.`;
 
 /** Faits de la marque donnés à chaque écriture (les mêmes pour toutes les sections). */
@@ -259,7 +260,7 @@ Ce que tu cherches, dans cet ordre :
 1. LA MÊME SCÈNE DEUX FOIS, dans une page ou d'une page à l'autre : même décor, mêmes objets, même cadrage, même moment. Tu gardes la meilleure et tu fais changer l'autre (dis vers quelle scène : un autre lieu, un autre moment, un autre point de vue).
 2. UNE PHOTO QUI NE VA PAS AVEC SON TEXTE : elle ne montre pas ce que le texte d'en face raconte, ou elle ne fait pas ressentir l'émotion de l'angle.
 3. UNE PHOTO PLATE : un produit seul sur fond uni pour une ouverture ou une ambiance, un objet posé sans vie, une scène sans lumière ni profondeur, un objet vague (« quelques accessoires », « des éléments de décor »).
-4. L'ÉQUILIBRE DU SITE : une partie des scènes met en scène le vrai produit, les autres montrent l'univers de la marque SANS lui (pour du thé : théière, feuilles, fruits, plantes). Le produit dans toutes les scènes, ou dans aucune, est un défaut : dis lesquelles changer.
+4. L'ÉQUILIBRE DU SITE : une partie des scènes met en scène le vrai produit, les autres montrent l'univers de la marque SANS lui (les objets, les matières, le lieu, le moment). Le produit dans toutes les scènes, ou dans aucune, est un défaut : dis lesquelles changer.
 5. UNE DESCRIPTION QUI NE SUIT PAS LA MÉTHODE : elle ne dit pas le type de photo et le cadrage, la place exacte de chaque objet, « La scène contient exactement N objets », la partie calme où le texte se pose, la lumière ; elle se contredit ; elle montre plusieurs paquets du produit ; elle décrit l'emballage ou l'étiquette du produit (la vraie photo jointe les donne).
 6. CE QUI EST INTERDIT : une personne quand la fiche ne l'autorise pas, un texte, un chiffre, un logo ou un nom de marque demandé dans l'image, une photo que seul le client peut fournir (ses clients, son équipe, ses vrais chantiers) inventée à sa place.
 7. UNE SÉANCE QUI SE DISPERSE : lumière, décors, matières et couleurs qui changent d'une photo à l'autre sans raison. La direction artistique donnée se tient d'un bout à l'autre.
@@ -427,6 +428,14 @@ export function siteArtDirection(p: Project, fu: FamilyUniverse | null, j: Journ
   return `${fu.style} ; ${fu.idea} ; lumière : ${fu.light} ; décors : ${fu.setting} ; composition : ${fu.composition.join(" ; ")} ; émotion à faire ressentir : ${d.emotion ?? fu.emotion}${d.story ? ` (l'histoire de la marque : ${d.story})` : ""} ; couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.${look ? ` Direction artistique de sa planche de marque (la même marque, la même séance) : ${look}` : ""}`;
 }
 
+/** Direction artistique des photos d'un site conçu dans une famille du Studio : sa façon de photographier, l'émotion de l'angle, la planche. */
+export function familleArtDirection(p: Project, famille: string | null | undefined, j: Journey | null): string | null {
+  const line = famillePhotoLine(famille);
+  if (!line) return null;
+  const d = j ? angleDetails(j) : {}, look = boardLook(j);
+  return `${line}${d.emotion ? ` Émotion à faire ressentir : ${d.emotion}${d.story ? ` (l'histoire de la marque : ${d.story})` : ""}.` : ""} Couleurs de la marque : ${[p.brand?.palette?.dark, p.brand?.palette?.primary, p.brand?.palette?.accent].filter(Boolean).join(", ")}.${look ? ` Direction artistique de sa planche de marque (la même marque, la même séance) : ${look}` : ""}`;
+}
+
 /**
  * Photos envoyées par le client (Fichiers du projet), dans l'ordre d'arrivée, utilisables sur son site : jamais son logo
  * (ni ses déclinaisons), jamais une image marquée comme inspiration, jamais une image trop petite pour une section
@@ -481,7 +490,9 @@ export async function runCustomBrandJob(ctx: JobContext) {
   const name = p.brand?.name ?? p.name;
   const products = (() => { try { return listProducts(p.id); } catch { return []; } })();
   const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });
-  const direction = siteArtDirection(p, fu, j);
+  // Lot 4 : les photos suivent la façon de photographier de la famille du Studio choisie d'après la planche (et non plus
+  // un univers commun à tous les sites).
+  const direction = familleArtDirection(p, t.famille, j) ?? siteArtDirection(p, fu, j);
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();

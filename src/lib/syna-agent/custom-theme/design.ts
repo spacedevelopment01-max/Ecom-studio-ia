@@ -14,6 +14,7 @@
  * de la recherche et le rythme ; ce qui est refusé revient une fois au concepteur. La conception est gardée dans le
  * thème (`concept`, `journey` de chaque page, `intent` de chaque section) et sert au plan des textes et au rédacteur.
  */
+import { FamillePick, famillesBrief } from "./familles";
 import { z } from "zod";
 import { FEATURED_ROLE, familySections, isCardSection, libSection, onlyFor, sectionTraits } from "./library";
 import { TENUE_CHOICES, TenuePickSchema, constructionsOf, isTenueSection, tenueSection } from "./tenue";
@@ -32,6 +33,11 @@ export const DesignSchema = z.object({
   /** Construction de l'en-tête, s'il est à tenue. */
   headerConstruction: z.string().max(40).nullable().optional(),
   footer: z.string().max(80),
+  /** Construction du pied de page, s'il en a. */
+  footerConstruction: z.string().max(40).nullable().optional(),
+  /** Lot 4 : la famille du Studio choisie d'après la planche de marque (en coulisses), et ce qui l'a décidée. */
+  famille: FamillePick.optional(),
+  familleWhy: z.string().max(600).nullable().optional(),
   search: z.string().max(80).nullable(),
   /** La tenue de la marque (sections à tenue) : titres, boutons, cadre des photos, fond, petits textes, signe. */
   tenue: TenuePickSchema.nullable().optional(),
@@ -62,22 +68,20 @@ export const DESIGN_TYPICAL_MICRO = 800_000;
  * actuelles de la banque : l'ancien citait des sections retirées et posait deux fois la même section dans une page,
  * et SINA recopiait ce niveau-là.
  */
-const EXAMPLE = `EXEMPLE DU NIVEAU ATTENDU (une autre marque, à ne jamais recopier : des bougies coulées à la main, cible « personnes qui veulent une maison qui sent bon sans produits chimiques », objections « ça coûte cher pour une bougie », « elles fument et noircissent les murs », « l'odeur ne tient pas » ; pas d'avis clients).
-ACCUEIL (10 moments) :
-1. ouverture en grande photo · why : il arrive d'une publicité ; il doit ressentir le soir chez lui avant de lire quoi que ce soit · says : « La maison qui sent l'été dans un jardin, même en janvier », bouton « Allumer l'été » vers la boutique · photos : un salon au crépuscule, la bougie allumée au premier plan à droite, la partie gauche calme pour le titre.
-2. orientation · why : juste sous l'ouverture, on l'oriente (16 thèmes vendus sur 27 le font) : il choisit son univers · says : « Les bougies du soir », « Les parfums d'été », « Les coffrets à offrir ».
-3. produits · why : il veut voir les bougies tout de suite (dans les thèmes vendus, les produits arrivent en 2e à 4e position) ; SEULE section de cartes de la page · says : les parfums avec leur prix.
-4. fabrication racontée · why : après le choix, il veut comprendre ce qu'il achète · says : de la cire de colza à la flamme, en trois phrases vraies.
-5. respiration en grande image · why : entre deux moments d'information, il se projette chez lui · says : « Le soir où la maison ralentit ».
-6. objection levée · why : « ça coûte cher » et « elles fument », au moment où il hésite · says : cire de colza contre paraffine, mèche en coton contre métal, 50 h contre 20 h.
-7. voix de la marque · why : après les faits, l'émotion revient par la fondatrice · says : sa phrase vraie sur pourquoi elle coule ses bougies elle-même.
-8. confiance · why : sans avis clients, elle vient des garanties et du savoir-faire, en fin de page · says : fabriquée à Lyon, retours 30 jours, livraison 48 h.
-9. raison de revenir · why : il n'est pas prêt à acheter · says : deux articles utiles.
-10. appel final · why : la page finit par un appel à agir, jamais par des produits · says : la lettre des nouveaux parfums.
-FICHE PRODUIT (8 moments) : bloc d'achat (produit vedette) → description racontée en onglets ou accordéon → points forts (objection « l'odeur ne tient pas ») → première combustion en étapes → grande image d'émotion → garanties → vraies questions → les autres produits (seule section de cartes).
-COLLECTION : la grille et ses filtres, au plus une section courte. PANIER : le panier et la livraison offerte. À PROPOS : la personne, son histoire, les chiffres vrais, des images.
-L'EXEMPLE MONTRE UNE LOGIQUE, PAS DES SECTIONS : il ne donne volontairement aucun identifiant. Pour CHAQUE moment, compare TOUTES les sections de la bibliothèque qui peuvent le servir (même rôle, ou autre rôle qui fait le même travail) et prends celle qui sert le mieux CETTE marque (son produit, son émotion, ses photos, son ambiance) ; dis dans why pourquoi celle-là plutôt que ses voisines. Deux marques différentes n'ont presque jamais les mêmes sections : une conception qui reprend les sections des derniers thèmes du Studio par habitude est refusée.
-POUR UN SITE DE SERVICES (un électricien, cible « propriétaires qui rénovent », objections « il ne viendra pas pour un petit chantier », « le devis va exploser ») : accueil = ouverture avec la promesse et le délai réel d'intervention → prestations en cartes → déroulé d'une intervention → estimation de devis → réalisations réelles (seulement si le client en a) → zone d'intervention → garanties et assurances réelles → « on vous rappelle ».`;
+const EXAMPLE = `LE NIVEAU ATTENDU, EN LOGIQUE (aucun exemple de marque : tout vient de CETTE marque).
+ACCUEIL, une dizaine de moments, chacun avec sa raison :
+1. ouverture en grande photo pleine, le titre dessus · il doit ressentir la scène de l'angle avant de lire quoi que ce soit ; un seul bouton, qui porte le désir.
+2. orientation · juste sous l'ouverture, il choisit par où entrer (les gammes, les prestations, ou une bande d'engagements vrais).
+3. ce qui se vend · les produits ou les prestations arrivent tôt, avec leurs vrais prix ; SEULE section de cartes de la page.
+4. ce qu'il achète vraiment · la fabrication, la méthode ou le déroulé, en quelques phrases vraies.
+5. respiration en grande image · entre deux moments d'information, il se projette.
+6. objection levée · la crainte la plus forte de la recherche, au moment où il hésite, avec les faits de la marque.
+7. voix de la marque · après les faits, l'émotion revient par la personne qui fait.
+8. confiance · sans avis clients, elle vient des garanties, de la transparence et du savoir-faire.
+9. raison de revenir, puis 10. appel final · la page finit par un moyen d'agir, jamais par des produits.
+PAGE QUI VEND (fiche produit ou prestations) : ce qu'on achète et son prix d'abord → ce qui le raconte → ce qui lève les objections → une grande image d'émotion → les garanties → les vraies questions → le reste de l'offre en dernier.
+SITE DE SERVICES : la promesse et le moyen d'agir (appeler, réserver, demander un devis) dès l'ouverture → les prestations et leurs prix → comment ça se passe → des réalisations (seulement si le client en a) → la zone et les horaires → les garanties et assurances réelles → le contact.
+CETTE LOGIQUE NE DONNE AUCUN IDENTIFIANT. Pour CHAQUE moment, compare TOUTES les pièces de la bibliothèque qui peuvent le servir (même rôle, ou autre rôle qui fait le même travail) et prends celle qui sert le mieux CETTE marque (son offre, son émotion, ses photos, sa famille) ; dis dans why pourquoi celle-là plutôt que ses voisines. Deux marques différentes n'ont presque jamais les mêmes pièces : une conception qui reprend les pièces des derniers sites du Studio par habitude est refusée.`;
 
 /**
  * Ordre des pages appris de 65 thèmes Shopify vendus sur ThemeForest (étude du 11 novembre 2026, demandée par le
@@ -98,7 +102,7 @@ PANIER (1 à 3 sections) : le panier, la barre de livraison offerte ; jamais d'a
 À PROPOS (4 à 6) : l'histoire et la personne d'abord, puis image et texte en alternance, les valeurs ou engagements, les chiffres vrais ; CONTACT (1 à 3) : formulaire et coordonnées, une aide courte.
 RYTHME : fonds clairs pour les produits ; une ou deux bandes de couleur pâle et UNE bande sombre ou sur photo par page ; l'ouverture et les grandes photos en pleine largeur, les produits cadrés.
 CE QUE LES BONS THÈMES NE FONT JAMAIS : un minuteur ou une « offre du jour » sur une marque soignée, une fenêtre d'inscription à l'arrivée, des compteurs de visiteurs, deux fois la même section, deux sections de cartes à la suite, une section « espace » pour aérer.
-THÉ, INFUSIONS, CAFÉ : sous le bloc d'achat, la préparation (quantité, température, temps) ; les familles expliquées une par une ; le rituel ou la culture sur fond sombre ; jamais de minuteur. MONO-PRODUIT : le produit en ouverture, puis il est expliqué (points forts, détails, vidéo, résultats) avant tout catalogue, les questions tôt.`;
+MONO-PRODUIT : le produit en ouverture, puis il est expliqué (points forts, détails, vidéo, résultats) avant tout catalogue, les questions tôt.`;
 
 /**
  * Sections à tenue (13 novembre 2026, retour du propriétaire : « juste changer les images et les textes ferais déjà des
@@ -130,6 +134,7 @@ EXIGENCES :
 - Toutes les pages obligatoires, avec leurs clés exactes ; aucune page de paiement que la plateforme tient elle-même.
 - Utilise UNIQUEMENT les identifiants de la liste (champ « section »). corrections : [] au premier passage.
 ${TENUE_RULES}
+- FAMILLE : avant tout choix de pièce, choisis la famille du Studio qui correspond à la planche de marque (les six te sont décrites dans la demande) ; champs « famille » et « familleWhy ». L'allure, l'en-tête (headerConstruction), le pied de page (footer et footerConstruction), l'ouverture de l'accueil et les photos restent dans SES choix.
 ${EXAMPLE}
 Réponse : uniquement le JSON demandé.`;
 
@@ -138,13 +143,16 @@ Cherche, page par page : où le visiteur décroche ; chaque objection sans répo
 Puis rends la conception CORRIGÉE et complète (même format, toutes les pages), en gardant ce qui est bon, et liste dans corrections ce que tu as changé et pourquoi (une ligne par changement).
 Vérifie aussi l'ordre des pages des thèmes qui se vendent (ci-dessous) : produits tôt sur l'accueil, preuves après les produits, fin jamais sur des produits, fiche qui commence par l'achat et finit par les autres produits, collection et panier courts.
 ${PAGE_PATTERNS}
+FAMILLE : vérifie que la famille choisie (champ « famille ») est bien celle que dit la PLANCHE DE MARQUE (couleurs, polices, direction artistique, voix), pas seulement le métier ; si une autre famille lui va mieux, change-la, dis pourquoi dans corrections, et remets l'allure, l'en-tête, le pied de page, l'ouverture et les photos dans les choix de la nouvelle famille. Garde les champs « famille », « familleWhy », « headerConstruction » et « footerConstruction ».
 Mêmes exigences que le concepteur (pages riches, aucune section sans contenu réel, une section de cartes par page, « Produit vedette » en haut de la fiche, jamais la même section deux fois, jamais deux sections de même rôle à la suite, pages obligatoires, identifiants de la liste uniquement).
 Réponse : uniquement le JSON demandé.`;
 
 /** Catalogue de la famille donné au concepteur : identifiant, rôle, caractéristiques, titre, ce qu'elle fait. */
 export function designCatalogue(family: FamilyId, seed?: string): string {
   const tr = sectionTraits();
-  return shuffled(familySections(family), seed).map((s) => {
+  // Lot 4 : le thème unique du Studio. Le concepteur ne reçoit que ses pièces (celles qui prennent l'allure de la marque) ;
+  // les anciennes sections, qui avaient leur allure à elles et ne partaient pas en boutique, ne lui sont plus données.
+  return shuffled(familySections(family).filter((x) => isTenueSection(x)), seed).map((s) => {
     const t = tr[s.id];
     const traits = t ? ` · fond ${t.fond} · ${t.densite} · ${t.photos} photo(s)` : "";
     const built = constructionsOf(s.id);
@@ -192,13 +200,15 @@ export function designPrompt(o: { brief: string; family: FamilyId; site: SiteKin
     o.brief,
     o.consigne ? `DEMANDE DU CLIENT (prioritaire, ses mots) : « ${o.consigne} »` : "",
     `Site : ${o.site.business === "services" ? "entreprise de services" : `boutique de ${o.site.products} produit(s)`}${o.site.platform ? `, plateforme ${o.site.platform}` : ""}.`,
-    o.ambiance ? `AMBIANCE VOULUE PAR LE CLIENT : ${AMBIANCE_LABEL[o.ambiance]}.` : "AMBIANCE : non précisée par le client ; suis la personnalité de la marque.",
+    o.ambiance ? `AMBIANCE VOULUE PAR LE CLIENT : ${AMBIANCE_LABEL[o.ambiance]}.` : "AMBIANCE : celle de la planche de marque et de la famille choisie.",
     o.products?.length ? `FICHES PRODUITS (vraies) :\n${o.products.join("\n")}` : "",
     `Ce que la marque a réellement : ${o.has.length ? o.has.join(" ; ") : "rien de plus que les faits ci-dessus"}.`,
     `Ce qu'elle n'a PAS (aucune section qui en dépend) : ${o.lacks.join(" ; ")}.`,
     `Pages obligatoires (clés) : ${req}.${owned ? ` Jamais de page : ${owned} (la plateforme les tient).` : ""}`,
     "",
     o.references ?? "",
+    famillesBrief(),
+    "",
     o.overused?.length ? `SECTIONS DÉJÀ PRISES DANS LES DERNIERS THÈMES DU STUDIO (pour d'autres marques) : ${o.overused.join(", ")}. Ne les reprends pas par habitude : seulement si, pour CE moment de CETTE marque, aucune autre section ne fait mieux (dis-le dans why).` : "",
     `BIBLIOTHÈQUE DE LA FAMILLE (dans un ordre propre à ce projet : l'ordre ne dit rien de la qualité ; identifiant · rôle · fond · densité · photos · titre : ce qu'elle fait) :`,
     designCatalogue(o.family, o.seed),
