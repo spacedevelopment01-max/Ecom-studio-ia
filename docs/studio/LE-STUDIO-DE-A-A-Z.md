@@ -432,6 +432,121 @@ Ce qui change dans le Studio, à faire dans le lot des forfaits (rien n'est fait
 premier mois à 50 % (le client voit toujours un pourcentage de son budget, jamais des euros) ; le nombre de
 publications, de vidéos et de campagnes compris par forfait.
 
+## 14. Ce que le client gagne chaque mois (accord du propriétaire, 15 novembre 2026)
+
+Sa question : « il faut que le client puisse se dire je paye tant par mois mais ça doit lui servir à quelque chose ».
+Son accord, et sa condition : « Oui je veux bien que tu les ajoute mais ils doivent faire vraiment ce que tu as dit pas
+juste la moitié ça doit vraiment faire ce que tu as dit c'est impératif ».
+
+**Règle** : chacun des engagements ci-dessous (les cinq premiers acceptés d'abord, les cinq suivants ensuite : « Ok pour ça », les sept derniers enfin : « Ok ») n'est fini que lorsqu'il fait tout ce qui est écrit dans sa colonne
+« Fait vraiment », prouvé par un essai réel où SINA travaille seule. Une partie qui manque est dite manquante, jamais
+présentée comme faite. Rien ne part sans l'accord du client, sauf là où il l'a autorisé par écrit, dans son plafond.
+
+| Engagement | Fait vraiment (rien de moins) | Lot |
+|---|---|---|
+| 1. Le point du mois | Chaque mois, sans qu'il le demande, SINA lui envoie un point avec de **vrais chiffres** lus sur ses comptes reliés (publications parues, personnes touchées, visites du site, commandes ou demandes, avis reçus), jamais estimés ni inventés ; un chiffre qu'elle ne peut pas lire est écrit « non disponible » avec la raison. Elle dit ce qui a le mieux marché et pourquoi, et propose trois actions précises pour le mois suivant, qu'il accepte d'un clic. | 7 |
+| 2. « Envoie une photo, SINA fait le reste » | Depuis son téléphone, il envoie une photo et une phrase (un nouveau produit, un chantier fini, un plat). SINA met la photo au niveau d'une photo de campagne avec son vrai produit, crée ou met à jour la fiche sur son site (texte, prix demandé s'il manque, jamais deviné), prépare la publication et la story aux formats de chaque réseau, et lui montre le tout ; un seul clic met tout en ligne. | 5 |
+| 3. Les grands moments de l'année | SINA tient le calendrier des moments qui comptent pour **son** métier et sa région (fêtes, saisons, soldes, rentrée, événements locaux qu'elle a vérifiés). Trois semaines avant chacun, elle prépare d'elle-même la campagne complète : publications, mise en avant sur le site, texte de l'offre s'il en veut une, publicité préparée si son forfait la comprend. Elle la lui présente ; il accepte, retouche ou refuse. | 5 et 7 |
+| 4. Sa fiche Google et ses avis | Sa fiche Google est reliée au Studio. SINA la tient à jour (horaires, photos, description, prestations ou produits), y publie, et prépare une réponse à **chaque** avis, dans sa voix, qu'il valide d'un clic (ou qui part seule s'il l'a autorisé par écrit). Elle le prévient d'un avis négatif le jour même. Ce que Google permet de brancher, et à quelles conditions, est à vérifier avant le lot : un manque sera dit. | 5 |
+| 5. Le site qui s'améliore | Chaque mois, SINA relit son site entier (textes, photos, liens, vitesse, téléphone) et ses chiffres de visite, et propose au moins une amélioration concrète et montrée en image avant d'être faite : un texte de saison, un produit à mettre en avant, une page qui manque, un article pour être trouvé sur Google. Rien ne change sur le site sans son accord. | 4 et 7 |
+| 6. « Ta journée est prête » | Chaque matin, le Studio ouvre sur sa journée : la publication du jour prête, qu'il publie d'un geste depuis son téléphone (le partage ouvre le réseau avec l'image, le texte est déjà copié) ; les demandes reçues depuis la veille ; une idée du jour pour son métier. Rien d'inventé, rien de vide : un jour sans demande le dit. | 5 et 7 |
+| 7. La boîte des demandes | L'assistante de son site (construite avec le site) répond jour et nuit avec ses vraies informations seulement, et transmet ce qu'elle ne sait pas. Chaque demande arrive dans le Studio, triée (devis, rendez-vous, question, urgence) et résumée (qui, quoi, où, quand, coordonnées), avec une réponse prête qu'il envoie d'un geste par son e-mail ou par SMS depuis son téléphone. Une urgence le prévient tout de suite. Plafond par jour dans son budget d'IA ; au-delà, un formulaire, jamais un visiteur sans réponse. | 4 |
+| 8. Le studio photo de poche | Il envoie une photo prise au téléphone ; SINA en fait des images de campagne avec son vrai produit, entier, sans rien changer à l'objet, aux formats du site, des publications, de l'étal et de l'affiche. Chaque image est relue avant d'être montrée ; une image ratée est dite ratée. | 2 et 5 |
+| 9. Ses devis (artisans et prestataires) | Il décrit le chantier en deux phrases, à l'écrit ou à la voix. SINA prépare le devis à partir de **ses** tarifs enregistrés, jamais devinés (un prix manquant se demande), avec ses mentions et son style, en document prêt à envoyer. Elle suit s'il est signé et propose la relance au bon moment. | 4 |
+| 10. Ses vrais chiffres de vente | Il relie sa boutique Shopify ou WooCommerce avec sa propre clé, créée dans sa boutique, sans validation de personne. Le point du mois et sa journée montrent alors ses vraies commandes, ce qui s'est vendu, et les visites de son site ; un chiffre absent est dit absent. | 4 et 7 |
+| 11. Son carnet de clients | Chaque personne qui lui a écrit, acheté, réservé ou signé un devis est rangée au même endroit, avec ce qui s'est passé (dates, achats, chantier, échanges). Au bon moment, SINA propose la bonne relance (entretien annuel, fête de l'an dernier, devis resté sans réponse), rédigée dans sa voix ; il l'envoie d'un geste. Seuls les clients qui ont accepté d'être recontactés le sont ; le carnet se corrige et s'efface à leur demande. | 4 et 7 |
+| 12. Les avis qui arrivent tout seuls | Après chaque vente ou chaque chantier fini, SINA prépare le message qui demande un avis, avec le lien de sa fiche Google (une simple adresse, aucun branchement), qu'il envoie d'un geste par SMS ou par e-mail. Elle suit qui a laissé un avis et ne relance jamais deux fois. Jamais d'avis inventé, jamais de cadeau en échange d'un avis. | 7 |
+| 13. De nouvelles façons de gagner de l'argent sur son site | SINA lui propose ce qui rapporte dans son métier (cartes cadeaux, coffrets de saison, abonnement, contrat d'entretien), avec le prix qu'il fixe lui-même, et l'installe sur son site : page, texte, images, mise en avant. Sur une boutique Shopify, WooCommerce ou PrestaShop, seulement ce que sa plateforme permet ; ce qui demande un module en plus est dit avant. | 4 |
+| 14. Le code à scanner et les affiches | Un code à scanner, propre à lui, qui mène à son site et à son assistante, posé sur des supports prêts pour l'imprimeur dans le style de sa marque : carte, étiquette, affiche d'étal ou de vitrine, marquage de véhicule. Pour chaque grand moment de l'année, l'affiche est prête avec la campagne. | 5 |
+| 15. L'objectif du mois | Il fixe un but simple (un nombre de demandes, de ventes ou de rendez-vous). SINA construit le plan du mois pour l'atteindre (publications, offre, relances), et sa journée montre chaque matin où il en est, avec ses vrais chiffres. À la fin du mois, le point dit honnêtement si c'est atteint, et pourquoi. | 7 |
+| 16. Ce que ses clients demandent | Chaque mois, SINA relit toutes les demandes de son site, les devis et les avis, et lui dit ce qui revient (un produit qu'on lui réclame, une zone, une question, un reproche), avec les messages d'origine en preuve, et ce qu'elle propose d'en faire. Rien de supposé : un sujet cité une seule fois n'est pas présenté comme une tendance. | 7 |
+| 17. Son bras droit au quotidien | Il peut lui demander n'importe quelle tâche liée à son affaire (répondre à un client mécontent, écrire à un fournisseur, préparer une annonce, calculer un prix de revient) ; elle répond avec ce qu'elle sait de sa marque, ne lui fait rien inventer, et pour le droit, la comptabilité ou les impôts, elle cite ses sources et dit quand il faut un professionnel. | 7 |
+
+**Gardées pour plus tard** : la lettre mensuelle à ses clients (le Studio ne l'enverrait qu'avec un fournisseur d'envoi
+payant, donc avec l'accord du propriétaire), ses concurrents sous surveillance, les vitrines en plus en kit prêt à coller.
+
+**Règle ajoutée le même jour** : « Je veux aucune proposition qui doivent nous faire attendre des semaines pour que les
+plateformes valides de travailler avec nous ». Conséquence, à trancher avec lui : la fiche Google (engagement 4), les
+chiffres des réseaux (engagement 1) et l'envoi automatique des publications (lot 5) passent par des accès que Google,
+Meta et TikTok doivent valider ; si ces accès ne sont pas déjà validés, ces parties se font sans eux (SINA prépare tout,
+le client publie d'un geste) ou ne se font pas. L'assistante qui répond aux clients se fait sur son site seulement.
+
+**Sa décision, le même jour** : « Je mettrai en place toute l'automatisation avec les autres plateformes mais pour
+l'instant c'est pas le cas donc on fait sans et on y met de côté ». Les engagements 1, 2, 3 et 4 se font donc sans
+branchement aux plateformes : SINA prépare tout, le client publie ou colle d'un geste ; le point du mois s'appuie sur les
+chiffres du site et de sa boutique. Les branchements reviendront quand il les aura mis en place.
+
+## 15. Décisions du 15 novembre 2026 sur le site
+
+- **Modifier en cliquant sur l'aperçu, obligatoire** : sur l'aperçu de son site, le client clique sur n'importe quel
+  élément de n'importe quelle section (titre, texte, photo, bouton, détail) et demande le changement à SINA, qui sait
+  exactement de quoi il parle. Ses mots : « ça c'est obligatoire et pour chaque détail des sections ». À construire au
+  lot 4 (l'ancien assistant savait désigner un élément ; la fonction est partie avec lui au lot 1).
+- **Pas de création gratuite** : l'idée vue chez Scale Ova (« créer et voir gratuitement, payer pour publier ») est
+  refusée. Ses mots : « Pas envie de faire comme ça ».
+- **Le thème unique du Studio** (accord du propriétaire : « Oui écris le »). SINA n'a qu'un seul thème, très riche,
+  construit une fois au meilleur niveau, et elle **monte** chaque site avec : elle choisit les pièces utiles au métier,
+  leur disposition et leur ordre, les habille avec la marque du client, écrit les textes, crée les images, juge le
+  résultat en image et le corrige. Le client voit son site fini, jamais un modèle ni un catalogue, et retouche en
+  cliquant. Le contenu du thème :
+  - **En-têtes : 8**, chacun avec sa vraie version téléphone : classique (logo à gauche) ; logo centré ; transparent sur
+    la photo d'ouverture ; avec bande d'annonce ; **méga menu à colonnes avec images** (sur téléphone : panneau plein
+    écran, rubriques dépliantes avec images) ; **méga menu avec produits mis en avant** (sur téléphone : onglets et
+    produits qui défilent) ; services compact avec téléphone et bouton « rendez-vous » ou « devis » toujours visibles ;
+    menu plein écran pour les marques éditoriales.
+  - **Pieds de page : 6** : complet en colonnes ; centré et minimal ; avec lettre d'information ; services (coordonnées,
+    horaires, zone, carte) ; grand logo éditorial ; réassurance et moyens de paiement.
+  - **Pages produit : 6 styles** : simple (créateurs, artisans) ; vente directe (promesses, avis, offres par quantité,
+    avantages, avant et après, questions, barre d'achat qui reste visible ; jamais de fausse urgence ni de faux avis) ;
+    haut de gamme (grandes photos, récit, matières) ; technique (caractéristiques, vue sous tous les angles, comparatif) ;
+    alimentaire et soin (ingrédients, composition, utilisation, allergènes) ; mode (tailles, couleurs, looks associés).
+  - **Pages de services : 6 styles** : prestation simple ; rendez-vous complet (prestation, intervenant, créneau) ; devis
+    d'artisan (étapes, réalisations, formulaire détaillé) ; fiche de bien immobilier (galerie, caractéristiques,
+    étiquette énergie, demande de visite) ; restaurant (carte, réservation de table) ; atelier ou cours (dates, places,
+    inscription).
+  - **Pages simples, en 2 ou 3 mises en page chacune** : contact (formulaire et carte, coordonnées seules, prise de
+    rendez-vous) ; à propos (récit, chronologie, équipe réelle seulement) ; questions fréquentes (liste, rubriques) ;
+    404 (image de la marque et recherche, produits suggérés) ; pages légales (simple, avec sommaire) ; blog (grille,
+    liste éditoriale) ; article (2) ; recherche, merci, boutique fermée, compte client (1 ou 2 chacune).
+  - **Panier** : tiroir sur le côté et page panier, en 2 versions chacun ; le paiement reste celui de la plateforme.
+  - **Sections : environ 60 pièces**, en 2 à 4 dispositions chacune (ouvertures, produits et collections, confiance,
+    récit, aide, images, appels à agir, et 10 pièces de métier : rendez-vous, prestations et tarifs, biens, recherche de
+    biens, carte, réservation de table, réalisations, zone d'intervention, devis, ateliers et places). Elles reprennent
+    les meilleures des 354 sections actuelles, sans les doublons. Chiffres à ajuster au lot 4.
+  - **Six familles, en coulisses seulement** (jamais montrées ni nommées au client) : Maison chaleureuse, Épuré et
+    éditorial, Naturel et sincère, Gourmand et joyeux, Confiance et savoir-faire, Spectaculaire. Une famille est un
+    ensemble de choix accordés entre eux (en-tête, pied de page, pages, rythme, boutons, traitement des photos) ; SINA
+    la déduit de la planche de marque, puis l'adapte au métier et au client. Leurs références réelles :
+    https://claude.ai/artifact/Dz6bWpehndTytmXcuEhRkv. Explication en images du thème unique :
+    https://claude.ai/artifact/MyKgXoDEedXDwqwYgKYGBa.
+  - **Les 15 thèmes actuels** restent tant que le thème unique n'a pas fait ses preuves au lot 4 ; leur sort se décide
+    ensuite avec le propriétaire.
+- **Douze démonstrations**, de vrais sites complets faits par SINA, marqués « marque inventée pour la démonstration »,
+  sans faux avis, montrés sur la page d'accueil publique et dans le compte Découverte. **Six à la sortie** : cosmétiques
+  naturels, mode et accessoires, salon avec rendez-vous, agence immobilière, artisan du bâtiment, restaurant (les trois
+  clients inventés de l'essai du lot 4 en font partie). **Six ensuite** : maison et déco, épicerie fine, bijoux, coach ou
+  bien-être, photographe, garage. Le prix d'un site complet se mesure sur le premier, puis se décide avec lui.
+- **Le design du site public et de l'intérieur du Studio** se reprend plus tard (« On reviendra sur le design de notre
+  site et studio plus tard »). Référence qu'il aime : https://scale-ova.ai/ (fond nuit, champ de saisie en ouverture,
+  preuves en images) ; ce n'est pas un site à copier.
+- **Le visage de SINA : la constellation du projet** (idée du propriétaire, notée à sa demande le 15 novembre 2026 :
+  « J'aime bien la constellation car chaque branche peux représenter une étape du projet avec le projet au milieu »,
+  puis « Oui note la »). Direction retenue pour le design, rien n'est construit :
+  - le projet au milieu, une branche par étape du parcours (les 9) ; SINA est la lumière qui part du centre vers
+    l'étape où elle travaille ; une étape finie reste allumée et se relie à la suivante ;
+  - **jamais symétrique** (« ça doit avoir plusieurs taille les branches autour ») : branches de longueurs et de
+    directions différentes, étoiles de tailles différentes, petites étoiles autour des grandes étapes (le nom, le logo
+    et les couleurs autour de la marque) ;
+  - le cœur est bleu comme SINA, puis prend les couleurs de la marque dès qu'elle est créée ;
+  - **après la livraison, elle continue de faire tourner sa constellation** (« Même quand le projet est fini, sina doit
+    se déplacer sur les étoiles concerné quand elle modifie ») : elle va sur l'étoile de ce qu'elle fait (une
+    publication sur « La communication », une retouche sur « Le site », une campagne sur « La publicité », le point du
+    mois sur « Dans la durée »), avec une phrase qui dit ce qu'elle fait ;
+  - elle sert aussi de carte du projet dans le tableau de bord ;
+  - sur la page d'accueil, elle remplace l'orbe en ouverture : un projet naît en une vingtaine de secondes, et chaque
+    étoile fait apparaître ce que SINA a créé ; chaque démonstration a sa propre constellation, tirée du projet ;
+  - écartés : un visage ou un personnage. Planche : https://claude.ai/artifact/Ej7Dy3oXCZEUGEfCCKgPXF
+
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).
