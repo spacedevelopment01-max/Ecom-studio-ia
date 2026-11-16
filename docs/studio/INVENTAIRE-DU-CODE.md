@@ -234,6 +234,16 @@ avec lui, dans le lot 1.
 - Les chemins des fichiers retirés restent cités plus haut et dans `docs/studio/inventaire/` : c'est l'état d'avant
   les lots 0 et 1, gardé comme référence.
 
+## 7 quinquies. Les lots 2 et 3 faits (16 novembre 2026)
+
+- **Lot 2, la marque** : compte rendu et retraits dans `docs/studio/LOT-2-LA-MARQUE.md`.
+- **Lot 3, les trois angles** : une seule façon (la chaîne de SINA : types de clients, trois stratèges séparées, juge à
+  part, lecteur qui ne sait rien ; leçon `docs/sina-savoir/angles-marketing.md`). Retirés : les outils `pilot.*`,
+  `strategy.read`, `research.read`, `strategy.choose`, l'ancien écran des cinq angles, la recherche et les révisions
+  payantes de la route `/marketing-strategy`, l'ancien juge. Gardés pour leur lot : le moteur de préparation (lot du
+  site), le rangement de l'angle actif `marketing-strategy/` et le sélecteur d'angle des publications. Détail :
+  `docs/studio/LOT-3-LES-TROIS-ANGLES.md`.
+
 ## 8. Non vérifié
 
 - La suite de tests n'a pas été lancée ; « code jamais appelé » repose sur une recherche de texte.

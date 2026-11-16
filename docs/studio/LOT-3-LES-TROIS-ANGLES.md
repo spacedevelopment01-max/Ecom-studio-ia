@@ -1,8 +1,8 @@
 # Lot 3 : les trois angles
 
 Compte rendu du 16 novembre 2026. Accord du propriétaire pour construire : « Oui, on construit comme ça ».
-**Construit, puis essayé avec la vraie IA sur deux clients inventés le même jour.** Reste l'avis du propriétaire sur
-les angles, puis le retrait des anciennes façons.
+**Lot fini le 16 novembre 2026** : SINA a créé seule, avec la vraie IA, les trois angles de deux clients inventés ;
+le propriétaire a validé les angles (« Parfait ») ; les anciennes façons sont retirées.
 
 ## Ce qui est construit
 
@@ -124,21 +124,45 @@ lui en faire une leçon, et lui en rendre compte.
 - Défauts vus : une parole d'acheteur d'un autre atelier peut être citée comme si elle venait des clients du
   commerçant ; une reprise coûte cher quand une seule clientèle reste libre (Bécane : 1,60 €).
 
-## Ce qui reste à faire pour finir le lot
+## Anciennes façons retirées le 16 novembre 2026
 
-1. **L'avis du propriétaire** sur les angles de Bécane et d'Atelier Vasco.
-2. **Retirer les anciennes façons** : l'analyse de fiche et la recherche du Pilote
-   (`preparation/` : `research*.ts`, `angles-judge.ts`, et ce qui ne sert plus), les outils `pilot.*` et
-   `strategy.choose`, les cinq angles et leurs révisions payantes (`marketing-strategy.tsx`,
-   `marketing-angle-cards.tsx`, `strategy-status.tsx`, la route `/marketing-strategy`), le banc
-   `scripts/syna-recette/banc-angles.mts`, et leurs tests. Puis supprimer la branche `essai-lot2-donnees` quand les
-   clients d'essai ne servent plus (ils peuvent resservir au lot du site).
+Avis du propriétaire sur les angles refaits avec la leçon : « Parfait ». Il ne reste qu'une façon de créer et de
+choisir des angles : la chaîne de SINA (`syna.angles`), puis le choix du client (`angles.choose`).
+
+**Retiré**
+
+- **Les outils du Pilote et des cinq angles dans SINA** (`tools/project.ts`) : `pilot.state`, `pilot.run`,
+  `pilot.answer`, `pilot.approve`, `strategy.read`, `research.read`, `strategy.choose`.
+- **L'ancien écran des cinq angles** : `marketing-strategy.tsx`, `marketing-angle-cards.tsx`, et son encadré dans la
+  galerie des thèmes (`theme-gallery.tsx`). L'écran « Angles » est celui de SINA (`tab-strategie.tsx`).
+- **La recherche payante et les révisions payantes par l'ancienne route** : `/api/projects/[id]/marketing-strategy`
+  ne fait plus que lire l'angle actif (plus d'action « rechercher », « préparer », « activer », « réviser »).
+- **L'ancien juge des cinq angles** : `preparation/angles-judge.ts` et son appel dans la recherche.
+- **Les bancs d'essai des anciens angles** : `scripts/syna-recette/banc-angles.mts`, `scripts/angles/`.
+- **Les tests qui ne portaient que sur ces façons** : `sina-juge-angles.test.ts`, `angles-sources.test.ts`,
+  `mission160-api.test.ts`. Les autres ont été adaptés.
+- **Le texte « les cinq propositions »** du bandeau d'angle des écrans (`strategy-status.tsx`).
+
+**Gardé, et pourquoi**
+
+- **`marketing-strategy/`** (pile A de l'inventaire) : il range l'angle actif, que lisent le site, les publications,
+  les publicités et les vidéos. L'angle choisi dans le fil de SINA y entre par `activateSinaAngle`. Ses fonctions de
+  changement d'angle avec révisions (`prepareStrategyChange`, `activateStrategy`, `bundle.ts`) ne sont plus appelées par
+  aucun écran ; elles se décident avec les lots des publications et du site, qui lisent leurs tables.
+- **Le moteur de préparation** (`preparation/`) et sa tâche `project.prepare` : plus aucun outil ni aucune route ne
+  lance sa recherche d'angles, mais la fiche de départ de SINA l'alimente encore (`start.ts`, `project.create`), le
+  moteur des thèmes lit son état, et une soixantaine de tests s'y appuient. Il part avec le lot du site.
+- **Le sélecteur d'angle des écrans de publications, de publicités et de vidéos** (`communication-angle.tsx`) : il lit
+  l'angle actif ; il se revoit aux lots correspondants.
+- **Le nombre d'angles par forfait** (`plans.ts`, 1, 2 et 5) : il ne compte plus pour les trois angles de SINA ; il se
+  décide au lot des forfaits.
+- **La branche `essai-lot2-donnees`** : les clients d'essai (Bécane, Atelier Vasco, Braise, Trempe) peuvent resservir
+  au lot du site. À supprimer quand ils ne servent plus.
 
 ## Défauts connus, pas corrigés
 
 - Le nombre d'angles par forfait (1, 2 et 5) est encore dans `plans.ts` : il ne compte plus pour les trois angles de
   SINA, et se décide au lot des forfaits.
-- `theme-gallery.tsx` montre encore l'ancien encadré des cinq angles (ancienne galerie, à traiter avec le lot du site).
 - L'angle actif est lié à l'offre du projet au moment du choix : si l'offre change beaucoup à l'étape de l'activité,
   les publications peuvent demander de le choisir à nouveau. À regarder au lot des publications.
 

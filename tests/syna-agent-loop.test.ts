@@ -304,16 +304,23 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     expect(submitMessage(s.user, s.cid, { requestId: "fond-4", text: "Merci !" }).status).toBe("queued");
   });
 
-  it("un refus du moteur natif pendant le devis est lu par SINA, l'exécution continue", async () => {
+  it("un refus pendant le devis d'un outil est lu par SINA, l'exécution continue", async () => {
     const s = await shop("refus");
     let seen = "";
-    const run = await send(s.user, s.cid, "Lance la recherche marketing.", (step) => step === 0
-      ? { message: "", actions: [{ tool: "pilot.run", args: { step: "content", action: "generate" } }], done: false }
-      : (seen = "vu", { message: "L'étape précédente doit d'abord être validée : voulez-vous que je la valide ?", actions: [], question: { text: "Je valide l'étape précédente ?", choices: ["Oui", "Non"] }, done: false }));
-    expect(run.status).toBe("waiting_user");
-    expect(seen).toBe("vu");
-    const tool = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool'", s.cid).map((m) => JSON.parse(m.content_json)).find((m) => m.tool === "pilot.run");
-    expect(tool.ok).toBe(false);
+    // Un outil payant dont le devis échoue (les outils du Pilote, qui servaient d'exemple, ont été retirés au lot 3).
+    const { getTool } = await import("@/lib/syna-agent/registry");
+    const tool0 = getTool("angles.propose")!, estimate = tool0.estimate;
+    tool0.estimate = () => { throw new Error("L'étape précédente doit d'abord être validée."); };
+    try {
+      const run = await send(s.user, s.cid, "Lance mes angles.", (step) => step === 0
+        ? { message: "", actions: [{ tool: "angles.propose", args: {} }], done: false }
+        : (seen = "vu", { message: "L'étape précédente doit d'abord être validée : voulez-vous que je la valide ?", actions: [], question: { text: "Je valide l'étape précédente ?", choices: ["Oui", "Non"] }, done: false }));
+      expect(run.status).toBe("waiting_user");
+      expect(seen).toBe("vu");
+      const tool = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool'", s.cid).map((m) => JSON.parse(m.content_json)).find((m) => m.tool === "angles.propose");
+      expect(tool.ok).toBe(false);
+      expect(tool.summary).toMatch(/Refus avant exécution/);
+    } finally { tool0.estimate = estimate; }
   });
 
 
