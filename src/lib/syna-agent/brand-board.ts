@@ -154,6 +154,21 @@ export const BoardSchema = z.object({
     text: z.string().min(1).max(180),
     button: z.string().min(1).max(30),
     menu: z.array(z.string().min(1).max(18)).max(4).default([]),
+    /**
+     * Composition du haut du site, propre à cette identité (retour du propriétaire du 15 novembre 2026 : « l'image du
+     * site est toujours la même disposition, j'aimerais que les maquettes soient différentes et qu'elles reprennent
+     * le tableau de marque »). L'ouverture reste une grande photo pleine avec le titre dessus ; ce qui change : la place
+     * du titre sur la photo, le menu, la forme du bouton, les angles, et ce qui vient juste après l'ouverture.
+     */
+    layout: z.object({
+      /** La manière d'ouvrir choisie pour cette identité, en quelques mots (cahier « maquettes-accueil-mobile »). */
+      opening: z.string().min(3).max(160).optional(),
+      title: z.enum(["bas", "centre", "haut"]).optional(),
+      menu: z.enum(["burger", "onglets", "centre"]).optional(),
+      button: z.enum(["pilule", "rectangle", "souligne"]).optional(),
+      corners: z.enum(["ronds", "droits"]).optional(),
+      next: z.enum(["produits", "phrase", "points", "bandeau"]).optional(),
+    }).optional(),
     /** Image du haut de la page. */
     art: ArtSchema.optional(),
   }),

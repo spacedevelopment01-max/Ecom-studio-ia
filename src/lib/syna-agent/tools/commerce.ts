@@ -10,7 +10,6 @@ import { createManualPost, ManualPostInputSchema } from "../../social-v2/manual"
 import { exportAndRecord } from "../../cms-v2/record";
 import { readPrestations, savePrestations, prestationsInput } from "../../contenus/prestations";
 import { rdvOverview, setRdvLive, proMove, proCancel, proCreate, type RdvKind } from "../../rendez-vous";
-import { enqueue } from "../../jobs";
 import { assetUrl } from "../../library";
 import { L } from "../../i18n-server";
 import type { AgentTool, Change } from "../types";
@@ -47,14 +46,6 @@ const brandSave: AgentTool<{ name?: string; tagline?: string; palette?: Record<s
     if (propagated) changes.push({ module: "site", object: "palette du site", summary: L("palette appliquée au site (nouvelle version)", "palette applied to site"), verified: true });
     return { ok: true, summary: L(`Marque « ${read.name} » enregistrée et relue.`, `Brand "${read.name}" saved.`), data: { name: read.name, logo: read.logo.assetId ?? null }, changes };
   },
-};
-
-const brandCreate: AgentTool<{ guidance?: string }> = {
-  name: "brand.create", module: "marque", kind: "generate", needsProject: true,
-  description: "Crée l'identité complète avec le moteur natif (IA) : nom proposé, signature, palette, polices, puis 3 pistes de logo contrôlées et la charte. Payant (budget autorisé). guidance = consignes exactes du client. Les éléments déjà validés sont conservés.",
-  args: z.object({ guidance: z.string().max(2000).optional() }).strict(),
-  estimate: () => ({ maxMicro: 3_000_000, label: "marque + logo" }),
-  run: (ctx, a) => { const p = project(ctx), j = enqueue({ userId: ctx.user.id, projectId: p.id, type: "brand.build", label: L("Marque avec SINA", "Brand with SINA"), payload: { projectId: p.id, guidance: a.guidance, costCapMicro: 3_000_000 }, maxAttempts: 1 }); return { ok: true, summary: L("Création de la marque lancée.", "Brand creation started."), jobs: [j.id] }; },
 };
 
 /* ---------- Publicités (documents à calques) ---------- */
@@ -179,4 +170,4 @@ const rdvAct: AgentTool<any> = {
   },
 };
 
-export const commerceTools: AgentTool[] = [brandRead, brandSave, brandCreate, adsList, adsEdit, postsList, postCreate, exportTool, prestRead, prestSave, rdvList, rdvLive, rdvAct];
+export const commerceTools: AgentTool[] = [brandRead, brandSave, adsList, adsEdit, postsList, postCreate, exportTool, prestRead, prestSave, rdvList, rdvLive, rdvAct];

@@ -32,7 +32,8 @@ export function TutorialButton({ tab, business }: { tab: string; business?: "pro
         <span className="sr-only md:hidden">{t("Tutoriel", "Tutorial")}</span>
       </button>
       {/* Portail : l'en-tête floute son fond (backdrop-filter), ce qui piégerait un élément « fixed » à l'intérieur. */}
-      {nudge && createPortal(<TutorialNudge id={id} onWatch={show} onClose={seen} />, document.body)}
+      {/* Sur l'écran « Marque », SINA guide elle-même : pas de bulle posée sur la marque du client (le bouton reste). */}
+      {nudge && tab !== "marque" && createPortal(<TutorialNudge id={id} onWatch={show} onClose={seen} />, document.body)}
       {open && createPortal(<TutorialPlayer id={open} business={business} onPick={setOpen} onClose={() => setOpen(null)} />, document.body)}
     </>
   );

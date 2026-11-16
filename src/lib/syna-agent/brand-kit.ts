@@ -12,7 +12,7 @@ import { contrast } from "../color";
 import { canvasFamily, font } from "../media/fonts";
 import { isDetailedSolidMark } from "../media/identity-board";
 import { faithfulSvg } from "../logo-v2/artwork";
-import { all } from "../db";
+import { all, one } from "../db";
 import { L } from "../i18n-server";
 import { assetData, getAsset, saveAsset, type Asset } from "../library";
 import { loadProject } from "../projects";
@@ -90,14 +90,16 @@ export async function buildBrandKit(projectId: string): Promise<BrandKit> {
   const markData = markAsset ? assetData(markAsset) : assetData(main);
   if (!markAsset) notes.push(L("Pas de symbole séparé : le favicon et l'avatar reprennent le logo entier.", "No separate symbol: favicon and avatar use the whole logo."));
   const save = (role: string, name: string, data: Buffer) => saveAsset({ projectId, userId: p.userId, data, name, mime: "image/png", role, folderKey: "brand.logos", origin: "generated", sourceAssetId: main.id, meta: { engine: "syna-brand-kit" } });
+  // Un favicon ou un avatar fait AVANT le symbole actuel (symbole refait depuis) est refait à partir de lui.
+  const fresh = (role: string) => { const d = derived(role); return !!d && (!markAsset || d.created_at >= markAsset.created_at); };
   const detailed = await isDetailedSolidMark(markData).catch(() => false);
   if (detailed) {
-    notes.push(L("Favicon 32 px : l'illustration est trop détaillée pour cette taille ; il reprend l'initiale de la marque, dans sa police et ses couleurs.", "32 px favicon: the illustration is too detailed; it uses the brand initial."));
+    notes.push(L("Favicon 32 px : ton symbole est très détaillé pour cette taille ; regarde s'il reste lisible dans l'onglet du navigateur.", "32 px favicon: your symbol is very detailed for this size."));
     notes.push(L("Versions une couleur (noir, blanc) : une illustration aussi détaillée y perd ses détails ; à garder pour les usages où une seule couleur est imposée (tampon, gravure).", "One-colour versions lose the illustration's details."));
   }
-  if (!derived("favicon-32")) await save("favicon-32", "favicon-32.png", detailed ? initialFavicon(b.name, b.palette, canvasFamily(b.fonts.heading, "Inter"), 32) : await faviconPng(markData, 32));
-  if (!derived("favicon-512")) await save("favicon-512", "icone-512.png", await faviconPng(markData, 512));
-  if (!derived("social-avatar")) await save("social-avatar", "avatar-reseaux.png", await avatarPng(markData, b.palette.light && b.palette.light !== "#000000" ? b.palette.light : "#FFFFFF"));
+  if (!fresh("favicon-32")) await save("favicon-32", "favicon-32.png", await faviconPng(markData, 32));
+  if (!fresh("favicon-512")) await save("favicon-512", "icone-512.png", await faviconPng(markData, 512));
+  if (!fresh("social-avatar")) await save("social-avatar", "avatar-reseaux.png", await avatarPng(markData, b.palette.light && b.palette.light !== "#000000" ? b.palette.light : "#FFFFFF"));
   if (!derived("logo-svg")) {
     // La VRAIE raison (essai réel : « dégradés et textures » était dit pour un lettrage en aplats).
     const why = await faithfulSvg(assetData(main)).then((r) => (r.ok ? null : r.reason)).catch(() => null);
@@ -106,7 +108,9 @@ export async function buildBrandKit(projectId: string): Promise<BrandKit> {
       : L("Pas de logo vectoriel (SVG) : le tracé automatique ne reproduit pas assez fidèlement ce dessin. Le logo est livré en PNG haute définition.", "No SVG: the automatic tracing is not faithful enough; delivered as high-resolution PNG."));
   }
   // Planche et charte : faites au choix du logo ; refaites seulement si elles manquent ou sont plus anciennes que lui.
-  let board = latestOf(projectId, "brand-board");
+  // La planche d'identité rendue par le Studio, jamais une image de planche de SINA (même rôle de fichier, repérée par « synaBoard »).
+  const boardRow = one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='brand-board' AND deleted_at IS NULL AND (meta IS NULL OR meta NOT LIKE '%synaBoard%') ORDER BY created_at DESC LIMIT 1", projectId);
+  let board = boardRow ? getAsset(boardRow.id) ?? null : null;
   if (!board || board.created_at < main.created_at) board = (await saveIdentityBoard(projectId).catch((e) => { notes.push(L(`Planche de marque non refaite : ${(e as Error).message}`, "Brand board not rebuilt.")); return null; })) ?? board;
   let book = latestOf(projectId, "brand-book");
   if (!book || book.created_at < main.created_at) book = (await saveBrandBook(projectId).catch((e) => { notes.push(L(`Charte PDF non refaite : ${(e as Error).message}`, "Brand book not rebuilt.")); return null; })) ?? book;

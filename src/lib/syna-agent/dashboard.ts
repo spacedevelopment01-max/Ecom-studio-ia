@@ -57,7 +57,8 @@ function brandOf(projectId: string, brandJson: string | null): DashboardData["br
   const b = json<any>(brandJson ?? "{}", {});
   const colors = Object.values((b.palette ?? {}) as Record<string, unknown>).filter((c): c is string => typeof c === "string" && HEX.test(c)).slice(0, 6);
   const name = typeof b.name === "string" && b.name.trim() ? b.name.trim() : null;
-  const logo = b.logo?.chosen ? `/api/projects/${projectId}/brand/logo` : null;
+  // Le logo adopté pour la marque (créé par SINA et choisi, ou gardé par le client) : servi par la bibliothèque du projet.
+  const logo = typeof b.logo?.assetId === "string" && b.logo.assetId ? `/api/files/${b.logo.assetId}` : null;
   if (!name && !logo && !colors.length) return null;
   return { name, slogan: typeof b.tagline === "string" && b.tagline.trim() ? b.tagline.trim() : null, logo, colors };
 }

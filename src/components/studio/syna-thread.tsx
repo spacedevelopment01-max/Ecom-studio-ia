@@ -18,9 +18,11 @@ type Msg = { id: string; seq: number; role: "user" | "assistant" | "tool" | "eve
 type View = {
   conversationId: string; projectId: string | null; messages: Msg[];
   run: { id: string; status: string; step: number; pending: any; error: string | null } | null;
+  /** Une création tourne en arrière-plan : le fil se relit, mais le client peut continuer à écrire. */
+  background?: boolean;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; logos?: Logos | null; brandKit?: Kit | null; angles?: Angles | null; posts?: PostsPlan | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; brandKit?: Kit | null; angles?: Angles | null; posts?: PostsPlan | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
@@ -139,39 +141,6 @@ function CalendarCard({ projectId, refreshKey }: { projectId: string; refreshKey
       {days.length > 7 && <button type="button" className="mt-2 text-xs underline" onClick={() => setAll((x) => !x)}>{all ? t("Voir moins", "Show less") : t(`Voir les ${days.length} jours`, `Show all ${days.length} days`)}</button>}
       {!days.length && <p className="text-xs text-muted">{t("Rien à publier pour l'instant.", "Nothing to post yet.")}</p>}
       {!!v.warnings.length && <p className="mt-2 text-xs text-muted">{v.warnings.join(" ")}</p>}
-    </div>
-  );
-}
-
-type Logos = { round: number; chosen: string | null; list: { source: "A" | "B" | "C"; name: string; style: string; assetId: string | null; href: string | null; verdict: string; score: number | null; reason: string; best?: boolean; choosable?: boolean; kind?: "planche" | "image" }[] };
-
-/** Étape 2 : le logo (ou les 3 logos d'une identité d'avant les planches), sur fond blanc et sur le fond de la marque, avec le verdict honnête du contrôle. */
-function LogoCards({ logos, brandBg, busy, onChoose }: { logos: Logos; brandBg: string | null; busy: boolean; onChoose: (source: string) => void }) {
-  const t = useT();
-  return (
-    <div className="@container mt-2 space-y-2" data-syna-logos={logos.round}>
-      <div className="grid grid-cols-1 gap-2 @3xl:grid-cols-3">
-        {logos.list.map((x) => {
-          const chosen = logos.chosen === x.source;
-          const ok = x.verdict === "FINAL";
-          return (
-            <article key={x.source} className={cx("overflow-hidden rounded-xl border bg-card", chosen ? "border-ink ring-2 ring-ink" : "border-line", logos.chosen && !chosen && "opacity-60")} data-logo={x.source} data-verdict={x.verdict}>
-              <div className="grid grid-cols-2">
-                <div className="flex h-44 items-center justify-center bg-white p-3">{x.href ? <img src={x.href} alt={`${t("Logo", "Logo")} ${x.source} — ${x.name}`} className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-muted">{t("Pas de dessin", "No drawing")}</span>}</div>
-                <div className="flex h-44 items-center justify-center p-3" style={{ background: brandBg ?? "#F5F5F5" }}>{x.href && <img src={x.href} alt="" className="max-h-full max-w-full object-contain" />}</div>
-              </div>
-              <div className="space-y-1 px-3 py-2 text-xs">
-                <p className="font-semibold">{logos.list.length < 3 ? x.name : `${t("Logo", "Logo")} ${x.source} · ${x.name}`}</p>
-                <p className={ok || x.kind === "planche" || x.kind === "image" ? "text-emerald-700" : "text-amber-700"} data-logo-verdict>{x.kind === "image" ? `✓ ${t("Créé avec ta planche et relu : ton nom y est exact", "Made with your board and reviewed: your name is exact")}` : x.kind === "planche" ? `✓ ${t("Dessiné par le Studio : ton nom, exact à la lettre", "Drawn by the Studio: your name, letter-perfect")}` : ok ? `✓ ${t("Validé par le contrôle", "Passed the check")}${x.score != null ? ` (${String(x.score).replace(".", ",")}/10)` : ""}` : x.assetId ? `${t("Non validé par le contrôle", "Did not pass the check")} : ${x.reason}` : `${t("Pas de dessin", "No drawing")} : ${x.reason}`}</p>
-              </div>
-              <div className="border-t border-line px-3 py-2">
-                {chosen ? <p className="text-xs font-semibold">✓ {t("Logo de ta marque", "Your brand logo")}</p> : !logos.chosen && x.assetId && x.choosable !== false && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.source)}>{logos.list.length < 3 ? (x.kind === "planche" ? t("Je choisis le nom dessiné", "I choose the drawn name") : t("Je choisis ce logo", "I choose this logo")) : t(`Je choisis le logo ${x.source}`, `I choose logo ${x.source}`)}</Button>}
-              </div>
-            </article>
-          );
-        })}
-      </div>
-      {!logos.chosen && <p className="text-xs text-muted">{t("Tu peux aussi demander une nouvelle proposition, avec tes mots (par exemple « plus simple », « sans illustration »).", "You can also ask for a new proposal, in your own words.")}</p>}
     </div>
   );
 }
@@ -511,16 +480,9 @@ function BrandKitCard({ kit, darkBg, busy, onValidate }: { kit: Kit; darkBg: str
         {kit.items.filter((x) => x.downloadHref).map((x) => <a key={x.key} className="underline" href={x.downloadHref} data-kit-download={x.key}>{t("Télécharger", "Download")} : {x.label}</a>)}
       </div>
       {!!kit.notes.length && <ul className="list-disc pl-4 text-xs text-amber-700" data-kit-notes>{kit.notes.map((n) => <li key={n}>{n}</li>)}</ul>}
-      {kit.validated ? <p className="text-xs font-semibold">✓ {t("Image de marque validée", "Brand kit validated")}</p> : <Button size="sm" disabled={busy} onClick={onValidate}>{t("Je valide mon image de marque", "I validate my brand kit")}</Button>}
+      {kit.validated ? <p className="text-xs font-semibold">✓ {t("Marque validée", "Brand validated")}</p> : <Button size="sm" disabled={busy} onClick={onValidate}>{t("Je valide ma marque", "I validate my brand")}</Button>}
     </div>
   );
-}
-
-/** Fond de la marque choisie (aperçu des logos sur ce fond) : sombre, dégradé ou couleur de surface. */
-function brandBackground(ids: Identities | null | undefined): string | null {
-  const f = ids?.final;
-  if (!f) return null;
-  return f.ground === "sombre" ? f.palette.dark : f.ground === "degrade" && f.gradient ? `linear-gradient(135deg, ${f.gradient.from}, ${f.gradient.to})` : f.palette.secondary;
 }
 
 /** Texte le plus lisible sur les deux couleurs d'un dégradé. */
@@ -606,7 +568,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   useEffect(() => { const on = () => { load().catch(() => undefined); }; addEventListener("syna:refresh", on); return () => removeEventListener("syna:refresh", on); }, [load]);
 
   // Suivi de l'exécution : relecture régulière tant que SINA travaille, puis rafraîchissement des onglets du Studio.
-  const working = !!v?.run && WORKING.includes(v.run.status);
+  const background = !!v?.background;
+  const working = !!v?.run && WORKING.includes(v.run.status) && !background;
   // Brouillon : dès que SINA a créé le projet, le client est emmené dans son projet, où la même conversation continue
   // (sinon l'accueil, qui affiche alors « Mes projets », ferait disparaître le fil en pleine étape 0).
   const moved = useRef(false);
@@ -615,14 +578,14 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   }, [projectId, v?.projectId, router]);
   useEffect(() => {
     if (!v) return;
-    if (!working) {
+    if (!working && !background) {
       if (lastRun.current && lastRun.current === v.run?.id) { lastRun.current = ""; project?.reload?.(); if (v.projectId && v.projectId !== projectId) router.push(`/studio/${v.projectId}/pilote`); router.refresh(); }
       return;
     }
     lastRun.current = v.run!.id;
     const h = setTimeout(() => api<View>(`/api/syna/${v.conversationId}`).then(setV).catch(() => undefined), 1800);
     return () => clearTimeout(h);
-  }, [v, working, project, router, projectId]);
+  }, [v, working, background, project, router, projectId]);
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [v?.messages.length]);
 
   async function send(message?: string) {
@@ -668,9 +631,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const lastConcepts = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "custom.concepts" && m.content?.ok && m.content?.data?.concepts)?.id, [v?.messages]);
   const lastFamilies = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.families" && m.content?.ok)?.id, [v?.messages]);
   const lastThemes = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.propose" && m.content?.ok)?.id, [v?.messages]);
-  const lastKit = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "brand.kit" && m.content?.ok)?.id, [v?.messages]);
-  const lastLogos = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && (m.content?.tool === "logo.propose" || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logos"))) && m.content?.ok)?.id, [v?.messages]);
-  // Identités : sous la proposition faite sur-le-champ (ancienne méthode), ou sous la fin de la tâche de fond de la chaîne.
+  // Identités : sous la fin de la tâche de fond de la chaîne (ou sous une proposition déjà rangée dans le fil).
   const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && ((m.content?.tool === "identity.propose" && !m.content?.jobs?.length) || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.brand"))))?.id, [v?.messages]);
   if (!v) return <div className="p-4 text-sm text-muted">{error || t("Ouverture du fil SINA…", "Opening SINA thread…")}</div>;
   const pending = v.run?.status === "waiting_confirmation" ? v.run.pending : null;
@@ -683,7 +644,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
               {t("Budget autorisé", "Authorised budget")} : {fmt(v.budget.authorizedPct)} % · {t("engagé", "used")} {fmt(v.budget.spentPct)} %
             </button>
           : <span className="flex items-center gap-1">{t("Budget autorisé (%)", "Authorised budget (%)")}<input className="w-14 rounded border border-line bg-card px-1" value={budgetEdit} onChange={(e) => setBudgetEdit(e.target.value)} inputMode="decimal" aria-label={t("Budget autorisé en pourcentage", "Authorised budget in percent")} /><Button size="sm" variant="secondary" onClick={saveBudget}>OK</Button></span>}
-        {working && <Button size="sm" variant="ghost" onClick={stop}>{t("Arrêter", "Stop")}</Button>}
+        {(working || background) && <Button size="sm" variant="ghost" onClick={stop}>{t("Arrêter", "Stop")}</Button>}
       </div>
       {v.journey && <JourneyBar journey={v.journey} compact={compact} />}
 
@@ -703,7 +664,6 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
               </div>}
               {it.tools.map((tm) => <div key={tm.id}>
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis le thème sur mesure ${n}.`, `I choose custom theme ${n}.`))} busy={busy || working} />
-                {tm.id === lastLogos && v.journey?.logos && <LogoCards logos={v.journey.logos} brandBg={brandBackground(v.journey.identities)} busy={busy || working} onChoose={(k) => send(t(`Je choisis le logo ${k}.`, `I choose logo ${k}.`))} />}
                 {tm.id === lastActivity && v.journey?.activity && <ActivityCard a={v.journey.activity} busy={busy || working} onValidate={() => send(t("Je valide mon activité.", "I validate my business."))} />}
                 {tm.id === lastPosts && v.journey?.posts && <PostsPlanCard plan={v.journey.posts} />}
                 {tm.id === lastAngles && v.journey?.angles && <AngleCards angles={v.journey.angles} busy={busy || working} onChoose={(titles) => send(titles.length > 1 ? t(`Je choisis ces angles : ${titles.map((x, i) => `« ${x} »${i === 0 ? " (principal)" : ""}`).join(", ")}.`, `I choose these angles: ${titles.join(", ")}.`) : t(`Je choisis l'angle « ${titles[0]} ».`, `I choose the angle "${titles[0]}".`))} />}
@@ -712,11 +672,12 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastConcepts && v.projectId && <ConceptCards concepts={tm.content.data.concepts} busy={busy || working} onChoose={(k) => send(t(`Je choisis le concept ${k}.`, `I choose concept ${k}.`))} />}
                 {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère la famille ${title}.`, `I prefer the ${title} family.`))} />}
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}
-                {tm.id === lastKit && v.journey?.brandKit && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide mon image de marque.", "I validate my brand kit."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {tm.id === lastIdentity && v.journey?.identities && (v.journey.identities.list.some((x) => x.board)
                   ? <BrandBoards ids={v.journey.identities as unknown as BoardSet} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />
                   : <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />)}
+                {/* La marque finie : sa charte (déclinaisons du logo, favicons, avatar, charte PDF) sous sa planche complète. */}
+                {tm.id === lastIdentity && v.journey?.brandKit && (v.journey.identities as { final?: { finished?: boolean } } | null | undefined)?.final?.finished && <BrandKitCard kit={v.journey.brandKit} darkBg={v.journey.identities?.final?.palette.dark ?? "#16161A"} busy={busy || working} onValidate={() => send(t("Je valide ma marque.", "I validate my brand."))} />}
               </div>)}
             </div>
           : <EventLine key={it.m.id} m={it.m} />)}
@@ -727,6 +688,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
             ? <p className="mt-2 text-xs">{t("Augmente le budget autorisé ci-dessus, puis demande à SINA de continuer.", "Raise the budget above, then ask SINA to continue.")}</p>
             : <div className="mt-2 flex gap-2"><Button size="sm" onClick={() => decide(pending.id, true)} disabled={busy}>{t("Confirmer", "Confirm")}</Button><Button size="sm" variant="secondary" onClick={() => decide(pending.id, false)} disabled={busy}>{t("Refuser", "Decline")}</Button></div>}
         </div>}
+        {background && <p className="text-xs text-muted" data-syna-background>{t("Ta création avance en arrière-plan. Tu peux continuer à me parler : je te montre le résultat dès qu'il est prêt.", "Your creation is running in the background. You can keep talking to me: I will show you the result as soon as it is ready.")}</p>}
         {working && <p className="text-xs text-muted" data-syna-working>{v.run?.status === "waiting_jobs" ? t("SINA attend la fin d'une création (images, vidéo ou site) puis reprend seule…", "SINA is waiting for a creation to finish…") : t("SINA travaille…", "SINA is working…")}</p>}
         {v.run?.status === "failed" && <p className="text-xs text-red-600">{t("L'exécution s'est arrêtée : ", "The run stopped: ")}{v.run.error}</p>}
         <div ref={end} />

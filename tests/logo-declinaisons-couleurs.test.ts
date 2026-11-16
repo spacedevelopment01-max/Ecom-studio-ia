@@ -34,14 +34,12 @@ describe("Déclinaisons d'un logo complet", () => {
     expect((await px(mono, 5, 5))[3]).toBe(0);
   });
 
-  it("fond sombre : couleurs foncées de la marque gardées avec un liseré clair, au lieu d'être délavées en blanc", async () => {
+  it("fond sombre : tout ce qui est foncé passe en clair, même une couleur foncée de la marque (règle du propriétaire du 16 novembre 2026 : « sur fond sombre, le logo soit clair tout le temps »)", async () => {
     const src = await emblem();
     const dark = await onDarkVersion(src);
-    const m = await sharp(dark).metadata();
-    expect(m.width!).toBeGreaterThan(W); // liseré tout autour
-    const off = (m.width! - W) / 2;
-    const [r, g, b] = await px(dark, Math.round(off + 200), Math.round(off + 70));
-    expect([r, g, b]).toEqual([0x4e, 0x0a, 0x0b]); // le brun reste brun
+    expect((await sharp(dark).metadata()).width).toBe(W); // plus de liseré autour du logo
+    expect((await px(dark, 200, 70)).slice(0, 3)).toEqual([255, 255, 255]); // le brun foncé passe en clair
+    expect((await px(dark, 5, 5))[3]).toBe(0); // le fond reste transparent
   });
 
   it("fond sombre : un logo noir (texte, contours) passe simplement en blanc", async () => {
@@ -109,13 +107,12 @@ describe("File des tâches : appliquer le logo choisi passe avant les longues t�
     expect(navy).toBeGreaterThan(0); // la feuille aussi
     expect(navy).toBeLessThan(info.width * info.height * 0.05); // mais aucune lettre (5 lettres = bien plus de bleu nuit)
     expect(await artworkSymbol(src, box)).toBeTruthy();
-    // Fond sombre : les lettres passent en blanc (lues), la feuille garde sa couleur avec un liseré clair, l'orange reste.
+    // Fond sombre : tout ce qui est foncé passe en clair (les lettres et la feuille bleu nuit), l'orange reste.
     const dark = await onDarkVersion(src, box);
     expect((await sharp(dark).metadata()).width).toBe(400); // pas de grand liseré autour du logo entier
     expect((await px(dark, 75, 270)).slice(0, 3)).toEqual([255, 255, 255]); // première lettre (hors de la zone lue) : blanche
     expect((await px(dark, 310, 260)).slice(0, 3)).toEqual([255, 255, 255]);
-    expect((await px(dark, 150, 45)).slice(0, 3)).toEqual([0x1f, 0x2a, 0x3a]); // feuille : bleu nuit gardé
-    expect((await px(dark, 113, 45))[3]).toBeGreaterThan(0); // liseré clair juste autour d'elle
+    expect((await px(dark, 150, 45)).slice(0, 3)).toEqual([255, 255, 255]); // feuille bleu nuit : claire elle aussi
     expect((await px(dark, 200, 120)).slice(0, 3)).toEqual([0xc2, 0x65, 0x2b]); // fruit : couleur gardée
   });
   it("logo illustré (essai réel du 7 novembre) : zone du nom retrouvée dans l'encre, ornements sous le nom écartés du symbole", async () => {

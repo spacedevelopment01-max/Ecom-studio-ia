@@ -44,7 +44,11 @@ function jobLangs(job: { user_id: string | null; project_id: string | null; payl
   return { ui: userLang(job.user_id), content: isLang(p.lang) ? p.lang : isLang(projLang) ? projLang : "fr", contentForced: isLang(p.lang) } as const;
 }
 
-const CONCURRENCY = Math.max(1, Math.min(3, Number(process.env.WORKER_CONCURRENCY) || Math.floor(os.cpus().length / 2) || 1));
+// Sans réglage : trois tâches au plus, comme avant. Avec WORKER_CONCURRENCY : jusqu'à huit (les tâches attendent
+// surtout des réponses de fournisseurs ; une création de marque garde sa place plusieurs minutes, et les réponses de
+// SINA ne doivent pas attendre derrière elle).
+const ASKED = Number(process.env.WORKER_CONCURRENCY);
+const CONCURRENCY = ASKED > 0 ? Math.max(1, Math.min(8, Math.floor(ASKED))) : Math.max(1, Math.min(3, Math.floor(os.cpus().length / 2) || 1));
 let running = 0;
 let stopping = false;
 

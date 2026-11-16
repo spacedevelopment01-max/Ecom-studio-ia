@@ -14,7 +14,6 @@
  * par des variables posées par React, jamais par du texte collé dans la feuille).
  */
 import { createElement, useId, type CSSProperties, type ReactNode } from "react";
-import { firstProduct, sitePoints } from "@/lib/syna-agent/brand-site-preview";
 import { Button, cx } from "../ui";
 import { useT } from "../i18n";
 
@@ -45,7 +44,7 @@ type Board = {
   signs: { kind: string; kindLabel: string; title: string; text: string; symbol?: Picto; art?: Art; ground?: Role; sample?: string; hand?: boolean }[];
   object: { kind: string; label: string; front: string[]; back: string[]; art?: Art; note?: string };
   parcel?: { tape: string };
-  site: { headline: string; text: string; button: string; menu: string[]; art?: Art };
+  site: { headline: string; text: string; button: string; menu: string[]; art?: Art; layout?: { opening?: string; title?: "bas" | "centre" | "haut"; menu?: "burger" | "onglets" | "centre"; button?: "pilule" | "rectangle" | "souligne"; corners?: "ronds" | "droits"; next?: "produits" | "phrase" | "points" | "bandeau" } };
   posts: { text: string; look: "fond" | "couleur" | "motif" | "citation"; art?: Art; ground?: Role; note?: string }[];
   toProve: string[];
   images?: Shots;
@@ -58,7 +57,7 @@ export type BoardCard = {
   board: Board; drawn: Drawn | null; look: Look;
 };
 export type StudyCard = { quotes: { text: string; url: string }[]; quoteCount: number; sources: number; competitors: string[]; mould: string; substitutes: string[]; notFound: string[] };
-export type BoardSet = { round: number; issues: string[]; chosen: { key: string; mix: Record<string, string> } | null; list: BoardCard[]; final?: (BoardCard & { mixLabel?: string }) | null; study?: StudyCard | null };
+export type BoardSet = { round: number; issues: string[]; chosen: { key: string; mix: Record<string, string> } | null; list: BoardCard[]; final?: (BoardCard & { mixLabel?: string; finished?: boolean; finishIssues?: string[] }) | null; study?: StudyCard | null };
 
 // ---------------------------------------------------------------- couleurs (calculs simples, côté écran)
 
@@ -190,7 +189,6 @@ const BOARD_CSS = `
 .bb-photo.bb-mark{display:block;width:auto;max-width:min(100%,24rem);max-height:9.5rem;height:auto;object-fit:contain;object-position:left center}
 .bb-signs-shot{margin:0 0 .8rem;border-radius:1.1rem;overflow:hidden;aspect-ratio:1/1;max-width:34rem;box-shadow:0 18px 40px -22px rgba(0,0,0,.45)}
 .bb-photo.bb-seen-mark{width:auto;height:auto;max-width:82%;max-height:70%;object-fit:contain}
-.bb-photo.bb-ps-mark{display:block;height:1.5rem;width:auto;max-width:55%;object-fit:contain}
 .bb-genre{margin-top:.8rem;font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.82}
 .bb-sign{margin-top:.7rem;font-family:var(--bb-head);font-size:clamp(1.35rem,1.05rem + 2.2cqi,2.1rem);line-height:1.1;text-wrap:balance;color:var(--bb-pop)}
 .bb-promise{margin-top:.5rem;font-size:.88rem;line-height:1.45;opacity:.92;max-width:34rem}
@@ -245,28 +243,8 @@ const BOARD_CSS = `
 .bb-live figure[data-phone]{grid-column:1/-1}
 .bb-live .bb-stack{grid-column:1/-1;grid-template-columns:1fr 1fr;align-items:end}
 @container (min-width:42rem){.bb-live figure[data-phone]{grid-column:span 2;grid-row:span 2}.bb-live .bb-stack{grid-column:span 2}}
-.bb-phone[data-screen="site"]{width:min(100%,17rem);aspect-ratio:9/19.5;transform:rotate(1deg);background:var(--ps-bg);color:var(--ps-ink);font-family:var(--bb-body)}
-.bb-ps-bar{flex:none;font-size:.5rem;letter-spacing:.07em;text-transform:uppercase;text-align:center;padding:.32rem .6rem;background:var(--ps-dark);color:var(--ps-on-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bb-ps-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.5rem .7rem}
-.bb-ps-head svg.ico{width:1rem;height:1rem;flex:none}
-.bb-ps-hero{flex:none;position:relative;aspect-ratio:5/4;overflow:hidden;background:var(--bb-bg2)}
-.bb-ps-hero>svg{display:block;width:100%;height:100%}
-.bb-ps-hero[data-kind="dessin"]{aspect-ratio:20/13}
-.bb-ps-card{flex:none;position:relative;margin:-1.1rem .55rem 0;border-radius:16px 16px 0 0;padding:.8rem .75rem 0;background:var(--ps-bg)}
-.bb-ps-h{font-family:var(--bb-head);line-height:1.04;text-wrap:balance}
-.bb-ps-t{font-size:.62rem;line-height:1.42;opacity:.82;margin-top:.4rem;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.bb-ps-cta{flex:none;display:block;margin:.6rem 1.3rem 0;padding:.52rem .7rem;border-radius:999px;text-align:center;font-weight:700;font-size:.68rem;line-height:1.2;background:var(--bb-btn);color:var(--bb-btn-ink)}
-.bb-ps-chips{flex:none;display:flex;gap:.3rem;padding:.55rem 1.3rem 0;overflow:hidden}
-.bb-ps-chips span{flex:none;font-size:.5rem;font-weight:600;padding:.2rem .45rem;border-radius:999px;border:1px solid color-mix(in srgb,var(--ps-ink) 35%,transparent);white-space:nowrap}
-.bb-ps-next{flex:1;display:flex;flex-direction:column;padding:.6rem 1.3rem 0;min-height:0}
-.bb-ps-next h5{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-family:var(--bb-head);font-size:.82rem;line-height:1.1;margin:0}
-.bb-ps-next h5 small{font-family:var(--bb-body);font-size:.52rem;font-weight:600;opacity:.7;white-space:nowrap}
-.bb-ps-row{flex:1;min-height:0;display:flex;gap:.5rem;margin-top:.4rem;overflow:hidden}
-.bb-ps-prod{flex:none;width:60%;display:flex;flex-direction:column;border-radius:12px 12px 0 0;overflow:hidden;background:color-mix(in srgb,var(--ps-ink) 7%,var(--ps-bg))}
-.bb-ps-prod .pic{flex:1;min-height:2.6rem;display:grid;place-items:center;overflow:hidden;padding:.5rem}
-.bb-ps-prod .txt{flex:none;display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.35rem .5rem .5rem}
-.bb-ps-prod .txt b{font-size:.6rem;line-height:1.2}
-.bb-ps-prod .txt i{flex:none;font-style:normal;width:1.15rem;height:1.15rem;border-radius:999px;display:grid;place-items:center;font-weight:700;font-size:.72rem;line-height:1;background:var(--bb-btn);color:var(--bb-btn-ink)}
+.bb-mock{width:min(100%,24rem);border-radius:18px;overflow:hidden;box-shadow:0 22px 40px -24px rgba(0,0,0,.55)}
+.bb-mock .bb-photo{display:block;width:100%;height:auto;object-fit:contain}
 .bb-phone .bb-top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.7rem .7rem 0}
 .bb-phone .bb-big{font-family:var(--bb-head);font-size:1.3rem;line-height:1.02;text-wrap:balance}
 .bb-phone .bb-txt{font-size:.66rem;line-height:1.35;opacity:.92}
@@ -325,53 +303,6 @@ const OBJECT_SHAPE: Record<string, { ratio: string; radius: string; width: strin
 };
 
 const sameText = (a: string, b: string) => a.normalize("NFD").replace(/[^\p{L}\p{N}]/gu, "").toLowerCase() === b.normalize("NFD").replace(/[^\p{L}\p{N}]/gu, "").toLowerCase();
-
-/**
- * Le haut du site, sur téléphone (retour du propriétaire du 13 novembre 2026 sur l'image créée par l'IA : « 3/10, ça
- * doit être mieux fait et plus représentatif de ce que ça devrait devenir »). Ce n'est plus une image : c'est une vraie
- * page, rendue par le Studio comme le sera le site : bandeau, menu et panier, grande photo de la marque, titre, texte
- * et bouton de la planche lettre pour lettre, points forts vrais, début de la boutique. Rien n'y est inventé : chaque
- * mot vient de la planche ; sans nom de produit connu, la boutique ne montre pas de faux produit.
- */
-function PhoneSite({ x, shots, headWeight, firstPicto, t }: { x: BoardCard; shots: Shots; headWeight: number; firstPicto?: Picto; t: (fr: string, en: string) => string }) {
-  const b = x.board, p = x.palette, dark = x.ground === "sombre";
-  const bg = safeHex(dark ? p.dark : p.light, dark ? "#111111" : "#FFFFFF"), ink = inkOn(bg, p);
-  const barBg = safeHex(dark ? p.primary : p.dark, "#141414"), barInk = inkOn(barBg, p);
-  const pop = popOn([bg], p, ink);
-  const points = sitePoints(b.object.back);
-  const product = firstProduct(b.object.front, x.name);
-  const shelf = b.site.menu[0];
-  const tile = safeHex(p.primary), tileInk = inkOn(tile, p);
-  const size = b.site.headline.length <= 28 ? "1.32rem" : b.site.headline.length <= 48 ? "1.12rem" : ".96rem";
-  return (
-    <div className="bb-phone" data-screen="site" style={{ "--ps-bg": bg, "--ps-ink": ink, "--ps-dark": barBg, "--ps-on-dark": barInk } as CSSProperties}>
-      {b.descriptor && <div className="bb-ps-bar">{b.descriptor}</div>}
-      <div className="bb-ps-head">
-        <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h10" /></svg>
-        {shotOk(lum(bg) < 0.4 ? shots.markDark : shots.mark) ? <Photo shot={(lum(bg) < 0.4 ? shots.markDark : shots.mark)!} alt={x.name} className="bb-ps-mark" /> : <Wordmark x={x} main={ink} accent={pop} compact className="block h-6 max-w-[55%] text-xs" />}
-        <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 8h12l-1 12H7L6 8Z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg>
-      </div>
-      <div className="bb-ps-hero" data-kind={shotOk(shots.hero) ? "photo" : "dessin"}>{shotOk(shots.hero) ? <Photo shot={shots.hero} alt={b.site.headline} /> : b.site.art ? <Vignette art={b.site.art} ratio={20 / 13} /> : b.hero ? <Vignette art={b.hero} ratio={20 / 13} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
-      <div className="bb-ps-card">
-        <p className="bb-ps-h" style={{ fontWeight: headWeight, fontSize: size }}>{b.site.headline}</p>
-        <p className="bb-ps-t">{b.site.text}</p>
-      </div>
-      <span className="bb-ps-cta">{b.site.button}</span>
-      {points.length > 0 && <div className="bb-ps-chips">{points.map((c) => <span key={c}>{c}</span>)}</div>}
-      {shelf && <div className="bb-ps-next">
-        <h5 style={{ fontWeight: headWeight }}><span>{shelf}</span><small>{t("Tout voir", "See all")} →</small></h5>
-        <div className="bb-ps-row">
-          <div className="bb-ps-prod">
-            {shotOk(shots.mark) ? <div className="pic" style={{ background: "#FFFFFF" }}><Photo shot={shots.mark} alt={x.name} className="bb-ps-mark" /></div>
-              : <div className="pic" style={{ background: tile, color: tileInk }}><Wordmark x={x} main={tileInk} accent={[p.accent, p.light, p.dark].find((c) => contrast(c, tile) >= 1.9) ?? tileInk} compact className="block h-6 max-w-[80%] text-xs" /></div>}
-            <div className="txt"><b>{product ?? t("[Ton premier produit]", "[Your first product]")}</b><i aria-hidden>+</i></div>
-          </div>
-          <div className="bb-ps-prod" aria-hidden><div className="pic" style={{ background: safeHex(p.accent), color: inkOn(safeHex(p.accent), p) }} /><div className="txt"><b>&nbsp;</b></div></div>
-        </div>
-      </div>}
-    </div>
-  );
-}
 
 /** Une face de l'objet. Devant : le dessin, le nom dessiné, ce qui est écrit ; dos : le mode d'emploi, la phrase. */
 function ObjectFace({ x, back, pop }: { x: BoardCard; back?: boolean; pop: string }) {
@@ -445,6 +376,9 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
   const tape = b.parcel?.tape ?? x.slogan, tapeBg = safeHex(p.primary), tapeInk = inkOn(tapeBg, p);
   const support = b.idea.confessionSupport;
   const shots: Shots = b.images ?? {};
+  const hasPosts = !!shots.posts?.some((q) => shotOk(q));
+  // La marque finie (identité choisie) a son objet, ses signes en photo ou ses publications ; une planche proposée, pas encore.
+  const finished = !!chosen && (hasPosts || shotOk(shots.object) || shotOk(shots.signs));
   return (
     <article className={cx("overflow-hidden rounded-2xl border", chosen ? "border-ink ring-2 ring-ink" : "border-line", faded && "opacity-60")} data-brand-board={x.key}>
       <div className={cx("bb", `bb-g-${x.ground}`)} data-ink={light ? "clair" : "fonce"} style={vars}>
@@ -457,7 +391,8 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
             <p className="bb-sign" style={{ fontWeight: headWeight }} data-signature>{x.slogan}</p>
             <p className="bb-promise">{x.promise}</p>
           </div>
-          <div className="bb-scene" data-scene={shotOk(shots.hero) ? "image" : b.hero ? "dessin" : "secours"}>{shotOk(shots.hero) ? <Photo shot={shots.hero} alt={t("La scène de la marque", "The brand's scene")} /> : b.hero ? <Vignette art={b.hero} ratio={32 / 25} label={t("La scène de la marque", "The brand's scene")} /> : <FallbackScene x={x} picto={firstPicto} />}</div>
+          {/* La grande scène est une vraie image créée et relue ; refusée, elle n'est pas remplacée par un dessin. */}
+          {shotOk(shots.hero) && <div className="bb-scene" data-scene="image"><Photo shot={shots.hero} alt={t("La scène de la marque", "The brand's scene")} /></div>}
         </div>
 
         <h4 className="bb-h">{t("L'idée", "The idea")}</h4>
@@ -534,16 +469,13 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
               <div className="bb-shot"><Photo shot={shots.object} alt={b.object.label} /></div>
               <figcaption>{b.object.label}{b.object.back.length > 0 ? <> · {t("au dos", "on the back")} : {b.object.back[0]}</> : null}</figcaption>
             </figure>
-          ) : b.images ? null /* planche à images : jamais un dessin de secours à la place d'une photo refusée */ : (
-            <>
-              <figure data-object={b.object.kind}><ObjectFace x={x} pop={pop} /><figcaption>{b.object.label}</figcaption></figure>
-              {b.object.back.length > 0 && <figure><ObjectFace x={x} back pop={pop} /><figcaption>{t("Le dos", "The back")}</figcaption></figure>}
-            </>
-          )}
-          <figure data-phone>
-            <PhoneSite x={x} shots={shots} headWeight={headWeight} firstPicto={firstPicto} t={t} />
+          ) : null /* jamais un dessin de secours à la place d'une photo : l'objet est créé pour l'identité choisie */}
+          {/* La maquette du haut de l'accueil, créée par OpenAI pour cette identité, dans le cadre du téléphone. Refusée à
+              la relecture, elle n'est pas remplacée par une page dessinée par le Studio. */}
+          {shotOk(shots.site) && <figure data-phone>
+            <div className="bb-mock" data-screen="maquette"><Photo shot={shots.site} alt={b.site.headline} /></div>
             <figcaption>{t("Le haut de ton site, sur téléphone", "The top of your site, on a phone")}</figcaption>
-          </figure>
+          </figure>}
           <div className="bb-stack">
             {shotOk(shots.logo) ? <figure data-logo><div className="bb-logo"><Photo shot={shots.logo} alt={`${t("Logo", "Logo")} ${x.name}`} /></div><figcaption>{t("Le logo", "The logo")}</figcaption></figure> : <figure data-sticker>
               <div className="bb-sticker" style={{ background: stickerBg, color: stickerInk }}><Wordmark x={x} main={stickerInk} accent={[p.primary, p.dark, p.light].find((c) => contrast(c, stickerBg) >= 2.2) ?? stickerInk} compact className="block h-full w-full" /></div>
@@ -551,34 +483,21 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
             </figure>}
             {/* Planche à images : plus de colis dessiné en code (sans objet pour un métier de services, et un dessin
                 là où le reste est en vraies photos). */}
-            {!b.images && <figure data-parcel>
-              <div className="bb-parcel"><div className="bb-tape" style={{ background: tapeBg, color: tapeInk, fontWeight: headWeight }} aria-label={tape}>{Array.from({ length: 5 }, (_u, i) => <span key={i} aria-hidden>&nbsp;{tape}&nbsp;·</span>)}</div><div className="bb-label">{t("[Nom de ta cliente]", "[Your customer's name]")}<br />{t("[Adresse]", "[Address]")}</div></div>
-              <figcaption>{t("Le colis", "The parcel")}</figcaption>
-            </figure>}
+
           </div>
-          <figure className="bb-wide" data-posts>
+          {hasPosts && <figure className="bb-wide" data-posts>
             {/* Avec des images créées : des publications assez grandes pour être lues sur téléphone (on les fait défiler). */}
             <div className="bb-posts" data-shots={shots.posts?.some((q) => shotOk(q)) ? "" : undefined}>
               {b.posts.map((q, i) => {
-                const bg = postBg[i], on = inkOn(bg, p);
-                // Le dessin en haut, le texte en dessous, jamais l'un sur l'autre (essai réel du 12 novembre 2026). Taille du
-                // texte : le mot le plus long tient sur une ligne, et tout le texte tient dans la carte.
-                const longest = Math.max(...q.text.split(/\s+/).map((w) => w.length), 1);
-                const size = Math.min(36 / longest, Math.sqrt((q.art ? 430 : 620) / Math.max(q.text.length, 6)), 6.4);
                 const shot = shots.posts?.[i];
-                if (shotOk(shot)) return <div key={i} className="bb-post" data-post="image"><Photo shot={shot} alt={q.text} /></div>;
-                return (
-                  <div key={i} className="bb-post" style={{ background: bg, color: on }} data-post={q.look}>
-                    {q.art ? <ArtView art={q.art} /> : q.look === "motif" && firstPicto ? <PictoView p={firstPicto} main={on} accent={[p.accent, p.primary].find((c) => contrast(c, bg) >= 2) ?? on} className="absolute -right-3 -top-3 h-20 w-20 opacity-30" /> : null}
-                    <p style={{ fontWeight: headWeight, fontSize: `clamp(.6rem, ${size.toFixed(2)}cqi, 1.7rem)` }}>{q.look === "citation" ? `« ${q.text} »` : q.text}</p>
-                    {q.note && <span className="bb-hand" style={{ color: [p.accent, p.primary, p.secondary].find((c) => contrast(c, bg) >= 2.6) ?? on }}>{q.note}</span>}
-                  </div>
-                );
+                // Une publication est une vraie image créée et relue : refusée, elle n'est pas remplacée par un aplat de couleur.
+                return shotOk(shot) ? <div key={i} className="bb-post" data-post="image"><Photo shot={shot} alt={q.text} /></div> : null;
               })}
             </div>
             <figcaption>{t("Trois publications", "Three posts")}</figcaption>
-          </figure>
+          </figure>}
         </div>
+        {!finished && <p className="bb-note mt-[.7rem]" data-board-later>{t("L'objet qui porte ton logo, tes signes en photo et tes trois premières publications sont créés pour l'identité que tu choisis, dès ton choix.", "The object carrying your logo, your signs as a photo and your first three posts are created for the identity you choose, as soon as you choose.")}</p>}
 
         <h4 className="bb-h">{t("Sa voix", "Its voice")}</h4>
         <div className="bb-2">
@@ -652,13 +571,14 @@ export function BrandBoards({ ids, busy, onChoose }: { ids: BoardSet; busy: bool
       {ids.study && !ids.final && <Study s={ids.study} />}
       {ids.final ? (
         <>
-          <p className="text-xs font-semibold">{t("Ton identité", "Your identity")}{ids.final.mixLabel ? ` · ${ids.final.mixLabel}` : ""}</p>
-          <Planche x={ids.final} label={t("Ton identité", "Your identity")} chosen canChoose={false} busy={busy} onChoose={onChoose} />
+          <p className="text-xs font-semibold">{ids.final.finished ? t("Ta marque", "Your brand") : t("Ton identité", "Your identity")}{ids.final.mixLabel ? ` · ${ids.final.mixLabel}` : ""}</p>
+          <Planche x={ids.final} label={ids.final.finished ? t("Ta marque", "Your brand") : t("Ton identité", "Your identity")} chosen canChoose={false} busy={busy} onChoose={onChoose} />
+          {!!ids.final.finishIssues?.length && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-brand-finish-issues><p className="font-semibold">{t("Ce que je n'ai pas pu réussir", "What I could not get right")}</p><ul className="mt-1 list-disc pl-4">{ids.final.finishIssues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
           <p className="text-xs text-muted">{t("Les autres propositions", "The other proposals")} : {ids.list.filter((x) => x.key !== ids.chosen?.key).map((x) => `${x.key} « ${x.name} »`).join(", ")}.</p>
         </>
       ) : ids.list.map((x) => <Planche key={x.key} x={x} canChoose={!ids.chosen} busy={busy} onChoose={onChoose} />)}
       {!ids.chosen && <p className="text-xs text-muted">{t("Tu peux aussi mélanger (par exemple le nom de A avec les couleurs de B), retoucher un nom ou une phrase, ou demander une nouvelle proposition : écris-le simplement.", "You can also mix (e.g. A's name with B's colours), tweak a name or a line, or ask for a new proposal.")}</p>}
-      {!!ids.issues.length && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-syna-identity-issues><p className="font-semibold">{t("Ce que je n'ai pas pu régler", "What I could not settle")}</p><ul className="mt-1 list-disc pl-4">{ids.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
+      {!!ids.issues.length && !ids.final?.finished && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-syna-identity-issues><p className="font-semibold">{t("Ce que je n'ai pas pu régler", "What I could not settle")}</p><ul className="mt-1 list-disc pl-4">{ids.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
     </div>
   );
 }

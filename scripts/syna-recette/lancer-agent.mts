@@ -20,22 +20,29 @@ const secretFile = path.join(dir, "app-secret.txt");
 if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, randomBytes(32).toString("hex"));
 process.env.DATA_DIR = dir;
 process.env.APP_SECRET = fs.readFileSync(secretFile, "utf8").trim();
-const env: Record<string, string> = { OPENAI_API_KEY: "sk-proxy-injected", DASHSCOPE_API_KEY: "sk-proxy-injected", FAL_KEY: "proxy-injected", ANTHROPIC_API_KEY: "", GOOGLE_API_KEY: "", STUDIO_SYNA_AGENT: "1", STUDIO_SYNA_SHELL: "1" };
+const env: Record<string, string> = { OPENAI_API_KEY: "sk-proxy-injected", DASHSCOPE_API_KEY: "sk-proxy-injected", FAL_KEY: "proxy-injected", ANTHROPIC_API_KEY: "", GOOGLE_API_KEY: "" };
 Object.assign(process.env, env);
 
 const PASSWORD = "Recette-492-fictif";
 const { one, run } = await import("../../src/lib/db");
 const { account } = await import("../../tests/conversation209-fixtures");
 const bcrypt = (await import("bcryptjs")).default;
-async function compte(email: string, nom: string, role: "client" | "admin") {
+/** Compte fictif, à un forfait donné (« creer », « vendre » ou « dominer » : 2, 3 ou 4 identités proposées). */
+async function compte(email: string, nom: string, role: "client" | "admin", plan: "creer" | "vendre" | "dominer" = "vendre") {
   if (one("SELECT 1 FROM users WHERE email=?", email)) return;
   const u = await account();
   run("UPDATE users SET name=?, email=?, password_hash=?, role=? WHERE id=?", nom, email, await bcrypt.hash(PASSWORD, 10), role, u.id);
-  console.log(`Compte fictif : ${email} (${role})`);
+  run("UPDATE subscriptions SET plan=? WHERE user_id=?", plan, u.id);
+  const { syncAllowance } = await import("../../src/lib/billing");
+  syncAllowance(u.id);
+  console.log(`Compte fictif : ${email} (${role}, forfait ${plan})`);
 }
-await compte("admin492@example.com", "Admin recette 492 (fictif)", "admin");
-await compte("boutique492@example.com", "Boutique recette 492 (fictif)", "client");
-await compte("vans492@example.com", "Vans recette 492 (fictif)", "client");
+await compte("admin492@example.com", "Admin recette (fictif)", "admin");
+// Les clients inventés de l'essai en cours : COMPTES="email:nom:forfait,…" (par défaut, trois clients, un par forfait).
+for (const spec of (process.env.COMPTES ?? "client1@example.com:Client un (fictif):creer,client2@example.com:Client deux (fictif):vendre,client3@example.com:Client trois (fictif):dominer").split(",")) {
+  const [email, nom, plan] = spec.split(":");
+  await compte(email.trim(), (nom ?? "Client fictif").trim(), "client", (["creer", "vendre", "dominer"].includes(plan) ? plan : "vendre") as "creer");
+}
 
 // Clé Anthropic de la variable d'environnement → réglage chiffré du Studio privé (jamais affichée).
 if (process.env.STUDIO_ANTHROPIC_KEY) {
@@ -52,7 +59,7 @@ console.log("Tarifs vérifiés du 06/11/2026 appliqués (recherche web Claude, i
 const origin = `http://localhost:${port}`;
 const common = { ...process.env, ...env, APP_URL: origin, NEXT_TELEMETRY_DISABLED: "1" };
 const web = spawn(process.execPath, [path.resolve("node_modules/next/dist/bin/next"), "start", "-p", String(port), "-H", "0.0.0.0"], { env: { ...common, NODE_OPTIONS: "--max-old-space-size=4096" }, stdio: "inherit" });
-const worker = spawn(path.resolve("node_modules/.bin/tsx"), ["worker/index.ts"], { env: { ...common, WORKER_CONCURRENCY: "3" }, stdio: "inherit" });
+const worker = spawn(path.resolve("node_modules/.bin/tsx"), ["worker/index.ts"], { env: { ...common, WORKER_CONCURRENCY: "5" }, stdio: "inherit" });
 console.log(`Studio privé SINA agent : ${origin} — mot de passe des comptes fictifs : ${PASSWORD}`);
 const stop = () => { web.kill(); worker.kill(); };
 process.on("SIGTERM", stop); process.on("SIGINT", stop);

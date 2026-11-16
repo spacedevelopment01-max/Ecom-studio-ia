@@ -50,6 +50,12 @@ export type LlmCall = {
   userId: string;
   projectId?: string | null;
   jobId?: string | null;
+  /**
+   * Travail en DIFFÉRÉ (lot 2, 15 novembre 2026) : l'appel est déposé chez Anthropic et traité plus tard, à moitié
+   * prix. Réservé au travail de fond (jamais une réponse attendue à l'écran). L'attente est bornée : passé le délai,
+   * le dépôt est annulé (rien n'est alors facturé) et l'appel part en direct, au prix normal déjà réservé.
+   */
+  deferred?: boolean;
   /** Instructions spécialisées de la tâche (stables, mises en cache). */
   system: string;
   /** Contexte commun du projet (mémoire), placé avant la demande. */
@@ -301,7 +307,7 @@ async function countInputTokens(p: { model: string; system?: unknown; messages: 
 const RETRYABLE = (status: number) => status === 429;
 const RETRY_DELAYS_MS = [1000, 4000];
 
-function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "", reservationId: string | null = null, requestedModel = model): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
+function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "", reservationId: string | null = null, requestedModel = model, discount = 1): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
   // Une réponse reçue sans usage exploitable n'est pas supposée gratuite : rawCall conserve sa réserve.
   const counts=[usage?.input_tokens,usage?.output_tokens,...[usage?.cache_creation_input_tokens,usage?.cache_read_input_tokens].filter(n=>n!=null)];
   if(counts.some(n=>!Number.isSafeInteger(n)||n!<0))throw new PermanentError(L("Usage fournisseur incomplet ou invalide : coût maximal retenu, rapprochement nécessaire avant toute relance.","Provider usage is missing or invalid: maximum cost retained; reconciliation required before retrying."));
@@ -310,7 +316,7 @@ function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage |
   const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * 1.25 + (usage.cache_read_input_tokens ?? 0) * 0.1;
   const output = usage.output_tokens ?? 0;
   const usd = (input * Math.max(p.inputPerM, requested.inputPerM) + output * Math.max(p.outputPerM, requested.outputPerM)) / 1e6;
-  const costMicro = Math.round(usd * usdToEur() * EUR);
+  const costMicro = Math.round(usd * discount * usdToEur() * EUR);
   const billed = recordUsage({
     userId: call.userId,
     projectId: call.projectId,
@@ -329,6 +335,54 @@ function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage |
 }
 
 type RawResult = { text: string; stop: string | null; model: string };
+
+// ---------------------------------------------------------------- travail en différé (moitié prix)
+
+/** Remise d'Anthropic sur un appel traité en différé (tarif public : 50 % sur l'entrée et la sortie). */
+export const DEFERRED_DISCOUNT = 0.5;
+/** Patience du différé : par appel, puis pour toute une tâche ; au-delà, les appels partent en direct. */
+export const deferredLimits = { perCallMs: 10 * 60_000, perJobMs: 30 * 60_000, pollMs: 15_000 };
+const deferredWaited = new Map<string, number>();
+/** Remplaçable par les tests (aucun appel réel). */
+export const deferredDeps: { batches?: { create: (p: any) => Promise<any>; retrieve: (id: string) => Promise<any>; cancel: (id: string) => Promise<any>; results: (id: string) => Promise<AsyncIterable<any>> }; sleep?: (ms: number) => Promise<void> } = {};
+/** Temps déjà passé à attendre le différé pour une tâche (mesure montrée dans les comptes rendus d'essai). */
+export const deferredWaitedMs = (jobId: string) => deferredWaited.get(jobId) ?? 0;
+
+/**
+ * Dépose UN appel en différé et attend sa réponse. Rend le message, ou `null` quand l'appel doit partir en direct :
+ * patience de la tâche épuisée, dépôt refusé, ou dépôt annulé faute de réponse à temps (rien n'est alors facturé, c'est
+ * certain : aucun risque de payer deux fois). Une erreur pendant le suivi reste un résultat incertain, jamais relancé.
+ */
+async function deferredMessage(params: any, jobKey: string): Promise<Anthropic.Beta.BetaMessage | null> {
+  if ((deferredWaited.get(jobKey) ?? 0) >= deferredLimits.perJobMs) return null;
+  const b = deferredDeps.batches ?? (client().beta.messages.batches as any), sleep = deferredDeps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  let batch: any;
+  try { batch = await b.create({ requests: [{ custom_id: "appel", params }] }); }
+  catch (e) {
+    // Dépôt refusé net par le fournisseur (4xx) : rien n'existe, l'appel part en direct. Toute autre erreur remonte.
+    const status = (e as { status?: unknown })?.status;
+    if (typeof status === "number" && status >= 400 && status < 500 && status !== 429) return null;
+    throw e;
+  }
+  const t0 = Date.now();
+  let cancelled = false, misses = 0;
+  try {
+    while (batch.processing_status !== "ended") {
+      if (!cancelled && Date.now() - t0 > deferredLimits.perCallMs) { await b.cancel(batch.id); cancelled = true; }
+      if (cancelled && Date.now() - t0 > deferredLimits.perCallMs + 5 * 60_000) throw new Error("dépôt en différé annulé mais toujours en cours");
+      await sleep(deferredLimits.pollMs);
+      try { batch = await b.retrieve(batch.id); misses = 0; } catch (e) { if (++misses >= 5) throw e; }
+    }
+  } finally { deferredWaited.set(jobKey, (deferredWaited.get(jobKey) ?? 0) + (Date.now() - t0)); if (deferredWaited.size > 500) deferredWaited.clear(); }
+  for await (const r of await b.results(batch.id)) {
+    const res = r?.result;
+    if (res?.type === "succeeded") return res.message as Anthropic.Beta.BetaMessage;
+    // Annulé ou expiré : jamais traité, jamais facturé.
+    if (res?.type === "canceled" || res?.type === "expired") return null;
+    if (res?.type === "errored") throw Object.assign(new Error(`appel en différé refusé : ${String(res.error?.error?.message ?? res.error?.message ?? "erreur").slice(0, 200)}`), { status: res.error?.error?.type === "invalid_request_error" ? 400 : 500 });
+  }
+  throw new Error("dépôt en différé terminé sans réponse");
+}
 /** Un coût inconnu reste bloquant pour les moteurs, quelle que soit la langue du message. */
 function uncertainProviderFailure(message:string){return Object.assign(new PermanentError(message),{uncertain:true as const});}
 
@@ -376,6 +430,8 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     params.output_config = { format };
   }
   let msg: Anthropic.Beta.BetaMessage;
+  // Appel réellement servi en différé (moitié prix) ; faux quand il est parti en direct.
+  let servedDeferred = false;
   // Trace de l'appel (jamais le prompt ni les images : clé et empreinte du prompt système seulement).
   const counter = { n: 0 };
   const started = Date.now();
@@ -404,7 +460,9 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   };
   try {
     // Relances maison, dans la MÊME réservation, uniquement sur une saturation 429 (rien de produit ni facturé). Une coupure après le début de la réponse n'est jamais relancée ici (résultat incertain).
-    msg = await httpCounter.run(counter, async () => {
+    const later = call.deferred && !isHaiku ? await deferredMessage(params, call.jobId ?? call.userId) : null;
+    if (later) servedDeferred = true;
+    msg = later ?? await httpCounter.run(counter, async () => {
       for (let attempt = 0; ; attempt++) {
         try {
           beforeAgentTextAttempt(call.userId,call.jobId,attempt);
@@ -441,7 +499,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   try {
     // Un identifiant servi inconnu n'est jamais supposé gratuit ni au tarif du modèle demandé.
     if (msg.model && !priceFor("anthropic", msg.model)) throw new PermanentError(L("Tarif du modèle servi inconnu : coût maximal retenu, rapprochement nécessaire avant toute relance.", "The served model's price is unknown: maximum cost kept; reconciliation is required before retrying."));
-    billed = account(call, served, msg.usage, suffix, reservation, route.model);
+    billed = account(call, served, msg.usage, suffix, reservation, route.model, servedDeferred ? DEFERRED_DISCOUNT : 1);
   } catch (e) {
     // Réponse reçue (donc facturée) mais comptabilisation impossible : coût maximal retenu.
     settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
@@ -449,6 +507,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   }
   recordCall({
     ...trace,
+    ...(servedDeferred ? { routingReason: `${decision.reason} · différé (moitié prix)` } : {}),
     servedModel: msg.model ?? null,
     inputTokens: msg.usage?.input_tokens ?? 0,
     cacheReadTokens: msg.usage?.cache_read_input_tokens ?? 0,

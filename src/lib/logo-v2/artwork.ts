@@ -236,30 +236,17 @@ export const INTENDED_SIZES: Record<LogoStyle, { widths: number[]; uses: string 
  * nuit…), elles disparaîtraient sur fond sombre : le logo garde alors ses couleurs et reçoit un liseré clair tout
  * autour (version « autocollant »), au lieu d'être délavé en blanc.
  */
-export async function onDarkVersion(png: Buffer, nameBox?: TextBox | null): Promise<Buffer> {
-  if (nameBox) return onDarkWithName(png, nameBox);
+export async function onDarkVersion(png: Buffer, _nameBox?: TextBox | null, light = "#FFFFFF"): Promise<Buffer> {
+  // Règle du propriétaire (16 novembre 2026 : « sur fond sombre, le logo soit clair tout le temps ») : TOUT ce qui est
+  // foncé passe en clair, même une couleur foncée de la marque (un nom brun gardé brun avec un liseré restait
+  // illisible) ; les couleurs vives du dessin sont gardées. Plus de liseré « autocollant ».
   const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  let opaque = 0;
-  let colouredDark = 0;
+  const c = /^#[0-9a-f]{6}$/i.test(light) ? light : "#FFFFFF", [r, g, b] = [1, 3, 5].map((k) => parseInt(c.slice(k, k + 2), 16));
   for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] < 128) continue;
-    opaque++;
-    const mx = Math.max(data[i], data[i + 1], data[i + 2]);
-    const mn = Math.min(data[i], data[i + 1], data[i + 2]);
-    const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
-    const sat = (mx - mn) / 255;
-    if (lum < 0.35 && sat < 0.16) data[i] = data[i + 1] = data[i + 2] = 255;
-    else if (lum < 0.3) colouredDark++;
+    if (data[i + 3] < 8) continue;
+    if ((0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255 < 0.4) { data[i] = r; data[i + 1] = g; data[i + 2] = b; }
   }
-  const flipped = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
-  if (!opaque || colouredDark / opaque < 0.1) return flipped;
-  const r = Math.max(4, Math.round(Math.max(info.width, info.height) * 0.014));
-  const pad = { top: r * 2, bottom: r * 2, left: r * 2, right: r * 2, background: { r: 0, g: 0, b: 0, alpha: 0 } };
-  const ext = await sharp(png).extend(pad).png().toBuffer();
-  const m = await sharp(ext).metadata();
-  const mask = await sharp(ext).extractChannel("alpha").blur(r * 0.7).threshold(6).png().toBuffer();
-  const halo = await sharp({ create: { width: m.width!, height: m.height!, channels: 3, background: "#FBF8F2" } }).joinChannel(mask).png().toBuffer();
-  return sharp(halo).composite([{ input: ext }]).png().toBuffer();
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
 
 /**
