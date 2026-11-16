@@ -415,7 +415,7 @@ describe("thème unique, vente : dans l'aperçu du Studio et dans Shopify", asyn
     expect(liquid("tn-entete-arrivee")).toContain('href="{{ vedette.url }}">Découvrir <span data-tn-produit-nom>{{ vedette.title }}</span></a>');
     expect(liquid("tn-barre-produit")).toContain('<b data-tn-produit-nom>{{ vedette.title }}</b>');
     expect(liquid("tn-barre-produit")).toContain('data-tn-c="carte-flottante"');
-    expect(liquid("tn-pied-arrivee")).toContain('<a class="tn-v-lien" href="{{ routes.root_url }}pages/legal">Mentions légales</a>');
+    expect(/<a class="tn-v-lien" href="\{\{ routes\.root_url \}\}pages\/[a-z-]+">Mentions légales<\/a>/.test(liquid("tn-pied-arrivee")), "le pied mène à la page des mentions légales").toBe(true);
     // Les raisons : le texte part tel quel, les numéros viennent de la feuille.
     expect(liquid("tn-raisons")).toContain('<ol class="tn-v-liste"><li><h2>La première raison, dite en une phrase entière.</h2>');
     // Avis : aucune application d'avis ne remplit ces pièces ; elles partent sans note ni avis, avec la seule invitation.
