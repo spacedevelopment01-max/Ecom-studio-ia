@@ -1,0 +1,16 @@
+const { chromium } = require('playwright'); const fs = require('fs'); const path = require('path');
+(async () => { const b = await chromium.launch(); const dir = process.argv[2];
+  const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 }); const errs = [];
+  p.on('pageerror', (e) => errs.push(String(e).slice(0, 160))); p.on('requestfailed', (r) => errs.push('ÉCHEC ' + r.url().slice(0, 100)));
+  await p.route('**/*', (r) => { const u = new URL(r.request().url()); if (u.hostname !== 'vitrine.local') return r.abort();
+    if (u.pathname === '/') return r.fulfill({ contentType: 'text/html', body: '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>' + fs.readFileSync(dir + '/index.html', 'utf8') });
+    const f = path.join(dir, decodeURIComponent(u.pathname)); return fs.existsSync(f) ? r.fulfill({ path: f }) : r.fulfill({ status: 404, body: '' }); });
+  await p.goto('http://vitrine.local/', { waitUntil: 'load' }); await p.waitForTimeout(1500);
+  await p.screenshot({ path: dir + '/essai-accueil.jpg', type: 'jpeg', quality: 75 });
+  const liens = await p.evaluate(() => [...document.querySelectorAll('[data-go]')].map((a) => a.getAttribute('data-go')).filter((v, i, a) => a.indexOf(v) === i));
+  const cible = liens.find((x) => /prestations|shop/.test(x)) || liens[0];
+  await p.evaluate((k) => document.querySelector(`[data-go="${k}"]`).click(), cible); await p.waitForTimeout(800);
+  const vis = await p.evaluate(() => [...document.querySelectorAll('.tb-pg')].filter((x) => !x.hidden && x.offsetHeight).map((x) => x.dataset.pg).join(','));
+  await p.screenshot({ path: dir + '/essai-page2.jpg', type: 'jpeg', quality: 75 });
+  console.log('liens', liens.join(','), '| clic', cible, '→ visible', vis, '| largeur page', await p.evaluate(() => document.documentElement.scrollWidth), '| erreurs', errs.slice(0, 5));
+  await b.close(); })();
