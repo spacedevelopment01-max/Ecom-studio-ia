@@ -1439,19 +1439,22 @@ describe("SINA — chaîne de création de la marque", async () => {
     run("INSERT INTO projects(id,user_id,name,brand_json,created_at,updated_at) VALUES(?,?,?,?,?,?)", `variete-${far}`, other.id, "Autre client", JSON.stringify({ name: "Autre client", fonts: { heading: "archivo_black_n4", body: "dm_sans_n4" }, palette: { light: "#FFFCF7", dark: "#111111", primary: "#FF2E63", secondary: "#EEEEEE", accent: "#12A36D" } }), far, far);
     try {
       const { out, log } = await chain(t, {}, { fix: () => FIXED_LINE }, undefined);
-      const { marquesRecentes, ligneeDe, deltaE2000, FOND_ECART_MIN } = await import("@/lib/syna-agent/variete-marques");
+      const { marquesRecentes, ligneeDe, deltaE2000, fondDoux } = await import("@/lib/syna-agent/variete-marques");
       const recent = marquesRecentes(t.pid);
       expect(recent[0]).toEqual({ heading: "archivo_black_n4", light: "#FFFCF7" });
       // La consigne de chaque planche nomme les polices et les fonds pris, sans le nom de l'autre marque.
       expect(log.prompts["direction-1-B"]).toMatch(/Polices de titres déjà prises[^\n]*Archivo Black \(archivo_black\)/);
-      expect(log.prompts["direction-1-B"]).toMatch(/Fonds clairs déjà pris \(light\) : #FFFCF7/);
+      expect(log.prompts["direction-1-B"]).toMatch(/Fonds clairs des \d dernières \(light\) : #FFFCF7/);
       expect(log.prompts["direction-1-B"]).not.toMatch(/Autre client/);
       expect(log.prompts["fix-1-B"]).toMatch(/Polices de titres déjà prises/);
       const list = J.journeyOf(t.cid).identities!.list;
       const taken = new Set(recent.flatMap((m) => (m.heading ? [ligneeDe(m.heading)] : [])));
       const b = list.find((x) => x.key === "B")!;
       expect(ligneeDe(b.fonts.heading)).not.toBe("archivo");
-      expect(deltaE2000(b.palette.light, "#FFFCF7")).toBeGreaterThanOrEqual(FOND_ECART_MIN);
+      // Fond trop proche (#FFFDF5 contre #FFFCF7) : remplacé par un fond doux, plus écarté.
+      expect(b.palette.light).not.toBe(route("B").palette.light);
+      expect(fondDoux(b.palette.light)).toBe(true);
+      expect(deltaE2000(b.palette.light, "#FFFCF7")).toBeGreaterThan(deltaE2000(route("B").palette.light, "#FFFCF7"));
       expect(b.palette.primary).toBe(route("B").palette.primary); // la couleur vedette ne change jamais
       for (const x of list) expect(taken.has(ligneeDe(x.fonts.heading))).toBe(false);
       expect(new Set(list.map((x) => ligneeDe(x.fonts.heading))).size).toBe(list.length);

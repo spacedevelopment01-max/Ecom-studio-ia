@@ -360,34 +360,41 @@ marques pareilles donnent deux sites pareils. Sa demande (« Fait les 5 », poin
 pour chaque marque, sa police de titres, ses couleurs, son fond, jamais repris d'une marque récente ; et sa règle du
 jour : « elle doit y arriver, on ne laisse pas de porte de sortie sinon elle va la prendre ».
 
-- **Ce que SINA reçoit** : au moment d'écrire chaque planche (et à sa reprise), les polices de titres et les fonds clairs
-  des 20 dernières marques du Studio (autres clients ; jamais leur nom), avec la règle : jamais la même police de
-  titres, ni une autre graisse de la même police ; un fond clair nettement différent, sauf un fond « blanc ».
-- **Le contrôle du Studio, sans IA, sans porte de sortie** (`src/lib/syna-agent/variete-marques.ts`), juste après chaque
-  planche écrite puis sur la série finale, **avant toute image payante** (le logo et la planche montrent la police et
-  les couleurs) :
-  - une police de titres déjà prise par une marque récente, ou par une autre identité de la même proposition, est
-    remplacée par une police du catalogue de la même allure (onze allures tirées des descriptions du catalogue : très
-    grasse, demi-grasse, légère, condensée, d'affichage, ronde, empattements gras, fins ou de lecture, manuscrite,
-    chasse fixe), libre, en accord avec la police de texte (quand titres et textes étaient de la même police, les
-    textes suivent) ; le nom de la police écrit dans la planche suit. Archivo et Archivo Black comptent comme une seule
-    police (de même Cormorant et Cormorant Garamond, Nunito et Nunito Sans) ;
-  - un fond clair trop proche d'une marque récente est remplacé par un fond pâle pris dans les teintes de la marque
-    elle-même (celle de son fond, de son accent, de son bouton, de sa surface), le plus proche possible de celui de
-    SINA, sans aucun défaut de contraste de plus. Choix fait : cet ajustement sans IA plutôt qu'une reprise demandée à
-    l'IA, parce qu'il est sûr, gratuit, et ne touche qu'une couleur de fond. La couleur du bouton, les couleurs données
-    par le client et ses polices ou couleurs gardées ne changent jamais ; un fond « blanc » reste un blanc pur (règle du
-    propriétaire : un blanc par série).
-  - **Le seuil** : écart de couleur perçu (CIEDE2000) d'au moins 10. Les deux fonds de l'essai sont à 6,9 et le
-    propriétaire les voit pareils ; un crème et un blanc pur (#FFF6E0 et #FFFFFF) sont à 9,4 et se confondent encore
-    d'un site à l'autre ; à 10, un fond pâle a une couleur à lui (crème contre rose poudré : 11,1 ; contre lavande :
-    16,6).
+- **Ce que SINA reçoit** : au moment d'écrire chaque planche (et à sa reprise), les polices de titres des 20 dernières
+  marques du Studio et les fonds clairs des 6 dernières (autres clients ; jamais leur nom), avec la règle : jamais la
+  même police de titres, ni une autre graisse de la même police ; un fond clair qui s'en écarte tout en restant doux,
+  sauf un fond « blanc ».
+- **Le contrôle du Studio, sans IA** (`src/lib/syna-agent/variete-marques.ts`), juste après chaque planche écrite puis
+  sur la série finale, **avant toute image payante** (le logo et la planche montrent la police et les couleurs) :
+  - **La police, sans porte de sortie** : une police de titres déjà prise par une des 20 dernières marques, ou par une
+    autre identité de la même proposition, est remplacée par une police du catalogue de la même allure (onze allures
+    tirées des descriptions du catalogue : très grasse, demi-grasse, légère, condensée, d'affichage, ronde, empattements
+    gras, fins ou de lecture, manuscrite, chasse fixe), libre, en accord avec la police de texte (quand titres et textes
+    étaient de la même police, les textes suivent) ; le nom de la police écrit dans la planche suit. Archivo et Archivo
+    Black comptent comme une seule police (de même Cormorant et Cormorant Garamond, Nunito et Nunito Sans).
+  - **Le fond clair, toujours doux** (reprise du 17 novembre au soir : les premiers fonds de remplacement étaient trop
+    colorés, et comparer à 20 marques poussait client après client vers des fonds de plus en plus marqués) : comparé aux
+    **6 dernières marques** seulement ; trop proche (écart de couleur perçu, CIEDE2000, sous 10), il est remplacé par un
+    fond pâle pris dans les teintes de la marque (son fond, puis son bouton, sa surface, son accent), **toujours dans les
+    bornes d'un fond doux : clarté 95 au moins, saturation 7 au plus** (mesures CIELAB), sans défaut de contraste de plus,
+    le plus proche possible de celui de SINA. Si aucun fond doux ne s'écarte assez, le plus écarté **dans les bornes**
+    est pris : la différence se fait alors par la police (elle reste stricte), les couleurs de la marque, l'allure du
+    site et le contrôle par l'image. La couleur du bouton, les couleurs données par le client et ses polices ou couleurs
+    gardées ne changent jamais ; un fond « blanc » reste un blanc pur (un blanc par série).
+  - **Les bornes, choisies sur une planche de rendus** (douze marques inventées, titre et bouton posés sur leur fond de
+    remplacement, contre six marques récentes aux fonds presque blancs, le cas le plus serré) : à clarté 94 et
+    saturation 10, le fond le plus écarté devient un rose ou un vert d'eau qu'on remarque ; à clarté 95 et saturation 7,
+    il reste un blanc teinté, calme, et la marque se lit d'abord par son bouton et son titre. Dans ce cas serré, aucun
+    fond doux n'atteint l'écart de 10 (écarts obtenus : de 3,9 à 8,3) : c'est le cas prévu où la police fait la
+    différence.
+  - **Le seuil de 10** : les deux fonds de l'essai sont à 6,9 et le propriétaire les voit pareils ; un crème et un blanc
+    pur (#FFF6E0 et #FFFFFF) sont à 9,4.
 - **Vérifié sans IA** (`tests/variete-marques.test.ts`, et un essai de bout en bout dans `tests/sina-chaine-marque.test.ts`
   avec l'IA simulée) : une identité qui reprend l'Archivo Black d'une marque récente reçoit une autre police très grasse,
-  libre, et la relecture voit déjà la série corrigée ; #FFF6E0 contre #FFFCF7 est jugé trop proche et remplacé ; avec
-  treize marques récentes aux fonds pâles, un fond qui s'écarte de toutes est encore trouvé ; sans marque récente, rien
-  ne change ; deux identités d'une même proposition n'ont jamais la même police de titres (avant, c'était seulement
-  signalé à l'IA, sans garantie).
-- **Pas encore vérifié** : avec la vraie IA (il faudra un essai de création de marque) ; à l'œil, la beauté des fonds
-  de remplacement sur une vraie planche et un vrai site. Une marque en fond « blanc » garde son blanc : deux sites
-  blancs restent possibles, la différence vient alors de la police et des couleurs.
+  libre, et la relecture voit déjà la série corrigée ; #FFF6E0 contre #FFFCF7 est jugé trop proche et remplacé par un
+  fond doux assez écarté ; quand aucun fond doux ne s'écarte assez, le plus écarté dans les bornes est pris ; le fond
+  ne se compare qu'aux 6 dernières marques, la police aux 20 ; sans marque récente, rien ne change ; deux identités
+  d'une même proposition n'ont jamais la même police de titres.
+- **Pas encore vérifié** : avec la vraie IA (il faudra un essai de création de marque) ; sur un vrai site et une vraie
+  planche (la planche de contrôle pose seulement un titre et un bouton sur chaque fond). Deux marques en fond « blanc »
+  gardent leur blanc : leur différence vient de la police et des couleurs.

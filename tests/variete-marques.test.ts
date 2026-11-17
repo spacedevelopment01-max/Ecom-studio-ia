@@ -8,7 +8,7 @@ import { route, series } from "./sina-routes-fixtures";
 import { FONT_FILES, FONT_HANDLES } from "@/lib/theme/render";
 import { bodyFontOk, fontKeyOf, paletteIssues } from "@/lib/syna-agent/identities";
 import { emptyJourney } from "@/lib/syna-agent/journey";
-import { ALLURES, FOND_ECART_MIN, accordPolices, allureDe, deltaE2000, fondDeRemplacement, fondsTropProches, ligneeDe, marquesRecentes, policeDeRemplacement, varierIdentites, varieteMarquesBrief, type MarqueRecente } from "@/lib/syna-agent/variete-marques";
+import { ALLURES, FONDS_COMPARES, FOND_BORNES, FOND_ECART_MIN, accordPolices, allureDe, deltaE2000, fondDeRemplacement, fondDoux, fondsTropProches, ligneeDe, marquesRecentes, policeDeRemplacement, varierIdentites, varieteMarquesBrief, type MarqueRecente } from "@/lib/syna-agent/variete-marques";
 
 const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
 /** Une identité de l'essai : fond clair coloré (« uni »), titres en Archivo Black, comme les deux marques de l'essai. */
@@ -102,30 +102,49 @@ describe("variété entre les marques — le fond clair", () => {
     expect(fondsTropProches("#FFF6E0", "#FFE9E3")).toBe(false);
     expect(deltaE2000("#123456", "#123456")).toBe(0);
   });
-  it("fond trop proche d'une marque récente : remplacé par un fond tiré des couleurs de la marque, sans défaut de plus, bouton inchangé", () => {
+  it("fond trop proche d'une marque récente : remplacé par un fond doux qui s'écarte assez, le plus proche de celui de SINA, bouton inchangé", () => {
     const x = uni();
     const r = varierIdentites([x], [{ heading: null, light: "#FFF6E0" }], { modifiables: ["D"] });
     const y = r.list[0];
     expect(y.palette.light).not.toBe("#FFFCF7");
     expect(deltaE2000(y.palette.light, "#FFF6E0")).toBeGreaterThanOrEqual(FOND_ECART_MIN);
+    expect(fondDoux(y.palette.light)).toBe(true);
+    expect(deltaE2000(y.palette.light, x.palette.light)).toBeLessThan(6); // un voisin du fond choisi, pas un autre monde
     expect({ ...y.palette, light: "" }).toEqual({ ...x.palette, light: "" });
     expect(paletteIssues(y.palette, y.ground, y.gradient)).toEqual(paletteIssues(x.palette, x.ground, x.gradient));
     expect(y.fonts).toEqual(x.fonts); // aucune marque récente n'a sa police
     expect(r.changes.join(" ")).toMatch(/fond clair #FFFCF7 trop proche d'une marque récente, remplacé par #/);
   });
-  it("le fond choisi par SINA reste le point de départ : le remplaçant est le plus proche qui s'écarte assez", () => {
-    const x = uni();
-    const f = fondDeRemplacement(x, ["#FFF6E0"])!;
-    expect(f.assez).toBe(true);
-    // Il reste un fond de page calme et clair.
-    expect(deltaE2000(f.light, x.palette.light)).toBeLessThan(25);
+  it("un fond de remplacement reste toujours doux : clarté 95 au moins, saturation 7 au plus", () => {
+    expect(FOND_BORNES).toEqual({ clarteMin: 95, saturationMax: 7 });
+    // Les fonds trop colorés d'avant la reprise ne passent plus.
+    expect(fondDoux("#D9D3FE")).toBe(false);
+    expect(fondDoux("#EDD2CB")).toBe(false);
+    expect(fondDoux("#FFFCF7")).toBe(true);
+    for (const k of ["A", "B", "D"] as const) {
+      const x = clone(route(k));
+      const f = fondDeRemplacement(x, [x.palette.light]);
+      if (f) expect(fondDoux(f.light), `${k} ${f.light}`).toBe(true);
+    }
   });
-  it("beaucoup de marques récentes aux fonds pâles : un fond qui s'écarte de toutes est encore trouvé", () => {
-    const lights = ["#FFFFFF", "#FFF6E0", "#FFFCF7", "#FAF7F2", "#F5EFE6", "#FFF1E0", "#F2F0FF", "#FFFDF5", "#F3EFE6", "#FDEBD3", "#FFF0C8", "#E8F0FF", "#EAF4EC"];
-    const f = fondDeRemplacement(uni(), lights)!;
+  it("aucun fond doux ne s'écarte assez : le plus écarté DANS les bornes est pris, jamais un fond coloré", () => {
+    const lights = ["#FFFFFF", "#FFF6E0", "#FFFCF7", "#FAF7F2", "#F5EFE6", "#F8FAFC"];
+    const x = uni();
+    const f = fondDeRemplacement(x, lights)!;
     expect(f).not.toBeNull();
-    expect(f.assez).toBe(true);
-    for (const l of lights) expect(deltaE2000(f.light, l)).toBeGreaterThanOrEqual(FOND_ECART_MIN);
+    expect(f.assez).toBe(false);
+    expect(fondDoux(f.light)).toBe(true);
+    const far = (c: string) => Math.min(...lights.map((l) => deltaE2000(c, l)));
+    expect(far(f.light)).toBeGreaterThan(far(x.palette.light));
+    const r = varierIdentites([x], lights.map((light) => ({ heading: null, light })), { modifiables: ["D"] });
+    expect(r.changes.join(" ")).toMatch(/le plus écarté des fonds doux/);
+  });
+  it("le fond se compare aux 6 dernières marques seulement ; la police, aux 20", () => {
+    const recent: MarqueRecente[] = Array.from({ length: 20 }, (_, i) => ({ heading: i === 15 ? "archivo_black_n4" : "fraunces_n8", light: i < FONDS_COMPARES ? "#D6CFF6" : "#FFFCF7" }));
+    const y = varierIdentites([uni()], recent, { modifiables: ["D"] }).list[0];
+    expect(y.palette.light).toBe("#FFFCF7"); // même fond qu'une marque plus ancienne que les 6 dernières : gardé
+    expect(ligneeDe(y.fonts.heading)).not.toBe("archivo"); // la 16e marque compte pour la police
+    expect(varieteMarquesBrief(recent)).toMatch(/Fonds clairs des 6 dernières \(light\) : #D6CFF6\./);
   });
   it("un fond « blanc » reste blanc ; les couleurs gardées ou données par le client ne changent jamais", () => {
     const c = clone(route("C"));
@@ -169,7 +188,7 @@ describe("variété entre les marques — les marques récentes du Studio", asyn
     expect(got).toEqual([{ heading: "archivo_black_n4", light: "#FFF6E0" }, { heading: "chivo_n7", light: "#F4F1FF" }]);
     const brief = varieteMarquesBrief(got);
     expect(brief).toMatch(/Polices de titres déjà prises[^\n]*Archivo Black \(archivo_black\), Chivo \(chivo\)/);
-    expect(brief).toMatch(/Fonds clairs déjà pris \(light\) : #FFF6E0, #F4F1FF/);
+    expect(brief).toMatch(/Fonds clairs des 2 dernières \(light\) : #FFF6E0, #F4F1FF/);
     // Jamais le nom d'une autre marque dans la consigne.
     expect(brief).not.toMatch(/Essai variété/);
   });

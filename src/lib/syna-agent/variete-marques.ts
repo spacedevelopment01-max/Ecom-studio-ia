@@ -4,30 +4,44 @@
  * la même police de titres et deux fonds clairs presque pareils ; le site reprend la police et la palette de la marque,
  * donc deux marques pareilles donnent deux sites pareils.
  *
- * La règle, contre les 20 dernières marques du Studio (autres projets, lues dans `projects.brand_json`) :
- *  - jamais la même police de titres qu'une de ces marques, ni une police de la même lignée (Archivo et Archivo Black
- *    sont une seule police pour l'œil) ; jamais deux fois la même lignée dans une même série d'identités ;
- *  - un fond clair (`palette.light`, le fond des pages du site) nettement différent : écart de couleur CIEDE2000 d'au
- *    moins `FOND_ECART_MIN`.
+ * La règle (autres projets, lus dans `projects.brand_json`, les plus récents d'abord) :
+ *  - police de titres, contre les 20 dernières marques, sans exception : jamais la même police qu'une de ces marques,
+ *    ni une police de la même lignée (Archivo et Archivo Black sont une seule police pour l'œil) ; jamais deux fois la
+ *    même lignée dans une même série d'identités ;
+ *  - fond clair (`palette.light`, le fond des pages du site), contre les 6 dernières marques seulement : écart de
+ *    couleur CIEDE2000 d'au moins `FOND_ECART_MIN`, en restant toujours un fond doux et calme (bornes `FOND_BORNES`).
+ *    Comparer le fond à plus de marques pousserait, client après client, vers des fonds de plus en plus colorés : une
+ *    impasse lente. Quand aucun fond doux ne s'écarte assez, le plus écarté reste dans les bornes ; la différence se
+ *    fait alors par la police (toujours stricte), les couleurs de la marque, l'allure du site et le contrôle par l'image.
  *
  * Aucune porte de sortie (« elle doit y arriver, on ne laisse pas de porte de sortie sinon elle va la prendre ») : SINA
  * reçoit ces marques avant de proposer ses identités ; puis le Studio corrige lui-même, sans IA, avant toute image
  * payante (le logo et la planche montrent la police et les couleurs) :
  *  - une police de titres déjà prise est remplacée par une police du catalogue de la même allure (mêmes empattements,
  *    même graisse, même chasse, même écriture), libre, en accord avec la police de texte ;
- *  - un fond clair trop proche est remplacé par un fond tiré des couleurs de la marque elle-même (une teinte pâle de
- *    son bouton, de son accent, de sa surface, ou son propre fond plus profond), le plus proche possible de celui
- *    choisi, qui ne crée aucun défaut de contraste. La couleur vedette (le bouton) et les couleurs données par le client
+ *  - un fond clair trop proche est remplacé par un fond doux pris dans les teintes de la marque elle-même (celle de
+ *    son fond, de son accent, de son bouton, de sa surface), le plus proche possible de celui choisi, qui ne crée aucun
+ *    défaut de contraste. La couleur vedette (le bouton) et les couleurs données par le client
  *    ne changent jamais ; un fond « blanc » reste blanc (règle du propriétaire : un blanc pur par série).
  */
 import { all } from "../db";
 import { FONT_FILES, FONT_HANDLES } from "../theme/render";
 import { hexToRgb, sameColor } from "../color";
-import { bodyFontOk, fontFamily, fontKeyOf, oklch, paletteIssues, type Identity } from "./identities";
+import { bodyFontOk, fontFamily, fontKeyOf, paletteIssues, type Identity } from "./identities";
 import type { Journey } from "./journey";
 
-/** Nombre de marques récentes comparées (les plus récentes d'abord). */
+/** Nombre de marques récentes comparées pour la police de titres (les plus récentes d'abord). */
 export const MARQUES_COMPAREES = 20;
+/** Nombre de marques récentes comparées pour le fond clair (décision du 17 novembre 2026 : jamais une impasse lente). */
+export const FONDS_COMPARES = 6;
+/**
+ * Bornes d'un fond de remplacement (CIELAB) : toujours pâle et peu saturé, jamais un fond « coloré » ; ce sont les
+ * couleurs de la marque qui portent sa personnalité. Vérifiées sur une planche de rendus (douze marques, titre et
+ * bouton posés dessus, 17 novembre 2026) : à clarté 94 et saturation 10, le fond le plus écarté devient un rose ou un
+ * vert d'eau qu'on remarque ; à clarté 95 et saturation 7, il reste un blanc teinté, calme, et la marque se lit d'abord
+ * par son bouton et son titre.
+ */
+export const FOND_BORNES = { clarteMin: 95, saturationMax: 7 };
 /**
  * Écart de couleur minimal (CIEDE2000) entre deux fonds clairs. Les deux fonds de l'essai du 17 novembre 2026
  * (#FFF6E0 et #FFFCF7), que le propriétaire voit pareils, sont à 6,9 ; un crème et un blanc pur (#FFF6E0 et #FFFFFF)
@@ -171,12 +185,12 @@ export function marquesRecentes(projectId: string, n = MARQUES_COMPAREES): Marqu
 /** Ce que SINA reçoit avant de proposer une identité : les polices de titres et les fonds des marques récentes. */
 export function varieteMarquesBrief(recent: MarqueRecente[]): string {
   const fonts = [...new Map(recent.filter((m) => m.heading).map((m) => [ligneeDe(m.heading!), m.heading!])).values()];
-  const lights = [...new Set(recent.map((m) => m.light).filter((x): x is string => !!x))];
+  const lights = [...new Set(recent.slice(0, FONDS_COMPARES).map((m) => m.light).filter((x): x is string => !!x))];
   if (!fonts.length && !lights.length) return "";
   return [
     `# Les ${recent.length} dernières marques créées par le Studio pour d'autres clients : la tienne ne ressemble à aucune`,
     ...(fonts.length ? [`Polices de titres déjà prises (jamais la même, ni une autre graisse de la même police) : ${fonts.map((h) => `${fontFamily(h)} (${fontKeyOf(h)})`).join(", ")}. Choisis une autre police de la liste autorisée, dans le caractère demandé.`] : []),
-    ...(lights.length ? [`Fonds clairs déjà pris (light) : ${lights.join(", ")}. Ton fond clair s'en écarte nettement (une autre teinte ou une autre profondeur, pas un blanc cassé de plus), sauf un fond « blanc », qui reste un blanc pur.`] : []),
+    ...(lights.length ? [`Fonds clairs des ${Math.min(FONDS_COMPARES, recent.length)} dernières (light) : ${lights.join(", ")}. Ton fond clair s'en écarte nettement tout en restant un fond de page doux et pâle (une autre nuance, jamais un fond coloré : la personnalité vient des couleurs de la marque), sauf un fond « blanc », qui reste un blanc pur.`] : []),
     "Si tu reprends quand même une de ces polices ou un fond trop proche, le Studio les remplace lui-même avant les images.",
   ].join("\n");
 }
@@ -184,23 +198,33 @@ export function varieteMarquesBrief(recent: MarqueRecente[]): string {
 // ---------------------------------------------------------------- le fond clair
 
 type Fond = Pick<Identity, "palette" | "ground" | "gradient">;
-/** Couleur d'OKLCH (clarté, saturation, teinte en degrés) en code hexadécimal ; null hors des couleurs d'un écran. */
-export function oklchHex(L: number, C: number, h: number): string | null {
+/** Clarté et saturation CIELAB d'une couleur (bornes d'un fond doux). */
+export function clarteSaturation(hex: string): { l: number; c: number } {
+  const [L, a, b] = lab(hex);
+  return { l: L, c: Math.hypot(a, b) };
+}
+/** Un fond doux : dans les bornes de clarté et de saturation. */
+export const fondDoux = (hex: string) => { const v = clarteSaturation(hex); return v.l >= FOND_BORNES.clarteMin && v.c <= FOND_BORNES.saturationMax; };
+/** Couleur CIELAB (clarté, saturation, teinte en degrés) en code hexadécimal ; null hors des couleurs d'un écran. */
+export function labHex(L: number, C: number, h: number): string | null {
   const a = C * Math.cos((h * Math.PI) / 180), b = C * Math.sin((h * Math.PI) / 180);
-  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
-  const lin = [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s];
+  const fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - b / 200;
+  const inv = (t: number) => (t ** 3 > 216 / 24389 ? t ** 3 : (116 * t - 16) / (24389 / 27));
+  const X = inv(fx) * 0.95047, Y = inv(fy), Z = inv(fz) * 1.08883;
+  const lin = [3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z, -0.969266 * X + 1.8760108 * Y + 0.041556 * Z, 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z];
   if (lin.some((v) => v < -0.001 || v > 1.001)) return null;
   const enc = (v: number) => { const x = Math.min(1, Math.max(0, v)); return Math.round(255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055)); };
   return `#${lin.map((v) => enc(v).toString(16).padStart(2, "0")).join("").toUpperCase()}`;
 }
-/** Clartés et saturations essayées : un fond de page qui reste clair et calme (jamais vif). */
-const CLARTES = [0.975, 0.96, 0.945, 0.93, 0.915, 0.9, 0.885];
-const SATURATIONS = [0.008, 0.016, 0.024, 0.032, 0.04, 0.05, 0.06];
+/** Clartés et saturations essayées (CIELAB), dans les bornes d'un fond doux. */
+const CLARTES = [99, 98, 97, 96, 95];
+const SATURATIONS = [1, 2, 3, 4, 5, 6, 7];
 /**
- * Fond clair de remplacement, sans IA, quand celui de l'identité est trop proche d'une marque récente : un fond pâle
- * pris dans les teintes de la marque elle-même (celle du fond choisi, de l'accent, du bouton, de la surface), clair et
- * peu saturé, sans aucun défaut de contraste de plus, le plus proche possible du fond choisi. Si aucun ne s'écarte assez
- * de toutes les marques récentes (cas extrême), le plus éloigné est pris. Null : rien à changer.
+ * Fond clair de remplacement, sans IA, quand celui de l'identité est trop proche d'une des marques récentes données
+ * (les 6 dernières) : un fond doux (bornes `FOND_BORNES`) pris dans les teintes de la marque elle-même (celle du fond
+ * choisi, de l'accent, du bouton, de la surface), sans aucun défaut de contraste de plus, le plus proche possible du
+ * fond choisi. Si aucun fond doux ne s'écarte assez, le plus écarté d'entre eux est pris (`assez` faux), seulement s'il
+ * s'écarte plus que celui choisi. Null : rien à changer.
  */
 export function fondDeRemplacement(x: Fond, recentLights: string[]): { light: string; assez: boolean } | null {
   const light = x.palette.light.toUpperCase();
@@ -208,15 +232,21 @@ export function fondDeRemplacement(x: Fond, recentLights: string[]): { light: st
   if (!recentLights.length || x.ground === "blanc" || dist(light) >= FOND_ECART_MIN) return null;
   const before = new Set(paletteIssues(x.palette, x.ground, x.gradient));
   // Teintes de la marque : celle du fond choisi (même presque blanc, il a une chaleur), puis les couleurs franches.
-  const own = oklch(light);
-  const hues = [own.h, ...[x.palette.accent, x.palette.primary, x.palette.secondary].map(oklch).filter((c) => c.c >= 0.02).map((c) => c.h)];
-  const raw = hues.flatMap((h) => CLARTES.flatMap((L) => SATURATIONS.map((C) => oklchHex(L, C, h)))).filter((c): c is string => !!c);
-  const ok = [...new Set(raw)].filter((c) => !sameColor(c, light) && paletteIssues({ ...x.palette, light: c }, x.ground, x.gradient).every((i) => before.has(i)))
-    .map((c) => ({ c, far: dist(c), near: deltaE2000(c, light) }));
+  const hueOf = (c: string) => { const [, a, b] = lab(c); return { c: Math.hypot(a, b), h: ((Math.atan2(b, a) * 180) / Math.PI + 360) % 360 }; };
+  // Ordre de préférence des teintes : celle du fond choisi, puis le bouton, la surface, l'accent (un fond tiré d'un
+  // simple détail de la marque ne passe qu'ensuite).
+  const hues = [{ h: hueOf(light).h, rang: 0 }, ...[x.palette.primary, x.palette.secondary, x.palette.accent].map((c, i) => ({ ...hueOf(c), rang: i + 1 })).filter((c) => c.c >= 8)];
+  const raw = hues.flatMap(({ h, rang }) => CLARTES.flatMap((L) => SATURATIONS.map((C) => ({ c: labHex(L, C, h), rang })))).filter((o): o is { c: string; rang: number } => !!o.c && fondDoux(o.c));
+  const seen = new Set<string>();
+  const ok = raw.filter((o) => !seen.has(o.c) && !!seen.add(o.c) && !sameColor(o.c, light) && paletteIssues({ ...x.palette, light: o.c }, x.ground, x.gradient).every((i) => before.has(i)))
+    .map((o) => ({ ...o, far: dist(o.c), near: deltaE2000(o.c, light) + 1.5 * o.rang }));
   const enough = ok.filter((o) => o.far >= FOND_ECART_MIN).sort((a, b) => a.near - b.near)[0];
   if (enough) return { light: enough.c, assez: true };
-  const best = ok.sort((a, b) => b.far - a.far)[0];
-  return best && best.far > dist(light) ? { light: best.c, assez: false } : null;
+  // Le plus écarté, en gardant la préférence des teintes : un fond doux tiré d'un détail de la marque doit s'écarter
+  // nettement plus pour passer devant celui de sa propre teinte.
+  const mine = dist(light);
+  const best = ok.filter((o) => o.far > mine).sort((a, b) => b.far - 0.75 * b.rang - (a.far - 0.75 * a.rang))[0];
+  return best ? { light: best.c, assez: false } : null;
 }
 
 // ---------------------------------------------------------------- la série d'identités
@@ -247,7 +277,7 @@ export function varierIdentites<T extends Identity>(list: T[], recent: MarqueRec
   const keepFonts = !!o.j?.keep.includes("polices"), keepColors = !!o.j?.keep.includes("couleurs");
   const own = clientColors(o.j), changes: string[] = [];
   const recentFonts = new Set(recent.flatMap((m) => (m.heading ? [ligneeDe(m.heading)] : [])));
-  const lights = recent.flatMap((m) => (m.light ? [m.light] : []));
+  const lights = recent.slice(0, FONDS_COMPARES).flatMap((m) => (m.light ? [m.light] : []));
   const serie = new Set(list.filter((x) => !o.modifiables.includes(x.key)).map((x) => ligneeDe(x.fonts.heading)));
   const out = list.map((x) => {
     if (!o.modifiables.includes(x.key)) return x;
@@ -269,7 +299,7 @@ export function varierIdentites<T extends Identity>(list: T[], recent: MarqueRec
       if (f) {
         const before = y.palette.light;
         y = { ...swapText(y, before, f.light), palette: { ...y.palette, light: f.light } };
-        changes.push(`Identité ${x.key} : fond clair ${before} trop proche d'une marque récente, remplacé par ${f.light}${f.assez ? "" : " (le plus éloigné possible : aucun fond tiré de ses couleurs ne s'écartait assez de toutes)"}.`);
+        changes.push(`Identité ${x.key} : fond clair ${before} trop proche d'une marque récente, remplacé par ${f.light}${f.assez ? "" : " (le plus écarté des fonds doux : aucun ne s'écartait assez de toutes ; la différence se fait par la police et les couleurs)"}.`);
       }
     }
     return y;
