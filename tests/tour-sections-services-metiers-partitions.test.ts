@@ -82,7 +82,7 @@ describe("goûts du propriétaire", () => {
     expect(derniere(METIERS, ".ctw .tn-bien-energie .tn-etiquette:not([data-tn-classe]) ol")).toBe("opacity:1");
   });
   it("cadre penché : la photo qui finit sa section garde la place de son ombre", () => {
-    expect(PARTITIONS).toContain('.ctw[data-tn-cadre="penche"] .tn-bien-description .tn-ph{margin-bottom:16px}');
-    expect(PARTITIONS).toContain('.ctw[data-tn-cadre="penche"] .tn-privatisation[data-tn-c="cote-a-cote"] .tn-ph{margin-bottom:16px}');
+    expect(PARTITIONS).toContain('.ctw[data-tn-cadre="penche"] .tn-bien-description{padding-bottom:18px}');
+    expect(PARTITIONS).toContain('.ctw[data-tn-cadre="penche"] .tn-privatisation[data-tn-c="cote-a-cote"]{padding-bottom:18px}');
   });
 });

@@ -1052,7 +1052,7 @@
 .ctw .tn-carte .tn-rubrique em mark{padding:1px 5px;font-size:13px}
 /* ── Énergie et climat sans classe communiquée : l'échelle s'efface, mais ses lettres restent lisibles ── */
 .ctw .tn-bien-energie .tn-etiquette:not([data-tn-classe]) ol{opacity:1}
-.ctw .tn-bien-energie .tn-etiquette:not([data-tn-classe]) ol li span:not(#tn){background:color-mix(in srgb,var(--tn-c) 34%,var(--tn-fond));color:color-mix(in srgb,var(--tn-encre) 72%,var(--tn-fond))}
+.ctw .tn-bien-energie .tn-etiquette:not([data-tn-classe]) ol li span:not(#tn){background:color-mix(in srgb,var(--tn-c) 34%,var(--tn-fond));color:var(--tn-encre)}
 /* « reglettes » sans classe : « non communiquée » passe sous le nom de l'étiquette (elle le serrait en colonne) */
 .ctw .tn-bien-energie[data-tn-c="reglettes"] .tn-etiquette:not([data-tn-classe]) .tn-classe{grid-column:1/-1;grid-row:auto;margin-top:8px;text-align:left}
 .ctw .tn-bien-energie[data-tn-c="reglettes"] .tn-etiquette:not([data-tn-classe]) .tn-classe strong{display:inline}
@@ -1108,3 +1108,14 @@
 .ctw .tn-origines[data-tn-c="mention"] h2{--tn-k:max(.7,var(--tn-k0))}
 /* Plats en vignettes, cadre penché, sur téléphone : deux vignettes penchées côte à côte ne se touchent plus */
 @media (max-width:759px){.ctw[data-tn-cadre="penche"] .tn-retrait[data-tn-c="vignettes"] .tn-plats{column-gap:20px}}
+/* Galerie d'un bien : une note dans les chiffres-clés se coupe à la française, avec son trait d'union */
+.ctw .tn-bien-galerie .tn-cles b mark{padding:1px 3px;font-size:12px;hyphenate-limit-chars:8 3 3;-webkit-hyphenate-limit-before:3;-webkit-hyphenate-limit-after:3}
+@media (max-width:359px){
+  /* Très petit téléphone : les repères du quartier et les noms des biens tiennent sur leur ligne */
+  .ctw .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b{font-size:27px}
+  .ctw[data-tn-titres="gras"] .tn-bien-quartier .tn-reperes-q b:not(#tn),.ctw[data-tn-titres="capitales"] .tn-bien-quartier .tn-reperes-q b:not(#tn),.ctw[data-tn-lourd] .tn-bien-quartier .tn-reperes-q b:not(#tn){font-size:18px}
+  .ctw[data-tn-titres="gras"] .tn-biens[data-tn-c="vedette"] .tn-cartes-b .tn-bien:not(:only-child) b,.ctw[data-tn-titres="capitales"] .tn-biens[data-tn-c="vedette"] .tn-cartes-b .tn-bien:not(:only-child) b,.ctw[data-tn-lourd] .tn-biens[data-tn-c="vedette"] .tn-cartes-b .tn-bien:not(:only-child) b{font-size:17px}
+}
+@media (min-width:760px){
+  .ctw[data-tn-titres="gras"] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b,.ctw[data-tn-titres="capitales"] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b,.ctw[data-tn-lourd] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b{font-size:40px}
+}

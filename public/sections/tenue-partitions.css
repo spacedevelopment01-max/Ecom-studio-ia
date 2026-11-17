@@ -565,7 +565,7 @@
    dans un œuf ── */
 .ctw .tn-realisations-types .tn-pt-filtres span{border-radius:21px;text-wrap:balance}
 .ctw .tn-realisations-types[data-tn-c="bandes"] .tn-pt-filtres span{border-radius:0}
-.ctw .tn-realisations-types .tn-pt-filtres span mark{padding:0 4px;font-size:13.5px}
+.ctw .tn-realisations-types .tn-pt-filtres span mark{padding:0 4px;font-size:13.5px;line-height:1.6}
 /* ── Comptes des réseaux : un identifiant ne se coupe pas comme un mot (ni trait d'union, ni lettres seules) ; dans une
    tenue aux titres gras, sur téléphone, il s'écrit en texte courant pour tenir sur sa ligne ── */
 .ctw .tn-reseaux li b{-webkit-hyphens:manual;hyphens:manual}
@@ -577,8 +577,8 @@
 /* ── Frais en cartes : un montant écrit en toutes lettres (long) passe en texte courant ── */
 .ctw .tn-bien-frais[data-tn-c="cartes"] dd[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:1.4;letter-spacing:0;text-transform:none}
 /* ── Cadre penché : la photo penchée et son ombre gardent leur place en bas de la section ── */
-.ctw[data-tn-cadre="penche"] .tn-bien-description .tn-ph{margin-bottom:16px}
-.ctw[data-tn-cadre="penche"] .tn-privatisation[data-tn-c="cote-a-cote"] .tn-ph{margin-bottom:16px}
+.ctw[data-tn-cadre="penche"] .tn-bien-description{padding-bottom:18px}
+.ctw[data-tn-cadre="penche"] .tn-privatisation[data-tn-c="cote-a-cote"]{padding-bottom:18px}
 .ctw[data-tn-cadre="penche"] .tn-realisations-types:not([data-tn-c="bandes"]):not([data-tn-c="liste"]) .tn-galerie{column-gap:20px}
 @media (max-width:759px){
   .ctw[data-tn-titres="gras"] .tn-reseaux li b:not(#tn),.ctw[data-tn-titres="capitales"] .tn-reseaux li b:not(#tn),.ctw[data-tn-lourd] .tn-reseaux li b:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:17px;line-height:1.3;letter-spacing:0;text-transform:none}
@@ -593,7 +593,9 @@
 }
 @media (min-width:760px){
   /* Privatisation, photo pleine : la carte posée à cheval descend sous la photo ; la section lui garde sa place */
-  .ctw .tn-privatisation:not([data-tn-c="cote-a-cote"]):not([data-tn-c="sombre"]){padding-bottom:34px}
+  .ctw .tn-privatisation:not([data-tn-c="cote-a-cote"]):not([data-tn-c="sombre"]){display:grid;grid-template-columns:minmax(0,1fr)}
+  .ctw .tn-privatisation:not([data-tn-c="cote-a-cote"]):not([data-tn-c="sombre"]) .tn-ph{grid-area:1/1;height:auto;min-height:540px}
+  .ctw .tn-privatisation:not([data-tn-c="cote-a-cote"]):not([data-tn-c="sombre"]) .tn-pt-corps{grid-area:1/1;align-self:center;justify-self:end;margin:44px max(40px,calc(50% - 540px)) 44px 0}
   .ctw[data-tn-titres="gras"] .tn-adresse address[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-adresse address[data-tn-long],.ctw[data-tn-lourd] .tn-adresse address[data-tn-long]{font-size:22px}
   .ctw[data-tn-titres="gras"] .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long],.ctw[data-tn-lourd] .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long]{font-size:30px}
   .ctw .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long]{font-size:42px}
