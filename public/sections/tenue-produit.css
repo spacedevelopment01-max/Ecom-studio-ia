@@ -765,7 +765,7 @@
   .ctw .tn-composition li span{font-size:17.5px;margin-top:12px}
   .ctw .tn-composition[data-tn-c="bande"]{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
   .ctw .tn-composition[data-tn-c="bande"] ul{gap:24px}
-  .ctw .tn-composition[data-tn-c="bande"] li,.ctw .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3),.ctw .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3) ~ li{flex:1 1 0}
+  .ctw .tn-composition[data-tn-c="bande"] li,.ctw .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3),.ctw .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3) ~ li{flex:1 1 calc(25% - 18px)}
   .ctw .tn-composition[data-tn-c="bande"] .tn-ph{height:400px}
   .ctw .tn-composition[data-tn-c="bande"] li b{font-size:28px;margin-top:16px}
   .ctw .tn-composition[data-tn-c="bande"] li span{font-size:16px;margin-top:8px}
@@ -1007,4 +1007,16 @@
 .ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:last-child:nth-child(odd):has(>.tn-ph-manque)>div:not(.tn-ph){grid-column:1/-1;min-height:0}
 @media (min-width:760px){
   .ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:has(>.tn-ph-manque)>div:not(.tn-ph){min-height:340px;padding:22px 20px}
+}
+/* Ce qu'il y a dedans, en bande, cadre penché, grand écran : les ingrédients restent côte à côte (l'écart plus large des
+   cadres penchés les faisait passer chacun sur sa ligne, en très grandes bandes rognées). */
+@media (min-width:760px){
+  .ctw[data-tn-cadre="penche"] .tn-composition[data-tn-c="bande"] li,.ctw[data-tn-cadre="penche"] .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3),.ctw[data-tn-cadre="penche"] .tn-composition[data-tn-c="bande"] li:first-child:nth-last-child(3) ~ li{flex:1 1 calc(25% - 29px)}
+}
+/* (sur grand écran, quatre ingrédients au plus par rangée : sept colonnes étroites étiraient chaque photo en hauteur) */
+/* Ce qu'il y a dedans, en bande : un ingrédient dont la photo manque garde la taille d'une case (son nom dans un aplat doux). */
+.ctw .tn-composition[data-tn-c="bande"] li:has(>.tn-ph-manque):not(:only-child){display:flex;flex-direction:column;justify-content:flex-end;min-height:172px;padding:16px 14px;border-radius:var(--tn-arrondi,0);background-color:var(--tn-doux)}
+.ctw .tn-composition[data-tn-c="bande"] li:has(>.tn-ph-manque):not(:only-child) b{margin-top:0}
+@media (min-width:760px){
+  .ctw .tn-composition[data-tn-c="bande"] li:has(>.tn-ph-manque):not(:only-child){min-height:400px;padding:22px 20px}
 }
