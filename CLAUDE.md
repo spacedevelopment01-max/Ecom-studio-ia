@@ -126,6 +126,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   commande dans le thème.
 - **Jamais de photo dans une arche ni une demi-lune** (16 novembre 2026, devant une page d'arrivée : « L'arrière plan en lune
   c'est pas beau je veux plus ça ») : le cadre en arche n'est plus proposé, plus permis, plus affiché (`sansArche`).
+- **Jamais un bouton coupé** (17 novembre 2026, devant le site d'essai sur son téléphone : « Les boutons sont coupés en bas,
+  jamais au grand jamais ») : un bouton, son bord et son ombre se voient en entier, sur téléphone comme sur ordinateur
+  (`tests/bouton-a-ombre-jamais-coupe.test.ts`).
 - **Photos** : les photos produit du client restent sur les emplacements produit ; l'ouverture est une scène créée
   avec son vrai produit. SINA n'invente jamais l'équipe ni les biens à vendre. Les réalisations d'artisans sont créées
   quand le client n'en a pas assez (règle maintenue le 14 novembre, « on verra plus tard si on change »). Boutique
