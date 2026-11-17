@@ -1119,3 +1119,12 @@
 @media (min-width:760px){
   .ctw[data-tn-titres="gras"] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b,.ctw[data-tn-titres="capitales"] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b,.ctw[data-tn-lourd] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b{font-size:40px}
 }
+/* ── Réserver une table, photo qui manque : la boîte ne remonte plus sur une photo absente (son titre sortait par le
+   haut de la section), et sur ordinateur elle se pose au milieu au lieu de laisser la moitié de l'écran vide (tour des
+   sections, 17 novembre 2026). ── */
+.ctw .tn-reserver-table[data-tn-photo-manque]:not([data-tn-c="horaires"]) .tn-boite{margin-top:0}
+@media (min-width:900px){
+  .ctw .tn-reserver-table[data-tn-photo-manque]:not([data-tn-c="horaires"]) .tn-boite:not(#tn){justify-self:center;width:min(640px,calc(100% - 80px));margin:0}
+  .ctw .tn-reserver-table[data-tn-photo-manque]:not([data-tn-c="encadre"]):not([data-tn-c="horaires"]) .tn-boite:not(#tn){padding:44px 48px 40px;background:var(--tn-doux)}
+  .ctw .tn-reserver-table[data-tn-c="horaires"][data-tn-photo-manque] .tn-pratique-t:not(#tn){margin-top:44px}
+}

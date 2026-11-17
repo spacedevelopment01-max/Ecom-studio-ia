@@ -614,3 +614,10 @@
   .ctw .tn-delai-reponse .tn-pt-moyens:has(li:nth-child(5)) li:nth-child(n+5){border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
   .ctw .tn-delai-reponse[data-tn-c="bande"] .tn-pt-moyens:has(li:nth-child(5)) li:nth-child(n+5){border-top-color:color-mix(in srgb,var(--tn-sur-accent) 34%,transparent)}
 }
+/* ── Privatisation, photo pleine, photo qui manque : jamais un grand fond sombre vide à côté de la carte. Le panneau
+   sombre se resserre autour de la carte, posée au milieu (tour des sections, 17 novembre 2026). ── */
+.ctw .tn-privatisation[data-tn-photo-manque="fond"]:not([data-tn-c="cote-a-cote"]):not([data-tn-c="sombre"]) .tn-ph{height:104px}
+@media (min-width:760px){
+  .ctw .tn-privatisation[data-tn-photo-manque="fond"]:not([data-tn-c="cote-a-cote"]):not([data-tn-c="sombre"]) .tn-ph{height:auto;min-height:0}
+  .ctw .tn-privatisation[data-tn-photo-manque="fond"]:not([data-tn-c="cote-a-cote"]):not([data-tn-c="sombre"]) .tn-pt-corps{justify-self:center;width:min(620px,calc(100% - 80px));margin:44px 0}
+}
