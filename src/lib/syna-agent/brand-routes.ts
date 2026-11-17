@@ -15,8 +15,9 @@ import type { PlanId } from "../plans";
 import { FONT_HANDLES } from "../theme/render";
 import { BoardSchema, SERVICE_OBJECTS, type Board, type Wordmark } from "./brand-board";
 import { NAME_EXAMPLES } from "./brand-references";
-import { COLOR_RULES, IdentitySchema, bodyFontOk, fontFamily, fontKeyOf, hueGap, normText, oklch, paletteIssues, refusedColorIssues, wordCount, type Identity } from "./identities";
+import { COLOR_RULES, IdentitySchema, bodyFontOk, fontFamily, hueGap, normText, oklch, paletteIssues, refusedColorIssues, wordCount, type Identity } from "./identities";
 import { FIELD_LABEL, START_FIELDS, type Journey } from "./journey";
+import { ligneeDe } from "./variete-marques";
 
 export const ROUTE_KEYS = ["A", "B", "C", "D"] as const;
 export type RouteKey = (typeof ROUTE_KEYS)[number];
@@ -235,7 +236,8 @@ export function routeIssues(list: Route[], j: Journey, count: number): string[] 
   if (!keptSlogan && new Set(list.map((x) => normText(x.slogan))).size < list.length) issues.push("Deux identités ont la même signature.");
   if (new Set(list.map((x) => normText(x.board.idea.belief))).size < list.length) issues.push("Deux identités partent de la même idée de marque : des idées différentes sont attendues.");
   if (new Set(list.map((x) => normText(x.territory))).size < list.length) issues.push("Deux identités ont le même territoire émotionnel.");
-  if (!j.keep.includes("polices") && new Set(list.map((x) => fontKeyOf(x.fonts.heading))).size < list.length) issues.push("Deux identités ont la même police de titres : des familles différentes sont attendues.");
+  // Même lignée = même police pour l'œil (Archivo et Archivo Black) : `variete-marques.ts`.
+  if (!j.keep.includes("polices") && new Set(list.map((x) => ligneeDe(x.fonts.heading))).size < list.length) issues.push("Deux identités ont la même police de titres : des familles différentes sont attendues.");
   if (!j.keep.includes("couleurs")) {
     const grounds = list.map((x) => x.ground), want = groundsFor(keys.length);
     if (new Set(grounds).size < grounds.length || grounds.some((g) => !want.among.includes(g)) || (want.exact && [...grounds].sort().join() !== [...want.exact].sort().join())) {

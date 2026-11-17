@@ -38,6 +38,7 @@ import { NAME_REFUSALS } from "./brand-references";
 import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
 import { IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
+import { marquesRecentes, varierIdentites, varieteMarquesBrief } from "./variete-marques";
 
 export const SINA_BRAND_JOB = "syna.brand";
 
@@ -717,6 +718,18 @@ export async function runSinaBrandJob(ctx: JobContext) {
   } else nameCheck = "non_verifie";
 
   // 6 et 7. La voix, les signes, les situations : la planche de chaque route.
+  // Une identité vraiment différente pour chaque marque (demande du propriétaire du 17 novembre 2026) : les polices de
+  // titres et les fonds clairs des dernières marques du Studio, lus une fois pour la tâche (une relance retrouve les
+  // mêmes), sont donnés à chaque planche ; ce qui en serait repris quand même est corrigé par le Studio, sans IA,
+  // avant les images (`variete-marques.ts`). Le client qui garde tout sauf le nom garde aussi ses polices et ses couleurs.
+  const recent = await ctx.step("brand:recent", async () => marquesRecentes(p.id));
+  const recentBlock = namesOnly ? "" : varieteMarquesBrief(recent);
+  const vary = (x: Route, others: Route[]): Route => {
+    if (namesOnly) return x;
+    const r = varierIdentites([...others, x], recent, { modifiables: [x.key], j });
+    notes.push(...r.changes);
+    return r.list[r.list.length - 1];
+  };
   const ideaOf = (r: Pick) => strategy.ideas.find((i) => i.id === r.idea) ?? ideas[0];
   /** Ce qu'une route doit savoir des autres pour s'en écarter (couleurs, police, phrases, bouton). */
   const seen = (x: Route) => `- ${x.key} « ${x.name} » : fond ${x.ground}, bouton ${x.palette.primary}, titres ${x.fonts.heading} (police de titres déjà prise), signature « ${x.slogan} », titre du site « ${x.board.site.headline} », bouton du site « ${x.board.site.button} »${x.board.site.layout?.opening ? `, manière d'ouvrir son site : ${x.board.site.layout.opening} (la tienne doit en différer)` : ""}`;
@@ -726,6 +739,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     ideaBlock(idea, strategy), `Ton de la route : ${r.tone || idea.tone}`, `Fond de page : ${r.ground}`, `Teinte du bouton : ${r.hue}`, `Caractère de la police de titres : ${r.type}`,
     ...(others.length ? ["", "# Les autres routes de la série (reste nettement différente : autre teinte de bouton, AUTRE police de titres, autres images, autres phrases)", ...others.map(seen)] : []),
     ...(namesOnly && old ? ["", "# Le client garde TOUT de cette route sauf le nom : reprends à l'identique son fond, son dégradé, sa palette, ses polices, son ton, ses curseurs de voix, ses signes et son objet ; réécris le nom, sa logique, la signature et les phrases qui citaient l'ancien nom.", routeText(old)] : []),
+    ...(recentBlock ? ["", recentBlock] : []),
   ].join("\n");
   const planOf = new Map(todo.map((k, n) => [k, picks[n]] as const));
   const drafted: Route[] = [];
@@ -735,7 +749,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const prompt = routePrompt(r, idea, [...kept, ...drafted], old);
     const draft = await ctx.step(`brand:direction:${round}:${key}`, () => ai.ask(`direction-${round}-${key}`, { kind: "direction", system: P.directionSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt }));
     const forced: Draft = namesOnly && old ? { ...draft, ground: old.ground, gradient: old.gradient, palette: old.palette, paletteFamily: old.paletteFamily, fonts: old.fonts, fontStyle: old.fontStyle, tone: old.tone } : draft;
-    drafted.push(finishRoute({ ...forced, name: keptName || r.name, ...(keptSlogan ? { slogan: keptSlogan } : {}) }, key, { support: support(idea), nameCheck: taken.has(normText(r.name)) ? "non_verifie" : nameCheck, ownName: !!keptName }));
+    drafted.push(vary(finishRoute({ ...forced, name: keptName || r.name, ...(keptSlogan ? { slogan: keptSlogan } : {}) }, key, { support: support(idea), nameCheck: taken.has(normText(r.name)) ? "non_verifie" : nameCheck, ownName: !!keptName }), [...kept, ...drafted]));
   }
   const assemble = (fresh: Route[]) => keys.map((k) => fresh.find((x) => x.key === k) ?? kept.find((x) => x.key === k)).filter((x): x is Route => !!x);
   let list = assemble(drafted);
@@ -788,7 +802,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     for (const [n, x] of toFix.entries()) {
       ctx.progress(0.88 + (0.06 * n) / toFix.length, L(`Je reprends la planche ${x.key}`, `Reworking board ${x.key}`));
       const others = current().filter((o) => o.key !== x.key);
-      const draft = await ctx.step(`brand:fix:${round}:${x.key}`, () => ai.ask(`fix-${round}-${x.key}`, { kind: "fix", system: P.fixSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt: `${brief}\n\n# Ta route\n${routeText(x)}\n\n# Ce qui ne change pas\nLe nom « ${x.name} » (déjà jugé et vérifié) et le fond de page « ${x.ground} » (fixé pour la série) restent tels quels.\n\n# Corrections exigées\n${fixesOf(x).map((f) => `- ${f}`).join("\n")}${series ? `\n\n# Sur l'ensemble de la série\n${series}` : ""}${others.length ? `\n\n# Les autres routes de la série (ne reprends ni leurs phrases, ni leur bouton, ni leurs images, ni leur police de titres)\n${others.map(seen).join("\n")}` : ""}` }));
+      const draft = await ctx.step(`brand:fix:${round}:${x.key}`, () => ai.ask(`fix-${round}-${x.key}`, { kind: "fix", system: P.fixSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt: `${brief}\n\n# Ta route\n${routeText(x)}\n\n# Ce qui ne change pas\nLe nom « ${x.name} » (déjà jugé et vérifié) et le fond de page « ${x.ground} » (fixé pour la série) restent tels quels.\n\n# Corrections exigées\n${fixesOf(x).map((f) => `- ${f}`).join("\n")}${series ? `\n\n# Sur l'ensemble de la série\n${series}` : ""}${others.length ? `\n\n# Les autres routes de la série (ne reprends ni leurs phrases, ni leur bouton, ni leurs images, ni leur police de titres)\n${others.map(seen).join("\n")}` : ""}${recentBlock ? `\n\n${recentBlock}` : ""}` }));
       // Une reprise qui change le nom ou le fond de la série n'est pas une reprise : la première version reste, et c'est dit.
       if (normText(draft.name) !== normText(x.name) || (draft.ground !== x.ground && !namesOnly)) {
         notes.push(`reprise de ${x.key} écartée : elle changeait ${normText(draft.name) !== normText(x.name) ? "le nom" : "le fond de page"}`);
@@ -814,6 +828,12 @@ export async function runSinaBrandJob(ctx: JobContext) {
     if (!(e instanceof CostCapReached)) throw e;
     notes.push("plafond de dépense atteint avant la fin de la relecture");
     remaining.push(L("Je n'ai pas pu finir ma relecture : le plafond annoncé était atteint. Regarde ces propositions d'un œil critique.", "I could not finish my review: the announced cap was reached."));
+  }
+  // Dernier contrôle de la variété, sans IA, sur la série finale (une reprise a pu revenir à une police ou à un fond
+  // déjà pris) : avant toute image payante, puisque le logo et la planche montrent la police et les couleurs.
+  if (!namesOnly) {
+    const v = varierIdentites(list, recent, { modifiables: todo, j });
+    list = v.list; notes.push(...v.changes);
   }
   // Premier temps des images : le logo et la grande scène de chaque planche neuve, créés par OpenAI et relus. Une
   // image non gardée n'est pas montrée, et c'est dit. Le reste (objet, signes, publications) est créé pour la seule

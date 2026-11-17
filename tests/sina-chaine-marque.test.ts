@@ -1427,4 +1427,39 @@ describe("SINA — chaîne de création de la marque", async () => {
     }
     expect((out as any).notes.join("\n")).not.toMatch(/dessin/);
   });
+
+  // ---------------------------------------------------------------- une identité différente de chaque marque récente
+
+  it("variété entre les marques : SINA reçoit les polices et les fonds des marques récentes ; une police reprise est remplacée sans IA, avant les images", async () => {
+    const t = await thread();
+    // La marque la plus récente du Studio (un autre client) a les titres de l'identité B (Archivo Black) et un fond
+    // presque pareil au sien (#FFFCF7 contre #FFFDF5).
+    const other = await account();
+    const far = Date.now() + 50_000_000;
+    run("INSERT INTO projects(id,user_id,name,brand_json,created_at,updated_at) VALUES(?,?,?,?,?,?)", `variete-${far}`, other.id, "Autre client", JSON.stringify({ name: "Autre client", fonts: { heading: "archivo_black_n4", body: "dm_sans_n4" }, palette: { light: "#FFFCF7", dark: "#111111", primary: "#FF2E63", secondary: "#EEEEEE", accent: "#12A36D" } }), far, far);
+    try {
+      const { out, log } = await chain(t, {}, { fix: () => FIXED_LINE }, undefined);
+      const { marquesRecentes, ligneeDe, deltaE2000, FOND_ECART_MIN } = await import("@/lib/syna-agent/variete-marques");
+      const recent = marquesRecentes(t.pid);
+      expect(recent[0]).toEqual({ heading: "archivo_black_n4", light: "#FFFCF7" });
+      // La consigne de chaque planche nomme les polices et les fonds pris, sans le nom de l'autre marque.
+      expect(log.prompts["direction-1-B"]).toMatch(/Polices de titres déjà prises[^\n]*Archivo Black \(archivo_black\)/);
+      expect(log.prompts["direction-1-B"]).toMatch(/Fonds clairs déjà pris \(light\) : #FFFCF7/);
+      expect(log.prompts["direction-1-B"]).not.toMatch(/Autre client/);
+      expect(log.prompts["fix-1-B"]).toMatch(/Polices de titres déjà prises/);
+      const list = J.journeyOf(t.cid).identities!.list;
+      const taken = new Set(recent.flatMap((m) => (m.heading ? [ligneeDe(m.heading)] : [])));
+      const b = list.find((x) => x.key === "B")!;
+      expect(ligneeDe(b.fonts.heading)).not.toBe("archivo");
+      expect(deltaE2000(b.palette.light, "#FFFCF7")).toBeGreaterThanOrEqual(FOND_ECART_MIN);
+      expect(b.palette.primary).toBe(route("B").palette.primary); // la couleur vedette ne change jamais
+      for (const x of list) expect(taken.has(ligneeDe(x.fonts.heading))).toBe(false);
+      expect(new Set(list.map((x) => ligneeDe(x.fonts.heading))).size).toBe(list.length);
+      // Le directeur de création a relu la série déjà corrigée.
+      expect(log.prompts["review-1"]).not.toMatch(/"heading":"archivo_black_n4"/);
+      expect((out as any).notes.join("\n")).toMatch(/Identité B : police de titres Archivo Black \(déjà prise par une marque récente\) remplacée/);
+    } finally {
+      run("DELETE FROM projects WHERE id=?", `variete-${far}`);
+    }
+  });
 });
