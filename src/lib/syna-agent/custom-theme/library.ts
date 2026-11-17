@@ -279,6 +279,8 @@ export function withoutMissingPhotos(html: string, pal: { light?: string | null;
     if (end < 0 || !hasExamplePhoto(chunk)) { parts.push(chunk); return; }
     let sec = chunk.slice(0, end + st.tag.length + 3);
     const rest = chunk.slice(end + st.tag.length + 3);
+    // Une section qui n'était que photo (aucun texte posé dessus) : sans la photo, un panneau sombre serait un vide.
+    if (fondPhoto(st.uid) && !lisible(sec.replace(/<(?:small|figcaption)\b[\s\S]*?<\/(?:small|figcaption)>/g, ""))) return void parts.push(rest);
     if (fondPhoto(st.uid)) { parts.push(sec.replace(/^<[^>]*>/, (o) => o.replace(/>$/, ' data-tn-photo-manque="fond">')).replace(EXAMPLE_PHOTO, darkFrame(pal)) + rest); return; }
     // Une photo et sa légende : elles partent ensemble.
     const figures = sec.match(/<figure\b[\s\S]*?<\/figure>/g) ?? [];

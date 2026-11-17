@@ -895,3 +895,6 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 @media (min-width:760px){
   .ctw .tn-ent~.tb-pg .tn-histoire[data-tn-c="deux-colonnes"] .tn-ph,.ctw .tn-ent~.tb-pg .tn-volets[data-tn-c="deux-colonnes"] h2{top:calc(var(--tb-h,0px) + 100px)}
 }
+/* Contact, carte des coordonnées posée en bas : ses dernières lignes gardent de l'air au-dessus du bord (une longue
+   coordonnée touchait le bas de la carte). */
+.ctw .tn-contact:not([data-tn-c="coordonnees-en-grand"]):not([data-tn-c="deux-colonnes"]) .tn-infos{padding-bottom:28px}

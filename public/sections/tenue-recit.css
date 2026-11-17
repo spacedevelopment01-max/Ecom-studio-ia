@@ -1025,3 +1025,5 @@
 /* « Choisir » (cookies) : 44 px à toucher ; les deux champs du suivi de commande : 10 px entre eux */
 .ctw .tn-cookies summary:not(#tn){padding-top:19px}
 .ctw .tn-suivi .tn-champ+.tn-champ:not(#tn){margin-top:12px}
+/* Manifeste : le titre se répartit en lignes égales (un mot seul en bout de ligne, « thé. », faisait une ligne pauvre). */
+.ctw .tn-manifeste h2{text-wrap:balance}

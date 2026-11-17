@@ -178,3 +178,14 @@ describe("aucun vide quand une photo manque", () => {
     expect(textOnPhoto({ id: "tn-fermee", construction: "photo-pleine" } as never)).toBe(true);
   });
 });
+
+describe("aucun vide quand une photo manque (sections faites seulement d'une photo)", () => {
+  it("une bande de photo sans sa photo ne se rend pas (pas de panneau sombre vide)", async () => {
+    process.env.STUDIO_SYNA_AGENT = "1";
+    const Lib = await import("@/lib/syna-agent/custom-theme/library");
+    const html = '<section data-ct="b1" class="tn tn-bande"><div class="tn-ph" style="background-image:url(photos/hero.jpg)"></div></section><section data-ct="b2" class="tn tn-ouverture"><div class="tn-ph" style="background-image:url(photos/hero.jpg)"></div><h1>Un titre</h1></section>';
+    const out = Lib.withoutMissingPhotos(html, null, () => true);
+    expect(out).not.toContain('data-ct="b1"');
+    expect(out).toContain('data-ct="b2" class="tn tn-ouverture" data-tn-photo-manque="fond"');
+  });
+});
