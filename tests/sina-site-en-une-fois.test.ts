@@ -84,7 +84,7 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       expect(X.siteSizeGuess({ business: "products", products: 1 }).sections).toBeGreaterThan(48);
       for (const q of [one1, four, svc]) { expect(q.probableMicro!).toBeGreaterThan(0); expect(q.probableMicro!).toBeLessThanOrEqual(q.maxMicro); expect(q.label).toMatch(/ton site entier/); }
       // Au-delà de douze fiches, les produits suivants gardent la fiche commune : le devis ne grandit plus.
-      expect(X.siteQuote({ business: "products", products: 40 }).maxMicro).toBe(X.siteQuote({ business: "products", products: 12 }).maxMicro);
+      expect(X.siteQuote({ business: "products", products: 40 }).maxMicro).toBe(X.siteQuote({ business: "products", products: 30 }).maxMicro); // (même genre d'accueil : au-delà de 24 produits, le catalogue)
     } finally { delete T.customPhotoDeps.unit; }
   });
 
