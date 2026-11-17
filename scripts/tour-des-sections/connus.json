@@ -1,0 +1,426 @@
+{
+ "lisezmoi": "Défauts bloquants déjà mesurés par le tour des sections, par pièce et par type : le nombre de mesures (construction × état × tenue × largeur). L'essai tests/tour-des-sections.test.ts échoue dès qu'une pièce en compte plus. Une pièce corrigée : relancer « npx tsx scripts/tour-des-sections/tour.ts --piece <id> --ecrire-connus » pour retirer ses lignes. But : un fichier vide.",
+ "bloquants": {
+  "boutique-accueil": {
+   "chevauchement": 36,
+   "contraste": 36,
+   "ombre-coupee": 80,
+   "pave-gras": 8,
+   "texte-sort-de-sa-boite": 20
+  },
+  "boutique-fiche": {
+   "chevauchement": 40,
+   "contraste": 23,
+   "ombre-coupee": 48,
+   "texte-sort-de-sa-boite": 18
+  },
+  "services-accueil": {
+   "chevauchement": 138,
+   "contraste": 87,
+   "debordement-page": 15,
+   "hors-ecran": 68,
+   "ombre-coupee": 16,
+   "pave-gras": 42,
+   "plus-large-que-ecran": 11,
+   "texte-sort-de-sa-boite": 118
+  },
+  "tn-404": {
+   "chevauchement": 6,
+   "texte-sort-de-sa-boite": 15
+  },
+  "tn-acces": {
+   "chevauchement": 30,
+   "texte-sort-de-sa-boite": 21
+  },
+  "tn-achat": {
+   "chevauchement": 40,
+   "contraste": 4,
+   "hors-ecran": 28,
+   "texte-sort-de-sa-boite": 132
+  },
+  "tn-adresse": {
+   "pave-gras": 6
+  },
+  "tn-age": {
+   "hors-ecran": 31,
+   "ombre-coupee": 8,
+   "plus-large-que-ecran": 8
+  },
+  "tn-aides": {
+   "chevauchement": 6,
+   "texte-sort-de-sa-boite": 12
+  },
+  "tn-appel-produit": {
+   "texte-sort-de-sa-boite": 4
+  },
+  "tn-article": {
+   "contraste": 6
+  },
+  "tn-atouts": {
+   "chevauchement": 2,
+   "texte-sort-de-sa-boite": 12
+  },
+  "tn-avant-apres-produit": {
+   "chevauchement": 108,
+   "debordement-page": 4,
+   "hors-ecran": 16,
+   "pave-gras": 80,
+   "texte-sort-de-sa-boite": 144
+  },
+  "tn-avantages": {
+   "pave-gras": 6
+  },
+  "tn-avis-page": {
+   "debordement-page": 6,
+   "hors-ecran": 66
+  },
+  "tn-bande": {
+   "ombre-coupee": 18
+  },
+  "tn-barre-produit": {
+   "texte-sort-de-sa-boite": 6
+  },
+  "tn-bien-caracteristiques": {
+   "pave-gras": 6
+  },
+  "tn-bien-description": {
+   "ombre-coupee": 18
+  },
+  "tn-bien-energie": {
+   "contraste": 72
+  },
+  "tn-bien-galerie": {
+   "texte-sort-de-sa-boite": 2
+  },
+  "tn-bien-quartier": {
+   "texte-sort-de-sa-boite": 4
+  },
+  "tn-bien-visite": {
+   "debordement-page": 1,
+   "hors-ecran": 1,
+   "pastille-deformee": 3,
+   "pave-gras": 6,
+   "texte-sort-de-sa-boite": 5
+  },
+  "tn-biens": {
+   "pave-gras": 12
+  },
+  "tn-carte": {
+   "chevauchement": 7,
+   "debordement-page": 1,
+   "hors-ecran": 4,
+   "pave-gras": 12,
+   "texte-sort-de-sa-boite": 10
+  },
+  "tn-catalogue": {
+   "contraste": 66,
+   "pave-gras": 14,
+   "texte-sort-de-sa-boite": 12
+  },
+  "tn-colis": {
+   "chevauchement": 9,
+   "texte-sort-de-sa-boite": 21
+  },
+  "tn-coloris": {
+   "ombre-coupee": 32
+  },
+  "tn-comment": {
+   "chevauchement": 28,
+   "pave-gras": 28
+  },
+  "tn-comparatif": {
+   "pave-gras": 22
+  },
+  "tn-cookies": {
+   "hors-ecran": 66,
+   "ombre-coupee": 12,
+   "plus-large-que-ecran": 18
+  },
+  "tn-delai-reponse": {
+   "pave-gras": 28
+  },
+  "tn-delais": {
+   "pave-gras": 108
+  },
+  "tn-difference": {
+   "contraste": 60
+  },
+  "tn-discussion": {
+   "hors-ecran": 18,
+   "ombre-coupee": 6,
+   "plus-large-que-ecran": 6
+  },
+  "tn-disponibilites": {
+   "chevauchement": 3
+  },
+  "tn-echelle": {
+   "pave-gras": 10
+  },
+  "tn-effets": {
+   "chevauchement": 20,
+   "pave-gras": 7,
+   "texte-sort-de-sa-boite": 36
+  },
+  "tn-entete": {
+   "chevauchement": 48,
+   "debordement-page": 8,
+   "hors-ecran": 8
+  },
+  "tn-entete-annonce": {
+   "chevauchement": 8
+  },
+  "tn-entete-arrivee": {
+   "texte-sort-de-sa-boite": 6
+  },
+  "tn-entete-liens": {
+   "chevauchement": 72
+  },
+  "tn-entete-services": {
+   "chevauchement": 66,
+   "debordement-page": 15,
+   "hors-ecran": 60,
+   "ombre-coupee": 4,
+   "plus-large-que-ecran": 3,
+   "texte-sort-de-sa-boite": 68
+  },
+  "tn-equation": {
+   "contraste": 36
+  },
+  "tn-equipe": {
+   "pave-gras": 7
+  },
+  "tn-exemples-prix": {
+   "chevauchement": 21,
+   "pave-gras": 7
+  },
+  "tn-fiche-technique": {
+   "debordement-page": 5,
+   "hors-ecran": 5,
+   "pave-gras": 16,
+   "plus-large-que-ecran": 5
+  },
+  "tn-frise": {
+   "contraste": 44,
+   "pave-gras": 12
+  },
+  "tn-garantie": {
+   "chevauchement": 8,
+   "texte-sort-de-sa-boite": 2
+  },
+  "tn-grade": {
+   "chevauchement": 12,
+   "texte-sort-de-sa-boite": 16
+  },
+  "tn-guide-choix": {
+   "contraste": 96,
+   "ombre-coupee": 88,
+   "pave-gras": 6
+  },
+  "tn-horaires": {
+   "debordement-page": 4,
+   "hors-ecran": 4,
+   "plus-large-que-ecran": 4
+  },
+  "tn-infolettre-photo": {
+   "texte-sort-de-sa-boite": 3
+  },
+  "tn-journal": {
+   "ombre-coupee": 28,
+   "pave-gras": 4,
+   "texte-sort-de-sa-boite": 4
+  },
+  "tn-looks": {
+   "pave-gras": 6
+  },
+  "tn-lots": {
+   "texte-sort-de-sa-boite": 9
+  },
+  "tn-manifeste": {
+   "pave-gras": 16
+  },
+  "tn-merci": {
+   "chevauchement": 4
+  },
+  "tn-mosaique": {
+   "chevauchement": 6
+  },
+  "tn-notes": {
+   "pave-gras": 14
+  },
+  "tn-offre-moment": {
+   "chevauchement": 9,
+   "debordement-page": 12,
+   "hors-ecran": 84,
+   "ombre-coupee": 6,
+   "plus-large-que-ecran": 6,
+   "texte-sort-de-sa-boite": 12
+  },
+  "tn-offre-visite": {
+   "debordement-page": 14,
+   "hors-ecran": 54,
+   "ombre-coupee": 8,
+   "plus-large-que-ecran": 26,
+   "texte-sort-de-sa-boite": 22
+  },
+  "tn-ouverture": {
+   "chevauchement": 37,
+   "contraste": 1,
+   "debordement-page": 3,
+   "ombre-coupee": 2,
+   "plus-large-que-ecran": 3
+  },
+  "tn-ouverture-arrivee": {
+   "contraste": 48
+  },
+  "tn-ouverture-metier": {
+   "chevauchement": 10,
+   "debordement-page": 5,
+   "hors-ecran": 5,
+   "ombre-coupee": 2,
+   "plus-large-que-ecran": 5,
+   "texte-sort-de-sa-boite": 5
+  },
+  "tn-ouverture-nom": {
+   "chevauchement": 1
+  },
+  "tn-ouverture-vente": {
+   "chevauchement": 12,
+   "contraste": 12,
+   "hors-ecran": 49,
+   "ombre-coupee": 20,
+   "plus-large-que-ecran": 5
+  },
+  "tn-packs": {
+   "chevauchement": 42,
+   "debordement-page": 9,
+   "hors-ecran": 42,
+   "pave-gras": 14,
+   "texte-sort-de-sa-boite": 3
+  },
+  "tn-panier": {
+   "chevauchement": 6,
+   "pave-gras": 4,
+   "texte-sort-de-sa-boite": 3
+  },
+  "tn-panier-cote": {
+   "chevauchement": 18,
+   "contraste": 3,
+   "pave-gras": 6,
+   "texte-sort-de-sa-boite": 21
+  },
+  "tn-pays": {
+   "hors-ecran": 151,
+   "ombre-coupee": 24,
+   "plus-large-que-ecran": 18
+  },
+  "tn-pied-arrivee": {
+   "contraste": 24
+  },
+  "tn-pied-complet": {
+   "chevauchement": 10
+  },
+  "tn-pied-services": {
+   "ombre-coupee": 6
+  },
+  "tn-places": {
+   "contraste": 2,
+   "ombre-coupee": 8
+  },
+  "tn-planning": {
+   "pave-gras": 12
+  },
+  "tn-presse": {
+   "pave-gras": 14
+  },
+  "tn-prestations": {
+   "pave-gras": 5
+  },
+  "tn-privatisation": {
+   "ombre-coupee": 6
+  },
+  "tn-prix-explique": {
+   "chevauchement": 3,
+   "debordement-page": 12,
+   "hors-ecran": 12,
+   "plus-large-que-ecran": 12,
+   "texte-sort-de-sa-boite": 9
+  },
+  "tn-probleme-reponse": {
+   "chevauchement": 42,
+   "contraste": 12,
+   "texte-sort-de-sa-boite": 33
+  },
+  "tn-produits": {
+   "chevauchement": 8,
+   "debordement-page": 1,
+   "hors-ecran": 1,
+   "pave-gras": 14,
+   "texte-sort-de-sa-boite": 5
+  },
+  "tn-produits-vente": {
+   "contraste": 228,
+   "ombre-coupee": 34,
+   "pave-gras": 38
+  },
+  "tn-raisons": {
+   "contraste": 72
+  },
+  "tn-rayons": {
+   "chevauchement": 3,
+   "pave-gras": 8
+  },
+  "tn-rdv": {
+   "pastille-deformee": 3
+  },
+  "tn-rdv-complet": {
+   "pastille-deformee": 46
+  },
+  "tn-realisations": {
+   "pave-gras": 6
+  },
+  "tn-realisations-types": {
+   "pastille-deformee": 3,
+   "pave-gras": 18
+  },
+  "tn-recherche-biens": {
+   "pave-gras": 8
+  },
+  "tn-reserver-table": {
+   "chevauchement": 35
+  },
+  "tn-resultats": {
+   "debordement-page": 6,
+   "hors-ecran": 30,
+   "pave-gras": 4,
+   "plus-large-que-ecran": 30,
+   "texte-sort-de-sa-boite": 30
+  },
+  "tn-sous-bouton": {
+   "contraste": 56
+  },
+  "tn-tarifs": {
+   "chevauchement": 36,
+   "debordement-page": 3,
+   "hors-ecran": 36,
+   "plus-large-que-ecran": 3,
+   "texte-sort-de-sa-boite": 42
+  },
+  "tn-temoignages": {
+   "contraste": 36,
+   "pave-gras": 30
+  },
+  "tn-urgence": {
+   "pave-gras": 3
+  },
+  "tn-vendus": {
+   "ombre-coupee": 48
+  },
+  "tn-vitrine": {
+   "pave-gras": 26,
+   "texte-sort-de-sa-boite": 8
+  },
+  "tn-zone": {
+   "texte-sort-de-sa-boite": 4
+  }
+ }
+}

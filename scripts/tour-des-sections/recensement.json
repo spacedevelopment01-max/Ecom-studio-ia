@@ -1,0 +1,6137 @@
+{
+  "totaux": {
+    "pieces": 165,
+    "constructions": 386,
+    "parModule": {
+      "socle": {
+        "pieces": 20,
+        "constructions": 62
+      },
+      "produit": {
+        "pieces": 24,
+        "constructions": 52
+      },
+      "services": {
+        "pieces": 22,
+        "constructions": 60
+      },
+      "recit": {
+        "pieces": 29,
+        "constructions": 60
+      },
+      "coque": {
+        "pieces": 6,
+        "constructions": 11
+      },
+      "achat": {
+        "pieces": 20,
+        "constructions": 40
+      },
+      "metiers": {
+        "pieces": 11,
+        "constructions": 26
+      },
+      "pages": {
+        "pieces": 5,
+        "constructions": 10
+      },
+      "vente": {
+        "pieces": 13,
+        "constructions": 28
+      },
+      "partitions": {
+        "pieces": 15,
+        "constructions": 37
+      }
+    }
+  },
+  "pieces": [
+    {
+      "id": "tn-entete",
+      "titre": "En-tête à la tenue de la marque",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "en-tête",
+      "genre": "En-tête · tout le site",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-entete",
+      "constructions": [
+        {
+          "cle": "centre",
+          "libelle": "le nom au centre, le menu à gauche, le panier à droite",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "gauche",
+          "libelle": "le nom à gauche, « Menu » et le panier en mots à droite",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "sangle",
+          "libelle": "une bande sombre comme une sangle, le nom sur une étiquette cousue",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-ouverture",
+      "titre": "Ouverture à la tenue de la marque",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "ouverture",
+      "genre": "Ouverture · accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-ouverture",
+      "constructions": [
+        {
+          "cle": "dans-la-photo",
+          "libelle": "photo pleine, le titre posé dans la partie calme du HAUT de la photo, le texte et le bouton dessous (la photo garde son sujet en bas)",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "titre-puis-cadre",
+          "libelle": "le grand titre d'abord, puis la photo dans le cadre de la marque, le bouton à cheval sur la photo",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "titre-geant",
+          "libelle": "une petite étiquette, un titre très grand, puis la photo sur toute la largeur, le bouton à cheval sur la photo",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "titre-centre",
+          "libelle": "photo pleine sur tout l'écran, le titre fin, la phrase et le bouton centrés au milieu de la photo, sur un voile léger",
+          "feuilles": [
+            "tenue.css",
+            "tenue-coque.css"
+          ]
+        },
+        {
+          "cle": "titre-en-bas",
+          "libelle": "photo pleine sur tout l'écran, le titre, la phrase et le bouton en bas à gauche, sur un voile sombre qui monte du bas ; beaucoup d'air",
+          "feuilles": [
+            "tenue.css",
+            "tenue-coque.css"
+          ]
+        },
+        {
+          "cle": "titre-massif",
+          "libelle": "photo pleine sur tout l'écran, un titre énorme de deux ou trois mots sur toute la largeur en bas, le bouton à droite sur grand écran",
+          "feuilles": [
+            "tenue.css",
+            "tenue-coque.css"
+          ]
+        },
+        {
+          "cle": "bandeau",
+          "libelle": "photo pleine sur tout l'écran, une bande pleine et sombre posée sur le bas de la photo, avec le titre, la phrase et le bouton dedans",
+          "feuilles": [
+            "tenue.css",
+            "tenue-coque.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-bande",
+      "titre": "Bande de photo",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "mise en avant",
+      "genre": "Respiration · toutes les pages",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-bande",
+      "constructions": [
+        {
+          "cle": "pleine-largeur",
+          "libelle": "une bande étroite de photo, d'un bord à l'autre de l'écran",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "encadree",
+          "libelle": "une photo plus haute, dans le cadre de la marque, avec des marges autour",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-de-pres",
+      "titre": "De près",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "contenu",
+      "genre": "Détails · accueil et fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-de-pres",
+      "constructions": [
+        {
+          "cle": "avec-titre",
+          "libelle": "un titre court, trois photos, une ligne sous chacune",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "sans-titre",
+          "libelle": "trois photos seules, en bande",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 3,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-achat",
+      "titre": "Bloc d'achat à la tenue de la marque",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "produit vedette",
+      "genre": "Achat · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-achat",
+      "constructions": [
+        {
+          "cle": "simple",
+          "libelle": "la photo et ses vignettes d'abord, puis le nom, le prix, la phrase et le bouton ; sur grand écran, la photo à gauche et l'achat à droite",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "vente-directe",
+          "libelle": "achat serré : photo compacte, prix en grand, puis dans une carte la livraison et les retours cochés et un gros bouton ; la phrase vient après",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "grandes-photos",
+          "libelle": "très grandes photos d'un bord à l'autre, à faire glisser (en colonne sur grand écran) ; l'achat étroit, discret et centré",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "technique",
+          "libelle": "le nom en tête, la photo bordée avec ses vignettes en colonne sur grand écran ; le prix, la version et les repères rangés dans des cases bordées",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "fond-doux",
+          "libelle": "le produit entier posé sur un grand fond de couleur douce, les vignettes en ronds ; le nom, la phrase, le prix et le bouton centrés",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "portrait",
+          "libelle": "une grande photo en hauteur d'un bord à l'autre, les autres vues en bande à faire glisser ; le nom et le prix sur une même ligne, la version en pastille large",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-achat"
+      ],
+      "photos": 2,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-description",
+      "titre": "Description en volets",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "produit",
+      "genre": "Description · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-volets",
+      "constructions": [
+        {
+          "cle": "sans-titre",
+          "libelle": "des volets l'un sous l'autre, sans titre, le premier ouvert",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "encadre",
+          "libelle": "un encadré bordé : le titre en haut, les volets dedans, séparés par des filets fins",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "numeros",
+          "libelle": "chaque volet porte un grand numéro de couleur ; sur grand écran, le titre à gauche et les volets à droite",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-emotion",
+      "titre": "Grande photo et sa phrase",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "mise en avant",
+      "genre": "Émotion · toutes les pages",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-emotion",
+      "constructions": [
+        {
+          "cle": "phrase-sur-photo",
+          "libelle": "la phrase posée sur le haut de la photo, en clair sur un voile sombre",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "phrase-dessous",
+          "libelle": "la photo seule d'abord, puis la phrase en très grand dessous, sur le fond de la page",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-places",
+      "titre": "En situation",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "contenu",
+      "genre": "Scènes · fiche produit et accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-places",
+      "constructions": [
+        {
+          "cle": "file",
+          "libelle": "une file de photos à faire glisser, le nom de la scène sous chacune",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "alternees",
+          "libelle": "une scène par ligne : la photo d'un côté, son nom en grand de l'autre, en alternance",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 2,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-mesures",
+      "titre": "Mesures en schéma",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "produit",
+      "genre": "Mesures · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-mesures",
+      "constructions": [
+        {
+          "cle": "boite",
+          "libelle": "une boîte ou un paquet",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "fauteuil",
+          "libelle": "un fauteuil ou un meuble",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "sac",
+          "libelle": "un sac, un bagage ou une housse",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "flacon",
+          "libelle": "un flacon ou une bouteille",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-questions",
+      "titre": "Questions en volets",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "aide",
+      "genre": "Questions · toutes les pages",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-volets",
+      "constructions": [
+        {
+          "cle": "filets",
+          "libelle": "le titre, puis les questions l'une sous l'autre, séparées par des filets",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "deux-colonnes",
+          "libelle": "des questions numérotées ; sur grand écran, le titre reste à gauche et les questions sont à droite",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par question, le titre centré au-dessus",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-final",
+      "titre": "Appel final",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "conversion",
+      "genre": "Appel à agir · fin de page",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-final",
+      "constructions": [
+        {
+          "cle": "sombre-centre",
+          "libelle": "une bande sombre, la phrase et le bouton centrés",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "encadre",
+          "libelle": "un encadré clair bordé d'un double filet, la phrase et le bouton centrés dedans",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "gauche-droite",
+          "libelle": "une bande sombre, la phrase en très grand à gauche, le bouton à droite sur grand écran (dessous sur téléphone)",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-404",
+      "titre": "Page introuvable à la tenue de la marque",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "404",
+      "genre": "Page · erreur",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-404",
+      "constructions": [
+        {
+          "cle": "photo-au-centre",
+          "libelle": "tout centré : la photo de la marque en petit dans son cadre, le mot, le champ de recherche, le bouton",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "grande-image",
+          "libelle": "une grande image de la marque sur toute la largeur, puis le mot et le champ de recherche alignés à gauche (image à gauche, texte à droite sur grand écran)",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        },
+        {
+          "cle": "produits",
+          "libelle": "la photo en petite vignette près du mot, le champ de recherche, puis des produits du catalogue pour repartir",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-contact",
+      "titre": "Contact à la tenue de la marque",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "contact",
+      "genre": "Page · contact",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-contact",
+      "constructions": [
+        {
+          "cle": "formulaire-puis-carte",
+          "libelle": "le titre, le formulaire, puis les coordonnées dans une carte de couleur douce en bas",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "coordonnees-en-grand",
+          "libelle": "les coordonnées en grandes lettres entre deux filets, juste sous le titre, le formulaire ensuite",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "deux-colonnes",
+          "libelle": "le formulaire dans une carte de couleur douce ; sur grand écran, le titre et les coordonnées à gauche, la carte à droite",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-atouts",
+      "titre": "Trois atouts vrais",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "confiance",
+      "genre": "Atouts · accueil et fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-atouts",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "trois lignes l'une sous l'autre, séparées par des filets",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "numeros",
+          "libelle": "un grand numéro devant chaque fait ; trois colonnes sur grand écran",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par fait, côte à côte sur grand écran",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "coches",
+          "libelle": "une liste cochée dans une seule carte de couleur douce : une coche ronde et sombre devant chaque fait, le fait en grand",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "ronds",
+          "libelle": "des cartes blanches au trait fin, deux de front : une coche dans un rond de couleur douce en haut de chacune, le fait et sa ligne centrés (côte à côte sur grand écran)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-produits",
+      "titre": "Les produits en cartes",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "produits",
+      "genre": "Produits · accueil et boutique",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-produits",
+      "constructions": [
+        {
+          "cle": "grille",
+          "libelle": "des cartes égales en grille, deux de front sur téléphone, quatre sur grand écran",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "vedette",
+          "libelle": "le premier produit en grande carte, les autres en petit à côté ou dessous",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "liste",
+          "libelle": "une ligne par produit : la photo à gauche, le nom et le prix à droite, un filet entre les lignes",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-produits"
+      ],
+      "photos": 2,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-histoire",
+      "titre": "L'histoire de la marque",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "à propos",
+      "genre": "Page · à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-histoire",
+      "constructions": [
+        {
+          "cle": "titre-photo-texte",
+          "libelle": "le grand titre, la grande photo dans le cadre de la marque, puis le texte",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "lettrine",
+          "libelle": "tout centré en colonne étroite : le titre, une petite photo, puis le texte qui commence par une très grande lettre",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "deux-colonnes",
+          "libelle": "la photo d'abord ; sur grand écran, la photo à gauche sur toute la hauteur, le titre et le texte à droite",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-panier",
+      "titre": "Panier à la tenue de la marque",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "panier",
+      "genre": "Page · panier",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-panier",
+      "constructions": [
+        {
+          "cle": "empile",
+          "libelle": "les produits en lignes, puis le total et le bouton de commande dessous",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "deux-colonnes",
+          "libelle": "le récapitulatif dans une carte de couleur douce, avec la barre de livraison offerte si le client a donné son seuil ; sur grand écran, les lignes à gauche et la carte à droite, qui reste visible",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-panier"
+      ],
+      "photos": 1,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-compte",
+      "titre": "Compte à la tenue de la marque",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "compte",
+      "genre": "Page · compte",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-compte",
+      "constructions": [
+        {
+          "cle": "simple",
+          "libelle": "le titre, une phrase et les deux champs l'un sous l'autre",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "carte",
+          "libelle": "les champs dans une carte de couleur douce ; sur grand écran, le titre à gauche et la carte à droite",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-legal",
+      "titre": "Informations légales en volets",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "légal",
+      "genre": "Page · légal",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-legal",
+      "constructions": [
+        {
+          "cle": "volets",
+          "libelle": "les textes en volets qui s'ouvrent, l'un sous l'autre",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "sommaire",
+          "libelle": "un sommaire en tête de page, puis les textes ouverts à la suite ; sur grand écran, le sommaire reste visible à gauche pendant la lecture",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 5
+    },
+    {
+      "id": "tn-pied",
+      "titre": "Pied de page à la tenue de la marque",
+      "module": "socle",
+      "feuille": "tenue.css",
+      "script": "tenue.js",
+      "role": "pied de page",
+      "genre": "Pied de page · tout le site",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-pied",
+      "constructions": [
+        {
+          "cle": "ligne",
+          "libelle": "les liens en petit, centrés sur une ligne",
+          "feuilles": [
+            "tenue.css"
+          ]
+        },
+        {
+          "cle": "liens-en-grand",
+          "libelle": "les liens en grandes lettres, l'un sous l'autre avec une flèche et un filet (côte à côte sur grand écran)",
+          "feuilles": [
+            "tenue.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-fiche-technique",
+      "titre": "Fiche technique",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Caractéristiques · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-fiche-technique",
+      "constructions": [
+        {
+          "cle": "tableau",
+          "libelle": "un tableau à deux colonnes, le nom du groupe en tête (à gauche sur grand écran)",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "tuiles",
+          "libelle": "des tuiles, le nom en petit et la valeur en grand",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "volets",
+          "libelle": "un volet à déplier par groupe, le premier ouvert",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 5
+    },
+    {
+      "id": "tn-colis",
+      "titre": "Dans le colis",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Contenu · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-colis",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "une liste illustrée, une ligne par pièce",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "grille",
+          "libelle": "des vignettes en grille, le nom dessous",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 3,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-pour-qui",
+      "titre": "Pour qui, pas pour qui",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Franchise · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-pour-qui",
+      "constructions": [
+        {
+          "cle": "listes",
+          "libelle": "deux listes cochées et barrées, côte à côte sur grand écran",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "panneaux",
+          "libelle": "deux panneaux pleins : un sombre pour le oui, un bordé pour le non",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-essayer",
+      "titre": "Essayer avant d'acheter",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "confiance",
+      "genre": "Essai · fiche produit et accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-essayer",
+      "constructions": [
+        {
+          "cle": "photo-puis-liste",
+          "libelle": "le titre, la photo dans le cadre de la marque, les façons d'essayer en lignes, le bouton (la photo à gauche sur grand écran)",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "carte",
+          "libelle": "une carte de couleur douce : la photo en bandeau en haut, les façons d'essayer et le bouton dedans (la photo à droite sur grand écran)",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-echelle",
+      "titre": "À l'échelle",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Taille réelle · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-echelle",
+      "constructions": [
+        {
+          "cle": "regle",
+          "libelle": "la photo bordée d'une règle dessinée, sa légende, puis les dimensions en colonnes",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "carte-a-cheval",
+          "libelle": "la photo en grand d'un bord à l'autre, sans règle ; les dimensions dans une carte posée à cheval sur son bas",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-valeurs",
+      "titre": "Tableau des valeurs",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Valeurs · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-valeurs",
+      "constructions": [
+        {
+          "cle": "etiquette",
+          "libelle": "une étiquette bordée, comme au dos d'un paquet",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "bandes",
+          "libelle": "sans cadre : le titre en grand, puis un tableau à bandes de couleur douce, une ligne sur deux",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 12
+    },
+    {
+      "id": "tn-documents",
+      "titre": "Analyses et documents à consulter",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "confiance",
+      "genre": "Preuves · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-documents",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "une ligne par document, « Lire » à droite",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "feuilles",
+          "libelle": "des feuilles au coin plié, posées côte à côte",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-documents"
+      ],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-preuves",
+      "titre": "D'où viennent nos preuves",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "confiance",
+      "genre": "Sources · fiche produit et pages",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-preuves",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "la liste des sources, ouverte, numérotée",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "tiroir",
+          "libelle": "un tiroir fermé « Voir nos sources », qui s'ouvre au toucher",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-accords",
+      "titre": "Accords : avec, et à éviter",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Conseils · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-accords",
+      "constructions": [
+        {
+          "cle": "carte",
+          "libelle": "une carte de restaurant : les accords en grand, centrés, leur raison dessous",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "etiquettes",
+          "libelle": "des étiquettes en nuage, celles à éviter barrées",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-notes",
+      "titre": "Notes en trois temps",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Parfum et goût · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": "parfums, bougies, vins, bières et spiritueux",
+      "authentique": null,
+      "racine": "tn-notes",
+      "constructions": [
+        {
+          "cle": "pyramide",
+          "libelle": "une pyramide en trois étages, du plus léger au plus profond",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "colonnes",
+          "libelle": "trois colonnes séparées d'un trait (trois lignes sur téléphone)",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-grade",
+      "titre": "La note expliquée",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Note ou grade · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": "cafés, thés, miels et produits notés",
+      "authentique": null,
+      "racine": "tn-grade",
+      "constructions": [
+        {
+          "cle": "sceau",
+          "libelle": "la note dans un sceau penché, puis le titre, les critères en lignes et le volet",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "bandeau",
+          "libelle": "une bande sombre d'un bord à l'autre avec la note en très grand, puis les critères en colonnes",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-effets",
+      "titre": "Calendrier des effets",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Frise · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": "compléments alimentaires et cosmétiques",
+      "authentique": null,
+      "racine": "tn-effets",
+      "constructions": [
+        {
+          "cle": "frise",
+          "libelle": "une frise : une pastille par étape, qui se remplit (debout sur téléphone, couchée sur grand écran)",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte par étape, de plus en plus colorée, l'échéance en très grand",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-cout",
+      "titre": "Coût et durée dans le temps",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Coût à l'usage · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-cout",
+      "constructions": [
+        {
+          "cle": "cases",
+          "libelle": "deux ou trois grands chiffres dans des cases bordées, côte à côte",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "panneau-sombre",
+          "libelle": "un panneau sombre, une ligne par chiffre : le nom à gauche, le chiffre en très grand à droite",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-ration",
+      "titre": "Ration selon le poids",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Barème · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": "aliments pour animaux",
+      "authentique": null,
+      "racine": "tn-ration",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par gabarit : la gamelle qui grandit, le poids, la ration à droite",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte par gabarit, deux de front (quatre sur grand écran), la gamelle au centre, la ration en grand",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 9
+    },
+    {
+      "id": "tn-prix-explique",
+      "titre": "Pourquoi ce prix",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "confiance",
+      "genre": "Transparence · fiche produit et à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-prix-explique",
+      "constructions": [
+        {
+          "cle": "ticket",
+          "libelle": "un ticket de caisse, une ligne par poste, le total en bas",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "couches",
+          "libelle": "le prix en couches empilées, chaque poste à sa hauteur",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 5
+    },
+    {
+      "id": "tn-preparation",
+      "titre": "La préparation en étapes",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "contenu",
+      "genre": "Mode d'emploi · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-preparation",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "les étapes l'une sous l'autre, le numéro en grand à gauche",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "file",
+          "libelle": "une file de cartes à faire glisser, une étape par carte",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-transition",
+      "titre": "Transition sur sept jours",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Schéma · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": "aliments pour animaux",
+      "authentique": null,
+      "racine": "tn-transition",
+      "constructions": [
+        {
+          "cle": "barres",
+          "libelle": "une barre debout par jour, la part du nouvel aliment qui monte",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par jour : le jour à gauche, une barre couchée dont la couleur avance de jour en jour",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-semis",
+      "titre": "Calendrier de semis et de récolte",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Schéma · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": "graines et plantes",
+      "authentique": null,
+      "racine": "tn-semis",
+      "constructions": [
+        {
+          "cle": "bandes",
+          "libelle": "une ligne par période, une bande de couleur sur les douze mois",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "panneau-sombre",
+          "libelle": "le calendrier dans un panneau sombre : les douze mois en cases, les bandes en clair et en couleur",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-composition",
+      "titre": "Ce qu'il y a dedans",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produit",
+      "genre": "Composition · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-composition",
+      "constructions": [
+        {
+          "cle": "alternee",
+          "libelle": "un ingrédient par ligne, la photo tantôt à gauche, tantôt à droite",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "les ingrédients côte à côte, en petites photos, le nom dessous",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 2,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-comparatif",
+      "titre": "Comparer les produits de la gamme",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "comparatif",
+      "genre": "Comparatif · fiche produit et boutique",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-comparatif",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "le critère au-dessus, une valeur par produit, des filets entre les critères",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "colonne-vedette",
+          "libelle": "des colonnes : le premier produit dans une colonne de couleur sombre, les autres à côté sur fond doux",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-comparatif"
+      ],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-avis",
+      "titre": "Les avis des clients",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "confiance",
+      "genre": "Avis · fiche produit et accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-avis",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "les avis l'un sous l'autre, la réponse de la marque en retrait",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "en-grand",
+          "libelle": "le premier avis en très grand, les autres en petit dessous",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-avis"
+      ],
+      "photos": 0,
+      "aCompleter": 7
+    },
+    {
+      "id": "tn-catalogue",
+      "titre": "La boutique : produits, filtres et tri",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "produits",
+      "genre": "Catalogue · page boutique",
+      "groupe": "categorie",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-catalogue",
+      "constructions": [
+        {
+          "cle": "grille",
+          "libelle": "les produits en grille de cartes, deux de front sur téléphone",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "liste",
+          "libelle": "un produit par ligne, la photo à gauche ; les filtres en colonne sur grand écran",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "ajout-rapide",
+          "libelle": "des cartes encadrées avec un bouton sous chaque produit : « Ajouter au panier » s'il n'a qu'une version, « Choisir des options » sinon ; la note en étoiles quand une vraie source d'avis existe",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-produits"
+      ],
+      "photos": 4,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-rayons",
+      "titre": "Les familles de produits",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "rayons",
+      "genre": "Rayons · accueil et boutique",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-rayons",
+      "constructions": [
+        {
+          "cle": "grille",
+          "libelle": "une grille de photos encadrées, le nom dessous",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "bandes",
+          "libelle": "des bandes larges : le nom en grand à gauche, la photo à droite",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "mots",
+          "libelle": "une liste de mots en très grand, une petite photo devant chacun",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-rayons"
+      ],
+      "photos": 4,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-garanties",
+      "titre": "Livraison, retours, paiement",
+      "module": "produit",
+      "feuille": "tenue-produit.css",
+      "script": "tenue-produit.js",
+      "role": "confiance",
+      "genre": "Réassurance · fiche produit, panier et accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-garanties",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par sujet, le dessin à gauche (trois colonnes sur grand écran)",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande de couleur douce, les trois sujets centrés",
+          "feuilles": [
+            "tenue-produit.css"
+          ]
+        },
+        {
+          "cle": "cases",
+          "libelle": "un seul cadre au trait partagé en cases par des filets, deux de front : le dessin dans un rond de couleur douce, le nom, la phrase (une rangée sur grand écran)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-garanties",
+        "data-tn-cle"
+      ],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-ouverture-metier",
+      "titre": "Ouverture d'un métier de services",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "ouverture",
+      "genre": "Ouverture · accueil",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-ouverture-metier",
+      "constructions": [
+        {
+          "cle": "lieu",
+          "libelle": "la photo du lieu en grand, puis le titre, l'adresse et les horaires, le bouton pour réserver (salon, restaurant, cabinet)",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "appel",
+          "libelle": "le téléphone en très grand sous le titre, la zone et les horaires, le bouton de devis, la photo en bande (artisan, dépannage)",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "promesse",
+          "libelle": "un grand titre, puis une photo en hauteur dans le cadre de la marque, le bouton à cheval sur la photo",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "photo-pleine",
+          "libelle": "photo pleine sur tout l'écran, le métier et la ville, le grand titre, le téléphone et le bouton posés en bas à gauche sur un voile sombre",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "photo-centre",
+          "libelle": "photo pleine sur tout l'écran sous un voile, tout centré au milieu : le métier et la ville, le titre, le bouton, le téléphone en grand",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "photo-bandeau",
+          "libelle": "photo pleine avec le titre posé dessus en bas, puis un bandeau sombre collé dessous : le téléphone en grand, la zone, les horaires, le bouton",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-tel",
+        "data-tn-adresse",
+        "data-tn-horaires",
+        "data-tn-zone"
+      ],
+      "photos": 1,
+      "aCompleter": 5
+    },
+    {
+      "id": "tn-prestations",
+      "titre": "Les prestations et leurs prix",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Prestations · accueil et page prestations",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-prestations",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "une liste à traits fins, le prix aligné à droite, la photo du lieu dans le cadre de la marque",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "la photo du lieu en bande, puis une carte par prestation, sur deux colonnes",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "carte",
+          "libelle": "une carte centrée par rubriques, comme la carte d'un restaurant, la photo en médaillon",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-prestations"
+      ],
+      "photos": 1,
+      "aCompleter": 8
+    },
+    {
+      "id": "tn-tarifs",
+      "titre": "Grille de tarifs en tableau",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Tarifs · page tarifs ou prestations",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-tarifs",
+      "constructions": [
+        {
+          "cle": "tableau",
+          "libelle": "un tableau : une ligne par prestation, une colonne par critère",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par prestation, ses prix dedans (côte à côte sur grand écran jusqu'à quatre prestations)",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 12
+    },
+    {
+      "id": "tn-exemples-prix",
+      "titre": "Exemples de prix : trois cas réels",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Prix · accueil et page d'une prestation",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-exemples-prix",
+      "constructions": [
+        {
+          "cle": "colonnes",
+          "libelle": "trois cas séparés par des traits, le prix en très grand sous chacun",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "ticket",
+          "libelle": "une note de chantier sur fond doux : une ligne par cas, le prix à droite, des pointillés entre les lignes",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-aides",
+      "titre": "Aides et prix après aide",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Prix · accueil et page tarifs",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-aides",
+      "constructions": [
+        {
+          "cle": "fiches",
+          "libelle": "une fiche de couleur douce par prestation : le prix plein, l'aide déduite, ce qu'il reste à payer en bas",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "tableau",
+          "libelle": "un tableau à traits fins : une ligne par prestation, trois colonnes (prix plein, aide, reste à payer)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "reste",
+          "libelle": "ce qu'il reste à payer en très grand pour chaque prestation, le prix plein et l'aide en petit dessous",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 8
+    },
+    {
+      "id": "tn-rdv",
+      "titre": "Demande de rendez-vous",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Rendez-vous · accueil et page rendez-vous",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-rdv",
+      "constructions": [
+        {
+          "cle": "colonne",
+          "libelle": "une seule colonne, sous une bande de photo du lieu",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "photo",
+          "libelle": "le formulaire à côté d'une grande photo du lieu dans le cadre de la marque",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "encadre",
+          "libelle": "le formulaire dans un encadré de couleur douce, la photo du lieu en médaillon à cheval sur son bord",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-prestations-choix"
+      ],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-devis",
+      "titre": "Demande de devis",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Devis · accueil et page devis",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-devis",
+      "constructions": [
+        {
+          "cle": "courte",
+          "libelle": "quatre champs seulement, à côté du titre sur ordinateur",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "etapes",
+          "libelle": "trois étapes numérotées (le projet, le lieu, les coordonnées), avec la description et le type de logement",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande sombre : le titre en clair dessus, le formulaire court dans une carte claire (à droite sur ordinateur)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-prestations-choix"
+      ],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-disponibilites",
+      "titre": "Vérifier une date ou un séjour",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Réservation · accueil et page d'une chambre",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-disponibilites",
+      "constructions": [
+        {
+          "cle": "barre",
+          "libelle": "la photo du lieu en bande, la boîte des dates posée à cheval dessus, comme sur le site d'un hôtel",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "fiche",
+          "libelle": "le formulaire à côté de la photo de la chambre, dans le cadre de la marque",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-agenda",
+      "titre": "Prochaines dates",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Agenda · accueil et page ateliers",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-agenda",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "une liste à traits, la date en tête de chaque ligne",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "prochain",
+          "libelle": "la prochaine date en grand dans un bloc de couleur douce, les suivantes en liste dessous",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "billets",
+          "libelle": "un billet par date : la date sur le talon de couleur douce, le titre, les places restantes et l'inscription sur le volet",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-agenda"
+      ],
+      "photos": 0,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-planning",
+      "titre": "Planning de la semaine",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Planning · accueil et page planning",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-planning",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "un jour par ligne, le nom du jour à gauche, ses cours à droite",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "colonnes",
+          "libelle": "un bloc par jour sur fond doux, côte à côte : deux par ligne sur téléphone, toute la semaine en colonnes sur ordinateur",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-planning"
+      ],
+      "photos": 0,
+      "aCompleter": 8
+    },
+    {
+      "id": "tn-retrait",
+      "titre": "Commande à retirer",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "restaurant",
+      "genre": "Commande · accueil et page à emporter",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "restaurants, traiteurs, boulangeries",
+      "authentique": null,
+      "racine": "tn-retrait",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "une liste de plats, la vignette à gauche, la quantité à droite, puis le jour du retrait",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "vignettes",
+          "libelle": "les plats en grandes vignettes, la photo au-dessus du nom ; le retrait dans un encadré de couleur douce",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-retrait"
+      ],
+      "photos": 2,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-vitrine",
+      "titre": "La vitrine du jour",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "restaurant",
+      "genre": "Du jour · accueil",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "boulangeries et pâtisseries",
+      "authentique": null,
+      "racine": "tn-vitrine",
+      "constructions": [
+        {
+          "cle": "ardoise",
+          "libelle": "une ardoise sombre, les fournées écrites dessus",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "etiquettes",
+          "libelle": "sur fond clair, une étiquette par produit, comme celles posées devant les pains, l'heure de fournée en bas",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "lignes",
+          "libelle": "sur fond clair, une liste à points de conduite : le produit à gauche, ses heures de fournée à droite",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-vitrine",
+        "data-tn-tel"
+      ],
+      "photos": 0,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-origines",
+      "titre": "Origine des viandes",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "restaurant",
+      "genre": "Information · page carte",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "restaurants",
+      "authentique": null,
+      "racine": "tn-origines",
+      "constructions": [
+        {
+          "cle": "tableau",
+          "libelle": "un tableau : la viande à gauche, son pays à droite",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "fiches",
+          "libelle": "une petite fiche de couleur douce par viande, son pays en dessous (quatre par ligne sur ordinateur)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "mention",
+          "libelle": "une mention courte sous la carte : les viandes et leur pays à la suite, sans grand titre",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-origines"
+      ],
+      "photos": 0,
+      "aCompleter": 5
+    },
+    {
+      "id": "tn-realisations",
+      "titre": "Les réalisations en photos",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Preuves · accueil et page réalisations",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-realisations",
+      "constructions": [
+        {
+          "cle": "grille",
+          "libelle": "une grille de photos dans le cadre de la marque, la légende sous chacune",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "bandes",
+          "libelle": "de grandes bandes de photo l'une sous l'autre, la légende à côté ou dessous",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "detail",
+          "libelle": "une réalisation en grand avec son récit, les autres en petites vignettes dessous",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-realisations"
+      ],
+      "photos": 4,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-avant-apres",
+      "titre": "Avant et après, côte à côte",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Preuves · accueil et page d'une réalisation",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-avant-apres",
+      "constructions": [
+        {
+          "cle": "cote-a-cote",
+          "libelle": "les deux photos côte à côte, de même taille, chacune avec son étiquette",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "incruste",
+          "libelle": "la photo « après » en grand, la photo « avant » en vignette posée sur son coin",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "decale",
+          "libelle": "les deux photos en grand, décalées et à cheval l'une sur l'autre : « avant » à gauche, « après » plus grande à droite, la légende dessous",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 2,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-equipe",
+      "titre": "L'équipe",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Équipe · accueil et page à propos",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": "ton équipe",
+      "racine": "tn-equipe",
+      "constructions": [
+        {
+          "cle": "noms",
+          "libelle": "sans photo : les prénoms en très grand, le métier de chacun dessous",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "photos",
+          "libelle": "le portrait de chacun dans le cadre de la marque, son prénom et son métier",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-equipe"
+      ],
+      "photos": 3,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-zone",
+      "titre": "La zone d'intervention",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Zone · accueil et page zone",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-zone",
+      "constructions": [
+        {
+          "cle": "vue",
+          "libelle": "une vue de la ville ou de la région d'abord, dans le cadre de la marque, puis les villes en liste sur deux colonnes",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "villes",
+          "libelle": "les villes en très grand, l'une sous l'autre, la vue de la région ensuite",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "etiquettes",
+          "libelle": "la vue de la région en bande pleine largeur, les villes en étiquettes à la suite, le téléphone dessous",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-zone",
+        "data-tn-tel"
+      ],
+      "photos": 1,
+      "aCompleter": 5
+    },
+    {
+      "id": "tn-acces",
+      "titre": "Horaires et accès",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Infos pratiques · accueil et page contact",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-acces",
+      "constructions": [
+        {
+          "cle": "lieu",
+          "libelle": "la photo du lieu d'abord, dans le cadre de la marque, puis l'adresse, le bouton d'itinéraire, les horaires",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "horaires",
+          "libelle": "les horaires en grand dans un bloc de couleur douce, puis l'adresse et la photo du lieu",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-adresse",
+        "data-tn-itineraire",
+        "data-tn-tel",
+        "data-tn-horaires"
+      ],
+      "photos": 1,
+      "aCompleter": 12
+    },
+    {
+      "id": "tn-deroule",
+      "titre": "Comment ça se passe",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Déroulé · accueil et page d'une prestation",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-deroule",
+      "constructions": [
+        {
+          "cle": "chiffres",
+          "libelle": "les étapes l'une sous l'autre, un grand chiffre devant chacune",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "frise",
+          "libelle": "une frise : des pastilles numérotées reliées par un trait (en ligne sur ordinateur)",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par étape, son grand chiffre dans le coin (quatre côte à côte sur ordinateur)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-urgence",
+      "titre": "Bandeau d'appel",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "services",
+      "genre": "Appel · accueil et toutes les pages",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-urgence",
+      "constructions": [
+        {
+          "cle": "bandeau",
+          "libelle": "un bandeau sombre : la question, puis le numéro en très grand",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "ligne",
+          "libelle": "une bande claire entre deux traits : la question à gauche, le numéro en grand à droite (sur une ligne sur ordinateur)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "carton",
+          "libelle": "un carton de couleur douce posé dans la page, le numéro au centre dans un cartouche sombre",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-tel",
+        "data-tn-horaires"
+      ],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-labels",
+      "titre": "Qualifications et assurances",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "confiance",
+      "genre": "Confiance · accueil et page à propos",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-labels",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par preuve, son nom à gauche, ses références à droite",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "pieces",
+          "libelle": "une pièce encadrée par preuve, comme des attestations posées côte à côte",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-vendus",
+      "titre": "Vendus récemment",
+      "module": "services",
+      "feuille": "tenue-services.css",
+      "script": null,
+      "role": "immobilier",
+      "genre": "Preuves · accueil de l'agence",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": "tes biens vendus",
+      "racine": "tn-vendus",
+      "constructions": [
+        {
+          "cle": "cartes",
+          "libelle": "le dernier bien vendu en grand, les autres en cartes dessous, l'étiquette « Vendu » sur chaque photo",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        },
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par bien : sa vignette à gauche, le bien, la ville et le délai à droite",
+          "feuilles": [
+            "tenue-services.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-vendus"
+      ],
+      "photos": 3,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-texte-photo",
+      "titre": "Texte et photo",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "contenu",
+      "genre": "Récit · toutes les pages",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-texte-photo",
+      "constructions": [
+        {
+          "cle": "photo-gauche",
+          "libelle": "la photo à gauche (en premier sur téléphone), le texte à droite",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "photo-droite",
+          "libelle": "le texte à gauche (en premier sur téléphone), la photo à droite",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "texte-remonte",
+          "libelle": "une grande photo pleine, et le bloc de texte qui remonte sur le bas de la photo",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "carte-a-cheval",
+          "libelle": "la photo dans son cadre, et une carte sombre posée à cheval sur son bord",
+          "feuilles": [
+            "tenue.css",
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-fabrication",
+      "titre": "Comment c'est fait",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "marque",
+      "genre": "Fabrication · accueil et à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-fabrication",
+      "constructions": [
+        {
+          "cle": "file",
+          "libelle": "une file d'étapes à faire glisser (côte à côte sur ordinateur)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "lignes",
+          "libelle": "une étape par ligne, la photo d'un côté puis de l'autre",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 4,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-engagements",
+      "titre": "Les engagements de la marque",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "confiance",
+      "genre": "Engagements · accueil et à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-engagements",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "une grande liste de phrases, l'une sous l'autre",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "deux-colonnes",
+          "libelle": "le titre d'un côté, les engagements en deux colonnes de l'autre",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-chiffres",
+      "titre": "Les chiffres vrais",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "marque",
+      "genre": "Chiffres · accueil et à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-chiffres",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "un chiffre par ligne, très grand, ce qu'il compte à côté",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande de couleur, les chiffres centrés (en colonnes sur ordinateur)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-chiffres"
+      ],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-presse",
+      "titre": "Ce que la presse a écrit",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "confiance",
+      "genre": "Presse · accueil et à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-presse",
+      "constructions": [
+        {
+          "cle": "citations",
+          "libelle": "les phrases citées, le nom du journal sous chacune",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "noms",
+          "libelle": "les noms des journaux seuls, en grand, sur une ligne",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-presse"
+      ],
+      "photos": 0,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-citation",
+      "titre": "Une phrase en très grand",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "marque",
+      "genre": "Respiration · toutes les pages",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-citation",
+      "constructions": [
+        {
+          "cle": "couleur",
+          "libelle": "sur une bande à la couleur de la marque",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "traits",
+          "libelle": "centrée entre deux traits fins, sur le fond de la page",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-citation-photo",
+      "titre": "Une phrase sur une photo",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "marque",
+      "genre": "Émotion · toutes les pages",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-citation-photo",
+      "constructions": [
+        {
+          "cle": "voile",
+          "libelle": "la photo pleine, un voile sombre en haut, la phrase posée sur sa partie calme",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "moitie",
+          "libelle": "une moitié à la couleur de la marque avec la phrase, l'autre moitié en photo",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-mosaique",
+      "titre": "Photos en mosaïque",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "contenu",
+      "genre": "Galerie · accueil et à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-mosaique",
+      "constructions": [
+        {
+          "cle": "grille",
+          "libelle": "une grille régulière, deux photos par rang (quatre sur ordinateur)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "collage",
+          "libelle": "un collage décalé : des photos inégales qui se chevauchent, les mots dessous",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "une-grande",
+          "libelle": "une grande photo, puis trois petites en rang",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 4,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-manifeste",
+      "titre": "Manifeste de la marque",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "marque",
+      "genre": "Manifeste · accueil et à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-manifeste",
+      "constructions": [
+        {
+          "cle": "sombre",
+          "libelle": "sur fond sombre : le titre, puis le texte (le titre à gauche, le texte à droite sur grand écran)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "clair-centre",
+          "libelle": "sur le fond de la page, tout centré en colonne étroite entre deux filets, le premier paragraphe en très grand",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-frise",
+      "titre": "L'histoire en dates",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "marque",
+      "genre": "Histoire · à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-frise",
+      "constructions": [
+        {
+          "cle": "ligne",
+          "libelle": "une ligne verticale, les dates l'une sous l'autre",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "colonnes",
+          "libelle": "les dates côte à côte sous un trait (à faire glisser sur téléphone)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-dates"
+      ],
+      "photos": 0,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-comment",
+      "titre": "Comment ça marche",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "contenu",
+      "genre": "Mode d'emploi · accueil et fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-comment",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "une étape par ligne, le grand numéro à gauche (en colonnes sur ordinateur)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "escalier",
+          "libelle": "les étapes en escalier, chacune décalée de la précédente",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "fleches",
+          "libelle": "dans une carte de couleur douce, les trois temps côte à côte même sur téléphone, leur numéro en couleur, reliés par des flèches",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-fondateur",
+      "titre": "La personne derrière la marque",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "à propos",
+      "genre": "Portrait · accueil et à propos",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": "ta photo ou celle de ton atelier",
+      "racine": "tn-fondateur",
+      "constructions": [
+        {
+          "cle": "portrait",
+          "libelle": "la photo de la personne ou de l'atelier, la lettre à côté",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "lettre",
+          "libelle": "sans photo : la lettre seule, sur une feuille, signée",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-journal",
+      "titre": "Le journal, liste des articles",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "journal",
+      "genre": "Page · journal",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-journal",
+      "constructions": [
+        {
+          "cle": "titres",
+          "libelle": "une liste de grands titres, une petite photo au bout de chaque ligne",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "des cartes : la photo en grand, le titre dessous (trois de front sur ordinateur)",
+          "feuilles": [
+            "tenue-recit.css",
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-articles"
+      ],
+      "photos": 3,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-article",
+      "titre": "La page d'un article",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "journal",
+      "genre": "Page · article du journal",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-article",
+      "constructions": [
+        {
+          "cle": "colonne",
+          "libelle": "tout dans une colonne étroite centrée : le titre, la photo dans son cadre, puis le texte",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "grande-image",
+          "libelle": "une grande image sur toute la largeur d'abord, le titre en grand dessous, puis le texte ; sur grand écran, la phrase mise en avant sort dans la marge",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-article"
+      ],
+      "photos": 1,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-suivi",
+      "titre": "Suivre sa commande et trouver de l'aide",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "aide",
+      "genre": "Page · aide et suivi",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-suivi",
+      "constructions": [
+        {
+          "cle": "deux-parties",
+          "libelle": "le champ de suivi, puis les trois chemins en lignes (le champ à gauche, les chemins à droite sur grand écran)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "le champ de suivi dans une carte de couleur douce centrée, puis les trois chemins en cartes au trait (trois de front sur grand écran)",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-resultats",
+      "titre": "Résultats d'une recherche",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "contenu",
+      "genre": "Page · recherche",
+      "groupe": "pages",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-resultats",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par résultat : son nom, son genre dessous, son prix à droite",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par résultat, deux de front (trois sur grand écran) : le genre en haut, le nom, le prix en bas",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-resultats"
+      ],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-infolettre",
+      "titre": "Inscription à la lettre",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "inscription",
+      "genre": "Inscription · fin de page",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-infolettre",
+      "constructions": [
+        {
+          "cle": "bande",
+          "libelle": "une bande de couleur douce sur toute la largeur",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "carte",
+          "libelle": "une carte au trait, centrée sur le fond de la page",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-infolettre-photo",
+      "titre": "Inscription à la lettre, avec une photo",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "inscription",
+      "genre": "Inscription · fin de page",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-infolettre-photo",
+      "constructions": [
+        {
+          "cle": "a-cote",
+          "libelle": "la photo dans son cadre, l'inscription à côté (dessous sur téléphone)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "dessus",
+          "libelle": "la photo pleine, l'inscription sur une carte posée sur son bas",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-annonce",
+      "titre": "Bandeau d'annonce",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "contenu",
+      "genre": "Bandeau · tout le site",
+      "groupe": "bandeau",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-annonce",
+      "constructions": [
+        {
+          "cle": "centre",
+          "libelle": "une phrase centrée sur une bande à la couleur de la marque",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "defile",
+          "libelle": "sur une bande sombre, la phrase défile lentement d'un bord à l'autre (immobile si le visiteur a demandé moins de mouvement)",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        },
+        {
+          "cle": "filets",
+          "libelle": "sur le fond de la page, entre deux filets : un point de couleur, puis la phrase alignée à gauche",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-cookies",
+      "titre": "Bandeau de cookies",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "légal",
+      "genre": "Fenêtre · tout le site",
+      "groupe": "partout",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-cookies",
+      "constructions": [
+        {
+          "cle": "bandeau",
+          "libelle": "un bandeau sur toute la largeur, en bas de l'écran",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "carte",
+          "libelle": "une petite carte au trait posée dans le coin en bas à gauche, les deux boutons l'un sous l'autre",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-cookies"
+      ],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-pays",
+      "titre": "Choix du pays, de la langue et de la devise",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "contenu",
+      "genre": "Fenêtre · tout le site",
+      "groupe": "partout",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-pays",
+      "constructions": [
+        {
+          "cle": "fenetre",
+          "libelle": "une petite fenêtre au trait, centrée, une ligne par choix",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande de couleur douce sur toute la largeur : les trois choix côte à côte sur grand écran, le bouton au bout",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-pays"
+      ],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-age",
+      "titre": "Demande d'âge et message sanitaire",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "légal",
+      "genre": "Fenêtre · tout le site",
+      "groupe": "partout",
+      "pour": null,
+      "seulement": "vins, bières et spiritueux",
+      "authentique": null,
+      "racine": "tn-age",
+      "constructions": [
+        {
+          "cle": "fenetre",
+          "libelle": "une fenêtre de couleur douce centrée, le message sanitaire encadré dessous",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "plein-ecran",
+          "libelle": "tout l'écran en sombre : la question en très grand au centre, les deux réponses côte à côte, le message sanitaire en bas",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-discussion",
+      "titre": "Discuter avec la marque",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "contact",
+      "genre": "Fenêtre · tout le site",
+      "groupe": "partout",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-discussion",
+      "constructions": [
+        {
+          "cle": "bulle",
+          "libelle": "une bulle au trait en bas à droite, avec sa pointe",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "bandeau",
+          "libelle": "une bande sombre sur toute la largeur : la question et qui répond à gauche, le bouton à droite",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-discussion"
+      ],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-ouverture-nom",
+      "titre": "Ouverture au nom de la marque",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "ouverture",
+      "genre": "Ouverture · accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-ouverture-nom",
+      "constructions": [
+        {
+          "cle": "",
+          "libelle": "(seule façon de bâtir)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-ouverture-collage",
+      "titre": "Ouverture en collage",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "ouverture",
+      "genre": "Ouverture · accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-ouverture-collage",
+      "constructions": [
+        {
+          "cle": "",
+          "libelle": "(seule façon de bâtir)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 3,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-ouverture-carte",
+      "titre": "Ouverture à la carte posée",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "ouverture",
+      "genre": "Ouverture · accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-ouverture-carte",
+      "constructions": [
+        {
+          "cle": "",
+          "libelle": "(seule façon de bâtir)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-ouverture-formes",
+      "titre": "Ouverture aux formes rondes",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "ouverture",
+      "genre": "Ouverture · accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-ouverture-formes",
+      "constructions": [
+        {
+          "cle": "",
+          "libelle": "(seule façon de bâtir)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-ouverture-flou",
+      "titre": "Ouverture en lueurs qui bougent",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "ouverture",
+      "genre": "Ouverture · accueil",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-ouverture-flou",
+      "constructions": [
+        {
+          "cle": "",
+          "libelle": "(seule façon de bâtir)",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-pied-complet",
+      "titre": "Pied de page complet",
+      "module": "recit",
+      "feuille": "tenue-recit.css",
+      "script": "tenue-recit.js",
+      "role": "pied de page",
+      "genre": "Pied de page · tout le site",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-pied-complet",
+      "constructions": [
+        {
+          "cle": "colonnes",
+          "libelle": "le nom et l'inscription d'un côté, les liens en colonnes de l'autre",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "grand-nom",
+          "libelle": "les liens en colonnes, puis le nom de la marque en très grand tout en bas",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "centre",
+          "libelle": "tout centré : le nom, l'inscription, les liens sur une ligne",
+          "feuilles": [
+            "tenue-recit.css"
+          ]
+        },
+        {
+          "cle": "centre-minimal",
+          "libelle": "centré et minimal : le nom de la marque, les liens utiles sur une ligne, la mention légale ; ni phrase ni inscription",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-paiements"
+      ],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-entete-liens",
+      "titre": "En-tête à menu visible",
+      "module": "coque",
+      "feuille": "tenue-coque.css",
+      "script": "tenue-coque.js",
+      "role": "en-tête",
+      "genre": "En-tête · tout le site",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-entete-liens",
+      "constructions": [
+        {
+          "cle": "classique",
+          "libelle": "le nom à gauche, le menu en toutes lettres au milieu, la recherche, le compte et le panier à droite ; sur téléphone : le nom à gauche, le bouton du menu à droite",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        },
+        {
+          "cle": "logo-centre",
+          "libelle": "le nom au centre, la recherche à gauche, le compte et le panier à droite, le menu sur une seconde ligne centrée dessous ; sur téléphone : le menu à gauche, le nom au centre, le panier à droite",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        },
+        {
+          "cle": "sur-photo",
+          "libelle": "posé par-dessus la grande photo d'ouverture de l'accueil, sans fond, en lettres claires ; il prend un fond plein dès qu'on défile et sur les pages sans photo d'ouverture",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        },
+        {
+          "cle": "mega-colonnes",
+          "libelle": "grand menu à colonnes avec images : sous le menu, un panneau sur toute la largeur, une colonne par famille avec la photo d'un de ses produits et ses liens ; sur téléphone : des rubriques qui se déplient, chacune avec sa vignette",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        },
+        {
+          "cle": "mega-produits",
+          "libelle": "grand menu à produits mis en avant : les familles à gauche, les vrais produits de la famille choisie à droite, avec photo et prix ; sur téléphone : les familles en onglets en haut du panneau, les produits défilent au doigt",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        },
+        {
+          "cle": "plein-ecran",
+          "libelle": "menu plein écran des marques éditoriales : le nom, le panier en mots et le seul mot « Menu » ; il ouvre un panneau sombre sur tout l'écran, les pages en très grands mots numérotés",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-boutique"
+      ],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-entete-annonce",
+      "titre": "En-tête avec bande d'annonce",
+      "module": "coque",
+      "feuille": "tenue-coque.css",
+      "script": "tenue-coque.js",
+      "role": "en-tête",
+      "genre": "En-tête · tout le site",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-entete-annonce",
+      "constructions": [
+        {
+          "cle": "annonce",
+          "libelle": "une ligne de message à la couleur de la marque, puis le nom à gauche, le menu en toutes lettres au milieu, la recherche, le compte et le panier à droite",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-boutique"
+      ],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-entete-services",
+      "titre": "En-tête de services, téléphone et rendez-vous",
+      "module": "coque",
+      "feuille": "tenue-coque.css",
+      "script": "tenue-coque.js",
+      "role": "en-tête",
+      "genre": "En-tête · tout le site",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-entete-services",
+      "constructions": [
+        {
+          "cle": "services",
+          "libelle": "le nom à gauche, le menu au milieu, le téléphone et le bouton de rendez-vous à droite ; sur téléphone : le nom et le menu, puis une ligne toujours visible avec le numéro et le bouton",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-tel"
+      ],
+      "photos": 0,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-pied-lettre",
+      "titre": "Pied de page avec lettre d'information",
+      "module": "coque",
+      "feuille": "tenue-coque.css",
+      "script": "tenue-coque.js",
+      "role": "pied de page",
+      "genre": "Pied de page · tout le site",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-pied-lettre",
+      "constructions": [
+        {
+          "cle": "",
+          "libelle": "(seule façon de bâtir)",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-pied-services",
+      "titre": "Pied de page de services",
+      "module": "coque",
+      "feuille": "tenue-coque.css",
+      "script": "tenue-coque.js",
+      "role": "pied de page",
+      "genre": "Pied de page · tout le site",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-pied-services",
+      "constructions": [
+        {
+          "cle": "",
+          "libelle": "(seule façon de bâtir)",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-tel",
+        "data-tn-adresse",
+        "data-tn-itineraire",
+        "data-tn-horaires",
+        "data-tn-zone"
+      ],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-pied-reassurance",
+      "titre": "Pied de page de réassurance et de paiement",
+      "module": "coque",
+      "feuille": "tenue-coque.css",
+      "script": "tenue-coque.js",
+      "role": "pied de page",
+      "genre": "Pied de page · tout le site",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-pied-reassurance",
+      "constructions": [
+        {
+          "cle": "",
+          "libelle": "(seule façon de bâtir)",
+          "feuilles": [
+            "tenue-coque.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-garanties",
+        "data-tn-cle",
+        "data-tn-paiements"
+      ],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-versions",
+      "titre": "Tailles et couleurs en pastilles",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Choix de la version · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-versions",
+      "constructions": [
+        {
+          "cle": "pastilles",
+          "libelle": "une rangée par option : des ronds de couleur avec leur nom, des boutons larges pour les tailles",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par option : le nom de l'option à gauche, ses boutons à droite, des filets entre les lignes",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-versions"
+      ],
+      "photos": 0,
+      "aCompleter": 5
+    },
+    {
+      "id": "tn-guide-tailles",
+      "titre": "Guide des tailles",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Tailles · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": "vêtements, chaussures et accessoires à taille",
+      "authentique": null,
+      "racine": "tn-guide-tailles",
+      "constructions": [
+        {
+          "cle": "tableau",
+          "libelle": "le titre, le tableau des tailles ouvert, puis comment se mesurer en trois lignes",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "tiroir",
+          "libelle": "une seule ligne « Guide des tailles » à toucher : le tableau et les conseils s'ouvrent dessous",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-guide-tailles"
+      ],
+      "photos": 0,
+      "aCompleter": 13
+    },
+    {
+      "id": "tn-lots",
+      "titre": "Offres par quantité",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Offre · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-lots",
+      "constructions": [
+        {
+          "cle": "cartes",
+          "libelle": "une carte par quantité, côte à côte, la remise sur une étiquette en haut de la carte",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par quantité : un rond à cocher, la quantité, puis le prix à droite",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-lots"
+      ],
+      "photos": 0,
+      "aCompleter": 9
+    },
+    {
+      "id": "tn-looks",
+      "titre": "Le look complet",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Produits associés · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": "la photo du look porté ou composé",
+      "racine": "tn-looks",
+      "constructions": [
+        {
+          "cle": "photo-et-liste",
+          "libelle": "la grande photo du look, puis une ligne par pièce : sa photo, son nom, son prix (la liste à droite sur grand écran)",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "la photo du look en bandeau, puis les pièces en cartes côte à côte dessous",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-looks"
+      ],
+      "photos": 4,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-allergenes",
+      "titre": "Allergènes",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Sécurité · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": "aliments, boissons, compléments alimentaires et cosmétiques",
+      "authentique": null,
+      "racine": "tn-allergenes",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "le titre, puis une ligne par sujet, séparées par des filets",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "encadre",
+          "libelle": "un encadré au trait épais, comme la mention au dos d'un paquet, les allergènes en gras",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-avant-apres-produit",
+      "titre": "Avant et après, avec le produit",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Preuves · fiche produit",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": "tes photos avant et après",
+      "racine": "tn-avant-apres-produit",
+      "constructions": [
+        {
+          "cle": "cote-a-cote",
+          "libelle": "les deux photos côte à côte, de même taille, chacune avec son étiquette",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "apres-en-grand",
+          "libelle": "la photo « après » en grand, la photo « avant » en vignette posée sur son coin",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 2,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-pictos",
+      "titre": "Repères en pictos",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Repères · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-pictos",
+      "constructions": [
+        {
+          "cle": "rangee",
+          "libelle": "les pictos dans des ronds, côte à côte, le nom et le fait centrés dessous",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "liste",
+          "libelle": "une ligne par repère : le picto à gauche, le nom et le fait à droite",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-probleme-reponse",
+      "titre": "Le problème, puis la réponse",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Promesse · fiche produit et accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-probleme-reponse",
+      "constructions": [
+        {
+          "cle": "deux-temps",
+          "libelle": "deux blocs l'un après l'autre : « aujourd'hui » en clair et barré d'un trait, puis « avec lui » sur un panneau sombre, coché",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "face-a-face",
+          "libelle": "un tableau à deux colonnes : chaque gêne à gauche, sa réponse en face à droite, sur fond de couleur",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-nous-et-autres",
+      "titre": "Nous et les autres",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "comparatif",
+      "genre": "Comparaison · fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-nous-et-autres",
+      "constructions": [
+        {
+          "cle": "tableau",
+          "libelle": "un tableau : les critères en lignes, le produit dans une colonne sombre à coches, la solution habituelle à côté",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par critère en grand ; dessous deux pastilles, la pleine pour le produit, la bordée pour la solution habituelle",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-face"
+      ],
+      "photos": 0,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-appel-produit",
+      "titre": "Le produit, son prix, son bouton",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "conversion",
+      "genre": "Appel à acheter · accueil et fin de fiche",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-appel-produit",
+      "constructions": [
+        {
+          "cle": "bande-sombre",
+          "libelle": "une bande sombre d'un bord à l'autre : la photo du produit, puis la phrase, le nom, le prix et le bouton (côte à côte sur grand écran)",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "carte",
+          "libelle": "une carte de couleur douce, tout centré : la photo en haut, le nom, le prix en grand, le bouton, les repères en pastilles",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-appel-produit"
+      ],
+      "photos": 1,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-livraison",
+      "titre": "La livraison, étape par étape",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "confiance",
+      "genre": "Confiance · fiche produit et aide",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-livraison",
+      "constructions": [
+        {
+          "cle": "frise",
+          "libelle": "une frise : une pastille numérotée par étape, reliées d'un trait (debout sur téléphone, couchée sur grand écran)",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par étape, deux de front, le grand numéro en haut",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-livraison"
+      ],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-garantie",
+      "titre": "La garantie de retour, mise en avant",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "confiance",
+      "genre": "Confiance · fiche produit et accueil",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-garantie",
+      "constructions": [
+        {
+          "cle": "sceau",
+          "libelle": "tout centré : un sceau rond avec le délai de retour, la phrase en grand, les conditions dessous",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande de couleur douce d'un bord à l'autre : le sceau à gauche, la phrase et les conditions à droite",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-garantie"
+      ],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-mur-avis",
+      "titre": "Le mur d'avis",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "confiance",
+      "genre": "Avis · fiche produit et accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": "les avis et les photos de tes clients",
+      "racine": "tn-mur-avis",
+      "constructions": [
+        {
+          "cle": "mosaique",
+          "libelle": "une mosaïque de cartes de hauteurs inégales, sur deux colonnes (trois sur grand écran)",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "file",
+          "libelle": "une file de cartes à faire glisser, de même hauteur",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-avis"
+      ],
+      "photos": 2,
+      "aCompleter": 9
+    },
+    {
+      "id": "tn-avantages",
+      "titre": "Les avantages, un par un",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Avantages · fiche produit et accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-avantages",
+      "constructions": [
+        {
+          "cle": "alternes",
+          "libelle": "un avantage par rang, la photo tantôt à gauche, tantôt à droite, le titre en grand",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "des cartes à faire glisser sur téléphone, côte à côte sur grand écran : la photo en haut, le texte dessous",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 3,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-packs",
+      "titre": "Les packs",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Offre · fiche produit",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-packs",
+      "constructions": [
+        {
+          "cle": "empilees",
+          "libelle": "des cartes l'une sous l'autre, un rond à cocher à gauche, le prix à droite ; la carte choisie s'encadre et déplie ses articles",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "cote-a-cote",
+          "libelle": "des cartes côte à côte, le rond à cocher en haut, le prix en grand au centre ; les articles du pack choisi dans un cadre sous les cartes",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-packs",
+        "data-tn-achat-form",
+        "data-tn-pack",
+        "data-tn-quantite",
+        "data-tn-pack-lignes",
+        "data-tn-acheter",
+        "data-tn-erreur"
+      ],
+      "photos": 3,
+      "aCompleter": 9
+    },
+    {
+      "id": "tn-sous-bouton",
+      "titre": "Sous le bouton d'achat",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "confiance",
+      "genre": "Confiance · fiche produit",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-sous-bouton",
+      "constructions": [
+        {
+          "cle": "liste",
+          "libelle": "tout en lignes séparées par des filets, les quatre repères en deux colonnes avec leur petit dessin",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce : les repères en quatre pastilles rondes côte à côte, les volets dans des cases bordées",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-sous-bouton",
+        "data-tn-fen",
+        "data-tn-guide-tailles",
+        "data-tn-fermer",
+        "data-tn-delai",
+        "data-tn-paiements-sb",
+        "data-tn-g"
+      ],
+      "photos": 0,
+      "aCompleter": 24
+    },
+    {
+      "id": "tn-offre-moment",
+      "titre": "L'offre du moment",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Offre datée · fiche produit",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-offre-moment",
+      "constructions": [
+        {
+          "cle": "encadre",
+          "libelle": "un encadré à tirets de la couleur de la marque : la remise en grand dans une pastille, le nom, le cadeau avec sa photo, la date de fin et le décompte en cases",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "bandeau",
+          "libelle": "un bandeau plein de la couleur de la marque, d'un bord à l'autre : la remise et le nom sur une ligne, la date de fin et le décompte à droite",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-offre-moment",
+        "data-tn-fin-texte",
+        "data-tn-decompte"
+      ],
+      "photos": 1,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-fenetre-offre",
+      "titre": "Fenêtre d'offre",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "conversion",
+      "genre": "Fenêtre · tout le site",
+      "groupe": "partout",
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-fenetre-offre",
+      "constructions": [
+        {
+          "cle": "plein-ecran",
+          "libelle": "plein écran : une grande photo en haut (à gauche sur grand écran), le titre en grand, le champ e-mail et le bouton dessous",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "carte-en-bas",
+          "libelle": "une carte posée en bas de l'écran, sans photo, qui laisse voir la page : le titre, le champ e-mail et le bouton sur une ligne",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-fenetre-offre",
+        "data-tn-fermer",
+        "data-tn-fo-form",
+        "data-tn-fo-code"
+      ],
+      "photos": 1,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-rappel-achat",
+      "titre": "Rappel vers l'achat",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "conversion",
+      "genre": "Appel à acheter · fiche produit",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-rappel-achat",
+      "constructions": [
+        {
+          "cle": "bouton",
+          "libelle": "un seul gros bouton centré, rien d'autre",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande de couleur douce : le nom du produit et son prix à gauche, le bouton à droite (l'un sous l'autre sur téléphone)",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-rappel-achat",
+        "data-tn-rappel"
+      ],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-coloris",
+      "titre": "Les coloris en scène",
+      "module": "achat",
+      "feuille": "tenue-achat.css",
+      "script": "tenue-achat.js",
+      "role": "produit",
+      "genre": "Versions · fiche produit et accueil",
+      "groupe": null,
+      "pour": "produits",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-coloris",
+      "constructions": [
+        {
+          "cle": "mosaique",
+          "libelle": "une mosaïque : deux photos de front sur téléphone, jusqu'à quatre sur grand écran, le nom de la couleur et sa pastille dessous",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        },
+        {
+          "cle": "file",
+          "libelle": "une file de grandes photos en hauteur à faire glisser, le nom de la couleur sur une étiquette posée en bas de la photo",
+          "feuilles": [
+            "tenue-achat.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-coloris",
+        "data-tn-rappel"
+      ],
+      "photos": 3,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-biens",
+      "titre": "Les biens à vendre et à louer",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "immobilier",
+      "genre": "Biens · accueil et page des biens",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": "tes biens",
+      "racine": "tn-biens",
+      "constructions": [
+        {
+          "cle": "grille",
+          "libelle": "une grille de cartes : la photo dans le cadre de la marque, le statut dessus, le prix sous le titre (trois par ligne sur ordinateur)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "liste",
+          "libelle": "une liste éditoriale : une ligne par bien, la photo à gauche, le titre en grand, le prix aligné à droite",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "vedette",
+          "libelle": "un bien vedette en très grand, sa fiche posée sur le bas de la photo, les autres en petites cartes dessous",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-biens"
+      ],
+      "photos": 3,
+      "aCompleter": 9
+    },
+    {
+      "id": "tn-recherche-biens",
+      "titre": "Chercher un bien",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "immobilier",
+      "genre": "Recherche · accueil et page des biens",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": "tes biens",
+      "racine": "tn-recherche-biens",
+      "constructions": [
+        {
+          "cle": "barre",
+          "libelle": "les filtres en barre au-dessus des biens (sur une ligne sur ordinateur), puis les biens en grille",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "volet",
+          "libelle": "les filtres dans un volet de couleur douce (à gauche sur ordinateur), les biens en lignes à côté",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-biens",
+        "data-tn-biens-types",
+        "data-tn-biens-villes"
+      ],
+      "photos": 3,
+      "aCompleter": 9
+    },
+    {
+      "id": "tn-bien-galerie",
+      "titre": "Fiche d'un bien : galerie et prix",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "immobilier",
+      "genre": "Fiche d'un bien · haut de la fiche",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": "tes biens",
+      "racine": "tn-bien-galerie",
+      "constructions": [
+        {
+          "cle": "mosaique",
+          "libelle": "une mosaïque : la première photo en grand, les autres en carreaux à côté ; le titre et le prix au-dessus",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "defile",
+          "libelle": "les photos en hauteur qui défilent du doigt, le titre et le prix dessous",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "affiche",
+          "libelle": "une seule grande photo en pleine largeur, la fiche (titre, prix, chiffres) posée à cheval dessus, les autres photos en vignettes",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-bien"
+      ],
+      "photos": 5,
+      "aCompleter": 6
+    },
+    {
+      "id": "tn-bien-caracteristiques",
+      "titre": "Fiche d'un bien : caractéristiques",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "immobilier",
+      "genre": "Fiche d'un bien · sous la galerie",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": "tes biens",
+      "racine": "tn-bien-caracteristiques",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "la description, puis un tableau à traits fins : le nom à gauche, la valeur à droite (côte à côte sur ordinateur)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "chiffres",
+          "libelle": "les caractéristiques en carreaux de couleur douce, la valeur en grand, puis la description et les atouts",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-bien"
+      ],
+      "photos": 0,
+      "aCompleter": 11
+    },
+    {
+      "id": "tn-bien-energie",
+      "titre": "Fiche d'un bien : étiquettes énergie",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "immobilier",
+      "genre": "Fiche d'un bien · diagnostic",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": "tes biens",
+      "racine": "tn-bien-energie",
+      "constructions": [
+        {
+          "cle": "echelles",
+          "libelle": "deux échelles en escalier, de A à G, la classe du bien sortie en grand avec sa flèche (côte à côte sur ordinateur)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "reglettes",
+          "libelle": "deux réglettes horizontales de sept cases, la case du bien agrandie, la classe écrite en grand à côté",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-bien"
+      ],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-bien-quartier",
+      "titre": "Fiche d'un bien : le quartier",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "immobilier",
+      "genre": "Fiche d'un bien · autour du bien",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": "tes biens",
+      "racine": "tn-bien-quartier",
+      "constructions": [
+        {
+          "cle": "photo",
+          "libelle": "la photo du quartier dans le cadre de la marque, puis le texte et les repères en lignes (côte à côte sur ordinateur)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "reperes",
+          "libelle": "les repères en très grand, l'un sous l'autre, leur distance à droite ; le texte et la photo en bande ensuite",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-bien"
+      ],
+      "photos": 1,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-bien-visite",
+      "titre": "Fiche d'un bien : demander une visite",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "immobilier",
+      "genre": "Fiche d'un bien · bas de la fiche et page visite",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": "tes biens",
+      "racine": "tn-bien-visite",
+      "constructions": [
+        {
+          "cle": "fiche",
+          "libelle": "le rappel du bien (photo, titre, prix) d'un côté, le formulaire de l'autre",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "encadre",
+          "libelle": "le formulaire dans un encadré de couleur douce, le rappel du bien en une ligne au-dessus, sa photo en vignette",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-bien",
+        "data-tn-biens-choix"
+      ],
+      "photos": 1,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-carte",
+      "titre": "La carte du restaurant",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "restaurant",
+      "genre": "Carte · accueil et page carte",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "restaurants, traiteurs, salons de thé",
+      "authentique": null,
+      "racine": "tn-carte",
+      "constructions": [
+        {
+          "cle": "colonnes",
+          "libelle": "les rubriques en colonnes, le nom de chaque rubrique en grand, le prix à droite de chaque plat",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "conduite",
+          "libelle": "une carte centrée à l'ancienne : un filet de chaque côté du nom des rubriques, des points de conduite entre le plat et son prix",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par rubrique, ses plats dedans, le prix aligné à droite",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-carte"
+      ],
+      "photos": 0,
+      "aCompleter": 13
+    },
+    {
+      "id": "tn-reserver-table",
+      "titre": "Réserver une table",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "restaurant",
+      "genre": "Réservation · accueil et page réservation",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "restaurants, salons de thé",
+      "authentique": null,
+      "racine": "tn-reserver-table",
+      "constructions": [
+        {
+          "cle": "photo",
+          "libelle": "la photo de la salle en grand, le formulaire dans un panneau clair posé dessus, les horaires dessous",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "encadre",
+          "libelle": "un encadré centré aux traits fins, comme un carton de réservation, la photo de la salle en bande au-dessus",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "horaires",
+          "libelle": "deux colonnes : les horaires réels, l'adresse et le téléphone d'un côté, le formulaire de l'autre, la photo en bande",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-horaires",
+        "data-tn-adresse",
+        "data-tn-tel"
+      ],
+      "photos": 1,
+      "aCompleter": 9
+    },
+    {
+      "id": "tn-rdv-complet",
+      "titre": "Rendez-vous en trois temps",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "services",
+      "genre": "Rendez-vous · page rendez-vous",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": "ton équipe",
+      "racine": "tn-rdv-complet",
+      "constructions": [
+        {
+          "cle": "etapes",
+          "libelle": "trois temps l'un sous l'autre, un grand chiffre devant chacun, les choix en lignes à cocher",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "colonnes",
+          "libelle": "trois cartes de couleur douce, une par temps (côte à côte sur ordinateur), les coordonnées dessous",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-prestations-options",
+        "data-tn-equipe-options"
+      ],
+      "photos": 0,
+      "aCompleter": 8
+    },
+    {
+      "id": "tn-inscription",
+      "titre": "Inscription à un atelier ou à un cours",
+      "module": "metiers",
+      "feuille": "tenue-metiers.css",
+      "script": "tenue-metiers.js",
+      "role": "services",
+      "genre": "Inscription · page atelier, page inscription",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-inscription",
+      "constructions": [
+        {
+          "cle": "billet",
+          "libelle": "un billet : le talon de couleur douce avec ce que l'atelier comprend, le formulaire sur l'autre volet, une ligne de pointillés entre les deux",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        },
+        {
+          "cle": "photo",
+          "libelle": "la photo de l'atelier dans le cadre de la marque, le formulaire à côté (dessous sur téléphone)",
+          "feuilles": [
+            "tenue-metiers.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-panier-cote",
+      "titre": "Tiroir de panier",
+      "module": "pages",
+      "feuille": "tenue-pages.css",
+      "script": "tenue-pages.js",
+      "role": "panier",
+      "genre": "Panier · tout le site",
+      "groupe": "partout",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-panier-cote",
+      "constructions": [
+        {
+          "cle": "etroit",
+          "libelle": "un panneau étroit et sobre : les produits, le total, le bouton de commande",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        },
+        {
+          "cle": "large",
+          "libelle": "un panneau large : la barre de livraison offerte en haut, les produits, puis d'autres produits du catalogue à ajouter et le total",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-panier-cote",
+        "data-tn-fermer",
+        "data-tn-seuil",
+        "data-tn-lignes",
+        "data-tn-moins",
+        "data-tn-plus",
+        "data-tn-oter",
+        "data-tn-suggestions"
+      ],
+      "photos": 3,
+      "aCompleter": 5
+    },
+    {
+      "id": "tn-recherche",
+      "titre": "Recherche à la tenue de la marque",
+      "module": "pages",
+      "feuille": "tenue-pages.css",
+      "script": "tenue-pages.js",
+      "role": "recherche",
+      "genre": "Recherche · tout le site",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-recherche",
+      "constructions": [
+        {
+          "cle": "barre",
+          "libelle": "une barre de recherche toujours visible sous l'en-tête, les raccourcis à la suite",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        },
+        {
+          "cle": "panneau",
+          "libelle": "un panneau qui s'ouvre par la loupe et couvre le haut de l'écran : le champ en très grand, les raccourcis, des produits en vignettes",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-recherche",
+        "data-tn-mots",
+        "data-tn-trouves",
+        "data-tn-fermer"
+      ],
+      "photos": 3,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-questions-rubriques",
+      "titre": "Questions par rubriques",
+      "module": "pages",
+      "feuille": "tenue-pages.css",
+      "script": "tenue-pages.js",
+      "role": "aide",
+      "genre": "Page · questions fréquentes",
+      "groupe": "pages",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-rubriques",
+      "constructions": [
+        {
+          "cle": "empilees",
+          "libelle": "les rubriques l'une sous l'autre : un numéro, le nom du sujet, ses questions séparées par des filets (le nom du sujet à gauche sur grand écran)",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par rubrique, le nom du sujet en haut de la carte (deux cartes de front sur grand écran)",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 7
+    },
+    {
+      "id": "tn-merci",
+      "titre": "Bien reçu, après une demande",
+      "module": "pages",
+      "feuille": "tenue-pages.css",
+      "script": "tenue-pages.js",
+      "role": "contact",
+      "genre": "Page · après un formulaire",
+      "groupe": "pages",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-merci",
+      "constructions": [
+        {
+          "cle": "centre",
+          "libelle": "tout centré : un signe rond, le mot en grand, les trois étapes l'une sous l'autre, le bouton",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        },
+        {
+          "cle": "deux-colonnes",
+          "libelle": "le mot en très grand à gauche, les étapes numérotées dans une carte de couleur douce (à droite sur grand écran, dessous sur téléphone)",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-fermee",
+      "titre": "Boutique fermée, ouverture prochaine",
+      "module": "pages",
+      "feuille": "tenue-pages.css",
+      "script": "tenue-pages.js",
+      "role": "inscription",
+      "genre": "Page · avant l'ouverture",
+      "groupe": "pages",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-fermee",
+      "constructions": [
+        {
+          "cle": "photo-pleine",
+          "libelle": "la photo sur tout l'écran, et une carte posée sur son bas avec le nom, le mot et l'inscription",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        },
+        {
+          "cle": "moitie",
+          "libelle": "la photo dans le cadre de la marque d'un côté, le nom, le mot et l'inscription de l'autre (photo au-dessus sur téléphone)",
+          "feuilles": [
+            "tenue-pages.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-messages",
+      "titre": "Bandeau à plusieurs messages",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "contenu",
+      "genre": "Bandeau · tout le site",
+      "groupe": "bandeau",
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-messages",
+      "constructions": [
+        {
+          "cle": "defilent",
+          "libelle": "sur une bande sombre, les messages défilent sans fin d'un bord à l'autre, séparés par un petit signe",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "tour-a-tour",
+          "libelle": "sur une bande à la couleur de la marque, un seul message à la fois, centré, qui laisse la place au suivant",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "rangee",
+          "libelle": "sur une bande de couleur douce, tous les messages côte à côte, une coche devant chacun (à faire glisser sur téléphone)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-messages",
+        "data-tn-cle"
+      ],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-ouverture-vente",
+      "titre": "Ouverture au macaron",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "ouverture",
+      "genre": "Ouverture · accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-ouverture-vente",
+      "constructions": [
+        {
+          "cle": "photo-pleine",
+          "libelle": "la photo sur tout l'écran, le titre et le bouton posés en bas sur un voile sombre, le macaron dans le coin en haut à droite",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "texte-puis-photo",
+          "libelle": "le titre, la phrase et le bouton d'abord, puis la photo dans le cadre de la marque avec le macaron à cheval sur son coin (texte à gauche, photo à droite sur grand écran)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-macaron"
+      ],
+      "photos": 1,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-produits-vente",
+      "titre": "Les produits en cartes de vente",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "produits",
+      "genre": "Produits · accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-produits-vente",
+      "constructions": [
+        {
+          "cle": "cartes",
+          "libelle": "des cartes encadrées, deux de front sur téléphone, jusqu'à quatre sur grand écran : la photo en haut, tout le reste centré dessous",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "file",
+          "libelle": "une file de grandes cartes à faire glisser, la suivante dépasse du bord (côte à côte sur grand écran)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "lignes",
+          "libelle": "un produit par ligne, sans cadre : la photo à gauche, le genre, le nom, la ligne d'envie, le prix et « Découvrir » à droite (deux colonnes de lignes sur grand écran)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-cartes-vente"
+      ],
+      "photos": 3,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-difference",
+      "titre": "La différence, en trois volets",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "mise en avant",
+      "genre": "Mise en avant · accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-difference",
+      "constructions": [
+        {
+          "cle": "panneau",
+          "libelle": "un grand panneau à la couleur de la marque d'un bord à l'autre : la photo en haut, le titre, puis les trois volets numérotés dans des cadres au trait (photo à gauche, volets à droite sur grand écran)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "photo-a-cote",
+          "libelle": "sur le fond de la page : la photo dans le cadre de la marque, puis les trois volets séparés par des filets, leur numéro en grand et en couleur",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 1,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-guide-choix",
+      "titre": "Lequel est fait pour toi ?",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "rayons",
+      "genre": "Guide de choix · accueil",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-guide-choix",
+      "constructions": [
+        {
+          "cle": "volets",
+          "libelle": "un panneau à la couleur de la marque : les envies en volets qui s'ouvrent, le produit conseillé apparaît dans le volet avec sa photo et son prix",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "sur le fond de la page, une carte de couleur douce par envie, toutes ouvertes : l'envie en titre, la photo du produit, son nom, son prix (côte à côte sur grand écran)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-guide",
+        "data-tn-produit"
+      ],
+      "photos": 3,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-entete-arrivee",
+      "titre": "En-tête minimal d'une page d'arrivée",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "en-tête",
+      "genre": "En-tête · page d'arrivée de publicité",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-entete-arrivee",
+      "constructions": [
+        {
+          "cle": "nom-a-gauche",
+          "libelle": "le nom de la marque à gauche, le lien « Découvrir » à droite avec une petite flèche, un filet dessous",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "nom-au-centre",
+          "libelle": "le nom de la marque centré, et sous lui une fine bande à la couleur de la marque qui porte le lien",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-arrivee",
+        "data-tn-produit-nom"
+      ],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-ouverture-arrivee",
+      "titre": "Ouverture d'une page d'arrivée",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "ouverture",
+      "genre": "Ouverture · page d'arrivée de publicité",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-ouverture-arrivee",
+      "constructions": [
+        {
+          "cle": "colonne",
+          "libelle": "tout en colonne étroite : le petit mot, le titre, le chapô, puis la photo, l'avis en carte blanche à cheval sur le bas de la photo",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "cote-a-cote",
+          "libelle": "la photo d'abord sur toute la largeur, puis le titre ; sur grand écran, le titre à gauche et la photo à droite, l'avis en carte sur son coin",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-avis-pose"
+      ],
+      "photos": 1,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-raisons",
+      "titre": "Les raisons numérotées",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "contenu",
+      "genre": "Contenu · page d'arrivée de publicité",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-raisons",
+      "constructions": [
+        {
+          "cle": "colonne",
+          "libelle": "une colonne d'article : le numéro dans un rond à gauche du titre, la photo dessous, puis le texte ; un filet entre deux raisons",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "alternees",
+          "libelle": "le numéro en très grand et en couleur au-dessus du titre ; sur grand écran, la photo d'un côté et le texte de l'autre, en alternance",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 2,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-equation",
+      "titre": "L'équation",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "mise en avant",
+      "genre": "Mise en avant · page d'arrivée ou fiche produit",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-equation",
+      "constructions": [
+        {
+          "cle": "carte",
+          "libelle": "une carte de couleur douce centrée : les deux termes et le signe plus sur une ligne, le résultat en grand et en couleur dessous",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande à la couleur de la marque d'un bord à l'autre : les deux termes en petit, le résultat en très grand",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-temoignages",
+      "titre": "Les témoignages datés",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "confiance",
+      "genre": "Preuves · page d'arrivée de publicité",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": "les avis de tes clients",
+      "racine": "tn-temoignages",
+      "constructions": [
+        {
+          "cle": "cartes",
+          "libelle": "sur un fond de couleur douce, une carte blanche par avis avec un grand guillemet, l'avis réservé dessous entre deux filets (deux cartes de front sur grand écran)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "en-grand",
+          "libelle": "sur le fond de la page, le premier avis en très grand, les autres en lignes séparées par des filets, l'avis réservé dans un encadré au trait",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-temoignages"
+      ],
+      "photos": 0,
+      "aCompleter": 9
+    },
+    {
+      "id": "tn-barre-produit",
+      "titre": "Barre du produit collée en bas",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "conversion",
+      "genre": "Conversion · page d'arrivée de publicité",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-barre-produit",
+      "constructions": [
+        {
+          "cle": "barre",
+          "libelle": "une barre claire sur toute la largeur, collée au bas de l'écran : la vignette et le nom à gauche, le bouton à droite",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "carte-flottante",
+          "libelle": "une carte sombre aux coins arrondis, décollée des bords, qui flotte en bas de l'écran (dans le coin en bas à droite sur grand écran)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-barre-produit",
+        "data-tn-produit-nom"
+      ],
+      "photos": 1,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-pied-arrivee",
+      "titre": "Pied minimal d'une page d'arrivée",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "pied de page",
+      "genre": "Pied de page · page d'arrivée de publicité",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-pied-arrivee",
+      "constructions": [
+        {
+          "cle": "centre",
+          "libelle": "tout centré : le nom de la marque en grand, sa phrase, puis les liens en petit sur une ligne",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "ligne",
+          "libelle": "au-dessus d'un filet : le nom et la phrase à gauche, les liens à droite (l'un sous l'autre sur téléphone)",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    },
+    {
+      "id": "tn-avis-page",
+      "titre": "La page des avis",
+      "module": "vente",
+      "feuille": "tenue-vente.css",
+      "script": "tenue-vente.js",
+      "role": "confiance",
+      "genre": "Page · tous les avis",
+      "groupe": "pages",
+      "pour": null,
+      "seulement": null,
+      "authentique": "les avis de tes clients",
+      "racine": "tn-avis-page",
+      "constructions": [
+        {
+          "cle": "resume-en-haut",
+          "libelle": "le résumé centré en haut (la note en très grand, les étoiles, les barres), puis la liste des avis en lignes séparées par des filets",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        },
+        {
+          "cle": "resume-a-cote",
+          "libelle": "le résumé dans une carte de couleur douce : la note à gauche, les barres à droite ; sur grand écran, la carte reste visible à gauche pendant que la liste défile à droite",
+          "feuilles": [
+            "tenue-vente.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-avis-page",
+        "data-tn-tri-avis",
+        "data-tn-avis-liste"
+      ],
+      "photos": 0,
+      "aCompleter": 14
+    },
+    {
+      "id": "tn-offre-visite",
+      "titre": "L'offre de première visite",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "conversion",
+      "genre": "Offre · accueil d'un métier sur rendez-vous",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-offre-visite",
+      "constructions": [
+        {
+          "cle": "encadre",
+          "libelle": "un encadré au double filet, centré : l'offre en grand, ses conditions, le bouton",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande à la couleur de la marque sur toute la largeur : l'offre à gauche, le bouton à droite sur grand écran",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "billet",
+          "libelle": "un billet à talon détachable sur fond doux : « Première visite » sur le talon, l'offre et le bouton sur le billet",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-fait"
+      ],
+      "photos": 0,
+      "aCompleter": 2
+    },
+    {
+      "id": "tn-delais",
+      "titre": "Les délais, étape par étape",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "services",
+      "genre": "Délais · accueil et page d'une prestation sur devis",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-delais",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par étape entre deux filets : l'étape à gauche, son délai en grand à droite",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "frise",
+          "libelle": "une frise : un point par étape sur un trait, en ligne sur grand écran, en colonne sur téléphone",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par étape, numérotée, le délai en très grand",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-fait"
+      ],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-annulation",
+      "titre": "Annulation et conditions",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "aide",
+      "genre": "Conditions · page d'une prestation sur rendez-vous",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-annulation",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "les règles l'une sous l'autre, séparées par des filets, la règle en gras et sa réponse dessous",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte au trait par règle, deux de front sur grand écran",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "encadre",
+          "libelle": "tout dans un encadré de couleur douce ; sur grand écran, le titre reste à gauche et les règles sont à droite",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-fait"
+      ],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-privatisation",
+      "titre": "Privatiser le lieu",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "restaurant",
+      "genre": "Groupes · page d'un restaurant ou d'un lieu",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-privatisation",
+      "constructions": [
+        {
+          "cle": "photo-pleine",
+          "libelle": "une grande photo du lieu sur toute la largeur, puis une carte claire posée à cheval sur elle",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "cote-a-cote",
+          "libelle": "la photo dans le cadre de la marque d'un côté, le texte et les repères de l'autre (l'un sous l'autre sur téléphone)",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "sombre",
+          "libelle": "une bande sombre : le titre en grand, les trois repères en colonnes, la photo en bande étroite dessous",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-fait"
+      ],
+      "photos": 1,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-realisations-types",
+      "titre": "Les réalisations, filtrées par type",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "services",
+      "genre": "Preuves · page réalisations",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-realisations-types",
+      "constructions": [
+        {
+          "cle": "grille",
+          "libelle": "les filtres en pastilles, puis une grille de photos dans le cadre de la marque, la légende sous chacune",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "bandes",
+          "libelle": "les filtres en onglets soulignés, puis de grandes bandes de photo l'une sous l'autre, la légende dessous",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "liste",
+          "libelle": "une ligne par réalisation : petite photo à gauche, texte à droite, un filet entre les lignes ; les filtres en colonne à gauche sur grand écran",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-t",
+        "data-tn-realisations"
+      ],
+      "photos": 6,
+      "aCompleter": 15
+    },
+    {
+      "id": "tn-reseaux",
+      "titre": "Les réseaux du client",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "contact",
+      "genre": "Réseaux · page contact",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-reseaux",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par réseau entre deux filets : le nom du réseau, le compte en grand, une flèche",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "pastilles",
+          "libelle": "de grandes pastilles à la couleur de la marque, côte à côte, le compte dedans",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "sombre",
+          "libelle": "une bande sombre : le titre à gauche, les comptes en très grand à droite sur grand écran",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-reseaux"
+      ],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-delai-reponse",
+      "titre": "Le délai de réponse",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "contact",
+      "genre": "Contact · sous le formulaire",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-delai-reponse",
+      "constructions": [
+        {
+          "cle": "colonnes",
+          "libelle": "une colonne par moyen de contact, le délai en grand, des filets entre les colonnes (l'une sous l'autre sur téléphone)",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande à la couleur de la marque : le titre, puis les délais en ligne",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-fait"
+      ],
+      "photos": 0,
+      "aCompleter": 3
+    },
+    {
+      "id": "tn-horaires",
+      "titre": "Les horaires seuls",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "contact",
+      "genre": "Infos pratiques · page contact",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-horaires",
+      "constructions": [
+        {
+          "cle": "tableau",
+          "libelle": "le titre, puis un jour par ligne : le jour à gauche, les heures à droite, des filets",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "encadre",
+          "libelle": "un encadré au trait centré, le titre à cheval sur le bord du haut",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-fait",
+        "data-tn-horaires",
+        "data-tn-tel"
+      ],
+      "photos": 0,
+      "aCompleter": 8
+    },
+    {
+      "id": "tn-adresse",
+      "titre": "L'adresse et sa carte",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "contact",
+      "genre": "Infos pratiques · page contact",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-adresse",
+      "constructions": [
+        {
+          "cle": "carte-dessus",
+          "libelle": "le titre, le grand cadre de la carte, puis l'adresse et le bouton d'itinéraire dessous",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "adresse-en-grand",
+          "libelle": "l'adresse en très grandes lettres et le bouton d'itinéraire, la carte à côté sur grand écran (dessous sur téléphone)",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-adresse",
+        "data-tn-fait",
+        "data-tn-itineraire"
+      ],
+      "photos": 1,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-venir",
+      "titre": "Accès et stationnement",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "contact",
+      "genre": "Infos pratiques · page contact",
+      "groupe": null,
+      "pour": "services",
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-venir",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par sujet entre deux filets : le sujet à gauche, la réponse à droite",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par sujet, deux de front sur téléphone, quatre sur grand écran",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-fait"
+      ],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-bien-description",
+      "titre": "Fiche d'un bien : la description",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "immobilier",
+      "genre": "Fiche d'un bien · sous la galerie",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": null,
+      "racine": "tn-bien-description",
+      "constructions": [
+        {
+          "cle": "avec-photo",
+          "libelle": "le texte d'un côté, une photo du bien dans le cadre de la marque de l'autre (l'un sous l'autre sur téléphone)",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "colonne",
+          "libelle": "le texte seul en colonne étroite et centrée, sa première phrase en très grand",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-bien",
+        "data-tn-fait"
+      ],
+      "photos": 1,
+      "aCompleter": 1
+    },
+    {
+      "id": "tn-bien-surfaces",
+      "titre": "Fiche d'un bien : les surfaces",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "immobilier",
+      "genre": "Fiche d'un bien · plans et surfaces",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": null,
+      "racine": "tn-bien-surfaces",
+      "constructions": [
+        {
+          "cle": "chiffres",
+          "libelle": "les mesures en très grands chiffres côte à côte, puis le détail en lignes fines dessous",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "tableau",
+          "libelle": "tout en lignes entre deux filets : le nom à gauche, la mesure à droite",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-bien",
+        "data-tn-fait"
+      ],
+      "photos": 0,
+      "aCompleter": 7
+    },
+    {
+      "id": "tn-bien-equipements",
+      "titre": "Fiche d'un bien : les équipements",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "immobilier",
+      "genre": "Fiche d'un bien · équipements",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": null,
+      "racine": "tn-bien-equipements",
+      "constructions": [
+        {
+          "cle": "coches",
+          "libelle": "une liste à coches, sur deux colonnes (trois sur grand écran)",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "etiquettes",
+          "libelle": "des étiquettes au trait, posées en nuage sous le titre",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-bien",
+        "data-tn-fait"
+      ],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-bien-frais",
+      "titre": "Fiche d'un bien : frais et charges",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "immobilier",
+      "genre": "Fiche d'un bien · frais et charges",
+      "groupe": null,
+      "pour": "services",
+      "seulement": "agences immobilières",
+      "authentique": null,
+      "racine": "tn-bien-frais",
+      "constructions": [
+        {
+          "cle": "lignes",
+          "libelle": "une ligne par frais entre deux filets : son nom à gauche, son montant à droite",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "cartes",
+          "libelle": "une carte de couleur douce par frais, le montant en grand, côte à côte sur grand écran",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [
+        "data-tn-bien",
+        "data-tn-fait"
+      ],
+      "photos": 0,
+      "aCompleter": 4
+    },
+    {
+      "id": "tn-presentation",
+      "titre": "Présentation d'une page",
+      "module": "partitions",
+      "feuille": "tenue-partitions.css",
+      "script": null,
+      "role": "contenu",
+      "genre": "Titre de page · réalisations, questions",
+      "groupe": null,
+      "pour": null,
+      "seulement": null,
+      "authentique": null,
+      "racine": "tn-presentation",
+      "constructions": [
+        {
+          "cle": "centre",
+          "libelle": "tout centré : un petit mot, le grand titre, la phrase, un court filet à la couleur de la marque",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "gauche",
+          "libelle": "sous un filet, le titre très grand à gauche et la phrase à droite sur grand écran (dessous sur téléphone)",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        },
+        {
+          "cle": "bande",
+          "libelle": "une bande à la couleur de la marque sur toute la largeur, le titre et la phrase dedans",
+          "feuilles": [
+            "tenue-partitions.css"
+          ]
+        }
+      ],
+      "donnees": [],
+      "photos": 0,
+      "aCompleter": 0
+    }
+  ]
+}
