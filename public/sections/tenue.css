@@ -882,3 +882,6 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
   .ctw :is(.tn-contact,.tn-compte,.tn-histoire,.tn-panier) h1[data-tn-long="2"],.ctw .tn-ouverture:is([data-tn-c="titre-puis-cadre"],[data-tn-c="titre-geant"],[data-tn-c="titre-massif"]) h1[data-tn-long="2"]{--tn-k:calc(var(--tn-k0)*.58)}
   .ctw :is(.tn-contact,.tn-compte,.tn-histoire,.tn-panier) h1[data-tn-long="1"],.ctw .tn-ouverture:is([data-tn-c="titre-puis-cadre"],[data-tn-c="titre-geant"],[data-tn-c="titre-massif"]) h1[data-tn-long="1"]{--tn-k:calc(var(--tn-k0)*.74)}
 }
+/* Pages en situation (tour des sections) : la dernière carte à ombre dure garde la place de son ombre avant la section suivante. */
+.ctw[data-tn-cadre="penche"] .tn-atouts[data-tn-c="cartes"]:not(:last-child){padding-bottom:12px}
+.ctw[data-tn-cadre="penche"] .tn-volets[data-tn-c="cartes"]:not(:last-child){padding-bottom:10px}

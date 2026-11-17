@@ -868,3 +868,7 @@
 .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p .tn-v-vers:has(>.tn-ph-manque)>:not(.tn-ph,em){margin-left:10px;margin-right:10px}
 /* Carte de vente d'un produit qui n'a pas encore sa photo : l'emplacement se lit comme un emplacement (cadre en tirets), jamais comme une photo vide. */
 .ctw .tn-produits-vente .tn-v-carte .tn-ph:not([style]){outline:1.5px dashed color-mix(in srgb,var(--tn-encre) 38%,transparent);outline-offset:-10px;background-color:color-mix(in srgb,var(--tn-doux) 62%,var(--tn-fond))}
+.ctw .tn-avis-page[data-tn-c="resume-a-cote"] .tn-v-resume:has(mark){grid-template-columns:minmax(0,1fr)}
+.ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-vers{min-width:42%}
+@media (max-width:359px){.ctw[data-tn-titres="gras"] .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-nom,.ctw[data-tn-titres="capitales"] .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-nom,.ctw[data-tn-lourd] .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-nom{font-size:18px;line-height:1.05}}
+.ctw[data-tn-cadre="penche"] .tn-atouts[data-tn-c="ronds"]:not(:last-child){padding-bottom:10px}

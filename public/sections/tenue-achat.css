@@ -1469,3 +1469,6 @@
 .ctw .tn-packs:not([data-tn-c="cote-a-cote"]) .tn-pack>label:has(mark) .tn-pack-prix{grid-column:2;grid-row:auto;justify-self:start;justify-items:start;white-space:normal;font-size:13px}
 .ctw .tn-lots[data-tn-c="lignes"] label:has(mark){grid-template-columns:22px minmax(0,1fr)}
 .ctw .tn-lots[data-tn-c="lignes"] label:has(mark) span,.ctw .tn-lots[data-tn-c="lignes"] label:has(mark) em,.ctw .tn-lots[data-tn-c="lignes"] label:has(mark) em:has(mark){grid-column:2;grid-row:auto;justify-self:start}
+/* En situation, sous le bloc d'achat : l'ombre d'une carte au cadre penché garde sa place avant la section suivante. */
+.ctw[data-tn-cadre="penche"] .tn-lots:not(:last-child){padding-bottom:8px}
+.ctw[data-tn-cadre="penche"] .tn-atouts[data-tn-c="coches"]:not(:last-child){padding-bottom:10px}
