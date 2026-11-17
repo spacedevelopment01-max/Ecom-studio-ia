@@ -866,3 +866,5 @@
 /* La boutique en « ajout rapide » : une carte dont le produit n'a pas encore de photo reste centrée, avec de l'air en haut. */
 .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p .tn-v-vers:has(>.tn-ph-manque){justify-items:center;padding-top:16px;text-align:center}
 .ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p .tn-v-vers:has(>.tn-ph-manque)>:not(.tn-ph,em){margin-left:10px;margin-right:10px}
+/* Carte de vente d'un produit qui n'a pas encore sa photo : l'emplacement se lit comme un emplacement (cadre en tirets), jamais comme une photo vide. */
+.ctw .tn-produits-vente .tn-v-carte .tn-ph:not([style]){outline:1.5px dashed color-mix(in srgb,var(--tn-encre) 38%,transparent);outline-offset:-10px;background-color:color-mix(in srgb,var(--tn-doux) 62%,var(--tn-fond))}

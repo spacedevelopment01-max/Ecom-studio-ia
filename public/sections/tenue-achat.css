@@ -1459,3 +1459,13 @@
 }
 .ctw .tn-garantie .tn-sceau-g{gap:6px}
 .ctw .tn-garantie .tn-sceau-g span{line-height:1.12}
+@media (min-width:760px){
+  .ctw[data-tn-titres="gras"] .tn-echelle[data-tn-c="carte-a-cheval"] li b,.ctw[data-tn-titres="capitales"] .tn-echelle[data-tn-c="carte-a-cheval"] li b,.ctw[data-tn-lourd] .tn-echelle[data-tn-c="carte-a-cheval"] li b{font-size:22px}
+}
+/* Tant qu'une offre est encore à compléter, ses notes jaunes se rangent l'une sous l'autre (elles écrasaient le nom à 320 px). */
+.ctw .tn-offre-moment .tn-om:has(.tn-om-remise mark){grid-template-columns:minmax(0,36%) minmax(0,1fr)}
+.ctw .tn-offre-moment .tn-om-remise:has(mark){max-width:100%}
+.ctw .tn-packs:not([data-tn-c="cote-a-cote"]) .tn-pack>label:has(mark){grid-template-columns:24px minmax(0,1fr)}
+.ctw .tn-packs:not([data-tn-c="cote-a-cote"]) .tn-pack>label:has(mark) .tn-pack-prix{grid-column:2;grid-row:auto;justify-self:start;justify-items:start;white-space:normal;font-size:13px}
+.ctw .tn-lots[data-tn-c="lignes"] label:has(mark){grid-template-columns:22px minmax(0,1fr)}
+.ctw .tn-lots[data-tn-c="lignes"] label:has(mark) span,.ctw .tn-lots[data-tn-c="lignes"] label:has(mark) em,.ctw .tn-lots[data-tn-c="lignes"] label:has(mark) em:has(mark){grid-column:2;grid-row:auto;justify-self:start}
