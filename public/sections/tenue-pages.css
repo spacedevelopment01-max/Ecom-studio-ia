@@ -710,3 +710,8 @@
 /* Tiroir de panier, tenue aux titres gras : le nom d'un produit reste lisible dans la colonne étroite du tiroir */
 .ctw[data-tn-titres="gras"] .tn-panier-cote .tn-quoi b:not(#tn),.ctw[data-tn-titres="capitales"] .tn-panier-cote .tn-quoi b:not(#tn),.ctw[data-tn-lourd] .tn-panier-cote .tn-quoi b:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:15.5px;line-height:1.25;letter-spacing:0;text-transform:none}
 .ctw .tn-panier-cote .tn-quoi b:not(#tn){overflow-wrap:break-word}
+/* Tour des sections : ce qui reste collé en défilant sur grand écran se colle SOUS l'en-tête collant de la boutique
+   (76 px sur grand écran), jamais dessous. */
+@media (min-width:760px){
+  .ctw .tn-ent~.tb-pg .tn-panier[data-tn-c="deux-colonnes"] .tn-recap,.ctw .tn-ent~.tb-pg .tn-rubriques .tn-rub h2,.ctw .tn-ent~.tb-pg .tn-legal[data-tn-c="sommaire"] .tn-sommaire{top:calc(var(--tb-h,0px) + 100px)}
+}

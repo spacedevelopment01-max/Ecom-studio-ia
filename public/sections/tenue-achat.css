@@ -1473,3 +1473,8 @@
 /* En situation, sous le bloc d'achat : l'ombre d'une carte au cadre penché garde sa place avant la section suivante. */
 .ctw[data-tn-cadre="penche"] .tn-lots:not(:last-child){padding-bottom:8px}
 .ctw[data-tn-cadre="penche"] .tn-atouts[data-tn-c="coches"]:not(:last-child){padding-bottom:10px}
+/* Tour des sections : ce qui reste collé en défilant sur grand écran se colle SOUS l'en-tête collant de la boutique
+   (76 px sur grand écran), jamais dessous. */
+@media (min-width:760px){
+  .ctw .tn-ent~.tb-pg .tn-volets[data-tn-c="numeros"] h2{top:calc(var(--tb-h,0px) + 100px)}
+}
