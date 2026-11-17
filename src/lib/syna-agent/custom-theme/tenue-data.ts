@@ -17,6 +17,7 @@
  *    restaurant), data-tn-prestations-options et data-tn-equipe-options (rendez-vous en trois temps). Seule la lecture
  *    de ces deux rubriques (« tenueMetiers », en bas du fichier) touche à la base ; tout le reste est pur.
  */
+import { withStructuredInfos } from "./theme";
 import { coupe, markMissing, repere, type TenuePrestation, type TenueProduct } from "./tenue";
 import { assetUrl } from "../../library";
 import { listBiens, VISIBLE_STATUSES } from "../../biens";
@@ -901,7 +902,7 @@ export function tenueVitrine(projectId: string): TenueVitrine {
  */
 export function withTenueSite(html: string, d: TenueSite, built?: string | null): string {
   if (!/class="tn tn-/.test(html)) return html;
-  let out = withTenueContact(html, d);
+  let out = withStructuredInfos(withTenueContact(html, d));
   out = withTenuePrestationChoices(out, d.prestations ?? []);
   out = withTenueCatalogue(out, d);
   out = withTenueFamilies(out, d.families ?? []);

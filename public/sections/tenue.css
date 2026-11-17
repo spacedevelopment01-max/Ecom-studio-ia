@@ -496,7 +496,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 .ctw .tn-contact[data-tn-c="coordonnees-en-grand"],.ctw .tn-contact[data-tn-c="deux-colonnes"]{display:flex;flex-direction:column;padding-bottom:64px}
 .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] form{order:2;margin-top:10px}
 .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-bt{align-self:flex-start}
-.ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-infos{order:1;min-height:0;margin-top:28px;padding:18px 0 20px;background:none;border-radius:0;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);text-align:left;font-family:var(--f-title);font-size:23px;line-height:1.45;overflow-wrap:anywhere}
+.ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-infos{order:1;min-height:0;margin-top:28px;padding:18px 0 20px;background:none;border-radius:0;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);text-align:left;font-family:var(--f-ui);font-size:17px;line-height:1.5;overflow-wrap:anywhere}
 .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-infos b{font-family:var(--f-ui);font-weight:700;font-size:12.5px;line-height:1.4;letter-spacing:.1em;text-transform:uppercase;color:var(--tn-sourd);margin-bottom:10px}
 /* ══ Contact « deux colonnes » : le formulaire dans une carte de couleur douce ══ */
 .ctw .tn-contact[data-tn-c="deux-colonnes"] form{margin-top:28px;padding:10px 22px 28px;background-color:var(--tn-doux);border-radius:max(var(--tn-arrondi,0px),0px)}
@@ -616,7 +616,10 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
   .ctw .tn-final[data-tn-c="gauche-droite"] .tn-bt{margin:0 0 10px}
   .ctw .tn-final:where([data-tn-c="gauche-droite"]) .tn-bt{padding:18px 44px}
 
-  .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-infos{margin-top:36px;padding:26px 0 28px;font-size:34px;line-height:1.4}
+  .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-infos{margin-top:36px;padding:26px 0 28px}
+  .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-info{grid-template-columns:170px minmax(0,1fr);align-items:baseline;column-gap:24px}
+  .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-info-seule{grid-template-columns:minmax(0,1fr)}
+  .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-info dd{font-size:22px}
   .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] form{margin-top:16px}
   .ctw .tn-contact[data-tn-c="deux-colonnes"]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);column-gap:72px;padding:44px max(40px,calc(50% - 540px)) 88px}
   .ctw .tn-contact[data-tn-c="deux-colonnes"] :is(h1,p,.tn-infos){grid-column:1}
@@ -743,3 +746,14 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
    coupés en bas, jamais au grand jamais »). Le bouton passe donc au-dessus de ce qui suit, et garde sa place en bas. */
 .ctw[data-tn-bouton="ombre"] .tn .tn-bt{position:relative;z-index:1}
 .ctw[data-tn-bouton="ombre"] .tn>.tn-bt:last-child,.ctw[data-tn-bouton="ombre"] .tn>:last-child>.tn-bt:last-child{margin-bottom:8px}
+
+/* Coordonnées de la page Contact : une ligne par information, un petit libellé, la valeur en texte courant. Jamais un
+   pavé dans la police des titres (goût du propriétaire, 17 novembre 2026). Vaut pour les trois façons de la pièce. */
+.ctw .tn-contact .tn-infos{font-family:var(--f-ui)}
+.ctw .tn-contact .tn-info-liste{display:grid;gap:14px;margin:0;padding:0}
+.ctw .tn-contact .tn-info{display:grid;gap:3px;margin:0}
+.ctw .tn-contact .tn-info dt{font-family:var(--f-ui);font-size:12px;font-weight:600;line-height:1.4;letter-spacing:.09em;text-transform:uppercase;color:var(--tn-sourd)}
+.ctw .tn-contact .tn-info dd{margin:0;font-family:var(--f-ui);font-size:17px;font-weight:500;line-height:1.45;letter-spacing:0;text-transform:none;color:var(--tn-encre);overflow-wrap:anywhere}
+.ctw .tn-contact .tn-info-seule dd{font-weight:600}
+.ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-info dd{font-size:19px}
+.ctw .tn-contact .tn-infos>b+.tn-info-liste{margin-top:6px}

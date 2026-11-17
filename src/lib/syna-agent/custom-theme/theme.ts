@@ -123,6 +123,31 @@ const HISTORY_MAX = 15;
 export const newUid = () => "s" + crypto.randomBytes(4).toString("hex");
 export const sectionHtml = (s: CtSection): string => { const h = withSectionLinks(inlineBackgrounds(s.html ?? libSection(s.id)?.html ?? ""), s.links); return s.id === "scene-achetable" ? sceneGrid(h) : h; };
 
+/**
+ * Les coordonnées d'une page Contact, rangées : une ligne par information, son petit libellé au-dessus, la valeur en
+ * texte courant. Le rédacteur les écrit comme des lignes séparées par des retours ; posées telles quelles dans la police
+ * des titres, elles donnaient un pavé très gras illisible (vu par le propriétaire le 17 novembre 2026, sur téléphone :
+ * « refais la section pour qu'elle n'ait plus jamais ce rendu au niveau du texte »). Un bloc déjà rangé n'est pas touché.
+ * Posé à l'AFFICHAGE (aperçu et mise en boutique, par `withTenueSite`), jamais dans le texte enregistré : le rédacteur
+ * et les retouches continuent de lire et de remplacer les lignes telles qu'elles sont écrites.
+ */
+export function withStructuredInfos(html: string): string {
+  if (!html.includes("tn-infos")) return html;
+  return html.replace(/(<div class="tn-infos"[^>]*>)([\s\S]*?)(<\/div>)/g, (m, open: string, inner: string, close: string) => {
+    if (/<(?:dl|ul|ol|table|p|div)\b/i.test(inner)) return m;
+    const t = /^\s*<b>[\s\S]*?<\/b>/.exec(inner), title = t ? t[0].trim() : "";
+    const lines = inner.slice(t ? t[0].length : 0).split(/<br\s*\/?>/i).map((x) => x.trim()).filter(Boolean);
+    if (!lines.length) return m;
+    const plain = (x: string) => x.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ");
+    const guess = (x: string) => (/\[À compléter/.test(x) ? "" : /@[\w-]+\.[a-z]{2,}/i.test(x) ? "E-mail" : /(?:\+33|\b0)\s?[1-9](?:[\s.]?\d{2}){4}\b/.test(x) ? "Téléphone" : /\b\d{5}\b/.test(x) ? "Adresse" : /\b(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b|\b\d{1,2}\s?h\b/i.test(x) ? "Horaires" : "");
+    const row = (line: string) => {
+      const k = /^([^:<>]{2,30}?)\s*:\s+([\s\S]+)$/.exec(line), label = k ? k[1].trim() : guess(plain(line)), value = k ? k[2].trim() : line;
+      return `<div class="tn-info${label ? "" : " tn-info-seule"}">${label ? `<dt>${label}</dt>` : ""}<dd>${value}</dd></div>`;
+    };
+    return `${open}${title}<dl class="tn-info-liste">${lines.map(row).join("")}</dl>${close}`;
+  });
+}
+
 const linkText = (inner: string) => inner.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&#39;|&rsquo;/g, "'").replace(/[→↗]/g, "").replace(/\s+/g, " ").trim();
 /**
  * La table des liens d'une section (écrite par le rédacteur : texte du bouton → page) s'impose à l'attribut « data-go »
