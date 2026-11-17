@@ -538,7 +538,9 @@
     if (ctx.monte) {
       textes.forEach(function (t) {
         if (/\[À compléter/.test(t.texte)) ajoute("crochets-bruts", t.el, { texte: t.texte, detail: "des crochets « [À compléter » s'affichent tels quels" });
-        (ctx.exemples || []).forEach(function (mot) { if (mot && t.texte.indexOf(mot) >= 0) ajoute("texte-exemple", t.el, { texte: t.texte, detail: "un texte d'exemple de la bibliothèque reste affiché : « " + mot + " »" }); });
+        // La casse ne compte pas : « L'infuseur » en tête de phrase est le même exemple que « l'infuseur ».
+        var bas = t.texte.toLocaleLowerCase("fr-FR");
+        (ctx.exemples || []).forEach(function (mot) { if (mot && bas.indexOf(mot.toLocaleLowerCase("fr-FR")) >= 0) ajoute("texte-exemple", t.el, { texte: t.texte, detail: "un texte d'exemple de la bibliothèque reste affiché : « " + mot + " »" }); });
       });
       racines.forEach(function (sec) {
         Array.prototype.forEach.call(sec.querySelectorAll("*"), function (el) {

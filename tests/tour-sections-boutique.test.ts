@@ -112,3 +112,28 @@ describe("aucun vide", () => {
     expect(PRODUIT).toContain(".ctw .tn-rayons .tn-familles a:has(>.tn-ph:not([style])):not(#tn) .tn-ph{display:none}");
   });
 });
+
+describe("aucun texte d'exemple chez un client", () => {
+  it("hors des emplacements de produit (remplis par le vrai catalogue), aucune pièce n'écrit le nom d'un produit d'exemple", async () => {
+    process.env.STUDIO_SYNA_AGENT = "1";
+    const { TENUE_SECTIONS, exampleProductNames } = await import("@/lib/syna-agent/custom-theme/tenue");
+    const noms = [...exampleProductNames()].filter((x) => x.length >= 5);
+    // Le nom du produit du bloc d'achat et les lignes d'un panier sont posés par le Studio avec les vrais produits.
+    const POSES = new Set(["tn-achat", "tn-panier", "tn-panier-cote"]);
+    const restes = TENUE_SECTIONS.filter((s) => !POSES.has(s.id)).flatMap((s) => {
+      const t = s.html.replace(/<a class="(?:tn-carte-p|tn-r|tn-s|tn-v-carte)[^"]*"[\s\S]*?<\/a>/g, " ").replace(/<b data-tn-produit>[\s\S]*?<\/b>/g, " ").replace(/<div class="tn-noms">[\s\S]*?<\/div>/g, " ")
+        .replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").toLocaleLowerCase("fr-FR");
+      return noms.filter((n) => t.includes(n)).map((n) => `${s.id} : « ${n} »`);
+    });
+    expect(restes).toEqual([]);
+  });
+  it("la préparation en étapes et le colis : des exemples neutres, aucune quantité inventée", async () => {
+    process.env.STUDIO_SYNA_AGENT = "1";
+    const { tenueSection } = await import("@/lib/syna-agent/custom-theme/tenue");
+    for (const id of ["tn-preparation", "tn-colis"]) {
+      const html = tenueSection(id)!.html, texte = html.replace(/<[^>]+>/g, " ");
+      expect(texte, id).not.toMatch(/infuseur|cuillère|jasmin|feuilles|tasse|thé\b|sachet de/i);
+      expect(html, id).toContain("[À compléter");
+    }
+  });
+});

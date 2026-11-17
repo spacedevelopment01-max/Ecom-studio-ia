@@ -215,6 +215,16 @@ describe("boutique sans photos du client", async () => {
     } finally { clean(); }
   });
 
+  it("tour des sections : la carte de vente qui porte une offre et la carte « ajout rapide » montrent aussi « Ta photo ici »", () => {
+    const vente = '<section data-ct="v1" class="tn tn-produits-vente" data-tn-cartes-vente><div class="tn-v-cartes"><a class="tn-v-carte" href="#" onclick="return false" data-go="product"><div class="tn-ph"><em class="tn-v-offre">L\'offre de rentrée</em></div><b>Le sac</b></a></div></section>';
+    const v = Lib.withoutMissingPhotos(vente, null, () => false);
+    expect(v).toContain('<div class="tn-ph tn-ta-photo" role="img" aria-label="Ta photo ici"><span>Ta photo ici</span><em class="tn-v-offre">L\'offre de rentrée</em></div><b>Le sac</b>');
+    const rapide = '<section data-ct="c1" class="tn tn-catalogue" data-tn-produits><div class="tn-cartes"><div class="tn-carte-p" data-tn-prix="1900"><a class="tn-v-vers" href="#" onclick="return false" data-go="product"><div class="tn-ph"></div><b>La sangle</b></a><a class="tn-v-ajout" href="#" onclick="return false" role="button" data-pogo>Ajouter au panier</a></div></div></section>';
+    const r = Lib.withoutMissingPhotos(rapide, null, () => false);
+    expect(r).toContain('<a class="tn-v-vers" href="#" onclick="return false" data-go="product"><div class="tn-ph tn-ta-photo" role="img" aria-label="Ta photo ici"><span>Ta photo ici</span></div><b>La sangle</b>');
+    expect(r).not.toContain("tn-ph-manque");
+  });
+
   it("un site déjà créé garde la photo de sa fiche sur ses cartes ; un site neuf n'en a plus", () => {
     const ancien = { pages: [{ key: "product", label: "Fiche", product: "lampe-galet", sections: [{ uid: "s1", id: "tn-achat", html: '<section class="tn tn-achat" data-tn-achat><div class="tn-galerie"><div class="tn-grande tn-ph" style="background-image:url(/api/files/abc123)"></div></div></section>' }] }] } as any;
     expect(R.fichePhotos(ancien).get("lampe-galet")).toBe("/api/files/abc123");

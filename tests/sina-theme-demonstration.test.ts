@@ -147,9 +147,9 @@ const YOGA: Site = {
         ["À la maison", "Au quotidien"], ["<span>Conservation</span>", "<span>Entretien</span>"], ["À l'abri de la lumière", "Une éponge humide, puis à l'air"], ["<span>À boire avant</span>", "<span>Rangement</span>"], ["[À compléter : date]", "Roulé, avec sa sangle"],
       ] },
       { id: "tn-colis", construction: "liste", photos: [["sachet-bois.jpg", "roule"], ["infuseur.jpg", "sangle"], ["rooibos.jpg", "colis"]], texts: [
-        ["Tout ce que tu reçois, pièce par pièce.", "Tout ce que vous recevez, pièce par pièce."], ["Le sachet de thé", "Le tapis, roulé"], ["Des feuilles entières, dans un sachet qui se referme.", "Roulé serré, prêt à être déroulé."],
-        ["L'infuseur et sa cuillère", "Sa sangle de transport"], ["Une cuillère rase, une tasse.", "Elle le tient roulé et se passe à l'épaule."], ["Un mélange à découvrir", "Un colis en carton"], ["[À compléter : lequel]", "Du papier de soie, rien d'autre autour."],
-        ["La boîte en métal", "La brique en liège"], ["[À compléter : prix]", "19 €"], ["Le paquet cadeau", "L'anneau Pilates"], ["[À compléter : prix]", "29 €"],
+        ["Tout ce que tu reçois, pièce par pièce.", "Tout ce que vous recevez, pièce par pièce."], ["Le produit", "Le tapis, roulé"], ["Ce que c'est, en une phrase qui donne envie.", "Roulé serré, prêt à être déroulé."],
+        ["Ce qui l'accompagne", "Sa sangle de transport"], ["À quoi ça sert, en quelques mots.", "Elle le tient roulé et se passe à l'épaule."], ["Une attention en plus", "Un colis en carton"], ["[À compléter : laquelle]", "Du papier de soie, rien d'autre autour."],
+        ["Une pièce de plus", "La brique en liège"], ["[À compléter : prix]", "19 €"], ["Le paquet cadeau", "L'anneau Pilates"], ["[À compléter : prix]", "29 €"],
       ] },
       { id: "tn-pour-qui", construction: "panneaux", texts: [
         ["Fait pour toi si…", "Fait pour vous si…"], ["Tu cherches une vraie pause dans l'après-midi.", "Vous pratiquez chez vous, deux ou trois fois par semaine."], ["Tu aimes les parfums de fleurs, tout en douceur.", "Vous aimez un appui souple sous les genoux."], ["Tu bois ton thé sans sucre.", "Vous voulez un tapis qui reste beau, déroulé dans le salon."],

@@ -179,7 +179,10 @@ describe("thème unique, partitions : jamais une pièce sans sa vraie donnée", 
     expect(D.reseauxDansTexte("Partage : https://www.facebook.com/sharer/sharer.php?u=x ; https://www.instagram.com/p/Abc123/ ; je suis sur Instagram et TikTok")).toEqual([]);
     expect(D.reseauxDansTexte("tiktok @mon.compte")).toEqual([{ cle: "tiktok", nom: "TikTok", url: "https://www.tiktok.com/@mon.compte", compte: "@mon.compte" }]);
     const out = D.withTenueSite(tenueSection("tn-reseaux")!.html, { reseaux: RESEAUX });
-    expect(out.match(/<li><a href="https:\/\/[^"]+" target="_blank" rel="noopener"><small>[^<]+<\/small><b>[^<]+<\/b><\/a><\/li>/g)).toHaveLength(3);
+    expect(out.match(/<li><a href="https:\/\/[^"]+" target="_blank" rel="noopener"><small>[^<]+<\/small><b>(?:[^<]|<wbr>)+<\/b><\/a><\/li>/g)).toHaveLength(3);
+    // Un compte trop long passe à la ligne à ses signes, jamais au milieu d'un nom.
+    expect(out).toContain("<b>@atelier<wbr>.essai</b>");
+    expect(out).toContain("<b>facebook<wbr>.com/<wbr>atelier<wbr>.essai</b>");
     expect(out).not.toMatch(/Nom du réseau|À compléter|href="#"/);
     // Un texte écrit dans la pièce ne suffit pas : sans compte connu du Studio, elle ne se montre pas.
     expect(D.withTenueSite(remplir(tenueSection("tn-reseaux")!.html).replace(/\[À compléter[^\]]*\]/g, "@invente"), {})).toBe("");
@@ -423,7 +426,7 @@ describe("thème unique, partitions : la mise en boutique (Shopify)", async () =
     const filtres = liquidOf(out, "tn-realisations-types")!;
     expect(filtres.match(/<input type="radio" name="tn-pt-type" value="(?:tous|[abc])"/g)).toHaveLength(4); // le même groupe : un seul choix à la fois
     expect(filtres.match(/<figure data-tn-t="[abc]">/g)).toHaveLength(6);
-    expect(liquidOf(out, "tn-reseaux")!).toContain('<a href="https://www.instagram.com/atelier.essai/" target="_blank" rel="noopener"><small>Instagram</small><b>@atelier.essai</b></a>');
+    expect(liquidOf(out, "tn-reseaux")!).toContain('<a href="https://www.instagram.com/atelier.essai/" target="_blank" rel="noopener"><small>Instagram</small><b>@atelier<wbr>.essai</b></a>');
     const ouverture = sp(liquidOf(out, "tn-ouverture-metier")!);
     expect(validateCustomSection(ouverture)).toBeNull();
     expect(ouverture).toContain('data-tn-c="photo-bandeau"');

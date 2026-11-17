@@ -262,7 +262,9 @@ export function withoutMissingPhotos(html: string, pal: { light?: string | null;
   });
   // 1) Cartes de produit sans photo : « Ta photo ici » dans le cadre ; les petites lignes (recherche, suggestions,
   //    panier), trop petites pour un libellé, perdent leur cadre vide et le disent à la feuille.
-  out = out.replace(/(<a class="tn-(?:carte-p|v-carte)[^"]*"[^>]*>)<div class="tn-ph"><\/div>/g, (_m, open: string) => `${open}${taPhotoIci("tn-ph")}`)
+  //    Aussi : la carte de vente qui porte l'étiquette d'une offre sur sa photo (l'étiquette reste posée sur l'emplacement),
+  //    et la carte « ajout rapide » d'une collection (un cadre, son lien vers la fiche, son bouton dessous).
+  out = out.replace(/(<a class="tn-(?:carte-p|v-carte)[^"]*"[^>]*>|<div class="tn-carte-p[^"]*"[^>]*><a class="tn-v-vers"[^>]*>)<div class="tn-ph">((?:<em class="tn-v-offre">(?:(?!<\/em>)[\s\S])*<\/em>)?)<\/div>/g, (_m, open: string, tag: string) => `${open}${taPhotoIci("tn-ph").replace(/<\/div>$/, `${tag}</div>`)}`)
     .replace(/<a class="(tn-r|tn-s)"([^>]*)><div class="tn-ph"><\/div>/g, '<a class="$1 tn-sans-photo"$2>')
     .replace(/<div class="tn-ligne"([^>]*)><div class="tn-ph"><\/div>/g, '<div class="tn-ligne tn-sans-photo"$1>')
     .replace(/<div class="tn-ph"><\/div>/g, '<div class="tn-ph tn-ph-manque"></div>');
