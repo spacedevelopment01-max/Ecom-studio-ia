@@ -347,9 +347,9 @@ de placement » ; « il y a déjà la moitié des sections qui sont identiques. 
   de bout en bout (IA simulée), les remplacements sont justes (les questions deviennent les questions par rubriques, les
   garanties la livraison, les produits la grille de vente). **Pas encore vérifié avec la vraie IA** : il faudra un essai
   de création.
-- **Reste à proposer** (dit au propriétaire, en attente de son oui) : une vraie signature visible pour chaque famille
-  (fonds, cadres, rythme), et une police de titres différente d'une marque à l'autre (trois marques d'essai sur quatre
-  ont reçu la même grosse police grasse).
+- **La suite** (« Fait les 5 », 17 novembre 2026) : une identité différente pour chaque marque (police de titres et fond,
+  partie « L'identité différente pour chaque marque »), une signature visible pour chaque famille, des réglages à
+  l'intérieur des sections, le signe de la marque plus visible, et un contrôle par l'image (parties suivantes).
 
 ## L'identité différente pour chaque marque (17 novembre 2026)
 
