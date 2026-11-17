@@ -707,3 +707,6 @@
 @media (min-width:760px){
   .ctw .tn-rubriques[data-tn-c="cartes"] .tn-encore{margin-top:20px}
 }
+/* Tiroir de panier, tenue aux titres gras : le nom d'un produit reste lisible dans la colonne étroite du tiroir */
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-panier-cote .tn-quoi b:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:15.5px;line-height:1.25;letter-spacing:0;text-transform:none}
+.ctw .tn-panier-cote .tn-quoi b:not(#tn){overflow-wrap:break-word}

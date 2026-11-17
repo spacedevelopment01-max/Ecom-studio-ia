@@ -1027,11 +1027,11 @@
 /* ── Le téléphone souligné sous un bouton : assez loin du bouton pour ne pas toucher l'un en visant l'autre ── */
 .ctw :is(.tn-ouverture-metier,.tn-acces) .tn-tel{margin-top:10px}
 /* ── Accès : dans une tenue aux titres gras, l'adresse (souvent longue) s'écrit en texte courant, en demi-gras ── */
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-acces address{font-family:var(--f-ui);font-weight:600;font-size:19px;line-height:1.4;letter-spacing:0;text-transform:none}
+.ctw[data-tn-titres="gras"] .tn-acces address,.ctw[data-tn-titres="capitales"] .tn-acces address,.ctw[data-tn-lourd] .tn-acces address{font-family:var(--f-ui);font-weight:600;font-size:19px;line-height:1.4;letter-spacing:0;text-transform:none}
 /* ── Prestations : le prix ne mange jamais plus de 42 % de la ligne, il passe à la ligne ; noms longs en texte courant ── */
-.ctw .tn-prestations:is(:not([data-tn-c]),[data-tn-c="liste"]) .tn-liste-p li:not(.tn-rub){grid-template-columns:minmax(0,1fr) fit-content(48%)}
-.ctw .tn-prestations:is(:not([data-tn-c]),[data-tn-c="liste"]) .tn-liste-p i{white-space:normal;text-wrap:balance}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-prestations .tn-liste-p b[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:600;font-size:17px;line-height:1.3;letter-spacing:0;text-transform:none}
+.ctw .tn-prestations:not([data-tn-c="cartes"]):not([data-tn-c="carte"]) .tn-liste-p li:not(.tn-rub){grid-template-columns:minmax(0,1fr) fit-content(48%)}
+.ctw .tn-prestations:not([data-tn-c="cartes"]):not([data-tn-c="carte"]) .tn-liste-p i{white-space:normal;text-wrap:balance}
+.ctw[data-tn-titres="gras"] .tn-prestations .tn-liste-p b[data-tn-long]:not(#tn),.ctw[data-tn-titres="capitales"] .tn-prestations .tn-liste-p b[data-tn-long]:not(#tn),.ctw[data-tn-lourd] .tn-prestations .tn-liste-p b[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:600;font-size:17px;line-height:1.3;letter-spacing:0;text-transform:none}
 /* ── Tarifs : « À compléter » dans une colonne de prix reste une petite note ── */
 .ctw .tn-tarifs td mark.tn-manque{padding:1px 4px;font-size:12.5px}
 /* ── Aides : la ligne à toucher d'une question fait 44 px, le signe au milieu ── */
@@ -1042,15 +1042,15 @@
 /* ── Biens vendus, cadre penché : la photo penchée et son ombre gardent leur place dans la carte (l'ombre ne touche plus
    la photo voisine ni le bord de l'écran) ── */
 .ctw[data-tn-cadre="penche"] .tn-vendus .tn-biens{column-gap:20px}
-@media (max-width:759px){.ctw[data-tn-cadre="penche"] .tn-vendus:is(:not([data-tn-c]),[data-tn-c="cartes"]) .tn-biens li:not(:first-child){flex-basis:calc(50% - 10px)}}
+@media (max-width:759px){.ctw[data-tn-cadre="penche"] .tn-vendus:not([data-tn-c="lignes"]) .tn-biens li:not(:first-child){flex-basis:calc(50% - 10px)}}
 /* (la liste porte la même classe que la pièce « biens » du module des métiers, qui rogne ce qui dépasse) */
-.ctw[data-tn-cadre="penche"] .tn-vendus .tn-biens{overflow:visible}
+.ctw[data-tn-cadre="penche"] .tn-vendus>ul:not(#tn){overflow:visible}
 @media (max-width:759px){
   /* Noms sur deux colonnes de téléphone, tenue aux titres gras : un peu plus petits, pour qu'un mot courant tienne sur sa ligne */
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-prestations:is(:not([data-tn-c]),[data-tn-c="liste"]) .tn-liste-p b{font-size:20px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-prestations[data-tn-c="cartes"] .tn-liste-p b{font-size:17px;line-height:1.15}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-vendus .tn-biens li:not(:first-child) b{font-size:17px;line-height:1.15}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-vendus[data-tn-c="lignes"] .tn-biens li b{font-size:19px}
+  .ctw[data-tn-titres="gras"] .tn-prestations:not([data-tn-c="cartes"]):not([data-tn-c="carte"]) .tn-liste-p b,.ctw[data-tn-titres="capitales"] .tn-prestations:not([data-tn-c="cartes"]):not([data-tn-c="carte"]) .tn-liste-p b,.ctw[data-tn-lourd] .tn-prestations:not([data-tn-c="cartes"]):not([data-tn-c="carte"]) .tn-liste-p b{font-size:20px}
+  .ctw[data-tn-titres="gras"] .tn-prestations[data-tn-c="cartes"] .tn-liste-p b,.ctw[data-tn-titres="capitales"] .tn-prestations[data-tn-c="cartes"] .tn-liste-p b,.ctw[data-tn-lourd] .tn-prestations[data-tn-c="cartes"] .tn-liste-p b{font-size:17px;line-height:1.15}
+  .ctw[data-tn-titres="gras"] .tn-vendus .tn-biens li:not(:first-child) b,.ctw[data-tn-titres="capitales"] .tn-vendus .tn-biens li:not(:first-child) b,.ctw[data-tn-lourd] .tn-vendus .tn-biens li:not(:first-child) b{font-size:17px;line-height:1.15}
+  .ctw[data-tn-titres="gras"] .tn-vendus[data-tn-c="lignes"] .tn-biens li b,.ctw[data-tn-titres="capitales"] .tn-vendus[data-tn-c="lignes"] .tn-biens li b,.ctw[data-tn-lourd] .tn-vendus[data-tn-c="lignes"] .tn-biens li b{font-size:19px}
 }
 
 /* ── Réalisations en bandes : la ville (ou une note longue) à droite du nom ne lui prend jamais plus de 40 % de la ligne
@@ -1065,16 +1065,38 @@
 /* ── Disponibilités en barre, sans la photo : la boîte des dates n'a plus rien à chevaucher ── */
 .ctw .tn-disponibilites:has(>.tn-ph-manque) form:not(#tn){margin-top:24px}
 @media (max-width:759px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b{font-size:calc(28px*var(--tn-k));line-height:1.06}
+  .ctw[data-tn-titres="gras"] .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b,.ctw[data-tn-titres="capitales"] .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b,.ctw[data-tn-lourd] .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b{font-size:calc(28px*var(--tn-k));line-height:1.06}
 }
 @media (min-width:760px){
   .ctw[data-tn-cadre="penche"] .tn-vendus .tn-biens{column-gap:34px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b{font-size:calc(38px*var(--tn-k));line-height:1.04}
+  .ctw[data-tn-titres="gras"] .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b,.ctw[data-tn-titres="capitales"] .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b,.ctw[data-tn-lourd] .tn-realisations[data-tn-c="detail"] figure:first-child figcaption b{font-size:calc(38px*var(--tn-k));line-height:1.04}
   /* Tarifs en tableau : dans une tenue aux titres gras, le nom d'une ligne garde une taille de nom, pas de titre */
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-tarifs:is(:not([data-tn-c]),[data-tn-c="tableau"]) tbody th{font-size:19px;line-height:1.2}
+  .ctw[data-tn-titres="gras"] .tn-tarifs:not([data-tn-c="cartes"]) tbody th,.ctw[data-tn-titres="capitales"] .tn-tarifs:not([data-tn-c="cartes"]) tbody th,.ctw[data-tn-lourd] .tn-tarifs:not([data-tn-c="cartes"]) tbody th{font-size:19px;line-height:1.2}
 }
 @media (min-width:760px){
   /* Tarifs en tableau : le nom de la ligne garde au moins un tiers de la largeur, même quand les prix sont des notes longues */
-  .ctw .tn-tarifs:is(:not([data-tn-c]),[data-tn-c="tableau"]) tbody th{width:34%}
-  .ctw .tn-tarifs:is(:not([data-tn-c]),[data-tn-c="tableau"]) td:has(mark.tn-manque){white-space:normal}
+  .ctw .tn-tarifs:not([data-tn-c="cartes"]) tbody th{width:34%}
+  .ctw .tn-tarifs:not([data-tn-c="cartes"]) td:has(mark.tn-manque){white-space:normal}
 }
+/* Une note dans une colonne de prix étroite se coupe à la française, avec son trait d'union (jamais « informatio / n ») */
+.ctw .tn-tarifs td mark.tn-manque{hyphenate-limit-chars:8 3 3;-webkit-hyphenate-limit-before:3;-webkit-hyphenate-limit-after:3}
+/* Cadre penché : une photo penchée qui finit sa section (à côté d'une liste courte, sur grand écran) garde la place de son ombre */
+.ctw[data-tn-cadre="penche"] :is(.tn-prestations:not([data-tn-c="cartes"]):not([data-tn-c="carte"]),.tn-zone,.tn-acces,.tn-rdv[data-tn-c="photo"],.tn-disponibilites[data-tn-c="fiche"]) .tn-ph{margin-bottom:16px}
+@media (max-width:359px){
+  /* Très petit téléphone, deux cartes par rangée, tenue aux titres gras : le nom s'écrit en texte courant (jamais quatre lignes de gras) */
+  .ctw[data-tn-titres="gras"] .tn-prestations[data-tn-c="cartes"] .tn-liste-p b:not(#tn),.ctw[data-tn-titres="capitales"] .tn-prestations[data-tn-c="cartes"] .tn-liste-p b:not(#tn),.ctw[data-tn-lourd] .tn-prestations[data-tn-c="cartes"] .tn-liste-p b:not(#tn){font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:1.25;letter-spacing:0;text-transform:none}
+}
+/* Une note « À compléter » posée dans un très grand texte reste lisible : jamais sous 12,5 px */
+.ctw .tn-equipe .tn-membres b mark:not(#tn){font-size:clamp(13px,.5em,16px)}
+.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas i mark{font-size:max(12.5px,.62em)}
+.ctw .tn-urgence .tn-tel mark{font-size:max(12.5px,.5em)}
+@media (min-width:760px){
+  /* Déroulé en frise : au-delà de quatre étapes, elles passent à la ligne par quatre (jamais sept colonnes de deux mots) */
+  .ctw .tn-deroule[data-tn-c="frise"] .tn-etapes:has(li:nth-child(5)){grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:44px}
+  .ctw .tn-deroule[data-tn-c="frise"] .tn-etapes:has(li:nth-child(5)) li:nth-child(4n)::after{display:none}
+  /* Portraits de l'équipe, cadre penché : les portraits penchés ne se touchent plus */
+  .ctw[data-tn-cadre="penche"] .tn-equipe[data-tn-c="photos"] .tn-membres{column-gap:38px}
+}
+/* Avant / après avec une seule photo (l'autre manque) : elle prend toute la largeur, elle ne reste pas dans une demi-colonne */
+.ctw .tn-avant-apres .tn-paire:has(>figure:only-child){grid-template-columns:minmax(0,1fr)}
+.ctw .tn-avant-apres[data-tn-c="incruste"] .tn-paire:has(>figure:only-child){padding-bottom:0}

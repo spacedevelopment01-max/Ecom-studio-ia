@@ -30,7 +30,7 @@ describe("une valeur ou une adresse longue est marquée par le Studio", () => {
   it("les feuilles s'en servent : jamais un pavé gras dans un carreau, une carte de frais ou une adresse", () => {
     expect(METIERS).toMatch(/\.tn-bien-caracteristiques\[data-tn-c="chiffres"\] \.tn-carac dd\[data-tn-long\][^{]*\{font-family:var\(--f-ui\)/);
     expect(PARTITIONS).toMatch(/\.tn-bien-frais\[data-tn-c="cartes"\] dd\[data-tn-long\][^{]*\{font-family:var\(--f-ui\)/);
-    expect(PARTITIONS).toMatch(/\.tn-adresse address\[data-tn-long\]\{font-family:var\(--f-ui\)/);
+    expect(PARTITIONS).toMatch(/\.ctw\[data-tn-lourd\] \.tn-adresse address\[data-tn-long\]\{font-family:var\(--f-ui\)/);
   });
 });
 
@@ -60,7 +60,7 @@ describe("un prix ou une note ne serre plus le nom à côté de lui", () => {
     expect(derniere(METIERS, ".ctw .tn-carte .tn-rubrique li")).toMatch(/grid-template-columns:minmax\(0,1fr\) fit-content\(\d+%\)/);
     expect(derniere(SERVICES, '.ctw .tn-exemples-prix[data-tn-c="ticket"] .tn-cas li')).toMatch(/fit-content\(\d+%\)/);
     expect(derniere(SERVICES, '.ctw .tn-realisations[data-tn-c="bandes"] figcaption')).toMatch(/fit-content\(\d+%\)/);
-    expect(SERVICES).toMatch(/\.tn-prestations:is\(:not\(\[data-tn-c\]\),\[data-tn-c="liste"\]\) \.tn-liste-p li:not\(\.tn-rub\)\{grid-template-columns:minmax\(0,1fr\) fit-content\(\d+%\)\}/);
+    expect(SERVICES).toMatch(/\.tn-prestations:not\(\[data-tn-c="cartes"\]\):not\(\[data-tn-c="carte"\]\) \.tn-liste-p li:not\(\.tn-rub\)\{grid-template-columns:minmax\(0,1fr\) fit-content\(\d+%\)\}/);
   });
   it("rendez-vous en trois temps : le prix passe sous le nom quand les deux ne tiennent pas sur la ligne", () => {
     expect(derniere(METIERS, ".ctw .tn.tn-rdv-complet form .tn-options label>span")).toContain("flex-wrap:wrap");
@@ -70,10 +70,10 @@ describe("un prix ou une note ne serre plus le nom à côté de lui", () => {
 
 describe("deux pièces qui portent le même nom de classe ne se marchent plus dessus", () => {
   it("la carte du restaurant ne reçoit plus les marges de la pièce « questions par rubriques »", () => {
-    expect(METIERS).toContain(".ctw .tn-carte .tn-rubriques:not(#tn){padding:0;overflow:visible}");
+    expect(METIERS).toContain(".ctw .tn-carte>div:not(#tn){padding:0;overflow:visible}");
   });
   it("les biens vendus ne sont plus rognés par la règle de la pièce « biens » (ombre de la photo penchée)", () => {
-    expect(SERVICES).toContain('.ctw[data-tn-cadre="penche"] .tn-vendus .tn-biens{overflow:visible}');
+    expect(SERVICES).toContain('.ctw[data-tn-cadre="penche"] .tn-vendus>ul:not(#tn){overflow:visible}');
   });
 });
 

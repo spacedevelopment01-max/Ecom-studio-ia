@@ -434,7 +434,7 @@
   .ctw[data-tn-titres="capitales"] .tn-ent .tn-nom{font-size:clamp(13px,4.3vw,19px);letter-spacing:.02em}
   .ctw .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:clamp(17px,5.6vw,27px)}
   .ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:clamp(14px,4.6vw,24px)}
-  .ctw[data-tn-titres="capitales"] .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:clamp(11.5px,3.7vw,18px)}
+  .ctw[data-tn-titres="capitales"] .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:clamp(12px,3.8vw,18px)}
   .ctw .tn-ent[data-tn-c="plein-ecran"] .tn-e-outils{flex:none}
   /* Le menu ouvert : le titre de rubrique d'un grand menu garde 44 px ; le nom d'une famille ne devient pas un pavé gras */
   .ctw .tn-ent .tn-e-sous[data-tn-m]>.tn-e-t{min-height:44px;padding:16px 0 4px;align-items:flex-end}
@@ -481,4 +481,17 @@
   .ctw .tn-pied-services .tn-p-blocs:has(>.tn-p-bloc:nth-child(4))>.tn-p-bloc:nth-child(n+4){border-top:1px solid var(--tn-p-filet)}
   .ctw .tn-pied-reassurance .tn-p-gar:has(>li:nth-child(5)){grid-template-columns:repeat(4,minmax(0,1fr))}
   .ctw .tn-pied-reassurance .tn-p-gar:has(>li:nth-child(5))>li:nth-child(4n+1){padding-left:0;border-left:0}
+}
+/* En-tête de services : un numéro et un bouton, jamais plus (une troisième action ne s'affiche pas). Sur téléphone, un
+   bouton au libellé long prend sa propre ligne sous le numéro plutôt que de s'écrire sur quatre lignes. */
+.ctw .tn-entete-services .tn-e-actions>li:nth-child(n+3){display:none}
+@media (max-width:959px){
+  .ctw .tn-entete-services .tn-e-actions:not(#tn){display:flex;flex-wrap:wrap}
+  .ctw .tn-entete-services .tn-e-actions>li:first-child:not(:only-child){flex:0 1 auto}
+  .ctw .tn-entete-services .tn-e-actions>li{flex:1 1 auto;max-width:100%}
+}
+/* Pied de page de services, titres gras : un numéro au format international tient sur une ligne */
+.ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-pied-services .tn-p-tel:not(#tn){font-size:clamp(19px,6.4vw,34px)}
+@media (min-width:760px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-pied-services .tn-p-tel:not(#tn){font-size:clamp(30px,3vw,38px)}
 }

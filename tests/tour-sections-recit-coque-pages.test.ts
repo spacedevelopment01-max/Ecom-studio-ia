@@ -26,3 +26,31 @@ describe("la couleur de la marque écrite sur le fond de la page reste lisible",
     expect(recit).toMatch(/\.tn-comment[^{]*li::before[^{]*\{[^}]*color:var\(--tn-accent-texte/);
   });
 });
+
+describe("ce que le tour a corrigé reste écrit dans les feuilles", () => {
+  const recit = feuille("tenue-recit.css"), coque = feuille("tenue-coque.css"), pages = feuille("tenue-pages.css");
+  it("une liste longue passe à la ligne sur ordinateur (jamais sept colonnes de quelques lettres)", () => {
+    for (const piece of [".tn-comment", ".tn-frise", ".tn-presse", ".tn-chiffres", ".tn-fabrication", ".tn-journal"]) {
+      expect(recit, piece).toMatch(new RegExp(`\\${piece}[^{]*:has\\(>[a-z.-]+:nth-child\\([45]\\)\\)[^{]*\\{[^}]*grid-auto-flow:row`));
+    }
+    expect(coque).toMatch(/\.tn-pied-services \.tn-p-blocs:has\(>\.tn-p-bloc:nth-child\(4\)\)\{grid-template-columns:repeat\(3,/);
+  });
+  it("en-tête : le nom de la marque n'est plus coupé par des points de suspension sur téléphone", () => {
+    expect(coque).toMatch(/@media \(max-width:959px\)\{\s*\.ctw \.tn-ent \.tn-nom\{white-space:normal;overflow:visible;text-overflow:clip/);
+  });
+  it("en-tête de services : le numéro a de l'air dans sa pilule, et jamais plus de deux actions", () => {
+    expect(coque).toMatch(/\.tn-entete-services \.tn-e-tel\{padding:0 13px/);
+    expect(coque).toContain(".ctw .tn-entete-services .tn-e-actions>li:nth-child(n+3){display:none}");
+  });
+  it("recherche : le texte d'attente du champ n'est plus coupé par « … »", () => {
+    expect(pages).toMatch(/\.tn-recherche \.tn-cherche input::placeholder\{[^}]*text-overflow:clip/);
+    expect(pages).toContain('.ctw .tn-recherche[data-tn-c="panneau"] .tn-cherche input[type]{text-overflow:clip}');
+  });
+  it("tiroir de panier : le prix a sa colonne bornée et passe à la ligne, il ne recouvre plus le nom", () => {
+    expect(pages).toMatch(/\.tn-panier-cote \.tn-ligne:not\(#tn\)\{grid-template-columns:76px minmax\(0,1fr\) fit-content\(38%\)/);
+    expect(pages).toMatch(/\.tn-panier-cote \.tn-prix-l\{white-space:normal/);
+  });
+  it("le nom géant n'est rogné que sur les côtés", () => {
+    expect(recit).toContain(".ctw .tn-ouverture-nom,.ctw .tn-pied-complet{overflow:visible;overflow-x:clip}");
+  });
+});

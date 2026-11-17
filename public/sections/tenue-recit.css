@@ -1022,3 +1022,6 @@
 }
 /* Le nom géant : sa section ne rogne plus que sur les côtés (le haut et le bas des lettres ne sont jamais coupés). */
 .ctw .tn-ouverture-nom,.ctw .tn-pied-complet{overflow:visible;overflow-x:clip}
+/* « Choisir » (cookies) : 44 px à toucher ; les deux champs du suivi de commande : 10 px entre eux */
+.ctw .tn-cookies summary:not(#tn){padding-top:19px}
+.ctw .tn-suivi .tn-champ+.tn-champ:not(#tn){margin-top:12px}

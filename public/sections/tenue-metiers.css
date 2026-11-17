@@ -1019,11 +1019,11 @@
 /* ── Vitrine du jour, en étiquettes et en lignes : dans une tenue aux titres gras, sur téléphone, le nom du pain se
    réduit pour qu'un mot courant tienne sur sa ligne ── */
 @media (max-width:759px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-vitrine[data-tn-c="etiquettes"] .tn-fournees b{font-size:17px;line-height:1.15}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-vitrine[data-tn-c="lignes"] .tn-fournees b{font-size:19px;line-height:1.15}
+  .ctw[data-tn-titres="gras"] .tn-vitrine[data-tn-c="etiquettes"] .tn-fournees b,.ctw[data-tn-titres="capitales"] .tn-vitrine[data-tn-c="etiquettes"] .tn-fournees b,.ctw[data-tn-lourd] .tn-vitrine[data-tn-c="etiquettes"] .tn-fournees b{font-size:17px;line-height:1.15}
+  .ctw[data-tn-titres="gras"] .tn-vitrine[data-tn-c="lignes"] .tn-fournees b,.ctw[data-tn-titres="capitales"] .tn-vitrine[data-tn-c="lignes"] .tn-fournees b,.ctw[data-tn-lourd] .tn-vitrine[data-tn-c="lignes"] .tn-fournees b{font-size:19px;line-height:1.15}
   /* Aides en tableau : trois colonnes sur un téléphone, les montants à leur taille */
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-aides[data-tn-c="tableau"] .tn-comptes i{font-size:15px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-aides[data-tn-c="tableau"] .tn-comptes .tn-reste i{font-size:18px}
+  .ctw[data-tn-titres="gras"] .tn-aides[data-tn-c="tableau"] .tn-comptes i,.ctw[data-tn-titres="capitales"] .tn-aides[data-tn-c="tableau"] .tn-comptes i,.ctw[data-tn-lourd] .tn-aides[data-tn-c="tableau"] .tn-comptes i{font-size:15px}
+  .ctw[data-tn-titres="gras"] .tn-aides[data-tn-c="tableau"] .tn-comptes .tn-reste i,.ctw[data-tn-titres="capitales"] .tn-aides[data-tn-c="tableau"] .tn-comptes .tn-reste i,.ctw[data-tn-lourd] .tn-aides[data-tn-c="tableau"] .tn-comptes .tn-reste i{font-size:18px}
   /* Prochaines dates en billets : les places restantes prennent toute la largeur du volet, l'inscription passe dessous */
   .ctw .tn-agenda[data-tn-c="billets"] .tn-dates-a i{grid-column:2/-1;margin-bottom:0}
   .ctw .tn-agenda[data-tn-c="billets"] .tn-dates-a a{grid-column:2/-1;justify-self:start}
@@ -1069,10 +1069,10 @@
 .ctw .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac div:has(dd[data-tn-long]){flex-basis:100%}
 .ctw .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac dd{max-width:100%;min-width:0}
 @media (max-width:759px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-carte .tn-rubrique b{font-size:18px;line-height:1.2}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) :is(.tn-biens,.tn-recherche-biens) .tn-cartes-b .tn-bien:not(:only-child) b{font-size:20px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-bien-energie figcaption b{font-size:21px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b{font-size:27px}
+  .ctw[data-tn-titres="gras"] .tn-carte .tn-rubrique b,.ctw[data-tn-titres="capitales"] .tn-carte .tn-rubrique b,.ctw[data-tn-lourd] .tn-carte .tn-rubrique b{font-size:18px;line-height:1.2}
+  .ctw[data-tn-titres="gras"] :is(.tn-biens,.tn-recherche-biens) .tn-cartes-b .tn-bien:not(:only-child) b,.ctw[data-tn-titres="capitales"] :is(.tn-biens,.tn-recherche-biens) .tn-cartes-b .tn-bien:not(:only-child) b,.ctw[data-tn-lourd] :is(.tn-biens,.tn-recherche-biens) .tn-cartes-b .tn-bien:not(:only-child) b{font-size:20px}
+  .ctw[data-tn-titres="gras"] .tn-bien-energie figcaption b,.ctw[data-tn-titres="capitales"] .tn-bien-energie figcaption b,.ctw[data-tn-lourd] .tn-bien-energie figcaption b{font-size:21px}
+  .ctw[data-tn-titres="gras"] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b,.ctw[data-tn-titres="capitales"] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b,.ctw[data-tn-lourd] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b{font-size:27px}
 }
 @media (max-width:359px){
   /* Réserver une table sur un très petit téléphone : la date sur sa ligne, l'heure et les couverts dessous */
@@ -1082,19 +1082,29 @@
 @media (min-width:760px){
   /* La carte sur grand écran : les rubriques rangées en grille (les colonnes de journal laissaient un vide sous les
      rubriques, et des cartes de hauteurs inégales dans une rangée) */
-  .ctw .tn-carte:is(:not([data-tn-c]),[data-tn-c="colonnes"],[data-tn-c="cartes"]) .tn-rubriques{display:grid;columns:auto;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));column-gap:56px}
+  .ctw .tn-carte:not([data-tn-c="conduite"]) .tn-rubriques{display:grid;columns:auto;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));column-gap:56px}
   .ctw .tn-carte[data-tn-c="cartes"] .tn-rubriques{gap:20px}
   .ctw .tn-carte[data-tn-c="cartes"] .tn-rubrique{margin-bottom:0}
-  .ctw .tn-carte:is(:not([data-tn-c]),[data-tn-c="colonnes"],[data-tn-c="cartes"]) .tn-rubrique:only-child{max-width:620px}
+  .ctw .tn-carte:not([data-tn-c="conduite"]) .tn-rubrique:only-child{max-width:620px}
 }
 
 /* ── La carte : le bloc des rubriques porte le même nom de classe que la pièce « questions par rubriques » du module des
    pages, dont les marges lui tombaient dessus (un retrait de chaque côté, 64 px de vide dessous, et sur grand écran des
    colonnes resserrées au milieu) ── */
-.ctw .tn-carte .tn-rubriques:not(#tn){padding:0;overflow:visible}
+.ctw .tn-carte>div:not(#tn){padding:0;overflow:visible}
 @media (max-width:759px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b{font-size:23px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac dd:not([data-tn-long]){font-size:19px}
+  .ctw[data-tn-titres="gras"] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b,.ctw[data-tn-titres="capitales"] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b,.ctw[data-tn-lourd] .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b{font-size:23px}
+  .ctw[data-tn-titres="gras"] .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac dd:not([data-tn-long]),.ctw[data-tn-titres="capitales"] .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac dd:not([data-tn-long]),.ctw[data-tn-lourd] .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac dd:not([data-tn-long]){font-size:19px}
 }
 /* « conduite » : le prix se pose sur la ligne des points, même quand le nom du plat passe à la ligne */
 .ctw .tn-carte[data-tn-c="conduite"] .tn-rubrique em{align-self:end}
+/* Biens « vedette », cadre penché, sur téléphone : deux photos penchées côte à côte ne se touchent plus (ni leur ombre) */
+@media (max-width:759px){.ctw[data-tn-cadre="penche"] .tn-biens[data-tn-c="vedette"] .tn-cartes-b{column-gap:22px}}
+@media (max-width:359px){
+  /* Très petit téléphone, deux étiquettes par rangée, tenue aux titres gras : le nom du pain s'écrit en texte courant */
+  .ctw[data-tn-titres="gras"] .tn-vitrine[data-tn-c="etiquettes"] .tn-fournees b:not(#tn),.ctw[data-tn-titres="capitales"] .tn-vitrine[data-tn-c="etiquettes"] .tn-fournees b:not(#tn),.ctw[data-tn-lourd] .tn-vitrine[data-tn-c="etiquettes"] .tn-fournees b:not(#tn){font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:1.25;letter-spacing:0;text-transform:none}
+}
+/* Origine des viandes en mention : un titre très long, déjà réduit, ne descend pas sous 16 px */
+.ctw .tn-origines[data-tn-c="mention"] h2{--tn-k:max(.7,var(--tn-k0))}
+/* Plats en vignettes, cadre penché, sur téléphone : deux vignettes penchées côte à côte ne se touchent plus */
+@media (max-width:759px){.ctw[data-tn-cadre="penche"] .tn-retrait[data-tn-c="vignettes"] .tn-plats{column-gap:20px}}

@@ -195,7 +195,7 @@
 .ctw .tn-guide-tailles .tn-chapo{font-size:16.5px;color:var(--tn-texte);margin-top:10px}
 .ctw .tn-guide-tailles .tn-table-g{margin-top:22px;border-top:1.5px solid var(--tn-encre)}
 .ctw .tn-guide-tailles table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:14.5px;line-height:1.3}
-.ctw .tn-guide-tailles th,.ctw .tn-guide-tailles td{padding:13px 4px;text-align:center;font-weight:400;vertical-align:middle;overflow-wrap:anywhere;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+.ctw .tn-guide-tailles th,.ctw .tn-guide-tailles td{padding:13px 4px;text-align:center;font-weight:400;vertical-align:middle;overflow-wrap:break-word;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
 .ctw .tn-guide-tailles th:first-child{width:25%;padding-left:0;text-align:left}
 .ctw .tn-guide-tailles thead th{padding-top:10px;padding-bottom:10px;font-size:12.5px;color:var(--tn-sourd);vertical-align:bottom;border-bottom:1.5px solid var(--tn-encre)}
 .ctw .tn-guide-tailles tbody th{font-family:var(--f-title);font-size:22px;line-height:1.1}
@@ -312,7 +312,7 @@
 .ctw .tn-avant-apres-produit li:first-child{padding-left:0}
 .ctw .tn-avant-apres-produit li + li{border-left:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
 .ctw .tn-avant-apres-produit li span{font-size:14px;color:var(--tn-sourd)}
-.ctw .tn-avant-apres-produit li b{font-family:var(--f-title);font-weight:400;font-size:24px;line-height:1.1;overflow-wrap:anywhere}
+.ctw .tn-avant-apres-produit li b{font-family:var(--f-title);font-weight:400;font-size:24px;line-height:1.1;overflow-wrap:break-word}
 .ctw .tn-avant-apres-produit li b mark.tn-manque{font-size:13.5px;padding:1px 5px}
 .ctw .tn-avant-apres-produit .tn-note{margin-top:12px;font-size:14.5px;color:var(--tn-sourd)}
 /* « apres-en-grand » : l'après en grand, l'avant en vignette sur son coin */
@@ -361,7 +361,7 @@
 /* ── Description « numeros » : un grand numéro de couleur devant chaque volet ── */
 .ctw .tn-volets[data-tn-c="numeros"] .tn-liste{counter-reset:tn-volet;border-top:0}
 .ctw .tn-volets[data-tn-c="numeros"] details{counter-increment:tn-volet;position:relative;padding:14px 0 14px 60px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
-.ctw .tn-volets[data-tn-c="numeros"] details::before{content:counter(tn-volet);position:absolute;left:0;top:12px;font-family:var(--f-title);font-size:50px;line-height:1;color:var(--tn-accent)}
+.ctw .tn-volets[data-tn-c="numeros"] details::before{content:counter(tn-volet);position:absolute;left:0;top:12px;font-family:var(--f-title);font-size:50px;line-height:1;color:var(--tn-accent-texte,var(--tn-accent))}
 .ctw .tn-volets[data-tn-c="numeros"] summary{align-items:center;gap:12px;min-height:48px;font-size:24px;line-height:1.15}
 
 /* ── À l'échelle « carte-a-cheval » : la photo d'un bord à l'autre, les dimensions dans une carte à cheval ── */
@@ -716,7 +716,7 @@
 .ctw .tn-nous-et-autres .tn-tetes{margin-top:22px;font-size:13.5px;line-height:1.25;text-align:center}
 .ctw .tn-nous-et-autres .tn-tetes b{display:grid;place-items:center;padding:12px 6px;border-radius:var(--tn-arrondi,0) var(--tn-arrondi,0) 0 0;background-color:var(--tn-encre);color:var(--tn-sur-bouton);font-weight:700}
 .ctw[data-tn-cadre="niche"] .tn-nous-et-autres .tn-tetes b{border-radius:18px 18px 0 0}
-.ctw .tn-nous-et-autres .tn-tetes span{display:grid;place-items:center;padding:12px 4px;color:var(--tn-sourd);overflow-wrap:anywhere}
+.ctw .tn-nous-et-autres .tn-tetes span{display:grid;place-items:center;padding:12px 4px;color:var(--tn-sourd);overflow-wrap:break-word}
 .ctw .tn-nous-et-autres li{border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
 .ctw .tn-nous-et-autres li>span{align-self:center;padding:14px 10px 14px 0;font-size:15.5px;line-height:1.4}
 .ctw .tn-nous-et-autres li>p{display:contents}
@@ -783,7 +783,7 @@
 .ctw .tn-livraison[data-tn-c="cartes"] ol li,.ctw .tn-livraison[data-tn-c="cartes"] ol li:last-child{align-content:start;padding:16px 14px 18px;border-radius:var(--tn-arrondi,0);background-color:var(--tn-doux)}
 .ctw[data-tn-cadre="niche"] .tn-livraison[data-tn-c="cartes"] ol li{border-radius:18px}
 .ctw[data-tn-cadre="penche"] .tn-livraison[data-tn-c="cartes"] ol li{border:2.5px solid var(--tn-encre);border-radius:14px}
-.ctw .tn-livraison[data-tn-c="cartes"] ol li::before{position:static;display:block;width:auto;height:auto;margin-bottom:6px;background-color:transparent;color:var(--tn-accent);font-family:var(--f-title);font-size:44px;font-weight:400;line-height:.95}
+.ctw .tn-livraison[data-tn-c="cartes"] ol li::before{position:static;display:block;width:auto;height:auto;margin-bottom:6px;background-color:transparent;color:var(--tn-accent-texte,var(--tn-accent));font-family:var(--f-title);font-size:44px;font-weight:400;line-height:.95}
 .ctw .tn-livraison[data-tn-c="cartes"] ol li::after{display:none}
 .ctw .tn-livraison[data-tn-c="cartes"] ol li b{font-size:20px}
 .ctw .tn-livraison ol li b{overflow-wrap:break-word;min-width:0}
@@ -802,7 +802,7 @@
 .ctw .tn-garantie h2{margin-top:22px;font-size:calc(36px*var(--tn-k))}
 .ctw .tn-garantie .tn-conditions{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
 /* « bande » : une bande de couleur douce d'un bord à l'autre */
-.ctw .tn-garantie[data-tn-c="bande"]{margin-top:44px;padding:28px 20px 26px;background-color:var(--tn-doux);display:grid;grid-template-columns:104px minmax(0,1fr);column-gap:18px;align-items:start;text-align:left}
+.ctw .tn-garantie[data-tn-c="bande"]{margin-top:44px;padding:28px 20px 26px;background-color:var(--tn-doux);display:grid;grid-template-columns:124px minmax(0,1fr);column-gap:16px;align-items:start;text-align:left}
 .ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g{grid-row:1/4;width:104px;margin:0;padding:10px;background-color:var(--tn-fond)}
 .ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g b{font-size:10.5px}
 .ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g span{font-size:20px}
@@ -914,7 +914,7 @@
   .ctw .tn-garantie h2{font-size:calc(48px*var(--tn-k))}
   .ctw .tn-garantie .tn-sceau-g{width:176px}
   .ctw .tn-garantie .tn-sceau-g span{font-size:32px}
-  .ctw .tn-garantie[data-tn-c="bande"]{grid-template-columns:150px minmax(0,1fr);column-gap:40px;margin-top:56px;padding:44px max(40px,calc(50% - 380px)) 40px}
+  .ctw .tn-garantie[data-tn-c="bande"]{grid-template-columns:156px minmax(0,1fr);column-gap:40px;margin-top:56px;padding:44px max(40px,calc(50% - 380px)) 40px}
   .ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g{width:150px}
   .ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g span{font-size:27px}
   .ctw .tn-garantie[data-tn-c="bande"] h2{font-size:calc(38px*var(--tn-k))}
@@ -1003,7 +1003,7 @@
 .ctw[data-tn-cadre="penche"] .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label{border:2.5px solid var(--tn-encre);border-radius:14px}
 .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack:has(input[type="radio"]:checked)>label{border-color:var(--tn-encre);box-shadow:inset 0 0 0 1.5px var(--tn-encre);background-color:var(--tn-doux)}
 .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label input{grid-row:auto}
-.ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label b,.ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label i{grid-column:1;overflow-wrap:anywhere}
+.ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label b,.ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label i{grid-column:1;overflow-wrap:break-word}
 .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label b{font-size:17px}
 .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack-prix{grid-column:1;grid-row:auto;justify-self:center;justify-items:center;font-size:19px}
 .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>.tn-pack-cadeau{grid-row:3;flex-direction:column;gap:5px;margin:8px 0 0;padding:8px 4px;text-align:center;font-size:12px}
@@ -1047,7 +1047,7 @@
 .ctw .tn-sous-bouton .tn-quatre li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:1px 10px;align-items:start;min-width:0}
 .ctw .tn-sous-bouton .tn-quatre svg{grid-row:1/3;width:28px;height:28px;fill:none;stroke:var(--tn-encre);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .ctw .tn-sous-bouton .tn-quatre b{font-size:14px}
-.ctw .tn-sous-bouton .tn-quatre span{grid-column:2;font-size:13px;color:var(--tn-sourd);overflow-wrap:anywhere}
+.ctw .tn-sous-bouton .tn-quatre span{grid-column:2;font-size:13px;color:var(--tn-sourd);overflow-wrap:break-word}
 .ctw .tn-sous-bouton .tn-questions-sb details:last-child{border-bottom:1.5px solid color-mix(in srgb,var(--tn-encre) 18%,transparent)}
 .ctw .tn-sous-bouton[data-tn-c="cartes"]{margin:18px 20px 0;padding:18px 16px 16px;border-radius:var(--tn-arrondi,0);background-color:var(--tn-doux)}
 .ctw[data-tn-cadre="niche"] .tn-sous-bouton[data-tn-c="cartes"]{border-radius:22px}
@@ -1109,7 +1109,7 @@
 .ctw .tn-fenetre-offre .tn-fo-form small{font-size:12px;line-height:1.4;color:var(--tn-sourd);text-align:center}
 .ctw .tn-fenetre-offre .tn-fo-code{display:grid;gap:6px;padding:16px;border:2px dashed var(--tn-accent);border-radius:var(--tn-arrondi,0);background-color:var(--tn-doux)}
 .ctw .tn-fenetre-offre .tn-fo-code span{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.ctw .tn-fenetre-offre .tn-fo-code b{font-size:26px;letter-spacing:.08em;user-select:all;overflow-wrap:anywhere}
+.ctw .tn-fenetre-offre .tn-fo-code b{font-size:26px;letter-spacing:.08em;user-select:all;overflow-wrap:break-word}
 .ctw .tn-fenetre-offre .tn-fo-non{min-height:44px;border:0;background:none;color:var(--tn-sourd);font:inherit;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .ctw .tn-fenetre-offre :is(button,input):focus-visible{outline:2px solid var(--tn-encre);outline-offset:2px}
 .ctw .tn-fenetre-offre .tn-fo-boite{min-height:100vh;max-width:none;display:grid;grid-template-rows:auto 1fr;align-content:start}
@@ -1210,7 +1210,7 @@
 .ctw[data-tn-cadre="niche"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra{border-radius:22px}
 .ctw[data-tn-cadre="penche"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra{border:2.5px solid var(--tn-encre);border-radius:14px}
 .ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra-mots{display:grid;gap:3px;min-width:0}
-.ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-family:var(--f-title);font-weight:400;font-size:23px;line-height:1.15;overflow-wrap:anywhere}
+.ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-family:var(--f-title);font-weight:400;font-size:23px;line-height:1.15;overflow-wrap:break-word}
 .ctw[data-tn-titres="gras"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-weight:800;font-size:20px}
 .ctw[data-tn-titres="capitales"] .tn-rappel-achat[data-tn-c="bande"] .tn-ra-nom{font-size:16px;letter-spacing:.07em;text-transform:uppercase}
 .ctw .tn-rappel-achat[data-tn-c="bande"] .tn-ra-prix{font-size:17px;font-weight:700}
@@ -1315,3 +1315,147 @@
   .ctw .tn-achat[data-tn-c="portrait"]>h1{grid-column:1/-1}
   .ctw .tn-achat[data-tn-c="portrait"]>.tn-prix{grid-row:4;grid-column:1/-1;margin:8px 0 0}
 }
+
+/* ══ Tour des sections (17 novembre 2026 : « j'en veux plus un seul ») ══
+   Chaque pièce ouverte sur 320, 390 et 1280 px, dans trois tenues, avec des contenus courts, vrais et difficiles. Ce qui
+   cassait est réglé ici, pièce par pièce (mêmes gestes que dans tenue-produit.css : une liste en colonnes passe à la ligne,
+   un nom long quitte la police des titres dans une tenue aux titres gras, rien ne sort de sa boîte). */
+/* Avant, après : sur téléphone, une mesure par ligne (le nom à gauche, la valeur à droite) ; sur grand écran, trois par rangée. */
+@media (max-width:759px){
+  .ctw .tn-avant-apres-produit ul{display:block}
+  .ctw .tn-avant-apres-produit li,.ctw .tn-avant-apres-produit li:first-child{grid-template-columns:minmax(0,auto) minmax(0,1fr);column-gap:16px;align-items:baseline;padding:12px 0}
+  .ctw .tn-avant-apres-produit li + li{border-left:0;border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+  .ctw .tn-avant-apres-produit li span{font-size:15px}
+  .ctw .tn-avant-apres-produit li b{text-align:right;font-size:22px}
+}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-avant-apres-produit li b{font-size:19px;line-height:1.15}
+.ctw .tn-avant-apres-produit li b:has(mark){font-size:14px;line-height:1.5}
+@media (min-width:760px){
+  .ctw .tn-avant-apres-produit ul:has(li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ctw .tn-avant-apres-produit ul:has(li:nth-child(5)) li:nth-child(3n+1){padding-left:0;border-left:0}
+  .ctw .tn-avant-apres-produit ul:has(li:nth-child(5)) li:nth-child(n+4){border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-avant-apres-produit li b{font-size:24px}
+}
+/* Problème, réponse : « face à face » garde ses deux colonnes ; une ligne longue se coupe proprement. Sur grand écran, chaque
+   ligne au-delà de la quatrième a sa rangée (elles s'empilaient sur la même). */
+.ctw .tn-probleme-reponse li span,.ctw .tn-probleme-reponse li b{min-width:0}
+.ctw .tn-probleme-reponse[data-tn-c="face-a-face"] .tn-t-avant,.ctw .tn-probleme-reponse[data-tn-c="face-a-face"] .tn-t-apres{min-width:0}
+@media (min-width:760px){
+  .ctw .tn-probleme-reponse li:nth-child(5)>*{grid-row:6}
+  .ctw .tn-probleme-reponse li:nth-child(6)>*{grid-row:7}
+  .ctw .tn-probleme-reponse li:nth-child(7)>*{grid-row:8}
+  .ctw .tn-probleme-reponse li:nth-child(8)>*{grid-row:9}
+  .ctw .tn-probleme-reponse li:nth-child(n+9)>*{grid-row:auto}
+}
+/* Les packs : un nom long quitte la police des titres ; côte à côte sur téléphone, le nom et le prix tiennent dans leur carte. */
+.ctw .tn-packs .tn-pack>label b{min-width:0;hyphens:auto;-webkit-hyphens:auto}
+.ctw .tn-packs .tn-pack>label b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:16px;line-height:1.3;letter-spacing:0;text-transform:none}
+.ctw .tn-packs .tn-pack-prix{min-width:0}
+@media (max-width:759px){
+  .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label{padding-left:5px;padding-right:5px}
+  .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label b,.ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:14px;line-height:1.25;letter-spacing:0;text-transform:none}
+  .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack-liste:has(>li:nth-child(3)) .tn-pack-prix{font-size:16px}
+  .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label i{font-size:12px;line-height:1.3}
+  .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>.tn-pack-etiquette{font-size:12px;letter-spacing:.02em;padding:3px 6px}
+}
+@media (max-width:359px){
+  .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack-liste:has(>li:nth-child(3)) .tn-pack-prix{font-size:14px;letter-spacing:-.01em}
+  .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label b,.ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label b[data-tn-long]{font-size:13px}
+}
+.ctw .tn-packs .tn-pack-etiquette{font-size:12px}
+/* Sous le bouton : les quatre repères ; en « cartes », deux par rangée sur téléphone (quatre de front écrasaient la phrase). */
+.ctw .tn-sous-bouton .tn-quatre span{font-size:13px;line-height:1.4}
+@media (max-width:759px){
+  .ctw .tn-sous-bouton[data-tn-c="cartes"] .tn-quatre{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 10px}
+  .ctw .tn-sous-bouton[data-tn-c="cartes"] .tn-quatre b{font-size:13.5px}
+  .ctw .tn-sous-bouton[data-tn-c="cartes"] .tn-quatre span{font-size:12.5px}
+}
+@media (min-width:760px){.ctw .tn-sous-bouton[data-tn-c="cartes"] .tn-quatre span{font-size:12.5px}.ctw .tn-sous-bouton[data-tn-c="cartes"] .tn-quatre b{font-size:13px}}
+/* L'offre du moment : une remise encore à compléter passe à la ligne (le rond ne pousse plus la page) ; l'ombre de l'encadré
+   reste dans la section ; un nom d'offre long quitte la police des titres. */
+.ctw .tn-offre-moment .tn-om-remise:has(mark){min-width:0;min-height:0;max-width:40%;padding:10px 8px;border-radius:14px;font-size:13px;line-height:1.3;white-space:normal}
+.ctw .tn-offre-moment[data-tn-c="bandeau"] .tn-om-remise:has(mark){padding:0;font-size:13px}
+.ctw .tn-offre-moment .tn-om-nom[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:17px;line-height:1.3;letter-spacing:0;text-transform:none}
+.ctw[data-tn-cadre="penche"] .tn-offre-moment:not([data-tn-c="bandeau"]){padding-bottom:8px}
+.ctw .tn-offre-moment small{font-size:12px}
+/* Les coloris en file : l'ombre du cadre penché reste dans la file. */
+.ctw[data-tn-cadre="penche"] .tn-coloris[data-tn-c="file"] .tn-col-liste{padding-bottom:16px}
+/* La garantie : le sceau porte deux mots au plus ; il est assez grand pour eux, dans toutes les tenues (« 14 jours » ne sort plus du rond). */
+.ctw .tn-garantie .tn-sceau-g{width:164px;padding:20px;justify-items:center;text-align:center}
+.ctw .tn-garantie .tn-sceau-g b,.ctw .tn-garantie .tn-sceau-g span{min-width:0;max-width:100%}
+.ctw .tn-garantie .tn-sceau-g span{font-size:26px;text-wrap:balance}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-garantie .tn-sceau-g span{font-size:19px;line-height:1.1}
+.ctw .tn-garantie .tn-sceau-g span:has(mark){font-size:12px}
+.ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g{width:124px;padding:16px}
+.ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g b{font-size:12px;letter-spacing:.05em}
+.ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g span{font-size:19px}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-garantie[data-tn-c="bande"] .tn-sceau-g span{font-size:15px}
+.ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g span:has(mark){font-size:12px}
+@media (min-width:760px){
+  .ctw .tn-garantie .tn-sceau-g{width:188px}
+  .ctw .tn-garantie .tn-sceau-g span{font-size:32px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-garantie .tn-sceau-g span{font-size:23px}
+  .ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g{width:156px}
+  .ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g span{font-size:26px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-garantie[data-tn-c="bande"] .tn-sceau-g span{font-size:19px}
+  .ctw .tn-garantie .tn-sceau-g span:has(mark),.ctw .tn-garantie[data-tn-c="bande"] .tn-sceau-g span:has(mark){font-size:12px}
+}
+/* La fenêtre d'offre : sans photo, le titre commence sous la croix ; sur grand écran, le texte garde sa place à côté d'elle. */
+.ctw .tn-fenetre-offre:not([data-tn-c="carte-en-bas"]) .tn-fo-boite:not(:has(>.tn-ph:not(.tn-ph-manque))) .tn-fo-corps{padding-top:64px}
+@media (min-width:760px){.ctw .tn-fenetre-offre:not([data-tn-c="carte-en-bas"]) .tn-fo-corps{padding:64px 44px 40px}}
+/* Offres par quantité : sur un très petit téléphone, « 3 articles » tient dans sa carte. */
+.ctw .tn-lots label b,.ctw .tn-lots label span,.ctw .tn-lots label i{min-width:0;max-width:100%}
+@media (max-width:359px){
+  .ctw .tn-lots label{padding-left:3px;padding-right:3px}
+  .ctw .tn-lots:not([data-tn-c="lignes"]) label b{font-size:17px}
+  .ctw[data-tn-titres="gras"] .tn-lots:not([data-tn-c="lignes"]) label b{font-size:13.5px}
+  .ctw[data-tn-titres="capitales"] .tn-lots:not([data-tn-c="lignes"]) label b{font-size:12px;letter-spacing:0}
+  .ctw .tn-lots:not([data-tn-c="lignes"]) label span{font-size:15px}
+}
+/* Le look complet, « bande » : trois produits de front ; leurs noms restent lisibles dans une tenue aux titres gras. */
+@media (max-width:759px){
+  .ctw .tn-looks[data-tn-c="bande"] .tn-carte-p b{font-size:16px;line-height:1.2;hyphens:auto;-webkit-hyphens:auto}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-looks[data-tn-c="bande"] .tn-carte-p b{font-family:var(--f-ui);font-weight:700;font-size:14px;line-height:1.25;letter-spacing:0;text-transform:none}
+  .ctw .tn-looks[data-tn-c="bande"] .tn-carte-p span{font-size:14px}
+}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-looks .tn-carte-p b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:16px;line-height:1.3;letter-spacing:0;text-transform:none}
+/* Guide des tailles : le nom d'une taille tient dans sa colonne ; sur un très petit téléphone, le tableau se fait glisser
+   plutôt que d'écraser ses mesures. */
+.ctw .tn-guide-tailles .tn-table-g{overflow-x:auto;scrollbar-width:none}
+.ctw .tn-guide-tailles .tn-table-g::-webkit-scrollbar{display:none}
+.ctw .tn-guide-tailles td mark.tn-manque{font-size:12.5px;padding:1px 3px}
+@media (max-width:759px){
+  .ctw .tn-guide-tailles table{min-width:350px}
+  .ctw .tn-guide-tailles th:first-child{width:27%}
+  .ctw .tn-guide-tailles tbody th{font-size:18px;hyphens:auto;-webkit-hyphens:auto}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-guide-tailles tbody th{font-family:var(--f-ui);font-weight:700;font-size:14.5px;line-height:1.25;letter-spacing:0;text-transform:none}
+}
+/* Allergènes « encadré », pictos, avantages en cartes, livraison : sur grand écran, quatre de front au plus. */
+@media (min-width:760px){
+  .ctw .tn-allergenes[data-tn-c="encadre"] ul:has(li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:6px}
+  .ctw .tn-pictos:not([data-tn-c="liste"]) ul:has(li:nth-child(6)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:34px}
+  .ctw .tn-avantages[data-tn-c="cartes"] ul:has(li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ctw .tn-livraison:not([data-tn-c="cartes"]) ol:has(li:nth-child(6)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:30px}
+}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-livraison[data-tn-c="cartes"] ol li b{font-size:16px;line-height:1.2}
+@media (max-width:359px){.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-livraison[data-tn-c="cartes"] ol li b{font-size:14.5px}.ctw .tn-livraison[data-tn-c="cartes"] ol li{padding-left:10px;padding-right:10px}}
+/* Nous et les autres : une tête de colonne encore à compléter garde ses mots entiers. */
+.ctw .tn-nous-et-autres .tn-tetes mark.tn-manque{font-size:12px;padding:1px 2px}
+/* Petits réglages du tour : deux boutons voisins gardent 8 px entre eux ; aucun texte sous 12 px. */
+.ctw .tn-versions[data-tn-c="lignes"] .tn-choix-v{gap:8px}
+.ctw .tn-packs .tn-pack-cadeau em,.ctw .tn-offre-moment .tn-om-cadeau em{font-size:12px}
+.ctw .tn-offre-moment .tn-om-decompte span{font-size:12px;letter-spacing:.02em}
+.ctw .tn-sous-bouton .tn-fen-corps h2{font-size:max(19px,calc(22px*var(--tn-k)))}
+/* Façons ajoutées à des pièces du module produit : mêmes réglages que leur façon d'origine. */
+@media (max-width:759px){
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] ul{display:block;padding:2px 14px}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] li,.ctw .tn-echelle[data-tn-c="carte-a-cheval"] li:first-child{grid-template-columns:minmax(0,auto) minmax(0,1fr);column-gap:16px;align-items:baseline;padding:12px 0}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] li + li{border-left:0;border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+}
+@media (min-width:760px){
+  .ctw .tn-grade[data-tn-c="bandeau"] ul:has(li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ctw .tn-echelle[data-tn-c="carte-a-cheval"] ul:has(li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));max-width:none}
+  .ctw .tn-effets[data-tn-c="cartes"] ol{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+}
+.ctw .tn-garantie .tn-sceau-g{gap:6px}
+.ctw .tn-garantie .tn-sceau-g span{line-height:1.12}
