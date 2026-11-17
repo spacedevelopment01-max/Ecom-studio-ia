@@ -939,8 +939,8 @@
 }
 
 /* ── Résultats d'une recherche, en lignes : un prix long (ou « À compléter ») passe à la ligne ; le nom garde sa place ── */
-.ctw .tn-resultats:is(:not([data-tn-c]),[data-tn-c="lignes"]) .tn-res{grid-template-columns:minmax(0,1fr) fit-content(42%)}
-.ctw .tn-resultats:is(:not([data-tn-c]),[data-tn-c="lignes"]) .tn-res span{white-space:normal;text-align:right}
+.ctw .tn-resultats:not([data-tn-c="cartes"]) .tn-res{grid-template-columns:minmax(0,1fr) fit-content(42%)}
+.ctw .tn-resultats:not([data-tn-c="cartes"]) .tn-res span{white-space:normal;text-align:right}
 
 /* ── Inscription à la lettre ── */
 /* sur ordinateur, le champ garde une vraie largeur : un bouton long passe dessous plutôt que de l'écraser */

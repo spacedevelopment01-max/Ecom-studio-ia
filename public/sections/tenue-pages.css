@@ -676,14 +676,14 @@
   .ctw .tn-merci[data-tn-c="deux-colonnes"] .tn-suite:has(>li:nth-child(5)) li{padding:16px 0}
 }
 @media (max-width:759px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-merci[data-tn-c="deux-colonnes"] h1{font-size:calc(54px*var(--tn-k))}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-merci .tn-suite b{font-size:18px;line-height:1.16}
+  .ctw[data-tn-titres="gras"] .tn-merci[data-tn-c="deux-colonnes"] h1,.ctw[data-tn-lourd] .tn-merci[data-tn-c="deux-colonnes"] h1{font-size:calc(54px*var(--tn-k))}
+  .ctw[data-tn-titres="gras"] .tn-merci .tn-suite b,.ctw[data-tn-titres="capitales"] .tn-merci .tn-suite b,.ctw[data-tn-lourd] .tn-merci .tn-suite b{font-size:18px;line-height:1.16}
 }
 /* ── Manifeste, « clair et centré » : dans une tenue aux titres gras, le premier paragraphe reste un texte que l'on lit
    (texte courant, un peu plus grand), jamais un pavé de sept lignes en gras. ── */
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child{font-family:var(--f-ui);font-weight:500;font-size:20px;line-height:1.45;letter-spacing:0;text-transform:none}
+.ctw[data-tn-titres="gras"] .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child,.ctw[data-tn-titres="capitales"] .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child,.ctw[data-tn-lourd] .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child{font-family:var(--f-ui);font-weight:500;font-size:20px;line-height:1.45;letter-spacing:0;text-transform:none}
 @media (min-width:760px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child{font-size:25px;line-height:1.4;max-width:30em;margin-left:auto;margin-right:auto}
+  .ctw[data-tn-titres="gras"] .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child,.ctw[data-tn-titres="capitales"] .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child,.ctw[data-tn-lourd] .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child{font-size:25px;line-height:1.4;max-width:30em;margin-left:auto;margin-right:auto}
 }
 /* ── Demande d'âge, plein écran : un libellé long ne fait plus un bouton de quatre lignes ; les deux réponses passent
    l'une sous l'autre quand la première est longue (plus de 22 signes : data-tn-long absent sur un lien, d'où :has). ── */
@@ -695,18 +695,18 @@
 }
 /* ── Résultats en cartes, tenue aux titres gras : sur téléphone le nom tient dans sa demi-carte ── */
 @media (max-width:759px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-resultats[data-tn-c="cartes"] .tn-res b:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:16px;line-height:1.22;letter-spacing:0;text-transform:none;overflow-wrap:break-word}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-resultats[data-tn-c="cartes"] .tn-res{padding:14px 12px 12px}
+  .ctw[data-tn-titres="gras"] .tn-resultats[data-tn-c="cartes"] .tn-res b:not(#tn),.ctw[data-tn-titres="capitales"] .tn-resultats[data-tn-c="cartes"] .tn-res b:not(#tn),.ctw[data-tn-lourd] .tn-resultats[data-tn-c="cartes"] .tn-res b:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:16px;line-height:1.22;letter-spacing:0;text-transform:none;overflow-wrap:break-word}
+  .ctw[data-tn-titres="gras"] .tn-resultats[data-tn-c="cartes"] .tn-res,.ctw[data-tn-titres="capitales"] .tn-resultats[data-tn-c="cartes"] .tn-res,.ctw[data-tn-lourd] .tn-resultats[data-tn-c="cartes"] .tn-res{padding:14px 12px 12px}
 }
 /* ── Article, grande image : la phrase d'accroche reste un texte courant dans une tenue aux titres gras ── */
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-article[data-tn-c="grande-image"] .tn-chapo{font-family:var(--f-ui);font-weight:500;letter-spacing:0;text-transform:none;font-size:19px;line-height:1.45}
+.ctw[data-tn-titres="gras"] .tn-article[data-tn-c="grande-image"] .tn-chapo,.ctw[data-tn-titres="capitales"] .tn-article[data-tn-c="grande-image"] .tn-chapo,.ctw[data-tn-lourd] .tn-article[data-tn-c="grande-image"] .tn-chapo{font-family:var(--f-ui);font-weight:500;letter-spacing:0;text-transform:none;font-size:19px;line-height:1.45}
 @media (min-width:760px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-article[data-tn-c="grande-image"] .tn-chapo{font-size:22px}
+  .ctw[data-tn-titres="gras"] .tn-article[data-tn-c="grande-image"] .tn-chapo,.ctw[data-tn-titres="capitales"] .tn-article[data-tn-c="grande-image"] .tn-chapo,.ctw[data-tn-lourd] .tn-article[data-tn-c="grande-image"] .tn-chapo{font-size:22px}
 }
 /* ── Questions par rubriques, en cartes : sur ordinateur, la bande « Encore une question ? » ne touche plus les cartes ── */
 @media (min-width:760px){
   .ctw .tn-rubriques[data-tn-c="cartes"] .tn-encore{margin-top:20px}
 }
 /* Tiroir de panier, tenue aux titres gras : le nom d'un produit reste lisible dans la colonne étroite du tiroir */
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-panier-cote .tn-quoi b:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:15.5px;line-height:1.25;letter-spacing:0;text-transform:none}
+.ctw[data-tn-titres="gras"] .tn-panier-cote .tn-quoi b:not(#tn),.ctw[data-tn-titres="capitales"] .tn-panier-cote .tn-quoi b:not(#tn),.ctw[data-tn-lourd] .tn-panier-cote .tn-quoi b:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:15.5px;line-height:1.25;letter-spacing:0;text-transform:none}
 .ctw .tn-panier-cote .tn-quoi b:not(#tn){overflow-wrap:break-word}

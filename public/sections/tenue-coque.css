@@ -430,15 +430,15 @@
 @media (max-width:959px){
   .ctw .tn-ent .tn-nom{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;line-height:1.02;font-size:clamp(19px,6.6vw,26px);text-wrap:balance;-webkit-hyphens:none;hyphens:none}
   .ctw .tn-ent .tn-e-home{padding-right:8px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-ent .tn-nom{font-size:clamp(16px,5.4vw,25px)}
+  .ctw[data-tn-titres="gras"] .tn-ent .tn-nom,.ctw .tn-ent:is([data-tn-lourd] *) .tn-nom{font-size:clamp(16px,5.4vw,25px)}
   .ctw[data-tn-titres="capitales"] .tn-ent .tn-nom{font-size:clamp(13px,4.3vw,19px);letter-spacing:.02em}
   .ctw .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:clamp(17px,5.6vw,27px)}
-  .ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:clamp(14px,4.6vw,24px)}
+  .ctw[data-tn-titres="gras"] .tn-ent[data-tn-c="logo-centre"] .tn-nom,.ctw .tn-ent:is([data-tn-lourd] *)[data-tn-c="logo-centre"] .tn-nom{font-size:clamp(14px,4.6vw,24px)}
   .ctw[data-tn-titres="capitales"] .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:clamp(12px,3.8vw,18px)}
   .ctw .tn-ent[data-tn-c="plein-ecran"] .tn-e-outils{flex:none}
   /* Le menu ouvert : le titre de rubrique d'un grand menu garde 44 px ; le nom d'une famille ne devient pas un pavé gras */
   .ctw .tn-ent .tn-e-sous[data-tn-m]>.tn-e-t{min-height:44px;padding:16px 0 4px;align-items:flex-end}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-ent[data-tn-c="mega-colonnes"] .tn-e-col>span{font-size:18px;line-height:1.14;letter-spacing:0}
+  .ctw[data-tn-titres="gras"] .tn-ent[data-tn-c="mega-colonnes"] .tn-e-col>span,.ctw[data-tn-titres="capitales"] .tn-ent[data-tn-c="mega-colonnes"] .tn-e-col>span,.ctw .tn-ent:is([data-tn-lourd] *)[data-tn-c="mega-colonnes"] .tn-e-col>span{font-size:18px;line-height:1.14;letter-spacing:0}
   .ctw[data-tn-titres="capitales"] .tn-ent[data-tn-c="mega-colonnes"] .tn-e-col>span{font-size:15px}
 }
 /* ── En-tête de services ── */
@@ -468,11 +468,11 @@
 .ctw .tn-pied-services .tn-p-joindre{grid-template-columns:minmax(0,1fr)}
 .ctw .tn-pied-services .tn-p-joindre li{min-width:0;max-width:100%}
 .ctw .tn-pied-services .tn-p-tel{white-space:normal;overflow-wrap:anywhere;max-width:100%}
-.ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-pied-services .tn-p-tel{font-size:clamp(24px,8vw,40px);letter-spacing:-.02em}
+.ctw[data-tn-titres="gras"] .tn-pied-services .tn-p-tel,.ctw .tn-pied-services:is([data-tn-lourd] *) .tn-p-tel{font-size:clamp(24px,8vw,40px);letter-spacing:-.02em}
 .ctw .tn-pied-services .tn-p-joindre .tn-bt{max-width:100%;white-space:normal}
 .ctw[data-tn-bouton="ombre"] .tn-pied-services .tn-p-joindre{padding-right:6px;padding-bottom:6px}
 @media (min-width:760px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-pied-services .tn-p-tel{font-size:clamp(40px,4.6vw,60px)}
+  .ctw[data-tn-titres="gras"] .tn-pied-services .tn-p-tel,.ctw .tn-pied-services:is([data-tn-lourd] *) .tn-p-tel{font-size:clamp(40px,4.6vw,60px)}
 }
 @media (min-width:760px){
   /* au-delà de trois blocs (ou de quatre repères), ils passent à la ligne : jamais sept colonnes de quelques lettres */
@@ -491,7 +491,7 @@
   .ctw .tn-entete-services .tn-e-actions>li{flex:1 1 auto;max-width:100%}
 }
 /* Pied de page de services, titres gras : un numéro au format international tient sur une ligne */
-.ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-pied-services .tn-p-tel:not(#tn){font-size:clamp(19px,6.4vw,34px)}
+.ctw[data-tn-titres="gras"] .tn-pied-services .tn-p-tel:not(#tn),.ctw .tn-pied-services:is([data-tn-lourd] *) .tn-p-tel:not(#tn){font-size:clamp(19px,6.4vw,34px)}
 @media (min-width:760px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-pied-services .tn-p-tel:not(#tn){font-size:clamp(30px,3vw,38px)}
+  .ctw[data-tn-titres="gras"] .tn-pied-services .tn-p-tel:not(#tn),.ctw .tn-pied-services:is([data-tn-lourd] *) .tn-p-tel:not(#tn){font-size:clamp(30px,3vw,38px)}
 }
