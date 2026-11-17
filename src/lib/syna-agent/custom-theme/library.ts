@@ -268,7 +268,7 @@ export function withoutMissingPhotos(html: string, pal: { light?: string | null;
     .replace(/<a class="(tn-r|tn-s)"([^>]*)><div class="tn-ph"><\/div>/g, '<a class="$1 tn-sans-photo"$2>')
     .replace(/<div class="tn-ligne"([^>]*)><div class="tn-ph"><\/div>/g, '<div class="tn-ligne tn-sans-photo"$1>')
     .replace(/<div class="tn-ph"><\/div>/g, '<div class="tn-ph tn-ph-manque"></div>');
-  if (!hasExamplePhoto(out)) return out;
+  if (!hasExamplePhoto(out)) return unePhotoParEtape(out);
   // 2) Section par section.
   const starts = [...out.matchAll(/<(section|footer|header|aside|div)\b[^>]*\sdata-ct="([\w-]+)"[^>]*>/g)].map((m) => ({ at: m.index!, tag: m[1], uid: m[2], open: m[0] }));
   if (!starts.length) return withoutExamplePhotos(out, pal);
@@ -294,7 +294,24 @@ export function withoutMissingPhotos(html: string, pal: { light?: string | null;
     parts.push(sec.replace(/^<[^>]*>/, (o) => (/data-tn-photo-manque/.test(o) ? o : o.replace(/>$/, " data-tn-photo-manque>"))) + rest);
   });
   // Ce qui reste d'exemple ailleurs (image d'un gabarit) : le cadre neutre.
-  return withoutExamplePhotos(parts.join(""), pal);
+  return unePhotoParEtape(withoutExamplePhotos(parts.join(""), pal));
+}
+
+/**
+ * Des étapes de fabrication où certaines ont leur photo et d'autres non (17 novembre 2026, sur le site d'essai,
+ * téléphone : une seule étape sur quatre avait sa photo, les trois autres laissaient de grands vides à côté d'elle ;
+ * « Ça fait pas beau comme ça donc change »). Côte à côte, une étape sans photo fait un trou. La section passe alors
+ * « en lignes » : chaque photo à côté de son texte, et l'étape sans photo prend toute la largeur. Aucune photo perdue,
+ * aucun vide.
+ */
+export function unePhotoParEtape(html: string): string {
+  return html.replace(/<section\b[^>]*\btn-fabrication\b[^>]*>(?:(?!<section\b)[\s\S])*?<\/section>/g, (sec) => {
+    const ol = /<ol class="tn-etapes">[\s\S]*?<\/ol>/.exec(sec)?.[0] ?? "";
+    const cadres = ol.match(/<div class="tn-ph\b[^"]*"/g) ?? [];
+    const manque = cadres.filter((c) => /\btn-ph-manque\b/.test(c)).length;
+    if (!manque || manque === cadres.length) return sec;
+    return sec.replace(/^<section\b[^>]*>/, (o) => (/\sdata-tn-c="/.test(o) ? o.replace(/\sdata-tn-c="[^"]*"/, ' data-tn-c="lignes"') : o.replace(/>$/, ' data-tn-c="lignes">')));
+  });
 }
 
 const escHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));

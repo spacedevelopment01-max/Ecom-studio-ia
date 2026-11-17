@@ -873,7 +873,13 @@
 /* une étape sans photo (photo qui manque) : son texte prend la ligne, sans rangée vide autour */
 .ctw .tn-fabrication[data-tn-c="lignes"] li:has(>.tn-ph-manque):not(#tn){grid-template-rows:auto;grid-template-columns:minmax(0,1fr)}
 .ctw .tn-fabrication[data-tn-c="lignes"] li:has(>.tn-ph-manque):not(#tn)::before{align-self:start}
+.ctw .tn-fabrication[data-tn-c="lignes"] li:has(>.tn-ph-manque):not(#tn)::before{margin-bottom:2px}
+/* Sur un téléphone, le texte d'une étape est plus haut que sa photo : il part du haut, sans vide gardé en dessous. */
+@media (max-width:759px){
+  .ctw .tn-fabrication[data-tn-c="lignes"] li:not(#tn){grid-template-rows:auto auto auto 1fr}
+}
 .ctw .tn-fabrication:not([data-tn-c="lignes"]) li:has(>.tn-ph-manque)::before{position:static;margin-bottom:-12px}
+.ctw .tn-fabrication:not([data-tn-c="lignes"]) li:has(>.tn-ph-manque) h3{margin-top:22px}
 @media (min-width:760px){
   .ctw .tn-fabrication[data-tn-c="lignes"] li:has(>.tn-ph-manque):not(#tn)::before{font-size:60px}
 }
@@ -900,6 +906,22 @@
   .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(4))>li:not(#tn) h3{grid-column:2;margin-top:4px;font-size:16px;overflow-wrap:break-word}
   .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(4))>li:not(#tn) p{grid-column:2;font-size:14px}
   .ctw .tn-comment[data-tn-c="fleches"] li:not(#tn) p{font-size:13px;color:var(--tn-texte)}
+}
+/* « flèches » avec de vraies phrases sous chaque temps (17 novembre 2026, sur le site d'essai, téléphone : trois
+   colonnes de 80 px, une phrase par mot, « Ça fait pas beau ») : sur un téléphone, dès qu'un temps porte une phrase, les
+   temps se rangent l'un sous l'autre, le numéro à gauche ; seuls de courts intitulés restent côte à côte. Et un titre
+   long n'est jamais plus gros que ses voisins : les titres d'une même rangée ont une seule taille. */
+.ctw .tn-comment[data-tn-c="fleches"] li h3[data-tn-long]:not(#tn):not(#tn){font-family:var(--f-ui);font-weight:700;font-size:15px;line-height:1.2;letter-spacing:0;text-transform:none}
+@media (max-width:759px){
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li>p):not(#tn){grid-auto-flow:row;grid-template-columns:minmax(0,1fr);row-gap:20px;padding:22px 18px}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li>p)>li:not(#tn){display:grid;grid-template-columns:52px minmax(0,1fr);column-gap:12px;align-items:start;padding:0;text-align:left}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li>p)>li:not(#tn)::before{grid-row:1/3;font-size:34px}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li>p)>li:not(#tn)::after{content:none}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li>p)>li:not(#tn) h3:not(#tn){grid-column:2;margin-top:2px;font-size:17px}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li>p)>li:not(#tn) p{grid-column:2;margin-top:6px;font-size:15px;line-height:1.45}
+}
+@media (min-width:760px){
+  .ctw .tn-comment[data-tn-c="fleches"] li h3[data-tn-long]:not(#tn):not(#tn){font-size:21px}
 }
 @media (min-width:760px){
   .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(5)):not(#tn){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:34px}
