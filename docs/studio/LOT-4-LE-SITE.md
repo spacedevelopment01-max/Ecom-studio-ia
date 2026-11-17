@@ -362,8 +362,8 @@ jour : « elle doit y arriver, on ne laisse pas de porte de sortie sinon elle va
 
 - **Ce que SINA reçoit** : au moment d'écrire chaque planche (et à sa reprise), les polices de titres des 20 dernières
   marques du Studio et les fonds clairs des 6 dernières (autres clients ; jamais leur nom), avec la règle : jamais la
-  même police de titres, ni une autre graisse de la même police ; un fond clair qui s'en écarte tout en restant doux,
-  sauf un fond « blanc ».
+  même police de titres, ni une autre graisse de la même police ; un fond clair qui s'en écarte tout en restant doux ;
+  un fond blanc pur est toujours permis.
 - **Le contrôle du Studio, sans IA** (`src/lib/syna-agent/variete-marques.ts`), juste après chaque planche écrite puis
   sur la série finale, **avant toute image payante** (le logo et la planche montrent la police et les couleurs) :
   - **La police, sans porte de sortie** : une police de titres déjà prise par une des 20 dernières marques, ou par une
@@ -377,23 +377,30 @@ jour : « elle doit y arriver, on ne laisse pas de porte de sortie sinon elle va
     **6 dernières marques** seulement ; trop proche (écart de couleur perçu, CIEDE2000, sous 10), il est remplacé par un
     fond pâle pris dans les teintes de la marque (son fond, puis son bouton, sa surface, son accent), **toujours dans les
     bornes d'un fond doux : clarté 95 au moins, saturation 7 au plus** (mesures CIELAB), sans défaut de contraste de plus,
-    le plus proche possible de celui de SINA. Si aucun fond doux ne s'écarte assez, le plus écarté **dans les bornes**
-    est pris : la différence se fait alors par la police (elle reste stricte), les couleurs de la marque, l'allure du
-    site et le contrôle par l'image. La couleur du bouton, les couleurs données par le client et ses polices ou couleurs
-    gardées ne changent jamais ; un fond « blanc » reste un blanc pur (un blanc par série).
+    le plus proche possible de celui de SINA. **Si aucun fond doux ne s'écarte assez, c'est le blanc pur** (règle du
+    propriétaire du 17 novembre : « La couleur blanche en fond est autorisée si jamais ») : la différence se fait alors
+    par la police (elle reste stricte), les couleurs de la marque, l'allure du site et le contrôle par l'image. Une
+    teinte tirée de la marque passe avant le blanc seulement si elle s'écarte assez. Le blanc pur n'est jamais refusé
+    pour ressemblance, et le fond blanc d'une marque récente n'est pas un obstacle (sinon, aucun fond doux ne pourrait
+    jamais s'en écarter assez, et tout finirait en blanc). La couleur du bouton, les couleurs données par le client et
+    ses polices ou couleurs gardées ne changent jamais ; un fond « blanc » reste un blanc pur (un blanc par série).
   - **Les bornes, choisies sur une planche de rendus** (douze marques inventées, titre et bouton posés sur leur fond de
     remplacement, contre six marques récentes aux fonds presque blancs, le cas le plus serré) : à clarté 94 et
     saturation 10, le fond le plus écarté devient un rose ou un vert d'eau qu'on remarque ; à clarté 95 et saturation 7,
-    il reste un blanc teinté, calme, et la marque se lit d'abord par son bouton et son titre. Dans ce cas serré, aucun
-    fond doux n'atteint l'écart de 10 (écarts obtenus : de 3,9 à 8,3) : c'est le cas prévu où la police fait la
-    différence.
+    il reste un blanc teinté, calme, et la marque se lit d'abord par son bouton et son titre.
+  - **Ce que la règle donne en pratique** (planche refaite avec le blanc pur) : la zone des fonds doux est petite (son
+    plus grand écart est d'environ 12 à 16), donc elle ne contient que deux ou trois fonds doux qui s'écartent de 10
+    entre eux. Contre six marques récentes dont deux fonds doux (un crème, un bleu très pâle), 2 marques sur 12
+    reçoivent un vert très pâle tiré de leurs couleurs, les 10 autres le blanc pur ; dès que trois ou quatre fonds doux
+    sont récents, presque tout passe au blanc. La variété des fonds vient donc surtout du blanc et des fonds colorés
+    choisis par SINA quand ils sont déjà assez différents ; la police reste la vraie garantie.
   - **Le seuil de 10** : les deux fonds de l'essai sont à 6,9 et le propriétaire les voit pareils ; un crème et un blanc
     pur (#FFF6E0 et #FFFFFF) sont à 9,4.
 - **Vérifié sans IA** (`tests/variete-marques.test.ts`, et un essai de bout en bout dans `tests/sina-chaine-marque.test.ts`
   avec l'IA simulée) : une identité qui reprend l'Archivo Black d'une marque récente reçoit une autre police très grasse,
   libre, et la relecture voit déjà la série corrigée ; #FFF6E0 contre #FFFCF7 est jugé trop proche et remplacé par un
-  fond doux assez écarté ; quand aucun fond doux ne s'écarte assez, le plus écarté dans les bornes est pris ; le fond
-  ne se compare qu'aux 6 dernières marques, la police aux 20 ; sans marque récente, rien ne change ; deux identités
+  fond doux assez écarté ; quand aucun fond doux ne s'écarte assez, c'est le blanc pur ; le blanc n'est jamais refusé
+  et un fond blanc récent ne gêne pas ; le fond ne se compare qu'aux 6 dernières marques, la police aux 20 ; sans marque récente, rien ne change ; deux identités
   d'une même proposition n'ont jamais la même police de titres.
 - **Pas encore vérifié** : avec la vraie IA (il faudra un essai de création de marque) ; sur un vrai site et une vraie
   planche (la planche de contrôle pose seulement un titre et un bouton sur chaque fond). Deux marques en fond « blanc »

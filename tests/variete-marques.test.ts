@@ -127,17 +127,26 @@ describe("variété entre les marques — le fond clair", () => {
       if (f) expect(fondDoux(f.light), `${k} ${f.light}`).toBe(true);
     }
   });
-  it("aucun fond doux ne s'écarte assez : le plus écarté DANS les bornes est pris, jamais un fond coloré", () => {
-    const lights = ["#FFFFFF", "#FFF6E0", "#FFFCF7", "#FAF7F2", "#F5EFE6", "#F8FAFC"];
+  it("aucun fond doux ne s'écarte assez : le blanc pur est pris (« La couleur blanche en fond est autorisée si jamais »)", () => {
+    const lights = ["#FFF6E0", "#FFFCF7", "#FAF7F2", "#F5EFE6", "#F8FAFC", "#EEF4FE"];
     const x = uni();
     const f = fondDeRemplacement(x, lights)!;
-    expect(f).not.toBeNull();
-    expect(f.assez).toBe(false);
-    expect(fondDoux(f.light)).toBe(true);
-    const far = (c: string) => Math.min(...lights.map((l) => deltaE2000(c, l)));
-    expect(far(f.light)).toBeGreaterThan(far(x.palette.light));
+    expect(f).toEqual({ light: "#FFFFFF", assez: false });
+    expect(paletteIssues({ ...x.palette, light: f.light }, x.ground, x.gradient)).toEqual(paletteIssues(x.palette, x.ground, x.gradient));
     const r = varierIdentites([x], lights.map((light) => ({ heading: null, light })), { modifiables: ["D"] });
-    expect(r.changes.join(" ")).toMatch(/le plus écarté des fonds doux/);
+    expect(r.list[0].palette.light).toBe("#FFFFFF");
+    expect(r.changes.join(" ")).toMatch(/remplacé par #FFFFFF \(blanc pur/);
+  });
+  it("le blanc pur n'est jamais refusé pour ressemblance, et un fond blanc d'une marque récente n'est pas un obstacle", () => {
+    const x = uni();
+    x.palette.light = "#FFFFFF";
+    expect(varierIdentites([x], [{ heading: null, light: "#FFFFFF" }], { modifiables: ["D"] }).list[0].palette.light).toBe("#FFFFFF");
+    // Les marques récentes blanches ne comptent pas : même résultat qu'avec le seul fond crème.
+    expect(fondDeRemplacement(uni(), ["#FFFFFF", "#FFF6E0", "#FFFFFF"])).toEqual(fondDeRemplacement(uni(), ["#FFF6E0"]));
+    expect(fondDeRemplacement(uni(), ["#FFFFFF"])).toBeNull();
+    // Une teinte tirée de la marque qui s'écarte assez reste préférée au blanc.
+    expect(fondDeRemplacement(uni(), ["#FFF6E0"])!.light).not.toBe("#FFFFFF");
+    expect(varieteMarquesBrief([{ heading: null, light: "#FFF6E0" }])).toMatch(/Un fond blanc pur \(#FFFFFF\) est toujours permis\./);
   });
   it("le fond se compare aux 6 dernières marques seulement ; la police, aux 20", () => {
     const recent: MarqueRecente[] = Array.from({ length: 20 }, (_, i) => ({ heading: i === 15 ? "archivo_black_n4" : "fraunces_n8", light: i < FONDS_COMPARES ? "#D6CFF6" : "#FFFCF7" }));

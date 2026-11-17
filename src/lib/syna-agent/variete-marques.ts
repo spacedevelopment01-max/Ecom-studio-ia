@@ -11,8 +11,9 @@
  *  - fond clair (`palette.light`, le fond des pages du site), contre les 6 dernières marques seulement : écart de
  *    couleur CIEDE2000 d'au moins `FOND_ECART_MIN`, en restant toujours un fond doux et calme (bornes `FOND_BORNES`).
  *    Comparer le fond à plus de marques pousserait, client après client, vers des fonds de plus en plus colorés : une
- *    impasse lente. Quand aucun fond doux ne s'écarte assez, le plus écarté reste dans les bornes ; la différence se
- *    fait alors par la police (toujours stricte), les couleurs de la marque, l'allure du site et le contrôle par l'image.
+ *    impasse lente. Quand aucun fond doux ne s'écarte assez, c'est le blanc pur, toujours permis (« La couleur
+ *    blanche en fond est autorisée si jamais ») ; la différence se fait alors par la police (toujours stricte), les
+ *    couleurs de la marque, l'allure du site et le contrôle par l'image.
  *
  * Aucune porte de sortie (« elle doit y arriver, on ne laisse pas de porte de sortie sinon elle va la prendre ») : SINA
  * reçoit ces marques avant de proposer ses identités ; puis le Studio corrige lui-même, sans IA, avant toute image
@@ -185,12 +186,12 @@ export function marquesRecentes(projectId: string, n = MARQUES_COMPAREES): Marqu
 /** Ce que SINA reçoit avant de proposer une identité : les polices de titres et les fonds des marques récentes. */
 export function varieteMarquesBrief(recent: MarqueRecente[]): string {
   const fonts = [...new Map(recent.filter((m) => m.heading).map((m) => [ligneeDe(m.heading!), m.heading!])).values()];
-  const lights = [...new Set(recent.slice(0, FONDS_COMPARES).map((m) => m.light).filter((x): x is string => !!x))];
+  const lights = [...new Set(recent.slice(0, FONDS_COMPARES).map((m) => m.light).filter((x): x is string => !!x && !estBlanc(x)))];
   if (!fonts.length && !lights.length) return "";
   return [
     `# Les ${recent.length} dernières marques créées par le Studio pour d'autres clients : la tienne ne ressemble à aucune`,
     ...(fonts.length ? [`Polices de titres déjà prises (jamais la même, ni une autre graisse de la même police) : ${fonts.map((h) => `${fontFamily(h)} (${fontKeyOf(h)})`).join(", ")}. Choisis une autre police de la liste autorisée, dans le caractère demandé.`] : []),
-    ...(lights.length ? [`Fonds clairs des ${Math.min(FONDS_COMPARES, recent.length)} dernières (light) : ${lights.join(", ")}. Ton fond clair s'en écarte nettement tout en restant un fond de page doux et pâle (une autre nuance, jamais un fond coloré : la personnalité vient des couleurs de la marque), sauf un fond « blanc », qui reste un blanc pur.`] : []),
+    ...(lights.length ? [`Fonds clairs des ${Math.min(FONDS_COMPARES, recent.length)} dernières (light) : ${lights.join(", ")}. Ton fond clair s'en écarte nettement tout en restant un fond de page doux et pâle (une autre nuance, jamais un fond coloré : la personnalité vient des couleurs de la marque), sauf un fond « blanc », qui reste un blanc pur. Un fond blanc pur (#FFFFFF) est toujours permis.`] : []),
     "Si tu reprends quand même une de ces polices ou un fond trop proche, le Studio les remplace lui-même avant les images.",
   ].join("\n");
 }
@@ -198,6 +199,10 @@ export function varieteMarquesBrief(recent: MarqueRecente[]): string {
 // ---------------------------------------------------------------- le fond clair
 
 type Fond = Pick<Identity, "palette" | "ground" | "gradient">;
+/** Le blanc pur : un fond toujours permis, jamais refusé pour ressemblance. */
+export const BLANC = "#FFFFFF";
+/** Un blanc pur (ou presque, à l'œil). */
+export const estBlanc = (hex: string) => deltaE2000(hex, BLANC) < 1;
 /** Clarté et saturation CIELAB d'une couleur (bornes d'un fond doux). */
 export function clarteSaturation(hex: string): { l: number; c: number } {
   const [L, a, b] = lab(hex);
@@ -223,18 +228,22 @@ const SATURATIONS = [1, 2, 3, 4, 5, 6, 7];
  * Fond clair de remplacement, sans IA, quand celui de l'identité est trop proche d'une des marques récentes données
  * (les 6 dernières) : un fond doux (bornes `FOND_BORNES`) pris dans les teintes de la marque elle-même (celle du fond
  * choisi, de l'accent, du bouton, de la surface), sans aucun défaut de contraste de plus, le plus proche possible du
- * fond choisi. Si aucun fond doux ne s'écarte assez, le plus écarté d'entre eux est pris (`assez` faux), seulement s'il
- * s'écarte plus que celui choisi. Null : rien à changer.
+ * fond choisi. Si aucun fond doux ne s'écarte assez, c'est le blanc pur (règle du propriétaire du 17 novembre 2026 : « La couleur
+ * blanche en fond est autorisée si jamais ») : `assez` faux. Le blanc pur n'est lui-même jamais refusé pour
+ * ressemblance. Null : rien à changer.
  */
 export function fondDeRemplacement(x: Fond, recentLights: string[]): { light: string; assez: boolean } | null {
   const light = x.palette.light.toUpperCase();
+  // Un fond blanc pur d'une marque récente n'est pas un obstacle : le blanc est permis à tous (« La couleur blanche en
+  // fond est autorisée si jamais »). Sinon, aucun fond doux ne pourrait s'en écarter assez, et tout finirait en blanc.
+  recentLights = recentLights.filter((c) => !estBlanc(c));
   const dist = (c: string) => Math.min(...recentLights.map((r) => deltaE2000(c, r)));
-  if (!recentLights.length || x.ground === "blanc" || dist(light) >= FOND_ECART_MIN) return null;
+  if (!recentLights.length || x.ground === "blanc" || estBlanc(light) || dist(light) >= FOND_ECART_MIN) return null;
   const before = new Set(paletteIssues(x.palette, x.ground, x.gradient));
   // Teintes de la marque : celle du fond choisi (même presque blanc, il a une chaleur), puis les couleurs franches.
   const hueOf = (c: string) => { const [, a, b] = lab(c); return { c: Math.hypot(a, b), h: ((Math.atan2(b, a) * 180) / Math.PI + 360) % 360 }; };
   // Ordre de préférence des teintes : celle du fond choisi, puis le bouton, la surface, l'accent (un fond tiré d'un
-  // simple détail de la marque ne passe qu'ensuite).
+  // simple détail de la marque ne passe qu'ensuite, et seulement s'il s'écarte assez ; sinon c'est le blanc pur).
   const hues = [{ h: hueOf(light).h, rang: 0 }, ...[x.palette.primary, x.palette.secondary, x.palette.accent].map((c, i) => ({ ...hueOf(c), rang: i + 1 })).filter((c) => c.c >= 8)];
   const raw = hues.flatMap(({ h, rang }) => CLARTES.flatMap((L) => SATURATIONS.map((C) => ({ c: labHex(L, C, h), rang })))).filter((o): o is { c: string; rang: number } => !!o.c && fondDoux(o.c));
   const seen = new Set<string>();
@@ -242,11 +251,8 @@ export function fondDeRemplacement(x: Fond, recentLights: string[]): { light: st
     .map((o) => ({ ...o, far: dist(o.c), near: deltaE2000(o.c, light) + 1.5 * o.rang }));
   const enough = ok.filter((o) => o.far >= FOND_ECART_MIN).sort((a, b) => a.near - b.near)[0];
   if (enough) return { light: enough.c, assez: true };
-  // Le plus écarté, en gardant la préférence des teintes : un fond doux tiré d'un détail de la marque doit s'écarter
-  // nettement plus pour passer devant celui de sa propre teinte.
-  const mine = dist(light);
-  const best = ok.filter((o) => o.far > mine).sort((a, b) => b.far - 0.75 * b.rang - (a.far - 0.75 * a.rang))[0];
-  return best ? { light: best.c, assez: false } : null;
+  // Aucun fond doux ne s'écarte assez : le blanc pur, toujours permis, s'il ne crée aucun défaut de contraste de plus.
+  return paletteIssues({ ...x.palette, light: BLANC }, x.ground, x.gradient).every((i) => before.has(i)) ? { light: BLANC, assez: false } : null;
 }
 
 // ---------------------------------------------------------------- la série d'identités
@@ -299,7 +305,7 @@ export function varierIdentites<T extends Identity>(list: T[], recent: MarqueRec
       if (f) {
         const before = y.palette.light;
         y = { ...swapText(y, before, f.light), palette: { ...y.palette, light: f.light } };
-        changes.push(`Identité ${x.key} : fond clair ${before} trop proche d'une marque récente, remplacé par ${f.light}${f.assez ? "" : " (le plus écarté des fonds doux : aucun ne s'écartait assez de toutes ; la différence se fait par la police et les couleurs)"}.`);
+        changes.push(`Identité ${x.key} : fond clair ${before} trop proche d'une marque récente, remplacé par ${f.light}${f.assez ? "" : " (blanc pur : aucun fond doux tiré de ses couleurs ne s'écartait assez ; la différence se fait par la police et les couleurs)"}.`);
       }
     }
     return y;
