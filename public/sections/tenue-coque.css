@@ -495,3 +495,8 @@
 @media (min-width:760px){
   .ctw[data-tn-titres="gras"] .tn-pied-services .tn-p-tel:not(#tn),.ctw .tn-pied-services:is([data-tn-lourd] *) .tn-p-tel:not(#tn){font-size:clamp(30px,3vw,38px)}
 }
+/* En-tête de services sur téléphone : le panneau du menu s'arrête au bas de l'écran, même quand le numéro et un bouton
+   long prennent deux rangées (sa hauteur part de celle de l'en-tête, telle qu'elle est). */
+@media (max-width:959px){
+  .ctw .tn-entete-services .tn-e-nav{height:calc(100vh - 100% - var(--tb-h,0px));height:calc(100dvh - 100% - var(--tb-h,0px))}
+}

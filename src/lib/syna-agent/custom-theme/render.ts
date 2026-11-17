@@ -155,7 +155,13 @@ export function linkMap(t: CustomTheme): Record<string, string> {
  * (réalisations, photos de clients, biens), jamais la photo d'une autre marque présentée comme celle du client.
  */
 export function provideFrame(kind: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" fill="#EEEAE3"/><rect x="40" y="40" width="1120" height="1120" fill="none" stroke="#9A9184" stroke-width="6" stroke-dasharray="26 18"/><text x="600" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="84" font-weight="700" fill="#2B2722">Photo à fournir</text><text x="600" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" fill="#4A443C">SINA ne peut pas inventer ${esc(kind)}.</text><text x="600" y="720" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#6B6359">Envoie ta vraie photo avec le trombone.</text></svg>`;
+  // Tour des sections (17 novembre 2026) : le cadre est souvent plus haut que large (photo de look, de bien) ; ses mots
+  // tiennent dans la bande du milieu, sur plusieurs lignes, pour ne jamais être coupés par les bords du cadre.
+  const lignes = (texte: string, max: number) => texte.split(/\s+/).reduce<string[]>((acc, mot) => { const last = acc[acc.length - 1]; if (last && `${last} ${mot}`.length <= max) acc[acc.length - 1] = `${last} ${mot}`; else acc.push(mot); return acc; }, []);
+  const phrase = lignes(`SINA ne peut pas inventer ${kind}.`, 22), envoi = lignes("Envoie ta vraie photo avec le trombone.", 22);
+  let y = 470;
+  const bloc = (l: string[], size: number, fill: string) => l.map((x) => { y += size * 1.25; return `<text x="600" y="${Math.round(y)}" text-anchor="middle" font-family="Arial, sans-serif" font-size="${size}" fill="${fill}">${esc(x)}</text>`; }).join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><title>Photo à fournir : SINA ne peut pas inventer ${esc(kind)}.</title><rect width="1200" height="1200" fill="#EEEAE3"/><rect x="40" y="40" width="1120" height="1120" fill="none" stroke="#9A9184" stroke-width="6" stroke-dasharray="26 18"/><text x="600" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="64" font-weight="700" fill="#2B2722">Photo à fournir</text>${bloc(phrase, 38, "#4A443C")}${(y += 18, "")}${bloc(envoi, 34, "#6B6359")}</svg>`;
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
 
@@ -497,7 +503,7 @@ export function tenueBuyData(projectId: string, handle?: string | null): TenueBu
   const price = priceText(p0);
   const company = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string }; } catch { return {}; } })() as { shipping?: string; returns?: string };
   const clean = (v: string | undefined) => (v && v.trim() ? v.trim() : null);
-  return { images: p0.data.images.map((im) => im.assetId).filter((id): id is string => !!id).map((id) => assetUrl({ id })), price, shipping: clean(company.shipping), returns: clean(company.returns), soldOut: soldOut(p0), notes: priceNotes(projectId) };
+  return { title: p0.data.title, images: p0.data.images.map((im) => im.assetId).filter((id): id is string => !!id).map((id) => assetUrl({ id })), price, shipping: clean(company.shipping), returns: clean(company.returns), soldOut: soldOut(p0), notes: priceNotes(projectId) };
 }
 /**
  * Mentions à dire près du prix (fonctions du bloc d'achat, jamais des sections à part) : l'indice de réparabilité ou de

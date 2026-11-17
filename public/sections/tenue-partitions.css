@@ -207,7 +207,7 @@
 .ctw .tn-adresse .tn-bt{display:block;padding:16px 20px}
 /* l'adresse en très grandes lettres */
 .ctw .tn-adresse[data-tn-c="adresse-en-grand"]{display:flex;flex-direction:column}
-.ctw .tn-adresse[data-tn-c="adresse-en-grand"] h2{order:1;padding-bottom:12px;border-bottom:1.5px solid var(--tn-encre);font-size:calc(22px*var(--tn-k))}
+.ctw .tn-adresse[data-tn-c="adresse-en-grand"] h2{order:1;padding-bottom:12px;border-bottom:1.5px solid var(--tn-encre);font-size:max(16px,calc(22px*var(--tn-k)))}
 .ctw .tn-adresse[data-tn-c="adresse-en-grand"] .tn-pt-lieu{order:2;gap:22px;margin-top:18px}
 .ctw .tn-adresse[data-tn-c="adresse-en-grand"] address{font-size:38px;line-height:1.04;letter-spacing:-.015em}
 .ctw .tn-adresse[data-tn-c="adresse-en-grand"] .tn-ph{order:3;min-height:170px;margin-top:26px}

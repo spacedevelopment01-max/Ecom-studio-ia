@@ -314,7 +314,10 @@
       var ecart = rx > 4 ? -ry : ry > 4 ? -rx : Infinity; // l'un sous l'autre, ou côte à côte
       if (ecart < SEUILS.BOUTONS_ECART_MIN_PX && ecart > -SEUILS.CHEVAUCHEMENT_PX) {
         // Deux éléments d'un même bloc soudé (les deux moitiés d'un sélecteur, un champ et son bouton) ne sont pas « collés ».
-        var soudes = A.el.parentElement === B.el.parentElement && (cs(A.el.parentElement).gap === "0px" || estBoite(A.el.parentElement)) && ecart <= 1;
+        // L'écart compté est celui du sens où ils se suivent, quand il est écrit à zéro : les cellules d'une ligne
+        // d'en-tête de tableau (colonnes sans écart) sont soudées ; deux pastilles sans écart écrit ne le sont pas.
+        var gapSens = A.el.parentElement ? (ry > 4 ? cs(A.el.parentElement).columnGap : cs(A.el.parentElement).rowGap) : "";
+        var soudes = A.el.parentElement === B.el.parentElement && (gapSens === "0px" || estBoite(A.el.parentElement)) && ecart <= 1;
         // Les lignes d'un menu, d'un accordéon, d'une liste à cocher : l'une sous l'autre, chacune assez haute pour le
         // doigt, et qui ne sont pas deux vrais boutons (bouton du Studio, boîte bordée des quatre côtés, pastille arrondie
         // ou à ombre). C'est la forme normale d'une liste : le doigt ne se trompe pas de ligne.
@@ -623,10 +626,22 @@
     styles = new WeakMap();
     var fond = function (e) { var s = cs(e), c = couleur(s.backgroundColor); return s.backgroundImage !== "none" || /^(IMG|VIDEO|CANVAS|IFRAME)$/.test(e.tagName) ? 1 : c ? c[3] : 0; };
     var y0 = scrollY;
+    // Une fenêtre ouverte qui prend tout l'écran (fixe, peinte) : tant qu'elle est ouverte, rien derrière elle ne se lit,
+    // au-dessus comme au-dessous du pli (la capture pleine page ne la peint que sur le premier écran).
+    var modales = Array.prototype.filter.call(document.querySelectorAll(".tb-wrap *"), function (e) {
+      if (cs(e).position !== "fixed" || !fond(e)) return false;
+      var r = e.getBoundingClientRect();
+      return r.width >= innerWidth * 0.9 && r.height >= innerHeight * 0.9;
+    });
     var out = liste.map(function (q) {
       var t = derniersTextes[q.i];
+      if (t && modales.length && !modales.some(function (m) { return m.contains(t.el); })) return q.points.map(function () { return false; });
       if (!t || cs(t.el).pointerEvents === "none") return q.points.map(function () { return true; });
-      return q.points.map(function (p) {
+      // Un texte qu'une fenêtre, un tiroir ou un menu ouvert recouvre EN PARTIE se trouve sous elle : à ce moment il ne
+      // se lit pas, et la capture (pleine page) ne peint pas la fenêtre au même endroit que l'écran sous le pli. Aucun de
+      // ses points ne se juge.
+      var sousFenetre = false;
+      var res = q.points.map(function (p) {
         var x = p[0], y = p[1];
         if (y >= innerHeight - 1) { if (t.flotte) return true; scrollTo(0, Math.max(0, Math.round(y - innerHeight / 2))); }
         else if (scrollY) scrollTo(0, 0);
@@ -639,10 +654,11 @@
           // Une autre section, ou une fenêtre fixe : dès qu'elle peint quelque chose (un voile compris). Dans la même
           // section : seulement un panneau opaque (le texte ne se voit plus du tout).
           var ailleurs = sectionDe(e) !== t.sec || (f && f !== t.flotte && cs(f).position === "fixed");
-          if (fond(e) > (ailleurs ? 0.05 : 0.9)) return false;
+          if (fond(e) > (ailleurs ? 0.05 : 0.9)) { if (f && f !== t.flotte && !scrollY) sousFenetre = true; return false; }
         }
         return true;
       });
+      return sousFenetre ? res.map(function () { return false; }) : res;
     });
     scrollTo(0, y0);
     return out;

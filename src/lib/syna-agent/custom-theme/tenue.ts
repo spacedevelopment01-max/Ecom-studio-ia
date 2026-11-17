@@ -351,7 +351,7 @@ export function repere(label: "Livraison" | "Retours", value: string | null | un
   return plie(v).startsWith(plie(label).slice(0, 6)) ? coupe(v, max) : `${label} : ${coupe(v, max)}`;
 }
 /** Vraies données du bloc d'achat à tenue : photos du produit, prix, livraison, retours. */
-export type TenueBuy = { images: string[]; price: string | null; shipping: string | null; returns: string | null; /** Plus de stock : dit sous le prix, le bouton ne commande plus. */ soldOut?: boolean; /** Mentions vraies à dire près du prix (indice de réparabilité, paiement en plusieurs fois) : seulement celles que le client a confirmées. */ notes?: string[] };
+export type TenueBuy = { /** Le nom du produit de la fiche : posé à la place d'un nom d'exemple resté dans le titre. */ title?: string | null; images: string[]; price: string | null; shipping: string | null; returns: string | null; /** Plus de stock : dit sous le prix, le bouton ne commande plus. */ soldOut?: boolean; /** Mentions vraies à dire près du prix (indice de réparabilité, paiement en plusieurs fois) : seulement celles que le client a confirmées. */ notes?: string[] };
 /**
  * Pose les vraies données du produit dans le bloc d'achat à tenue : ses photos (la grande, puis jusqu'à cinq vignettes),
  * son vrai prix, la livraison et les retours du client. Ce qui manque reste « [À compléter] ». La barre d'achat reprend
@@ -360,6 +360,8 @@ export type TenueBuy = { images: string[]; price: string | null; shipping: strin
 export function withTenueBuyBlock(html: string, d: TenueBuy | null): string {
   if (!/\sdata-tn-achat\b/.test(html)) return html;
   let out = html;
+  // Un nom de produit d'exemple de la bibliothèque resté dans le titre (texte pas encore réécrit) : le vrai nom du produit.
+  if (d?.title?.trim()) out = out.replace(/(<h1\b[^>]*>)([\s\S]*?)(<\/h1>)/, (m, a: string, inner: string, b: string) => (exampleProductNames().has(nomDe(inner).toLocaleLowerCase("fr-FR")) ? `${a}${esc(d.title!.trim())}${b}` : m));
   if (d?.images.length) {
     const url = (u: string) => `style="background-image:url(${esc(u)})"`;
     out = out.replace(/(<div class="tn-grande tn-ph") style="[^"]*"/, `$1 ${url(d.images[0])}`);

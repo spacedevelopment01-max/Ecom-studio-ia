@@ -127,6 +127,26 @@ describe("aucun texte d'exemple chez un client", () => {
     });
     expect(restes).toEqual([]);
   });
+  it("la page des résultats montre de vrais produits ; le titre du bloc d'achat resté sur un nom d'exemple prend le vrai nom", async () => {
+    process.env.STUDIO_SYNA_AGENT = "1";
+    const { tenueSection, withTenueBuyBlock } = await import("@/lib/syna-agent/custom-theme/tenue");
+    const D = await import("@/lib/syna-agent/custom-theme/tenue-data");
+    const produits = [{ title: "Le sac du quotidien", image: null, price: "89 €" }, { title: "La trousse assortie", image: null, price: "29 €" }, { title: "Le grand sac de voyage", image: null, price: null }];
+    const r = D.withTenueSite(tenueSection("tn-resultats")!.html, { products: produits });
+    expect(r).toContain("Résultats pour «&nbsp;Le sac du quotidien&nbsp;»");
+    expect(r).toContain('<small class="tn-nombre">Deux résultats</small>');
+    expect(r.match(/<a class="tn-res"/g)).toHaveLength(2);
+    expect(r).toContain("<b>Le grand sac de voyage</b><span><mark");
+    expect(r).not.toMatch(/jasmin|Le journal/);
+    // Mise en boutique : la vraie recherche de la boutique pose ses résultats ; rien n'est écrit ici.
+    expect(D.withTenueSite(tenueSection("tn-resultats")!.html, { products: produits, live: true })).toContain("Thé vert jasmin");
+    const achat = withTenueBuyBlock(tenueSection("tn-achat")!.html, { title: "Le sac du quotidien", images: [], price: "89 €", shipping: null, returns: null });
+    expect(achat).toMatch(/<h1\b[^>]*>Le sac du quotidien<\/h1>/);
+    expect(achat).not.toContain("Thé vert jasmin");
+    // Un titre écrit pour le client (texte réécrit) reste tel quel.
+    const ecrit = tenueSection("tn-achat")!.html.replace(/<h1>[\s\S]*?<\/h1>/, "<h1>Tapis de yoga</h1>");
+    expect(withTenueBuyBlock(ecrit, { title: "Le sac du quotidien", images: [], price: "89 €", shipping: null, returns: null })).toContain("<h1>Tapis de yoga</h1>");
+  });
   it("la préparation en étapes et le colis : des exemples neutres, aucune quantité inventée", async () => {
     process.env.STUDIO_SYNA_AGENT = "1";
     const { tenueSection } = await import("@/lib/syna-agent/custom-theme/tenue");
@@ -135,5 +155,17 @@ describe("aucun texte d'exemple chez un client", () => {
       expect(texte, id).not.toMatch(/infuseur|cuillère|jasmin|feuilles|tasse|thé\b|sachet de/i);
       expect(html, id).toContain("[À compléter");
     }
+  });
+});
+
+describe("rien de coupé", () => {
+  it("le cadre « Photo à fournir » écrit ses mots sur des lignes courtes, au milieu (un cadre haut et étroit ne les coupe plus)", async () => {
+    process.env.STUDIO_SYNA_AGENT = "1";
+    const { provideFrame } = await import("@/lib/syna-agent/custom-theme/render");
+    const svg = Buffer.from(provideFrame("la photo du look porté ou composé").split(",")[1], "base64").toString();
+    const lignes = [...svg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]);
+    expect(lignes[0]).toBe("Photo à fournir");
+    expect(lignes.length).toBeGreaterThanOrEqual(4);
+    for (const l of lignes.slice(1)) expect(l.length, l).toBeLessThanOrEqual(22);
   });
 });

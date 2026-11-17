@@ -982,3 +982,16 @@
 .ctw .tn-rayons[data-tn-c="mots"] .tn-familles a:has(>.tn-ph:not([style])):not(#tn){grid-template-columns:minmax(0,1fr) 22px}
 .ctw[data-tn-lourd] .tn-echelle figcaption{font-family:var(--f-ui);font-style:normal;font-weight:500;font-size:15px}
 @media (min-width:760px){.ctw .tn-grade .tn-sceau{gap:14px}}
+/* Rayons : un nom de famille d'un seul long mot (« Les accessoires ») se coupe avec son trait d'union quand sa tuile est
+   étroite (tuile sans photo, petit téléphone, titres gras), jamais au milieu sans rien. */
+.ctw .tn-rayons b{-webkit-hyphens:auto;hyphens:auto}
+@media (max-width:359px){
+  .ctw .tn-rayons:not([data-tn-c="bandes"],[data-tn-c="mots"]) .tn-familles a:has(>.tn-ph:not([style])):not(#tn){padding:16px 10px}
+  .ctw[data-tn-titres="gras"] .tn-rayons:not([data-tn-c="bandes"],[data-tn-c="mots"]) .tn-familles a:has(>.tn-ph:not([style])):not(#tn) b,.ctw[data-tn-titres="capitales"] .tn-rayons:not([data-tn-c="bandes"],[data-tn-c="mots"]) .tn-familles a:has(>.tn-ph:not([style])):not(#tn) b,.ctw[data-tn-lourd] .tn-rayons:not([data-tn-c="bandes"],[data-tn-c="mots"]) .tn-familles a:has(>.tn-ph:not([style])):not(#tn) b{font-family:var(--f-ui);font-weight:700;font-size:17px;letter-spacing:0;text-transform:none}
+}
+/* Documents en feuilles : les deux feuilles d'une rangée gardent la même largeur (un mot long ne pousse plus sa feuille
+   contre sa voisine) ; sur un très petit téléphone, dans une tenue aux titres gras, le nom passe en texte courant gras. */
+.ctw .tn-documents[data-tn-c="feuilles"] li a{min-width:0}
+@media (max-width:359px){
+  .ctw[data-tn-titres="gras"] .tn-documents[data-tn-c="feuilles"] li b,.ctw[data-tn-titres="capitales"] .tn-documents[data-tn-c="feuilles"] li b,.ctw[data-tn-lourd] .tn-documents[data-tn-c="feuilles"] li b{font-family:var(--f-ui);font-weight:700;font-size:17px;line-height:1.25;letter-spacing:0;text-transform:none}
+}

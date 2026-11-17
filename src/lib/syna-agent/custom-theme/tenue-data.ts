@@ -420,6 +420,29 @@ export function withTenueSearch(html: string, d: TenueSite): string {
   return markMissing(out);
 }
 
+/**
+ * Page des résultats d'une recherche, dans l'aperçu : jamais les résultats d'exemple de la bibliothèque. Elle montre ce
+ * que le visiteur trouverait en cherchant le nom du premier produit : les vrais produits dont le nom partage un mot avec
+ * lui (six au plus), leur genre et leur prix. En boutique, la vraie recherche les remplace (mise en boutique).
+ */
+const MOTS_VIDES = new Set(["les", "des", "une", "aux", "pour", "avec", "sans", "sur", "par", "dans", "son", "ses", "mon", "ton", "nos", "vos", "qui", "que", "est", "the", "and"]);
+const NOMBRES = ["Aucun résultat", "Un résultat", "Deux résultats", "Trois résultats", "Quatre résultats", "Cinq résultats", "Six résultats"];
+export function withTenueResultats(html: string, d: TenueSite): string {
+  const products = d.products ?? [];
+  if (d.live || !products.length || !/\sdata-tn-resultats\b/.test(html)) return html;
+  const mots = (t: string) => t.toLocaleLowerCase("fr-FR").normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/[^a-z0-9]+/).filter((w) => w.length >= 3 && !MOTS_VIDES.has(w));
+  const terme = products[0].title.trim(), cles = new Set(mots(terme));
+  const trouves = [products[0], ...products.slice(1).filter((p) => mots(p.title).some((w) => cles.has(w)))].slice(0, 6);
+  const ligne = (p: TenueProduct) => {
+    const genre = clean(d.vitrine?.produits?.[p.title]?.genre, 40);
+    return `<a class="tn-res" href="#" onclick="return false" data-go="${esc(p.go ?? "product")}"><b>${esc(p.title)}</b>${genre ? `<small>${esc(genre)}</small>` : ""}<span>${p.soldOut ? "Épuisé" : p.price ? esc(p.price) : "[À compléter : prix]"}</span></a>`;
+  };
+  return markMissing(html.replace(/(<h1\b[^>]*>Résultats pour «&nbsp;)[\s\S]*?(&nbsp;»<\/h1>)/, `$1${esc(terme)}$2`)
+    .replace(/(<input type="search" value=")[^"]*(")/, `$1${esc(terme)}$2`)
+    .replace(/(<small class="tn-nombre">)[\s\S]*?(<\/small>)/, `$1${NOMBRES[trouves.length]}$2`)
+    .replace(/(<div class="tn-liste">)[\s\S]*?(<\/div>)(?=<div class="tn-vide">)/, (_m, a: string, b: string) => `${a}${trouves.map(ligne).join("")}${b}`));
+}
+
 /** Un bien immobilier visible sur le site (rubrique Biens) : ses photos sont des adresses de médias du projet. */
 export type TenueBien = {
   ref: string; title: string; type: string; transaction: "vente" | "location"; status: string; city: string; sector: string;
@@ -918,6 +941,7 @@ export function withTenueSite(html: string, d: TenueSite, built?: string | null)
   out = withTenue404(out, d, built);
   out = withTenueLegal(out, built);
   out = withTenueSearch(out, d);
+  out = withTenueResultats(out, d);
   out = withTenueVitrine(out, d, built); // vente directe (module « vente »)
   out = withTenueFaits(withTenueTypes(withTenueReseaux(out, d)), d); // module « partitions » : jamais une pièce sans sa vraie donnée
   out = withOuverturePleine(out, builtOf(out, built));

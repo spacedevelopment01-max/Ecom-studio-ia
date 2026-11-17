@@ -798,7 +798,7 @@
 .ctw .tn-garantie .tn-sceau-g b{font-size:12.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .ctw .tn-garantie .tn-sceau-g span{font-family:var(--f-title);font-size:27px;line-height:1.05}
 .ctw .tn-garantie .tn-sceau-g span:has(mark){font-family:var(--f-ui);font-size:12px;line-height:1.5}
-.ctw .tn-garantie .tn-sceau-g mark.tn-manque{font-size:11.5px;padding:1px 4px}
+.ctw .tn-garantie .tn-sceau-g mark.tn-manque{font-size:12px;padding:1px 4px}
 .ctw .tn-garantie h2{margin-top:22px;font-size:calc(36px*var(--tn-k))}
 .ctw .tn-garantie .tn-conditions{margin-top:12px;font-size:16.5px;color:var(--tn-texte)}
 /* « bande » : une bande de couleur douce d'un bord à l'autre */
@@ -1132,7 +1132,7 @@
   .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label{padding:28px 12px 20px}
   .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>label b{font-size:21px}
   .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack-prix{font-size:26px}
-  .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>.tn-pack-etiquette{font-size:11px}
+  .ctw .tn-packs[data-tn-c="cote-a-cote"] .tn-pack>.tn-pack-etiquette{font-size:12px}
   .ctw .tn-sous-bouton[data-tn-c="cartes"]{max-width:560px;margin:22px 40px 0 auto;padding:22px}
   .ctw .tn-sous-bouton .tn-tailles-sb[data-tn-js][open] .tn-fen{align-items:center;justify-items:center}
   .ctw .tn-sous-bouton .tn-tailles-sb[data-tn-js][open] .tn-fen-boite{width:min(640px,92vw);padding:30px 32px;border-radius:var(--tn-arrondi,0)}
@@ -1477,4 +1477,17 @@
    (76 px sur grand écran), jamais dessous. */
 @media (min-width:760px){
   .ctw .tn-ent~.tb-pg .tn-volets[data-tn-c="numeros"] h2{top:calc(var(--tb-h,0px) + 100px)}
+}
+/* Les looks, en liste, sur téléphone : un prix encore à compléter passe sous le nom (le nom garde toute la colonne et ne
+   se coupe plus au milieu d'un mot). */
+@media (max-width:759px){
+  .ctw .tn-looks:not([data-tn-c="bande"]) .tn-carte-p:has(>span mark){grid-template-columns:76px minmax(0,1fr)}
+  .ctw .tn-looks:not([data-tn-c="bande"]) .tn-carte-p:has(>span mark)>span{grid-column:2;max-width:none;margin-top:4px;text-align:left}
+  .ctw .tn-looks:not([data-tn-c="bande"]) .tn-carte-p:has(>span mark)>.tn-ph{grid-row:1/3}
+}
+/* Packs sur petit téléphone : la ligne du cadeau garde la place de sa phrase ; l'étiquette « Offert » passe dessous
+   quand la place manque (la phrase ne se coupait plus qu'en syllabes). */
+@media (max-width:479px){
+  .ctw .tn-packs:not([data-tn-c="cote-a-cote"]) .tn-pack-cadeau{flex-wrap:wrap;row-gap:6px;margin-left:44px}
+  .ctw .tn-packs:not([data-tn-c="cote-a-cote"]) .tn-pack-cadeau span{flex:1 1 140px}
 }
