@@ -373,6 +373,16 @@
         ajoute(bout <= SEUILS.LETTRES_SEULES ? "lettres-seules" : "mot-coupe", t.el, { texte: m[0], detail: "le mot « " + m[0] + " » est coupé sans trait d'union (" + m[0].slice(0, k) + " / " + m[0].slice(k) + ")", cadre: union(rr) });
         fait = true;
       }
+      // Un nombre (un prix, un poids, une quantité) ne se coupe jamais : « 2 / 50 g » se lit mal ou faux.
+      var rxn = /\d{2,}/g, mn;
+      while (!fait && (mn = rxn.exec(txt))) {
+        var rn = document.createRange(); rn.setStart(t.noeud, mn.index); rn.setEnd(t.noeud, mn.index + mn[0].length);
+        var rrn = Array.prototype.map.call(rn.getClientRects(), deRect).filter(function (x) { return x.w > 0.5; });
+        if (lignesDe(rrn) < 2) continue;
+        var kn = coupeEn(t.noeud, mn.index, mn[0]).k || 1;
+        ajoute("lettres-seules", t.el, { texte: mn[0], detail: "le nombre « " + mn[0] + " » est coupé sur deux lignes (" + mn[0].slice(0, kn) + " / " + mn[0].slice(kn) + ")", cadre: union(rrn) });
+        fait = true;
+      }
     });
 
     // ── 4. deux textes, ou un texte et un bouton, qui se chevauchent

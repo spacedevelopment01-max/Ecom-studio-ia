@@ -456,7 +456,7 @@
 .ctw[data-tn-cadre="penche"] .tn-garanties[data-tn-c="cases"] ul{margin-right:6px;border:3px solid var(--tn-encre);border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
 .ctw .tn-garanties[data-tn-c="cases"] li{display:flex;flex-direction:column;align-items:center;gap:0;padding:20px 12px 22px;border-bottom:0;text-align:center;box-shadow:0 0 0 .5px color-mix(in srgb,var(--tn-encre) 18%,transparent)}
 .ctw .tn-garanties[data-tn-c="cases"] li:last-child:nth-child(odd){grid-column:1/-1}
-.ctw .tn-garanties[data-tn-c="cases"] li svg{box-sizing:content-box;width:22px;height:22px;margin:0 0 12px;padding:10px;border-radius:50%;background-color:var(--tn-doux);stroke:var(--tn-accent);stroke-width:1.6}
+.ctw .tn-garanties[data-tn-c="cases"] li svg{box-sizing:content-box;width:22px;height:22px;margin:0 0 12px;padding:10px;border-radius:50%;background-color:var(--tn-doux);stroke:var(--tn-accent-texte,var(--tn-accent));stroke-width:1.6}
 .ctw .tn-garanties[data-tn-c="cases"] li b{font-size:19px;line-height:1.15}
 .ctw .tn-garanties[data-tn-c="cases"] li span{margin-top:6px;font-size:14px;line-height:1.45}
 .ctw .tn-garanties[data-tn-c="cases"]>a{display:table;margin:10px auto 0;font-size:14px}

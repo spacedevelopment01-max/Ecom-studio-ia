@@ -1509,3 +1509,8 @@
 @media (min-width:760px){
   .ctw .tn-mur-avis:not([data-tn-c="file"]) ul:not(:has(>li:nth-child(5))){columns:2;column-gap:20px}
 }
+/* Calendrier des effets en cartes, grand écran : la bande prend la largeur des autres sections ; une échéance
+   (« Sept jours ») tient sur une ligne dans sa carte, même en titres gras. */
+@media (min-width:760px){
+  .ctw .tn-effets[data-tn-c="cartes"]{padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+}

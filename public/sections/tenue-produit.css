@@ -71,7 +71,7 @@
 .ctw .tn-pour-qui ul{margin-top:12px;border-top:1.5px solid var(--tn-encre)}
 .ctw .tn-pour-qui li{position:relative;padding:13px 0 13px 34px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-size:16.5px;line-height:1.45}
 /* le oui : une coche ; le non : une croix (dessinées, pas des caractères) */
-.ctw .tn-pour-qui .tn-oui li::before{content:"";position:absolute;left:3px;top:19px;width:14px;height:7px;border-left:2px solid var(--tn-accent);border-bottom:2px solid var(--tn-accent);transform:rotate(-45deg)}
+.ctw .tn-pour-qui .tn-oui li::before{content:"";position:absolute;left:3px;top:19px;width:14px;height:7px;border-left:2px solid var(--tn-accent-texte,var(--tn-accent));border-bottom:2px solid var(--tn-accent-texte,var(--tn-accent));transform:rotate(-45deg)}
 .ctw .tn-pour-qui .tn-non li{color:var(--tn-sourd)}
 .ctw .tn-pour-qui .tn-non li::before,.ctw .tn-pour-qui .tn-non li::after{content:"";position:absolute;left:2px;top:24px;width:16px;border-top:2px solid currentColor;transform:rotate(45deg)}
 .ctw .tn-pour-qui .tn-non li::after{transform:rotate(-45deg)}
@@ -929,7 +929,11 @@
   .ctw .tn-effets ol{grid-auto-flow:row;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));row-gap:34px}
 }
 /* Ration : le nom et la quantité gardent leur place quand la quantité est longue. */
-.ctw .tn-ration li em{min-width:0;max-width:min(150px,42%)}
+.ctw .tn-ration li{grid-template-columns:42px minmax(0,1fr) fit-content(42%)}
+.ctw .tn-ration li em{min-width:0;max-width:150px}
+@media (min-width:760px){
+  .ctw .tn-ration:not([data-tn-c="cartes"]) li{grid-template-columns:56px minmax(0,1fr) fit-content(42%)}
+}
 .ctw .tn-ration li em:has(mark){grid-column:2;grid-row:auto;max-width:none;text-align:left}
 .ctw[data-tn-titres="gras"] .tn-ration li b,.ctw[data-tn-titres="capitales"] .tn-ration li b,.ctw[data-tn-lourd] .tn-ration li b{font-size:19px;line-height:1.18}
 /* Pourquoi ce prix : un poste et son montant ; un montant long passe sous son poste, le total ne sort jamais du ticket. */
