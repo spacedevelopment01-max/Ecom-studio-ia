@@ -18,7 +18,7 @@
 .ctw .tn-fiche-technique li{display:grid;grid-template-columns:minmax(0,38%) minmax(0,1fr);gap:12px;padding:11px 0;border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent);font-size:15.5px;line-height:1.4}
 .ctw .tn-fiche-technique li:first-child{border-top:0}
 .ctw .tn-fiche-technique li span{color:var(--tn-sourd)}
-.ctw .tn-fiche-technique li b{font-weight:400;overflow-wrap:anywhere}
+.ctw .tn-fiche-technique li b{font-weight:400;overflow-wrap:break-word}
 /* « tuiles » : le nom en petit, la valeur en grand ; la dernière tuile d'une ligne incomplète prend la place qui reste */
 .ctw .tn-fiche-technique[data-tn-c="tuiles"]{display:flex;flex-wrap:wrap;gap:8px}
 .ctw .tn-fiche-technique[data-tn-c="tuiles"] h2{flex:0 0 100%;margin-bottom:14px}
@@ -122,7 +122,7 @@
 .ctw .tn-echelle li + li{border-left:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
 .ctw .tn-echelle li:first-child{padding-left:0}
 .ctw .tn-echelle li span{font-size:14px;color:var(--tn-sourd)}
-.ctw .tn-echelle li b{font-family:var(--f-title);font-weight:400;font-size:26px;line-height:1.1;overflow-wrap:anywhere}
+.ctw .tn-echelle li b{font-family:var(--f-title);font-weight:400;font-size:26px;line-height:1.1;overflow-wrap:break-word}
 .ctw .tn-echelle li b mark.tn-manque{font-size:13.5px;padding:1px 5px}
 .ctw[data-tn-cadre="penche"] .tn-echelle{overflow-x:clip}
 .ctw[data-tn-cadre="penche"] .tn-echelle .tn-regle{padding:0 12px 30px 28px}
@@ -135,7 +135,7 @@
 .ctw .tn-valeurs h2{font-size:calc(34px*var(--tn-k))}
 .ctw .tn-valeurs .tn-tete p{font-size:14.5px;line-height:1.45;margin-top:8px}
 .ctw .tn-valeurs table{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:14px;border-top:6px solid var(--tn-encre);font-size:14.5px;line-height:1.3}
-.ctw .tn-valeurs th,.ctw .tn-valeurs td{padding:10px 0 10px 8px;text-align:right;font-weight:400;vertical-align:top;overflow-wrap:anywhere}
+.ctw .tn-valeurs th,.ctw .tn-valeurs td{padding:10px 0 10px 8px;text-align:right;font-weight:400;vertical-align:top;overflow-wrap:break-word}
 .ctw .tn-valeurs th:first-child{width:34%;padding-left:0;text-align:left}
 .ctw .tn-valeurs thead th{font-size:12.5px;color:var(--tn-sourd);padding-top:8px;padding-bottom:8px;border-bottom:1.5px solid var(--tn-encre)}
 .ctw .tn-valeurs tbody th{font-weight:700}
@@ -231,7 +231,7 @@
 .ctw .tn-notes li:nth-child(2){width:85%;background-color:color-mix(in srgb,var(--tn-accent) 30%,var(--tn-fond));clip-path:polygon(8.8% 0,91.2% 0,100% 100%,0 100%)}
 .ctw .tn-notes li:last-child{background-color:var(--tn-encre);color:var(--tn-sur-bouton)}
 .ctw .tn-notes li small{font-size:15px;color:inherit;opacity:.82}
-.ctw .tn-notes li b{display:block;font-family:var(--f-title);font-weight:400;font-size:21px;line-height:1.12;margin-top:4px;overflow-wrap:anywhere}
+.ctw .tn-notes li b{display:block;font-family:var(--f-title);font-weight:400;font-size:21px;line-height:1.12;margin-top:4px;overflow-wrap:break-word}
 .ctw .tn-notes li span{display:block;font-size:14.5px;line-height:1.4;margin-top:6px}
 /* « colonnes » : trois temps séparés d'un trait */
 .ctw .tn-notes[data-tn-c="colonnes"] ol{justify-items:stretch;gap:0;border-top:1.5px solid var(--tn-encre)}
@@ -347,7 +347,7 @@
 .ctw .tn-preparation .tn-ph{height:280px;margin-top:22px}
 .ctw .tn-preparation ol{list-style:none;margin:26px 0 0;padding:0;counter-reset:tn-etape;border-top:1.5px solid var(--tn-encre)}
 .ctw .tn-preparation li{counter-increment:tn-etape;display:grid;grid-template-columns:50px minmax(0,1fr);column-gap:10px;row-gap:4px;align-items:start;padding:16px 0 18px;border-bottom:1.5px solid var(--tn-encre)}
-.ctw .tn-preparation li::before{content:counter(tn-etape);grid-row:1/4;font-family:var(--f-title);font-size:52px;line-height:.92;color:var(--tn-accent)}
+.ctw .tn-preparation li::before{content:counter(tn-etape);grid-row:1/4;font-family:var(--f-title);font-size:52px;line-height:.92;color:var(--tn-accent-texte,var(--tn-accent))}
 .ctw .tn-preparation li b{grid-column:2;font-family:var(--f-title);font-weight:400;font-size:26px;line-height:1.1}
 .ctw .tn-preparation li span{grid-column:2;font-size:16px;line-height:1.5;color:var(--tn-texte)}
 .ctw[data-tn-cadre="penche"] .tn-preparation{overflow-x:clip}
@@ -431,7 +431,7 @@
 .ctw .tn-comparatif .tn-table{margin-top:24px}
 .ctw .tn-comparatif .tn-noms,.ctw .tn-comparatif .tn-critere p{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:14px}
 .ctw .tn-comparatif .tn-noms{padding-bottom:12px;border-bottom:1.5px solid var(--tn-encre)}
-.ctw .tn-comparatif .tn-noms a{display:flex;align-items:flex-end;min-width:0;min-height:44px;font-family:var(--f-title);font-size:18px;line-height:1.12;overflow-wrap:anywhere}
+.ctw .tn-comparatif .tn-noms a{display:flex;align-items:flex-end;min-width:0;min-height:44px;font-family:var(--f-title);font-size:18px;line-height:1.12;overflow-wrap:break-word}
 .ctw .tn-comparatif .tn-critere{padding:13px 0 15px;border-bottom:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
 .ctw .tn-comparatif .tn-critere small{font-size:15px}
 .ctw .tn-comparatif .tn-critere p{margin-top:5px;font-size:15.5px;line-height:1.4}
@@ -460,7 +460,7 @@
 /* « en grand » : le premier avis en très grand, centré ; les autres en petit */
 .ctw .tn-avis[data-tn-c="en-grand"] ul{border-top:0;margin-top:14px}
 .ctw .tn-avis[data-tn-c="en-grand"] li:first-child{padding:0 0 30px;text-align:center}
-.ctw .tn-avis[data-tn-c="en-grand"] li:first-child::before{content:"«";display:block;font-family:var(--f-title);font-size:76px;line-height:.8;color:var(--tn-accent)}
+.ctw .tn-avis[data-tn-c="en-grand"] li:first-child::before{content:"«";display:block;font-family:var(--f-title);font-size:76px;line-height:.8;color:var(--tn-accent-texte,var(--tn-accent))}
 .ctw .tn-avis[data-tn-c="en-grand"] li:first-child blockquote{font-family:var(--f-title);font-size:30px;line-height:1.18}
 .ctw .tn-avis[data-tn-c="en-grand"] li:first-child blockquote mark.tn-manque{font-size:17px}
 /* titres gras ou en capitales : plus larges, donc plus petits, pour qu'un avis long reste lisible */
@@ -875,3 +875,109 @@
   .ctw .tn-garanties[data-tn-c="bande"] li + li{border-left:1px solid color-mix(in srgb,var(--tn-encre) 26%,transparent)}
   .ctw .tb-pg>.tn-garanties[data-tn-c="bande"]:last-child{padding-bottom:50px}
 }
+
+/* ══ Tour des sections (17 novembre 2026 : « j'en veux plus un seul ») ══
+   Chaque pièce ouverte sur 320, 390 et 1280 px, dans trois tenues, avec des contenus courts, vrais et difficiles (sept
+   éléments dans une liste, un nom long, une valeur longue). Ce qui cassait est réglé ici, pièce par pièce. Deux gestes
+   reviennent : une liste « en colonnes » passe à la ligne au-delà de trois ou quatre éléments (jamais sept colonnes
+   d'un mot de large), et un nom long dans une tenue aux titres gras passe dans la police du texte courant. */
+/* Fiche technique : le nom d'un groupe n'est pas un bouton dans « tableau », mais garde la hauteur d'une ligne à toucher ;
+   les tuiles prennent toute la largeur sur un très petit téléphone ; une valeur en gras reste courte. */
+.ctw .tn-fiche-technique label{display:flex;align-items:flex-end;min-height:40px}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-fiche-technique[data-tn-c="tuiles"] li b{font-size:18px;line-height:1.2}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-fiche-technique[data-tn-c="tuiles"] li b[data-tn-long]{font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:1.35;text-transform:none;letter-spacing:0}
+@media (max-width:359px){.ctw .tn-fiche-technique[data-tn-c="tuiles"] li{flex-basis:100%}}
+@media (min-width:760px){.ctw .tn-fiche-technique label{display:block;min-height:0}.ctw .tn-fiche-technique[data-tn-c="volets"] label{display:flex;min-height:44px}}
+/* Dans le colis : une ligne « en plus » dont la valeur est longue passe à la ligne ; en grille, trois colonnes au plus. */
+.ctw .tn-colis .tn-en-plus li{flex-wrap:wrap}
+.ctw .tn-colis .tn-en-plus li b{min-width:0;max-width:100%}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-colis[data-tn-c="grille"] .tn-pieces b{font-size:18px;line-height:1.18}
+@media (min-width:760px){
+  .ctw .tn-colis[data-tn-c="grille"] .tn-en-plus ul{grid-auto-flow:row;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-colis[data-tn-c="grille"] .tn-pieces b{font-size:22px}
+}
+/* À l'échelle : sur téléphone, une mesure par ligne (le nom à gauche, la valeur à droite) : trois colonnes écrasaient une
+   valeur de plus de deux mots. */
+@media (max-width:759px){
+  .ctw .tn-echelle ul{display:block}
+  .ctw .tn-echelle li,.ctw .tn-echelle li:first-child{grid-template-columns:minmax(0,auto) minmax(0,1fr);column-gap:16px;align-items:baseline;padding:12px 0}
+  .ctw .tn-echelle li + li{border-left:0;border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+  .ctw .tn-echelle li span{font-size:15px}
+  .ctw .tn-echelle li b{text-align:right;font-size:24px}
+}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-echelle li b{font-size:20px;line-height:1.15}
+.ctw .tn-echelle li b:has(mark){font-size:14px;line-height:1.5}
+/* Notes en trois temps, « colonnes » : trois colonnes au plus sur grand écran. */
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-notes[data-tn-c="colonnes"] li b{font-size:22px;line-height:1.15}
+@media (min-width:760px){
+  .ctw .tn-notes[data-tn-c="colonnes"] ol:has(li:nth-child(4)){grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ctw .tn-notes[data-tn-c="colonnes"] ol:has(li:nth-child(4)) li:nth-child(3n+1){padding-left:0;border-left:0}
+  .ctw .tn-notes[data-tn-c="colonnes"] ol:has(li:nth-child(4)) li:nth-child(n+4){border-top:1px solid color-mix(in srgb,var(--tn-encre) 22%,transparent)}
+}
+/* La note expliquée : le sceau grandit avec ce qu'il porte (une note et celui qui la donne), rien n'en sort. */
+.ctw .tn-grade .tn-sceau{width:min(100%,232px);min-width:0;max-width:none;padding:30px}
+.ctw .tn-grade .tn-sceau b{min-width:0;font-size:38px;text-wrap:balance}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-grade .tn-sceau b{font-size:28px}
+.ctw .tn-grade .tn-sceau span{min-width:0;max-width:100%}
+@media (min-width:760px){
+  .ctw .tn-grade .tn-sceau{width:264px;min-width:0;max-width:none;padding:36px}
+  .ctw .tn-grade .tn-sceau b{font-size:46px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-grade .tn-sceau b{font-size:34px}
+}
+/* Calendrier des effets : sur grand écran, quatre étapes par rangée au plus. */
+@media (min-width:760px){
+  .ctw .tn-effets ol{grid-auto-flow:row;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));row-gap:34px}
+}
+/* Ration : le nom et la quantité gardent leur place quand la quantité est longue. */
+.ctw .tn-ration li em{min-width:0;max-width:min(150px,42%)}
+.ctw .tn-ration li em:has(mark){grid-column:2;grid-row:auto;max-width:none;text-align:left}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-ration li b{font-size:19px;line-height:1.18}
+/* Pourquoi ce prix : un poste et son montant ; un montant long passe sous son poste, le total ne sort jamais du ticket. */
+.ctw .tn-prix-explique li span{flex:1 1 55%}
+.ctw .tn-prix-explique li b{min-width:0;max-width:100%}
+.ctw .tn-prix-explique .tn-total{flex-wrap:wrap}
+.ctw .tn-prix-explique .tn-total span{flex:1 1 40%}
+.ctw .tn-prix-explique .tn-total b{flex:0 1 auto;min-width:0;max-width:100%}
+.ctw .tn-prix-explique[data-tn-c="couches"] li{flex-wrap:wrap}
+/* Comparatif : dans une tenue aux titres gras, le nom d'un produit s'écrit dans la police du texte courant (une colonne
+   d'un tiers d'écran en faisait un pavé). */
+.ctw .tn-comparatif .tn-noms a{hyphens:auto;-webkit-hyphens:auto}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-comparatif .tn-noms a{font-family:var(--f-ui);font-weight:700;font-size:15px;line-height:1.25;text-transform:none;letter-spacing:0}
+@media (max-width:759px){.ctw .tn-comparatif .tn-noms a{font-size:16px}.ctw .tn-comparatif .tn-noms,.ctw .tn-comparatif .tn-critere p{column-gap:10px}.ctw .tn-comparatif .tn-critere p{font-size:14.5px}}
+@media (min-width:760px){.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-comparatif .tn-noms a{font-size:18px}}
+/* La boutique et les rayons : un nom long dans une tenue aux titres gras ; les très grands noms se réduisent sur téléphone. */
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue .tn-carte-p b{font-size:18px;line-height:1.18}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue .tn-carte-p b[data-tn-long]{font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:1.3;text-transform:none;letter-spacing:0}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-rayons b{font-size:18px;line-height:1.18}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-rayons[data-tn-c="bandes"] b{font-size:22px;line-height:1.12}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-rayons[data-tn-c="mots"] b{font-size:22px;line-height:1.12}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-rayons b[data-tn-long]{font-family:var(--f-ui);font-weight:600;font-size:17px;line-height:1.3;text-transform:none;letter-spacing:0}
+@media (max-width:759px){.ctw .tn-rayons[data-tn-c="mots"] b[data-tn-long]{font-size:24px;line-height:1.08}.ctw .tn-rayons[data-tn-c="bandes"] b[data-tn-long]{font-size:23px}}
+@media (min-width:760px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue .tn-carte-p b{font-size:21px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-rayons b{font-size:22px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-rayons[data-tn-c="bandes"] b{font-size:34px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-rayons[data-tn-c="mots"] b{font-size:40px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-rayons :is(b[data-tn-long]){font-size:20px}
+  .ctw .tn-garanties ul:has(li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ctw .tn-garanties ul:has(li:nth-child(5)) li:nth-child(3n+1){padding-left:0;border-left:0}
+}
+/* Tableau des valeurs : sur un très petit téléphone, l'étiquette serre ses marges pour que chaque mot tienne en entier. */
+.ctw .tn-valeurs td mark.tn-manque{font-size:12.5px;padding:1px 3px}
+@media (max-width:359px){
+  .ctw .tn-valeurs .tn-etiquette{padding-left:10px;padding-right:10px}
+  .ctw .tn-valeurs th:first-child{width:30%}
+  .ctw .tn-valeurs th,.ctw .tn-valeurs td{padding-left:5px}
+  .ctw .tn-valeurs tbody tr.tn-dont th{padding-left:7px}
+  .ctw .tn-valeurs tbody th{font-size:13.5px}
+}
+/* La boutique : « Filtrer » et le tri gardent 8 px entre eux quand ils passent sur deux lignes ; l'étiquette d'une carte en liste reste lisible. */
+.ctw .tn-catalogue .tn-outils{row-gap:4px}
+.ctw .tn-catalogue[data-tn-c="liste"] .tn-carte-p em{font-size:12px}
+/* Les rayons : une famille dont aucun produit n'a encore de photo n'a pas de cadre vide ; son nom se pose sur une tuile douce. */
+.ctw .tn-rayons .tn-familles a:has(>.tn-ph:not([style])):not(#tn) .tn-ph{display:none}
+.ctw .tn-rayons:not([data-tn-c="bandes"],[data-tn-c="mots"]) .tn-familles a:has(>.tn-ph:not([style])):not(#tn){display:flex;flex-direction:column;justify-content:flex-end;min-height:200px;padding:18px 16px;border-radius:var(--tn-arrondi,0);background-color:var(--tn-doux)}
+.ctw .tn-rayons:not([data-tn-c="bandes"],[data-tn-c="mots"]) .tn-familles a:has(>.tn-ph:not([style])):not(#tn) b{margin-top:0}
+.ctw .tn-rayons[data-tn-c="bandes"] .tn-familles a:has(>.tn-ph:not([style])):not(#tn){grid-template-columns:minmax(0,1fr)}
+.ctw .tn-rayons[data-tn-c="mots"] .tn-familles a:has(>.tn-ph:not([style])):not(#tn){grid-template-columns:minmax(0,1fr) 22px}
+.ctw[data-tn-lourd] .tn-echelle figcaption{font-family:var(--f-ui);font-style:normal;font-weight:500;font-size:15px}
