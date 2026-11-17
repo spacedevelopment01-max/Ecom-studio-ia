@@ -169,3 +169,12 @@ describe("rien de coupé", () => {
     for (const l of lignes.slice(1)) expect(l.length, l).toBeLessThanOrEqual(22);
   });
 });
+
+describe("aucun vide quand une photo manque", () => {
+  it("boutique fermée « moitié » : la photo est à côté du texte ; sans elle, son cadre s'en va (pas de panneau sombre vide)", async () => {
+    process.env.STUDIO_SYNA_AGENT = "1";
+    const { textOnPhoto } = await import("@/lib/syna-agent/custom-theme/render");
+    expect(textOnPhoto({ id: "tn-fermee", construction: "moitie" } as never)).toBe(false);
+    expect(textOnPhoto({ id: "tn-fermee", construction: "photo-pleine" } as never)).toBe(true);
+  });
+});

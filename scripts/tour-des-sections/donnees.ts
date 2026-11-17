@@ -61,7 +61,7 @@ const REPONSES: [RegExp, string][] = [
   [/villes? desservies|zone/i, "Lyon, Villeurbanne et Bron"], [/ville|quartier|r[ée]gion|pays|lieu/i, "Lyon"],
   [/note moyenne/i, "4,8 sur 5"], [/nombre d'avis/i, "126 avis"], [/note/i, "4,8 sur 5"], [/nombre|combien|chiffre|quantit[ée]|places/i, "120"],
   [/pr[ée]nom et date|pr[ée]nom, date/i, "Camille, mars 2026"], [/pr[ée]nom|qui [ée]crit|signature|qui r[ée]pond/i, "Camille"], [/ann[ée]e/i, "2014"],
-  [/date|jour|saison/i, "le 14 mars"], [/heures?$/i, "10 h"], [/surface/i, "85 m², 4 pièces"], [/distance/i, "à 5 minutes à pied"],
+  [/date de la carte/i, "14 mars"], [/date|jour|saison/i, "le 14 mars"], [/heures?$/i, "10 h"], [/surface/i, "85 m², 4 pièces"], [/distance/i, "à 5 minutes à pied"],
   [/poids|contenance|portion|ration|taille|temp[ée]rature/i, "250 g"], [/couleur/i, "Sable"], [/code/i, "BIENVENUE"],
   [/nom du produit|nom du pack|nom |^nom/i, "Le classique"], [/avis d'un client|la phrase cit[ée]e|un avis/i, "Reçu vite, bien emballé, exactement comme sur la photo."],
   [/question/i, "Combien de temps faut-il compter ?"], [/moyens/i, "Carte bancaire, virement"], [/livraison/i, "Chez toi sous 48 heures"], [/retours?/i, "30 jours pour changer d'avis"],

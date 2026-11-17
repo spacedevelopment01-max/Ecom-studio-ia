@@ -1491,3 +1491,21 @@
   .ctw .tn-packs:not([data-tn-c="cote-a-cote"]) .tn-pack-cadeau{flex-wrap:wrap;row-gap:6px;margin-left:44px}
   .ctw .tn-packs:not([data-tn-c="cote-a-cote"]) .tn-pack-cadeau span{flex:1 1 140px}
 }
+/* Coloris : le dernier coloris d'un nombre impair ne s'étire plus en bande (la photo coupait le produit) ; il garde la
+   taille des autres, au milieu de sa rangée. En file sur grand écran, toutes les photos ont la même hauteur. */
+.ctw .tn-coloris:not([data-tn-c="file"]) .tn-col-liste>li:last-child:nth-child(odd){justify-self:center;width:calc(50% - 6px)}
+.ctw .tn-coloris:not([data-tn-c="file"]) .tn-col-liste>li:last-child:nth-child(odd) .tn-ph{aspect-ratio:1}
+.ctw .tn-coloris[data-tn-c="file"] .tn-col-liste>li:last-child:nth-child(odd) .tn-ph{aspect-ratio:3/4}
+@media (min-width:760px){
+  .ctw .tn-coloris:not([data-tn-c="file"]) .tn-col-liste>li:last-child:nth-child(odd){justify-self:stretch;width:auto}
+}
+/* Coloris en file, cadre penché, grand écran : la file garde la place des coins penchés et de leur ombre (le premier et
+   le dernier cadre étaient rognés par les bords de la file). */
+@media (min-width:760px){
+  .ctw[data-tn-cadre="penche"] .tn-coloris[data-tn-c="file"] .tn-col-liste{margin-left:-12px;margin-right:-12px;padding:8px 14px 18px 12px}
+}
+/* Mur d'avis en mosaïque sur grand écran : avec quatre avis ou moins, deux colonnes sur toute la largeur (trois colonnes
+   n'en remplissaient que deux et laissaient un grand vide à droite). */
+@media (min-width:760px){
+  .ctw .tn-mur-avis:not([data-tn-c="file"]) ul:not(:has(>li:nth-child(5))){columns:2;column-gap:20px}
+}

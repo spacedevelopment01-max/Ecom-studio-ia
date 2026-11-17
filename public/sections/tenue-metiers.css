@@ -1128,3 +1128,12 @@
   .ctw .tn-reserver-table[data-tn-photo-manque]:not([data-tn-c="encadre"]):not([data-tn-c="horaires"]) .tn-boite:not(#tn){padding:44px 48px 40px;background:var(--tn-doux)}
   .ctw .tn-reserver-table[data-tn-c="horaires"][data-tn-photo-manque] .tn-pratique-t:not(#tn){margin-top:44px}
 }
+/* Fiche d'un bien en affiche, grand écran : les vignettes se rangent en deux paires de même taille à droite de la fiche
+   (les règles du téléphone, plus fortes, les éparpillaient en trois tailles avec un grand vide). */
+@media (min-width:760px){
+  .ctw .tn-bien-galerie[data-tn-c="affiche"] .tn-photos .tn-ph:not(:first-child):not(#tn){height:150px;margin:12px 0 0}
+  .ctw .tn-bien-galerie[data-tn-c="affiche"] .tn-photos .tn-ph:nth-child(2):not(#tn){grid-column:7/10;grid-row:2;margin-right:20px}
+  .ctw .tn-bien-galerie[data-tn-c="affiche"] .tn-photos .tn-ph:nth-child(3):not(#tn){grid-column:10/13;grid-row:2;margin-left:-20px;margin-right:40px}
+  .ctw .tn-bien-galerie[data-tn-c="affiche"] .tn-photos .tn-ph:nth-child(4):not(#tn){grid-column:7/10;grid-row:3;margin-right:20px}
+  .ctw .tn-bien-galerie[data-tn-c="affiche"] .tn-photos .tn-ph:nth-child(5):not(#tn){grid-column:10/13;grid-row:3;margin-left:-20px;margin-right:40px}
+}

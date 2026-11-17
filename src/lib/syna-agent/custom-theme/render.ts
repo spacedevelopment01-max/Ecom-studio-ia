@@ -169,7 +169,7 @@ export function provideFrame(kind: string): string {
  * Le texte de cette section se pose-t-il SUR sa photo ? (fond « photo » de la pièce, sauf les façons qui posent la photo
  * seule et le texte à côté ou dessous.) Sert au filet « aucun vide » : sans photo, ces pièces gardent un panneau sombre.
  */
-const PHOTO_A_PART = new Set(["tn-ouverture:titre-puis-cadre", "tn-ouverture:titre-geant", "tn-ouverture:dans-la-photo", "tn-emotion:phrase-dessous"]);
+const PHOTO_A_PART = new Set(["tn-ouverture:titre-puis-cadre", "tn-ouverture:titre-geant", "tn-ouverture:dans-la-photo", "tn-emotion:phrase-dessous", "tn-fermee:moitie"]);
 export const textOnPhoto = (s: Pick<CtSection, "id" | "construction">): boolean => sectionTraits()[s.id]?.fond === "photo" && !PHOTO_A_PART.has(`${s.id}:${validConstruction(s.id, s.construction) ?? ""}`);
 
 /** HTML d'une section du thème, marqué de son identifiant (désignation, règles propres). */
