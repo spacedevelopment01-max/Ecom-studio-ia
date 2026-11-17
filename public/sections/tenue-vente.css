@@ -783,32 +783,32 @@
 .ctw .tn-produits-vente .tn-v-carte small{font-size:12px;letter-spacing:.07em}
 .ctw .tn-produits-vente .tn-v-voir{box-sizing:border-box;max-width:calc(100% - 20px);padding:0 14px;text-align:center}
 .ctw .tn-produits-vente .tn-v-offre{font-size:12px;border-radius:12px}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente .tn-v-carte b{font-size:17px;line-height:1.16}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente[data-tn-c="file"] .tn-v-carte b{font-size:21px}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente[data-tn-c="lignes"] .tn-v-carte b{font-size:19px}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente .tn-v-carte b[data-tn-long],.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:15.5px;line-height:1.3;letter-spacing:0;text-transform:none}
+.ctw[data-tn-titres="gras"] .tn-produits-vente .tn-v-carte b,.ctw[data-tn-titres="capitales"] .tn-produits-vente .tn-v-carte b,.ctw[data-tn-lourd] .tn-produits-vente .tn-v-carte b{font-size:17px;line-height:1.16}
+.ctw[data-tn-titres="gras"] .tn-produits-vente[data-tn-c="file"] .tn-v-carte b,.ctw[data-tn-titres="capitales"] .tn-produits-vente[data-tn-c="file"] .tn-v-carte b,.ctw[data-tn-lourd] .tn-produits-vente[data-tn-c="file"] .tn-v-carte b{font-size:21px}
+.ctw[data-tn-titres="gras"] .tn-produits-vente[data-tn-c="lignes"] .tn-v-carte b,.ctw[data-tn-titres="capitales"] .tn-produits-vente[data-tn-c="lignes"] .tn-v-carte b,.ctw[data-tn-lourd] .tn-produits-vente[data-tn-c="lignes"] .tn-v-carte b{font-size:19px}
+.ctw[data-tn-titres="gras"] .tn-produits-vente .tn-v-carte b[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-produits-vente .tn-v-carte b[data-tn-long],.ctw[data-tn-lourd] .tn-produits-vente .tn-v-carte b[data-tn-long],.ctw[data-tn-titres="gras"] .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long],.ctw[data-tn-lourd] .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:15.5px;line-height:1.3;letter-spacing:0;text-transform:none}
 @media (max-width:359px){
   .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-voir{gap:6px;padding:0 9px;font-size:13px}
   .ctw .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b{font-size:18px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b{font-size:14.5px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long]{font-size:14px}
+  .ctw[data-tn-titres="gras"] .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b,.ctw[data-tn-titres="capitales"] .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b,.ctw[data-tn-lourd] .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b{font-size:14.5px}
+  .ctw[data-tn-titres="gras"] .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long],.ctw[data-tn-lourd] .tn-produits-vente:not([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long]{font-size:14px}
 }
 @media (min-width:760px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente .tn-v-carte b{font-size:21px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b{font-size:24px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente .tn-v-carte b[data-tn-long],.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long]{font-size:17px}
+  .ctw[data-tn-titres="gras"] .tn-produits-vente .tn-v-carte b,.ctw[data-tn-titres="capitales"] .tn-produits-vente .tn-v-carte b,.ctw[data-tn-lourd] .tn-produits-vente .tn-v-carte b{font-size:21px}
+  .ctw[data-tn-titres="gras"] .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b,.ctw[data-tn-titres="capitales"] .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b,.ctw[data-tn-lourd] .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b{font-size:24px}
+  .ctw[data-tn-titres="gras"] .tn-produits-vente .tn-v-carte b[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-produits-vente .tn-v-carte b[data-tn-long],.ctw[data-tn-lourd] .tn-produits-vente .tn-v-carte b[data-tn-long],.ctw[data-tn-titres="gras"] .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long],.ctw[data-tn-lourd] .tn-produits-vente:is([data-tn-c="file"],[data-tn-c="lignes"]) .tn-v-carte b[data-tn-long]{font-size:17px}
   .ctw .tn-produits-vente[data-tn-c="file"] .tn-v-cartes:has(.tn-v-carte:nth-child(5)){display:flex;gap:24px;margin:40px calc(-1*max(40px,50vw - 540px)) 0;padding:0 max(40px,calc(50vw - 540px)) 12px;overflow-x:auto;scroll-padding-left:max(40px,calc(50vw - 540px))}
   .ctw .tn-produits-vente[data-tn-c="file"] .tn-v-cartes:has(.tn-v-carte:nth-child(5)) .tn-v-carte{flex:none;width:300px}
 }
 /* Lequel est fait pour toi : l'ombre du cadre penché reste dans la section ; le nom du produit reste lisible. */
 .ctw[data-tn-cadre="penche"] .tn-guide-choix{padding-bottom:12px}
 .ctw .tn-guide-choix .tn-v-quoi b{hyphens:auto;-webkit-hyphens:auto}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-guide-choix .tn-v-quoi b{font-size:16px;line-height:1.2}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-guide-choix .tn-v-quoi b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:15px;line-height:1.3;letter-spacing:0;text-transform:none}
-@media (max-width:359px){.ctw .tn-guide-choix .tn-v-rep,.ctw .tn-guide-choix[data-tn-c="cartes"] .tn-v-rep{grid-template-columns:76px minmax(0,1fr);gap:12px}.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-guide-choix .tn-v-quoi b{font-size:14.5px}}
+.ctw[data-tn-titres="gras"] .tn-guide-choix .tn-v-quoi b,.ctw[data-tn-titres="capitales"] .tn-guide-choix .tn-v-quoi b,.ctw[data-tn-lourd] .tn-guide-choix .tn-v-quoi b{font-size:16px;line-height:1.2}
+.ctw[data-tn-titres="gras"] .tn-guide-choix .tn-v-quoi b[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-guide-choix .tn-v-quoi b[data-tn-long],.ctw[data-tn-lourd] .tn-guide-choix .tn-v-quoi b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:15px;line-height:1.3;letter-spacing:0;text-transform:none}
+@media (max-width:359px){.ctw .tn-guide-choix .tn-v-rep,.ctw .tn-guide-choix[data-tn-c="cartes"] .tn-v-rep{grid-template-columns:76px minmax(0,1fr);gap:12px}.ctw[data-tn-titres="gras"] .tn-guide-choix .tn-v-quoi b,.ctw[data-tn-titres="capitales"] .tn-guide-choix .tn-v-quoi b,.ctw[data-tn-lourd] .tn-guide-choix .tn-v-quoi b{font-size:14.5px}}
 @media (min-width:760px){
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-guide-choix .tn-v-quoi b{font-size:19px}
-  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-guide-choix .tn-v-quoi b[data-tn-long]{font-size:16.5px}
+  .ctw[data-tn-titres="gras"] .tn-guide-choix .tn-v-quoi b,.ctw[data-tn-titres="capitales"] .tn-guide-choix .tn-v-quoi b,.ctw[data-tn-lourd] .tn-guide-choix .tn-v-quoi b{font-size:19px}
+  .ctw[data-tn-titres="gras"] .tn-guide-choix .tn-v-quoi b[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-guide-choix .tn-v-quoi b[data-tn-long],.ctw[data-tn-lourd] .tn-guide-choix .tn-v-quoi b[data-tn-long]{font-size:16.5px}
   .ctw .tn-guide-choix[data-tn-c="cartes"] .tn-v-in>.tn-v-besoins:has(.tn-v-besoin:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 /* En-tête d'une page d'arrivée : le nom du produit se lit en entier (deux lignes plutôt que des points de suspension). */
@@ -817,17 +817,17 @@
 .ctw .tn-entete-arrivee[data-tn-c="nom-au-centre"] .tn-v-vers{padding:9px 20px;text-align:center}
 .ctw .tn-entete-arrivee[data-tn-c="nom-au-centre"] .tn-v-vers span{max-width:none;min-width:0}
 /* Ouverture d'une page d'arrivée : l'avis posé sur la photo reste lisible dans une tenue aux titres gras. */
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-ouverture-arrivee .tn-v-pose p{font-family:var(--f-ui);font-weight:600;font-size:16.5px;line-height:1.4}
+.ctw[data-tn-titres="gras"] .tn-ouverture-arrivee .tn-v-pose p,.ctw[data-tn-titres="capitales"] .tn-ouverture-arrivee .tn-v-pose p,.ctw[data-tn-lourd] .tn-ouverture-arrivee .tn-v-pose p{font-family:var(--f-ui);font-weight:600;font-size:16.5px;line-height:1.4}
 .ctw .tn-ouverture-arrivee small{font-size:12px}
 .ctw .tn-ouverture-arrivee .tn-v-pose small{font-size:12px}
 /* L'équation en bande : un titre long se réduit. */
 .ctw .tn-equation[data-tn-c="bande"] h2[data-tn-long="1"]{--tn-k:calc(var(--tn-k0)*.72)}
 .ctw .tn-equation[data-tn-c="bande"] h2[data-tn-long="2"]{--tn-k:calc(var(--tn-k0)*.56)}
 /* Les témoignages : un avis de plus de deux lignes s'écrit dans la police du texte courant quand les titres sont gras. */
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-temoignages blockquote[data-tn-long]{font-family:var(--f-ui);font-weight:500;font-size:17px;line-height:1.45;letter-spacing:0;text-transform:none}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-temoignages[data-tn-c="en-grand"] .tn-v-avis-l li:first-child blockquote[data-tn-long]{font-size:20px;line-height:1.35}
+.ctw[data-tn-titres="gras"] .tn-temoignages blockquote[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-temoignages blockquote[data-tn-long],.ctw[data-tn-lourd] .tn-temoignages blockquote[data-tn-long]{font-family:var(--f-ui);font-weight:500;font-size:17px;line-height:1.45;letter-spacing:0;text-transform:none}
+.ctw[data-tn-titres="gras"] .tn-temoignages[data-tn-c="en-grand"] .tn-v-avis-l li:first-child blockquote[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-temoignages[data-tn-c="en-grand"] .tn-v-avis-l li:first-child blockquote[data-tn-long],.ctw[data-tn-lourd] .tn-temoignages[data-tn-c="en-grand"] .tn-v-avis-l li:first-child blockquote[data-tn-long]{font-size:20px;line-height:1.35}
 .ctw .tn-temoignages>small{font-size:12px}
-@media (min-width:760px){.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-temoignages[data-tn-c="en-grand"] .tn-v-avis-l li:first-child blockquote[data-tn-long]{font-size:26px}}
+@media (min-width:760px){.ctw[data-tn-titres="gras"] .tn-temoignages[data-tn-c="en-grand"] .tn-v-avis-l li:first-child blockquote[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-temoignages[data-tn-c="en-grand"] .tn-v-avis-l li:first-child blockquote[data-tn-long],.ctw[data-tn-lourd] .tn-temoignages[data-tn-c="en-grand"] .tn-v-avis-l li:first-child blockquote[data-tn-long]{font-size:26px}}
 /* Barre du produit : sur téléphone, un nom ou un bouton long prend sa ligne ; rien n'est coupé par des points de suspension. */
 .ctw .tn-barre-produit .tn-v-colle{flex-wrap:wrap}
 .ctw .tn-barre-produit p{flex:1 1 120px}
@@ -843,10 +843,10 @@
 .ctw .tn-raisons .tn-v-temps span{font-size:12.5px}
 .ctw .tn-raisons .tn-v-temps b{hyphens:auto;-webkit-hyphens:auto}
 /* La boutique en « ajout rapide » : le nom d'un produit reste lisible dans une carte étroite. */
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b{font-size:16px;line-height:1.18}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:15px;line-height:1.3;letter-spacing:0;text-transform:none}
-@media (max-width:359px){.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b{font-size:14px}}
-@media (min-width:760px){.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b{font-size:20px}}
+.ctw[data-tn-titres="gras"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b,.ctw[data-tn-titres="capitales"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b,.ctw[data-tn-lourd] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b{font-size:16px;line-height:1.18}
+.ctw[data-tn-titres="gras"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b[data-tn-long],.ctw[data-tn-lourd] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:15px;line-height:1.3;letter-spacing:0;text-transform:none}
+@media (max-width:359px){.ctw[data-tn-titres="gras"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b,.ctw[data-tn-titres="capitales"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b,.ctw[data-tn-lourd] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b{font-size:14px}}
+@media (min-width:760px){.ctw[data-tn-titres="gras"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b,.ctw[data-tn-titres="capitales"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b,.ctw[data-tn-lourd] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b{font-size:20px}}
 /* Bandeau « tour à tour » : au-delà de six messages, les six premiers tournent (un septième se superposait aux autres). */
 .ctw .tn-messages[data-tn-c="tour-a-tour"] .tn-v-fil:not([data-tn-n="1"],[data-tn-n="2"],[data-tn-n="3"],[data-tn-n="4"],[data-tn-n="5"],[data-tn-n="6"]) li{animation-name:tn-v-tour-6;animation-duration:24s}
 .ctw .tn-messages[data-tn-c="tour-a-tour"] .tn-v-fil li:nth-child(n+7){display:none}
@@ -863,3 +863,6 @@
   .ctw .tn-barre-produit[data-tn-c="carte-flottante"] .tn-bt,.ctw[data-tn-bouton] .tn-barre-produit[data-tn-c="carte-flottante"] .tn-bt{flex:1 1 auto;max-width:100%}
   .ctw .tn-ouverture-vente .tn-v-macaron{gap:8px}
 }
+/* La boutique en « ajout rapide » : une carte dont le produit n'a pas encore de photo reste centrée, avec de l'air en haut. */
+.ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p .tn-v-vers:has(>.tn-ph-manque){justify-items:center;padding-top:16px;text-align:center}
+.ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p .tn-v-vers:has(>.tn-ph-manque)>:not(.tn-ph,em){margin-left:10px;margin-right:10px}

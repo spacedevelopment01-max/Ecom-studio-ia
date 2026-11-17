@@ -62,7 +62,7 @@ describe("bloc d'achat : six façons, une par style de page produit", () => {
   it("la feuille suit les règles : sélecteurs « .ctw .tn-… », aucune couleur en dur, aucun « !important »", () => {
     expect(SHEET).not.toMatch(/!important/);
     expect(SHEET.replace(/url\("data:[^"]*"\)/g, "")).not.toMatch(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(/i);
-    for (const sel of SELECTORS) for (const one of sel.split(/,(?![^(]*\))/)) expect(one.trim(), one).toMatch(/^\.ctw(?:\[data-tn-[a-z]+="[a-z]+"\])? \.(?:tn-|tb-pg>\.tn-|tb-pg:not\(\[hidden\]\):has\(>\.tn-)/);
+    for (const sel of SELECTORS) for (const one of sel.split(/,(?![^(]*\))/)) expect(one.trim(), one).toMatch(/^\.ctw(?:\[data-tn-[a-z]+(?:="[a-z]+")?\])? \.(?:tn-|tb-pg>\.tn-|tb-pg:not\(\[hidden\]\):has\(>\.tn-)/);
     // Toute taille de titre suit l'échelle de la tenue.
     for (const r of SHEET.split("}")) { const [sel, body] = r.split("{").slice(-2); if (/ h[12](?:,|$)|>h[12](?:,|$)/.test(sel ?? "") && /font-size:/.test(body ?? "")) expect(body, sel).toMatch(/font-size:calc\([\d.]+px\*var\(--tn-k\)\)/); }
   });

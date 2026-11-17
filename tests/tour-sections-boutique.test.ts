@@ -14,7 +14,7 @@ const VENTE = feuille("tenue-vente.css");
 const TOUTES = [PRODUIT, ACHAT, VENTE];
 /** Les déclarations de toutes les règles dont le sélecteur contient ce texte (hors @media compris). */
 const regles = (css: string, selecteur: string) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter((m) => m[1].includes(selecteur)).map((m) => m[2]).join(";");
-const GRAS = '.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd])';
+const GRAS = '.ctw[data-tn-titres="gras"]';
 
 describe("un mot ne se coupe jamais au milieu sans trait d'union", () => {
   it("aucune des trois feuilles n'écrit « overflow-wrap:anywhere »", () => {
@@ -37,7 +37,7 @@ describe("rien ne sort de son rond", () => {
   it("le sceau de la garantie (« 14 jours ») est assez grand, et son texte se réduit dans une tenue aux titres gras", () => {
     const sceau = [...ACHAT.matchAll(/\.ctw \.tn-garantie \.tn-sceau-g\{([^}]*)\}/g)].map((m) => m[1]).join(";");
     expect(sceau).toContain("width:164px");
-    expect(ACHAT).toContain(`${GRAS} .tn-garantie .tn-sceau-g span{font-size:19px`);
+    expect(regles(ACHAT, `${GRAS} .tn-garantie .tn-sceau-g span`)).toContain("font-size:19px");
     expect(ACHAT).toMatch(/\.tn-garantie\[data-tn-c="bande"\] \.tn-sceau-g b\{font-size:12px/);
   });
   it("le sceau de la note expliquée a une largeur fixe et un texte équilibré", () => {
@@ -76,9 +76,9 @@ describe("un nom long n'est jamais un pavé gras", () => {
     expect(ACHAT).toMatch(/\.tn-packs \.tn-pack>label b\[data-tn-long\]\{font-family:var\(--f-ui\)/);
     expect(ACHAT).toMatch(/\.tn-offre-moment \.tn-om-nom\[data-tn-long\]\{font-family:var\(--f-ui\)/);
     expect(VENTE).toContain(`${GRAS} .tn-produits-vente .tn-v-carte b[data-tn-long]`);
-    expect(VENTE).toContain(`${GRAS} .tn-guide-choix .tn-v-quoi b[data-tn-long]{font-family:var(--f-ui)`);
-    expect(PRODUIT).toContain(`${GRAS} .tn-rayons b[data-tn-long]{font-family:var(--f-ui)`);
-    expect(PRODUIT).toContain(`${GRAS} .tn-comparatif .tn-noms a{font-family:var(--f-ui)`);
+    expect(regles(VENTE, `${GRAS} .tn-guide-choix .tn-v-quoi b[data-tn-long]`)).toContain("font-family:var(--f-ui)");
+    expect(regles(PRODUIT, `${GRAS} .tn-rayons b[data-tn-long]`)).toContain("font-family:var(--f-ui)");
+    expect(regles(PRODUIT, `${GRAS} .tn-comparatif .tn-noms a`)).toContain("font-family:var(--f-ui)");
   });
 });
 
@@ -98,6 +98,12 @@ describe("jamais un bouton coupé, jamais une fin de phrase en points de suspens
   });
   it("la fenêtre d'offre sans photo : le titre commence sous la croix", () => {
     expect(ACHAT).toContain('.ctw .tn-fenetre-offre:not([data-tn-c="carte-en-bas"]) .tn-fo-boite:not(:has(>.tn-ph:not(.tn-ph-manque))) .tn-fo-corps{padding-top:64px}');
+  });
+});
+
+describe("les sélecteurs de tenue gardent la forme du cahier", () => {
+  it("« .ctw[data-tn-…] .tn-… » : jamais « .ctw:is(…) » (les essais des modules et la mise en boutique lisent cette forme)", () => {
+    for (const css of TOUTES) expect(css).not.toContain(".ctw:is(");
   });
 });
 
