@@ -48,7 +48,7 @@ import { educated, knowledgeCapMicro, knowledgeTypicalMicro, themeKnowledgeReady
 import { proposeMenu, validMenu } from "./menu";
 import { choixDeLaFamille, familleGaps, fitFamille } from "./familles";
 import { fitStyle, styleGaps } from "./styles-de-page";
-import { dataGaps, tenueMetiers, tenueVitrine } from "./tenue-data";
+import { dataGaps, tenueMetiers, tenueReseaux, tenueVitrine } from "./tenue-data";
 import { achatFacts } from "./buy-block";
 import { installCustomTheme } from "./install";
 import { menuProducts } from "./render";
@@ -231,10 +231,19 @@ export function dossierPreuves(ctx: ToolContext): Preuves {
   try { const j = journeyOf(ctx.conversationId); lines.push(...activityPlan(p.id, j).offer.facts.map((value) => ({ value }))); } catch { /* fil ou activité absents */ }
   const extra: Parameters<typeof preuvesDe>[1] = {};
   try { const n = tenueVitrine(p.id).avis?.liste.length ?? 0; if (n) extra.avis = `${n} avis d'une vraie source`; } catch { /* aucune source d'avis */ }
+  // Ce que les pièces de la page contact demandent, constaté dans les données du Studio : ses comptes sur les réseaux,
+  // ses horaires, une adresse qu'il veut montrer.
+  try { const r = tenueReseaux(p.id); if (r.length) extra.reseaux = r.map((x) => `${x.nom} ${x.compte}`).join(", "); } catch { /* aucun compte connu */ }
+  try {
+    const co = companyOf(p.id);
+    if (p.services?.hours?.trim()) extra.horaires = p.services.hours.trim().slice(0, 120);
+    const address = (p.services?.address || co.address || "").trim();
+    if (address && co.addressDiscreet !== true && p.business === "services") extra.adresse = address.slice(0, 120);
+  } catch { /* fiche absente */ }
   return preuvesDe(lines, extra);
 }
 /** Ce que le Studio sait du site pour l'ordre et la variété : son métier, ses types d'accueil permis, s'il se déplace. */
-export function ordreContext(ctx: ToolContext, site: SiteKind, families = 0): { metier: string; types: string[]; mobile: boolean; zoneConnue: boolean; angle: AngleRole | null } {
+export function ordreContext(ctx: ToolContext, site: SiteKind, families = 0): { metier: string; types: string[]; mobile: boolean; zoneConnue: boolean; telConnu: boolean; angle: AngleRole | null } {
   const p = project(ctx);
   const sector = (() => { try { return sectorOf(offerWords(ctx), site.business); } catch { return null; } })();
   const co = (() => { try { return companyOf(p.id); } catch { return {} as ReturnType<typeof companyOf>; } })();
@@ -244,7 +253,7 @@ export function ordreContext(ctx: ToolContext, site: SiteKind, families = 0): { 
   const plats = (() => { try { return (tenueMetiers(p.id).carte ?? []).reduce((n, r) => n + r.items.length, 0); } catch { return 0; } })();
   const types = typesAccueilPermis({ business: site.business, products: site.products, families, secteur: sector?.key ?? null, mobile, lieu: plats > 0 || (shown && !!hours) });
   const angle = (() => { try { const j = journeyOf(ctx.conversationId); const id = j.angleChoice?.ids?.[0] ?? j.angleChoice?.id; return id && j.angles ? roleOf(j.angles, id) : null; } catch { return null; } })();
-  return { metier: sector?.key ?? types[0], types, mobile, zoneConnue: !!area, angle: (angle as AngleRole | null) ?? null };
+  return { metier: sector?.key ?? types[0], types, mobile, zoneConnue: !!area, telConnu: !!(p.services?.phone || co.phone || "").trim(), angle: (angle as AngleRole | null) ?? null };
 }
 
 /** Ce que la marque a réellement, et ce qu'elle n'a pas (aucune section qui en dépend). */
@@ -305,7 +314,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   // dossier, et les partitions prises par les derniers sites du même métier (à ne pas reprendre).
   const families = (() => { try { return new Set(listProducts(p.id).flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size; } catch { return 0; } })();
   const oc = ordreContext(ctx, site, families), preuves = dossierPreuves(ctx);
-  const facts: OrdreFacts = { business: site.business, products: site.products, types: oc.types, mobile: oc.mobile, zoneConnue: oc.zoneConnue, preuves: preuves.ids };
+  const facts: OrdreFacts = { business: site.business, products: site.products, types: oc.types, mobile: oc.mobile, zoneConnue: oc.zoneConnue, preuves: preuves.ids, ...(site.business === "services" ? { profil: { zone: oc.zoneConnue, telephone: oc.telConnu } } : {}) };
   const kindOfKey = (key: string) => { const k = pageKind(key, site.business); return k && k !== "utilitaire" ? k : null; };
   const memes = sites.filter((x) => x.site.metier === oc.metier);
   const prises: Partial<Record<PageKind, string[]>> = {};

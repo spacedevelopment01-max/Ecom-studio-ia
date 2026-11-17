@@ -102,12 +102,16 @@ describe("les partitions en données (cahier, parties 3 et 4)", () => {
     expect(P.REGLE_DE_PAGE.prestation).toBe("le prix ou son mode de calcul et le bouton dès le premier écran, puis en bas");
   });
 
-  it("les moments du cahier qu'aucune pièce ne tient sont marqués « sans pièce » et sautés, jamais inventés", () => {
-    const sans = [...new Set(P.momentsSansPiece().map((x) => x.label))].sort();
-    expect(sans).toEqual(["annulation et conditions", "délais", "filtres par type", "offre", "offre de première visite", "privatisation", "réseaux"]);
+  it("chaque moment du cahier a sa pièce (module « partitions », 17 novembre 2026) ; un moment dont le fait manque au dossier est sauté, jamais inventé", () => {
+    // Avant ce module, sept libellés n'avaient aucune pièce : annulation et conditions, délais, filtres par type, offre,
+    // offre de première visite, privatisation, réseaux.
+    expect(P.momentsSansPiece()).toEqual([]);
     const brief = P.partitionsBrief({ business: "services", types: ["rendez-vous"], dossier: { preuves: [], products: 1 } });
     expect(brief).toContain("[à sauter : offre de première visite]");
-    expect(brief).toMatch(/offre de première visite · « [^»]+ » · SANS PIÈCE dans la bibliothèque · À SAUTER/);
+    expect(brief).toMatch(/offre de première visite · « [^»]+ » · pièces : tn-offre-visite · À SAUTER pour ce client \(le dossier n'a pas la preuve réelle qu'il demande\)/);
+    // Le client a donné son offre : le moment existe.
+    const avec = P.partitionsBrief({ business: "services", types: ["rendez-vous"], dossier: { preuves: ["offre-visite"], products: 1 } });
+    expect(avec).not.toContain("[à sauter : offre de première visite]");
   });
 
   it("chaque partition peut se monter sans deux dispositions pareilles à la suite (sauf le catalogue, dont deux moments de cartes se suivent dans le cahier)", () => {

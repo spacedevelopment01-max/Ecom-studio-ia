@@ -15,10 +15,12 @@ export type Forme =
   | "tableau" | "formulaire" | "grand-texte" | "bande" | "avis" | "avant-apres" | "deux-temps" | "deux-listes" | "achat"
   | "offres" | "frise" | "schema" | "chiffres" | "sceau" | "choix" | "villes" | "liste-prix" | "portraits" | "look";
 
-export type TraitOrdre = "offre" | "prix" | "livraison" | "zone" | "preuve" | "reassurance" | "abstrait" | "doutes" | "action" | "personne";
+export type TraitOrdre = "offre" | "prix" | "livraison" | "zone" | "telephone" | "preuve" | "reassurance" | "abstrait" | "doutes" | "action" | "personne";
 
 /** Les preuves réelles qu'un dossier peut contenir (preuves.ts les cherche ; une pièce n'en demande qu'une). */
-export type PreuveId = "avis" | "realisations" | "qualifications" | "anciennete" | "chiffres" | "presse" | "documents" | "equipe" | "clients" | "avant-apres";
+export type PreuveId = "avis" | "realisations" | "qualifications" | "anciennete" | "chiffres" | "presse" | "documents" | "equipe" | "clients" | "avant-apres"
+  // Faits du dossier qu'une pièce demande pour exister (module « partitions ») : jamais posée sans eux, comme une preuve.
+  | "offre-visite" | "delais" | "annulation" | "privatisation" | "reseaux" | "horaires" | "adresse" | "acces";
 
 export type OrdrePiece = { forme: Forme; traits?: TraitOrdre[]; /** Preuve réelle que la pièce montre. */ preuve?: PreuveId };
 
@@ -69,7 +71,7 @@ export const ORDRE_PIECES: Record<string, OrdrePiece> = {
   "tn-rayons": o("cartes", ["offre"]),
   "tn-garanties": o("liste", ["reassurance", "doutes", "livraison"]),
   // ── Les services
-  "tn-ouverture-metier": o("ouverture", ["zone"]),
+  "tn-ouverture-metier": o("ouverture", ["zone", "telephone"]),
   "tn-prestations": o("liste-prix", ["offre", "prix"]),
   "tn-tarifs": o("tableau", ["offre", "prix"]),
   "tn-exemples-prix": o("offres", ["prix"]),
@@ -162,7 +164,37 @@ export const ORDRE_PIECES: Record<string, OrdrePiece> = {
   "tn-temoignages": o("avis", ["preuve"], "avis"),
   "tn-barre-produit": o("coque", ["action"]),
   "tn-avis-page": o("page", ["preuve"], "avis"),
+  // ── Les partitions (pièces des moments du cahier qui n'en avaient pas)
+  "tn-offre-visite": o("offres", ["action"], "offre-visite"),
+  "tn-delais": o("frise", ["reassurance"], "delais"),
+  "tn-annulation": o("liste", ["reassurance", "doutes"], "annulation"),
+  "tn-privatisation": o("grande-photo", ["action"], "privatisation"),
+  "tn-realisations-types": o("photos", ["preuve"], "realisations"),
+  "tn-reseaux": o("liste", [], "reseaux"),
+  "tn-delai-reponse": o("chiffres", ["reassurance"], "delais"),
+  "tn-horaires": o("tableau", [], "horaires"),
+  "tn-adresse": o("texte-photo", [], "adresse"),
+  "tn-venir": o("liste", [], "acces"),
+  "tn-bien-description": o("texte-photo"),
+  "tn-bien-surfaces": o("chiffres"),
+  "tn-bien-equipements": o("liste"),
+  "tn-bien-frais": o("tableau"),
+  "tn-presentation": o("grand-texte"),
 };
+
+/**
+ * Pièces qui montrent la même chose : jamais deux d'un même groupe sur une page (ordre.ts : la seconde n'est ni proposée
+ * ni acceptée). « Horaires et accès » porte déjà les horaires, l'adresse et l'accès ; « Les réalisations en photos » et
+ * « Les réalisations, filtrées par type » sont deux fois la même liste ; les caractéristiques d'un bien portent déjà sa
+ * description, ses surfaces, ses équipements et ses frais.
+ */
+export const MEME_CONTENU: [string, string[]][] = [
+  ["tn-acces", ["tn-horaires", "tn-adresse", "tn-venir"]],
+  ["tn-realisations", ["tn-realisations-types"]],
+  ["tn-bien-caracteristiques", ["tn-bien-description", "tn-bien-surfaces", "tn-bien-equipements", "tn-bien-frais"]],
+];
+/** Les pièces qui feraient doublon avec celle-ci sur une même page. */
+export const doublonsDe = (id: string): string[] => MEME_CONTENU.flatMap(([a, list]) => (a === id ? list : list.includes(id) ? [a] : []));
 
 /** Mots simples d'une disposition, pour le dire au concepteur. */
 export const FORME_LABEL: Record<Forme, string> = {

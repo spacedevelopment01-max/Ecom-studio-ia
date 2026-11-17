@@ -224,7 +224,7 @@ describe("thème unique, intégration : aperçu, données du site et remises (pr
     expect(JSON.parse(sp(JSON.stringify(d.vitrine)))).toEqual(JSON.parse(sp(JSON.stringify(D.tenueVitrine(pid)))));
     expect(sp(d.vitrine!.produits!["Gourde d'essai"].compare!)).toBe("45 €");
     expect(d.vitrine!.produits!["Gourde d'essai"]).toMatchObject({ genre: "Gourde isotherme", versions: 2 });
-    expect(D.tenueMetiers(pid)).toEqual({ biens: [], carte: [] });
+    expect(D.tenueMetiers(pid)).toEqual({ biens: [], carte: [], reseaux: [] }); // (les comptes du client sur les réseaux suivent le même chemin : module « partitions »)
     expect(D.tenueMetiers(pid)).not.toHaveProperty("vitrine");
   });
 

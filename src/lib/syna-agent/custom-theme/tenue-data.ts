@@ -23,6 +23,8 @@ import { listBiens, VISIBLE_STATUSES } from "../../biens";
 import { carteprice, listCarte } from "../../contenus/carte";
 import { QUANTITE } from "./tenue-pages";
 import { listProducts } from "../../products/catalog";
+import { all } from "../../db";
+import { memory } from "../../projects";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const clean = (v: string | null | undefined, max = 200) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null);
@@ -41,6 +43,8 @@ export type TenueSite = {
   families?: TenueFamily[]; prestations?: TenuePrestation[]; products?: TenueProduct[]; articles?: TenueArticle[];
   /** Métiers : les biens visibles de la rubrique Biens, la carte publiée du restaurant, l'équipe donnée par le client. */
   biens?: TenueBien[]; carte?: TenueRubrique[]; equipe?: TenueMembre[];
+  /** Les vrais comptes du client sur les réseaux (ses notes, son site existant) : sans eux, la pièce des réseaux ne se montre pas. */
+  reseaux?: TenueReseau[];
   /** Panier : le seuil de livraison offerte donné par le client, en euros (sinon aucune barre de livraison offerte). */
   freeFrom?: number | null;
   /** Mise en boutique : les produits sont lus en direct par la boutique ; les emplacements sont posés, sans produit écrit. */
@@ -470,7 +474,7 @@ function withEnergyLabel(html: string, cls: "tn-dpe" | "tn-ges", letter: string 
  * inventée : sa ligne s'en va, ou reste « [À compléter] ».
  */
 export function withTenueBienFiche(html: string, biens: TenueBien[]): string {
-  const piece = /\sdata-tn-bien="(galerie|caracteristiques|energie|quartier|visite)"/.exec(html)?.[1], b = ficheBien(biens);
+  const piece = /\sdata-tn-bien="(galerie|caracteristiques|energie|quartier|visite|description|surfaces|equipements|frais)"/.exec(html)?.[1], b = ficheBien(biens);
   if (!piece || !b) return html;
   const inner = (rx: RegExp, value: string | null) => (h: string) => (value == null ? h : h.replace(rx, (_m, a: string, z: string) => `${a}${value}${z}`));
   const prix = bienPrix(b), lieu = bienLieu(b);
@@ -492,6 +496,32 @@ export function withTenueBienFiche(html: string, biens: TenueBien[]): string {
     out = inner(/(<p class="tn-descr">)[\s\S]*?(<\/p>)/, texte ? esc(texte).replace(/\n+/g, "<br>") : null)(out);
     out = inner(/(<dl class="tn-carac">)[\s\S]*?(<\/dl>)/, bienRows(b).map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join(""))(out);
     out = out.replace(/<ul class="tn-atouts-b">[\s\S]*?<\/ul>/, b.features.length ? `<ul class="tn-atouts-b">${b.features.slice(0, 16).map((f) => `<li>${esc(f)}</li>`).join("")}</ul>` : "");
+  } else if (piece === "description") {
+    // Module « partitions » : la fiche d'un bien, moment par moment. Une ligne marquée « data-tn-fait » qui ne reçoit
+    // rien du bien est retirée ensuite (withTenueFaits) ; sans aucune, la pièce ne se montre pas.
+    const texte = clean(b.description, 6000) ?? clean(b.summary, 400);
+    out = inner(/(<p class="tn-pt-texte"[^>]*>)[\s\S]*?(<\/p>)/, texte ? esc(texte).replace(/\n+/g, "<br>") : null)(out);
+    out = out.replace(/<div class="tn-ph tn-cadre"[^>]*><\/div>/, b.photos[1] ? `<div class="tn-ph tn-cadre"${pic(b.photos[1])}></div>` : "");
+  } else if (piece === "surfaces") {
+    const mesures: [string, string][] = [];
+    if (b.surface) mesures.push([`${nombre(b.surface)} m²`, "Surface habitable"]);
+    if (b.land) mesures.push([`${nombre(b.land)} m²`, "Terrain"]);
+    if (b.rooms) mesures.push([String(b.rooms), b.rooms > 1 ? "Pièces" : "Pièce"]);
+    if (b.bedrooms) mesures.push([String(b.bedrooms), b.bedrooms > 1 ? "Chambres" : "Chambre"]);
+    if (mesures.length) out = inner(/(<ul class="tn-pt-mesures">)[\s\S]*?(<\/ul>)/, mesures.map(([v, l]) => `<li data-tn-fait><b>${esc(v)}</b><small>${l}</small></li>`).join(""))(out);
+    const detail = ([["Type de bien", bienType(b)], ["Étage", clean(b.floor, 40)], ["Disponibilité", clean(b.availability, 60)], ["Référence", clean(b.ref, 24)]] as [string, string | null][]).filter((r): r is [string, string] => !!r[1]);
+    out = out.replace(/<dl class="tn-pt-detail">[\s\S]*?<\/dl>/, `<dl class="tn-pt-detail">${detail.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`);
+  } else if (piece === "equipements") {
+    const maj = (x: string) => x.charAt(0).toLocaleUpperCase("fr-FR") + x.slice(1);
+    const list = [...b.features, ...b.exteriors.map(maj), ...(b.pool ? ["Piscine"] : []), ...(b.transaction === "location" && b.furnished ? ["Meublé"] : [])].map((x) => x.trim()).filter(Boolean);
+    if (list.length) out = inner(/(<ul class="tn-pt-equip">)[\s\S]*?(<\/ul>)/, [...new Set(list)].slice(0, 24).map((x) => `<li data-tn-fait>${esc(x)}</li>`).join(""))(out);
+  } else if (piece === "frais") {
+    const rows = ([
+      ["Charges", b.transaction === "location" && b.charges != null ? `${eurosRonds(b.charges)} par mois` : null],
+      ["Dépôt de garantie", b.transaction === "location" && b.deposit != null ? eurosRonds(b.deposit) : null],
+      ["Honoraires", clean(b.fees, 200)], ["Taxe foncière", clean(b.propertyTax, 60)],
+    ] as [string, string | null][]).filter((r): r is [string, string] => !!r[1]);
+    if (rows.length) out = inner(/(<dl class="tn-pt-frais">)[\s\S]*?(<\/dl>)/, rows.map(([k, v]) => `<div data-tn-fait><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join(""))(out);
   } else if (piece === "energie") {
     out = withEnergyLabel(withEnergyLabel(out, "tn-dpe", b.dpe), "tn-ges", b.ges);
   } else if (piece === "quartier") {
@@ -844,7 +874,118 @@ export function withTenueSite(html: string, d: TenueSite, built?: string | null)
   out = withTenueLegal(out, built);
   out = withTenueSearch(out, d);
   out = withTenueVitrine(out, d, built); // vente directe (module « vente »)
+  out = withTenueFaits(withTenueTypes(withTenueReseaux(out, d)), d); // module « partitions » : jamais une pièce sans sa vraie donnée
+  out = withOuverturePleine(out, builtOf(out, built));
   return withTenueArticles(out, d.articles ?? []);
+}
+
+// ---------------------------------------------------------------- module « partitions » : jamais une pièce sans sa vraie donnée
+
+/** Un compte du client sur un réseau : le réseau, son adresse complète, le nom du compte à montrer. */
+export type TenueReseau = { cle: string; nom: string; url: string; compte: string };
+const RESEAUX: { cle: string; nom: string; hote: RegExp; profil?: (compte: string) => string }[] = [
+  { cle: "instagram", nom: "Instagram", hote: /(?:^|\.)instagram\.com$/, profil: (c) => `https://www.instagram.com/${c}/` },
+  { cle: "facebook", nom: "Facebook", hote: /(?:^|\.)(?:facebook|fb)\.com$/ },
+  { cle: "tiktok", nom: "TikTok", hote: /(?:^|\.)tiktok\.com$/, profil: (c) => `https://www.tiktok.com/@${c}` },
+  { cle: "youtube", nom: "YouTube", hote: /(?:^|\.)(?:youtube\.com|youtu\.be)$/ },
+  { cle: "linkedin", nom: "LinkedIn", hote: /(?:^|\.)linkedin\.com$/ },
+  { cle: "pinterest", nom: "Pinterest", hote: /(?:^|\.)pinterest\.[a-z.]{2,6}$/ },
+  { cle: "x", nom: "X", hote: /(?:^|\.)(?:x|twitter)\.com$/ },
+];
+/**
+ * Les comptes écrits dans un texte : une adresse complète vers un réseau connu, ou « Instagram : @compte » (seuls
+ * Instagram et TikTok ont une adresse qui se déduit du nom du compte). Un lien de partage n'est pas un compte. Rien
+ * n'est deviné : un réseau cité sans compte ni adresse ne donne rien.
+ */
+export function reseauxDansTexte(text: string): TenueReseau[] {
+  const out = new Map<string, TenueReseau>();
+  for (const m of text.matchAll(/(?:https?:\/\/)?(?:[\w-]+\.)+[a-z]{2,6}\/[^\s,;)"'<>]*/gi)) {
+    let u: URL;
+    try { u = new URL(/^https?:/i.test(m[0]) ? m[0] : `https://${m[0]}`); } catch { continue; }
+    const r = RESEAUX.find((x) => x.hote.test(u.hostname.toLowerCase()));
+    const chemin = u.pathname.replace(/\/+$/, "");
+    if (!r || out.has(r.cle) || !chemin || /sharer|share|intent\/|\/p\/|\/reel\/|\/watch|\/hashtag\//i.test(u.pathname + u.search)) continue;
+    const dernier = decodeURIComponent(chemin.split("/").filter(Boolean)[0] ?? "").replace(/^@/, "");
+    const compte = (r.cle === "instagram" || r.cle === "tiktok") && /^[\w.]{2,30}$/.test(dernier) ? `@${dernier}` : `${u.hostname.replace(/^www\./, "")}${decodeURIComponent(chemin)}`.slice(0, 48);
+    out.set(r.cle, { cle: r.cle, nom: r.nom, url: `https://${u.hostname}${u.pathname}`, compte });
+  }
+  for (const m of text.matchAll(/(instagram|tiktok)\s*(?::|-|,)?\s*@([\w.]{2,30})(?![\w.]*@)/gi)) {
+    const r = RESEAUX.find((x) => x.cle === m[1].toLowerCase())!, compte = m[2].replace(/\.+$/, "");
+    if (!out.has(r.cle) && compte.length >= 2) out.set(r.cle, { cle: r.cle, nom: r.nom, url: r.profil!(compte), compte: `@${compte}` });
+  }
+  return RESEAUX.map((r) => out.get(r.cle)).filter((x): x is TenueReseau => !!x);
+}
+
+/** La pièce des réseaux : les vrais comptes du client, chacun avec son lien ; sans compte connu, elle ne se montre pas. */
+export function withTenueReseaux(html: string, d: TenueSite): string {
+  if (!/\sdata-tn-reseaux\b/.test(html)) return html;
+  const list = (d.reseaux ?? []).filter((r) => /^https:\/\/[^\s"<>]+$/.test(r.url) && r.compte.trim()).slice(0, 5);
+  if (!list.length) return "";
+  return html.replace(/(<ul class="tn-pt-comptes">)[\s\S]*?(<\/ul>)/, (_m, a: string, b: string) => `${a}${list.map((r) => `<li><a href="${esc(r.url)}" target="_blank" rel="noopener"><small>${esc(r.nom)}</small><b>${esc(r.compte)}</b></a></li>`).join("")}${b}`);
+}
+
+/**
+ * Les réalisations filtrées par type : un filtre n'existe que pour un type que le client a nommé ET qui a au moins une
+ * réalisation ; avec moins de deux types, les filtres (et la phrase qui les annonce) s'en vont, la liste reste.
+ */
+export function withTenueTypes(html: string): string {
+  if (!/class="tn tn-realisations-types\b/.test(html)) return html;
+  const figures = new Set([...html.matchAll(/<figure\b[^>]*\sdata-tn-t="([a-z0-9-]+)"/g)].map((m) => m[1]));
+  let types = 0;
+  let out = html.replace(/<label data-tn-t="([a-z0-9-]+)">[\s\S]*?<\/label>/g, (m, t: string) => { const ok = figures.has(t) && !manque(/<span>([\s\S]*?)<\/span>/.exec(m)?.[1] ?? "[À compléter"); if (ok) types++; return ok ? m : ""; });
+  if (types < 2) out = out.replace(/<div class="tn-pt-filtres"[^>]*>[\s\S]*?<\/div>/, "").replace(/<p class="tn-pt-aide">[\s\S]*?<\/p>/, "");
+  return out;
+}
+
+/**
+ * L'ouverture d'un métier de services en grande photo pleine (façons « photo-… ») : le premier écran ne montre jamais
+ * un trou. Un repère que le profil ne connaît pas (adresse, horaires, zone) s'en va ; un téléphone inconnu aussi.
+ */
+export function withOuverturePleine(html: string, built?: string | null): string {
+  if (!/class="tn tn-ouverture-metier\b/.test(html) || !/^photo-/.test(built ?? "")) return html;
+  return html.replace(/<li class="tn-(?:adr|hor|zon)">[\s\S]*?<\/li>/g, (m) => (manque(m) ? "" : m)).replace(/<ul class="tn-reperes">\s*<\/ul>/, "")
+    .replace(/<a\b[^>]*\sdata-tn-tel(?=[\s>])[^>]*>[\s\S]*?<\/a>/g, (m) => (manque(m) ? "" : m));
+}
+
+const FAIT_MARQUE = /\sdata-tn-fait(?=[\s>])/;
+/**
+ * Les pièces qui ne valent que par un fait du client (une offre, des délais, des conditions, des horaires, une adresse,
+ * les mesures d'un bien) : un élément marqué « data-tn-fait » encore à compléter est retiré ; quand il n'en reste
+ * aucun, la pièce entière ne se montre pas. Jamais un trou, jamais un fait d'exemple.
+ */
+export function withTenueFaits(html: string, d: TenueSite = {}): string {
+  if (!FAIT_MARQUE.test(html)) return html;
+  // L'adresse seule ne se montre jamais quand le client la veut discrète (elle ne s'écrit que dans les informations légales).
+  if (d.addressDiscreet === true && /class="tn tn-adresse\b/.test(html)) return "";
+  let out = html;
+  for (const tags of ["li|tr", "div|p|h2|h3|address|table"]) out = out.replace(new RegExp(`<(${tags})\\b[^>]*\\sdata-tn-fait(?=[\\s>])[^>]*>(?:(?!<\\/?\\1\\b)[\\s\\S])*?<\\/\\1>`, "g"), (m) => (manque(m) ? "" : m));
+  if (!FAIT_MARQUE.test(out)) return "";
+  // Un téléphone ou une adresse d'appoint restés à compléter ne laissent pas de trou dans une pièce par ailleurs vraie.
+  return out.replace(/<a\b[^>]*\sdata-tn-(?:tel|itineraire)(?=[\s>])[^>]*>[\s\S]*?<\/a>/g, (m) => (manque(m) || (/data-tn-itineraire/.test(m) && /href="#"/.test(m)) ? "" : m)).replace(/<(ul|dl|tbody)\b[^>]*>\s*<\/\1>/g, "");
+}
+
+/**
+ * Les vrais comptes du client sur les réseaux, lus sans rien deviner : ceux trouvés sur son site existant (lecture
+ * gratuite de l'étape de départ), et ceux qu'il a dits à SINA (notes dont le titre parle de ses réseaux ou d'un compte).
+ * Une note qui parle d'un concurrent n'est jamais lue.
+ */
+export function tenueReseaux(projectId: string): TenueReseau[] {
+  const texts: string[] = [];
+  const SUJET = /r[ée]seau|instagram|facebook|tiktok|youtube|linkedin|pinterest|compte/i, AUTRE = /concurr/i;
+  try {
+    for (const row of all<{ state_json: string | null }>("SELECT state_json FROM agent_conversations WHERE project_id=?", projectId)) {
+      const j = (() => { try { return (JSON.parse(row.state_json ?? "{}") as { parcours?: { imported?: { socials?: Record<string, string> }[]; notes?: { sujet?: string; value?: string }[] } }).parcours; } catch { return null; } })();
+      for (const site of j?.imported ?? []) for (const u of Object.values(site?.socials ?? {})) if (typeof u === "string") texts.push(u);
+      for (const n of j?.notes ?? []) if (n?.value && SUJET.test(n.sujet ?? "") && !AUTRE.test(`${n.sujet} ${n.value}`)) texts.push(n.value);
+    }
+  } catch { /* aucune conversation */ }
+  try {
+    for (const m of memory(projectId)) {
+      if (!m.key.startsWith("syna.") || m.source !== "user" || m.status !== "confirmed" || !["fact", "decision"].includes(m.kind)) continue;
+      if (SUJET.test(m.key.slice(5)) && !AUTRE.test(`${m.key} ${m.value}`)) texts.push(m.value);
+    }
+  } catch { /* mémoire absente */ }
+  return reseauxDansTexte(texts.join("\n"));
 }
 
 /**
@@ -874,7 +1015,7 @@ export function dataGaps(ids: string[], facts: { products: number; families: num
  * bien retiré) et la carte publiée de son restaurant (jamais un plat en brouillon, retiré ou indisponible). Une lecture
  * qui échoue rend une liste vide : la pièce garde alors son exemple, annoncé « À compléter ».
  */
-export function tenueMetiers(projectId: string): Pick<TenueSite, "biens" | "carte"> {
+export function tenueMetiers(projectId: string): Pick<TenueSite, "biens" | "carte" | "reseaux"> {
   const url = (assetId: string) => assetUrl({ id: assetId });
   const biens = (() => {
     try {
@@ -896,7 +1037,8 @@ export function tenueMetiers(projectId: string): Pick<TenueSite, "biens" | "cart
       return categories.map((c): TenueRubrique => ({ title: c.title, items: items.filter((i) => i.categoryId === c.id && i.status === "published" && i.available).map((i) => ({ name: i.name, description: i.description, price: carteprice(i) || null, allergens: i.allergens, vegetarian: i.vegetarian })) })).filter((r) => r.items.length);
     } catch { return []; }
   })();
-  return { biens, carte };
+  // Les comptes du client sur les réseaux suivent le même chemin (aperçu et mise en boutique), sans autre branchement.
+  return { biens, carte, reseaux: tenueReseaux(projectId) };
 }
 
 // ---------------------------------------------------------------- achat, suite : packs, sous le bouton, offres datées

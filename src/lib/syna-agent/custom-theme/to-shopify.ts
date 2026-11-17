@@ -595,6 +595,9 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean; /** Pièce d
   if (o.header || o.coque === "header") html = withMenu(html, c.t.menu, { construction: built, boutique: !(c.input.business === "services" && !c.t.pages.some((pg) => pg.key === "cart")), shop: { collection: slug } });
   // Ce que le client a donné s'écrit dans la page : téléphone, adresse, horaires, zone, plan, livraison et retours.
   html = withTenueSite(withTenuePrestations(html, c.input.prestations ?? []), { ...(c.input.site ?? {}), shipping: c.input.company?.shipping ?? null, returns: c.input.company?.returns ?? null, prestations: c.input.prestations ?? [], live: true }, built).replace(/<mark class="tn-manque">([\s\S]*?)<\/mark>/g, "[$1]");
+  // Une pièce qui ne vaut que par un fait du client (offre de première visite, délais, réseaux, horaires, adresse, fiche
+  // d'un bien…) ne rend rien sans lui (tenue-data.ts) : elle n'est pas envoyée, et c'est dit.
+  if (!html.trim()) { c.problems.push({ level: "à savoir", text: `${where} : section non envoyée (elle ne se montre qu'avec l'information du client, qui manque)` }); return null; }
   // Les avis : sans application d'avis dans la boutique, rien ne peut en recevoir ; la section n'est envoyée que si de vrais avis y sont écrits.
   if (root === "tn-avis" && !/<ul data-tn-avis>\s*<li>/.test(html)) { c.problems.push({ level: "à savoir", text: `${where} : section non envoyée (aucun avis réel ; dans Shopify, les avis demandent une application d'avis)` }); return null; }
   html = live(c, html, root);

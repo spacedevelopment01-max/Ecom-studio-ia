@@ -28,15 +28,18 @@ import { jobSpentMicro } from "../budget";
 import { journeyOf, setStep, updateJourney } from "../journey";
 import type { AgentTool, CostEstimate, ToolContext } from "../types";
 import { project } from "../tools/common";
-import { clientImages, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, PHOTO_REVIEW_CAP_MICRO, runCustomBrandJob, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, type CustomBrandPayload } from "./brand";
+import { clientImages, productSlotSection, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, PHOTO_REVIEW_CAP_MICRO, runCustomBrandJob, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, type CustomBrandPayload } from "./brand";
 import { galleryCheckMaxMicro } from "./gallery";
 import { installCustomTheme } from "./install";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
 import { proposeMenu, validMenu } from "./menu";
 import { menuProducts } from "./render";
-import { isTenueSection } from "./tenue";
+import { isTenueSection, tenueSection } from "./tenue";
 import { libSection } from "./library";
 import { allSections, applyStructure, checkCustomTheme, loadCustomTheme, MAX_PRODUCT_PAGES, saveCustomTheme, type CustomTheme } from "./theme";
+import { momentsTenables, piecesPossibles, type OrdreFacts } from "./ordre";
+import { MIN_SECTIONS_IMPORTANTE, TYPES_ACCUEIL, partitionsPermises, typesAccueilPermis, type PageKind } from "./partitions";
+import type { PreuveId } from "./tenue-ordre";
 import { buildKnowledge, buildTool, COPY_FIXES_TYPICAL, COPY_REVIEW_TYPICAL_MICRO, customPhotoDeps, designCost, keepWork, PHOTO_FIX_TYPICAL_MICRO, PHOTO_REVIEW_TYPICAL_MICRO, photoUnit, runDesign, SECTION_TEXT_TYPICAL_MICRO, SITE_PLAN_TYPICAL_MICRO, siteKind, type BuildArgs, type DesignRun } from "./tools";
 
 export const SINA_SITE_JOB = "syna.site";
@@ -46,16 +49,68 @@ export type SitePayload = { projectId: string; userId: string; conversationId: s
  * Taille d'un site AVANT sa conception (le devis est annoncé avant tout appel payant) : le nombre de sections à écrire
  * et de photos à créer n'est connu qu'une fois le site conçu. Le devis prend donc une taille haute ; le plafond annoncé
  * n'est jamais dépassé, et le coût réel est dit à la fin.
+ *
+ * Depuis le 17 novembre 2026, la taille se CALCULE d'après les partitions du cahier « ordre et variété » (partitions.ts)
+ * au lieu d'être écrite à la main (44 et 48 sections au plus dataient d'avant « minimum 10 sections par page ») :
+ *  - au plus : pour chaque page importante, la partition la plus longue que ce genre de site peut tenir avec un dossier
+ *    complet (toutes les preuves) ; sur l'accueil et la page qui vend, une pièce de plus (la pièce signature, une pièce
+ *    propre au produit ou au métier) ;
+ *  - d'ordinaire : ce que la page porte de pièces réelles avec un dossier ordinaire (le profil, sans avis, sans chiffres,
+ *    sans équipe), jamais moins que le minimum bloquant de dix sur l'accueil et la fiche produit ;
+ *  - les photos : celles des pièces de ces pages (leur trait), sans les photos que le client seul peut donner ni les
+ *    emplacements de ses produits ;
+ *  - les pages utilitaires et la coque, comptées une à une (voir FIXES).
  */
+const DOSSIER_COMPLET: PreuveId[] = ["avis", "realisations", "qualifications", "anciennete", "chiffres", "presse", "documents", "equipe", "clients", "avant-apres", "offre-visite", "delais", "annulation", "privatisation", "reseaux", "horaires", "adresse", "acces"];
+const DOSSIER_ORDINAIRE: PreuveId[] = ["horaires"];
+/**
+ * Hors pages importantes. Services : réserver ou demander un devis (1, 2 au plus), « bien reçu » (1), informations
+ * légales (1), page introuvable (1), en-tête et pied (2), et au plus un bandeau et une fenêtre (2). Boutique : panier
+ * (1), compte (1), informations légales (1), page introuvable (1), en-tête et pied (2), et au plus un bandeau, le
+ * panier de côté et une fenêtre (3). Photos : celle de la page introuvable, et au plus celle du rendez-vous.
+ */
+const FIXES = { services: { max: 9, usual: 6, photosMax: 2, photosUsual: 1 }, products: { max: 9, usual: 7, photosMax: 1, photosUsual: 1 } } as const;
+const median = (list: number[]) => { const s = [...list].sort((a, b) => a - b); return s.length ? s[Math.floor((s.length - 1) / 2)] : 0; };
+const photosDe = (ids: string[], business: "products" | "services") => ids.reduce((n, id) => { const s = tenueSection(id); return n + (!s || s.authentic || (business === "products" && productSlotSection(s)) ? 0 : s.trait.photos ?? 0); }, 0);
+/** Une page importante de ce genre de site : sections et photos, au plus et d'ordinaire, d'après ses partitions. */
+export function pageSizeGuess(kind: PageKind, o: { business: "products" | "services"; products: number }): { sections: number; sectionsUsual: number; photos: number; photosUsual: number } {
+  const types = o.business === "services" ? TYPES_ACCUEIL.filter((t) => t.business.includes("services")).map((t) => t.id) : typesAccueilPermis({ business: "products", products: o.products });
+  const list = partitionsPermises(kind, { types, business: o.business });
+  const facts = (preuves: PreuveId[]): OrdreFacts => ({ business: o.business, products: o.products, types, mobile: false, zoneConnue: true, preuves: new Set(preuves) });
+  const full = list.map((p) => ({ moments: momentsTenables(p, facts(DOSSIER_COMPLET)).length, pieces: piecesPossibles(p, facts(DOSSIER_COMPLET)) }));
+  // Une partition que ce genre de site ne sait pas monter (la fiche d'un bien sans agence, la carte sans restaurant)
+  // ne compte pas dans l'ordinaire : seules comptent celles qui tiennent au moins la moitié du minimum.
+  const all = list.map((p) => piecesPossibles(p, facts(DOSSIER_ORDINAIRE))), able = all.filter((x) => x.length >= MIN_SECTIONS_IMPORTANTE / 2);
+  const plain = able.length ? able : all;
+  const vend = kind === "accueil" || kind === "fiche" || kind === "prestation";
+  const sections = Math.max(0, ...full.map((x) => x.moments)) + (vend ? 1 : 0);
+  const floor = kind === "accueil" || kind === "fiche" ? MIN_SECTIONS_IMPORTANTE : 0;
+  return {
+    sections, sectionsUsual: Math.min(sections, Math.max(floor, median(plain.map((x) => x.length)))),
+    photos: Math.max(0, ...full.map((x) => photosDe(x.pieces, o.business))), photosUsual: median(plain.map((x) => photosDe(x, o.business))),
+  };
+}
+/** Les pages importantes d'un site de ce genre (les réalisations d'un artisan ne sont pas une page obligatoire : non comptées). */
+export const pagesImportantes = (o: { business: "products" | "services"; products: number }): PageKind[] => (o.business === "services" ? ["accueil", "prestation", "a-propos", "contact", "questions"] : ["accueil", "fiche", ...(o.products > 1 ? ["boutique" as const] : []), "a-propos", "contact", "questions"]);
 export function siteSizeGuess(o: { business: "products" | "services"; products: number }): { sections: number; sectionsUsual: number; photos: number; photosUsual: number } {
   const fiches = o.business === "products" ? Math.min(Math.max(0, o.products - 1), MAX_PRODUCT_PAGES - 1) : 0;
-  const base = o.business === "services" ? 44 : 48;
-  return { sections: base + fiches * 8, sectionsUsual: (o.business === "services" ? 30 : 34) + fiches * 7, photos: 16, photosUsual: 10 };
+  const fixes = FIXES[o.business];
+  const out = { sections: fixes.max, sectionsUsual: fixes.usual, photos: fixes.photosMax, photosUsual: fixes.photosUsual };
+  for (const kind of pagesImportantes(o)) {
+    const g = pageSizeGuess(kind, o), times = kind === "fiche" ? 1 + fiches : 1;
+    out.sections += g.sections * times; out.sectionsUsual += g.sectionsUsual * times;
+    // Les fiches de plus reprennent les photos de leur produit : seules les photos de la première fiche sont à créer.
+    out.photos += g.photos; out.photosUsual += g.photosUsual;
+  }
+  return out;
 }
 
 /** Devis de la création du site entier, en une fois. */
 export function siteQuote(o: { business: "products" | "services"; products: number }): CostEstimate & { sections: number; photos: number } {
-  const g = siteSizeGuess(o);
+  return siteQuoteFor(siteSizeGuess(o));
+}
+/** Le devis d'un site d'une taille donnée (sections à écrire et photos à créer, au plus et d'ordinaire). */
+export function siteQuoteFor(g: ReturnType<typeof siteSizeGuess>): CostEstimate & { sections: number; photos: number } {
   const unit = (customPhotoDeps.unit ?? photoUnit)();
   if (unit == null) throw new Error(L("Aucun modèle d'images utilisable pour les photos du site.", "No usable image model."));
   const check = galleryCheckMaxMicro();

@@ -73,12 +73,15 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
     const scope = { inJourney: true, legacyMockups: false };
     expect(toolVisible("site.create", scope)).toBe(true);
     for (const n of ["site.mode", "theme.propose", "theme.choose", "theme.family", "custom.concepts", "custom.design"]) expect(toolVisible(n, scope), n).toBe(false);
-    // Devis : la taille d'un site de services est plus petite que celle d'une boutique ; chaque produit en plus compte ses fiches.
+    // Devis : la taille se calcule d'après les partitions du cahier (17 novembre 2026) ; chaque produit en plus compte ses fiches.
+    // (Avant le minimum de dix sections par page, un site de services était compté plus petit qu'une boutique : ce n'est
+    // plus vrai, ses pages de prestation, à propos, contact et questions ont chacune dix moments.)
     T.customPhotoDeps.unit = () => 150_000;
     try {
       const one1 = X.siteQuote({ business: "products", products: 1 }), four = X.siteQuote({ business: "products", products: 4 }), svc = X.siteQuote({ business: "services", products: 1 });
       expect(four.maxMicro).toBeGreaterThan(one1.maxMicro);
-      expect(svc.maxMicro).toBeLessThan(one1.maxMicro);
+      expect(X.siteSizeGuess({ business: "services", products: 1 }).sections).toBeGreaterThan(44);
+      expect(X.siteSizeGuess({ business: "products", products: 1 }).sections).toBeGreaterThan(48);
       for (const q of [one1, four, svc]) { expect(q.probableMicro!).toBeGreaterThan(0); expect(q.probableMicro!).toBeLessThanOrEqual(q.maxMicro); expect(q.label).toMatch(/ton site entier/); }
       // Au-delà de douze fiches, les produits suivants gardent la fiche commune : le devis ne grandit plus.
       expect(X.siteQuote({ business: "products", products: 40 }).maxMicro).toBe(X.siteQuote({ business: "products", products: 12 }).maxMicro);

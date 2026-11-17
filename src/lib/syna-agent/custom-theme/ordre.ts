@@ -16,11 +16,15 @@
  *  - jamais deux dispositions pareilles à la suite (la « forme » de la pièce) ;
  *  - les doutes dans les trois dernières sections, la page finit par l'action ;
  *  - au moins dix sections sur chaque page importante, pages utilitaires courtes ;
- *  - une pièce qui demande une preuve absente du dossier est refusée (le moment se saute).
+ *  - une pièce qui demande une preuve absente du dossier est refusée (le moment se saute) ;
+ *  - le premier écran d'un service (règle d'or 1) : quand le profil connaît la zone ou le téléphone, l'ouverture de
+ *    l'accueil est une pièce qui les porte (traits « zone » et « telephone » : le Studio les y pose tout seul) ;
+ *  - jamais deux pièces qui montrent la même chose sur une page (tenue-ordre.ts : MEME_CONTENU).
  */
 import { tenueSection } from "./tenue";
 import { FEATURED_ROLE, isCardSection, libSection } from "./library";
-import { FORME_LABEL, type PreuveId, type TraitOrdre } from "./tenue-ordre";
+import { FORME_LABEL, doublonsDe, type PreuveId, type TraitOrdre } from "./tenue-ordre";
+import { OUVERTURES_SERVICES } from "./tenue-partitions";
 import { familleOf } from "./familles";
 import { preuveLabel } from "./preuves";
 import {
@@ -42,6 +46,11 @@ export type OrdreFacts = {
   zoneConnue: boolean;
   /** Preuves réelles au dossier. */
   preuves: ReadonlySet<PreuveId>;
+  /**
+   * Ce que le profil des services connaît pour le premier écran (règle d'or 1 : « pour un service, la ville et le
+   * téléphone cliquable en plus ») : la zone ou la ville, le téléphone. Absent : le contrôle du premier écran ne se fait pas.
+   */
+  profil?: { zone: boolean; telephone: boolean };
 };
 
 const ordre = (id: string) => tenueSection(id)?.ordre ?? null;
@@ -74,7 +83,7 @@ const isFeatured = (id: string) => lib(id)?.role === FEATURED_ROLE;
  */
 export function momentsLibres(p: Partition, placed: string[], f: OrdreFacts): { moment: Moment; pieces: string[] }[] {
   const on = new Set(placed), cards = placed.some(isCard), featured = placed.some(isFeatured);
-  const posable = (id: string) => { const o = ordre(id); return !on.has(id) && !(cards && isCard(id)) && !(featured && isFeatured(id)) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); };
+  const posable = (id: string) => { const o = ordre(id); return !on.has(id) && !doublonsDe(id).some((x) => on.has(x)) && !(cards && isCard(id)) && !(featured && isFeatured(id)) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); };
   const out: { moment: Moment; pieces: string[] }[] = [], seen = new Set<string>();
   for (const x of p.moments) {
     if (!momentTenable(x, f).ok || x.pieces.some((id) => on.has(id))) continue;
@@ -83,6 +92,27 @@ export function momentsLibres(p: Partition, placed: string[], f: OrdreFacts): { 
     seen.add(k); out.push({ moment: x, pieces });
   }
   return out;
+}
+
+/** Une pièce va-t-elle à ce genre de site ? (réservée aux services ou aux boutiques ; réservée à un métier, donné par l'appelant) */
+const vaAuSite = (id: string, business: "products" | "services", metier?: RegExp | null) => { const s = tenueSection(id); return !!s && (!s.pour || s.pour === (business === "services" ? "services" : "produits")) && (!s.only || (!!metier && metier.test(s.only))); };
+/** Les moments d'une partition qu'un client de ce genre peut tenir avec son dossier (une pièce au moins lui va, la preuve est là). */
+export function momentsTenables(p: Partition, f: OrdreFacts, metier?: RegExp | null): Moment[] {
+  return p.moments.filter((x) => momentTenable(x, f).ok && x.pieces.some((id) => { const o = ordre(id); return vaAuSite(id, f.business, metier) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); }));
+}
+/**
+ * Les pièces RÉELLES qu'une page peut porter en suivant sa partition, pour ce dossier : une pièce par moment tenable,
+ * jamais deux fois la même, jamais deux pièces qui montrent la même chose, jamais une pièce dont la preuve manque.
+ * Sert à dire honnêtement combien de sections vraies une page peut atteindre (compte rendu, devis du site).
+ */
+export function piecesPossibles(p: Partition, f: OrdreFacts, metier?: RegExp | null): string[] {
+  const placed: string[] = [];
+  for (let n = 0; n < 40; n++) {
+    const next = momentsLibres(p, placed, f).map((x) => x.pieces.find((id) => vaAuSite(id, f.business, metier))).find(Boolean);
+    if (!next) break;
+    placed.push(next);
+  }
+  return placed;
 }
 
 /**
@@ -112,6 +142,16 @@ export function ordreGaps(d: OrdreDesign, f: OrdreFacts): { refus: string[]; not
     for (const id of new Set(ids)) {
       const o = ordre(id);
       if (o?.preuve && !PREUVE_LIBRE.includes(o.preuve) && !preuveAuDossier(o.preuve, f)) refus.push(`${name} : « ${title(id)} » (${id}) demande ${preuveLabel(o.preuve)}, que le dossier n'a pas : saute ce moment (aucune section ne se remplit avec un contenu que le client n'a pas)`);
+    }
+    // ── jamais deux pièces qui montrent la même chose sur une page
+    for (const id of new Set(ids)) {
+      const twin = doublonsDe(id).find((x) => ids.includes(x));
+      if (twin && ids.indexOf(id) < ids.indexOf(twin)) refus.push(`${name} : « ${title(id)} » (${id}) et « ${title(twin)} » (${twin}) montrent la même chose : garde l'une des deux, jamais les deux sur une page`);
+    }
+    // ── règle 1 : le premier écran d'un service dit la ville (ou la zone) et porte le téléphone cliquable
+    if (kind === "accueil" && f.business === "services" && f.profil) {
+      const sans = [f.profil.zone && !has(ids[0], "zone") ? "la ville ou la zone desservie" : "", f.profil.telephone && !has(ids[0], "telephone") ? "le téléphone cliquable" : ""].filter(Boolean);
+      if (sans.length) refus.push(`${name} : le premier écran d'un service dit la ville et porte le téléphone cliquable (règle d'or 1) ; l'ouverture ${ids[0]} ne porte pas ${sans.join(" ni ")}, que le profil du client connaît : ouvre l'accueil par ${OUVERTURES_SERVICES.join(" ou ")} (grande photo pleine, le titre dessus ; le Studio y pose la zone et le téléphone du profil)`);
     }
     const offre = ids.findIndex((x) => has(x, "offre"));
     const confiance = ids.findIndex((x) => vraiePreuve(x, f) || has(x, "reassurance"));

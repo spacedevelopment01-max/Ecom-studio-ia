@@ -6,8 +6,8 @@
  *
  * Une partition est un ordre de départ : une suite de MOMENTS. Chaque moment garde son libellé du cahier, la question
  * du visiteur à laquelle il répond, et les pièces de la bibliothèque qui peuvent le tenir (identifiants réels, vérifiés
- * par un test). Un moment « sans pièce » n'a aucune pièce dans la bibliothèque : le concepteur le saute, il n'est
- * jamais inventé. Une même pièce peut tenir plusieurs moments qui se suivent (la page boutique : titre, filtres,
+ * par un test). Un moment « sans pièce » n'aurait aucune pièce dans la bibliothèque : le concepteur le sauterait, il ne
+ * serait jamais inventé (depuis le 17 novembre 2026 et le module tenue-partitions.ts, chaque moment du cahier a sa pièce). Une même pièce peut tenir plusieurs moments qui se suivent (la page boutique : titre, filtres,
  * produits).
  *
  * Source unique : les contrôles sans IA (ordre.ts), la consigne du concepteur, celles des juges et les « moments » des
@@ -99,13 +99,13 @@ export const MOMENTS: Record<string, MomentDef> = {
   creneaux: m("Quand puis-je venir ?", ["tn-rdv", "tn-rdv-complet", "tn-agenda", "tn-planning", "tn-disponibilites"]),
   lieu: m("À quoi ressemble l'endroit, et comment y aller ?", ["tn-acces", "tn-mosaique", "tn-texte-photo", "tn-places"]),
   equipe: m("Qui va s'occuper de moi ?", ["tn-equipe"], { preuves: ["equipe"] }),
-  "offre-visite": m("Y a-t-il une offre pour une première fois ?", []),
+  "offre-visite": m("Y a-t-il une offre pour une première fois ?", ["tn-offre-visite"], { preuves: ["offre-visite"] }),
   galerie: m("Puis-je voir d'autres images ?", ["tn-mosaique", "tn-de-pres", "tn-realisations"]),
   "preparer-venue": m("Que dois-je prévoir avant de venir ?", ["tn-comment", "tn-acces"]),
   besoins: m("Traites-tu mon besoin ?", ["tn-prestations", "tn-exemples-prix"]),
   "calcul-prix": m("Comment le prix est-il calculé ?", ["tn-exemples-prix", "tn-tarifs", "tn-aides", "tn-prix-explique"]),
   "formulaire-devis": m("Comment je demande mon devis ?", ["tn-devis"]),
-  delais: m("Sous quel délai ?", []),
+  delais: m("Sous quel délai ?", ["tn-delais"], { preuves: ["delais"] }),
   // ── lieu
   "carte-moment": m("Qu'est-ce qu'on y trouve en ce moment, et à quel prix ?", ["tn-carte", "tn-vitrine", "tn-prestations", "tn-produits"]),
   ambiance: m("Est-ce que je m'y sentirai bien ?", ["tn-mosaique", "tn-texte-photo", "tn-places", "tn-emotion"]),
@@ -171,25 +171,26 @@ export const MOMENTS: Record<string, MomentDef> = {
   intervenant: m("Qui s'en occupe ?", ["tn-fondateur", "tn-equipe", "tn-texte-photo"]),
   reserver: m("Comment je réserve ?", ["tn-rdv", "tn-rdv-complet", "tn-urgence", "tn-final"]),
   "prestation-duree-prix": m("Quelle prestation, combien de temps, à quel prix ?", ["tn-prestations", "tn-rdv-complet"]),
-  annulation: m("Et si je dois annuler ?", []),
+  annulation: m("Et si je dois annuler ?", ["tn-annulation"], { preuves: ["annulation"] }),
   besoin: m("Est-ce bien mon problème ?", ["tn-probleme-reponse", "tn-texte-photo"]),
   "ce-que-je-fais": m("Que fais-tu exactement ?", ["tn-prestations", "tn-texte-photo"]),
   materiaux: m("Avec quels matériaux et quelles marques ?", ["tn-composition", "tn-de-pres"]),
   "garanties-assurances": m("Es-tu assuré, et que garantis-tu ?", ["tn-labels", "tn-engagements"]),
   "bien-galerie": m("À quoi ressemble ce bien ?", ["tn-bien-galerie"]),
   "bien-prix": m("Combien, et qu'a-t-il exactement ?", ["tn-bien-galerie", "tn-bien-caracteristiques"]),
-  "bien-description": m("Qu'est-ce qui le rend agréable à vivre ?", ["tn-bien-caracteristiques"]),
-  "bien-plans": m("Quelles surfaces, quelle distribution ?", ["tn-bien-caracteristiques"]),
+  // La fiche d'un bien : une pièce par moment, ou « caractéristiques » qui en tient quatre (jamais les deux : MEME_CONTENU).
+  "bien-description": m("Qu'est-ce qui le rend agréable à vivre ?", ["tn-bien-description", "tn-bien-caracteristiques"]),
+  "bien-plans": m("Quelles surfaces, quelle distribution ?", ["tn-bien-surfaces", "tn-bien-caracteristiques"]),
   "bien-energie": m("Que consomme-t-il ?", ["tn-bien-energie"]),
-  "bien-equipements": m("Qu'est-ce qui est équipé ?", ["tn-bien-caracteristiques"]),
+  "bien-equipements": m("Qu'est-ce qui est équipé ?", ["tn-bien-equipements", "tn-bien-caracteristiques"]),
   quartier: m("Comment vit-on autour ?", ["tn-bien-quartier"]),
-  "bien-frais": m("Que vais-je payer en plus du prix ?", ["tn-bien-caracteristiques"]),
+  "bien-frais": m("Que vais-je payer en plus du prix ?", ["tn-bien-frais", "tn-bien-caracteristiques"]),
   agent: m("Qui me le fait visiter ?", ["tn-equipe", "tn-fondateur"]),
   visite: m("Comment je le visite ?", ["tn-bien-visite"]),
   "formules-prix": m("Quelles formules, à quel prix ?", ["tn-tarifs", "tn-prestations"]),
   signatures: m("Quels sont les plats à ne pas manquer ?", ["tn-de-pres", "tn-mosaique"]),
   "allergenes-carte": m("Puis-je manger ici sans risque ?", ["tn-allergenes"]),
-  privatisation: m("Puis-je réserver le lieu pour un groupe ?", []),
+  privatisation: m("Puis-je réserver le lieu pour un groupe ?", ["tn-privatisation"], { preuves: ["privatisation"] }),
   "reserver-table": m("Comment je réserve ma table ?", ["tn-reserver-table"]),
   dates: m("Quand a lieu la prochaine séance, et reste-t-il de la place ?", ["tn-agenda", "tn-planning"]),
   programme: m("Que va-t-on y faire ?", ["tn-deroule", "tn-comment"]),
@@ -205,9 +206,10 @@ export const MOMENTS: Record<string, MomentDef> = {
   "boutique-produits": m("Quels sont les produits, et leurs prix ?", ["tn-catalogue"]),
   "questions-livraison": m("Et la livraison ?", ["tn-questions", "tn-livraison"]),
   // ── réalisations
-  presentation: m("Qu'est-ce que je vais voir ici ?", ["tn-texte-photo"]),
-  "filtres-type": m("Puis-je ne voir que ce qui ressemble à mon projet ?", []),
-  "realisations-lieu-date": m("Qu'as-tu fait, où et quand ?", ["tn-realisations"]),
+  presentation: m("Qu'est-ce que je vais voir ici ?", ["tn-presentation", "tn-texte-photo"]),
+  // « Les réalisations, filtrées par type » tient les filtres ET la liste (une seule liste de réalisations par page).
+  "filtres-type": m("Puis-je ne voir que ce qui ressemble à mon projet ?", ["tn-realisations-types"]),
+  "realisations-lieu-date": m("Qu'as-tu fait, où et quand ?", ["tn-realisations-types", "tn-realisations"]),
   "realisation-racontee": m("Comment s'est passé un chantier, du début à la fin ?", ["tn-avant-apres"]),
   methode: m("Comment travailles-tu ?", ["tn-deroule", "tn-comment"]),
   "demander-devis": m("Comment je demande le mien ?", ["tn-devis", "tn-rdv", "tn-urgence", "tn-final"]),
@@ -223,11 +225,13 @@ export const MOMENTS: Record<string, MomentDef> = {
   // ── contact
   "appeler-ecrire": m("Quel est le moyen le plus simple de te joindre ?", ["tn-urgence", "tn-contact"]),
   "formulaire-court": m("Puis-je écrire sans tout raconter ?", ["tn-contact", "tn-rdv", "tn-devis"]),
-  "delai-reponse": m("Quand vais-je avoir une réponse ?", ["tn-contact"]),
-  horaires: m("Quand puis-je appeler ou passer ?", ["tn-acces"]),
-  "adresse-carte": m("Où est-ce ?", ["tn-acces"]),
-  acces: m("Comment y venir, où se garer ?", ["tn-acces"]),
-  reseaux: m("Où te suivre ?", []),
+  // Chaque moment de la page contact a sa pièce ; « Horaires et accès » (tn-acces) en tient trois à elle seule, et ne se
+  // pose jamais avec les pièces qui les montrent une par une (tenue-ordre.ts : MEME_CONTENU).
+  "delai-reponse": m("Quand vais-je avoir une réponse ?", ["tn-delai-reponse"], { preuves: ["delais"] }),
+  horaires: m("Quand puis-je appeler ou passer ?", ["tn-horaires", "tn-acces"]),
+  "adresse-carte": m("Où est-ce ?", ["tn-adresse", "tn-acces"]),
+  acces: m("Comment y venir, où se garer ?", ["tn-venir", "tn-acces"]),
+  reseaux: m("Où te suivre ?", ["tn-reseaux"], { preuves: ["reseaux"] }),
   "questions-courantes": m("Ma question a-t-elle déjà sa réponse ?", ["tn-questions"]),
   // ── questions fréquentes
   "questions-bloquent": m("La chose qui m'empêche d'acheter a-t-elle sa réponse ?", ["tn-questions"]),

@@ -15,6 +15,7 @@
 import { z } from "zod";
 import type { Design } from "./design";
 import type { Tenue } from "./tenue";
+import { OUVERTURES_SERVICES } from "./tenue-partitions";
 
 export const FAMILLE_IDS = ["maison-chaleureuse", "epure-editorial", "naturel-sincere", "gourmand-joyeux", "confiance-savoir-faire", "spectaculaire"] as const;
 export type FamilleId = (typeof FAMILLE_IDS)[number];
@@ -48,7 +49,7 @@ export type Famille = {
 };
 
 /** Ouvertures qui respectent la règle du propriétaire : grande photo pleine, le titre posé dessus. */
-export const OUVERTURES_PHOTO_PLEINE = ["tn-ouverture:dans-la-photo", "tn-ouverture:titre-centre", "tn-ouverture:titre-en-bas", "tn-ouverture:titre-massif", "tn-ouverture:bandeau", "tn-ouverture-carte"] as const;
+export const OUVERTURES_PHOTO_PLEINE = ["tn-ouverture:dans-la-photo", "tn-ouverture:titre-centre", "tn-ouverture:titre-en-bas", "tn-ouverture:titre-massif", "tn-ouverture:bandeau", "tn-ouverture-carte", ...OUVERTURES_SERVICES] as const;
 
 export const FAMILLES: Famille[] = [
   {
@@ -142,9 +143,17 @@ const headersOf = (f: Famille, o: FamilleFacts) => {
   return f.entete.filter((r) => !MEGA.includes(r.split(":")[1] ?? "") || o.families == null || o.families >= 3);
 };
 const footersOf = (f: Famille, o: FamilleFacts) => (o.business === "services" ? [PIED_SERVICES, ...f.pied.filter((r) => r !== "tn-pied-reassurance")] : f.pied);
+/**
+ * Les ouvertures de l'accueil pour CE site. Un site de services (17 novembre 2026, règle d'or 1 du cahier « ordre et
+ * variété » : « pour un service : la ville et le téléphone cliquable en plus ») ouvre, dans TOUTES les familles, par
+ * l'ouverture d'un métier de services en grande photo pleine, le titre dessus : elle porte le métier et la ville, la
+ * zone et le téléphone cliquable du profil. Les ouvertures de la famille restent permises ensuite : le contrôle de
+ * l'ordre (ordre.ts) les refuse quand le profil connaît la zone ou le téléphone, qu'elles ne portent pas.
+ */
+const ouverturesOf = (f: Famille, o: FamilleFacts): string[] => (o.business === "services" ? [...OUVERTURES_SERVICES, ...f.ouvertures] : [...f.ouvertures]);
 
 /** Les choix d'en-tête, de pied de page et d'ouverture d'une famille pour CE site (services ou boutique) : sert à la règle « ils tournent ». */
-export const choixDeLaFamille = (id: string | null | undefined, o: FamilleFacts = {}): { entete: string[]; pied: string[]; ouvertures: string[] } | null => { const f = familleOf(id); return f ? { entete: headersOf(f, o), pied: footersOf(f, o), ouvertures: [...f.ouvertures] } : null; };
+export const choixDeLaFamille = (id: string | null | undefined, o: FamilleFacts = {}): { entete: string[]; pied: string[]; ouvertures: string[] } | null => { const f = familleOf(id); return f ? { entete: headersOf(f, o), pied: footersOf(f, o), ouvertures: ouverturesOf(f, o) } : null; };
 const BY_ID = new Map(FAMILLES.map((f) => [f.id, f]));
 export const familleOf = (id: string | null | undefined): Famille | null => (id ? BY_ID.get(id as FamilleId) ?? null : null);
 
@@ -174,7 +183,7 @@ export function famillesBrief(): string {
       `  Ses moments forts, quand la marque a de quoi les remplir : ${f.cles}.`,
     ].join("\n")),
     "L'accueil s'ouvre TOUJOURS par une grande photo pleine avec le titre posé dessus : seules les ouvertures données pour la famille sont permises.",
-    `POUR UN SITE DE SERVICES, quelle que soit la famille : l'en-tête est « ${ENTETE_SERVICES} » (le téléphone et le bouton de rendez-vous ou de devis toujours visibles ; jamais de panier) et le pied de page « ${PIED_SERVICES} » (téléphone, adresse, horaires, zone) est permis en plus de ceux de la famille ; le pied « tn-pied-reassurance » (livraison, retours, paiement) est réservé aux boutiques.`,
+    `POUR UN SITE DE SERVICES, quelle que soit la famille : l'en-tête est « ${ENTETE_SERVICES} » (le téléphone et le bouton de rendez-vous ou de devis toujours visibles ; jamais de panier) et le pied de page « ${PIED_SERVICES} » (téléphone, adresse, horaires, zone) est permis en plus de ceux de la famille ; le pied « tn-pied-reassurance » (livraison, retours, paiement) est réservé aux boutiques. L'OUVERTURE de l'accueil d'un site de services est « tn-ouverture-metier », dans une de ses trois façons en grande photo pleine (${OUVERTURES_SERVICES.join(" ou ")}) : le premier écran d'un service dit le métier et la ville et porte le téléphone cliquable ; le Studio y pose tout seul la zone, les horaires et le téléphone du profil.`,
     "LES GRANDS MENUS (« tn-entete-liens:mega-colonnes », « tn-entete-liens:mega-produits ») ne se prennent que pour une boutique dont le catalogue a au moins trois familles de produits ; sinon, un autre en-tête de la famille.",
   ].join("\n");
 }
@@ -199,7 +208,8 @@ export function familleGaps(d: Pick<Design, "pages" | "header" | "headerConstruc
   if (!allows(heads, d.header, d.headerConstruction)) out.push(`famille ${f.id}${o.business === "services" ? ", site de services" : ""} : l'en-tête « ${built(d.header, d.headerConstruction)} » n'est pas dans ses choix (${heads.join(" ou ")})`);
   if (!allows(feet, d.footer, d.footerConstruction)) out.push(`famille ${f.id} : le pied de page « ${built(d.footer, d.footerConstruction)} » n'est pas dans ses choix (${feet.join(" ou ")})`);
   const first = d.pages.find((p) => p.key === "home")?.sections[0];
-  if (first && !allows(f.ouvertures, first.section, first.construction)) out.push(`famille ${f.id} : l'accueil s'ouvre par « ${built(first.section, first.construction)} », qui n'est pas dans ses ouvertures (${f.ouvertures.join(" ou ")}) : grande photo pleine, le titre posé dessus`);
+  const opens = ouverturesOf(f, o);
+  if (first && !allows(opens, first.section, first.construction)) out.push(`famille ${f.id}${o.business === "services" ? ", site de services" : ""} : l'accueil s'ouvre par « ${built(first.section, first.construction)} », qui n'est pas dans ses ouvertures (${opens.join(" ou ")}) : grande photo pleine, le titre posé dessus`);
   return out;
 }
 
@@ -223,6 +233,7 @@ export function fitFamille<D extends Pick<Design, "pages" | "header" | "headerCo
   if (!allows(heads, out.header, out.headerConstruction)) { const [id, c] = heads[0].split(":"); changed.push(`en-tête : ${built(out.header, out.headerConstruction)} → ${heads[0]}`); out.header = id; out.headerConstruction = c ?? null; }
   if (!allows(feet, out.footer, out.footerConstruction)) { const [id, c] = feet[0].split(":"); changed.push(`pied de page : ${built(out.footer, out.footerConstruction)} → ${feet[0]}`); out.footer = id; out.footerConstruction = c ?? null; }
   const home = out.pages.find((p) => p.key === "home"), first = home?.sections[0];
-  if (first && !allows(f.ouvertures, first.section, first.construction)) { const [id, c] = f.ouvertures[0].split(":"); changed.push(`ouverture : ${built(first.section, first.construction)} → ${f.ouvertures[0]}`); first.section = id; first.construction = c ?? null; }
+  const opens = ouverturesOf(f, o);
+  if (first && !allows(opens, first.section, first.construction)) { const [id, c] = opens[0].split(":"); changed.push(`ouverture : ${built(first.section, first.construction)} → ${opens[0]}`); first.section = id; first.construction = c ?? null; }
   return { d: out, changed };
 }
