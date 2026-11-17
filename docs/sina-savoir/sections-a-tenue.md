@@ -1,7 +1,8 @@
 # Écrire une section « à tenue » du thème sur mesure
 
 Cahier des règles du 13 novembre 2026, mis à jour le 16 novembre 2026 (thème unique du lot 4 : cinq modules de plus, le
-registre des façons, le contrat du panier, la coque propre à une page). Il sert à toute personne (ou tout agent) qui ajoute ou reprend une section de la
+registre des façons, le contrat du panier, la coque propre à une page) et le 17 novembre 2026 (module « partitions » :
+les pièces des moments du cahier « ordre et variété », la règle « jamais une pièce sans sa vraie donnée »). Il sert à toute personne (ou tout agent) qui ajoute ou reprend une section de la
 bibliothèque à tenue. Retour du propriétaire à l'origine de ce travail : « juste changer les images et les textes ferais
 déjà des thèmes trop basique car les sections sur le studio sont loin d'être à la hauteur de celle que tu as vu sur
 internet », et « les clients ne vont pas avoir tous les même menu les même bouton ».
@@ -34,6 +35,7 @@ trois.
 | Métiers (lot 4) | biens et fiche d'un bien, carte du restaurant et réservation de table, rendez-vous en trois temps, inscription | `tenue-metiers.ts` (`METIERS_SECTIONS`) | `tenue-metiers.css`, `tenue-metiers.js` |
 | Pages (lot 4) | tiroir de panier, recherche, questions par rubriques, « bien reçu », boutique fermée | `tenue-pages.ts` (`PAGES_SECTIONS`) | `tenue-pages.css`, `tenue-pages.js` |
 | Vente (lot 4) | le site de vente directe : bandeau à messages, ouverture au macaron, cartes de vente, « la différence », guide de choix, page d'arrivée de publicité (en-tête et pied minimaux, ouverture d'article, raisons, équation, témoignages, barre du produit), page des avis | `tenue-vente.ts` (`VENTE_SECTIONS`) | `tenue-vente.css`, `tenue-vente.js` |
+| Partitions (17 novembre) | les pièces des moments du cahier « ordre et variété » qui n'en avaient pas : offre de première visite, délais, annulation et conditions, privatisation, réalisations filtrées par type, réseaux ; la page contact moment par moment (délai de réponse, horaires, adresse et carte, accès et stationnement) ; la fiche d'un bien moment par moment (description, surfaces, équipements, frais) ; la présentation d'une page ; l'ouverture d'un service en grande photo pleine | `tenue-partitions.ts` (`PARTITIONS_SECTIONS`, `PARTITIONS_FACONS`, `OUVERTURES_SERVICES`) | `tenue-partitions.css` (aucun script) |
 
 Les outils communs (`sec`, `ph`, `VOLET`, le type `TenueSection`) sont dans `tenue-base.ts`. Un module ne touche ni aux
 fichiers d'un autre module, ni à `tenue.ts`, ni à `tenue.css`. Un script n'est permis que s'il est indispensable
@@ -44,13 +46,13 @@ tard l'emporte.
 ### Le registre des façons (`*_FACONS`)
 
 Un module du lot 4 peut ajouter des façons de bâtir à une pièce d'un AUTRE module, sans toucher à son fichier : il les
-écrit dans son registre (`COQUE_FACONS`, `ACHAT_FACONS`, `METIERS_FACONS`, `PAGES_FACONS`, `VENTE_FACONS` :
+écrit dans son registre (`COQUE_FACONS`, `ACHAT_FACONS`, `METIERS_FACONS`, `PAGES_FACONS`, `VENTE_FACONS`, `PARTITIONS_FACONS` :
 identifiant de la pièce → ses constructions) et les dessine dans SA feuille.
 
 - Le registre **remplace** la liste `constructions` de la pièce : il faut donc y réécrire toutes ses façons, et **la
   première clé reste le rendu d'origine** (celui sans règle `data-tn-c` particulière).
 - Plusieurs modules sur une même pièce **s'additionnent** (`mergeFacons` dans `tenue.ts`) : les listes se suivent dans
-  l'ordre coque, achat, métiers, pages, vente, sans doublon de clé ; la liste du premier module qui parle de la pièce
+  l'ordre coque, achat, métiers, pages, vente, partitions, sans doublon de clé ; la liste du premier module qui parle de la pièce
   vient d'abord. Un module qui arrive après ne répète pas la façon d'origine : il ajoute les siennes.
 - Une clé de pièce inconnue dans un registre arrête le Studio tout de suite (erreur d'écriture, dite à l'import).
 - Une façon ajoutée ne redessine jamais une façon existante : aucune règle de la feuille du module ne cible une façon
@@ -165,6 +167,38 @@ Attributs ajoutés au lot 4 (les lignes d'exemple gardent exactement la forme é
 | `data-tn-arrivee`, `data-tn-barre-produit` (avec `data-tn-produit-nom`) | le nom, la photo et la fiche du premier produit en stock | catalogue |
 | `data-tn-avis-pose`, `data-tn-temoignages`, `data-tn-avis-page` | seulement les avis d'une vraie source ; sans avis, rien n'est montré | aucune source d'avis dans le Studio pour l'instant |
 
+### Jamais une pièce sans sa vraie donnée (module « partitions »)
+
+Une pièce qui ne vaut que par un fait du client (une offre, des délais, des conditions, des horaires, une adresse, des
+comptes sur les réseaux, les mesures d'un bien) ne se montre pas sans lui :
+
+- dans son HTML, chaque élément qui porte un tel fait est marqué **`data-tn-fait`** et l'écrit « [À compléter : …] » ;
+- au rendu (`withTenueFaits`, `tenue-data.ts`), un élément marqué encore à compléter est **retiré** ; quand il n'en reste
+  aucun, **la pièce entière ne rend rien** (aperçu), et elle n'est pas envoyée en boutique (« section non envoyée ») ;
+- à la conception, sa ligne de `tenue-ordre.ts` dit le fait qu'elle demande (`offre-visite`, `delais`, `annulation`,
+  `privatisation`, `reseaux`, `horaires`, `adresse`, `acces`) : le contrôle de l'ordre la refuse quand le dossier ne
+  l'a pas (`preuves.ts` : `FAITS`, lus dans les notes du client ; horaires, adresse et réseaux constatés dans le Studio).
+
+| Attribut | Ce que le Studio y met | Source |
+|---|---|---|
+| `data-tn-fait` (sur une ligne, un titre, un bloc) | rien : la ligne s'en va tant que son fait manque | le rédacteur, avec les mots du client |
+| `data-tn-reseaux` (liste `tn-pt-comptes`) | les vrais comptes, chacun avec son lien ; sans compte, la pièce ne rend rien | `tenueReseaux` : le site existant lu au départ, les notes du client (jamais une note sur un concurrent) |
+| `data-tn-t` (sur un filtre et sur chaque réalisation de `tn-realisations-types`) | rien : un filtre sans nom ou sans réalisation est retiré ; moins de deux types, plus de filtres | le rédacteur |
+| `data-tn-bien="description\|surfaces\|equipements\|frais"` | la fiche du bien mis en avant, partie par partie | rubrique Biens |
+
+Les filtres des réalisations marchent **sans script** : des boutons radio d'un même groupe et une règle
+`:has(input[value="a"]:checked) figure:not([data-tn-t="a"]){display:none}` (types `a` à `d`). Ils partent tels quels
+en boutique. Une seule pièce de ce genre par page.
+
+Deux pièces qui montrent la même chose ne se posent jamais sur une même page (`MEME_CONTENU`, `tenue-ordre.ts`) :
+« Horaires et accès » avec les horaires, l'adresse ou l'accès seuls ; les deux listes de réalisations ; les
+caractéristiques d'un bien avec sa description, ses surfaces, ses équipements ou ses frais.
+
+L'ouverture d'un site de services est `tn-ouverture-metier` dans une de ses trois façons en grande photo pleine
+(`OUVERTURES_SERVICES`, permises dans les six familles) : le Studio y pose le téléphone cliquable, la zone et les
+horaires du profil, et retire le repère que le profil ne connaît pas (`withOuverturePleine`) : jamais un trou dans le
+premier écran.
+
 Les lectures de la base se font à un seul endroit par sujet : `tenueMetiers` (biens, carte) et `tenueVitrine`
 (catalogue de vente) dans `tenue-data.ts`, posées dans les données du site par `tenueSite` (`render.ts`, aperçu) et par
 `customThemeExport` (`install.ts`, mise en boutique). Tout le reste de `tenue-data.ts` est pur.
@@ -245,7 +279,11 @@ python3 scripts/tenue-planche.py /chemin/vers/un/dossier      # une planche par 
 `TENUE_ONLY` prend un module (`socle`, `produit`, `services`, `recit`) ou des identifiants séparés par des virgules.
 Chaque module du lot 4 a son essai, `tests/theme-unique-<module>.test.ts` (coque, achat, metiers, pages, vente), et ses
 planches à la demande : `COQUE_OUT`, `ACHAT_OUT`, `METIERS_OUT`, `PAGES_OUT`, `VENTE_OUT=<dossier>` (avec
-`<MODULE>_ONLY` pour limiter aux pièces citées). Ce qui relie les modules est dans
+`<MODULE>_ONLY` pour limiter aux pièces citées). Le module « partitions » (`tests/theme-unique-partitions.test.ts`,
+`PARTITIONS_OUT=<dossier>`) rend chaque construction dans deux palettes (une calme, une difficile à la couleur de marque
+jaune vif) et contrôle dans le navigateur qu'aucun texte n'a un contraste inférieur à 3 avec son fond, que rien ne
+dépasse à 320 px et que les filtres des réalisations filtrent ; il assemble une planche par pièce et
+« pieces-nouvelles.jpg ». Ce qui relie les modules est dans
 `tests/theme-unique-integration.test.ts`.
 Sur une machine partagée, un seul rendu à la fois (`flock <fichier> env … npx vitest run …`).
 L'essai échoue si une page dépasse de l'écran en largeur. Chaque planche se **regarde** : la section est terminée

@@ -364,6 +364,11 @@ export function checkCustomTheme(t: CustomTheme, site?: SiteKind): ThemeProblem[
   // aussi, mais « à revoir » seulement : la bibliothèque et le dossier d'un client ne permettent pas toujours dix
   // sections vraies sur un contact ou des questions, et rien ne doit pousser à remplir. Le contrôle de la conception
   // (ordre.ts) dit au concepteur quels moments de la partition restent libres.
+  // Revu le 17 novembre 2026, après le module « partitions » (chaque moment du cahier a maintenant sa pièce) : ces
+  // pages restent « à revoir ». Compté avec `piecesPossibles` (ordre.ts) : un service à domicile au dossier ordinaire
+  // tient 5 pièces réelles sur le contact, 6 sur les questions et l'à-propos, 7 sur les réalisations ; une boutique
+  // 3 à 4 sur le contact. Dix ne s'atteignent qu'avec des preuves et des faits que tous les clients n'ont pas : un
+  // minimum bloquant pousserait à remplir.
   if (site) for (const pg of t.pages) {
     const kind = pageKind(pg.key, site.business);
     if (!kind || kind === "utilitaire" || pg.sections.length >= MIN_SECTIONS_IMPORTANTE) continue;
