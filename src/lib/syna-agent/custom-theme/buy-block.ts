@@ -11,7 +11,8 @@ import { assetUrl } from "../../library";
 import { companyOf } from "../activity";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { galleryAssets } from "../../products/gallery-store";
-import { avisAchat, tenueVitrine, withAchatId, withTenueColoris, withTenueLooks, withTenueLots, withTenueSizes, withTenueAchatVrai, withTenueVersions, type TenueCadeau, type TenueColoris, type TenueLots, type TenueOption, type TenueAchatVrai } from "./tenue-data";
+import { repere } from "./tenue";
+import { avisAchat, tenueVitrine, withAchatId, withAchatOptions, withTenueColoris, withTenueLooks, withTenueLots, withTenueSizes, withTenueAchatVrai, withTenueVersions, type TenueCadeau, type TenueColoris, type TenueLots, type TenueOption, type TenueAchatVrai } from "./tenue-data";
 
 export type BuyData = {
   base: number;
@@ -193,12 +194,13 @@ export function achatFacts(projectId: string, handle?: string | null): { title: 
  * par quantité ; et retire du « look complet » le produit de la page (il ne se propose pas à lui-même). Une section qui
  * ne porte aucun de ces repères est rendue telle quelle, sans lire le catalogue.
  */
-export function withTenueAchat(html: string, projectId: string, handle?: string | null): string {
+export function withTenueAchat(html: string, projectId: string, handle?: string | null, o: { /** La page n'a pas la pièce des pastilles : le bloc d'achat porte lui-même le vrai choix. */ selecteur?: boolean; /** Photo créée pour le bloc d'achat de chaque fiche (repère du produit → adresse) : elle sert quand le produit n'a aucune photo au catalogue. */ fiches?: Map<string, string> } = {}): string {
   if (!/\sdata-tn-(?:versions|guide-tailles|lots|looks|appel-produit|achat|packs|sous-bouton|offre-moment|fenetre-offre|rappel-achat|coloris)\b/.test(html)) return html;
   const f = (() => { try { return achatFacts(projectId, handle); } catch { return null; } })();
   // Sans produit : ni offre, ni fenêtre, ni coloris (une pièce qui ne montrerait que son exemple ne se pose pas).
   if (!f) return /\sdata-tn-(?:offre-moment|fenetre-offre|coloris)\b/.test(html) ? "" : html;
-  let out = withTenueLots(withTenueSizes(withTenueVersions(withAchatId(html), f.options), f.options), f.lots);
+  // Le vrai choix du catalogue dans le bloc d'achat : jamais une phrase d'option écrite à sa place.
+  let out = withTenueLots(withTenueSizes(withTenueVersions(withAchatOptions(withAchatId(html), f.options, o), f.options), f.options), f.lots);
   // Les coloris en scène : seulement avec au moins deux couleurs qui ont leur photo.
   out = withTenueColoris(out, f.coloris);
   if (!out) return out;
@@ -215,10 +217,11 @@ export function withTenueAchat(html: string, projectId: string, handle?: string 
   // « Le produit, son prix, son bouton » : la vraie photo, le vrai nom, le vrai prix, le stock, la livraison et les retours du client.
   if (/\sdata-tn-appel-produit\b/.test(out)) {
     const co = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string }; } catch { return {}; } })() as { shipping?: string; returns?: string };
-    const line = (v: string | undefined) => (v && v.trim() ? escText(v.trim().slice(0, 120)) : "[À compléter]");
-    if (f.image) out = out.replace(/(<div class="tn-ph")[^>]*(><\/div>)/, `$1 style="background-image:url(${escAttr(f.image)})"$2`);
+    // Sa vraie photo ; sans photo au catalogue, la scène créée pour cette pièce reste, et une photo d'exemple laisse la place à celle de sa fiche.
+    const image = f.image ?? (/<div class="tn-ph" style="background-image:url\(\/api\/files\//.test(out) ? null : o.fiches?.get(f.handle) ?? (!handle ? o.fiches?.get("") : null) ?? null);
+    if (image) out = out.replace(/(<div class="tn-ph")[^>]*(><\/div>)/, `$1 style="background-image:url(${escAttr(image)})"$2`);
     out = out.replace(/(<b class="tn-nom-a">)[\s\S]*?(<\/b>)/, `$1${escText(f.title)}$2`)
-      .replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${line(co.shipping)}</li><li>Retours : ${line(co.returns)}</li></ul>`);
+      .replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>${escText(repere("Livraison", co.shipping))}</li><li>${escText(repere("Retours", co.returns))}</li></ul>`);
     if (f.price) out = out.replace(/<div class="tn-prix">[\s\S]*?<\/div>/, `<div class="tn-prix">${f.price}</div>${f.soldOut ? '<div class="tn-rupture">Épuisé pour l\'instant.</div>' : ""}`);
     if (f.soldOut) out = out.replace(/<a class="tn-bt"/, '<a class="tn-bt tn-off" aria-disabled="true"');
     out = out.replace(/\[À compléter(?:\s*:\s*([^\]<]{1,80}))?\]/g, (_m, what: string | undefined) => `<mark class="tn-manque">À compléter${what ? ` : ${what.trim()}` : ""}</mark>`);

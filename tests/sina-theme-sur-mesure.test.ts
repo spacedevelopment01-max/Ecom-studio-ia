@@ -738,12 +738,13 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
           expect(B.COPY_REVIEW_SYSTEM).toMatch(/Tu n'écris rien toi-même/);
           expect(B.COPY_REVIEW_SYSTEM).toMatch(/L'ÉMOTION D'ABORD/);
           expect(fixes).toHaveLength(B.MAX_COPY_FIXES);
-          expect(fixes[0]).toMatch(/ce titre décrit, il ne fait rien ressentir/);
+          // (17 novembre 2026 : les sections à reprendre pour répétition passent d'abord, la moitié du budget au plus ; les corrections de la relecture gardent le reste.)
+          expect(fixes.some((x: string) => /ce titre décrit, il ne fait rien ressentir/.test(x))).toBe(true);
           expect(third.relecture).toMatchObject({ refusees: B.MAX_COPY_FIXES + 1, avis: "Clair, mais trop descriptif." });
           expect(third.relecture.reprises).toBeGreaterThan(0);
           const now = allSections(loadCustomTheme(pid)!);
           expect(now.filter((x) => sectionHtml(x.s).includes("Repris : Texte de la marque")).length).toBe(third.relecture.reprises);
-          expect(third.problems.filter((x: string) => /: à relire \(/.test(x))).toHaveLength(1); // la septième, au-delà de la limite
+          expect(third.problems.filter((x: string) => /: à relire \(/.test(x)).length).toBeGreaterThanOrEqual(1); // au-delà de la limite : dites, jamais reprises en plus
           // Le gardien des faits (sans IA) : une promesse que la fiche ne confirme pas est donnée au relecteur avec sa
           // section, et dite dans le compte rendu tant qu'elle reste ; un « [À compléter] » n'en est jamais une.
           {

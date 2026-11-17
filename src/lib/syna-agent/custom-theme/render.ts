@@ -15,9 +15,9 @@ import { fontOf, fontsCss } from "../mockup-code/code-mockup";
 import { decideBuyFeatures, deliveryFrom, freeShippingFrom, loadShopOffers, type BuyFeatures } from "../product-features";
 import { companyOf } from "../activity";
 import { buyBlockData, withRealBuyBlock, withTenueAchat } from "./buy-block";
-import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, withBrandName, withoutExamplePhotos } from "./library";
+import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, sectionTraits, withBrandName, withoutExamplePhotos, withoutMissingPhotos } from "./library";
 import { allSections, drawerOf, hasCoque, sectionHtml, type CtPage, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
-import { TENUE_FILES, markMissing, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenueBuyBlock, withTenuePrestations, withTenueProducts, type TenueBuy, type TenuePrestation, type TenueProduct } from "./tenue";
+import { TENUE_FILES, listedProducts, markMissing, withoutExampleProducts, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenueBuyBlock, withTenuePrestations, withTenueProducts, type TenueBuy, type TenuePrestation, type TenueProduct } from "./tenue";
 import { productPageKey, withMenu, type MenuProduct } from "./menu";
 import { tenueMetiers, tenueVitrine, withTenueSite, withVenteArrivee, type TenueSite } from "./tenue-data";
 import { factLine } from "../activity";
@@ -158,6 +158,13 @@ export function provideFrame(kind: string): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" fill="#EEEAE3"/><rect x="40" y="40" width="1120" height="1120" fill="none" stroke="#9A9184" stroke-width="6" stroke-dasharray="26 18"/><text x="600" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="84" font-weight="700" fill="#2B2722">Photo à fournir</text><text x="600" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="46" fill="#4A443C">SINA ne peut pas inventer ${esc(kind)}.</text><text x="600" y="720" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" fill="#6B6359">Envoie ta vraie photo avec le trombone.</text></svg>`;
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
+
+/**
+ * Le texte de cette section se pose-t-il SUR sa photo ? (fond « photo » de la pièce, sauf les façons qui posent la photo
+ * seule et le texte à côté ou dessous.) Sert au filet « aucun vide » : sans photo, ces pièces gardent un panneau sombre.
+ */
+const PHOTO_A_PART = new Set(["tn-ouverture:titre-puis-cadre", "tn-ouverture:titre-geant", "tn-ouverture:dans-la-photo", "tn-emotion:phrase-dessous"]);
+export const textOnPhoto = (s: Pick<CtSection, "id" | "construction">): boolean => sectionTraits()[s.id]?.fond === "photo" && !PHOTO_A_PART.has(`${s.id}:${validConstruction(s.id, s.construction) ?? ""}`);
 
 /** HTML d'une section du thème, marqué de son identifiant (désignation, règles propres). */
 export function sectionMarkup(s: CtSection, brandName: string, role: string, business: "products" | "services" = "products"): string {
@@ -422,7 +429,26 @@ const soldOut = (p: ReturnType<typeof listProducts>[number]) => p.variants.lengt
  * (une fiche par produit quand elle existe, sinon la fiche commune).
  */
 export function tenueProducts(projectId: string, t?: CustomTheme): TenueProduct[] {
-  return listProducts(projectId).map((p) => ({ title: p.data.title, image: p.data.images[0]?.assetId ? assetUrl({ id: p.data.images[0].assetId }) : null, price: priceText(p), go: t ? productPageKey(t, p.handle) : null, soldOut: soldOut(p), families: p.data.categories.map((c) => c.trim()).filter(Boolean), cents: p.data.price ?? p.variants.find((v) => v.price != null)?.price ?? null }));
+  const fiches = t ? fichePhotos(t) : new Map<string, string>();
+  // Un produit sans photo au catalogue : ses cartes reprennent la photo que SINA a créée pour le bloc d'achat de SA fiche (la même, jamais une autre).
+  return listProducts(projectId).map((p, i) => ({ title: p.data.title, image: p.data.images[0]?.assetId ? assetUrl({ id: p.data.images[0].assetId }) : fiches.get(p.handle) ?? (i === 0 ? fiches.get("") ?? null : null), price: priceText(p), go: t ? productPageKey(t, p.handle) : null, soldOut: soldOut(p), families: p.data.categories.map((c) => c.trim()).filter(Boolean), cents: p.data.price ?? p.variants.find((v) => v.price != null)?.price ?? null }));
+}
+/**
+ * La photo créée pour le bloc d'achat de chaque fiche produit du thème (la grande photo de sa galerie, un média du
+ * projet) : repère du produit → adresse. La fiche commune (sans produit nommé) est rangée sous « "" » : c'est celle du
+ * premier produit du catalogue. Une photo d'exemple n'en fait jamais partie.
+ */
+export function fichePhotos(t: CustomTheme): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const pg of t.pages) {
+    if (!/^product/.test(pg.key)) continue;
+    for (const s of pg.sections) {
+      if (s.id !== "tn-achat" || !s.html) continue;
+      const url = /<div class="tn-grande tn-ph" style="background-image:url\((\/api\/files\/[\w-]+)\)"/.exec(s.html)?.[1];
+      if (url && !out.has(pg.product ?? "")) out.set(pg.product ?? "", url);
+    }
+  }
+  return out;
 }
 /**
  * Tout ce que le Studio sait du client pour les sections à tenue : coordonnées, horaires et zone (profil des services,
@@ -455,7 +481,7 @@ export function tenueBuyData(projectId: string, handle?: string | null): TenueBu
   const p0 = (handle && products.find((x) => x.handle === handle)) || products[0];
   const price = priceText(p0);
   const company = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string }; } catch { return {}; } })() as { shipping?: string; returns?: string };
-  const clean = (v: string | undefined) => (v && v.trim() ? v.trim().slice(0, 120) : null);
+  const clean = (v: string | undefined) => (v && v.trim() ? v.trim() : null);
   return { images: p0.data.images.map((im) => im.assetId).filter((id): id is string => !!id).map((id) => assetUrl({ id })), price, shipping: clean(company.shipping), returns: clean(company.returns), soldOut: soldOut(p0), notes: priceNotes(projectId) };
 }
 /**
@@ -507,6 +533,7 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const tnBuy = (() => { try { return tenueBuyData(p.id); } catch { return null; } })();
   const tnProducts = (() => { try { return tenueProducts(p.id, t); } catch { return []; } })();
   const tnPrestations = tenuePrestations(p.id);
+  const fiches = fichePhotos(t);
   const site = (() => { try { return tenueSite(p, t, tnProducts, tnPrestations); } catch { return { products: tnProducts, prestations: tnPrestations } as TenueSite; } })();
   // Une fiche par produit : le bloc d'achat de chaque fiche montre SON produit.
   const buyOf = (pg: CtPage) => (pg.product ? (() => { try { return tenueBuyData(p.id, pg.product) ?? tnBuy; } catch { return tnBuy; } })() : tnBuy);
@@ -520,7 +547,7 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const shell = (s: CtSection | null | undefined, place: string) => (s ? (place === "en-tête" ? withVenteArrivee(withTenueSite(withMenu(sectionMarkup(s, name, roleOf(place)), t.menu, { boutique: flags.hdCart !== "0" || p.business !== "services", families: site.families, products: tnProducts }), { phone: site.phone }), site) : withTenueSite(sectionMarkup(s, name, roleOf(place)), site)) : "");
   // Une page qui porte sa propre coque (page d'arrivée d'une publicité) : SON en-tête ouvre la page, SON pied la ferme ;
   // quand elle est affichée, rien du site ne se pose autour (règle « data-coque » de la feuille, posée par la navigation).
-  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${hasCoque(pg) ? " data-coque" : ""}${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${hasCoque(pg) ? `${shell(pg.coque!.header, "en-tête")}\n` : ""}${pg.sections.map((s) => withTenueAchat(realMap(withTenueSite(withTenuePrestations(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), buyOf(pg)), tnProducts), tnPrestations), site), address), p.id, pg.product)).join("\n")}${hasCoque(pg) ? `\n${shell(pg.coque!.footer, "pied de page")}` : ""}</main>`).join("\n");
+  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${hasCoque(pg) ? " data-coque" : ""}${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${hasCoque(pg) ? `${shell(pg.coque!.header, "en-tête")}\n` : ""}${pg.sections.map((s) => withTenueAchat(realMap(withTenueSite(withTenuePrestations(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), buyOf(pg)), listedProducts(tnProducts, pg.key)), tnPrestations), site), address), p.id, pg.product, { selecteur: !pg.sections.some((x) => x.id === "tn-versions"), fiches })).join("\n")}${hasCoque(pg) ? `\n${shell(pg.coque!.footer, "pied de page")}` : ""}</main>`).join("\n");
   // Sections de tout le site : le bandeau au-dessus de l'en-tête ; les fenêtres (cookies, âge, discussion) posées en bas de l'écran.
   const extras = (group: "bandeau" | "partout") => [...(t.extras ?? []), ...(drawer && !(t.extras ?? []).includes(drawer) ? [drawer] : [])].filter((s) => (tenueSection(s.id)?.group ?? "partout") === group).map((s) => withTenueAchat(withTenueSite(sectionMarkup(s, name, "page"), site), p.id)).join("\n");
   const windows = extras("partout");
@@ -529,6 +556,11 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   // Fait ici, au rendu, après toutes les vraies données : vaut pour tout site, y compris déjà enregistré.
   const mounted = allSections(t).some((x) => x.s.clientTexts);
   const clean = (html: string) => (mounted ? withoutExamplePhotos(html, p.brand?.palette) : html);
+  // « Aucun vide » : une photo qui manque ne laisse pas un grand cadre uni (carte sans image, cadre retiré, section sans
+  // objet non rendue) ; une pièce dont le texte se pose sur la photo garde un panneau sombre, pour rester lisible.
+  const surPhoto = new Map(allSections(t).map((x) => [x.s.uid, textOnPhoto(x.s)] as const));
+  // Et aucun produit d'exemple de la bibliothèque : une carte qui en montrerait un s'en va, une section vidée ne se rend pas.
+  const sansVide = (html: string) => (mounted ? withoutMissingPhotos(withoutExampleProducts(html, tnProducts.map((x) => x.title)), p.brand?.palette, (uid) => surPhoto.get(uid) === true) : html);
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><base href="/sections/"><title>${esc(title)}</title>
@@ -542,7 +574,7 @@ ${tenueCss(p.brand?.palette, t.tenue, MONO_CSS(), titleWeight(p.brand?.fonts?.he
 ${own}</style></head><body>
 <script${n}>${pre}</script>
 <div class="tb-bar"><span>${esc(name)} ·</span>${bar}<span class="tb-vw">Voir en</span><button class="tb-vw" type="button" data-vw="desk" aria-pressed="true">Ordinateur</button><button class="tb-vw" type="button" data-vw="phone" aria-pressed="false">Téléphone</button></div>
-<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${t.pages[0] && hasCoque(t.pages[0]) ? " data-coque" : ""}${tenueAttrs(t.tenue)}><div class="frame">${clean(`${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
+<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${t.pages[0] && hasCoque(t.pages[0]) ? " data-coque" : ""}${tenueAttrs(t.tenue)}><div class="frame">${sansVide(`${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
 ${body}
 ${shell(t.footer, "pied de page")}${windows ? `<div class="tn-fixes">${windows}</div>` : ""}`)}</div></div>
 ${clean(withBrandName(templates, name))}

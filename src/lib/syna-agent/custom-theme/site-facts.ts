@@ -20,9 +20,10 @@
  *    jamais rapproché d'un fait du client → `gapFact`, `TIERS`, `AUTRE_IDENTIFIANT`.
  */
 import { memory, type Project } from "../../projects";
+import { listProducts } from "../../products/catalog";
 import { companyOf } from "../activity";
 import { tenuePrestations, tenueProducts, tenueSite } from "./render";
-import { withTenuePrestations, withTenueProducts, type TenuePrestation, type TenueProduct } from "./tenue";
+import { listedProducts, withTenuePrestations, withTenueProducts, type TenuePrestation, type TenueProduct } from "./tenue";
 import { hoursLine, withTenueSite, zoneCities, type TenueSite } from "./tenue-data";
 import type { CustomTheme } from "./theme";
 
@@ -68,7 +69,9 @@ export function clientNotesBrief(projectId: string): string {
 
 // ---------------------------------------------------------------- ce que les emplacements automatiques afficheront
 
-export type SiteFacts = { site: TenueSite; prestations: TenuePrestation[]; products: TenueProduct[]; notes: ClientNote[]; /** Adresse de la fiche (même discrète), pour la reconnaître dans un texte. */ address: string | null; discreet: boolean; /** E-mail de la fiche de l'entreprise. */ email?: string | null };
+/** Un produit du catalogue, pour les faits que le Studio pose lui-même : son repère, son nom, son prix écrit, ses options. */
+export type CatalogueFact = { handle: string; title: string; price: string | null; options: { name: string; values: string[] }[] };
+export type SiteFacts = { site: TenueSite; prestations: TenuePrestation[]; products: TenueProduct[]; /** Le catalogue (options et prix de chaque produit) : des faits, jamais « à compléter ». */ catalogue?: CatalogueFact[]; notes: ClientNote[]; /** Adresse de la fiche (même discrète), pour la reconnaître dans un texte. */ address: string | null; discreet: boolean; /** E-mail de la fiche de l'entreprise. */ email?: string | null };
 
 /** Tout ce que le Studio sait et posera lui-même dans les pièces (lu une fois par montage). */
 export function siteFacts(p: Project, t: CustomTheme): SiteFacts {
@@ -76,17 +79,29 @@ export function siteFacts(p: Project, t: CustomTheme): SiteFacts {
   const products = (() => { try { return tenueProducts(p.id, t); } catch { return []; } })();
   const site = (() => { try { return tenueSite(p, t, products, prestations); } catch { return { products, prestations } as TenueSite; } })();
   const co = (() => { try { return companyOf(p.id); } catch { return {}; } })() as { address?: string; addressDiscreet?: boolean; email?: string };
-  return { site, prestations, products, notes: clientNotes(p.id), address: (p.services?.address || co.address || "").trim() || null, discreet: co.addressDiscreet === true, email: (co.email ?? "").trim() || null };
+  const catalogue: CatalogueFact[] = (() => { try { return listProducts(p.id).map((x) => { const c = x.data.price ?? x.variants.find((v) => v.price != null)?.price ?? null; return { handle: x.handle, title: x.data.title, price: c == null ? null : `${(Math.round(c) / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",")} €`, options: x.data.options.filter((o) => o.name.trim() && o.values.length) }; }); } catch { return []; } })();
+  return { site, prestations, products, catalogue, notes: clientNotes(p.id), address: (p.services?.address || co.address || "").trim() || null, discreet: co.addressDiscreet === true, email: (co.email ?? "").trim() || null };
+}
+
+export { listedProducts };
+/**
+ * Une section telle qu'un visiteur la verra : les emplacements d'exemple remplis par les vraies données (produits,
+ * prestations, coordonnées). C'est CE texte que la relecture et les contrôles lisent (essai réel du 17 novembre 2026 :
+ * la relecture lisait les cartes d'exemple de la bibliothèque, que le Studio remplace au rendu, et y a dépensé quatre
+ * de ses six reprises).
+ */
+export function asShown(html: string, f: SiteFacts, pageKey?: string | null): string {
+  try { return withTenueSite(withTenueProducts(withTenuePrestations(html, f.prestations), listedProducts(f.products, pageKey)), f.site); } catch { return html; }
 }
 
 const has = (html: string, attr: string) => new RegExp(`\\sdata-tn-${attr}(?=[\\s>=])`).test(html);
 const prestationLine = (x: TenuePrestation) => `${x.name}${x.duration || x.price ? ` (${[x.duration, x.price].filter(Boolean).join(", ")})` : ""}`;
 
 /** Les listes qu'une pièce remplit seule depuis le catalogue : ce qu'elles montrent, et combien d'éléments. */
-export function autoLists(html: string, f: SiteFacts): { what: string; count: number; items: string[] }[] {
+export function autoLists(html: string, f: SiteFacts, pageKey?: string | null): { what: string; count: number; items: string[] }[] {
   const out: { what: string; count: number; items: string[] }[] = [];
   if (has(html, "prestations") && f.prestations.length) { const list = f.prestations.slice(0, 40); out.push({ what: "prestations", count: list.length, items: list.map(prestationLine) }); }
-  if (has(html, "produits") && f.products.length) { const list = f.products.slice(0, /class="tn tn-catalogue/.test(html) ? 60 : 8); out.push({ what: "produits", count: list.length, items: list.map((x) => `${x.title}${x.price ? ` (${x.price})` : ""}`) }); }
+  if (has(html, "produits") && f.products.length) { const list = listedProducts(f.products, pageKey).slice(0, /class="tn tn-catalogue/.test(html) ? 60 : 8); out.push({ what: "produits", count: list.length, items: list.map((x) => `${x.title}${x.price ? ` (${x.price})` : ""}`) }); }
   const biens = f.site.biens ?? [];
   if (/\sdata-tn-biens(?:="[a-z]+")?(?=[\s>])/.test(html) && biens.length) { const list = biens.slice(0, /\sdata-tn-biens="filtres"/.test(html) ? 60 : 12); out.push({ what: "biens", count: list.length, items: list.map((b) => b.title) }); }
   const plats = (f.site.carte ?? []).flatMap((r) => r.items);
@@ -98,9 +113,9 @@ export function autoLists(html: string, f: SiteFacts): { what: string; count: nu
  * Dit au rédacteur, pour UNE section, ce que le Studio posera lui-même à la place des emplacements d'exemple : il écrit
  * autour de faits exacts, et ne compte jamais autre chose que ce qui s'affichera. Vide pour une section sans emplacement.
  */
-export function shownFacts(html: string, f: SiteFacts): string {
+export function shownFacts(html: string, f: SiteFacts, pageKey?: string | null): string {
   const lines: string[] = [];
-  for (const l of autoLists(html, f)) lines.push(`- La liste de cette section affichera TOUT ce que le catalogue contient, soit exactement ${l.count} ${l.what}, dans cet ordre : ${l.items.join(" ; ")}. Tu ne peux ni en retirer ni en choisir : n'écris pas ses lignes.`);
+  for (const l of autoLists(html, f, pageKey)) lines.push(`- La liste de cette section affichera TOUT ce que le catalogue contient, soit exactement ${l.count} ${l.what}, dans cet ordre : ${l.items.join(" ; ")}. Tu ne peux ni en retirer ni en choisir : n'écris pas ses lignes.`);
   if ((has(html, "prestations-choix") || has(html, "prestations-options")) && f.prestations.length) lines.push(`- Le formulaire proposera les ${f.prestations.length} prestations du client : ${f.prestations.map((x) => x.name).join(" ; ")}.`);
   if (has(html, "horaires")) lines.push(f.site.hours ? `- Horaires affichés (ceux du client) : ${hoursLine(f.site.hours)}.` : "- Horaires : le client ne les a pas donnés, l'emplacement affichera « À compléter ».");
   if (has(html, "zone")) lines.push(f.site.area ? `- Zone affichée (celle du client) : ${f.site.area}.` : "- Zone desservie : le client ne l'a pas donnée, l'emplacement affichera « À compléter ».");
@@ -190,6 +205,31 @@ function factValue(fact: GapFact, f: SiteFacts, pageKey?: string | null): string
     case "prestations-prix": return f.prestations.length ? f.prestations.slice(0, 40).map(prestationLine).join(" ; ") : null;
   }
 }
+/** « Caramel, Noir ou Prune » : une liste dite comme on la dit. */
+const listeDite = (v: string[]) => (v.length <= 1 ? v.join("") : `${v.slice(0, -1).join(", ")} ou ${v[v.length - 1]}`);
+const motEntier = (texte: string, mot: string) => { const m = fold(mot).trim(); return m.length >= 2 && new RegExp(`(?<![a-z0-9])${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}s?(?![a-z0-9])`).test(texte); };
+/**
+ * Un manque qui nomme un fait du CATALOGUE (essai réel du 17 novembre 2026 : « [À compléter : teintes de cuir
+ * proposées] » sur une fiche dont le produit a l'option « Cuir : Caramel, Noir, Prune » au catalogue). Le produit est
+ * celui de la page (sa fiche), sinon celui que le libellé nomme. Rend la vraie valeur, ou null dans le doute :
+ *  - une option : le libellé porte son nom, ou parle de teintes, couleurs ou tailles quand le produit a cette option
+ *    (ou une seule option) ;
+ *  - le prix : le libellé ne dit que « prix » (et, au plus, le nom du produit).
+ * Un tiers, un autre identifiant, des dimensions, un délai ou un tarif de livraison ne sont jamais rapprochés.
+ */
+export function catalogueGap(label: string, f: SiteFacts, product?: string | null): string | null {
+  const g = fold(label), list = f.catalogue ?? [];
+  if (!list.length || TIERS.test(g) || AUTRE_IDENTIFIANT.test(g) || /dimension|mesure|poids|delai|livraison|retour|paiement|tarif|frais|stock/.test(g)) return null;
+  const named = list.filter((x) => motEntier(g, x.title));
+  const p = (product ? list.find((x) => x.handle === product) : null) ?? (named.length === 1 ? named[0] : list.length === 1 ? list[0] : null);
+  if (!p) return null;
+  const couleur = /teinte|couleur|coloris/.test(g), taille = /taille|pointure/.test(g);
+  const options = p.options.filter((o) => motEntier(g, o.name) || (couleur && (/couleur|coloris|teinte|colou?r/i.test(o.name) || p.options.length === 1)) || (taille && /taille|pointure|size/i.test(o.name)));
+  if (options.length === 1) return listeDite(options[0].values);
+  if (options.length > 1) return null;
+  const reste = g.split(/[^a-z0-9]+/).filter((w) => w && !FILLER.has(w) && !fold(p.title).split(/[^a-z0-9]+/).includes(w));
+  return p.price && reste.length === 1 && reste[0] === "prix" ? p.price : null;
+}
 const escHtml = (x: string) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const GAP = /\[À compléter\s*:\s*([^\]<]{1,80})\]|<mark class="tn-manque">À compléter\s*:\s*([^<]{1,80})<\/mark>/g;
 
@@ -199,7 +239,7 @@ const GAP = /\[À compléter\s*:\s*([^\]<]{1,80})\]|<mark class="tn-manque">À c
  * d'un formulaire restés « À compléter » reçoivent les vraies prestations. Rend le HTML et ce qui a été posé ; ce qui
  * reste ambigu n'est pas touché (il reste signalé par `factFlags`).
  */
-export function fillKnownGaps(html: string, f: SiteFacts, pageKey?: string | null): { html: string; filled: string[] } {
+export function fillKnownGaps(html: string, f: SiteFacts, pageKey?: string | null, product?: string | null): { html: string; filled: string[] } {
   const filled: string[] = [];
   // 1) Liste de choix d'un formulaire dont un choix est resté « À compléter » pour les prestations : les vraies prestations.
   let out = !f.prestations.length ? html : html.replace(/(<select\b[^>]*>)([\s\S]*?)(<\/select>)/g, (m, a: string, inner: string, b: string) => {
@@ -211,7 +251,8 @@ export function fillKnownGaps(html: string, f: SiteFacts, pageKey?: string | nul
   // 2) Un manque dont le libellé nomme le fait.
   out = out.replace(GAP, (m, a?: string, b?: string) => {
     const label = (a ?? b ?? "").trim(), fact = gapFact(label);
-    const value = fact ? factValue(fact, f, pageKey) : null;
+    // Un fait du catalogue (option, prix du produit de la page) : posé lui aussi.
+    const value = (fact ? factValue(fact, f, pageKey) : null) ?? catalogueGap(label, f, product);
     if (!value) return m;
     filled.push(`« ${label} » : ${value.slice(0, 80)}`);
     return escHtml(value);
@@ -229,7 +270,7 @@ export function fillKnownGaps(html: string, f: SiteFacts, pageKey?: string | nul
 export function factFlags(html: string, f: SiteFacts, pageKey?: string | null): string[] {
   const out: string[] = [];
   // 1) Nombre annoncé par un titre ≠ nombre d'éléments affichés.
-  const lists = autoLists(html, f);
+  const lists = autoLists(html, f, pageKey);
   if (lists.length) {
     const titles = [...html.matchAll(/<(h[1-3])\b[^>]*>([\s\S]*?)<\/\1>/g)].map((m) => strip(m[2])).filter(Boolean);
     for (const title of titles) for (const c of countsInTitle(title)) {
@@ -239,7 +280,7 @@ export function factFlags(html: string, f: SiteFacts, pageKey?: string | null): 
     }
   }
   // 2) « À compléter » encore visible une fois les vraies données posées, pour un fait présent au dossier.
-  const filled = (() => { try { return withTenueSite(withTenueProducts(withTenuePrestations(html, f.prestations), f.products), f.site); } catch { return html; } })();
+  const filled = asShown(html, f, pageKey);
   const gaps = [...new Set([...filled.matchAll(/\[À compléter\s*:\s*([^\]<]{1,80})\]|<mark class="tn-manque">À compléter\s*:\s*([^<]{1,80})<\/mark>/g)].map((m) => (m[1] ?? m[2]).trim()))];
   for (const gap of gaps) {
     const g = fold(gap);

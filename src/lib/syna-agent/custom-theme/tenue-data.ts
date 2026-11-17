@@ -17,7 +17,7 @@
  *    restaurant), data-tn-prestations-options et data-tn-equipe-options (rendez-vous en trois temps). Seule la lecture
  *    de ces deux rubriques (« tenueMetiers », en bas du fichier) touche à la base ; tout le reste est pur.
  */
-import { markMissing, type TenuePrestation, type TenueProduct } from "./tenue";
+import { coupe, markMissing, repere, type TenuePrestation, type TenueProduct } from "./tenue";
 import { assetUrl } from "../../library";
 import { listBiens, VISIBLE_STATUSES } from "../../biens";
 import { carteprice, listCarte } from "../../contenus/carte";
@@ -27,7 +27,8 @@ import { all } from "../../db";
 import { memory } from "../../projects";
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const clean = (v: string | null | undefined, max = 200) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null);
+/** Une valeur du client, nettoyée ; trop longue, elle s'arrête au dernier mot entier (jamais au milieu d'un mot). */
+const clean = (v: string | null | undefined, max = 200) => (typeof v === "string" && v.trim() ? (v.trim().length <= max ? v.trim() : coupe(v.trim(), max)) : null);
 const pic = (u: string | null) => (u ? ` style="background-image:url(${esc(u)})"` : "");
 
 /** Famille de produits : son nom, la page qui la montre, la photo d'un de ses produits, les noms de ses produits. */
@@ -200,15 +201,58 @@ const isSize = (name: string) => /taille|pointure|size/i.test(name);
  * Les vraies options du produit en pastilles (« data-tn-versions ») : une rangée par option. La couleur est choisie
  * d'avance (la première en stock), la taille jamais ; une valeur sans stock est barrée et ne se choisit pas.
  */
-export function withTenueVersions(html: string, options: TenueOption[]): string {
-  const list = options.filter((o) => o.name.trim() && o.values.length);
-  if (!list.length || !/\sdata-tn-versions\b/.test(html)) return html;
+/** Une rangée de pastilles par option (trois options au plus) : la couleur est choisie d'avance, une valeur sans stock est barrée. */
+function versionGroups(options: TenueOption[]): string {
   const group = (o: TenueOption, i: number) => {
     const color = isColor(o.name), first = color ? o.values.findIndex((v) => !v.soldOut) : -1;
     const pill = (v: TenueOption["values"][number], j: number) => `<label${v.soldOut ? ' class="tn-off"' : ""}${color && v.teinte && /^#[0-9a-f]{3,8}$/i.test(v.teinte) ? ` style="--teinte:${v.teinte}"` : ""}><input type="radio" name="tn-v-${i + 1}"${j === first ? " checked" : ""}${v.soldOut ? " disabled" : ""}><span>${esc(v.label)}</span></label>`;
     return `<div class="tn-groupe-v${color ? " tn-couleurs" : ""}"><small>${esc(o.name)}</small><div class="tn-choix-v">${o.values.slice(0, 24).map(pill).join("")}</div></div>`;
   };
-  return html.replace(/(<section\b[^>]*\sdata-tn-versions\b[^>]*>)[\s\S]*(<\/section>)$/, (_m, a: string, b: string) => `${a}${list.slice(0, 3).map(group).join("")}${b}`);
+  return options.filter((o) => o.name.trim() && o.values.length).slice(0, 3).map(group).join("");
+}
+export function withTenueVersions(html: string, options: TenueOption[]): string {
+  const list = options.filter((o) => o.name.trim() && o.values.length);
+  if (!list.length || !/<section\b[^>]*\sdata-tn-versions\b/.test(html)) return html;
+  return html.replace(/(<section\b[^>]*\sdata-tn-versions\b[^>]*>)[\s\S]*(<\/section>)$/, (_m, a: string, b: string) => `${a}${versionGroups(list)}${b}`);
+}
+
+const plier = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const motDans = (texte: string, mot: string) => { const m = plier(mot).trim(); return m.length >= 2 && new RegExp(`(?<![a-z0-9])${m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![a-z0-9])`).test(texte); };
+/**
+ * Une ligne d'option écrite par le rédacteur dans le bloc d'achat (« Cuir : caramel, noir ou prune », ou « Cuir : [À
+ * compléter : teintes] ») double-t-elle une VRAIE option du produit ? Oui quand elle commence par le nom de l'option,
+ * quand elle cite au moins deux de ses valeurs (sa seule valeur s'il n'y en a qu'une), ou quand elle laisse « à
+ * compléter » le choix que le catalogue connaît. Une ligne qui parle d'autre chose (une gravure, une date) ne double rien.
+ */
+export function doublesOption(text: string, options: TenueOption[]): boolean {
+  const t = plier(text.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim());
+  if (!t) return false;
+  return options.some((o) => {
+    const nom = plier(o.name).trim(), cites = o.values.filter((v) => motDans(t, v.label)).length;
+    if (nom && new RegExp(`^${nom.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}s?\\s*:`).test(t)) return true;
+    if (cites >= Math.min(2, o.values.length) && cites > 0) return true;
+    return /a completer/.test(t) && (motDans(t, o.name) || /teinte|couleur|coloris|taille|pointure|version|variante|choix propos/.test(t));
+  });
+}
+/**
+ * Le VRAI choix dans le bloc d'achat (essai réel du 17 novembre 2026 : trois teintes au catalogue, et le bloc montrait
+ * une phrase « Cuir : caramel, noir ou prune », puis « [À compléter : teintes] » après la relecture). Dès que le produit
+ * a des options : la ligne d'option écrite qui double ce choix s'en va ; « selecteur » : les vraies pastilles sont
+ * posées à sa place (quand la page n'a pas déjà la pièce des pastilles). Sans option au catalogue, rien ne bouge.
+ */
+export function withAchatOptions(html: string, options: TenueOption[], o: { selecteur?: boolean } = {}): string {
+  const list = options.filter((x) => x.name.trim() && x.values.length);
+  if (!list.length || !/^\s*<section\b[^>]*\sdata-tn-achat\b/.test(html)) return html;
+  const pastilles = o.selecteur && !/class="tn-versions tn-versions-achat"/.test(html) ? `<div class="tn-versions tn-versions-achat" data-tn-versions>${versionGroups(list)}</div>` : "";
+  let pose = false;
+  let out = html.replace(/<div class="tn-option">[\s\S]*?<\/div>/g, (m) => {
+    if (!doublesOption(m, list)) return m;
+    if (pose || !pastilles) return "";
+    pose = true; return pastilles;
+  });
+  // Aucune ligne à remplacer : les pastilles se posent juste avant le bouton d'achat.
+  if (pastilles && !pose) out = out.replace(/(<a class="tn-bt[^"]*"[^>]*data-pogo)/, `${pastilles}$1`);
+  return out;
 }
 
 /** Guide des tailles : une ligne par vraie taille du produit ; les mesures restent celles que le client a écrites, sinon « [À compléter] ». */
@@ -621,8 +665,8 @@ export function withVenteMessages(html: string, d: TenueSite, now = Date.now()):
     const out: string[] = [];
     for (const li of lines.match(/<li\b[^>]*>[\s\S]*?<\/li>/g) ?? []) {
       const key = /\sdata-tn-cle="([a-z]+)"/.exec(li)?.[1] ?? null, text = li.replace(/^<li\b[^>]*>|<\/li>$/g, "");
-      if (key === "livraison") out.push(shipping ? `Livraison : ${esc(shipping)}` : text);
-      else if (key === "retours") out.push(returns ? `Retours : ${esc(returns)}` : text);
+      if (key === "livraison") out.push(shipping ? esc(repere("Livraison", shipping)) : text);
+      else if (key === "retours") out.push(returns ? esc(repere("Retours", returns)) : text);
       else if (key === "offre") { if (offre) out.push(`${esc(offre.label.trim())}, jusqu'au ${esc(dateFr(offre.fin))}`); else if (!manque(text)) out.push(text); }
       else if (!manque(text)) out.push(text);
     }
@@ -1128,8 +1172,8 @@ export function withTenueAchatVrai(html: string, v: TenueAchatVrai, now = Date.n
     out = out.replace(/(<section\b[^>]*\sdata-tn-sous-bouton\b[^>]*>)/, `$1${jauge}${stock}`)
       .replace(/<p class="tn-delai"[^>]*>[\s\S]*?<\/p>/, v.delai ? `<p class="tn-delai" data-tn-delai>Chez toi en ${esc(v.delai.replace(/^(?:chez toi )?en\s+/i, ""))}</p>` : "")
       .replace(/<div class="tn-paiements-sb"[^>]*>[\s\S]*?<\/div>/, v.paiements.length ? `<div class="tn-paiements-sb" data-tn-paiements-sb aria-label="Moyens de paiement acceptés">${v.paiements.slice(0, 8).map((p) => `<span>${esc(p)}</span>`).join("")}</div>` : "");
-    if (v.livraison) out = out.replace(/(<li data-tn-g="livraison">[\s\S]*?<span>)[\s\S]*?(<\/span>)/, (_m, a: string, b: string) => `${a}${esc(v.livraison!.slice(0, 90))}${b}`);
-    if (v.retours) out = out.replace(/(<li data-tn-g="retours">[\s\S]*?<span>)[\s\S]*?(<\/span>)/, (_m, a: string, b: string) => `${a}${esc(v.retours!.slice(0, 90))}${b}`);
+    if (v.livraison) out = out.replace(/(<li data-tn-g="livraison">[\s\S]*?<span>)[\s\S]*?(<\/span>)/, (_m, a: string, b: string) => `${a}${esc(coupe(v.livraison!, 90))}${b}`);
+    if (v.retours) out = out.replace(/(<li data-tn-g="retours">[\s\S]*?<span>)[\s\S]*?(<\/span>)/, (_m, a: string, b: string) => `${a}${esc(coupe(v.retours!, 90))}${b}`);
     // Sans taille au catalogue, pas de lien « Quelle taille me faut-il ? ».
     if (!v.noms.some(isSize)) out = out.replace(/<details class="tn-tailles-sb"[\s\S]*?<\/details>(?=<details|<p|<div|<ul)/, "");
   }

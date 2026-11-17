@@ -184,6 +184,20 @@ export function loadCustomTheme(projectId: string): CustomTheme | null {
   const t = readArtifact<CustomTheme>(projectId, THEME_KEY);
   if (!(t && t.version === 1 && Array.isArray(t.pages))) return null;
   for (const x of allSections(t)) if (staleMarkup(x.s)) dropStaleWork(x.s);
+  nameProductPages(t, (handle) => { try { const r = all<{ data_json: string }>("SELECT data_json FROM studio_products WHERE project_id = ? AND handle = ?", projectId, handle)[0]; return r ? String((JSON.parse(r.data_json) as { title?: string }).title ?? "") : ""; } catch { return ""; } });
+  return t;
+}
+/** Le libellé passe-partout de la fiche commune. */
+export const GENERIC_PRODUCT_LABEL = /^(?:fiche(?:s)? (?:du |de |d['’]un )?produits?|produits?|product(?: page)?)$/i;
+/**
+ * Dès que le site a une fiche par produit, chaque fiche porte le NOM de son produit dans la liste des pages (essai réel
+ * du 17 novembre 2026 : « Fiche produit, Besace Sillon, Pochette Pli » : la première fiche gardait son libellé
+ * passe-partout). Vaut à la lecture, pour les sites déjà enregistrés. Un libellé choisi par le client n'est pas touché.
+ */
+export function nameProductPages(t: CustomTheme, titleOf: (handle: string) => string): CustomTheme {
+  const fiches = t.pages.filter((p) => /^product/.test(p.key) && p.product);
+  if (fiches.length < 2) return t;
+  for (const p of fiches) if (GENERIC_PRODUCT_LABEL.test(p.label.trim())) { const title = titleOf(p.product!).trim().slice(0, 40); if (title) p.label = title; }
   return t;
 }
 
@@ -565,13 +579,18 @@ export function applyStructure(t: CustomTheme, ops: StructureOp[]): CustomTheme 
       if (!tpl) throw new Error("aucune fiche produit à reprendre (page « product »)");
       const list = o.products.slice(0, MAX_PRODUCT_PAGES);
       if (list[0] && !tpl.product) tpl.product = list[0].handle;
+      // Une fiche par produit : la première porte aussi le nom de SON produit dans la liste des pages (jamais « Fiche produit » à côté de « Besace… »).
+      const first = list.find((x) => x.handle === tpl.product);
+      if (first && list.length > 1 && GENERIC_PRODUCT_LABEL.test(tpl.label.trim()) && first.title.trim()) tpl.label = first.title.trim().slice(0, 40);
+      // Le parcours repris pour une autre fiche parle de SON produit : le nom du premier est remplacé, son prix n'est pas recopié.
+      const journeyFor = (title: string) => { if (!tpl.journey) return null; const from = first?.title.trim(); const j = from ? tpl.journey.replace(new RegExp(from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), title) : tpl.journey; return j.replace(/\d[\d\s.,]*\s?€/g, "son prix"); };
       let at = Math.max(...next.pages.map((p, i) => (/^product/.test(p.key) ? i : -1))) + 1;
       for (const pr of list) {
         if (next.pages.some((p) => p.product === pr.handle)) continue;
         const key = `product-${pr.handle}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-").slice(0, 40).replace(/-+$/, "");
         if (next.pages.some((p) => p.key === key)) continue;
         // Même structure que la fiche commune (sections, constructions, intention) ; les textes sont à écrire pour CE produit.
-        next.pages.splice(at++, 0, { key, label: pr.title.slice(0, 40) || key, product: pr.handle, ...(tpl.journey ? { journey: tpl.journey } : {}), sections: tpl.sections.map((s) => ({ uid: newUid(), id: s.id, ...(s.construction ? { construction: s.construction } : {}), ...(s.intent ? { intent: s.intent } : {}) })) });
+        next.pages.splice(at++, 0, { key, label: pr.title.slice(0, 40) || key, product: pr.handle, ...(tpl.journey ? { journey: journeyFor(pr.title.trim() || key)! } : {}), sections: tpl.sections.map((s) => ({ uid: newUid(), id: s.id, ...(s.construction ? { construction: s.construction } : {}), ...(s.intent ? { intent: s.intent } : {}) })) });
       }
     }
     else if (o.op === "menu") { if (o.menu?.length) next.menu = o.menu; else delete next.menu; }

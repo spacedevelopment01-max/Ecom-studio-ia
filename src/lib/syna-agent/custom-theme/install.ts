@@ -74,7 +74,7 @@ export function customThemeExport(projectId: string, o: { dropMissing?: boolean 
   const remises = business === "products" ? remisesDuProjet(projectId, saisies, base) : null;
   const out = customThemeSpec(t, {
     name: p.brand?.name || p.name || "Boutique", palette: p.brand?.palette ?? null, fonts: p.brand?.fonts ?? null, business,
-    products: products.map((x) => ({ handle: x.handle, title: x.data.title, categories: x.data.categories })),
+    products: products.map((x) => ({ handle: x.handle, title: x.data.title, categories: x.data.categories, options: x.data.options })),
     prestations: tenuePrestations(projectId), company: { shipping: company.shipping?.trim() || null, returns: company.returns?.trim() || null },
     priceNotes: priceNotes(projectId), titleWeight: titleWeight(p.brand?.fonts?.heading, t.tenue?.titres),
     site: { phone: p.services?.phone || company.phone || null, address: company.addressDiscreet === true ? null : p.services?.address || company.address || null, addressDiscreet: company.addressDiscreet === true, hours: p.services?.hours || null, area: p.services?.area || null,

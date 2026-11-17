@@ -204,6 +204,41 @@ export function ordreGaps(d: OrdreDesign, f: OrdreFacts): { refus: string[]; not
   return { refus: [...new Set(refus)], notes: [...new Set(notes)] };
 }
 
+/**
+ * Dernier recours sans IA pour la règle d'or 6 (essai réel du 17 novembre 2026 : « deux dispositions pareilles à la
+ * suite » relevé sur deux pages, puis laissé). Quand deux pièces de même disposition se suivent, l'une des deux change
+ * de place avec sa voisine ; ni la première ni la dernière section d'une page ne bougent. L'échange n'est gardé que
+ * s'il fait baisser le nombre total de refus du contrôle de l'ordre, rejoué en entier : il ne crée jamais un autre défaut.
+ */
+export function fitRythme<D extends OrdreDesign>(d: D, f: OrdreFacts): { d: D; changed: string[] } {
+  let cur: D = JSON.parse(JSON.stringify(d));
+  const changed: string[] = [];
+  const count = (x: D) => ordreGaps(x, f).refus.length;
+  for (let tour = 0; tour < 12; tour++) {
+    const before = count(cur);
+    let better: { d: D; note: string } | null = null;
+    for (const [pi, pg] of cur.pages.entries()) {
+      const ids = pg.sections.map((x) => x.section), n = ids.length;
+      for (let i = 1; i < n && !better; i++) {
+        const a = ordre(ids[i - 1])?.forme, b = ordre(ids[i])?.forme;
+        if (!a || a !== b || a === "page") continue;
+        // La seconde descend d'un ou deux rangs, ou la première remonte d'un ou deux rangs.
+        for (const [from, to] of [[i, i + 1], [i - 1, i - 2], [i, i + 2], [i - 1, i - 3]] as const) {
+          if (from < 1 || to < 1 || from > n - 2 || to > n - 2) continue;
+          const next: D = JSON.parse(JSON.stringify(cur));
+          const list = next.pages[pi].sections, [moved] = list.splice(from, 1);
+          list.splice(to, 0, moved);
+          if (count(next) < before) { better = { d: next, note: `« ${pg.key} » : ${ids[from]} déplacée (deux dispositions pareilles se suivaient : ${ids[i - 1]}, ${ids[i]})` }; break; }
+        }
+      }
+      if (better) break;
+    }
+    if (!better) break;
+    cur = better.d; changed.push(better.note);
+  }
+  return { d: changed.length ? cur : d, changed };
+}
+
 // ════════════════════════════════════════════════════════════════ la variété (règles 2, 5, 6 et 7 du cahier)
 
 /** Ce que le Studio garde d'un site déjà monté, pour que le suivant du même métier ne lui ressemble pas. */

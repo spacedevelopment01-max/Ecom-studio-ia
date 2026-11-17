@@ -23,14 +23,14 @@ import fs from "node:fs";
 import path from "node:path";
 import type { ThemeSpec, StorePage, StoreCollection, TemplateJson } from "../../theme/spec";
 import { LIBRARY_DIR, libSection, withoutExamplePhotos } from "./library";
-import { TENUE_FILES, TENUE_SECTIONS, isTenueSection, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenuePrestations, type TenuePrestation } from "./tenue";
+import { TENUE_FILES, TENUE_SECTIONS, coupe, isTenueSection, repere, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenuePrestations, type TenuePrestation } from "./tenue";
 import { isHeaderRoot, withMenu } from "./menu";
-import { venteBoutique, withAchatId, withTenueComparison, withTenueFamilies, withTenueSite, type TenueSite } from "./tenue-data";
+import { venteBoutique, withAchatId, withAchatOptions, withTenueComparison, withTenueFamilies, withTenueSite, type TenueSite } from "./tenue-data";
 import { allSections, drawerOf, hasCoque, sectionHtml, type CtPage, type CtSection, type CustomTheme } from "./theme";
 import { freeShippingFrom, type ShopOffers } from "../product-features";
 
 export type ExportProblem = { level: "bloquant" | "à savoir"; text: string };
-export type ExportProduct = { handle: string; title: string; categories: string[] };
+export type ExportProduct = { handle: string; title: string; categories: string[]; /** Ses options au catalogue (« Couleur », « Taille ») : la liste de choix de la boutique les porte ; une phrase d'option écrite qui les double ne part pas. */ options?: { name: string; values: string[] }[] };
 export type ExportInput = {
   name: string;
   palette?: { dark?: string; primary?: string; secondary?: string; accent?: string; light?: string } | null;
@@ -357,6 +357,9 @@ function live(c: Ctx, html: string, root: string | null): string {
   // Bloc d'achat : photos, prix, stock et ajout au panier du produit de la page.
   if (/\sdata-tn-achat\b/.test(out)) {
     out = withAchatId(out); // la cible des boutons de rappel (« #tn-achat »)
+    // Le vrai choix est la liste des versions de la boutique : la phrase d'option écrite qui double une option du catalogue ne part pas.
+    const fiche = c.input.products.find((x) => x.handle === c.page?.product) ?? (c.page && /^product/.test(c.page.key) ? c.input.products[0] : undefined);
+    if (fiche?.options?.length) out = withAchatOptions(out, fiche.options.map((o) => ({ name: o.name, values: o.values.map((label) => ({ label })) })));
     const label = strip(/<a class="tn-bt"[^>]*data-pogo[^>]*>([\s\S]*?)<\/a>/.exec(out)?.[1] ?? "Ajouter au panier");
     out = out
       .replace(/<div class="tn-galerie">[\s\S]*?<\/div><\/div>/, `<div class="tn-galerie">{%- if product.featured_image -%}<div class="tn-grande tn-ph" role="img" aria-label="{{ product.featured_image.alt | default: product.title | escape }}" style="background-image:url({{ product.featured_image | image_url: width: 1400 }})"></div>{%- endif -%}{%- if product.images.size > 1 -%}<div class="tn-vignettes">{%- for image in product.images limit: 5 -%}<i class="tn-ph" style="background-image:url({{ image | image_url: width: 300 }})"></i>{%- endfor -%}</div>{%- endif -%}</div>`)
@@ -369,7 +372,7 @@ function live(c: Ctx, html: string, root: string | null): string {
     if (c.input.priceNotes?.length) out = out.replace(/(<div class="tn-prix">[\s\S]*?<\/div>(?:\{%- unless product\.available -%\}[\s\S]*?\{%- endunless -%\})?)/, `$1<ul class="tn-pres-prix">${c.input.priceNotes.slice(0, 3).map((n) => `<li>${literal(attr(n))}</li>`).join("")}</ul>`);
     // Livraison et retours : ceux du client, tels qu'il les a donnés.
     const co = c.input.company ?? {};
-    out = out.replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${co.shipping ? literal(attr(co.shipping)) : "[À compléter]"}</li><li>Retours : ${co.returns ? literal(attr(co.returns)) : "[À compléter]"}</li></ul>`);
+    out = out.replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>${literal(attr(repere("Livraison", co.shipping)))}</li><li>${literal(attr(repere("Retours", co.returns)))}</li></ul>`);
   }
   // Pastilles de version (pièce posée sous le bloc d'achat) : les vraies options du produit ; chaque pastille mène à la
   // version choisie, que le bloc d'achat reprend (prix, stock, choix du formulaire). Sans script.
@@ -382,7 +385,7 @@ function live(c: Ctx, html: string, root: string | null): string {
       .replace(/(<b class="tn-nom-a">)[\s\S]*?(<\/b>)/, `$1{{ vedette.title }}$2`)
       .replace(/<div class="tn-prix">[\s\S]*?<\/div>(?:<div class="tn-rupture">[\s\S]*?<\/div>)?/, `<div class="tn-prix">{{ vedette.selected_or_first_available_variant.price | money }}</div>{%- unless vedette.available -%}<div class="tn-rupture">Épuisé pour l'instant.</div>{%- endunless -%}`)
       .replace(/<a class="tn-bt[^"]*"[^>]*>[\s\S]*?<\/a>/, `{%- form 'product', vedette, class: 'tn-enveloppe' -%}<input type="hidden" name="id" value="{{ vedette.selected_or_first_available_variant.id }}"><button class="tn-bt" type="submit" name="add"{% unless vedette.available %} disabled{% endunless %}>${label}</button>{%- endform -%}`)
-      .replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${co.shipping ? literal(attr(co.shipping)) : "[À compléter]"}</li><li>Retours : ${co.returns ? literal(attr(co.returns)) : "[À compléter]"}</li></ul>`);
+      .replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>${literal(attr(repere("Livraison", co.shipping)))}</li><li>${literal(attr(repere("Retours", co.returns)))}</li></ul>`);
   }
   // Rappel vers l'achat : une vraie ancre vers le bloc d'achat de la fiche (sans script) ; ailleurs, vers la fiche du produit.
   if (/\sdata-tn-rappel-achat\b/.test(out)) {
@@ -552,7 +555,7 @@ function vente(c: Ctx, html: string, root: string | null, where: string): string
       // Moyens de paiement : ceux que la boutique accepte vraiment, dessinés par Shopify.
       .replace(/<div class="tn-paiements-sb"[^>]*>[\s\S]*?<\/div>/, `<div class="tn-paiements-sb" data-tn-paiements-sb aria-label="Moyens de paiement acceptés">{%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}</div>`);
     const co = c.input.company ?? {};
-    for (const [cle, val] of [["livraison", co.shipping], ["retours", co.returns]] as const) if (val) out = out.replace(new RegExp(`(<li data-tn-g="${cle}">[\\s\\S]*?<span>)[\\s\\S]*?(<\\/span>)`), (_m, a: string, b: string) => `${a}${literal(attr(val.slice(0, 90)))}${b}`);
+    for (const [cle, val] of [["livraison", co.shipping], ["retours", co.returns]] as const) if (val) out = out.replace(new RegExp(`(<li data-tn-g="${cle}">[\\s\\S]*?<span>)[\\s\\S]*?(<\\/span>)`), (_m, a: string, b: string) => `${a}${literal(attr(coupe(val, 90)))}${b}`);
     // Ce qui n'a pas été écrit pour ce client ne part pas : volet, repère ou question encore « à compléter ».
     if (c.input.dropMissing) out = out.replace(/<details class="tn-tailles-sb"[\s\S]*?<\/details>(?=<details|<p|<div|<ul)/, drop).replace(/<details class="tn-recois">[\s\S]*?<\/details>/, drop)
       .replace(/<li data-tn-g="[a-z]+">[\s\S]*?<\/li>/g, drop).replace(/<details><summary>[\s\S]*?<\/details>/g, drop);

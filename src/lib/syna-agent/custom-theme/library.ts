@@ -223,6 +223,57 @@ export function withoutExamplePhotos(html: string, pal?: { light?: string | null
   return html.replace(EXAMPLE_PHOTO, frame);
 }
 
+/** Le panneau sombre de la marque (image unie, sans mot) : il tient la place d'une photo sur laquelle un texte clair est posé. */
+export function darkFrame(pal?: { dark?: string | null } | null): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" fill="${hex(pal?.dark) ?? "#2B2722"}"/></svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+}
+const EXAMPLE_BG = /\sstyle="background-image:url\((?:\/sections\/|\.\/)?photos\/[\w.-]+\.(?:webp|png|jpe?g)\)"/;
+const lisible = (html: string) => html.replace(/<(script|style|svg)\b[\s\S]*?<\/\1>/g, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+/**
+ * « Aucun vide » (essai réel du 17 novembre 2026 : sept photos ratées et des pages sans photo créée laissaient de grands
+ * cadres unis). Dans un site monté, une photo qui manque (photo d'exemple restée, ou produit sans photo) ne montre plus
+ * de cadre vide. Sans IA, au rendu, section par section (« data-ct ») :
+ *  - une carte de produit sans photo devient une carte SANS image (« tn-sans-photo » : nom, prix, lien) ;
+ *  - une photo avec sa légende (« figure ») s'en va avec sa légende ; s'il n'en reste aucune, la section ne se rend pas ;
+ *  - une pièce dont le texte se pose SUR la photo (fond « photo ») reçoit un panneau sombre à la couleur de la marque,
+ *    pour que son texte clair reste lisible ;
+ *  - ailleurs, le cadre est retiré (« tn-ph-manque ») et le texte prend la place (règles de la feuille) ; une section qui
+ *    n'était QUE photo ne se rend pas.
+ * `fondPhoto` : dit, pour l'identifiant d'une section du thème (uid), si son texte se pose sur la photo.
+ */
+export function withoutMissingPhotos(html: string, pal: { light?: string | null; primary?: string | null; dark?: string | null } | null | undefined, fondPhoto: (uid: string) => boolean): string {
+  // 1) Cartes et lignes de produit sans photo : le cadre vide s'en va, la carte le dit à la feuille.
+  let out = html.replace(/<a class="(tn-carte-p[^"]*|tn-r|tn-s)"([^>]*)><div class="tn-ph"><\/div>/g, '<a class="$1 tn-sans-photo"$2>')
+    .replace(/<div class="tn-ligne"([^>]*)><div class="tn-ph"><\/div>/g, '<div class="tn-ligne tn-sans-photo"$1>')
+    .replace(/<div class="tn-ph"><\/div>/g, '<div class="tn-ph tn-ph-manque"></div>');
+  if (!hasExamplePhoto(out)) return out;
+  // 2) Section par section.
+  const starts = [...out.matchAll(/<(section|footer|header|aside|div)\b[^>]*\sdata-ct="([\w-]+)"[^>]*>/g)].map((m) => ({ at: m.index!, tag: m[1], uid: m[2], open: m[0] }));
+  if (!starts.length) return withoutExamplePhotos(out, pal);
+  const parts: string[] = [out.slice(0, starts[0].at)];
+  starts.forEach((st, i) => {
+    const chunk = out.slice(st.at, i + 1 < starts.length ? starts[i + 1].at : out.length);
+    const end = chunk.lastIndexOf(`</${st.tag}>`);
+    if (end < 0 || !hasExamplePhoto(chunk)) { parts.push(chunk); return; }
+    let sec = chunk.slice(0, end + st.tag.length + 3);
+    const rest = chunk.slice(end + st.tag.length + 3);
+    if (fondPhoto(st.uid)) { parts.push(sec.replace(/^<[^>]*>/, (o) => o.replace(/>$/, ' data-tn-photo-manque="fond">')).replace(EXAMPLE_PHOTO, darkFrame(pal)) + rest); return; }
+    // Une photo et sa légende : elles partent ensemble.
+    const figures = sec.match(/<figure\b[\s\S]*?<\/figure>/g) ?? [];
+    const gone = figures.filter((x) => EXAMPLE_BG.test(x));
+    for (const x of gone) sec = sec.replace(x, "");
+    if (figures.length && gone.length === figures.length) return void parts.push(rest);
+    // Le cadre s'en va, le texte reste.
+    sec = sec.replace(new RegExp(`(<[a-z]+ class="[^"]*\\btn-ph\\b[^"]*)"${EXAMPLE_BG.source}`, "g"), '$1 tn-ph-manque"');
+    // Une section qui n'était que photo : sans elle, plus rien à lire.
+    if (!lisible(sec)) return void parts.push(rest);
+    parts.push(sec.replace(/^<[^>]*>/, (o) => (/data-tn-photo-manque/.test(o) ? o : o.replace(/>$/, " data-tn-photo-manque>"))) + rest);
+  });
+  // Ce qui reste d'exemple ailleurs (image d'un gabarit) : le cadre neutre.
+  return withoutExamplePhotos(parts.join(""), pal);
+}
+
 const escHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 export function withBrandName(html: string, name: string): string {
   const n = escHtml(name.trim());

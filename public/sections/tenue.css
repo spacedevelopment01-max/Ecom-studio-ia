@@ -155,7 +155,7 @@
 .ctw .tn-achat .tn-prix{font-size:19px;margin-top:12px}
 .ctw .tn-achat p{font-size:16.5px;color:var(--tn-texte);margin-top:12px}
 .ctw .tn-achat .tn-option{display:flex;align-items:center;gap:10px;margin-top:18px;font-size:15.5px}
-.ctw .tn-achat .tn-option i{display:block;width:26px;height:26px;border-radius:50%;background:var(--teinte,var(--tn-accent));outline:1.5px solid var(--tn-encre);outline-offset:3px}
+.ctw .tn-achat .tn-option i{display:block;flex:none;width:26px;height:26px;border-radius:50%;background:var(--teinte,var(--tn-accent));outline:1.5px solid var(--tn-encre);outline-offset:3px}
 .ctw .tn-achat .tn-bt{display:block;margin-top:20px;font-size:16.5px;padding:16px 20px;letter-spacing:normal}
 .ctw .tn-achat .tn-reperes{margin-top:16px;font-size:15px;line-height:2}
 .ctw .tn-barre{position:fixed;left:12px;right:12px;bottom:12px;z-index:70;max-width:420px;margin:0 auto;background:color-mix(in srgb,var(--tn-fond) 40%,#fff);color:var(--tn-encre);border-radius:999px;padding:8px 8px 8px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 8px 24px rgba(40,25,15,.28);font-size:15px;transform:translateY(170%);transition:transform .35s ease}
@@ -322,12 +322,14 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
   .ctw .tn-entete .tn-menu nav{padding:12px 40px 22px}
   /* Ouvertures « dans la photo » et « titre géant » : la photo est en hauteur (une seule image sert au téléphone et à
      l'ordinateur). Sur grand écran elle prend une colonne entière, le sujet reste entier ; le texte prend l'autre. */
-  .ctw .tn-ouverture[data-tn-c="dans-la-photo"]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr 1fr;padding-bottom:0;text-align:left}
-  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{grid-column:2;grid-row:1/3;height:min(88vh,780px);background-position:center}
-  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{position:static;grid-column:1;grid-row:1;align-self:end;padding:0 56px 0 max(40px,calc(50vw - 540px))}
-  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] h1{font-size:calc(clamp(56px,6.4vw,92px)*var(--tn-k));margin-top:12px}
-  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas{grid-column:1;grid-row:2;align-self:start;padding:24px 56px 0 max(40px,calc(50vw - 540px))}
-  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas p{font-size:18px;max-width:440px}
+  /* « dans la photo » reste une photo PLEINE sur grand écran (règle du propriétaire : grande photo pleine, le titre dessus).
+     Essai réel du 17 novembre 2026 : ici la photo passait dans une moitié d'écran, le titre dans l'autre. */
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"]{padding-bottom:44px}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{height:min(86vh,780px);background-position:center 30%}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{top:clamp(32px,6vh,64px);padding:0 max(40px,calc(50vw - 520px))}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] h1{font-size:calc(clamp(44px,4.4vw,66px)*var(--tn-k));margin-top:10px}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas{padding:30px 40px 0}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bas p{font-size:18px;max-width:640px;margin-left:auto;margin-right:auto}
   .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-bt{margin-top:26px}
   .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"]{max-width:none}
   .ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] h1{font-size:calc(104px*var(--tn-k));margin-left:40px;margin-right:40px}
@@ -347,6 +349,9 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
   .ctw .tn-de-pres .tn-ph{height:320px}
   .ctw .tn-achat{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 56px;padding:24px max(40px,calc(50% - 540px)) 56px;align-items:start}
   .ctw .tn-achat .tn-galerie{grid-row:1 / span 8}
+  /* façon d'origine : la colonne d'achat tient à droite quel que soit le nombre de lignes (options, mentions, pastilles) */
+  .ctw .tn-achat:is(:not([data-tn-c]),[data-tn-c="simple"]) .tn-galerie{grid-column:1;grid-row:1 / span 20}
+  .ctw .tn-achat:is(:not([data-tn-c]),[data-tn-c="simple"])>:not(.tn-galerie){grid-column:2}
   .ctw .tn-achat .tn-grande{height:560px}
   .ctw .tn-achat small{margin-top:40px}
   .ctw .tn-emotion .tn-ph{height:620px}
@@ -688,3 +693,29 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
   .ctw .tn-pied[data-tn-c="liens-en-grand"]{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:32px;padding:30px max(40px,calc(50% - 540px)) 36px}
   .ctw .tn-pied[data-tn-c="liens-en-grand"] a,.ctw .tn-pied[data-tn-c="liens-en-grand"] a:last-child{min-height:64px;font-size:25px;border-bottom:0;border-top:1px solid color-mix(in srgb,var(--tn-sur-bouton) 34%,transparent)}
 }
+
+/* ══ Aucun vide (essai réel du 17 novembre 2026) : une photo qui manque ne laisse jamais un grand cadre uni ══ */
+/* Le rendu pose « tn-ph-manque » sur le cadre d'une photo absente et « tn-sans-photo » sur une carte de produit sans
+   photo. « :not(#tn) » : ces règles passent devant celles de chaque pièce et de chaque façon, sans les réécrire une à une. */
+.ctw .tn-ph-manque:not(#tn){display:none}
+.ctw .tn:has(>.tn-ph-manque):not(#tn),.ctw .tn :has(>.tn-ph-manque):not(#tn){grid-template-columns:minmax(0,1fr)}
+/* carte de produit sans image : le nom, le prix, le lien, dans un cadre fin */
+.ctw .tn-carte-p.tn-sans-photo:not(#tn){display:flex;flex-direction:column;align-items:center;justify-content:center;grid-template-columns:none;min-height:148px;padding:22px 18px;text-align:center;background-color:var(--tn-doux);border-radius:var(--tn-arrondi,0)}
+.ctw .tn-carte-p.tn-sans-photo:not(#tn)::after{content:"→";position:static;margin-top:10px;font-size:18px;line-height:1}
+.ctw .tn-carte-p.tn-sans-photo:not(#tn) b{margin-top:0;font-size:24px;line-height:1.1}
+.ctw .tn-carte-p.tn-sans-photo:not(#tn) span{margin-top:6px}
+/* étapes de fabrication : sans sa photo, le numéro se range au-dessus du titre */
+.ctw .tn-fabrication li:has(>.tn-ph-manque):not(#tn)::before{position:static;grid-column:auto;grid-row:auto;margin-bottom:10px}
+/* texte et photo : sans la photo, le texte tient la largeur de lecture, au milieu */
+.ctw .tn-texte-photo[data-tn-photo-manque]:not(#tn){display:block}
+.ctw .tn-texte-photo[data-tn-photo-manque]:not(#tn) .tn-txt{max-width:720px;margin:0 auto;padding-left:20px;padding-right:20px}
+.ctw .tn-texte-photo[data-tn-c="carte-a-cheval"][data-tn-photo-manque]:not(#tn) .tn-txt{padding-bottom:28px}
+.ctw :is(.tn-r,.tn-s).tn-sans-photo:not(#tn){display:block;grid-template-columns:none}
+.ctw .tn-ligne.tn-sans-photo:not(#tn){grid-template-columns:minmax(0,1fr) auto}
+/* en liste : une ligne sans image, le nom à gauche, le prix et la flèche à droite */
+.ctw .tn-produits[data-tn-c="liste"] .tn-carte-p.tn-sans-photo:not(:only-child):not(#tn){flex-direction:row;justify-content:flex-start;gap:16px;min-height:0;padding:20px 0;text-align:left;background-color:transparent;border-radius:0}
+.ctw .tn-produits[data-tn-c="liste"] .tn-carte-p.tn-sans-photo:not(:only-child):not(#tn) b{flex:1 1 auto}
+.ctw .tn-produits[data-tn-c="liste"] .tn-carte-p.tn-sans-photo:not(:only-child):not(#tn) span,.ctw .tn-produits[data-tn-c="liste"] .tn-carte-p.tn-sans-photo:not(:only-child):not(#tn)::after{margin-top:0}
+/* ouverture « dans la photo » : un voile clair sous le titre, pour qu'il se lise même quand le sujet de la photo monte haut */
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]{position:relative}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]::before{content:"";position:absolute;left:0;right:0;top:0;height:330px;pointer-events:none;background:linear-gradient(to bottom,color-mix(in srgb,var(--tn-fond) 88%,transparent) 0,color-mix(in srgb,var(--tn-fond) 70%,transparent) 55%,transparent)}

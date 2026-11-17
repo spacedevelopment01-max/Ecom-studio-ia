@@ -1116,3 +1116,47 @@ describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("achat, suite 
     fs.writeFileSync(path.join(out, "fiche-complete.jpg"), board);
   }, 600_000);
 });
+
+// ══ Essai réel du 17 novembre 2026 : deux options écrites dans le bloc d'achat cassaient la fiche sur téléphone ══
+// Deux « .tn-option » recevaient la même ligne de grille : une deuxième colonne naissait, la première tombait à 0 px
+// et le titre se découpait lettre par lettre. Chaque option a maintenant sa ligne, dans les six façons.
+describe.runIf(!!process.env.CHROMIUM || !!process.env.ACHAT_OUT)("bloc d'achat : 0, 1, 2 ou 3 options, dans les six façons, à 320, 390 et 1280 px", () => {
+  const OPTIONS = ["Matière : une valeur parmi trois, écrite en toutes lettres sur une ligne assez longue", "Ta date (facultatif). Dis-moi le jour à marquer : elle ira sur l'étiquette, à l'intérieur.", "Emballage cadeau : oui ou non"];
+  it("aucune colonne à 0 px, le titre garde plus de 60 % de la colonne d'achat, les options se suivent sans se couvrir", async () => {
+    const { chromium } = await import("playwright");
+    const { chromiumPath } = await import("@/lib/theme/snapshot");
+    const dir = path.join(process.cwd(), "public", "sections");
+    const css = ["tenue.css", "tenue-produit.css", "tenue-achat.css"].map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n");
+    const bloc = (style: string, n: number) => withTenueBuyBlock(tenueSection("tn-achat")!.html.replace(/photos\//g, `file://${dir}/photos/`).replace(/<div class="tn-option">[\s\S]*?<\/div>/, OPTIONS.slice(0, n).map((o) => `<div class="tn-option"><i></i><span>${o}</span></div>`).join("")), { images: [], price: "420 €", shipping: "Livraison en France, 12 €", returns: "14 jours après réception" })
+      .replace(/^<section\b/, `<section data-essai="${style} · ${n} option(s)" data-tn-c="${style}"`);
+    const body = STYLES.flatMap((s) => [0, 1, 2, 3].map((n) => `<main class="tb-pg">${bloc(s, n)}</main>`)).join("\n");
+    const tmp = path.join(process.env.ACHAT_OUT ?? path.join(process.cwd(), "node_modules", ".cache", "achat-suite"));
+    fs.mkdirSync(tmp, { recursive: true });
+    const file = path.join(tmp, "options.html");
+    fs.writeFileSync(file, `<!doctype html><html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}.ctw{--tn-fond:#F6F1E7;--tn-encre:#1F1B16;--tn-accent:#B4532A;--tn-doux:#E9D8B8;--tn-texte:#2c2620;--tn-sourd:#6d655c;--tn-bouton:#1F1B16;--tn-sur-bouton:#fbf8f2;--f-ui:Arial,sans-serif;--f-title:'Arial Black',Impact,sans-serif;--tn-k:1}${css}</style><body><div class="ctw" data-tn-titres="gras" data-tn-bouton="droit" data-tn-cadre="droit" data-tn-fond="uni" data-tn-petits="normal"><div class="frame">${body}</div></div></body></html>`);
+    const browser = await chromium.launch({ executablePath: chromiumPath() ?? undefined });
+    try {
+      const bad: string[] = [];
+      for (const width of [320, 390, 1280]) {
+        const page = await browser.newPage({ viewport: { width, height: 800 } });
+        await page.goto(`file://${file}`);
+        bad.push(...await page.evaluate((w) => [...document.querySelectorAll("section[data-essai]")].flatMap((sec) => {
+          const nom = `${w} px · ${sec.getAttribute("data-essai")}`, cs = getComputedStyle(sec), out: string[] = [];
+          const box = (el: Element) => el.getBoundingClientRect();
+          if (cs.display === "grid") { const cols = cs.gridTemplateColumns.split(" ").map(parseFloat); if (cols.some((c) => !(c > 0.5))) out.push(`${nom} : une colonne à 0 px (${cs.gridTemplateColumns})`); if (w < 760 && cols.length > 2) out.push(`${nom} : ${cols.length} colonnes sur téléphone`); }
+          const h1 = box(sec.querySelector("h1")!), bt = box(sec.querySelector(":scope > .tn-bt")!);
+          if (h1.width < 0.6 * bt.width) out.push(`${nom} : le titre fait ${Math.round(h1.width)} px pour une colonne de ${Math.round(bt.width)} px`);
+          if (bt.width < 0.4 * Math.min(w, 600)) out.push(`${nom} : le bouton d'achat ne fait que ${Math.round(bt.width)} px`);
+          const opts = [...sec.querySelectorAll(":scope > .tn-option")].map(box);
+          opts.forEach((o, i) => { if (o.width < 120) out.push(`${nom} : l'option ${i + 1} ne fait que ${Math.round(o.width)} px`); if (i && o.top < opts[i - 1].bottom - 2) out.push(`${nom} : l'option ${i + 1} couvre la précédente`); });
+          if (opts.length && bt.top < opts[opts.length - 1].bottom - 2) out.push(`${nom} : le bouton couvre la dernière option`);
+          if (document.documentElement.scrollWidth > w + 1) out.push(`${nom} : la page dépasse de l'écran`);
+          return out;
+        }), width));
+        if (process.env.ACHAT_OUT) fs.writeFileSync(path.join(tmp, `options__${width}.jpg`), await page.screenshot({ type: "jpeg", quality: 70, fullPage: true }));
+        await page.close();
+      }
+      expect([...new Set(bad)], "bloc d'achat avec plusieurs options").toEqual([]);
+    } finally { await browser.close(); }
+  }, 180_000);
+});

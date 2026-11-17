@@ -25,8 +25,8 @@ import { listProducts } from "../../products/catalog";
 import { peopleAllowed } from "../../people-policy";
 import { loadFamilyChoice, siteArtUniverse, type FamilyUniverse } from "../section-families";
 import { activityPlan } from "../activity";
-import { clientNotesBrief, factFlags, fillKnownGaps, shownFacts, siteFacts } from "./site-facts";
-import { hoursLine } from "./tenue-data";
+import { asShown, clientNotes, clientNotesBrief, factFlags, fillKnownGaps, shownFacts, siteFacts } from "./site-facts";
+import { hoursLine, zoneCities } from "./tenue-data";
 import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
 import { jobSpentMicro } from "../budget";
 import { angleDetails, COPY_MODEL } from "../mockup-code/copy";
@@ -124,7 +124,9 @@ Réponse : uniquement le JSON demandé.`;
 export function brandBrief(p: Project, j: Journey | null): string {
   const plan = j ? activityPlan(p.id, j) : null;
   const d = j ? angleDetails(j, plan?.company) : {};
-  const products = (() => { try { return listProducts(p.id).map((x) => `${x.data.title}${x.data.price != null ? ` (${(x.data.price / 100).toFixed(2).replace(".", ",")} €)` : ""}`); } catch { return []; } })();
+  // Nom, prix et options de chaque produit (essai réel du 17 novembre 2026 : sans les options, la relecture a cru les
+  // teintes inventées et les a fait remplacer par « [À compléter] »). Le prix s'écrit comme sur le site (« 420 € »).
+  const products = (() => { try { return listProducts(p.id).map((x) => { const prix = x.data.price ?? x.variants.find((v) => v.price != null)?.price ?? null; const bits = [prix != null ? `${(prix / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",")} €` : "", ...x.data.options.filter((o) => o.values.length).map((o) => `${o.name} au choix : ${o.values.join(", ")}`)].filter(Boolean); return `${x.data.title}${bits.length ? ` (${bits.join(" ; ")})` : ""}`; }); } catch { return []; } })();
   const wording = wordingPromptLine(loadWordingRules(p.id));
   const b = p.brand;
   return [
@@ -139,7 +141,7 @@ export function brandBrief(p: Project, j: Journey | null): string {
     plan?.keyMessages.length ? `Messages clés : ${plan.keyMessages.map((m) => `« ${m} »`).join(" ; ")}.` : "",
     ((a) => (a ? [a.audience ? `Cible de l'angle : ${a.audience}` : "", a.motivation ? `Ce qui la fait acheter : ${a.motivation}` : ""].filter(Boolean).join(". ") : ""))(j ? j.angles?.list.find((x) => x.id === (j.angleChoice?.ids?.[0] ?? j.angleChoice?.id)) : undefined),
     plan?.objections.length ? `Objections du client idéal (recherche) et réponses vraies : ${plan.objections.map((o) => `« ${o.objection} » → ${o.answer}`).join(" ; ")}.` : "",
-    products.length ? `Produits (noms et prix exacts) : ${products.join(" ; ")}.` : "",
+    products.length ? `Produits du catalogue (noms, prix et options exacts : des faits confirmés, à écrire tels quels, jamais « [À compléter] » ni « à confirmer ») : ${products.join(" ; ")}.` : "",
     plan?.offer.facts.length ? `Faits confirmés par le client : ${plan.offer.facts.join(" ; ")}.` : "",
     d.toConfirm?.length ? `NON confirmés, à ne JAMAIS affirmer : ${d.toConfirm.join(" ; ")}.` : "",
     plan?.company.shipping ? `Livraison : ${plan.company.shipping}.` : "",
@@ -318,15 +320,19 @@ const foldWord = (w: string) => w.toLowerCase().normalize("NFD").replace(/[\u030
  * Ne comptent pas : les libellés de boutons et de liens, le nom de la marque, les noms de produits et de prestations,
  * et tout ce que le Studio pose lui-même (téléphone, horaires, zone, adresse, prix : `ignore`, et tout mot à chiffre).
  */
-export function repeatedPhrases(sections: { uid: string; label: string; html: string }[], o: { ignore?: (string | null | undefined)[] } = {}): RepeatedPhrase[] {
+export function repeatedPhrases(sections: { uid: string; label: string; html: string }[], o: { ignore?: (string | null | undefined)[]; /** Textes de faits du client (livraison, retours, horaires) : aucune suite de mots tirée d'eux n'est une répétition. */ facts?: (string | null | undefined)[]; /** Nombre de sections à partir duquel une suite est relevée (par défaut : plus de REPEAT_SECTIONS_MAX). */ atLeast?: number } = {}): RepeatedPhrase[] {
+  const least = Math.max(2, o.atLeast ?? REPEAT_SECTIONS_MAX + 1);
   const ignore = (o.ignore ?? []).map((x) => (x ?? "").trim()).filter((x) => x.length >= 2).sort((a, b) => b.length - a.length);
+  // Les suites de trois mots des faits du client : la condition de retour ou la livraison se redisent sur chaque fiche, à raison.
+  const given = new Set<string>();
+  for (const text of o.facts ?? []) { const w = (text ?? "").split(/[^\p{L}\p{N}]+/u).filter(Boolean).map(foldWord); for (let i = 0; i + 3 <= w.length; i++) given.add(w.slice(i, i + 3).join(" ")); }
   const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const cut = ignore.length ? new RegExp(ignore.map(esc).join("|"), "giu") : null;
   /** Suite de 3 mots (pliée) → les sections où elle se lit, et sa forme d'origine. */
   const grams = new Map<string, { uids: Set<string>; words: string[] }>();
   for (const x of sections) {
     // Titres et textes seulement : un bouton ou un lien (son libellé peut revenir) n'est pas lu.
-    const pieces = sectionReadableTexts(x.html.replace(/<(a|button)\b[\s\S]*?<\/\1>/g, " | ")).filter((b) => !b.startsWith("BOUTON")).map((b) => b.replace(/^(?:TITRE|TEXTE) : /, ""));
+    const pieces = sectionReadableTexts(x.html.replace(/<mark class="tn-manque">[\s\S]*?<\/mark>/g, " | ").replace(/<(a|button)\b[\s\S]*?<\/\1>/g, " | ")).filter((b) => !b.startsWith("BOUTON")).map((b) => b.replace(/^(?:TITRE|TEXTE) : /, ""));
     for (const piece of new Set(pieces)) {
       // Un nom ignoré, un chiffre ou une ponctuation forte coupe la suite.
       const runs = (cut ? piece.replace(cut, " | ") : piece).replace(/\[(?:À|A) compléter[^\]]*\]/gi, " | ").split(/[|.!?;:«»()\[\]…–—\n]|,\s/);
@@ -335,17 +341,19 @@ export function repeatedPhrases(sections: { uid: string; label: string; html: st
         for (let i = 0; i + 3 <= words.length; i++) {
           const w = words.slice(i, i + 3), f = w.map(foldWord);
           if (f.some((k) => /\d/.test(k)) || f.filter((k) => k.length >= 4 && !EMPTY_WORDS.has(k)).length < 2) continue;
-          const key = f.join(" "), g = grams.get(key) ?? { uids: new Set<string>(), words: w };
+          const key = f.join(" ");
+          if (given.has(key)) continue;
+          const g = grams.get(key) ?? { uids: new Set<string>(), words: w };
           g.uids.add(x.uid); grams.set(key, g);
         }
       }
     }
   }
-  const many = new Map([...grams].filter(([, g]) => g.uids.size > REPEAT_SECTIONS_MAX));
+  const many = new Map([...grams].filter(([, g]) => g.uids.size >= least));
   const label = new Map(sections.map((x) => [x.uid, x.label] as const));
   // Les suites qui se chevauchent (« prix annoncé avant », « annoncé avant de ») se réunissent en une seule phrase.
   const used = new Set<string>(), out: RepeatedPhrase[] = [];
-  const starts = [...many.keys()].filter((k) => ![...many.keys()].some((q) => q !== k && q.split(" ").slice(1).join(" ") === k.split(" ").slice(0, 2).join(" ") && [...many.get(q)!.uids].filter((u) => many.get(k)!.uids.has(u)).length > REPEAT_SECTIONS_MAX));
+  const starts = [...many.keys()].filter((k) => ![...many.keys()].some((q) => q !== k && q.split(" ").slice(1).join(" ") === k.split(" ").slice(0, 2).join(" ") && [...many.get(q)!.uids].filter((u) => many.get(k)!.uids.has(u)).length >= least));
   for (const k of [...starts, ...many.keys()]) {
     if (used.has(k)) continue;
     used.add(k);
@@ -353,7 +361,7 @@ export function repeatedPhrases(sections: { uid: string; label: string; html: st
     const words = [...many.get(k)!.words];
     for (;;) {
       const tail = cur.split(" ").slice(1).join(" ");
-      const next = [...many.keys()].find((q) => !used.has(q) && q.split(" ").slice(0, 2).join(" ") === tail && [...many.get(q)!.uids].filter((u) => uids.has(u)).length > REPEAT_SECTIONS_MAX);
+      const next = [...many.keys()].find((q) => !used.has(q) && q.split(" ").slice(0, 2).join(" ") === tail && [...many.get(q)!.uids].filter((u) => uids.has(u)).length >= least);
       if (!next) break;
       used.add(next); words.push(many.get(next)!.words[2]); uids = new Set([...many.get(next)!.uids].filter((u) => uids.has(u))); cur = next;
     }
@@ -364,13 +372,62 @@ export function repeatedPhrases(sections: { uid: string; label: string; html: st
 }
 
 /**
+ * Qui garde une formule répétée, qui la retire (sans IA) : les REPEAT_SECTIONS_MAX premières sections du site où elle se
+ * lit la gardent, les suivantes la retirent. Rend, par section à reprendre (uid), les formules exactes à ne plus employer
+ * et les endroits où elles restent ; les sections qui en ont le plus d'abord.
+ */
+export function repeatDrops(repeats: RepeatedPhrase[]): { uid: string; drops: { phrase: string; kept: string[] }[] }[] {
+  const by = new Map<string, { phrase: string; kept: string[] }[]>();
+  for (const r of repeats) {
+    const all = r.sections.map((x) => ({ uid: x.split(" ")[0], label: x.replace(/^\S+ \((.*)\)$/, "$1") }));
+    const kept = all.slice(0, REPEAT_SECTIONS_MAX).map((x) => x.label);
+    for (const x of all.slice(REPEAT_SECTIONS_MAX)) by.set(x.uid, [...(by.get(x.uid) ?? []), { phrase: r.phrase, kept }]);
+  }
+  return [...by].map(([uid, drops]) => ({ uid, drops })).sort((a, b) => b.drops.length - a.drops.length);
+}
+/** La consigne de reprise d'une section pour ses répétitions : la liste exacte, et où chaque formule reste permise. */
+export const repeatFixLines = (drops: { phrase: string; kept: string[] }[]): string[] => drops.map((d) => `La formule « ${d.phrase} » revient dans trop de sections du site : ici, ne l'emploie plus (ni elle, ni ses mots dans le même ordre) et dis autre chose, autrement. Elle reste seulement dans : ${d.kept.join(" ; ")}.`);
+/**
+ * Le budget des reprises partagé (jamais plus de `max`) : les sections à reprendre pour répétition d'abord, mais pas plus
+ * de la moitié quand la relecture a aussi ses sections (une faute de fait passe avant une formule redite) ; les places
+ * libres d'un côté servent à l'autre. Une section citée des deux côtés n'est reprise qu'une fois, avec les deux listes.
+ */
+export function planCopyFixes(review: { uid: string; fixes: string[] }[], drops: ReturnType<typeof repeatDrops>, max = MAX_COPY_FIXES): { uid: string; fixes: string[]; repeats: boolean }[] {
+  const mine = new Map(drops.map((d) => [d.uid, repeatFixLines(d.drops)] as const));
+  const both = (uid: string, fixes: string[]) => ({ uid, fixes: [...(mine.get(uid) ?? []), ...fixes].slice(0, 8), repeats: mine.has(uid) });
+  const forRepeats = drops.filter((d) => !review.some((r) => r.uid === d.uid));
+  const quota = review.length ? Math.max(Math.ceil(max / 2), max - review.length) : max;
+  const first = forRepeats.slice(0, Math.min(quota, max)).map((d) => both(d.uid, []));
+  const rest = review.slice(0, max - first.length).map((r) => both(r.uid, r.fixes));
+  return [...first, ...rest];
+}
+
+/**
  * Le gardien des faits des textes du site (carte des spécialistes : « ce qui vaut pour toutes les étapes ») : promesses,
  * chiffres et prix d'une section que la fiche du client ne confirme pas, relevés sans IA par le contrôle des promesses
  * du Studio. Un « [À compléter : …] » n'est jamais une promesse.
  */
-export function unconfirmedClaims(p: Project, html: string): string[] {
-  const texts = sectionReadableTexts(html).map((x) => x.replace(/\[(?:À|A) compléter[^\]]*\]/gi, " "));
-  try { return [...new Set(lintClaims(texts, p).map((c) => `« ${c.term} » (${c.label})`))].slice(0, 4); } catch { return []; }
+export function unconfirmedClaims(p: Project, html: string, known: KnownFacts = knownFacts(p)): string[] {
+  // Le total d'un panier d'essai est calculé par le Studio (somme de prix du catalogue) : ce n'est pas un prix écrit.
+  const texts = sectionReadableTexts(html.replace(/<span class="tn-prix-t">[\s\S]*?<\/span>/g, " ")).map((x) => x.replace(/\[(?:À|A) compléter[^\]]*\]/gi, " "));
+  try { return [...new Set(lintClaims(texts, p, known).map((c) => `« ${c.term} » (${c.label})`))].slice(0, 4); } catch { return []; }
+}
+/**
+ * Ce que le Studio sait de vrai en dehors de la fiche du projet, pour le contrôle des promesses : le catalogue (noms,
+ * descriptions, options, prix de chaque produit et de chaque version, en euros) et les notes du client prises par SINA.
+ * Un prix du catalogue ou un fait dit par le client n'est jamais « à confirmer ».
+ */
+export type KnownFacts = { facts: string[]; prices: number[] };
+export function knownFacts(p: Pick<Project, "id">): KnownFacts {
+  const facts: string[] = [], prices: number[] = [];
+  try {
+    for (const x of listProducts(p.id)) {
+      facts.push(x.data.title, x.data.description_html.replace(/<[^>]+>/g, " "), x.data.productType, ...x.data.options.flatMap((o) => [o.name, ...o.values]));
+      for (const c of [x.data.price, x.data.compareAt, ...x.variants.flatMap((v) => [v.price, v.compareAt])]) if (typeof c === "number") prices.push(c / 100);
+    }
+  } catch { /* catalogue indisponible : seuls les faits de la fiche comptent */ }
+  try { for (const n of clientNotes(p.id)) facts.push(`${n.title} ${n.value}`); } catch { /* notes indisponibles */ }
+  return { facts: facts.map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean), prices: [...new Set(prices)] };
 }
 
 /** Textes visibles d'une section (titres, boutons, liens), pour montrer sa forme au plan sans tout son HTML. */
@@ -454,8 +511,8 @@ export function productFacts(projectId: string, handle: string | null | undefine
   const x = (() => { try { return listProducts(projectId).find((q) => q.handle === handle); } catch { return undefined; } })();
   if (!x) return null;
   const d = x.data, price = d.price ?? x.variants.find((v) => v.price != null)?.price ?? null;
-  return [`Produit : « ${d.title} »`, price != null ? `prix : ${(price / 100).toFixed(2).replace(".", ",")} €` : "prix : non donné (écris « [À compléter : prix] »)",
-    d.options.length ? `options : ${d.options.map((o) => `${o.name} (${o.values.join(", ")})`).join(" ; ")}` : "", d.categories.length ? `familles : ${d.categories.join(", ")}` : "",
+  return [`Produit : « ${d.title} »`, price != null ? `prix : ${(price / 100).toFixed(2).replace(/[.,]00$/, "").replace(".", ",")} €` : "prix : non donné (écris « [À compléter : prix] »)",
+    d.options.length ? `options au choix (faits du catalogue ; le bloc d'achat pose lui-même ce choix : n'écris pas de ligne d'option qui le redit, et jamais « [À compléter] » pour elles) : ${d.options.map((o) => `${o.name} (${o.values.join(", ")})`).join(" ; ")}` : "", d.categories.length ? `familles : ${d.categories.join(", ")}` : "",
     d.description_html ? `description donnée par le client : ${d.description_html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 900)}` : "aucune description donnée : ne décris que ce que ses photos et son nom permettent, le reste s'écrit « [À compléter : …] »"].filter(Boolean).join(" · ");
 }
 
@@ -470,7 +527,7 @@ export function factPlaces(plan: SitePlan, uid: string): { mine: string[]; elsew
   return { mine: list.filter((x) => x.sections.includes(uid)).map((x) => x.fait), elsewhere: list.filter((x) => !x.sections.includes(uid)).map((x) => x.fait).slice(0, 20) };
 }
 
-export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string; /** Fiche d'UN produit du catalogue : ses faits. */ product?: string | null; /** Ce que le Studio posera lui-même dans la section (faits exacts). */ shown?: string }): string {
+export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string; /** Fiche d'UN produit du catalogue : ses faits. */ product?: string | null; /** Ce que le Studio posera lui-même dans la section (faits exacts). */ shown?: string; /** Formules déjà employées dans REPEAT_SECTIONS_MAX sections déjà écrites (relevé sans IA) : à ne plus employer. */ deja?: string[] }): string {
   const mine = plan?.site.sections.find((x) => x.uid === plan.uid);
   const others = plan ? plan.site.sections.filter((x) => x.uid !== plan.uid && x.titre).map((x) => `« ${x.titre} »`) : [];
   const planText = plan ? [
@@ -484,7 +541,8 @@ export function sectionWritePrompt(brief: string, place: string, title: string, 
     ])(factPlaces(plan.site, plan.uid)) : []),
     "Une formule de style (une image, une tournure, une fin de phrase qui sonne) ne sert qu'UNE fois sur tout le site : n'en reprends aucune d'un titre ou d'un message d'une autre section.",
   ].filter(Boolean).join("\n") : "";
-  const designText = [design?.pages ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${design.product}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : "", design?.shown ?? ""].filter(Boolean).join("\n");
+  const designText = [design?.pages ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${design.product}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : "", design?.shown ?? "",
+    design?.deja?.length ? `FORMULES DÉJÀ EMPLOYÉES DANS ${REPEAT_SECTIONS_MAX} SECTIONS DU SITE (relevé du Studio ; ne les emploie plus ici, ni elles ni leurs mots dans le même ordre : dis autre chose, autrement) : ${design.deja.map((x) => `« ${x} »`).join(" ; ")}.` : ""].filter(Boolean).join("\n");
   return [brief, "", ...(planText ? [planText, ""] : []), ...(designText ? [designText, ""] : []), `Section à adapter : « ${title} » (${place}). Ce qu'elle fait : ${does}`, "HTML actuel de la section (textes de démonstration à remplacer) :", html].join("\n");
 }
 
@@ -698,18 +756,33 @@ export async function runCustomBrandJob(ctx: JobContext) {
       let n = 0;
       for (const x of allSections(now)) {
         if (x.s.html == null) continue;
-        const r = fillKnownGaps(x.s.html, facts, x.page?.key);
+        const r = fillKnownGaps(x.s.html, facts, x.page?.key, x.page?.product);
         if (r.filled.length) { x.s.html = r.html; n += r.filled.length; }
       }
       if (n) { t = saveCustomTheme(p.id, now, { history: false }); report.faitsPoses += n; }
     } catch { /* remplissage indisponible : les manques restent signalés */ }
   };
+  /** Une section telle qu'un visiteur la verra (vraies données posées) : c'est elle que la relecture et les contrôles lisent. */
+  const shown = (x: ReturnType<typeof allSections>[number]) => asShown(withBrandName(sectionHtml(x.s), name), facts, x.page?.key);
   /** Les suites de mots qui reviennent dans plus de trois sections (sans IA), hors noms et faits posés par le Studio. */
-  const repeats = (list: ReturnType<typeof allSections>) => {
+  const repeats = (list: ReturnType<typeof allSections>, o: { atLeast?: number } = {}) => {
     try {
-      return repeatedPhrases(list.map((x) => ({ uid: x.s.uid, label: `${libSection(x.s.id)?.title ?? x.s.id}, ${x.page?.label ?? x.place}`, html: withBrandName(sectionHtml(x.s), name) })),
-        { ignore: [name, p.name, ...products.map((x) => x.data.title), ...facts.prestations.map((x) => x.name), facts.site.phone, facts.site.area, facts.site.address, facts.address, facts.email, facts.site.hours ? hoursLine(facts.site.hours) : null] });
+      return repeatedPhrases(list.map((x) => ({ uid: x.s.uid, label: `${libSection(x.s.id)?.title ?? x.s.id}, ${x.page?.label ?? x.place}`, html: shown(x) })),
+        { ...repeatScope(), ...o });
     } catch { return []; }
+  };
+  /**
+   * Ce qui ne compte pas comme une répétition : les noms (marque, produits, prestations, options et leurs valeurs), les
+   * coordonnées, la ville de l'entreprise et les villes de sa zone (un lieu se redit à raison d'une page à l'autre), et
+   * toute suite de mots tirée des faits que le client a donnés tels quels (livraison, retours, horaires).
+   */
+  const repeatScope = () => {
+    const villes = [facts.address, facts.site.address].flatMap((x) => { const v = /\b\d{5}\s+([^,\n]+)/.exec(x ?? "")?.[1]?.trim(); return v ? [v, v.replace(/-/g, " ")] : []; });
+    const zone = facts.site.area ? zoneCities(facts.site.area).filter((x) => x.length <= 40) : [];
+    return {
+      ignore: [name, p.name, ...products.flatMap((x) => [x.data.title, ...x.data.options.flatMap((q) => [q.name, ...q.values])]), ...facts.prestations.map((x) => x.name), facts.site.phone, facts.site.area, facts.site.address, facts.address, facts.email, facts.site.hours ? hoursLine(facts.site.hours) : null, ...villes, ...zone],
+      facts: [facts.site.shipping, facts.site.returns, facts.site.hours],
+    };
   };
 
   // Un seul point d'annulation pour tout le montage : « Annuler » revient au thème d'avant le montage.
@@ -767,7 +840,9 @@ export async function runCustomBrandJob(ctx: JobContext) {
     try {
       const w = await ctx.step(`text:${x.s.uid}`, async () => {
         const html = withBrandName(sectionHtml(x.s), name);
-        const prompt = sectionWritePrompt(brief, x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(html, facts) });
+        const prompt = sectionWritePrompt(brief, x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(html, facts, x.page?.key),
+          // Les formules déjà dites dans trois sections écrites avant celle-ci (sans IA) : le rédacteur ne les emploie plus.
+          deja: repeats(allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts && y.s.uid !== x.s.uid), { atLeast: REPEAT_SECTIONS_MAX }).slice(0, 12).map((r) => r.phrase) });
         const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
         return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
           : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
@@ -820,9 +895,10 @@ export async function runCustomBrandJob(ctx: JobContext) {
     try {
       const review = await ctx.step("text-review", async () => {
         const all = allSections(loadCustomTheme(p.id)!).filter((x) => x.s.clientTexts || sections.some((y) => y.s.uid === x.s.uid));
-        const flags = Object.fromEntries(all.map((x) => [x.s.uid, unconfirmedClaims(p, withBrandName(sectionHtml(x.s), name))] as const).filter(([, list]) => list.length));
+        const known0 = knownFacts(p);
+        const flags = Object.fromEntries(all.map((x) => [x.s.uid, unconfirmedClaims(p, shown(x), known0)] as const).filter(([, list]) => list.length));
         const contradictions = Object.fromEntries(all.map((x) => [x.s.uid, factFlags(withBrandName(sectionHtml(x.s), name), facts, x.page?.key)] as const).filter(([, list]) => list.length));
-        const prompt = copyReviewPrompt(brief, all.map((x) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, html: withBrandName(sectionHtml(x.s), name) })), flags, contradictions, repeats(all));
+        const prompt = copyReviewPrompt(brief, all.map((x) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, html: shown(x) })), flags, contradictions, repeats(all));
         const usageKey = `${ctx.job.id}:text-review`;
         return CopyReviewSchema.parse(customBrandDeps.review ? await customBrandDeps.review(prompt, usageKey)
           : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-review", costCapMicro: a.capMicro }, () =>
@@ -830,7 +906,10 @@ export async function runCustomBrandJob(ctx: JobContext) {
       });
       const known = new Map(allSections(loadCustomTheme(p.id)!).map((x) => [x.s.uid, x] as const));
       const refused = review.sections.filter((f, i, all) => known.has(f.uid) && all.findIndex((g) => g.uid === f.uid) === i);
-      const todo = refused.slice(0, MAX_COPY_FIXES);
+      // Les répétitions relevées sans IA décident elles-mêmes qui garde chaque formule et qui la retire : ces sections
+      // passent d'abord (la moitié du budget au plus quand la relecture a aussi les siennes), avec la liste exacte.
+      const drops = repeatDrops(repeats([...known.values()].filter((x) => x.s.clientTexts || sections.some((y) => y.s.uid === x.s.uid)))).filter((d) => known.has(d.uid));
+      const todo = planCopyFixes(refused, drops);
       let fixed = 0;
       for (const [i, f] of todo.entries()) {
         const x = known.get(f.uid)!, l = libSection(x.s.id), label = l?.title ?? x.s.id;
@@ -838,7 +917,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         try {
           const w = await ctx.step(`text-fix:${f.uid}`, async () => {
             const cur = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === f.uid) ?? x;
-            const prompt = `${sectionWritePrompt(brief, cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, product: productFacts(p.id, cur.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(sectionHtml(cur.s), facts) })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
+            const prompt = `${sectionWritePrompt(brief, cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, product: productFacts(p.id, cur.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(sectionHtml(cur.s), facts, cur.page?.key) })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
             const usageKey = `${ctx.job.id}:text-fix:${f.uid}`;
             return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
               : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-fix", costCapMicro: a.capMicro }, () =>
@@ -862,10 +941,11 @@ export async function runCustomBrandJob(ctx: JobContext) {
           else report.problems.push(`${label} : ma relecture demandait une reprise (${f.fixes[0].slice(0, 140)}), elle n'a pas pu être posée : à relire`);
         } catch (e) { report.problems.push(`${label} : reprise demandée par ma relecture non faite (${(e as Error).message.slice(0, 100)})`); }
       }
-      for (const f of refused.slice(MAX_COPY_FIXES)) report.problems.push(`${libSection(known.get(f.uid)!.s.id)?.title ?? f.uid} : à relire (${f.fixes[0].slice(0, 140)})`);
+      for (const f of refused.filter((r) => !todo.some((d) => d.uid === r.uid))) report.problems.push(`${libSection(known.get(f.uid)!.s.id)?.title ?? f.uid} : à relire (${f.fixes[0].slice(0, 140)})`);
       report.relecture = { reprises: fixed, refusees: refused.length, avis: review.site };
       // Ce que la fiche ne confirme toujours pas après la relecture : dit au client, jamais laissé en silence.
-      const left = allSections(loadCustomTheme(p.id)!).map((x) => ({ x, claims: unconfirmedClaims(p, withBrandName(sectionHtml(x.s), name)) })).filter((y) => y.claims.length);
+      const known1 = knownFacts(p);
+      const left = allSections(loadCustomTheme(p.id)!).map((x) => ({ x, claims: unconfirmedClaims(p, shown(x), known1) })).filter((y) => y.claims.length);
       for (const y of left.slice(0, 6)) report.problems.push(`${libSection(y.x.s.id)?.title ?? y.x.s.id} (${y.x.page?.label ?? y.x.place}) : à confirmer par toi ou à retirer : ${y.claims.join(" ; ")}`);
       if (left.length > 6) report.problems.push(`${left.length - 6} autre(s) section(s) avec une promesse à confirmer`);
     } catch (e) { report.problems.push(`relecture des textes non faite (${(e as Error).message.slice(0, 120)}) : les textes n'ont pas été relus`); }

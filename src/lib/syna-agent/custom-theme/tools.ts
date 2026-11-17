@@ -37,7 +37,7 @@ import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
 import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, varietyGaps, type Design } from "./design";
 import { referencesBrief, sectorOf } from "./references";
-import { ordreGaps, partitionChoisie, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
+import { fitRythme, ordreGaps, partitionChoisie, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
 import { MIN_SECTIONS_IMPORTANTE, pageKind, partitionsBrief, partitionsPermises, typesAccueilPermis, type AngleRole, type PageKind } from "./partitions";
 import { preuvesBrief, preuvesDe, preuvesDemandees, type Preuves } from "./preuves";
 import { SECOND_REGARD_CALLS_MAX, SECOND_REGARD_CAP_MICRO, SECOND_REGARD_SYSTEM, SECOND_REGARD_TYPICAL_MICRO, SecondRegardSchema, secondRegardPrompt, secondRegardRefus, type RegardPage, type SecondRegard } from "./second-regard";
@@ -466,6 +466,8 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   // Dernier recours sans IA : ce qui sort encore des choix de la famille y est ramené ; le site est fait dans son style.
   { const fit = fitFamille(d, { business: site.business, families: catalogueFacts.families }); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   { const fit = fitStyle(d, site.business); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+  // Le rythme : deux dispositions pareilles à la suite, réglé par un échange de place quand il ne crée aucun autre défaut.
+  { const fit = fitRythme(d, facts); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   if (c.rules.length || !c.t) return { ok: false, result: { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." } };
   // Conception gardée dans le thème : parcours de chaque page et intention de chaque section.
   for (const pg of c.t.pages) {

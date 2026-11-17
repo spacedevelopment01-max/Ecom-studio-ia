@@ -350,7 +350,8 @@ const RISKY: Risk[] = [
   [/hypoallerg/i, { fr: "hypoallergénique", en: "hypoallergenic" }],
   [/\bgaranti(e|s)?\b|\bguarantee[sd]?\b|\bwarrant(y|ies)\b/i, { fr: "garantie", en: "guarantee" }],
   [/n°\s?1|numéro 1|leader|#\s?1\b|number one/i, { fr: "classement", en: "ranking" }],
-  [/\bavis\b|★|étoiles?\b|clients? satisfaits?|\breviews?\b|\bstars?\b|satisfied customers?|happy customers?/i, { fr: "avis ou notes", en: "reviews or ratings" }],
+  // « changer d'avis », « à mon avis », « ton avis » ne sont pas des avis de clients (essai réel du 17 novembre 2026 : « quatorze jours pour changer d'avis » signalé comme un avis inventé).
+  [/(?<!\b(?:chang\p{L}* d['’]|mon |ton |votre |son |notre |leur |d['’]un |du même ))\bavis\b|★|étoiles?\b|clients? satisfaits?|\breviews?\b|\bstars?\b|satisfied customers?|happy customers?/iu, { fr: "avis ou notes", en: "reviews or ratings" }],
   [/stock limité|derni(er|ère)s? (articles|exemplaires|pièces)|limited stock|only \d+ left|last (items|pieces|units)/i, { fr: "rareté", en: "scarcity" }],
   [/-\s?\d{1,2}\s?%|\bpromo(tion)?s?\b|\bsoldes\b|\d{1,2}\s?% off\b|\bon sale\b/i, { fr: "promotion", en: "promotion" }],
   [/livraison (gratuite|offerte|express|en \d+)|free (shipping|delivery)|express (shipping|delivery)|ships in \d+/i, { fr: "conditions de livraison", en: "shipping terms" }],
@@ -387,7 +388,14 @@ const RISKY_SERVICES: Risk[] = [
   [/(à partir de|dès|from|starting at)\s?\d+([.,]\d+)?\s?(€|eur|\$|£)|\d+([.,]\d+)?\s?(€|eur)\b|[$£]\s?\d+/i, { fr: "tarif", en: "rate" }],
 ];
 
-export function lintClaims(content: unknown, p: Project): { path: string; term: string; label: string }[] {
+/** Le dossier dit-il, avec ses mots, que c'est fait à la main ? (« cousu main », « fabriqué à la main », « artisane ») */
+const FAIT_MAIN = /(?:fait|fabriqu|cousu|façonn|tiss|mont|assembl|réalis|taill|coup|peint|tourn|brod|tricot)\p{L}*\s+(?:à la\s+)?main\b|artisan/iu;
+/**
+ * `extra` : ce que l'appelant sait de plus et que la fiche du projet ne porte pas (catalogue du Studio, notes du client
+ * prises par SINA) : des faits confirmés (textes) et des prix connus (en euros). Essai réel du 17 novembre 2026 : les
+ * prix du catalogue et « faits à la main », dit par la cliente, étaient signalés « à confirmer ».
+ */
+export function lintClaims(content: unknown, p: Project, extra: { facts?: (string | null | undefined)[]; prices?: number[] } = {}): { path: string; term: string; label: string }[] {
   const allowed = p.product.facts
     .filter((f) => f.status === "confirmed")
     .map((f) => `${f.label} ${f.value}`)
@@ -397,23 +405,27 @@ export function lintClaims(content: unknown, p: Project): { path: string; term: 
     // Livraison et retours donnés par le client (essai réel du 8 novembre : « livraison offerte » refusé alors que le
     // client avait écrit « offerte dès 35 € d'achat »).
     .concat(((c) => [c?.shipping ?? "", c?.returns ?? "", /offert|gratuit/i.test(c?.shipping ?? "") ? "livraison offerte livraison gratuite frais de port offerts" : ""])((p.settings as { company?: { shipping?: string; returns?: string } } | undefined)?.company))
+    .concat((extra.facts ?? []).filter((x): x is string => !!x))
     .join(" ")
     .toLowerCase();
+  // Une fabrication à la main est confirmée dès que le dossier la dit, quels que soient ses mots.
+  const faitMain = FAIT_MAIN.test(allowed);
   const issues: { path: string; term: string; label: string }[] = [];
   // Prix connus (produit et catalogue) : tout autre montant écrit dans un texte de vente est inventé.
   // Montants de livraison écrits par le client (« 4,90 €, offerte dès 35 € ») : confirmés eux aussi (essai réel du 8 novembre).
   const company = (p.settings as { company?: { shipping?: string; returns?: string } } | undefined)?.company;
   const clientAmounts = [...`${company?.shipping ?? ""} ${company?.returns ?? ""}`.matchAll(/(\d+(?:[,.]\d{1,2})?)\s*€/g)].map((m) => Number(m[1].replace(",", ".")));
-  const prices = p.business === "services" ? null : [...knownPrices(p), ...clientAmounts];
+  const prices = p.business === "services" ? null : [...knownPrices(p), ...clientAmounts, ...(extra.prices ?? [])];
   const walk = (v: unknown, path: string) => {
     if (typeof v === "string") {
       for (const [re, label] of p.business === "services" ? [...RISKY, ...RISKY_SERVICES] : RISKY) {
         const m = v.match(re);
+        if (m && label.fr === "fabrication artisanale" && faitMain) continue;
         if (m && !allowed.includes(m[0].toLowerCase().trim()) && !issues.some((x) => x.path === path && x.term.toLowerCase() === m[0].trim().toLowerCase())) issues.push({ path, term: m[0].trim(), label: L(label.fr, label.en) });
       }
       if (prices) {
         for (const m of v.matchAll(PRICE_RE)) {
-          const n = Number((m[1] ?? m[2]).replace(/\s/g, "").replace(",", "."));
+          const n = Number((m[1] ?? m[2]).replace(/\s/g, "").replace(/\.(?=\d{3}(?:\D|$))/g, "").replace(",", "."));
           if (!prices.some((x) => Math.abs(x - n) < 0.005)) issues.push({ path, term: m[0].trim(), label: L("prix non confirmé", "unconfirmed price") });
         }
       }
@@ -425,7 +437,8 @@ export function lintClaims(content: unknown, p: Project): { path: string; term: 
 }
 
 /** Montant écrit avec une devise (« 29,90 € », « 29 EUR », « $29.90 »). */
-const PRICE_RE = /(?:(\d{1,5}(?:[.,]\d{1,2})?)\s?(?:€|eur\b|euros?\b))|(?:[$£]\s?(\d{1,5}(?:[.,]\d{1,2})?))/gi;
+/** Toutes les écritures : « 420 € », « 420,00 € », « 1 200 € » (espace, fine ou insécable), « 1.200,50 € ». */
+const PRICE_RE = /(?:(?<![\d.,])(\d{1,3}(?:[\s.]\d{3})+(?:,\d{1,2})?|\d{1,5}(?:[.,]\d{1,2})?)\s?(?:€|eur\b|euros?\b))|(?:[$£]\s?(\d{1,5}(?:[.,]\d{1,2})?))/gi;
 function knownPrices(p: Project): number[] {
   const out: number[] = [];
   const amount = p.product?.price?.amount;

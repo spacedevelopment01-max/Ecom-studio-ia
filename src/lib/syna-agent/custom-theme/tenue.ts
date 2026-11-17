@@ -286,6 +286,24 @@ export function validConstruction(id: string, wanted: string | null | undefined)
 }
 export const tenueTraits = (): Record<string, Trait> => Object.fromEntries(TENUE_SECTIONS.map((s) => [s.id, s.trait]));
 
+/** Un texte du client raccourci sans jamais couper un mot : au dernier mot entier, suivi de « … ». */
+export function coupe(text: string, max: number): string {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max + 1), at = cut.lastIndexOf(" ");
+  return `${cut.slice(0, at > max * 0.5 ? at : max).replace(/[\s,;:.(«-]+$/, "")}…`;
+}
+/**
+ * Un repère sous le bouton d'achat (« Livraison : … », « Retours : … ») avec les mots du client. Essai réel du 17
+ * novembre 2026 : « Livraison : Livraison en France… » (le mot dit deux fois) et « …qui est fai » (coupé au milieu d'un
+ * mot). Le libellé ne se redit pas quand la phrase du client commence par lui ; la phrase n'est jamais coupée dans un mot.
+ */
+export function repere(label: "Livraison" | "Retours", value: string | null | undefined, max = 240): string {
+  const v = (value ?? "").trim();
+  if (!v) return `${label} : [À compléter]`;
+  const plie = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return plie(v).startsWith(plie(label).slice(0, 6)) ? coupe(v, max) : `${label} : ${coupe(v, max)}`;
+}
 /** Vraies données du bloc d'achat à tenue : photos du produit, prix, livraison, retours. */
 export type TenueBuy = { images: string[]; price: string | null; shipping: string | null; returns: string | null; /** Plus de stock : dit sous le prix, le bouton ne commande plus. */ soldOut?: boolean; /** Mentions vraies à dire près du prix (indice de réparabilité, paiement en plusieurs fois) : seulement celles que le client a confirmées. */ notes?: string[] };
 /**
@@ -306,7 +324,7 @@ export function withTenueBuyBlock(html: string, d: TenueBuy | null): string {
   if (d?.soldOut) out = out.replace(/(<div class="tn-prix">[\s\S]*?<\/div>)/, `$1<div class="tn-rupture">Épuisé pour l'instant. Retour en stock : [À compléter]</div>`).replace(/<a class="tn-bt"/g, '<a class="tn-bt tn-off" aria-disabled="true"');
   // Près du prix : l'indice de réparabilité, le paiement en plusieurs fois. Jamais affichés sans le fait confirmé par le client.
   if (d?.notes?.length) out = out.replace(/(<div class="tn-prix">[\s\S]*?<\/div>(?:<div class="tn-rupture">[\s\S]*?<\/div>)?)/, `$1<ul class="tn-pres-prix">${d.notes.slice(0, 3).map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`);
-  if (d) out = out.replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>Livraison : ${d.shipping ? esc(d.shipping) : "[À compléter]"}</li><li>Retours : ${d.returns ? esc(d.returns) : "[À compléter]"}</li></ul>`);
+  if (d) out = out.replace(/<ul class="tn-reperes">[\s\S]*?<\/ul>/, `<ul class="tn-reperes"><li>${esc(repere("Livraison", d.shipping))}</li><li>${esc(repere("Retours", d.returns))}</li></ul>`);
   // La barre d'achat suit le bloc : même nom, même bouton.
   const name = /<h1>([\s\S]*?)<\/h1>/.exec(out)?.[1]?.replace(/<br\s*\/?>/g, " ").replace(/<[^>]+>/g, "").trim();
   const label = /<a class="tn-bt"[^>]*>([\s\S]*?)<\/a>/.exec(out)?.[1]?.replace(/<[^>]+>/g, "").trim();
@@ -339,6 +357,51 @@ export function withTenueProducts(html: string, products: TenueProduct[]): strin
       .replace(/<span class="tn-prix-l">[\s\S]*?<\/span>/, `<span class="tn-prix-l">${price}</span>`).replace(/<span class="tn-prix-t">[\s\S]*?<\/span>/, `<span class="tn-prix-t">${price}</span>`);
   }
   return markMissing(out);
+}
+
+/** Les produits qu'une liste automatique montre sur une page : sur la fiche d'un produit, les AUTRES produits (s'il y en a). */
+export function listedProducts(products: TenueProduct[], pageKey?: string | null): TenueProduct[] {
+  if (!pageKey || !/^product/.test(pageKey)) return products;
+  const others = products.filter((x) => (x.go ?? "product") !== pageKey);
+  return others.length ? others : products;
+}
+
+// ---------------------------------------------------------------- produits d'exemple : jamais dans un site monté
+
+const nomDe = (x: string) => x.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+/** Les emplacements où une pièce écrit le NOM d'un produit : carte, ligne de panier, résultat de recherche, suggestion, repère du guide. */
+const PRODUCT_NAME_SLOTS = [/<a class="tn-carte-p[^"]*"[^>]*>(?:(?!<\/a>|<b>)[\s\S])*?<b>([\s\S]*?)<\/b>/g, /<b data-tn-produit>([\s\S]*?)<\/b>/g, /<a class="tn-r"[^>]*>(?:(?!<\/a>|<b>)[\s\S])*?<b>([\s\S]*?)<\/b>/g, /<a class="tn-s"[^>]*>(?:<div class="tn-ph"[^>]*><\/div>)?<span>([\s\S]*?)<\/span>/g];
+/** Les noms en tête d'un comparatif de la gamme (« tn-noms ») : un lien par produit. */
+const comparedIn = (html: string) => [...html.matchAll(/<div class="tn-noms">([\s\S]*?)<\/div>/g)].flatMap((m) => [...m[1].matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/g)].map((x) => nomDe(x[1])));
+const namesIn = (html: string) => [...PRODUCT_NAME_SLOTS.flatMap((rx) => [...html.matchAll(rx)].map((m) => nomDe(m[1]))), ...comparedIn(html)].filter(Boolean);
+let exampleNames: Set<string> | null = null;
+/**
+ * Les produits d'exemple de la bibliothèque, relevés À LA SOURCE : tout nom écrit par une pièce d'origine dans un
+ * emplacement de produit. Aucune liste de mots à tenir : une pièce nouvelle y entre d'elle-même avec ses exemples.
+ */
+export function exampleProductNames(): Set<string> {
+  exampleNames ??= new Set(TENUE_SECTIONS.flatMap((s) => namesIn(s.html)).map((x) => x.toLocaleLowerCase("fr-FR")));
+  return exampleNames;
+}
+/** Les produits d'exemple encore écrits dans un HTML (hors vrais produits du client, qui peuvent porter le même nom). */
+export function exampleProductsLeft(html: string, real: string[] = []): string[] {
+  const mine = new Set(real.map((x) => x.trim().toLocaleLowerCase("fr-FR"))), ex = exampleProductNames();
+  return [...new Set(namesIn(html).filter((n) => ex.has(n.toLocaleLowerCase("fr-FR")) && !mine.has(n.toLocaleLowerCase("fr-FR"))))];
+}
+/**
+ * Filet de fin de rendu (essai réel du 17 novembre 2026 : la relecture a lu des cartes « de démonstration ») : dans un
+ * site monté, aucune carte ne montre un produit d'exemple de la bibliothèque. La carte s'en va ; une section de produits
+ * qui n'a plus aucune carte ne se rend pas (elle est remplie par le VRAI catalogue, ou elle ne s'affiche pas).
+ */
+export function withoutExampleProducts(html: string, real: string[] = []): string {
+  if (!exampleProductsLeft(html, real).length) return html;
+  const mine = new Set(real.map((x) => x.trim().toLocaleLowerCase("fr-FR"))), ex = exampleProductNames();
+  const exemple = (name: string) => { const n = nomDe(name).toLocaleLowerCase("fr-FR"); return ex.has(n) && !mine.has(n); };
+  let out = html.replace(/<a class="(?:tn-carte-p[^"]*|tn-r|tn-s)"[^>]*>[\s\S]*?<\/a>/g, (m) => (namesIn(m).some(exemple) ? "" : m))
+    .replace(/<details class="tn-v-besoin"[\s\S]*?<\/details>/g, (m) => (namesIn(m).some(exemple) ? "" : m));
+  // Une section de produits vidée de ses cartes : elle ne se rend pas.
+  out = out.replace(/<section\b[^>]*\sdata-tn-(?:produits|looks|guide|comparatif)\b[^>]*>(?:(?!<section\b)[\s\S])*?<\/section>/g, (m) => (/<div class="tn-cartes">\s*<\/div>/.test(m) || (/\sdata-tn-guide\b/.test(m) && !/<details class="tn-v-besoin"/.test(m)) || comparedIn(m).some(exemple) ? "" : m));
+  return out;
 }
 
 /** Une prestation du client (profil des services) : son nom, sa durée, son prix. */

@@ -416,7 +416,8 @@ describe("SINA — le site, deuxième essai réel", async () => {
         expect(reviewed).toMatch(/RÉPÉTITIONS RELEVÉES PAR LE STUDIO[^]*« le prix annoncé avant » : s0000002a \([^\n]*s0000002e \(/);
         expect(fixed).toBe(true);
         // (Les autres textes de la pièce d'exemple, que ce rédacteur simulé ne réécrit pas, se répètent aussi : ils sont relevés de même.)
-        expect(r.repetitions.some((x: string) => /« le prix annoncé avant » revient dans 4 sections \(Ouverture[^)]*Accueil ; /.test(x))).toBe(true);
+        // (17 novembre 2026 : le Studio reprend lui-même les sections au-delà de la troisième ; la formule ne reste que dans trois sections, ce qui est permis.)
+        expect(r.repetitions.some((x: string) => /« le prix annoncé avant »/.test(x))).toBe(false);
         expect(r.problems.join("\n")).toMatch(/répétitions : \d+ suite\(s\) de mots reviennent encore dans plus de 3 sections, par exemple « /);
       } finally { clean(); }
     });
