@@ -234,7 +234,8 @@
 /* le texte seul, en colonne */
 .ctw .tn-bien-description[data-tn-c="colonne"] .tn-ph{display:none}
 .ctw .tn-bien-description[data-tn-c="colonne"] h2{padding-top:20px;border-top:1.5px solid var(--tn-encre)}
-.ctw .tn-bien-description[data-tn-c="colonne"] .tn-pt-texte::first-line{font-family:var(--f-title);font-size:25px;line-height:1.3;color:var(--tn-encre)}
+.ctw .tn-bien-description[data-tn-c="colonne"] .tn-pt-texte .tn-pt-une{display:block;margin-bottom:10px;font-family:var(--f-title);font-size:25px;line-height:1.25;color:var(--tn-encre)}
+.ctw .tn-bien-description[data-tn-c="colonne"] .tn-pt-texte .tn-pt-une+br{display:none}
 
 /* ════════ Fiche d'un bien : les surfaces ════════ */
 .ctw .tn-bien-surfaces{padding:44px 20px 0}
@@ -486,7 +487,7 @@
   .ctw .tn-bien-description .tn-pt-texte{font-size:18px}
   .ctw .tn-bien-description .tn-ph{height:540px;margin-top:0}
   .ctw .tn-bien-description[data-tn-c="colonne"]{display:block;padding-left:max(40px,calc(50% - 380px));padding-right:max(40px,calc(50% - 380px))}
-  .ctw .tn-bien-description[data-tn-c="colonne"] .tn-pt-texte::first-line{font-size:32px}
+  .ctw .tn-bien-description[data-tn-c="colonne"] .tn-pt-texte .tn-pt-une{font-size:32px}
 
   .ctw .tn-bien-surfaces{padding:60px max(40px,calc(50% - 540px)) 0}
   .ctw .tn-bien-surfaces h2{font-size:calc(50px*var(--tn-k))}

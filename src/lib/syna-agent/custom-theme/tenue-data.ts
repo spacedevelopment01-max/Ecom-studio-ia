@@ -541,6 +541,15 @@ function withEnergyLabel(html: string, cls: "tn-dpe" | "tn-ges", letter: string 
  * énergie, quartier, demande de visite. Tout vient du bien saisi par le client ; une valeur absente n'est jamais
  * inventée : sa ligne s'en va, ou reste « [À compléter] ».
  */
+/**
+ * Le texte d'un bien : sa première phrase (ou sa première ligne) à part, pour que la façon « colonne » la montre en
+ * grand en entier (avant, la première LIGNE à l'écran était agrandie et coupait la phrase au milieu).
+ */
+function premierePhrase(texte: string): string {
+  const t = texte.trim(), nl = /^([^\n]+)\n+([\s\S]+)$/.exec(t), ph = nl ? null : /^(.+?[.!?…])\s+(\S[\s\S]*)$/.exec(t);
+  const m = nl ?? ph;
+  return m ? `<span class="tn-pt-une">${esc(m[1].trim())}</span><br>${esc(m[2].trim()).replace(/\n+/g, "<br>")}` : esc(t).replace(/\n+/g, "<br>");
+}
 export function withTenueBienFiche(html: string, biens: TenueBien[]): string {
   const piece = /\sdata-tn-bien="(galerie|caracteristiques|energie|quartier|visite|description|surfaces|equipements|frais)"/.exec(html)?.[1], b = ficheBien(biens);
   if (!piece || !b) return html;
@@ -568,7 +577,7 @@ export function withTenueBienFiche(html: string, biens: TenueBien[]): string {
     // Module « partitions » : la fiche d'un bien, moment par moment. Une ligne marquée « data-tn-fait » qui ne reçoit
     // rien du bien est retirée ensuite (withTenueFaits) ; sans aucune, la pièce ne se montre pas.
     const texte = clean(b.description, 6000) ?? clean(b.summary, 400);
-    out = inner(/(<p class="tn-pt-texte"[^>]*>)[\s\S]*?(<\/p>)/, texte ? esc(texte).replace(/\n+/g, "<br>") : null)(out);
+    out = inner(/(<p class="tn-pt-texte"[^>]*>)[\s\S]*?(<\/p>)/, texte ? premierePhrase(texte) : null)(out);
     out = out.replace(/<div class="tn-ph tn-cadre"[^>]*><\/div>/, b.photos[1] ? `<div class="tn-ph tn-cadre"${pic(b.photos[1])}></div>` : "");
   } else if (piece === "surfaces") {
     const mesures: [string, string][] = [];

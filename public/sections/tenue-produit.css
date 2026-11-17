@@ -995,3 +995,16 @@
 @media (max-width:359px){
   .ctw[data-tn-titres="gras"] .tn-documents[data-tn-c="feuilles"] li b,.ctw[data-tn-titres="capitales"] .tn-documents[data-tn-c="feuilles"] li b,.ctw[data-tn-lourd] .tn-documents[data-tn-c="feuilles"] li b{font-family:var(--f-ui);font-weight:700;font-size:17px;line-height:1.25;letter-spacing:0;text-transform:none}
 }
+/* Accords en étiquettes, grand écran : la colonne des accords est plus large que celle « à éviter » ; un accord long
+   (« Un carré de chocolat blanc ») tient sur une ligne dans sa pastille. */
+@media (min-width:760px){
+  .ctw .tn-accords[data-tn-c="etiquettes"]{grid-template-columns:minmax(0,3fr) minmax(0,2fr);padding-left:max(40px,calc(50% - 480px));padding-right:max(40px,calc(50% - 480px))}
+}
+/* Dans le colis, en grille : une pièce dont la photo manque garde la taille d'une case (son nom posé dans un aplat doux),
+   au lieu d'un texte seul qui décale toute la grille. */
+.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:has(>.tn-ph-manque)>div:not(.tn-ph){display:flex;flex-direction:column;justify-content:flex-end;min-height:200px;padding:16px 14px;border-radius:var(--tn-arrondi,0);background-color:var(--tn-doux)}
+.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:has(>.tn-ph-manque)>div:not(.tn-ph) b{margin-top:0}
+.ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:last-child:nth-child(odd):has(>.tn-ph-manque)>div:not(.tn-ph){grid-column:1/-1;min-height:0}
+@media (min-width:760px){
+  .ctw .tn-colis[data-tn-c="grille"] .tn-pieces li:has(>.tn-ph-manque)>div:not(.tn-ph){min-height:340px;padding:22px 20px}
+}

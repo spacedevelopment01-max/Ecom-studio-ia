@@ -190,7 +190,7 @@ describe("thème unique, partitions : jamais une pièce sans sa vraie donnée", 
 
   it("la fiche d'un bien, moment par moment : seulement ce que l'agence a saisi", () => {
     const d = sp(D.withTenueSite(tenueSection("tn-bien-description")!.html, SITE));
-    expect(d).toContain("Une maison de famille au calme, tournée vers son jardin.<br>Quatre chambres");
+    expect(d).toContain('<span class="tn-pt-une">Une maison de famille au calme, tournée vers son jardin.</span><br>Quatre chambres'); // la première phrase à part, entière
     expect(d).toContain('<div class="tn-ph tn-cadre" style="background-image:url(photos/im-salon.jpg)"></div>'); // la deuxième photo du bien
     const s = sp(D.withTenueSite(tenueSection("tn-bien-surfaces")!.html, SITE));
     expect(s).toContain("<li data-tn-fait><b>142 m²</b><small>Surface habitable</small></li><li data-tn-fait><b>620 m²</b><small>Terrain</small></li><li data-tn-fait><b>6</b><small>Pièces</small></li><li data-tn-fait><b>4</b><small>Chambres</small></li>");
