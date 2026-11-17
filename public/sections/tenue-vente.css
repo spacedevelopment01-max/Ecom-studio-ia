@@ -35,7 +35,7 @@
 .ctw .tn-messages[data-tn-c="rangee"] .tn-v-fil{flex:1;min-width:0;justify-content:flex-start;gap:8px;padding:0 20px;overflow-x:auto;scrollbar-width:none;animation:none}
 .ctw .tn-messages[data-tn-c="rangee"] .tn-v-fil::-webkit-scrollbar{display:none}
 .ctw .tn-messages[data-tn-c="rangee"] li{gap:9px;padding:12px 14px 12px 0}
-.ctw .tn-messages[data-tn-c="rangee"] li::before{width:11px;height:6px;margin-top:-3px;border-radius:0;background-color:transparent;border-left:2px solid var(--tn-accent);border-bottom:2px solid var(--tn-accent);transform:rotate(-45deg)}
+.ctw .tn-messages[data-tn-c="rangee"] li::before{width:11px;height:6px;margin-top:-3px;border-radius:0;background-color:transparent;border-left:2px solid var(--tn-accent-texte,var(--tn-accent));border-bottom:2px solid var(--tn-accent-texte,var(--tn-accent));transform:rotate(-45deg)}
 @media (prefers-reduced-motion:reduce){
   .ctw .tn-messages .tn-v-fil{animation:none;flex:1;min-width:0;flex-wrap:wrap;justify-content:center}
   .ctw .tn-messages .tn-v-fil.tn-v-bis{display:none}
@@ -265,7 +265,7 @@
 .ctw .tn-ouverture-arrivee[data-tn-c="cote-a-cote"] .tn-v-mots{margin-top:28px}
 
 /* ══ Étoiles d'une vraie note (dessinées, jamais écrites) ══ */
-.ctw .tn-ouverture-arrivee .tn-v-etoiles,.ctw .tn-avis-page .tn-v-etoiles,.ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-etoiles{--tn-v-e:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 15l-5.2 2.8 1-5.9L1.5 7.8l5.9-.8z'/%3E%3C/svg%3E");display:inline-block;flex:none;width:5.4em;height:1.08em;font-size:15px;vertical-align:middle;background-image:linear-gradient(90deg,var(--tn-accent) calc(var(--note,0)*20%),color-mix(in srgb,var(--tn-encre) 20%,transparent) 0);-webkit-mask:var(--tn-v-e) left center/1.08em 1.08em repeat-x;mask:var(--tn-v-e) left center/1.08em 1.08em repeat-x}
+.ctw .tn-ouverture-arrivee .tn-v-etoiles,.ctw .tn-avis-page .tn-v-etoiles,.ctw .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-etoiles{--tn-v-e:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 15l-5.2 2.8 1-5.9L1.5 7.8l5.9-.8z'/%3E%3C/svg%3E");display:inline-block;flex:none;width:5.4em;height:1.08em;font-size:15px;vertical-align:middle;background-image:linear-gradient(90deg,var(--tn-accent-texte,var(--tn-accent)) calc(var(--note,0)*20%),color-mix(in srgb,var(--tn-encre) 20%,transparent) 0);-webkit-mask:var(--tn-v-e) left center/1.08em 1.08em repeat-x;mask:var(--tn-v-e) left center/1.08em 1.08em repeat-x}
 
 /* ══ Les raisons numérotées ══ */
 .ctw .tn-raisons{padding:44px 20px 0}
@@ -409,7 +409,7 @@
 .ctw .tn-avis-page .tn-v-barres{display:grid;gap:8px;max-width:340px;margin:22px auto 0}
 .ctw .tn-avis-page .tn-v-barres li{display:grid;grid-template-columns:104px minmax(0,1fr) 40px;align-items:center;gap:10px;font-size:13px;text-align:left}
 .ctw .tn-avis-page .tn-v-barres i{position:relative;height:8px;border-radius:999px;background-color:color-mix(in srgb,var(--tn-encre) 12%,transparent);overflow:hidden}
-.ctw .tn-avis-page .tn-v-barres i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--part,0%);border-radius:999px;background-color:var(--tn-accent)}
+.ctw .tn-avis-page .tn-v-barres i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--part,0%);border-radius:999px;background-color:var(--tn-accent-texte,var(--tn-accent))}
 .ctw .tn-avis-page .tn-v-barres em{font-style:normal;text-align:right;color:var(--tn-sourd);font-variant-numeric:tabular-nums}
 .ctw .tn-avis-page .tn-v-barres em:has(mark){font-size:9px}
 .ctw .tn-avis-page .tn-v-tri{display:flex;justify-content:flex-end;margin-top:30px;padding-bottom:6px;border-bottom:1.5px solid var(--tn-encre)}
@@ -424,7 +424,7 @@
 .ctw .tn-avis-page .tn-v-avis-l li>span{font-size:12.5px;color:var(--tn-sourd)}
 .ctw .tn-avis-page .tn-v-verifie{grid-column:2;align-self:end;display:inline-flex;align-items:center;gap:6px;font-style:normal;font-size:12px;font-weight:600;color:var(--tn-sourd)}
 .ctw .tn-avis-page .tn-v-avis-l li>.tn-v-verifie{grid-column:2}
-.ctw .tn-avis-page .tn-v-verifie::before{content:"";width:9px;height:5px;margin-top:-3px;border-left:2px solid var(--tn-accent);border-bottom:2px solid var(--tn-accent);transform:rotate(-45deg)}
+.ctw .tn-avis-page .tn-v-verifie::before{content:"";width:9px;height:5px;margin-top:-3px;border-left:2px solid var(--tn-accent-texte,var(--tn-accent));border-bottom:2px solid var(--tn-accent-texte,var(--tn-accent));transform:rotate(-45deg)}
 .ctw .tn-avis-page blockquote{margin:10px 0 0;font-size:16px;line-height:1.55;color:var(--tn-texte)}
 .ctw .tn-avis-page .tn-v-photos{display:flex;gap:8px;margin-top:14px}
 .ctw .tn-avis-page .tn-v-photos .tn-ph{width:76px;height:76px;border-radius:min(var(--tn-arrondi,0px),10px)}
@@ -469,7 +469,7 @@
 .ctw[data-tn-cadre="penche"] .tn-atouts[data-tn-c="ronds"] li{border:3px solid var(--tn-encre);border-radius:18px;box-shadow:5px 6px 0 var(--tn-encre)}
 .ctw .tn-atouts[data-tn-c="ronds"] li:last-child:nth-child(odd){grid-column:1/-1}
 .ctw .tn-atouts[data-tn-c="ronds"] li::before{content:"";width:48px;height:48px;margin-bottom:14px;border-radius:50%;background-color:var(--tn-doux)}
-.ctw .tn-atouts[data-tn-c="ronds"] li::after{content:"";position:absolute;left:50%;top:41px;width:15px;height:8px;margin-left:-8px;border-left:2.2px solid var(--tn-accent);border-bottom:2.2px solid var(--tn-accent);transform:rotate(-45deg)}
+.ctw .tn-atouts[data-tn-c="ronds"] li::after{content:"";position:absolute;left:50%;top:41px;width:15px;height:8px;margin-left:-8px;border-left:2.2px solid var(--tn-accent-texte,var(--tn-accent));border-bottom:2.2px solid var(--tn-accent-texte,var(--tn-accent));transform:rotate(-45deg)}
 .ctw .tn-atouts[data-tn-c="ronds"] li b{font-size:21px;line-height:1.12;overflow-wrap:break-word}
 .ctw .tn-atouts[data-tn-c="ronds"] li span{margin-top:8px;font-size:14px;line-height:1.45}
 
@@ -880,4 +880,11 @@
    (76 px sur grand écran), jamais dessous. */
 @media (min-width:760px){
   .ctw .tn-ent~.tb-pg .tn-difference[data-tn-c="photo-a-cote"] .tn-v-fig,.ctw .tn-ent~.tb-pg .tn-avis-page[data-tn-c="resume-a-cote"] .tn-v-resume{top:calc(var(--tb-h,0px) + 100px)}
+}
+/* En-tête d'une page d'arrivée, « nom à gauche », sur téléphone : un nom de produit long ne s'empile plus en colonne
+   étroite à côté du nom de la marque (il se coupait en syllabes) ; le lien dit « Découvrir » seul, le nom se lit dans
+   l'ouverture juste dessous. */
+@media (max-width:759px){
+  .ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-vers [data-tn-produit-nom][data-tn-long]{display:none}
+  .ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-vers:has([data-tn-long]){flex:none;min-width:0}
 }

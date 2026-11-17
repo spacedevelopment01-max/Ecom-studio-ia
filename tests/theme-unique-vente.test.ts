@@ -197,6 +197,10 @@ describe("thème unique, vente : les vraies données, depuis un catalogue d'essa
     expect(D.withVenteMacaron(html("tn-ouverture-vente"), {})).not.toContain("tn-v-macaron");
     expect(D.withVenteMacaron(markMissing(html("tn-ouverture-vente")), {})).not.toContain("tn-v-macaron");
     expect(D.withVenteMacaron(html("tn-ouverture-vente"), { vitrine: { macaron: { chiffre: "+ 2 000", quoi: "gourdes en service" } } })).toContain('<div class="tn-v-macaron" data-tn-macaron><b>+ 2 000</b><span>gourdes en service</span></div>');
+    // Rien de coupé : une phrase trop longue pour le rond ne se tronque jamais, le macaron ne se pose pas.
+    const long = D.withVenteMacaron(html("tn-ouverture-vente"), { vitrine: { macaron: { chiffre: "12 450", quoi: "clients servis depuis l'ouverture de la boutique" } } });
+    expect(long).not.toContain("…");
+    expect(long).not.toContain("12 450");
     // Un chiffre écrit dans la pièce (donné par le client au rédacteur) reste.
     const written = html("tn-ouverture-vente").replace(/<b>\[À compléter : chiffre vrai\]<\/b><span>[^<]*<\/span>/, "<b>12 ans</b><span>d'atelier</span>");
     expect(D.withVenteMacaron(written, {})).toContain("<b>12 ans</b><span>d'atelier</span>");
@@ -215,6 +219,8 @@ describe("thème unique, vente : les vraies données, depuis un catalogue d'essa
     const promo = sp(D.withVenteCartes(ecrit, { ...site, vitrine: { produits: EXTRAS, offre: { label: "Offre de rentrée", fin: "2026-12-01", produits: ["Gourde Halte"] } } }, NOW));
     expect((promo.match(/<em class="tn-v-offre">Offre de rentrée<\/em>/g) ?? []).length).toBe(1);
     expect(D.withVenteCartes(ecrit, { ...site, vitrine: { produits: EXTRAS, offre: { label: "Offre de rentrée", fin: "2026-10-01" } } }, NOW)).not.toContain("tn-v-offre");
+    // Rien de coupé : une étiquette trop longue pour la photo n'y est pas tronquée, elle n'y va pas.
+    expect(D.withVenteCartes(ecrit, { ...site, vitrine: { produits: EXTRAS, offre: { label: "L'offre de rentrée, sur toute la boutique et sans minimum", fin: "2026-12-01" } } }, NOW)).not.toContain("tn-v-offre");
     // Sans catalogue : la pièce garde son exemple, annoncé comme tel.
     expect(D.withVenteCartes(html("tn-produits-vente"), {})).toBe(html("tn-produits-vente"));
   });

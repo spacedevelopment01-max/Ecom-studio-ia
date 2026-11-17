@@ -898,3 +898,21 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 /* Contact, carte des coordonnées posée en bas : ses dernières lignes gardent de l'air au-dessus du bord (une longue
    coordonnée touchait le bas de la carte). */
 .ctw .tn-contact:not([data-tn-c="coordonnees-en-grand"]):not([data-tn-c="deux-colonnes"]) .tn-infos{padding-bottom:28px}
+/* Grande photo et sa phrase, quand la photo manque : le panneau sombre de la marque se resserre autour de la phrase
+   (une grande surface sombre presque vide se lisait comme un trou). */
+.ctw .tn-emotion[data-tn-photo-manque="fond"]:not([data-tn-c="phrase-dessous"]){position:relative}
+.ctw .tn-emotion[data-tn-photo-manque="fond"]:not([data-tn-c="phrase-dessous"]) .tn-ph{position:absolute;inset:0;height:auto}
+.ctw .tn-emotion[data-tn-photo-manque="fond"]:not([data-tn-c="phrase-dessous"]) h2{position:relative;left:auto;right:auto;top:auto;margin:0;padding:56px 24px 60px}
+@media (min-width:760px){
+  .ctw .tn-emotion[data-tn-photo-manque="fond"]:not([data-tn-c="phrase-dessous"]) h2{padding:96px 40% 100px max(40px,calc(50% - 540px))}
+}
+/* En-tête sur un très petit téléphone : le nom ne touche jamais le panier (titres gras ou en capitales : le nom se
+   resserre ; « sangle » : l'étiquette du nom se fait plus petite, elle couvrait le « P » de « Panier »). */
+@media (max-width:399px){
+  .ctw .tn-entete[data-tn-c="sangle"] .tn-nom{font-size:12.5px;letter-spacing:.12em;padding:6px 8px 5px 10px}
+  .ctw .tn-entete[data-tn-c="sangle"] .tn-pan{font-size:12px}
+}
+@media (max-width:359px){
+  .ctw[data-tn-titres="gras"] .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"]) .tn-nom,.ctw[data-tn-titres="capitales"] .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"]) .tn-nom,.ctw[data-tn-lourd] .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"]) .tn-nom{left:64px;right:100px;font-size:14px}
+  .ctw .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"]) .tn-pan{font-size:12.5px}
+}

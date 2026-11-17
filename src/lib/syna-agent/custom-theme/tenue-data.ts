@@ -712,7 +712,10 @@ export function withVenteMessages(html: string, d: TenueSite, now = Date.now()):
 /** Le macaron de l'ouverture : le chiffre vrai du client, sinon pas de macaron (jamais un chiffre « à compléter » sur la photo). */
 export function withVenteMacaron(html: string, d: TenueSite): string {
   if (!/\sdata-tn-macaron\b/.test(html)) return html;
-  const m = d.vitrine?.macaron, chiffre = clean(m?.chiffre, 14), quoi = clean(m?.quoi, 40);
+  // Rien de coupé (tour des sections, 17 novembre 2026) : un chiffre ou une phrase trop longs pour le rond ne sont
+  // jamais tronqués (« depuis l'ouverture de la… ») : le macaron ne se pose pas.
+  const m = d.vitrine?.macaron, entier = (v: string | null | undefined, max: number) => (v?.trim() && v.trim().length <= max ? v.trim() : null);
+  const chiffre = entier(m?.chiffre, 14), quoi = entier(m?.quoi, 40);
   return html.replace(/<div class="tn-v-macaron" data-tn-macaron>([\s\S]*?)<\/div>/, (all, inner: string) => (chiffre && quoi ? `<div class="tn-v-macaron" data-tn-macaron><b>${esc(chiffre)}</b><span>${esc(quoi)}</span></div>` : manque(inner) ? "" : all));
 }
 
@@ -733,7 +736,9 @@ export function withVenteCartes(html: string, d: TenueSite, now = Date.now()): s
   const ecrit = cartesEcrites(html), offre = offreActive(d.vitrine?.offre, now) ? d.vitrine!.offre! : null;
   const card = (p: TenueProduct) => {
     const x = d.vitrine?.produits?.[p.title] ?? {}, w = ecrit.par.get(p.title.trim().toLocaleLowerCase("fr-FR"));
-    const genre = clean(x.genre, 40), tag = offre && (!offre.produits?.length || offre.produits.some((t) => sameName(t, p.title))) && !p.soldOut ? `<em class="tn-v-offre">${esc(offre.label.trim().slice(0, 30))}</em>` : "";
+    // Rien de coupé : l'étiquette d'offre posée sur la photo s'écrit entière (trop longue pour la photo, elle n'y va
+    // pas : l'offre reste dite par le bandeau de messages) ; le genre aussi.
+    const genre = x.genre?.trim() && x.genre.trim().length <= 40 ? x.genre.trim() : null, etiquette = offre?.label.trim() ?? "", tag = offre && etiquette.length <= 34 && (!offre.produits?.length || offre.produits.some((t) => sameName(t, p.title))) && !p.soldOut ? `<em class="tn-v-offre">${esc(etiquette)}</em>` : "";
     const prix = p.soldOut ? "Épuisé" : p.price ? `${x.des ? `dès ${esc(x.des)}` : esc(p.price)}${x.compare ? ` <s>${esc(x.compare)}</s>` : ""}` : "[À compléter : prix]";
     return `<a class="tn-v-carte${p.soldOut ? " tn-epuise" : ""}" href="#" onclick="return false" data-go="${esc(p.go ?? "product")}"><div class="tn-ph"${pic(p.image)}>${tag}</div>${genre ? `<small>${esc(genre)}</small>` : w?.genre ? `<small>${w.genre}</small>` : ""}<b>${esc(p.title)}</b>${w?.envie ? `<span class="tn-v-envie">${w.envie}</span>` : ""}<span class="tn-v-prix">${prix}</span><i class="tn-v-voir">${ecrit.voir}</i></a>`;
   };
@@ -768,7 +773,9 @@ export function withVenteArrivee(html: string, d: TenueSite): string {
   if (!/\sdata-tn-(?:arrivee|barre-produit)\b/.test(html)) return html;
   const p = (d.products ?? []).find((x) => !x.soldOut) ?? (d.products ?? [])[0];
   if (!p) return html;
-  return html.replace(/(<(?:span|b) data-tn-produit-nom>)[\s\S]*?(<\/(?:span|b)>)/g, `$1${esc(p.title)}$2`).replace(/data-go="product"/g, `data-go="${esc(p.go ?? "product")}"`)
+  // Un nom long (plus de 28 signes) le dit à la feuille : sur téléphone, l'en-tête « nom à gauche » garde alors « Découvrir » seul.
+  const long = p.title.trim().length > 28;
+  return html.replace(/<(span|b) data-tn-produit-nom>[\s\S]*?<\/\1>/g, (_m, t: string) => `<${t} data-tn-produit-nom${long ? " data-tn-long" : ""}>${esc(p.title)}</${t}>`).replace(/data-go="product"/g, `data-go="${esc(p.go ?? "product")}"`)
     .replace(/(<div class="tn-v-colle">)<div class="tn-ph"[^>]*><\/div>/, `$1<div class="tn-ph"${pic(p.image)}></div>`);
 }
 
