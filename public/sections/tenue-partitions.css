@@ -569,7 +569,13 @@
 /* ── Comptes des réseaux : un identifiant ne se coupe pas comme un mot (ni trait d'union, ni lettres seules) ; dans une
    tenue aux titres gras, sur téléphone, il s'écrit en texte courant pour tenir sur sa ligne ── */
 .ctw .tn-reseaux li b{-webkit-hyphens:manual;hyphens:manual}
-.ctw .tn-reseaux li b[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:16px;line-height:1.3;letter-spacing:0;text-transform:none}
+.ctw .tn-reseaux li b[data-tn-long]:not(#tn){font-size:19px;line-height:1.2;letter-spacing:0;text-transform:none}
+.ctw[data-tn-titres="gras"] .tn-reseaux li b[data-tn-long]:not(#tn),.ctw[data-tn-titres="capitales"] .tn-reseaux li b[data-tn-long]:not(#tn),.ctw[data-tn-lourd] .tn-reseaux li b[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:16px;line-height:1.3}
+@media (min-width:760px){
+  .ctw .tn-reseaux li b[data-tn-long]:not(#tn){font-size:26px}
+  .ctw[data-tn-titres="gras"] .tn-reseaux li b[data-tn-long]:not(#tn),.ctw[data-tn-titres="capitales"] .tn-reseaux li b[data-tn-long]:not(#tn),.ctw[data-tn-lourd] .tn-reseaux li b[data-tn-long]:not(#tn){font-size:22px}
+  .ctw .tn-reseaux[data-tn-c="pastilles"] li b[data-tn-long]:not(#tn){font-size:20px}
+}
 /* ── Adresse : une adresse longue (attribut posé par le Studio) n'est jamais un pavé gras ── */
 .ctw[data-tn-titres="gras"] .tn-adresse address[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-adresse address[data-tn-long],.ctw[data-tn-lourd] .tn-adresse address[data-tn-long]{font-family:var(--f-ui);font-weight:600;font-size:19px;line-height:1.4;letter-spacing:0;text-transform:none}
 .ctw[data-tn-titres="gras"] .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long],.ctw[data-tn-titres="capitales"] .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long],.ctw[data-tn-lourd] .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long]{font-size:22px;line-height:1.35}

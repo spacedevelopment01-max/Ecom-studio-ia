@@ -18,6 +18,8 @@ export const CONTRASTE_ILLISIBLE = 1.8;
 /** Part des points mesurés sous le contraste minimal à partir de laquelle le texte est dit peu lisible ; en dessous (mais au-dessus de la part « partielle »), seulement par endroits. */
 export const PART_ILLISIBLE = 0.4;
 export const PART_PARTIELLE = 0.15;
+/** Un texte en partie recouvert (tiroir, fenêtre, menu ouvert) : son contraste ne se juge que si au moins cette part de ses points est au premier plan. */
+export const PART_VISIBLE_MIN = 0.25;
 /** Hauteur maximale d'une capture, en pixels : au-delà, la page est coupée (et c'est dit). */
 export const CAPTURE_MAX_PX = 12000;
 /** Attente, en millisecondes, après le chargement (scripts des pièces) et après une ouverture (volets, tiroir). */
@@ -26,7 +28,7 @@ export const ATTENTE_OUVERTURE_MS = 380;
 
 export type Defaut = { type: string; gravite: "bloquant" | "important" | "mineur"; uid: string | null; selecteur: string; texte: string; detail: string; cadre: [number, number, number, number]; autres?: number };
 export type Mesure = { largeur: number; hauteur: number; hauteurPage: number; coupee: boolean; sections: { uid: string; classe: string; construction: string; visible: boolean; cadre: [number, number, number, number] }[]; defauts: Defaut[]; capture: Buffer | null; ouverts: string[] };
-type TexteMesure = { uid: string | null; selecteur: string; texte: string; couleur: number[]; taille: number; gras: boolean; fixe: boolean; rects: number[][] };
+type TexteMesure = { i?: number; uid: string | null; selecteur: string; texte: string; couleur: number[]; taille: number; gras: boolean; fixe: boolean; rects: number[][] };
 
 const ICI = path.dirname(new URL(import.meta.url).pathname);
 export const DETECTEURS_PAGE = fs.readFileSync(path.join(ICI, "detecteurs-page.js"), "utf8");
@@ -37,7 +39,7 @@ export const DETECTEURS_PAGE = fs.readFileSync(path.join(ICI, "detecteurs-page.j
  */
 export async function ouvrirNavigateur(): Promise<Browser> {
   const { chromium } = await import("playwright");
-  const exe = [process.env.CHROMIUM, "/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome"].find((c) => c && fs.existsSync(c));
+  const exe = [process.env.CHROMIUM, "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"].find((c) => c && fs.existsSync(c));
   const args = ["--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE 127.0.0.1", "--no-proxy-server"];
   return chromium.launch(exe ? { executablePath: exe, args: [...args, "--no-sandbox", "--disable-dev-shm-usage"] } : { args });
 }
@@ -86,26 +88,39 @@ export async function onglet(browser: Browser, service: Service): Promise<{ cont
 const lum = (c: number[]) => { const f = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
 export const contraste = (a: number[], b: number[]) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
 
-const SANS_TEXTE = ".tb-wrap > .frame *, .tb-wrap > .frame *::before, .tb-wrap > .frame *::after, .tb-wrap > .frame *::placeholder, .tb-wrap > .frame *::marker{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;-webkit-text-stroke-color:transparent!important;caret-color:transparent!important;text-decoration-color:transparent!important}";
+const SANS_TEXTE = ".tb-wrap > .frame *, .tb-wrap > .frame *::before, .tb-wrap > .frame *::after, .tb-wrap > .frame *::placeholder, .tb-wrap > .frame *::marker{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;-webkit-text-stroke-color:transparent!important;caret-color:transparent!important;text-decoration-color:transparent!important;transition:none!important}";
+/** Les couleurs reviennent d'un coup : sans cela, un texte dont la couleur change en douceur (un lien) resterait à moitié effacé sur la capture ou la mesure suivante. */
+const SANS_TRANSITION = ".tb-wrap > .frame *, .tb-wrap > .frame *::before, .tb-wrap > .frame *::after{transition:none!important}";
 
 /** Le contraste de chaque texte avec ce qu'il y a vraiment dessous : la page est capturée sans ses textes, et les pixels sont lus. */
 async function contrastes(page: Page, textes: TexteMesure[], hauteur: number, largeur: number): Promise<Defaut[]> {
   if (!textes.length) return [];
   const style = await page.addStyleTag({ content: SANS_TEXTE });
   const img = await page.screenshot({ type: "png", fullPage: true, clip: { x: 0, y: 0, width: largeur, height: hauteur }, animations: "disabled" });
-  await style.evaluate((n) => (n as HTMLElement).remove());
+  await style.evaluate((n, css) => { n.textContent = css; void getComputedStyle(document.body).color; document.querySelectorAll(".tb-wrap > .frame a, .tb-wrap > .frame button").forEach((e) => void getComputedStyle(e).color); (n as HTMLElement).remove(); }, SANS_TRANSITION);
   const raw = await sharp(img, { limitInputPixels: false }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const W = raw.info.width, H = raw.info.height, data = raw.data;
   const pixel = (x: number, y: number) => { const i = (Math.min(H - 1, Math.max(0, Math.round(y))) * W + Math.min(W - 1, Math.max(0, Math.round(x)))) * 3; return [data[i], data[i + 1], data[i + 2]]; };
   const out: Defaut[] = [], vus = new Set<string>();
+  // Premier passage : les textes dont le contraste est trop bas quelque part, avec leurs points de mesure.
+  const candidats: { t: TexteMesure; points: number[][]; ratios: number[] }[] = [];
   for (const t of textes) {
-    const ratios: number[] = [];
+    const ratios: number[] = [], points: number[][] = [];
     for (const [x, y, w, h] of t.rects) {
       if (y + h > H || x + w > W + 1 || x < -1) continue;
       // Jamais le bord de la ligne (un soulignement, un filet s'y trouvent).
-      for (let i = 1; i <= 7; i++) for (const j of [0.25, 0.5, 0.72]) { const b = pixel(x + (w * i) / 8, y + h * j), a = t.couleur[3]; ratios.push(contraste([0, 1, 2].map((k) => t.couleur[k] * a + b[k] * (1 - a)), b)); }
+      for (let i = 1; i <= 7; i++) for (const j of [0.25, 0.5, 0.72]) { const px = x + (w * i) / 8, py = y + h * j, b = pixel(px, py), a = t.couleur[3]; points.push([px, py]); ratios.push(contraste([0, 1, 2].map((k) => t.couleur[k] * a + b[k] * (1 - a)), b)); }
     }
-    if (!ratios.length) continue;
+    if (!ratios.length || ratios.filter((r) => r < CONTRASTE_MIN).length / ratios.length < PART_PARTIELLE) continue;
+    candidats.push({ t, points, ratios });
+  }
+  if (!candidats.length) return [];
+  // Second passage : seuls comptent les points où le texte est au premier plan (pas sous un tiroir, une fenêtre, un
+  // menu ouvert ou leur voile : ce texte-là ne se lit pas à ce moment, son contraste ne se juge pas).
+  const devant = (await page.evaluate((q) => (window as unknown as { __tour: { premierPlan: (q: unknown) => boolean[][] } }).__tour.premierPlan(q), candidats.map((c) => ({ i: c.t.i ?? -1, points: c.points })))) as boolean[][];
+  for (let n = 0; n < candidats.length; n++) {
+    const t = candidats[n].t, ratios = candidats[n].ratios.filter((_r, k) => devant[n]?.[k] !== false);
+    if (ratios.length < candidats[n].ratios.length * PART_VISIBLE_MIN) continue;
     ratios.sort((a, b) => a - b);
     const sous = ratios.filter((r) => r < CONTRASTE_MIN).length / ratios.length, median = ratios[Math.floor(ratios.length / 2)];
     if (sous < PART_PARTIELLE) continue;

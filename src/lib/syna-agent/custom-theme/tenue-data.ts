@@ -961,12 +961,18 @@ export function reseauxDansTexte(text: string): TenueReseau[] {
   return RESEAUX.map((r) => out.get(r.cle)).filter((x): x is TenueReseau => !!x);
 }
 
+/**
+ * Un compte ou une adresse de réseau trop long pour sa ligne passe à la ligne à ses signes (après « / » et « _ », avant
+ * « . » et « @ »), jamais au milieu d'un nom : « linkedin.com/company/ » puis « maison-essai ».
+ */
+export const compteEnLignes = (compte: string): string => esc(compte).replace(/([/_])(?=.)/g, "$1<wbr>").replace(/(?<=[^<>/_])([.@])(?=.)/g, "<wbr>$1");
+
 /** La pièce des réseaux : les vrais comptes du client, chacun avec son lien ; sans compte connu, elle ne se montre pas. */
 export function withTenueReseaux(html: string, d: TenueSite): string {
   if (!/\sdata-tn-reseaux\b/.test(html)) return html;
   const list = (d.reseaux ?? []).filter((r) => /^https:\/\/[^\s"<>]+$/.test(r.url) && r.compte.trim()).slice(0, 5);
   if (!list.length) return "";
-  return html.replace(/(<ul class="tn-pt-comptes">)[\s\S]*?(<\/ul>)/, (_m, a: string, b: string) => `${a}${list.map((r) => `<li><a href="${esc(r.url)}" target="_blank" rel="noopener"><small>${esc(r.nom)}</small><b>${esc(r.compte)}</b></a></li>`).join("")}${b}`);
+  return html.replace(/(<ul class="tn-pt-comptes">)[\s\S]*?(<\/ul>)/, (_m, a: string, b: string) => `${a}${list.map((r) => `<li><a href="${esc(r.url)}" target="_blank" rel="noopener"><small>${esc(r.nom)}</small><b>${compteEnLignes(r.compte)}</b></a></li>`).join("")}${b}`);
 }
 
 /**

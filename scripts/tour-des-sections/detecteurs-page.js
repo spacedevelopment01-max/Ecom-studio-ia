@@ -43,6 +43,8 @@
     SERIE_ECART_MAX: 1.35,
     /** Sur téléphone : hauteur minimale d'une zone à toucher ; écart minimal entre deux boutons. */
     TOUCHER_MIN_PX: 40, BOUTONS_ECART_MIN_PX: 8,
+    /** Deux lignes d'une liste (menu, accordéon, cases à cocher) d'au moins tant de haut peuvent se toucher. */
+    LIGNE_A_TOUCHER_PX: 44,
     /** Vide : une section de plus de tant de haut sans rien de visible ; un trou de plus de tant entre deux éléments. */
     SECTION_VIDE_PX: 160, TROU_PX: 120,
     /** Un cadre de photo vide ne se signale qu'au-delà de cette taille. */
@@ -204,7 +206,8 @@
     textes.forEach(function (t) {
       for (var a = t.el, i = 0; a && i < 3 && !a.hasAttribute("data-ct"); a = a.parentElement, i++) {
         var s = cs(a);
-        if (s.display === "inline" || !estBoite(a)) continue;
+        // « display:contents » : l'élément n'a pas de boîte (ses enfants sont posés chez son parent), rien ne peut en sortir.
+        if (s.display === "inline" || s.display === "contents" || !estBoite(a)) continue;
         var b = boite(a), u = union(t.rects);
         // En hauteur, la ligne d'un texte serré dépasse un peu de ses lettres : la tolérance suit la taille du texte.
         var dx = Math.max(u.r - b.r, b.l - u.l), dy = Math.max(u.b - b.b, b.t - u.t) - num(cs(t.el).fontSize) * SEUILS.SORT_DE_BOITE_INTERLIGNE;
@@ -227,13 +230,17 @@
       }
     });
     // Le choix affiché d'une liste déroulante, plus long que la liste : sa fin ne se lit pas.
-    var toile = document.createElement("canvas").getContext("2d");
+    var toile = document.createElement("canvas").getContext("2d"), SELECT_FLECHE_PX = 24;
     racines.forEach(function (sec) {
       Array.prototype.forEach.call(sec.querySelectorAll("select"), function (el) {
         if (!visible(el) || !el.options.length || el.multiple) return;
         var s = cs(el), o = el.options[el.selectedIndex < 0 ? 0 : el.selectedIndex];
         toile.font = s.fontStyle + " " + s.fontWeight + " " + s.fontSize + " " + s.fontFamily;
         var place = el.clientWidth - num(s.paddingLeft) - num(s.paddingRight), w = toile.measureText(o.text).width;
+        // Le navigateur écrit le choix sur plusieurs lignes quand la liste peut grandir : il n'est rogné que si ses
+        // lignes ne tiennent pas dans la hauteur de la liste (ou si le texte ne revient pas à la ligne).
+        var interligne = num(s.lineHeight) || num(s.fontSize) * 1.2, lignesPossibles = /nowrap|^pre$/.test(s.whiteSpace) ? 1 : Math.max(1, Math.round((el.clientHeight - num(s.paddingTop) - num(s.paddingBottom)) / interligne));
+        if (lignesPossibles > 1 && place > 0 && Math.ceil(w / (place - SELECT_FLECHE_PX)) <= lignesPossibles) return;
         if (w - place > SEUILS.COUPE_PX) ajoute("texte-coupe", el, { texte: o.text, detail: "le choix affiché de la liste est rogné (" + Math.round(w) + " px de texte pour " + Math.round(place) + " px)" });
       });
     });
@@ -292,6 +299,13 @@
         });
       });
     });
+    var vraiBouton = function (el) {
+      var s = cs(el);
+      if (el.classList.contains("tn-bt")) return true;
+      var bords = ["Top", "Right", "Bottom", "Left"].filter(function (k) { return num(s["border" + k + "Width"]) > 0 && s["border" + k + "Style"] !== "none" && (couleur(s["border" + k + "Color"]) || [0, 0, 0, 0])[3] > 0.05; }).length;
+      var fond = (couleur(s.backgroundColor) || [0, 0, 0, 0])[3] > 0.05 || s.backgroundImage !== "none";
+      return bords === 4 || (fond && (num(s.borderTopLeftRadius) >= 2 || s.boxShadow !== "none"));
+    };
     // Deux boutons collés (téléphone).
     if (tel) for (var i1 = 0; i1 < cibles.length; i1++) for (var j1 = i1 + 1; j1 < cibles.length; j1++) {
       var A = cibles[i1], B = cibles[j1];
@@ -301,7 +315,11 @@
       if (ecart < SEUILS.BOUTONS_ECART_MIN_PX && ecart > -SEUILS.CHEVAUCHEMENT_PX) {
         // Deux éléments d'un même bloc soudé (les deux moitiés d'un sélecteur, un champ et son bouton) ne sont pas « collés ».
         var soudes = A.el.parentElement === B.el.parentElement && (cs(A.el.parentElement).gap === "0px" || estBoite(A.el.parentElement)) && ecart <= 1;
-        if (!soudes) ajoute("boutons-colles", B.el, { detail: "à " + Math.max(0, Math.round(ecart)) + " px d'un autre bouton (« " + court(A.el.textContent).slice(0, 24) + " »)", cadre: union([A.b, B.b]) });
+        // Les lignes d'un menu, d'un accordéon, d'une liste à cocher : l'une sous l'autre, chacune assez haute pour le
+        // doigt, et qui ne sont pas deux vrais boutons (bouton du Studio, boîte bordée des quatre côtés, pastille arrondie
+        // ou à ombre). C'est la forme normale d'une liste : le doigt ne se trompe pas de ligne.
+        var lignesDeListe = rx > 4 && A.b.h >= SEUILS.LIGNE_A_TOUCHER_PX && B.b.h >= SEUILS.LIGNE_A_TOUCHER_PX && !(vraiBouton(A.el) && vraiBouton(B.el));
+        if (!soudes && !lignesDeListe) ajoute("boutons-colles", B.el, { detail: "à " + Math.max(0, Math.round(ecart)) + " px d'un autre bouton (« " + court(A.el.textContent).slice(0, 24) + " »)", cadre: union([A.b, B.b]) });
       }
     }
 
@@ -326,6 +344,19 @@
         var r = document.createRange(); r.setStart(t.noeud, m.index); r.setEnd(t.noeud, m.index + m[0].length);
         var rr = Array.prototype.map.call(r.getClientRects(), deRect).filter(function (x) { return x.w > 0.5; });
         if (lignesDe(rr) < 2) continue;
+        // Un identifiant ou une adresse (« @maison.essai », « instagram.com/maison-essai ») n'est pas un mot : il peut
+        // passer à la ligne après un de ses signes. Coupé ailleurs (au milieu d'un nom), c'est un mot coupé.
+        var d0 = m.index, f0 = m.index + m[0].length;
+        while (d0 > 0 && !/\s/.test(txt[d0 - 1])) d0--;
+        while (f0 < txt.length && !/\s/.test(txt[f0])) f0++;
+        var jeton = txt.slice(d0, f0);
+        if (/[@\/_]|[A-Za-z0-9]\.[A-Za-z]/.test(jeton)) {
+          rx.lastIndex = f0;
+          var mal = "", haut0 = null;
+          for (var q0 = 0; q0 < jeton.length; q0++) { var cq = cadresDe(t.noeud, d0 + q0), dq = cq[cq.length - 1]; if (!dq) continue; if (haut0 !== null && Math.abs(dq.top - haut0) > 3 && !/[\/.@_\-–?&=#:]/.test(jeton[q0 - 1]) && !/[\/.@_\-–?&=#:]/.test(jeton[q0])) { mal = jeton.slice(0, q0) + " / " + jeton.slice(q0); break; } haut0 = dq.top; }
+          if (mal) { var rj = document.createRange(); rj.setStart(t.noeud, d0); rj.setEnd(t.noeud, f0); ajoute("mot-coupe", t.el, { texte: jeton, detail: "l'adresse « " + jeton + " » est coupée au milieu d'un nom, pas après un de ses signes (" + mal + ")", cadre: union(Array.prototype.map.call(rj.getClientRects(), deRect)) }); fait = true; }
+          continue;
+        }
         // Où le mot se coupe : la plus petite part.
         var coupe = coupeEn(t.noeud, m.index, m[0]), k = coupe.k || 1;
         if (coupe.trait) continue; // coupé à la française, avec son trait d'union
@@ -450,8 +481,20 @@
         var plein = tag === "img" || tag === "svg" || tag === "video" || tag === "canvas" || tag === "iframe" || tag === "input" || tag === "select" || tag === "textarea" || tag === "button" || tag === "hr" || s.backgroundImage !== "none";
         if (!plein && estBoite(el)) { var bg = couleur(s.backgroundColor), sbg = couleur(cs(sec).backgroundColor); plein = !bg || bg[3] <= 0.05 || !sbg || Math.abs(bg[0] - sbg[0]) + Math.abs(bg[1] - sbg[1]) + Math.abs(bg[2] - sbg[2]) > 12 || sbg[3] < 0.5; }
         if (!plein) { ["::before", "::after"].forEach(function (p) { var ps = getComputedStyle(el, p); if (ps.content !== "none" && ps.display !== "none" && (ps.backgroundImage !== "none" || (couleur(ps.backgroundColor) || [0, 0, 0, 0])[3] > 0.05 || num(ps.borderTopWidth) > 0)) plein = true; }); }
-        if (!plein) return;
         var b = boite(el), z = zone(el);
+        // Un pseudo-élément qui ÉCRIT (un grand numéro, un signe) se voit aussi : sa place est estimée d'après sa taille.
+        ["::before", "::after"].forEach(function (p) {
+          var ps = getComputedStyle(el, p), ct = ps.content;
+          if (!ct || ct === "none" || ct === "normal" || ps.display === "none" || ps.visibility === "hidden" || !/[^"'\s]/.test(ct)) return;
+          var col = couleur(ps.color);
+          if (!col || col[3] * num(ps.opacity === "" ? 1 : ps.opacity) < 0.1 || num(ps.fontSize) < 1) return;
+          var h = num(ps.height) || num(ps.lineHeight) || num(ps.fontSize) * 1.1, w = num(ps.width) || b.w, q;
+          if (ps.position === "absolute") { var gauche = ps.left === "auto" ? 0 : num(ps.left), haut = ps.top === "auto" ? 0 : num(ps.top); q = { l: b.l + gauche, t: b.t + haut, r: b.l + gauche + w, b: b.t + haut + h }; }
+          else if (p === "::before") q = { l: b.l, t: b.t + num(s.paddingTop), r: b.l + w, b: b.t + num(s.paddingTop) + h };
+          else q = { l: b.l, t: b.b - num(s.paddingBottom) - h, r: b.l + w, b: b.b - num(s.paddingBottom) };
+          if (q.r - q.l > 0.5 && q.b - q.t > 0.5) out.push(q);
+        });
+        if (!plein) return;
         var c = { l: Math.max(b.l, z.l), t: Math.max(b.t, z.t), r: Math.min(b.r, z.r), b: Math.min(b.b, z.b) };
         if (c.r - c.l > 0.5 && c.b - c.t > 0.5) out.push(c);
       });
@@ -528,6 +571,8 @@
         Array.prototype.forEach.call(sec.querySelectorAll("*"), function (el) {
           var s = cs(el);
           if (s.position !== "sticky" || !visible(el) || s.top === "auto") return;
+          // Dans une fenêtre ou un tiroir fixe (posé au-dessus de la page, en-tête compris), il se colle à sa fenêtre.
+          for (var a = el.parentElement; a && a !== sec.parentElement; a = a.parentElement) if (cs(a).position === "fixed") return;
           if (num(s.top) < he - 2) ajoute("collant-sous-entete", el, { detail: "cet élément se colle à " + Math.round(num(s.top)) + " px du haut, sous l'en-tête collant (" + Math.round(he) + " px) : il passe dessous" });
         });
       });
@@ -543,9 +588,10 @@
       var op = 1; for (var a = t.el; a && a !== document.body; a = a.parentElement) op *= num(cs(a).opacity === "" ? 1 : cs(a).opacity);
       if (op < 0.05) return;
       var sec = t.sec;
-      pourContraste.push({ uid: sec ? sec.getAttribute("data-ct") : null, selecteur: sec ? chemin(t.el, sec) : t.el.tagName.toLowerCase(), texte: court(t.texte), couleur: [c[0], c[1], c[2], c[3] * op], taille: num(s.fontSize), gras: num(s.fontWeight) >= 600, fixe: !!t.flotte && cs(t.flotte).position === "fixed", rects: t.vus.map(function (r) { var zp = t.zone; return [Math.max(r.l, zp.l), Math.max(r.t, zp.t), Math.min(r.r, zp.r) - Math.max(r.l, zp.l), Math.min(r.b, zp.b) - Math.max(r.t, zp.t)]; }).filter(function (r) { return r[2] > 2 && r[3] > 2; }) });
+      pourContraste.push({ i: textes.indexOf(t), uid: sec ? sec.getAttribute("data-ct") : null, selecteur: sec ? chemin(t.el, sec) : t.el.tagName.toLowerCase(), texte: court(t.texte), couleur: [c[0], c[1], c[2], c[3] * op], taille: num(s.fontSize), gras: num(s.fontWeight) >= 600, fixe: !!t.flotte && cs(t.flotte).position === "fixed", rects: t.vus.map(function (r) { var zp = t.zone; return [Math.max(r.l, zp.l), Math.max(r.t, zp.t), Math.min(r.r, zp.r) - Math.max(r.l, zp.l), Math.min(r.b, zp.b) - Math.max(r.t, zp.t)]; }).filter(function (r) { return r[2] > 2 && r[3] > 2; }) });
     });
 
+    derniersTextes = textes;
     defauts.forEach(function (d) { delete d._cle; });
     // Ce qui se voit : la hauteur à capturer (la page, et ce qui flotte dans l'écran).
     var bas = 0;
@@ -561,6 +607,41 @@
     };
   }
 
+  /**
+   * Pour le contraste : chaque point (en pixels de la page) du texte numéro `i` de la dernière mesure est-il AU PREMIER
+   * PLAN ? Non quand autre chose est peint par-dessus : un tiroir, une fenêtre, un menu ouvert, leur voile. La capture
+   * est prise en haut de page : ce qui est fixe ou collant ne couvre que le premier écran.
+   */
+  var derniersTextes = [];
+  function premierPlan(liste) {
+    styles = new WeakMap();
+    var fond = function (e) { var s = cs(e), c = couleur(s.backgroundColor); return s.backgroundImage !== "none" || /^(IMG|VIDEO|CANVAS|IFRAME)$/.test(e.tagName) ? 1 : c ? c[3] : 0; };
+    var y0 = scrollY;
+    var out = liste.map(function (q) {
+      var t = derniersTextes[q.i];
+      if (!t || cs(t.el).pointerEvents === "none") return q.points.map(function () { return true; });
+      return q.points.map(function (p) {
+        var x = p[0], y = p[1];
+        if (y >= innerHeight - 1) { if (t.flotte) return true; scrollTo(0, Math.max(0, Math.round(y - innerHeight / 2))); }
+        else if (scrollY) scrollTo(0, 0);
+        var pile = document.elementsFromPoint(x, y - scrollY);
+        for (var k = 0; k < pile.length; k++) {
+          var e = pile[k];
+          if (e === t.el || e.contains(t.el) || t.el.contains(e)) return true;
+          var f = flotte(e);
+          if (scrollY && f) continue;
+          // Une autre section, ou une fenêtre fixe : dès qu'elle peint quelque chose (un voile compris). Dans la même
+          // section : seulement un panneau opaque (le texte ne se voit plus du tout).
+          var ailleurs = sectionDe(e) !== t.sec || (f && f !== t.flotte && cs(f).position === "fixed");
+          if (fond(e) > (ailleurs ? 0.05 : 0.9)) return false;
+        }
+        return true;
+      });
+    });
+    scrollTo(0, y0);
+    return out;
+  }
+
   /** Ouvre ce qui est replié ou caché (volets, tiroir de panier, recherche, fenêtre d'offre, menu du téléphone). Rend ce qui a été ouvert. */
   function ouvrir() {
     var faits = [];
@@ -573,5 +654,5 @@
     return faits;
   }
 
-  window.__tour = { SEUILS: SEUILS, GRAVITE: GRAVITE, mesurer: mesurer, ouvrir: ouvrir };
+  window.__tour = { SEUILS: SEUILS, GRAVITE: GRAVITE, mesurer: mesurer, ouvrir: ouvrir, premierPlan: premierPlan };
 })();

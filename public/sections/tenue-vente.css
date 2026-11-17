@@ -39,7 +39,10 @@
 @media (prefers-reduced-motion:reduce){
   .ctw .tn-messages .tn-v-fil{animation:none;flex:1;min-width:0;flex-wrap:wrap;justify-content:center}
   .ctw .tn-messages .tn-v-fil.tn-v-bis{display:none}
-  .ctw .tn-messages li{white-space:normal;padding:7px 14px 7px 0}
+  .ctw .tn-messages li{flex:0 1 auto;min-width:0;max-width:100%;white-space:normal;padding:7px 14px;gap:10px;text-align:center}
+  .ctw .tn-messages li::before{display:none}
+  .ctw .tn-messages[data-tn-c="rangee"] li{text-align:left}
+  .ctw .tn-messages[data-tn-c="rangee"] li::before{display:block}
   .ctw .tn-messages[data-tn-c="tour-a-tour"] .tn-v-fil{display:block}
   .ctw .tn-messages[data-tn-c="tour-a-tour"] li{opacity:1;animation:none;padding:7px 20px}
 }
