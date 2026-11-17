@@ -149,7 +149,7 @@ export function withTextesLongs(html: string): string {
       const n = texteNu(inner).length;
       return n > TEXTE_LONG.titre ? `<${tag}${attrs} data-tn-long="${n > TEXTE_LONG.titreTresLong ? 2 : 1}">${inner}</${tag}>` : m;
     })
-    .replace(/<(b|strong|h3|h4|dt|summary|blockquote)\b((?:"[^"]*"|[^>"])*)>((?:[^<]|<\/?(?:mark|br|i|em|u)\b[^>]*>)*)<\/\1>/g, (m, tag: string, attrs: string, inner: string) => {
+    .replace(/<(b|strong|h3|h4|dt|dd|address|summary|blockquote)\b((?:"[^"]*"|[^>"])*)>((?:[^<]|<\/?(?:mark|br|i|em|u)\b[^>]*>)*)<\/\1>/g, (m, tag: string, attrs: string, inner: string) => {
       if (deja(attrs)) return m;
       const n = texteNu(inner).length;
       return n > TEXTE_LONG.libelleAssezLong ? `<${tag}${attrs} data-tn-long="${n > TEXTE_LONG.libelle ? 2 : 1}">${inner}</${tag}>` : m;

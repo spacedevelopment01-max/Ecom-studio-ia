@@ -555,3 +555,46 @@
   .ctw .tn-ouverture-metier[data-tn-c="photo-bandeau"] .tn-reperes .tn-zon{display:block}
   .ctw .tn-ouverture-metier[data-tn-c="photo-bandeau"] .tn-reperes small{margin-bottom:5px}
 }
+
+/* ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   Tour des sections (17 novembre 2026, « j'en veux plus un seul ») : chaque pièce des partitions ouverte sur téléphone
+   et sur ordinateur, dans trois tenues, avec des contenus courts, vrais et difficiles. Ce bloc corrige ce que le tour a
+   mesuré et ce qui se voyait sur les planches.
+   ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+/* ── Les filtres en pastilles : rayon fixe ; un texte long passe à la ligne dans un rectangle aux coins ronds, jamais
+   dans un œuf ── */
+.ctw .tn-realisations-types .tn-pt-filtres span{border-radius:21px;text-wrap:balance}
+.ctw .tn-realisations-types[data-tn-c="bandes"] .tn-pt-filtres span{border-radius:0}
+.ctw .tn-realisations-types .tn-pt-filtres span mark{padding:0 4px;font-size:13.5px}
+/* ── Comptes des réseaux : un identifiant ne se coupe pas comme un mot (ni trait d'union, ni lettres seules) ; dans une
+   tenue aux titres gras, sur téléphone, il s'écrit en texte courant pour tenir sur sa ligne ── */
+.ctw .tn-reseaux li b{-webkit-hyphens:manual;hyphens:manual}
+.ctw .tn-reseaux li b[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:16px;line-height:1.3;letter-spacing:0;text-transform:none}
+/* ── Adresse : une adresse longue (attribut posé par le Studio) n'est jamais un pavé gras ── */
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-adresse address[data-tn-long]{font-family:var(--f-ui);font-weight:600;font-size:19px;line-height:1.4;letter-spacing:0;text-transform:none}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long]{font-size:22px;line-height:1.35}
+.ctw .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long]{font-size:30px;line-height:1.12}
+/* ── Frais en cartes : un montant écrit en toutes lettres (long) passe en texte courant ── */
+.ctw .tn-bien-frais[data-tn-c="cartes"] dd[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:1.4;letter-spacing:0;text-transform:none}
+/* ── Cadre penché : la photo penchée et son ombre gardent leur place en bas de la section ── */
+.ctw[data-tn-cadre="penche"] .tn-bien-description .tn-ph{margin-bottom:16px}
+.ctw[data-tn-cadre="penche"] .tn-privatisation[data-tn-c="cote-a-cote"] .tn-ph{margin-bottom:16px}
+.ctw[data-tn-cadre="penche"] .tn-realisations-types:is(:not([data-tn-c]),[data-tn-c="grille"]) .tn-galerie{column-gap:20px}
+@media (max-width:759px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-reseaux li b:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:17px;line-height:1.3;letter-spacing:0;text-transform:none}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-reseaux[data-tn-c="pastilles"] li b:not(#tn){font-size:16px}
+}
+@media (max-width:359px){
+  .ctw .tn-reseaux li b{font-size:21px}
+  .ctw .tn-reseaux[data-tn-c="sombre"] li b{font-size:23px}
+  /* Offre de première visite en billet, très petit téléphone : le bouton prend la largeur du billet (libellé sur deux lignes au plus) */
+  .ctw .tn-offre-visite[data-tn-c="billet"] .tn-pt-carte{padding-right:14px;padding-left:70px}
+  .ctw .tn-offre-visite[data-tn-c="billet"] .tn-bt{width:100%;padding:14px 10px}
+}
+@media (min-width:760px){
+  /* Privatisation, photo pleine : la carte posée à cheval descend sous la photo ; la section lui garde sa place */
+  .ctw .tn-privatisation:is(:not([data-tn-c]),[data-tn-c="photo-pleine"]){padding-bottom:34px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-adresse address[data-tn-long]{font-size:22px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long]{font-size:30px}
+  .ctw .tn-adresse[data-tn-c="adresse-en-grand"] address[data-tn-long]{font-size:42px}
+}

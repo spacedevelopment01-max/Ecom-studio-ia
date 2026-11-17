@@ -1006,3 +1006,95 @@
   .ctw .tn-agenda[data-tn-c="billets"] .tn-dates-a i{grid-column:2;margin:8px 0 18px}
   .ctw .tn-agenda[data-tn-c="billets"] .tn-dates-a a{grid-column:3;grid-row:auto;align-self:center;margin-bottom:12px}
 }
+
+/* ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   Tour des sections (17 novembre 2026, « j'en veux plus un seul ») : chaque pièce ouverte sur téléphone et sur
+   ordinateur, dans trois tenues, avec des contenus courts, vrais et difficiles. Ce bloc corrige ce que le tour a mesuré
+   et ce qui se voyait sur les planches. D'abord les constructions des pièces de services écrites dans cette feuille.
+   ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+/* ── Avant / après « décalé » avec une seule photo : elle prend toute la place (plus de vide à gauche) ── */
+.ctw .tn-avant-apres[data-tn-c="decale"] .tn-paire>figure:only-child{grid-column:1/-1;width:100%;margin:0}
+/* ── Aides « reste » : le très grand montant ne mord plus sur la ligne du dessous ── */
+.ctw .tn-aides[data-tn-c="reste"] .tn-comptes .tn-reste{gap:10px}
+/* ── Vitrine du jour, en étiquettes et en lignes : dans une tenue aux titres gras, sur téléphone, le nom du pain se
+   réduit pour qu'un mot courant tienne sur sa ligne ── */
+@media (max-width:759px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-vitrine[data-tn-c="etiquettes"] .tn-fournees b{font-size:17px;line-height:1.15}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-vitrine[data-tn-c="lignes"] .tn-fournees b{font-size:19px;line-height:1.15}
+  /* Aides en tableau : trois colonnes sur un téléphone, les montants à leur taille */
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-aides[data-tn-c="tableau"] .tn-comptes i{font-size:15px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-aides[data-tn-c="tableau"] .tn-comptes .tn-reste i{font-size:18px}
+  /* Prochaines dates en billets : les places restantes prennent toute la largeur du volet, l'inscription passe dessous */
+  .ctw .tn-agenda[data-tn-c="billets"] .tn-dates-a i{grid-column:2/-1;margin-bottom:0}
+  .ctw .tn-agenda[data-tn-c="billets"] .tn-dates-a a{grid-column:2/-1;justify-self:start}
+}
+
+/* ════ Les pièces du module des métiers ════ */
+/* ── Les choix en pastilles (le matin, à midi, l'après-midi) : une pastille prend la largeur de son texte, celles d'une
+   rangée ont la même hauteur, et un texte long (« À compléter : … ») prend sa propre rangée et passe à la ligne. Le rayon
+   est fixe : sur deux lignes, la pastille devient un rectangle aux coins ronds, jamais un œuf (capture du propriétaire,
+   17 novembre 2026). ── */
+.ctw .tn:is(.tn-recherche-biens,.tn-bien-visite,.tn-reserver-table,.tn-rdv-complet,.tn-inscription) form .tn-moment:not(.tn-options) label:not(#tn){display:grid;flex:1 1 auto;min-width:30%;max-width:100%}
+.ctw .tn:is(.tn-recherche-biens,.tn-bien-visite,.tn-reserver-table,.tn-rdv-complet,.tn-inscription) form .tn-moment:not(.tn-options) label>span{padding:8px 16px;border-radius:22px;line-height:1.3;text-wrap:balance}
+.ctw .tn:is(.tn-recherche-biens,.tn-bien-visite,.tn-reserver-table,.tn-rdv-complet,.tn-inscription) form .tn-moment:not(.tn-options) label>span mark{padding:0 4px;font-size:14.5px;line-height:1.35}
+/* ── La liste déroulante : un choix long passe à la ligne dans le champ au lieu d'être rogné ── */
+.ctw .tn:is(.tn-recherche-biens,.tn-bien-visite,.tn-reserver-table,.tn-rdv-complet,.tn-inscription) form select{height:auto;white-space:normal;text-wrap:wrap;text-overflow:clip}
+/* ── Rendez-vous en trois temps : le prix ne serre plus le nom de la prestation (il s'écrivait deux lettres par ligne) ;
+   quand les deux ne tiennent pas sur la ligne, le prix passe dessous ── */
+.ctw .tn.tn-rdv-complet form .tn-options label>span{display:flex;flex-wrap:wrap;align-items:baseline}
+.ctw .tn.tn-rdv-complet form .tn-options b{order:1;flex:1 1 7.2em;min-width:0}
+.ctw .tn.tn-rdv-complet form .tn-options em{order:2;flex:0 1 auto;max-width:100%;white-space:normal}
+.ctw .tn.tn-rdv-complet form .tn-options small{order:3;flex:0 0 100%}
+/* ── La carte du restaurant : le prix (ou sa note) ne prend jamais plus de 46 % de la ligne ── */
+.ctw .tn-carte .tn-rubrique li{grid-template-columns:minmax(0,1fr) fit-content(46%)}
+.ctw .tn-carte .tn-rubrique em{white-space:normal;text-wrap:balance}
+.ctw .tn-carte[data-tn-c="conduite"] .tn-rubrique li{grid-template-columns:fit-content(60%) minmax(18px,1fr) fit-content(36%)}
+.ctw .tn-carte .tn-rubrique em mark{padding:1px 5px;font-size:13px}
+/* ── Énergie et climat sans classe communiquée : l'échelle s'efface, mais ses lettres restent lisibles ── */
+.ctw .tn-bien-energie .tn-etiquette:not([data-tn-classe]) ol{opacity:1}
+.ctw .tn-bien-energie .tn-etiquette:not([data-tn-classe]) ol li span:not(#tn){background:color-mix(in srgb,var(--tn-c) 34%,var(--tn-fond));color:color-mix(in srgb,var(--tn-encre) 72%,var(--tn-fond))}
+/* « reglettes » sans classe : « non communiquée » passe sous le nom de l'étiquette (elle le serrait en colonne) */
+.ctw .tn-bien-energie[data-tn-c="reglettes"] .tn-etiquette:not([data-tn-classe]) .tn-classe{grid-column:1/-1;grid-row:auto;margin-top:8px;text-align:left}
+.ctw .tn-bien-energie[data-tn-c="reglettes"] .tn-etiquette:not([data-tn-classe]) .tn-classe strong{display:inline}
+.ctw .tn-bien-energie[data-tn-c="reglettes"] .tn-etiquette:not([data-tn-classe]) figcaption{grid-column:1/-1}
+/* ── La vie du quartier : la distance (ou sa note) passe à la ligne au lieu de sortir de l'écran ── */
+.ctw .tn-bien-quartier .tn-reperes-q b{min-width:0;flex:1 1 auto}
+.ctw .tn-bien-quartier .tn-reperes-q span{flex:0 1 auto;max-width:48%}
+.ctw .tn-bien-quartier .tn-reperes-q span mark{padding:1px 5px;font-size:13px}
+/* ── Galerie d'un bien : une note dans les trois chiffres-clés passe à la ligne ── */
+.ctw .tn-bien-galerie .tn-cles b:has(mark){white-space:normal}
+/* ── Caractéristiques en carreaux : une valeur longue (plus de 32 signes, attribut posé par le Studio) s'écrit en texte
+   courant, jamais en pavé gras ── */
+.ctw .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac dd[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:600;font-size:15.5px;line-height:1.35;letter-spacing:0;text-transform:none}
+.ctw .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac div:has(dd[data-tn-long]){flex-basis:100%}
+.ctw .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac dd{max-width:100%;min-width:0}
+@media (max-width:759px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-carte .tn-rubrique b{font-size:18px;line-height:1.2}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) :is(.tn-biens,.tn-recherche-biens) .tn-cartes-b .tn-bien:not(:only-child) b{font-size:20px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-bien-energie figcaption b{font-size:21px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b{font-size:27px}
+}
+@media (max-width:359px){
+  /* Réserver une table sur un très petit téléphone : la date sur sa ligne, l'heure et les couverts dessous */
+  .ctw .tn-reserver-table .tn-trio{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .ctw .tn-reserver-table .tn-trio label:nth-child(3n+1){grid-column:1/-1}
+}
+@media (min-width:760px){
+  /* La carte sur grand écran : les rubriques rangées en grille (les colonnes de journal laissaient un vide sous les
+     rubriques, et des cartes de hauteurs inégales dans une rangée) */
+  .ctw .tn-carte:is(:not([data-tn-c]),[data-tn-c="colonnes"],[data-tn-c="cartes"]) .tn-rubriques{display:grid;columns:auto;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));column-gap:56px}
+  .ctw .tn-carte[data-tn-c="cartes"] .tn-rubriques{gap:20px}
+  .ctw .tn-carte[data-tn-c="cartes"] .tn-rubrique{margin-bottom:0}
+  .ctw .tn-carte:is(:not([data-tn-c]),[data-tn-c="colonnes"],[data-tn-c="cartes"]) .tn-rubrique:only-child{max-width:620px}
+}
+
+/* ── La carte : le bloc des rubriques porte le même nom de classe que la pièce « questions par rubriques » du module des
+   pages, dont les marges lui tombaient dessus (un retrait de chaque côté, 64 px de vide dessous, et sur grand écran des
+   colonnes resserrées au milieu) ── */
+.ctw .tn-carte .tn-rubriques:not(#tn){padding:0;overflow:visible}
+@media (max-width:759px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-bien-quartier[data-tn-c="reperes"] .tn-reperes-q b{font-size:23px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-bien-caracteristiques[data-tn-c="chiffres"] .tn-carac dd:not([data-tn-long]){font-size:19px}
+}
+/* « conduite » : le prix se pose sur la ligne des points, même quand le nom du plat passe à la ligne */
+.ctw .tn-carte[data-tn-c="conduite"] .tn-rubrique em{align-self:end}
