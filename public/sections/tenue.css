@@ -737,3 +737,9 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 /* ouverture « dans la photo » : un voile clair sous le titre, pour qu'il se lise même quand le sujet de la photo monte haut */
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"]{position:relative}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"]::before{content:"";position:absolute;left:0;right:0;top:0;height:330px;pointer-events:none;background:linear-gradient(to bottom,color-mix(in srgb,var(--tn-fond) 88%,transparent) 0,color-mix(in srgb,var(--tn-fond) 70%,transparent) 55%,transparent)}
+
+/* Bouton à ombre : l'ombre dépasse de quelques pixels sous le bouton. Quand le bouton finit sa section, la section
+   suivante la recouvrait et le bouton semblait coupé (vu par le propriétaire le 17 novembre 2026 : « Les boutons sont
+   coupés en bas, jamais au grand jamais »). Le bouton passe donc au-dessus de ce qui suit, et garde sa place en bas. */
+.ctw[data-tn-bouton="ombre"] .tn .tn-bt{position:relative;z-index:1}
+.ctw[data-tn-bouton="ombre"] .tn>.tn-bt:last-child,.ctw[data-tn-bouton="ombre"] .tn>:last-child>.tn-bt:last-child{margin-bottom:8px}
