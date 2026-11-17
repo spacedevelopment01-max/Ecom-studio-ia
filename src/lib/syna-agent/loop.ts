@@ -262,7 +262,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           // le lit et s'adapte (question au client, autre outil), l'exécution ne s'arrête pas.
           let est: Awaited<ReturnType<NonNullable<AgentTool["estimate"]>>>;
           try { est = await t.estimate(tctx, parsed.data); }
-          catch (e) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, summary: L("Refus avant exécution : ", "Refused before running: ") + String(clip(e instanceof Error ? e.message : String(e), 600)) }, r.id); continue; }
+          catch (e) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, ...((e as { internal?: boolean } | null)?.internal === true ? { internal: true } : {}), summary: L("Refus avant exécution : ", "Refused before running: ") + String(clip(e instanceof Error ? e.message : String(e), (e as { internal?: boolean } | null)?.internal === true ? 1600 : 600)) }, r.id); continue; }
           // Règle du propriétaire : le prix d'abord, puis l'accord écrit du client, pour TOUTE dépense (audit du 10 novembre
           // 2026 : sous un budget autorisé d'office, les créations partaient sans carte). Une action gratuite (devis à 0, ex.
           // lire des angles prêts) ne demande jamais d'accord.

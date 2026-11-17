@@ -40,7 +40,8 @@ import { allSections, applyStructure, checkCustomTheme, loadCustomTheme, MAX_PRO
 import { momentsTenables, piecesPossibles, type OrdreFacts } from "./ordre";
 import { MIN_SECTIONS_IMPORTANTE, TYPES_ACCUEIL, partitionsPermises, typesAccueilPermis, type PageKind } from "./partitions";
 import type { PreuveId } from "./tenue-ordre";
-import { buildKnowledge, buildTool, COPY_FIXES_TYPICAL, COPY_REVIEW_TYPICAL_MICRO, customPhotoDeps, designCost, keepWork, PHOTO_FIX_TYPICAL_MICRO, PHOTO_REVIEW_TYPICAL_MICRO, photoUnit, runDesign, SECTION_TEXT_TYPICAL_MICRO, SITE_PLAN_TYPICAL_MICRO, siteKind, type BuildArgs, type DesignRun } from "./tools";
+import { refusSansPreuves } from "./preuves";
+import { dossierPreuves, preuvesRepondues, buildKnowledge, buildTool, COPY_FIXES_TYPICAL, COPY_REVIEW_TYPICAL_MICRO, customPhotoDeps, designCost, keepWork, PHOTO_FIX_TYPICAL_MICRO, PHOTO_REVIEW_TYPICAL_MICRO, photoUnit, runDesign, SECTION_TEXT_TYPICAL_MICRO, SITE_PLAN_TYPICAL_MICRO, siteKind, type BuildArgs, type DesignRun } from "./tools";
 
 export const SINA_SITE_JOB = "syna.site";
 export type SitePayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null };
@@ -130,12 +131,26 @@ export function siteQuoteFor(g: ReturnType<typeof siteSizeGuess>): CostEstimate 
 
 const kindOf = (ctx: ToolContext) => { const k = siteKind(ctx); return { business: k.business, products: k.products ?? 1 }; };
 
+/**
+ * GARDE-FOU SANS IA (deuxième essai réel, 17 novembre 2026 : à « refais tout le site », SINA a lancé la création sans
+ * avoir demandé au client ses preuves, puis lui a écrit que son site n'en montrait aucune « parce que je ne t'en ai pas
+ * encore demandé »). Une consigne ne suffit pas : tant que le dossier n'a aucune preuve ET que le client n'a répondu à
+ * aucune question sur ses preuves (réponse notée dans la mémoire du projet), le site ne se lance pas. Le refus tombe
+ * AVANT la carte de dépense (il part du devis) et de nouveau au lancement. « Je n'en ai pas » se note, puis le site se
+ * crée sans preuve.
+ */
+export function refusPreuves(ctx: ToolContext): string | null {
+  try { return refusSansPreuves({ preuves: dossierPreuves(ctx).a.length, repondu: preuvesRepondues(ctx) }); } catch { return null; }
+}
+/** Refus d'un outil pendant son devis, pour SINA seule : le client ne le lit pas. */
+export class RefusInterne extends Error { readonly internal = true; }
+
 type CreateArgs = { consigne?: string; refaire?: boolean };
 export const siteCreateTool: AgentTool<CreateArgs> = {
   name: "site.create", module: "site", kind: "generate", needsProject: true,
   description: "Étape du site (PAYANT : un seul prix annoncé, un seul accord écrit du client) : tu CRÉES TOUT SON SITE en une fois, pour sa marque. Tu le conçois (le parcours du visiteur sur chaque page, les pièces qui conviennent à son métier, l'allure tirée de sa planche de marque : titres, boutons, cadres des photos, un signe pris sur son produit ou son métier), tu donnes sa fiche à chaque produit, tu calcules le menu, tu écris tous les textes dans l'angle qu'il a choisi, tu les relis, tu poses ses photos là où elles vont et tu crées celles qui manquent, puis tu regardes le résultat en image sur téléphone. Tâche de fond de 20 à 40 minutes : tu restes disponible pendant ce temps. À lancer quand la marque, l'angle et l'activité (produits ou prestations, coordonnées) sont validés. consigne : ce que le client a dit vouloir pour son site, avec ses mots. refaire:true seulement s'il demande de refaire tout le site (payant, même prix). Il ne choisit ni thème, ni famille, ni concept : tu ne lui montres jamais de modèle.",
   args: z.object({ consigne: z.string().max(1500).optional(), refaire: z.boolean().optional() }).strict(),
-  estimate: (ctx) => siteQuote(kindOf(ctx)),
+  estimate: (ctx) => { const refus = refusPreuves(ctx); if (refus) throw new RefusInterne(refus); return siteQuote(kindOf(ctx)); },
   preview: () => L("Ton site entier, créé pour ta marque.", "Your whole site, built for your brand."),
   run: (ctx, a) => {
     const p = project(ctx);
@@ -143,6 +158,8 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
     if (j.steps[4]?.status !== "done") return { ok: false, summary: L("L'angle doit être choisi avant le site.", "Choose the angle first.") };
     if (j.steps[5]?.status !== "done") return { ok: false, summary: L("L'activité (produits ou prestations, coordonnées) doit être validée avant le site.", "Validate the activity first."), hint: "Finis d'abord l'étape de l'activité avec le client." };
     if (pendingJob(p.id, SINA_SITE_JOB)) return { ok: false, summary: L("Ton site est déjà en cours de création : attends-le.", "Your site is already being created.") };
+    const refus = refusPreuves(ctx);
+    if (refus) return { ok: false, internal: true, summary: refus };
     const cur = loadCustomTheme(p.id);
     if (cur && allSections(cur).some((x) => x.s.clientTexts) && !a.refaire) return { ok: false, summary: L("Le site est déjà créé.", "The site already exists."), hint: "Pour une retouche : custom.section puis custom.edit. Pour tout refaire (payant, à la demande du client seulement) : site.create avec refaire:true et sa consigne." };
     const quote = siteQuote(kindOf(ctx));
@@ -183,7 +200,7 @@ const short = (v: unknown, n: number) => (typeof v === "string" ? v.slice(0, n) 
 function montageSummary(m: unknown): Record<string, unknown> | null {
   if (!m || typeof m !== "object") return null;
   const r = m as Record<string, unknown>, out: Record<string, unknown> = {};
-  for (const k of ["sections", "failedEdits", "photosMade", "photosReal", "photosClient", "photosToProvide", "photosLeft", "photosFailed", "photosReprises", "relecture", "relecturePhotos", "regards", "regardNonFait"]) if (r[k] != null) out[k] = r[k];
+  for (const k of ["sections", "failedEdits", "photosMade", "photosReal", "photosClient", "photosToProvide", "photosLeft", "photosFailed", "photosReprises", "faitsPoses", "repetitions", "relecture", "relecturePhotos", "regards", "regardNonFait"]) if (r[k] != null) out[k] = r[k];
   if (Array.isArray(r.problems) && r.problems.length) out.problems = r.problems.slice(0, 12).map((x) => short(x, 220));
   return out;
 }

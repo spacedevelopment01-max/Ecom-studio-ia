@@ -95,6 +95,27 @@ export function preuvesDe(lines: DossierLine[], extra: Partial<Record<PreuveId, 
   return { a, manque: PREUVES.filter((p) => !found.has(p.id)).map((p) => ({ id: p.id, label: p.label })), faits, faitsAbsents: FAITS.filter((p) => !found.has(p.id)).map((p) => ({ id: p.id, label: p.label })), ids: new Set([...a, ...faits].map((x) => x.id)) };
 }
 
+/** Une note qui parle des preuves en général (« preuves : aucune pour l'instant », « rien à montrer »). */
+const NOTE_GENERALE = /(?<!\p{L})preuves?(?!\p{L})/iu;
+/**
+ * La question des preuves a-t-elle reçu une RÉPONSE du client ? (deuxième essai réel, 17 novembre 2026 : le site a été
+ * créé sans que la question soit posée.) Vrai quand ses notes portent au moins une preuve, une preuve qu'il a dit ne
+ * pas avoir, ou une note générale sur ses preuves. Les faits qu'une pièce demande (horaires, délais, accès) ne
+ * comptent pas : ce ne sont pas des preuves.
+ */
+export function preuvesDemandees(lines: DossierLine[]): boolean {
+  const found = preuvesDansLignes(lines), ids = new Set(PREUVES.map((p) => p.id));
+  return [...found.a.keys(), ...found.pas].some((id) => ids.has(id)) || lines.some((l) => NOTE_GENERALE.test(l.title ?? "") || (NOTE_GENERALE.test(l.value ?? "") && ABSENT.test((l.value ?? "").trim())));
+}
+/**
+ * Refus de créer le site tant que la question des preuves n'a pas eu de réponse (message pour SINA seule, jamais montré
+ * au client). `null` : le site peut se créer.
+ */
+export function refusSansPreuves(o: { preuves: number; repondu: boolean }): string | null {
+  if (o.preuves > 0 || o.repondu) return null;
+  return `Le site n'est pas lancé et rien n'est payé : le dossier ne contient AUCUNE preuve, et le client n'a pas encore répondu à la question des preuves. Demande-lui d'abord ses vraies preuves, simplement et une question à la fois : ${PREUVES.map((p) => p.demande).join(" ; ")}. Note chaque réponse avec memory.note, sous un titre qui dit la preuve, avec ses mots exacts. S'il n'en a aucune, note-le (memory.note, titre « preuves », valeur « aucune pour l'instant ») puis relance site.create : son site se créera sans partie « preuves », et tu le lui dis. Ne lui en suggère aucune, n'en invente jamais.`;
+}
+
 /** Ce qui est dit au concepteur et aux juges. */
 export function preuvesBrief(p: Preuves): string {
   return [
@@ -105,4 +126,4 @@ export function preuvesBrief(p: Preuves): string {
 }
 
 /** La question des preuves que SINA pose avant de créer le site (règle générale, sans exemple de métier). */
-export const QUESTION_DES_PREUVES = `LES PREUVES, AVANT DE LANCER : le site ne montre que de vraies preuves, et une partie de la page qui en dépend n'existe pas sans elles. Demande donc au client, simplement et une question à la fois, ce qu'il a déjà et que tu ne sais pas encore : ${PREUVES.map((p) => p.demande).join(" ; ")}. Note chaque réponse avec memory.note, sous un titre qui dit la preuve (« avis », « assurance », « diplômes », « depuis quand », « chiffres », « réalisations », « presse », « équipe », « clients entreprises ») et avec ses mots exacts ; s'il n'en a pas, note-le aussi (« aucun pour l'instant ») : cela ne se redemande pas. Ne lui en suggère aucune et n'en invente jamais : sans avis, ton site n'aura pas de partie « avis », et tu le lui dis. CE QUE CERTAINES PARTIES DEMANDENT EN PLUS, seulement quand cela a un sens pour son métier et que tu ne le sais pas encore : ${FAITS.filter((p) => !["horaires", "adresse"].includes(p.id)).map((p) => p.demande).join(" ; ")}. Même règle : ses mots exacts, notés avec memory.note sous un titre clair (« offre de première visite », « délais », « annulation », « privatisation », « réseaux », « accès »), rien de suggéré, et « aucun » se note aussi.`;
+export const QUESTION_DES_PREUVES = `LES PREUVES, AVANT DE LANCER : le site ne montre que de vraies preuves, et une partie de la page qui en dépend n'existe pas sans elles. Demande donc au client, simplement et une question à la fois, ce qu'il a déjà et que tu ne sais pas encore : ${PREUVES.map((p) => p.demande).join(" ; ")}. Note chaque réponse avec memory.note, sous un titre qui dit la preuve (« avis », « assurance », « diplômes », « depuis quand », « chiffres », « réalisations », « presse », « équipe », « clients entreprises ») et avec ses mots exacts ; s'il n'en a pas, note-le aussi (« aucun pour l'instant ») : cela ne se redemande pas ; s'il n'a AUCUNE preuve du tout, note-le sous le titre « preuves » (« aucune pour l'instant »). Tant qu'aucune réponse n'est notée et que le dossier n'a aucune preuve, site.create refuse de se lancer. Ne lui en suggère aucune et n'en invente jamais : sans avis, ton site n'aura pas de partie « avis », et tu le lui dis. CE QUE CERTAINES PARTIES DEMANDENT EN PLUS, seulement quand cela a un sens pour son métier et que tu ne le sais pas encore : ${FAITS.filter((p) => !["horaires", "adresse"].includes(p.id)).map((p) => p.demande).join(" ; ")}. Même règle : ses mots exacts, notés avec memory.note sous un titre clair (« offre de première visite », « délais », « annulation », « privatisation », « réseaux », « accès »), rien de suggéré, et « aucun » se note aussi.`;

@@ -470,14 +470,18 @@ describe("le second regard séparé et le devis", () => {
     const Og = await import("@/lib/syna-agent/custom-theme/originality");
     const c = T.designCost(true);
     expect(c.calls).toEqual({ max: 7, usual: 4 });
-    expect(c.max).toBe(D.DESIGN_CAP_MICRO * D.DESIGN_CALLS_MAX + SR.SECOND_REGARD_CAP_MICRO * SR.SECOND_REGARD_CALLS_MAX + Og.ORIGINALITY_CAP_MICRO * Og.ORIGINALITY_CALLS_MAX + T.designKnowledge(true).max);
-    expect(c.usual).toBe(D.DESIGN_TYPICAL_MICRO + SR.SECOND_REGARD_TYPICAL_MICRO + Og.ORIGINALITY_TYPICAL_MICRO + T.designKnowledge(true).usual);
+    // Depuis le 17 novembre 2026 : la part de chaque relecteur se calcule sur le vrai tarif de sa route (jamais moins que l'ancien montant fixe).
+    expect(T.secondRegardCapMicro()).toBeGreaterThanOrEqual(SR.SECOND_REGARD_CAP_MICRO);
+    expect(T.originalityCapMicro()).toBeGreaterThanOrEqual(Og.ORIGINALITY_CAP_MICRO);
+    expect(c.max).toBe(D.DESIGN_CAP_MICRO * D.DESIGN_CALLS_MAX + T.secondRegardCapMicro() * SR.SECOND_REGARD_CALLS_MAX + T.originalityCapMicro() * Og.ORIGINALITY_CALLS_MAX + T.designKnowledge(true).max);
+    expect(c.usual).toBeGreaterThanOrEqual(D.DESIGN_TYPICAL_MICRO + SR.SECOND_REGARD_TYPICAL_MICRO + Og.ORIGINALITY_TYPICAL_MICRO + T.designKnowledge(true).usual);
+    expect(c.usual).toBeLessThan(c.max);
     expect(T.designCost(false).calls).toEqual({ max: 5, usual: 3 });
     // Le devis du site entier porte cette conception : il monte d'au moins le plafond des deux avis du second regard.
     T.customPhotoDeps.unit = () => 150_000;
     try {
       const q = X.siteQuote({ business: "services", products: 1 });
-      const sans = q.maxMicro - SR.SECOND_REGARD_CAP_MICRO * SR.SECOND_REGARD_CALLS_MAX - K.knowledgeCapMicro("secondRegard", "quality_control", SR.SECOND_REGARD_CALLS_MAX);
+      const sans = q.maxMicro - T.secondRegardCapMicro() * SR.SECOND_REGARD_CALLS_MAX - K.knowledgeCapMicro("secondRegard", "quality_control", SR.SECOND_REGARD_CALLS_MAX);
       expect(sans).toBeGreaterThan(0);
       expect(q.maxMicro - sans).toBeGreaterThanOrEqual(300_000);
     } finally { delete T.customPhotoDeps.unit; }

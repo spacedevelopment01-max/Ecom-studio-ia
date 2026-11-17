@@ -153,7 +153,7 @@ export async function checkCreatedImage(o: { jobId: string; projectId: string; u
           product ? "productWhole : true si le produit est entier (rien de coupé par le cadre) et non déformé." : "productWhole : true.",
           `texts : UNE entrée par texte attendu, dans cet ordre, avec expected (le texte attendu recopié), written (ce qui est réellement écrit, mot pour mot, vide s'il est absent) et exact (true seulement s'il est écrit sans faute ni lettre en trop), par exemple [{"expected":"Thé vert bio","written":"Thé vert bio","exact":true}]. Textes attendus : ${texts.length ? texts.map(q).join(", ") : "(aucun : liste vide)"}.`,
           "extraText : tout autre texte, lettre ou chiffre écrit sur l'image, en dehors des textes attendus et de ceux imprimés sur le produit (vide sinon).",
-          "people : true si une personne, un visage ou une main est visible.", "notes : autre défaut net (bande blanche, zone cassée ; vide sinon)."].join("\n"),
+          "people : true si une personne, un visage, une main ou une autre partie du corps est visible, même de dos, de loin, floue ou en partie (une silhouette, un bras, des jambes, des pieds, quelqu'un sur un véhicule).", "notes : autre défaut net (bande blanche, zone cassée ; vide sinon)."].join("\n"),
         images: [{ data: image, label: "image créée" }, ...(product ? [{ data: product, label: "vraie photo du produit" }] : [])],
         maxTokens: CHECK_OUT, maxOutputTokens: CHECK_OUT, routing: { difficulty: "standard", prefer: CHECK_MODEL },
       } as LlmCall, GalleryCheckSchema)));
@@ -214,7 +214,7 @@ export async function runGalleryJob(ctx: JobContext) {
                 "productWhole : true si le produit est entier (rien de coupé par le cadre) et non déformé.",
                 `texts : UNE entrée par texte attendu, dans cet ordre, avec expected (le texte attendu recopié), written (ce qui est réellement écrit sur l'image, mot pour mot, vide s'il est absent) et exact (true seulement s'il est écrit sans faute ni lettre en trop), par exemple [{"expected":"Thé vert bio","written":"Thé vert bio","exact":true}]. Textes attendus : ${texts.length ? texts.map(q).join(", ") : "(aucun : liste vide)"}.`,
                 "extraText : tout autre texte écrit sur l'image, en dehors des textes attendus et de ceux imprimés sur le produit (vide sinon).",
-                "people : true si une personne, un visage ou une main est visible.", "notes : autre défaut net (vide sinon)."].join("\n"),
+                "people : true si une personne, un visage, une main ou une autre partie du corps est visible, même de dos, de loin, floue ou en partie (une silhouette, un bras, des jambes, des pieds, quelqu'un sur un véhicule).", "notes : autre défaut net (vide sinon)."].join("\n"),
               images: [{ data, label: "image créée" }, { data: refData, label: "vraie photo du produit" }],
               maxTokens: CHECK_OUT, maxOutputTokens: CHECK_OUT, routing: { difficulty: "standard", prefer: CHECK_MODEL },
             } as LlmCall, GalleryCheckSchema)));

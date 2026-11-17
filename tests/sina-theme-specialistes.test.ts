@@ -153,9 +153,11 @@ describe("le juge de l'originalité (séparé du concepteur)", async () => {
       expect(designKnowledge(true).max).toBeGreaterThan(designKnowledge(true).usual);
       // Depuis le 16 novembre 2026 : le second regard sur l'ordre des pages aussi (deux avis au plus par concept).
       const { designCost } = await import("@/lib/syna-agent/custom-theme/tools");
+      const T2 = await import("@/lib/syna-agent/custom-theme/tools");
       const R = await import("@/lib/syna-agent/custom-theme/second-regard");
       expect(est.maxMicro).toBe(designCost(true).max * 2);
-      expect(designCost(true).max).toBe(design3.DESIGN_CAP_MICRO * design3.DESIGN_CALLS_MAX + O.ORIGINALITY_CAP_MICRO * O.ORIGINALITY_CALLS_MAX + R.SECOND_REGARD_CAP_MICRO * R.SECOND_REGARD_CALLS_MAX + designKnowledge(true).max);
+      expect(designCost(true).max).toBe(design3.DESIGN_CAP_MICRO * design3.DESIGN_CALLS_MAX + T2.originalityCapMicro() * O.ORIGINALITY_CALLS_MAX + T2.secondRegardCapMicro() * R.SECOND_REGARD_CALLS_MAX + designKnowledge(true).max);
+      expect(T2.originalityCapMicro()).toBeGreaterThanOrEqual(O.ORIGINALITY_CAP_MICRO);
       const r = await call("custom.concepts", ctx, {});
       expect(r.ok, r.summary).toBe(true);
       // La documentaliste : secteur reconnu dans les mots du client, références sans nom de site.

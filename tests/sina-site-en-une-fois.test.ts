@@ -96,6 +96,8 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       expect(early.ok).toBe(false);
       expect(early.summary).toMatch(/activité/);
       J.updateJourney(cid, (x) => J.setStep(x, 5, "done"));
+      // Depuis le 17 novembre 2026 : le site ne se lance qu'une fois la question des preuves répondue (ici : « aucune »).
+      await call("memory.note", ctx, { kind: "fact", key: "preuves", value: "aucune pour l'instant" });
       const est = await fr(() => getTool("site.create")!.estimate!(ctx, {}));
       const r = await call("site.create", ctx, { consigne: "Qu'on ait envie de s'asseoir." });
       expect(r.ok, r.summary).toBe(true);

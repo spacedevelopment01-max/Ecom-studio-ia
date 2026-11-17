@@ -9,12 +9,21 @@
  *  - un « À compléter » restait écrit pour un fait présent au dossier → `factFlags` ;
  *  - l'adresse sortait sur le site alors que le client la voulait seulement dans les informations légales → `factFlags`
  *    (le remplissage automatique, lui, suit le réglage « adresse discrète » : voir tenue-data.ts).
+ *
+ * Deuxième essai réel (17 novembre 2026), deux défauts de plus, corrigés ici, sans IA :
+ *  - un fait connu resté « [À compléter : …] » était signalé, puis laissé tel quel : quand le libellé du manque nomme
+ *    sans ambiguïté un fait que le Studio connaît de façon structurée (téléphone, e-mail, horaires, zone ou ville,
+ *    adresse, liste des prestations), le vrai fait est POSÉ à sa place → `fillKnownGaps` ; ce qui reste ambigu continue
+ *    d'être signalé ;
+ *  - « [À compléter : numéro SIRET] » ou « [… téléphone de l'hébergeur] » étaient pris pour le téléphone du client : un
+ *    manque qui nomme un tiers (hébergeur, assureur, médiateur…) ou un autre identifiant (SIRET, TVA, RCS…) n'est
+ *    jamais rapproché d'un fait du client → `gapFact`, `TIERS`, `AUTRE_IDENTIFIANT`.
  */
 import { memory, type Project } from "../../projects";
 import { companyOf } from "../activity";
 import { tenuePrestations, tenueProducts, tenueSite } from "./render";
 import { withTenuePrestations, withTenueProducts, type TenuePrestation, type TenueProduct } from "./tenue";
-import { hoursLine, withTenueSite, type TenueSite } from "./tenue-data";
+import { hoursLine, withTenueSite, zoneCities, type TenueSite } from "./tenue-data";
 import type { CustomTheme } from "./theme";
 
 // ---------------------------------------------------------------- ce que le client a dit (mémoire du projet)
@@ -59,15 +68,15 @@ export function clientNotesBrief(projectId: string): string {
 
 // ---------------------------------------------------------------- ce que les emplacements automatiques afficheront
 
-export type SiteFacts = { site: TenueSite; prestations: TenuePrestation[]; products: TenueProduct[]; notes: ClientNote[]; /** Adresse de la fiche (même discrète), pour la reconnaître dans un texte. */ address: string | null; discreet: boolean };
+export type SiteFacts = { site: TenueSite; prestations: TenuePrestation[]; products: TenueProduct[]; notes: ClientNote[]; /** Adresse de la fiche (même discrète), pour la reconnaître dans un texte. */ address: string | null; discreet: boolean; /** E-mail de la fiche de l'entreprise. */ email?: string | null };
 
 /** Tout ce que le Studio sait et posera lui-même dans les pièces (lu une fois par montage). */
 export function siteFacts(p: Project, t: CustomTheme): SiteFacts {
   const prestations = (() => { try { return tenuePrestations(p.id); } catch { return []; } })();
   const products = (() => { try { return tenueProducts(p.id, t); } catch { return []; } })();
   const site = (() => { try { return tenueSite(p, t, products, prestations); } catch { return { products, prestations } as TenueSite; } })();
-  const co = (() => { try { return companyOf(p.id); } catch { return {}; } })() as { address?: string; addressDiscreet?: boolean };
-  return { site, prestations, products, notes: clientNotes(p.id), address: (p.services?.address || co.address || "").trim() || null, discreet: co.addressDiscreet === true };
+  const co = (() => { try { return companyOf(p.id); } catch { return {}; } })() as { address?: string; addressDiscreet?: boolean; email?: string };
+  return { site, prestations, products, notes: clientNotes(p.id), address: (p.services?.address || co.address || "").trim() || null, discreet: co.addressDiscreet === true, email: (co.email ?? "").trim() || null };
 }
 
 const has = (html: string, attr: string) => new RegExp(`\\sdata-tn-${attr}(?=[\\s>=])`).test(html);
@@ -127,6 +136,89 @@ const words = (x: string) => fold(x).split(/[^a-z0-9]+/).filter((w) => w.length 
 /** Mots trop communs pour rapprocher un « À compléter » d'une note du client. */
 const COMMON = new Set(["compl", "comple", "client", "clien", "votre", "notre", "moyen", "facon", "votres"]);
 
+// ---------------------------------------------------------------- un manque qui nomme un fait connu (sans IA)
+
+/** Un tiers : son téléphone, son adresse ou son nom ne sont JAMAIS ceux du client. */
+export const TIERS = /heberg|assur|mediat|editeur|directeur|responsable|publication|imprim|banqu|transporteur|livreur|fournisseur|prestataire|organisme|autorite|syndic|notaire|bailleur|\bcnil\b/;
+/** Un autre identifiant que ceux que le Studio connaît : jamais pris pour le téléphone (« numéro SIRET »). */
+export const AUTRE_IDENTIFIANT = /siret|siren|\btva\b|\brcs\b|\brm\b|\bape\b|\bnaf\b|capital|immatricul|agrement|licence|\bpolice\b|contrat|certificat|identifiant|\biban\b|\bbic\b|commande|facture/;
+/** Mots qui ne disent rien du fait demandé. */
+const FILLER = new Set(["le", "la", "les", "l", "de", "du", "des", "d", "un", "une", "son", "sa", "ses", "ton", "ta", "tes", "notre", "nos", "votre", "vos", "mon", "ma", "mes", "a", "au", "aux", "et", "en", "ou", "pour", "ici", "exact", "exacte", "exacts", "exactes", "complet", "complete", "complets", "completes", "reel", "reels", "reelle", "reelles", "vrai", "vrais", "entreprise", "marque", "societe", "contact", "nous", "joindre", "appeler", "ecrire", "du", "client"]);
+export type GapFact = "tel" | "email" | "horaires" | "zone" | "ville" | "adresse" | "prestations" | "prestations-prix";
+/** Pour chaque fait : le mot qui le nomme (il en faut un), et les seuls mots qui peuvent l'accompagner. */
+const FACT_WORDS: { fact: GapFact; core: RegExp; ok: RegExp }[] = [
+  { fact: "tel", core: /^(?:telephone|tel|portable|mobile)$/, ok: /^(?:telephone|tel|portable|mobile|numero|fixe)$/ },
+  { fact: "email", core: /^(?:mail|email|courriel)$/, ok: /^(?:e|mail|email|courriel|adresse|electronique)$/ },
+  { fact: "horaires", core: /^(?:horaires?|heures|jours|ouverture)$/, ok: /^(?:horaires?|heures?|jours?|ouverture|ouverts?)$/ },
+  { fact: "ville", core: /^(?:ville|commune)$/, ok: /^(?:ville|commune|intervention|principale)$/ },
+  { fact: "zone", core: /^(?:zones?|secteurs?|villes|communes)$/, ok: /^(?:zones?|secteurs?|villes|communes|intervention|interventions|deplacements?|desservies?|couvertes?|geographique)$/ },
+  { fact: "adresse", core: /^adresse$/, ok: /^(?:adresse|postale)$/ },
+  { fact: "prestations-prix", core: /^(?:tarifs?|prix)$/, ok: /^(?:prestations|services|liste|tarifs?|prix|noms?)$/ },
+  { fact: "prestations", core: /^(?:prestations|services)$/, ok: /^(?:prestations|services|liste|noms?|proposees?|proposes?)$/ },
+];
+/**
+ * Le fait du client qu'un manque nomme SANS AMBIGUÏTÉ, ou null. Null dès que le libellé nomme un tiers ou un autre
+ * identifiant, mêle deux faits (« téléphone et horaires »), ou porte un mot de plus (« prix de la prestation »,
+ * « délai de rappel ») : dans le doute, rien n'est posé.
+ */
+export function gapFact(label: string): GapFact | null {
+  const g = fold(label);
+  if (TIERS.test(g) || AUTRE_IDENTIFIANT.test(g)) return null;
+  const tokens = g.split(/[^a-z0-9]+/).filter((w) => w && !FILLER.has(w));
+  if (!tokens.length) return null;
+  const hits = FACT_WORDS.filter((f) => tokens.some((w) => f.core.test(w)) && tokens.every((w) => f.ok.test(w)));
+  // « prestations et prix » nomme la liste avec ses prix ; « prestations » seule, la liste des noms.
+  if (hits.length === 2 && hits.every((h) => h.fact.startsWith("prestations"))) return tokens.some((w) => /^(?:prestations|services)$/.test(w)) ? "prestations-prix" : null;
+  if (hits.length !== 1) return null;
+  // « tarifs » ou « prix » seuls ne nomment pas la liste des prestations.
+  if (hits[0].fact === "prestations-prix" && !tokens.some((w) => /^(?:prestations|services)$/.test(w))) return null;
+  return hits[0].fact;
+}
+/** La valeur vraie d'un fait nommé, telle que le Studio la connaît (null : inconnue, ou à ne pas montrer ici). */
+function factValue(fact: GapFact, f: SiteFacts, pageKey?: string | null): string | null {
+  const area = (f.site.area ?? "").trim();
+  switch (fact) {
+    case "tel": return (f.site.phone ?? "").trim() || null;
+    case "email": return (f.email ?? "").trim() || null;
+    case "horaires": return f.site.hours?.trim() ? hoursLine(f.site.hours) : null;
+    case "zone": return area || null;
+    // « ville » : la première ville de sa zone ; une zone dite en une longue phrase n'est pas une ville.
+    case "ville": { if (!area) return null; const first = zoneCities(area)[0]?.trim() ?? ""; return first && first.length <= 40 && !/\d/.test(first) ? first : null; }
+    // Adresse discrète : jamais posée hors des informations légales.
+    case "adresse": return pageKey === "legal" ? f.address : f.discreet ? null : (f.site.address ?? "").trim() || null;
+    case "prestations": return f.prestations.length ? f.prestations.slice(0, 40).map((x) => x.name).join(", ") : null;
+    case "prestations-prix": return f.prestations.length ? f.prestations.slice(0, 40).map(prestationLine).join(" ; ") : null;
+  }
+}
+const escHtml = (x: string) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const GAP = /\[À compléter\s*:\s*([^\]<]{1,80})\]|<mark class="tn-manque">À compléter\s*:\s*([^<]{1,80})<\/mark>/g;
+
+/**
+ * Pose le VRAI fait à la place d'un « [À compléter : …] » quand son libellé nomme sans ambiguïté un fait que le Studio
+ * connaît (téléphone, e-mail, horaires, zone, ville, adresse non discrète, liste des prestations). Sans IA. Les choix
+ * d'un formulaire restés « À compléter » reçoivent les vraies prestations. Rend le HTML et ce qui a été posé ; ce qui
+ * reste ambigu n'est pas touché (il reste signalé par `factFlags`).
+ */
+export function fillKnownGaps(html: string, f: SiteFacts, pageKey?: string | null): { html: string; filled: string[] } {
+  const filled: string[] = [];
+  // 1) Liste de choix d'un formulaire dont un choix est resté « À compléter » pour les prestations : les vraies prestations.
+  let out = !f.prestations.length ? html : html.replace(/(<select\b[^>]*>)([\s\S]*?)(<\/select>)/g, (m, a: string, inner: string, b: string) => {
+    const gaps = [...inner.matchAll(/<option\b[^>]*>\s*(?:\[À compléter\s*:?\s*([^\]<]{0,80})\]|<mark class="tn-manque">À compléter\s*:?\s*([^<]{0,80})<\/mark>)\s*<\/option>/g)].map((x) => fold(x[1] ?? x[2] ?? ""));
+    if (!gaps.length || !gaps.some((g) => /prestation|service|travaux|soin|formule|besoin/.test(g)) || gaps.some((g) => TIERS.test(g) || AUTRE_IDENTIFIANT.test(g))) return m;
+    filled.push(`les ${f.prestations.length} prestations dans la liste de choix du formulaire`);
+    return `${a}${f.prestations.slice(0, 40).map((p) => `<option>${escHtml(p.name)}</option>`).join("")}${b}`;
+  });
+  // 2) Un manque dont le libellé nomme le fait.
+  out = out.replace(GAP, (m, a?: string, b?: string) => {
+    const label = (a ?? b ?? "").trim(), fact = gapFact(label);
+    const value = fact ? factValue(fact, f, pageKey) : null;
+    if (!value) return m;
+    filled.push(`« ${label} » : ${value.slice(0, 80)}`);
+    return escHtml(value);
+  });
+  return { html: out, filled };
+}
+
 /**
  * Ce qu'une section ÉCRITE dit de faux par rapport au dossier (relevé sans IA) :
  *  - un titre qui annonce un nombre différent du nombre d'éléments que sa liste automatique affichera ;
@@ -151,12 +243,23 @@ export function factFlags(html: string, f: SiteFacts, pageKey?: string | null): 
   const gaps = [...new Set([...filled.matchAll(/\[À compléter\s*:\s*([^\]<]{1,80})\]|<mark class="tn-manque">À compléter\s*:\s*([^<]{1,80})<\/mark>/g)].map((m) => (m[1] ?? m[2]).trim()))];
   for (const gap of gaps) {
     const g = fold(gap);
-    const known = /horaire|heures?\b|jours?\b|ouvert/.test(g) && f.site.hours ? `ses horaires : ${hoursLine(f.site.hours)}`
+    // Un tiers (hébergeur, assureur, médiateur…) ou un autre identifiant (SIRET, TVA, RCS…) : ce n'est ni le téléphone,
+    // ni l'adresse, ni les horaires du client. Seule une note du client qui nomme la même chose peut y répondre.
+    const other = TIERS.exec(g) ?? AUTRE_IDENTIFIANT.exec(g);
+    const stem = other?.[0] ?? null;
+    const note = () => {
+      const w = words(gap).filter((x) => !COMMON.has(x));
+      const n = stem ? f.notes.find((x) => fold(x.title).includes(stem)) : w.length ? f.notes.find((x) => words(x.title).some((k) => w.includes(k))) : undefined;
+      return n ? `« ${n.title} : ${n.value.slice(0, 200)} »` : null;
+    };
+    const known = other ? note()
+      : /horaire|heures?\b|jours?\b|ouvert/.test(g) && f.site.hours ? `ses horaires : ${hoursLine(f.site.hours)}`
       : /zone|villes?\b|secteur|deplace/.test(g) && f.site.area ? `sa zone : ${f.site.area}`
-      : /telephone|numero/.test(g) && f.site.phone ? `son téléphone : ${f.site.phone}`
+      : /telephone|\btel\b|portable|\bmobile\b|numero (?:a appeler|d'appel|de contact)|^numero$/.test(g) && f.site.phone ? `son téléphone : ${f.site.phone}`
+      : /mail|courriel/.test(g) && f.email ? `son e-mail : ${f.email}`
       : /adresse/.test(g) && f.discreet ? "son adresse, qu'il veut seulement dans les informations légales : retire cet emplacement"
       : /adresse/.test(g) && f.site.address ? `son adresse : ${f.site.address}`
-      : (() => { const w = words(gap).filter((x) => !COMMON.has(x)); const n = w.length ? f.notes.find((x) => words(x.title).some((k) => w.includes(k))) : undefined; return n ? `« ${n.title} : ${n.value.slice(0, 200)} »` : null; })();
+      : note();
     if (known) out.push(`« [À compléter : ${gap}] » est écrit alors que le client a donné ${known}`);
   }
   // 3) Adresse discrète écrite ailleurs que dans les informations légales.

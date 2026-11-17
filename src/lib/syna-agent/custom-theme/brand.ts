@@ -25,7 +25,8 @@ import { listProducts } from "../../products/catalog";
 import { peopleAllowed } from "../../people-policy";
 import { loadFamilyChoice, siteArtUniverse, type FamilyUniverse } from "../section-families";
 import { activityPlan } from "../activity";
-import { clientNotesBrief, factFlags, shownFacts, siteFacts } from "./site-facts";
+import { clientNotesBrief, factFlags, fillKnownGaps, shownFacts, siteFacts } from "./site-facts";
+import { hoursLine } from "./tenue-data";
 import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
 import { jobSpentMicro } from "../budget";
 import { angleDetails, COPY_MODEL } from "../mockup-code/copy";
@@ -89,11 +90,11 @@ export type SectionWrite = z.infer<typeof SectionWriteSchema>;
  */
 export const COPY_CRAFT = `Écriture (comme le meilleur concepteur-rédacteur d'une vraie marque française) :
 - L'ÉMOTION D'ABORD, partout : chaque titre, chaque texte et chaque bouton qui vend fait RESSENTIR l'émotion de l'angle par une scène, un moment, une sensation (ce qu'on voit, goûte, touche, ressent), jamais par une simple description du produit. Un texte qui informe sans émouvoir est raté.
-- Les boutons qui vendent portent le désir et l'émotion (ex. « Retrouver l'été », « Goûter le soleil », « Offrir un matin doré ») ; seuls les boutons purement pratiques (panier, commande, compte, formulaire, aide, légal) restent simples et clairs.
+- Les boutons qui vendent portent le désir et l'émotion (un verbe d'envie et ce que le client de CETTE marque vient chercher, avec ses mots à elle) ; seuls les boutons purement pratiques (panier, commande, compte, formulaire, aide, légal) restent simples et clairs.
 - L'angle choisi est l'ÉMOTION à faire ressentir sur tout le site, jamais une formule à répéter. Son accroche est une piste : elle ne sert, au plus, qu'une fois (l'ouverture de l'accueil), et seulement si elle donne vraiment envie ; sinon tu écris mieux. Ses mots ne vont jamais dans les menus, les liens ni les boutons.
 - Un titre donne envie : une image concrète, un goût, une texture, un moment, un bénéfice. Jamais un ordre au lecteur (« Lis… », « Découvre… », « Plonge… »), jamais un slogan creux ni un jeu de mots forcé.
-- Un bouton : 2 à 5 mots, un verbe qui donne envie (ex. « Retrouver l'été en pot ») ; « Ajouter au panier » seulement sur le bouton d'achat lui-même.
-- Menus, pied de page, liens : les mots simples que le visiteur cherche (ex. « Nos confitures », « Coffret cadeau », « Notre histoire », « Livraison et retours », « Contact »).
+- Un bouton : 2 à 5 mots, un verbe qui donne envie ; « Ajouter au panier » seulement sur le bouton d'achat lui-même.
+- Menus, pied de page, liens : les mots simples que le visiteur cherche (le nom courant de ce qui est vendu, puis l'histoire, la livraison et les retours, le contact).
 - Chaque fait fort (pourcentage, savoir-faire, livraison, retours) apparaît au plus UNE fois par page : on prouve une fois, on ne martèle pas.
 - Une même formule n'apparaît qu'UNE fois sur tout le site (hors noms de produits et libellés du menu) ; la promesse du site est une idée à faire sentir, jamais une phrase à recopier.
 - Phrases courtes et vivantes (15 mots au plus), des mots qui se goûtent, se touchent, se voient, des détails précis du client plutôt que des adjectifs vagues. Court ne veut pas dire pauvre : une description, une réponse à une objection, un comparatif ou une histoire développe plusieurs idées en plusieurs phrases.
@@ -158,6 +159,8 @@ export function brandBrief(p: Project, j: Journey | null): string {
   ].filter(Boolean).join("\n");
 }
 
+/** Un fait fort du client se dit en toutes lettres à deux endroits du site au plus (là où il décide). */
+export const FACT_PLACES_MAX = 2;
 export const SitePlanSchema = z.object({
   promesse: z.string().min(5).max(240),
   voix: z.string().min(5).max(400),
@@ -168,6 +171,12 @@ export const SitePlanSchema = z.object({
   })).max(40),
   /** Référencement de chaque page (décision du propriétaire du 10 novembre 2026) : titre et description pour Google. */
   seo: z.array(z.object({ page: z.string().max(40), titre: z.string().min(5).max(80), description: z.string().min(20).max(200) })).max(20).default([]),
+  /**
+   * Répartition des faits forts (deuxième essai réel, 17 novembre 2026 : le même fait était redit dans presque toutes
+   * les sections) : chaque fait fort du client, et les DEUX sections au plus qui le disent en toutes lettres. Lue avec
+   * indulgence (un champ mal formé ne fait jamais perdre un appel payé) ; au-delà de deux sections, les deux premières.
+   */
+  repartition: z.array(z.object({ fait: z.string().min(2).max(200), sections: z.array(z.string().max(12)).max(8) })).max(40).optional().catch(undefined),
 });
 export type SitePlan = z.infer<typeof SitePlanSchema>;
 
@@ -175,6 +184,8 @@ export const SITE_PLAN_SYSTEM = `Tu es le concepteur-rédacteur en chef d'une pe
 ${COPY_CRAFT}
 - Rôle des pages : accueil = donner envie puis choisir ; boutique = choisir vite ; fiche produit = décider et rassurer ; panier = finir sans hésiter ; à propos = l'histoire vraie de la marque ; aide, contact, légal = répondre clairement, sans effet de style.
 - Les faits forts sont RÉPARTIS entre les sections : jamais deux sections d'une même page avec le même fait. Aucun titre ne se répète sur le site.
+- RÉPARTITION (repartition) : chaque fait fort du client (un prix ou sa façon de l'annoncer, une garantie, un délai, une façon de travailler, une zone, une livraison, une matière, un savoir-faire) n'est dit EN TOUTES LETTRES qu'à DEUX endroits du site au plus, là où il décide le visiteur ; ailleurs il est sous-entendu ou absent. Pour chaque fait fort, donne « fait » (le fait, en quelques mots) et « sections » (les uid des deux sections au plus qui le disent). Les « faits » d'une section ne reprennent que les faits qui lui sont attribués là. Tous les faits utiles du dossier ont leur place : chaque produit et chaque prestation de la liste est présenté quelque part, aucun n'est oublié.
+- Chaque FORMULE de style (une image, une tournure, une fin de phrase qui sonne) n'apparaît qu'UNE fois sur tout le site : ne la donne jamais dans deux messages, deux titres ou deux boutons.
 - RIEN d'inventé : seulement les faits fournis ; un fait inconnu n'est pas écrit.
 - Titre null pour une section sans titre (en-tête, bandeau, pied de page) ; dans l'en-tête, le menu suit tes libellés.
 - Le pied de page garde les coordonnées complètes de la marque (ses faits les citent).
@@ -187,12 +198,29 @@ export const PhotoBriefSchema = z.object({ photos: SectionWriteSchema.shape.phot
 export const peopleBriefLine = (allowed: boolean) => allowed
   ? "PERSONNES DANS LES PHOTOS : autorisées pour ce client (photo de personne fournie par lui, ou son accord écrit)."
   : "PERSONNES DANS LES PHOTOS : NON autorisées (le dossier ne contient ni photo de personne fournie par le client, ni son accord écrit). Aucune personne, aucune main, aucun visage, aucune silhouette dans les photos à créer : un geste se montre par l'outil posé, l'objet en cours, la trace du travail.";
-/** Mots qui désignent une personne ou une partie du corps dans une description de photo (contrôle sans IA). */
-const PEOPLE_WORDS = /(?<!\p{L})(personnes?|personnages?|gens|quelqu['’]un|humaine?s?|hommes?|femmes?|enfants?|b[ée]b[ée]s?|filles?|gar[çc]ons?|adultes?|couples?|familles?|mains?|doigts?|paumes?|poings?|poignets?|ongles?|bras|avant-bras|coudes?|[ée]paules?|jambes?|genoux?|visages?|sourires?|regards?|yeux|l[èe]vres|cheveux|peau|corps|torses?|dos|nuques?|silhouettes?|mannequins?|portraits?|artisan(?:e|s|es)?|client(?:e|s|es)?|[ée]quipes?|passant(?:e|s|es)?|visiteu(?:r|rs|se|ses))(?!\p{L})/iu;
+/**
+ * Mots qui désignent une personne ou une partie du corps dans une description de photo (contrôle sans IA). Deuxième
+ * essai réel (17 novembre 2026) : « un cycliste vu de dos » est passé. Une personne se dit aussi par son RÔLE ou son
+ * ACTIVITÉ (cycliste, passant, piéton, conducteur, livreur, coureur, promeneur…) : ces mots comptent comme elle.
+ */
+const PEOPLE_ROLES = "cyclistes?|pi[ée]ton(?:ne)?s?|passant(?:e|s|es)?|conduct(?:eur|rice)s?|chauffeu(?:r|se)s?|livreu(?:r|se)s?|coursi(?:er|[èe]re)s?|coureu(?:r|se)s?|joggeu(?:r|se)s?|promeneu(?:r|se)s?|marcheu(?:r|se)s?|randonneu(?:r|se)s?|voyageu(?:r|se)s?|nageu(?:r|se)s?|baigneu(?:r|se)s?|skieu(?:r|se)s?|danseu(?:r|se)s?|joueu(?:r|se)s?|motard(?:e|s|es)?|athl[èe]tes?|serveu(?:r|se)s?|cuisini(?:er|[èe]re)s?|vendeu(?:r|se)s?|coiffeu(?:r|se)s?|ouvri(?:er|[èe]re)s?|technicien(?:ne)?s?|m[ée]canicien(?:ne)?s?|r[ée]parat(?:eur|rice)s?|employ[ée]e?s?|invit[ée]e?s?|convives?|touristes?|spectat(?:eur|rice)s?|habitant(?:e|s|es)?|foule|adolescent(?:e|s|es)?|ados?|seniors?|parents?|papas?|mamans?|grands?-(?:m[èe]res?|p[èe]res?|parents)|artisan(?:e|s|es)?|client(?:e|s|es)?|[ée]quipes?|visiteu(?:r|rs|se|ses)|mannequins?";
+const PEOPLE_WORDS = new RegExp(`(?<!\\p{L})(personnes?|personnages?|gens|quelqu['’]une?|humaine?s?|hommes?|femmes?|enfants?|b[ée]b[ée]s?|filles?|gar[çc]ons?|adultes?|couples?|familles?|mains?|doigts?|paumes?|poings?|poignets?|ongles?|bras|avant-bras|coudes?|[ée]paules?|jambes?|genoux?|cuisses?|mollets?|chevilles?|pieds?|orteils?|visages?|sourires?|regards?|yeux|l[èe]vres|cheveux|peau|corps|torses?|dos|nuques?|silhouettes?|portraits?|${PEOPLE_ROLES})(?!\\p{L})`, "iu");
 /** Ce qui écarte déjà la personne (« aucune main », « sans personne », « ni visage ») : jamais compté comme une personne demandée. */
 const PEOPLE_DENIED = /(?<!\p{L})(?:aucune?|sans|ni|pas d['’]|pas de|jamais d['’]|jamais de)\s*(?:autres?\s+)?(?:(?:personnes?|mains?|visages?|silhouettes?|doigts?|corps|pr[ée]sence humaine|humaine?s?)(?:\s*(?:,|ni|et|ou)\s*(?:aucune?\s+|d['’]|de\s+)?)?)+/giu;
+/** Le mot qui suit une négation (« aucun passant », « sans cycliste », « ni piéton ») est écarté lui aussi. */
+const PEOPLE_DENIED_WORD = /(?<!\p{L})(?:aucune?|sans|ni|pas d['’]|pas de|jamais d['’]|jamais de)\s*(?:autres?\s+)?\p{L}+/giu;
+/**
+ * Un mot du corps qui désigne une partie d'OBJET n'est pas une personne : « le dos d'un fauteuil », « un pied de
+ * table », « le bras du canapé » (le mot du corps suivi de « de » et d'un nom qui n'est pas une personne), et les
+ * tournures figées (« main courante », « sac à dos », « fait main », « au pied du mur », « à pied »).
+ */
+const BODY_PART_OF = /(?<!\p{L})(dos|pieds?|bras|jambes?|mains?|coudes?|genoux?|[ée]paules?|corps|peau)\s+(?:d['’]une?\s+|du\s+|de la\s+|de l['’]\s*|des\s+|d['’]\s*|de\s+)(\p{L}+)/giu;
+const PERSON_AFTER_DE = new RegExp(`^(?:mains?|bras|jambes?|pieds?|corps|visages?|personnes?|gens|quelqu|humaine?s?|hommes?|femmes?|enfants?|b[ée]b[ée]s?|filles?|gar[çc]ons?|adultes?|couples?|familles?|${PEOPLE_ROLES}|[a-zà-ÿ]+(?:eur|euse|rice|iste)s?)$`, "iu");
+const BODY_IDIOMS = /(?<!\p{L})(?:mains? courantes?|sacs? à dos|(?:fait|faite|faits|faites|cousu|cousue|cousus|cousues|peint|peinte|peints|peintes|[ée]crit|[ée]crite|[ée]crits|[ée]crites|tiss[ée]e?s?|fabriqu[ée]e?s?) (?:à la )?main|à pied|au pied (?:du|de|des|d['’])|aux pieds (?:du|de|des|d['’])|sur pieds?|bras de (?:mer|lumi[èe]re|levier|rivi[èe]re)|corps de (?:ferme|b[âa]timent|logis|texte))(?!\p{L})/giu;
 /** La description demande-t-elle une personne ou une partie du corps ? (sans IA) */
-export const briefShowsPeople = (description: string) => PEOPLE_WORDS.test(description.replace(PEOPLE_DENIED, " "));
+export const briefShowsPeople = (description: string) => PEOPLE_WORDS.test(description
+  .replace(PEOPLE_DENIED, " ").replace(PEOPLE_DENIED_WORD, " ").replace(BODY_IDIOMS, " ")
+  .replace(BODY_PART_OF, (m, _part: string, noun: string) => (PERSON_AFTER_DE.test(noun) ? m : " ")));
 /** Phrase posée en tête d'une description qui demande une personne sans y être autorisée. */
 export const NO_PEOPLE_PREFIX = "Aucune personne, aucune main, aucun visage, aucune silhouette dans l'image : tout geste décrit ci-dessous se montre SANS celui qui le fait, par l'outil posé, l'objet en cours, la trace du travail.";
 /**
@@ -262,8 +290,10 @@ export function sectionReadableTexts(html: string): string[] {
 }
 
 /** Ce que le directeur de création reçoit : le dossier du client, puis chaque section avec ses textes, page par page. */
-export function copyReviewPrompt(brief: string, sections: { uid: string; place: string; title: string; html: string }[], flags: Record<string, string[]> = {}, facts: Record<string, string[]> = {}): string {
+export function copyReviewPrompt(brief: string, sections: { uid: string; place: string; title: string; html: string }[], flags: Record<string, string[]> = {}, facts: Record<string, string[]> = {}, repeats: RepeatedPhrase[] = []): string {
   return [
+    // Le contrôle des répétitions (sans IA) : la même suite de mots dans plus de REPEAT_SECTIONS_MAX sections.
+    ...(repeats.length ? [`RÉPÉTITIONS RELEVÉES PAR LE STUDIO (la même suite de mots revient dans plus de ${REPEAT_SECTIONS_MAX} sections ; la section où elle décide le visiteur la garde, les autres la retirent ou disent autre chose : désigne celles à reprendre) :\n${repeats.map((r) => `- « ${r.phrase} » : ${r.sections.join(", ")}`).join("\n")}`, ""] : []),
     brief, "", `TEXTES DU SITE À RELIRE (${sections.length} sections, dans l'ordre des pages) :`,
     ...sections.map((x) => [`## ${x.uid} · ${x.place} · ${x.title}`, ...sectionReadableTexts(x.html),
       // Le gardien des faits (contrôle du Studio, sans IA) : ce que la fiche du client ne confirme pas.
@@ -271,6 +301,66 @@ export function copyReviewPrompt(brief: string, sections: { uid: string; place: 
       // Le contrôle des faits (sans IA) : un nombre qui contredit la liste affichée, un « À compléter » pour un fait connu, une adresse à ne pas montrer.
       ...(facts[x.uid]?.length ? [`CONTREDIT LE DOSSIER DU CLIENT (contrôle du Studio), à faire corriger : ${facts[x.uid].join(" ; ")}`] : [])].join("\n")),
   ].join("\n\n");
+}
+
+// ---------------------------------------------------------------- répétitions d'un bout à l'autre du site (sans IA)
+
+/** Une suite de mots peut revenir dans ce nombre de sections au plus ; au-delà, elle est signalée. */
+export const REPEAT_SECTIONS_MAX = 3;
+export type RepeatedPhrase = { phrase: string; sections: string[] };
+/** Mots vides : ils comptent dans une suite, mais une suite doit porter au moins deux mots pleins. */
+const EMPTY_WORDS = new Set("a à au aux avec ce ces cet cette c ça chez comme d dans de des du elle elles en et est il ils j je l la le les leur leurs lui ma mais me mes moi mon n ne ni nos notre nous on ou où par pas plus pour qu que qui s sa sans se ses si son sur t ta te tes toi ton tu un une vos votre vous y être avoir es sont ont as ai tout tous toute toutes très bien aussi puis donc car quand ici là même dès entre vers sous après avant chaque rien autre autres fait faire faut peut cela ceci moins trop encore toujours jamais alors ainsi dont quel quelle depuis pendant quelques celui celle ceux deux trois sera seront était cette comment pourquoi parce simplement vraiment".split(" ").map((w) => w.normalize("NFD").replace(/[\u0300-\u036f]/g, "")));
+const foldWord = (w: string) => w.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+/**
+ * Les suites de 3 mots ou plus (dont deux mots pleins au moins) qui reviennent dans plus de REPEAT_SECTIONS_MAX
+ * sections différentes du site. Deuxième essai réel (17 novembre 2026) : la relecture a vu le même fait et les mêmes
+ * formules répétés « sans fin » ; le rédacteur de chaque section n'en savait rien. Sans IA.
+ * Ne comptent pas : les libellés de boutons et de liens, le nom de la marque, les noms de produits et de prestations,
+ * et tout ce que le Studio pose lui-même (téléphone, horaires, zone, adresse, prix : `ignore`, et tout mot à chiffre).
+ */
+export function repeatedPhrases(sections: { uid: string; label: string; html: string }[], o: { ignore?: (string | null | undefined)[] } = {}): RepeatedPhrase[] {
+  const ignore = (o.ignore ?? []).map((x) => (x ?? "").trim()).filter((x) => x.length >= 2).sort((a, b) => b.length - a.length);
+  const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const cut = ignore.length ? new RegExp(ignore.map(esc).join("|"), "giu") : null;
+  /** Suite de 3 mots (pliée) → les sections où elle se lit, et sa forme d'origine. */
+  const grams = new Map<string, { uids: Set<string>; words: string[] }>();
+  for (const x of sections) {
+    // Titres et textes seulement : un bouton ou un lien (son libellé peut revenir) n'est pas lu.
+    const pieces = sectionReadableTexts(x.html.replace(/<(a|button)\b[\s\S]*?<\/\1>/g, " | ")).filter((b) => !b.startsWith("BOUTON")).map((b) => b.replace(/^(?:TITRE|TEXTE) : /, ""));
+    for (const piece of new Set(pieces)) {
+      // Un nom ignoré, un chiffre ou une ponctuation forte coupe la suite.
+      const runs = (cut ? piece.replace(cut, " | ") : piece).replace(/\[(?:À|A) compléter[^\]]*\]/gi, " | ").split(/[|.!?;:«»()\[\]…–—\n]|,\s/);
+      for (const run of runs) {
+        const words = run.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+        for (let i = 0; i + 3 <= words.length; i++) {
+          const w = words.slice(i, i + 3), f = w.map(foldWord);
+          if (f.some((k) => /\d/.test(k)) || f.filter((k) => k.length >= 4 && !EMPTY_WORDS.has(k)).length < 2) continue;
+          const key = f.join(" "), g = grams.get(key) ?? { uids: new Set<string>(), words: w };
+          g.uids.add(x.uid); grams.set(key, g);
+        }
+      }
+    }
+  }
+  const many = new Map([...grams].filter(([, g]) => g.uids.size > REPEAT_SECTIONS_MAX));
+  const label = new Map(sections.map((x) => [x.uid, x.label] as const));
+  // Les suites qui se chevauchent (« prix annoncé avant », « annoncé avant de ») se réunissent en une seule phrase.
+  const used = new Set<string>(), out: RepeatedPhrase[] = [];
+  const starts = [...many.keys()].filter((k) => ![...many.keys()].some((q) => q !== k && q.split(" ").slice(1).join(" ") === k.split(" ").slice(0, 2).join(" ") && [...many.get(q)!.uids].filter((u) => many.get(k)!.uids.has(u)).length > REPEAT_SECTIONS_MAX));
+  for (const k of [...starts, ...many.keys()]) {
+    if (used.has(k)) continue;
+    used.add(k);
+    let cur = k, uids = new Set(many.get(k)!.uids);
+    const words = [...many.get(k)!.words];
+    for (;;) {
+      const tail = cur.split(" ").slice(1).join(" ");
+      const next = [...many.keys()].find((q) => !used.has(q) && q.split(" ").slice(0, 2).join(" ") === tail && [...many.get(q)!.uids].filter((u) => uids.has(u)).length > REPEAT_SECTIONS_MAX);
+      if (!next) break;
+      used.add(next); words.push(many.get(next)!.words[2]); uids = new Set([...many.get(next)!.uids].filter((u) => uids.has(u))); cur = next;
+    }
+    // « l esprit léger » se redit « l'esprit léger ».
+    out.push({ phrase: words.map((w, i) => (i < words.length - 1 && /^(?:[ldjnstcm]|qu)$/i.test(w) ? `${w}'` : `${w} `)).join("").trim(), sections: [...uids].map((u) => `${u} (${label.get(u) ?? u})`) });
+  }
+  return out.sort((a, b) => b.sections.length - a.sections.length || b.phrase.length - a.phrase.length).slice(0, 8);
 }
 
 /**
@@ -374,6 +464,12 @@ export function sectionSkeleton(html: string): string {
   return [...new Set(bits)].slice(0, 14).join(" | ") || "(aucun titre)";
 }
 
+/** Les faits forts du plan : ceux que CETTE section dit en toutes lettres, et ceux qui se disent ailleurs. */
+export function factPlaces(plan: SitePlan, uid: string): { mine: string[]; elsewhere: string[] } {
+  const list = (plan.repartition ?? []).map((x) => ({ fait: x.fait, sections: x.sections.slice(0, FACT_PLACES_MAX) })).filter((x) => x.sections.length);
+  return { mine: list.filter((x) => x.sections.includes(uid)).map((x) => x.fait), elsewhere: list.filter((x) => !x.sections.includes(uid)).map((x) => x.fait).slice(0, 20) };
+}
+
 export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string; /** Fiche d'UN produit du catalogue : ses faits. */ product?: string | null; /** Ce que le Studio posera lui-même dans la section (faits exacts). */ shown?: string }): string {
   const mine = plan?.site.sections.find((x) => x.uid === plan.uid);
   const others = plan ? plan.site.sections.filter((x) => x.uid !== plan.uid && x.titre).map((x) => `« ${x.titre} »`) : [];
@@ -382,6 +478,11 @@ export function sectionWritePrompt(brief: string, place: string, title: string, 
     `Promesse : ${plan.site.promesse}`, `Voix : ${plan.site.voix}`, plan.site.menu.length ? `Menu principal : ${plan.site.menu.join(" · ")}` : "",
     mine ? `CETTE section : message : ${mine.message}${mine.titre ? ` ; titre : « ${mine.titre} »` : ""}${mine.bouton ? ` ; bouton : « ${mine.bouton} »` : ""} ; faits à utiliser ici (et aucun autre chiffre) : ${mine.faits.length ? mine.faits.join(" ; ") : "aucun"}.` : "",
     others.length ? `Titres des autres sections (ne les répète pas) : ${others.join(", ")}.` : "",
+    ...(plan ? ((r) => [
+      r.mine.length ? `Faits forts que CETTE section dit en toutes lettres (c'est l'un des ${FACT_PLACES_MAX} endroits du site où ils se disent) : ${r.mine.join(" ; ")}.` : "",
+      r.elsewhere.length ? `Faits forts DITS AILLEURS sur le site (ici, ne les redis PAS en toutes lettres : sous-entends-les ou tais-les) : ${r.elsewhere.join(" ; ")}.` : "",
+    ])(factPlaces(plan.site, plan.uid)) : []),
+    "Une formule de style (une image, une tournure, une fin de phrase qui sonne) ne sert qu'UNE fois sur tout le site : n'en reprends aucune d'un titre ou d'un message d'une autre section.",
   ].filter(Boolean).join("\n") : "";
   const designText = [design?.pages ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${design.product}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : "", design?.shown ?? ""].filter(Boolean).join("\n");
   return [brief, "", ...(planText ? [planText, ""] : []), ...(designText ? [designText, ""] : []), `Section à adapter : « ${title} » (${place}). Ce qu'elle fait : ${does}`, "HTML actuel de la section (textes de démonstration à remplacer) :", html].join("\n");
@@ -584,8 +685,32 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, photosReprises: 0, regardNonFait: null as null | string, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, regards: null as null | LooksReport, problems: [] as string[] };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, photosReprises: 0, /** Faits connus posés à la place d'un « À compléter » (sans IA). */ faitsPoses: 0, /** Suites de mots encore répétées dans plus de trois sections après les reprises. */ repetitions: [] as string[], regardNonFait: null as null | string, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, regards: null as null | LooksReport, problems: [] as string[] };
   const briefs: Record<string, SectionWrite["photos"]> = {};
+  /**
+   * Les faits que le Studio connaît (téléphone, e-mail, horaires, zone, adresse, prestations) restés « [À compléter] »
+   * dans un texte écrit sont POSÉS à leur place, sans IA : après l'écriture, puis après les reprises (deuxième essai
+   * réel : ils étaient signalés, jamais corrigés). Gratuit, sans effet la seconde fois.
+   */
+  const poseFaits = () => {
+    try {
+      const now = loadCustomTheme(p.id)!;
+      let n = 0;
+      for (const x of allSections(now)) {
+        if (x.s.html == null) continue;
+        const r = fillKnownGaps(x.s.html, facts, x.page?.key);
+        if (r.filled.length) { x.s.html = r.html; n += r.filled.length; }
+      }
+      if (n) { t = saveCustomTheme(p.id, now, { history: false }); report.faitsPoses += n; }
+    } catch { /* remplissage indisponible : les manques restent signalés */ }
+  };
+  /** Les suites de mots qui reviennent dans plus de trois sections (sans IA), hors noms et faits posés par le Studio. */
+  const repeats = (list: ReturnType<typeof allSections>) => {
+    try {
+      return repeatedPhrases(list.map((x) => ({ uid: x.s.uid, label: `${libSection(x.s.id)?.title ?? x.s.id}, ${x.page?.label ?? x.place}`, html: withBrandName(sectionHtml(x.s), name) })),
+        { ignore: [name, p.name, ...products.map((x) => x.data.title), ...facts.prestations.map((x) => x.name), facts.site.phone, facts.site.area, facts.site.address, facts.address, facts.email, facts.site.hours ? hoursLine(facts.site.hours) : null] });
+    } catch { return []; }
+  };
 
   // Un seul point d'annulation pour tout le montage : « Annuler » revient au thème d'avant le montage.
   await ctx.step("undo-point", async () => { pushCustomThemeHistory(p.id); return true; });
@@ -686,6 +811,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
     } catch (e) { report.problems.push(`${l?.title ?? x.s.id} : textes non écrits (${(e as Error).message.slice(0, 120)})`); }
   }
 
+  if (report.sections) poseFaits();
+
   // 1 bis) Relecture de TOUS les textes par un directeur de création, puis une reprise des sections refusées.
   // (Essais sans IA : seulement si le test fournit la relecture, comme pour le référencement.)
   if (report.sections && (!customBrandDeps.write || customBrandDeps.review)) {
@@ -695,7 +822,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const all = allSections(loadCustomTheme(p.id)!).filter((x) => x.s.clientTexts || sections.some((y) => y.s.uid === x.s.uid));
         const flags = Object.fromEntries(all.map((x) => [x.s.uid, unconfirmedClaims(p, withBrandName(sectionHtml(x.s), name))] as const).filter(([, list]) => list.length));
         const contradictions = Object.fromEntries(all.map((x) => [x.s.uid, factFlags(withBrandName(sectionHtml(x.s), name), facts, x.page?.key)] as const).filter(([, list]) => list.length));
-        const prompt = copyReviewPrompt(brief, all.map((x) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, html: withBrandName(sectionHtml(x.s), name) })), flags, contradictions);
+        const prompt = copyReviewPrompt(brief, all.map((x) => ({ uid: x.s.uid, place: x.page?.label ?? x.place, title: libSection(x.s.id)?.title ?? x.s.id, html: withBrandName(sectionHtml(x.s), name) })), flags, contradictions, repeats(all));
         const usageKey = `${ctx.job.id}:text-review`;
         return CopyReviewSchema.parse(customBrandDeps.review ? await customBrandDeps.review(prompt, usageKey)
           : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-review", costCapMicro: a.capMicro }, () =>
@@ -748,9 +875,15 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // contredit la liste affichée, un « À compléter » pour un fait donné, une adresse à ne pas montrer, un bouton vers
   // une page absente. Dit dans le compte rendu, jamais laissé en silence.
   if (report.sections) {
+    // Après les reprises : les faits connus sont posés une dernière fois ; seul ce qui reste ambigu est signalé.
+    poseFaits();
     try {
       const now = loadCustomTheme(p.id)!, wrote = new Set(sections.map((y) => y.s.uid));
       const seen = allSections(now).filter((x) => x.s.clientTexts || wrote.has(x.s.uid));
+      // Répétitions encore là après les reprises : dites dans le compte rendu, jamais laissées en silence.
+      const again = repeats(seen);
+      report.repetitions = again.slice(0, 5).map((r) => `« ${r.phrase} » revient dans ${r.sections.length} sections (${r.sections.map((x) => x.replace(/^\S+ \((.*)\)$/, "$1")).slice(0, 6).join(" ; ")})`);
+      if (again.length) report.problems.push(`répétitions : ${again.length} suite(s) de mots reviennent encore dans plus de ${REPEAT_SECTIONS_MAX} sections, par exemple ${report.repetitions[0]}`);
       const found = seen.flatMap((x) => factFlags(withBrandName(sectionHtml(x.s), name), facts, x.page?.key).map((f) => `${libSection(x.s.id)?.title ?? x.s.id} (${x.page?.label ?? x.place}) : ${f}`));
       for (const f of found.slice(0, 8)) report.problems.push(f);
       if (found.length > 8) report.problems.push(`${found.length - 8} autre(s) texte(s) qui contredisent le dossier du client`);
@@ -810,6 +943,13 @@ export async function runCustomBrandJob(ctx: JobContext) {
       } catch (e) { report.problems.push(`${ly.title} : photos non décrites (${(e as Error).message.slice(0, 100)})`); }
     }
     const mode: ImagesMode = a.images ?? "sina";
+    /**
+     * Photos (section|source) dont la relecture a refusé la description pour une PERSONNE que rien n'autorise, et dont
+     * la description n'a pas pu être refaite (deuxième essai réel, 17 novembre 2026 : « photo à revoir (Le cycliste vu
+     * de dos est une personne…) », et la photo était créée telle quelle). Elles ne partent jamais telles quelles :
+     * consigne durcie dès la création, puis le contrôle de l'image décide (refus : cadre vide, et c'est dit).
+     */
+    const sansPersonne = new Set<string>();
     // 2 bis) Relecture de TOUTES les descriptions par la directrice artistique, avant de payer la moindre photo, puis
     // une reprise des descriptions refusées (un appel par section). Jamais pour une photo du produit seul (sa vraie
     // photo y va), ni pour une photo que seul le client peut fournir. (Essais sans IA : seulement si le test la fournit.)
@@ -833,7 +973,10 @@ export async function runCustomBrandJob(ctx: JobContext) {
           });
           // Seules les photos réellement relues comptent (une section ou une source inconnue est ignorée).
           const refused = review.photos.filter((f, i, list) => seen.some((x) => x.y.s.uid === f.uid && x.photos.some((b) => b.find === f.find)) && list.findIndex((g) => g.uid === f.uid && g.find === f.find) === i);
-          const uids = [...new Set(refused.map((f) => f.uid))];
+          // Ce qui est INTERDIT (une personne sans accord) passe avant toute correction de goût, dans la limite des reprises.
+          const forPeople = (f: { fixes: string[] }) => !photoPeople && f.fixes.some((c) => briefShowsPeople(c));
+          const uids = [...new Set([...refused.filter(forPeople), ...refused].map((f) => f.uid))];
+          const before = new Map<string, string>(seen.flatMap((x) => x.photos.map((b) => [`${x.y.s.uid}|${b.find}`, b.description.trim()] as [string, string])));
           let redone = 0;
           for (const [i, uid] of uids.slice(0, MAX_PHOTO_FIXES).entries()) {
             const x = seen.find((z) => z.y.s.uid === uid)!, mine = refused.filter((f) => f.uid === uid);
@@ -859,7 +1002,14 @@ export async function runCustomBrandJob(ctx: JobContext) {
               if (here < mine.length) report.problems.push(`${x.ly.title} : ${mine.length - here} photo(s) que ma relecture voulait revoir n'ont pas pu être redécrites (${mine[0].fixes[0].slice(0, 120)})`);
             } catch (e) { report.problems.push(`${x.ly.title} : photos non redécrites après ma relecture (${(e as Error).message.slice(0, 100)})`); }
           }
-          for (const uid of uids.slice(MAX_PHOTO_FIXES)) report.problems.push(`${seen.find((z) => z.y.s.uid === uid)!.ly.title} : photo à revoir (${refused.find((f) => f.uid === uid)!.fixes[0].slice(0, 140)})`);
+          // Refusée pour une personne et pas redécrite (au-delà des reprises, ou reprise ratée) : consigne durcie à la création.
+          for (const f of refused.filter(forPeople)) {
+            const key = `${f.uid}|${f.find}`, nowText = (briefs[f.uid] ?? []).find((b) => b.find === f.find)?.description.trim();
+            if (nowText == null || nowText !== before.get(key)) continue;
+            sansPersonne.add(key);
+            report.problems.push(`${seen.find((z) => z.y.s.uid === f.uid)!.ly.title} : ma relecture voyait une personne dans la photo prévue (${f.fixes.find((c) => briefShowsPeople(c))!.slice(0, 120)}) et sa description n'a pas pu être refaite : photo créée avec la consigne « aucune personne », puis contrôlée`);
+          }
+          for (const uid of uids.slice(MAX_PHOTO_FIXES)) { const rest = refused.filter((f) => f.uid === uid && !sansPersonne.has(`${f.uid}|${f.find}`)); if (rest.length) report.problems.push(`${seen.find((z) => z.y.s.uid === uid)!.ly.title} : photo à revoir (${rest[0].fixes[0].slice(0, 140)})`); }
           report.relecturePhotos = { reprises: redone, refusees: refused.length, avis: review.site };
         } catch (e) { report.problems.push(`relecture des photos non faite (${(e as Error).message.slice(0, 120)}) : les descriptions n'ont pas été relues`); }
       }
@@ -909,7 +1059,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
           const place = textPlacementLine(sectionHtml(here.s), ph.find, libSection(here.s.id)?.does ?? "", here.s.construction);
           // Photo d'exemple détourée (ouverture Moderne) : créée sur fond uni, puis détourée (gratuit).
           const cut = isCutoutPhoto(file);
-          const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: [briefWithoutPeople(ph.description, photoPeople, retry), place].filter(Boolean).join("\n"), ratio: ph.ratio, product: !!ph.product, ...(cut ? { background: FOND_A_DETOURER } : {}) }, { name, logo: false, product: !!ref, direction, people: photoPeople });
+          const prompt = codePhotoPrompt({ id: `ct-${uid}-${file}`, description: [briefWithoutPeople(ph.description, photoPeople, retry || sansPersonne.has(`${uid}|${ph.find}`)), place].filter(Boolean).join("\n"), ratio: ph.ratio, product: !!ph.product, ...(cut ? { background: FOND_A_DETOURER } : {}) }, { name, logo: false, product: !!ref, direction, people: photoPeople });
           const usageKey = `${ctx.job.id}:${retry ? "photo-retry" : "photo"}:${uid}:${file}`;
           const made = customBrandDeps.photo ? await customBrandDeps.photo(prompt, ref ? assetData(ref) : null, ph.ratio, usageKey)
             : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo", costCapMicro: a.capMicro }, () => withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey }, { prompt, product: ref ? assetData(ref) : null, aspect: hdAspect(ph.ratio) })));

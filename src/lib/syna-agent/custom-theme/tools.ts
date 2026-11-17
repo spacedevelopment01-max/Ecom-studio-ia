@@ -39,7 +39,7 @@ import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS
 import { referencesBrief, sectorOf } from "./references";
 import { ordreGaps, partitionChoisie, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
 import { MIN_SECTIONS_IMPORTANTE, pageKind, partitionsBrief, partitionsPermises, typesAccueilPermis, type AngleRole, type PageKind } from "./partitions";
-import { preuvesBrief, preuvesDe, type Preuves } from "./preuves";
+import { preuvesBrief, preuvesDe, preuvesDemandees, type Preuves } from "./preuves";
 import { SECOND_REGARD_CALLS_MAX, SECOND_REGARD_CAP_MICRO, SECOND_REGARD_SYSTEM, SECOND_REGARD_TYPICAL_MICRO, SecondRegardSchema, secondRegardPrompt, secondRegardRefus, type RegardPage, type SecondRegard } from "./second-regard";
 import { clientNotes } from "./site-facts";
 import { roleOf } from "../angle-roles";
@@ -55,7 +55,10 @@ import { menuProducts } from "./render";
 import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_SYSTEM, ORIGINALITY_TYPICAL_MICRO, OriginalitySchema, originalityNote, originalityPrompt, type Originality, type OriginalityOutcome } from "./originality";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
 import { TenueSchema, constructionsOf, isTenueSection, sansArche, validConstruction } from "./tenue";
-import { llmJson } from "../../ai/llm";
+import { llmJson, routeLlm } from "../../ai/llm";
+import { FX_SAFETY, requirePrice, usdToEur } from "../../ai/config";
+import { EUR } from "../../billing";
+import { getJsonSetting } from "../../settings";
 import { withTrace } from "../../ai/trace";
 import { jobSpentMicro } from "../budget";
 import { loadShopOffers } from "../product-features";
@@ -242,6 +245,15 @@ export function dossierPreuves(ctx: ToolContext): Preuves {
   } catch { /* fiche absente */ }
   return preuvesDe(lines, extra);
 }
+/**
+ * Le client a-t-il déjà RÉPONDU à la question des preuves ? (sans IA) Vrai dès qu'une de ses réponses est notée dans
+ * la mémoire du projet : une preuve qu'il a, ou une preuve qu'il a dit ne pas avoir (« avis : aucun pour l'instant »,
+ * « preuves : aucune »). C'est la trace durable de la question : elle ne se repose pas.
+ */
+export function preuvesRepondues(ctx: ToolContext): boolean {
+  const p = project(ctx);
+  try { return preuvesDemandees(clientNotes(p.id)); } catch { return false; }
+}
 /** Ce que le Studio sait du site pour l'ordre et la variété : son métier, ses types d'accueil permis, s'il se déplace. */
 export function ordreContext(ctx: ToolContext, site: SiteKind, families = 0): { metier: string; types: string[]; mobile: boolean; zoneConnue: boolean; telConnu: boolean; angle: AngleRole | null } {
   const p = project(ctx);
@@ -393,13 +405,13 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   const base = `syna:${ctx.runId}:${tag}`;
   // Le juge ne passe pas sur la suite d'un concept déjà choisi : ses deux pages ont été jugées avant d'être montrées.
   const judgeRaw = mode.kind === "complete" ? null : customDesignDeps.judge ?? (customDesignDeps.call ? null
-    : (text: string, key: string) => withTrace({ jobId, projectId: p.id, step: `${tag}-judge`, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + ORIGINALITY_CAP_MICRO + knowledgeCapMicro("juge", "quality_control", 1) }, () =>
+    : (text: string, key: string) => withTrace({ jobId, projectId: p.id, step: `${tag}-judge`, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + originalityCapMicro() + knowledgeCapMicro("juge", "quality_control", 1) }, () =>
         llmJson({ task: "quality_control", userId: ctx.user.id, projectId: p.id, jobId, system: educated(ORIGINALITY_SYSTEM, "juge"), promptKey: "syna-custom-originality-2", prompt: text, maxTokens: 2500, maxOutputTokens: 5000, usageKey: key, routing: { difficulty: "complex" } }, OriginalitySchema)));
   const judge = judgeRaw ? async (x: Design, key: string): Promise<Originality> => OriginalitySchema.parse(await judgeRaw(originalityPrompt({ brief, design: x, references: refs.text, first: mode.kind === "concept" ? mode.other ?? null : null }), key)) : null;
   // Le second regard (séparé du concepteur ET du juge de l'ordre) : il ne corrige rien, il dit page par page « conforme »
   // ou « non conforme ». Celui qui corrige n'est jamais celui qui valide.
   const regardRaw = customDesignDeps.second ?? (customDesignDeps.call ? null
-    : (text: string, key: string) => withTrace({ jobId, projectId: p.id, step: `${tag}-second`, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + SECOND_REGARD_CAP_MICRO + knowledgeCapMicro("secondRegard", "quality_control", 1) }, () =>
+    : (text: string, key: string) => withTrace({ jobId, projectId: p.id, step: `${tag}-second`, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + secondRegardCapMicro() + knowledgeCapMicro("secondRegard", "quality_control", 1) }, () =>
         llmJson({ task: "quality_control", userId: ctx.user.id, projectId: p.id, jobId, system: educated(SECOND_REGARD_SYSTEM, "secondRegard"), promptKey: "syna-custom-second-regard-1", prompt: text, maxTokens: 3000, maxOutputTokens: 6000, usageKey: key, routing: { difficulty: "complex" } }, SecondRegardSchema)));
   const regard = regardRaw ? async (x: Design, key: string): Promise<SecondRegard> => {
     const pages: RegardPage[] = x.pages.flatMap((pg) => { const k = kindOfKey(pg.key); if (!k) return []; const r = partitionChoisie(x, pg, k, facts); return [{ key: pg.key, partition: r.partition, why: r.why }]; });
@@ -462,7 +474,9 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     pg.journey = src.journey;
     pg.sections.forEach((s, i) => { const pick = src.sections[i]; if (pick) s.intent = intentText(pick.why, pick.says, pick.photos); });
   }
-  const doubt = originality && (originality as OriginalityOutcome).status === "doute" ? [`originalité : ${(originality as OriginalityOutcome).why}`] : [];
+  // Un juge qui n'a pas pu rendre son avis n'est jamais passé sous silence (comme le second regard).
+  const doubt = originality && (originality as OriginalityOutcome).status === "doute" ? [`originalité : ${(originality as OriginalityOutcome).why}`]
+    : originality && (originality as OriginalityOutcome).status === "non_juge" ? [`originalité du site non jugée (${(originality as OriginalityOutcome).why.slice(0, 120)})`] : [];
   return { ok: true, d, t: c.t, left: [...c.objections, ...c.rhythm, ...c.pages, ...secondLeft, ...c.notes, ...doubt], calls, originality, references: { sector: refs.sector, near: refs.near, far: refs.far } };
 }
 const MIN_SECTIONS_TEXT = `au moins ${MIN_SECTIONS_IMPORTANTE} sections, page qui vend au moins ${MIN_SECTIONS_IMPORTANTE}, sans remplissage`;
@@ -476,12 +490,45 @@ export const designKnowledge = (judge: boolean) => ({
   usual: knowledgeTypicalMicro("concepteur", "strategy", 1) + knowledgeTypicalMicro("relecteur", "strategy", 1) + knowledgeTypicalMicro("secondRegard", "quality_control", 1) + (judge ? knowledgeTypicalMicro("juge", "quality_control", 1) : 0),
 });
 /**
+ * LA PLACE DES DEUX RELECTEURS DE LA CONCEPTION (second regard, juge de l'originalité), 17 novembre 2026.
+ * Deuxième essai réel : « second regard sur l'ordre des pages non fait (plafond de dépense atteint : l'appel suivant
+ * n'a pas été envoyé) ». Chaque relecteur a SA part, comptée à partir de ce que la tâche a déjà dépensé au moment de
+ * son appel : les appels d'avant ne peuvent pas la manger. Mais cette part était un montant fixe (0,15 €), plus petit
+ * que le prix le plus haut de son propre appel : le fournisseur réserve toujours au moins 8 000 jetons de sortie, et
+ * l'avis relit le site entier (plus long depuis « dix sections par page »). L'appel n'était donc jamais envoyé.
+ * La part se calcule maintenant sur le vrai tarif de la route du relecteur : sa consigne et ses cahiers, la demande
+ * la plus longue d'un site entier, la sortie réservée, et une marge. Le devis (designCost) compte la même somme.
+ */
+export const AVIS_OUTPUT_RESERVE_TOKENS = 8000;
+/** Jetons d'entrée au plus de la demande : le dossier, les preuves et toutes les sections des pages importantes. */
+export const SECOND_REGARD_PROMPT_TOKENS = 36_000;
+/** Le dossier, les références du secteur, l'accueil et la page qui vend. */
+export const ORIGINALITY_PROMPT_TOKENS = 20_000;
+const AVIS_MARGIN = 1.15;
+export function avisCapMicro(system: string, promptTokens: number, floor: number): number {
+  try {
+    const r = routeLlm({ task: "quality_control", routing: { difficulty: "complex" } });
+    const price = requirePrice(r.provider, r.model);
+    if (price.unit !== "tokens") return floor;
+    const input = Math.ceil((system.length / 3 + promptTokens) * 1.02) + 512;
+    const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
+    return Math.max(floor, Math.ceil(((input * 1.25 * price.inputPerM + AVIS_OUTPUT_RESERVE_TOKENS * price.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup * AVIS_MARGIN));
+  } catch { return floor; }
+}
+/** La part d'UN second regard (jamais moins que son ancien plafond fixe). */
+export const secondRegardCapMicro = () => avisCapMicro(educated(SECOND_REGARD_SYSTEM, "secondRegard"), SECOND_REGARD_PROMPT_TOKENS, SECOND_REGARD_CAP_MICRO);
+/** La part d'UN avis du juge de l'originalité : même défaut, même calcul. */
+export const originalityCapMicro = () => avisCapMicro(educated(ORIGINALITY_SYSTEM, "juge"), ORIGINALITY_PROMPT_TOKENS, ORIGINALITY_CAP_MICRO);
+/** Coût habituel d'un avis : sa demande lue une fois, une réponse courte (environ trois dixièmes de sa part). */
+const avisTypicalMicro = (cap: number, floor: number) => Math.max(floor, Math.round(cap * 0.3));
+
+/**
  * Appels d'une conception, pour le devis : le concepteur, le juge de l'ordre et, au plus, une reprise (DESIGN_CALLS_MAX) ;
  * le second regard (deux au plus) ; avec `judge`, le juge de l'originalité (deux au plus) ; et la lecture des cahiers.
  */
 export const designCost = (judge: boolean) => ({
-  max: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + SECOND_REGARD_CAP_MICRO * SECOND_REGARD_CALLS_MAX + (judge ? ORIGINALITY_CAP_MICRO * ORIGINALITY_CALLS_MAX : 0) + designKnowledge(judge).max,
-  usual: DESIGN_TYPICAL_MICRO + SECOND_REGARD_TYPICAL_MICRO + (judge ? ORIGINALITY_TYPICAL_MICRO : 0) + designKnowledge(judge).usual,
+  max: DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + secondRegardCapMicro() * SECOND_REGARD_CALLS_MAX + (judge ? originalityCapMicro() * ORIGINALITY_CALLS_MAX : 0) + designKnowledge(judge).max,
+  usual: DESIGN_TYPICAL_MICRO + avisTypicalMicro(secondRegardCapMicro(), SECOND_REGARD_TYPICAL_MICRO) + (judge ? avisTypicalMicro(originalityCapMicro(), ORIGINALITY_TYPICAL_MICRO) : 0) + designKnowledge(judge).usual,
   calls: { max: DESIGN_CALLS_MAX + SECOND_REGARD_CALLS_MAX + (judge ? ORIGINALITY_CALLS_MAX : 0), usual: 2 + 1 + (judge ? 1 : 0) },
 });
 /** Lecture des cahiers pendant le montage à la marque : le rédacteur (plan, chaque section, reprises), le relecteur des textes, la directrice artistique. */
@@ -520,7 +567,7 @@ const conceptsTool: AgentTool<{ consigne?: string }> = {
   name: "custom.concepts", module: "site", kind: "generate", needsProject: true,
   description: "Étape 6, THÈME SUR MESURE (PAYANT : prix annoncé, accord écrit du client d'abord), APRÈS la famille (theme.family) et l'ambiance (theme.ambiance) : conçoit DEUX CONCEPTS COMPLÈTEMENT DIFFÉRENTS (autre idée, autre émotion mise en avant, autres sections), chacun avec sa page d'accueil et sa fiche produit (ou sa page de prestations pour un service), comme un directeur de création. Les deux s'affichent dans le fil (avec les photos d'exemple de la bibliothèque, annoncées comme telles) ; le client choisit, puis custom.concept monte tout le site sur SON choix. consigne : ce que le client a dit vouloir (ses mots).",
   args: z.object({ consigne: z.string().max(1500).optional() }).strict(),
-  estimate: () => ({ maxMicro: designCost(true).max * 2, probableMicro: CONCEPTS_TYPICAL_MICRO + (ORIGINALITY_TYPICAL_MICRO + SECOND_REGARD_TYPICAL_MICRO) * 2 + designKnowledge(true).usual * 2, label: L("deux concepts complètement différents de ton site sur mesure (page d'accueil et page produit), à comparer avant de choisir", "two different custom-site concepts") }),
+  estimate: () => ({ maxMicro: designCost(true).max * 2, probableMicro: CONCEPTS_TYPICAL_MICRO + (avisTypicalMicro(originalityCapMicro(), ORIGINALITY_TYPICAL_MICRO) + avisTypicalMicro(secondRegardCapMicro(), SECOND_REGARD_TYPICAL_MICRO)) * 2 + designKnowledge(true).usual * 2, label: L("deux concepts complètement différents de ton site sur mesure (page d'accueil et page produit), à comparer avant de choisir", "two different custom-site concepts") }),
   run: async (ctx, a) => {
     const p = project(ctx);
     const f = loadFamilyChoice(p.id);
