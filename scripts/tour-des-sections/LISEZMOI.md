@@ -124,6 +124,7 @@ Un détecteur nouveau ou modifié a son cas dans `tests/tour-des-sections.test.t
 | Fichier | Rôle |
 |---|---|
 | `tour.ts` | la commande |
+| `voir.ts` | la vue rapide d'une pièce ou d'une page en situation (une capture par cas et ses défauts), pour vérifier une correction sans refaire un tour ; mode d'emploi en tête du fichier |
 | `tour-lib.ts` | le tour : travaux, fiches, résumé, défauts connus |
 | `recensement.ts` | toutes les pièces, leur module, leur feuille, leurs constructions |
 | `donnees.ts` | les tenues, les clients d'essai inventés, le contenu difficile |
