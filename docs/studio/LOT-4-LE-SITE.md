@@ -315,3 +315,27 @@ pilule et ombre) ; les survols, le focus, les étapes 2 et 3 d'un parcours, les 
   Les deux ont été comparés en image sur la démonstration (identiques à l'œil). Un seul rendu pour l'aperçu : au temps 5,
   avec la mise en ligne.
 - Les temps 4 et 5, et le retrait des anciennes façons.
+
+## La variété entre les sites (17 novembre 2026)
+
+Devant les deux premiers sites de SINA (Bécane et Atelier Vasco), le propriétaire : « 4 fois la même section entre les
+deux alors qu'on a une centaine de sections, et surtout elles ont la même disposition alors qu'il y a 2 ou 3 possibilités
+de placement » ; « il y a déjà la moitié des sections qui sont identiques. J'appelle pas ça de la variété moi ».
+
+- **Le constat, compté** : 17 pièces communes sur 30 et 35 ; 18 fois la même pièce avec la même disposition ; sur
+  l'accueil, 4 pièces communes, dont les questions avec la même disposition.
+- **Pourquoi les contrôles d'avant n'ont rien vu** : l'un ne réagissait qu'à 70 % de sections en commun sur l'accueil et
+  la fiche ; l'autre ne comparait qu'avec les sites du même métier (Bécane répare des vélos, Vasco coud des sacs).
+- **La règle** (`custom-theme/variete-sites.ts`), contre chacun des 12 derniers sites montés pour d'autres marques, tous
+  métiers : accueil au plus 2 pièces en commun ; site entier (hors pages pratiques) au plus un quart ; une pièce reprise
+  prend toujours une autre disposition. L'en-tête, le pied de page et l'ouverture suivent leur famille et ne sont pas
+  comptés.
+- **Comment elle s'applique** : le concepteur reçoit les 6 derniers sites (pièces et dispositions) et la règle avant de
+  concevoir ; le contrôle du Studio, sans IA, rend les écarts à sa seule reprise (aucun appel de plus) ; ensuite, sans IA,
+  une disposition encore prise devient une disposition libre. Ce qui reste est écrit dans « à revoir ».
+- **Vérifié sans IA** sur les deux sites de l'essai : Vasco, comparé à Bécane, est refusé (accueil 4 pièces communes,
+  site 15 sur 29, dispositions reprises) ; la correction sans IA aurait changé 15 dispositions. Essai :
+  `tests/variete-entre-sites.test.ts`. **Pas encore vérifié avec la vraie IA** : il faudra un essai de création.
+- **Reste à proposer** (dit au propriétaire, en attente de son oui) : une vraie signature visible pour chaque famille
+  (fonds, cadres, rythme), et une police de titres différente d'une marque à l'autre (trois marques d'essai sur quatre
+  ont reçu la même grosse police grasse).

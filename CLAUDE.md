@@ -124,6 +124,12 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   d'au moins 7 ; une seule section « Produit vedette » par page, remplie avec les vraies données. Jamais une
   coordonnée, un avis ou un prix d'exemple. Le client ne lit jamais le mot « maquette ». Pour Shopify, pas de page de
   commande dans le thème.
+- **Un site ne ressemble pas à un autre** (17 novembre 2026, devant les deux premiers sites de SINA : « sur les 2 premiers
+  thèmes faits par SINA il y a déjà la moitié des sections qui sont identiques. J'appelle pas ça de la variété moi » ; « 4
+  fois la même section entre les deux alors qu'on a une centaine de sections, et surtout elles ont la même disposition
+  alors qu'il y a 2 ou 3 possibilités de placement ») : avec chaque site déjà monté, quel que soit le métier, l'accueil a
+  au plus 2 pièces en commun, le site entier au plus un quart, et une pièce reprise prend toujours une autre disposition
+  (`variete-sites.ts`).
 - **Jamais de photo dans une arche ni une demi-lune** (16 novembre 2026, devant une page d'arrivée : « L'arrière plan en lune
   c'est pas beau je veux plus ça ») : le cadre en arche n'est plus proposé, plus permis, plus affiché (`sansArche`).
 - **Jamais un bouton coupé** (17 novembre 2026, devant le site d'essai sur son téléphone : « Les boutons sont coupés en bas,

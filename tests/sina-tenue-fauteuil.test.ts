@@ -344,8 +344,9 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
       { op: "shell", slot: "header", section: F.HEADER.id, construction: F.HEADER.construction }, { op: "shell", slot: "footer", section: F.FOOTER.id }, { op: "tenue", tenue: { ...F.FAUTEUIL_TENUE } },
     ]);
     const same = commonLines(cardOfTheme(t), cardOfTheme(fauteuil));
-    // La fiche produit reprend les mêmes sections (un bloc d'achat reste un bloc d'achat) : c'est dit, pas caché.
-    expect(same.common).toEqual(["les sections de la page qui vend", "le pied de page"]);
+    // La fiche produit reprend des pièces du fauteuil (un bloc d'achat reste un bloc d'achat), mais plus leurs
+    // dispositions : règle de variété entre les sites du Studio (17 novembre 2026, variete-sites.ts).
+    expect(same.common).toEqual(["le pied de page"]);
     expect(same.compared - same.common.length).toBeGreaterThanOrEqual(6);
     expect(cardOfTheme(t)).toMatchObject({ opening: "tn-ouverture:titre-geant", header: "tn-entete:sangle", tenue: "gras etiquette droit toile machine" });
     await shots(pid, "sina-sac", ["home", "product", "404"]);

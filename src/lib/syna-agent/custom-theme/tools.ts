@@ -55,6 +55,7 @@ import { menuProducts } from "./render";
 import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_SYSTEM, ORIGINALITY_TYPICAL_MICRO, OriginalitySchema, originalityNote, originalityPrompt, type Originality, type OriginalityOutcome } from "./originality";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
 import { TenueSchema, constructionsOf, isTenueSection, sansArche, validConstruction } from "./tenue";
+import { fitVarieteSites, SITES_COMPARES, varieteSitesBrief, varieteSitesGaps, type SiteVu } from "./variete-sites";
 import { llmJson, routeLlm } from "../../ai/llm";
 import { FX_SAFETY, requirePrice, usdToEur } from "../../ai/config";
 import { EUR } from "../../billing";
@@ -324,6 +325,8 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   const refs = (() => { try { return referencesBrief({ offer: offerWords(ctx), business: site.business, seed }); } catch { return { sector: null, near: 0, far: 0, text: "" }; } })();
   // Cartes d'identité des thèmes déjà montés pour d'autres marques : aucun client ne reçoit le site d'un autre.
   const sites = recentSites(p.id), registry = sites.map((x) => x.card);
+  // La variété entre TOUS les sites du Studio (règle du propriétaire du 17 novembre 2026), quel que soit leur métier.
+  const vus = sitesVus(p.id);
   const brief = brandBrief(p, j);
   // L'ordre et la variété (cahier du 16 novembre 2026) : le métier, les types d'accueil permis, les preuves réelles du
   // dossier, et les partitions prises par les derniers sites du même métier (à ne pas reprendre).
@@ -343,7 +346,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   // Boutique dont des produits n'ont pas encore de photo du client : dit au concepteur (les pièces qui ne vivent que de la photo du produit attendent).
   const sansPhoto = site.business === "products" ? (() => { try { return listProducts(p.id).filter((x) => !x.data.images.some((i) => !!i.assetId)).map((x) => x.data.title); } catch { return []; } })() : [];
   const sansPhotoText = sansPhoto.length ? `PRODUITS SANS PHOTO DU CLIENT POUR L'INSTANT (il les importera après la création) : ${sansPhoto.map((x) => `« ${x} »`).join(", ")}. Un produit ne s'invente jamais : aucune photo créée ne le montrera. Ses emplacements de produit (bloc d'achat, cartes) afficheront « Ta photo ici ». Dans le champ « photos » de chaque section, prévois des scènes SANS ce produit : la matière, l'outil, l'atelier, le lieu, le geste sans personne, le moment d'usage sans lui. Ne choisis pas une pièce qui n'a de sens qu'avec la photo du produit lui-même.` : "";
-  const prompt = designPrompt({ brief, family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance, products, seed, overused, references: refs.text, preuves: [preuvesText, sansPhotoText, photosText].filter(Boolean).join("\n"), partitions: partitionsText }) + modeText;
+  const prompt = designPrompt({ brief, family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance, products, seed, overused, references: refs.text, preuves: [preuvesText, sansPhotoText, photosText].filter(Boolean).join("\n"), partitions: partitionsText }) + (vus.length ? `\n\n${varieteSitesBrief(vus)}` : "") + modeText;
   const jobId = a.jobId ?? getRun(ctx.runId)?.job_id ?? null;
   const tag = mode.kind === "concept" ? `custom-concept-${mode.label}` : mode.kind === "complete" ? "custom-design-complete" : "custom-design";
   // Chaque spécialiste lit ses cahiers de métier (knowledge.ts) : le concepteur ceux des pages, des ouvertures et de la
@@ -385,6 +388,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     // Concept : seules les objections dont la réponse est sur l'une de ses deux pages sont contrôlées.
     const g = designGaps(d, research);
     g.pages.push(...varietyGaps(d, recent));
+    g.pages.push(...varieteSitesGaps(siteVuDe(d), vus));
     // Une section qui lit le catalogue n'est gardée que si le catalogue a de quoi la remplir.
     g.pages.push(...dataGaps(d.pages.flatMap((pg) => pg.sections.map((s) => ref(s.section))), catalogueFacts));
     // Comparaison contre les doublons (sans IA) : avec les thèmes des autres marques, et entre les deux concepts.
@@ -477,6 +481,8 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   // Dernier recours sans IA : ce qui sort encore des choix de la famille y est ramené ; le site est fait dans son style.
   { const fit = fitFamille(d, { business: site.business, families: catalogueFacts.families }); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   { const fit = fitStyle(d, site.business); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+  // La variété entre les sites : une disposition encore prise par un autre site devient une disposition libre (sans IA).
+  { const fit = fitVarieteSites(d, vus, { resolve: (id, c) => { try { return validConstruction(ref(id), c); } catch { return c ?? null; } }, id: (s) => { try { return ref(s); } catch { return s; } }, garder: mode.kind === "complete" ? keys : [] }); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   // Le rythme : deux dispositions pareilles à la suite, réglé par un échange de place quand il ne crée aucun autre défaut.
   { const fit = fitRythme(d, facts); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   if (c.rules.length || !c.t) return { ok: false, result: { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." } };
@@ -646,6 +652,27 @@ export function recentSites(projectId: string): { card: ThemeCard; site: SiteMon
     } catch { /* thème illisible : ignoré */ }
   }
   return out;
+}
+/** Les derniers sites montés pour d'autres marques, toutes pages, pour la règle de variété entre sites (variete-sites.ts). */
+export function sitesVus(projectId: string): SiteVu[] {
+  const rows = all<{ value: string }>("SELECT value FROM memory WHERE kind='artifact' AND key=? AND state='active' AND project_id<>? ORDER BY rowid DESC LIMIT ?", THEME_KEY, projectId, SITES_COMPARES);
+  const out: SiteVu[] = [];
+  for (const r of rows) {
+    try {
+      const t = JSON.parse(r.value) as CustomTheme;
+      const pages = Object.fromEntries(t.pages.map((pg) => [pg.key, pg.sections.map((x) => `${x.id}:${validConstruction(x.id, x.construction) ?? ""}`)]));
+      const utiles = t.pages.filter((pg) => { const k = pageKind(pg.key, "products") ?? pageKind(pg.key, "services"); return !!k && k !== "utilitaire"; }).map((pg) => pg.key);
+      if (Object.keys(pages).length) out.push({ pages, utiles, metier: t.metier ?? null });
+    } catch { /* thème illisible : ignoré */ }
+  }
+  return out;
+}
+/** Une conception vue par la règle de variété entre sites. */
+function siteVuDe(d: Pick<Design, "pages">): SiteVu {
+  const id = (s: string) => { try { return ref(s); } catch { return s; } };
+  const pages = Object.fromEntries(d.pages.map((pg) => [pg.key, pg.sections.map((x) => { const i = id(x.section); return `${i}:${validConstruction(i, x.construction) ?? ""}`; })]));
+  const utiles = d.pages.filter((pg) => { const k = pageKind(pg.key, "products") ?? pageKind(pg.key, "services"); return !!k && k !== "utilitaire"; }).map((pg) => pg.key);
+  return { pages, utiles };
 }
 export function recentThemeSections(projectId: string): string[][] {
   const rows = all<{ value: string }>("SELECT value FROM memory WHERE kind='artifact' AND key=? AND state='active' AND project_id<>? ORDER BY rowid DESC LIMIT 8", THEME_KEY, projectId);
