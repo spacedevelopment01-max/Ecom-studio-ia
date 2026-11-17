@@ -129,7 +129,9 @@ function saved(ctx: ToolContext, t: CustomTheme, what: string, o: { strict?: boo
   const p = project(ctx);
   const site = siteKind(ctx);
   const problems = checkCustomTheme(t, site);
-  const key = (x: string) => x.replace(/\d+/g, "#");
+  // Un site enregistré avant le minimum de dix sections (16 novembre 2026) garde ses pages : une fiche de plus, copie de
+  // sa fiche commune, n'est pas un défaut NOUVEAU (le message est le même, au nom de la page près).
+  const key = (x: string) => x.replace(/^« [^»]+ » (?=n'a que \d+ section)/, "").replace(/\d+/g, "#");
   const before = o.strict ? null : loadCustomTheme(p.id);
   const known = new Set(before ? checkCustomTheme(before, site).filter((x) => x.level === "bloquant").map((x) => key(x.text)) : []);
   const all = problems.filter((x) => x.level === "bloquant");

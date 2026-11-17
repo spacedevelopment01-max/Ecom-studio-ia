@@ -16,7 +16,7 @@ describe("thème sur mesure : les cahiers de métier lus par chaque spécialiste
 
   it("chaque spécialiste a ses cahiers, sans sources ni adresses, coupés proprement", () => {
     expect(K.themeKnowledgeReady()).toEqual({ ok: true });
-    expect(Object.keys(K.THEME_READS).sort()).toEqual(["concepteur", "directriceArtistique", "juge", "redacteur", "relecteur", "relecteurTextes"]);
+    expect(Object.keys(K.THEME_READS).sort()).toEqual(["concepteur", "directriceArtistique", "juge", "redacteur", "relecteur", "relecteurTextes", "secondRegard"]);
     for (const who of Object.keys(K.THEME_READS) as (keyof typeof K.THEME_READS)[]) {
       const text = K.themeKnowledge(who);
       expect(text).toMatch(/^TON SAVOIR DE MÉTIER[^]*Tu ne cites aucun site, aucune marque ni aucun thème/);

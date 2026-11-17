@@ -15,16 +15,18 @@ const brand = { name: "Ardent", nameStatus: "validated", alternatives: [], tagli
 const proj = { id: "p-test", name: "Ardent", brand };
 const blocking = (t: CustomTheme) => checkCustomTheme(t).filter((p) => p.level === "bloquant").map((p) => p.text);
 /** Montage de A à Z (sans thème de départ), toutes les pages obligatoires d'une boutique, avec les sections de la famille. */
+/** Dix sections au moins sur l'accueil et la fiche produit (16 novembre 2026) : la composition d'exemple en a 8 et 7, complétées ici. */
+const PLUS: Record<string, string[]> = { home: ["Capsule numérotée", "Sois là avant les autres"], product: ["Entre deux tailles ?", "Manifeste en images", "Ouverture mot-fenêtre"] };
 function fullSite(family: "classique" | "moderne") {
   // Projets de test sur Shopify : pas de page commande ni de confirmation (pages de Shopify).
-  if (family === "moderne") { const st = STARTERS["sport-chic"]; return { header: st.header, footer: st.footer, search: st.search, pages: st.pages.filter(([key]) => key !== "commande" && key !== "merci").map(([key, label, sections]) => ({ key, label, sections })) }; }
+  if (family === "moderne") { const st = STARTERS["sport-chic"]; return { header: st.header, footer: st.footer, search: st.search, pages: st.pages.filter(([key]) => key !== "commande" && key !== "merci").map(([key, label, sections]) => ({ key, label, sections: [...sections, ...(PLUS[key] ?? [])] })) }; }
   return {
     header: "En-tête classique", footer: "Pied de page complet",
     pages: [
-      // Accueil : au moins 8 sections ; fiche produit : au moins 7 (méthode de montage, rappel du propriétaire du 9 novembre).
-      { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés"] },
+      // Accueil et fiche produit : au moins 10 sections (16 novembre 2026 ; 8 et 7 avant).
+      { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés", "Texte qui s'allume en lisant", "Questions en bulles de discussion"] },
       { key: "shop", label: "Boutique", sections: ["Catalogue avec filtres et tri"] },
-      { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Fiche produit à onglets", "Badges de confiance"] },
+      { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Fiche produit à onglets", "Badges de confiance", "Cartes qui s'empilent", "Comparatif « nous / les autres »", "Photo à points cliquables"] },
       { key: "cart", label: "Panier", sections: ["Page panier complète"] },
       { key: "compte", label: "Mon compte", sections: ["Connexion et création de compte"] },
       { key: "about", label: "Notre histoire", sections: ["L'atelier et la personne derrière"] },
@@ -422,10 +424,10 @@ describe("thème sur mesure : outils de SINA", async () => {
     const fixed = await call("custom.structure", ctx, { ops: [{ op: "replace", uid: offer, section: "Galerie avec visionneuse" }] });
     expect(fixed.ok, fixed.summary).toBe(true);
     expect(fixed.summary).not.toMatch(/Encore à corriger/);
-    // Une retouche qui crée un défaut (accueil sous 8 sections) est refusée, avec la façon de faire.
+    // Une retouche qui crée un défaut (accueil sous 10 sections) est refusée, avec la façon de faire.
     const short = await call("custom.structure", ctx, { ops: [{ op: "remove", uid: home.sections[1].uid }, { op: "remove", uid: home.sections[2].uid }] });
     expect(short.ok).toBe(false);
-    expect(short.summary).toMatch(/au moins 8/);
+    expect(short.summary).toMatch(/au moins 10/);
     expect(short.hint).toMatch(/UN SEUL appel/);
   });
 
@@ -785,7 +787,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
         };
         try {
           // Le devis compte les regards sur le montage qui pose les photos, pas sur un montage de textes seuls.
-          const est3 = await fr(() => getTool("custom.build")!.estimate!(ctx, {})), est4 = await fr(() => getTool("custom.build")!.estimate!(ctx, { photos: false, rewrite: true }));
+          const est3 = await fr(() => getTool("custom.build")!.estimate!(ctx, {})), est4 = await fr(() => getTool("custom.build")!.estimate!(ctx, { photos: false }));
           expect(est3.maxMicro - est4.maxMicro).toBeGreaterThanOrEqual(K.LOOK_CAP_MICRO * K.LOOK_PAGES_MAX);
           const noLook: any = await fr(() => B.runCustomBrandJob({ ...fake, job: { id: `${job.id}-textes-seuls` }, payload: { ...fake.payload, photos: false, rewrite: false } }));
           expect(noLook.regards).toBeNull();
@@ -1150,15 +1152,15 @@ describe("thème sur mesure : émotion et images magnifiques (retour du proprié
 });
 
 describe("thème sur mesure : pages pleines", () => {
-  it("accueil au moins 8 sections, fiche produit au moins 7 : sinon bloquant (Heure Dorée était passé avec 4 et 3)", () => {
+  it("accueil et fiche produit : au moins 10 sections depuis le 16 novembre 2026 (8 et 7 avant), sinon bloquant (Heure Dorée était passé avec 4 et 3)", () => {
     const site = { business: "products" as const, products: 5, platform: "shopify" };
     const base = fullSite("classique");
     const T = (pages: typeof base.pages) => ({ family: "classique", style: "classique", rev: 1, header: { uid: "s00000001", id: sectionByRef(base.header)!.id }, footer: { uid: "s00000002", id: sectionByRef(base.footer)!.id }, search: null, pages: pages.map((pg, i) => ({ key: pg.key, label: pg.label, sections: pg.sections.map((t, j) => ({ uid: `s${String(i).padStart(4, "0")}${String(j).padStart(4, "0")}`, id: sectionByRef(t)!.id })) })) }) as unknown as CustomTheme;
     expect(checkCustomTheme(T(base.pages), site).filter((x) => x.level === "bloquant")).toEqual([]);
     const short = base.pages.map((pg) => (pg.key === "home" ? { ...pg, sections: pg.sections.slice(0, 4) } : pg.key === "product" ? { ...pg, sections: pg.sections.slice(0, 3) } : pg));
     const problems = checkCustomTheme(T(short), site).filter((x) => x.level === "bloquant").map((x) => x.text);
-    expect(problems).toContain("« Accueil » n'a que 4 section(s) : au moins 8 (accueil)");
-    expect(problems).toContain("« Fiche produit » n'a que 3 section(s) : au moins 7 (fiche produit)");
+    expect(problems).toContain("« Accueil » n'a que 4 section(s) : au moins 10 (accueil)");
+    expect(problems).toContain("« Fiche produit » n'a que 3 section(s) : au moins 10 (fiche produit)");
   });
 
   it("jamais une section pour en ajouter une : pas d'offre en section à part, jamais la même section sur deux pages", () => {

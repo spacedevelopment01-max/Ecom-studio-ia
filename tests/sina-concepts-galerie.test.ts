@@ -9,8 +9,8 @@ import { sectionByRef } from "@/lib/syna-agent/custom-theme/library";
 import type { Design } from "@/lib/syna-agent/custom-theme/design";
 
 const SITE: Record<string, [string, string[]]> = {
-  home: ["Accueil", ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés"]],
-  product: ["Fiche produit", ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Fiche produit à onglets", "Badges de confiance"]],
+  home: ["Accueil", ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés", "Texte qui s'allume en lisant", "Questions en bulles de discussion"]],
+  product: ["Fiche produit", ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Fiche produit à onglets", "Badges de confiance", "Cartes qui s'empilent", "Comparatif « nous / les autres »", "Photo à points cliquables"]],
   cart: ["Panier", ["Page panier complète"]], compte: ["Mon compte", ["Connexion et création de compte"]], about: ["Notre histoire", ["L'atelier et la personne derrière"]],
   contact: ["Contact", ["Contact"]], aide: ["Aide", ["Suivi de commande et aide"]], legal: ["Informations légales", ["Mentions et conditions"]], "404": ["Page 404", ["Page introuvable (404)"]],
 };

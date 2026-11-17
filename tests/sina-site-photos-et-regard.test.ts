@@ -315,9 +315,9 @@ describe("photos du site : jamais de personne sans accord, jamais de photo d'exe
     // Un site complet et valide, monté par l'outil du Studio (toutes les pages obligatoires d'une boutique).
     await call("theme.family", ctx, { family: "classique" });
     const composed = await call("custom.compose", ctx, { header: "En-tête classique", footer: "Pied de page complet", pages: [
-      { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés"] },
+      { key: "home", label: "Accueil", sections: ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés", "Texte qui s'allume en lisant", "Questions en bulles de discussion"] },
       { key: "shop", label: "Boutique", sections: ["Catalogue avec filtres et tri"] },
-      { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Fiche produit à onglets", "Badges de confiance"] },
+      { key: "product", label: "Fiche produit", sections: ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Fiche produit à onglets", "Badges de confiance", "Cartes qui s'empilent", "Comparatif « nous / les autres »", "Photo à points cliquables"] },
       { key: "cart", label: "Panier", sections: ["Page panier complète"] }, { key: "compte", label: "Mon compte", sections: ["Connexion et création de compte"] },
       { key: "about", label: "Notre histoire", sections: ["L'atelier et la personne derrière"] }, { key: "contact", label: "Contact", sections: ["Contact"] },
       { key: "aide", label: "Aide", sections: ["Suivi de commande et aide"] }, { key: "legal", label: "Informations légales", sections: ["Mentions et conditions"] }, { key: "404", label: "Page 404", sections: ["Page introuvable (404)"] },

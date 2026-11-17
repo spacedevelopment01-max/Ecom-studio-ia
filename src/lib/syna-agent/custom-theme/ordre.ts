@@ -157,7 +157,8 @@ export function ordreGaps(d: OrdreDesign, f: OrdreFacts): { refus: string[]; not
     if (n < MIN_SECTIONS_IMPORTANTE) {
       const libres = partition ? momentsLibres(partition, ids, f) : [];
       if (libres.length) refus.push(`${name} : ${n} sections ; une page importante en a au moins ${MIN_SECTIONS_IMPORTANTE}. Moments encore libres de sa partition, que le dossier peut remplir : ${libres.map((x) => `${x.moment.label} (${x.pieces.join(" ou ")})`).join(" ; ")}. N'ajoute rien d'autre : jamais une section de remplissage, jamais un contenu que le client n'a pas`);
-      else notes.push(`${name} (${PAGE_KIND_LABEL[kind]}) : ${n} sections, moins de ${MIN_SECTIONS_IMPORTANTE} ; ${partition ? "aucun moment de sa partition ne reste que le dossier puisse remplir sans remplissage" : "partition inconnue"} : il manque des preuves ou des contenus à demander au client`);
+      // Sans partition reconnue, le refus ci-dessus (« partition manquante ») suffit : rien d'autre n'est réclamé.
+      else if (partition) notes.push(`${name} (${PAGE_KIND_LABEL[kind]}) : ${n} sections, moins de ${MIN_SECTIONS_IMPORTANTE} ; aucun moment de sa partition ne reste que le dossier puisse remplir sans remplissage : il manque des preuves ou des contenus à demander au client`);
     }
   }
   return { refus: [...new Set(refus)], notes: [...new Set(notes)] };

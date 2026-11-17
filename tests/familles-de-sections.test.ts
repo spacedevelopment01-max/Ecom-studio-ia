@@ -301,8 +301,10 @@ describe("conception de SINA d'après les thèmes qui se vendent", () => {
   it("la consigne donne l'ordre des pages ; l'exemple montre une logique sans aucun identifiant de section", async () => {
     const D = await import("../src/lib/syna-agent/custom-theme/design");
     const { sectionLibrary } = await import("../src/lib/syna-agent/custom-theme/library");
-    expect(D.DESIGN_SYSTEM).toContain("CE QUE FONT LES THÈMES QUI SE VENDENT");
-    expect(D.DESIGN_REVIEW_SYSTEM).toContain("CE QUE FONT LES THÈMES QUI SE VENDENT");
+    // Depuis le 16 novembre 2026, les dix règles d'or du cahier « ordre et variété » passent d'abord ; l'étude des thèmes vient en plus.
+    expect(D.DESIGN_SYSTEM).toContain("CE QUE FONT EN PLUS LES THÈMES QUI SE VENDENT");
+    expect(D.DESIGN_REVIEW_SYSTEM).toContain("CE QUE FONT EN PLUS LES THÈMES QUI SE VENDENT");
+    expect(D.DESIGN_SYSTEM).toContain("LES DIX RÈGLES D'OR");
     // Lot 4 : le niveau attendu est dit en logique, sans exemple de marque (aucun exemple tiré d'un projet d'essai).
     expect(D.DESIGN_SYSTEM).toContain("CETTE LOGIQUE NE DONNE AUCUN IDENTIFIANT");
     expect(D.DESIGN_SYSTEM).not.toMatch(/bougie|\bthés?\b|infusion/i);
@@ -325,14 +327,14 @@ describe("conception de SINA d'après les thèmes qui se vendent", () => {
     expect(D.varietyGaps(mine, [["a", "b", "c", "d", "e", "f", "x"]]).join(" ")).toContain("presque identiques");
     expect(D.varietyGaps(mine, [["a", "b", "y", "z"]])).toEqual([]);
   });
-  it("le contrôle refuse un accueil sans produits, des produits trop tard, des preuves avant les produits, une fin sur des produits", async () => {
+  it("le contrôle refuse une fin sur des produits ; l'offre en 3e, la preuve avant la 5e et le reste des règles d'or sont contrôlés dans ordre.ts (tests/sina-ordre-et-variete.test.ts)", async () => {
     const D = await import("../src/lib/syna-agent/custom-theme/design");
     const pg = (key: string, ids: string[]) => ({ key, label: key, journey: "", sections: ids.map((section) => ({ section })) });
     const sans = D.pageOrderGaps({ pages: [pg("home", ["ouverture-photo-pleine", "image-et-texte", "avis-clients"]), pg("product", ["produit-vedette"])] } as any);
-    expect(sans.join(" ")).toContain("aucun produit");
+    // « Une preuve jamais avant les produits » et « les produits en 4e position » contredisaient le cahier : retirés d'ici.
+    expect(sans.join(" ")).not.toContain("passe avant les produits");
     const tard = D.pageOrderGaps({ pages: [pg("home", ["ouverture-photo-pleine", "image-et-texte", "citation-en-grand", "grande-photo-de-respiration", "avis-clients", "collection-en-vedette"])] } as any).join(" ");
-    expect(tard).toContain("trop tard");
-    expect(tard).toContain("passe avant les produits");
+    expect(tard).not.toContain("passe avant les produits");
     expect(tard).toContain("finit sur des produits");
     const fiche = D.pageOrderGaps({ pages: [pg("product", ["fiche-produit-a-onglets", "vous-aimerez-aussi", "mode-d-emploi-en-etapes"])] } as any).join(" ");
     expect(fiche).toContain("commence par le bloc d'achat");

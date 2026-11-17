@@ -39,6 +39,9 @@ export const SAC_SITE: { key: string; label: string; sections: Instance[] }[] = 
     { id: "tn-produits", texts: [["Les mélanges.", "Le sac."]] },
     { id: "tn-atouts", texts: [["Tout est bio", "Une poche devant"], ["Du thé, des fleurs, rien d'autre.", "Ce que tu sors dix fois reste sous la main."], ["Assemblé à la main", "Des sangles sur les côtés"], ["Par petites quantités, à la commande.", "Tu serres, plus rien ne bouge."], ["En vrac", "Deux bretelles"], ["Dans un sachet qui se referme.", "Tes mains restent libres."]] },
     { id: "tn-emotion", texts: [["La journée s'arrête<br>à la première gorgée.", "Le quai, le lac.<br>Rien dans les mains."]], photos: [["photos/fenetre.jpg", "emotion-accueil"]] },
+    // Dix sections au moins sur l'accueil et la fiche produit (cahier « ordre et variété », 16 novembre 2026) : les sections suivantes ont été ajoutées aux écrans d'origine.
+    { id: "tn-garanties", texts: [["Sans mauvaise surprise.", "Sans mauvaise surprise."]] },
+    { id: "tn-pour-qui", texts: [["Soyons francs.", "Soyons francs."], ["Tu cherches une vraie pause dans l'après-midi.", "Tu pars deux ou trois jours, pas trois semaines."], ["Tu aimes les parfums de fleurs, tout en douceur.", "Tu veux garder les mains libres."], ["Tu bois ton thé sans sucre.", "Tu prends le train plus souvent que l'avion."], ["Tu veux un thé corsé, qui réveille.", "Tu cherches une valise à roulettes."], ["Tu n'aimes pas les notes fleuries.", "Tu emportes un costume sans le plier."]] },
     { id: "tn-questions", texts: q(["Tes questions.", "Passe-t-il en cabine ?", "[À compléter : dimensions]", "Puis-je le renvoyer ?", "Comment le nettoyer ?", "[À compléter : entretien]"]) },
     { id: "tn-final", texts: [["Cinq minutes.<br>Rien que pour toi.", "Ferme la porte.<br>Le reste suit."], ["Choisir mon mélange", "Partir léger"]] },
   ] },
@@ -48,6 +51,10 @@ export const SAC_SITE: { key: string; label: string; sections: Instance[] }[] = 
     { id: "tn-places", texts: [["Quand le boire.", "Où il te suit."], ["Trois moments où il fait la différence.", "Nos photos le montrent à chacune de ces places."], ["Au réveil", "Dans le train"], ["Après le déjeuner", "Au bord du lac"]], photos: [["photos/nl-tasse.jpg", "place-train"], ["photos/film-affiche.jpg", "place-lac"]] },
     { id: "tn-emotion", texts: [["La journée s'arrête<br>à la première gorgée.", "Tout est dedans.<br>Tu regardes dehors."]], photos: [["photos/fenetre.jpg", "emotion"]] },
     { id: "tn-mesures", construction: "sac", texts: [["<td>Poids</td>", "<td>Poids à vide</td>"]] },
+    // Dix sections au moins sur l'accueil et la fiche produit (cahier « ordre et variété », 16 novembre 2026) : les sections suivantes ont été ajoutées aux écrans d'origine.
+    { id: "tn-atouts", construction: "numeros", texts: [["Tout est bio", "Il s'ouvre en grand"], ["Du thé, des fleurs, rien d'autre.", "Tout se voit d'un seul coup d'œil."], ["Assemblé à la main", "Il se porte de deux façons"], ["Par petites quantités, à la commande.", "Sur le dos ou à la main."], ["En vrac", "Il se range à plat"], ["Dans un sachet qui se referme.", "Vide, il tient sous un lit."]] },
+    { id: "tn-citation", texts: [["Un thé ne se boit pas vite. C'est pour ça qu'on l'aime.", "Tout ce qu'on emporte tient dans une seule fermeture."]] },
+    { id: "tn-engagements", texts: [["Ce qu'on te doit.", "Ce qu'on te doit."], ["Du thé, des fleurs, rien d'autre.", "Un sac montré tel qu'il est."], ["La liste tient sur une ligne.", "Nos photos sont celles du vrai sac."], ["Aucun arôme ajouté.", "Aucune promesse en l'air."], ["Ce que tu sens vient de la feuille.", "Ce qui n'est pas encore sûr est écrit « à compléter »."], ["Un sachet qui se referme.", "Un colis bien fermé."], ["Le parfum reste dedans.", "La toile arrive propre."]] },
     { id: "tn-questions", texts: q(["Avant de le prendre.", "Combien de jours tient-il ?", "[À compléter : volume]", "Et s'il ne me convient pas ?", "Résiste-t-il à la pluie ?", "[À compléter : matière et traitement]"]) },
     { id: "tn-final", texts: [["Cinq minutes.<br>Rien que pour toi.", "Le train part.<br>Toi aussi."], ["Choisir mon mélange", "Le prendre"]] },
   ] },

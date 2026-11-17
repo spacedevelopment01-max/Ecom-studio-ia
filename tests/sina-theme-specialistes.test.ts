@@ -14,10 +14,10 @@ import * as C from "@/lib/syna-agent/custom-theme/identity-card";
 import * as O from "@/lib/syna-agent/custom-theme/originality";
 
 const ids = (titles: string[]) => titles.map((t) => { const s = sectionByRef(t); if (!s) throw new Error(`section « ${t} » absente`); return s.id; });
-const HOME_A = ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés"];
-const PRODUCT_A = ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Fiche produit à onglets", "Badges de confiance"];
-const HOME_B = ["Ouverture en écran partagé", "Grand texte défilant", "Produits en onglets", "Image et texte", "Grande photo de respiration", "Garanties et assurances", "Galerie avec visionneuse", "Inscription centrée"];
-const PRODUCT_B = ["Produit vedette", "Fiche produit en accordéon", "Profil du mélange", "Scène achetable", "Questions en cartes", "Mur d'avis", "Vous aimerez aussi"];
+const HOME_A = ["Ouverture photo pleine", "Collection en vedette", "Histoire du produit au défilement", "Citation en grand", "Avis clients", "Grille bento", "Nos engagements", "Chiffres clés", "Texte qui s'allume en lisant", "Questions en bulles de discussion"];
+const PRODUCT_A = ["Produit vedette", "Points forts du produit", "Mode d'emploi en étapes", "Résumé des avis", "Questions sur le produit", "Fiche produit à onglets", "Badges de confiance", "Histoires façon « stories »", "Comparatif « nous / les autres »", "Photo à points cliquables"];
+const HOME_B = ["Ouverture en écran partagé", "Grand texte défilant", "Produits en onglets", "Image et texte", "Grande photo de respiration", "Garanties et assurances", "Galerie avec visionneuse", "Histoire en frise", "Cartes qui s'empilent", "Inscription centrée"];
+const PRODUCT_B = ["Produit vedette", "Fiche produit en accordéon", "Profil du mélange", "Scène achetable", "Questions en cartes", "Mur d'avis", "Histoire du produit au défilement", "Texte qui s'allume en lisant", "Chiffres clés", "Vous aimerez aussi"];
 const design = (home: string[], product: string[], concept: string, shell = { header: "En-tête classique", footer: "Pied de page complet" }): Design => ({
   visitor: "Une personne qui veut une vraie pause dans sa journée chargée.", levers: ["la promesse visible", "la preuve par le savoir-faire"], objections: [],
   concept, header: sectionByRef(shell.header)!.id, footer: sectionByRef(shell.footer)!.id, search: null, corrections: [],
@@ -151,7 +151,11 @@ describe("le juge de l'originalité (séparé du concepteur)", async () => {
       // concepteur, le directeur commercial et le juge.
       const { designKnowledge } = await import("@/lib/syna-agent/custom-theme/tools");
       expect(designKnowledge(true).max).toBeGreaterThan(designKnowledge(true).usual);
-      expect(est.maxMicro).toBe((design3.DESIGN_CAP_MICRO * design3.DESIGN_CALLS_MAX + O.ORIGINALITY_CAP_MICRO * O.ORIGINALITY_CALLS_MAX + designKnowledge(true).max) * 2);
+      // Depuis le 16 novembre 2026 : le second regard sur l'ordre des pages aussi (deux avis au plus par concept).
+      const { designCost } = await import("@/lib/syna-agent/custom-theme/tools");
+      const R = await import("@/lib/syna-agent/custom-theme/second-regard");
+      expect(est.maxMicro).toBe(designCost(true).max * 2);
+      expect(designCost(true).max).toBe(design3.DESIGN_CAP_MICRO * design3.DESIGN_CALLS_MAX + O.ORIGINALITY_CAP_MICRO * O.ORIGINALITY_CALLS_MAX + R.SECOND_REGARD_CAP_MICRO * R.SECOND_REGARD_CALLS_MAX + designKnowledge(true).max);
       const r = await call("custom.concepts", ctx, {});
       expect(r.ok, r.summary).toBe(true);
       // La documentaliste : secteur reconnu dans les mots du client, références sans nom de site.

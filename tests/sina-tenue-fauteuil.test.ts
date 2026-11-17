@@ -170,8 +170,8 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     expect(designed.tenue).toMatchObject({ titres: "fins", bouton: "pilule", cadre: "droit", signe: "la niche du mur" });
     expect(designed.header).toMatchObject({ id: "tn-entete", construction: "centre" });
     expect(designed.pages.find((x) => x.key === "home")!.sections.slice(0, 2).map((s) => [s.id, s.construction])).toEqual([["tn-ouverture", "dans-la-photo"], ["tn-de-pres", "sans-titre"]]);
-    expect(designed.pages.find((x) => x.key === "product")!.sections.map((s) => s.id)).toEqual(["tn-achat", "tn-description", "tn-de-pres", "tn-emotion", "tn-places", "tn-mesures", "tn-questions", "tn-final"]);
-    // Règles du propriétaire : aucune n'est enfreinte (8 sections sur l'accueil, 8 sur la fiche, toutes les pages), et
+    expect(designed.pages.find((x) => x.key === "product")!.sections.map((s) => s.id)).toEqual(["tn-achat", "tn-description", "tn-de-pres", "tn-emotion", "tn-places", "tn-mesures", "tn-atouts", "tn-citation", "tn-questions", "tn-final"]);
+    // Règles du propriétaire : aucune n'est enfreinte (10 sections sur l'accueil, 10 sur la fiche depuis le 16 novembre 2026, toutes les pages), et
     // une même section à tenue sert sur plusieurs pages sans être refusée.
     expect(S.checkCustomTheme(designed, site).filter((x) => x.level === "bloquant").map((x) => x.text)).toEqual([]);
     expect(S.checkCustomTheme(designed, site).map((x) => x.text).join("\n")).not.toMatch(/mélange|sans tenue choisie/);
@@ -236,7 +236,7 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     // Par l'outil de SINA (étape 7) : jamais avant le choix du client ; puis la liste de ce qui reste à régler ; puis,
     // avec son accord, le thème prêt et son lien de téléchargement. Jamais « ta boutique est en ligne ».
     expect((await call("custom.install", ctx, {})).summary).toMatch(/n'a pas encore choisi son thème/);
-    expect((await call("custom.choose", ctx, {})).ok).toBe(true);
+    { const c = await call("custom.choose", ctx, {}); expect(c.ok, c.summary).toBe(true); }
     const refused = await call("custom.install", ctx, {});
     expect(refused.ok).toBe(false);
     expect(refused.summary).toMatch(/pas encore possible : \d+ point\(s\) à régler d'abord\. Rien n'est créé/);

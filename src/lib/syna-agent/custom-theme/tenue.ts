@@ -265,7 +265,9 @@ for (const id of Object.keys(FACONS)) if (!BASE_SECTIONS.some((s) => s.id === id
 // L'ordre d'une page (cahier « ordre et variété ») : chaque pièce porte sa disposition et ses traits ; aucune n'y échappe.
 for (const s of BASE_SECTIONS) if (!ORDRE_PIECES[s.id]) throw new Error(`Pièce sans ligne dans tenue-ordre.ts (disposition et traits pour l'ordre des pages) : ${s.id}`);
 for (const id of Object.keys(ORDRE_PIECES)) if (!BASE_SECTIONS.some((s) => s.id === id)) throw new Error(`tenue-ordre.ts parle d'une pièce inconnue : ${id}`);
-export const TENUE_SECTIONS: TenueSection[] = BASE_SECTIONS.map((s) => ({ ...s, ...(FACONS[s.id] ? { constructions: FACONS[s.id] } : {}), ordre: ORDRE_PIECES[s.id] }));
+// Le trait est posé sur la pièce elle-même (les modules gardent les mêmes objets que la bibliothèque).
+for (const s of BASE_SECTIONS) s.ordre = ORDRE_PIECES[s.id];
+export const TENUE_SECTIONS: TenueSection[] = BASE_SECTIONS.map((s) => (FACONS[s.id] ? { ...s, constructions: FACONS[s.id] } : s));
 /** Feuilles et scripts des sections à tenue, dans l'ordre de chargement (un fichier absent est ignoré). */
 /** « boutique-apercu.js » : le panier d'essai de l'aperçu (contrat window.tnBoutique) ; en boutique, l'adaptateur de la plateforme le remplace. */
 export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css", "tenue-coque.css", "tenue-achat.css", "tenue-metiers.css", "tenue-pages.css", "tenue-vente.css"], js: ["boutique-apercu.js", "tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js", "tenue-coque.js", "tenue-achat.js", "tenue-metiers.js", "tenue-pages.js", "tenue-vente.js"] };
