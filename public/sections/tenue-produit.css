@@ -996,6 +996,10 @@
 /* Documents en feuilles : les deux feuilles d'une rangée gardent la même largeur (un mot long ne pousse plus sa feuille
    contre sa voisine) ; sur un très petit téléphone, dans une tenue aux titres gras, le nom passe en texte courant gras. */
 .ctw .tn-documents[data-tn-c="feuilles"] li a{min-width:0}
+.ctw .tn-documents[data-tn-c="feuilles"] li b{-webkit-hyphens:auto;hyphens:auto}
+@media (min-width:760px){
+  .ctw[data-tn-titres="gras"] .tn-documents[data-tn-c="feuilles"] li b,.ctw[data-tn-titres="capitales"] .tn-documents[data-tn-c="feuilles"] li b,.ctw[data-tn-lourd] .tn-documents[data-tn-c="feuilles"] li b{font-size:20px}
+}
 @media (max-width:359px){
   .ctw[data-tn-titres="gras"] .tn-documents[data-tn-c="feuilles"] li b,.ctw[data-tn-titres="capitales"] .tn-documents[data-tn-c="feuilles"] li b,.ctw[data-tn-lourd] .tn-documents[data-tn-c="feuilles"] li b{font-family:var(--f-ui);font-weight:700;font-size:17px;line-height:1.25;letter-spacing:0;text-transform:none}
 }

@@ -251,6 +251,53 @@ un cadre vide ; le champ libre d'un produit (« ta date », une gravure) n'exist
 Le plafond est haut parce qu'il est annoncé avant la conception : le nombre de pages et de photos n'est connu
 qu'après. Ce sont des devis ; le coût réel sera relevé sur le premier site.
 
+## Le tour des sections (17 novembre 2026)
+
+**La demande du propriétaire** : « ouvre toutes les sections une par une mobile et ordi et tu corriges tous les
+défauts, j'en veux plus un seul ».
+
+**Le banc** (`scripts/tour-des-sections/`, mode d'emploi dans son `LISEZMOI.md`) : chaque pièce à tenue du thème
+(165 pièces) et trois pages composées en situation (accueil d'une boutique, fiche produit, accueil d'un métier de
+services) sont montées avec les fonctions du Studio, dans trois tenues (calme, gras, capitales), à 320, 390 et
+1 280 px, avec quatre contenus (l'exemple, un vrai petit site, un contenu difficile, une liste d'un seul élément), et ce
+qui se replie est ouvert. Des détecteurs mesurent chaque défaut (débordement, texte coupé ou caché, bouton coupé ou
+collé, contraste lu sur les pixels, mot coupé, nombre coupé, pavé gras, ombre recouverte, vide, photo ou nom d'exemple,
+arche…), chacun prouvé sur une page fautive et une page saine (`tests/tour-des-sections.test.ts`). Gratuit : aucune IA.
+
+**Avant, après** (défauts distincts : le même défaut revu d'une tenue, d'une largeur ou d'un état à l'autre compte
+une fois) :
+
+| Tour | Défauts distincts | Bloquants | Importants | Mineurs |
+|---|---|---|---|---|
+| Premier tour (14 h 49) | 2 785 | 850 | 1 127 | 808 |
+| Dernier tour (20 h 47) | 10 | 0 | 2, corrigés ensuite (pièce revérifiée) | 8 |
+
+Les mineurs qui restent sont expliqués : un mot inventé de 24 lettres du contenu « difficile » qui ne peut se couper
+qu'au milieu ; une petite ligne sur une photo floue au contraste de 2,76 par endroits ; des marques « À compléter » de
+l'état « exemple », jamais montrées chez un client ; le bloc d'achat et ses pièces voisines de la fiche, voulus sans
+séparation. `connus.json` est vide. Chaque pièce a aussi été regardée à l'œil, sur téléphone et sur ordinateur : ce
+regard a trouvé des défauts qu'aucun détecteur ne voyait (une quantité écrite chiffre par chiffre, des coches jaunes
+invisibles sur fond clair, des vignettes de trois tailles, un panneau sombre vide quand une photo manque), corrigés.
+
+**Les règles communes retenues** :
+
+- rien de coupé : un mot passe à la ligne entier ou avec son trait d'union, un nombre jamais ; un texte trop long pour
+  sa place (macaron, étiquette d'offre posée sur une photo) n'est jamais tronqué : il ne se pose pas ;
+- jamais un bouton coupé : un bouton, son bord et son ombre restent entiers ; une ombre qui finit sa section garde sa place ;
+- aucun vide : une photo qui manque emporte son cadre, ou laisse un aplat doux qui garde la place ; une section qui
+  n'était qu'une photo ne se rend pas ; un produit sans photo montre « Ta photo ici » (cartes, carte de vente, ajout rapide) ;
+- aucun exemple chez un client : ni nom de produit d'exemple (titre du bloc d'achat, résultats de recherche), ni
+  texte d'exemple propre à un métier (préparation, colis : textes neutres) ;
+- la couleur de la marque, quand elle sert à écrire ou à dessiner sur le fond (étoiles, coches, barres), passe par sa
+  version lisible (`--tn-accent-texte`) ;
+- ce qui reste collé en défilant se colle sous l'en-tête collant, un menu ouvert s'arrête au bas de l'écran ;
+- un titre sur une photo claire a son voile ;
+- dans une tenue aux titres gras, un nom long dans une case étroite passe en texte courant gras plutôt que de se casser.
+
+**Pas vérifié** : Safari sur iPhone (le banc n'a que Chromium) ; la mise en boutique Shopify des pièces corrigées (seul
+l'aperçu du Studio est rendu) ; les boutons « droit » et « étiquette » et les autres petits textes de tenue (seulement
+pilule et ombre) ; les survols, le focus, les étapes 2 et 3 d'un parcours, les animations.
+
 ## Vérifié, et non vérifié
 
 - Vérifié sans IA : compilation ; tests du nouveau chemin (`tests/sina-site-en-une-fois.test.ts`) et tests mis à jour ;
