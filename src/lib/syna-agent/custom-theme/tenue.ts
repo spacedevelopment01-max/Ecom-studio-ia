@@ -105,9 +105,44 @@ export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | nul
  * dans une famille, et un site qui l'avait prend le cadre droit. La valeur reste lisible pour les sites déjà enregistrés.
  */
 export const sansArche = <T extends string>(cadre: T): T | "droit" => (cadre === "niche" ? "droit" : cadre);
-export function tenueAttrs(tenue: Tenue | null | undefined): string {
+/**
+ * Polices de titres très grasses à leur graisse normale. Un petit texte ou un texte long écrit avec elles devient un pavé
+ * illisible (vu par le propriétaire le 17 novembre 2026) : le thème porte alors `data-tn-lourd`, et la feuille du socle
+ * passe ces textes dans la police du texte courant.
+ */
+const TITRES_TRES_GRAS = new Set(["anton", "archivo_black", "abril_fatface", "alfa_slab_one", "bebas_neue", "righteous"]);
+export const titresTresGras = (heading: string | null | undefined): boolean => TITRES_TRES_GRAS.has((heading ?? "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_"));
+export function tenueAttrs(tenue: Tenue | null | undefined, /** La police des titres de la marque (clé ou nom) : très grasse, elle pose data-tn-lourd. */ heading?: string | null): string {
   const t = tenue ?? DEFAULT_TENUE;
-  return ` data-tn-titres="${t.titres}" data-tn-bouton="${t.bouton}" data-tn-cadre="${sansArche(t.cadre)}" data-tn-fond="${t.fond}" data-tn-petits="${t.petits}"`;
+  return ` data-tn-titres="${t.titres}" data-tn-bouton="${t.bouton}" data-tn-cadre="${sansArche(t.cadre)}" data-tn-fond="${t.fond}" data-tn-petits="${t.petits}"${titresTresGras(heading) ? ' data-tn-lourd="1"' : ""}`;
+}
+
+/** Longueurs (en signes) à partir desquelles un texte est « long » : un grand titre (deux crans), un nom ou une légende. */
+export const TEXTE_LONG = { titre: 50, titreTresLong: 64, libelleAssezLong: 32, libelle: 56 };
+const texteNu = (h: string) => h.replace(/<[^>]+>/g, "").replace(/&[a-z#0-9]+;/gi, "x").replace(/\s+/g, " ").trim();
+/**
+ * Marque les textes longs, une fois les vraies données posées (dernier passage du rendu). La feuille du socle lit la marque :
+ * - un grand titre (h1, h2) de plus de 50 signes se réduit (`data-tn-long="1"`), de plus de 64 encore (`"2"`) : dix mots
+ *   ne remplissent jamais tout un écran de téléphone ;
+ * - un nom, un titre de carte, une question, une citation de plus de 56 signes (`data-tn-long="2"`) n'est plus écrit dans
+ *   la police des titres quand elle est grasse : « jamais un pavé de texte gras » (propriétaire, 17 novembre 2026) ;
+ *   de plus de 32 signes (`data-tn-long="1"`), il est seulement signalé : une pièce aux cartes étroites (deux par rangée
+ *   sur téléphone) s'en sert pour le passer plus tôt en texte courant (`b[data-tn-long]`).
+ * Rien n'est changé au texte lui-même.
+ */
+export function withTextesLongs(html: string): string {
+  const deja = (attrs: string) => /\sdata-tn-long=/.test(attrs);
+  return html
+    .replace(/<(h1|h2)\b((?:"[^"]*"|[^>"])*)>([\s\S]*?)<\/\1>/g, (m, tag: string, attrs: string, inner: string) => {
+      if (deja(attrs)) return m;
+      const n = texteNu(inner).length;
+      return n > TEXTE_LONG.titre ? `<${tag}${attrs} data-tn-long="${n > TEXTE_LONG.titreTresLong ? 2 : 1}">${inner}</${tag}>` : m;
+    })
+    .replace(/<(b|strong|h3|h4|dt|summary|blockquote)\b((?:"[^"]*"|[^>"])*)>((?:[^<]|<\/?(?:mark|br|i|em|u)\b[^>]*>)*)<\/\1>/g, (m, tag: string, attrs: string, inner: string) => {
+      if (deja(attrs)) return m;
+      const n = texteNu(inner).length;
+      return n > TEXTE_LONG.libelleAssezLong ? `<${tag}${attrs} data-tn-long="${n > TEXTE_LONG.libelle ? 2 : 1}">${inner}</${tag}>` : m;
+    });
 }
 /** Ce qui manque au dossier s'affiche en jaune dans l'aperçu du Studio, sans crochets : « [À compléter : délai] ». */
 export const markMissing = (html: string): string => html.replace(/\[À compléter(?:\s*:\s*([^\]<]{1,80}))?\]/g, (_m, what: string | undefined) => `<mark class="tn-manque">À compléter${what ? ` : ${what.trim()}` : ""}</mark>`);

@@ -943,7 +943,7 @@
 }
 
 /* ══ Achat, suite (16 novembre 2026) : prix barré, packs, dessous du bouton, offre du moment, fenêtre d'offre ══ */
-.ctw .tn-achat .tn-prix s,.ctw .tn-achat .tn-prix-b s{margin-right:8px;font-family:var(--f-ui);font-size:.5em;font-weight:400;color:var(--tn-sourd);text-decoration-thickness:1.5px;vertical-align:middle}
+.ctw .tn-achat .tn-prix s,.ctw .tn-achat .tn-prix-b s{margin-right:8px;font-family:var(--f-ui);font-size:max(.5em,13px);font-weight:400;color:var(--tn-sourd);text-decoration-thickness:1.5px;vertical-align:middle}
 .ctw .tn-achat .tn-moins,.ctw .tn-packs .tn-moins{display:inline-block;margin-left:8px;padding:4px 9px;border-radius:999px;background-color:var(--tn-accent);color:var(--tn-sur-accent);font-family:var(--f-ui);font-size:13px;font-style:normal;font-weight:700;line-height:1.2;letter-spacing:0;vertical-align:middle;white-space:nowrap}
 .ctw .tn-achat .tn-prix-b s{font-size:.8em;margin-right:5px}
 .ctw .tn-achat .tn-prix-b .tn-moins{margin-left:5px;padding:2px 6px;font-size:11px}
@@ -1295,4 +1295,18 @@
   .ctw .tn-achat:is([data-tn-c="grandes-photos"],[data-tn-c="fond-doux"])>.tn-versions{text-align:left}
   .ctw .tn-achat:is([data-tn-c="grandes-photos"],[data-tn-c="fond-doux"])>.tn-versions .tn-choix-v{justify-content:flex-start}
   .ctw .tn-achat[data-tn-c="vente-directe"]>.tn-versions{margin-left:28px;margin-right:28px}
+}
+
+/* ══ Tour des sections (17 novembre 2026) : le vrai choix (pastilles) posé DANS le bloc d'achat ══
+   Quand une ligne d'option écrite reste au-dessus des pastilles, les deux prenaient la même rangée : sur téléphone, une
+   deuxième colonne naissait et tout le bloc s'écrasait en une lettre par ligne. Les pastilles ont leur rangée, sous la
+   dernière ligne d'option, et restent dans la colonne du bloc. */
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-option~.tn-versions{grid-row:11}
+.ctw .tn-achat[data-tn-c="vente-directe"]>.tn-option~.tn-option~.tn-versions{grid-row:12}
+.ctw .tn-achat:is([data-tn-c="grandes-photos"],[data-tn-c="fond-doux"])>.tn-option~.tn-versions{grid-row:9}
+.ctw .tn-achat:is([data-tn-c="grandes-photos"],[data-tn-c="fond-doux"])>.tn-option~.tn-option~.tn-versions{grid-row:10}
+.ctw .tn-achat:is([data-tn-c="technique"],[data-tn-c="portrait"])>.tn-option~.tn-versions{grid-row:8}
+.ctw .tn-achat:is([data-tn-c="technique"],[data-tn-c="portrait"])>.tn-option~.tn-option~.tn-versions{grid-row:9}
+@media (max-width:759px){
+  .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"])>.tn-versions{grid-column:1}
 }

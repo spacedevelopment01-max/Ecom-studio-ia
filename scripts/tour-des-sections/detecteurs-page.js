@@ -311,7 +311,15 @@
       if (t.rects.length < 2) return;
       var b = boite(t.el), contenu = b.w - num(s.paddingLeft) - num(s.paddingRight);
       if (s.display !== "inline" && contenu < SEUILS.COLONNE_MIN_PX && t.texte.length >= 6) { ajoute("colonne-etroite", t.el, { texte: t.texte, detail: "la colonne du texte fait " + Math.round(contenu) + " px de large" }); return; }
-      if (s.hyphens === "auto") return; // césure propre, avec un trait
+      // Avec la césure automatique, un mot peut ENCORE être coupé sans trait (un mot trop court pour être césuré, dans une
+      // colonne trop étroite). Le trait d'union posé par le navigateur se voit : la première lettre de la ligne suivante
+      // porte deux cadres, dont celui du trait, resté au bout de la ligne d'avant.
+      var cadresDe = function (noeud, i) { var r0 = document.createRange(); r0.setStart(noeud, i); r0.setEnd(noeud, i + 1); return r0.getClientRects(); };
+      var coupeEn = function (noeud, debut, mot) {
+        var c = cadresDe(noeud, debut), c0 = c[c.length - 1]; if (!c0) return { k: 0, trait: false };
+        for (var q = 1; q < mot.length; q++) { var c1 = cadresDe(noeud, debut + q), d = c1[c1.length - 1]; if (d && Math.abs(d.top - c0.top) > 3) return { k: q, trait: c1.length > 1 && c1[0].width > 0.5 && Math.abs(c1[0].top - c0.top) <= 3 }; }
+        return { k: 0, trait: false };
+      };
       var rx = /[A-Za-zÀ-ÖØ-öø-ÿ]{6,}/g, txt = t.noeud.textContent, m, fait = false;
       while (!fait && (m = rx.exec(txt))) {
         if (m[0].length < SEUILS.MOT_MIN_LETTRES) continue;
@@ -319,8 +327,10 @@
         var rr = Array.prototype.map.call(r.getClientRects(), deRect).filter(function (x) { return x.w > 0.5; });
         if (lignesDe(rr) < 2) continue;
         // Où le mot se coupe : la plus petite part.
-        var k = 1, top0 = rr[0].t;
-        for (; k < m[0].length; k++) { var r1 = document.createRange(); r1.setStart(t.noeud, m.index + k); r1.setEnd(t.noeud, m.index + k + 1); var c1 = r1.getClientRects()[0]; if (c1 && Math.abs(c1.top + scrollY - top0) > 3) break; }
+        var coupe = coupeEn(t.noeud, m.index, m[0]), k = coupe.k || 1;
+        if (coupe.trait) continue; // coupé à la française, avec son trait d'union
+        // Une lettrine (première lettre flottante, en grand) n'est pas un mot coupé.
+        if (k === 1 && !t.noeud.previousSibling && !txt.slice(0, m.index).trim() && getComputedStyle(t.el, "::first-letter").float !== "none") continue;
         var bout = Math.min(k, m[0].length - k);
         ajoute(bout <= SEUILS.LETTRES_SEULES ? "lettres-seules" : "mot-coupe", t.el, { texte: m[0], detail: "le mot « " + m[0] + " » est coupé sans trait d'union (" + m[0].slice(0, k) + " / " + m[0].slice(k) + ")", cadre: union(rr) });
         fait = true;
@@ -375,8 +385,14 @@
         var rects = miens.reduce(function (acc, t) { return acc.concat(t.vus); }, []), lignes = lignesDe(rects), taille = num(s.fontSize);
         var estTitre = /^H[12]$/.test(el.tagName);
         if (tel && estTitre && taille >= SEUILS.TITRE_GRAND_PX && lignes > SEUILS.TITRE_LIGNES_MAX) ajoute("titre-trop-long", el, { detail: "un titre de " + Math.round(taille) + " px sur " + lignes + " lignes", cadre: union(rects) });
-        var police = (s.fontFamily || "").split(",")[0].replace(/["']/g, "").trim().toLowerCase();
-        var gras = num(s.fontWeight) >= SEUILS.PAVE_GRAISSE || (ctx.titreLourd && police === titrePolice);
+        // Le pavé se juge sur la police de CHAQUE texte du bloc : une marque « À compléter » posée dans un nom garde sa
+        // police de texte courant, elle ne fait pas un pavé dans la police des titres.
+        var policeDe = function (x) { return (cs(x).fontFamily || "").split(",")[0].replace(/["']/g, "").trim().toLowerCase(); };
+        var police = policeDe(el);
+        var lourds = miens.filter(function (t) { var st = cs(t.el), pt = policeDe(t.el); return pt === titrePolice && (num(st.fontWeight) >= SEUILS.PAVE_GRAISSE || ctx.titreLourd); });
+        var gras = lourds.length > 0;
+        if (gras && lourds.length < miens.length) { rects = lourds.reduce(function (acc, t) { return acc.concat(t.vus); }, []); lignes = lignesDe(rects); police = titrePolice; }
+        else if (gras) police = titrePolice;
         // Un titre de carte (h3, h4) est un titre : il ne devient un pavé qu'au-delà de PAVE_TITRE_LIGNES_MAX lignes.
         var seuilPave = /^H[3-6]$/.test(el.tagName) ? SEUILS.PAVE_TITRE_LIGNES_MAX : SEUILS.PAVE_LIGNES_MAX;
         if (!estTitre && police === titrePolice && titrePolice && gras && lignes > seuilPave) ajoute("pave-gras", el, { gravite: lignes > SEUILS.PAVE_BLOQUANT_LIGNES ? "bloquant" : "important", detail: lignes + " lignes dans la police des titres, en gras (" + Math.round(taille) + " px) : un pavé", cadre: union(rects) });
@@ -391,6 +407,9 @@
      */
     var auDessus = function (el, sec) {
       var ss = cs(sec);
+      // Une section elle-même posée au-dessus de la page (un en-tête, rang positif) : tout ce qu'elle porte, son menu
+      // déroulé compris, passe au-dessus de la section suivante.
+      if (ss.position !== "static" && ss.zIndex !== "auto" && num(ss.zIndex) > 0) return true;
       if ((ss.position !== "static" && ss.zIndex !== "auto") || ss.transform !== "none" || num(ss.opacity) < 1 || ss.isolation === "isolate" || ss.filter !== "none") return false;
       for (var a = el; a && a !== sec; a = a.parentElement) { var s = cs(a); if (s.position !== "static" && s.zIndex !== "auto" && num(s.zIndex) > 0) return true; if (s.transform !== "none" || num(s.opacity) < 1 || s.isolation === "isolate" || s.filter !== "none") return false; }
       return false;

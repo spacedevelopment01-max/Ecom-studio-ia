@@ -637,7 +637,7 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean; /** Pièce d
     c.suite.push(...parts.slice(1).map((x, i, all) => (i === all.length - 1 ? `${x}\n${SHOP_CSS}` : x)));
   }
   const name = (l?.title ?? s.id).replace(/ à la tenue de la marque/, "").slice(0, 25);
-  return `{%- comment -%} E-COM STUDIO IA : section du thème sur mesure (${s.id}). {%- endcomment -%}\n<div class="ctw ctw-${c.t.family}"${tenueAttrs(c.t.tenue)}>${html}</div>\n${css ? `{% stylesheet %}\n${css}\n{% endstylesheet %}\n` : ""}{% schema %}\n${JSON.stringify({ name, settings: [] })}\n{% endschema %}\n`;
+  return `{%- comment -%} E-COM STUDIO IA : section du thème sur mesure (${s.id}). {%- endcomment -%}\n<div class="ctw ctw-${c.t.family}"${tenueAttrs(c.t.tenue, c.input.fonts?.heading)}>${html}</div>\n${css ? `{% stylesheet %}\n${css}\n{% endstylesheet %}\n` : ""}{% schema %}\n${JSON.stringify({ name, settings: [] })}\n{% endschema %}\n`;
 }
 
 /** Type des sections de suite de la feuille du site (« es-custom-feuille-1 »…). */

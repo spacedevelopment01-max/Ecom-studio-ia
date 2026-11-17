@@ -5,19 +5,46 @@
  * Écrite à la main ; elle n'est pas refaite par scripts/sections-library.py.
  */
 .ctw .tn{position:relative;box-sizing:border-box;background:var(--tn-fond);color:var(--tn-encre);font-family:var(--f-ui);font-size:16px;line-height:normal;letter-spacing:normal;font-weight:400}
+/* ── Règles communes à toutes les pièces (tour des sections, 17 novembre 2026 : « j'en veux plus un seul ») ──
+   1. Un mot ne sort jamais de l'écran : un mot très long (douze lettres et plus) se coupe à la française, avec son trait
+      d'union ; un mot plus long que sa ligne se coupe plutôt que de dépasser. La page est écrite en français (lang="fr").
+      Dans un grand titre, seuls les mots de quatorze lettres et plus se coupent. */
+.ctw .tn{overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto;hyphenate-limit-chars:12 4 4;-webkit-hyphenate-limit-before:4;-webkit-hyphenate-limit-after:4}
+.ctw .tn :is(h1,h2){hyphenate-limit-chars:14 5 5;-webkit-hyphenate-limit-before:5;-webkit-hyphenate-limit-after:5}
+.ctw .tn :is(input,select,textarea,code,time){-webkit-hyphens:manual;hyphens:manual}
 .ctw .tn *{box-sizing:border-box}
 /* --tn-k : échelle des grands titres. Les capitales prennent plus de place : elles sont réduites, et un mot plus large
    que l'écran se coupe plutôt que de dépasser. Toute taille de h1 ou de h2 s'écrit calc(Npx*var(--tn-k)). */
-.ctw{--tn-k:1}
-.ctw[data-tn-titres="capitales"]{--tn-k:.78}
+/* --tn-k0 : l'échelle de la tenue et de l'écran. Sur un très petit téléphone (moins de 360 px), les grands titres se
+   réduisent encore. Un titre long (plus de 50 signes, plus de 64 : attribut data-tn-long posé par le Studio, withTextesLongs)
+   se réduit lui aussi : dix mots ne remplissent jamais tout l'écran. */
+.ctw{--tn-k0:1;--tn-k:var(--tn-k0)}
+.ctw[data-tn-titres="capitales"]{--tn-k0:.78}
+@media (max-width:359px){.ctw{--tn-k0:.88}.ctw[data-tn-titres="capitales"]{--tn-k0:.7}}
+.ctw .tn :is(h1,h2)[data-tn-long="1"]{--tn-k:calc(var(--tn-k0)*.84)}
+.ctw .tn :is(h1,h2)[data-tn-long="2"]{--tn-k:calc(var(--tn-k0)*.62)}
 .ctw .tn h1,.ctw .tn h2,.ctw .tn h3{font-family:var(--f-title);font-weight:var(--tn-poids,400)!important;margin:0;letter-spacing:-.015em;line-height:1;text-transform:none;overflow-wrap:break-word}
 .ctw .tn p,.ctw .tn figure,.ctw .tn ul{margin:0;padding:0}
 .ctw .tn p{line-height:1.55}
 .ctw .tn ul{list-style:none}
 .ctw .tn a{color:inherit;text-decoration:none}
+/* Le petit texte de la tenue : l'italique de la police des titres. Quand cette police est très grasse à sa graisse normale
+   (Archivo Black, Anton… : attribut data-tn-lourd posé par le Studio), un petit texte y devient un pavé illisible : il
+   passe dans la police du texte courant. */
 .ctw .tn small{display:block;font-family:var(--f-title);font-style:italic;font-size:17px;color:var(--tn-sourd)}
+.ctw[data-tn-lourd] .tn small{font-family:var(--f-ui);font-style:normal;font-weight:500}
+/* Un texte long n'est jamais écrit en gras dans la police des titres (goût du propriétaire, 17 novembre 2026 : « un pavé
+   de texte gras illisible ») : dans une tenue aux titres gras ou en capitales, un nom, un titre de carte, une question,
+   une citation de plus de 56 signes (data-tn-long="2", posé par le Studio : withTextesLongs) passe dans la police du
+   texte courant, en demi-gras, sans capitales. À partir de 32 signes (data-tn-long="1"), une pièce aux cartes étroites
+   peut faire de même pour ses noms (b[data-tn-long]). */
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn :is(b,strong,h3,h4,dt,summary,blockquote)[data-tn-long="2"]{font-family:var(--f-ui)!important;font-weight:600!important;font-style:normal!important;text-transform:none!important;letter-spacing:0!important;line-height:1.35!important;font-size:min(1em,17px)!important}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn blockquote[data-tn-long="2"]{font-size:clamp(17px,1.15em,20px)!important;font-weight:500!important;line-height:1.45!important}
 .ctw .tn .tn-ph{background-color:var(--tn-doux);background-size:cover;background-position:center;background-repeat:no-repeat}
-.ctw .tn mark.tn-manque{background:#f3c64b;color:#1b1a17;padding:1px 6px;border-radius:5px;font-weight:600;font-family:var(--f-ui);font-style:normal;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+/* Ce qui manque au dossier (« À compléter : … ») : une note en texte courant, jamais plus grande que 16 px (22 px dans un
+   grand titre), qui passe à la ligne dans une pastille ou un bouton plutôt que de les déformer. */
+.ctw .tn mark.tn-manque{background:#f3c64b;color:#1b1a17;padding:1px 6px;border-radius:5px;font-weight:600;font-family:var(--f-ui);font-style:normal;font-size:min(1em,16px);line-height:1.4;letter-spacing:0;text-transform:none;white-space:normal;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.ctw .tn :is(h1,h2) mark.tn-manque{font-size:min(1em,22px);line-height:1.3}
 
 /* ── Bouton : la forme vient de la tenue ── */
 .ctw .tn .tn-bt{display:inline-block;text-align:center;background:var(--tn-bouton);color:var(--tn-sur-bouton);font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:normal;letter-spacing:.01em;padding:15px 34px;border-radius:999px;border:0;cursor:pointer}
@@ -702,6 +729,10 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
    photo. « :not(#tn) » : ces règles passent devant celles de chaque pièce et de chaque façon, sans les réécrire une à une. */
 .ctw .tn-ph-manque:not(#tn){display:none}
 .ctw .tn:has(>.tn-ph-manque):not(#tn),.ctw .tn :has(>.tn-ph-manque):not(#tn){grid-template-columns:minmax(0,1fr)}
+/* … et tout ce qui était rangé à côté de la photo reprend la colonne unique, dans l'ordre de la page. Sans cela, un élément
+   posé « en colonne 2 » faisait naître une colonne de trop : la première tombait à zéro et le texte s'écrasait en une
+   lettre par ligne (tour des sections, 17 novembre 2026). */
+.ctw .tn:has(>.tn-ph-manque):not(#tn)>*,.ctw .tn :has(>.tn-ph-manque):not(#tn)>*{grid-column:1/-1;grid-row:auto}
 /* carte de produit sans image : le nom, le prix, le lien, dans un cadre fin */
 .ctw .tn-carte-p.tn-sans-photo:not(#tn){display:flex;flex-direction:column;align-items:center;justify-content:center;grid-template-columns:none;min-height:148px;padding:22px 18px;text-align:center;background-color:var(--tn-doux);border-radius:var(--tn-arrondi,0)}
 .ctw .tn-carte-p.tn-sans-photo:not(#tn)::after{content:"→";position:static;margin-top:10px;font-size:18px;line-height:1}
@@ -757,3 +788,80 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 .ctw .tn-contact .tn-info-seule dd{font-weight:600}
 .ctw .tn-contact[data-tn-c="coordonnees-en-grand"] .tn-info dd{font-size:19px}
 .ctw .tn-contact .tn-infos>b+.tn-info-liste{margin-top:6px}
+
+/* ════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   Tour des sections (17 novembre 2026) : chaque pièce du socle ouverte sur téléphone et sur ordinateur, dans trois
+   tenues, avec des contenus courts, vrais et difficiles. Ce bloc corrige ce que le tour a mesuré.
+   ════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+/* Cadre penché : la photo penchée et son ombre dure dépassent un peu de leur place. Quand elle finit sa section, la
+   section suivante la recouvrait : elle garde sa place en bas (comme le bouton à ombre). */
+.ctw[data-tn-cadre="penche"] .tn>.tn-cadre:last-child,.ctw[data-tn-cadre="penche"] .tn>:last-child>.tn-cadre:last-child{margin-bottom:14px}
+.ctw[data-tn-cadre="penche"] .tn-bande[data-tn-c="encadree"]{padding-bottom:14px}
+/* Volets (description, questions, informations légales) : une ligne à toucher de 44 px au moins, le signe au milieu. */
+.ctw :is(.tn-volets,.tn-legal) details{padding:11px 0}
+.ctw :is(.tn-volets,.tn-legal) summary{min-height:44px;align-items:center;gap:14px}
+.ctw :is(.tn-volets,.tn-legal) summary::after{flex:none}
+/* Petits liens soulignés et bouton « Panier » de l'en-tête : la zone à toucher est plus grande que le mot. */
+.ctw :is(.tn-404,.tn-compte) .tn-liens a{position:relative}
+.ctw :is(.tn-404,.tn-compte) .tn-liens a::after,.ctw .tn-entete .tn-pan::after{content:"";position:absolute;left:-8px;right:-8px;top:-13px;bottom:-13px}
+/* Noms de produits (cartes, panier) dans une tenue aux titres gras : sur téléphone, deux cartes par rangée ne laissent
+   que treize lettres par ligne ; le nom se réduit, et un nom assez long (plus de 32 signes) passe en texte courant. */
+@media (max-width:759px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) :is(.tn-produits,.tn-404) .tn-carte-p:not(:only-child) b:not(#tn){font-size:17px;line-height:1.15}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits[data-tn-c="liste"] .tn-carte-p:not(:only-child) b:not(#tn){font-size:19px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-produits[data-tn-c="vedette"] .tn-carte-p:first-child:not(:only-child) b:not(#tn){font-size:24px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-panier .tn-ligne b:not(#tn){font-size:19px;line-height:1.15}
+}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn :is(.tn-carte-p,.tn-ligne) b[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:600;font-size:15.5px;line-height:1.3;letter-spacing:0;text-transform:none}
+/* « Ta photo ici » dans un petit emplacement : jamais sous 12 px. */
+@container (max-width:120px){
+  .ctw .tn .tn-ta-photo:not(#tn) span{font-size:12px;line-height:1.1}
+}
+
+/* ── En-tête : le nom ne passe jamais sous le panier ni hors de l'écran (nom large, petit téléphone) ── */
+.ctw .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"]) .tn-nom{left:84px;right:84px;top:0;height:54px;display:flex;align-items:center;justify-content:center;line-height:1}
+.ctw .tn-entete[data-tn-c="gauche"] .tn-nom{min-width:0;line-height:1}
+.ctw .tn-entete[data-tn-c="gauche"] summary{margin-right:14px}
+.ctw .tn-entete .tn-pan{flex:none;white-space:nowrap}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"],[data-tn-c="gauche"]) .tn-nom{font-size:clamp(16px,5.2vw,26px)}
+/* ── Bande encadrée, cadre penché : la place de l'ombre sous la photo ── */
+.ctw[data-tn-cadre="penche"] .tn-bande[data-tn-c="encadree"]{padding-bottom:18px}
+/* ── Grande photo et sa phrase : le haut de la photo assez sombre pour que la phrase se lise sur une photo claire ── */
+.ctw .tn-emotion::after{background:linear-gradient(180deg,color-mix(in srgb,var(--tn-encre) 76%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 52%,transparent) 34%,transparent 62%)}
+/* ── Ouvertures ── */
+/* « dans la photo » : le titre reste posé dans la photo, mais c'est la photo qui grandit avec lui (un titre long ne
+   descend plus sur la phrase et le bouton). */
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]{display:grid;grid-template-columns:minmax(0,1fr)}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{grid-area:1/1;height:auto;min-height:512px}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{position:relative;grid-area:1/1;align-self:start;top:auto;padding:82px 20px 48px}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]::before{z-index:0;height:min(100%,330px)}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{z-index:1}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]:has(>.tn-ph-manque) .tn-in{padding:40px 20px 0}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]:has(>.tn-ph-manque)::before{content:none}
+/* sans la photo, le bouton « à cheval » n'a plus rien à chevaucher : il reprend sa place sous le titre */
+.ctw .tn-ouverture:is([data-tn-c="titre-puis-cadre"],[data-tn-c="titre-geant"]):has(>.tn-ph-manque) .tn-bas{margin-top:22px}
+/* le bouton de l'ouverture passe à la ligne plutôt que de sortir de l'écran */
+.ctw .tn-ouverture[data-tn-c="titre-puis-cadre"] .tn-bt{white-space:normal;max-width:100%}
+.ctw .tn-ouverture[data-tn-c="titre-geant"] .tn-etq{font-size:12px}
+/* photo pleine : le voile un peu plus dense, pour que la petite ligne au-dessus du titre se lise aussi */
+.ctw .tn-ouverture[data-tn-c="titre-centre"]::after{background:linear-gradient(180deg,color-mix(in srgb,var(--tn-encre) 40%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 64%,transparent) 50%,color-mix(in srgb,var(--tn-encre) 42%,transparent) 100%)}
+.ctw .tn-ouverture[data-tn-c="titre-en-bas"]::after{background:linear-gradient(0deg,color-mix(in srgb,var(--tn-encre) 88%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 68%,transparent) 38%,color-mix(in srgb,var(--tn-encre) 22%,transparent) 66%,transparent 84%)}
+.ctw .tn-ouverture:is([data-tn-c="titre-centre"],[data-tn-c="titre-en-bas"],[data-tn-c="titre-massif"]) :is(small,h1,p){text-shadow:0 1px 18px color-mix(in srgb,var(--tn-encre) 50%,transparent)}
+/* ── Panier : un prix long (ou « À compléter ») ne mange plus la colonne du nom ── */
+.ctw .tn-panier .tn-ligne:not(#tn){grid-template-columns:84px minmax(0,1fr) fit-content(36%)}
+.ctw .tn-panier .tn-ligne.tn-sans-photo:not(#tn){grid-template-columns:minmax(0,1fr) fit-content(36%)}
+.ctw .tn-panier :is(.tn-prix-l,.tn-ligne>:last-child:not(.tn-quoi)){white-space:normal;text-align:right}
+/* ── Où le mettre, en file : sur téléphone la file se fait défiler au doigt (la dernière photo n'est plus coupée) ── */
+@media (max-width:759px){
+  .ctw .tn-places:is(:not([data-tn-c]),[data-tn-c="file"]) .tn-file{overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;margin:8px 0 0 -6px;padding:10px 20px 16px 6px}
+  .ctw .tn-places:is(:not([data-tn-c]),[data-tn-c="file"]) .tn-file::-webkit-scrollbar{display:none}
+  .ctw .tn-places:is(:not([data-tn-c]),[data-tn-c="file"]) figure{scroll-snap-align:start}
+}
+@media (min-width:760px){
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{height:auto;min-height:min(86vh,780px)}
+  .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{top:auto;padding:clamp(32px,6vh,64px) max(40px,calc(50vw - 520px)) 64px}
+  .ctw[data-tn-cadre="penche"] .tn-bande[data-tn-c="encadree"]{padding-bottom:26px}
+  /* Atouts en colonnes : au-delà de quatre faits, ils passent à la ligne (jamais sept colonnes de quelques lettres). */
+  .ctw .tn-atouts:is([data-tn-c="numeros"],[data-tn-c="cartes"]) ul{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .ctw .tn-atouts[data-tn-c="numeros"] ul{row-gap:40px}
+}

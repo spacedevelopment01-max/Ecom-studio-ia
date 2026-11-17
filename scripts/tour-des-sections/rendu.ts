@@ -33,7 +33,7 @@ import * as R from "../../src/lib/syna-agent/custom-theme/render";
 import * as D from "../../src/lib/syna-agent/custom-theme/tenue-data";
 import { withTenueAchat } from "../../src/lib/syna-agent/custom-theme/buy-block";
 import { withoutMissingPhotos } from "../../src/lib/syna-agent/custom-theme/library";
-import { listedProducts, tenueSection, withTenueBuyBlock, withTenuePrestations, withTenueProducts, withoutExampleProducts, validConstruction, type TenueSection } from "../../src/lib/syna-agent/custom-theme/tenue";
+import { withTextesLongs, listedProducts, tenueSection, withTenueBuyBlock, withTenuePrestations, withTenueProducts, withoutExampleProducts, validConstruction, type TenueSection } from "../../src/lib/syna-agent/custom-theme/tenue";
 import { CLIENTS, MARQUE, SCENE, TENUES, avecListes, durcir, enScenes, listes, photoProduitSvg, remplir, type Client, type Etat, type TenueBanc } from "./donnees";
 
 if (!process.env.DATA_DIR || path.resolve(process.env.DATA_DIR).startsWith(path.resolve(process.cwd()) + path.sep)) throw new Error("Tour des sections : DATA_DIR doit être un dossier jetable hors du dépôt (voir tour.ts).");
@@ -165,6 +165,7 @@ export function contenu(banc: Banc, suite: Cas[], etat: Etat, o: { cle?: string;
     const surPhoto = new Map(sections.map((x) => [x.cs.uid, R.textOnPhoto(x.cs)] as const));
     html = withoutMissingPhotos(withoutExampleProducts(html, m.produits.map((p) => p.title)), TENUES[0].palette, (uid) => surPhoto.get(uid) === true);
   }
+  html = withTextesLongs(html); // le dernier passage du rendu du Studio : les textes longs sont marqués
   const rendues = sections.filter((x) => new RegExp(`\\sdata-ct="${x.cs.uid}"`).test(html)).map((x) => x.s.id);
   return { html, rendues };
 }

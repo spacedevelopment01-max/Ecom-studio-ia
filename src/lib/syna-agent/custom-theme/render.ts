@@ -17,7 +17,7 @@ import { companyOf } from "../activity";
 import { buyBlockData, withRealBuyBlock, withTenueAchat } from "./buy-block";
 import { authenticSection, DEMO_BRANDS, LIBRARY_DIR, sectionLibrary, sectionTraits, withBrandName, withoutExamplePhotos, withoutMissingPhotos } from "./library";
 import { allSections, drawerOf, hasCoque, sectionHtml, type CtPage, type CtSection, type CustomTheme, type SiteSettings } from "./theme";
-import { TENUE_FILES, listedProducts, markMissing, withoutExampleProducts, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenueBuyBlock, withTenuePrestations, withTenueProducts, type TenueBuy, type TenuePrestation, type TenueProduct } from "./tenue";
+import { TENUE_FILES, listedProducts, markMissing, withoutExampleProducts, withTextesLongs, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenueBuyBlock, withTenuePrestations, withTenueProducts, type TenueBuy, type TenuePrestation, type TenueProduct } from "./tenue";
 import { productPageKey, withMenu, type MenuProduct } from "./menu";
 import { tenueMetiers, tenueVitrine, withTenueSite, withVenteArrivee, type TenueSite } from "./tenue-data";
 import { factLine } from "../activity";
@@ -589,9 +589,9 @@ ${tenueCss(p.brand?.palette, t.tenue, MONO_CSS(), titleWeight(p.brand?.fonts?.he
 ${own}</style></head><body>
 <script${n}>${pre}</script>
 <div class="tb-bar"><span>${esc(name)} ·</span>${bar}<span class="tb-vw">Voir en</span><button class="tb-vw" type="button" data-vw="desk" aria-pressed="true">Ordinateur</button><button class="tb-vw" type="button" data-vw="phone" aria-pressed="false">Téléphone</button></div>
-<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${t.pages[0] && hasCoque(t.pages[0]) ? " data-coque" : ""}${tenueAttrs(t.tenue)}><div class="frame">${sansVide(`${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
+<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${t.pages[0] && hasCoque(t.pages[0]) ? " data-coque" : ""}${tenueAttrs(t.tenue, p.brand?.fonts?.heading)}><div class="frame">${withTextesLongs(sansVide(`${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
 ${body}
-${shell(t.footer, "pied de page")}${windows ? `<div class="tn-fixes">${windows}</div>` : ""}`)}</div></div>
+${shell(t.footer, "pied de page")}${windows ? `<div class="tn-fixes">${windows}</div>` : ""}`))}</div></div>
 ${clean(withBrandName(templates, name))}
 <script${n} src="/sections/library.js"></script>
 ${tenueFiles("js").map((f) => `<script${n} src="/sections/${f}"></script>`).join("\n")}
