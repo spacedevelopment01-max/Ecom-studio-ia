@@ -211,7 +211,7 @@
 .ctw[data-tn-cadre="penche"] .tn-merci{overflow-x:clip}
 .ctw .tn-merci[data-tn-c="deux-colonnes"] .tn-suite li{grid-template-columns:54px minmax(0,1fr);padding:18px 0}
 .ctw .tn-merci[data-tn-c="deux-colonnes"] .tn-suite li:last-child{border-bottom:0}
-.ctw .tn-merci[data-tn-c="deux-colonnes"] .tn-suite li::before{content:counter(tn-suite);font-family:var(--f-title);font-weight:400;font-size:44px;line-height:.8;letter-spacing:-.02em;color:var(--tn-accent)}
+.ctw .tn-merci[data-tn-c="deux-colonnes"] .tn-suite li::before{content:counter(tn-suite);font-family:var(--f-title);font-weight:400;font-size:44px;line-height:.8;letter-spacing:-.02em;color:var(--tn-accent-texte,var(--tn-accent))}
 .ctw .tn-merci[data-tn-c="deux-colonnes"] .tn-suite span{color:var(--tn-encre)}
 .ctw .tn-merci[data-tn-c="deux-colonnes"] .tn-actions{justify-items:start}
 
@@ -302,7 +302,7 @@
 .ctw .tn-article[data-tn-c="grande-image"] h1{font-size:calc(48px*var(--tn-k));line-height:.96}
 .ctw .tn-article[data-tn-c="grande-image"] .tn-chapo{font-family:var(--f-title);font-size:23px;line-height:1.28;padding-bottom:26px;border-bottom:1.5px solid var(--tn-encre)}
 .ctw .tn-article[data-tn-c="grande-image"] .tn-corps{margin-top:26px}
-.ctw .tn-article[data-tn-c="grande-image"] .tn-corps blockquote{padding:22px 0 20px;border-left:0;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);font-size:29px;line-height:1.1;color:var(--tn-accent)}
+.ctw .tn-article[data-tn-c="grande-image"] .tn-corps blockquote{padding:22px 0 20px;border-left:0;border-top:1.5px solid var(--tn-encre);border-bottom:1.5px solid var(--tn-encre);font-size:29px;line-height:1.1;color:var(--tn-accent-texte,var(--tn-accent))}
 
 /* ══════════ Compte, « carte » ══════════ */
 .ctw .tn-compte[data-tn-c="carte"] form{margin-top:26px;padding:8px 20px 26px;background-color:var(--tn-doux);color:var(--tn-encre);border-radius:var(--tn-arrondi,0)}
@@ -613,4 +613,97 @@
   .ctw .tn-article[data-tn-c="grande-image"] .tn-signe{grid-column:6/13}
   .ctw .tn-article[data-tn-c="grande-image"] .tn-chapo{border-bottom:1.5px solid var(--tn-encre);grid-column:2/14;padding-right:25%;margin-bottom:44px}
   .ctw .tn-article[data-tn-c="grande-image"] .tn-corps blockquote{float:left;width:292px;margin:6px 48px 20px -364px;padding:22px 0 20px;font-size:34px}
+}
+
+/* ════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   Tour des sections (17 novembre 2026 : « j'en veux plus un seul ») : le tiroir de panier, la recherche, les questions,
+   « bien reçu » et la boutique fermée, ouverts sur téléphone et sur ordinateur, fermés puis ouverts, dans trois tenues.
+   Ce bloc corrige ce que le tour a mesuré et ce que les planches ont montré.
+   ════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+/* ── Tiroir de panier : dans un panneau étroit, le prix ne passe plus sur le nom et « Retirer » ne sort plus de la ligne.
+   Le nom et le prix se partagent la première rangée (un prix long passe à la ligne), la quantité et « Retirer » ont la
+   leur, sur toute la largeur. ── */
+.ctw .tn-panier-cote .tn-prix-l{white-space:normal;text-align:right;overflow-wrap:break-word}
+.ctw .tn-panier-cote .tn-ligne:not(#tn){grid-template-columns:76px minmax(0,1fr) fit-content(38%);column-gap:12px;row-gap:0}
+.ctw .tn-panier-cote .tn-ligne.tn-sans-photo:not(#tn){grid-template-columns:minmax(0,1fr) fit-content(38%)}
+.ctw .tn-panier-cote .tn-ligne:not(#tn)>.tn-quoi{display:contents}
+.ctw .tn-panier-cote .tn-ligne:not(#tn)>.tn-ph{grid-column:1;grid-row:1/4}
+.ctw .tn-panier-cote .tn-ligne:not(#tn) .tn-quoi>b{grid-column:2;grid-row:1}
+.ctw .tn-panier-cote .tn-ligne:not(#tn) .tn-quoi>em{grid-column:2/-1;grid-row:2}
+.ctw .tn-panier-cote .tn-ligne:not(#tn)>.tn-prix-l{grid-column:3;grid-row:1}
+.ctw .tn-panier-cote .tn-ligne:not(#tn) .tn-qte{grid-column:2;grid-row:3;justify-self:start}
+.ctw .tn-panier-cote .tn-ligne:not(#tn) .tn-oter{grid-column:3;grid-row:3;justify-self:end;align-self:center;margin-left:0;white-space:nowrap}
+.ctw .tn-panier-cote .tn-ligne.tn-sans-photo:not(#tn) .tn-quoi>b{grid-column:1}
+.ctw .tn-panier-cote .tn-ligne.tn-sans-photo:not(#tn) .tn-quoi>em{grid-column:1/-1}
+.ctw .tn-panier-cote .tn-ligne.tn-sans-photo:not(#tn)>.tn-prix-l{grid-column:2}
+.ctw .tn-panier-cote .tn-ligne.tn-sans-photo:not(#tn) .tn-qte{grid-column:1}
+.ctw .tn-panier-cote .tn-ligne.tn-sans-photo:not(#tn) .tn-oter{grid-column:2}
+@media (max-width:359px){
+  .ctw .tn-panier-cote .tn-ligne:not(#tn){grid-template-columns:64px minmax(0,1fr) fit-content(38%);column-gap:10px}
+  .ctw .tn-panier-cote .tn-ligne:not(#tn)>.tn-ph{height:80px}
+  .ctw .tn-panier-cote .tn-qte{grid-template-columns:40px minmax(24px,auto) 40px}
+  .ctw .tn-panier-cote .tn-lignes{margin-left:16px;margin-right:16px}
+  .ctw .tn-panier-cote .tn-haut,.ctw .tn-panier-cote .tn-bas{padding-left:16px;padding-right:16px}
+}
+/* le bouton de commande garde son ombre entière dans le pied du tiroir */
+.ctw[data-tn-bouton="ombre"] .tn-panier-cote .tn-bas{padding-right:24px}
+/* ── Recherche ── */
+/* Le texte d'attente du champ (« Chercher un produit, une page ») se lit en entier : il s'écrit en texte courant, plus
+   petit sur un petit téléphone, et n'est plus coupé par « … ». */
+.ctw .tn-recherche .tn-cherche input::placeholder{font-family:var(--f-ui);font-weight:400;letter-spacing:0;text-overflow:clip}
+.ctw .tn-recherche[data-tn-c="panneau"] .tn-cherche input[type]{text-overflow:clip}
+@media (max-width:759px){
+  .ctw .tn-recherche[data-tn-c="panneau"] .tn-cherche input::placeholder{font-size:17px}
+  .ctw .tn-recherche[data-tn-c="panneau"] .tn-cherche{gap:8px}
+}
+@media (max-width:389px){
+  .ctw .tn-recherche .tn-cherche{padding:0 14px;gap:8px}
+  .ctw .tn-recherche .tn-cherche input::placeholder{font-size:14.5px}
+  .ctw .tn-recherche[data-tn-c="panneau"] .tn-cherche{padding:0}
+  .ctw .tn-recherche[data-tn-c="panneau"] .tn-cherche input::placeholder{font-size:13.5px}
+  .ctw .tn-recherche[data-tn-c="panneau"] .tn-form{padding-right:40px}
+}
+/* panneau : un raccourci long passe à la ligne dans sa pastille plutôt que de sortir de l'écran */
+.ctw .tn-recherche[data-tn-c="panneau"] .tn-mot{flex:0 1 auto;max-width:100%;white-space:normal;padding-top:8px;padding-bottom:8px}
+/* panneau : un produit sans photo a sa carte de couleur douce (son nom ne flotte plus dans une colonne vide) */
+.ctw .tn-recherche[data-tn-c="panneau"] .tn-r.tn-sans-photo{align-self:start;padding:12px 10px 12px;background-color:var(--tn-doux);color:var(--tn-encre);border-radius:var(--tn-arrondi,0)}
+.ctw .tn-recherche[data-tn-c="panneau"] .tn-r.tn-sans-photo b{margin-top:0}
+.ctw .tn-recherche[data-tn-c="panneau"] .tn-r b{overflow-wrap:break-word;font-size:14px}
+/* ── Bien reçu ── */
+@media (min-width:760px){
+  /* le très grand mot ne monte plus sur la petite ligne posée au-dessus de lui */
+  .ctw .tn-merci[data-tn-c="deux-colonnes"] h1{margin-top:16px}
+  .ctw .tn-merci[data-tn-c="deux-colonnes"] .tn-suite:has(>li:nth-child(5)) li{padding:16px 0}
+}
+@media (max-width:759px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-lourd]) .tn-merci[data-tn-c="deux-colonnes"] h1{font-size:calc(54px*var(--tn-k))}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-merci .tn-suite b{font-size:18px;line-height:1.16}
+}
+/* ── Manifeste, « clair et centré » : dans une tenue aux titres gras, le premier paragraphe reste un texte que l'on lit
+   (texte courant, un peu plus grand), jamais un pavé de sept lignes en gras. ── */
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child{font-family:var(--f-ui);font-weight:500;font-size:20px;line-height:1.45;letter-spacing:0;text-transform:none}
+@media (min-width:760px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-manifeste[data-tn-c="clair-centre"] .tn-corps p:first-child{font-size:25px;line-height:1.4;max-width:30em;margin-left:auto;margin-right:auto}
+}
+/* ── Demande d'âge, plein écran : un libellé long ne fait plus un bouton de quatre lignes ; les deux réponses passent
+   l'une sous l'autre quand la première est longue (plus de 22 signes : data-tn-long absent sur un lien, d'où :has). ── */
+@media (max-width:759px){
+  .ctw[data-tn-cadre] .tn-age[data-tn-c="plein-ecran"] .tn-fenetre{grid-template-columns:minmax(0,1fr)}
+  .ctw .tn-age[data-tn-c="plein-ecran"] .tn-fenetre>:is(.tn-bt,.tn-lien):not(#tn){grid-column:1}
+  .ctw .tn-age[data-tn-c="plein-ecran"] .tn-fenetre>.tn-lien:not(#tn){margin-top:12px}
+  .ctw[data-tn-bouton="ombre"] .tn-age[data-tn-c="plein-ecran"] .tn-fenetre{padding-right:28px}
+}
+/* ── Résultats en cartes, tenue aux titres gras : sur téléphone le nom tient dans sa demi-carte ── */
+@media (max-width:759px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-resultats[data-tn-c="cartes"] .tn-res b:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:16px;line-height:1.22;letter-spacing:0;text-transform:none;overflow-wrap:break-word}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-resultats[data-tn-c="cartes"] .tn-res{padding:14px 12px 12px}
+}
+/* ── Article, grande image : la phrase d'accroche reste un texte courant dans une tenue aux titres gras ── */
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-article[data-tn-c="grande-image"] .tn-chapo{font-family:var(--f-ui);font-weight:500;letter-spacing:0;text-transform:none;font-size:19px;line-height:1.45}
+@media (min-width:760px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-article[data-tn-c="grande-image"] .tn-chapo{font-size:22px}
+}
+/* ── Questions par rubriques, en cartes : sur ordinateur, la bande « Encore une question ? » ne touche plus les cartes ── */
+@media (min-width:760px){
+  .ctw .tn-rubriques[data-tn-c="cartes"] .tn-encore{margin-top:20px}
 }

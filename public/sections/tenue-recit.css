@@ -62,7 +62,7 @@
 .ctw .tn-fabrication[data-tn-c="lignes"] .tn-etapes{display:grid;gap:26px;overflow:visible;padding:12px 20px 0}
 .ctw .tn-fabrication[data-tn-c="lignes"] li{display:grid;grid-template-columns:minmax(0,44%) minmax(0,1fr);grid-template-rows:1fr auto auto 1fr;column-gap:20px;align-items:start}
 .ctw .tn-fabrication[data-tn-c="lignes"] li .tn-ph{grid-column:1;grid-row:1/5;height:196px}
-.ctw .tn-fabrication[data-tn-c="lignes"] li::before{position:static;grid-column:2;grid-row:1;align-self:end;width:auto;height:auto;border-radius:0;display:block;background:none;color:var(--tn-accent);font-family:var(--f-title);font-weight:400;font-size:46px;line-height:.9}
+.ctw .tn-fabrication[data-tn-c="lignes"] li::before{position:static;grid-column:2;grid-row:1;align-self:end;width:auto;height:auto;border-radius:0;display:block;background:none;color:var(--tn-accent-texte,var(--tn-accent));font-family:var(--f-title);font-weight:400;font-size:46px;line-height:.9}
 .ctw .tn-fabrication[data-tn-c="lignes"] h3{grid-column:2;grid-row:2;margin-top:8px;font-size:23px}
 .ctw .tn-fabrication[data-tn-c="lignes"] li p{grid-column:2;grid-row:3}
 .ctw .tn-fabrication[data-tn-c="lignes"] li:nth-child(even){grid-template-columns:minmax(0,1fr) minmax(0,44%)}
@@ -189,7 +189,7 @@
 .ctw .tn-frise li{position:relative;margin-left:6px;padding:0 0 34px 28px;border-left:1.5px solid var(--tn-encre)}
 .ctw .tn-frise li:last-child{padding-bottom:0;border-left-color:transparent}
 .ctw .tn-frise li::before{content:"";position:absolute;left:-7.5px;top:0;width:13px;height:13px;border-radius:50%;background:var(--tn-encre)}
-.ctw .tn-frise li b{display:block;font-family:var(--f-title);font-weight:400;font-size:40px;line-height:.9;letter-spacing:-.02em;color:var(--tn-accent)}
+.ctw .tn-frise li b{display:block;font-family:var(--f-title);font-weight:400;font-size:40px;line-height:.9;letter-spacing:-.02em;color:var(--tn-accent-texte,var(--tn-accent))}
 .ctw .tn-frise li b mark{display:inline-block;font-size:15px;line-height:1.3;letter-spacing:normal;vertical-align:top}
 .ctw .tn-frise h3{font-size:25px;line-height:1.05;margin-top:12px}
 .ctw .tn-frise li p{font-size:16px;color:var(--tn-texte);margin-top:6px}
@@ -207,7 +207,7 @@
 .ctw .tn-comment h2{font-size:calc(40px*var(--tn-k))}
 .ctw .tn-comment .tn-pas{list-style:none;margin:22px 0 0;padding:0;counter-reset:tn-pas;border-top:1.5px solid var(--tn-encre)}
 .ctw .tn-comment li{counter-increment:tn-pas;display:grid;grid-template-columns:58px minmax(0,1fr);column-gap:10px;align-items:start;padding:16px 0 18px;border-bottom:1.5px solid var(--tn-encre)}
-.ctw .tn-comment li::before{content:counter(tn-pas);grid-row:1/3;font-family:var(--f-title);font-weight:400;font-size:62px;line-height:.86;letter-spacing:-.03em;color:var(--tn-accent)}
+.ctw .tn-comment li::before{content:counter(tn-pas);grid-row:1/3;font-family:var(--f-title);font-weight:400;font-size:62px;line-height:.86;letter-spacing:-.03em;color:var(--tn-accent-texte,var(--tn-accent))}
 .ctw .tn-comment h3{font-size:26px;line-height:1.05}
 .ctw .tn-comment li p{grid-column:2;font-size:16px;color:var(--tn-texte);margin-top:6px}
 .ctw .tn-comment .tn-bt{margin-top:26px}
@@ -812,3 +812,213 @@
 
 /* Texte posé sur la couleur de la marque : toujours lisible. */
 .ctw .tn-citation-photo[data-tn-c="moitie"]{color:var(--tn-sur-accent)}
+
+/* ════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   Tour des sections (17 novembre 2026 : « ouvre toutes les sections une par une mobile et ordi et tu corriges tous les
+   défauts, j'en veux plus un seul »). Chaque pièce de récit ouverte sur téléphone et sur ordinateur, dans trois tenues,
+   avec des contenus courts, vrais et difficiles (sept éléments dans une liste prévue pour trois, des noms longs, une
+   photo qui manque). Ce bloc corrige ce que le tour a mesuré et ce que les planches ont montré.
+   « G » ci-dessous : une tenue aux titres gras, en capitales, ou dont la police des titres est très grasse.
+   ════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Listes côte à côte sur ordinateur : au-delà de quatre éléments, elles passent à la ligne (jamais sept colonnes de
+   quelques lettres). Sur téléphone elles restent en file ou en lignes. ── */
+@media (min-width:760px){
+  /* Comment c'est fait, en file : quatre étapes par rang */
+  .ctw .tn-fabrication:not([data-tn-c="lignes"]) .tn-etapes:has(>li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:40px}
+  /* Les chiffres en bande : quatre par rang, un filet entre deux voisins d'un même rang seulement */
+  .ctw .tn-chiffres[data-tn-c="bande"] .tn-nombres:has(>li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:36px}
+  .ctw .tn-chiffres[data-tn-c="bande"] .tn-nombres:has(>li:nth-child(5))>li:nth-child(4n+1){border-left:0}
+  /* La presse : trois citations par rang (quatre noms par rang) */
+  .ctw .tn-presse .tn-parutions:has(>li:nth-child(4)){grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));row-gap:22px}
+  .ctw .tn-presse .tn-parutions:has(>li:nth-child(4))>li:nth-child(3n+1){padding-left:0;border-left:0}
+  .ctw .tn-presse[data-tn-c="noms"] .tn-parutions:has(>li:nth-child(5)){grid-template-columns:repeat(4,minmax(0,1fr));row-gap:14px}
+  .ctw .tn-presse[data-tn-c="noms"] .tn-parutions:has(>li:nth-child(5))>li:nth-child(n){padding-left:24px;border-left:0}
+  /* L'histoire en dates, côte à côte : quatre dates par rang, le trait repris à chaque rang */
+  .ctw .tn-frise[data-tn-c="colonnes"] .tn-dates:has(>li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:44px}
+  /* Comment ça marche : quatre étapes par rang ; le filet de gauche seulement entre deux voisines */
+  .ctw .tn-comment:is(:not([data-tn-c]),[data-tn-c="lignes"],[data-tn-c="escalier"]) .tn-pas:has(>li:nth-child(5)){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ctw .tn-comment:is(:not([data-tn-c]),[data-tn-c="lignes"]) .tn-pas:has(>li:nth-child(5))>li:nth-child(4n+1){padding-left:0;border-left:0}
+  /* … en escalier : les marches reprennent à chaque rang */
+  .ctw .tn-comment[data-tn-c="escalier"] .tn-pas:has(>li:nth-child(5))>li:nth-child(4n+1){margin:0}
+  .ctw .tn-comment[data-tn-c="escalier"] .tn-pas:has(>li:nth-child(5))>li:nth-child(4n+2){margin:48px 0 0}
+  .ctw .tn-comment[data-tn-c="escalier"] .tn-pas:has(>li:nth-child(5))>li:nth-child(4n+3){margin:96px 0 0}
+  .ctw .tn-comment[data-tn-c="escalier"] .tn-pas:has(>li:nth-child(5))>li:nth-child(4n){margin:144px 0 0}
+  .ctw .tn-comment[data-tn-c="escalier"] .tn-pas:has(>li:nth-child(5))~.tn-bt{margin-top:14px}
+  /* Le journal en cartes : trois articles par rang */
+  .ctw .tn-journal[data-tn-c="cartes"] .tn-articles:has(>.tn-art:nth-child(4)){grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));row-gap:44px}
+}
+
+/* ── Noms assez longs (plus de 32 signes, data-tn-long posé par le Studio) dans une colonne étroite, tenue G : en texte
+   courant demi-gras, jamais huit lignes de capitales grasses. ── */
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) :is(.tn-comment,.tn-frise,.tn-fabrication) h3[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:18px;line-height:1.28;letter-spacing:0;text-transform:none}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) :is(.tn-resultats .tn-res,.tn-journal .tn-art) b[data-tn-long]:not(#tn){font-family:var(--f-ui);font-weight:700;font-size:17px;line-height:1.28;letter-spacing:0;text-transform:none}
+@media (min-width:760px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) :is(.tn-comment,.tn-frise,.tn-fabrication) h3[data-tn-long]:not(#tn){font-size:20px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-fabrication[data-tn-c="lignes"] h3[data-tn-long]:not(#tn){font-size:24px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-journal:not([data-tn-c="cartes"]) .tn-art b[data-tn-long]:not(#tn){font-size:22px!important}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-journal[data-tn-c="cartes"] .tn-art b[data-tn-long]:not(#tn){font-size:19px!important}
+}
+/* Sur téléphone, tenue G : les noms en gras d'une demi-colonne ou d'une petite colonne se réduisent. */
+@media (max-width:759px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-engagements li b{font-size:26px;line-height:1.08}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-engagements[data-tn-c="deux-colonnes"] li b{font-size:17px;line-height:1.16;letter-spacing:0}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-journal:not([data-tn-c="cartes"]) .tn-art b{font-size:21px;line-height:1.1}
+}
+@media (max-width:359px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-engagements li b{font-size:23px}
+}
+
+/* ── Comment c'est fait ── */
+/* une étape sans photo (photo qui manque) : son texte prend la ligne, sans rangée vide autour */
+.ctw .tn-fabrication[data-tn-c="lignes"] li:has(>.tn-ph-manque):not(#tn){grid-template-rows:auto;grid-template-columns:minmax(0,1fr)}
+.ctw .tn-fabrication[data-tn-c="lignes"] li:has(>.tn-ph-manque):not(#tn)::before{align-self:start}
+.ctw .tn-fabrication:not([data-tn-c="lignes"]) li:has(>.tn-ph-manque)::before{position:static;margin-bottom:-12px}
+@media (min-width:760px){
+  .ctw .tn-fabrication[data-tn-c="lignes"] li:has(>.tn-ph-manque):not(#tn)::before{font-size:60px}
+}
+
+/* ── Comment ça marche ── */
+/* en escalier, sur téléphone : au-delà de trois marches, l'escalier reprend (le texte ne s'écrase plus contre le bord) */
+@media (max-width:759px){
+  .ctw .tn-comment[data-tn-c="escalier"] li:nth-child(3n+1){margin-left:0}
+  .ctw .tn-comment[data-tn-c="escalier"] li:nth-child(3n+2){margin-left:44px}
+  .ctw .tn-comment[data-tn-c="escalier"] li:nth-child(3n){margin-left:88px}
+}
+@media (max-width:359px){
+  .ctw .tn-comment[data-tn-c="escalier"] li:nth-child(3n+2){margin-left:32px}
+  .ctw .tn-comment[data-tn-c="escalier"] li:nth-child(3n){margin-left:64px}
+}
+/* « flèches » (façon du module de vente) : plus de trois temps ne tiennent pas côte à côte sur un téléphone. Ils se
+   rangent alors l'un sous l'autre dans la carte, le numéro à gauche ; sur ordinateur, quatre par rang. */
+.ctw .tn-comment[data-tn-c="fleches"] li+li:not(#tn)::after{color:var(--tn-accent-texte,var(--tn-accent))}
+@media (max-width:759px){
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(4)):not(#tn){grid-auto-flow:row;grid-template-columns:minmax(0,1fr);row-gap:16px;padding:20px 16px}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(4))>li:not(#tn){display:grid;grid-template-columns:46px minmax(0,1fr);column-gap:10px;align-items:start;padding:0;text-align:left}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(4))>li:not(#tn)::before{grid-row:1/3;font-size:30px}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(4))>li:not(#tn)::after{content:none}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(4))>li:not(#tn) h3{grid-column:2;margin-top:4px;font-size:16px;overflow-wrap:break-word}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(4))>li:not(#tn) p{grid-column:2;font-size:14px}
+  .ctw .tn-comment[data-tn-c="fleches"] li:not(#tn) p{font-size:13px;color:var(--tn-texte)}
+}
+@media (min-width:760px){
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(5)):not(#tn){grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:34px}
+  .ctw .tn-comment[data-tn-c="fleches"] .tn-pas:has(>li:nth-child(5))>li:nth-child(4n+1):not(#tn)::after{content:none}
+  .ctw .tn-comment[data-tn-c="fleches"]:has(.tn-pas>li:nth-child(5)):not(#tn){padding-left:max(40px,calc(50% - 540px));padding-right:max(40px,calc(50% - 540px))}
+  .ctw .tn-comment[data-tn-c="fleches"] li:not(#tn) h3{overflow-wrap:break-word}
+}
+
+/* ── Photos en mosaïque : au-delà de quatre photos ── */
+.ctw .tn-mosaique[data-tn-c="collage"] figure:nth-child(n+5){grid-column:span 3;margin-top:26px;padding:0 6px}
+.ctw .tn-mosaique[data-tn-c="collage"] figure:nth-child(n+5) .tn-ph{height:190px}
+@media (min-width:760px){
+  .ctw .tn-mosaique[data-tn-c="collage"] figure:nth-child(n+5){grid-column:span 4;grid-row:auto;margin-top:44px;padding:0 12px 0 0}
+  .ctw .tn-mosaique[data-tn-c="collage"] figure:nth-child(n+5) .tn-ph{height:330px}
+  .ctw .tn-mosaique[data-tn-c="une-grande"]:has(figure:nth-child(5)){grid-template-rows:auto auto auto}
+  .ctw .tn-mosaique[data-tn-c="une-grande"]:has(figure:nth-child(5)) figure:first-child{grid-row:1/4}
+  .ctw .tn-mosaique[data-tn-c="une-grande"] figure:nth-child(n+5){grid-row:3;margin-top:24px}
+  .ctw .tn-mosaique[data-tn-c="une-grande"] figure:nth-child(3n+5){grid-column:2}
+  .ctw .tn-mosaique[data-tn-c="une-grande"] figure:nth-child(3n+6){grid-column:3}
+  .ctw .tn-mosaique[data-tn-c="une-grande"] figure:nth-child(3n+7){grid-column:4}
+}
+
+/* ── Une phrase sur une photo ── */
+/* la signature se lit sur une photo claire : le voile un peu plus dense, une ombre sous les mots */
+.ctw .tn-citation-photo:is(:not([data-tn-c]),[data-tn-c="voile"])::after{height:70%;background:linear-gradient(180deg,color-mix(in srgb,var(--tn-encre) 74%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 52%,transparent) 50%,transparent 100%)}
+.ctw .tn-citation-photo:is(:not([data-tn-c]),[data-tn-c="voile"]) :is(h2,small){text-shadow:0 1px 16px color-mix(in srgb,var(--tn-encre) 55%,transparent)}
+/* la photo manque : le panneau sombre prend la hauteur de la phrase, jamais un grand écran vide */
+.ctw .tn-citation-photo[data-tn-photo-manque]:is(:not([data-tn-c]),[data-tn-c="voile"]){display:grid;grid-template-columns:minmax(0,1fr)}
+.ctw .tn-citation-photo[data-tn-photo-manque]:is(:not([data-tn-c]),[data-tn-c="voile"])>:first-child{grid-area:1/1;height:auto;min-height:0}
+.ctw .tn-citation-photo[data-tn-photo-manque]:is(:not([data-tn-c]),[data-tn-c="voile"]) .tn-in{position:relative;grid-area:1/1;left:auto;right:auto;top:auto;width:auto;padding:44px 24px 46px}
+.ctw .tn-citation-photo[data-tn-photo-manque]:is(:not([data-tn-c]),[data-tn-c="voile"])::after{content:none}
+.ctw .tn-citation-photo[data-tn-photo-manque][data-tn-c="moitie"]>:first-child:not(.tn-in){display:none}
+@media (min-width:760px){
+  .ctw .tn-citation-photo[data-tn-photo-manque]:is(:not([data-tn-c]),[data-tn-c="voile"]) .tn-in{padding:72px max(40px,calc(50% - 540px)) 76px;max-width:none}
+  .ctw .tn-citation-photo[data-tn-photo-manque][data-tn-c="moitie"]{grid-template-columns:minmax(0,1fr)}
+  .ctw .tn-citation-photo[data-tn-photo-manque][data-tn-c="moitie"] .tn-in{padding:72px max(40px,calc(50% - 540px))}
+}
+
+/* ── Résultats d'une recherche, en lignes : un prix long (ou « À compléter ») passe à la ligne ; le nom garde sa place ── */
+.ctw .tn-resultats:is(:not([data-tn-c]),[data-tn-c="lignes"]) .tn-res{grid-template-columns:minmax(0,1fr) fit-content(42%)}
+.ctw .tn-resultats:is(:not([data-tn-c]),[data-tn-c="lignes"]) .tn-res span{white-space:normal;text-align:right}
+
+/* ── Inscription à la lettre ── */
+/* sur ordinateur, le champ garde une vraie largeur : un bouton long passe dessous plutôt que de l'écraser */
+@media (min-width:760px){
+  .ctw :is(.tn-infolettre,.tn-infolettre-photo) .tn-form{flex-wrap:wrap}
+  .ctw :is(.tn-infolettre,.tn-infolettre-photo) .tn-champ{flex:1 1 220px}
+  .ctw :is(.tn-infolettre,.tn-infolettre-photo) button.tn-bt{max-width:100%;white-space:normal}
+}
+/* « dessus », la photo manque : la carte n'a plus rien à chevaucher, elle reprend sa place dans la page */
+.ctw .tn-infolettre-photo[data-tn-c="dessus"]:has(>.tn-ph-manque):not(#tn) .tn-in{margin:0 16px}
+@media (min-width:760px){
+  .ctw .tn-infolettre-photo[data-tn-c="dessus"]:has(>.tn-ph-manque):not(#tn){padding-bottom:0}
+  .ctw .tn-infolettre-photo[data-tn-c="dessus"]:has(>.tn-ph-manque):not(#tn) .tn-in{margin:0;width:auto;max-width:640px;border:1.5px solid var(--tn-encre)}
+  .ctw[data-tn-cadre="penche"] .tn-infolettre-photo[data-tn-c="dessus"]:has(>.tn-ph-manque):not(#tn) .tn-in{border-width:3px}
+}
+@media (max-width:759px){
+  .ctw .tn-infolettre-photo[data-tn-c="dessus"]:has(>.tn-ph-manque):not(#tn) .tn-in{border:1.5px solid var(--tn-encre)}
+  .ctw[data-tn-cadre="penche"] .tn-infolettre-photo[data-tn-c="dessus"]:has(>.tn-ph-manque):not(#tn) .tn-in{border-width:3px}
+}
+
+/* ── Suivre sa commande : les deux champs ne se touchent plus ── */
+.ctw .tn-suivi .tn-champ+.tn-champ{margin-top:8px}
+
+/* ── Bandeau de cookies ── */
+/* « Choisir » a sa place sous les deux boutons ; ouvert, le bandeau ne dépasse jamais l'écran : il défile */
+.ctw .tn-cookies .tn-detail{margin-top:8px}
+.ctw .tn-cookies summary{padding-top:13px}
+.ctw .tn-cookies{max-height:100vh;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain}
+.ctw .tn-cookies .tn-garde{margin-top:10px}
+
+/* ── Ouverture au nom de la marque ── */
+/* la ligne du nom géant a la hauteur de ses lettres (elle était plus basse qu'elles) ; la place prise ne change pas */
+.ctw .tn-ouverture-nom .tn-geant span,.ctw .tn-pied-complet .tn-geant span{line-height:1.16;margin:-.17em 0}
+/* la photo manque : le titre et la phrase se posent sous le nom, sans le chevaucher */
+.ctw .tn-ouverture-nom:has(>.tn-ph-manque) h1:not(#tn){margin-top:calc(18px + var(--tn-g,84px)*.12)}
+@media (min-width:760px){
+  .ctw .tn-ouverture-nom:has(>.tn-ph-manque):not(#tn){grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+  .ctw .tn-ouverture-nom:has(>.tn-ph-manque) h1:not(#tn){grid-column:1;grid-row:2;align-self:start;margin-top:calc(24px + var(--tn-g,200px)*.22)}
+  .ctw .tn-ouverture-nom:has(>.tn-ph-manque) .tn-bas:not(#tn){grid-column:2;grid-row:2;align-self:start;margin-top:calc(30px + var(--tn-g,200px)*.22)}
+}
+
+/* ── Ouverture en collage : quand il n'y a pas trois photos, celles qui restent se rangent sans laisser de vide ── */
+.ctw .tn-ouverture-collage .tn-colle:has(>.tn-ph-manque),.ctw .tn-ouverture-collage .tn-colle:not(:has(>.tn-ph:nth-child(3))){display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:14px;height:auto}
+.ctw .tn-ouverture-collage .tn-colle:has(>.tn-ph-manque)>.tn-ph:not(#tn),.ctw .tn-ouverture-collage .tn-colle:not(:has(>.tn-ph:nth-child(3)))>.tn-ph:not(#tn){position:relative;left:auto;right:auto;top:auto;bottom:auto;width:auto;height:250px}
+.ctw .tn-ouverture-collage .tn-colle>.tn-ph:only-child:not(#tn){height:306px}
+.ctw .tn-ouverture-collage .tn-colle:not(:has(>.tn-ph:not(.tn-ph-manque))){display:none}
+@media (min-width:760px){
+  .ctw .tn-ouverture-collage .tn-colle:has(>.tn-ph-manque)>.tn-ph:not(#tn),.ctw .tn-ouverture-collage .tn-colle:not(:has(>.tn-ph:nth-child(3)))>.tn-ph:not(#tn){height:min(64vh,520px)}
+  .ctw .tn-ouverture-collage .tn-colle:has(>.tn-ph-manque),.ctw .tn-ouverture-collage .tn-colle:not(:has(>.tn-ph:nth-child(3))){align-self:center}
+}
+
+/* ── Ouverture à la carte posée : la photo manque (panneau sombre) ; le panneau se fait bas, la carte garde sa place ── */
+.ctw .tn-ouverture-carte[data-tn-photo-manque]>:first-child:not(.tn-carte){height:190px}
+@media (min-width:760px){
+  .ctw .tn-ouverture-carte[data-tn-photo-manque]>:first-child:not(.tn-carte){height:440px}
+}
+
+/* ── Ouverture en lueurs : la petite ligne au-dessus du titre se lit aussi sur une lueur claire ── */
+.ctw .tn-ouverture-flou::after{inset:22% 0 0;background-image:linear-gradient(to bottom,transparent,color-mix(in srgb,var(--tn-encre) 80%,transparent) 42%,var(--tn-encre) 78%)}
+.ctw .tn-ouverture-flou small{color:var(--tn-sur-bouton)}
+
+/* ── Pied de page complet, « grand nom » : le nom géant a sa place sous la dernière ligne, sans la toucher ── */
+.ctw .tn-pied-complet[data-tn-c="grand-nom"] .tn-geant{margin-top:calc(34px + var(--tn-g,84px)*.14)}
+@media (min-width:760px){
+  .ctw .tn-pied-complet[data-tn-c="grand-nom"] .tn-geant{margin-top:calc(34px + var(--tn-g,200px)*.14);min-width:0}
+}
+
+/* ── Retouches après le second tour ── */
+@media (min-width:760px){
+  /* Inscription « dessus », sans la photo : la place de l'ombre de la carte */
+  .ctw[data-tn-cadre="penche"] .tn-infolettre-photo[data-tn-c="dessus"]:has(>.tn-ph-manque):not(#tn){padding-bottom:14px}
+}
+.ctw[data-tn-cadre="penche"] .tn-infolettre-photo[data-tn-c="dessus"]:has(>.tn-ph-manque):not(#tn){padding-bottom:12px}
+/* Engagements en deux colonnes, tenue G, petit téléphone : un engagement long reste un texte, pas quatre lignes grasses */
+@media (max-width:759px){
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-engagements[data-tn-c="deux-colonnes"] li b{font-family:var(--f-ui);font-weight:700;font-size:16px;line-height:1.22;text-transform:none}
+  /* Grands titres de page (journal, ouverture en collage), titres gras : un cran de moins sur téléphone */
+  .ctw:is([data-tn-titres="gras"],[data-tn-lourd]) :is(.tn-journal,.tn-ouverture-collage) h1{font-size:calc(50px*var(--tn-k))}
+}
+/* Le nom géant : sa section ne rogne plus que sur les côtés (le haut et le bas des lettres ne sont jamais coupés). */
+.ctw .tn-ouverture-nom,.ctw .tn-pied-complet{overflow:visible;overflow-x:clip}
