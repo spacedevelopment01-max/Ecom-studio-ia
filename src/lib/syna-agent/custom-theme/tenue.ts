@@ -93,6 +93,9 @@ export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | nul
     "--tn-bouton": encre, "--tn-sur-bouton": `color-mix(in srgb,${fond} 70%,#fff)`,
     // Le texte posé sur la couleur de la marque : clair sur une couleur sombre, à l'encre sur une couleur claire.
     "--tn-sur-accent": contraste(encre, accent) > contraste(clair, accent) ? encre : clair,
+    // La couleur de la marque écrite SUR le fond de la page (une année, un numéro, un mot en couleur) : elle-même si elle
+    // s'y lit (contraste de 3 au moins), sinon l'encre. Un jaune vif sur un fond crème ne se lisait pas (tour des sections).
+    "--tn-accent-texte": contraste(accent, fond) >= 3 ? accent : encre,
     "--tn-arrondi": tenue?.cadre === "droit" || !tenue ? "0px" : "14px",
     ...(poids && poids !== 400 ? { "--tn-poids": String(poids) } : {}),
   };
