@@ -271,7 +271,7 @@ describe("démonstration : deux sites complets montés avec les sections à tenu
     expect(m.html.replace(/\u00a0/g, " ")).toContain("<tr><th>Du lundi au vendredi</th><td>8 h – 18 h</td></tr><tr><th>Samedi</th><td>9 h – 12 h</td></tr>");
     expect(m.html).toContain("--tn-poids:700"); // tenue « gras » : la police de la marque a une graisse forte, les titres la prennent
     expect(m.html).toContain('"hdCart":"0"'); // un site de services n'a pas de panier
-    expect(m.html).toMatch(/<ul class="tn-liste-p"[^>]*><li><b>Tableau électrique remis aux normes<\/b><span>Durée : une à deux journées<\/span><i>Sur devis<\/i><\/li>/);
+    expect(m.html).toMatch(/<ul class="tn-liste-p"[^>]*><li><b[^>]*>Tableau électrique remis aux normes<\/b><span>Durée : une à deux journées<\/span><i>Sur devis<\/i><\/li>/);
     expect(m.html).toContain("<option>Borne de recharge à domicile</option>"); // depuis le 17 novembre 2026 : la liste du devis reçoit les vraies prestations du profil
     expect(m.html).not.toContain("<option>Borne de recharge</option>");
     // Aucun mot de l'exemple (salon, thé, peintre), aucune photo d'exemple, rien à compléter.

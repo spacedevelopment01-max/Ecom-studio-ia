@@ -117,6 +117,14 @@ export function tenueAttrs(tenue: Tenue | null | undefined, /** La police des ti
   return ` data-tn-titres="${t.titres}" data-tn-bouton="${t.bouton}" data-tn-cadre="${sansArche(t.cadre)}" data-tn-fond="${t.fond}" data-tn-petits="${t.petits}"${titresTresGras(heading) ? ' data-tn-lourd="1"' : ""}`;
 }
 
+/**
+ * Un point d'interrogation ou d'exclamation ne se retrouve jamais seul au début d'une ligne (« Et s'il ne me plaît pas » puis
+ * « ? » à la ligne, vu au tour des sections du 17 novembre 2026) : l'espace qui le précède devient insécable, comme le veut
+ * la typographie française. Seul le texte affiché est touché : ni les balises, ni les scripts, ni les styles.
+ */
+export const sansPonctuationSeule = (html: string): string =>
+  html.replace(/(<(script|style)\b[\s\S]*?<\/\2>)|>([^<]+)</g, (m, bloc: string | undefined, _b, texte: string | undefined) => (bloc || !texte ? m : `>${texte.replace(/ ([?!])/g, "\u00a0$1")}<`));
+
 /** Longueurs (en signes) à partir desquelles un texte est « long » : un grand titre (deux crans), un nom ou une légende. */
 export const TEXTE_LONG = { titre: 50, titreTresLong: 64, libelleAssezLong: 32, libelle: 56 };
 const texteNu = (h: string) => h.replace(/<[^>]+>/g, "").replace(/&[a-z#0-9]+;/gi, "x").replace(/\s+/g, " ").trim();
@@ -132,7 +140,7 @@ const texteNu = (h: string) => h.replace(/<[^>]+>/g, "").replace(/&[a-z#0-9]+;/g
  */
 export function withTextesLongs(html: string): string {
   const deja = (attrs: string) => /\sdata-tn-long=/.test(attrs);
-  return html
+  return sansPonctuationSeule(html)
     .replace(/<(h1|h2)\b((?:"[^"]*"|[^>"])*)>([\s\S]*?)<\/\1>/g, (m, tag: string, attrs: string, inner: string) => {
       if (deja(attrs)) return m;
       const n = texteNu(inner).length;

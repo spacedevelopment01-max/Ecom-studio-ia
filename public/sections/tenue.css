@@ -22,7 +22,8 @@
 .ctw[data-tn-titres="capitales"]{--tn-k0:.78}
 @media (max-width:359px){.ctw{--tn-k0:.88}.ctw[data-tn-titres="capitales"]{--tn-k0:.7}}
 .ctw .tn :is(h1,h2)[data-tn-long="1"]{--tn-k:calc(var(--tn-k0)*.84)}
-.ctw .tn :is(h1,h2)[data-tn-long="2"]{--tn-k:calc(var(--tn-k0)*.62)}
+.ctw .tn :is(h1,h2)[data-tn-long="2"]{--tn-k:calc(var(--tn-k0)*.72)}
+@media (min-width:760px){.ctw .tn :is(h1,h2)[data-tn-long="1"]{--tn-k:calc(var(--tn-k0)*.92)}.ctw .tn :is(h1,h2)[data-tn-long="2"]{--tn-k:calc(var(--tn-k0)*.8)}}
 .ctw .tn h1,.ctw .tn h2,.ctw .tn h3{font-family:var(--f-title);font-weight:var(--tn-poids,400)!important;margin:0;letter-spacing:-.015em;line-height:1;text-transform:none;overflow-wrap:break-word}
 .ctw .tn p,.ctw .tn figure,.ctw .tn ul{margin:0;padding:0}
 .ctw .tn p{line-height:1.55}
@@ -47,7 +48,7 @@
 .ctw .tn :is(h1,h2) mark.tn-manque{font-size:min(1em,22px);line-height:1.3}
 
 /* ── Bouton : la forme vient de la tenue ── */
-.ctw .tn .tn-bt{display:inline-block;text-align:center;background:var(--tn-bouton);color:var(--tn-sur-bouton);font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:normal;letter-spacing:.01em;padding:15px 34px;border-radius:999px;border:0;cursor:pointer}
+.ctw .tn .tn-bt{display:inline-block;text-align:center;text-wrap:balance;max-width:100%;background:var(--tn-bouton);color:var(--tn-sur-bouton);font-family:var(--f-ui);font-weight:600;font-size:16px;line-height:normal;letter-spacing:.01em;padding:15px 34px;border-radius:999px;border:0;cursor:pointer}
 .ctw[data-tn-bouton="droit"] .tn .tn-bt{border-radius:0}
 .ctw[data-tn-bouton="etiquette"] .tn .tn-bt{background:var(--tn-fond);color:var(--tn-encre);font-weight:800;font-size:17px;letter-spacing:.14em;text-transform:uppercase;padding:17px 22px 16px;border-radius:3px;outline:1.5px dashed color-mix(in srgb,var(--tn-encre) 60%,transparent);outline-offset:-6px;box-shadow:0 1px 0 rgba(0,0,0,.35),0 8px 18px rgba(0,0,0,.28);display:inline-flex;gap:14px;align-items:center}
 .ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{content:"";width:26px;height:14px;flex:none;background:var(--tn-encre);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 14'%3E%3Cpath d='M0 7h22M16 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='2.6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 14'%3E%3Cpath d='M0 7h22M16 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='2.6'/%3E%3C/svg%3E") center/contain no-repeat}
@@ -819,11 +820,11 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 }
 
 /* ── En-tête : le nom ne passe jamais sous le panier ni hors de l'écran (nom large, petit téléphone) ── */
-.ctw .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"]) .tn-nom{left:84px;right:84px;top:0;height:54px;display:flex;align-items:center;justify-content:center;line-height:1}
+.ctw .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"]) .tn-nom{left:92px;right:92px;top:0;height:54px;display:flex;align-items:center;justify-content:center;line-height:1}
 .ctw .tn-entete[data-tn-c="gauche"] .tn-nom{min-width:0;line-height:1}
 .ctw .tn-entete[data-tn-c="gauche"] summary{margin-right:14px}
 .ctw .tn-entete .tn-pan{flex:none;white-space:nowrap}
-.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"],[data-tn-c="gauche"]) .tn-nom{font-size:clamp(16px,5.2vw,26px)}
+.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"],[data-tn-c="gauche"]) .tn-nom{font-size:clamp(15px,4.8vw,26px)}
 /* ── Bande encadrée, cadre penché : la place de l'ombre sous la photo ── */
 .ctw[data-tn-cadre="penche"] .tn-bande[data-tn-c="encadree"]{padding-bottom:18px}
 /* ── Grande photo et sa phrase : le haut de la photo assez sombre pour que la phrase se lise sur une photo claire ── */
@@ -831,7 +832,8 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 /* ── Ouvertures ── */
 /* « dans la photo » : le titre reste posé dans la photo, mais c'est la photo qui grandit avec lui (un titre long ne
    descend plus sur la phrase et le bouton). */
-.ctw .tn-ouverture[data-tn-c="dans-la-photo"]{display:grid;grid-template-columns:minmax(0,1fr)}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]{display:grid}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]>*{min-width:0}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{grid-area:1/1;height:auto;min-height:512px}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{position:relative;grid-area:1/1;align-self:start;top:auto;padding:82px 20px 48px}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"]::before{z-index:0;height:min(100%,330px)}
@@ -848,14 +850,14 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 .ctw .tn-ouverture[data-tn-c="titre-en-bas"]::after{background:linear-gradient(0deg,color-mix(in srgb,var(--tn-encre) 88%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 68%,transparent) 38%,color-mix(in srgb,var(--tn-encre) 22%,transparent) 66%,transparent 84%)}
 .ctw .tn-ouverture:is([data-tn-c="titre-centre"],[data-tn-c="titre-en-bas"],[data-tn-c="titre-massif"]) :is(small,h1,p){text-shadow:0 1px 18px color-mix(in srgb,var(--tn-encre) 50%,transparent)}
 /* ── Panier : un prix long (ou « À compléter ») ne mange plus la colonne du nom ── */
-.ctw .tn-panier .tn-ligne:not(#tn){grid-template-columns:84px minmax(0,1fr) fit-content(36%)}
+.ctw .tn-panier .tn-ligne:not(#tn){grid-template-columns:84px minmax(0,1fr) fit-content(42%)}
 .ctw .tn-panier .tn-ligne.tn-sans-photo:not(#tn){grid-template-columns:minmax(0,1fr) fit-content(36%)}
 .ctw .tn-panier :is(.tn-prix-l,.tn-ligne>:last-child:not(.tn-quoi)){white-space:normal;text-align:right}
 /* ── Où le mettre, en file : sur téléphone la file se fait défiler au doigt (la dernière photo n'est plus coupée) ── */
 @media (max-width:759px){
-  .ctw .tn-places:is(:not([data-tn-c]),[data-tn-c="file"]) .tn-file{overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;margin:8px 0 0 -6px;padding:10px 20px 16px 6px}
-  .ctw .tn-places:is(:not([data-tn-c]),[data-tn-c="file"]) .tn-file::-webkit-scrollbar{display:none}
-  .ctw .tn-places:is(:not([data-tn-c]),[data-tn-c="file"]) figure{scroll-snap-align:start}
+  .ctw .tn-places:not([data-tn-c="alternees"]) .tn-file{overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;margin:8px 0 0 -6px;padding:10px 20px 16px 6px}
+  .ctw .tn-places:not([data-tn-c="alternees"]) .tn-file::-webkit-scrollbar{display:none}
+  .ctw .tn-places:not([data-tn-c="alternees"]) figure{scroll-snap-align:start}
 }
 @media (min-width:760px){
   .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-ph{height:auto;min-height:min(86vh,780px)}
@@ -864,4 +866,19 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
   /* Atouts en colonnes : au-delà de quatre faits, ils passent à la ligne (jamais sept colonnes de quelques lettres). */
   .ctw .tn-atouts:is([data-tn-c="numeros"],[data-tn-c="cartes"]) ul{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
   .ctw .tn-atouts[data-tn-c="numeros"] ul{row-gap:40px}
+}
+/* Cadre penché : la légende ne passe pas sous la photo penchée ; une photo seule, très large, penche à peine. */
+.ctw[data-tn-cadre="penche"] :is(.tn-de-pres,.tn-places) figcaption{margin-top:16px}
+.ctw[data-tn-cadre="penche"] :is(.tn-de-pres,.tn-places) figure:only-child .tn-ph{transform:rotate(-.5deg)}
+/* Panier sur un très petit téléphone : la photo plus petite, le nom garde sa place. */
+@media (max-width:359px){
+  .ctw .tn-panier .tn-ligne:not(#tn){grid-template-columns:60px minmax(0,1fr) fit-content(34%);gap:10px}
+  .ctw .tn-panier .tn-ligne .tn-ph{height:72px}
+  .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-panier .tn-ligne b:not(#tn){font-size:17px}
+}
+.ctw[data-tn-petits="machine"] .tn-entete:is(:not([data-tn-c]),[data-tn-c="centre"]) .tn-nom{left:106px;right:106px;text-align:center}
+/* Les très grands titres du socle (58 à 64 px sur téléphone) : très longs, ils se réduisent davantage. */
+@media (max-width:759px){
+  .ctw :is(.tn-contact,.tn-compte,.tn-histoire,.tn-panier) h1[data-tn-long="2"],.ctw .tn-ouverture:is([data-tn-c="titre-puis-cadre"],[data-tn-c="titre-geant"],[data-tn-c="titre-massif"]) h1[data-tn-long="2"]{--tn-k:calc(var(--tn-k0)*.58)}
+  .ctw :is(.tn-contact,.tn-compte,.tn-histoire,.tn-panier) h1[data-tn-long="1"],.ctw .tn-ouverture:is([data-tn-c="titre-puis-cadre"],[data-tn-c="titre-geant"],[data-tn-c="titre-massif"]) h1[data-tn-long="1"]{--tn-k:calc(var(--tn-k0)*.74)}
 }

@@ -237,6 +237,26 @@ client : le Studio n'a pas encore de source pour elles.
    calme d'une photo, jamais sur le sujet ; une photo en hauteur ne remplit jamais une bande large (deux colonnes sur
    grand écran) ; jamais de faux compte à rebours ni d'offre d'exemple ; une zone à toucher fait 44 px au moins.
 
+### Les règles communes du socle (tour des sections, 17 novembre 2026)
+
+Le tour des sections (`scripts/tour-des-sections/`) ouvre chaque pièce sur 320, 390 et 1280 px, dans trois tenues, avec
+des contenus courts, vrais et difficiles. Ce qu'il a montré partout est réglé une fois, dans `tenue.css` et `tenue.ts` :
+une pièce n'a rien à réécrire, mais elle doit savoir ce qui existe.
+
+| Règle | Ce qu'elle fait | À savoir en écrivant une pièce |
+|---|---|---|
+| Césure française | `.ctw .tn{overflow-wrap:break-word;hyphens:auto;hyphenate-limit-chars:12 4 4}` (14 lettres dans un `h1`/`h2`) : un mot très long se coupe avec son trait d'union | Ne pas écrire `overflow-wrap:anywhere` sur un nom ou un titre : il coupe un mot court au milieu, sans trait. Si « Assemblé » se coupe, la police est trop grande pour la colonne. |
+| Échelle des titres | `--tn-k0` (tenue, et écran de moins de 360 px) ; `--tn-k` = l'échelle du titre | Toute taille de `h1`/`h2` reste `calc(Npx*var(--tn-k))`. |
+| Titre long | le Studio pose `data-tn-long="1"` (plus de 50 signes) ou `"2"` (plus de 64) sur `h1`/`h2` : le titre se réduit | Un titre de base de 56 px ou plus ajoute sa propre réduction (`h1[data-tn-long="2"]{--tn-k:calc(var(--tn-k0)*.58)}`). |
+| Texte long, jamais en pavé gras | le Studio pose `data-tn-long="1"` (plus de 32 signes) ou `"2"` (plus de 56) sur `b, strong, h3, h4, dt, summary, blockquote` ; au cran 2, dans une tenue aux titres gras, en capitales ou à la police très grasse, le texte passe dans la police du texte courant | Une pièce aux cartes étroites prend le cran 1 pour ses noms : `b[data-tn-long]`. |
+| Police très grasse | le thème porte `data-tn-lourd` (Archivo Black, Anton…) : `small` passe en texte courant | Un petit texte écrit à la main dans `var(--f-title)` doit faire de même sous `.ctw[data-tn-lourd]`. |
+| « À compléter » | `mark.tn-manque` : 16 px au plus (22 dans un grand titre), passe à la ligne | Une pastille, un bouton, une étiquette doivent accepter deux lignes (rayon fixe plutôt que rond imposé, `min-width:0`). |
+| Photo qui manque | `:has(>.tn-ph-manque)` : une seule colonne, et chaque enfant la reprend (`grid-column:1/-1;grid-row:auto`) | Ne pas compter sur une colonne 2 quand la photo peut manquer. |
+| Ponctuation | l'espace avant « ? » et « ! » devient insécable au rendu | Rien à faire. |
+| Bouton | `max-width:100%`, libellé équilibré sur deux lignes | Pas de `white-space:nowrap` sur un bouton dont le texte vient du client. |
+| Cadre penché, ombre dure | la photo `.tn-cadre` qui finit sa section garde 14 px dessous | Une carte à ombre dure qui finit sa section réserve la place de son ombre (marge basse). |
+| Zone à toucher | 44 px pour un volet ; un petit lien souligné agrandit sa zone par un `::after` en position absolue | Même geste pour tout petit lien d'une pièce. |
+
 ## 6. Les scripts
 
 À éviter : un volet est un `<details>`, des onglets sont des boutons radio cachés et leurs étiquettes. Quand un geste

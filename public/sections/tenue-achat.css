@@ -1310,3 +1310,8 @@
 @media (max-width:759px){
   .ctw .tn-achat:is([data-tn-c="vente-directe"],[data-tn-c="grandes-photos"],[data-tn-c="technique"],[data-tn-c="fond-doux"])>.tn-versions{grid-column:1}
 }
+/* Bloc d'achat « portrait » sur un très petit téléphone : le prix passe sous le nom (le nom garde toute la largeur). */
+@media (max-width:359px){
+  .ctw .tn-achat[data-tn-c="portrait"]>h1{grid-column:1/-1}
+  .ctw .tn-achat[data-tn-c="portrait"]>.tn-prix{grid-row:4;grid-column:1/-1;margin:8px 0 0}
+}

@@ -748,3 +748,11 @@
 /* Texte posé sur la couleur de la marque : toujours la couleur lisible dessus (claire sur une couleur sombre, sombre sur une couleur claire). */
 .ctw .tn-messages[data-tn-c="tour-a-tour"],.ctw .tn-messages[data-tn-c="tour-a-tour"] li,.ctw .tn-guide-choix .tn-v-in{color:var(--tn-sur-accent)}
 .ctw[data-tn-bouton="ombre"] .tn-produits-vente .tn-v-voir,.ctw[data-tn-bouton="ombre"] .tn-catalogue[data-tn-c="ajout-rapide"] .tn-v-ajout{color:var(--tn-sur-accent)}
+
+/* ══ Tour des sections (17 novembre 2026) : atouts « ronds » ══ Le titre d'une carte étroite ne se coupe plus au milieu
+   d'un mot court (police très large sur téléphone) ; sur grand écran, au-delà de quatre cartes, elles passent à la ligne. */
+.ctw[data-tn-titres="gras"] .tn-atouts[data-tn-c="ronds"] li b,.ctw[data-tn-titres="capitales"] .tn-atouts[data-tn-c="ronds"] li b,.ctw[data-tn-lourd] .tn-atouts[data-tn-c="ronds"] li b{font-size:clamp(15px,4.6vw,19px);overflow-wrap:break-word}
+@media (min-width:760px){
+  .ctw .tn-atouts[data-tn-c="ronds"] ul{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .ctw[data-tn-titres="gras"] .tn-atouts[data-tn-c="ronds"] li b,.ctw[data-tn-titres="capitales"] .tn-atouts[data-tn-c="ronds"] li b,.ctw[data-tn-lourd] .tn-atouts[data-tn-c="ronds"] li b{font-size:23px}
+}

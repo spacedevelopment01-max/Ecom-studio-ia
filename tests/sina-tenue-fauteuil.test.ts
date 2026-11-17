@@ -306,7 +306,7 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     expect(spec.settings.type_heading_font).toBe("instrument_serif_n4");
     // Le thème se compile en fichiers Shopify : une section par fichier, les gabarits, les groupes.
     const files = compileTheme(spec);
-    expect([...files.keys()].filter((f) => /^sections\/es-custom-s[0-9a-f]{8}\.liquid$/.test(f)).length).toBe(Object.keys(spec.customSections).length);
+    expect([...files.keys()].filter((f) => /^sections\/es-custom-(?:s[0-9a-f]{8}|feuille-\d+)\.liquid$/.test(f)).length).toBe(Object.keys(spec.customSections).length); // les sections du site, et la suite de la feuille quand elle ne tient pas dans l'en-tête
     for (const f of ["templates/index.json", "templates/product.json", "templates/page.contact.json", "templates/404.json", "sections/header-group.json", "sections/footer-group.json", "layout/theme.liquid"]) expect(files.has(f), f).toBe(true);
     if (process.env.TENUE_OUT) for (const [f, body] of files) if (/es-custom|templates\/(?:index|product)\.json|-group\.json/.test(f)) { fs.mkdirSync(`${process.env.TENUE_OUT}/shopify/${f.split("/")[0]}`, { recursive: true }); fs.writeFileSync(`${process.env.TENUE_OUT}/shopify/${f}`, body); }
     // À la demande : le thème Shopify rendu par l'aperçu Liquid du Studio, pour le comparer en image au thème sur mesure.

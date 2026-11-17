@@ -24,19 +24,9 @@
    "plus-large-que-ecran": 11,
    "texte-sort-de-sa-boite": 118
   },
-  "tn-404": {
-   "chevauchement": 6,
-   "texte-sort-de-sa-boite": 15
-  },
   "tn-acces": {
    "chevauchement": 30,
    "texte-sort-de-sa-boite": 21
-  },
-  "tn-achat": {
-   "chevauchement": 40,
-   "contraste": 4,
-   "hors-ecran": 28,
-   "texte-sort-de-sa-boite": 132
   },
   "tn-adresse": {
    "pave-gras": 6
@@ -56,10 +46,6 @@
   "tn-article": {
    "contraste": 6
   },
-  "tn-atouts": {
-   "chevauchement": 2,
-   "texte-sort-de-sa-boite": 12
-  },
   "tn-avant-apres-produit": {
    "chevauchement": 108,
    "debordement-page": 4,
@@ -73,9 +59,6 @@
   "tn-avis-page": {
    "debordement-page": 6,
    "hors-ecran": 66
-  },
-  "tn-bande": {
-   "ombre-coupee": 18
   },
   "tn-barre-produit": {
    "texte-sort-de-sa-boite": 6
@@ -160,11 +143,6 @@
    "chevauchement": 20,
    "pave-gras": 7,
    "texte-sort-de-sa-boite": 36
-  },
-  "tn-entete": {
-   "chevauchement": 48,
-   "debordement-page": 8,
-   "hors-ecran": 8
   },
   "tn-entete-annonce": {
    "chevauchement": 8
@@ -262,13 +240,6 @@
    "plus-large-que-ecran": 26,
    "texte-sort-de-sa-boite": 22
   },
-  "tn-ouverture": {
-   "chevauchement": 37,
-   "contraste": 1,
-   "debordement-page": 3,
-   "ombre-coupee": 2,
-   "plus-large-que-ecran": 3
-  },
   "tn-ouverture-arrivee": {
    "contraste": 48
   },
@@ -297,11 +268,6 @@
    "pave-gras": 14,
    "texte-sort-de-sa-boite": 3
   },
-  "tn-panier": {
-   "chevauchement": 6,
-   "pave-gras": 4,
-   "texte-sort-de-sa-boite": 3
-  },
   "tn-panier-cote": {
    "chevauchement": 18,
    "contraste": 3,
@@ -321,10 +287,6 @@
   },
   "tn-pied-services": {
    "ombre-coupee": 6
-  },
-  "tn-places": {
-   "contraste": 2,
-   "ombre-coupee": 8
   },
   "tn-planning": {
    "pave-gras": 12
@@ -349,13 +311,6 @@
    "chevauchement": 42,
    "contraste": 12,
    "texte-sort-de-sa-boite": 33
-  },
-  "tn-produits": {
-   "chevauchement": 8,
-   "debordement-page": 1,
-   "hors-ecran": 1,
-   "pave-gras": 14,
-   "texte-sort-de-sa-boite": 5
   },
   "tn-produits-vente": {
    "contraste": 228,

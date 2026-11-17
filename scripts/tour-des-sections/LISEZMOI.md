@@ -89,14 +89,14 @@ Dans `detecteurs-page.js` (exécuté dans la page ; les seuils sont en tête du 
 | `texte-sort-de-sa-boite` | bloquant | le texte dépasse de son bouton, de sa pastille, de sa carte, de son étiquette |
 | `pastille-deformee` | bloquant | une pastille ronde qui n'est plus ronde, ou plus haute que ses voisines |
 | `bouton-trop-de-lignes` | important | un bouton sur plus de 2 lignes |
-| `lettres-seules`, `mot-coupe` | important, mineur | un mot coupé au milieu sans trait d'union (un bout d'une ou deux lettres : important) |
+| `lettres-seules`, `mot-coupe` | important, mineur | un mot coupé au milieu sans trait d'union (un bout d'une ou deux lettres : important). Le trait d'union de la césure automatique est reconnu (la première lettre de la ligne suivante porte son cadre) ; une lettrine n'est pas un mot coupé |
 | `colonne-etroite` | important | une colonne de moins de 40 px qui porte du texte |
 | `chevauchement` | bloquant | deux textes, ou un bouton et un texte, l'un sur l'autre |
 | `contraste`, `contraste-partiel` | bloquant sous 1,8, important sous 3, mineur par endroits | les pixels sous chaque ligne de texte sont lus sur une capture sans texte |
 | `texte-petit` | mineur | texte de moins de 12 px |
 | `titre-trop-long` | important | sur téléphone, un titre d'au moins 40 px sur plus de 5 lignes |
-| `pave-gras` | bloquant au-delà de 5 lignes, sinon important | plus de 3 lignes en gras dans la police des titres, hors grand titre (un titre de carte : plus de 5) |
-| `ombre-coupee`, `bord-recouvert` | bloquant, important | l'ombre décalée ou le bord sort de la section (la suivante le recouvre), de l'écran, ou est rogné |
+| `pave-gras` | bloquant au-delà de 5 lignes, sinon important | plus de 3 lignes en gras dans la police des titres, hors grand titre (un titre de carte : plus de 5). Jugé sur la police de chaque texte : une marque « À compléter » en texte courant ne compte pas |
+| `ombre-coupee`, `bord-recouvert` | bloquant, important | l'ombre décalée ou le bord sort de la section (la suivante le recouvre), de l'écran, ou est rogné. Une section posée au-dessus de la page (un en-tête, rang positif) n'est pas recouverte : son menu déroulé ne compte pas |
 | `zone-a-toucher`, `boutons-colles` | important, mineur | sur téléphone : moins de 40 px de haut ; deux boutons à moins de 8 px |
 | `section-vide`, `section-nulle`, `trou`, `cadre-vide` | bloquant, important | section sans rien, de hauteur nulle, vide de plus de 120 px, cadre de photo vide |
 | `crochets-bruts`, `photo-exemple`, `texte-exemple` | bloquant, important | dans un site monté : crochets « [À compléter » tels quels, photo ou nom d'exemple de la bibliothèque |
