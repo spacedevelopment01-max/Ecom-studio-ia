@@ -129,7 +129,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   fois la même section entre les deux alors qu'on a une centaine de sections, et surtout elles ont la même disposition
   alors qu'il y a 2 ou 3 possibilités de placement ») : avec chaque site déjà monté, quel que soit le métier, l'accueil a
   au plus 2 pièces en commun, le site entier au plus un quart, et une pièce reprise prend toujours une autre disposition
-  (`variete-sites.ts`).
+  (`variete-sites.ts`). Comparé aux 12 derniers sites et aux 30 derniers du même métier. **Aucune porte de sortie** (« elle
+  doit y arriver, on ne laisse pas de porte de sortie sinon elle va la prendre ») : ce qu'elle laisse, le Studio le
+  remplace lui-même ; une conception qui ne tient pas la règle n'est jamais enregistrée.
 - **Jamais de photo dans une arche ni une demi-lune** (16 novembre 2026, devant une page d'arrivée : « L'arrière plan en lune
   c'est pas beau je veux plus ça ») : le cadre en arche n'est plus proposé, plus permis, plus affiché (`sansArche`).
 - **Jamais un bouton coupé** (17 novembre 2026, devant le site d'essai sur son téléphone : « Les boutons sont coupés en bas,

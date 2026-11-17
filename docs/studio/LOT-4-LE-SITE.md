@@ -326,16 +326,27 @@ de placement » ; « il y a déjà la moitié des sections qui sont identiques. 
   l'accueil, 4 pièces communes, dont les questions avec la même disposition.
 - **Pourquoi les contrôles d'avant n'ont rien vu** : l'un ne réagissait qu'à 70 % de sections en commun sur l'accueil et
   la fiche ; l'autre ne comparait qu'avec les sites du même métier (Bécane répare des vélos, Vasco coud des sacs).
-- **La règle** (`custom-theme/variete-sites.ts`), contre chacun des 12 derniers sites montés pour d'autres marques, tous
-  métiers : accueil au plus 2 pièces en commun ; site entier (hors pages pratiques) au plus un quart ; une pièce reprise
-  prend toujours une autre disposition. L'en-tête, le pied de page et l'ouverture suivent leur famille et ne sont pas
-  comptés.
-- **Comment elle s'applique** : le concepteur reçoit les 6 derniers sites (pièces et dispositions) et la règle avant de
-  concevoir ; le contrôle du Studio, sans IA, rend les écarts à sa seule reprise (aucun appel de plus) ; ensuite, sans IA,
-  une disposition encore prise devient une disposition libre. Ce qui reste est écrit dans « à revoir ».
-- **Vérifié sans IA** sur les deux sites de l'essai : Vasco, comparé à Bécane, est refusé (accueil 4 pièces communes,
-  site 15 sur 29, dispositions reprises) ; la correction sans IA aurait changé 15 dispositions. Essai :
-  `tests/variete-entre-sites.test.ts`. **Pas encore vérifié avec la vraie IA** : il faudra un essai de création.
+- **La règle** (`custom-theme/variete-sites.ts`), contre les 12 derniers sites montés pour d'autres marques, tous
+  métiers, et les 30 derniers du même métier, même anciens (« oui » du propriétaire : deux concurrents ne se ressemblent
+  jamais) : accueil au plus 2 pièces en commun ; site entier (hors pages pratiques) au plus un quart ; sur une même sorte
+  de page (accueil contre accueil, fiche contre fiche), une pièce reprise prend toujours une autre disposition qu'un des
+  4 derniers sites ou des 10 derniers du même métier. L'en-tête, le pied de page et l'ouverture suivent leur famille et ne
+  sont pas comptés.
+- **Aucune porte de sortie** (le propriétaire : « elle doit y arriver, on ne laisse pas de porte de sortie sinon elle va
+  la prendre ») : le concepteur reçoit les 8 derniers sites (pièces et dispositions) et la règle ; le contrôle du Studio
+  rend les écarts à sa seule reprise (aucun appel de plus) ; puis le Studio corrige lui-même, sans IA : une disposition
+  prise devient une disposition libre, une pièce de trop est remplacée par une autre pièce du même moment de la page,
+  qui passe les mêmes vérifications que celles du concepteur (elle va à ce genre de site, sa preuve est au dossier) et ne
+  crée aucun autre défaut. Une conception qui ne tient toujours pas la règle est refusée : rien n'est enregistré.
+- **Jamais d'impasse** : une pièce sans autre pièce libre pour son moment (le bloc d'achat d'une fiche, ou une pièce dont
+  la seule autre est déjà posée ailleurs sur le site) n'est pas comptée ; les pages pratiques changent de disposition
+  quand une est libre, sans refus ; les dispositions se comparent page par page et avec les sites les plus proches, sinon
+  une pièce que les premiers sites ont posée dans toutes ses dispositions serait interdite pour toujours.
+- **Vérifié sans IA** : sur les deux sites de l'essai, Vasco comparé à Bécane est refusé tel qu'il est sorti, puis le
+  Studio le corrige seul jusqu'à tenir la règle (`tests/variete-entre-sites.test.ts`) ; dans les essais de conception
+  de bout en bout (IA simulée), les remplacements sont justes (les questions deviennent les questions par rubriques, les
+  garanties la livraison, les produits la grille de vente). **Pas encore vérifié avec la vraie IA** : il faudra un essai
+  de création.
 - **Reste à proposer** (dit au propriétaire, en attente de son oui) : une vraie signature visible pour chaque famille
   (fonds, cadres, rythme), et une police de titres différente d'une marque à l'autre (trois marques d'essai sur quatre
   ont reçu la même grosse police grasse).

@@ -38,7 +38,7 @@ const design = (e: Example): Design => ({
 
 describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les outils de SINA", async () => {
   process.env.STUDIO_SYNA_AGENT = "1";
-  const { one } = await import("@/lib/db");
+  const { one, run: dbRun } = await import("@/lib/db");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { account } = await import("./conversation209-fixtures");
   const { threadFor } = await import("@/lib/syna-agent/thread");
@@ -104,6 +104,10 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     await call("theme.ambiance", ctx, { ambiance: "clair" });
 
     // 1) Conception : le concepteur (simulé) choisit sections, constructions et tenue ; le Studio monte et contrôle.
+    // Ces essais montent deux fois le même site de démonstration pour éprouver le montage, la mise en boutique et la
+    // tenue ; la variété entre les clients a ses essais à elle (variete-entre-sites.test.ts) : les sites déjà montés
+    // par les essais d'avant sont mis de côté, sinon la règle remplacerait des pièces que ce rédacteur simulé ne connaît pas.
+    dbRun("UPDATE memory SET state='archived' WHERE kind='artifact' AND key=? AND state='active'", S.THEME_KEY);
     T.customDesignDeps.call = async () => design(e);
     let built: any;
     try { built = await call("custom.design", ctx, {}); } finally { delete T.customDesignDeps.call; }
@@ -344,9 +348,8 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
       { op: "shell", slot: "header", section: F.HEADER.id, construction: F.HEADER.construction }, { op: "shell", slot: "footer", section: F.FOOTER.id }, { op: "tenue", tenue: { ...F.FAUTEUIL_TENUE } },
     ]);
     const same = commonLines(cardOfTheme(t), cardOfTheme(fauteuil));
-    // La fiche produit reprend des pièces du fauteuil (un bloc d'achat reste un bloc d'achat), mais plus leurs
-    // dispositions : règle de variété entre les sites du Studio (17 novembre 2026, variete-sites.ts).
-    expect(same.common).toEqual(["le pied de page"]);
+    // La fiche produit reprend les mêmes sections (un bloc d'achat reste un bloc d'achat) : c'est dit, pas caché.
+    expect(same.common).toEqual(["les sections de la page qui vend", "le pied de page"]);
     expect(same.compared - same.common.length).toBeGreaterThanOrEqual(6);
     expect(cardOfTheme(t)).toMatchObject({ opening: "tn-ouverture:titre-geant", header: "tn-entete:sangle", tenue: "gras etiquette droit toile machine" });
     await shots(pid, "sina-sac", ["home", "product", "404"]);

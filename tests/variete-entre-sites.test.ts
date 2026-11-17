@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { ACCUEIL_COMMUNES_MAX, fitVarieteSites, varieteSitesBrief, varieteSitesGaps, type SiteVu } from "@/lib/syna-agent/custom-theme/variete-sites";
-import { constructionsOf, validConstruction } from "@/lib/syna-agent/custom-theme/tenue";
+import { ACCUEIL_COMMUNES_MAX, fitVarietePieces, fitVarieteSites, sansDispositionLibre, varieteSitesBrief, varieteSitesGaps, type SiteVu } from "@/lib/syna-agent/custom-theme/variete-sites";
+import { familySections } from "@/lib/syna-agent/custom-theme/library";
+import { constructionsOf, isTenueSection, tenueSection, validConstruction } from "@/lib/syna-agent/custom-theme/tenue";
 
 // 17 novembre 2026, devant les deux premiers sites de SINA : « 4 fois la même section entre les deux alors qu'on a une
 // centaine de sections, et surtout elles ont la même disposition » ; « la moitié des sections sont identiques. J'appelle
@@ -35,7 +36,7 @@ describe("variété entre les sites du Studio, quel que soit le métier", () => 
   });
   it("une pièce reprise avec la même disposition est refusée, en disant les dispositions libres", () => {
     const g = gaps.find((x) => x.startsWith("dispositions déjà prises"))!;
-    expect(g).toContain("tn-histoire:lettrine (libres :");
+    expect(g).toContain("tn-histoire:lettrine sur la page about (libres :");
     expect(g).toContain("tn-questions:filets");
   });
   it("l'ouverture de l'accueil n'est jamais comptée ni changée : elle suit sa famille", () => {
@@ -66,6 +67,27 @@ describe("dernier recours sans IA : la disposition prise devient une disposition
   it("un concept déjà montré au client ne bouge pas", () => {
     const keep = fitVarieteSites(d, [BECANE], { resolve: (id, c) => validConstruction(id, c), garder: ["about", "contact", "404", "home"] });
     expect(keep.changed).toEqual([]);
+  });
+});
+
+describe("aucune porte de sortie, et jamais d'impasse", () => {
+  const lib = (familySections("classique" as never) as { id: string; role: string }[]).filter((s) => isTenueSection(s as never));
+  const roleOf = (id: string) => lib.find((s) => s.id === id)?.role;
+  const d = { pages: Object.entries(VASCO.pages).map(([key, list]) => ({ key, sections: list.map((x) => ({ section: x.split(":")[0], construction: x.split(":")[1] })) })) };
+  const vu = (x: typeof d): SiteVu => ({ utiles: VASCO.utiles, pages: Object.fromEntries(x.pages.map((pg) => [pg.key, pg.sections.map((s) => `${s.section}:${validConstruction(s.section, s.construction) ?? ""}`)])) });
+  it("sur les deux sites de l'essai, le Studio remplace et change sans IA jusqu'à tenir la règle", () => {
+    const pieces = fitVarietePieces(d, [BECANE], { siteVu: vu, id: (s) => s, accepte: () => true,
+      candidats: (_x, id) => lib.filter((s) => s.role === roleOf(id) && !tenueSection(s.id)?.only && tenueSection(s.id)?.pour !== "services").map((s) => s.id) });
+    const fin = fitVarieteSites(pieces.d, [BECANE], { resolve: (id, c) => validConstruction(id, c) });
+    expect(pieces.changed.length).toBeGreaterThan(0);
+    expect(varieteSitesGaps(vu(fin.d), [BECANE])).toEqual([]);
+  });
+  it("une pièce qu'un site a posée dans toutes ses dispositions, sur d'autres pages, reste permise ailleurs", () => {
+    const toutes = constructionsOf("tn-questions").map((c) => c.key);
+    const ancien: SiteVu = { utiles: ["home", "about", "aide"], pages: { home: ["tn-ouverture:dans-la-photo", `tn-questions:${toutes[0]}`], about: [`tn-questions:${toutes[1]}`], aide: [`tn-questions:${toutes[2]}`] } };
+    const nouveau: SiteVu = { utiles: ["home"], pages: { home: ["tn-ouverture:titre-en-bas", `tn-questions:${toutes[1]}`] } };
+    expect(sansDispositionLibre(nouveau, [ancien])).toEqual([]);
+    expect(varieteSitesGaps(nouveau, [ancien]).filter((g) => g.startsWith("dispositions"))).toEqual([]);
   });
 });
 

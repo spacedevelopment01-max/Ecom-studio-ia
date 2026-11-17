@@ -96,6 +96,8 @@ export function momentsLibres(p: Partition, placed: string[], f: OrdreFacts): { 
 
 /** Une pièce va-t-elle à ce genre de site ? (réservée aux services ou aux boutiques ; réservée à un métier, donné par l'appelant) */
 const vaAuSite = (id: string, business: "products" | "services", metier?: RegExp | null) => { const s = tenueSection(id); return !!s && (!s.pour || s.pour === (business === "services" ? "services" : "produits")) && (!s.only || (!!metier && metier.test(s.only))); };
+/** Une pièce qu'un client de ce genre peut poser : elle va à son site, et sa preuve est au dossier (ou n'en demande pas). */
+export function pieceTenable(id: string, f: OrdreFacts, metier?: RegExp | null): boolean { const o = ordre(id); return vaAuSite(id, f.business, metier) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); }
 /** Les moments d'une partition qu'un client de ce genre peut tenir avec son dossier (une pièce au moins lui va, la preuve est là). */
 export function momentsTenables(p: Partition, f: OrdreFacts, metier?: RegExp | null): Moment[] {
   return p.moments.filter((x) => momentTenable(x, f).ok && x.pieces.some((id) => { const o = ordre(id); return vaAuSite(id, f.business, metier) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); }));

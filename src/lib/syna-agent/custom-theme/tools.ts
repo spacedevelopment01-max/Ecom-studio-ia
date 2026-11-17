@@ -37,7 +37,7 @@ import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
 import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, varietyGaps, type Design } from "./design";
 import { referencesBrief, sectorOf } from "./references";
-import { fitRythme, ordreGaps, partitionChoisie, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
+import { fitRythme, ordreGaps, partitionChoisie, pieceTenable, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
 import { MIN_SECTIONS_IMPORTANTE, pageKind, partitionsBrief, partitionsPermises, typesAccueilPermis, type AngleRole, type PageKind } from "./partitions";
 import { preuvesBrief, preuvesDe, preuvesDemandees, type Preuves } from "./preuves";
 import { SECOND_REGARD_CALLS_MAX, SECOND_REGARD_CAP_MICRO, SECOND_REGARD_SYSTEM, SECOND_REGARD_TYPICAL_MICRO, SecondRegardSchema, secondRegardPrompt, secondRegardRefus, type RegardPage, type SecondRegard } from "./second-regard";
@@ -54,8 +54,8 @@ import { installCustomTheme } from "./install";
 import { menuProducts } from "./render";
 import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_SYSTEM, ORIGINALITY_TYPICAL_MICRO, OriginalitySchema, originalityNote, originalityPrompt, type Originality, type OriginalityOutcome } from "./originality";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
-import { TenueSchema, constructionsOf, isTenueSection, sansArche, validConstruction } from "./tenue";
-import { fitVarieteSites, SITES_COMPARES, varieteSitesBrief, varieteSitesGaps, type SiteVu } from "./variete-sites";
+import { TenueSchema, constructionsOf, isTenueSection, sansArche, tenueSection, validConstruction } from "./tenue";
+import { estVariete, fitVarietePieces, fitVarieteSites, METIER_COMPARES, SITES_COMPARES, varieteSitesBrief, varieteSitesGaps, type SiteVu } from "./variete-sites";
 import { llmJson, routeLlm } from "../../ai/llm";
 import { FX_SAFETY, requirePrice, usdToEur } from "../../ai/config";
 import { EUR } from "../../billing";
@@ -325,13 +325,14 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   const refs = (() => { try { return referencesBrief({ offer: offerWords(ctx), business: site.business, seed }); } catch { return { sector: null, near: 0, far: 0, text: "" }; } })();
   // Cartes d'identité des thèmes déjà montés pour d'autres marques : aucun client ne reçoit le site d'un autre.
   const sites = recentSites(p.id), registry = sites.map((x) => x.card);
-  // La variété entre TOUS les sites du Studio (règle du propriétaire du 17 novembre 2026), quel que soit leur métier.
-  const vus = sitesVus(p.id);
   const brief = brandBrief(p, j);
   // L'ordre et la variété (cahier du 16 novembre 2026) : le métier, les types d'accueil permis, les preuves réelles du
   // dossier, et les partitions prises par les derniers sites du même métier (à ne pas reprendre).
   const families = (() => { try { return new Set(listProducts(p.id).flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size; } catch { return 0; } })();
   const oc = ordreContext(ctx, site, families), preuves = dossierPreuves(ctx);
+  // La variété entre les sites du Studio (règle du propriétaire du 17 novembre 2026) : les 12 derniers, tous métiers, et
+  // les 30 derniers du même métier, même anciens.
+  const vus = sitesVus(p.id, oc.metier);
   const facts: OrdreFacts = { business: site.business, products: site.products, types: oc.types, mobile: oc.mobile, zoneConnue: oc.zoneConnue, preuves: preuves.ids, ...(site.business === "services" ? { profil: { zone: oc.zoneConnue, telephone: oc.telConnu } } : {}) };
   const kindOfKey = (key: string) => { const k = pageKind(key, site.business); return k && k !== "utilitaire" ? k : null; };
   const memes = sites.filter((x) => x.site.metier === oc.metier);
@@ -382,13 +383,25 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     .filter((x) => mode.kind !== "concept" || !/^page « .* » absente/.test(x));
   const research = (() => { try { return j ? activityPlan(p.id, j).objections.map((o) => o.objection) : []; } catch { return []; } })();
   const catalogueFacts = (() => { try { const list = listProducts(p.id); const m = (() => { try { return tenueMetiers(p.id); } catch { return {}; } })() as { biens?: unknown[]; carte?: { plats?: unknown[] }[] }; return { products: list.length, families: new Set(list.flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size, couleurs: Math.max(0, ...list.map((x) => { try { return (achatFacts(p.id, x.handle)?.coloris ?? []).filter((c) => c.nom.trim() && c.image).length; } catch { return 0; } })), biens: m.biens?.length ?? 0, plats: (m.carte ?? []).reduce((n, r) => n + (r.plats?.length ?? 0), 0) }; } catch { return { products: 0, families: 0 }; } })();
+  // Les remplaçants d'une pièce pour la règle de variété entre sites (variete-sites.ts).
+  const candidats = (x: Design, id: string): string[] => {
+    const moments = x.pages.flatMap((pg) => { const k = kindOfKey(pg.key); if (!k) return []; const part = partitionChoisie(x, pg, k, facts).partition; return part ? part.moments.filter((m) => m.pieces.includes(id)).flatMap((m) => m.pieces) : []; });
+    // Une pièce d'un moment de la partition : seulement les autres pièces de ce moment (même sens). Sinon (pages
+    // pratiques) : les pièces de la même catégorie de la bibliothèque.
+    const role = moments.length ? null : sectionByRef(id)?.role;
+    const memeRole = role ? familySections(f.family).filter((s) => isTenueSection(s) && s.role === role).map((s) => s.id) : [];
+    // Les mêmes vérifications que pour le concepteur : la pièce va à ce genre de site, sa preuve est au dossier.
+    return [...new Set([...moments, ...memeRole])].filter((x2) => x2 === id || pieceTenable(x2, facts));
+  };
+  /** Une pièce sans autre pièce libre pour son moment : la règle de variété ne la compte pas (jamais d'impasse). */
+  const seuleDans = (x: Design) => { const posee = new Set(Object.values(siteVuDe(x).pages).flat().map((y) => y.split(":")[0])); return (id: string) => { try { return !candidats(x, id).some((c2) => c2 !== id && !posee.has(c2)); } catch { return false; } }; };
   const check = (d: Design) => {
     let t: CustomTheme | null = null, rules: string[];
     try { t = build(d); rules = blocking(t); } catch (e) { rules = [(e as Error).message]; }
     // Concept : seules les objections dont la réponse est sur l'une de ses deux pages sont contrôlées.
     const g = designGaps(d, research);
     g.pages.push(...varietyGaps(d, recent));
-    g.pages.push(...varieteSitesGaps(siteVuDe(d), vus));
+    g.pages.push(...varieteSitesGaps({ ...siteVuDe(d), metier: oc.metier }, vus, { seule: seuleDans(d) }));
     // Une section qui lit le catalogue n'est gardée que si le catalogue a de quoi la remplir.
     g.pages.push(...dataGaps(d.pages.flatMap((pg) => pg.sections.map((s) => ref(s.section))), catalogueFacts));
     // Comparaison contre les doublons (sans IA) : avec les thèmes des autres marques, et entre les deux concepts.
@@ -482,7 +495,22 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   { const fit = fitFamille(d, { business: site.business, families: catalogueFacts.families }); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   { const fit = fitStyle(d, site.business); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   // La variété entre les sites : une disposition encore prise par un autre site devient une disposition libre (sans IA).
-  { const fit = fitVarieteSites(d, vus, { resolve: (id, c) => { try { return validConstruction(ref(id), c); } catch { return c ?? null; } }, id: (s) => { try { return ref(s); } catch { return s; } }, garder: mode.kind === "complete" ? keys : [] }); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+  // Aucune porte de sortie : chaque changement n'est gardé que s'il ne casse rien ; une pièce de trop est remplacée par une
+  // autre qui sert le même moment ; une conception qui ne tient toujours pas la règle est refusée.
+  {
+    const idOf = (s: string) => { try { return ref(s); } catch { return s; } };
+    const autres = (r: ReturnType<typeof check>) => r.objections.length + r.rhythm.length + r.pages.filter((g) => !estVariete(g)).length;
+    const base = autres(c);
+    const accepte = (x: Design) => { const r = check(x); return !r.rules.length && !!r.t && autres(r) <= base; };
+    const garder = mode.kind === "complete" ? keys : [];
+    const resolve = (id: string, cc: string | null | undefined) => { try { return validConstruction(ref(id), cc); } catch { return cc ?? null; } };
+    let fit = fitVarieteSites(d, vus, { resolve, id: idOf, garder, accepte, metier: oc.metier });
+    const pieces = fitVarietePieces(fit.d, vus, { siteVu: siteVuDe, candidats, accepte, id: idOf, garder, metier: oc.metier });
+    if (pieces.changed.length) fit = fitVarieteSites(pieces.d, vus, { resolve, id: idOf, garder, accepte, metier: oc.metier });
+    if (fit.changed.length || pieces.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } }
+    const reste = varieteSitesGaps({ ...siteVuDe(d), metier: oc.metier }, vus, { seule: seuleDans(d) });
+    if (reste.length) return { ok: false, result: { ok: false, summary: L(`Conception refusée : le site ressemblerait trop à un site déjà fait par le Studio (${reste.join(" ; ").slice(0, 400)}). Rien n'est enregistré.`, "Design refused: too close to an existing site."), hint: "Dis-le honnêtement au client avec le coût réel ; ne relance rien de payant sans son accord." } };
+  }
   // Le rythme : deux dispositions pareilles à la suite, réglé par un échange de place quand il ne crée aucun autre défaut.
   { const fit = fitRythme(d, facts); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   if (c.rules.length || !c.t) return { ok: false, result: { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." } };
@@ -654,15 +682,20 @@ export function recentSites(projectId: string): { card: ThemeCard; site: SiteMon
   return out;
 }
 /** Les derniers sites montés pour d'autres marques, toutes pages, pour la règle de variété entre sites (variete-sites.ts). */
-export function sitesVus(projectId: string): SiteVu[] {
-  const rows = all<{ value: string }>("SELECT value FROM memory WHERE kind='artifact' AND key=? AND state='active' AND project_id<>? ORDER BY rowid DESC LIMIT ?", THEME_KEY, projectId, SITES_COMPARES);
+export function sitesVus(projectId: string, metier?: string | null): SiteVu[] {
+  const rows = all<{ value: string }>("SELECT value FROM memory WHERE kind='artifact' AND key=? AND state='active' AND project_id<>? ORDER BY rowid DESC LIMIT 400", THEME_KEY, projectId);
   const out: SiteVu[] = [];
+  let recents = 0, memes = 0;
   for (const r of rows) {
     try {
       const t = JSON.parse(r.value) as CustomTheme;
       const pages = Object.fromEntries(t.pages.map((pg) => [pg.key, pg.sections.map((x) => `${x.id}:${validConstruction(x.id, x.construction) ?? ""}`)]));
       const utiles = t.pages.filter((pg) => { const k = pageKind(pg.key, "products") ?? pageKind(pg.key, "services"); return !!k && k !== "utilitaire"; }).map((pg) => pg.key);
-      if (Object.keys(pages).length) out.push({ pages, utiles, metier: t.metier ?? null });
+      if (!Object.keys(pages).length) continue;
+      const meme = !!metier && t.metier === metier;
+      // Les 12 plus récents, tous métiers ; puis, plus anciens, ceux du même métier jusqu'à 30.
+      if (recents < SITES_COMPARES) { recents++; if (meme) memes++; out.push({ pages, utiles, metier: t.metier ?? null }); }
+      else if (meme && memes < METIER_COMPARES) { memes++; out.push({ pages, utiles, metier: t.metier ?? null }); }
     } catch { /* thème illisible : ignoré */ }
   }
   return out;
