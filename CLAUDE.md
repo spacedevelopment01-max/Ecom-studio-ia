@@ -132,6 +132,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   (`variete-sites.ts`). Comparé aux 12 derniers sites et aux 30 derniers du même métier. **Aucune porte de sortie** (« elle
   doit y arriver, on ne laisse pas de porte de sortie sinon elle va la prendre ») : ce qu'elle laisse, le Studio le
   remplace lui-même ; une conception qui ne tient pas la règle n'est jamais enregistrée.
+- **Le fond blanc est toujours permis** (17 novembre 2026 : « La couleur blanche en fond est autorisée si jamais ») : un
+  fond blanc pur n'est jamais refusé pour ressemblance ; quand aucun fond doux ne s'écarte assez des marques récentes,
+  le Studio prend le blanc (`variete-marques.ts`).
 - **Jamais de photo dans une arche ni une demi-lune** (16 novembre 2026, devant une page d'arrivée : « L'arrière plan en lune
   c'est pas beau je veux plus ça ») : le cadre en arche n'est plus proposé, plus permis, plus affiché (`sansArche`).
 - **Jamais un bouton coupé** (17 novembre 2026, devant le site d'essai sur son téléphone : « Les boutons sont coupés en bas,
