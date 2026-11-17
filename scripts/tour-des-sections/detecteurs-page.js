@@ -319,6 +319,10 @@
         // doigt, et qui ne sont pas deux vrais boutons (bouton du Studio, boîte bordée des quatre côtés, pastille arrondie
         // ou à ombre). C'est la forme normale d'une liste : le doigt ne se trompe pas de ligne.
         var lignesDeListe = rx > 4 && A.b.h >= SEUILS.LIGNE_A_TOUCHER_PX && B.b.h >= SEUILS.LIGNE_A_TOUCHER_PX && !(vraiBouton(A.el) && vraiBouton(B.el));
+        // Les icônes d'une barre (recherche, panier, menu) : côte à côte, chacune une zone à toucher entière (assez haute
+        // et assez large), sans cadre visible. Leurs zones se touchent, leurs dessins non : le doigt ne se trompe pas.
+        var icones = ry > 4 && [A, B].every(function (c) { return c.b.h >= SEUILS.LIGNE_A_TOUCHER_PX && c.b.w >= SEUILS.LIGNE_A_TOUCHER_PX && !vraiBouton(c.el); });
+        lignesDeListe = lignesDeListe || icones;
         if (!soudes && !lignesDeListe) ajoute("boutons-colles", B.el, { detail: "à " + Math.max(0, Math.round(ecart)) + " px d'un autre bouton (« " + court(A.el.textContent).slice(0, 24) + " »)", cadre: union([A.b, B.b]) });
       }
     }
