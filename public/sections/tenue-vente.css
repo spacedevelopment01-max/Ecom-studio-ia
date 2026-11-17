@@ -872,3 +872,4 @@
 .ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-vers{min-width:42%}
 @media (max-width:359px){.ctw[data-tn-titres="gras"] .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-nom,.ctw[data-tn-titres="capitales"] .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-nom,.ctw[data-tn-lourd] .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-nom{font-size:18px;line-height:1.05}}
 .ctw[data-tn-cadre="penche"] .tn-atouts[data-tn-c="ronds"]:not(:last-child){padding-bottom:10px}
+@media (max-width:359px){.ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-vers{min-width:52%;font-size:12.5px}}
