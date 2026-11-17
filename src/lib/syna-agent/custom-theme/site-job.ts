@@ -41,6 +41,8 @@ import { momentsTenables, piecesPossibles, type OrdreFacts } from "./ordre";
 import { MIN_SECTIONS_IMPORTANTE, TYPES_ACCUEIL, partitionsPermises, typesAccueilPermis, type PageKind } from "./partitions";
 import type { PreuveId } from "./tenue-ordre";
 import { refusSansPreuves } from "./preuves";
+import { lignePhotosAImporter, photosProduitsRepondu, rappelCarte, refusSansPhotosProduits } from "./photos-produits";
+import { clientNotes } from "./site-facts";
 import { dossierPreuves, preuvesRepondues, buildKnowledge, buildTool, COPY_FIXES_TYPICAL, COPY_REVIEW_TYPICAL_MICRO, customPhotoDeps, designCost, keepWork, PHOTO_FIX_TYPICAL_MICRO, PHOTO_REVIEW_TYPICAL_MICRO, photoUnit, runDesign, SECTION_TEXT_TYPICAL_MICRO, SITE_PLAN_TYPICAL_MICRO, siteKind, type BuildArgs, type DesignRun } from "./tools";
 
 export const SINA_SITE_JOB = "syna.site";
@@ -100,7 +102,8 @@ export function siteSizeGuess(o: { business: "products" | "services"; products: 
   for (const kind of pagesImportantes(o)) {
     const g = pageSizeGuess(kind, o), times = kind === "fiche" ? 1 + fiches : 1;
     out.sections += g.sections * times; out.sectionsUsual += g.sectionsUsual * times;
-    // Les fiches de plus reprennent les photos de leur produit : seules les photos de la première fiche sont à créer.
+    // Les photos de la fiche produit sont comptées UNE fois : c'est le budget de TOUTES les fiches ensemble. Depuis le
+    // 17 novembre 2026 le concepteur le sait (photo-budget.ts) : une pièce à photo de la fiche compte une fois par fiche.
     out.photos += g.photos; out.photosUsual += g.photosUsual;
   }
   return out;
@@ -142,6 +145,21 @@ const kindOf = (ctx: ToolContext) => { const k = siteKind(ctx); return { busines
 export function refusPreuves(ctx: ToolContext): string | null {
   try { return refusSansPreuves({ preuves: dossierPreuves(ctx).a.length, repondu: preuvesRepondues(ctx) }); } catch { return null; }
 }
+/** Les produits du catalogue qui n'ont aucune photo du client (boutique seulement). */
+export function produitsSansPhoto(projectId: string, business?: string | null): string[] {
+  if (business === "services") return [];
+  try { return listProducts(projectId).filter((x) => x.status === "active" && !x.data.images.some((i) => !!i.assetId)).map((x) => x.data.title); } catch { return []; }
+}
+/**
+ * GARDE-FOU SANS IA (décision du propriétaire, 17 novembre 2026 : « elle lui dit qu'elle peux monter le site mais qu'elle
+ * devra importer ses photos par la suite »). Pour une boutique dont un produit n'a pas de photo, le site ne se lance pas
+ * tant que SINA n'a pas prévenu le client et noté sa réponse (note de mémoire, même mécanisme que les preuves). Le refus
+ * tombe AVANT la carte de dépense (il part du devis) et de nouveau au lancement. S'il envoie ses photos, elles sont
+ * posées sur les produits avant la création, et plus rien n'est demandé.
+ */
+export function refusPhotosProduits(ctx: ToolContext): string | null {
+  try { const p = project(ctx); return refusSansPhotosProduits({ sans: produitsSansPhoto(p.id, p.business), repondu: photosProduitsRepondu(clientNotes(p.id)) }); } catch { return null; }
+}
 /** Refus d'un outil pendant son devis, pour SINA seule : le client ne le lit pas. */
 export class RefusInterne extends Error { readonly internal = true; }
 
@@ -150,15 +168,16 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
   name: "site.create", module: "site", kind: "generate", needsProject: true,
   description: "Étape du site (PAYANT : un seul prix annoncé, un seul accord écrit du client) : tu CRÉES TOUT SON SITE en une fois, pour sa marque. Tu le conçois (le parcours du visiteur sur chaque page, les pièces qui conviennent à son métier, l'allure tirée de sa planche de marque : titres, boutons, cadres des photos, un signe pris sur son produit ou son métier), tu donnes sa fiche à chaque produit, tu calcules le menu, tu écris tous les textes dans l'angle qu'il a choisi, tu les relis, tu poses ses photos là où elles vont et tu crées celles qui manquent, puis tu regardes le résultat en image sur téléphone. Tâche de fond de 20 à 40 minutes : tu restes disponible pendant ce temps. À lancer quand la marque, l'angle et l'activité (produits ou prestations, coordonnées) sont validés. consigne : ce que le client a dit vouloir pour son site, avec ses mots. refaire:true seulement s'il demande de refaire tout le site (payant, même prix). Il ne choisit ni thème, ni famille, ni concept : tu ne lui montres jamais de modèle.",
   args: z.object({ consigne: z.string().max(1500).optional(), refaire: z.boolean().optional() }).strict(),
-  estimate: (ctx) => { const refus = refusPreuves(ctx); if (refus) throw new RefusInterne(refus); return siteQuote(kindOf(ctx)); },
-  preview: () => L("Ton site entier, créé pour ta marque.", "Your whole site, built for your brand."),
+  estimate: (ctx) => { const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx); if (refus) throw new RefusInterne(refus); return siteQuote(kindOf(ctx)); },
+  // La carte de dépense rappelle, en une ligne, que le site se monte sans les photos des produits (le client a été prévenu).
+  preview: (ctx) => { const sans = (() => { try { const p = project(ctx); return produitsSansPhoto(p.id, p.business); } catch { return []; } })(); return [L("Ton site entier, créé pour ta marque.", "Your whole site, built for your brand."), rappelCarte(sans)].filter(Boolean).join(" "); },
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
     if (j.steps[4]?.status !== "done") return { ok: false, summary: L("L'angle doit être choisi avant le site.", "Choose the angle first.") };
     if (j.steps[5]?.status !== "done") return { ok: false, summary: L("L'activité (produits ou prestations, coordonnées) doit être validée avant le site.", "Validate the activity first."), hint: "Finis d'abord l'étape de l'activité avec le client." };
     if (pendingJob(p.id, SINA_SITE_JOB)) return { ok: false, summary: L("Ton site est déjà en cours de création : attends-le.", "Your site is already being created.") };
-    const refus = refusPreuves(ctx);
+    const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx);
     if (refus) return { ok: false, internal: true, summary: refus };
     const cur = loadCustomTheme(p.id);
     if (cur && allSections(cur).some((x) => x.s.clientTexts) && !a.refaire) return { ok: false, summary: L("Le site est déjà créé.", "The site already exists."), hint: "Pour une retouche : custom.section puis custom.edit. Pour tout refaire (payant, à la demande du client seulement) : site.create avec refaire:true et sa consigne." };
@@ -174,7 +193,7 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
 };
 
 /** Remplaçables par les tests (aucun appel réel). */
-export const siteJobDeps: { design?: (ctx: ToolContext, a: { consigne?: string; jobId: string }) => Promise<DesignRun>; build?: (ctx: JobContext) => Promise<unknown>; estimate?: (ctx: ToolContext, a: BuildArgs) => CostEstimate } = {};
+export const siteJobDeps: { design?: (ctx: ToolContext, a: { consigne?: string; jobId: string; photoBudget?: number }) => Promise<DesignRun>; build?: (ctx: JobContext) => Promise<unknown>; estimate?: (ctx: ToolContext, a: BuildArgs) => CostEstimate } = {};
 
 /** Compte rendu de la création du site, gardé dans le parcours (SINA le relit en entier) ; la tâche en rend l'essentiel. */
 export type SiteReport = {
@@ -194,13 +213,18 @@ export type SiteReport = {
   pret: boolean;
   aCompleter: string[];
   photosPagesLimitees: string[] | null;
+  /**
+   * Boutique : « photos de tes produits à importer : <noms> ». Ces produits n'ont pas encore de photo du client ; rien
+   * n'a été inventé à leur place (« Ta photo ici »), et le site ne part pas en boutique tant qu'elles manquent.
+   */
+  photosProduitsAImporter?: string;
 };
 const short = (v: unknown, n: number) => (typeof v === "string" ? v.slice(0, n) : v);
 /** L'essentiel du compte rendu du montage (textes, photos, relectures, regards), sans ses longueurs. */
 function montageSummary(m: unknown): Record<string, unknown> | null {
   if (!m || typeof m !== "object") return null;
   const r = m as Record<string, unknown>, out: Record<string, unknown> = {};
-  for (const k of ["sections", "failedEdits", "photosMade", "photosReal", "photosClient", "photosToProvide", "photosLeft", "photosFailed", "photosReprises", "faitsPoses", "repetitions", "relecture", "relecturePhotos", "regards", "regardNonFait"]) if (r[k] != null) out[k] = r[k];
+  for (const k of ["sections", "failedEdits", "photosMade", "photosReal", "photosClient", "photosToProvide", "photosLeft", "photosFailed", "photosReprises", "photosProduitsAttendues", "photosSansProduit", "faitsPoses", "repetitions", "relecture", "relecturePhotos", "regards", "regardNonFait"]) if (r[k] != null) out[k] = r[k];
   if (Array.isArray(r.problems) && r.problems.length) out.problems = r.problems.slice(0, 12).map((x) => short(x, 220));
   return out;
 }
@@ -220,7 +244,9 @@ export async function runSinaSiteJob(ctx: JobContext) {
   // 1) Conception de tout le site : payée une seule fois (point de reprise).
   ctx.progress(0.03, L("Conception de ton site", "Designing your site"));
   const designed = await ctx.step("site:design", async () => {
-    const r = await (siteJobDeps.design ?? ((c, x) => runDesign(c, x, { kind: "full" })))(tc, { consigne: a.consigne ?? undefined, jobId: ctx.job.id });
+    // Le concepteur reçoit le nombre de photos que le prix annoncé permet (celui du devis) : il les répartit sur les pages.
+    const photoBudget = (() => { try { return siteSizeGuess(kindOf(tc)).photos; } catch { return undefined; } })();
+    const r = await (siteJobDeps.design ?? ((c, x) => runDesign(c, x, { kind: "full" })))(tc, { consigne: a.consigne ?? undefined, jobId: ctx.job.id, photoBudget });
     if (!r.ok) return { ok: false as const, why: r.result.summary };
     return { ok: true as const, t: r.t, concept: r.d.concept ?? null, signe: r.d.tenue?.signe ?? null, left: r.left, famille: r.d.famille ?? null, familleWhy: r.d.familleWhy ?? null };
   });
@@ -265,6 +291,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
     catch (e) { return { ok: false as const, blocking: [(e as Error).message.slice(0, 200)] }; }
   });
   const t = loadCustomTheme(p.id)!;
+  const sansPhoto = produitsSansPhoto(p.id, p.business);
   // Le regard en image : fait, fait en partie, ou pas fait du tout (montage arrêté avant, navigateur absent, réponse
   // illisible). Ce n'est jamais passé sous silence : c'est la première ligne du compte rendu que SINA relit.
   const seen = montageSummary(montage) as { regards?: { pages?: unknown[] } | null; regardNonFait?: string | null } | null;
@@ -276,6 +303,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
     styleEnCoulisses: { famille: designed.famille, pourquoi: short(designed.familleWhy, 300) as string | null },
     pret: install.ok, aCompleter: install.ok ? [] : install.blocking.slice(0, 30).map((x) => x.slice(0, 200)),
     photosPagesLimitees: tight ? sub.pages! : null,
+    ...(sansPhoto.length ? { photosProduitsAImporter: lignePhotosAImporter(sansPhoto) } : {}),
   };
   try { updateJourney(a.conversationId, (x) => { x.site = { report, at: Date.now() }; setStep(x, 6, "review", L("site créé, à regarder avec le client", "site created")); }); } catch { /* fil supprimé */ }
   notify(p.userId, p.id, L("Ton site est créé", "Your site is created"), L("SINA te le montre dans la conversation.", "SINA shows it in the conversation."), "success");

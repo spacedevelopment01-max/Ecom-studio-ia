@@ -228,13 +228,23 @@ export function darkFrame(pal?: { dark?: string | null } | null): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" fill="${hex(pal?.dark) ?? "#2B2722"}"/></svg>`;
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
+/**
+ * L'emplacement « Ta photo ici » (décision du propriétaire, 17 novembre 2026 : SINA monte le site sans attendre les
+ * photos des produits, et le client les importe ensuite) : à la place de la photo d'un produit qui n'en a pas encore,
+ * dans l'aperçu du Studio. Propre, à la tenue de la marque (feuille « tn-ta-photo »), avec le nom du produit quand
+ * l'emplacement ne le porte pas déjà. Il se désigne d'un clic comme une photo (« tn-ph »), pour la demander à SINA.
+ */
+export const TA_PHOTO_ICI = "Ta photo ici";
+const escTxt = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+export const taPhotoIci = (cls: string, name = ""): string => `<div class="${cls} tn-ta-photo" role="img" aria-label="${escTxt(name ? `${TA_PHOTO_ICI} : ${name}` : TA_PHOTO_ICI).replace(/"/g, "&quot;")}"><span>${TA_PHOTO_ICI}</span>${name ? ` <small>${escTxt(name)}</small>` : ""}</div>`;
 const EXAMPLE_BG = /\sstyle="background-image:url\((?:\/sections\/|\.\/)?photos\/[\w.-]+\.(?:webp|png|jpe?g)\)"/;
 const lisible = (html: string) => html.replace(/<(script|style|svg)\b[\s\S]*?<\/\1>/g, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 /**
  * « Aucun vide » (essai réel du 17 novembre 2026 : sept photos ratées et des pages sans photo créée laissaient de grands
  * cadres unis). Dans un site monté, une photo qui manque (photo d'exemple restée, ou produit sans photo) ne montre plus
  * de cadre vide. Sans IA, au rendu, section par section (« data-ct ») :
- *  - une carte de produit sans photo devient une carte SANS image (« tn-sans-photo » : nom, prix, lien) ;
+ *  - un emplacement de produit sans photo (carte, galerie du bloc d'achat) montre « Ta photo ici » (17 novembre 2026) ;
+ *    une petite ligne de produit (recherche, suggestion, panier) perd seulement son cadre (« tn-sans-photo ») ;
  *  - une photo avec sa légende (« figure ») s'en va avec sa légende ; s'il n'en reste aucune, la section ne se rend pas ;
  *  - une pièce dont le texte se pose SUR la photo (fond « photo ») reçoit un panneau sombre à la couleur de la marque,
  *    pour que son texte clair reste lisible ;
@@ -243,8 +253,17 @@ const lisible = (html: string) => html.replace(/<(script|style|svg)\b[\s\S]*?<\/
  * `fondPhoto` : dit, pour l'identifiant d'une section du thème (uid), si son texte se pose sur la photo.
  */
 export function withoutMissingPhotos(html: string, pal: { light?: string | null; primary?: string | null; dark?: string | null } | null | undefined, fondPhoto: (uid: string) => boolean): string {
-  // 1) Cartes et lignes de produit sans photo : le cadre vide s'en va, la carte le dit à la feuille.
-  let out = html.replace(/<a class="(tn-carte-p[^"]*|tn-r|tn-s)"([^>]*)><div class="tn-ph"><\/div>/g, '<a class="$1 tn-sans-photo"$2>')
+  // 0) Emplacements de produit sans photo du client (décision du 17 novembre 2026) : « Ta photo ici », jamais un cadre
+  //    vide ni une photo d'exemple, jamais un produit inventé. Le bloc d'achat et « le produit, son prix, son bouton ».
+  let out = html.replace(/<section\b[^>]*\sdata-tn-(?:achat|appel-produit)\b[^>]*>(?:(?!<section\b)[\s\S])*?<\/section>/g, (sec) => {
+    const name = lisible(/<h1>([\s\S]*?)<\/h1>/.exec(sec)?.[1] ?? /<b class="tn-nom-a">([\s\S]*?)<\/b>/.exec(sec)?.[1] ?? "").replace(/^À compléter.*$/, "");
+    return sec.replace(new RegExp(`<div class="(tn-grande tn-ph|tn-ph)"${EXAMPLE_BG.source}></div>`), (_m, cls: string) => taPhotoIci(cls, name))
+      .replace(/<div class="tn-vignettes">[\s\S]*?<\/div>/, (v) => (EXAMPLE_BG.test(v) ? "" : v));
+  });
+  // 1) Cartes de produit sans photo : « Ta photo ici » dans le cadre ; les petites lignes (recherche, suggestions,
+  //    panier), trop petites pour un libellé, perdent leur cadre vide et le disent à la feuille.
+  out = out.replace(/(<a class="tn-(?:carte-p|v-carte)[^"]*"[^>]*>)<div class="tn-ph"><\/div>/g, (_m, open: string) => `${open}${taPhotoIci("tn-ph")}`)
+    .replace(/<a class="(tn-r|tn-s)"([^>]*)><div class="tn-ph"><\/div>/g, '<a class="$1 tn-sans-photo"$2>')
     .replace(/<div class="tn-ligne"([^>]*)><div class="tn-ph"><\/div>/g, '<div class="tn-ligne tn-sans-photo"$1>')
     .replace(/<div class="tn-ph"><\/div>/g, '<div class="tn-ph tn-ph-manque"></div>');
   if (!hasExamplePhoto(out)) return out;

@@ -21,6 +21,7 @@ import { loadCustomTheme } from "./theme";
 import { tenueMetiers, tenueVitrine } from "./tenue-data";
 import { indicateurRemises, offreDepuisOffres, type OffreBoutique, type PreuveRemises } from "./remises";
 import { customThemeSpec, type ExportProblem, type ShopifyExport } from "./to-shopify";
+import { lignePhotosAImporter } from "./photos-produits";
 
 const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "image/svg+xml": "svg" };
 
@@ -88,6 +89,10 @@ export function customThemeExport(projectId: string, o: { dropMissing?: boolean 
   });
   // Contrôles du Studio : chaque section (Liquid, schéma, aucun script extérieur), puis le thème entier.
   const problems: ExportProblem[] = [...out.problems];
+  // Boutique : un produit sans aucune photo du client ne part pas (décision du 17 novembre 2026 : SINA monte le site sans
+  // attendre ses photos et n'invente jamais le produit ; le site n'est « prêt à partir » qu'une fois ses photos importées).
+  const sansPhoto = products.filter((x) => !x.data.images.some((i) => !!i.assetId)).map((x) => x.data.title);
+  if (sansPhoto.length) problems.push({ level: "bloquant", text: `${lignePhotosAImporter(sansPhoto)} (dans le fil avec le trombone, ou dans l'onglet Produits ; elles prennent leur place toutes seules)` });
   // La boutique a été interrogée et ne tient pas les remises : c'est dit, même si le client les avait déclarées.
   if (remises?.source === "preuve" && !remises.ok) problems.push({ level: "à savoir", text: `Remises : ${remises.pourquoi} Aucun prix de lot ni de pack ne part tant que la boutique ne les tient pas.` });
   for (const s of Object.values(out.spec.customSections)) { const why = validateCustomSection(s.liquid); if (why) problems.push({ level: "bloquant", text: `section « ${s.name} » refusée par le contrôle du Studio : ${why}` }); }

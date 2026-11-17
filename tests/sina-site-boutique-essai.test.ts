@@ -93,14 +93,17 @@ describe("cartes de produits : la photo de la fiche, sinon une carte sans image"
     expect(f.get("tabouret-rond")).toBe("/api/files/abc123");
     expect(f.has("banc")).toBe(false);
   });
-  it("un produit sans photo : sa carte perd son cadre vide et le dit à la feuille", () => {
+  it("un produit sans photo : sa carte montre « Ta photo ici », jamais un cadre vide (décision du 17 novembre 2026)", () => {
     const html = `<section data-ct="s1" class="tn tn-produits" data-tn-produits><h2>Les tabourets</h2><div class="tn-cartes"></div></section>`;
     const filled = withTenueProducts(html.replace('<div class="tn-cartes"></div>', '<div class="tn-cartes"><a class="tn-carte-p" href="#"><div class="tn-ph" style="background-image:url(photos/sachet.jpg)"></div><b>x</b><span>y</span></a></div>'), [{ title: "Tabouret Rond", image: "/api/files/abc123", price: "180 €" }, { title: "Banc", image: null, price: "320 €" }]);
     const out = withoutMissingPhotos(filled, null, () => false);
-    expect(out).toContain('<a class="tn-carte-p tn-sans-photo"');
+    expect(out).toContain('<a class="tn-carte-p" href="#" onclick="return false" data-go="product"><div class="tn-ph tn-ta-photo" role="img" aria-label="Ta photo ici"><span>Ta photo ici</span></div><b>Banc</b>');
     expect(out).not.toContain('<div class="tn-ph"></div>');
     expect(out).toContain("background-image:url(/api/files/abc123)");
-    expect(fs.readFileSync(path.join(process.cwd(), "public", "sections", "tenue.css"), "utf8")).toMatch(/\.tn-carte-p\.tn-sans-photo/);
+    const css = fs.readFileSync(path.join(process.cwd(), "public", "sections", "tenue.css"), "utf8");
+    expect(css).toMatch(/\.tn-ta-photo/);
+    // La carte sans image reste la façon de la boutique (Shopify) : sa règle part avec la feuille.
+    expect(css).toMatch(/\.tn-carte-p\.tn-sans-photo/);
   });
   it("sur la fiche d'un produit, la liste montre les autres produits", () => {
     const list = [{ title: "A", image: null, price: null, go: "product" }, { title: "B", image: null, price: null, go: "product-b" }];

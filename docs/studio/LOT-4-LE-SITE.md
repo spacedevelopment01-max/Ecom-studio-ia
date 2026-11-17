@@ -205,6 +205,41 @@ différentes, relié à sa collection, et donne des noms clairs à tous les mod�
   dans Produits, chaque page dans Pages, chaque modèle de collection dans Collections, et dans la page d'un produit, sa
   fiche choisie dans « Modèle de thème ». Rien de cela n'a encore été vu dans un vrai Shopify.
 
+## Boutique sans photos du client (décision du propriétaire, 17 novembre 2026)
+
+À la question « pour une boutique, SINA ne crée pas le site tant qu'elle n'a pas une vraie photo de chaque produit ? »,
+sa réponse, mot pour mot : « Ou alors elle lui dit qu'elle peux monter le site mais qu'elle devra importer ses photos
+par la suite. » SINA ne bloque donc pas. Construit et vérifié sans IA (`tests/sina-boutique-sans-photos.test.ts`,
+planche avant et après regardée en image) ; **pas encore essayé avec la vraie IA**.
+
+- **Le produit ne s'invente jamais.** À l'essai réel, des sacs « imaginés » remplissaient la galerie de la fiche et des
+  scènes. Un produit sans photo du client ne se montre plus dans aucune photo créée : la règle est dite à ceux qui
+  décrivent les photos et rappelée dans le dossier ; le Studio la tient sans IA (une description qui montre le produit
+  est refaite une fois, sinon la photo n'est pas créée, et c'est dit). Les photos montrent la matière, l'outil,
+  l'atelier, le lieu, le geste sans personne, l'usage sans le produit. Avec les photos du client, rien ne change, sauf
+  un défaut corrigé : la vraie photo n'était jointe à une scène que si la description citait un emballage.
+- **« Ta photo ici ».** Dans l'aperçu, la galerie du bloc d'achat et les cartes d'un produit sans photo montrent un
+  emplacement propre, à la tenue de la marque, qui se désigne d'un clic. Plus rien n'est créé ni payé pour ces
+  emplacements. En boutique (Shopify), un produit sans image part en carte sans image. Un site créé avant cette date
+  garde la photo de sa fiche.
+- **Dit avant.** `site.create` refuse de se lancer tant que SINA n'a pas prévenu le client et noté sa réponse (note de
+  mémoire « photos des produits », comme pour les preuves) ; la carte de dépense le rappelle en une ligne. S'il envoie
+  ses photos, l'outil `catalogue.photos` les pose sur les produits avant la création.
+- **Importer ensuite.** La photo posée sur un produit (dans le fil, ou dans l'onglet Produits) paraît dans sa galerie
+  et ses cartes sans refaire le site ; l'aperçu de l'onglet Boutique se recharge tout seul. Seule une photo envoyée par
+  le client est acceptée, jamais une image créée.
+- **Pas « prêt à partir » sans photos.** Tant qu'un produit n'a aucune photo, le site ne devient pas la version du
+  moteur : « photos de tes produits à importer : … » dans le compte rendu et dans « à compléter ».
+- **Le contrôle des photos créées** ne juge plus la fidélité sans vraie photo jointe, ne refuse plus un gros plan voulu
+  pour « produit coupé », et ne prend plus une remarque de goût pour un défaut (7 photos refusées sur 25 à l'essai).
+- **Le budget de photos.** Le devis comptait les photos de la fiche une fois, alors que chaque produit a sa fiche : le
+  site conçu en demandait 48 pour 34 payées, et seuls l'accueil et la première fiche recevaient les leurs. Le
+  concepteur reçoit maintenant ce nombre et la règle de répartition ; le Studio recompte après lui
+  (`photo-budget.ts`). Le prix annoncé ne change pas.
+
+Ce qui reste : l'essai réel ; dans Shopify, les petites vignettes (recherche, panier) d'un produit sans image gardent
+un cadre vide ; le champ libre d'un produit (« ta date », une gravure) n'existe pas au catalogue : c'est une décision.
+
 ## Le devis (calculé le 16 novembre 2026 avec les tarifs vérifiés, pas encore mesuré)
 
 | | Coût probable | Plafond jamais dépassé |

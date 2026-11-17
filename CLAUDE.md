@@ -128,7 +128,11 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   c'est pas beau je veux plus ça ») : le cadre en arche n'est plus proposé, plus permis, plus affiché (`sansArche`).
 - **Photos** : les photos produit du client restent sur les emplacements produit ; l'ouverture est une scène créée
   avec son vrai produit. SINA n'invente jamais l'équipe ni les biens à vendre. Les réalisations d'artisans sont créées
-  quand le client n'en a pas assez (règle maintenue le 14 novembre, « on verra plus tard si on change »).
+  quand le client n'en a pas assez (règle maintenue le 14 novembre, « on verra plus tard si on change »). Boutique
+  sans photos de produits (17 novembre 2026, à la question « SINA ne crée pas le site tant qu'elle n'a pas une vraie
+  photo de chaque produit ? ») : « Ou alors elle lui dit qu'elle peux monter le site mais qu'elle devra importer ses
+  photos par la suite. » SINA ne bloque donc pas : elle le dit avant la carte de dépense, n'invente jamais le produit
+  (« Ta photo ici » tient sa place), et le site ne part en boutique qu'une fois ses photos importées.
 - **Maquette du site sur la planche** : créée par OpenAI, sur un téléphone et dans le téléphone, belle, différente
   d'un client à l'autre, à l'identité de la planche, avec le bon logo (clair sur fond sombre).
 - **Publications** : chacune se comprend seule par quelqu'un qui ne connaît pas la marque, la première dit l'offre en

@@ -66,6 +66,7 @@ import { enqueue, pendingJob } from "../../jobs";
 import { stateOf } from "../../preparation/store";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { galleryCheckMaxMicro } from "./gallery";
+import { designPhotos, photoBudgetBrief, photoBudgetGaps } from "./photo-budget";
 import { briefUsable, misplacedProductPhotos, productSlotSection, showsProductAlone } from "./brand";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, MIN_PHOTOS_TO_REVIEW, PHOTO_REVIEW_CAP_MICRO, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
@@ -116,7 +117,9 @@ export function siteKind(ctx: ToolContext): SiteKind {
   };
 }
 /** Genre de site pour le classement des photos (produits ou services, vraies photos de produits ou non). */
-const photoSite = (ctx: ToolContext) => { const k = siteKind(ctx); return { business: k.business, productPhotos: (k.productPhotos?.length ?? 0) > 0, productIds: productImageIds(project(ctx).id) }; };
+// Boutique : un emplacement de produit (carte, bloc d'achat, vignette) n'est JAMAIS une photo à créer, que le client ait
+// déjà donné ses photos ou non (décision du 17 novembre 2026 : un produit ne s'invente pas ; « Ta photo ici » l'attend).
+const photoSite = (ctx: ToolContext) => { const k = siteKind(ctx); return { business: k.business, productPhotos: k.business === "products" || (k.productPhotos?.length ?? 0) > 0, productIds: productImageIds(project(ctx).id) }; };
 /**
  * Famille de sections du projet. Depuis le lot 4 (thème unique du Studio, 16 novembre 2026), le client ne la choisit
  * plus : les familles restent en coulisses, jamais montrées ni nommées. Un projet sans choix prend le socle commun.
@@ -281,7 +284,7 @@ function brandAssets(projectId: string): { has: string[]; lacks: string[] } {
   return { has, lacks };
 }
 
-export type DesignArgs = { consigne?: string; ambiance?: Ambiance; /** Tâche de fond qui porte la conception (création du site en une fois) : ses appels lui sont comptés. */ jobId?: string };
+export type DesignArgs = { consigne?: string; ambiance?: Ambiance; /** Tâche de fond qui porte la conception (création du site en une fois) : ses appels lui sont comptés. */ jobId?: string; /** Nombre de photos à créer que le prix annoncé permet (site créé en une fois) : dit au concepteur, recompté après lui. */ photoBudget?: number };
 /**
  * Conception d'un site sur mesure, en trois façons (décision du propriétaire du 10 novembre 2026 : « tu peux lui proposer
  * page d'accueil et page produit sur 2 concepts complètement différents, le client choisit et après SINA finit de monter
@@ -334,7 +337,13 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   const sellKind: PageKind = site.business === "services" ? "prestation" : "fiche";
   const preuvesText = preuvesBrief(preuves);
   const partitionsText = partitionsBrief({ business: site.business, types: oc.types, dossier: { preuves: preuves.ids, products: site.products }, angle: oc.angle, prises, ...(mode.kind === "concept" ? { kinds: ["accueil", sellKind] as PageKind[] } : {}) });
-  const prompt = designPrompt({ brief, family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance, products, seed, overused, references: refs.text, preuves: preuvesText, partitions: partitionsText }) + modeText;
+  // Le budget de photos (17 novembre 2026) : le concepteur sait combien de photos il peut demander et les répartit.
+  const photoSiteOf = { business: site.business, products: site.products };
+  const photosText = a.photoBudget != null && mode.kind === "full" ? photoBudgetBrief(a.photoBudget, photoSiteOf) : "";
+  // Boutique dont des produits n'ont pas encore de photo du client : dit au concepteur (les pièces qui ne vivent que de la photo du produit attendent).
+  const sansPhoto = site.business === "products" ? (() => { try { return listProducts(p.id).filter((x) => !x.data.images.some((i) => !!i.assetId)).map((x) => x.data.title); } catch { return []; } })() : [];
+  const sansPhotoText = sansPhoto.length ? `PRODUITS SANS PHOTO DU CLIENT POUR L'INSTANT (il les importera après la création) : ${sansPhoto.map((x) => `« ${x} »`).join(", ")}. Un produit ne s'invente jamais : aucune photo créée ne le montrera. Ses emplacements de produit (bloc d'achat, cartes) afficheront « Ta photo ici ». Dans le champ « photos » de chaque section, prévois des scènes SANS ce produit : la matière, l'outil, l'atelier, le lieu, le geste sans personne, le moment d'usage sans lui. Ne choisis pas une pièce qui n'a de sens qu'avec la photo du produit lui-même.` : "";
+  const prompt = designPrompt({ brief, family: f.family, site, has: assets.has, lacks: assets.lacks, consigne: a.consigne, ambiance, products, seed, overused, references: refs.text, preuves: [preuvesText, sansPhotoText, photosText].filter(Boolean).join("\n"), partitions: partitionsText }) + modeText;
   const jobId = a.jobId ?? getRun(ctx.runId)?.job_id ?? null;
   const tag = mode.kind === "concept" ? `custom-concept-${mode.label}` : mode.kind === "complete" ? "custom-design-complete" : "custom-design";
   // Chaque spécialiste lit ses cahiers de métier (knowledge.ts) : le concepteur ceux des pages, des ouvertures et de la
@@ -398,6 +407,8 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     g.pages.push(...familleGaps(d, { business: site.business, families: catalogueFacts.families }));
     if (mode.kind !== "concept") g.pages.push(...styleGaps(d, site.business));
     const foreign = [d.header, d.footer, ...d.pages.flatMap((pg) => pg.sections.map((x) => x.section))].filter((id) => { const l = sectionByRef(id); return !!l && !isTenueSection(l); });
+    // Le budget de photos : ce que la conception demande de créer, recompté sans IA (la fiche produit compte une fois par fiche).
+    if (a.photoBudget != null && mode.kind === "full") g.pages.push(...photoBudgetGaps(designPhotos(d.pages.map((pg) => ({ key: pg.key, label: pg.label, sections: pg.sections.map((x) => { try { return ref(x.section); } catch { return x.section; } }) })), photoSiteOf), a.photoBudget, photoSiteOf));
     if (foreign.length) g.pages.push(`pièces hors du thème du Studio, à remplacer par une pièce de la bibliothèque donnée : ${[...new Set(foreign)].join(", ")}`);
     const objections = mode.kind === "concept" ? g.blocking.filter((x) => keys.some((k) => x.includes(`page « ${k} »`))) : g.blocking;
     return { t, rules, objections, rhythm: g.rhythm, pages: g.pages, notes: og.notes };
@@ -698,7 +709,8 @@ export const buildTool: AgentTool<BuildArgs> = {
     // descriptions (essai du 10 novembre 2026 : devis de 4 photos pour 13 à créer, montage arrêté au plafond).
     const site = photoSite(ctx);
     const misplaced = written ? allSections(t).filter((x) => inPages(x.place, x.page?.key)).reduce((n, x) => n + misplacedProductPhotos(libSection(x.s.id), x.s.photoBriefs ?? [], sectionHtml(x.s), site.productIds), 0) : 0;
-    const photosMax = none ? 0 : known != null ? known + misplaced : photos + slots.filter((x) => x.kind === "produit").length;
+    // Les emplacements de produit ne comptent plus au plafond : rien n'y est jamais créé (la vraie photo, ou « Ta photo ici »).
+    const photosMax = none ? 0 : known != null ? known + misplaced : photos;
     // Photos annoncées : le nombre exact quand les descriptions sont connues, sinon le nombre d'emplacements.
     const shown = none ? 0 : known != null ? photosMax : photos;
     const unit = (customPhotoDeps.unit ?? photoUnit)();

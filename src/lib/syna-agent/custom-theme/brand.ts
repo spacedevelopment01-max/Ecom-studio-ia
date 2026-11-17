@@ -76,6 +76,77 @@ const RATIOS = ["1:1", "4:5", "2:3", "16:9", "9:16"] as const;
  */
 export const NO_PEOPLE_PHOTO_RULE = "PERSONNES : aucune personne, aucune main, aucun visage, aucune silhouette, aucune partie du corps dans une photo, sauf si le dossier dit en toutes lettres que les personnes sont autorisées (photo de personne fournie par le client, ou son accord écrit). Sans cela, un geste ne se montre jamais par celui qui le fait : il se montre par l'outil posé, l'objet en cours, la trace du travail.";
 
+/**
+ * Décision du propriétaire du 17 novembre 2026. À la question « pour une boutique, SINA ne crée pas le site tant qu'elle
+ * n'a pas une vraie photo de chaque produit ? », il a répondu : « Ou alors elle lui dit qu'elle peux monter le site mais
+ * qu'elle devra importer ses photos par la suite. » SINA monte donc le site sans attendre, mais elle n'INVENTE jamais le
+ * produit (essai réel : des produits « imaginés » dans la galerie de la fiche et dans des scènes). Un produit sans photo
+ * du client ne se montre dans aucune photo créée : la règle est dite à ceux qui décrivent les photos (ici), rappelée
+ * dans le dossier de chaque montage (productPhotosBriefLine), et tenue sans IA (briefShowsUnseenProduct) : une
+ * description qui le montre est refaite, sinon la photo n'est pas créée.
+ */
+export const NO_INVENTED_PRODUCT_RULE = "PRODUIT SANS PHOTO DU CLIENT : un produit dont le dossier dit qu'il n'a pas encore de photo ne se montre dans AUCUNE photo à créer, ni entier, ni en partie, ni de loin, ni flou : il ne s'invente jamais. Ses emplacements de produit (galerie du bloc d'achat, cartes, vignettes) ne se décrivent pas : le Studio y pose lui-même « Ta photo ici », et la photo du client y prendra sa place. Les scènes et les détails montrent alors ce qui se montre sans lui : la matière, l'outil, l'atelier, le lieu, le geste sans personne, le moment d'usage sans le produit ; product = null. Un produit qui A sa photo garde ses règles : sa vraie photo sur ses emplacements, et les scènes créées avec elle en modèle.";
+/** Un produit du catalogue vu par le contrôle des photos : son nom, son genre, et s'il a une vraie photo du client. */
+export type ProductSeen = { title: string; type?: string | null; photo: boolean };
+/** Ligne du dossier : les produits qui n'ont pas encore de photo du client (vide quand tous en ont une, ou sans produit). */
+export function productPhotosBriefLine(products: ProductSeen[]): string {
+  const sans = products.filter((x) => !x.photo), avec = products.filter((x) => x.photo);
+  if (!sans.length) return "";
+  return `PRODUITS SANS PHOTO DU CLIENT (il les importera plus tard ; ils ne se montrent dans AUCUNE photo à créer et ne s'inventent jamais ; leurs emplacements de produit ne se décrivent pas) : ${sans.map((x) => `« ${x.title} »`).join(", ")}.${avec.length ? ` Produits qui ont leur vraie photo : ${avec.map((x) => `« ${x.title} »`).join(", ")}.` : ""} Les photos à créer montrent la matière, l'outil, l'atelier, le lieu, le geste sans personne, le moment d'usage sans le produit.`;
+}
+const plie = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+/** Mots qui ne désignent pas l'objet vendu, en tête d'un nom de produit ou de genre. */
+const NOT_A_NOUN = new Set("le la les un une des mon ma mes ton ta tes notre nos votre vos ce cette grand grande grands grandes petit petite petits petites nouveau nouvelle nouveaux nouvelles beau belle vrai vraie mini maxi lot coffret de du en et".split(" "));
+/** Le nom commun de l'objet (premier mot plein du nom ou du genre du produit), au singulier plié : « cabas », « sac ». */
+function objectWords(p: ProductSeen): string[] {
+  const head = (v: string | null | undefined) => plie(v ?? "").split(/[^a-z0-9]+/).find((w) => w.length >= 3 && !NOT_A_NOUN.has(w));
+  return [...new Set([head(p.title), head(p.type)].filter((w): w is string => !!w))];
+}
+/** Ce qui écarte déjà le produit (« sans le sac », « aucun produit », « ni le cabas ») : jamais compté comme montré. */
+const deniedWord = (w: string) => new RegExp(`(?<![a-z])(?:sans|aucune?|ni|pas d['’ ]e?|jamais d['’ ]e?)\\s+(?:(?:le|la|les|l['’]|un|une|des|du|de|d['’]|son|sa|ses|ce|cette|autre|autres)\\s*){0,2}${w}(?:s|x)?(?![a-z])`, "g");
+/**
+ * La description montre-t-elle un produit qui n'a PAS de photo du client ? (sans IA.) Rend son nom, sinon null. Compte :
+ * le champ « product » qui le nomme, son nom dans la description, le nom commun de l'objet (premier mot plein de son nom
+ * ou de son genre), et « le produit » quand aucun produit du catalogue n'a de photo. La matière n'est jamais comptée
+ * (c'est elle qu'on veut voir) ; ce que la description écarte (« sans le produit ») non plus.
+ */
+export function briefShowsUnseenProduct(b: { description: string; product?: string | null }, products: ProductSeen[]): string | null {
+  const sans = products.filter((x) => !x.photo);
+  if (!sans.length) return null;
+  const named = b.product?.trim() ? sans.find((x) => plie(x.title).trim() === plie(b.product!).trim()) : undefined;
+  if (named) return named.title;
+  let d = plie(b.description);
+  const avec = products.filter((x) => x.photo);
+  for (const x of sans) {
+    const full = plie(x.title).trim();
+    if (full && d.includes(full) && !deniedWord(full.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(d)) return x.title;
+    for (const w of objectWords(x)) {
+      // Un nom commun partagé avec un produit qui a sa photo ne dit pas lequel est montré : le champ « product » tranche.
+      if (avec.some((y) => objectWords(y).includes(w))) continue;
+      const left = d.replace(deniedWord(w), " ");
+      if (new RegExp(`(?<![a-z])${w}(?:s|x)?(?![a-z])`).test(left)) return x.title;
+    }
+  }
+  if (!avec.length) {
+    d = d.replace(deniedWord("produit"), " ").replace(/(?<![a-z])(?:le|ce|du) produit (?:n['’]|ne |est absent|reste hors)[^.]*/g, " ").replace(/^\s*photo(?:graphie)? (?:de )?produit(?![a-z])/, "PRODUIT_SEUL");
+    if (/PRODUIT_SEUL/.test(d) || /(?<![a-z])(?:le|du|au|un|ce|notre|son) produit(?![a-z])/.test(d)) return sans[0].title;
+  }
+  return null;
+}
+/** La description nomme-t-elle ce produit (son nom, ou le nom commun de l'objet) ? */
+export function briefNamesProduct(description: string, p: ProductSeen): boolean {
+  const d = plie(description), full = plie(p.title).trim();
+  return (!!full && d.includes(full)) || objectWords(p).some((w) => new RegExp(`(?<![a-z])${w}(?:s|x)?(?![a-z])`).test(d));
+}
+/** La correction exigée par le Studio pour une description qui montre un produit sans photo (donnée à celui qui redécrit). */
+export const unseenProductFix = (title: string) => `Le produit « ${title} » n'a pas encore de photo du client : il ne s'invente pas et ne doit apparaître NULLE PART dans cette photo (ni entier, ni en partie, ni de loin). Décris à la place une scène sans lui : la matière, l'outil, l'atelier, le lieu, le geste sans personne, ou le moment d'usage sans le produit ; product = null.`;
+/**
+ * Cadrage voulu par la description (sans IA) : « produit » quand le sujet est le produit entier (ouverture, scène avec
+ * le produit, photo produit), « detail » quand la description demande un gros plan ou un détail (matière, couture, bord).
+ * Sert au contrôle de l'image : « produit entier, rien de coupé » ne se demande pas à un détail voulu.
+ */
+export const wantsCloseUp = (description: string) => /(?<!\p{L})(?:gros plans?|tr[èe]s gros plan|plans? (?:tr[èe]s )?serr[ée]s?|cadrages? (?:tr[èe]s )?serr[ée]s?|macro(?:photographie)?|photo(?:graphie)? de d[ée]tail|d[ée]tails? (?:de|du|d['’]une?|des)|de tr[èe]s pr[èe]s|vue rapproch[ée]e|en gros plan)(?!\p{L})/iu.test(description);
+
 export const SectionWriteSchema = z.object({
   edits: z.array(z.object({ find: z.string().min(1).max(4000), replace: z.string().max(8000) })).max(80),
   links: z.array(z.object({ text: z.string().min(1).max(120), to: z.string().min(1).max(60) })).max(20),
@@ -117,7 +188,7 @@ ${COPY_CRAFT}
 - Le vocabulaire imposé par le client est respecté.
 - Tu ne touches ni aux balises, ni aux classes, ni aux attributs (sauf alt et les textes) : chaque modification est un remplacement { find, replace } où find est un passage EXACT du HTML fourni, présent une seule fois (prends assez de contexte pour qu'il soit unique), et replace le même passage avec les nouveaux textes.
 - Cartes de produits : une carte par produit de la liste, jamais de carte « [À compléter : produit] ». S'il y a plus de cartes que de produits, retire les cartes en trop : find = la carte entière (de sa balise ouvrante à sa balise fermante), replace = "" ; et ne décris pas leurs photos.
-- Pour CHAQUE image de la section dont la source commence par « photos/ », décris TOUJOURS la photo à créer pour la marque (même si le client a dit de ne pas créer de photo maintenant : la description sert au montage des photos, plus tard) : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais de pot, flacon ou emballage générique), sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit » : sa vraie photo y est posée telle quelle. Une scène peut montrer le produit (sa vraie photo sert de modèle ; UN seul paquet, jamais plusieurs produits ni plusieurs paquets dans la même photo ; ne décris JAMAIS son emballage ni son étiquette, écris seulement « le sachet » + son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas l'emballage), mais pas toutes : les autres photos d'ambiance montrent l'univers de la marque SANS le produit (ce qui l'entoure dans la vraie vie : les objets, les matières, le lieu et le moment où l'on s'en sert), toujours en accord avec le texte d'en face ; jamais deux fois la même scène. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni. ${NO_PEOPLE_PHOTO_RULE}
+- Pour CHAQUE image de la section dont la source commence par « photos/ », décris TOUJOURS la photo à créer pour la marque (même si le client a dit de ne pas créer de photo maintenant : la description sert au montage des photos, plus tard) : find = la source exacte (ex. « photos/sl-b1.webp »), description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format de la photo ; product = le nom exact d'un produit de la liste dès que la photo le montre (sa vraie photo sera utilisée : jamais un produit générique à sa place), sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit » : sa vraie photo y est posée telle quelle. Une scène peut montrer un produit qui a sa vraie photo (elle sert de modèle ; UN seul exemplaire, jamais plusieurs produits ni plusieurs exemplaires dans la même photo ; ne décris JAMAIS son apparence, son emballage ni son étiquette, écris seulement son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas le produit lui-même), mais pas toutes : les autres photos d'ambiance montrent l'univers de la marque SANS le produit (ce qui l'entoure dans la vraie vie : les objets, les matières, le lieu et le moment où l'on s'en sert), toujours en accord avec le texte d'en face ; jamais deux fois la même scène. Une photo d'ouverture ou d'ambiance est une scène de vie MAGNIFIQUE qui remplit tout le cadre et fait ressentir l'émotion de l'angle (un lieu vrai, un moment de la journée, une lumière), jamais un produit posé sur un fond uni. ${NO_INVENTED_PRODUCT_RULE} ${NO_PEOPLE_PHOTO_RULE}
 Réponse : uniquement le JSON demandé.`;
 
 /** Faits de la marque donnés à chaque écriture (les mêmes pour toutes les sections). */
@@ -235,7 +306,7 @@ export function briefWithoutPeople(description: string, allowed: boolean, force 
 }
 /** Le contrôle d'une image créée a-t-il refusé la photo pour une personne ou une main sans accord ? */
 export const refusedForPeople = (problems: string[]) => problems.some((x) => /une personne ou une main apparaît sans accord/.test(x));
-export const PHOTO_BRIEF_SYSTEM = `Tu es le directeur artistique d'une petite marque. Pour une section de son site dont les textes sont déjà écrits, tu décris chaque photo à créer, en français, en accord avec le texte d'en face et l'émotion de l'angle : find = la source exacte donnée ; description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé (le texte se pose sur la partie calme) ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format ; product = le nom exact d'un produit dès que la photo le montre, sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit ». Une partie des scènes montre le vrai produit (UN seul paquet par photo, jamais plusieurs produits ; ne décris JAMAIS son emballage ni son étiquette, écris seulement « le sachet » + son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas l'emballage), les autres l'univers de la marque SANS lui ; jamais deux fois la même scène. ${NO_PEOPLE_PHOTO_RULE} Réponse : uniquement le JSON demandé.`;
+export const PHOTO_BRIEF_SYSTEM = `Tu es le directeur artistique d'une petite marque. Pour une section de son site dont les textes sont déjà écrits, tu décris chaque photo à créer, en français, en accord avec le texte d'en face et l'émotion de l'angle : find = la source exacte donnée ; description = UNE photo décrite en phrases complètes, dans l'ordre : type de photo, format, point de vue, cadrage ; surface et fond ; chaque objet à sa place (forme, matière, couleur, état) ; « La scène contient exactement N objets : … » ; ce qui est dégagé (le texte se pose sur la partie calme) ; lumière, ombres, ambiance ; « Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun filigrane. » ; ratio = format ; product = le nom exact d'un produit dès que la photo le montre, sinon null. Une carte ou une vignette (produit seul) commence par « Photo produit ». Une partie des scènes montre un produit qui a sa vraie photo (UN seul exemplaire par photo, jamais plusieurs produits ; ne décris JAMAIS son apparence, son emballage ni son étiquette, écris seulement son nom : sa vraie photo jointe les donne ; product = null si la photo ne montre pas le produit lui-même), les autres l'univers de la marque SANS lui ; jamais deux fois la même scène. ${NO_INVENTED_PRODUCT_RULE} ${NO_PEOPLE_PHOTO_RULE} Réponse : uniquement le JSON demandé.`;
 
 /** Référencement seul (pages déjà écrites) : titre et description de chaque page. */
 export const SeoSchema = z.object({ seo: SitePlanSchema.shape.seo });
@@ -471,7 +542,7 @@ Ce que tu cherches, dans cet ordre :
 1. LA MÊME SCÈNE DEUX FOIS, dans une page ou d'une page à l'autre : même décor, mêmes objets, même cadrage, même moment. Tu gardes la meilleure et tu fais changer l'autre (dis vers quelle scène : un autre lieu, un autre moment, un autre point de vue).
 2. UNE PHOTO QUI NE VA PAS AVEC SON TEXTE : elle ne montre pas ce que le texte d'en face raconte, ou elle ne fait pas ressentir l'émotion de l'angle.
 3. UNE PHOTO PLATE : un produit seul sur fond uni pour une ouverture ou une ambiance, un objet posé sans vie, une scène sans lumière ni profondeur, un objet vague (« quelques accessoires », « des éléments de décor »).
-4. L'ÉQUILIBRE DU SITE : une partie des scènes met en scène le vrai produit, les autres montrent l'univers de la marque SANS lui (les objets, les matières, le lieu, le moment). Le produit dans toutes les scènes, ou dans aucune, est un défaut : dis lesquelles changer.
+4. L'ÉQUILIBRE DU SITE : une partie des scènes met en scène le vrai produit, les autres montrent l'univers de la marque SANS lui (les objets, les matières, le lieu, le moment). Le produit dans toutes les scènes, ou dans aucune, est un défaut : dis lesquelles changer. EXCEPTION qui passe avant tout : un produit que le dossier dit SANS PHOTO DU CLIENT ne se montre dans aucune photo (il ne s'invente jamais) ; une description qui le montre est à reprendre, et son absence n'est jamais un défaut.
 5. UNE DESCRIPTION QUI NE SUIT PAS LA MÉTHODE : elle ne dit pas le type de photo et le cadrage, la place exacte de chaque objet, « La scène contient exactement N objets », la partie calme où le texte se pose, la lumière ; elle se contredit ; elle montre plusieurs paquets du produit ; elle décrit l'emballage ou l'étiquette du produit (la vraie photo jointe les donne).
 6. CE QUI EST INTERDIT : une personne quand la fiche ne l'autorise pas, un texte, un chiffre, un logo ou un nom de marque demandé dans l'image, une photo que seul le client peut fournir (ses clients, son équipe, ses vrais chantiers) inventée à sa place.
 7. UNE SÉANCE QUI SE DISPERSE : lumière, décors, matières et couleurs qui changent d'une photo à l'autre sans raison. La direction artistique donnée se tient d'un bout à l'autre.
@@ -731,9 +802,12 @@ export async function runCustomBrandJob(ctx: JobContext) {
   const fam = loadFamilyChoice(p.id), people = peopleAllowed(p.id), fu = siteArtUniverse(fam, { people });
   // Personnes dans les photos créées : seulement si le client l'autorise (photo de personne fournie ou accord écrit).
   const photoPeople = !!fu && people;
-  const brief = [brandBrief(p, j), peopleBriefLine(photoPeople), a.consigne ? `DEMANDE DU CLIENT POUR SES TEXTES (prioritaire, à suivre dans tout le site, ses mots) : « ${a.consigne} »` : ""].filter(Boolean).join("\n");
-  const name = p.brand?.name ?? p.name;
   const products = (() => { try { return listProducts(p.id); } catch { return []; } })();
+  // Décision du 17 novembre 2026 : un produit sans photo du client ne se montre dans aucune photo créée (il ne s'invente pas).
+  const seenProducts: ProductSeen[] = p.business === "services" ? [] : products.map((x) => ({ title: x.data.title, type: x.data.productType, photo: x.data.images.some((i) => !!i.assetId && !!getAsset(i.assetId)) }));
+  const unseen = (b: { description: string; product?: string | null }) => briefShowsUnseenProduct(b, seenProducts);
+  const brief = [brandBrief(p, j), peopleBriefLine(photoPeople), productPhotosBriefLine(seenProducts), a.consigne ? `DEMANDE DU CLIENT POUR SES TEXTES (prioritaire, à suivre dans tout le site, ses mots) : « ${a.consigne} »` : ""].filter(Boolean).join("\n");
+  const name = p.brand?.name ?? p.name;
   // Ce que le Studio posera lui-même dans les pièces (prestations, horaires, zone, adresse) et ce que le client a dit :
   // dit au rédacteur section par section, puis contrôlé sans IA après l'écriture.
   const facts = siteFacts(p, t);
@@ -743,7 +817,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, photosReprises: 0, /** Faits connus posés à la place d'un « À compléter » (sans IA). */ faitsPoses: 0, /** Suites de mots encore répétées dans plus de trois sections après les reprises. */ repetitions: [] as string[], regardNonFait: null as null | string, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, regards: null as null | LooksReport, problems: [] as string[] };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, photosReprises: 0, /** Emplacements de produit laissés à la photo du client (« Ta photo ici ») : rien n'y est créé. */ photosProduitsAttendues: 0, /** Photos non créées parce que leur description montrait un produit sans photo du client. */ photosSansProduit: 0, /** Faits connus posés à la place d'un « À compléter » (sans IA). */ faitsPoses: 0, /** Suites de mots encore répétées dans plus de trois sections après les reprises. */ repetitions: [] as string[], regardNonFait: null as null | string, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, regards: null as null | LooksReport, problems: [] as string[] };
   const briefs: Record<string, SectionWrite["photos"]> = {};
   /**
    * Les faits que le Studio connaît (téléphone, e-mail, horaires, zone, adresse, prestations) restés « [À compléter] »
@@ -1005,7 +1079,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
     if (a.newPhotos !== false && (!customBrandDeps.photo || customBrandDeps.photoBrief)) for (const y of allSections(loadCustomTheme(p.id)!).filter(onPage)) {
       const ly = libSection(y.s.id), html = sectionHtml(y.s);
       const left = [...new Set([...html.matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]))].filter((f) => !(briefs[y.s.uid] ?? []).some((b) => b.find === f) && !/(^|\/)(carte|map|plan)-/.test(f));
-      if (!ly || !left.length || authenticSection(y.s.id, p.business === "services" ? "services" : "products")) continue;
+      // Un emplacement de produit ne se décrit pas : seule la vraie photo du produit y va (aucun appel pour lui).
+      if (!ly || !left.length || authenticSection(y.s.id, p.business === "services" ? "services" : "products") || (p.business !== "services" && productSlotSection(ly))) continue;
       try {
         const got = await ctx.step(`photo-brief:${y.s.uid}`, async () => {
           const prompt = `${brief}\n\nSECTION « ${ly.title} » (${y.page?.label ?? y.place}) : ${ly.does}${y.s.intent ? `\nCONCEPTION : ${y.s.intent}` : ""}\n\nHTML actuel (textes déjà écrits pour la marque) :\n${html.slice(0, 12000)}\n\nPHOTOS À DÉCRIRE (source exacte) : ${left.join(", ")}`;
@@ -1052,10 +1127,21 @@ export async function runCustomBrandJob(ctx: JobContext) {
                   llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_REVIEW_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-review-2", prompt, maxTokens: 7000, maxOutputTokens: 14000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewWireSchema, { strict: true })));
           });
           // Seules les photos réellement relues comptent (une section ou une source inconnue est ignorée).
-          const refused = review.photos.filter((f, i, list) => seen.some((x) => x.y.s.uid === f.uid && x.photos.some((b) => b.find === f.find)) && list.findIndex((g) => g.uid === f.uid && g.find === f.find) === i);
-          // Ce qui est INTERDIT (une personne sans accord) passe avant toute correction de goût, dans la limite des reprises.
+          const asked = review.photos.filter((f, i, list) => seen.some((x) => x.y.s.uid === f.uid && x.photos.some((b) => b.find === f.find)) && list.findIndex((g) => g.uid === f.uid && g.find === f.find) === i);
+          // Contrôle du Studio, sans IA : une description qui montre un produit SANS photo du client est refusée d'office
+          // (le produit ne s'invente pas), avec la correction à suivre ; elle s'ajoute à ce que la relecture a désigné.
+          const forProduct = new Set<string>();
+          const refused = [...asked];
+          for (const x of seen) for (const b of x.photos) {
+            const title = unseen(b);
+            if (!title) continue;
+            forProduct.add(`${x.y.s.uid}|${b.find}`);
+            const mine = refused.find((f) => f.uid === x.y.s.uid && f.find === b.find);
+            if (mine) mine.fixes = [unseenProductFix(title), ...mine.fixes].slice(0, 4); else refused.push({ uid: x.y.s.uid, find: b.find, fixes: [unseenProductFix(title)] });
+          }
+          // Ce qui est INTERDIT (un produit inventé, une personne sans accord) passe avant toute correction de goût, dans la limite des reprises.
           const forPeople = (f: { fixes: string[] }) => !photoPeople && f.fixes.some((c) => briefShowsPeople(c));
-          const uids = [...new Set([...refused.filter(forPeople), ...refused].map((f) => f.uid))];
+          const uids = [...new Set([...refused.filter((f) => forProduct.has(`${f.uid}|${f.find}`)), ...refused.filter(forPeople), ...refused].map((f) => f.uid))];
           const before = new Map<string, string>(seen.flatMap((x) => x.photos.map((b) => [`${x.y.s.uid}|${b.find}`, b.description.trim()] as [string, string])));
           let redone = 0;
           for (const [i, uid] of uids.slice(0, MAX_PHOTO_FIXES).entries()) {
@@ -1103,6 +1189,16 @@ export async function runCustomBrandJob(ctx: JobContext) {
     const isAuthentic = (uid: string) => { const y = allSections(loadCustomTheme(p.id)!).find((z) => z.s.uid === uid); return !!y && !!authenticSection(y.s.id, p.business === "services" ? "services" : "products"); };
     const reserved = Math.min(allOwn.length, todo.filter((x) => isAuthentic(x.uid)).length);
     let nextA = 0, next = reserved;
+    /**
+     * La vraie photo du produit jointe à une scène : seulement quand la description le montre lui-même (son nom, le nom
+     * commun de l'objet, ou son emballage). Avant le 17 novembre 2026, seule une description qui citait un emballage
+     * joignait la photo : un produit sans emballage était alors recréé de mémoire, donc inventé.
+     */
+    const productRef = (ph: { description: string; product?: string | null }): string | undefined => {
+      const x = ph.product ? products.find((y) => y.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase()) : undefined;
+      const id = x?.data.images[0]?.assetId;
+      return id && getAsset(id) && (showsPackaging(ph.description) || briefNamesProduct(ph.description, { title: x!.data.title, type: x!.data.productType, photo: true })) ? id : undefined;
+    };
     for (const [i, { uid, ph }] of todo.entries()) {
       ctx.progress(0.5 + (0.48 * i) / Math.max(1, todo.length), L(`Photos : ${i + 1} sur ${todo.length}`, `Photos: ${i + 1} of ${todo.length}`));
       const file = ph.find.replace(/^.*\//, "");
@@ -1127,6 +1223,14 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // ambiance), une scène est créée avec elle en référence (audit du 10 novembre 2026 : le même packshot partout).
         const realId = ph.product ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
         const real = realId && lib && showsProductAlone(lib, ph.description) && getAsset(realId) ? realId : undefined;
+        // Emplacement de produit (galerie du bloc d'achat, carte, vignette) : SEULE la vraie photo du produit y va. Sans
+        // elle, rien n'est créé ni posé (essai réel : des produits « imaginés » dans la galerie de la fiche) : l'aperçu y
+        // montre « Ta photo ici », et la photo du client y prendra sa place dès qu'il l'importe.
+        if (p.business !== "services" && lib && showsProductAlone(lib, ph.description) && !real) { report.photosProduitsAttendues++; continue; }
+        // Une scène qui montre un produit SANS photo du client : jamais créée (un produit ne s'invente pas). Sa
+        // description a déjà eu sa reprise après la relecture ; ce qui reste est dit, le texte de la section prend la place.
+        const invented = !real && !(next < own.length) ? unseen(ph) : null;
+        if (invented) { report.photosSansProduit++; report.problems.push(`photo ${file} non créée : sa description montrait « ${invented} », qui n'a pas encore de photo de toi (je n'invente pas un produit)`); continue; }
         const mine = !real && next < own.length ? own[next++] : undefined;
         // Montage en deux fois (newPhotos:false) : rien de créé, la photo d'exemple attend le second montage.
         if (!real && !mine && a.newPhotos === false) { report.photosLeft++; continue; }
@@ -1134,7 +1238,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // Une photo créée : la description ne part jamais avec une personne ou une main que rien n'autorise (contrôle sans
         // IA) ; « retry » : la seule reprise permise, après un refus du contrôle pour une personne, description durcie.
         const create = (retry: boolean) => ctx.step(`${retry ? "photo-retry" : "photo"}:${uid}:${file}`, async () => {
-          const prodRef = ph.product && showsPackaging(ph.description) ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
+          const prodRef = productRef(ph);
           const ref = prodRef ? getAsset(prodRef) : undefined;
           const place = textPlacementLine(sectionHtml(here.s), ph.find, libSection(here.s.id)?.does ?? "", here.s.construction);
           // Photo d'exemple détourée (ouverture Moderne) : créée sur fond uni, puis détourée (gratuit).
@@ -1153,8 +1257,11 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // Chaque photo créée est contrôlée (décision du propriétaire du 10 novembre 2026) : une photo ratée n'est jamais
         // posée comme bonne ; elle est signalée et ne sera refaite qu'avec l'accord du client.
         if (!real && !mine && (!customBrandDeps.photo || galleryDeps.check)) {
-          const prodRef = ph.product && showsPackaging(ph.description) ? products.find((x) => x.data.title.trim().toLowerCase() === ph.product!.trim().toLowerCase())?.data.images[0]?.assetId : undefined;
-          const check = (id: string, retry: boolean) => ctx.step(`${retry ? "photo-recheck" : "photo-check"}:${uid}:${file}`, async () => checkCreatedImage({ jobId: ctx.job.id, projectId: p.id, userId: p.userId, usageKey: `${ctx.job.id}:${retry ? "photo-recheck" : "photo-check"}:${uid}:${file}`, capMicro: a.capMicro }, assetData(getAsset(id)!), prodRef && getAsset(prodRef) ? assetData(getAsset(prodRef)!) : null, [], people, ph.product ?? undefined));
+          const prodRef = productRef(ph);
+          // Le contrôle sait ce que la photo devait montrer : un gros plan voulu n'est pas « un produit coupé », et sans
+          // vraie photo jointe aucune fidélité n'est jugée. Un produit sans photo du client ne doit pas apparaître.
+          const wanted = { description: ph.description, closeUp: wantsCloseUp(ph.description), unseen: seenProducts.filter((x) => !x.photo).map((x) => (x.type?.trim() ? `${x.title} (${x.type.trim()})` : x.title)).slice(0, 8) };
+          const check = (id: string, retry: boolean) => ctx.step(`${retry ? "photo-recheck" : "photo-check"}:${uid}:${file}`, async () => checkCreatedImage({ jobId: ctx.job.id, projectId: p.id, userId: p.userId, usageKey: `${ctx.job.id}:${retry ? "photo-recheck" : "photo-check"}:${uid}:${file}`, capMicro: a.capMicro }, assetData(getAsset(id)!), prodRef && getAsset(prodRef) ? assetData(getAsset(prodRef)!) : null, [], people, ph.product ?? undefined, wanted));
           let problems = await check(assetId, false);
           // Refus pour une personne ou une main sans accord (essai réel du 16 novembre 2026 : quatre photos refusées ainsi,
           // l'accueil gardait une photo d'exemple) : UNE seule nouvelle création, description durcie, et seulement si le

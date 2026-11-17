@@ -118,14 +118,26 @@ export const GalleryCheckSchema = z.object({
   texts: z.array(z.object({ expected: z.string().max(120), written: z.string().max(160), exact: z.boolean() })).max(16),
   extraText: z.array(z.string().max(120)).max(8), people: z.boolean(),
   notes: z.array(z.string().max(200)).max(6),
+  /** L'image montre un produit que le client n'a pas encore photographié (question posée seulement quand il y en a). */
+  inventedProduct: z.boolean().optional(),
 });
 export type GalleryCheck = z.infer<typeof GalleryCheckSchema>;
 const CHECK_IN = 7000, CHECK_OUT = 1200;
 export const galleryCheckMaxMicro = () => jsonCallMaxMicro(CHECK_MODEL.provider, CHECK_MODEL.model, CHECK_IN, CHECK_OUT, CHECK_OUT, CHECK_MODEL.effort)?.maxMicro ?? 20_000;
-export function galleryVerdict(c: GalleryCheck, o: { person: boolean; texts?: string[] }): string[] {
+/**
+ * Les défauts qu'un contrôle relève. Essai réel du 17 novembre 2026 (7 photos refusées sur 25) : « pas fidèle à sa vraie
+ * photo » pour un produit qui n'avait AUCUNE vraie photo, « produit coupé » sur des gros plans voulus. Donc :
+ *  - reference:false (aucune vraie photo jointe) : ni la fidélité ni « produit entier » ne sont jugés, quoi que réponde le modèle ;
+ *  - closeUp:true (la description demandait un gros plan, un détail) : un produit coupé par le cadre n'est pas un défaut ;
+ *    seule une déformation l'est (c'est la question posée dans ce cas) ;
+ *  - un produit que le client n'a pas encore photographié et qui apparaît : refusé (un produit ne s'invente pas).
+ */
+export function galleryVerdict(c: GalleryCheck, o: { person: boolean; texts?: string[]; /** Une vraie photo du produit était jointe (par défaut : oui). */ reference?: boolean; /** Gros plan ou détail voulu par la description. */ closeUp?: boolean }): string[] {
   const p: string[] = [];
-  if (!c.productMatches) p.push("le produit n'est pas fidèle à sa vraie photo");
-  if (!c.productWhole) p.push("le produit est coupé ou déformé");
+  const ref = o.reference !== false;
+  if (ref && !c.productMatches) p.push("le produit n'est pas fidèle à sa vraie photo");
+  if (ref && !c.productWhole) p.push(o.closeUp ? "le produit est déformé" : "le produit est coupé ou déformé");
+  if (c.inventedProduct) p.push("l'image montre un produit que le client n'a pas encore photographié (un produit ne s'invente pas)");
   // Le contrôle doit rendre chaque texte attendu (essai réel : entrées vides, rien de vérifié) : un texte sans réponse
   // claire n'est jamais compté comme juste.
   const expected = o.texts ?? c.texts.map((t) => t.expected);
@@ -143,21 +155,33 @@ export function galleryVerdict(c: GalleryCheck, o: { person: boolean; texts?: st
  * Contrôle d'une image créée par l'IA (galerie ou photo du thème) : produit fidèle et entier (s'il apparaît), textes
  * exacts, aucun texte en trop, aucune personne sans accord. Rend les défauts en mots simples (vide : image bonne).
  */
-export async function checkCreatedImage(o: { jobId: string; projectId: string; userId: string; usageKey: string; capMicro: number }, image: Buffer, product: Buffer | null, texts: string[], person: boolean, productName?: string): Promise<string[]> {
+export type CreatedImageBrief = { /** Ce que la photo devait montrer (sa description, cadrage compris). */ description?: string; /** Gros plan ou détail voulu : un produit coupé par le cadre n'est pas un défaut. */ closeUp?: boolean; /** Produits sans photo du client : ils ne doivent apparaître nulle part. */ unseen?: string[] };
+/** Les questions posées au modèle qui regarde une photo créée pour le site (une ligne par champ de la réponse). */
+export function createdImageQuestions(o: { product: boolean; productName?: string; texts: string[] } & CreatedImageBrief): string[] {
+  return [
+    o.product ? `Première image : l'image créée. Seconde image : la vraie photo du produit${o.productName ? ` « ${o.productName} »` : ""}.` : "Image créée. Aucune vraie photo de produit n'est jointe : il n'y a aucun produit à reconnaître ni à comparer.",
+    o.description ? `CE QUE LA PHOTO DEVAIT MONTRER (sa description, cadrage compris ; ce qu'elle demande n'est jamais un défaut) : ${o.description.replace(/\s+/g, " ").trim().slice(0, 900)}` : "",
+    o.product ? "productMatches : true si le produit de l'image créée est bien le même que sur la vraie photo (forme, couleurs, étiquette, textes imprimés)." : "productMatches : true (rien à comparer).",
+    !o.product ? "productWhole : true (rien à comparer)."
+      : o.closeUp ? "productWhole : la description demande un gros plan ou un détail : un produit coupé par le cadre est VOULU, ce n'est pas un défaut. true, sauf si le produit est déformé (forme fondue, dédoublée, impossible)."
+        : "productWhole : true si le produit est entier (rien de coupé par le cadre) et non déformé.",
+    `texts : UNE entrée par texte attendu, dans cet ordre, avec expected (le texte attendu recopié), written (ce qui est réellement écrit, mot pour mot, vide s'il est absent) et exact (true seulement s'il est écrit sans faute ni lettre en trop). Forme : [{"expected":"…","written":"…","exact":true}]. Textes attendus : ${o.texts.length ? o.texts.map(q).join(", ") : "(aucun : liste vide)"}.`,
+    "extraText : tout autre texte, lettre ou chiffre écrit sur l'image, en dehors des textes attendus et de ceux imprimés sur le produit (vide sinon).",
+    "people : true si une personne, un visage, une main ou une autre partie du corps est visible, même de dos, de loin, floue ou en partie (une silhouette, un bras, des jambes, des pieds, quelqu'un sur un véhicule).",
+    o.unseen?.length ? `inventedProduct : true si l'image montre l'un de ces produits, que le client n'a pas encore photographiés et qui ne doivent donc apparaître nulle part : ${o.unseen.map(q).join(", ")} (l'objet lui-même, entier ou en partie ; sa matière seule, un outil, le lieu ne comptent pas) ; false sinon.` : "",
+    "notes : seulement un défaut de FABRICATION net de l'image (bande blanche, zone cassée, objet fondu ou dédoublé) ; jamais une remarque de goût, ni un trait voulu par la description ou propre à la matière (un gros plan, un cadrage serré, un bord brut, une matière percée, piquée, cousue, tissée ou usée) ; vide sinon.",
+  ].filter(Boolean);
+}
+export async function checkCreatedImage(o: { jobId: string; projectId: string; userId: string; usageKey: string; capMicro: number }, image: Buffer, product: Buffer | null, texts: string[], person: boolean, productName?: string, wanted: CreatedImageBrief = {}): Promise<string[]> {
   const c = galleryDeps.check ? await galleryDeps.check(image, product ?? Buffer.alloc(0), texts, o.usageKey)
     : GalleryCheckSchema.parse(await withTrace({ jobId: o.jobId, projectId: o.projectId, step: "image-check", costCapMicro: o.capMicro }, () => llmJson({
         task: "quality_control", userId: o.userId, projectId: o.projectId, jobId: o.jobId, usageKey: o.usageKey, promptKey: "syna-gallery-check-1",
         system: "Tu contrôles une image créée par l'IA avant qu'elle soit montrée à un client. Tu décris seulement ce que tu vois réellement. Tu réponds en JSON.",
-        prompt: [product ? `Première image : l'image créée. Seconde image : la vraie photo du produit${productName ? ` « ${productName} »` : ""}.` : "Image créée (aucun produit à reconnaître).",
-          product ? "productMatches : true si le produit de l'image créée est bien le même que sur la vraie photo (forme, couleurs, étiquette, textes imprimés)." : "productMatches : true.",
-          product ? "productWhole : true si le produit est entier (rien de coupé par le cadre) et non déformé." : "productWhole : true.",
-          `texts : UNE entrée par texte attendu, dans cet ordre, avec expected (le texte attendu recopié), written (ce qui est réellement écrit, mot pour mot, vide s'il est absent) et exact (true seulement s'il est écrit sans faute ni lettre en trop), par exemple [{"expected":"Thé vert bio","written":"Thé vert bio","exact":true}]. Textes attendus : ${texts.length ? texts.map(q).join(", ") : "(aucun : liste vide)"}.`,
-          "extraText : tout autre texte, lettre ou chiffre écrit sur l'image, en dehors des textes attendus et de ceux imprimés sur le produit (vide sinon).",
-          "people : true si une personne, un visage, une main ou une autre partie du corps est visible, même de dos, de loin, floue ou en partie (une silhouette, un bras, des jambes, des pieds, quelqu'un sur un véhicule).", "notes : autre défaut net (bande blanche, zone cassée ; vide sinon)."].join("\n"),
+        prompt: createdImageQuestions({ product: !!product, productName, texts, ...wanted }).join("\n"),
         images: [{ data: image, label: "image créée" }, ...(product ? [{ data: product, label: "vraie photo du produit" }] : [])],
         maxTokens: CHECK_OUT, maxOutputTokens: CHECK_OUT, routing: { difficulty: "standard", prefer: CHECK_MODEL },
       } as LlmCall, GalleryCheckSchema)));
-  return [...galleryVerdict(c, { person, texts }), ...c.notes];
+  return [...galleryVerdict(c, { person, texts, reference: !!product, closeUp: wanted.closeUp }), ...c.notes];
 }
 
 /** Remplaçables par les tests (aucun appel réel). */
@@ -212,7 +236,7 @@ export async function runGalleryJob(ctx: JobContext) {
               prompt: [`Première image : l'image créée. Seconde image : la vraie photo du produit « ${prod.data.title} ».`,
                 "productMatches : true si le produit de l'image créée est bien le même que sur la vraie photo (forme, couleurs, étiquette, textes imprimés).",
                 "productWhole : true si le produit est entier (rien de coupé par le cadre) et non déformé.",
-                `texts : UNE entrée par texte attendu, dans cet ordre, avec expected (le texte attendu recopié), written (ce qui est réellement écrit sur l'image, mot pour mot, vide s'il est absent) et exact (true seulement s'il est écrit sans faute ni lettre en trop), par exemple [{"expected":"Thé vert bio","written":"Thé vert bio","exact":true}]. Textes attendus : ${texts.length ? texts.map(q).join(", ") : "(aucun : liste vide)"}.`,
+                `texts : UNE entrée par texte attendu, dans cet ordre, avec expected (le texte attendu recopié), written (ce qui est réellement écrit sur l'image, mot pour mot, vide s'il est absent) et exact (true seulement s'il est écrit sans faute ni lettre en trop). Forme : [{"expected":"…","written":"…","exact":true}]. Textes attendus : ${texts.length ? texts.map(q).join(", ") : "(aucun : liste vide)"}.`,
                 "extraText : tout autre texte écrit sur l'image, en dehors des textes attendus et de ceux imprimés sur le produit (vide sinon).",
                 "people : true si une personne, un visage, une main ou une autre partie du corps est visible, même de dos, de loin, floue ou en partie (une silhouette, un bras, des jambes, des pieds, quelqu'un sur un véhicule).", "notes : autre défaut net (vide sinon)."].join("\n"),
               images: [{ data, label: "image créée" }, { data: refData, label: "vraie photo du produit" }],

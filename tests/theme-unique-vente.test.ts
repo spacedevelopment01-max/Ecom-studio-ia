@@ -425,7 +425,8 @@ describe("thème unique, vente : dans l'aperçu du Studio et dans Shopify", asyn
     // Collection en ajout rapide : un vrai formulaire d'achat pour une seule version, sinon le lien vers la fiche.
     const cat = liquid("tn-catalogue");
     expect(cat).toContain('data-tn-c="ajout-rapide"');
-    expect(cat).toContain(`<div class="tn-carte-p{% unless product.available %} tn-epuise{% endunless %}"><a class="tn-v-vers" href="{{ product.url }}">`);
+    // Un produit sans image part en carte SANS image (décision du 17 novembre 2026), jamais avec un cadre vide.
+    expect(cat).toContain(`<div class="tn-carte-p{% unless product.available %} tn-epuise{% endunless %}{% unless product.featured_image %} tn-sans-photo{% endunless %}"><a class="tn-v-vers" href="{{ product.url }}">{% if product.featured_image %}<div class="tn-ph"`);
     expect(cat).toContain(`{%- if product.available -%}{%- if product.has_only_default_variant -%}{%- form 'product', product, class: 'tn-v-achat' -%}<input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}"><button class="tn-v-ajout" type="submit" name="add">Ajouter au panier</button>{%- endform -%}{%- else -%}<a class="tn-v-ajout" href="{{ product.url }}">Choisir des options</a>{%- endif -%}{%- endif -%}</div>{%- endfor -%}`);
     // La feuille de chaque pièce part avec le groupe d'en-tête : dans l'en-tête, puis, pour un site complet dont la
     // feuille ne tient pas dans une seule section, dans ses sections de suite (« es-custom-feuille-… »).

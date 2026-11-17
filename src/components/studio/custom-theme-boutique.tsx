@@ -11,7 +11,7 @@ import { api, Button, cx, useApi } from "../ui";
 import { useT } from "../i18n";
 import { useAgentPanel } from "./agent-ui-context";
 
-export type CustomThemeInfo = { rev: number; family: string; style: string; chosen: boolean; pages: { key: string; label: string }[]; sampleTexts: boolean } | null;
+export type CustomThemeInfo = { rev: number; family: string; style: string; chosen: boolean; pages: { key: string; label: string }[]; sampleTexts: boolean; /** Repère des photos du catalogue : l'aperçu se recharge dès qu'un produit reçoit sa photo. */ photos?: string } | null;
 type Picked = { uid: string; page: string | null; kind: string; path: string | null; text: string | null; src: string | null; role: string | null };
 
 const DESKTOP_W = 1280;
@@ -105,7 +105,7 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div ref={box} className="overflow-hidden rounded-2xl border border-line bg-paper-2" style={{ height }}>
         <div className="mx-auto h-full" style={{ width: phone ? 390 : "100%" }}>
-          <iframe ref={frame} key={info.rev} title={t("Ton site", "Your site")} src={`/api/projects/${projectId}/custom-theme?studio=1&embed=1&rev=${info.rev}`}
+          <iframe ref={frame} key={`${info.rev}:${info.photos ?? ""}`} title={t("Ton site", "Your site")} src={`/api/projects/${projectId}/custom-theme?studio=1&embed=1&rev=${info.rev}${info.photos ? `&ph=${info.photos}` : ""}`}
             className="block border-0 bg-white" style={phone ? { width: 390, height } : { width: DESKTOP_W, height: height / scale, transform: `scale(${scale})`, transformOrigin: "0 0" }} />
         </div>
       </div>

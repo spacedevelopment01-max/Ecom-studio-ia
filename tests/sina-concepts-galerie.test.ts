@@ -156,7 +156,8 @@ describe("contrôle de chaque photo créée au montage du thème sur mesure", as
     // Verdict : texte en trop, produit coupé, personne sans accord → défauts en mots simples.
     G.galleryDeps.check = async () => ({ productMatches: true, productWhole: false, texts: [], extraText: ["SOLDES"], people: true, notes: ["bande blanche en bas"] });
     try {
-      const problems = await G.checkCreatedImage({ jobId: "j", projectId: "p", userId: "u", usageKey: "k", capMicro: 1 }, Buffer.from("x"), null, [], false);
+      // Avec la vraie photo du produit en référence (sans elle, « produit coupé » ne se juge pas : voir sina-boutique-sans-photos).
+      const problems = await G.checkCreatedImage({ jobId: "j", projectId: "p", userId: "u", usageKey: "k", capMicro: 1 }, Buffer.from("x"), Buffer.from("vraie photo"), [], false);
       expect(problems.join(" ; ")).toMatch(/coupé ou déformé[^]*texte en trop : « SOLDES »[^]*personne[^]*bande blanche/);
     } finally { delete G.galleryDeps.check; }
   });

@@ -654,6 +654,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect((await call("custom.build", ctx, {})).summary).toMatch(/montage de ton thème est déjà en cours/);
       const beforeBuild = allSections(loadCustomTheme(pid)!).map((x) => sectionHtml(x.s));
       const out: any = await fr(() => B.runCustomBrandJob(fake));
+      const expectedBuild = expected; // photos décrites au montage (la réécriture des textes, plus bas, redécrit celles qui restent)
       (await import("@/lib/db")).run("UPDATE jobs SET status='done' WHERE id=?", job.id); // tâche finie (exécutée ici à la main)
       // Une seconde demande pendant qu'un montage tourne est refusée (jamais deux montages payés) : vérifié plus bas.
       const t = loadCustomTheme(pid)!;
@@ -683,7 +684,10 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(out.sections).toBe(writes);
       expect(photos).toBeGreaterThan(0);
       expect(out.photosMade).toBe(photos);
-      expect(photos).toBe(expected);
+      // Décision du 17 novembre 2026 : un emplacement de produit (carte, bloc d'achat, vignette) n'est jamais une photo à
+      // créer ; « Sac Lune » n'a pas de photo, rien n'est inventé à sa place. Toutes les autres photos sont créées.
+      expect(out.photosProduitsAttendues).toBeGreaterThan(0);
+      expect(photos + out.photosProduitsAttendues).toBe(expectedBuild);
       // Chaque bouton écrit mène à une vraie page ; une destination inexistante est signalée et jamais posée.
       const linked = allSections(loadCustomTheme(pid)!).filter((x) => x.s.links);
       expect(linked.length).toBeGreaterThan(0);
@@ -698,7 +702,9 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(names.length).toBe(photos);
       for (const n of names) expect(n).toMatch(/^site-[a-z0-9-]+-bougie-verre-ambre-table-chene\.png$/);
       // la carte n'est jamais une photo : la vraie carte s'ouvre à l'adresse du client (realMap)
-      for (const x of allSections(t)) expect(sectionHtml(x.s).replace(/photos\/(carte|map|plan)-[\w-]*\.(webp|jpg|png)/g, ""), x.place).not.toMatch(/photos\/[a-z]+-?[a-z0-9]*\.(webp|jpg|png)/);
+      // (hors emplacements de produit : sans photo du client, rien n'y est créé ni inventé ; le rendu y pose « Ta photo ici »)
+      const { libSection: libOf0 } = await import("@/lib/syna-agent/custom-theme/library");
+      for (const x of allSections(t).filter((y) => { const l = libOf0(y.s.id); return !l || !B.productSlotSection(l); })) expect(sectionHtml(x.s).replace(/photos\/(carte|map|plan)-[\w-]*\.(webp|jpg|png)/g, ""), x.place).not.toMatch(/photos\/[a-z]+-?[a-z0-9]*\.(webp|jpg|png)/);
       expect(allSections(t).filter((x) => x.s.clientTexts).length).toBeGreaterThan(0);
       // Annuler : un seul point par montage (ici deux montages : la réécriture, puis le premier), jamais photo par photo.
       expect((await call("custom.undo", ctx, {})).ok).toBe(true);
@@ -955,7 +961,8 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       const { galleryCheckMaxMicro: chk } = await import("@/lib/syna-agent/custom-theme/gallery");
       // Plan des textes + chaque photo et son contrôle + la relecture des photos et ses reprises + les regards en image
       // sur le site fini ; rien de plus.
-      const slotsAll = B.photoSlots(loadCustomTheme(pid)!, { productPhotos: true }).length;
+      // Les emplacements de produit ne comptent plus au plafond : rien n'y est jamais créé (17 novembre 2026).
+      const slotsAll = B.photoSlots(loadCustomTheme(pid)!, { productPhotos: true }).filter((x) => x.kind !== "produit").length;
       const { LOOK_CAP_MICRO: lookCap, LOOK_PAGES_MAX: lookPages } = await import("@/lib/syna-agent/custom-theme/looks");
       // + la lecture de leurs cahiers de métier (le rédacteur pour le plan, la directrice artistique pour sa relecture et ses reprises).
       const { buildKnowledge } = await import("@/lib/syna-agent/custom-theme/tools");
@@ -974,7 +981,9 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       expect(first.photosMade).toBeGreaterThanOrEqual(homeSlots);
       // Seul l'accueil a reçu ses photos ; la fiche produit garde les siennes d'exemple (signalées).
       const after = loadCustomTheme(pid)!;
-      const sample = (key: string) => after.pages.find((pg) => pg.key === key)!.sections.map((x) => sectionHtml(x)).join("").match(/photos\/[\w-]+\.(?:webp|png|jpg)/g)?.length ?? 0;
+      // Hors emplacements de produit : rien n'y est créé (la vraie photo du produit, ou « Ta photo ici »), décision du 17 novembre 2026.
+      const { libSection: libOf } = await import("@/lib/syna-agent/custom-theme/library");
+      const sample = (key: string) => after.pages.find((pg) => pg.key === key)!.sections.filter((x) => { const l = libOf(x.id); return !l || !B.productSlotSection(l); }).map((x) => sectionHtml(x)).join("").match(/photos\/[\w-]+\.(?:webp|png|jpg)/g)?.length ?? 0;
       expect(sample("home")).toBe(0);
       expect(sample("product")).toBeGreaterThan(0);
       expect(first.problems.join(" ")).toMatch(/photo\(s\) d'exemple encore en place/);

@@ -389,7 +389,8 @@ const PICK_JS = `(function(){
   function kind(el){var t=el.tagName.toLowerCase();if(el.hasAttribute("data-ct"))return"Section";if(/^(img|video)$/.test(t)||el.classList.contains("tn-ph"))return"Image";if(/^(input|select|textarea)$/.test(t))return"Champ";if(/^(a|button|summary)$/.test(t))return"Bouton";if(/^h[1-6]$/.test(t))return"Titre";return"Texte"}
   function pathOf(el,sec){var segs=[],n=el;while(n&&n!==sec){var p=n.parentElement;if(!p)return"";segs.unshift(n.tagName.toLowerCase()+":nth-child("+([].indexOf.call(p.children,n)+1)+")");n=p}return n===sec?segs.join(" > "):""}
   /* Un mot isolé (titre découpé pour son animation, mot en couleur) désigne le titre, le texte ou le bouton entier. */
-  function target(e){var t=e.target.closest&&e.target.closest(SEL);if(!t)return null;if(!t.closest("[data-ct]"))return null;
+  function target(e){var tp=e.target.closest&&e.target.closest(".tn-ta-photo");if(tp&&tp.closest("[data-ct]"))return tp; /* « Ta photo ici » se désigne comme une photo */
+    var t=e.target.closest&&e.target.closest(SEL);if(!t)return null;if(!t.closest("[data-ct]"))return null;
     if(/^(span|b|strong|em|small|i)$/i.test(t.tagName)){var up=t.parentElement&&t.parentElement.closest("h1,h2,h3,h4,h5,h6,p,a,button,li,blockquote,label,summary");if(up&&t.closest("[data-ct]").contains(up))t=up}
     return t}
   function clear(){if(hov){hov.classList.remove("ctw-hov");hov=null}if(lab){lab.remove();lab=null}}
@@ -430,8 +431,22 @@ const soldOut = (p: ReturnType<typeof listProducts>[number]) => p.variants.lengt
  */
 export function tenueProducts(projectId: string, t?: CustomTheme): TenueProduct[] {
   const fiches = t ? fichePhotos(t) : new Map<string, string>();
-  // Un produit sans photo au catalogue : ses cartes reprennent la photo que SINA a créée pour le bloc d'achat de SA fiche (la même, jamais une autre).
+  // Un produit sans photo au catalogue, sur un site créé AVANT le 17 novembre 2026 : ses cartes reprennent la photo que SINA
+  // avait créée pour le bloc d'achat de SA fiche. Un site créé depuis n'a plus de telle photo (un produit ne s'invente
+  // pas) : sa carte montre « Ta photo ici » jusqu'à ce que le client importe sa photo.
   return listProducts(projectId).map((p, i) => ({ title: p.data.title, image: p.data.images[0]?.assetId ? assetUrl({ id: p.data.images[0].assetId }) : fiches.get(p.handle) ?? (i === 0 ? fiches.get("") ?? null : null), price: priceText(p), go: t ? productPageKey(t, p.handle) : null, soldOut: soldOut(p), families: p.data.categories.map((c) => c.trim()).filter(Boolean), cents: p.data.price ?? p.variants.find((v) => v.price != null)?.price ?? null }));
+}
+/**
+ * Repère des photos du catalogue (une suite courte qui change dès qu'un produit reçoit, perd ou change de photo) : l'aperçu
+ * du site se recharge quand il change, sans que le site soit refait (le rendu lit le catalogue à chaque affichage).
+ */
+export function productPhotosStamp(projectId: string): string {
+  try {
+    const all = listProducts(projectId).map((p) => `${p.handle}:${p.data.images.map((i) => i.assetId).join(",")}`).join("|");
+    let h = 5381;
+    for (let i = 0; i < all.length; i++) h = ((h << 5) + h + all.charCodeAt(i)) >>> 0;
+    return h.toString(36);
+  } catch { return ""; }
 }
 /**
  * La photo créée pour le bloc d'achat de chaque fiche produit du thème (la grande photo de sa galerie, un média du

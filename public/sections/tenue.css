@@ -704,6 +704,24 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 .ctw .tn-carte-p.tn-sans-photo:not(#tn)::after{content:"→";position:static;margin-top:10px;font-size:18px;line-height:1}
 .ctw .tn-carte-p.tn-sans-photo:not(#tn) b{margin-top:0;font-size:24px;line-height:1.1}
 .ctw .tn-carte-p.tn-sans-photo:not(#tn) span{margin-top:6px}
+/* « Ta photo ici » (17 novembre 2026) : l'emplacement d'un produit qui n'a pas encore sa photo, dans l'aperçu du Studio.
+   Un cadre en pointillés à la tenue de la marque, le libellé au milieu ; jamais un carré vide, jamais un produit inventé. */
+.ctw .tn .tn-ta-photo:not(#tn){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:6px;text-align:center;background-image:none;background-color:color-mix(in srgb,var(--tn-doux) 62%,var(--tn-fond));border:1.5px dashed color-mix(in srgb,var(--tn-encre) 38%,transparent);border-radius:var(--tn-arrondi,0);color:var(--tn-encre);transform:none;box-shadow:none}
+.ctw .tn .tn-ta-photo:not(#tn)::before{content:"";width:34px;height:26px;border:1.5px solid currentColor;border-radius:5px;opacity:.55;background:radial-gradient(circle at 50% 54%,transparent 0 5px,currentColor 5px 6.5px,transparent 7px),linear-gradient(currentColor,currentColor) 6px 4px/7px 1.5px no-repeat}
+.ctw .tn .tn-ta-photo:not(#tn) span{margin:0;font-family:var(--f-title);font-size:17px;line-height:1.15;font-style:normal;letter-spacing:0;text-transform:none;color:inherit}
+.ctw .tn .tn-ta-photo:not(#tn) small{margin:0;font-size:12.5px;line-height:1.3;letter-spacing:.02em;text-transform:none;color:var(--tn-texte);opacity:.85}
+.ctw .tn-achat .tn-grande.tn-ta-photo:not(#tn) span,.ctw .tn-appel-produit .tn-ta-photo:not(#tn) span{font-size:24px}
+.ctw .tn-achat .tn-grande.tn-ta-photo:not(#tn) small,.ctw .tn-appel-produit .tn-ta-photo:not(#tn) small{font-size:14px}
+.ctw .tn-achat .tn-grande.tn-ta-photo:not(#tn)::before,.ctw .tn-appel-produit .tn-ta-photo:not(#tn)::before{width:46px;height:36px;margin-bottom:4px}
+.ctw .tn-appel-produit .tn-ta-photo:not(#tn){min-height:260px;color:inherit;background-color:color-mix(in srgb,currentColor 8%,transparent);border-color:color-mix(in srgb,currentColor 45%,transparent)}
+.ctw .tn-appel-produit .tn-ta-photo:not(#tn) small{color:inherit}
+/* petit emplacement (une ligne de liste, une vignette) : le libellé seul, plus petit, sans le pictogramme */
+.ctw .tn .tn-ta-photo:not(#tn){container-type:inline-size}
+@container (max-width:120px){
+  .ctw .tn .tn-ta-photo:not(#tn)::before{display:none}
+  .ctw .tn .tn-ta-photo:not(#tn) span{font-size:10.5px;line-height:1.15}
+  .ctw .tn .tn-ta-photo:not(#tn) small{display:none}
+}
 /* étapes de fabrication : sans sa photo, le numéro se range au-dessus du titre */
 .ctw .tn-fabrication li:has(>.tn-ph-manque):not(#tn)::before{position:static;grid-column:auto;grid-row:auto;margin-bottom:10px}
 /* texte et photo : sans la photo, le texte tient la largeur de lecture, au milieu */

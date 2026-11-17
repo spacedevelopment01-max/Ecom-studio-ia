@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { createProduct, getProduct, listProducts, setVariantStock, updateProduct, archiveProduct, type StudioProduct } from "../../products/catalog";
 import { L } from "../../i18n-server";
+import { getAsset } from "../../library";
 import type { AgentTool, Change } from "../types";
 import { cents, euros, project, same } from "./common";
 
@@ -102,4 +103,42 @@ const archiveTool: AgentTool<{ productId: string }> = {
   run: (ctx, a) => { const p = project(ctx), r = archiveProduct(p.id, a.productId); return { ok: r.status === "archived", summary: L(`« ${r.data.title} » archivé.`, `"${r.data.title}" archived.`), changes: [{ module: "catalogue", object: r.data.title, summary: "archivé", verified: r.status === "archived" }] }; },
 };
 
-export const catalogueTools: AgentTool[] = [listTool, createTool, updateTool, stockTool, archiveTool];
+/**
+ * Poser sur un produit la photo que le client vient d'envoyer (décision du propriétaire, 17 novembre 2026 : SINA monte le
+ * site sans attendre les photos des produits ; le client les importe ensuite, « et elles prennent leur place toutes
+ * seules »). Seulement une VRAIE photo du client (image envoyée par lui dans ce projet), jamais une image créée : le
+ * produit ne s'invente pas. Le rendu du site lit le catalogue : la galerie de la fiche et les cartes la montrent aussitôt.
+ */
+const photosTool: AgentTool<{ product: string; photos: string[]; replace?: boolean }> = {
+  name: "catalogue.photos", module: "catalogue", kind: "write", needsProject: true,
+  description: "Pose sur UN produit les vraies photos que le client a envoyées (gratuit). product : son titre exact ou son id (catalogue.list). photos : les identifiants des pièces jointes du fil (ou des images de ses Fichiers), dans l'ordre voulu ; la première devient la photo principale. Elles s'ajoutent à celles qu'il a déjà (replace:true pour les remplacer). Jamais une image créée par l'IA : seulement ses photos à lui. Dans l'aperçu de son site, la galerie de sa fiche et ses cartes la montrent tout de suite, sans refaire le site.",
+  args: z.object({ product: z.string().min(1).max(160), photos: z.array(z.string().min(1).max(60)).min(1).max(12), replace: z.boolean().optional() }).strict(),
+  run: (ctx, a) => {
+    const p = project(ctx), list = listProducts(p.id);
+    const prod = list.find((x) => x.id === a.product) ?? list.find((x) => norm(x.data.title).trim() === norm(a.product).trim());
+    if (!prod) return { ok: false, summary: L(`Produit « ${a.product} » introuvable.`, "Product not found."), hint: `Produits du catalogue : ${list.map((x) => x.data.title).join(" ; ") || "aucun"}.` };
+    const ids: string[] = [], refused: string[] = [];
+    for (const raw of a.photos) {
+      const id = ctx.attachment(raw)?.assetId ?? raw;
+      const asset = getAsset(id);
+      if (!asset || asset.project_id !== p.id || asset.deleted_at || asset.kind !== "image") { refused.push(`${raw} : image introuvable dans ce projet`); continue; }
+      if (asset.origin !== "upload") { refused.push(`${raw} : ce n'est pas une photo envoyée par le client (une image créée ne se pose jamais comme photo de son produit)`); continue; }
+      if (!ids.includes(id)) ids.push(id);
+    }
+    if (!ids.length) return { ok: false, internal: true, summary: `Aucune photo posée : ${refused.join(" ; ")}.`, hint: "Les identifiants des photos envoyées sont dans la ligne de contexte de chaque pièce jointe (« asset … »), ou dans files.list." };
+    const before = prod.data.images.map((i) => i.assetId);
+    const images = [...(a.replace ? [] : prod.data.images), ...ids.filter((id) => a.replace || !before.includes(id)).map((assetId) => ({ assetId, alt: prod.data.title }))].slice(0, 30);
+    updateProduct(p.id, prod.id, { images, version: prod.version } as any);
+    const read = getProduct(p.id, prod.id), after = read.data.images.map((i) => i.assetId);
+    const ok = ids.every((id) => after.includes(id));
+    const sans = listProducts(p.id).filter((x) => x.status === "active" && !x.data.images.some((i) => !!i.assetId)).map((x) => x.data.title);
+    return {
+      ok, summary: L(`${ids.length} photo(s) posée(s) sur « ${read.data.title} » et relue(s) : ${after.length} photo(s) au total.`, "Photos set."),
+      data: { produit: read.data.title, photos: after, ...(refused.length ? { refusees: refused } : {}), produitsEncoreSansPhoto: sans },
+      hint: `Dis au client que la photo de « ${read.data.title} » est en place : la galerie de sa fiche et ses cartes la montrent dans l'aperçu de son site, sans rien refaire.${sans.length ? ` Il reste sans photo : ${sans.join(", ")}.` : " Tous ses produits ont maintenant leur photo : propose-lui, avec le prix de la carte d'accord, de créer les scènes avec son vrai produit (custom.photo pour une photo du site, gallery.plan pour la galerie de sa fiche), et de valider son site (custom.choose) pour qu'il soit prêt à partir."}`,
+      changes: [{ module: "catalogue", object: `${read.data.title} › photos`, summary: L(`${before.length} → ${after.length} photo(s)`, "photos changed"), before, after, verified: ok }],
+    };
+  },
+};
+
+export const catalogueTools: AgentTool[] = [listTool, createTool, updateTool, stockTool, archiveTool, photosTool];
