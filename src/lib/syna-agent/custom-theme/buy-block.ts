@@ -207,12 +207,13 @@ export function withTenueAchat(html: string, projectId: string, handle?: string 
   // Achat, suite : table des versions, prix barré, packs, dessous du bouton, offre datée, fenêtre d'offre.
   const v = (() => { try { return venteFacts(projectId, handle); } catch { return null; } })();
   if (v) out = withTenueAchatVrai(out, v);
+  // Sans les faits de vente (catalogue illisible) : ni offre datée ni fenêtre d'offre, elles ne montreraient que leur exemple.
+  else if (/\sdata-tn-(?:offre-moment|fenetre-offre)\b/.test(out)) return "";
   // Rappel vers l'achat : le vrai nom, le vrai prix (un prix inconnu ne s'écrit pas) ; avec des packs, le bouton le dit.
   if (/\sdata-tn-rappel-achat\b/.test(out)) {
     out = out.replace(/(<b class="tn-ra-nom">)[\s\S]*?(<\/b>)/, `$1${escText(f.title)}$2`).replace(/<span class="tn-ra-prix">[\s\S]*?<\/span>/, f.price ? `<span class="tn-ra-prix">${f.price}</span>` : "");
     if (v?.packs.length) out = out.replace(/>Choisir le mien<\/a>/, ">Choisir mon pack</a>");
   }
-  else if (/\sdata-tn-(?:offre-moment|fenetre-offre)\b/.test(out)) return "";
   if (!out) return out;
   // « Le produit, son prix, son bouton » : la vraie photo, le vrai nom, le vrai prix, le stock, la livraison et les retours du client.
   if (/\sdata-tn-appel-produit\b/.test(out)) {

@@ -644,6 +644,30 @@ describe("finitions de la fiche : note et avis, rappel vers l'achat, coloris en 
     expect(withTenueAchat(piece("tn-sous-bouton"), pid)).not.toMatch(/tn-paiements-sb/);
   });
 
+  it("l'offre du moment et la fenêtre d'offre s'affichent avec une vraie offre, et jamais sans (faute du 17 novembre 2026 : elles ne s'affichaient plus du tout)", async () => {
+    const { account, project } = await import("./conversation209-fixtures");
+    const { createProduct } = await import("@/lib/products/catalog");
+    const { saveShopOffers } = await import("@/lib/syna-agent/product-features");
+    const { withTenueAchat } = await import("@/lib/syna-agent/custom-theme/buy-block");
+    const user = await account(), pid = await project(user);
+    createProduct(pid, { title: "Collier Museau", price: 3000 } as any);
+    // Sans offre enregistrée : aucune des deux pièces ne se pose (elles ne montreraient que leur exemple).
+    expect(withTenueAchat(piece("tn-offre-moment"), pid)).toBe("");
+    expect(withTenueAchat(piece("tn-fenetre-offre"), pid)).toBe("");
+    const fin = Date.now() + 5 * 86_400_000;
+    saveShopOffers(pid, { promo: { pct: 15, endsAt: fin, nom: "L'offre de rentrée" }, fenetreOffre: { titre: "10 % sur ta première commande", texte: "Laisse ton e-mail, tu reçois ton code.", code: "BIENVENUE" } } as any);
+    const om = withTenueAchat(piece("tn-offre-moment"), pid);
+    expect(om).toContain(`data-tn-offre-moment data-tn-fin="${fin}"`);
+    expect(om).toContain("L'offre de rentrée");
+    const fen = withTenueAchat(piece("tn-fenetre-offre"), pid);
+    expect(fen).toMatch(/^<(?:section|aside|div)\b[^>]*tn-fenetre-offre/);
+    expect(fen).toContain("10 % sur ta première commande");
+    // Une offre finie ne s'affiche plus.
+    saveShopOffers(pid, { promo: { pct: 15, endsAt: Date.now() - 1000, nom: "Finie" }, fenetreOffre: null } as any);
+    expect(withTenueAchat(piece("tn-offre-moment"), pid)).toBe("");
+    expect(withTenueAchat(piece("tn-fenetre-offre"), pid)).toBe("");
+  });
+
   it("en boutique Shopify : l'identifiant du bloc, une vraie ancre pour le rappel, les coloris lus dans les options (Liquid contrôlé, pas une vraie boutique)", async () => {
     const { customThemeSpec } = await import("@/lib/syna-agent/custom-theme/to-shopify");
     const { validateCustomSection } = await import("@/lib/theme/ops");
