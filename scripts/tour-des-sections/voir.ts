@@ -26,7 +26,7 @@ let code = 0;
 try {
   if (!piece) throw new Error("Il faut au moins une pièce (voir l'en-tête de ce fichier).");
   const R = await import("./rendu");
-  const { TENUES, HAUTEUR } = await import("./donnees");
+  const { TOUTES_TENUES: TENUES, HAUTEUR } = await import("./donnees");
   const { mesurer, onglet, ouvrir, ouvrirNavigateur, servir } = await import("./banc");
   const { tenueSection, exampleProductNames } = await import("../../src/lib/syna-agent/custom-theme/tenue");
   const banc = await R.monter();
@@ -40,7 +40,7 @@ try {
     for (const c of facons) for (const etat of etats.split(",") as import("./donnees").Etat[]) for (const tk of tenues.split(",")) for (const l of largeurs.split(",").map(Number)) {
       const tenue = TENUES.find((t) => t.cle === tk);
       if (!tenue) throw new Error(`Tenue inconnue : ${tk}`);
-      const x = R.page(banc, sit ? R.suiteValable(sit.suite) : [{ piece, construction: c }], etat, tenue);
+      const x = R.page(banc, sit ? R.suiteValable(sit.suite) : [{ piece, construction: c }], etat, tenue, { cleReglages: sit?.page, ...(process.env.FOND ? { reglages: [{ fond: process.env.FOND as never }] } : {}) });
       const f = sortie.replace(/\.png$/, `--${c}--${etat}--${tk}--${l}.png`);
       if (!x.rendues.length) { console.log(`${f}\n    (le Studio ne rend rien pour cette pièce avec ces données)`); continue; }
       await og.montrer(x.html, l, HAUTEUR(l));

@@ -39,11 +39,11 @@ try {
     for (const [m, x] of Object.entries(tot.parModule)) console.log(`  ${m.padEnd(11)} ${String(x.pieces).padStart(3)} pièces, ${String(x.constructions).padStart(3)} constructions`);
   } else {
     const r = await T.tourner({
-      sortie, modules: liste("module"), pieces: liste("piece"), etats: liste("etat") as never, tenues: liste("tenue"), largeurs: liste("largeur")?.map(Number),
+      sortie, modules: liste("module"), pieces: liste("piece"), etats: liste("etat") as never, tenues: liste("tenue"), largeurs: liste("largeur")?.map(Number), fonds: liste("fond"),
       planches: !a("sans-planches"), situations: a("situations") ? "seules" : a("sans-situations") ? "non" : undefined, parallele: val("parallele") ? Number(val("parallele")) : undefined, dire: (s) => console.log(s),
     });
     const ici = r.fiches.flatMap((f) => f.defauts), pieces = r.fiches.map((f) => f.piece);
-    const complet = !val("etat") && !val("tenue") && !val("largeur");
+    const complet = !val("etat") && !val("tenue") && !val("largeur") && !val("fond");
     console.log(`\nSorties : ${sortie}\n  resume.md, resume.json, defauts.json, recensement.json${a("sans-planches") ? "" : ", planches/<module>/<pièce>--<état>--tel.jpg et --ordi.jpg"}`);
     const parType: Record<string, number> = {};
     for (const d of new Map(ici.map((d) => [T.cleDistincte(d), d])).values()) parType[`${d.gravite} · ${d.type}`] = (parType[`${d.gravite} · ${d.type}`] ?? 0) + 1;

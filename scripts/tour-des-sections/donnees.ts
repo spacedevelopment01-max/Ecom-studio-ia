@@ -23,6 +23,8 @@ export type TenueBanc = {
   fonts: { heading: string; body: string }; tenue: Tenue;
   /** La police des titres est très grasse à sa graisse normale (Archivo Black) : elle compte comme « gras » pour le pavé gras. */
   titreLourd: boolean;
+  /** La famille du site (signatures.ts) : sa signature, ses fonds de section, son signe. Absente : un site sans famille. */
+  famille?: string;
 };
 const DIFFICILE = { light: "#FFF6E0", dark: "#1A1F3A", primary: "#FFD23F", secondary: "#2A3157", accent: "#FFD23F" };
 export const TENUES: TenueBanc[] = [
@@ -30,6 +32,24 @@ export const TENUES: TenueBanc[] = [
   { cle: "gras", libelle: "difficile, titres gras (jaune vif, bleu nuit, bouton à ombre, cadre penché, police très large)", palette: DIFFICILE, fonts: { heading: "archivo_black", body: "dm_sans" }, tenue: { titres: "gras", bouton: "ombre", cadre: "penche", fond: "uni", petits: "normal", signe: "" } as Tenue, titreLourd: true },
   { cle: "capitales", libelle: "difficile, titres en capitales (mêmes couleurs, fond en toile, petits textes à la machine)", palette: DIFFICILE, fonts: { heading: "archivo_black", body: "dm_sans" }, tenue: { titres: "capitales", bouton: "ombre", cadre: "penche", fond: "toile", petits: "machine", signe: "" } as Tenue, titreLourd: true },
 ];
+
+/**
+ * Les six familles du Studio, chacune dans une allure qui lui va (couleurs et polices inventées pour le banc), avec un
+ * signe de marque : pour regarder la signature de chaque famille, ses fonds de section et son signe (17 novembre 2026).
+ * Choisies avec « --tenue famille-… » ; elles ne font pas partie du tour par défaut.
+ */
+const fam = (cle: string, famille: string, libelle: string, palette: TenueBanc["palette"], heading: string, body: string, tenue: Partial<Tenue>, titreLourd = false): TenueBanc =>
+  ({ cle, libelle, famille, palette, fonts: { heading, body }, titreLourd, tenue: { titres: "fins", bouton: "pilule", cadre: "droit", fond: "uni", petits: "normal", signe: "", ...tenue } as Tenue });
+export const TENUES_FAMILLES: TenueBanc[] = [
+  fam("famille-chaleureuse", "maison-chaleureuse", "Maison chaleureuse (terre cuite, lin, titres fins à empattements)", { light: "#F6EFE6", dark: "#2E2219", primary: "#8C4A2F", secondary: "#EBD7C1", accent: "#8C4A2F" }, "cormorant_garamond", "nunito_sans", { titres: "fins", bouton: "pilule", cadre: "droit", fond: "uni", signeForme: "couture", signeTexte: "Lin lavé, cousu main" }),
+  fam("famille-epure", "epure-editorial", "Épuré et éditorial (pierre, noir, capitales contrastées)", { light: "#F2F0EB", dark: "#141414", primary: "#5F5A52", secondary: "#E2DFD8", accent: "#5F5A52" }, "bodoni_moda", "inter", { titres: "capitales", bouton: "droit", cadre: "droit", fond: "uni", signeForme: "ligne", signeTexte: "__ / __ / ____" }),
+  fam("famille-naturel", "naturel-sincere", "Naturel et sincère (sauge, argile, empattements chaleureux)", { light: "#F5F1E7", dark: "#22301E", primary: "#557A45", secondary: "#E2E7D2", accent: "#557A45" }, "fraunces", "karla", { titres: "fins", bouton: "etiquette", cadre: "droit", fond: "toile", signeForme: "tampon", signeTexte: "Fait à la main" }),
+  fam("famille-gourmand", "gourmand-joyeux", "Gourmand et joyeux (orange franc, prune, capitales grasses)", { light: "#FFF6E8", dark: "#2A1740", primary: "#FF5B35", secondary: "#FFD9C9", accent: "#FF5B35" }, "archivo_black", "nunito", { titres: "capitales", bouton: "ombre", cadre: "penche", fond: "uni", signeForme: "etiquette", signeTexte: "Fait maison" }, true),
+  fam("famille-confiance", "confiance-savoir-faire", "Confiance et savoir-faire (bleu nuit, orange d'action, titres nets)", { light: "#F3F3F0", dark: "#15202B", primary: "#E07A1F", secondary: "#DDE2E6", accent: "#E07A1F" }, "archivo", "inter", { titres: "gras", bouton: "droit", cadre: "droit", fond: "uni", petits: "machine", signeForme: "tampon", signeTexte: "Travail soigné" }),
+  fam("famille-spectaculaire", "spectaculaire", "Spectaculaire (noir, blanc, jaune vif, capitales étroites)", { light: "#F4F4F1", dark: "#0E0E10", primary: "#D8FF3C", secondary: "#2A2A2E", accent: "#D8FF3C" }, "oswald", "barlow", { titres: "capitales", bouton: "droit", cadre: "droit", fond: "uni", petits: "machine", signeForme: "ruban", signeTexte: "Série 01" }),
+];
+/** Toutes les tenues que le banc connaît (le tour par défaut ne prend que TENUES). */
+export const TOUTES_TENUES: TenueBanc[] = [...TENUES, ...TENUES_FAMILLES];
 
 export const LARGEURS = [320, 390, 1280];
 export const HAUTEUR = (largeur: number) => (largeur <= 480 ? 844 : largeur <= 900 ? 1024 : 860);

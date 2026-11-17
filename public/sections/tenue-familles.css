@@ -1,0 +1,96 @@
+/*
+ * Signatures des familles, réglages des sections, signe de la marque (17 novembre 2026).
+ * Le propriétaire, devant deux sites de deux familles : « les thèmes entre les deux marques sont très identiques ».
+ * Trois choses ici, écrites à la main, lues sur des attributs posés par le Studio (signatures.ts) :
+ *  1) les RÉGLAGES d'une section : data-tn-fd (fond clair, doux, sombre, marque), data-tn-al (alignement du titre),
+ *     data-tn-ti (taille du titre). Les couleurs d'un fond sont des variables --tn-* calculées lisibles par le Studio
+ *     (tenue.ts, fondsCss) : la pièce entière change de couleurs sans être réécrite ;
+ *  2) la SIGNATURE de chaque famille (data-tn-famille sur le thème) : fonds, cadres, espaces, titres ;
+ *  3) le SIGNE de la marque (.tn-signe-m), posé dans le grand titre de l'ouverture, d'un moment du milieu et de la fin.
+ * Aucun pictogramme dessiné : des formes simples et du texte.
+ */
+
+/* ══ 1. Réglages d'une section ══ */
+/* Le fond réglé : la section prend la couleur de son fond (une trame de toile reste sous les sections claires). */
+.ctw .tn:is([data-tn-fd="doux"],[data-tn-fd="sombre"],[data-tn-fd="marque"]){background-color:var(--tn-fond);color:var(--tn-encre)}
+.ctw[data-tn-fond="toile"] .tn:is([data-tn-fd="doux"],[data-tn-fd="sombre"],[data-tn-fd="marque"]){background-color:var(--tn-fond)}
+/* Sur un fond sombre ou de couleur, les filets et les bords dessinés à l'encre restent visibles (l'encre y est claire). */
+.ctw .tn:is([data-tn-fd="sombre"],[data-tn-fd="marque"]) :is(hr){border-color:color-mix(in srgb,var(--tn-encre) 30%,transparent)}
+/* L'échelle des grands titres d'une section réglée : celle du site, multipliée par la famille (--tn-kf) et par le réglage (--tn-kt). */
+.ctw .tn:is([data-tn-fd],[data-tn-ti],[data-tn-al]){--tn-k:calc(var(--tn-k0) * var(--tn-kf,1) * var(--tn-kt,1))}
+.ctw .tn[data-tn-ti="grand"]{--tn-kt:1.2}
+@media (max-width:359px){.ctw .tn[data-tn-ti="grand"]{--tn-kt:1.08}}
+/* L'alignement : le titre de la section, son petit texte et sa première phrase. */
+.ctw .tn[data-tn-al="centre"]>:is(small,h2){text-align:center;margin-left:auto;margin-right:auto}
+.ctw .tn[data-tn-al="centre"]>h2+:is(p,.tn-chapo){text-align:center;margin-left:auto;margin-right:auto;max-width:36em;text-wrap:balance}
+.ctw .tn[data-tn-al="gauche"]>:is(small,h2){text-align:left;margin-right:auto}
+.ctw .tn[data-tn-al="gauche"]>h2+:is(p,.tn-chapo){text-align:left;margin-right:auto}
+
+/* ══ 2. Les signatures des familles ══ */
+.ctw{--tn-encre-page:var(--tn-encre)}
+
+/* ── Maison chaleureuse : panneaux de couleur chaude aux grands coins ronds, photos arrondies, beaucoup d'air, titres centrés ── */
+.ctw[data-tn-famille="maison-chaleureuse"]{--tn-arrondi:22px}
+.ctw[data-tn-famille="maison-chaleureuse"] .tn[data-tn-fd]{border-top:22px solid transparent;border-bottom:22px solid transparent;background-clip:padding-box}
+.ctw[data-tn-famille="maison-chaleureuse"] .tn[data-tn-fd]:is([data-tn-fd="doux"],[data-tn-fd="sombre"]){border:0;margin:14px 10px;border-radius:30px;background-clip:border-box}
+@media (max-width:759px){.ctw[data-tn-famille="maison-chaleureuse"] .tn.tn[data-tn-fd]:is([data-tn-fd="doux"],[data-tn-fd="sombre"]){margin:12px 8px;padding-left:12px;padding-right:12px}}
+@media (min-width:760px){.ctw[data-tn-famille="maison-chaleureuse"] .tn[data-tn-fd]:is([data-tn-fd="doux"],[data-tn-fd="sombre"]){margin:22px 28px;border-radius:44px}}
+.ctw[data-tn-famille="maison-chaleureuse"] .tn[data-tn-fd] :is(.tn-ph,img:not(.ctw-logo)){border-radius:20px}
+.ctw[data-tn-famille="maison-chaleureuse"] .tn[data-tn-fd] :is(article,figure,details,.tn-carte-p){border-radius:20px}
+.ctw[data-tn-famille="maison-chaleureuse"] .tn-achat :is(.tn-grande,.tn-vignettes>*){border-radius:20px}
+.ctw[data-tn-famille="maison-chaleureuse"] .tn[data-tn-fd]>small{font-size:18px}
+
+/* ── Épuré et éditorial : fond presque blanc, filets fins entre les parties, petits textes en capitales espacées, beaucoup de vide ── */
+.ctw[data-tn-famille="epure-editorial"] .tn[data-tn-fd]{margin-top:30px;border-top:1px solid color-mix(in srgb,var(--tn-encre-page) 18%,transparent)}
+@media (min-width:760px){.ctw[data-tn-famille="epure-editorial"] .tn[data-tn-fd]{margin:48px max(24px,4vw) 0}}
+.ctw[data-tn-famille="epure-editorial"] :is(.tn[data-tn-fd]>small,.tn-ouverture small){font-family:var(--f-ui);font-style:normal;font-weight:500;font-size:12px;letter-spacing:.24em;text-transform:uppercase}
+.ctw[data-tn-famille="epure-editorial"] .tn:not([data-ct-role="header"],[data-ct-role="footer"]) .tn-bt{font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;padding:15px 28px}
+@media (max-width:480px){.ctw[data-tn-famille="epure-editorial"] .tn:not([data-ct-role="header"],[data-ct-role="footer"]) .tn-bt{letter-spacing:.06em;padding:15px 18px}}
+.ctw[data-tn-famille="epure-editorial"] .tn[data-tn-fd] :is(.tn-ph,img){border-radius:0;box-shadow:none}
+
+/* ── Naturel et sincère : fonds teintés qui alternent, photos sur un passe-partout coloré, petits textes en étiquettes ── */
+.ctw[data-tn-famille="naturel-sincere"] .tn[data-tn-fd] :is(figure,article,li,.tn-carte-p) .tn-ph,.ctw[data-tn-famille="naturel-sincere"] .tn[data-tn-fd]>.tn-ph{border:9px solid var(--tn-doux);border-radius:6px}
+.ctw[data-tn-famille="naturel-sincere"] .tn[data-tn-fd] :is(figure,article,li) img{padding:9px;background:var(--tn-doux);border-radius:6px}
+.ctw[data-tn-famille="naturel-sincere"] .tn[data-tn-fd]>small,.ctw[data-tn-famille="naturel-sincere"] .tn-ouverture small{display:inline-block;width:auto;font-family:var(--f-ui);font-style:normal;font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:6px 13px 5px;border:1.5px solid currentColor;border-radius:999px;margin-bottom:14px}
+
+/* ── Gourmand et joyeux : chaque partie est un bloc posé comme un objet (bord épais, coins ronds, ombre décalée) ── */
+.ctw[data-tn-famille="gourmand-joyeux"] .tn[data-tn-fd]{margin:14px 14px 20px 10px;border:3px solid var(--tn-encre-page);border-radius:26px;box-shadow:6px 7px 0 var(--tn-encre-page)}
+/* Sur un téléphone, le bloc rend aux textes la largeur que prennent ses marges et son bord : ses côtés intérieurs passent
+   de 20 à 12 px (jamais un mot coupé de plus qu'ailleurs). */
+@media (max-width:759px){.ctw[data-tn-famille="gourmand-joyeux"] .tn.tn[data-tn-fd]{margin:12px 10px 18px 6px;padding-left:12px;padding-right:12px}}
+@media (min-width:760px){.ctw[data-tn-famille="gourmand-joyeux"] .tn[data-tn-fd]{margin:24px 34px 32px 26px;border-radius:34px}}
+.ctw[data-tn-famille="gourmand-joyeux"] .tn[data-tn-fd]>small{font-family:var(--f-ui);font-style:normal;font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+
+/* ── Confiance et savoir-faire : sections sombres qui alternent, un trait épais de la couleur d'action sur chaque titre, un bouton fort ── */
+.ctw[data-tn-famille="confiance-savoir-faire"] .tn[data-tn-fd]>h2::before{content:"";display:block;width:54px;height:6px;margin:0 0 18px;background:var(--tn-accent-texte)}
+.ctw[data-tn-famille="confiance-savoir-faire"] .tn[data-tn-fd][data-tn-al="centre"]>h2::before{margin-left:auto;margin-right:auto}
+.ctw[data-tn-famille="confiance-savoir-faire"] .tn[data-tn-fd]:is([data-tn-fd="sombre"])>h2::before{background:var(--tn-accent)}
+.ctw[data-tn-famille="confiance-savoir-faire"] .tn:not([data-ct-role="header"],[data-ct-role="footer"]) .tn-bt{background:var(--tn-accent);color:var(--tn-sur-accent);font-weight:700;letter-spacing:.02em}
+.ctw[data-tn-famille="confiance-savoir-faire"] .tn[data-tn-fd]>small{font-family:var(--f-ui);font-style:normal;font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+
+/* ── Spectaculaire : surtout sombre, titres immenses en capitales, bandes pleines de la couleur vive, fort contraste ── */
+.ctw[data-tn-famille="spectaculaire"]{--tn-k0:.9}
+@media (max-width:359px){.ctw[data-tn-famille="spectaculaire"]{--tn-k0:.78}}
+.ctw[data-tn-famille="spectaculaire"] .tn[data-tn-fd]{--tn-kf:1.28}
+.ctw[data-tn-famille="spectaculaire"] :is(.tn[data-tn-fd] h2,.tn-ouverture h1){text-transform:uppercase;letter-spacing:-.01em;line-height:.96}
+.ctw[data-tn-famille="spectaculaire"] .tn[data-tn-fd="sombre"]+.tn[data-tn-fd="sombre"]{border-top:1px solid color-mix(in srgb,var(--tn-encre) 16%,transparent)}
+.ctw[data-tn-famille="spectaculaire"] :is(.tn[data-tn-fd]>small,.tn-ouverture small){font-family:var(--f-ui);font-style:normal;font-weight:700;font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+.ctw[data-tn-famille="spectaculaire"] .tn:not([data-ct-role="header"],[data-ct-role="footer"]) .tn-bt{text-transform:uppercase;letter-spacing:.05em;font-weight:800}
+@media (max-width:480px){.ctw[data-tn-famille="spectaculaire"] .tn:not([data-ct-role="header"],[data-ct-role="footer"]) .tn-bt{letter-spacing:0;font-size:15px;padding-left:18px;padding-right:18px}}
+
+/* ══ 3. Le signe de la marque : une ligne à lui, au-dessus du grand titre ══ */
+.ctw .tn .tn-signe-m{display:block;margin:0 0 16px;font-size:0;line-height:0;letter-spacing:0;text-transform:none;font-style:normal}
+.ctw .tn .tn-signe-m>span{display:inline-block;max-width:100%;font-family:var(--f-ui);font-size:12px;font-weight:700;line-height:1.25;letter-spacing:.16em;text-transform:uppercase;font-style:normal;color:currentColor;white-space:normal;-webkit-hyphens:manual;hyphens:manual;vertical-align:middle}
+/* L'étiquette ronde, un peu penchée, double bord. */
+.ctw .tn .tn-signe-m[data-f="etiquette"]>span{margin:4px 8px;display:inline-grid;place-items:center;width:104px;height:104px;padding:14px;border-radius:50%;border:1.5px solid currentColor;outline:1px solid currentColor;outline-offset:-6px;text-align:center;font-size:12px;letter-spacing:.08em;transform:rotate(-8deg);overflow-wrap:anywhere}
+/* Le tampon : un rectangle à double bord, en capitales. */
+.ctw .tn .tn-signe-m[data-f="tampon"]>span{padding:7px 12px 6px;border:2px solid currentColor;outline:1px solid currentColor;outline-offset:2px;letter-spacing:.2em;font-weight:800;transform:rotate(-2.5deg)}
+/* La ligne : le texte entre deux filets, comme une ligne à remplir. */
+.ctw .tn .tn-signe-m[data-f="ligne"]>span{display:inline-flex;align-items:center;gap:12px;font-family:"IBM Plex Mono",var(--f-ui);font-weight:500;letter-spacing:.18em}
+.ctw .tn .tn-signe-m[data-f="ligne"]>span::before,.ctw .tn .tn-signe-m[data-f="ligne"]>span::after{content:"";width:30px;flex:none;border-top:1px solid currentColor}
+/* La couture : le texte entre deux lignes de points cousus. */
+.ctw .tn .tn-signe-m[data-f="couture"]>span{padding:8px 4px 7px;border-top:2px dashed currentColor;border-bottom:2px dashed currentColor;letter-spacing:.2em}
+/* Le ruban : une bande pleine penchée, de la couleur de la marque. */
+.ctw .tn .tn-signe-m[data-f="ruban"]>span{padding:8px 16px 7px;background:var(--tn-accent);color:var(--tn-sur-accent);letter-spacing:.14em;font-weight:800;transform:rotate(-2.5deg)}
+/* Dans un titre centré, le signe se centre avec lui (il suit l'alignement du titre). */
+.ctw .tn :is(h1,h2) .tn-signe-m{text-align:inherit}

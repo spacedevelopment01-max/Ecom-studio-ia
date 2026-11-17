@@ -55,6 +55,26 @@ npx tsx scripts/tour-des-sections/tour.ts --module achat --sans-planches --test
 npx tsx scripts/tour-des-sections/tour.ts --piece tn-rdv --ecrire-connus
 ```
 
+### Les familles, les fonds de section et le signe (17 novembre 2026)
+
+```bash
+# les trois pages en situation dans les six familles (signature, fonds de section, signe de la marque)
+npx tsx scripts/tour-des-sections/tour.ts --situations --tenue famille-chaleureuse,famille-epure,famille-naturel,famille-gourmand,famille-confiance,famille-spectaculaire
+
+# chaque pièce qui accepte un fond, dans chacun (« calme+sombre », « gras+marque »…)
+npx tsx scripts/tour-des-sections/tour.ts --sans-situations --etat vrai --tenue calme,gras --fond doux,sombre,marque --largeur 390,1280
+
+# une pièce dans un fond : FOND=sombre npx tsx scripts/tour-des-sections/voir.ts tn-produits grille vrai calme 390 /tmp/p.png
+
+# les planches à montrer : les six familles côte à côte ; une famille dans toutes ses variations
+npx tsx scripts/tour-des-sections/familles.ts --comparaison
+npx tsx scripts/tour-des-sections/familles.ts --une-famille
+```
+
+Les six tenues « famille-… » (`TENUES_FAMILLES`, donnees.ts) portent une famille, une allure qui lui va et un signe ;
+elles ne font pas partie du tour par défaut. `familles.ts` mesure aussi chaque page et sort en erreur s'il reste un
+défaut bloquant ou important. `memeQueLeStudio` compare aussi un site d'une famille avec son signe.
+
 Autres réglages : `--sortie <dossier>` (ou `TOUR_SORTIE`), `--parallele 4` (onglets en même temps).
 Sur une machine partagée, un seul tour à la fois.
 
@@ -114,8 +134,8 @@ Un détecteur nouveau ou modifié a son cas dans `tests/tour-des-sections.test.t
 - les états que seul un geste montre, hors de ceux que le banc ouvre : survol, focus, erreur d'un formulaire, étape 2 et
   3 d'un parcours, onglet non choisi, menu déroulant du grand écran, compte à rebours fini, panier plein ou vide ;
 - les animations (elles sont arrêtées) et ce qui dépend du défilement (un en-tête qui change en défilant) ;
-- la tenue : les boutons « droit » et « étiquette » et les petits textes des autres réglages ne sont pas rendus
-  (seulement pilule et ombre) ; les six familles et les styles de page non plus ;
+- la tenue : dans le tour par défaut, les boutons « droit » et « étiquette » ne sont pas rendus (seulement pilule et
+  ombre) ; ils le sont dans les six tenues « famille-… » ; les styles de page ne sont pas rendus ;
 - la mise en boutique (Shopify, WooCommerce, PrestaShop) : seul l'aperçu du Studio est rendu ;
 - les navigateurs autres que Chromium (Safari sur iPhone surtout).
 
@@ -124,6 +144,7 @@ Un détecteur nouveau ou modifié a son cas dans `tests/tour-des-sections.test.t
 | Fichier | Rôle |
 |---|---|
 | `tour.ts` | la commande |
+| `familles.ts` | les planches des familles : les six côte à côte, une famille dans toutes ses variations |
 | `voir.ts` | la vue rapide d'une pièce ou d'une page en situation (une capture par cas et ses défauts), pour vérifier une correction sans refaire un tour ; mode d'emploi en tête du fichier |
 | `tour-lib.ts` | le tour : travaux, fiches, résumé, défauts connus |
 | `recensement.ts` | toutes les pièces, leur module, leur feuille, leurs constructions |

@@ -23,6 +23,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { ThemeSpec, StorePage, StoreCollection, TemplateJson } from "../../theme/spec";
 import { LIBRARY_DIR, libSection, withoutExamplePhotos } from "./library";
+import { avecSigne, placesDuSigne, reglagesAttrs, reglagesDePage, signeDe } from "./signatures";
 import { TENUE_FILES, TENUE_SECTIONS, coupe, isTenueSection, repere, tenueAttrs, tenueCss, tenueSection, validConstruction, withTenuePrestations, type TenuePrestation } from "./tenue";
 import { isHeaderRoot, withMenu } from "./menu";
 import { venteBoutique, withAchatId, withAchatOptions, withTenueComparison, withTenueFamilies, withTenueSite, type TenueSite } from "./tenue-data";
@@ -586,7 +587,7 @@ function vente(c: Ctx, html: string, root: string | null, where: string): string
 }
 
 /** Une section du thème → sa section Shopify (HTML en Liquid, sa part de la feuille, un schéma). */
-function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean; /** Pièce de la coque propre à une page : traitée comme un en-tête ou un pied, sans la feuille du site. */ coque?: "header" | "footer" } = {}): string | null {
+function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean; /** Pièce de la coque propre à une page : traitée comme un en-tête ou un pied, sans la feuille du site. */ coque?: "header" | "footer"; /** Le signe de la marque se pose dans son grand titre (signatures.ts). */ signe?: boolean } = {}): string | null {
   const l = libSection(s.id);
   const where = `${c.page?.label ?? (o.header ? "En-tête" : "Site")} › ${l?.title ?? s.id}`;
   if (!isTenueSection(l)) { c.problems.push({ level: "bloquant", text: `${where} : cette section n'est pas à la tenue de la marque, elle ne part pas encore en boutique` }); return null; }
@@ -620,7 +621,9 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean; /** Pièce d
   }
   html = forms(html, root);
   html = links(c, photos(c, html, where), where);
-  html = html.replace(/\sonclick="return false"/g, "").replace(/^<(section|footer|aside|div)\b/, `<$1${built ? ` data-tn-c="${built}"` : ""}${o.coque ? " data-tn-coque" : ""}`);
+  const signe = o.signe ? signeDe(c.t.tenue) : null;
+  if (signe) html = avecSigne(html, signe) ?? html;
+  html = html.replace(/\sonclick="return false"/g, "").replace(/^<(section|footer|aside|div)\b/, `<$1${built ? ` data-tn-c="${built}"` : ""}${o.coque ? " data-tn-coque" : ""}${reglagesAttrs(s.id, built, s.reglages)}`);
   // Toute la feuille part avec l'en-tête (il est sur toutes les pages), dans l'ordre d'origine : couleurs et polices
   // de la marque, fond de page, socle, règles des sections utilisées, puis les règles propres à la boutique.
   const fond = c.input.palette?.light ?? "#F6F1E7";
@@ -628,7 +631,7 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean; /** Pièce d
   // suite part dans des sections de suite du groupe d'en-tête (voir customThemeSpec), dans le même ordre.
   let css = "";
   if (o.header) {
-    const tete = [tenueCss(c.input.palette, c.t.tenue, "", c.input.titleWeight ?? null).trim(), ".ctw{--f-title:var(--font-heading);--f-ui:var(--font-body)}",
+    const tete = [tenueCss(c.input.palette, c.t.tenue, "", c.input.titleWeight ?? null, c.t.famille ?? null).trim(), ".ctw{--f-title:var(--font-heading);--f-ui:var(--font-body)}",
       `html body:has(.ctw),html body:has(.ctw) .es-main,html body:has(.ctw) .shopify-section{background-color:${fond}}`,
       `html body:has(.ctw[data-tn-fond="toile"]){background-image:repeating-linear-gradient(0deg,color-mix(in srgb,var(--tn-encre) 3.5%,transparent) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,color-mix(in srgb,var(--tn-encre) 3%,transparent) 0 1px,transparent 1px 3px)}`,
       `html body:has(.ctw[data-tn-fond="toile"]) .es-main,html body:has(.ctw[data-tn-fond="toile"]) .shopify-section{background-color:transparent}`].join("\n");
@@ -637,7 +640,7 @@ function sectionLiquid(c: Ctx, s: CtSection, o: { header?: boolean; /** Pièce d
     c.suite.push(...parts.slice(1).map((x, i, all) => (i === all.length - 1 ? `${x}\n${SHOP_CSS}` : x)));
   }
   const name = (l?.title ?? s.id).replace(/ à la tenue de la marque/, "").slice(0, 25);
-  return `{%- comment -%} E-COM STUDIO IA : section du thème sur mesure (${s.id}). {%- endcomment -%}\n<div class="ctw ctw-${c.t.family}"${tenueAttrs(c.t.tenue, c.input.fonts?.heading)}>${html}</div>\n${css ? `{% stylesheet %}\n${css}\n{% endstylesheet %}\n` : ""}{% schema %}\n${JSON.stringify({ name, settings: [] })}\n{% endschema %}\n`;
+  return `{%- comment -%} E-COM STUDIO IA : section du thème sur mesure (${s.id}). {%- endcomment -%}\n<div class="ctw ctw-${c.t.family}"${tenueAttrs(c.t.tenue, c.input.fonts?.heading, c.t.famille)}>${html}</div>\n${css ? `{% stylesheet %}\n${css}\n{% endstylesheet %}\n` : ""}{% schema %}\n${JSON.stringify({ name, settings: [] })}\n{% endschema %}\n`;
 }
 
 /** Type des sections de suite de la feuille du site (« es-custom-feuille-1 »…). */
@@ -669,7 +672,7 @@ const BASE_TEMPLATES: Record<string, TemplateJson> = {
 export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExport {
   const problems: ExportProblem[] = [], files: Record<string, string> = {};
   const customSections: ThemeSpec["customSections"] = {}, templates: Record<string, TemplateJson> = {}, pages: StorePage[] = [], productSuffixes: Record<string, string> = {};
-  const add = (c: Ctx, s: CtSection, o: { header?: boolean; coque?: "header" | "footer" } = {}): string | null => { const liquid = sectionLiquid(c, s, o); if (!liquid) return null; const type = `es-custom-${s.uid}`; customSections[type] = { name: (libSection(s.id)?.title ?? s.id).slice(0, 25), liquid }; return type; };
+  const add = (c: Ctx, s: CtSection, o: { header?: boolean; coque?: "header" | "footer"; signe?: boolean } = {}): string | null => { const liquid = sectionLiquid(c, s, o); if (!liquid) return null; const type = `es-custom-${s.uid}`; customSections[type] = { name: (libSection(s.id)?.title ?? s.id).slice(0, 25), liquid }; return type; };
   const group = (list: (string | null)[], type: "header" | "footer", name: string) => { const ok = list.filter((x): x is string => !!x); return { type, name, sections: Object.fromEntries(ok.map((x) => [x.replace(/^es-custom-/, "tn-"), { type: x, settings: {} }])), order: ok.map((x) => x.replace(/^es-custom-/, "tn-")) }; };
   const roots = new Set(allSections(t).map((x) => rootOf(sectionHtml(x.s))).filter((x): x is string => !!x));
   const suite: string[] = [];
@@ -708,7 +711,9 @@ export function customThemeSpec(t: CustomTheme, input: ExportInput): ShopifyExpo
     const key = templateOf(pg, i === 0);
     if (!key) { problems.push({ level: "à savoir", text: `« ${pg.label} » n'est pas envoyée : dans Shopify, le compte client est une page de Shopify` }); continue; }
     // Coque propre à la page : SON en-tête est la première section du modèle, SON pied la dernière.
-    const c = ctx(pg, key), types = [pg.coque?.header ? add(c, pg.coque.header, { coque: "header" }) : null, ...pg.sections.map((s) => add(c, s)), pg.coque?.footer ? add(c, pg.coque.footer, { coque: "footer" }) : null].filter((x): x is string => !!x);
+    // Les réglages de chaque pièce (fond, alignement : signatures.ts) et les places du signe de la marque, comme dans l'aperçu.
+    const regles = reglagesDePage(t.famille, pg.key, pg.sections), places = new Set(placesDuSigne(pg.key, regles.map((s) => sectionHtml(s))));
+    const c = ctx(pg, key), types = [pg.coque?.header ? add(c, pg.coque.header, { coque: "header" }) : null, ...regles.map((s, i) => add(c, s, { signe: places.has(i) })), pg.coque?.footer ? add(c, pg.coque.footer, { coque: "footer" }) : null].filter((x): x is string => !!x);
     if (hasCoque(pg)) coques.push({ key, label: pg.label });
     templates[key] = { sections: Object.fromEntries(types.map((x) => [x.replace(/^es-custom-/, "tn-"), { type: x, settings: {} }])), order: types.map((x) => x.replace(/^es-custom-/, "tn-")), ...(key === "password" ? { layout: "password" } : {}) };
     if (key.startsWith("product.") && pg.product) productSuffixes[pg.product] = key.slice(8);

@@ -15,6 +15,7 @@
  * thème (`concept`, `journey` de chaque page, `intent` de chaque section) et sert au plan des textes et au rédacteur.
  */
 import { FamillePick, famillesBrief } from "./familles";
+import { ReglagesPick, signaturesBrief } from "./signatures";
 import { StylePick, stylesBrief } from "./styles-de-page";
 import { z } from "zod";
 import { MAX_SECTIONS_UTILITAIRE, MIN_SECTIONS_IMPORTANTE, REGLES_D_OR } from "./partitions";
@@ -25,7 +26,8 @@ import { requiredPages, platformOwnedPages, type SiteKind } from "./theme";
 import type { FamilyId } from "../section-families";
 
 /** construction : pour une section à tenue seulement (une des constructions données dans la bibliothèque). */
-const SectionPick = z.object({ section: z.string().max(80), construction: z.string().max(40).nullable().optional(), why: z.string().min(10).max(600), says: z.string().min(10).max(900), photos: z.string().max(600) });
+/** reglages : fond, alignement et taille du titre de la pièce (signatures.ts), lus avec indulgence. */
+const SectionPick = z.object({ section: z.string().max(80), construction: z.string().max(40).nullable().optional(), reglages: ReglagesPick.optional(), why: z.string().min(10).max(600), says: z.string().min(10).max(900), photos: z.string().max(600) });
 export const DesignSchema = z.object({
   visitor: z.string().min(20).max(900),
   levers: z.array(z.string().min(3).max(240)).min(2).max(10),
@@ -110,7 +112,8 @@ export const TENUE_RULES = `SECTIONS « À TENUE » (marquées dans la liste) : 
 - Pour chaque section à tenue qui en a, choisis sa CONSTRUCTION (champ « construction », une des clés données) d'après la photo prévue et le tempérament de la marque ; dis pourquoi dans why. Deux concepts montrés au client n'ont pas la même construction d'ouverture ni le même en-tête (champ « headerConstruction »).
 - Une section à tenue peut servir sur plusieurs pages : elle y aura d'autres textes et d'autres photos.
 - TENUE (champ « tenue », une seule pour tout le site, tirée de la planche de marque et du produit) : ${TENUE_CHOICES}
-- Le SIGNE : un détail vrai du produit ou du métier (une forme, une matière, une couture) que la tenue reprend à plusieurs endroits ; jamais un décor plaqué.`;
+- Le SIGNE : un détail vrai du produit ou du métier (une forme, une matière, une couture) que la tenue reprend à plusieurs endroits ; jamais un décor plaqué.
+${signaturesBrief()}`;
 
 export const DESIGN_SYSTEM = `Tu es le directeur de création d'une agence qui conçoit des sites de vente haut de gamme. Tu CONÇOIS le site d'une marque avec une bibliothèque de sections (la liste complète, avec les caractéristiques de chaque section, t'est donnée), en français.
 MÉTHODE, dans cet ordre :
@@ -150,7 +153,7 @@ TON CONTRÔLE, page importante par page importante (accueil, fiches produit, pag
 Cherche aussi, page par page : où le visiteur décroche ; chaque objection sans réponse convaincante ; chaque section décorative, faible, mal placée ou sans contenu réel ; le rythme cassé (deux dispositions pareilles, deux fonds sombres ou deux sections denses à la suite) ; l'absence d'appel à agir ; un bouton sans page de destination logique ; un fait annoncé qui n'est pas dans les faits de la marque ; un texte prévu (says) creux, vague ou qui décrit au lieu de faire ressentir.
 Puis rends la conception CORRIGÉE et complète (même format, toutes les pages, le champ « partitions » compris), en gardant ce qui est bon, et liste dans corrections ce que tu as changé et pourquoi (une ligne par changement, avec la règle en cause).
 ${PAGE_PATTERNS}
-FAMILLE : vérifie que la famille choisie (champ « famille ») est bien celle que dit la PLANCHE DE MARQUE (couleurs, polices, direction artistique, voix), pas seulement le métier ; si une autre famille lui va mieux, change-la, dis pourquoi dans corrections, et remets l'allure, l'en-tête, le pied de page, l'ouverture et les photos dans les choix de la nouvelle famille. Garde les champs « famille », « familleWhy », « pageStyle », « pageStyleWhy », « headerConstruction », « footerConstruction » et « partitions ». Vérifie de même que le style de la page qui vend (« pageStyle ») est celui que demande ce que le client vend vraiment.
+FAMILLE : vérifie que la famille choisie (champ « famille ») est bien celle que dit la PLANCHE DE MARQUE (couleurs, polices, direction artistique, voix), pas seulement le métier ; si une autre famille lui va mieux, change-la, dis pourquoi dans corrections, et remets l'allure, l'en-tête, le pied de page, l'ouverture et les photos dans les choix de la nouvelle famille. Garde les « reglages » de chaque section (et remets-les dans la signature de la famille si tu la changes), les champs « signeForme » et « signeTexte » de la tenue, les champs « famille », « familleWhy », « pageStyle », « pageStyleWhy », « headerConstruction », « footerConstruction » et « partitions ». Vérifie de même que le style de la page qui vend (« pageStyle ») est celui que demande ce que le client vend vraiment.
 Mêmes exigences que le concepteur (pages riches, aucune section sans contenu réel, une section de cartes par page, « Produit vedette » en haut de la fiche, jamais la même section deux fois sur une page, pages obligatoires, identifiants de la liste uniquement).
 Réponse : uniquement le JSON demandé.`;
 

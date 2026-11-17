@@ -14,7 +14,7 @@
 .ctw .tn-ent label>input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none}
 .ctw .tn-ent .tn-e-barre{display:flex;align-items:center;height:var(--tn-e-h);padding:0 8px 0 20px}
 .ctw .tn-ent .tn-e-home{order:1;flex:1 1 auto;min-width:0;display:flex;align-items:center;min-height:44px}
-.ctw .tn-ent .tn-nom{display:block;min-width:0;font-family:var(--f-title);font-weight:var(--tn-poids,400);font-size:26px;line-height:1.15;letter-spacing:.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctw .tn-ent .tn-nom{display:block;min-width:0;font-family:var(--f-title);font-weight:var(--tn-poids,400);font-size:26px;line-height:1.38;letter-spacing:.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ctw .tn-ent .tn-nom img{display:block;max-height:38px;width:auto;max-width:160px}
 .ctw[data-tn-titres="gras"] .tn-ent .tn-nom{letter-spacing:-.03em}
 .ctw[data-tn-titres="capitales"] .tn-ent .tn-nom{text-transform:uppercase;font-size:19px;letter-spacing:.03em}

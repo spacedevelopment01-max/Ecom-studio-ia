@@ -47,6 +47,7 @@ import { built, cardOf, cardOfTheme, conceptGaps, registryGaps, type ThemeCard }
 import { educated, knowledgeCapMicro, knowledgeTypicalMicro, themeKnowledgeReady } from "./knowledge";
 import { proposeMenu, validMenu } from "./menu";
 import { choixDeLaFamille, familleGaps, fitFamille } from "./familles";
+import { estSignature, fitSignature, fitSigne, signatureGaps, signeGaps } from "./signatures";
 import { fitStyle, styleGaps } from "./styles-de-page";
 import { dataGaps, tenueMetiers, tenueReseaux, tenueVitrine } from "./tenue-data";
 import { achatFacts } from "./buy-block";
@@ -370,6 +371,8 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     // (rien ne détourne le visiteur de l'offre). Posée ici, sans le demander au concepteur : c'est une règle, pas un choix.
     for (const pg of d.pages) if (isArrivee(pg.key)) t = applyStructure(t, [{ op: "page_shell", page: pg.key, slot: "header", section: ref("tn-entete-arrivee") }, { op: "page_shell", page: pg.key, slot: "footer", section: ref("tn-pied-arrivee") }]);
     if (d.famille) { t.famille = d.famille; t.familleWhy = d.familleWhy ?? null; }
+    // Les réglages de chaque pièce (fond, alignement, titre : signatures.ts), gardés avec elle.
+    for (const pg of d.pages) { const tp = t.pages.find((x) => x.key === pg.key); pg.sections.forEach((x, i) => { const ts = tp?.sections[i]; if (ts && x.reglages && Object.keys(x.reglages).length && ts.id === ref(x.section)) ts.reglages = x.reglages; }); }
     if (d.pageStyle) t.pageStyle = d.pageStyle;
     // Gardés avec le site pour les suivants : son métier et la partition de chaque page importante (jamais la même deux fois de suite).
     t.metier = oc.metier; t.partitions = chosen(d);
@@ -422,6 +425,8 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     // Lot 4 : la conception reste dans les choix de la famille du Studio qu'elle annonce (contrôle sans IA) ; et le site
     // n'est fait que des pièces du thème unique.
     g.pages.push(...familleGaps(d, { business: site.business, families: catalogueFacts.families }));
+    // La signature de la famille (ses fonds de section) et le signe de la marque, contrôlés sans IA.
+    g.pages.push(...signatureGaps(d, (x) => { try { return ref(x); } catch { return x; } }), ...(d.famille ? signeGaps(d.tenue) : []));
     if (mode.kind !== "concept") g.pages.push(...styleGaps(d, site.business));
     const foreign = [d.header, d.footer, ...d.pages.flatMap((pg) => pg.sections.map((x) => x.section))].filter((id) => { const l = sectionByRef(id); return !!l && !isTenueSection(l); });
     // Le budget de photos : ce que la conception demande de créer, recompté sans IA (la fiche produit compte une fois par fiche).
@@ -499,7 +504,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   // autre qui sert le même moment ; une conception qui ne tient toujours pas la règle est refusée.
   {
     const idOf = (s: string) => { try { return ref(s); } catch { return s; } };
-    const autres = (r: ReturnType<typeof check>) => r.objections.length + r.rhythm.length + r.pages.filter((g) => !estVariete(g)).length;
+    const autres = (r: ReturnType<typeof check>) => r.objections.length + r.rhythm.length + r.pages.filter((g) => !estVariete(g) && !estSignature(g)).length;
     const base = autres(c);
     const accepte = (x: Design) => { const r = check(x); return !r.rules.length && !!r.t && autres(r) <= base; };
     const garder = mode.kind === "complete" ? keys : [];
@@ -513,6 +518,14 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   }
   // Le rythme : deux dispositions pareilles à la suite, réglé par un échange de place quand il ne crée aucun autre défaut.
   { const fit = fitRythme(d, facts); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+  // Dernier passage sans IA, après tout ce qui déplace ou remplace des pièces : chaque page prend la signature de sa
+  // famille (fonds, alignement) et le signe de la marque est complet. Aucune porte de sortie.
+  {
+    const sig = fitSignature(d, (x) => { try { return ref(x); } catch { return x; } });
+    const sg = sig.d.tenue && sig.d.famille ? fitSigne(sig.d.tenue, sig.d.famille, p.brand?.name || p.name || "") : null;
+    const x = sg?.changed.length ? { ...sig.d, tenue: sg.t } : sig.d;
+    if (sig.changed.length || sg?.changed.length) { const again = check(x); if (!again.rules.length && again.t) { d = x; c = again; } }
+  }
   if (c.rules.length || !c.t) return { ok: false, result: { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." } };
   // Conception gardée dans le thème : parcours de chaque page et intention de chaque section.
   for (const pg of c.t.pages) {

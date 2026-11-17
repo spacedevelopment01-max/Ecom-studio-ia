@@ -44,6 +44,10 @@ export const TenueSchema = z.object({
   petits: z.enum(["normal", "machine"]).default("normal"),
   /** Le signe pris sur le produit ou le métier, en quelques mots (« la niche du mur », « l'étiquette cousue ») : dit au client. */
   signe: z.string().max(120).default(""),
+  /** Le signe tel qu'il se pose sur le site (signatures.ts) : sa forme (une forme simple, jamais un dessin)… */
+  signeForme: z.enum(["etiquette", "tampon", "ligne", "couture", "ruban"]).optional(),
+  /** … et ses quelques signes de texte (28 au plus), repris sur l'ouverture, au milieu et à la fin de l'accueil. */
+  signeTexte: z.string().max(40).optional(),
 });
 export type Tenue = z.infer<typeof TenueSchema>;
 export const DEFAULT_TENUE: Tenue = TenueSchema.parse({});
@@ -63,9 +67,11 @@ export const TenuePickSchema = z.object({
   fond: pick(["uni", "toile"], "uni"),
   petits: pick(["normal", "machine"], "normal"),
   signe: z.preprocess((v) => (typeof v === "string" ? v.trim().slice(0, 120) : ""), z.string()),
+  signeForme: z.preprocess((v) => { const x = plain(v); return x === "etiquette ronde" ? "etiquette" : x; }, z.enum(["etiquette", "tampon", "ligne", "couture", "ruban"]).optional()).catch(undefined),
+  signeTexte: z.preprocess((v) => (typeof v === "string" && v.trim() ? v.replace(/\s+/g, " ").trim().slice(0, 40) : undefined), z.string().optional()).catch(undefined),
 });
 
-export const TENUE_CHOICES = `titres : « fins » (lettres fines et serrées, pour une marque calme ou soignée), « gras » (très gras, très serrés, pour une marque franche, brute, de terrain), « capitales » (tout en capitales, pour une marque joyeuse ou sportive) ; bouton : « pilule » (arrondi plein), « droit » (angles vifs), « etiquette » (une étiquette cousue, pour ce qui est fabriqué, cousu, d'atelier), « ombre » (rond à ombre dure, joueur) ; cadre : « droit » (photos aux coins nets ou à peine adoucis) ou « penche » (photo penchée, bordée, joueuse) ; jamais de photo dans une arche ni dans une demi-lune ; fond : « uni » ou « toile » (trame fine, pour le textile, le papier, l'artisanat) ; petits : « normal » ou « machine » (petits textes à la machine à écrire, pour l'outil, le technique) ; signe : en quelques mots, le signe pris sur le produit ou le métier de CETTE marque et repris à plusieurs endroits (une couture, une forme, une matière du produit ou du métier).`;
+export const TENUE_CHOICES = `titres : « fins » (lettres fines et serrées, pour une marque calme ou soignée), « gras » (très gras, très serrés, pour une marque franche, brute, de terrain), « capitales » (tout en capitales, pour une marque joyeuse ou sportive) ; bouton : « pilule » (arrondi plein), « droit » (angles vifs), « etiquette » (une étiquette cousue, pour ce qui est fabriqué, cousu, d'atelier), « ombre » (rond à ombre dure, joueur) ; cadre : « droit » (photos aux coins nets ou à peine adoucis) ou « penche » (photo penchée, bordée, joueuse) ; jamais de photo dans une arche ni dans une demi-lune ; fond : « uni » ou « toile » (trame fine, pour le textile, le papier, l'artisanat) ; petits : « normal » ou « machine » (petits textes à la machine à écrire, pour l'outil, le technique) ; signe : en quelques mots, le signe pris sur le produit ou le métier de CETTE marque et repris à plusieurs endroits (une couture, une forme, une matière du produit ou du métier) ; signeForme : la forme sous laquelle le Studio pose ce signe sur le site, « etiquette » (étiquette ronde), « tampon », « ligne » (une ligne de texte entre deux filets), « couture » (entre deux lignes de points cousus) ou « ruban » (bande pleine penchée) ; signeTexte : ses quelques signes de texte (28 au plus), tirés du produit ou du métier, jamais un dessin ni un fait inventé.`;
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 type Palette = { dark?: string; primary?: string; secondary?: string; accent?: string; light?: string };
@@ -77,7 +83,7 @@ export function contraste(a: string, b: string): number { const x = hex(a), y = 
 const melange = (a: string, b: string, part: number): string | null => { const x = hex(a), y = hex(b); return x && y ? `#${x.map((v, i) => Math.round(v * part + y[i] * (1 - part)).toString(16).padStart(2, "0")).join("")}` : null; };
 
 /** Couleurs de la tenue, tirées de la palette de la marque. */
-export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | null | undefined, monoFontCss = "", /** Graisse des titres quand la police de la marque en a une plus forte que la normale (tenue « gras »). */ poids: number | null = null): string {
+export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | null | undefined, monoFontCss = "", /** Graisse des titres quand la police de la marque en a une plus forte que la normale (tenue « gras »). */ poids: number | null = null, /** La famille du site (en coulisses) : sa couleur douce et son fond (signatures.ts). */ famille: string | null = null): string {
   const pal = palette ?? {};
   const fond = pal.light ?? "#F6F1E7", encre = pal.dark ?? "#1F1B16", accent = pal.primary ?? encre;
   // Une palette ne suit pas toujours les rôles attendus (essai réel du 16 novembre 2026 : une couleur de marque jaune
@@ -99,7 +105,59 @@ export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | nul
     "--tn-arrondi": tenue?.cadre === "droit" || !tenue ? "0px" : "14px",
     ...(poids && poids !== 400 ? { "--tn-poids": String(poids) } : {}),
   };
-  return `${monoFontCss}\n.ctw{${Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(";")}}`;
+  return `${monoFontCss}\n.ctw{${Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(";")}}\n${fondsCss(pal, famille)}`;
+}
+
+/** Couleur sûre (hexadécimale) : celle demandée si elle se lit, sinon le repli. */
+const sure = (c: string | undefined, repli: string) => (c && hex(c) ? c : repli);
+/**
+ * Les fonds réglés d'une section (signatures.ts, 17 novembre 2026) : doux, sombre, couleur de la marque, et le fond
+ * d'une famille. Chaque fond redéfinit les variables de la tenue SUR la section : toute la pièce (textes, cartes,
+ * boutons, étoiles) prend des couleurs CALCULÉES pour rester lisibles, sans qu'aucune pièce n'ait à être réécrite.
+ * La couleur douce dépend de la famille : chaude et tirée de la deuxième couleur (maison), teintée de la couleur de la
+ * marque (naturel), plus franche (gourmand), discrète ailleurs.
+ */
+export function fondsCss(palette: Palette | null | undefined, famille?: string | null): string {
+  const pal = palette ?? {};
+  const F = sure(pal.light, "#F6F1E7"), E = sure(pal.dark, "#1F1B16"), A = sure(pal.primary, E);
+  const blanc = melange(F, "#ffffff", 0.35) ?? "#ffffff", clair = melange(F, "#ffffff", 0.7) ?? "#ffffff";
+  const S = pal.secondary && hex(pal.secondary) ? pal.secondary : null;
+  const lisible = (c: string | null | undefined): c is string => !!c && contraste(c, E) >= 7;
+  // La couleur douce de la famille, toujours assez claire pour que l'encre s'y lise (contraste de 7 au moins).
+  const essais: (string | null)[] = famille === "maison-chaleureuse" ? [S, melange(F, A, 0.86), melange(F, E, 0.9)]
+    : famille === "naturel-sincere" ? [melange(F, A, 0.8), melange(F, A, 0.86), S, melange(F, E, 0.9)]
+    : famille === "gourmand-joyeux" ? [S && melange(S, F, 0.85), melange(F, A, 0.7), melange(F, A, 0.8), S, melange(F, E, 0.88)]
+    : [S, melange(F, E, 0.92)];
+  const D = essais.find(lisible) ?? melange(F, E, 0.92) ?? F;
+  const sur = (fond: string, a: string, b: string) => (contraste(a, fond) >= contraste(b, fond) ? a : b);
+  const set = (sel: string, v: Record<string, string>) => `${sel}{${Object.entries(v).map(([k, x]) => `${k}:${x}`).join(";")}}`;
+  const sur1 = (fond: string, encre: string) => {
+    const accentOk = contraste(A, fond) >= 3;
+    // Le bouton reste celui de la page (l'encre) sur un fond clair ou doux ; sur un fond sombre, la couleur de la marque si elle s'y voit.
+    const bouton = encre === E ? E : accentOk ? A : encre;
+    return {
+      "--tn-fond": fond, "--tn-encre": encre, "--tn-texte": `color-mix(in srgb,${encre} 92%,${fond})`, "--tn-sourd": `color-mix(in srgb,${encre} 74%,${fond})`,
+      "--tn-accent": accentOk ? A : encre, "--tn-accent-texte": accentOk ? A : encre, "--tn-sur-accent": sur(accentOk ? A : encre, fond, encre === E ? clair : E),
+      "--tn-bouton": bouton, "--tn-sur-bouton": sur(bouton, fond, sur(bouton, E, clair)),
+    };
+  };
+  // Le fond sombre : l'encre de la marque, les textes clairs ; jamais un sombre qui ne l'est pas assez.
+  const N = contraste(E, "#ffffff") >= 9 ? E : melange(E, "#000000", 0.6) ?? "#111111";
+  // La couleur de la marque en aplat : le texte le plus lisible dessus (encre ou clair) ; illisible, elle devient le sombre.
+  const encreSurA = sur(A, E, clair), marqueOk = contraste(A, encreSurA) >= 4.5;
+  const out = [
+    set('.ctw .tn[data-tn-fd="doux"]', { ...sur1(D, E), "--tn-doux": clair, "--tn-sourd": `color-mix(in srgb,${E} 78%,${D})` }),
+    set('.ctw .tn[data-tn-fd="sombre"]', { ...sur1(N, clair), "--tn-doux": melange(N, clair, 0.86) ?? N }),
+    marqueOk
+      // L'accent, sur la couleur de la marque, est l'autre couleur (claire sous une encre sombre) : les cartes teintées
+      // d'accent s'éclaircissent au lieu de s'assombrir sous le texte (mesuré au tour des sections).
+      ? set('.ctw .tn[data-tn-fd="marque"]', { "--tn-fond": A, "--tn-encre": encreSurA, "--tn-texte": encreSurA, "--tn-sourd": `color-mix(in srgb,${encreSurA} 82%,${A})`, "--tn-accent": encreSurA === E ? clair : E, "--tn-accent-texte": encreSurA, "--tn-sur-accent": encreSurA, "--tn-bouton": encreSurA, "--tn-sur-bouton": A, "--tn-doux": melange(A, encreSurA === E ? clair : E, 0.8) ?? A })
+      : set('.ctw .tn[data-tn-fd="marque"]', { ...sur1(N, clair), "--tn-doux": melange(N, clair, 0.86) ?? N }),
+    set('.ctw .tn[data-tn-fd="clair"]', { "--tn-fond": famille === "epure-editorial" ? blanc : F }),
+    // Le fond presque blanc de l'épuré, sur tout le site.
+    ...(famille === "epure-editorial" ? [set(".ctw", { "--tn-fond": blanc, "--tn-encre-page": E }), set(".ctw>.frame", { background: blanc })] : [set(".ctw", { "--tn-encre-page": E })]),
+  ];
+  return out.join("\n");
 }
 /** Attributs posés sur le thème : chaque section à tenue les lit. */
 /**
@@ -115,9 +173,9 @@ export const sansArche = <T extends string>(cadre: T): T | "droit" => (cadre ===
  */
 const TITRES_TRES_GRAS = new Set(["anton", "archivo_black", "abril_fatface", "alfa_slab_one", "bebas_neue", "righteous"]);
 export const titresTresGras = (heading: string | null | undefined): boolean => TITRES_TRES_GRAS.has((heading ?? "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "_"));
-export function tenueAttrs(tenue: Tenue | null | undefined, /** La police des titres de la marque (clé ou nom) : très grasse, elle pose data-tn-lourd. */ heading?: string | null): string {
+export function tenueAttrs(tenue: Tenue | null | undefined, /** La police des titres de la marque (clé ou nom) : très grasse, elle pose data-tn-lourd. */ heading?: string | null, /** La famille du site (en coulisses) : sa signature (tenue-familles.css). */ famille?: string | null): string {
   const t = tenue ?? DEFAULT_TENUE;
-  return ` data-tn-titres="${t.titres}" data-tn-bouton="${t.bouton}" data-tn-cadre="${sansArche(t.cadre)}" data-tn-fond="${t.fond}" data-tn-petits="${t.petits}"${titresTresGras(heading) ? ' data-tn-lourd="1"' : ""}`;
+  return ` data-tn-titres="${t.titres}" data-tn-bouton="${t.bouton}" data-tn-cadre="${sansArche(t.cadre)}" data-tn-fond="${t.fond}" data-tn-petits="${t.petits}"${titresTresGras(heading) ? ' data-tn-lourd="1"' : ""}${famille && /^[a-z-]{3,40}$/.test(famille) ? ` data-tn-famille="${famille}"` : ""}`;
 }
 
 /**
@@ -130,7 +188,7 @@ export const sansPonctuationSeule = (html: string): string =>
 
 /** Longueurs (en signes) à partir desquelles un texte est « long » : un grand titre (deux crans), un nom ou une légende. */
 export const TEXTE_LONG = { titre: 50, titreTresLong: 64, libelleAssezLong: 32, libelle: 56 };
-const texteNu = (h: string) => h.replace(/<[^>]+>/g, "").replace(/&[a-z#0-9]+;/gi, "x").replace(/\s+/g, " ").trim();
+const texteNu = (h: string) => h.replace(/<span class="tn-signe-m"[^>]*>[\s\S]*?<\/span><\/span>/g, "").replace(/<[^>]+>/g, "").replace(/&[a-z#0-9]+;/gi, "x").replace(/\s+/g, " ").trim();
 /**
  * Marque les textes longs, une fois les vraies données posées (dernier passage du rendu). La feuille du socle lit la marque :
  * - un grand titre (h1, h2) de plus de 50 signes se réduit (`data-tn-long="1"`), de plus de 64 encore (`"2"`) : dix mots
@@ -317,7 +375,7 @@ for (const s of BASE_SECTIONS) s.ordre = ORDRE_PIECES[s.id];
 export const TENUE_SECTIONS: TenueSection[] = BASE_SECTIONS.map((s) => (FACONS[s.id] ? { ...s, constructions: FACONS[s.id] } : s));
 /** Feuilles et scripts des sections à tenue, dans l'ordre de chargement (un fichier absent est ignoré). */
 /** « boutique-apercu.js » : le panier d'essai de l'aperçu (contrat window.tnBoutique) ; en boutique, l'adaptateur de la plateforme le remplace. */
-export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css", "tenue-coque.css", "tenue-achat.css", "tenue-metiers.css", "tenue-pages.css", "tenue-vente.css", "tenue-partitions.css"], js: ["boutique-apercu.js", "tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js", "tenue-coque.js", "tenue-achat.js", "tenue-metiers.js", "tenue-pages.js", "tenue-vente.js", "tenue-partitions.js"] };
+export const TENUE_FILES = { css: ["tenue.css", "tenue-produit.css", "tenue-services.css", "tenue-recit.css", "tenue-coque.css", "tenue-achat.css", "tenue-metiers.css", "tenue-pages.css", "tenue-vente.css", "tenue-partitions.css", "tenue-familles.css"], js: ["boutique-apercu.js", "tenue.js", "tenue-produit.js", "tenue-services.js", "tenue-recit.js", "tenue-coque.js", "tenue-achat.js", "tenue-metiers.js", "tenue-pages.js", "tenue-vente.js", "tenue-partitions.js"] };
 
 const BY_ID = new Map(TENUE_SECTIONS.map((s) => [s.id, s]));
 export const tenueSection = (id: string): TenueSection | null => BY_ID.get(id) ?? null;

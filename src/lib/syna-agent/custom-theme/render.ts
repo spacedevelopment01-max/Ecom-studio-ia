@@ -21,6 +21,7 @@ import { TENUE_FILES, listedProducts, markMissing, withoutExampleProducts, withT
 import { productPageKey, withMenu, type MenuProduct } from "./menu";
 import { tenueMetiers, tenueVitrine, withTenueSite, withVenteArrivee, type TenueSite } from "./tenue-data";
 import { factLine } from "../activity";
+import { reglagesAttrs, reglagesDePage, signeDe, signeSurPage } from "./signatures";
 
 /** Feuilles ou scripts des sections à tenue réellement présents dans public/sections (un module sans script n'en charge pas). */
 const tenueFiles = (kind: "css" | "js") => TENUE_FILES[kind].filter((f) => { try { return fs.statSync(path.join(LIBRARY_DIR(), f)).size > 0; } catch { return false; } });
@@ -184,7 +185,7 @@ export function sectionMarkup(s: CtSection, brandName: string, role: string, bus
   const tenue = /^\s*<(?:section|footer) class="tn /.test(html);
   const built = tenue ? validConstruction(s.id, s.construction) : null;
   if (tenue) html = markMissing(html);
-  const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"${s.clientTexts ? " data-ct-own" : ""}${layAttr}${built ? ` data-tn-c="${built}"` : ""}`);
+  const marked = html.replace(/^\s*<(section|footer)\b/, `<$1 data-ct="${s.uid}" data-ct-role="${role}"${s.clientTexts ? " data-ct-own" : ""}${layAttr}${built ? ` data-tn-c="${built}"` : ""}${tenue ? reglagesAttrs(s.id, built, s.reglages) : ""}`);
   return marked;
 }
 
@@ -568,7 +569,9 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const shell = (s: CtSection | null | undefined, place: string) => (s ? (place === "en-tête" ? withVenteArrivee(withTenueSite(withMenu(sectionMarkup(s, name, roleOf(place)), t.menu, { boutique: flags.hdCart !== "0" || p.business !== "services", families: site.families, products: tnProducts }), { phone: site.phone }), site) : withTenueSite(sectionMarkup(s, name, roleOf(place)), site)) : "");
   // Une page qui porte sa propre coque (page d'arrivée d'une publicité) : SON en-tête ouvre la page, SON pied la ferme ;
   // quand elle est affichée, rien du site ne se pose autour (règle « data-coque » de la feuille, posée par la navigation).
-  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${hasCoque(pg) ? " data-coque" : ""}${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${hasCoque(pg) ? `${shell(pg.coque!.header, "en-tête")}\n` : ""}${pg.sections.map((s) => withTenueAchat(realMap(withTenueSite(withTenuePrestations(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), buyOf(pg)), listedProducts(tnProducts, pg.key)), tnPrestations), site), address), p.id, pg.product, { selecteur: !pg.sections.some((x) => x.id === "tn-versions"), fiches })).join("\n")}${hasCoque(pg) ? `\n${shell(pg.coque!.footer, "pied de page")}` : ""}</main>`).join("\n");
+  // Le signe de la marque (signatures.ts) : sur l'ouverture, un moment du milieu et la fin de l'accueil, la fin des autres pages importantes.
+  const signe = signeDe(t.tenue);
+  const body = t.pages.map((pg, i) => `<main class="tb-pg" data-pg="${esc(pg.key)}"${hasCoque(pg) ? " data-coque" : ""}${pg.seo ? ` data-seo-title="${esc(pg.seo.title)}" data-seo-desc="${esc(pg.seo.description)}"` : ""}${i ? " hidden" : ""}>${hasCoque(pg) ? `${shell(pg.coque!.header, "en-tête")}\n` : ""}${signeSurPage(pg.key, reglagesDePage(t.famille, pg.key, pg.sections).map((s) => withTenueAchat(realMap(withTenueSite(withTenuePrestations(withTenueProducts(withTenueBuyBlock(withRealBuyBlock(sectionMarkup(s, name, "page", p.business === "services" ? "services" : "products"), buy), buyOf(pg)), listedProducts(tnProducts, pg.key)), tnPrestations), site), address), p.id, pg.product, { selecteur: !pg.sections.some((x) => x.id === "tn-versions"), fiches })), signe).join("\n")}${hasCoque(pg) ? `\n${shell(pg.coque!.footer, "pied de page")}` : ""}</main>`).join("\n");
   // Sections de tout le site : le bandeau au-dessus de l'en-tête ; les fenêtres (cookies, âge, discussion) posées en bas de l'écran.
   const extras = (group: "bandeau" | "partout") => [...(t.extras ?? []), ...(drawer && !(t.extras ?? []).includes(drawer) ? [drawer] : [])].filter((s) => (tenueSection(s.id)?.group ?? "partout") === group).map((s) => withTenueAchat(withTenueSite(sectionMarkup(s, name, "page"), site), p.id)).join("\n");
   const windows = extras("partout");
@@ -591,11 +594,11 @@ ${tenueFiles("css").map((f) => `<link rel="stylesheet" href="/sections/${f}">`).
 <style>${BASE_CSS}
 ${SETTINGS_CSS}
 ${brandCss(p)}
-${tenueCss(p.brand?.palette, t.tenue, MONO_CSS(), titleWeight(p.brand?.fonts?.heading, t.tenue?.titres))}
+${tenueCss(p.brand?.palette, t.tenue, MONO_CSS(), titleWeight(p.brand?.fonts?.heading, t.tenue?.titres), t.famille ?? null)}
 ${own}</style></head><body>
 <script${n}>${pre}</script>
 <div class="tb-bar"><span>${esc(name)} ·</span>${bar}<span class="tb-vw">Voir en</span><button class="tb-vw" type="button" data-vw="desk" aria-pressed="true">Ordinateur</button><button class="tb-vw" type="button" data-vw="phone" aria-pressed="false">Téléphone</button></div>
-<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${t.pages[0] && hasCoque(t.pages[0]) ? " data-coque" : ""}${tenueAttrs(t.tenue, p.brand?.fonts?.heading)}><div class="frame">${withTextesLongs(sansVide(`${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
+<div class="tb-wrap ctw ctw-${t.family} ctw-${t.style}"${t.pages[0] && hasCoque(t.pages[0]) ? " data-coque" : ""}${tenueAttrs(t.tenue, p.brand?.fonts?.heading, t.famille)}><div class="frame">${withTextesLongs(sansVide(`${extras("bandeau")}${shell(t.header, "en-tête")}${shell(t.search, "recherche")}
 ${body}
 ${shell(t.footer, "pied de page")}${windows ? `<div class="tn-fixes">${windows}</div>` : ""}`))}</div></div>
 ${clean(withBrandName(templates, name))}

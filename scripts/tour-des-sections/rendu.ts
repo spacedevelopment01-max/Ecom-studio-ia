@@ -31,10 +31,11 @@ import * as S from "../../src/lib/syna-agent/custom-theme/theme";
 import * as M from "../../src/lib/syna-agent/custom-theme/menu";
 import * as R from "../../src/lib/syna-agent/custom-theme/render";
 import * as D from "../../src/lib/syna-agent/custom-theme/tenue-data";
+import * as G from "../../src/lib/syna-agent/custom-theme/signatures";
 import { withTenueAchat } from "../../src/lib/syna-agent/custom-theme/buy-block";
 import { withoutMissingPhotos } from "../../src/lib/syna-agent/custom-theme/library";
 import { withTextesLongs, listedProducts, tenueSection, withTenueBuyBlock, withTenuePrestations, withTenueProducts, withoutExampleProducts, validConstruction, type TenueSection } from "../../src/lib/syna-agent/custom-theme/tenue";
-import { CLIENTS, MARQUE, SCENE, TENUES, avecListes, durcir, enScenes, listes, photoProduitSvg, remplir, type Client, type Etat, type TenueBanc } from "./donnees";
+import { CLIENTS, MARQUE, SCENE, TENUES, TENUES_FAMILLES, avecListes, durcir, enScenes, listes, photoProduitSvg, remplir, type Client, type Etat, type TenueBanc } from "./donnees";
 
 if (!process.env.DATA_DIR || path.resolve(process.env.DATA_DIR).startsWith(path.resolve(process.cwd()) + path.sep)) throw new Error("Tour des sections : DATA_DIR doit être un dossier jetable hors du dépôt (voir tour.ts).");
 
@@ -44,7 +45,7 @@ export type Banc = { clients: Record<Client, Monte> };
 
 /** Les pages qu'un vrai site aurait : elles donnent ses liens au menu et ses familles à la boutique. */
 const PAGES = [["home", "Accueil"], ["shop", "Boutique"], ["product", "Fiche produit"], ["about", "À propos"], ["contact", "Contact"], ["prestations", "Prestations"], ["journal", "Journal"], ["legal", "Informations légales"]] as const;
-const themeVide = (tenue: TenueBanc, pages: S.CtPage[] = []): S.CustomTheme => ({ version: 1, family: "classique", style: "classique", header: null, footer: null, search: null, pages, tenue: tenue.tenue, rev: 0, at: 0 } as S.CustomTheme);
+const themeVide = (tenue: TenueBanc, pages: S.CtPage[] = []): S.CustomTheme => ({ version: 1, family: "classique", style: "classique", header: null, footer: null, search: null, pages, tenue: tenue.tenue, rev: 0, at: 0, ...(tenue.famille ? { famille: tenue.famille } : {}) } as S.CustomTheme);
 const themeDuSite = (tenue: TenueBanc) => themeVide(tenue, [...PAGES.map(([key, label]) => ({ key, label, sections: [] })), { key: "tour", label: "Tour", sections: [] }]);
 
 /** Remplit la base d'essai : un compte, et un projet par client d'essai. */
@@ -140,12 +141,15 @@ function photosCreees(html: string, etat: Etat, sansPhotoProduit: boolean): stri
  * Le contenu de la page pour une pièce seule (ou une suite de pièces), monté comme le Studio le monte.
  * Rend `null` quand le Studio ne rendrait rien du tout (pièce sans sa vraie donnée).
  */
-export function contenu(banc: Banc, suite: Cas[], etat: Etat, o: { cle?: string; /** Sans les photos « créées » du client d'essai (pour comparer au Studio). */ sansPhotosCreees?: boolean } = {}): { html: string; rendues: string[] } {
+export function contenu(banc: Banc, suite: Cas[], etat: Etat, o: { cle?: string; /** Sans les photos « créées » du client d'essai (pour comparer au Studio). */ sansPhotosCreees?: boolean; /** La famille du site et son signe (signatures.ts) : fonds de section, alignement, signe posés comme au Studio. */ famille?: string | null; signe?: G.Signe | null; /** La page telle que la voient les réglages et le signe (« home » : l'accueil). */ cleReglages?: string; /** Réglages imposés, pièce par pièce (dans l'ordre de la suite) : pour essayer chaque fond. */ reglages?: (G.Reglages | null)[] } = {}): { html: string; rendues: string[] } {
   const client: Client = etat === "exemple" ? "vrai" : etat, m = banc.clients[client], monte = etat !== "exemple";
   const pg = o.cle ?? "tour";
   const fiches = new Map<string, string>();
   const sansPhoto = !m.achat?.images.length;
-  const sections = suite.map((c, i) => { const s = tenueSection(c.piece)!; return { s, cs: { uid: `t${i}`, id: s.id, construction: c.construction || undefined, html: ecrire(s, etat), clientTexts: monte } as S.CtSection, place: placeDe(s) }; });
+  const brutes = suite.map((c, i) => { const s = tenueSection(c.piece)!; return { s, cs: { uid: `t${i}`, id: s.id, construction: c.construction || undefined, html: ecrire(s, etat), clientTexts: monte, ...(o.reglages?.[i] ? { reglages: o.reglages[i] } : {}) } as S.CtSection, place: placeDe(s) }; });
+  // Les réglages de la page comme au Studio (render.ts) : seulement sur les pièces posées dans la page.
+  const dansPage = brutes.filter((x) => x.place === "page"), regles = G.reglagesDePage(o.famille, o.cleReglages ?? pg, dansPage.map((x) => x.cs));
+  const sections = brutes.map((x) => { const k = dansPage.indexOf(x); return k < 0 ? x : { ...x, cs: regles[k] }; });
   const versions = sections.some((x) => x.s.id === "tn-versions");
   const rendre = (x: (typeof sections)[number]): string => {
     const role = x.place === "en-tête" ? "header" : x.place === "pied de page" ? "footer" : x.place === "recherche" ? "search" : "page";
@@ -160,7 +164,7 @@ export function contenu(banc: Banc, suite: Cas[], etat: Etat, o: { cle?: string;
   };
   const de = (place: string) => sections.filter((x) => x.place === place).map(rendre);
   const fenetres = de("partout").join("\n");
-  let html = `${de("bandeau").join("\n")}${de("en-tête").join("")}${de("recherche").join("")}\n<main class="tb-pg" data-pg="${pg}">${de("page").join("\n")}</main>\n${de("pied de page").join("")}${fenetres ? `<div class="tn-fixes">${fenetres}</div>` : ""}`;
+  let html = `${de("bandeau").join("\n")}${de("en-tête").join("")}${de("recherche").join("")}\n<main class="tb-pg" data-pg="${pg}">${G.signeSurPage(o.cleReglages ?? pg, de("page"), o.signe ?? null).join("\n")}</main>\n${de("pied de page").join("")}${fenetres ? `<div class="tn-fixes">${fenetres}</div>` : ""}`;
   if (monte) {
     const surPhoto = new Map(sections.map((x) => [x.cs.uid, R.textOnPhoto(x.cs)] as const));
     html = withoutMissingPhotos(withoutExampleProducts(html, m.produits.map((p) => p.title)), TENUES[0].palette, (uid) => surPhoto.get(uid) === true);
@@ -171,8 +175,8 @@ export function contenu(banc: Banc, suite: Cas[], etat: Etat, o: { cle?: string;
 }
 
 /** La page complète (le document que le navigateur charge) : la page du Studio, avec ce contenu. */
-export function page(banc: Banc, suite: Cas[], etat: Etat, tenue: TenueBanc): { html: string; rendues: string[] } {
-  const client: Client = etat === "exemple" ? "vrai" : etat, c = coquille(banc.clients[client], tenue), x = contenu(banc, suite, etat);
+export function page(banc: Banc, suite: Cas[], etat: Etat, tenue: TenueBanc, o: { cleReglages?: string; reglages?: (G.Reglages | null)[] } = {}): { html: string; rendues: string[] } {
+  const client: Client = etat === "exemple" ? "vrai" : etat, c = coquille(banc.clients[client], tenue), x = contenu(banc, suite, etat, { famille: tenue.famille ?? null, signe: G.signeDe(tenue.tenue), cleReglages: o.cleReglages, reglages: o.reglages });
   return { html: `${c.avant}${x.html}${c.apres}`, rendues: x.rendues };
 }
 
@@ -182,16 +186,16 @@ export const constructionsDe = (s: TenueSection): string[] => (s.constructions.l
 // ---------------------------------------------------------------- les pages en situation
 
 /** Deux sites composés (une suite de pièces avec en-tête collant et pied) : ce qui ne se voit qu'entre deux sections. */
-export const SITUATIONS: { cle: string; titre: string; suite: Cas[] }[] = [
-  { cle: "boutique-accueil", titre: "En situation : l'accueil d'une boutique", suite: [
+export const SITUATIONS: { cle: string; titre: string; /** La page vue par les réglages et le signe (« home » : l'accueil). */ page: string; suite: Cas[] }[] = [
+  { cle: "boutique-accueil", titre: "En situation : l'accueil d'une boutique", page: "home", suite: [
     { piece: "tn-bandeau", construction: "" }, { piece: "tn-entete-liens", construction: "" }, { piece: "tn-ouverture", construction: "titre-en-bas" }, { piece: "tn-produits", construction: "grille" }, { piece: "tn-atouts", construction: "cartes" },
     { piece: "tn-emotion", construction: "phrase-sur-photo" }, { piece: "tn-appel-produit", construction: "carte" }, { piece: "tn-histoire", construction: "deux-colonnes" }, { piece: "tn-questions", construction: "cartes" }, { piece: "tn-garantie", construction: "bande" },
     { piece: "tn-final", construction: "encadre" }, { piece: "tn-pied-lettre", construction: "" }] },
-  { cle: "boutique-fiche", titre: "En situation : la fiche produit d'une boutique", suite: [
+  { cle: "boutique-fiche", titre: "En situation : la fiche produit d'une boutique", page: "product", suite: [
     { piece: "tn-entete-annonce", construction: "" }, { piece: "tn-achat", construction: "vente-directe" }, { piece: "tn-versions", construction: "pastilles" }, { piece: "tn-lots", construction: "cartes" }, { piece: "tn-sous-bouton", construction: "" },
     { piece: "tn-atouts", construction: "coches" }, { piece: "tn-probleme-reponse", construction: "" }, { piece: "tn-livraison", construction: "frise" }, { piece: "tn-questions", construction: "filets" }, { piece: "tn-appel-produit", construction: "bande-sombre" },
     { piece: "tn-pied-reassurance", construction: "" }] },
-  { cle: "services-accueil", titre: "En situation : l'accueil d'un métier de services", suite: [
+  { cle: "services-accueil", titre: "En situation : l'accueil d'un métier de services", page: "home", suite: [
     { piece: "tn-entete-services", construction: "" }, { piece: "tn-ouverture-metier", construction: "photo-pleine" }, { piece: "tn-prestations", construction: "" }, { piece: "tn-tarifs", construction: "cartes" }, { piece: "tn-deroule", construction: "" },
     { piece: "tn-delais", construction: "frise" }, { piece: "tn-zone", construction: "" }, { piece: "tn-horaires", construction: "encadre" }, { piece: "tn-rdv", construction: "" }, { piece: "tn-reseaux", construction: "pastilles" },
     { piece: "tn-pied-services", construction: "" }] },
@@ -208,7 +212,11 @@ export function suiteValable(suite: Cas[]): Cas[] {
  * le contenu de la page au caractère près. Rend la liste des écarts (vide : le banc rend comme le Studio).
  */
 export function memeQueLeStudio(banc: Banc): string[] {
-  const ecarts: string[] = [], tenue = TENUES[0], m = banc.clients.vrai;
+  // Sans famille, puis avec une famille et un signe (fonds de section, alignement, signe posés au rendu).
+  return [TENUES[0], TENUES_FAMILLES[2]].flatMap((tenue) => memeQueLeStudioDans(banc, tenue));
+}
+function memeQueLeStudioDans(banc: Banc, tenue: TenueBanc): string[] {
+  const ecarts: string[] = [], m = banc.clients.vrai;
   const suites: Cas[][] = [
     [{ piece: "tn-ouverture", construction: "titre-en-bas" }, { piece: "tn-produits", construction: "grille" }, { piece: "tn-atouts", construction: "cartes" }, { piece: "tn-questions", construction: "cartes" }, { piece: "tn-contact", construction: "deux-colonnes" }],
     [{ piece: "tn-achat", construction: "simple" }, { piece: "tn-lots", construction: "cartes" }, { piece: "tn-appel-produit", construction: "carte" }, { piece: "tn-prestations", construction: "" }, { piece: "tn-tarifs", construction: "cartes" }],
@@ -222,7 +230,7 @@ export function memeQueLeStudio(banc: Banc): string[] {
     const main = (h: string) => { const a = h.indexOf('<main class="tb-pg" data-pg="tour"'), b = h.indexOf("</main>", a); return a < 0 ? "" : h.slice(a, b + 7).replace(/^<main[^>]*>/, "<main>"); };
     const x = main(R.renderCustomTheme(m.projet as never, t, { embed: true }));
     // Le banc, avec les seules données que le Studio lit dans la base, et sans ses photos « créées ».
-    const y = main(contenu({ clients: { ...banc.clients, vrai: { ...m, site: R.tenueSite(m.projet, t, m.produits, m.prestations) } } }, suite, etat, { sansPhotosCreees: true }).html);
+    const y = main(contenu({ clients: { ...banc.clients, vrai: { ...m, site: R.tenueSite(m.projet, t, m.produits, m.prestations) } } }, suite, etat, { sansPhotosCreees: true, famille: tenue.famille ?? null, signe: G.signeDe(tenue.tenue) }).html);
     if (!x || x !== y) { let i = 0; while (i < x.length && x[i] === y[i]) i++; ecarts.push(`${suite.map((c) => c.piece).join(", ")} : le banc s'écarte du Studio au signe ${i} — Studio « ${x.slice(Math.max(0, i - 60), i + 80)} » ; banc « ${y.slice(Math.max(0, i - 60), i + 80)} »`); }
   }
   return ecarts;

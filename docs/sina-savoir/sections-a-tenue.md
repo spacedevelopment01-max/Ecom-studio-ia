@@ -257,6 +257,22 @@ une pièce n'a rien à réécrire, mais elle doit savoir ce qui existe.
 | Cadre penché, ombre dure | la photo `.tn-cadre` qui finit sa section garde 14 px dessous | Une carte à ombre dure qui finit sa section réserve la place de son ombre (marge basse). |
 | Zone à toucher | 44 px pour un volet ; un petit lien souligné agrandit sa zone par un `::after` en position absolue | Même geste pour tout petit lien d'une pièce. |
 
+### Les réglages de section, les familles et le signe (17 novembre 2026)
+
+Le propriétaire, devant deux sites de deux familles : « les thèmes entre les deux marques sont très identiques ». Trois
+choses s'ajoutent à chaque pièce, sans qu'elle ait à les écrire (`custom-theme/signatures.ts`, feuille
+`tenue-familles.css`, chargée en dernier) :
+
+| Quoi | Comment | À savoir en écrivant une pièce |
+|---|---|---|
+| Le fond de la section (`data-tn-fd` : clair, doux, sombre, marque) | les variables `--tn-*` sont redéfinies SUR la section, couleurs calculées lisibles (`fondsCss`, tenue.ts) | **Aucune couleur écrite en dur** : tout passe par les variables, sinon la pièce devient illisible sur un fond sombre ou de couleur. Une pièce dessinée sombre a le trait `fond: "sombre"` ou une façon dont la clé contient « sombre » : elle garde son fond. |
+| L'alignement (`data-tn-al`) et la taille du titre (`data-tn-ti="grand"`) | la tête de la pièce : `small` et `h2` enfants directs de la section, et la phrase qui suit le `h2` ; l'échelle `--tn-k` est multipliée | Une pièce qui commence par `<section …>(<small>…</small>)<h2>` les reçoit ; les autres non. |
+| La famille (`data-tn-famille` sur le thème) | sa signature : fonds de section en rythme, cadres, espaces, titres, petits textes | Rien à faire ; une règle de famille ne vise que les pièces réglées (`.tn[data-tn-fd]`), l'ouverture, ou un élément précis. |
+| Le signe de la marque (`.tn-signe-m`) | posé par le Studio au début du premier grand titre (`h1`, sinon `h2`) de l'ouverture, d'un moment du milieu et de la fin | Le grand titre peut recevoir une ligne de plus au-dessus de son texte. |
+
+Une pièce qui ne se lit pas bien sur un fond réglé va dans `FOND_FIXE` (signatures.ts), seulement sur une mesure du
+banc : `tour.ts --fond doux,sombre,marque`.
+
 ## 6. Les scripts
 
 À éviter : un volet est un `<details>`, des onglets sont des boutons radio cachés et leurs étiquettes. Quand un geste

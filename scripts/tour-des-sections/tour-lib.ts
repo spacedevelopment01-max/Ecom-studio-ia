@@ -8,14 +8,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { TENUE_SECTIONS, tenueSection, exampleProductNames } from "../../src/lib/syna-agent/custom-theme/tenue";
-import { ETATS, HAUTEUR, LARGEURS, MARQUE, TENUES, type Etat, type TenueBanc } from "./donnees";
+import { ETATS, HAUTEUR, LARGEURS, MARQUE, TENUES, TOUTES_TENUES, type Etat, type TenueBanc } from "./donnees";
 import { MODULES, moduleDe, recenser, totaux, type Module } from "./recensement";
 import * as R from "./rendu";
 import { mesurer, onglet, ouvrir, ouvrirNavigateur, servir, type Defaut } from "./banc";
 import { assembler, type Ligne } from "./planches";
+import { reglagesPermis, type Fond } from "../../src/lib/syna-agent/custom-theme/signatures";
 
 export type Options = {
   sortie: string; modules?: string[]; pieces?: string[]; etats?: Etat[]; tenues?: string[]; largeurs?: number[];
+  /** Les fonds de section à essayer (signatures.ts) : chaque pièce qui accepte un fond est rendue dans chacun (« tenue+fond »). */
+  fonds?: string[];
   /** Captures et planches (sinon : seulement les détecteurs). */
   planches?: boolean;
   /** Les pages en situation : « oui » (avec le reste), « non », « seules ». */
@@ -40,7 +43,11 @@ export async function tourner(o: Options) {
   const dire = o.dire ?? (() => {}), t0 = Date.now();
   const sortie = path.resolve(o.sortie);
   fs.mkdirSync(path.join(sortie, "defauts"), { recursive: true });
-  const etats = o.etats?.length ? o.etats : [...ETATS], tenues = TENUES.filter((t) => !o.tenues?.length || o.tenues.includes(t.cle)), largeurs = o.largeurs?.length ? o.largeurs : LARGEURS;
+  const etats = o.etats?.length ? o.etats : [...ETATS], largeurs = o.largeurs?.length ? o.largeurs : LARGEURS;
+  // Avec des fonds de section à essayer, chaque tenue se décline par fond (« calme+sombre ») ; seules les pièces qui
+  // acceptent un fond sont rendues, et les pages en situation ne le sont pas (elles ont leur propre rythme).
+  const tenuesDeBase = o.tenues?.length ? TOUTES_TENUES.filter((t) => o.tenues!.includes(t.cle)) : TENUES;
+  const tenues: (TenueBanc & { fond?: Fond })[] = o.fonds?.length ? tenuesDeBase.flatMap((t) => o.fonds!.map((f) => ({ ...t, cle: `${t.cle}+${f}`, fond: f as Fond }))) : tenuesDeBase;
   const avecPlanches = o.planches !== false, situations = o.situations ?? (o.modules?.length || o.pieces?.length ? "non" : "oui");
 
   // ── le recensement
@@ -65,18 +72,19 @@ export async function tourner(o: Options) {
     for (const c of R.constructionsDe(s)) for (const etat of etats) {
       if (etat === "seul" && !R.aUneListe(s)) continue;
       for (const tenue of tenues) {
-        const x = R.page(banc, [{ piece: p.id, construction: c }], etat, tenue);
+        if (tenue.fond && !reglagesPermis(p.id, c).fond) continue;
+        const x = R.page(banc, [{ piece: p.id, construction: c }], etat, tenue, tenue.fond ? { reglages: [{ fond: tenue.fond }] } : {});
         if (!x.rendues.length) { if (tenue === tenues[0]) f.nonRendues.push({ piece: p.id, module: p.module, construction: c, etat, pourquoi: "le Studio ne rend rien pour cette pièce avec ces données (pièce sans sa vraie donnée, ou retirée faute de photo)" }); continue; }
         for (const largeur of largeurs) travaux.push({ piece: p.id, module: p.module, titre: p.titre, suite: [{ piece: p.id, construction: c }], construction: c, etat, tenue, largeur, html: x.html });
       }
     }
   }
-  for (const sit of R.SITUATIONS) {
+  for (const sit of o.fonds?.length ? [] : R.SITUATIONS) {
     // Une page en situation : avec tout le tour, à la demande (« --situations », module « situation »), ou nommée par sa clé.
     if (!(situations === "seules" || o.pieces?.includes(sit.cle) || o.modules?.includes(SITUATION) || (situations === "oui" && !o.pieces?.length && !o.modules?.length))) continue;
     const suite = R.suiteValable(sit.suite);
     fiche(sit.cle, SITUATION, sit.titre);
-    for (const etat of etats.filter((e) => e === "vrai" || e === "difficile")) for (const tenue of tenues) { const x = R.page(banc, suite, etat, tenue); for (const largeur of largeurs) travaux.push({ piece: sit.cle, module: SITUATION, titre: sit.titre, suite, construction: "", etat, tenue, largeur, html: x.html }); }
+    for (const etat of etats.filter((e) => e === "vrai" || e === "difficile")) for (const tenue of tenues) { const x = R.page(banc, suite, etat, tenue, { cleReglages: sit.page }); for (const largeur of largeurs) travaux.push({ piece: sit.cle, module: SITUATION, titre: sit.titre, suite, construction: "", etat, tenue, largeur, html: x.html }); }
   }
   dire(`${voulues.length} pièce(s)${[...fiches.values()].some((f) => f.module === SITUATION) ? ` et ${[...fiches.values()].filter((f) => f.module === SITUATION).length} page(s) en situation` : ""} : ${travaux.length} rendus (${etats.join(", ")} × ${tenues.map((t) => t.cle).join(", ")} × ${largeurs.join(", ")} px)${avecPlanches ? "" : ", détecteurs seuls"}`);
 
@@ -113,9 +121,9 @@ export async function tourner(o: Options) {
 
   // ── une fiche par pièce (un tour partiel ne touche que ses pièces), puis l'ensemble
   for (const f of fiches.values()) {
-    const ordre = (x: { construction: string; etat: string; tenue: string; largeur: number; variante?: string }) => `${x.construction}|${ETATS.indexOf(x.etat as Etat)}|${TENUES.findIndex((t) => t.cle === x.tenue)}|${String(x.largeur).padStart(5, "0")}|${x.variante ?? ""}`;
+    const ordre = (x: { construction: string; etat: string; tenue: string; largeur: number; variante?: string }) => `${x.construction}|${ETATS.indexOf(x.etat as Etat)}|${tenues.findIndex((t) => t.cle === x.tenue)}|${String(x.largeur).padStart(5, "0")}|${x.variante ?? ""}`;
     f.rendus.sort((a, b) => ordre(a).localeCompare(ordre(b))); f.defauts.sort((a, b) => ordre(a).localeCompare(ordre(b)) || a.numero - b.numero);
-    const complet = !o.etats?.length && !o.tenues?.length && !o.largeurs?.length;
+    const complet = !o.etats?.length && !o.tenues?.length && !o.largeurs?.length && !o.fonds?.length;
     const chemin = path.join(sortie, "defauts", `${nomSur(f.piece)}.json`);
     // Un tour restreint (un état, une tenue, une largeur) garde ce que la fiche savait du reste.
     if (!complet && fs.existsSync(chemin)) {

@@ -10,6 +10,7 @@ import { remember } from "../../projects";
 import type { FamilyId } from "../section-families";
 import { authenticSection, FAKE_OFFER_SECTIONS, RETIRED_SECTIONS, inFamily, inlineBackgrounds, isCardSection, FEATURED_ROLE, libSection, SCRIPT_DEMO_SECTIONS, SHELL_ROLES, sectionPhotos, type LibSection } from "./library";
 import { constructionsOf, isTenueSection, tenueSection, validConstruction, type Tenue } from "./tenue";
+import type { Reglages } from "./signatures";
 
 export type CtSection = {
   /** Identifiant de CETTE section dans le thème (une même section de la bibliothèque peut servir sur deux pages). */
@@ -34,6 +35,8 @@ export type CtSection = {
   layout?: SectionLayout;
   /** Construction d'une section à tenue (tenue.ts) : la façon dont elle est bâtie, choisie à la conception. */
   construction?: string;
+  /** Réglages de la pièce choisis à la conception (signatures.ts) : fond, alignement, taille du titre. */
+  reglages?: Reglages | null;
 };
 /** Disposition d'une section : inverser texte et image, alignement du texte, cadre ou pleine largeur, fond. */
 export type SectionLayout = { flip?: boolean; align?: "left" | "center"; frame?: "frame" | "full"; bg?: "light" | "soft" | "dark" };

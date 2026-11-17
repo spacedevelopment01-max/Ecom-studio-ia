@@ -581,6 +581,13 @@ describe("la conception de bout en bout, IA simulée", async () => {
       expect(r.t.metier).toBe("mobilier");
       expect(r.t.partitions).toEqual({ home: "marque-createur:produits-dabord", product: "fiche:simple" });
       expect(r.t.pages.find((x) => x.key === "home")!.sections.map((x) => x.id)).toEqual(BON.map((x) => (Array.isArray(x) ? x[0] : x)));
+      // La signature de la famille et le signe de la marque (17 novembre 2026) : dits au concepteur, contrôlés, rendus à sa
+      // reprise, puis posés sans IA (fonds de section de la famille, signe complété) ; rien n'en reste « à revoir ».
+      expect(calls[0].system).toContain("RÉGLAGES DE CHAQUE SECTION");
+      expect(calls[2].prompt).toMatch(/signe : le signe de la marque n'a pas de forme/);
+      expect(r.t.tenue).toMatchObject({ signeForme: "couture" });
+      expect(r.t.pages.find((x) => x.key === "home")!.sections.filter((x) => x.reglages?.fond === "doux").length).toBeGreaterThanOrEqual(2);
+      expect(r.left.join("\n")).not.toMatch(/^(signature|signe) : /m);
       S.saveCustomTheme(pid, r.t);
     } finally { delete T.customDesignDeps.call; delete T.customDesignDeps.second; }
 
