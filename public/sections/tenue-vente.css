@@ -847,3 +847,19 @@
 .ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b[data-tn-long]{font-family:var(--f-ui);font-weight:700;font-size:15px;line-height:1.3;letter-spacing:0;text-transform:none}
 @media (max-width:359px){.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b{font-size:14px}}
 @media (min-width:760px){.ctw:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) .tn-catalogue[data-tn-c="ajout-rapide"] .tn-carte-p b{font-size:20px}}
+/* Bandeau « tour à tour » : au-delà de six messages, les six premiers tournent (un septième se superposait aux autres). */
+.ctw .tn-messages[data-tn-c="tour-a-tour"] .tn-v-fil:not([data-tn-n="1"],[data-tn-n="2"],[data-tn-n="3"],[data-tn-n="4"],[data-tn-n="5"],[data-tn-n="6"]) li{animation-name:tn-v-tour-6;animation-duration:24s}
+.ctw .tn-messages[data-tn-c="tour-a-tour"] .tn-v-fil li:nth-child(n+7){display:none}
+/* En-tête d'une page d'arrivée, le nom à gauche : sur un très petit téléphone, le nom et le lien se partagent la ligne. */
+.ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-marque{flex:0 1 auto;min-width:0}
+.ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-nom{min-width:0;overflow-wrap:break-word}
+.ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-vers{flex:1 1 0;justify-content:flex-end;padding:6px 0}
+.ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-vers span{max-width:none;min-width:0}
+@media (max-width:359px){.ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-nom{font-size:21px}.ctw .tn-entete-arrivee .tn-v-vers{font-size:13px}}
+/* Barre du produit en carte flottante : un coin moins rond dès que le texte passe sur deux lignes ; le bouton garde deux lignes au plus. */
+.ctw[data-tn-bouton="pilule"] .tn-barre-produit[data-tn-c="carte-flottante"] .tn-v-colle,.ctw:not([data-tn-bouton]) .tn-barre-produit[data-tn-c="carte-flottante"] .tn-v-colle{border-radius:30px;padding:10px 12px 10px 14px}
+@media (min-width:760px){
+  .ctw .tn-barre-produit[data-tn-c="carte-flottante"] .tn-v-colle{flex-wrap:wrap;width:440px}
+  .ctw .tn-barre-produit[data-tn-c="carte-flottante"] .tn-bt,.ctw[data-tn-bouton] .tn-barre-produit[data-tn-c="carte-flottante"] .tn-bt{flex:1 1 auto;max-width:100%}
+  .ctw .tn-ouverture-vente .tn-v-macaron{gap:8px}
+}
