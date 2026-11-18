@@ -121,6 +121,8 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
     T.customDesignDeps.call = async () => { designs++; return DESIGN; };
     X.siteJobDeps.estimate = () => ({ maxMicro: 2_000_000, label: "montage" });
     X.siteJobDeps.build = async (c: any) => { builds.push(c.payload); return { sections: 9, photosMade: 2, photosFailed: 1, problems: ["photo de l'accueil : aucun visuel validé"], relecture: { reprises: 1, refusees: 0, avis: "bon" } }; };
+    // Le contrôle par l'image (controle-image.ts) a ses propres essais : ici, il rend « différent » sans navigateur.
+    X.siteJobDeps.image = async () => ({ statut: "passe", avant: 30, note: 30, seuil: 48, compares: 1, nonCompares: 0, changements: [] });
     try {
       const payload = { projectId: pid, userId: user.id, conversationId: cid, runId: ctx.runId, capMicro: 9_000_000, consigne: null };
       const cp: Record<string, unknown> = {};
@@ -146,6 +148,8 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       expect(j.site!.report.concept).toMatch(/niche/);
       expect(j.site!.report.signe).toBe(F.FAUTEUIL_TENUE.signe);
       // Le compte rendu garde la famille en coulisses, et la consigne interdit à SINA d'en dire le nom.
+      expect(j.site!.report.controleImage).toMatch(/^comparé en image à 1 site\(s\) du Studio : différent/);
+      expect("ressemblance" in j.site!.report).toBe(false);
       expect(j.site!.report.styleEnCoulisses).toEqual({ famille: "maison-chaleureuse", pourquoi: "Les tons chauds de la planche et sa police de titre fine." });
       expect(J.STEP_GUIDES[6]).toMatch(/le nom de la famille est un mot de coulisses, tu ne le dis JAMAIS/);
       expect(j.site!.report.montage).toMatchObject({ sections: 9, photosMade: 2, photosFailed: 1, problems: ["photo de l'accueil : aucun visuel validé"] });
@@ -161,7 +165,7 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       const before = designs;
       await fr(() => X.runSinaSiteJob(jobCtx("job-site-1", payload, cp)));
       expect(designs).toBe(before);
-    } finally { delete T.customDesignDeps.call; delete X.siteJobDeps.estimate; delete X.siteJobDeps.build; }
+    } finally { delete T.customDesignDeps.call; delete X.siteJobDeps.estimate; delete X.siteJobDeps.build; delete X.siteJobDeps.image; }
   });
 
   it("plafond serré : les photos sont créées d'abord pour l'accueil et la page qui vend, et le compte rendu le dit", async () => {
@@ -171,12 +175,13 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
     T.customDesignDeps.call = async () => DESIGN;
     X.siteJobDeps.estimate = () => ({ maxMicro: 50_000_000, label: "montage" });
     X.siteJobDeps.build = async (c: any) => { builds.push(c.payload); return { sections: 9 }; };
+    X.siteJobDeps.image = async () => ({ statut: "passe", avant: null, note: null, seuil: 48, compares: 0, nonCompares: 0, changements: [] });
     try {
       await fr(() => X.runSinaSiteJob(jobCtx("job-site-2", { projectId: pid, userId: user.id, conversationId: cid, runId: ctx.runId, capMicro: 3_000_000, consigne: null })));
       expect(builds[0].pages).toEqual(["home", "product"]);
       expect(builds[0].capMicro).toBeLessThanOrEqual(3_000_000);
       expect(J.journeyOf(cid).site!.report.photosPagesLimitees).toEqual(["home", "product"]);
-    } finally { delete T.customDesignDeps.call; delete X.siteJobDeps.estimate; delete X.siteJobDeps.build; }
+    } finally { delete T.customDesignDeps.call; delete X.siteJobDeps.estimate; delete X.siteJobDeps.build; delete X.siteJobDeps.image; }
   });
 
   it("conception refusée : rien n'est rangé, l'étape revient à faire, l'erreur est dite", async () => {

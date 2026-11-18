@@ -405,3 +405,92 @@ jour : « elle doit y arriver, on ne laisse pas de porte de sortie sinon elle va
 - **Pas encore vérifié** : avec la vraie IA (il faudra un essai de création de marque) ; sur un vrai site et une vraie
   planche (la planche de contrôle pose seulement un titre et un bouton sur chaque fond). Deux marques en fond « blanc »
   gardent leur blanc : leur différence vient de la police et des couleurs.
+
+## Le contrôle par l'image (17 novembre 2026)
+
+**La demande**, validée par le propriétaire (« Fait les 5 ») : « Un dernier contrôle par l'image, sans IA et gratuit :
+avant de livrer, le Studio prend une capture de l'accueil (téléphone et ordinateur) et la compare aux captures des
+derniers sites : formes, masses de couleur, place des photos. Si deux accueils se ressemblent trop à l'œil, le site est
+corrigé avant d'être montré. » Et sa règle du jour : « elle doit y arriver, on ne laisse pas de porte de sortie ».
+
+**La méthode** (`custom-theme/ressemblance.ts`, capture dans `custom-theme/shots.ts`, `shootAccueil`) :
+
+- L'accueil est capturé en entier sur téléphone (390 pixels de large) et sur ordinateur (1 280), photos chargées,
+  animations coupées. Une deuxième capture est prise aussitôt, chaque photo peinte en gris, les textes posés dessus
+  gardés : c'est l'image des **masses**. Le contrôle compare ainsi la place des photos, pas ce qu'elles montrent.
+- L'**empreinte** d'un accueil : la page en bandes de 48 pixels (téléphone) ou 60 (ordinateur), chaque bande en 4 ou 8
+  cases ; chaque case garde sa couleur moyenne (clarté et teinte, comme l'œil les perçoit) et son grain ; chaque
+  section a sa vignette (8 lignes) ; les couleurs dominantes de la page, photos comprises ; l'épaisseur des traits
+  d'encre (lettres fines ou très grasses, vues de loin).
+- La **ressemblance** (0 à 100), dans chaque vue, puis la moyenne des deux : le haut de la page (les deux premiers
+  écrans, la première impression, 10 %), le rythme de la page entière (bandes alignées avec souplesse, une section plus
+  haute s'aligne sur la même section de l'autre, 10 %), les couleurs dominantes (5 %), l'allure des lettres (35 %) et
+  les **sections jumelles à l'œil** (même disposition des masses, même ton, même hauteur, 40 %).
+- Les poids ont été choisis par le calcul : parmi toutes les répartitions, celle qui sépare le mieux les cas jugés trop
+  proches des cas différents. La mise en page seule ne suffisait pas : Bécane et Vasco n'ont presque rien de commun à la
+  règle des pièces, et pourtant le propriétaire les voit pareils ; ce qu'ils ont en commun à l'œil, c'est la même
+  allure de lettres (la même police très grasse) et deux sections jumelles (les questions, la phrase sur une photo
+  pleine). C'est ce que mesurent les deux plus grosses parts.
+
+**Le seuil : 48**, calibré sur de vraies captures, gratuites et sans IA, faites avec l'état du dépôt que le propriétaire
+a vu (avant les signatures des familles) :
+
+| Comparaison | Téléphone | Ordinateur | Moyenne | Attendu |
+| --- | --- | --- | --- | --- |
+| Un même site capturé deux fois | 100 | 100 | 100 | trop proche |
+| Bécane contre Atelier Vasco | 51,0 | 46,5 | **48,8** | trop proche (jugé par le propriétaire) |
+| Vasco contre ses quatre tenues (autre police, autre tenue) | 71,7 à 89,3 | 82,6 à 97,3 | 77,5 à 93,3 | trop proche (« le même site ») |
+| Les tenues de Vasco entre elles | 61,1 à 82,8 | 77,8 à 94,4 | 69,5 à 87,2 | trop proche |
+| Le site de Vasco sous une autre marque (police et palette de Braise, puis de Trempe) | 60,4 et 78,8 | 65,5 et 85,0 | 63,0 et 81,9 | trop proche |
+| Un autre accueil pour Braise (autres pièces, autres dispositions, fonds sombres et de couleur) contre les neuf autres | 29,7 à 45,2 | 31,4 à 47,2 | 32,1 à **46,2** | différent |
+| Un autre accueil pour Trempe (encore d'autres pièces et dispositions) contre Braise, les tenues, la démonstration | 40,3 à 42,4 | 39,0 à 49,8 | 39,7 à 46,1 | différent |
+
+Le plus bas des cas trop proches fait 48,8, le plus haut des cas différents 46,2 : le seuil est entre les deux. La
+marge est mince (1,3 et 2,6 points) : elle est dite ici et la correction vise sous le seuil, pas au ras. Non jugés,
+pour information : Vasco contre la boutique de yoga de la démonstration, 42,9 ; Vasco avec toutes ses dispositions
+changées mais ses photos, ses textes et sa marque, 53,0 ; Trempe (Archivo, même lignée que la police de Bécane et de
+Vasco) contre Vasco, 50,6 : la même lignée de police est désormais refusée entre deux marques
+(`variete-marques.ts`). Fichier des empreintes : `tests/fixtures/ressemblance/empreintes-essai.json.gz`.
+
+**La correction, sans IA** (`custom-theme/controle-image.ts`, branchée dans `site-job.ts` après le montage, avant que le
+site devienne la version active) : l'accueil est comparé aux sites de la règle de variété (les 12 derniers, tous
+métiers, et les 30 derniers du même métier). Trop proche d'un site, le Studio retouche puis recapture, jusqu'à 12
+essais et 20 captures : d'abord une autre disposition pour chaque section jumelle de ce site (la moins prise par les
+sites récents), sinon un autre fond ou un autre alignement de titre permis par la signature de sa famille, puis une autre façon d'ouvrir l'accueil permise par la famille, puis un réglage de la tenue permis par
+la famille, puis les autres sections, du haut vers le bas. Une retouche n'est gardée que si elle ne crée aucun défaut
+(aucun défaut bloquant du thème en plus, la règle de variété entre sites et la rotation de l'ouverture tenues, l'allure
+dans les choix de la famille, la signature de la famille, aucune photo d'exemple qui réapparaîtrait) et si elle rend l'accueil moins proche. Les
+pièces ne changent jamais : leurs textes, écrits pour le client, restent justes. L'empreinte est gardée avec le site
+(mémoire du projet, avec la version du site et de la bibliothèque) ; celle d'un site plus ancien est capturée la
+première fois qu'il sert de comparaison.
+
+**Sans porte de sortie** : si la correction ne suffit pas, le site **n'est pas présenté comme fini** : il ne devient pas
+la version active, la première ligne du compte rendu (« ressemblance ») le dit à SINA, qui le dit au client en premier
+et lui propose de reprendre la conception avec une autre direction (payant, accord écrit avant) ; l'étape reste « à
+revoir », avec « pas encore fini ». J'ai choisi cela plutôt qu'un échec de la tâche : le montage déjà payé n'est pas
+perdu, et rien n'est montré comme fini. Si le navigateur de captures manque, le contrôle n'est pas fait et c'est dit de
+la même façon (première ligne et « à revoir ») ; le site n'est pas bloqué pour une panne du serveur, comme le regard en
+image.
+
+**Essai sans IA sur les vraies données de l'essai** (copie, rien d'enregistré dans les vraies) : Vasco contre Bécane fait
+48,9 ; le Studio le corrige seul en deux retouches (la phrase sur photo passe de « voile » à « moitié », les questions
+de « filets » à « deux colonnes ») et tombe à 42,1, en 22 secondes.
+
+**Le navigateur en production** : l'image de production (`Dockerfile`) installe Chromium (`CHROMIUM=/usr/bin/chromium`)
+dans le même conteneur que le site et le worker (`npm start` lance les deux) ; c'est le même navigateur que les regards
+en image et les captures du Studio. Vérifié dans le fichier, **pas sur le serveur en ligne**.
+
+**Vérifié sans IA** (`tests/controle-par-image.test.ts`) : les chiffres du tableau sur les empreintes de l'essai ; un
+site jumeau d'un site déjà monté est corrigé et passe, ses pièces inchangées, son empreinte gardée ; quand rien ne
+suffit, « trop-proche » avec la note ; sans navigateur, « non-fait » avec la raison ; dans la création du site, un site
+trop proche ne devient pas la version active et le compte rendu commence par « ressemblance » ; avec un vrai
+navigateur, un accueil capturé deux fois fait 100, et le même accueil monté pour une autre marque (autre police, autres
+couleurs) fait 71,5 et passe à 40,8 en sept retouches sans IA (cinq dispositions, une deuxième pour une même section,
+l'ouverture).
+
+**Pas encore vérifié** : avec la vraie IA (il faudra un essai de création) ; sur l'allure nouvelle des familles (les
+signatures, posées en même temps par une autre aide, changent les sites : le seuil a été calibré sur l'allure que le
+propriétaire a vue, il faudra le revoir sur les prochains vrais sites ; pour information, rendus avec ces signatures
+encore en cours, Bécane contre Vasco tombent à 34,0 : différents) ; le temps réel sur le serveur (environ 8
+secondes par capture ici ; après un changement de l'allure de la bibliothèque, les empreintes des sites comparés sont
+refaites à la création suivante : jusqu'à 42 sites, quelques minutes de plus) ; le jugement du propriétaire sur les cas « différents » fabriqués pour l'essai.

@@ -127,6 +127,56 @@ export async function shootPages(html: string, keys: string[], o: { view: "ordin
   } finally { await browser.close().catch(() => {}); }
 }
 
+/**
+ * Le contrôle par l'image (ressemblance.ts, 17 novembre 2026) : l'accueil entier, tel que le visiteur le voit une fois
+ * descendu jusqu'en bas (photos chargées, éléments révélés), animations et transitions coupées pour que deux captures du
+ * même site soient identiques. Jusqu'à `maxHeight` pixels de haut. Sans Chromium : null (jamais une fausse capture).
+ */
+export async function shootAccueil(html: string, view: "ordinateur" | "téléphone", maxHeight: number): Promise<{ image: Buffer; masses: Buffer; sections: { uid: string; role: string; top: number; height: number }[] } | null> {
+  const v = VIEWS.find((x) => x.key === view)!;
+  const opened = await open(html, v);
+  if (!opened) return null;
+  const { browser, page } = opened;
+  try {
+    await page.addStyleTag({ content: "*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}.tn-barre{display:none!important}" });
+    await page.evaluate(async (max) => {
+      for (let y = 0; y < Math.min(document.documentElement.scrollHeight, max); y += Math.round(innerHeight * 0.7)) { scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); }
+      scrollTo(0, 0);
+      const wait = [...document.images].filter((i) => !i.complete).map((i) => new Promise((r) => { i.onload = i.onerror = r; }));
+      await Promise.race([Promise.all(wait), new Promise((r) => setTimeout(r, 4000))]);
+    }, maxHeight);
+    await page.waitForTimeout(400);
+    const h = await page.evaluate(() => document.documentElement.scrollHeight);
+    // Les sections de l'accueil telles qu'elles se voient (place et hauteur dans la page), de haut en bas : l'en-tête, les
+    // pièces de la page, le pied. Une section dans une autre n'est pas comptée deux fois.
+    const sections = await page.evaluate(() => {
+      const list = [...document.querySelectorAll<HTMLElement>("[data-ct]")].filter((e) => !e.parentElement?.closest("[data-ct]"));
+      return list.map((e) => { const r = e.getBoundingClientRect(); return { uid: e.dataset.ct ?? "", role: e.dataset.ctRole ?? "", top: Math.round(r.top + scrollY), height: Math.round(r.height) }; })
+        .filter((x) => x.height > 8).sort((a, b) => a.top - b.top);
+    });
+    const clip = { x: 0, y: 0, width: v.width, height: Math.min(h, maxHeight) };
+    const image = await page.screenshot({ type: "jpeg", quality: 85, fullPage: true, clip });
+    // L'image des masses : les mêmes pixels, chaque photo (posée ou en fond) peinte en gris moyen, les textes posés dessus
+    // gardés. Le contrôle compare ainsi la place des photos et la disposition, pas ce que les photos montrent.
+    await page.evaluate(() => {
+      const st = document.createElement("style");
+      st.textContent = "img,video,picture,canvas{filter:brightness(0) invert(.5)!important}";
+      document.head.appendChild(st);
+      for (const e of document.querySelectorAll<HTMLElement>("body *")) {
+        const bg = getComputedStyle(e).backgroundImage;
+        if (!/url\(/.test(bg)) continue;
+        const r = e.getBoundingClientRect();
+        if (r.width < 60 || r.height < 60) continue;
+        e.style.setProperty("background-image", bg.split(/,(?![^(]*\))/).filter((x) => !/url\(/.test(x)).join(",") || "none", "important");
+        e.style.setProperty("background-color", "rgb(128,128,128)", "important");
+      }
+    });
+    await page.waitForTimeout(150);
+    const masses = await page.screenshot({ type: "jpeg", quality: 85, fullPage: true, clip });
+    return { image, masses, sections: sections.filter((x) => x.top < maxHeight) };
+  } finally { await browser.close().catch(() => {}); }
+}
+
 /** Ouvre le thème dans un Chromium local ; tout est servi par le Studio lui-même. */
 async function open(html: string, v: (typeof VIEWS)[number], scale?: number) {
   const executablePath = chromiumPath();

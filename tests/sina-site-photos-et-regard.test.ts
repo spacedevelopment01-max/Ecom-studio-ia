@@ -328,8 +328,9 @@ describe("photos du site : jamais de personne sans accord, jamais de photo d'exe
       J.siteJobDeps.design = async () => designed as any;
       J.siteJobDeps.estimate = () => ({ maxMicro: 100_000, probableMicro: 50_000, label: "" });
       J.siteJobDeps.build = async () => montage;
+      J.siteJobDeps.image = async () => ({ statut: "passe", avant: null, note: null, seuil: 48, compares: 0, nonCompares: 0, changements: [] });
       try { await fr(() => J.runSinaSiteJob({ job: { id }, payload: { projectId: pid, userId: user, conversationId: cid, runId: "r", capMicro: 10_000_000 }, checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any)); }
-      finally { delete J.siteJobDeps.design; delete J.siteJobDeps.estimate; delete J.siteJobDeps.build; }
+      finally { delete J.siteJobDeps.design; delete J.siteJobDeps.estimate; delete J.siteJobDeps.build; delete J.siteJobDeps.image; }
       return journeyOf(cid).site.report as Record<string, unknown>;
     };
     // Regard en panne, avec plus de douze autres problèmes : rien ne se perd, c'est dit en premier.

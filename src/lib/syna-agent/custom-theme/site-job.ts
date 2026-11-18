@@ -12,7 +12,10 @@
  *  2) une fiche par produit et le menu, calculés depuis le catalogue (sans IA) ;
  *  3) le montage à la marque : plan des textes, textes, relecture, photos (les siennes d'abord, puis celles créées par
  *     OpenAI, chacune relue), regards en image sur téléphone ;
- *  4) le site devient la version active du moteur des thèmes, quand rien n'y reste « à compléter » : c'est elle que le
+ *  4) le contrôle par l'image (controle-image.ts, 17 novembre 2026) : l'accueil, capturé sur téléphone et ordinateur,
+ *     est comparé aux derniers sites du Studio ; trop proche, il est corrigé sans IA ; si rien ne suffit, il n'est pas
+ *     présenté comme fini, et c'est dit en tête du compte rendu ;
+ *  5) le site devient la version active du moteur des thèmes, quand rien n'y reste « à compléter » : c'est elle que le
  *     Studio met en ligne ou envoie vers la boutique du client.
  * Les familles de sections restent en coulisses : le client ne choisit ni famille, ni concept, ni thème.
  */
@@ -43,6 +46,8 @@ import type { PreuveId } from "./tenue-ordre";
 import { refusSansPreuves } from "./preuves";
 import { lignePhotosAImporter, photosProduitsRepondu, rappelCarte, refusSansPhotosProduits } from "./photos-produits";
 import { clientNotes } from "./site-facts";
+import { controleParImage, ligneControle, type ControleImage } from "./controle-image";
+import { SEUIL } from "./ressemblance";
 import { dossierPreuves, preuvesRepondues, buildKnowledge, buildTool, COPY_FIXES_TYPICAL, COPY_REVIEW_TYPICAL_MICRO, customPhotoDeps, designCost, keepWork, PHOTO_FIX_TYPICAL_MICRO, PHOTO_REVIEW_TYPICAL_MICRO, photoUnit, runDesign, SECTION_TEXT_TYPICAL_MICRO, SITE_PLAN_TYPICAL_MICRO, siteKind, type BuildArgs, type DesignRun } from "./tools";
 
 export const SINA_SITE_JOB = "syna.site";
@@ -193,7 +198,7 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
 };
 
 /** Remplaçables par les tests (aucun appel réel). */
-export const siteJobDeps: { design?: (ctx: ToolContext, a: { consigne?: string; jobId: string; photoBudget?: number }) => Promise<DesignRun>; build?: (ctx: JobContext) => Promise<unknown>; estimate?: (ctx: ToolContext, a: BuildArgs) => CostEstimate } = {};
+export const siteJobDeps: { design?: (ctx: ToolContext, a: { consigne?: string; jobId: string; photoBudget?: number }) => Promise<DesignRun>; build?: (ctx: JobContext) => Promise<unknown>; estimate?: (ctx: ToolContext, a: BuildArgs) => CostEstimate; image?: typeof controleParImage } = {};
 
 /** Compte rendu de la création du site, gardé dans le parcours (SINA le relit en entier) ; la tâche en rend l'essentiel. */
 export type SiteReport = {
@@ -202,6 +207,13 @@ export type SiteReport = {
    * entier) : elle doit le dire au client, avec ces mots simples, avant tout le reste.
    */
   siteNonRegarde?: string;
+  /**
+   * En tête aussi, seulement quand le contrôle par l'image n'a pas pu se faire, ou quand l'accueil ressemble encore trop
+   * à un site déjà fait par le Studio malgré la correction sans IA : à dire au client, avec ces mots simples.
+   */
+  ressemblance?: string;
+  /** Le contrôle par l'image, en une ligne (comparé à combien de sites, corrigé ou non, la note du plus proche). */
+  controleImage?: string;
   pages: string[];
   concept: string | null;
   signe: string | null;
@@ -284,29 +296,50 @@ export async function runSinaSiteJob(ctx: JobContext) {
   try { montage = await (siteJobDeps.build ?? runCustomBrandJob)(child); }
   catch (e) { if (e instanceof CostCapReached) montage = { problems: [L("plafond annoncé atteint : le montage s'est arrêté là", "announced cap reached")] }; else throw e; }
 
-  // 4) Le site devient la version active du moteur des thèmes, si rien d'inventé ni d'exemple n'y reste.
-  ctx.progress(0.97, L("Dernières vérifications", "Final checks"));
-  const install = await ctx.step("site:install", async () => {
-    try { const r = installCustomTheme(p.id, { activate: true }); return r.ok ? { ok: true as const, notes: r.notes } : { ok: false as const, blocking: r.blocking }; }
-    catch (e) { return { ok: false as const, blocking: [(e as Error).message.slice(0, 200)] }; }
+  // 4) Le contrôle par l'image (règle du propriétaire : jamais deux sites qui se ressemblent à l'œil) : l'accueil est
+  //    comparé aux derniers sites du Studio, corrigé sans IA s'il est trop proche. Jamais en silence : sans navigateur, ou
+  //    si la correction ne suffit pas, c'est la première ligne du compte rendu.
+  ctx.progress(0.95, L("Je compare ton site aux autres sites du Studio", "Comparing your site with the Studio's other sites"));
+  const image = await ctx.step("site:image", async (): Promise<ControleImage> => {
+    const families = (() => { try { return new Set(listProducts(p.id).flatMap((x) => x.data.categories.map((c) => c.trim()).filter(Boolean))).size; } catch { return 0; } })();
+    try { return await (siteJobDeps.image ?? controleParImage)(p.id, siteKind(tc), { families }); }
+    catch (e) { return { statut: "non-fait", avant: null, note: null, seuil: SEUIL, compares: 0, nonCompares: 0, changements: [], raison: `contrôle interrompu (${(e as Error).message.slice(0, 160)})` }; }
   });
+  const tropProche = image.statut === "trop-proche";
+
+  // 5) Le site devient la version active du moteur des thèmes, si rien d'inventé ni d'exemple n'y reste, et s'il ne
+  //    ressemble pas trop à un autre site du Studio (sinon il n'est pas présenté comme fini).
+  ctx.progress(0.97, L("Dernières vérifications", "Final checks"));
+  const install = tropProche
+    ? { ok: false as const, blocking: [L("ton site ressemble encore trop à un site déjà fait par le Studio pour une autre marque : il n'est pas encore fini", "your site still looks too much like another Studio site: not finished yet")] }
+    : await ctx.step("site:install", async () => {
+      try { const r = installCustomTheme(p.id, { activate: true }); return r.ok ? { ok: true as const, notes: r.notes } : { ok: false as const, blocking: r.blocking }; }
+      catch (e) { return { ok: false as const, blocking: [(e as Error).message.slice(0, 200)] }; }
+    });
   const t = loadCustomTheme(p.id)!;
   const sansPhoto = produitsSansPhoto(p.id, p.business);
   // Le regard en image : fait, fait en partie, ou pas fait du tout (montage arrêté avant, navigateur absent, réponse
   // illisible). Ce n'est jamais passé sous silence : c'est la première ligne du compte rendu que SINA relit.
   const seen = montageSummary(montage) as { regards?: { pages?: unknown[] } | null; regardNonFait?: string | null } | null;
   const unseen = seen?.regardNonFait ? seen.regardNonFait : seen?.regards?.pages?.length ? null : L("je n'ai pas pu regarder le site en image", "I could not look at the site as an image");
+  const imageLigne = ligneControle(image);
+  const ressemblance = tropProche
+    ? L(`ton site ressemble encore trop, à l'œil, à un site déjà fait par le Studio pour une autre marque, même après mes retouches : je ne te le présente pas comme fini. À dire au client en premier, simplement, puis lui proposer de reprendre la conception de son site avec une autre direction (payant : son accord écrit avant). Détail : ${imageLigne}`, "your site still looks too much like another Studio site: tell the client first")
+    : image.statut === "non-fait" ? L(`je n'ai pas pu comparer ton site en image aux autres sites du Studio (${image.raison ?? "raison inconnue"}) : à dire au client en premier`, "the site could not be compared as an image: tell the client first") : null;
   const report: SiteReport = {
     ...(unseen ? { siteNonRegarde: L(`${unseen} : à dire au client en premier, et à lui proposer de le regarder ensemble sur son téléphone`, `${unseen}: tell the client first`) } : {}),
+    ...(ressemblance ? { ressemblance } : {}),
+    controleImage: imageLigne,
     pages: t.pages.map((pg) => `${pg.label} (${pg.sections.length})`),
-    concept: short(designed.concept, 400) as string | null, signe: designed.signe, aRevoir: designed.left.slice(0, 8).map((x) => x.slice(0, 220)), montage: montageSummary(montage),
+    concept: short(designed.concept, 400) as string | null, signe: designed.signe, aRevoir: [...(image.statut === "trop-proche" || image.statut === "non-fait" ? [imageLigne.slice(0, 300)] : []), ...designed.left.slice(0, 8).map((x) => x.slice(0, 220))], montage: montageSummary(montage),
     styleEnCoulisses: { famille: designed.famille, pourquoi: short(designed.familleWhy, 300) as string | null },
     pret: install.ok, aCompleter: install.ok ? [] : install.blocking.slice(0, 30).map((x) => x.slice(0, 200)),
     photosPagesLimitees: tight ? sub.pages! : null,
     ...(sansPhoto.length ? { photosProduitsAImporter: lignePhotosAImporter(sansPhoto) } : {}),
   };
-  try { updateJourney(a.conversationId, (x) => { x.site = { report, at: Date.now() }; setStep(x, 6, "review", L("site créé, à regarder avec le client", "site created")); }); } catch { /* fil supprimé */ }
-  notify(p.userId, p.id, L("Ton site est créé", "Your site is created"), L("SINA te le montre dans la conversation.", "SINA shows it in the conversation."), "success");
+  try { updateJourney(a.conversationId, (x) => { x.site = { report, at: Date.now() }; setStep(x, 6, "review", tropProche ? L("site monté, trop proche d'un autre site du Studio : pas encore fini", "site built, too close to another site") : L("site créé, à regarder avec le client", "site created")); }); } catch { /* fil supprimé */ }
+  if (tropProche) notify(p.userId, p.id, L("Ton site est monté, pas encore fini", "Your site is built, not finished yet"), L("Il ressemble encore trop à un autre site du Studio : SINA t'explique dans la conversation.", "It still looks too much like another Studio site: SINA explains."), "warning");
+  else notify(p.userId, p.id, L("Ton site est créé", "Your site is created"), L("SINA te le montre dans la conversation.", "SINA shows it in the conversation."), "success");
   // La tâche rend l'essentiel (son résultat est coupé dans le fil) ; le compte rendu entier est dans le parcours.
-  return { pages: report.pages, pret: report.pret, aCompleter: report.aCompleter.length, compteRendu: "dans le parcours (étape du site)" };
+  return { pages: report.pages, pret: report.pret, aCompleter: report.aCompleter.length, controleImage: image.statut, compteRendu: "dans le parcours (étape du site)" };
 }
