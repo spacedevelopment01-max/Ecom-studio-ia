@@ -1169,7 +1169,7 @@
   .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>.tn-galerie{grid-column:photo;grid-row:1/41;align-self:stretch;align-items:start}
   .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>.tn-galerie>*{position:sticky;top:24px}
   /* sous un en-tête (collant, 56 à 76 px de haut) : la photo s'arrête juste dessous */
-  .ctw .tn-ent~.tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>.tn-galerie>*{top:calc(var(--tb-h,0px) + 84px)}
+  .ctw .tn-ent~.tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>.tn-galerie>*{top:calc(var(--tb-h,0px) + var(--tn-colle,100px) - 16px)}
   .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child :is(.tn-grande,.tn-vignettes){height:420px}
   .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child>.tn-erreur{grid-column:achat;margin:10px 0 0}
   .ctw .tb-pg>.tn-achat[data-tn-c="vente-directe"]:first-child~:is(.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton):not(.tb-pg>:not(.tn-achat,.tn-versions,.tn-guide-tailles[data-tn-c="tiroir"],.tn-lots,.tn-offre-moment,.tn-packs,.tn-sous-bouton)~*){grid-column:achat;max-width:none;margin-left:0;margin-right:0;padding-left:0;padding-right:0}
@@ -1460,6 +1460,9 @@
 }
 .ctw .tn-garantie .tn-sceau-g{gap:6px}
 .ctw .tn-garantie .tn-sceau-g span{line-height:1.12}
+/* Titres fins (Bodoni et autres à hautes lettres) : la durée est écrite plus grand, et le sceau est penché ; sans plus
+   d'air, « 30 jours » montait sur « Retours ». */
+.ctw .tn-garantie .tn-sceau-g:not(:is([data-tn-titres="gras"],[data-tn-titres="capitales"],[data-tn-lourd]) *){gap:14px}
 @media (min-width:760px){
   .ctw[data-tn-titres="gras"] .tn-echelle[data-tn-c="carte-a-cheval"] li b,.ctw[data-tn-titres="capitales"] .tn-echelle[data-tn-c="carte-a-cheval"] li b,.ctw[data-tn-lourd] .tn-echelle[data-tn-c="carte-a-cheval"] li b{font-size:22px}
 }
@@ -1476,7 +1479,7 @@
 /* Tour des sections : ce qui reste collé en défilant sur grand écran se colle SOUS l'en-tête collant de la boutique
    (76 px sur grand écran), jamais dessous. */
 @media (min-width:760px){
-  .ctw .tn-ent~.tb-pg .tn-volets[data-tn-c="numeros"] h2{top:calc(var(--tb-h,0px) + 100px)}
+  .ctw .tn-ent~.tb-pg .tn-volets[data-tn-c="numeros"] h2{top:calc(var(--tb-h,0px) + var(--tn-colle,100px))}
 }
 /* Les looks, en liste, sur téléphone : un prix encore à compléter passe sous le nom (le nom garde toute la colonne et ne
    se coupe plus au milieu d'un mot). */

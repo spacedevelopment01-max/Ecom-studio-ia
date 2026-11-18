@@ -854,6 +854,10 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"] .tn-in{z-index:1}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"]:has(>.tn-ph-manque) .tn-in{padding:40px 20px 0}
 .ctw .tn-ouverture[data-tn-c="dans-la-photo"]:has(>.tn-ph-manque)::before{content:none}
+/* Le voile suit le titre, quelle que soit sa hauteur : avec un signe rond au-dessus, le titre descendait sous les 330 px
+   du voile et passait sur la photo sans lui (« Respire. » illisible sur la théière, 18 novembre 2026). */
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]::before{content:none}
+.ctw .tn-ouverture[data-tn-c="dans-la-photo"]:not(:has(>.tn-ph-manque)) .tn-in::before{content:"";position:absolute;left:0;right:0;top:0;bottom:-40px;z-index:-1;pointer-events:none;background:linear-gradient(to bottom,color-mix(in srgb,var(--tn-fond) 88%,transparent) 0,color-mix(in srgb,var(--tn-fond) 74%,transparent) 72%,transparent)}
 /* sans la photo, le bouton « à cheval » n'a plus rien à chevaucher : il reprend sa place sous le titre */
 .ctw .tn-ouverture:is([data-tn-c="titre-puis-cadre"],[data-tn-c="titre-geant"]):has(>.tn-ph-manque) .tn-bas{margin-top:22px}
 /* le bouton de l'ouverture passe à la ligne plutôt que de sortir de l'écran */
@@ -907,7 +911,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 /* Tour des sections : ce qui reste collé en défilant sur grand écran se colle SOUS l'en-tête collant de la boutique
    (76 px sur grand écran), jamais dessous. */
 @media (min-width:760px){
-  .ctw .tn-ent~.tb-pg .tn-histoire[data-tn-c="deux-colonnes"] .tn-ph,.ctw .tn-ent~.tb-pg .tn-volets[data-tn-c="deux-colonnes"] h2{top:calc(var(--tb-h,0px) + 100px)}
+  .ctw .tn-ent~.tb-pg .tn-histoire[data-tn-c="deux-colonnes"] .tn-ph,.ctw .tn-ent~.tb-pg .tn-volets[data-tn-c="deux-colonnes"] h2{top:calc(var(--tb-h,0px) + var(--tn-colle,100px))}
 }
 /* Contact, carte des coordonnées posée en bas : ses dernières lignes gardent de l'air au-dessus du bord (une longue
    coordonnée touchait le bas de la carte). */

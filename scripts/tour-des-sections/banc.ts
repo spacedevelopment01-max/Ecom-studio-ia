@@ -18,6 +18,9 @@ export const CONTRASTE_ILLISIBLE = 1.8;
 /** Part des points mesurés sous le contraste minimal à partir de laquelle le texte est dit peu lisible ; en dessous (mais au-dessus de la part « partielle »), seulement par endroits. */
 export const PART_ILLISIBLE = 0.4;
 export const PART_PARTIELLE = 0.15;
+/** Un texte lisible « par endroits » dont une partie tombe presque à rien (sous ce contraste) est un vrai défaut : un mot
+ *  du titre disparaît dans la photo (« Respire. » sur la théière, 18 novembre 2026). */
+export const CONTRASTE_DISPARAIT = 1.5;
 /** Un texte en partie recouvert (tiroir, fenêtre, menu ouvert) : son contraste ne se juge que si au moins cette part de ses points est au premier plan. */
 export const PART_VISIBLE_MIN = 0.25;
 /** Hauteur maximale d'une capture, en pixels : au-delà, la page est coupée (et c'est dit). */
@@ -130,7 +133,7 @@ async function contrastes(page: Page, textes: TexteMesure[], hauteur: number, la
     const l = Math.min(...t.rects.map((r) => r[0])), tp = Math.min(...t.rects.map((r) => r[1])), r = Math.max(...t.rects.map((x) => x[0] + x[2])), b = Math.max(...t.rects.map((x) => x[1] + x[3]));
     // Lisible sur la plus grande part de sa surface (un texte posé sur une photo) : seulement par endroits.
     const partiel = sous < PART_ILLISIBLE || median >= CONTRASTE_MIN;
-    out.push({ type: partiel ? "contraste-partiel" : "contraste", gravite: partiel ? "mineur" : median < CONTRASTE_ILLISIBLE ? "bloquant" : "important", uid: t.uid, selecteur: t.selecteur, texte: t.texte, detail: partiel ? `le texte passe sous un contraste de ${CONTRASTE_MIN} sur ${Math.round(sous * 100)} % de sa surface (au plus bas ${ratios[0].toFixed(2)})` : `contraste de ${median.toFixed(2)} avec le fond (il en faut ${CONTRASTE_MIN}) ; texte de ${Math.round(t.taille)} px`, cadre: [Math.round(l), Math.round(tp), Math.round(r - l), Math.round(b - tp)] });
+    out.push({ type: partiel ? "contraste-partiel" : "contraste", gravite: partiel ? (ratios[0] < CONTRASTE_DISPARAIT ? "important" : "mineur") : median < CONTRASTE_ILLISIBLE ? "bloquant" : "important", uid: t.uid, selecteur: t.selecteur, texte: t.texte, detail: partiel ? `le texte passe sous un contraste de ${CONTRASTE_MIN} sur ${Math.round(sous * 100)} % de sa surface (au plus bas ${ratios[0].toFixed(2)})` : `contraste de ${median.toFixed(2)} avec le fond (il en faut ${CONTRASTE_MIN}) ; texte de ${Math.round(t.taille)} px`, cadre: [Math.round(l), Math.round(tp), Math.round(r - l), Math.round(b - tp)] });
   }
   return out;
 }

@@ -111,8 +111,8 @@ Dans `detecteurs-page.js` (exécuté dans la page ; les seuils sont en tête du 
 | `bouton-trop-de-lignes` | important | un bouton sur plus de 2 lignes |
 | `lettres-seules`, `mot-coupe` | important, mineur | un mot coupé au milieu sans trait d'union (un bout d'une ou deux lettres : important). Le trait d'union de la césure automatique est reconnu (la première lettre de la ligne suivante porte son cadre) ; une lettrine n'est pas un mot coupé |
 | `colonne-etroite` | important | une colonne de moins de 40 px qui porte du texte |
-| `chevauchement` | bloquant | deux textes, ou un bouton et un texte, l'un sur l'autre |
-| `contraste`, `contraste-partiel` | bloquant sous 1,8, important sous 3, mineur par endroits | les pixels sous chaque ligne de texte sont lus sur une capture sans texte |
+| `chevauchement` | bloquant | deux textes, ou un bouton et un texte, l'un sur l'autre ; aussi un texte de la page qui passe sous l'en-tête posé sur la photo d'ouverture |
+| `contraste`, `contraste-partiel` | bloquant sous 1,8, important sous 3, mineur par endroits, important par endroits quand un mot tombe sous 1,5 (il disparaît dans la photo) | les pixels sous chaque ligne de texte sont lus sur une capture sans texte |
 | `texte-petit` | mineur | texte de moins de 12 px |
 | `titre-trop-long` | important | sur téléphone, un titre d'au moins 40 px sur plus de 5 lignes |
 | `pave-gras` | bloquant au-delà de 5 lignes, sinon important | plus de 3 lignes en gras dans la police des titres, hors grand titre (un titre de carte : plus de 5). Jugé sur la police de chaque texte : une marque « À compléter » en texte courant ne compte pas |

@@ -1028,6 +1028,9 @@
 .ctw .tn-pied-complet[data-tn-c="grand-nom"] .tn-geant{margin-top:calc(34px + var(--tn-g,84px)*.14)}
 @media (min-width:760px){
   .ctw .tn-pied-complet[data-tn-c="grand-nom"] .tn-geant{margin-top:calc(34px + var(--tn-g,200px)*.14);min-width:0}
+  /* En minuscules, le nom tient en moins de largeur, donc il est plus grand (jusqu'à 340 px) : les polices aux hautes
+     lettres (Oswald) montaient alors jusque sur la dernière ligne. L'écart suit la taille du nom. */
+  .ctw .tn-pied-complet[data-tn-c="grand-nom"] .tn-geant:not([data-tn-titres="capitales"] *){margin-top:calc(34px + var(--tn-g,200px)*.36)}
 }
 
 /* ── Retouches après le second tour ── */

@@ -713,5 +713,5 @@
 /* Tour des sections : ce qui reste collé en défilant sur grand écran se colle SOUS l'en-tête collant de la boutique
    (76 px sur grand écran), jamais dessous. */
 @media (min-width:760px){
-  .ctw .tn-ent~.tb-pg .tn-panier[data-tn-c="deux-colonnes"] .tn-recap,.ctw .tn-ent~.tb-pg .tn-rubriques .tn-rub h2,.ctw .tn-ent~.tb-pg .tn-legal[data-tn-c="sommaire"] .tn-sommaire{top:calc(var(--tb-h,0px) + 100px)}
+  .ctw .tn-ent~.tb-pg .tn-panier[data-tn-c="deux-colonnes"] .tn-recap,.ctw .tn-ent~.tb-pg .tn-rubriques .tn-rub h2,.ctw .tn-ent~.tb-pg .tn-legal[data-tn-c="sommaire"] .tn-sommaire{top:calc(var(--tb-h,0px) + var(--tn-colle,100px))}
 }

@@ -27,6 +27,7 @@ const R = await import("./rendu");
 const { TENUES_FAMILLES, HAUTEUR } = await import("./donnees");
 const { mesurer, onglet, ouvrirNavigateur, servir } = await import("./banc");
 const { exampleProductNames } = await import("../../src/lib/syna-agent/custom-theme/tenue");
+const { VARIANTES } = await import("./familles-variantes");
 type Reglages = import("../../src/lib/syna-agent/custom-theme/signatures").Reglages;
 type TenueBanc = import("./donnees").TenueBanc;
 type Cas = import("./rendu").Cas;
@@ -75,8 +76,21 @@ function vuesUneFamille(): Vue[] {
   return vues;
 }
 
+/** Les six sites possibles d'une des cinq autres familles (familles-variantes.ts). */
+function vuesDe(famille: string): Vue[] {
+  const base = TENUES_FAMILLES.find((t) => t.famille === famille)!;
+  return VARIANTES[famille].vues.map((x, i) => {
+    const suite = suiteAvec(x.changes);
+    return { titre: x.titre, tenue: { ...base, cle: `${base.cle}-${i + 1}`, tenue: { ...base.tenue, ...x.tenue } }, suite, reglages: reglagesDe(suite, x.reglages) };
+  });
+}
+
 const mode = args.includes("--une-famille") ? "une-famille" : "comparaison";
-const vues = mode === "une-famille" ? vuesUneFamille() : vuesComparaison();
+/** `--une-famille <clé>` : une des cinq autres familles ; sans clé, le gourmand (la première planche). */
+const famille = mode === "une-famille" && VARIANTES[val("une-famille") ?? ""] ? val("une-famille")! : "gourmand-joyeux";
+const vues = mode === "comparaison" ? vuesComparaison() : famille === "gourmand-joyeux" ? vuesUneFamille() : vuesDe(famille);
+const nomFamille = famille === "gourmand-joyeux" ? "gourmand et joyeux" : VARIANTES[famille].nom;
+const fichierFamille = famille === "gourmand-joyeux" ? "une-famille-tous-reglages" : `une-famille-${famille}`;
 const banc = await R.monter();
 const browser = await ouvrirNavigateur(), service = await servir(R.fichier);
 let graves = 0;
@@ -126,8 +140,8 @@ if (mode === "comparaison") {
   await planche(captures[390], titres, { hauteur: 3400, echelle: 1, colonnes: 6, sortie: path.join(sortie, "comparaison-familles.jpg"), titre: "Le même accueil dans les six familles du Studio (téléphone)" });
   await planche(captures[1280], titres, { hauteur: 2600, echelle: 0.5, colonnes: 3, sortie: path.join(sortie, "comparaison-familles-ordi.jpg"), titre: "Le même accueil dans les six familles du Studio (ordinateur)" });
 } else {
-  await planche(captures[390], titres, { hauteur: 3400, echelle: 1, colonnes: 6, sortie: path.join(sortie, "une-famille-tous-reglages.jpg"), titre: "Une seule famille (gourmand et joyeux), une seule marque : six sites possibles (téléphone)" });
-  await planche(captures[1280], titres, { hauteur: 2600, echelle: 0.5, colonnes: 3, sortie: path.join(sortie, "une-famille-tous-reglages-ordi.jpg"), titre: "Une seule famille (gourmand et joyeux), une seule marque : six sites possibles (ordinateur)" });
+  await planche(captures[390], titres, { hauteur: 3400, echelle: 1, colonnes: 6, sortie: path.join(sortie, `${fichierFamille}.jpg`), titre: `Une seule famille (${nomFamille}), une seule marque : six sites possibles (téléphone)` });
+  await planche(captures[1280], titres, { hauteur: 2600, echelle: 0.5, colonnes: 3, sortie: path.join(sortie, `${fichierFamille}-ordi.jpg`), titre: `Une seule famille (${nomFamille}), une seule marque : six sites possibles (ordinateur)` });
 }
 try { fs.rmSync(donnees, { recursive: true, force: true }); } catch { /* le dossier jetable part au prochain ménage */ }
 console.log(graves ? `${graves} défaut(s) bloquant(s) ou important(s)` : "aucun défaut bloquant ni important");

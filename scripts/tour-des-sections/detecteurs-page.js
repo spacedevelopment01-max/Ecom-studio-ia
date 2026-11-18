@@ -413,6 +413,28 @@
         t.vus.some(function (r) { var w = Math.min(r.r, c.b.r) - Math.max(r.l, c.b.l), h = Math.min(r.b, c.b.b) - Math.max(r.t, c.b.t); if (w > SEUILS.CHEVAUCHEMENT_PX && h > Math.max(SEUILS.CHEVAUCHEMENT_PX, r.h * 0.45)) { ajoute("chevauchement", c.el, { detail: "le bouton recouvre le texte « " + court(t.texte).slice(0, 30) + " »", cadre: union([r, c.b]) }); return true; } return false; });
       });
     });
+    // ── 4 bis. l'en-tête posé sur la photo d'ouverture : aucun de ses textes ne recouvre un texte de la page dessous
+    // (il flotte et s'anime, donc la règle précédente ne le compare pas au reste ; la mesure se fait page en haut).
+    var ent = document.querySelector(".tn-ent");
+    if (ent && window.scrollY < 2) {
+      // L'en-tête sur la photo s'anime au défilement (sa couleur seulement, pas sa place) : ses textes comptent quand même.
+      var duHaut = textes.filter(function (t) { return ent.contains(t.el); });
+      var dessous = blocs.filter(function (t) { return !ent.contains(t.el) && !t.flotte; });
+      var ditsEnt = new Set();
+      duHaut.forEach(function (a) {
+        dessous.some(function (b) {
+          return a.vus.some(function (ra) {
+            return b.vus.some(function (rb) {
+              var w = Math.min(ra.r, rb.r) - Math.max(ra.l, rb.l), h = Math.min(ra.b, rb.b) - Math.max(ra.t, rb.t);
+              if (!(w > SEUILS.CHEVAUCHEMENT_PX && h > Math.max(SEUILS.CHEVAUCHEMENT_PX, Math.min(ra.h, rb.h) * 0.45))) return false;
+              var cle = court(a.texte) + "|" + court(b.texte);
+              if (!ditsEnt.has(cle)) { ditsEnt.add(cle); ajoute("chevauchement", b.el, { texte: b.texte, detail: "ce texte passe sous « " + court(a.texte).slice(0, 30) + " » de l'en-tête, sur " + Math.round(w) + " × " + Math.round(h) + " px", cadre: union([ra, rb]) }); }
+              return true;
+            });
+          });
+        });
+      });
+    }
 
     // ── 5. textes trop petits, titres trop longs, pavé gras
     var titrePolice = (getComputedStyle(document.documentElement).getPropertyValue("--f-title") || "").split(",")[0].replace(/["']/g, "").trim().toLowerCase();

@@ -183,6 +183,8 @@
 .ctw[data-tn-titres="capitales"] .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:clamp(15px,4.6vw,19px)}
 @media (min-width:960px){
   .ctw .tn-ent[data-tn-c="logo-centre"] .tn-e-barre{grid-template-rows:var(--tn-e-h) 50px;height:auto;gap:0;padding:0 max(40px,calc(50% - 620px))}
+  /* L'en-tête au logo centré a deux rangées (127 px) : ce qui colle dans la page se pose dessous, jamais derrière. */
+  .ctw .tn-ent[data-tn-c="logo-centre"]~.tb-pg{--tn-colle:150px}
   .ctw .tn-ent[data-tn-c="logo-centre"] .tn-e-home{grid-row:1}
   .ctw .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:36px}
   .ctw[data-tn-titres="capitales"] .tn-ent[data-tn-c="logo-centre"] .tn-nom{font-size:25px}
@@ -198,6 +200,10 @@
 @supports (animation-timeline:scroll()){
   .ctw .tn-ent[data-tn-c="sur-photo"]:is(.frame:has(>.tb-pg:not([hidden])>.tn-ouverture:first-child:is([data-tn-c="titre-centre"],[data-tn-c="titre-en-bas"],[data-tn-c="titre-massif"],[data-tn-c="bandeau"]))>*),.ctw .tn-ent[data-tn-c="sur-photo"]:is(body:has(.es-main>.shopify-section:first-child .tn-ouverture:is([data-tn-c="titre-centre"],[data-tn-c="titre-en-bas"],[data-tn-c="titre-massif"],[data-tn-c="bandeau"])) *){position:sticky;top:var(--tb-h,0px);animation:tn-e-plein linear both;animation-timeline:scroll();animation-range:0px 120px}
 }
+/* Le titre massif pose son étiquette en haut de la photo : sous l'en-tête transparent, elle descend d'autant, jamais dessous. */
+.ctw .tn-ent[data-tn-c="sur-photo"]~.tb-pg>.tn-ouverture[data-tn-c="titre-massif"]:first-child,.ctw .tn-ouverture[data-tn-c="titre-massif"]:is(body:has(.tn-ent[data-tn-c="sur-photo"]) .es-main>.shopify-section:first-child *){padding-top:80px}
+@media (min-width:760px){.ctw .tn-ent[data-tn-c="sur-photo"]~.tb-pg>.tn-ouverture[data-tn-c="titre-massif"]:first-child,.ctw .tn-ouverture[data-tn-c="titre-massif"]:is(body:has(.tn-ent[data-tn-c="sur-photo"]) .es-main>.shopify-section:first-child *){padding-top:90px}}
+@media (min-width:960px){.ctw .tn-ent[data-tn-c="sur-photo"]~.tb-pg>.tn-ouverture[data-tn-c="titre-massif"]:first-child,.ctw .tn-ouverture[data-tn-c="titre-massif"]:is(body:has(.tn-ent[data-tn-c="sur-photo"]) .es-main>.shopify-section:first-child *){padding-top:106px}}
 @keyframes tn-e-plein{to{background-color:var(--tn-fond);background-image:none;color:var(--tn-encre);border-bottom-color:var(--tn-e-filet)}}
 
 /* ══ 4 · Avec bande d'annonce ══ */
