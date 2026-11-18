@@ -12,6 +12,7 @@ import { z } from "zod";
 import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId, tx } from "../db";
 import { budgetPctText } from "../ai/budget-pct";
+import { balance } from "../billing";
 import { activityGaps, COMPANY_FIELDS } from "./activity";
 import { loadSiteCopy } from "./mockup-code/copy";
 import { loadMockupSet } from "./mockup-code/mockup-set";
@@ -266,7 +267,14 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           // Règle du propriétaire : le prix d'abord, puis l'accord écrit du client, pour TOUTE dépense (audit du 10 novembre
           // 2026 : sous un budget autorisé d'office, les créations partaient sans carte). Une action gratuite (devis à 0, ex.
           // lire des angles prêts) ne demande jamais d'accord.
-          if (est.maxMicro > 0) return askConfirmation(r, t, parsed.data, tctx, "cost", est.maxMicro, est);
+          // Le budget d'IA du mois doit couvrir le plafond AVANT la carte (essai réel du 18 novembre 2026 : une création de
+          // site confirmée avec un budget presque épuisé s'est arrêtée en route, 4,48 € dépensés pour rien). Rien n'est
+          // lancé ni payé ; SINA le dit au client, qui peut recharger l'IA de son projet.
+          if (est.maxMicro > 0) {
+            const manque = budgetInsuffisant(r.user_id, r.project_id, est.maxMicro);
+            if (manque) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, summary: manque }, r.id); stepFailed = true; continue; }
+            return askConfirmation(r, t, parsed.data, tctx, "cost", est.maxMicro, est);
+          }
         }
         const res = await execute(t, parsed.data, tctx, key, r);
         if (!res.ok) stepFailed = true;
@@ -328,6 +336,20 @@ export async function confirmationText(t: AgentTool, args: unknown, ctx: ToolCon
   const price = est && est.maxMicro > 0 ? (est.probableMicro ? L(`Coût probable : ${pct(est.probableMicro)} ; au plus ${pct(est.maxMicro)}.`, `Likely cost: ${pct(est.probableMicro)}; at most ${pct(est.maxMicro)}.`) : L(`Au plus ${pct(est.maxMicro)}.`, `At most ${pct(est.maxMicro)}.`)) : "";
   const what = t.preview ? await t.preview(ctx, args) : est?.label ? est.label.charAt(0).toUpperCase() + est.label.slice(1) + "." : t.description.split(/(?<=[.:])\s/)[0];
   return [what, price].filter(Boolean).join("\n");
+}
+
+/**
+ * Le budget d'IA restant du client ne couvre pas le plafond d'un travail payant : la phrase que SINA lit (en pourcentages,
+ * jamais en euros), ou null s'il le couvre. Sans IA.
+ */
+export function budgetInsuffisant(userId: string, projectId: string | null, maxMicro: number): string | null {
+  let b: ReturnType<typeof balance>;
+  try { b = balance(userId, projectId); } catch { return null; }
+  if (b.available >= maxMicro) return null;
+  const pct = (m: number) => budgetPctText(userId, m, projectId).replace(/de votre budget/, "de ton budget");
+  const fin = new Date(b.periodEnd).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
+  return L(`Pas lancé, rien n'est payé : ce travail peut coûter jusqu'à ${pct(maxMicro)}, et il ne reste que ${pct(b.available)} pour ce mois. Dis-le simplement au client : il peut recharger l'IA de son projet (Mon compte), puis te redemander ; sinon, son budget repart le ${fin}.`,
+    `Not started, nothing paid: this may cost up to ${pct(maxMicro)} and only ${pct(b.available)} is left this month. Tell the client: they can top up the project's AI (My account), or wait until ${fin}.`);
 }
 
 async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "cost", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number }) {
