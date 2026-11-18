@@ -195,4 +195,20 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       expect(currentTheme(pid)?.spec.direction ?? "").not.toBe("sur-mesure");
     } finally { delete X.siteJobDeps.design; }
   });
+
+  it("une conception ratée n'est jamais gardée comme étape faite : la reprise de la même tâche la retente (essai réel du 18 novembre 2026)", async () => {
+    const { ctx, cid, pid, user } = await client();
+    J.updateJourney(cid, (x) => J.setStep(x, 5, "done"));
+    const cp: Record<string, unknown> = {};
+    const payload = { projectId: pid, userId: user.id, conversationId: cid, runId: ctx.runId, capMicro: 3_000_000 };
+    let essais = 0;
+    X.siteJobDeps.design = async () => { essais++; return { ok: false, result: { ok: false, summary: "Conception non faite : le budget disponible est insuffisant." } }; };
+    try {
+      await expect(fr(() => X.runSinaSiteJob(jobCtx("job-site-4", payload, cp)))).rejects.toThrow(/budget disponible est insuffisant/);
+      expect("site:design" in cp).toBe(false);
+      // La reprise de la même tâche retente la conception, au lieu de rendre l'ancien échec.
+      await expect(fr(() => X.runSinaSiteJob(jobCtx("job-site-4", payload, cp)))).rejects.toThrow(/budget disponible est insuffisant/);
+      expect(essais).toBe(2);
+    } finally { delete X.siteJobDeps.design; }
+  });
 });

@@ -275,13 +275,17 @@ export async function runSinaSiteJob(ctx: JobContext) {
 
   // 1) Conception de tout le site : payée une seule fois (point de reprise).
   ctx.progress(0.03, L("Conception de ton site", "Designing your site"));
+  // Un échec n'est jamais gardé comme étape faite (essai réel du 18 novembre 2026 : la conception arrêtée faute de budget
+  // était rendue telle quelle à chaque reprise, sans rien retenter). Il est levé, donc rien n'est gardé ; à la reprise, les
+  // appels déjà payés sont repris sans nouvel achat (même clé d'usage), et seule la suite est payée.
+  class EtapeRatee extends Error {}
   const designed = await ctx.step("site:design", async () => {
     // Le concepteur reçoit le nombre de photos que le prix annoncé permet (celui du devis) : il les répartit sur les pages.
     const photoBudget = (() => { try { return siteSizeGuess(kindOf(tc)).photos; } catch { return undefined; } })();
     const r = await (siteJobDeps.design ?? ((c, x) => runDesign(c, x, { kind: "full" })))(tc, { consigne: a.consigne ?? undefined, jobId: ctx.job.id, photoBudget });
-    if (!r.ok) return { ok: false as const, why: r.result.summary };
+    if (!r.ok) throw new EtapeRatee(r.result.summary);
     return { ok: true as const, t: r.t, concept: r.d.concept ?? null, signe: r.d.tenue?.signe ?? null, left: r.left, famille: r.d.famille ?? null, familleWhy: r.d.familleWhy ?? null };
-  });
+  }).catch((e) => { if (e instanceof EtapeRatee) return { ok: false as const, why: e.message }; throw e; });
   if (!designed.ok) return fail(designed.why);
 
   // 2) Le site conçu est rangé ; chaque produit reçoit sa fiche ; le menu est calculé depuis les pages et le catalogue.
@@ -297,10 +301,10 @@ export async function runSinaSiteJob(ctx: JobContext) {
       if (menu.length) t = applyStructure(t, [{ op: "menu", menu }]);
     }
     const blocking = checkCustomTheme(t, siteKind(tc)).filter((x) => x.level === "bloquant").map((x) => x.text);
-    if (blocking.length) return { ok: false as const, why: blocking.join(" ; ") };
+    if (blocking.length) throw new EtapeRatee(blocking.join(" ; "));
     saveCustomTheme(p.id, t);
     return { ok: true as const };
-  }).then((r) => { if (!r.ok) fail(L(`Le site conçu ne passe pas le contrôle du Studio : ${r.why}`, "The designed site fails the Studio checks.")); });
+  }).catch((e) => { if (e instanceof EtapeRatee) return { ok: false as const, why: e.message }; throw e; }).then((r) => { if (!r.ok) fail(L(`Le site conçu ne passe pas le contrôle du Studio : ${r.why}`, "The designed site fails the Studio checks.")); });
 
   // 3) Montage à la marque, dans ce qui reste du plafond annoncé. Si le site conçu coûte plus que le reste, les photos
   //    sont créées d'abord pour l'accueil et la page qui vend ; les autres pages le disent.
