@@ -378,6 +378,8 @@ export function requestHash(value: unknown): string {
   return createHash("sha256").update(JSON.stringify(normalize(value))).digest("hex");
 }
 
+/** Une demande déjà payée sous cette clé, mais dont le contenu a changé depuis : jamais rendue ni repayée sous la même clé. */
+export class DemandeChangee extends UserFacingError {}
 /** La réservation native est aussi le reçu de l'opération : aucune seconde requête payante sous la même clé. */
 export function existingOperation(user: string, meta: Pick<ReservationMeta, "task" | "projectId" | "usageKey" | "requestHash">): Operation | undefined {
   // Résout et vérifie le propriétaire, même pour la lecture d'un résultat déjà acquis.
@@ -385,7 +387,7 @@ export function existingOperation(user: string, meta: Pick<ReservationMeta, "tas
   const key = operationKey(user, meta);
   if (!key) return undefined;
   const r = one<Operation>("SELECT * FROM ai_reservations WHERE operation_key=? AND user_id=? AND status!='released'", key, account);
-  if (r && r.request_hash !== (meta.requestHash ?? null)) throw new UserFacingError(L("Cette demande a changé. Enregistrez-la comme une nouvelle action ; le travail précédent est conservé.", "This request has changed. Save it as a new action; the previous work is kept."));
+  if (r && r.request_hash !== (meta.requestHash ?? null)) throw new DemandeChangee(L("Cette demande a changé. Enregistrez-la comme une nouvelle action ; le travail précédent est conservé.", "This request has changed. Save it as a new action; the previous work is kept."));
   if (!r && !one("SELECT 1 FROM ai_reservations WHERE operation_key=?", key)) {
     // Avant cette migration, une clé n'empêchait pas le second envoi. Une ancienne facture/trace
     // ou un suivi fournisseur sans reçu associé ne doivent pas devenir un nouvel appel gratuit.

@@ -942,7 +942,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text-plan`;
         return customBrandDeps.plan ? SitePlanSchema.parse(await customBrandDeps.plan(prompt, usageKey))
           : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
-              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SITE_PLAN_SYSTEM, "redacteur"), promptKey: "syna-custom-plan-2", prompt, maxTokens: SITE_PLAN_OUTPUT_TOKENS, maxOutputTokens: SITE_PLAN_OUTPUT_TOKENS * 1.5, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
+              llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SITE_PLAN_SYSTEM, "redacteur"), promptKey: "syna-custom-plan-2", prompt, maxTokens: SITE_PLAN_OUTPUT_TOKENS, maxOutputTokens: SITE_PLAN_OUTPUT_TOKENS * 1.5, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
       });
     } catch (e) { report.problems.push(`plan des textes non fait (${(e as Error).message.slice(0, 120)}) : sections écrites sans plan`); }
     // Référencement de chaque page, gardé dans le thème (titre de l'onglet et description pour Google).
@@ -967,7 +967,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
           const usageKey = `${ctx.job.id}:seo`;
           return customBrandDeps.seo ? customBrandDeps.seo(prompt, usageKey)
             : SeoSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-seo", costCapMicro: a.capMicro }, () =>
-                llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SEO_SYSTEM, promptKey: "syna-custom-seo-1", prompt, maxTokens: 4000, maxOutputTokens: 8000, usageKey, routing: { difficulty: "standard", prefer: siteCopyModel() } }, SeoSchema, { strict: true })));
+                llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: SEO_SYSTEM, promptKey: "syna-custom-seo-1", prompt, maxTokens: 4000, maxOutputTokens: 8000, usageKey, routing: { difficulty: "standard", prefer: siteCopyModel() } }, SeoSchema, { strict: true })));
         });
         const t2 = loadCustomTheme(p.id)!;
         for (const pg of t2.pages) { const s = seo.seo.find((x) => x.page === pg.key); if (!pg.seo && s) pg.seo = { title: s.titre, description: s.description }; }
@@ -989,7 +989,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
         return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
           : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
-              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
+              llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
       });
       // Écriture posée une seule fois : à la reprise d'une tâche, une section déjà enregistrée n'est pas réappliquée
       // (sinon tous ses remplacements échouaient sur un texte déjà réécrit, audit du 10 novembre 2026).
@@ -1053,7 +1053,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text-review`;
         return CopyReviewSchema.parse(customBrandDeps.review ? await customBrandDeps.review(prompt, usageKey)
           : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-review", costCapMicro: a.capMicro }, () =>
-              llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(COPY_REVIEW_SYSTEM, "relecteurTextes"), promptKey: "syna-custom-copy-review-2", prompt, maxTokens: 8000, maxOutputTokens: 16000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, CopyReviewSchema, { strict: true })));
+              llmJson({ nouvelleSiChangee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(COPY_REVIEW_SYSTEM, "relecteurTextes"), promptKey: "syna-custom-copy-review-2", prompt, maxTokens: 8000, maxOutputTokens: 16000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, CopyReviewSchema, { strict: true })));
       });
       const known = new Map(allSections(loadCustomTheme(p.id)!).map((x) => [x.s.uid, x] as const));
       const refused = review.sections.filter((f, i, all) => known.has(f.uid) && all.findIndex((g) => g.uid === f.uid) === i);
@@ -1076,7 +1076,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
             const usageKey = `${ctx.job.id}:text-fix:${f.uid}`;
             return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
               : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-fix", costCapMicro: a.capMicro }, () =>
-                  llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
+                  llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
           });
           const r = await ctx.step(`text-fix-saved:${f.uid}`, async () => {
             t = loadCustomTheme(p.id)!;
@@ -1168,7 +1168,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
           const usageKey = `${ctx.job.id}:photo-brief:${y.s.uid}`;
           return customBrandDeps.photoBrief ? customBrandDeps.photoBrief(prompt, usageKey)
             : PhotoBriefSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo-brief", costCapMicro: a.capMicro }, () =>
-                llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_BRIEF_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-brief-2", prompt, maxTokens: 6000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoBriefSchema, { strict: true })));
+                llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_BRIEF_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-brief-2", prompt, maxTokens: 6000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoBriefSchema, { strict: true })));
         });
         const ok = got.photos.filter((x) => left.includes(x.find));
         if (ok.length) {
@@ -1205,7 +1205,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
             const usageKey = `${ctx.job.id}:photo-review`;
             return PhotoReviewSchema.parse(customBrandDeps.photoReview ? await customBrandDeps.photoReview(prompt, usageKey)
               : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo-review", costCapMicro: a.capMicro }, () =>
-                  llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_REVIEW_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-review-2", prompt, maxTokens: 12000, maxOutputTokens: 20000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewWireSchema, { strict: true })));
+                  llmJson({ nouvelleSiChangee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_REVIEW_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-review-2", prompt, maxTokens: 12000, maxOutputTokens: 20000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewWireSchema, { strict: true })));
           });
           // Seules les photos réellement relues comptent (une section ou une source inconnue est ignorée).
           const asked = review.photos.filter((f, i, list) => seen.some((x) => x.y.s.uid === f.uid && x.photos.some((b) => b.find === f.find)) && list.findIndex((g) => g.uid === f.uid && g.find === f.find) === i);
@@ -1234,7 +1234,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
                 const usageKey = `${ctx.job.id}:photo-fix:${uid}`;
                 return customBrandDeps.photoBrief ? customBrandDeps.photoBrief(prompt, usageKey)
                   : PhotoBriefSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo-fix", costCapMicro: a.capMicro }, () =>
-                      llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_BRIEF_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-brief-2", prompt, maxTokens: 6000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoBriefSchema, { strict: true })));
+                      llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_BRIEF_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-brief-2", prompt, maxTokens: 6000, maxOutputTokens: 12000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoBriefSchema, { strict: true })));
               });
               // Une reprise ne change que la description (et le produit montré) : jamais la source ni le format.
               let here = 0;
@@ -1405,7 +1405,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
           const look = await ctx.step(`look:${now.rev}:${s.key}`, async () => {
             const prompt = lookPrompt({ brand: name, sells, page: s.label, concept: now.concept }), usageKey = `${ctx.job.id}:look:${s.key}`;
             return LookSchema.parse(customBrandDeps.look ? await customBrandDeps.look(prompt, s.data, usageKey)
-              : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-look", costCapMicro: a.capMicro }, () => llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey, promptKey: "syna-custom-look-1", system: LOOK_SYSTEM, prompt, images: [{ data: s.data, label: `page ${s.label} sur téléphone` }], maxTokens: 1500, maxOutputTokens: 3000, routing: { difficulty: "standard", prefer: CHECK_MODEL } } as LlmCall, LookSchema)));
+              : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-look", costCapMicro: a.capMicro }, () => llmJson({ nouvelleSiChangee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey, promptKey: "syna-custom-look-1", system: LOOK_SYSTEM, prompt, images: [{ data: s.data, label: `page ${s.label} sur téléphone` }], maxTokens: 1500, maxOutputTokens: 3000, routing: { difficulty: "standard", prefer: CHECK_MODEL } } as LlmCall, LookSchema)));
           });
           seen.pages.push({ page: s.label, envie: look.cliente.envie, beau: look.directeurArtistique.note, avis: [look.cliente.avis, look.directeurArtistique.avis].filter(Boolean).join(" ").slice(0, 400) });
           const found = lookProblems(s.label, look);

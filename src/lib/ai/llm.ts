@@ -13,7 +13,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
-import { balance, EUR, existingOperation, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
+import { balance, DemandeChangee, EUR, existingOperation, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
 import {AgentBoundStop,beforeAgentTextAttempt} from './request-bounds';
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
@@ -43,6 +43,12 @@ export type LlmImage = { data: Buffer; label?: string };
 
 export type LlmCall = {
   task: TaskId;
+  /**
+   * Reprise d'une tâche (essai réel du 18 novembre 2026) : si la même étape a déjà été payée avec une demande différente
+   * (une règle du Studio a changé entre deux tentatives), elle devient une nouvelle action, sous une clé tirée de sa
+   * demande : payée une fois, reprise ensuite sans repayer. Sans ce choix, la tâche entière restait bloquée.
+   */
+  nouvelleSiChangee?: boolean;
   /** Route consentie par devis serveur : un changement impose un nouveau devis, jamais un repli facturé. */
   expectedRoute?: { provider: string; model: string; effort?: string };
   /** Remise en forme de la réponse JSON avant sa vérification (alias, forme d'une liste…). */
@@ -388,7 +394,13 @@ function uncertainProviderFailure(message:string){return Object.assign(new Perma
 
 async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[], format?: unknown, suffix = "", callTry = 0): Promise<RawResult> {
   const operation = { task: call.task, projectId: call.projectId, usageKey: call.usageKey ? `${call.usageKey}${suffix}` : undefined, requestHash: requestHash({ system: systemText(call), messages, format, maxTokens: call.maxTokens }) };
-  const previous = existingOperation(call.userId, operation);
+  let previous: ReturnType<typeof existingOperation>;
+  try { previous = existingOperation(call.userId, operation); }
+  catch (e) {
+    if (!(e instanceof DemandeChangee) || !call.nouvelleSiChangee || !operation.usageKey) throw e;
+    operation.usageKey = `${operation.usageKey}~${String(operation.requestHash).slice(0, 12)}`;
+    previous = existingOperation(call.userId, operation);
+  }
   if (previous) {
     if (previous.result) return JSON.parse(previous.result) as RawResult;
     operationPending();
