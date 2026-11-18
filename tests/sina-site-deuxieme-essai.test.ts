@@ -333,7 +333,7 @@ describe("SINA — le site, deuxième essai réel", async () => {
       T.customPhotoDeps.unit = () => 150_000;
       try {
         const c = T.designCost(true);
-        expect(c.max).toBe(3 * 1_000_000 + T.secondRegardCapMicro() * SR.SECOND_REGARD_CALLS_MAX + T.originalityCapMicro() * Og.ORIGINALITY_CALLS_MAX + T.designKnowledge(true).max);
+        expect(c.max).toBe(3 * 2_200_000 + T.secondRegardCapMicro() * SR.SECOND_REGARD_CALLS_MAX + T.originalityCapMicro() * Og.ORIGINALITY_CALLS_MAX + T.designKnowledge(true).max);
         const q = X.siteQuote({ business: "services", products: 1 });
         expect(q.maxMicro).toBeGreaterThan(c.max);
         expect(q.probableMicro!).toBeLessThan(q.maxMicro);

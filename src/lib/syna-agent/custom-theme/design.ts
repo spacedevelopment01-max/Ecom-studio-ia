@@ -69,12 +69,18 @@ export type Design = z.infer<typeof DesignSchema>;
  * Plafond d'un appel de conception (entrée : toute la bibliothèque de la famille ; sortie : tout le site). Essai réel du
  * 10 novembre 2026 (Éclat de thé) : la réflexion du modèle compte dans la sortie ; à 14 000 jetons, la réponse d'un site
  * complet a été coupée (0,34 € payés pour rien). Sortie portée à 32 000 jetons, plafond et coût probable relevés.
+ *
+ * Essai réel du 18 novembre 2026 (Atelier Vasco refait) : avec le cahier de l'ordre et de la variété, les sites déjà faits
+ * et le site actuel du client, la conception écrit désormais de 30 000 à 46 000 jetons ; coupée à 32 000 (puis sa reprise
+ * à 48 000), la réponse était illisible : 2,19 € payés pour rien. Sortie portée à 64 000 jetons (seuls les jetons écrits
+ * sont payés : environ 1 € mesuré par conception) ; plafond d'un appel relevé à ce que coûterait une sortie entière.
  */
-export const DESIGN_OUTPUT_TOKENS = 32_000;
-export const DESIGN_CAP_MICRO = 1_000_000;
+export const DESIGN_OUTPUT_TOKENS = 64_000;
+export const DESIGN_CAP_MICRO = 2_200_000;
 /** Conception + relecture du juge de l'ordre (deux appels) ; une troisième (la reprise du concepteur) seulement si un contrôle ou un juge refuse quelque chose. */
 export const DESIGN_CALLS_MAX = 3;
-export const DESIGN_TYPICAL_MICRO = 800_000;
+/** Coût d'une conception, mesuré sur les essais réels des 17 et 18 novembre 2026 (de 0,90 à 1,16 €). */
+export const DESIGN_TYPICAL_MICRO = 1_000_000;
 
 /**
  * Exemple de niveau attendu (une autre marque, à ne jamais recopier). Refait le 11 novembre 2026 avec les seules sections
