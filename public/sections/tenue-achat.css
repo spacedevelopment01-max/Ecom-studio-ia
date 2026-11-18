@@ -458,6 +458,8 @@
 .ctw .tn-essayer[data-tn-c="carte"] .tn-ph{order:-1;height:200px;margin:0;border:0;border-radius:var(--tn-r) var(--tn-r) 0 0;box-shadow:none;transform:none}
 .ctw[data-tn-cadre="penche"] .tn-essayer[data-tn-c="carte"] .tn-ph{margin:3px 3px 0;border-radius:12px 12px 0 0}
 .ctw .tn-essayer[data-tn-c="carte"] h2{margin:24px 20px 0;font-size:calc(32px*var(--tn-k))}
+/* Centrée, la carte garde ses marges intérieures : un titre long reste dans la carte, jamais sur son bord. */
+.ctw .tn-essayer[data-tn-c="carte"][data-tn-al="centre"]>h2{margin-left:20px;margin-right:20px}
 .ctw .tn-essayer[data-tn-c="carte"] .tn-chapo{margin:10px 20px 0}
 .ctw .tn-essayer[data-tn-c="carte"] ul{margin:18px 20px 0}
 .ctw .tn-essayer[data-tn-c="carte"] .tn-bt{margin:20px 20px 24px;justify-content:center}
@@ -671,6 +673,7 @@
   .ctw[data-tn-cadre="penche"] .tn-essayer[data-tn-c="carte"] .tn-ph{margin:3px 3px 3px 0;border-radius:0 12px 12px 0}
   .ctw .tn-essayer[data-tn-c="carte"]>:is(h2,.tn-chapo,ul,.tn-bt){grid-column:1;margin-left:52px;margin-right:52px}
   .ctw .tn-essayer[data-tn-c="carte"] h2{margin-top:44px;font-size:calc(48px*var(--tn-k))}
+  .ctw .tn-essayer[data-tn-c="carte"][data-tn-al="centre"]>h2{margin-left:52px;margin-right:52px}
   .ctw .tn-essayer[data-tn-c="carte"] .tn-bt{justify-self:start;margin-top:26px;margin-bottom:44px}
   .ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-table{display:block;margin-top:30px;padding:0}
   .ctw .tn-comparatif[data-tn-c="colonne-vedette"] .tn-noms{padding-left:0}

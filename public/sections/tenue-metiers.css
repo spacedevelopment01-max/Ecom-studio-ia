@@ -1057,9 +1057,10 @@
 .ctw .tn-bien-energie[data-tn-c="reglettes"] .tn-etiquette:not([data-tn-classe]) .tn-classe{grid-column:1/-1;grid-row:auto;margin-top:8px;text-align:left}
 .ctw .tn-bien-energie[data-tn-c="reglettes"] .tn-etiquette:not([data-tn-classe]) .tn-classe strong{display:inline}
 .ctw .tn-bien-energie[data-tn-c="reglettes"] .tn-etiquette:not([data-tn-classe]) figcaption{grid-column:1/-1}
-/* ── La vie du quartier : la distance (ou sa note) passe à la ligne au lieu de sortir de l'écran ── */
-.ctw .tn-bien-quartier .tn-reperes-q b{min-width:0;flex:1 1 auto}
-.ctw .tn-bien-quartier .tn-reperes-q span{flex:0 1 auto;max-width:48%}
+/* ── La vie du quartier : la distance (ou sa note) passe à la ligne au lieu de sortir de l'écran ; le nom du repère garde
+   ses mots entiers (« Commerces » coupé en « Commerce / s » dans un titre de 36 px, 18 novembre 2026) ── */
+.ctw .tn-bien-quartier .tn-reperes-q b{min-width:0;flex:0 0 auto;max-width:68%}
+.ctw .tn-bien-quartier .tn-reperes-q span{flex:1 1 0;min-width:0;max-width:48%}
 .ctw .tn-bien-quartier .tn-reperes-q span mark{padding:1px 5px;font-size:13px}
 /* ── Galerie d'un bien : une note dans les trois chiffres-clés passe à la ligne ── */
 .ctw .tn-bien-galerie .tn-cles b:has(mark){white-space:normal}

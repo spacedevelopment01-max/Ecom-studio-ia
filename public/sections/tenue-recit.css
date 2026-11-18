@@ -134,6 +134,9 @@
 .ctw .tn-citation-photo .tn-in{position:absolute;z-index:1;left:24px;right:24px;top:34px;color:var(--tn-sur-bouton)}
 .ctw .tn-citation-photo h2{font-size:calc(36px*var(--tn-k));line-height:1.04}
 .ctw .tn-citation-photo small{margin-top:16px;color:inherit}
+/* Le voile suit la citation jusqu'à sa signature : sous un long texte, la fin se lit aussi bien que le début. */
+.ctw .tn-citation-photo:not([data-tn-c="moitie"]){overflow:clip}
+.ctw .tn-citation-photo:not([data-tn-c="moitie"]) .tn-in::before{content:"";position:absolute;z-index:-1;inset:-36px -48px -48px;pointer-events:none;background:color-mix(in srgb,var(--tn-encre) 34%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,black 48px,black calc(100% - 48px),transparent),linear-gradient(180deg,transparent,black 36px,black calc(100% - 48px),transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,black 48px,black calc(100% - 48px),transparent),linear-gradient(180deg,transparent,black 36px,black calc(100% - 48px),transparent);mask-composite:intersect}
 .ctw[data-tn-titres="gras"] .tn-citation-photo h2,.ctw[data-tn-titres="capitales"] .tn-citation-photo h2{font-size:calc(31px*var(--tn-k))}
 /* « moitié » : la phrase sur la couleur de la marque, la photo dessous (à côté sur ordinateur) */
 .ctw .tn-citation-photo[data-tn-c="moitie"]{display:flex;flex-direction:column-reverse;background-color:var(--tn-accent)}
@@ -250,6 +253,8 @@
 .ctw .tn-journal[data-tn-c="cartes"] .tn-art{display:block;padding:0;border:0}
 .ctw .tn-journal[data-tn-c="cartes"] .tn-art .tn-ph{height:250px}
 .ctw .tn-journal[data-tn-c="cartes"] .tn-art small{margin-top:16px}
+/* Photo penchée : plus elle est large (un article seul), plus son coin descend ; le petit mot dessous garde sa place. */
+.ctw[data-tn-cadre="penche"] .tn-journal[data-tn-c="cartes"] .tn-art small{margin-top:30px}
 .ctw .tn-journal[data-tn-c="cartes"] .tn-art b{font-size:29px}
 
 /* ══ La page d'un article ══ */

@@ -133,7 +133,10 @@ async function contrastes(page: Page, textes: TexteMesure[], hauteur: number, la
     const l = Math.min(...t.rects.map((r) => r[0])), tp = Math.min(...t.rects.map((r) => r[1])), r = Math.max(...t.rects.map((x) => x[0] + x[2])), b = Math.max(...t.rects.map((x) => x[1] + x[3]));
     // Lisible sur la plus grande part de sa surface (un texte posé sur une photo) : seulement par endroits.
     const partiel = sous < PART_ILLISIBLE || median >= CONTRASTE_MIN;
-    out.push({ type: partiel ? "contraste-partiel" : "contraste", gravite: partiel ? (ratios[0] < CONTRASTE_DISPARAIT ? "important" : "mineur") : median < CONTRASTE_ILLISIBLE ? "bloquant" : "important", uid: t.uid, selecteur: t.selecteur, texte: t.texte, detail: partiel ? `le texte passe sous un contraste de ${CONTRASTE_MIN} sur ${Math.round(sous * 100)} % de sa surface (au plus bas ${ratios[0].toFixed(2)})` : `contraste de ${median.toFixed(2)} avec le fond (il en faut ${CONTRASTE_MIN}) ; texte de ${Math.round(t.taille)} px`, cadre: [Math.round(l), Math.round(tp), Math.round(r - l), Math.round(b - tp)] });
+    // Une marque « À compléter » porte son propre fond jaune et son encre foncée, fixes : lisible par construction. Penchée
+    // (dans un sceau, un macaron), le rectangle droit mesuré déborde du jaune par les coins ; ce n'est pas un mot qui disparaît.
+    const marque = /\.tn-manque$/.test(t.selecteur);
+    out.push({ type: partiel ? "contraste-partiel" : "contraste", gravite: partiel ? (ratios[0] < CONTRASTE_DISPARAIT && !marque ? "important" : "mineur") : median < CONTRASTE_ILLISIBLE ? "bloquant" : "important", uid: t.uid, selecteur: t.selecteur, texte: t.texte, detail: partiel ? `le texte passe sous un contraste de ${CONTRASTE_MIN} sur ${Math.round(sous * 100)} % de sa surface (au plus bas ${ratios[0].toFixed(2)})` : `contraste de ${median.toFixed(2)} avec le fond (il en faut ${CONTRASTE_MIN}) ; texte de ${Math.round(t.taille)} px`, cadre: [Math.round(l), Math.round(tp), Math.round(r - l), Math.round(b - tp)] });
   }
   return out;
 }

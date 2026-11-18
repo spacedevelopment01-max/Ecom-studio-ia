@@ -385,6 +385,23 @@
       }
     });
 
+    // La hauteur des lettres, pas celle de la boîte de la police : certaines polices de titre (très hautes ou très
+    // condensées) ont une boîte bien plus haute que leurs lettres ; deux boîtes qui se touchent ne sont pas deux textes
+    // l'un sur l'autre. La toile du navigateur donne, pour la vraie police, où commencent et finissent les lettres.
+    var toile = document.createElement("canvas").getContext("2d");
+    var encre = function (t) {
+      if (t._encre) return t._encre;
+      var s = cs(t.el), txt = t.texte.slice(0, 300);
+      if (s.textTransform === "uppercase") txt = txt.toUpperCase();
+      toile.font = s.fontStyle + " " + s.fontWeight + " " + s.fontSize + " " + s.fontFamily;
+      var m = toile.measureText(txt), fa = m.fontBoundingBoxAscent, fd = m.fontBoundingBoxDescent;
+      if (!(fa > 0) || !(fd >= 0) || !(m.actualBoundingBoxAscent > 0)) return (t._encre = t.vus);
+      t._encre = t.vus.map(function (r) {
+        var k = r.h / (fa + fd), haut = r.t + Math.max(0, fa - m.actualBoundingBoxAscent) * k, bas = Math.min(r.b, r.t + (fa + Math.max(0, m.actualBoundingBoxDescent)) * k);
+        return bas - haut < 2 ? r : { l: r.l, r: r.r, t: haut, b: bas, w: r.w, h: bas - haut };
+      });
+      return t._encre;
+    };
     // ── 4. deux textes, ou un texte et un bouton, qui se chevauchent
     var blocs = textes.filter(function (t) { return !t.zone.anime; });
     var parSection = new Map();
@@ -394,14 +411,15 @@
       for (var i = 0; i < list.length; i++) for (var j = i + 1; j < list.length; j++) {
         var a = list[i], b = list[j];
         if (a.el === b.el || a.el.contains(b.el) || b.el.contains(a.el) || a.flotte !== b.flotte) continue;
-        for (var x = 0; x < a.vus.length; x++) for (var y = 0; y < b.vus.length; y++) {
-          var ra = a.vus[x], rb = b.vus[y];
+        var ea = encre(a), eb = encre(b);
+        for (var x = 0; x < ea.length; x++) for (var y = 0; y < eb.length; y++) {
+          var ra = ea[x], rb = eb[y];
           var w = Math.min(ra.r, rb.r) - Math.max(ra.l, rb.l), h = Math.min(ra.b, rb.b) - Math.max(ra.t, rb.t);
           // Le recouvrement compte sur la hauteur des lettres, pas sur l'interligne.
           if (w > SEUILS.CHEVAUCHEMENT_PX && h > Math.max(SEUILS.CHEVAUCHEMENT_PX, Math.min(ra.h, rb.h) * 0.45)) {
             var cle = chemin(a.el, a.sec) + "|" + chemin(b.el, b.sec);
             if (!dits.has(cle)) { dits.add(cle); ajoute("chevauchement", b.el, { texte: b.texte, detail: "ce texte recouvre « " + court(a.texte).slice(0, 30) + " » (" + chemin(a.el, a.sec) + ") sur " + Math.round(w) + " × " + Math.round(h) + " px", cadre: union([ra, rb]) }); }
-            x = a.vus.length; break;
+            x = ea.length; break;
           }
         }
       }
@@ -410,7 +428,7 @@
       if (!(c.el.classList.contains("tn-bt") || c.el.tagName === "BUTTON")) return;
       blocs.forEach(function (t) {
         if (t.sec !== c.sec || c.el.contains(t.el) || t.el.contains(c.el) || t.flotte !== c.flotte) return;
-        t.vus.some(function (r) { var w = Math.min(r.r, c.b.r) - Math.max(r.l, c.b.l), h = Math.min(r.b, c.b.b) - Math.max(r.t, c.b.t); if (w > SEUILS.CHEVAUCHEMENT_PX && h > Math.max(SEUILS.CHEVAUCHEMENT_PX, r.h * 0.45)) { ajoute("chevauchement", c.el, { detail: "le bouton recouvre le texte « " + court(t.texte).slice(0, 30) + " »", cadre: union([r, c.b]) }); return true; } return false; });
+        encre(t).some(function (r) { var w = Math.min(r.r, c.b.r) - Math.max(r.l, c.b.l), h = Math.min(r.b, c.b.b) - Math.max(r.t, c.b.t); if (w > SEUILS.CHEVAUCHEMENT_PX && h > Math.max(SEUILS.CHEVAUCHEMENT_PX, r.h * 0.45)) { ajoute("chevauchement", c.el, { detail: "le bouton recouvre le texte « " + court(t.texte).slice(0, 30) + " »", cadre: union([r, c.b]) }); return true; } return false; });
       });
     });
     // ── 4 bis. l'en-tête posé sur la photo d'ouverture : aucun de ses textes ne recouvre un texte de la page dessous
@@ -418,13 +436,17 @@
     var ent = document.querySelector(".tn-ent");
     if (ent && window.scrollY < 2) {
       // L'en-tête sur la photo s'anime au défilement (sa couleur seulement, pas sa place) : ses textes comptent quand même.
-      var duHaut = textes.filter(function (t) { return ent.contains(t.el); });
+      // Seuls les textes de la barre elle-même comptent : un menu ouvert par le banc recouvre la page, c'est son rôle.
+      var be = boite(ent);
+      var duHaut = textes.filter(function (t) { return ent.contains(t.el); }).map(function (t) {
+        return { texte: t.texte, vus: encre(t).filter(function (r) { return r.t >= be.t - 1 && r.b <= be.b + 1; }) };
+      }).filter(function (t) { return t.vus.length; });
       var dessous = blocs.filter(function (t) { return !ent.contains(t.el) && !t.flotte; });
       var ditsEnt = new Set();
       duHaut.forEach(function (a) {
         dessous.some(function (b) {
           return a.vus.some(function (ra) {
-            return b.vus.some(function (rb) {
+            return encre(b).some(function (rb) {
               var w = Math.min(ra.r, rb.r) - Math.max(ra.l, rb.l), h = Math.min(ra.b, rb.b) - Math.max(ra.t, rb.t);
               if (!(w > SEUILS.CHEVAUCHEMENT_PX && h > Math.max(SEUILS.CHEVAUCHEMENT_PX, Math.min(ra.h, rb.h) * 0.45))) return false;
               var cle = court(a.texte) + "|" + court(b.texte);

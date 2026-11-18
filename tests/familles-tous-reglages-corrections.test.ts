@@ -34,7 +34,7 @@ describe("l'en-tête transparent ne recouvre jamais le haut de l'ouverture", () 
   });
   it("le banc compare les textes de l'en-tête (même animé) à ceux de la page dessous", () => {
     const js = banc("detecteurs-page.js");
-    expect(js).toContain("var duHaut = textes.filter(function (t) { return ent.contains(t.el); });");
+    expect(js).toContain("var duHaut = textes.filter(function (t) { return ent.contains(t.el); })");
     expect(js).toContain("de l'en-tête, sur ");
   });
 });
@@ -48,7 +48,7 @@ describe("un texte posé sur une photo se lit toujours", () => {
   it("le banc compte comme important un mot qui disparaît (contraste sous 1,5), même sur une partie du texte", () => {
     const ts = banc("banc.ts");
     expect(ts).toContain("export const CONTRASTE_DISPARAIT = 1.5;");
-    expect(ts).toMatch(/partiel \? \(ratios\[0\] < CONTRASTE_DISPARAIT \? "important" : "mineur"\)/);
+    expect(ts).toMatch(/partiel \? \(ratios\[0\] < CONTRASTE_DISPARAIT && !marque \? "important" : "mineur"\)/);
   });
 });
 
@@ -61,5 +61,35 @@ describe("rien ne se chevauche avec les titres fins", () => {
   });
   it("la pastille « À compléter » du macaron garde ses lignes jaunes jointives", () => {
     expect(feuille("tenue-vente.css")).toContain(".ctw .tn-ouverture-vente .tn-v-macaron mark.tn-manque{font-size:12px;padding:2px 4px;line-height:1.3}");
+  });
+});
+
+describe("le tour des six familles : les derniers défauts réels", () => {
+  it("le nom d'un repère du quartier garde ses mots entiers, la distance passe à la ligne", () => {
+    const css = feuille("tenue-metiers.css");
+    expect(css).toContain(".ctw .tn-bien-quartier .tn-reperes-q b{min-width:0;flex:0 0 auto;max-width:68%}");
+    expect(css).toContain(".ctw .tn-bien-quartier .tn-reperes-q span{flex:1 1 0;min-width:0;max-width:48%}");
+  });
+  it("la citation sur photo : un voile doux suit le texte jusqu'à sa signature, sans dépasser de la section", () => {
+    const css = feuille("tenue-recit.css");
+    expect(css).toContain('.ctw .tn-citation-photo:not([data-tn-c="moitie"]){overflow:clip}');
+    expect(css).toMatch(/\.ctw \.tn-citation-photo:not\(\[data-tn-c="moitie"\]\) \.tn-in::before\{content:"";position:absolute;z-index:-1;[^}]*mask-composite:intersect\}/);
+  });
+  it("la carte « Essayer » centrée garde ses marges intérieures (téléphone 20 px, ordinateur 52 px)", () => {
+    const css = feuille("tenue-achat.css");
+    expect(css).toContain('.ctw .tn-essayer[data-tn-c="carte"][data-tn-al="centre"]>h2{margin-left:20px;margin-right:20px}');
+    expect(css).toContain('.ctw .tn-essayer[data-tn-c="carte"][data-tn-al="centre"]>h2{margin-left:52px;margin-right:52px}');
+  });
+  it("journal en cartes, photos penchées : le petit mot sous la photo garde sa place", () => {
+    expect(feuille("tenue-recit.css")).toContain('.ctw[data-tn-cadre="penche"] .tn-journal[data-tn-c="cartes"] .tn-art small{margin-top:30px}');
+  });
+  it("le banc mesure les chevauchements sur la hauteur des lettres, et seulement dans la barre de l'en-tête", () => {
+    const js = banc("detecteurs-page.js");
+    expect(js).toContain("toile.measureText(txt)");
+    expect(js).toContain("var ea = encre(a), eb = encre(b);");
+    expect(js).toContain("return r.t >= be.t - 1 && r.b <= be.b + 1;");
+  });
+  it("le banc garde en mineur le contraste d'une marque « À compléter » (fond jaune et encre fixes)", () => {
+    expect(banc("banc.ts")).toContain('ratios[0] < CONTRASTE_DISPARAIT && !marque ? "important" : "mineur"');
   });
 });
