@@ -121,3 +121,17 @@ describe("face au site actuel du client, l'accueil ne compte pas les pièces qui
     expect(V.varieteSitesGaps(neuf, [{ ...ancien, ancien: false }]).some((g) => /^accueil :/.test(g))).toBe(true);
   });
 });
+
+describe("dernier recours sans IA pour la variété : un second passage qui n'accepte que ce qui rapproche de la règle", async () => {
+  const V = await import("@/lib/syna-agent/custom-theme/variete-sites");
+  it("l'écart compte les pièces de trop et les dispositions reprises, et ne compte pas les pièces obligatoires face à l'ancien site", () => {
+    const autre = { pages: { home: ["tn-ouverture:dans-la-photo", "tn-produits:grille", "tn-atouts:coches", "tn-garantie:bande", "tn-questions:filets"] }, utiles: ["home"], metier: null };
+    const neuf = { pages: { home: ["tn-ouverture:titre-en-bas", "tn-produits:grille", "tn-atouts:coches", "tn-garantie:sceau", "tn-questions:cartes"] }, utiles: ["home"], metier: null };
+    expect(V.ecartVariete(neuf, [autre])).toBeGreaterThan(V.ecartVariete(neuf, [{ ...autre, ancien: true }]));
+    expect(V.ecartVariete(autre, [])).toBe(0);
+  });
+  it("le second passage existe, après le premier, et seulement si la règle n'est pas tenue", () => {
+    const src = fs.readFileSync("src/lib/syna-agent/custom-theme/tools.ts", "utf8");
+    expect(src).toContain("const rapproche = (x: Design) => { const r = check(x); if (r.rules.length || !r.t) return false; const e = ecart(x); if (e >= courant) return false; courant = e; return true; };");
+  });
+});

@@ -56,7 +56,7 @@ import { menuProducts } from "./render";
 import { ORIGINALITY_CALLS_MAX, ORIGINALITY_CAP_MICRO, ORIGINALITY_SYSTEM, ORIGINALITY_TYPICAL_MICRO, OriginalitySchema, originalityNote, originalityPrompt, type Originality, type OriginalityOutcome } from "./originality";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
 import { TenueSchema, constructionsOf, isTenueSection, sansArche, tenueSection, validConstruction } from "./tenue";
-import { estVariete, fitVarietePieces, fitVarieteSites, METIER_COMPARES, SITES_COMPARES, varieteSitesBrief, varieteSitesGaps, type SiteVu } from "./variete-sites";
+import { ecartVariete, estVariete, fitVarietePieces, fitVarieteSites, METIER_COMPARES, SITES_COMPARES, varieteSitesBrief, varieteSitesGaps, type SiteVu } from "./variete-sites";
 import { llmJson, routeLlm } from "../../ai/llm";
 import { FX_SAFETY, requirePrice, usdToEur } from "../../ai/config";
 import { EUR } from "../../billing";
@@ -540,6 +540,20 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     const pieces = fitVarietePieces(fit.d, vus, { siteVu: siteVuDe, candidats, accepte, id: idOf, garder, metier: oc.metier });
     if (pieces.changed.length) fit = fitVarieteSites(pieces.d, vus, { resolve, id: idOf, garder, accepte, metier: oc.metier });
     if (fit.changed.length || pieces.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } }
+    // Second passage, seulement si la règle n'est toujours pas tenue (essai réel du 18 novembre 2026 : trois conceptions
+    // payées refusées parce que chaque remplacement possible ajoutait une remarque d'ordre). La variété est la règle
+    // absolue du propriétaire : un remplacement est gardé dès qu'il ne casse aucune règle du thème ET qu'il rapproche
+    // de la règle ; la remarque d'ordre qu'il peut ajouter n'est pas bloquante (dite dans « à revoir », puis reprise par
+    // les passages du rythme et des allures).
+    if (varieteSitesGaps({ ...siteVuDe(d), metier: oc.metier }, vus, { seule: seuleDans(d) }).length) {
+      const ecart = (x: Design) => ecartVariete({ ...siteVuDe(x), metier: oc.metier }, vus, { seule: seuleDans(x) });
+      let courant = ecart(d);
+      const rapproche = (x: Design) => { const r = check(x); if (r.rules.length || !r.t) return false; const e = ecart(x); if (e >= courant) return false; courant = e; return true; };
+      let fit2 = fitVarieteSites(d, vus, { resolve, id: idOf, garder, accepte: rapproche, metier: oc.metier });
+      const pieces2 = fitVarietePieces(fit2.d, vus, { siteVu: siteVuDe, candidats, accepte: rapproche, id: idOf, garder, metier: oc.metier, tours: 80 });
+      if (pieces2.changed.length) fit2 = { d: pieces2.d, changed: [...fit2.changed, ...pieces2.changed] };
+      if (fit2.changed.length) { const again = check(fit2.d); if (!again.rules.length && again.t) { d = fit2.d; c = again; } }
+    }
     const reste = varieteSitesGaps({ ...siteVuDe(d), metier: oc.metier }, vus, { seule: seuleDans(d) });
     if (reste.length) return { ok: false, result: { ok: false, summary: L(`Conception refusée : le site ressemblerait trop à un site déjà fait par le Studio (${reste.join(" ; ").slice(0, 400)}). Rien n'est enregistré.`, "Design refused: too close to an existing site."), hint: "Dis-le honnêtement au client avec le coût réel ; ne relance rien de payant sans son accord." } };
   }

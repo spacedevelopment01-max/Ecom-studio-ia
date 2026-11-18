@@ -79,6 +79,25 @@ export function sansDispositionLibre(mine: SiteVu, sites: SiteVu[], o: Options =
   return [...new Set([...posees(mine, mine.utiles)].filter((x) => { const [s, pc] = x.split("|"); const id = bare(pc); return prises.has(x) && plusieurs(id) && !o.seule?.(id) && constructionsOf(id).every((c) => prises.has(`${s}|${id}:${c.key}`)); }).map((x) => bare(x.split("|")[1])))];
 }
 
+/** Face au site actuel du même client : une pièce qui lève les derniers doutes (questions, garantie, livraison), obligatoire. */
+const pratiquePourAncien = (s: SiteVu, x: string) => !!s.ancien && !!tenueSection(x)?.ordre?.traits?.some((tr) => tr === "doutes" || tr === "livraison");
+/**
+ * L'écart à la règle de variété, en nombre : pièces de trop sur l'accueil et sur le site entier, et pièces reprises sans
+ * autre disposition. Sert au dernier recours sans IA : un remplacement n'est gardé que s'il fait baisser cet écart.
+ */
+export function ecartVariete(mine: SiteVu, sites: SiteVu[], o: Options = {}): number {
+  const garde = (x: string) => !o.seule?.(x);
+  const h = new Set([...accueil(mine)].filter(garde)), u = new Set([...piecesDe(mine, mine.utiles)].filter(garde)), max = Math.floor(u.size * SITE_COMMUNES_PART);
+  let e = 0;
+  for (const s of sites) {
+    e += Math.max(0, [...h].filter((x) => accueil(s).has(x) && !pratiquePourAncien(s, x)).length - ACCUEIL_COMMUNES_MAX);
+    if (!s.ancien) { const theirs = piecesDe(s, s.utiles); e += Math.max(0, [...u].filter((x) => theirs.has(x)).length - max); }
+  }
+  const prises = dispositionsPrises(mine, sites);
+  e += [...posees(mine, mine.utiles)].filter((x) => { const id = bare(x.split("|")[1]); return prises.has(x) && plusieurs(id) && !o.seule?.(id); }).length;
+  return e;
+}
+
 /** Les pièces de trop, de la plus urgente à la moins urgente (l'accueil d'abord). */
 export function piecesEnTrop(mine: SiteVu, sites: SiteVu[], o: Options = {}): string[] {
   const score = new Map<string, number>();
@@ -86,8 +105,9 @@ export function piecesEnTrop(mine: SiteVu, sites: SiteVu[], o: Options = {}): st
   const garde = (x: string) => !o.seule?.(x);
   const h = new Set([...accueil(mine)].filter(garde)), u = new Set([...piecesDe(mine, mine.utiles)].filter(garde)), max = Math.floor(u.size * SITE_COMMUNES_PART);
   for (const s of sites) {
-    const ch = [...h].filter((x) => accueil(s).has(x));
+    const ch = [...h].filter((x) => accueil(s).has(x) && !pratiquePourAncien(s, x));
     if (ch.length > ACCUEIL_COMMUNES_MAX) for (const x of ch) score.set(x, (score.get(x) ?? 0) + 100);
+    if (s.ancien) continue;
     const theirs = piecesDe(s, s.utiles), cu = [...u].filter((x) => theirs.has(x));
     if (cu.length > max) for (const x of cu) score.set(x, (score.get(x) ?? 0) + 1);
   }
@@ -107,8 +127,7 @@ export function varieteSitesGaps(mine: SiteVu, sites: SiteVu[], o: Options = {})
   // Avec le site actuel du même client, les pièces qui lèvent les derniers doutes (questions, garantie, livraison) ne
   // comptent pas : chaque page doit les avoir près de la fin (règle d'or 8) et le Studio ne peut pas les remplacer
   // (essai réel du 18 novembre 2026 : accueil refusé pour ces pièces obligatoires).
-  const pratique = (s: SiteVu, x: string) => !!s.ancien && !!tenueSection(x)?.ordre?.traits?.some((tr) => tr === "doutes" || tr === "livraison");
-  for (const s of sites) { const c = [...h].filter((x) => accueil(s).has(x) && !pratique(s, x)); if (c.length > pire.length) { pire = c; pireSite = s; } }
+  for (const s of sites) { const c = [...h].filter((x) => accueil(s).has(x) && !pratiquePourAncien(s, x)); if (c.length > pire.length) { pire = c; pireSite = s; } }
   if (pire.length > ACCUEIL_COMMUNES_MAX) out.push(`accueil : ${pire.length} pièces en commun avec l'accueil ${pireSite?.ancien ? "du site actuel du client, qu'il fait refaire" : "d'un site déjà monté pour une autre marque"} (${pire.join(", ")}) ; au plus ${ACCUEIL_COMMUNES_MAX} : remplace-en ${pire.length - ACCUEIL_COMMUNES_MAX} par d'autres pièces de la bibliothèque qui servent le même moment (règle du propriétaire : la variété d'un client à l'autre)`);
   // ── le site entier : au plus un quart de pièces en commun
   const u = new Set([...piecesDe(mine, mine.utiles)].filter(garde));
