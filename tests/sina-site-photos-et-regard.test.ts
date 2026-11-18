@@ -348,3 +348,82 @@ describe("photos du site : jamais de personne sans accord, jamais de photo d'exe
     expect(STEP_GUIDES[6]).toMatch(/« siteNonRegarde »[^]*tu n'as PAS pu regarder le site en image[^]*dis-le-lui EN PREMIER[^]*ne dis jamais que tu l'as regardé/);
   });
 });
+
+describe("refaire le site : les photos déjà faites se reprennent, sans création ni paiement (18 novembre 2026)", async () => {
+  process.env.STUDIO_SYNA_AGENT = "1";
+  const { one } = await import("@/lib/db");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const { account } = await import("./conversation209-fixtures");
+  const { threadFor } = await import("@/lib/syna-agent/thread");
+  const { getTool } = await import("@/lib/syna-agent/registry");
+  const { saveAsset } = await import("@/lib/library");
+  const B = await import("@/lib/syna-agent/custom-theme/brand");
+  const G = await import("@/lib/syna-agent/custom-theme/gallery");
+  const S = await import("@/lib/syna-agent/custom-theme/theme");
+  const sharp = (await import("sharp")).default;
+  const fr = <R,>(fn: () => Promise<R> | R) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+  const call = async (name: string, ctx: any, args: unknown): Promise<any> => {
+    ctx.projectId = one<{ project_id: string | null }>("SELECT project_id FROM agent_conversations WHERE id=?", ctx.conversationId)?.project_id ?? null;
+    return fr(() => getTool(name)!.run(ctx, getTool(name)!.args.parse(args)));
+  };
+  const png = () => sharp({ create: { width: 20, height: 20, channels: 3, background: "#888" } }).png().toBuffer();
+  const CALM = "Photographie d'ambiance en plan serré, format vertical. Un outil posé sur un établi en bois clair, à côté de la pièce en cours. La scène contient exactement 2 objets.";
+
+  it("la liste des photos déjà faites : numérotée, avec la marque à écrire, jamais sur un produit", () => {
+    const brief = B.photothequeBrief([{ id: "a1", description: CALM }, { id: "a2", description: "Une bobine de fil sur du lin." }]);
+    expect(brief).toMatch(/REPRENDRE R<numéro> :/);
+    expect(brief).toMatch(/Chaque photo une seule fois sur tout le site ; jamais sur la photo d'un produit/);
+    expect(brief).toContain("R2 : Une bobine de fil sur du lin.");
+    expect(B.photothequeBrief([])).toBe("");
+    expect(B.REPRISE_PHOTO.exec("REPRENDRE R12 : Un établi.")?.[1]).toBe("12");
+    expect(B.REPRISE_PHOTO.test("Un établi en bois clair.")).toBe(false);
+  });
+
+  it("montage : la photo reprise est posée telle quelle, une seule fois ; l'autre place reçoit une photo créée", async () => {
+    const user = await account();
+    const cid = threadFor(user, null), ctx: any = { user, conversationId: cid, runId: `run-${Date.now()}-${Math.random()}`, projectId: null, attachment: () => null };
+    await call("start.answer", ctx, { answers: [{ field: "business", value: "products" }, { field: "offer", value: "Des objets faits à la main." }] });
+    await call("start.answer", ctx, { answers: [
+      { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 objet" }, { field: "market", value: "France." },
+      { field: "price", value: "25 €" }, { field: "difference", value: "Fait main." }, { field: "taste", status: "none" }, { field: "photos", value: "Non." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
+    ] });
+    await call("start.confirm", ctx, {});
+    const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
+    const old = await saveAsset({ projectId: pid, userId: user.id, data: await png(), name: "site-atelier.png", mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: CALM, ratio: "4:5", direction: "custom", product: false } } } as any);
+    S.saveCustomTheme(pid, { version: 1, family: "classique", style: "x", header: null, footer: null, search: null,
+      pages: [{ key: "home", label: "Accueil", sections: [{ uid: "s0000000a", id: "tn-ouverture" }, { uid: "s0000000b", id: "tn-bande" }] }] } as any);
+    let made = 0;
+    B.customBrandDeps.plan = async () => ({ promesse: "Fait pour durer.", voix: "Simple.", menu: [], sections: [] });
+    // Les deux rédacteurs demandent la même photo déjà faite : la seconde demande ne la reçoit pas (jamais deux fois).
+    B.customBrandDeps.write = async (prompt: string) => {
+      const html = prompt.slice(prompt.indexOf("HTML actuel"));
+      return { edits: [], links: [], photos: [...new Set([...html.matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((x) => x[0]))].map((find) => ({ find, description: `REPRENDRE R1 : ${CALM}`, ratio: "4:5" as const, product: null })) };
+    };
+    B.customBrandDeps.photo = async () => { made++; return png(); };
+    B.customBrandDeps.photoUnit = () => 50_000;
+    G.galleryDeps.check = async () => ({ productMatches: true, productWhole: true, texts: [], extraText: [], people: false, notes: [] }) as any;
+    try {
+      const r: any = await fr(() => B.runCustomBrandJob({ job: { id: `j-${Date.now()}-reprise` }, payload: { projectId: pid, capMicro: 10_000_000, photos: true, newPhotos: true, phototheque: [{ id: old.id, description: CALM }] }, checkpoint: {}, progress: () => undefined, step: async (_k: string, fn: () => Promise<unknown>) => fn() } as any));
+      expect(r.photosReutilisees).toBe(1);
+      expect(made).toBe(1);
+      const html = S.allSections(S.loadCustomTheme(pid)!).map((x) => S.sectionHtml(x.s)).join("\n");
+      expect(html.split(`/api/files/${old.id}`).length - 1).toBe(1);
+    } finally { for (const k of ["plan", "write", "photo", "photoUnit"] as const) delete B.customBrandDeps[k]; delete G.galleryDeps.check; }
+  });
+
+  it("la création du site relève les photos et les textes du site d'avant, et le devis compte les photos reprises", async () => {
+    const X = await import("@/lib/syna-agent/custom-theme/site-job");
+    const T = await import("@/lib/syna-agent/custom-theme/tools");
+    T.customPhotoDeps.unit = () => 150_000;
+    try {
+      const sans = X.siteQuote({ business: "products", products: 3 }), avec = X.siteQuote({ business: "products", products: 3 }, 30);
+      expect(avec.probableMicro!).toBeLessThan(sans.probableMicro!);
+      expect(X.PART_REPRISE).toBe(0.5);
+    } finally { delete T.customPhotoDeps.unit; }
+    const src = fs.readFileSync("src/lib/syna-agent/custom-theme/site-job.ts", "utf8");
+    expect(src).toContain('const reprise = await ctx.step("site:reprise"');
+    expect(src).toContain("phototheque: reprise.phototheque, matiere: reprise.matiere");
+    const brand = fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8");
+    expect(brand).toContain("TEXTES DE SON SITE D'AVANT (matière");
+  });
+});

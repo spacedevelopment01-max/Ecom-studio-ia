@@ -43,9 +43,9 @@ describe("refaire un site : il ne ressemble pas à l'ancien", async () => {
     expect(src).toContain("if (ancien) for (const [key, id] of Object.entries(ancien.partitions))");
   });
 
-  it("refaire repart d'une page blanche : aucun ancien texte ni aucune ancienne photo n'est repris", () => {
+  it("refaire : une pièce gardée garde son travail, sauf les emplacements de produit, qui repartent vides", () => {
     const src = fs.readFileSync("src/lib/syna-agent/custom-theme/site-job.ts", "utf8");
-    expect(src).toContain("if (!avant || !allSections(avant).some((x) => x.s.clientTexts)) keepWork(t, avant);");
+    expect(src).toContain("pg.sections = pg.sections.filter((x) => { const l = libSection(x.id); return !l || !productSlotSection(l); });");
   });
 });
 

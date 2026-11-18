@@ -50,7 +50,7 @@ export const CUSTOM_BRAND_JOB = "syna.custom.brand";
  * autres. Les vraies photos de ses produits servent toujours aux photos de ses produits.
  */
 export type ImagesMode = "sina" | "client" | "mix";
-export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; newPhotos?: boolean; /** Pages dont les photos sont créées maintenant (null : toutes). */ pages?: string[] | null; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string | null };
+export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; newPhotos?: boolean; /** Pages dont les photos sont créées maintenant (null : toutes). */ pages?: string[] | null; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string | null; /** Refaire le site : les photos créées du site d'avant, réutilisables (18 novembre 2026). */ phototheque?: PhotoReprise[]; /** Refaire le site : les textes du site d'avant, matière donnée au plan des textes. */ matiere?: string | null };
 
 /** Plafond d'un appel d'écriture d'une section (même modèle que les textes du site). */
 export const SECTION_TEXT_CAP_MICRO = 200_000; // mesuré jusqu'à 0,14 € (17 et 18 novembre 2026) : marge rendue
@@ -158,6 +158,45 @@ export const SectionWriteSchema = z.object({
   photos: z.array(z.object({ find: z.string().min(3).max(200), description: z.string().min(20).max(2500), ratio: z.enum(RATIOS), product: z.string().max(160).nullable() })).max(14),
 });
 export type SectionWrite = z.infer<typeof SectionWriteSchema>;
+
+/**
+ * Refaire un site en reprenant ce qui est déjà fait (le propriétaire, 18 novembre 2026 : « tu refais un thème entier mais
+ * le copywriting et les images existent déjà, tu peux les réutiliser ? »). Les photos créées pour le site d'avant, avec
+ * leur description, sont proposées aux rédacteurs : une photo qui convient est reprise telle quelle (rien de créé, rien
+ * de payé), jamais deux fois sur le site. Jamais une photo posée sur un emplacement de produit, ni une qui montre un
+ * produit dont le client n'a pas envoyé de photo (un produit ne s'invente pas).
+ */
+export type PhotoReprise = { id: string; description: string };
+/** Marque qu'un rédacteur écrit au début de la description d'une photo pour reprendre une photo déjà faite. */
+export const REPRISE_PHOTO = /^\s*REPRENDRE\s+R(\d+)\b\s*[:.-]?\s*/i;
+export function photothequeDe(projectId: string, t: CustomTheme | null, business: "products" | "services", products: ProductSeen[]): PhotoReprise[] {
+  if (!t) return [];
+  const out: PhotoReprise[] = [], vus = new Set<string>();
+  for (const x of allSections(t)) {
+    const l = libSection(x.s.id);
+    if (!l || (business !== "services" && productSlotSection(l))) continue;
+    for (const m of sectionHtml(x.s).matchAll(/\/api\/files\/([\w-]+)/g)) {
+      const id = m[1];
+      if (vus.has(id)) continue;
+      vus.add(id);
+      const asset = getAsset(id);
+      if (!asset || asset.deleted_at || asset.project_id !== projectId || asset.role !== "site" || asset.origin !== "generated") continue;
+      const meta = (() => { try { return JSON.parse(String((asset as { meta?: unknown }).meta ?? "{}")) as { synaPhoto?: { description?: string; product?: boolean } }; } catch { return {}; } })();
+      const d = meta.synaPhoto?.description?.trim();
+      if (!d || meta.synaPhoto?.product || briefShowsUnseenProduct({ description: d }, products)) continue;
+      out.push({ id, description: d });
+    }
+  }
+  return out.slice(0, 60);
+}
+/** Ce que les rédacteurs lisent : les photos déjà faites, numérotées. */
+export function photothequeBrief(list: PhotoReprise[]): string {
+  if (!list.length) return "";
+  return [
+    `PHOTOS DÉJÀ FAITES POUR CETTE MARQUE (son site d'avant), à reprendre plutôt qu'à recréer : quand l'une d'elles convient vraiment à une photo de ta section (même sujet, même cadrage, sa place sur la page), commence la description de cette photo par « REPRENDRE R<numéro> : », puis décris-la quand même en entier. Chaque photo une seule fois sur tout le site ; jamais sur la photo d'un produit. Si aucune ne convient, décris une photo neuve sans cette marque.`,
+    ...list.map((x, i) => `R${i + 1} : ${x.description.replace(/\s+/g, " ").slice(0, 260)}`),
+  ].join("\n");
+}
 
 /**
  * Règles d'écriture du site (retour du propriétaire du 9 novembre 2026 sur l'essai Heure Dorée : « Lis les étiquettes :
@@ -830,7 +869,11 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // Décision du 17 novembre 2026 : un produit sans photo du client ne se montre dans aucune photo créée (il ne s'invente pas).
   const seenProducts: ProductSeen[] = p.business === "services" ? [] : products.map((x) => ({ title: x.data.title, type: x.data.productType, photo: x.data.images.some((i) => !!i.assetId && !!getAsset(i.assetId)) }));
   const unseen = (b: { description: string; product?: string | null }) => briefShowsUnseenProduct(b, seenProducts);
-  const brief = [brandBrief(p, j), peopleBriefLine(photoPeople), productPhotosBriefLine(seenProducts), a.consigne ? `DEMANDE DU CLIENT POUR SES TEXTES (prioritaire, à suivre dans tout le site, ses mots) : « ${a.consigne} »` : ""].filter(Boolean).join("\n");
+  const brief = [brandBrief(p, j), peopleBriefLine(photoPeople), productPhotosBriefLine(seenProducts), a.consigne ? `DEMANDE DU CLIENT POUR SES TEXTES (prioritaire, à suivre dans tout le site, ses mots) : « ${a.consigne} »` : "", photothequeBrief(a.phototheque ?? [])].filter(Boolean).join("\n");
+  // Les photos déjà faites, reprises au plus une fois chacune (refaire le site).
+  const reprises = new Map((a.phototheque ?? []).map((x, i) => [i + 1, x.id] as const));
+  const dejaPosees = new Set<string>();
+  for (const y of allSections(t)) for (const m of sectionHtml(y.s).matchAll(/\/api\/files\/([\w-]+)/g)) dejaPosees.add(m[1]);
   const name = p.brand?.name ?? p.name;
   // Ce que le Studio posera lui-même dans les pièces (prestations, horaires, zone, adresse) et ce que le client a dit :
   // dit au rédacteur section par section, puis contrôlé sans IA après l'écriture.
@@ -841,7 +884,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // rewrite : le client n'aime pas les textes, tout le site est réécrit (sinon seules les sections encore d'exemple).
   const sections = allSections(t).filter((x) => a.rewrite || !x.s.clientTexts);
   const writer = siteCopyModel();
-  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, photosReprises: 0, /** Emplacements de produit laissés à la photo du client (« Ta photo ici ») : rien n'y est créé. */ photosProduitsAttendues: 0, /** Photos non créées parce que leur description montrait un produit sans photo du client. */ photosSansProduit: 0, /** Faits connus posés à la place d'un « À compléter » (sans IA). */ faitsPoses: 0, /** Suites de mots encore répétées dans plus de trois sections après les reprises. */ repetitions: [] as string[], regardNonFait: null as null | string, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, regards: null as null | LooksReport, problems: [] as string[] };
+  const report = { sections: 0, failedEdits: 0, photosMade: 0, photosReal: 0, photosClient: 0, photosToProvide: 0, photosLeft: 0, photosFailed: 0, photosReprises: 0, /** Photos du site d'avant reprises telles quelles (refaire le site) : rien de créé ni payé. */ photosReutilisees: 0, /** Emplacements de produit laissés à la photo du client (« Ta photo ici ») : rien n'y est créé. */ photosProduitsAttendues: 0, /** Photos non créées parce que leur description montrait un produit sans photo du client. */ photosSansProduit: 0, /** Faits connus posés à la place d'un « À compléter » (sans IA). */ faitsPoses: 0, /** Suites de mots encore répétées dans plus de trois sections après les reprises. */ repetitions: [] as string[], regardNonFait: null as null | string, redacteur: `${writer.provider}:${writer.model}`, relecture: null as null | { reprises: number; refusees: number; avis: string }, relecturePhotos: null as null | { reprises: number; refusees: number; avis: string }, regards: null as null | LooksReport, problems: [] as string[] };
   const briefs: Record<string, SectionWrite["photos"]> = {};
   /**
    * Les faits que le Studio connaît (téléphone, e-mail, horaires, zone, adresse, prestations) restés « [À compléter] »
@@ -892,8 +935,10 @@ export async function runCustomBrandJob(ctx: JobContext) {
     ctx.progress(0.03, L("Plan des textes du site", "Site copy plan"));
     try {
       sitePlan = await ctx.step("text-plan", async () => {
-        const prompt = sitePlanPrompt(brief, sections.map((x) => { const l = libSection(x.s.id); return { uid: x.s.uid, page: x.page?.label ?? x.place, title: l?.title ?? x.s.id, does: l?.does ?? "", texts: sectionSkeleton(withBrandName(sectionHtml(x.s), name)), intent: x.s.intent }; }),
+        const prompt0 = sitePlanPrompt(brief, sections.map((x) => { const l = libSection(x.s.id); return { uid: x.s.uid, page: x.page?.label ?? x.place, title: l?.title ?? x.s.id, does: l?.does ?? "", texts: sectionSkeleton(withBrandName(sectionHtml(x.s), name)), intent: x.s.intent }; }),
           { concept: t!.concept, journeys: t!.pages.filter((pg) => pg.journey).map((pg) => ({ page: pg.label, journey: pg.journey! })), pages: t!.pages.map((pg) => ({ key: pg.key, label: pg.label })) });
+        // Refaire le site : ses textes d'avant sont la matière du plan (reprendre mot pour mot ce qui va à une section).
+        const prompt = a.matiere ? `${prompt0}\n\nTEXTES DE SON SITE D'AVANT (matière : quand un titre, une phrase ou un bouton va à une section du nouveau site, reprends-le mot pour mot dans le plan ; jamais toute une section recopiée, jamais un fait inventé) :\n${a.matiere}` : prompt0;
         const usageKey = `${ctx.job.id}:text-plan`;
         return customBrandDeps.plan ? SitePlanSchema.parse(await customBrandDeps.plan(prompt, usageKey))
           : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
@@ -1235,7 +1280,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
       const id = x?.data.images[0]?.assetId;
       return id && getAsset(id) && (showsPackaging(ph.description) || briefNamesProduct(ph.description, { title: x!.data.title, type: x!.data.productType, photo: true })) ? id : undefined;
     };
-    for (const [i, { uid, ph }] of todo.entries()) {
+    for (const [i, { uid, ph: ph0 }] of todo.entries()) {
+      let ph = ph0;
       ctx.progress(0.5 + (0.48 * i) / Math.max(1, todo.length), L(`Photos : ${i + 1} sur ${todo.length}`, `Photos: ${i + 1} of ${todo.length}`));
       const file = ph.find.replace(/^.*\//, "");
       // Photo d'un élément retiré par le rédacteur (carte en trop) : rien à créer, rien à payer.
@@ -1263,6 +1309,16 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // elle, rien n'est créé ni posé (essai réel : des produits « imaginés » dans la galerie de la fiche) : l'aperçu y
         // montre « Ta photo ici », et la photo du client y prendra sa place dès qu'il l'importe.
         if (p.business !== "services" && lib && showsProductAlone(lib, ph.description) && !real) { report.photosProduitsAttendues++; continue; }
+        // Une photo déjà faite pour le site d'avant, que le rédacteur a choisi de reprendre : posée telle quelle, sans
+        // création ni paiement, jamais deux fois (ni sur un emplacement de produit, écarté juste au-dessus).
+        const rep = REPRISE_PHOTO.exec(ph.description);
+        const repId = rep ? reprises.get(Number(rep[1])) : undefined;
+        if (repId && !dejaPosees.has(repId) && getAsset(repId)) {
+          t = loadCustomTheme(p.id)!;
+          const cur0 = allSections(t).find((y) => y.s.uid === uid);
+          if (cur0) { cur0.s.html = sectionHtml(cur0.s).split(ph.find).join(assetUrl({ id: repId })); t = saveCustomTheme(p.id, t, { history: false }); dejaPosees.add(repId); report.photosReutilisees++; continue; }
+        }
+        if (rep) ph = { ...ph, description: ph.description.replace(REPRISE_PHOTO, "") };
         // Une scène qui montre un produit SANS photo du client : jamais créée (un produit ne s'invente pas). Sa
         // description a déjà eu sa reprise après la relecture ; ce qui reste est dit, le texte de la section prend la place.
         const invented = !real && !(next < own.length) ? unseen(ph) : null;

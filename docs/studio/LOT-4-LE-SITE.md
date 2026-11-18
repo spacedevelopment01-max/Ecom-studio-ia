@@ -688,3 +688,20 @@ de fond.
 
 Devis d'une boutique de trois produits après l'audit : **11,56 € probables, 17,34 € au plus** (les coûts prévus suivent
 désormais les mesures). Les créations mesurées : 5,30 €, 7,25 €, 11,98 € et 9,79 €.
+
+## Refaire un site en reprenant ce qui est fait (18 novembre 2026)
+
+Le propriétaire : « tu refais un thème entier mais le copywriting et les images existent déjà, tu peux les réutiliser ? »,
+puis « Oui ». Construit sans IA :
+- **Les photos** : avant de ranger le nouveau site, le Studio relève les photos créées du site d'avant, avec leur
+  description (jamais celles d'un emplacement de produit, ni une qui montre un produit sans photo du client). Les
+  rédacteurs les lisent numérotées ; une photo qui convient est demandée par « REPRENDRE R<numéro> » et posée telle
+  quelle, sans création ni paiement, jamais deux fois sur le site.
+- **Les textes** : ceux du site d'avant sont la matière du plan des textes (un seul appel) : un titre ou une phrase qui
+  va à une section est repris mot pour mot. Une pièce gardée garde ses textes et ses photos, sauf les emplacements de
+  produit, qui repartent vides.
+- **Le devis** compte qu'une photo reprenable sur deux trouve sa place. Atelier Vasco : 22 photos reprenables ;
+  **8,89 € probables, 13,33 € au plus** (11,56 € et 17,34 € sans reprise).
+
+Tests : `tests/sina-site-photos-et-regard.test.ts` (dernière partie). **Pas vérifié** : combien de photos la vraie IA
+reprend vraiment ; si elle en reprend moins qu'une sur deux, le plafond garde les photos des pages principales d'abord.

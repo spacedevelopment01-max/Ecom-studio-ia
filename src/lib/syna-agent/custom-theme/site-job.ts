@@ -31,7 +31,7 @@ import { jobSpentMicro } from "../budget";
 import { journeyOf, setStep, updateJourney } from "../journey";
 import type { AgentTool, CostEstimate, ToolContext } from "../types";
 import { project } from "../tools/common";
-import { clientImages, productSlotSection, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, PHOTO_REVIEW_CAP_MICRO, runCustomBrandJob, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, type CustomBrandPayload } from "./brand";
+import { clientImages, photothequeDe, sectionSkeleton, type PhotoReprise, productSlotSection, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, PHOTO_REVIEW_CAP_MICRO, runCustomBrandJob, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, type CustomBrandPayload } from "./brand";
 import { galleryCheckMaxMicro } from "./gallery";
 import { installCustomTheme } from "./install";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
@@ -39,7 +39,7 @@ import { proposeMenu, validMenu } from "./menu";
 import { menuProducts } from "./render";
 import { isTenueSection, tenueSection } from "./tenue";
 import { libSection } from "./library";
-import { allSections, applyStructure, checkCustomTheme, loadCustomTheme, MAX_PRODUCT_PAGES, saveCustomTheme, type CustomTheme } from "./theme";
+import { allSections, applyStructure, checkCustomTheme, loadCustomTheme, MAX_PRODUCT_PAGES, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
 import { momentsTenables, piecesPossibles, type OrdreFacts } from "./ordre";
 import { MIN_SECTIONS_IMPORTANTE, TYPES_ACCUEIL, partitionsPermises, typesAccueilPermis, type PageKind } from "./partitions";
 import type { PreuveId } from "./tenue-ordre";
@@ -117,9 +117,23 @@ export function siteSizeGuess(o: { business: "products" | "services"; products: 
 /** Le plafond d'une création de site : le prix probable multiplié par ce nombre (le prix probable et sa moitié). */
 export const MARGE_PLAFOND_SITE = 1.5;
 /** Devis de la création du site entier, en une fois. */
-export function siteQuote(o: { business: "products" | "services"; products: number }): CostEstimate & { sections: number; photos: number } {
-  return siteQuoteFor(siteSizeGuess(o));
+export function siteQuote(o: { business: "products" | "services"; products: number }, reprises = 0): CostEstimate & { sections: number; photos: number } {
+  const g = siteSizeGuess(o);
+  // Refaire le site : les photos déjà faites qui se reprennent ne se paient pas. Le devis compte qu'une sur deux trouve
+  // sa place (le plafond, lui, garde toutes les photos : rien n'oblige le rédacteur à reprendre).
+  return siteQuoteFor({ ...g, photosUsual: Math.max(0, g.photosUsual - Math.round(Math.min(reprises, g.photosUsual * 2) * PART_REPRISE)) });
 }
+/** Part des photos déjà faites que le devis compte comme reprises (mesurée au premier essai, à corriger ensuite). */
+export const PART_REPRISE = 0.5;
+/** Nombre de photos du site actuel qui se reprendraient si le client le fait refaire. */
+const reprisesPossibles = (ctx: ToolContext, refaire: boolean | undefined): number => {
+  if (!refaire) return 0;
+  try {
+    const p = project(ctx);
+    const seen = p.business === "services" ? [] : listProducts(p.id).map((x) => ({ title: x.data.title, type: x.data.productType, photo: x.data.images.some((i) => !!i.assetId) }));
+    return photothequeDe(p.id, loadCustomTheme(p.id), p.business === "services" ? "services" : "products", seen).length;
+  } catch { return 0; }
+};
 /** Le devis d'un site d'une taille donnée (sections à écrire et photos à créer, au plus et d'ordinaire). */
 export function siteQuoteFor(g: ReturnType<typeof siteSizeGuess>): CostEstimate & { sections: number; photos: number } {
   const unit = (customPhotoDeps.unit ?? photoUnit)();
@@ -198,7 +212,7 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
   name: "site.create", module: "site", kind: "generate", needsProject: true,
   description: "Étape du site (PAYANT : un seul prix annoncé, un seul accord écrit du client) : tu CRÉES TOUT SON SITE en une fois, pour sa marque. Tu le conçois (le parcours du visiteur sur chaque page, les pièces qui conviennent à son métier, l'allure tirée de sa planche de marque : titres, boutons, cadres des photos, un signe pris sur son produit ou son métier), tu donnes sa fiche à chaque produit, tu calcules le menu, tu écris tous les textes dans l'angle qu'il a choisi, tu les relis, tu poses ses photos là où elles vont et tu crées celles qui manquent, puis tu regardes le résultat en image sur téléphone. Tâche de fond de 20 à 40 minutes : tu restes disponible pendant ce temps. À lancer quand la marque, l'angle et l'activité (produits ou prestations, coordonnées) sont validés. consigne : ce que le client a dit vouloir pour son site, avec ses mots. refaire:true seulement s'il demande de refaire tout le site (payant, même prix) : avant, demande-lui ce qui ne lui plaît pas dans son site actuel et note sa réponse (« ce qui ne plaisait pas dans le site ») ; le nouveau site s'écartera de l'actuel. Il ne choisit ni thème, ni famille, ni concept : tu ne lui montres jamais de modèle.",
   args: z.object({ consigne: z.string().max(1500).optional(), refaire: z.boolean().optional() }).strict(),
-  estimate: (ctx, a) => { const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx) ?? refusRefaire(ctx, a?.refaire); if (refus) throw new RefusInterne(refus); return siteQuote(kindOf(ctx)); },
+  estimate: (ctx, a) => { const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx) ?? refusRefaire(ctx, a?.refaire); if (refus) throw new RefusInterne(refus); return siteQuote(kindOf(ctx), reprisesPossibles(ctx, a?.refaire)); },
   // La carte de dépense rappelle, en une ligne, que le site se monte sans les photos des produits (le client a été prévenu).
   preview: (ctx) => { const sans = (() => { try { const p = project(ctx); return produitsSansPhoto(p.id, p.business); } catch { return []; } })(); return [L("Ton site entier, créé pour ta marque.", "Your whole site, built for your brand."), rappelCarte(sans)].filter(Boolean).join(" "); },
   run: (ctx, a) => {
@@ -211,7 +225,7 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
     if (refus) return { ok: false, internal: true, summary: refus };
     const cur = loadCustomTheme(p.id);
     if (cur && allSections(cur).some((x) => x.s.clientTexts) && !a.refaire) return { ok: false, summary: L("Le site est déjà créé.", "The site already exists."), hint: "Pour une retouche : custom.section puis custom.edit. Pour tout refaire (payant, à la demande du client seulement) : site.create avec refaire:true et sa consigne." };
-    const quote = siteQuote(kindOf(ctx));
+    const quote = siteQuote(kindOf(ctx), reprisesPossibles(ctx, a.refaire));
     const round = (cur?.rev ?? 0) + 1;
     // Refaire : ce que le client n'aimait pas va au concepteur avec sa consigne (ses mots).
     const aChanger = a.refaire ? siteAChanger(clientNotes(p.id)) : null;
@@ -277,7 +291,7 @@ const short = (v: unknown, n: number) => (typeof v === "string" ? v.slice(0, n) 
 function montageSummary(m: unknown): Record<string, unknown> | null {
   if (!m || typeof m !== "object") return null;
   const r = m as Record<string, unknown>, out: Record<string, unknown> = {};
-  for (const k of ["sections", "failedEdits", "photosMade", "photosReal", "photosClient", "photosToProvide", "photosLeft", "photosFailed", "photosReprises", "photosProduitsAttendues", "photosSansProduit", "faitsPoses", "repetitions", "relecture", "relecturePhotos", "regards", "regardNonFait"]) if (r[k] != null) out[k] = r[k];
+  for (const k of ["sections", "failedEdits", "photosMade", "photosReal", "photosClient", "photosToProvide", "photosLeft", "photosFailed", "photosReprises", "photosReutilisees", "photosProduitsAttendues", "photosSansProduit", "faitsPoses", "repetitions", "relecture", "relecturePhotos", "regards", "regardNonFait"]) if (r[k] != null) out[k] = r[k];
   if (Array.isArray(r.problems) && r.problems.length) out.problems = r.problems.slice(0, 12).map((x) => short(x, 220));
   return out;
 }
@@ -309,14 +323,34 @@ export async function runSinaSiteJob(ctx: JobContext) {
   }).catch((e) => { if (e instanceof EtapeRatee) return { ok: false as const, why: e.message }; throw e; });
   if (!designed.ok) return fail(designed.why);
 
+  // 1 bis) Refaire le site (18 novembre 2026, le propriétaire : « le copywriting et les images existent déjà, tu peux les
+  //    réutiliser ? ») : avant de ranger le nouveau site, le Studio relève ce qui se reprend du site d'avant : ses photos
+  //    créées (avec leur description, sans emplacement de produit ni produit inventé) et ses textes, matière du plan.
+  const reprise = await ctx.step("site:reprise", async (): Promise<{ phototheque: PhotoReprise[]; matiere: string | null }> => {
+    try {
+      const avant = loadCustomTheme(p.id);
+      if (!avant || !allSections(avant).some((x) => x.s.clientTexts)) return { phototheque: [], matiere: null };
+      const seen = p.business === "services" ? [] : listProducts(p.id).map((x) => ({ title: x.data.title, type: x.data.productType, photo: x.data.images.some((i) => !!i.assetId) }));
+      const phototheque = photothequeDe(p.id, avant, p.business === "services" ? "services" : "products", seen);
+      const lignes: string[] = [];
+      for (const pg of avant.pages) for (const x of pg.sections) { if (!x.clientTexts) continue; const txt = sectionSkeleton(sectionHtml(x)).replace(/\s+/g, " ").trim(); if (txt) lignes.push(`[${pg.label}] ${txt.slice(0, 600)}`); }
+      return { phototheque, matiere: lignes.join("\n").slice(0, 12000) || null };
+    } catch { return { phototheque: [], matiere: null }; }
+  });
+
   // 2) Le site conçu est rangé ; chaque produit reçoit sa fiche ; le menu est calculé depuis les pages et le catalogue.
   await ctx.step("site:structure", async () => {
     let t: CustomTheme = { ...designed.t, chosen: false };
-    // Refaire un site déjà écrit repart d'une page blanche (essai réel du 18 novembre 2026 : chaque section de même nom
-    // gardait ses anciens textes et ses anciennes photos, dont un sac imaginé avant la règle du 17 novembre ; le site
-    // « refait » était en partie une copie du premier). Le travail n'est repris que d'un site jamais écrit pour le client.
+    // Refaire un site déjà écrit : une pièce gardée garde ses textes et ses photos (le site d'avant ne se recopie plus :
+    // la règle de variété le compare au nouveau, au plus deux pièces en commun sur l'accueil), SAUF les emplacements de
+    // produit, qui repartent vides (essai réel du 18 novembre 2026 : un sac imaginé avant la règle du 17 novembre était
+    // revenu ainsi ; « Ta photo ici » tient la place jusqu'à la vraie photo du client).
     const avant = loadCustomTheme(p.id);
-    if (!avant || !allSections(avant).some((x) => x.s.clientTexts)) keepWork(t, avant);
+    if (avant && allSections(avant).some((x) => x.s.clientTexts) && p.business !== "services") {
+      const sans: CustomTheme = JSON.parse(JSON.stringify(avant));
+      for (const pg of sans.pages) pg.sections = pg.sections.filter((x) => { const l = libSection(x.id); return !l || !productSlotSection(l); });
+      keepWork(t, sans);
+    } else keepWork(t, avant);
     const products = (() => { try { return listProducts(p.id); } catch { return []; } })();
     if (p.business !== "services" && products.length >= 2) {
       try { t = applyStructure(t, [{ op: "product_pages", products: products.map((x) => ({ handle: x.handle, title: x.data.title })) }]); } catch { /* fiche commune gardée */ }
@@ -342,7 +376,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
   const real = await ctx.step("site:quote", async () => { const est = await (siteJobDeps.estimate ?? buildTool.estimate!)(tc, args); return est.probableMicro ?? est.maxMicro; });
   const tight = real > left();
   const sub: CustomBrandPayload = { projectId: p.id, capMicro: jobSpentMicro(ctx.job.id) + left(), conversationId: a.conversationId, photos: true, newPhotos: true,
-    pages: tight ? ["home", selling] : null, images: args.images, clientAssets: own, rewrite: false, consigne: a.consigne ?? null };
+    pages: tight ? ["home", selling] : null, images: args.images, clientAssets: own, rewrite: false, consigne: a.consigne ?? null, phototheque: reprise.phototheque, matiere: reprise.matiere };
   const child = Object.create(ctx, { payload: { get: () => sub } }) as JobContext;
   let montage: unknown = null;
   try { montage = await (siteJobDeps.build ?? runCustomBrandJob)(child); }
