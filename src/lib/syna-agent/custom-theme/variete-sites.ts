@@ -22,7 +22,7 @@
  * L'en-tête, le pied de page et l'ouverture de l'accueil suivent leur famille et tournent à part : ils ne sont pas comptés
  * ici, et la correction sans IA n'y touche jamais.
  */
-import { constructionsOf } from "./tenue";
+import { constructionsOf, tenueSection } from "./tenue";
 
 export const ACCUEIL_COMMUNES_MAX = 2;
 export const SITE_COMMUNES_PART = 0.25;
@@ -110,7 +110,12 @@ export function varieteSitesGaps(mine: SiteVu, sites: SiteVu[], o: Options = {})
   const u = new Set([...piecesDe(mine, mine.utiles)].filter(garde));
   if (u.size) {
     let pis: string[] = [], pisSite: SiteVu | undefined;
-    for (const s of sites) { const theirs = piecesDe(s, s.utiles); const c = [...u].filter((x) => theirs.has(x)); if (c.length > pis.length) { pis = c; pisSite = s; } }
+    // Avec le site actuel du même client, les pièces qui lèvent les derniers doutes (questions, garanties, livraison)
+    // ne comptent pas pour le quart : chaque page doit les avoir près de la fin (règle d'or 8), le Studio ne peut pas
+    // les remplacer, et elles répondent aux mêmes questions pour le même client (essai réel du 18 novembre 2026 : une
+    // conception refusée pour ces seules quatre pièces). L'accueil (au plus deux) et les dispositions restent contrôlés.
+    const leveDoutes = (x: string) => !!tenueSection(x)?.ordre?.traits?.some((tr) => tr === "doutes" || tr === "livraison");
+    for (const s of sites) { const theirs = piecesDe(s, s.utiles); const c = [...u].filter((x) => theirs.has(x) && !(s.ancien && leveDoutes(x))); if (c.length > pis.length) { pis = c; pisSite = s; } }
     const max = Math.floor(u.size * SITE_COMMUNES_PART);
     if (pis.length > max) out.push(`site entier : ${pis.length} pièces sur ${u.size} en commun avec ${quel(pisSite)} (${pis.join(", ")}) ; au plus ${max} (un quart) : remplace-en ${pis.length - max} par d'autres pièces de la bibliothèque qui servent le même moment`);
   }

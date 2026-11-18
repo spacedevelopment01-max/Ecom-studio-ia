@@ -95,3 +95,16 @@ describe("une même allure jamais deux fois sur une page", async () => {
     expect(cahier).toMatch(/une même allure ne revient jamais sur une page/);
   });
 });
+
+describe("face au site actuel du client, les pièces qui lèvent les derniers doutes ne comptent pas pour le quart", async () => {
+  const V = await import("@/lib/syna-agent/custom-theme/variete-sites");
+  it("essai réel du 18 novembre 2026 : quatre pièces communes (questions, garanties, livraison) ne refusent plus la conception ; l'accueil reste contrôlé", () => {
+    const ancien = { pages: { home: ["tn-ouverture:dans-la-photo", "tn-produits:grille", "tn-questions:filets", "tn-garantie:bande"], product: ["tn-achat:grandes-photos", "tn-livraison:", "tn-garanties:bande", "tn-questions:deux-colonnes"] }, utiles: ["home", "product"], metier: null, ancien: true };
+    const neuf = { pages: { home: ["tn-ouverture:titre-massif", "tn-produits:vedette", "tn-histoire:lettrine", "tn-questions:cartes", "tn-garantie:sceau"], product: ["tn-achat:simple", "tn-livraison:", "tn-garanties:bande", "tn-questions:filets", "tn-comment:lignes"] }, utiles: ["home", "product"], metier: null };
+    const gaps = V.varieteSitesGaps(neuf, [ancien]);
+    expect(gaps.some((g) => /^site entier :/.test(g)), gaps.join("\n")).toBe(false);
+    // Avec un autre client, ces pièces comptent toujours.
+    const autre = { ...ancien, ancien: false };
+    expect(V.varieteSitesGaps(neuf, [autre]).some((g) => /^site entier :/.test(g))).toBe(true);
+  });
+});
