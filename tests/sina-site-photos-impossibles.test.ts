@@ -36,4 +36,14 @@ describe("une pièce qui demande des photos impossibles à inventer, sans les ph
     expect(i).toBeLessThan(fin);
     expect(tools).toContain("candidats(x, id).find((k) => k !== id && !posees.has(k) && pieceTenable(k, facts))");
   });
+
+  it("le compte rendu du site le dit au client et lui demande sa photo, seulement s'il n'en a envoyé aucune", async () => {
+    process.env.STUDIO_SYNA_AGENT = "1";
+    const X = await import("@/lib/syna-agent/custom-theme/site-job");
+    const l = X.lignephotoDuClient({ imagesDuClient: 0, posees: ["tn-histoire"] });
+    expect(l).toMatch(/La personne derrière la marque/);
+    expect(l).toMatch(/Envoie-la-moi/);
+    expect(X.lignephotoDuClient({ imagesDuClient: 2, posees: [] })).toBeNull();
+    expect(X.lignephotoDuClient({ imagesDuClient: 0, posees: ["tn-fondateur"] })).toBeNull();
+  });
 });

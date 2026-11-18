@@ -237,7 +237,20 @@ export type SiteReport = {
    * n'a été inventé à leur place (« Ta photo ici »), et le site ne part pas en boutique tant qu'elles manquent.
    */
   photosProduitsAImporter?: string;
+  /**
+   * Le client n'a envoyé aucune image de lui ni de son atelier : la partie qui le présente n'a pas pu être posée (jamais
+   * une photo inventée). À lui dire en une phrase, et à lui demander sa photo (décision du propriétaire, 18 novembre 2026 :
+   * « si il faut juste le dire au client »).
+   */
+  photoDuClientADemander?: string;
 };
+/** La phrase du compte rendu quand le client n'a envoyé aucune image (null : il en a envoyé, ou la partie est déjà posée). */
+export function lignephotoDuClient(o: { imagesDuClient: number; posees: string[] }): string | null {
+  const s = tenueSection("tn-fondateur");
+  if (o.imagesDuClient > 0 || !s || o.posees.includes("tn-fondateur")) return null;
+  return L(`la partie « ${s.title} » demande ${s.authentic ?? "ta photo"} : je ne l'invente pas, elle n'est pas sur ton site. Envoie-la-moi avec le trombone 📎 et je l'ajoute (à dire au client en une phrase, et lui demander sa photo)`,
+    "the founder section needs the client's own photo: ask for it");
+}
 const short = (v: unknown, n: number) => (typeof v === "string" ? v.slice(0, n) : v);
 /** L'essentiel du compte rendu du montage (textes, photos, relectures, regards), sans ses longueurs. */
 function montageSummary(m: unknown): Record<string, unknown> | null {
@@ -346,6 +359,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
     pret: install.ok, aCompleter: install.ok ? [] : install.blocking.slice(0, 30).map((x) => x.slice(0, 200)),
     photosPagesLimitees: tight ? sub.pages! : null,
     ...(sansPhoto.length ? { photosProduitsAImporter: lignePhotosAImporter(sansPhoto) } : {}),
+    ...((): { photoDuClientADemander?: string } => { try { const l = lignephotoDuClient({ imagesDuClient: clientImages(p.id).length, posees: allSections(t).map((x) => x.s.id) }); return l ? { photoDuClientADemander: l } : {}; } catch { return {}; } })(),
   };
   try { updateJourney(a.conversationId, (x) => { x.site = { report, at: Date.now() }; setStep(x, 6, "review", tropProche ? L("site monté, trop proche d'un autre site du Studio : pas encore fini", "site built, too close to another site") : L("site créé, à regarder avec le client", "site created")); }); } catch { /* fil supprimé */ }
   if (tropProche) notify(p.userId, p.id, L("Ton site est monté, pas encore fini", "Your site is built, not finished yet"), L("Il ressemble encore trop à un autre site du Studio : SINA t'explique dans la conversation.", "It still looks too much like another Studio site: SINA explains."), "warning");
