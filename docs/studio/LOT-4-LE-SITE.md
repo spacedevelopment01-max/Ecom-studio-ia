@@ -660,3 +660,12 @@ volets ; l'aide). L'allure se juge sur la disposition posée (une même pièce p
 file de photos). Peuvent revenir sur une page, parce que les déroulés de page les demandent à plusieurs moments sans
 autre allure possible : la liste de lignes courte, la bande d'appel, la file de photos, la bande étroite. **Pas vérifié** : un
 nouveau site conçu par la vraie IA avec ces règles (payant, à décider avec le propriétaire).
+
+**Le Studio d'essai qui se coupait** (18 novembre 2026, le propriétaire : « ça ne doit pas se couper ») : c'est la copie
+privée d'essai, dans la session de travail de Claude, que la machine d'essai arrête au bout de 2 heures ou à la fin d'une
+autre tâche de fond ; le Studio en ligne n'est pas concerné. Le gardien `scripts/syna-recette/garder-allume.sh` le
+relance seul s'il s'arrête, ou si son travailleur des tâches de fond s'arrête (vérifié : revenu en 8 secondes après une
+coupure du Studio entier, et après une coupure du travailleur seul). Une création coupée reprend seule à sa dernière
+étape faite, sans repayer ce qui est fait (`tests/taches-fond-robustesse.test.ts`) ; un appel payant coupé en plein
+milieu n'est jamais relancé d'office (règle du propriétaire) : la création s'arrête avec son explication et se reprend
+à la demande. Le gardien lui-même s'arrête avec la session de travail : il se relance au début de chaque essai.
