@@ -251,6 +251,19 @@ un cadre vide ; le champ libre d'un produit (« ta date », une gravure) n'exist
 Le plafond est haut parce qu'il est annoncé avant la conception : le nombre de pages et de photos n'est connu
 qu'après. Ce sont des devis ; le coût réel sera relevé sur le premier site.
 
+**Mesuré ensuite** (coût compté par le Studio, tâche de création du site) : Bécane, services, 5,30 € ; une boutique,
+premier essai, 7,25 € ; Atelier Vasco, trois sacs, 11,98 € (17 novembre : 8,40 € de réflexion et d'écriture, 2,80 € pour
+25 photos, 0,78 € de contrôles). Le devis du 18 novembre pour refaire le site d'Atelier Vasco : 10,70 € probables, 34,19 €
+au plus.
+
+**Plafond resserré** (18 novembre 2026, le propriétaire : « L'écart de prix annoncés par sina est beaucoup trop large et
+fait même peur le plus au haut », puis « Yes » à la proposition) : le plafond annoncé est le prix probable et sa moitié
+(`MARGE_PLAFOND_SITE`, `site-job.ts`), soit environ 16 € au lieu de 34 € pour Atelier Vasco. La création le tient : le
+montage reçoit tout le reste du plafond ; une relecture ou une reprise de texte ne se lance que s'il reste ensuite de
+quoi créer toutes les photos encore à faire (`relectureTient`, `photosACreer`, `brand.ts`) ; le montage ne se limite à
+l'accueil et à la page qui vend que si même son prix probable ne tient plus. Ce qui est laissé de côté est dit dans le
+compte rendu. Testé sans IA (`tests/sina-site-plafond-resserre.test.ts`) ; pas encore essayé avec la vraie IA.
+
 ## Le tour des sections (17 novembre 2026)
 
 **La demande du propriétaire** : « ouvre toutes les sections une par une mobile et ordi et tu corriges tous les

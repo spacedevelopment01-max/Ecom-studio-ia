@@ -791,6 +791,25 @@ function retryCost(): number | null {
   const unit = (customBrandDeps.photoUnit ?? (() => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: 2, aspect: "2:3", quality: "high" }); } catch { return null; } }))();
   return unit == null ? null : unit + galleryCheckMaxMicro();
 }
+/**
+ * Les photos passent avant les relectures (décision du propriétaire du 18 novembre 2026, « l'écart de prix annoncé par
+ * SINA est beaucoup trop large et fait même peur le plus haut » : le plafond devient le prix probable et sa moitié, et le
+ * Studio économise sur la fin du travail plutôt que de le laisser à moitié fait). Combien de photos restent à créer sur
+ * les pages montées : un emplacement d'image d'exemple dans une section qui reçoit une photo créée (ni photo à fournir
+ * par le client, ni emplacement de produit). Sans IA.
+ */
+export function photosACreer(list: { id: string; html: string; pageKey?: string | null }[], business: "products" | "services", pages?: string[] | null): number {
+  let n = 0;
+  for (const x of list) {
+    if (pages?.length && !(x.pageKey && pages.includes(x.pageKey))) continue;
+    const l = libSection(x.id);
+    if (!l || authenticSection(x.id, business) || (business !== "services" && productSlotSection(l))) continue;
+    n += new Set([...x.html.matchAll(/photos\/[\w-]+\.(?:webp|png|jpg)/g)].map((m) => m[0]).filter((f) => !/(^|\/)(carte|map|plan)-/.test(f))).size;
+  }
+  return n;
+}
+/** Une étape de relecture ne se lance que s'il reste, après elle, de quoi créer toutes les photos encore à faire. */
+export const relectureTient = (o: { reste: number; photos: number; photoMax: number | null; etape: number }) => o.reste - o.photos * (o.photoMax ?? 0) >= o.etape;
 
 export async function runCustomBrandJob(ctx: JobContext) {
   const a = ctx.payload as CustomBrandPayload;
@@ -963,8 +982,16 @@ export async function runCustomBrandJob(ctx: JobContext) {
   if (report.sections) poseFaits();
 
   // 1 bis) Relecture de TOUS les textes par un directeur de création, puis une reprise des sections refusées.
-  // (Essais sans IA : seulement si le test fournit la relecture, comme pour le référencement.)
-  if (report.sections && (!customBrandDeps.write || customBrandDeps.review)) {
+  // (Essais sans IA : seulement si le test fournit la relecture, comme pour le référencement.) Les photos passent avant :
+  // une relecture ou une reprise ne se lance que s'il reste ensuite de quoi créer toutes les photos encore à faire.
+  const resteAvantPhotos = (etape: number) => relectureTient({ reste: a.capMicro - jobSpentMicro(ctx.job.id), etape, photoMax: a.newPhotos === false ? 0 : retryCost(),
+    photos: a.newPhotos === false ? 0 : photosACreer(allSections(loadCustomTheme(p.id)!).map((y) => ({ id: y.s.id, html: sectionHtml(y.s), pageKey: y.page?.key ?? null })), p.business === "services" ? "services" : "products", a.pages) });
+  let relectureAbregee = false;
+  if (report.sections && (!customBrandDeps.write || customBrandDeps.review) && !resteAvantPhotos(COPY_REVIEW_CAP_MICRO)) {
+    relectureAbregee = true;
+    report.problems.push(L("relecture des textes laissée de côté pour tenir le prix annoncé : les photos passent avant", "copy review skipped to stay within the announced price"));
+  }
+  if (report.sections && (!customBrandDeps.write || customBrandDeps.review) && !relectureAbregee) {
     ctx.progress(0.5, L("Je relis tous les textes du site", "Reviewing all the site copy"));
     try {
       const review = await ctx.step("text-review", async () => {
@@ -986,6 +1013,10 @@ export async function runCustomBrandJob(ctx: JobContext) {
       const todo = planCopyFixes(refused, drops);
       let fixed = 0;
       for (const [i, f] of todo.entries()) {
+        if (!resteAvantPhotos(SECTION_TEXT_CAP_MICRO)) {
+          report.problems.push(L(`${todo.length - i} reprise(s) de texte laissée(s) de côté pour tenir le prix annoncé : les photos passent avant`, "copy fixes skipped to stay within the announced price"));
+          break;
+        }
         const x = known.get(f.uid)!, l = libSection(x.s.id), label = l?.title ?? x.s.id;
         ctx.progress(0.5 + (0.08 * i) / todo.length, L(`Je reprends : ${label}`, `Reworking: ${label}`));
         try {

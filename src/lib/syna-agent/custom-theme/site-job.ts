@@ -114,6 +114,8 @@ export function siteSizeGuess(o: { business: "products" | "services"; products: 
   return out;
 }
 
+/** Le plafond d'une création de site : le prix probable multiplié par ce nombre (le prix probable et sa moitié). */
+export const MARGE_PLAFOND_SITE = 1.5;
 /** Devis de la création du site entier, en une fois. */
 export function siteQuote(o: { business: "products" | "services"; products: number }): CostEstimate & { sections: number; photos: number } {
   return siteQuoteFor(siteSizeGuess(o));
@@ -133,7 +135,12 @@ export function siteQuoteFor(g: ReturnType<typeof siteSizeGuess>): CostEstimate 
     + PHOTO_REVIEW_CAP_MICRO + artFixes * SECTION_TEXT_CAP_MICRO + LOOK_CAP_MICRO * LOOK_PAGES_MAX + books.max + g.photos * (unit + check);
   const usual = design.usual + SITE_PLAN_TYPICAL_MICRO + g.sectionsUsual * SECTION_TEXT_TYPICAL_MICRO + COPY_REVIEW_TYPICAL_MICRO + COPY_FIXES_TYPICAL * SECTION_TEXT_TYPICAL_MICRO
     + PHOTO_REVIEW_TYPICAL_MICRO + PHOTO_FIX_TYPICAL_MICRO + LOOK_TYPICAL_MICRO * LOOK_PAGES_MAX + booksUsual.usual + Math.round(g.photosUsual * (unit * 0.8 + check * 0.5));
-  return { maxMicro: max, probableMicro: Math.min(usual, max), sections: g.sections, photos: g.photos,
+  // Le plafond annoncé : le prix probable et sa moitié, jamais le pire cas de tout à la fois (décision du propriétaire du
+  // 18 novembre 2026 : « l'écart de prix annoncé par SINA est beaucoup trop large et fait même peur le plus haut » ; mesuré
+  // sur les trois premiers sites : 5,30 €, 7,25 € et 11,98 €, pour des plafonds annoncés jusqu'à 34 €). La création tient
+  // ce plafond : elle économise sur la fin du travail (les relectures, puis les photos des pages secondaires).
+  const plafond = Math.min(max, Math.round(usual * MARGE_PLAFOND_SITE));
+  return { maxMicro: Math.max(plafond, Math.min(usual, max)), probableMicro: Math.min(usual, max), sections: g.sections, photos: g.photos,
     label: L("ton site entier, créé pour ta marque : sa conception, toutes ses pages, tous ses textes relus, ses photos créées et relues, puis mon regard sur le résultat", "your whole site, designed and built for your brand") };
 }
 
@@ -287,9 +294,12 @@ export async function runSinaSiteJob(ctx: JobContext) {
   const own = clientImages(p.id).map((x) => x.id);
   const args: BuildArgs = { images: own.length ? "mix" : "sina", clientAssets: own };
   const selling = p.business === "services" ? "prestations" : "product";
-  const real = await ctx.step("site:quote", async () => { const est = await (siteJobDeps.estimate ?? buildTool.estimate!)(tc, args); return est.maxMicro; });
+  // Le montage reçoit tout ce qui reste du plafond annoncé. Il ne se limite à l'accueil et à la page qui vend que si même
+  // son prix probable n'y tient pas (son pire cas dépasse presque toujours le plafond resserré du 18 novembre 2026 ; à
+  // l'intérieur, les photos passent avant les relectures).
+  const real = await ctx.step("site:quote", async () => { const est = await (siteJobDeps.estimate ?? buildTool.estimate!)(tc, args); return est.probableMicro ?? est.maxMicro; });
   const tight = real > left();
-  const sub: CustomBrandPayload = { projectId: p.id, capMicro: jobSpentMicro(ctx.job.id) + Math.min(real, left()), conversationId: a.conversationId, photos: true, newPhotos: true,
+  const sub: CustomBrandPayload = { projectId: p.id, capMicro: jobSpentMicro(ctx.job.id) + left(), conversationId: a.conversationId, photos: true, newPhotos: true,
     pages: tight ? ["home", selling] : null, images: args.images, clientAssets: own, rewrite: false, consigne: a.consigne ?? null };
   const child = Object.create(ctx, { payload: { get: () => sub } }) as JobContext;
   let montage: unknown = null;
