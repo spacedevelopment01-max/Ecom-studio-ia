@@ -22,7 +22,7 @@
  *  - jamais deux pièces qui montrent la même chose sur une page (tenue-ordre.ts : MEME_CONTENU).
  */
 import { tenueSection } from "./tenue";
-import { FEATURED_ROLE, isCardSection, libSection } from "./library";
+import { FEATURED_ROLE, authenticSection, isCardSection, libSection, sectionPhotos } from "./library";
 import { FORME_LABEL, doublonsDe, type PreuveId, type TraitOrdre } from "./tenue-ordre";
 import { OUVERTURES_SERVICES } from "./tenue-partitions";
 import { familleOf } from "./familles";
@@ -38,6 +38,12 @@ export type OrdreDesign = { pages: PagePick[]; partitions?: PartitionPick[] | nu
 
 export type OrdreFacts = {
   business: "products" | "services"; products: number;
+  /**
+   * Nombre d'images que le client a envoyées (son portrait, son atelier, ses clients). Donné : une pièce qui demande une
+   * photo impossible à inventer (`authenticSection`) n'est permise que s'il en a assez (essai réel du 18 novembre 2026 :
+   * « La personne derrière la marque » posée sans sa photo, conception refusée et payée pour rien).
+   */
+  clientImages?: number;
   /** Types d'accueil permis pour ce client (partitions.ts). */
   types: string[];
   /** Service qui se déplace chez le client. */
@@ -83,7 +89,7 @@ const isFeatured = (id: string) => lib(id)?.role === FEATURED_ROLE;
  */
 export function momentsLibres(p: Partition, placed: string[], f: OrdreFacts): { moment: Moment; pieces: string[] }[] {
   const on = new Set(placed), cards = placed.some(isCard), featured = placed.some(isFeatured);
-  const posable = (id: string) => { const o = ordre(id); return !on.has(id) && !doublonsDe(id).some((x) => on.has(x)) && !(cards && isCard(id)) && !(featured && isFeatured(id)) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); };
+  const posable = (id: string) => { const o = ordre(id); return !on.has(id) && !doublonsDe(id).some((x) => on.has(x)) && !(cards && isCard(id)) && !(featured && isFeatured(id)) && !photosAuthentiquesManquantes(id, f) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); };
   const out: { moment: Moment; pieces: string[] }[] = [], seen = new Set<string>();
   for (const x of p.moments) {
     if (!momentTenable(x, f).ok || x.pieces.some((id) => on.has(id))) continue;
@@ -96,11 +102,17 @@ export function momentsLibres(p: Partition, placed: string[], f: OrdreFacts): { 
 
 /** Une pièce va-t-elle à ce genre de site ? (réservée aux services ou aux boutiques ; réservée à un métier, donné par l'appelant) */
 const vaAuSite = (id: string, business: "products" | "services", metier?: RegExp | null) => { const s = tenueSection(id); return !!s && (!s.pour || s.pour === (business === "services" ? "services" : "produits")) && (!s.only || (!!metier && metier.test(s.only))); };
-/** Une pièce qu'un client de ce genre peut poser : elle va à son site, et sa preuve est au dossier (ou n'en demande pas). */
-export function pieceTenable(id: string, f: OrdreFacts, metier?: RegExp | null): boolean { const o = ordre(id); return vaAuSite(id, f.business, metier) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); }
+/** La pièce demande des photos impossibles à inventer que le client n'a pas envoyées (connu seulement si `clientImages` est donné). */
+export function photosAuthentiquesManquantes(id: string, f: Pick<OrdreFacts, "business" | "clientImages">): boolean {
+  if (f.clientImages === undefined || !authenticSection(id, f.business)) return false;
+  const l = libSection(id);
+  return f.clientImages < Math.max(1, l ? sectionPhotos(l.html).length : 1);
+}
+/** Une pièce qu'un client de ce genre peut poser : elle va à son site, sa preuve est au dossier (ou n'en demande pas), et ses photos impossibles à inventer sont là. */
+export function pieceTenable(id: string, f: OrdreFacts, metier?: RegExp | null): boolean { const o = ordre(id); return vaAuSite(id, f.business, metier) && !photosAuthentiquesManquantes(id, f) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); }
 /** Les moments d'une partition qu'un client de ce genre peut tenir avec son dossier (une pièce au moins lui va, la preuve est là). */
 export function momentsTenables(p: Partition, f: OrdreFacts, metier?: RegExp | null): Moment[] {
-  return p.moments.filter((x) => momentTenable(x, f).ok && x.pieces.some((id) => { const o = ordre(id); return vaAuSite(id, f.business, metier) && (!o?.preuve || PREUVE_LIBRE.includes(o.preuve) || preuveAuDossier(o.preuve, f)); }));
+  return p.moments.filter((x) => momentTenable(x, f).ok && x.pieces.some((id) => pieceTenable(id, f, metier)));
 }
 /**
  * Les pièces RÉELLES qu'une page peut porter en suivant sa partition, pour ce dossier : une pièce par moment tenable,
@@ -140,6 +152,8 @@ export function ordreGaps(d: OrdreDesign, f: OrdreFacts): { refus: string[]; not
       const [first, next] = partition.moments.slice(1).filter((x) => momentTenable(x, f).ok);
       if (first && !first.pieces.includes(ids[1]) && !(next && next.pieces.includes(ids[1]))) refus.push(`${name} : la partition « ${partition.id} » place « ${first.label} » juste après l'ouverture (pièces : ${first.pieces.join(", ")}), ici ${ids[1]} ; suis la partition choisie, ou choisis-en une autre et dis pourquoi`);
     }
+    // ── une pièce qui demande des photos impossibles à inventer que le client n'a pas envoyées : une autre pièce du moment
+    for (const id of new Set(ids)) if (photosAuthentiquesManquantes(id, f)) refus.push(`${name} : « ${title(id)} » (${id}) demande ${authenticSection(id, f.business)}, que le client n'a pas envoyée : prends une autre pièce de ce moment, ou saute-le (jamais une photo inventée à la place)`);
     // ── une pièce qui demande une preuve que le dossier n'a pas : le moment se saute
     for (const id of new Set(ids)) {
       const o = ordre(id);

@@ -37,7 +37,7 @@ import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
 import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, varietyGaps, type Design } from "./design";
 import { referencesBrief, sectorOf } from "./references";
-import { fitRythme, ordreGaps, partitionChoisie, pieceTenable, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
+import { fitRythme, ordreGaps, partitionChoisie, photosAuthentiquesManquantes, pieceTenable, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
 import { MIN_SECTIONS_IMPORTANTE, pageKind, partitionsBrief, partitionsPermises, typesAccueilPermis, type AngleRole, type PageKind } from "./partitions";
 import { preuvesBrief, preuvesDe, preuvesDemandees, type Preuves } from "./preuves";
 import { SECOND_REGARD_CALLS_MAX, SECOND_REGARD_CAP_MICRO, SECOND_REGARD_SYSTEM, SECOND_REGARD_TYPICAL_MICRO, SecondRegardSchema, secondRegardPrompt, secondRegardRefus, type RegardPage, type SecondRegard } from "./second-regard";
@@ -334,7 +334,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   // La variété entre les sites du Studio (règle du propriétaire du 17 novembre 2026) : les 12 derniers, tous métiers, et
   // les 30 derniers du même métier, même anciens.
   const vus = sitesVus(p.id, oc.metier);
-  const facts: OrdreFacts = { business: site.business, products: site.products, types: oc.types, mobile: oc.mobile, zoneConnue: oc.zoneConnue, preuves: preuves.ids, ...(site.business === "services" ? { profil: { zone: oc.zoneConnue, telephone: oc.telConnu } } : {}) };
+  const facts: OrdreFacts = { business: site.business, products: site.products, types: oc.types, mobile: oc.mobile, zoneConnue: oc.zoneConnue, preuves: preuves.ids, clientImages: site.clientImages ?? 0, ...(site.business === "services" ? { profil: { zone: oc.zoneConnue, telephone: oc.telConnu } } : {}) };
   const kindOfKey = (key: string) => { const k = pageKind(key, site.business); return k && k !== "utilitaire" ? k : null; };
   const memes = sites.filter((x) => x.site.metier === oc.metier);
   const prises: Partial<Record<PageKind, string[]>> = {};
@@ -495,6 +495,24 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     // Coût réel, même d'un passage raté (essai du 10 novembre 2026 : « 0 passage payé » alors que 0,34 € l'avaient été).
     const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${base}%`)[0]?.c ?? 0;
     return { ok: false, result: { ok: false, summary: L(`Conception non faite (${calls} passage(s) réussi(s) ; coût réel : ${budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget")}) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." } };
+  }
+  // Dernier recours sans IA (essai réel du 18 novembre 2026 : « La personne derrière la marque » posée sans le portrait du
+  // client, conception refusée et payée pour rien). Une pièce qui demande des photos impossibles à inventer que le client
+  // n'a pas envoyées est remplacée par une autre pièce qui sert le même moment ; s'il n'y en a aucune, elle est retirée.
+  // Gardé seulement si rien ne casse. Aucune porte de sortie : le Studio remplace lui-même ce qui ne tient pas.
+  {
+    const idOf = (x: string) => { try { return ref(x); } catch { return x; } };
+    const x: Design = JSON.parse(JSON.stringify(d));
+    let n = 0;
+    for (const pg of x.pages) for (let i = pg.sections.length - 1; i >= 0; i--) {
+      const s = pg.sections[i], id = idOf(s.section);
+      if (!photosAuthentiquesManquantes(id, facts)) continue;
+      const posees = new Set(x.pages.flatMap((q) => q.sections.map((y) => idOf(y.section))));
+      const autre = (() => { try { return candidats(x, id).find((k) => k !== id && !posees.has(k) && pieceTenable(k, facts)); } catch { return undefined; } })();
+      if (autre) { s.section = autre; delete (s as { construction?: string | null }).construction; } else pg.sections.splice(i, 1);
+      n++;
+    }
+    if (n) { const again = check(x); if (!again.rules.length && again.t) { d = x; c = again; } }
   }
   // Dernier recours sans IA : ce qui sort encore des choix de la famille y est ramené ; le site est fait dans son style.
   { const fit = fitFamille(d, { business: site.business, families: catalogueFacts.families }); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
