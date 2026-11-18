@@ -641,3 +641,40 @@ chiffres du site et de sa boutique. Les branchements reviendront quand il les au
 Sources de la partie 7 : journal des nouveautés de Shopify (conseils de Sidekick), Unite.AI (Canvas), TechCrunch
 (créateur de boutique), eCommerce Fastlane, Copyfy, blog de Google (Pomelli), test de Blaze par R. Doser, Apaya, blog de
 Zeely, Pixis (Meta), Tool Advisor et Capeb (Simplébo).
+
+## 16. Les fournisseurs d'IA (accord du propriétaire, 18 novembre 2026)
+
+Recherche du 18 novembre 2026 sur les pages officielles de tous les fournisseurs d'images et de vidéos et des
+intermédiaires : prix en direct, prix chez les intermédiaires, ouverture du compte, droit d'ouvrir l'outil aux clients
+du Studio. Page en ligne, avec les tableaux et les captures : https://claude.ai/artifact/Guf6SK6UeHdynNevdxqJ7c
+
+Ce qu'on retient :
+- **Le direct n'est pas toujours moins cher.** Nettement moins cher pour Kling (environ −25 %) et Seedance (jusqu'à
+  deux fois moins), −20 % pour Veo 3.1 Fast ; même prix chez les intermédiaires sérieux pour la plupart des images.
+- **Ce qui décide, ce sont les conditions des fabricants.** Écartés : Runway (« Powered by Runway » obligatoire et
+  entraînement sur nos contenus), Luma (marque blanche interdite sans accord), Ideogram (sa marque sur chaque page),
+  Midjourney (aucune API, services non officiels interdits), Adobe Firefly (contrat d'entreprise obligatoire, contraire
+  à la règle « rien qui fasse attendre une plateforme »), Kie (prix inexpliqués, conditions trop minces).
+- **Seedance (ByteDance)** interdit d'être ouvert aux utilisateurs dans un outil de création sans accord écrit : il ne
+  sert pas dans le Studio tant que cet accord n'est pas obtenu.
+- **Higgsfield (offre développeurs)** est à quitter : il peut entraîner ses modèles sur les photos envoyées, donc celles
+  des clients.
+
+Accord du propriétaire (« Oui », 18 novembre 2026) pour ces fournisseurs payants :
+- en direct : **Kling** (vidéo), **Google Cloud / Vertex** (Veo 3.1 Fast et Lite ; Nano Banana et Gemini Omni Flash
+  restent dans l'API Gemini), **Black Forest Labs** (Flux, contrat européen) ; déjà ouverts : OpenAI, Google (API
+  Gemini), Alibaba (Wan, Qwen, données gardées en Europe à Francfort) ;
+- un seul intermédiaire de secours : **Runware** (prix proche du fabricant, aucun entraînement sur nos contenus,
+  données en Europe possibles), à la place de Higgsfield ; fal reste le temps de la transition ;
+- une demande d'accord écrit à **ByteDance** pour Seedance.
+
+Règles : les comptes sont ouverts par le propriétaire, à son nom ; les clés se saisissent dans Administration ›
+Fournisseurs IA, jamais dans la conversation ; ouvrir un compte ne coûte rien, chaque achat de crédits ou essai payant
+se décide avec lui avant, avec son prix.
+
+À réparer dans le Studio : Veo n'est plus dans l'API Gemini (seulement sur Vertex depuis 2026) ; Sora est arrêté ;
+GPT Image 1 est arrêté, GPT Image 1.5 s'arrête le 1er décembre 2026, GPT Image 2 le 10 février 2027 (les modèles
+actuels sont GPT Image 2.6 « flare » et « sunburst »).
+
+Pas encore vérifié : le délai réel d'ouverture chez Kling et ByteDance ; la recharge du solde Kling sans passer par le
+service commercial ; la TVA pour une entreprise française ; le détail des conditions de Vertex.
