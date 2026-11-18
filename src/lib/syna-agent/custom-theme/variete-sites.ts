@@ -37,7 +37,7 @@ export const DISPO_METIER = 10;
 export const SITES_MONTRES = 8;
 
 /** Un site vu par la règle : chaque page (clé) et ses pièces posées « pièce:disposition », dans l'ordre. */
-export type SiteVu = { pages: Record<string, string[]>; /** Les pages qui ne sont pas pratiques (comptées pour le quart). */ utiles: string[]; metier?: string | null };
+export type SiteVu = { pages: Record<string, string[]>; /** Les pages qui ne sont pas pratiques (comptées pour le quart). */ utiles: string[]; metier?: string | null; /** Le site actuel du même client, qu'il fait refaire (18 novembre 2026) : la nouvelle version s'en écarte comme d'un autre site. */ ancien?: boolean };
 type Pages = { pages: { key: string; sections: { section: string; construction?: string | null }[] }[] };
 
 const bare = (x: string) => x.split(":")[0];
@@ -101,16 +101,18 @@ export function varieteSitesGaps(mine: SiteVu, sites: SiteVu[], o: Options = {})
   const garde = (x: string) => !o.seule?.(x);
   // ── l'accueil : au plus deux pièces en commun avec chaque site comparé
   const h = new Set([...accueil(mine)].filter(garde));
-  let pire: string[] = [];
-  for (const s of sites) { const c = [...h].filter((x) => accueil(s).has(x)); if (c.length > pire.length) pire = c; }
-  if (pire.length > ACCUEIL_COMMUNES_MAX) out.push(`accueil : ${pire.length} pièces en commun avec l'accueil d'un site déjà monté pour une autre marque (${pire.join(", ")}) ; au plus ${ACCUEIL_COMMUNES_MAX} : remplace-en ${pire.length - ACCUEIL_COMMUNES_MAX} par d'autres pièces de la bibliothèque qui servent le même moment (règle du propriétaire : la variété d'un client à l'autre)`);
+  // Le site actuel du même client (qu'il fait refaire) se nomme comme tel : SINA comprend ce qu'elle doit quitter.
+  const quel = (s: SiteVu | undefined) => (s?.ancien ? "le site actuel du client, qu'il fait refaire" : "un site déjà monté pour une autre marque");
+  let pire: string[] = [], pireSite: SiteVu | undefined;
+  for (const s of sites) { const c = [...h].filter((x) => accueil(s).has(x)); if (c.length > pire.length) { pire = c; pireSite = s; } }
+  if (pire.length > ACCUEIL_COMMUNES_MAX) out.push(`accueil : ${pire.length} pièces en commun avec l'accueil ${pireSite?.ancien ? "du site actuel du client, qu'il fait refaire" : "d'un site déjà monté pour une autre marque"} (${pire.join(", ")}) ; au plus ${ACCUEIL_COMMUNES_MAX} : remplace-en ${pire.length - ACCUEIL_COMMUNES_MAX} par d'autres pièces de la bibliothèque qui servent le même moment (règle du propriétaire : la variété d'un client à l'autre)`);
   // ── le site entier : au plus un quart de pièces en commun
   const u = new Set([...piecesDe(mine, mine.utiles)].filter(garde));
   if (u.size) {
-    let pis: string[] = [];
-    for (const s of sites) { const theirs = piecesDe(s, s.utiles); const c = [...u].filter((x) => theirs.has(x)); if (c.length > pis.length) pis = c; }
+    let pis: string[] = [], pisSite: SiteVu | undefined;
+    for (const s of sites) { const theirs = piecesDe(s, s.utiles); const c = [...u].filter((x) => theirs.has(x)); if (c.length > pis.length) { pis = c; pisSite = s; } }
     const max = Math.floor(u.size * SITE_COMMUNES_PART);
-    if (pis.length > max) out.push(`site entier : ${pis.length} pièces sur ${u.size} en commun avec un site déjà monté pour une autre marque (${pis.join(", ")}) ; au plus ${max} (un quart) : remplace-en ${pis.length - max} par d'autres pièces de la bibliothèque qui servent le même moment`);
+    if (pis.length > max) out.push(`site entier : ${pis.length} pièces sur ${u.size} en commun avec ${quel(pisSite)} (${pis.join(", ")}) ; au plus ${max} (un quart) : remplace-en ${pis.length - max} par d'autres pièces de la bibliothèque qui servent le même moment`);
   }
   // ── sur une même sorte de page (hors pages pratiques), jamais la même disposition d'une pièce qu'un site récent, quand
   //    elle en a plusieurs ; une pièce sans autre pièce pour son moment n'est refusée que si une disposition est libre
@@ -208,7 +210,7 @@ export function varieteSitesBrief(sites: SiteVu[]): string {
   const ligne = (s: SiteVu, i: number) => {
     const home = (s.pages.home ?? []).join(", ");
     const autres = Object.entries(s.pages).filter(([k]) => k !== "home").map(([k, v]) => `${sorte(k)} : ${v.join(", ")}`).join(" · ");
-    return `- site ${i + 1}${s.metier ? ` (${s.metier})` : ""} · accueil : ${home || "—"}${autres ? ` · ${autres}` : ""}`;
+    return `- ${s.ancien ? "SON SITE ACTUEL, QUE LE CLIENT FAIT REFAIRE (le nouveau doit s'en écarter autant que d'un autre site : il ne l'a pas aimé tel quel)" : `site ${i + 1}`}${s.metier ? ` (${s.metier})` : ""} · accueil : ${home || "—"}${autres ? ` · ${autres}` : ""}`;
   };
   return [
     `SITES DÉJÀ MONTÉS PAR LE STUDIO POUR D'AUTRES MARQUES (pièce:disposition). Règle du propriétaire, contrôlée par le Studio, sans exception : chaque client a un site qui ne ressemble pas aux autres. Avec CHACUN de ces sites : l'accueil a au plus ${ACCUEIL_COMMUNES_MAX} pièces en commun (l'ouverture n'est pas comptée) ; le site entier (hors mentions légales, page introuvable, panier, compte) au plus un quart ; sur une même sorte de page, une pièce reprise prend TOUJOURS une autre disposition que la sienne. La bibliothèque a plusieurs pièces pour chaque moment : cherche celle qui sert CETTE marque au lieu de la pièce habituelle. Ce que tu laisses, le Studio le remplace lui-même.`,

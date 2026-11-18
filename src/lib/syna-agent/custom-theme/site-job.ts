@@ -172,15 +172,33 @@ export function produitsSansPhoto(projectId: string, business?: string | null): 
 export function refusPhotosProduits(ctx: ToolContext): string | null {
   try { const p = project(ctx); return refusSansPhotosProduits({ sans: produitsSansPhoto(p.id, p.business), repondu: photosProduitsRepondu(clientNotes(p.id)) }); } catch { return null; }
 }
+/** Titre sous lequel SINA note ce que le client n'aimait pas dans son site, avant de le refaire. */
+export const NOTE_SITE_A_CHANGER = "ce qui ne plaisait pas dans le site";
+const TITRE_A_CHANGER = /(?<!\p{L})site(?!\p{L})[^\n]{0,40}(?:plai|chang|refai|refont|aim|d[ée]pla)|(?:plai|chang|refai|refont|aim|d[ée]pla)[^\n]{0,40}(?<!\p{L})site(?!\p{L})/iu;
+/** Ce que le client a dit ne pas aimer dans son site actuel (la note de SINA), ou null. */
+export const siteAChanger = (lines: { title?: string | null; value: string }[]): string | null => lines.find((l) => TITRE_A_CHANGER.test((l.title ?? "").trim()) && !!(l.value ?? "").trim())?.value.trim() ?? null;
+/**
+ * GARDE-FOU SANS IA (essai réel du 18 novembre 2026 : à « refais-moi tout le site », SINA a refait presque le même ; le
+ * propriétaire : « tout ça pour me refaire le même thème que le premier »). Refaire un site déjà écrit ne se lance pas
+ * tant que SINA n'a pas demandé au client ce qui ne lui plaisait pas, et noté sa réponse. Le refus tombe AVANT la carte
+ * de dépense. La réponse va au concepteur avec la consigne.
+ */
+export function refusRefaireSansAvis(o: { refaire: boolean; siteExiste: boolean; avis: string | null }): string | null {
+  if (!o.refaire || !o.siteExiste || o.avis) return null;
+  return `Le site n'est pas refait et rien n'est payé : avant de le refaire, demande au client, en une question, ce qui ne lui plaît pas dans son site actuel (ce qu'il veut voir changer : l'allure, l'ordre, les photos, les textes…), avec ses mots. Note sa réponse avec memory.note sous le titre « ${NOTE_SITE_A_CHANGER} », puis relance site.create avec refaire:true. Le nouveau site s'écartera de l'actuel.`;
+}
+const refusRefaire = (ctx: ToolContext, refaire: boolean | undefined): string | null => {
+  try { const p = project(ctx), cur = loadCustomTheme(p.id); return refusRefaireSansAvis({ refaire: !!refaire, siteExiste: !!cur && allSections(cur).some((x) => x.s.clientTexts), avis: siteAChanger(clientNotes(p.id)) }); } catch { return null; }
+};
 /** Refus d'un outil pendant son devis, pour SINA seule : le client ne le lit pas. */
 export class RefusInterne extends Error { readonly internal = true; }
 
 type CreateArgs = { consigne?: string; refaire?: boolean };
 export const siteCreateTool: AgentTool<CreateArgs> = {
   name: "site.create", module: "site", kind: "generate", needsProject: true,
-  description: "Étape du site (PAYANT : un seul prix annoncé, un seul accord écrit du client) : tu CRÉES TOUT SON SITE en une fois, pour sa marque. Tu le conçois (le parcours du visiteur sur chaque page, les pièces qui conviennent à son métier, l'allure tirée de sa planche de marque : titres, boutons, cadres des photos, un signe pris sur son produit ou son métier), tu donnes sa fiche à chaque produit, tu calcules le menu, tu écris tous les textes dans l'angle qu'il a choisi, tu les relis, tu poses ses photos là où elles vont et tu crées celles qui manquent, puis tu regardes le résultat en image sur téléphone. Tâche de fond de 20 à 40 minutes : tu restes disponible pendant ce temps. À lancer quand la marque, l'angle et l'activité (produits ou prestations, coordonnées) sont validés. consigne : ce que le client a dit vouloir pour son site, avec ses mots. refaire:true seulement s'il demande de refaire tout le site (payant, même prix). Il ne choisit ni thème, ni famille, ni concept : tu ne lui montres jamais de modèle.",
+  description: "Étape du site (PAYANT : un seul prix annoncé, un seul accord écrit du client) : tu CRÉES TOUT SON SITE en une fois, pour sa marque. Tu le conçois (le parcours du visiteur sur chaque page, les pièces qui conviennent à son métier, l'allure tirée de sa planche de marque : titres, boutons, cadres des photos, un signe pris sur son produit ou son métier), tu donnes sa fiche à chaque produit, tu calcules le menu, tu écris tous les textes dans l'angle qu'il a choisi, tu les relis, tu poses ses photos là où elles vont et tu crées celles qui manquent, puis tu regardes le résultat en image sur téléphone. Tâche de fond de 20 à 40 minutes : tu restes disponible pendant ce temps. À lancer quand la marque, l'angle et l'activité (produits ou prestations, coordonnées) sont validés. consigne : ce que le client a dit vouloir pour son site, avec ses mots. refaire:true seulement s'il demande de refaire tout le site (payant, même prix) : avant, demande-lui ce qui ne lui plaît pas dans son site actuel et note sa réponse (« ce qui ne plaisait pas dans le site ») ; le nouveau site s'écartera de l'actuel. Il ne choisit ni thème, ni famille, ni concept : tu ne lui montres jamais de modèle.",
   args: z.object({ consigne: z.string().max(1500).optional(), refaire: z.boolean().optional() }).strict(),
-  estimate: (ctx) => { const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx); if (refus) throw new RefusInterne(refus); return siteQuote(kindOf(ctx)); },
+  estimate: (ctx, a) => { const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx) ?? refusRefaire(ctx, a?.refaire); if (refus) throw new RefusInterne(refus); return siteQuote(kindOf(ctx)); },
   // La carte de dépense rappelle, en une ligne, que le site se monte sans les photos des produits (le client a été prévenu).
   preview: (ctx) => { const sans = (() => { try { const p = project(ctx); return produitsSansPhoto(p.id, p.business); } catch { return []; } })(); return [L("Ton site entier, créé pour ta marque.", "Your whole site, built for your brand."), rappelCarte(sans)].filter(Boolean).join(" "); },
   run: (ctx, a) => {
@@ -189,13 +207,16 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
     if (j.steps[4]?.status !== "done") return { ok: false, summary: L("L'angle doit être choisi avant le site.", "Choose the angle first.") };
     if (j.steps[5]?.status !== "done") return { ok: false, summary: L("L'activité (produits ou prestations, coordonnées) doit être validée avant le site.", "Validate the activity first."), hint: "Finis d'abord l'étape de l'activité avec le client." };
     if (pendingJob(p.id, SINA_SITE_JOB)) return { ok: false, summary: L("Ton site est déjà en cours de création : attends-le.", "Your site is already being created.") };
-    const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx);
+    const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx) ?? refusRefaire(ctx, a.refaire);
     if (refus) return { ok: false, internal: true, summary: refus };
     const cur = loadCustomTheme(p.id);
     if (cur && allSections(cur).some((x) => x.s.clientTexts) && !a.refaire) return { ok: false, summary: L("Le site est déjà créé.", "The site already exists."), hint: "Pour une retouche : custom.section puis custom.edit. Pour tout refaire (payant, à la demande du client seulement) : site.create avec refaire:true et sa consigne." };
     const quote = siteQuote(kindOf(ctx));
     const round = (cur?.rev ?? 0) + 1;
-    const payload: SitePayload = { projectId: p.id, userId: ctx.user.id, conversationId: ctx.conversationId, runId: ctx.runId, capMicro: quote.maxMicro, consigne: a.consigne?.trim() || null };
+    // Refaire : ce que le client n'aimait pas va au concepteur avec sa consigne (ses mots).
+    const aChanger = a.refaire ? siteAChanger(clientNotes(p.id)) : null;
+    const consigne = [a.consigne?.trim(), aChanger ? `Il refait son site. Ce qui ne lui plaisait pas dans l'actuel (à changer) : « ${aChanger} »` : ""].filter(Boolean).join("\n") || null;
+    const payload: SitePayload = { projectId: p.id, userId: ctx.user.id, conversationId: ctx.conversationId, runId: ctx.runId, capMicro: quote.maxMicro, consigne };
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: SINA_SITE_JOB, label: L("Ton site (SINA)", "Your site (SINA)"), payload, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:site:${round}` });
     updateJourney(ctx.conversationId, (x) => setStep(x, 6, "doing"));
     return { ok: true, jobs: [job.id], data: { plafondMicro: quote.maxMicro },
@@ -291,7 +312,11 @@ export async function runSinaSiteJob(ctx: JobContext) {
   // 2) Le site conçu est rangé ; chaque produit reçoit sa fiche ; le menu est calculé depuis les pages et le catalogue.
   await ctx.step("site:structure", async () => {
     let t: CustomTheme = { ...designed.t, chosen: false };
-    keepWork(t, loadCustomTheme(p.id));
+    // Refaire un site déjà écrit repart d'une page blanche (essai réel du 18 novembre 2026 : chaque section de même nom
+    // gardait ses anciens textes et ses anciennes photos, dont un sac imaginé avant la règle du 17 novembre ; le site
+    // « refait » était en partie une copie du premier). Le travail n'est repris que d'un site jamais écrit pour le client.
+    const avant = loadCustomTheme(p.id);
+    if (!avant || !allSections(avant).some((x) => x.s.clientTexts)) keepWork(t, avant);
     const products = (() => { try { return listProducts(p.id); } catch { return []; } })();
     if (p.business !== "services" && products.length >= 2) {
       try { t = applyStructure(t, [{ op: "product_pages", products: products.map((x) => ({ handle: x.handle, title: x.data.title })) }]); } catch { /* fiche commune gardée */ }

@@ -37,7 +37,7 @@ import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
 import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, varietyGaps, type Design } from "./design";
 import { referencesBrief, sectorOf } from "./references";
-import { fitRythme, ordreGaps, partitionChoisie, photosAuthentiquesManquantes, pieceTenable, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
+import { fitFormes, fitRythme, ordreGaps, partitionChoisie, photosAuthentiquesManquantes, pieceTenable, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
 import { MIN_SECTIONS_IMPORTANTE, pageKind, partitionsBrief, partitionsPermises, typesAccueilPermis, type AngleRole, type PageKind } from "./partitions";
 import { preuvesBrief, preuvesDe, preuvesDemandees, type Preuves } from "./preuves";
 import { SECOND_REGARD_CALLS_MAX, SECOND_REGARD_CAP_MICRO, SECOND_REGARD_SYSTEM, SECOND_REGARD_TYPICAL_MICRO, SecondRegardSchema, secondRegardPrompt, secondRegardRefus, type RegardPage, type SecondRegard } from "./second-regard";
@@ -333,12 +333,18 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   const oc = ordreContext(ctx, site, families), preuves = dossierPreuves(ctx);
   // La variété entre les sites du Studio (règle du propriétaire du 17 novembre 2026) : les 12 derniers, tous métiers, et
   // les 30 derniers du même métier, même anciens.
-  const vus = sitesVus(p.id, oc.metier);
+  // Refaire le site (essai réel du 18 novembre 2026 : le site refait d'Atelier Vasco reprenait 7 pièces sur 10 de son
+  // accueil, le propriétaire : « tout ça pour me refaire le même thème que le premier ») : le site actuel du client
+  // compte comme un site déjà fait, en tête de liste. Le concepteur le voit, ses partitions sont à ne pas reprendre, et
+  // le Studio le contrôle comme les autres.
+  const ancien = mode.kind === "full" ? siteActuelDuClient(p.id) : null;
+  const vus = [...(ancien ? [ancien.vu] : []), ...sitesVus(p.id, oc.metier)];
   const facts: OrdreFacts = { business: site.business, products: site.products, types: oc.types, mobile: oc.mobile, zoneConnue: oc.zoneConnue, preuves: preuves.ids, clientImages: site.clientImages ?? 0, ...(site.business === "services" ? { profil: { zone: oc.zoneConnue, telephone: oc.telConnu } } : {}) };
   const kindOfKey = (key: string) => { const k = pageKind(key, site.business); return k && k !== "utilitaire" ? k : null; };
   const memes = sites.filter((x) => x.site.metier === oc.metier);
   const prises: Partial<Record<PageKind, string[]>> = {};
   for (const x of memes) for (const [key, id] of Object.entries(x.site.partitions)) { const k = kindOfKey(key); if (k) (prises[k] ??= []).push(id); }
+  if (ancien) for (const [key, id] of Object.entries(ancien.partitions)) { const k = kindOfKey(key); if (k) (prises[k] ??= []).push(id); }
   const sellKind: PageKind = site.business === "services" ? "prestation" : "fiche";
   const preuvesText = preuvesBrief(preuves);
   const partitionsText = partitionsBrief({ business: site.business, types: oc.types, dossier: { preuves: preuves.ids, products: site.products }, angle: oc.angle, prises, ...(mode.kind === "concept" ? { kinds: ["accueil", sellKind] as PageKind[] } : {}) });
@@ -536,6 +542,13 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   }
   // Le rythme : deux dispositions pareilles à la suite, réglé par un échange de place quand il ne crée aucun autre défaut.
   { const fit = fitRythme(d, facts); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+  // Une même allure jamais deux fois sur une page (18 novembre 2026) : la seconde est remplacée par une pièce du même
+  // moment d'une autre allure, puis le rythme est revu. Aucune porte de sortie.
+  {
+    const fit = fitFormes(d, facts, { candidats, accepte: (x) => { const r = check(x); return !r.rules.length && !!r.t; } });
+    if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } }
+    const r2 = fitRythme(d, facts); if (r2.changed.length) { const again = check(r2.d); if (!again.rules.length && again.t) { d = r2.d; c = again; } }
+  }
   // Dernier passage sans IA, après tout ce qui déplace ou remplace des pièces : chaque page prend la signature de sa
   // famille (fonds, alignement) et le signe de la marque est complet. Aucune porte de sortie.
   {
@@ -730,6 +743,16 @@ export function sitesVus(projectId: string, metier?: string | null): SiteVu[] {
     } catch { /* thème illisible : ignoré */ }
   }
   return out;
+}
+/** Le site actuel du client, s'il a déjà été écrit pour lui (et pas seulement un modèle) : ce qu'une nouvelle version ne doit pas reprendre. */
+export function siteActuelDuClient(projectId: string): { vu: SiteVu; partitions: Record<string, string> } | null {
+  try {
+    const t = loadCustomTheme(projectId);
+    if (!t || !allSections(t).some((x) => x.s.clientTexts)) return null;
+    const pages = Object.fromEntries(t.pages.map((pg) => [pg.key, pg.sections.map((x) => `${x.id}:${validConstruction(x.id, x.construction) ?? ""}`)]));
+    const utiles = t.pages.filter((pg) => { const k = pageKind(pg.key, "products") ?? pageKind(pg.key, "services"); return !!k && k !== "utilitaire"; }).map((pg) => pg.key);
+    return { vu: { pages, utiles, metier: t.metier ?? null, ancien: true }, partitions: t.partitions ?? {} };
+  } catch { return null; }
 }
 /** Une conception vue par la règle de variété entre sites. */
 function siteVuDe(d: Pick<Design, "pages">): SiteVu {

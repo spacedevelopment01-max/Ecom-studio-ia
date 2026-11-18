@@ -620,3 +620,39 @@ mesurent sur la hauteur des lettres, plus sur la boîte de la police (fausses al
 
 Mineurs qui restent : des petits textes posés sur photo dont le contraste descend par endroits sous 3 (jamais sous 1,5),
 des marques « À compléter » penchées (état d'exemple, fond jaune fixe), deux mots inventés de 24 lettres coupés.
+
+## L'essai réel du 18 novembre 2026 : Atelier Vasco refait (21,35 €)
+
+Accord du propriétaire : une boutique, environ 10,70 €, 16,18 € au plus (après le plafond resserré). Claude n'a joué
+que la cliente (« refais-moi tout le site depuis le début, toujours sans mes photos »).
+
+| Tentative | Dépensé | Ce qui s'est passé | Corrigé |
+|---|---|---|---|
+| 1 | 4,64 € | conception refusée : « La personne derrière la marque » posée sans le portrait de la cliente | pièce non proposée ni permise sans les images du client, remplacée par le Studio sinon ; SINA lui demande sa photo |
+| 2 | 4,48 € | arrêtée en route : le budget du mois de la cliente d'essai était presque épuisé, la carte ne l'avait pas vu | le budget du mois doit couvrir le plafond avant la carte (« pas lancé, rien n'est payé ») |
+| reprise | 0 € | une étape ratée était gardée comme faite ; puis la demande avait changé avec la correction 1 | un échec n'est plus gardé comme étape faite |
+| 3 | 9,79 € | site créé, 12 pages, sous le prix probable | voir ci-dessous |
+
+Réponses de SINA à la cliente : 2,44 €. SINA a dit honnêtement chaque échec, avec son coût réel.
+
+**Ce que le propriétaire a vu** : « tout ça pour me refaire le même thème que le premier ??? En plus avec plusieurs fois
+la même sections sur la page d'accueil et produit ». Compté : accueil, 7 pièces sur 10 identiques au premier site ;
+fiche, 6 sur 10 ; deux fois des étapes numérotées et deux fois un texte et une photo en alternance sur l'accueil. Et un
+sac imaginé sur la carte et la fiche du cabas.
+
+**Les causes** (toutes dans le Studio, pas dans la réflexion de SINA, dont chaque choix était argumenté) :
+- la règle de variété ne comparait que les sites des autres clients : le site actuel du même client n'était ni montré
+  au concepteur ni contrôlé ;
+- refaire gardait, pour chaque section de même nom, ses anciens textes et ses anciennes photos (`keepWork`) : le site
+  « refait » était en partie une copie, et le sac imaginé du 17 novembre (avant la règle) est revenu ainsi ;
+- une même allure n'était refusée que deux fois à la suite, pas plus loin dans la page.
+
+**Corrigé, sans IA** (« Oui », 18 novembre) : le site actuel compte comme un site déjà fait, en tête, nommé « le site
+actuel du client, qu'il fait refaire », et ses partitions sont à ne pas reprendre ; refaire repart d'une page blanche ;
+avant de refaire, SINA demande ce qui ne plaisait pas et le note (« ce qui ne plaisait pas dans le site »), sa réponse
+va au concepteur ; une même allure ne revient jamais sur une page (règle 6 bis, cahier « ordre et variété »), avec un
+dernier recours sans IA (`fitFormes`). Tests : `tests/sina-refaire-site-different.test.ts`.
+
+**Preuve gratuite** sur le site refait réel : le contrôle le refuse désormais (accueil : 6 pièces en commun avec le
+site actuel, au plus 2 ; site entier : 21 sur 28) et relève 9 allures en double sur 6 pages. **Pas vérifié** : un
+nouveau site conçu par la vraie IA avec ces règles (payant, à décider avec le propriétaire).

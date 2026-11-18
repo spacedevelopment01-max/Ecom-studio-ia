@@ -23,7 +23,7 @@
  */
 import { tenueSection } from "./tenue";
 import { FEATURED_ROLE, authenticSection, isCardSection, libSection, sectionPhotos } from "./library";
-import { FORME_LABEL, doublonsDe, type PreuveId, type TraitOrdre } from "./tenue-ordre";
+import { FORME_LABEL, doublonsDe, type Forme, type PreuveId, type TraitOrdre } from "./tenue-ordre";
 import { OUVERTURES_SERVICES } from "./tenue-partitions";
 import { familleOf } from "./familles";
 import { preuveLabel } from "./preuves";
@@ -60,6 +60,32 @@ export type OrdreFacts = {
 };
 
 const ordre = (id: string) => tenueSection(id)?.ordre ?? null;
+/**
+ * L'allure d'une pièce telle qu'un visiteur la voit. Certaines dispositions changent d'allure : une composition en
+ * alternance se voit comme un texte et une photo côte à côte, pas comme une file de photos (essai réel du 18 novembre
+ * 2026 : deux parties « texte et photo en alternance » sur l'accueil d'Atelier Vasco).
+ */
+const FORME_PAR_DISPOSITION: Record<string, Forme[]> = {
+  "tn-composition:alternee": ["texte-photo"],
+  // Des étapes numérotées, chacune avec sa photo en alternance : on y voit aussi un texte et une photo côte à côte.
+  "tn-fabrication:lignes": ["etapes", "texte-photo"],
+};
+/** Les allures d'une pièce telles qu'un visiteur les voit (la première est son allure principale). */
+export const formesVues = (id: string, construction?: string | null): Forme[] => FORME_PAR_DISPOSITION[`${id}:${construction ?? ""}`] ?? (ordre(id)?.forme ? [ordre(id)!.forme!] : []);
+export const formeVue = (id: string, construction?: string | null): Forme | null => formesVues(id, construction)[0] ?? null;
+/** Les allures qui peuvent revenir sur une page : la coque et une page entière (ce ne sont pas des sections vues). */
+const ALLURES_LIBRES = new Set<Forme>(["page", "coque"]);
+/** Les sections d'une page qui reprennent une allure déjà vue plus haut sur la même page (la seconde, la troisième…). */
+export function alluresEnDouble(sections: { section: string; construction?: string | null }[]): { i: number; id: string; premier: string; forme: Forme }[] {
+  const vues = new Map<Forme, string>(), out: { i: number; id: string; premier: string; forme: Forme }[] = [];
+  sections.forEach((x, i) => {
+    const fos = formesVues(x.section, x.construction).filter((fo) => !ALLURES_LIBRES.has(fo));
+    const deja = fos.find((fo) => vues.has(fo));
+    if (deja) { out.push({ i, id: x.section, premier: vues.get(deja)!, forme: deja }); return; }
+    for (const fo of fos) vues.set(fo, x.section);
+  });
+  return out;
+}
 const has = (id: string, t: TraitOrdre) => !!ordre(id)?.traits?.includes(t);
 const title = (id: string) => tenueSection(id)?.title ?? id;
 const nth = (i: number) => `${i + 1}e`;
@@ -203,6 +229,9 @@ export function ordreGaps(d: OrdreDesign, f: OrdreFacts): { refus: string[]; not
       const a = ordre(ids[i - 1])?.forme, b = ordre(ids[i])?.forme;
       if (a && b && a === b && a !== "page") refus.push(`${name} : deux dispositions pareilles à la suite (${ids[i - 1]}, ${ids[i]} : ${FORME_LABEL[a]}) ; le rythme alterne (règle d'or 6)`);
     }
+    // ── règle 6 bis (18 novembre 2026, le propriétaire devant le site refait d'Atelier Vasco : « plusieurs fois la même
+    //    section sur la page d'accueil et produit ») : une même allure ne revient jamais sur une page, même plus loin.
+    for (const x of alluresEnDouble(pg.sections)) refus.push(`${name} : deux sections de même allure sur la page (${x.premier}, puis ${x.id} : ${FORME_LABEL[x.forme]}) ; chaque allure une seule fois par page : remplace la seconde par une pièce d'une autre allure qui sert le même moment`);
     // ── règle 8 : les doutes levés juste avant la fin ; règle 9 : la page finit par l'action
     const veutDoutes = kind === "accueil" || kind === "fiche" || (partition ? partition.moments.slice(-3).some((x) => x.pieces.some((id) => has(id, "doutes"))) : false);
     if (veutDoutes && kind !== "questions" && n >= 4 && !ids.slice(-3).some((x) => has(x, "doutes"))) refus.push(`${name} : les doutes sont levés juste avant la fin (règle d'or 8) : les questions ou la garantie dans les trois dernières sections`);
@@ -246,6 +275,39 @@ export function fitRythme<D extends OrdreDesign>(d: D, f: OrdreFacts): { d: D; c
           list.splice(to, 0, moved);
           if (count(next) < before) { better = { d: next, note: `« ${pg.key} » : ${ids[from]} déplacée (deux dispositions pareilles se suivaient : ${ids[i - 1]}, ${ids[i]})` }; break; }
         }
+      }
+      if (better) break;
+    }
+    if (!better) break;
+    cur = better.d; changed.push(better.note);
+  }
+  return { d: changed.length ? cur : d, changed };
+}
+
+/**
+ * Dernier recours sans IA pour la règle 6 bis : une section qui reprend une allure déjà vue sur sa page est remplacée par
+ * une pièce qui sert le même moment (`candidats`) et dont l'allure n'est pas encore sur la page. Gardé seulement si le
+ * contrôle de l'ordre, rejoué en entier, compte moins de refus et si `accepte` le valide (aucune règle du thème cassée).
+ */
+export function fitFormes<D extends OrdreDesign>(d: D, f: OrdreFacts, o: { candidats: (x: D, id: string) => string[]; accepte: (x: D) => boolean }): { d: D; changed: string[] } {
+  let cur: D = JSON.parse(JSON.stringify(d));
+  const changed: string[] = [];
+  const count = (x: D) => ordreGaps(x, f).refus.length;
+  for (let tour = 0; tour < 12; tour++) {
+    const before = count(cur);
+    let better: { d: D; note: string } | null = null;
+    for (const [pi, pg] of cur.pages.entries()) {
+      for (const dbl of alluresEnDouble(pg.sections)) {
+        const prises = new Set(pg.sections.flatMap((x, k) => (k === dbl.i ? [] : formesVues(x.section, x.construction))));
+        const posees = new Set(cur.pages.flatMap((q) => q.sections.map((x) => x.section)));
+        const cands = (() => { try { return o.candidats(cur, dbl.id); } catch { return []; } })().filter((c) => c !== dbl.id && !posees.has(c) && pieceTenable(c, f) && !formesVues(c, null).some((fo) => prises.has(fo)));
+        for (const c of cands) {
+          const next: D = JSON.parse(JSON.stringify(cur));
+          const s = next.pages[pi].sections[dbl.i];
+          s.section = c; delete (s as { construction?: string | null }).construction;
+          if (count(next) < before && o.accepte(next)) { better = { d: next, note: `« ${pg.key} » : ${dbl.id} → ${c} (même allure que ${dbl.premier})` }; break; }
+        }
+        if (better) break;
       }
       if (better) break;
     }
