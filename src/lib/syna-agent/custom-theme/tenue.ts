@@ -101,7 +101,9 @@ export function tenueCss(palette: Palette | null | undefined, tenue: Tenue | nul
     "--tn-sur-accent": contraste(encre, accent) > contraste(clair, accent) ? encre : clair,
     // La couleur de la marque écrite SUR le fond de la page (une année, un numéro, un mot en couleur) : elle-même si elle
     // s'y lit (contraste de 3 au moins), sinon l'encre. Un jaune vif sur un fond crème ne se lisait pas (tour des sections).
-    "--tn-accent-texte": contraste(accent, fond) >= 3 ? accent : encre,
+    // Entre 3 et 4,5, elle s'assombrit vers l'encre, sans changer de teinte, jusqu'à se lire comme un texte : une police
+    // fine en couleur paraît plus claire qu'elle n'est (tour des familles, 18 novembre 2026).
+    "--tn-accent-texte": contraste(accent, fond) >= 4.5 ? accent : contraste(accent, fond) >= 3 ? [0.82, 0.68, 0.54, 0.4].map((k) => melange(accent, encre, k)).find((c): c is string => !!c && contraste(c, fond) >= 4.5) ?? encre : encre,
     "--tn-arrondi": tenue?.cadre === "droit" || !tenue ? "0px" : "14px",
     ...(poids && poids !== 400 ? { "--tn-poids": String(poids) } : {}),
   };

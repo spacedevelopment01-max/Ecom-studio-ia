@@ -54,16 +54,16 @@
 .ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{content:"";width:26px;height:14px;flex:none;background:var(--tn-encre);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 14'%3E%3Cpath d='M0 7h22M16 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='2.6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 14'%3E%3Cpath d='M0 7h22M16 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='2.6'/%3E%3C/svg%3E") center/contain no-repeat}
 /* Très petit téléphone (moins de 360 px), polices larges (tour des familles, 18 novembre 2026) : un nom de carte, une
    ligne de tableau ou une légende coupe un mot de huit lettres avec son trait d'union plutôt qu'au milieu sans trait. */
-@media (max-width:359px){.ctw .tn :is(b,th,figcaption,strong){hyphenate-limit-chars:8 4 3;-webkit-hyphenate-limit-before:4;-webkit-hyphenate-limit-after:3}}
+@media (max-width:359px){.ctw .tn :is(b,th,figcaption,strong,h3){hyphenate-limit-chars:8 4 3;-webkit-hyphenate-limit-before:4;-webkit-hyphenate-limit-after:3}}
 /* Sur un très petit téléphone, un bouton posé dans un formulaire ou une carte étroite prend des côtés plus courts : un
    libellé de six mots tient sur deux lignes, quelle que soit la police de la marque (tour des familles, 18 novembre 2026). */
-@media (max-width:359px){.ctw .tn :is(form,.tn-form,.tn-pt-carte,.tn-boite) .tn-bt{padding-left:14px;padding-right:14px;letter-spacing:0;font-size:15px}}
+@media (max-width:359px){.ctw .tn :is(form,.tn-form,.tn-boite) .tn-bt{padding-left:14px;padding-right:14px;letter-spacing:0;font-size:15px}}
 /* Bouton « étiquette » sur un téléphone : des capitales plus petites et moins espacées, une flèche plus courte ; un libellé
    de six mots tient sur deux lignes (signatures des familles, 17 novembre 2026). */
 @media (max-width:480px){.ctw[data-tn-bouton="etiquette"] .tn .tn-bt{font-size:14px;letter-spacing:.06em;padding:15px 16px 14px;gap:10px}.ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{width:20px}}
 /* Dans une place étroite (formulaire, fenêtre, bulle, barre de filtres), le bouton « étiquette » prend sa taille compacte. */
-.ctw[data-tn-bouton="etiquette"] .tn :is(form,.tn-fenetre,.tn-bulle,.tn-filtres-b,.tn-pt-carte) .tn-bt{font-size:14px;letter-spacing:.06em;padding:15px 16px 14px;gap:10px}
-@media (max-width:359px){.ctw[data-tn-bouton="etiquette"] .tn .tn-bt,.ctw[data-tn-bouton="etiquette"] .tn :is(form,.tn-fenetre,.tn-bulle,.tn-filtres-b,.tn-pt-carte) .tn-bt{font-size:13px;letter-spacing:.03em;padding:14px 12px 13px;gap:8px}.ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{width:16px}}
+.ctw[data-tn-bouton="etiquette"] .tn :is(form,.tn-fenetre,.tn-bulle,.tn-filtres-b) .tn-bt{font-size:14px;letter-spacing:.06em;padding:15px 16px 14px;gap:10px}
+@media (max-width:359px){.ctw[data-tn-bouton="etiquette"] .tn .tn-bt,.ctw[data-tn-bouton="etiquette"] .tn :is(form,.tn-fenetre,.tn-bulle,.tn-filtres-b) .tn-bt{font-size:13px;letter-spacing:.03em;padding:14px 12px 13px;gap:8px}.ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{width:16px}}
 .ctw[data-tn-bouton="ombre"] .tn .tn-bt{background:var(--tn-accent);color:var(--tn-sur-accent);font-weight:800;padding:13px 22px;border:3px solid var(--tn-encre);box-shadow:4px 5px 0 var(--tn-encre)}
 
 /* ── Cadre des photos : la forme vient de la tenue ── */
@@ -455,7 +455,7 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 /* « titre en bas » : en bas à gauche, sur un voile sombre qui monte du bas ; le haut de la photo reste libre */
 .ctw .tn-ouverture[data-tn-c="titre-en-bas"]{justify-content:flex-end;padding:0 20px 36px}
 .ctw .tn-ouverture[data-tn-c="titre-en-bas"]::after{background:linear-gradient(0deg,color-mix(in srgb,var(--tn-encre) 86%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 56%,transparent) 30%,transparent 64%)}
-.ctw .tn-ouverture[data-tn-c="titre-en-bas"] small{font-size:15.5px}
+.ctw .tn-ouverture[data-tn-c="titre-en-bas"] small{font-size:15.5px;color:var(--tn-sur-bouton)}
 .ctw .tn-ouverture[data-tn-c="titre-en-bas"] h1{font-size:calc(42px*var(--tn-k));margin-top:8px}
 .ctw .tn-ouverture[data-tn-c="titre-en-bas"] .tn-bas{margin-top:12px}
 .ctw .tn-ouverture[data-tn-c="titre-en-bas"] .tn-bas p{max-width:330px;color:color-mix(in srgb,var(--tn-sur-bouton) 90%,transparent)}
@@ -609,14 +609,14 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
   .ctw .tn-ouverture[data-tn-c="titre-centre"] h1{font-size:calc(clamp(60px,6.4vw,96px)*var(--tn-k));margin-top:14px}
   .ctw .tn-ouverture[data-tn-c="titre-centre"] .tn-bas{max-width:520px;margin-top:22px}
   .ctw .tn-ouverture[data-tn-c="titre-en-bas"]{padding:0 max(40px,calc(50% - 540px)) 64px}
-  .ctw .tn-ouverture[data-tn-c="titre-en-bas"]::after{background:linear-gradient(0deg,color-mix(in srgb,var(--tn-encre) 84%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 44%,transparent) 32%,transparent 62%),linear-gradient(90deg,color-mix(in srgb,var(--tn-encre) 34%,transparent) 0%,transparent 58%)}
+  .ctw .tn-ouverture[data-tn-c="titre-en-bas"]::after{background:linear-gradient(0deg,color-mix(in srgb,var(--tn-encre) 84%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 52%,transparent) 34%,transparent 66%),linear-gradient(90deg,color-mix(in srgb,var(--tn-encre) 34%,transparent) 0%,transparent 58%)}
   .ctw .tn-ouverture[data-tn-c="titre-en-bas"] h1{font-size:calc(clamp(52px,5.2vw,80px)*var(--tn-k));max-width:760px;margin-top:10px}
   .ctw .tn-ouverture[data-tn-c="titre-en-bas"] .tn-bas{margin-top:18px}
   .ctw .tn-ouverture[data-tn-c="titre-en-bas"] .tn-bas p{max-width:440px}
   .ctw .tn-ouverture[data-tn-c="titre-en-bas"] .tn-bt{margin-top:28px}
   .ctw .tn-ouverture[data-tn-c="titre-massif"]{padding:30px max(40px,calc(50% - 540px)) 46px}
   .ctw .tn-ouverture[data-tn-c="titre-massif"] h1{font-size:calc(clamp(104px,13vw,190px)*var(--tn-k));line-height:.86}
-  .ctw .tn-ouverture[data-tn-c="titre-massif"] .tn-bas{display:flex;justify-content:space-between;align-items:flex-end;gap:48px;margin-top:26px}
+  .ctw .tn-ouverture[data-tn-c="titre-massif"] .tn-bas{display:flex;justify-content:space-between;align-items:flex-end;gap:48px;margin-top:40px}
   .ctw .tn-ouverture[data-tn-c="titre-massif"] .tn-bas p{max-width:480px}
   .ctw .tn-ouverture[data-tn-c="titre-massif"] .tn-bt{flex:none;margin-top:0}
   .ctw .tn-ouverture[data-tn-c="bandeau"]{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
@@ -841,6 +841,8 @@ html[data-po-barre="1"] .ctw:has(.tb-pg:not([hidden]) .tn-barre) .tn-pied{paddin
 .ctw[data-tn-cadre="penche"] .tn-bande[data-tn-c="encadree"]{padding-bottom:18px}
 /* ── Grande photo et sa phrase : le haut de la photo assez sombre pour que la phrase se lise sur une photo claire ── */
 .ctw .tn-emotion::after{background:linear-gradient(180deg,color-mix(in srgb,var(--tn-encre) 76%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 52%,transparent) 34%,transparent 62%)}
+/* Une police de titres large met la phrase sur quatre lignes : le voile descend avec elle (tour des familles, 18 novembre 2026). */
+@media (max-width:759px){.ctw .tn-emotion h2{right:28px}.ctw .tn-emotion::after{background:linear-gradient(180deg,color-mix(in srgb,var(--tn-encre) 76%,transparent) 0%,color-mix(in srgb,var(--tn-encre) 56%,transparent) 40%,transparent 72%)}}
 /* ── Ouvertures ── */
 /* « dans la photo » : le titre reste posé dans la photo, mais c'est la photo qui grandit avec lui (un titre long ne
    descend plus sur la phrase et le bouton). */

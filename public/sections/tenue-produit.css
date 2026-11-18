@@ -1028,3 +1028,5 @@
 @media (min-width:760px){
   .ctw .tn-composition[data-tn-c="bande"] li:has(>.tn-ph-manque):not(:only-child){min-height:400px;padding:22px 20px}
 }
+/* Une police de titres aux lettres hautes : la note du sceau ne touche jamais la ligne qui la suit (tour des familles, 18 novembre 2026). */
+.ctw .tn-grade .tn-sceau b{line-height:1.16}

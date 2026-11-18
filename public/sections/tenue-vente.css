@@ -888,3 +888,5 @@
   .ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-vers [data-tn-produit-nom][data-tn-long]{display:none}
   .ctw .tn-entete-arrivee:not([data-tn-c="nom-au-centre"]) .tn-v-vers:has([data-tn-long]){flex:none;min-width:0}
 }
+/* Une police de titres aux lettres hautes : le chiffre du macaron ne touche pas sa légende (tour des familles, 18 novembre 2026). */
+.ctw .tn-ouverture-vente .tn-v-macaron b{line-height:1.14}

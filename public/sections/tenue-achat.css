@@ -1516,3 +1516,4 @@
 }
 /* Bouton « étiquette » (capitales espacées) dans la vente directe : sur un téléphone, il reste à deux lignes (17 novembre 2026). */
 @media (max-width:480px){.ctw[data-tn-bouton="etiquette"] .tn-achat[data-tn-c="vente-directe"]>:is(.tn-bt,form>.tn-bt){font-size:14px;padding:17px 14px}}
+.ctw .tn-grade[data-tn-c="bandeau"] .tn-sceau b{line-height:1.1}

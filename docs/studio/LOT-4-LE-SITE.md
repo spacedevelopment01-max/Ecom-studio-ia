@@ -494,3 +494,88 @@ propriétaire a vue, il faudra le revoir sur les prochains vrais sites ; pour in
 encore en cours, Bécane contre Vasco tombent à 34,0 : différents) ; le temps réel sur le serveur (environ 8
 secondes par capture ici ; après un changement de l'allure de la bibliothèque, les empreintes des sites comparés sont
 refaites à la création suivante : jusqu'à 42 sites, quelques minutes de plus) ; le jugement du propriétaire sur les cas « différents » fabriqués pour l'essai.
+
+## Signatures des familles, réglages des sections, signe de la marque (17 novembre 2026)
+
+**La demande du propriétaire**, devant les deux premiers sites de SINA (Bécane, famille gourmande ; Atelier Vasco,
+famille épurée) : « les thèmes entre les deux marques sont très identiques ». Le même site rendu dans cinq allures se
+reconnaissait toujours : même fond crème du haut en bas, mêmes cadres droits, même rythme ; presque toutes les familles
+avaient le cadre « droit » et le fond « uni ». Il a validé trois chantiers (« Fait les 5 ») ; puis, pour la planche :
+« je veux surtout voir un type de thème avec tous les réglages différents dans le type ».
+
+**Ce qui est construit** (`custom-theme/signatures.ts`, feuille `public/sections/tenue-familles.css`) :
+
+- **Les réglages d'une section** (point 3), en plus de sa disposition : son **fond** (clair, doux, sombre, couleur de la
+  marque), son **alignement** (titre à gauche ou centré) et la **taille de son titre** (normal ou grand). Choisis par le
+  concepteur (champ `reglages` de chaque section), rendus par attributs, contrôlés. Le fond redéfinit les couleurs de la
+  tenue SUR la section, calculées lisibles par le Studio (contraste de 4,5 au moins entre le texte et son fond, quelle que
+  soit la palette) : aucune des 165 pièces n'a été réécrite. 116 pièces prennent un fond, 79 un alignement et une taille
+  de titre ; la coque, l'ouverture, le bloc d'achat, les pages pratiques et les dispositions déjà sombres gardent le leur.
+  Une même pièce dans une même disposition a ainsi jusqu'à seize allures.
+- **La signature de chaque famille** (point 2), d'après ses descriptions : un rythme de fonds propre à la famille et un
+  dessin propre, posé par le Studio sur tout le site (`data-tn-famille`) :
+  - Maison chaleureuse : des panneaux de couleur chaude aux grands coins ronds qui alternent avec le clair, photos
+    arrondies, beaucoup d'air, titres centrés ;
+  - Épuré et éditorial : fond presque blanc du haut en bas, filets fins entre les parties, petits textes en capitales
+    espacées, jamais de fond de couleur ;
+  - Naturel et sincère : fonds teintés de la couleur de la marque qui alternent, photos sur un passe-partout coloré,
+    petits textes en étiquettes ;
+  - Gourmand et joyeux : chaque partie est un bloc posé comme un objet (bord épais, coins ronds, ombre décalée), les fonds
+    changent à chaque bloc, dont la couleur franche de la marque ; sur un très petit téléphone (moins de 360 px), le bloc
+    devient une bande bordée pleine largeur, pour garder aux textes toute leur place ;
+  - Confiance et savoir-faire : sections sombres qui alternent avec le clair, un trait épais de la couleur d'action
+    au-dessus de chaque titre, un bouton fort ;
+  - Spectaculaire : surtout sombre, titres immenses en capitales, bandes pleines de la couleur vive, fort contraste.
+- **Le signe de la marque** (point 4). Avant, le signe n'était qu'une phrase dite au client : il n'apparaissait nulle
+  part sur le site. Maintenant le concepteur choisit sa forme (étiquette ronde, tampon, ligne entre deux filets, couture,
+  ruban) et son texte (28 signes au plus, tiré du produit ou du métier) ; le Studio le pose dans le grand titre de
+  l'ouverture, d'un moment du milieu et de l'appel final de l'accueil, et à la fin de chaque page importante (jamais sur
+  le panier, le compte, les mentions). Aucun dessin : une forme simple et du texte.
+
+**Sans porte de sortie** : le concepteur reçoit les réglages, les six signatures et le signe ; le contrôle du Studio,
+sans IA, rend les écarts à sa seule reprise (fond interdit dans la famille, deux fonds teintés pareils à la suite,
+accueil sans le rythme de sa famille, signe incomplet) ; puis le Studio corrige seul, en dernier, après tout ce qui
+déplace des pièces : il garde les choix qui tiennent dans la famille et pose le reste (un signe sans forme prend celle
+de la famille, sans texte le nom de la marque). Ces écarts ne bloquent jamais une autre correction sans IA. Un site
+déjà enregistré, sans réglages, prend quand même la signature de sa famille au rendu. Tout part aussi dans Shopify
+(attributs, couleurs, feuille, signe).
+
+**La variété entre les sites** : je n'ai pas compté les réglages comme une disposition différente. Le propriétaire
+reprochait « la même disposition » d'une pièce entre deux sites ; une même mise en page dans une autre couleur resterait
+la même disposition, et la compter à part aurait affaibli la règle. Les réglages s'ajoutent à la règle : avec elle, deux
+sites n'ont déjà ni les mêmes pièces ni les mêmes dispositions ; les réglages changent en plus l'allure de chaque pièce.
+Le contrôle par l'image de l'accueil (construit en même temps, enregistrement 1caa0157) mesure l'effet : avec les
+signatures, Bécane contre Vasco tombe à 34 de ressemblance (le seuil est 48 ; 48,8 avant).
+
+**Vérifié en image, sans IA** (banc du tour des sections, étendu : six tenues « famille-… » aux couleurs et polices
+inventées, l'option `--fond`, et `scripts/tour-des-sections/familles.ts` pour les planches) :
+
+| Tour | Rendus | Bloquants | Importants |
+|---|---|---|---|
+| Chaque pièce qui prend un fond, dans les fonds doux, sombre et de la marque (deux palettes, 390 et 1 280 px) | 3 216 | 12 au premier passage → 0 (pièces mesurées gardées dans leur fond) | 6 → 0 |
+| Toutes les pièces dans les six familles (contenu difficile, 320 et 1 280 px ; puis vrai et difficile à 390 px ; puis gourmand, trois contenus, 320 px) | 4 512 + 5 400 + 1 300 | 3 + 10 → 0 | 136 + 4 → 0 (beaucoup dus à des polices plus larges ou plus hautes que celles du banc d'avant) |
+| Les trois pages en situation dans les six familles et les trois tenues de base (vrai et difficile, 320, 390 et 1 280 px) | 162 | 0 | 0 |
+| Le tour de base complet (trois tenues, quatre contenus, 320 et 1 280 px), pour vérifier que rien n'a reculé | 8 478 | 0 | 0 |
+| Les pièces retouchées après ce tour de base, dans les neuf tenues, aux trois largeurs | environ 1 500 | 0 | 0 |
+
+Mineurs qui restent (dits, jamais montrés comme bloquants) : un petit texte posé sur une photo dont le contraste descend
+par endroits sous 3, deux sections voisines de même fond dans la page d'essai, un mot inventé de 24 lettres coupé.
+
+Corrigé en chemin, pour tous les sites (pas seulement les familles) : le nom de l'en-tête rogné en hauteur avec une
+police haute (Bodoni, Oswald) ; un grand chiffre ou une note qui touchait sa légende avec ces polices ; la couleur de la
+marque écrite en texte, assombrie sans changer de teinte quand elle se lit mal (entre 3 et 4,5 de contraste) ; le voile
+de la grande photo à phrase, qui descend avec une phrase sur quatre lignes ; le bouton « étiquette » sur trois ou quatre lignes sur téléphone (il n'était pas rendu
+par le banc) ; un nom de carte de huit lettres coupé sans trait d'union sous 360 px ; un titre d'ouverture très long
+sur six lignes ; les chiffres d'un bien qui se recouvraient ; le petit texte de l'ouverture « titre en bas » sur
+ordinateur, plus lisible.
+
+Planches montrées au propriétaire : une famille (gourmand et joyeux, celle qui a le plus de choix permis) dans six
+combinaisons de réglages, même marque, même contenu, sur téléphone et sur ordinateur ; les six familles côte à côte.
+Chacune regardée à l'œil.
+
+**Pas vérifié** : la vraie IA (le concepteur n'a pas encore choisi lui-même ses réglages et son signe ; l'essai de
+création le montrera) ; Safari sur iPhone (le banc n'a que Chromium) ; la mise en boutique Shopify en vrai (le thème
+exporté porte les attributs, la feuille et le signe, essais automatiques seulement ; dans Shopify chaque section a son
+propre cadre, donc le filet entre deux sections sombres du spectaculaire n'y est pas) ; les survols et les animations.
+**Pas fait** : un réglage de la taille de la photo (il dépend trop du dessin de chaque pièce pour être général ; les
+trois réglages faits valent pour toutes les pièces qui ont un fond clair et une tête).

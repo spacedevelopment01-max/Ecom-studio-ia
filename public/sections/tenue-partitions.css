@@ -622,3 +622,6 @@
   .ctw .tn-privatisation[data-tn-photo-manque="fond"]:not([data-tn-c="cote-a-cote"]):not([data-tn-c="sombre"]) .tn-ph{height:auto;min-height:0}
   .ctw .tn-privatisation[data-tn-photo-manque="fond"]:not([data-tn-c="cote-a-cote"]):not([data-tn-c="sombre"]) .tn-pt-corps{justify-self:center;width:min(620px,calc(100% - 80px));margin:44px 0}
 }
+/* Le billet de l'offre de première visite, bouton « étiquette » ou très petit téléphone : le libellé tient sur deux lignes (tour des familles, 18 novembre 2026). */
+.ctw[data-tn-bouton="etiquette"] .tn-offre-visite .tn-pt-carte .tn-bt{font-size:14px;letter-spacing:.06em;padding:15px 16px 14px;gap:10px}
+@media (max-width:359px){.ctw .tn-offre-visite .tn-pt-carte .tn-bt,.ctw[data-tn-bouton="etiquette"] .tn-offre-visite .tn-pt-carte .tn-bt{padding-left:12px;padding-right:14px;letter-spacing:0;font-size:13px}}

@@ -1049,3 +1049,5 @@
 .ctw .tn-suivi .tn-champ+.tn-champ:not(#tn){margin-top:12px}
 /* Manifeste : le titre se répartit en lignes égales (un mot seul en bout de ligne, « thé. », faisait une ligne pauvre). */
 .ctw .tn-manifeste h2{text-wrap:balance}
+/* Une police de titres aux lettres hautes (Oswald, Bodoni…) : le grand chiffre garde l'interligne qui le sépare de sa légende (tour des familles, 18 novembre 2026). */
+.ctw .tn-chiffres li b{line-height:1.16}
