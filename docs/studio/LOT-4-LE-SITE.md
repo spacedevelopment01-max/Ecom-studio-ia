@@ -669,3 +669,22 @@ coupure du Studio entier, et après une coupure du travailleur seul). Une créat
 étape faite, sans repayer ce qui est fait (`tests/taches-fond-robustesse.test.ts`) ; un appel payant coupé en plein
 milieu n'est jamais relancé d'office (règle du propriétaire) : la création s'arrête avec son explication et se reprend
 à la demande. Le gardien lui-même s'arrête avec la session de travail : il se relance au début de chaque essai.
+
+## L'audit des appels payés (18 novembre 2026, sans IA)
+
+Le propriétaire, après un troisième échec payé : « corrige tout ce genre de défauts avant de relancer ». Relevé de tous
+les appels à l'IA des essais réels depuis le 16 novembre (21 sortes d'appels, plus de 600 appels) et de toutes les tâches
+de fond.
+
+| Ce qui a été relevé | Mesuré | Corrigé |
+|---|---|---|
+| Conception du site coupée avant la fin | 6 fois à 32 000 jetons ; réponses de 30 000 à 46 000 | sortie à 64 000 ; coût prévu 1 € (0,80 avant) |
+| Plan des textes coupé avant la fin | 2 fois à 18 000 ; réponse la plus longue 24 107 | sortie à 36 000 ; plafond 0,90 € (0,25 avant), coût prévu 0,45 € (0,09 avant) |
+| Relecture des photos : plafond presque atteint | jusqu'à 0,198 € pour 0,20 € ; sortie 5 836 pour 8 000 | plafond 0,30 €, sortie 12 000, coût prévu 0,18 € (0,06 avant) |
+| Relecture des textes : coût prévu trop bas | 0,18 € en moyenne pour 0,09 € prévu | coût prévu 0,18 € |
+| Écriture d'une section : plafond juste | jusqu'à 0,14 € pour 0,15 € | plafond 0,20 € |
+| Toutes les autres réponses | la plus longue au tiers de sa place | rien à changer |
+| Tâches de fond en échec | 3, toutes des créations de site | causes déjà corrigées (photo du client, budget du mois, réponse coupée) |
+
+Devis d'une boutique de trois produits après l'audit : **11,56 € probables, 17,34 € au plus** (les coûts prévus suivent
+désormais les mesures). Les créations mesurées : 5,30 €, 7,25 €, 11,98 € et 9,79 €.

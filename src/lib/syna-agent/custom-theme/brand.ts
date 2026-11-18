@@ -53,7 +53,7 @@ export type ImagesMode = "sina" | "client" | "mix";
 export type CustomBrandPayload = { projectId: string; capMicro: number; conversationId?: string | null; photos?: boolean; newPhotos?: boolean; /** Pages dont les photos sont créées maintenant (null : toutes). */ pages?: string[] | null; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string | null };
 
 /** Plafond d'un appel d'écriture d'une section (même modèle que les textes du site). */
-export const SECTION_TEXT_CAP_MICRO = 150_000;
+export const SECTION_TEXT_CAP_MICRO = 200_000; // mesuré jusqu'à 0,14 € (17 et 18 novembre 2026) : marge rendue
 /**
  * Rédacteur des textes du site (réglage d'administration « site.copy_model », ex. « openai:gpt-5.6-sol ») : demande du
  * propriétaire du 9 novembre 2026 d'essayer OpenAI. Par défaut le modèle des textes du Studio (Claude). Un modèle
@@ -65,8 +65,13 @@ export function siteCopyModel(): { provider: "anthropic" | "openai" | "google"; 
   return m ? { provider: m[1] as "anthropic" | "openai" | "google", model: m[2] } : COPY_MODEL;
 }
 
-/** Plafond du plan des textes de tout le site (un appel par montage). */
-export const SITE_PLAN_CAP_MICRO = 250_000;
+/**
+ * Plafond du plan des textes de tout le site (un appel par montage). Mesuré aux essais réels des 17 et 18 novembre 2026 :
+ * de 0,30 à 0,55 € (plafond d'avant : 0,25 €), et deux réponses coupées à 18 000 jetons (sortie maximale relevée à
+ * 24 107) : la sortie passe à 36 000 jetons, le plafond à ce qu'elle coûterait entière.
+ */
+export const SITE_PLAN_CAP_MICRO = 900_000;
+export const SITE_PLAN_OUTPUT_TOKENS = 36_000;
 const RATIOS = ["1:1", "4:5", "2:3", "16:9", "9:16"] as const;
 /**
  * Règle du propriétaire : jamais de personne dans une image sans photo fournie par le client ou accord écrit. Essai réel
@@ -503,7 +508,7 @@ export function knownFacts(p: Pick<Project, "id">): KnownFacts {
 
 /** Textes visibles d'une section (titres, boutons, liens), pour montrer sa forme au plan sans tout son HTML. */
 /** Plafond de la relecture des descriptions de photos par la directrice artistique (un appel pour tout le site). */
-export const PHOTO_REVIEW_CAP_MICRO = 200_000;
+export const PHOTO_REVIEW_CAP_MICRO = 300_000; // mesuré jusqu'à 0,198 € (17 et 18 novembre 2026) : marge rendue
 /** Sections dont les photos sont redécrites après sa relecture, au plus ; le reste est dit dans le compte rendu. */
 export const MAX_PHOTO_FIXES = 5;
 /** En dessous, pas de relecture : une photo seule ne peut ni se répéter ni déséquilibrer le site. */
@@ -892,7 +897,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text-plan`;
         return customBrandDeps.plan ? SitePlanSchema.parse(await customBrandDeps.plan(prompt, usageKey))
           : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
-              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SITE_PLAN_SYSTEM, "redacteur"), promptKey: "syna-custom-plan-2", prompt, maxTokens: 18000, maxOutputTokens: 32000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
+              llmJson({ task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SITE_PLAN_SYSTEM, "redacteur"), promptKey: "syna-custom-plan-2", prompt, maxTokens: SITE_PLAN_OUTPUT_TOKENS, maxOutputTokens: SITE_PLAN_OUTPUT_TOKENS * 1.5, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
       });
     } catch (e) { report.problems.push(`plan des textes non fait (${(e as Error).message.slice(0, 120)}) : sections écrites sans plan`); }
     // Référencement de chaque page, gardé dans le thème (titre de l'onglet et description pour Google).
@@ -1155,7 +1160,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
             const usageKey = `${ctx.job.id}:photo-review`;
             return PhotoReviewSchema.parse(customBrandDeps.photoReview ? await customBrandDeps.photoReview(prompt, usageKey)
               : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo-review", costCapMicro: a.capMicro }, () =>
-                  llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_REVIEW_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-review-2", prompt, maxTokens: 7000, maxOutputTokens: 14000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewWireSchema, { strict: true })));
+                  llmJson({ task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_REVIEW_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-review-2", prompt, maxTokens: 12000, maxOutputTokens: 20000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewWireSchema, { strict: true })));
           });
           // Seules les photos réellement relues comptent (une section ou une source inconnue est ignorée).
           const asked = review.photos.filter((f, i, list) => seen.some((x) => x.y.s.uid === f.uid && x.photos.some((b) => b.find === f.find)) && list.findIndex((g) => g.uid === f.uid && g.find === f.find) === i);

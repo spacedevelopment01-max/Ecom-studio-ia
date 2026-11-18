@@ -770,12 +770,12 @@ export function recentThemeSections(projectId: string): string[][] {
 
 /** Coût probable d'une écriture de section (mesuré sur les textes du site : environ 0,06 € avec le modèle des textes). */
 export const SECTION_TEXT_TYPICAL_MICRO = 60_000;
-export const SITE_PLAN_TYPICAL_MICRO = 90_000;
+export const SITE_PLAN_TYPICAL_MICRO = 450_000; // mesuré : 0,42 € en moyenne (17 et 18 novembre 2026)
 /** Relecture de tous les textes par le directeur de création : son coût habituel, et deux sections reprises en moyenne. */
-export const COPY_REVIEW_TYPICAL_MICRO = 90_000;
+export const COPY_REVIEW_TYPICAL_MICRO = 180_000; // mesuré : 0,18 € en moyenne
 export const COPY_FIXES_TYPICAL = 2;
 /** Relecture de toutes les photos prévues par la directrice artistique : son coût habituel, et une section revue en moyenne. */
-export const PHOTO_REVIEW_TYPICAL_MICRO = 60_000;
+export const PHOTO_REVIEW_TYPICAL_MICRO = 180_000; // mesuré : 0,18 € en moyenne
 export const PHOTO_FIX_TYPICAL_MICRO = 30_000;
 export type BuildArgs = { photos?: boolean; newPhotos?: boolean; images?: ImagesMode; clientAssets?: string[]; rewrite?: boolean; consigne?: string; pages?: string[] };
 /** Thème à monter à la marque : celui que le Studio a conçu de A à Z (custom.design), toutes ses pages comprises. */
