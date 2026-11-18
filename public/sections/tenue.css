@@ -52,12 +52,18 @@
 .ctw[data-tn-bouton="droit"] .tn .tn-bt{border-radius:0}
 .ctw[data-tn-bouton="etiquette"] .tn .tn-bt{background:var(--tn-fond);color:var(--tn-encre);font-weight:800;font-size:17px;letter-spacing:.14em;text-transform:uppercase;padding:17px 22px 16px;border-radius:3px;outline:1.5px dashed color-mix(in srgb,var(--tn-encre) 60%,transparent);outline-offset:-6px;box-shadow:0 1px 0 rgba(0,0,0,.35),0 8px 18px rgba(0,0,0,.28);display:inline-flex;gap:14px;align-items:center}
 .ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{content:"";width:26px;height:14px;flex:none;background:var(--tn-encre);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 14'%3E%3Cpath d='M0 7h22M16 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='2.6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 14'%3E%3Cpath d='M0 7h22M16 1l7 6-7 6' fill='none' stroke='%23000' stroke-width='2.6'/%3E%3C/svg%3E") center/contain no-repeat}
+/* Très petit téléphone (moins de 360 px), polices larges (tour des familles, 18 novembre 2026) : un nom de carte, une
+   ligne de tableau ou une légende coupe un mot de huit lettres avec son trait d'union plutôt qu'au milieu sans trait. */
+@media (max-width:359px){.ctw .tn :is(b,th,figcaption,strong){hyphenate-limit-chars:8 4 3;-webkit-hyphenate-limit-before:4;-webkit-hyphenate-limit-after:3}}
+/* Sur un très petit téléphone, un bouton posé dans un formulaire ou une carte étroite prend des côtés plus courts : un
+   libellé de six mots tient sur deux lignes, quelle que soit la police de la marque (tour des familles, 18 novembre 2026). */
+@media (max-width:359px){.ctw .tn :is(form,.tn-form,.tn-pt-carte,.tn-boite) .tn-bt{padding-left:14px;padding-right:14px;letter-spacing:0;font-size:15px}}
 /* Bouton « étiquette » sur un téléphone : des capitales plus petites et moins espacées, une flèche plus courte ; un libellé
    de six mots tient sur deux lignes (signatures des familles, 17 novembre 2026). */
 @media (max-width:480px){.ctw[data-tn-bouton="etiquette"] .tn .tn-bt{font-size:14px;letter-spacing:.06em;padding:15px 16px 14px;gap:10px}.ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{width:20px}}
 /* Dans une place étroite (formulaire, fenêtre, bulle, barre de filtres), le bouton « étiquette » prend sa taille compacte. */
 .ctw[data-tn-bouton="etiquette"] .tn :is(form,.tn-fenetre,.tn-bulle,.tn-filtres-b,.tn-pt-carte) .tn-bt{font-size:14px;letter-spacing:.06em;padding:15px 16px 14px;gap:10px}
-@media (max-width:359px){.ctw[data-tn-bouton="etiquette"] .tn .tn-bt{font-size:13px;letter-spacing:.03em;padding:14px 12px 13px;gap:8px}.ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{width:16px}}
+@media (max-width:359px){.ctw[data-tn-bouton="etiquette"] .tn .tn-bt,.ctw[data-tn-bouton="etiquette"] .tn :is(form,.tn-fenetre,.tn-bulle,.tn-filtres-b,.tn-pt-carte) .tn-bt{font-size:13px;letter-spacing:.03em;padding:14px 12px 13px;gap:8px}.ctw[data-tn-bouton="etiquette"] .tn .tn-bt::after{width:16px}}
 .ctw[data-tn-bouton="ombre"] .tn .tn-bt{background:var(--tn-accent);color:var(--tn-sur-accent);font-weight:800;padding:13px 22px;border:3px solid var(--tn-encre);box-shadow:4px 5px 0 var(--tn-encre)}
 
 /* ── Cadre des photos : la forme vient de la tenue ── */

@@ -62,6 +62,8 @@ const ROLES_FIXES = new Set(["en-tête", "pied de page", "recherche", "ouverture
 export const FOND_FIXE: Record<string, FondVu> = {
   // L'échelle d'énergie a ses propres couleurs (de A à G) : sur un fond sombre ou de couleur, ses lettres ne se lisent plus.
   "tn-bien-energie": "clair",
+  // La page de remerciement est une page pratique : elle garde son fond.
+  "tn-merci": "clair",
   // Le ticket en couches : sa troisième couche est peinte d'une teinte qui ne se lit plus sur un fond sombre ou de couleur.
   "tn-prix-explique:couches": "clair",
   // Des bandes déjà pleines (l'encre ou la couleur de la marque) : elles sont elles-mêmes le moment de couleur.

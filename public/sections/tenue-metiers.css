@@ -1137,3 +1137,8 @@
   .ctw .tn-bien-galerie[data-tn-c="affiche"] .tn-photos .tn-ph:nth-child(4):not(#tn){grid-column:7/10;grid-row:3;margin-right:20px}
   .ctw .tn-bien-galerie[data-tn-c="affiche"] .tn-photos .tn-ph:nth-child(5):not(#tn){grid-column:10/13;grid-row:3;margin-left:-20px;margin-right:40px}
 }
+/* Très petit téléphone, titres gras ou en capitales (tour des sections, familles, 18 novembre 2026) : les chiffres clés
+   d'un bien prennent la place qu'il leur faut, plus petits ; un nombre ne se coupe jamais et ne recouvre jamais son voisin. */
+@media (max-width:359px){.ctw:is([data-tn-titres="capitales"],[data-tn-titres="gras"]) .tn-bien-galerie .tn-cles{flex-wrap:wrap}.ctw:is([data-tn-titres="capitales"],[data-tn-titres="gras"]) .tn-bien-galerie .tn-cles li{flex:1 1 40%}.ctw:is([data-tn-titres="capitales"],[data-tn-titres="gras"]) .tn-bien-galerie .tn-cles li:nth-child(odd){padding-left:0;border-left:0}}
+/* Vitrine en étiquettes, très petit téléphone, police de titres large : le nom du pain tient sur sa ligne. */
+@media (max-width:359px){.ctw .tn-vitrine[data-tn-c="etiquettes"] .tn-fournees b{font-size:18px}}

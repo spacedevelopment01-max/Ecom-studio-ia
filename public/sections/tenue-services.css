@@ -1100,3 +1100,6 @@
 /* Avant / après avec une seule photo (l'autre manque) : elle prend toute la largeur, elle ne reste pas dans une demi-colonne */
 .ctw .tn-avant-apres .tn-paire:has(>figure:only-child){grid-template-columns:minmax(0,1fr)}
 .ctw .tn-avant-apres[data-tn-c="incruste"] .tn-paire:has(>figure:only-child){padding-bottom:0}
+/* Très petit téléphone : un titre d'ouverture très long (plus de 64 signes) se réduit encore, quelle que soit la largeur
+   de la police de la marque ; dix mots ne remplissent jamais l'écran (tour des familles, 18 novembre 2026). */
+@media (max-width:359px){.ctw .tn-ouverture-metier h1[data-tn-long="2"]{--tn-k:calc(var(--tn-k0)*.62)}}
