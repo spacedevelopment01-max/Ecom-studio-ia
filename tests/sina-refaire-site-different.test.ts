@@ -24,11 +24,14 @@ describe("refaire un site : il ne ressemble pas à l'ancien", async () => {
   const O = await import("@/lib/syna-agent/custom-theme/ordre");
   const X = await import("@/lib/syna-agent/custom-theme/site-job");
 
-  it("le site refait du 18 novembre, comparé à l'ancien, est refusé par la règle de variété (accueil et site entier)", () => {
+  it("le site refait du 18 novembre, comparé à l'ancien, est refusé par la règle de variété (l'accueil et les dispositions, ce que le propriétaire a accepté)", () => {
     const ancien = { pages: PREMIER, utiles: ["home", "product"], metier: null, ancien: true };
     const gaps = V.varieteSitesGaps({ pages: REFAIT, utiles: ["home", "product"], metier: null }, [ancien]);
     expect(gaps.some((g) => /^accueil :/.test(g)), gaps.join("\n")).toBe(true);
-    expect(gaps.some((g) => /^site entier :/.test(g)), gaps.join("\n")).toBe(true);
+    expect(gaps.some((g) => /^dispositions déjà prises/.test(g)), gaps.join("\n")).toBe(true);
+    // Le quart du site entier ne compte qu'avec les sites des autres clients.
+    expect(gaps.some((g) => /^site entier :/.test(g)), gaps.join("\n")).toBe(false);
+    expect(V.varieteSitesGaps({ pages: REFAIT, utiles: ["home", "product"], metier: null }, [{ ...ancien, ancien: false }]).some((g) => /^site entier :/.test(g))).toBe(true);
   });
 
   it("le concepteur voit le site actuel du client, nommé comme tel", () => {

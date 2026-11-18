@@ -115,7 +115,11 @@ export function varieteSitesGaps(mine: SiteVu, sites: SiteVu[], o: Options = {})
     // les remplacer, et elles répondent aux mêmes questions pour le même client (essai réel du 18 novembre 2026 : une
     // conception refusée pour ces seules quatre pièces). L'accueil (au plus deux) et les dispositions restent contrôlés.
     const leveDoutes = (x: string) => !!tenueSection(x)?.ordre?.traits?.some((tr) => tr === "doutes" || tr === "livraison");
-    for (const s of sites) { const theirs = piecesDe(s, s.utiles); const c = [...u].filter((x) => theirs.has(x) && !(s.ancien && leveDoutes(x))); if (c.length > pis.length) { pis = c; pisSite = s; } }
+    // Avec le site actuel du même client, le quart du site entier ne compte pas (ce que le propriétaire a accepté le
+    // 18 novembre 2026 : « au plus 2 sections en commun sur l'accueil, et jamais la même disposition ») : les fiches d'une
+    // même boutique partagent leurs pièces d'achat. Essai réel : deux conceptions payées refusées pour ce seul quart.
+    void leveDoutes;
+    for (const s of sites) { if (s.ancien) continue; const theirs = piecesDe(s, s.utiles); const c = [...u].filter((x) => theirs.has(x)); if (c.length > pis.length) { pis = c; pisSite = s; } }
     const max = Math.floor(u.size * SITE_COMMUNES_PART);
     if (pis.length > max) out.push(`site entier : ${pis.length} pièces sur ${u.size} en commun avec ${quel(pisSite)} (${pis.join(", ")}) ; au plus ${max} (un quart) : remplace-en ${pis.length - max} par d'autres pièces de la bibliothèque qui servent le même moment`);
   }
