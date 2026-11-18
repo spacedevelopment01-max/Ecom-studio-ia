@@ -104,7 +104,11 @@ export function varieteSitesGaps(mine: SiteVu, sites: SiteVu[], o: Options = {})
   // Le site actuel du même client (qu'il fait refaire) se nomme comme tel : SINA comprend ce qu'elle doit quitter.
   const quel = (s: SiteVu | undefined) => (s?.ancien ? "le site actuel du client, qu'il fait refaire" : "un site déjà monté pour une autre marque");
   let pire: string[] = [], pireSite: SiteVu | undefined;
-  for (const s of sites) { const c = [...h].filter((x) => accueil(s).has(x)); if (c.length > pire.length) { pire = c; pireSite = s; } }
+  // Avec le site actuel du même client, les pièces qui lèvent les derniers doutes (questions, garantie, livraison) ne
+  // comptent pas : chaque page doit les avoir près de la fin (règle d'or 8) et le Studio ne peut pas les remplacer
+  // (essai réel du 18 novembre 2026 : accueil refusé pour ces pièces obligatoires).
+  const pratique = (s: SiteVu, x: string) => !!s.ancien && !!tenueSection(x)?.ordre?.traits?.some((tr) => tr === "doutes" || tr === "livraison");
+  for (const s of sites) { const c = [...h].filter((x) => accueil(s).has(x) && !pratique(s, x)); if (c.length > pire.length) { pire = c; pireSite = s; } }
   if (pire.length > ACCUEIL_COMMUNES_MAX) out.push(`accueil : ${pire.length} pièces en commun avec l'accueil ${pireSite?.ancien ? "du site actuel du client, qu'il fait refaire" : "d'un site déjà monté pour une autre marque"} (${pire.join(", ")}) ; au plus ${ACCUEIL_COMMUNES_MAX} : remplace-en ${pire.length - ACCUEIL_COMMUNES_MAX} par d'autres pièces de la bibliothèque qui servent le même moment (règle du propriétaire : la variété d'un client à l'autre)`);
   // ── le site entier : au plus un quart de pièces en commun
   const u = new Set([...piecesDe(mine, mine.utiles)].filter(garde));

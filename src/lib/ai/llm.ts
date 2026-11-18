@@ -13,7 +13,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
-import { balance, DemandeChangee, EUR, existingOperation, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
+import { balance, DemandeChangee, EUR, existingOperation, reponseDejaPayee, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
 import {AgentBoundStop,beforeAgentTextAttempt} from './request-bounds';
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
@@ -397,6 +397,11 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   let previous: ReturnType<typeof existingOperation>;
   try { previous = existingOperation(call.userId, operation); }
   catch (e) {
+    if (e instanceof DemandeChangee && process.env.STUDIO_RECUS_SEULEMENT === "1" && process.env.STUDIO_REJEU_ANCIENNES === "1") {
+      // Diagnostic sur une copie : la réponse d'avant, pour voir la suite de la tâche sans rien payer.
+      const old = reponseDejaPayee(call.userId, operation);
+      if (old) { console.error(`[rejeu] réponse d'avant reprise : ${call.promptKey ?? "?"}`); return JSON.parse(old) as RawResult; }
+    }
     if (!(e instanceof DemandeChangee) || !call.nouvelleSiChangee || !operation.usageKey) throw e;
     operation.usageKey = `${operation.usageKey}~${String(operation.requestHash).slice(0, 12)}`;
     previous = existingOperation(call.userId, operation);
@@ -405,7 +410,10 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     if (previous.result) return JSON.parse(previous.result) as RawResult;
     operationPending();
   }
-  if (call.acquiredOnly) throw new UserFacingError(L("Le reçu acquis n’est pas disponible. Aucun nouvel appel envoyé.", "The acquired receipt is unavailable. No new request sent."));
+  // Rejouer une tâche sans rien payer (diagnostic sur une copie, 18 novembre 2026) : seules les réponses déjà payées
+  // sont rendues ; tout appel nouveau est refusé avant l'envoi.
+  if (process.env.STUDIO_RECUS_SEULEMENT === "1" && !call.acquiredOnly) console.error(`[reçus seulement] appel non acquis : ${call.promptKey ?? "?"} · ${operation.usageKey ?? "sans clé"}`);
+  if (call.acquiredOnly || process.env.STUDIO_RECUS_SEULEMENT === "1") throw new UserFacingError(L("Le reçu acquis n’est pas disponible. Aucun nouvel appel envoyé.", "The acquired receipt is unavailable. No new request sent."));
   if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
   const decision = routeLlm(call);
   if (call.expectedRoute && (decision.provider !== call.expectedRoute.provider || decision.model !== call.expectedRoute.model || (decision.effort ?? '') !== (call.expectedRoute.effort ?? '')))

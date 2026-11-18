@@ -32,4 +32,12 @@ describe("reprise d'une tâche : une étape changée devient une nouvelle action
       expect((src.match(/llmJson\(\{ nouvelleSiChangee: true, /g) ?? []).length, f).toBe(appels);
     }
   });
+
+  it("le numéro de variation de la conception suit le début de la tâche, pas l'heure de la reprise ; le rejeu sans paiement existe", () => {
+    const tools = fs.readFileSync("src/lib/syna-agent/custom-theme/tools.ts", "utf8");
+    expect(tools).toContain('const seed = `${p.id}:${mode.kind === "concept" ? mode.label : "site"}:${debut >> 22}`;');
+    expect(tools).not.toContain("${Date.now() >> 22}");
+    const llm = fs.readFileSync("src/lib/ai/llm.ts", "utf8");
+    expect(llm).toContain('if (call.acquiredOnly || process.env.STUDIO_RECUS_SEULEMENT === "1") throw new UserFacingError(');
+  });
 });

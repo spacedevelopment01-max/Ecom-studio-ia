@@ -17,7 +17,7 @@
 import { z } from "zod";
 import { riskCount } from "./risk";
 import { L } from "../../i18n-server";
-import { all } from "../../db";
+import { all, one } from "../../db";
 import { assetUrl, getAsset, saveAsset } from "../../library";
 import { aiSiteImageHd, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
 import { budgetPctText } from "../../ai/budget-pct";
@@ -321,7 +321,10 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   const counts = new Map<string, number>();
   for (const r of recent) for (const id of new Set(r)) counts.set(id, (counts.get(id) ?? 0) + 1);
   const overused = [...counts].filter(([, n]) => n >= 2 || recent.length === 1).sort((x, y) => y[1] - x[1]).slice(0, 20).map(([id]) => id);
-  const seed = `${p.id}:${mode.kind === "concept" ? mode.label : "site"}:${Date.now() >> 22}`;
+  // Le numéro de variation suit l'heure du DÉBUT de la tâche, jamais l'heure courante : une reprise plus d'une heure
+  // après envoyait sinon une demande différente, donc repayée (essai réel du 18 novembre 2026).
+  const debut = (() => { if (!a.jobId) return Date.now(); try { return one<{ created_at: number }>("SELECT created_at FROM jobs WHERE id=?", a.jobId)?.created_at ?? Date.now(); } catch { return Date.now(); } })();
+  const seed = `${p.id}:${mode.kind === "concept" ? mode.label : "site"}:${debut >> 22}`;
   // La documentaliste (sans IA) : références proches et lointaines, constats du secteur, sections propres au secteur.
   const refs = (() => { try { return referencesBrief({ offer: offerWords(ctx), business: site.business, seed }); } catch { return { sector: null, near: 0, far: 0, text: "" }; } })();
   // Cartes d'identité des thèmes déjà montés pour d'autres marques : aucun client ne reçoit le site d'un autre.

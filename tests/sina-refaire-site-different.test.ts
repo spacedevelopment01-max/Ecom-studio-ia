@@ -111,3 +111,13 @@ describe("face au site actuel du client, les pièces qui lèvent les derniers do
     expect(V.varieteSitesGaps(neuf, [autre]).some((g) => /^site entier :/.test(g))).toBe(true);
   });
 });
+
+describe("face au site actuel du client, l'accueil ne compte pas les pièces qui lèvent les derniers doutes", async () => {
+  const V = await import("@/lib/syna-agent/custom-theme/variete-sites");
+  it("essai réel du 18 novembre 2026 : quatre pièces communes dont la garantie et les questions passent ; avec un autre client, elles comptent", () => {
+    const ancien = { pages: { home: ["tn-ouverture:dans-la-photo", "tn-produits:grille", "tn-atouts:coches", "tn-garantie:bande", "tn-questions:filets"] }, utiles: ["home"], metier: null, ancien: true };
+    const neuf = { pages: { home: ["tn-ouverture:titre-en-bas", "tn-produits:vedette", "tn-atouts:ronds", "tn-garantie:sceau", "tn-questions:cartes", "tn-equation:carte"] }, utiles: ["home"], metier: null };
+    expect(V.varieteSitesGaps(neuf, [ancien]).some((g) => /^accueil :/.test(g))).toBe(false);
+    expect(V.varieteSitesGaps(neuf, [{ ...ancien, ancien: false }]).some((g) => /^accueil :/.test(g))).toBe(true);
+  });
+});

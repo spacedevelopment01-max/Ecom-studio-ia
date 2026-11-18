@@ -378,6 +378,12 @@ export function requestHash(value: unknown): string {
   return createHash("sha256").update(JSON.stringify(normalize(value))).digest("hex");
 }
 
+/** Diagnostic seulement (rejeu sur une copie, STUDIO_REJEU_ANCIENNES=1) : la réponse déjà payée sous cette clé, même si la demande a changé. */
+export function reponseDejaPayee(user: string, meta: Pick<ReservationMeta, "task" | "projectId" | "usageKey">): string | null {
+  const key = operationKey(user, meta);
+  if (!key) return null;
+  return one<{ result: string | null }>("SELECT result FROM ai_reservations WHERE operation_key=? AND status='settled'", key)?.result ?? null;
+}
 /** Une demande déjà payée sous cette clé, mais dont le contenu a changé depuis : jamais rendue ni repayée sous la même clé. */
 export class DemandeChangee extends UserFacingError {}
 /** La réservation native est aussi le reçu de l'opération : aucune seconde requête payante sous la même clé. */
