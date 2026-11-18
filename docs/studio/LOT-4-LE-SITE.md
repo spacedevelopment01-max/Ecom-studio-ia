@@ -579,3 +579,31 @@ exporté porte les attributs, la feuille et le signe, essais automatiques seulem
 propre cadre, donc le filet entre deux sections sombres du spectaculaire n'y est pas) ; les survols et les animations.
 **Pas fait** : un réglage de la taille de la photo (il dépend trop du dessin de chaque pièce pour être général ; les
 trois réglages faits valent pour toutes les pièces qui ont un fond clair et une tête).
+
+## Chaque famille dans tous ses réglages (18 novembre 2026)
+
+**La demande du propriétaire**, après la planche de la famille gourmande : « Tu as fait ça pour tous les styles et toutes
+les sections ? », puis « Oui fais les ». Les cinq autres familles ont chacune leur planche : même marque, même contenu,
+six combinaisons de réglages permis par la famille (titres, boutons, fonds, en-tête, ouverture, dispositions), sur
+téléphone et sur ordinateur (`scripts/tour-des-sections/familles.ts --une-famille <famille>`, réglages dans
+`familles-variantes.ts`). Chaque planche regardée à l'œil. Son avis : « Compliqué à dire juste en image et le thème pas
+rempli en vrai donc on verra par la suite » : le jugement se fera sur un vrai site rempli par SINA.
+
+Corrigé en chemin, pour tous les sites : ce qui reste collé en défilant se pose sous l'en-tête au nom centré (deux
+rangées sur ordinateur) ; l'étiquette du titre massif ne passe plus sous l'en-tête posé sur la photo ; le voile de
+l'ouverture « dans la photo » et celui de la citation sur photo suivent le texte jusqu'au bout ; le sceau de garantie et
+le grand nom du pied de page avec les titres fins ; le titre de la carte « Essayer » centrée reste dans la carte ; le nom
+d'un repère du quartier n'est plus coupé (« Commerce / s ») ; le petit mot sous une photo penchée du journal.
+
+Le banc, rendu plus juste : un mot qui disparaît dans une photo (contraste sous 1,5) est important ; un texte de la page
+caché sous l'en-tête est bloquant (le banc avait laissé passer l'étiquette du titre massif) ; les chevauchements se
+mesurent sur la hauteur des lettres, plus sur la boîte de la police (fausses alertes avec Oswald et Bodoni).
+
+| Tour | Rendus | Bloquants | Importants |
+|---|---|---|---|
+| Les sept planches (six familles, plus la comparaison), téléphone et ordinateur | 84 | 0 | 0 |
+| Tour de base complet | 12 717 | 0 | 0 |
+| Tour des six familles (390 et 1 280 px) | 16 956 | 0 | 0 |
+
+Mineurs qui restent : des petits textes posés sur photo dont le contraste descend par endroits sous 3 (jamais sous 1,5),
+des marques « À compléter » penchées (état d'exemple, fond jaune fixe), deux mots inventés de 24 lettres coupés.
