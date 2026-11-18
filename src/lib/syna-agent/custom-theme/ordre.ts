@@ -21,7 +21,7 @@
  *    l'accueil est une pièce qui les porte (traits « zone » et « telephone » : le Studio les y pose tout seul) ;
  *  - jamais deux pièces qui montrent la même chose sur une page (tenue-ordre.ts : MEME_CONTENU).
  */
-import { tenueSection } from "./tenue";
+import { tenueSection, validConstruction } from "./tenue";
 import { FEATURED_ROLE, authenticSection, isCardSection, libSection, sectionPhotos } from "./library";
 import { FORME_LABEL, doublonsDe, type Forme, type PreuveId, type TraitOrdre } from "./tenue-ordre";
 import { OUVERTURES_SERVICES } from "./tenue-partitions";
@@ -66,15 +66,28 @@ const ordre = (id: string) => tenueSection(id)?.ordre ?? null;
  * 2026 : deux parties « texte et photo en alternance » sur l'accueil d'Atelier Vasco).
  */
 const FORME_PAR_DISPOSITION: Record<string, Forme[]> = {
-  "tn-composition:alternee": ["texte-photo"],
+  "tn-composition:alternee": ["texte-photo"], "tn-composition:bande": ["photos"],
   // Des étapes numérotées, chacune avec sa photo en alternance : on y voit aussi un texte et une photo côte à côte.
-  "tn-fabrication:lignes": ["etapes", "texte-photo"],
+  "tn-fabrication:lignes": ["etapes", "texte-photo"], "tn-fabrication:file": ["etapes"],
+  "tn-places:file": ["photos"], "tn-places:alternees": ["texte-photo"],
+  // La description en volets numérotés s'ouvre comme des questions ; sans titre ou encadrée, c'est un texte posé.
+  "tn-description:numeros": ["volets"], "tn-description:sans-titre": [], "tn-description:encadre": [],
+  // La bande de photo étroite sépare deux moments : ce n'est pas une grande photo à phrase.
+  "tn-bande:pleine-largeur": [], "tn-bande:encadree": [],
 };
-/** Les allures d'une pièce telles qu'un visiteur les voit (la première est son allure principale). */
-export const formesVues = (id: string, construction?: string | null): Forme[] => FORME_PAR_DISPOSITION[`${id}:${construction ?? ""}`] ?? (ordre(id)?.forme ? [ordre(id)!.forme!] : []);
+/** Les allures d'une pièce telles qu'un visiteur les voit, pour sa disposition (celle par défaut si aucune n'est donnée). */
+export const formesVues = (id: string, construction?: string | null): Forme[] => {
+  const c = (() => { try { return validConstruction(id, construction) ?? construction ?? ""; } catch { return construction ?? ""; } })();
+  return FORME_PAR_DISPOSITION[`${id}:${c}`] ?? (ordre(id)?.forme ? [ordre(id)!.forme!] : []);
+};
 export const formeVue = (id: string, construction?: string | null): Forme | null => formesVues(id, construction)[0] ?? null;
-/** Les allures qui peuvent revenir sur une page : la coque et une page entière (ce ne sont pas des sections vues). */
-const ALLURES_LIBRES = new Set<Forme>(["page", "coque"]);
+/**
+ * Les allures qui peuvent revenir sur une page : la coque et une page entière (ce ne sont pas des sections vues), et deux
+ * blocs courts que les déroulés de page demandent à plusieurs moments sans autre choix d'allure (la liste de lignes de
+ * réassurance ou d'engagements, la bande d'appel du haut et celle de la fin, les files de photos des moments de vie et
+ * des détails vus de près).
+ */
+const ALLURES_LIBRES = new Set<Forme>(["page", "coque", "liste", "bande", "photos"]);
 /** Les sections d'une page qui reprennent une allure déjà vue plus haut sur la même page (la seconde, la troisième…). */
 export function alluresEnDouble(sections: { section: string; construction?: string | null }[]): { i: number; id: string; premier: string; forme: Forme }[] {
   const vues = new Map<Forme, string>(), out: { i: number; id: string; premier: string; forme: Forme }[] = [];

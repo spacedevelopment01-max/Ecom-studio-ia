@@ -36,7 +36,7 @@ const pourquoi = "Ses clients veulent d'abord savoir s'il se déplace chez eux, 
 /** Accueil d'un service qui se déplace, sans avis ni réalisations ni photo de la personne : dix sections vraies. */
 const ACCUEIL_SERVICE = ["tn-ouverture", "tn-zone", "tn-prestations", "tn-atouts", "tn-avant-apres", "tn-deroule", "tn-texte-photo", "tn-engagements", "tn-questions", "tn-final"];
 const serviceDesign = (ids: string[], partition = "service-proximite:zone-dabord") => ({ pages: [pg("home", ids, "Accueil")], partitions: [{ page: "home", partition, why: pourquoi }] });
-const ACCUEIL_BOUTIQUE = ["tn-ouverture", "tn-produits", "tn-atouts", "tn-fabrication", "tn-places", "tn-appel-produit", "tn-texte-photo", "tn-composition", "tn-questions", "tn-infolettre"];
+const ACCUEIL_BOUTIQUE = ["tn-ouverture", "tn-produits", "tn-atouts", "tn-fabrication", "tn-places", "tn-appel-produit", "tn-emotion", "tn-composition", "tn-questions", "tn-infolettre"];
 const boutiqueDesign = (ids: string[], partition = "marque-createur:produits-dabord") => ({ pages: [pg("home", ids, "Accueil")], partitions: [{ page: "home", partition, why: "Un seul produit fait à la main : on le montre tout de suite, puis ce qui le rend sûr." }] });
 const refus = (d: O.OrdreDesign, f: O.OrdreFacts) => O.ordreGaps(d, f).refus;
 
@@ -280,7 +280,7 @@ describe("les contrôles automatiques de l'ordre, sans IA (une règle, un test)"
     expect(refus(serviceDesign(parOuverture, "service-proximite:prestations-dabord"), SERVICE).join("\n")).not.toMatch(/règle d'or 2/);
     expect(refus(serviceDesign(parOuverture, "service-proximite:prestations-dabord"), { ...SERVICE, zoneConnue: false }).join("\n")).toMatch(/règle d'or 2/);
     // Boutique : une pièce qui montre les prix dans les trois premières.
-    const prixTard = ["tn-ouverture", "tn-places", "tn-guide-choix", "tn-produits", "tn-atouts", "tn-fabrication", "tn-texte-photo", "tn-composition", "tn-questions", "tn-infolettre"];
+    const prixTard = ["tn-ouverture", "tn-places", "tn-guide-choix", "tn-produits", "tn-atouts", "tn-fabrication", "tn-emotion", "tn-composition", "tn-questions", "tn-infolettre"];
     expect(refus(boutiqueDesign(prixTard, "marque-createur:moment-dabord"), { ...BOUTIQUE, products: 3 }).join("\n")).toMatch(/le prix doit se voir au plus tard en 3e position \(règle d'or 2\)[^\n]*ici en 4e/);
   });
 
@@ -337,7 +337,7 @@ describe("les contrôles automatiques de l'ordre, sans IA (une règle, un test)"
     const formulaire = [...ACCUEIL_SERVICE.slice(0, 8), "tn-devis", "tn-questions"];
     expect(refus(serviceDesign(formulaire), SERVICE)).toEqual([]);
     // La fiche produit finit par les autres produits, ou par l'appel final.
-    const fiche = (last: string) => ({ pageStyle: "simple", pages: [pg("product", ["tn-achat", "tn-description", "tn-atouts", "tn-fabrication", "tn-places", "tn-preparation", "tn-de-pres", "tn-garanties", "tn-questions", last])] });
+    const fiche = (last: string) => ({ pageStyle: "simple", pages: [pg("product", ["tn-achat", "tn-description", "tn-places", "tn-atouts", "tn-composition", "tn-fabrication", "tn-de-pres", "tn-garanties", "tn-questions", last])] });
     expect(refus(fiche("tn-final"), BOUTIQUE)).toEqual([]);
     expect(refus(fiche("tn-produits"), BOUTIQUE)).toEqual([]);
     expect(refus(fiche("tn-mosaique"), BOUTIQUE).join("\n")).toMatch(/règle d'or 9/);
@@ -368,7 +368,7 @@ describe("les contrôles automatiques de l'ordre, sans IA (une règle, un test)"
     expect(S.MIN_SECTIONS).toEqual({ home: 10, product: 10 });
     const page = (key: string, label: string, ids: string[]) => ({ key, label, sections: ids.map((id, i) => ({ uid: `s${key}${i}`, id })) });
     const t = { version: 1, family: "classique", style: "x", header: { uid: "h", id: "tn-entete" }, footer: { uid: "f", id: "tn-pied" }, search: null, rev: 1, at: 1,
-      pages: [page("home", "Accueil", ACCUEIL_BOUTIQUE.slice(0, 9)), page("product", "Fiche produit", ["tn-achat", "tn-description", "tn-atouts", "tn-fabrication", "tn-places", "tn-preparation", "tn-de-pres", "tn-garanties", "tn-questions"]), page("about", "Notre histoire", ["tn-histoire"]), page("cart", "Panier", ["tn-panier"])] } as never;
+      pages: [page("home", "Accueil", ACCUEIL_BOUTIQUE.slice(0, 9)), page("product", "Fiche produit", ["tn-achat", "tn-description", "tn-places", "tn-atouts", "tn-composition", "tn-fabrication", "tn-de-pres", "tn-garanties", "tn-questions"]), page("about", "Notre histoire", ["tn-histoire"]), page("cart", "Panier", ["tn-panier"])] } as never;
     const problems = S.checkCustomTheme(t, { business: "products", products: 1 });
     const of = (level: string) => problems.filter((x) => x.level === level).map((x) => x.text);
     expect(of("bloquant")).toContain("« Accueil » n'a que 9 section(s) : au moins 10 (accueil)");
@@ -525,7 +525,7 @@ describe("la conception de bout en bout, IA simulée", async () => {
   }
   const pick = (section: string, construction?: string) => ({ section, ...(construction ? { construction } : {}), why: "Le moment où le visiteur a besoin de cela.", says: "Les vrais faits de la marque, sans rien inventer.", photos: "aucune" });
   const page = (key: string, label: string, ids: (string | [string, string])[]) => ({ key, label, journey: "Le visiteur arrive, comprend, ressent, puis agit sans hésiter.", sections: ids.map((x) => (Array.isArray(x) ? pick(x[0], x[1]) : pick(x))) });
-  const FICHE: (string | [string, string])[] = [["tn-achat", "simple"], "tn-description", "tn-atouts", "tn-fabrication", "tn-places", "tn-preparation", "tn-de-pres", "tn-garanties", "tn-questions", "tn-final"];
+  const FICHE: (string | [string, string])[] = [["tn-achat", "simple"], "tn-description", "tn-places", "tn-atouts", "tn-composition", "tn-fabrication", "tn-de-pres", "tn-garanties", "tn-questions", "tn-final"];
   const design = (home: (string | [string, string])[], partition: string): Design => ({
     visitor: "Une personne qui veut un coin à elle pour lire.", levers: ["ce que le produit change dans la journée", "sa silhouette"], objections: [],
     concept: "Le fauteuil dans sa niche : tout le site reprend l'arrondi du mur.", header: "tn-entete", headerConstruction: "centre", footer: "tn-pied-complet", footerConstruction: "colonnes", search: null, corrections: [],
@@ -533,9 +533,9 @@ describe("la conception de bout en bout, IA simulée", async () => {
     partitions: [{ page: "home", partition, why: "Un seul fauteuil, fait à la main : on le montre tout de suite, puis ce qui le rend sûr pour un lecteur qui partage son salon." }],
     pages: [page("home", "Accueil", home), page("product", "Fiche produit", FICHE), page("cart", "Panier", ["tn-panier"]), page("compte", "Mon compte", ["tn-compte"]), page("about", "Notre histoire", ["tn-histoire"]), page("contact", "Contact", ["tn-contact"]), page("aide", "Aide", ["tn-questions"]), page("legal", "Informations légales", ["tn-legal"]), page("404", "Page introuvable", ["tn-404"])],
   } as Design);
-  const BON: (string | [string, string])[] = [["tn-ouverture", "dans-la-photo"], "tn-produits", "tn-atouts", "tn-fabrication", "tn-places", "tn-appel-produit", "tn-texte-photo", "tn-composition", "tn-questions", "tn-infolettre"];
+  const BON: (string | [string, string])[] = [["tn-ouverture", "dans-la-photo"], "tn-produits", "tn-atouts", "tn-fabrication", "tn-places", "tn-appel-produit", "tn-emotion", "tn-composition", "tn-questions", "tn-infolettre"];
   // La formule abstraite en deuxième position, les produits en quatrième.
-  const MAUVAIS: (string | [string, string])[] = [["tn-ouverture", "dans-la-photo"], "tn-equation", "tn-atouts", "tn-produits", "tn-places", "tn-appel-produit", "tn-texte-photo", "tn-composition", "tn-questions", "tn-infolettre"];
+  const MAUVAIS: (string | [string, string])[] = [["tn-ouverture", "dans-la-photo"], "tn-equation", "tn-atouts", "tn-produits", "tn-places", "tn-appel-produit", "tn-emotion", "tn-composition", "tn-questions", "tn-infolettre"];
 
   it("le juge de l'ordre corrige, le second regard revérifie sans corriger, le concepteur fait UNE reprise, les contrôles sans IA repassent ; la partition est gardée avec le site et interdite au suivant du même métier", async () => {
     const { ctx, pid } = await client();

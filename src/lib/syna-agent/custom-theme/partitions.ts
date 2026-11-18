@@ -36,7 +36,7 @@ export const REGLES_D_OR = `LES DIX RÈGLES D'OR (toutes les pages importantes, 
 3. L'offre (produits ou prestations) arrive au plus tard en 3e position.
 4. Une vraie preuve arrive avant la 5e section : avis réels, réalisations, assurances, diplômes, chiffres vrais. Jamais la marque qui se cite elle-même.
 5. Le concret passe avant l'abstrait : aucune formule, citation ou conviction de marque tant que le visiteur ne sait pas ce qu'on vend et pourquoi y croire.
-6. Le rythme alterne : jamais deux dispositions pareilles à la suite ; on alterne dense et aéré, image et texte, clair et sombre.
+6. Le rythme alterne : jamais deux dispositions pareilles à la suite ; on alterne dense et aéré, image et texte, clair et sombre. Et une même allure ne revient jamais sur une page, même plus loin : deux étapes numérotées, deux textes et photos en alternance, deux listes, deux volets, c'est la même section vue deux fois pour le visiteur. Un moment qui demanderait la même allure qu'un autre prend une autre pièce de son moment.
 7. Chaque rôle n'apparaît qu'une fois : une seule section de cartes par page, un seul « Produit vedette ».
 8. Les doutes sont levés juste avant la fin : questions, garantie.
 9. La page finit par l'action : réserver, demander un devis ou acheter, avec les coordonnées.

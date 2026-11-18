@@ -654,5 +654,9 @@ va au concepteur ; une même allure ne revient jamais sur une page (règle 6 bis
 dernier recours sans IA (`fitFormes`). Tests : `tests/sina-refaire-site-different.test.ts`.
 
 **Preuve gratuite** sur le site refait réel : le contrôle le refuse désormais (accueil : 6 pièces en commun avec le
-site actuel, au plus 2 ; site entier : 21 sur 28) et relève 9 allures en double sur 6 pages. **Pas vérifié** : un
+site actuel, au plus 2 ; site entier : 21 sur 28) et relève 7 allures en double sur 5 pages (l'accueil : deux
+étapes numérotées et deux textes et photos en alternance ; chaque fiche : la description en volets puis les questions en
+volets ; l'aide). L'allure se juge sur la disposition posée (une même pièce peut se voir en volets, en texte posé ou en
+file de photos). Peuvent revenir sur une page, parce que les déroulés de page les demandent à plusieurs moments sans
+autre allure possible : la liste de lignes courte, la bande d'appel, la file de photos, la bande étroite. **Pas vérifié** : un
 nouveau site conçu par la vraie IA avec ces règles (payant, à décider avec le propriétaire).
