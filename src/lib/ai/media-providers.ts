@@ -689,6 +689,15 @@ export async function aiSiteMockup(ctx: Ctx, input: { prompt: string; logo?: Buf
 }
 
 /**
+ * Maquette d'UNE page du site, dessinée en plusieurs images qui se suivent de haut en bas (méthode « dessiner puis
+ * coder », essai du 19 novembre 2026, d'après le thème que le propriétaire a fait faire à ChatGPT) : le logo, les
+ * photos du site et les morceaux déjà dessinés de la page sont joints en références. Même circuit que les autres images.
+ */
+export async function aiSitePageMockup(ctx: Ctx, input: { prompt: string; references: { role: "logo" | "scene" | "style"; data: Buffer }[] }) {
+  return generateImage(ctx, { text: input.prompt, aspect: "2:3", reference: null, refMax: 1024, references: input.references.map((r) => ({ ...r, essential: true })), quality: "high", strictQuality: true, usage: "text_layout", need: { text: true, references: input.references.length } });
+}
+
+/**
  * Photo du site recréée en haute définition d'après la maquette choisie (demande du propriétaire du 8 novembre :
  * « OpenAI devra refaire toutes les images du thème en haute résolution pour les inclure, et que ce soit comme les
  * maquettes »). Références : la photo découpée sur la maquette (à reproduire), le logo (s'il figure sur un emballage),
