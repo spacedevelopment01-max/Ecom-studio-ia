@@ -13,7 +13,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
-import { balance, DemandeChangee, EUR, existingOperation, reponseDejaPayee, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
+import { balance, cleDeRelance, DemandeChangee, EUR, existingOperation, reponseDejaPayee, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
 import {AgentBoundStop,beforeAgentTextAttempt} from './request-bounds';
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
@@ -406,6 +406,9 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     operation.usageKey = `${operation.usageKey}~${String(operation.requestHash).slice(0, 12)}`;
     previous = existingOperation(call.userId, operation);
   }
+  // Relance accordée par le client : l'appel coupé en plein milieu se renvoie une fois, sous sa clé de relance.
+  const relance = cleDeRelance(previous, operation.usageKey);
+  if (relance) { operation.usageKey = relance; previous = existingOperation(call.userId, operation); }
   if (previous) {
     if (previous.result) return JSON.parse(previous.result) as RawResult;
     operationPending();

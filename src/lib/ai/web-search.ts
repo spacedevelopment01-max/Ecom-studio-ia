@@ -13,7 +13,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { EUR, existingOperation, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
+import { cleDeRelance, EUR, existingOperation, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
 import { PermanentError, UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
@@ -162,7 +162,10 @@ export async function webResearch(call: { userId: string; projectId: string | nu
   };
   const task = "strategy";
   const operation = { task, projectId: call.projectId, usageKey: call.usageKey, requestHash: requestHash(body) };
-  const previous = existingOperation(call.userId, operation);
+  let previous = existingOperation(call.userId, operation);
+  // Relance accordée par le client : la recherche coupée en plein milieu se renvoie une fois, sous sa clé de relance.
+  const relance = cleDeRelance(previous, operation.usageKey);
+  if (relance) { operation.usageKey = relance; previous = existingOperation(call.userId, operation); }
   if (previous) {
     if (previous.result) return JSON.parse(previous.result);
     operationPending();

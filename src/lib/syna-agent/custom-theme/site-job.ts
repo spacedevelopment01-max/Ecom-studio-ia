@@ -20,10 +20,10 @@
  * Les familles de sections restent en coulisses : le client ne choisit ni famille, ni concept, ni thème.
  */
 import { z } from "zod";
-import { one } from "../../db";
+import { one, run } from "../../db";
 import type { User } from "../../auth";
 import { L } from "../../i18n-server";
-import { enqueue, pendingJob, UserFacingError, type JobContext } from "../../jobs";
+import { enqueue, pendingJob, retryJob, UserFacingError, type JobContext } from "../../jobs";
 import { listProducts } from "../../products/catalog";
 import { loadProject, notify } from "../../projects";
 import { CostCapReached } from "../../ai/trace";
@@ -51,7 +51,7 @@ import { SEUIL } from "./ressemblance";
 import { dossierPreuves, preuvesRepondues, buildKnowledge, buildTool, COPY_FIXES_TYPICAL, COPY_REVIEW_TYPICAL_MICRO, customPhotoDeps, designCost, keepWork, PHOTO_FIX_TYPICAL_MICRO, PHOTO_REVIEW_TYPICAL_MICRO, photoUnit, runDesign, SECTION_TEXT_TYPICAL_MICRO, SITE_PLAN_TYPICAL_MICRO, siteKind, type BuildArgs, type DesignRun } from "./tools";
 
 export const SINA_SITE_JOB = "syna.site";
-export type SitePayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null };
+export type SitePayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null; /** Numéro de la relance accordée par le client (création coupée en plein appel payant). */ relance?: number };
 
 /**
  * Taille d'un site AVANT sa conception (le devis est annoncé avant tout appel payant) : le nombre de sections à écrire
@@ -186,6 +186,35 @@ export function produitsSansPhoto(projectId: string, business?: string | null): 
 export function refusPhotosProduits(ctx: ToolContext): string | null {
   try { const p = project(ctx); return refusSansPhotosProduits({ sans: produitsSansPhoto(p.id, p.business), repondu: photosProduitsRepondu(clientNotes(p.id)) }); } catch { return null; }
 }
+/** Une création coupée se relance pendant sept jours ; après, elle se refait. */
+export const COUPURE_RX = /Interrompue|interrompu|déjà été envoyée|incertain|already been sent|uncertain|interrupted/;
+export const RELANCE_JOURS = 7;
+/**
+ * La dernière création du site du projet, si elle s'est arrêtée en route (essai réel du 19 novembre 2026, Bécane : le
+ * serveur a redémarré en plein appel payant ; la nouvelle création a tout repayé, conception comprise). Sans IA.
+ */
+export function creationCoupee(projectId: string): { id: string; payload: SitePayload } | null {
+  const j = one<{ id: string; status: string; payload: string; finished_at: number | null; error: string | null; message: string }>("SELECT id, status, payload, finished_at, error, message FROM jobs WHERE project_id = ? AND type = ? ORDER BY created_at DESC LIMIT 1", projectId, SINA_SITE_JOB);
+  if (!j || j.status !== "failed" || !j.finished_at || Date.now() - j.finished_at > RELANCE_JOURS * 86_400_000) return null;
+  // Seulement une création COUPÉE (arrêt en plein travail, appel au résultat incertain) : une création refusée pour une
+  // autre raison referait la même chose ; elle se relance par une nouvelle création.
+  if (!COUPURE_RX.test(`${j.error ?? ""} ${j.message}`)) return null;
+  try { return { id: j.id, payload: JSON.parse(j.payload) as SitePayload }; } catch { return null; }
+}
+/** Ce que la création coupée a déjà payé et dont la réponse est gardée : repris sans repayer à la relance. */
+export function acquisMicro(jobId: string): number {
+  return one<{ c: number }>("SELECT COALESCE(SUM(COALESCE(actual, amount)), 0) AS c FROM ai_reservations WHERE job_id = ? AND status IN ('settled', 'reconciled') AND result IS NOT NULL", jobId)?.c ?? 0;
+}
+/**
+ * Le prix d'une relance : le prix de la création, moins ce qui est déjà payé et repris (jamais moins d'un cinquième du
+ * prix probable : la fin du travail reste à faire). Le plafond garde la même marge que celui de la création.
+ */
+export function relanceQuote(full: CostEstimate, acquis: number): CostEstimate {
+  const probable = full.probableMicro ?? full.maxMicro;
+  const reste = Math.max(Math.round(probable * 0.2), probable - acquis);
+  return { probableMicro: reste, maxMicro: Math.max(Math.round(reste * MARGE_PLAFOND_SITE), full.maxMicro - acquis), label: L("la suite de ton site, là où sa création s'était arrêtée : ce qui était déjà fait est repris sans être repayé", "the rest of your site, from where it stopped") };
+}
+
 /** Titre sous lequel SINA note ce que le client n'aimait pas dans son site, avant de le refaire. */
 export const NOTE_SITE_A_CHANGER = "ce qui ne plaisait pas dans le site";
 const TITRE_A_CHANGER = /(?<!\p{L})site(?!\p{L})[^\n]{0,40}(?:plai|chang|refai|refont|aim|d[ée]pla)|(?:plai|chang|refai|refont|aim|d[ée]pla)[^\n]{0,40}(?<!\p{L})site(?!\p{L})/iu;
@@ -207,12 +236,18 @@ const refusRefaire = (ctx: ToolContext, refaire: boolean | undefined): string | 
 /** Refus d'un outil pendant son devis, pour SINA seule : le client ne le lit pas. */
 export class RefusInterne extends Error { readonly internal = true; }
 
-type CreateArgs = { consigne?: string; refaire?: boolean };
+type CreateArgs = { consigne?: string; refaire?: boolean; relancer?: boolean };
 export const siteCreateTool: AgentTool<CreateArgs> = {
   name: "site.create", module: "site", kind: "generate", needsProject: true,
-  description: "Étape du site (PAYANT : un seul prix annoncé, un seul accord écrit du client) : tu CRÉES TOUT SON SITE en une fois, pour sa marque. Tu le conçois (le parcours du visiteur sur chaque page, les pièces qui conviennent à son métier, l'allure tirée de sa planche de marque : titres, boutons, cadres des photos, un signe pris sur son produit ou son métier), tu donnes sa fiche à chaque produit, tu calcules le menu, tu écris tous les textes dans l'angle qu'il a choisi, tu les relis, tu poses ses photos là où elles vont et tu crées celles qui manquent, puis tu regardes le résultat en image sur téléphone. Tâche de fond de 20 à 40 minutes : tu restes disponible pendant ce temps. À lancer quand la marque, l'angle et l'activité (produits ou prestations, coordonnées) sont validés. consigne : ce que le client a dit vouloir pour son site, avec ses mots. refaire:true seulement s'il demande de refaire tout le site (payant, même prix) : avant, demande-lui ce qui ne lui plaît pas dans son site actuel et note sa réponse (« ce qui ne plaisait pas dans le site ») ; le nouveau site s'écartera de l'actuel. Il ne choisit ni thème, ni famille, ni concept : tu ne lui montres jamais de modèle.",
-  args: z.object({ consigne: z.string().max(1500).optional(), refaire: z.boolean().optional() }).strict(),
-  estimate: (ctx, a) => { const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx) ?? refusRefaire(ctx, a?.refaire); if (refus) throw new RefusInterne(refus); return siteQuote(kindOf(ctx), reprisesPossibles(ctx, a?.refaire)); },
+  description: "Étape du site (PAYANT : un seul prix annoncé, un seul accord écrit du client) : tu CRÉES TOUT SON SITE en une fois, pour sa marque. Tu le conçois (le parcours du visiteur sur chaque page, les pièces qui conviennent à son métier, l'allure tirée de sa planche de marque : titres, boutons, cadres des photos, un signe pris sur son produit ou son métier), tu donnes sa fiche à chaque produit, tu calcules le menu, tu écris tous les textes dans l'angle qu'il a choisi, tu les relis, tu poses ses photos là où elles vont et tu crées celles qui manquent, puis tu regardes le résultat en image sur téléphone. Tâche de fond de 20 à 40 minutes : tu restes disponible pendant ce temps. À lancer quand la marque, l'angle et l'activité (produits ou prestations, coordonnées) sont validés. consigne : ce que le client a dit vouloir pour son site, avec ses mots. refaire:true seulement s'il demande de refaire tout le site (payant, même prix) : avant, demande-lui ce qui ne lui plaît pas dans son site actuel et note sa réponse (« ce qui ne plaisait pas dans le site ») ; le nouveau site s'écartera de l'actuel. Il ne choisit ni thème, ni famille, ni concept : tu ne lui montres jamais de modèle. relancer:true quand la création de son site s'est arrêtée en route (coupure, appel interrompu) et qu'il veut la relancer : elle reprend là où elle s'était arrêtée, avec sa consigne d'alors, et ce qui était fait n'est pas repayé (la carte affiche le prix de ce qui reste). Si ses envies ont changé depuis, lance plutôt une nouvelle création.",
+  args: z.object({ consigne: z.string().max(1500).optional(), refaire: z.boolean().optional(), relancer: z.boolean().optional() }).strict(),
+  estimate: (ctx, a) => {
+    if (a?.relancer) {
+      const c = creationCoupee(project(ctx).id);
+      if (!c) throw new RefusInterne("Aucune création du site arrêtée en route à relancer (elle a réussi, ou date de plus de sept jours) : lance site.create sans relancer.");
+      return relanceQuote(siteQuote(kindOf(ctx), reprisesPossibles(ctx, true)), acquisMicro(c.id));
+    }
+    const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx) ?? refusRefaire(ctx, a?.refaire); if (refus) throw new RefusInterne(refus); return siteQuote(kindOf(ctx), reprisesPossibles(ctx, a?.refaire)); },
   // La carte de dépense rappelle, en une ligne, que le site se monte sans les photos des produits (le client a été prévenu).
   preview: (ctx) => { const sans = (() => { try { const p = project(ctx); return produitsSansPhoto(p.id, p.business); } catch { return []; } })(); return [L("Ton site entier, créé pour ta marque.", "Your whole site, built for your brand."), rappelCarte(sans)].filter(Boolean).join(" "); },
   run: (ctx, a) => {
@@ -223,6 +258,20 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
     if (pendingJob(p.id, SINA_SITE_JOB)) return { ok: false, summary: L("Ton site est déjà en cours de création : attends-le.", "Your site is already being created.") };
     const refus = refusPreuves(ctx) ?? refusPhotosProduits(ctx) ?? refusRefaire(ctx, a.refaire);
     if (refus) return { ok: false, internal: true, summary: refus };
+    // Relance d'une création coupée : la même tâche repart (mêmes étapes, mêmes clés : ce qui est payé est repris tel
+    // quel), avec sa consigne d'alors ; seul l'appel coupé en plein milieu est renvoyé, une fois, avec cet accord.
+    if (a.relancer) {
+      const c = creationCoupee(p.id);
+      if (!c) return { ok: false, internal: true, summary: "Aucune création du site arrêtée en route à relancer : lance site.create sans relancer." };
+      const q = relanceQuote(siteQuote(kindOf(ctx), reprisesPossibles(ctx, true)), acquisMicro(c.id));
+      const payload: SitePayload = { ...c.payload, conversationId: ctx.conversationId, runId: ctx.runId, relance: (c.payload.relance ?? 0) + 1, capMicro: jobSpentMicro(c.id) + q.maxMicro };
+      run("UPDATE jobs SET payload = ? WHERE id = ? AND status = 'failed'", JSON.stringify(payload), c.id);
+      retryJob(c.id);
+      updateJourney(ctx.conversationId, (x) => setStep(x, 6, "doing"));
+      return { ok: true, jobs: [c.id], data: { plafondMicro: q.maxMicro },
+        summary: L("Création de ton site relancée, là où elle s'était arrêtée : ce qui était déjà fait est repris sans être repayé. Je reprends quand c'est prêt.", "Your site creation was restarted from where it stopped."),
+        hint: "Dis-lui que ce qui était fait est repris sans être repayé. N'annonce jamais que le site est prêt avant la fin de la tâche." };
+    }
     const cur = loadCustomTheme(p.id);
     if (cur && allSections(cur).some((x) => x.s.clientTexts) && !a.refaire) return { ok: false, summary: L("Le site est déjà créé.", "The site already exists."), hint: "Pour une retouche : custom.section puis custom.edit. Pour tout refaire (payant, à la demande du client seulement) : site.create avec refaire:true et sa consigne." };
     const quote = siteQuote(kindOf(ctx), reprisesPossibles(ctx, a.refaire));

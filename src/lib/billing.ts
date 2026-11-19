@@ -407,6 +407,18 @@ export function existingOperation(user: string, meta: Pick<ReservationMeta, "tas
   return r;
 }
 
+/**
+ * Relance d'une tâche coupée en plein appel payant (redémarrage du serveur pendant l'appel), accordée par le client sur
+ * sa carte de prix : un appel au résultat incertain, sans reçu du fournisseur, se renvoie UNE fois sous une clé à lui.
+ * Les appels déjà payés gardent leur clé et leur réponse (repris sans repayer). Sans cet accord, jamais : la règle du
+ * propriétaire (« un appel au résultat incertain n'est jamais relancé tout seul ») tient.
+ */
+export function cleDeRelance(previous: Pick<Operation, "status" | "result" | "provider_receipt"> | undefined, usageKey: string | undefined): string | null {
+  const n = currentTrace().relance;
+  if (!n || !usageKey || !previous || previous.result || previous.provider_receipt || previous.status !== "uncertain") return null;
+  return `${usageKey}~relance${n}`;
+}
+
 export function operationPending(): never {
   throw new UserFacingError(L("Cette action a déjà été envoyée. Les résultats acquis sont conservés ; aucune nouvelle génération n'a été lancée. Reprenez son suivi ou faites vérifier le résultat incertain avant de recommencer.", "This action has already been sent. Acquired results are kept; no new generation was started. Resume tracking it or have its uncertain outcome checked before starting again."));
 }

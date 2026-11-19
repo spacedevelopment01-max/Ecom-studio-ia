@@ -24,6 +24,12 @@ const capOf = (payload: unknown) => {
   return typeof c === "number" && Number.isFinite(c) && c >= 0 ? c : undefined;
 };
 
+/** Relance accordée par le client (tâche coupée en plein appel payant) : son numéro, sinon aucune. */
+const relanceOf = (payload: unknown) => {
+  const n = (payload as { relance?: unknown } | null)?.relance;
+  return typeof n === "number" && Number.isInteger(n) && n > 0 ? n : undefined;
+};
+
 /** Intention d'une tâche de fond, sans IA (trace : chaque appel est rattaché à ce que le client a demandé). */
 const jobIntent = (type: string, payload: unknown) => intentsFromAction(type, payload as { regenerate?: boolean })?.join("+");
 import { runWithLang, userLang } from "../src/lib/i18n-server";
@@ -82,7 +88,7 @@ async function runOne() {
       const guarded = (ctx.payload as { aiOff?: boolean })?.aiOff ? () => withAiDisabled("demande lancée sans devis payant accepté", exec) : exec;
       // Seul le rattachement serveur persistant définit la demande commune ; jamais un ID libre du payload.
       const agentBound=one<{bound_id:string}>('SELECT bound_id FROM agent_request_jobs WHERE job_id=?',job.id);
-      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload),...(agentBound?{agentBoundId:agentBound.bound_id}:{}) }, guarded), "normal", job.project_id ?? null));
+      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload), relance: relanceOf(ctx.payload),...(agentBound?{agentBoundId:agentBound.bound_id}:{}) }, guarded), "normal", job.project_id ?? null));
       // Écriture du résultat : en cas d'échec (base occupée…), nouvel essai — jamais une relance du traitement,
       // qui referait (et repaierait) ce qui vient d'être fait.
       for (let i = 0; ; i++) {

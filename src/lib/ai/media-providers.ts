@@ -26,7 +26,7 @@ import { emitMediaProgress, openaiClient, openaiImage, openaiStreams, OPENAI_PAR
 import {photoEditRequest,type PhotoEditInput} from "../image-v2/edit-request";
 export {photoEditRequest,editPhotoPrompt,type PhotoEditInput} from "../image-v2/edit-request";
 import sharp from "sharp";
-import { claimOperationRecovery, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
+import { claimOperationRecovery, cleDeRelance, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
 import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
@@ -68,9 +68,12 @@ const mediaTrace = new AsyncLocalStorage<MediaTrace>();
 
 function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...a: A) => Promise<R>): (...a: A) => Promise<R> {
   return (...args: A) => {
-    const ctx = args[0];
+    let ctx = args[0];
     const fingerprint = requestHash({ adapter: fn.name, input: args.slice(1) });
-    const previous = existingOperation(ctx.userId, { task, projectId: ctx.projectId, usageKey: ctx.usageKey, requestHash: fingerprint });
+    let previous = existingOperation(ctx.userId, { task, projectId: ctx.projectId, usageKey: ctx.usageKey, requestHash: fingerprint });
+    // Relance accordée par le client : l'image coupée en plein milieu (sans reçu) se renvoie une fois, sous sa clé de relance.
+    const relance = cleDeRelance(previous, ctx.usageKey);
+    if (relance) { ctx = { ...ctx, usageKey: relance }; args[0] = ctx; previous = existingOperation(ctx.userId, { task, projectId: ctx.projectId, usageKey: relance, requestHash: fingerprint }); }
     if (previous?.result) {
       const saved = JSON.parse(previous.result) as { file?: string };
       if (saved.file && fileExists(saved.file)) return Promise.resolve(readFile(saved.file) as R);

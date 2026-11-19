@@ -16,6 +16,11 @@ export type TraceScope = {
   agentBoundId?: string;
   /** Récupération des acquis uniquement : aucune nouvelle réservation fournisseur. */
   recoveryOnly?: boolean;
+  /**
+   * Relance d'une tâche coupée en plein appel payant, accordée par le client sur sa carte de prix (numéro de la
+   * relance) : un appel au résultat incertain se renvoie une fois, sous une clé à lui (billing.cleDeRelance).
+   */
+  relance?: number;
   jobId?: string | null;
   projectId?: string | null;
   step?: string;

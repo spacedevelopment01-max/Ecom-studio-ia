@@ -733,3 +733,20 @@ arrêtée et ce qu'elle a coûté, et lui propose de relancer.
 
 Tests : `tests/sina-defauts-becane.test.ts`, `tests/signatures-familles.test.ts`. **Pas vérifié avec la vraie IA** :
 l'effet de ces corrections sur une nouvelle création.
+
+## Relancer une création coupée sans repayer (19 novembre 2026, accord du propriétaire : « Oui »)
+
+Pourquoi les coupures : la machine des essais limite la durée des programmes en fond et redémarre parfois ; le Studio
+en ligne tourne sur son propre serveur. Mais une coupure peut arriver partout, et la relance de Bécane avait tout repayé
+(dont le premier passage de la conception, 1,18 €, déjà payé et gardé).
+
+Désormais, quand la dernière création du site s'est arrêtée en route (coupure, appel au résultat incertain, moins de
+sept jours), SINA la relance avec `site.create` et `relancer:true` : la même tâche repart, avec sa consigne d'alors ; ce
+qui est payé est repris tel quel (mêmes clés, réponses gardées) ; seul l'appel coupé en plein milieu est renvoyé, une
+fois, sous une clé à lui (`billing.cleDeRelance`, pour le texte, la recherche et les images). La carte affiche le prix
+de ce qui reste (jamais moins d'un cinquième du prix probable), et c'est l'accord du client sur cette carte qui permet
+le renvoi : sans lui, un appel au résultat incertain n'est toujours jamais relancé. Une création refusée pour une autre
+raison ne se relance pas à l'identique.
+
+Tests : `tests/sina-relance-creation-coupee.test.ts`. **Pas vérifié avec la vraie IA** : une vraie relance après une
+vraie coupure.
