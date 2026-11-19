@@ -48,14 +48,38 @@ Elle a ${SECTIONS_ACCUEIL.min} à ${SECTIONS_ACCUEIL.max} sections (sans compter
 Réponds en JSON : idee (l'idée de la page en une phrase) ; sections (dans l'ordre : nom, pourquoi (la question du visiteur), disposition (précise), fond (clair, crème, couleur de la marque, sombre ou photo), textes (TOUS les textes exacts dans l'ordre de lecture : titres, phrases, boutons, étiquettes), photo (la photo voulue en une phrase, ou null)) ; morceaux (la page en trois morceaux de hauteur égale pour la dessiner : trois listes des numéros de sections, à partir de 1, dans l'ordre ; l'en-tête va avec le premier, le pied de page avec le dernier).`;
 
 export const JUGE_SYSTEM = `Tu es le juge des faits d'une petite agence. Tu relis le PLAN d'une page d'accueil contre le DOSSIER du projet, texte par texte, AVANT que la page soit dessinée et payée. Celui qui a fait le plan n'est pas toi.
-Tu cherches : un fait faux ou absent du dossier (un chiffre, une promesse, un détail du matériel, une façon de travailler, un avis, une entreprise citée) ; le nom d'une prestation ou d'un produit remplacé par une phrase (il doit être rétabli tel que le dossier le donne, la phrase peut rester à côté) ; un prix différent du dossier ; le client tutoyé puis vouvoyé ; deux sections qui disent la même chose.
+Tu cherches : un fait faux ou absent du dossier (un chiffre, une promesse, un détail du matériel, une façon de travailler, un avis, une entreprise citée) ; un SERVICE ou une offre que le dossier ne propose pas, même suggéré en passant (une urgence, un dépannage, un devis gratuit, une garantie, une livraison, un rendez-vous le jour même : essai réel, « Une urgence ? Appelle-moi » pour un artisan qui n'en avait jamais parlé) ; le nom d'une prestation ou d'un produit remplacé par une phrase (il doit être rétabli tel que le dossier le donne, la phrase peut rester à côté) ; un prix différent du dossier ; le client tutoyé puis vouvoyé ; deux sections qui disent la même chose.
 Pour chaque défaut, une correction : section (son numéro, à partir de 1), avant (le texte exact du plan), apres (le texte vrai qui le remplace, ou vide pour le retirer), pourquoi. Ne corrige rien par goût : seulement ce qui est faux, inventé ou répété. Réponds en JSON : corrections, avis (deux phrases).`;
 
 export const CODE_SYSTEM = `Tu es un développeur de thèmes Shopify du plus haut niveau, et un intégrateur exigeant. Tu codes la PAGE D'ACCUEIL d'un thème Shopify (Online Store 2.0) d'après le plan et les dessins joints, fidèlement (même ordre, mêmes dispositions, même allure, mêmes couleurs), en suivant ton cahier « Dessiner puis coder une page ». Les TEXTES viennent du plan, mot pour mot (les dessins ont des fautes : le plan a toujours raison).
 Fichiers : layout/theme.liquid ; config/settings_schema.json ; templates/index.json (les sections dans l'ordre) ; sections/header.liquid et sections/footer.liquid (posés par {% section %} dans le gabarit) ; une section par section du plan (sections/<marque>-<nom-court>.liquid), chacune avec son {% schema %} complet (name, settings, presets) ; assets/<marque>.css (tout le style, aucune bibliothèque externe) ; un fichier de script seulement s'il le faut.
-Chaque texte est un réglage de sa section (text, textarea ou richtext) avec le texte du plan pour valeur par défaut, et templates/index.json reprend ces valeurs. Photos : seulement les fichiers listés, appelés par {{ 'nom.webp' | asset_url }}, chacune une seule fois, alt en français, loading="lazy" sauf l'ouverture, largeur et hauteur posées. Logo : le fichier du logo sur fond clair, le fichier du logo clair sur fond sombre. Polices : réglages de thème font_picker chargés avec font_face. Couleurs en variables CSS.
+Chaque texte est un réglage de sa section (text, textarea ou richtext) avec le texte du plan pour valeur par défaut, et templates/index.json reprend ces valeurs. Photos : seulement les fichiers listés, appelés par {{ 'nom.webp' | asset_url }}, chacune une seule fois ; l'OUVERTURE prend une photo d'ensemble (plan large ou moyen, le sujet entier), jamais un gros plan de détail ; sur téléphone comme sur ordinateur, le cadrage (object-fit et object-position) garde le sujet ENTIER, jamais un morceau de guidon ou d'objet coupé (essai réel : sur téléphone, l'ouverture ne montrait qu'un guidon) ; aucun rond ni aplat décoratif derrière un titre ; alt en français, loading="lazy" sauf l'ouverture, largeur et hauteur posées. Logo : le fichier du logo sur fond clair, le fichier du logo clair sur fond sombre. Polices : réglages de thème font_picker chargés avec font_face. Couleurs en variables CSS.
 RESPONSIVE PARFAIT : d'abord le téléphone (390 px), puis la tablette (768 px) et l'ordinateur (1 440 px). Jamais de défilement horizontal, aucun texte coupé, un bouton (son bord et son ombre) se voit toujours en entier, boutons d'au moins 44 px de haut sur téléphone, menu en trois traits sur téléphone (sans bibliothèque), grilles en une colonne, grands titres avec clamp(). L'en-tête sur ordinateur tient sur UNE ligne, lisible. HTML sémantique (un seul h1), contrastes lisibles, focus visible, aucun pictogramme dessiné, aucune personne, rien d'inventé. Le code passe le contrôle officiel de Shopify (Theme Check) sans erreur.
 Réponds en JSON : files (chaque fichier : path, content complet) ; notes (deux phrases : ce que tu as fait pour le téléphone, ce qui reste à vérifier).`;
+
+/** Les textes visibles du thème codé, pour le juge : valeurs de l'accueil (JSON) et textes des sections, sans balises. */
+export function textesDuCode(files: { path: string; content: string }[]): string {
+  const out: string[] = [];
+  for (const f of files) {
+    if (f.path.endsWith("templates/index.json")) {
+      try { const walk = (v: unknown) => { if (typeof v === "string") { const t = v.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(); if (t.length > 2 && !/^[\w-]+\.(webp|png|jpe?g)$/.test(t) && !/^#[0-9a-f]{3,8}$/i.test(t)) out.push(t); } else if (v && typeof v === "object") for (const x of Object.values(v)) walk(x); }; walk(JSON.parse(f.content)); } catch { /* JSON illisible : rien */ }
+    } else if (/^sections\/(header|footer)\.liquid$/.test(f.path)) {
+      const t = f.content.replace(/\{%[\s\S]*?%\}|\{\{[\s\S]*?\}\}/g, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      if (t) out.push(t.slice(0, 600));
+    }
+  }
+  return [...new Set(out)].join("\n").slice(0, 12_000);
+}
+
+/** Applique une correction de texte à tous les fichiers du thème (dans le JSON, le texte est écrit comme le JSON l'exige). */
+export function corrigerFichiers(files: { path: string; content: string }[], avant: string, apres: string): number {
+  let n = 0;
+  for (const f of files) {
+    const [a, b] = f.path.endsWith(".json") ? [JSON.stringify(avant).slice(1, -1), JSON.stringify(apres).slice(1, -1)] : [avant, apres];
+    if (a && f.content.includes(a)) { f.content = f.content.split(a).join(b); n++; }
+  }
+  return n;
+}
 
 /** Applique les corrections du juge au plan (sans IA) : chaque texte cité est remplacé, ou retiré si la correction est vide. */
 export function appliquerJugement(plan: PlanPage, j: Jugement): { plan: PlanPage; appliquees: number; ignorees: number } {

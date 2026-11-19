@@ -34,7 +34,7 @@ import { buildSpec } from "../../theme/directions";
 import { contentFromInput, libraryFiller } from "../../theme/library-fill";
 import { localCopy } from "../../engine/local-copy";
 import { emptyProduct } from "../../project-types";
-import { appliquerJugement, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
+import { appliquerJugement, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
 
 export const SINA_DESSIN_JOB = "syna.dessin";
 export type DessinPayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null };
@@ -66,8 +66,9 @@ export const PHOTOS_ACCUEIL = 8;
 /** Le prix de l'accueil dessiné puis codé : le plan, le juge, cinq dessins, les photos qui manquent, le code. */
 export function dessinQuote(photosACreer: number): CostEstimate {
   const c = DESSIN_COUTS, images = 5 + Math.max(0, photosACreer);
-  const probable = c.plan.probable + c.juge.probable + images * c.image.probable + c.code.probable;
-  const max = c.plan.max + c.juge.max + images * imageMaxMicro() + c.code.max;
+  // Deux relectures du juge : le plan, puis les textes du site codé.
+  const probable = c.plan.probable + 2 * c.juge.probable + images * c.image.probable + c.code.probable;
+  const max = c.plan.max + 2 * c.juge.max + images * imageMaxMicro() + c.code.max;
   return { probableMicro: probable, maxMicro: Math.min(max, Math.round(probable * 1.6)), label: L("l'accueil de ton site, réfléchi, dessiné sur ordinateur et sur téléphone, puis codé et vérifié", "your home page, planned, drawn, coded and checked") };
 }
 
@@ -197,6 +198,19 @@ export async function runDessinJob(ctx: JobContext) {
   fs.mkdirSync(path.join(theme, "locales"), { recursive: true });
   if (!fs.existsSync(path.join(theme, "locales/fr.default.json"))) fs.writeFileSync(path.join(theme, "locales/fr.default.json"), "{}");
 
+  // 5 bis) Le juge relit les textes du site CODÉ contre le dossier (essai réel : « Une urgence ? Appelle-moi », un
+  // service jamais proposé, était passé). Ses corrections sont posées dans les fichiers du thème.
+  ctx.progress(0.8, L("Je fais relire les textes du code", "Checking the coded copy"));
+  const lus = fs.readdirSync(path.join(theme, "templates")).map((f) => `templates/${f}`).concat(["sections/header.liquid", "sections/footer.liquid"]).filter((f) => fs.existsSync(path.join(theme, f))).map((f) => ({ path: f, content: fs.readFileSync(path.join(theme, f), "utf8") }));
+  const jugeCode = await ctx.step("juge-code", () => withTrace(trace("dessin-juge-code", DESSIN_COUTS.juge.max), () =>
+    llmJson({ nouvelleSiChangee: true, sansRelanceCoupee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(JUGE_SYSTEM, "jugeDessin"), promptKey: "syna-dessin-juge-code-1", prompt: `DOSSIER DU PROJET :\n${dossier}\n\nTEXTES DU SITE CODÉ (section 1 pour tous ; « avant » = le passage exact à remplacer) :\n${textesDuCode(lus)}`, maxTokens: 6_000, maxOutputTokens: 6_000, usageKey: `${ctx.job.id}:juge-code`, routing: { difficulty: "complex" } }, JugementSchema, { strict: true })));
+  const fichiersTheme: { path: string; content: string }[] = [];
+  const walkT = (d: string) => { for (const f of fs.readdirSync(d)) { const x = path.join(d, f); if (fs.statSync(x).isDirectory()) walkT(x); else if (/\.(liquid|json)$/.test(f)) fichiersTheme.push({ path: path.relative(theme, x), content: fs.readFileSync(x, "utf8") }); } };
+  walkT(theme);
+  let corrigesCode = 0;
+  for (const c of jugeCode.corrections) if (c.avant.trim().length > 3 && corrigerFichiers(fichiersTheme, c.avant.trim(), c.apres.trim())) corrigesCode++;
+  for (const f of fichiersTheme) fs.writeFileSync(path.join(theme, f.path), f.content);
+
   // 6) Les contrôles du Studio, sans IA : Theme Check, puis l'affichage réel.
   ctx.progress(0.85, L("Je vérifie le code et l'affichage sur téléphone, tablette et ordinateur", "Checking the code and the display"));
   const controle = await ctx.step("controle", async () => {
@@ -210,7 +224,7 @@ export async function runDessinJob(ctx: JobContext) {
     return { erreurs, avertissements, exemples, captures };
   });
 
-  const res = { plan: { idee: plan.idee, sections: plan.sections.map((s) => s.nom) }, juge: { corrections: juge.appliquees, ignorees: juge.ignorees, avis: jugement.avis }, dessins: Object.values(dessins), photosCreees: creees.length, fichiers: ecrits, notes: code.notes, controle };
+  const res = { plan: { idee: plan.idee, sections: plan.sections.map((s) => s.nom) }, juge: { corrections: juge.appliquees, ignorees: juge.ignorees, avis: jugement.avis, code: { corrections: corrigesCode, demandees: jugeCode.corrections.length, avis: jugeCode.avis } }, dessins: Object.values(dessins), photosCreees: creees.length, fichiers: ecrits, notes: code.notes, controle };
   remember(p.id, { kind: "artifact", key: `syna.dessin.${ctx.job.id}`, value: JSON.stringify(res), source: "local", origin: "system" as never });
   ctx.progress(1, L("Terminé", "Done"));
   return res;

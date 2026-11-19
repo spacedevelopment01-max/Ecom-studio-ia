@@ -769,3 +769,19 @@ accordés), puis la méthode est apprise à SINA (« essaie avec sina, apprends-
 
 Tests : `tests/sina-dessiner-puis-coder.test.ts`, `tests/dessiner-puis-coder.test.ts`. **Pas vérifié avec la vraie IA :**
 SINA seule, de bout en bout.
+
+### L'essai réel avec SINA (19 novembre 2026) et ses corrections
+
+SINA a fait seule l'accueil de Bécane (Claude ne jouait que le client) : 9 sections choisies par elle, aucun fait faux
+selon son juge, contrôle de Shopify sans faute, rien qui déborde à 390, 820 et 1 440 px, aucune image manquante.
+Création : 0,96 € (plan 0,19, juge 0,04, cinq dessins 0,56, code par Sol 6.2 0,16) ; essai entier avec les réponses de
+SINA : 1,68 € sur 2,50 € accordés. Deux fautes de Claude en route : un plafond de dessin sous la réserve du Studio
+(tâche arrêtée avant le premier dessin, rien payé en trop ; SINA avait cru le budget du client épuisé : message rendu
+clair), et un gardien du Studio privé qui ne relançait plus (corrigé).
+
+Défauts relevés, corrigés sans IA, accord du propriétaire (« Oui ») :
+- SINA ne voyait ni ses dessins ni son code affiché : ils lui sont joints deux heures (`accueilDessineImages`).
+- « Une urgence ? Appelle-moi », un service jamais proposé, était passé : le juge le traque, et relit une seconde fois
+  les textes du site codé, corrections posées dans les fichiers (étape `juge-code`).
+- Sur téléphone, l'ouverture ne montrait qu'un guidon, et un rond jaune passait derrière le titre : règle du code
+  (photo d'ensemble à l'ouverture, sujet entier sur chaque écran, aucun rond décoratif derrière un titre).

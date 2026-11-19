@@ -78,7 +78,7 @@ describe("dessiner puis coder : la méthode", async () => {
 
   it("le prix : plan, juge, cinq dessins, les photos qui manquent et le code ; le plafond garde une marge raisonnable", () => {
     const q = J.dessinQuote(0), q2 = J.dessinQuote(3);
-    expect(q.probableMicro).toBe(120_000 + 60_000 + 5 * 115_000 + 300_000);
+    expect(q.probableMicro).toBe(120_000 + 2 * 60_000 + 5 * 115_000 + 300_000);
     expect(q2.probableMicro! - q.probableMicro!).toBe(3 * 115_000);
     expect(q.maxMicro).toBeLessThanOrEqual(Math.round(q.probableMicro! * 1.6));
     expect(q.label).not.toMatch(/€/);
@@ -101,10 +101,48 @@ describe("dessiner puis coder : la méthode", async () => {
     expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol" });
     expect(J.CODE_OUTPUT_TOKENS).toBeGreaterThanOrEqual(48_000);
     const src = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
-    expect((src.match(/sansRelanceCoupee: true/g) ?? []).length).toBe(3);
+    expect((src.match(/sansRelanceCoupee: true/g) ?? []).length).toBe(4);
     const llm = fs.readFileSync("src/lib/ai/llm.ts", "utf8");
     expect(llm).toContain('if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());');
     expect(llm).toContain("if (cut && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());");
+  });
+});
+
+describe("dessiner puis coder : les corrections de l'essai réel du 19 novembre 2026", async () => {
+  const M = await import("@/lib/syna-agent/dessin/methode");
+  it("le juge relit aussi les textes du site codé, et traque un service que le client ne propose pas", () => {
+    expect(M.JUGE_SYSTEM).toMatch(/un SERVICE ou une offre que le dossier ne propose pas[^;]*urgence/);
+    const files = [
+      { path: "templates/index.json", content: JSON.stringify({ sections: { a: { type: "x", settings: { titre: "Demain matin, laisse ta bécane", aide: "Une urgence ? Appelle-moi au", photo: "marque-photo-01.webp", fond: "#FFD23F" } } } }) },
+      { path: "sections/footer.liquid", content: "<footer><p>Mentions légales</p>{{ section.settings.x }}{% schema %}{}{% endschema %}</footer>" },
+      { path: "sections/marque-a.liquid", content: "<p>{{ section.settings.aide }}</p>" },
+    ];
+    const t = M.textesDuCode(files);
+    expect(t).toContain("Une urgence ? Appelle-moi au");
+    expect(t).toContain("Mentions légales");
+    expect(t).not.toContain("marque-photo-01.webp");
+    expect(t).not.toContain("#FFD23F");
+    expect(M.corrigerFichiers(files, "Une urgence ? Appelle-moi au", "Tu préfères parler ? Appelle-moi au")).toBe(1);
+    expect(files[0].content).toContain("Tu préfères parler ? Appelle-moi au");
+    expect(M.corrigerFichiers(files, "introuvable", "x")).toBe(0);
+    const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
+    expect(job).toContain('ctx.step("juge-code"');
+    expect(job.indexOf('ctx.step("juge-code"')).toBeLessThan(job.indexOf('ctx.step("controle"'));
+  });
+
+  it("le code garde le sujet entier sur l'ouverture, sur téléphone comme sur ordinateur, sans rond décoratif derrière le titre", () => {
+    expect(M.CODE_SYSTEM).toMatch(/l'OUVERTURE prend une photo d'ensemble[^;]*jamais un gros plan de détail/);
+    expect(M.CODE_SYSTEM).toMatch(/garde le sujet ENTIER/);
+    expect(M.CODE_SYSTEM).toMatch(/aucun rond ni aplat décoratif derrière un titre/);
+  });
+
+  it("SINA a sous les yeux ses dessins et le code affiché avant d'en parler", async () => {
+    const A = await import("@/lib/syna-agent/attachments");
+    expect(typeof A.accueilDessineImages).toBe("function");
+    expect(A.ACCUEIL_DESSINE_FENETRE_MS).toBe(2 * 60 * 60_000);
+    expect(fs.readFileSync("src/lib/syna-agent/attachments.ts", "utf8")).toContain("for (const im of await accueilDessineImages(projectId).catch(() => [])) if (out.length < 8) out.push(im);");
+    expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toContain("|Accueil dessiné)/");
+    expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("te sont joints : regarde-les toi-même avant d'en parler");
   });
 });
 

@@ -168,6 +168,10 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
     const shown: [string | undefined, string][] = [[im.logo?.id, "son logo"], [im.hero?.id, "la grande scène"], [im.object?.id, "l'objet qui porte le logo"], [im.signs?.id, "les signes de la marque"], ...((im.posts ?? []).map((q, i) => [q?.id, `publication ${i + 1}`] as [string | undefined, string]))];
     for (const [id, what] of shown) { const data = id ? await small(id, 512).catch(() => null) : null; if (data) out.push({ data, label: `Marque du client — ${what}, montré au client` }); }
   }
+  // Méthode « dessiner puis coder » (essai réel du 19 novembre 2026 : « les dessins et les captures ne me sont pas
+  // montrés à moi : je ne peux donc pas juger de leur beauté ») : l'accueil fait dans les deux dernières heures, ses
+  // trois dessins sur ordinateur et le code affiché (téléphone puis ordinateur, découpés en bandes lisibles).
+  if (projectId) for (const im of await accueilDessineImages(projectId).catch(() => [])) if (out.length < 8) out.push(im);
   if (j.brandKit?.boardId && j.steps[3]?.status !== "done") { const data = await small(j.brandKit.boardId, 1024).catch(() => null); if (data) out.push({ data, label: "Planche de marque montrée au client" }); }
   // Étape 6 : les images de maquette déjà créées (consigne du propriétaire : « SINA doit lire les images » ; essai réel
   // du 8 novembre : « je n'ai pas de rendu à te décrire, je ne le vois pas ici »). Trois au plus, la plus récente de
@@ -246,6 +250,36 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
       if (m) out.push({ data: m, label: `Maquette ${d!.key} — ${c.page} (${c.viewport === "desktop" ? "ordinateur" : "téléphone"}), la référence` });
       const data = await small(c.assetId, 1536).catch(() => null);
       if (data) out.push({ data, label: `Site codé (étape 7) — ${c.page} (${c.viewport === "desktop" ? "ordinateur" : "téléphone"}), capture de l'aperçu : compare-la à la maquette` });
+    }
+  }
+  return out;
+}
+
+/** Fenêtre pendant laquelle SINA garde sous les yeux l'accueil dessiné puis codé qu'elle vient de faire. */
+export const ACCUEIL_DESSINE_FENETRE_MS = 2 * 60 * 60_000;
+/**
+ * Les images de l'accueil dessiné puis codé le plus récent (moins de deux heures) : les trois dessins sur ordinateur,
+ * puis le code affiché sur téléphone et sur ordinateur, en bandes (une capture entière serait réduite au point de rendre
+ * les textes illisibles). Six images au plus.
+ */
+export async function accueilDessineImages(projectId: string): Promise<LlmImage[]> {
+  const { one } = await import("../db");
+  const { getAsset, assetData } = await import("../library");
+  const sharp = (await import("sharp")).default;
+  const job = one<{ result: string | null; finished_at: number | null }>("SELECT result, finished_at FROM jobs WHERE project_id = ? AND type = 'syna.dessin' AND status = 'done' ORDER BY created_at DESC LIMIT 1", projectId);
+  if (!job?.result || !job.finished_at || Date.now() - job.finished_at > ACCUEIL_DESSINE_FENETRE_MS) return [];
+  const r = JSON.parse(job.result) as { dessins?: string[]; controle?: { captures?: { appareil: string; assetId: string | null }[] } };
+  const out: LlmImage[] = [];
+  const data = (id: string) => { const a = getAsset(id); return a && !a.deleted_at ? assetData(a) : null; };
+  for (const [i, id] of (r.dessins ?? []).slice(0, 3).entries()) { const d = data(id); if (d) out.push({ data: await sharp(d).resize(1024, 1024, { fit: "inside" }).png().toBuffer(), label: `Accueil dessiné — dessin ${i + 1}/3 sur ordinateur, de haut en bas (sert à l'allure ; les textes du site viennent du plan)` }); }
+  for (const c of (r.controle?.captures ?? []).filter((x) => x.assetId && x.appareil !== "tablette")) {
+    const d = data(c.assetId!), meta = d ? await sharp(d).metadata() : null;
+    if (!d || !meta?.width || !meta.height) continue;
+    const band = c.appareil === "ordinateur" ? 1600 : 1200;
+    for (let top = 0, n = 1; top < meta.height && out.length < 6 && n <= 2; top += band, n++) {
+      const height = Math.min(band, meta.height - top);
+      if (height < 120) break;
+      out.push({ data: await sharp(d).extract({ left: 0, top, width: meta.width, height }).jpeg({ quality: 72 }).toBuffer(), label: `Accueil dessiné — le code affiché sur ${c.appareil}, partie ${n} de haut en bas, tel que le client le voit : regarde-le toi-même (photo qui coupe le sujet, texte illisible, élément qui gêne) avant d'en parler` });
     }
   }
   return out;

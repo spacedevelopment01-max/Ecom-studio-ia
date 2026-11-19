@@ -39,6 +39,10 @@ méthode a été essayée dans le Studio, étape par étape, et ce cahier garde 
 - Celui qui fait n'est jamais celui qui juge : un autre spécialiste relit le plan contre le dossier, fait par fait,
   AVANT le moindre dessin payé. Il corrige chaque texte faux ou inventé (en le remplaçant par un texte vrai, ou en le
   retirant), rétablit le nom exact d'une prestation remplacée, et signale deux sections qui se répètent.
+- Il cherche aussi un SERVICE ou une offre que le dossier ne propose pas, même suggéré en passant (une urgence, un
+  dépannage, un devis gratuit, une garantie) : essai réel, une phrase d'appel « en cas d'urgence » était passée.
+- Il relit une seconde fois, après le code : les textes du site codé, contre le dossier ; ses corrections sont posées
+  dans les fichiers du thème avant les contrôles.
 
 ## 4. Les dessins (modèle d'images)
 
@@ -66,6 +70,11 @@ méthode a été essayée dans le Studio, étape par étape, et ce cahier garde 
   Jamais de défilement horizontal, aucun texte coupé, un bouton se voit toujours en entier, menu en trois traits sur
   téléphone, grilles en une colonne, grands titres avec clamp().
 - Les photos : seulement celles de la liste donnée, chacune une seule fois ; le logo clair sur les fonds sombres.
+- L'ouverture prend une photo d'ensemble (plan large ou moyen, le sujet entier), jamais un gros plan de détail ; sur
+  téléphone comme sur ordinateur, le cadrage garde le sujet entier (essai réel : sur téléphone, l'ouverture ne montrait
+  qu'un morceau de l'objet) ; aucun rond ni aplat décoratif derrière un titre.
+- Avant de montrer le résultat au client, SINA regarde elle-même les dessins et le code affiché (téléphone et
+  ordinateur) et dit ce qui ne va pas.
 - La réponse doit avoir la place d'être entière : un thème coupé en plein milieu est perdu et payé (essai réel : une
   réponse limitée trop court a été coupée trois fois). Le Studio donne au modèle de code une longueur suffisante et ne
   relance jamais tout seul une réponse coupée.
