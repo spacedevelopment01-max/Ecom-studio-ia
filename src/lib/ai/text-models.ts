@@ -131,6 +131,25 @@ export const TEXT_MODELS: TextModel[] = [
   },
   {
     provider: "openai",
+    // Présent dans la liste des modèles du compte (GET /v1/models, 19 novembre 2026). Le propriétaire a fait coder son
+    // thème Shopify par ce modèle dans ChatGPT. Tarif relevé sur des sources non officielles (2 $ / 10 $ par million,
+    // au-delà de 272 000 jetons d'entrée : 4 $ / 15 $) : à saisir et confirmer dans l'administration.
+    model: "gpt-6.2-sol",
+    label: "GPT-6.2 Sol",
+    tier: "strong",
+    vision: true,
+    structured: true,
+    effort: { kind: "openai_reasoning", values: ["low", "medium", "high"], default: "medium" },
+    // Limites prudentes, sous le seuil du tarif long (272 000 jetons d'entrée), tant que les vraies ne sont pas confirmées.
+    limits: { context: 272_000, maxOutput: 64_000, flatPriceUpTo: 272_000 },
+    latency: 3,
+    exactCount: true,
+    verified: false,
+    source: "https://raw.githubusercontent.com/openai/openai-openapi/master/openapi.yaml",
+    use: { fr: "Candidat pour écrire le code des sites (méthode « dessiner puis coder »), à comparer à Opus 5.5 après essai réel.", en: "Candidate for coding sites (draw then code), to compare with Opus 5.5 after a real trial." },
+  },
+  {
+    provider: "openai",
     model: "gpt-5.6-terra",
     label: "GPT-5.6 Terra",
     tier: "standard",

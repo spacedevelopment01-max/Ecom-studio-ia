@@ -16,3 +16,16 @@ describe("le dessin d'une page en plusieurs images", async () => {
     expect(M.imageReferencePrompt("x", ["logo", "style"])).toContain("image 2: style");
   });
 });
+
+describe("Sol 6.2 (OpenAI), candidat pour écrire le code des sites", async () => {
+  const T = await import("@/lib/ai/text-models");
+  it("est déclaré, mais verrouillé tant que l'administration n'a pas confirmé son tarif et ses limites", () => {
+    const m = T.textModel("openai", "gpt-6.2-sol");
+    expect(m).toBeTruthy();
+    expect(m!.verified).toBe(false);
+    expect(m!.limits.context).toBeLessThanOrEqual(272_000);
+    const st = T.modelStatus(m!, {});
+    expect(st.usable).toBe(false);
+    expect(st.enabled).toBe(false);
+  });
+});
