@@ -175,7 +175,17 @@ describe("dessiner puis coder : les corrections de l'essai sur Atelier Vasco (19
     expect(job).toContain("info.theme_documentation_url ??=");
     expect(job).toContain("info.theme_support_url ??=");
     expect(job).toContain("const net = nettoyerPlan(juge.plan);");
-    expect(job).toContain("(document.body.innerText.match(/Ta photo ici|\\[À compléter/g) ?? []).length");
+    expect(job).toContain("(texte.match(/\\[À compléter/g) ?? []).length");
+    expect(job).toContain("const tenantsPlace = Math.max(0, (texte.match(/Ta photo ici/g) ?? []).length - sansPhoto);");
+  });
+
+  it("un produit sans photo garde sa carte avec « Ta photo ici », et un produit absent de l'accueil est un défaut (essai réel Braise : la carte d'un café caché)", () => {
+    expect(M.CODE_SYSTEM).toMatch(/SEULE exception, un produit SANS photo : sa carte RESTE, avec son nom et son prix exacts/);
+    expect(M.CODE_SYSTEM).toMatch(/jamais une carte cachée ni retirée/);
+    const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
+    expect(job).toContain("const absents = attendus.filter((t) => !norme(texte).includes(norme(t)));");
+    const tools = fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8");
+    expect(tools).toContain("x.produitsAbsents?.length");
   });
 });
 
@@ -240,7 +250,7 @@ describe("dessiner puis coder : une boutique a toujours le panier dans l'en-têt
     expect(M.CODE_SYSTEM).toMatch(/Une BOUTIQUE a toujours l'icône du panier dans l'en-tête/);
     const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
     expect(job).toContain('boutique: p.business !== "services",');
-    expect(job).toContain("panier: m.panier });");
+    expect(job).toContain("panier: m.panier, produitsAbsents: m.absents });");
     expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("(boutique && x.panier === false)");
   });
   it("un produit mis en scène est comparé à sa vraie photo par un autre modèle ; refusée, la vraie photo prend sa place, et la photo refusée se montre", () => {
@@ -284,5 +294,18 @@ describe("dessiner puis coder : SINA l'a appris", async () => {
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
     expect(SYNA_SYSTEM).toMatch(/site\.dessiner fait l'accueil comme les meilleures agences/);
     expect(fs.readFileSync("src/components/studio/syna-thread.tsx", "utf8")).toContain("data-syna-dessin");
+  });
+});
+
+describe("dessiner puis coder : le contrôle de fidélité peut partir", async () => {
+  const J = await import("@/lib/syna-agent/dessin/job");
+  const { maxCostMicro } = await import("@/lib/ai/llm");
+  const { FideleSchema } = await import("@/lib/syna-agent/dessin/methode");
+
+  it("son plafond couvre la réserve que le Studio prend avant l'envoi (essai réel Braise : 0,04 € bloquait les six contrôles)", async () => {
+    // Deux images de 768 px et la consigne : environ 2 500 jetons d'entrée ; la réserve compte 8 000 jetons de sortie au moins.
+    const reserve = await maxCostMicro("claude-sonnet-5-5", { system: [{ type: "text", text: "x" }], messages: [{ role: "user", content: "x" }], max_tokens: 8000 }, FideleSchema, async () => 2500);
+    expect(reserve).toBeGreaterThan(40_000);
+    expect(J.DESSIN_COUTS.fidele.max).toBeGreaterThanOrEqual(reserve);
   });
 });

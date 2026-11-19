@@ -56,8 +56,12 @@ export const DESSIN_COUTS = {
   // 0,16 € a arrêté la tâche avant le premier dessin). Le plafond suit la vraie réserve (imageMaxMicro).
   image: { probable: 115_000, max: 200_000 },
   code: { probable: 300_000, max: 900_000 },
-  /** Contrôle de fidélité d'une photo qui met un produit en scène (deux images, une courte réponse). */
-  fidele: { probable: 15_000, max: 40_000 },
+  /**
+   * Contrôle de fidélité d'une photo qui met un produit en scène (deux images, une courte réponse). Plafond : la réserve
+   * que le Studio prend avant l'envoi, 8 000 jetons de sortie au moins, soit environ 0,08 € (essai réel du 19 novembre
+   * 2026 sur Braise : un plafond de 0,04 € a empêché les six contrôles de partir, et les vraies photos ont été posées).
+   */
+  fidele: { probable: 15_000, max: 120_000 },
 } as const;
 /** Plafond d'un dessin : la réserve que le Studio prend avant l'envoi (jamais moins), sinon la mesure. */
 export function imageMaxMicro(): number {
@@ -299,8 +303,12 @@ export function specApercu(p: Project): ThemeSpec | undefined {
  * Studio : débordements, boutons hors de l'écran, images manquantes. Chaque capture est rangée dans les fichiers.
  * Le moteur d'aperçu écrit déjà le nom d'une police entre guillemets : la copie d'aperçu le dit comme Shopify.
  */
-export async function capturesAccueil(p: Project, jobId: string, theme: string): Promise<{ appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean }[]> {
+export async function capturesAccueil(p: Project, jobId: string, theme: string): Promise<{ appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean; produitsAbsents?: string[] }[]> {
   const spec = specApercu(p);
+  // Produits du catalogue : un produit sans photo garde sa carte avec « Ta photo ici » (règle du propriétaire), donc ces
+  // emplacements-là ne sont pas des manques ; un produit absent de la page en est un (essai réel : une carte cachée).
+  const produits = p.business === "services" ? [] : listProducts(p.id).map((x) => ({ titre: x.data.title, photo: x.data.images.some((im) => im.assetId) }));
+  const attendus = produits.map((x) => x.titre), sansPhoto = produits.filter((x) => !x.photo).length;
   const exe = chromiumPath();
   if (!spec || !exe) return [];
   const files = new Map<string, string>();
@@ -317,7 +325,7 @@ export async function capturesAccueil(p: Project, jobId: string, theme: string):
   const port = (server.address() as { port: number }).port;
   const { chromium } = await import("playwright");
   const browser = await chromium.launch({ executablePath: exe, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
-  const out: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean }[] = [];
+  const out: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean; produitsAbsents?: string[] }[] = [];
   try {
     for (const [appareil, vp] of [["telephone", { width: 390, height: 844 }], ["tablette", { width: 820, height: 1180 }], ["ordinateur", { width: 1440, height: 900 }]] as const) {
       const phone = appareil === "telephone";
@@ -325,18 +333,21 @@ export async function capturesAccueil(p: Project, jobId: string, theme: string):
       await page.goto(`http://127.0.0.1:${port}/p/`, { waitUntil: "networkidle", timeout: 60_000 }).catch(() => undefined);
       await page.addStyleTag({ content: "*{animation:none!important;transition:none!important}" });
       await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 500) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); } window.scrollTo(0, 0); });
-      const m = await page.evaluate(() => {
+      const m = await page.evaluate(({ attendus, sansPhoto }) => {
         const W = window.innerWidth, hors: string[] = [];
         for (const el of document.querySelectorAll("a,button,[role=button]")) { const b = el.getBoundingClientRect(); const cs = getComputedStyle(el); if (!b.width || !b.height || cs.visibility === "hidden") continue; if (b.left < -1 || b.right > W + 1) hors.push((el.textContent ?? "").trim().slice(0, 40)); }
         // Bouton ou lien visible sans aucun texte ni nom (essai réel : un bouton vide après une correction du juge).
         const vides = [...document.querySelectorAll("a,button")].filter((el) => { const b = el.getBoundingClientRect(); const cs = getComputedStyle(el); return b.width > 20 && b.height > 16 && cs.visibility !== "hidden" && !(el.textContent ?? "").trim() && !el.getAttribute("aria-label") && !el.querySelector("img,svg"); }).length;
         const panier = !!document.querySelector('header a[href*="/cart"], [class*=header] a[href*="/cart"]');
-        return { panier, debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + (document.body.innerText.match(/Ta photo ici|\[À compléter/g) ?? []).length + vides };
-      });
+        const texte = document.body.innerText, norme = (t: string) => t.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ");
+        const tenantsPlace = Math.max(0, (texte.match(/Ta photo ici/g) ?? []).length - sansPhoto);
+        const absents = attendus.filter((t) => !norme(texte).includes(norme(t)));
+        return { panier, absents, debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + tenantsPlace + (texte.match(/\[À compléter/g) ?? []).length + vides };
+      }, { attendus, sansPhoto });
       const shot = await page.screenshot({ fullPage: true, type: "jpeg", quality: 72 });
       await page.close();
       const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(shot), name: `accueil-code-${appareil}.jpg`, mime: "image/jpeg", role: "dessin-capture", origin: "generated", meta: { dessin: { jobId, appareil } } });
-      out.push({ appareil, assetId: asset.id, debordement: m.debordement, horsEcran: m.hors, manquantes: m.manquantes, panier: m.panier });
+      out.push({ appareil, assetId: asset.id, debordement: m.debordement, horsEcran: m.hors, manquantes: m.manquantes, panier: m.panier, produitsAbsents: m.absents });
     }
   } finally { await browser.close(); server.close(); }
   return out;
@@ -348,7 +359,7 @@ export function resultatDessin(projectId: string, jobId?: string) {
     ? one<{ result: string | null }>("SELECT result FROM jobs WHERE id = ? AND project_id = ? AND type = ?", jobId, projectId, SINA_DESSIN_JOB)
     : one<{ result: string | null }>("SELECT result FROM jobs WHERE project_id = ? AND type = ? AND status = 'done' ORDER BY created_at DESC LIMIT 1", projectId, SINA_DESSIN_JOB);
   if (!row?.result) return null;
-  const r = JSON.parse(row.result) as { photosRefusees?: { section: number; produit: string | null; defaut?: string; assetId: string | null }[]; plan: { idee: string; sections: string[] }; juge: { corrections: number; avis: string }; dessins: string[]; controle: { erreurs: number; avertissements: number; exemples: string[]; captures: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean }[] }; notes: string; photosCreees: number };
+  const r = JSON.parse(row.result) as { photosRefusees?: { section: number; produit: string | null; defaut?: string; assetId: string | null }[]; plan: { idee: string; sections: string[] }; juge: { corrections: number; avis: string }; dessins: string[]; controle: { erreurs: number; avertissements: number; exemples: string[]; captures: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean; produitsAbsents?: string[] }[] }; notes: string; photosCreees: number };
   const lien = (id: string | null) => (id ? assetUrl({ id }) : null);
   return { ...r, images: [
     ...r.dessins.map((id, i) => ({ href: lien(id), label: i < 3 ? L(`Dessin, ordinateur (${i + 1}/3)`, `Drawing, desktop (${i + 1}/3)`) : L(`Dessin, téléphone (${i - 2}/2)`, `Drawing, phone (${i - 2}/2)`) })),

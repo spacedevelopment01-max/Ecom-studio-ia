@@ -100,3 +100,13 @@ méthode a été essayée dans le Studio, étape par étape, et ce cahier garde 
   Sol 6.2 (OpenAI) 0,25 € en 4 minutes, contrôle de Shopify sans faute, aucun débordement à 390, 820 et 1 440 px.
 - Le modèle qui code : Sol 6.2 a été retenu par le propriétaire (« à voir qui est le moins cher ») ; le code par Claude
   n'a pas pu être comparé (réponse coupée par un réglage trop court, 2,10 € perdus, faute de Claude Code).
+- Essai Braise (torréfactrice, 19 novembre 2026) : accueil de 10 sections pour 1,76 € (plan 0,25 € ; juge 0,08 € ; 5 dessins
+  0,57 € ; 6 photos 0,66 € ; code par Sol 6.2 0,17 € ; relecture du code 0,03 €), contrôle de Shopify sans faute, aucun
+  débordement. Deux fautes de réglage, corrigées : le contrôle de fidélité avait un plafond (0,04 €) sous la réserve que
+  le Studio prend avant l'envoi (8 000 jetons de sortie, environ 0,08 €), donc aucun contrôle n'est parti et les vraies
+  photos ont remplacé les mises en scène ; la consigne du code interdisait « Ta photo ici », et la carte du café sans photo
+  a disparu (maintenant : la carte reste, et le Studio contrôle que chaque produit est sur la page).
+- Comparaison des réponses de SINA sur le même passage (Braise) : Opus 5.5, 12 questions, 13 appels, 1,80 € (0,14 € par
+  appel) ; Sol 6.2, 3 questions, 6 appels, 0,36 € (0,06 € par appel, mais deux appels par échange, et aucune reprise de
+  la partie déjà lue). Sol a sauté des questions utiles au site (abonnement, travail seule, ressenti voulu). Décision : Opus
+  reste ; le levier du prix est le nombre de messages.
