@@ -83,6 +83,7 @@ export function identiteDe(p: Project): Identite {
   const menu = (t?.pages ?? []).filter((pg) => !/^(home|legal|404|cart|panier|search|recherche)/.test(pg.key)).map((pg) => pg.label).slice(0, 6);
   const sv = p.business === "services" ? p.services : null;
   return {
+    boutique: p.business !== "services",
     marque: b?.name ?? p.name,
     couleurs: [pal.primary && `couleur principale ${pal.primary}`, pal.dark && `sombre ${pal.dark}`, pal.accent && `touches ${pal.accent}`, pal.light && `clair ${pal.light}`, pal.secondary && `secondaire ${pal.secondary}`].filter(Boolean).join(", "),
     polices: `Titres en ${nomPolice(b?.fonts?.heading) || "une linéale grasse"}, textes en ${nomPolice(b?.fonts?.body) || "une linéale simple"}`,
@@ -285,7 +286,7 @@ export function specApercu(p: Project): ThemeSpec | undefined {
  * Studio : débordements, boutons hors de l'écran, images manquantes. Chaque capture est rangée dans les fichiers.
  * Le moteur d'aperçu écrit déjà le nom d'une police entre guillemets : la copie d'aperçu le dit comme Shopify.
  */
-export async function capturesAccueil(p: Project, jobId: string, theme: string): Promise<{ appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number }[]> {
+export async function capturesAccueil(p: Project, jobId: string, theme: string): Promise<{ appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean }[]> {
   const spec = specApercu(p);
   const exe = chromiumPath();
   if (!spec || !exe) return [];
@@ -303,7 +304,7 @@ export async function capturesAccueil(p: Project, jobId: string, theme: string):
   const port = (server.address() as { port: number }).port;
   const { chromium } = await import("playwright");
   const browser = await chromium.launch({ executablePath: exe, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
-  const out: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number }[] = [];
+  const out: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean }[] = [];
   try {
     for (const [appareil, vp] of [["telephone", { width: 390, height: 844 }], ["tablette", { width: 820, height: 1180 }], ["ordinateur", { width: 1440, height: 900 }]] as const) {
       const phone = appareil === "telephone";
@@ -314,12 +315,13 @@ export async function capturesAccueil(p: Project, jobId: string, theme: string):
       const m = await page.evaluate(() => {
         const W = window.innerWidth, hors: string[] = [];
         for (const el of document.querySelectorAll("a,button,[role=button]")) { const b = el.getBoundingClientRect(); const cs = getComputedStyle(el); if (!b.width || !b.height || cs.visibility === "hidden") continue; if (b.left < -1 || b.right > W + 1) hors.push((el.textContent ?? "").trim().slice(0, 40)); }
-        return { debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + (document.body.innerText.match(/Ta photo ici|\[À compléter/g) ?? []).length };
+        const panier = !!document.querySelector('header a[href*="/cart"], [class*=header] a[href*="/cart"]');
+        return { panier, debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + (document.body.innerText.match(/Ta photo ici|\[À compléter/g) ?? []).length };
       });
       const shot = await page.screenshot({ fullPage: true, type: "jpeg", quality: 72 });
       await page.close();
       const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(shot), name: `accueil-code-${appareil}.jpg`, mime: "image/jpeg", role: "dessin-capture", origin: "generated", meta: { dessin: { jobId, appareil } } });
-      out.push({ appareil, assetId: asset.id, debordement: m.debordement, horsEcran: m.hors, manquantes: m.manquantes });
+      out.push({ appareil, assetId: asset.id, debordement: m.debordement, horsEcran: m.hors, manquantes: m.manquantes, panier: m.panier });
     }
   } finally { await browser.close(); server.close(); }
   return out;
@@ -331,7 +333,7 @@ export function resultatDessin(projectId: string, jobId?: string) {
     ? one<{ result: string | null }>("SELECT result FROM jobs WHERE id = ? AND project_id = ? AND type = ?", jobId, projectId, SINA_DESSIN_JOB)
     : one<{ result: string | null }>("SELECT result FROM jobs WHERE project_id = ? AND type = ? AND status = 'done' ORDER BY created_at DESC LIMIT 1", projectId, SINA_DESSIN_JOB);
   if (!row?.result) return null;
-  const r = JSON.parse(row.result) as { plan: { idee: string; sections: string[] }; juge: { corrections: number; avis: string }; dessins: string[]; controle: { erreurs: number; avertissements: number; exemples: string[]; captures: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number }[] }; notes: string; photosCreees: number };
+  const r = JSON.parse(row.result) as { plan: { idee: string; sections: string[] }; juge: { corrections: number; avis: string }; dessins: string[]; controle: { erreurs: number; avertissements: number; exemples: string[]; captures: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean }[] }; notes: string; photosCreees: number };
   const lien = (id: string | null) => (id ? assetUrl({ id }) : null);
   return { ...r, images: [
     ...r.dessins.map((id, i) => ({ href: lien(id), label: i < 3 ? L(`Dessin, ordinateur (${i + 1}/3)`, `Drawing, desktop (${i + 1}/3)`) : L(`Dessin, téléphone (${i - 2}/2)`, `Drawing, phone (${i - 2}/2)`) })),

@@ -228,6 +228,23 @@ describe("dessiner puis coder : corrections du second essai sur Atelier Vasco (1
   });
 });
 
+describe("dessiner puis coder : une boutique a toujours le panier dans l'en-tête (remarque du propriétaire, 19 novembre 2026)", async () => {
+  const M = await import("@/lib/syna-agent/dessin/methode");
+  it("le panier est dessiné, codé et contrôlé ; jamais pour un service", () => {
+    const boutique = { ...id, boutique: true };
+    expect(M.consignesDessins(plan(), boutique)[0].prompt).toMatch(/l'icône du PANIER/);
+    expect(M.consignesDessins(plan(), id)[0].prompt).not.toMatch(/PANIER/);
+    const d = M.demandeCode(plan(), boutique, { photos: [], logo: "l.png", logoClair: "lc.png", liens: "x" });
+    expect(d).toMatch(/ICÔNE DU PANIER toujours visible, sur téléphone comme sur ordinateur : lien \/cart/);
+    expect(M.demandeCode(plan(), id, { photos: [], logo: "l.png", logoClair: "lc.png", liens: "x" })).not.toMatch(/PANIER/);
+    expect(M.CODE_SYSTEM).toMatch(/Une BOUTIQUE a toujours l'icône du panier dans l'en-tête/);
+    const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
+    expect(job).toContain('boutique: p.business !== "services",');
+    expect(job).toContain("panier: m.panier });");
+    expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("(boutique && x.panier === false)");
+  });
+});
+
 describe("dessiner puis coder : SINA l'a appris", async () => {
   it("l'arrêt au plafond d'une création se dit clairement : ce n'est pas le budget du client (essai réel : SINA avait compris l'inverse)", async () => {
     const { CostCapReached } = await import("@/lib/ai/trace");
