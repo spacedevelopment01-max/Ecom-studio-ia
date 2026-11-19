@@ -277,13 +277,30 @@ export function fitSignature<D extends { famille?: string | null; pages: PageVue
 export const SIGNE_FORMES = ["etiquette", "tampon", "ligne", "couture", "ruban"] as const;
 export type SigneForme = (typeof SIGNE_FORMES)[number];
 export const SIGNE_TEXTE_MAX = 28;
-export const SIGNE_FORMES_TEXTE = "« etiquette » (une étiquette ronde, légèrement penchée, le texte au centre), « tampon » (un tampon rectangulaire à double bord, en capitales), « ligne » (une ligne de texte typographique entre deux filets, comme une date à remplir ou un numéro de série), « couture » (le texte entre deux lignes de points cousus), « ruban » (une bande pleine penchée, comme un ruban collé)";
+export const SIGNE_FORMES_TEXTE = "« etiquette » (une étiquette ronde, légèrement penchée, le texte au centre), « tampon » (un tampon rectangulaire à double bord, en capitales), « ligne » (une ligne de texte typographique entre deux filets, comme un numéro de série), « couture » (le texte entre deux lignes de points cousus), « ruban » (une bande pleine penchée, comme un ruban collé)";
 export type Signe = { forme: SigneForme; texte: string };
+
+/**
+ * Un blanc à remplir dans le texte du signe (« __ € », « __ / __ / ____ ») : sur le site, le client lit un prix ou une
+ * date qui manque. Essai réel du 18 novembre 2026 (Bécane) : « Prix annoncé : __ € » sur l'ouverture.
+ */
+export const SIGNE_BLANC_RX = /_{2,}|…|\.{3,}/;
+/** Le texte sans ses blancs à remplir, ni la ponctuation ou l'unité restées seules autour. */
+export function signeSansBlanc(texte: string): string {
+  return texte
+    .replace(/_{2,}|…|\.{3,}/g, " ")
+    .replace(/(^|\s)[/:€%·\-–—,]+(?=\s|$)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[\s:/·,\-–—]+$/, "")
+    .trim();
+}
 
 /** Le signe d'une tenue, s'il est complet. */
 export function signeDe(t: { signeForme?: string | null; signeTexte?: string | null } | null | undefined): Signe | null {
   const forme = SIGNE_FORMES.find((f) => f === t?.signeForme);
-  const texte = (t?.signeTexte ?? "").replace(/\s+/g, " ").trim();
+  // Un site monté avant la règle garde son signe, sans le blanc à remplir.
+  const texte = signeSansBlanc((t?.signeTexte ?? "").replace(/\s+/g, " ").trim());
   return forme && texte ? { forme, texte: texte.slice(0, SIGNE_TEXTE_MAX) } : null;
 }
 
@@ -294,6 +311,7 @@ export function signeGaps(t: { signeForme?: string | null; signeTexte?: string |
   const texte = (t?.signeTexte ?? "").trim();
   if (!texte) out.push(`signe : le signe de la marque n'a pas de texte (champ tenue.signeTexte, ${SIGNE_TEXTE_MAX} signes au plus : quelques mots ou un motif de texte tiré du produit ou du métier)`);
   else if (texte.length > SIGNE_TEXTE_MAX) out.push(`signe : le texte du signe fait ${texte.length} signes (${SIGNE_TEXTE_MAX} au plus)`);
+  if (SIGNE_BLANC_RX.test(texte)) out.push(`signe : le texte du signe « ${texte} » a un blanc à remplir : sur le site, le client lirait un prix ou une date qui manque. Écris un texte complet (un mot du métier, une mesure ou un numéro que le dossier donne)`);
   return out;
 }
 
@@ -301,7 +319,9 @@ export function signeGaps(t: { signeForme?: string | null; signeTexte?: string |
 export function fitSigne<T extends { signeForme?: string | null; signeTexte?: string | null }>(t: T, famille: string | null | undefined, marque: string): { t: T; changed: string[] } {
   const out = { ...t }, changed: string[] = [];
   if (!SIGNE_FORMES.includes(out.signeForme as SigneForme)) { out.signeForme = signatureOf(famille)?.signe ?? "etiquette"; changed.push(`signe : forme ${out.signeForme}`); }
-  const texte = (out.signeTexte ?? "").replace(/\s+/g, " ").trim();
+  const brut = (out.signeTexte ?? "").replace(/\s+/g, " ").trim();
+  const texte = SIGNE_BLANC_RX.test(brut) ? signeSansBlanc(brut) : brut;
+  if (texte !== brut) { out.signeTexte = texte; changed.push(`signe : blanc à remplir retiré (« ${brut} »)`); }
   if (!texte) { out.signeTexte = marque.trim().slice(0, SIGNE_TEXTE_MAX); changed.push(`signe : texte « ${out.signeTexte} »`); }
   else if (texte.length > SIGNE_TEXTE_MAX) { out.signeTexte = texte.slice(0, SIGNE_TEXTE_MAX).replace(/\s+\S*$/, "") || texte.slice(0, SIGNE_TEXTE_MAX); changed.push("signe : texte raccourci"); }
   return { t: out, changed };
@@ -353,7 +373,7 @@ export function signaturesBrief(): string {
     "RÉGLAGES DE CHAQUE SECTION (champ « reglages » de chaque section, en plus de sa construction) : « fond » (clair, doux, sombre ou marque : la couleur de la marque en aplat ; le Studio recalcule toutes les couleurs de la section pour qu'elles restent lisibles), « alignement » (gauche ou centre : le titre et sa phrase), « titre » (normal ou grand). Seules les pièces de contenu à fond clair prennent un fond ; l'en-tête, le pied de page, l'ouverture, le bloc d'achat et les pages pratiques gardent le leur. Une même pièce change ainsi d'allure d'un site à l'autre : choisis ces réglages pour CETTE marque.",
     "SIGNATURE DE LA FAMILLE : chaque famille se reconnaît au premier coup d'œil, et ses fonds suivent son rythme (contrôlé par le Studio) :",
     ...(Object.entries(SIGNATURES) as [FamilleId, Signature][]).map(([id, s]) => `- ${id} : ${s.dessin}. Fonds : ${s.cycle.join(" puis ")} en boucle${Object.keys(s.min).length ? ` ; sur l'accueil au moins ${Object.entries(s.min).map(([f, n]) => `${n} « ${f} »`).join(" et ")}` : ""}${Object.entries(s.max).length ? ` ; par page au plus ${Object.entries(s.max).map(([f, n]) => `${n} « ${f} »`).join(", ")}` : ""} ; ${s.sombresALaSuite ? "les sections sombres peuvent s'enchaîner" : "jamais deux fonds teintés pareils à la suite"}.`),
-    `LE SIGNE DE LA MARQUE (champs « signeForme » et « signeTexte » de la tenue) : le Studio le pose sur l'ouverture, sur un moment du milieu et sur l'appel final de l'accueil, et à la fin de chaque page importante. Forme : ${SIGNE_FORMES_TEXTE}. Texte : ${SIGNE_TEXTE_MAX} signes au plus, tiré du produit ou du métier de CETTE marque (un mot de son métier, une mesure, un numéro d'atelier, une ligne à remplir comme « __ / __ / ____ ») ; jamais un dessin, jamais une phrase de vente, jamais un fait inventé (ni date de création, ni chiffre que le dossier n'a pas).`,
+    `LE SIGNE DE LA MARQUE (champs « signeForme » et « signeTexte » de la tenue) : le Studio le pose sur l'ouverture, sur un moment du milieu et sur l'appel final de l'accueil, et à la fin de chaque page importante. Forme : ${SIGNE_FORMES_TEXTE}. Texte : ${SIGNE_TEXTE_MAX} signes au plus, tiré du produit ou du métier de CETTE marque (un mot de son métier, une mesure, un numéro d'atelier que le dossier donne) ; jamais un blanc à remplir (« __ € », « __ / __ / ____ » : le client lirait un prix ou une date qui manque), jamais un dessin, jamais une phrase de vente, jamais un fait inventé (ni date de création, ni chiffre que le dossier n'a pas).`,
   ].join("\n");
 }
 

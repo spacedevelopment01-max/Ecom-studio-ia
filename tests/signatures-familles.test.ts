@@ -161,10 +161,23 @@ describe("le signe de la marque (point 4)", () => {
   it("un signe incomplet est rendu au concepteur, puis complété sans IA (forme de la famille, nom de la marque)", () => {
     expect(G.signeGaps({}).join("\n")).toMatch(/n'a pas de forme[\s\S]*n'a pas de texte/);
     expect(G.signeGaps({ signeForme: "tampon", signeTexte: "x".repeat(30) }).join("\n")).toMatch(/30 signes/);
-    expect(G.signeGaps({ signeForme: "ligne", signeTexte: "__ / __ / ____" })).toEqual([]);
+    expect(G.signeGaps({ signeForme: "ligne", signeTexte: "N° 0427" })).toEqual([]);
     const fit = G.fitSigne({ signeForme: null, signeTexte: "" }, "epure-editorial", "Atelier Nord");
     expect(fit.t).toEqual({ signeForme: "ligne", signeTexte: "Atelier Nord" });
     expect(G.signeGaps(fit.t)).toEqual([]);
+  });
+
+  it("jamais un blanc à remplir : refusé au concepteur, retiré sans IA, et retiré au rendu d'un site déjà monté (essai Bécane)", () => {
+    expect(G.signeGaps({ signeForme: "etiquette", signeTexte: "Prix annoncé : __ €" }).join("\n")).toMatch(/blanc à remplir/);
+    expect(G.signeGaps({ signeForme: "ligne", signeTexte: "__ / __ / ____" }).join("\n")).toMatch(/blanc à remplir/);
+    expect(G.signeSansBlanc("Prix annoncé : __ €")).toBe("Prix annoncé");
+    expect(G.signeSansBlanc("Révisé le __ / __ / ____")).toBe("Révisé le");
+    expect(G.signeSansBlanc("N° __")).toBe("N°");
+    expect(G.fitSigne({ signeForme: "etiquette", signeTexte: "Prix annoncé : __ €" }, "epure-editorial", "Bécane").t.signeTexte).toBe("Prix annoncé");
+    expect(G.fitSigne({ signeForme: "ligne", signeTexte: "__ / __ / ____" }, "epure-editorial", "Bécane").t.signeTexte).toBe("Bécane");
+    expect(G.signeDe({ signeForme: "etiquette", signeTexte: "Prix annoncé : __ €" })).toEqual({ forme: "etiquette", texte: "Prix annoncé" });
+    expect(G.signeDe({ signeForme: "ligne", signeTexte: "__ / __ / ____" })).toBeNull();
+    expect(G.signaturesBrief()).not.toMatch(/une ligne à remplir/);
   });
 
   it("revient sur l'ouverture, un moment du milieu et l'appel final de l'accueil ; à la fin des autres pages importantes ; jamais sur une page pratique", () => {

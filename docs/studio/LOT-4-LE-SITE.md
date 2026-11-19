@@ -705,3 +705,31 @@ puis « Oui ». Construit sans IA :
 
 Tests : `tests/sina-site-photos-et-regard.test.ts` (dernière partie). **Pas vérifié** : combien de photos la vraie IA
 reprend vraiment ; si elle en reprend moins qu'une sur deux, le plafond garde les photos des pages principales d'abord.
+
+## Bécane refait (18 et 19 novembre 2026) et les défauts corrigés
+
+SINA a refait tout le site de Bécane : 8 pages sur l'idée « La cour, pas l'atelier ». Elle a d'abord demandé ce qui ne
+plaisait pas, posé ses questions une à une et n'a rien inventé. La création a coûté 5,90 € ; en comptant la tentative
+coupée par un redémarrage du serveur d'essai et les réponses de SINA, Bécane a coûté 9,45 € depuis la demande. Il reste
+quatre appels dont on ne sait pas s'ils ont été facturés (2,86 € au plus) : ils ne sont pas relancés.
+
+Défauts relevés, corrigés sans IA :
+
+- **« Prix annoncé : __ € »** sur le signe de la marque : la consigne proposait « une ligne à remplir ». Un blanc à
+  remplir est maintenant refusé au concepteur, retiré par le Studio en dernier recours, et retiré au rendu d'un site déjà
+  monté (`signatures.ts` : `SIGNE_BLANC_RX`, `signeSansBlanc`).
+- **Deux scènes de vélo dans une cour presque pareilles** : une photo du site d'avant était demandée par deux sections ;
+  la seconde, refusée à la pose, était créée d'après la même description. La relecture des photos relève désormais ces
+  doubles et les fait redécrire en scène neuve, avec un second passage pour ceux que ses propres reprises créent
+  (`reprisesEnDouble`, au plus 3 sections de plus).
+- **Les mêmes faits redits de page en page** : la même pièce (questions sur cinq pages, engagements sur deux) était écrite
+  page par page sans voir les autres. Son rédacteur reçoit maintenant ses titres, questions et lignes déjà écrits
+  ailleurs, avec la consigne de ne rien en reprendre (`memePieceAilleurs`).
+- **Les réalisations** : SINA refusait d'en montrer. Sa consigne dit maintenant la règle du propriétaire (14 novembre
+  2026) : elles se créent quand le client n'en a pas assez, sans personne reconnaissable ; ses vraies photos d'abord.
+
+Déjà en place, vérifié dans l'essai : après une coupure en plein appel payant, SINA dit au client que la création s'est
+arrêtée et ce qu'elle a coûté, et lui propose de relancer.
+
+Tests : `tests/sina-defauts-becane.test.ts`, `tests/signatures-familles.test.ts`. **Pas vérifié avec la vraie IA** :
+l'effet de ces corrections sur une nouvelle création.
