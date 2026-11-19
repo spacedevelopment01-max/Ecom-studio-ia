@@ -201,9 +201,30 @@ describe("dessiner puis coder : SINA crée toutes les photos du site, sauf celle
     expect(job).toContain("PHOTOS DES PRODUITS, ÉTAT ACTUEL DU CATALOGUE (fait foi, avant toute note plus ancienne)");
     expect(job).toContain("PHOTO DE LA SECTION ${c.n}");
     const media = fs.readFileSync("src/lib/ai/media-providers.ts", "utf8");
-    expect(media).toContain('export async function aiSitePhoto(ctx: Ctx, input: { prompt: string; references: { role: "product" | "style"; data: Buffer }[]; aspect: "1:1" | "2:3" | "16:9" })');
+    expect(media).toContain('export async function aiSitePhoto(ctx: Ctx, input: { prompt: string; references: { role: "product" | "style"; data: Buffer }[]; aspect: "1:1" | "2:3" | "3:2" })');
     expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("const photosACreer = (_projectId: string, _business: string) => PHOTOS_ACCUEIL;");
     expect(J.dessinQuote(J.PHOTOS_ACCUEIL).probableMicro).toBe(120_000 + 2 * 60_000 + (5 + 8) * 115_000 + 300_000);
+  });
+});
+
+describe("dessiner puis coder : corrections du second essai sur Atelier Vasco (19 novembre 2026)", async () => {
+  const M = await import("@/lib/syna-agent/dessin/methode");
+  const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
+  it("les photos sont créées par OpenAI (route imposée), variées, dans la couleur exacte du produit", () => {
+    expect(job).toContain("() => withQuotedImageRoute(mockupImageRoute(), () => aiSitePhoto(");
+    expect(job).toContain("PHOTOS DÉJÀ FAITES POUR CETTE PAGE (la tienne est NETTEMENT différente");
+    expect(job).toContain("dans EXACTEMENT la même couleur que sur sa photo (jamais une autre teinte)");
+    expect(M.PLAN_SYSTEM).toMatch(/Les photos VARIENT d'une section à l'autre/);
+  });
+  it("les dessins reçoivent les vraies photos des produits ; le titre ne passe jamais sur le produit", () => {
+    expect(job).toContain("for (const x of produitsAvecPhoto) refs.push({ role: \"scene\", data: assetData(getAsset(x.photo)!) });");
+    expect(job).toContain("Chaque produit dessiné est EXACTEMENT l'un d'eux");
+    expect(M.CODE_SYSTEM).toMatch(/le titre et les textes posés sur une photo vont sur sa partie CALME, jamais sur le produit/);
+  });
+  it("SINA ne promet jamais ce que son outil ne fait pas", async () => {
+    const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
+    expect(SYNA_SYSTEM).toMatch(/Tu ne lui promets jamais une étape que l'outil ne fait pas/);
+    expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("Ce que l'outil NE fait PAS (ne le promets jamais)");
   });
 });
 

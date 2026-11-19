@@ -59,7 +59,7 @@ export const DESSIN_COUTS = {
 } as const;
 /** Plafond d'un dessin : la réserve que le Studio prend avant l'envoi (jamais moins), sinon la mesure. */
 export function imageMaxMicro(): number {
-  try { return Math.max(DESSIN_COUTS.image.max, photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: 3, aspect: "2:3", quality: "high" })); } catch { return DESSIN_COUTS.image.max; }
+  try { return Math.max(DESSIN_COUTS.image.max, photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: 7, aspect: "2:3", quality: "high" })); } catch { return DESSIN_COUTS.image.max; }
 }
 /** Nombre de photos voulues sur un accueil (essai : 9 sections, 8 photos). */
 export const PHOTOS_ACCUEIL = 8;
@@ -139,13 +139,19 @@ export async function runDessinJob(ctx: JobContext) {
   const plan: PlanPage = net.plan;
 
   // 3) Les dessins : trois pour l'ordinateur, deux pour le téléphone.
+  const produitsAvecPhoto = p.business === "services" ? [] : listProducts(p.id).flatMap((x) => { const ph = x.data.images.find((im) => im.assetId)?.assetId; return ph ? [{ titre: x.data.title, photo: ph }] : []; }).slice(0, 4);
   const consignes = consignesDessins(plan, id);
   const dessins: Record<string, string> = {};
   for (const [i, c] of consignes.entries()) {
     ctx.progress(0.18 + 0.32 * (i / consignes.length), L(`Je dessine ton accueil : ${i < 3 ? "ordinateur" : "téléphone"} (${i + 1} sur ${consignes.length})`, `Drawing (${i + 1}/${consignes.length})`));
     dessins[c.nom] = await ctx.step(`dessin:${c.nom}`, async () => {
-      const refs = c.refs.map((k) => ({ role: (k === "logo" ? "logo" : "style") as "logo" | "style", data: k === "logo" ? logo : assetData(getAsset(dessins[{ haut: "1-haut", milieu: "2-milieu", bas: "3-bas", tel1: "4-tel-haut" }[k as "haut"]])!) }));
-      const img = await withTrace(trace(`dessin-${c.nom}`, imageMaxMicro()), () => withQuotedImageRoute(mockupImageRoute(), () => aiSitePageMockup({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:dessin:${c.nom}` }, { prompt: c.prompt, references: refs })));
+      const refs: { role: "logo" | "style" | "scene"; data: Buffer }[] = c.refs.map((k) => ({ role: (k === "logo" ? "logo" : "style") as "logo" | "style", data: k === "logo" ? logo : assetData(getAsset(dessins[{ haut: "1-haut", milieu: "2-milieu", bas: "3-bas", tel1: "4-tel-haut" }[k as "haut"]])!) }));
+      // Les vraies photos des produits, pour que les produits dessinés soient les vrais (essai réel du 19 novembre 2026 :
+      // les sacs dessinés étaient inventés).
+      const premier = refs.length + 1;
+      for (const x of produitsAvecPhoto) refs.push({ role: "scene", data: assetData(getAsset(x.photo)!) });
+      const prompt = produitsAvecPhoto.length ? `${c.prompt}\nLES PRODUITS : les images ${premier} à ${refs.length} sont les VRAIES photos des produits (${produitsAvecPhoto.map((x) => `« ${x.titre} »`).join(", ")}, dans cet ordre). Chaque produit dessiné est EXACTEMENT l'un d'eux : même forme, même couleur, mêmes détails ; jamais un produit inventé.` : c.prompt;
+      const img = await withTrace(trace(`dessin-${c.nom}`, imageMaxMicro()), () => withQuotedImageRoute(mockupImageRoute(), () => aiSitePageMockup({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:dessin:${c.nom}` }, { prompt, references: refs })));
       const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: img as Buffer, name: `dessin-accueil-${c.nom}.png`, mime: "image/png", role: "dessin", origin: "generated", meta: { dessin: { jobId: ctx.job.id, morceau: c.nom } } });
       return asset.id;
     });
@@ -167,10 +173,12 @@ export async function runDessinJob(ctx: JobContext) {
       const prod = s.produit ? catalogue.find((x) => x.titre.trim().toLowerCase() === s.produit!.trim().toLowerCase() && x.photo) : undefined;
       const dessin = dessins[m1.includes(n) ? "1-haut" : m2.includes(n) ? "2-milieu" : "3-bas"];
       const refs: { role: "product" | "style"; data: Buffer }[] = [...(prod ? [{ role: "product" as const, data: assetData(getAsset(prod.photo!)!) }] : []), ...(dessin ? [{ role: "style" as const, data: assetData(getAsset(dessin)!) }] : [])];
-      const aspect = n === 1 || s.format === "paysage" ? "16:9" : s.format === "portrait" ? "2:3" : "1:1";
-      const prompt = `Photo de site pour la marque « ${id.marque} », section « ${s.nom} » : ${s.photo}. ${prod ? `Le produit « ${prod.titre} » est mis en scène : UN seul exemplaire, fidèle à sa vraie photo jointe (forme, couleur, matière, détails), entier, jamais déformé.` : "Aucun produit de la marque n'apparaît dans cette photo (un produit ne s'invente jamais)."} La photo suit l'allure de la page dessinée jointe (lumière, couleurs, ambiance) mais n'en recopie ni la mise en page ni les textes. Couleurs : ${id.couleurs}. Lumière naturelle travaillée, niveau d'une campagne haut de gamme. Aucune personne, aucun visage, aucune main. Aucun texte, aucune lettre, aucun chiffre, aucun logo.`;
+      const aspect = n === 1 || s.format === "paysage" ? "3:2" : s.format === "portrait" ? "2:3" : "1:1";
+      // Variété (essai réel : même rebord de pierre et même fenêtre sur les huit photos, la même besace trois fois).
+      const deja = out.filter((o) => o.id).map((o) => `- ${o.description.slice(0, 160)}${o.produit ? ` (avec « ${o.produit} »)` : ""}`);
+      const prompt = `Photo de site pour la marque « ${id.marque} », section « ${s.nom} » : ${s.photo}. ${prod ? `Le produit « ${prod.titre} » est mis en scène : UN seul exemplaire, fidèle à sa vraie photo jointe (forme, matière, détails), dans EXACTEMENT la même couleur que sur sa photo (jamais une autre teinte), entier, jamais déformé.` : "Aucun produit de la marque n'apparaît dans cette photo (un produit ne s'invente jamais)."}${deja.length ? ` PHOTOS DÉJÀ FAITES POUR CETTE PAGE (la tienne est NETTEMENT différente : un autre décor, une autre surface, un autre cadrage ou une autre distance, une autre lumière du jour ; pas la même fenêtre ni le même rebord) :\n${deja.join("\n")}\n` : ""} La photo suit l'allure de la page dessinée jointe (lumière, couleurs, ambiance) mais n'en recopie ni la mise en page ni les textes. Couleurs : ${id.couleurs}. Lumière naturelle travaillée, niveau d'une campagne haut de gamme. Aucune personne, aucun visage, aucune main. Aucun texte, aucune lettre, aucun chiffre, aucun logo.`;
       try {
-        const img = await withTrace(trace(`dessin-photo-${n}`, imageMaxMicro()), () => aiSitePhoto({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:photo:${n}` }, { prompt, references: refs, aspect }));
+        const img = await withTrace(trace(`dessin-photo-${n}`, imageMaxMicro()), () => withQuotedImageRoute(mockupImageRoute(), () => aiSitePhoto({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:photo:${n}` }, { prompt, references: refs, aspect })));
         const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: img as Buffer, name: `photo-accueil-section-${n}.png`, mime: "image/png", role: "site", origin: "generated", meta: { dessin: { jobId: ctx.job.id, section: n, produit: prod?.titre ?? null } } });
         out.push({ n, id: asset.id, description: s.photo!, produit: prod?.titre ?? null });
       } catch (e) { out.push({ n, id: null, description: `${s.photo} (création ratée : ${(e as Error).message.slice(0, 120)})`, produit: null }); }

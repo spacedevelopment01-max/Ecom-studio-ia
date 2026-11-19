@@ -65,6 +65,11 @@ méthode a été essayée dans le Studio, étape par étape, et ce cahier garde 
   jointe en modèle, un seul exemplaire, fidèle. Un produit sans photo n'apparaît dans aucune image créée ; sa carte
   garde « Ta photo ici ». L'état des photos se lit dans le catalogue, jamais dans une note plus ancienne (essai réel :
   une vieille note disait les photos absentes, et l'ouverture est restée vide).
+- Les photos VARIENT d'une section à l'autre (décor, surface, cadrage, distance, moment de la journée) : chaque photo
+  connaît celles déjà faites pour la page (essai réel : même rebord de pierre et même fenêtre sur huit photos). Un même
+  produit est mis en scène deux fois au plus, dans EXACTEMENT la couleur de sa vraie photo (essai réel : une pochette
+  noire devenue prune). Les dessins reçoivent aussi les vraies photos des produits : un produit dessiné est l'un d'eux,
+  jamais un produit inventé. Toutes les images sont créées par OpenAI (règle du propriétaire).
 
 ## 5. Le code (modèle de code)
 
@@ -79,7 +84,8 @@ méthode a été essayée dans le Studio, étape par étape, et ce cahier garde 
 - Les photos : seulement celles de la liste donnée, chacune une seule fois ; le logo clair sur les fonds sombres.
 - L'ouverture prend une photo d'ensemble (plan large ou moyen, le sujet entier), jamais un gros plan de détail ; sur
   téléphone comme sur ordinateur, le cadrage garde le sujet entier (essai réel : sur téléphone, l'ouverture ne montrait
-  qu'un morceau de l'objet) ; aucun rond ni aplat décoratif derrière un titre.
+  qu'un morceau de l'objet) ; aucun rond ni aplat décoratif derrière un titre ; un texte posé sur une photo va sur sa
+  partie calme, jamais sur le produit (essai réel : le titre de l'ouverture passait sur le sac).
 - Avant de montrer le résultat au client, SINA regarde elle-même les dessins et le code affiché (téléphone et
   ordinateur) et dit ce qui ne va pas.
 - La réponse doit avoir la place d'être entière : un thème coupé en plein milieu est perdu et payé (essai réel : une

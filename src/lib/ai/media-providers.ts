@@ -702,7 +702,8 @@ export async function aiSitePageMockup(ctx: Ctx, input: { prompt: string; refere
  * 2026 : « sina doit forcément faire toutes les images du site en dehors de celle du produit ») : la vraie photo d'un
  * produit mis en scène (à reproduire fidèlement) et le dessin de la page (modèle d'allure) en références.
  */
-export async function aiSitePhoto(ctx: Ctx, input: { prompt: string; references: { role: "product" | "style"; data: Buffer }[]; aspect: "1:1" | "2:3" | "16:9" }) {
+export async function aiSitePhoto(ctx: Ctx, input: { prompt: string; references: { role: "product" | "style"; data: Buffer }[]; aspect: "1:1" | "2:3" | "3:2" }) {
+  // Les images de SINA sont créées par OpenAI (règle du propriétaire) : l'appelant impose la route (withQuotedImageRoute).
   return generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references: input.references.map((r) => ({ ...r, essential: true })), quality: "high", strictQuality: true, usage: "scene", need: { references: input.references.length } });
 }
 
