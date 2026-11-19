@@ -44,7 +44,7 @@ export const CodeSchema = z.object({
 export type CodePage = z.infer<typeof CodeSchema>;
 
 export const PLAN_SYSTEM = `Tu es le directeur artistique et le concepteur-rédacteur d'une petite agence qui fait les meilleurs sites. Tu fais le PLAN de la PAGE D'ACCUEIL d'un site, d'après le dossier du projet ci-dessous et rien d'autre, en suivant la méthode de ton cahier « Dessiner puis coder une page ».
-Elle a ${SECTIONS_ACCUEIL.min} à ${SECTIONS_ACCUEIL.max} sections (sans compter l'en-tête et le pied de page) : c'est TOI qui les choisis, pour CE métier et CE client, pas un modèle tout fait. Chaque section répond à une question que ce visiteur se pose, au moment où il se la pose ; aucune ne répète le sujet ni la disposition d'une autre ; jamais deux dispositions pareilles à la suite ; la première est une ouverture en grande photo pleine avec le titre dessus ; la dernière donne envie d'agir. Les textes sont en français, clairs à la première lecture, font ressentir une scène ; un même fait ne se dit qu'une fois. Le nom d'une prestation ou d'un produit et son prix s'écrivent tels que le dossier les donne. Rien d'inventé : aucun avis, aucun chiffre, aucune promesse, aucun détail absent du dossier. Pas de pictogramme dessiné. Aucune personne sur les photos.
+Elle a ${SECTIONS_ACCUEIL.min} à ${SECTIONS_ACCUEIL.max} sections (sans compter l'en-tête et le pied de page) : c'est TOI qui les choisis, pour CE métier et CE client, pas un modèle tout fait. Chaque section répond à une question que ce visiteur se pose, au moment où il se la pose ; aucune ne répète le sujet ni la disposition d'une autre ; jamais deux dispositions pareilles à la suite ; la première est une ouverture en grande photo pleine avec le titre dessus ; la dernière donne envie d'agir. Les textes sont en français, clairs à la première lecture, font ressentir une scène ; un même fait ne se dit qu'une fois. Le nom d'une prestation ou d'un produit et son prix s'écrivent tels que le dossier les donne. Rien d'inventé : aucun avis, aucun chiffre, aucune promesse, aucun détail absent du dossier. Jamais un blanc à remplir (« __ / __ / ____ ») ni un « [À compléter] » sur l'accueil : une information qui manque ne s'y montre pas. Pas de pictogramme dessiné. Aucune personne sur les photos. La photo de l'ouverture est une scène d'ensemble de l'univers de la marque, jamais un emplacement vide.
 Réponds en JSON : idee (l'idée de la page en une phrase) ; sections (dans l'ordre : nom, pourquoi (la question du visiteur), disposition (précise), fond (clair, crème, couleur de la marque, sombre ou photo), textes (TOUS les textes exacts dans l'ordre de lecture : titres, phrases, boutons, étiquettes), photo (la photo voulue en une phrase, ou null)) ; morceaux (la page en trois morceaux de hauteur égale pour la dessiner : trois listes des numéros de sections, à partir de 1, dans l'ordre ; l'en-tête va avec le premier, le pied de page avec le dernier).`;
 
 export const JUGE_SYSTEM = `Tu es le juge des faits d'une petite agence. Tu relis le PLAN d'une page d'accueil contre le DOSSIER du projet, texte par texte, AVANT que la page soit dessinée et payée. Celui qui a fait le plan n'est pas toi.
@@ -53,7 +53,7 @@ Pour chaque défaut, une correction : section (son numéro, à partir de 1), ava
 
 export const CODE_SYSTEM = `Tu es un développeur de thèmes Shopify du plus haut niveau, et un intégrateur exigeant. Tu codes la PAGE D'ACCUEIL d'un thème Shopify (Online Store 2.0) d'après le plan et les dessins joints, fidèlement (même ordre, mêmes dispositions, même allure, mêmes couleurs), en suivant ton cahier « Dessiner puis coder une page ». Les TEXTES viennent du plan, mot pour mot (les dessins ont des fautes : le plan a toujours raison).
 Fichiers : layout/theme.liquid ; config/settings_schema.json ; templates/index.json (les sections dans l'ordre) ; sections/header.liquid et sections/footer.liquid (posés par {% section %} dans le gabarit) ; une section par section du plan (sections/<marque>-<nom-court>.liquid), chacune avec son {% schema %} complet (name, settings, presets) ; assets/<marque>.css (tout le style, aucune bibliothèque externe) ; un fichier de script seulement s'il le faut.
-Chaque texte est un réglage de sa section (text, textarea ou richtext) avec le texte du plan pour valeur par défaut, et templates/index.json reprend ces valeurs. Photos : seulement les fichiers listés, appelés par {{ 'nom.webp' | asset_url }}, chacune une seule fois ; une « PHOTO DU PRODUIT » ne va que sur la carte ou le bloc de CE produit, avec son nom et son prix exacts, jamais un produit montré sans sa vraie photo ; l'OUVERTURE prend une photo d'ensemble (plan large ou moyen, le sujet entier), jamais un gros plan de détail ; sur téléphone comme sur ordinateur, le cadrage (object-fit et object-position) garde le sujet ENTIER, jamais un morceau de guidon ou d'objet coupé (essai réel : sur téléphone, l'ouverture ne montrait qu'un guidon) ; aucun rond ni aplat décoratif derrière un titre ; alt en français, loading="lazy" sauf l'ouverture, largeur et hauteur posées. Logo : le fichier du logo sur fond clair, le fichier du logo clair sur fond sombre. Polices : réglages de thème font_picker chargés avec font_face. Couleurs en variables CSS.
+Chaque texte est un réglage de sa section (text, textarea ou richtext) avec le texte du plan pour valeur par défaut, et templates/index.json reprend ces valeurs. Photos : seulement les fichiers listés, appelés par {{ 'nom.webp' | asset_url }}, chacune une seule fois ; JAMAIS un emplacement vide ni « Ta photo ici », jamais un réglage d'image sans photo : chaque photo vient de la liste (essai réel : l'ouverture était restée vide) ; une « PHOTO DU PRODUIT » ne va que sur la carte ou le bloc de CE produit, avec son nom et son prix exacts, jamais un produit montré sans sa vraie photo ; l'OUVERTURE prend une photo d'ensemble (plan large ou moyen, le sujet entier), jamais un gros plan de détail ; sur téléphone comme sur ordinateur, le cadrage (object-fit et object-position) garde le sujet ENTIER, jamais un morceau de guidon ou d'objet coupé (essai réel : sur téléphone, l'ouverture ne montrait qu'un guidon) ; aucun rond ni aplat décoratif derrière un titre ; alt en français, loading="lazy" sauf l'ouverture, largeur et hauteur posées. Logo : le fichier du logo sur fond clair, le fichier du logo clair sur fond sombre. Polices : réglages de thème font_picker chargés avec font_face. Couleurs en variables CSS.
 RESPONSIVE PARFAIT : d'abord le téléphone (390 px), puis la tablette (768 px) et l'ordinateur (1 440 px). Jamais de défilement horizontal, aucun texte coupé, un bouton (son bord et son ombre) se voit toujours en entier, boutons d'au moins 44 px de haut sur téléphone, menu en trois traits sur téléphone (sans bibliothèque), grilles en une colonne, grands titres avec clamp(). L'en-tête sur ordinateur tient sur UNE ligne, lisible. HTML sémantique (un seul h1), contrastes lisibles, focus visible, aucun pictogramme dessiné, aucune personne, rien d'inventé. Le code passe le contrôle officiel de Shopify (Theme Check) sans erreur.
 Réponds en JSON : files (chaque fichier : path, content complet) ; notes (deux phrases : ce que tu as fait pour le téléphone, ce qui reste à vérifier).`;
 
@@ -81,12 +81,45 @@ export function corrigerFichiers(files: { path: string; content: string }[], ava
   return n;
 }
 
+/**
+ * Nettoyage sans IA du plan, après le juge : jamais un blanc à remplir (« __ / __ / ____ ») ni un « [À compléter] »
+ * sur l'accueil (essai réel du 19 novembre 2026 : une date à remplir dessinée deux fois, une question sans réponse).
+ * Un texte fait seulement d'un blanc est retiré ; un blanc dans une phrase est enlevé ; une question dont la réponse est
+ * « [À compléter] » est retirée avec sa réponse.
+ */
+export function nettoyerPlan(plan: PlanPage): { plan: PlanPage; retires: string[] } {
+  const out: PlanPage = JSON.parse(JSON.stringify(plan)), retires: string[] = [];
+  const BLANC = /_{2,}|…|\.{3,}/g;
+  for (const s of out.sections) {
+    const t: string[] = [];
+    for (let i = 0; i < s.textes.length; i++) {
+      const x = s.textes[i], suivant = s.textes[i + 1] ?? "";
+      if (/\?\s*$/.test(x) && /^\s*\[À compléter/i.test(suivant)) { retires.push(x, suivant); i++; continue; }
+      if (/\[À compléter/i.test(x)) { retires.push(x); continue; }
+      if (BLANC.test(x)) { BLANC.lastIndex = 0; const net = x.replace(BLANC, " ").replace(/(^|\s)[/:€%·\-–—,]+(?=\s|$)/g, " ").replace(/\s+/g, " ").trim(); retires.push(x); if (net.length > 2) t.push(net); continue; }
+      t.push(x);
+    }
+    s.textes = t.length ? t : [s.nom];
+  }
+  return { plan: out, retires };
+}
+
 /** Applique les corrections du juge au plan (sans IA) : chaque texte cité est remplacé, ou retiré si la correction est vide. */
 export function appliquerJugement(plan: PlanPage, j: Jugement): { plan: PlanPage; appliquees: number; ignorees: number } {
   const out: PlanPage = JSON.parse(JSON.stringify(plan));
   let appliquees = 0, ignorees = 0;
   for (const c of j.corrections) {
     const s = out.sections[c.section - 1];
+    // Une correction qui cite plusieurs textes à la fois (« question » « réponse ») : chacun est retiré, ou le premier
+    // remplacé et les autres retirés (essai réel du 19 novembre 2026 : une question sans réponse était restée).
+    const cites = [...c.avant.matchAll(/«\s*([^»]+?)\s*»/g)].map((m) => m[1].trim());
+    if (s && cites.length > 1 && cites.every((t) => s.textes.some((x) => x.trim() === t))) {
+      const idx = cites.map((t) => s.textes.findIndex((x) => x.trim() === t)).sort((a, b) => a - b);
+      if (c.apres.trim()) s.textes[idx[0]] = c.apres.trim();
+      for (const k of idx.slice(c.apres.trim() ? 1 : 0).reverse()) s.textes.splice(k, 1);
+      appliquees++;
+      continue;
+    }
     const i = s ? s.textes.findIndex((t) => t.trim() === c.avant.trim()) : -1;
     const k = i >= 0 ? i : s ? s.textes.findIndex((t) => t.includes(c.avant.trim())) : -1;
     if (!s || k < 0) { ignorees++; continue; }

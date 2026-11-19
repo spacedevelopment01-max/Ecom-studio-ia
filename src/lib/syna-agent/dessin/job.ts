@@ -35,7 +35,7 @@ import { buildSpec } from "../../theme/directions";
 import { contentFromInput, libraryFiller } from "../../theme/library-fill";
 import { localCopy } from "../../engine/local-copy";
 import { emptyProduct } from "../../project-types";
-import { appliquerJugement, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
+import { appliquerJugement, nettoyerPlan, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
 
 export const SINA_DESSIN_JOB = "syna.dessin";
 export type DessinPayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null };
@@ -132,7 +132,8 @@ export async function runDessinJob(ctx: JobContext) {
   const jugement = await ctx.step("juge", () => withTrace(trace("dessin-juge", DESSIN_COUTS.juge.max), () =>
     llmJson({ nouvelleSiChangee: true, sansRelanceCoupee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(JUGE_SYSTEM, "jugeDessin"), promptKey: "syna-dessin-juge-1", prompt: `DOSSIER DU PROJET :\n${dossier}\n\nPLAN À RELIRE :\n${plan0.sections.map((s, i) => `${i + 1}. « ${s.nom} » : ${s.textes.map((t) => `« ${t} »`).join(" ")}`).join("\n")}`, maxTokens: 6_000, maxOutputTokens: 6_000, usageKey: `${ctx.job.id}:juge`, routing: { difficulty: "complex" } }, JugementSchema, { strict: true })));
   const juge = appliquerJugement(plan0, jugement);
-  const plan: PlanPage = juge.plan;
+  const net = nettoyerPlan(juge.plan);
+  const plan: PlanPage = net.plan;
 
   // 3) Les dessins : trois pour l'ordinateur, deux pour le téléphone.
   const consignes = consignesDessins(plan, id);
@@ -197,6 +198,8 @@ export async function runDessinJob(ctx: JobContext) {
   }
   const schemaFile = path.join(theme, "config/settings_schema.json");
   if (!fs.existsSync(schemaFile)) { fs.mkdirSync(path.dirname(schemaFile), { recursive: true }); fs.writeFileSync(schemaFile, JSON.stringify([{ name: "theme_info", theme_name: id.marque, theme_version: "0.1.0", theme_author: "SINA", theme_documentation_url: "https://help.shopify.com", theme_support_url: "https://help.shopify.com" }], null, 2)); }
+  // theme_info complet (essai réel : le schéma écrit par le modèle de code en oubliait deux champs, refusés par Shopify).
+  try { const sch = JSON.parse(fs.readFileSync(schemaFile, "utf8")); const info = Array.isArray(sch) ? sch.find((g: { name?: string }) => g.name === "theme_info") : null; if (info) { info.theme_name ??= id.marque; info.theme_version ??= "0.1.0"; info.theme_author ??= "SINA"; info.theme_documentation_url ??= "https://help.shopify.com"; info.theme_support_url ??= "https://help.shopify.com"; fs.writeFileSync(schemaFile, JSON.stringify(sch, null, 2)); } } catch { /* schéma illisible : Theme Check le dira */ }
   if (!fs.existsSync(path.join(theme, "config/settings_data.json"))) fs.writeFileSync(path.join(theme, "config/settings_data.json"), reglagesParDefaut(fs.readFileSync(schemaFile, "utf8")));
   fs.mkdirSync(path.join(theme, "locales"), { recursive: true });
   if (!fs.existsSync(path.join(theme, "locales/fr.default.json"))) fs.writeFileSync(path.join(theme, "locales/fr.default.json"), "{}");
@@ -284,7 +287,7 @@ export async function capturesAccueil(p: Project, jobId: string, theme: string):
       const m = await page.evaluate(() => {
         const W = window.innerWidth, hors: string[] = [];
         for (const el of document.querySelectorAll("a,button,[role=button]")) { const b = el.getBoundingClientRect(); const cs = getComputedStyle(el); if (!b.width || !b.height || cs.visibility === "hidden") continue; if (b.left < -1 || b.right > W + 1) hors.push((el.textContent ?? "").trim().slice(0, 40)); }
-        return { debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length };
+        return { debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + (document.body.innerText.match(/Ta photo ici|\[À compléter/g) ?? []).length };
       });
       const shot = await page.screenshot({ fullPage: true, type: "jpeg", quality: 72 });
       await page.close();

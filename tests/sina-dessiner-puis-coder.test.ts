@@ -149,6 +149,36 @@ describe("dessiner puis coder : les corrections de l'essai réel du 19 novembre 
   });
 });
 
+describe("dessiner puis coder : les corrections de l'essai sur Atelier Vasco (19 novembre 2026)", async () => {
+  const M = await import("@/lib/syna-agent/dessin/methode");
+  it("une correction du juge qui cite la question et sa réponse les retire toutes les deux", () => {
+    const p = plan();
+    p.sections[7].textes = ["Vos questions", "Puis-je renvoyer mon sac ?", "Oui, dans les 14 jours.", "Combien coûte la livraison en Europe ?", "[À compléter : tarif]"];
+    const r = M.appliquerJugement(p, { avis: "x", corrections: [{ section: 8, avant: "« Combien coûte la livraison en Europe ? » « [À compléter : tarif] »", apres: "", pourquoi: "sans réponse" }] });
+    expect(r.plan.sections[7].textes).toEqual(["Vos questions", "Puis-je renvoyer mon sac ?", "Oui, dans les 14 jours."]);
+    expect(r.appliquees).toBe(1);
+  });
+
+  it("jamais un blanc à remplir ni un « [À compléter] » sur l'accueil : retirés sans IA, la question avec sa réponse vide", () => {
+    const p = plan();
+    p.sections[2].textes = ["__ / __ / ____", "Il y a une date dans ce sac.", "Frappée le __ / __ / ____ dans la doublure.", "Combien coûte l'envoi ?", "[À compléter : tarif]", "Merci."];
+    const r = M.nettoyerPlan(p);
+    expect(r.plan.sections[2].textes).toEqual(["Il y a une date dans ce sac.", "Frappée le dans la doublure.", "Merci."]);
+    expect(r.retires).toHaveLength(4);
+    expect(M.PLAN_SYSTEM).toMatch(/Jamais un blanc à remplir/);
+    expect(M.PLAN_SYSTEM).toMatch(/La photo de l'ouverture est une scène d'ensemble de l'univers de la marque, jamais un emplacement vide/);
+    expect(M.CODE_SYSTEM).toMatch(/JAMAIS un emplacement vide ni « Ta photo ici »/);
+  });
+
+  it("le schéma du thème a toujours son theme_info complet, et un emplacement vide compte au contrôle", () => {
+    const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
+    expect(job).toContain("info.theme_documentation_url ??=");
+    expect(job).toContain("info.theme_support_url ??=");
+    expect(job).toContain("const net = nettoyerPlan(juge.plan);");
+    expect(job).toContain("(document.body.innerText.match(/Ta photo ici|\\[À compléter/g) ?? []).length");
+  });
+});
+
 describe("dessiner puis coder : SINA l'a appris", async () => {
   it("l'arrêt au plafond d'une création se dit clairement : ce n'est pas le budget du client (essai réel : SINA avait compris l'inverse)", async () => {
     const { CostCapReached } = await import("@/lib/ai/trace");
