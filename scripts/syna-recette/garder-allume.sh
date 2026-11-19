@@ -18,6 +18,10 @@ repond() { curl -s -o /dev/null --max-time 5 "http://localhost:${PORT}/"; }
 lancer() {
   echo "$(date -u +%H:%M:%S) relance du Studio privé" >> "$JOURNAL"
   pkill -f "next start -p ${PORT}" 2>/dev/null; pkill -f "worker/index.ts" 2>/dev/null
+  # Le serveur de Next change de nom en route (« next-server ») : celui qui tient encore le port est arrêté aussi
+  # (essai du 19 novembre 2026 : l'ancien serveur gardait le port, la relance échouait en boucle, sans travailleur).
+  for pid in $(ss -ltnp 2>/dev/null | grep ":${PORT} " | grep -o "pid=[0-9]*" | cut -d= -f2); do kill "$pid" 2>/dev/null; done
+  sleep 2
   setsid nohup node_modules/.bin/tsx scripts/syna-recette/lancer-agent.mts >> "$JOURNAL" 2>&1 < /dev/null &
   for _ in $(seq 1 45); do repond && { echo "$(date -u +%H:%M:%S) Studio privé prêt" >> "$JOURNAL"; return 0; }; sleep 2; done
   echo "$(date -u +%H:%M:%S) le Studio privé ne répond pas après 90 secondes" >> "$JOURNAL"
