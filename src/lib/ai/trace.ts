@@ -61,7 +61,8 @@ export class CostCapReached extends Error {
   readonly permanent = true;
   constructor(public spentMicro: number, public estimateMicro: number, public capMicro: number) {
     // Message vu par le client (tâche) : jamais de montant en euros ; les chiffres restent dans les champs (journal, admin).
-    super("plafond de dépense atteint : l'appel suivant n'a pas été envoyé (rien de plus n'est décompté)");
+    // Essai réel du 19 novembre 2026 : SINA a lu ce message comme « ton budget d'IA est épuisé » et l'a dit au client.
+    super("plafond de dépense atteint : l'appel suivant n'a pas été envoyé (rien de plus n'est décompté). C'est le plafond de CETTE création, fixé à l'avance par le Studio : le budget d'IA du client n'est pas épuisé.");
     this.name = "CostCapReached";
   }
 }

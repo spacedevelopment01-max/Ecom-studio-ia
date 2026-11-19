@@ -82,6 +82,10 @@ describe("dessiner puis coder : la méthode", async () => {
     expect(q2.probableMicro! - q.probableMicro!).toBe(3 * 115_000);
     expect(q.maxMicro).toBeLessThanOrEqual(Math.round(q.probableMicro! * 1.6));
     expect(q.label).not.toMatch(/€/);
+    // Essai réel du 19 novembre 2026 : un plafond de dessin sous la réserve du Studio (0,186 €) a arrêté la tâche.
+    expect(J.imageMaxMicro()).toBeGreaterThanOrEqual(J.DESSIN_COUTS.image.max);
+    expect(J.DESSIN_COUTS.image.max).toBeGreaterThanOrEqual(186_047);
+    expect(fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8")).toContain("trace(`dessin-${c.nom}`, imageMaxMicro())");
   });
 
   it("l'identité : le nom lisible des polices ; les réglages par défaut du thème ; le logo clair pour les fonds sombres", async () => {
@@ -105,6 +109,13 @@ describe("dessiner puis coder : la méthode", async () => {
 });
 
 describe("dessiner puis coder : SINA l'a appris", async () => {
+  it("l'arrêt au plafond d'une création se dit clairement : ce n'est pas le budget du client (essai réel : SINA avait compris l'inverse)", async () => {
+    const { CostCapReached } = await import("@/lib/ai/trace");
+    const m = new CostCapReached(1, 2, 3).message;
+    expect(m).toMatch(/^plafond de dépense atteint : l'appel suivant n'a pas été envoyé/);
+    expect(m).toMatch(/le budget d'IA du client n'est pas épuisé/);
+  });
+
   it("son cahier est lu par ses trois spécialistes, sans la partie des mesures ni aucun exemple d'un client d'essai", async () => {
     const K = await import("@/lib/syna-agent/custom-theme/knowledge");
     for (const who of ["dessinateur", "jugeDessin", "codeur"] as const) expect(K.themeKnowledge(who), who).toMatch(/DESSINER PUIS CODER UNE PAGE/);

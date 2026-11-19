@@ -17,7 +17,7 @@ import type { Project } from "../../projects";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
-import { aiSiteImageHd, aiSitePageMockup, withQuotedImageRoute } from "../../ai/media-providers";
+import { aiSiteImageHd, aiSitePageMockup, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
 import { getSetting } from "../../settings";
 import type { CostEstimate } from "../types";
 import { jobSpentMicro } from "../budget";
@@ -50,10 +50,16 @@ export const CODE_OUTPUT_TOKENS = 48_000;
 /** Mesures de l'essai du 19 novembre 2026 (micro-euros), avec leur plafond. */
 export const DESSIN_COUTS = {
   plan: { probable: 120_000, max: 400_000 },
-  juge: { probable: 60_000, max: 200_000 },
-  image: { probable: 115_000, max: 160_000 },
+  juge: { probable: 60_000, max: 300_000 },
+  // Réserve prise par le Studio avant chaque dessin : 0,186 € mesuré le 19 novembre 2026 (essai réel : un plafond de
+  // 0,16 € a arrêté la tâche avant le premier dessin). Le plafond suit la vraie réserve (imageMaxMicro).
+  image: { probable: 115_000, max: 200_000 },
   code: { probable: 300_000, max: 900_000 },
 } as const;
+/** Plafond d'un dessin : la réserve que le Studio prend avant l'envoi (jamais moins), sinon la mesure. */
+export function imageMaxMicro(): number {
+  try { return Math.max(DESSIN_COUTS.image.max, photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: 3, aspect: "2:3", quality: "high" })); } catch { return DESSIN_COUTS.image.max; }
+}
 /** Nombre de photos voulues sur un accueil (essai : 9 sections, 8 photos). */
 export const PHOTOS_ACCUEIL = 8;
 
@@ -61,7 +67,7 @@ export const PHOTOS_ACCUEIL = 8;
 export function dessinQuote(photosACreer: number): CostEstimate {
   const c = DESSIN_COUTS, images = 5 + Math.max(0, photosACreer);
   const probable = c.plan.probable + c.juge.probable + images * c.image.probable + c.code.probable;
-  const max = c.plan.max + c.juge.max + images * c.image.max + c.code.max;
+  const max = c.plan.max + c.juge.max + images * imageMaxMicro() + c.code.max;
   return { probableMicro: probable, maxMicro: Math.min(max, Math.round(probable * 1.6)), label: L("l'accueil de ton site, réfléchi, dessiné sur ordinateur et sur téléphone, puis codé et vérifié", "your home page, planned, drawn, coded and checked") };
 }
 
@@ -133,7 +139,7 @@ export async function runDessinJob(ctx: JobContext) {
     ctx.progress(0.18 + 0.32 * (i / consignes.length), L(`Je dessine ton accueil : ${i < 3 ? "ordinateur" : "téléphone"} (${i + 1} sur ${consignes.length})`, `Drawing (${i + 1}/${consignes.length})`));
     dessins[c.nom] = await ctx.step(`dessin:${c.nom}`, async () => {
       const refs = c.refs.map((k) => ({ role: (k === "logo" ? "logo" : "style") as "logo" | "style", data: k === "logo" ? logo : assetData(getAsset(dessins[{ haut: "1-haut", milieu: "2-milieu", bas: "3-bas", tel1: "4-tel-haut" }[k as "haut"]])!) }));
-      const img = await withTrace(trace(`dessin-${c.nom}`, DESSIN_COUTS.image.max), () => withQuotedImageRoute(mockupImageRoute(), () => aiSitePageMockup({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:dessin:${c.nom}` }, { prompt: c.prompt, references: refs })));
+      const img = await withTrace(trace(`dessin-${c.nom}`, imageMaxMicro()), () => withQuotedImageRoute(mockupImageRoute(), () => aiSitePageMockup({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:dessin:${c.nom}` }, { prompt: c.prompt, references: refs })));
       const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: img as Buffer, name: `dessin-accueil-${c.nom}.png`, mime: "image/png", role: "dessin", origin: "generated", meta: { dessin: { jobId: ctx.job.id, morceau: c.nom } } });
       return asset.id;
     });
@@ -149,7 +155,7 @@ export async function runDessinJob(ctx: JobContext) {
     const out: { id: string; description: string }[] = [];
     for (const [i, s] of voulues.slice(0, aCreer).entries()) {
       ctx.progress(0.5 + 0.08 * (i / Math.max(1, aCreer)), L("Je crée les photos qui manquent", "Creating missing photos"));
-      const img = await withTrace(trace(`dessin-photo-${i}`, DESSIN_COUTS.image.max), () => aiSiteImageHd({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:photo:${i}` }, { prompt: `Photo pour le site de « ${id.marque} » : ${s.photo}. Lumière naturelle, couleurs ${id.couleurs}. Aucune personne, aucun visage, aucune main. Aucun texte, aucune lettre, aucun chiffre, aucun logo.`, aspect: "16:9" }));
+      const img = await withTrace(trace(`dessin-photo-${i}`, imageMaxMicro()), () => aiSiteImageHd({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:photo:${i}` }, { prompt: `Photo pour le site de « ${id.marque} » : ${s.photo}. Lumière naturelle, couleurs ${id.couleurs}. Aucune personne, aucun visage, aucune main. Aucun texte, aucune lettre, aucun chiffre, aucun logo.`, aspect: "16:9" }));
       const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: img as Buffer, name: `photo-accueil-${i + 1}.png`, mime: "image/png", role: "site", origin: "generated", meta: { dessin: { jobId: ctx.job.id } } });
       out.push({ id: asset.id, description: s.photo! });
     }
