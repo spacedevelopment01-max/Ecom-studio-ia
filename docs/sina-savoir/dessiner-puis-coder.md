@@ -110,3 +110,7 @@ méthode a été essayée dans le Studio, étape par étape, et ce cahier garde 
   appel) ; Sol 6.2, 3 questions, 6 appels, 0,36 € (0,06 € par appel, mais deux appels par échange, et aucune reprise de
   la partie déjà lue). Sol a sauté des questions utiles au site (abonnement, travail seule, ressenti voulu). Décision : Opus
   reste ; le levier du prix est le nombre de messages.
+- Même passage, Sol 6.2 au niveau « élevé » (le plus haut que le Studio connaisse pour lui) : 6 questions (avis, dates,
+  label, presse, ateliers, photos), 12 appels, 0,74 € (0,06 € par appel, deux appels par échange). Il pose ses
+  questions de preuves comme Opus, mais saute encore l'abonnement, le travail seule et le ressenti voulu. Le niveau
+  ordinaire des réponses se règle désormais avec le modèle (« sina.brand_chain », champ effort).

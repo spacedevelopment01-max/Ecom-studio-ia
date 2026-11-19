@@ -481,8 +481,9 @@ function toolScope(r: SynaRun): ToolScope {
  * Le modèle lui-même se règle à un seul endroit (models.ts).
  */
 export function modelFor(_currentStepNumber: number, opts: { customTheme?: boolean; judge?: boolean; keyMoment?: KeyMoment | null } = {}): { provider: "anthropic"; model: string; effort?: string } {
+  // Niveau ordinaire : celui du réglage (« moyen » par défaut) ; « élevé » aux moments forts et pour juger.
   const strong = sinaModels().strong;
-  return { provider: strong.provider, model: strong.model, effort: opts.keyMoment || opts.judge ? "high" : "medium" };
+  return { provider: strong.provider, model: strong.model, effort: opts.keyMoment || opts.judge ? "high" : strong.effort };
 }
 
 /** Action payante de chaque étape du parcours : son devis est donné à SINA (le même s'affiche sur la carte d'accord). */

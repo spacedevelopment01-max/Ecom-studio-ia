@@ -101,6 +101,17 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     expect(modelFor(6, { keyMoment: "resultat", judge: true })).toMatchObject({ model: fort, effort: "high" });
   });
 
+  it("le niveau ordinaire des réponses se règle avec le modèle (« sina.brand_chain »), sans changer les moments forts", () => {
+    setJsonSetting("sina.brand_chain", { strong: { provider: "openai", model: "gpt-6.2-sol", effort: "high" } });
+    try {
+      expect(modelFor(1)).toMatchObject({ model: "gpt-6.2-sol", effort: "high" });
+      setJsonSetting("sina.brand_chain", { strong: { effort: "low" } });
+      expect(modelFor(1)).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: "low" });
+      expect(modelFor(1, { keyMoment: "resultat" })).toMatchObject({ effort: "high" });
+    } finally { setSetting("sina.brand_chain", null); }
+    expect(modelFor(1)).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: "medium" });
+  });
+
   it("la relectrice : sa demande porte le moment, les mots du client, les résultats et le brouillon ; ses remarques ne sortent pas", () => {
     expect(C.shouldReview(null, { message: "Voici tes trois identités, regarde-les tranquillement.", actions: [] })).toBe(false);
     expect(C.shouldReview("resultat", { message: "Ok.", actions: [] })).toBe(false);
