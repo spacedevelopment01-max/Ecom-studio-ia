@@ -134,6 +134,9 @@ describe("dessiner puis coder : les corrections de l'essai réel du 19 novembre 
     expect(M.CODE_SYSTEM).toMatch(/l'OUVERTURE prend une photo d'ensemble[^;]*jamais un gros plan de détail/);
     expect(M.CODE_SYSTEM).toMatch(/garde le sujet ENTIER/);
     expect(M.CODE_SYSTEM).toMatch(/aucun rond ni aplat décoratif derrière un titre/);
+    // Boutique : la vraie photo de chaque produit, sur sa carte seulement (jamais un produit sans sa photo).
+    expect(M.CODE_SYSTEM).toMatch(/une « PHOTO DU PRODUIT » ne va que sur la carte ou le bloc de CE produit/);
+    expect(fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8")).toContain("for (const [i, x] of [...produits, ...phototheque, ...creees].slice(0, 30).entries()) {");
   });
 
   it("SINA a sous les yeux ses dessins et le code affiché avant d'en parler", async () => {

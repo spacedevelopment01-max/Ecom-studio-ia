@@ -24,6 +24,7 @@ import { jobSpentMicro } from "../budget";
 import { journeyOf } from "../journey";
 import { brandBrief, photothequeDe, siteCopyModel } from "../custom-theme/brand";
 import { loadCustomTheme } from "../custom-theme/theme";
+import { listProducts } from "../../products/catalog";
 import { educated } from "../custom-theme/knowledge";
 import { mockupImageRoute } from "../mockup-code/tools";
 import { chromiumPath } from "../../theme/snapshot";
@@ -163,7 +164,9 @@ export async function runDessinJob(ctx: JobContext) {
     return out;
   });
   const photos: { fichier: string; format: string; description: string }[] = [];
-  for (const [i, x] of [...phototheque, ...creees].slice(0, 24).entries()) {
+  // Boutique : la vraie photo de chaque produit d'abord (jamais un produit inventé), nommée avec le produit.
+  const produits = p.business === "services" ? [] : listProducts(p.id).flatMap((x) => { const id = x.data.images.find((im) => im.assetId)?.assetId; return id ? [{ id, description: `PHOTO DU PRODUIT « ${x.data.title} » (sa vraie photo, à poser telle quelle sur la carte ou le bloc de ce produit, jamais pour une autre section)` }] : []; });
+  for (const [i, x] of [...produits, ...phototheque, ...creees].slice(0, 30).entries()) {
     const ast = getAsset(x.id);
     if (!ast) continue;
     const fichier = `${slug}-photo-${String(i + 1).padStart(2, "0")}.webp`;
