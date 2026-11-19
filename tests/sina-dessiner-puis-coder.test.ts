@@ -203,7 +203,7 @@ describe("dessiner puis coder : SINA crée toutes les photos du site, sauf celle
     const media = fs.readFileSync("src/lib/ai/media-providers.ts", "utf8");
     expect(media).toContain('export async function aiSitePhoto(ctx: Ctx, input: { prompt: string; references: { role: "product" | "style"; data: Buffer }[]; aspect: "1:1" | "2:3" | "3:2" })');
     expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("const photosACreer = (_projectId: string, _business: string) => PHOTOS_ACCUEIL;");
-    expect(J.dessinQuote(J.PHOTOS_ACCUEIL).probableMicro).toBe(120_000 + 2 * 60_000 + (5 + 8) * 115_000 + 300_000);
+    expect(J.dessinQuote(J.PHOTOS_ACCUEIL).probableMicro).toBe(120_000 + 2 * 60_000 + (5 + 8) * 115_000 + 300_000 + 8 * 15_000);
   });
 });
 
@@ -242,6 +242,14 @@ describe("dessiner puis coder : une boutique a toujours le panier dans l'en-têt
     expect(job).toContain('boutique: p.business !== "services",');
     expect(job).toContain("panier: m.panier });");
     expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("(boutique && x.panier === false)");
+  });
+  it("un produit mis en scène est comparé à sa vraie photo par un autre modèle ; refusée, la vraie photo prend sa place, et la photo refusée se montre", () => {
+    const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
+    expect(M.FideleSchema.parse({ fidele: false, defaut: "silhouette changée" })).toEqual({ fidele: false, defaut: "silhouette changée" });
+    expect(M.FIDELE_SYSTEM).toMatch(/même forme générale, mêmes proportions, même couleur/);
+    expect(job).toContain('prefer: { provider: "anthropic", model: "claude-sonnet-5-5" }');
+    expect(job).toContain("const id0 = c.refusee ? c.produitPhoto! : c.id ?? phototheque[secours]?.id;");
+    expect(job).toContain("Photo refusée (section ${x.section}");
   });
   it("jamais un bouton vide : interdit au code, compté au contrôle (essai réel : un bouton sans texte après une correction)", () => {
     expect(M.CODE_SYSTEM).toMatch(/Un bouton, un lien ou un titre dont le réglage de texte est vide NE S'AFFICHE PAS/);

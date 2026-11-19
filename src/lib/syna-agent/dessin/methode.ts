@@ -41,6 +41,10 @@ export const JugementSchema = z.object({
 });
 export type Jugement = z.infer<typeof JugementSchema>;
 
+/** Le contrôle de fidélité d'une photo qui met un produit en scène. */
+export const FideleSchema = z.object({ fidele: z.boolean(), defaut: z.string().max(300) });
+export const FIDELE_SYSTEM = `Tu es le contrôleur qualité d'une marque. On te montre la VRAIE photo d'un produit (image 1), puis une photo créée pour son site qui doit le mettre en scène (image 2). Le produit de l'image 2 est-il bien le MÊME que celui de l'image 1 : même forme générale, mêmes proportions, même couleur, mêmes détails visibles (anses, sangle, fermoir, rabat, coutures) ? Un autre angle, une autre lumière ou un autre décor ne comptent pas comme un défaut. Il y a défaut si la forme est changée (déformé, une autre silhouette), si la couleur est différente, s'il manque ou s'ajoute un élément, ou si plusieurs exemplaires apparaissent. Réponds en JSON : fidele (vrai ou faux), defaut (le défaut en une phrase, vide s'il n'y en a pas).`;
+
 export const CodeSchema = z.object({
   files: z.array(z.object({ path: z.string().min(3).max(120), content: z.string().min(1) })).min(4).max(30),
   notes: z.string().max(1200),

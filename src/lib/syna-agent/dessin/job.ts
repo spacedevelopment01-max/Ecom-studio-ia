@@ -35,7 +35,7 @@ import { buildSpec } from "../../theme/directions";
 import { contentFromInput, libraryFiller } from "../../theme/library-fill";
 import { localCopy } from "../../engine/local-copy";
 import { emptyProduct } from "../../project-types";
-import { appliquerJugement, morceauxSurs, nettoyerPlan, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
+import { appliquerJugement, FIDELE_SYSTEM, FideleSchema, morceauxSurs, nettoyerPlan, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
 
 export const SINA_DESSIN_JOB = "syna.dessin";
 export type DessinPayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null };
@@ -56,6 +56,8 @@ export const DESSIN_COUTS = {
   // 0,16 € a arrêté la tâche avant le premier dessin). Le plafond suit la vraie réserve (imageMaxMicro).
   image: { probable: 115_000, max: 200_000 },
   code: { probable: 300_000, max: 900_000 },
+  /** Contrôle de fidélité d'une photo qui met un produit en scène (deux images, une courte réponse). */
+  fidele: { probable: 15_000, max: 40_000 },
 } as const;
 /** Plafond d'un dessin : la réserve que le Studio prend avant l'envoi (jamais moins), sinon la mesure. */
 export function imageMaxMicro(): number {
@@ -68,8 +70,8 @@ export const PHOTOS_ACCUEIL = 8;
 export function dessinQuote(photosACreer: number): CostEstimate {
   const c = DESSIN_COUTS, images = 5 + Math.max(0, photosACreer);
   // Deux relectures du juge : le plan, puis les textes du site codé.
-  const probable = c.plan.probable + 2 * c.juge.probable + images * c.image.probable + c.code.probable;
-  const max = c.plan.max + 2 * c.juge.max + images * imageMaxMicro() + c.code.max;
+  const probable = c.plan.probable + 2 * c.juge.probable + images * c.image.probable + c.code.probable + Math.max(0, photosACreer) * c.fidele.probable;
+  const max = c.plan.max + 2 * c.juge.max + images * imageMaxMicro() + c.code.max + Math.max(0, photosACreer) * c.fidele.max;
   return { probableMicro: probable, maxMicro: Math.min(max, Math.round(probable * 1.6)), label: L("l'accueil de ton site, réfléchi, dessiné sur ordinateur et sur téléphone, puis codé et vérifié", "your home page, planned, drawn, coded and checked") };
 }
 
@@ -168,7 +170,7 @@ export async function runDessinJob(ctx: JobContext) {
   const [m1, m2] = morceauxSurs(plan);
   const voulues = plan.sections.map((s, i) => ({ s, n: i + 1 })).filter((x) => x.s.photo).slice(0, PHOTOS_ACCUEIL);
   const creees = await ctx.step("photos", async () => {
-    const out: { n: number; id: string | null; description: string; produit: string | null }[] = [];
+    const out: { n: number; id: string | null; description: string; produit: string | null; refusee?: string; produitPhoto?: string }[] = [];
     for (const [i, { s, n }] of voulues.entries()) {
       ctx.progress(0.5 + 0.1 * (i / Math.max(1, voulues.length)), L(`Je crée les photos de ton accueil (${i + 1} sur ${voulues.length})`, `Creating photos (${i + 1}/${voulues.length})`));
       const prod = s.produit ? catalogue.find((x) => x.titre.trim().toLowerCase() === s.produit!.trim().toLowerCase() && x.photo) : undefined;
@@ -181,7 +183,17 @@ export async function runDessinJob(ctx: JobContext) {
       try {
         const img = await withTrace(trace(`dessin-photo-${n}`, imageMaxMicro()), () => withQuotedImageRoute(mockupImageRoute(), () => aiSitePhoto({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:photo:${n}` }, { prompt, references: refs, aspect })));
         const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: img as Buffer, name: `photo-accueil-section-${n}.png`, mime: "image/png", role: "site", origin: "generated", meta: { dessin: { jobId: ctx.job.id, section: n, produit: prod?.titre ?? null } } });
-        out.push({ n, id: asset.id, description: s.photo!, produit: prod?.titre ?? null });
+        // Le produit mis en scène est-il le vrai ? (essai réel du 19 novembre 2026 : une besace déformée en demi-lune.)
+        // Un autre modèle que celui qui a créé l'image compare les deux ; refusée, la vraie photo du produit prend sa place.
+        let refusee: string | undefined;
+        if (prod) {
+          try {
+            const deux = [{ data: await sharp(assetData(getAsset(prod.photo!)!)).resize(768, 768, { fit: "inside" }).png().toBuffer(), label: "vraie photo" }, { data: await sharp(img as Buffer).resize(768, 768, { fit: "inside" }).png().toBuffer(), label: "photo créée" }];
+            const v = await withTrace(trace(`dessin-fidele-${n}`, DESSIN_COUTS.fidele.max), () => llmJson({ nouvelleSiChangee: true, sansRelanceCoupee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: FIDELE_SYSTEM, promptKey: "syna-dessin-fidele-1", prompt: `Produit : « ${prod.titre} ». Image 1 : sa VRAIE photo. Image 2 : la photo créée pour le site, qui doit le mettre en scène.`, images: deux, maxTokens: 1_000, maxOutputTokens: 1_000, usageKey: `${ctx.job.id}:fidele:${n}`, routing: { difficulty: "standard", prefer: { provider: "anthropic", model: "claude-sonnet-5-5" } } }, FideleSchema, { strict: true }));
+            if (!v.fidele) refusee = v.defaut || "produit différent de sa vraie photo";
+          } catch (e) { refusee = `contrôle de fidélité non fait (${(e as Error).message.slice(0, 80)}) : la vraie photo est posée par prudence`; }
+        }
+        out.push({ n, id: asset.id, description: s.photo!, produit: prod?.titre ?? null, ...(refusee ? { refusee, produitPhoto: prod!.photo! } : {}) });
       } catch (e) { out.push({ n, id: null, description: `${s.photo} (création ratée : ${(e as Error).message.slice(0, 120)})`, produit: null }); }
     }
     return out;
@@ -200,7 +212,8 @@ export async function runDessinJob(ctx: JobContext) {
   };
   for (const [i, x] of catalogue.filter((x) => x.photo).entries()) await poser(x.photo!, `${slug}-produit-${i + 1}.webp`, `PHOTO DU PRODUIT « ${x.titre} » (sa vraie photo, à poser telle quelle sur la carte ou le bloc de ce produit, jamais pour une autre section)`);
   for (const c of creees) {
-    const id0 = c.id ?? phototheque[secours]?.id;
+    // Photo refusée au contrôle de fidélité : la vraie photo du produit à sa place.
+    const id0 = c.refusee ? c.produitPhoto! : c.id ?? phototheque[secours]?.id;
     if (!c.id && id0) secours++;
     if (id0) await poser(id0, `${slug}-section-${c.n}.webp`, `PHOTO DE LA SECTION ${c.n} « ${plan.sections[c.n - 1].nom} » (${c.id ? "créée pour elle" : "photo de la marque, à défaut"}) : ${c.description}${c.produit ? ` — met en scène le produit « ${c.produit} »` : ""}`);
   }
@@ -258,7 +271,7 @@ export async function runDessinJob(ctx: JobContext) {
     return { erreurs, avertissements, exemples, captures };
   });
 
-  const res = { plan: { idee: plan.idee, sections: plan.sections.map((s) => s.nom) }, juge: { corrections: juge.appliquees, ignorees: juge.ignorees, avis: jugement.avis, code: { corrections: corrigesCode, demandees: jugeCode.corrections.length, avis: jugeCode.avis } }, dessins: Object.values(dessins), photosCreees: creees.filter((c) => c.id).length, photosSecours: secours, fichiers: ecrits, notes: code.notes, controle };
+  const res = { plan: { idee: plan.idee, sections: plan.sections.map((s) => s.nom) }, juge: { corrections: juge.appliquees, ignorees: juge.ignorees, avis: jugement.avis, code: { corrections: corrigesCode, demandees: jugeCode.corrections.length, avis: jugeCode.avis } }, dessins: Object.values(dessins), photosCreees: creees.filter((c) => c.id).length, photosSecours: secours, photosRefusees: creees.filter((c) => c.refusee).map((c) => ({ section: c.n, produit: c.produit, defaut: c.refusee, assetId: c.id })), fichiers: ecrits, notes: code.notes, controle };
   remember(p.id, { kind: "artifact", key: `syna.dessin.${ctx.job.id}`, value: JSON.stringify(res), source: "local", origin: "system" as never });
   ctx.progress(1, L("Terminé", "Done"));
   return res;
@@ -335,10 +348,12 @@ export function resultatDessin(projectId: string, jobId?: string) {
     ? one<{ result: string | null }>("SELECT result FROM jobs WHERE id = ? AND project_id = ? AND type = ?", jobId, projectId, SINA_DESSIN_JOB)
     : one<{ result: string | null }>("SELECT result FROM jobs WHERE project_id = ? AND type = ? AND status = 'done' ORDER BY created_at DESC LIMIT 1", projectId, SINA_DESSIN_JOB);
   if (!row?.result) return null;
-  const r = JSON.parse(row.result) as { plan: { idee: string; sections: string[] }; juge: { corrections: number; avis: string }; dessins: string[]; controle: { erreurs: number; avertissements: number; exemples: string[]; captures: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean }[] }; notes: string; photosCreees: number };
+  const r = JSON.parse(row.result) as { photosRefusees?: { section: number; produit: string | null; defaut?: string; assetId: string | null }[]; plan: { idee: string; sections: string[] }; juge: { corrections: number; avis: string }; dessins: string[]; controle: { erreurs: number; avertissements: number; exemples: string[]; captures: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean }[] }; notes: string; photosCreees: number };
   const lien = (id: string | null) => (id ? assetUrl({ id }) : null);
   return { ...r, images: [
     ...r.dessins.map((id, i) => ({ href: lien(id), label: i < 3 ? L(`Dessin, ordinateur (${i + 1}/3)`, `Drawing, desktop (${i + 1}/3)`) : L(`Dessin, téléphone (${i - 2}/2)`, `Drawing, phone (${i - 2}/2)`) })),
     ...r.controle.captures.map((c) => ({ href: lien(c.assetId), label: L(`Le code affiché sur ${c.appareil}`, `The code on ${c.appareil}`) })),
+    // Les photos refusées au contrôle de fidélité se montrent aussi (règle du propriétaire : montrer les images refusées).
+    ...(r.photosRefusees ?? []).map((x) => ({ href: lien(x.assetId), label: L(`Photo refusée (section ${x.section}${x.produit ? `, « ${x.produit} »` : ""}) : ${x.defaut ?? ""} — sa vraie photo est posée à la place`, "Rejected photo") })),
   ].filter((x) => x.href) };
 }
