@@ -715,6 +715,12 @@ function ToolResult({ m, projectId, onChoose, busy }: { m: Msg; projectId: strin
             <span className="flex items-center gap-2"><a className="underline" href={x.href} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a>{c.data?.complete !== false && <Button size="sm" variant="secondary" disabled={busy} onClick={() => onChoose(x.n)}>{t("Choisir", "Choose")}</Button>}</span>
           </figcaption>
         </figure>))}</div>}
+      {/* Méthode « dessiner puis coder » : les dessins de la page, puis le code affiché sur chaque écran, en grand. */}
+      {Array.isArray(c.data?.images) && c.data.images.length > 0 && <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2" data-syna-dessin>{(c.data.images as { href: string; label: string }[]).map((x) => (
+        <figure key={x.href} className="overflow-hidden rounded-xl border border-line bg-card">
+          <a href={x.href} target="_blank" rel="noreferrer" title={t("Ouvrir en grand", "Open full size")}><img src={x.href} alt={x.label} className="max-h-[520px] w-full object-cover object-top" loading="lazy" /></a>
+          <figcaption className="px-3 py-2 text-xs">{x.label} · <a className="underline" href={x.href} target="_blank" rel="noreferrer">{t("Ouvrir en grand", "Open full size")}</a></figcaption>
+        </figure>))}</div>}
       {c.data?.preview && !mockups && <a className="mt-1 inline-block text-xs underline" href={c.data.preview} target="_blank" rel="noreferrer">{t("Voir l'aperçu", "Open preview")}</a>}
       {c.data?.href && <a className="mt-1 inline-block text-xs underline" href={c.data.href} data-syna-download>{t("Télécharger", "Download")} {c.data.name ?? ""}</a>}
     </div>

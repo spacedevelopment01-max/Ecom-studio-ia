@@ -30,6 +30,11 @@ export const THEME_BOOKS = {
    * (parties 3 et 4) par les données de partitions.ts, filtrées pour le client ; l'introduction et les parties 7, 8 et 9
    * parlent d'un projet d'essai et de l'état du code : elles n'entrent JAMAIS dans une consigne envoyée à l'IA.
    */
+  /**
+   * La méthode « dessiner puis coder » (19 novembre 2026, d'après le thème que le propriétaire a fait faire à ChatGPT) :
+   * seules les parties 1 à 5 sont lues ; la partie 6 (mesures de l'essai) est pour les humains.
+   */
+  dessin: { file: "dessiner-puis-coder.md", title: "DESSINER PUIS CODER UNE PAGE", parts: [1, 2, 3, 4, 5], min: 1500 },
   ordre: { file: "theme-ordre-et-variete.md", title: "L'ORDRE ET LA VARIÉTÉ DES SECTIONS (décisions du propriétaire)", parts: [1, 5, 6], min: 1500 },
 } as const satisfies Record<string, { file: string; title: string; parts?: readonly number[]; min?: number }>;
 export type ThemeBook = keyof typeof THEME_BOOKS;
@@ -50,6 +55,12 @@ export const THEME_READS = {
   relecteurTextes: ["textes"],
   /** Décrit les photos, puis relit toutes les descriptions avant qu'une seule soit payée. */
   directriceArtistique: ["images"],
+  /** Méthode « dessiner puis coder » : fait le plan de la page (sections, dispositions, textes exacts). */
+  dessinateur: ["dessin", "textes"],
+  /** Relit ce plan contre le dossier, fait par fait, avant le moindre dessin payé. */
+  jugeDessin: ["dessin"],
+  /** Code la page d'après le plan et les dessins. */
+  codeur: ["dessin"],
 } as const satisfies Record<string, readonly ThemeBook[]>;
 export type ThemeSpecialist = keyof typeof THEME_READS;
 

@@ -42,6 +42,12 @@ const reasoningOnly = (call: { task: string }) => call.task === "agent_conversat
 export type LlmImage = { data: Buffer; label?: string };
 
 export type LlmCall = {
+  /**
+   * Une réponse coupée faute de place n'est jamais redemandée (ni avec plus de place, ni en réparation) : l'étape
+   * s'arrête et le dit. Pour les longues réponses déjà dimensionnées (le code d'une page : essai réel du 19 novembre
+   * 2026, une réponse coupée trois fois et repayée trois fois).
+   */
+  sansRelanceCoupee?: boolean;
   task: TaskId;
   /**
    * Reprise d'une tâche (essai réel du 18 novembre 2026) : si la même étape a déjà été payée avec une demande différente
@@ -712,6 +718,8 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   return result;
 }
 
+/** Message d'une réponse coupée qui n'est pas redemandée (sansRelanceCoupee). */
+const REPONSE_COUPEE = () => L("La réponse de l'IA a été coupée faute de place : elle n'est pas redemandée d'office (rien de plus n'est payé). La suite se décide avec le client.", "The AI response was cut for lack of room: it is not requested again automatically (nothing more is paid).");
 /** Plafond de sortie (réflexion comprise) quand une réponse JSON a été coupée faute de place. */
 const MAX_OUTPUT_TOKENS = 64000;
 
@@ -832,6 +840,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
     let budget = call.maxTokens ?? 32000, attempt = 0;
     for (;;) {
       const r = await rawCall({ ...call, maxTokens: budget }, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text}, attempt ? `:fix${attempt}` : "", attempt);
+      if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());
       if (r.stop === "max_tokens" && budget < cap) { budget = Math.min(cap, budget * 2); attempt++; continue; }
       // Un écart de pure forme (un texte un peu trop long, une liste trop longue) ne fait plus perdre un appel
       // payé : il est réparé comme en JSON libre (essai réel du 16 novembre 2026 : une correction de plus de
@@ -857,6 +866,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
     // Réponse coupée faute de place (réflexion longue, beaucoup de photos) : même demande avec plus de place,
     // sans renvoyer le début tronqué au modèle (jsonRetry).
     const cut = r.stop === "max_tokens";
+    if (cut && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());
     let issue = "";
     if (!(cut && step.budget < cap)) {
       const parsed = call.prepare ? call.prepare(extractJson(r.text)) : extractJson(r.text);

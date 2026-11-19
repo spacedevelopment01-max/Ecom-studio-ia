@@ -750,3 +750,22 @@ raison ne se relance pas à l'identique.
 
 Tests : `tests/sina-relance-creation-coupee.test.ts`. **Pas vérifié avec la vraie IA** : une vraie relance après une
 vraie coupure.
+
+## Dessiner puis coder : la méthode apprise à SINA (19 novembre 2026)
+
+Le propriétaire a fait faire un thème Shopify complet par ChatGPT (toutes les pages dessinées, puis codées par Sol 6.2),
+avec un très bon résultat (« Braise » : contrôle de Shopify sans faute, rien ne déborde sur téléphone). Demande : « je
+veux que le studio soit capable de faire ce genre de thème par lui-même ». Essai mené par Claude (3,67 € sur 4 €
+accordés), puis la méthode est apprise à SINA (« essaie avec sina, apprends-lui ce que tu as appris ») :
+
+- **Cahier** `docs/sina-savoir/dessiner-puis-coder.md` (parties 1 à 5 lues par le dessinateur, le juge et le codeur).
+- **Outil** `site.dessiner` (payant, une carte) et tâche `syna.dessin` (`src/lib/syna-agent/dessin/`) : plan de toute la
+  page (8 à 10 sections choisies par le modèle, jamais imposées), juge des faits, cinq dessins (ordinateur en trois
+  morceaux, téléphone en deux), photos (celles déjà faites pour la marque, puis celles qui manquent), code par Sol 6.2
+  (réglage `site.code_model`), contrôles sans IA (Theme Check, captures à 390, 820 et 1 440 px). Rien n'est posé sur le
+  site actuel. `site.dessin.voir` montre au client les dessins et le code affiché.
+- **Sécurité** : `sansRelanceCoupee` (une réponse coupée n'est jamais redemandée ni repayée).
+- **Prix** de l'accueil : environ 1,05 € probables (plan 0,12, juge 0,06, cinq dessins 0,58, code 0,30), plafond 1,69 €.
+
+Tests : `tests/sina-dessiner-puis-coder.test.ts`, `tests/dessiner-puis-coder.test.ts`. **Pas vérifié avec la vraie IA :**
+SINA seule, de bout en bout.
