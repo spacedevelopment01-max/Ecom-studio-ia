@@ -330,7 +330,7 @@ describe("thème sur mesure à tenue : le fauteuil et le sac, montés par les ou
     expect(designed.family).toBe("moderne"); // les sections à tenue vont avec les deux familles
     expect(designed.tenue).toMatchObject({ titres: "gras", bouton: "etiquette", cadre: "droit", fond: "toile", petits: "machine" });
     expect(designed.header).toMatchObject({ id: "tn-entete", construction: "sangle" });
-    expect(designed.pages.find((x) => x.key === "home")!.sections.slice(0, 2).map((s) => [s.id, s.construction ?? null])).toEqual([["tn-ouverture", "titre-geant"], ["tn-bande", "pleine-largeur"]]);
+    expect(designed.pages.find((x) => x.key === "home")!.sections.slice(0, 2).map((s) => [s.id, s.construction ?? null])).toEqual([["tn-ouverture", "titre-geant"], ["tn-bande", "encadree"]]); // encadrée : une seule photo pleine largeur sur l'accueil (18 novembre 2026)
     expect(S.checkCustomTheme(designed, site).filter((x) => x.level === "bloquant").map((x) => x.text)).toEqual([]);
     const t = S.loadCustomTheme(pid)!;
     const page = renderCustomTheme(loadProject(pid), t, { embed: true });

@@ -172,6 +172,9 @@ export const REPRISE_PHOTO = /^\s*REPRENDRE\s+R(\d+)\b\s*[:.-]?\s*/i;
 export function photothequeDe(projectId: string, t: CustomTheme | null, business: "products" | "services", products: ProductSeen[]): PhotoReprise[] {
   if (!t) return [];
   const out: PhotoReprise[] = [], vus = new Set<string>();
+  // Les photos de l'ouverture de l'accueil ne se reprennent jamais : le premier écran d'un site refait est neuf.
+  const ouverture = t.pages.find((pg) => pg.key === "home")?.sections[0];
+  if (ouverture) for (const m of sectionHtml(ouverture).matchAll(/\/api\/files\/([\w-]+)/g)) vus.add(m[1]);
   for (const x of allSections(t)) {
     const l = libSection(x.s.id);
     if (!l || (business !== "services" && productSlotSection(l))) continue;

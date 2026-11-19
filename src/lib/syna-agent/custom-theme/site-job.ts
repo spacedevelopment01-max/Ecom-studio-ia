@@ -333,7 +333,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
       const seen = p.business === "services" ? [] : listProducts(p.id).map((x) => ({ title: x.data.title, type: x.data.productType, photo: x.data.images.some((i) => !!i.assetId) }));
       const phototheque = photothequeDe(p.id, avant, p.business === "services" ? "services" : "products", seen);
       const lignes: string[] = [];
-      for (const pg of avant.pages) for (const x of pg.sections) { if (!x.clientTexts) continue; const txt = sectionSkeleton(sectionHtml(x)).replace(/\s+/g, " ").trim(); if (txt) lignes.push(`[${pg.label}] ${txt.slice(0, 600)}`); }
+      for (const pg of avant.pages) for (const [i, x] of pg.sections.entries()) { if (!x.clientTexts || (pg.key === "home" && i === 0)) continue; const txt = sectionSkeleton(sectionHtml(x)).replace(/\s+/g, " ").trim(); if (txt) lignes.push(`[${pg.label}] ${txt.slice(0, 600)}`); }
       return { phototheque, matiere: lignes.join("\n").slice(0, 12000) || null };
     } catch { return { phototheque: [], matiere: null }; }
   });
@@ -348,7 +348,9 @@ export async function runSinaSiteJob(ctx: JobContext) {
     const avant = loadCustomTheme(p.id);
     if (avant && allSections(avant).some((x) => x.s.clientTexts) && p.business !== "services") {
       const sans: CustomTheme = JSON.parse(JSON.stringify(avant));
-      for (const pg of sans.pages) pg.sections = pg.sections.filter((x) => { const l = libSection(x.id); return !l || !productSlotSection(l); });
+      // L'ouverture de l'accueil ne se garde jamais (essai réel du 18 novembre 2026 : le site refait avait le même premier
+      // écran, photo et titre compris).
+      for (const pg of sans.pages) pg.sections = pg.sections.filter((x, i) => { const l = libSection(x.id); return !(pg.key === "home" && i === 0) && (!l || !productSlotSection(l)); });
       keepWork(t, sans);
     } else keepWork(t, avant);
     const products = (() => { try { return listProducts(p.id); } catch { return []; } })();

@@ -21,7 +21,7 @@
  *    l'accueil est une pièce qui les porte (traits « zone » et « telephone » : le Studio les y pose tout seul) ;
  *  - jamais deux pièces qui montrent la même chose sur une page (tenue-ordre.ts : MEME_CONTENU).
  */
-import { tenueSection, validConstruction } from "./tenue";
+import { constructionsOf, tenueSection, validConstruction } from "./tenue";
 import { FEATURED_ROLE, authenticSection, isCardSection, libSection, sectionPhotos } from "./library";
 import { FORME_LABEL, doublonsDe, type Forme, type PreuveId, type TraitOrdre } from "./tenue-ordre";
 import { OUVERTURES_SERVICES } from "./tenue-partitions";
@@ -72,8 +72,10 @@ const FORME_PAR_DISPOSITION: Record<string, Forme[]> = {
   "tn-places:file": ["photos"], "tn-places:alternees": ["texte-photo"],
   // La description en volets numérotés s'ouvre comme des questions ; sans titre ou encadrée, c'est un texte posé.
   "tn-description:numeros": ["volets"], "tn-description:sans-titre": [], "tn-description:encadre": [],
-  // La bande de photo étroite sépare deux moments : ce n'est pas une grande photo à phrase.
-  "tn-bande:pleine-largeur": [], "tn-bande:encadree": [],
+  // La bande de photo étroite est vue comme une grande photo pleine largeur (essai réel du 18 novembre 2026 : une bande
+  // de cuir et une grande photo de couture sur le même accueil, « la même photo deux fois » à l'œil).
+  // Encadrée, la bande est une petite photo posée dans la page, pas une photo pleine largeur.
+  "tn-bande:pleine-largeur": ["grande-photo"], "tn-bande:encadree": [],
 };
 /** Les allures d'une pièce telles qu'un visiteur les voit, pour sa disposition (celle par défaut si aucune n'est donnée). */
 export const formesVues = (id: string, construction?: string | null): Forme[] => {
@@ -302,6 +304,10 @@ export function fitRythme<D extends OrdreDesign>(d: D, f: OrdreFacts): { d: D; c
  * une pièce qui sert le même moment (`candidats`) et dont l'allure n'est pas encore sur la page. Gardé seulement si le
  * contrôle de l'ordre, rejoué en entier, compte moins de refus et si `accepte` le valide (aucune règle du thème cassée).
  */
+/** Pièces de photo décorative, qui séparent deux moments sans en tenir un : retirables sans rien perdre. */
+const BANDES_DECORATIVES = new Set(["tn-bande"]);
+/** Les dispositions d'une pièce, par leur clé (aucune si la pièce n'en a qu'une). */
+const constructionsOfPiece = (id: string): string[] => { try { return constructionsOf(id).map((c) => c.key); } catch { return []; } };
 export function fitFormes<D extends OrdreDesign>(d: D, f: OrdreFacts, o: { candidats: (x: D, id: string) => string[]; accepte: (x: D) => boolean }): { d: D; changed: string[] } {
   let cur: D = JSON.parse(JSON.stringify(d));
   const changed: string[] = [];
@@ -312,8 +318,39 @@ export function fitFormes<D extends OrdreDesign>(d: D, f: OrdreFacts, o: { candi
     for (const [pi, pg] of cur.pages.entries()) {
       for (const dbl of alluresEnDouble(pg.sections)) {
         const prises = new Set(pg.sections.flatMap((x, k) => (k === dbl.i ? [] : formesVues(x.section, x.construction))));
+        // D'abord une autre disposition de la même pièce, d'une autre allure (la description en texte posé plutôt qu'en
+        // volets) : le moment et les textes restent les mêmes.
+        const premierI = pg.sections.findIndex((x) => x.section === dbl.premier);
+        // Une bande de photo décorative en double avec une vraie section : c'est la bande qui part (elle ne tient aucun
+        // moment), jamais la section qui porte un message.
+        const bandeI = [dbl.i, premierI].find((k) => k >= 0 && BANDES_DECORATIVES.has(pg.sections[k].section));
+        if (bandeI !== undefined) {
+          const next: D = JSON.parse(JSON.stringify(cur));
+          next.pages[pi].sections.splice(bandeI, 1);
+          if (count(next) <= before && o.accepte(next)) { better = { d: next, note: `« ${pg.key} » : ${pg.sections[bandeI].section} retirée (même allure qu'une autre photo pleine largeur de la page)` }; break; }
+        }
+        // La seconde pièce, puis la première (la description en volets peut devenir un texte posé si les questions restent
+        // en volets).
+        for (const k of [dbl.i, premierI].filter((x) => x >= 0)) {
+          const id = pg.sections[k].section;
+          const autres = new Set(pg.sections.flatMap((x, j) => (j === k ? [] : formesVues(x.section, x.construction))));
+          for (const c of constructionsOfPiece(id)) {
+            if (c === (pg.sections[k].construction ?? null) || formesVues(id, c).some((fo) => autres.has(fo))) continue;
+            const next: D = JSON.parse(JSON.stringify(cur));
+            next.pages[pi].sections[k].construction = c;
+            if (count(next) < before && o.accepte(next)) { better = { d: next, note: `« ${pg.key} » : ${id} en « ${c} » (même allure que ${k === dbl.i ? dbl.premier : dbl.id})` }; break; }
+          }
+          if (better) break;
+        }
+        if (better) break;
         const posees = new Set(cur.pages.flatMap((q) => q.sections.map((x) => x.section)));
         const cands = (() => { try { return o.candidats(cur, dbl.id); } catch { return []; } })().filter((c) => c !== dbl.id && !posees.has(c) && pieceTenable(c, f) && !formesVues(c, null).some((fo) => prises.has(fo)));
+        // Une bande de photo décorative sans remplaçant : retirée (elle sépare deux moments, elle n'en tient aucun).
+        if (!cands.length && BANDES_DECORATIVES.has(dbl.id)) {
+          const next: D = JSON.parse(JSON.stringify(cur));
+          next.pages[pi].sections.splice(dbl.i, 1);
+          if (count(next) <= before && o.accepte(next)) { better = { d: next, note: `« ${pg.key} » : ${dbl.id} retirée (même allure que ${dbl.premier})` }; break; }
+        }
         for (const c of cands) {
           const next: D = JSON.parse(JSON.stringify(cur));
           const s = next.pages[pi].sections[dbl.i];

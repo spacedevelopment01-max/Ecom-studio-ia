@@ -48,7 +48,7 @@ describe("refaire un site : il ne ressemble pas à l'ancien", async () => {
 
   it("refaire : une pièce gardée garde son travail, sauf les emplacements de produit, qui repartent vides", () => {
     const src = fs.readFileSync("src/lib/syna-agent/custom-theme/site-job.ts", "utf8");
-    expect(src).toContain("pg.sections = pg.sections.filter((x) => { const l = libSection(x.id); return !l || !productSlotSection(l); });");
+    expect(src).toContain('pg.sections = pg.sections.filter((x, i) => { const l = libSection(x.id); return !(pg.key === "home" && i === 0) && (!l || !productSlotSection(l)); });');
   });
 });
 
@@ -133,5 +133,37 @@ describe("dernier recours sans IA pour la variété : un second passage qui n'ac
   it("le second passage existe, après le premier, et seulement si la règle n'est pas tenue", () => {
     const src = fs.readFileSync("src/lib/syna-agent/custom-theme/tools.ts", "utf8");
     expect(src).toContain("const rapproche = (x: Design) => { const r = check(x); if (r.rules.length || !r.t) return false; const e = ecart(x); if (e >= courant) return false; courant = e; return true; };");
+  });
+});
+
+describe("les trois corrections après le site refait du 19 novembre 2026", async () => {
+  const O = await import("@/lib/syna-agent/custom-theme/ordre");
+  const facts = { business: "products" as const, products: 3, types: [], mobile: false, zoneConnue: false, preuves: new Set<never>() };
+
+  it("l'ouverture de l'ancien site ne revient jamais : ni gardée, ni sa photo reprise, ni son titre donné au plan, ni sa disposition", () => {
+    const job = fs.readFileSync("src/lib/syna-agent/custom-theme/site-job.ts", "utf8");
+    expect(job).toContain('!(pg.key === "home" && i === 0)');
+    expect(job).toContain('if (!x.clientTexts || (pg.key === "home" && i === 0)) continue;');
+    const brand = fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8");
+    expect(brand).toContain('const ouverture = t.pages.find((pg) => pg.key === "home")?.sections[0];');
+    const tools = fs.readFileSync("src/lib/syna-agent/custom-theme/tools.ts", "utf8");
+    expect(tools).toContain("Refaire le site : l'ouverture de l'accueil ne reprend jamais la disposition de l'actuelle");
+  });
+
+  it("une bande de photo pleine largeur et une grande photo sur la même page : même allure (la bande encadrée, non)", () => {
+    const d = O.alluresEnDouble([{ section: "tn-ouverture", construction: "dans-la-photo" }, { section: "tn-emotion", construction: "phrase-sur-photo" }, { section: "tn-bande", construction: "pleine-largeur" }]);
+    expect(d.map((x) => `${x.id}=${x.forme}`)).toEqual(["tn-bande=grande-photo"]);
+    expect(O.alluresEnDouble([{ section: "tn-emotion", construction: "phrase-sur-photo" }, { section: "tn-bande", construction: "encadree" }])).toEqual([]);
+  });
+
+  it("la fiche d'Atelier Vasco : la description en volets devient un texte posé, les questions gardent leurs volets", () => {
+    const fiche = ["tn-achat:simple", "tn-description:numeros", "tn-pictos:rangee", "tn-composition:alternee", "tn-citation-photo:voile", "tn-comment:lignes", "tn-rappel-achat:bouton", "tn-sous-bouton:liste", "tn-questions:deux-colonnes", "tn-produits:vedette"];
+    const d = { pages: [{ key: "product", label: "Fiche", sections: fiche.map((x) => { const [section, construction] = x.split(":"); return { section, construction }; }) }] };
+    expect(O.alluresEnDouble(d.pages[0].sections).map((x) => x.forme)).toEqual(["volets"]);
+    const fit = O.fitFormes(d, facts as never, { candidats: () => [], accepte: () => true });
+    const desc = fit.d.pages[0].sections.find((x) => x.section === "tn-description")!;
+    expect(desc.construction).not.toBe("numeros");
+    expect(O.alluresEnDouble(fit.d.pages[0].sections)).toEqual([]);
+    expect(fit.changed.join(" ")).toMatch(/tn-description en « /);
   });
 });

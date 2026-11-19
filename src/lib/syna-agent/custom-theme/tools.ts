@@ -557,6 +557,25 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     const reste = varieteSitesGaps({ ...siteVuDe(d), metier: oc.metier }, vus, { seule: seuleDans(d) });
     if (reste.length) return { ok: false, result: { ok: false, summary: L(`Conception refusée : le site ressemblerait trop à un site déjà fait par le Studio (${reste.join(" ; ").slice(0, 400)}). Rien n'est enregistré.`, "Design refused: too close to an existing site."), hint: "Dis-le honnêtement au client avec le coût réel ; ne relance rien de payant sans son accord." } };
   }
+  // Refaire le site : l'ouverture de l'accueil ne reprend jamais la disposition de l'actuelle (essai réel du 18 novembre
+  // 2026 : même pièce, même disposition, même premier écran). Une autre disposition de la même pièce, sinon c'est dit.
+  if (ancien) {
+    const home = d.pages.find((pg) => pg.key === "home"), avant = ancien.vu.pages.home?.[0];
+    const premier = home?.sections[0];
+    if (home && premier && avant) {
+      const id = (() => { try { return ref(premier.section); } catch { return premier.section; } })();
+      const meme = () => `${id}:${(() => { try { return validConstruction(id, home.sections[0].construction) ?? ""; } catch { return home.sections[0].construction ?? ""; } })()}` === avant;
+      if (meme()) {
+        for (const cc of (() => { try { return constructionsOf(id).map((x) => x.key); } catch { return []; } })()) {
+          if (`${id}:${cc}` === avant) continue;
+          const x: Design = JSON.parse(JSON.stringify(d));
+          x.pages.find((pg) => pg.key === "home")!.sections[0].construction = cc;
+          const r = check(x);
+          if (!r.rules.length && r.t) { d = x; c = r; break; }
+        }
+      }
+    }
+  }
   // Le rythme : deux dispositions pareilles à la suite, réglé par un échange de place quand il ne crée aucun autre défaut.
   { const fit = fitRythme(d, facts); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
   // Une même allure jamais deux fois sur une page (18 novembre 2026) : la seconde est remplacée par une pièce du même
