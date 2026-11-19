@@ -698,6 +698,15 @@ export async function aiSitePageMockup(ctx: Ctx, input: { prompt: string; refere
 }
 
 /**
+ * Photo d'une section du site, créée pour elle (méthode « dessiner puis coder », décision du propriétaire du 19 novembre
+ * 2026 : « sina doit forcément faire toutes les images du site en dehors de celle du produit ») : la vraie photo d'un
+ * produit mis en scène (à reproduire fidèlement) et le dessin de la page (modèle d'allure) en références.
+ */
+export async function aiSitePhoto(ctx: Ctx, input: { prompt: string; references: { role: "product" | "style"; data: Buffer }[]; aspect: "1:1" | "2:3" | "16:9" }) {
+  return generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references: input.references.map((r) => ({ ...r, essential: true })), quality: "high", strictQuality: true, usage: "scene", need: { references: input.references.length } });
+}
+
+/**
  * Photo du site recréée en haute définition d'après la maquette choisie (demande du propriétaire du 8 novembre :
  * « OpenAI devra refaire toutes les images du thème en haute résolution pour les inclure, et que ce soit comme les
  * maquettes »). Références : la photo découpée sur la maquette (à reproduire), le logo (s'il figure sur un emballage),

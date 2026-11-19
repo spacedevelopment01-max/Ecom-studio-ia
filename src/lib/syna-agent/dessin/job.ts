@@ -17,7 +17,7 @@ import type { Project } from "../../projects";
 import { assetData, assetUrl, getAsset, saveAsset } from "../../library";
 import { llmJson } from "../../ai/llm";
 import { withTrace } from "../../ai/trace";
-import { aiSiteImageHd, aiSitePageMockup, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
+import { aiSitePageMockup, aiSitePhoto, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
 import { getSetting } from "../../settings";
 import type { CostEstimate } from "../types";
 import { jobSpentMicro } from "../budget";
@@ -35,7 +35,7 @@ import { buildSpec } from "../../theme/directions";
 import { contentFromInput, libraryFiller } from "../../theme/library-fill";
 import { localCopy } from "../../engine/local-copy";
 import { emptyProduct } from "../../project-types";
-import { appliquerJugement, nettoyerPlan, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
+import { appliquerJugement, morceauxSurs, nettoyerPlan, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
 
 export const SINA_DESSIN_JOB = "syna.dessin";
 export type DessinPayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null };
@@ -121,7 +121,10 @@ export async function runDessinJob(ctx: JobContext) {
   if (!logoAsset) throw new UserFacingError(L("Il faut d'abord le logo de la marque.", "The brand logo is needed first."));
   const logo = assetData(logoAsset);
   const id = identiteDe(p), slug = slugMarque(id.marque);
-  const dossier = [brandBrief(p, j), a.consigne ? `DEMANDE DU CLIENT (ses mots, prioritaire) : « ${a.consigne} »` : ""].filter(Boolean).join("\n");
+  // L'état RÉEL des photos des produits, lu dans le catalogue (essai réel du 19 novembre 2026 : une vieille note disait les
+  // photos « pas encore importées » alors qu'elles l'étaient, et l'ouverture est restée vide).
+  const etatPhotos = p.business === "services" ? "" : `PHOTOS DES PRODUITS, ÉTAT ACTUEL DU CATALOGUE (fait foi, avant toute note plus ancienne) : ${listProducts(p.id).map((x) => `« ${x.data.title} » : ${x.data.images.some((im) => im.assetId) ? "a sa vraie photo (peut être mis en scène)" : "SANS photo (n'apparaît dans aucune photo ; sa carte garde « Ta photo ici »)"}`).join(" ; ")}.`;
+  const dossier = [brandBrief(p, j), etatPhotos, a.consigne ? `DEMANDE DU CLIENT (ses mots, prioritaire) : « ${a.consigne} »` : ""].filter(Boolean).join("\n");
 
   // 1) Le plan de toute la page (le dessinateur choisit seul les 8 à 10 sections).
   ctx.progress(0.03, L("Je réfléchis à ton accueil, section par section", "Planning your home page"));
@@ -148,33 +151,49 @@ export async function runDessinJob(ctx: JobContext) {
     });
   }
 
-  // 4) Les photos : celles déjà faites pour la marque (son site actuel), puis celles qui manquent, créées.
+  // 4) Les photos (décision du propriétaire du 19 novembre 2026 : « sina doit forcément faire toutes les images du site
+  // en dehors de celle du produit ») : une photo CRÉÉE par section du plan, dans l'allure de son dessin ; un produit qui a
+  // sa vraie photo y est mis en scène (sa photo jointe en modèle) ; un produit sans photo n'apparaît dans aucune image.
+  // Les cartes des produits prennent leurs vraies photos. Une photo qui échoue prend une photo déjà faite pour la marque.
   const theme = dossierTheme(p, ctx.job.id);
   fs.mkdirSync(path.join(theme, "assets"), { recursive: true });
-  const phototheque = photothequeDe(p.id, loadCustomTheme(p.id), p.business === "services" ? "services" : "products", []);
-  const voulues = plan.sections.filter((s) => s.photo);
-  const aCreer = Math.max(0, Math.min(voulues.length, PHOTOS_ACCUEIL) - phototheque.length);
+  const catalogue = p.business === "services" ? [] : listProducts(p.id).map((x) => ({ titre: x.data.title, photo: x.data.images.find((im) => im.assetId)?.assetId ?? null }));
+  const [m1, m2] = morceauxSurs(plan);
+  const voulues = plan.sections.map((s, i) => ({ s, n: i + 1 })).filter((x) => x.s.photo).slice(0, PHOTOS_ACCUEIL);
   const creees = await ctx.step("photos", async () => {
-    const out: { id: string; description: string }[] = [];
-    for (const [i, s] of voulues.slice(0, aCreer).entries()) {
-      ctx.progress(0.5 + 0.08 * (i / Math.max(1, aCreer)), L("Je crée les photos qui manquent", "Creating missing photos"));
-      const img = await withTrace(trace(`dessin-photo-${i}`, imageMaxMicro()), () => aiSiteImageHd({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:photo:${i}` }, { prompt: `Photo pour le site de « ${id.marque} » : ${s.photo}. Lumière naturelle, couleurs ${id.couleurs}. Aucune personne, aucun visage, aucune main. Aucun texte, aucune lettre, aucun chiffre, aucun logo.`, aspect: "16:9" }));
-      const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: img as Buffer, name: `photo-accueil-${i + 1}.png`, mime: "image/png", role: "site", origin: "generated", meta: { dessin: { jobId: ctx.job.id } } });
-      out.push({ id: asset.id, description: s.photo! });
+    const out: { n: number; id: string | null; description: string; produit: string | null }[] = [];
+    for (const [i, { s, n }] of voulues.entries()) {
+      ctx.progress(0.5 + 0.1 * (i / Math.max(1, voulues.length)), L(`Je crée les photos de ton accueil (${i + 1} sur ${voulues.length})`, `Creating photos (${i + 1}/${voulues.length})`));
+      const prod = s.produit ? catalogue.find((x) => x.titre.trim().toLowerCase() === s.produit!.trim().toLowerCase() && x.photo) : undefined;
+      const dessin = dessins[m1.includes(n) ? "1-haut" : m2.includes(n) ? "2-milieu" : "3-bas"];
+      const refs: { role: "product" | "style"; data: Buffer }[] = [...(prod ? [{ role: "product" as const, data: assetData(getAsset(prod.photo!)!) }] : []), ...(dessin ? [{ role: "style" as const, data: assetData(getAsset(dessin)!) }] : [])];
+      const aspect = n === 1 || s.format === "paysage" ? "16:9" : s.format === "portrait" ? "2:3" : "1:1";
+      const prompt = `Photo de site pour la marque « ${id.marque} », section « ${s.nom} » : ${s.photo}. ${prod ? `Le produit « ${prod.titre} » est mis en scène : UN seul exemplaire, fidèle à sa vraie photo jointe (forme, couleur, matière, détails), entier, jamais déformé.` : "Aucun produit de la marque n'apparaît dans cette photo (un produit ne s'invente jamais)."} La photo suit l'allure de la page dessinée jointe (lumière, couleurs, ambiance) mais n'en recopie ni la mise en page ni les textes. Couleurs : ${id.couleurs}. Lumière naturelle travaillée, niveau d'une campagne haut de gamme. Aucune personne, aucun visage, aucune main. Aucun texte, aucune lettre, aucun chiffre, aucun logo.`;
+      try {
+        const img = await withTrace(trace(`dessin-photo-${n}`, imageMaxMicro()), () => aiSitePhoto({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:photo:${n}` }, { prompt, references: refs, aspect }));
+        const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: img as Buffer, name: `photo-accueil-section-${n}.png`, mime: "image/png", role: "site", origin: "generated", meta: { dessin: { jobId: ctx.job.id, section: n, produit: prod?.titre ?? null } } });
+        out.push({ n, id: asset.id, description: s.photo!, produit: prod?.titre ?? null });
+      } catch (e) { out.push({ n, id: null, description: `${s.photo} (création ratée : ${(e as Error).message.slice(0, 120)})`, produit: null }); }
     }
     return out;
   });
+  const phototheque = photothequeDe(p.id, loadCustomTheme(p.id), p.business === "services" ? "services" : "products", []);
+  let secours = 0;
   const photos: { fichier: string; format: string; description: string }[] = [];
-  // Boutique : la vraie photo de chaque produit d'abord (jamais un produit inventé), nommée avec le produit.
-  const produits = p.business === "services" ? [] : listProducts(p.id).flatMap((x) => { const id = x.data.images.find((im) => im.assetId)?.assetId; return id ? [{ id, description: `PHOTO DU PRODUIT « ${x.data.title} » (sa vraie photo, à poser telle quelle sur la carte ou le bloc de ce produit, jamais pour une autre section)` }] : []; });
-  for (const [i, x] of [...produits, ...phototheque, ...creees].slice(0, 30).entries()) {
-    const ast = getAsset(x.id);
-    if (!ast) continue;
-    const fichier = `${slug}-photo-${String(i + 1).padStart(2, "0")}.webp`;
+  const poser = async (assetId: string, fichier: string, description: string) => {
+    const ast = getAsset(assetId);
+    if (!ast) return false;
     const img = sharp(assetData(ast)).rotate().resize(1600, 1600, { fit: "inside", withoutEnlargement: true });
     const meta = await img.metadata();
     fs.writeFileSync(path.join(theme, "assets", fichier), await img.webp({ quality: 82 }).toBuffer());
-    photos.push({ fichier, format: `${meta.width ?? 0}x${meta.height ?? 0}`, description: x.description.split(". ").slice(0, 3).join(". ").slice(0, 420) });
+    photos.push({ fichier, format: `${meta.width ?? 0}x${meta.height ?? 0}`, description: description.split(". ").slice(0, 3).join(". ").slice(0, 420) });
+    return true;
+  };
+  for (const [i, x] of catalogue.filter((x) => x.photo).entries()) await poser(x.photo!, `${slug}-produit-${i + 1}.webp`, `PHOTO DU PRODUIT « ${x.titre} » (sa vraie photo, à poser telle quelle sur la carte ou le bloc de ce produit, jamais pour une autre section)`);
+  for (const c of creees) {
+    const id0 = c.id ?? phototheque[secours]?.id;
+    if (!c.id && id0) secours++;
+    if (id0) await poser(id0, `${slug}-section-${c.n}.webp`, `PHOTO DE LA SECTION ${c.n} « ${plan.sections[c.n - 1].nom} » (${c.id ? "créée pour elle" : "photo de la marque, à défaut"}) : ${c.description}${c.produit ? ` — met en scène le produit « ${c.produit} »` : ""}`);
   }
   const logoFichier = `${slug}-logo.png`, logoClairFichier = `${slug}-logo-clair.png`;
   const logoPng = await sharp(logo).resize(600, 600, { fit: "inside", withoutEnlargement: true }).png().toBuffer();
@@ -230,7 +249,7 @@ export async function runDessinJob(ctx: JobContext) {
     return { erreurs, avertissements, exemples, captures };
   });
 
-  const res = { plan: { idee: plan.idee, sections: plan.sections.map((s) => s.nom) }, juge: { corrections: juge.appliquees, ignorees: juge.ignorees, avis: jugement.avis, code: { corrections: corrigesCode, demandees: jugeCode.corrections.length, avis: jugeCode.avis } }, dessins: Object.values(dessins), photosCreees: creees.length, fichiers: ecrits, notes: code.notes, controle };
+  const res = { plan: { idee: plan.idee, sections: plan.sections.map((s) => s.nom) }, juge: { corrections: juge.appliquees, ignorees: juge.ignorees, avis: jugement.avis, code: { corrections: corrigesCode, demandees: jugeCode.corrections.length, avis: jugeCode.avis } }, dessins: Object.values(dessins), photosCreees: creees.filter((c) => c.id).length, photosSecours: secours, fichiers: ecrits, notes: code.notes, controle };
   remember(p.id, { kind: "artifact", key: `syna.dessin.${ctx.job.id}`, value: JSON.stringify(res), source: "local", origin: "system" as never });
   ctx.progress(1, L("Terminé", "Done"));
   return res;

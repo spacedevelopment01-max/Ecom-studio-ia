@@ -58,6 +58,13 @@ méthode a été essayée dans le Studio, étape par étape, et ce cahier garde 
 - Le modèle d'images fait des fautes dans les textes (une ligne de prix oubliée, un zéro en trop dans un numéro, un
   panneau inventé) : le dessin sert à l'ALLURE, jamais aux textes. Les textes du site viennent toujours du plan.
 - Sur un fond sombre, le logo est en version claire.
+- LES PHOTOS DU SITE (décision du propriétaire du 19 novembre 2026 : « sina doit forcément faire toutes les images du
+  site en dehors de celle du produit ») : chaque emplacement du plan reçoit une photo CRÉÉE pour lui, dans l'allure de
+  la page dessinée, comme sur la maquette d'une agence où chaque emplacement a sa photo. Les cartes des produits prennent
+  leurs vraies photos. Un produit qui a sa vraie photo est mis en scène (l'ouverture, une ambiance, un détail), sa photo
+  jointe en modèle, un seul exemplaire, fidèle. Un produit sans photo n'apparaît dans aucune image créée ; sa carte
+  garde « Ta photo ici ». L'état des photos se lit dans le catalogue, jamais dans une note plus ancienne (essai réel :
+  une vieille note disait les photos absentes, et l'ouverture est restée vide).
 
 ## 5. Le code (modèle de code)
 

@@ -8,11 +8,10 @@ import { L } from "../../i18n-server";
 import { enqueue, pendingJob } from "../../jobs";
 import type { AgentTool } from "../types";
 import { project } from "../tools/common";
-import { photothequeDe } from "../custom-theme/brand";
-import { loadCustomTheme } from "../custom-theme/theme";
 import { dessinQuote, PHOTOS_ACCUEIL, resultatDessin, SINA_DESSIN_JOB, type DessinPayload } from "./job";
 
-const photosACreer = (projectId: string, business: string) => { try { return Math.max(0, PHOTOS_ACCUEIL - photothequeDe(projectId, loadCustomTheme(projectId), business === "services" ? "services" : "products", []).length); } catch { return PHOTOS_ACCUEIL; } };
+/** Une photo créée par section qui en prévoit une (décision du propriétaire du 19 novembre 2026). */
+const photosACreer = (_projectId: string, _business: string) => PHOTOS_ACCUEIL;
 
 type DessinArgs = { consigne?: string };
 export const dessinTool: AgentTool<DessinArgs> = {

@@ -136,7 +136,7 @@ describe("dessiner puis coder : les corrections de l'essai réel du 19 novembre 
     expect(M.CODE_SYSTEM).toMatch(/aucun rond ni aplat décoratif derrière un titre/);
     // Boutique : la vraie photo de chaque produit, sur sa carte seulement (jamais un produit sans sa photo).
     expect(M.CODE_SYSTEM).toMatch(/une « PHOTO DU PRODUIT » ne va que sur la carte ou le bloc de CE produit/);
-    expect(fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8")).toContain("for (const [i, x] of [...produits, ...phototheque, ...creees].slice(0, 30).entries()) {");
+    expect(fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8")).toContain("for (const [i, x] of catalogue.filter((x) => x.photo).entries()) await poser(x.photo!, `${slug}-produit-${i + 1}.webp`, `PHOTO DU PRODUIT");
   });
 
   it("SINA a sous les yeux ses dessins et le code affiché avant d'en parler", async () => {
@@ -176,6 +176,34 @@ describe("dessiner puis coder : les corrections de l'essai sur Atelier Vasco (19
     expect(job).toContain("info.theme_support_url ??=");
     expect(job).toContain("const net = nettoyerPlan(juge.plan);");
     expect(job).toContain("(document.body.innerText.match(/Ta photo ici|\\[À compléter/g) ?? []).length");
+  });
+});
+
+describe("dessiner puis coder : SINA crée toutes les photos du site, sauf celles des produits (19 novembre 2026)", async () => {
+  const M = await import("@/lib/syna-agent/dessin/methode");
+  const J = await import("@/lib/syna-agent/dessin/job");
+  it("le plan dit, pour chaque photo, le produit mis en scène et son format ; une valeur mal formée ne fait rien perdre", () => {
+    const p = plan();
+    (p.sections[0] as any).produit = "Cabas Lune"; (p.sections[0] as any).format = "paysage";
+    (p.sections[3] as any).format = "rond";
+    const r = M.PlanSchema.parse(p);
+    expect(r.sections[0]).toMatchObject({ produit: "Cabas Lune", format: "paysage" });
+    expect(r.sections[3].format).toBeNull();
+    expect(M.PLAN_SYSTEM).toMatch(/CHAQUE photo du site est créée pour sa section/);
+    expect(M.PLAN_SYSTEM).toMatch(/un produit sans photo n'apparaît dans AUCUNE photo/);
+    expect(M.CODE_SYSTEM).toMatch(/une « PHOTO DE LA SECTION n » va dans la section n/);
+  });
+
+  it("une photo créée par section, la vraie photo du produit en modèle, le dessin pour l'allure ; l'état des photos lu dans le catalogue ; le prix les compte toutes", async () => {
+    const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
+    expect(job).toContain("aiSitePhoto({ userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey: `${ctx.job.id}:photo:${n}` }");
+    expect(job).toContain("Aucun produit de la marque n'apparaît dans cette photo (un produit ne s'invente jamais).");
+    expect(job).toContain("PHOTOS DES PRODUITS, ÉTAT ACTUEL DU CATALOGUE (fait foi, avant toute note plus ancienne)");
+    expect(job).toContain("PHOTO DE LA SECTION ${c.n}");
+    const media = fs.readFileSync("src/lib/ai/media-providers.ts", "utf8");
+    expect(media).toContain('export async function aiSitePhoto(ctx: Ctx, input: { prompt: string; references: { role: "product" | "style"; data: Buffer }[]; aspect: "1:1" | "2:3" | "16:9" })');
+    expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("const photosACreer = (_projectId: string, _business: string) => PHOTOS_ACCUEIL;");
+    expect(J.dessinQuote(J.PHOTOS_ACCUEIL).probableMicro).toBe(120_000 + 2 * 60_000 + (5 + 8) * 115_000 + 300_000);
   });
 });
 
