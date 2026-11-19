@@ -79,7 +79,7 @@ describe("dessiner puis coder : la méthode", async () => {
   it("le prix : plan, juge, cinq dessins, les photos qui manquent et le code ; le plafond garde une marge raisonnable", () => {
     const q = J.dessinQuote(0), q2 = J.dessinQuote(3);
     expect(q.probableMicro).toBe(120_000 + 2 * 60_000 + 5 * 115_000 + 300_000);
-    expect(q2.probableMicro! - q.probableMicro!).toBe(3 * 115_000);
+    expect(q2.probableMicro! - q.probableMicro!).toBe(3 * (115_000 + 15_000));
     expect(q.maxMicro).toBeLessThanOrEqual(Math.round(q.probableMicro! * 1.6));
     expect(q.label).not.toMatch(/€/);
     // Essai réel du 19 novembre 2026 : un plafond de dessin sous la réserve du Studio (0,186 €) a arrêté la tâche.
@@ -101,7 +101,7 @@ describe("dessiner puis coder : la méthode", async () => {
     expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol" });
     expect(J.CODE_OUTPUT_TOKENS).toBeGreaterThanOrEqual(48_000);
     const src = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
-    expect((src.match(/sansRelanceCoupee: true/g) ?? []).length).toBe(4);
+    expect((src.match(/sansRelanceCoupee: true/g) ?? []).length).toBe(5);
     const llm = fs.readFileSync("src/lib/ai/llm.ts", "utf8");
     expect(llm).toContain('if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());');
     expect(llm).toContain("if (cut && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());");
