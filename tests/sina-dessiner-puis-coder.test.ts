@@ -243,6 +243,12 @@ describe("dessiner puis coder : une boutique a toujours le panier dans l'en-têt
     expect(job).toContain("panier: m.panier });");
     expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("(boutique && x.panier === false)");
   });
+  it("jamais un bouton vide : interdit au code, compté au contrôle (essai réel : un bouton sans texte après une correction)", () => {
+    expect(M.CODE_SYSTEM).toMatch(/Un bouton, un lien ou un titre dont le réglage de texte est vide NE S'AFFICHE PAS/);
+    const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
+    expect(job).toContain("const vides = [...document.querySelectorAll(\"a,button\")]");
+    expect(job).toContain("+ vides };");
+  });
 });
 
 describe("dessiner puis coder : SINA l'a appris", async () => {

@@ -315,8 +315,10 @@ export async function capturesAccueil(p: Project, jobId: string, theme: string):
       const m = await page.evaluate(() => {
         const W = window.innerWidth, hors: string[] = [];
         for (const el of document.querySelectorAll("a,button,[role=button]")) { const b = el.getBoundingClientRect(); const cs = getComputedStyle(el); if (!b.width || !b.height || cs.visibility === "hidden") continue; if (b.left < -1 || b.right > W + 1) hors.push((el.textContent ?? "").trim().slice(0, 40)); }
+        // Bouton ou lien visible sans aucun texte ni nom (essai réel : un bouton vide après une correction du juge).
+        const vides = [...document.querySelectorAll("a,button")].filter((el) => { const b = el.getBoundingClientRect(); const cs = getComputedStyle(el); return b.width > 20 && b.height > 16 && cs.visibility !== "hidden" && !(el.textContent ?? "").trim() && !el.getAttribute("aria-label") && !el.querySelector("img,svg"); }).length;
         const panier = !!document.querySelector('header a[href*="/cart"], [class*=header] a[href*="/cart"]');
-        return { panier, debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + (document.body.innerText.match(/Ta photo ici|\[À compléter/g) ?? []).length };
+        return { panier, debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + (document.body.innerText.match(/Ta photo ici|\[À compléter/g) ?? []).length + vides };
       });
       const shot = await page.screenshot({ fullPage: true, type: "jpeg", quality: 72 });
       await page.close();
