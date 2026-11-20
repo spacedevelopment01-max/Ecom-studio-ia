@@ -34,9 +34,9 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
     expect(chain.match(/gouts: j\.start\.image\?\.value \?\? null/g)).toHaveLength(2);
   });
 
-  it("le modèle tout fait (trait sous le nom) est interdit dans la consigne, et repéré sans IA sur l'image", async () => {
-    expect(I.imagePrompt("logo", route("A") as never, imagery)).toContain(I.LOGO_SANS_TRAIT);
-    expect(I.LOGO_SANS_TRAIT).toMatch(/aucun trait, filet ou ligne sous le nom/);
+  it("le trait près du nom avec parcimonie : jamais interdit, un seul par série, repéré sans IA sur l'image", async () => {
+    expect(I.imagePrompt("logo", route("A") as never, imagery)).not.toMatch(/trait|filet/);
+    expect(I.LOGO_TRAIT_DEJA_PRIS).toMatch(/Un des logos déjà faits a un trait, un filet ou une ligne près du nom : celui-ci n'en a pas/);
     // Un nom (des blocs séparés comme des lettres) avec, puis sans, un filet fin dessous.
     const lettres = Array.from({ length: 8 }, (_v, i) => ({ input: { create: { width: 40, height: 70, channels: 3 as const, background: "#1F3D2B" } }, left: 100 + i * 55, top: 200 }));
     const filet = { input: { create: { width: 420, height: 4, channels: 3 as const, background: "#1F3D2B" } }, left: 100, top: 300 };
@@ -49,7 +49,8 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
     const bandeau = await fond().composite([...lettres, { input: { create: { width: 420, height: 60, channels: 3 as const, background: "#1F3D2B" } }, left: 100, top: 300 }]).png().toBuffer();
     expect((await I.traitHorizontal(bandeau)).trouve).toBe(false);
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).toContain("if (drawn && (await traitHorizontal(drawn)).trouve) {");
+    expect(img).toContain("if (drawn && traitPris && (await traitHorizontal(drawn)).trouve) {");
+    expect(img).toContain("(traitPris ? `\\n${LOGO_TRAIT_DEJA_PRIS}` : \"\")");
     expect(img).toContain('":sans-trait"');
   });
 });

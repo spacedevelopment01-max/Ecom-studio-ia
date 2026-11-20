@@ -148,11 +148,11 @@ export const spell = (name: string) => [...name.normalize("NFC")].map((c) => (c 
  */
 export const LOGO_NOT_SCENE = "Un LOGO, pas une illustration ni une scène : le nom, et au plus UN signe simple et fort (un seul objet ou une seule forme), lisible en tout petit comme un tampon. Aucune personne, aucun personnage, aucune silhouette humaine, aucune main ; aucune scène avec un décor, un véhicule garé ou une maison.";
 /**
- * Le modèle tout fait des logos d'artisan, interdit (demande du propriétaire du 20 novembre 2026, « j'ai toujours les
- * traits en dessous » : sur 43 logos, presque toutes les marques calmes avaient le signe en haut, le nom, un trait
- * souligné d'un petit losange). C'est l'interdiction d'un cliché, pas un style imposé : le dessin reste libre.
+ * Le trait sous le nom, avec PARCIMONIE (propriétaire, 20 novembre 2026 : « j'ai toujours les traits en dessous »,
+ * puis « il doit juste être là par parcimonie ») : jamais interdit, mais un seul logo au plus par série le porte. Sur 43
+ * logos du Studio d'essai, presque toutes les marques calmes sortaient avec le signe en haut, le nom, un trait souligné.
  */
-export const LOGO_SANS_TRAIT = "Pas le modèle tout fait des logos d'artisan : aucun trait, filet ou ligne sous le nom, au-dessus ou de chaque côté, et aucun petit losange, point ou motif posé sur une ligne.";
+export const LOGO_TRAIT_DEJA_PRIS = "Un des logos déjà faits a un trait, un filet ou une ligne près du nom : celui-ci n'en a pas.";
 export const LOGO_OWN = "Une conception propre à cette marque, tirée de son idée et de son métier, jamais une recette déjà vue ailleurs.";
 const exact = (texts: string[]) => `Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${texts.map((t) => `« ${t} »`).join(" ; ")}. Aucun autre texte, aucun mot inventé, aucun faux texte de remplissage.`;
 /**
@@ -192,7 +192,6 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       // pas un style imposé : le dessin reste libre.
       o.gouts?.trim() ? `Ce que le client a dit de l'image qu'il veut, avec ses mots, à respecter (surtout ce qu'il refuse) : « ${o.gouts.trim()} »` : "",
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni cadre, ni ombre portée.",
-      LOGO_SANS_TRAIT,
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
@@ -381,14 +380,16 @@ export async function runBoardImages(o: {
     // Jamais les logos d'une série précédente ni d'un autre projet.
     const already = o.madeLogos ?? [], shown = await logoSheet(already);
     const n = Math.min(already.length, 4);
-    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true, gouts: o.gouts }) + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
+    // Parcimonie du trait : un seul logo par série le porte (contrôle sans IA des logos déjà faits).
+    const traitPris = (await Promise.all(already.map((b) => traitHorizontal(b).then((r) => r.trouve).catch(() => false)))).some(Boolean);
+    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true, gouts: o.gouts }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
     let drawn = bufferOf("logo");
-    // Contrôle sans IA du modèle tout fait (trait sous le nom) : le logo est redessiné UNE fois ; s'il le garde encore,
-    // il est montré et c'est dit au client.
-    if (drawn && (await traitHorizontal(drawn)).trouve) {
-      mark(made.get("logo")!.id, "rejected", "un trait sous le nom (modèle tout fait)"); made.delete("logo");
-      notes.push(`logo de ${key} redessiné : un trait sous le nom (contrôle sans IA)`);
-      await make("logo", calls.get("logo")!.refs, `${calls.get("logo")!.prompt}\nLe logo précédent avait un trait ou un filet près du nom : refais-le SANS aucun trait, filet, ligne ni petit motif sur une ligne.`, ":sans-trait");
+    // Contrôle sans IA de la parcimonie : un trait alors qu'un logo de la série en a déjà un, le logo est redessiné UNE
+    // fois ; s'il le garde encore, il est montré et c'est dit au client. Le premier trait d'une série est gardé.
+    if (drawn && traitPris && (await traitHorizontal(drawn)).trouve) {
+      mark(made.get("logo")!.id, "rejected", "un trait près du nom, déjà pris par un autre logo de la série"); made.delete("logo");
+      notes.push(`logo de ${key} redessiné : un trait près du nom, déjà pris dans la série (contrôle sans IA)`);
+      await make("logo", calls.get("logo")!.refs, `${calls.get("logo")!.prompt}\nLe logo précédent avait lui aussi un trait ou un filet près du nom : refais-le sans trait, sans filet ni ligne.`, ":sans-trait");
       drawn = bufferOf("logo");
       if (drawn && (await traitHorizontal(drawn)).trouve) issues.push(tag(L("son logo garde un trait sous le nom, malgré un second dessin.", "its logo still has a line under the name.")));
     }
