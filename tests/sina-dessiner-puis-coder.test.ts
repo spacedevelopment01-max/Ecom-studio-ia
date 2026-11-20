@@ -353,3 +353,23 @@ describe("dessiner puis coder : le juge refuse une citation qui n'est pas mot po
     expect(M.JUGE_SYSTEM).toMatch(/elle reprend ses mots exacts, ou elle est retirée/);
   });
 });
+
+describe("dessiner puis coder : une correction du juge citée entre guillemets est bien posée (essai réel Braise)", async () => {
+  const M = await import("@/lib/syna-agent/dessin/methode");
+  it("le passage entre « » est retrouvé sans ses guillemets, dans le plan comme dans le code", () => {
+    const p = { idee: "x", morceaux: [[1], [2], [3]], sections: [
+      { nom: "Semaine", pourquoi: "q", disposition: "d", fond: "sombre", textes: ["Mercredi", "Tout part, sans exception."], photo: null },
+      { nom: "Marché", pourquoi: "q", disposition: "d", fond: "clair", textes: ["Mes habitués me disent que le café sent encore.", "Léa, au marché chaque samedi depuis 2023"], photo: null },
+    ] } as any;
+    const r = M.appliquerJugement(p, { avis: "", corrections: [
+      { section: 1, avant: "« Tout part, sans exception. »", apres: "« Tout part. »", pourquoi: "promesse" },
+      { section: 2, avant: "« Léa, au marché chaque samedi depuis 2023 »", apres: "", pourquoi: "signature trompeuse" },
+    ] } as any);
+    expect(r).toMatchObject({ appliquees: 2, ignorees: 0 });
+    expect(r.plan.sections[0].textes).toEqual(["Mercredi", "Tout part."]);
+    expect(r.plan.sections[1].textes).toEqual(["Mes habitués me disent que le café sent encore."]);
+    const files = [{ path: "sections/semaine.liquid", content: "<p>Tout part, sans exception.</p>" }];
+    expect(M.corrigerFichiers(files, "« Tout part, sans exception. »", "« Tout part. »")).toBe(1);
+    expect(files[0].content).toBe("<p>Tout part.</p>");
+  });
+});

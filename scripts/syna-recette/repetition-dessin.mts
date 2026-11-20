@@ -127,7 +127,8 @@ if (j.status === "done") {
   for (const c of r.controle?.captures ?? []) console.log(`  ${c.appareil} : débordement ${c.debordement ? "OUI" : "non"}, hors écran ${c.horsEcran.length}, manques ${c.manquantes}, panier ${c.panier === false ? "ABSENT" : "là"}, produits absents ${c.produitsAbsents?.length ? c.produitsAbsents.join(", ") : "aucun"}`);
   console.log(`Photos refusées au contrôle de fidélité : ${r.photosRefusees?.length ?? 0}.`);
   for (const x of r.photosRefusees ?? []) console.log(`  section ${x.section} : ${/non fait/.test(x.defaut ?? "") ? "ALERTE, CONTRÔLE NON FAIT — " : ""}${x.defaut}`);
-  const alertes = (r.photosRefusees ?? []).filter((x: { defaut?: string }) => /non fait/.test(x.defaut ?? "")).length + (r.controle?.erreurs ?? 0) + (r.controle?.captures ?? []).filter((c: any) => c.debordement || c.horsEcran.length || c.manquantes || c.panier === false || c.produitsAbsents?.length).length;
+  console.log(`Juge du plan : ${r.juge?.corrections ?? "?"} correction(s) posée(s), ${r.juge?.ignorees ?? 0} ignorée(s)${r.juge?.ignorees ? " — ALERTE, CORRECTIONS DU JUGE NON POSÉES" : ""} ; juge du code : ${r.juge?.code?.corrections ?? "?"} posée(s) sur ${r.juge?.code?.demandees ?? "?"}${r.juge?.code && r.juge.code.corrections < r.juge.code.demandees ? " — ALERTE" : ""}.`);
+  const alertes = (r.juge?.ignorees ?? 0) + (r.juge?.code && r.juge.code.corrections < r.juge.code.demandees ? 1 : 0) + (r.photosRefusees ?? []).filter((x: { defaut?: string }) => /non fait/.test(x.defaut ?? "")).length + (r.controle?.erreurs ?? 0) + (r.controle?.captures ?? []).filter((c: any) => c.debordement || c.horsEcran.length || c.manquantes || c.panier === false || c.produitsAbsents?.length).length;
   console.log(alertes ? `\nRÉPÉTITION À REVOIR : ${alertes} alerte(s) ci-dessus. Aucun essai payant avant de les régler.` : "\nRÉPÉTITION RÉUSSIE : rien à régler avant l'essai payant.");
   process.exit(alertes ? 1 : 0);
 }

@@ -81,6 +81,11 @@ export function textesDuCode(files: { path: string; content: string }[]): string
 
 /** Applique une correction de texte à tous les fichiers du thème (dans le JSON, le texte est écrit comme le JSON l'exige). */
 export function corrigerFichiers(files: { path: string; content: string }[], avant: string, apres: string): number {
+  const n = poserDansFichiers(files, avant, apres);
+  // Passage cité entre guillemets par le juge, absent tel quel du code : retrouvé sans ses guillemets.
+  return n || (sansGuillemets(avant) !== avant.trim() ? poserDansFichiers(files, sansGuillemets(avant), sansGuillemets(apres)) : 0);
+}
+function poserDansFichiers(files: { path: string; content: string }[], avant: string, apres: string): number {
   let n = 0;
   for (const f of files) {
     const [a, b] = f.path.endsWith(".json") ? [JSON.stringify(avant).slice(1, -1), JSON.stringify(apres).slice(1, -1)] : [avant, apres];
@@ -113,6 +118,9 @@ export function nettoyerPlan(plan: PlanPage): { plan: PlanPage; retires: string[
 }
 
 /** Applique les corrections du juge au plan (sans IA) : chaque texte cité est remplacé, ou retiré si la correction est vide. */
+/** Un passage cité par le juge, sans les guillemets qui l'entourent. */
+const sansGuillemets = (t: string) => t.trim().replace(/^[«"“„]\s*/, "").replace(/\s*[»"”]$/, "").trim();
+
 export function appliquerJugement(plan: PlanPage, j: Jugement): { plan: PlanPage; appliquees: number; ignorees: number } {
   const out: PlanPage = JSON.parse(JSON.stringify(plan));
   let appliquees = 0, ignorees = 0;
@@ -128,12 +136,21 @@ export function appliquerJugement(plan: PlanPage, j: Jugement): { plan: PlanPage
       appliquees++;
       continue;
     }
-    const i = s ? s.textes.findIndex((t) => t.trim() === c.avant.trim()) : -1;
-    const k = i >= 0 ? i : s ? s.textes.findIndex((t) => t.includes(c.avant.trim())) : -1;
-    if (!s || k < 0) { ignorees++; continue; }
-    if (!c.apres.trim()) s.textes.splice(k, 1);
-    else s.textes[k] = i >= 0 ? c.apres.trim() : s.textes[k].replace(c.avant.trim(), c.apres.trim());
-    appliquees++;
+    // Le juge écrit souvent le passage entre guillemets (« Tout part, sans exception. ») alors que le plan l'a sans eux
+    // (essai réel du 20 novembre 2026 : ses quatre corrections ignorées, dont une citation inventée et une promesse).
+    const essais = [{ avant: c.avant.trim(), apres: c.apres.trim() }, { avant: sansGuillemets(c.avant), apres: sansGuillemets(c.apres) }];
+    let fait = false;
+    for (const e of essais) {
+      if (!s || !e.avant) continue;
+      const i = s.textes.findIndex((t) => t.trim() === e.avant);
+      const k = i >= 0 ? i : s.textes.findIndex((t) => t.includes(e.avant));
+      if (k < 0) continue;
+      if (!e.apres) s.textes.splice(k, 1);
+      else s.textes[k] = i >= 0 ? e.apres : s.textes[k].replace(e.avant, e.apres);
+      fait = true;
+      break;
+    }
+    if (fait) appliquees++; else ignorees++;
   }
   for (const s of out.sections) if (!s.textes.length) s.textes.push(s.nom);
   return { plan: out, appliquees, ignorees };
