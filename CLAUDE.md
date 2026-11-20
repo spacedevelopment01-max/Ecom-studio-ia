@@ -107,7 +107,10 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Logo** : créé par OpenAI pour cette marque-là, jamais repris d'une autre ; aucun pictogramme dessiné en code ;
   fond retiré, pas de carré autour. OpenAI est libre du dessin : il reçoit le métier, les couleurs, la typographie et la
   direction artistique de la marque, jamais un style imposé. Dans une série, chaque logo reçoit ceux déjà faits avec
-  « je veux un logo complètement différent ». Le favicon reprend le logo.
+  « je veux un logo complètement différent ». Dans le même projet, TOUS les logos déjà construits (séries d'avant
+  comprises) sont montrés pour ne pas être reproduits, jamais ceux des autres projets (20 novembre 2026 : « le premier
+  logo construit doit être montré pour ne pas être reproduit »), et ce que le client refuse est transmis au dessinateur
+  avec ses mots. Le favicon reprend le logo.
 - **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
   image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair.
 - **Trois angles** : un angle, c'est « aller chercher une typologie de client différente, avec des envies et des
