@@ -70,7 +70,18 @@ async function openai(url: URL, init: RequestInit, body: any): Promise<Response>
   const p = url.pathname;
   if (p.endsWith("/responses/input_tokens")) return json({ input_tokens: jetons({ i: body.instructions, x: body.input }) });
   if (p.endsWith("/responses") && init.method === "POST") {
-    const t = codes[0];
+    // Le code rejoué vient peut-être d'un autre client : ses photos sont renommées, dans l'ordre, avec celles que la
+    // demande d'aujourd'hui donne (sinon chaque photo manquerait, et la répétition signalerait une fausse panne).
+    const demandees = [...new Set(JSON.stringify(body.input ?? "").match(/[a-z0-9][a-z0-9-]*-(?:section|produit)-\d+\.webp/g) ?? [])];
+    const rejouees = [...new Set(codes[0].match(/[a-z0-9][a-z0-9-]*-(?:section|produit)-\d+\.webp/g) ?? [])];
+    const sections = demandees.filter((x) => /-section-/.test(x)), produits = demandees.filter((x) => /-produit-/.test(x));
+    const vers = new Map<string, string>();
+    for (const [k, liste] of [["-section-", sections], ["-produit-", produits]] as const) rejouees.filter((x) => x.includes(k)).forEach((x, i) => { const d = liste[i] ?? sections[i % Math.max(1, sections.length)] ?? demandees[0]; if (d) vers.set(x, d); });
+    let t = codes[0];
+    for (const [a, b] of vers) t = t.split(a).join(b);
+    // Le reste des fichiers (logo, feuille de style) : le nom de l'autre client devient celui d'aujourd'hui.
+    const ancien = rejouees[0]?.replace(/-(?:section|produit)-\d+\.webp$/, ""), nouveau = demandees[0]?.replace(/-(?:section|produit)-\d+\.webp$/, "");
+    if (ancien && nouveau && ancien !== nouveau) t = t.replace(new RegExp(`\\b${ancien}-(?=[a-z0-9-]*\\.(?:png|webp|css|js)\\b)`, "g"), `${nouveau}-`);
     appels.push(`openai ${body.model} code (${body.background ? "déposé puis relevé" : "en flux"})`);
     reponse = { id: "resp_rep", status: "completed", model: body.model, output: [{ type: "message", content: [{ type: "output_text", text: t }] }], usage: { input_tokens: jetons({ i: body.instructions, x: body.input }), input_tokens_details: { cached_tokens: 0 }, output_tokens: Math.ceil(t.length / 3) } };
     if (body.background) return json({ id: "resp_rep", status: "queued" });
