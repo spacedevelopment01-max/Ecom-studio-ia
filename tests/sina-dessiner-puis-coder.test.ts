@@ -254,7 +254,7 @@ describe("dessiner puis coder : une boutique a toujours le panier dans l'en-têt
     expect(M.CODE_SYSTEM).toMatch(/Une BOUTIQUE a toujours l'icône du panier dans l'en-tête/);
     const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
     expect(job).toContain('boutique: p.business !== "services",');
-    expect(job).toContain("panier: m.panier, produitsAbsents: m.absents });");
+    expect(job).toContain("panier: m.panier, produitsAbsents: m.absents, photosRecadrees: m.recadrees });");
     expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("(boutique && x.panier === false)");
   });
   it("un produit mis en scène est comparé à sa vraie photo par un autre modèle ; refusée, la vraie photo prend sa place, et la photo refusée se montre", () => {
@@ -371,5 +371,23 @@ describe("dessiner puis coder : une correction du juge citée entre guillemets e
     const files = [{ path: "sections/semaine.liquid", content: "<p>Tout part, sans exception.</p>" }];
     expect(M.corrigerFichiers(files, "« Tout part, sans exception. »", "« Tout part. »")).toBe(1);
     expect(files[0].content).toBe("<p>Tout part.</p>");
+  });
+});
+
+describe("dessiner puis coder : prix jamais coupés, photos jamais trop recadrées (essai réel Braise, 20 novembre 2026)", async () => {
+  const M = await import("@/lib/syna-agent/dessin/methode");
+  const fs = await import("node:fs");
+  it("espace insécable entre le nombre et « € », « % », « kg », « g » ; rien d'autre n'est touché", () => {
+    expect(M.insecables("250 g à 9,50 € · 1 kg à 32 €")).toBe("250 g à 9,50 € · 1 kg à 32 €");
+    expect(M.insecables("{% if x %}grand garde 5 gens{% endif %}")).toBe("{% if x %}grand garde 5 gens{% endif %}");
+    expect(M.nettoyerPlan({ idee: "x", morceaux: [[1], [2], [3]], sections: [{ nom: "a", pourquoi: "q", disposition: "d", fond: "clair", textes: ["1 kg à 32 €"], photo: null }] } as any).plan.sections[0].textes).toEqual(["1 kg à 32 €"]);
+    expect(fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8")).toContain("fs.writeFileSync(path.join(theme, f.path), insecables(f.content))");
+  });
+  it("le cadre d'une photo garde ses proportions ; le contrôle mesure la part visible et le dit à SINA", () => {
+    expect(M.CODE_SYSTEM).toMatch(/jamais plus d'un quart de la photo coupé, jamais le haut d'un produit ni son nom coupés/);
+    const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
+    expect(job).toContain('getComputedStyle(i).objectFit === "cover"');
+    expect(job).toContain(".filter((x) => x.garde < 67)");
+    expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("x.photosRecadrees?.length");
   });
 });

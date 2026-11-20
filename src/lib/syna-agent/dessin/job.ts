@@ -35,7 +35,7 @@ import { buildSpec } from "../../theme/directions";
 import { contentFromInput, libraryFiller } from "../../theme/library-fill";
 import { localCopy } from "../../engine/local-copy";
 import { emptyProduct } from "../../project-types";
-import { appliquerJugement, FIDELE_SYSTEM, FideleSchema, morceauxSurs, nettoyerPlan, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
+import { appliquerJugement, insecables, FIDELE_SYSTEM, FideleSchema, morceauxSurs, nettoyerPlan, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
 
 export const SINA_DESSIN_JOB = "syna.dessin";
 export type DessinPayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null; /** Numéro de la relance d'une création coupée (le Studio renvoie alors, une fois, l'appel coupé). */ relance?: number };
@@ -260,7 +260,8 @@ export async function runDessinJob(ctx: JobContext) {
   walkT(theme);
   let corrigesCode = 0;
   for (const c of jugeCode.corrections) if (c.avant.trim().length > 3 && corrigerFichiers(fichiersTheme, c.avant.trim(), c.apres.trim())) corrigesCode++;
-  for (const f of fichiersTheme) fs.writeFileSync(path.join(theme, f.path), f.content);
+  // Prix et quantités jamais coupés en fin de ligne (espace insécable), dans tous les textes du thème.
+  for (const f of fichiersTheme) fs.writeFileSync(path.join(theme, f.path), insecables(f.content));
 
   // 6) Les contrôles du Studio, sans IA : Theme Check, puis l'affichage réel.
   ctx.progress(0.85, L("Je vérifie le code et l'affichage sur téléphone, tablette et ordinateur", "Checking the code and the display"));
@@ -303,7 +304,7 @@ export function specApercu(p: Project): ThemeSpec | undefined {
  * Studio : débordements, boutons hors de l'écran, images manquantes. Chaque capture est rangée dans les fichiers.
  * Le moteur d'aperçu écrit déjà le nom d'une police entre guillemets : la copie d'aperçu le dit comme Shopify.
  */
-export async function capturesAccueil(p: Project, jobId: string, theme: string): Promise<{ appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean; produitsAbsents?: string[] }[]> {
+export async function capturesAccueil(p: Project, jobId: string, theme: string): Promise<{ appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean; produitsAbsents?: string[]; photosRecadrees?: { photo: string; garde: number }[] }[]> {
   const spec = specApercu(p);
   // Produits du catalogue : un produit sans photo garde sa carte avec « Ta photo ici » (règle du propriétaire), donc ces
   // emplacements-là ne sont pas des manques ; un produit absent de la page en est un (essai réel : une carte cachée).
@@ -325,7 +326,7 @@ export async function capturesAccueil(p: Project, jobId: string, theme: string):
   const port = (server.address() as { port: number }).port;
   const { chromium } = await import("playwright");
   const browser = await chromium.launch({ executablePath: exe, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
-  const out: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean; produitsAbsents?: string[] }[] = [];
+  const out: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean; produitsAbsents?: string[]; photosRecadrees?: { photo: string; garde: number }[] }[] = [];
   try {
     for (const [appareil, vp] of [["telephone", { width: 390, height: 844 }], ["tablette", { width: 820, height: 1180 }], ["ordinateur", { width: 1440, height: 900 }]] as const) {
       const phone = appareil === "telephone";
@@ -344,12 +345,15 @@ export async function capturesAccueil(p: Project, jobId: string, theme: string):
         const texte = document.body.innerText, plat = texte.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ");
         const tenantsPlace = Math.max(0, (texte.match(/Ta photo ici/g) ?? []).length - sansPhoto);
         const absents = attendus.filter((t) => !plat.includes(t.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ")));
-        return { panier, absents, debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + tenantsPlace + (texte.match(/\[À compléter/g) ?? []).length + vides };
+        // Photos très recadrées (essai réel : le cadre en bandeau d'une photo verticale ne montrait que le bas du sachet) :
+        // part de la photo gardée à l'écran, sous les deux tiers = défaut. Calcul en ligne (aucune fonction nommée).
+        const recadrees = [...document.images].filter((i) => getComputedStyle(i).objectFit === "cover" && i.naturalWidth > 0 && i.clientWidth > 120 && i.clientHeight > 80).map((i) => ({ photo: (i.currentSrc || i.src).split("/").pop()!.split("?")[0], garde: Math.round(100 * Math.min((i.naturalWidth / i.naturalHeight) / (i.clientWidth / i.clientHeight), (i.clientWidth / i.clientHeight) / (i.naturalWidth / i.naturalHeight))) })).filter((x) => x.garde < 67);
+        return { panier, absents, recadrees, debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + tenantsPlace + (texte.match(/\[À compléter/g) ?? []).length + vides };
       }, { attendus, sansPhoto });
       const shot = await page.screenshot({ fullPage: true, type: "jpeg", quality: 72 });
       await page.close();
       const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: Buffer.from(shot), name: `accueil-code-${appareil}.jpg`, mime: "image/jpeg", role: "dessin-capture", origin: "generated", meta: { dessin: { jobId, appareil } } });
-      out.push({ appareil, assetId: asset.id, debordement: m.debordement, horsEcran: m.hors, manquantes: m.manquantes, panier: m.panier, produitsAbsents: m.absents });
+      out.push({ appareil, assetId: asset.id, debordement: m.debordement, horsEcran: m.hors, manquantes: m.manquantes, panier: m.panier, produitsAbsents: m.absents, photosRecadrees: m.recadrees });
     }
   } finally { await browser.close(); server.close(); }
   return out;
@@ -361,7 +365,7 @@ export function resultatDessin(projectId: string, jobId?: string) {
     ? one<{ result: string | null }>("SELECT result FROM jobs WHERE id = ? AND project_id = ? AND type = ?", jobId, projectId, SINA_DESSIN_JOB)
     : one<{ result: string | null }>("SELECT result FROM jobs WHERE project_id = ? AND type = ? AND status = 'done' ORDER BY created_at DESC LIMIT 1", projectId, SINA_DESSIN_JOB);
   if (!row?.result) return null;
-  const r = JSON.parse(row.result) as { photosRefusees?: { section: number; produit: string | null; defaut?: string; assetId: string | null }[]; plan: { idee: string; sections: string[] }; juge: { corrections: number; avis: string }; dessins: string[]; controle: { erreurs: number; avertissements: number; exemples: string[]; captures: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean; produitsAbsents?: string[] }[] }; notes: string; photosCreees: number };
+  const r = JSON.parse(row.result) as { photosRefusees?: { section: number; produit: string | null; defaut?: string; assetId: string | null }[]; plan: { idee: string; sections: string[] }; juge: { corrections: number; avis: string }; dessins: string[]; controle: { erreurs: number; avertissements: number; exemples: string[]; captures: { appareil: string; assetId: string | null; debordement: boolean; horsEcran: string[]; manquantes: number; panier?: boolean; produitsAbsents?: string[]; photosRecadrees?: { photo: string; garde: number }[] }[] }; notes: string; photosCreees: number };
   const lien = (id: string | null) => (id ? assetUrl({ id }) : null);
   return { ...r, images: [
     ...r.dessins.map((id, i) => ({ href: lien(id), label: i < 3 ? L(`Dessin, ordinateur (${i + 1}/3)`, `Drawing, desktop (${i + 1}/3)`) : L(`Dessin, téléphone (${i - 2}/2)`, `Drawing, phone (${i - 2}/2)`) })),
