@@ -43,9 +43,11 @@ export type DessinPayload = { projectId: string; userId: string; conversationId:
 /** Le modèle qui code (réglage « site.code_model ») : Sol 6.2 d'OpenAI, choisi par le propriétaire le 19 novembre 2026. */
 export function codeModel(): { provider: "anthropic" | "openai" | "google"; model: string; effort?: "low" | "medium" | "high" } {
   const m = /^(anthropic|openai|google):([\w.-]+)$/.exec((getSetting("site.code_model") ?? "").trim());
-  // Niveau de réflexion (réglage « site.code_effort » : low, medium ou high) ; sans réglage, celui du modèle (moyen).
+  // Niveau de réflexion (réglage « site.code_effort » : low, medium ou high). Sans réglage : ÉLEVÉ (décision du
+  // propriétaire du 20 novembre 2026, « Coder tous les thèmes en élevé », après l'essai sur Bécane : 0,22 € au lieu de
+  // 0,17 €, et plus rien hors de l'écran sur téléphone et tablette).
   const e = (getSetting("site.code_effort") ?? "").trim();
-  const effort = e === "low" || e === "medium" || e === "high" ? { effort: e as "low" | "medium" | "high" } : {};
+  const effort = { effort: (e === "low" || e === "medium" || e === "high" ? e : "high") as "low" | "medium" | "high" };
   return { ...(m ? { provider: m[1] as "anthropic" | "openai" | "google", model: m[2] } : { provider: "openai" as const, model: "gpt-6.2-sol" }), ...effort };
 }
 

@@ -117,7 +117,7 @@ globalThis.fetch = (async (input: any, init: RequestInit = {}) => {
 const { enqueue, getJob } = await import("../../src/lib/jobs");
 const { dessinQuote, PHOTOS_ACCUEIL, SINA_DESSIN_JOB } = await import("../../src/lib/syna-agent/dessin/job");
 const { runWithLang } = await import("../../src/lib/i18n-server");
-const p = one<{ user_id: string }>("SELECT user_id FROM projects WHERE id = ?", projectId);
+const p = one<{ user_id: string; business_type: string | null }>("SELECT user_id, business_type FROM projects WHERE id = ?", projectId);
 if (!p) { console.error("Projet introuvable."); process.exit(2); }
 const q = dessinQuote(PHOTOS_ACCUEIL);
 const job = runWithLang({ ui: "fr", content: "fr" }, () => enqueue({ userId: p.user_id, projectId, type: SINA_DESSIN_JOB, label: "Répétition gratuite", payload: { projectId, userId: p.user_id, conversationId: "repetition", runId: `repetition-${Date.now()}`, capMicro: q.maxMicro, consigne: "Répétition gratuite : les réponses d'une création déjà payée sont rejouées." }, maxAttempts: 1, idempotencyKey: `repetition:${Date.now()}` }));
@@ -135,11 +135,11 @@ console.log(`Compté : ${(calls.reduce((n, c) => n + c.cost, 0) / 1e6).toFixed(2
 if (j.status === "done") {
   const r = JSON.parse(j.result ?? "{}");
   console.log(`Contrôle de Shopify : ${r.controle?.erreurs ?? "?"} erreur(s), ${r.controle?.avertissements ?? "?"} avertissement(s).`);
-  for (const c of r.controle?.captures ?? []) console.log(`  ${c.appareil} : débordement ${c.debordement ? "OUI" : "non"}, hors écran ${c.horsEcran.length}, manques ${c.manquantes}, panier ${c.panier === false ? "ABSENT" : "là"}, produits absents ${c.produitsAbsents?.length ? c.produitsAbsents.join(", ") : "aucun"}, photos trop recadrées ${c.photosRecadrees?.length ? c.photosRecadrees.map((x: any) => `${x.photo} (${x.garde} % visible)`).join(", ") : "aucune"}`);
+  for (const c of r.controle?.captures ?? []) console.log(`  ${c.appareil} : débordement ${c.debordement ? "OUI" : "non"}, hors écran ${c.horsEcran.length}, manques ${c.manquantes}, panier ${c.panier === false ? (p!.business_type === "services" ? "absent (normal : services)" : "ABSENT") : (p!.business_type === "services" ? "EN TROP" : "là")}, produits absents ${c.produitsAbsents?.length ? c.produitsAbsents.join(", ") : "aucun"}, photos trop recadrées ${c.photosRecadrees?.length ? c.photosRecadrees.map((x: any) => `${x.photo} (${x.garde} % visible)`).join(", ") : "aucune"}`);
   console.log(`Photos refusées au contrôle de fidélité : ${r.photosRefusees?.length ?? 0}.`);
   for (const x of r.photosRefusees ?? []) console.log(`  section ${x.section} : ${/non fait/.test(x.defaut ?? "") ? "ALERTE, CONTRÔLE NON FAIT — " : ""}${x.defaut}`);
   console.log(`Juge du plan : ${r.juge?.corrections ?? "?"} correction(s) posée(s), ${r.juge?.ignorees ?? 0} ignorée(s)${r.juge?.ignorees ? " — ALERTE, CORRECTIONS DU JUGE NON POSÉES" : ""} ; juge du code : ${r.juge?.code?.corrections ?? "?"} posée(s) sur ${r.juge?.code?.demandees ?? "?"}${r.juge?.code && r.juge.code.corrections < r.juge.code.demandees ? " — ALERTE" : ""}.`);
-  const alertes = (r.juge?.ignorees ?? 0) + (r.juge?.code && r.juge.code.corrections < r.juge.code.demandees ? 1 : 0) + (r.photosRefusees ?? []).filter((x: { defaut?: string }) => /non fait/.test(x.defaut ?? "")).length + (r.controle?.erreurs ?? 0) + (r.controle?.captures ?? []).filter((c: any) => c.debordement || c.horsEcran.length || c.manquantes || c.panier === false || c.produitsAbsents?.length || c.photosRecadrees?.length).length;
+  const alertes = (r.juge?.ignorees ?? 0) + (r.juge?.code && r.juge.code.corrections < r.juge.code.demandees ? 1 : 0) + (r.photosRefusees ?? []).filter((x: { defaut?: string }) => /non fait/.test(x.defaut ?? "")).length + (r.controle?.erreurs ?? 0) + (r.controle?.captures ?? []).filter((c: any) => c.debordement || c.horsEcran.length || c.manquantes || (p!.business_type === "services" ? c.panier === true : c.panier === false) || c.produitsAbsents?.length || c.photosRecadrees?.length).length;
   console.log(alertes ? `\nRÉPÉTITION À REVOIR : ${alertes} alerte(s) ci-dessus. Aucun essai payant avant de les régler.` : "\nRÉPÉTITION RÉUSSIE : rien à régler avant l'essai payant.");
   process.exit(alertes ? 1 : 0);
 }

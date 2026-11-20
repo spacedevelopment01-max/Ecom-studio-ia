@@ -98,7 +98,7 @@ describe("dessiner puis coder : la méthode", async () => {
   });
 
   it("le code est fait par Sol 6.2 par défaut, avec assez de place, et une réponse coupée n'est jamais relancée toute seule", () => {
-    expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol" });
+    expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol", effort: "high" });
     expect(J.CODE_OUTPUT_TOKENS).toBeGreaterThanOrEqual(48_000);
     const src = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
     expect((src.match(/sansRelanceCoupee: true/g) ?? []).length).toBe(5);
@@ -395,13 +395,20 @@ describe("dessiner puis coder : prix jamais coupés, photos jamais trop recadré
 describe("dessiner puis coder : le niveau de réflexion du code se règle (20 novembre 2026)", async () => {
   const J = await import("@/lib/syna-agent/dessin/job");
   const { setSetting } = await import("@/lib/settings");
-  it("« site.code_effort » donne le niveau ; sans réglage (ou une valeur inconnue), rien n'est imposé", () => {
+  it("« site.code_effort » donne le niveau ; sans réglage (ou une valeur inconnue) : élevé, décision du propriétaire", () => {
     try {
-      expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol" });
-      setSetting("site.code_effort", "high");
       expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol", effort: "high" });
+      setSetting("site.code_effort", "medium");
+      expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol", effort: "medium" });
       setSetting("site.code_effort", "maximum");
-      expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol" });
+      expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol", effort: "high" });
     } finally { setSetting("site.code_effort", null); }
+  });
+  it("jamais de panier pour un métier de services : consigne au code et au dessin, défaut au contrôle (essai réel Bécane)", async () => {
+    const M = await import("@/lib/syna-agent/dessin/methode");
+    const services = { ...id, boutique: false };
+    expect(M.demandeCode(plan(9) as any, services as any, { photos: [], logo: "l.png", logoClair: "lc.png", liens: "" })).toMatch(/AUCUN panier ni lien \/cart ni compte/);
+    expect(JSON.stringify(M.consignesDessins(plan(9) as any, services as any))).toMatch(/aucun panier ni icône de compte/);
+    expect((await import("node:fs")).readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("(!boutique && x.panier === true)");
   });
 });

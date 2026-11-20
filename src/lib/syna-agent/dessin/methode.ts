@@ -193,7 +193,7 @@ export function consignesDessins(plan: PlanPage, id: Identite): { nom: string; r
 IDENTITÉ : ${id.couleurs}. ${id.polices}. Le LOGO fourni (image 1), reproduit tel quel ; sur un fond sombre, en version claire.
 Écrire EXACTEMENT les textes donnés, en français avec leurs accents, et aucun autre texte. Aucune personne, aucun visage, aucune main. Aucun pictogramme. Chaque photo différente.
 IDÉE DE LA PAGE : ${plan.idee}`;
-  const entete = `EN-TÊTE : le logo à gauche ; le menu ${id.menu.map((x) => `« ${x} »`).join(" ")}${id.telephone ? ` ; « ${id.telephone} »` : ""}${id.boutique ? " ; à droite, l'icône du PANIER (un sac ou un panier simple, avec un petit nombre d'articles) et l'icône du compte" : ""}.`;
+  const entete = `EN-TÊTE : le logo à gauche ; le menu ${id.menu.map((x) => `« ${x} »`).join(" ")}${id.telephone ? ` ; « ${id.telephone} »` : ""}${id.boutique ? " ; à droite, l'icône du PANIER (un sac ou un panier simple, avec un petit nombre d'articles) et l'icône du compte" : " ; aucun panier ni icône de compte (rien ne s'achète en ligne)"}.`;
   const pied = `PIED DE PAGE sur fond sombre : le logo en version claire${id.telephone ? `, « ${id.telephone} »` : ""}${id.horaires ? `, « ${id.horaires} »` : ""}${id.zone ? `, « ${id.zone} »` : ""}, liens ${id.liensPied.map((x) => `« ${x} »`).join(" ")}.`;
   const tous = [...m1, ...m2, ...m3], moitie = Math.ceil(tous.length / 2);
   return [
@@ -211,7 +211,7 @@ export function demandeCode(plan: PlanPage, id: Identite, o: { photos: { fichier
     `PLAN DE LA PAGE (idée : ${plan.idee}) :`,
     ...plan.sections.map((s, i) => `${i + 1}. « ${s.nom} » — disposition : ${s.disposition} — fond : ${s.fond} — textes, dans l'ordre : ${s.textes.map((t) => `« ${t} »`).join(" ")}${s.photo ? ` — photo voulue : ${s.photo}` : ""}`),
     `IDENTITÉ : ${id.couleurs}. ${id.polices}.`,
-    `EN-TÊTE : logo ; menu ${id.menu.map((x) => `« ${x} »`).join(" ")}${id.telephone ? ` ; « ${id.telephone} » (lien tel:)` : ""}${id.boutique ? " ; ICÔNE DU PANIER toujours visible, sur téléphone comme sur ordinateur : lien /cart avec le nombre d'articles ({{ cart.item_count }}) ; lien du compte" : ""}.`,
+    `EN-TÊTE : logo ; menu ${id.menu.map((x) => `« ${x} »`).join(" ")}${id.telephone ? ` ; « ${id.telephone} » (lien tel:)` : ""}${id.boutique ? " ; ICÔNE DU PANIER toujours visible, sur téléphone comme sur ordinateur : lien /cart avec le nombre d'articles ({{ cart.item_count }}) ; lien du compte" : " ; AUCUN panier ni lien /cart ni compte : ce métier vend des prestations, rien ne s'achète en ligne (essai réel du 20 novembre 2026 : un panier dans l'en-tête d'un réparateur de vélos)"}.`,
     `PIED DE PAGE (fond sombre) : logo clair${id.telephone ? ` ; « ${id.telephone} »` : ""}${id.horaires ? ` ; « ${id.horaires} »` : ""}${id.zone ? ` ; « ${id.zone} »` : ""} ; liens ${id.liensPied.map((x) => `« ${x} »`).join(" ")}.`,
     `LIENS : ${o.liens}`,
     `LOGO : '${o.logo}' (fond clair) ; '${o.logoClair}' (fond sombre).`,

@@ -122,3 +122,8 @@ méthode a été essayée dans le Studio, étape par étape, et ce cahier garde 
 - AVANT TOUT ESSAI PAYANT de cette méthode : la répétition gratuite (`scripts/syna-recette/repetition-dessin.mts`), qui
   rejoue de bout en bout une création déjà payée sans aucun appel aux fournisseurs. Elle a été vérifiée sur une faute
   réelle : avec l'ancien plafond du contrôle de fidélité, elle montre les quatre contrôles non faits.
+- Niveau de réflexion du code (20 novembre 2026, décision du propriétaire : « Coder tous les thèmes en élevé ») : Sol 6.2
+  code au niveau ÉLEVÉ par défaut (réglage « site.code_effort »). Mesure sur l'accueil de Bécane, même plan, mêmes dessins,
+  mêmes photos : 0,22 € au lieu de 0,17 €, 5 min 36 au lieu de 3 min 40, et plus aucun élément hors de l'écran (cinq sur
+  tablette au niveau moyen). Le niveau élevé avait mis un panier chez un réparateur : un métier de services n'a jamais
+  de panier (consigne au dessin et au code, défaut au contrôle).
