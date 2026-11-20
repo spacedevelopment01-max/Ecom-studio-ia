@@ -27,7 +27,7 @@ import { z } from "zod";
 import type { JobContext } from "../jobs";
 import { L } from "../i18n-server";
 import { CostCapReached } from "../ai/trace";
-import { all, one, run } from "../db";
+import { one, run } from "../db";
 import { assetData, getAsset, saveAsset } from "../library";
 import { getJsonSetting } from "../settings";
 import { BOARD_OBJECT_LABEL } from "./brand-board";
@@ -235,7 +235,7 @@ type Made = { id: string; w: number; h: number };
 const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : "je ne la montre pas";
 /** Planche des logos déjà créés dans la série (côte à côte sur blanc), donnée au dessinateur. Rien : null. */
 export async function logoSheet(logos: Buffer[]): Promise<Buffer | null> {
-  const tiles = (await Promise.all(logos.slice(-6).map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(512, 512, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
+  const tiles = (await Promise.all(logos.slice(-4).map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(512, 512, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
   if (!tiles.length) return null;
   return sharp({ create: { width: 512 * tiles.length, height: 512, channels: 3, background: "#FFFFFF" } }).composite(tiles.map((input, i) => ({ input, left: 512 * i, top: 0 }))).png().toBuffer();
 }
@@ -247,15 +247,6 @@ export async function clientLogoOf(projectId: string): Promise<ClientLogo | null
   const a = row ? getAsset(row.id) : undefined;
   if (!a) return null;
   try { const data = assetData(a), meta = await sharp(data).metadata(); return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024, data }; } catch { return null; }
-}
-/** Les logos déjà construits pour ce projet (planches de marque, gardés ou refusés), du plus ancien au plus récent. */
-export function logosDuProjet(projectId: string): Buffer[] {
-  const out: Buffer[] = [];
-  for (const r of all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='brand-board' AND name LIKE 'planche-%-logo.png' AND deleted_at IS NULL ORDER BY created_at", projectId)) {
-    const a = getAsset(r.id);
-    if (a) { try { out.push(assetData(a)); } catch { /* fichier absent */ } }
-  }
-  return out;
 }
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[] };
 
@@ -353,10 +344,10 @@ export async function runBoardImages(o: {
     ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
     // Le premier logo d'une série est créé avec les seules consignes de base ; chacun des suivants reçoit en plus ceux
     // déjà créés dans la série, avec « je veux un logo complètement différent » (mots du propriétaire).
-    // TOUS les logos déjà construits pour CE projet, séries précédentes comprises (décision du propriétaire du 20 novembre
-    // 2026 : « le premier logo construit doit être montré pour ne pas être reproduit, dans le même projet ») ; jamais
-    // ceux des autres projets.
-    const duProjet = logosDuProjet(o.who.projectId), already = duProjet.length ? duProjet : o.madeLogos ?? [], shown = await logoSheet(already);
+    // Seulement les logos de CETTE série, dans l'ordre (règle du propriétaire, redite le 20 novembre 2026 : le premier
+    // logo créé est donné pour faire le deuxième, « complètement différent » ; puis les deux premiers pour le troisième).
+    // Jamais les logos d'une série précédente ni d'un autre projet.
+    const already = o.madeLogos ?? [], shown = await logoSheet(already);
     const n = Math.min(already.length, 6);
     await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true, gouts: o.gouts }) + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, y compris dans sa disposition : la place du signe, un trait ou un motif sous le nom, la façon de poser le nom changent aussi (essai réel : trois logos construits pareil, le signe en haut, le nom, un trait souligné d'un petit motif).` : ""));
     const drawn = bufferOf("logo");
