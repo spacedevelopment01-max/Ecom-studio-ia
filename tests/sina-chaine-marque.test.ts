@@ -680,18 +680,17 @@ describe("SINA — chaîne de création de la marque", async () => {
     await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
     run("UPDATE jobs SET status='done' WHERE project_id=? AND type=?", t.pid, C.SINA_BRAND_JOB);
     const est = await tool.estimate!(t.ctx, { keys: ["A", "B"], images: ["logo", "hero"] } as never);
-    // Un logo refait emporte la maquette du site de sa planche (retour du propriétaire du 16 novembre 2026 : « c'est pas
-    // les bons logos » sur une maquette restée avec l'ancien) : elle est comptée dans le prix annoncé avant l'accord.
-    expect(est.label).toBe("3 images à refaire sur 2 planches");
-    expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["logo", "hero", "site"]).maxMicro);
-    expect(est.maxMicro).toBeGreaterThan(C.boardImagesQuote(2, undefined, ["logo", "hero"]).maxMicro);
+    // Seulement les images demandées (propriétaire, 20 novembre 2026 : « j'ai juste demandé de refaire les logos ») ;
+    // la maquette gardée avec l'ancien logo est refaite pour l'identité choisie, à la fin de la marque.
+    expect(est.label).toBe("2 images à refaire sur 2 planches");
+    expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["logo", "hero"]).maxMicro);
     expect((await tool.estimate!(t.ctx, { keys: ["A"], images: ["hero"] } as never)).maxMicro).toBe(C.boardImagesQuote(1, undefined, ["hero"]).maxMicro);
     const r = await call("identity.images", t.ctx, { keys: ["A", "B"], images: ["logo", "hero"], guidance: "Le logo est trop chargé, je le veux plus simple." });
     expect(r.ok).toBe(true);
-    expect(r.summary).toMatch(/^Je refais 3 images sur « .+ » et « .+ » \(quelques minutes\) ; le reste des planches ne bouge pas\.$/);
+    expect(r.summary).toMatch(/^Je refais 2 images sur « .+ » et « .+ » \(quelques minutes\) ; le reste des planches ne bouge pas\.$/);
     const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs![0]);
     expect(job.type).toBe(C.SINA_BRAND_JOB);
-    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["logo", "hero", "site"], guidance: "Le logo est trop chargé, je le veux plus simple.", capMicro: est.maxMicro });
+    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["logo", "hero"], guidance: "Le logo est trop chargé, je le veux plus simple.", capMicro: est.maxMicro });
     // Avant le choix, une planche a son logo, sa grande scène et la maquette du haut de son site : ces trois images se
     // refont ici ; l'objet, les signes et les publications se créent (et se refont) pour l'identité choisie, avec brand.finish.
     for (const slot of ["logo", "hero", "site"]) expect(tool.args.safeParse({ keys: ["A"], images: [slot] }).success).toBe(true);

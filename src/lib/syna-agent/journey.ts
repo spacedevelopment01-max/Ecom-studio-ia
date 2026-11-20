@@ -121,6 +121,8 @@ export type Journey = {
     shownNames?: string[];
     /** « Ce que j'ai compris de ton marché » : paroles réelles lues sur le web (avec leur page), concurrents, moule de la catégorie. */
     study?: { quotes: { text: string; url: string }[]; quoteCount: number; sources: number; competitors: string[]; mould: string; substitutes: string[]; notFound: string[] };
+    /** Planches dont le logo a été refait SEUL : leur maquette du site montre encore l'ancien logo, refaite au choix. */
+    siteAncienLogo?: string[];
   };
   identityChoice?: { key: "A" | "B" | "C" | "D"; mix: Partial<Record<string, "A" | "B" | "C" | "D">>; edits?: { name?: string; slogan?: string }; at: number };
   /**

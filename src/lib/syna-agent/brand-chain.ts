@@ -557,7 +557,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
       list = list.map((o) => (o.key === x.key ? r.route : o));
       said.push(...r.issues); notes.push(...r.notes);
     }
-    updateJourney(a.conversationId, (y) => { if (y.identities) { y.identities.list = list; y.identities.issues = [...new Set([...y.identities.issues, ...said])]; y.identities.at = Date.now(); } });
+    // Logo refait sans sa maquette : la planche est notée, sa maquette sera refaite si elle est choisie.
+    const seul = (a.slots ?? []).includes("logo") && !(a.slots ?? []).includes("site") ? targets.map((x) => x.key) : [], refaite = (a.slots ?? []).includes("site") ? targets.map((x) => x.key) : [];
+    updateJourney(a.conversationId, (y) => { if (y.identities) { y.identities.list = list; y.identities.issues = [...new Set([...y.identities.issues, ...said])]; y.identities.at = Date.now(); y.identities.siteAncienLogo = [...new Set([...(y.identities.siteAncienLogo ?? []), ...seul])].filter((k) => !(refaite as string[]).includes(k)); } });
     return { routes: list.map((x) => ({ key: x.key, name: x.name, slogan: x.slogan })), issues: said, notes, images: list.reduce((n, x) => n + Object.values(x.board?.images ?? {}).flat().filter((v) => v && typeof v === "object").length, 0) };
   }
 

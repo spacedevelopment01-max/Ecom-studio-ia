@@ -39,7 +39,9 @@ export function missingSlots(j: Journey): ImageSlot[] {
   if (!x) return [];
   // La maquette du site appartient à la proposition : absente (refusée, ou jamais demandée), elle ne se refait que si
   // le client la demande (redo « site »), jamais d'office à la fin de la marque, qui reste couverte par son accord.
-  return CREATED_SLOTS.filter((s) => s !== "site" && !(s === "logo" && j.keep.includes("logo")) && !has(x.board.images, s));
+  // Sauf un logo refait SEUL avant le choix (20 novembre 2026) : la maquette montre encore l'ancien logo, elle est refaite.
+  const ancien = (j.identities?.siteAncienLogo ?? []).includes(x.key);
+  return CREATED_SLOTS.filter((s) => (s !== "site" || ancien) && !(s === "logo" && j.keep.includes("logo")) && (!has(x.board.images, s) || (s === "site" && ancien)));
 }
 
 /** Images réellement refaites : un nouveau logo entraîne ce qui le porte (jamais deux logos différents sur la marque). */
@@ -99,6 +101,8 @@ export async function runBrandFinish(o: {
       imagery: mixed || o.guidance ? undefined : proposalImagery(j, route),
     });
     current = r.route; notes.push(...r.notes);
+    // La maquette refaite avec le bon logo : la planche n'est plus notée « ancien logo ».
+    if (slots.includes("site") && current.board.images?.site) updateJourney(o.conversationId, (y) => { if (y.identities?.siteAncienLogo) y.identities.siteAncienLogo = y.identities.siteAncienLogo.filter((k) => k !== route.key); });
     // « Identité A : … » n'a plus de sens une fois l'identité choisie : c'est SA marque.
     issues.push(...r.issues.map((l) => l.replace(/^Identité [A-D] : /, "").replace(/^Identity [A-D]: /, "")).map((l) => l.charAt(0).toUpperCase() + l.slice(1)));
   }

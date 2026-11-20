@@ -54,3 +54,16 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
     expect(img).toContain('":sans-trait"');
   });
 });
+
+describe("logos refaits seuls : le téléphone de la planche est refait pour l'identité choisie (20 novembre 2026)", async () => {
+  const T = await import("@/lib/syna-agent/tools/identity");
+  const F = await import("@/lib/syna-agent/brand-finish");
+  it("seulement les images demandées ; une planche notée « ancien logo » reçoit sa maquette refaite à la fin de la marque", () => {
+    expect(T.redoImages(["logo"])).toEqual(["logo"]);
+    expect(T.redoImages(["logo", "logo", "hero"])).toEqual(["logo", "hero"]);
+    const j = (ancien: string[]) => ({ keep: [], identityChoice: { key: "A", mix: {}, at: 1 }, identities: { list: [{ key: "A", name: "Aplomb", board: { images: { logo: { id: "l" }, hero: { id: "h" }, site: { id: "s" } } } }], issues: [], comparison: "", at: 1, round: 1, siteAncienLogo: ancien } }) as never;
+    expect(F.missingSlots(j(["A"]))).toContain("site");
+    expect(F.missingSlots(j([]))).not.toContain("site");
+    expect(F.missingSlots(j(["B"]))).not.toContain("site");
+  });
+});

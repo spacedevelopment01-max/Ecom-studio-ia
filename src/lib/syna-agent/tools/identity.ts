@@ -241,14 +241,14 @@ type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
  * l'est pas. Devis par image refaite, accord du client avant.
  */
 /**
- * Un logo refait emporte la maquette du site de sa planche, qui le porte dans son en-tête (retour du propriétaire du
- * 16 novembre 2026, devant une maquette restée avec l'ancien logo : « c'est pas les bons logos »). Le prix annoncé
- * avant l'accord compte donc la maquette.
+ * Seulement les images demandées (propriétaire, 20 novembre 2026 : « j'ai juste demandé de refaire les logos ») : un logo
+ * refait seul laisse la maquette du site de sa planche avec l'ancien logo ; elle est refaite pour l'identité choisie, à
+ * la fin de la marque (jamais l'ancien logo sur la marque finie : retour du 16 novembre 2026, « c'est pas les bons logos »).
  */
-export const redoImages = <T extends string>(images: readonly T[]): T[] => { const l = [...new Set(images)]; return l.includes("logo" as T) && !l.includes("site" as T) ? [...l, "site" as T] : l; };
+export const redoImages = <T extends string>(images: readonly T[]): T[] => [...new Set(images)];
 const imagesTool: AgentTool<ImagesArgs> = {
   name: "identity.images", module: "marque", kind: "generate", needsProject: true,
-  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») d'une ou plusieurs planches déjà montrées, sans toucher au nom ni aux textes. Un logo refait emporte toujours la maquette du site de sa planche (elle le porte dans son en-tête) : elle est refaite avec lui et comptée dans le prix. À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
+  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») d'une ou plusieurs planches déjà montrées, sans toucher au nom ni aux textes. Refais SEULEMENT les images que le client demande : un logo refait seul laisse le téléphone de la planche avec l'ancien logo jusqu'au choix, puis il est refait pour l'identité choisie (dis-le-lui en une phrase). À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
   args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(3), guidance: z.string().max(1500).optional() }).strict(),
   estimate: (_ctx, a) => { const n = redoImages(a.images).length; return { ...boardImagesQuote(a.keys.length, undefined, redoImages(a.images) as never), label: `${n} image${n > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}` }; },
   run: (ctx, a) => {
