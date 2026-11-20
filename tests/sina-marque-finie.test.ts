@@ -199,8 +199,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       // Demande du propriétaire du 16 novembre 2026 : le premier logo est créé avec les seules consignes de base ; le
       // deuxième reçoit le premier avec « je veux un logo complètement différent de celui-là » ; le troisième, les deux premiers.
       if (k === "A") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).not.toMatch(/L'image jointe/);
-      if (k === "B") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/L'image jointe montre le logo déjà fait pour ce client\. Je veux un logo complètement différent de celui-là\.$/);
-      if (k === "C") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/L'image jointe montre les 2 logos déjà faits pour ce client\. Je veux un logo complètement différent de ceux-là\.$/);
+      if (k === "B") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/L'image jointe montre le logo déjà fait pour ce client\. Je veux un logo complètement différent de celui-là, y compris dans sa disposition/);
+      if (k === "C") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/L'image jointe montre les 2 logos déjà faits pour ce client\. Je veux un logo complètement différent de ceux-là, y compris dans sa disposition/);
       expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/Direction artistique de la marque : /);
       expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/Typographie de la marque : un caractère /);
       expect(log.refs[`image-1-${k}-hero${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "16:9" });

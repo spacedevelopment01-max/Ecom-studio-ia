@@ -27,7 +27,7 @@ import { z } from "zod";
 import type { JobContext } from "../jobs";
 import { L } from "../i18n-server";
 import { CostCapReached } from "../ai/trace";
-import { one, run } from "../db";
+import { all, one, run } from "../db";
 import { assetData, getAsset, saveAsset } from "../library";
 import { getJsonSetting } from "../settings";
 import { BOARD_OBJECT_LABEL } from "./brand-board";
@@ -167,7 +167,7 @@ export async function logoForGround(logo: Buffer | null, x: Pick<Route, "ground"
 const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`;
 
 /** Consigne complète d'une image : la direction globale, la consigne de la directrice artistique, les lignes fixes du Studio. */
-export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean } = { logo: true }): string {
+export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean; gouts?: string | null } = { logo: true }): string {
   const look = imagery.look.trim(), texts = slotTexts(x)[slot];
   if (slot === "logo") {
     // Carte blanche (retour du propriétaire du 15 novembre 2026 : « tu dois laisser libre OpenAI pour faire les logos,
@@ -181,6 +181,10 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       `Direction artistique de la marque : ${[imagery.logo.trim(), look].filter(Boolean).join(" ")}`,
       paletteLine(x),
       `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,
+      // Ce que le client a dit de l'image voulue, avec ses mots (essai réel du 20 novembre 2026 : un plombier avait dit
+      // « pas de goutte d'eau ni de clé à molette », et ses trois logos portaient une goutte d'eau). Ce sont ses goûts,
+      // pas un style imposé : le dessin reste libre.
+      o.gouts?.trim() ? `Ce que le client a dit de l'image qu'il veut, avec ses mots, à respecter (surtout ce qu'il refuse) : « ${o.gouts.trim()} »` : "",
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni cadre, ni ombre portée.",
     ].filter(Boolean).join("\n");
   }
@@ -231,7 +235,7 @@ type Made = { id: string; w: number; h: number };
 const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : "je ne la montre pas";
 /** Planche des logos déjà créés dans la série (côte à côte sur blanc), donnée au dessinateur. Rien : null. */
 export async function logoSheet(logos: Buffer[]): Promise<Buffer | null> {
-  const tiles = (await Promise.all(logos.slice(-4).map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(512, 512, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
+  const tiles = (await Promise.all(logos.slice(-6).map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(512, 512, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
   if (!tiles.length) return null;
   return sharp({ create: { width: 512 * tiles.length, height: 512, channels: 3, background: "#FFFFFF" } }).composite(tiles.map((input, i) => ({ input, left: 512 * i, top: 0 }))).png().toBuffer();
 }
@@ -243,6 +247,15 @@ export async function clientLogoOf(projectId: string): Promise<ClientLogo | null
   const a = row ? getAsset(row.id) : undefined;
   if (!a) return null;
   try { const data = assetData(a), meta = await sharp(data).metadata(); return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024, data }; } catch { return null; }
+}
+/** Les logos déjà construits pour ce projet (planches de marque, gardés ou refusés), du plus ancien au plus récent. */
+export function logosDuProjet(projectId: string): Buffer[] {
+  const out: Buffer[] = [];
+  for (const r of all<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='brand-board' AND name LIKE 'planche-%-logo.png' AND deleted_at IS NULL ORDER BY created_at", projectId)) {
+    const a = getAsset(r.id);
+    if (a) { try { out.push(assetData(a)); } catch { /* fichier absent */ } }
+  }
+  return out;
 }
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[] };
 
@@ -280,6 +293,8 @@ export async function runBoardImages(o: {
   slots?: ImageSlot[];
   /** Logos déjà créés dans la même série pour ce client : donnés au dessinateur pour qu'il en fasse un complètement différent. */
   madeLogos?: Buffer[];
+  /** Ce que le client a dit de l'image qu'il veut (ses mots, refus compris) : donné au dessinateur du logo. */
+  gouts?: string | null;
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
   imagery?: Imagery;
   /** Logo GARDÉ par le client : jamais redessiné ; il est la marque de la planche et se pose sur ce qui le porte. */
@@ -338,8 +353,12 @@ export async function runBoardImages(o: {
     ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
     // Le premier logo d'une série est créé avec les seules consignes de base ; chacun des suivants reçoit en plus ceux
     // déjà créés dans la série, avec « je veux un logo complètement différent » (mots du propriétaire).
-    const already = o.madeLogos ?? [], shown = await logoSheet(already);
-    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery) + (shown ? `\nL'image jointe montre ${already.length > 1 ? `les ${Math.min(already.length, 4)} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${already.length > 1 ? "ceux-là" : "celui-là"}.` : ""));
+    // TOUS les logos déjà construits pour CE projet, séries précédentes comprises (décision du propriétaire du 20 novembre
+    // 2026 : « le premier logo construit doit être montré pour ne pas être reproduit, dans le même projet ») ; jamais
+    // ceux des autres projets.
+    const duProjet = logosDuProjet(o.who.projectId), already = duProjet.length ? duProjet : o.madeLogos ?? [], shown = await logoSheet(already);
+    const n = Math.min(already.length, 6);
+    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true, gouts: o.gouts }) + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, y compris dans sa disposition : la place du signe, un trait ou un motif sous le nom, la façon de poser le nom changent aussi (essai réel : trois logos construits pareil, le signe en haut, le nom, un trait souligné d'un petit motif).` : ""));
     const drawn = bufferOf("logo");
     if (drawn && !(await logoOnWhite(drawn))) {
       const why = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background");

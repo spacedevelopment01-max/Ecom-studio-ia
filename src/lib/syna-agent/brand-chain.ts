@@ -551,7 +551,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     let list = (j.identities?.list ?? []) as Route[];
     const said: string[] = [], redoneLogos: Buffer[] = [];
     for (const x of targets) {
-      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos] });
+      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts: j.start.image?.value ?? null });
       const fresh = (a.slots ?? CREATED_SLOTS).includes("logo") && r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
       if (fresh) { try { redoneLogos.push(assetData(fresh)); } catch { /* fichier absent */ } }
       list = list.map((o) => (o.key === x.key ? r.route : o));
@@ -845,7 +845,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos] });
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos], gouts: j.start.image?.value ?? null });
         const fresh = r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
         if (fresh) { try { seriesLogos.push(assetData(fresh)); } catch { /* fichier absent : rien à montrer */ } }
         list = list.map((o) => (o.key === x.key ? r.route : o));
