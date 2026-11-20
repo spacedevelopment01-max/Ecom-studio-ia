@@ -183,7 +183,11 @@ describe("dessiner puis coder : les corrections de l'essai sur Atelier Vasco (19
     expect(M.CODE_SYSTEM).toMatch(/SEULE exception, un produit SANS photo : sa carte RESTE, avec son nom et son prix exacts/);
     expect(M.CODE_SYSTEM).toMatch(/jamais une carte cachée ni retirée/);
     const job = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
-    expect(job).toContain("const absents = attendus.filter((t) => !norme(texte).includes(norme(t)));");
+    expect(job).toContain("const absents = attendus.filter((t) => !plat.includes(");
+    // Le code envoyé au navigateur n'a aucune fonction nommée (essai réel : « __name is not defined » sous tsx).
+    const evalue = job.slice(job.indexOf("const m = await page.evaluate("), job.indexOf("}, { attendus, sansPhoto });"));
+    expect(evalue.length).toBeGreaterThan(200);
+    expect(evalue).not.toMatch(/(const|let)\s+\w+\s*=\s*(async\s*)?\([^)]*\)\s*=>|function\s+\w+/);
     const tools = fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8");
     expect(tools).toContain("x.produitsAbsents?.length");
   });

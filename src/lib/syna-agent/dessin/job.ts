@@ -339,9 +339,11 @@ export async function capturesAccueil(p: Project, jobId: string, theme: string):
         // Bouton ou lien visible sans aucun texte ni nom (essai réel : un bouton vide après une correction du juge).
         const vides = [...document.querySelectorAll("a,button")].filter((el) => { const b = el.getBoundingClientRect(); const cs = getComputedStyle(el); return b.width > 20 && b.height > 16 && cs.visibility !== "hidden" && !(el.textContent ?? "").trim() && !el.getAttribute("aria-label") && !el.querySelector("img,svg"); }).length;
         const panier = !!document.querySelector('header a[href*="/cart"], [class*=header] a[href*="/cart"]');
-        const texte = document.body.innerText, norme = (t: string) => t.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ");
+        // Aucune fonction nommée ici : ce code part dans le navigateur, où l'aide « __name » de tsx n'existe pas (essai réel
+        // du 20 novembre 2026 : le contrôle d'affichage a planté sur « __name is not defined »).
+        const texte = document.body.innerText, plat = texte.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ");
         const tenantsPlace = Math.max(0, (texte.match(/Ta photo ici/g) ?? []).length - sansPhoto);
-        const absents = attendus.filter((t) => !norme(texte).includes(norme(t)));
+        const absents = attendus.filter((t) => !plat.includes(t.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, " ")));
         return { panier, absents, debordement: document.documentElement.scrollWidth > W + 1, hors: hors.slice(0, 6), manquantes: [...document.images].filter((i) => !i.complete || !i.naturalWidth).length + tenantsPlace + (texte.match(/\[À compléter/g) ?? []).length + vides };
       }, { attendus, sansPhoto });
       const shot = await page.screenshot({ fullPage: true, type: "jpeg", quality: 72 });
