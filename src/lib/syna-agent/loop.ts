@@ -8,6 +8,8 @@
  * Les créations natives longues (images, vidéos, thème…) suspendent l'exécution ; une tâche de reprise dépendante
  * repart quand elles sont terminées. Aucune règle par formulation : le choix appartient au modèle.
  */
+import { dessinCoupe, ouArrete } from "./dessin/tools";
+import { SINA_DESSIN_JOB } from "./dessin/job";
 import { z } from "zod";
 import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId, tx } from "../db";
@@ -121,6 +123,17 @@ const ACTIVE_JOB = ["queued", "running", "paused"];
 const otherRunBusy = (r: SynaRun) => !!one("SELECT 1 FROM syna_runs WHERE conversation_id=? AND id<>? AND status IN ('queued','running')", r.conversation_id, r.id);
 /** Une création lancée par une autre demande du fil tourne-t-elle encore en arrière-plan ? */
 const backgroundCreation = (r: SynaRun) => !!one("SELECT 1 FROM syna_runs WHERE conversation_id=? AND id<>? AND status='waiting_jobs'", r.conversation_id, r.id);
+/**
+ * Accueil dessiné arrêté en route : SINA lit ICI où il s'est arrêté et comment le reprendre (essai réel du 20 novembre
+ * 2026 : elle se fiait à une vieille notice, a d'abord dit la reprise impossible, puis « je ne sais pas où ça s'est
+ * arrêté », alors que c'était noté).
+ */
+function repriseAccueil(projectId: string | null, results: { status?: string; type?: string }[]): string {
+  if (!projectId || !results.some((x) => x.status === "failed" && x.type === SINA_DESSIN_JOB)) return "";
+  const c = dessinCoupe(projectId);
+  return c ? ` Son accueil s'est arrêté en route (${ouArrete(c.etapes)}) : pour le reprendre là, sans repayer ce qui est fait, site.dessiner avec relancer:true (une carte affiche le prix de ce qui reste). Ne dis jamais que la reprise est impossible ni que tu ne sais pas où il s'est arrêté.` : "";
+}
+
 const BACKGROUND_NOTE = "# Une création est en cours en arrière-plan\nTu as lancé une création pour lui : elle tourne en arrière-plan, et tu lui montreras le résultat dès qu'il sera prêt. Tu n'as rien à relancer : n'appelle AUCUN outil de création, et ne présente jamais un résultat que tu n'as pas encore. Il peut te parler pendant ce temps : réponds d'abord à ce qu'il dit. Puis profite de l'attente pour avancer sur la suite, UNE question à la fois, seulement sur ce qu'il n'a pas déjà dit et que lui seul sait : ce que ses angles, son activité et son site demanderont (ses produits ou ses prestations avec leurs prix, ses coordonnées, sa livraison ou sa zone, ses retours, ses horaires, ses preuves, ses réseaux). Note chaque réponse avec start.note, avec ses mots. S'il n'a pas envie de répondre maintenant, n'insiste pas : dis-lui simplement que tu le préviens dès que c'est prêt.\n\n";
 /** Attente courte dans la tâche de reprise, puis nouvelle reprise planifiée : aucune place de worker gardée longtemps. */
 async function waitForJobs(jobs: string[], maxMs = 45_000) {
@@ -198,7 +211,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       // chiffre (essais réels du 7 novembre : deux recherches échouées avaient coûté 0,29 € et 0,95 €).
       const results = waited.map((jid) => { const j = getJob(jid); const spent = one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", jid)?.c ?? 0; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctText(j.user_id, spent, j.project_id) : null, coutReelMicro: spent }; });
       const failedSpent = results.filter((x) => x.status !== "done" && x.coutReelMicro > 0);
-      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Tâche terminée, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")}.`, "Finished with a failure.") : L("Tâche terminée : je relis le résultat.", "Task finished: reading the result."), ...(failedSpent.length ? { hint: `Dis au client ce coût réel ; ne dis jamais que rien n'a été débité.${results.some((x) => x.status === "failed" && x.type === "syna.site") ? " Pour relancer la création de son site là où elle s'est arrêtée, sans repayer ce qui était fait : site.create avec relancer:true (une carte affiche le prix de ce qui reste)." : ""}` } : {}), data: results }, r.id);
+      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Tâche terminée, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")}.`, "Finished with a failure.") : L("Tâche terminée : je relis le résultat.", "Task finished: reading the result."), ...(failedSpent.length ? { hint: `Dis au client ce coût réel ; ne dis jamais que rien n'a été débité.${results.some((x) => x.status === "failed" && x.type === "syna.site") ? " Pour relancer la création de son site là où elle s'est arrêtée, sans repayer ce qui était fait : site.create avec relancer:true (une carte affiche le prix de ce qui reste)." : ""}${repriseAccueil(r.project_id, results)}` } : {}), data: results }, r.id);
       updateRun(r.id, { waiting_jobs: "[]" });
     }
     // 2. Action approuvée (ou refusée) par le client.

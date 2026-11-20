@@ -21,6 +21,11 @@ export type TextRequest = {
   effort: string | null;
   /** Schéma JSON imposé (sorties structurées), sinon texte libre. */
   jsonSchema?: Record<string, unknown> | null;
+  /**
+   * Appel long (plusieurs minutes) : déposé chez le fournisseur puis relevé, au lieu d'une connexion tenue ouverte
+   * (essai réel du 20 novembre 2026 : le code d'un accueil, 3 minutes de réponse, coupé en route par le réseau).
+   */
+  arrierePlan?: boolean;
 };
 
 export type TextUsage = { input: number; cachedInput: number; output: number };
@@ -137,8 +142,41 @@ async function postStream(fetcher: Fetch, url: string, headers: Record<string, s
   return final;
 }
 
+/** Réglages du relevé d'un appel déposé (remplaçables par les tests). */
+export const releve = { intervalleMs: 2_000, maxMs: 20 * 60_000, essaisReseau: 8, attendre: (ms: number) => new Promise<void>((r) => setTimeout(r, ms)) };
+const FINI = new Set(["completed", "incomplete", "failed", "cancelled"]);
+/**
+ * Appel DÉPOSÉ (mode « background » de la Responses API) : la demande part une seule fois, puis le Studio relève la
+ * réponse par de courtes lectures gratuites. Une lecture coupée par le réseau se refait (rien n'est renvoyé ni repayé).
+ * La réponse doit être gardée chez OpenAI le temps du relevé (store) : elle y est effacée dès qu'elle est lue.
+ */
+async function deposerPuisRelever(fetcher: Fetch, key: string, body: Record<string, unknown>) {
+  const h = bearer(key);
+  const depot = await postJson(fetcher, `${OPENAI}/responses`, h, { ...body, store: true, background: true });
+  const id = String(depot?.id ?? "");
+  if (!id) throw new Error("Dépôt OpenAI sans identifiant (résultat incertain)");
+  let j: any = depot, ratees = 0;
+  const debut = Date.now();
+  while (!FINI.has(String(j?.status))) {
+    if (Date.now() - debut > releve.maxMs) throw new Error(`Réponse OpenAI ${id} toujours en cours après ${Math.round(releve.maxMs / 60_000)} minutes (résultat incertain)`);
+    await releve.attendre(releve.intervalleMs);
+    try {
+      const r = await fetcher(`${OPENAI}/responses/${encodeURIComponent(id)}`, { method: "GET", headers: h });
+      if (!r.ok) { if (r.status >= 500 || r.status === 429) { if (++ratees > releve.essaisReseau) throw new Error(`Relevé OpenAI ${id} impossible (HTTP ${r.status}, résultat incertain)`); continue; } throw new Error(`Relevé OpenAI ${id} refusé (HTTP ${r.status}, résultat incertain)`); }
+      j = await r.json();
+      ratees = 0;
+    } catch (e) {
+      // Lecture coupée (réseau) : on relit, la demande n'est jamais renvoyée.
+      if (/résultat incertain/.test((e as Error).message) || ++ratees > releve.essaisReseau) throw e instanceof Error && /incertain/.test(e.message) ? e : new Error(`Relevé OpenAI ${id} coupé ${ratees} fois (${(e as Error).message.slice(0, 80)}, résultat incertain)`);
+    }
+  }
+  // Effacée chez OpenAI dès qu'elle est lue (rien n'y reste conservé) ; un effacement raté ne change pas la réponse.
+  try { await fetcher(`${OPENAI}/responses/${encodeURIComponent(id)}`, { method: "DELETE", headers: h }); } catch {}
+  return j;
+}
+
 export async function openaiSend(req: TextRequest, key: string, fetcher: Fetch = fetch): Promise<TextResult> {
-  const j = await postStream(fetcher, `${OPENAI}/responses`, bearer(key), openaiBody(req));
+  const j = req.arrierePlan ? await deposerPuisRelever(fetcher, key, openaiBody(req)) : await postStream(fetcher, `${OPENAI}/responses`, bearer(key), openaiBody(req));
   if (j?.status === "failed") throw new Error(`Réponse OpenAI en échec : ${String(j?.error?.message ?? "sans détail").slice(0, 200)} (résultat incertain)`);
   let text = "";
   let refused = false;

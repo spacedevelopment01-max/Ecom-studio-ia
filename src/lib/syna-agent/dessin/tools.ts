@@ -10,7 +10,7 @@ import { enqueue, pendingJob, retryJob } from "../../jobs";
 import type { CostEstimate } from "../types";
 import type { AgentTool } from "../types";
 import { project } from "../tools/common";
-import { acquisMicro, COUPURE_RX, RELANCE_JOURS, RefusInterne } from "../custom-theme/site-job";
+import { acquisMicro, RELANCE_JOURS, RefusInterne } from "../custom-theme/site-job";
 import { jobSpentMicro } from "../budget";
 import { dessinQuote, PHOTOS_ACCUEIL, resultatDessin, SINA_DESSIN_JOB, type DessinPayload } from "./job";
 
@@ -21,11 +21,19 @@ const photosACreer = (_projectId: string, _business: string) => PHOTOS_ACCUEIL;
  * Le dernier accueil dessiné du projet, s'il s'est arrêté en route (essai réel du 20 novembre 2026, Braise : la machine a
  * redémarré pendant les photos ; SINA a lancé une nouvelle création, qui aurait repayé le plan et les dessins). Sans IA.
  */
-export function dessinCoupe(projectId: string): { id: string; payload: DessinPayload } | null {
-  const j = one<{ id: string; status: string; payload: string; finished_at: number | null; error: string | null; message: string }>("SELECT id, status, payload, finished_at, error, message FROM jobs WHERE project_id = ? AND type = ? ORDER BY created_at DESC LIMIT 1", projectId, SINA_DESSIN_JOB);
+export function dessinCoupe(projectId: string): { id: string; payload: DessinPayload; etapes: string[] } | null {
+  const j = one<{ id: string; status: string; payload: string; finished_at: number | null; checkpoint: string | null }>("SELECT id, status, payload, finished_at, checkpoint FROM jobs WHERE project_id = ? AND type = ? ORDER BY created_at DESC LIMIT 1", projectId, SINA_DESSIN_JOB);
   if (!j || j.status !== "failed" || !j.finished_at || Date.now() - j.finished_at > RELANCE_JOURS * 86_400_000) return null;
-  if (!COUPURE_RX.test(`${j.error ?? ""} ${j.message}`)) return null;
-  try { return { id: j.id, payload: JSON.parse(j.payload) as DessinPayload }; } catch { return null; }
+  // Arrêtée EN ROUTE, quelle qu'en soit la cause (coupure, appel interrompu, panne du Studio : essai réel du 20 novembre
+  // 2026, le contrôle d'affichage a planté après le code) : au moins une étape est faite, donc il y a de quoi reprendre.
+  const etapes = (() => { try { return Object.keys(JSON.parse(j.checkpoint ?? "{}") ?? {}); } catch { return []; } })();
+  if (!etapes.length) return null;
+  try { return { id: j.id, payload: JSON.parse(j.payload) as DessinPayload, etapes }; } catch { return null; }
+}
+/** Les étapes d'un accueil dessiné, dans l'ordre, dites simplement (pour dire au client où sa création s'est arrêtée). */
+export function ouArrete(etapes: string[]): string {
+  const faites = [etapes.includes("plan") && "le plan de la page", etapes.includes("juge") && "sa relecture", etapes.some((e) => e.startsWith("dessin:")) && "les dessins", etapes.includes("photos") && "les photos", etapes.includes("code") && "le code", etapes.includes("juge-code") && "la relecture du code"].filter(Boolean) as string[];
+  return faites.length ? `déjà fait et gardé : ${faites.join(", ")}` : "rien de gardé";
 }
 /** Le prix de la reprise : celui de l'accueil, moins ce qui est payé et repris (au moins un cinquième du prix probable). */
 export function repriseDessinQuote(full: CostEstimate, acquis: number): CostEstimate {
@@ -64,7 +72,7 @@ export const dessinTool: AgentTool<DessinArgs> = {
       retryJob(c.id);
       return { ok: true, jobs: [c.id], data: { plafondMicro: q.maxMicro },
         summary: L("Création de ton accueil relancée, là où elle s'était arrêtée : ce qui était déjà fait est repris sans être repayé. Je reprends quand c'est prêt.", "Your home page creation was restarted from where it stopped."),
-        hint: "Dis-lui que ce qui était fait est repris sans être repayé. À la fin, montre-lui le résultat avec site.dessin.voir." };
+        hint: `Reprise : ${ouArrete(c.etapes)}. Dis-lui que ce qui était fait est repris sans être repayé. À la fin, montre-lui le résultat avec site.dessin.voir.` };
     }
     const q = dessinQuote(photosACreer(p.id, p.business));
     const payload: DessinPayload = { projectId: p.id, userId: ctx.user.id, conversationId: ctx.conversationId, runId: ctx.runId, capMicro: q.maxMicro, consigne: a.consigne?.trim() || null };

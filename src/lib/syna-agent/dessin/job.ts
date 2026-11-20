@@ -232,7 +232,7 @@ export async function runDessinJob(ctx: JobContext) {
     llmJson({ nouvelleSiChangee: true, sansRelanceCoupee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(CODE_SYSTEM, "codeur"), promptKey: "syna-dessin-code-1",
       prompt: demandeCode(plan, id, { photos, logo: logoFichier, logoClair: logoClairFichier, liens: "l'action principale vers la page de réservation ou de contact ; les autres pages vers /pages/<nom>." }),
       images: ["1-haut", "2-milieu", "3-bas", "4-tel-haut"].map((n) => ({ data: assetData(getAsset(dessins[n])!), label: n })),
-      maxTokens: CODE_OUTPUT_TOKENS, maxOutputTokens: CODE_OUTPUT_TOKENS, usageKey: `${ctx.job.id}:code`, routing: { difficulty: "complex", prefer: codeModel() } }, CodeSchema, { strict: true })));
+      arrierePlan: true, maxTokens: CODE_OUTPUT_TOKENS, maxOutputTokens: CODE_OUTPUT_TOKENS, usageKey: `${ctx.job.id}:code`, routing: { difficulty: "complex", prefer: codeModel() } }, CodeSchema, { strict: true })));
   let ecrits = 0;
   for (const f of code.files) {
     const rel = f.path.replace(/^\/+/, "");

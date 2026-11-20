@@ -319,21 +319,37 @@ describe("dessiner puis coder : un accueil coupé se reprend sans repayer (essai
   const { run } = await import("@/lib/db");
   const { account } = await import("./conversation209-fixtures");
 
-  it("seule la dernière création COUPÉE se reprend ; le prix est ce qui reste, jamais moins d'un cinquième", async () => {
+  it("la dernière création arrêtée EN ROUTE se reprend (une étape faite, quelle que soit la panne) ; le prix est ce qui reste", async () => {
     const u = await account();
     const pid = `p-dessin-coupe-${Date.now()}`;
     run("INSERT INTO projects(id,user_id,name,status,created_at,updated_at) VALUES(?,?,?,?,?,?)", pid, u.id, "Essai", "active", Date.now(), Date.now());
     expect(T.dessinCoupe(pid)).toBeNull();
     const t = Date.now();
-    run("INSERT INTO jobs(id,user_id,project_id,type,label,payload,status,progress,message,error,attempts,max_attempts,run_at,created_at,updated_at,finished_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", `j1-${pid}`, u.id, pid, "syna.dessin", "Accueil", JSON.stringify({ projectId: pid, consigne: "Envie" }), "failed", 0.5, "Interrompue pendant un appel IA payant", "Interrompue pendant un appel IA payant", 2, 2, t, t, t, t);
-    expect(T.dessinCoupe(pid)).toMatchObject({ id: `j1-${pid}`, payload: { consigne: "Envie" } });
-    run("INSERT INTO jobs(id,user_id,project_id,type,label,payload,status,progress,message,error,attempts,max_attempts,run_at,created_at,updated_at,finished_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", `j2-${pid}`, u.id, pid, "syna.dessin", "Accueil", "{}", "failed", 0.5, "Refusé", "Le plan est refusé", 2, 2, t + 1, t + 1, t + 1, t + 1);
+    const etapes = JSON.stringify({ plan: {}, juge: {}, "dessin:1-haut": "a", photos: [], code: {}, "juge-code": {} });
+    // Panne du Studio après le code (essai réel : le contrôle d'affichage a planté) : reprise possible.
+    run("INSERT INTO jobs(id,user_id,project_id,type,label,payload,status,progress,message,error,attempts,max_attempts,run_at,created_at,updated_at,finished_at,checkpoint) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", `j1-${pid}`, u.id, pid, "syna.dessin", "Accueil", JSON.stringify({ projectId: pid, consigne: "Envie" }), "failed", 0.9, "page.evaluate: ReferenceError: __name is not defined", "page.evaluate: ReferenceError: __name is not defined", 2, 2, t, t, t, t, etapes);
+    const c = T.dessinCoupe(pid)!;
+    expect(c).toMatchObject({ id: `j1-${pid}`, payload: { consigne: "Envie" } });
+    expect(T.ouArrete(c.etapes)).toBe("déjà fait et gardé : le plan de la page, sa relecture, les dessins, les photos, le code, la relecture du code");
+    // Refusée avant toute étape (rien de fait) : rien à reprendre, une nouvelle création.
+    run("INSERT INTO jobs(id,user_id,project_id,type,label,payload,status,progress,message,error,attempts,max_attempts,run_at,created_at,updated_at,finished_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", `j2-${pid}`, u.id, pid, "syna.dessin", "Accueil", "{}", "failed", 0, "Refusé", "Il faut d'abord le logo de la marque.", 2, 2, t + 1, t + 1, t + 1, t + 1);
     expect(T.dessinCoupe(pid)).toBeNull();
+    const loop = (await import("node:fs")).readFileSync("src/lib/syna-agent/loop.ts", "utf8");
+    expect(loop).toContain("${repriseAccueil(r.project_id, results)}");
+    expect(loop).toMatch(/Ne dis jamais que la reprise est impossible ni que tu ne sais pas où il s'est arrêté/);
     const q = T.repriseDessinQuote({ probableMicro: 2_000_000, maxMicro: 3_400_000, label: "x" }, 1_200_000);
     expect(q.probableMicro).toBe(800_000);
     expect(q.maxMicro).toBe(2_200_000);
     expect(T.repriseDessinQuote({ probableMicro: 2_000_000, maxMicro: 3_400_000, label: "x" }, 1_950_000).probableMicro).toBe(400_000);
     expect(T.dessinTool.description).toMatch(/relancer:true quand la création de son accueil s'est arrêtée en route/);
     expect(T.dessinTool.description).toMatch(/sans relancer:true, c'est une NOUVELLE création, qui refait et repaie tout/);
+  });
+});
+
+describe("dessiner puis coder : le juge refuse une citation qui n'est pas mot pour mot", async () => {
+  const M = await import("@/lib/syna-agent/dessin/methode");
+  it("une phrase signée du client ou de ses clients reprend ses mots exacts, ou elle est retirée (essai réel Braise)", () => {
+    expect(M.JUGE_SYSTEM).toMatch(/une CITATION \(entre guillemets, signée, ou présentée comme les mots du client ou de ses clients/);
+    expect(M.JUGE_SYSTEM).toMatch(/elle reprend ses mots exacts, ou elle est retirée/);
   });
 });

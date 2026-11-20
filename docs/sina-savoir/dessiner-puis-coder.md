@@ -114,3 +114,11 @@ méthode a été essayée dans le Studio, étape par étape, et ce cahier garde 
   label, presse, ateliers, photos), 12 appels, 0,74 € (0,06 € par appel, deux appels par échange). Il pose ses
   questions de preuves comme Opus, mais saute encore l'abonnement, le travail seule et le ressenti voulu. Le niveau
   ordinaire des réponses se règle désormais avec le modèle (« sina.brand_chain », champ effort).
+- Pannes de l'essai Braise du 20 novembre 2026, réglées : le code (3 minutes de réponse) coupé en route par le réseau
+  (il est maintenant déposé chez OpenAI puis relevé : une lecture coupée se refait, rien n'est renvoyé ni repayé) ;
+  une création arrêtée par une panne du Studio ne se reprenait pas (elle se reprend dès qu'une étape est faite) ; SINA se
+  fiait à une vieille notice et disait ne pas savoir où ça s'était arrêté (le Studio le lui dit à l'échec) ; le contrôle
+  d'affichage plantait sur une fonction nommée envoyée au navigateur ; le juge laissait passer une citation inventée.
+- AVANT TOUT ESSAI PAYANT de cette méthode : la répétition gratuite (`scripts/syna-recette/repetition-dessin.mts`), qui
+  rejoue de bout en bout une création déjà payée sans aucun appel aux fournisseurs. Elle a été vérifiée sur une faute
+  réelle : avec l'ancien plafond du contrôle de fidélité, elle montre les quatre contrôles non faits.

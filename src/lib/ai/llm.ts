@@ -48,6 +48,11 @@ export type LlmCall = {
    * 2026, une réponse coupée trois fois et repayée trois fois).
    */
   sansRelanceCoupee?: boolean;
+  /**
+   * Appel long (plusieurs minutes, OpenAI) : déposé puis relevé au lieu d'une connexion tenue ouverte (essai réel du
+   * 20 novembre 2026 : le code d'un accueil coupé en route par le réseau au bout de 2 minutes 40).
+   */
+  arrierePlan?: boolean;
   task: TaskId;
   /**
    * Reprise d'une tâche (essai réel du 18 novembre 2026) : si la même étape a déjà été payée avec une demande différente
@@ -622,7 +627,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   const adapter = textDeps.adapters[provider];
   const effort = mapEffort(provider, model, decision.effort ?? null);
   const schema = format && typeof format === "object" && (format as any).schema ? ((format as any).schema as Record<string, unknown>) : null;
-  const req: TextRequest = { model, system: systemText(call), turns: toTurns(messages), maxOutput: Math.min(m.limits.maxOutput, Math.max(call.maxTokens ?? 16000, 4000)), effort, jsonSchema: schema };
+  const req: TextRequest = { model, system: systemText(call), turns: toTurns(messages), maxOutput: Math.min(m.limits.maxOutput, Math.max(call.maxTokens ?? 16000, 4000)), effort, jsonSchema: schema, ...(call.arrierePlan && provider === "openai" ? { arrierePlan: true } : {}) };
   const { brain } = brainOf(call);
   const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
   assertUnderCostCap(maxMicro);
