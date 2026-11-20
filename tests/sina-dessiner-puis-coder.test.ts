@@ -391,3 +391,17 @@ describe("dessiner puis coder : prix jamais coupés, photos jamais trop recadré
     expect(fs.readFileSync("src/lib/syna-agent/dessin/tools.ts", "utf8")).toContain("x.photosRecadrees?.length");
   });
 });
+
+describe("dessiner puis coder : le niveau de réflexion du code se règle (20 novembre 2026)", async () => {
+  const J = await import("@/lib/syna-agent/dessin/job");
+  const { setSetting } = await import("@/lib/settings");
+  it("« site.code_effort » donne le niveau ; sans réglage (ou une valeur inconnue), rien n'est imposé", () => {
+    try {
+      expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol" });
+      setSetting("site.code_effort", "high");
+      expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol", effort: "high" });
+      setSetting("site.code_effort", "maximum");
+      expect(J.codeModel()).toEqual({ provider: "openai", model: "gpt-6.2-sol" });
+    } finally { setSetting("site.code_effort", null); }
+  });
+});

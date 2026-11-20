@@ -41,9 +41,12 @@ export const SINA_DESSIN_JOB = "syna.dessin";
 export type DessinPayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null; /** Numéro de la relance d'une création coupée (le Studio renvoie alors, une fois, l'appel coupé). */ relance?: number };
 
 /** Le modèle qui code (réglage « site.code_model ») : Sol 6.2 d'OpenAI, choisi par le propriétaire le 19 novembre 2026. */
-export function codeModel(): { provider: "anthropic" | "openai" | "google"; model: string } {
+export function codeModel(): { provider: "anthropic" | "openai" | "google"; model: string; effort?: "low" | "medium" | "high" } {
   const m = /^(anthropic|openai|google):([\w.-]+)$/.exec((getSetting("site.code_model") ?? "").trim());
-  return m ? { provider: m[1] as "anthropic" | "openai" | "google", model: m[2] } : { provider: "openai", model: "gpt-6.2-sol" };
+  // Niveau de réflexion (réglage « site.code_effort » : low, medium ou high) ; sans réglage, celui du modèle (moyen).
+  const e = (getSetting("site.code_effort") ?? "").trim();
+  const effort = e === "low" || e === "medium" || e === "high" ? { effort: e as "low" | "medium" | "high" } : {};
+  return { ...(m ? { provider: m[1] as "anthropic" | "openai" | "google", model: m[2] } : { provider: "openai" as const, model: "gpt-6.2-sol" }), ...effort };
 }
 
 /** Longueur de la réponse du code : assez pour un accueil entier (essai réel : environ 8 000 à 16 000 jetons). */
