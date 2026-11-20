@@ -38,7 +38,7 @@ import { emptyProduct } from "../../project-types";
 import { appliquerJugement, FIDELE_SYSTEM, FideleSchema, morceauxSurs, nettoyerPlan, corrigerFichiers, textesDuCode, CODE_SYSTEM, CodeSchema, cheminSur, consignesDessins, demandeCode, JUGE_SYSTEM, JugementSchema, PLAN_SYSTEM, PlanSchema, slugMarque, type Identite, type PlanPage } from "./methode";
 
 export const SINA_DESSIN_JOB = "syna.dessin";
-export type DessinPayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null };
+export type DessinPayload = { projectId: string; userId: string; conversationId: string; runId: string; capMicro: number; consigne?: string | null; /** Numéro de la relance d'une création coupée (le Studio renvoie alors, une fois, l'appel coupé). */ relance?: number };
 
 /** Le modèle qui code (réglage « site.code_model ») : Sol 6.2 d'OpenAI, choisi par le propriétaire le 19 novembre 2026. */
 export function codeModel(): { provider: "anthropic" | "openai" | "google"; model: string } {

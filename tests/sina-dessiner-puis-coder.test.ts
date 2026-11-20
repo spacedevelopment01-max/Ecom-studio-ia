@@ -309,3 +309,27 @@ describe("dessiner puis coder : le contrôle de fidélité peut partir", async (
     expect(J.DESSIN_COUTS.fidele.max).toBeGreaterThanOrEqual(reserve);
   });
 });
+
+describe("dessiner puis coder : un accueil coupé se reprend sans repayer (essai réel Braise du 20 novembre 2026)", async () => {
+  const T = await import("@/lib/syna-agent/dessin/tools");
+  const { run } = await import("@/lib/db");
+  const { account } = await import("./conversation209-fixtures");
+
+  it("seule la dernière création COUPÉE se reprend ; le prix est ce qui reste, jamais moins d'un cinquième", async () => {
+    const u = await account();
+    const pid = `p-dessin-coupe-${Date.now()}`;
+    run("INSERT INTO projects(id,user_id,name,status,created_at,updated_at) VALUES(?,?,?,?,?,?)", pid, u.id, "Essai", "active", Date.now(), Date.now());
+    expect(T.dessinCoupe(pid)).toBeNull();
+    const t = Date.now();
+    run("INSERT INTO jobs(id,user_id,project_id,type,label,payload,status,progress,message,error,attempts,max_attempts,run_at,created_at,updated_at,finished_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", `j1-${pid}`, u.id, pid, "syna.dessin", "Accueil", JSON.stringify({ projectId: pid, consigne: "Envie" }), "failed", 0.5, "Interrompue pendant un appel IA payant", "Interrompue pendant un appel IA payant", 2, 2, t, t, t, t);
+    expect(T.dessinCoupe(pid)).toMatchObject({ id: `j1-${pid}`, payload: { consigne: "Envie" } });
+    run("INSERT INTO jobs(id,user_id,project_id,type,label,payload,status,progress,message,error,attempts,max_attempts,run_at,created_at,updated_at,finished_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", `j2-${pid}`, u.id, pid, "syna.dessin", "Accueil", "{}", "failed", 0.5, "Refusé", "Le plan est refusé", 2, 2, t + 1, t + 1, t + 1, t + 1);
+    expect(T.dessinCoupe(pid)).toBeNull();
+    const q = T.repriseDessinQuote({ probableMicro: 2_000_000, maxMicro: 3_400_000, label: "x" }, 1_200_000);
+    expect(q.probableMicro).toBe(800_000);
+    expect(q.maxMicro).toBe(2_200_000);
+    expect(T.repriseDessinQuote({ probableMicro: 2_000_000, maxMicro: 3_400_000, label: "x" }, 1_950_000).probableMicro).toBe(400_000);
+    expect(T.dessinTool.description).toMatch(/relancer:true quand la création de son accueil s'est arrêtée en route/);
+    expect(T.dessinTool.description).toMatch(/sans relancer:true, c'est une NOUVELLE création, qui refait et repaie tout/);
+  });
+});
