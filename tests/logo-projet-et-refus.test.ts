@@ -28,8 +28,28 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(img).toContain("const already = o.madeLogos ?? [], shown = await logoSheet(already);");
     expect(img).not.toContain("logosDuProjet");
-    expect(img).toMatch(/y compris dans sa disposition : la place du signe, un trait ou un motif sous le nom, la façon de poser le nom changent aussi/);
+    expect(img).toMatch(/dans un autre style que \$\{n > 1 \? "chacun d'eux" : "lui"\} : une autre façon de faire \(je ne t'impose aucun style\)/);
+    expect(img).toContain("Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
     expect(chain.match(/gouts: j\.start\.image\?\.value \?\? null/g)).toHaveLength(2);
+  });
+
+  it("le modèle tout fait (trait sous le nom) est interdit dans la consigne, et repéré sans IA sur l'image", async () => {
+    expect(I.imagePrompt("logo", route("A") as never, imagery)).toContain(I.LOGO_SANS_TRAIT);
+    expect(I.LOGO_SANS_TRAIT).toMatch(/aucun trait, filet ou ligne sous le nom/);
+    // Un nom (des blocs séparés comme des lettres) avec, puis sans, un filet fin dessous.
+    const lettres = Array.from({ length: 8 }, (_v, i) => ({ input: { create: { width: 40, height: 70, channels: 3 as const, background: "#1F3D2B" } }, left: 100 + i * 55, top: 200 }));
+    const filet = { input: { create: { width: 420, height: 4, channels: 3 as const, background: "#1F3D2B" } }, left: 100, top: 300 };
+    const fond = () => sharp({ create: { width: 640, height: 480, channels: 3, background: "#FFFFFF" } });
+    const avec = await fond().composite([...lettres, filet]).png().toBuffer();
+    const sans = await fond().composite(lettres).png().toBuffer();
+    expect((await I.traitHorizontal(avec)).trouve).toBe(true);
+    expect((await I.traitHorizontal(sans)).trouve).toBe(false);
+    // Un aplat épais (un bandeau, un toit plein) n'est pas un trait.
+    const bandeau = await fond().composite([...lettres, { input: { create: { width: 420, height: 60, channels: 3 as const, background: "#1F3D2B" } }, left: 100, top: 300 }]).png().toBuffer();
+    expect((await I.traitHorizontal(bandeau)).trouve).toBe(false);
+    const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(img).toContain("if (drawn && (await traitHorizontal(drawn)).trouve) {");
+    expect(img).toContain('":sans-trait"');
   });
 });

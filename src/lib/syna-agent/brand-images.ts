@@ -147,6 +147,12 @@ export const spell = (name: string) => [...name.normalize("NFC")].map((c) => (c 
  * toiletteuse à genoux près de son camion, alors que la consigne disait « aucune personne »).
  */
 export const LOGO_NOT_SCENE = "Un LOGO, pas une illustration ni une scène : le nom, et au plus UN signe simple et fort (un seul objet ou une seule forme), lisible en tout petit comme un tampon. Aucune personne, aucun personnage, aucune silhouette humaine, aucune main ; aucune scène avec un décor, un véhicule garé ou une maison.";
+/**
+ * Le modèle tout fait des logos d'artisan, interdit (demande du propriétaire du 20 novembre 2026, « j'ai toujours les
+ * traits en dessous » : sur 43 logos, presque toutes les marques calmes avaient le signe en haut, le nom, un trait
+ * souligné d'un petit losange). C'est l'interdiction d'un cliché, pas un style imposé : le dessin reste libre.
+ */
+export const LOGO_SANS_TRAIT = "Pas le modèle tout fait des logos d'artisan : aucun trait, filet ou ligne sous le nom, au-dessus ou de chaque côté, et aucun petit losange, point ou motif posé sur une ligne.";
 export const LOGO_OWN = "Une conception propre à cette marque, tirée de son idée et de son métier, jamais une recette déjà vue ailleurs.";
 const exact = (texts: string[]) => `Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${texts.map((t) => `« ${t} »`).join(" ; ")}. Aucun autre texte, aucun mot inventé, aucun faux texte de remplissage.`;
 /**
@@ -186,6 +192,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       // pas un style imposé : le dessin reste libre.
       o.gouts?.trim() ? `Ce que le client a dit de l'image qu'il veut, avec ses mots, à respecter (surtout ce qu'il refuse) : « ${o.gouts.trim()} »` : "",
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni cadre, ni ombre portée.",
+      LOGO_SANS_TRAIT,
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
@@ -233,6 +240,31 @@ const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
 type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
 const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : "je ne la montre pas";
+/**
+ * Un trait fin et horizontal dans un logo (filet sous le nom, ligne de chaque côté) : une rangée de pixels sombres
+ * presque continue, longue (au moins 22 % du dessin), fine (au plus 2,5 %) et isolée. Sans IA. Essayé sur les 43 logos
+ * du Studio d'essai (20 novembre 2026) : il trouve tous ceux qui ont le trait, aucun de ceux qui ne l'ont pas.
+ */
+export async function traitHorizontal(png: Buffer): Promise<{ trouve: boolean; detail: string }> {
+  const { data, info } = await sharp(png).flatten({ background: "#FFFFFF" }).resize(400, 400, { fit: "inside" }).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height, sombre = (x: number, y: number) => data[y * W + x] < 215;
+  let x0 = W, x1 = 0, y0 = H, y1 = 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (sombre(x, y)) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+  if (bw < 20 || bh < 20) return { trouve: false, detail: "" };
+  const run = (y: number) => { let best = 0, cur = 0, gap = 0; for (let x = x0; x <= x1; x++) { if (sombre(x, y)) { cur += 1 + gap; gap = 0; } else if (cur && gap < 2) gap++; else { best = Math.max(best, cur); cur = 0; gap = 0; } } return Math.max(best, cur); };
+  const longue = (y: number) => run(y) >= 0.22 * bw;
+  for (let y = y0; y <= y1; y++) {
+    if (!longue(y)) continue;
+    let e = y; while (e + 1 <= y1 && longue(e + 1)) e++;
+    if (e - y + 1 <= Math.max(3, 0.025 * bh)) {
+      const avant = y - 2 >= y0 ? run(y - 2) : 0, apres = e + 2 <= y1 ? run(e + 2) : 0;
+      if (avant < 0.15 * bw && apres < 0.15 * bw) return { trouve: true, detail: `rangée ${y - y0} sur ${bh}, longueur ${Math.round((100 * run(y)) / bw)} %` };
+    }
+    y = e;
+  }
+  return { trouve: false, detail: "" };
+}
 /** Planche des logos déjà créés dans la série (côte à côte sur blanc), donnée au dessinateur. Rien : null. */
 export async function logoSheet(logos: Buffer[]): Promise<Buffer | null> {
   const tiles = (await Promise.all(logos.slice(-4).map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(512, 512, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
@@ -348,9 +380,18 @@ export async function runBoardImages(o: {
     // logo créé est donné pour faire le deuxième, « complètement différent » ; puis les deux premiers pour le troisième).
     // Jamais les logos d'une série précédente ni d'un autre projet.
     const already = o.madeLogos ?? [], shown = await logoSheet(already);
-    const n = Math.min(already.length, 6);
-    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true, gouts: o.gouts }) + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, y compris dans sa disposition : la place du signe, un trait ou un motif sous le nom, la façon de poser le nom changent aussi (essai réel : trois logos construits pareil, le signe en haut, le nom, un trait souligné d'un petit motif).` : ""));
-    const drawn = bufferOf("logo");
+    const n = Math.min(already.length, 4);
+    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true, gouts: o.gouts }) + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
+    let drawn = bufferOf("logo");
+    // Contrôle sans IA du modèle tout fait (trait sous le nom) : le logo est redessiné UNE fois ; s'il le garde encore,
+    // il est montré et c'est dit au client.
+    if (drawn && (await traitHorizontal(drawn)).trouve) {
+      mark(made.get("logo")!.id, "rejected", "un trait sous le nom (modèle tout fait)"); made.delete("logo");
+      notes.push(`logo de ${key} redessiné : un trait sous le nom (contrôle sans IA)`);
+      await make("logo", calls.get("logo")!.refs, `${calls.get("logo")!.prompt}\nLe logo précédent avait un trait ou un filet près du nom : refais-le SANS aucun trait, filet, ligne ni petit motif sur une ligne.`, ":sans-trait");
+      drawn = bufferOf("logo");
+      if (drawn && (await traitHorizontal(drawn)).trouve) issues.push(tag(L("son logo garde un trait sous le nom, malgré un second dessin.", "its logo still has a line under the name.")));
+    }
     if (drawn && !(await logoOnWhite(drawn))) {
       const why = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background");
       mark(made.get("logo")!.id, "rejected", why); made.delete("logo"); dropped.set("logo", why);
@@ -410,7 +451,9 @@ export async function runBoardImages(o: {
     else try {
       const review = await ctx.step(`brand:imagecheck:${round}:${key}${pass}${rt}`, () => ai.look(`imagecheck-${round}-${key}${pass}${rt}`, {
         system: P.imageReviewSystem(), schema: ImageReviewSchema,
-        prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` La dernière image jointe (${slots.length + 1}) est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`, ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
+        prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` La dernière image jointe (${slots.length + 1}) est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`,
+          // Ce que le client refuse (essai réel du 20 novembre 2026 : une goutte d'eau refusée par le client, passée au contrôle).
+          ...(o.gouts?.trim() ? [`Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut (defect « autre »).`] : []), ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
         images: seen,
       }));
       // Le Studio compare la lecture du relecteur aux textes attendus. Quand son jugement et sa propre lecture se
