@@ -66,21 +66,24 @@ describe("logos refaits seuls : le téléphone de la planche est refait pour l'i
   });
 });
 
-describe("logos expressifs : le niveau des 50 logos que le propriétaire aime (21 novembre 2026)", async () => {
+describe("logos : le niveau des 50 logos que le propriétaire aime, la façon de faire vient du projet (21 novembre 2026)", async () => {
   const I = await import("@/lib/syna-agent/brand-images");
   const P = await import("@/lib/syna-agent/brand-prompts");
   const imagery = { look: "calme", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
   it("le dessinateur reçoit une phrase de niveau (pas de style), le relecteur la planche des 50, jamais le dessinateur", async () => {
     const p = I.imagePrompt("logo", route("A") as never, imagery);
     expect(p).toContain(I.LOGO_NIVEAU);
-    expect(I.LOGO_NIVEAU).toMatch(/Un logo EXPRESSIF, avec du caractère, qui raconte le métier en une seule image/);
-    expect(I.LOGO_NIVEAU).toMatch(/un objet, un animal ou une mascotte, dessinés avec soin et du détail/);
-    expect(I.LOGO_NIVEAU).not.toMatch(/personne|personnage/);
+    expect(I.LOGO_NIVEAU).toMatch(/C'est un logo, pas un tableau : il se lit et se reconnaît en tout petit/);
+    expect(I.LOGO_NIVEAU).toMatch(/Sa façon de faire vient de cette marque-là/);
+    // « ça dépend des projets » (21 novembre 2026) : aucune façon de dessiner imposée à toutes les marques.
+    expect(I.LOGO_NIVEAU).not.toMatch(/personne|personnage|mascotte|animal|détail|illustr|EXPRESSIF/);
     expect(p).toMatch(/Tu es totalement libre du dessin/);
     const planche = await I.planchedesLogosAimes();
     expect(planche).toBeInstanceOf(Buffer);
     expect(P.imageReviewSystem()).toMatch(/quand la planche des logos que le propriétaire aime est jointe .* nettement plus sage, timide ou banal que ces exemples/);
-    expect(P.imageReviewSystem()).toMatch(/Un logo détaillé, illustré, coloré ou chargé n'est PAS un défaut tant qu'il reste lisible/);
+    expect(P.imageReviewSystem()).not.toMatch(/illustré, coloré ou chargé n'est PAS un défaut/);
+    expect(P.imageReviewSystem()).toMatch(/il ne va pas avec CETTE marque .* la planche ne donne jamais un style à suivre/);
+    expect(P.imageReviewSystem()).toMatch(/une scène, un décor, un dessin chargé de détails, qui ne se lit plus en tout petit/);
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(img).toContain('const aimes = slots.includes("logo") ? await planchedesLogosAimes() : null;');
     // La planche n'est jamais jointe au dessin du logo (seulement à la relecture).
