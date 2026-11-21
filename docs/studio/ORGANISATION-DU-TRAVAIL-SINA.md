@@ -61,6 +61,25 @@ oublier ».
 - **Projet d'essai du plombier** (client inventé) : 20,06 € dépensés ; ses données étaient dans un dossier temporaire et
   ne sont plus disponibles. Un nouvel essai part d'un nouveau client inventé.
 
+### Reprise du 21 novembre 2026, nuit (nouveau chef d'orchestre : `session_01HSEvRzKV3NKmjQAmJC3ohd`)
+
+- Accord du propriétaire pour relancer « SINA évolue » : « Tout doit être fait correctement avec un debrief simple à
+  comprendre pour moi ». Consigne envoyée :
+  1. vérifier (série complète) et envoyer le socle déjà construit ;
+  2. reprendre une création coupée sans repayer (gratuit) ;
+  3. une seule règle à un seul endroit (gratuit) ;
+  4. puis s'arrêter et proposer, point par point (SINA simplifiée, juges, coûts), ce qu'elle construirait, ce qu'il verra
+     et le prix, avant de rien écrire.
+  Après chaque point, un compte rendu simple pour lui, avec un exemple réel, ce qui est vérifié ou non, l'argent dépensé.
+- Annulé : la liste de tâches erronée qu'elle avait reçue (« A. SINA en général », « B à J : parties du parcours »).
+- Interdit : tout appel payant (l'essai d'images à 1 € attend son oui), toucher à « dessiner puis coder » ou au code du
+  thème, retirer du contenu sans son accord, une chaîne d'assistants, un juge sans mesure qu'il sert.
+- Rappel tiré des recherches, demandé par le propriétaire (« s'il y a trop de juges ça bogue ? ») : ce sont les assistants
+  à la chaîne qui font perdre 39 à 70 % (Google, 180 configurations) ; un juge ne sert que sur ce qui se mesure, une IA
+  juge la beauté presque au hasard (0,55 contre 0,50). Donc : SINA seule, le code juge ce qui se mesure, un seul relecteur
+  des défauts visibles, le goût au client.
+- À préparer ensuite : la conversation « Les essais complets » (consignes à lui montrer avant de l'ouvrir).
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
