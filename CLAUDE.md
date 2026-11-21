@@ -108,8 +108,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   fond retiré, pas de carré autour. OpenAI est libre du dessin : il reçoit le métier, les couleurs, la typographie et la
   direction artistique de la marque, jamais un style imposé. Dans une série, chaque logo reçoit ceux déjà faits avec
   « je veux un logo complètement différent » : le 1er est fait sans modèle, le 2e reçoit le 1er, le 3e les deux
-  premiers ; jamais les logos d'une série précédente ni d'un autre projet (redit le 20 novembre 2026). Ce que le
-  client refuse est transmis au dessinateur avec ses mots. Le favicon reprend le logo.
+  premiers ; jamais les logos d'une série précédente ni d'un autre projet (redit le 20 novembre 2026). Les mots du
+  client sur l'image voulue ne vont pas au dessinateur du logo (« enlève la 7 », 21 novembre 2026), seulement au
+  relecteur des images. Le trait près du nom avec parcimonie : un seul par série. Le favicon reprend le logo.
 - **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
   image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair.
 - **Trois angles** : un angle, c'est « aller chercher une typologie de client différente, avec des envies et des

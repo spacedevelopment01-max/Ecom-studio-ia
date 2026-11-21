@@ -173,7 +173,7 @@ export async function logoForGround(logo: Buffer | null, x: Pick<Route, "ground"
 const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`;
 
 /** Consigne complète d'une image : la direction globale, la consigne de la directrice artistique, les lignes fixes du Studio. */
-export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean; gouts?: string | null } = { logo: true }): string {
+export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean } = { logo: true }): string {
   const look = imagery.look.trim(), texts = slotTexts(x)[slot];
   if (slot === "logo") {
     // Carte blanche (retour du propriétaire du 15 novembre 2026 : « tu dois laisser libre OpenAI pour faire les logos,
@@ -187,10 +187,6 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       `Direction artistique de la marque : ${[imagery.logo.trim(), look].filter(Boolean).join(" ")}`,
       paletteLine(x),
       `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,
-      // Ce que le client a dit de l'image voulue, avec ses mots (essai réel du 20 novembre 2026 : un plombier avait dit
-      // « pas de goutte d'eau ni de clé à molette », et ses trois logos portaient une goutte d'eau). Ce sont ses goûts,
-      // pas un style imposé : le dessin reste libre.
-      o.gouts?.trim() ? `Ce que le client a dit de l'image qu'il veut, avec ses mots, à respecter (surtout ce qu'il refuse) : « ${o.gouts.trim()} »` : "",
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni cadre, ni ombre portée.",
     ].filter(Boolean).join("\n");
   }
@@ -315,7 +311,8 @@ export async function runBoardImages(o: {
   slots?: ImageSlot[];
   /** Logos déjà créés dans la même série pour ce client : donnés au dessinateur pour qu'il en fasse un complètement différent. */
   madeLogos?: Buffer[];
-  /** Ce que le client a dit de l'image qu'il veut (ses mots, refus compris) : donné au dessinateur du logo. */
+  /** Ce que le client a dit de l'image qu'il veut (ses mots, refus compris) : donné au RELECTEUR des images, jamais au
+   * dessinateur du logo (propriétaire, 21 novembre 2026 : « enlève la 7 »). */
   gouts?: string | null;
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
   imagery?: Imagery;
@@ -382,7 +379,7 @@ export async function runBoardImages(o: {
     const n = Math.min(already.length, 4);
     // Parcimonie du trait : un seul logo par série le porte (contrôle sans IA des logos déjà faits).
     const traitPris = (await Promise.all(already.map((b) => traitHorizontal(b).then((r) => r.trouve).catch(() => false)))).some(Boolean);
-    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true, gouts: o.gouts }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
+    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
     let drawn = bufferOf("logo");
     // Contrôle sans IA de la parcimonie : un trait alors qu'un logo de la série en a déjà un, le logo est redessiné UNE
     // fois ; s'il le garde encore, il est montré et c'est dit au client. Le premier trait d'une série est gardé.

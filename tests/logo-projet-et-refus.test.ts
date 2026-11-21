@@ -17,11 +17,9 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
   const { account } = await import("./conversation209-fixtures");
   const imagery = { look: "calme", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
 
-  it("les mots du client sur l'image voulue vont au dessinateur du logo, et le dessin reste libre", () => {
-    const p = I.imagePrompt("logo", route("A") as never, imagery, { logo: true, gouts: "Il ne veut surtout pas : une goutte d'eau, une clé à molette." });
-    expect(p).toMatch(/Ce que le client a dit de l'image qu'il veut, avec ses mots, à respecter \(surtout ce qu'il refuse\) : « Il ne veut surtout pas : une goutte d'eau, une clé à molette\. »/);
-    expect(p).toMatch(/Tu es totalement libre du dessin/);
+  it("les mots du client ne vont plus au dessinateur du logo (« enlève la 7 »), seulement au relecteur des images", () => {
     expect(I.imagePrompt("logo", route("A") as never, imagery)).not.toMatch(/Ce que le client a dit/);
+    expect(I.imagePrompt("logo", route("A") as never, imagery)).toMatch(/Tu es totalement libre du dessin/);
   });
 
   it("la consigne « complètement différent » vise aussi la disposition, et la chaîne transmet les goûts du client", () => {
