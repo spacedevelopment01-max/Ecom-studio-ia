@@ -1113,7 +1113,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     const freeLogo = I.imagePrompt("logo", route("A"), { look: "x", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never);
     expect(freeLogo).toMatch(/Tu es totalement libre du dessin : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi/);
     expect(freeLogo).toMatch(/Typographie de la marque : un caractère /);
-    expect(freeLogo).toMatch(/Direction artistique de la marque : /);
+    expect(freeLogo).toMatch(/La marque : /);
     expect(freeLogo).not.toMatch(/recette|ligne ondulée|image de référence/);
     expect(P.imagerySystem("services")).not.toMatch(/redessine en vrai logo/);
     expect(P.imageReviewSystem()).toMatch(/le logo, l'emblème ou le nom d'une AUTRE marque apparaît \(constructeur/);

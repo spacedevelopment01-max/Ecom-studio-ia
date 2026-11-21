@@ -2,9 +2,9 @@
 
 Cahier de SINA (21 novembre 2026). Le propriétaire a montré 50 logos, rangés en cinq familles de métiers (mode et beauté,
 maison et quotidien, cuisine et boissons, services et expériences, tech et loisirs), en disant : « c'est ce genre de logo
-que je veux ». Ses images sont dans `logos-aimes/` ; `logos-aimes/planche-des-50.jpg` les réunit. Elles servent de NIVEAU
-à atteindre au relecteur des images : elles ne sont JAMAIS données au dessinateur (il les recopierait, et un logo n'est
-jamais repris d'une autre marque).
+que je veux ». Ses images sont dans `logos-aimes/` ; `logos-aimes/planche-des-50.jpg` les réunit. Elles vont au dessinateur
+du logo, annoncées « seulement comme exemples : n'en recopie aucun » (décision du propriétaire du 21 novembre 2026 :
+« pas de consigne autre que les 50 logos en exemple et simplement en exemple »), et au relecteur, comme niveau.
 
 ## La façon de faire dépend du projet
 
@@ -34,13 +34,9 @@ Le dessin suit l'idée, le ton, le métier, les couleurs et l'écriture de la ma
 
 ## Ce que fait le Studio
 
-- Le dessinateur est libre du dessin. Il reçoit ce qu'il faut savoir de la marque (idée, ton, métier, couleurs,
-  écriture) et une seule phrase qui vaut pour tous les logos : « C'est un logo, pas un tableau : il se lit et se
-  reconnaît en tout petit… Sa façon de faire vient de cette marque-là (son idée, son ton, son métier) : jamais la même façon pour toutes les marques. »
-  S'il a refusé des signes (une goutte d'eau, un robinet), il les reçoit en une ligne : c'est la seule chose des mots du
-  client qui lui arrive. Sans elle, il remettait la goutte du plombier à chaque essai (21 novembre 2026).
-- Un logo refusé est redessiné avec TOUTES les raisons de ses refus, pas seulement la dernière : corriger « trop sage »
-  ne doit pas ramener la goutte retirée juste avant.
-- Le relecteur reçoit la planche des 50 à côté du logo à juger. Il refuse un logo nettement plus sage que ces exemples,
-  un logo qui ne va pas avec cette marque (son métier, son ton), et une image qui n'est pas un logo (scène, décor,
-  dessin chargé). La planche donne un niveau, jamais un style à suivre.
+- Le dessinateur est libre du dessin. Il reçoit seulement ce qu'il faut savoir de la marque (nom, métier, idée et ton,
+  couleurs, écriture, fond blanc) et la planche des 50 logos, comme exemples. Aucune phrase de style, aucune liste de
+  signes interdits (essai du 21 novembre 2026 : huit interdits ne lui laissaient plus rien à dessiner).
+- Dans une série, le 2e logo reçoit le 1er, le 3e les deux premiers, avec « je veux un logo complètement différent ».
+- Le relecteur reçoit la planche des 50 à côté du logo à juger, comme niveau. Un logo refusé est redessiné avec les
+  raisons de ses refus ; une raison technique (relecture impossible) n'est jamais donnée au dessinateur.

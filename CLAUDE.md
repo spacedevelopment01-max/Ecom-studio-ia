@@ -111,9 +111,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   premiers ; jamais les logos d'une série précédente ni d'un autre projet (redit le 20 novembre 2026). Les mots du
   client sur l'image voulue ne vont pas au dessinateur du logo (« enlève la 7 », 21 novembre 2026), seulement au
   relecteur des images. Seule exception, accordée le même jour : une ligne avec les signes qu'il a refusés (« goutte d'eau »).
-  Un logo redessiné reçoit toutes les raisons de ses refus, jamais la seule dernière. La façon de dessiner dépend du projet (« ça dépend des projets », 21 novembre 2026) : aucune
-  façon imposée à toutes les marques ; un logo n'est jamais une scène, un décor ni un dessin chargé (« j'ai pas demandé des
-  logos illustrés ») ; ses 50 logos aimés (`docs/sina-savoir/logos-aimes.md`) donnent le niveau au relecteur seulement. Le trait près du nom avec parcimonie : un seul par série. Le favicon reprend le logo.
+  Un logo redessiné reçoit toutes les raisons de ses refus, jamais la seule dernière. Aucune consigne de style au dessinateur (21 novembre 2026 : « pas de consigne autre que les 50 logos en exemple et
+  simplement en exemple ») : il reçoit le nom, le métier, l'idée et le ton de la marque, ses couleurs, sa typographie, le fond
+  blanc, et la planche des 50 logos aimés (`docs/sina-savoir/logos-aimes/`) annoncée « seulement comme exemples ». Le trait près du nom avec parcimonie : un seul par série. Le favicon reprend le logo.
 - **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
   image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair.
 - **Trois angles** : un angle, c'est « aller chercher une typologie de client différente, avec des envies et des

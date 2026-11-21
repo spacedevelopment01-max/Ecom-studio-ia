@@ -267,7 +267,7 @@ Forme exacte : ${ROUTE_SHAPE}`;
 
 // Toutes les consignes attendues y figurent : « site » y manquait, le modèle l'oubliait parfois, et sa réponse était
 // alors redemandée et repayée (vu dans les comptes de l'essai du lot 2 : 7 consignes sur 54 écrites deux fois).
-const IMAGERY_SHAPE = `{"look": "", "logo": "", "hero": "", "object": "", "signs": "", "site": "", "posts": ["", "", ""], "refus": []}`;
+const IMAGERY_SHAPE = `{"look": "", "logo": "", "hero": "", "object": "", "signs": "", "site": "", "posts": ["", "", ""]}`;
 
 /**
  * Consignes des images qui finissent la planche (demande du propriétaire du 12 novembre 2026 : « faire intervenir
@@ -295,8 +295,6 @@ Comment écrire chaque consigne (celle du logo exceptée), dans cet ordre, en ph
 LE VRAI MATÉRIEL DU MÉTIER : avant d'écrire une consigne, demande-toi à quoi ressemble VRAIMENT ce matériel chez un professionnel de ce métier (sa taille, son aménagement, ses équipements), et décris-le ainsi : un client du métier doit y croire au premier regard. Un véhicule de travail, un atelier ou un outil trop petit ou mal équipé pour le travail annoncé est une faute. Même exigence pour chaque métier : l'atelier, l'outil, le véhicule, le comptoir sont à la bonne échelle et bien équipés.
 
 Niveau attendu : une campagne haut de gamme : vraie scène de vie, lumière travaillée, profondeur, couleurs de la palette tenues d'une image à l'autre. Jamais un produit posé à plat sur un fond uni pour la grande image. Aucune personne, aucun visage, aucune main, dans aucune image.
-
-- refus : les signes que le client a REFUSÉS de voir dans son logo ou ses images, d'après SES mots (sa fiche de départ et ce qu'il demande pour cette proposition), en 1 à 4 mots chacun (« goutte d'eau », « robinet », « clé à molette ») ; seulement ce qu'il a refusé lui-même, jamais une idée à toi ; liste vide s'il n'a rien refusé. C'est la seule chose de ses mots que le dessinateur du logo reçoit.
 
 Longueurs : look 600 caractères ; logo 900 ; chaque autre consigne 1 300.
 

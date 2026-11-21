@@ -66,55 +66,46 @@ describe("logos refaits seuls : le téléphone de la planche est refait pour l'i
   });
 });
 
-describe("logos : le niveau des 50 logos que le propriétaire aime, la façon de faire vient du projet (21 novembre 2026)", async () => {
+describe("logos : aucune consigne de style, les 50 logos aimés seulement comme exemples (21 novembre 2026)", async () => {
   const I = await import("@/lib/syna-agent/brand-images");
   const P = await import("@/lib/syna-agent/brand-prompts");
-  const imagery = { look: "calme", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
-  it("le dessinateur reçoit une phrase de niveau (pas de style), le relecteur la planche des 50, jamais le dessinateur", async () => {
+  const M = await import("@/lib/ai/media-providers");
+  const imagery = { look: "Lumière du matin, pierre calcaire.", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
+  it("le dessinateur reçoit la marque (nom, métier, idée, couleurs, typographie, format) et rien d'autre", async () => {
     const p = I.imagePrompt("logo", route("A") as never, imagery);
-    expect(p).toContain(I.LOGO_NIVEAU);
-    expect(I.LOGO_NIVEAU).toMatch(/C'est un logo, pas un tableau : il se lit et se reconnaît en tout petit/);
-    expect(I.LOGO_NIVEAU).toMatch(/Sa façon de faire vient de cette marque-là/);
-    // « ça dépend des projets » (21 novembre 2026) : aucune façon de dessiner imposée à toutes les marques.
-    expect(I.LOGO_NIVEAU).not.toMatch(/personne|personnage|mascotte|animal|détail|illustr|EXPRESSIF/);
     expect(p).toMatch(/Tu es totalement libre du dessin/);
-    const planche = await I.planchedesLogosAimes();
-    expect(planche).toBeInstanceOf(Buffer);
-    expect(P.imageReviewSystem()).toMatch(/quand la planche des logos que le propriétaire aime est jointe .* nettement plus sage, timide ou banal que ces exemples/);
-    expect(P.imageReviewSystem()).not.toMatch(/illustré, coloré ou chargé n'est PAS un défaut/);
-    expect(P.imageReviewSystem()).toMatch(/il ne va pas avec CETTE marque .* la planche ne donne jamais un style à suivre/);
-    expect(P.imageReviewSystem()).toMatch(/une scène, un décor, un dessin chargé de détails, qui ne se lit plus en tout petit/);
+    expect(p).toContain("La marque : Ce qu'il faut savoir de la marque.");
+    expect(p).toMatch(/Typographie de la marque/);
+    // « pas de consigne autre que les 50 logos en exemple » : ni phrase de niveau, ni signes interdits, ni lumière des photos.
+    expect(p).not.toMatch(/tableau|caractère : jamais|EXPRESSIF|refuse ces signes|Lumière du matin|Direction artistique/);
+    expect((I as Record<string, unknown>).LOGO_NIVEAU).toBeUndefined();
+    expect((I as Record<string, unknown>).logoRefus).toBeUndefined();
+    expect(P.imagerySystem("services")).not.toMatch(/- refus :/);
+  });
+  it("les 50 logos aimés sont joints au dessin du logo, annoncés seulement comme exemples", async () => {
+    expect(await I.planchedesLogosAimes()).toBeInstanceOf(Buffer);
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(img).toContain('examples: slot === "logo" ? await planchedesLogosAimes() : null');
+    expect(M.imageReferencePrompt("x", ["avoid", "examples"])).toContain("image 2 : exemples de logos que j'aime, seulement comme exemples : n'en recopie aucun");
+    // Le relecteur les garde aussi comme niveau.
     expect(img).toContain('const aimes = slots.includes("logo") ? await planchedesLogosAimes() : null;');
-    // La planche n'est jamais jointe au dessin du logo (seulement à la relecture).
-    expect(img).not.toMatch(/make\("logo"[^\n]*planchedesLogosAimes/);
-    expect(fs.existsSync("docs/sina-savoir/logos-aimes.md")).toBe(true);
+    expect(P.imageReviewSystem()).toMatch(/quand la planche des logos que le propriétaire aime est jointe/);
   });
 });
 
-
-describe("logos : redessin avec toutes les raisons, signes refusés au dessinateur (21 novembre 2026)", async () => {
+describe("logos : redessin avec toutes les raisons des refus (21 novembre 2026)", async () => {
   const I = await import("@/lib/syna-agent/brand-images");
-  const P = await import("@/lib/syna-agent/brand-prompts");
-  it("un redessin reçoit toutes les raisons des refus, pas seulement la dernière", () => {
+  it("un redessin reçoit toutes les raisons des refus, jamais une raison technique", () => {
     const une = I.fixLine(["une goutte d'eau, refusée par le client"], 1);
     expect(une).toMatch(/une première image a été refusée pour cette raison : « une goutte d'eau, refusée par le client »/);
     const deux = I.fixLine(["une goutte d'eau, refusée par le client", "trop sage"], 2);
     expect(deux).toMatch(/à corriger TOUTES à la fois/);
     expect(deux).toMatch(/1\. « une goutte d'eau, refusée par le client »\n2\. « trop sage »/);
     expect(deux).toMatch(/Fais plus simple/);
+    expect(I.fixLine(["je n'ai pas pu la vérifier une seconde fois"], 1)).toBe("");
+    expect(I.fixLine(["je n'ai pas pu la vérifier une seconde fois", "trop sage"], 1)).toMatch(/une première image a été refusée pour cette raison : « trop sage »/);
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(img).toContain('c.prompt + fix("logo", why)');
     expect(img).toContain("c.prompt + fix(s, why)");
-  });
-  it("les signes refusés par le client vont au dessinateur du logo, en une ligne, et rien d'autre de ses mots", () => {
-    const imagery = { look: "calme", logo: "Ce qu'il faut savoir.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""], refus: ["goutte d'eau", "robinet.", "goutte d'eau"] } as never;
-    const p = I.imagePrompt("logo", route("A") as never, imagery);
-    expect(p).toContain("Le client refuse ces signes : goutte d'eau, robinet. Aucun ne figure dans le logo");
-    expect(I.logoRefus({ refus: [] })).toBe("");
-    expect(I.imagePrompt("logo", route("A") as never, { ...(imagery as object), refus: [] } as never)).not.toMatch(/refuse ces signes/);
-    // La directrice artistique les relève d'après les mots du client seulement.
-    expect(P.imagerySystem("services")).toMatch(/- refus : les signes que le client a REFUSÉS .* seulement ce qu'il a refusé lui-même, jamais une idée à toi/);
-    expect(I.ImagerySchema.parse({ logo: "x", hero: "x", object: "x", site: "x", posts: ["a", "b", "c"] }).refus).toEqual([]);
   });
 });

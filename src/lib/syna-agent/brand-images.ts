@@ -79,12 +79,6 @@ export const ImagerySchema = z.object({
   /** Les signes de la marque posés sur de vrais objets de son monde (remplace les pictogrammes dessinés en code). */
   signs: z.string().max(2200).default(""),
   posts: z.array(z.string().min(1).max(2200)).length(3),
-  /**
-   * Les signes que le client a REFUSÉS, en quelques mots chacun (« goutte d'eau », « robinet ») : seule chose de ses
-   * mots sur l'image qui va au dessinateur du logo (accord du propriétaire du 21 novembre 2026 ; ses autres mots restent
-   * au relecteur, « enlève la 7 »). Sans elle, le dessinateur remettait la goutte du plombier à chaque essai.
-   */
-  refus: z.array(z.string().min(1).max(40)).max(8).default([]),
 });
 export type Imagery = z.infer<typeof ImagerySchema>;
 export const ImageReviewSchema = z.object({
@@ -162,14 +156,6 @@ export const LOGO_NOT_SCENE = "Un LOGO, pas une illustration ni une scène : le 
  * puis « il doit juste être là par parcimonie ») : jamais interdit, mais un seul logo au plus par série le porte. Sur 43
  * logos du Studio d'essai, presque toutes les marques calmes sortaient avec le signe en haut, le nom, un trait souligné.
  */
-/**
- * Ce qui vaut pour TOUS les logos que le propriétaire aime (21 novembre 2026, 50 exemples, cahier
- * `docs/sina-savoir/logos-aimes.md`), quel que soit le métier. Jamais un style : « ça dépend des projets » (21 novembre
- * 2026) ; le dessin suit l'idée, le ton, le métier, les couleurs et l'écriture de CETTE marque. Une phrase précédente
- * (« un objet, un animal ou une mascotte dessinés avec soin et du détail ») imposait la même façon de faire à toutes les
- * marques et a donné des scènes de salle de bain illustrées à un plombier : retirée.
- */
-export const LOGO_NIVEAU = "C'est un logo, pas un tableau : il se lit et se reconnaît en tout petit, en un coup d'œil. Il a du caractère : jamais un nom sage sous un petit signe timide. Sa façon de faire vient de cette marque-là (son idée, son ton, son métier) : jamais la même façon pour toutes les marques.";
 /** La planche des 50 logos aimés du propriétaire, jointe au RELECTEUR seulement (jamais au dessinateur). Absente : null. */
 export async function planchedesLogosAimes(): Promise<Buffer | null> {
   try { return await sharp(fs.readFileSync(path.resolve(process.cwd(), "docs/sina-savoir/logos-aimes/planche-des-50.jpg"))).resize(1200, 1200, { fit: "inside" }).jpeg({ quality: 80 }).toBuffer(); } catch { return null; }
@@ -194,15 +180,12 @@ export async function logoForGround(logo: Buffer | null, x: Pick<Route, "ground"
 }
 const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`;
 
-/** La ligne des signes refusés par le client, pour le dessinateur du logo (vide s'il n'en a refusé aucun). */
-export const logoRefus = (imagery: Pick<Imagery, "refus">): string => {
-  const r = [...new Set((imagery.refus ?? []).map((t) => t.trim().replace(/[.;]+$/, "")).filter(Boolean))].slice(0, 8);
-  return r.length ? `Le client refuse ces signes : ${r.join(", ")}. Aucun ne figure dans le logo, ni en entier, ni en partie, ni caché dans une lettre.` : "";
-};
-
 /** Toutes les raisons des refus d'une image, de la plus ancienne à la plus récente, pour la redessiner sans revenir en arrière. */
+/** Une raison qui ne dit rien de l'image (relecture impossible) : jamais donnée au dessinateur comme une correction. */
+const TECHNIQUE = /pas pu la (vérifier|relire)|non relue|could not (check|review)/i;
 export const fixLine = (whys: string[], attempt: number): string => {
-  const list = [...new Set(whys.map((w) => w.replace(/\s+/g, " ").trim().slice(0, 300)).filter(Boolean))];
+  const list = [...new Set(whys.filter((w) => !TECHNIQUE.test(w)).map((w) => w.replace(/\s+/g, " ").trim().slice(0, 300)).filter(Boolean))];
+  if (!list.length) return attempt > 1 ? "\nFais plus simple : retire de l'image tout élément qui porte une écriture non demandée (étiquette, emballage, enseigne, écran) ou laisse-le vierge." : "";
   const head = list.length > 1
     ? `\nCORRECTION : les images précédentes ont été refusées pour ces raisons, à corriger TOUTES à la fois (corriger la dernière ne doit pas ramener une faute déjà corrigée) :\n${list.map((w, i) => `${i + 1}. « ${w} »`).join("\n")}`
     : `\nCORRECTION : une première image a été refusée pour cette raison : « ${list[0] ?? ""} ». Refais l'image en corrigeant ce point.`;
@@ -221,12 +204,11 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       `Crée le logo de la marque « ${x.name} ». Tu es totalement libre du dessin : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi.`,
       `Le nom s'écrit exactement « ${x.name} », lettre par lettre : ${spell(x.name)}. Aucune lettre ajoutée, retirée ni changée, accents compris. Aucun autre mot.`,
       x.board.descriptor ? `Métier : ${x.board.descriptor.trim().replace(/\.+$/, "")}.` : "",
-      `Direction artistique de la marque : ${[imagery.logo.trim(), look].filter(Boolean).join(" ")}`,
+      // Ce que la marque est (son idée, son ton, son métier) ; la lumière et les matières des photos n'y vont plus.
+      imagery.logo.trim() ? `La marque : ${imagery.logo.trim()}` : "",
       paletteLine(x),
       `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni cadre, ni ombre portée.",
-      LOGO_NIVEAU,
-      logoRefus(imagery),
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
@@ -387,7 +369,7 @@ export async function runBoardImages(o: {
     if (!retry) calls.set(slot, { refs, prompt });
     try {
       made.set(slot, await ctx.step(`brand:image:${round}:${key}:${slot}${pass}${retry}`, async (): Promise<Made> => {
-        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, avoid: refs.avoid ?? null });
+        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, avoid: refs.avoid ?? null, examples: slot === "logo" ? await planchedesLogosAimes() : null });
         const png = await sharp(data).png().toBuffer(), meta = await sharp(png).metadata();
         const asset = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-${slot}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "review", meta: { synaBoard: { key, slot, round, name: x.name } } });
         return { id: asset.id, w: meta.width ?? 1024, h: meta.height ?? 1024 };

@@ -527,7 +527,7 @@ export function imageReferencePrompt(text:string,roles:readonly string[]):string
  // « avoid » : une image montrée pour ne PAS la refaire (les logos déjà créés pour un client). Essai réel du 16 novembre
  // 2026 : jointe comme une référence ordinaire, elle était annoncée « à reproduire fidèlement », et chaque logo sortait
  // comme une copie du précédent.
- return text+(roles.length?'\nTRANSMITTED REFERENCES (ordered): '+roles.map((role,i)=>role==='avoid'?`image ${i+1}: logos already made, shown ONLY so that the new one is completely different (not a model: do not reproduce, retouch or imitate it)`:`image ${i+1}: ${role} (essential, reproduce faithfully)`).join('; '):'');
+ return text+(roles.length?'\nTRANSMITTED REFERENCES (ordered): '+roles.map((role,i)=>role==='avoid'?`image ${i+1}: logos already made, shown ONLY so that the new one is completely different (not a model: do not reproduce, retouch or imitate it)`:role==='examples'?`image ${i+1} : exemples de logos que j'aime, seulement comme exemples : n'en recopie aucun`:`image ${i+1}: ${role} (essential, reproduce faithfully)`).join('; '):'');
 }
 
 export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | "alibaba" | null {
@@ -713,9 +713,9 @@ export async function aiSitePhoto(ctx: Ctx, input: { prompt: string; references:
  * maquettes »). Références : la photo découpée sur la maquette (à reproduire), le logo (s'il figure sur un emballage),
  * la photo du produit (s'il figure sur la photo). Route des maquettes, sans relais (withQuotedImageRoute).
  */
-export async function aiSiteImageHd(ctx: Ctx, input: { prompt: string; scene?: Buffer | null; logo?: Buffer | null; product?: Buffer | null; /** Image montrée pour ne pas la refaire. */ avoid?: Buffer | null; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
+export async function aiSiteImageHd(ctx: Ctx, input: { prompt: string; scene?: Buffer | null; logo?: Buffer | null; product?: Buffer | null; /** Image montrée pour ne pas la refaire. */ avoid?: Buffer | null; /** Exemples aimés du propriétaire (logos), seulement comme exemples. */ examples?: Buffer | null; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
   // Sans photo de maquette (maquettes en code, 8 novembre) : la photo est créée d'après sa seule description.
-  const references = [...(input.scene ? [{ role: "scene" as const, data: input.scene, essential: true }] : []), ...(input.product ? [{ role: "product" as const, data: input.product, essential: true }] : []), ...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : []), ...(input.avoid ? [{ role: "avoid" as const, data: input.avoid, essential: true }] : [])];
+  const references = [...(input.scene ? [{ role: "scene" as const, data: input.scene, essential: true }] : []), ...(input.product ? [{ role: "product" as const, data: input.product, essential: true }] : []), ...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : []), ...(input.avoid ? [{ role: "avoid" as const, data: input.avoid, essential: true }] : []), ...(input.examples ? [{ role: "examples" as const, data: input.examples, essential: false }] : [])];
   return generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "scene", need: { references: references.length } });
 }
 
@@ -924,7 +924,7 @@ export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "h
   return v === "medium" || v === "high" ? v : asked;
 }
 
-async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: AspectId; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ onRequest?: (receipt:ImageRequestReceipt)=>void; extraRefs?: Buffer[]; references?: { role: "product" | "logo" | "scene" | "style" | "avoid"; data: Buffer; essential: boolean }[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: AspectId; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ onRequest?: (receipt:ImageRequestReceipt)=>void; extraRefs?: Buffer[]; references?: { role: "product" | "logo" | "scene" | "style" | "avoid" | "examples"; data: Buffer; essential: boolean }[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
   const input = { ...input0, quality: input0.strictQuality ? input0.quality : imageQuality(input0.usage, input0.quality) };
   const typed = input.references ?? [...(input.reference ? [{ role: "product" as const, data: input.reference, essential: true }] : []), ...(input.extraRefs ?? []).map(data => ({ role: "logo" as const, data, essential: true }))];
   // Every supplied reference is required. Routing may reject a model, never silently discard a client's logo.

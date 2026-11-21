@@ -201,7 +201,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       if (k === "A") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).not.toMatch(/L'image jointe/);
       if (k === "B") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/L'image jointe montre le logo déjà fait pour ce client\. Je veux un logo complètement différent de celui-là, dans un autre style que lui/);
       if (k === "C") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/L'image jointe montre les 2 logos déjà faits pour ce client\. Je veux un logo complètement différent de ceux-là, dans un autre style que chacun d'eux/);
-      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/Direction artistique de la marque : /);
+      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/La marque : /);
       expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/Typographie de la marque : un caractère /);
       expect(log.refs[`image-1-${k}-hero${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "16:9" });
       expect(log.refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
