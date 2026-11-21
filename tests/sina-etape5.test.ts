@@ -49,14 +49,14 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     expect(J.READY_STEPS).toContain(5);
     expect(J.currentStep(J.journeyOf(cid))).toBe(5);
     expect(modelFor(5)?.model).toBe(DEFAULT_MODELS.strong.model);
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 5 \(activité complète, GRATUITE\)[^]*activity\.plan[^]*UNE par UNE[^]*SES prix, sans en inventer aucun[^]*catalogue\.create/);
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/y compris les facultatives \(téléphone, SIRET\), une fois chacune ; « Plus tard » se propose SEULEMENT pour le téléphone et le SIRET, JAMAIS pour le nom/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Étape 5 \(activité complète, GRATUITE\)[^]*activity\.plan[^]*les faits simples ENSEMBLE, numérotés et courts, six au plus[^]*une question de choix ou d'accord SEULE[^]*SES prix, sans en inventer aucun[^]*catalogue\.create/);
+    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/y compris les facultatives \(téléphone, SIRET\), une fois chacune : [^;]*; « Plus tard » se propose SEULEMENT pour le téléphone et le SIRET, JAMAIS pour le nom/);
     expect(J.journeyContext(J.journeyOf(cid))).toMatch(/poids ou contenance qu'il a cités dans sa fiche de départ/);
     // 1) Plan : tout ce qui manque devient une question.
     const r1 = await call("activity.plan", ctx, {});
     expect(r1.ok).toBe(true);
     expect(r1.summary).toBe("Plan de l'activité affiché."); // la carte montre ce qui manque, sans doublon
-    expect(r1.hint).toMatch(/Encore à compléter : nom de l.entreprise[^]*aucun produit créé[^]*Questions à poser au client, UNE par UNE/);
+    expect(r1.hint).toMatch(/Encore à compléter : nom de l.entreprise[^]*aucun produit créé[^]*Questions à poser au client \(les faits simples ensemble, numérotés, six au plus ; un choix ou un accord seul\)/);
     expect(J.journeyOf(cid).steps[5].status).toBe("doing");
     expect((await call("activity.validate", ctx, {})).ok).toBe(false); // jamais validé avec des manques
     // 2) Coordonnées avec les mots du client ; une coordonnée obligatoire ne se reporte jamais.

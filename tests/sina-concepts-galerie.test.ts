@@ -104,7 +104,8 @@ describe("thème sur mesure en deux concepts, puis galerie produit", async () =>
     expect(plan.ok).toBe(true);
     expect(plan.data.conseille).toBe(7);
     expect(plan.data.genres).toHaveLength(8);
-    expect(plan.hint).toMatch(/POURQUOI[^]*combien d'images[^]*7[^]*SA photo[^]*personne[^]*points forts[^]*JAMAIS écrit/);
+    // Règle du 19 novembre 2026 : les questions simples ensemble ; l'accord pour une personne, seul, à part.
+    expect(plan.hint).toMatch(/POURQUOI[^]*ces questions simples ENSEMBLE[^]*combien d'images[^]*7[^]*SA photo[^]*points forts[^]*JAMAIS écrit[^]*dans un message à part, SEULE \(c'est un accord\) : veut-il une personne/);
     const G = await import("@/lib/syna-agent/custom-theme/gallery");
     const img = (kind: string, more: object = {}) => ({ kind, scene: "Une table en bois clair près d'une fenêtre, lumière du matin.", ...more });
     // Textes obligatoires par genre ; une personne sans accord du client : rien n'est lancé.
