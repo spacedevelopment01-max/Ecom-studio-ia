@@ -114,7 +114,7 @@ describe("les six familles du Studio (en coulisses)", () => {
 
   it("les photos suivent la façon de photographier de la famille", () => {
     expect(M.famillePhotoLine("spectaculaire")).toMatch(/FAÇON DE PHOTOGRAPHIER DE CE SITE[^]*l'action, une lumière rasante/);
-    expect(M.famillePhotoLine("confiance-savoir-faire")).toMatch(/jamais une équipe inventée, jamais une personne reconnaissable/);
+    expect(M.famillePhotoLine("confiance-savoir-faire")).toMatch(/jamais une équipe inventée, jamais de personne sans photo fournie par le client ou son accord écrit/);
     expect(M.famillePhotoLine(null)).toBe("");
     // Le montage prend cette direction, et non plus un univers commun à tous les sites.
     const brand = fs.readFileSync(path.join(process.cwd(), "src/lib/syna-agent/custom-theme/brand.ts"), "utf8");
