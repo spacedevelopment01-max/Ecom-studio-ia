@@ -209,6 +209,22 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     for (const t of ["brand.finish", "identity.images", "identity.propose"]) expect(V.refusVerrou(cid, t), t).toMatchObject({ ok: false });
   });
 
+  epreuve("creation-coupee-reprise-sans-repayer", async () => {
+    const { run, id, now } = await import("@/lib/db");
+    const T = await import("@/lib/syna-agent/tools/identity");
+    const { SINA_BRAND_JOB } = await import("@/lib/syna-agent/brand-chain");
+    const user = await account(), projectId = project(user, "services") as string, job = id(), t = now();
+    // Arrêtée en route après l'étude et 2 images payées (0,40 € gardés).
+    run("INSERT INTO jobs (id, user_id, project_id, type, payload, status, checkpoint, run_at, created_at, updated_at, finished_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)", job, user.id, projectId, SINA_BRAND_JOB, JSON.stringify({ projectId, capMicro: 2_000_000, finish: true }), "cancelled", JSON.stringify({ "brand:study": {}, "brand:image:1:A:logo": {}, "brand:image:1:A:object": {} }), t, t, t, t);
+    run("INSERT INTO ai_reservations (id, user_id, amount, status, job_id, project_id, actual, created_at, result) VALUES (?,?,?,?,?,?,?,?,?)", id(), user.id, 300_000, "settled", job, projectId, 200_000, t, "{}");
+    run("INSERT INTO ai_reservations (id, user_id, amount, status, job_id, project_id, actual, created_at, result) VALUES (?,?,?,?,?,?,?,?,?)", id(), user.id, 300_000, "settled", job, projectId, 200_000, t, "{}");
+    const c = T.marqueCoupee(projectId)!;
+    expect(c.id).toBe(job);
+    expect(T.marqueOuArretee(c.etapes)).toBe("déjà fait et gardé : l'étude de ton marché, 2 images");
+    // La carte ne montre que ce qui reste : le plafond moins ce qui est payé et repris.
+    expect(T.relanceMarqueQuote(c).maxMicro).toBe(1_600_000);
+  });
+
   epreuve("fiche-relue-en-entier", async () => {
     const user = await account(), projectId = project(user, "services") as string, cid = threadFor(user, projectId);
     J.updateJourney(cid, (j) => { J.setStep(j, 0, "done"); });

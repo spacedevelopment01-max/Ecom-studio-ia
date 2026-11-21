@@ -8,8 +8,8 @@
  * du projet (nom, slogan, promesse, palette, polices, ton).
  */
 import { z } from "zod";
-import { json as parseJson, one } from "../../db";
-import { enqueue, getJob, pendingJob } from "../../jobs";
+import { json as parseJson, one, run } from "../../db";
+import { enqueue, getJob, pendingJob, retryJob } from "../../jobs";
 import { L } from "../../i18n-server";
 import { loadProject, remember, saveBrand } from "../../projects";
 import { localBrand } from "../../engine/local";
@@ -22,6 +22,9 @@ import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, type ImageSlot } from "../
 import { finishSlots } from "../brand-finish";
 import { chosenRoute } from "../logos";
 import { ROUTE_KEYS, routeKeys } from "../brand-routes";
+import { acquisMicro, RELANCE_JOURS, RefusInterne } from "../custom-theme/site-job";
+import { jobSpentMicro } from "../budget";
+import type { CostEstimate, ToolResult } from "../types";
 import { project } from "./common";
 
 const KEYS = ROUTE_KEYS;
@@ -34,7 +37,49 @@ function workshopReady(j: Journey): boolean {
   try { return !!parseJson<Record<string, unknown>>(getJob(id)?.checkpoint ?? "{}", {})["brand:strategy"]; } catch { return false; }
 }
 
-type ProposeArgs = { guidance?: string; redo?: Key[]; only?: "noms" };
+/**
+ * REPRENDRE UNE CRÉATION DE MARQUE COUPÉE, SANS REPAYER (21 novembre 2026). Reprise d'Aplomb arrêtée en route : 2,04 €
+ * payés pour 13 images, rien de gardé, parce qu'une nouvelle création repartait de zéro. Comme pour le site et l'accueil
+ * dessiné : la MÊME tâche repart (mêmes étapes, mêmes clés d'appel), donc tout ce qui est déjà fait et payé (l'étude, les
+ * idées, les noms, les images) est repris tel quel ; seul l'appel coupé en plein milieu est renvoyé, une fois, avec
+ * l'accord du client sur la carte. Une création arrêtée (en échec ou arrêtée par « Arrêter ») se relance pendant sept
+ * jours, si au moins une étape est faite ; la carte montre le prix de ce qui reste.
+ */
+export function marqueCoupee(projectId: string): { id: string; payload: Record<string, any>; etapes: string[] } | null {
+  const j = one<{ id: string; status: string; payload: string; finished_at: number | null; checkpoint: string | null }>("SELECT id, status, payload, finished_at, checkpoint FROM jobs WHERE project_id = ? AND type = ? ORDER BY created_at DESC, rowid DESC LIMIT 1", projectId, SINA_BRAND_JOB);
+  if (!j || !["failed", "cancelled"].includes(j.status) || !j.finished_at || Date.now() - j.finished_at > RELANCE_JOURS * 86_400_000) return null;
+  const etapes = (() => { try { return Object.keys(JSON.parse(j.checkpoint ?? "{}") ?? {}).filter((k) => k.startsWith("brand:")); } catch { return []; } })();
+  if (!etapes.length) return null;
+  try { return { id: j.id, payload: JSON.parse(j.payload) as Record<string, any>, etapes }; } catch { return null; }
+}
+/** Ce qui est déjà fait dans la création coupée, dit simplement (SINA le redit au client). */
+export function marqueOuArretee(etapes: string[]): string {
+  const images = etapes.filter((e) => e.startsWith("brand:image:")).length;
+  const faites = [etapes.includes("brand:study") && "l'étude de ton marché", etapes.some((e) => e.startsWith("brand:strategy")) && "l'idée de ta marque", etapes.some((e) => e.startsWith("brand:team:")) && "les pistes de noms", etapes.some((e) => e.startsWith("brand:judge")) && "le tri des noms", images > 0 && `${images} image${images > 1 ? "s" : ""}`].filter(Boolean);
+  return faites.length ? `déjà fait et gardé : ${faites.join(", ")}` : "rien de gardé";
+}
+/** Le prix de la reprise : le plafond de la création, moins ce qui est payé et repris (jamais moins d'un cinquième). */
+export function relanceMarqueQuote(c: { id: string; payload: Record<string, any> }): CostEstimate {
+  const cap = Number(c.payload.capMicro) || 0;
+  return { maxMicro: Math.max(Math.round(cap * 0.2), cap - acquisMicro(c.id)), label: L("la suite de ta marque, là où sa création s'était arrêtée : ce qui était déjà fait est repris sans être repayé", "the rest of your brand, from where it stopped") };
+}
+function relanceMarque(ctx: ToolContext): ToolResult {
+  const p = project(ctx);
+  if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Ta marque est déjà en cours de création : attends-la.", "Your brand is already being created.") };
+  const c = marqueCoupee(p.id);
+  if (!c) return { ok: false, internal: true, summary: "Aucune création de marque arrêtée en route à relancer (elle a réussi, rien n'y était fait, ou elle date de plus de sept jours) : lance-la sans relancer." };
+  const q = relanceMarqueQuote(c);
+  const payload = { ...c.payload, conversationId: ctx.conversationId, relance: (Number(c.payload.relance) || 0) + 1, capMicro: jobSpentMicro(c.id) + q.maxMicro };
+  run("UPDATE jobs SET payload = ? WHERE id = ? AND status IN ('failed','cancelled')", JSON.stringify(payload), c.id);
+  retryJob(c.id);
+  updateJourney(ctx.conversationId, (x) => setStep(x, c.payload.finish ? 2 : 1, "doing"));
+  return { ok: true, jobs: [c.id], data: { plafondMicro: q.maxMicro },
+    summary: L(`Création de ta marque relancée, là où elle s'était arrêtée (${marqueOuArretee(c.etapes)}) : ce qui était déjà fait est repris sans être repayé. Je reprends quand c'est prêt.`, "Your brand creation was restarted from where it stopped."),
+    hint: "Dis-lui que ce qui était fait est repris sans être repayé. N'annonce jamais que sa marque est prête avant la fin de la tâche." };
+}
+const RELANCER_LIGNE = " relancer:true quand la création de sa marque s'est arrêtée en route (le Studio te le dit) : la même création repart là où elle s'était arrêtée, ce qui est déjà fait et payé est repris sans être repayé ; la carte montre le prix de ce qui reste.";
+
+type ProposeArgs = { guidance?: string; redo?: Key[]; only?: "noms"; relancer?: boolean };
 /** Travail demandé à la chaîne : combien d'identités à faire, et si l'atelier précédent ressert. */
 function chainWork(ctx: ToolContext, a: ProposeArgs | undefined) {
   const count = ctx.projectId ? routeCountOfProject(ctx.projectId) : 2;
@@ -91,14 +136,16 @@ export const identityView = (x: Identity) => ({
 
 const proposeTool: AgentTool<ProposeArgs> = {
   name: "identity.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 1 : crée les identités de marque du client, VRAIMENT différentes : 2, 3 ou 4 selon son forfait (le Studio le sait). Chaque identité est une PLANCHE de marque : l'idée, le nom et sa logique, la signature, les signes, l'objet, le site sur téléphone, des publications, la voix, ce qui reste à prouver ; couleurs, polices et ton compris (chaque planche porte son logo, sa grande image et le haut de son site sur téléphone ; l'objet, les signes en photo et les publications en images sont créés pour l'identité choisie). Tu étudies d'abord son marché sur le web (paroles réelles de clients avec leur page), tu cherches l'idée et les noms, puis tu relis tout : tâche de fond de plusieurs minutes. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les phrases (couleurs, polices et le reste gardés). Les planches s'affichent dans le fil.",
-  args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(4).optional(), only: z.enum(["noms"]).optional() }).strict(),
+  description: "Étape 1 : crée les identités de marque du client, VRAIMENT différentes : 2, 3 ou 4 selon son forfait (le Studio le sait). Chaque identité est une PLANCHE de marque : l'idée, le nom et sa logique, la signature, les signes, l'objet, le site sur téléphone, des publications, la voix, ce qui reste à prouver ; couleurs, polices et ton compris (chaque planche porte son logo, sa grande image et le haut de son site sur téléphone ; l'objet, les signes en photo et les publications en images sont créés pour l'identité choisie). Tu étudies d'abord son marché sur le web (paroles réelles de clients avec leur page), tu cherches l'idée et les noms, puis tu relis tout : tâche de fond de plusieurs minutes. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les phrases (couleurs, polices et le reste gardés). Les planches s'affichent dans le fil." + RELANCER_LIGNE,
+  args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(4).optional(), only: z.enum(["noms"]).optional(), relancer: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
+    if (a?.relancer) { const c = marqueCoupee(project(ctx).id); if (!c) throw new RefusInterne("Aucune création de marque arrêtée en route à relancer : lance-la sans relancer."); return relanceMarqueQuote(c); }
     const w = chainWork(ctx, a);
     return { ...proposalQuote(w), label: w.routes === w.count ? `${w.count} identités de marque` : `${w.routes} identité${w.routes > 1 ? "s" : ""} de marque à refaire` };
   },
   run: (ctx, a) => {
     project(ctx);
+    if (a.relancer) return relanceMarque(ctx);
     const j = journeyOf(ctx.conversationId);
     if (j.steps[0]?.status !== "done") return { ok: false, summary: L("L'étape 0 (questions de départ) n'est pas encore validée : termine-la d'abord.", "Step 0 is not validated yet.") };
     // Après le choix, une nouvelle proposition seulement si le client la demande avec ses mots (guidance).
@@ -274,7 +321,7 @@ const imagesTool: AgentTool<ImagesArgs> = {
 
 /** Images de la marque finie que le client peut faire refaire. */
 const FINISH_REDO = CREATED_SLOTS as unknown as [string, ...string[]];
-type FinishArgs = { redo?: string[]; guidance?: string };
+type FinishArgs = { relancer?: boolean; redo?: string[]; guidance?: string };
 
 /**
  * Devis de la fin de marque : gratuit quand l'accord donné pour les identités la couvre déjà (premier choix, identité
@@ -305,13 +352,15 @@ function startFinish(ctx: ToolContext, a: FinishArgs): { jobs?: string[]; refuse
 
 const finishTool: AgentTool<FinishArgs> = {
   name: "brand.finish", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape « La marque », après le choix de l'identité : finit la marque du client, ou en refait une partie. Sans argument : crée ce qui manque à son identité (le logo s'il n'y en a pas, l'objet qui porte le logo, les signes, trois publications), adopte son logo (fond retiré, déclinaisons) et prépare sa charte complète ; c'est déjà compris dans son accord quand il a pris une identité telle quelle. redo = les images à refaire quand il le demande ou qu'une image est ratée : « logo » (un AUTRE logo, créé pour sa marque ; l'objet et les signes sont refaits avec lui), « hero » (la grande scène), « object », « signs », « post0 », « post1 », « post2 » ; guidance = ce qu'il veut de différent, avec ses mots. Payant quand ce n'est pas déjà couvert : le Studio montre le prix au client avant. La marque complète s'affiche dans le fil.",
-  args: z.object({ redo: z.array(z.enum(FINISH_REDO)).min(1).max(7).optional(), guidance: z.string().max(1500).optional() }).strict(),
+  description: "Étape « La marque », après le choix de l'identité : finit la marque du client, ou en refait une partie. Sans argument : crée ce qui manque à son identité (le logo s'il n'y en a pas, l'objet qui porte le logo, les signes, trois publications), adopte son logo (fond retiré, déclinaisons) et prépare sa charte complète ; c'est déjà compris dans son accord quand il a pris une identité telle quelle. redo = les images à refaire quand il le demande ou qu'une image est ratée : « logo » (un AUTRE logo, créé pour sa marque ; l'objet et les signes sont refaits avec lui), « hero » (la grande scène), « object », « signs », « post0 », « post1 », « post2 » ; guidance = ce qu'il veut de différent, avec ses mots. Payant quand ce n'est pas déjà couvert : le Studio montre le prix au client avant. La marque complète s'affiche dans le fil." + RELANCER_LIGNE,
+  args: z.object({ redo: z.array(z.enum(FINISH_REDO)).min(1).max(7).optional(), guidance: z.string().max(1500).optional(), relancer: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
+    if (a?.relancer) { const c = marqueCoupee(project(ctx).id); if (!c) throw new RefusInterne("Aucune création de marque arrêtée en route à relancer : lance-la sans relancer."); return relanceMarqueQuote(c); }
     const e = finishEstimate(journeyOf(ctx.conversationId), a);
     return { maxMicro: e.maxMicro, ...(e.probableMicro ? { probableMicro: e.probableMicro } : {}), label: a.redo?.length ? L(`${e.slots.length} image${e.slots.length > 1 ? "s" : ""} de ta marque à refaire`, "brand images to redo") : L("ta marque complète", "your complete brand") };
   },
   run: (ctx, a) => {
+    if (a.relancer) return relanceMarque(ctx);
     const j = journeyOf(ctx.conversationId);
     if (j.steps[1]?.status !== "done" || !j.identityChoice) return { ok: false, summary: L("L'identité doit être choisie avant de finir la marque.", "Choose the identity first."), hint: "Le client choisit d'abord une identité (identity.choose)." };
     if (j.steps[3]?.status === "done" && !a.redo?.length) return { ok: false, summary: L("La marque est déjà validée.", "The brand is already validated.") };

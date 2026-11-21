@@ -103,6 +103,19 @@ sur les fichiers d'essai concernés (72 essais). Lancer la série complète avan
   épreuve.
 - Pas encore vérifié avec la vraie IA.
 
+## 3 quater. Reprendre une création coupée sans repayer (point 2 du chef d'orchestre ; sans dépense)
+
+- Ce qui existait déjà : chaque appel payant (texte, recherche, image, vidéo) est enregistré avec sa réponse ; une même
+  demande dans la même tâche est rendue sans être repayée ; un appel au résultat incertain n'est jamais renvoyé tout
+  seul ; une tâche coupée par une panne du travailleur reprend à son dernier point d'étape. Le site (`site.create`) et
+  l'accueil dessiné (`site.dessiner`) savaient déjà relancer une création arrêtée en route (`relancer:true`).
+- Ce qui manquait : la marque. Une création de marque arrêtée (en échec, ou arrêtée par « Arrêter ») repartait de zéro
+  et repayait tout (reprise d'Aplomb : 2,04 € payés, rien de gardé).
+- Ajouté : `identity.propose` et `brand.finish` acceptent `relancer:true` (`tools/identity.ts`, `marqueCoupee`) : la
+  même tâche repart, l'étude, l'idée, les noms et les images déjà faits sont repris ; la carte montre le prix de ce qui
+  reste ; SINA est prévenue quand la création s'arrête. Essai : `tests/sina-chaine-marque.test.ts` ; épreuve
+  `creation-coupee-reprise-sans-repayer`.
+
 ## 4. Projet d'essai du plombier (client inventé, Studio d'essai)
 
 - Identités : A « Aplomb », B « Faïence », C « Cuivre ». Le propriétaire a choisi **Aplomb**.

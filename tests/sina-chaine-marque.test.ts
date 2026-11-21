@@ -1210,6 +1210,40 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(IdentitySchema.shape.sloganTone.parse(tone)).toBe(tone);
   });
 
+  it("création de marque coupée en route puis relancée (reprise d'Aplomb, 21 novembre 2026) : la même tâche repart, rien de ce qui est fait n'est refait ni repayé", async () => {
+    const t = await thread();
+    const T = await import("@/lib/syna-agent/tools/identity");
+    const first = jobCtx(t.user, t.pid, { projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, images: false });
+    // Coupure du serveur au moment de composer les identités : l'étude, l'idée, les noms et leur tri sont déjà faits.
+    await expect(chain(t, {}, { shortlist: () => { throw new Error("Interrompue : coupure du serveur"); } }, first)).rejects.toThrow(/Interrompue/);
+    run("UPDATE jobs SET status='failed', error='Interrompue : coupure du serveur', finished_at=? WHERE id=?", Date.now(), first.job.id);
+    const c = T.marqueCoupee(t.pid)!;
+    expect(c.id).toBe(first.job.id);
+    expect(T.marqueOuArretee(c.etapes)).toBe("déjà fait et gardé : l'étude de ton marché, l'idée de ta marque, les pistes de noms, le tri des noms");
+    // Le prix de la reprise : ce qui reste du plafond (rien de payé ici : le plafond entier, jamais moins d'un cinquième).
+    expect(T.relanceMarqueQuote(c).maxMicro).toBe(9_000_000);
+    // SINA relance : la MÊME tâche repart, avec la relance comptée (un appel coupé en plein milieu se renvoie une fois).
+    const r = await call("identity.propose", ctxOf(t.user, t.cid), { relancer: true });
+    expect(r).toMatchObject({ ok: true, jobs: [first.job.id] });
+    expect(r.summary).toMatch(/repris sans être repayé/);
+    const again = one<{ status: string; payload: string }>("SELECT status, payload FROM jobs WHERE id=?", first.job.id)!;
+    expect(again.status).toBe("queued");
+    expect(JSON.parse(again.payload)).toMatchObject({ relance: 1, conversationId: t.cid });
+    const { log } = await chain(t, {}, {}, reload(first));
+    // Rien de ce qui était fait n'est redemandé : ni la recherche, ni l'étude, ni l'idée, ni les équipes, ni le tri.
+    for (const done of ["web:paroles", "study", "strategy", "team-langue", "team-mots", "team-univers", "team-verite", "judge-1"]) expect(log.ids, done).not.toContain(done);
+    expect(log.ids[0]).toBe("shortlist");
+    expect(J.journeyOf(t.cid).identities?.list.length).toBe(3);
+    // Plus rien à relancer une fois la création finie.
+    run("UPDATE jobs SET status='done', finished_at=? WHERE id=?", Date.now(), first.job.id);
+    expect(T.marqueCoupee(t.pid)).toBeNull();
+    expect(await call("identity.propose", ctxOf(t.user, t.cid), { relancer: true })).toMatchObject({ ok: false, internal: true });
+    // SINA le sait quand la tâche s'arrête, et la fin de marque se relance de la même façon.
+    expect((await import("node:fs")).readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toContain("avec relancer:true (une carte affiche le prix de ce qui reste). Ne dis jamais que la reprise est impossible.");
+    expect(getTool("brand.finish")!.args.safeParse({ relancer: true }).success).toBe(true);
+    expect(getTool("identity.propose")!.description).toMatch(/relancer:true quand la création de sa marque s'est arrêtée en route/);
+  });
+
   it("photo en partie transparente (panne du 21 novembre 2026) : refusée sans relecture payée, puis refaite et relue", async () => {
     const t = await thread();
     await chain(t, { images: true }, { review: () => ({ routes: [], series: "" }) });

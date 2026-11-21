@@ -117,6 +117,12 @@ export const EPREUVES: Epreuve[] = [
     rejeu: "gratuit",
   },
   {
+    id: "creation-coupee-reprise-sans-repayer", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
+    verdict: "La reprise d'Aplomb (nouveau logo et 6 images) a été arrêtée en cours de route : 2,04 € dépensés, rien de gardé.",
+    attendu: "Une création de marque arrêtée en route se relance là où elle s'était arrêtée : ce qui est déjà fait et payé est repris, la carte ne montre que le prix de ce qui reste.",
+    rejeu: "gratuit",
+  },
+  {
     id: "publication-incomprehensible", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
     verdict: "Une publication d'escalier pour un plombier, incompréhensible pour un inconnu : « Personne ne juge l'idée d'une publication avant de payer le dessin ».",
     attendu: "L'idée de chaque publication est jugée par un lecteur qui ne connaît pas la marque AVANT de payer son image.",

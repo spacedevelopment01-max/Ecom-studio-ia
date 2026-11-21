@@ -10,6 +10,8 @@
  */
 import { ficheDuFil, ficheOf, notesDuProjet } from "./fiche";
 import { apresValidation, refusVerrou } from "./verrous";
+import { marqueCoupee, marqueOuArretee } from "./tools/identity";
+import { SINA_BRAND_JOB } from "./brand-chain";
 import { dessinCoupe, ouArrete } from "./dessin/tools";
 import { SINA_DESSIN_JOB } from "./dessin/job";
 import { z } from "zod";
@@ -131,9 +133,13 @@ const backgroundCreation = (r: SynaRun) => !!one("SELECT 1 FROM syna_runs WHERE 
  * arrêté », alors que c'était noté).
  */
 function repriseAccueil(projectId: string | null, results: { status?: string; type?: string }[]): string {
-  if (!projectId || !results.some((x) => x.status === "failed" && x.type === SINA_DESSIN_JOB)) return "";
+  if (!projectId) return "";
+  // La marque arrêtée en route (21 novembre 2026, reprise d'Aplomb : 2,04 € payés, rien de gardé) : même façon de reprendre.
+  const marque = results.some((x) => (x.status === "failed" || x.status === "cancelled") && x.type === SINA_BRAND_JOB) ? marqueCoupee(projectId) : null;
+  const ligneMarque = marque ? ` Sa marque s'est arrêtée en route (${marqueOuArretee(marque.etapes)}) : pour la reprendre là, sans repayer ce qui est fait, ${marque.payload.finish ? "brand.finish" : "identity.propose"} avec relancer:true (une carte affiche le prix de ce qui reste). Ne dis jamais que la reprise est impossible.` : "";
+  if (!results.some((x) => x.status === "failed" && x.type === SINA_DESSIN_JOB)) return ligneMarque;
   const c = dessinCoupe(projectId);
-  return c ? ` Son accueil s'est arrêté en route (${ouArrete(c.etapes)}) : pour le reprendre là, sans repayer ce qui est fait, site.dessiner avec relancer:true (une carte affiche le prix de ce qui reste). Ne dis jamais que la reprise est impossible ni que tu ne sais pas où il s'est arrêté.` : "";
+  return (c ? ` Son accueil s'est arrêté en route (${ouArrete(c.etapes)}) : pour le reprendre là, sans repayer ce qui est fait, site.dessiner avec relancer:true (une carte affiche le prix de ce qui reste). Ne dis jamais que la reprise est impossible ni que tu ne sais pas où il s'est arrêté.` : "") + ligneMarque;
 }
 
 const BACKGROUND_NOTE = "# Une création est en cours en arrière-plan\nTu as lancé une création pour lui : elle tourne en arrière-plan, et tu lui montreras le résultat dès qu'il sera prêt. Tu n'as rien à relancer : n'appelle AUCUN outil de création, et ne présente jamais un résultat que tu n'as pas encore. Il peut te parler pendant ce temps : réponds d'abord à ce qu'il dit. Puis profite de l'attente pour avancer sur la suite, UNE question à la fois, seulement sur ce qu'il n'a pas déjà dit et que lui seul sait : ce que ses angles, son activité et son site demanderont (ses produits ou ses prestations avec leurs prix, ses coordonnées, sa livraison ou sa zone, ses retours, ses horaires, ses preuves, ses réseaux). Note chaque réponse avec start.note, avec ses mots. S'il n'a pas envie de répondre maintenant, n'insiste pas : dis-lui simplement que tu le préviens dès que c'est prêt.\n\n";
