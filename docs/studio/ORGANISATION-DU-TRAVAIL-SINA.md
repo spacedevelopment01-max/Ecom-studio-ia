@@ -92,6 +92,15 @@ oublier ».
 - En attente de sa décision, un par un avec leur prix : SINA simplifiée, juges (carnet de ses verdicts, mesure
   d'accord ~0,90 €), coûts (tableau du coût par travail accepté, différé).
 
+### Les questions groupées (21 novembre 2026, nuit)
+
+- Faute du chef d'orchestre : il avait donné « une question à la fois » partout d'après la décision du 14 novembre, sans
+  voir la décision plus récente du 19 novembre (essai Braise : questions simples groupées, six au plus ; choix et accord
+  seuls ; « faire connaissance » une à la fois). Toujours chercher la décision la plus récente avant de trancher.
+- Le propriétaire craignait que SINA « perde la boule » ; réponse : six questions simples au plus, la fiche note chaque
+  réponse, SINA ne redemande que ce qui manque. Son accord (« Ok ») : on garde la règle du 19 novembre, avec une épreuve,
+  rejouée aussi avec la vraie IA dans « Les essais complets » ; si SINA perd une réponse, retour à une question à la fois.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
