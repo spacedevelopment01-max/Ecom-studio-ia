@@ -67,7 +67,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €). Essai du lot 2, au 16 novembre 2026 :
   40,06 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés). Essais du lot 3 : 8,36 €.
 - **Fournisseurs d'IA accordés le 18 novembre 2026** : Kling, Google Cloud (Vertex), Black Forest Labs, et Runware
-  comme seul secours à la place de Higgsfield ; Seedance seulement avec l'accord écrit de ByteDance. Détail et
+  comme seul secours à la place de Higgsfield ; Seedance autorisé par ByteDance le 21 novembre 2026 (conditions à relire). Détail et
   fournisseurs écartés : référence, partie 16.
 - **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
 - **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni

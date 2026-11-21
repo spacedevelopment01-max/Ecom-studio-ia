@@ -655,8 +655,8 @@ Ce qu'on retient :
   entraînement sur nos contenus), Luma (marque blanche interdite sans accord), Ideogram (sa marque sur chaque page),
   Midjourney (aucune API, services non officiels interdits), Adobe Firefly (contrat d'entreprise obligatoire, contraire
   à la règle « rien qui fasse attendre une plateforme »), Kie (prix inexpliqués, conditions trop minces).
-- **Seedance (ByteDance)** interdit d'être ouvert aux utilisateurs dans un outil de création sans accord écrit : il ne
-  sert pas dans le Studio tant que cet accord n'est pas obtenu.
+- **Seedance (ByteDance)** interdit d'être ouvert aux utilisateurs dans un outil de création sans accord écrit :
+  accord obtenu le 21 novembre 2026 (voir plus bas).
 - **Higgsfield (offre développeurs)** est à quitter : il peut entraîner ses modèles sur les photos envoyées, donc celles
   des clients.
 
@@ -666,7 +666,7 @@ Accord du propriétaire (« Oui », 18 novembre 2026) pour ces fournisseurs paya
   Gemini), Alibaba (Wan, Qwen, données gardées en Europe à Francfort) ;
 - un seul intermédiaire de secours : **Runware** (prix proche du fabricant, aucun entraînement sur nos contenus,
   données en Europe possibles), à la place de Higgsfield ; fal reste le temps de la transition ;
-- une demande d'accord écrit à **ByteDance** pour Seedance.
+- une demande d'accord écrit à **ByteDance** pour Seedance (accordée le 21 novembre 2026).
 
 Règles : les comptes sont ouverts par le propriétaire, à son nom ; les clés se saisissent dans Administration ›
 Fournisseurs IA, jamais dans la conversation ; ouvrir un compte ne coûte rien, chaque achat de crédits ou essai payant
@@ -675,6 +675,15 @@ se décide avec lui avant, avec son prix.
 À réparer dans le Studio : Veo n'est plus dans l'API Gemini (seulement sur Vertex depuis 2026) ; Sora est arrêté ;
 GPT Image 1 est arrêté, GPT Image 1.5 s'arrête le 1er décembre 2026, GPT Image 2 le 10 février 2027 (les modèles
 actuels sont GPT Image 2.6 « flare » et « sunburst »).
+
+**Seedance autorisé** (21 novembre 2026) : le propriétaire a reçu de ByteDance l'autorisation d'utiliser l'API de
+Seedance dans le Studio. [À compléter : le texte de l'autorisation et ses conditions (vérification des clients,
+modération, mention IA, prix pour les entreprises).] Seedance entre donc dans les outils de SINA et de l'atelier, aux
+conditions écrites de ByteDance.
+
+**Comptes** (18 novembre 2026) : Kling ouvert ; une vérification d'entreprise y est proposée (papiers d'immatriculation
+et lettre d'autorisation, examen à la main), pas exigée pour l'instant. La société qui porte le Studio est à décider par
+le propriétaire avec son comptable avant de l'envoyer.
 
 Pas encore vérifié : le délai réel d'ouverture chez Kling et ByteDance ; la recharge du solde Kling sans passer par le
 service commercial ; la TVA pour une entreprise française ; le détail des conditions de Vertex.
