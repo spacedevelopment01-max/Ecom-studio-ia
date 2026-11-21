@@ -83,6 +83,26 @@ sur les fichiers d'essai concernés (72 essais). Lancer la série complète avan
   AVANT de dessiner la maquette du site, l'objet, les signes et les publications. Rien n'est plus jeté ni repayé parce
   que le logo a été refusé ensuite, et aucune image ne porte un logo refusé.
 
+## 3 ter. Le socle (accord du propriétaire : « Oui » ; branche `claude/evolution-sina`, sans dépense)
+
+- **La fiche du client** (`src/lib/syna-agent/fiche.ts`) : une seule façon de noter ce qu'il dit (`start.note`, à toute
+  étape) : ses mots exacts, la date, le genre (fait, goût, refus) et la portée (tout, marque, logo, images, site,
+  publications, publicités), avec ses réponses de départ, ses choix, ses mots corrigés et ce qu'il garde. L'ancien outil de
+  mémoire est retiré (ses anciennes notes restent lues). SINA relit la fiche entière à chaque pas après les questions de
+  départ ; la chaîne de la marque et l'écoute des acheteurs la reçoivent entière ; un refus pour le logo arrive au
+  dessinateur mot pour mot et au relecteur. Le client la voit dans son tableau de bord (« Ce que SINA sait de toi ») et
+  corrige ou efface une ligne.
+- **Les étapes verrouillées** (`verrous.ts`) : le Studio pose le verrou après une validation confirmée par le parcours
+  relu (identité, marque, angle, site, publications) ; un outil qui referait une partie verrouillée est refusé avant le
+  devis et la carte d'accord ; `etape.rouvrir` ne rouvre que si le client vient de le demander par écrit (ses mots
+  gardés). Les retouches demandées en cliquant restent permises.
+- **Le banc d'épreuves** (`tests/epreuves/catalogue.ts`, `tests/epreuves.test.ts`, `npm run epreuves`) : 17 épreuves
+  tirées de ses verdicts (15 rejouées gratuitement, dont 8 dans la vraie chaîne des images avec un faux dessinateur et un
+  faux relecteur ; 2 payantes listées avec leur prix, non lancées). Chaque épreuve est scellée (`sceaux.json`) : un
+  verdict réécrit ou retiré fait échouer le banc. Vérifié : casser exprès le contrôle de transparence fait échouer son
+  épreuve.
+- Pas encore vérifié avec la vraie IA.
+
 ## 4. Projet d'essai du plombier (client inventé, Studio d'essai)
 
 - Identités : A « Aplomb », B « Faïence », C « Cuivre ». Le propriétaire a choisi **Aplomb**.

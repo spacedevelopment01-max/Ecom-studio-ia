@@ -198,7 +198,9 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 
 - Dépôt GitHub : `spacedevelopment01-max/Ecom-studio-ia` (avec cette casse).
 - Avant chaque envoi : `npx tsc --noEmit` puis `npx vitest run` (mettre `NODE_OPTIONS=--max-old-space-size=8192`).
-  Un test pour tout comportement modifié. Thème (`theme-base/`, `src/lib/theme/`) : skill **verifier-theme**.
+  Un test pour tout comportement modifié. **Le banc d'épreuves** (`tests/epreuves/catalogue.ts`, `npm run epreuves`) :
+  chaque raté vu avec le propriétaire, avec son verdict mot pour mot ; une épreuve qui échoue bloque l'envoi ; un
+  verdict ou ce qui est attendu ne se réécrit jamais (sceaux), on en ajoute, on n'en retire pas. Thème (`theme-base/`, `src/lib/theme/`) : skill **verifier-theme**.
 - Messages d'enregistrement en français. **Aucun identifiant de modèle d'IA, aucune signature de co-auteur** dans les
   enregistrements, les demandes de fusion ou les fichiers.
 - **Fusion** : seulement un lot prouvé (SINA l'a réussi seule avec la vraie IA, contrôles verts), et seulement après

@@ -13,7 +13,8 @@
     "setup": "tsx scripts/setup.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "demos:themes": "tsx scripts/prepare-theme-demos.ts"
+    "demos:themes": "tsx scripts/prepare-theme-demos.ts",
+    "epreuves": "vitest run tests/epreuves.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
