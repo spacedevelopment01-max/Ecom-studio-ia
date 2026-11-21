@@ -155,6 +155,6 @@ describe("le relecteur des images : le plus fort, une image à la fois, une list
     expect(img).toContain("const review = async (slots: ImageSlot[], rt = \"\") => { for (const s of slots) await reviewOne([s], slots.length > 1 ? `${rt}:${s}` : rt); };");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
     expect(chain).toContain('look: { tier: "strong", input: 9_000, output: 2_500, max: 6_000 },');
-    expect(chain).toContain('routing: { difficulty: "complex", prefer: s.strong },');
+    expect(chain).toContain('routing: { difficulty: "complex", prefer: { ...s.strong, effort: "high" } },');
   });
 });

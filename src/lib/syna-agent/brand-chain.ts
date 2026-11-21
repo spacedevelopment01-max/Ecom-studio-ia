@@ -157,7 +157,7 @@ export function boardImagesQuote(routes: number, settings?: ChainSettings, slots
   for (const slot of list) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]); max += unit * routes; probable += (unit / 1.25) * routes; }
   for (const id of ["imagery", "look"] as const) {
     // La relecture se fait image par image : une relecture par image.
-    const c = CALLS[id], m = s[c.tier], n = id === "look" ? Math.max(1, list.length) : 1;
+    const c = CALLS[id], m = id === "look" ? { ...s[c.tier], effort: "high" } : s[c.tier], n = id === "look" ? Math.max(1, list.length) : 1;
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
     max += (bound ?? (usual ?? 0) * 4) * routes * n;
     probable = probable == null || usual == null ? null : probable + usual * routes * n;
@@ -298,7 +298,7 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
     draw: (id, c) => withTrace(scope(`brand-${id}`), () => withQuotedImageRoute(boardImageRoute(), () => aiSiteImageHd({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, { prompt: c.prompt, aspect: c.aspect, logo: c.logo ?? null, scene: c.scene ?? null, avoid: c.avoid ?? null, examples: c.examples ?? null }))),
     look: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "quality_control", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, images: c.images, promptKey: "syna-brand-look-1",
-      maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, deferred, routing: { difficulty: "complex", prefer: s.strong },
+      maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, deferred, routing: { difficulty: "complex", prefer: { ...s.strong, effort: "high" } },
     }, c.schema)),
   };
 }
