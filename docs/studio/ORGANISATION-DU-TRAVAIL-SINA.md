@@ -80,6 +80,18 @@ oublier ».
   des défauts visibles, le goût au client.
 - À préparer ensuite : la conversation « Les essais complets » (consignes à lui montrer avant de l'ouvrir).
 
+### Fin du premier passage de « SINA évolue » (21 novembre 2026, soir)
+
+- Points 1 à 3 faits et envoyés sur `claude/evolution-sina` (5 739 essais verts, 0 €, pas d'essai avec la vraie IA) :
+  socle (fiche, étapes verrouillées, 18 épreuves), reprise d'une création de marque coupée sans repayer, rangement des
+  doublons. Relevé des 16 règles contradictoires : `docs/studio/REGLES-EN-DOUBLE-2026-11-21.md`.
+- Deux recommandations trahissaient ses décisions et ont été refusées par le chef d'orchestre : grouper les questions
+  (sa décision : une à la fois) ; marquer les réalisations « illustrations » (proposition écartée le 14 novembre).
+- Son accord (« Oui envoie lui ») : appliquer seulement ses règles déjà décidées, points 1, 2, 3, 4, 6, 7, 8, 11, 13 du
+  relevé. Les points 5, 9, 10, 12, 14, 15, 16 attendent la conversation de leur étape ou le lot des forfaits.
+- En attente de sa décision, un par un avec leur prix : SINA simplifiée, juges (carnet de ses verdicts, mesure
+  d'accord ~0,90 €), coûts (tableau du coût par travail accepté, différé).
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
