@@ -241,8 +241,8 @@ type Made = { id: string; w: number; h: number };
 const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : "je ne la montre pas";
 /**
  * Un trait fin et horizontal dans un logo (filet sous le nom, ligne de chaque côté) : une rangée de pixels sombres
- * presque continue, longue (au moins 22 % du dessin), fine (au plus 2,5 %) et isolée. Sans IA. Essayé sur les 43 logos
- * du Studio d'essai (20 novembre 2026) : il trouve tous ceux qui ont le trait, aucun de ceux qui ne l'ont pas.
+ * presque continue, longue (au moins 22 % du dessin), fine (au plus 4 %, ou 5 points) et isolée. Sans IA. Essayé sur les 43 logos
+ * du Studio d'essai (20 novembre 2026), puis réglé le 21 : un trait doré de 4 points sous le nom passait pour un aplat.
  */
 export async function traitHorizontal(png: Buffer): Promise<{ trouve: boolean; detail: string }> {
   const { data, info } = await sharp(png).flatten({ background: "#FFFFFF" }).resize(400, 400, { fit: "inside" }).greyscale().raw().toBuffer({ resolveWithObject: true });
@@ -256,7 +256,7 @@ export async function traitHorizontal(png: Buffer): Promise<{ trouve: boolean; d
   for (let y = y0; y <= y1; y++) {
     if (!longue(y)) continue;
     let e = y; while (e + 1 <= y1 && longue(e + 1)) e++;
-    if (e - y + 1 <= Math.max(3, 0.025 * bh)) {
+    if (e - y + 1 <= Math.max(5, 0.04 * bh)) {
       const avant = y - 2 >= y0 ? run(y - 2) : 0, apres = e + 2 <= y1 ? run(e + 2) : 0;
       if (avant < 0.15 * bw && apres < 0.15 * bw) return { trouve: true, detail: `rangée ${y - y0} sur ${bh}, longueur ${Math.round((100 * run(y)) / bw)} %` };
     }
