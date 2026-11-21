@@ -160,9 +160,10 @@ export const LOGO_NOT_SCENE = "Un LOGO, pas une illustration ni une scène : le 
  * Le niveau voulu par le propriétaire (21 novembre 2026, devant 50 logos qu'il aime : « c'est ce genre de logo que je
  * veux », en un mot : expressifs ; cahier `docs/sina-savoir/logos-aimes.md`). Un niveau d'exigence, pas un style : le
  * dessin reste libre. « Un personnage » a fait dessiner un plombier en personne (essai réel du 21 novembre 2026) :
- * c'est un objet, un animal ou une mascotte, jamais une personne.
+ * la phrase nomme un objet, un animal ou une mascotte (sans le mot « personne », retiré de la consigne du logo à la
+ * demande du propriétaire le 16 novembre 2026 ; le relecteur refuse toujours une personne dessinée).
  */
-export const LOGO_NIVEAU = "Un logo EXPRESSIF, avec du caractère, qui raconte le métier en une seule image (un objet, un animal ou une mascotte dessinés avec soin et du détail, jamais une personne), dans des couleurs franches, qui se lit encore en tout petit et se reconnaît en un coup d'œil. Jamais un nom sage posé sous un petit symbole.";
+export const LOGO_NIVEAU = "Un logo EXPRESSIF, avec du caractère, qui raconte le métier en une seule image (un objet, un animal ou une mascotte, dessinés avec soin et du détail), dans des couleurs franches, qui se lit encore en tout petit et se reconnaît en un coup d'œil. Jamais un nom sage posé sous un petit symbole.";
 /** La planche des 50 logos aimés du propriétaire, jointe au RELECTEUR seulement (jamais au dessinateur). Absente : null. */
 export async function planchedesLogosAimes(): Promise<Buffer | null> {
   try { return await sharp(fs.readFileSync(path.resolve(process.cwd(), "docs/sina-savoir/logos-aimes/planche-des-50.jpg"))).resize(1200, 1200, { fit: "inside" }).jpeg({ quality: 80 }).toBuffer(); } catch { return null; }
