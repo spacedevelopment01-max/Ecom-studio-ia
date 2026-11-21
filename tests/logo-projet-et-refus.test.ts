@@ -158,3 +158,26 @@ describe("le relecteur des images : le plus fort, une image à la fois, une list
     expect(chain).toContain('routing: { difficulty: "complex", prefer: { ...s.strong, effort: "high" } },');
   });
 });
+
+describe("consignes de base claires et refus du client mot pour mot au dessinateur du logo (21 novembre 2026)", async () => {
+  const I = await import("@/lib/syna-agent/brand-images");
+  const imagery = { look: "calme", logo: "La marque.", signs: "Les signes.", hero: "La scène.", object: "La carte.", site: "Le haut du site.", posts: ["Un.", "Deux.", "Trois."] } as never;
+  const gouts = "Faire sérieux et propre, calme, quelqu'un à qui on confie sa maison sans stress. Il aime les tons de pierre, le blanc cassé, un vert profond. Il ne veut surtout pas : le style plombier avec une goutte d'eau et une clé à molette, de bleu électrique, de photos de stock avec un ouvrier qui sourit.";
+  it("le logo reçoit seulement la phrase de refus du client, telle qu'il l'a écrite", () => {
+    expect(I.clientRefusal(gouts)).toBe("Ce que le client refuse, avec ses mots : « Il ne veut surtout pas : le style plombier avec une goutte d'eau et une clé à molette, de bleu électrique, de photos de stock avec un ouvrier qui sourit. »");
+    expect(I.clientRefusal("Il aime le vert.")).toBe("");
+    const p = I.imagePrompt("logo", route("A") as never, imagery, { logo: true, refusal: gouts });
+    expect(p).toContain("Ce que le client refuse, avec ses mots : « Il ne veut surtout pas");
+    expect(p).not.toMatch(/tons de pierre|sans stress/);
+    const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(img).toContain('imagePrompt("logo", x, imagery, { logo: true, refusal: o.gouts })');
+  });
+  it("les photos reçoivent les consignes de base, dites en positif", () => {
+    for (const sl of ["hero", "object", "signs", "site", "post0"] as const) expect(I.imagePrompt(sl, route("A") as never, imagery)).toContain(I.BORD_A_BORD);
+    expect(I.imagePrompt("site", route("A") as never, imagery)).toContain(I.SITE_REMPLI);
+    expect(I.imagePrompt("post1", route("A") as never, imagery)).toContain(I.TEXTE_NET);
+    expect(I.imagePrompt("object", route("A") as never, imagery)).toContain(I.OBJETS_UTILES);
+    expect(I.imagePrompt("hero", route("A") as never, imagery)).not.toContain(I.TEXTE_NET);
+    expect(I.imagePrompt("logo", route("A") as never, imagery)).not.toContain(I.BORD_A_BORD);
+  });
+});

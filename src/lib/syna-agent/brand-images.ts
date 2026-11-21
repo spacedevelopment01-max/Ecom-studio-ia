@@ -141,6 +141,23 @@ const NO_TEXT = "Aucun texte, aucune lettre, aucun chiffre, aucun logo, aucun fi
  */
 /** Sans logo gardé, le modèle en inventait un (une patte sur le camion de « Pelage », essai réel du 14 novembre 2026). */
 export const NO_INVENTED_MARK = "Aucun logo ni symbole inventé : le nom est écrit seul, en lettres simples, sans patte, sans silhouette, sans dessin ni pictogramme à côté.";
+/**
+ * Consignes de base des photos, dites en positif, tirées des défauts vus le 21 novembre 2026 sur la marque finie
+ * d'Aplomb (accord du propriétaire : « les consignes de bases doivent être claires ») : l'image est bonne du premier
+ * coup, le relecteur vérifie derrière.
+ */
+export const BORD_A_BORD = "Image bord à bord : ni vignette, ni cadre arrondi, ni coins assombris.";
+export const SITE_REMPLI = "Sous le titre et le bouton, la photo de campagne remplit l'écran du téléphone jusqu'en bas : aucune zone blanche vide.";
+export const TEXTE_NET = "Le texte est net, sans ombre ni halo, posé sur une zone calme et unie de l'image, sans vapeur, brume ni fumée derrière lui.";
+export const OBJETS_UTILES = "Chaque objet de la scène a un rôle : aucune étiquette, aucun carton ni cadre vierge posé sans raison.";
+/**
+ * Le refus du client, mot pour mot, pour le dessinateur du logo (accord du propriétaire du 21 novembre 2026 : une seule
+ * ligne, le refus du client lui-même, sans autre consigne) : seulement ses phrases de refus, telles qu'il les a écrites.
+ */
+export function clientRefusal(words?: string | null): string {
+  const phrases = (words ?? "").split(/(?<=[.!?])\s+/).map((t) => t.trim()).filter((t) => /\b(ne veu[tx]|ne voulons|pas de|surtout pas|jamais|refuse)\b/i.test(t));
+  return phrases.length ? `Ce que le client refuse, avec ses mots : « ${phrases.join(" ").slice(0, 400)} »` : "";
+}
 export const SIGNS_LINE = "Une vraie photographie haut de gamme, comme dans le livre d'identité d'une grande agence : les signes de la marque sont appliqués sur de vrais objets de son monde, en vraies matières (impression, broderie, gravure, peinture, sérigraphie). Jamais une icône plate, jamais un pictogramme, jamais une grille de cases ni un nuancier dessiné.";
 /** Le nom épelé (« P, e, l, a, g, e ») : sans modèle d'image, c'est ce qui tient les lettres exactes. */
 export const spell = (name: string) => [...name.normalize("NFC")].map((c) => (c === " " ? "(espace)" : c)).join(", ");
@@ -195,7 +212,7 @@ export const fixLine = (whys: string[], attempt: number): string => {
 };
 
 /** Consigne complète d'une image : la direction globale, la consigne de la directrice artistique, les lignes fixes du Studio. */
-export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean } = { logo: true }): string {
+export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean; refusal?: string | null } = { logo: true }): string {
   const look = imagery.look.trim(), texts = slotTexts(x)[slot];
   if (slot === "logo") {
     // Carte blanche (retour du propriétaire du 15 novembre 2026 : « tu dois laisser libre OpenAI pour faire les logos,
@@ -211,6 +228,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       paletteLine(x),
       `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni cadre, ni ombre portée.",
+      clientRefusal(o.refusal),
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
@@ -228,6 +246,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
     // 16 novembre 2026, devant trois publications sans nom : « j'ai pas compris l'angle marketing des images »).
     post && withLogo ? "Le logo est posé en PETIT dans un coin calme de l'image, entier, net et lisible, sans gêner le texte. Sur une zone foncée de l'image, il est dans sa version claire (ses parties foncées en clair) : jamais un logo foncé sur du foncé." : "",
     slot === "signs" ? SIGNS_LINE : "",
+    BORD_A_BORD, slot === "site" ? SITE_REMPLI : "", post ? TEXTE_NET : "", slot === "object" || slot === "signs" || post ? OBJETS_UTILES : "",
     (slot === "object" || slot === "site") && !withLogo ? NO_INVENTED_MARK : "",
     slot === "signs" ? (withLogo ? "Aucun autre texte que le logo : aucune lettre, aucun chiffre, aucun mot, aucun filigrane." : NO_TEXT) : written.length ? exact(written) : NO_TEXT, NO_PERSON, NO_OTHER_BRAND,
   ].filter(Boolean).join("\n");
@@ -402,7 +421,7 @@ export async function runBoardImages(o: {
     const n = Math.min(already.length, 4);
     // Parcimonie du trait : un seul logo par série le porte (contrôle sans IA des logos déjà faits).
     const traitPris = (await Promise.all(already.map((b) => traitHorizontal(b).then((r) => r.trouve).catch(() => false)))).some(Boolean);
-    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
+    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true, refusal: o.gouts }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
     let drawn = bufferOf("logo");
     // Contrôle sans IA de la parcimonie : un trait alors qu'un logo de la série en a déjà un, le logo est redessiné UNE
     // fois ; s'il le garde encore, il est montré et c'est dit au client. Le premier trait d'une série est gardé.
