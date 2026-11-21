@@ -9,6 +9,10 @@
  * ou « non » n'est jamais prise pour une preuve.
  */
 import type { PreuveId } from "./tenue-ordre";
+import { REGLE_PERSONNES } from "../../people-policy";
+
+/** Les preuves que SINA crée quand le client n'en a pas assez (règle des artisans) : jamais « absentes, moment sauté ». */
+export const PREUVES_CREEES: PreuveId[] = ["realisations"];
 
 export type PreuveInfo = { id: PreuveId; label: string; /** Ce que SINA demande au client, en règle générale. */ demande: string; mots: RegExp };
 
@@ -122,8 +126,11 @@ export function refusSansPreuves(o: { preuves: number; repondu: boolean }): stri
 export function preuvesBrief(p: Preuves): string {
   return [
     `PREUVES RÉELLES AU DOSSIER (les seules qu'une section peut montrer) : ${p.a.length ? p.a.map((x) => `${x.label} (« ${x.detail} »)`).join(" ; ") : "aucune pour l'instant"}.`,
-    `PREUVES ABSENTES DU DOSSIER : ${p.manque.map((x) => x.label).join(" ; ") || "aucune"}. Un moment d'une partition qui en dépend est SAUTÉ, jamais rempli, jamais remplacé par la marque qui se cite elle-même. Sans vraie preuve, la confiance vient des faits vrais du dossier (ce que le client garantit, sa façon de travailler, ses prix clairs).`,
+    `PREUVES ABSENTES DU DOSSIER : ${p.manque.filter((x) => !PREUVES_CREEES.includes(x.id)).map((x) => x.label).join(" ; ") || "aucune"}. Un moment d'une partition qui en dépend est SAUTÉ, jamais rempli, jamais remplacé par la marque qui se cite elle-même. Sans vraie preuve, la confiance vient des faits vrais du dossier (ce que le client garantit, sa façon de travailler, ses prix clairs).`,
     `CE QUE LE CLIENT A DONNÉ D'AUTRE, qu'une pièce demande pour exister : ${p.faits.length ? p.faits.map((x) => `${x.label} (« ${x.detail} »)`).join(" ; ") : "rien pour l'instant"}. NON DONNÉ : ${p.faitsAbsents.map((x) => x.label).join(" ; ") || "rien"}. Une pièce qui en dépend (offre de première visite, délais, annulation, privatisation, réseaux, horaires, adresse, accès) ne se pose JAMAIS sans ce que le client a donné : son moment est sauté.`,
+    // Règle du propriétaire (10 et 14 novembre 2026, « on fait comme c'est ») : les réalisations d'un artisan que le dossier
+    // n'a pas en assez grand nombre sont créées par SINA ; leur moment n'est jamais sauté faute de preuve.
+    ...(p.manque.some((x) => PREUVES_CREEES.includes(x.id)) ? [`RÉALISATIONS (artisan ou service) : il n'en a pas assez au dossier ; SINA les crée pour son site. ${REGLE_PERSONNES}`] : []),
   ].join("\n");
 }
 

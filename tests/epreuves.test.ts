@@ -156,6 +156,22 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     expect(I.NOTE_MIN).toBe(8);
   });
 
+  epreuve("personne-sans-accord-ecrit", async () => {
+    const P = await import("@/lib/syna-agent/brand-prompts");
+    const { timeline } = await planche({ slots: ["hero"] });
+    expect(timeline.find((t) => t.kind === "draw")!.prompt).toMatch(/Aucune personne, aucun visage, aucune main\./);
+    expect(P.imageReviewSystem()).toMatch(/- une personne, un visage ou une main apparaît ;/);
+    expect(fs.readFileSync("src/lib/syna-agent/tools/gallery.ts", "utf8")).toContain("if (a.people && !peopleAllowed(p.id) && !(a.accordEcrit && ditParLeClient(ctx.conversationId, a.accordEcrit)))");
+  });
+
+  epreuve("le-mot-maquette", async () => {
+    // Le haut du site refusé à chaque reprise : ce qui est dit au client.
+    const { r } = await planche({ slots: ["site"], verdict: (s) => (s === "site" ? { ok: false, why: "écran à moitié vide" } : { ok: true, score: 9 }) });
+    const dit = r.issues.join(" ");
+    expect(dit).toMatch(/le haut de ton site/);
+    expect(dit).not.toMatch(/maquette/i);
+  });
+
   epreuve("logo-sur-fond-sombre", async () => {
     const x = { ...route("A"), ground: "sombre", palette: { ...route("A").palette, dark: "#101418" } };
     const clair = await I.logoForGround(await logoSimple(), x as never);

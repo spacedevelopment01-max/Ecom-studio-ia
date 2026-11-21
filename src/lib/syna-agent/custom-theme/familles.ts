@@ -108,7 +108,7 @@ export const FAMILLES: Famille[] = [
     id: "confiance-savoir-faire", nom: "Confiance et savoir-faire", metiers: "artisans du bâtiment, rénovation, réparation, garage, services à domicile",
     planche: "un fond sombre et sérieux, une couleur chaude réservée à l'action, une police de titre nette et solide, une voix directe qui parle de délais tenus, de prix clairs et de travail bien fait",
     esprit: "ils montrent le résultat, jamais les outils ; un seul bouton fort (devis, rendez-vous) ; les peurs du client traitées une à une : le prix, les délais, la qualité, la tranquillité",
-    photos: "le travail fini, en grand, dans un lieu où l'on a envie de vivre ou de rouler ; l'avant et l'après quand le client les a ; jamais une équipe inventée, jamais une personne reconnaissable",
+    photos: "le travail fini, en grand, dans un lieu où l'on a envie de vivre ou de rouler ; l'avant et l'après quand le client les a ; jamais une équipe inventée, jamais de personne sans photo fournie par le client ou son accord écrit",
     police: "titres nets et solides, très lisibles au téléphone ; texte direct",
     couleurs: "un fond sombre et sérieux, du clair pour lire, une couleur chaude réservée au bouton",
     rythme: "net et ordonné : une promesse, puis une réponse par peur du client, des étapes numérotées, le moyen d'agir (téléphone, devis) qui revient souvent",

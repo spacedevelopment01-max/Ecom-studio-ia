@@ -18,6 +18,30 @@ la décision du propriétaire.
 - **La façon de demander les preuves** était écrite deux fois mot pour mot (`preuves.ts`) : une seule source ; le texte
   reçu par SINA est identique au caractère près (vérifié).
 
+## Suite : décisions appliquées (accord du propriétaire relayé par le chef d'orchestre, « Oui envoie lui », 21 novembre 2026)
+
+Appliqué, ses décisions déjà écrites seulement (essais : `tests/sina-regles-alignees.test.ts` ; épreuves
+`personne-sans-accord-ecrit` et `le-mot-maquette`) :
+- point 2, les personnes : une seule phrase (`REGLE_PERSONNES`, `src/lib/people-policy.ts`), reprise dans la consigne
+  générale, les réalisations, les sections du site, les cahiers des publications et du site ; la planche n'en montre
+  aucune sans photo d'une personne fournie par le client ni son accord écrit (et son relecteur la refuse) ; la galerie
+  demande les mots écrits du client lui-même ;
+- point 3, les réalisations : SINA les crée quand l'artisan n'en a pas assez ; leur moment n'est plus « absent, sauté » ;
+- point 4, la planche : l'objet de la marque, jamais le produit dessiné sans sa photo ;
+- points 6 et 7, les cahiers : l'accueil qui contredisait les règles d'or retiré ; le cadre aux angles arrondis et le
+  produit dans un rond retirés ;
+- point 8 : « clair d'abord ; puis l'émotion, jamais avant le sens » chez le rédacteur du site ;
+- point 11 : le prix de la galerie dit à SINA en part du budget d'IA ;
+- point 13 : « le haut de ton site » au lieu de « la maquette ».
+
+Pas appliqué :
+- **point 1 (les questions)** : la consigne demandait de tout aligner sur « une à la fois » (décision du 14 novembre) ; or
+  une décision du propriétaire du 19 novembre, après l'essai Braise, demande de grouper les questions simples (six au
+  plus), « faire connaissance » gardant une question à la fois (enregistrement `c982c30`, essai
+  `tests/sina-questions-ensemble.test.ts`). Les deux se contredisent : en attente de sa réponse ;
+- la méthode « dessiner puis coder » n'est pas touchée : son dessin n'a déjà aucune personne ;
+- points 5, 9, 10, 12, 14, 15, 16 et partie 3 : conversations de leur étape ou lot des forfaits.
+
 ## 2. Contradictions qui changent ce que le client voit ou reçoit (à trancher par le propriétaire)
 
 Pour chacune : ce qui se contredit, où, et ce que je recommande (rien n'est appliqué).

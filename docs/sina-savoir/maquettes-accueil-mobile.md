@@ -34,7 +34,7 @@ ne reçoivent jamais la même.
 Photo plein écran :
 1. Accès direct. Le titre en bas à gauche, une ligne courte dessous, un bouton large sur toute la largeur avec une
    flèche, puis, sous un filet fin, une entrée secondaire (une catégorie, un service) avec sa flèche.
-2. Titre centré. Le produit seul, grand, au centre ; le titre centré dans le bas de l'écran, une ligne dessous, un
+2. Titre centré. L'objet de la marque seul, grand, au centre ; le titre centré dans le bas de l'écran, une ligne dessous, un
    bouton en pilule centré. Très calme, très luxe.
 3. Accroche en haut. Le titre en très grand tout en haut à gauche, sur le ciel ou le fond de la photo ; le sujet occupe
    le reste ; un bouton court en bas à gauche et l'entrée secondaire sous son filet.
@@ -48,15 +48,13 @@ Photo plein écran :
 
 Titre sur fond de couleur :
 8. Bénéfice puis caractéristiques. Le titre en haut sur un fond clair de la marque, une ligne, un bouton court ; puis la
-   photo du produit dans un grand cadre aux angles arrondis ; puis deux ou trois petites tuiles de raccourci.
+   photo, bord à bord ; puis deux ou trois petites tuiles de raccourci.
 9. Prestations en raccourci (services). Le titre en haut, la photo du lieu ou du travail dans un cadre, deux tuiles de
    prestations, un bouton large.
 10. Devis par besoin (services). La photo en haut ; une carte de couleur qui remonte dessus avec le titre, trois tuiles
     de besoins et le bouton.
-11. Affiche typographique. Le produit dans un rond ou une forme simple, le titre en très grand centré dessous, un bouton
-    discret. Pour un objet précieux.
-12. Deux cadrages. Deux photos côte à côte en haut (l'objet, puis sa matière de près), le titre dessous, un bouton large.
-13. Recherche et collections (grand catalogue). Une barre de recherche et trois pastilles de catégories sous l'en-tête,
+11. Deux cadrages. Deux photos côte à côte en haut (l'objet, puis sa matière de près), le titre dessous, un bouton large.
+12. Recherche et collections (grand catalogue). Une barre de recherche et trois pastilles de catégories sous l'en-tête,
     la photo dans un cadre, un titre court et malicieux, le bouton.
 
 ## Le titre
@@ -81,8 +79,9 @@ Titre sur fond de couleur :
 - Toute l'image baigne dans la couleur de la marque : le fond, les ombres et le dégradé sous le texte sont dans sa
   teinte. C'est ce qui fait reconnaître la marque au premier regard.
 - Le bas de la photo s'assombrit ou se teinte en dégradé pour que le titre et le bouton se lisent sans effort.
-- Le vrai produit du client, entier ou en gros plan assumé ; pour un service, son lieu, ses outils, son résultat.
-- Aucune personne (règle du propriétaire : jamais sans photo fournie par le client ou accord écrit).
+- L'objet de la marque (son emballage, son sac, sa carte) dans le monde de son produit, entier ou en gros plan assumé ;
+  jamais le produit lui-même dessiné sans sa photo ; pour un service, son lieu, ses outils, son résultat.
+- Jamais de personne dans une image sans photo fournie par le client ou son accord écrit.
 
 ## Ce qui fait rater une maquette
 

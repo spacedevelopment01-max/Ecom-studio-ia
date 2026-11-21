@@ -916,11 +916,11 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Le reste de la planche ne souffre pas du refus de la maquette.
     for (const x of [b, c]) { expect(x.board!.images!.logo).toBeTruthy(); expect(x.board!.images!.hero).toBeTruthy(); }
     // C'est dit au client, avec la raison, et jamais remplacé par une page dessinée.
-    expect(j.identities!.issues).toContain("Identité B : je n'ai pas gardé la maquette de ton site (elle n'est pas au niveau) ; je ne la montre pas."); // une phrase simple du Studio, jamais les mots du relecteur
-    expect(j.identities!.issues).toContain(`Identité C : je n'ai pas gardé la maquette de ton site (le texte « ${c.board!.site.headline.slice(0, 60)} » n'y est pas écrit exactement) ; je ne la montre pas.`);
+    expect(j.identities!.issues).toContain("Identité B : je n'ai pas gardé le haut de ton site (il n'est pas au niveau) ; je ne le montre pas."); // une phrase simple du Studio, jamais les mots du relecteur
+    expect(j.identities!.issues).toContain(`Identité C : je n'ai pas gardé le haut de ton site (le texte « ${c.board!.site.headline.slice(0, 60)} » n'y est pas écrit exactement) ; je ne le montre pas.`);
     expect(j.identities!.issues.some((l) => l.startsWith("Identité A"))).toBe(false);
     expect(j.identities!.issues.join("\n")).not.toMatch(/un texte non demandé/);
-    expect(J.journeyContext(j)).toMatch(/Points que le contrôle du Studio n'a pas pu valider \(dis-les honnêtement au client, en mots simples\) : [\s\S]*Identité B : je n'ai pas gardé la maquette de ton site/);
+    expect(J.journeyContext(j)).toMatch(/Points que le contrôle du Studio n'a pas pu valider \(dis-les honnêtement au client, en mots simples\) : [\s\S]*Identité B : je n'ai pas gardé le haut de ton site/);
     // Dans la bibliothèque : la maquette de A est prête, celles de B et de C sont marquées refusées avec leur raison.
     const status = (key: string) => one<{ status: string; why: string | null }>("SELECT status, json_extract(meta,'$.synaBoard.review.why') why FROM assets WHERE project_id=? AND name=?", t.pid, `planche-${key}-site.png`);
     expect(status("A")).toMatchObject({ status: "ready" });
@@ -970,7 +970,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(c.board!.images!.site).toBeTruthy();
     expect(j.identities!.issues.filter((l) => !l.startsWith("Identité B"))).toEqual([]);
     expect(j.identities!.issues).toHaveLength(1);
-    expect(j.identities!.issues[0]).toMatch(/^Identité B : je n'ai pas gardé la maquette de ton site \(.+\) ; je ne la montre pas\.$/);
+    expect(j.identities!.issues[0]).toMatch(/^Identité B : je n'ai pas gardé le haut de ton site \(.+\) ; je ne le montre pas\.$/);
     for (const x of [a, b, c]) { expect(x.board!.images!.logo).toBeTruthy(); expect(x.board!.images!.hero).toBeTruthy(); }
     const status = (key: string) => one<{ status: string }>("SELECT status FROM assets WHERE project_id=? AND name=?", t.pid, `planche-${key}-site.png`)!.status;
     expect([status("A"), status("B"), status("C")]).toEqual(["ready", "rejected", "ready"]);

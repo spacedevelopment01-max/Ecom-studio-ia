@@ -147,8 +147,8 @@ export const FEATURED_ROLE = "produit vedette";
  * Photos que SINA ne peut pas inventer honnêtement : les photos publiées par ses clients (un faux témoignage) et les
  * biens mis en vente ou en location (de vraies annonces). Seules les vraies photos du client y vont ; sans elles, la
  * section n'est jamais posée (contrôle bloquant). Décision du propriétaire du 10 novembre 2026 : les réalisations, les
- * chantiers et l'avant / après d'un artisan sont créés par SINA quand le client n'en a pas assez (sans personne
- * reconnaissable sauf son accord) ; elles ne sont plus dans cette liste.
+ * chantiers et l'avant / après d'un artisan sont créés par SINA quand le client n'en a pas assez, en suivant la règle
+ * des personnes (`REGLE_PERSONNES`, people-policy.ts) ; elles ne sont plus dans cette liste.
  */
 const AUTHENTIC_SECTIONS: Record<string, { kind: string; services?: boolean }> = {
   "vus-dans-la-rue": { kind: "les photos de tes clients" },

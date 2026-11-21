@@ -147,7 +147,7 @@ export const SERVICES_SECTIONS: TenueSection[] = [
   }),
   sec({
     id: "tn-realisations", title: "Les réalisations en photos", kind: "Preuves · accueil et page réalisations", role: "services", pour: "services",
-    does: "Les chantiers ou les réalisations du professionnel en photos, chacune avec sa légende vraie : le type de chantier, ce qui a été fait, la ville. La preuve par l'image, avant les avis. Les photos sont celles du client d'abord ; s'il n'en a pas assez, SINA les crée, sans personne reconnaissable. La ville reste « [À compléter] » tant que le client ne l'a pas donnée. Exemple : un électricien.",
+    does: "Les chantiers ou les réalisations du professionnel en photos, chacune avec sa légende vraie : le type de chantier, ce qui a été fait, la ville. La preuve par l'image, avant les avis. Les photos sont celles du client d'abord ; s'il n'en a pas assez, SINA les crée, sans aucune personne tant que le client n'a ni fourni de photo d'une personne ni donné son accord écrit. La ville reste « [À compléter] » tant que le client ne l'a pas donnée. Exemple : un électricien.",
     data: "les réalisations du client (photo, titre, ce qui a été fait, ville)",
     constructions: [
       { key: "grille", label: "une grille de photos dans le cadre de la marque, la légende sous chacune" },

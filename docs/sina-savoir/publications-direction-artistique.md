@@ -46,7 +46,7 @@ Recherche du 14 novembre 2026. Les chiffres entre crochets renvoient aux sources
 
 ### 3.4 Les grands styles, et à quoi ils servent
 - Nature morte à lumière dure ou au flash : objet net, ombre franche, fond coloré uni ; fort en vignette ; pour les produits de forme nette [9] (usage : métier).
-- Scène de vie : le produit dans son moment, registre de l'émotion partagée [5] ; sans personne reconnaissable, des mains, une silhouette de dos, les traces d'un passage (tasse entamée, pli d'un drap) (métier).
+- Scène de vie : le produit dans son moment, registre de l'émotion partagée [5] ; jamais de personne dans une image sans photo fournie par le client ou son accord écrit : sans eux, les traces d'un passage (tasse entamée, pli d'un drap) (métier).
 - Gros plan de matière : texture, goutte, vapeur, fibre [9][5] ; alimentaire, cosmétique, textile (métier).
 - Plan à plat vu de dessus : lisible, mais code de banque d'images quand il est sage ; seulement s'il est vraiment construit (métier).
 - Sombre et contrasté : registre du luxe [10]. Surréaliste : là où l'image créée est la mieux acceptée (partie 4) [5][23].
@@ -119,7 +119,7 @@ Recherche du 14 novembre 2026. Les chiffres entre crochets renvoient aux sources
 4. Fais sentir avant de dire : décris dans la consigne la matière, la température, le bruit, l'odeur (vapeur, condensation, fibre, grain du bois).
 5. Crée là où l'image créée est crédible et acceptée : nature morte, matière, mise en scène construite, surréalisme assumé. N'invente jamais une fausse photo de reportage présentée comme réelle (faux atelier, faux client, faux chantier).
 6. Chasse le lisse : une seule source de lumière, des ombres qui la suivent, une vraie zone d'ombre, une profondeur de champ, des matières avec usure, un objet un peu de travers. Refuse peau cireuse, symétrie parfaite, brillant uniforme, arrière-plan simplifié, étiquettes vides.
-7. Aucune personne reconnaissable sans photo ni accord du client : des mains, une silhouette de dos, les traces d'un passage.
+7. Jamais de personne dans une image sans photo fournie par le client ou son accord écrit (ni main, ni silhouette) : sans eux, les traces d'un passage.
 8. Publications en 3:4 (1080 × 1440), l'essentiel dans la bande centrale 4:5 ; Reels et stories en 9:16 (1080 × 1920), texte dans la zone centrale d'environ 950 × 980, titre de couverture dans le 3:4 central.
 9. Regarde chaque image réduite au quart, comme une vignette : sujet, contraste et titre lisibles, sinon recommence.
 10. Peu de texte : aucun sur une image d'ambiance ; trois à sept mots sur une couverture ; police de la marque, grande, sur la partie calme, jamais sur le produit ; le texte dit la même chose que l'image ; environ un dixième de la surface. Relis chaque lettre écrite par le modèle.

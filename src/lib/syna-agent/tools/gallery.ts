@@ -8,7 +8,9 @@ import { L } from "../../i18n-server";
 import { enqueue, pendingJob } from "../../jobs";
 import { listProducts } from "../../products/catalog";
 import { loadGalleries } from "../../products/gallery-store";
-import { peopleAllowed } from "../../people-policy";
+import { REGLE_PERSONNES, peopleAllowed } from "../../people-policy";
+import { budgetPctText } from "../../ai/budget-pct";
+import { ditParLeClient } from "../verrous";
 import type { AgentTool } from "../types";
 import { project } from "./common";
 import { GALLERY_ADVISED, GALLERY_JOB, GALLERY_KINDS, GALLERY_ORDER, galleryEstimate, galleryGaps, GalleryImageSchema, productByTitle, type GalleryImageSpec } from "../custom-theme/gallery";
@@ -37,17 +39,18 @@ const planTool: AgentTool<Record<string, never>> = {
         conseille: GALLERY_ADVISED,
         genres: GALLERY_ORDER.map((k) => ({ genre: k, image: GALLERY_KINDS[k].label, textes: GALLERY_KINDS[k].texts })),
         personnesDejaAutorisees: peopleAllowed(p.id),
-        prixParProduit: est ? `${GALLERY_ADVISED} images : au plus ${Math.round(est.maxMicro / 1e4) / 100} € (outil de devis du Studio)` : null,
+        // Le client ne voit jamais d'euros pour l'IA : le prix est dit en part du budget d'IA de son mois.
+        prixParProduit: est ? `${GALLERY_ADVISED} images : au plus ${budgetPctText(ctx.user.id, est.maxMicro, p.id)} de ton budget d'IA du mois (outil de devis du Studio)` : null,
       },
     };
   },
 };
 
-type CreateArgs = { product: string; images: GalleryImageSpec[]; keepOwn: boolean; people: boolean; add?: boolean };
+type CreateArgs = { product: string; images: GalleryImageSpec[]; keepOwn: boolean; people: boolean; add?: boolean; accordEcrit?: string };
 const createTool: AgentTool<CreateArgs> = {
   name: "gallery.create", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 (PAYANT : prix annoncé par la carte d'accord, accord écrit du client d'abord), APRÈS gallery.plan et les réponses du client : crée la galerie d'UN produit (product = son titre exact ; images toujours CARRÉES, format 1:1) : images = une entrée par image voulue (kind parmi les genres de gallery.plan ; scene = le décor ou le moment, d'après la marque, l'angle et le produit ; les textes de l'image : title, subtitle, labels, promise, bullets, steps, features, UNIQUEMENT avec les faits donnés par le client ; person: true seulement sur l'image où le client veut une personne). keepOwn : sa photo garde-t-elle la première place dans la galerie. people : le client a dit oui à une personne. add: true pour ajouter des images à sa galerie (une image ratée refaite), sinon la galerie est remplacée. Chaque image est contrôlée ; une image ratée n'est pas posée et elle est signalée.",
-  args: z.object({ product: z.string().min(1).max(160), images: z.array(GalleryImageSchema).min(1).max(9), keepOwn: z.boolean(), people: z.boolean(), add: z.boolean().optional() }).strict(),
+  description: "Étape 6 (PAYANT : prix annoncé par la carte d'accord, accord écrit du client d'abord), APRÈS gallery.plan et les réponses du client : crée la galerie d'UN produit (product = son titre exact ; images toujours CARRÉES, format 1:1) : images = une entrée par image voulue (kind parmi les genres de gallery.plan ; scene = le décor ou le moment, d'après la marque, l'angle et le produit ; les textes de l'image : title, subtitle, labels, promise, bullets, steps, features, UNIQUEMENT avec les faits donnés par le client ; person: true seulement sur l'image où le client veut une personne). keepOwn : sa photo garde-t-elle la première place dans la galerie. people : le client a dit oui à une personne. add: true pour ajouter des images à sa galerie (une image ratée refaite), sinon la galerie est remplacée. Chaque image est contrôlée ; une image ratée n'est pas posée et elle est signalée." + " Une personne sur une image (people: true) demande son accord ÉCRIT : accordEcrit = ses mots exacts, recopiés de son dernier message (sauf s'il a fourni une photo d'une personne).",
+  args: z.object({ product: z.string().min(1).max(160), images: z.array(GalleryImageSchema).min(1).max(9), keepOwn: z.boolean(), people: z.boolean(), add: z.boolean().optional(), accordEcrit: z.string().max(300).optional() }).strict(),
   estimate: (_ctx, a) => {
     // Galerie incomplète refusée AVANT la carte d'accord (essai réel du 10 novembre 2026 : refusée après le clic).
     const gaps = a.images.flatMap((i, n) => galleryGaps(i).map((g) => `image ${n + 1} (${i.kind}) : il manque ${g}`));
@@ -64,6 +67,9 @@ const createTool: AgentTool<CreateArgs> = {
     const gaps = a.images.flatMap((i, n) => galleryGaps(i).map((g) => `image ${n + 1} (${i.kind}) : il manque ${g}`));
     if (gaps.length) return { ok: false, internal: true, summary: `Galerie incomplète : ${gaps.join(" ; ")}. Rien n'est lancé.`, hint: "Complète avec les réponses du client (jamais un fait inventé), ou change le genre de l'image." };
     if (a.images.some((i) => i.person) && !a.people) return { ok: false, internal: true, summary: "Une image demande une personne alors que le client ne l'a pas accepté : rien n'est lancé.", hint: "Demande-lui s'il veut une personne ; sans son oui, person: false partout." };
+    // Règle des personnes (REGLE_PERSONNES) : sans photo d'une personne fournie par lui ni réglage « personnes autorisées »,
+    // il faut son accord ÉCRIT, ses mots recopiés de son dernier message (jamais la parole de SINA).
+    if (a.people && !peopleAllowed(p.id) && !(a.accordEcrit && ditParLeClient(ctx.conversationId, a.accordEcrit))) return { ok: false, internal: true, summary: `${REGLE_PERSONNES} Le client ne l'a pas écrit dans son dernier message : rien n'est lancé.`, hint: "Demande-lui s'il accepte une personne sur ces images ; s'il l'écrit, relance avec accordEcrit = ses mots exacts. Sinon, people: false et person: false partout." };
     if (pendingJob(p.id, "syna.product.gallery")) return { ok: false, summary: L("Une galerie est déjà en cours de création : attends-la.", "A gallery is already running.") };
     const est = galleryEstimate(a.images.length)!;
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: GALLERY_JOB, label: L(`Galerie de « ${prod.data.title} » (SINA)`, `Gallery of ${prod.data.title}`), payload: { projectId: p.id, productId: prod.id, images: a.images, keepOwn: a.keepOwn, people: a.people, capMicro: est.maxMicro, add: !!a.add, conversationId: ctx.conversationId }, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:gallery:${prod.id}` });

@@ -160,7 +160,7 @@ Fiche pratique de l'ARPP du 3 août 2026, alignée sur la Commission et l'allian
 7. **Passer chaque image aux trois questions de l'ARPP** ; trois oui : « Image générée par IA » dans l'image ou au début de la légende, et option IA du réseau cochée.
 8. **Une image créée n'est jamais une preuve** : pas de « nos réalisations », « notre plat », « ce bien », « une cliente » sur une image créée ; une ambiance porte sa mention.
 9. **Prévenir le client** que les réseaux peuvent étiqueter seuls les images d'OpenAI ; ne jamais retirer leurs marques C2PA ou SynthID.
-10. **Aucune personne reconnaissable sans autorisation écrite**, aucune ressemblance avec une personne connue, aucune marque d'un autre ; une personne créée au premier plan porte « Personnage généré par IA ».
+10. **Jamais de personne dans une image sans photo fournie par le client ou son accord écrit**, aucune ressemblance avec une personne connue, aucune marque d'un autre ; une personne créée au premier plan porte « Personnage généré par IA ».
 11. **Rien d'invérifiable** : ni avis, ni chiffre, ni label, ni assurance, ni prix barré inventés ; prix en euros TTC ; réduction sur le prix le plus bas des 30 derniers jours.
 12. **Reconnaître le secteur avant d'écrire** : alcool (produit et terroir seulement, message sanitaire) ; aliment transformé (un « Pour votre santé… » et mangerbouger.fr) ; compléments, cosmétiques, soin (aucune promesse de guérir ni résultat embelli) ; immobilier (prix honoraires inclus, classes énergie et climat, Géorisques) ; artisan (décennale, RGE, Qualibat sur certificat).
 13. **Signaler la publicité qui ne se voit pas** : chez un créateur payé ou sur un contenu de client repris, « Collaboration commerciale » au début, jamais à la fin ni dans les mots-dièse.

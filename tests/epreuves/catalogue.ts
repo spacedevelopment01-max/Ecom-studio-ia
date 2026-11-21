@@ -123,6 +123,18 @@ export const EPREUVES: Epreuve[] = [
     rejeu: "gratuit",
   },
   {
+    id: "personne-sans-accord-ecrit", date: "2026-11-21", source: "CLAUDE.md (Jamais de personne)",
+    verdict: "« Jamais de personne dans une image sans photo fournie par le client ou accord écrit. »",
+    attendu: "Sans photo d'une personne fournie par le client ni son accord écrit, aucune image de la planche n'en montre, son relecteur la refuse, et une galerie avec une personne ne part pas sans les mots du client.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "le-mot-maquette", date: "2026-11-21", source: "CLAUDE.md (Site)",
+    verdict: "« Le client ne lit jamais le mot « maquette ». »",
+    attendu: "Quand le haut du site manque sur une planche, le client lit « le haut de ton site », jamais « maquette ».",
+    rejeu: "gratuit",
+  },
+  {
     id: "publication-incomprehensible", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
     verdict: "Une publication d'escalier pour un plombier, incompréhensible pour un inconnu : « Personne ne juge l'idée d'une publication avant de payer le dessin ».",
     attendu: "L'idée de chaque publication est jugée par un lecteur qui ne connaît pas la marque AVANT de payer son image.",

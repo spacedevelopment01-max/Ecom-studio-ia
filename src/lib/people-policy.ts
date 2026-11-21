@@ -47,6 +47,12 @@ export function peopleAllowedFor(p: { id: string; settings?: unknown }): boolean
   return clientImageWithPerson(p.id);
 }
 
+/**
+ * LA règle des personnes, en une phrase (règle du propriétaire, CLAUDE.md : « Jamais de personne dans une image sans photo
+ * fournie par le client ou accord écrit ») : seule source, reprise par SINA, ses créations et leurs relecteurs.
+ */
+export const REGLE_PERSONNES = "Jamais de personne dans une image sans photo fournie par le client ou son accord écrit.";
+
 /** Clause des consignes de génération rédigées en anglais (vidéo, anciens parcours). */
 export const NO_PEOPLE_EN = "No people: no person, no face, no hands, no body parts, no silhouettes, no reflections of people, no mannequins with faces; show only places, objects, tools, materials and results.";
 

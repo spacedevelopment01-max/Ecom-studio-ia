@@ -742,7 +742,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
           expect(reviews[0]).toMatch(/## s[0-9a-f]{8} · /);
           expect(reviews[0]).toMatch(/TITRE : Texte de la marque \d+/);
           expect(B.COPY_REVIEW_SYSTEM).toMatch(/Tu n'écris rien toi-même/);
-          expect(B.COPY_REVIEW_SYSTEM).toMatch(/L'ÉMOTION D'ABORD/);
+          expect(B.COPY_REVIEW_SYSTEM).toMatch(/CLAIR D'ABORD ; PUIS L'ÉMOTION, JAMAIS AVANT LE SENS/);
           expect(fixes).toHaveLength(B.MAX_COPY_FIXES);
           // (17 novembre 2026 : les sections à reprendre pour répétition passent d'abord, la moitié du budget au plus ; les corrections de la relecture gardent le reste.)
           expect(fixes.some((x: string) => /ce titre décrit, il ne fait rien ressentir/.test(x))).toBe(true);
@@ -1153,7 +1153,7 @@ describe("thème sur mesure : émotion et images magnifiques (retour du proprié
     // Les publications et publicités ne changent pas (familyArtUniverse reste propre à Moderne).
     expect(F.familyArtUniverse({ family: "classique", style: "classique" } as any, { people: false })).toBeNull();
     const B = await import("@/lib/syna-agent/custom-theme/brand");
-    expect(B.COPY_CRAFT).toMatch(/L'ÉMOTION D'ABORD/);
+    expect(B.COPY_CRAFT).toMatch(/CLAIR D'ABORD ; PUIS L'ÉMOTION, JAMAIS AVANT LE SENS/);
     expect(B.COPY_CRAFT).toMatch(/boutons qui vendent portent le désir/);
     const C = await import("@/lib/syna-agent/mockup-code/code-mockup");
     expect(C.codePhotoPrompt({ id: "x", description: "Une scène.", ratio: "16:9" } as any, { name: "M", logo: false, product: false })).toMatch(/photo magnifique[^]*jamais un fond uni/);

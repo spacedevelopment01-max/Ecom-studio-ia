@@ -64,7 +64,7 @@ describe("site refait de Bécane : les défauts relevés ne reviennent plus", as
   it("les réalisations d'artisans se créent quand le client n'en a pas : SINA le sait, et le site ne les réserve pas à ses vraies photos", async () => {
     for (const id of ["tn-realisations", "tn-avant-apres", "tn-realisations-types"]) expect(authenticSection(id, "services"), id).toBeNull();
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
-    expect(SYNA_SYSTEM).toMatch(/Ses réalisations[^.]*s'il n'en a pas assez en photos, le Studio en crée pour son site, sans personne reconnaissable/);
+    expect(SYNA_SYSTEM).toMatch(/Ses réalisations[^.]*s'il n'en a pas assez en photos, le Studio en crée pour son site, en suivant la règle des personnes \(« Jamais de personne dans une image sans photo fournie par le client ou son accord écrit\. »\)/);
     expect(SYNA_SYSTEM).toMatch(/tu ne lui dis jamais que tu ne peux pas les montrer/);
   });
 });

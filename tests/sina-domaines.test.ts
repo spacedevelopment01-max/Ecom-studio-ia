@@ -104,7 +104,9 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
       expect(t).not.toMatch(/Le haut du site sur téléphone n'est plus une image/);
     }
     expect(P.imagerySystem("produits")).toMatch(/selon une boutique : menu replié, logo au centre, panier/);
-    expect(P.imagerySystem("produits")).toMatch(/le vrai produit du client, très grand, cadré avec audace/);
+    // Sur la planche, sans photo du client, l'objet de la marque, jamais son produit dessiné (décision du 21 novembre 2026).
+    expect(P.imagerySystem("produits")).toMatch(/l'objet de la marque \(son emballage, son sac\) dans le monde de son produit, très grand, cadré avec audace, jamais le produit lui-même dessiné/);
+    expect(P.imagerySystem("produits")).not.toMatch(/le vrai produit du client/);
     expect(P.imagerySystem("services")).toMatch(/selon un service : le logo à gauche, la pastille d'action et le menu replié à droite/);
     expect(P.imagerySystem("services")).toMatch(/le lieu, les outils ou le résultat du métier, sans personne/);
     expect(P.imagerySystem("produits")).toMatch(/"site": ""/); // la consigne de la maquette est demandée dans la forme de la réponse

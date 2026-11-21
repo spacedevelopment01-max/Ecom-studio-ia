@@ -120,14 +120,18 @@ function dernierMessage(cid: string): string {
   return (rows?.t ?? "").split("\n").map((j) => { try { return String(JSON.parse(j)?.text ?? ""); } catch { return ""; } }).join("\n");
 }
 const lettres = (t: string) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[«»"“”'’]/g, " ").replace(/\s+/g, " ").trim();
+/** Ces mots sont-ils, tels quels, dans ce que le client vient d'écrire ? (son accord écrit, jamais la parole de SINA) */
+export function ditParLeClient(cid: string, mots: string): boolean {
+  const said = lettres(dernierMessage(cid)), quoted = lettres(mots);
+  return quoted.length >= 2 && said.includes(quoted);
+}
 
 /**
  * Rouvre une partie à la demande ÉCRITE du client : ses mots doivent se trouver, tels quels, dans ce qu'il vient
  * d'écrire. Rend la liste des parties rouvertes.
  */
 export function rouvrir(cid: string, partie: Partie, mots: string): { ok: true; parties: Partie[] } | { ok: false; raison: string } {
-  const said = lettres(dernierMessage(cid)), quoted = lettres(mots);
-  if (quoted.length < 6 || !said.includes(quoted)) return { ok: false, raison: L("Ces mots ne sont pas dans ce que le client vient d'écrire : une partie validée ne se rouvre que s'il le demande lui-même. Recopie ses mots exacts, ou demande-lui s'il veut vraiment la changer.", "These words are not in the client's last message.") };
+  if (lettres(mots).length < 6 || !ditParLeClient(cid, mots)) return { ok: false, raison: L("Ces mots ne sont pas dans ce que le client vient d'écrire : une partie validée ne se rouvre que s'il le demande lui-même. Recopie ses mots exacts, ou demande-lui s'il veut vraiment la changer.", "These words are not in the client's last message.") };
   const r = registreOf(cid);
   const parts = [partie, ...(DEPEND[partie] ?? [])].filter((p) => ferme(r, p));
   if (!parts.length) return { ok: true, parties: [] };

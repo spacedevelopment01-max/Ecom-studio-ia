@@ -24,6 +24,7 @@
  * - les textes écrits dans une image viennent de la planche, lettre pour lettre, jamais du modèle ;
  * - aucune personne.
  */
+import { peopleAllowed } from "../people-policy";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import fs from "node:fs";
 import path from "node:path";
@@ -131,7 +132,13 @@ export function slotTexts(x: Route): Record<ImageSlot, string[]> {
   };
 }
 
-const NO_PERSON = "Aucune personne, aucun visage, aucune main. Aucun objet supplémentaire. Le sujet est entier dans le cadre : rien n'est coupé.";
+/**
+ * Règle des personnes (REGLE_PERSONNES, people-policy.ts) : sans photo d'une personne fournie par le client ni son accord
+ * écrit (réglage « personnes autorisées »), aucune personne sur la planche ; avec, la scène peut en montrer une.
+ */
+const SANS_PERSONNE = "Aucune personne, aucun visage, aucune main.";
+const SUJET_ENTIER = "Aucun objet supplémentaire. Le sujet est entier dans le cadre : rien n'est coupé.";
+const noPerson = (personnes?: boolean) => (personnes ? SUJET_ENTIER : `${SANS_PERSONNE} ${SUJET_ENTIER}`);
 /**
  * Aucune autre marque que celle du client (essai réel du 14 novembre 2026 : le camion de « Pelage » portait le losange
  * d'un vrai constructeur) : véhicule, appareil, emballage sans logo ni nom de fabricant.
@@ -213,7 +220,7 @@ export const fixLine = (whys: string[], attempt: number): string => {
 };
 
 /** Consigne complète d'une image : la direction globale, la consigne de la directrice artistique, les lignes fixes du Studio. */
-export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean; refusal?: string | null } = { logo: true }): string {
+export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean; refusal?: string | null; /** Personnes autorisées pour ce client (règle des personnes). */ personnes?: boolean } = { logo: true }): string {
   const look = imagery.look.trim(), texts = slotTexts(x)[slot];
   if (slot === "logo") {
     // Carte blanche (retour du propriétaire du 15 novembre 2026 : « tu dois laisser libre OpenAI pour faire les logos,
@@ -249,7 +256,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
     slot === "signs" ? SIGNS_LINE : "",
     BORD_A_BORD, slot === "site" ? SITE_REMPLI : "", post ? TEXTE_NET : "", slot === "object" || slot === "signs" || post ? OBJETS_UTILES : "",
     (slot === "object" || slot === "site") && !withLogo ? NO_INVENTED_MARK : "",
-    slot === "signs" ? (withLogo ? "Aucun autre texte que le logo : aucune lettre, aucun chiffre, aucun mot, aucun filigrane." : NO_TEXT) : written.length ? exact(written) : NO_TEXT, NO_PERSON, NO_OTHER_BRAND,
+    slot === "signs" ? (withLogo ? "Aucun autre texte que le logo : aucune lettre, aucun chiffre, aucun mot, aucun filigrane." : NO_TEXT) : written.length ? exact(written) : NO_TEXT, noPerson(o.personnes), NO_OTHER_BRAND,
   ].filter(Boolean).join("\n");
 }
 
@@ -267,7 +274,7 @@ const imageryBrief = (x: Route) => [
 ].join("\n");
 
 const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
-  logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande image", en: "the main image" }, object: { fr: "l'image de l'objet", en: "the object image" }, signs: { fr: "l'image des signes", en: "the signs image" }, site: { fr: "la maquette de ton site", en: "your site mock-up" },
+  logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande image", en: "the main image" }, object: { fr: "l'image de l'objet", en: "the object image" }, signs: { fr: "l'image des signes", en: "the signs image" }, site: { fr: "le haut de ton site", en: "your site mock-up" },
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
 export const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
@@ -277,7 +284,7 @@ export const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
 
 type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
-const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : "je ne la montre pas";
+const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : slot === "site" ? "je ne le montre pas" : "je ne la montre pas";
 /**
  * Un trait fin et horizontal dans un logo (filet sous le nom, ligne de chaque côté) : une rangée de pixels sombres
  * presque continue, longue (au moins 22 % du dessin), fine (au plus 4 %, ou 5 points) et isolée. Sans IA. Essayé sur les 43 logos
@@ -388,6 +395,8 @@ export async function runBoardImages(o: {
   clientLogo?: ClientLogo | null;
 }): Promise<BoardImagesResult> {
   const { ctx, ai, route: x, round } = o, key = x.key, notes: string[] = [], issues: string[] = [];
+  // Règle des personnes : autorisées seulement avec une photo d'une personne fournie par le client ou son accord écrit.
+  const personnes = peopleAllowed(o.who.projectId);
   const wanted = new Set<ImageSlot>(o.slots?.length ? o.slots : CREATED_SLOTS);
   if (o.clientLogo) wanted.delete("logo");
   // Un nouvel essai d'une partie des images a sa propre étape (jamais la réponse en cache du premier essai).
@@ -396,7 +405,7 @@ export async function runBoardImages(o: {
   // La direction artistique ne reçoit rien des autres logos, ni en image ni en mots (16 novembre 2026 : « ça doit repartir
   // de 0 pour les logos, le seul truc qu'il a c'est le nom et l'identité de marque, et c'est tout »). Seul le dessinateur
   // reçoit les logos déjà faits de CETTE série, pour en faire un complètement différent (20 novembre 2026, plus bas).
-  const imagery = o.imagery ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}` }));
+  const imagery = o.imagery ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind, personnes), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}` }));
 
   const made = new Map<ImageSlot, Made>();
   const bufferOf = (slot: ImageSlot): Buffer | null => { const m = made.get(slot), a = m ? getAsset(m.id) : undefined; return a ? assetData(a) : null; };
@@ -479,7 +488,7 @@ export async function runBoardImages(o: {
     if (capped) unreviewed();
     else try {
       const review = await ctx.step(`brand:imagecheck:${round}:${key}${pass}${rt}`, () => ai.look(`imagecheck-${round}-${key}${pass}${rt}`, {
-        system: P.imageReviewSystem(), schema: ImageReviewSchema,
+        system: P.imageReviewSystem(personnes), schema: ImageReviewSchema,
         prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` La dernière image jointe (${slots.length + 1}) est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`,
           ...(aimes ? [`La dernière image jointe est la planche des logos que le propriétaire du Studio aime : elle donne le NIVEAU attendu pour le logo, ne la juge pas et ne la recopie pas.`] : []),
           // Ce que le client refuse (essai réel du 20 novembre 2026 : une goutte d'eau refusée par le client, passée au contrôle).
@@ -588,15 +597,15 @@ export async function runBoardImages(o: {
   const logo = currentLogo();
   // 2. La grande scène, puis ce qui porte le logo, puis les publications.
   ctx.progress(0.965, L(`Je crée les images de la planche ${key}`, `Creating the images of board ${key}`));
-  if (wanted.has("hero")) await make("hero", {}, imagePrompt("hero", x, imagery));
+  if (wanted.has("hero")) await make("hero", {}, imagePrompt("hero", x, imagery, { logo: false, personnes }));
   // La maquette du haut de l'accueil : le logo et la grande scène lui sont fournis (elle garde l'identité de la planche).
   if (wanted.has("site") && imagery.site.trim()) {
     const heroKept = x.board.images?.hero, heroBuffer = bufferOf("hero") ?? (() => { const a = heroKept ? getAsset(heroKept.id) : undefined; return a ? assetData(a) : null; })();
-    await make("site", { logo: await logoForGround(logo, x), scene: heroBuffer }, imagePrompt("site", x, imagery, { logo: !!logo }));
+    await make("site", { logo: await logoForGround(logo, x), scene: heroBuffer }, imagePrompt("site", x, imagery, { logo: !!logo, personnes }));
   } else if (wanted.has("site")) {
     // Sans consigne de maquette, rien n'est créé ni payé, et c'est dit (SINA ne parle jamais d'une maquette absente).
     notes.push(`maquette du site de ${key} non créée : la direction artistique n'a pas rendu sa consigne`);
-    issues.push(tag(L("je n'ai pas pu préparer la maquette de ton site ; je peux la refaire si tu me le demandes.", "I could not prepare your site mock-up; I can redo it if you ask.")));
+    issues.push(tag(L("je n'ai pas pu préparer le haut de ton site ; je peux le refaire si tu me le demandes.", "I could not prepare your site mock-up; I can redo it if you ask.")));
   }
   // Reprise d'une partie des images : l'objet et les signes portent le logo de la planche ; sans logo gardé, ils ne
   // sont pas refaits (retour du propriétaire du 14 novembre 2026 : « les logos ne sont pas les mêmes entre le logo et
@@ -606,9 +615,9 @@ export async function runBoardImages(o: {
     notes.push(`${SLOT_LABEL[slot].fr} de ${key} non refait(e) : aucun logo gardé à poser dessus`);
     issues.push(tag(L(`je n'ai pas refait ${SLOT_LABEL[slot].fr} : sans logo gardé, il porterait un autre logo que le tien.`, `I did not redo ${SLOT_LABEL[slot].en}: without a kept logo it would carry a different one.`)));
   }
-  if (wanted.has("object") && !skipCarriers) await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo }));
-  if (wanted.has("signs") && !skipCarriers && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo }));
-  for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, { logo }, imagePrompt(slot, x, imagery, { logo: !!logo }));
+  if (wanted.has("object") && !skipCarriers) await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo, personnes }));
+  if (wanted.has("signs") && !skipCarriers && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo, personnes }));
+  for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, { logo }, imagePrompt(slot, x, imagery, { logo: !!logo, personnes }));
 
   await review(IMAGE_SLOTS.filter((s) => s !== "logo" && made.has(s)));
 
@@ -629,7 +638,7 @@ export async function runBoardImages(o: {
     await review(redone, `:r${attempt}`);
   }
   // Ce qui reste refusé après les reprises est dit au client, sans image fausse à la place.
-  for (const [slot, raw] of dropped) { const why = saidWhy.get(slot) ?? raw; rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`))); }
+  for (const [slot, raw] of dropped) { const why = slot === "site" ? (saidWhy.get(slot) ?? raw).replace(/^elle /, "il ") : saidWhy.get(slot) ?? raw; rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`))); }
 
   for (const m of made.values()) mark(m.id, "ready");
 

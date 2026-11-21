@@ -28,7 +28,8 @@ Elles garantissent la qualité. Elles sont les mêmes pour tous : ce ne sont pas
 2. **La question qui bloque la décision arrive au plus tard en 3e position** : pour un service à domicile, « tu viens
    jusque chez moi ? » ; pour une boutique, le prix et la livraison.
 3. **L'offre** (produits ou prestations) **arrive au plus tard en 3e position.**
-4. **Une vraie preuve arrive avant la 5e section** : avis réels, réalisations, assurances, diplômes, chiffres vrais.
+4. **Une vraie preuve arrive avant la 5e section** : avis réels, réalisations (les siennes ; pour un artisan qui n'en a
+   pas assez, celles que SINA crée), assurances, diplômes, chiffres vrais.
    Jamais la marque qui se cite elle-même.
 5. **Le concret passe avant l'abstrait** : aucune formule, citation ou conviction de marque tant que le visiteur ne sait
    pas ce qu'on vend et pourquoi y croire.
@@ -137,7 +138,7 @@ Chaque type d'accueil a un ordre de départ et au moins deux variantes. Le « �
 phrase courte › liens vers les sous-familles › filtres › produits › guide de choix › moment de vie › produit vedette ›
 questions sur la livraison › avis › réassurance › lettre d'information.
 
-**Les réalisations** (règle : de vraies réalisations, sauf la règle des artisans déjà décidée) : présentation ›
+**Les réalisations** (règle : ses réalisations ; quand il n'en a pas assez, SINA les crée, selon la règle des artisans) : présentation ›
 filtres par type › réalisations avec lieu et date › une réalisation racontée en avant et après › chiffres vrais ›
 méthode › avis réels › zone › garanties › demander un devis.
 

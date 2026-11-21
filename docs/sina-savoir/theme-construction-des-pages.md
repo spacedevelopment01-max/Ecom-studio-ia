@@ -119,11 +119,10 @@ Ce que Shopify exige d'un thème vendu sur sa boutique [1] :
 2. **Le premier écran du téléphone** montre l'image, un titre de quelques mots, une phrase, un bouton, et le début de la suite.
 3. **Les produits au plus tard en troisième position,** à moins de deux écrans du haut.
 4. **Une preuve tôt, en petit :** si le client a une vraie preuve (une note d'avis, un titre de presse), elle se glisse sous l'ouverture ou parmi les trois atouts, avant la cinquième section. Sinon, la place va à un fait vérifiable du produit. La section d'avis complète vient plus bas.
-5. **Accueil d'une petite marque (proposition, à éprouver sur un vrai thème) :** ouverture › trois atouts vrais › les produits › la conviction de la marque en une phrase › la section propre au produit (ce qu'il contient, comment on s'en sert) › un moment de vie en image › « nous et les autres » ou une preuve › le produit vedette avec son bloc d'achat, une seule fois › avis ou presse s'ils sont réels › l'histoire › les questions › la lettre d'information. Douze sections, pas vingt.
-6. **Fiche produit :** images › titre › prix › choix › bouton › livraison et retours › deux à six points forts › la section propre au produit › avis réels › produits liés. Le bouton d'achat reste à portée du pouce pendant tout le défilement.
-7. **Peu de mots :** 25 mots par section environ, 130 pour le bloc d'achat. Tout le reste va dans des volets.
-8. **Jamais d'impasse :** panier vide, recherche vide et page introuvable proposent une suite.
-9. **Site de services :** le bouton « réserver » ou « demander un devis » tient le rôle du bouton d'achat, en haut et en bas ; les coordonnées et les horaires sont dans le premier écran.
+5. **Fiche produit :** images › titre › prix › choix › bouton › livraison et retours › deux à six points forts › la section propre au produit › avis réels › produits liés. Le bouton d'achat reste à portée du pouce pendant tout le défilement.
+6. **Peu de mots :** 25 mots par section environ, 130 pour le bloc d'achat. Tout le reste va dans des volets.
+7. **Jamais d'impasse :** panier vide, recherche vide et page introuvable proposent une suite.
+8. **Site de services :** le bouton « réserver » ou « demander un devis » tient le rôle du bouton d'achat, en haut et en bas ; les coordonnées et les horaires sont dans le premier écran.
 
 ## Points à trancher avec le propriétaire
 

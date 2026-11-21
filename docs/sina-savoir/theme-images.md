@@ -60,10 +60,10 @@ Shopify ne donne aucune taille par emplacement : il renvoie à la documentation 
 - **Combien :** jamais moins de 3 à 5 images par produit, de types variés [26]. Plus de la moitié des testeurs commencent par les images [19].
 - **Les types utiles :**
   - le produit seul sur fond neutre, le plus lisible [27] ;
-  - **à l'échelle**, au moins une : main, personne, objet de taille connue ou lieu d'usage. Beaucoup de visiteurs jugent la taille sur les images, et plus d'un tiers des sites n'en donnent pas [19][30] ;
+  - **à l'échelle**, au moins une : objet de taille connue ou lieu d'usage (une main ou une personne seulement avec une photo fournie par le client ou son accord écrit). Beaucoup de visiteurs jugent la taille sur les images, et plus d'un tiers des sites n'en donnent pas [19][30] ;
   - en situation (ce peut être la même image) [19] ;
   - le détail de matière en très gros plan [27] ;
-  - porté par une personne, pour les vêtements, accessoires et cosmétiques [30] ;
+  - porté par une personne, pour les vêtements, accessoires et cosmétiques, seulement avec une photo fournie par le client ou son accord écrit [30] ;
   - l'image annotée (dimensions, contenu du lot, une propriété) : texte gros, pensé pour le téléphone, ou légende sous l'image [20] ;
   - la compatibilité et les idées d'usage [27] ; les photos de clients, jugées plus fiables que celles du site [30].
 - **Étiquette, composition, ingrédients :** les visiteurs zooment pour les lire [23]. Il faut donc une image où ils sont lisibles.

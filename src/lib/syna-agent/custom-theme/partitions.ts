@@ -34,7 +34,7 @@ export const REGLES_D_OR = `LES DIX RÈGLES D'OR (toutes les pages importantes, 
 1. Le premier écran dit tout : ce qui est vendu, pour qui ou où, et l'action. Pour un service : la ville et le téléphone cliquable en plus.
 2. La question qui bloque la décision arrive au plus tard en 3e position : pour un service à domicile, « tu viens jusque chez moi ? » ; pour une boutique, le prix et la livraison.
 3. L'offre (produits ou prestations) arrive au plus tard en 3e position.
-4. Une vraie preuve arrive avant la 5e section : avis réels, réalisations, assurances, diplômes, chiffres vrais. Jamais la marque qui se cite elle-même.
+4. Une vraie preuve arrive avant la 5e section : avis réels, réalisations (les siennes ; pour un artisan qui n'en a pas assez, celles que SINA crée), assurances, diplômes, chiffres vrais. Jamais la marque qui se cite elle-même.
 5. Le concret passe avant l'abstrait : aucune formule, citation ou conviction de marque tant que le visiteur ne sait pas ce qu'on vend et pourquoi y croire.
 6. Le rythme alterne : jamais deux dispositions pareilles à la suite ; on alterne dense et aéré, image et texte, clair et sombre. Et une même allure ne revient jamais sur une page, même plus loin : deux étapes numérotées, deux textes et photos en alternance, deux listes, deux volets, c'est la même section vue deux fois pour le visiteur. Un moment qui demanderait la même allure qu'un autre prend une autre pièce de son moment.
 7. Chaque rôle n'apparaît qu'une fois : une seule section de cartes par page, un seul « Produit vedette ».
@@ -370,7 +370,7 @@ export const REGLE_DE_PAGE: Record<Exclude<PageKind, "accueil">, string> = {
   fiche: "le bloc d'achat en premier, les autres produits en dernier, une seule section de cartes",
   prestation: "le prix ou son mode de calcul et le bouton dès le premier écran, puis en bas",
   boutique: "les produits dans le premier écran, la réassurance en bas",
-  realisations: "de vraies réalisations, sauf la règle des artisans déjà décidée",
+  realisations: "ses réalisations ; quand il n'en a pas assez, SINA les crée, selon la règle des artisans",
   "a-propos": "la personne et la preuve avant les valeurs",
   contact: "l'action la plus simple d'abord",
   questions: "les questions qui bloquent l'achat en premier",
@@ -424,7 +424,7 @@ export const PARTITIONS_AUTRES: Partition[] = [
     "boutique-titre sous-familles filtres boutique-produits vedette guide-choix avis vie questions-livraison reassurance lettre", "ecrite"),
   autre("boutique", "avis-dabord", "Avis après la grille", "titre et phrase courte › liens vers les sous-familles › filtres › produits › avis › guide de choix › produit vedette › moment de vie › réassurance › questions sur la livraison › lettre d'information",
     "boutique-titre sous-familles filtres boutique-produits avis guide-choix vedette vie reassurance questions-livraison lettre", "ecrite"),
-  // Les réalisations : de vraies réalisations, sauf la règle des artisans déjà décidée.
+  // Les réalisations : ses réalisations ; quand il n'en a pas assez, SINA les crée, selon la règle des artisans.
   autre("realisations", "toutes-dabord", "Toutes les réalisations d'abord", "présentation › filtres par type › réalisations avec lieu et date › une réalisation racontée en avant et après › chiffres vrais › méthode › avis réels › zone › garanties › demander un devis",
     "presentation filtres-type realisations-lieu-date realisation-racontee chiffres methode avis zone garanties demander-devis"),
   autre("realisations", "racontee-dabord", "Une réalisation racontée d'abord", "présentation › une réalisation racontée en avant et après › filtres par type › réalisations avec lieu et date › avis réels › méthode › chiffres vrais › zone › garanties › demander un devis",
