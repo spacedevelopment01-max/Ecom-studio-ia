@@ -101,6 +101,16 @@ oublier ».
   réponse, SINA ne redemande que ce qui manque. Son accord (« Ok ») : on garde la règle du 19 novembre, avec une épreuve,
   rejouée aussi avec la vraie IA dans « Les essais complets » ; si SINA perd une réponse, retour à une question à la fois.
 
+### Vague 1, « SINA évolue » : terminée (21 novembre 2026, nuit)
+
+- Envoyé sur `claude/evolution-sina` (dernier enregistrement `3216b85`) : socle, reprise sans repayer, rangement des
+  doublons, règles alignées sur ses décisions (personnes, réalisations, planche sans produit inventé, pas de cadre
+  arrondi, clair d'abord, pas de « maquette », pas d'euros, questions du 19 novembre), 21 épreuves.
+- Vérifié par le chef d'orchestre sur une copie propre : contrôle des types sans erreur, 5 750 essais passés (81 mis de
+  côté, 603 fichiers). 0 € dépensé. Rien essayé avec la vraie IA. Rien fusionné.
+- Reste de la vague 1 : préparer « Les essais complets » (consignes montrées au propriétaire avant de l'ouvrir).
+- En attente de sa décision, avec leur prix : SINA simplifiée, juges, coûts ; essai d'images à 1 €.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
