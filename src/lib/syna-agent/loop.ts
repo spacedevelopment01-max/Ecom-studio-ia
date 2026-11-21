@@ -9,6 +9,7 @@
  * repart quand elles sont terminées. Aucune règle par formulation : le choix appartient au modèle.
  */
 import { ficheDuFil, ficheOf, notesDuProjet } from "./fiche";
+import { apresValidation, refusVerrou } from "./verrous";
 import { dessinCoupe, ouArrete } from "./dessin/tools";
 import { SINA_DESSIN_JOB } from "./dessin/job";
 import { z } from "zod";
@@ -270,6 +271,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         const parsed = t.args.safeParse(a.args);
         if (!parsed.success) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, internal: true, summary: L("Arguments invalides : ", "Invalid arguments: ") + parsed.error.issues.slice(0, 4).map((x) => `${x.path.join(".")}: ${x.message}`).join(" ; ") + (toolScope(r).routed ? `\nNotice de l'outil :\n${toolEntry(t)}` : "") }, r.id); continue; }
         if (t.needsProject && !r.project_id) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, ok: false, internal: true, summary: L("Aucun projet n'est encore rattaché : il sera créé dès que l'activité et l'offre sont connues.", "No project yet: it is created once the business and offer are known.") }, r.id); continue; }
+        // Partie validée par le client : refusée AVANT le devis et la carte d'accord (aucune carte de dépense pour la refaire).
+        const lock = refusVerrou(r.conversation_id, t.name);
+        if (lock) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ...lock }, r.id); stepFailed = true; continue; }
         // Accord explicite : actions sensibles, et dépenses au-delà du budget autorisé.
         if (isSensitive(t, parsed.data, tctx)) return askConfirmation(r, t, parsed.data, tctx, "sensitive");
         if (t.estimate) {
@@ -329,12 +333,17 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
   if (prior) return prior.result ?? { ok: prior.ok, summary: prior.summary, hint: prior.hint, data: prior.data, jobs: prior.jobs };
   if (t.needsProject && ctx.projectId) requirePlan(ctx.user, ctx.projectId);
   let res: ToolResult;
-  try {
+  // Une partie validée par le client est verrouillée : l'outil qui la referait est refusé avant de s'exécuter (le socle).
+  const locked = refusVerrou(r.conversation_id, t.name);
+  if (locked) res = locked;
+  else try {
     res = await t.run(ctx, args);
   } catch (e) {
     const msg = e instanceof HttpError || e instanceof Error ? e.message : String(e);
     res = { ok: false, summary: L("Échec de l'outil : ", "Tool failed: ") + clip(msg, 600) };
   }
+  // Après une validation réussie et confirmée par le parcours relu, le Studio pose le verrou lui-même.
+  if (!locked) { try { apresValidation(r.conversation_id, t.name, res); } catch { /* registre illisible : rien n'est verrouillé */ } }
   if (res.changes?.length) recordChanges(r.conversation_id, r.id, t.name, res.changes);
   addMessage(r.conversation_id, "tool", { key, tool: t.name, args, ok: res.ok, summary: res.summary, ...(res.hint ? { hint: res.hint } : {}), ...(res.internal ? { internal: true } : {}), data: clip(res.data, 6000), changes: res.changes, jobs: res.jobs, ambiguous: res.ambiguous }, r.id);
   return res;
