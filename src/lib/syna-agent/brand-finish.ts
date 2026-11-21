@@ -23,7 +23,7 @@ import { chooseLogoV2 } from "../logo-v2/choose";
 import { cleanArtwork } from "../logo-v2/artwork";
 import type { Territory } from "../logo-v2/types";
 import type { ChainAi } from "./brand-chain";
-import { clientWords } from "./brand-chain";
+import { clientWords, goutsDuClient } from "./brand-chain";
 import { CREATED_SLOTS, ImagerySchema, clientLogoOf, logoOnWhite, onWhite, runBoardImages, type ImageSlot, type Imagery } from "./brand-images";
 import { buildBrandKit } from "./brand-kit";
 import type { Route } from "./brand-routes";
@@ -104,7 +104,7 @@ export async function runBrandFinish(o: {
       // du 21 novembre 2026 : « un fil à plomb stylisé, vert profond »), seulement ce qu'on savait de la marque avant ;
       // le relecteur reçoit les mots du client (sa fiche et ce qu'il vient de dire).
       ...(slots.includes("logo") && o.guidance ? { logoLine: proposalImagery(j, route)?.logo ?? before?.logoIdea ?? null } : {}),
-      gouts: [j.start.image?.value, clientWords(o.guidance)].filter((v): v is string => !!v?.trim()).join("\n") || null,
+      gouts: goutsDuClient(j, o.projectId, clientWords(o.guidance)),
     });
     current = r.route; notes.push(...r.notes);
     // La maquette refaite avec le bon logo : la planche n'est plus notée « ancien logo ».

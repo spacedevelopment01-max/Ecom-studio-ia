@@ -14,6 +14,7 @@
  * borne la tâche entière ; rien n'est inventé (une parole de client que le Studio ne retrouve pas dans l'extrait de sa
  * page est supprimée ; ce qui n'est pas vérifié est écrit dans « ce qui reste à prouver »).
  */
+import { ficheTexte, goutsPour, notesDuProjet } from "./fiche";
 import { DEFAULT_MODELS } from "./models";
 import { z } from "zod";
 import { domainDeps, domainLine, findDomains, type NameDomains } from "./brand-domains";
@@ -468,7 +469,10 @@ function studyDigest(st: Study): string {
 }
 /** Les mots du client cités dans une consigne de SINA (« Le client a dit : « … » ») ; rien de ce qu'elle y ajoute. */
 export const clientWords = (guidance?: string): string => [...(guidance ?? "").matchAll(/client a dit\s*:\s*«\s*([^»]+?)\s*»/gi)].map((m) => m[1]).join(" ");
-const briefBlock = (j: Journey, guidance?: string) => ["# Fiche de départ du client (ses mots)", briefFromJourney(j), "", "# Existant et refonte", keepConstraints(j), ...(guidance ? ["", "# Ce que le client demande pour cette nouvelle proposition (ses mots)", guidance] : [])].join("\n");
+/** Le dossier de chaque création de la marque : la fiche ENTIÈRE du client (le socle, 21 novembre 2026), puis la refonte. */
+const briefBlock = (j: Journey, projectId: string, guidance?: string) => [ficheTexte({ j, notes: notesDuProjet(projectId), projectId }), "", "# Existant et refonte", keepConstraints(j), ...(guidance ? ["", "# Ce que le client demande pour cette nouvelle proposition (ses mots)", guidance] : [])].join("\n");
+/** Ce que le client a dit de l'image qu'il veut : sa réponse de départ, et ses goûts et refus de sa fiche qui valent pour le logo ou les images de la marque. */
+export const goutsDuClient = (j: Journey, projectId: string, ...more: (string | null | undefined)[]): string | null => [j.start.image?.value, ...goutsPour(notesDuProjet(projectId), ["logo", "images"]), ...more].filter((v): v is string => !!v?.trim()).join("\n") || null;
 const ideaBlock = (i: Strategy["ideas"][number], s: Strategy) => `Idée ${i.id} : ${i.belief} | aveu : ${s.confessions[i.confession]?.text ?? s.confessions[0].text} | adversaire : ${i.enemy} | preuve dans l'objet : ${i.proof} | ce qu'elle coûte : ${i.cost} | ton : ${i.tone}`;
 const routeText = (x: Route) => JSON.stringify({ ...x, board: (({ hero: _h, images: _i, ...b }) => ({
   ...b, signs: b.signs.map(({ symbol: _s, art: _a, ...s }) => s), wordmark: (({ symbol: _s, swap: _w, ...w }) => w)(b.wordmark),
@@ -542,7 +546,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const bad = imposed.flatMap((n) => nameIssues(n));
     if (bad.length) throw new UserFacingError(L(`Ce nom ne peut pas servir tel quel : ${bad[0]} Rien n'a été décompté.`, `This name cannot be used as is: ${bad[0]} Nothing was charged.`));
   }
-  const brief = briefBlock(j, a.guidance);
+  const brief = briefBlock(j, p.id, a.guidance);
 
   // La marque finie de l'identité choisie (second temps) : rien d'autre n'est refait.
   if (a.finish) return (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: a.slots, guidance: a.guidance });
@@ -560,8 +564,8 @@ export async function runSinaBrandJob(ctx: JobContext) {
     // jour : SINA y avait mis « logotype sobre, lettres à empattements, un fil à plomb » et neuf signes interdits). Elle
     // va au relecteur, avec les mots du client sur l'image.
     const logoOnly = !!a.slots?.length && a.slots.every((s) => s === "logo");
-    const imagesBrief = logoOnly ? briefBlock(j) : brief;
-    const gouts = [j.start.image?.value, logoOnly ? clientWords(a.guidance) : undefined].filter((v): v is string => !!v?.trim()).join("\n") || null;
+    const imagesBrief = logoOnly ? briefBlock(j, p.id) : brief;
+    const gouts = goutsDuClient(j, p.id, logoOnly ? clientWords(a.guidance) : undefined);
     for (const x of targets) {
       const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts });
       const fresh = (a.slots ?? CREATED_SLOTS).includes("logo") && r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
@@ -860,7 +864,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos], gouts: j.start.image?.value ?? null });
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos], gouts: goutsDuClient(j, p.id) });
         const fresh = r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
         if (fresh) { try { seriesLogos.push(assetData(fresh)); } catch { /* fichier absent : rien à montrer */ } }
         list = list.map((o) => (o.key === x.key ? r.route : o));

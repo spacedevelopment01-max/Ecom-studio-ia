@@ -254,7 +254,7 @@ describe("boutique sans photos du client", async () => {
   it("site.create refuse de se lancer tant que le client n'a pas été prévenu ; sa réponse notée suffit ; la carte le rappelle", async () => {
     const { ctx, cid } = await boutique();
     J.updateJourney(cid, (x) => { for (const n of [1, 2, 3, 4, 5]) J.setStep(x, n, "done"); });
-    await call("memory.note", ctx, { kind: "fact", key: "preuves", value: "aucune pour l'instant" });
+    ({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(ctx.conversationId, [{ sujet: "preuves", value: "aucune pour l'instant" }]).notes.length > 0 });
     T.customPhotoDeps.unit = () => 150_000;
     try {
       const tool = getTool("site.create")!;
@@ -262,15 +262,15 @@ describe("boutique sans photos du client", async () => {
       let thrown: unknown = null;
       try { await fr(() => tool.estimate!(ctx, {})); } catch (e) { thrown = e; }
       expect(thrown).toBeInstanceOf(X.RefusInterne);
-      expect((thrown as Error).message).toMatch(/rien n'est payé : 2 produit\(s\) du catalogue n'ont aucune photo du client \(« Lampe Galet », « Vase Dune »\)[^]*je peux monter ton site maintenant ; tes photos, tu les importeras ensuite et elles prendront leur place toutes seules ; en attendant je ne montre pas tes produits en image, parce que je ne les invente pas[^]*catalogue\.photos[^]*memory\.note[^]*« photos des produits »/);
+      expect((thrown as Error).message).toMatch(/rien n'est payé : 2 produit\(s\) du catalogue n'ont aucune photo du client \(« Lampe Galet », « Vase Dune »\)[^]*je peux monter ton site maintenant ; tes photos, tu les importeras ensuite et elles prendront leur place toutes seules ; en attendant je ne montre pas tes produits en image, parce que je ne les invente pas[^]*catalogue\.photos[^]*start\.note[^]*« photos des produits »/);
       const refuse = await call("site.create", ctx, {});
       expect(refuse).toMatchObject({ ok: false, internal: true });
       expect(one<any>("SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type='syna.site'", ctx.projectId).n).toBe(0);
       // Une note sur autre chose ne vaut pas réponse.
-      await call("memory.note", ctx, { kind: "fact", key: "délais", value: "quatre semaines" });
+      ({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(ctx.conversationId, [{ sujet: "délais", value: "quatre semaines" }]).notes.length > 0 });
       expect(X.refusPhotosProduits(ctx)).not.toBeNull();
       // Sa réponse, notée avec ses mots : le site se lance, sans ses photos.
-      await call("memory.note", ctx, { kind: "decision", key: P.NOTE_PHOTOS_PRODUITS, value: "je te les envoie la semaine prochaine, monte le site" });
+      ({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(ctx.conversationId, [{ sujet: P.NOTE_PHOTOS_PRODUITS, value: "je te les envoie la semaine prochaine, monte le site" }]).notes.length > 0 });
       expect(X.refusPhotosProduits(ctx)).toBeNull();
       const est = await fr(() => tool.estimate!(ctx, {}));
       expect(est.maxMicro).toBeGreaterThan(0);

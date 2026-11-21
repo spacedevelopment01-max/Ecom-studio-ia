@@ -44,8 +44,8 @@ describe("SINA — tableau de bord du projet", async () => {
       j.start.business = answered("services");
       j.start.offer = answered("Dépannage et salles de bain clé en main");
       j.start.audience = { value: "", status: "later", source: "client", at: 1 };
-      j.notes = [{ sujet: "objectifs", value: "Deux salles de bain par mois", at: 1 }];
     });
+    (await import("@/lib/syna-agent/fiche")).updateFiche(cid, (f) => { f.notes = [{ sujet: "objectifs", value: "Deux salles de bain par mois", at: 1 }]; });
     const d = dashboardOf(projectId)!;
     expect(d.started).toBe(true);
     expect(d.building).toBe(true);

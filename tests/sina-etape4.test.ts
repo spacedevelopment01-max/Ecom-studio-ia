@@ -142,7 +142,7 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
 
   it("trois stratèges séparées, un juge à part, trois angles montrés avec celui que SINA recommande ; le reste en réserve", async () => {
     const t = await atAngles();
-    expect((await call("memory.note", t.ctx, { kind: "fact", key: "paiement", value: "Par carte le soir, ou par virement." })).ok).toBe(true);
+    expect((({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(t.ctx.conversationId, [{ sujet: "paiement", value: "Par carte le soir, ou par virement." }]).notes.length > 0 })).ok).toBe(true);
     const { log, result, angles } = await create(t);
     // L'étude de la marque suffit : aucune recherche repayée. Trois stratèges, un juge, un lecteur ; ni reprise ni réécriture.
     expect(log.ids[0]).toBe("segments-1");

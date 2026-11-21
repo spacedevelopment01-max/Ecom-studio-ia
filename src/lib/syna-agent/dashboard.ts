@@ -5,6 +5,7 @@
  * son angle. Rien n'est inventé : une étape sans résultat n'affiche que ce qu'elle apportera. Tout est lu, rien n'est
  * écrit ; la page se relit seule après chaque réponse de SINA.
  */
+import { ficheVue, journeyDuProjet, notesDuProjet, type FicheVue } from "./fiche";
 import { json, one } from "../db";
 import { FIELD_LABEL, PHASES, START_FIELDS, currentStep, emptyJourney, phaseOf, phaseStatus, stepReady, type Journey, type StepStatus } from "./journey";
 import { journeyOfProject, underConstruction } from "./construction";
@@ -38,6 +39,9 @@ export type DashboardData = {
   steps: DashboardStep[];
   fiche: { fr: string; en: string; value: string; later: boolean }[];
   notes: { sujet: string; value: string }[];
+  /** « Ce que SINA sait de toi » : sa fiche entière (faits, goûts, refus avec leur portée, choix, mots), qu'il corrige. */
+  savoir: FicheVue | null;
+  projectId: string;
   brand: { name: string | null; slogan: string | null; logo: string | null; colors: string[] } | null;
   angle: { title: string; promise: string | null } | null;
 };
@@ -86,7 +90,9 @@ export function dashboardOf(projectId: string): DashboardData | null {
     // Sans parcours, rien n'a commencé : aucune étape n'est dite « en cours ».
     steps: PHASES.map((ph) => ({ n: ph.n, fr: ph.fr, en: ph.en, status: found ? phaseStatus(j, ph) : "todo", ready: (ph.steps as readonly number[]).some((n) => stepReady(n)), promise: PHASE_PROMISE[ph.n] })),
     fiche: ficheOf(j),
-    notes: (j.notes ?? []).map((n) => ({ sujet: n.sujet, value: n.value })),
+    notes: notesDuProjet(projectId).map((n) => ({ sujet: n.sujet, value: n.value })),
+    savoir: ((cid) => { try { return cid ? ficheVue(cid, projectId) : null; } catch { return null; } })(journeyDuProjet(projectId)?.cid),
+    projectId,
     brand,
     angle: angleOf(j),
   };

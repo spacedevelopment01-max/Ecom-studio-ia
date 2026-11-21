@@ -22,6 +22,7 @@ import {
 import { short } from "./common";
 import { companyFromText, saveCompany } from "../activity";
 import { addWordingRule, loadWordingRules } from "../../client-wording";
+import { GENRES, PORTEES, addNotes, ficheOf, type Genre, type Portee } from "../fiche";
 
 const words = (t: string) => new Set(t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().match(/[a-z]{4,}|\d+/g) ?? []);
 /** Ce que le client a écrit depuis la dernière réponse de SINA, et le sujet que cette réponse demandait. */
@@ -49,12 +50,12 @@ export function unsaid<T extends { value: string }>(conversationId: string, item
 /** Lecteur de site remplaçable par les tests (aucun réseau). */
 export const startDeps: { fetchImpl?: SiteFetcher } = {};
 
-const view = (j: Journey) => ({
+const view = (j: Journey, cid: string) => ({
   etapeEnCours: currentStep(j),
   etapes: JOURNEY_STEPS.map((s) => ({ n: s.n, nom: s.fr, statut: j.steps[s.n]?.status ?? "todo" })),
   fiche: Object.fromEntries(START_FIELDS.filter((f) => j.start[f]).map((f) => [f, j.start[f]])),
   sujetsPasEncoreAbordes: missingFields(j).map((f) => ({ champ: f, aApprendre: TOPICS[f](j).fr })),
-  notes: j.notes ?? [],
+  notes: ficheOf(cid).notes,
   mode: j.mode, aGarder: j.keep,
   existantLu: j.imported,
 });
@@ -87,9 +88,9 @@ export const withoutIds = (s: string) => s.replace(/\b(?:pi[eè]ce(?: jointe)?|f
 
 const stateTool: AgentTool<{}> = {
   name: "start.state", module: "parcours", kind: "read",
-  description: "Lit le parcours et la fiche du client : ce qu'il a déjà dit (avec la source : client, site lu, formulaire, photo), tes notes, les sujets pas encore abordés, le mode (création ou refonte) et ce qu'il faut garder tel quel. Gratuit, utilisable avant la création du projet.",
+  description: "Lit le parcours et la fiche du client : ce qu'il a déjà dit (avec la source : client, site lu, formulaire, photo), ses notes (faits, goûts, refus, avec leur portée), les sujets pas encore abordés, le mode (création ou refonte) et ce qu'il faut garder tel quel. Gratuit, utilisable avant la création du projet.",
   args: z.object({}).strict(),
-  run: (ctx) => ({ ok: true, summary: L("Parcours relu.", "Journey read."), data: view(journeyOf(ctx.conversationId)) }),
+  run: (ctx) => ({ ok: true, summary: L("Parcours relu.", "Journey read."), data: view(journeyOf(ctx.conversationId), ctx.conversationId) }),
 };
 
 const answerTool: AgentTool<any> = {
@@ -129,16 +130,13 @@ const answerTool: AgentTool<any> = {
 
 const noteTool: AgentTool<any> = {
   name: "start.note", module: "parcours", kind: "write",
-  description: "Note un fait utile que le client vient de donner et qui n'entre dans aucun sujet de la fiche : son histoire, ses concurrents, ses réseaux, sa fabrication, le déroulé d'une prestation, ses diplômes ou garanties, ses horaires, ce qu'il attend des prochains mois… sujet : quelques mots (le même sujet remplace la note précédente) ; value : ses mots, sans rien ajouter. Refusé si le client ne l'a pas dit dans son dernier message. Ces notes servent à sa marque, à son site et à ses publications. Gratuit, utilisable avant la création du projet.",
-  args: z.object({ notes: z.array(z.object({ sujet: z.string().min(2).max(80), value: z.string().min(2).max(2000) })).min(1).max(8) }).strict(),
-  run: (ctx, a: { notes: { sujet: string; value: string }[] }) => {
+  description: "Note dans la fiche du client, à n'importe quelle étape, ce qu'il vient de dire et qui n'entre dans aucun sujet des questions de départ : un fait (son histoire, ses concurrents, ses réseaux, sa fabrication, le déroulé d'une prestation, ses diplômes ou garanties, ses horaires, ses preuves, ce qu'il attend des prochains mois…), ce qu'il aime, ou ce qu'il refuse. sujet : quelques mots (le même sujet remplace la note précédente : il a changé d'avis) ; value : ses mots exacts, sans rien ajouter ni reformuler ; genre : « fait », « aime » ou « refuse » ; portee : à quoi cela s'applique, « tout », « marque », « logo », « images », « site », « publications » ou « publicites » (en cas de doute : « tout »). Refusé si le client ne l'a pas dit dans son dernier message. Sa fiche est relue en entier avant chaque création. Gratuit, utilisable avant la création du projet.",
+  args: z.object({ notes: z.array(z.object({ sujet: z.string().min(2).max(80), value: z.string().min(2).max(2000), genre: z.enum(GENRES).default("fait"), portee: z.enum(PORTEES).default("tout") })).min(1).max(8) }).strict(),
+  run: (ctx, a: { notes: { sujet: string; value: string; genre: Genre; portee: Portee }[] }) => {
     const refused = unsaid(ctx.conversationId, a.notes);
     if (refused.length) return { ok: false, internal: true, summary: L(`${refused.map((x) => `« ${x.sujet} »`).join(", ")} : le client ne l'a pas dit dans son dernier message. Note seulement ce qu'il a dit, avec ses mots.`, "The client did not say this.") };
-    const j = updateJourney(ctx.conversationId, (j) => {
-      const at = Date.now();
-      for (const n of a.notes) j.notes = [...(j.notes ?? []).filter((x) => x.sujet.toLowerCase() !== n.sujet.trim().toLowerCase()), { sujet: n.sujet.trim(), value: withoutIds(n.value), at }].slice(-40);
-    });
-    return { ok: true, summary: L(`Noté : ${a.notes.map((n) => n.sujet).join(", ")}.`, "Noted."), data: { notes: j.notes?.length ?? 0 }, changes: a.notes.map((n) => ({ module: "parcours", object: `note · ${n.sujet}`, summary: short(n.value, 160), after: n.value, verified: true })) };
+    const f = addNotes(ctx.conversationId, a.notes.map((n) => ({ ...n, value: withoutIds(n.value) })));
+    return { ok: true, summary: L(`Noté dans sa fiche : ${a.notes.map((n) => n.sujet).join(", ")}.`, "Noted."), data: { notes: f.notes.length }, changes: a.notes.map((n) => ({ module: "parcours", object: `fiche · ${n.sujet}`, summary: short(n.value, 160), after: { value: n.value, genre: n.genre, portee: n.portee }, verified: true })) };
   },
 };
 
@@ -312,7 +310,7 @@ const confirmTool: AgentTool<{}> = {
       v("taste") && `Goûts : ${v("taste")}`, v("platform") && `Plateforme : ${v("platform")}`, v("contact") && `Coordonnées : ${v("contact")}`,
       v("image") && `Image voulue : ${v("image")}`, v("setup") && `Organisation : ${v("setup")}`, v("photos") && `Photos du client : ${v("photos")}`, v("language") && `Langue du site : ${v("language")}`,
       j0.keep.length && `Refonte : garder tel quel ${j0.keep.join(", ")} ; tout le reste est recréé.`,
-      ...(j0.notes ?? []).map((n) => `${n.sujet} : ${n.value}`),
+      ...ficheOf(ctx.conversationId).notes.map((n) => `${n.sujet} : ${n.value}`),
     ].filter(Boolean).join("\n");
     const st = stateOf(pid);
     if (st) {

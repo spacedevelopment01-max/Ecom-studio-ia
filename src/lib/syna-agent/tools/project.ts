@@ -123,12 +123,7 @@ const servicesTool: AgentTool<any> = {
   },
 };
 
-const noteTool: AgentTool<{ kind: "decision" | "preference" | "fact"; key: string; value: string }> = {
-  name: "memory.note", module: "mémoire", kind: "write", needsProject: true,
-  description: "Mémorise dans le projet une décision, une préférence ou un fait CONFIRMÉ par le client (ex. « garder le logo actuel », « ton chaleureux »), pour les reprises ultérieures et les autres moteurs.",
-  args: z.object({ kind: z.enum(["decision", "preference", "fact"]), key: z.string().min(1).max(80), value: z.string().min(1).max(1000) }).strict(),
-  run: (ctx, a) => { const p = project(ctx); remember(p.id, { kind: a.kind === "fact" ? "fact" : "decision", key: `syna.${a.key}`, value: a.value, status: "confirmed", source: "user", origin: "user" as any }); return { ok: true, summary: L("Noté dans la mémoire du projet.", "Saved to project memory."), changes: [{ module: "mémoire", object: a.key, summary: a.value, verified: true }] }; },
-};
+// Noter ce que dit le client : une seule façon, la fiche (start.note, `fiche.ts`, 21 novembre 2026).
 
 const attachmentReadTool: AgentTool<{ attachmentId: string; from?: number; length?: number }> = {
   name: "attachment.read", module: "fichiers", kind: "read",
@@ -150,5 +145,5 @@ const jobTool: AgentTool<{ jobId: string }> = {
   run: (ctx, a) => { const j = getJob(a.jobId); if (!j || j.project_id !== ctx.projectId) return { ok: false, summary: L("Tâche introuvable.", "Job not found.") }; return { ok: true, summary: `${j.type} : ${j.status}`, data: publicJob(j) }; },
 };
 
-export const projectTools: AgentTool[] = [createTool, profileTool, servicesTool, noteTool, attachmentReadTool, jobTool];
+export const projectTools: AgentTool[] = [createTool, profileTool, servicesTool, attachmentReadTool, jobTool];
 export const _unused = { HttpError };

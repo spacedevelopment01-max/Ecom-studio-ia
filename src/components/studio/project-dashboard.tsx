@@ -2,9 +2,10 @@
 /**
  * Tableau de bord du projet : la page d'accueil d'un projet. Pendant que le client parle à SINA, elle s'affiche à côté
  * de la conversation et se remplit en direct (ses neuf étapes, et sous chacune ce qui existe vraiment : sa fiche, sa
- * marque, son angle). Après la construction, elle reste le résumé du projet. Rien ne s'y modifie : tout se demande à SINA.
+ * marque, son angle). Après la construction, elle reste le résumé du projet. Tout se demande à SINA, sauf sa fiche
+ * (« Ce que SINA sait de toi ») : il la lit et la corrige lui-même (le socle, 21 novembre 2026).
  */
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { cx } from "../ui";
@@ -77,29 +78,106 @@ function Step({ s, data, last }: { s: DashboardStep; data: DashboardData; last: 
   );
 }
 
-/** Ce que le client a dit à SINA : ouvert pendant qu'ils font connaissance, replié ensuite (un clic le rouvre). */
+/**
+ * « Ce que SINA sait de toi » : sa fiche entière (ses réponses, ce qu'il a dit, aime et refuse avec leur portée, ses choix,
+ * ses mots), ouverte pendant qu'ils font connaissance, repliée ensuite (un clic la rouvre). Il corrige ou efface une ligne
+ * lui-même ; SINA relit sa fiche en entier avant chaque création.
+ */
 function Fiche({ data, open }: { data: DashboardData; open: boolean }) {
   const t = useT();
-  const n = data.fiche.length + data.notes.length;
+  const v = data.savoir;
+  const notes = v?.notes ?? [];
+  const n = data.fiche.length + (v ? notes.length + v.choix.length + v.mots.length : data.notes.length);
   if (!n) return null;
+  const answers = new Map((v?.reponses ?? []).map((r) => [r.label, r]));
+  const groups = [
+    { genre: "fait", title: t("Ce que tu nous as dit", "What you told us") },
+    { genre: "aime", title: t("Ce que tu aimes", "What you like") },
+    { genre: "refuse", title: t("Ce que tu refuses", "What you refuse") },
+  ] as const;
   return (
     <details className="group mt-2 rounded-2xl border border-line bg-card" open={open} data-dashboard-fiche>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
-        <span>{t("Ce que tu as dit à SINA", "What you told SINA")}</span>
-        <span className="text-xs font-normal text-muted"><span className="group-open:hidden">{t(`Voir les ${n} réponses`, `Show ${n} answers`)}</span><span className="hidden group-open:inline">{t("Replier", "Hide")}</span></span>
+        <span>{t("Ce que SINA sait de toi", "What SINA knows about you")}</span>
+        <span className="text-xs font-normal text-muted"><span className="group-open:hidden">{t(`Voir les ${n} lignes`, `Show ${n} lines`)}</span><span className="hidden group-open:inline">{t("Replier", "Hide")}</span></span>
       </summary>
-      <dl className="divide-y divide-line border-t border-line px-4">
-        {data.fiche.map((f) => (
-          <div key={f.fr} className="py-2.5"><dt className="text-xs text-muted">{t(f.fr, f.en)}</dt><dd className={cx("mt-0.5 whitespace-pre-wrap text-sm [overflow-wrap:anywhere]", f.later && "text-muted")}>{f.value}</dd></div>
-        ))}
-        {data.notes.map((x, i) => (
+      <p className="border-t border-line px-4 pt-2.5 text-xs text-muted">{t("SINA relit tout ceci avant chaque création. Si une ligne n'est pas juste, corrige-la ici.", "SINA rereads all of this before each creation. If a line is wrong, fix it here.")}</p>
+      <dl className="divide-y divide-line px-4">
+        {data.fiche.map((f) => {
+          const r = answers.get(f.fr) ?? answers.get(f.en);
+          return <Line key={f.fr} projectId={data.projectId} label={t(f.fr, f.en)} value={f.value} muted={f.later} edit={r ? { type: "reponse", champ: r.champ, value: r.status === "answered" ? r.value : "" } : null} />;
+        })}
+        {v ? groups.map((g) => notes.filter((x) => x.genre === g.genre).length > 0 && (
+          <div key={g.genre} className="py-2.5" data-dashboard-genre={g.genre}>
+            <p className="text-xs font-medium text-ink-2">{g.title}</p>
+            <dl className="mt-1 divide-y divide-line">
+              {notes.filter((x) => x.genre === g.genre).map((x) => (
+                <Line key={x.sujet} projectId={data.projectId} label={x.sujet} tag={x.porteeLabel} value={x.value} corrected={!!x.corrigeLe} edit={{ type: "note", sujet: x.sujet, value: x.value }} note />
+              ))}
+            </dl>
+          </div>
+        )) : data.notes.map((x, i) => (
           <div key={`n${i}`} className="py-2.5" data-dashboard-note><dt className="text-xs text-muted first-letter:uppercase">{x.sujet}</dt><dd className="mt-0.5 whitespace-pre-wrap text-sm [overflow-wrap:anywhere]">{x.value}</dd></div>
         ))}
+        {!!v?.choix.length && (
+          <div className="py-2.5" data-dashboard-choix>
+            <p className="text-xs font-medium text-ink-2">{t("Tes choix", "Your choices")}</p>
+            <ul className="mt-1 space-y-0.5 text-sm">{v.choix.map((c) => <li key={c}>{c}</li>)}</ul>
+            <p className="mt-1 text-xs text-muted">{t("Validés par toi : SINA n'y touche que si tu le lui demandes.", "Approved by you: SINA only changes them if you ask.")}</p>
+          </div>
+        )}
+        {!!v?.mots.length && (
+          <div className="py-2.5" data-dashboard-mots>
+            <p className="text-xs font-medium text-ink-2">{t("Tes mots", "Your words")}</p>
+            <ul className="mt-1 space-y-0.5 text-sm">{v.mots.map((m) => <li key={m.avoid}>{t(`« ${m.use} », jamais « ${m.avoid} »`, `"${m.use}", never "${m.avoid}"`)}</li>)}</ul>
+          </div>
+        )}
         {data.mode === "refonte" && !!data.keep.length && (
           <div className="py-2.5"><dt className="text-xs text-muted">{t("Gardé tel quel", "Kept as is")}</dt><dd className="mt-0.5 text-sm">{data.keep.join(", ")}</dd></div>
         )}
       </dl>
     </details>
+  );
+}
+
+type Edit = { type: "reponse"; champ: string; value: string } | { type: "note"; sujet: string; value: string };
+/** Une ligne de la fiche : le client la corrige (ou l'efface, pour une note) ; la page se relit ensuite. */
+function Line({ projectId, label, value, tag, muted, corrected, edit, note }: { projectId: string; label: string; value: string; tag?: string; muted?: boolean; corrected?: boolean; edit: Edit | null; note?: boolean }) {
+  const t = useT(), router = useRouter();
+  const [editing, setEditing] = useState(false), [text, setText] = useState(edit?.value ?? ""), [busy, setBusy] = useState(false), [err, setErr] = useState("");
+  const send = async (payload: Record<string, unknown>) => {
+    setBusy(true); setErr("");
+    try {
+      const r = await fetch(`/api/projects/${projectId}/fiche`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!r.ok) throw new Error(((await r.json().catch(() => ({}))) as { error?: string }).error ?? "");
+      setEditing(false); router.refresh();
+    } catch (e) { setErr((e as Error).message || t("La correction n'a pas pu être enregistrée.", "The correction could not be saved.")); } finally { setBusy(false); }
+  };
+  const save = () => edit && text.trim() && send(edit.type === "note" ? { type: "note", sujet: edit.sujet, value: text.trim() } : { type: "reponse", champ: edit.champ, value: text.trim() });
+  return (
+    <div className="py-2.5" data-dashboard-note={note ? "" : undefined}>
+      <dt className="flex flex-wrap items-baseline gap-x-2 text-xs text-muted"><span className="first-letter:uppercase">{label}</span>{tag && <span className="rounded-full bg-paper px-2 py-px text-[11px]">{tag}</span>}{corrected && <span className="text-[11px]">{t("corrigé par toi", "corrected by you")}</span>}</dt>
+      {editing ? (
+        <dd className="mt-1">
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} className="w-full rounded-xl border border-line bg-paper px-3 py-2 text-sm" aria-label={t(`Corriger : ${label}`, `Fix: ${label}`)} />
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            <button type="button" disabled={busy || !text.trim()} onClick={save} className="rounded-full bg-ink px-3.5 py-1.5 text-xs font-medium text-paper disabled:opacity-50">{t("Enregistrer", "Save")}</button>
+            <button type="button" disabled={busy} onClick={() => { setEditing(false); setText(edit?.value ?? ""); }} className="rounded-full border border-line px-3.5 py-1.5 text-xs">{t("Annuler", "Cancel")}</button>
+          </div>
+          {err && <p className="mt-1 text-xs text-red-600">{err}</p>}
+        </dd>
+      ) : (
+        <dd className="mt-0.5 flex items-start gap-3">
+          <span className={cx("min-w-0 flex-1 whitespace-pre-wrap text-sm [overflow-wrap:anywhere]", muted && "text-muted")}>{value}</span>
+          {edit && (
+            <span className="flex shrink-0 gap-2 text-xs">
+              <button type="button" onClick={() => setEditing(true)} className="text-ink-2 underline underline-offset-2">{t("Corriger", "Fix")}</button>
+              {edit.type === "note" && <button type="button" disabled={busy} onClick={() => { if (window.confirm(t("Effacer cette ligne de ta fiche ?", "Delete this line from your file?"))) void send({ type: "note", sujet: edit.sujet, value: null }); }} className="text-muted underline underline-offset-2">{t("Effacer", "Delete")}</button>}
+            </span>
+          )}
+        </dd>
+      )}
+    </div>
   );
 }
 

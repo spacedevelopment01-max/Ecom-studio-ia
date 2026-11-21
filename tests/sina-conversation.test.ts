@@ -173,10 +173,10 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     const cid = threadFor(user, null);
     const r = submitMessage(user, cid, { requestId: `req-${Math.random()}`, text: "Note que je préfère le vert." });
     let n = 0;
-    await fr(() => runAgent(r.id, r.job_id!, { reason: async () => (++n === 1 ? { message: "", actions: [{ tool: "memory.note", args: { pasLeBonChamp: 1 }, why: "noter" }], question: null, done: false } : { message: "C'est noté.", actions: [], question: null, done: true }) }));
+    await fr(() => runAgent(r.id, r.job_id!, { reason: async () => (++n === 1 ? { message: "", actions: [{ tool: "start.note", args: { pasLeBonChamp: 1 }, why: "noter" }], question: null, done: false } : { message: "C'est noté.", actions: [], question: null, done: true }) }));
     const tools = all<any>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='tool' ORDER BY seq", cid).map((m) => json<any>(m.content_json, {}));
-    expect(tools[0]).toMatchObject({ tool: "memory.note", ok: false, internal: true });
-    expect(tools[0].summary).toMatch(/Arguments invalides : [\s\S]*Notice de l'outil :\n### memory\.note — module mémoire/);
+    expect(tools[0]).toMatchObject({ tool: "start.note", ok: false, internal: true });
+    expect(tools[0].summary).toMatch(/Arguments invalides : [\s\S]*Notice de l'outil :\n### start\.note — module parcours/);
   });
 
   it("moment qui compte : devant un client mécontent, SINA réfléchit plus longtemps", async () => {

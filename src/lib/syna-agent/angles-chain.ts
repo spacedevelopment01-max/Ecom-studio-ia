@@ -19,6 +19,7 @@
  *
  * Tâche de fond : chaque appel payant est un point de reprise ; un plafond borne la tâche entière.
  */
+import { ficheTexte, notesDuProjet } from "./fiche";
 import { z } from "zod";
 import { UserFacingError, type JobContext } from "../jobs";
 import { L } from "../i18n-server";
@@ -312,7 +313,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
     if (!findings.length) return base;
     const pages = findings.slice(0, 30).map((f, i) => `[page ${i}] ${f.url}\n${f.title}\n${f.excerpt.slice(0, 2400)}`).join("\n\n");
     let raw: z.infer<typeof StudySchema>;
-    try { raw = await ai.ask("listen", { kind: "listen", system: BP.STUDY_SYSTEM, schema: StudySchema, prompt: `# Fiche de départ du client (ses mots)\n${briefFromJourney(j)}\n\n# Pages trouvées (${Math.min(findings.length, 30)})\n${pages}` }); }
+    try { raw = await ai.ask("listen", { kind: "listen", system: BP.STUDY_SYSTEM, schema: StudySchema, prompt: `${ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id })}\n\n# Pages trouvées (${Math.min(findings.length, 30)})\n${pages}` }); }
     catch (e) { if (e instanceof CostCapReached) throw e; notes.push("écoute des acheteurs illisible"); return base; }
     // Deux relectures gratuites, comme pour la marque : la parole est dans l'extrait, puis dans la page elle-même.
     const read = await quotesReadOnPages(verifiedQuotes(raw.quotes, findings).kept);

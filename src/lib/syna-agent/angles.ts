@@ -5,6 +5,7 @@
  * sait rien). Ici : ce qui est gardé dans le parcours, et l'enregistrement de l'angle que le client choisit comme
  * angle actif du projet (le fil conducteur que lisent le site, les publications et les publicités).
  */
+import { notesDuProjet } from "./fiche";
 import { all, json as parseJson } from "../db";
 import { getJob } from "../jobs";
 import { loadProject } from "../projects";
@@ -78,7 +79,7 @@ export const pct = (x: number | null | undefined) => (x == null ? "?" : `${Strin
  * avec SINA, et les faits confirmés du projet. Seule source de vérité des angles.
  */
 export function angleFacts(j: Journey, projectId: string): string {
-  const lines = [clientFacts(j), ...(j.notes ?? []).map((n) => `${n.sujet} : ${n.value}`)];
+  const lines = [clientFacts(j), ...notesDuProjet(projectId).map((n) => `${n.sujet} : ${n.value}`)];
   try {
     const p = loadProject(projectId);
     for (const f of p.product?.facts ?? []) if (f.status === "confirmed") lines.push(`${f.label} : ${f.value}`);

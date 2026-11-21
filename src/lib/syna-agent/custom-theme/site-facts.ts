@@ -19,7 +19,8 @@
  *    manque qui nomme un tiers (hébergeur, assureur, médiateur…) ou un autre identifiant (SIRET, TVA, RCS…) n'est
  *    jamais rapproché d'un fait du client → `gapFact`, `TIERS`, `AUTRE_IDENTIFIANT`.
  */
-import { memory, type Project } from "../../projects";
+import type { Project } from "../../projects";
+import { notesDuProjet, type FicheNote } from "../fiche";
 import { listProducts } from "../../products/catalog";
 import { companyOf } from "../activity";
 import { tenuePrestations, tenueProducts, tenueSite } from "./render";
@@ -29,30 +30,23 @@ import type { CustomTheme } from "./theme";
 
 // ---------------------------------------------------------------- ce que le client a dit (mémoire du projet)
 
-/**
- * Clés « syna.* » que le Studio écrit lui-même dans la mémoire (étape 0, identité choisie, copies de travail) : ce ne sont
- * pas des notes prises par SINA dans la conversation. Les notes de l'outil de mémoire sont des décisions ou des faits
- * confirmés, de source « client », sous une clé libre « syna.<titre> ».
- */
-export const STUDIO_MEMORY_KEYS = new Set(["identite", "nom", "langues", "slogan", "depart", "garder"]);
-const STUDIO_MEMORY_PREFIXES = ["custom_", "mockup", "css", "step", "product_", "remises", "agent", "site", "brand", "angles", "posts", "studio"];
 export const NOTES_MAX = 24, NOTE_MAX_CHARS = 400, NOTES_MAX_CHARS = 4000;
 
 export type ClientNote = { title: string; value: string };
 
-/** Les notes prises par SINA avec son outil de mémoire (les plus récentes d'abord), dans une taille raisonnable. */
+/**
+ * Ce que le client a dit, lu dans sa fiche (`fiche.ts` : notes de tous les fils du projet, et les anciennes notes de la
+ * mémoire du projet), les plus récentes d'abord, dans une taille raisonnable.
+ */
 export function clientNotes(projectId: string): ClientNote[] {
-  let rows: ReturnType<typeof memory> = [];
-  try { rows = memory(projectId); } catch { return []; }
+  let rows: FicheNote[] = [];
+  try { rows = notesDuProjet(projectId); } catch { return []; }
   const out: ClientNote[] = [];
   let size = 0;
-  for (const m of [...rows].sort((a, b) => b.updated_at - a.updated_at)) {
-    if (!m.key.startsWith("syna.") || !["fact", "decision"].includes(m.kind) || m.source !== "user" || m.status !== "confirmed") continue;
-    const title = m.key.slice(5).trim(), low = title.toLowerCase();
-    if (!title || STUDIO_MEMORY_KEYS.has(low) || STUDIO_MEMORY_PREFIXES.some((x) => low.startsWith(x))) continue;
+  for (const m of [...rows].sort((a, b) => b.at - a.at)) {
+    const title = m.genre === "refuse" ? `${m.sujet} (il refuse${m.portee && m.portee !== "tout" ? `, pour ${m.portee}` : ""})` : m.genre === "aime" ? `${m.sujet} (il aime${m.portee && m.portee !== "tout" ? `, pour ${m.portee}` : ""})` : m.sujet;
     const value = m.value.replace(/\s+/g, " ").trim();
-    // Une copie de travail (objet enregistré tel quel) n'est pas une parole du client.
-    if (!value || /^[[{]/.test(value)) continue;
+    if (!value) continue;
     const short = value.length > NOTE_MAX_CHARS ? `${value.slice(0, NOTE_MAX_CHARS - 1)}…` : value;
     if (out.length >= NOTES_MAX || size + short.length > NOTES_MAX_CHARS) break;
     out.push({ title, value: short }); size += short.length;

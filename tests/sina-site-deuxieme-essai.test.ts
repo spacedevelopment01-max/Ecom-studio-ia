@@ -75,7 +75,7 @@ describe("SINA — le site, deuxième essai réel", async () => {
       expect(PR.preuvesDemandees([{ title: "avis", value: "aucun pour l'instant" }])).toBe(true);
       expect(PR.preuvesDemandees([{ title: "preuves", value: "aucune pour l'instant" }])).toBe(true);
       expect(PR.preuvesDemandees([{ title: "ce qu'il a dit", value: "Aucune preuve à montrer pour le moment" }])).toBe(true);
-      expect(PR.refusSansPreuves({ preuves: 0, repondu: false })).toMatch(/Demande-lui d'abord ses vraies preuves[^]*les avis déjà reçus[^]*depuis quand il exerce[^]*memory\.note[^]*« preuves »[^]*relance site\.create/);
+      expect(PR.refusSansPreuves({ preuves: 0, repondu: false })).toMatch(/Demande-lui d'abord ses vraies preuves[^]*les avis déjà reçus[^]*depuis quand il exerce[^]*start\.note[^]*« preuves »[^]*relance site\.create/);
       expect(PR.refusSansPreuves({ preuves: 1, repondu: false })).toBeNull();
       expect(PR.refusSansPreuves({ preuves: 0, repondu: true })).toBeNull();
       // La consigne de l'étape dit la même règle, sans exemple de métier.
@@ -103,7 +103,7 @@ describe("SINA — le site, deuxième essai réel", async () => {
         }
         expect(one<{ n: number }>("SELECT COUNT(*) n FROM jobs WHERE project_id=? AND type='syna.site'", pid)!.n).toBe(0);
         // Un fait qui n'est pas une preuve ne lève pas le refus.
-        await call("memory.note", ctx, { kind: "fact", key: "délais", value: "rappel sous 24 h" });
+        ({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(ctx.conversationId, [{ sujet: "délais", value: "rappel sous 24 h" }]).notes.length > 0 });
         expect(X.refusPreuves(ctx)).not.toBeNull();
       } finally { clean(); }
     });
@@ -113,7 +113,7 @@ describe("SINA — le site, deuxième essai réel", async () => {
       J.updateJourney(a.cid, (x) => { for (const n of [1, 2, 3, 4, 5]) J.setStep(x, n, "done"); });
       T.customPhotoDeps.unit = () => 150_000;
       try {
-        await call("memory.note", a.ctx, { kind: "fact", key: "preuves", value: "aucune pour l'instant" });
+        ({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(a.ctx.conversationId, [{ sujet: "preuves", value: "aucune pour l'instant" }]).notes.length > 0 });
         expect(X.refusPreuves(a.ctx)).toBeNull();
         expect(T.dossierPreuves(a.ctx).a).toHaveLength(0); // le dossier reste sans preuve : aucune partie « preuves » ne sera posée
         const est = await fr(() => getTool("site.create")!.estimate!(a.ctx, {}));
@@ -123,7 +123,7 @@ describe("SINA — le site, deuxième essai réel", async () => {
         expect(r.jobs).toHaveLength(1);
         const b = await client();
         J.updateJourney(b.cid, (x) => { for (const n of [1, 2, 3, 4, 5]) J.setStep(x, n, "done"); });
-        await call("memory.note", b.ctx, { kind: "fact", key: "assurance", value: "responsabilité civile professionnelle, attestation à jour" });
+        ({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(b.ctx.conversationId, [{ sujet: "assurance", value: "responsabilité civile professionnelle, attestation à jour" }]).notes.length > 0 });
         expect(X.refusPreuves(b.ctx)).toBeNull();
         expect(T.dossierPreuves(b.ctx).a.map((x) => x.id)).toContain("qualifications");
       } finally { clean(); }

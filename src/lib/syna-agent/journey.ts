@@ -105,8 +105,7 @@ export type Journey = {
   version: 1;
   steps: Record<number, { status: StepStatus; at?: number; note?: string }>;
   start: Partial<Record<StartField, FieldAnswer>>;
-  /** Tout autre fait utile dit par le client (son histoire, ses concurrents, ses réseaux, sa fabrication…), par sujet. */
-  notes?: { sujet: string; value: string; at: number }[];
+  /** Les notes du client (faits, goûts, refus, avec leur portée) vivent dans sa fiche (`fiche.ts`), plus ici. */
   keep: Keepable[];
   mode: "creation" | "refonte";
   imported: ImportedSite[];
@@ -287,12 +286,12 @@ export const TOPICS: Record<StartField, (j: Journey) => { fr: string; en: string
 };
 
 /** D'autres sujets utiles selon le métier : SINA les aborde quand la conversation s'y prête, et les note (start.note). */
-export function extraTopics(j: Journey): string[] {
+export function extraTopics(j: Journey, notes: { sujet: string }[] = []): string[] {
   const common = ["son histoire : pourquoi il s'est lancé", "les concurrents qu'il connaît, et ce qu'il fait autrement", "les réseaux où il est déjà ou veut être, et ce qu'il y montre", "ce qu'il attend de son site et de sa communication dans les prochains mois"];
   const own = j.start.business?.value === "services"
     ? ["comment se passe une prestation, du premier contact à la fin", "ses années de métier, ses diplômes, ses assurances ou garanties, s'il en a", "ses jours et ses horaires"]
     : j.start.business?.value === "products" ? ["comment c'est fabriqué, d'où cela vient, ce qu'il y a dedans", "à quel moment et comment ses clients s'en servent"] : [];
-  const done = new Set((j.notes ?? []).map((n) => n.sujet.toLowerCase()));
+  const done = new Set(notes.map((n) => n.sujet.toLowerCase()));
   return [...own, ...common].filter((t) => !done.has(t.split(" :")[0].toLowerCase()));
 }
 
@@ -306,7 +305,7 @@ export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
 };
 
 /** Texte relu par SINA à chaque pas : où en est le parcours et que faire maintenant. */
-export function journeyContext(j: Journey, o: { identityCount?: number } = {}): string {
+export function journeyContext(j: Journey, o: { identityCount?: number; /** Les notes de sa fiche. */ notes?: { sujet: string; value: string; genre?: string; portee?: string }[]; /** Sa fiche entière (`fiche.ts`), relue à chaque pas après les questions de départ. */ fiche?: string } = {}): string {
   const cur = currentStep(j);
   const steps = JOURNEY_STEPS.map((s) => `${s.n}. ${s.fr} = ${j.steps[s.n]?.status ?? "todo"}`).join(" ; ");
   if (j.outside) return "Projet existant (créé avant ce fil) : il n'y a PAS de parcours de création. Ne pose pas les questions de départ et ne lance aucune étape du parcours : aide le client sur ce qu'il demande, avec les outils du catalogue.";
@@ -329,10 +328,10 @@ export function journeyContext(j: Journey, o: { identityCount?: number } = {}): 
     const missing = missingFields(j);
     lines.push("Faire connaissance. Ton but : apprendre tout ce que LUI SEUL sait et dont sa marque, son site, ses publications et ses publicités auront besoin, pour réussir du premier coup et lui éviter les reprises. Tu mènes la conversation comme une professionnelle qui s'intéresse vraiment à son projet : tu choisis toi-même la prochaine question, la plus utile maintenant, selon son métier et ce qu'il vient de dire. UNE seule question à la fois. Jamais une question dont la réponse est déjà connue (ci-dessous, ou lue sur son site). Quand une réponse est vague, ou qu'elle ouvre quelque chose d'important pour la suite, creuse avant de changer de sujet. Ce que tu peux trouver seule, tu le trouves : s'il donne un lien, lis-le (start.import) et montre-lui ce que tu as trouvé au lieu de le lui demander.");
     lines.push(`Ce que tu sais déjà : ${filled.join(" ; ") || "rien encore"}.`);
-    if (j.notes?.length) lines.push(`Tes notes (autres faits qu'il a donnés) : ${j.notes.map((n) => `${n.sujet} : « ${n.value.slice(0, 300)} »`).join(" ; ")}.`);
+    if (o.notes?.length) lines.push(`Tes notes (autres faits qu'il a donnés) : ${o.notes.map((n) => `${n.sujet} : « ${n.value.slice(0, 300)} »${n.genre === "refuse" || n.genre === "aime" ? ` (${n.genre === "refuse" ? "refus" : "goût"}, ${n.portee ?? "tout"})` : ""}`).join(" ; ")}.`);
     lines.push(`Mode : ${j.mode}${j.keep.length ? ` ; à garder tel quel : ${j.keep.join(", ")}` : ""}.`);
     if (j.imported.length) lines.push(`Existant lu : ${j.imported.map((s) => `${s.url} (nom « ${s.name ?? "?"} », slogan « ${s.tagline ?? "?"} », logo ${s.logoSrc ? "trouvé" : "non trouvé"}, couleurs ${s.colors?.join(" ") ?? "?"}, polices ${s.fonts?.join(", ") ?? "?"}${s.warnings?.length ? `, limites : ${s.warnings.slice(0, 3).join(" / ")}` : ""})`).join(" ; ")}.`);
-    const extra = extraTopics(j);
+    const extra = extraTopics(j, o.notes ?? []);
     if (missing.length) {
       lines.push(`Sujets de la fiche pas encore abordés (chacun doit l'avoir été avec lui avant le résumé ; l'ordre et les mots sont les tiens) : ${missing.map((f) => `${f} — ${TOPICS[f](j).fr}`).join(" | ")}.`);
       if (extra.length) lines.push(`Autres sujets utiles pour ce métier, à aborder quand la conversation s'y prête et à noter avec start.note : ${extra.join(" ; ")}. Tu peux en ajouter d'autres si son projet le demande. Tu pourras aussi lui reposer une question plus tard, à l'étape où tu en auras besoin : ne garde pour maintenant que ce qui sert à bien démarrer.`);
@@ -342,6 +341,9 @@ export function journeyContext(j: Journey, o: { identityCount?: number } = {}): 
       lines.push(`${extra.length ? "Quand tu n'as plus de question utile" : "Tous les sujets ont été abordés. S'il te manque encore quelque chose d'important, demande-le ; sinon"}, fais le RÉSUMÉ complet (« Voici ce que j'ai compris »), court, par rubrique, avec ses mots et ses notes, dans « message » ; la question reste courte (« Est-ce juste ? Si quelque chose est à corriger, écris-le-moi. ») ; à sa confirmation, appelle start.confirm.`);
     }
   }
+  // Après les questions de départ, la fiche entière est relue à chaque pas (le socle, 21 novembre 2026) : SINA ne va
+  // plus chercher ce qu'il a dit dans le fil de la conversation.
+  if (cur >= 1 && o.fiche) lines.push(o.fiche);
   if (cur === 1) lines.push(...identityStepContext(j, o.identityCount));
   if (cur === 2 || cur === 3) lines.push(...brandFinishContext(j));
   if (cur === 4) lines.push(...anglesStepContext(j));

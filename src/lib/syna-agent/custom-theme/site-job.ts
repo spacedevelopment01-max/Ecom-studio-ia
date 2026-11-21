@@ -228,7 +228,7 @@ export const siteAChanger = (lines: { title?: string | null; value: string }[]):
  */
 export function refusRefaireSansAvis(o: { refaire: boolean; siteExiste: boolean; avis: string | null }): string | null {
   if (!o.refaire || !o.siteExiste || o.avis) return null;
-  return `Le site n'est pas refait et rien n'est payé : avant de le refaire, demande au client, en une question, ce qui ne lui plaît pas dans son site actuel (ce qu'il veut voir changer : l'allure, l'ordre, les photos, les textes…), avec ses mots. Note sa réponse avec memory.note sous le titre « ${NOTE_SITE_A_CHANGER} », puis relance site.create avec refaire:true. Le nouveau site s'écartera de l'actuel.`;
+  return `Le site n'est pas refait et rien n'est payé : avant de le refaire, demande au client, en une question, ce qui ne lui plaît pas dans son site actuel (ce qu'il veut voir changer : l'allure, l'ordre, les photos, les textes…), avec ses mots. Note sa réponse avec start.note sous le sujet « ${NOTE_SITE_A_CHANGER} » (portee « site »), puis relance site.create avec refaire:true. Le nouveau site s'écartera de l'actuel.`;
 }
 const refusRefaire = (ctx: ToolContext, refaire: boolean | undefined): string | null => {
   try { const p = project(ctx), cur = loadCustomTheme(p.id); return refusRefaireSansAvis({ refaire: !!refaire, siteExiste: !!cur && allSections(cur).some((x) => x.s.clientTexts), avis: siteAChanger(clientNotes(p.id)) }); } catch { return null; }

@@ -30,7 +30,7 @@ export function conversationSettings(): ConversationSettings {
 export const OPEN_TOOL = "tools.open";
 
 /** Toujours sous la main, quelle que soit l'étape : lire la fiche, noter, lire un fichier, suivre une tâche. */
-const ALWAYS = new Set(["start.state", "memory.note", "client.wording", "attachment.read", "jobs.status", "files.list", "brand.read", OPEN_TOOL]);
+const ALWAYS = new Set(["start.state", "start.note", "client.wording", "attachment.read", "jobs.status", "files.list", "brand.read", OPEN_TOOL]);
 
 /** Outils de chaque étape construite du parcours (0 à 8). Une étape absente d'ici n'est pas aiguillée. */
 const STEP_TOOLS: Record<number, RegExp> = {

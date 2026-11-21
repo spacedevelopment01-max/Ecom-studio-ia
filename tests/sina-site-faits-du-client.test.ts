@@ -58,8 +58,8 @@ describe("SINA — les faits du client dans son site", async () => {
 
   it("les notes prises par SINA (mémoire du projet) entrent dans le dossier ; les clés du Studio n'y entrent pas", async () => {
     const c = await client();
-    await call("memory.note", c.ctx, { kind: "fact", key: "Paiement", value: "Espèces ou virement, à la fin de la prestation." });
-    await call("memory.note", c.ctx, { kind: "decision", key: "Prévenir le client", value: "Par SMS la veille." });
+    ({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(c.ctx.conversationId, [{ sujet: "Paiement", value: "Espèces ou virement, à la fin de la prestation." }]).notes.length > 0 });
+    ({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(c.ctx.conversationId, [{ sujet: "Prévenir le client", value: "Par SMS la veille." }]).notes.length > 0 });
     // Clés écrites par le Studio lui-même : jamais prises pour une parole du client.
     remember(c.pid, { kind: "decision", key: "syna.identite", value: JSON.stringify({ base: "a" }), source: "user" } as any);
     remember(c.pid, { kind: "decision", key: "syna.depart", value: "Étape 0 validée par le client.", source: "user" } as any);
@@ -209,7 +209,7 @@ describe("SINA — les faits du client dans son site", async () => {
 
   it("montage simulé : le rédacteur reçoit notes et faits affichés ; ce qui contredit le dossier va au relecteur puis au compte rendu", async () => {
     const c = await client({ discreet: true });
-    await call("memory.note", c.ctx, { kind: "fact", key: "Paiement", value: "Espèces ou virement, à la fin de la prestation." });
+    ({ ok: (await import("@/lib/syna-agent/fiche")).addNotes(c.ctx.conversationId, [{ sujet: "Paiement", value: "Espèces ou virement, à la fin de la prestation." }]).notes.length > 0 });
     theme(c.pid);
     const prompts: string[] = [], reviews: string[] = [];
     B.customBrandDeps.plan = async (prompt) => ({ promesse: "Un service qui vient à toi.", voix: "Phrases courtes.", menu: [], sections: [...prompt.matchAll(/^- (s[0-9a-z]{8,10}) · /gm)].map((m, i) => ({ uid: m[1], message: `Message ${i}`, titre: null, bouton: null, faits: [] })), seo: [] });

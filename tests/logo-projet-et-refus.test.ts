@@ -29,8 +29,9 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
     expect(img).toMatch(/dans un autre style que \$\{n > 1 \? "chacun d'eux" : "lui"\} : une autre façon de faire \(je ne t'impose aucun style\)/);
     expect(img).toContain("Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
-    expect(chain.match(/gouts: j\.start\.image\?\.value \?\? null/g)).toHaveLength(1);
-    expect(chain).toContain("[j.start.image?.value, logoOnly ? clientWords(a.guidance) : undefined]");
+    // Les goûts du client viennent de sa fiche (réponse « image », goûts et refus pour les images) : `goutsDuClient`.
+    expect(chain.match(/gouts: goutsDuClient\(j, p\.id\) \}/g)).toHaveLength(1);
+    expect(chain).toContain("goutsDuClient(j, p.id, logoOnly ? clientWords(a.guidance) : undefined)");
   });
 
   it("le trait près du nom avec parcimonie : jamais interdit, un seul par série, repéré sans IA sur l'image", async () => {
@@ -118,7 +119,7 @@ describe("logo refait seul : la consigne de SINA ne va jamais au dessinateur (21
     expect(C.clientWords(g)).toBe("Refais seulement le logo de A.");
     expect(C.clientWords("Direction : un fil à plomb.")).toBe("");
     const src = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
-    expect(src).toContain("const imagesBrief = logoOnly ? briefBlock(j) : brief;");
+    expect(src).toContain("const imagesBrief = logoOnly ? briefBlock(j, p.id) : brief;");
     expect(src).toContain("brief: imagesBrief, kind");
     expect(src).toContain("logoOnly ? clientWords(a.guidance) : undefined");
   });
@@ -188,7 +189,7 @@ describe("marque finie, logo refait avec les mots du client : la consigne de SIN
     const imagery = { look: "calme", logo: "Piste : un fil à plomb stylisé, vert profond.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
     const fin = fs.readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8");
     expect(fin).toContain('...(slots.includes("logo") && o.guidance ? { logoLine: proposalImagery(j, route)?.logo ?? before?.logoIdea ?? null } : {}),');
-    expect(fin).toContain("gouts: [j.start.image?.value, clientWords(o.guidance)]");
+    expect(fin).toContain("gouts: goutsDuClient(j, o.projectId, clientWords(o.guidance))");
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(img).toContain('imagePrompt("logo", x, o.logoLine?.trim() ? { ...imagery, logo: o.logoLine.trim() } : imagery, { logo: true, refusal: o.gouts })');
     expect(I.imagePrompt("logo", route("A") as never, { ...(imagery as object), logo: "Ce qu'on savait de la marque." } as never)).not.toMatch(/fil à plomb/);

@@ -155,7 +155,8 @@ export const OBJETS_UTILES = "Chaque objet de la scène a un rôle : aucune éti
  * ligne, le refus du client lui-même, sans autre consigne) : seulement ses phrases de refus, telles qu'il les a écrites.
  */
 export function clientRefusal(words?: string | null): string {
-  const phrases = (words ?? "").split(/(?<=[.!?])\s+/).map((t) => t.trim()).filter((t) => /\b(ne veu[tx]|ne voulons|pas de|surtout pas|jamais|refuse)\b/i.test(t));
+  // Une ligne par chose dite (sa fiche) : un goût sur une ligne voisine n'est jamais pris avec le refus.
+  const phrases = (words ?? "").split(/(?<=[.!?])\s+|\n+/).map((t) => t.trim()).filter((t) => /\b(ne veu[tx]|ne voulons|pas de|surtout pas|jamais|refuse)\b/i.test(t));
   return phrases.length ? `Ce que le client refuse, avec ses mots : « ${phrases.join(" ").slice(0, 400)} »` : "";
 }
 export const SIGNS_LINE = "Une vraie photographie haut de gamme, comme dans le livre d'identité d'une grande agence : les signes de la marque sont appliqués sur de vrais objets de son monde, en vraies matières (impression, broderie, gravure, peinture, sérigraphie). Jamais une icône plate, jamais un pictogramme, jamais une grille de cases ni un nuancier dessiné.";

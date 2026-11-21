@@ -253,15 +253,15 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     addMessage(cid, "user", { text: "J'ai commencé après dix ans comme mécanicien chez un vélociste." }, null);
     expect(await call("start.note", ctx, { notes: [{ sujet: "Son histoire", value: "Dix ans comme mécanicien chez un vélociste avant de se lancer." }] })).toMatchObject({ ok: true });
     expect(await call("start.note", ctx, { notes: [{ sujet: "Ses concurrents", value: "Deux ateliers en centre-ville, plus chers." }] })).toMatchObject({ ok: false, internal: true });
-    const j = J.journeyOf(cid);
-    expect(j.notes).toMatchObject([{ sujet: "Son histoire" }]);
+    const F = await import("@/lib/syna-agent/fiche");
+    expect(F.ficheOf(cid).notes).toMatchObject([{ sujet: "Son histoire", genre: "fait", portee: "tout" }]);
     // Le même sujet remplace la note précédente.
     addMessage(cid, "user", { text: "Plutôt douze ans, en fait, comme mécanicien." }, null);
     await call("start.note", ctx, { notes: [{ sujet: "son histoire", value: "Douze ans comme mécanicien." }] });
-    expect(J.journeyOf(cid).notes).toHaveLength(1);
-    expect(J.journeyContext(J.journeyOf(cid))).toMatch(/Tes notes \(autres faits qu'il a donnés\) : son histoire : « Douze ans comme mécanicien\. »/);
+    expect(F.ficheOf(cid).notes).toHaveLength(1);
+    expect(J.journeyContext(J.journeyOf(cid), { notes: F.ficheOf(cid).notes })).toMatch(/Tes notes \(autres faits qu'il a donnés\) : son histoire : « Douze ans comme mécanicien\. »/);
     // Les sujets déjà notés ne sont plus proposés.
-    expect(J.extraTopics(J.journeyOf(cid)).join(" ")).not.toMatch(/son histoire/);
+    expect(J.extraTopics(J.journeyOf(cid), F.ficheOf(cid).notes).join(" ")).not.toMatch(/son histoire/);
   });
 
   it("vocabulaire du client : un mot qu'il corrige est retenu pour toujours", async () => {
@@ -322,8 +322,8 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
     const full = J.emptyJourney();
     for (const f of J.START_FIELDS) if (f !== "keep") full.start[f] = { value: f === "business" ? "products" : f === "existing" ? "Rien" : `réponse ${f}`, status: "answered", source: "client", at: 1 };
     expect(J.journeyContext(full)).toMatch(/Avant le résumé, il te reste des sujets utiles pour ce métier[^.]*comment c'est fabriqué/);
-    full.notes = J.extraTopics(full).map((t) => ({ sujet: t.split(" :")[0], value: "dit", at: 1 }));
-    expect(J.journeyContext(full)).toMatch(/Tous les sujets ont été abordés\. S'il te manque encore quelque chose d'important, demande-le ; sinon, fais le RÉSUMÉ complet/);
+    const notes = J.extraTopics(full).map((t) => ({ sujet: t.split(" :")[0], value: "dit", at: 1 }));
+    expect(J.journeyContext(full, { notes })).toMatch(/Tous les sujets ont été abordés\. S'il te manque encore quelque chose d'important, demande-le ; sinon, fais le RÉSUMÉ complet/);
     // Étape 1 : le nombre exact d'identités du client, jamais « deux à quatre ».
     const j1 = J.emptyJourney(); J.setStep(j1, 0, "done");
     expect(J.journeyContext(j1, { identityCount: 3 })).toMatch(/3 identités pour ce client \(son forfait\) : annonce 3, jamais « deux à quatre »/);

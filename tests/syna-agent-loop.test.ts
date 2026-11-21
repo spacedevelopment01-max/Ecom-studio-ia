@@ -90,7 +90,7 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
       if (step === 1) {
         const h = homeHeading(s.p.id), layer = textLayer(latestDoc(s.p.id, s.docKey)!.doc);
         return { message: "J'applique les trois modifications.", actions: [
-          { tool: "memory.note", args: { kind: "decision", key: "logo", value: "Garder le logo actuel" } },
+          { tool: "start.note", args: { notes: [{ sujet: "logo", value: "Garde mon logo", genre: "aime", portee: "logo" }] } },
           { tool: "site.edit", args: { ops: [{ op: "set_setting", template: "index", section: h.section, key: h.key, value: "L'éclat au naturel" }], summary: "Titre de l'accueil" } },
           { tool: "catalogue.update", args: { productId: s.product.id, variants: [{ options: ["Noir"], price: 39 }] } },
           { tool: "ads.edit", args: { docKey: s.docKey, ops: [{ op: "text", id: layer.id, text: "39 € seulement" }] } },
@@ -113,7 +113,7 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     // Changements vérifiés par module, visibles dans le fil ; réponses de SINA conservées.
     const view = threadView(s.user, s.cid);
     const modules = all<{ module: string; verified: number }>("SELECT module,verified FROM syna_changes WHERE conversation_id=?", s.cid);
-    expect(new Set(modules.map((m) => m.module))).toEqual(new Set(["mémoire", "site", "catalogue", "publicités"]));
+    expect(new Set(modules.map((m) => m.module))).toEqual(new Set(["parcours", "site", "catalogue", "publicités"]));
     expect(modules.every((m) => m.verified === 1)).toBe(true);
     expect(view.messages.filter((m) => m.role === "assistant").map((m) => m.content.message)).toContain("Je repère les éléments.");
     expect(one<{ n: number }>("SELECT COUNT(*) n FROM ai_calls")!.n).toBe(aiCallsBefore);
