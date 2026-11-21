@@ -29,7 +29,8 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
     expect(img).toMatch(/dans un autre style que \$\{n > 1 \? "chacun d'eux" : "lui"\} : une autre façon de faire \(je ne t'impose aucun style\)/);
     expect(img).toContain("Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
-    expect(chain.match(/gouts: j\.start\.image\?\.value \?\? null/g)).toHaveLength(2);
+    expect(chain.match(/gouts: j\.start\.image\?\.value \?\? null/g)).toHaveLength(1);
+    expect(chain).toContain("[j.start.image?.value, logoOnly ? clientWords(a.guidance) : undefined]");
   });
 
   it("le trait près du nom avec parcimonie : jamais interdit, un seul par série, repéré sans IA sur l'image", async () => {
@@ -107,5 +108,18 @@ describe("logos : redessin avec toutes les raisons des refus (21 novembre 2026)"
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(img).toContain('c.prompt + fix("logo", why)');
     expect(img).toContain("c.prompt + fix(s, why)");
+  });
+});
+
+describe("logo refait seul : la consigne de SINA ne va jamais au dessinateur (21 novembre 2026)", async () => {
+  const C = await import("@/lib/syna-agent/brand-chain");
+  it("seuls les mots cités du client vont au relecteur ; la fiche du dessin n'a pas la consigne", () => {
+    const g = "Le client a dit : « Refais seulement le logo de A. » Direction précise : un logotype sobre, un fil à plomb. Interdit : goutte d'eau, tuyau.";
+    expect(C.clientWords(g)).toBe("Refais seulement le logo de A.");
+    expect(C.clientWords("Direction : un fil à plomb.")).toBe("");
+    const src = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
+    expect(src).toContain("const imagesBrief = logoOnly ? briefBlock(j) : brief;");
+    expect(src).toContain("brief: imagesBrief, kind");
+    expect(src).toContain("logoOnly ? clientWords(a.guidance) : undefined");
   });
 });
