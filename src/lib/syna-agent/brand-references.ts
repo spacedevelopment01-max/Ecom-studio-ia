@@ -8,6 +8,7 @@
  * accent (détails graphiques) ; pour un fond en dégradé (135°), « depart » et « arrivee » remplacent fond et surface.
  * Les titres prennent la couleur du texte.
  */
+import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { luminance } from "../color";
 
 /** Clarté d'une couleur (tests de calage des palettes). */
@@ -156,7 +157,7 @@ export const NAME_REFUSALS: { name: string; activity: string; words: string }[] 
 ];
 
 /** Note à partir de laquelle un nom est gardé par le juge. */
-export const NAME_KEEP_SCORE = 8;
+export const NAME_KEEP_SCORE = NOTE_DU_PROPRIETAIRE;
 
 export const INVENTED_NAME_EXAMPLES: { name: string; how: string }[] = [
   { name: "Velcro", how: "« velours » + « crochet » : deux mots du produit fondus sans couture visible" },

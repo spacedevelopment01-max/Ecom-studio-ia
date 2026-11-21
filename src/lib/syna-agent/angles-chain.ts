@@ -19,6 +19,7 @@
  *
  * Tâche de fond : chaque appel payant est un point de reprise ; un plafond borne la tâche entière.
  */
+import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { ficheTexte, notesDuProjet } from "./fiche";
 import { z } from "zod";
 import { UserFacingError, type JobContext } from "../jobs";
@@ -43,7 +44,7 @@ export const SINA_ANGLES_JOB = "syna.angles";
 /** Propositions écrites par chaque stratège, puis par sa reprise. */
 export const CANDIDATES = 3, REWORKED = 2;
 /** Note du juge à partir de laquelle un angle est gardé (règle du propriétaire : 8 sur 10). */
-export const KEPT_NOTE = 8;
+export const KEPT_NOTE = NOTE_DU_PROPRIETAIRE;
 /** En dessous de ce nombre de paroles d'acheteurs, SINA retourne écouter le web avant d'écrire. */
 export const MIN_QUOTES = 8;
 

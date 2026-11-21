@@ -16,12 +16,15 @@
  * marque en tête de planche et dans le haut du site (fond retiré par le Studio, version pour fond sombre comprise).
  *
  * Règles du propriétaire tenues ici :
- * - chaque image est RELUE avant d'être montrée ; une image fausse (nom mal écrit, texte en trop, personne, sujet
- *   coupé) n'est pas montrée : la planche garde le dessin de SINA à sa place, et c'est dit ;
- * - une image qui échoue n'est jamais relancée seule ; le plafond de dépense arrête tout, sans rien cacher ;
+ * - chaque image est RELUE avant d'être montrée ; une image refusée (nom mal écrit, texte en trop, personne, sujet
+ *   coupé, note sous 8) est redessinée avec toutes les raisons de ses refus, deux fois au plus (MAX_IMAGE_RETRIES) ;
+ *   ce qui reste refusé n'est pas montré, et c'est dit au client ;
+ * - une image dont la DEMANDE échoue chez le fournisseur n'est jamais renvoyée seule ; le plafond de dépense arrête tout,
+ *   sans rien cacher ;
  * - les textes écrits dans une image viennent de la planche, lettre pour lettre, jamais du modèle ;
  * - aucune personne.
  */
+import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -82,7 +85,7 @@ export const ImagerySchema = z.object({
 });
 export type Imagery = z.infer<typeof ImagerySchema>;
 /** Note minimale (sur 10) pour qu'une image soit montrée au client. */
-export const NOTE_MIN = 8;
+export const NOTE_MIN = NOTE_DU_PROPRIETAIRE;
 export const ImageReviewSchema = z.object({
   // Jusqu'à 12 avis : les 8 images d'une planche, plus les images jointes pour comparer (logo, logos aimés), que le
   // relecteur juge parfois aussi (ses avis sur elles sont ignorés).
@@ -167,21 +170,18 @@ export const spell = (name: string) => [...name.normalize("NFC")].map((c) => (c 
  * dans l'eau, est celle de « Pulpe », validée par le propriétaire le 13 novembre 2026).
  */
 /**
- * Un logo, pas une illustration (essai réel du 14 novembre 2026 : « Pelage » est revenu en scène dessinée, une
- * toiletteuse à genoux près de son camion, alors que la consigne disait « aucune personne »).
- */
-export const LOGO_NOT_SCENE = "Un LOGO, pas une illustration ni une scène : le nom, et au plus UN signe simple et fort (un seul objet ou une seule forme), lisible en tout petit comme un tampon. Aucune personne, aucun personnage, aucune silhouette humaine, aucune main ; aucune scène avec un décor, un véhicule garé ou une maison.";
-/**
  * Le trait sous le nom, avec PARCIMONIE (propriétaire, 20 novembre 2026 : « j'ai toujours les traits en dessous »,
  * puis « il doit juste être là par parcimonie ») : jamais interdit, mais un seul logo au plus par série le porte. Sur 43
  * logos du Studio d'essai, presque toutes les marques calmes sortaient avec le signe en haut, le nom, un trait souligné.
  */
-/** La planche des 50 logos aimés du propriétaire, jointe au RELECTEUR seulement (jamais au dessinateur). Absente : null. */
+/**
+ * La planche des 50 logos aimés du propriétaire : jointe au dessinateur du logo, annoncée « seulement comme exemples »
+ * (décision du 21 novembre 2026), et au relecteur comme niveau attendu. Absente : null.
+ */
 export async function planchedesLogosAimes(): Promise<Buffer | null> {
   try { return await sharp(fs.readFileSync(path.resolve(process.cwd(), "docs/sina-savoir/logos-aimes/planche-des-50.jpg"))).resize(1200, 1200, { fit: "inside" }).jpeg({ quality: 80 }).toBuffer(); } catch { return null; }
 }
 export const LOGO_TRAIT_DEJA_PRIS = "Un des logos déjà faits a un trait, un filet ou une ligne près du nom : celui-ci n'en a pas.";
-export const LOGO_OWN = "Une conception propre à cette marque, tirée de son idée et de son métier, jamais une recette déjà vue ailleurs.";
 const exact = (texts: string[]) => `Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${texts.map((t) => `« ${t} »`).join(" ; ")}. Aucun autre texte, aucun mot inventé, aucun faux texte de remplissage.`;
 /**
  * Le logo joint à la maquette du site. Sur une identité à fond sombre, c'est sa version claire, posée sur le foncé de
@@ -393,8 +393,9 @@ export async function runBoardImages(o: {
   // Un nouvel essai d'une partie des images a sa propre étape (jamais la réponse en cache du premier essai).
   const pass = o.slots?.length ? `:${[...wanted].join("+")}` : "";
   const tag = (line: string) => L(`Identité ${key} : ${line}`, `Identity ${key}: ${line}`);
-  // Rien des autres logos n'est transmis, ni en image ni en mots (demande du propriétaire du 16 novembre 2026 : « ça doit
-  // repartir de 0 pour les logos, le seul truc qu'il a c'est le nom et l'identité de marque, et c'est tout »).
+  // La direction artistique ne reçoit rien des autres logos, ni en image ni en mots (16 novembre 2026 : « ça doit repartir
+  // de 0 pour les logos, le seul truc qu'il a c'est le nom et l'identité de marque, et c'est tout »). Seul le dessinateur
+  // reçoit les logos déjà faits de CETTE série, pour en faire un complètement différent (20 novembre 2026, plus bas).
   const imagery = o.imagery ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}` }));
 
   const made = new Map<ImageSlot, Made>();
@@ -423,7 +424,7 @@ export async function runBoardImages(o: {
       }));
     } catch (e) {
       if (e instanceof CostCapReached) { capped = true; notes.push(`plafond de dépense atteint pendant les images de ${key}`); return; }
-      // Une image qui échoue n'est jamais relancée seule : la planche garde le dessin de SINA à cette place.
+      // Une demande qui échoue chez le fournisseur n'est jamais renvoyée seule : l'image manque, et c'est dit au client.
       notes.push(`${SLOT_LABEL[slot].fr} de ${key} non créé(e) : ${String((e as Error)?.message ?? e).slice(0, 140)}`);
       issues.push(tag(L(`je n'ai pas pu créer ${SLOT_LABEL[slot].fr} ; ${instead(x, slot)}.`, `I could not create ${SLOT_LABEL[slot].en}; ${slot === "signs" ? "the signs stay described in words" : slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`)));
     }
