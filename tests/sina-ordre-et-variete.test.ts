@@ -231,7 +231,7 @@ describe("ce que le client n'a pas : les preuves réelles du dossier", () => {
     expect(guide).toContain(PR.QUESTION_DES_PREUVES);
     expect(guide.indexOf(PR.QUESTION_DES_PREUVES)).toBeLessThan(guide.indexOf("2) LA CRÉATION"));
     expect(PR.QUESTION_DES_PREUVES).toMatch(/les avis déjà reçus[^]*les réalisations[^]*son assurance, ses diplômes[^]*depuis quand il exerce[^]*ses chiffres vrais/);
-    expect(PR.QUESTION_DES_PREUVES).toMatch(/memory\.note/);
+    expect(PR.QUESTION_DES_PREUVES).toMatch(/start\.note/);
     expect(PR.QUESTION_DES_PREUVES).toMatch(/n'en invente jamais/);
   });
 
