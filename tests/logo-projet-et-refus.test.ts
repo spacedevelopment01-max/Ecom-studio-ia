@@ -65,3 +65,25 @@ describe("logos refaits seuls : le téléphone de la planche est refait pour l'i
     expect(F.missingSlots(j(["B"]))).not.toContain("site");
   });
 });
+
+describe("logos expressifs : le niveau des 50 logos que le propriétaire aime (21 novembre 2026)", async () => {
+  const I = await import("@/lib/syna-agent/brand-images");
+  const P = await import("@/lib/syna-agent/brand-prompts");
+  const imagery = { look: "calme", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
+  it("le dessinateur reçoit une phrase de niveau (pas de style), le relecteur la planche des 50, jamais le dessinateur", async () => {
+    const p = I.imagePrompt("logo", route("A") as never, imagery);
+    expect(p).toContain(I.LOGO_NIVEAU);
+    expect(I.LOGO_NIVEAU).toMatch(/Un logo EXPRESSIF, avec du caractère, qui raconte le métier en une seule image/);
+    expect(p).toMatch(/Tu es totalement libre du dessin/);
+    const planche = await I.planchedesLogosAimes();
+    expect(planche).toBeInstanceOf(Buffer);
+    expect(P.imageReviewSystem()).toMatch(/quand la planche des logos que le propriétaire aime est jointe .* nettement plus sage, timide ou banal que ces exemples/);
+    expect(P.imageReviewSystem()).toMatch(/Un logo détaillé, illustré, coloré ou chargé n'est PAS un défaut tant qu'il reste lisible/);
+    const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(img).toContain('const aimes = slots.includes("logo") ? await planchedesLogosAimes() : null;');
+    // La planche n'est jamais jointe au dessin du logo (seulement à la relecture).
+    expect(img).not.toMatch(/make\("logo"[^\n]*planchedesLogosAimes/);
+    expect(fs.existsSync("docs/sina-savoir/logos-aimes.md")).toBe(true);
+  });
+});
+

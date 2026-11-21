@@ -22,6 +22,8 @@
  * - les textes écrits dans une image viennent de la planche, lettre pour lettre, jamais du modèle ;
  * - aucune personne.
  */
+import fs from "node:fs";
+import path from "node:path";
 import sharp from "sharp";
 import { z } from "zod";
 import type { JobContext } from "../jobs";
@@ -80,12 +82,14 @@ export const ImagerySchema = z.object({
 });
 export type Imagery = z.infer<typeof ImagerySchema>;
 export const ImageReviewSchema = z.object({
+  // Jusqu'à 12 avis : les 8 images d'une planche, plus les images jointes pour comparer (logo, logos aimés), que le
+  // relecteur juge parfois aussi (ses avis sur elles sont ignorés).
   // defect : la nature du défaut d'une image refusée. Seul « texte » peut être contredit par la lecture elle-même ;
   // un défaut non précisé vaut « autre » (l'image reste refusée : c'est le côté sûr).
-  images: z.array(z.object({ slot: z.string().max(12), ok: z.boolean(), read: z.array(z.string().max(400)).max(14).default([]), why: z.string().max(260).default(""), defect: z.enum(["texte", "personne", "coupe", "abime", "autre"]).default("autre") })).max(8).default([]),
+  images: z.array(z.object({ slot: z.string().max(12), ok: z.boolean(), read: z.array(z.string().max(400)).max(14).default([]), why: z.string().max(260).default(""), defect: z.enum(["texte", "personne", "coupe", "abime", "autre"]).default("autre") })).max(12).default([]),
 });
 /** Seconde lecture d'une image dont le jugement contredit la lecture : seulement recopier, sans juger. */
-export const ImageRereadSchema = z.object({ images: z.array(z.object({ slot: z.string().max(12), read: z.array(z.string().max(400)).max(14).default([]) })).max(8).default([]) });
+export const ImageRereadSchema = z.object({ images: z.array(z.object({ slot: z.string().max(12), read: z.array(z.string().max(400)).max(14).default([]) })).max(12).default([]) });
 
 /** Même texte, à la casse, aux espaces, au type d'apostrophe et au point final près ; jamais aux lettres ni aux accents. */
 const plain = (t: string) => t.normalize("NFC").replace(/[’ʼ`´]/g, "'").replace(/[«»“”"]/g, " ").replace(/[_＿]+|[—–]{2,}/g, "_").replace(/\s*\/\s*/g, "/").replace(/\s+([:;!?])/g, "$1").replace(/\s+/g, " ").trim().replace(/[.\s]+$/, "").toLowerCase();
@@ -152,6 +156,16 @@ export const LOGO_NOT_SCENE = "Un LOGO, pas une illustration ni une scène : le 
  * puis « il doit juste être là par parcimonie ») : jamais interdit, mais un seul logo au plus par série le porte. Sur 43
  * logos du Studio d'essai, presque toutes les marques calmes sortaient avec le signe en haut, le nom, un trait souligné.
  */
+/**
+ * Le niveau voulu par le propriétaire (21 novembre 2026, devant 50 logos qu'il aime : « c'est ce genre de logo que je
+ * veux », en un mot : expressifs ; cahier `docs/sina-savoir/logos-aimes.md`). Un niveau d'exigence, pas un style : le
+ * dessin reste libre.
+ */
+export const LOGO_NIVEAU = "Un logo EXPRESSIF, avec du caractère, qui raconte le métier en une seule image (un objet, un personnage ou une scène dessinés avec soin et du détail), dans des couleurs franches, et qui se reconnaît en un coup d'œil. Jamais un nom sage posé sous un petit symbole.";
+/** La planche des 50 logos aimés du propriétaire, jointe au RELECTEUR seulement (jamais au dessinateur). Absente : null. */
+export async function planchedesLogosAimes(): Promise<Buffer | null> {
+  try { return await sharp(fs.readFileSync(path.resolve(process.cwd(), "docs/sina-savoir/logos-aimes/planche-des-50.jpg"))).resize(1200, 1200, { fit: "inside" }).jpeg({ quality: 80 }).toBuffer(); } catch { return null; }
+}
 export const LOGO_TRAIT_DEJA_PRIS = "Un des logos déjà faits a un trait, un filet ou une ligne près du nom : celui-ci n'en a pas.";
 export const LOGO_OWN = "Une conception propre à cette marque, tirée de son idée et de son métier, jamais une recette déjà vue ailleurs.";
 const exact = (texts: string[]) => `Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : ${texts.map((t) => `« ${t} »`).join(" ; ")}. Aucun autre texte, aucun mot inventé, aucun faux texte de remplissage.`;
@@ -188,6 +202,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       paletteLine(x),
       `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni cadre, ni ombre portée.",
+      LOGO_NIVEAU,
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
@@ -441,15 +456,19 @@ export async function runBoardImages(o: {
       issues.push(tag(L("je n'ai pas pu relire ses images, donc je ne te les montre pas.", "I could not review its images, so I am not showing them.")));
     };
     // Un logo à fond transparent est montré au relecteur posé sur du blanc, comme le client le verra.
-    const seen = await Promise.all(slots.map(async (s) => ({ data: s === "logo" ? await onWhite(bufferOf(s)!) : bufferOf(s)!, label: s })));
+    const seen: { data: Buffer; label: string }[] = await Promise.all(slots.map(async (s) => ({ data: s === "logo" ? await onWhite(bufferOf(s)!) : bufferOf(s)!, label: s as string })));
     // Un objet qui porte un logo gardé d'avant : ce logo est joint, en dernier, pour que le relecteur compare.
     const reference = !slots.includes("logo") && logo && slots.some((s) => s !== "hero") ? await onWhite(logo) : null;
     if (reference) seen.push({ data: reference, label: "logo" });
+    // Un logo à juger : la planche des logos que le propriétaire aime, en dernier, comme niveau à atteindre.
+    const aimes = slots.includes("logo") ? await planchedesLogosAimes() : null;
+    if (aimes) seen.push({ data: aimes, label: "logos aimés" });
     if (capped) unreviewed();
     else try {
       const review = await ctx.step(`brand:imagecheck:${round}:${key}${pass}${rt}`, () => ai.look(`imagecheck-${round}-${key}${pass}${rt}`, {
         system: P.imageReviewSystem(), schema: ImageReviewSchema,
         prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` La dernière image jointe (${slots.length + 1}) est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`,
+          ...(aimes ? [`La dernière image jointe est la planche des logos que le propriétaire du Studio aime : elle donne le NIVEAU attendu pour le logo, ne la juge pas et ne la recopie pas.`] : []),
           // Ce que le client refuse (essai réel du 20 novembre 2026 : une goutte d'eau refusée par le client, passée au contrôle).
           ...(o.gouts?.trim() ? [`Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut (defect « autre »).`] : []), ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
         images: seen,
