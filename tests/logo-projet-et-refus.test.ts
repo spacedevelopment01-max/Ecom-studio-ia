@@ -92,3 +92,29 @@ describe("logos : le niveau des 50 logos que le propriétaire aime, la façon de
   });
 });
 
+
+describe("logos : redessin avec toutes les raisons, signes refusés au dessinateur (21 novembre 2026)", async () => {
+  const I = await import("@/lib/syna-agent/brand-images");
+  const P = await import("@/lib/syna-agent/brand-prompts");
+  it("un redessin reçoit toutes les raisons des refus, pas seulement la dernière", () => {
+    const une = I.fixLine(["une goutte d'eau, refusée par le client"], 1);
+    expect(une).toMatch(/une première image a été refusée pour cette raison : « une goutte d'eau, refusée par le client »/);
+    const deux = I.fixLine(["une goutte d'eau, refusée par le client", "trop sage"], 2);
+    expect(deux).toMatch(/à corriger TOUTES à la fois/);
+    expect(deux).toMatch(/1\. « une goutte d'eau, refusée par le client »\n2\. « trop sage »/);
+    expect(deux).toMatch(/Fais plus simple/);
+    const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(img).toContain('c.prompt + fix("logo", why)');
+    expect(img).toContain("c.prompt + fix(s, why)");
+  });
+  it("les signes refusés par le client vont au dessinateur du logo, en une ligne, et rien d'autre de ses mots", () => {
+    const imagery = { look: "calme", logo: "Ce qu'il faut savoir.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""], refus: ["goutte d'eau", "robinet.", "goutte d'eau"] } as never;
+    const p = I.imagePrompt("logo", route("A") as never, imagery);
+    expect(p).toContain("Le client refuse ces signes : goutte d'eau, robinet. Aucun ne figure dans le logo");
+    expect(I.logoRefus({ refus: [] })).toBe("");
+    expect(I.imagePrompt("logo", route("A") as never, { ...(imagery as object), refus: [] } as never)).not.toMatch(/refuse ces signes/);
+    // La directrice artistique les relève d'après les mots du client seulement.
+    expect(P.imagerySystem("services")).toMatch(/- refus : les signes que le client a REFUSÉS .* seulement ce qu'il a refusé lui-même, jamais une idée à toi/);
+    expect(I.ImagerySchema.parse({ logo: "x", hero: "x", object: "x", site: "x", posts: ["a", "b", "c"] }).refus).toEqual([]);
+  });
+});

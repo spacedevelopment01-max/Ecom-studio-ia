@@ -79,6 +79,12 @@ export const ImagerySchema = z.object({
   /** Les signes de la marque posés sur de vrais objets de son monde (remplace les pictogrammes dessinés en code). */
   signs: z.string().max(2200).default(""),
   posts: z.array(z.string().min(1).max(2200)).length(3),
+  /**
+   * Les signes que le client a REFUSÉS, en quelques mots chacun (« goutte d'eau », « robinet ») : seule chose de ses
+   * mots sur l'image qui va au dessinateur du logo (accord du propriétaire du 21 novembre 2026 ; ses autres mots restent
+   * au relecteur, « enlève la 7 »). Sans elle, le dessinateur remettait la goutte du plombier à chaque essai.
+   */
+  refus: z.array(z.string().min(1).max(40)).max(8).default([]),
 });
 export type Imagery = z.infer<typeof ImagerySchema>;
 export const ImageReviewSchema = z.object({
@@ -188,6 +194,21 @@ export async function logoForGround(logo: Buffer | null, x: Pick<Route, "ground"
 }
 const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`;
 
+/** La ligne des signes refusés par le client, pour le dessinateur du logo (vide s'il n'en a refusé aucun). */
+export const logoRefus = (imagery: Pick<Imagery, "refus">): string => {
+  const r = [...new Set((imagery.refus ?? []).map((t) => t.trim().replace(/[.;]+$/, "")).filter(Boolean))].slice(0, 8);
+  return r.length ? `Le client refuse ces signes : ${r.join(", ")}. Aucun ne figure dans le logo, ni en entier, ni en partie, ni caché dans une lettre.` : "";
+};
+
+/** Toutes les raisons des refus d'une image, de la plus ancienne à la plus récente, pour la redessiner sans revenir en arrière. */
+export const fixLine = (whys: string[], attempt: number): string => {
+  const list = [...new Set(whys.map((w) => w.replace(/\s+/g, " ").trim().slice(0, 300)).filter(Boolean))];
+  const head = list.length > 1
+    ? `\nCORRECTION : les images précédentes ont été refusées pour ces raisons, à corriger TOUTES à la fois (corriger la dernière ne doit pas ramener une faute déjà corrigée) :\n${list.map((w, i) => `${i + 1}. « ${w} »`).join("\n")}`
+    : `\nCORRECTION : une première image a été refusée pour cette raison : « ${list[0] ?? ""} ». Refais l'image en corrigeant ce point.`;
+  return head + (attempt > 1 ? "\nFais plus simple : retire de l'image tout élément qui porte une écriture non demandée (étiquette, emballage, enseigne, écran) ou laisse-le vierge." : "");
+};
+
 /** Consigne complète d'une image : la direction globale, la consigne de la directrice artistique, les lignes fixes du Studio. */
 export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean } = { logo: true }): string {
   const look = imagery.look.trim(), texts = slotTexts(x)[slot];
@@ -205,6 +226,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni cadre, ni ombre portée.",
       LOGO_NIVEAU,
+      logoRefus(imagery),
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
@@ -528,16 +550,19 @@ export async function runBoardImages(o: {
   // 3 bis. Une image refusée est refaite avant d'être montrée : deux reprises au plus, avec la raison du refus donnée au
   // modèle ; à la seconde, la consigne est simplifiée. Les reprises restent dans le plafond déjà accepté par le client.
   // Un logo refait emporte ce qui le porte (créé avec le logo refusé).
+  const whyHistory = new Map<ImageSlot, string[]>();
   const CARRIERS: ImageSlot[] = ["site", "object", "signs", "post0", "post1", "post2"];
   for (let attempt = 1; attempt <= MAX_IMAGE_RETRIES && dropped.size && !capped && !blind; attempt++) {
     const again = IMAGE_SLOTS.filter((s) => dropped.has(s) && calls.has(s));
     if (!again.length) break;
     ctx.progress(0.97, L(`Je reprends ${again.length > 1 ? "des images" : "une image"} de la planche ${key}`, `Redoing images of board ${key}`));
-    const fix = (why: string) => `\nCORRECTION : une première image a été refusée pour cette raison : « ${why.replace(/\s+/g, " ").slice(0, 300)} ». Refais l'image en corrigeant ce point.${attempt > 1 ? "\nFais plus simple : retire de l'image tout élément qui porte une écriture non demandée (étiquette, emballage, enseigne, écran) ou laisse-le vierge." : ""}`;
+    // Toutes les raisons des refus de l'image, pas seulement la dernière (essai réel du 21 novembre 2026 : le 3e logo
+    // d'Aplomb, corrigé seulement de « trop sage », a remis la goutte retirée au 2e).
+    const fix = (slot: ImageSlot, why: string) => { const h = [...(whyHistory.get(slot) ?? []), why]; whyHistory.set(slot, h); return fixLine(h, attempt); };
     const redone: ImageSlot[] = [];
     if (again.includes("logo")) {
       const c = calls.get("logo")!, why = dropped.get("logo")!; dropped.delete("logo");
-      await make("logo", c.refs, c.prompt + fix(why), `:r${attempt}`);
+      await make("logo", c.refs, c.prompt + fix("logo", why), `:r${attempt}`);
       const drawn = bufferOf("logo");
       if (drawn && !(await logoOnWhite(drawn))) { const w = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background"); mark(made.get("logo")!.id, "rejected", w); made.delete("logo"); dropped.set("logo", w); }
       else if (drawn) {
@@ -550,7 +575,7 @@ export async function runBoardImages(o: {
       if (attempt === 1 && !again.includes(s)) continue; // porteur d'un logo refait à l'instant : repris au tour suivant
       const c = calls.get(s)!, why = dropped.get(s)!; dropped.delete(s);
       const now = currentLogo(), refs = c.refs.logo ? { ...c.refs, logo: s === "site" ? await logoForGround(now, x) : now } : c.refs;
-      await make(s, refs, c.prompt + fix(why), `:r${attempt}`);
+      await make(s, refs, c.prompt + fix(s, why), `:r${attempt}`);
       if (made.has(s)) redone.push(s); else dropped.set(s, why);
     }
     await review(redone, `:r${attempt}`);

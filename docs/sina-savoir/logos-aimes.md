@@ -37,6 +37,10 @@ Le dessin suit l'idée, le ton, le métier, les couleurs et l'écriture de la ma
 - Le dessinateur est libre du dessin. Il reçoit ce qu'il faut savoir de la marque (idée, ton, métier, couleurs,
   écriture) et une seule phrase qui vaut pour tous les logos : « C'est un logo, pas un tableau : il se lit et se
   reconnaît en tout petit… Sa façon de faire vient de cette marque-là (son idée, son ton, son métier) : jamais la même façon pour toutes les marques. »
+  S'il a refusé des signes (une goutte d'eau, un robinet), il les reçoit en une ligne : c'est la seule chose des mots du
+  client qui lui arrive. Sans elle, il remettait la goutte du plombier à chaque essai (21 novembre 2026).
+- Un logo refusé est redessiné avec TOUTES les raisons de ses refus, pas seulement la dernière : corriger « trop sage »
+  ne doit pas ramener la goutte retirée juste avant.
 - Le relecteur reçoit la planche des 50 à côté du logo à juger. Il refuse un logo nettement plus sage que ces exemples,
   un logo qui ne va pas avec cette marque (son métier, son ton), et une image qui n'est pas un logo (scène, décor,
   dessin chargé). La planche donne un niveau, jamais un style à suivre.
