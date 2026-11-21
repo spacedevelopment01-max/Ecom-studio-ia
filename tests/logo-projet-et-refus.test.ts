@@ -123,3 +123,17 @@ describe("logo refait seul : la consigne de SINA ne va jamais au dessinateur (21
     expect(src).toContain("logoOnly ? clientWords(a.guidance) : undefined");
   });
 });
+
+describe("jamais une planche incomplète : une image refaite et refusée garde celle d'avant (21 novembre 2026)", () => {
+  it("le haut du site et la grande scène refaits et refusés restent ceux d'avant ; le haut du site est noté à refaire au choix", () => {
+    const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(img).toContain('made.get(k as ImageSlot) ?? (k === "site" || k === "hero" ? before[k] : undefined)');
+    expect(img).toContain('const siteGarde = wanted.has("site") && !made.get("site") && !!before.site;');
+    const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
+    expect(chain).toContain("if (r.siteGarde) siteGardes.push(x.key);");
+    expect(chain).toContain("...seul, ...siteGardes])]");
+    // Sur chaque carte proposée, une ligne visible dit ce qui est créé au choix.
+    const cards = fs.readFileSync("src/components/studio/brand-boards.tsx", "utf8");
+    expect(cards).toContain("Dès ton choix : l'objet qui porte ton logo, tes signes en photo et tes trois premières publications.");
+  });
+});

@@ -320,6 +320,7 @@ const BOARD_CSS = `
 .ic-dl>div{display:flex;gap:12px;align-items:baseline;padding:9px 0;border-top:1px solid var(--bb-edge)}
 .ic-dl dt{flex:none;width:6.6rem;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;opacity:.65}
 .ic-dl dd{margin:0;min-width:0;font-size:.88rem;line-height:1.4;overflow-wrap:anywhere}
+.ic-later{margin:12px 6px 0;font-size:.8rem;line-height:1.4;opacity:.75}
 .ic-foot{display:flex;flex-wrap:wrap;gap:8px;margin:14px 4px 0}
 .ic-go{flex:1 1 9rem;min-height:44px;border:0;border-radius:999px;padding:0 18px;font-weight:600;font-size:.92rem;cursor:pointer;background:var(--bb-btn);color:var(--bb-btn-ink);box-shadow:0 8px 18px -12px rgba(0,0,0,.6)}
 .ic-go:disabled{opacity:.55;cursor:default}
@@ -618,6 +619,7 @@ function IdentityCard({ x, canChoose, busy, onChoose }: { x: BoardCard; canChoos
           {nameLine && <div><dt>{t("Le nom", "The name")}</dt><dd>{nameLine}</dd></div>}
           {free && <div><dt>{t("Adresse libre", "Free address")}</dt><dd>{free}</dd></div>}
         </dl>
+        {canChoose && <p className="ic-later" data-card-later>{t("Dès ton choix : l'objet qui porte ton logo, tes signes en photo et tes trois premières publications.", "As soon as you choose: the object carrying your logo, your signs as a photo and your first three posts.")}</p>}
         <div className="ic-foot">
           {canChoose && <button type="button" className="ic-go" disabled={busy} onClick={() => onChoose(x.key)} data-card-choose={x.key}>{t(`Choisir ${x.name}`, `Choose ${x.name}`)}</button>}
           <details className="ic-more">

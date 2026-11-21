@@ -551,7 +551,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     if (!previous.length) throw new UserFacingError(L("Il n'y a pas encore de planche à mettre en images. Rien n'a été décompté.", "There is no board to illustrate yet. Nothing was charged."));
     const targets = a.redo?.length ? previous.filter((x) => a.redo!.includes(x.key)) : previous, round = j.identities?.round ?? 1;
     let list = (j.identities?.list ?? []) as Route[];
-    const said: string[] = [], redoneLogos: Buffer[] = [];
+    const said: string[] = [], redoneLogos: Buffer[] = [], siteGardes: string[] = [];
     // Logo refait seul : la consigne écrite par SINA ne va jamais au dessinateur, même par la fiche de la marque (décision
     // du propriétaire du 21 novembre 2026 : « pas de consigne autre que les 50 logos en exemple » ; essai réel du même
     // jour : SINA y avait mis « logotype sobre, lettres à empattements, un fil à plomb » et neuf signes interdits). Elle
@@ -564,11 +564,12 @@ export async function runSinaBrandJob(ctx: JobContext) {
       const fresh = (a.slots ?? CREATED_SLOTS).includes("logo") && r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
       if (fresh) { try { redoneLogos.push(assetData(fresh)); } catch { /* fichier absent */ } }
       list = list.map((o) => (o.key === x.key ? r.route : o));
+      if (r.siteGarde) siteGardes.push(x.key);
       said.push(...r.issues); notes.push(...r.notes);
     }
     // Logo refait sans sa maquette : la planche est notée, sa maquette sera refaite si elle est choisie.
-    const seul = (a.slots ?? []).includes("logo") && !(a.slots ?? []).includes("site") ? targets.map((x) => x.key) : [], refaite = (a.slots ?? []).includes("site") ? targets.map((x) => x.key) : [];
-    updateJourney(a.conversationId, (y) => { if (y.identities) { y.identities.list = list; y.identities.issues = [...new Set([...y.identities.issues, ...said])]; y.identities.at = Date.now(); y.identities.siteAncienLogo = [...new Set([...(y.identities.siteAncienLogo ?? []), ...seul])].filter((k) => !(refaite as string[]).includes(k)); } });
+    const seul = (a.slots ?? []).includes("logo") && !(a.slots ?? []).includes("site") ? targets.map((x) => x.key) : [], refaite = (a.slots ?? []).includes("site") ? targets.map((x) => x.key).filter((k) => !siteGardes.includes(k)) : [];
+    updateJourney(a.conversationId, (y) => { if (y.identities) { y.identities.list = list; y.identities.issues = [...new Set([...y.identities.issues, ...said])]; y.identities.at = Date.now(); y.identities.siteAncienLogo = [...new Set([...(y.identities.siteAncienLogo ?? []), ...seul, ...siteGardes])].filter((k) => !(refaite as string[]).includes(k)); } });
     return { routes: list.map((x) => ({ key: x.key, name: x.name, slogan: x.slogan })), issues: said, notes, images: list.reduce((n, x) => n + Object.values(x.board?.images ?? {}).flat().filter((v) => v && typeof v === "object").length, 0) };
   }
 

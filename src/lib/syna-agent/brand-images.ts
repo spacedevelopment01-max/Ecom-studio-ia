@@ -296,7 +296,7 @@ export async function clientLogoOf(projectId: string): Promise<ClientLogo | null
   if (!a) return null;
   try { const data = assetData(a), meta = await sharp(data).metadata(); return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024, data }; } catch { return null; }
 }
-export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[] };
+export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[]; /** Haut du site refait et refusé : celui d'avant est gardé (il porte l'ancien logo). */ siteGarde?: boolean };
 
 /** Un logo à fond transparent posé sur du blanc, pour qu'un relecteur le voie comme le client le verra. */
 export const onWhite = (png: Buffer): Promise<Buffer> => sharp(png).flatten({ background: "#FFFFFF" }).png().toBuffer().catch(() => png);
@@ -602,7 +602,11 @@ export async function runBoardImages(o: {
   // Les images gardées d'avant restent quand seule une partie est refaite ; une image refaite et refusée ne garde
   // jamais l'ancienne à sa place si elle portait l'ancien logo (l'objet) : la planche montre alors le dessin de SINA.
   const before = (x.board.images ?? {}) as NonNullable<Route["board"]["images"]>;
-  const keep = <K extends "logo" | "hero" | "object" | "signs" | "site">(k: K) => (wanted.has(k as ImageSlot) ? made.get(k as ImageSlot) : before[k]) ?? undefined;
+  // Jamais une planche incomplète (règle du propriétaire ; essai réel du 21 novembre 2026 : le haut du site d'Aplomb,
+  // refait trois fois et refusé, avait laissé la planche sans téléphone) : la grande scène et le haut du site refaits
+  // et refusés gardent ceux d'avant. Le haut du site d'avant porte l'ancien logo : il est refait au choix (siteGarde).
+  const siteGarde = wanted.has("site") && !made.get("site") && !!before.site;
+  const keep = <K extends "logo" | "hero" | "object" | "signs" | "site">(k: K) => (wanted.has(k as ImageSlot) ? made.get(k as ImageSlot) ?? (k === "site" || k === "hero" ? before[k] : undefined) : before[k]) ?? undefined;
   // Pas de logo gardé : l'ancien logo, l'ancien objet qui le porte et l'ancienne marque de planche restent ensemble.
   if (skipCarriers) { if (before.logo) made.set("logo", before.logo); for (const k of ["object", "signs"] as const) if (before[k]) made.set(k, before[k]!); }
   const posts = (["post0", "post1", "post2"] as const).map((s, i) => (wanted.has(s) ? made.get(s) : before.posts?.[i]) ?? null);
@@ -620,5 +624,5 @@ export async function runBoardImages(o: {
   const { images: _old, ...boardRest } = x.board as Route["board"] & { images?: unknown };
   const next = RouteSchema.safeParse({ ...x, board: { ...boardRest, ...(any ? { images } : {}) } });
   if (capped) issues.push(tag(L("le plafond annoncé a été atteint avant la fin de ses images.", "the announced cap was reached before its images were finished.")));
-  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues };
+  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues, siteGarde };
 }
