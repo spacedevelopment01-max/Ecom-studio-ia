@@ -278,6 +278,24 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(count(html, "<figure data-logo")).toBe(3);
     expect(html).not.toContain('data-post="image"');
     expect(html).not.toContain("Ta marque");
+    // Présentation classe et courte (demande du propriétaire du 21 novembre 2026 : « beaucoup plus classe », « moins de
+    // texte ») : une carte par identité (scène et nom, logo, haut du site, couleurs, une phrase, le nom, l'adresse,
+    // le choix) ; toute la planche reste derrière « Voir le détail ».
+    {
+      const shown = (await fr(() => threadView(t.user, t.cid))).journey.identities!.list as any[];
+      expect(count(html, "data-identity-card=")).toBe(3);
+      expect(count(html, '<details class="ic-more"><summary>Voir le détail</summary>')).toBe(3);
+      for (const x of shown) {
+        const card = new RegExp(`data-identity-card="${x.key}"[\\s\\S]*?<details`).exec(html)![0];
+        expect(card).toContain(`data-card-choose="${x.key}"`);
+        expect(card).toContain(`Choisir ${x.name.replace(/'/g, "&#x27;")}`);
+        expect(card).toMatch(new RegExp(`data-card-site="true"><img[^>]*src="${x.board.images.site.url}"`));
+        expect(card).toMatch(new RegExp(`data-card-logo="true"><img[^>]*src="${x.board.images.logo.url}"`));
+        expect(card).toContain(`<p class="ic-idea"`);
+        // Peu de mots avant le détail : ni la voix, ni les signes, ni ce qui reste à prouver.
+        expect(card).not.toMatch(/data-to-prove|data-voice-is|bb-signs|Ce que ton client pense/);
+      }
+    }
   });
 
   // ---------------------------------------------------------------- le second temps : la marque finie

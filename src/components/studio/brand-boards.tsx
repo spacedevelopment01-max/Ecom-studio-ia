@@ -287,6 +287,45 @@ const BOARD_CSS = `
 .bb-prove{margin-top:1.6rem;font-size:.84rem;line-height:1.45}
 .bb-prove ul{margin:.4rem 0 0;padding-left:1.1em;list-style:disc}
 .bb-prove li+li{margin-top:.3em}
+.ic-grid{display:grid;gap:1.1rem;grid-template-columns:1fr;align-items:start}
+@container (min-width:60rem){.ic-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container (min-width:40rem) and (max-width:59.99rem){.ic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ic{position:relative;min-width:0;border-radius:28px;padding:12px 12px 16px;color:var(--bb-ink);font-family:var(--bb-body);background:var(--bb-bg1);box-shadow:0 1px 0 rgba(0,0,0,.04),0 24px 60px -30px rgba(20,24,22,.45)}
+.ic.bb-g-degrade{background:linear-gradient(165deg,var(--bb-bg1),var(--bb-bg2))}
+.ic.bb-g-sombre{background:linear-gradient(180deg,var(--bb-bg1),color-mix(in srgb,var(--bb-bg1) 80%,#000))}
+.ic-top{display:flex;align-items:center;gap:8px;padding:4px 4px 10px}
+.ic-k{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--bb-tile);box-shadow:inset 0 0 0 1px var(--bb-edge)}
+.ic-hero{position:relative;margin:0;border-radius:20px;overflow:hidden;aspect-ratio:3/2;background:var(--bb-tile)}
+.ic-hero .bb-photo{display:block;width:100%;height:100%;object-fit:cover}
+.ic-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 38%,rgba(8,10,9,.74) 100%);pointer-events:none}
+.ic-hero figcaption{position:absolute;left:18px;right:18px;bottom:14px;z-index:1;color:#fff}
+.ic-name{font-family:var(--bb-head);font-size:clamp(2rem,1.4rem + 3cqi,2.9rem);line-height:.95;letter-spacing:-.01em;text-wrap:balance}
+.ic-slogan{margin-top:6px;font-size:.92rem;line-height:1.3;opacity:.94;text-wrap:balance}
+.ic-plain{padding:10px 4px 2px}
+.ic-plain .ic-slogan{opacity:.85}
+.ic-bento{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:9rem 5.6rem;gap:8px;margin-top:8px}
+.ic-tile{border-radius:16px;overflow:hidden;min-width:0;background:var(--bb-tile);box-shadow:inset 0 0 0 1px var(--bb-edge)}
+.ic-logo{background:#fff;display:grid;place-items:center;padding:10px}
+.ic-logo .bb-photo{width:100%;height:100%;object-fit:contain}
+.ic-logo svg{width:100%;max-height:100%}
+.ic-phone{grid-row:span 2;background:color-mix(in srgb,var(--bb-ink) 6%,#fff)}
+.ic-phone .bb-photo{width:100%;height:100%;object-fit:cover;object-position:top}
+.ic-pal{display:flex;flex-direction:column;justify-content:space-between;padding:10px}
+.ic-sw{display:flex;gap:5px}.ic-sw i{flex:1;height:30px;border-radius:9px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.ic-cap{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;opacity:.7}
+.ic-idea{margin:18px 6px 4px;font-family:var(--bb-head);font-size:1.32rem;line-height:1.22;text-wrap:pretty}
+.ic-dl{display:grid;gap:0;margin:10px 6px 0}
+.ic-dl>div{display:flex;gap:12px;align-items:baseline;padding:9px 0;border-top:1px solid var(--bb-edge)}
+.ic-dl dt{flex:none;width:6.6rem;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;opacity:.65}
+.ic-dl dd{margin:0;min-width:0;font-size:.88rem;line-height:1.4;overflow-wrap:anywhere}
+.ic-foot{display:flex;flex-wrap:wrap;gap:8px;margin:14px 4px 0}
+.ic-go{flex:1 1 9rem;min-height:44px;border:0;border-radius:999px;padding:0 18px;font-weight:600;font-size:.92rem;cursor:pointer;background:var(--bb-btn);color:var(--bb-btn-ink);box-shadow:0 8px 18px -12px rgba(0,0,0,.6)}
+.ic-go:disabled{opacity:.55;cursor:default}
+.ic-more{width:100%}
+.ic-more>summary{list-style:none;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;font-weight:600;font-size:.92rem;cursor:pointer;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bb-ink) 28%,transparent)}
+.ic-more>summary::-webkit-details-marker{display:none}
+.ic-more[open]>summary{margin-bottom:12px}
+.ic-more>article{color:initial}
 @media (prefers-reduced-motion:no-preference){.bb-obj,.bb-phone,.bb-post,.bb-parcel,.bb-sticker,.bb-shot,.bb-logo{transition:transform .25s ease}.bb-obj:hover,.bb-phone:hover,.bb-post:hover,.bb-parcel:hover,.bb-sticker:hover,.bb-shot:hover,.bb-logo:hover{transform:rotate(0) translateY(-2px)}}
 `;
 
@@ -541,6 +580,52 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
   );
 }
 
+/**
+ * La carte d'une identité proposée (demande du propriétaire du 21 novembre 2026 : « quelque chose de notre temps 2026
+ * […] beaucoup plus classe à regarder », « moins de texte […] pas trop barbant pour les clients ») : la grande scène et
+ * le nom, le logo, le haut du site, les couleurs, une phrase pour l'idée, le nom et son adresse, puis le choix. Toute la
+ * planche reste derrière « Voir le détail ».
+ */
+function IdentityCard({ x, canChoose, busy, onChoose }: { x: BoardCard; canChoose: boolean; busy: boolean; onChoose: (key: string) => void }) {
+  const t = useT();
+  const b = x.board, k = x.look, p = x.palette, shots: Shots = b.images ?? {};
+  const head = x.faces.heading ? `"SINA ${x.faces.heading.family}", serif` : "serif", body = x.faces.body ? `"SINA ${x.faces.body.family}", sans-serif` : "sans-serif";
+  const bgs = k.backgrounds.map((c) => safeHex(c, "#FFFFFF")), ink = safeHex(k.text, "#141414"), light = lum(ink) > 0.5;
+  const vars = { "--bb-bg1": bgs[0], "--bb-bg2": bgs[1] ?? bgs[0], "--bb-ink": ink, "--bb-btn": safeHex(k.button), "--bb-btn-ink": safeHex(k.buttonText, "#FFFFFF"), "--bb-head": head, "--bb-body": body } as CSSProperties;
+  const headWeight = x.faces.heading?.weight ?? 700;
+  const logo = shotOk(shots.logo) ? shots.logo : shotOk(shots.mark) ? shots.mark : null;
+  const nameLine = x.nameExpression || x.nameAnchor || x.nameWhy;
+  const free = b.domains?.free[0];
+  const title = <><p className="ic-name" style={{ fontWeight: headWeight }}>{x.name}</p><p className="ic-slogan">{x.slogan}</p></>;
+  return (
+    <section className={cx("ic", `bb-g-${x.ground}`)} data-ink={light ? "clair" : "fonce"} style={vars} data-identity-card={x.key}>
+      <div className="bb" data-ink={light ? "clair" : "fonce"} style={{ display: "contents" }}>
+        <div className="ic-top"><span className="ic-k">{x.key}</span></div>
+        {shotOk(shots.hero)
+          ? <figure className="ic-hero"><Photo shot={shots.hero} alt={t("La scène de la marque", "The brand's scene")} /><figcaption>{title}</figcaption></figure>
+          : <div className="ic-plain">{title}</div>}
+        <div className="ic-bento">
+          <div className="ic-tile ic-logo" data-card-logo>{logo ? <Photo shot={logo} alt={`${t("Logo", "Logo")} ${x.name}`} /> : <Wordmark x={x} main={safeHex(p.dark, "#141414")} accent={safeHex(p.accent)} compact />}</div>
+          <div className="ic-tile ic-phone" data-card-site>{shotOk(shots.site) ? <Photo shot={shots.site} alt={b.site.headline} /> : null}</div>
+          <div className="ic-tile ic-pal"><div className="ic-sw" aria-hidden>{(["dark", "primary", "accent", "secondary", "light"] as const).map((r) => <i key={r} style={{ background: safeHex(p[r]) }} />)}</div><span className="ic-cap">{t("Couleurs", "Colours")}</span></div>
+        </div>
+        <p className="ic-idea" style={{ fontWeight: headWeight }}>« {b.idea.belief} »</p>
+        <dl className="ic-dl">
+          {nameLine && <div><dt>{t("Le nom", "The name")}</dt><dd>{nameLine}</dd></div>}
+          {free && <div><dt>{t("Adresse libre", "Free address")}</dt><dd>{free}</dd></div>}
+        </dl>
+        <div className="ic-foot">
+          {canChoose && <button type="button" className="ic-go" disabled={busy} onClick={() => onChoose(x.key)} data-card-choose={x.key}>{t(`Choisir ${x.name}`, `Choose ${x.name}`)}</button>}
+          <details className="ic-more">
+            <summary>{t("Voir le détail", "See the details")}</summary>
+            <Planche x={x} canChoose={canChoose} busy={busy} onChoose={onChoose} />
+          </details>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /** « Voici ce que j'ai compris de ton marché » : les paroles réelles lues sur le web, avec leur page. */
 function Study({ s }: { s: StudyCard }) {
   const t = useT();
@@ -576,7 +661,7 @@ export function BrandBoards({ ids, busy, onChoose }: { ids: BoardSet; busy: bool
           {!!ids.final.finishIssues?.length && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-brand-finish-issues><p className="font-semibold">{t("Ce que je n'ai pas pu réussir", "What I could not get right")}</p><ul className="mt-1 list-disc pl-4">{ids.final.finishIssues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
           <p className="text-xs text-muted">{t("Les autres propositions", "The other proposals")} : {ids.list.filter((x) => x.key !== ids.chosen?.key).map((x) => `${x.key} « ${x.name} »`).join(", ")}.</p>
         </>
-      ) : ids.list.map((x) => <Planche key={x.key} x={x} canChoose={!ids.chosen} busy={busy} onChoose={onChoose} />)}
+      ) : <div className="ic-grid" data-identity-cards>{ids.list.map((x) => <IdentityCard key={x.key} x={x} canChoose={!ids.chosen} busy={busy} onChoose={onChoose} />)}</div>}
       {!ids.chosen && <p className="text-xs text-muted">{t("Tu peux aussi mélanger (par exemple le nom de A avec les couleurs de B), retoucher un nom ou une phrase, ou demander une nouvelle proposition : écris-le simplement.", "You can also mix (e.g. A's name with B's colours), tweak a name or a line, or ask for a new proposal.")}</p>}
       {!!ids.issues.length && !ids.final?.finished && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-syna-identity-issues><p className="font-semibold">{t("Ce que je n'ai pas pu régler", "What I could not settle")}</p><ul className="mt-1 list-disc pl-4">{ids.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
     </div>
