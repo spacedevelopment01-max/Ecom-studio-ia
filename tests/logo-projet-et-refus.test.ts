@@ -74,6 +74,7 @@ describe("logos expressifs : le niveau des 50 logos que le propriétaire aime (2
     const p = I.imagePrompt("logo", route("A") as never, imagery);
     expect(p).toContain(I.LOGO_NIVEAU);
     expect(I.LOGO_NIVEAU).toMatch(/Un logo EXPRESSIF, avec du caractère, qui raconte le métier en une seule image/);
+    expect(I.LOGO_NIVEAU).toMatch(/un objet, un animal ou une mascotte dessinés avec soin et du détail, jamais une personne/);
     expect(p).toMatch(/Tu es totalement libre du dessin/);
     const planche = await I.planchedesLogosAimes();
     expect(planche).toBeInstanceOf(Buffer);
