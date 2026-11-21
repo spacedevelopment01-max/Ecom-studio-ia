@@ -296,6 +296,15 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
         expect(card).not.toMatch(/data-to-prove|data-voice-is|bb-signs|Ce que ton client pense/);
       }
     }
+    // Sans maquette du site gardée : aucune case vide à sa place.
+    {
+      const ids = (await fr(() => threadView(t.user, t.cid))).journey.identities as any;
+      const noSite = { ...ids, list: ids.list.map((x: any, i: number) => i === 0 ? { ...x, board: { ...x.board, images: { ...x.board.images, site: undefined } } } : x) };
+      const out = renderToStaticMarkup(createElement(BrandBoards, { ids: noSite, busy: false, onChoose: () => {} }));
+      const first = new RegExp(`data-identity-card="${noSite.list[0].key}"[\\s\\S]*?<details`).exec(out)![0];
+      expect(first).not.toContain("data-card-site");
+      expect(first).toContain("ic-bento ic-bento-short");
+    }
   });
 
   // ---------------------------------------------------------------- le second temps : la marque finie

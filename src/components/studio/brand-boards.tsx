@@ -304,6 +304,7 @@ const BOARD_CSS = `
 .ic-plain{padding:10px 4px 2px}
 .ic-plain .ic-slogan{opacity:.85}
 .ic-bento{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:9rem 5.6rem;gap:8px;margin-top:8px}
+.ic-bento-short{grid-template-rows:9rem}
 .ic-tile{border-radius:16px;overflow:hidden;min-width:0;background:var(--bb-tile);box-shadow:inset 0 0 0 1px var(--bb-edge)}
 .ic-logo{background:#fff;display:grid;place-items:center;padding:10px}
 .ic-logo .bb-photo{width:100%;height:100%;object-fit:contain}
@@ -321,7 +322,8 @@ const BOARD_CSS = `
 .ic-foot{display:flex;flex-wrap:wrap;gap:8px;margin:14px 4px 0}
 .ic-go{flex:1 1 9rem;min-height:44px;border:0;border-radius:999px;padding:0 18px;font-weight:600;font-size:.92rem;cursor:pointer;background:var(--bb-btn);color:var(--bb-btn-ink);box-shadow:0 8px 18px -12px rgba(0,0,0,.6)}
 .ic-go:disabled{opacity:.55;cursor:default}
-.ic-more{width:100%}
+.ic-more{flex:0 0 auto;min-width:0}
+.ic-more[open]{flex:1 1 100%}
 .ic-more>summary{list-style:none;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;font-weight:600;font-size:.92rem;cursor:pointer;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bb-ink) 28%,transparent)}
 .ic-more>summary::-webkit-details-marker{display:none}
 .ic-more[open]>summary{margin-bottom:12px}
@@ -604,9 +606,10 @@ function IdentityCard({ x, canChoose, busy, onChoose }: { x: BoardCard; canChoos
         {shotOk(shots.hero)
           ? <figure className="ic-hero"><Photo shot={shots.hero} alt={t("La scène de la marque", "The brand's scene")} /><figcaption>{title}</figcaption></figure>
           : <div className="ic-plain">{title}</div>}
-        <div className="ic-bento">
+        {/* Sans maquette du site gardée, pas de case vide : le logo et les couleurs prennent la ligne. */}
+        <div className={cx("ic-bento", !shotOk(shots.site) && "ic-bento-short")}>
           <div className="ic-tile ic-logo" data-card-logo>{logo ? <Photo shot={logo} alt={`${t("Logo", "Logo")} ${x.name}`} /> : <Wordmark x={x} main={safeHex(p.dark, "#141414")} accent={safeHex(p.accent)} compact />}</div>
-          <div className="ic-tile ic-phone" data-card-site>{shotOk(shots.site) ? <Photo shot={shots.site} alt={b.site.headline} /> : null}</div>
+          {shotOk(shots.site) && <div className="ic-tile ic-phone" data-card-site><Photo shot={shots.site} alt={b.site.headline} /></div>}
           <div className="ic-tile ic-pal"><div className="ic-sw" aria-hidden>{(["dark", "primary", "accent", "secondary", "light"] as const).map((r) => <i key={r} style={{ background: safeHex(p[r]) }} />)}</div><span className="ic-cap">{t("Couleurs", "Colours")}</span></div>
         </div>
         <p className="ic-idea" style={{ fontWeight: headWeight }}>« {b.idea.belief} »</p>
