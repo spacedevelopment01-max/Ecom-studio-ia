@@ -31,6 +31,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
   const { renderToStaticMarkup } = await import("react-dom/server");
   const { BrandBoards } = await import("@/components/studio/brand-boards");
   /** L'écran des planches tel que le client le voit dans le fil (rendu sans navigateur). */
+  /** Les consignes de relecture d'une planche, une par image (relecture image par image), mises bout à bout. */
+  const checksOf = (log: { prompts: Record<string, string> }, prefix: string) => Object.keys(log.prompts).filter((k) => k === prefix || k.startsWith(`${prefix}:`)).map((k) => log.prompts[k]).join("\n");
   const screen = async (t: { user: any; cid: string }) => renderToStaticMarkup(createElement(BrandBoards, { ids: (await fr(() => threadView(t.user, t.cid))).journey.identities as any, busy: false, onChoose: () => {} })).replace(/<style>[\s\S]*?<\/style>/g, "");
   const count = (html: string, mark: string) => html.split(mark).length - 1;
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
@@ -188,7 +190,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(payloadOf(jobId).finish).toBeUndefined();
     // Après la relecture des textes : pour chaque planche, la direction artistique, le logo, la grande scène, la
     // maquette du haut du site, puis UNE relecture.
-    expect(log.ids.slice(log.ids.indexOf("review-1") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, `imagecheck-1-${k}${FIRST}`]));
+    expect(log.ids.slice(log.ids.indexOf("review-1") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, ...["logo", "hero", "site"].map((sl) => `imagecheck-1-${k}${FIRST}:${sl}`)]));
     // La maquette : en portrait, avec le logo et la grande scène de SA planche en références ; le logo et la scène,
     // eux, naissent sans modèle.
     for (const k of ["A", "B", "C"]) {
@@ -230,7 +232,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       expect(prompt).not.toMatch(/Montre seulement l'écran du téléphone|ni téléphone, ni cadre/);
       expect(prompt).toMatch(/Aucune personne, aucun visage, aucune main/);
       // La relecture attend ces mêmes mots, juge la beauté de la maquette et sait que les petits mots d'interface sont normaux.
-      const check = log.prompts[`imagecheck-1-A${FIRST}`];
+      const check = checksOf(log, `imagecheck-1-A${FIRST}`);
       expect(check).toContain(`slot "site" : la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie`);
       expect(check).toMatch(/un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand/);
       expect(check).toMatch(/un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts \(defect « autre »\)/);
@@ -342,7 +344,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Exactement les cinq images manquantes, puis UNE relecture ; la direction artistique du premier temps ressert
     // telle quelle (aucun nouvel appel « imagery »), et aucun logo n'est redessiné. Après l'adoption du logo : le
     // symbole seul, tiré de lui, puis SA relecture.
-    expect(log.ids).toEqual([...I.FINISH_SLOTS.map((sl) => `image-1-A-${sl}${REST}`), `imagecheck-1-A${REST}`, "symbol-1", "symbolcheck-1"]);
+    expect(log.ids).toEqual([...I.FINISH_SLOTS.map((sl) => `image-1-A-${sl}${REST}`), ...["logo", "hero", "object", "signs", "site", "post0", "post1", "post2"].filter((sl) => (I.FINISH_SLOTS as string[]).includes(sl)).map((sl) => `imagecheck-1-A${REST}:${sl}`), "symbol-1", "symbolcheck-1"]);
     expect(log.prompts[`image-1-A-post0${REST}`]).toMatch(/^Direction artistique : Lumière de fin d'après-midi/);
     expect(log.prompts[`image-1-A-object${REST}`]).toContain("Le sachet posé sur la table.");
     // L'objet et les signes portent le logo de la planche, joint à la relecture pour comparer.
@@ -357,7 +359,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(BP.imagerySystem("produits")).toMatch(/La PREMIÈRE publication montre clairement ce qui est vendu/);
     expect(BP.reviewSystem("produits")).toMatch(/des publications qu'une personne qui ne connaît pas la marque ne comprendrait pas seule/);
     expect(log.ids.some((i) => i.includes("-site"))).toBe(false); // la maquette de la planche est gardée, jamais repayée
-    expect(log.prompts[`imagecheck-1-A${REST}`]).toMatch(/La dernière image jointe \(6\) est seulement le logo de la marque, pour comparer : ne la juge pas\./);
+    expect(log.prompts[`imagecheck-1-A${REST}:object`]).toMatch(/La dernière image jointe \(2\) est seulement le logo de la marque, pour comparer : ne la juge pas\./);
     expect(out).toMatchObject({ finished: true, name: "Bain de Minuit", created: I.FINISH_SLOTS, issues: [], kit: true });
 
     j = J.journeyOf(t.cid);
@@ -535,7 +537,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // de sa marque (la maquette du site appartient à la proposition : elle ne se refait que si le client la demande).
     const all8 = ":logo+hero+object+signs+post0+post1+post2";
     // Puis le symbole seul, tiré du logo créé pour l'identité mélangée, et sa relecture.
-    expect(log.ids).toEqual([`imagery-1-A${all8}`, ...["logo", "hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), `imagecheck-1-A${all8}`, "symbol-1", "symbolcheck-1"]);
+    expect(log.ids).toEqual([`imagery-1-A${all8}`, ...["logo", "hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), ...["logo", "hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `imagecheck-1-A${all8}:${sl}`), "symbol-1", "symbolcheck-1"]);
     expect(log.prompts[`imagery-1-A${all8}`]).toContain(`couleur de marque ${route("B").palette.primary}`);
     const done = J.journeyOf(t.cid);
     {
@@ -578,7 +580,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Le client demande un changement avec ses mots : la direction artistique est réécrite, et l'ancien logo est donné
     // comme ce dont le nouveau doit nettement différer.
     // Un autre logo : son symbole est tiré du NOUVEAU logo (un appel de création, un de relecture).
-    expect(log.ids).toEqual([`imagery-1-A${part}`, `image-1-A-logo${part}`, `image-1-A-object${part}`, `image-1-A-signs${part}`, `imagecheck-1-A${part}`, "symbol-1", "symbolcheck-1"]);
+    expect(log.ids).toEqual([`imagery-1-A${part}`, `image-1-A-logo${part}`, `image-1-A-object${part}`, `image-1-A-signs${part}`, ...["logo", "object", "signs"].map((sl) => `imagecheck-1-A${part}:${sl}`), "symbol-1", "symbolcheck-1"]);
     expect(log.refs["symbol-1"]).toEqual({ logo: true, scene: false, aspect: "1:1" });
     expect(log.prompts[`imagery-1-A${part}`]).toMatch(/# Ce que le client demande pour cette nouvelle proposition \(ses mots\)\nPlus rond, avec une lune\./);
     // Rien des autres logos n'est transmis, ni en image ni en mots : chaque logo repart de zéro.
@@ -804,7 +806,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       symbolLook: (_id, c) => { sent.seen = c.images.map((i: any) => i.data); return { ok: true, why: "" }; },
     });
     // Son logo n'est pas redessiné, mais son symbole seul en est tiré (création, puis relecture).
-    expect(log.ids).toEqual([...I.FINISH_SLOTS.map((sl) => `image-1-A-${sl}${REST}`), `imagecheck-1-A${REST}`, "symbol-1", "symbolcheck-1"]);
+    expect(log.ids).toEqual([...I.FINISH_SLOTS.map((sl) => `image-1-A-${sl}${REST}`), ...["logo", "hero", "object", "signs", "site", "post0", "post1", "post2"].filter((sl) => (I.FINISH_SLOTS as string[]).includes(sl)).map((sl) => `imagecheck-1-A${REST}:${sl}`), "symbol-1", "symbolcheck-1"]);
     expect(log.ids.some((i) => i.includes("-logo") || i.startsWith("imagery"))).toBe(false);
     // La référence envoyée est SON logo (posé sur du blanc), et la relecture le reçoit pour comparer.
     expect(log.refs["symbol-1"]).toEqual({ logo: true, scene: false, aspect: "1:1" });
@@ -899,15 +901,15 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     const j = J.journeyOf(t.cid), [a, b, c] = j.identities!.list;
     // Le relecteur a bien reçu le nom, le titre et le bouton (jamais le menu ni le paragraphe du site).
     for (const x of [a, b, c]) {
-      const check = log.prompts[`imagecheck-1-${x.key}${FIRST}`];
+      const check = checksOf(log, `imagecheck-1-${x.key}${FIRST}`);
       expect(check).toContain(`Textes attendus : ${[x.name, x.board!.site.headline, x.board!.site.button].map((w) => `« ${w} »`).join(" ; ")}.`);
       expect(check).not.toContain(paragraph(x.key as "A"));
     }
     expect(c.board!.site.headline).toBe(route("C").board.site.headline);
     // A : gardée SANS seconde lecture, ses textes en trop ne sont pas un défaut. B : refusée par le jugement. C : il lui
     // manque son titre, une seconde lecture tranche : le titre n'y est pas, l'image n'est pas gardée.
-    expect(log.ids.filter((i) => i.startsWith("imagereread") && !/:r\d$/.test(i))).toEqual([`imagereread-1-C${FIRST}`]);
-    expect(log.prompts[`imagereread-1-C${FIRST}`]).toMatch(/Voici 1 image\(s\), dans l'ordre\.\nImage 1 — slot "site"\./);
+    expect(log.ids.filter((i) => i.startsWith("imagereread") && !/:r\d$/.test(i))).toEqual([`imagereread-1-C${FIRST}:site`]);
+    expect(log.prompts[`imagereread-1-C${FIRST}:site`]).toMatch(/Voici 1 image\(s\), dans l'ordre\.\nImage 1 — slot "site"\./);
     expect(a.board!.images!.site).toBeTruthy();
     expect(b.board!.images!.site).toBeUndefined();
     expect(c.board!.images!.site).toBeUndefined();
@@ -959,8 +961,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     const j = J.journeyOf(t.cid), [a, b, c] = j.identities!.list;
     expect(route("B").board.site.headline).toContain("pétille");
     // Une seconde lecture pour A et pour B (un texte attendu manquait) ; aucune pour C.
-    expect(log.ids.filter((i) => i.startsWith("imagereread") && !/:r\d$/.test(i))).toEqual([`imagereread-1-A${FIRST}`, `imagereread-1-B${FIRST}`]);
-    for (const k of ["A", "B"]) expect(log.prompts[`imagereread-1-${k}${FIRST}`]).toMatch(/Voici 1 image\(s\), dans l'ordre\.\nImage 1 — slot "site"\./);
+    expect(log.ids.filter((i) => i.startsWith("imagereread") && !/:r\d$/.test(i))).toEqual([`imagereread-1-A${FIRST}:site`, `imagereread-1-B${FIRST}:site`]);
+    for (const k of ["A", "B"]) expect(log.prompts[`imagereread-1-${k}${FIRST}:site`]).toMatch(/Voici 1 image\(s\), dans l'ordre\.\nImage 1 — slot "site"\./);
     // A : gardée, son titre y est bien, et ses petits mots en trop ne comptent pas. B : son titre n'y est pas écrit
     // exactement (un accent manque), refusée, et c'est dit. C : gardée.
     expect(a.board!.images!.site).toBeTruthy();

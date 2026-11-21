@@ -81,12 +81,14 @@ export const ImagerySchema = z.object({
   posts: z.array(z.string().min(1).max(2200)).length(3),
 });
 export type Imagery = z.infer<typeof ImagerySchema>;
+/** Note minimale (sur 10) pour qu'une image soit montrée au client. */
+export const NOTE_MIN = 8;
 export const ImageReviewSchema = z.object({
   // Jusqu'à 12 avis : les 8 images d'une planche, plus les images jointes pour comparer (logo, logos aimés), que le
   // relecteur juge parfois aussi (ses avis sur elles sont ignorés).
   // defect : la nature du défaut d'une image refusée. Seul « texte » peut être contredit par la lecture elle-même ;
   // un défaut non précisé vaut « autre » (l'image reste refusée : c'est le côté sûr).
-  images: z.array(z.object({ slot: z.string().max(12), ok: z.boolean(), read: z.array(z.string().max(400)).max(14).default([]), why: z.string().max(260).default(""), defect: z.enum(["texte", "personne", "coupe", "abime", "autre"]).default("autre") })).max(12).default([]),
+  images: z.array(z.object({ slot: z.string().max(12), seen: z.string().max(1500).default(""), score: z.number().min(0).max(10).optional(), ok: z.boolean(), read: z.array(z.string().max(400)).max(14).default([]), why: z.string().max(260).default(""), defect: z.enum(["texte", "personne", "coupe", "abime", "autre"]).default("autre") })).max(12).default([]),
 });
 /** Seconde lecture d'une image dont le jugement contredit la lecture : seulement recopier, sans juger. */
 export const ImageRereadSchema = z.object({ images: z.array(z.object({ slot: z.string().max(12), read: z.array(z.string().max(400)).max(14).default([]) })).max(12).default([]) });
@@ -248,7 +250,7 @@ const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
   logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande image", en: "the main image" }, object: { fr: "l'image de l'objet", en: "the object image" }, signs: { fr: "l'image des signes", en: "the signs image" }, site: { fr: "la maquette de ton site", en: "your site mock-up" },
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
-const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
+export const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
   logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Le bouton principal porte son texte, écrit DANS le bouton : un bouton vide, avec seulement une flèche, est un défaut (defect « autre »). Le logo de l'en-tête est CELUI de la marque (compare-le à l'image « logo » fournie avec les autres) : même signe, même dessin de lettres ; sur un écran sombre, il est dans sa version claire (ses parties foncées en clair), et une nuance de couleur différente n'est pas un défaut. Seul un AUTRE signe ou un autre dessin du nom à la place du sien est un défaut (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
   post0: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post1: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post2: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)",
 };
@@ -447,7 +449,10 @@ export async function runBoardImages(o: {
   // 3. La relecture : aucune image n'est montrée sans avoir été regardée.
   let blind = false;
   const currentLogo = () => o.clientLogo?.data ?? bufferOf("logo") ?? logo;
-  const review = async (slots: ImageSlot[], rt = "") => {
+  // Une image à la fois, avec toute l'attention du relecteur (21 novembre 2026 : six images jugées d'un coup, en une
+  // réponse courte, laissaient passer taches, textes flous et écrans à moitié vides).
+  const review = async (slots: ImageSlot[], rt = "") => { for (const s of slots) await reviewOne([s], slots.length > 1 ? `${rt}:${s}` : rt); };
+  const reviewOne = async (slots: ImageSlot[], rt = "") => {
     if (!slots.length) return;
     const logo = currentLogo();
     const texts = slotTexts(x);
@@ -486,6 +491,9 @@ export async function runBoardImages(o: {
       for (const s of slots) {
         const v = review.images.find((r) => r.slot === s);
         if (!v) { drop(s, L("elle n'a pas pu être relue", "it could not be reviewed")); continue; }
+        // Note du relecteur face à une campagne haut de gamme : seule une image notée 8 sur 10 ou plus est montrée
+        // (décision du propriétaire du 21 novembre 2026, devant quatre images ratées laissées passer).
+        if (v.ok && v.score != null && v.score < NOTE_MIN) { drop(s, v.why || L(`elle n'est pas au niveau d'une campagne haut de gamme (${v.score}/10)`, `it is not at premium campaign level (${v.score}/10)`), SAID.autre); continue; }
         const c = textCheck(texts[s], v.read, x.name), exact = !c.missing.length && (s === "site" || !c.extra.length);
         if (s === "site" && !c.missing.length) complete.add(s);
         if (!v.ok) {

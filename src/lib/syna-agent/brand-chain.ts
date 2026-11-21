@@ -81,7 +81,8 @@ const CALLS = {
   // Images de la planche (réglage `sina.brand_images`) : la direction artistique écrit les consignes ; un modèle
   // qui voit relit les images d'une planche.
   imagery: { tier: "strong", input: 7_000, output: 6_000, max: 10_000 },
-  look: { tier: "craft", input: 14_000, output: 1_500, max: 4_000 },
+  // Le relecteur des images : le modèle le plus fort, une image à la fois (21 novembre 2026).
+  look: { tier: "strong", input: 9_000, output: 2_500, max: 6_000 },
 } as const satisfies Record<string, { tier: Tier; input: number; output: number; max: number }>;
 type CallId = keyof typeof CALLS;
 const RESEARCHES = 3;
@@ -152,12 +153,14 @@ const imageUnitMax = (aspect: ImageAspect, references: number) => photoRequestMa
 export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[]): ChainQuote {
   const s = settings ?? chainSettings();
   let max = 0, probable: number | null = 0;
-  for (const slot of slots?.length ? CREATED_SLOTS.filter((x) => slots.includes(x)) : CREATED_SLOTS) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]); max += unit * routes; probable += (unit / 1.25) * routes; }
+  const list = slots?.length ? CREATED_SLOTS.filter((x) => slots.includes(x)) : CREATED_SLOTS;
+  for (const slot of list) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]); max += unit * routes; probable += (unit / 1.25) * routes; }
   for (const id of ["imagery", "look"] as const) {
-    const c = CALLS[id], m = s[c.tier];
+    // La relecture se fait image par image : une relecture par image.
+    const c = CALLS[id], m = s[c.tier], n = id === "look" ? Math.max(1, list.length) : 1;
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
-    max += (bound ?? (usual ?? 0) * 4) * routes;
-    probable = probable == null || usual == null ? null : probable + usual * routes;
+    max += (bound ?? (usual ?? 0) * 4) * routes * n;
+    probable = probable == null || usual == null ? null : probable + usual * routes * n;
   }
   return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
 }
@@ -295,7 +298,7 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
     draw: (id, c) => withTrace(scope(`brand-${id}`), () => withQuotedImageRoute(boardImageRoute(), () => aiSiteImageHd({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, { prompt: c.prompt, aspect: c.aspect, logo: c.logo ?? null, scene: c.scene ?? null, avoid: c.avoid ?? null, examples: c.examples ?? null }))),
     look: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "quality_control", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, images: c.images, promptKey: "syna-brand-look-1",
-      maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, deferred, routing: { difficulty: "standard", prefer: s.craft },
+      maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, deferred, routing: { difficulty: "complex", prefer: s.strong },
     }, c.schema)),
   };
 }

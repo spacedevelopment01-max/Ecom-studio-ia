@@ -137,3 +137,24 @@ describe("jamais une planche incomplète : une image refaite et refusée garde c
     expect(cards).toContain("Dès ton choix : l'objet qui porte ton logo, tes signes en photo et tes trois premières publications.");
   });
 });
+
+describe("le relecteur des images : le plus fort, une image à la fois, une liste de défauts, 8 sur 10 au moins (21 novembre 2026)", async () => {
+  const I = await import("@/lib/syna-agent/brand-images");
+  const P = await import("@/lib/syna-agent/brand-prompts");
+  it("consigne : décrire d'abord, chercher les défauts vus le 21 novembre, noter sévèrement", () => {
+    const sys = P.imageReviewSystem();
+    expect(sys).toMatch(/D'abord, seen = ce que tu vois, zone par zone/);
+    for (const d of [/une TACHE, une zone sale/, /un texte FLOU, baveux, entouré d'un halo/, /une grande zone VIDE sans raison : un écran de téléphone à moitié vide/, /un cadre arrondi, une ARCHE, une demi-lune ou une vignette ronde/, /un objet VIDE ou posé sans raison \(un carton blanc/, /un bouton coupé, vide ou séparé de son texte/, /ce que le client refuse/]) expect(sys).toMatch(d);
+    expect(sys).toMatch(/Une image n'est gardée que sans aucun défaut de la liste ET avec une note d'au moins 8\./);
+    expect(sys).not.toMatch(/et seulement ceux-là|même si tu l'aurais composée autrement/);
+    expect(I.NOTE_MIN).toBe(8);
+  });
+  it("une image jugée bonne mais notée sous 8 est refusée ; le relecteur est le modèle fort ; une relecture par image", () => {
+    const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(img).toContain("if (v.ok && v.score != null && v.score < NOTE_MIN) {");
+    expect(img).toContain("const review = async (slots: ImageSlot[], rt = \"\") => { for (const s of slots) await reviewOne([s], slots.length > 1 ? `${rt}:${s}` : rt); };");
+    const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
+    expect(chain).toContain('look: { tier: "strong", input: 9_000, output: 2_500, max: 6_000 },');
+    expect(chain).toContain('routing: { difficulty: "complex", prefer: s.strong },');
+  });
+});
