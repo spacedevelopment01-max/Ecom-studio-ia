@@ -170,7 +170,7 @@ describe("consignes de base claires et refus du client mot pour mot au dessinate
     expect(p).toContain("Ce que le client refuse, avec ses mots : « Il ne veut surtout pas");
     expect(p).not.toMatch(/tons de pierre|sans stress/);
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).toContain('imagePrompt("logo", x, imagery, { logo: true, refusal: o.gouts })');
+    expect(img).toContain('{ logo: true, refusal: o.gouts })');
   });
   it("les photos reçoivent les consignes de base, dites en positif", () => {
     for (const sl of ["hero", "object", "signs", "site", "post0"] as const) expect(I.imagePrompt(sl, route("A") as never, imagery)).toContain(I.BORD_A_BORD);
@@ -179,5 +179,18 @@ describe("consignes de base claires et refus du client mot pour mot au dessinate
     expect(I.imagePrompt("object", route("A") as never, imagery)).toContain(I.OBJETS_UTILES);
     expect(I.imagePrompt("hero", route("A") as never, imagery)).not.toContain(I.TEXTE_NET);
     expect(I.imagePrompt("logo", route("A") as never, imagery)).not.toContain(I.BORD_A_BORD);
+  });
+});
+
+describe("marque finie, logo refait avec les mots du client : la consigne de SINA ne va pas au dessinateur (21 novembre 2026)", async () => {
+  const I = await import("@/lib/syna-agent/brand-images");
+  it("le logo reçoit ce qu'on savait de la marque avant ; le relecteur, les mots du client", () => {
+    const imagery = { look: "calme", logo: "Piste : un fil à plomb stylisé, vert profond.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
+    const fin = fs.readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8");
+    expect(fin).toContain('...(slots.includes("logo") && o.guidance ? { logoLine: proposalImagery(j, route)?.logo ?? before?.logoIdea ?? null } : {}),');
+    expect(fin).toContain("gouts: [j.start.image?.value, clientWords(o.guidance)]");
+    const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(img).toContain('imagePrompt("logo", x, o.logoLine?.trim() ? { ...imagery, logo: o.logoLine.trim() } : imagery, { logo: true, refusal: o.gouts })');
+    expect(I.imagePrompt("logo", route("A") as never, { ...(imagery as object), logo: "Ce qu'on savait de la marque." } as never)).not.toMatch(/fil à plomb/);
   });
 });

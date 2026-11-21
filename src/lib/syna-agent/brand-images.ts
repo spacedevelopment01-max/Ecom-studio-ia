@@ -356,6 +356,11 @@ export async function runBoardImages(o: {
   /** Ce que le client a dit de l'image qu'il veut (ses mots, refus compris) : donné au RELECTEUR des images, jamais au
    * dessinateur du logo (propriétaire, 21 novembre 2026 : « enlève la 7 »). */
   gouts?: string | null;
+  /**
+   * Ce que le dessinateur du logo sait de la marque, écrit SANS la consigne de SINA (décision du propriétaire du
+   * 21 novembre 2026 : « pas de consigne autre que les 50 logos en exemple ») ; à défaut, la ligne de la direction artistique.
+   */
+  logoLine?: string | null;
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
   imagery?: Imagery;
   /** Logo GARDÉ par le client : jamais redessiné ; il est la marque de la planche et se pose sur ce qui le porte. */
@@ -421,7 +426,7 @@ export async function runBoardImages(o: {
     const n = Math.min(already.length, 4);
     // Parcimonie du trait : un seul logo par série le porte (contrôle sans IA des logos déjà faits).
     const traitPris = (await Promise.all(already.map((b) => traitHorizontal(b).then((r) => r.trouve).catch(() => false)))).some(Boolean);
-    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, imagery, { logo: true, refusal: o.gouts }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
+    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, o.logoLine?.trim() ? { ...imagery, logo: o.logoLine.trim() } : imagery, { logo: true, refusal: o.gouts }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
     let drawn = bufferOf("logo");
     // Contrôle sans IA de la parcimonie : un trait alors qu'un logo de la série en a déjà un, le logo est redessiné UNE
     // fois ; s'il le garde encore, il est montré et c'est dit au client. Le premier trait d'une série est gardé.
