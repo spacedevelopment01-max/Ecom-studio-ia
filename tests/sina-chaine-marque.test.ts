@@ -853,10 +853,13 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     // logo, la grande scène, la maquette du haut du site, puis UNE relecture. Rien d'autre : ni objet, ni signes, ni
     // publications, ni illustratrice.
     const first = await chain(t, { images: true }, script);
-    expect(first.log.ids.slice(first.log.ids.indexOf("review-1") + 1).filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, ...["logo", "hero", "site"].map((sl) => `imagecheck-1-${k}${FIRST}:${sl}`)]));
+    expect(first.log.ids.slice(first.log.ids.indexOf("review-1") + 1).filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `imagecheck-1-${k}${FIRST}:logo`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, ...["hero", "site"].map((sl) => `imagecheck-1-${k}${FIRST}:${sl}`)]));
     expect(first.log.ids.some((i) => /-(object|signs|post\d)/.test(i))).toBe(false);
     // La maquette : en portrait, avec le logo et la grande scène de sa planche en références.
-    for (const k of ["A", "B", "C"]) expect((first.log as any).refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
+    for (const k of ["A", "B"]) expect((first.log as any).refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
+    // C : son logo est refusé à la relecture, faite AVANT la maquette (21 novembre 2026) : la maquette ne porte jamais
+    // un logo refusé.
+    expect((first.log as any).refs[`image-1-C-site${FIRST}`]).toEqual({ logo: false, scene: true, aspect: "9:16" });
     expect(first.log.prompts[`image-1-A-site${FIRST}`]).toContain("Le haut de la page d'accueil.");
     expect(first.log.systems[`imagery-1-A${FIRST}`]).toMatch(/- site : la MAQUETTE du haut de la page d'accueil du site sur téléphone\. Suis le cahier « La maquette du haut de l'accueil » ci-dessous/);
     // La directrice artistique reçoit la manière d'ouvrir choisie pour cette identité, et aucune seconde lecture n'est payée.
@@ -882,10 +885,10 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     const kept = count();
     expect(kept.rejected).toBe(3);
 
-    // Toutes les images d'une planche (ici demandées sur les planches déjà écrites) : les consignes, les huit images
-    // dans l'ordre, puis UNE relecture.
+    // Toutes les images d'une planche (ici demandées sur les planches déjà écrites) : les consignes, le logo relu
+    // aussitôt, puis les sept autres images dans l'ordre et leur relecture.
     const { log, out, job } = await chain(t, { imagesOnly: true }, script);
-    expect(log.ids.filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, ...SLOTS.map((sl) => `image-1-${k}-${sl}`), ...REVIEW_ORDER.map((sl) => `imagecheck-1-${k}:${sl}`)]));
+    expect(log.ids.filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, `image-1-${k}-logo`, `imagecheck-1-${k}:logo`, ...SLOTS.filter((sl) => sl !== "logo").map((sl) => `image-1-${k}-${sl}`), ...REVIEW_ORDER.filter((sl) => sl !== "logo").map((sl) => `imagecheck-1-${k}:${sl}`)]));
     const refs = (log as any).refs;
     // Le logo est conçu par OpenAI à partir de la marque, sans modèle (retour du propriétaire du 14 novembre 2026 :
     // le nom composé envoyé en modèle portait la vague de « Pulpe », et chaque logo la recopiait).
@@ -1061,7 +1064,8 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(before.every((x) => !x.board!.images)).toBe(true); // planches écrites sans leurs images (`images: false`)
     let tries = 0;
     const { log } = await chain(t, { imagesOnly: true, redo: ["B"] }, { draw: async (id) => { if (id.endsWith("-post1")) { tries++; throw new Error("503 du fournisseur"); } return id.endsWith("-logo") ? whiteLogo("#CC3366", 120, 180) : square("#CC3366", 120, 180); } });
-    expect(log.ids).toEqual(["imagery-1-B", ...SLOTS.map((sl) => `image-1-B-${sl}`), ...REVIEW_ORDER.filter((sl) => sl !== "post1").map((sl) => `imagecheck-1-B:${sl}`)]);
+    // Le logo est relu dès qu'il est dessiné, avant les images qui le portent (21 novembre 2026).
+    expect(log.ids).toEqual(["imagery-1-B", "image-1-B-logo", "imagecheck-1-B:logo", ...SLOTS.filter((sl) => sl !== "logo").map((sl) => `image-1-B-${sl}`), ...REVIEW_ORDER.filter((sl) => sl !== "post1" && sl !== "logo").map((sl) => `imagecheck-1-B:${sl}`)]);
     expect(tries).toBe(1);
     const after = J.journeyOf(t.cid).identities!.list;
     expect(after[0]).toEqual(before[0]);
@@ -1206,6 +1210,19 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(IdentitySchema.shape.sloganTone.parse(tone)).toBe(tone);
   });
 
+  it("photo en partie transparente (panne du 21 novembre 2026) : refusée sans relecture payée, puis refaite et relue", async () => {
+    const t = await thread();
+    await chain(t, { images: true }, { review: () => ({ routes: [], series: "" }) });
+    const brume = () => { const w = 96, h = 96, d = Buffer.alloc(w * h * 4); for (let i = 0; i < w * h; i++) { d[i * 4] = 40; d[i * 4 + 1] = 80; d[i * 4 + 2] = 120; d[i * 4 + 3] = i < (w * h) / 3 ? 90 : 255; } return sharpLib(d, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer(); };
+    let n = 0;
+    const { log } = await chain(t, { imagesOnly: true, redo: ["A"], slots: ["hero"] }, { draw: async (id) => (id.includes("-hero") && n++ === 0 ? brume() : square("#224466", 128, 128)) });
+    // Aucune relecture n'est payée pour la photo transparente : elle est refaite, et seule la nouvelle est relue.
+    expect(log.ids).toEqual(["imagery-1-A:hero", "image-1-A-hero:hero", "image-1-A-hero:hero:r1", "imagecheck-1-A:hero:r1"]);
+    expect(log.prompts["image-1-A-hero:hero:r1"]).toMatch(/une partie de l'image est transparente/);
+    const hero = J.journeyOf(t.cid).identities!.list[0].board!.images!.hero!;
+    expect(one<{ status: string }>("SELECT status FROM assets WHERE id=?", hero.id)!.status).toBe("ready");
+  });
+
   it("refaire seulement le logo et l'objet qui le porte : les autres images gardées restent, le devis ne compte que ces deux images", async () => {
     const t = await thread();
     // La proposition (logo et grande scène), puis toutes les images de la planche A.
@@ -1215,7 +1232,7 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     const before = J.journeyOf(t.cid).identities!.list[0].board!.images!;
     expect(before.object).toBeTruthy();
     const { log } = await chain(t, { imagesOnly: true, redo: ["A"], slots: ["logo", "object"] }, { draw: async (id) => (id.includes("-logo") ? whiteLogo("#6FB3C9", 128, 128) : square("#224466", 128, 128)) });
-    expect(log.ids).toEqual(["imagery-1-A:logo+object", "image-1-A-logo:logo+object", "image-1-A-object:logo+object", "imagecheck-1-A:logo+object:logo", "imagecheck-1-A:logo+object:object"]);
+    expect(log.ids).toEqual(["imagery-1-A:logo+object", "image-1-A-logo:logo+object", "imagecheck-1-A:logo+object:logo", "image-1-A-object:logo+object", "imagecheck-1-A:logo+object"]);
     const after = J.journeyOf(t.cid).identities!.list[0].board!.images!;
     expect(after.logo!.id).not.toBe(before.logo!.id);
     expect(after.object!.id).not.toBe(before.object!.id);

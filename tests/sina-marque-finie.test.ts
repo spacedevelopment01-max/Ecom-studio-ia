@@ -190,7 +190,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(payloadOf(jobId).finish).toBeUndefined();
     // Après la relecture des textes : pour chaque planche, la direction artistique, le logo, la grande scène, la
     // maquette du haut du site, puis UNE relecture.
-    expect(log.ids.slice(log.ids.indexOf("review-1") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, ...["logo", "hero", "site"].map((sl) => `imagecheck-1-${k}${FIRST}:${sl}`)]));
+    expect(log.ids.slice(log.ids.indexOf("review-1") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `imagecheck-1-${k}${FIRST}:logo`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, ...["hero", "site"].map((sl) => `imagecheck-1-${k}${FIRST}:${sl}`)]));
     // La maquette : en portrait, avec le logo et la grande scène de SA planche en références ; le logo et la scène,
     // eux, naissent sans modèle.
     for (const k of ["A", "B", "C"]) {
@@ -537,7 +537,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // de sa marque (la maquette du site appartient à la proposition : elle ne se refait que si le client la demande).
     const all8 = ":logo+hero+object+signs+post0+post1+post2";
     // Puis le symbole seul, tiré du logo créé pour l'identité mélangée, et sa relecture.
-    expect(log.ids).toEqual([`imagery-1-A${all8}`, ...["logo", "hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), ...["logo", "hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `imagecheck-1-A${all8}:${sl}`), "symbol-1", "symbolcheck-1"]);
+    expect(log.ids).toEqual([`imagery-1-A${all8}`, `image-1-A-logo${all8}`, `imagecheck-1-A${all8}:logo`, ...["hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), ...["hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `imagecheck-1-A${all8}:${sl}`), "symbol-1", "symbolcheck-1"]);
     expect(log.prompts[`imagery-1-A${all8}`]).toContain(`couleur de marque ${route("B").palette.primary}`);
     const done = J.journeyOf(t.cid);
     {
@@ -580,7 +580,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Le client demande un changement avec ses mots : la direction artistique est réécrite, et l'ancien logo est donné
     // comme ce dont le nouveau doit nettement différer.
     // Un autre logo : son symbole est tiré du NOUVEAU logo (un appel de création, un de relecture).
-    expect(log.ids).toEqual([`imagery-1-A${part}`, `image-1-A-logo${part}`, `image-1-A-object${part}`, `image-1-A-signs${part}`, ...["logo", "object", "signs"].map((sl) => `imagecheck-1-A${part}:${sl}`), "symbol-1", "symbolcheck-1"]);
+    expect(log.ids).toEqual([`imagery-1-A${part}`, `image-1-A-logo${part}`, `imagecheck-1-A${part}:logo`, `image-1-A-object${part}`, `image-1-A-signs${part}`, ...["object", "signs"].map((sl) => `imagecheck-1-A${part}:${sl}`), "symbol-1", "symbolcheck-1"]);
     expect(log.refs["symbol-1"]).toEqual({ logo: true, scene: false, aspect: "1:1" });
     expect(log.prompts[`imagery-1-A${part}`]).toMatch(/# Ce que le client demande pour cette nouvelle proposition \(ses mots\)\nPlus rond, avec une lune\./);
     // Rien des autres logos n'est transmis, ni en image ni en mots : chaque logo repart de zéro.

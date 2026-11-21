@@ -73,6 +73,16 @@ sur les fichiers d'essai concernés (72 essais). Lancer la série complète avan
    TASTE 2026) : le relecteur peut écarter les défauts mesurables, pas décider seul du goût.
 7. **Les réponses de SINA coûtent cher** : 0,53 € pour une seule réponse au choix de l'identité.
 
+## 3 bis. Réglé ensuite (branche `claude/evolution-sina`, sans dépense, vérifié par les essais automatiques)
+
+- **Panne de transparence (point 1)** : toute photo est demandée à OpenAI en fond plein (`openaiBackground`,
+  `src/lib/ai/openai-images.ts`), y compris quand elle est créée avec des images jointes ; seul un logo garde un fond
+  retirable. Un contrôle sans IA (`photoTransparente`, `brand-images.ts`) refuse une photo de planche dont plus d'un
+  pixel sur mille n'est pas plein, AVANT de payer sa relecture ; elle est refaite. Pas encore vérifié avec la vraie IA.
+- **Ordre de travail (point 3)** : dans `runBoardImages`, le logo est dessiné, relu, refait s'il le faut et gardé
+  AVANT de dessiner la maquette du site, l'objet, les signes et les publications. Rien n'est plus jeté ni repayé parce
+  que le logo a été refusé ensuite, et aucune image ne porte un logo refusé.
+
 ## 4. Projet d'essai du plombier (client inventé, Studio d'essai)
 
 - Identités : A « Aplomb », B « Faïence », C « Cuivre ». Le propriétaire a choisi **Aplomb**.

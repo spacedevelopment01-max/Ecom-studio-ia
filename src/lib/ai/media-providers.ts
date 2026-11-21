@@ -22,7 +22,7 @@ import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
-import { emitMediaProgress, openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
+import { emitMediaProgress, openaiBackground, openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
 import {photoEditRequest,type PhotoEditInput} from "../image-v2/edit-request";
 export {photoEditRequest,editPhotoPrompt,type PhotoEditInput} from "../image-v2/edit-request";
 import sharp from "sharp";
@@ -570,6 +570,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
       size: input.size,
       quality: "high",
       n: 1,
+      ...openaiBackground({ transparentCap: false }),
     }, sent);
   } catch (e: any) {
     if (e?.status === 401) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
@@ -598,7 +599,7 @@ async function mockupMaskEditImpl(ctx: Ctx, input: { image: Buffer; mask?: Buffe
   const client = openaiClient(key);
   let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
-    res = await openaiImage(client, "edit", { model: input.model, image: await toFile(input.image, "maquette.png", { type: "image/png" }), ...(input.mask ? { mask: await toFile(input.mask, "mask.png", { type: "image/png" }) } : {}), prompt: input.prompt, size: input.size, quality: "high", n: 1 }, sent);
+    res = await openaiImage(client, "edit", { model: input.model, image: await toFile(input.image, "maquette.png", { type: "image/png" }), ...(input.mask ? { mask: await toFile(input.mask, "mask.png", { type: "image/png" }) } : {}), prompt: input.prompt, size: input.size, quality: "high", n: 1, ...openaiBackground({ transparentCap: false }) }, sent);
   } catch (e: any) {
     if (e?.status === 401) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Retouche refusée par OpenAI : ${e.message}`, `Edit rejected by OpenAI: ${e.message}`)));
@@ -971,11 +972,13 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   const oaExtras = ref ? extras : [];
   gate(ctx, openaiImageMax(model, { prompt: text, images: ref ? 1 + oaExtras.length : 0, size, quality: input.quality }), "image", "openai", model);
   const client = openaiClient(key);
+  // Fond plein pour toute photo, y compris en retouche avec images jointes (panne de transparence du 21 novembre 2026).
+  const background = openaiBackground({ transparent: input.transparent, transparentCap: openaiTransparent(model), logo: input.usage === "logo" });
   let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
     res = ref
-      ? await openaiImage(client, "edit", { model, image: [await toFile(ref, "reference.png", { type: "image/png" }), ...(await Promise.all(oaExtras.map((b, i) => toFile(b, `reference-${i + 2}.png`, { type: "image/png" }))))], prompt: text, size, quality: input.quality, n: 1 }, sent)
-      : await openaiImage(client, "generate", { model, prompt: text, size, quality: input.quality, n: 1, ...(input.transparent && openaiTransparent(model) ? { background: "transparent", output_format: "png" } : {}) }, sent);
+      ? await openaiImage(client, "edit", { model, image: [await toFile(ref, "reference.png", { type: "image/png" }), ...(await Promise.all(oaExtras.map((b, i) => toFile(b, `reference-${i + 2}.png`, { type: "image/png" }))))], prompt: text, size, quality: input.quality, n: 1, ...background }, sent)
+      : await openaiImage(client, "generate", { model, prompt: text, size, quality: input.quality, n: 1, ...background }, sent);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));
@@ -1107,7 +1110,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   if (persona) images.push(await toFile(persona, "personne.jpg", { type: "image/jpeg" }));
   let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
-    res = await openaiImage(client, "edit", { model, image: images as any, prompt: text, size: ugcSize, quality: "high", n: 1 }, sent);
+    res = await openaiImage(client, "edit", { model, image: images as any, prompt: text, size: ugcSize, quality: "high", n: 1, ...openaiBackground({ transparentCap: false }) }, sent);
   } catch (e: any) {
     if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
     if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));

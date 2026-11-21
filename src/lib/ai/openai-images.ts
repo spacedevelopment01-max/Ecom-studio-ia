@@ -63,6 +63,18 @@ export function openaiClient(apiKey: string): OpenAI {
   return new OpenAI({ apiKey, maxRetries: 0, timeout: 300_000, ...opts, fetch: strip });
 }
 
+/**
+ * Réglage du fond envoyé à OpenAI (guide officiel : `background: "auto" | "opaque" | "transparent"`). Toute photo est
+ * demandée en fond PLEIN : sans ce réglage, une image créée avec des images jointes (retouche) revenait en partie
+ * transparente (brume blanche ou taches sombres selon le fond ; 16 images touchées depuis le 16 novembre 2026, prises
+ * pour des défauts de dessin). Seul un logo demandé en fond transparent garde un fond retirable : transparent si le
+ * modèle le permet, sinon réglage laissé au modèle (fond blanc retiré ensuite par le Studio).
+ */
+export function openaiBackground(o: { transparent?: boolean; transparentCap: boolean; /** Logo seul (usage « Logos ») : fond laissé retirable. */ logo?: boolean }): { background?: "opaque" | "transparent"; output_format?: "png" } {
+  if (o.transparent) return o.transparentCap ? { background: "transparent", output_format: "png" } : {};
+  return o.logo ? {} : { background: "opaque" };
+}
+
 /** Flux terminé sans image finale : la génération a pu être facturée (jamais relancée automatiquement). */
 export class StreamInterrupted extends Error {
   constructor(message: string) {

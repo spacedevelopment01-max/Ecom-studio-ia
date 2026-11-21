@@ -106,8 +106,8 @@ describe("logos : redessin avec toutes les raisons des refus (21 novembre 2026)"
     expect(I.fixLine(["je n'ai pas pu la vérifier une seconde fois"], 1)).toBe("");
     expect(I.fixLine(["je n'ai pas pu la vérifier une seconde fois", "trop sage"], 1)).toMatch(/une première image a été refusée pour cette raison : « trop sage »/);
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).toContain('c.prompt + fix("logo", why)');
-    expect(img).toContain("c.prompt + fix(s, why)");
+    expect(img).toContain('c.prompt + fix("logo", why, attempt)');
+    expect(img).toContain("c.prompt + fix(s, why, attempt)");
   });
 });
 

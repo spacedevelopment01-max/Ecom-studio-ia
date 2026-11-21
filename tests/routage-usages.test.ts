@@ -172,7 +172,7 @@ describe("routage multimédia par usage", async () => {
     expect(net.calls).toHaveLength(0);
     // Décor et ambiance : réglage général (OpenAI GPT Image 1), pas celui des logos.
     await fr(() => mp.ambianceImage(ctx(c), { prompt: "atelier lumineux", aspect: "1:1" }));
-    expect(oa.calls.at(-1)).toMatchObject({ kind: "generate", model: "gpt-image-1" });
+    expect(oa.calls.at(-1)).toMatchObject({ kind: "generate", model: "gpt-image-1", background: "opaque" });
     // Publicité (visuel d'ambiance) : modèle des publicités.
     const before = net.calls.length;
     await fr(() => mp.ambianceImage(ctx(c), { prompt: "fond publicitaire", aspect: "4:5", usage: "ad_visual" }));
@@ -189,7 +189,8 @@ describe("routage multimédia par usage", async () => {
     // Jamais de produit détouré collé sur un décor : photo publicitaire générée avec la photo du produit en référence.
     expect(fr(() => mp.productImagePath("product_image"))).toEqual({ path: "reference_scene", usage: "product_edit" });
     await fr(() => mp.openaiScene(ctx(c), { composite: png, productMask: png, prompt: "scène", size: "1024x1024", usage: "product_edit" }));
-    expect(oa.calls.at(-1)).toMatchObject({ kind: "edit", model: "gpt-image-1" });
+    // Fond plein demandé pour toute photo (panne de transparence du 21 novembre 2026).
+    expect(oa.calls.at(-1)).toMatchObject({ kind: "edit", model: "gpt-image-1", background: "opaque" });
     // Retouche coupée par l'administration + Images produit → Gemini 2.5 : décor vide demandé à Gemini.
     setUsage("product_edit", { off: true });
     setUsage("product_image", { primary: "google:gemini-2.5-flash-image" });
@@ -202,7 +203,8 @@ describe("routage multimédia par usage", async () => {
     // Images produit → OpenAI : génération à partir de la photo du produit (retouche avec image de référence).
     setUsage("product_image", { primary: "openai:gpt-image-1" });
     await fr(() => mp.productScene(ctx(c), { prompt: "plan en bois", aspect: "1:1", reference: png, usage: "product_image" }));
-    expect(oa.calls.at(-1)).toMatchObject({ kind: "edit", model: "gpt-image-1" });
+    // Photo créée avec une image jointe (retouche) : fond plein, jamais en partie transparente.
+    expect(oa.calls.at(-1)).toMatchObject({ kind: "edit", model: "gpt-image-1", background: "opaque" });
   });
 
   it("publicités : photo générée à partir de la photo du produit (modèle qui accepte une référence)", async () => {

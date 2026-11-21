@@ -343,6 +343,26 @@ export async function logoOnWhite(png: Buffer): Promise<boolean> {
   } catch { return false; }
 }
 
+/** Part de pixels transparents au-delà de laquelle une photo est refusée sans la relire (1 pixel sur 1 000). */
+export const PART_TRANSPARENTE_MAX = 0.001;
+/**
+ * Contrôle sans IA, avant de payer la relecture : une photo doit être pleine. Panne du 21 novembre 2026 : créées avec
+ * des images jointes, des photos revenaient d'OpenAI en partie transparentes (brume blanche ou taches sombres selon le
+ * fond). Compte les pixels dont l'opacité n'est pas complète ; une image sans couche de transparence est pleine.
+ */
+export async function photoTransparente(png: Buffer): Promise<{ transparente: boolean; part: number }> {
+  try {
+    const meta = await sharp(png).metadata();
+    if (!meta.hasAlpha) return { transparente: false, part: 0 };
+    const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const n = info.width * info.height, c = info.channels;
+    let t = 0;
+    for (let i = 0; i < n; i++) if (data[i * c + c - 1] < 250) t++;
+    const part = n ? t / n : 0;
+    return { transparente: part > PART_TRANSPARENTE_MAX, part };
+  } catch { return { transparente: false, part: 0 }; }
+}
+
 /**
  * Crée, relit et pose les images d'UNE planche. Rend la route avec `board.images` (seulement les images acceptées),
  * les notes de la chaîne, et ce qui est dit au client pour chaque image non gardée.
@@ -413,70 +433,26 @@ export async function runBoardImages(o: {
   const mark = (id: string, status: "ready" | "rejected", why = "") => run("UPDATE assets SET status=?, meta=json_set(meta,'$.synaBoard.review',json(?)) WHERE id=? AND project_id=?", status, JSON.stringify({ status, why: why.slice(0, 240) }), id, o.who.projectId);
   let rejected = 0;
 
-  // 1. Le logo : conçu par OpenAI à partir de la marque, sans modèle. Contrôle gratuit du fond blanc avant toute
-  // relecture : un logo sur fond noir ou coloré n'est ni gardé ni posé sur l'objet.
-  if (wanted.has("logo")) {
-    ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
-    // Le premier logo d'une série est créé avec les seules consignes de base ; chacun des suivants reçoit en plus ceux
-    // déjà créés dans la série, avec « je veux un logo complètement différent » (mots du propriétaire).
-    // Seulement les logos de CETTE série, dans l'ordre (règle du propriétaire, redite le 20 novembre 2026 : le premier
-    // logo créé est donné pour faire le deuxième, « complètement différent » ; puis les deux premiers pour le troisième).
-    // Jamais les logos d'une série précédente ni d'un autre projet.
-    const already = o.madeLogos ?? [], shown = await logoSheet(already);
-    const n = Math.min(already.length, 4);
-    // Parcimonie du trait : un seul logo par série le porte (contrôle sans IA des logos déjà faits).
-    const traitPris = (await Promise.all(already.map((b) => traitHorizontal(b).then((r) => r.trouve).catch(() => false)))).some(Boolean);
-    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, o.logoLine?.trim() ? { ...imagery, logo: o.logoLine.trim() } : imagery, { logo: true, refusal: o.gouts }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
-    let drawn = bufferOf("logo");
-    // Contrôle sans IA de la parcimonie : un trait alors qu'un logo de la série en a déjà un, le logo est redessiné UNE
-    // fois ; s'il le garde encore, il est montré et c'est dit au client. Le premier trait d'une série est gardé.
-    if (drawn && traitPris && (await traitHorizontal(drawn)).trouve) {
-      mark(made.get("logo")!.id, "rejected", "un trait près du nom, déjà pris par un autre logo de la série"); made.delete("logo");
-      notes.push(`logo de ${key} redessiné : un trait près du nom, déjà pris dans la série (contrôle sans IA)`);
-      await make("logo", calls.get("logo")!.refs, `${calls.get("logo")!.prompt}\nLe logo précédent avait lui aussi un trait ou un filet près du nom : refais-le sans trait, sans filet ni ligne.`, ":sans-trait");
-      drawn = bufferOf("logo");
-      if (drawn && (await traitHorizontal(drawn)).trouve) issues.push(tag(L("son logo garde un trait sous le nom, malgré un second dessin.", "its logo still has a line under the name.")));
-    }
-    if (drawn && !(await logoOnWhite(drawn))) {
-      const why = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background");
-      mark(made.get("logo")!.id, "rejected", why); made.delete("logo"); dropped.set("logo", why);
-      notes.push(`logo de ${key} refusé par le contrôle du fond (sans IA)`);
-    }
-  }
-  // Le logo à poser sur l'objet : celui qui vient d'être créé, sinon celui déjà gardé sur la planche.
+  // Le logo déjà gardé sur la planche (reprise d'une partie des images) ; le logo du client passe avant tout.
   const kept = x.board.images?.logo, keptBuffer = () => { const a = kept ? getAsset(kept.id) : undefined; return a ? assetData(a) : null; };
-  const logo = o.clientLogo?.data ?? bufferOf("logo") ?? (wanted.has("logo") ? null : keptBuffer());
-  // 2. La grande scène, puis ce qui porte le logo, puis les publications.
-  ctx.progress(0.965, L(`Je crée les images de la planche ${key}`, `Creating the images of board ${key}`));
-  if (wanted.has("hero")) await make("hero", {}, imagePrompt("hero", x, imagery));
-  // La maquette du haut de l'accueil : le logo et la grande scène lui sont fournis (elle garde l'identité de la planche).
-  if (wanted.has("site") && imagery.site.trim()) {
-    const heroKept = x.board.images?.hero, heroBuffer = bufferOf("hero") ?? (() => { const a = heroKept ? getAsset(heroKept.id) : undefined; return a ? assetData(a) : null; })();
-    await make("site", { logo: await logoForGround(logo, x), scene: heroBuffer }, imagePrompt("site", x, imagery, { logo: !!logo }));
-  } else if (wanted.has("site")) {
-    // Sans consigne de maquette, rien n'est créé ni payé, et c'est dit (SINA ne parle jamais d'une maquette absente).
-    notes.push(`maquette du site de ${key} non créée : la direction artistique n'a pas rendu sa consigne`);
-    issues.push(tag(L("je n'ai pas pu préparer la maquette de ton site ; je peux la refaire si tu me le demandes.", "I could not prepare your site mock-up; I can redo it if you ask.")));
-  }
-  // Reprise d'une partie des images : l'objet et les signes portent le logo de la planche ; sans logo gardé, ils ne
-  // sont pas refaits (retour du propriétaire du 14 novembre 2026 : « les logos ne sont pas les mêmes entre le logo et
-  // sur le camion » : sans logo fourni, OpenAI en inventait un autre). Rien n'est payé pour une image fausse d'avance.
-  const skipCarriers = !!o.slots?.length && !logo;
-  if (skipCarriers) for (const slot of ["object", "signs"] as const) if (wanted.has(slot)) {
-    notes.push(`${SLOT_LABEL[slot].fr} de ${key} non refait(e) : aucun logo gardé à poser dessus`);
-    issues.push(tag(L(`je n'ai pas refait ${SLOT_LABEL[slot].fr} : sans logo gardé, il porterait un autre logo que le tien.`, `I did not redo ${SLOT_LABEL[slot].en}: without a kept logo it would carry a different one.`)));
-  }
-  if (wanted.has("object") && !skipCarriers) await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo }));
-  if (wanted.has("signs") && !skipCarriers && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo }));
-  for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, { logo }, imagePrompt(slot, x, imagery, { logo: !!logo }));
-
-  // 3. La relecture : aucune image n'est montrée sans avoir été regardée.
+  const currentLogo = () => o.clientLogo?.data ?? bufferOf("logo") ?? (wanted.has("logo") ? null : keptBuffer());
+  // La relecture : aucune image n'est montrée sans avoir été regardée.
   let blind = false;
-  const currentLogo = () => o.clientLogo?.data ?? bufferOf("logo") ?? logo;
   // Une image à la fois, avec toute l'attention du relecteur (21 novembre 2026 : six images jugées d'un coup, en une
   // réponse courte, laissaient passer taches, textes flous et écrans à moitié vides).
   const review = async (slots: ImageSlot[], rt = "") => { for (const s of slots) await reviewOne([s], slots.length > 1 ? `${rt}:${s}` : rt); };
   const reviewOne = async (slots: ImageSlot[], rt = "") => {
+    // Contrôle sans IA avant de payer la relecture : une photo en partie transparente est refusée et refaite.
+    for (const s of slots) {
+      if (s === "logo") continue;
+      const png = bufferOf(s), t = png ? await photoTransparente(png) : null;
+      if (t?.transparente) {
+        const why = L("une partie de l'image est transparente (brume ou taches) : la photo doit être pleine, d'un bord à l'autre", "part of the image is transparent: the photo must be solid from edge to edge");
+        mark(made.get(s)!.id, "rejected", why); made.delete(s); dropped.set(s, why); saidWhy.set(s, SAID.abime);
+        notes.push(`${SLOT_LABEL[s].fr} de ${key} refusé(e) sans relecture payée : ${Math.round(t.part * 1000) / 10} % de l'image transparente (contrôle sans IA)`);
+      }
+    }
+    slots = slots.filter((s) => made.has(s));
     if (!slots.length) return;
     const logo = currentLogo();
     const texts = slotTexts(x);
@@ -559,37 +535,93 @@ export async function runBoardImages(o: {
       unreviewed();
     }
   };
-  await review(IMAGE_SLOTS.filter((s) => made.has(s)));
-
-  // 3 bis. Une image refusée est refaite avant d'être montrée : deux reprises au plus, avec la raison du refus donnée au
-  // modèle ; à la seconde, la consigne est simplifiée. Les reprises restent dans le plafond déjà accepté par le client.
-  // Un logo refait emporte ce qui le porte (créé avec le logo refusé).
+  // Toutes les raisons des refus d'une image, pas seulement la dernière (essai réel du 21 novembre 2026 : le 3e logo
+  // d'Aplomb, corrigé seulement de « trop sage », a remis la goutte retirée au 2e).
   const whyHistory = new Map<ImageSlot, string[]>();
-  const CARRIERS: ImageSlot[] = ["site", "object", "signs", "post0", "post1", "post2"];
+  const fix = (slot: ImageSlot, why: string, attempt: number) => { const h = [...(whyHistory.get(slot) ?? []), why]; whyHistory.set(slot, h); return fixLine(h, attempt); };
+
+  // 1. Le logo : conçu par OpenAI à partir de la marque, sans modèle. Contrôle gratuit du fond blanc avant toute
+  // relecture : un logo sur fond noir ou coloré n'est ni gardé ni posé sur l'objet.
+  if (wanted.has("logo")) {
+    ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
+    // Le premier logo d'une série est créé avec les seules consignes de base ; chacun des suivants reçoit en plus ceux
+    // déjà créés dans la série, avec « je veux un logo complètement différent » (mots du propriétaire).
+    // Seulement les logos de CETTE série, dans l'ordre (règle du propriétaire, redite le 20 novembre 2026 : le premier
+    // logo créé est donné pour faire le deuxième, « complètement différent » ; puis les deux premiers pour le troisième).
+    // Jamais les logos d'une série précédente ni d'un autre projet.
+    const already = o.madeLogos ?? [], shown = await logoSheet(already);
+    const n = Math.min(already.length, 4);
+    // Parcimonie du trait : un seul logo par série le porte (contrôle sans IA des logos déjà faits).
+    const traitPris = (await Promise.all(already.map((b) => traitHorizontal(b).then((r) => r.trouve).catch(() => false)))).some(Boolean);
+    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, o.logoLine?.trim() ? { ...imagery, logo: o.logoLine.trim() } : imagery, { logo: true, refusal: o.gouts }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
+    let drawn = bufferOf("logo");
+    // Contrôle sans IA de la parcimonie : un trait alors qu'un logo de la série en a déjà un, le logo est redessiné UNE
+    // fois ; s'il le garde encore, il est montré et c'est dit au client. Le premier trait d'une série est gardé.
+    if (drawn && traitPris && (await traitHorizontal(drawn)).trouve) {
+      mark(made.get("logo")!.id, "rejected", "un trait près du nom, déjà pris par un autre logo de la série"); made.delete("logo");
+      notes.push(`logo de ${key} redessiné : un trait près du nom, déjà pris dans la série (contrôle sans IA)`);
+      await make("logo", calls.get("logo")!.refs, `${calls.get("logo")!.prompt}\nLe logo précédent avait lui aussi un trait ou un filet près du nom : refais-le sans trait, sans filet ni ligne.`, ":sans-trait");
+      drawn = bufferOf("logo");
+      if (drawn && (await traitHorizontal(drawn)).trouve) issues.push(tag(L("son logo garde un trait sous le nom, malgré un second dessin.", "its logo still has a line under the name.")));
+    }
+    if (drawn && !(await logoOnWhite(drawn))) {
+      const why = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background");
+      mark(made.get("logo")!.id, "rejected", why); made.delete("logo"); dropped.set("logo", why);
+      notes.push(`logo de ${key} refusé par le contrôle du fond (sans IA)`);
+    }
+    // Le logo est relu, et refait s'il est refusé, AVANT de dessiner ce qui le porte (21 novembre 2026 : les images
+    // portant un logo dessinées avant sa relecture étaient jetées et repayées quand il était refusé).
+    if (made.has("logo")) await review(["logo"], ":logo");
+    for (let attempt = 1; attempt <= MAX_IMAGE_RETRIES && dropped.has("logo") && calls.has("logo") && !capped && !blind; attempt++) {
+      ctx.progress(0.96, L(`Je reprends le logo de la planche ${key}`, `Redoing the logo of board ${key}`));
+      const c = calls.get("logo")!, why = dropped.get("logo")!; dropped.delete("logo");
+      await make("logo", c.refs, c.prompt + fix("logo", why, attempt), `:r${attempt}`);
+      const again = bufferOf("logo");
+      if (!again) { dropped.set("logo", why); continue; }
+      if (!(await logoOnWhite(again))) { const w = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background"); mark(made.get("logo")!.id, "rejected", w); made.delete("logo"); dropped.set("logo", w); continue; }
+      await review(["logo"], `:logo:r${attempt}`);
+    }
+  }
+  // Le logo à poser sur l'objet : celui qui vient d'être créé, relu et gardé, sinon celui déjà gardé sur la planche.
+  const logo = currentLogo();
+  // 2. La grande scène, puis ce qui porte le logo, puis les publications.
+  ctx.progress(0.965, L(`Je crée les images de la planche ${key}`, `Creating the images of board ${key}`));
+  if (wanted.has("hero")) await make("hero", {}, imagePrompt("hero", x, imagery));
+  // La maquette du haut de l'accueil : le logo et la grande scène lui sont fournis (elle garde l'identité de la planche).
+  if (wanted.has("site") && imagery.site.trim()) {
+    const heroKept = x.board.images?.hero, heroBuffer = bufferOf("hero") ?? (() => { const a = heroKept ? getAsset(heroKept.id) : undefined; return a ? assetData(a) : null; })();
+    await make("site", { logo: await logoForGround(logo, x), scene: heroBuffer }, imagePrompt("site", x, imagery, { logo: !!logo }));
+  } else if (wanted.has("site")) {
+    // Sans consigne de maquette, rien n'est créé ni payé, et c'est dit (SINA ne parle jamais d'une maquette absente).
+    notes.push(`maquette du site de ${key} non créée : la direction artistique n'a pas rendu sa consigne`);
+    issues.push(tag(L("je n'ai pas pu préparer la maquette de ton site ; je peux la refaire si tu me le demandes.", "I could not prepare your site mock-up; I can redo it if you ask.")));
+  }
+  // Reprise d'une partie des images : l'objet et les signes portent le logo de la planche ; sans logo gardé, ils ne
+  // sont pas refaits (retour du propriétaire du 14 novembre 2026 : « les logos ne sont pas les mêmes entre le logo et
+  // sur le camion » : sans logo fourni, OpenAI en inventait un autre). Rien n'est payé pour une image fausse d'avance.
+  const skipCarriers = !!o.slots?.length && !logo;
+  if (skipCarriers) for (const slot of ["object", "signs"] as const) if (wanted.has(slot)) {
+    notes.push(`${SLOT_LABEL[slot].fr} de ${key} non refait(e) : aucun logo gardé à poser dessus`);
+    issues.push(tag(L(`je n'ai pas refait ${SLOT_LABEL[slot].fr} : sans logo gardé, il porterait un autre logo que le tien.`, `I did not redo ${SLOT_LABEL[slot].en}: without a kept logo it would carry a different one.`)));
+  }
+  if (wanted.has("object") && !skipCarriers) await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo }));
+  if (wanted.has("signs") && !skipCarriers && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo }));
+  for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, { logo }, imagePrompt(slot, x, imagery, { logo: !!logo }));
+
+  await review(IMAGE_SLOTS.filter((s) => s !== "logo" && made.has(s)));
+
+  // Une image refusée est refaite avant d'être montrée : deux reprises au plus, avec toutes les raisons de ses refus
+  // données au modèle ; à la seconde, la consigne est simplifiée. Les reprises restent dans le plafond déjà accepté par
+  // le client. Le logo, lui, est déjà relu et gardé : ce qui le porte n'est jamais refait à cause de lui.
   for (let attempt = 1; attempt <= MAX_IMAGE_RETRIES && dropped.size && !capped && !blind; attempt++) {
-    const again = IMAGE_SLOTS.filter((s) => dropped.has(s) && calls.has(s));
+    const again = IMAGE_SLOTS.filter((s) => s !== "logo" && dropped.has(s) && calls.has(s));
     if (!again.length) break;
     ctx.progress(0.97, L(`Je reprends ${again.length > 1 ? "des images" : "une image"} de la planche ${key}`, `Redoing images of board ${key}`));
-    // Toutes les raisons des refus de l'image, pas seulement la dernière (essai réel du 21 novembre 2026 : le 3e logo
-    // d'Aplomb, corrigé seulement de « trop sage », a remis la goutte retirée au 2e).
-    const fix = (slot: ImageSlot, why: string) => { const h = [...(whyHistory.get(slot) ?? []), why]; whyHistory.set(slot, h); return fixLine(h, attempt); };
     const redone: ImageSlot[] = [];
-    if (again.includes("logo")) {
-      const c = calls.get("logo")!, why = dropped.get("logo")!; dropped.delete("logo");
-      await make("logo", c.refs, c.prompt + fix("logo", why), `:r${attempt}`);
-      const drawn = bufferOf("logo");
-      if (drawn && !(await logoOnWhite(drawn))) { const w = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background"); mark(made.get("logo")!.id, "rejected", w); made.delete("logo"); dropped.set("logo", w); }
-      else if (drawn) {
-        await review(["logo"], `:r${attempt}`);
-        // Le nouveau logo est gardé : ce qui portait l'ancien est refait avec lui.
-        if (made.has("logo")) for (const s of CARRIERS) if (made.has(s) && calls.has(s) && !o.clientLogo) { mark(made.get(s)!.id, "rejected", "logo refait"); made.delete(s); dropped.set(s, L("le logo de la marque a été refait : reprends l'image avec le logo fourni", "the brand logo was redone")); saidWhy.set(s, SAID.autre); }
-      } else dropped.set("logo", why);
-    }
-    for (const s of IMAGE_SLOTS.filter((v) => v !== "logo" && dropped.has(v) && calls.has(v))) {
-      if (attempt === 1 && !again.includes(s)) continue; // porteur d'un logo refait à l'instant : repris au tour suivant
+    for (const s of again) {
       const c = calls.get(s)!, why = dropped.get(s)!; dropped.delete(s);
       const now = currentLogo(), refs = c.refs.logo ? { ...c.refs, logo: s === "site" ? await logoForGround(now, x) : now } : c.refs;
-      await make(s, refs, c.prompt + fix(s, why), `:r${attempt}`);
+      await make(s, refs, c.prompt + fix(s, why, attempt), `:r${attempt}`);
       if (made.has(s)) redone.push(s); else dropped.set(s, why);
     }
     await review(redone, `:r${attempt}`);
