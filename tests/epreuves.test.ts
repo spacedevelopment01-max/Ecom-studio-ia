@@ -241,6 +241,33 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     expect(T.relanceMarqueQuote(c).maxMicro).toBe(1_600_000);
   });
 
+  epreuve("questions-groupees-reponse-incomplete", async () => {
+    const { addMessage } = await import("@/lib/syna-agent/store");
+    const { getTool } = await import("@/lib/syna-agent/registry");
+    const PR = await import("@/lib/syna-agent/custom-theme/preuves");
+    const { clientNotes } = await import("@/lib/syna-agent/custom-theme/site-facts");
+    const user = await account(), projectId = project(user, "services") as string, cid = threadFor(user, projectId);
+    // SINA pose ensemble ses questions simples sur les preuves ; le client ne répond qu'à deux d'entre elles.
+    addMessage(cid, "assistant", { message: "1) Tes avis déjà reçus ? 2) Ton assurance ? 3) Depuis quand tu exerces ? 4) Tes réalisations ?" }, null);
+    addMessage(cid, "user", { text: "J'ai 23 avis Google à 4,8. Je suis assuré en décennale." }, null);
+    const note = getTool("start.note")!, ctx: any = { user, conversationId: cid, runId: "epreuve", projectId, attachment: () => null };
+    const r = await note.run(ctx, note.args.parse({ notes: [{ sujet: "avis", value: "23 avis Google à 4,8", portee: "site" }, { sujet: "assurance", value: "assuré en décennale", portee: "site" }] }));
+    expect(r.ok).toBe(true);
+    // Chaque réponse donnée est notée dans sa fiche, relue en entier par SINA.
+    const fiche = F.ficheDuFil(cid, projectId);
+    expect(fiche).toContain("- avis : « 23 avis Google à 4,8 »");
+    expect(fiche).toContain("- assurance : « assuré en décennale »");
+    // Seul ce qui manque reste à demander : ni les avis ni l'assurance ne reviennent.
+    const p = PR.preuvesDe(clientNotes(projectId));
+    expect(p.a.map((x) => x.id)).toEqual(expect.arrayContaining(["avis", "qualifications"]));
+    expect(p.manque.map((x) => x.id)).not.toEqual(expect.arrayContaining(["avis"]));
+    expect(p.manque.map((x) => x.id)).not.toContain("qualifications");
+    expect(p.manque.map((x) => x.id)).toContain("anciennete");
+    // Une réponse que le client n'a pas donnée n'est jamais notée à sa place.
+    const faux = await note.run(ctx, note.args.parse({ notes: [{ sujet: "ancienneté", value: "depuis 2009", portee: "site" }] }));
+    expect(faux.ok).toBe(false);
+  });
+
   epreuve("fiche-relue-en-entier", async () => {
     const user = await account(), projectId = project(user, "services") as string, cid = threadFor(user, projectId);
     J.updateJourney(cid, (j) => { J.setStep(j, 0, "done"); });

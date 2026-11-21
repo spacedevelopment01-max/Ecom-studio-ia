@@ -82,6 +82,25 @@ describe("règles alignées sur les décisions du propriétaire", async () => {
     expect(B.COPY_CRAFT).not.toMatch(/L'ÉMOTION D'ABORD/);
   });
 
+  it("1. les questions : la règle du 19 novembre partout hors « faire connaissance » (faits simples ensemble, choix et accord seuls)", async () => {
+    const J = await import("@/lib/syna-agent/journey");
+    const C = await import("@/lib/syna-agent/conversation");
+    expect(SYNA_SYSTEM).toMatch(/pose-les ENSEMBLE dans une seule « question », numérotées et courtes, six au plus/);
+    expect(SYNA_SYSTEM).toMatch(/Pendant « faire connaissance », c'est une question à la fois/);
+    const j = J.emptyJourney(); for (const n of [0, 1, 2, 3, 4]) J.setStep(j, n, "done");
+    const etape5 = J.journeyContext(j);
+    expect(etape5).toMatch(/les faits simples ENSEMBLE, numérotés et courts, six au plus \(règle du propriétaire du 19 novembre 2026\), une question de choix ou d'accord SEULE/);
+    expect(etape5).not.toMatch(/UNE par UNE/);
+    expect(lire("src/lib/syna-agent/tools/activity.ts")).toContain("Questions à poser au client (les faits simples ensemble, numérotés, six au plus ; un choix ou un accord seul)");
+    // La galerie : l'accord pour montrer une personne est posé seul, à part.
+    expect(lire("src/lib/syna-agent/tools/gallery.ts")).toMatch(/Ensuite, dans un message à part, SEULE \(c'est un accord\) : veut-il une personne/);
+    // La relectrice des messages accepte des questions simples groupées et refuse deux questions de choix ou d'accord.
+    const rel = lire("src/lib/syna-agent/conversation.ts");
+    expect(rel).toContain("Une seule question de réflexion, de choix ou d'accord au plus par message (jamais deux) ; plusieurs questions SIMPLES et indépendantes");
+    expect(rel).not.toContain("Une seule question au plus, jamais");
+    void C;
+  });
+
   it("11. la galerie dit son prix à SINA en part du budget d'IA, jamais en euros", () => {
     const src = lire("src/lib/syna-agent/tools/gallery.ts");
     expect(src).toContain("au plus ${budgetPctText(ctx.user.id, est.maxMicro, p.id)} de ton budget d'IA du mois");

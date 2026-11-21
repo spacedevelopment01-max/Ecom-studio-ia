@@ -35,10 +35,11 @@ Appliqué, ses décisions déjà écrites seulement (essais : `tests/sina-regles
 - point 13 : « le haut de ton site » au lieu de « la maquette ».
 
 Pas appliqué :
-- **point 1 (les questions)** : la consigne demandait de tout aligner sur « une à la fois » (décision du 14 novembre) ; or
-  une décision du propriétaire du 19 novembre, après l'essai Braise, demande de grouper les questions simples (six au
-  plus), « faire connaissance » gardant une question à la fois (enregistrement `c982c30`, essai
-  `tests/sina-questions-ensemble.test.ts`). Les deux se contredisent : en attente de sa réponse ;
+- **point 1 (les questions)**, tranché ensuite par le propriétaire (« Ok ») : sa règle du 19 novembre reste (questions
+  simples et indépendantes ensemble, numérotées, six au plus ; réflexion, choix et accord seuls ; « faire connaissance »
+  une question à la fois). Alignés sur elle : l'étape de l'activité, la galerie (l'accord pour une personne est posé
+  seul) et la relectrice des messages. Épreuve `questions-groupees-reponse-incomplete` ; elle sera rejouée avec la vraie
+  IA dans « Les essais complets » : si SINA perd une réponse, on revient à une question à la fois ;
 - la méthode « dessiner puis coder » n'est pas touchée : son dessin n'a déjà aucune personne ;
 - points 5, 9, 10, 12, 14, 15, 16 et partie 3 : conversations de leur étape ou lot des forfaits.
 

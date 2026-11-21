@@ -135,6 +135,12 @@ export const EPREUVES: Epreuve[] = [
     rejeu: "gratuit",
   },
   {
+    id: "questions-groupees-reponse-incomplete", date: "2026-11-21", source: "docs/studio/REGLES-EN-DOUBLE-2026-11-21.md",
+    verdict: "« Ok » : garder la règle du 19 novembre (questions simples ensemble, six au plus ; choix et accord seuls ; « faire connaissance » une à la fois), avec une épreuve ; si SINA perd une réponse, on revient à une question à la fois.",
+    attendu: "Après des questions groupées et une réponse incomplète du client, chaque réponse donnée est notée dans sa fiche, et seul ce qui manque reste à demander.",
+    rejeu: "gratuit",
+  },
+  {
     id: "publication-incomprehensible", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
     verdict: "Une publication d'escalier pour un plombier, incompréhensible pour un inconnu : « Personne ne juge l'idée d'une publication avant de payer le dessin ».",
     attendu: "L'idée de chaque publication est jugée par un lecteur qui ne connaît pas la marque AVANT de payer son image.",

@@ -27,7 +27,7 @@ const planTool: AgentTool<Record<string, never>> = {
         ? L("Plan de l'activité affiché.", "Activity plan shown, gaps remain.")
         : L("Plan de l'activité complet et affiché.", "Activity plan complete."),
       hint: gaps.length
-        ? `Encore à compléter : ${gaps.join(" ; ")}. Questions à poser au client, UNE par UNE : ${plan.missing.map((m) => `[${m.key}${m.required ? "" : ", facultatif"}] ${m.question}`).join(" | ") || "aucune"}.`
+        ? `Encore à compléter : ${gaps.join(" ; ")}. Questions à poser au client (les faits simples ensemble, numérotés, six au plus ; un choix ou un accord seul) : ${plan.missing.map((m) => `[${m.key}${m.required ? "" : ", facultatif"}] ${m.question}`).join(" | ") || "aucune"}.`
         : "Demande au client s'il valide son activité (activity.validate).",
       data: { manque: gaps, questions: plan.missing, produits: plan.products, prix: plan.offer.price, angle: plan.angle?.title ?? null },
     };
