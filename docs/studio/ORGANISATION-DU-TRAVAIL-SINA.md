@@ -111,6 +111,14 @@ oublier ».
 - Reste de la vague 1 : préparer « Les essais complets » (consignes montrées au propriétaire avant de l'ouvrir).
 - En attente de sa décision, avec leur prix : SINA simplifiée, juges, coûts ; essai d'images à 1 €.
 
+### « Les essais complets » ouverte (21 novembre 2026, nuit)
+
+- Accord du propriétaire : « Oui ouvre la ». Conversation `session_01HSEvRxTiq736ZZf4yYDL2d`, partie de
+  `claude/evolution-sina`, branche `claude/essais-complets`. Consignes : `docs/studio/CONSIGNES-LES-ESSAIS-COMPLETS.md`.
+- Premier travail gratuit : préparer le Studio d'essai, montrer les trois photos libres de droits de Nadia, jouer Nadia
+  jusqu'à la première carte de dépense, puis demander au propriétaire son oui et le plafond (estimation : 8 à 12 € pour
+  ses étapes 1 à 3). Son accord doit être écrit dans cette conversation-là.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
