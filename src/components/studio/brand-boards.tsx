@@ -303,14 +303,15 @@ const BOARD_CSS = `
 .ic-slogan{margin-top:6px;font-size:.92rem;line-height:1.3;opacity:.94;text-wrap:balance}
 .ic-plain{padding:10px 4px 2px}
 .ic-plain .ic-slogan{opacity:.85}
-.ic-bento{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:9rem 5.6rem;gap:8px;margin-top:8px}
-.ic-bento-short{grid-template-rows:9rem}
+.ic-bento{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto minmax(5.6rem,auto);gap:8px;margin-top:8px}
+.ic-bento-short{grid-template-rows:auto}
+.ic-bento-short .ic-pal{aspect-ratio:4/3}
 .ic-tile{border-radius:16px;overflow:hidden;min-width:0;background:var(--bb-tile);box-shadow:inset 0 0 0 1px var(--bb-edge)}
-.ic-logo{background:#fff;display:grid;place-items:center;padding:10px}
-.ic-logo .bb-photo{width:100%;height:100%;object-fit:contain}
-.ic-logo svg{width:100%;max-height:100%}
-.ic-phone{grid-row:span 2;background:color-mix(in srgb,var(--bb-ink) 6%,#fff)}
-.ic-phone .bb-photo{width:100%;height:100%;object-fit:cover;object-position:top}
+.ic-logo{position:relative;background:#fff;aspect-ratio:4/3}
+.ic-logo .bb-photo{position:absolute;inset:8%;width:84%;height:84%;object-fit:contain}
+.ic-logo svg{position:absolute;inset:12%;width:76%;height:76%}
+.ic-phone{position:relative;grid-row:span 2;background:color-mix(in srgb,var(--bb-ink) 6%,#fff)}
+.ic-phone .bb-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
 .ic-pal{display:flex;flex-direction:column;justify-content:space-between;padding:10px}
 .ic-sw{display:flex;gap:5px}.ic-sw i{flex:1;height:30px;border-radius:9px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
 .ic-cap{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;opacity:.7}
