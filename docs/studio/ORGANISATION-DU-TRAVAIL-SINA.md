@@ -138,6 +138,25 @@ oublier ».
   tarif officiel ; la consommation n'est pas mesurée.
 - Nadia est en pause avant sa carte de marque (8 € probables, 16,69 € au plus), en attendant les économies.
 
+### Tout passe par « SINA évolue » (22 novembre 2026)
+
+- Ordre du propriétaire : « Je veux que tu envoies à la conversation tout ce qui n'a pas été modifié pour faire évoluer
+  SINA ». Il remplace les vagues de conversations d'étape : « SINA évolue » construit seule tout ce que les recherches
+  proposent et qui n'est pas fait (référence : `TOUTES-LES-RECHERCHES-SINA.md`, branche `claude/lot-4-site-b5qjsw`).
+- Ordre envoyé :
+  1. finir les économies, les juges, les deux reprises, les ratés de Nadia et l'essai à 1 € ;
+  2. puis, dans l'ordre : images, fiabilité, conversation, enrichissement, marque et textes, angles, site, publications
+     et publicités, suivi du mois, briques, vidéos en dernier.
+  Un compte rendu simple après chaque partie.
+- Attendent son oui :
+  - toute dépense, tout nouveau fournisseur, tout retrait visible ;
+  - le texte posé par le Studio sur les photos des publications.
+- Inchangé :
+  - « dessiner puis coder » et le code du thème ;
+  - ses règles du logo et des angles ;
+  - la règle des questions du 19 novembre.
+- « Les essais complets » reste en pause (Nadia avant sa carte de marque), jusqu'à ce que les économies soient faites.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
