@@ -1,3 +1,4 @@
+import { avertissementsDe } from "@/lib/atelier/verification-photos";
 import { z } from "zod";
 import { id as newId } from "@/lib/db";
 import { HttpError } from "@/lib/auth";
@@ -39,12 +40,13 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const name = get("name");
   if (!name) throw new HttpError(400, L("Donnez un nom au produit.", "Give the product a name."));
   const photo = form.get("photo");
-  let originalAssetId: string | null = null;
+  let originalAssetId: string | null = null, avertissements: string[] = [];
   if (photo && typeof photo !== "string" && photo.size > 0) {
     if (photo.size > MAX) throw new HttpError(413, L("La photo dépasse 25 Mo.", "The photo exceeds 25 MB."));
     if (!/^image\/(jpeg|png|webp|avif)$/.test(photo.type)) throw new HttpError(415, L("Format non pris en charge (JPEG, PNG, WebP, AVIF).", "Unsupported format (JPEG, PNG, WebP, AVIF)."));
     const a = await saveAsset({ projectId: p.id, userId: user.id, data: Buffer.from(await photo.arrayBuffer()), name: photo.name || `${name}.jpg`, mime: photo.type, role: "catalog-original", folderKey: "product.catalog", origin: "upload", meta: { product: name } });
     originalAssetId = a.id;
+    avertissements = avertissementsDe([a.meta]);
   }
   const item: CatalogItem = {
     key: newId(),
@@ -58,7 +60,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     ...(get("supplierUrl") ? { source: { supplier: get("supplier") || "Fournisseur", url: get("supplierUrl"), ref: get("supplierRef") || undefined } } : {}),
   };
   upsertCatalogItem(p.id, item);
-  return ok({ item: view(p.id, item) });
+  return ok({ item: view(p.id, item), avertissements });
 });
 
 const ItemPatch = z.object({

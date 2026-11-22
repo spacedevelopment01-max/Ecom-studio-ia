@@ -1,3 +1,4 @@
+import { avertissementsDe } from "@/lib/atelier/verification-photos";
 import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { all, one } from "@/lib/db";
 import { handle, ok, readForm } from "@/lib/http";
@@ -99,5 +100,6 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     });
     out.push(publicAssetSummary(a));
   }
-  return ok({ assets: out });
+  // Une photo gardée de côté (pas encore vérifiée, ou refusée) : la phrase claire, montrée au client.
+  return ok({ assets: out, avertissements: avertissementsDe(out.map((a) => a.meta)) });
 });

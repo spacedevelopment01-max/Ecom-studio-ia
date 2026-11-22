@@ -23,3 +23,9 @@ afterAll(()=>{
  delete globals.__ecomDb;
  process.env.DATA_DIR=root;
 });
+
+// Toute photo déposée passe par la vérification gratuite d'OpenAI (22 novembre 2026) : dans les essais, une fausse
+// vérification qui laisse passer, jamais un appel réel. Un essai qui veut un refus ou une panne la remplace
+// (`remplacerModeration`).
+import {vi} from 'vitest';
+vi.mock('@/lib/atelier/moderation-appel',()=>({appelModeration:async()=>({results:[{flagged:false,categories:{}}]})}));

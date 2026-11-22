@@ -192,7 +192,10 @@ export async function saveAsset(input: SaveAssetInput, commit?: (asset: Asset) =
   if (input.mime === "image/svg+xml" || input.mime.startsWith("image/") && /^[\uFEFF\s]*</.test(input.data.subarray(0,1024).toString("utf8"))) assertStaticSvg(input.data);
   if (input.mime.startsWith("video/")) await checkedUpload(input.data, "video." + (EXT_BY_MIME[input.mime] ?? "bin"), input.mime);
   const strategy = input.origin === "generated" ? strategyStamp(input.projectId) : null;
-  const { marketingStrategy: _untrustedStamp, ...meta } = input.meta ?? {};
+  const { marketingStrategy: _untrustedStamp, verification: _untrustedCheck, ...meta } = input.meta ?? {};
+  // Toute photo du client passe par la vérification gratuite d'OpenAI (22 novembre 2026). Impossible : la photo est
+  // gardée quand même (jamais perdue), mise de côté, et ne sert à rien de payant tant qu'elle n'est pas vérifiée.
+  if (input.origin !== "generated" && (await import("./atelier/verification-photos")).aVerifier(input)) meta.verification = await (await import("./atelier/verification-photos")).verifierImage(input.data);
   const aid = id();
   // Extension du fichier stocké : celle du type, sinon celle du nom SEULEMENT si elle est connue et inoffensive
   // (jamais « .m3u8 », « .ffconcat »… qu'un outil comme ffmpeg interpréterait comme une liste de lecture).

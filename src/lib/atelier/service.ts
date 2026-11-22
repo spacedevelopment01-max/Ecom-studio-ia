@@ -10,7 +10,8 @@ import { currentPeriod } from "../billing";
 import { accountKeyFor } from "../project-billing";
 import { userPlan } from "../quotas";
 import { assetData, assetMeta, getAsset } from "../library";
-import { activeProviderKey } from "../ai/config";
+import { moderation } from "./moderation";
+import { marquerVerifiee, PhotoDeCoteError, verificationDe } from "./verification-photos";
 import { mediaModel } from "../ai/media-models";
 import { mediaStatus, typicalCostMicro } from "../ai/media-routing";
 import { pctBaseFor } from "../ai/budget-pct";
@@ -19,7 +20,7 @@ import type { Project } from "../projects";
 import { GESTES, LOT_MAX } from "./gestes";
 import { OUTILS, outil, outilsPour, type GesteId } from "./outils";
 import { chaineGeste, plafondTexte, plafondVideos, prixTexte, SOUS_LE_PRIX, type PlafondVideos } from "./prix";
-import { accordValide, CONDITIONS, CONDITIONS_VERSION, controlePersonnes, modererEntree, MODERATION_URL, PHRASE_ACCORD, type AccordPersonne } from "./garde-fous";
+import { accordValide, CONDITIONS, CONDITIONS_VERSION, controlePersonnes, modererEntree, PHRASE_ACCORD, type AccordPersonne } from "./garde-fous";
 import { MODES, conseilOutil } from "./conseil";
 import { modelesPour } from "./modeles-images";
 import { GESTES_CAMERA, MODELES_VIDEOS } from "./modeles-videos";
@@ -99,18 +100,8 @@ export function photoAvecAccord(projectId: string, assetId?: string | null): boo
   return accordValide(assetMeta<{ peopleConsentProof?: AccordPersonne }>(a).peopleConsentProof);
 }
 
-/** L'appel à la modération gratuite d'OpenAI (null sans clé). */
-export async function appelModeration(body: unknown): Promise<any | null> {
-  const key = activeProviderKey("openai");
-  if (!key) return null;
-  const r = await fetch(MODERATION_URL, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  if (!r.ok) return null;
-  return r.json();
-}
-
-/** Appel de modération remplaçable dans les essais (jamais d'appel réel dans les tests). */
-let moderation: (body: unknown) => Promise<any | null> = appelModeration;
-export const remplacerModeration = (f: typeof moderation | null) => { moderation = f ?? appelModeration; };
+/** La vérification gratuite d'OpenAI, remplaçable dans les essais (jamais d'appel réel dans les tests). */
+export { appelModeration, remplacerModeration } from "./moderation";
 
 /**
  * Les garde-fous d'entrée, avant tout devis de l'atelier : conditions acceptées, demande et photo vérifiées par la
@@ -122,6 +113,8 @@ export async function gardeFousAtelier(userId: string, projectId: string, o: { t
   if (personnes) throw new HttpError(400, personnes, "atelier_personne");
   const images: { mime: string; base64: string }[] = [];
   const a = o.assetId ? getAsset(o.assetId) : null;
+  // Une photo refusée à son dépôt ne sert jamais ; une photo gardée de côté est revérifiée ici avec la demande.
+  if (a) { const v = verificationDe(assetMeta(a)); if (v?.etat === "refusee") throw new PhotoDeCoteError(v); }
   // Seules les photos déposées par le client passent par la modération (les images créées l'ont déjà été).
   if (a && ["upload", "site", "link"].includes(a.origin) && /^image\//.test(a.mime)) {
     const sharp = (await import("sharp")).default;
@@ -130,6 +123,8 @@ export async function gardeFousAtelier(userId: string, projectId: string, o: { t
   }
   const v = await modererEntree({ texte: o.texte ?? null, images }, moderation, lang());
   if (!v.ok) throw new HttpError(400, v.raison, "atelier_moderation");
+  // La photo vient d'être vérifiée avec la demande : si elle était gardée de côté faute de vérification, elle sert.
+  if (a && images.length) marquerVerifiee(a.id);
 }
 
 /** Ce que l'écran de l'atelier affiche (aucun appel payant). */

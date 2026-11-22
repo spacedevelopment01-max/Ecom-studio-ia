@@ -79,8 +79,10 @@ describe("l'atelier, essais simulés", () => {
     const qr = await f.images({ action: "quote_edit", operationId: op, ...b });
     expect(qr.status, await qr.clone().text()).toBe(200);
     const q = await qr.json();
-    expect(moderations).toHaveLength(1);
-    expect(moderations[0].input.map((i: any) => i.type)).toEqual(["text", "image_url"]);
+    // La photo a été vérifiée à son dépôt (toute photo l'est), puis la demande et la photo ensemble, avant le devis.
+    expect(moderations).toHaveLength(2);
+    expect(moderations[0].input.map((i: any) => i.type)).toEqual(["image_url"]);
+    expect(moderations[1].input.map((i: any) => i.type)).toEqual(["text", "image_url"]);
     const r = await f.images({ action: "edit", operationId: op, approvalToken: q.approvalToken, confirmation: true, ...b });
     expect(r.status, await r.clone().text()).toBe(200);
     const out: any = await handlers["image.edit"](new JobContext(getJob((await r.json()).jobId)!));

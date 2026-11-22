@@ -320,6 +320,13 @@ export function headBlocks(call: Pick<LlmCall, "task" | "context" | "reference" 
 }
 
 export async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[]> {
+  // Garde central (22 novembre 2026) : une photo du client mise de côté (pas encore vérifiée, ou refusée) n'est jamais
+  // lue par un appel payant ; elle est retirée de la demande, le reste part.
+  if (call.projectId && (call.images?.length || call.imagesEnMemoire?.length)) {
+    const { imagesLisibles } = await import("../atelier/verification-photos");
+    const garder = async (l?: LlmImage[]) => { if (!l?.length) return l; const ok = await imagesLisibles(call.projectId, l.map((im) => im.data)); return l.filter((_, i) => ok[i]); };
+    call = { ...call, images: await garder(call.images), imagesEnMemoire: await garder(call.imagesEnMemoire) };
+  }
   // Ce qui ne change pas en tête, avec ses points de mémoire (promptHead) : repris au lieu d'être relu à chaque appel.
   const content: Anthropic.ContentBlockParam[] = [];
   // Les images fixes d'abord (même octets pour tous les clients), avec un point de mémoire sur la dernière.

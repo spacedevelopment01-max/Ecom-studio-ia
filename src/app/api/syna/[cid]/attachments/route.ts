@@ -2,7 +2,9 @@ import { requireUser, HttpError } from "@/lib/auth";
 import { handle, ok, readForm } from "@/lib/http";
 import type { Ctx } from "@/lib/route-helpers";
 import { assertSynaAgent } from "@/lib/syna-agent/enabled";
-import { saveAttachment, MAX_ATTACHMENT_BYTES } from "@/lib/syna-agent/attachments";
+import { saveAttachment, MAX_ATTACHMENT_BYTES, verificationActuelle } from "@/lib/syna-agent/attachments";
+import { phraseVerification } from "@/lib/atelier/verification-photos";
+import { L } from "@/lib/i18n-server";
 export const runtime = "nodejs";
 export const POST = handle(async (req: Request, ctx: Ctx<{ cid: string }>) => {
   assertSynaAgent(); const user = await requireUser(), { cid } = await ctx.params;
@@ -10,5 +12,5 @@ export const POST = handle(async (req: Request, ctx: Ctx<{ cid: string }>) => {
   if (files.length !== 1 || typeof files[0] === "string" || !files[0].size) throw new HttpError(400, "Un fichier est attendu.");
   const f = files[0];
   const a = await saveAttachment(user, cid, { name: f.name, type: f.type, data: Buffer.from(await f.arrayBuffer()) });
-  return ok({ id: a.id, kind: a.kind, name: a.name, analysis: a.kind === "document" ? { characters: a.analysis?.characters } : { ...a.analysis, frames: a.analysis?.frames?.length } });
+  return ok({ id: a.id, kind: a.kind, name: a.name, analysis: a.kind === "document" ? { characters: a.analysis?.characters } : { ...a.analysis, frames: a.analysis?.frames?.length }, avertissements: [phraseVerification(verificationActuelle(a), L("fr", "en") as "fr" | "en")].filter(Boolean) });
 });

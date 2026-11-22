@@ -2,6 +2,7 @@
  * Photo d'une valeur de variante (ex. le coloris « Vert sauge »). Elle est détourée et mise en
  * packshot à la prochaine construction de la boutique, puis montrée quand le client choisit cette valeur.
  */
+import { avertissementsDe } from "@/lib/atelier/verification-photos";
 import { all, run, now } from "@/lib/db";
 import { HttpError } from "@/lib/auth";
 import { handle, ok, readForm } from "@/lib/http";
@@ -33,5 +34,5 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     if (((JSON.parse(a.meta || "{}") as { variant?: string }).variant ?? "").toLowerCase() === value.toLowerCase()) run("UPDATE assets SET deleted_at = ? WHERE id = ?", now(), a.id);
   }
   const a = await saveAsset({ projectId: p.id, userId: user.id, data: Buffer.from(await photo.arrayBuffer()), name: photo.name || `${value}.jpg`, mime: photo.type, role: "variant-original", folderKey: "product.originals", origin: "upload", meta: { variant: value, uploadedAt: now() } });
-  return ok({ id: a.id, variant: value }, { status: 201 });
+  return ok({ id: a.id, variant: value, avertissements: avertissementsDe([a.meta]) }, { status: 201 });
 });

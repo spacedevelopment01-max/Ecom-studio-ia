@@ -86,6 +86,7 @@ describe("SINA et l'atelier dans sa conversation", () => {
     const t = getTool("atelier.creer")!;
     const args = { geste: "fond", mode: "sina", assetId: f.a.id, mots: "un mur de pierre clair", outil: "bfl:flux-kontext-pro" };
     // Conditions pas acceptées : refus avant tout devis (le client les accepte lui-même à l'écran).
+    moderations = [];
     await expect(t.estimate!(f.ctx as any, args)).rejects.toThrow(/conditions de l'atelier/);
     expect(moderations).toHaveLength(0);
     accepterConditions(f.u.id);

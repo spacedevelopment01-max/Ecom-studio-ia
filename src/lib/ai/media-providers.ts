@@ -84,6 +84,9 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
     const t: MediaTrace = { task, ctx, requestHash: fingerprint, previous };
     return mediaTrace.run(t, async () => {
       try {
+        // Garde central (22 novembre 2026) : aucune photo du client mise de côté (pas encore vérifiée, ou refusée) ne
+        // part vers un appel payant ; rien n'est envoyé, rien n'est compté.
+        if (!previous?.provider_receipt) { const v = await import("../atelier/verification-photos"); await v.gardePhotosDeCote(ctx.projectId, v.imagesDans(args.slice(1))); }
         // Image synchrone déjà produite et facturée, téléchargement interrompu : lecture seule.
         const receipt = previous?.provider_receipt ? JSON.parse(previous.provider_receipt) : null;
         if (receipt?.downloadUrl && previous) {
