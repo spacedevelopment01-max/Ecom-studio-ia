@@ -10,7 +10,7 @@ process.env.STUDIO_SYNA_AGENT = "1";
 
 describe("mise en mémoire chez le fournisseur", async () => {
   const { headBlocks, cacheReadRatio, CACHE_WRITE_RATIO } = await import("@/lib/ai/llm");
-  const { filEnBlocs, FIL_TITRE, submitMessage, runAgent } = await import("@/lib/syna-agent/loop");
+  const { filEnBlocs, FIL_TITRE, submitMessage, runAgent, resultatsDeLaDemande } = await import("@/lib/syna-agent/loop");
   const { addMessage, filDeConversation, getRun } = await import("@/lib/syna-agent/store");
   const { memoireReprise, gagneSurAppel, travailDe } = await import("@/lib/ai/memoire");
   const { run } = await import("@/lib/db");
@@ -42,8 +42,10 @@ describe("mise en mémoire chez le fournisseur", async () => {
     expect(a[0].startsWith(FIL_TITRE)).toBe(true);
     expect(b.slice(0, a.length)).toEqual(a);
     expect(b).toHaveLength(5);
-    // Le résultat d'outil de la demande en cours reste lu en entier (rien n'est retiré à SINA).
-    expect(a[2]).toContain("y".repeat(500));
+    // Le résultat d'outil de la demande en cours reste lu en entier (rien n'est retiré à SINA), mais à part : le fil,
+    // lui, l'a court dès son entrée et ne change plus.
+    expect(a[2]).not.toContain("y".repeat(500));
+    expect(resultatsDeLaDemande(pas2)).toContain("y".repeat(500));
   });
 
   it("la fenêtre du fil ne glisse plus à chaque message : son début ne bouge que tous les 40 messages, jamais moins de 120 messages", async () => {
@@ -185,7 +187,7 @@ describe("ses mots corrigés, contrôlés par le code", async () => {
 
 describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 2026)", async () => {
   const L = await import("@/lib/ai/llm");
-  const { filEnBlocs, debutEntier, ALLEGEMENT } = await import("@/lib/syna-agent/loop");
+  const { filEnBlocs, resultatsDeLaDemande } = await import("@/lib/syna-agent/loop");
   it("une heure pour la conversation de SINA et les tâches en différé ; 5 minutes ailleurs ; l'écriture d'une heure comptée à 2 fois", () => {
     expect(L.pointDeMemoire({ memoireLongue: true })).toEqual({ type: "ephemeral", ttl: "1h" });
     expect(L.pointDeMemoire({})).toEqual({ type: "ephemeral" });
@@ -196,16 +198,19 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toContain("    memoireLongue: true,\n    system: SYNA_SYSTEM");
     expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain("const avecMemoire = (call: LlmCall): LlmCall => (call.memoireLongue == null && (call.deferred ?? differeActif()) ? { ...call, memoireLongue: true } : call);");
   });
-  it("un message déjà envoyé ne change plus quand le client écrit de nouveau ; l'allègement ne vient que tous les 40 messages", () => {
+  it("un message s'écrit une fois, à son entrée dans le fil, puis ne change plus ; le résultat entier de la demande en cours est donné à part", () => {
     const m = (seq: number, role: string, content: unknown) => ({ id: String(seq), seq, role, runId: null, content, createdAt: 0 }) as never;
     const demande1 = [m(1, "user", { text: "Bonjour" }), m(2, "tool", { tool: "start.state", ok: true, summary: "Lu.", data: { x: "y".repeat(2000) } }), m(3, "assistant", { message: "Salut", actions: [] })];
     const avant = filEnBlocs(demande1);
+    // Court dès son entrée dans le fil, et le même ensuite, quelle que soit la longueur du fil.
+    expect(avant[1]).not.toContain("y".repeat(400));
+    expect(resultatsDeLaDemande(demande1)).toContain("y".repeat(2000));
     const apres = filEnBlocs([...demande1, m(4, "user", { text: "Je vends des bijoux." })]);
     expect(apres.slice(0, avant.length)).toEqual(avant);
-    expect(apres[1]).toContain("y".repeat(2000)); // pas raccourci au message suivant
-    expect(debutEntier([{ seq: 39 }])).toBe(0);
-    expect(debutEntier([{ seq: 125 }])).toBe(80);
-    expect(ALLEGEMENT).toBe(40);
+    expect(resultatsDeLaDemande([...demande1, m(4, "user", { text: "Je vends des bijoux." })])).toBe("");
+    const long = Array.from({ length: 130 }, (_, i) => m(i + 5, i % 2 ? "tool" : "user", i % 2 ? { tool: "t", ok: true, summary: "s", data: "z".repeat(900) } : { text: `mot ${i}` }));
+    const tous = [...demande1, ...long];
+    expect(filEnBlocs(tous).slice(0, avant.length)).toEqual(avant);
   });
 
   it("relecture des images : la planche des 50 logos passe en tête, gardée en mémoire, avant les images qui changent", async () => {

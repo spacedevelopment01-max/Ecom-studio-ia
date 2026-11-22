@@ -341,4 +341,25 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     await runWithLang({ ui: "fr", content: "fr" }, () => runAgent(r.id, r.job_id!, { reason: async (c) => { ctx = String(c.context ?? ""); return { message: "Bonjour !", actions: [], done: true }; } }));
     expect(ctx).toContain("## Ses mots (corrigés une fois, valables pour toujours)\n- « atelier », jamais « boutique »");
   });
+  epreuve("fil-ecrit-une-seule-fois", async () => {
+    const { submitMessage, runAgent } = await import("@/lib/syna-agent/loop");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const user = await account(), cid = threadFor(user, null);
+    const fils: string[][] = [], apart: string[] = [];
+    const reason = async (c: any) => {
+      fils.push(c.history ?? []); apart.push(String(c.context ?? ""));
+      // Premier pas de chaque demande : un outil dont le résultat est long ; second pas : la réponse.
+      return fils.length % 2 === 1 ? { message: "", actions: [{ tool: "start.state", args: {} }], done: false } : { message: "Merci, je note.", actions: [], done: true };
+    };
+    for (const text of ["Je fais des bougies.", "Je les vends en ligne.", "Et sur les marchés."]) {
+      const r = submitMessage(user, cid, { requestId: `epreuve-${Math.random()}`, text });
+      await runWithLang({ ui: "fr", content: "fr" }, () => runAgent(r.id, r.job_id!, { reason }));
+    }
+    expect(fils.length).toBe(6);
+    // Chaque envoi commence par TOUT ce que le précédent avait envoyé, au caractère près.
+    for (let i = 1; i < fils.length; i++) expect(fils[i].slice(0, fils[i - 1].length)).toEqual(fils[i - 1]);
+    // Un résultat d'outil y est court dès son entrée (jamais plus de 300 caractères de données).
+    for (const b of fils.at(-1)!.filter((x) => x.includes("[résultat "))) expect((/données : (.*)$/m.exec(b)?.[1] ?? "").length).toBeLessThanOrEqual(300);
+  });
 });
+

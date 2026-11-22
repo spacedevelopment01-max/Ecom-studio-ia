@@ -186,7 +186,10 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
 
   it("moment qui compte : devant un client mécontent, SINA réfléchit plus longtemps", async () => {
     const { calls } = await unhappy({}, () => fixed);
-    expect(calls[0].routing.prefer).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: "high" });
+    // Depuis le 22 novembre 2026 : l'effort de la demande reste le même (la mémoire du fil reste) ; l'effort élevé de ce
+    // moment passe par un message dans la conversation (retour automatique à l'effort dans la demande si refusé).
+    expect(calls[0].routing.prefer).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: DEFAULT_MODELS.strong.effort });
+    expect(calls[0].effortDuTour).toBe("high");
   });
 
   it("relecture allumée : un brouillon refusé est réécrit UNE fois avec les remarques, qui ne partent jamais chez le client", async () => {

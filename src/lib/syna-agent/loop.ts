@@ -597,7 +597,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     // la 2e réponse et toutes les notices étaient réécrites en mémoire) ; un outil qui demande un projet est refusé sans
     // rien payer tant qu'il n'existe pas.
     reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(true, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}${guide ? `\n\n# Consigne de l'étape en cours (la même à chaque pas de l'étape)\n${guide}` : ""}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
-    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
+    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${resultatsDeLaDemande(history)}${note}`,
     // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
     history: filEnBlocs(history, history[0] ? messagesDuClientAvant(r.conversation_id, history[0].seq) : []),
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
@@ -668,27 +668,40 @@ export function filEnBlocs(h: SynaMessage[], avant: SynaMessage[] = []): string[
 /** Rubrique du résumé du début du fil, quand il n'est plus relu. */
 export const DEBUT_COUPE = "# Début de la conversation, qui n'est plus relu en entier\nCe qu'il t'a dit y est noté dans sa fiche (ci-dessous) ; voici, en bref, ce qu'il a écrit (ses mots) :";
 
-/** Tous les combien de messages les anciens résultats sont raccourcis, d'un seul coup. */
-export const ALLEGEMENT = 40;
 /**
- * À partir de quel message le fil est écrit en entier. Avant le 22 novembre 2026, les résultats de la demande précédente
- * étaient raccourcis dès le message suivant du client : le début du fil changeait et le fournisseur ne pouvait plus le
- * reprendre de mémoire. Désormais un message déjà envoyé ne change plus ; les anciens résultats ne sont raccourcis que
- * tous les 40 messages, d'un seul coup, et les 40 derniers au moins restent toujours entiers.
+ * Un message s'écrit dans le fil UNE seule fois, au moment où il y entre, puis ne change plus jamais (22 novembre 2026,
+ * demande du chef d'orchestre : réécrire le début d'une demande efface la mémoire du fournisseur, et peut la faire
+ * refuser quand on lui renvoie des résultats d'outils). Les résultats d'outils y sont donc toujours courts ; ceux de la
+ * demande en cours sont donnés en entier à part, dans la partie qui change à chaque pas (`resultatsDeLaDemande`).
  */
-export const debutEntier = (h: Pick<SynaMessage, "seq">[]) => { const last = h.length ? h[h.length - 1].seq : 0; return Math.max(0, Math.floor(last / ALLEGEMENT) * ALLEGEMENT - ALLEGEMENT); };
+export const FIL_DONNEES_MAX = 300, FIL_ACTIONS_MAX = 160;
+/** Taille d'un résultat de la demande en cours, donné en entier à part. */
+export const DEMANDE_DONNEES_MAX = 12000;
 
 function serializeLines(h: SynaMessage[]): string[] {
-  const entier = debutEntier(h);
-  return h.map((m) => {
-    const c = m.content, current = m.seq >= entier, dataMax = current ? 12000 : 300, argsMax = current ? 400 : 160;
-    if (m.role === "user") return `[client #${m.seq}] ${c.text}${c.attachments?.length ? ` (pièces jointes : ${c.attachments.join(", ")})` : ""}`;
-    if (m.role === "assistant") return `[SINA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, argsMax)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
-    if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.hint ? `\n  consigne (pour toi seule) : ${c.hint}` : ""}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, dataMax)}` : ""}`;
-    if (c.kind === "confirmation") return `[accord demandé #${m.seq}] ${c.pending?.tool} — ${c.pending?.reason}`;
-    if (c.kind === "approved" || c.kind === "declined") return `[client : ${c.kind === "approved" ? "ACCORD" : "REFUS"} pour ${c.tool}]`;
-    return `[événement ${c.kind}]`;
-  });
+  return h.map((m) => ligneDuFil(m, FIL_DONNEES_MAX, FIL_ACTIONS_MAX));
+}
+
+/** Un message tel qu'il s'écrit : ne dépend que de lui-même, jamais de sa place dans le fil. */
+function ligneDuFil(m: SynaMessage, dataMax: number, argsMax: number): string {
+  const c = m.content;
+  if (m.role === "user") return `[client #${m.seq}] ${c.text}${c.attachments?.length ? ` (pièces jointes : ${c.attachments.join(", ")})` : ""}`;
+  if (m.role === "assistant") return `[SINA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, argsMax)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
+  if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.hint ? `\n  consigne (pour toi seule) : ${c.hint}` : ""}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, dataMax)}` : ""}`;
+  if (c.kind === "confirmation") return `[accord demandé #${m.seq}] ${c.pending?.tool} — ${c.pending?.reason}`;
+  if (c.kind === "approved" || c.kind === "declined") return `[client : ${c.kind === "approved" ? "ACCORD" : "REFUS"} pour ${c.tool}]`;
+  return `[événement ${c.kind}]`;
+}
+
+/**
+ * Les résultats d'outils de la demande en cours (depuis le dernier message du client), en entier, avec les actions qui
+ * les ont lancés : donnés à part, après le point de mémoire. Vide quand aucun n'a été raccourci dans le fil.
+ */
+export function resultatsDeLaDemande(h: SynaMessage[]): string {
+  let i = h.length - 1;
+  while (i >= 0 && h[i].role !== "user") i--;
+  const lignes = h.slice(i + 1).filter((m) => (m.role === "tool" && m.content?.data != null && JSON.stringify(m.content.data).length > FIL_DONNEES_MAX) || (m.role === "assistant" && m.content?.actions?.some((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.length > FIL_ACTIONS_MAX)));
+  return lignes.length ? `\n\n# Résultats complets de cette demande (raccourcis dans le fil)\n${lignes.map((m) => ligneDuFil(m, DEMANDE_DONNEES_MAX, 400)).join("\n")}` : "";
 }
 
 function clip(v: unknown, max: number): unknown {

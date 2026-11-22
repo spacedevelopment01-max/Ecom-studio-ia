@@ -208,4 +208,10 @@ export const EPREUVES: Epreuve[] = [
     rejeu: "payant",
     prix: "Demande une vraie création d'angles : l'essai du lot 3 a coûté 8,36 € pour deux clients inventés ; [À compléter : prix d'un seul rejeu, à mesurer avant de le lancer].",
   },
+  {
+    id: "fil-ecrit-une-seule-fois", date: "2026-11-22", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md",
+    verdict: "Demande du chef d'orchestre, le propriétaire lui ayant laissé trancher : « un résultat d'outil se raccourcit UNE seule fois, au moment où il entre dans le fil, puis ne change plus jamais ».",
+    attendu: "Dans la vraie boucle, ce que SINA a déjà reçu du fil est renvoyé au caractère près à chaque pas et à chaque nouveau message du client ; un long résultat d'outil y est court dès son entrée, et n'est donné en entier qu'à part, pendant la demande qui l'a produit.",
+    rejeu: "gratuit",
+  },
 ];
