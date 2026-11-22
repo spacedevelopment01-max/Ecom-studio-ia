@@ -263,3 +263,38 @@ Rien n'a été dépensé ; chaque point a son essai.
 Pas fait : les notices écrites plus court (à essayer d'abord au banc, l'audit le demande) ; la fin de retouche sans
 réflexion de plus (à ne pas faire sans le chef). Tout est estimé d'après le code ; le vrai gain se lit dans
 Administration › Consommation au prochain essai. [À compléter : gain mesuré.]
+
+## Le moteur commun des appels, et la règle « une erreur de SINA n'est jamais comptée »
+
+Rien n'a été dépensé ; chaque point a son essai.
+
+- **Règle du propriétaire appliquée** (LE-STUDIO-DE-A-A-Z, partie 13 : « une erreur de SINA est toujours corrigée sans
+  rien compter ; un changement de goût du client passe par son budget du mois »). Ce que le Studio refait pour sa propre
+  qualité ne prend plus rien sur le budget du client, même quand son budget du mois est épuisé :
+  - une image refaite parce qu'elle était ratée (marque, publications, photos du site) ;
+  - un texte du site repris sur les remarques du relecteur ;
+  - une réponse de SINA réécrite après le contrôle ou la relectrice ;
+  - une réponse coupée ou mal formée, redemandée.
+
+  Le coût reste inscrit, à la charge du Studio, et le plafond de la tâche s'applique toujours. Une épreuve au banc
+  le garantit (`erreur-de-sina-jamais-comptee`). Avant, c'était le client qui payait.
+- **La recherche sur Internet** est gardée en mémoire chez le fournisseur : les pages trouvées ne sont plus repayées à
+  chaque tour. Chaque part est comptée à son vrai prix. Une recherche arrêtée en route est reprise là où elle s'est
+  arrêtée, au lieu d'être payée puis jetée. Environ 0,35 € par projet, à vérifier dans les reçus du prochain essai.
+- **Le différé** :
+  - la patience de 30 minutes est comptée en temps réel par tâche (avant, quatre appels qui attendaient ensemble la
+    mangeaient quatre fois) ; environ 0,30 € ;
+  - les petits contrôles (Haiku) ne passent plus par le différé, donc le site arrive plus vite ;
+  - le numéro de chaque envoi en différé est gardé : après un redémarrage, la réponse est reprise au lieu d'être
+    repayée ;
+  - une demande en erreur dans un envoi en différé n'est pas retenue. La page officielle d'Anthropic le dit : « You
+    aren't billed for these requests ».
+- **Pas de mémoire payée** pour les consignes qui ne servent qu'une fois par projet (étude, vérification, lecture finale
+  de la marque).
+- **Le journal** garde la part écrite pour une heure, les appels en différé partis au plein tarif et le détail des
+  images (taille, qualité, images jointes). L'administration montre maintenant le vrai gain : avant, elle le surestimait.
+- **Une erreur du fournisseur rendue avant toute réponse** (500, surcharge 529) : seul le coût de l'envoi est retenu,
+  plus le plafond entier. La page officielle ne dit pas si ces erreurs sont facturées : la prudence reste, la retenue est
+  juste. Une coupure après le début de la réponse garde le plafond, rendu après rapprochement.
+- **Le taux du dollar** : 0,86 par défaut dans le code. Le réglage du Studio en ligne se lit dans Administration ›
+  Fournisseurs IA. [À compléter : le taux réglé en ligne, à vérifier par le propriétaire.]
