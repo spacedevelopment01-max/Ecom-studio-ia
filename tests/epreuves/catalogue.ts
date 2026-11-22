@@ -141,6 +141,30 @@ export const EPREUVES: Epreuve[] = [
     rejeu: "gratuit",
   },
   {
+    id: "faire-connaissance-une-question-a-la-fois", date: "2026-11-22", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md",
+    verdict: "Elle a groupé des questions cinq fois pendant « faire connaissance », dont quatre coordonnées d'un coup. La règle y est une question à la fois.",
+    attendu: "Pendant « faire connaissance », un message qui pose plusieurs questions, ou plusieurs coordonnées d'un coup, ne part pas : SINA le réécrit avec une seule question.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "c-est-parti-avant-la-carte", date: "2026-11-22", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md",
+    verdict: "Elle a écrit « C'est parti » alors que rien ne démarre avant l'accord sur la carte.",
+    attendu: "Un message qui annonce le départ d'une création payante avant que le client accepte la carte ne part pas : SINA le réécrit.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "carte-qui-vouvoie", date: "2026-11-22", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md",
+    verdict: "La carte de dépense vouvoie le client ; SINA le tutoie partout.",
+    attendu: "La carte d'accord d'une dépense dit « ton budget IA », jamais « votre ».",
+    rejeu: "gratuit",
+  },
+  {
+    id: "acheteuses-inconnues-sina-propose", date: "2026-11-22", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md",
+    verdict: "Nadia ne savait pas qui sont ses acheteuses, et SINA n'a rien proposé à partir du marché. Ce qu'elle peut trouver seule, elle le propose.",
+    attendu: "Quand SINA demande à qui le client s'adresse, sa consigne lui dit, s'il ne sait pas, de proposer elle-même deux ou trois types d'acheteurs probables.",
+    rejeu: "gratuit",
+  },
+  {
     id: "publication-incomprehensible", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
     verdict: "Une publication d'escalier pour un plombier, incompréhensible pour un inconnu : « Personne ne juge l'idée d'une publication avant de payer le dessin ».",
     attendu: "L'idée de chaque publication est jugée par un lecteur qui ne connaît pas la marque AVANT de payer son image.",

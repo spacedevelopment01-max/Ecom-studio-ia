@@ -17,7 +17,7 @@ import { SINA_DESSIN_JOB } from "./dessin/job";
 import { z } from "zod";
 import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId, tx } from "../db";
-import { budgetPctText } from "../ai/budget-pct";
+import { budgetPctTu } from "../ai/budget-pct";
 import { balance } from "../billing";
 import { activityGaps, COMPANY_FIELDS } from "./activity";
 import { loadSiteCopy } from "./mockup-code/copy";
@@ -30,6 +30,7 @@ import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { allTools, getTool, isSensitive, toolCatalog, toolEntry, toolVisible, type ToolScope } from "./registry";
 import { noterTravail, prixJuste } from "./travaux";
+import { defautsDuMessage, noteDeControle } from "./controle-message";
 import { conversationSettings, keyMoment, momentDeLEtape, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
 import { loadWordingRules, wordingPromptLine } from "../client-wording";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
@@ -218,7 +219,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
     if (waited.length) {
       // Coût RÉEL de chaque tâche (appels enregistrés), même en échec : SINA ne dit jamais « rien n'a été débité » sans ce
       // chiffre (essais réels du 7 novembre : deux recherches échouées avaient coûté 0,29 € et 0,95 €).
-      const results = waited.map((jid) => { const j = getJob(jid); const spent = one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", jid)?.c ?? 0; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctText(j.user_id, spent, j.project_id) : null, coutReelMicro: spent }; });
+      const results = waited.map((jid) => { const j = getJob(jid); const spent = one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", jid)?.c ?? 0; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctTu(j.user_id, spent, j.project_id) : null, coutReelMicro: spent }; });
       const failedSpent = results.filter((x) => x.status !== "done" && x.coutReelMicro > 0);
       addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Tâche terminée, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")}.`, "Finished with a failure.") : L("Tâche terminée : je relis le résultat.", "Task finished: reading the result."), ...(failedSpent.length ? { hint: `Dis au client ce coût réel ; ne dis jamais que rien n'a été débité.${results.some((x) => x.status === "failed" && x.type === "syna.site") ? " Pour relancer la création de son site là où elle s'est arrêtée, sans repayer ce qui était fait : site.create avec relancer:true (une carte affiche le prix de ce qui reste)." : ""}${repriseAccueil(r.project_id, results)}` } : {}), data: results }, r.id);
       updateRun(r.id, { waiting_jobs: "[]" });
@@ -254,6 +255,16 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       // réécrite une fois si la relectrice la refuse.
       let relu: "ok" | "repris" | null = null;
       ({ out, relu } = await reviewedReply(user, r, jobId, step, deps, out));
+      // Contrôle gratuit des règles du propriétaire (une question à la fois pendant « faire connaissance », jamais
+      // « C'est parti » avant l'accord sur la carte) : réécrit une fois avec la remarque (essais complets, Nadia).
+      {
+        const lance = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND run_id=? AND role='tool'", r.conversation_id, r.id).some((m) => (json<any>(m.content_json, {}).jobs ?? []).length > 0);
+        const regle = { etape: currentStep(journeyOf(r.conversation_id)), payant: (tool: string) => !!getTool(tool)?.estimate, lance };
+        const defauts = defautsDuMessage(out, regle);
+        if (defauts.length) {
+          try { out = await reason(user, r, jobId, step, deps, noteDeControle(defauts), ":controle"); } catch (e) { if (e instanceof CostCapReached) return askBudget(r); throw e; }
+        }
+      }
       if (out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
       // Un bouton est une réponse complète, cliquable telle quelle : jamais un gabarit à trous (essai réel du 7 novembre :
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
@@ -365,7 +376,7 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
  * IA du mois (jamais en euros, jamais le nom technique de l'outil).
  */
 export async function confirmationText(t: AgentTool, args: unknown, ctx: ToolContext, userId: string, projectId: string | null, est?: { label: string; probableMicro?: number; maxMicro: number }): Promise<string> {
-  const pct = (m: number) => budgetPctText(userId, m, projectId);
+  const pct = (m: number) => budgetPctTu(userId, m, projectId);
   const price = est && est.maxMicro > 0 ? (est.probableMicro ? L(`Coût probable : ${pct(est.probableMicro)} ; au plus ${pct(est.maxMicro)}.`, `Likely cost: ${pct(est.probableMicro)}; at most ${pct(est.maxMicro)}.`) : L(`Au plus ${pct(est.maxMicro)}.`, `At most ${pct(est.maxMicro)}.`)) : "";
   const what = t.preview ? await t.preview(ctx, args) : est?.label ? est.label.charAt(0).toUpperCase() + est.label.slice(1) + "." : t.description.split(/(?<=[.:])\s/)[0];
   return [what, price].filter(Boolean).join("\n");
@@ -379,7 +390,7 @@ export function budgetInsuffisant(userId: string, projectId: string | null, maxM
   let b: ReturnType<typeof balance>;
   try { b = balance(userId, projectId); } catch { return null; }
   if (b.available >= maxMicro) return null;
-  const pct = (m: number) => budgetPctText(userId, m, projectId).replace(/de votre budget/, "de ton budget");
+  const pct = (m: number) => budgetPctTu(userId, m, projectId);
   const fin = new Date(b.periodEnd).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
   return L(`Pas lancé, rien n'est payé : ce travail peut coûter jusqu'à ${pct(maxMicro)}, et il ne reste que ${pct(b.available)} pour ce mois. Dis-le simplement au client : il peut recharger l'IA de son projet (Mon compte), puis te redemander ; sinon, son budget repart le ${fin}.`,
     `Not started, nothing paid: this may cost up to ${pct(maxMicro)} and only ${pct(b.available)} is left this month. Tell the client: they can top up the project's AI (My account), or wait until ${fin}.`);
@@ -534,8 +545,8 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
     const est = prixJuste(name!, await t.estimate(toolContext(user, r), {} as never));
     if (!est.maxMicro) return "";
     // Coût probable annoncé quand l'outil le donne (étape 7 : le plafond au pire n'a pas de sens pour le client).
-    if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctText(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctText(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
-    return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctText(user.id, est.maxMicro, r.project_id)}. Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
+    if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctTu(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctTu(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
+    return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctTu(user.id, est.maxMicro, r.project_id)}. Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
   } catch { return ""; }
 }
 
@@ -562,7 +573,7 @@ export function needsJudgement(history: { role: string; content?: any }[]): bool
 const sawImages = new Map<string, boolean>();
 
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
-async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, note = ""): Promise<StepOutput> {
+async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, note = "", cle = note ? ":reprise" : ""): Promise<StepOutput> {
   const history = filDeConversation(r.conversation_id);
   const scope = toolScope(r), conv = conversationSettings();
   // Variété des réponses : les débuts de tes derniers messages, à ne pas reprendre.
@@ -579,7 +590,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     history: filEnBlocs(history),
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
-    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${note ? ":reprise" : ""}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
+    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${cle}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
   };
   sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Identité|Marque du client|Maquette|Site codé|Thème sur mesure|Accueil dessiné)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));

@@ -275,4 +275,58 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     const ctx = J.journeyContext(J.journeyOf(cid), { fiche: F.ficheDuFil(cid, projectId) });
     expect(ctx).toContain("## Ce qu'il refuse\n- le style plombier : « surtout pas de goutte d'eau » (pour le logo,");
   });
+  epreuve("faire-connaissance-une-question-a-la-fois", async () => {
+    const { submitMessage, runAgent } = await import("@/lib/syna-agent/loop");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { defautsDuMessage } = await import("@/lib/syna-agent/controle-message");
+    const regle = { etape: 0, payant: () => false, lance: false };
+    // Quatre coordonnées d'un coup, puis deux questions : refusés ; une seule question : permise.
+    expect(defautsDuMessage({ message: "Super !", question: { text: "Donne-moi ton nom, ton adresse, ton e-mail et ton téléphone." }, actions: [] }, regle)).toHaveLength(1);
+    expect(defautsDuMessage({ message: "Tu vends en ligne ?", question: { text: "Et tu livres où ?" }, actions: [] }, regle)).toHaveLength(1);
+    expect(defautsDuMessage({ message: "Des bougies, j'adore.", question: { text: "Pour qui les fais-tu ?" }, actions: [] }, regle)).toEqual([]);
+    // Dans la vraie boucle : le message groupé ne part pas, SINA le réécrit avec la remarque.
+    const user = await account(), cid = threadFor(user, null);
+    const r = submitMessage(user, cid, { requestId: `epreuve-${Math.random()}`, text: "Je fais des bijoux." });
+    const notes: string[] = [];
+    await runWithLang({ ui: "fr", content: "fr" }, () => runAgent(r.id, r.job_id!, { reason: async (c) => {
+      notes.push(String(c.context ?? ""));
+      return notes.length === 1
+        ? { message: "Top !", actions: [], question: { text: "Quel est ton nom, ton adresse e-mail et ton téléphone ?" }, done: false }
+        : { message: "Top !", actions: [], question: { text: "Comment s'appelle ta marque ?" }, done: false };
+    } }));
+    expect(notes).toHaveLength(2);
+    expect(notes[1]).toContain("c'est une question à la fois");
+    const { all } = await import("@/lib/db");
+    const sent = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='assistant'", cid).map((m) => JSON.parse(m.content_json));
+    expect(sent.at(-1).question.text).toBe("Comment s'appelle ta marque ?");
+  });
+
+  epreuve("c-est-parti-avant-la-carte", async () => {
+    const { defautsDuMessage } = await import("@/lib/syna-agent/controle-message");
+    const payant = (t: string) => t === "identity.propose";
+    expect(defautsDuMessage({ message: "C'est parti, je crée tes identités !", actions: [{ tool: "identity.propose" }] }, { etape: 1, payant, lance: false })).toHaveLength(1);
+    // Rien de lancé pendant la demande : pas de départ annoncé non plus.
+    expect(defautsDuMessage({ message: "C'est parti !", actions: [] }, { etape: 1, payant, lance: false })).toHaveLength(1);
+    // Après l'accord, la création lancée : l'annonce est juste.
+    expect(defautsDuMessage({ message: "C'est parti, tes identités sont en cours.", actions: [] }, { etape: 1, payant, lance: true })).toEqual([]);
+    expect(defautsDuMessage({ message: "Je te propose trois identités ; la carte te montre le prix.", actions: [{ tool: "identity.propose" }] }, { etape: 1, payant, lance: false })).toEqual([]);
+  });
+
+  epreuve("carte-qui-vouvoie", async () => {
+    const { confirmationText } = await import("@/lib/syna-agent/loop");
+    const { tutoie } = await import("@/lib/ai/budget-pct");
+    const user = await account(), projectId = project(user) as string;
+    const t: any = { name: "essai.payant", description: "Essai.", estimate: () => ({ maxMicro: 2_000_000, label: "x" }) };
+    const txt = await confirmationText(t, {}, {} as never, user.id, projectId, { label: "tes trois identités", probableMicro: 1_000_000, maxMicro: 2_000_000 });
+    expect(txt).not.toMatch(/\b(votre|vous|vos)\b/i);
+    expect(txt).toMatch(/de ton budget IA/);
+    expect(tutoie("≈ 3 % de votre budget IA")).toBe("≈ 3 % de ton budget IA");
+  });
+
+  epreuve("acheteuses-inconnues-sina-propose", async () => {
+    const cid = threadFor(await account(), null);
+    J.updateJourney(cid, (j) => { j.start.business = { value: "products", at: Date.now() } as never; j.start.offer = { value: "Des bijoux en argent faits main.", at: Date.now() } as never; });
+    const ctx = J.journeyContext(J.journeyOf(cid));
+    expect(ctx).toContain("S'il ne sait pas, ne lui renvoie pas la question : propose-lui toi-même deux ou trois types d'acheteurs probables pour son offre");
+  });
 });

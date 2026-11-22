@@ -20,7 +20,7 @@ import { L } from "../../i18n-server";
 import { all, one } from "../../db";
 import { assetUrl, getAsset, saveAsset } from "../../library";
 import { aiSiteImageHd, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, withQuotedImageRoute } from "../../ai/media-providers";
-import { budgetPctText } from "../../ai/budget-pct";
+import { budgetPctTu } from "../../ai/budget-pct";
 import { peopleAllowed } from "../../people-policy";
 import { getRun } from "../store";
 import type { AgentTool, ToolContext } from "../types";
@@ -503,7 +503,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   } catch (e) {
     // Coût réel, même d'un passage raté (essai du 10 novembre 2026 : « 0 passage payé » alors que 0,34 € l'avaient été).
     const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${base}%`)[0]?.c ?? 0;
-    return { ok: false, result: { ok: false, summary: L(`Conception non faite (${calls} passage(s) réussi(s) ; coût réel : ${budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget")}) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." } };
+    return { ok: false, result: { ok: false, summary: L(`Conception non faite (${calls} passage(s) réussi(s) ; coût réel : ${budgetPctTu(ctx.user.id, spent, p.id)}) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." } };
   }
   // Dernier recours sans IA (essai réel du 18 novembre 2026 : « La personne derrière la marque » posée sans le portrait du
   // client, conception refusée et payée pour rien). Une pièce qui demande des photos impossibles à inventer que le client
@@ -1100,7 +1100,7 @@ const photoTool: AgentTool<PhotoArgs> = {
     const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: sitePhotoName(x.page?.label ?? x.place, a.description), mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: a.description, ratio: a.ratio, page: x.place, direction: "custom", background: a.background ?? null, product: !!a.product } } });
     const res = editTool.run(ctx, { uid: a.uid, image: { find: a.find, assetId: asset.id } }) as Awaited<ReturnType<typeof editTool.run>>;
     const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${usageKey}%`)[0]?.c ?? 0;
-    const spentText = budgetPctText(ctx.user.id, spent, p.id).replace(/de votre budget/, "de ton budget");
+    const spentText = budgetPctTu(ctx.user.id, spent, p.id);
     return {
       ...res,
       summary: L(`Photo créée${cut ? (cutProblem ? " (détourage impossible : photo pleine posée)" : " et détourée") : ""} et posée dans la section (${res.ok ? "enregistré" : "NON posée : " + res.summary}). Coût réel : ${spentText}.`, "Photo created."),

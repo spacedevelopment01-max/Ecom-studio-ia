@@ -264,7 +264,9 @@ export const TOPICS: Record<StartField, (j: Journey) => { fr: string; en: string
     : { fr: "ce qu'il vend, avec ses mots : ce que c'est, de quoi c'est fait, comment on s'en sert ; et ses photos du vrai produit s'il en a", en: "what they sell, in their words, with photos of the real product" },
   existing: () => ({ fr: "ce qui existe déjà : un nom, un logo, des couleurs, un site, des réseaux ; s'il a un lien, tu le lis toi-même", en: "what already exists: name, logo, colours, site, social accounts" }),
   keep: () => ({ fr: "ce qu'il veut garder tel quel de l'existant ; tout le reste sera recréé", en: "what they want to keep as is" }),
-  audience: () => ({ fr: "à qui il s'adresse : qui achète ou réserve, dans quelle situation, ce que cette personne cherche", en: "who it is for" }),
+  // Essais complets, Nadia (22 novembre 2026) : elle ne savait pas qui sont ses acheteuses et SINA n'a rien proposé.
+  // Règle relayée du propriétaire : « ce qu'elle peut trouver seule, elle le propose ».
+  audience: () => ({ fr: "à qui il s'adresse : qui achète ou réserve, dans quelle situation, ce que cette personne cherche. S'il ne sait pas, ne lui renvoie pas la question : propose-lui toi-même deux ou trois types d'acheteurs probables pour son offre, tirés de ce que tu sais de ce marché, à choisir ou à corriger", en: "who it is for; if they don't know, propose two or three likely buyer types yourself" }),
   market: (j) => j.start.business?.value === "services"
     ? { fr: "où il travaille : son adresse ou sa zone, chez le client, chez lui ou en ligne", en: "where they work" }
     : { fr: "où il vend (en ligne seulement, en boutique, sur des marchés) et où il livre", en: "where they sell and ship" },
