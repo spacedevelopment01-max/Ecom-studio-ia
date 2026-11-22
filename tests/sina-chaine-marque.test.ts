@@ -1099,6 +1099,20 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(log.prompts[id]).toMatch(/complètement différent/);
   });
 
+  it("nouvelle proposition sans les mots du client : l'étude, les idées, les noms et les verdicts du juge de moins d'un mois resservent (audit, partie 3)", async () => {
+    const t = await thread();
+    const garde = ["Bain de Minuit", "Lâche le Morceau", "L'Eau Est Bonne", "Nage Libre", "La Main Lourde", "Grand Bain", "Plongeon", "Marée Haute", "Patience"];
+    const judge = (_id: string, names: string[]) => ({ kept: names.filter((n) => garde.includes(n)).map((name) => ({ name, seen: "Une image nette.", why: "On le porterait avec fierté." })), almost: [] });
+    await chain(t, {}, { judge, review: () => ({ routes: [], series: "" }) });
+    const { log } = await chain(t, {}, { judge, shortlist: () => [pick("A", "Plongeon"), pick("B", "Marée Haute"), pick("C", "Grand Bain"), pick("A", "Patience", true)], review: () => ({ routes: [], series: "" }) });
+    expect(J.journeyOf(t.cid).identities!.list.map((x) => x.name)).toEqual(["Plongeon", "Marée Haute", "Grand Bain"]);
+    expect(log.ids.filter((i) => /^(web:(paroles|concurrents|usages)|study|strategy|team-|judge)/.test(i))).toEqual([]);
+    const shown = J.journeyOf(t.cid).identities!.shownNames ?? [];
+    expect(shown.length).toBeGreaterThan(3);
+    const { atelierDuMois } = await import("@/lib/syna-agent/tools/identity");
+    expect(atelierDuMois(J.journeyOf(t.cid))).toBe(true);
+  });
+
   it("un logo refait seul ne repaie pas la direction artistique : la ligne « La marque » est écrite par le code depuis la planche (audit 2.3)", async () => {
     const t = await thread();
     await chain(t, {}, { review: () => ({ routes: [], series: "" }) });

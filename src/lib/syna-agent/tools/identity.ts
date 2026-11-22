@@ -38,6 +38,17 @@ function workshopReady(j: Journey): boolean {
 }
 
 /**
+ * L'atelier d'une proposition de moins d'un mois : l'étude du marché, les idées et les noms ne changent pas en quelques
+ * jours ; une nouvelle proposition sans les mots du client les reprend sans les repayer (audit de la marque du
+ * 22 novembre 2026, partie 3 : environ 1,60 € par nouvelle proposition).
+ */
+export const ATELIER_MAX_MS = 30 * 24 * 3600 * 1000;
+export function atelierDuMois(j: Journey): boolean {
+  const id = j.identities?.chainJobId, job = id ? getJob(id) : undefined;
+  return !!job && Date.now() - job.created_at < ATELIER_MAX_MS && workshopReady(j);
+}
+
+/**
  * REPRENDRE UNE CRÉATION DE MARQUE COUPÉE, SANS REPAYER (21 novembre 2026). Reprise d'Aplomb arrêtée en route : 2,04 €
  * payés pour 13 images, rien de gardé, parce qu'une nouvelle création repartait de zéro. Comme pour le site et l'accueil
  * dessiné : la MÊME tâche repart (mêmes étapes, mêmes clés d'appel), donc tout ce qui est déjà fait et payé (l'étude, les
@@ -88,7 +99,7 @@ function chainWork(ctx: ToolContext, a: ProposeArgs | undefined) {
   const sameShape = previous.length === count && previous.every((x) => !!x.board);
   const redo = (a?.redo ?? []).filter((k) => routeKeys(count).includes(k));
   const partial = sameShape && redo.length > 0 && redo.length < count;
-  const fresh = !((redo.length || a?.only || a?.guidance) && workshopReady(j));
+  const fresh = !(((redo.length || a?.only || a?.guidance) && workshopReady(j)) || atelierDuMois(j));
   return { j, count, previous, sameShape, redo, routes: partial ? redo.length : count, fresh };
 }
 

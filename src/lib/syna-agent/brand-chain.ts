@@ -612,7 +612,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
 
   // Atelier d'une proposition précédente (étude, idées, réserve de noms) : repris tel quel, jamais repayé.
   const before = j.identities?.chainJobId ? parseJson<Record<string, unknown>>(getJob(j.identities.chainJobId)?.checkpoint ?? "{}", {}) : {};
-  if ((a.redo?.length || a.namesOnly || a.guidance) && before["brand:strategy"]) for (const [k, v] of Object.entries(before)) if (/^brand:(study|strategy|team:)/.test(k) && !(k in ctx.checkpoint)) ctx.save(k, v);
+  // Une nouvelle proposition sans les mots du client reprend aussi l'atelier, s'il a moins d'un mois (audit, partie 3).
+  const atelierRecent = !!j.identities?.chainJobId && Date.now() - (getJob(j.identities.chainJobId)?.created_at ?? 0) < 30 * 24 * 3600 * 1000;
+  if ((a.redo?.length || a.namesOnly || a.guidance || atelierRecent) && before["brand:strategy"]) for (const [k, v] of Object.entries(before)) if (/^brand:(study|strategy|team:)/.test(k) && !(k in ctx.checkpoint)) ctx.save(k, v);
 
   // 1. Comprendre : trois recherches, puis l'étude. Une recherche qui échoue est dite, jamais remplacée ni relancée.
   ctx.progress(0.03, L("J'étudie ton marché", "Studying your market"));
@@ -684,7 +686,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     // Une proposition refaite sans nouveaux mots du client reprend l'étude, les idées et les noms : les verdicts du juge
     // sur ces mêmes noms resservent aussi (audit du 22 novembre 2026, 2.13). Les noms déjà montrés sont écartés avant
     // lui ; seuls des noms nouveaux (second tour) sont jugés.
-    const verdictsAvant = !a.guidance && (a.redo?.length || a.namesOnly) ? Object.entries(before).filter(([k]) => /^brand:judge:\d+(:2)?$/.test(k)).map(([, v]) => JudgeSchema.safeParse(v)).flatMap((r) => (r.success ? [r.data] : [])) : [];
+    const verdictsAvant = !a.guidance && (a.redo?.length || a.namesOnly || atelierRecent) ? Object.entries(before).filter(([k]) => /^brand:judge:\d+(:2)?$/.test(k)).map(([, v]) => JudgeSchema.safeParse(v)).flatMap((r) => (r.success ? [r.data] : [])) : [];
     const judge = async (tag: string, list: PoolName[]) => {
       if (!list.length) return;
       const r = tag === "" && verdictsAvant.length ? { kept: verdictsAvant.flatMap((v) => v.kept), almost: verdictsAvant.flatMap((v) => v.almost) } : await ctx.step(`brand:judge:${round}${tag}`, () => ai.ask(`judge-${round}${tag.replace(":", "-")}`, { kind: "judge", system: P.nameJudgeSystem(kind), schema: JudgeSchema, prompt: `${brief}\n\n# Noms trouvés par les équipes (${list.length})\n${list.map((n) => `- ${n.name} | détail réel : ${n.detail} | deuxième lecture : ${n.second}`).join("\n")}` }));
