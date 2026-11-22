@@ -136,3 +136,57 @@ Rien n'a été dépensé.
   essai payant) ; les propositions réglées par le client (« plus ou moins de propositions ») : c'est le lot 7, « SINA
   prend les devants » ; le différé du point du mois et des publications du mois préparées d'avance : ces travaux
   n'existent pas encore.
+
+## Les économies de l'audit des coûts (demande du chef d'orchestre)
+
+Rien n'a été dépensé. Aucun modèle, aucune taille d'image, aucune relecture et aucune règle du propriétaire n'a changé.
+
+- **Les images d'OpenAI comptées à leur vrai prix.** Chaque image est comptée sur les jetons qu'OpenAI facture (30 $ le
+  million en sortie, 8 $ pour les images jointes, 5 $ pour le texte), au lieu de 0,12 $ au forfait. La carte d'accord
+  garde la borne de 0,12 $ par image : le client n'accepte jamais un prix plus bas que ce qui peut arriver.
+- **Plus d'aperçus payés.** Les deux aperçus envoyés pendant la création d'une image (environ 100 jetons chacun) ne sont
+  plus demandés ; le client n'en voyait aucun.
+- **16:9 et 9:16 dessinés directement** (1824 × 1024 et 1152 × 2048) au lieu d'être recadrés depuis le 3:2 : même prix
+  ou moins, rien de coupé.
+- **La relecture des images** reçoit la planche des 50 logos aimés en tête, gardée en mémoire chez le fournisseur : elle
+  est la même pour tous les clients. Le modèle et la taille de l'image relue ne changent pas. Le logo est toujours relu
+  avant les images qui le portent (déjà le cas).
+- **Une image par format, pas par réseau.** Instagram et Facebook, tous deux en 4:5, reçoivent la même image, payée et
+  relue une fois ; chacun garde son texte. Exemple : 3 publications sur Instagram et Facebook, c'était 6 images ; c'est
+  3 images. Avec LinkedIn en plus (carré), 6 images au lieu de 9. La carte d'accord le dit.
+- **La conversation de SINA** : la consigne de l'étape et les images de ce qu'elle a déjà créé (logos, planche, site)
+  passent dans la partie gardée en mémoire ; les photos que le client vient de joindre restent avec sa demande.
+- **Le résumé du client gardé en mémoire** pour chacune des 43 à 70 sections du site, et pour les appels de la marque qui
+  reviennent une fois par route (direction, reprise, images). Pas pour les appels uniques : la mise en mémoire se paie à
+  l'écriture et ne rapporte que si elle est relue.
+- **Le niveau léger** (tri des photos, classement) passe de Haiku 4.5 à Haiku 5.5 : dix fois moins cher, plus récent.
+  Aucune tâche où SINA décide, conseille ou juge n'y passe.
+
+**Pas fait, à décider par le propriétaire** : garder l'effort de SINA constant dans la conversation et passer à l'effort
+élevé, aux moments forts, par un message à l'intérieur du fil. C'est l'économie la plus grosse de l'audit (environ
+1,80 € par projet), mais elle demande une fonction encore en essai chez Anthropic (« effort par message »). Aujourd'hui,
+chaque moment fort efface la mémoire du fil.
+
+### Le coût compté d'un projet complet, avant et après
+
+Projet de référence de l'audit : une boutique d'un produit, 3 identités, Instagram et Facebook, de « faire connaissance »
+aux premières publications, sans reprise demandée. Chiffres estimés d'après le code, pas mesurés sur un vrai essai.
+
+| | Gain par projet |
+|---|---|
+| Avant | **environ 22 €** |
+| Mémoire d'une heure pour le fil de SINA et les tâches en différé | −1,40 € |
+| Une image par format | −0,80 € |
+| Consigne de l'étape et images du parcours en mémoire | −0,70 € |
+| Résumé du client en mémoire pour les sections du site | −0,30 € à −1 € |
+| Marque : résumé en mémoire pour les appels qui reviennent | −0,25 € |
+| Plus d'aperçus payés (environ 46 images) | −0,25 € |
+| Planche des 50 logos en mémoire à la relecture | −0,08 € |
+| Haiku 5.5 au niveau léger | −0,05 € |
+| **Après** | **environ 17,50 € à 18,20 €** |
+
+Encore possible :
+- l'effort constant (oui du propriétaire nécessaire, fonction en essai) : environ −1,80 €, soit **environ 16 €** ;
+- le prix réel des images : il se lit maintenant sur les jetons rendus par OpenAI. Si une image coûte environ 0,06 $
+  au lieu de 0,12 $, le compte d'un projet baisse encore d'environ 2,40 €. [À compléter : prix réel d'une image, lu au
+  prochain essai.]
