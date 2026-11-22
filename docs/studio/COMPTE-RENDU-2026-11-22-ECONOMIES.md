@@ -352,3 +352,55 @@ Rien n'a été dépensé ; chaque point a son essai. Les gains sont ceux de l'au
 
 Vérifié : `npx tsc --noEmit` sans erreur. Suite complète : 5 843 essais passés, épreuves comprises. Les derniers lots ont
 été vérifiés sur les essais de la marque.
+
+## Le site (partie 3)
+
+Rien n'a été dépensé ; chaque point a son essai. Les gains sont ceux de l'audit, estimés d'après le code, sur un site de
+référence (50 sections, 10 pages, 15 photos, environ 7 € aujourd'hui). [À compléter : gain mesuré au prochain essai réel.]
+
+- **Ta règle sur les photos du site** : chacune est maintenant relue, une à une, par le modèle le plus fort au niveau
+  élevé (avant : le petit modèle). **Coût en plus : environ 0,80 € par site**, moitié moins quand la création passe en
+  différé.
+- **Les textes s'écrivent page par page**, au lieu de section par section : 10 à 12 appels au lieu de 43 à 70. Une page
+  a huit sections au plus par appel, et les pièces pratiques (en-tête, pied de page, panier, recherche) sont écrites
+  ensemble. Le rédacteur voit la page entière, donc il ne répète plus une formule ou un fait à deux sections d'écart. Le
+  plan, la relecture et les reprises ne changent pas. Gain : 0,20 à 0,85 €. **La qualité doit être confirmée sur un
+  essai réel** (deux clients inventés, avec le nombre de sections refusées par la relecture comparé à aujourd'hui).
+- **La partie commune à tout le site** (promesse, voix, menu, titres prévus, pages) part une fois, gardée en mémoire avec
+  le dossier du client, au lieu d'être renvoyée dans chaque section. Gain : 0,13 à 0,25 €.
+- **La conception** :
+  - le juge de l'ordre et la reprise du concepteur ne rendent plus que les pages et les champs qu'ils changent, au lieu
+    de recopier tout le site. Gain : 0,27 à 0,55 €, et environ 8 minutes de moins par appel ;
+  - les correcteurs gratuits du Studio (variété, rythme, allures, famille, signature…) passent avant de décider la
+    reprise payée. Les juges lisent la version corrigée, et la reprise ne se paie que pour ce que le code ne sait pas
+    réparer. Gain : 0,05 à 0,35 € (à mesurer) ;
+  - le second regard ne juge plus que ce que seul un lecteur voit : la raison du choix parle-t-elle de ce client ? Le
+    premier écran dit-il ce qui est vendu ? La preuve est-elle vraie ? Les règles d'or étaient déjà vérifiées deux fois.
+- **En même temps** : les photos partent trois à la fois. Le juge de l'originalité et le second regard partent ensemble,
+  et les reprises de sections trois à la fois. Les prix ne changent pas, mais le site arrive plus tôt (10 à 20 minutes,
+  estimé) et gaspille moins l'attente du différé.
+- **Plus de mémoire d'une heure payée** pour les relectures servies une seule fois (juge de l'ordre, plan, relecture des
+  textes, relecture des photos). Gain : 0,12 à 0,15 €.
+- **Le plan des textes garde jusqu'à 90 sections**. Avant, il était coupé à 40 sans rien dire, alors qu'un site en a 43
+  à 70.
+- **Le regard sur une page** reçoit la capture découpée en bandes lisibles. Avant, la page arrivait réduite à 170 points
+  de large, où aucun texte ne se lit.
+- **Un appel en différé encore en cours après 15 minutes** repart en direct au lieu de faire échouer la conception. Son
+  coût possible est retenu à la charge du Studio, jamais du client.
+- **Images (rapport sur les images)** : une image vide, ou dans le mauvais sens, est refusée sans payer sa relecture. Le
+  reste du rapport était déjà fait : comptage au jeton, plus d'aperçus, tailles natives, fond opaque, logo relu avant le
+  reste, partie fixe du relecteur en mémoire.
+
+**Pas fait, en attente :**
+
+- *Les mesures gratuites de la partie 12* (temps réellement attendu en différé, part de réflexion d'une section…) : elles
+  se lisent sur les données du Studio en ligne, que je n'ai pas ici. Administration › Consommation les montre après un
+  essai.
+- *La grande scène de la planche en ouverture du site, une image de marque sur la page introuvable* : pas fait sans le
+  propriétaire, comme demandé.
+- *Les publications du mois en différé* (rapport sur les images, point 9) : à faire avec le lot des publications. Il
+  demande d'abord un essai d'une seule image en différé, environ 1 centime, avec son accord.
+- *La retouche d'une seule zone* au lieu de refaire l'image : elle demande un essai payant.
+- *Rapport sur le texte* : le reste était déjà fait (fil en mémoire, mémoire d'une heure, différé, petit modèle pour le
+  mécanique). Le point « refaire au niveau élevé plutôt que deux fois » ne s'applique pas : la marque n'a déjà qu'une
+  reprise.
