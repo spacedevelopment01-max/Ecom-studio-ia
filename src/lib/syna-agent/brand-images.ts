@@ -26,6 +26,7 @@
  */
 import { peopleAllowed } from "../people-policy";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
+import { noterRelecture, travailDeLImage } from "./juges";
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -441,7 +442,12 @@ export async function runBoardImages(o: {
 
   // Dans la bibliothèque du client : une image attend sa relecture (« review »), puis elle est gardée (« ready ») ou
   // refusée (« rejected », avec la raison) : une image ratée n'y est jamais rangée comme une bonne image.
-  const mark = (id: string, status: "ready" | "rejected", why = "") => run("UPDATE assets SET status=?, meta=json_set(meta,'$.synaBoard.review',json(?)) WHERE id=? AND project_id=?", status, JSON.stringify({ status, why: why.slice(0, 240) }), id, o.who.projectId);
+  const mark = (id: string, status: "ready" | "rejected", why = "") => {
+    run("UPDATE assets SET status=?, meta=json_set(meta,'$.synaBoard.review',json(?)) WHERE id=? AND project_id=?", status, JSON.stringify({ status, why: why.slice(0, 240) }), id, o.who.projectId);
+    // Le carnet des juges : chaque verdict du relecteur, pour que le propriétaire dise oui ou non à son tour (mesure d'accord).
+    const slot = [...made.entries()].find(([, m]) => m.id === id)?.[0];
+    if (slot && why !== "non relue") { try { noterRelecture({ assetId: id, userId: o.who.userId, projectId: o.who.projectId, travail: travailDeLImage(slot), garde: status === "ready", raison: why }); } catch { /* le carnet ne bloque jamais une planche */ } }
+  };
   let rejected = 0;
 
   // Le logo déjà gardé sur la planche (reprise d'une partie des images) ; le logo du client passe avant tout.

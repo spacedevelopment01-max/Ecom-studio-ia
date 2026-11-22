@@ -626,6 +626,21 @@ CREATE TABLE IF NOT EXISTS travaux_payes (
 );
 CREATE INDEX IF NOT EXISTS travaux_payes_tool ON travaux_payes(tool, created_at);
 
+-- Le carnet des juges (22 novembre 2026) : pour chaque image relue par le relecteur de SINA, son verdict (gardée ou
+-- refusée, et pourquoi), puis celui du propriétaire (oui ou non) ; l'accord entre les deux se mesure ici.
+CREATE TABLE IF NOT EXISTS verdicts_images (
+  asset_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  project_id TEXT,
+  travail TEXT NOT NULL,               -- ce que l'image est (logo, grande scène, haut du site…)
+  relecteur_garde INTEGER NOT NULL,    -- 1 : gardée et montrée ; 0 : refusée
+  relecteur_raison TEXT NOT NULL DEFAULT '',
+  proprietaire TEXT,                   -- 'oui' | 'non' | NULL (pas encore jugée)
+  proprietaire_at INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS verdicts_images_attente ON verdicts_images(proprietaire, created_at);
+
 CREATE TABLE IF NOT EXISTS quality_checks (
   id TEXT PRIMARY KEY,
   created_at INTEGER NOT NULL,
