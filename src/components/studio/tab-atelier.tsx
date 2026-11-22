@@ -365,6 +365,17 @@ const USAGES: Record<string, T2> = { post: ["dans une publication", "in a post"]
 function CreationsCard({ etat, projectId }: { etat: Etat; projectId: string }) {
   const t = useT();
   const { lang } = useLang();
+  const toast = useToast();
+  const [pose, setPose] = useState<string | null>(null);
+  // La création va vraiment là où le client la veut : brouillon de publication, publicité préparée (rien n'est publié).
+  const poser = async (c: Creation, cible: "publication" | "publicite") => {
+    setPose(`${c.id}:${cible}`);
+    try {
+      const r = await api<{ lien: string; deja: boolean }>(`/api/projects/${projectId}/atelier`, { body: { action: "poser", creationId: c.id, cible } });
+      toast("ok", cible === "publication" ? (r.deja ? t("Elle est déjà dans un brouillon de publication : je te l'ouvre.", "It's already in a draft post: opening it.") : t("Brouillon de publication prêt avec ton image. Rien n'est publié.", "Draft post ready with your image. Nothing is published.")) : (r.deja ? t("Elle est déjà dans une publicité préparée : je te l'ouvre.", "It's already in a prepared ad: opening it.") : t("Publicité préparée avec ton image, en brouillon. Rien n'est diffusé.", "Ad prepared with your image, as a draft. Nothing is running.")));
+      window.location.href = r.lien;
+    } catch (e) { toast("bad", (e as Error).message); } finally { setPose(null); }
+  };
   const [filtre, setFiltre] = useState<"toutes" | "dorment">("toutes");
   const liste = filtre === "dorment" ? etat.creations.filter((c) => c.status === "ok" && !c.servie) : etat.creations;
   const STATUT: Record<Creation["status"], T2> = { ok: ["Réussie", "Successful"], rate: ["Ratée : je te le dis, elle n'est pas comptée si l'outil s'est trompé", "Failed: I'm telling you, it isn't charged if the tool got it wrong"], produit_modifie: ["Ton produit a changé : gardée à part, elle ne part pas vers ta boutique", "Your product changed: kept aside, it won't go to your shop"] };
@@ -387,9 +398,9 @@ function CreationsCard({ etat, projectId }: { etat: Etat; projectId: string }) {
                 <span>{c.servie ? `${t("A servi", "Used")} ${c.usages.map((u) => pick(USAGES[u] ?? [u, u], lang)).join(", ")}` : t("Pas encore servie", "Not used yet")}</span>
                 {c.status === "ok" && !c.servie && c.assetId && (
                   <span className="flex flex-wrap gap-2 pt-1">
-                    <a className="underline" href={`/studio/${projectId}/publications#image`}>{t("Une publication", "A post")}</a>
-                    <a className="underline" href={`/studio/${projectId}/publicites`}>{t("Une publicité", "An ad")}</a>
-                    <a className="underline" href={`/studio/${projectId}/boutique`}>{t("Mon site", "My site")}</a>
+                    <button type="button" className="underline disabled:opacity-50" disabled={!!pose} onClick={() => void poser(c, "publication")} data-atelier-poser="publication">{t("Une publication", "A post")}</button>
+                    {c.kind === "image" && <button type="button" className="underline disabled:opacity-50" disabled={!!pose} onClick={() => void poser(c, "publicite")} data-atelier-poser="publicite">{t("Une publicité", "An ad")}</button>}
+                    {c.kind === "image" && <a className="underline" href={`/studio/${projectId}/boutique?poser=${encodeURIComponent(c.id)}`} data-atelier-poser="site">{t("Mon site", "My site")}</a>}
                   </span>
                 )}
               </div>

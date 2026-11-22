@@ -25,6 +25,7 @@ import { mesCreations, nonServies } from "../../atelier/journal";
 import { plafondTexte } from "../../atelier/prix";
 import type { AgentTool, ToolContext } from "../types";
 import { project } from "./common";
+import { poserDansPublication, poserDansPublicite, poserSurLeSite } from "../../atelier/placer";
 
 const lang = (): "fr" | "en" => L("fr", "en") as "fr" | "en";
 const nom = (x: readonly [string, string]) => x[lang() === "fr" ? 0 : 1];
@@ -114,7 +115,7 @@ const creerTool: AgentTool<CreerArgs> = {
       if (d.kind === "scene") jobs.push((await lancerScene(ctx.user, p.id, d.operationId, d.request, d.token)).jobId);
       else jobs.push((await lancerRetouche(ctx.user, p.id, d.operationId, d.demande, d.token)).jobId);
     }
-    return { ok: true, jobs, summary: L(`${nom(GESTES[a.geste].nom)} lancé${jobs.length > 1 ? ` sur ${jobs.length} photos` : ""} ; le résultat arrivera dans « Mes créations ».`, "Started; the result will be in My creations."), hint: "À la fin : regarde le résultat avant d'en parler ; une image ratée ou « produit modifié » se dit telle quelle." };
+    return { ok: true, jobs, summary: L(`${nom(GESTES[a.geste].nom)} lancé${jobs.length > 1 ? ` sur ${jobs.length} photos` : ""} ; le résultat arrivera dans « Mes créations ».`, "Started; the result will be in My creations."), hint: "À la fin : regarde le résultat avant d'en parler ; une image ratée ou « produit modifié » se dit telle quelle. Propose ensuite où la poser (une publication, une publicité, son site) ; atelier.placer seulement s'il le veut." };
   },
 };
 
@@ -131,4 +132,21 @@ const videoTool: AgentTool<{ modele: ModeleVideoId }> = {
   },
 };
 
-export const atelierTools: AgentTool[] = [etatTool, creerTool, videoTool];
+type PoserArgs = { creationId: string; cible: "publication" | "publicite" | "site"; uid?: string; src?: string };
+const poserTool: AgentTool<PoserArgs> = {
+  name: "atelier.placer", module: "atelier", kind: "write", needsProject: true,
+  description: "Gratuit, SEULEMENT quand le client te le demande : pose une création réussie de « Mes créations » (creationId, lu dans atelier.etat) là où il la veut. cible : publication (un brouillon de publication avec l'image, rien n'est publié), publicite (une publicité préparée avec l'image, en brouillon, textes à écrire avec lui, aucune diffusion), site (la photo d'une section de son site : uid et src de la photo qu'il a désignée sur l'aperçu). Une création ratée, « produit modifié », refusée ou pas encore vérifiée ne part nulle part ; les photos de ses produits restent sur leurs emplacements ; jamais deux fois la même photo sur son site.",
+  args: z.object({ creationId: z.string().max(40), cible: z.enum(["publication", "publicite", "site"]), uid: z.string().regex(/^s[0-9a-f]{8}$/).optional(), src: z.string().max(400).optional() }).strict(),
+  run: (ctx, a) => {
+    const p = project(ctx);
+    try {
+      if (a.cible === "publication") { const r = poserDansPublication(p, ctx.user, a.creationId); return { ok: true, summary: L(r.deja ? "Elle était déjà dans un brouillon de publication." : "Brouillon de publication créé avec l'image (rien n'est publié).", "Draft post with the image."), data: r, changes: [{ module: "publications", object: r.postId, summary: L("brouillon avec la création", "draft with the creation"), verified: !!r.postId }] }; }
+      if (a.cible === "publicite") { const r = poserDansPublicite(p, ctx.user, a.creationId); return { ok: true, summary: L(r.deja ? "Elle était déjà dans une publicité préparée." : "Publicité préparée avec l'image, en brouillon (aucune diffusion ; textes à écrire avec lui).", "Ad prepared with the image."), data: r, changes: [{ module: "publicités", object: r.campaignId, summary: L("publicité préparée avec la création", "ad prepared with the creation"), verified: !!r.campaignId }] }; }
+      if (!a.uid || !a.src) return { ok: false, internal: true, summary: "uid et src de la photo désignée sur l'aperçu sont nécessaires pour le site." };
+      const r = poserSurLeSite(p, a.creationId, { uid: a.uid, src: a.src });
+      return { ok: true, summary: L("La création est posée sur son site, à l'endroit désigné.", "The creation is on the site."), data: r, changes: [{ module: "site", object: r.uid, summary: L("photo remplacée par la création", "photo replaced by the creation"), verified: true }] };
+    } catch (e) { return { ok: false, summary: (e as Error).message, hint: "Dis-lui la raison telle quelle, simplement, et propose une autre création ou un autre endroit." }; }
+  },
+};
+
+export const atelierTools: AgentTool[] = [etatTool, creerTool, videoTool, poserTool];
