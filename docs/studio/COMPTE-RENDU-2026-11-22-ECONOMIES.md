@@ -570,3 +570,48 @@ que tu n'as pas dit oui) :
   pas ») engage ta responsabilité ; le branchement attend ton oui.
 - *« L'idée du jour »* dans ta journée : elle demanderait un appel à l'IA chaque jour ; pas faite, à décider avec toi.
 - *Les « réalisations d'artisans » créées par l'IA* (point 12 du rapport) : ta décision, rien n'a été construit.
+
+## Les décisions appliquées aux publications et aux publicités
+
+Décisions tranchées au nom de tes règles déjà écrites (« aucun ordre donné au lecteur », « Trois angles », « ses
+publications deviennent les premières du calendrier »). Tout est vérifié par des essais simulés : aucun appel payant,
+aucune publication, aucune publicité lancée, aucune dépense de diffusion.
+
+**Ce qui change pour le client :**
+
+- **Les légendes ne finissent plus sur un ordre.** Plus de « Commande maintenant », « Clique », « Découvre »,
+  « Enregistre ce conseil » : une légende finit sur une vraie question, une invitation qui donne envie (« Le coffret
+  t'attend à l'atelier jusqu'à samedi ») ou un fait utile. C'est dit à tous les rédacteurs (SINA, le moteur des
+  publications, le calendrier) et dans les cahiers de SINA. Le code contrôle chaque légende : un ordre laissé à la fin est
+  retiré par le Studio, sans nouvel appel ; une pastille d'appel qui reste un ordre n'est pas posée sur l'image. Une
+  légende qui ne serait qu'un ordre n'est jamais vidée : elle est signalée et refaite dans la reprise déjà comprise. Les
+  phrases toutes faites du Studio (« Demander un devis », « Enregistrez la publication… ») sont devenues des questions et
+  des invitations (« Un devis pour votre projet ? Il se demande en un message. »).
+- **De 0 à 3 mots-dièse par légende**, sur tous les réseaux (avant : 3 à 5 exigés sur Instagram et TikTok). Au-delà, le
+  Studio garde les 3 premiers.
+- **Une publicité par type de client.** Chaque publicité part d'un type de client différent : celui de l'angle choisi
+  d'abord, puis ceux des angles en réserve ; jamais deux publicités pour le même type. Le levier (démonstration, détail,
+  preuve…) change aussi d'une publicité à l'autre. Il y a autant de publicités que de types de clients connus, au plus.
+  Le rédacteur sait à qui parle chaque annonce, et le plan d'essai le montre.
+- **Le budget d'essai est un conseil, jamais une promesse** : un seul ensemble d'annonces, de 5 à 20 € par jour au total,
+  choisi par le client, 7 jours sans toucher, bilan à 14 jours sur les demandes et les clients obtenus. C'est écrit
+  « conseil, pas une garantie : aucun résultat n'est promis », et « le Studio ne dépense rien et ne lance rien ». Avant :
+  deux ensembles à 10 à 20 € chacun, au vouvoiement.
+- **Le titre des publicités Meta tient en 27 caractères**, contrôlé par le code (avant : 40). Un titre trop long est
+  repris ou remplacé par la version du Studio.
+- **Le tutoriel des publicités tutoie le client** (plus aucun « vous »).
+- **Le marqueur dans les liens** : le Studio ajoute lui-même au lien de chaque publicité les paramètres de suivi
+  (utm_source, utm_medium, utm_campaign, utm_content). Les visites venues d'une publicité pourront se compter sur son
+  site, sans branchement à Meta. Le lien n'est posé que si son site est en ligne ; sinon l'export écrit « [À compléter :
+  l'adresse de ton site, une fois en ligne] ». L'export des campagnes a une colonne « Lien (avec marqueur) ».
+- **Les publications de sa marque ouvrent son calendrier**, offertes : les images créées et relues avec la marque
+  servent telles quelles, sans nouvel appel payant, sur Instagram et Facebook (elles sont en 4:5), dans l'ordre de la
+  planche. Une image refusée à la relecture n'y va jamais. Le client publie lui-même, comme le reste du calendrier.
+
+**Ce qui n'a pas été vérifié :** aucun essai avec la vraie IA (les textes réellement écrits par SINA avec ces consignes
+restent à voir) ; la lecture des visites par marqueur dans le point du mois n'est pas faite (le marqueur est posé, le
+compte par publicité reste à construire) ; la reconnaissance des ordres est faite par le code avec une liste de verbes :
+une tournure rare peut lui échapper.
+
+**Pas touché, en attente de ta décision :** « tout dans l'image par OpenAI » ou « les mots posés par le Studio », et
+l'essai du différé des images d'OpenAI.
