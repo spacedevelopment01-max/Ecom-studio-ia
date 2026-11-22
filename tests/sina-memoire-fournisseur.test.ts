@@ -230,5 +230,26 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     expect(src).toContain(`fixes: [{ data: aimes, label: "logos aimés" }]`);
     expect(src).not.toContain(`seen.push({ data: aimes`);
   });
+
+  it("conversation de SINA : les images de ce qu'elle a créé passent entre les notices et le fil, gardées en mémoire ; les photos jointes restent après", async () => {
+    const sharp = (await import("sharp")).default;
+    const { buildContent } = await import("@/lib/ai/llm");
+    const png = (c: string) => sharp({ create: { width: 64, height: 64, channels: 3, background: c } }).png().toBuffer();
+    const content: any[] = await buildContent({ task: "agent_conversation", system: "S", memoireLongue: true, reference: "NOTICES ET CONSIGNE DE L'ÉTAPE", history: ["# Fil\n[client #1] Bonjour", "[SINA #2] Salut"], context: "ÉTAT", prompt: "Étape 1.", imagesEnMemoire: [{ data: await png("#123456"), label: "Logo A" }, { data: await png("#654321"), label: "Planche A" }], images: [{ data: await png("#abcdef"), label: "photo du client" }] } as any);
+    const ou = (pred: (b: any) => boolean) => content.findIndex(pred);
+    const notices = ou((b) => b.text === "NOTICES ET CONSIGNE DE L'ÉTAPE"), fil = ou((b) => b.text?.startsWith("# Fil")), etat = ou((b) => b.text === "ÉTAT");
+    const images = content.map((b, i) => [b, i] as const).filter(([b]) => b.type === "image");
+    expect(images).toHaveLength(3);
+    // Les deux images du parcours : après les notices, avant le fil ; un seul point de mémoire, sur la dernière.
+    expect(images[0][1]).toBeGreaterThan(notices);
+    expect(images[1][1]).toBeLessThan(fil);
+    expect(images[0][0].cache_control).toBeUndefined();
+    expect(images[1][0].cache_control).toEqual({ type: "ephemeral", ttl: "1h" });
+    // La photo jointe par le client : après l'état, sans point de mémoire.
+    expect(images[2][1]).toBeGreaterThan(etat);
+    expect(images[2][0].cache_control).toBeUndefined();
+    // Au plus quatre points de mémoire dans le message (la consigne générale en a un de son côté).
+    expect(content.filter((b) => b.cache_control).length).toBeLessThanOrEqual(3);
+  });
 });
 

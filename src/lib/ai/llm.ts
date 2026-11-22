@@ -99,6 +99,12 @@ export type LlmCall = {
    * relecture, pour tous les clients. Ni le modèle ni la taille de l'image ne changent.
    */
   imagesFixes?: LlmImage[];
+  /**
+   * Conversation de SINA : images de ce qu'elle a déjà créé (logos, planche, site), les mêmes à chaque pas tant que rien
+   * de nouveau n'est livré (22 novembre 2026). Placées après la référence et avant le fil, avec leur point de mémoire :
+   * reprises au lieu d'être relues au plein prix à chaque pas.
+   */
+  imagesEnMemoire?: LlmImage[];
   maxTokens?: number;
   /** llmJson : limite de sortie au-delà de laquelle une réponse coupée n'est plus relancée plus longue (défaut 64 000). */
   maxOutputTokens?: number;
@@ -130,9 +136,9 @@ export type LlmCall = {
  * Modèle d'un appel, choisi par le Router V2 (politique centrale + route fixée par l'administration + historique).
  * Un appel arrivé ici est déjà engagé vers l'IA : jamais de bascule silencieuse vers le moteur local.
  */
-const avecImages = (call: Pick<LlmCall, "images" | "imagesFixes">) => !!(call.images?.length || call.imagesFixes?.length);
+const avecImages = (call: Pick<LlmCall, "images" | "imagesFixes" | "imagesEnMemoire">) => !!(call.images?.length || call.imagesFixes?.length || call.imagesEnMemoire?.length);
 
-export function routeLlm(call: Pick<LlmCall, "task" | "images" | "imagesFixes" | "routing"> & { userId?: string }): RouteDecision {
+export function routeLlm(call: Pick<LlmCall, "task" | "images" | "imagesFixes" | "imagesEnMemoire" | "routing"> & { userId?: string }): RouteDecision {
   const pref = call.routing?.prefer;
   if (pref && pref.provider === "anthropic") {
     const info = modelInfo(pref.provider, pref.model);
@@ -289,7 +295,15 @@ export async function buildContent(call: LlmCall): Promise<Anthropic.ContentBloc
     content.push({ type: "text", text: `Image jointe à part${img.label ? ` — ${img.label}` : ""} (hors numérotation) :` });
     content.push(i === fixes.length - 1 ? { ...(await imageBlock(img)), cache_control: pointDeMemoire(call) } : await imageBlock(img));
   }
-  content.push(...headBlocks(call));
+  const tete = headBlocks(call), nCaches = promptHead(call).cached.length;
+  content.push(...tete.slice(0, nCaches));
+  // Les images déjà livrées du parcours, entre la référence et le fil, avec leur point de mémoire sur la dernière.
+  const enMemoire = call.imagesEnMemoire ?? [];
+  for (const [i, img] of enMemoire.entries()) {
+    content.push({ type: "text", text: `Image du parcours ${i + 1}${img.label ? ` — ${img.label}` : ""} :` });
+    content.push(i === enMemoire.length - 1 ? { ...(await imageBlock(img)), cache_control: pointDeMemoire(call) } : await imageBlock(img));
+  }
+  content.push(...tete.slice(nCaches));
   // Après le point de cache : le contexte volatil (créations récentes) peut changer sans invalider le préfixe.
   const { volatile } = brainOf(call);
   if (volatile) content.push({ type: "text", text: volatile });

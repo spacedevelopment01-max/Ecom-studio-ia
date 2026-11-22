@@ -72,6 +72,12 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     expect(toolVisible("posts.plan", scope)).toBe(true);
     expect(J.journeyContext(j)).toMatch(/Publications : aucun plan encore/);
     expect(J.journeyContext(j)).toMatch(/Étape 9 \(3 groupes de publications\)[\s\S]*LE PLAN D'ABORD[\s\S]*jamais « ma stratège »/);
+    // La consigne de l'étape peut être donnée à part, gardée en mémoire avec les notices (22 novembre 2026) : elle
+    // n'est alors plus dans ce qui change à chaque pas, et elle reste la même à chaque pas de l'étape.
+    expect(J.journeyContext(j, { guideAPart: true })).not.toMatch(/LE PLAN D'ABORD/);
+    expect(J.journeyContext(j, { guideAPart: true })).toMatch(/Publications : aucun plan encore/);
+    expect(J.guideDeLEtape(j)).toBe(J.STEP_GUIDES[9]);
+    expect(J.guideDeLEtape(J.emptyJourney())).toBe("");
     expect(routedCatalog(true, scope, 9)).toMatch(/### posts\.plan — module publications/);
     setSetting("sina.etapes_ouvertes", "n'importe quoi");
     expect(J.stepReady(9)).toBe(false);

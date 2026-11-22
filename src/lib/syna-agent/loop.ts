@@ -41,7 +41,7 @@ import { budgetState, jobSpentMicro, replyAllowanceMicro, trackJob, authorizeBud
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, stepReady, currentStep, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus } from "./journey";
+import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus } from "./journey";
 import { anglesViewOf } from "./angles";
 import { sinaModels } from "./models";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
@@ -579,7 +579,12 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   const scope = toolScope(r), conv = conversationSettings();
   // Variété des réponses : les débuts de tes derniers messages, à ne pas reprendre.
   const openings = history.filter((m) => m.role === "assistant" && m.content?.message).slice(-4).map((m) => String(m.content.message).split(/\s+/).slice(0, 5).join(" "));
-  const images: LlmImage[] = [...(step === 0 || newAttachmentSinceLastAssistant(history) ? attachmentImages(r.conversation_id, history) : []), ...(await journeyImages(journeyOf(r.conversation_id), r.project_id).catch(() => []))].slice(0, 12);
+  // Les photos jointes par le client arrivent avec sa demande ; les images de ce qu'elle a déjà créé (logos, planche,
+  // site) restent les mêmes d'un pas à l'autre : elles sont gardées en mémoire chez le fournisseur (22 novembre 2026).
+  const jointes: LlmImage[] = (step === 0 || newAttachmentSinceLastAssistant(history) ? attachmentImages(r.conversation_id, history) : []).slice(0, 12);
+  const duParcours: LlmImage[] = (await journeyImages(journeyOf(r.conversation_id), r.project_id).catch(() => [])).slice(0, 12 - jointes.length);
+  const images = [...jointes, ...duParcours];
+  const guide = guideDeLEtape(journeyOf(r.conversation_id));
   const b = budgetState(user.id, r.project_id, r.conversation_id);
   const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon) : il est créé dès que l'activité et l'offre du client sont connues (start.answer).", "No project linked yet (draft): it is created once the business and offer are known.");
   const call: LlmCall = {
@@ -590,12 +595,13 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     // La même liste d'outils avant et après la création du projet (relevé de Nadia, 22 novembre 2026 : la liste changeait à
     // la 2e réponse et toutes les notices étaient réécrites en mémoire) ; un outil qui demande un projet est refusé sans
     // rien payer tant qu'il n'existe pas.
-    reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(true, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
-    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id) })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
+    reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(true, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}${guide ? `\n\n# Consigne de l'étape en cours (la même à chaque pas de l'étape)\n${guide}` : ""}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
+    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
     // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
     history: filEnBlocs(history, history[0] ? messagesDuClientAvant(r.conversation_id, history[0].seq) : []),
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
-    images: images.length ? images : undefined,
+    images: jointes.length ? jointes : undefined,
+    imagesEnMemoire: duParcours.length ? duParcours : undefined,
     maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${cle}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
   };
   sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Identité|Marque du client|Maquette|Site codé|Thème sur mesure|Accueil dessiné)/.test(im.label ?? "")));

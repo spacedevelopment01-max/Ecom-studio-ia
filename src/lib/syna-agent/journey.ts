@@ -307,7 +307,7 @@ export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
 };
 
 /** Texte relu par SINA à chaque pas : où en est le parcours et que faire maintenant. */
-export function journeyContext(j: Journey, o: { identityCount?: number; /** Les notes de sa fiche. */ notes?: { sujet: string; value: string; genre?: string; portee?: string }[]; /** Sa fiche entière (`fiche.ts`), relue à chaque pas après les questions de départ. */ fiche?: string } = {}): string {
+export function journeyContext(j: Journey, o: { identityCount?: number; /** Les notes de sa fiche. */ notes?: { sujet: string; value: string; genre?: string; portee?: string }[]; /** Sa fiche entière (`fiche.ts`), relue à chaque pas après les questions de départ. */ fiche?: string; /** La consigne détaillée de l'étape est donnée à part (`guideDeLEtape`), dans la partie gardée en mémoire. */ guideAPart?: boolean } = {}): string {
   const cur = currentStep(j);
   const steps = JOURNEY_STEPS.map((s) => `${s.n}. ${s.fr} = ${j.steps[s.n]?.status ?? "todo"}`).join(" ; ");
   if (j.outside) return "Projet existant (créé avant ce fil) : il n'y a PAS de parcours de création. Ne pose pas les questions de départ et ne lance aucune étape du parcours : aide le client sur ce qu'il demande, avec les outils du catalogue.";
@@ -318,7 +318,7 @@ export function journeyContext(j: Journey, o: { identityCount?: number; /** Les 
   ];
   if (cur === 7 && j.customChosenAt) {
     lines.push("Étape 7 (mise en boutique du thème sur mesure) : son thème est choisi et en place dans l'onglet Boutique. Quand il veut l'installer dans sa boutique Shopify, appelle custom.install (gratuit) : le Studio en fait un vrai thème Shopify (ajout au panier, panier, contact, recherche, une fiche par produit) et te rend soit le lien à télécharger, soit la liste de ce qui reste à régler (informations « À compléter », photos d'exemple) : donne-la-lui simplement et aide-le à compléter (custom.edit) ; s'il préfère retirer ce qu'il ne peut pas donner, relance avec sansLesManques:true, avec son accord écrit. Ne dis jamais que sa boutique est en ligne : c'est lui qui importe le thème dans Shopify. Continue de faire les changements qu'il demande sur son thème (consigne de l'étape 6) ; après un changement, la mise en boutique se refait (custom.install). N'utilise AUCUN outil des anciennes maquettes (mockup.*, site.code_from_mockup, site.images).");
-    if (STEP_GUIDES[6]) lines.push(STEP_GUIDES[6]);
+    if (STEP_GUIDES[6] && !o.guideAPart) lines.push(STEP_GUIDES[6]);
     return lines.join("\n");
   }
   if (!stepReady(cur)) {
@@ -354,8 +354,20 @@ export function journeyContext(j: Journey, o: { identityCount?: number; /** Les 
   if (cur === 6) lines.push(...themeStepContext(j));
   if (cur === 9 && stepReady(9)) lines.push(...postsStepContext(j));
   if (cur >= 10 && stepReady(cur)) lines.push(...lateStepContext(j, cur));
-  if (stepReady(cur) && STEP_GUIDES[cur]) lines.push(STEP_GUIDES[cur]);
+  if (stepReady(cur) && STEP_GUIDES[cur] && !o.guideAPart) lines.push(STEP_GUIDES[cur]);
   return lines.join("\n");
+}
+
+/**
+ * La consigne détaillée de l'étape en cours, la même à chaque pas de l'étape (22 novembre 2026, audit des coûts) :
+ * placée avec les notices des outils de l'étape, dans la partie gardée en mémoire chez le fournisseur, au lieu d'être
+ * relue au plein prix à chaque pas. Vide hors parcours ou pour une étape sans consigne.
+ */
+export function guideDeLEtape(j: Journey): string {
+  if (j.outside) return "";
+  const cur = currentStep(j);
+  if (cur === 7 && j.customChosenAt) return STEP_GUIDES[6] ?? "";
+  return stepReady(cur) ? STEP_GUIDES[cur] ?? "" : "";
 }
 
 /** Consignes détaillées des étapes ouvertes (READY_STEPS), relues par SINA à chaque pas de l'étape en cours. */
