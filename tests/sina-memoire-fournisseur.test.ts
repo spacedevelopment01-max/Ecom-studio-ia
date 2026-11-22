@@ -251,5 +251,19 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     // Au plus quatre points de mémoire dans le message (la consigne générale en a un de son côté).
     expect(content.filter((b) => b.cache_control).length).toBeLessThanOrEqual(3);
   });
+
+  it("le résumé du client part à part, gardé en mémoire : pour chaque section du site, et pour les appels de la marque qui reviennent par route", async () => {
+    const { coupeLeResume } = await import("@/lib/syna-agent/brand-chain");
+    const resume = "RÉSUMÉ DU CLIENT ".repeat(40);
+    expect(coupeLeResume(resume, "direction", `${resume}\n\n# Étude\nx`)).toEqual({ context: resume, prompt: "# Étude\nx" });
+    expect(coupeLeResume(resume, "imagery", `${resume}\n\n# La route`)).toEqual({ context: resume, prompt: "# La route" });
+    // Un appel unique (l'étude, le jugement) garde tout dans sa demande : une mise en mémoire jamais relue coûterait plus.
+    expect(coupeLeResume(resume, "study", `${resume}\n\n# Pages`)).toEqual({ prompt: `${resume}\n\n# Pages` });
+    expect(coupeLeResume("", "fix", "autre")).toEqual({ prompt: "autre" });
+    const fs = await import("node:fs");
+    const src = fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8");
+    expect(src.match(/promptKey: "syna-custom-section-2", context: brief, prompt/g)).toHaveLength(2);
+    expect(src).not.toMatch(/sectionWritePrompt\(brief,/);
+  });
 });
 

@@ -270,6 +270,11 @@ export type ChainAi = {
   /** Création d'UNE image par le modèle d'images du Studio (route des images de SINA), avec ses images de référence. */
   draw: (id: string, call: { prompt: string; aspect: ImageAspect; logo?: Buffer | null; scene?: Buffer | null; /** Image montrée pour ne pas la refaire. */ avoid?: Buffer | null; /** Les 50 logos aimés du propriétaire, seulement comme exemples. */ examples?: Buffer | null }) => Promise<Buffer>;
   /** Relecture par un modèle qui voit : des images et une consigne, réponse contrôlée par son schéma. */
+  /**
+   * Le résumé du client, le même pour toute la chaîne (22 novembre 2026) : une demande qui commence par lui l'envoie à
+   * part, gardé en mémoire chez le fournisseur après la consigne, au lieu de le relire au plein prix à chaque appel.
+   */
+  partage?: (brief: string) => void;
   look: <S extends z.ZodType>(id: string, call: { system: string; prompt: string; schema: S; images: { data: Buffer; label?: string }[]; /** Images identiques pour tous les clients (planche des logos aimés) : en tête, gardées en mémoire. */ fixes?: { data: Buffer; label?: string }[] }) => Promise<z.infer<S>>;
 };
 export const brandChainDeps: { ai?: (ctx: JobContext) => ChainAi } = {};
@@ -283,15 +288,29 @@ const domainsOn = () => !brandChainDeps.ai || !!domainDeps.lookup;
  */
 export const deferredOn = (): boolean => getJsonSetting<boolean>("sina.differe", true) !== false;
 
+/** Les appels de la chaîne qui reviennent, l'un après l'autre, avec la même consigne (un par route). */
+const REPETES = new Set<CallId>(["direction", "fix", "imagery"]);
+
+/** Une demande qui commence par le résumé du client, coupée en deux : le résumé à part (gardé en mémoire), le reste. */
+export function coupeLeResume(commun: string, kind: CallId, prompt: string): { context?: string; prompt: string } {
+  return commun && REPETES.has(kind) && prompt.startsWith(`${commun}\n\n`) ? { context: commun, prompt: prompt.slice(commun.length + 2) } : { prompt };
+}
+
 function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: ChainSettings, capMicro: number, direct = false): ChainAi {
   const scope = (step: string) => ({ jobId: ctx.job.id, projectId: who.projectId, step, costCapMicro: capMicro });
   // Une retouche ou la fin de la marque part en direct : le client attend devant, et le différé n'y fait gagner que
   // quelques centimes pour un quart d'heure d'attente (essai réel : vingt minutes pour quatre logos).
   const deferred = deferredOn() && !direct;
+  let commun = "";
+  /** La demande coupée en deux : le résumé du client à part (gardé en mémoire), le reste propre à l'appel. */
+  // Seulement pour les appels qui reviennent plusieurs fois avec la même consigne (un par route) : la mise
+  // en mémoire se paie à l'écriture, elle ne rapporte que si elle est relue.
+  const coupe = (kind: CallId, prompt: string) => coupeLeResume(commun, kind, prompt);
   return {
+    partage: (brief) => { commun = brief.length >= 400 ? brief : ""; },
     research: async (id, query) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft }, query))).findings,
     ask: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
-      task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, promptKey: `syna-brand-${c.kind}-1`,
+      task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, ...coupe(c.kind, c.prompt), promptKey: `syna-brand-${c.kind}-1`,
       prepare: c.prepare, maxTokens: CALLS[c.kind].max, maxOutputTokens: CALLS[c.kind].max + 6000, usageKey: `${ctx.job.id}:brand:${id}`, deferred,
       routing: { difficulty: CALLS[c.kind].tier === "strong" ? "complex" : "standard", prefer: s[CALLS[c.kind].tier] },
     }, c.schema)),
@@ -547,6 +566,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     if (bad.length) throw new UserFacingError(L(`Ce nom ne peut pas servir tel quel : ${bad[0]} Rien n'a été décompté.`, `This name cannot be used as is: ${bad[0]} Nothing was charged.`));
   }
   const brief = briefBlock(j, p.id, a.guidance);
+  ai.partage?.(brief);
 
   // La marque finie de l'identité choisie (second temps) : rien d'autre n'est refait.
   if (a.finish) return (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: a.slots, guidance: a.guidance });
