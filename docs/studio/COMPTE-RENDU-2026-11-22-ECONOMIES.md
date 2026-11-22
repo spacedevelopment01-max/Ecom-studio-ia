@@ -107,3 +107,32 @@ essais du Studio avec Shopify et WooCommerce simulés.
   l'application du client ; les commandes WooCommerce aussi, et la boutique se relie en un clic (« Approuver »). Pas fait :
   la ligne de la mesure d'audience dans les mentions du site (texte prêt : `MENTION_MESURE`), et l'affichage de ces
   chiffres dans le point du mois (partie du suivi).
+
+## Partie 2 : SINA elle-même (rapport 11)
+
+Rien n'a été dépensé.
+
+- **Le coût de la conversation de Nadia, recalculé** (21 réponses, sur les jetons relevés appel par appel) : **1,154 €
+  avant, environ 0,80 € après** (−30 %). Détail : 0,90 € avec le fil repris de mémoire ; 0,84 € en comptant la lecture
+  en mémoire à son vrai prix ; 0,80 € sans la réécriture des notices à la création du projet. Seule hypothèse du calcul :
+  la fiche, le parcours et l'état font environ 3 600 jetons au début et 5 000 à la fin. À mesurer pour de vrai au
+  prochain essai (l'administration montre maintenant le coût de SINA étape par étape).
+- **Pourquoi la mémoire était réécrite deux fois** : à la 2e réponse, la liste des outils changeait à la création du
+  projet (corrigé : la même liste avant et après) ; à la 20e, le passage à l'étape de la marque change la liste des
+  outils de l'étape (normal, une fois par étape).
+- **Les 760 jetons de sortie par réponse** : ils comprennent la réflexion de SINA (réglée à l'effort moyen). Je n'ai pas
+  baissé l'effort : rien ne permet de vérifier sans essai payant que ses décisions resteraient aussi bonnes, et changer
+  l'effort en cours de conversation casse la mémoire. Proposition : un essai comparé effort moyen et effort bas sur
+  quelques conversations, au prix à donner avant.
+- **Ses mots corrigés** : relus par SINA à chaque pas, dès « faire connaissance », et un message qui emploie un mot que le
+  client a corrigé ne part pas : SINA le réécrit.
+- **La fiche** relue à chaque pas ; quand le fil devient très long, un résumé à rubrique fixe remplace son début.
+- **La relectrice** : une règle « pas de complaisance » (une fausse promotion, un faux avis, un prix barré sans preuve, un
+  nom à double sens, une photo dans une arche : SINA le dit franchement, avec la raison et une autre proposition), et les
+  contrôles propres à l'étape, tirés des règles du propriétaire.
+- **Le coût par travail** : une alerte dans l'administration quand le coût moyen d'un travail double en une semaine.
+- **Les cas « dire non »** sont au banc d'épreuves (quatre épreuves payantes, prix à mesurer avant de les rejouer).
+- **Pas fait, et pourquoi** : les images en série par la Responses API (le prix réel d'une image est à vérifier avant :
+  essai payant) ; les propositions réglées par le client (« plus ou moins de propositions ») : c'est le lot 7, « SINA
+  prend les devants » ; le différé du point du mois et des publications du mois préparées d'avance : ces travaux
+  n'existent pas encore.
