@@ -335,6 +335,24 @@ function sunday(y: number, m: number, n: number): Date {
   return new Date(Date.UTC(y, m, d.getUTCDate() - d.getUTCDay()));
 }
 
+/** Dimanche de Pâques (calcul grégorien de Meeus/Jones/Butcher), en UTC. */
+export function easterSunday(y: number): Date {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(Date.UTC(y, month - 1, day));
+}
+
+/**
+ * Fête des mères en France : le dernier dimanche de mai, reportée au premier dimanche de juin quand ce dimanche est la
+ * Pentecôte (Pâques + 49 jours ; loi de 1950, article R. 215-1 du code de l'action sociale). Cas suivants : 2034, 2039.
+ */
+export function mothersDayFr(y: number): Date {
+  const last = sunday(y, 4, -1);
+  const pentecost = easterSunday(y).getTime() + 49 * 86400_000;
+  return last.getTime() === pentecost ? sunday(y, 5, 1) : last;
+}
+
 /**
  * Temps forts réels compris dans la période (ou juste après), utiles au secteur : Noël, Saint-Valentin, fête des
  * mères et des pères, rentrée, Halloween. Jamais de promotion inventée : ce sont des occasions de parler du produit.
@@ -350,7 +368,7 @@ export function keyMoments(startDate: string, days: number, sector?: string | nu
     const list: { id: string; at: Date; lead: number; fr: string; en: string; ok: boolean }[] = [
       { id: "noel", at: new Date(Date.UTC(y, 11, 25)), lead: 24, fr: "Noël", en: "Christmas", ok: gifts },
       { id: "valentin", at: new Date(Date.UTC(y, 1, 14)), lead: 12, fr: "la Saint-Valentin", en: "Valentine's Day", ok: ["beaute", "mode", "bijoux", "alimentation", "maison", "artisanat"].includes(s) },
-      { id: "meres", at: lang === "en" ? sunday(y, 4, 2) : sunday(y, 4, -1), lead: 14, fr: "la fête des mères", en: "Mother's Day", ok: ["beaute", "mode", "bijoux", "maison", "alimentation", "artisanat"].includes(s) },
+      { id: "meres", at: lang === "en" ? sunday(y, 4, 2) : mothersDayFr(y), lead: 14, fr: "la fête des mères", en: "Mother's Day", ok: ["beaute", "mode", "bijoux", "maison", "alimentation", "artisanat"].includes(s) },
       { id: "peres", at: sunday(y, 5, 3), lead: 14, fr: "la fête des pères", en: "Father's Day", ok: ["mode", "hightech", "sport", "alimentation", "bijoux"].includes(s) },
       { id: "rentree", at: lang === "en" ? new Date(Date.UTC(y, 7, 25)) : new Date(Date.UTC(y, 8, 1)), lead: 14, fr: "la rentrée", en: "back to school", ok: ["enfants", "artisanat", "mode", "hightech"].includes(s) },
       { id: "halloween", at: new Date(Date.UTC(y, 9, 31)), lead: 12, fr: "Halloween", en: "Halloween", ok: ["enfants", "alimentation", "maison"].includes(s) },

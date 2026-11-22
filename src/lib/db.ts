@@ -320,6 +320,16 @@ CREATE TABLE IF NOT EXISTS syna_calendars (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
+-- « Le point du mois » de SINA (engagement 1) : les chiffres comptés par le code, leur empreinte et le bilan écrit.
+-- Un point par projet et par mois ; aucun nouvel appel quand l'empreinte n'a pas changé (src/lib/syna-agent/rendez-vous.ts).
+CREATE TABLE IF NOT EXISTS syna_points_du_mois (
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  month TEXT NOT NULL,
+  empreinte TEXT NOT NULL,
+  point_json TEXT NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (project_id, month)
+);
 CREATE TABLE IF NOT EXISTS agent_request_bounds (
   id TEXT PRIMARY KEY,
   conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
