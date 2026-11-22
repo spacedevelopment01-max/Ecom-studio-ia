@@ -57,4 +57,13 @@ describe("ventes et visites", async () => {
     const signe = lien.searchParams.get("user_id")!, faux = signe.slice(0, -1) + (signe.endsWith("0") ? "1" : "0");
     expect(S.etatAutorisationWoo(faux)).toBeNull();
   });
+  it("la ligne de la mesure d'audience est posée une fois en bas des pages légales seulement (suivi, point 3)", async () => {
+    const { avecMentionMesure } = await import("@/lib/sites/serve");
+    const page = "<html><body><main><h1>Mentions légales</h1></main></body></html>";
+    const une = avecMentionMesure(page, "/pages/mentions-legales");
+    expect(une).toMatch(/<p data-mesure-audience[^>]*>Mesure d'audience : .*<a href="\/__ne-pas-compter">\/__ne-pas-compter<\/a>.*<\/p><\/main>/);
+    expect(avecMentionMesure(une, "/pages/mentions-legales")).toBe(une);
+    expect(avecMentionMesure(page, "/products/bougie")).toBe(page);
+    expect(avecMentionMesure("<body><p>x</p></body>", "/policies/privacy-policy")).toMatch(/data-mesure-audience[\s\S]*<\/body>$/);
+  });
 });

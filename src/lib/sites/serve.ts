@@ -14,7 +14,7 @@ import { manifestOf, pageFile, postedFile } from "./publish";
 import { recordTraffic } from "./maintenance";
 import { customDomainServable } from "./domains";
 import { receiveSiteRequest } from "./requests";
-import { aCompter, CHEMIN_REFUS, compterVue, pageRefus } from "./visites";
+import { aCompter, CHEMIN_REFUS, compterVue, MENTION_MESURE, pageRefus } from "./visites";
 import { addresses, addressOf, livePublication, publicationDir, type Publication, type SiteAddress } from "./store";
 
 const SECURITY = {
@@ -87,6 +87,18 @@ export function avecCanonique(html: string, url: string): string {
   return html.replace(/<\/head>/i, `<link rel="canonical" href="${url.replace(/"/g, "&quot;")}"></head>`);
 }
 
+/** Les pages légales d'un site (mentions, confidentialité, cookies), à leur adresse. */
+export const PAGE_LEGALE = /(mentions|legal|l[ée]gales?|confidentialit|privacy|cookies|policies\/)/i;
+/**
+ * La ligne de la mesure d'audience (exemption de la CNIL : le visiteur est informé et peut refuser), posée par le Studio
+ * en bas des pages légales du site qu'il héberge, une fois ; jamais deux fois, jamais ailleurs.
+ */
+export function avecMentionMesure(html: string, pathname: string): string {
+  if (!PAGE_LEGALE.test(pathname) || html.includes("data-mesure-audience")) return html;
+  const ligne = `<p data-mesure-audience style="max-width:48rem;margin:2rem auto;padding:0 1rem;font-size:.85em;line-height:1.5">${MENTION_MESURE.replace(CHEMIN_REFUS, `<a href="${CHEMIN_REFUS}">${CHEMIN_REFUS}</a>`)}</p>`;
+  return /<\/main>/i.test(html) ? html.replace(/<\/main>/i, `${ligne}</main>`) : html.replace(/<\/body>/i, `${ligne}</body>`);
+}
+
 export async function serveSite(req: Request, hostname: string, pathname: string): Promise<Response> {
   const site = siteFor(hostname);
   if (!site) return plain(404, L("Site introuvable.", "Site not found."));
@@ -143,7 +155,7 @@ export async function serveSite(req: Request, hostname: string, pathname: string
   if (req.headers.get("if-none-match") === etag && file) return new Response(null, { status: 304, headers: { ETag: etag } });
   const status = file ? 200 : 404;
   const raw = fs.readFileSync(file ?? artifactPath(pub, "404.html")!);
-  const html = status === 200 ? Buffer.from(avecCanonique(raw.toString("utf8"), `${origin}${pathname === "/" ? "/" : pathname}`)) : raw;
+  const html = status === 200 ? Buffer.from(avecMentionMesure(avecCanonique(raw.toString("utf8"), `${origin}${pathname === "/" ? "/" : pathname}`), pathname)) : raw;
   recordTraffic(pub.project_id, html.length);
   // Les pages vues, comptées sans traceur (exemption de la CNIL) : jamais une erreur de compte ne gêne la page.
   if (status === 200 && aCompter(req)) { try { compterVue(pub.project_id, pathname); } catch { /* compte perdu, page servie */ } }

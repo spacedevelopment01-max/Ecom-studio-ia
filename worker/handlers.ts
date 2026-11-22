@@ -90,6 +90,8 @@ export const handlers: Record<string, Handler> = {
   "syna.product.gallery": async (ctx) => (await import("../src/lib/syna-agent/custom-theme/gallery")).runGalleryJob(ctx),
   // SINA (#492), étape 6 : thème du Studio monté à la marque du client (textes dans l'angle choisi et images, payant).
   "syna.studio.brand": async (ctx) => (await import("../src/lib/syna-agent/studio-brand")).runStudioBrandJob(ctx),
+  // Le point du mois (engagement 1) : un seul appel au modèle le plus fort, en différé par l'appel lui-même.
+  "syna.point-du-mois": async (ctx) => (await import("../src/lib/syna-agent/rendez-vous")).runPointDuMoisJob(ctx),
   "syna.posts.plan": async (ctx) => differe(async () => (await import("../src/lib/syna-agent/posts-plan")).runPostsPlanJob(ctx)),
   "strategy.prepare":async ctx=>(await import("../src/lib/marketing-strategy/bundle")).runStrategyBundle(ctx),
   "project.prepare": async (ctx) => (await import("../src/lib/preparation/engine")).runPreparation(ctx),

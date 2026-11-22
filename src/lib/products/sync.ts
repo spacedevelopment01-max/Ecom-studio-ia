@@ -414,3 +414,12 @@ async function importNow(projectId: string, userId: string, conn: StoreConnector
 export async function syncStore(projectId: string, storeId: string, opts: { productIds?: string[]; imageUrl?: ImageUrl; fetcher?: typeof fetch } = {}) {
   return syncProducts(projectId, await connectorOf(projectId, storeId, opts.fetcher), opts);
 }
+
+/** La clé WooCommerce d'un projet, pour lire ses commandes (le suivi du mois) ; aucune boutique, aucune clé. */
+export function wooCredentials(projectId: string): { url: string; key: string; secret: string } | null {
+  ensureStoresTable();
+  const r = one<StoreRow>("SELECT * FROM platform_stores WHERE project_id = ? AND platform = 'woocommerce' AND status = 'active' ORDER BY updated_at DESC LIMIT 1", projectId);
+  if (!r) return null;
+  const c = json<{ key: string; secret: string }>(decrypt(r.credentials), { key: "", secret: "" });
+  return c.key && c.secret ? { url: r.url, key: c.key, secret: c.secret } : null;
+}

@@ -102,7 +102,8 @@ describe("SINA — tableau de bord du projet", async () => {
     const fs = await import("node:fs"), path = await import("node:path");
     const page = fs.readFileSync(path.resolve(import.meta.dirname, "../src/app/studio/[projectId]/[tab]/page.tsx"), "utf8");
     expect(page).toContain('if (tab === "pilote")');
-    expect(page).toContain("<ProjectDashboard data={data} />");
+    // Depuis le 22 novembre 2026, la page passe aussi « ta journée » et « le point du mois » (engagements 6 et 1, allumés).
+    expect(page).toContain("<ProjectDashboard data={data} suivi={suivi} />");
     expect(page).not.toMatch(/ChantierView|underConstruction/);
     expect(dashboardOf("projet-inconnu")).toBeNull();
   });

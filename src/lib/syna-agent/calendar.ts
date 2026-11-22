@@ -18,6 +18,7 @@
  * partagent `posts.group_id` ; le « groupe » de l'étape 9 (1 à 3) peut être noté `brief.serie` pour varier les sujets.
  * Les formats d'une même publicité partagent `meta.conceptId` dans leur document.
  */
+import { demandesRecues } from "../suivi/mesures";
 import { formatInTimeZone } from "date-fns-tz";
 import { HttpError } from "../auth";
 import { all, json, logError, now, one, run, tx } from "../db";
@@ -551,7 +552,10 @@ export async function remindDue(at = now()): Promise<number> {
     if (cal.reminded.includes(today) || Number(formatInTimeZone(at, cal.settings.timezone, "H")) < REMIND_HOUR) continue;
     const due = cal.entries.filter((e) => e.ymd === today && e.status === "a_publier");
     if (!due.length) continue;
-    const body = due.map((e) => `${e.time} · ${networkLabel(e.network)}${e.kind === "publicite" ? L(" (publicité à lancer)", " (ad to launch)") : ""}`).join("\n");
+    // « Ta journée est prête » (engagement 6) : les demandes reçues par le site depuis hier matin, lues par le code.
+    const dem = demandesRecues(r.project_id, at - 86_400_000 - Number(formatInTimeZone(at, cal.settings.timezone, "H")) * 3_600_000, at);
+    const body = due.map((e) => `${e.time} · ${networkLabel(e.network)}${e.kind === "publicite" ? L(" (publicité à lancer)", " (ad to launch)") : ""}`).join("\n")
+      + (dem ? L(`\n${dem} demande${dem > 1 ? "s" : ""} reçue${dem > 1 ? "s" : ""} par ton site depuis hier.`, `\n${dem} request${dem > 1 ? "s" : ""} received by your site since yesterday.`) : "");
     const units = new Set(due.map((e) => e.unit)).size;
     const title = L(`Aujourd'hui : ${units} publication(s) à faire${due.length !== units ? ` (${due.length} envois)` : ""}`, `Today: ${units} post(s) to do${due.length !== units ? ` (${due.length} sends)` : ""}`);
     notify(r.user_id, r.project_id, title, body, "info");

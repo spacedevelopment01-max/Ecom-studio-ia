@@ -5,15 +5,16 @@
  * marque, son angle). Après la construction, elle reste le résumé du projet. Tout se demande à SINA, sauf sa fiche
  * (« Ce que SINA sait de toi ») : il la lit et la corrige lui-même (le socle, 21 novembre 2026).
  */
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { cx } from "../ui";
 import { useT } from "../i18n";
 import { stepLabel } from "./journey-labels";
 import type { DashboardData, DashboardStep } from "@/lib/syna-agent/dashboard";
+import type { SuiviVue } from "@/lib/syna-agent/rendez-vous";
 
-export function ProjectDashboard({ data }: { data: DashboardData }) {
+export function ProjectDashboard({ data, suivi = null }: { data: DashboardData; suivi?: SuiviVue | null }) {
   const t = useT(), router = useRouter();
   // En direct : la page se relit seule pendant la construction (et à la fin de chaque réponse de SINA, par le fil).
   useEffect(() => {
@@ -40,6 +41,8 @@ export function ProjectDashboard({ data }: { data: DashboardData }) {
           {data.steps.map((s) => <span key={s.n} className={cx("h-1.5 flex-1 rounded-full", s.status === "done" ? "bg-ink" : s.n === data.current && data.started ? "bg-signal" : "bg-line")} />)}
         </div>
       </header>
+
+      {suivi && <Suivi suivi={suivi} />}
 
       <ol className="mt-7" aria-label={t("Les étapes de ton projet", "Your project steps")}>
         {data.steps.map((s, i) => <Step key={s.n} s={s} data={data} last={i === data.steps.length - 1} />)}
@@ -192,5 +195,40 @@ function Brand({ brand }: { brand: NonNullable<DashboardData["brand"]> }) {
         {!!brand.colors.length && <div className="mt-2 flex gap-1.5" role="img" aria-label={t("Tes couleurs", "Your colours")}>{brand.colors.map((c, i) => <span key={`${c}${i}`} className="size-5 rounded-full border border-line" style={{ background: c }} />)}</div>}
       </div>
     </div>
+  );
+}
+
+/**
+ * « Ta journée est prête » et « le point du mois » (engagements 6 et 1) : tout est composé par le code côté serveur, avec
+ * les vrais chiffres et leur source ; un chiffre illisible est écrit « non disponible » avec sa raison. Un mois faible
+ * s'affiche dans l'ordre décidé par le code : le chiffre honnête et la raison d'abord, le travail fait à la fin.
+ */
+function Suivi({ suivi }: { suivi: SuiviVue }) {
+  const t = useT();
+  const { journee: j, point: p } = suivi;
+  const bloc: Record<string, ReactNode> = p ? {
+    lignes: p.lignes?.length ? <ul key="lignes" className="mt-2 space-y-0.5 text-sm">{p.lignes.map((l) => <li key={l}>{l}</li>)}</ul> : null,
+    raison: p.etat?.etat === "faible" ? <p key="raison" className="mt-2 text-sm text-ink-2">{p.etat.raison}</p> : null,
+    bilan: p.ecrit ? <p key="bilan" className="mt-2 text-sm">{p.ecrit.bilan}</p> : null,
+    mieux: p.ecrit?.mieux ? <p key="mieux" className="mt-2 text-sm text-ink-2">{p.ecrit.mieux}</p> : null,
+    actions: p.ecrit ? <ol key="actions" className="mt-2 list-decimal pl-5 text-sm">{p.ecrit.actions.map((a) => <li key={a}>{a}</li>)}</ol> : null,
+    travail: p.travail?.length ? <p key="travail" className="mt-2 text-xs text-muted">{t("Ce que j'ai fait pour toi : ", "What I did for you: ")}{p.travail.join(" · ")}</p> : null,
+  } : {};
+  return (
+    <section className="mt-6 space-y-3" data-dashboard-suivi>
+      <div className="rounded-2xl border border-line bg-card px-4 py-3" data-journee>
+        <p className="text-xs font-medium text-muted">{t("Ta journée", "Your day")} · {j.ymd}</p>
+        <p className="mt-1 text-sm">{j.message}</p>
+        {j.aPublier.length > 0 && <ul className="mt-2 space-y-1 text-sm">{j.aPublier.map((x) => <li key={x.entryId}><span className="font-medium">{x.time}</span> · {x.networkLabel}{x.title ? ` · ${x.title}` : ""}</li>)}</ul>}
+        {j.chiffres.filter((c) => c.valeur == null).map((c) => <p key={c.cle} className="mt-1 text-xs text-muted">{c.libelle} : {c.raison}</p>)}
+      </div>
+      {p && (
+        <div className="rounded-2xl border border-line bg-card px-4 py-3" data-point-du-mois data-etat={p.etat?.etat ?? ""}>
+          <p className="text-xs font-medium text-muted">{t("Le point du mois", "Monthly report")} · {p.month}</p>
+          {(p.ordre ?? ["lignes", "bilan", "mieux", "actions"]).map((k) => bloc[k])}
+          {p.chiffres.filter((c) => c.valeur == null).map((c) => <p key={c.cle} className="mt-1 text-xs text-muted">{c.libelle} : {c.raison}</p>)}
+        </div>
+      )}
+    </section>
   );
 }

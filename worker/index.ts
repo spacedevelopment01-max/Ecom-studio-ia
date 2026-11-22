@@ -153,6 +153,8 @@ async function tick() {
     if (now() - lastCalendarReminder > 10 * 60_000) {
       lastCalendarReminder = now();
       try { await (await import("../src/lib/syna-agent/calendar")).remindDue(); } catch (e) { logError("worker:calendar-remind", e); }
+      // Le point du mois (engagement 1) : chaque début de mois, une tâche par projet abonné, pour le mois écoulé.
+      try { (await import("../src/lib/syna-agent/rendez-vous")).planifierPointsDuMois(); } catch (e) { logError("worker:point-du-mois", e); }
     }
     // L'identifiant du worker change à chaque démarrage : les battements des anciens démarrages sont purgés.
     run("DELETE FROM worker_heartbeat WHERE beat_at < ?", now() - 86400_000);
