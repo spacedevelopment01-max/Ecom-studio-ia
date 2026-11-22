@@ -22,7 +22,7 @@ import { aiSiteImageHd, photoRequestMaxMicro, PUBLICATION_PROMPT_MAX_BYTES, with
 import { listProducts, type StudioProduct } from "../../products/catalog";
 import { loadGalleries, saveGallery, type GalleryImage } from "../../products/gallery-store";
 import { mockupImageRoute } from "../mockup-code/tools";
-import { CHECK_MODEL } from "../mockup-code/check";
+import { TEXT_MODEL_BY_TIER } from "../../orchestrator/policy";
 
 export const GALLERY_JOB = "syna.product.gallery";
 
@@ -123,7 +123,15 @@ export const GalleryCheckSchema = z.object({
 });
 export type GalleryCheck = z.infer<typeof GalleryCheckSchema>;
 const CHECK_IN = 7000, CHECK_OUT = 1200;
-export const galleryCheckMaxMicro = () => jsonCallMaxMicro(CHECK_MODEL.provider, CHECK_MODEL.model, CHECK_IN, CHECK_OUT, CHECK_OUT, CHECK_MODEL.effort)?.maxMicro ?? 20_000;
+/**
+ * Le relecteur des photos du site : le modèle le plus fort, au niveau élevé, une photo à la fois (règle du propriétaire,
+ * redite le 22 novembre 2026 : « chaque image relue par le modèle le plus fort »). Avant : Haiku 5.5. Environ 0,80 € de
+ * plus par site (audit du site, partie 11), moitié moins quand la tâche passe en différé. Plus de place pour sa
+ * réflexion : au niveau élevé, il regarde avant de répondre.
+ */
+export const PHOTO_REVIEW_MODEL = { provider: "anthropic" as const, model: TEXT_MODEL_BY_TIER.strong, effort: "high" };
+const REVIEW_OUT = 6000;
+export const galleryCheckMaxMicro = () => jsonCallMaxMicro(PHOTO_REVIEW_MODEL.provider, PHOTO_REVIEW_MODEL.model, CHECK_IN, CHECK_OUT, REVIEW_OUT, PHOTO_REVIEW_MODEL.effort)?.maxMicro ?? 120_000;
 /**
  * Les défauts qu'un contrôle relève. Essai réel du 17 novembre 2026 (7 photos refusées sur 25) : « pas fidèle à sa vraie
  * photo » pour un produit qui n'avait AUCUNE vraie photo, « produit coupé » sur des gros plans voulus. Donc :
@@ -179,7 +187,7 @@ export async function checkCreatedImage(o: { jobId: string; projectId: string; u
         system: "Tu contrôles une image créée par l'IA avant qu'elle soit montrée à un client. Tu décris seulement ce que tu vois réellement. Tu réponds en JSON.",
         prompt: createdImageQuestions({ product: !!product, productName, texts, ...wanted }).join("\n"),
         images: [{ data: image, label: "image créée" }, ...(product ? [{ data: product, label: "vraie photo du produit" }] : [])],
-        maxTokens: CHECK_OUT, maxOutputTokens: CHECK_OUT, routing: { difficulty: "standard", prefer: CHECK_MODEL },
+        maxTokens: CHECK_OUT, maxOutputTokens: REVIEW_OUT, routing: { difficulty: "complex", prefer: PHOTO_REVIEW_MODEL },
       } as LlmCall, GalleryCheckSchema)));
   return [...galleryVerdict(c, { person, texts, reference: !!product, closeUp: wanted.closeUp }), ...c.notes];
 }
@@ -240,7 +248,7 @@ export async function runGalleryJob(ctx: JobContext) {
                 "extraText : tout autre texte écrit sur l'image, en dehors des textes attendus et de ceux imprimés sur le produit (vide sinon).",
                 "people : true si une personne, un visage, une main ou une autre partie du corps est visible, même de dos, de loin, floue ou en partie (une silhouette, un bras, des jambes, des pieds, quelqu'un sur un véhicule).", "notes : autre défaut net (vide sinon)."].join("\n"),
               images: [{ data, label: "image créée" }, { data: refData, label: "vraie photo du produit" }],
-              maxTokens: CHECK_OUT, maxOutputTokens: CHECK_OUT, routing: { difficulty: "standard", prefer: CHECK_MODEL },
+              maxTokens: CHECK_OUT, maxOutputTokens: REVIEW_OUT, routing: { difficulty: "complex", prefer: PHOTO_REVIEW_MODEL },
             } as LlmCall, GalleryCheckSchema)));
       });
       const problems = galleryVerdict(check, { person, texts });

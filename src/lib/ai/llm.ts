@@ -528,7 +528,13 @@ async function resultatDuLot(b: any, batchId: string): Promise<Anthropic.Beta.Be
   throw new Error("dépôt en différé terminé sans réponse");
 }
 
-async function deferredMessage(params: any, jobKey: string, reservationId?: string): Promise<Anthropic.Beta.BetaMessage | null> {
+/**
+ * Un dépôt annulé mais encore en cours après la grâce (10 minutes de patience, puis 5) : l'appel repart en direct au lieu
+ * d'échouer (audit du site du 22 novembre 2026 : une conception longue s'arrêtait là, « Conception non faite »). Le dépôt
+ * abandonné a pu être traité quand même : son coût possible (moitié prix) est retenu, à la charge du Studio.
+ */
+export type DepotAbandonne = { abandonne: string };
+async function deferredMessage(params: any, jobKey: string, reservationId?: string): Promise<Anthropic.Beta.BetaMessage | DepotAbandonne | null> {
   if (attendu(jobKey) >= deferredLimits.perJobMs) return null;
   const b = deferredDeps.batches ?? (client().beta.messages.batches as any), sleep = deferredDeps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   let batch: any;
@@ -547,7 +553,7 @@ async function deferredMessage(params: any, jobKey: string, reservationId?: stri
   try {
     while (batch.processing_status !== "ended") {
       if (!cancelled && Date.now() - t0 > deferredLimits.perCallMs) { await b.cancel(batch.id); cancelled = true; }
-      if (cancelled && Date.now() - t0 > deferredLimits.perCallMs + 5 * 60_000) throw new Error("dépôt en différé annulé mais toujours en cours");
+      if (cancelled && Date.now() - t0 > deferredLimits.perCallMs + 5 * 60_000) return { abandonne: batch.id };
       await sleep(deferredLimits.pollMs);
       try { batch = await b.retrieve(batch.id); misses = 0; } catch (e) { if (++misses >= 5) throw e; }
     }
@@ -670,7 +676,13 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   try {
     // Relances maison, dans la MÊME réservation, uniquement sur une saturation 429 (rien de produit ni facturé). Une coupure après le début de la réponse n'est jamais relancée ici (résultat incertain).
     // Jamais de différé pour un petit contrôle (Haiku) : il gagnerait un dixième de centime et ferait attendre le site.
-    const later = reprise?.msg ?? ((call.deferred ?? differeActif()) && !/haiku/.test(route.model) ? await deferredMessage(params, call.jobId ?? call.userId, reservation) : null);
+    const depot = reprise?.msg ?? ((call.deferred ?? differeActif()) && !/haiku/.test(route.model) ? await deferredMessage(params, call.jobId ?? call.userId, reservation) : null);
+    if (depot && "abandonne" in depot) {
+      // Le dépôt abandonné a pu être traité : son coût possible (moitié prix) est retenu à la charge du Studio, jamais du client.
+      const abandon = reserve(call.userId, Math.ceil(maxMicro / 2), { ...operation, usageKey: operation.usageKey ? `${operation.usageKey}:depot-abandonne` : undefined, provider: "anthropic", model: route.model, jobId: call.jobId, studio: true });
+      settleUncertain(abandon, `dépôt en différé ${depot.abandonne} annulé mais encore en cours : l'appel est reparti en direct`);
+    }
+    const later = depot && !("abandonne" in depot) ? depot : null;
     if (later) servedDeferred = true;
     msg = later ?? await httpCounter.run(counter, async () => {
       for (let attempt = 0; ; attempt++) {

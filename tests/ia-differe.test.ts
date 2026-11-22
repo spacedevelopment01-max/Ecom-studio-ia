@@ -155,6 +155,19 @@ describe("IA — travail en différé, à moitié prix, avec une attente bornée
     expect(events(h.user.id)).toHaveLength(1);
   });
 
+  it("dépôt annulé mais encore en cours après la grâce : l'appel repart en direct au lieu d'échouer ; le coût possible du dépôt est retenu au Studio (audit du site)", async () => {
+    const f = await fixture();
+    const log = batches({ polls: 1_000_000 }); // jamais terminé
+    noWait();
+    deferredLimits.perCallMs = -6 * 60_000; // patience et grâce déjà dépassées
+    expect(await llmText(f.call({ deferred: true }))).toBe("Réponse en direct.");
+    expect(log.cancelled).toEqual(["depot-1"]);
+    expect(direct.length - f.start).toBe(1);
+    // Deux réservations : l'appel direct, payé, et le dépôt abandonné, retenu comme incertain à la charge du Studio.
+    const r = all<{ status: string; studio: number }>("SELECT status, studio FROM ai_reservations WHERE user_id=? ORDER BY created_at, rowid", f.user.id);
+    expect(r.some((x) => x.studio === 1 && x.status !== "held")).toBe(true);
+  });
+
   it("patience comptée en temps réel : trois appels qui attendent ensemble ne la mangent qu'une fois (22 novembre 2026)", async () => {
     const f = await fixture();
     batches({ polls: 1 });
