@@ -33,6 +33,8 @@ export const POST = handle(async (req: Request) => {
       route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba", "higgsfield"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
       // Routage des modèles de texte : manuel (défaut, routage actuel inchangé) ou automatique multifournisseur.
       routingMode: z.enum(["manual", "auto"]).optional(),
+      // Effort des moments forts de SINA par un message dans la conversation (fonction en essai d'Anthropic) : s'éteint ici.
+      effortParMessage: z.boolean().optional(),
       pinTask: z.object({ task: z.string(), pinned: z.boolean() }).optional(),
       // Routage multimédia (images, vidéos) : mode, principal, secours, confirmation et activation des modèles.
       mediaMode: z.object({ kind: z.enum(["image", "video"]), mode: z.enum(["manual", "auto"]) }).optional(),
@@ -111,6 +113,7 @@ export const POST = handle(async (req: Request) => {
     setJsonSetting("ai.prices", prices);
   }
   if (b.routingMode) setSetting("ai.routing.mode", b.routingMode);
+  if (b.effortParMessage !== undefined) setJsonSetting("sina.effortParMessage", b.effortParMessage);
   if (b.pinTask) {
     if (!(b.pinTask.task in DEFAULT_ROUTES)) throw new HttpError(400, L("Tâche inconnue.", "Unknown task."));
     const pinned = new Set(getJsonSetting<string[]>("ai.routing.pinned", []));

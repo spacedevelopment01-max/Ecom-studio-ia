@@ -74,11 +74,12 @@ export function memoireReprise(since: number): { lignes: LigneMemoire[]; total: 
  */
 export type AppelReleve = { entree: number; lu: number; ecrit: number; sortie: number };
 export type Tarif = { entree: number; lu: number; ecrit: number; sortie: number }; // euros par million de jetons
-export function coutConversation(appels: AppelReleve[], tarif: Tarif, contexte: (i: number) => number): { avant: number; apres: number } {
+export function coutConversation(appels: AppelReleve[], tarif: Tarif, contexte: (i: number) => number, /** Réponses où la mémoire du fil est effacée (un changement d'effort dans la demande) : tout le fil y est réécrit. */ ruptures: number[] = []): { avant: number; apres: number } {
   const e = (n: number, prix: number) => (n * prix) / 1e6;
   let avant = 0, apres = 0, filPrecedent = 0;
   appels.forEach((a, i) => {
     avant += e(a.entree, tarif.entree) + e(a.lu, tarif.lu) + e(a.ecrit, tarif.ecrit) + e(a.sortie, tarif.sortie);
+    if (ruptures.includes(i)) filPrecedent = 0;
     const ctx = Math.min(a.entree, contexte(i)), fil = a.entree - ctx;
     // Le fil : ce qui était déjà là est lu en mémoire ; ce qui s'y ajoute est écrit (repris à l'appel suivant).
     const repris = Math.min(fil, filPrecedent), neuf = fil - repris;

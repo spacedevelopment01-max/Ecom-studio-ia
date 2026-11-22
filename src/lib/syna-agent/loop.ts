@@ -587,6 +587,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   const guide = guideDeLEtape(journeyOf(r.conversation_id));
   const b = budgetState(user.id, r.project_id, r.conversation_id);
   const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon) : il est créé dès que l'activité et l'offre du client sont connues (start.answer).", "No project linked yet (draft): it is created once the business and offer are known.");
+  const choix = (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })();
   const call: LlmCall = {
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
     // Mémoire d'une heure : un client qui réfléchit, ou une création en arrière-plan, ne fait plus tout repayer.
@@ -602,7 +603,10 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: jointes.length ? jointes : undefined,
     imagesEnMemoire: duParcours.length ? duParcours : undefined,
-    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${cle}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
+    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${cle}`, routing: { difficulty: "complex", prefer: { ...choix, effort: sinaModels().strong.effort } },
+    // L'effort des moments forts passe par un message dans la conversation : l'effort de la demande ne change plus et la
+    // mémoire du fil reste (22 novembre 2026). Fonction refusée ou éteinte : l'effort passe dans la demande, comme avant.
+    ...(choix.effort && choix.effort !== sinaModels().strong.effort ? { effortDuTour: choix.effort } : {}),
   };
   sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Identité|Marque du client|Maquette|Site codé|Thème sur mesure|Accueil dessiné)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));

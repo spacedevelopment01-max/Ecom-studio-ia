@@ -152,7 +152,7 @@ export function AdminConsole() {
             {tab === "abonnements" && <SubscriptionsAdmin />}
             {tab === "themes" && <ThemeRightsAdmin />}
             {tab === "rdv" && <CallsAdmin />}
-            {tab === "conso" && <Usage data={data} />}
+            {tab === "conso" && <Usage data={data} post={post} />}
             {tab === "sante" && <Health data={data} reload={reload} />}
           </div>
         )}
@@ -690,7 +690,7 @@ function Clients({ d, reload }: { d: Dashboard; reload: () => void }) {
   );
 }
 
-function Usage({ data }: { data: Overview }) {
+function Usage({ data, post }: { data: Overview; post: (b: Record<string, unknown>, msg?: string) => Promise<void> }) {
   const t = useT();
   const { lang } = useLang();
   const cost = data.usage.reduce((s, u) => s + u.costEur, 0);
@@ -704,7 +704,7 @@ function Usage({ data }: { data: Overview }) {
         <Card className="p-5"><p className="text-xs text-muted">{t("Encaissements Stripe (30 j)", "Stripe collections (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, rev)}</p></Card>
       </div>
       {data.travaux && <TravauxCard lignes={data.travaux.lignes} />}
-      {data.memoire && <MemoireCard m={data.memoire} />}
+      {data.memoire && <MemoireCard m={data.memoire} post={post} />}
       <Card className="overflow-x-auto p-5">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Fournisseur / modèle", "Provider / model")}</th><th>{t("Unité", "Unit")}</th><th>{t("Appels", "Calls")}</th><th>{t("Entrée", "Input")}</th><th>{t("Sortie / quantité", "Output / quantity")}</th><th>{t("Coût", "Cost")}</th><th>{t("Débité", "Charged")}</th></tr></thead>
@@ -759,7 +759,7 @@ function TravauxCard({ lignes }: { lignes: LigneTravail[] }) {
 }
 
 /** Ce que le fournisseur a repris de mémoire au lieu de le relire (consignes, notices, cahiers, fil déjà lu). */
-function MemoireCard({ m }: { m: { lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean; etapes?: { etape: string; reflexions: number; plein: number; lu: number; ecrit: number; sortie: number; parReflexionMicro: number }[] } }) {
+function MemoireCard({ m, post }: { post: (b: Record<string, unknown>, msg?: string) => Promise<void>; m: { effortParMessage?: { allume: boolean; panne: { model: string; at: number; why: string } | null }; lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean; etapes?: { etape: string; reflexions: number; plein: number; lu: number; ecrit: number; sortie: number; parReflexionMicro: number }[] } }) {
   const t = useT();
   const { lang } = useLang();
   const pct = (x: number | null) => x == null ? "—" : `${Math.round(x * 100)} %`;
@@ -768,6 +768,10 @@ function MemoireCard({ m }: { m: { lignes: LigneMemoire[]; total: LigneMemoire; 
       <p className="font-display text-lg font-semibold">{t("Mise en mémoire chez le fournisseur (30 j)", "Provider-side memory (30 d)")}</p>
       <p className="mt-1 text-sm text-ink-2">{t(`Ce qui ne change pas d'un appel à l'autre est repris de mémoire, bien moins cher que relu. Part reprise sur tout le Studio : ${pct(m.total.partReprise)} ; gagné : ${euro(lang, m.total.gagneMicro / 1e6)}.`, `What doesn't change between calls is reused from memory, far cheaper than re-read. Reused across the Studio: ${pct(m.total.partReprise)}; saved: ${euro(lang, m.total.gagneMicro / 1e6)}.`)}</p>
       <p className="mt-1 text-sm text-ink-2">{m.differe ? t(`Différé à moitié prix (marque, angles, site, publications) : allumé ; ${num(lang, m.total.differes)} appels servis ainsi.`, `Half-price deferred work (brand, angles, site, posts): on; ${num(lang, m.total.differes)} calls served this way.`) : t("Différé à moitié prix : éteint (réglage « sina.differe »).", "Half-price deferred work: off (setting “sina.differe”).")}</p>
+      {m.effortParMessage && <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-ink-2">
+        <span>{m.effortParMessage.allume ? t("Effort de SINA aux moments forts par un message dans la conversation (fonction en essai d'Anthropic) : allumé ; la mémoire du fil n'est plus effacée.", "SINA's key-moment effort set by an in-conversation message (Anthropic beta): on.") : t("Effort de SINA aux moments forts par un message dans la conversation : éteint ; l'effort passe dans la demande, comme avant.", "SINA's key-moment effort by in-conversation message: off.")}{m.effortParMessage.panne ? t(` Dernier refus du fournisseur (${m.effortParMessage.panne.model}, ${new Date(m.effortParMessage.panne.at).toLocaleString(lang)}) : retour automatique à l'effort dans la demande pendant une heure.`, ` Last provider refusal (${m.effortParMessage.panne.model}): automatic fallback for one hour.`) : ""}</span>
+        <Button size="sm" variant="ghost" onClick={() => post({ effortParMessage: !m.effortParMessage!.allume })}>{m.effortParMessage.allume ? t("Éteindre", "Turn off") : t("Allumer", "Turn on")}</Button>
+      </div>}
       <table className="mt-3 w-full min-w-[640px] text-sm">
         <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Travail", "Work")}</th><th>{t("Appels", "Calls")}</th><th>{t("Entrée", "Input")}</th><th>{t("Part reprise", "Reused")}</th><th>{t("Part écrite", "Written")}</th><th>{t("Gagné", "Saved")}</th><th>{t("En différé", "Deferred")}</th></tr></thead>
         <tbody className="divide-y divide-line">

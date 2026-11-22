@@ -105,6 +105,13 @@ export type LlmCall = {
    * reprises au lieu d'être relues au plein prix à chaque pas.
    */
   imagesEnMemoire?: LlmImage[];
+  /**
+   * Effort de CETTE réponse, donné par un message à l'intérieur de la conversation (fonction en essai chez Anthropic,
+   * décidée le 22 novembre 2026) : l'effort de la demande reste celui de la route, la mémoire du fil n'est plus effacée
+   * aux moments forts. Refusée par le fournisseur ou éteinte dans l'administration : l'effort passe dans la demande,
+   * comme avant.
+   */
+  effortDuTour?: string;
   maxTokens?: number;
   /** llmJson : limite de sortie au-delà de laquelle une réponse coupée n'est plus relancée plus longue (défaut 64 000). */
   maxOutputTokens?: number;
@@ -273,6 +280,27 @@ export function promptHead(call: Pick<LlmCall, "task" | "context" | "reference" 
 }
 
 /** Blocs de tête d'un appel, avec leurs points de mémoire (sans les images ni la demande). */
+/** Fonction en essai d'Anthropic : l'effort changé par un message dans la conversation, sans effacer la mémoire. */
+export const EFFORT_PAR_MESSAGE_BETA = "mid-conversation-output-config-2026-07-01";
+/** Modèles qui l'acceptent (documentation du fournisseur, 22 novembre 2026), réflexion allumée. */
+const EFFORT_PAR_MESSAGE_MODELES = /^claude-(opus-5-5|opus-5|sonnet-5-5|haiku-5-5|fable-5-[12]|mythos-5-[12])$/;
+/** Refus récents du fournisseur, par modèle : la fonction est mise de côté une heure, puis réessayée. */
+const effortPannes = new Map<string, { at: number; why: string }>();
+export const EFFORT_PANNE_MS = 60 * 60_000;
+export function effortParMessageEnPanne(model: string, why: string, at = Date.now()) { effortPannes.set(model, { at, why }); }
+/** Réglage « sina.effortParMessage » (allumé par défaut, s'éteint d'un geste dans l'administration). */
+export function effortParMessageActif(model: string, now = Date.now()): boolean {
+  if (getJsonSetting<boolean>("sina.effortParMessage", true) === false) return false;
+  if (!EFFORT_PAR_MESSAGE_MODELES.test(model)) return false;
+  const p = effortPannes.get(model);
+  return !p || now - p.at > EFFORT_PANNE_MS;
+}
+/** Ce que l'administration montre : allumé ou non, et la dernière panne de la fonction. */
+export function etatEffortParMessage(): { allume: boolean; panne: { model: string; at: number; why: string } | null } {
+  const last = [...effortPannes.entries()].sort((a, b) => b[1].at - a[1].at)[0];
+  return { allume: getJsonSetting<boolean>("sina.effortParMessage", true) !== false, panne: last ? { model: last[0], ...last[1] } : null };
+}
+
 /** Le point de mémoire d'un appel : 5 minutes, ou une heure (`memoireLongue`). */
 export const pointDeMemoire = (call: Pick<LlmCall, "memoireLongue">): { type: "ephemeral"; ttl?: "1h" } => (call.memoireLongue ? { type: "ephemeral", ttl: "1h" } : { type: "ephemeral" });
 
@@ -546,6 +574,15 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   } else if (format) {
     params.output_config = { format };
   }
+  // Effort de la réponse par un message dans la conversation (jamais en différé : le lot n'accepte pas la fonction).
+  const tour = !isHaiku && call.effortDuTour ? mapEffort("anthropic", route.model, call.effortDuTour) : null;
+  const parMessage = !!tour && tour !== effort && !(call.deferred ?? differeActif()) && effortParMessageActif(route.model);
+  /** Retour à la façon d'avant : l'effort de la réponse dans la demande, sans message ni fonction en essai. */
+  const commeAvant = () => { params.messages = messages; delete params.betas; params.output_config = { ...params.output_config, effort: tour }; };
+  if (parMessage) {
+    params.messages = [...messages, { role: "system", content: [], output_config: { effort: tour } }];
+    params.betas = [EFFORT_PAR_MESSAGE_BETA];
+  } else if (tour && tour !== effort) commeAvant();
   let msg: Anthropic.Beta.BetaMessage;
   // Appel réellement servi en différé (moitié prix) ; faux quand il est parti en direct.
   let servedDeferred = false;
@@ -561,7 +598,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     provider: "anthropic",
     requestedModel: route.model,
     unit: "tokens" as const,
-    effort: isHaiku ? null : effort,
+    effort: isHaiku ? null : tour && tour !== effort ? `${tour}${parMessage ? " (par message)" : ""}` : effort,
     usageKey: call.usageKey ? `${call.usageKey}${suffix}` : null,
     promptKey: call.promptKey ?? call.task,
     promptHash: shortHash(params.system[0].text),
@@ -587,6 +624,14 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
           return (await stream.finalMessage()) as Anthropic.Beta.BetaMessage;
         } catch (e) {
           const status = (e as { status?: unknown })?.status;
+          // La fonction en essai refusée (400 : rien n'est produit ni facturé) : retour immédiat à la façon d'avant, sans
+          // panne pour le client, et la fonction est mise de côté une heure.
+          if (params.betas?.includes(EFFORT_PAR_MESSAGE_BETA) && status === 400) {
+            effortParMessageEnPanne(route.model, redact(String((e as Error)?.message ?? e)).slice(0, 200));
+            commeAvant();
+            trace.effort = `${tour} (retour à l'effort dans la demande)`;
+            continue;
+          }
           if (typeof status !== "number" || !RETRYABLE(status) || attempt >= RETRY_DELAYS_MS.length) throw e;
           await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
         }

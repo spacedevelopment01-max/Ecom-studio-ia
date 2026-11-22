@@ -1,3 +1,4 @@
+import { etatEffortParMessage } from "@/lib/ai/llm";
 import {approvedQuote} from '@/lib/ai/higgsfield/pricing';
 import {defaultConfiguration} from '@/lib/ai/higgsfield/catalog';
 import { all, one } from "@/lib/db";
@@ -53,7 +54,7 @@ export const GET = handle(async () => {
     smtp: { configured: mailConfigured(), hostMasked: mask(getSetting("smtp.host")), port: getSetting("smtp.port") ?? "", userMasked: mask(getSetting("smtp.user")), passwordConfigured: !!getSetting("smtp.password"), fromMasked: mask(getSetting("smtp.from")) },
     users,
     usage,
-    memoire: { ...memoireReprise(since), differe: deferredOn(), etapes: coutParEtape(since) },
+    memoire: { ...memoireReprise(since), differe: deferredOn(), etapes: coutParEtape(since), effortParMessage: etatEffortParMessage() },
     travaux: coutParTravail(since),
     revenue,
     errors: all("SELECT id, scope, message, user_id, project_id, created_at FROM error_log ORDER BY created_at DESC LIMIT 60"),

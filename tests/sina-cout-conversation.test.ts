@@ -33,4 +33,18 @@ describe("le coût d'une conversation de 21 réponses, avant et après", () => {
     console.log(`détail : fil en mémoire seul ${coutConversation(NADIA, STUDIO_AVANT, contexte).apres} € ; + vrai tarif ${vrai.apres} € ; + notices non réécrites ${final.apres} €`);
     console.log(`Nadia, 21 réponses : avant ${r.avant} € ; après (fil en mémoire, vrai tarif de lecture) ${vrai.apres} €`);
   });
+
+  it("l'effort des moments forts par un message : la mémoire du fil n'est plus effacée (chiffres de Nadia)", () => {
+    // Nadia en était à « faire connaissance » : aucun moment fort, rien ne change pour elle.
+    const sans = coutConversation(NADIA, VRAI, contexte);
+    expect(coutConversation(NADIA, VRAI, contexte, [])).toEqual(sans);
+    // Sur un projet complet, l'audit compte 13 moments forts pour 63 réponses : sur 21 réponses de même taille, environ 4.
+    // Aujourd'hui, chacun efface la mémoire deux fois (en passant à l'effort élevé, puis en revenant à l'effort moyen).
+    const moments = [5, 10, 15, 19];
+    const avant = coutConversation(NADIA, VRAI, contexte, moments.flatMap((i) => [i, i + 1]).filter((i) => i < NADIA.length));
+    // Avec le message dans la conversation, aucune rupture : le coût redevient celui sans moment fort.
+    expect(avant.apres).toBeGreaterThan(sans.apres);
+    console.log(`21 réponses de Nadia avec 4 moments forts : ${avant.apres} € avec l'effort dans la demande, ${sans.apres} € avec l'effort par message`);
+  });
 });
+
