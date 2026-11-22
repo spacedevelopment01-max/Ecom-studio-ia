@@ -44,6 +44,7 @@ import { SYNA_SYSTEM } from "./prompt";
 import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
 import { anglesViewOf } from "./angles";
 import { sinaModels } from "./models";
+import { aLaChargeDuStudio } from "../billing";
 import { carteActiviteAJour, ECRITURES_DE_L_ACTIVITE } from "./tools/activity";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
 import { chosenRoute } from "./logos";
@@ -267,7 +268,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         const regle = { etape: currentStep(journeyOf(r.conversation_id)), payant: (tool: string) => !!getTool(tool)?.estimate, lance, motsCorriges };
         const defauts = defautsDuMessage(out, regle);
         if (defauts.length) {
-          try { out = await reason(user, r, jobId, step, deps, noteDeControle(defauts), ":controle"); } catch (e) { if (e instanceof CostCapReached) return askBudget(r); throw e; }
+          // Réécriture après le contrôle : une reprise du Studio, jamais débitée au client (règle du propriétaire).
+          const run0 = r;
+          try { out = await aLaChargeDuStudio(() => reason(user, run0, jobId, step, deps, noteDeControle(defauts), ":controle")); } catch (e) { if (e instanceof CostCapReached) return askBudget(r); throw e; }
         }
       }
       // Moment qui compte (résultat à présenter, échec, client mécontent) : la réponse est relue avant de partir, après le
@@ -683,7 +686,8 @@ async function reviewedReply(user: User, r: SynaRun, jobId: string, step: number
     const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);
     const review = ReplyReviewSchema.parse(deps.review ? await deps.review(call) : await withTrace({ jobId, projectId: r.project_id, step: "syna-relecture", costCapMicro: cap }, () => llmJson(call, ReplyReviewSchema)));
     if (review.verdict !== "reprendre" || !review.issues.length) return { out: draft, relu: "ok" };
-    return { out: await reason(user, r, jobId, step, deps, reviewNote(draft, review.issues)), relu: "repris" };
+    // Réécriture après la relectrice : une reprise du Studio, jamais débitée au client.
+    return { out: await aLaChargeDuStudio(() => reason(user, r, jobId, step, deps, reviewNote(draft, review.issues))), relu: "repris" };
   } catch { return { out: draft, relu: null }; }
 }
 

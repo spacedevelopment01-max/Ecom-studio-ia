@@ -8,6 +8,7 @@
  *     d'images des sites, dans la direction artistique de la famille choisie (personnes seulement si autorisées).
  * Le thème est ensuite en place dans l'onglet Boutique, où le client demande ses changements.
  */
+import { aLaChargeDuStudio } from "../../billing";
 import { famillePhotoLine } from "./familles";
 import { z } from "zod";
 import { L } from "../../i18n-server";
@@ -1121,14 +1122,15 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const x = known.get(f.uid)!, l = libSection(x.s.id), label = l?.title ?? x.s.id;
         ctx.progress(0.5 + (0.08 * i) / todo.length, L(`Je reprends : ${label}`, `Reworking: ${label}`));
         try {
-          const w = await ctx.step(`text-fix:${f.uid}`, async () => {
+          // Texte repris sur les remarques du directeur de création : reprise du Studio, jamais débitée au client.
+          const w = await aLaChargeDuStudio(() => ctx.step(`text-fix:${f.uid}`, async () => {
             const cur = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === f.uid) ?? x;
             const prompt = `${sectionWritePrompt("", cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, product: productFacts(p.id, cur.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(sectionHtml(cur.s), facts, cur.page?.key) })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
             const usageKey = `${ctx.job.id}:text-fix:${f.uid}`;
             return customBrandDeps.write ? customBrandDeps.write(`${brief}\n\n${prompt}`, usageKey)
               : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-fix", costCapMicro: a.capMicro }, () =>
                   llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", context: brief, prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
-          });
+          }));
           const r = await ctx.step(`text-fix-saved:${f.uid}`, async () => {
             t = loadCustomTheme(p.id)!;
             const cur = allSections(t).find((y) => y.s.uid === f.uid);
@@ -1312,12 +1314,13 @@ export async function runCustomBrandJob(ctx: JobContext) {
               if (here < mine.length) report.problems.push(`${x.ly.title} : ${mine.length - here} photo(s) que ma relecture voulait revoir n'ont pas pu être redécrites (${mine[0].fixes[0].slice(0, 120)})`);
             } catch (e) { report.problems.push(`${x.ly.title} : photos non redécrites après ma relecture (${(e as Error).message.slice(0, 100)})`); }
           };
-          for (const [i, uid] of uids.slice(0, MAX_PHOTO_FIXES).entries()) await redecrire(uid, refused.filter((f) => f.uid === uid), i, Math.min(uids.length, MAX_PHOTO_FIXES), "photo-fix");
+          // Photos redécrites parce que refusées à la relecture : reprises du Studio, jamais débitées au client.
+          for (const [i, uid] of uids.slice(0, MAX_PHOTO_FIXES).entries()) await aLaChargeDuStudio(() => redecrire(uid, refused.filter((f) => f.uid === uid), i, Math.min(uids.length, MAX_PHOTO_FIXES), "photo-fix"));
           // Une reprise peut en créer une autre en double (Bécane : la correction a demandé « REPRENDRE R2 », déjà prise) :
           // second passage, seulement pour ces doubles-là, puis plus rien n'est recréé à l'identique.
           const encore = reprisesEnDouble(photosDuSite(), reprises, dejaPosees).filter(relue);
           const uids2 = [...new Set(encore.map((d) => d.uid))].slice(0, MAX_DOUBLES_FIXES);
-          for (const [i, uid] of uids2.entries()) await redecrire(uid, encore.filter((d) => d.uid === uid).map((d) => ({ uid, find: d.find, fixes: [repriseEnDoubleFix(d)] })), i, uids2.length, "photo-fix-double");
+          for (const [i, uid] of uids2.entries()) await aLaChargeDuStudio(() => redecrire(uid, encore.filter((d) => d.uid === uid).map((d) => ({ uid, find: d.find, fixes: [repriseEnDoubleFix(d)] })), i, uids2.length, "photo-fix-double"));
           // Refusée pour une personne et pas redécrite (au-delà des reprises, ou reprise ratée) : consigne durcie à la création.
           for (const f of refused.filter(forPeople)) {
             const key = `${f.uid}|${f.find}`, nowText = (briefs[f.uid] ?? []).find((b) => b.find === f.find)?.description.trim();

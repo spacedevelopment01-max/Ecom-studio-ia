@@ -214,4 +214,10 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Dans la vraie boucle, ce que SINA a déjà reçu du fil est renvoyé au caractère près à chaque pas et à chaque nouveau message du client ; un long résultat d'outil y est court dès son entrée, et n'est donné en entier qu'à part, pendant la demande qui l'a produit.",
     rejeu: "gratuit",
   },
+  {
+    id: "erreur-de-sina-jamais-comptee", date: "2026-11-22", source: "docs/studio/LE-STUDIO-DE-A-A-Z.md",
+    verdict: "« Pas de reprises comptées : une erreur de SINA est toujours corrigée sans rien compter ; un changement de goût du client passe par son budget du mois. »",
+    attendu: "Une image ratée refaite, une réponse réécrite après le contrôle ou la relectrice, une réponse coupée redemandée ne prennent rien sur le budget du client, même épuisé ; le coût reste inscrit à la charge du Studio.",
+    rejeu: "gratuit",
+  },
 ];

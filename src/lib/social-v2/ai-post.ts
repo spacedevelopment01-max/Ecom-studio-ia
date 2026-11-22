@@ -1,4 +1,5 @@
 import {contentStrategy,withCommunicationStrategy} from '../strategy-consumption';
+import { aLaChargeDuStudio } from "../billing";
 import { authorizedPublicationTexts, copyNeedsEvidence, publicationCopyIssues } from "./publication-copy-policy";
 import { acquiredCorrection, makeCopyReview } from "./publication-copy-recovery";
 import { creativeContract, creativeInstruction, editorialPages, commercialCta, EditorialBlockSchema, type CreativeContract, type EditorialBlock } from "./creative-contract";
@@ -732,7 +733,8 @@ async function designSinglePostWithAi(
     const pal = effectivePalette(p.brand) ?? p.brand?.palette;
     for (let attempt = 0; attempt < Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS)); attempt++) {
       const key = `${prefix}:${attempt}`;
-      const result = await stage(
+      // Un visuel refait parce que le précédent a été refusé : reprise du Studio, jamais débitée au client (règle du propriétaire).
+      const result = await (attempt > 0 ? aLaChargeDuStudio : <T,>(f: () => T) => f())(() => stage(
         `${key}:outcome`,
         async () => {
           const imageReady = publicationStageDone(
@@ -978,7 +980,7 @@ async function designSinglePostWithAi(
           };
         },
         true,
-      );
+      ));
       if (result.assetId) {
         const asset = getAsset(result.assetId);
         if (

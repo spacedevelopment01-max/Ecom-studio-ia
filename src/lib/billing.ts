@@ -22,6 +22,7 @@
  *  5. réservation orpheline (processus arrêté pendant l'appel) : traitée comme incertaine après RESERVATION_TTL_MS.
  * Montants internes en micro-euros (1 € = 1 000 000).
  */
+import { AsyncLocalStorage } from "node:async_hooks";
 import { addMonths } from "date-fns";
 import { all, id, logError, now, one, run, tx } from "./db";
 import { UserFacingError } from "./jobs";
@@ -367,8 +368,18 @@ export function assertCanSpend(userId: string, estimateMicro: number, projectId?
 
 // ------------------------------------------------------------------ réservations
 
-export type ReservationMeta = { task: string; provider: string; model: string; jobId?: string | null; projectId?: string | null; usageKey?: string; requestHash?: string };
-type ReservationRow = { id: string; user_id: string; amount: number; res_monthly: number; res_topup: number; status: "held" | "settled" | "released" | "uncertain" | "reconciled"; debit_monthly: number; debit_topup: number; actual: number | null; created_at: number; settled_at: number | null; settled_period_start: number | null };
+export type ReservationMeta = { task: string; provider: string; model: string; jobId?: string | null; projectId?: string | null; usageKey?: string; requestHash?: string; /** Une reprise du Studio : jamais débitée au client. */ studio?: boolean };
+
+/**
+ * RÈGLE DU PROPRIÉTAIRE (LE-STUDIO-DE-A-A-Z, partie 13 : « une erreur de SINA est toujours corrigée sans rien compter ;
+ * un changement de goût du client passe par son budget du mois ») : ce que le Studio refait pour sa propre qualité (une
+ * image ratée refaite, une réponse réécrite après la relectrice ou le contrôle, une réponse coupée redemandée) n'est
+ * jamais débité au client. Le coût réel reste inscrit, à la charge du Studio. Le plafond de la tâche s'applique toujours.
+ */
+const studioScope = new AsyncLocalStorage<boolean>();
+export const aLaChargeDuStudio = <T>(fn: () => T): T => studioScope.run(true, fn);
+export const chargeDuStudio = (): boolean => studioScope.getStore() === true;
+type ReservationRow = { id: string; user_id: string; amount: number; res_monthly: number; res_topup: number; studio?: number; status: "held" | "settled" | "released" | "uncertain" | "reconciled"; debit_monthly: number; debit_topup: number; actual: number | null; created_at: number; settled_at: number | null; settled_period_start: number | null };
 
 type Operation = ReservationRow & { request_hash: string | null; result: string | null; provider_receipt: string | null; recovery_until: number; provider: string; model: string };
 const operationProject = (projectId?: string | null) => projectId ?? currentTrace().projectId ?? currentRunScope()?.projectId ?? null;
@@ -462,13 +473,15 @@ export function reserve(user: string, maxMicro: number, meta: ReservationMeta): 
     assertUnderCostCap(amount);
     assertAgentReservation(user,amount,meta.jobId);
     const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
+    // Une reprise du Studio ne prend rien sur le budget du client (ni réservé, ni débité).
+    const studio = !!meta.studio || chargeDuStudio();
     const fm = freeMonthly(w);
     const ft = freeTopup(w);
-    if (fm + ft < amount) return false;
-    const onMonthly = Math.min(amount, fm);
-    const onTopup = amount - onMonthly;
+    if (!studio && fm + ft < amount) return false;
+    const onMonthly = studio ? 0 : Math.min(amount, fm);
+    const onTopup = studio ? 0 : amount - onMonthly;
     run("UPDATE wallets SET reserved = reserved + ?, reserved_topup = reserved_topup + ?, updated_at = ? WHERE user_id = ?", onMonthly, onTopup, now(), userId);
-    run("INSERT INTO ai_reservations (id, user_id, amount, res_monthly, res_topup, status, task, provider, model, job_id, project_id, created_at, operation_key, request_hash, recovery_until) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rid, userId, amount, onMonthly, onTopup, "held", meta.task, meta.provider, meta.model, meta.jobId ?? null, meta.projectId ?? null, now(), operationKey(user, meta), meta.requestHash ?? null, now() + 30 * 60_000);
+    run("INSERT INTO ai_reservations (id, user_id, amount, res_monthly, res_topup, status, task, provider, model, job_id, project_id, created_at, operation_key, request_hash, recovery_until, studio) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rid, userId, amount, onMonthly, onTopup, "held", meta.task, meta.provider, meta.model, meta.jobId ?? null, meta.projectId ?? null, now(), operationKey(user, meta), meta.requestHash ?? null, now() + 30 * 60_000, studio ? 1 : 0);
     return true;
   });
   if (!ok) throw budgetError(userId);
@@ -509,6 +522,12 @@ function recordOverrun(userId: string, overrun: number, ref: string | null, note
   logError("billing:overrun", new Error(`Coût IA réel supérieur au budget réservé de ${(overrun / EUR).toFixed(4)} €`), { userId, details: { ref, note } });
 }
 
+/** Une reprise du Studio : le coût est inscrit à la charge du Studio, rien n'est débité au client. */
+function chargeAuStudio(r: ReservationRow, amount: number, note: string, status: "settled" | "uncertain") {
+  run("UPDATE ai_reservations SET status = ?, actual = ?, debit_monthly = 0, debit_topup = 0, note = ?, settled_at = ?, settled_period_start = (SELECT period_start FROM wallets WHERE user_id=?) WHERE id = ?", status, amount, "à la charge du Studio", now(), r.user_id, r.id);
+  if (amount > 0) run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "studio", "none", -amount, `studio:${r.id}`, `Reprise du Studio, jamais débitée au client — ${note.slice(0, 120)}`, now());
+}
+
 /**
  * Règle une réservation au coût réellement facturé : la réservation est libérée, le coût réel débité (au plus le
  * disponible : jamais de solde négatif), un éventuel dépassement inscrit à part. Idempotent.
@@ -521,6 +540,7 @@ export function settle(reservationId: string, billedMicro: number, ref: string |
     if (r.status !== "held") return;
     unreserve(r);
     const amount = Math.max(0, Math.round(billedMicro));
+    if (r.studio) return chargeAuStudio(r, amount, note, "settled");
     const d = debit(r.user_id, amount, { monthly: r.res_monthly, topup: r.res_topup });
     run("UPDATE ai_reservations SET status = 'settled', actual = ?, debit_monthly = ?, debit_topup = ?, settled_at = ?, settled_period_start = (SELECT period_start FROM wallets WHERE user_id=?) WHERE id = ?", amount, d.fromMonthly, d.fromTopup, now(), r.user_id, r.id);
     if (amount > 0) run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "usage", d.fromTopup > 0 ? "topup" : "monthly", -(d.fromMonthly + d.fromTopup), ref, note, now());
@@ -548,6 +568,7 @@ export function settleUncertain(reservationId: string, reason: string, /** Ce qu
     if (!r || r.status !== "held") return;
     unreserve(r);
     const montant = retenuMicro != null ? Math.min(r.amount, Math.max(0, Math.round(retenuMicro))) : r.amount;
+    if (r.studio) return chargeAuStudio(r, montant, `résultat incertain — ${reason}`, "uncertain");
     const d = debit(r.user_id, montant, { monthly: r.res_monthly, topup: r.res_topup });
     run("UPDATE ai_reservations SET status = 'uncertain', actual = ?, debit_monthly = ?, debit_topup = ?, note = ?, settled_at = ?, settled_period_start = (SELECT period_start FROM wallets WHERE user_id=?) WHERE id = ?", montant, d.fromMonthly, d.fromTopup, reason.slice(0, 200), now(), r.user_id, r.id);
     run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "usage", d.fromTopup > 0 ? "topup" : "monthly", -(d.fromMonthly + d.fromTopup), `uncertain:${r.id}`, `Résultat incertain, ${montant < r.amount ? "coût de l'envoi retenu" : "coût maximal retenu"} — ${reason.slice(0, 120)}`, now());

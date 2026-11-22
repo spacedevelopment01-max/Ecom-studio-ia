@@ -361,5 +361,24 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     // Un résultat d'outil y est court dès son entrée (jamais plus de 300 caractères de données).
     for (const b of fils.at(-1)!.filter((x) => x.includes("[résultat "))) expect((/données : (.*)$/m.exec(b)?.[1] ?? "").length).toBeLessThanOrEqual(300);
   });
+  epreuve("erreur-de-sina-jamais-comptee", async () => {
+    const billing = await import("@/lib/billing");
+    const { one, run } = await import("@/lib/db");
+    const user = await account();
+    billing.getSubscription(user.id);
+    run("UPDATE subscriptions SET status='active', plan='vendre', billing='month' WHERE user_id=?", user.id);
+    billing.alignPeriod(user.id, Date.now());
+    billing.syncAllowance(user.id);
+    run("UPDATE wallets SET monthly_used = monthly_allowance, topup_balance = 0 WHERE user_id = ?", user.id);
+    const avant = one<{ monthly_used: number }>("SELECT monthly_used FROM wallets WHERE user_id=?", user.id)!.monthly_used;
+    const rid = billing.aLaChargeDuStudio(() => billing.reserve(user.id, 30_000, { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare" }));
+    billing.settle(rid, 25_000, "epreuve", "image refaite");
+    expect(one<{ monthly_used: number }>("SELECT monthly_used FROM wallets WHERE user_id=?", user.id)!.monthly_used).toBe(avant);
+    expect(one<{ amount: number }>("SELECT amount FROM ledger WHERE user_id=? AND type='studio'", user.id)!.amount).toBe(-25_000);
+    const fs = await import("node:fs");
+    expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toMatch(/aLaChargeDuStudio\(\(\) => reason\(user, run0, jobId, step, deps, noteDeControle/);
+    expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toMatch(/aLaChargeDuStudio\(\(\) => reason\(user, r, jobId, step, deps, reviewNote/);
+    expect(fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8")).toContain("retry ? aLaChargeDuStudio(");
+  });
 });
 

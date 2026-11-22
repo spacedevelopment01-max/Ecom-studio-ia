@@ -621,7 +621,8 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   const maxMicro = await maxCostMicro(route.model, params, format);
   assertUnderCostCap(maxMicro);
   if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
-  const reservation = reprise?.reservation ?? reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId });
+  // Une réponse coupée ou mal formée redemandée (callTry > 0) : une reprise du Studio, jamais débitée au client.
+  const reservation = reprise?.reservation ?? reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId, studio: callTry > 0 });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
     params.output_config = { effort, ...(format ? { format } : {}) };
@@ -825,7 +826,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
   assertUnderCostCap(maxMicro);
   if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
-  const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId });
+  const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId, studio: callTry > 0 });
   const started = Date.now();
   let attempts = 0;
   const trace = {

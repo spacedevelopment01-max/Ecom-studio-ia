@@ -1261,6 +1261,8 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["ai_reservations", "result", "TEXT"],
   ["ai_reservations", "provider_receipt", "TEXT"],
   ["ai_reservations", "recovery_until", "INTEGER NOT NULL DEFAULT 0"],
+  // Reprise du Studio (image ratée refaite, réponse réécrite, réponse coupée redemandée) : jamais débitée au client.
+  ["ai_reservations", "studio", "INTEGER NOT NULL DEFAULT 0"],
   // Décompte d'un quota : période et répartition (mois / packs), pour pouvoir le rendre (image refusée au contrôle).
   ["quota_events", "period_start", "INTEGER"],
   ["quota_events", "from_month", "INTEGER"],

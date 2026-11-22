@@ -28,6 +28,7 @@ import { peopleAllowed } from "../people-policy";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { noterRelecture, travailDeLImage } from "./juges";
 import { REPRISES_MAX } from "./reprises";
+import { aLaChargeDuStudio } from "../billing";
 import { pngSansPerte } from "../media/signature-ia";
 import fs from "node:fs";
 import path from "node:path";
@@ -424,7 +425,9 @@ export async function runBoardImages(o: {
   // sert seulement à refaire l'image.
   const saidWhy = new Map<ImageSlot, string>();
   const SAID: Record<string, string> = { texte: L("un texte y est mal écrit", "a text is misspelt"), personne: L("une personne y apparaît", "a person appears"), coupe: L("le sujet y est coupé", "the subject is cropped"), abime: L("l'image est abîmée", "the image is damaged"), autre: L("elle n'est pas au niveau", "it is not good enough") };
-  const make = async (slot: ImageSlot, refs: Refs, prompt: string, retry = "") => {
+  // Une image refaite parce qu'elle était ratée est une reprise du Studio : jamais débitée au client (règle du propriétaire).
+  const make = async (slot: ImageSlot, refs: Refs, prompt: string, retry = ""): Promise<void> => (retry ? aLaChargeDuStudio(() => fabrique(slot, refs, prompt, retry)) : fabrique(slot, refs, prompt, retry));
+  const fabrique = async (slot: ImageSlot, refs: Refs, prompt: string, retry = "") => {
     if (capped) return;
     if (!retry) calls.set(slot, { refs, prompt });
     try {
@@ -460,7 +463,7 @@ export async function runBoardImages(o: {
   let blind = false;
   // Une image à la fois, avec toute l'attention du relecteur (21 novembre 2026 : six images jugées d'un coup, en une
   // réponse courte, laissaient passer taches, textes flous et écrans à moitié vides).
-  const review = async (slots: ImageSlot[], rt = "") => { for (const s of slots) await reviewOne([s], slots.length > 1 ? `${rt}:${s}` : rt); };
+  const review = async (slots: ImageSlot[], rt = "") => { const go = async () => { for (const s of slots) await reviewOne([s], slots.length > 1 ? `${rt}:${s}` : rt); }; return /:r\d/.test(rt) ? aLaChargeDuStudio(go) : go(); };
   const reviewOne = async (slots: ImageSlot[], rt = "") => {
     // Contrôle sans IA avant de payer la relecture : une photo en partie transparente est refusée et refaite.
     for (const s of slots) {
