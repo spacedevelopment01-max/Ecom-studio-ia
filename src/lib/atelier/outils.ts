@@ -4,7 +4,7 @@
  * Seulement les fournisseurs accordés par le propriétaire (référence, partie 16) : OpenAI, Google (API Gemini), Vertex
  * (Veo 3.1 Fast et Lite seulement), Kling en direct, BytePlus (Seedance), Black Forest Labs (Flux), Alibaba (Qwen,
  * Wan), et Runware comme seul intermédiaire de secours. fal ne sert que pendant la transition : aucun outil de
- * l'atelier ne passe par lui. Bria, Ideogram, MiniMax, Higgsfield et Imagen Product Recontext ne sont pas accordés :
+ * l'atelier ne passe par lui. Bria, Ideogram, MiniMax et Imagen Product Recontext ne sont pas accordés :
  * ils ne sont jamais proposés (`OUTILS_ECARTES`).
  *
  * Toutes les images de SINA sont faites par OpenAI : les autres outils ne servent qu'au choix du client (mode « Je
@@ -106,7 +106,6 @@ export const OUTILS: Outil[] = [
 /** Fournisseurs jamais proposés dans l'atelier, et pourquoi (vérifié par les tests). */
 export const OUTILS_ECARTES: Record<string, T2> = {
   fal: ["Ne sert que pendant la transition : rien de neuf ne passe par lui.", "Only used during the transition: nothing new goes through it."],
-  higgsfield: ["Non accordé (il peut entraîner ses modèles sur les photos envoyées).", "Not approved (it may train its models on uploaded photos)."],
   bria: ["Non accordé.", "Not approved."],
   ideogram: ["Écarté par le propriétaire.", "Ruled out by the owner."],
   minimax: ["Non accordé.", "Not approved."],

@@ -30,7 +30,7 @@ export const POST = handle(async (req: Request) => {
     req,
     z.object({
       set: z.array(z.object({ key: z.string(), value: z.string().nullable() })).optional(),
-      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba", "higgsfield", "vertex", "kling", "byteplus", "runware", "bfl"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
+      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba", "vertex", "kling", "byteplus", "runware", "bfl"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
       // Routage des modèles de texte : manuel (défaut, routage actuel inchangé) ou automatique multifournisseur.
       routingMode: z.enum(["manual", "auto"]).optional(),
       // Effort des moments forts de SINA par un message dans la conversation (fonction en essai d'Anthropic) : s'éteint ici.

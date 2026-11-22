@@ -805,9 +805,9 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
     } : undefined,
     async directClip(image,prompt,aspect,seconds,key,generation){
       const route=sceneGenerationRoute(generation,seconds,aspect==="16:9"?"16:9":"9:16");if(!route.allowed)throw new UserFacingError(route.reason);
-      const {wanTextClip,aiClip,higgsfieldClip}=await import("../ai/media-providers");
+      const {wanTextClip,aiClip}=await import("../ai/media-providers");
       const context={...base,jobId,usageKey:key};
-      const generate=()=>image?aiClip(route.provider,context,{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false}):(route.provider==='higgsfield'?higgsfieldClip:wanTextClip)(context,{prompt,seconds:route.seconds,model:route.model,usage:"text_video",aspect:aspect==="16:9"?"16:9":"9:16"});
+      const generate=()=>image?aiClip(route.provider,context,{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false}):wanTextClip(context,{prompt,seconds:route.seconds,model:route.model,usage:"text_video",aspect:aspect==="16:9"?"16:9":"9:16"});
       if(o.request?.quotedGeneration){
         const q=o.request.quotedGeneration,{assertBoundedSceneQuote}=await import("./bounded-quote");assertBoundedSceneQuote(q);
         const index=Number(key.match(/:direct:(\d+)$/)?.[1]),scene=q.scenes[index];

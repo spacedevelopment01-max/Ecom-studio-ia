@@ -1,5 +1,3 @@
-import {approvedQuote} from "./higgsfield/pricing";
-import {defaultConfiguration} from "./higgsfield/catalog";
 /**
  * Routage des générations IMAGES et VIDÉOS entre fournisseurs spécialisés (OpenAI, Google, fal.ai).
  *
@@ -12,7 +10,7 @@ import {defaultConfiguration} from "./higgsfield/catalog";
  * restant. Jamais « le moins cher » par principe : le coût ne fait que départager des modèles de qualité voisine.
  */
 import type { TaskId } from "./config";
-import { activeProviderKey, priceFor, priceValid } from "./config";
+import { activeProviderKey, FOURNISSEURS_QUITTES, priceFor, priceValid } from "./config";
 import { MEDIA_MODELS, mediaModel, type MediaKind, type MediaModel } from "./media-models";
 import { EUR } from "../billing";
 import { usdToEur } from "./config";
@@ -103,6 +101,8 @@ const splitKey = (v: string) => {
   const [provider, ...rest] = v.split(":");
   return { provider, model: rest.join(":") };
 };
+/** Un réglage qui choisit un fournisseur quitté (Higgsfield) est ignoré : retour au réglage par défaut. */
+const quitte = (v: string | null | undefined) => !!v && FOURNISSEURS_QUITTES.has(v.split(":")[0]);
 /**
  * Modèle principal des images de publications : celui de l'administration s'il est d'OpenAI, sinon celui des images de
  * SINA (`syna.mockup.image_route`) s'il est d'OpenAI, sinon le modèle d'OpenAI par défaut (social-image-policy.ts).
@@ -122,7 +122,7 @@ export function usagePrimary(u: MediaUsage): { provider: string; model: string; 
   if (u === "logo") return { provider: REQUIRED_LOGO_PROVIDER, model: REQUIRED_LOGO_MODEL, inherited: false };
   if (u === "social_image") return socialImagePrimary();
   const v = usageSettings()[u]?.primary;
-  if (v) return { ...splitKey(v), inherited: false };
+  if (v && !quitte(v)) return { ...splitKey(v), inherited: false };
   const parent = USAGE_INFO[u].parent;
   return parent ? { ...usagePrimary(parent), inherited: true } : { ...mediaPrimary(USAGE_INFO[u].kind), inherited: true };
 }
@@ -132,7 +132,7 @@ export function usageBackup(u: MediaUsage): { provider: string; model: string } 
   const s = usageSettings()[u];
   // Publications : un secours d'OpenAI seulement, jamais un autre fournisseur.
   if (u === "social_image") { const b = s?.backup ? splitKey(s.backup) : null; return b && b.provider === REQUIRED_SOCIAL_IMAGE_PROVIDER ? b : null; }
-  if (s && "backup" in s) return s.backup ? splitKey(s.backup) : null;
+  if (s && "backup" in s && !quitte(s.backup)) return s.backup ? splitKey(s.backup) : null;
   const parent = USAGE_INFO[u].parent;
   return parent ? usageBackup(parent) : mediaBackup(USAGE_INFO[u].kind);
 }
@@ -145,7 +145,7 @@ export const usageExplicit = (u: MediaUsage): boolean => {
   // Publications : OpenAI imposé, donc jamais le repli historique vers un autre modèle.
   if (u === "social_image") return true;
   const s = usageSettings()[u];
-  return (!!s && (!!s.primary || !!s.mode)) || (!!USAGE_INFO[u].parent && usageExplicit(USAGE_INFO[u].parent!));
+  return (!!s && ((!!s.primary && !quitte(s.primary)) || !!s.mode)) || (!!USAGE_INFO[u].parent && usageExplicit(USAGE_INFO[u].parent!));
 };
 /** Usage coupé par l'administration (retouches produit seulement : les photos passent alors par décor + composition). */
 export const usageOff = (u: MediaUsage): boolean => !!USAGE_INFO[u].canBeOff && !!usageSettings()[u]?.off;
@@ -179,7 +179,7 @@ export const mediaMode = (kind: MediaKind): MediaMode => (getJsonSetting<Partial
 /** Principal : route de l'administration (ou défaut du studio). */
 export function mediaPrimary(kind: MediaKind): { provider: string; model: string } {
   const r = getJsonSetting<Partial<Record<TaskId, { provider: string; model: string }>>>("ai.routes", {})[MEDIA_TASK[kind]];
-  if (r?.provider && r.model) return { provider: r.provider, model: r.model };
+  if (r?.provider && r.model && !FOURNISSEURS_QUITTES.has(r.provider)) return { provider: r.provider, model: r.model };
   // Défaut du studio : le mieux classé qui est UTILISABLE (ex. Qwen-Image 3.0 Pro une fois confirmé par
   // l'administration) ; sinon le défaut historique, pour qu'une génération ne reste jamais sans modèle.
   const ds = MEDIA_MODELS.filter((m) => m.kind === kind && m.defaultFor === "primary").sort((a, b) => (b.defaultRank ?? 0) - (a.defaultRank ?? 0));
@@ -190,7 +190,7 @@ export function mediaPrimary(kind: MediaKind): { provider: string; model: string
 /** Secours choisi par l'administration (« fournisseur:modèle »), null s'il n'y en a pas. */
 export function mediaBackup(kind: MediaKind): { provider: string; model: string } | null {
   const v = getJsonSetting<Partial<Record<MediaKind, string>>>("ai.media.backup", {})[kind];
-  if (!v) return null;
+  if (!v || quitte(v)) return null;
   const [provider, ...rest] = v.split(":");
   return { provider, model: rest.join(":") };
 }
@@ -207,7 +207,6 @@ export const shutDown = (m: MediaModel, now = Date.now()) => !!m.shutdown && Dat
  */
 export function mediaStatus(m: MediaModel, admin: Record<string, MediaAdmin> = mediaAdmin()): MediaStatus {
   const key = `${m.provider}:${m.model}`;
-  if(m.provider==='higgsfield'){let ready=false;try{approvedQuote(defaultConfiguration(m.model));ready=true;}catch{}return {key,usable:ready,confirmed:ready,enabled:ready && (admin[key]?.enabled??true),connected:!!activeProviderKey('higgsfield'),reasons:ready?[]:[L('Tarifs Higgsfield exacts à récupérer et confirmer (ou confirmation expirée).','Retrieve and approve exact Higgsfield prices (or approval expired).')]};}
   const a = admin[key] ?? {};
   const reasons: string[] = [];
   const connected = !!activeProviderKey(m.provider);
@@ -256,7 +255,6 @@ export function incompatibility(m: MediaModel, n: MediaNeed): string | null {
 
 /** Coût d'une génération typique (micro-euros) au tarif de l'administration, null si inconnu. */
 export function typicalCostMicro(m: Pick<MediaModel, "provider" | "model" | "kind" | "typical">): number | null {
-  if(m.provider==='higgsfield'){try{return approvedQuote(defaultConfiguration(m.model,m.typical.seconds??5)).micro;}catch{return null;}}
   const p = priceFor(m.provider, m.model);
   if (!p || !priceValid(p)) return null;
   let usd: number;

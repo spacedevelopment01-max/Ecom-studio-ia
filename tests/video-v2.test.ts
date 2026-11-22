@@ -1,4 +1,3 @@
-import {HIGGS_MODELS} from "../src/lib/ai/higgsfield/catalog";
 /**
  * Video & UGC Engine V2 (phase 7A) — modules sans rendu : intention, stratégie, script, storyboard, planification
  * des plans, Router V2 / capacités des fournisseurs, document éditable, opérations, retouches par conversation,
@@ -158,11 +157,11 @@ describe("Video Engine V2 — modules", async () => {
   // ------------------------------------------------------------------ Router V2 et fournisseurs
 
   it("Router V2 : seules les capacités VÉRIFIÉES comptent ; repli sur un fournisseur compatible ; tarif inconnu refusé", () => {
-    // Les adaptateurs directs Alibaba et Higgsfield sont raccordés ; Veo reste documenté seulement.
+    // L'adaptateur direct d'Alibaba est raccordé (Higgsfield quitté le 22 novembre 2026) ; Veo reste documenté seulement.
     // Capacité du code ne signifie ni tarif approuvé ni accès fournisseur effectivement testé.
     const direct = VIDEO_CAPABILITIES.filter(c => verified(c, "textToVideo"));
     expect(direct.length).toBeGreaterThan(0);
-    expect(direct.every(c => c.provider === "alibaba" || c.provider === "higgsfield" && HIGGS_MODELS.some(m=>m.id===c.model && m.mode==="text"))).toBe(true);
+    expect(direct.every(c => c.provider === "alibaba")).toBe(true);
     expect(VIDEO_CAPABILITIES.filter(c => c.provider === "google").every(c => !verified(c, "textToVideo"))).toBe(true);
     expect(chooseProvider({ imageToVideo: false, people: false, nativeAudio: false, aspect: "9:16", durationS: 5 }, { ...allProviders, available: p => p !== "alibaba" })).toBeNull();
     // Son natif : seulement Veo (vérifié par le code UGC) ; Kling n'en a pas.

@@ -32,7 +32,7 @@ describe("les outils de l'atelier (point 8)", () => {
     const accordes = new Set(["openai", "google", "vertex", "kling", "byteplus", "bfl", "alibaba", "runware"]);
     for (const o of OUTILS) expect(accordes.has(o.provider)).toBe(true);
     expect(OUTILS.some((o) => /fal|higgs|bria|ideogram|minimax|recontext/i.test(o.id))).toBe(false);
-    for (const k of ["fal", "higgsfield", "bria", "ideogram", "minimax", "imagen-product-recontext"]) expect(OUTILS_ECARTES[k]).toBeTruthy();
+    for (const k of ["fal", "bria", "ideogram", "minimax", "imagen-product-recontext"]) expect(OUTILS_ECARTES[k]).toBeTruthy();
     // Vertex : Veo 3.1 Fast et Lite seulement.
     expect(OUTILS.filter((o) => o.provider === "vertex").map((o) => o.model).sort()).toEqual(["veo-3.1-fast-generate-001", "veo-3.1-lite-generate-001"]);
   });

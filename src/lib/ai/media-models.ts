@@ -1,4 +1,3 @@
-import {HIGGS_MODELS} from "./higgsfield/catalog";
 /**
  * Catalogue des modèles IMAGES et VIDÉOS (données pures, sans dépendance) : fournisseur, identifiant exact,
  * adaptateur réel du studio, capacités, qualité relative, formats, résolution, durées, statut chez le fournisseur
@@ -13,10 +12,10 @@ import {HIGGS_MODELS} from "./higgsfield/catalog";
  *  - `legacyDefault` : modèle appelé chez ce fournisseur quand aucun n'a été choisi (comportement d'avant).
  */
 export type MediaKind = "image" | "video";
-export type MediaAdapter = "openai_image" | "gemini_image" | "fal_image" | "veo" | "fal_video" | "alibaba_image" | "alibaba_video" | "higgsfield_video" | "direct_video" | "bfl_image" | null;
+export type MediaAdapter = "openai_image" | "gemini_image" | "fal_image" | "veo" | "fal_video" | "alibaba_image" | "alibaba_video" | "direct_video" | "bfl_image" | null;
 
 export type MediaModel = {
-  provider: "openai" | "google" | "fal" | "alibaba" | "higgsfield" | "vertex" | "kling" | "byteplus" | "runware" | "bfl";
+  provider: "openai" | "google" | "fal" | "alibaba" | "vertex" | "kling" | "byteplus" | "runware" | "bfl";
   /** Image de fin acceptée (même photo, ou la vraie photo sous un autre angle). */
   lastFrame?: boolean;
   /** Brouillon bon marché avant la version finale (Seedance 2.5 « Draft »). */
@@ -582,4 +581,3 @@ MEDIA_MODELS.push(
 
 export const mediaModel = (provider: string, model: string): MediaModel | null => MEDIA_MODELS.find((m) => m.provider === provider && m.model === model) ?? null;
 
-for(const m of HIGGS_MODELS) MEDIA_MODELS.push({provider:'higgsfield',model:m.id,label:m.label,kind:'video',adapter:'higgsfield_video',quality:3,caps:{imageToVideo:m.mode==='image',textToVideo:m.mode==='text',audio:true,people:false},aspects:['16:9','9:16','1:1'],resolution:m.resolutions.join(', '),durations:Array.from({length:m.max-m.min+1},(_,i)=>m.min+i),typical:{seconds:5},priceNote:'Estimation officielle du compte par configuration ; approbation groupée obligatoire',status:'stable',verified:{id:true,price:false},adminConfirm:true,paramsVerified:true,source:m.docs,use:{fr:'Plans de produit fidèles à la référence, puis montage du studio ; aucun personnage sans référence.',en:'Reference-guided product shots then studio montage; no people without reference.'}});

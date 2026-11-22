@@ -1,6 +1,5 @@
 "use client";
 import { ThemeRightsAdmin } from "./admin-theme-rights";
-import {HiggsfieldAdmin} from "./admin-higgsfield";
 import { MusicLibraryAdmin } from "./admin-music";
 import { PACKS, PACKS_FOR_SALE, PLAN_IDS, PLANS } from "@/lib/plans";
 import { useId, useState } from "react";
@@ -197,7 +196,7 @@ function AiProviders({ data, set, refreshOverview }: { data: Overview; set: SetF
     <>
       <Card className="p-5 text-sm text-ink-2">{t("Les clés sont chiffrées en base (AES-256-GCM avec APP_SECRET) et ne sont jamais renvoyées au navigateur. Les clients n'ont jamais de clé à fournir. Sans clé, le studio fonctionne avec son moteur intégré (sans IA externe) et l'indique clairement aux clients.", "Keys are encrypted in the database (AES-256-GCM with APP_SECRET) and are never sent back to the browser. Customers never have to provide a key. Without a key, the studio runs on its built-in engine (no external AI) and tells customers so clearly.")}</Card>
       <div className="grid gap-4 md:grid-cols-2">
-        {data.providers.filter(p=>p.id!=="higgsfield").map((p) => (
+        {data.providers.map((p) => (
           <Card key={p.id} className="grid content-start gap-3 p-5">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -222,7 +221,6 @@ function AiProviders({ data, set, refreshOverview }: { data: Overview; set: SetF
           </Card>
         ))}
       </div>
-      <HiggsfieldAdmin onSaved={refreshOverview} />
       <Card className="grid gap-3 p-5">
         <p className="font-display text-lg font-semibold">{t("Adresse publique du studio", "Studio public URL")}</p>
         <p className="text-sm text-ink-2">{t("Utilisée pour les retours OAuth, les médias publiés (Instagram, TikTok, Pinterest récupèrent les fichiers par URL) et l'installation du thème Shopify. Doit être en HTTPS et accessible depuis Internet. Actuelle : ", "Used for OAuth callbacks, published media (Instagram, TikTok and Pinterest fetch files by URL) and Shopify theme installation. Must use HTTPS and be reachable from the internet. Current: ")}<span className="font-mono">{data.appUrl}</span></p>

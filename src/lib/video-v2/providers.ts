@@ -1,5 +1,3 @@
-import {approvedQuote} from "../ai/higgsfield/pricing";
-import {defaultConfiguration} from "../ai/higgsfield/catalog";
 /**
  * Fournisseurs vidéo (Router V2) : capacités DÉCLARÉES et leur niveau de vérification. « code » = adaptateur raccordé dans le studio (chemin écrit, sans garantie de qualité ni recette fournisseur réelle) ; « documented » = annoncée par le fournisseur mais jamais
  * appelée ici — elle n'est donc PAS utilisée par le moteur tant qu'elle n'a pas été vérifiée (benchmark 7B).
@@ -81,7 +79,7 @@ for (const m of MEDIA_MODELS) {
     people: !!m.caps.people,
     crossShotConsistency: "start_frame",
     nativeAudio: !!m.caps.audio,
-    verification: { imageToVideo: "code", people: "code", ...(m.caps.audio ? { nativeAudio: "code" as const } : {}), ...(m.caps.textToVideo ? { textToVideo: (["alibaba_video","higgsfield_video"].includes(m.adapter)?"code":"documented") as "code"|"documented" } : {}) },
+    verification: { imageToVideo: "code", people: "code", ...(m.caps.audio ? { nativeAudio: "code" as const } : {}), ...(m.caps.textToVideo ? { textToVideo: (m.adapter==="alibaba_video"?"code":"documented") as "code"|"documented" } : {}) },
   });
 }
 
@@ -105,7 +103,6 @@ export function compatible(c: VideoCapability, n: ShotNeed): string | null {
 
 /** Coût estimé d'un plan (EUR micro) au tarif de l'administration ; null : tarif inconnu (génération refusée). */
 export function estimateMicro(provider: string, model: string, seconds: number, aspect: VideoAspect = "16:9"): number | null {
-  if(provider==="higgsfield"){try{return approvedQuote(defaultConfiguration(model,seconds,aspect==="16:9"?"16:9":"9:16")).micro;}catch{return null;}}
   const p = priceFor(provider, model);
   if (!p || p.unit !== "video_second" || !(p.perSecond > 0)) return null;
   return Math.round(seconds * p.perSecond * usdToEur() * EUR);

@@ -1,6 +1,6 @@
 /**
  * Intégration #194 — isolation A/B des routes arrivées après le lot 9 (#176 produits, boutiques, synchronisation,
- * rendez-vous, biens ; #176/#193 administration des droits de thèmes et Higgsfield). Comptes et données fictifs,
+ * rendez-vous, biens ; #176/#193 administration des droits de thèmes). Comptes et données fictifs,
  * aucun appel réseau. Même matrice que tests/mission171-scope-inputs.test.ts : A autorisé, B, administrateur et
  * visiteur non connecté refusés, sans rien révéler ni modifier.
  */
@@ -19,7 +19,6 @@ import * as rdv from "@/app/api/projects/[id]/rendez-vous/route";
 import * as biens from "@/app/api/projects/[id]/biens/route";
 import * as biensOrdre from "@/app/api/projects/[id]/biens/ordre/route";
 import * as bien from "@/app/api/projects/[id]/biens/[bid]/route";
-import * as higgsfield from "@/app/api/admin/higgsfield/route";
 import * as themeRights from "@/app/api/admin/theme-rights/route";
 
 async function fixture(role = "client") {
@@ -90,12 +89,10 @@ it("B ne modifie pas le produit ni le bien de A par son propre projet (identifia
   expect(getBien(a.pid, a.bien.id).status).toBe(a.bien.status);
 });
 
-it("administration des droits de thèmes et de Higgsfield : client refusé (403), visiteur refusé (401)", async () => {
+it("administration des droits de thèmes : client refusé (403), visiteur refusé (401)", async () => {
   const a = await fixture();
   for (const [uid, status] of [[a.u.id, 403], [undefined, 401]] as const) {
     login(uid);
-    expect((await higgsfield.GET()).status).toBe(status);
-    expect((await higgsfield.POST(req("/api/admin/higgsfield", "POST", {}))).status).toBe(status);
     expect((await themeRights.GET()).status).toBe(status);
     expect((await themeRights.POST(req("/api/admin/theme-rights", "POST", { plans: {} }))).status).toBe(status);
   }
