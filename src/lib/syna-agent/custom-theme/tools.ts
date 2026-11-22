@@ -472,12 +472,110 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   let d: Design, c: ReturnType<typeof check>, calls = 0;
   /** Ce que le second regard laisse au compte rendu : ses refus encore là après la reprise, ou le fait qu'il n'a pas pu relire. */
   let secondLeft: string[] = [];
+  /**
+   * Les correcteurs sans IA (photos introuvables, famille, style, variété entre sites, rythme, allures, signature). Ils
+   * passent AVANT de décider la reprise payée du concepteur, et les juges lisent la version corrigée (audit du site du
+   * 22 novembre 2026, 6.2) : la reprise ne se paie plus que pour ce que le code ne sait pas réparer. Ils repassent après
+   * la reprise. Rend le refus de la conception quand la variété entre sites reste impossible à tenir.
+   */
+  const sansIA = (): Extract<DesignRun, { ok: false }> | null => {
+    // Dernier recours sans IA (essai réel du 18 novembre 2026 : « La personne derrière la marque » posée sans le portrait du
+    // client, conception refusée et payée pour rien). Une pièce qui demande des photos impossibles à inventer que le client
+    // n'a pas envoyées est remplacée par une autre pièce qui sert le même moment ; s'il n'y en a aucune, elle est retirée.
+    // Gardé seulement si rien ne casse. Aucune porte de sortie : le Studio remplace lui-même ce qui ne tient pas.
+    {
+      const idOf = (x: string) => { try { return ref(x); } catch { return x; } };
+      const x: Design = JSON.parse(JSON.stringify(d));
+      let n = 0;
+      for (const pg of x.pages) for (let i = pg.sections.length - 1; i >= 0; i--) {
+        const s = pg.sections[i], id = idOf(s.section);
+        if (!photosAuthentiquesManquantes(id, facts)) continue;
+        const posees = new Set(x.pages.flatMap((q) => q.sections.map((y) => idOf(y.section))));
+        const autre = (() => { try { return candidats(x, id).find((k) => k !== id && !posees.has(k) && pieceTenable(k, facts)); } catch { return undefined; } })();
+        if (autre) { s.section = autre; delete (s as { construction?: string | null }).construction; } else pg.sections.splice(i, 1);
+        n++;
+      }
+      if (n) { const again = check(x); if (!again.rules.length && again.t) { d = x; c = again; } }
+    }
+    // Dernier recours sans IA : ce qui sort encore des choix de la famille y est ramené ; le site est fait dans son style.
+    { const fit = fitFamille(d, { business: site.business, families: catalogueFacts.families }); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+    { const fit = fitStyle(d, site.business); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+    // La variété entre les sites : une disposition encore prise par un autre site devient une disposition libre (sans IA).
+    // Aucune porte de sortie : chaque changement n'est gardé que s'il ne casse rien ; une pièce de trop est remplacée par une
+    // autre qui sert le même moment ; une conception qui ne tient toujours pas la règle est refusée.
+    {
+      const idOf = (s: string) => { try { return ref(s); } catch { return s; } };
+      const autres = (r: ReturnType<typeof check>) => r.objections.length + r.rhythm.length + r.pages.filter((g) => !estVariete(g) && !estSignature(g)).length;
+      const base = autres(c);
+      const accepte = (x: Design) => { const r = check(x); return !r.rules.length && !!r.t && autres(r) <= base; };
+      const garder = mode.kind === "complete" ? keys : [];
+      const resolve = (id: string, cc: string | null | undefined) => { try { return validConstruction(ref(id), cc); } catch { return cc ?? null; } };
+      let fit = fitVarieteSites(d, vus, { resolve, id: idOf, garder, accepte, metier: oc.metier });
+      const pieces = fitVarietePieces(fit.d, vus, { siteVu: siteVuDe, candidats, accepte, id: idOf, garder, metier: oc.metier });
+      if (pieces.changed.length) fit = fitVarieteSites(pieces.d, vus, { resolve, id: idOf, garder, accepte, metier: oc.metier });
+      if (fit.changed.length || pieces.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } }
+      // Second passage, seulement si la règle n'est toujours pas tenue (essai réel du 18 novembre 2026 : trois conceptions
+      // payées refusées parce que chaque remplacement possible ajoutait une remarque d'ordre). La variété est la règle
+      // absolue du propriétaire : un remplacement est gardé dès qu'il ne casse aucune règle du thème ET qu'il rapproche
+      // de la règle ; la remarque d'ordre qu'il peut ajouter n'est pas bloquante (dite dans « à revoir », puis reprise par
+      // les passages du rythme et des allures).
+      if (varieteSitesGaps({ ...siteVuDe(d), metier: oc.metier }, vus, { seule: seuleDans(d) }).length) {
+        const ecart = (x: Design) => ecartVariete({ ...siteVuDe(x), metier: oc.metier }, vus, { seule: seuleDans(x) });
+        let courant = ecart(d);
+        const rapproche = (x: Design) => { const r = check(x); if (r.rules.length || !r.t) return false; const e = ecart(x); if (e >= courant) return false; courant = e; return true; };
+        let fit2 = fitVarieteSites(d, vus, { resolve, id: idOf, garder, accepte: rapproche, metier: oc.metier });
+        const pieces2 = fitVarietePieces(fit2.d, vus, { siteVu: siteVuDe, candidats, accepte: rapproche, id: idOf, garder, metier: oc.metier, tours: 80 });
+        if (pieces2.changed.length) fit2 = { d: pieces2.d, changed: [...fit2.changed, ...pieces2.changed] };
+        if (fit2.changed.length) { const again = check(fit2.d); if (!again.rules.length && again.t) { d = fit2.d; c = again; } }
+      }
+      const reste = varieteSitesGaps({ ...siteVuDe(d), metier: oc.metier }, vus, { seule: seuleDans(d) });
+      if (reste.length) return { ok: false, result: { ok: false, summary: L(`Conception refusée : le site ressemblerait trop à un site déjà fait par le Studio (${reste.join(" ; ").slice(0, 400)}). Rien n'est enregistré.`, "Design refused: too close to an existing site."), hint: "Dis-le honnêtement au client avec le coût réel ; ne relance rien de payant sans son accord." } };
+    }
+    // Refaire le site : l'ouverture de l'accueil ne reprend jamais la disposition de l'actuelle (essai réel du 18 novembre
+    // 2026 : même pièce, même disposition, même premier écran). Une autre disposition de la même pièce, sinon c'est dit.
+    if (ancien) {
+      const home = d.pages.find((pg) => pg.key === "home"), avant = ancien.vu.pages.home?.[0];
+      const premier = home?.sections[0];
+      if (home && premier && avant) {
+        const id = (() => { try { return ref(premier.section); } catch { return premier.section; } })();
+        const meme = () => `${id}:${(() => { try { return validConstruction(id, home.sections[0].construction) ?? ""; } catch { return home.sections[0].construction ?? ""; } })()}` === avant;
+        if (meme()) {
+          for (const cc of (() => { try { return constructionsOf(id).map((x) => x.key); } catch { return []; } })()) {
+            if (`${id}:${cc}` === avant) continue;
+            const x: Design = JSON.parse(JSON.stringify(d));
+            x.pages.find((pg) => pg.key === "home")!.sections[0].construction = cc;
+            const r = check(x);
+            if (!r.rules.length && r.t) { d = x; c = r; break; }
+          }
+        }
+      }
+    }
+    // Le rythme : deux dispositions pareilles à la suite, réglé par un échange de place quand il ne crée aucun autre défaut.
+    { const fit = fitRythme(d, facts); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
+    // Une même allure jamais deux fois sur une page (18 novembre 2026) : la seconde est remplacée par une pièce du même
+    // moment d'une autre allure, puis le rythme est revu. Aucune porte de sortie.
+    {
+      const fit = fitFormes(d, facts, { candidats, accepte: (x) => { const r = check(x); return !r.rules.length && !!r.t; } });
+      if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } }
+      const r2 = fitRythme(d, facts); if (r2.changed.length) { const again = check(r2.d); if (!again.rules.length && again.t) { d = r2.d; c = again; } }
+    }
+    // Dernier passage sans IA, après tout ce qui déplace ou remplace des pièces : chaque page prend la signature de sa
+    // famille (fonds, alignement) et le signe de la marque est complet. Aucune porte de sortie.
+    {
+      const sig = fitSignature(d, (x) => { try { return ref(x); } catch { return x; } });
+      const sg = sig.d.tenue && sig.d.famille ? fitSigne(sig.d.tenue, sig.d.famille, p.brand?.name || p.name || "") : null;
+      const x = sg?.changed.length ? { ...sig.d, tenue: sg.t } : sig.d;
+      if (sig.changed.length || sg?.changed.length) { const again = check(x); if (!again.rules.length && again.t) { d = x; c = again; } }
+    }
+    return null;
+  };
   try {
     // 1) conception (stratégie, parcours, partitions, sections), 2) relecture du juge de l'ordre (le directeur commercial),
     //    qui rend la version corrigée.
     d = only(pin(await call(prompt, base))); calls++;
     d = only(pin(await call(`${prompt}\n\nCONCEPTION À RELIRE (JSON) :\n${JSON.stringify(d)}`, `${base}-review`, DESIGN_REVIEW_SYSTEM))); calls++;
     c = check(d);
+    sansIA();
     // 3) le juge de l'originalité (séparé du concepteur) : ses refus rejoignent la seule reprise ci-dessous.
     let refused: Originality | null = null;
     if (judge) {
@@ -514,94 +612,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     const spent = all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${base}%`)[0]?.c ?? 0;
     return { ok: false, result: { ok: false, summary: L(`Conception non faite (${calls} passage(s) réussi(s) ; coût réel : ${budgetPctTu(ctx.user.id, spent, p.id)}) : ${(e as Error).message.slice(0, 200)}.`, "Design failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." } };
   }
-  // Dernier recours sans IA (essai réel du 18 novembre 2026 : « La personne derrière la marque » posée sans le portrait du
-  // client, conception refusée et payée pour rien). Une pièce qui demande des photos impossibles à inventer que le client
-  // n'a pas envoyées est remplacée par une autre pièce qui sert le même moment ; s'il n'y en a aucune, elle est retirée.
-  // Gardé seulement si rien ne casse. Aucune porte de sortie : le Studio remplace lui-même ce qui ne tient pas.
-  {
-    const idOf = (x: string) => { try { return ref(x); } catch { return x; } };
-    const x: Design = JSON.parse(JSON.stringify(d));
-    let n = 0;
-    for (const pg of x.pages) for (let i = pg.sections.length - 1; i >= 0; i--) {
-      const s = pg.sections[i], id = idOf(s.section);
-      if (!photosAuthentiquesManquantes(id, facts)) continue;
-      const posees = new Set(x.pages.flatMap((q) => q.sections.map((y) => idOf(y.section))));
-      const autre = (() => { try { return candidats(x, id).find((k) => k !== id && !posees.has(k) && pieceTenable(k, facts)); } catch { return undefined; } })();
-      if (autre) { s.section = autre; delete (s as { construction?: string | null }).construction; } else pg.sections.splice(i, 1);
-      n++;
-    }
-    if (n) { const again = check(x); if (!again.rules.length && again.t) { d = x; c = again; } }
-  }
-  // Dernier recours sans IA : ce qui sort encore des choix de la famille y est ramené ; le site est fait dans son style.
-  { const fit = fitFamille(d, { business: site.business, families: catalogueFacts.families }); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
-  { const fit = fitStyle(d, site.business); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
-  // La variété entre les sites : une disposition encore prise par un autre site devient une disposition libre (sans IA).
-  // Aucune porte de sortie : chaque changement n'est gardé que s'il ne casse rien ; une pièce de trop est remplacée par une
-  // autre qui sert le même moment ; une conception qui ne tient toujours pas la règle est refusée.
-  {
-    const idOf = (s: string) => { try { return ref(s); } catch { return s; } };
-    const autres = (r: ReturnType<typeof check>) => r.objections.length + r.rhythm.length + r.pages.filter((g) => !estVariete(g) && !estSignature(g)).length;
-    const base = autres(c);
-    const accepte = (x: Design) => { const r = check(x); return !r.rules.length && !!r.t && autres(r) <= base; };
-    const garder = mode.kind === "complete" ? keys : [];
-    const resolve = (id: string, cc: string | null | undefined) => { try { return validConstruction(ref(id), cc); } catch { return cc ?? null; } };
-    let fit = fitVarieteSites(d, vus, { resolve, id: idOf, garder, accepte, metier: oc.metier });
-    const pieces = fitVarietePieces(fit.d, vus, { siteVu: siteVuDe, candidats, accepte, id: idOf, garder, metier: oc.metier });
-    if (pieces.changed.length) fit = fitVarieteSites(pieces.d, vus, { resolve, id: idOf, garder, accepte, metier: oc.metier });
-    if (fit.changed.length || pieces.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } }
-    // Second passage, seulement si la règle n'est toujours pas tenue (essai réel du 18 novembre 2026 : trois conceptions
-    // payées refusées parce que chaque remplacement possible ajoutait une remarque d'ordre). La variété est la règle
-    // absolue du propriétaire : un remplacement est gardé dès qu'il ne casse aucune règle du thème ET qu'il rapproche
-    // de la règle ; la remarque d'ordre qu'il peut ajouter n'est pas bloquante (dite dans « à revoir », puis reprise par
-    // les passages du rythme et des allures).
-    if (varieteSitesGaps({ ...siteVuDe(d), metier: oc.metier }, vus, { seule: seuleDans(d) }).length) {
-      const ecart = (x: Design) => ecartVariete({ ...siteVuDe(x), metier: oc.metier }, vus, { seule: seuleDans(x) });
-      let courant = ecart(d);
-      const rapproche = (x: Design) => { const r = check(x); if (r.rules.length || !r.t) return false; const e = ecart(x); if (e >= courant) return false; courant = e; return true; };
-      let fit2 = fitVarieteSites(d, vus, { resolve, id: idOf, garder, accepte: rapproche, metier: oc.metier });
-      const pieces2 = fitVarietePieces(fit2.d, vus, { siteVu: siteVuDe, candidats, accepte: rapproche, id: idOf, garder, metier: oc.metier, tours: 80 });
-      if (pieces2.changed.length) fit2 = { d: pieces2.d, changed: [...fit2.changed, ...pieces2.changed] };
-      if (fit2.changed.length) { const again = check(fit2.d); if (!again.rules.length && again.t) { d = fit2.d; c = again; } }
-    }
-    const reste = varieteSitesGaps({ ...siteVuDe(d), metier: oc.metier }, vus, { seule: seuleDans(d) });
-    if (reste.length) return { ok: false, result: { ok: false, summary: L(`Conception refusée : le site ressemblerait trop à un site déjà fait par le Studio (${reste.join(" ; ").slice(0, 400)}). Rien n'est enregistré.`, "Design refused: too close to an existing site."), hint: "Dis-le honnêtement au client avec le coût réel ; ne relance rien de payant sans son accord." } };
-  }
-  // Refaire le site : l'ouverture de l'accueil ne reprend jamais la disposition de l'actuelle (essai réel du 18 novembre
-  // 2026 : même pièce, même disposition, même premier écran). Une autre disposition de la même pièce, sinon c'est dit.
-  if (ancien) {
-    const home = d.pages.find((pg) => pg.key === "home"), avant = ancien.vu.pages.home?.[0];
-    const premier = home?.sections[0];
-    if (home && premier && avant) {
-      const id = (() => { try { return ref(premier.section); } catch { return premier.section; } })();
-      const meme = () => `${id}:${(() => { try { return validConstruction(id, home.sections[0].construction) ?? ""; } catch { return home.sections[0].construction ?? ""; } })()}` === avant;
-      if (meme()) {
-        for (const cc of (() => { try { return constructionsOf(id).map((x) => x.key); } catch { return []; } })()) {
-          if (`${id}:${cc}` === avant) continue;
-          const x: Design = JSON.parse(JSON.stringify(d));
-          x.pages.find((pg) => pg.key === "home")!.sections[0].construction = cc;
-          const r = check(x);
-          if (!r.rules.length && r.t) { d = x; c = r; break; }
-        }
-      }
-    }
-  }
-  // Le rythme : deux dispositions pareilles à la suite, réglé par un échange de place quand il ne crée aucun autre défaut.
-  { const fit = fitRythme(d, facts); if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } } }
-  // Une même allure jamais deux fois sur une page (18 novembre 2026) : la seconde est remplacée par une pièce du même
-  // moment d'une autre allure, puis le rythme est revu. Aucune porte de sortie.
-  {
-    const fit = fitFormes(d, facts, { candidats, accepte: (x) => { const r = check(x); return !r.rules.length && !!r.t; } });
-    if (fit.changed.length) { const again = check(fit.d); if (!again.rules.length && again.t) { d = fit.d; c = again; } }
-    const r2 = fitRythme(d, facts); if (r2.changed.length) { const again = check(r2.d); if (!again.rules.length && again.t) { d = r2.d; c = again; } }
-  }
-  // Dernier passage sans IA, après tout ce qui déplace ou remplace des pièces : chaque page prend la signature de sa
-  // famille (fonds, alignement) et le signe de la marque est complet. Aucune porte de sortie.
-  {
-    const sig = fitSignature(d, (x) => { try { return ref(x); } catch { return x; } });
-    const sg = sig.d.tenue && sig.d.famille ? fitSigne(sig.d.tenue, sig.d.famille, p.brand?.name || p.name || "") : null;
-    const x = sg?.changed.length ? { ...sig.d, tenue: sg.t } : sig.d;
-    if (sig.changed.length || sg?.changed.length) { const again = check(x); if (!again.rules.length && again.t) { d = x; c = again; } }
-  }
+  { const refus = sansIA(); if (refus) return refus; }
   if (c.rules.length || !c.t) return { ok: false, result: { ok: false, summary: L(`Conception refusée par le contrôle : ${c.rules.join(" ; ")}. Rien n'est enregistré.`, "Design refused."), hint: "Dis-le honnêtement au client avec le coût réel ; propose de corriger avec custom.structure (gratuit) à partir de la conception, sans rien relancer de payant sans son accord." } };
   // Conception gardée dans le thème : parcours de chaque page et intention de chaque section.
   for (const pg of c.t.pages) {

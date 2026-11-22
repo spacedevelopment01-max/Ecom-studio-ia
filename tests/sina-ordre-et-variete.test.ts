@@ -584,7 +584,9 @@ describe("la conception de bout en bout, IA simulée", async () => {
       // La signature de la famille et le signe de la marque (17 novembre 2026) : dits au concepteur, contrôlés, rendus à sa
       // reprise, puis posés sans IA (fonds de section de la famille, signe complété) ; rien n'en reste « à revoir ».
       expect(calls[0].system).toContain("RÉGLAGES DE CHAQUE SECTION");
-      expect(calls[2].prompt).toMatch(/signe : le signe de la marque n'a pas de forme/);
+      // Depuis l'audit du site du 22 novembre 2026 (6.2), le Studio pose le signe lui-même AVANT de décider la reprise :
+      // ce point ne part plus à la reprise payée du concepteur.
+      expect(calls[2].prompt).not.toMatch(/signe : le signe de la marque n'a pas de forme/);
       expect(r.t.tenue).toMatchObject({ signeForme: "couture" });
       expect(r.t.pages.find((x) => x.key === "home")!.sections.filter((x) => x.reglages?.fond === "doux").length).toBeGreaterThanOrEqual(2);
       expect(r.left.join("\n")).not.toMatch(/^(signature|signe) : /m);

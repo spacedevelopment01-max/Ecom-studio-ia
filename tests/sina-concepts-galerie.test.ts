@@ -153,7 +153,7 @@ describe("contrôle de chaque photo créée au montage du thème sur mesure", as
   it("une photo ratée au contrôle n'est jamais posée : la photo d'exemple reste, le défaut est signalé", async () => {
     const G = await import("@/lib/syna-agent/custom-theme/gallery");
     const src = (await import("node:fs")).readFileSync((await import("node:path")).join(process.cwd(), "src/lib/syna-agent/custom-theme/brand.ts"), "utf8");
-    expect(src).toMatch(/checkCreatedImage\([^]*ratée au contrôle[^]*non posée, à refaire avec ton accord[^]*continue;/);
+    expect(src).toMatch(/checkCreatedImage\([^]*ratée au contrôle[^]*non posée, à refaire avec ton accord[^]*return;/); // une photo à la fois dans `unePhoto` (photos créées trois à la fois)
     // Verdict : texte en trop, produit coupé, personne sans accord → défauts en mots simples.
     G.galleryDeps.check = async () => ({ productMatches: true, productWhole: false, texts: [], extraText: ["SOLDES"], people: true, notes: ["bande blanche en bas"] });
     try {
