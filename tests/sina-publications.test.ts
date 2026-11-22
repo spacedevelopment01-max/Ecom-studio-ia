@@ -214,7 +214,8 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     const est: any = await fr(() => create.estimate!(ctx, args));
     expect(est.maxMicro).toBeGreaterThanOrEqual(est.probableMicro);
     expect(est.probableMicro).toBeGreaterThan(0);
-    expect(est.label).toMatch(/3 publications créées pour instagram, facebook \(6 images\)/);
+    // Une image par format, pas par réseau (22 novembre 2026) : Instagram et Facebook, en 4:5, partagent la leur.
+    expect(est.label).toMatch(/3 publications créées pour instagram, facebook \(3 images, la même pour les réseaux au même format\)/);
     const made: any = await fr(() => create.run(ctx, args));
     expect(made.ok, made.summary).toBe(true);
     const created = J.journeyOf(cid).posts!.created!;
@@ -230,6 +231,17 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     expect(job.type).toBe("social.v2.produce");
     expect(json<any>(job.payload, {})).toMatchObject({ projectId: p.id, allowPaid: true, approvedEstimateMicro: est.probableMicro, maxCostEur: est.maxMicro / 1e6 });
     expect(json<any>(job.payload, {}).ids.sort()).toEqual([...created.postIds].sort());
+    // Le moteur paie une image par groupe : la seconde adaptation, au même format, reprend la même (gratuite).
+    const { estimateProduction, cleDePartage } = await import("@/lib/social-v2/production");
+    const { loadProject } = await import("@/lib/projects");
+    const devis = estimateProduction(loadProject(p.id), created.postIds, { estimate: () => 100, probable: () => 60, aiActive: true }, { allowPaid: true, aiImages: 60 });
+    expect([devis.paid, devis.free, devis.estimateMicro]).toEqual([3, 3, 180]);
+    expect(await fr(() => create.estimate!(ctx, create.args.parse({ networks: ["instagram", "facebook", "linkedin"] })))).toMatchObject({ label: expect.stringMatching(/\(6 images, la même pour les réseaux au même format\)/) });
+    const autre = { id: "x", network: "instagram", format: "image", title: "t", caption: "c", pillar: null, objective: null, headline: "Titre", scheduled_at: null, group_id: "g" } as any;
+    expect(cleDePartage(autre)).toBe(cleDePartage({ ...autre, network: "facebook", caption: "autre texte" }));
+    expect(cleDePartage({ ...autre, headline: "Autre titre" })).not.toBe(cleDePartage(autre));
+    expect(cleDePartage({ ...autre, aspect: "1:1" })).not.toBe(cleDePartage(autre));
+    expect(cleDePartage({ ...autre, group_id: null })).toBeNull();
     // Pas deux fois : les publications de ce plan existent déjà.
     expect(await fr(() => create.run(ctx, args))).toMatchObject({ ok: false, summary: expect.stringMatching(/déjà été créées/) });
   });

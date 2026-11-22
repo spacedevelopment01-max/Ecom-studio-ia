@@ -1,6 +1,6 @@
 import{HttpError}from '../auth';
 import{imageBindingHash,pinImageAsset}from '../image-v2/request-binding';import{acquiredPublicationCopyReview}from './publication-copy-policy';
-import{matchesPostAspect}from './post-aspect';
+import{matchesPostAspect,postVisualAspect}from './post-aspect';
 import {nativeSocialSubject}from './native-subject';
 import {loadProject}from '../projects';
 import { assertContentAlignment } from "../marketing-strategy";
@@ -110,6 +110,17 @@ export const productionPost=(pid:string,postId:string)=>selectRows(pid,[postId])
 const productionInputToken=(p:Project,row:Row)=>stableHash('social-production-confirmed-input-1',{row,context:row.nativeBinding?nativeSocialSubject(p,row,false)?.digest:{identity:p.brand,settings:p.settings,strategy:p.strategy,business:p.business,product:p.product,catalog:p.catalog,services:p.services}});
 export const productionInputVersions=(projectId:string,ids:string[])=>{const p=loadProject(projectId);return Object.fromEntries(selectRows(projectId,ids).map(row=>[row.id,productionInputToken(p,row)]));};
 
+/**
+ * Une seule image par format dans un groupe (22 novembre 2026, audit des coûts) : les adaptations d'une même
+ * publication pour d'autres réseaux (même `group_id`) qui demandent le même format (Instagram et Facebook en 4:5)
+ * reçoivent la même image, payée et contrôlée une fois ; chacune garde son propre texte. Les textes posés sur l'image
+ * (titre, points) doivent être les mêmes ; sinon chaque réseau a la sienne.
+ */
+export function cleDePartage(r: PostBrief & { group_id?: string | null }): string | null {
+  if (!r.group_id || r.format !== "image" || r.nativeBinding) return null;
+  return stableHash("image-partagee-1", { groupe: r.group_id, format: postVisualAspect(r), titre: r.headline, demande: r.request ?? null, sujet: r.subject ?? null, editorial: r.editorial ?? null });
+}
+
 /** Les `n` premières publications en image (dans l'ordre du calendrier) : celles dont le visuel est fait par l'IA. */
 export function aiImageIds(rows: { id: string; format: string }[], n: number | null | undefined): Set<string> {
   return new Set(n ? rows.filter((r) => !VIDEO_FORMATS.has(r.format)).slice(0, n).map((r) => r.id) : []);
@@ -121,11 +132,16 @@ export function estimateProduction(p: Project, ids: string[], deps: Pick<SocialD
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const allowPaid = opts.allowPaid && deps.aiActive;
   const aiIds = aiImageIds(rows, opts.aiImages);
+  const partages = new Set<string>();
   const lines = rows.map((r) => {
     const own=p.business==='services'?contentStrategy(p.id,'post',r.id):null;
     const scopedPools=own?{image:pools.image.filter(a=>mediaAngleMatches(a,p.id,own)),video:pools.video.filter(a=>mediaAngleMatches(a,p.id,own))}:pools,ownPools={image:scopedPools.image.filter(a=>matchesNativeOffer(a,r,p)),video:scopedPools.video.filter(a=>matchesNativeOffer(a,r,p))};
     // The quote and execution use the same angle-compatible stock; no false free reuse.
-    const m = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: opts.aiBackground }, ownPools);
+    const m0 = pick(r, { allowPaid: allowPaid && (!opts.aiImages || aiIds.has(r.id)), ai: aiIds.has(r.id), bg: opts.aiBackground }, ownPools);
+    // Même image qu'une adaptation déjà payée du même groupe, au même format : rien de plus à payer.
+    const cle = m0.method === "ai_post" ? cleDePartage(r) : null, partagee = !!cle && partages.has(cle);
+    if (cle) partages.add(cle);
+    const m = partagee ? { method: "library" as const, paid: false } : m0;
     const kind = m.method === "video_v2" ? "video" : m.method === "ads_v2" ? "ad" : m.method === "ai_post" ? "ai_post" : "image";
     let units=1;try{units=publicationUnits(r);}catch{units=0;}
     return { postId: r.id, method: m.method, paid: m.paid, estimateMicro: m.paid ? units*probableOf(deps, kind) : 0, capMicro: m.paid ? units*deps.estimate(kind) : 0 };
@@ -164,6 +180,8 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
   const pools = { image: libraryPool(p.id, "image"), video: libraryPool(p.id, "video") };
   const used = new Map<string, number>();
   const aiIds = aiImageIds(rows, o.aiImages);
+  /** Image déjà créée et gardée pour une adaptation du même groupe, au même format (`cleDePartage`). */
+  const partagees = new Map<string, string>();
   const res: ProductionResult = { produced: 0, skipped: 0, failed: 0, spentMicro: 0, stoppedByCap: false, notes, byMethod: {} };
   if(changed.size){res.failed=changed.size;notes.push('Un brouillon a changé ou disparu depuis la confirmation. Aucune acquisition pour cette ancienne version.');}
   let done = 0;
@@ -180,7 +198,10 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
       if(o.publicationQuote&&o.publicationQuote.postId!==r.id)throw new Error('Le devis ne désigne pas ce brouillon.');
       if(r.nativeBinding){if(needsVideo(r)||r.format==='text')throw new Error('Cette production ciblée raccorde les images et carrousels seulement. Texte et vidéos restent conservés dans leurs outils natifs ; aucun appel image détourné.');forGeneration=m.method==='ai_post';native=nativeSocialSubject(loadProject(p.id),o.publicationQuote&&forGeneration?{...r,request:o.publicationQuote.instruction,nativeBinding:o.publicationQuote.binding}:r,forGeneration);}
       assertContentAlignment(p.id, "post", r.id);
-      if (m.method === "none") {
+      const cle = !exact && !o.publicationQuote && m.method === "ai_post" ? cleDePartage(r) : null, deja = cle ? partagees.get(cle) : undefined, dejaAsset = deja ? getAsset(deja) : null;
+      if (dejaAsset && !dejaAsset.deleted_at && dejaAsset.status !== "rejected" && matchesPostAspect(dejaAsset, r)) {
+        out = { assetId: dejaAsset.id, costMicro: 0, by: "library" };
+      } else if (m.method === "none") {
         out = { assetId: null, costMicro: 0, by: "local", note: r.editorialData?.initialCreative ? "Publication initiale : utilisez le suivi des vingt créations pour reprendre les seules créations manquantes, sans doublon." : `publication ${r.id.slice(0, 6)} : ${WAITING_AI}` };
       } else if (m.method === "library") {
         const pool = needsVideo(r) ? ownPools.video : ownPools.image.filter(a=>aiFinal(a)&&matchesEditorial(a,r));
@@ -218,6 +239,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
       continue;
     }
     used.set(out.assetId, (used.get(out.assetId) ?? 0) + 1);
+    { const cle = m.method === "ai_post" ? cleDePartage(r) : null; if (cle && !partagees.has(cle)) partagees.set(cle, out.assetId); }
     const media=out.assetIds??[out.assetId];
     if(r.format==="carousel" && (media.length<2 || new Set(media).size!==media.length)){res.failed++;notes.push("Carrousel incomplet : plusieurs images distinctes et ordonnées sont requises.");continue;}
     if(media.some(aid=>{const a=getAsset(aid);return !a||a.project_id!==p.id||a.deleted_at||a.status==="rejected";})){res.failed++;notes.push("Média indisponible : version précédente conservée.");continue;}
