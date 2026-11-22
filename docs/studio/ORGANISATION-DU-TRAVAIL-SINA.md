@@ -157,6 +157,29 @@ oublier ».
   - la règle des questions du 19 novembre.
 - « Les essais complets » reste en pause (Nadia avant sa carte de marque), jusqu'à ce que les économies soient faites.
 
+### L'atelier d'images et de vidéos (demande du propriétaire, rappelée le 22 novembre 2026)
+
+- Ses mots : « J'avais aussi demandé à ce qu'on construise dans le studio une plateforme comme Higgsfield pour la
+  création d'image et vidéo pour aider dans le développement de SINA et apporter aux clients un truc en plus dans le
+  studio, à voir pour s'en servir dans les étapes de SINA ».
+- Cette demande n'était écrite dans aucun document du chef d'orchestre ; elle l'est maintenant. Seule trace dans le code :
+  des adaptateurs vidéo écrits mais jamais vérifiés (`docs/studio/inventaire/4-communication.md`).
+- Recherche lancée (`docs/studio/recherches-2026-11-22/08-atelier-images-et-videos.md`). Ensuite : ce que l'atelier
+  contiendra, son coût, et son usage dans chaque étape de SINA, puis la construction.
+
+### Recherches du 22 novembre 2026
+
+Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches »), dans
+`docs/studio/recherches-2026-11-22/` :
+1. thèmes sur mesure ;
+2. mise en ligne ;
+3. publications ;
+4. publicités ;
+5. suivi dans la durée ;
+6. vidéos ;
+7. calendrier de publication (oublié au départ, ajouté à sa demande) ;
+8. atelier d'images et de vidéos.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
