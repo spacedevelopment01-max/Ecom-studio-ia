@@ -265,7 +265,7 @@ describe("Router V2 : manuel inchangé, automatique multifournisseur", async () 
   it("mode manuel (défaut) : routage actuel des clients inchangé", () => {
     expect(route({ task: "copywriting", ...env })).toMatchObject({ provider: "anthropic", model: "claude-sonnet-5-5", effort: "high" });
     expect(route({ task: "strategy", ...env })).toMatchObject({ model: "claude-opus-5-5" });
-    expect(route({ task: "classification", ...env })).toMatchObject({ model: "claude-haiku-4-5" });
+    expect(route({ task: "classification", ...env })).toMatchObject({ model: "claude-haiku-5-5" });
   });
 
   it("automatique : jamais un modèle d'un niveau inférieur à celui de la tâche", () => {

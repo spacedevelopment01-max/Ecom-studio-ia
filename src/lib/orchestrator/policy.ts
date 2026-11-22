@@ -34,7 +34,9 @@ export type TaskPolicy = {
 
 /** Modèle par défaut de chaque niveau, pour le texte (le reste passe par les capacités). */
 export const TEXT_MODEL_BY_TIER: Record<Exclude<Tier, "local">, string> = {
-  light: "claude-haiku-4-5",
+  // Haiku 5.5 depuis le 22 novembre 2026 (dix fois moins cher que Haiku 4.5, meilleur) : mêmes tâches qu'avant, le tri
+  // et le classement ; aucune tâche où SINA décide, conseille ou juge ne passe sur ce niveau.
+  light: "claude-haiku-5-5",
   standard: "claude-sonnet-5-5",
   strong: "claude-opus-5-5",
 };

@@ -153,7 +153,7 @@ describe("Phase 3A — intention, plan, routeur", async () => {
   // ------------------------------------------------------------------ routeur
 
   it("tâche simple → modèle approprié ; créative complexe → modèle fort d'emblée ; sans IA (Découverte) → moteur local", () => {
-    expect(o.route({ task: "classification", ...env })).toMatchObject({ mode: "llm", model: "claude-haiku-4-5" });
+    expect(o.route({ task: "classification", ...env })).toMatchObject({ mode: "llm", model: "claude-haiku-5-5" });
     expect(o.route({ task: "classification", difficulty: "simple", ...env })).toMatchObject({ mode: "local", reason: "deterministic local task" });
     expect(o.route({ task: "theme_edit", difficulty: "simple", ...env })).toMatchObject({ mode: "local" });
     expect(o.route({ task: "quality_control", ...env })).toMatchObject({ model: "claude-sonnet-5-5", effort: "low" });
@@ -162,16 +162,17 @@ describe("Phase 3A — intention, plan, routeur", async () => {
     // Demande complexe d'une tâche standard : directement le niveau fort, pas d'essai faible d'abord.
     expect(o.route({ task: "copywriting", difficulty: "complex", ...env })).toMatchObject({ model: "claude-opus-5-5", escalation: false, reason: "complex request: strongest permitted model directly" });
     expect(o.route({ task: "logo_symbol", aiActive: false, available: env.available })).toMatchObject({ mode: "local", reason: "AI not active for this account: local engine" });
-    expect(o.route({ task: "photo_triage", inputType: "image", ...env })).toMatchObject({ model: "claude-haiku-4-5" });
+    expect(o.route({ task: "photo_triage", inputType: "image", ...env })).toMatchObject({ model: "claude-haiku-5-5" });
   });
 
   it("aucun cheap-first aveugle : routage par défaut identique à celui d'avant ; un coût observé plus bas ne fait pas descendre de niveau", () => {
     const before: Record<string, [string, string, string?]> = {
       vision_analysis: ["anthropic", "claude-opus-5-5", "medium"], strategy: ["anthropic", "claude-opus-5-5", "high"], copywriting: ["anthropic", "claude-sonnet-5-5", "high"],
+    // Niveau léger passé de Haiku 4.5 à Haiku 5.5 le 22 novembre 2026 (mêmes tâches : tri et classement).
       theme_design: ["anthropic", "claude-opus-5-5", "high"], theme_edit: ["anthropic", "claude-opus-5-5", "medium"], theme_custom: ["anthropic", "claude-opus-5-5", "high"],
-      quality_control: ["anthropic", "claude-sonnet-5-5", "low"], photo_triage: ["anthropic", "claude-haiku-4-5"], cutout_check: ["anthropic", "claude-sonnet-5-5", "low"],
+      quality_control: ["anthropic", "claude-sonnet-5-5", "low"], photo_triage: ["anthropic", "claude-haiku-5-5"], cutout_check: ["anthropic", "claude-sonnet-5-5", "low"],
       logo_symbol: ["anthropic", "claude-opus-5-5", "medium"], social_planning: ["anthropic", "claude-opus-5-5", "medium"], social_copy: ["anthropic", "claude-sonnet-5-5", "medium"],
-      classification: ["anthropic", "claude-haiku-4-5"], video_direction: ["anthropic", "claude-opus-5-5", "medium"], art_direction: ["anthropic", "claude-opus-5-5", "medium"],
+      classification: ["anthropic", "claude-haiku-5-5"], video_direction: ["anthropic", "claude-opus-5-5", "medium"], art_direction: ["anthropic", "claude-opus-5-5", "medium"],
       ad_creative: ["anthropic", "claude-opus-5-5", "medium"], blog_topics: ["anthropic", "claude-sonnet-5-5", "low"], blog_writing: ["anthropic", "claude-sonnet-5-5", "medium"],
       image_generation: ["openai", "gpt-image-1"], video_generation: ["google", "veo-3.0-generate-001"],
     };
