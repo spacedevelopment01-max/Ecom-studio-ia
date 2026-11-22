@@ -262,6 +262,30 @@ Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches
   modèle moins cher servirait sans décider, et le propriétaire tranche.
 - On ne s'arrête qu'avec un coût de projet mesuré avant et après, en vrai.
 
+### Le coût d'un projet : résultats (22 novembre 2026, après-midi)
+
+- Relevé réel de Nadia (21 réponses, 1,154 €) : 58 % du coût venait de la conversation repayée sans cache. La mise en
+  cache du fil a été corrigée depuis (`920e7482`).
+- Audit du code (`docs/studio/couts/01`) : un projet complet est compté environ 22 €, dont :
+  - la conversation, environ 6,50 € ;
+  - les images, environ 46 images pour 5,50 à 6 € ;
+  - le site, environ 7 €, dont 5 € de textes.
+- Corrections envoyées à « SINA évolue », sans changer de modèle là où SINA décide :
+  - effort constant dans le fil ;
+  - mémoire d'une heure ;
+  - une image par format ;
+  - consigne de l'étape mise en cache ;
+  - résumé du client en cache ;
+  - Haiku 5.5 au lieu de 4.5 pour le niveau léger ;
+  - images comptées au jeton (0,12 $ n'était qu'une borne) ;
+  - pas d'aperçus inutiles ;
+  - formats dessinés directement.
+- Estimation (calculs, à mesurer) : environ 22 € → environ 13 € par projet.
+- En attente de lui :
+  - laisser le différé du site attendre plus longtemps (environ −1,30 €, site livré plus tard) ;
+  - l'essai d'un centime pour le différé des images ;
+  - relancer Nadia pour mesurer en vrai.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
