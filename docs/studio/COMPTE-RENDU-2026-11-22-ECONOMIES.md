@@ -403,3 +403,89 @@ référence (50 sections, 10 pages, 15 photos, environ 7 € aujourd'hui). [À c
 - *Rapport sur le texte* : le reste était déjà fait (fil en mémoire, mémoire d'une heure, différé, petit modèle pour le
   mécanique). Le point « refaire au niveau élevé plutôt que deux fois » ne s'applique pas : la marque n'a déjà qu'une
   reprise.
+
+## Les publications et les publicités
+
+Tout a été vérifié par des essais simulés, sans aucun appel payant ni publication réelle. Les gains sont **estimés**
+(audit des coûts du 22 novembre 2026), pas mesurés sur une facture.
+
+**Ce qui change pour le client, et l'argent gagné :**
+
+- **Le titre que le client a accepté est celui de l'image.** La stratège écrit maintenant, dans le plan des trois
+  publications, le concept de chaque image (idée, composition, cadrage, lieu, lumière, matières, lettres, bouton). Le
+  juge le relit avec le reste. À la création, ce concept sert tel quel : plus de second rédacteur qui réécrivait titre
+  et scène sans que personne le relise. Gain : environ 0,14 € par projet. Un plan d'avant, sans concept, garde l'ancienne
+  façon.
+- **Une campagne cohérente d'un format à l'autre.** Pour une publicité, un seul concept d'image par idée, partagé par ses
+  formats (fil, carré, récit vertical). Chaque format garde son image et sa relecture. Gain : environ 0,30 € par
+  campagne de trois idées. Le devis de la campagne en tient compte.
+- **Une relecture plus légère, sans rien perdre.** La photo du produit et le logo sont joints une seule fois (la version
+  réduite n'était qu'une copie). Les trois dernières publications, qui ne servent qu'à juger la variété, arrivent en
+  petites vignettes. La consigne envoyée au modèle d'images est remplacée par son empreinte. Les règles fixes du
+  relecteur passent en tête, gardées en mémoire. L'image relue reste en pleine taille. Gain : environ 0,02 € par
+  relecture, soit environ 0,64 €, 1,47 € et 2,30 € par mois (forfaits à 69 €, 99 € et 169 €).
+- **Les visuels du pilote en différé.** Les visuels de « Ma communication automatique » servent un à trois jours plus
+  tard : leur concept et leurs relectures partent maintenant en différé, à moitié prix, avec une heure de patience pour
+  la tâche entière. Au-delà, le reste part en direct. Les visuels que le client lance lui-même restent en direct. Gain :
+  jusqu'à 0,74 €, 1,49 € et 2,23 € par mois sur le concept, et la moitié des relectures de ces visuels.
+- **Une réponse coupée n'est plus redemandée à l'identique.** Avant, une réponse coupée était redemandée avec la même
+  place (8 000 jetons), deux fois de suite. Elle repart maintenant avec deux fois plus de place que celle vraiment
+  envoyée. Le devis suit la même règle. Gain : environ 0,10 € à chaque réponse coupée, et moins d'attente. Le nombre de
+  réponses coupées reste à mesurer.
+- **Petits gains** : la reprise du plan des publications garde la consigne de la stratège, donc ses cahiers sont relus
+  en mémoire au lieu d'être réécrits (environ 0,045 € par plan). L'identité et la stratégie ne sont plus envoyées deux
+  fois au rédacteur des images (environ 0,08 €, 0,16 € et 0,24 € par mois). Le pilote ne réinscrit plus l'estimation
+  d'une tâche déjà lancée : le plafond de la semaine ne paraît plus atteint alors que rien n'a été payé.
+- **« Ta journée est prête » et « le point du mois » sont construits, surtout par le code.** La journée se compose sans
+  aucun appel à l'IA, à partir du calendrier (publication du jour, réseau, heure, texte à copier). Le point du mois compte
+  les chiffres par le code. Un chiffre que le Studio ne peut pas lire est écrit « non disponible ». Un seul appel au
+  modèle le plus fort, en différé, écrit le bilan et trois actions. Aucun appel quand rien n'a changé, et un bilan qui
+  contient un nombre absent des chiffres comptés est refusé. Coût prévu : environ 5 centimes par mois et par client, au
+  lieu d'environ 1,40 € pour un message quotidien écrit par l'IA. Ils ne sont **pas encore allumés** (ni écran, ni
+  horaire) : voir plus bas.
+- **La fête des mères** suit enfin la loi : quand le dernier dimanche de mai est la Pentecôte, elle passe au premier
+  dimanche de juin (prochains cas : 2034 et 2039).
+
+**La relecture par le modèle le plus fort (sa règle) : ce qu'elle coûte en plus.** Chaque image des publications et des
+publicités est maintenant relue par le modèle le plus fort, au niveau élevé, une image à la fois, comme les photos du
+site. Avant, c'était le modèle moyen, au niveau faible. Les devis et les prix montrés comptent ce nouveau relecteur.
+Coût en plus, par mois, après l'allègement de la relecture et avant le différé du pilote :
+
+| Forfait | Relectures par mois (1,3 essai par image) | En plus par mois |
+|---|---|---|
+| 69 € (30 publications) | environ 39 | environ **+1,58 €** |
+| 99 € (60 publications et 1 campagne) | environ 90 | environ **+3,63 €** |
+| 169 € (90 publications et 2 campagnes) | environ 140 | environ **+5,69 €** |
+
+Ce sont les chiffres de l'audit (environ 4 centimes de plus par relecture). Recalculé sur le code : si le relecteur
+réfléchit plus longuement au niveau élevé (3 000 jetons de réponse au lieu de 2 000), cela monte à environ +2,54 €,
++5,85 € et +9,15 €. Avec le différé du pilote, la part des publications coûte jusqu'à moitié moins : environ +0,80 € à
++1,30 €, +2,05 € à +3,30 € et +3,30 € à +5,35 €. Le vrai chiffre se lira dans Administration › Consommation après un
+essai.
+
+**Pas fait, en attente :**
+
+- *Allumer « Ta journée est prête » et « le point du mois »* (écran, notification, horaire chaque mois) : c'est le lot 7,
+  et cela engage son argent (environ 5 centimes par mois et par client). **Décision du propriétaire nécessaire.**
+- *Les angles en réserve pour les publicités* : le moteur des publicités refait ses propres « angles » (des leviers) au
+  lieu de prendre les trois types de clients déjà payés. Une publicité par type de client changerait ce que voit le
+  client. **Décision du propriétaire**, au lot des publicités.
+- *« Tout dans l'image par OpenAI » ou « la photo par OpenAI, les mots posés par le Studio »* (rapport sur la composition
+  des publications) : cela revient sur sa règle des images 100 % IA. **Décision du propriétaire**, après un essai
+  gratuit sur des photos déjà payées.
+- *Les fins de légende sans ordre* (questions et invitations plutôt que « commente », « partage ») et *0 à 3 mots-dièse
+  sur Instagram* : les études disent que la question marche mieux, mais cela change les textes que le client lit, et
+  touche sa règle « aucun ordre donné au lecteur ». **Décision du propriétaire.**
+- *Publicités* : le budget d'essai conseillé (un seul ensemble de 5 à 20 € par jour au lieu de deux ensembles), le titre
+  Meta à 27 caractères, le tutoriel des publicités qui vouvoie encore le client, le marqueur dans les liens. Ce sont des
+  changements visibles ou un conseil sur l'argent de ses clients. **Décision du propriétaire**, au lot des publicités.
+- *Les trois publications de la marque finie offertes au calendrier* (gratuit, trois publications de plus) : **décision
+  du propriétaire.**
+- *Le différé des images d'OpenAI* : il demande d'abord un essai d'une seule image (environ 1 centime). **Essai payant,
+  avec son accord.**
+- *Les angles : la leçon commune en tête, gardée en mémoire* (environ 0,04 € par tour) : pas fait. Le gain est
+  incertain (sous un certain nombre de mots, le fournisseur ne garde rien en mémoire), et il faut changer la façon dont
+  partent tous les appels.
+- *Le calendrier des temps forts par métier, les événements locaux, « ta semaine est prête » le lundi* (rapport sur le
+  calendrier et les légendes) : ce sont de nouvelles fonctions visibles, à construire au lot des publications
+  automatiques, avec son accord.
