@@ -298,3 +298,57 @@ Rien n'a été dépensé ; chaque point a son essai.
   juste. Une coupure après le début de la réponse garde le plafond, rendu après rapprochement.
 - **Le taux du dollar** : 0,86 par défaut dans le code. Le réglage du Studio en ligne se lit dans Administration ›
   Fournisseurs IA. [À compléter : le taux réglé en ligne, à vérifier par le propriétaire.]
+
+## La marque
+
+Rien n'a été dépensé ; chaque point a son essai. Les gains sont ceux de l'audit, estimés d'après le code.
+[À compléter : gain mesuré au prochain essai réel.]
+
+- **Les recherches sur Internet** : une seule famille par recherche (paroles de clients, concurrents, usages). Les
+  trois recherches partent en même temps. Une page trouvée deux fois n'est lue qu'une fois. Gain : 0,20 à 0,40 €, et la
+  marque arrive 2 à 3 minutes plus tôt.
+- **Une retouche de la signature** ne jette plus le logo, la scène ni le téléphone. Elle ne réécrit pas la direction
+  artistique et ne montre pas de seconde carte. Gain : 0,32 € par retouche.
+- **Un logo refait** :
+  - avant ou après le choix, il ne repaie plus la direction artistique. La ligne « La marque » donnée au dessinateur est
+    écrite par le code, à partir de la planche : ce qu'elle croit, ce contre quoi elle se bat, ce qu'elle fait ressentir
+    et son ton. C'est ce que permet ta règle du 21 novembre. Aucun mot de style de SINA ne peut plus glisser vers lui ;
+  - une image refaite sans nouveaux mots du client reprend la direction d'origine ;
+  - après le choix, le logo refait remplace l'ancien partout : objet, signes, trois publications et téléphone ;
+  - avant le choix, il reçoit les logos des autres planches, avec « je veux un logo complètement différent ».
+
+  Gain : 0,13 € par planche refaite, et 0,07 € après le choix. La carte baisse d'autant.
+- **La reprise d'une planche et les quatre équipes de noms** relisent leur consigne en mémoire au lieu de la réécrire au
+  double du prix. Le chemin de chaque équipe passe à la fin, et les équipes restent séparées. Gain : environ 0,11 €.
+- **Ce qui se mesure est corrigé par le Studio, gratuitement, avant le directeur de création**. Avant, chacun de ces
+  défauts déclenchait une reprise payée de la planche entière :
+  - un fond « blanc » qui n'est pas blanc pur ;
+  - un fond sombre pas assez foncé ;
+  - un contraste sous 4,5:1 ;
+  - un dégradé trop sombre ;
+  - une manière d'ouvrir le site déjà prise ou oubliée ;
+  - un chiffre absent de la fiche, désormais annoncé dans « ce qui reste à prouver ».
+
+  Les mots que le client a corrigés une fois (« X, jamais Y ») sont maintenant contrôlés sur la planche. Gain :
+  0,13 à 0,22 € par reprise évitée.
+- **Le refus du client** est mieux repéré pour le dessinateur du logo : « pas d' », « aucune », « sans », « évite »,
+  « déteste ». Une épreuve au banc le garantit (`refus-du-client-toutes-tournures`).
+- **L'ordre des images** : la grande scène est relue, et refaite s'il le faut, avant le dessin du téléphone qui la
+  reprend. Si aucun logo n'a été gardé, le téléphone n'est pas dessiné à la proposition, et le client le lit : « je te
+  montrerai le haut de ton site avec ton vrai logo si tu choisis cette identité ». Il est dessiné avec le vrai logo à la
+  fin de la marque. Le téléphone ne montre donc jamais une scène refusée ni un autre logo.
+- **Plus de pictogrammes dessinés en code ni de ruban du colis** demandés dans la consigne de la planche. Le nom dessiné
+  de secours est en lettres seules, même sur les planches d'avant.
+- **Refaire des planches sans nouveaux mots du client** reprend les verdicts du juge des noms. Une nouvelle proposition
+  sans ses mots reprend aussi l'étude, les idées et les noms de moins d'un mois, et la carte montre ce prix plus bas.
+  Les noms déjà montrés ne reviennent jamais. Gain : environ 1,60 € par nouvelle proposition.
+
+**Pas fait, en attente :**
+
+- *Limiter à 600 caractères ce que le relecteur des images écrit de ce qu'il voit* (0,05 € par marque). L'audit demande
+  d'abord un essai sur 20 images du carnet des juges, pour vérifier que ses verdicts ne changent pas. Cet essai est
+  payant, environ 0,50 € (estimé). Il attend le oui écrit du propriétaire, et des images du carnet déjà jugées par lui.
+- *L'aperçu des noms avant les planches* : pas fait sans le propriétaire, comme demandé.
+
+Vérifié : `npx tsc --noEmit` sans erreur. Suite complète : 5 843 essais passés, épreuves comprises. Les derniers lots ont
+été vérifiés sur les essais de la marque.
