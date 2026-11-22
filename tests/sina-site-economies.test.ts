@@ -102,3 +102,19 @@ describe("le site : les textes écrits page par page", () => {
     expect(fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8")).toMatch(/promptKey: "syna-custom-page-1"[^\n]*PageWriteSchema, \{ strict: true \}/);
   });
 });
+
+describe("images de la planche : contrôles gratuits avant la relecture payée", () => {
+  it("une image vide ou dans le mauvais sens est refusée sans relecture ; une vraie image ou une vignette passe", async () => {
+    const I = await import("@/lib/syna-agent/brand-images");
+    const uni = await sharp({ create: { width: 1536, height: 1024, channels: 3, background: "#e0d8cc" } }).png().toBuffer();
+    expect(await I.photoVideOuMalFormee(uni, "16:9")).toMatch(/vide/);
+    const bruit = Buffer.alloc(1536 * 1024 * 3); for (let i = 0; i < bruit.length; i++) bruit[i] = (i * 2654435761) % 251;
+    const vraie = await sharp(bruit, { raw: { width: 1536, height: 1024, channels: 3 } }).png().toBuffer();
+    expect(await I.photoVideOuMalFormee(vraie, "16:9")).toBeNull();
+    expect(await I.photoVideOuMalFormee(vraie, "9:16")).toMatch(/format demandé/);
+    const portrait = await sharp(bruit, { raw: { width: 1024, height: 1536, channels: 3 } }).png().toBuffer();
+    expect(await I.photoVideOuMalFormee(portrait, "4:5")).toBeNull(); // dessiné en 2:3 puis recadré : pas une faute
+    const vignette = await sharp({ create: { width: 128, height: 128, channels: 3, background: "#3366cc" } }).png().toBuffer();
+    expect(await I.photoVideOuMalFormee(vignette, "16:9")).toBeNull();
+  });
+});

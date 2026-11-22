@@ -387,6 +387,26 @@ export async function photoTransparente(png: Buffer): Promise<{ transparente: bo
 }
 
 /**
+ * Deux autres contrôles sans IA avant de payer la relecture (rapport sur le coût des images du 22 novembre 2026,
+ * partie 3.4) : une image vide ou presque d'une seule couleur, et une image dans le mauvais sens (paysage, carré, portrait). Seulement sur
+ * une vraie image (512 points au moins de côté) : une vignette n'est pas jugée. Rend la raison, ou null.
+ */
+export async function photoVideOuMalFormee(png: Buffer, aspect: string): Promise<string | null> {
+  try {
+    const meta = await sharp(png).metadata();
+    const w = meta.width ?? 0, h = meta.height ?? 0;
+    if (Math.min(w, h) < 512) return null;
+    const [aw, ah] = aspect.split(":").map(Number);
+    // Le sens seulement (paysage, carré, portrait) : un 4:5 est dessiné en 2:3 puis recadré, ce n'est pas une faute.
+    const sens = (r: number) => (r > 1.1 ? 1 : r < 0.9 ? -1 : 0);
+    if (aw && ah && sens(w / h) !== sens(aw / ah)) return L(`l'image n'a pas le format demandé (${aspect})`, `the image is not in the requested format (${aspect})`);
+    const st = await sharp(png).flatten({ background: "#ffffff" }).resize(64, 64, { fit: "fill" }).stats();
+    if (st.channels.slice(0, 3).every((c) => c.stdev < 4)) return L("l'image est vide, presque d'une seule couleur", "the image is empty, almost a single colour");
+    return null;
+  } catch { return null; }
+}
+
+/**
  * Crée, relit et pose les images d'UNE planche. Rend la route avec `board.images` (seulement les images acceptées),
  * les notes de la chaîne, et ce qui est dit au client pour chaque image non gardée.
  */
@@ -518,6 +538,12 @@ export async function runBoardImages(o: {
         const why = L("une partie de l'image est transparente (brume ou taches) : la photo doit être pleine, d'un bord à l'autre", "part of the image is transparent: the photo must be solid from edge to edge");
         mark(made.get(s)!.id, "rejected", why); made.delete(s); dropped.set(s, why); saidWhy.set(s, SAID.abime);
         notes.push(`${SLOT_LABEL[s].fr} de ${key} refusé(e) sans relecture payée : ${Math.round(t.part * 1000) / 10} % de l'image transparente (contrôle sans IA)`);
+        continue;
+      }
+      const vide = png ? await photoVideOuMalFormee(png, SLOT_ASPECT[s]) : null;
+      if (vide) {
+        mark(made.get(s)!.id, "rejected", vide); made.delete(s); dropped.set(s, vide); saidWhy.set(s, SAID.abime);
+        notes.push(`${SLOT_LABEL[s].fr} de ${key} refusé(e) sans relecture payée : ${vide} (contrôle sans IA)`);
       }
     }
     slots = slots.filter((s) => made.has(s));
