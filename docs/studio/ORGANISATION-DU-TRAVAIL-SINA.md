@@ -301,6 +301,26 @@ Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches
   5. moteur des appels ;
   6. techniques publiées.
 
+### Coûts : les six audits finis et confiés (22 novembre 2026, soir)
+
+- Gains trouvés par projet (estimations, qui se recouvrent en partie) :
+  - conversation : environ 3,50 € ;
+  - site : environ 2 € ;
+  - marque : environ 0,90 € ;
+  - moteur commun : environ 0,70 € ;
+  - angles, publications et publicités : environ 0,30 à 0,80 € ;
+  - techniques publiées : 0,20 à 2,60 €.
+  Par mois courant, sur les publications : −1,48, −3,44 et −5,41 € selon le forfait.
+- Trois écarts à ses règles trouvés et corrigés, même quand ça coûte :
+  - photos du site relues par Haiku ;
+  - images des publications et des publicités relues par Sonnet ;
+  - ratés du Studio débités au client, contraire à « une erreur de SINA est corrigée sans rien compter ».
+- Un risque de panne : modifier le début du fil peut faire échouer une demande sur Opus 5.5. Correction demandée, avec
+  une épreuve.
+- Estimation globale : un projet d'environ 22 € tombe à environ 9 à 11 €. À MESURER en relançant Nadia.
+- Attendent sa décision : réutiliser les images de la planche sur le site ; l'aperçu des noms avant les planches ;
+  les crédits d'API liés à un abonnement (conditions à confirmer).
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
