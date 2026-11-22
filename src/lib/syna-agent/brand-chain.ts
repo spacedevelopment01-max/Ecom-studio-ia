@@ -26,7 +26,7 @@ import { getJsonSetting } from "../settings";
 import { callCostBoundMicro, estimateCallMicro, llmJson } from "../ai/llm";
 import { aiSiteImageHd, photoRequestMaxMicro, withQuotedImageRoute } from "../ai/media-providers";
 import { CostCapReached, withTrace } from "../ai/trace";
-import { webResearch, webSearchQuoteMicro, type WebFinding } from "../ai/web-search";
+import { consigneUneFamille, webResearch, webSearchQuoteMicro, type ResearchCategory, type WebFinding } from "../ai/web-search";
 import { sanitizeSymbolSvg } from "../media/logo-symbol";
 import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
@@ -264,7 +264,7 @@ const RecheckSchema = z.object({ routes: z.array(z.object({ key: z.string().max(
 
 export type ChainAi = {
   /** Recherche sur le web : les pages trouvées (liens vérifiés, places de marché exclues). */
-  research: (id: string, query: string) => Promise<WebFinding[]>;
+  research: (id: string, query: string, /** La seule famille de pages cherchée. */ famille?: ResearchCategory) => Promise<WebFinding[]>;
   /** Appel d'un spécialiste, réponse contrôlée par son schéma. */
   ask: <S extends z.ZodType>(id: string, call: { system: string; prompt: string; schema: S; kind: CallId; prepare?: (raw: unknown) => unknown }) => Promise<z.infer<S>>;
   /** Création d'UNE image par le modèle d'images du Studio (route des images de SINA), avec ses images de référence. */
@@ -310,7 +310,7 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
   const coupe = (kind: CallId, prompt: string) => coupeLeResume(commun, kind, prompt);
   return {
     partage: (brief) => { commun = brief.length >= 400 ? brief : ""; },
-    research: async (id, query) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft }, query))).findings,
+    research: async (id, query, famille) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft, ...(famille ? { consigne: consigneUneFamille(famille) } : {}) }, query))).findings,
     ask: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, ...coupe(c.kind, c.prompt), ...(UNIQUES.has(c.kind) ? { teteUnique: true } : {}), promptKey: `syna-brand-${c.kind}-1`,
       prepare: c.prepare, maxTokens: CALLS[c.kind].max, maxOutputTokens: CALLS[c.kind].max + 6000, usageKey: `${ctx.job.id}:brand:${id}`, deferred,
@@ -609,10 +609,14 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // 1. Comprendre : trois recherches, puis l'étude. Une recherche qui échoue est dite, jamais remplacée ni relancée.
   ctx.progress(0.03, L("J'étudie ton marché", "Studying your market"));
   const study = await ctx.step("brand:study", async (): Promise<Study> => {
+    // Trois recherches indépendantes, une famille chacune, en même temps (la marque arrive plus tôt) ; une page trouvée
+    // deux fois n'est lue qu'une fois.
+    const parFamille: Record<string, ResearchCategory> = { paroles: "customers", concurrents: "competitors", usages: "offer" };
+    const lots = await Promise.all(P.researchQueries(briefFromJourney(j)).map(async (q) => {
+      try { return await ai.research(q.id, q.query, parFamille[q.id]); } catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`recherche « ${q.id} » sans résultat`); return []; }
+    }));
     const findings: WebFinding[] = [];
-    for (const q of P.researchQueries(briefFromJourney(j))) {
-      try { findings.push(...await ai.research(q.id, q.query)); } catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`recherche « ${q.id} » sans résultat`); }
-    }
+    for (const f of lots.flat()) if (!findings.some((x) => sameUrl(x.url, f.url))) findings.push(f);
     if (!findings.length) return { quotes: [], competitors: [], mould: "", substitutes: [], facts: [], notFound: [L("La recherche sur le web n'a rien donné : je n'ai lu aucune parole réelle de clients.", "Web research returned nothing.")], sources: 0, dropped: 0 };
     // Lecture bornée (coût maîtrisé) : les pages de paroles de clients d'abord et en plus long, 45 pages au plus.
     const shownPages = [...findings].sort((x, y) => Number(y.category === "customers") - Number(x.category === "customers")).slice(0, MAX_STUDY_PAGES);
@@ -740,7 +744,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const candidates = [...picks, ...reserves].map((r) => r.name);
     const check = await ctx.step(`brand:verify:${round}`, async () => {
       let findings: WebFinding[];
-      try { findings = await ai.research(`verify-${round}`, P.verifyQuery(candidates, briefFromJourney(j))); } catch (e) { if (e instanceof CostCapReached) throw e; return { done: false as const, checks: [] }; }
+      try { findings = await ai.research(`verify-${round}`, P.verifyQuery(candidates, briefFromJourney(j)), "competitors"); } catch (e) { if (e instanceof CostCapReached) throw e; return { done: false as const, checks: [] }; }
       if (!findings.length) return { done: true as const, checks: [] };
       const r = await ai.ask(`verify-${round}`, { kind: "verify", system: P.VERIFY_SYSTEM, schema: VerifySchema, prompt: `# Noms à vérifier\n${candidates.map((n) => `- ${n}`).join("\n")}\n\n# Pages trouvées\n${findings.map((f) => `${f.url}\n${f.title}\n${f.excerpt}`).join("\n\n")}` });
       // Un nom n'est dit « pris » que sur une page réellement trouvée.

@@ -112,7 +112,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     posts: [{ index: 0, svg: '<svg viewBox="0 0 100 92"><circle cx="70" cy="24" r="14" fill="#FFE98A"/></svg>', ground: "dark" }],
   };
   const fakeAi = (log: { ids: string[]; prompts: Record<string, string>; systems: Record<string, string> }, s: Script = {}) => () => ({
-    research: async (id: string, _query: string) => { log.ids.push(`web:${id}`); return s.web ? s.web(id) : id.startsWith("verify") ? [{ url: "https://annuaire.example/boissons", title: "Marques de boissons", category: "competitors", excerpt: "Annuaire des marques de boissons aux fruits." }] : pages(id); },
+    research: async (id: string, _query: string, famille?: string) => { log.ids.push(`web:${id}`); (log as any).familles = { ...((log as any).familles ?? {}), [id]: famille }; return s.web ? s.web(id) : id.startsWith("verify") ? [{ url: "https://annuaire.example/boissons", title: "Marques de boissons", category: "competitors", excerpt: "Annuaire des marques de boissons aux fruits." }] : pages(id); },
     ask: async (id: string, c: any) => {
       // Le lecteur qui ne sait rien : par défaut il comprend tout, et son appel n'encombre pas les suites d'appels vérifiées.
       if (c.kind === "reader" && !(s as any).reader) return c.schema.parse({ texts: [] });
@@ -180,6 +180,8 @@ describe("SINA — chaîne de création de la marque", async () => {
   it("chaîne complète : les sept temps dans l'ordre, les équipes séparées, la reprise relue", async () => {
     const t = await thread();
     const { log, job } = await chain(t, {}, { fix: () => FIXED_LINE });
+    // Une seule famille de pages par recherche (22 novembre 2026), au lieu de la consigne des angles et de ses quatre familles.
+    expect((log as any).familles).toMatchObject({ paroles: "customers", concurrents: "competitors", usages: "offer", "verify-1": "competitors" });
     expect(log.ids).toEqual(["web:paroles", "web:concurrents", "web:usages", "study", "strategy", "team-langue", "team-mots", "team-univers", "team-verite", "judge-1", "shortlist", "web:verify-1", "verify-1", "direction-1-A", "direction-1-B", "direction-1-C", "review-1", "fix-1-B", "recheck-1"]);
     // Plus d'illustratrice (lot 2) : aucun appel de dessin ni de relecture de dessin, et aucune planche ne porte de
     // dessin en code à la place d'une image (scène, objet, site, signes, publications).
