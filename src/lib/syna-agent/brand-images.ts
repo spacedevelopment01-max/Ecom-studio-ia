@@ -393,6 +393,8 @@ export async function runBoardImages(o: {
   ctx: JobContext; ai: ChainAi; who: { userId: string; projectId: string }; brief: string; kind: "produits" | "services"; route: Route; round: number;
   /** Seulement ces images (les autres images déjà gardées restent telles quelles) ; par défaut, toutes. */
   slots?: ImageSlot[];
+  /** Avant le choix d'une identité (proposition, images d'une planche) : sans logo gardé, le haut du site attend le vrai logo. */
+  proposition?: boolean;
   /** Logos déjà créés dans la même série pour ce client : donnés au dessinateur pour qu'il en fasse un complètement différent. */
   madeLogos?: Buffer[];
   /** Ce que le client a dit de l'image qu'il veut (ses mots, refus compris) : donné au RELECTEUR des images, jamais au
@@ -619,9 +621,30 @@ export async function runBoardImages(o: {
   const logo = currentLogo();
   // 2. La grande scène, puis ce qui porte le logo, puis les publications.
   ctx.progress(0.965, L(`Je crée les images de la planche ${key}`, `Creating the images of board ${key}`));
-  if (wanted.has("hero")) await make("hero", {}, imagePrompt("hero", x, imagery, { logo: false, personnes }));
+  // Rien n'est dessiné sur une image pas encore relue (audit du 22 novembre 2026, 2.11) : la grande scène, que le haut
+  // du site reprend, est relue (et refaite s'il le faut) AVANT lui.
+  const relusTot = new Set<ImageSlot>(["logo"]);
+  if (wanted.has("hero")) {
+    await make("hero", {}, imagePrompt("hero", x, imagery, { logo: false, personnes }));
+    if (made.has("hero") && wanted.has("site") && imagery.site.trim()) {
+      relusTot.add("hero");
+      await review(["hero"], ":hero");
+      for (let attempt = 1; attempt <= MAX_IMAGE_RETRIES && dropped.has("hero") && calls.has("hero") && !capped && !blind; attempt++) {
+        const c = calls.get("hero")!, why = dropped.get("hero")!; dropped.delete("hero");
+        await make("hero", c.refs, c.prompt + fix("hero", why, attempt), `:r${attempt}`);
+        if (made.has("hero")) await review(["hero"], `:hero:r${attempt}`); else dropped.set("hero", why);
+      }
+    }
+  }
+  // Logo dessiné à ce passage et refusé : le haut du site n'est pas dessiné à la proposition (il montrerait un autre logo ou aucun) : il le
+  // sera avec le vrai logo si cette identité est choisie (`siteSansLogo`, repris à la fin de la marque).
+  const siteSansLogo = !!o.proposition && wanted.has("logo") && wanted.has("site") && !!imagery.site.trim() && !currentLogo();
+  if (siteSansLogo) {
+    notes.push(`haut du site de ${key} non dessiné : aucun logo gardé ; il le sera avec le vrai logo si cette identité est choisie`);
+    issues.push(tag(L("je te montrerai le haut de ton site avec ton vrai logo si tu choisis cette identité.", "I will show you your site header with your real logo if you choose this identity.")));
+  }
   // La maquette du haut de l'accueil : le logo et la grande scène lui sont fournis (elle garde l'identité de la planche).
-  if (wanted.has("site") && imagery.site.trim()) {
+  if (siteSansLogo) { /* rien n'est payé pour une image fausse d'avance */ } else if (wanted.has("site") && imagery.site.trim()) {
     const heroKept = x.board.images?.hero, heroBuffer = bufferOf("hero") ?? (() => { const a = heroKept ? getAsset(heroKept.id) : undefined; return a ? assetData(a) : null; })();
     await make("site", { logo: await logoForGround(logo, x), scene: heroBuffer }, imagePrompt("site", x, imagery, { logo: !!logo, personnes }));
   } else if (wanted.has("site")) {
@@ -641,13 +664,14 @@ export async function runBoardImages(o: {
   if (wanted.has("signs") && !skipCarriers && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo, personnes }));
   for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, { logo }, imagePrompt(slot, x, imagery, { logo: !!logo, personnes }));
 
-  await review(IMAGE_SLOTS.filter((s) => s !== "logo" && made.has(s)));
+  const aRelire = IMAGE_SLOTS.filter((s) => !relusTot.has(s) && made.has(s));
+  await review(aRelire, aRelire.length === 1 && relusTot.size > 1 ? `:${aRelire[0]}` : "");
 
   // Une image refusée est refaite avant d'être montrée : deux reprises au plus, avec toutes les raisons de ses refus
   // données au modèle ; à la seconde, la consigne est simplifiée. Les reprises restent dans le plafond déjà accepté par
   // le client. Le logo, lui, est déjà relu et gardé : ce qui le porte n'est jamais refait à cause de lui.
   for (let attempt = 1; attempt <= MAX_IMAGE_RETRIES && dropped.size && !capped && !blind; attempt++) {
-    const again = IMAGE_SLOTS.filter((s) => s !== "logo" && dropped.has(s) && calls.has(s));
+    const again = IMAGE_SLOTS.filter((s) => !relusTot.has(s) && dropped.has(s) && calls.has(s));
     if (!again.length) break;
     ctx.progress(0.97, L(`Je reprends ${again.length > 1 ? "des images" : "une image"} de la planche ${key}`, `Redoing images of board ${key}`));
     const redone: ImageSlot[] = [];
@@ -721,5 +745,5 @@ export async function runBoardImages(o: {
   const { images: _old, ...boardRest } = x.board as Route["board"] & { images?: unknown };
   const next = RouteSchema.safeParse({ ...x, board: { ...boardRest, ...(any ? { images } : {}) } });
   if (capped) issues.push(tag(L("le plafond annoncé a été atteint avant la fin de ses images.", "the announced cap was reached before its images were finished.")));
-  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues, siteGarde };
+  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues, siteGarde: siteGarde || siteSansLogo };
 }

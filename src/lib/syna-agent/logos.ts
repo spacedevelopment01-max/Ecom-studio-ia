@@ -60,7 +60,8 @@ export function chosenRoute(j: Journey): Route | null {
 
 /** Le nom dessiné de la planche (tracés du Studio, lettres exactes). */
 export function plancheWordmark(x: Route): DrawnWordmark {
-  return drawWordmark(x.name, safeWordmark(x.board.wordmark, x.name), x.fonts.heading);
+  // En lettres seules : aucun pictogramme dessiné en code, même sur une planche d'avant (audit du 22 novembre 2026, 2.12).
+  return drawWordmark(x.name, safeWordmark({ ...x.board.wordmark, symbol: undefined }, x.name), x.fonts.heading);
 }
 
 /**

@@ -196,8 +196,10 @@ describe("SINA — chaîne de création de la marque", async () => {
     // La relecture ne reçoit jamais les dessins (trop lourds, inutiles à la lecture des textes).
     expect(log.prompts["review-1"]).not.toMatch(/"nodes"/);
     // Chaque équipe suit UN chemin et ne voit pas les noms des autres.
-    expect(log.systems["team-mots"]).toMatch(/sur UN seul chemin : mots forts/);
-    expect(log.systems["team-langue"]).toMatch(/sur UN seul chemin : expressions de la langue/);
+    // Le chemin de chaque équipe part à la fin de sa demande ; la consigne est la même pour les quatre (audit 2.6).
+    expect(log.prompts["team-mots"]).toMatch(/# Ton chemin : mots forts[^\n]*\n[\s\S]*$/);
+    expect(log.prompts["team-langue"]).toMatch(/# Ton chemin : expressions de la langue/);
+    expect(log.systems["team-mots"]).toBe(log.systems["team-langue"]);
     expect(log.prompts["team-mots"]).not.toMatch(/Bain de Minuit/);
     // Les noms du propriétaire servent de mesure, sans formule imposée.
     expect(log.systems.shortlist).toMatch(/La Mèche Courte/);
@@ -220,8 +222,11 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(b.lines).toEqual(FIXED_LINE.lines); // la reprise jugée meilleure est gardée
     expect(b.idea.confessionSupport).toBe(7); // paroles réelles qui appuient l'aveu
     expect(b.toProve[0]).toMatch(/INPI/);
-    expect(b.signs[0].symbol?.shapes.length).toBeGreaterThan(0); // pictogramme nettoyé
-    expect(b.signs[1].symbol).toBeUndefined(); // pictogramme avec script : retiré
+    // Aucun pictogramme dessiné en code, même rendu par le modèle (audit du 22 novembre 2026, 2.12) ; ni ruban du colis.
+    expect(b.signs.every((s) => !s.symbol)).toBe(true);
+    expect(b.wordmark.symbol).toBeUndefined();
+    expect(b.parcel).toBeUndefined();
+    expect((await import("@/lib/syna-agent/brand-prompts")).directionSystem("produits")).not.toMatch(/symbolSvg|Pictogrammes|ruban du colis|parcel/);
     expect(JSON.stringify(j.identities)).not.toMatch(/<script|<svg/);
     // Le nom dessiné garde sa mise en lignes (lettres exactes).
     expect(b.wordmark.lines).toEqual(["LÂCHE LE", "MOR", "CEAU"]);
@@ -796,7 +801,13 @@ describe("SINA — chaîne de création de la marque", async () => {
     }
     // Leçons de l'essai réel : le nom et le plan de la série ne se changent pas pendant une reprise ; rien n'est promis après.
     expect(P.reviewSystem("produits")).toMatch(/Ce que tu ne demandes jamais dans fixes : changer le nom[\s\S]*replaceName à true/);
-    expect(P.fixSystem("produits")).toMatch(/Le NOM et le FOND DE PAGE ne changent jamais pendant une reprise/);
+    expect(P.FIX_HEAD).toMatch(/Le NOM et le FOND DE PAGE ne changent jamais pendant une reprise/);
+    // Audit 2.5 : la reprise reçoit exactement la consigne de la planche (relue en mémoire), sa propre consigne part en tête de la demande.
+    expect(P.fixSystem("produits")).toBe(P.directionSystem("produits"));
+    // Audit 2.6 : les quatre équipes reçoivent la même consigne ; leur chemin part à la fin de la demande.
+    const teams = P.teamPathsFor("produits", 4);
+    expect(new Set(teams.map((t) => P.teamSystem("produits", t))).size).toBe(1);
+    for (const t of teams) { expect(P.teamSystem("produits", t)).not.toContain(t.brief); expect(P.teamPathBlock(t)).toContain(t.brief); }
     expect(P.recheckSystem("produits")).toMatch(/Ne promets JAMAIS de le corriger/);
     // Entreprise de services : les équipes partent des mots du métier, et l'objet n'est jamais un emballage.
     expect(P.teamPathsFor("services", 4).map((p) => p.id)).toEqual(["metier", "langue", "mots", "verite"]);
@@ -855,13 +866,16 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     // logo, la grande scène, la maquette du haut du site, puis UNE relecture. Rien d'autre : ni objet, ni signes, ni
     // publications, ni illustratrice.
     const first = await chain(t, { images: true }, script);
-    expect(first.log.ids.slice(first.log.ids.indexOf("review-1") + 1).filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `imagecheck-1-${k}${FIRST}:logo`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, ...["hero", "site"].map((sl) => `imagecheck-1-${k}${FIRST}:${sl}`)]));
+    expect(first.log.ids.slice(first.log.ids.indexOf("review-1") + 1).filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `imagecheck-1-${k}${FIRST}:logo`, `image-1-${k}-hero${FIRST}`, `imagecheck-1-${k}${FIRST}:hero`, ...(k === "C" ? [] : [`image-1-${k}-site${FIRST}`, `imagecheck-1-${k}${FIRST}:site`])]));
     expect(first.log.ids.some((i) => /-(object|signs|post\d)/.test(i))).toBe(false);
     // La maquette : en portrait, avec le logo et la grande scène de sa planche en références.
     for (const k of ["A", "B"]) expect((first.log as any).refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     // C : son logo est refusé à la relecture, faite AVANT la maquette (21 novembre 2026) : la maquette ne porte jamais
-    // un logo refusé.
-    expect((first.log as any).refs[`image-1-C-site${FIRST}`]).toEqual({ logo: false, scene: true, aspect: "9:16" });
+    // un logo refusé. Depuis l'audit du 22 novembre 2026 (2.11), elle n'est même pas dessinée sans logo gardé : elle le
+    // sera avec le vrai logo si C est choisie, et c'est dit. La grande scène est relue avant d'être reprise par la maquette.
+    expect((first.log as any).refs[`image-1-C-site${FIRST}`]).toBeUndefined();
+    expect(J.journeyOf(t.cid).identities!.siteAncienLogo).toEqual(["C"]);
+    expect(J.journeyOf(t.cid).identities!.issues).toContain("Identité C : je te montrerai le haut de ton site avec ton vrai logo si tu choisis cette identité.");
     expect(first.log.prompts[`image-1-A-site${FIRST}`]).toContain("Le haut de la page d'accueil.");
     expect(first.log.systems[`imagery-1-A${FIRST}`]).toMatch(/- site : la MAQUETTE du haut de la page d'accueil du site sur téléphone\. Suis le cahier « La maquette du haut de l'accueil » ci-dessous/);
     // La directrice artistique reçoit la manière d'ouvrir choisie pour cette identité, et aucune seconde lecture n'est payée.
@@ -874,12 +888,12 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(Object.keys(pa.board!.images!).sort()).toEqual(["hero", "logo", "logoIdea", "look", "mark", "markDark", "site"]);
     expect(Object.keys(pb.board!.images!).sort()).toEqual(["hero", "logo", "logoIdea", "look", "mark", "markDark", "site"]);
     // C : le logo ne porte pas le nom exact (contrôle du Studio) ; il n'est pas montré, le nom dessiné tient sa place.
-    expect(Object.keys(pc.board!.images!).sort()).toEqual(["hero", "logoIdea", "look", "site"]);
+    expect(Object.keys(pc.board!.images!).sort()).toEqual(["hero", "logoIdea", "look"]);
     expect(J.journeyOf(t.cid).identities!.issues).toContain("Identité C : je n'ai pas gardé le logo (le nom n'y est pas écrit exactement) ; tu vois ton nom dessiné à la place.");
     const count = () => Object.fromEntries(all<{ s: string; n: number }>("SELECT status s, COUNT(*) n FROM assets WHERE project_id=? AND role='brand-board' GROUP BY status", t.pid).map((r) => [r.s, r.n]));
-    // 8 images gardées (3 + 3 + 2), plus le logo détouré de A et de B et sa version pour fond sombre ; le logo de C refusé, puis
+    // 7 images gardées (3 + 3 + 1), plus le logo détouré de A et de B et sa version pour fond sombre ; le logo de C refusé, puis
     // repris deux fois et refusé encore (jamais une planche incomplète sans avoir réessayé).
-    expect(count()).toEqual({ ready: 12, rejected: 3 });
+    expect(count()).toEqual({ ready: 11, rejected: 3 });
     // Reprise de la tâche : aucun appel n'est refait ni repayé, et les images des planches restent les mêmes.
     const shownBefore = JSON.stringify(J.journeyOf(t.cid).identities!.list.map((x) => [x.board!.images!.logo, x.board!.images!.hero]));
     expect((await chain(t, {}, {}, reload(first.job))).log.ids).toEqual([]);
@@ -890,7 +904,9 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     // Toutes les images d'une planche (ici demandées sur les planches déjà écrites) : les consignes, le logo relu
     // aussitôt, puis les sept autres images dans l'ordre et leur relecture.
     const { log, out, job } = await chain(t, { imagesOnly: true }, script);
-    expect(log.ids.filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, `image-1-${k}-logo`, `imagecheck-1-${k}:logo`, ...SLOTS.filter((sl) => sl !== "logo").map((sl) => `image-1-${k}-${sl}`), ...REVIEW_ORDER.filter((sl) => sl !== "logo").map((sl) => `imagecheck-1-${k}:${sl}`)]));
+    // La grande scène est relue juste après elle, avant la maquette qui la reprend (audit du 22 novembre 2026, 2.11) ;
+    // C, sans logo gardé, n'a pas de maquette dessinée.
+    expect(log.ids.filter((i) => !/:r\d$/.test(i))).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}`, `image-1-${k}-logo`, `imagecheck-1-${k}:logo`, `image-1-${k}-hero`, `imagecheck-1-${k}:hero`, ...SLOTS.filter((sl) => sl !== "logo" && sl !== "hero" && !(k === "C" && sl === "site")).map((sl) => `image-1-${k}-${sl}`), ...REVIEW_ORDER.filter((sl) => sl !== "logo" && sl !== "hero" && !(k === "C" && sl === "site")).map((sl) => `imagecheck-1-${k}:${sl}`)]));
     const refs = (log as any).refs;
     // Le logo est conçu par OpenAI à partir de la marque, sans modèle (retour du propriétaire du 14 novembre 2026 :
     // le nom composé envoyé en modèle portait la vague de « Pulpe », et chaque logo la recopiait).
@@ -900,7 +916,7 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(refs["image-1-A-hero"]).toEqual({ logo: false, scene: false, aspect: "16:9" });
     expect(refs["image-1-A-object"]).toEqual({ logo: true, scene: false, aspect: "1:1" }); // le logo est posé sur l'objet
     expect(refs["image-1-A-site"]).toEqual({ logo: true, scene: true, aspect: "9:16" }); // la maquette : le logo et la scène en références, en portrait
-    // B : pas de différence, son logo est gardé ; C : son logo existe au moment de la maquette (il n'est refusé qu'à la relecture).
+    // B : pas de différence, son logo est gardé ; C : son logo refusé, sa maquette n'est pas dessinée.
     expect(refs["image-1-B-site"]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     // Les textes viennent de la planche, lettre pour lettre ; aucune personne ; la grande image n'a aucun texte.
     const a = J.journeyOf(t.cid).identities!.list[0];
@@ -949,10 +965,11 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(issues).not.toMatch(/mon dessin|forme simple de la planche|dessin à la place/);
     expect((out as any).routes).toHaveLength(3);
     // Bibliothèque du client : les images gardées sont prêtes, l'image refusée y est marquée refusée avec sa raison.
-    // Ce second passage ajoute 22 images gardées (dont l'image des signes et la maquette du site de chaque planche),
+    // Ce second passage ajoute 21 images gardées (dont l'image des signes de chaque planche et la maquette du site de A
+    // et de B : C, sans logo gardé, attend son vrai logo),
     // plus le logo détouré de A et de B et sa version pour fond sombre (C : logo refusé, aucune), et deux images refusées,
     // chacune reprise deux fois avant d'être dite (trois essais refusés par image).
-    expect(count()).toEqual({ ready: kept.ready + 26, rejected: 3 + 6 });
+    expect(count()).toEqual({ ready: kept.ready + 25, rejected: 3 + 6 });
     // Les signes : une vraie photo, le logo posé dessus, aucun autre texte, jamais un pictogramme.
     const I = await import("@/lib/syna-agent/brand-images");
     expect(log.prompts["image-1-A-signs"]).toContain(I.SIGNS_LINE);
@@ -965,7 +982,8 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     const shown = (await fr(() => threadView(t.user, t.cid))).journey.identities!.list as any[];
     expect(shown[0].board.images.hero.url).toMatch(/^\/api\/files\/[\w-]+$/);
     expect(shown[1].board.images.object).toBeUndefined();
-    for (const x of shown) expect(x.board.images.site.url).toMatch(/^\/api\/files\/[\w-]+$/);
+    for (const x of shown.slice(0, 2)) expect(x.board.images.site.url).toMatch(/^\/api\/files\/[\w-]+$/);
+    expect(shown[2].board.images.site).toBeUndefined(); // C : sans logo gardé, le haut du site attend le vrai logo
     // Reprise de la tâche : rien n'est recréé ni repayé.
     const again = await chain(t, {}, {}, reload(job));
     expect(again.log.ids).toEqual([]);
@@ -1078,7 +1096,8 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     let tries = 0;
     const { log } = await chain(t, { imagesOnly: true, redo: ["B"] }, { draw: async (id) => { if (id.endsWith("-post1")) { tries++; throw new Error("503 du fournisseur"); } return id.endsWith("-logo") ? whiteLogo("#CC3366", 120, 180) : square("#CC3366", 120, 180); } });
     // Le logo est relu dès qu'il est dessiné, avant les images qui le portent (21 novembre 2026).
-    expect(log.ids).toEqual(["imagery-1-B", "image-1-B-logo", "imagecheck-1-B:logo", ...SLOTS.filter((sl) => sl !== "logo").map((sl) => `image-1-B-${sl}`), ...REVIEW_ORDER.filter((sl) => sl !== "post1" && sl !== "logo").map((sl) => `imagecheck-1-B:${sl}`)]);
+    // La grande scène aussi, avant la maquette qui la reprend (audit du 22 novembre 2026, 2.11).
+    expect(log.ids).toEqual(["imagery-1-B", "image-1-B-logo", "imagecheck-1-B:logo", "image-1-B-hero", "imagecheck-1-B:hero", ...SLOTS.filter((sl) => sl !== "logo" && sl !== "hero").map((sl) => `image-1-B-${sl}`), ...REVIEW_ORDER.filter((sl) => sl !== "post1" && sl !== "logo" && sl !== "hero").map((sl) => `imagecheck-1-B:${sl}`)]);
     expect(tries).toBe(1);
     const after = J.journeyOf(t.cid).identities!.list;
     expect(after[0]).toEqual(before[0]);

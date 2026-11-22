@@ -190,7 +190,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(payloadOf(jobId).finish).toBeUndefined();
     // Après la relecture des textes : pour chaque planche, la direction artistique, le logo, la grande scène, la
     // maquette du haut du site, puis UNE relecture.
-    expect(log.ids.slice(log.ids.indexOf("review-1") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `imagecheck-1-${k}${FIRST}:logo`, `image-1-${k}-hero${FIRST}`, `image-1-${k}-site${FIRST}`, ...["hero", "site"].map((sl) => `imagecheck-1-${k}${FIRST}:${sl}`)]));
+    expect(log.ids.slice(log.ids.indexOf("review-1") + 1)).toEqual(["A", "B", "C"].flatMap((k) => [`imagery-1-${k}${FIRST}`, `image-1-${k}-logo${FIRST}`, `imagecheck-1-${k}${FIRST}:logo`, `image-1-${k}-hero${FIRST}`, `imagecheck-1-${k}${FIRST}:hero`, `image-1-${k}-site${FIRST}`, `imagecheck-1-${k}${FIRST}:site`]));
     // La maquette : en portrait, avec le logo et la grande scène de SA planche en références ; le logo et la scène,
     // eux, naissent sans modèle.
     for (const k of ["A", "B", "C"]) {
@@ -538,7 +538,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // de sa marque, le téléphone compris : il portait l'ancien logo et les anciennes couleurs (22 novembre 2026).
     const all8 = ":logo+hero+object+signs+site+post0+post1+post2";
     // Puis le symbole seul, tiré du logo créé pour l'identité mélangée, et sa relecture.
-    expect(log.ids).toEqual([`imagery-1-A${all8}`, `image-1-A-logo${all8}`, `imagecheck-1-A${all8}:logo`, ...["hero", "site", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), ...["hero", "object", "signs", "site", "post0", "post1", "post2"].map((sl) => `imagecheck-1-A${all8}:${sl}`), "symbol-1", "symbolcheck-1"]);
+    // La grande scène est relue avant le téléphone qui la reprend (audit du 22 novembre 2026, 2.11).
+    expect(log.ids).toEqual([`imagery-1-A${all8}`, `image-1-A-logo${all8}`, `imagecheck-1-A${all8}:logo`, `image-1-A-hero${all8}`, `imagecheck-1-A${all8}:hero`, ...["site", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), ...["object", "signs", "site", "post0", "post1", "post2"].map((sl) => `imagecheck-1-A${all8}:${sl}`), "symbol-1", "symbolcheck-1"]);
     expect(log.prompts[`imagery-1-A${all8}`]).toContain(`couleur de marque ${route("B").palette.primary}`);
     const done = J.journeyOf(t.cid);
     {
@@ -662,19 +663,19 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // À la proposition, le logo de A sort sur fond noir : refusé par le contrôle gratuit, la planche n'en a pas.
     const first = await proposed(t, { draw: async (id) => (id.startsWith("image-1-A-logo") ? square("#050505") : isLogo(id) ? whiteLogo() : square("#3366CC")) });
     expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.logo).toBeUndefined();
-    // Sans logo gardé, la maquette du site ne reçoit que la grande scène : le nom y est écrit seul, sans logo inventé.
-    expect(first.log.refs[`image-1-A-site${FIRST}`]).toEqual({ logo: false, scene: true, aspect: "9:16" });
+    // Sans logo gardé, le haut du site n'est pas dessiné à la proposition (audit du 22 novembre 2026, 2.11) : il le sera
+    // avec le vrai logo si l'identité est choisie ; B, elle, a son logo et sa maquette.
+    expect(first.log.refs[`image-1-A-site${FIRST}`]).toBeUndefined();
     expect(first.log.refs[`image-1-B-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
-    expect(first.log.prompts[`image-1-A-site${FIRST}`]).toContain(I.NO_INVENTED_MARK);
-    expect(first.log.prompts[`image-1-A-site${FIRST}`]).toMatch(/Textes à écrire dans l'image, lettre pour lettre, accents et ponctuation compris : « Bain de Minuit » ; /);
-    expect(first.log.prompts[`image-1-A-site${FIRST}`]).not.toMatch(/Le logo fourni en image de référence/);
-    expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.site).toBeTruthy();
+    expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.site).toBeUndefined();
+    expect(J.journeyOf(t.cid).identities!.siteAncienLogo).toEqual(["A"]);
     const chosen = await call("identity.choose", t.ctx, { key: "A" });
     // Il manque aussi le logo : la fin n'est plus couverte en entier, elle passe par brand.finish et son prix.
     expect(chosen.jobs).toBeUndefined();
     expect(chosen.hint).toMatch(/brand\.finish/);
     const j0 = J.journeyOf(t.cid);
-    expect(F.missingSlots(j0)).toEqual(["logo", "object", "signs", "post0", "post1", "post2"]);
+    // Le haut du site, pas dessiné sans logo à la proposition, manque aussi : il sera dessiné avec le vrai logo.
+    expect(F.missingSlots(j0)).toEqual(["logo", "object", "signs", "site", "post0", "post1", "post2"]);
     // Le logo à créer entraîne aussi le téléphone (jamais l'ancien logo).
     expect(finishEstimate(j0).maxMicro).toBe(C.finishQuote(F.finishSlots(j0)).maxMicro - C.finishQuote().maxMicro);
     const r = await call("brand.finish", t.ctx, {});

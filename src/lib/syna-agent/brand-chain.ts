@@ -27,12 +27,11 @@ import { callCostBoundMicro, estimateCallMicro, llmJson } from "../ai/llm";
 import { aiSiteImageHd, photoRequestMaxMicro, withQuotedImageRoute } from "../ai/media-providers";
 import { CostCapReached, withTrace } from "../ai/trace";
 import { consigneUneFamille, webResearch, webSearchQuoteMicro, type ResearchCategory, type WebFinding } from "../ai/web-search";
-import { sanitizeSymbolSvg } from "../media/logo-symbol";
 import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
 import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, clientLogoOf, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
-import { BoardSchema, WordmarkSchema, type Board, type BoardSymbol } from "./brand-board";
+import { BoardSchema, WordmarkSchema, type Board } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
 import { NAME_REFUSALS } from "./brand-references";
@@ -289,7 +288,7 @@ const domainsOn = () => !brandChainDeps.ai || !!domainDeps.lookup;
 export const deferredOn = (): boolean => getJsonSetting<boolean>("sina.differe", true) !== false;
 
 /** Les appels de la chaîne qui reviennent, l'un après l'autre, avec la même consigne (un par route). */
-const REPETES = new Set<CallId>(["direction", "fix", "imagery"]);
+const REPETES = new Set<CallId>(["direction", "fix", "imagery", "team"]);
 /** Les appels de la chaîne dont la consigne ne sert qu'une fois par projet : aucun point de mémoire. */
 const UNIQUES = new Set<CallId>(["study", "shortlist", "verify", "reader"]);
 
@@ -413,13 +412,6 @@ export function namePool(teams: { team: string; names: z.infer<typeof TeamSchema
   return out.slice(0, 240);
 }
 
-/** Pictogramme rendu par le modèle : nettoyé par la liste blanche du Studio, ou retiré (jamais le SVG brut à l'écran). */
-function cleanSymbol(svg: string, accent: string): BoardSymbol | undefined {
-  if (!svg.trim()) return undefined;
-  const r = sanitizeSymbolSvg(svg, { accent, maxShapes: 4 });
-  return r.ok ? (r.symbol as BoardSymbol) : undefined;
-}
-
 /** Brouillon de la direction artistique → route complète et sûre (clé, pictogrammes nettoyés, lignes d'honnêteté). */
 export function finishRoute(draft: Draft, key: RouteKey, o: { support: number; nameCheck: Board["nameCheck"]; ownName?: boolean }): Route {
   const d = draft.board;
@@ -427,8 +419,9 @@ export function finishRoute(draft: Draft, key: RouteKey, o: { support: number; n
     ...d,
     idea: { ...d.idea, confessionSupport: o.support },
     nameCheck: o.nameCheck,
-    signs: d.signs.map(({ symbolSvg, ...s }) => { const symbol = cleanSymbol(symbolSvg, draft.palette.accent); return symbol ? { ...s, symbol } : s; }),
-    wordmark: (() => { const { symbolSvg, ...w } = d.wordmark; const symbol = cleanSymbol(symbolSvg, draft.palette.accent); return safeWordmark(symbol ? { ...w, symbol } : w, draft.name); })(),
+    // Aucun pictogramme dessiné en code (règle du propriétaire) : ce qu'un ancien brouillon en rendrait est jeté.
+    signs: d.signs.map(({ symbolSvg: _s, ...s }) => s),
+    wordmark: (() => { const { symbolSvg: _s, ...w } = d.wordmark; return safeWordmark(w, draft.name); })(),
   }, { ownName: o.ownName });
   return RouteSchema.parse({
     key, name: draft.name.trim(), nameStyle: "", nameWhy: draft.nameWhy, nameAnchor: draft.nameAnchor, nameTest: "", nameExpression: draft.nameExpression, nameCandidates: [],
@@ -454,7 +447,7 @@ export function pruneDraft(raw: any): any {
   const drop = (o: any, keys: string[]) => { if (o && typeof o === "object") for (const k of keys) if (k in o && blank(o[k])) delete o[k]; };
   const strip = (o: any, keys: string[]) => { if (o && typeof o === "object") for (const k of keys) delete o[k]; };
   drop(b, ["descriptor"]); strip(b, ["hero", "images"]);
-  if (b.parcel && blank(b.parcel?.tape)) delete b.parcel;
+  delete b.parcel; // le ruban du colis n'est plus affiché ni demandé (audit du 22 novembre 2026, 2.12)
   if (b.voice && typeof b.voice === "object") {
     if (Array.isArray(b.voice.is)) b.voice.is = b.voice.is.filter((x: unknown) => !blank(x)).slice(0, 4);
     if (Array.isArray(b.voice.micro)) b.voice.micro = b.voice.micro.filter((m: any) => m && !blank(m.where) && !blank(m.text)).slice(0, 4);
@@ -596,7 +589,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const imagesBrief = logoOnly ? briefBlock(j, p.id) : brief;
     const gouts = goutsDuClient(j, p.id, logoOnly ? clientWords(a.guidance) : undefined);
     for (const x of targets) {
-      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts });
+      const r = await runBoardImages({ ctx, ai, proposition: true, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts });
       const fresh = (a.slots ?? CREATED_SLOTS).includes("logo") && r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
       if (fresh) { try { redoneLogos.push(assetData(fresh)); } catch { /* fichier absent */ } }
       list = list.map((o) => (o.key === x.key ? r.route : o));
@@ -658,7 +651,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // Les équipes ne se voient pas : elles cherchent en même temps (une seule attente au lieu de quatre).
   if (!j.keep.includes("nom") && !imposed.length) {
     ctx.progress(0.3, L("Je cherche des noms", "Looking for names"));
-    const found = await Promise.all(paths.map((path) => ctx.step(`brand:team:${path.id}`, () => ai.ask(`team-${path.id}`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: teamPrompt }))));
+    const found = await Promise.all(paths.map((path) => ctx.step(`brand:team:${path.id}`, () => ai.ask(`team-${path.id}`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: `${teamPrompt}\n\n${P.teamPathBlock(path)}` }))));
     for (const [i, path] of paths.entries()) teams.push({ team: path.id, names: found[i].names });
   }
   // Noms déjà montrés AVANT cette tâche, fixés une fois : une relance après coup n'écarte pas ses propres noms.
@@ -698,7 +691,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
       const level = judged.length ? `Noms gardés par le juge (le niveau à atteindre, à ne pas redonner) : ${judged.map((k) => k.name).join(", ")}` : "Le juge n'a gardé AUCUN nom du premier tour.";
       const near = almost.length ? `\nPresque gardés, avec ce qui leur manque :\n${almost.map((k) => `- ${k.name} : ${k.why}`).join("\n")}` : "";
       const more: typeof teams = [];
-      const again = await Promise.all(paths.map((path) => ctx.step(`brand:team:${path.id}:${round}:2`, () => ai.ask(`team-${path.id}-2`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: `${teamPrompt}\n\n# Second tour\nLes noms du premier tour n'ont pas suffi. ${level}${near}\n\nCette fois, chaque nom doit tenir SEUL sur l'objet : on doit voir le produit ou son moment sans aucune explication, et le fondateur doit avoir envie de le porter.\n\nNoms déjà trouvés par les équipes (ne les redonne pas) : ${pool.slice(0, 260).map((n) => n.name).join(", ")}` }))));
+      const again = await Promise.all(paths.map((path) => ctx.step(`brand:team:${path.id}:${round}:2`, () => ai.ask(`team-${path.id}-2`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: `${teamPrompt}\n\n# Second tour\nLes noms du premier tour n'ont pas suffi. ${level}${near}\n\nCette fois, chaque nom doit tenir SEUL sur l'objet : on doit voir le produit ou son moment sans aucune explication, et le fondateur doit avoir envie de le porter.\n\nNoms déjà trouvés par les équipes (ne les redonne pas) : ${pool.slice(0, 260).map((n) => n.name).join(", ")}\n\n${P.teamPathBlock(path)}` }))));
       for (const [i, path] of paths.entries()) more.push({ team: path.id, names: again[i].names });
       second = namePool(more, { competitors: study.competitors.map((c) => c.name), shown: [...shown, ...pool.map((n) => n.name)] }).filter((n) => freeName(n.name));
       searched += second.length;
@@ -854,7 +847,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     for (const [n, x] of toFix.entries()) {
       ctx.progress(0.88 + (0.06 * n) / toFix.length, L(`Je reprends la planche ${x.key}`, `Reworking board ${x.key}`));
       const others = current().filter((o) => o.key !== x.key);
-      const draft = await ctx.step(`brand:fix:${round}:${x.key}`, () => ai.ask(`fix-${round}-${x.key}`, { kind: "fix", system: P.fixSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt: `${brief}\n\n# Ta route\n${routeText(x)}\n\n# Ce qui ne change pas\nLe nom « ${x.name} » (déjà jugé et vérifié) et le fond de page « ${x.ground} » (fixé pour la série) restent tels quels.\n\n# Corrections exigées\n${fixesOf(x).map((f) => `- ${f}`).join("\n")}${series ? `\n\n# Sur l'ensemble de la série\n${series}` : ""}${others.length ? `\n\n# Les autres routes de la série (ne reprends ni leurs phrases, ni leur bouton, ni leurs images, ni leur police de titres)\n${others.map(seen).join("\n")}` : ""}${recentBlock ? `\n\n${recentBlock}` : ""}` }));
+      const draft = await ctx.step(`brand:fix:${round}:${x.key}`, () => ai.ask(`fix-${round}-${x.key}`, { kind: "fix", system: P.fixSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt: `${brief}\n\n# Reprise\n${P.FIX_HEAD}\n\n# Ta route\n${routeText(x)}\n\n# Ce qui ne change pas\nLe nom « ${x.name} » (déjà jugé et vérifié) et le fond de page « ${x.ground} » (fixé pour la série) restent tels quels.\n\n# Corrections exigées\n${fixesOf(x).map((f) => `- ${f}`).join("\n")}${series ? `\n\n# Sur l'ensemble de la série\n${series}` : ""}${others.length ? `\n\n# Les autres routes de la série (ne reprends ni leurs phrases, ni leur bouton, ni leurs images, ni leur police de titres)\n${others.map(seen).join("\n")}` : ""}${recentBlock ? `\n\n${recentBlock}` : ""}` }));
       // Une reprise qui change le nom ou le fond de la série n'est pas une reprise : la première version reste, et c'est dit.
       if (normText(draft.name) !== normText(x.name) || (draft.ground !== x.ground && !namesOnly)) {
         notes.push(`reprise de ${x.key} écartée : elle changeait ${normText(draft.name) !== normText(x.name) ? "le nom" : "le fond de page"}`);
@@ -900,13 +893,16 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const g = o.board?.images?.logo ? getAsset(o.board.images.logo.id) : undefined;
     if (g) { try { seriesLogos.push(assetData(g)); } catch { /* fichier absent */ } }
   }
+  /** Planches dont le haut du site attend le vrai logo (aucun logo gardé) : il sera dessiné si elle est choisie. */
+  const siteAttend: string[] = [];
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos], gouts: goutsDuClient(j, p.id) });
+        const r = await runBoardImages({ ctx, ai, proposition: true, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos], gouts: goutsDuClient(j, p.id) });
         const fresh = r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
         if (fresh) { try { seriesLogos.push(assetData(fresh)); } catch { /* fichier absent : rien à montrer */ } }
         list = list.map((o) => (o.key === x.key ? r.route : o));
+        if (r.siteGarde) siteAttend.push(x.key);
         remaining.push(...r.issues); notes.push(...r.notes);
       } catch (e) {
         if (e instanceof CostCapReached) { notes.push("plafond de dépense atteint avant la fin des images"); break; }
@@ -938,6 +934,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
       shownNames: [...new Set([...(x.identities?.shownNames ?? []), ...(x.identities?.list ?? []).map((i) => i.name), ...list.map((i) => i.name)])].slice(-60),
       study: { quotes: study.quotes.slice(0, 8), quoteCount: study.quotes.length, sources: study.sources, competitors: study.competitors.slice(0, 8).map((c) => c.name), mould: study.mould, substitutes: study.substitutes.slice(0, 4), notFound: study.notFound.slice(0, 4) },
       ...(firstIssues.length ? { corrected: firstIssues } : {}), ...(a.guidance ? { guidance: a.guidance } : {}),
+      ...((() => { const k = [...(x.identities?.siteAncienLogo ?? []).filter((y) => !(todo as string[]).includes(y) && list.some((o) => o.key === y)), ...siteAttend]; return k.length ? { siteAncienLogo: [...new Set(k)] } : {}; })()),
     };
     setStep(x, 1, "review");
     // Nouvelle proposition demandée APRÈS un choix : l'ancien choix ne désigne plus ces planches. Tout ce qui en

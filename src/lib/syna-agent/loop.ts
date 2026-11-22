@@ -47,7 +47,7 @@ import { sinaModels } from "./models";
 import { aLaChargeDuStudio } from "../billing";
 import { carteActiviteAJour, ECRITURES_DE_L_ACTIVITE } from "./tools/activity";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
-import { chosenRoute } from "./logos";
+import { chosenRoute, plancheWordmark } from "./logos";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
 import { safeWordmark } from "./brand-routes";
 import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
@@ -780,7 +780,7 @@ function drawnName(x: Identity): DrawnWordmark | null {
   if (drawnNames.has(key)) return drawnNames.get(key)!;
   let drawn: DrawnWordmark | null = null;
   // Police illisible ou recette impossible : la planche écrit alors le nom dans la police de titres (jamais d'écran vide).
-  try { drawn = drawWordmark(x.name, safeWordmark(x.board.wordmark, x.name), x.fonts.heading); } catch { drawn = null; }
+  try { drawn = plancheWordmark(x as never); } catch { drawn = null; }
   if (drawnNames.size > 300) drawnNames.clear();
   drawnNames.set(key, drawn);
   return drawn;
