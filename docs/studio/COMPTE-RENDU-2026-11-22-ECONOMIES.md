@@ -652,3 +652,70 @@ fait, sur tes téléphones, gratuit), le devis et le carnet de clients.
 **Pas vérifié :** aucun essai avec la vraie IA ni sur un vrai site en ligne ; le contrôle de fidélité n'a été essayé
 que sur des images simulées (ses seuils restent à régler sur de vraies images) ; « posé tel quel » (coller la vraie
 photo du produit sur une scène) n'est pas branché, parce que tu avais refusé le produit collé devant un décor.
+
+## Les vidéos
+
+D'après la recherche 09 du 22 novembre 2026, points 2 à 11. Tout est vérifié par des essais simulés : aucun appel
+payant, aucune vidéo réellement créée, aucune clé saisie. Les fabricants que tu as accordés (Vertex, Kling en direct,
+BytePlus pour Seedance, Runware en secours) sont branchés mais restent éteints tant que tu n'as pas saisi leur clé dans
+Administration › Fournisseurs IA et confirmé chaque modèle ; sans clé, le Studio garde ce qui marche aujourd'hui.
+
+**Ce que le client verra, point par point :**
+
+- **2. Le plan sûr au centre.** Sa vidéo montre son vrai produit, exactement le sien : la photo détourée posée sur les
+  couleurs de sa marque, avec son ombre, et la caméra qui avance ou glisse doucement (plus jamais une image figée).
+  Rien ne peut changer son étiquette. Gratuit.
+- **3. Le mélange.** Un seul plan animé par l'IA dans une publication (deux dans une publicité), le reste en plans sûrs.
+  Le modèle animé est celui que tu régleras dans Administration › Images & Vidéos › « Vidéos produit », après l'essai
+  comparatif ; tant qu'aucun n'est réglé, la vidéo est faite uniquement de plans sûrs, sans dépense de vidéo.
+- **4. Moins de pannes.** Rien de visible : Veo 3.1 Fast et Lite par Vertex (personnes interdites sans accord, son
+  coupé), Kling 4.0 en direct (durée toujours envoyée, sinon Kling compte 10 secondes ; vidéo copiée chez nous tout de
+  suite, Kling ne la garde que 30 jours), Seedance par BytePlus (l'identifiant du client, chiffré, part à chaque appel),
+  Runware en secours (il renvoie le coût exact de chaque vidéo), Alibaba à Francfort (avec l'identifiant de l'espace de
+  travail). La durée de Veo est maintenant toujours envoyée.
+- **5. Le contrôle image par image.** Cinq images par seconde de chaque plan animé sont comparées à la vraie photo, sans
+  rien payer ; au moindre écart, le plan est arrêté avant même la relecture. Le relecteur cherche ensuite tout texte
+  inventé dans toute l'image, pas seulement sur l'étiquette. Un plan refusé n'est jamais montré : le plan sûr prend sa
+  place.
+- **6. Le brouillon.** Prêt pour Seedance 2.5 : un aperçu bon marché en 480p, puis la version finale tirée de
+  l'aperçu validé, sans tout refaire.
+- **7. Les sous-titres mot à mot.** Deux à quatre mots à la fois, le mot dit s'allume à la couleur de sa marque, comme
+  dans CapCut, posés au-dessus du bas de l'image. Le minutage suit la voix mesurée et ses silences. Gratuit.
+- **8. Les coupes au rythme de la musique.** Chaque changement de plan tombe sur un temps du morceau composé par le
+  Studio, pour toute vidéo sans voix (une vidéo avec voix garde le rythme de la voix). Gratuit.
+- **9. Les deux grilles.** Publication de 9 à 15 secondes en cinq temps (l'accroche de son angle en moins de 2
+  secondes, deux bénéfices, son produit dans son décor, l'offre en clair) ; publicité de 21 à 30 secondes avec, en plus,
+  une preuve vraie quand il en a fourni une (jamais inventée). La carte de fin reste dans le tiers du milieu, jamais dans
+  le bas de l'image que cachent les boutons des réseaux.
+- **10. Le prix avant.** Il lit le coût probable en pourcentage de son budget avant de dire oui, avec : « Seul le plan
+  accepté par le contrôle est compté ». Un plan refusé lui est rendu : le Studio le garde à sa charge.
+- **11. Ses droits.** Avant d'animer une photo, il coche « J'ai les droits sur cette photo » ; sans cette case, rien
+  n'est animé. Chaque plan créé par l'IA est inscrit au journal (qui, quand, quel modèle, date de son accord), et il peut
+  signaler un plan : il est retiré tout de suite, la trace reste.
+
+**Ce que ça coûtera (estimé, d'après les prix officiels du 22 novembre, un dollar compté pour un euro, relecture du
+juge non comptée) :** un plan animé de 5 secondes coûte environ 0,19 € avec Wan 2.6 Flash, 0,15 € avec Veo 3.1 Lite,
+0,40 € avec Seedance 2.0 Mini, 0,79 € avec Kling 4.0, 1,16 € avec Seedance 2.5. Pour le forfait à 99 € (33 € de budget
+d'IA par mois), une publication du mélange prend donc entre environ 0,5 % et 3,5 % de son mois, une publicité (deux
+plans animés) le double. Seul le plan accepté lui est compté.
+
+**Pas fait, en attente :**
+
+- **L'essai comparatif** (point 1, environ 10 $) : il te revient, et c'est lui qui choisira le modèle animé.
+- **La musique d'ElevenLabs** (point 12) : demande l'abonnement Scale (299 $ par mois) ; la musique reste celle,
+  gratuite, du compositeur du Studio.
+- **Un décor créé par OpenAI derrière le produit détouré**, comme le proposait la recherche : cela touche ta règle
+  « produit collé devant une photo floue », refusé. Le plan sûr reste donc sur les couleurs de la marque. À toi de dire.
+- **Le minutage exact de la voix** : la recherche disait ElevenLabs déjà branché, ce n'est pas le cas (aucun appel à
+  ElevenLabs dans le code). Le Studio sait déjà lire l'heure de chaque lettre qu'ElevenLabs renvoie, mais l'utiliser
+  demande d'ajouter sa voix : ta décision.
+- **Le brouillon à l'écran** : l'aperçu puis la version finale sont prêts dans le branchement de Seedance 2.5, pas
+  encore dans l'écran ; à faire si Seedance 2.5 est choisi après l'essai.
+- **Les données en Europe** : aucun des fabricants ne calcule ses vidéos en Europe (Veo aux États-Unis, Kling à
+  Singapour, Seedance en Asie, Wan à Francfort en portée « Global », donc parfois ailleurs). À te dire avant d'ouvrir
+  ces modèles aux clients.
+- **La vérification d'identité des clients** demandée par BytePlus pour Seedance : pas faite ; le texte exact de
+  l'autorisation de ByteDance reste [À compléter].
+
+**Pas vérifié :** aucun appel réel à Vertex, Kling, BytePlus ni Runware ; la forme de la réponse de suivi de BytePlus
+n'a pas pu être lue (page fermée sans navigateur) ; le seuil du contrôle image par image est à régler sur de vrais plans.
