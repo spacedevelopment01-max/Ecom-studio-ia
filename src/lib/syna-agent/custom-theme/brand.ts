@@ -161,6 +161,32 @@ export const SectionWriteSchema = z.object({
 export type SectionWrite = z.infer<typeof SectionWriteSchema>;
 
 /**
+ * Les textes PAR PAGE (audit du site du 22 novembre 2026, partie 4) : un appel écrit toutes les sections d'une page
+ * (huit au plus ; une page plus longue est écrite en deux fois), et les pièces pratiques (en-tête, pied de page, recherche,
+ * panier…) ensemble. Le rédacteur voit la page entière : il ne répète pas une formule, un fait ou une scène à deux
+ * sections d'écart. Le parcours de la page et la fiche du produit ne partent qu'une fois. 10 à 12 appels au lieu de 43 à 70.
+ */
+export const PAGE_SECTIONS_MAX = 8;
+export const PageWriteSchema = z.object({ sections: z.array(SectionWriteSchema.extend({ uid: z.string().min(1).max(12) })).max(PAGE_SECTIONS_MAX) });
+export type PageWrite = z.infer<typeof PageWriteSchema>;
+/** Les sections à écrire, rangées par page dans l'ordre du site, en morceaux de huit au plus. */
+export function morceauxParPage<T extends { page?: { key: string } | null; s: { uid: string } }>(list: T[]): T[][] {
+  const parPage = new Map<string, T[]>();
+  for (const x of list) { const k = x.page?.key ?? "pratique"; parPage.set(k, [...(parPage.get(k) ?? []), x]); }
+  return [...parPage.values()].flatMap((g) => { const n = Math.ceil(g.length / PAGE_SECTIONS_MAX), taille = Math.ceil(g.length / n); return Array.from({ length: n }, (_, i) => g.slice(i * taille, (i + 1) * taille)); });
+}
+/** La demande d'une page : ce qui vaut pour toute la page une fois, puis chaque section avec son identifiant. */
+export function pageWritePrompt(o: { page: string; journey?: string | null; product?: string | null; sections: { uid: string; prompt: string }[] }): string {
+  return [
+    `TU ÉCRIS ICI ${o.sections.length > 1 ? `LES ${o.sections.length} SECTIONS` : "LA SECTION"} DE LA PAGE « ${o.page} », dans l'ordre où le visiteur les lit. Chaque section suit toutes les règles d'une section ; vois-les ensemble : jamais deux fois la même formule, le même fait ou la même scène sur la page.`,
+    o.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${o.product}` : "",
+    o.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${o.journey}` : "",
+    `Réponse : {"sections": [{"uid": "", "edits": [], "links": [], "photos": []}]}, UNE entrée par section, avec son uid exact, chacune dans la forme d'une section.`,
+    ...o.sections.map((x) => `\n══ SECTION uid « ${x.uid} » ══\n${x.prompt}`),
+  ].filter(Boolean).join("\n");
+}
+
+/**
  * Refaire un site en reprenant ce qui est déjà fait (le propriétaire, 18 novembre 2026 : « tu refais un thème entier mais
  * le copywriting et les images existent déjà, tu peux les réutiliser ? »). Les photos créées pour le site d'avant, avec
  * leur description, sont proposées aux rédacteurs : une photo qui convient est reprise telle quelle (rien de créé, rien
@@ -892,6 +918,8 @@ export const customBrandDeps: {
   seo?: (prompt: string, usageKey: string) => Promise<z.infer<typeof SeoSchema>>;
   photoBrief?: (prompt: string, usageKey: string) => Promise<z.infer<typeof PhotoBriefSchema>>;
   write?: (prompt: string, usageKey: string) => Promise<SectionWrite>;
+  /** Écriture d'une page entière (essais sans IA). */
+  writePage?: (prompt: string, usageKey: string) => Promise<z.input<typeof PageWriteSchema>>;
   /** Relecture de tous les textes par le directeur de création (essais sans IA : seulement si le test la fournit). */
   review?: (prompt: string, usageKey: string) => Promise<z.input<typeof CopyReviewSchema>>;
   /** Relecture de toutes les descriptions de photos par la directrice artistique (essais sans IA : seulement si fournie). */
@@ -1054,25 +1082,46 @@ export async function runCustomBrandJob(ctx: JobContext) {
   // La partie du plan commune à tout le site : à part, en mémoire avec le dossier (audit du site, partie 3).
   const commun = planCommun(sitePlan ?? undefined, t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "));
   const dossierEtPlan = commun ? `${brief}\n\n${commun}` : brief;
-  // 1) Textes, section par section (un point de reprise chacune).
+  // 1) Textes, page par page (un point de reprise par page, puis un par section).
+  const morceaux = morceauxParPage(sections), morceauDe = new Map(morceaux.flatMap((m, k) => m.map((x) => [x.s.uid, k] as const)));
+  const enCours = new Map<number, Promise<Record<string, SectionWrite>>>();
+  const pageDe = (x: (typeof sections)[number]) => x.page?.label ?? x.place;
+  /** La demande d'UNE section : ce qui vaut pour toute la page (parcours, fiche du produit) part avec la page. */
+  const demandeDe = (x: (typeof sections)[number], parPage: boolean) => {
+    const l = libSection(x.s.id);
+    return sectionWritePrompt("", pageDe(x), l?.title ?? x.s.id, l?.does ?? "", withBrandName(sectionHtml(x.s), name), sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: parPage ? undefined : x.page?.journey, product: parPage ? undefined : productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), communAPart: true, shown: shownFacts(sectionHtml(x.s), facts, x.page?.key),
+      // Les formules déjà dites dans trois sections écrites avant (sans IA) : le rédacteur ne les emploie plus.
+      deja: repeats(allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts && y.s.uid !== x.s.uid), { atLeast: REPEAT_SECTIONS_MAX }).slice(0, 12).map((r) => r.phrase),
+      // La même pièce déjà écrite sur une autre page (sans IA) : le rédacteur y dit autre chose.
+      ailleurs: memePieceAilleurs({ uid: x.s.uid, id: x.s.id }, allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts).map((y) => ({ uid: y.s.uid, id: y.s.id, page: y.page?.label ?? y.place, html: sectionHtml(y.s) }))) });
+  };
+  const ecritLaPage = (k: number): Promise<Record<string, SectionWrite>> => {
+    const deja = enCours.get(k);
+    if (deja) return deja;
+    const m = morceaux[k];
+    const run = ctx.step(`text-page:${k}:${m.map((x) => x.s.uid).join("+")}`, async () => {
+      // Essais sans IA qui simulent l'écriture d'une section : chaque section garde son appel simulé.
+      if (customBrandDeps.write && !customBrandDeps.writePage) {
+        const out: Record<string, SectionWrite> = {};
+        for (const x of m) out[x.s.uid] = await customBrandDeps.write(`${dossierEtPlan}\n\n${sectionWritePrompt("", pageDe(x), libSection(x.s.id)?.title ?? x.s.id, libSection(x.s.id)?.does ?? "", withBrandName(sectionHtml(x.s), name), sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), communAPart: true, shown: shownFacts(sectionHtml(x.s), facts, x.page?.key) })}`, `${ctx.job.id}:text:${x.s.uid}`);
+        return out;
+      }
+      const prompt = pageWritePrompt({ page: pageDe(m[0]), journey: m[0].page?.journey, product: productFacts(p.id, m[0].page?.product), sections: m.map((x) => ({ uid: x.s.uid, prompt: demandeDe(x, true) })) });
+      const usageKey = `${ctx.job.id}:text-page:${m.map((x) => x.s.uid).join("+")}`;
+      const r = customBrandDeps.writePage ? PageWriteSchema.parse(await customBrandDeps.writePage(`${dossierEtPlan}\n\n${prompt}`, usageKey))
+        : PageWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
+            llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-page-1", context: dossierEtPlan, prompt, maxTokens: Math.min(64_000, 8000 + 7000 * m.length), maxOutputTokens: 64_000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PageWriteSchema, { strict: true })));
+      return Object.fromEntries(r.sections.filter((x) => m.some((y) => y.s.uid === x.uid)).map(({ uid, ...w }) => [uid, w]));
+    });
+    enCours.set(k, run);
+    return run;
+  };
   for (const [i, x] of sections.entries()) {
     const l = libSection(x.s.id);
     ctx.progress(0.05 + (0.45 * i) / Math.max(1, sections.length), L(`Textes : ${l?.title ?? x.s.id}`, `Copy: ${l?.title ?? x.s.id}`));
     try {
-      const w = await ctx.step(`text:${x.s.uid}`, async () => {
-        const html = withBrandName(sectionHtml(x.s), name);
-        // Le résumé du client est le même pour toutes les sections : il part à part (`context`), gardé en mémoire chez le
-        // fournisseur après la consigne du rédacteur, au lieu d'être relu au plein prix dans chacune (22 novembre 2026).
-        const prompt = sectionWritePrompt("", x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), communAPart: true, shown: shownFacts(html, facts, x.page?.key),
-          // Les formules déjà dites dans trois sections écrites avant celle-ci (sans IA) : le rédacteur ne les emploie plus.
-          deja: repeats(allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts && y.s.uid !== x.s.uid), { atLeast: REPEAT_SECTIONS_MAX }).slice(0, 12).map((r) => r.phrase),
-          // La même pièce déjà écrite sur une autre page (sans IA) : le rédacteur y dit autre chose.
-          ailleurs: memePieceAilleurs({ uid: x.s.uid, id: x.s.id }, allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts).map((y) => ({ uid: y.s.uid, id: y.s.id, page: y.page?.label ?? y.place, html: sectionHtml(y.s) }))) });
-        const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
-        return customBrandDeps.write ? customBrandDeps.write(`${dossierEtPlan}\n\n${prompt}`, usageKey)
-          : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
-              llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", context: dossierEtPlan, prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
-      });
+      // Une section que la page n'a pas rendue reste avec ses textes d'exemple, et c'est dit plus bas.
+      const w = await ctx.step(`text:${x.s.uid}`, async () => (await ecritLaPage(morceauDe.get(x.s.uid)!))[x.s.uid] ?? { edits: [], links: [], photos: [] });
       // Écriture posée une seule fois : à la reprise d'une tâche, une section déjà enregistrée n'est pas réappliquée
       // (sinon tous ses remplacements échouaient sur un texte déjà réécrit, audit du 10 novembre 2026).
       const r = await ctx.step(`text-saved:${x.s.uid}`, async () => {

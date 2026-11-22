@@ -280,7 +280,9 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     const fs = await import("node:fs");
     const src = fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8");
     // Depuis l'audit du site (partie 3), la partie du plan commune à tout le site part avec le résumé, en mémoire.
-    expect(src.match(/promptKey: "syna-custom-section-2", context: dossierEtPlan, prompt/g)).toHaveLength(2);
+    // Les textes s'écrivent par page (audit du site, partie 4) ; la reprise d'une section reste section par section.
+    expect(src.match(/promptKey: "syna-custom-page-1", context: dossierEtPlan, prompt/g)).toHaveLength(1);
+    expect(src.match(/promptKey: "syna-custom-section-2", context: dossierEtPlan, prompt/g)).toHaveLength(1);
     expect(src).toMatch(/const dossierEtPlan = commun \? `\$\{brief\}\\n\\n\$\{commun\}` : brief;/);
     expect(src).not.toMatch(/sectionWritePrompt\(brief,/);
   });

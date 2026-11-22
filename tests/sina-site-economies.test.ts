@@ -81,3 +81,24 @@ describe("le site : la partie commune du plan des textes, une fois, en mémoire"
     expect(p).toMatch(/CETTE section : message : Dire l'offre\. ; titre : « Le titre A »/);
   });
 });
+
+describe("le site : les textes écrits page par page", () => {
+  it("les sections sont rangées par page, huit au plus par appel ; les pièces pratiques ensemble", async () => {
+    const B = await import("@/lib/syna-agent/custom-theme/brand");
+    const sec = (uid: string, page?: string) => ({ s: { uid }, page: page ? { key: page } : undefined });
+    const list = [sec("h1"), ...Array.from({ length: 11 }, (_, i) => sec(`a${i}`, "home")), sec("p1", "product"), sec("f1")];
+    const m = B.morceauxParPage(list as any).map((g) => g.map((x: any) => x.s.uid));
+    expect(m).toEqual([["h1", "f1"], ["a0", "a1", "a2", "a3", "a4", "a5"], ["a6", "a7", "a8", "a9", "a10"], ["p1"]]);
+    expect(Math.max(...m.map((g) => g.length))).toBeLessThanOrEqual(B.PAGE_SECTIONS_MAX);
+  });
+
+  it("la demande d'une page donne une fois le parcours et la fiche, puis chaque section avec son uid ; la réponse a une entrée par section", async () => {
+    const B = await import("@/lib/syna-agent/custom-theme/brand");
+    const p = B.pageWritePrompt({ page: "Accueil", journey: "Il arrive, il comprend, il achète.", product: null, sections: [{ uid: "a1", prompt: "Section à adapter : A" }, { uid: "b2", prompt: "Section à adapter : B" }] });
+    expect(p.match(/PARCOURS DU VISITEUR SUR CETTE PAGE/g)).toHaveLength(1);
+    expect(p).toMatch(/══ SECTION uid « a1 » ══\nSection à adapter : A[\s\S]*══ SECTION uid « b2 » ══/);
+    expect(B.PageWriteSchema.parse({ sections: [{ uid: "a1", edits: [], links: [], photos: [] }] }).sections[0].uid).toBe("a1");
+    const fs = await import("node:fs");
+    expect(fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8")).toMatch(/promptKey: "syna-custom-page-1"[^\n]*PageWriteSchema, \{ strict: true \}/);
+  });
+});
