@@ -51,3 +51,19 @@ describe("le site : photos créées trois à la fois", () => {
     expect([...fin].sort()).toEqual([0, 1, 2, 3, 4, 5, 6]);
   });
 });
+
+describe("le site : le juge de l'ordre et la reprise ne rendent que leurs changements", () => {
+  it("une page rendue remplace la sienne, les autres restent ; les partitions se fondent ; rien rendu = rien changé", async () => {
+    const { applyDesignPatch, DesignPatchSchema, DESIGN_REVIEW_SYSTEM } = await import("@/lib/syna-agent/custom-theme/design");
+    const page = (key: string, ids: string[]) => ({ key, label: key, journey: "Le visiteur arrive, comprend, achète sans hésiter.", sections: ids.map((id) => ({ section: id, why: "Parce que le visiteur le demande.", says: "Ce que la section dit.", photos: "aucune" })) });
+    const base = { pages: [page("home", ["a", "b"]), page("product", ["c"])], partitions: [{ page: "home", partition: "x" }, { page: "product", partition: "y" }], famille: "f1", corrections: [] } as any;
+    const p = DesignPatchSchema.parse({ pages: [page("home", ["b", "a"])], partitions: [{ page: "home", partition: "z" }], corrections: ["home : l'offre avant la preuve"] });
+    const d = applyDesignPatch(base, p);
+    expect(d.pages.map((x: any) => [x.key, x.sections.map((s: any) => s.section)])).toEqual([["home", ["b", "a"]], ["product", ["c"]]]);
+    expect(d.partitions).toEqual([{ page: "product", partition: "y" }, { page: "home", partition: "z" }]);
+    expect(d.famille).toBe("f1");
+    expect(applyDesignPatch(base, DesignPatchSchema.parse({ corrections: [] })).pages).toEqual(base.pages);
+    expect(DESIGN_REVIEW_SYSTEM).toMatch(/rends SEULEMENT ce que tu changes/);
+    expect(DESIGN_REVIEW_SYSTEM).not.toMatch(/rends la conception CORRIGÉE et complète/);
+  });
+});

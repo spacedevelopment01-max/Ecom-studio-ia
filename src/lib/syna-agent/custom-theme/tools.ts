@@ -35,7 +35,7 @@ import { allSections, applyStructure, BUY_OPTIONS, checkCustomTheme, findSection
 import { listProducts } from "../../products/catalog";
 import { activityPlan, companyOf } from "../activity";
 import { brandBrief, siteCopyModel } from "./brand";
-import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignSchema, designGaps, designPrompt, intentText, varietyGaps, type Design } from "./design";
+import { type Ambiance, DESIGN_CALLS_MAX, DESIGN_CAP_MICRO, DESIGN_OUTPUT_TOKENS, DESIGN_REVIEW_SYSTEM, DESIGN_SYSTEM, DESIGN_TYPICAL_MICRO, DesignPatchSchema, DesignSchema, applyDesignPatch, designGaps, designPrompt, intentText, varietyGaps, type Design } from "./design";
 import { referencesBrief, sectorOf } from "./references";
 import { fitFormes, fitRythme, ordreGaps, partitionChoisie, photosAuthentiquesManquantes, pieceTenable, varieteGaps, type OrdreFacts, type SiteMonte } from "./ordre";
 import { MIN_SECTIONS_IMPORTANTE, pageKind, partitionsBrief, partitionsPermises, typesAccueilPermis, type AngleRole, type PageKind } from "./partitions";
@@ -371,8 +371,11 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   const tag = mode.kind === "concept" ? `custom-concept-${mode.label}` : mode.kind === "complete" ? "custom-design-complete" : "custom-design";
   // Chaque spécialiste lit ses cahiers de métier (knowledge.ts) : le concepteur ceux des pages, des ouvertures et de la
   // mise en page ; le directeur commercial ceux des pages, de l'achat et du catalogue.
-  const call = async (text: string, key: string, role = DESIGN_SYSTEM): Promise<Design> => { const system = educated(role, role === DESIGN_SYSTEM ? "concepteur" : "relecteur"); return customDesignDeps.call ? customDesignDeps.call(system, text, key)
-    : DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: tag, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + (DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + designKnowledge(false).max) * (mode.kind === "concept" ? 2 : 1) }, () =>
+  /** `sur` : la conception relue ; l'appel ne rend que ses changements (`DesignPatchSchema`), appliqués par le Studio. */
+  const call = async (text: string, key: string, role = DESIGN_SYSTEM, sur?: Design): Promise<Design> => { const system = educated(role, role === DESIGN_SYSTEM ? "concepteur" : "relecteur"); if (customDesignDeps.call) { const r = await customDesignDeps.call(system, text, key); return sur ? applyDesignPatch(sur, DesignPatchSchema.parse(r)) : r; }
+    if (sur) return applyDesignPatch(sur, DesignPatchSchema.parse(await withTrace({ jobId, projectId: p.id, step: tag, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + (DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + designKnowledge(false).max) * (mode.kind === "concept" ? 2 : 1) }, () =>
+        llmJson({ nouvelleSiChangee: true, task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, ...(role === DESIGN_SYSTEM ? {} : { teteUnique: true }), promptKey: role === DESIGN_SYSTEM ? "syna-custom-design-fix-4" : "syna-custom-design-review-3", prompt: text, maxTokens: DESIGN_OUTPUT_TOKENS, maxOutputTokens: DESIGN_OUTPUT_TOKENS * 1.5, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignPatchSchema, { strict: true }))));
+    return DesignSchema.parse(await withTrace({ jobId, projectId: p.id, step: tag, costCapMicro: (jobId ? jobSpentMicro(jobId) : 0) + (DESIGN_CAP_MICRO * DESIGN_CALLS_MAX + designKnowledge(false).max) * (mode.kind === "concept" ? 2 : 1) }, () =>
         llmJson({ nouvelleSiChangee: true, task: "strategy", userId: ctx.user.id, projectId: p.id, jobId, system, ...(role === DESIGN_SYSTEM ? {} : { teteUnique: true }), promptKey: role === DESIGN_SYSTEM ? "syna-custom-design-3" : "syna-custom-design-review-2", prompt: text, maxTokens: DESIGN_OUTPUT_TOKENS, maxOutputTokens: DESIGN_OUTPUT_TOKENS * 1.5, usageKey: key, routing: { difficulty: "complex", prefer: siteCopyModel() } }, DesignSchema, { strict: true }))); };
   // Concept choisi : ses pages et sa coque restent celles que le client a vues, quoi que rende le concepteur.
   const pin = (d: Design): Design => mode.kind !== "complete" ? d : { ...d, concept: mode.fixed.concept, header: mode.fixed.header, headerConstruction: mode.fixed.headerConstruction, tenue: mode.fixed.tenue, footer: mode.fixed.footer, search: mode.fixed.search,
@@ -573,7 +576,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     // 1) conception (stratégie, parcours, partitions, sections), 2) relecture du juge de l'ordre (le directeur commercial),
     //    qui rend la version corrigée.
     d = only(pin(await call(prompt, base))); calls++;
-    d = only(pin(await call(`${prompt}\n\nCONCEPTION À RELIRE (JSON) :\n${JSON.stringify(d)}`, `${base}-review`, DESIGN_REVIEW_SYSTEM))); calls++;
+    d = only(pin(await call(`${prompt}\n\nCONCEPTION À RELIRE (JSON) :\n${JSON.stringify(d)}`, `${base}-review`, DESIGN_REVIEW_SYSTEM, d))); calls++;
     c = check(d);
     sansIA();
     // 3) le juge de l'originalité (séparé du concepteur) : ses refus rejoignent la seule reprise ci-dessous.
@@ -594,7 +597,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     //    refuse quelque chose ; puis les contrôles sans IA. Jamais de boucle : ce qui reste est dit dans « à revoir ».
     const todo = [...c.rules, ...c.objections, ...c.rhythm, ...c.pages, ...(refused ? refused.fixes.map((x) => `juge de l'originalité : ${x}`) : []), ...second];
     if (todo.length) {
-      d = only(pin(await call(`${prompt}\n\nTA CONCEPTION, RELUE PAR LE DIRECTEUR COMMERCIAL (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO ET PAR LES JUGES (à corriger, en gardant ta logique et ce qui n'est pas en cause ; rends la conception complète, le champ « partitions » compris ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `${base}-fix`))); calls++;
+      d = only(pin(await call(`${prompt}\n\nTA CONCEPTION, RELUE PAR LE DIRECTEUR COMMERCIAL (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO ET PAR LES JUGES (à corriger, en gardant ta logique et ce qui n'est pas en cause ; rends SEULEMENT ce que tu changes : chaque page que tu modifies, entière, et seulement les autres champs que tu changes, les partitions des pages changées comprises ; une page que tu ne touches pas n'est pas recopiée ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `${base}-fix`, DESIGN_SYSTEM, d))); calls++;
       c = check(d);
       // Le juge relit la reprise : rien n'est montré sans avoir été relu ; un doute qui reste est dit au client.
       if (refused && judge) {
