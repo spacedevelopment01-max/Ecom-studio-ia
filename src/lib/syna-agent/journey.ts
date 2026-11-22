@@ -341,8 +341,12 @@ function lignesDuParcours(j: Journey, o: { identityCount?: number; /** Les notes
     const filled = START_FIELDS.filter((f) => j.start[f]).map((f) => `${f} (${FIELD_LABEL[f].fr}) = ${j.start[f]!.status === "answered" ? `« ${j.start[f]!.value.slice(0, 400)} »` : j.start[f]!.status === "later" ? "il répondra plus tard" : "rien à dire"} (source : ${j.start[f]!.source})`);
     const missing = missingFields(j);
     lines.push(fixe("Faire connaissance. Ton but : apprendre tout ce que LUI SEUL sait et dont sa marque, son site, ses publications et ses publicités auront besoin, pour réussir du premier coup et lui éviter les reprises. Tu mènes la conversation comme une professionnelle qui s'intéresse vraiment à son projet : tu choisis toi-même la prochaine question, la plus utile maintenant, selon son métier et ce qu'il vient de dire. UNE seule question à la fois. Jamais une question dont la réponse est déjà connue (ci-dessous, ou lue sur son site). Quand une réponse est vague, ou qu'elle ouvre quelque chose d'important pour la suite, creuse avant de changer de sujet. Ce que tu peux trouver seule, tu le trouves : s'il donne un lien, lis-le (start.import) et montre-lui ce que tu as trouvé au lieu de le lui demander."));
-    lines.push(`Ce que tu sais déjà : ${filled.join(" ; ") || "rien encore"}.`);
-    if (o.notes?.length) lines.push(`Tes notes (autres faits qu'il a donnés) : ${o.notes.map((n) => `${n.sujet} : « ${n.value.slice(0, 300)} »${n.genre === "refuse" || n.genre === "aime" ? ` (${n.genre === "refuse" ? "refus" : "goût"}, ${n.portee ?? "tout"})` : ""}`).join(" ; ")}.`);
+    // Sa fiche entière suit plus bas : ce qu'il a dit n'est pas redonné une deuxième fois (audit du 22 novembre 2026).
+    if (o.fiche) lines.push("Tout ce qu'il a déjà dit est dans sa fiche, ci-dessous : ne lui redemande rien de ce qui y est.");
+    else {
+      lines.push(`Ce que tu sais déjà : ${filled.join(" ; ") || "rien encore"}.`);
+      if (o.notes?.length) lines.push(`Tes notes (autres faits qu'il a donnés) : ${o.notes.map((n) => `${n.sujet} : « ${n.value.slice(0, 300)} »${n.genre === "refuse" || n.genre === "aime" ? ` (${n.genre === "refuse" ? "refus" : "goût"}, ${n.portee ?? "tout"})` : ""}`).join(" ; ")}.`);
+    }
     lines.push(`Mode : ${j.mode}${j.keep.length ? ` ; à garder tel quel : ${j.keep.join(", ")}` : ""}.`);
     if (j.imported.length) lines.push(`Existant lu : ${j.imported.map((s) => `${s.url} (nom « ${s.name ?? "?"} », slogan « ${s.tagline ?? "?"} », logo ${s.logoSrc ? "trouvé" : "non trouvé"}, couleurs ${s.colors?.join(" ") ?? "?"}, polices ${s.fonts?.join(", ") ?? "?"}${s.warnings?.length ? `, limites : ${s.warnings.slice(0, 3).join(" / ")}` : ""})`).join(" ; ")}.`);
     const extra = extraTopics(j, o.notes ?? []);
@@ -362,7 +366,7 @@ function lignesDuParcours(j: Journey, o: { identityCount?: number; /** Les notes
   if (cur === 1) lines.push(...identityStepContext(j, o.identityCount));
   if (cur === 2 || cur === 3) lines.push(...brandFinishContext(j));
   if (cur === 4) lines.push(...anglesStepContext(j));
-  if (cur === 5) lines.push(...activityStepContext(j));
+  if (cur === 5) lines.push(...activityStepContext(j, { fiche: !!o.fiche }));
   if (cur === 6) lines.push(...themeStepContext(j));
   if (cur === 9 && stepReady(9)) lines.push(...postsStepContext(j));
   if (cur >= 10 && stepReady(cur)) lines.push(...lateStepContext(j, cur));
@@ -433,12 +437,12 @@ export function postsStepContext(j: Journey): string[] {
   ];
 }
 
-export function activityStepContext(j: Journey): string[] {
+export function activityStepContext(j: Journey, o: { /** Sa fiche entière est relue à côté : les réponses de l'étape 0 ne sont pas redonnées. */ fiche?: boolean } = {}): string[] {
   const a = j.activity;
   const base = fixe("Étape 5 (activité complète, GRATUITE) : on réunit tout ce que le site va dire. 1) appelle activity.plan : il AFFICHE la carte « Ton activité » et renvoie ce qui manque ; 2) pose les questions manquantes, y compris les facultatives (téléphone, SIRET), une fois chacune : les faits simples ENSEMBLE, numérotés et courts, six au plus (règle du propriétaire du 19 novembre 2026), une question de choix ou d'accord SEULE ; « Plus tard » se propose SEULEMENT pour le téléphone et le SIRET, JAMAIS pour le nom, l'e-mail, l'adresse, la livraison ou les retours (obligatoires pour le site) (coordonnées : activity.company avec ses mots ; « plus tard » → activity.company later ; « je n'en veux pas sur le site » (pas de téléphone…) → activity.company none, jamais later). L'ADRESSE SUR LE SITE : elle figure toujours dans les informations légales ; un métier sans local qui reçoit du public (il travaille chez lui et se déplace chez ses clients) : demande-lui, en une question, si son adresse doit s'afficher ailleurs sur le site, puis enregistre sa réponse avec activity.company addressDiscreet (true = discrète, seulement dans les informations légales ; false = affichée) ; par défaut discrète pour quelqu'un qui travaille chez lui et se déplace ; s'il l'a déjà dit, ne le redemande pas, enregistre-le ; 3) PRODUITS : s'il n'y en a aucun dans l'onglet Produits, propose la liste tirée de SA fiche (un produit par parfum, modèle ou formule, et les coffrets ou lots qu'il a cités) avec SES prix, sans en inventer aucun ; demande son accord, puis crée chaque produit avec catalogue.create (titre, prix confirmé, description courte avec les faits du client, ses mots : ingrédients, poids ou contenance qu'il a cités dans sa fiche de départ, composition ; rien d'autre) ; un prix manquant se demande, jamais il ne se devine ; 4) chaque enregistrement met la carte à jour tout seul et te rend ce qui manque encore : enregistre ce qu'il vient de dire ET pose ta question suivante dans la MÊME réponse ; 5) quand rien ne manque, demande s'il valide (activity.validate).");
   // Réponses de l'étape 0 : déjà données par le client, jamais redemandées (audit du 10 novembre 2026).
   const said = (["contact", "market", "price", "offer"] as StartField[]).filter((f) => j.start[f]?.status === "answered").map((f) => `${FIELD_LABEL[f].fr} : « ${j.start[f]!.value.slice(0, 600)} »`);
-  const known = said.length ? [`Déjà dit par le client à l'étape 0 (NE LE REDEMANDE PAS : enregistre ce qui s'y trouve avec activity.company ou catalogue.create, puis ne pose que ce qui manque vraiment) : ${said.join(" ; ")}.`] : [];
+  const known = o.fiche ? ["Ce qu'il a dit à l'étape 0 (coordonnées, lieu, prix, offre) est dans sa fiche, ci-dessous : NE LE REDEMANDE PAS ; enregistre ce qui s'y trouve avec activity.company ou catalogue.create, puis ne pose que ce qui manque vraiment."] : said.length ? [`Déjà dit par le client à l'étape 0 (NE LE REDEMANDE PAS : enregistre ce qui s'y trouve avec activity.company ou catalogue.create, puis ne pose que ce qui manque vraiment) : ${said.join(" ; ")}.`] : [];
   const services = fixe("Entreprise de SERVICES : pas de produits ni de livraison ni de retours ; ses PRESTATIONS (nom, prix et durée s'il les donne) s'enregistrent avec services.profile, jamais inventées.");
   if (!a) return [base, ...known];
   const euros = (n: number) => `${n.toFixed(2).replace(".", ",").replace(/,00$/, "")} €`;
@@ -449,9 +453,18 @@ export function activityStepContext(j: Journey): string[] {
 }
 
 /** Étape 6 : le site, créé par SINA en une fois (une seule façon depuis le lot 4). */
+/**
+ * Ce qui reste à régler sur le site, relu à chaque pas de l'étape (audit du 22 novembre 2026) : le compte rendu entier
+ * (6 000 caractères) est donné une seule fois, avec le résultat de la tâche.
+ */
+export function resteDuSite(r: NonNullable<Journey["site"]>["report"]): Record<string, unknown> {
+  const x = r as Record<string, unknown>;
+  return Object.fromEntries(["siteNonRegarde", "ressemblance", "aCompleter", "photosPagesLimitees", "photosProduitsAImporter", "aRevoir", "pret"].filter((k) => x[k] != null && !(Array.isArray(x[k]) && !(x[k] as unknown[]).length)).map((k) => [k, x[k]]));
+}
+
 export function themeStepContext(j: Journey): string[] {
   const st = j.steps[6]?.status ?? "todo";
-  return [st === "doing" ? "Étape 6 — ton site est en cours de création (tâche de fond) : n'annonce rien avant sa fin." : st === "review" ? `Étape 6 — son site est créé : montre-le-lui, écoute ses retouches, et valide seulement quand il le dit (custom.choose).${j.site ? ` COMPTE RENDU DE LA CRÉATION (à lui dire simplement et honnêtement, à la première personne) : ${JSON.stringify(j.site.report).slice(0, 6000)}` : ""}` : "Étape 6 — le site n'est pas encore créé."];
+  return [st === "doing" ? "Étape 6 — ton site est en cours de création (tâche de fond) : n'annonce rien avant sa fin." : st === "review" ? `Étape 6 — son site est créé : montre-le-lui, écoute ses retouches, et valide seulement quand il le dit (custom.choose).${j.site ? ` Le compte rendu entier de la création t'a été donné avec le résultat de la tâche (dans le fil). CE QUI RESTE À RÉGLER : ${JSON.stringify(resteDuSite(j.site.report))}` : ""}` : "Étape 6 — le site n'est pas encore créé."];
 }
 
 /** Étape des angles : trois angles (un sûr, un d'émotion, un audacieux), écrits par trois stratèges séparées et jugés à part. */

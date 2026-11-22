@@ -220,9 +220,11 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
     if (waited.length) {
       // Coût RÉEL de chaque tâche (appels enregistrés), même en échec : SINA ne dit jamais « rien n'a été débité » sans ce
       // chiffre (essais réels du 7 novembre : deux recherches échouées avaient coûté 0,29 € et 0,95 €).
+      // Le compte rendu entier de la création du site, donné une seule fois, ici (le contexte n'en garde que ce qui reste).
+      const compteRendu = waited.some((jid) => getJob(jid)?.type === "syna.site" && getJob(jid)?.status === "done") ? journeyOf(r.conversation_id).site?.report ?? null : null;
       const results = waited.map((jid) => { const j = getJob(jid); const spent = one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", jid)?.c ?? 0; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctTu(j.user_id, spent, j.project_id) : null, coutReelMicro: spent }; });
       const failedSpent = results.filter((x) => x.status !== "done" && x.coutReelMicro > 0);
-      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Tâche terminée, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")}.`, "Finished with a failure.") : L("Tâche terminée : je relis le résultat.", "Task finished: reading the result."), ...(failedSpent.length ? { hint: `Dis au client ce coût réel ; ne dis jamais que rien n'a été débité.${results.some((x) => x.status === "failed" && x.type === "syna.site") ? " Pour relancer la création de son site là où elle s'est arrêtée, sans repayer ce qui était fait : site.create avec relancer:true (une carte affiche le prix de ce qui reste)." : ""}${repriseAccueil(r.project_id, results)}` } : {}), data: results }, r.id);
+      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Tâche terminée, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")}.`, "Finished with a failure.") : L("Tâche terminée : je relis le résultat.", "Task finished: reading the result."), ...(failedSpent.length ? { hint: `Dis au client ce coût réel ; ne dis jamais que rien n'a été débité.${results.some((x) => x.status === "failed" && x.type === "syna.site") ? " Pour relancer la création de son site là où elle s'est arrêtée, sans repayer ce qui était fait : site.create avec relancer:true (une carte affiche le prix de ce qui reste)." : ""}${repriseAccueil(r.project_id, results)}` } : {}), data: compteRendu ? { taches: results, compteRenduDuSite: compteRendu } : results }, r.id);
       updateRun(r.id, { waiting_jobs: "[]" });
     }
     // 2. Action approuvée (ou refusée) par le client.
@@ -353,6 +355,18 @@ function suspend(r: SynaRun, jobs: string[]) {
 }
 
 /** Exécution d'un outil : idempotente par clé (une reprise ne rejoue jamais une écriture acquise). */
+/**
+ * Les pièces jointes, dans la partie qui change à chaque pas (audit du 22 novembre 2026) : celles du dernier message du
+ * client décrites en entier, les plus anciennes en une ligne (leur identifiant et leur nom), au lieu de tout redécrire.
+ */
+export function piecesJointes(cid: string, history: SynaMessage[]): string {
+  const toutes = attachmentsOf(cid);
+  if (!toutes.length) return "aucune";
+  const derniere = [...history].reverse().find((m) => m.role === "user");
+  const neuves = new Set<string>((derniere?.content?.attachments ?? []).map(String));
+  return toutes.map((a) => (neuves.has(a.id) ? describeAttachment(a) : `- ${a.id} : « ${a.name} »${a.assetId ? ` (asset ${a.assetId})` : ""}`)).join("\n");
+}
+
 /** La section désignée par le client dans son message (« [Élément désigné · section s1234abcd … »), sinon null. */
 export function sectionDesignee(text: string): string | null {
   return /^\[Élément désigné · section (s[0-9a-f]{8})\b/.exec(text.trim())?.[1] ?? null;
@@ -439,7 +453,7 @@ function reportWithoutAi(r: SynaRun) {
   const last = waits[waits.length - 1];
   // Rien de créé dans cette demande, ou SINA a déjà parlé depuis : rien à ajouter.
   if (!last || msgs.slice(msgs.indexOf(last) + 1).some((m) => m.role === "assistant")) return;
-  const results = (Array.isArray(last.c.data) ? last.c.data : []) as { type?: string; status?: string; coutReel?: string | null }[];
+  const results = (Array.isArray(last.c.data) ? last.c.data : Array.isArray(last.c.data?.taches) ? last.c.data.taches : []) as { type?: string; status?: string; coutReel?: string | null }[];
   const done = results.length > 0 && results.every((x) => x.status === "done");
   const site = results.some((x) => x.type === "syna.site") ? (() => { try { return journeyOf(r.conversation_id).site?.report ?? null; } catch { return null; } })() : null;
   const what = site
@@ -619,7 +633,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     // la 2e réponse et toutes les notices étaient réécrites en mémoire) ; un outil qui demande un projet est refusé sans
     // rien payer tant qu'il n'existe pas.
     reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(true, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}${guide ? `\n\n# Consigne de l'étape en cours (la même à chaque pas de l'étape)\n${guide}` : ""}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
-    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${resultatsDeLaDemande(history)}${note}`,
+    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${piecesJointes(r.conversation_id, history)}${resultatsDeLaDemande(history)}${note}`,
     // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
     history: filEnBlocs(history, history[0] ? messagesDuClientAvant(r.conversation_id, history[0].seq) : []),
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
@@ -655,6 +669,8 @@ async function reviewedReply(user: User, r: SynaRun, jobId: string, step: number
     const wording = r.project_id ? (() => { try { return wordingPromptLine(loadWordingRules(r.project_id!)); } catch { return ""; } })() : "";
     const call: LlmCall = {
       task: "quality_control", userId: user.id, projectId: r.project_id, jobId, system: REPLY_REVIEW_SYSTEM, promptKey: "syna-reply-review-1",
+      // Les relectures sont espacées de plus de 5 minutes : une heure, sinon sa consigne serait réécrite à chaque fois.
+      memoireLongue: true,
       prompt: replyReviewPrompt({ moment, step: n, stepLabel: JOURNEY_STEPS.find((s) => s.n === n)?.fr, client: String(history[lastUser]?.content?.text ?? ""), facts: serialize(history.slice(lastUser + 1)), draft, wording, quote: await stepQuote(user, r) }),
       maxTokens: 3000, maxOutputTokens: 6000, usageKey: `syna:${r.id}:${step}:relecture`, routing: { difficulty: "standard", prefer: { ...modelFor(0)!, effort: "medium" } },
     };

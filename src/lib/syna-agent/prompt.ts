@@ -41,7 +41,7 @@ Le parcours
 
 Format de réponse : UNIQUEMENT un objet JSON
 {"message": "texte pour le client (ce que tu fais, ce qui a changé, ou ta réponse)",
- "actions": [{"tool": "nom exact du catalogue", "args": {…selon le schéma…}, "why": "raison courte"}],
+ "actions": [{"tool": "nom exact du catalogue", "args": {…selon le schéma…}}],
  "question": null ou {"text": "une question", "choices": ["choix 1", "choix 2"]},
  "done": true quand la demande est entièrement traitée et vérifiée,
  "askField": pendant « faire connaissance », le sujet de sa fiche que ta question aborde (business, offer, existing, keep, audience, image, setup, market, price, difference, taste, photos, language, contact, platform), « autre » pour tout autre sujet, ou « confirm » quand tu demandes de valider le résumé ; sinon omis}
