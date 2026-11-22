@@ -41,6 +41,19 @@ export const TEXT_MODEL_BY_TIER: Record<Exclude<Tier, "local">, string> = {
   strong: "claude-opus-5-5",
 };
 
+/**
+ * Le relecteur des IMAGES des publications et des publicités : le modèle le plus fort, au niveau élevé, une image à la
+ * fois (règle du propriétaire, redite le 22 novembre 2026 : « chaque image relue par le modèle le plus fort »). Avant :
+ * Sonnet 5.5 au niveau faible. Même choix que pour les photos du site (`PHOTO_REVIEW_MODEL`).
+ */
+export const IMAGE_REVIEW_MODEL = { provider: "anthropic" as const, model: TEXT_MODEL_BY_TIER.strong, effort: "high" };
+/** Routage de cette relecture (le même pour l'appel, le devis et le prix montré). */
+export const IMAGE_REVIEW_ROUTING = { difficulty: "complex" as const, deliverable: "image_v2" as const, prefer: IMAGE_REVIEW_MODEL };
+/** Place de sortie de cette relecture (sa réflexion au niveau élevé comprise) ; une relance coupée double à partir d'ici. */
+export const IMAGE_REVIEW_OUTPUT_TOKENS = 8000;
+/** Jetons d'une relecture d'image de publication au déroulé habituel (images allégées le 22 novembre 2026). */
+export const IMAGE_REVIEW_UNITS = { input: 20000, output: 3000 };
+
 const TEXT: Capability[] = ["text", "structured_output"];
 
 export const DEFAULT_POLICY: Record<TaskId, TaskPolicy> = {

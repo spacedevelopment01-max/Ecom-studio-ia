@@ -211,7 +211,7 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
       let conceptReview: AdReview | null = null;
       let reviewed = false;
       for (const [fi, f] of formats.entries()) {
-        const out = await oneFormat({ p, ctx, deps, concept, f, main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, refPhoto: ownPhotos[0] ?? null, refId, insight, limits, stats, prior: conceptReview, features: feats, maxCostEur:Math.max(0,((currentTrace().costCapMicro ?? (req.maxCostEur ?? DEFAULT_AD_CAP_EUR)*EUR)-(jobId?one<{c:number}>("SELECT COALESCE(SUM(cost),0) c FROM ai_calls WHERE job_id=?",jobId)?.c ?? 0:0))/EUR) });
+        const out = await oneFormat({ p, ctx, deps, concept, f, aspects: formats.map((x) => x.aspect), main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, refPhoto: ownPhotos[0] ?? null, refId, insight, limits, stats, prior: conceptReview, features: feats, maxCostEur:Math.max(0,((currentTrace().costCapMicro ?? (req.maxCostEur ?? DEFAULT_AD_CAP_EUR)*EUR)-(jobId?one<{c:number}>("SELECT COALESCE(SUM(cost),0) c FROM ai_calls WHERE job_id=?",jobId)?.c ?? 0:0))/EUR) });
         if (out.review) {
           conceptReview = out.review;
           reviewed = true;
@@ -278,6 +278,8 @@ type OneInput = {
   deps: AdsV2Deps;
   concept: AdConcept & { claims: ClaimIssue[] };
   f: FormatSpec;
+  /** Tous les formats de la campagne : un seul concept d'image par idée, partagé par eux. */
+  aspects?: AspectId[];
   main: boolean;
   maxCostEur?: number;
   images: Map<AspectId, { assetId: string; data: Buffer; withProduct: boolean } | null>;
@@ -318,7 +320,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
   // (IA indisponible, budget, essais refusés) : aucune création, la raison est dite.
   if (deps.finalAd) {
     const aspect = f.aspect;
-    const r = await deps.finalAd({ conceptId: concept.id, confirmedOffer:o.insight.offer, campaignContext:JSON.stringify({insight:o.insight,angle:concept.angle,direction:concept.direction,copy:concept.copy,visual:concept.visual,audience:o.insight.audience,platform:f}), platform:f.platform, copyApproved:(concept as AdConcept & {copyBy?:string}).copyBy==="ai", angle: concept.angle.type, hook: concept.copy.hook, cta: concept.copy.cta, subject: [concept.visual.subject, concept.copy.visual].filter(Boolean).join(" — "), aspect, maxCostEur: o.maxCostEur ?? DEFAULT_AD_CAP_EUR });
+    const r = await deps.finalAd({ conceptId: concept.id, confirmedOffer:o.insight.offer, campaignContext:JSON.stringify({insight:o.insight,angle:concept.angle,direction:concept.direction,copy:concept.copy,visual:concept.visual,audience:o.insight.audience,platform:f}), platform:f.platform, conceptShare: o.aspects && o.aspects.length > 1 ? { id: hash({ marketingStrategy: strategyReuseKey(p.id), v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, visual: concept.visual, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, offer: o.insight.offer ?? null }), aspects: o.aspects } : undefined, copyApproved:(concept as AdConcept & {copyBy?:string}).copyBy==="ai", angle: concept.angle.type, hook: concept.copy.hook, cta: concept.copy.cta, subject: [concept.visual.subject, concept.copy.visual].filter(Boolean).join(" — "), aspect, maxCostEur: o.maxCostEur ?? DEFAULT_AD_CAP_EUR });
     stats.images++;
     if (r.assetId) run("UPDATE assets SET meta = json_set(meta, '$.adV2', json(?)) WHERE id = ?", JSON.stringify({ version: ADS_V2_VERSION, hash: h, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy: concept.copy, platform: f.platform, aspect: f.aspect, layout: "ai", aiFinal: true }), r.assetId);
     return { outcome: { conceptId: concept.id, platform: f.platform, aspect: f.aspect, verdict: r.assetId ? "PROVISIONAL" : "REJECTED", score: null, codes: r.assetId ? [] : ["ai_blocked"], reason: r.assetId ? "publicité entièrement créée par l'IA, contrôlée (textes, produit, logo)" : r.reason ?? "publicité IA non créée", assetId: r.assetId, imageAssetId: null, attempts: 1, reused: false }, review: null };

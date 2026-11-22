@@ -13,6 +13,7 @@ import {defaultConfiguration} from "./higgsfield/catalog";
 import { balance, EUR } from "../billing";
 import { getJsonSetting } from "../settings";
 import { priceFor, routeFor, usdToEur, type TaskId } from "./config";
+import { IMAGE_REVIEW_MODEL, IMAGE_REVIEW_UNITS } from "../orchestrator/policy";
 import { mediaRouteFor } from "./media-providers";
 import { usageExplicit, type MediaUsage } from "./media-routing";
 import { L } from "../i18n-server";
@@ -63,6 +64,17 @@ function usd(task: TaskId, units: { input?: number; output?: number; images?: nu
   if (p.unit === "call") return 0;
   return (units.seconds ?? 0) * p.perSecond;
 }
+
+/**
+ * Relecture d'UNE image de publication ou de publicité, au prix du modèle qui la fait vraiment (le plus fort, règle du
+ * propriétaire : IMAGE_REVIEW_MODEL), pas au prix de la tâche « contrôle » (Sonnet).
+ */
+function reviewUsd(units: { input: number; output: number } = IMAGE_REVIEW_UNITS): number {
+  const p = priceFor(IMAGE_REVIEW_MODEL.provider, IMAGE_REVIEW_MODEL.model);
+  return p && p.unit === "tokens" ? (units.input * p.inputPerM + units.output * p.outputPerM) / 1e6 : usd("quality_control", units);
+}
+/** Coût probable (micro-euros, coefficient compris) d'une relecture d'image de publication. */
+export const publicationReviewMicro = (units?: { input: number; output: number }): number => toMicro(reviewUsd(units));
 
 /** Coût estimé en micro-euros débités de l'enveloppe (coefficient de l'administration compris). */
 export type VideoChoice = "ai" | "edited" | "none";
@@ -139,9 +151,12 @@ export const capMicro = (probableMicro: number) => Math.round(probableMicro * CA
  * Publication (ou visuel avec texte) entièrement conçue par l'IA : coût probable d'UN essai — l'image du modèle des
  * publications, son contrôle lettre par lettre, et l'accroche.
  */
+/** Concept et textes d'une image (rédacteur), une fois : partagé par tous les formats d'une même idée de publicité. */
+export const aiPostConceptMicro = (): number => toMicro(usd("copywriting", { input: 18000, output: 2000 }));
+
 export function aiPostProbableMicro(): number {
   const two = usageExplicit("text_layout");
-  const qc = usd("quality_control", { input: 24000, output: 2000 }) * (two ? 2 : 1);
+  const qc = reviewUsd() * (two ? 2 : 1);
   const concept = usd("copywriting", { input: 18000, output: 2000 });
   return toMicro(usd("image_generation", { images: 1 }, "social_image") + (two ? usd("image_generation", { images: 1 }, "text_layout") : 0) + qc + concept);
 }

@@ -23,7 +23,8 @@ import {
   formatPlan,
 } from "./publication-quality";
 import type { AspectId } from "../image-v2/types";
-import { estimateTaskMicro } from "../ai/estimate";
+import { estimateTaskMicro, publicationReviewMicro } from "../ai/estimate";
+import { IMAGE_REVIEW_ROUTING, IMAGE_REVIEW_OUTPUT_TOKENS as REVIEW_OUTPUT_TOKENS } from "../orchestrator/policy";
 /**
  * Publication entièrement conçue par l'IA : l'IA d'images compose le visuel complet (scène, mise en page,
  * typographie, bouton) avec le VRAI produit en référence, dans les couleurs de la marque. Les textes sont donnés mot
@@ -285,7 +286,24 @@ export type PublicationContext = {
   scene?: Buffer;
   referenceManifest?: unknown;
   clientTexts?: Partial<AiPostCopy>;
+  /** Formats servis par un concept partagé (une idée de publicité, plusieurs formats). */
+  conceptAspects?: AspectId[];
 };
+
+/**
+ * Le concept de l'image écrit par la stratège dans le plan accepté par le client (titre, appel, scène et concept),
+ * relu par le juge du plan : il sert tel quel, sans nouvel appel de rédaction (audit du 22 novembre 2026). Le titre que
+ * le client a accepté est celui de l'image. Absent ou incomplet : null, et le rédacteur écrit le concept comme avant.
+ */
+export function planConceptOf(post: Pick<PostBrief, "editorialData">): AiPostCopy | null {
+  const raw = post.editorialData?.planConcept;
+  if (!raw) return null;
+  // Mêmes longueurs que le plan (titre 70, appel 40) : un titre accepté n'est jamais coupé ni refusé pour sa longueur.
+  const r = AiPostCopySchema.extend({ headline: z.string().min(2).max(70), cta: z.string().max(40) }).required({ concept: true }).safeParse(raw);
+  return r.success && r.data.scene.trim() ? r.data : null;
+}
+
+const isPlanConcept = (post: Pick<PostBrief, "editorialData">) => !!planConceptOf(post);
 
 export type AiPostDeps = {
   /** Relire la cible avant une nouvelle étape ; un acquis reste lisible sans appel. */
@@ -321,6 +339,12 @@ export type AiPostDeps = {
   conceptMaxMicro?: () => number;
   reviewMaxMicro?: () => number;
   clientTexts?: Partial<AiPostCopy>;
+  /**
+   * Un seul concept pour tous les formats d'une même idée de publicité (audit du 22 novembre 2026) : `id` désigne l'idée
+   * (stable d'un format à l'autre), `aspects` tous ses formats. Le premier format paie le concept ; les autres le
+   * reprennent sans nouvel appel. Chaque format garde son image et sa relecture.
+   */
+  conceptShare?: { id: string; aspects: AspectId[] };
   /** Explicit operation id is supplied only by a deliberate new-version action, not retries. */
   operationId?: string;
   sourceAssetId?: string;
@@ -502,7 +526,7 @@ async function designSinglePostWithAi(
   const rules = loadWordingRules(p0.id);
   const art = artDirectionFor(p0);
   const view = brainView(p, "image"); // completeness is enforced, no lost critical constraint
-  const prefix = publicationKey(p.id, {
+  const keyParts = {
     policy: PUBLICATION_POLICY,
     post: {
       id: post.id,
@@ -531,8 +555,17 @@ async function designSinglePostWithAi(
     brain: view.hash,
     operation: deps.operationId ?? null,
     creative,
-  });
-  const spent = () => deps.spentMicro(prefix);
+  };
+  const prefix = publicationKey(p.id, keyParts);
+  // Concept partagé par les formats d'une même idée de publicité : une seule clé, hors format, réseau et demande du format.
+  const sharedAspects = deps.conceptShare && !isPlanConcept(post) ? [...new Set(deps.conceptShare.aspects)].sort() : [];
+  const shared = sharedAspects.length > 1 && sharedAspects.includes(o.aspect);
+  const copyKey = shared
+    ? `${publicationKey(p.id, { ...keyParts, aspect: sharedAspects.join("+"), conceptShare: deps.conceptShare!.id, post: { subject: post.subject, objective: post.objective }, creative: { purpose: creative.purpose, structure: creative.structure } })}:copy`
+    : `${prefix}:copy`;
+  // Le format qui paie le concept partagé le compte dans sa dépense ; les autres le reprennent sans le compter.
+  const copyOwner = shared && !publicationStageDone(p.id, copyKey);
+  const spent = () => deps.spentMicro(prefix) + (copyOwner ? deps.spentMicro(copyKey) : 0);
   const blocked = (note: string): MediaResult => ({
     assetId: null,
     costMicro: spent(),
@@ -542,7 +575,7 @@ async function designSinglePostWithAi(
   const fits = (n: number) => spent() + n <= capMicro;
   const qcMax = deps.reviewMaxMicro?.() ?? 0;
   try {
-    if(deps.expectedCopyKey && deps.expectedCopyKey!==`${prefix}:copy`)return {...blocked(L("Le contexte a changé depuis cette rédaction : vérifiez le projet avant de reprendre. Aucun nouvel appel de rédaction envoyé.","Context changed since this copy: review the project before resuming. No new copywriting call sent.")),code:"COPY_CONTEXT_CHANGED"};
+    if(deps.expectedCopyKey && deps.expectedCopyKey!==copyKey)return {...blocked(L("Le contexte a changé depuis cette rédaction : vérifiez le projet avant de reprendre. Aucun nouvel appel de rédaction envoyé.","Context changed since this copy: review the project before resuming. No new copywriting call sent.")),code:"COPY_CONTEXT_CHANGED"};
     // An acquired final result does not need a currently available generation model.
     for(let i=0;i<Math.min(AI_POST_ATTEMPTS,Math.max(1,o.maxAttempts??AI_POST_ATTEMPTS));i++) {
       const cached=publicationStageValue<{assetId?:string}>(p.id,`${prefix}:${i}:outcome`);
@@ -558,13 +591,14 @@ async function designSinglePostWithAi(
     const layoutReady=!photoOnly||publicationStageDone(p.id,`${prefix}:0:layout`);
     const max=imageReady?0:deps.maxMicro((refBuf?1:0)+(photoOnly?0:logoBuf?1:0),photoOnly);
     if(max==null || (!layoutReady&&deps.layoutMaxMicro?.()==null))return {...blocked("Aucun modèle compatible avec toutes les références essentielles."),code:"ESSENTIAL_REFERENCES_NO_COMPATIBLE_MODEL"};
-    if(!publicationStageDone(p.id,`${prefix}:copy`)) {
+    const preset = planConceptOf(post);
+    if(!publicationStageDone(p.id,copyKey)) {
       const input={headline:deps.clientTexts?.headline??"",subline:deps.clientTexts?.subline??"",cta:deps.clientTexts?.cta??""};
       const explicit=Object.values(input).filter(Boolean);
       const issues=publicationCopyIssues(p,input,post.request??"",explicit,deps.confirmedCommercialTexts);
       if(issues.length){const labels={headline:L("titre","headline"),subline:L("sous-ligne","subline"),cta:L("appel à l’action","call to action")};const fields=[...new Set(issues.map(x=>labels[x.field]))].join(", ");return {...blocked(L(`Texte saisi à vérifier (${fields}) : confirmez les faits de l’offre dans le projet ou retirez cette assertion. Aucun appel de rédaction envoyé.`,`Review supplied text (${fields}): confirm the offer facts in the project or remove this assertion. No copywriting call sent.`)),code:"CLIENT_COPY_FACTS_REQUIRED"};}
-      if(!deps.copy)return {...blocked("Conception IA indisponible : génération suspendue, aucun secours silencieux."),code:"COPY_ENGINE_UNAVAILABLE"};
-      const minimum=(deps.conceptMaxMicro?.()??0)+max+(photoOnly?deps.layoutMaxMicro!()!:0)+(photoOnly?2:1)*qcMax;
+      if(!preset&&!deps.copy)return {...blocked("Conception IA indisponible : génération suspendue, aucun secours silencieux."),code:"COPY_ENGINE_UNAVAILABLE"};
+      const minimum=(preset?0:deps.conceptMaxMicro?.()??0)+max+(photoOnly?deps.layoutMaxMicro!()!:0)+(photoOnly?2:1)*qcMax;
       if(!fits(minimum))return {...blocked(L("Budget insuffisant pour concevoir le visuel et son premier contrôle : étapes acquises conservées, aucun appel envoyé.","Insufficient budget for designing the visual and its first check: acquired steps kept, no call sent.")),code:"CREATIVE_CAP_BEFORE_COPY"};
     }
     const recent = all<{ id: string; meta: string }>(
@@ -619,7 +653,10 @@ async function designSinglePostWithAi(
     };
     const base = aiPostTexts(p, post);
     if(!creative.allowCommercial)base.cta="";
-    const acquired = await stage(`${prefix}:copy`, async () => {
+    if (shared) context.conceptAspects = sharedAspects;
+    const acquired = await stage(copyKey, async () => {
+      // Concept du plan accepté par le client et relu par le juge : repris tel quel, sans appel payant.
+      if (preset) return preset;
       if (!fits(deps.conceptMaxMicro?.() ?? 0))
         throw new Error(
           "Budget insuffisant pour concevoir le visuel : aucun titre de calendrier certifié premium.",
@@ -632,7 +669,7 @@ async function designSinglePostWithAi(
         p,
         post,
         base,
-        `${prefix}:copy`,
+        copyKey,
         people,
         context,
       );
@@ -642,7 +679,7 @@ async function designSinglePostWithAi(
         );
       return result;
     });
-    const correction=acquiredCorrection(p.id,`${prefix}:copy`,acquired);
+    const correction=acquiredCorrection(p.id,copyKey,acquired);
     const written=correction?{...acquired,...correction}:acquired;
     const protectedTexts=[p.brand?.name,...Object.values({...deps.clientTexts,...correction})].filter((x):x is string=>typeof x==="string"&&!!x).sort((a,b)=>b.length-a.length);
     const protectedPattern=protectedTexts.length?new RegExp(`(${protectedTexts.map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")})`,"g"):null;
@@ -658,7 +695,7 @@ async function designSinglePostWithAi(
       deps.confirmedCommercialTexts,
     );
     const issues=publicationCopyIssues(p,written,post.request??"",authorized,deps.confirmedCommercialTexts);
-    if(issues.length)return {...blocked(L("Rédaction IA non conforme aux faits confirmés : vérifiez les passages indiqués et corrigez gratuitement le texte acquis avant de reprendre l'image.","AI copy inconsistent with confirmed facts: review the indicated passages and correct acquired copy for free before resuming the image.")),code:"COPY_FACTS_REJECTED",copyReview:makeCopyReview(`${prefix}:copy`,acquired,issues,p)};
+    if(issues.length)return {...blocked(L("Rédaction IA non conforme aux faits confirmés : vérifiez les passages indiqués et corrigez gratuitement le texte acquis avant de reprendre l'image.","AI copy inconsistent with confirmed facts: review the indicated passages and correct acquired copy for free before resuming the image.")),code:"COPY_FACTS_REJECTED",copyReview:makeCopyReview(copyKey,acquired,issues,p)};
     const t0 = cleanAiCopy(written, base, people, allowed);
     const t = {
       ...t0,
@@ -882,7 +919,7 @@ async function designSinglePostWithAi(
               key,
               people,
               logoBuf,
-              { ...context, native: native.data, scene: scene?.data },
+              { ...context, referenceManifest: reviewManifest(context.referenceManifest), native: native.data, scene: scene?.data },
             ),
           );
           const accepted = aiPostAccepted(
@@ -1014,6 +1051,37 @@ async function designSinglePostWithAi(
   }
 }
 
+/**
+ * Reçu des envois au modèle d'images, tel que le relecteur le lit (audit du 22 novembre 2026) : l'empreinte de la
+ * consigne envoyée au lieu de son texte entier (jusqu'à 24 000 octets, déjà résumé par le brief et le contrat joints).
+ * Le texte complet reste rangé avec l'image.
+ */
+export function reviewManifest(m: unknown): unknown {
+  if (!m || typeof m !== "object" || !Array.isArray((m as { transports?: unknown }).transports)) return m;
+  const x = m as { transports: unknown[] };
+  return {
+    ...x,
+    transports: x.transports.map((t) =>
+      t && typeof t === "object" && typeof (t as { prompt?: unknown }).prompt === "string"
+        ? (({ prompt, ...rest }) => ({ ...rest, promptSha256: stableHash("image-prompt", prompt) }))(t as { prompt: string })
+        : t,
+    ),
+  };
+}
+
+/**
+ * Consignes fixes du relecteur des publications, les mêmes pour toutes les images de tous les clients : en tête, gardées
+ * en mémoire chez le fournisseur au lieu d'être relues au plein prix après les images (audit du 22 novembre 2026).
+ */
+export const PUBLICATION_REVIEW_SYSTEM = `You are a strict art director checking a finished social media post before publication. Answer with JSON only.
+Evaluate relevance and hierarchy against the declared purpose. Organic content must teach, help, explain or invite dialogue according to its role; never penalize absence of a commercial CTA, hero product or photography. Product fidelity means faithful if depicted, or legitimately absent for an editorial subject. Every useful block/step/authorized quotation must remain intact and readable. Invented review, attribution, proof or diagram data is fatal. A carousel page must match its declared order and series, not repeat the same sales poster.
+Set fixTarget to scene for wrong setting/light/materials or composition already wrong BEFORE layout; layout for misspelled/missing text/logo or damage introduced ONLY by layout; both only when both stages need repair; none when accepted. Never discard a faithful scene to fix typography.
+Report logoFaithful explicitly: false for any changed emblem, missing or misspelled logo, even if overall design is attractive. Compare the final crop against native and layout against scene: no essential text/logo/subject cut or changed. Mobile viewing at 360px: hierarchy, safe margins, crisp letters, no interface overlap. No fabricated facts or false real-service evidence.
+Give grid entries for relevance,hierarchy,product,identity,text,mobile,lightMaterials,artifacts,diversity; each {score:0..10,evidence:"visible specific observation (not generic praise)"}. Inspect materials/reflections/contact shadows, perspective, artifacts, product details and recent image similarity, not just JSON validity. The recent posts are small thumbnails, given only to judge diversity. Target 9/10, with each criterion >=8. Missing, inaccurate text/logo/product, unauthorized person, unreadable mobile, unsafe crop or unsupported claim is fatal regardless of average. issues must list every actionable defect; fatal lists critical ones. Never approve without evidence.`;
+
+/** Taille des publications récentes jointes au relecteur : de simples vignettes, la variété se voit très bien ainsi. */
+export const RECENT_THUMB_PX = 512;
+
 /** Branchement réel : IA d'images de l'usage « Publicités », contrôle visuel, coûts lus dans le journal des appels. */
 export function realAiPostDeps(base: {
   userId: string;
@@ -1035,11 +1103,12 @@ export function realAiPostDeps(base: {
     async copy(p, post, fallback, key, people, context) {
       const { llmJson } = await import("../ai/llm");
       const view = brainView(p, "image");
+      // L'identité et la stratégie n'y sont qu'une fois : dans le contrat (creativeContext), pas aussi en tête (audit du
+      // 22 novembre 2026, environ 1 500 jetons de moins par concept). Sans contrat, elles restent en tête.
       const facts = JSON.stringify({
         subject: p.product,
         services: p.business === "services" ? p.services : null,
-        identity: publicationIdentity(p),
-        strategy: p.strategy,
+        ...(context ? {} : { identity: publicationIdentity(p), strategy: p.strategy }),
         request: post.request,
         creativeContext: context,
         previousCreative: previous ? assetMeta(previous) : null,
@@ -1060,7 +1129,7 @@ export function realAiPostDeps(base: {
 Design ONE specific ${context?.creative?.purpose==="ad"?"commercial campaign":"editorial composition"} for THIS subject and destination, not a sector template. Identity, confirmed facts, complete client brief, explicit client text, complete useful caption, blocks and recent concepts: ${facts}.
 Headline, image, light, physical materials, type and logo must be conceived together. Keep proper brand names exactly as validated, even when vocabulary preferences replace generic product terms. Reply in ${p.settings.language === "en" ? "English" : "French"}, image scene instructions may be English. No invented claims. A confirmed/requested price or promotion is allowed; preserve explicit clientTexts verbatim. Choose no CTA, a discreet link or button according to objective; organic posts need no button. A service scene is a generated illustration, never evidence of actual client work. ${people ? "Human presence permitted, anatomy must be credible." : "NO humans, hands, faces, bodies, silhouettes or mannequins; use tools, finished spaces, materials and documented products."}
 If previousCreative is provided, preserve its exact texts and usable composition unless THIS client modification explicitly requests changing them. Do not treat a lighting retouch as a new campaign. Reformatting may recompose for the new ratio while preserving subject, logo and exact text.
-Use ALL five identity palette roles and validated heading/body families appropriately without recolouring the product. Deliberately vary concept, layout, lighting, location and scale from recent work; justify any wave, panel or special effect. Sharp detail or a documented closeup is allowed; never invent hidden faces. Explain the hierarchy, safe areas for ${context?.aspect}, logo placement, negative space and differentiation. No universal blur or luxury style. Text must be concise and useful.
+Use ALL five identity palette roles and validated heading/body families appropriately without recolouring the product. Deliberately vary concept, layout, lighting, location and scale from recent work; justify any wave, panel or special effect. Sharp detail or a documented closeup is allowed; never invent hidden faces. Explain the hierarchy, safe areas for ${context?.conceptAspects?.length ? `each of these formats: ${context.conceptAspects.join(", ")} (ONE common concept and scene serves all of them; say where the text sits in each format)` : context?.aspect}, logo placement, negative space and differentiation. No universal blur or luxury style. Text must be concise and useful.
 For organic content return blocks:[{kind:"paragraph|tip|step|question|answer|check|quote|source",title?:"...",text:"..."}]. Develop useful explanations, not just a slogan. Use confirmed facts and verified sources; missing knowledge is a reason to request material, not invent an answer. Preserve explicitly supplied blocks and authorized quotes verbatim. A photograph or community question may deliberately have no body blocks; advice, FAQ, checklist and tutorials need useful substance. A factual diagram needs documented data, never fabricated measurements. Ads may omit blocks.
 Return blocks, headline, subline (may be empty), cta (may be empty), scene (specific setting), concept:{idea,composition,framing,setting,light,materials,typography,effects,rationale,diversity,ctaStyle:"none"|"link"|"button"}.`,
           maxTokens: 2000,
@@ -1087,38 +1156,28 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
     async review(image, reference, texts, key, people, logo, context) {
       const { llmJson } = await import("../ai/llm");
       const phone = await sharp(image).resize({ width: 360 }).png().toBuffer();
+      const thumb = (b: Buffer) => sharp(b).resize({ width: RECENT_THUMB_PX, height: RECENT_THUMB_PX, fit: "inside" }).jpeg({ quality: 82 }).toBuffer();
+      const recent = await Promise.all((context?.recent ?? []).slice(0, 3).map(async (r) => {
+        const a = getAsset(r.assetId);
+        return a && a.project_id === base.projectId && !a.deleted_at ? [{ data: await thumb(assetData(a)), label: "recent post thumbnail — compare visual diversity only" }] : [];
+      }));
+      // Relecture par le modèle le plus fort, au niveau élevé, une image à la fois (règle du propriétaire). Allégée
+      // (audit du 22 novembre 2026) : la photo du produit et le logo joints UNE fois (la version réduite n'était qu'une
+      // copie), les publications récentes en vignettes, l'image relue toujours en pleine taille.
       return llmJson(
         {
           task: "quality_control",
           ...(quoted?.routes?{expectedRoute:quoted.routes.review}:{}),
           ...base,
           usageKey: `${key}:check`,
-          promptKey: "social-ai-post-check",
-          routing: { difficulty: "standard", deliverable: "image_v2" },
-          system:
-            "You are a strict art director checking a finished social media post before publication. Answer with JSON only.",
+          promptKey: "social-ai-post-check-2",
+          routing: IMAGE_REVIEW_ROUTING,
+          system: PUBLICATION_REVIEW_SYSTEM,
           images: [
             { data: image, label: "post — final file" },
             { data: phone, label: "phone-size proof at 360px" },
-            ...(reference
-              ? [
-                  {
-                    data: await prepareImageReference(reference, 768),
-                    label: "actual transmitted product/scene reference (768px)",
-                  },
-                ]
-              : []),
-            ...(logo
-              ? [
-                  {
-                    data: await prepareImageReference(
-                      logo,
-                      context?.mode === "two-step" ? 1536 : 768,
-                    ),
-                    label: "actual transmitted logo reference",
-                  },
-                ]
-              : []),
+            ...(reference ? [{ data: reference, label: "real product/scene reference, as transmitted to the image model" }] : []),
+            ...(logo ? [{ data: logo, label: "brand logo reference, as transmitted to the image model" }] : []),
             ...(previous
               ? [
                   {
@@ -1128,10 +1187,6 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
                   },
                 ]
               : []),
-            ...(reference
-              ? [{ data: reference, label: "real product (reference)" }]
-              : []),
-            ...(logo ? [{ data: logo, label: "brand logo (reference)" }] : []),
             ...(context?.native
               ? [
                   {
@@ -1149,29 +1204,17 @@ Return blocks, headline, subline (may be empty), cta (may be empty), scene (spec
                   },
                 ]
               : []),
-            ...(context?.recent ?? []).slice(0, 3).flatMap((r) => {
-              const a = getAsset(r.assetId);
-              return a && a.project_id === base.projectId && !a.deleted_at
-                ? [
-                    {
-                      data: assetData(a),
-                      label: "recent campaign — compare visual diversity",
-                    },
-                  ]
-                : [];
-            }),
+            ...recent.flat(),
           ],
           context: brainView(requestContext.project??loadProjectForReview(base.projectId), "image")
             .stable,
           prompt: `${context?.creative?creativeInstruction(context.creative):""}
-Evaluate relevance and hierarchy against the declared purpose. Organic content must teach, help, explain or invite dialogue according to its role; never penalize absence of a commercial CTA, hero product or photography. Product fidelity means faithful if depicted, or legitimately absent for an editorial subject. Every useful block/step/authorized quotation must remain intact and readable. Invented review, attribution, proof or diagram data is fatal. A carousel page must match its declared order and series, not repeat the same sales poster.
 STAGE: ${context?.stage ?? "final"}. ${context?.stage === "scene" ? "This is the scene BEFORE layout: overlay texts and brand logo are deliberately absent, not missing. Score text/logo criteria as not applicable with evidence; do not demand the future overlay. Still check product, consent, light, materials, perspective, artifacts and diversity." : "This is the final composition: every required exact text and supplied logo must be present and faithful."}
 Check the post against this FULL contract: ${JSON.stringify(context ? { ...context, native: undefined, scene: undefined } : null)}.
-Set fixTarget to scene for wrong setting/light/materials or composition already wrong BEFORE layout; layout for misspelled/missing text/logo or damage introduced ONLY by layout; both only when both stages need repair; none when accepted. Never discard a faithful scene to fix typography.
-Report logoFaithful explicitly: false for any changed emblem, missing or misspelled logo, even if overall design is attractive. Compare the final crop against native and layout against scene: no essential text/logo/subject cut or changed. Mobile viewing at 360px: hierarchy, safe margins, crisp letters, no interface overlap. No fabricated facts or false real-service evidence.
-Give grid entries for relevance,hierarchy,product,identity,text,mobile,lightMaterials,artifacts,diversity; each {score:0..10,evidence:"visible specific observation (not generic praise)"}. Inspect materials/reflections/contact shadows, perspective, artifacts, product details and recent image similarity, not just JSON validity. Target 9/10, with each criterion >=8. Missing, inaccurate text/logo/product, unauthorized person, unreadable mobile, unsafe crop or unsupported claim is fatal regardless of average. issues must list every actionable defect; fatal lists critical ones. Never approve without evidence.
 Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lines, button, brand name), copied EXACTLY letter by letter as it is drawn (keep any wrong letter, accent or typo as you see it; one item per text block). Do NOT include text printed on the product itself (it belongs to the real product, compare it with the reference instead)${logo ? " nor the text inside the brand logo (emblem, brand name, trade line or slogan drawn as part of the logo: compare it with the logo reference; a logo that is altered, misspelled, missing or invented is a fatal refusal)" : ""}.\n- textsExact: true only if the design contains exactly these texts, each spelled exactly (accents included), and no other words (text printed on the product, when it matches the reference, is allowed): ${texts.map((x) => `"${x}"`).join(", ")}.\n- legible: every text is clearly readable (contrast, size).\n- person: true if any person, face, hand, body part or human silhouette appears.\n- anatomyOk: ${people ? "false if a person looks fake or has a wrong face, hands, fingers, limbs or posture; true otherwise" : "true"}.\n- productFaithful: ${reference ? `${context?.creative?.purpose === "organic" ? "If the product is absent for this editorial composition, true; if depicted, " : ""}the product in the post is the same as the reference (shape, colour, details, printed text); false if altered, invented or duplicated` : "true"}.\n- score: overall quality 0-10 for a premium brand.\n- issues: short list of problems; fix: one instruction to correct them.\nReply { "transcribed": ["..."], "person": false, "anatomyOk": true, "productFaithful": true, "textsExact": true, "legible": true, "score": 0, "logoFaithful": false, "grid": {"criterion":{"score":0,"evidence":"observation"}}, "fatal": [], "issues": [], "fix": "", "fixTarget":"none" }.`,
-          maxTokens: 2000,
+          // Au niveau élevé, le relecteur regarde avant de répondre : de la place pour sa réflexion, une relance possible.
+          maxTokens: REVIEW_OUTPUT_TOKENS,
+          maxOutputTokens: REVIEW_OUTPUT_TOKENS * 2,
         },
         AiPostReviewSchema.required({
           logoFaithful: true,
@@ -1211,7 +1254,7 @@ Check the post.\n- transcribed: every piece of text of the DESIGN (headline, lin
     conceptMaxMicro: () =>
       quoted?.costs?.copy??estimateTaskMicro("copywriting", { input: 18000, output: 2000 }),
     reviewMaxMicro: () =>
-      quoted?.costs?.review??estimateTaskMicro("quality_control", { input: 24000, output: 2000 }),
+      quoted?.costs?.review??publicationReviewMicro(),
   };
 }
 

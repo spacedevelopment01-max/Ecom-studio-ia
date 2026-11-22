@@ -4,6 +4,7 @@ import type { Project } from "../projects";
 import { projectRights } from "../plan-gates";
 import {
   aiPostProbableMicro,
+  aiPostConceptMicro,
   estimateTaskMicro,
   capMicro,
 } from "../ai/estimate";
@@ -30,7 +31,8 @@ export function campaignEstimate(
   return {
     concepts,
     images,
-    estimateMicro: planning + images * aiPostProbableMicro(),
+    // Un seul concept par idée, partagé par ses formats (22 novembre 2026) : les autres formats ne le repaient pas.
+    estimateMicro: planning + images * aiPostProbableMicro() - (images - concepts) * aiPostConceptMicro(),
     capMicro: capMicro(planning) + images * aiPostEstimate(),
   };
 }
