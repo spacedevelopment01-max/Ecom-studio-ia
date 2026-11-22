@@ -14,7 +14,7 @@ import { manifestOf, pageFile, postedFile } from "./publish";
 import { recordTraffic } from "./maintenance";
 import { customDomainServable } from "./domains";
 import { receiveSiteRequest } from "./requests";
-import { addressOf, livePublication, publicationDir, type Publication, type SiteAddress } from "./store";
+import { addresses, addressOf, livePublication, publicationDir, type Publication, type SiteAddress } from "./store";
 
 const SECURITY = {
   "X-Content-Type-Options": "nosniff",
@@ -70,10 +70,32 @@ function refererPath(req: Request, hostname: string): string | null {
   }
 }
 
+/**
+ * UNE SEULE ADRESSE PAR SITE (recherche 04, 22 novembre 2026 ; Google : « redirections permanentes côté serveur, puis
+ * rel=canonical ») : quand le client a relié son domaine et qu'il est servi, c'est l'adresse principale ; l'adresse du
+ * Studio et toute autre variante y renvoient en permanence. Sans domaine relié, l'adresse du Studio reste la principale.
+ */
+export function adressePrincipale(projectId: string): string | null {
+  const custom = addresses(projectId).filter((a) => a.kind === "custom" && customDomainServable(a)).sort((a, b) => (a.verified_at ?? a.created_at) - (b.verified_at ?? b.created_at));
+  if (custom.length && customDomainsEnabled()) return (custom.find((a) => !a.hostname.startsWith("www.")) ?? custom[0]).hostname;
+  return addresses(projectId).find((a) => a.kind === "studio" && a.status === "active")?.hostname ?? null;
+}
+/** La page dit son adresse principale à Google (une seule, jamais deux). */
+export function avecCanonique(html: string, url: string): string {
+  if (/<link[^>]+rel=["']canonical["']/i.test(html)) return html.replace(/(<link[^>]+rel=["']canonical["'][^>]*href=["'])[^"']*(["'])/i, `$1${url}$2`);
+  return html.replace(/<\/head>/i, `<link rel="canonical" href="${url.replace(/"/g, "&quot;")}"></head>`);
+}
+
 export async function serveSite(req: Request, hostname: string, pathname: string): Promise<Response> {
   const site = siteFor(hostname);
   if (!site) return plain(404, L("Site introuvable.", "Site not found."));
   const { address, pub } = site;
+  const principale = adressePrincipale(address.project_id);
+  // Une autre adresse que la principale : renvoi permanent (les envois de formulaire, eux, sont reçus là où ils arrivent).
+  if (principale && principale !== hostname && (req.method === "GET" || req.method === "HEAD")) {
+    const u = new URL(req.url);
+    return new Response(null, { status: 301, headers: { Location: `${new URL(pub.origin).protocol}//${principale}${pathname}${u.search}`, "Cache-Control": "public, max-age=3600", ...SECURITY } });
+  }
   // Forfait du projet expiré : le site est suspendu (pas supprimé), sans exposer de détail de facturation.
   if (!projectPlan(address.project_id)) return plain(503, L("Ce site est momentanément indisponible.", "This site is temporarily unavailable."));
   const manifest = manifestOf(pub.project_id, pub.id);
@@ -118,7 +140,8 @@ export async function serveSite(req: Request, hostname: string, pathname: string
   const file = manifest.files[page] ? artifactPath(pub, page) : null;
   if (req.headers.get("if-none-match") === etag && file) return new Response(null, { status: 304, headers: { ETag: etag } });
   const status = file ? 200 : 404;
-  const html = fs.readFileSync(file ?? artifactPath(pub, "404.html")!);
+  const raw = fs.readFileSync(file ?? artifactPath(pub, "404.html")!);
+  const html = status === 200 ? Buffer.from(avecCanonique(raw.toString("utf8"), `${origin}${pathname === "/" ? "/" : pathname}`)) : raw;
   recordTraffic(pub.project_id, html.length);
   return new Response(req.method === "HEAD" ? null : new Uint8Array(html), { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": status === 200 ? "public, max-age=60, must-revalidate" : "no-store", ETag: etag, ...SECURITY } });
 }

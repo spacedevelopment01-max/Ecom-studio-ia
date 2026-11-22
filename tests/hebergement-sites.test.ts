@@ -277,4 +277,24 @@ describe("Domaines personnalisés (préparés)", () => {
     expect(() => addCustomDomain(other.pid, "studio.test")).toThrow(/studio/);
     expect(() => addCustomDomain(other.pid, `x.${"sites.test"}`)).toThrow(/studio/);
   });
+
+  it("une seule adresse (22 novembre 2026) : le domaine du client servi, l'adresse du Studio y renvoie en permanence, la page dit son adresse canonique", async () => {
+    const { pid, host } = await published();
+    const a = addCustomDomain(pid, "atelier-unique.example");
+    await verifyCustomDomain(pid, a.hostname, { txt: async () => [[a.verify_token!]], cname: async () => [host], a: async () => [] } as never);
+    // Domaines personnalisés pas encore mis en service : l'adresse du Studio reste la principale, sans renvoi.
+    vi.stubEnv("SITES_CUSTOM_DOMAINS", "");
+    const avant = await get(host, "/");
+    expect(avant.status).toBe(200);
+    expect(await avant.text()).toContain(`<link rel="canonical" href="https://${host}/">`);
+    vi.stubEnv("SITES_CUSTOM_DOMAINS", "1");
+    const redirige = await get(host, "/pages/contact?x=1");
+    expect(redirige.status).toBe(301);
+    expect(redirige.headers.get("location")).toBe("https://atelier-unique.example/pages/contact?x=1");
+    const ok = await get("atelier-unique.example", "/");
+    expect(ok.status).toBe(200);
+    const html = await ok.text();
+    expect(html.match(/rel="canonical"/g)).toHaveLength(1);
+    expect(html).toContain('<link rel="canonical" href="https://atelier-unique.example/">');
+  });
 });
