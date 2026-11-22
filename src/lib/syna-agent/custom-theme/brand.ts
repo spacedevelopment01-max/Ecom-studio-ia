@@ -284,6 +284,8 @@ export function brandBrief(p: Project, j: Journey | null): string {
     d.toConfirm?.length ? `NON confirmés, à ne JAMAIS affirmer : ${d.toConfirm.join(" ; ")}.` : "",
     plan?.company.shipping ? `Livraison : ${plan.company.shipping}.` : "",
     plan?.company.returns ? `Retours : ${plan.company.returns}.` : "",
+    plan?.company.mediateur ? `Médiateur de la consommation (à écrire dans les informations légales, tel quel) : ${plan.company.mediateur}.` : "",
+    plan?.company.hebergeur ? `Hébergeur du site (à écrire dans les mentions légales, tel quel) : ${plan.company.hebergeur}.` : "",
     ((c) => (c.length ? `Coordonnées : ${c.join(" · ")}.` : ""))([plan?.company.legalName, plan?.company.email, plan?.company.address, plan?.company.phone].filter((x): x is string => !!x)),
     plan?.company.addressDiscreet === true && plan.company.address ? "ADRESSE DISCRÈTE (demande du client) : son adresse ne s'écrit QUE dans les informations légales, jamais ailleurs sur le site (ni pied de page, ni contact, ni carte, ni itinéraire) ; ailleurs, on dit la zone où il se déplace." : "",
     // Entreprise de services : ce que le profil sait et que les pièces afficheront telles quelles (essai réel du 16
