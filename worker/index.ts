@@ -144,6 +144,7 @@ async function tick() {
     try { cleanupInterrupted(); } catch (e) { logError("worker:sites-cleanup", e); }
     try { (await import("../src/lib/sites/visites")).purgerVisites(); } catch (e) { logError("worker:visites-purge", e); }
     try { (await import("../src/lib/suivi/assistante")).purgerEchanges(); } catch (e) { logError("worker:assistante-purge", e); }
+    try { (await import("../src/lib/suivi/carnet")).purgerCarnet(); } catch (e) { logError("worker:carnet-purge", e); }
     // Domaines reliés par les clients : preuve DNS revérifiée chaque jour (domaine expiré ou DNS changé → « perdu »).
     if (sitesDomain()) await recheckDomains().catch((e) => logError("worker:sites-domains", e));
     // Liste d'attente (#420) : notifications internes des nouvelles inscriptions encore à envoyer (reprises espacées).

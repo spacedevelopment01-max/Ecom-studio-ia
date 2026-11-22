@@ -4,6 +4,7 @@
  * n'a pas dit oui (réglage `suivi.devis`). Débit limité par adresse IP ; aucun cookie.
  */
 import { one } from "@/lib/db";
+import { notify } from "@/lib/projects";
 import { clientIp, rateTake } from "@/lib/rate-limit";
 import { suiviAllume } from "@/lib/suivi/reglages";
 import { empreinteDevis, MENTION_ACCORD, signer, totaux, type Devis } from "@/lib/suivi/devis";
@@ -39,6 +40,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ token: string 
   const f = new URLSearchParams(await req.text());
   try {
     signer(token, { nom: f.get("nom") ?? "", mention: f.get("mention") ?? "", empreinteVue: f.get("empreinte") ?? "" });
+    const pr = one<{ project_id: string; user_id: string }>("SELECT d.project_id, p.user_id FROM devis_signatures d JOIN projects p ON p.id = d.project_id WHERE d.token=?", token);
+    if (pr) notify(pr.user_id, pr.project_id, "Un devis vient d'être signé", `Signé par ${(f.get("nom") ?? "").trim().slice(0, 120)}.`, "info");
     return page("<h1>Merci, le devis est signé.</h1><p>Le professionnel est prévenu.</p>");
   } catch (e) { return page(`<h1>Signature impossible.</h1><p>${esc((e as Error).message)}</p><p><a href="">Revenir au devis</a></p>`, 400); }
 }

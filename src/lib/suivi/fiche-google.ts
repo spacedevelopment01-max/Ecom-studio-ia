@@ -81,7 +81,7 @@ export function ressemblance(a: string, b: string): number {
   let n = 0; for (const w of A) if (B.has(w)) n++;
   return n / Math.min(A.size, B.size);
 }
-const OFFRE = /\b(remise|r[ée]duction|promo\w*|code promo|offert\w*|cadeau\w*|gratuit\w*)\b|-\s?\d+\s?%|\d+\s?%\s?(?:de\s)?(?:remise|r[ée]duction)/i;
+export const OFFRE = /\b(remise|r[ée]duction|promo\w*|code promo|offert\w*|cadeau\w*|gratuit\w*)\b|-\s?\d+\s?%|\d+\s?%\s?(?:de\s)?(?:remise|r[ée]duction)/i;
 
 export type Avis = { auteur: string; texte: string; note?: number | null };
 
