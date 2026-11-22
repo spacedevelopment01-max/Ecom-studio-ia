@@ -304,6 +304,15 @@ export function brandBrief(p: Project, j: Journey | null): string {
 
 /** Un fait fort du client se dit en toutes lettres à deux endroits du site au plus (là où il décide). */
 export const FACT_PLACES_MAX = 2;
+/** Photos du site créées en même temps (le prix ne change pas ; le site arrive plus tôt). */
+export const PHOTOS_EN_MEME_TEMPS = 3;
+/** Lance `fn` sur chaque élément, dans l'ordre, `n` au plus en même temps ; attend la fin de tous. */
+export async function enMemeTemps<T>(list: readonly T[], n: number, fn: (i: number, x: T) => Promise<void>): Promise<void> {
+  let k = 0;
+  const run = async () => { while (k < list.length) { const i = k++; await fn(i, list[i]); } };
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(n, list.length)) }, run));
+}
+
 export const SitePlanSchema = z.object({
   promesse: z.string().min(5).max(240),
   voix: z.string().min(5).max(400),
@@ -1352,13 +1361,16 @@ export async function runCustomBrandJob(ctx: JobContext) {
       const id = x?.data.images[0]?.assetId;
       return id && getAsset(id) && (showsPackaging(ph.description) || briefNamesProduct(ph.description, { title: x!.data.title, type: x!.data.productType, photo: true })) ? id : undefined;
     };
-    for (const [i, { uid, ph: ph0 }] of todo.entries()) {
+    // Les photos partent trois à la fois (audit du site du 22 novembre 2026, partie 7) : aucun prix ne change, le site
+    // arrive une dizaine de minutes plus tôt. Chacune est lancée dans l'ordre, et ce qui touche au site (pose de la
+    // photo, images du client attribuées) se fait sans attente entre deux, donc sans mélange.
+    const unePhoto = async (i: number, { uid, ph: ph0 }: (typeof todo)[number]): Promise<void> => {
       let ph = ph0;
       ctx.progress(0.5 + (0.48 * i) / Math.max(1, todo.length), L(`Photos : ${i + 1} sur ${todo.length}`, `Photos: ${i + 1} of ${todo.length}`));
       const file = ph.find.replace(/^.*\//, "");
       // Photo d'un élément retiré par le rédacteur (carte en trop) : rien à créer, rien à payer.
       const here = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === uid);
-      if (!here || !sectionHtml(here.s).includes(ph.find)) continue;
+      if (!here || !sectionHtml(here.s).includes(ph.find)) return;
       try {
         const lib = libSection(here.s.id);
         // Photo impossible à inventer (équipe, photos de clients, biens… ; les réalisations d'artisans, elles, se créent) : seule une vraie photo du client va là,
@@ -1366,12 +1378,12 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const authentic = authenticSection(here.s.id, p.business === "services" ? "services" : "products");
         if (authentic) {
           const given = nextA < reserved ? allOwn[nextA++] : undefined;
-          if (!given) { report.photosToProvide++; continue; }
+          if (!given) { report.photosToProvide++; return; }
           report.photosClient++;
           t = loadCustomTheme(p.id)!;
           const cur0 = allSections(t).find((y) => y.s.uid === uid);
           if (cur0) { cur0.s.html = sectionHtml(cur0.s).split(ph.find).join(assetUrl({ id: given })); t = saveCustomTheme(p.id, t, { history: false }); }
-          continue;
+          return;
         }
         // La vraie photo du produit telle quelle seulement sur sa carte ou dans le bloc d'achat ; ailleurs (ouverture,
         // ambiance), une scène est créée avec elle en référence (audit du 10 novembre 2026 : le même packshot partout).
@@ -1380,7 +1392,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // Emplacement de produit (galerie du bloc d'achat, carte, vignette) : SEULE la vraie photo du produit y va. Sans
         // elle, rien n'est créé ni posé (essai réel : des produits « imaginés » dans la galerie de la fiche) : l'aperçu y
         // montre « Ta photo ici », et la photo du client y prendra sa place dès qu'il l'importe.
-        if (p.business !== "services" && lib && showsProductAlone(lib, ph.description) && !real) { report.photosProduitsAttendues++; continue; }
+        if (p.business !== "services" && lib && showsProductAlone(lib, ph.description) && !real) { report.photosProduitsAttendues++; return; }
         // Une photo déjà faite pour le site d'avant, que le rédacteur a choisi de reprendre : posée telle quelle, sans
         // création ni paiement, jamais deux fois (ni sur un emplacement de produit, écarté juste au-dessus).
         const rep = REPRISE_PHOTO.exec(ph.description);
@@ -1388,7 +1400,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         if (repId && !dejaPosees.has(repId) && getAsset(repId)) {
           t = loadCustomTheme(p.id)!;
           const cur0 = allSections(t).find((y) => y.s.uid === uid);
-          if (cur0) { cur0.s.html = sectionHtml(cur0.s).split(ph.find).join(assetUrl({ id: repId })); t = saveCustomTheme(p.id, t, { history: false }); dejaPosees.add(repId); report.photosReutilisees++; continue; }
+          if (cur0) { cur0.s.html = sectionHtml(cur0.s).split(ph.find).join(assetUrl({ id: repId })); t = saveCustomTheme(p.id, t, { history: false }); dejaPosees.add(repId); report.photosReutilisees++; return; }
         }
         // Reprise refusée (photo déjà sur le site) : la description est celle d'une scène déjà montrée. Elle est créée en
         // scène différente, et c'est dit (dernier recours : la relecture l'a normalement déjà redécrite).
@@ -1397,11 +1409,11 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // Une scène qui montre un produit SANS photo du client : jamais créée (un produit ne s'invente pas). Sa
         // description a déjà eu sa reprise après la relecture ; ce qui reste est dit, le texte de la section prend la place.
         const invented = !real && !(next < own.length) ? unseen(ph) : null;
-        if (invented) { report.photosSansProduit++; report.problems.push(`photo ${file} non créée : sa description montrait « ${invented} », qui n'a pas encore de photo de toi (je n'invente pas un produit)`); continue; }
+        if (invented) { report.photosSansProduit++; report.problems.push(`photo ${file} non créée : sa description montrait « ${invented} », qui n'a pas encore de photo de toi (je n'invente pas un produit)`); return; }
         const mine = !real && next < own.length ? own[next++] : undefined;
         // Montage en deux fois (newPhotos:false) : rien de créé, la photo d'exemple attend le second montage.
-        if (!real && !mine && a.newPhotos === false) { report.photosLeft++; continue; }
-        if (!real && !mine && mode === "client") { report.problems.push(`photo ${file} : aucune image du client pour cet emplacement`); continue; }
+        if (!real && !mine && a.newPhotos === false) { report.photosLeft++; return; }
+        if (!real && !mine && mode === "client") { report.problems.push(`photo ${file} : aucune image du client pour cet emplacement`); return; }
         // Une photo créée : la description ne part jamais avec une personne ou une main que rien n'autorise (contrôle sans
         // IA) ; « retry » : la seule reprise permise, après un refus du contrôle pour une personne, description durcie.
         const create = (retry: boolean) => ctx.step(`${retry ? "photo-retry" : "photo"}:${uid}:${file}`, async () => {
@@ -1441,18 +1453,19 @@ export async function runCustomBrandJob(ctx: JobContext) {
               report.photosReprises++;
               assetId = await create(true);
               const again = await check(assetId, true);
-              if (again.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle deux fois, reprise comprise (${again.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); continue; }
+              if (again.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle deux fois, reprise comprise (${again.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); return; }
               problems = [];
             } else problems = [...problems, go === "inconnu" ? "reprise non tentée : prix d'une photo inconnu" : "reprise non tentée : le plafond accordé ne le permettait pas"];
           }
-          if (problems.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle (${problems.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); continue; }
+          if (problems.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle (${problems.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); return; }
         }
         if (real) report.photosReal++; else if (mine) report.photosClient++; else report.photosMade++;
         t = loadCustomTheme(p.id)!;
         const cur = allSections(t).find((y) => y.s.uid === uid);
         if (cur) { cur.s.html = sectionHtml(cur.s).split(ph.find).join(assetUrl({ id: assetId })); t = saveCustomTheme(p.id, t, { history: false }); }
       } catch (e) { report.problems.push(`photo ${file} non créée (${(e as Error).message.slice(0, 120)})`); }
-    }
+    };
+    await enMemeTemps(todo, customBrandDeps.photo ? 1 : PHOTOS_EN_MEME_TEMPS, unePhoto);
   }
 
   // Aucune photo d'exemple ne reste en silence (décision du 10 novembre 2026).

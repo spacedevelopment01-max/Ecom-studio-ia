@@ -34,3 +34,20 @@ describe("le site : relecture des photos, plan, regard en image", () => {
     expect(fs.readFileSync("src/lib/syna-agent/custom-theme/tools.ts", "utf8")).toMatch(/role === DESIGN_SYSTEM \? \{\} : \{ teteUnique: true \}/);
   });
 });
+
+describe("le site : photos créées trois à la fois", () => {
+  it("chaque photo est lancée dans l'ordre, trois au plus en même temps, et toutes sont attendues", async () => {
+    const { enMemeTemps, PHOTOS_EN_MEME_TEMPS } = await import("@/lib/syna-agent/custom-theme/brand");
+    expect(PHOTOS_EN_MEME_TEMPS).toBe(3);
+    const debut: number[] = [], fin: number[] = [];
+    let actives = 0, max = 0;
+    await enMemeTemps([0, 1, 2, 3, 4, 5, 6], 3, async (i) => {
+      debut.push(i); actives++; max = Math.max(max, actives);
+      await new Promise((r) => setTimeout(r, 5 + (i % 3) * 5));
+      actives--; fin.push(i);
+    });
+    expect(debut).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(max).toBe(3);
+    expect([...fin].sort()).toEqual([0, 1, 2, 3, 4, 5, 6]);
+  });
+});
