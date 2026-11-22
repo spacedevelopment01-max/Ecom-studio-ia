@@ -580,19 +580,23 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
     c = check(d);
     sansIA();
     // 3) le juge de l'originalité (séparé du concepteur) : ses refus rejoignent la seule reprise ci-dessous.
-    let refused: Originality | null = null;
-    if (judge) {
-      try {
-        const v = await judge(d, `${base}-judge`);
-        if (v.verdict === "reprendre" && v.fixes.length) refused = v; else originality = { status: "garde", why: v.why };
-      } catch (e) { originality = { status: "non_juge", why: (e as Error).message.slice(0, 160) }; }
-    }
-    // 3 bis) le second regard relit ce que le juge de l'ordre a rendu ; « non conforme » rejoint la seule reprise.
+    //    3 bis) le second regard relit la même version. Les deux lisent la même conception et ne dépendent pas l'un de
+    //    l'autre : ils partent en même temps (une seule attente, en différé comme en direct ; audit du site, partie 5).
+    let refused = null as Originality | null;
     let second: string[] = [];
-    if (regard) {
-      try { second = secondRegardRefus(await regard(d, `${base}-second`)); }
-      catch (e) { secondLeft = [`second regard sur l'ordre des pages non fait (${(e as Error).message.slice(0, 120)})`]; }
-    }
+    const dj = d;
+    await Promise.all([
+      judge ? (async () => {
+        try {
+          const v = await judge(dj, `${base}-judge`);
+          if (v.verdict === "reprendre" && v.fixes.length) refused = v; else originality = { status: "garde", why: v.why };
+        } catch (e) { originality = { status: "non_juge", why: (e as Error).message.slice(0, 160) }; }
+      })() : null,
+      regard ? (async () => {
+        try { second = secondRegardRefus(await regard(dj, `${base}-second`)); }
+        catch (e) { secondLeft = [`second regard sur l'ordre des pages non fait (${(e as Error).message.slice(0, 120)})`]; }
+      })() : null,
+    ]);
     // 4) UNE seule reprise, par le CONCEPTEUR, si le contrôle du Studio, le juge de l'originalité ou le second regard
     //    refuse quelque chose ; puis les contrôles sans IA. Jamais de boucle : ce qui reste est dit dans « à revoir ».
     const todo = [...c.rules, ...c.objections, ...c.rhythm, ...c.pages, ...(refused ? refused.fixes.map((x) => `juge de l'originalité : ${x}`) : []), ...second];
@@ -600,15 +604,19 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
       d = only(pin(await call(`${prompt}\n\nTA CONCEPTION, RELUE PAR LE DIRECTEUR COMMERCIAL (JSON) :\n${JSON.stringify(d)}\n\nPOINTS REFUSÉS PAR LE CONTRÔLE DU STUDIO ET PAR LES JUGES (à corriger, en gardant ta logique et ce qui n'est pas en cause ; rends SEULEMENT ce que tu changes : chaque page que tu modifies, entière, et seulement les autres champs que tu changes, les partitions des pages changées comprises ; une page que tu ne touches pas n'est pas recopiée ; liste dans corrections ce que tu changes) :\n- ${todo.join("\n- ")}`, `${base}-fix`, DESIGN_SYSTEM, d))); calls++;
       c = check(d);
       // Le juge relit la reprise : rien n'est montré sans avoir été relu ; un doute qui reste est dit au client.
-      if (refused && judge) {
-        try { const v = await judge(d, `${base}-judge-2`); originality = v.verdict === "reprendre" && v.fixes.length ? { status: "doute", why: v.why } : { status: "repris", why: v.why }; }
-        catch { originality = { status: "doute", why: refused.why }; }
-      }
       // Le second regard relit la reprise seulement s'il avait refusé quelque chose : ce qu'il refuse encore reste écrit.
-      if (second.length && regard) {
-        try { secondLeft = secondRegardRefus(await regard(d, `${base}-second-2`)).map((x) => `${x} (encore là après la reprise)`); }
-        catch { secondLeft = second.map((x) => `${x} (reprise non relue)`); }
-      }
+      // Les deux secondes lectures partent en même temps.
+      const dr = d, avant = refused;
+      await Promise.all([
+        avant && judge ? (async () => {
+          try { const v = await judge(dr, `${base}-judge-2`); originality = v.verdict === "reprendre" && v.fixes.length ? { status: "doute", why: v.why } : { status: "repris", why: v.why }; }
+          catch { originality = { status: "doute", why: avant.why }; }
+        })() : null,
+        second.length && regard ? (async () => {
+          try { secondLeft = secondRegardRefus(await regard(dr, `${base}-second-2`)).map((x) => `${x} (encore là après la reprise)`); }
+          catch { secondLeft = second.map((x) => `${x} (reprise non relue)`); }
+        })() : null,
+      ]);
     }
   } catch (e) {
     // Coût réel, même d'un passage raté (essai du 10 novembre 2026 : « 0 passage payé » alors que 0,34 € l'avaient été).

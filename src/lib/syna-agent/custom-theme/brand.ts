@@ -1193,11 +1193,12 @@ export async function runCustomBrandJob(ctx: JobContext) {
       const drops = repeatDrops(repeats([...known.values()].filter((x) => x.s.clientTexts || sections.some((y) => y.s.uid === x.s.uid)))).filter((d) => known.has(d.uid));
       const todo = planCopyFixes(refused, drops);
       let fixed = 0;
-      for (const [i, f] of todo.entries()) {
-        if (!resteAvantPhotos(SECTION_TEXT_CAP_MICRO)) {
-          report.problems.push(L(`${todo.length - i} reprise(s) de texte laissée(s) de côté pour tenir le prix annoncé : les photos passent avant`, "copy fixes skipped to stay within the announced price"));
-          break;
-        }
+      // Chaque reprise porte sur une section différente : trois partent en même temps (audit du site, partie 5). Le prix
+      // qui reste est revu avant chacune ; dès qu'il ne permet plus les photos, plus aucune ne part.
+      let arret = -1;
+      await enMemeTemps(todo, customBrandDeps.write ? 1 : PHOTOS_EN_MEME_TEMPS, async (i, f) => {
+        if (arret >= 0) return;
+        if (!resteAvantPhotos(SECTION_TEXT_CAP_MICRO)) { arret = i; return; }
         const x = known.get(f.uid)!, l = libSection(x.s.id), label = l?.title ?? x.s.id;
         ctx.progress(0.5 + (0.08 * i) / todo.length, L(`Je reprends : ${label}`, `Reworking: ${label}`));
         try {
@@ -1227,7 +1228,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
           if (r?.applied) fixed++;
           else report.problems.push(`${label} : ma relecture demandait une reprise (${f.fixes[0].slice(0, 140)}), elle n'a pas pu être posée : à relire`);
         } catch (e) { report.problems.push(`${label} : reprise demandée par ma relecture non faite (${(e as Error).message.slice(0, 100)})`); }
-      }
+      });
+      if (arret >= 0) report.problems.push(L(`${todo.length - arret} reprise(s) de texte laissée(s) de côté pour tenir le prix annoncé : les photos passent avant`, "copy fixes skipped to stay within the announced price"));
       for (const f of refused.filter((r) => !todo.some((d) => d.uid === r.uid))) report.problems.push(`${libSection(known.get(f.uid)!.s.id)?.title ?? f.uid} : à relire (${f.fixes[0].slice(0, 140)})`);
       report.relecture = { reprises: fixed, refusees: refused.length, avis: review.site };
       // Ce que la fiche ne confirme toujours pas après la relecture : dit au client, jamais laissé en silence.
