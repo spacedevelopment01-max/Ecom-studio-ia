@@ -655,6 +655,17 @@ CREATE TABLE IF NOT EXISTS retractations (
 );
 CREATE INDEX IF NOT EXISTS retractations_projet ON retractations(project_id, created_at);
 
+-- Les pages vues des sites hébergés par le Studio (22 novembre 2026, exemption de la CNIL pour la mesure d'audience) :
+-- un simple compte par jour et par page, rangé à part pour chaque client ; aucune adresse, aucun identifiant, aucun
+-- traceur ; effacé au bout de 25 mois.
+CREATE TABLE IF NOT EXISTS visites (
+  project_id TEXT NOT NULL,
+  jour TEXT NOT NULL,                  -- AAAA-MM-JJ
+  page TEXT NOT NULL,
+  vues INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (project_id, jour, page)
+);
+
 CREATE TABLE IF NOT EXISTS quality_checks (
   id TEXT PRIMARY KEY,
   created_at INTEGER NOT NULL,

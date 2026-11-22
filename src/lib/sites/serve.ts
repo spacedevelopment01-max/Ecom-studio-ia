@@ -14,6 +14,7 @@ import { manifestOf, pageFile, postedFile } from "./publish";
 import { recordTraffic } from "./maintenance";
 import { customDomainServable } from "./domains";
 import { receiveSiteRequest } from "./requests";
+import { aCompter, CHEMIN_REFUS, compterVue, pageRefus } from "./visites";
 import { addresses, addressOf, livePublication, publicationDir, type Publication, type SiteAddress } from "./store";
 
 const SECURITY = {
@@ -116,6 +117,7 @@ export async function serveSite(req: Request, hostname: string, pathname: string
   }
   if (req.method !== "GET" && req.method !== "HEAD") return plain(405, "Method Not Allowed");
   const etag = `"${pub.id}"`;
+  if (pathname === CHEMIN_REFUS) return pageRefus(origin);
   if (pathname === "/robots.txt") return new Response(`User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=300", ...SECURITY } });
   if (pathname === "/sitemap.xml") {
     const urls = manifest.pages.map((p) => `<url><loc>${origin}${p === "/" ? "/" : p}</loc><lastmod>${new Date(pub.created_at).toISOString().slice(0, 10)}</lastmod></url>`).join("");
@@ -143,5 +145,7 @@ export async function serveSite(req: Request, hostname: string, pathname: string
   const raw = fs.readFileSync(file ?? artifactPath(pub, "404.html")!);
   const html = status === 200 ? Buffer.from(avecCanonique(raw.toString("utf8"), `${origin}${pathname === "/" ? "/" : pathname}`)) : raw;
   recordTraffic(pub.project_id, html.length);
+  // Les pages vues, comptées sans traceur (exemption de la CNIL) : jamais une erreur de compte ne gêne la page.
+  if (status === 200 && aCompter(req)) { try { compterVue(pub.project_id, pathname); } catch { /* compte perdu, page servie */ } }
   return new Response(req.method === "HEAD" ? null : new Uint8Array(html), { status, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": status === 200 ? "public, max-age=60, must-revalidate" : "no-store", ETag: etag, ...SECURITY } });
 }

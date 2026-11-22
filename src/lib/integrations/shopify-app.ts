@@ -31,6 +31,10 @@ export const DROITS_SHOPIFY: { droit: string; pourquoi: string }[] = [
   { droit: "write_legal_policies", pourquoi: "remplir tes pages légales" },
   { droit: "write_files", pourquoi: "envoyer ton logo et tes images" },
   { droit: "write_discounts", pourquoi: "créer tes remises" },
+  // Le suivi du mois (recherche 08) : lire tes ventes et tes visites, en lecture seule.
+  { droit: "read_orders", pourquoi: "lire tes ventes" },
+  { droit: "read_all_orders", pourquoi: "lire tes ventes de plus de 60 jours" },
+  { droit: "read_reports", pourquoi: "lire tes visites" },
 ];
 
 const SHOP = /^[a-z0-9][a-z0-9-]*\.myshopify\.com$/;

@@ -296,5 +296,10 @@ describe("Domaines personnalisés (préparés)", () => {
     const html = await ok.text();
     expect(html.match(/rel="canonical"/g)).toHaveLength(1);
     expect(html).toContain('<link rel="canonical" href="https://atelier-unique.example/">');
+    // La page vue est comptée (compteur du Studio, sans traceur) ; le lien de refus pose son témoin.
+    const { visitesDe } = await import("@/lib/sites/visites");
+    const jour = new Date().toISOString().slice(0, 10);
+    expect(visitesDe(pid, jour, jour).vues).toBeGreaterThan(0);
+    expect((await get("atelier-unique.example", "/__ne-pas-compter")).headers.get("set-cookie")).toMatch(/^ecs_ne_pas_compter=1/);
   });
 });

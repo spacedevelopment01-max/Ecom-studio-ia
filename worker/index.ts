@@ -142,6 +142,7 @@ async function tick() {
     await processOutbox().catch((e) => logError("worker:site-notify", e));
     // Publications interrompues (arrêt pendant l'écriture) : dossiers temporaires de plus d'une heure supprimés.
     try { cleanupInterrupted(); } catch (e) { logError("worker:sites-cleanup", e); }
+    try { (await import("../src/lib/sites/visites")).purgerVisites(); } catch (e) { logError("worker:visites-purge", e); }
     // Domaines reliés par les clients : preuve DNS revérifiée chaque jour (domaine expiré ou DNS changé → « perdu »).
     if (sitesDomain()) await recheckDomains().catch((e) => logError("worker:sites-domains", e));
     // Liste d'attente (#420) : notifications internes des nouvelles inscriptions encore à envoyer (reprises espacées).
