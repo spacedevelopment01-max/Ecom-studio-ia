@@ -374,7 +374,7 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
   const billing = await import("@/lib/billing");
   const { EUR, balance, syncAllowance, alignPeriod, reserve, settle, release } = billing;
   const { llmText } = await import("@/lib/ai/llm");
-  const { veoClip, falClip, ambianceImage, veoBilledSeconds, falBilledSeconds, openaiImageMax } = await import("@/lib/ai/media-providers");
+  const { veoClip, falClip, ambianceImage, veoBilledSeconds, falBilledSeconds, openaiImageMax, openaiSize, cost: coutMedia } = await import("@/lib/ai/media-providers");
   const { runForUser } = await import("@/lib/ai/access");
   const { setSetting, setJsonSetting } = await import("@/lib/settings");
   const { DEFAULT_PRICES, FX_SAFETY, usdToEur } = await import("@/lib/ai/config");
@@ -546,10 +546,25 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
   it("images OpenAI : borne documentée par taille et qualité ; taille inconnue : bloquée", () => {
     const high = openaiImageMax("gpt-image-1", { prompt: "x".repeat(1000), images: 2, size: "1024x1536", quality: "high" });
     const medium = openaiImageMax("gpt-image-1", { prompt: "x".repeat(1000), images: 2, size: "1024x1536", quality: "medium" });
-    // 6 240 jetons de sortie (haute qualité, 1024×1536) + 2 aperçus du flux (≈ 100 jetons chacun).
-    expect(high).toBe(Math.round(((1000 * 5 + 3000 * 10 + (6240 + 200) * 40) / 1e6) * usdToEur() * EUR));
+    // 6 240 jetons de sortie (haute qualité, 1024×1536) ; plus aucun aperçu payé (22 novembre 2026).
+    expect(high).toBe(Math.round(((1000 * 5 + 3000 * 10 + 6240 * 40) / 1e6) * usdToEur() * EUR));
     expect(medium).toBeLessThan(high);
     expect(() => openaiImageMax("gpt-image-1", { prompt: "x", images: 0, size: "2048x2048", quality: "high" })).toThrow(/sans borne de coût/);
+  });
+
+  it("GPT Image 2.6 : compté à ses jetons réels (30 $ le million en sortie), la carte garde la borne de 0,12 $ ; 16:9 et 9:16 natifs", () => {
+    // Le 22 novembre 2026 : une image coûtait 0,12 $ au forfait ; comptée à ses jetons, elle coûte ce qu'OpenAI facture.
+    const reel = coutMedia("openai", "gpt-image-2.6-sunburst", { input: 400, imageIn: 1000, imageOut: 3000 });
+    expect(reel.estimated).toBe(false);
+    expect(reel.micro).toBe(Math.round(((400 * 5 + 1000 * 8 + 3000 * 30) / 1e6) * usdToEur() * EUR));
+    // Sans jetons rendus (fournisseur muet) : le forfait de 0,12 $ reste compté, marqué estimé.
+    expect(coutMedia("openai", "gpt-image-2.6-sunburst", { images: 1 })).toMatchObject({ estimated: true, micro: Math.round(0.12 * usdToEur() * EUR) });
+    // La carte de dépense réserve toujours la borne de 0,12 $ par image, sans supplément d'aperçu.
+    expect(openaiImageMax("gpt-image-2.6-sunburst", { prompt: "", images: 2, size: "1824x1024", quality: "high" })).toBe(Math.round(0.12 * usdToEur() * EUR));
+    expect(openaiSize("gpt-image-2.6-sunburst", "16:9")).toBe("1824x1024");
+    expect(openaiSize("gpt-image-2.6-flare", "9:16")).toBe("1152x2048");
+    expect(openaiSize("gpt-image-2.6-flare", "4:5")).toBe("1024x1536");
+    expect(openaiSize("gpt-image-2.5-sunburst", "16:9")).toBe("1536x1024");
   });
 
   it("budgets séparés : la réservation prend l'abonnement puis les packs, chacun rendu ou débité sur son propre budget", async () => {

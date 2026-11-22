@@ -3,7 +3,7 @@ vi.mock("@/lib/public-download",()=>import("./public-download-double"));
  * Génération OpenAI EN FLUX dans le moteur multimédia (méthode de l'essai réel du logo Sébastien Blanc) — AUCUN
  * appel payant : le vrai SDK OpenAI parle à un faux serveur local qui renvoie le VRAI logo déjà payé
  * (tests/fixtures/logo-openai/direct-*.png) en flux SSE, comme l'API.
- *  - flux : 2 aperçus puis l'image finale ; progression transmise ; coût et modèle tracés ; original conservé ;
+ *  - flux : l'image finale seule (aucun aperçu payé depuis le 22 novembre 2026) ; progression transmise ; coût et modèle tracés ; original conservé ;
  *  - proxy HTTPS de l'environnement respecté même sans NODE_USE_ENV_PROXY ;
  *  - 502, coupure du flux : facturation incertaine → coût maximal retenu, AUCUNE seconde génération (ni secours) ;
  *  - budget insuffisant : rien n'est envoyé ;
@@ -53,6 +53,8 @@ function startServer() {
       await new Promise((r) => setTimeout(r, 20));
       if (srv.mode === "cut") return res.socket?.destroy();
     }
+    // Coupure après le début du flux (en-têtes reçus), avant l'image finale.
+    if (srv.mode === "cut") return res.write(": en cours\n\n", () => setTimeout(() => res.socket?.destroy(), 20));
     if (srv.mode === "no-final") return res.end();
     ev({ type: "image_generation.completed", b64_json: b64, usage });
     res.end();
@@ -107,16 +109,16 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     setUsage("logo", { primary: "openai:gpt-image-2.5-sunburst", backup: "google:gemini-2.5-flash-image" });
   });
 
-  it("flux : 2 aperçus puis l'image finale (le vrai logo), progression transmise, coût tracé, original conservé tel quel", async () => {
+  it("flux : l'image finale sans aperçu payé (le vrai logo), progression transmise, coût tracé, original conservé tel quel", async () => {
     const c = await client();
     const events: string[] = [];
     const out = await oi.mediaProgress.run((p) => events.push(`${p.phase}${p.partials ? `:${p.partials}` : ""}`), () => fr(() => mp.logoArtworkImage({ ...c, usageKey: "k-ok" }, { prompt: "logo Sébastien Blanc" })));
     expect(out.equals(realPng)).toBe(true);
     expect(srv.requests).toHaveLength(1);
-    expect(srv.requests[0]).toMatchObject({ model: "gpt-image-2.5-sunburst", stream: true, partial_images: 2, quality: "medium", size: "1024x1024" });
+    expect(srv.requests[0]).toMatchObject({ model: "gpt-image-2.5-sunburst", stream: true, partial_images: 0, quality: "medium", size: "1024x1024" });
     expect(srv.requests[0].background).toBeUndefined();
     // Prix par image injecté : réception tracée, mais aucune facture au jeton déduite de ce forfait simulé.
-    expect(events).toEqual(["sent", "partial:1", "partial:2", "received:2"]);
+    expect(events).toEqual(["sent", "received"]);
     const call = one<any>("SELECT * FROM ai_calls WHERE user_id = ? AND task = 'image_generation'", c.userId);
     expect(call).toMatchObject({ status: "ok", provider: "openai", estimated: 1 });
     expect(reservations(c.userId).map((r) => r.status)).toEqual(["settled"]);
@@ -132,7 +134,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     expect(reservations(c.userId).map((r) => `${r.status}:${r.model}`)).toEqual(["uncertain:gpt-image-2.5-sunburst"]);
   });
 
-  it("flux coupé après un aperçu, ou terminé sans image : incertain, aucune relance", async () => {
+  it("flux coupé avant l'image, ou terminé sans image : incertain, aucune relance", async () => {
     for (const mode of ["cut", "no-final"] as const) {
       const c = await client();
       srv.mode = mode;
@@ -200,12 +202,12 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     }
   });
 
-  it("coût maximal réservé : inclut les aperçus du flux (modèle au jeton)", () => {
+  it("coût maximal réservé : aucun aperçu ajouté, en flux comme sans flux (modèle au jeton)", () => {
     confirmModel("openai:gpt-image-1", { unit: "tokens", inputPerM: 5, outputPerM: 40, imageInputPerM: 10, imageOutputPerM: 40 });
     const on = mp.openaiImageMax("gpt-image-1", { prompt: "x", images: 0, size: "1024x1024", quality: "high" });
     setJsonSetting("ai.media.openaiStream", false as any);
     const off = mp.openaiImageMax("gpt-image-1", { prompt: "x", images: 0, size: "1024x1024", quality: "high" });
-    expect(on).toBeGreaterThan(off);
+    expect(on).toBe(off);
   });
 
   it("parcours Logo V2 avec le vrai logo : flux, sauvegarde, reprise SANS nouvel appel, choix → identité tirée du logo", async () => {
@@ -255,7 +257,7 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     const live = readLive(pid)!;
     expect(live.stage).toBe("done");
     expect(live.art).toBe("openai:gpt-image-2.5-sunburst");
-    expect(live.directions[0]).toMatchObject({ status: "done", progress: { phase: "saved", partials: 2, streamed: true } });
+    expect(live.directions[0]).toMatchObject({ status: "done", progress: { phase: "saved", streamed: true } });
     // Fichier reçu du fournisseur conservé à l'identique, à côté de la proposition (fond retiré, dessin intact).
     const orig = one<{ id: string }>("SELECT id FROM assets WHERE project_id = ? AND role = 'logo-v2-original' AND source_asset_id = ?", pid, prop.assetId!)!;
     expect(assetData(getAsset(orig.id)!).equals(realPng)).toBe(true);
@@ -315,9 +317,9 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     const { artFixture } = await import("./logo-v2-fixtures");
     const imgs = [realPng, await artFixture(1), await artFixture(3)];
     const { r, pid } = await series(imgs);
-    // 3 demandes distinctes, chacune en flux avec 2 aperçus.
+    // 3 demandes distinctes, chacune en flux, sans aperçu payé.
     expect(srv.requests).toHaveLength(3);
-    expect(srv.requests.every((q) => q.stream === true && q.partial_images === 2 && q.model === "gpt-image-2.5-sunburst")).toBe(true);
+    expect(srv.requests.every((q) => q.stream === true && q.partial_images === 0 && q.model === "gpt-image-2.5-sunburst")).toBe(true);
     // 3 prompts distincts : direction, style et idée de symbole propres à chacun.
     expect(new Set(srv.prompts).size).toBe(3);
     const { STYLE_GUIDE } = await import("@/lib/logo-v2/artwork");
@@ -378,7 +380,8 @@ describe("OpenAI en flux dans le moteur multimédia", async () => {
     const withStream = q.imageMaxMicro!;
     setJsonSetting("ai.media.openaiStream", false as any);
     const noStream = fr(() => logoSeriesQuote()).imageMaxMicro!;
-    expect(withStream).toBeGreaterThan(noStream);
+    // Sans aperçu, le flux ne coûte rien de plus.
+    expect(withStream).toBe(noStream);
     expect(q.maxMicro).toBeGreaterThanOrEqual(3 * withStream);
     // Coût réel mesuré lors de l'essai (0,2164 $ pour une image haute qualité 1024² en flux) sous le maximum d'UNE image
     // quand le tarif saisi est d'au moins 0,22 $ par image.

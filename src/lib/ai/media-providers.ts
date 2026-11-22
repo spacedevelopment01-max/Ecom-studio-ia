@@ -332,15 +332,19 @@ function mediaAllowed() {
   return currentUserHasAiCredits() && (!u || !!userPlan(u));
 }
 
-function cost(provider: string, model: string, units: { input?: number; output?: number; imageIn?: number; imageOut?: number; images?: number; seconds?: number }) {
+export function cost(provider: string, model: string, units: { input?: number; output?: number; imageIn?: number; imageOut?: number; images?: number; seconds?: number }) {
   // Sans tarif connu, la génération est refusée (sinon elle serait comptée 0 € hors enveloppe).
   const p = requirePrice(provider, model);
   let usd = 0;
   if (p.unit === "tokens") usd = ((units.input ?? 0) * p.inputPerM + (units.imageIn ?? 0) * (p.imageInputPerM ?? p.inputPerM) + (units.output ?? 0) * p.outputPerM + (units.imageOut ?? 0) * (p.imageOutputPerM ?? p.outputPerM)) / 1e6;
   // Image au forfait (Gemini) : prix de l'image produite + jetons d'entrée (texte, images de référence).
-  if (p.unit === "image") usd = (units.images ?? 1) * p.perImage + ((units.input ?? 0) * (p.inputPerM ?? 0)) / 1e6;
+  // Image comptée aux jetons réels quand le fournisseur les rend (OpenAI) ; sinon au forfait (Gemini, Alibaba).
+  const auJeton = p.unit === "image" && p.outputPerM != null && (units.imageOut ?? 0) > 0;
+  if (p.unit === "image") usd = auJeton
+    ? ((units.input ?? 0) * (p.inputPerM ?? 0) + (units.imageIn ?? 0) * (p.imageInputPerM ?? p.inputPerM ?? 0) + (units.imageOut ?? 0) * p.outputPerM!) / 1e6
+    : (units.images ?? 1) * p.perImage + ((units.input ?? 0) * (p.inputPerM ?? 0)) / 1e6;
   if (p.unit === "video_second") usd = (units.seconds ?? 0) * p.perSecond;
-  return { micro: Math.round(usd * usdToEur() * EUR), estimated: p.unit !== "tokens" };
+  return { micro: Math.round(usd * usdToEur() * EUR), estimated: p.unit !== "tokens" && !auJeton };
 }
 
 /**
@@ -361,11 +365,23 @@ const GEMINI_IMAGE_IN_TOKENS = 1300;
 export const VEO_MIN_BILLED_SECONDS = 8;
 const bytes = (t: string) => Buffer.byteLength(t, "utf8");
 
+/**
+ * La taille demandée à OpenAI. Pour GPT Image 2.6, le 16:9 et le 9:16 se dessinent directement en 1824 × 1024 et
+ * 1152 × 2048 (22 novembre 2026, guide officiel : même prix ou moins, image plus nette, aucun recadrage) ; sinon la
+ * taille 3:2 ou 2:3 la plus proche, recadrée ensuite.
+ */
+export function openaiSize(model: string, aspect: string): string {
+  const [aw, ah] = aspect.split(":").map(Number);
+  if (/^gpt-image-2\.6/.test(model) && aspect === "16:9") return "1824x1024";
+  if (/^gpt-image-2\.6/.test(model) && aspect === "9:16") return "1152x2048";
+  return aw > ah ? "1536x1024" : aw === ah ? "1024x1024" : "1024x1536";
+}
+
 export function openaiImageMax(model: string, o: { prompt: string; images: number; size: string; quality: "medium" | "high" }) {
   // Tarif « par image » saisi dans l'administration : borne directe (une image demandée).
   const p = requirePrice("openai", model);
   // Avec le flux, les aperçus s'ajoutent (≈ 2 × 100 jetons, < 5 % d'une image haute qualité) : +5 % sur le tarif par image.
-  if (p.unit === "image") return Math.ceil(cost("openai", model, { images: 1, input: bytes(o.prompt) }).micro * (openaiStreams(model) ? 1.05 : 1));
+  if (p.unit === "image") return Math.ceil(cost("openai", model, { images: 1, input: bytes(o.prompt) }).micro * (openaiStreams(model) && OPENAI_PARTIAL_IMAGES > 0 ? 1.05 : 1));
   // Au jeton : seulement pour le modèle dont la table officielle des jetons de sortie est connue.
   // gpt-image-1.5 : mêmes jetons de sortie par taille et qualité (page officielle du modèle : « medium » 1024² = 1 056 ;
   // mesuré en réel : « high » 1024×1536 ≈ 6 240 + aperçus).
@@ -517,7 +533,7 @@ export function withQuotedVideoRoute<T>(route:{provider:string;model:string},fn:
 
 /** Borne d'UNE photographie, mêmes formules que sa réservation native. Aucune grille de prix parallèle. */
 export function photoRequestMaxMicro(route:{provider:string;model:string},input:{prompt:string;references:number;aspect:string;quality?:"medium"|"high"}):number{
-  const size=input.aspect==='1:1'?'1024x1024':input.aspect==='16:9'?'1536x1024':'1024x1536';
+  const size=openaiSize(route.model,input.aspect);
   const micro=route.provider==='openai'?openaiImageMax(route.model,{prompt:input.prompt,images:input.references,size,quality:input.quality??'high'}):route.provider==='google'?geminiImageMax(route.model,{prompt:input.prompt,images:input.references}):cost(route.provider,route.model,{images:1,input:Buffer.byteLength(input.prompt,'utf8')}).micro;
   return mediaReservationMaxMicro(micro);
 }
@@ -581,7 +597,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
   if (!b64) throw new Error(L("Réponse d'image vide.", "Empty image response."));
   const u = res.usage ?? {};
   const c = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 });
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -608,7 +624,7 @@ async function mockupMaskEditImpl(ctx: Ctx, input: { image: Buffer; mask?: Buffe
   if (!res.b64) throw new Error(L("Réponse d'image vide.", "Empty image response."));
   const u = res.usage ?? {};
   const c = cost("openai", input.model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 });
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model: input.model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || requirePrice("openai", input.model).unit !== "tokens", idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model: input.model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || cost("openai", input.model, { imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey });
   return Buffer.from(res.b64, "base64");
 }
 /** Borne d'une retouche localisée de maquette (image + masque), mêmes formules que sa réservation. */
@@ -940,7 +956,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   const max = mediaModel(provider, selected)?.caps.references ?? 0;
   if (refs.length > max) throw new UserFacingError(`Le modèle ${selected} ne peut pas recevoir les ${refs.length} références essentielles. Aucune référence supprimée.`);
   const [aw, ah] = input.aspect.split(":").map(Number);
-  const nativeSize=provider==="openai"?(aw>ah?"1536x1024":aw===ah?"1024x1024":"1024x1536"):provider==="alibaba"?qwenSize(input.aspect):null;
+  const nativeSize=provider==="openai"?openaiSize(pickModel("openai","image"),input.aspect):provider==="alibaba"?qwenSize(input.aspect):null;
   input.onRequest?.({provider,requestedModel:selected,aspect:input.aspect,quality:input.quality,nativeSize,prompt:text,references:refs.map((b,i)=>({role:typed[i].role,sha256:createHash("sha256").update(b).digest("hex"),bytes:b.length}))});
   if (provider === "fal") return falImage(ctx, selected, text, refs, input.aspect);
   if (provider === "alibaba") return alibabaImage(ctx, selected, text, refs, input.aspect, !!input.need?.people, !input.need?.text && !refs.length, input.negative);
@@ -968,7 +984,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   }
   const key = activeProviderKey("openai")!;
   const model = pickModel("openai", "image");
-  const size = aw > ah ? "1536x1024" : aw === ah ? "1024x1024" : "1024x1536";
+  const size = openaiSize(model, input.aspect);
   const oaExtras = ref ? extras : [];
   gate(ctx, openaiImageMax(model, { prompt: text, images: ref ? 1 + oaExtras.length : 0, size, quality: input.quality }), "image", "openai", model);
   const client = openaiClient(key);
@@ -988,9 +1004,9 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
   const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey });
   // Coût réel de cette image transmis au moteur qui l'a demandée (affiché sur la carte de la proposition).
-  if (res.usage && requirePrice("openai", model).unit === "tokens") emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
+  if (res.usage && !cost("openai", model, { imageOut: u.output_tokens ?? 0 }).estimated) emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
   return Buffer.from(b64, "base64");
 }
 
@@ -1119,7 +1135,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   const b64 = res.b64;
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 

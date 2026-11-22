@@ -144,7 +144,12 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = POLICY_ROUTES;
 /** Tarifs publics (USD) servant au calcul du coût. À vérifier et ajuster dans l'administration. */
 export type Price =
   | { unit: "tokens"; inputPerM: number; outputPerM: number; imageInputPerM?: number; imageOutputPerM?: number }
-  | { unit: "image"; perImage: number; inputPerM?: number }
+  /**
+   * Image au forfait. `perImage` est la borne de réservation (le plafond de la carte) ; quand le fournisseur rend ses
+   * jetons (OpenAI), le coût compté est celui des jetons réels : texte `inputPerM`, image jointe `imageInputPerM`, sortie
+   * `outputPerM` (22 novembre 2026 : 0,12 $ comptés par image quand la facture en dit environ deux fois moins).
+   */
+  | { unit: "image"; perImage: number; inputPerM?: number; imageInputPerM?: number; outputPerM?: number }
   | { unit: "video_second"; perSecond: number }
   /** Outil facturé à l'appel (ex. recherche web OpenAI : `openai:web_search`). */
   | { unit: "call"; perCall: number };
@@ -160,8 +165,8 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   // sortie 30 $/M, comme le 2.5 ; consommation « high » inchangée, « low » et « medium » environ 4 fois plus) : borne PAR
   // IMAGE, la table des jetons de sortie du 2.6 n'étant pas publiée. Mesuré en réel sur le 2.5 Flare « high » : 1 372 à
   // 1 909 jetons de sortie, soit ≈ 0,06 $ ; borne 0,12 $ par prudence, à ajuster après les premiers appels réels.
-  "openai:gpt-image-2.6-flare": { unit: "image", perImage: 0.12, inputPerM: 5 },
-  "openai:gpt-image-2.6-sunburst": { unit: "image", perImage: 0.12, inputPerM: 5 },
+  "openai:gpt-image-2.6-flare": { unit: "image", perImage: 0.12, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 },
+  "openai:gpt-image-2.6-sunburst": { unit: "image", perImage: 0.12, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 },
   "openai:gpt-image-1": { unit: "tokens", inputPerM: 5, outputPerM: 40, imageInputPerM: 10, imageOutputPerM: 40 },
   "google:gemini-2.5-flash-image": { unit: "image", perImage: 0.039, inputPerM: 0.3 },
   "google:veo-3.0-generate-001": { unit: "video_second", perSecond: 0.4 },
