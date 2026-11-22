@@ -1035,6 +1035,26 @@ CREATE TABLE IF NOT EXISTS ad_documents (
 CREATE UNIQUE INDEX IF NOT EXISTS ad_documents_version ON ad_documents(project_id, doc_key, version);
 CREATE INDEX IF NOT EXISTS ad_documents_project ON ad_documents(project_id, created_at);
 
+-- Journal des créations vidéo par l'IA (rapport 09, point 11 : obligations de « Platform Customer » de Seedance) :
+-- qui, quoi, quand, quel modèle, droits confirmés sur la photo, signalement et retrait.
+CREATE TABLE IF NOT EXISTS video_creations (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  asset_id TEXT,
+  source_asset_id TEXT,
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  prompt_sha TEXT NOT NULL,
+  rights_confirmed_at INTEGER,
+  status TEXT NOT NULL DEFAULT 'ok',   -- ok | retire
+  report_reason TEXT,
+  reported_by TEXT,
+  reported_at INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS video_creations_project ON video_creations(project_id, created_at);
+
 -- Video Engine V2 : documents vidéo (timeline éditable) versionnés, comme les documents publicitaires.
 CREATE TABLE IF NOT EXISTS video_documents (
   id TEXT PRIMARY KEY,

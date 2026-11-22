@@ -61,6 +61,7 @@ import type { GateDecision } from "../quality/gate";
 import { execTool } from "../exec-tool";
 import { dressPromo } from "./promo";
 import { safeCamera } from "./melange";
+import { journalCreation, photoRightsAt } from "./journal";
 import { artDirection } from "../art-direction";
 import { adArt } from "../ads-v2/art";
 import { songGrid, songStyleFor } from "../media/song";
@@ -133,6 +134,12 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
   const rights = projectRights(p.id);
   const intent = rights?.videos === "short" && intent0.durationS > SHORT_VIDEO_MAX_S ? { ...intent0, durationS: SHORT_VIDEO_MAX_S, reasons: [...intent0.reasons, `durée ramenée à ${SHORT_VIDEO_MAX_S} s (vidéos courtes du forfait ${rights.name.fr})`] } : intent0;
   if (rights?.videos === "none" && req.approveGeneration) req = { ...req, approveGeneration: false };
+  // Rapport 09, point 11 : aucune photo animée sans « j'ai les droits sur cette photo » (essais simulés : outils injectés).
+  if (req.approveGeneration && !deps.rightsChecked && !photoRightsAt(p.id)) {
+    if (intent0.generation) throw new Error("Cochez « j'ai les droits sur cette photo » avant d'animer : aucun clip lancé.");
+    notes.push("droits sur les photos non confirmés : aucun plan animé, plans sûrs seulement");
+    req = { ...req, approveGeneration: false };
+  }
   const insight = adInsight(p, { audience: intent.audience, offer: req.offer });
   const strategy = videoStrategy(p, intent, { offer: req.offer, insight });
   notes.push(...strategy.gaps.map((g) => `à compléter : ${g}`));
@@ -541,6 +548,7 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
     const d = gateShot({ review, error, expectsProduct: s.showsProduct, expectsCharacter: s.character && !!o.characterRef, attempt, peopleAllowed: o.intent.people !== false });
     const g = gateSave({ userId: p.userId, projectId: p.id, jobId: o.ctx?.job.id ?? null, candidateId: `video2:${s.id}` }, d);
     const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `plan-${s.id}-${s.part}${attempt ? `-essai-${attempt + 1}` : ""}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: startAsset ?? null, status: d.verdict === "FINAL" ? "review" : "rejected", meta: {durationS:inspected.durationS, videoV2Shot: { key, shotId: s.id, provider, model, attempt, verdict: d.verdict }, ...g.meta } });
+    journalCreation({ projectId: p.id, userId: p.userId, assetId: asset.id, sourceAssetId: startAsset ?? null, provider, model, prompt: shotPrompt(s, o.strategy, o.persona, feedback, o.intent.people !== false) });
     last = { verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], reason: [d.reason, d.feedback].filter(Boolean).join(" — "), assetId: asset.id };
     // Aucun essai raté facturé au client (rapport 09, point 10) : le plan refusé passe à la charge du Studio.
     if (d.verdict !== "FINAL") {

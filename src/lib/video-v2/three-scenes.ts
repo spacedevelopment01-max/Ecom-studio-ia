@@ -403,6 +403,8 @@ async function sceneClipDuration(data:Buffer){
 }
 
 /** Primitive commune aux scènes et aux reprises : même reçu durable, contrôle obligatoire, aucun secours. */
+import { rendreAuClient } from "../billing";
+import { journalCreation } from "./journal";
 export async function acquireDirectScene(p:Project,o:{ctx:JobContext|null;index:number;key:string;rootKey:string;as:"post"|"ad";aspect:SceneAspect;generation:"direct"|"reference";scene:Scene;reference:Buffer|null;referenceAssetId:string|null;clipS:number;minimumDurationS:number;progress?:number;request?:string|null;folderKey:string;prior:import("../library").Asset|null;beforeAcquire:()=>void},deps:ThreeScenesDeps):Promise<string>{
  const {ctx,index:k,reference,prior}=o,projectId=p.id;
  if(!deps.directClip)throw new UserFacingError("Adaptateur vidéo directe indisponible ; aucune image ou vidéo stock substituée.");
@@ -412,6 +414,7 @@ export async function acquireDirectScene(p:Project,o:{ctx:JobContext|null;index:
  const text=directScenePrompt(p,o.scene,!!reference,o.request),clipKey=`${o.key}:direct:${k}`,reviewKey=`${o.key}:direct-qc:${k}`;
  const mp4=prior?assetData(prior):await videoReceipt(projectId,clipKey,()=>deps.directClip!(reference,text,o.aspect,o.clipS,clipKey,o.generation),{readOnlyRecovery:true});
  const asset=prior??await saveAsset({projectId,userId:p.userId,data:mp4,name:`scene-${k+1}.mp4`,mime:"video/mp4",role:"clip",folderKey:o.folderKey,origin:"generated",status:"review",sourceAssetId:o.referenceAssetId,meta:{scenes:{key:o.key,rootKey:o.rootKey,index:k,as:o.as,generation:o.generation},illustration:p.business==="services",gate:{verdict:"PROVISIONAL",checked:false}}});
+ if(!prior){const r=sceneGenerationRoute(o.generation,o.clipS,o.aspect==="16:9"?"16:9":"9:16");journalCreation({projectId,userId:p.userId,assetId:asset.id,sourceAssetId:o.referenceAssetId,provider:r.allowed?r.provider:"inconnu",model:r.allowed?r.model:"inconnu",prompt:text});}
  const duration=await(deps.duration??sceneClipDuration)(mp4);
  if(duration+.05<o.minimumDurationS)throw new UserFacingError(`Scène ${k+1} trop courte : ${duration} s reçues. Clip conservé, aucun remplacement ni nouvel envoi automatique.`);
  const {run}=await import("../db");run("UPDATE assets SET duration=?,meta=json_set(meta,'$.durationS',?) WHERE id=?",duration,duration,asset.id);
@@ -421,7 +424,11 @@ export async function acquireDirectScene(p:Project,o:{ctx:JobContext|null;index:
  const decision=gateShot({review,expectsProduct,expectsCharacter:false,attempt:0,peopleAllowed:false});
  if(expectsProduct&&review?.sameProduct==null){decision.verdict="PROVISIONAL";decision.checked=false;decision.reason="Identité du produit non vérifiée";}
  const gate=gateSave({userId:p.userId,projectId,jobId:ctx?.job.id??null,assetId:asset.id},decision);run("UPDATE assets SET status=?,meta=? WHERE id=?",statusFor(decision),JSON.stringify({...assetMeta(asset),...gate.meta}),asset.id);
- if(decision.verdict!=="FINAL")throw new UserFacingError(`Scène ${k+1} refusée ou non vérifiée : ${decision.reason}. Version conservée.`);
+ if(decision.verdict!=="FINAL"){
+  // Aucun essai raté facturé au client (rapport 09, point 10) : le clip refusé passe à la charge du Studio.
+  if(!prior)rendreAuClient(p.userId,{task:"video_generation",projectId,usageKey:clipKey},`scène ${k+1} refusée au contrôle`);
+  throw new UserFacingError(`Scène ${k+1} refusée ou non vérifiée : ${decision.reason}. Version conservée, rien ne vous est compté pour ce clip.`);
+ }
  return asset.id;
 }
 

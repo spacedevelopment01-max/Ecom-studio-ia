@@ -125,6 +125,8 @@ export function mockVideoDeps(o: {
       : null,
     available: o.available ?? ((x) => x === "google" || x === "fal"),
     preferred: { provider: "fal", model: "fal-ai/kling-video/v2.1/pro/image-to-video" },
+    // Rapport 09, point 11 : dans les essais simulés, « j'ai les droits sur cette photo » est tenu pour coché.
+    rightsChecked: true,
     estimate: (_p, _m, seconds) => seconds * (o.perSecondMicro ?? 100_000),
     inventory: () => projectInventory(p),
     data: (id) => {

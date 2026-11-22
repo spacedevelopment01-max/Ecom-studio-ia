@@ -15,6 +15,7 @@ import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { runVideoEngineV2 } from "@/lib/video-v2/engine";
 import { VIDEO_FORMATS, VIDEO_INTENTS, VIDEO_PLATFORMS, type VideoDocument } from "@/lib/video-v2/types";
 
+import { confirmPhotoRights } from "@/lib/video-v2/journal";
 export const runtime = "nodejs";
 
 const AskSchema = z.object({
@@ -77,7 +78,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
  */
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ action: z.enum(["plan", "generate"]), ask: AskSchema.default({}), offer: z.string().max(200).optional(), approvalToken:z.string().max(100000).optional(), approveGeneration: z.boolean().optional(), maxCostEur: z.number().min(0).max(50).optional() }));
+  const b = await body(req, z.object({ action: z.enum(["plan", "generate"]), ask: AskSchema.default({}), offer: z.string().max(200).optional(), approvalToken:z.string().max(100000).optional(), approveGeneration: z.boolean().optional(), rightsConfirmed: z.boolean().optional(), maxCostEur: z.number().min(0).max(50).optional() }));
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (b.action === "plan") {
     const r = await runVideoEngineV2(null, p.id, { ask: b.ask, offer: b.offer, planOnly: true, maxCostEur: b.maxCostEur });
@@ -90,6 +91,11 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   // projet (Développer : courtes, Dominer : avancées) ; UGC : Dominer.
   if (b.ask.kind === "ugc" || b.approveGeneration) requireCreationPlan(user, p.id, b.ask.kind === "ugc" ? "ugc" : "videos");
   else requirePlan(user, p.id);
+  // Rapport 09, point 11 : aucun plan animé à partir d'une photo sans « j'ai les droits sur cette photo » coché.
+  if (b.approveGeneration) {
+    if (b.rightsConfirmed !== true) throw new HttpError(409, L("Cochez « j'ai les droits sur cette photo » avant d'animer.", "Tick “I own the rights to this photo” before animating."));
+    confirmPhotoRights(p.id, user.id);
+  }
   const approval=readVideoApproval<VideoScript>(p,{ask:b.ask,offer:b.offer??null},b.approvalToken);
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type LIKE 'video.v2%' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
   const job = enqueue({ userId: user.id, projectId: p.id, type: "video.v2", label: L("Vidéo : script, plans, montage", "Video: script, shots, editing"), payload: { projectId: p.id, request: { approval, ask: b.ask, offer: b.offer, approveGeneration: !!b.approveGeneration, maxCostEur: approval.capMicro/1e6 } } });

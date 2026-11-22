@@ -31,6 +31,7 @@ import { loadCreativeMemory } from "@/lib/video-v2/creative-memory";
 import { voiceAvailable } from "@/lib/video-v2/voice";
 import type { Project } from "@/lib/projects";
 
+import { confirmPhotoRights } from "@/lib/video-v2/journal";
 export const runtime = "nodejs";
 
 const Subject = z.discriminatedUnion("kind", [z.object({ kind: z.literal("product"), key: z.string().min(1).max(80) }), z.object({ kind: z.literal("service"), name: z.string().min(1).max(120) })]);
@@ -86,7 +87,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
   return withCommunicationRequest(p.id,req,async()=>{
-  const b = await body(req, z.discriminatedUnion("action", [z.object({action:z.literal("refine"),draftPlan:ApprovedScenePlanSchema,instruction:z.string().min(1).max(1000),...Req.shape}),z.object({action:z.literal("repair"),jobId:z.string().max(80),index:z.number().int().min(0).max(5),kind:z.enum(["image","clip"]),instruction:z.string().max(1000).optional()}),z.object({action:z.literal("plan"),scenarioJobId:z.string().max(80).optional(),approvedScriptMicro:z.number().int().min(0).optional(),draftPlan:ApprovedScenePlanSchema.optional(),...Req.shape}),z.object({ action: z.literal("quote"), ...Req.shape }), z.object({ action: z.literal("create"), ...Req.shape, approvalToken:z.string().max(100000).optional(), approvedEstimateMicro: z.number().int().min(0).nullable().optional() })]));
+  const b = await body(req, z.discriminatedUnion("action", [z.object({action:z.literal("refine"),draftPlan:ApprovedScenePlanSchema,instruction:z.string().min(1).max(1000),...Req.shape}),z.object({action:z.literal("repair"),jobId:z.string().max(80),index:z.number().int().min(0).max(5),kind:z.enum(["image","clip"]),instruction:z.string().max(1000).optional()}),z.object({action:z.literal("plan"),scenarioJobId:z.string().max(80).optional(),approvedScriptMicro:z.number().int().min(0).optional(),draftPlan:ApprovedScenePlanSchema.optional(),...Req.shape}),z.object({ action: z.literal("quote"), ...Req.shape }), z.object({ action: z.literal("create"), ...Req.shape, approvalToken:z.string().max(100000).optional(), approvedEstimateMicro: z.number().int().min(0).nullable().optional(), rightsConfirmed: z.boolean().optional() })]));
   if(b.action!=="repair"&&b.as==="ad")assertAdvertising(p.id);
   if(b.action === "repair") {
     requirePlan(user,p.id);
@@ -144,6 +145,11 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if (!p.brand) throw new HttpError(409, L("La marque n'est pas encore créée.", "The brand has not been created yet."));
   if (!q.allowed) throw new HttpError(402, q.reason ?? L("Vidéo impossible pour ce projet.", "Video not possible for this project."));
   if (q.estimateMicro > 0 && (b.approvedEstimateMicro == null || b.approvedEstimateMicro < q.estimateMicro)) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));
+  // Rapport 09, point 11 : une photo n'est animée qu'après « j'ai les droits sur cette photo », coché pour cette création.
+  if (r.generation === "reference") {
+    if (b.rightsConfirmed !== true) throw new HttpError(409, L("Cochez « j'ai les droits sur cette photo » avant de l'animer.", "Tick “I own the rights to this photo” before animating it."));
+    confirmPhotoRights(p.id, user.id);
+  }
   const approval=readVideoApproval<ScenePlan>(p,sceneApprovalRequest(r),b.approvalToken);
   approvedScenePlan(p,r,approval.scenario);
   if((approval.quoteTotalMicro??approval.capMicro)!==q.capMicro) throw new HttpError(409,"Devis modifié : préparez à nouveau le scénario.");

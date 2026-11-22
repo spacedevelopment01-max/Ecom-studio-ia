@@ -45,6 +45,8 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
   const kinds = KINDS.filter(([v]) => !scope || (scope === "ad") === AD_KINDS.has(v));
   const [form, setForm] = useState({ kind: scope === "ad" ? "video_ad" : scope === "organic" ? (services ? "service_presentation" : "social_content") : services ? "company_presentation" : "video_ad", platform: scope === "ad" ? "meta_feed" : "reels", text: "", allowGeneration: false });
   const [plan, setPlan] = useState<Plan | null>(null);
+  // Rapport 09, point 11 : aucune photo animée sans « j'ai les droits sur cette photo ».
+  const [rights, setRights] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const aiVideo = !!data?.ai.video;
@@ -63,7 +65,7 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
     setBusy("go");
     try {
       // Accord explicite : les plans payants ne sont produits qu'après avoir vu l'estimation (sinon montage local).
-      await api(`/api/projects/${id}/videos/v2`, { body: { approvalToken:plan?.approvalToken, action: "generate", ask: ask(), approveGeneration: !!plan && plan.estimateMicro > 0 && form.allowGeneration && aiVideo } });
+      await api(`/api/projects/${id}/videos/v2`, { body: { approvalToken:plan?.approvalToken, action: "generate", ask: ask(), approveGeneration: !!plan && plan.estimateMicro > 0 && form.allowGeneration && aiVideo, rightsConfirmed: rights } });
       toast("ok", t("Vidéo en préparation : elle apparaît ci-dessous à la fin du rendu.", "Video in progress: it appears below once rendered."));
       setPlan(null);
       reload();
@@ -104,7 +106,9 @@ export function VideoV2Panel({ scope }: { scope?: "ad" | "organic" } = {}) {
             {plan.shots.map((s) => <li key={s.id}>{s.part} · {s.durationS} s · {s.subject} — {s.paid ? t(`plan généré (${budget.short(s.estimateMicro)})`, `generated shot (${budget.short(s.estimateMicro)})`) : t("montage local (gratuit)", "local edit (free)")}</li>)}
           </ul>
           {plan.notes.length > 0 && <p className="mt-2 text-xs text-muted">{plan.notes.slice(0, 3).join(" · ")}</p>}
-          <Button className="mt-3" icon={<Play className="size-4" />} loading={busy === "go"} onClick={produce}>{plan.estimateMicro > 0 && form.allowGeneration && aiVideo ? t(`J'accepte (coût probable ${budget.label(plan.estimateMicro)}) : produire`, `I accept (likely cost ${budget.label(plan.estimateMicro)}): produce`) : t("Produire (montage local, gratuit)", "Produce (local edit, free)")}</Button>
+          {plan.estimateMicro > 0 && form.allowGeneration && aiVideo && <p className="mt-2 text-xs text-ink-2">{t("Seul le plan accepté par le contrôle est compté : un plan refusé est remplacé par votre vrai produit, et ne vous coûte rien.", "Only the shot accepted by the check is counted: a rejected shot is replaced by your real product, at no cost to you.")}</p>}
+          {plan.estimateMicro > 0 && form.allowGeneration && aiVideo && <label className="mt-2 flex items-start gap-2 text-sm" data-video-rights><input type="checkbox" className="mt-1" checked={rights} onChange={(e) => setRights(e.target.checked)} /><span>{t("J'ai les droits sur cette photo (je l'ai prise, ou j'ai l'accord de son auteur et des personnes qu'elle montre).", "I own the rights to this photo (I took it, or I have the consent of its author and of the people shown).")}</span></label>}
+          <Button className="mt-3" icon={<Play className="size-4" />} loading={busy === "go"} disabled={plan.estimateMicro > 0 && form.allowGeneration && aiVideo && !rights} onClick={produce}>{plan.estimateMicro > 0 && form.allowGeneration && aiVideo ? t(`J'accepte (coût probable ${budget.label(plan.estimateMicro)}) : produire`, `I accept (likely cost ${budget.label(plan.estimateMicro)}): produce`) : t("Produire (montage local, gratuit)", "Produce (local edit, free)")}</Button>
         </div>
       )}
       {videos.length > 0 && (

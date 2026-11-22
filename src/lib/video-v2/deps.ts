@@ -59,6 +59,8 @@ export type VideoV2Deps = {
    * aucun réglé, la vidéo reste en plans sûrs. Absent (essais simulés) : le moins cher compatible.
    */
   animated?: { provider: string; model: string } | null;
+  /** Essais simulés seulement : droits sur les photos tenus pour confirmés (le Studio réel lit l'accord daté du client). */
+  rightsChecked?: boolean;
   /** Modèle préféré selon l'usage du plan (vidéo produit, ou UGC quand une personne est à l'image). */
   preferredFor?: (people: boolean) => { provider: string; model: string } | null;
   /** Estimation du coût d'un plan (EUR micro) ; par défaut, le tarif de l'administration. */
