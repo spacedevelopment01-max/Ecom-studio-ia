@@ -348,7 +348,14 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
         reviewError = (e as Error).message;
       }
     }
-    const d = gateImage({ brief, origin: "generated", local, review, reviewError, attempt });
+    let d = gateImage({ brief, origin: "generated", local, review, reviewError, attempt });
+    // Le contrôle gratuit de fidélité (studio photo, recherche 08 point 6) : une image retenue dont le produit a changé
+    // (forme, proportions, couleur) est dite ratée et n'est jamais montrée. Elle n'est PAS refaite toute seule : une
+    // nouvelle image se paierait, c'est au client de la redemander.
+    const fidelite = d.verdict !== "REJECTED" && d.checked && !d.fatalCodes.length && brief.productFidelity && !brief.nativeEdit && reference && deps.fidelity
+      ? await deps.fidelity(reference, img).catch(() => null) : null;
+    const infidele = !!fidelite && !fidelite.fidele;
+    if (infidele) d = { ...d, verdict: "REJECTED", fatal: true, action: "none", fatalCodes: [...d.fatalCodes, "product_changed"], reason: L(`Image ratée : ${fidelite!.ecarts.join(", ")} (contrôle de fidélité au produit). Elle n'est pas refaite toute seule.`, `Failed image: ${fidelite!.ecarts.join(", ")} (product fidelity check). It is not remade automatically.`) };
     const g = gateSave({ ...base, candidateId: `img2:${bh}` }, d);
     const plan = targetedCorrection(d, review, brief);
     // Dernier essai (ou plus de correction utile) : une image payée correcte (contrôlée, sans défaut rédhibitoire, note
@@ -380,6 +387,7 @@ async function one(ctx: JobContext | null, p: Project, req: ImageRequestV2, deps
     }
     remember(p.id, `gen:${ph}`, bh, { verdict: d.verdict === "FINAL" ? "FINAL" : "REJECTED", score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], check_id: g.meta.gate.checkId, asset_id: asset.id, phash: local.hash });
     last = { briefHash: bh, verdict: d.verdict, score: d.score, codes: [...d.fatalCodes, ...d.blockingCodes], reason: d.reason, origin: "generated", assetId: d.verdict === "FINAL" ? asset.id : null,...(d.verdict!=='FINAL'&&!keep?{diagnosticAssetId:asset.id}:{}), attempts: attempt + 1, candidateKey: `gen:${ph}` };
+    if (infidele) { result.notes.push(d.reason); return { outcome: { ...last, verdict: "REJECTED" }, changeDirection: false }; }
     if(reviewCap){result.stoppedByCostCap=true;result.notes.push(`arrêt du contrôle au plafond : ${reviewCap.message}`);return{outcome:last,changeDirection:false};}
     if (d.verdict === "FINAL") {
       seriesHashes.push(local.hash);

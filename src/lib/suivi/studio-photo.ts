@@ -12,9 +12,14 @@
  *     entier par OpenAI ;
  *  3. une image refaite est comparée au détourage d'origine (forme, proportions, couleur) : un produit qui a changé est
  *     dit raté et n'est pas montré.
- * ÉTEINT tant que le propriétaire n'a pas dit oui (réglage `suivi.studioPhoto`) : le moteur des images n'appelle pas
- * encore ce contrôle. Point à lui soumettre : coller le vrai produit sur une scène d'OpenAI tient « images créées par
- * OpenAI » pour la scène, mais le produit reste la photo du client (c'est ce que veut « jamais déformé »).
+ * ALLUMÉ par défaut (décision du 22 novembre 2026 ; « 0 » dans le réglage `suivi.studioPhoto` l'éteint), gratuit :
+ *  - le jugement de la photo est fait quand SINA pose une photo sur un produit (`catalogue.photos`) : la photo reste
+ *    posée, SINA reçoit le conseil pour la refaire avant toute image payée ;
+ *  - le contrôle de fidélité est fait par le moteur des images (`image-v2/engine.ts`, `fideliteLocale`) sur chaque image
+ *    retenue du produit réel : un produit changé rend l'image ratée, et elle n'est PAS refaite toute seule (elle se
+ *    paierait).
+ * Pas branché : la méthode « posé tel quel » (`methodePhoto`). Coller le vrai produit sur une scène touche la règle du
+ * propriétaire (« produit collé devant une photo floue », refusé) : sa décision.
  */
 import sharp from "sharp";
 import { L } from "../i18n-server";

@@ -40,7 +40,33 @@ export type ImageV2Deps = {
   generate: (brief: VisualBrief, prompt: string, reference: Buffer | null, key: string) => Promise<{ img: Buffer; provider: string; model: string | null; path: GenerationPath }>;
   /** Détourage (PNG transparent) du produit de référence. */
   reference: (assetId: string) => Buffer | null;
+  /**
+   * Contrôle gratuit de fidélité au produit (studio photo, recherche 08 point 6 ; réglage `suivi.studioPhoto`) : le
+   * produit de l'image créée comparé à celui de la référence (forme, proportions, couleur), par le code. null : contrôle
+   * impossible (détourage indisponible) ; l'image n'est alors ni refusée ni refaite.
+   */
+  fidelity?: (reference: Buffer, img: Buffer) => Promise<{ fidele: boolean; ecarts: string[] } | null>;
 };
+
+/** Le détourage d'une image, s'il n'en est pas déjà un (une image entièrement opaque est détourée par le modèle local). */
+async function enDetourage(img: Buffer): Promise<Buffer> {
+  const { channels, isOpaque } = await sharp(img).stats();
+  if (channels.length === 4 && !isOpaque) return img;
+  return (await (await import("../media/cutout")).cutoutProduct(img)).png;
+}
+
+/**
+ * Le contrôle de fidélité du Studio, sans aucun appel payant : les deux produits détourés par le modèle embarqué, puis
+ * comparés (`suivi/studio-photo.ts`). Éteint si l'administration a écrit « 0 » dans `suivi.studioPhoto`.
+ */
+export async function fideliteLocale(reference: Buffer, img: Buffer): Promise<{ fidele: boolean; ecarts: string[] } | null> {
+  const { suiviAllume } = await import("../suivi/reglages");
+  if (!suiviAllume("studioPhoto")) return null;
+  try {
+    const { controleFidelite } = await import("../suivi/studio-photo");
+    return await controleFidelite(await enDetourage(reference), await enDetourage(img));
+  } catch { return null; }
+}
 
 /** Résumé du brief pour la relecture (structuré, en anglais). */
 export function reviewPrompt(b: VisualBrief): string {
@@ -151,6 +177,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
       return a && a.project_id === p.id && !a.deleted_at ? assetData(a) : null;
     },
     path: pathFor,
+    fidelity: fideliteLocale,
     async review(brief, img, reference, key, origin) {
       const small = await sharp(img, { failOn: "none" }).rotate().resize(1024, 1024, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
       const images = [{ data: small, label: L("image à juger", "image to review") }];

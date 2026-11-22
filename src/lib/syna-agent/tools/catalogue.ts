@@ -3,7 +3,8 @@ import { prixBarresSansPreuve, QUESTION_30_JOURS } from "../prix-anterieur";
 import { z } from "zod";
 import { createProduct, getProduct, listProducts, setVariantStock, updateProduct, archiveProduct, type StudioProduct } from "../../products/catalog";
 import { L } from "../../i18n-server";
-import { getAsset } from "../../library";
+import { assetData, getAsset } from "../../library";
+import { suiviAllume } from "../../suivi/reglages";
 import type { AgentTool, Change } from "../types";
 import { cents, euros, project, same } from "./common";
 
@@ -116,7 +117,7 @@ const photosTool: AgentTool<{ product: string; photos: string[]; replace?: boole
   name: "catalogue.photos", module: "catalogue", kind: "write", needsProject: true,
   description: "Pose sur UN produit les vraies photos que le client a envoyées (gratuit). product : son titre exact ou son id (catalogue.list). photos : les identifiants des pièces jointes du fil (ou des images de ses Fichiers), dans l'ordre voulu ; la première devient la photo principale. Elles s'ajoutent à celles qu'il a déjà (replace:true pour les remplacer). Jamais une image créée par l'IA : seulement ses photos à lui. Dans l'aperçu de son site, la galerie de sa fiche et ses cartes la montrent tout de suite, sans refaire le site.",
   args: z.object({ product: z.string().min(1).max(160), photos: z.array(z.string().min(1).max(60)).min(1).max(12), replace: z.boolean().optional() }).strict(),
-  run: (ctx, a) => {
+  run: async (ctx, a) => {
     const p = project(ctx), list = listProducts(p.id);
     const prod = list.find((x) => x.id === a.product) ?? list.find((x) => norm(x.data.title).trim() === norm(a.product).trim());
     if (!prod) return { ok: false, summary: L(`Produit « ${a.product} » introuvable.`, "Product not found."), hint: `Produits du catalogue : ${list.map((x) => x.data.title).join(" ; ") || "aucun"}.` };
@@ -135,10 +136,20 @@ const photosTool: AgentTool<{ product: string; photos: string[]; replace?: boole
     const read = getProduct(p.id, prod.id), after = read.data.images.map((i) => i.assetId);
     const ok = ids.every((id) => after.includes(id));
     const sans = listProducts(p.id).filter((x) => x.status === "active" && !x.data.images.some((i) => !!i.assetId)).map((x) => x.data.title);
+    // Le contrôle gratuit de la photo du téléphone (studio photo, recherche 08 point 6) : taille, lumière, netteté, jugées
+    // par le code. Une photo faible reste posée (c'est la sienne), mais SINA lui dit comment la refaire plutôt que de
+    // payer des images sur une mauvaise base.
+    const aRefaire: { photo: string; conseil: string }[] = [];
+    if (suiviAllume("studioPhoto")) {
+      const { jugerPhoto } = await import("../../suivi/studio-photo");
+      for (const id of ids) {
+        try { const j = await jugerPhoto(assetData(getAsset(id)!)); if (!j.ok && j.conseil) aRefaire.push({ photo: id, conseil: j.conseil }); } catch { /* photo illisible : rien à dire */ }
+      }
+    }
     return {
       ok, summary: L(`${ids.length} photo(s) posée(s) sur « ${read.data.title} » et relue(s) : ${after.length} photo(s) au total.`, "Photos set."),
-      data: { produit: read.data.title, photos: after, ...(refused.length ? { refusees: refused } : {}), produitsEncoreSansPhoto: sans },
-      hint: `Dis au client que la photo de « ${read.data.title} » est en place : la galerie de sa fiche et ses cartes la montrent dans l'aperçu de son site, sans rien refaire.${sans.length ? ` Il reste sans photo : ${sans.join(", ")}.` : " Tous ses produits ont maintenant leur photo : propose-lui, avec le prix de la carte d'accord, de créer les scènes avec son vrai produit (custom.photo pour une photo du site, gallery.plan pour la galerie de sa fiche), et de valider son site (custom.choose) pour qu'il soit prêt à partir."}`,
+      data: { produit: read.data.title, photos: after, ...(refused.length ? { refusees: refused } : {}), ...(aRefaire.length ? { photosARefaire: aRefaire } : {}), produitsEncoreSansPhoto: sans },
+      hint: `${aRefaire.length ? `Photo(s) faible(s) jugée(s) par le code (gratuit) : ${aRefaire.map((x) => `${x.photo} : ${x.conseil}`).join(" | ")} Dis-lui ce conseil avec ses mots, avant toute image payée sur cette photo. ` : ""}Dis au client que la photo de « ${read.data.title} » est en place : la galerie de sa fiche et ses cartes la montrent dans l'aperçu de son site, sans rien refaire.${sans.length ? ` Il reste sans photo : ${sans.join(", ")}.` : " Tous ses produits ont maintenant leur photo : propose-lui, avec le prix de la carte d'accord, de créer les scènes avec son vrai produit (custom.photo pour une photo du site, gallery.plan pour la galerie de sa fiche), et de valider son site (custom.choose) pour qu'il soit prêt à partir."}`,
       changes: [{ module: "catalogue", object: `${read.data.title} › photos`, summary: L(`${before.length} → ${after.length} photo(s)`, "photos changed"), before, after, verified: ok }],
     };
   },

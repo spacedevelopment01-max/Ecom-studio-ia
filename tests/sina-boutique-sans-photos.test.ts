@@ -301,6 +301,10 @@ describe("boutique sans photos du client", async () => {
     expect(r.ok).toBe(true);
     expect(r.data.produitsEncoreSansPhoto).toEqual([]);
     expect(r.hint).toMatch(/Tous ses produits ont maintenant leur photo : propose-lui, avec le prix de la carte d'accord, de créer les scènes avec son vrai produit/);
+    // Le contrôle gratuit de la photo du téléphone (allumé le 22 novembre 2026) : une photo petite et unie (floue) reste
+    // posée, et SINA reçoit le conseil pour la refaire, avant toute image payée.
+    expect(r.data.photosARefaire).toEqual([{ photo: b, conseil: expect.stringMatching(/^Je préfère que tu refasses la photo : la photo est trop petite.*floue/) }]);
+    expect(r.hint).toMatch(/^Photo\(s\) faible\(s\) jugée\(s\) par le code \(gratuit\)/);
     expect(X.refusPhotosProduits(ctx)).toBeNull();
     expect(await fr(() => getTool("site.create")!.preview!(ctx, {}))).toBe("Ton site entier, créé pour ta marque.");
   });

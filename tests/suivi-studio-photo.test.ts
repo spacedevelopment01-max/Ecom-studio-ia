@@ -51,4 +51,45 @@ describe("suivi : le studio photo qui garde le vrai produit", async () => {
     const ronde = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="200"><ellipse cx="50" cy="100" rx="50" ry="100" fill="rgb(180,60,40)"/></svg>`)).png().toBuffer();
     expect((await fr(() => S.controleFidelite(origine, ronde))).ecarts).toContain("la forme du produit a changé");
   });
+
+  // Décision du 22 novembre 2026 : le contrôle de fidélité est branché dans le moteur des images (gratuit). Une image dont
+  // le produit a changé est dite ratée, jamais montrée, et n'est PAS refaite toute seule (une nouvelle image se paierait).
+  it("moteur des images : un produit changé rend l'image ratée, sans nouvelle génération ; un produit fidèle passe", async () => {
+    const { createUser } = await import("@/lib/auth");
+    const { loadProject } = await import("@/lib/projects");
+    const { getAsset } = await import("@/lib/library");
+    const { runImageEngineV2 } = await import("@/lib/image-v2/engine");
+    const { seedImageFixture, seedCutout } = await import("./image-v2-fixtures");
+    const { mockDeps, review } = await import("./image-v2-mock");
+    const { grantProjectPlan } = await import("@/lib/project-subscriptions");
+    const u = await createUser(`fidelite-${Date.now()}@test.fr`, "motdepasse-test", "F");
+    const cut = await sharp({ create: { width: 300, height: 600, channels: 4, background: { r: 199, g: 123, b: 48, alpha: 1 } } }).png().toBuffer();
+    for (const fidele of [false, true]) {
+      const p = loadProject(seedImageFixture(u.id, "cosmetic"));
+      grantProjectPlan(p.id, "dominer");
+      const cutId = await seedCutout(u.id, p.id);
+      const { deps, log } = mockDeps({ providers: [], reference: cut, reviewFor: () => review(8.8) });
+      let controles = 0;
+      deps.fidelity = async () => (controles++, fidele ? { fidele: true, ecarts: [] } : { fidele: false, ecarts: ["la forme du produit a changé"] });
+      const r = await fr(() => runImageEngineV2(null, p.id, { kind: "lifestyle", support: "ad", aspect: "1:1", references: [cutId], noStock: true } as any, deps));
+      expect(controles).toBe(1);
+      expect(log.generations.length).toBe(1);
+      if (fidele) { expect(r.outcomes[0].verdict).toBe("FINAL"); expect(r.outcomes[0].assetId).toBeTruthy(); continue; }
+      expect(r.outcomes[0]).toMatchObject({ verdict: "REJECTED", assetId: null });
+      expect(r.outcomes[0].codes).toContain("product_changed");
+      expect(r.notes.join(" ")).toMatch(/Image ratée : la forme du produit a changé .*n'est pas refaite toute seule/);
+      expect(getAsset(r.outcomes[0].diagnosticAssetId!)!.status).toBe("rejected");
+    }
+  });
+
+  it("le contrôle de fidélité du Studio est allumé par défaut, gratuit, et « 0 » dans le réglage l'éteint", async () => {
+    const { setSetting } = await import("@/lib/settings");
+    const { fideliteLocale, realImageDeps } = await import("@/lib/image-v2/deps");
+    const a = await decoupe(400, 400, 200, 200, 100, 100), b = await decoupe(400, 400, 100, 300, 150, 50);
+    expect(await fr(() => fideliteLocale(a, a))).toEqual({ fidele: true, ecarts: [] });
+    expect((await fr(() => fideliteLocale(a, b)))!.fidele).toBe(false);
+    setSetting("suivi.studioPhoto", "0");
+    try { expect(await fideliteLocale(a, b)).toBeNull(); } finally { setSetting("suivi.studioPhoto", null); }
+    expect(realImageDeps({ id: "x", userId: "u" } as any, { jobId: null, aiActive: false }).fidelity).toBe(fideliteLocale);
+  });
 });
