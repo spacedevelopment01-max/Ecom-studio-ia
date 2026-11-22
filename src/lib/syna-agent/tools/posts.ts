@@ -20,6 +20,7 @@ import type { AgentTool } from "../types";
 import { journeyOf, setStep, stepAvailable, updateJourney } from "../journey";
 import { POST_SUBJECT_LABEL, POSTS_PLAN_JOB, chosenAngles, postsPlanMaxMicro, postsPlanTypicalMicro, type PostGroup } from "../posts-plan";
 import { project } from "./common";
+import { bornerMotsDiese, estUnOrdre } from "../../social-v2/fin-de-legende";
 
 const closed = () => ({ ok: false as const, summary: L("L'étape des publications n'est pas encore ouverte dans le parcours.", "The posts step is not open yet.") });
 
@@ -86,10 +87,11 @@ const createTool: AgentTool<CreateArgs> = {
         platforms: q.networks.map((platform) => ({ platform })),
         headline: g.title, caption: g.caption, request: g.visual,
         subject: product ? { kind: "product", key: product.id } : null,
-        editorial: { role: POST_SUBJECT_LABEL[g.subject], structure: STRUCTURE[g.subject], blocks: [...g.points.map((text) => ({ kind: "tip" as const, text })), { kind: "paragraph" as const, text: g.cta }] },
+        // Une pastille qui reste un ordre au lecteur n'est jamais posée (règle « aucun ordre donné au lecteur »).
+        editorial: { role: POST_SUBJECT_LABEL[g.subject], structure: STRUCTURE[g.subject], blocks: [...g.points.map((text) => ({ kind: "tip" as const, text })), ...(estUnOrdre(g.cta) ? [] : [{ kind: "paragraph" as const, text: g.cta }])] },
       });
       // Convention attendue par le calendrier : un groupe = une publication déclinée par réseau, avec son sujet.
-      run("UPDATE posts SET group_id=?, hashtags=?, brief=json_set(COALESCE(brief,'{}'),'$.serie',?,'$.synaPlan',?) WHERE plan_id=?", one.planId, g.hashtags.join(" "), POST_SUBJECT_LABEL[g.subject], j.posts.round, one.planId);
+      run("UPDATE posts SET group_id=?, hashtags=?, brief=json_set(COALESCE(brief,'{}'),'$.serie',?,'$.synaPlan',?) WHERE plan_id=?", one.planId, bornerMotsDiese(g.hashtags).join(" "), POST_SUBJECT_LABEL[g.subject], j.posts.round, one.planId);
       // Le concept de l'image écrit par la stratège et relu par le juge : il sert tel quel, sans nouvel appel de rédaction,
       // et le titre accepté par le client est celui de l'image (audit du 22 novembre 2026).
       const planConcept = planConceptFor(g);
@@ -108,7 +110,7 @@ const createTool: AgentTool<CreateArgs> = {
 export function planConceptFor(g: PostGroup): { headline: string; subline: string; cta: string; scene: string; concept: NonNullable<PostGroup["concept"]> } | null {
   if (!g.concept) return null;
   const ctaStyle = g.concept.ctaStyle;
-  return { headline: g.title, subline: "", cta: ctaStyle === "none" ? "" : g.cta, scene: g.visual, concept: g.concept };
+  return { headline: g.title, subline: "", cta: ctaStyle === "none" || estUnOrdre(g.cta) ? "" : g.cta, scene: g.visual, concept: g.concept };
 }
 
 /** Publications du plan qui ont leur image (créées, contrôlées par le moteur). */

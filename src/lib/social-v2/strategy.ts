@@ -137,19 +137,21 @@ export function socialStrategy(p: Project, o: { lang?: string; platforms?: Platf
     saas: [t("Montrer la valeur du logiciel en démonstration", "Show the software's value in demos"), t("Éduquer le public cible", "Educate the target audience"), t("Obtenir des essais ou des démonstrations", "Get trials or demos")],
     product: [t("Faire connaître le produit", "Make the product known"), t("Lever les doutes d'achat", "Remove buying doubts"), t("Amener vers la boutique", "Drive to the shop")],
   }[a];
+  // Fins de légende sans ordre (décision du 22 novembre 2026, règle « aucun ordre donné au lecteur ») : une vraie
+  // question, une invitation ou un fait utile. Avant : « Demander un devis », « Réserver une table », « Enregistrez ».
   const ctasByKind = {
-    trade: [t("Demander un devis", "Request a quote"), t("Appeler", "Call"), t("Posez votre question en commentaire", "Ask your question in the comments")],
-    restaurant: [t("Réserver une table", "Book a table"), t("Appeler", "Call"), t("Dites-nous votre plat préféré", "Tell us your favourite dish")],
-    service: [t("Prendre rendez-vous", "Book an appointment"), t("Nous contacter", "Contact us"), t("Enregistrez ce conseil", "Save this tip")],
-    beauty: [t("Découvrir sur la boutique", "Shop now"), t("Enregistrez pour votre routine", "Save for your routine"), t("Votre question en commentaire", "Your question in the comments")],
-    tech: [t("Voir le produit", "See the product"), t("Enregistrez la fiche", "Save the specs"), t("Votre usage en commentaire", "Your use case in the comments")],
-    saas: [t("Essayer", "Try it"), t("Demander une démo", "Book a demo"), t("Enregistrez la méthode", "Save the method")],
-    product: [t("Voir le produit", "See the product"), t("Enregistrez", "Save it"), t("Votre question en commentaire", "Your question in the comments")],
+    trade: [t("Un devis pour votre projet ? Il se demande en un message.", "A quote for your project? It takes one message."), t("Une question ? Un appel suffit.", "A question? One call is enough."), t("Une question sur votre projet ? On y répond en commentaire.", "A question about your project? We answer in the comments.")],
+    restaurant: [t("Envie d'une table ? La réservation se fait en un message.", "Fancy a table? Booking takes one message."), t("Une question ? Un appel suffit.", "A question? One call is enough."), t("Et vous, quel est votre plat préféré ?", "What's your favourite dish?")],
+    service: [t("Un rendez-vous ? Tout se passe sur le site.", "An appointment? It's all on the website."), t("Une question ? On vous répond.", "A question? We'll answer."), t("Un conseil à garder pour plus tard.", "A tip worth keeping.")],
+    beauty: [t("Tout est sur la boutique.", "It's all in the shop."), t("À garder pour votre routine.", "Worth keeping for your routine."), t("Une question sur votre routine ?", "A question about your routine?")],
+    tech: [t("Tout le détail est sur la fiche du produit.", "Every detail is on the product page."), t("La fiche, à garder sous le coude.", "Specs worth keeping."), t("Et vous, quel usage en feriez-vous ?", "How would you use it?")],
+    saas: [t("Envie d'essayer ? Tout est sur le site.", "Want to try it? It's all on the website."), t("Une démonstration ? Elle se demande en un message.", "A demo? It takes one message."), t("Une méthode à garder pour plus tard.", "A method worth keeping.")],
+    product: [t("Tout est sur la boutique.", "It's all in the shop."), t("À garder pour plus tard.", "Worth keeping for later."), t("Une question sur le produit ?", "A question about it?")],
   }[a];
   // Entreprise de services : le premier appel à l'action est celui que le client a choisi (devis, rendez-vous, appel…).
-  // (Restaurant : « Réserver une table » reste en tête, c'est la réservation propre au métier.)
+  // (Restaurant : la réservation reste en tête, c'est celle propre au métier.)
   const mode = p.business === "services" && a !== "restaurant" ? p.services?.contactMode : undefined;
-  const own = mode === "booking" ? t("Prendre rendez-vous", "Book an appointment") : mode === "quote" ? t("Demander un devis", "Request a quote") : mode === "call" ? t("Appeler", "Call") : mode === "form" ? t("Nous contacter", "Contact us") : null;
+  const own = mode === "booking" ? t("Un rendez-vous ? Tout se passe sur le site.", "An appointment? It's all on the website.") : mode === "quote" ? t("Un devis pour votre projet ? Il se demande en un message.", "A quote for your project? It takes one message.") : mode === "call" ? t("Une question ? Un appel suffit.", "A question? One call is enough.") : mode === "form" ? t("Une question ? On vous répond.", "A question? We'll answer.") : null;
   const ctas = own ? [own, ...ctasByKind.filter((x) => x !== own && !/rendez-vous|appointment|devis|quote/i.test(x))].slice(0, 3) : ctasByKind;
   const moments = o.startDate ? keyMoments(o.startDate, o.days ?? 30, p.product.sector ?? null, lang === "en" ? "en" : "fr").map((m) => ({ label: m.label, date: m.date })) : [];
   const gaps = [...f.unknowns];

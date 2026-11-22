@@ -91,10 +91,13 @@ describe("Économies des publications et des publicités", async () => {
     const src = (await import("node:fs")).readFileSync("src/lib/syna-agent/posts-plan.ts", "utf8");
     expect(src).toContain('ask("fix", postsEducated(POSTS_PLAN_SYSTEM, "stratege")');
     expect(src).not.toContain("POSTS_FIX_SYSTEM");
-    const g = { angleId: "a", subject: "conseil" as const, title: "Titre : promesse", points: [], cta: "Enregistre ce mémo", caption: "x".repeat(60), hashtags: ["#a"], visual: "v".repeat(60), look: "différent", product: null };
+    // Pastille sans ordre au lecteur (décision du 22 novembre 2026) : avant « Enregistre ce mémo ».
+    const g = { angleId: "a", subject: "conseil" as const, title: "Titre : promesse", points: [], cta: "À garder pour samedi", caption: "x".repeat(60), hashtags: ["#a"], visual: "v".repeat(60), look: "différent", product: null };
     expect(planConceptFor(g)).toBeNull();
     expect(planConceptFor({ ...g, concept: { ...campaignConcept(), ctaStyle: "none" } })).toMatchObject({ headline: "Titre : promesse", cta: "", scene: "v".repeat(60) });
-    expect(planConceptFor({ ...g, concept: campaignConcept() })).toMatchObject({ cta: "Enregistre ce mémo" });
+    expect(planConceptFor({ ...g, concept: campaignConcept() })).toMatchObject({ cta: "À garder pour samedi" });
+    // Une pastille qui reste un ordre n'est jamais posée sur l'image.
+    expect(planConceptFor({ ...g, cta: "Enregistre ce mémo", concept: campaignConcept() })).toMatchObject({ cta: "" });
   });
 
   it("3. la relecture d'une image est comptée au prix du modèle le plus fort, au niveau élevé", async () => {

@@ -10,6 +10,7 @@
  *  - `unavailable` : aucun adaptateur.
  */
 import { NETWORK_RULES } from "../engine/social-quality";
+import { MOTS_DIESE_MAX, sansOrdreEnFin } from "./fin-de-legende";
 import { fold } from "../seo-v2/lang";
 
 export const PLATFORMS = ["instagram", "facebook", "tiktok", "youtube", "pinterest", "linkedin"] as const;
@@ -193,6 +194,9 @@ export function adaptForPlatform(p: Platform, x: AdaptInput, lang: "fr" | "en" |
   const format = nativeFormatFor(p, x.format);
   if (format !== x.format) notes.push(`format ${x.format} → ${format} (${s.label})`);
   let caption = x.caption.trim();
+  // Jamais un ordre en fin de légende (décision du 22 novembre 2026) : retiré par le Studio, sans appel payant.
+  const fin = sansOrdreEnFin(caption);
+  if (fin.retire.length) { caption = fin.caption; notes.push(`fin de légende sans ordre : « ${fin.retire.join(" ")} » retiré`); }
   // Lien : jamais collé là où il n'est pas cliquable.
   let link = x.link;
   if (link && !s.linkInCaption) {
@@ -209,8 +213,10 @@ export function adaptForPlatform(p: Platform, x: AdaptInput, lang: "fr" | "en" |
     notes.push(`légende raccourcie à ${s.captionMax} caractères`);
   }
   const tags = [...new Set(x.hashtags.map((h) => h.replace(/^#/, "").trim()).filter(Boolean))];
-  const hashtags = tags.slice(0, s.hashtags[1]);
-  if (tags.length > hashtags.length) notes.push(`${tags.length - hashtags.length} hashtag(s) retiré(s) (au plus ${s.hashtags[1]} sur ${s.label})`);
+  // De 0 à 3 mots-dièse par légende, sur tous les réseaux (`MOTS_DIESE_MAX`).
+  const max = Math.min(s.hashtags[1], MOTS_DIESE_MAX);
+  const hashtags = tags.slice(0, max);
+  if (tags.length > hashtags.length) notes.push(`${tags.length - hashtags.length} hashtag(s) retiré(s) (au plus ${max} sur ${s.label})`);
   const mediaCount = Math.min(x.mediaCount, format === "carousel" ? s.carouselMax : 1);
   if (mediaCount < x.mediaCount) notes.push(`médias limités à ${mediaCount}`);
   return { caption, title: x.title.slice(0, 100), hashtags, link, format, mediaCount, notes };

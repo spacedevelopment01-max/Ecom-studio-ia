@@ -27,12 +27,12 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
   afterEach(() => { setSetting("sina.etapes_ouvertes", null); for (const k of ["plan", "judge", "fix"] as const) delete P.postsPlanDeps[k]; });
 
   const group = (o: Partial<import("@/lib/syna-agent/posts-plan").PostGroup> = {}) => ({
-    angleId: "generalist", subject: "conseil" as const, title: "Thé du matin : trois gestes simples", points: ["Chauffe l'eau sans la faire bouillir", "Laisse infuser sans regarder l'heure", "Bois la première gorgée assis"], cta: "Enregistre ce mémo",
+    angleId: "generalist", subject: "conseil" as const, title: "Thé du matin : trois gestes simples", points: ["Chauffe l'eau sans la faire bouillir", "Laisse infuser sans regarder l'heure", "Bois la première gorgée assis"], cta: "À garder pour demain matin",
     caption: "Le matin n'a pas besoin d'aller vite. Trois gestes, une tasse chaude, et la journée commence à ton rythme, avant le bruit et les écrans.",
-    hashtags: ["#thedumatin", "#rituelthe", "#pausethe", "#theenvrac", "#matincalme"], visual: "Photographie d'ambiance vue de trois quarts : une tasse en grès fumante posée sur une table en bois près d'une fenêtre, lumière dorée du matin, la partie gauche reste calme pour le titre.",
+    hashtags: ["#thedumatin", "#rituelthe", "#pausethe"], visual: "Photographie d'ambiance vue de trois quarts : une tasse en grès fumante posée sur une table en bois près d'une fenêtre, lumière dorée du matin, la partie gauche reste calme pour le titre.",
     look: "Plan rapproché, tons chauds et dorés, photo d'ambiance.", product: null, ...o,
   });
-  const three = () => [group(), group({ subject: "coulisses", title: "Dans l'atelier : le tri des feuilles", hashtags: ["#atelierthe", "#feuillesdethe", "#savoirfaire", "#theartisanal", "#coulisses"], look: "Plan large, tons verts, photo de lieu." }), group({ subject: "question", title: "Sucré ou nature : ton camp ?", hashtags: ["#teamthe", "#thenature", "#debatthe", "#pausegourmande", "#tonavis"], look: "Vue de dessus, tons clairs, composition graphique." })];
+  const three = () => [group(), group({ subject: "coulisses", title: "Dans l'atelier : le tri des feuilles", hashtags: ["#atelierthe", "#feuillesdethe", "#savoirfaire"], look: "Plan large, tons verts, photo de lieu." }), group({ subject: "question", title: "Sucré ou nature : ton camp ?", hashtags: ["#teamthe", "#thenature", "#debatthe"], look: "Vue de dessus, tons clairs, composition graphique." })];
   const keepAll = { groups: [0, 1, 2].map((index) => ({ index, verdict: "garde", why: "Il tient.", fixes: [] })), overall: "Trois publications nettes." };
 
   /** Projet réel du Studio (stratégie choisie), fil au parcours avancé jusqu'à l'étape 9, angle « generalist » choisi. */
@@ -98,9 +98,15 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     expect(issues).toMatch(/1:hashtags génériques vides à remplacer : #love/);
     expect(issues).toMatch(/1:produit « Produit inventé » absent du catalogue/);
     expect(issues).toMatch(/1:même sujet que le groupe 1/);
-    expect(issues).toMatch(/2:2 mots-dièse : il en faut 3 à 5/);
-    // Instagram n'accepte pas plus de 5 mots-dièse depuis décembre 2025 : 6 sont refusés.
-    expect(P.planIssues(p, [group({ hashtags: ["#a1", "#b2", "#c3", "#d4", "#e5", "#f6"] })], facts).map((x) => x.issue).join("\n")).toMatch(/6 mots-dièse : il en faut 3 à 5/);
+    // De 0 à 3 mots-dièse (décision du 22 novembre 2026 ; avant : 3 à 5, et 2 étaient refusés).
+    expect(issues).not.toMatch(/2:2 mots-dièse/);
+    expect(issues).toMatch(/1:5 mots-dièse : 3 au plus/);
+    expect(P.planIssues(p, [group({ hashtags: [] })], facts)).toEqual([]);
+    expect(P.planIssues(p, [group({ hashtags: ["#a1", "#b2", "#c3", "#d4", "#e5", "#f6"] })], facts).map((x) => x.issue).join("\n")).toMatch(/6 mots-dièse : 3 au plus/);
+    // Aucun ordre au lecteur, ni en fin de texte ni dans la pastille (décision du 22 novembre 2026).
+    const ordres = P.planIssues(p, [group({ cta: "Enregistre ce mémo", caption: "Le matin n'a pas besoin d'aller vite. Trois gestes, une tasse chaude, et la journée commence à ton rythme. Commande ton thé maintenant." })], facts).map((x) => x.issue).join("\n");
+    expect(ordres).toMatch(/le texte finit sur un ordre au lecteur \(« Commande ton thé maintenant\. »\)/);
+    expect(ordres).toMatch(/l'appel « Enregistre ce mémo » est un ordre au lecteur/);
     expect(issues).toMatch(/2:la photo décrit une personne/);
     expect(P.planIssues(p, bad, { ...facts, people: true }).map((x) => x.issue).join("\n")).not.toMatch(/décrit une personne/);
   });
@@ -156,7 +162,7 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     const { cid, job } = await ready();
     setJsonSetting("sina.etapes_ouvertes", [9]);
     const first = three();
-    first[1] = { ...first[1], hashtags: ["#love", "#atelierthe", "#feuillesdethe", "#savoirfaire", "#coulisses"] };
+    first[1] = { ...first[1], hashtags: ["#love", "#atelierthe", "#feuillesdethe"] };
     const judges: string[] = [], fixPrompts: string[] = [];
     P.postsPlanDeps.plan = async () => ({ groups: first });
     P.postsPlanDeps.judge = async (prompt) => {
@@ -165,7 +171,7 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
         ? { groups: [{ index: 0, verdict: "garde", why: "Il tient.", fixes: [] }, { index: 1, verdict: "garde", why: "Il tient.", fixes: [] }, { index: 2, verdict: "reprendre", why: "C'est une question vide, on n'apprend rien.", fixes: ["Pose une question qui révèle une habitude du lecteur."] }], overall: "Deux tiennent." }
         : { groups: [{ index: 1, verdict: "garde", why: "Corrigé.", fixes: [] }, { index: 2, verdict: "reprendre", why: "Toujours une question vide.", fixes: ["Repars d'un moment précis de la journée."] }], overall: "Le troisième reste faible." };
     };
-    P.postsPlanDeps.fix = async (prompt) => { fixPrompts.push(prompt); return { groups: [{ index: 1, group: { ...first[1], hashtags: ["#atelierthe", "#feuillesdethe", "#savoirfaire", "#theartisanal", "#coulisses"] } }, { index: 2, group: { ...first[2], title: "Matin ou soir : ton heure du thé ?" } }] }; };
+    P.postsPlanDeps.fix = async (prompt) => { fixPrompts.push(prompt); return { groups: [{ index: 1, group: { ...first[1], hashtags: ["#atelierthe", "#feuillesdethe", "#savoirfaire"] } }, { index: 2, group: { ...first[2], title: "Matin ou soir : ton heure du thé ?" } }] }; };
     await fr(() => P.runPostsPlanJob(job()));
     expect(fixPrompts).toHaveLength(1);
     expect(fixPrompts[0]).toMatch(/GROUPES À RÉÉCRIRE :[\s\S]*hashtags génériques vides à remplacer : #love[\s\S]*Pose une question qui révèle une habitude du lecteur\./);

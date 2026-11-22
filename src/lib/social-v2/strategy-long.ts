@@ -108,7 +108,7 @@ export function longTermStrategy(p: Project, s: SocialStrategy, o: { lang?: "fr"
   const titles = (xs: Pillar[]) => xs.map((x) => x.title);
   const share = (id: FunnelStage["id"]) => Math.round(byStage(id).reduce((n, x) => n + x.share, 0) * 100);
   const services = p.business === "services";
-  const conversion = s.ctas[0] ?? t("Nous contacter", "Contact us");
+  const conversion = s.ctas[0] ?? t("Une question ? On vous répond.", "A question? We'll answer.");
   const perDay = Math.max(1, o.perDay ?? 1);
   const target = t("[À compléter : objectif chiffré après 4 semaines de mesures réelles]", "[To complete: numeric target after 4 weeks of real measurements]");
 

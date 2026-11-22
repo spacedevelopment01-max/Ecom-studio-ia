@@ -61,7 +61,7 @@ Dans le texte, une source suivie de « (extrait) » n'a été vue qu'en extrait 
 
 - Metricool (juillet 2026) [1] [2] : une question dans la légende, +37 % de commentaires ; un appel à commenter ou à enregistrer triple les commentaires et double les enregistrements ; demander un « j'aime » en fait perdre environ 5 % ; mentionner un autre compte, +108 % de portée pour les comptes de moins de 2 000 abonnés. Corrélations.
 - Envoyer : mettre l'appel au partage dans la légende ou sur l'image, avec une demande claire [13].
-- Enregistrer (métier) : un conseil utile plus tard (entretien, recette, tailles, saison) ; « Garde-la pour samedi » plutôt que « Enregistrez ce post ».
+- Enregistrer (métier) : un conseil utile plus tard (entretien, recette, tailles, saison) ; « À garder pour samedi » plutôt que « Enregistrez ce post » (règle du propriétaire : aucun ordre donné au lecteur).
 - Commenter (métier) : une vraie question simple à laquelle chacun a une réponse, jamais « Dites-le-nous en commentaire ! ».
 - Venir : un fait précis avec une heure et une quantité réelle (« Le pain au levain sort du four » à 8 h 15), une offre avec une fenêtre de temps [38].
 - Cliquer (métier) : dire ce qu'on trouve derrière le lien et où il est.
@@ -129,9 +129,9 @@ Dans le texte, une source suivie de « (extrait) » n'a été vue qu'en extrait 
 2. **Précis plutôt que malin** : nomme qui, quand, quoi (« 16 h, le frigo, la fraise » plutôt que « Un goût unique ») ; refuse toute formule usée de la partie 2 et toute promesse non tenue.
 3. **La première ligne de la légende tient seule** en 125 caractères (140 sur LinkedIn) et prolonge l'accroche de l'image.
 4. **Longueur par défaut** : Instagram et Facebook, 30 à 60 mots ; une ligne pour un Reel ou une image forte ; TikTok, une phrase avec le mot-clé ; au-delà de 90 mots, seulement pour une vraie histoire.
-5. **Construis dans cet ordre** : la scène ; ce qu'on ressent ou apprend, en phrases courtes, un saut de ligne toutes les une ou deux phrases ; un fait vrai de la fiche du client ; une seule demande ; les mots-dièse.
-6. **Un seul appel à agir, selon le but** : enregistrer, envoyer à une personne précise, répondre à une vraie question, venir (jour, heure, adresse), cliquer (dire ce qu'il y a derrière). Jamais « like », « partage si », « tague », « commente OUI », ni vote par réaction.
-7. **3 à 5 mots-dièse précis, dans la légende**, jamais en bloc ni en commentaire ; le mot que le client taperait (produit, métier, ville ou quartier) écrit en clair dans les deux premières phrases.
+5. **Construis dans cet ordre** : la scène ; ce qu'on ressent ou apprend, en phrases courtes, un saut de ligne toutes les une ou deux phrases ; un fait vrai de la fiche du client ; une seule question ou invitation ; les mots-dièse.
+6. **Une seule fin, sans ordre au lecteur** (règle du propriétaire, 22 novembre 2026) : une vraie question à laquelle chacun a une réponse, une invitation qui porte le désir (« Le coffret t'attend à l'atelier jusqu'à samedi », « À garder pour samedi »), ou un fait utile (jour, heure, adresse, ce qu'il y a derrière le lien). Jamais un impératif (« Commande », « Clique », « Découvre », « Enregistre », « Partage », « Réserve »), jamais « like », « partage si », « tague », « commente OUI », ni vote par réaction. Le Studio retire un ordre laissé en fin de légende.
+7. **0 à 3 mots-dièse précis, dans la légende** (règle du Studio, 22 novembre 2026 ; au-delà, le Studio les ramène à 3), jamais en bloc ni en commentaire ; le mot que le client taperait (produit, métier, ville ou quartier) écrit en clair dans les deux premières phrases.
 8. **Un texte alternatif par image** : une ou deux phrases qui décrivent ce qu'on voit vraiment, pour quelqu'un qui ne voit pas l'image ; jamais une liste de mots-clés.
 9. **Une fiche de voix par marque avant la première publication** : trois traits avec « c'est / ce n'est pas », des phrases bonnes et mauvaises, les mots du client, le ton selon la situation. La voix ne bouge pas, le ton s'adapte.
 10. **Tu ou vous : propose selon le secteur, le client tranche**, puis tiens-le partout, sans mélange.

@@ -4,9 +4,10 @@
  *
  *  1) La STRATÈGE DES CONTENUS écrit trois groupes « sans aucune ressemblance » (charte de qualité § 7) : sujet utile,
  *     titre en deux temps, trois points au plus, appel à l'action, texte, hashtags, et la photo à créer.
- *  2) Le Studio contrôle sans IA : angle choisi par le client, produit du catalogue, 3 à 5 mots-dièse sans générique
- *     vide (Instagram n'en accepte pas plus de 5 depuis décembre 2025), trois sujets différents, aucune promesse non
- *     confirmée.
+ *  2) Le Studio contrôle sans IA : angle choisi par le client, produit du catalogue, 0 à 3 mots-dièse sans générique
+ *     vide, aucune légende ni pastille qui finit sur un ordre au lecteur (décision du 22 novembre 2026, `fin-de-legende.ts`),
+ *     trois sujets différents, aucune promesse non confirmée. Ce qui reste fautif après la reprise est corrigé par le code
+ *     (ordre retiré, mots-dièse ramenés à 3), sans nouvel appel.
  * La stratège et le juge lisent leurs cahiers de métier et les modèles de publication du secteur du client
  * (posts-knowledge.ts, 14 novembre 2026). Les images sont créées par le modèle d'images d'OpenAI, obligatoire
  * (usage « social_image », src/lib/ai/media-routing.ts).
@@ -27,6 +28,7 @@ import { listProducts } from "../products/catalog";
 import { peopleAllowed } from "../people-policy";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 import { brandBrief, boardLook } from "./custom-theme/brand";
+import { CONSIGNE_FIN_DE_LEGENDE, MOTS_DIESE_MAX, bornerMotsDiese, estUnOrdre, ordreEnFin, sansOrdreEnFin } from "../social-v2/fin-de-legende";
 import { postsEducated, postsKnowledgeCapMicro, postsKnowledgeReady, postsKnowledgeTypicalMicro, publicationModelsFor } from "./posts-knowledge";
 
 export const POSTS_PLAN_JOB = "syna.posts.plan";
@@ -69,11 +71,12 @@ export const PostGroupSchema = z.object({
   title: z.string().min(6).max(70),
   /** Trois points au plus, courts et concrets (écrits dans l'image). */
   points: z.array(z.string().min(3).max(80)).max(3).default([]),
-  /** Appel à l'action en pastille (« Enregistre ce mémo »). */
+  /** Appel en pastille, sans ordre au lecteur (« À garder pour samedi », « Et toi, sucré ou nature ? »). */
   cta: z.string().min(3).max(40),
   /** Texte de la publication (sous l'image). */
   caption: z.string().min(60).max(900),
-  hashtags: z.array(z.string().min(2).max(40)).min(1).max(20),
+  /** De 0 à 3 mots-dièse (décision du 22 novembre 2026) : une liste vide est permise. */
+  hashtags: z.array(z.string().min(2).max(40)).max(20).default([]),
   /** La photo d'ambiance à créer : UNE scène décrite, sans texte dedans. */
   visual: z.string().min(60).max(700),
   /** Ce qui rend ce groupe différent des deux autres : cadrage, palette dominante, type de visuel. */
@@ -112,9 +115,10 @@ const RULES = `Règles des publications (charte de qualité du Studio) :
 - Un sujet UTILE par publication, jamais une simple publicité : un conseil, des erreurs à éviter, comment choisir, les coulisses, un usage, une question à la communauté. Trois sujets différents parmi : ${POST_SUBJECTS.join(", ")}.
 - Titre accrocheur en deux temps, « Sujet : promesse » (« Bougie : 5 erreurs à éviter »), court.
 - Trois points au plus, phrases courtes et concrètes. Un chiffre affiché est vrai et vient du client, jamais inventé.
-- UN appel à l'action qui fait agir la communauté (« Enregistre ce mémo », « Vote en commentaire », « Partage à un ami ») : enregistrer, envoyer à quelqu'un de précis, répondre à une vraie question, venir. Jamais un appât que les réseaux pénalisent (« like si », « tague un ami », « commente OUI », vote par réaction).
-- Le texte fait RESSENTIR l'émotion de l'angle (une scène, un moment, une sensation), au tutoiement, sans ordre donné au lecteur en dehors de l'appel à l'action. La première phrase tient seule (125 caractères au plus : c'est tout ce qu'on voit avant de déplier).
-- Mots-dièse : 3 à 5 (Instagram n'en accepte pas plus de 5), précis pour CE sujet, CE métier et, pour un commerce local, sa ville ; aucun générique vide (#love, #instagood, #photooftheday…).
+- UN appel en pastille qui donne envie, JAMAIS un ordre au lecteur : une vraie question ou une invitation (« À garder pour samedi », « Et toi, plutôt sucré ou nature ? », « Le coffret t'attend à l'atelier »). Jamais « Enregistre », « Partage », « Commande », « Clique », « Découvre », ni un appât que les réseaux pénalisent (« like si », « tague un ami », « commente OUI », vote par réaction).
+- Le texte fait RESSENTIR l'émotion de l'angle (une scène, un moment, une sensation), au tutoiement, sans aucun ordre donné au lecteur. La première phrase tient seule (125 caractères au plus : c'est tout ce qu'on voit avant de déplier).
+- ${CONSIGNE_FIN_DE_LEGENDE}
+- Mots-dièse : 0 à ${MOTS_DIESE_MAX}, précis pour CE sujet, CE métier et, pour un commerce local, sa ville ; aucun générique vide (#love, #instagood, #photooftheday…).
 - La photo : une vraie scène de vie avec une lumière soignée et une partie calme où le titre se pose ; jamais un produit seul sur fond uni ; aucun texte, aucun logo dans la description ; aucune personne sauf si la fiche l'autorise. Elle est créée par le modèle d'images d'OpenAI : décris-la comme une photo (cadrage, surface, chaque objet à sa place, lumière), le vrai produit du client entier et inchangé.
 - Une image créée ne prouve jamais rien : elle montre une ambiance, un geste, un outil, une matière ou le vrai produit mis en scène, jamais « notre chantier », « notre plat », « une cliente », un bien ou le lieu du client (pratique trompeuse, même avec une mention « IA »). Ce qui exige une vraie photo du client n'entre pas dans le plan.
 - Aucun avis, chiffre, délai, garantie ni certification absent de la fiche du client.`;
@@ -160,13 +164,30 @@ export function cleanHashtags(tags: string[]): string[] {
   return tags.map((t) => `#${t.replace(/^#+/, "").replace(/\s+/g, "")}`).filter((t) => { const k = tagKey(t); if (!k || seen.has(k)) return false; seen.add(k); return true; });
 }
 
+/**
+ * Ce qui reste fautif après la reprise, corrigé par le code (à la charge du Studio, sans nouvel appel) : un ordre en fin
+ * de texte est retiré, les mots-dièse ramenés à 3, et une pastille qui reste un ordre n'est pas posée sur l'image.
+ */
+export function finDeLegende(g: PostGroup, notes: string[] = [], index = 0): PostGroup {
+  const fin = sansOrdreEnFin(g.caption);
+  if (fin.retire.length) notes.push(`groupe ${index + 1} : ordre retiré de la fin du texte (« ${fin.retire.join(" ")} »)`);
+  const tags = cleanHashtags(g.hashtags), kept = bornerMotsDiese(tags);
+  if (kept.length < tags.length) notes.push(`groupe ${index + 1} : mots-dièse ramenés à ${MOTS_DIESE_MAX}`);
+  const ordre = estUnOrdre(g.cta);
+  if (ordre) notes.push(`groupe ${index + 1} : l'appel « ${g.cta} » est un ordre, il n'est pas posé sur l'image`);
+  return { ...g, caption: fin.retire.length && fin.caption.trim() ? fin.caption : g.caption, hashtags: kept, ...(ordre && g.concept ? { concept: { ...g.concept, ctaStyle: "none" as const } } : {}) };
+}
+
 /** Contrôles sans IA d'un plan : chaque défaut est rendu avec l'index du groupe (ou -1 pour la série). */
 export function planIssues(p: Project, groups: PostGroup[], o: { angleIds: string[]; products: string[]; people: boolean }): { index: number; issue: string }[] {
   const out: { index: number; issue: string }[] = [];
   groups.forEach((g, i) => {
     if (!o.angleIds.includes(g.angleId)) out.push({ index: i, issue: `angle « ${g.angleId} » inconnu : prends un des angles choisis par le client (${o.angleIds.join(", ")})` });
     const tags = cleanHashtags(g.hashtags);
-    if (tags.length < 3 || tags.length > 5) out.push({ index: i, issue: `${tags.length} mots-dièse : il en faut 3 à 5 (Instagram n'en accepte pas plus de 5)` });
+    if (tags.length > MOTS_DIESE_MAX) out.push({ index: i, issue: `${tags.length} mots-dièse : ${MOTS_DIESE_MAX} au plus (0 est permis)` });
+    const ordre = ordreEnFin(g.caption);
+    if (ordre) out.push({ index: i, issue: `le texte finit sur un ordre au lecteur (« ${ordre} ») : finis sur une vraie question, une invitation qui donne envie ou un fait utile` });
+    if (estUnOrdre(g.cta)) out.push({ index: i, issue: `l'appel « ${g.cta} » est un ordre au lecteur : écris une invitation ou une vraie question` });
     const empty = tags.filter((t) => EMPTY_TAGS.has(tagKey(t)));
     if (empty.length) out.push({ index: i, issue: `hashtags génériques vides à remplacer : ${empty.join(" ")}` });
     if (g.product && !o.products.some((x) => x.trim().toLowerCase() === g.product!.trim().toLowerCase())) out.push({ index: i, issue: `produit « ${g.product} » absent du catalogue : le nom exact d'un produit du client, ou null` });
@@ -281,7 +302,7 @@ export async function runPostsPlanJob(ctx: JobContext) {
 
   const plan: SinaPosts = {
     round: (j.posts?.round ?? 0) + 1,
-    groups: groups.map((g, i) => { const r = refused.find((x) => x.index === i); return { ...g, hashtags: cleanHashtags(g.hashtags), ...(r ? { doubt: r.why.slice(0, 320) } : {}) }; }),
+    groups: groups.map((g, i) => { const r = refused.find((x) => x.index === i); return { ...finDeLegende(g, notes, i), ...(r ? { doubt: r.why.slice(0, 320) } : {}) }; }),
     judged, overall, notes, at: Date.now(),
   };
   updateJourney(a.conversationId, (x) => { x.posts = plan; setStep(x, 9, "review", L("plan des publications prêt", "posts plan ready")); });

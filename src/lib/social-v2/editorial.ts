@@ -64,7 +64,7 @@ type T = { fr: Tpl[]; en: Tpl[] };
 export const BANKS: Record<string, T> = {
   presentation: {
     fr: [
-      (x, c) => ({ hook: fold2(x.a) === fold2(c.brand) ? `Découvrez ${strip(x.a)}.` : `${cap(strip(x.a))}, signé ${c.brand}.`, body: body(x, "ce que c'est, en une phrase", "what it is, in one sentence", "fr"), headline: short(x.a) }),
+      (x, c) => ({ hook: fold2(x.a) === fold2(c.brand) ? `${cap(strip(x.a))}, en quelques mots.` : `${cap(strip(x.a))}, signé ${c.brand}.`, body: body(x, "ce que c'est, en une phrase", "what it is, in one sentence", "fr"), headline: short(x.a) }),
       (x) => ({ hook: `On vous présente : ${nm(x)}.`, body: body(x, "à qui il s'adresse", "who it is for", "fr"), headline: short(x.a) }),
       (x, c) => ({ hook: fold2(x.a) === fold2(c.brand) ? `Vous connaissez ${strip(x.a)} ?` : `Vous connaissez ${nm(x)} ${de(c.brand)} ?`, body: body(x, "ce qu'il apporte", "what it brings", "fr"), headline: short(x.a) }),
       (x) => ({ hook: `Gros plan sur ${nm(x)}.`, body: body(x, "ses points forts confirmés", "its confirmed strengths", "fr"), headline: short(x.a) }),
@@ -128,10 +128,10 @@ export const BANKS: Record<string, T> = {
   },
   ask: {
     fr: [
-      (x) => ({ hook: isQ(x) ? `${q(x)} Et vous, comment faites-vous ?` : `Et vous, que pensez-vous de ${low(strip(x.a))} ?`, body: "Dites-le-nous en commentaire.", headline: short(x.a) }),
-      (x) => ({ hook: isQ(x) ? `${q(x)} Partagez votre expérience.` : `Une question sur ${low(strip(x.a))} ? Posez-la en commentaire.`, body: "", headline: short(x.a) }),
+      (x) => ({ hook: isQ(x) ? `${q(x)} Et vous, comment faites-vous ?` : `Et vous, que pensez-vous de ${low(strip(x.a))} ?`, body: "", headline: short(x.a) }),
+      (x) => ({ hook: isQ(x) ? `${q(x)} Et vous, comment ça se passe ?` : `Une question sur ${low(strip(x.a))} ? On y répond en commentaire.`, body: "", headline: short(x.a) }),
     ],
-    en: [(x) => ({ hook: isQ(x) ? `${q(x)} How do you handle it?` : `What do you think about ${low(strip(x.a))}?`, body: "Tell us in the comments.", headline: short(x.a) })],
+    en: [(x) => ({ hook: isQ(x) ? `${q(x)} How do you handle it?` : `What do you think about ${low(strip(x.a))}?`, body: "", headline: short(x.a) })],
   },
   usecase: {
     fr: [
@@ -215,11 +215,11 @@ export const BANKS: Record<string, T> = {
   },
   cta: {
     fr: [
-      (_x, c) => ({ hook: c.f.business === "services" ? `Un projet ? Demandez votre devis.` : `${c.offer} est disponible sur notre boutique.`, body: "", headline: short(c.offer) }),
+      (_x, c) => ({ hook: c.f.business === "services" ? `Un projet ? Le devis se demande en un message.` : `${c.offer} est disponible sur notre boutique.`, body: "", headline: short(c.offer) }),
       (_x, c) => ({ hook: c.f.business === "services" ? `Parlons de votre projet : on vous répond.` : `Pour commander ${c.offer}, c'est par ici.`, body: "", headline: short(c.offer) }),
-      (_x, c) => ({ hook: c.f.business === "services" ? `Votre devis, sans engagement : écrivez-nous.` : `${c.offer} : le lien est dans notre profil.`, body: "", headline: short(c.offer) }),
+      (_x, c) => ({ hook: c.f.business === "services" ? `Votre devis : un message suffit.` : `${c.offer} : le lien est dans notre profil.`, body: "", headline: short(c.offer) }),
     ],
-    en: [(_x, c) => ({ hook: c.f.business === "services" ? `A project? Ask for a quote.` : `${c.offer} is available in our store.`, body: "", headline: short(c.offer) })],
+    en: [(_x, c) => ({ hook: c.f.business === "services" ? `A project? A quote takes one message.` : `${c.offer} is available in our store.`, body: "", headline: short(c.offer) })],
   },
   community: {
     fr: [
@@ -244,9 +244,9 @@ export const BANKS: Record<string, T> = {
   },
   discuss: {
     fr: [
-      (x, c) => (x.kind === "brand" ? { hook: `Sujet de discussion : comment utilisez-vous ${c.offer} ?`, body: "Partagez votre expérience en commentaire.", headline: short(c.offer) } : { hook: isQ(x) ? `Sujet de discussion — ${q(x)}` : `Sujet de discussion : ${low(strip(x.a))}.`, body: "Partagez votre expérience en commentaire.", headline: short(x.a) }),
+      (x, c) => (x.kind === "brand" ? { hook: `Sujet de discussion : comment utilisez-vous ${c.offer} ?`, body: "Et vous, comment ça se passe chez vous ?", headline: short(c.offer) } : { hook: isQ(x) ? `Sujet de discussion — ${q(x)}` : `Sujet de discussion : ${low(strip(x.a))}.`, body: "Et vous, qu'en pensez-vous ?", headline: short(x.a) }),
     ],
-    en: [(x) => ({ hook: isQ(x) ? `Let's talk — ${q(x)}` : `Let's talk about ${low(strip(x.a))}.`, body: "Share your experience in the comments.", headline: short(x.a) })],
+    en: [(x) => ({ hook: isQ(x) ? `Let's talk — ${q(x)}` : `Let's talk about ${low(strip(x.a))}.`, body: "What's your experience?", headline: short(x.a) })],
   },
   teaser: {
     fr: [(x) => ({ hook: `La semaine prochaine, on vous parle ${de(nm(x))}.`, body: "Restez connectés.", headline: short(x.a) })],

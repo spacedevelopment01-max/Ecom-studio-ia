@@ -65,7 +65,7 @@ pendant.
    marque), recopiée mot pour mot dans chaque consigne d'image.
 3. **Les publications (la stratège).** Pour chaque place : une idée, son format (image, carrousel, story), l'accroche
    (3 à 8 mots, précise : qui, quand, quoi), la scène décrite comme une photo (méthode du propriétaire,
-   `docs/guide-images-ia.md`), la légende, un seul appel à agir, 3 à 5 mots-dièse, le texte alternatif.
+   `docs/guide-images-ia.md`), la légende, une seule fin sans ordre au lecteur (question ou invitation), 0 à 3 mots-dièse, le texte alternatif.
 4. **Le juge (séparé).** Il lit tout et refuse ce qui ne vaut pas d'être payé : je ne m'arrête pas ; un concurrent
    pourrait la signer ; ce n'est pas vrai d'après la fiche ; je ne l'enverrais à personne ; une image créée présentée
    comme une preuve ; un interdit du secteur ; une ressemblance entre deux publications. Une seule reprise.
@@ -134,7 +134,7 @@ créées pour cet essai : 0,31 $ (environ 0,28 €), 0,05 $ l'image en 1088 × 1
 
 - **Fait le 14 novembre 2026** : les cahiers et la bibliothèque ; la stratège et le juge du plan des publications les
   lisent, avec les modèles du secteur du client (`posts-knowledge.ts`, `posts-plan.ts`) ; les mots-dièse ramenés à 3 à
-  5 ; **les images des publications passent obligatoirement par OpenAI** (`social_image`, `src/lib/ai/media-routing.ts` :
+  5 (puis à 0 à 3 le 22 novembre 2026, avec une fin de légende sans ordre au lecteur) ; **les images des publications passent obligatoirement par OpenAI** (`social_image`, `src/lib/ai/media-routing.ts` :
   aucun autre fournisseur, aucun secours hors d'OpenAI, l'administration ne peut proposer qu'un modèle d'OpenAI).
 - **Pas fait** : la ligne de neuf publications et la mosaïque sur la planche de marque ; les trois regards en image ;
   la pose du texte par le Studio sur les images des publications ; le vrai produit recollé dans la scène pour les

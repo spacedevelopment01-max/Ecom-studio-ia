@@ -6,6 +6,7 @@
  * contrôle.
  */
 import { cleanTag } from "../engine/social-quality";
+import { MOTS_DIESE_MAX } from "./fin-de-legende";
 import { mainCity } from "../seo-v2/keywords";
 import { fold } from "../seo-v2/lang";
 import { tradeTopics, topicLabel } from "../seo-v2/trade-topics";
@@ -250,7 +251,8 @@ export function hashtagsFor(f: VerifiedFacts, archetype: Archetype, pillar: Pill
   const pil = words(pillar.title)[0];
   if (pil) out.add(cleanTag(pil));
   out.add(cleanTag(fold(f.brand).replace(/[^a-z0-9]/g, "")));
-  return [...out].filter((x) => x.length >= 3).slice(0, 5);
+  // De 0 à 3 mots-dièse par légende (décision du 22 novembre 2026 ; avant : 5).
+  return [...out].filter((x) => x.length >= 3).slice(0, MOTS_DIESE_MAX);
 }
 
 /**

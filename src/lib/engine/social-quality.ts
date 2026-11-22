@@ -14,6 +14,7 @@ import type { Project } from "../projects";
 import type { SocialVoice } from "../project-types";
 import { lintClaims, lintHollow } from "../ai/tasks";
 import { C, contentLang } from "../i18n-server";
+import { MOTS_DIESE_MAX, ordreEnFin, sansOrdreEnFin } from "../social-v2/fin-de-legende";
 
 export type Network = PostDraft["network"];
 export type Format = PostDraft["format"];
@@ -21,12 +22,14 @@ export type Format = PostDraft["format"];
 /** Règles natives de chaque réseau (pratiques 2026). */
 export const NETWORK_RULES: Record<Network, { formats: Format[]; video: Format; tags: [number, number]; firstLine: number; min: number; max: number; cta: boolean; link: boolean; titleMax: number }> = {
   // Instagram limite à 5 hashtags ; la légende est coupée vers 125 caractères (« … plus »).
-  instagram: { formats: ["image", "carousel", "reel", "story"], video: "reel", tags: [3, 5], firstLine: 125, min: 60, max: 2200, cta: true, link: false, titleMax: 80 },
+  // De 0 à 3 mots-dièse par légende sur tous les réseaux (décision du 22 novembre 2026, `MOTS_DIESE_MAX`) : avant,
+  // Instagram et TikTok en exigeaient 3 à 5, YouTube 1 à 3.
+  instagram: { formats: ["image", "carousel", "reel", "story"], video: "reel", tags: [0, MOTS_DIESE_MAX], firstLine: 125, min: 60, max: 2200, cta: true, link: false, titleMax: 80 },
   facebook: { formats: ["image", "carousel", "video", "reel", "story"], video: "video", tags: [0, 2], firstLine: 125, min: 40, max: 1500, cta: true, link: true, titleMax: 80 },
-  tiktok: { formats: ["video"], video: "video", tags: [3, 5], firstLine: 150, min: 20, max: 400, cta: true, link: false, titleMax: 80 },
-  youtube: { formats: ["short"], video: "short", tags: [1, 3], firstLine: 100, min: 20, max: 600, cta: false, link: true, titleMax: 100 },
+  tiktok: { formats: ["video"], video: "video", tags: [0, MOTS_DIESE_MAX], firstLine: 150, min: 20, max: 400, cta: true, link: false, titleMax: 80 },
+  youtube: { formats: ["short"], video: "short", tags: [0, MOTS_DIESE_MAX], firstLine: 100, min: 20, max: 600, cta: false, link: true, titleMax: 100 },
   // Pinterest : une description de recherche d'un seul tenant (pas de coupure « plus » à soigner).
-  pinterest: { formats: ["pin"], video: "pin", tags: [0, 3], firstLine: 500, min: 80, max: 500, cta: false, link: true, titleMax: 100 },
+  pinterest: { formats: ["pin"], video: "pin", tags: [0, MOTS_DIESE_MAX], firstLine: 500, min: 80, max: 500, cta: false, link: true, titleMax: 100 },
 };
 
 const VIDEO_FORMATS: Format[] = ["reel", "short", "video"];
@@ -44,8 +47,8 @@ const URL = /https?:\/\/\S+/gi;
 /** Accroche faible : ouverture générique qui ne dit rien (« Découvrez… », « Voici… », « Nouveau ! »). */
 const WEAK_OPENER = /^(découvrez|voici|voilà|nouveau|nouveauté|on vous présente|présentation|bonjour|coucou|hello|salut|discover|introducing|meet our|check out|here is|here's|say hello|new in|we're excited|nous sommes (ravis|heureux|fiers))\b/i;
 
-/** Appel à l'interaction : question, commentaire, enregistrement, partage, lien. */
-const CTA = /\?|en commentaire|commentez|dites[- ]?(le|nous)|racontez|répondez|votez|enregistre|sauvegarde|partage|envoyez|identifiez|taguez|lien en bio|lien dans la bio|bio\b|à découvrir|sur la boutique|prenez rendez-vous|réservez|appelez|écrivez-nous|demandez|tell us|let us know|comment below|drop a comment|vote|save (this|it|for)|share (this|it|with)|send (this|it) to|tag (a|someone|your)|link in bio|take a look|see more|shop (now|the)|book (now|your|an)|call us|write to us|request a quote|in the comments/i;
+/** Appel à l'interaction : question, invitation, commentaire, enregistrement, partage, lien (un ordre en fin de légende est retiré à part, `fin-de-legende.ts`). */
+const CTA = /\?|t'attend|vous attend|à garder|à retrouver|tout est|it's all|worth keeping|one worth|plairait|en commentaire|commentez|dites[- ]?(le|nous)|racontez|répondez|votez|enregistre|sauvegarde|partage|envoyez|identifiez|taguez|lien en bio|lien dans la bio|bio\b|à découvrir|sur la boutique|prenez rendez-vous|réservez|appelez|écrivez-nous|demandez|tell us|let us know|comment below|drop a comment|vote|save (this|it|for)|share (this|it|with)|send (this|it) to|tag (a|someone|your)|link in bio|take a look|see more|shop (now|the)|book (now|your|an)|call us|write to us|request a quote|in the comments/i;
 
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
 const firstLineOf = (caption: string) => (caption.split(/\n/).find((l) => l.trim()) ?? "").trim();
@@ -93,6 +96,8 @@ export function normalizePost(d: PostDraft, voice?: Pick<SocialVoice, "emoji"> |
   // Tirets cadratins et demi-cadratins dans les phrases : virgule.
   const dash = (s: string) => s.replace(/\s+[—–]\s+/g, ", ").replace(/[—–]/g, "-");
   caption = dash(caption);
+  // Jamais un ordre en fin de légende (règle « aucun ordre donné au lecteur ») : retiré par le Studio, sans appel.
+  caption = sansOrdreEnFin(caption).caption;
   if (!rules.link) caption = caption.replace(URL, C("(lien en bio)", "(link in bio)")).replace(/\(lien en bio\)\s*\(lien en bio\)/g, "(lien en bio)");
   if (voice?.emoji === "none") caption = caption.replace(EMOJI, "").replace(/[ \t]{2,}/g, " ").replace(/ +\n/g, "\n").trim();
   else if (voice?.emoji === "sparing") {
@@ -118,7 +123,7 @@ export function normalizePost(d: PostDraft, voice?: Pick<SocialVoice, "emoji"> |
     format,
     title: title.length > rules.titleMax ? cut(title, rules.titleMax) : title,
     caption,
-    hashtags: hashtags.slice(0, rules.tags[1]),
+    hashtags: hashtags.slice(0, Math.min(rules.tags[1], MOTS_DIESE_MAX)),
     visual: { ...d.visual, kind, headline: dash(String(d.visual?.headline ?? "")).trim(), subline: dash(String(d.visual?.subline ?? "")).trim(), ...(slides.length && format === "carousel" ? { slides } : { slides: undefined }) },
   };
 }
@@ -146,7 +151,10 @@ export function postIssues(d: PostDraft, p?: Pick<Project, "brand" | "product" |
     if (WEAK_OPENER.test(first)) out.push({ code: "hook", text: `accroche générique (« ${first.split(/\s+/).slice(0, 3).join(" ")} … ») : ouvrir sur un détail concret, une question ou une tension` });
     else if (brand && new RegExp(`^${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[,:]`, "i").test(first)) out.push({ code: "hook", text: "accroche qui commence par le nom de la marque : commencer par ce qui intéresse la personne (détail, question, situation)" });
   }
-  if (rules.cta && !CTA.test(caption)) out.push({ code: "cta", text: "pas d'appel à l'interaction : finir par une question précise, « enregistrez », « partagez » ou le lien" });
+  const ordre = ordreEnFin(caption);
+  if (ordre) out.push({ code: "order", text: `la légende finit sur un ordre (« ${ordre} ») : finir par une vraie question, une invitation qui donne envie ou un fait utile, jamais un ordre` });
+  else if (rules.cta && !CTA.test(caption)) out.push({ code: "cta", text: "pas d'appel à l'interaction : finir par une vraie question précise ou une invitation qui donne envie (jamais un ordre)" });
+  if (d.hashtags.length > MOTS_DIESE_MAX) out.push({ code: "tags", text: `trop de mots-dièse (${d.hashtags.length} ; ${MOTS_DIESE_MAX} au plus)` });
   if (plain.length < rules.min) out.push({ code: "thin", text: `légende trop pauvre (${plain.length} caractères utiles ; ${rules.min} au moins pour ${d.network})` });
   if (caption.length > rules.max) out.push({ code: "long", text: `légende trop longue pour ${d.network} (${caption.length} caractères ; ${rules.max} au plus)` });
   if ((caption.match(PLACEHOLDER) ?? []).length > 1) out.push({ code: "filler", text: "remplissage : plusieurs « [À compléter : …] » dans une seule légende ; choisir un angle fondé sur les faits connus" });
@@ -202,7 +210,7 @@ export function planIssues(posts: PostDraft[]): { byPost: Map<number, PostIssue[
   if (feed.length >= 5 && new Set(feed.map((d) => d.format)).size === 1) global.push({ code: "one-format", text: `un seul format (${feed[0].format}) sur tout le plan : varier (carrousel, reel, photo, story)` });
   const lasts = posts.filter((d) => d.format !== "story").map((d) => norm(lastLineOf(d.caption))).filter((s) => s.length > 8);
   const top = Math.max(0, ...[...lasts.reduce((m, s) => m.set(s, (m.get(s) ?? 0) + 1), new Map<string, number>()).values()]);
-  if (lasts.length >= 4 && top / lasts.length > 0.5) global.push({ code: "same-cta", text: "le même appel à l'action termine plus de la moitié des publications : varier (question, enregistrer, partager, lien)" });
+  if (lasts.length >= 4 && top / lasts.length > 0.5) global.push({ code: "same-cta", text: "le même appel à l'action termine plus de la moitié des publications : varier (question, invitation, fait utile ; jamais un ordre)" });
   const sets = posts.filter((d) => d.hashtags.length >= 3).map((d) => d.hashtags.map((t) => t.toLowerCase()).sort().join(" "));
   if (sets.length >= 4 && new Set(sets).size === 1) global.push({ code: "same-tags", text: "exactement les mêmes hashtags partout : adapter au sujet de chaque publication" });
   return { byPost, global };
@@ -405,7 +413,9 @@ export function voiceIssues(v: Pick<SocialVoice, "pillars" | "captions"> & { ser
     if (first.length > 90) out.push(`légende ${i + 1} : accroche trop longue (${first.length} caractères, 90 au plus)`);
     if (WEAK_OPENER.test(first)) out.push(`légende ${i + 1} : accroche générique (« ${first.split(/\s+/).slice(0, 3).join(" ")} … »)`);
     else if (brand && new RegExp(`^${brand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*[,:]`, "i").test(first)) out.push(`légende ${i + 1} : commence par le nom de la marque`);
-    if (!CTA.test(c.text)) out.push(`légende ${i + 1} : pas d'appel à l'interaction`);
+    const ordre = ordreEnFin(c.text);
+    if (ordre) out.push(`légende ${i + 1} : finit sur un ordre (« ${ordre} ») ; une question ou une invitation, jamais un ordre`);
+    else if (!CTA.test(c.text)) out.push(`légende ${i + 1} : pas d'appel à l'interaction`);
     if ((c.text.match(PLACEHOLDER) ?? []).length > 1) out.push(`légende ${i + 1} : plusieurs « [À compléter : …] »`);
   });
   const bags = v.captions.map((c) => words(c.text));
@@ -416,12 +426,13 @@ export function voiceIssues(v: Pick<SocialVoice, "pillars" | "captions"> & { ser
 
 const ADVICE: Record<string, [string, string]> = {
   hook: ["Accroche de la 1re ligne à renforcer (détail concret ou question précise, moins de 125 caractères).", "Strengthen the first-line hook (a concrete detail or a precise question, under 125 characters)."],
-  cta: ["Ajouter un appel à l'interaction (question, enregistrer, partager, lien).", "Add a call to interact (question, save, share, link)."],
+  cta: ["Finir par une question ou une invitation qui donne envie (jamais un ordre).", "End with a question or an inviting line (never an order)."],
+  order: ["La légende finit sur un ordre : finir par une question, une invitation ou un fait utile.", "The caption ends on an order: end with a question, an invitation or a useful fact."],
   thin: ["Légende un peu courte pour ce réseau.", "Caption is a bit short for this network."],
   long: ["Légende trop longue pour ce réseau.", "Caption is too long for this network."],
   filler: ["Plusieurs « [À compléter : …] » : remplacer par des faits réels ou changer d'angle.", "Several \"[To complete: …]\": replace with real facts or change the angle."],
   wall: ["Aérer la légende en 2 ou 3 paragraphes courts.", "Break the caption into 2 or 3 short paragraphs."],
-  tags: ["Hashtags insuffisants pour ce réseau.", "Not enough hashtags for this network."],
+  tags: ["Mots-dièse : 3 au plus.", "Hashtags: 3 at most."],
   headline: ["Titre du visuel à raccourcir (2 à 6 mots).", "Shorten the visual's headline (2 to 6 words)."],
   title: ["Titre trop court pour la recherche (YouTube, Pinterest).", "Title too short for search (YouTube, Pinterest)."],
   slides: ["Carrousel : prévoir 3 à 6 diapositives.", "Carousel: plan 3 to 6 slides."],
