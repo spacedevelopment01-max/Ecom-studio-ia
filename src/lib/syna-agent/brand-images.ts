@@ -28,6 +28,7 @@ import { peopleAllowed } from "../people-policy";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { noterRelecture, travailDeLImage } from "./juges";
 import { REPRISES_MAX } from "./reprises";
+import { pngSansPerte } from "../media/signature-ia";
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -429,7 +430,8 @@ export async function runBoardImages(o: {
     try {
       made.set(slot, await ctx.step(`brand:image:${round}:${key}:${slot}${pass}${retry}`, async (): Promise<Made> => {
         const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, avoid: refs.avoid ?? null, examples: slot === "logo" ? await planchedesLogosAimes() : null });
-        const png = await sharp(data).png().toBuffer(), meta = await sharp(png).metadata();
+        // Gardée telle quelle si elle est déjà en PNG : sa signature « fait par l'IA » d'OpenAI reste (règlement européen).
+        const png = await pngSansPerte(data), meta = await sharp(png).metadata();
         const asset = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-${slot}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "review", meta: { synaBoard: { key, slot, round, name: x.name } } });
         return { id: asset.id, w: meta.width ?? 1024, h: meta.height ?? 1024 };
       }));

@@ -63,3 +63,15 @@ Chacun a son épreuve au banc, puis sa correction :
 ## E. L'essai du grand modèle d'images
 
 Pas lancé : il attend le oui écrit du propriétaire (trois photos par modèle, 1 € au plus).
+
+## La signature « fait par l'IA » des images d'OpenAI (demande urgente du chef d'orchestre)
+
+Vérifié dans le code : la planche ré-encodait chaque image d'OpenAI, ce qui effaçait sa signature C2PA. Corrigé : une
+image déjà en PNG est rangée avec ses octets d'origine (`src/lib/media/signature-ia.ts`). Les photos du site et de la
+galerie étaient déjà rangées telles quelles. Rien ne change pour ce que voit le client.
+
+Ce qui perd forcément la signature, parce que l'image est transformée : le logo détouré et sa version claire, les photos
+détourées du site, les publications composées (texte posé), les recadrages au format d'un réseau. Pour celles-là, il
+faudrait que le Studio signe lui-même ses images finales (un manifeste C2PA qui cite l'image d'OpenAI) ; cela demande un
+certificat de signature reconnu par la liste de confiance C2PA (payant, à acheter auprès d'un organisme agréé) et une
+bibliothèque de signature. Décision au propriétaire : [À compléter : prix du certificat, à demander avant].
