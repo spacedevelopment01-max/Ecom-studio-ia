@@ -719,3 +719,96 @@ plans animés) le double. Seul le plan accepté lui est compté.
 
 **Pas vérifié :** aucun appel réel à Vertex, Kling, BytePlus ni Runware ; la forme de la réponse de suivi de BytePlus
 n'a pas pu être lue (page fermée sans navigateur) ; le seuil du contrôle image par image est à régler sur de vrais plans.
+
+## L'atelier
+
+D'après la recherche 10 du 22 novembre 2026, points 1 à 12. Tout est vérifié par des essais simulés : aucun appel
+payant, aucune image ni vidéo réellement créée, aucune clé saisie. Black Forest Labs (Flux) est branché en direct, mais
+reste éteint tant que tu n'as pas saisi sa clé dans Administration › Fournisseurs IA et confirmé chaque modèle.
+
+**Ce que le client voit, point par point :**
+
+- **Un nouvel espace « Atelier »**, dans « Créer », entre « Rendez-vous » et « Images ». En haut, trois façons de faire :
+  « SINA s'en occupe », « On le fait ensemble », « Je fais moi-même ».
+- **1. Le prix sur chaque bouton**, en part de son budget du mois, jamais en euros : « Créer : environ … % de ton
+  budget du mois ». Le prix compte toute la chaîne : la création, la relecture par le juge quand il relit, et une reprise
+  probable (une vidéo sur deux, une image sur quatre). Sous chaque prix : « Un essai raté par l'outil ne t'est jamais
+  compté. » Un plafond de vidéos par mois, celui des forfaits validés : 0, 3 et 6. Au-delà : « Tu as fait tes 3 vidéos
+  du mois. Elles reviennent au début du mois prochain. »
+- **2. Les garde-fous d'entrée.** Les règles de l'atelier, lues et acceptées une fois. Chaque demande et chaque photo
+  déposée passent par la vérification gratuite d'OpenAI avant tout devis ; si la vérification est impossible, rien
+  n'est lancé. Une demande qui parle d'une personne (en français ou en anglais) est refusée sans sa photo et son accord
+  écrit : son nom et la phrase « J'accepte que ma photo serve à créer des images et des vidéos pour cette marque »,
+  gardés avec la photo, datés. Le niveau « low » de la modération d'OpenAI n'est écrit nulle part (un essai le vérifie).
+- **3. « Mets mon produit dans une scène ».** Il écrit le décor (« sur une table en bois, lumière du matin ») ; OpenAI
+  crée la scène avec sa vraie photo ; le juge lit maintenant l'étiquette mot à mot contre la photo d'origine, pour
+  toutes les images du vrai produit du Studio (une lettre, un chiffre ou une contenance changée : image ratée). Une image
+  ratée lui est dite ratée dans « Mes créations ».
+- **4. La signature « faite par l'IA ».** Une retouche rendue en PNG à la taille de sa photo garde maintenant la
+  signature d'OpenAI ; les versions story et carrée aussi. Rien de visible pour lui.
+- **5. Les gestes simples** sous une image choisie : « Change le fond », « Version story », « Version carrée »,
+  « Retire un objet », et « Tout mon catalogue » (le même fond pour toutes ses photos de produit, jusqu'à 30, le prix de
+  toutes donné avant). Une seule chose change. Après chaque retouche, le contrôle gratuit compare son produit à
+  l'original : un produit changé est marqué « Ton produit a changé : gardée à part, elle ne part pas vers ta boutique ».
+- **6. « Mes créations »** : chaque création avec le nom de l'outil, la date, ce qu'elle a pris sur son budget, et si
+  elle a servi (publication, publicité, site). En haut : « 3 créations n'ont pas encore servi : je les mets dans ton
+  calendrier ? », et un filtre « Pas encore servies ».
+- **7. SINA en direct** : une phrase de conseil par geste (« Je prends OpenAI GPT-Image 2.6 pour « change le fond » :
+  … »), « Améliorer ma demande avec SINA (gratuit) » qui ajoute les couleurs de sa marque, la lumière et le cadrage,
+  montrés à part et qu'il peut retirer un par un, et l'avertissement avant un risque : « Avec Flux Kontext, ton
+  étiquette risque de changer. Je compare l'image à ta vraie photo avant de te la montrer. »
+- **8. Le choix de l'outil** : quatre ou cinq outils au plus par geste, chacun avec « ce qu'il fait de mieux » et son
+  prix, celui que SINA conseille marqué. Pour les retouches : OpenAI, Google Nano Banana, Flux Kontext et Flux Agrandir.
+  Runware n'apparaît qu'en secours. fal, Higgsfield, Bria, Ideogram, MiniMax et Imagen Product Recontext ne sont jamais
+  proposés. En mode « SINA s'en occupe », c'est toujours OpenAI.
+- **9. Les modèles prêts en images** : douze (Saint-Valentin, fête des mères, fête des pères, rentrée, Halloween,
+  Noël, les quatre saisons, l'offre du moment, la nouveauté). SINA en épingle trois : les fêtes des trois semaines qui
+  viennent, la saison, la nouveauté, puis la prochaine fête. Un clic remplit la demande. « L'offre du moment » demande
+  son offre écrite : rien n'est inventé.
+- **10. Les vidéos pour vendre** : huit modèles (le produit qui tourne, le moment cadeau, le déballage, le produit dans
+  la vraie vie, les détails, l'avant et l'après, l'offre du moment, la publicité de 15 secondes), avec la durée, le
+  geste de caméra nommé en français parmi douze, la règle du modèle et le prix. « Utiliser ce modèle » ouvre la vidéo
+  guidée déjà remplie, avec le même devis et le même accord qu'aujourd'hui (image fixe validée d'abord, relecture image
+  par image). **Le déballage se fait sans mains** : la boîte s'ouvre seule, jamais une personne. **L'avant et l'après**
+  n'invente jamais l'après : deux de ses vraies photos montées par le Studio, gratuit. Le produit qui tourne fait un
+  demi-tour : je n'invente pas le dos du produit.
+- **11. La musique** vient du compositeur du Studio, à l'ambiance de sa marque, sans droits à payer. ElevenLabs n'est
+  pas branché.
+- **12. Les mentions obligatoires** : « Images virtuelles », « Images retouchées » et « Personne créée par l'IA » (dans
+  une publicité) se posent seules à la fin de la légende, jamais coupées, dès qu'une image en porte une.
+
+**Pas fait, en attente de ta décision :**
+
+- **« Vrais pixels reposés »** (reposer les pixels de sa vraie photo à la place du produit dans la scène) : écrit et
+  essayé sur des images simulées, mais éteint. Il touche ta règle « produit collé devant une photo floue », et son essai
+  payant n'est pas accordé. Il ne s'allume que par un réglage que toi seul décides.
+- **La signature posée par le Studio lui-même** sur les images transformées : le manifeste est préparé, rien n'est
+  signé. Il faut un certificat de signature (payant) et l'avis d'un juriste sur le délai du 2 décembre 2026.
+- **Une version refusée « par goût »** : rien n'a changé à ce qui existe. L'essai raté par l'outil n'est jamais compté.
+- **La recharge** : rien de construit.
+- **ElevenLabs** (voix et musique) : rien d'ajouté.
+- **Les vignettes d'exemple** des modèles (faites par l'atelier sur des produits inventés) : elles demandent un petit
+  essai payant ; en attendant, chaque carte montre son nom et son idée, sans image.
+
+**Ce qui n'est pas encore fait, à savoir :**
+
+- Pour les vidéos, le client ne choisit pas encore l'outil : c'est celui réglé dans Administration après l'essai
+  comparatif. Les outils vidéo sont seulement nommés.
+- « Mets mon produit dans une scène » reste fait par OpenAI dans les trois façons : c'est le seul parcours où le juge
+  relit l'image et lit l'étiquette.
+- Les retouches simples (fond, story, carré, objet retiré) n'ont que le contrôle gratuit du produit, pas le juge : leur
+  prix ne compte donc pas de relecture.
+- Les liens « Une publication », « Une publicité », « Mon site » de « Mes créations » ouvrent l'espace, sans y poser
+  l'image d'office.
+- La conversation de SINA ne parle pas encore de l'atelier : ses conseils sont sur l'écran de l'atelier.
+- La vérification d'OpenAI se fait au devis de l'atelier ; les photos déposées ailleurs dans le Studio ne passent pas
+  par elle.
+- La vidéo « personnage » déjà existante garde sa mention « Vidéo générée par IA », au choix du client, comme décidé
+  avant ; « Images virtuelles » n'y est pas ajoutée d'office : à toi de dire.
+- L'outil Higgsfield reste dans le catalogue des modèles de l'administration (il n'est pas proposé dans l'atelier) : à
+  retirer si tu le veux.
+
+**Pas vérifié :** aucun appel réel à Black Forest Labs (adaptateur écrit d'après sa documentation), ni à la
+vérification d'OpenAI ; l'identifiant de Nano Banana 2.1 n'est pas dans le catalogue (l'atelier prend Nano Banana 2) ;
+le montage de l'avant-après n'a pas été rendu en vraie vidéo dans les essais ; les mots qui signalent une personne
+peuvent laisser passer une tournure rare.
