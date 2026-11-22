@@ -329,4 +329,16 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     const ctx = J.journeyContext(J.journeyOf(cid));
     expect(ctx).toContain("S'il ne sait pas, ne lui renvoie pas la question : propose-lui toi-même deux ou trois types d'acheteurs probables pour son offre");
   });
+  epreuve("mots-corriges-relus-par-sina", async () => {
+    const { submitMessage, runAgent } = await import("@/lib/syna-agent/loop");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { addWordingRule } = await import("@/lib/client-wording");
+    const user = await account(), projectId = project(user) as string, cid = threadFor(user, projectId);
+    addWordingRule(projectId, { avoid: "boutique", use: "atelier" });
+    expect(J.currentStep(J.journeyOf(cid))).toBe(0);
+    const r = submitMessage(user, cid, { requestId: `epreuve-${Math.random()}`, text: "Bonjour." });
+    let ctx = "";
+    await runWithLang({ ui: "fr", content: "fr" }, () => runAgent(r.id, r.job_id!, { reason: async (c) => { ctx = String(c.context ?? ""); return { message: "Bonjour !", actions: [], done: true }; } }));
+    expect(ctx).toContain("## Ses mots (corrigés une fois, valables pour toujours)\n- « atelier », jamais « boutique »");
+  });
 });

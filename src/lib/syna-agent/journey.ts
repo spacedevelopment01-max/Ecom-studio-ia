@@ -345,7 +345,8 @@ export function journeyContext(j: Journey, o: { identityCount?: number; /** Les 
   }
   // Après les questions de départ, la fiche entière est relue à chaque pas (le socle, 21 novembre 2026) : SINA ne va
   // plus chercher ce qu'il a dit dans le fil de la conversation.
-  if (cur >= 1 && o.fiche) lines.push(o.fiche);
+  // Dès « faire connaissance » aussi (22 novembre 2026 : ses mots corrigés n'arrivaient à SINA qu'après), à chaque pas.
+  if (o.fiche) lines.push(o.fiche);
   if (cur === 1) lines.push(...identityStepContext(j, o.identityCount));
   if (cur === 2 || cur === 3) lines.push(...brandFinishContext(j));
   if (cur === 4) lines.push(...anglesStepContext(j));

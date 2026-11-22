@@ -165,6 +165,12 @@ export const EPREUVES: Epreuve[] = [
     rejeu: "gratuit",
   },
   {
+    id: "mots-corriges-relus-par-sina", date: "2026-11-22", source: "CLAUDE.md (Vocabulaire du client)",
+    verdict: "« ce qu'il corrige une fois vaut pour toujours ; ses textes sont repris mot pour mot. »",
+    attendu: "Un mot que le client a corrigé est dans ce que SINA relit à chaque pas, dès « faire connaissance », pas seulement chez sa relectrice.",
+    rejeu: "gratuit",
+  },
+  {
     id: "publication-incomprehensible", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
     verdict: "Une publication d'escalier pour un plombier, incompréhensible pour un inconnu : « Personne ne juge l'idée d'une publication avant de payer le dessin ».",
     attendu: "L'idée de chaque publication est jugée par un lecteur qui ne connaît pas la marque AVANT de payer son image.",

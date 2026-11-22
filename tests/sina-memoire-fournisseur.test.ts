@@ -62,6 +62,22 @@ describe("mise en mémoire chez le fournisseur", async () => {
     expect(f3.length).toBeGreaterThanOrEqual(120);
   });
 
+  it("fil très long : le début qui n'est plus relu est remplacé par un résumé à rubrique fixe, avec les mots du client", async () => {
+    const { DEBUT_COUPE } = await import("@/lib/syna-agent/loop");
+    const { messagesDuClientAvant } = await import("@/lib/syna-agent/store");
+    const user = await account();
+    const cid = threadFor(user, null);
+    for (let i = 0; i < 170; i++) addMessage(cid, i % 2 ? "assistant" : "user", i % 2 ? { message: `r${i}`, actions: [] } : { text: `mot du client ${i}` }, null);
+    const fil = filDeConversation(cid), avant = messagesDuClientAvant(cid, fil[0].seq);
+    expect(avant.length).toBeGreaterThan(0);
+    const blocs = filEnBlocs(fil, avant);
+    expect(blocs[0].startsWith(DEBUT_COUPE)).toBe(true);
+    expect(blocs[0]).toContain("mot du client 0");
+    // Le résumé ne bouge pas d'un message à l'autre (il reste repris de mémoire).
+    addMessage(cid, "user", { text: "encore" }, null);
+    expect(filEnBlocs(filDeConversation(cid), messagesDuClientAvant(cid, filDeConversation(cid)[0].seq))[0]).toBe(blocs[0]);
+  });
+
   it("dans la vraie boucle : le fil arrive en blocs, la demande ne porte plus que la consigne du pas, et le pas 2 reprend tous les blocs du pas 1", async () => {
     const user = await account();
     const cid = threadFor(user, null);

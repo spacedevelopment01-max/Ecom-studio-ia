@@ -48,6 +48,13 @@ export function filDeConversation(conversationId: string, min = 120, pas = 40): 
   ).map((r) => ({ id: r.id, seq: r.seq, role: r.role, runId: r.run_id, content: json(r.content_json, {}), createdAt: r.created_at }));
 }
 
+/** Les messages du client écrits avant `seq` (le début du fil qui n'est plus relu), les plus récents en dernier. */
+export function messagesDuClientAvant(conversationId: string, seq: number, limit = 60): SynaMessage[] {
+  return all<{ id: string; seq: number; role: SynaRole; run_id: string | null; content_json: string; created_at: number }>(
+    "SELECT * FROM (SELECT * FROM syna_messages WHERE conversation_id=? AND role='user' AND seq<? ORDER BY seq DESC LIMIT ?) ORDER BY seq", conversationId, seq, limit,
+  ).map((r) => ({ id: r.id, seq: r.seq, role: r.role, runId: r.run_id, content: json(r.content_json, {}), createdAt: r.created_at }));
+}
+
 export const getRun = (rid: string) => one<SynaRun>("SELECT * FROM syna_runs WHERE id=?", rid);
 export const activeRun = (cid: string) => one<SynaRun>("SELECT * FROM syna_runs WHERE conversation_id=? AND status IN ('queued','running','waiting_jobs','waiting_confirmation') ORDER BY created_at DESC LIMIT 1", cid);
 export const runByRequest = (cid: string, requestId: string) => one<SynaRun>("SELECT * FROM syna_runs WHERE conversation_id=? AND request_id=?", cid, requestId);

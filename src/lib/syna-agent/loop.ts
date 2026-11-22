@@ -36,7 +36,7 @@ import { loadWordingRules, wordingPromptLine } from "../client-wording";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
 import { planOfProject } from "../plan-gates";
 import { routeCountFor } from "./brand-routes";
-import { authorizedBudget, addMessage, createRun, filDeConversation, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
+import { authorizedBudget, addMessage, createRun, filDeConversation, messagesDuClientAvant, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
 import { budgetState, jobSpentMicro, replyAllowanceMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGET_PCT } from "./budget";
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
@@ -587,7 +587,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(!!r.project_id, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
     context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id) })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
     // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
-    history: filEnBlocs(history),
+    history: filEnBlocs(history, history[0] ? messagesDuClientAvant(r.conversation_id, history[0].seq) : []),
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
     maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${cle}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
@@ -642,10 +642,14 @@ export const FIL_TITRE = "# Fil de la conversation (le plus ancien d'abord ; tes
  * Le fil en blocs pour la mise en mémoire : un bloc par message (le titre sur le premier). D'un pas à l'autre d'une
  * même demande, les blocs déjà envoyés restent identiques au caractère près et sont repris de mémoire.
  */
-export function filEnBlocs(h: SynaMessage[]): string[] {
+export function filEnBlocs(h: SynaMessage[], avant: SynaMessage[] = []): string[] {
   const lines = serializeLines(h);
-  return lines.length ? lines.map((l, i) => i === 0 ? `${FIL_TITRE}\n${l}` : l) : [`${FIL_TITRE}\n(vide)`];
+  // Le début du fil n'est plus relu (fil très long) : un résumé à rubrique fixe le remplace, avec les mots du client.
+  const coupe = avant.length ? `${DEBUT_COUPE}\n${avant.map((m) => `- [client #${m.seq}] ${String(m.content?.text ?? "").replace(/\s+/g, " ").slice(0, 200)}`).join("\n")}\n\n` : "";
+  return lines.length ? lines.map((l, i) => i === 0 ? `${coupe}${FIL_TITRE}\n${l}` : l) : [`${coupe}${FIL_TITRE}\n(vide)`];
 }
+/** Rubrique du résumé du début du fil, quand il n'est plus relu. */
+export const DEBUT_COUPE = "# Début de la conversation, qui n'est plus relu en entier\nCe qu'il t'a dit y est noté dans sa fiche (ci-dessous) ; voici, en bref, ce qu'il a écrit (ses mots) :";
 
 function serializeLines(h: SynaMessage[]): string[] {
   // Demande en cours : résultats complets ; demandes précédentes : résumés courts (moins de jetons relus à chaque étape).
