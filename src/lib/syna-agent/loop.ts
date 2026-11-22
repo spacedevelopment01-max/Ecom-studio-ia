@@ -36,12 +36,12 @@ import { loadWordingRules, wordingPromptLine } from "../client-wording";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
 import { planOfProject } from "../plan-gates";
 import { routeCountFor } from "./brand-routes";
-import { authorizedBudget, addMessage, createRun, filDeConversation, messagesDuClientAvant, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
+import { authorizedBudget, addMessage, createRun, debutDuFil, FIL_MAX, filDeConversation, messagesDepuis, messagesDuClientAvant, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
 import { budgetState, jobSpentMicro, replyAllowanceMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGET_PCT } from "./budget";
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus } from "./journey";
+import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
 import { anglesViewOf } from "./angles";
 import { sinaModels } from "./models";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
@@ -232,6 +232,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       updateRun(r.id, { pending_json: null });
       if (out.jobs?.length) return suspend(r, out.jobs);
     } else if (pending?.declined) updateRun(r.id, { pending_json: null });
+    // Le client a cliqué sur une partie de son site : le Studio lit lui-même la section (gratuit) avant la première
+    // réflexion, comme si SINA l'avait demandée (audit de la conversation, 22 novembre 2026 : une réflexion de moins).
+    if (r.step === 0) await prelireLaSection(r, tctx);
 
     // 3. Étapes du modèle.
     for (;;) {
@@ -347,6 +350,20 @@ function suspend(r: SynaRun, jobs: string[]) {
 }
 
 /** Exécution d'un outil : idempotente par clé (une reprise ne rejoue jamais une écriture acquise). */
+/** La section désignée par le client dans son message (« [Élément désigné · section s1234abcd … »), sinon null. */
+export function sectionDesignee(text: string): string | null {
+  return /^\[Élément désigné · section (s[0-9a-f]{8})\b/.exec(text.trim())?.[1] ?? null;
+}
+
+async function prelireLaSection(r: SynaRun, ctx: ToolContext): Promise<void> {
+  if (!r.project_id) return;
+  const dernier = lastMessages(r.conversation_id, 6).filter((m) => m.role === "user").at(-1);
+  const uid = dernier ? sectionDesignee(String(dernier.content?.text ?? "")) : null;
+  const t = uid ? getTool("custom.section") : null;
+  if (!uid || !t) return;
+  try { await execute(t, { uid }, ctx, `prelecture:${uid}`, r); } catch { /* SINA la lira elle-même */ }
+}
+
 async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: string, r: SynaRun): Promise<ToolResult> {
   const prior = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND run_id=? AND role='tool'", r.conversation_id, r.id)
     .map((m) => json<any>(m.content_json, {})).find((m) => m.key === key && m.tool === t.name);
@@ -367,7 +384,7 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
   if (res.changes?.length) recordChanges(r.conversation_id, r.id, t.name, res.changes);
   // Un travail payant lancé : noté avec son plafond (prix probable mesuré, coût par travail accepté).
   if (t.estimate && res.ok && res.jobs?.length) { try { noterTravail(t.name, res.jobs, { userId: r.user_id, projectId: r.project_id, conversationId: r.conversation_id }); } catch { /* le carnet ne bloque jamais un travail */ } }
-  addMessage(r.conversation_id, "tool", { key, tool: t.name, args, ok: res.ok, summary: res.summary, ...(res.hint ? { hint: res.hint } : {}), ...(res.internal ? { internal: true } : {}), data: clip(res.data, 6000), changes: res.changes, jobs: res.jobs, ambiguous: res.ambiguous }, r.id);
+  addMessage(r.conversation_id, "tool", { key, tool: t.name, args, ok: res.ok, summary: res.summary, ...(res.hint ? { hint: res.hint } : {}), ...(res.internal ? { internal: true } : {}), data: clip(res.data, t.name === "custom.section" ? 32000 : 6000), changes: res.changes, jobs: res.jobs, ambiguous: res.ambiguous }, r.id);
   return res;
 }
 
@@ -575,7 +592,7 @@ const sawImages = new Map<string, boolean>();
 
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
 async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, note = "", cle = note ? ":reprise" : ""): Promise<StepOutput> {
-  const history = filDeConversation(r.conversation_id);
+  const history = filDeConversation(r.conversation_id, debutDuFilDeLEtape(r.conversation_id));
   const scope = toolScope(r), conv = conversationSettings();
   // Variété des réponses : les débuts de tes derniers messages, à ne pas reprendre.
   const openings = history.filter((m) => m.role === "assistant" && m.content?.message).slice(-4).map((m) => String(m.content.message).split(/\s+/).slice(0, 5).join(" "));
@@ -648,6 +665,18 @@ function newAttachmentSinceLastAssistant(h: SynaMessage[]) {
   return false;
 }
 
+/**
+ * Le début du fil pour ce pas : le même pendant toute une étape. Il n'est recalculé qu'au changement d'étape (les notices
+ * changent alors, la mémoire est réécrite de toute façon) ou au-delà de `FIL_MAX` messages.
+ */
+export function debutDuFilDeLEtape(cid: string): number {
+  const j = journeyOf(cid), etape = currentStep(j);
+  if (j.fil && j.fil.etape === etape && messagesDepuis(cid, j.fil.depuis) <= FIL_MAX) return j.fil.depuis;
+  const depuis = debutDuFil(cid);
+  updateJourney(cid, (x) => { x.fil = { depuis, etape }; });
+  return depuis;
+}
+
 /** Fil lisible par le modèle : paroles exactes, réponses de SINA, résultats d'outils (tronqués), accords. */
 export function serialize(h: SynaMessage[]): string {
   return serializeLines(h).join("\n");
@@ -701,7 +730,8 @@ export function resultatsDeLaDemande(h: SynaMessage[]): string {
   let i = h.length - 1;
   while (i >= 0 && h[i].role !== "user") i--;
   const lignes = h.slice(i + 1).filter((m) => (m.role === "tool" && m.content?.data != null && JSON.stringify(m.content.data).length > FIL_DONNEES_MAX) || (m.role === "assistant" && m.content?.actions?.some((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.length > FIL_ACTIONS_MAX)));
-  return lignes.length ? `\n\n# Résultats complets de cette demande (raccourcis dans le fil)\n${lignes.map((m) => ligneDuFil(m, DEMANDE_DONNEES_MAX, 400)).join("\n")}` : "";
+  // La section lue pour une retouche, en entier : SINA y recopie les passages exacts à changer.
+  return lignes.length ? `\n\n# Résultats complets de cette demande (raccourcis dans le fil)\n${lignes.map((m) => ligneDuFil(m, m.content?.tool === "custom.section" ? 32000 : DEMANDE_DONNEES_MAX, 400)).join("\n")}` : "";
 }
 
 function clip(v: unknown, max: number): unknown {

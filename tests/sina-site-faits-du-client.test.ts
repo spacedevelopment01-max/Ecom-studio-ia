@@ -306,6 +306,25 @@ describe("SINA — les faits du client dans son site", async () => {
     expect(G.approvedRemainderMicro(c.cid, other.id)).toBe(0);
   });
 
+  it("retouche au clic : le Studio lit lui-même la section désignée avant la première réflexion (une réflexion de moins)", async () => {
+    const { submitMessage, runAgent, sectionDesignee } = await import("@/lib/syna-agent/loop");
+    const c = await client();
+    theme(c.pid, {});
+    const t0 = S.loadCustomTheme(c.pid)!;
+    t0.pages[0].sections[0].uid = "s0a1b2c3d";
+    S.saveCustomTheme(c.pid, t0);
+    expect(sectionDesignee("[Élément désigné · section s0a1b2c3d · page Accueil · titre · « Nos prestations »] Plus chaleureux")).toBe("s0a1b2c3d");
+    expect(sectionDesignee("Change le titre")).toBeNull();
+    const r = submitMessage(c.user, c.cid, { requestId: `clic-${Math.random()}`, text: "[Élément désigné · section s0a1b2c3d · page Accueil · titre · « Nos prestations »] Plus chaleureux" });
+    const vus: string[] = [];
+    await fr(() => runAgent(r.id, r.job_id!, { reason: async (call) => { vus.push((call.history ?? []).join("\n") + String(call.context ?? "")); return { message: "Je le rends plus chaleureux.", actions: [], done: true }; } }));
+    // Dès la première réflexion, la section lue est là : SINA n'a pas à la demander.
+    expect(vus).toHaveLength(1);
+    expect(vus[0]).toMatch(/\[résultat custom\.section #\d+\] OK/);
+    expect(vus[0]).toContain("Résultats complets de cette demande");
+    expect(vus[0]).toContain("s0a1b2c3d");
+  });
+
   it("budget atteint juste après une création payée : SINA dit sans IA ce qui est fait, puis la carte du budget s'affiche", async () => {
     const { addMessage, createRun, getRun } = await import("@/lib/syna-agent/store");
     const { runAgent } = await import("@/lib/syna-agent/loop");

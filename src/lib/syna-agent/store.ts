@@ -34,18 +34,32 @@ export function lastMessages(conversationId: string, limit: number): SynaMessage
   ).map((r) => ({ id: r.id, seq: r.seq, role: r.role, runId: r.run_id, content: json(r.content_json, {}), createdAt: r.created_at }));
 }
 
+/** Le fil relu en entier : au moins ce nombre de messages quand il est allégé. */
+export const FIL_MIN = 120;
+/** Au-delà de ce nombre de messages depuis le dernier allègement, il s'allège même sans changement d'étape (filet). */
+export const FIL_MAX = 400;
+
 /**
- * Le fil que SINA relit à chaque pas : au moins les `min` derniers messages, à partir d'un début qui ne bouge que tous
- * les `pas` messages. Avant (22 novembre 2026), la fenêtre glissait d'un message à chaque fois : le début du fil
- * changeait sans cesse et le fournisseur ne pouvait rien en reprendre de mémoire. Elle ne montre jamais moins qu'avant.
+ * Où commence le fil quand il est allégé : les `FIL_MIN` derniers messages au moins (0 tant qu'il est plus court).
  */
-export function filDeConversation(conversationId: string, min = 120, pas = 40): SynaMessage[] {
-  const oldest = one<{ seq: number }>("SELECT seq FROM syna_messages WHERE conversation_id=? ORDER BY seq DESC LIMIT 1 OFFSET ?", conversationId, min - 1);
-  if (!oldest) return lastMessages(conversationId, min);
-  const from = Math.floor(oldest.seq / pas) * pas;
+export function debutDuFil(conversationId: string, min = FIL_MIN): number {
+  return one<{ seq: number }>("SELECT seq FROM syna_messages WHERE conversation_id=? ORDER BY seq DESC LIMIT 1 OFFSET ?", conversationId, min - 1)?.seq ?? 0;
+}
+
+/**
+ * Le fil que SINA relit à chaque pas, à partir de `depuis` (22 novembre 2026, audit de la conversation) : son début ne
+ * bouge plus qu'au changement d'étape, où la mémoire est de toute façon réécrite (les notices changent), ou au-delà de
+ * `FIL_MAX` messages. Avant, il glissait tous les 40 messages et tout le fil était réécrit en mémoire.
+ */
+export function filDeConversation(conversationId: string, depuis = 0): SynaMessage[] {
   return all<{ id: string; seq: number; role: SynaRole; run_id: string | null; content_json: string; created_at: number }>(
-    "SELECT * FROM syna_messages WHERE conversation_id=? AND seq>=? ORDER BY seq", conversationId, from,
+    "SELECT * FROM syna_messages WHERE conversation_id=? AND seq>=? ORDER BY seq", conversationId, depuis,
   ).map((r) => ({ id: r.id, seq: r.seq, role: r.role, runId: r.run_id, content: json(r.content_json, {}), createdAt: r.created_at }));
+}
+
+/** Messages depuis `depuis` (pour savoir s'il faut alléger le fil par sécurité). */
+export function messagesDepuis(conversationId: string, depuis: number): number {
+  return one<{ n: number }>("SELECT COUNT(*) n FROM syna_messages WHERE conversation_id=? AND seq>=?", conversationId, depuis)?.n ?? 0;
 }
 
 /** Les messages du client écrits avant `seq` (le début du fil qui n'est plus relu), les plus récents en dernier. */

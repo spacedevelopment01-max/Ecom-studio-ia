@@ -48,20 +48,24 @@ describe("mise en mémoire chez le fournisseur", async () => {
     expect(resultatsDeLaDemande(pas2)).toContain("y".repeat(500));
   });
 
-  it("la fenêtre du fil ne glisse plus à chaque message : son début ne bouge que tous les 40 messages, jamais moins de 120 messages", async () => {
+  it("le début du fil ne bouge qu'au changement d'étape (ou au-delà de 400 messages) : il n'est plus réécrit tous les 40 messages", async () => {
+    const { debutDuFilDeLEtape } = await import("@/lib/syna-agent/loop");
+    const J = await import("@/lib/syna-agent/journey");
     const user = await account();
     const cid = threadFor(user, null);
     for (let i = 0; i < 130; i++) addMessage(cid, i % 2 ? "assistant" : "user", i % 2 ? { message: `r${i}`, actions: [] } : { text: `m${i}` }, null);
-    const f1 = filDeConversation(cid);
-    expect(f1.length).toBeGreaterThanOrEqual(120);
-    addMessage(cid, "user", { text: "encore" }, null);
-    const f2 = filDeConversation(cid);
-    expect(f2[0].seq).toBe(f1[0].seq);
-    expect(f2.length).toBe(f1.length + 1);
-    for (let i = 0; i < 45; i++) addMessage(cid, "user", { text: `plus ${i}` }, null);
-    const f3 = filDeConversation(cid);
-    expect(f3[0].seq).toBeGreaterThan(f1[0].seq);
-    expect(f3.length).toBeGreaterThanOrEqual(120);
+    const d1 = debutDuFilDeLEtape(cid), f1 = filDeConversation(cid, d1);
+    expect(f1.length).toBe(120);
+    // Même étape : 85 messages de plus, le début ne bouge pas (avant, il glissait deux fois).
+    for (let i = 0; i < 85; i++) addMessage(cid, "user", { text: `plus ${i}` }, null);
+    expect(debutDuFilDeLEtape(cid)).toBe(d1);
+    expect(filDeConversation(cid, d1).length).toBe(205);
+    // Changement d'étape : le fil s'allège une fois, aux 120 derniers messages.
+    J.updateJourney(cid, (x) => { J.setStep(x, 0, "done"); });
+    const d2 = debutDuFilDeLEtape(cid);
+    expect(d2).toBeGreaterThan(d1);
+    expect(filDeConversation(cid, d2).length).toBe(120);
+    expect(debutDuFilDeLEtape(cid)).toBe(d2);
   });
 
   it("fil très long : le début qui n'est plus relu est remplacé par un résumé à rubrique fixe, avec les mots du client", async () => {
@@ -70,14 +74,15 @@ describe("mise en mémoire chez le fournisseur", async () => {
     const user = await account();
     const cid = threadFor(user, null);
     for (let i = 0; i < 170; i++) addMessage(cid, i % 2 ? "assistant" : "user", i % 2 ? { message: `r${i}`, actions: [] } : { text: `mot du client ${i}` }, null);
-    const fil = filDeConversation(cid), avant = messagesDuClientAvant(cid, fil[0].seq);
+    const { debutDuFil } = await import("@/lib/syna-agent/store");
+    const fil = filDeConversation(cid, debutDuFil(cid)), avant = messagesDuClientAvant(cid, fil[0].seq);
     expect(avant.length).toBeGreaterThan(0);
     const blocs = filEnBlocs(fil, avant);
     expect(blocs[0].startsWith(DEBUT_COUPE)).toBe(true);
     expect(blocs[0]).toContain("mot du client 0");
     // Le résumé ne bouge pas d'un message à l'autre (il reste repris de mémoire).
     addMessage(cid, "user", { text: "encore" }, null);
-    expect(filEnBlocs(filDeConversation(cid), messagesDuClientAvant(cid, filDeConversation(cid)[0].seq))[0]).toBe(blocs[0]);
+    expect(filEnBlocs(filDeConversation(cid, fil[0].seq), messagesDuClientAvant(cid, fil[0].seq))[0]).toBe(blocs[0]);
   });
 
   it("dans la vraie boucle : le fil arrive en blocs, la demande ne porte plus que la consigne du pas, et le pas 2 reprend tous les blocs du pas 1", async () => {
