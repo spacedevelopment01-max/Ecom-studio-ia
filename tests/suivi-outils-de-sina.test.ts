@@ -22,6 +22,7 @@ describe("suivi : les outils de SINA (fiche Google, bras droit)", async () => {
   const { threadFor } = await import("@/lib/syna-agent/thread");
   const { getTool } = await import("@/lib/syna-agent/registry");
   const { toolInFocus } = await import("@/lib/syna-agent/conversation");
+  const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
   const G = await import("@/lib/suivi/fiche-google");
   const B = await import("@/lib/suivi/bras-droit");
   const T = await import("@/lib/syna-agent/tools/suivi");
@@ -49,6 +50,8 @@ describe("suivi : les outils de SINA (fiche Google, bras droit)", async () => {
     expect(getTool("google.avis")!.estimate).toBeTypeOf("function");
     expect(getTool("google.fiche")!.estimate).toBeUndefined();
     expect(getTool("droit.informer")!.estimate).toBeUndefined();
+    // SINA sait quand s'en servir : une ligne dans ses consignes stables.
+    expect(SYNA_SYSTEM).toMatch(/Dans la durée : [^\n]*droit\.informer[^\n]*google\.fiche[^\n]*google\.avis/);
     // Les deux listes d'outils de l'étape du site restent ce qu'elles étaient.
     for (const site of [false, true]) for (const n of ["google.fiche", "google.avis", "droit.informer"]) expect(toolInFocus(n, 6, { site })).toBe(false);
   });
