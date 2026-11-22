@@ -1,0 +1,55 @@
+/**
+ * Les trois publications de la marque finie deviennent les premières du calendrier (référence du propriétaire, partie 13 :
+ * « ses publications deviennent les premières du calendrier » ; décision appliquée le 22 novembre 2026).
+ *
+ * Elles sont offertes : leurs images ont été créées et relues avec la marque (`brand-finish.ts`), rien n'est recréé et
+ * aucun appel payant n'est fait ici. Chaque publication de la planche (son image relue et son texte) devient une
+ * publication à publier sur chacun des réseaux du client qui prennent une image 4:5 (Instagram, Facebook), avec sa fin
+ * de légende contrôlée (aucun ordre au lecteur, `fin-de-legende.ts`). Une image refusée à la relecture n'existe pas sur
+ * la planche : elle n'est jamais mise au calendrier. Rien n'est jamais publié par le Studio : le client publie lui-même.
+ */
+import { one } from "../db";
+import { getAsset } from "../library";
+import type { Project } from "../projects";
+import { createManualPost } from "../social-v2/manual";
+import { adaptForPlatform, platformSpec, type Platform } from "../social-v2/platforms";
+import type { Journey } from "./journey";
+import { chosenRoute } from "./logos";
+
+/** Les réseaux qui reçoivent telle quelle l'image 4:5 d'une publication de la planche. */
+const RESEAUX_4_5 = ["instagram", "facebook"] as const;
+
+/** Les publications de la planche de la marque finie qui ont leur image relue, dans l'ordre de la planche. */
+export function publicationsDeLaMarque(j: Journey): { index: number; text: string; assetId: string }[] {
+  const x = chosenRoute(j);
+  if (!x) return [];
+  const images = x.board.images?.posts ?? [];
+  return x.board.posts.map((post, index) => ({ index, text: post.text.trim(), assetId: images[index]?.id ?? "" })).filter((p) => p.text && p.assetId);
+}
+
+/** Identifiant stable d'une publication de la marque (une seule fois par projet, par publication et par réseau). */
+export const idPublicationDeLaMarque = (projectId: string, index: number, network: string) => `marque-${projectId}-${index}-${network}`;
+
+/**
+ * Met les publications de la marque au rang des publications prêtes (offertes, sans appel payant), pour les réseaux du
+ * client. Déjà faites : rien ne change. Renvoie ce qui a été ajouté et ce qui ne l'a pas été, avec la raison.
+ */
+export function offrirLesPublicationsDeLaMarque(p: Project, userId: string, j: Journey, networks: readonly string[]): { added: string[]; kept: string[]; notes: string[] } {
+  const added: string[] = [], kept: string[] = [], notes: string[] = [];
+  const posts = publicationsDeLaMarque(j);
+  if (!posts.length) return { added, kept, notes };
+  const nets = RESEAUX_4_5.filter((n) => networks.includes(n) && platformSpec(n).dims.image?.aspect === "4:5");
+  if (!nets.length) { notes.push("les publications de ta marque sont en 4:5 : elles vont sur Instagram et Facebook, aucun de ces réseaux n'est choisi"); return { added, kept, notes }; }
+  for (const post of posts) {
+    const a = getAsset(post.assetId);
+    if (!a || a.project_id !== p.id || a.deleted_at) { notes.push(`publication ${post.index + 1} de ta marque : image introuvable, elle n'est pas mise au calendrier`); continue; }
+    for (const network of nets) {
+      const postId = idPublicationDeLaMarque(p.id, post.index, network);
+      if (one("SELECT 1 FROM posts WHERE id=?", postId)) { kept.push(postId); continue; }
+      const adapted = adaptForPlatform(network as Platform, { caption: post.text, title: post.text, hashtags: [], link: null, format: "image", mediaCount: 1 });
+      createManualPost(p, userId, { network, format: "image", title: adapted.title.slice(0, 200), caption: adapted.caption, hashtags: "", media: [post.assetId] }, { postId, brief: { unit: `marque:${post.index}`, serie: "La marque", marque: true, offerte: true, ordre: post.index } });
+      added.push(postId);
+    }
+  }
+  return { added, kept, notes };
+}

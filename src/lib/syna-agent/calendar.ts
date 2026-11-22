@@ -220,9 +220,13 @@ export function buildCalendar(p: Project, req: CalendarRequest, previous: Calend
   }
   const prevOf = new Map((previous?.entries ?? []).map((e) => [e.id, e.prev]));
 
-  const units = varietyOrder(sources.units
+  const ready = sources.units
     .map((u) => ({ ...u, posts: u.posts.filter((x) => networks.includes(x.network as Platform) && !keptRefs.has(x.id)) }))
-    .filter((u) => u.posts.length));
+    .filter((u) => u.posts.length);
+  // Les publications de la marque finie ouvrent le calendrier, dans l'ordre de la planche (référence du propriétaire,
+  // partie 13 ; `publications-de-la-marque.ts`) ; les autres suivent, dans un ordre varié.
+  const marque = (u: SourceUnit) => { const b = json<Record<string, unknown>>(u.posts[0]?.brief ?? "{}", {}); return b.marque === true ? Number(b.ordre ?? 0) : null; };
+  const units = [...ready.filter((u) => marque(u) != null).sort((a, b) => marque(a)! - marque(b)!), ...varietyOrder(ready.filter((u) => marque(u) == null))];
 
   const dates = publishingDates({ startDate, days: req.days });
   const slots: { ymd: string; time: string; at: number }[] = [];
