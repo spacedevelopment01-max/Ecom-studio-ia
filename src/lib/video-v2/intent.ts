@@ -49,6 +49,7 @@ export const PLATFORM_SPECS: Record<VideoPlatform, { aspect: VideoAspect; defaul
 };
 
 /** Durée par défaut selon l'intention (l'audience décroche vite : on reste court sauf besoin réel). */
+import { gridDuration, gridKind } from "./grilles";
 const INTENT_DURATION: Partial<Record<VideoIntentKind, number>> = {
   video_ad: 15,
   social_content: 12,
@@ -105,8 +106,15 @@ export function videoIntent(p: Project, ask: VideoAsk = {}): VideoIntent {
   const m = t.match(DURATION_RE);
   const asked = ask.durationS ?? (m ? (m[1] ? Number(m[1]) : Number(m[3]) * 60) : null);
   const base = asked ?? INTENT_DURATION[kind] ?? spec.defaultS;
-  const durationS = Math.max(6, Math.min(spec.maxS, Math.round(base)));
+  let durationS = Math.max(6, Math.min(spec.maxS, Math.round(base)));
   if (asked && asked !== durationS) reasons.push(`durée ramenée à ${durationS} s (limite ${spec.label} : ${spec.maxS} s)`);
+  // Grilles des formats courts (rapport 09, point 9) : publication 9-15 s, publicité 21-30 s (sauf durée demandée).
+  const grid = gridKind({ kind, platform, durationS, purpose: ask.purpose });
+  if (grid && !asked) {
+    const g = gridDuration(grid, durationS);
+    if (g !== durationS) reasons.push(`durée de la grille ${grid === "ad" ? "publicité (21 à 30 s)" : "publication (9 à 15 s)"} : ${g} s`);
+    durationS = g;
+  }
 
   // Complexité : une demande courte et modeste reste « simple » (montage local), même si l'IA est active.
   const modest = /petite?|simple|rapide|vite|quick|basique|juste|seulement|sans ia|without ai/.test(t);

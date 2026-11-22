@@ -15,7 +15,7 @@ import { usageSettings } from "../ai/media-routing";
 import { mediaModel } from "../ai/media-models";
 import type { Shot } from "./types";
 
-/** Nombre de plans animés par IA dans une vidéo du mélange. */
+/** Nombre de plans animés par IA dans une publication du mélange (une publicité de 21 à 30 s en a deux : `grilles.ts`). */
 export const MIX_ANIMATED_SHOTS = 1;
 
 /**
@@ -36,8 +36,13 @@ export function mixAnimatedModel(): { provider: string; model: string } | null {
  * secondes, guide de TikTok), sinon la première démonstration. Jamais la preuve, la conclusion ni la carte de fin.
  */
 export function animatedShotId(storyboard: Pick<Shot, "id" | "part" | "showsProduct" | "character">[]): string | null {
+  return animatedShotIds(storyboard, 1)[0] ?? null;
+}
+/** Plans animés d'une vidéo : un pour une publication, deux pour une publicité (grille, point 9), dans cet ordre de choix. */
+export function animatedShotIds(storyboard: Pick<Shot, "id" | "part" | "showsProduct" | "character">[], count: number): string[] {
   const ok = storyboard.filter((s) => !s.character && s.part !== "cta" && s.part !== "proof" && s.part !== "conclusion");
-  return (ok.find((s) => s.part === "hook" && s.showsProduct) ?? ok.find((s) => s.part === "demonstration") ?? ok.find((s) => s.part === "hook") ?? null)?.id ?? null;
+  const order = [ok.find((s) => s.part === "hook" && s.showsProduct), ...ok.filter((s) => s.part === "demonstration"), ok.find((s) => s.part === "hook"), ...ok.filter((s) => s.part === "development")];
+  return [...new Set(order.filter(Boolean).map((s) => s!.id))].slice(0, count);
 }
 
 /** Mouvement de caméra du plan sûr : jamais figé (un plan fixe devient une avancée lente). */

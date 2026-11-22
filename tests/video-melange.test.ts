@@ -16,7 +16,8 @@ describe("le mélange", async () => {
   const { buildStoryboard } = await import("@/lib/video-v2/storyboard");
   const { planShots, paidShots } = await import("@/lib/video-v2/shots");
   const { chooseProvider } = await import("@/lib/video-v2/providers");
-  const { mixAnimatedModel, animatedShotId, safeCamera } = await import("@/lib/video-v2/melange");
+  const { mixAnimatedModel, animatedShotIds, safeCamera } = await import("@/lib/video-v2/melange");
+  const { gridAnimatedShots, gridFor } = await import("@/lib/video-v2/grilles");
   const { packshotDoc, SIZES, safeZone } = await import("@/lib/video-v2/doc");
   const { productDrift, imageSignature, signatureGap, DRIFT_LIMIT } = await import("@/lib/video-v2/quality");
   const { setJsonSetting, getJsonSetting } = await import("@/lib/settings");
@@ -28,21 +29,26 @@ describe("le mélange", async () => {
   const all = { available: () => true, preferred: null, estimate: (_p: string, _m: string, s: number) => s * 100_000 };
   const before = getJsonSetting("ai.media.usage", {});
   afterEach(() => setJsonSetting("ai.media.usage", before));
-  const mk = (text: string) => {
-    const intent = videoIntent(cosmetic, { text });
+  const mk = (text: string, extra: Record<string, unknown> = {}) => {
+    const intent = videoIntent(cosmetic, { text, ...extra });
     const st = videoStrategy(cosmetic, intent);
     const i = adInsight(cosmetic);
     return { intent, st, sb: buildStoryboard(i, st, intent, localScript(i, st, intent), inv0) };
   };
 
-  it("un seul plan animé par vidéo, l'accroche d'abord ; les autres sont des plans sûrs qui bougent", async () => {
+  it("un seul plan animé par publication, deux par publicité, l'accroche d'abord ; les autres sont des plans sûrs qui bougent", async () => {
     await fr(() => {
       const v = mk("publicité instagram de 30 secondes");
       const plan = planShots(v.sb, { intent: v.intent, strategy: v.st, inv: inv0, allowGeneration: true, provider: (n) => chooseProvider(n, all), budgetMicro: 50_000_000 });
       const paid = paidShots(plan.shots);
-      expect(paid).toHaveLength(1);
-      expect(paid[0].id).toBe(animatedShotId(v.sb));
+      const n = gridAnimatedShots(gridFor(v.intent));
+      expect(n).toBe(2); // publicité : grille de 21 à 30 s
+      expect(paid).toHaveLength(n);
+      expect(paid.map((x) => x.id)).toEqual(animatedShotIds(v.sb, n));
       expect(["hook", "demonstration"]).toContain(paid[0].part);
+      const post = mk("publication instagram du jour", { kind: "social_content", purpose: "organic" });
+      expect(gridAnimatedShots(gridFor(post.intent))).toBe(1);
+      expect(paidShots(planShots(post.sb, { intent: post.intent, strategy: post.st, inv: inv0, allowGeneration: true, provider: (x) => chooseProvider(x, all), budgetMicro: 50_000_000 }).shots).length).toBeLessThanOrEqual(1);
       // Plans sûrs : jamais une caméra figée.
       for (const s of plan.shots.filter((x) => x.source.kind !== "generate")) expect(s.camera).not.toBe("static");
     });
@@ -71,8 +77,9 @@ describe("le mélange", async () => {
       const only = { provider: "fal", model: "fal-ai/kling-video/v2.1/pro/image-to-video" };
       const plan = planShots(v.sb, { intent: v.intent, strategy: v.st, inv: inv0, allowGeneration: true, provider: (n) => chooseProvider(n, { ...all, only }), budgetMicro: 50_000_000, animated: only });
       const paid = paidShots(plan.shots);
-      expect(paid).toHaveLength(1);
-      expect(paid[0].source).toMatchObject(only);
+      expect(paid.length).toBeGreaterThan(0);
+      expect(paid.length).toBeLessThanOrEqual(2);
+      for (const x of paid) expect(x.source).toMatchObject(only);
     });
   });
 

@@ -738,7 +738,10 @@ function assemble(a: AssembleInput): VideoDocument {
     if (target) target.durationS = Math.round((target.durationS + lost) * 100) / 100;
   }
   const promo = !organicVideo(a.intent.editorial) && a.intent.purpose!=="organic" && a.intent.kind !== "ugc" && clips.some((c) => c.source.kind === "video");
-  if (promo && a.strategy.style.music !== "none") clips = snapToBeat(clips, songGrid(songStyleFor(a.p), clips.reduce((t, c) => t + c.durationS, 0)).beatS);
+  // Coupes calées sur la musique composée (rapport 09, point 8) : toute vidéo avec musique, sauf l'UGC et une vidéo dont
+  // un plan porte une voix (la voix mesurée garde sa place).
+  const voiced = a.shots.some((s) => s.voice.trim());
+  if (a.strategy.style.music !== "none" && a.intent.kind !== "ugc" && (promo || !voiced)) clips = snapToBeat(clips, songGrid(songStyleFor(a.p), clips.reduce((t, c) => t + c.durationS, 0)).beatS);
   // Direction artistique de la marque : la même ligne que les publications (typographie, élément graphique, rythme, lumière).
   const look = artDirection(adArt(a.p, a.typo)).video;
   if (promo) clips = dressPromo(clips, a.shots, { p: a.p, pal: a.pal, typo: a.typo, w, h, safe: a.safe, brand: a.insight.brand, logoId: a.inv.logo?.id ?? null, thumbs: a.thumbs ?? [], productPhotos: a.p.business === "services" ? [] : a.inv.photos.map((x) => x.id), icons: a.icons ?? [], cta: a.strategy.cta, message: a.strategy.message, look });

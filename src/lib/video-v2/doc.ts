@@ -195,7 +195,8 @@ export function endCardDoc(o: { w: number; h: number; safe: VideoDocument["safe"
   const ctaSize = o.px?.cta ?? Math.round(short * (o.big ? 0.065 : 0.042));
   const bw = o.px ? Math.min(w - o.safe.side * 2, Math.max(short * 0.5, o.cta.length * ctaSize * 0.6 + o.px.padX * 2)) : Math.min(w - o.safe.side * 2, short * (o.big ? 0.76 : 0.62));
   const bh = o.px ? ctaSize * 1.25 + o.px.padY * 2 : short * (o.big ? 0.15 : 0.11);
-  layers.push(buttonLayer("cta", { x: (w - bw) / 2, y: h * 0.6, w: bw, h: bh }, o.cta, { family: o.typo.body, size: ctaSize, fill: pal.accent, color: inkOn(pal.accent) }));
+  // Logo et offre dans le tiers du milieu : le bouton ne descend jamais dans les 35 % du bas (règle de Meta, rapport 09).
+  layers.push(buttonLayer("cta", { x: (w - bw) / 2, y: Math.min(h * 0.6, h * 0.63 - bh), w: bw, h: bh }, o.cta, { family: o.typo.body, size: ctaSize, fill: pal.accent, color: inkOn(pal.accent) }));
   return frame(w, h, pal, o.typo, o.brand, layers, pal.dark);
 }
 
