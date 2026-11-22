@@ -77,7 +77,11 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     expect(J.journeyContext(j, { guideAPart: true })).not.toMatch(/LE PLAN D'ABORD/);
     expect(J.journeyContext(j, { guideAPart: true })).toMatch(/Publications : aucun plan encore/);
     expect(J.guideDeLEtape(j)).toBe(J.STEP_GUIDES[9]);
-    expect(J.guideDeLEtape(J.emptyJourney())).toBe("");
+    // Étape 0 : ses consignes fixes (« Faire connaissance. Ton but… ») sont aussi données à part, et plus dans le contexte.
+    expect(J.guideDeLEtape(J.emptyJourney())).toMatch(/^Faire connaissance\. Ton but/);
+    expect(J.journeyContext(J.emptyJourney(), { guideAPart: true })).not.toMatch(/Faire connaissance\. Ton but/);
+    expect(J.journeyContext(J.emptyJourney())).toMatch(/Faire connaissance\. Ton but/);
+    expect(J.guideDeLEtape({ ...J.emptyJourney(), outside: true } as any)).toBe("");
     expect(routedCatalog(true, scope, 9)).toMatch(/### posts\.plan — module publications/);
     setSetting("sina.etapes_ouvertes", "n'importe quoi");
     expect(J.stepReady(9)).toBe(false);
