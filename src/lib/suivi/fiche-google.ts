@@ -8,8 +8,9 @@
  *  - une réponse propre à CHAQUE avis collé ou transféré : prénom de l'auteur, un détail de son avis, signature du
  *    client, aucune offre ni promotion (Google le déconseille), jamais trop proche d'une réponse déjà donnée (les
  *    réponses toutes faites rebutent la moitié des clients, BrightLocal 2026). Relue par le code avant d'être montrée.
- * ÉTEINT tant que le propriétaire n'a pas dit oui (réglage `suivi.ficheGoogle`). Une réponse à un avis coûte un appel
- * (estimé à moins d'un centime avec le modèle le plus fort, effort faible ; non mesuré).
+ * ALLUMÉ par défaut (décision du 22 novembre 2026 ; « 0 » dans le réglage `suivi.ficheGoogle` l'éteint), dans la
+ * conversation de SINA : outils `google.fiche` (gratuit) et `google.avis` (`syna-agent/tools/suivi.ts`). Une réponse à un
+ * avis coûte un appel (estimé à moins d'un centime avec le modèle le plus fort, effort faible ; non mesuré).
  */
 import { z } from "zod";
 import { all, id, now, run } from "../db";

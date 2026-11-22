@@ -12,8 +12,10 @@
  *     page affiche ; une source non ouverte n'est jamais citée ; chaque phrase citée entre guillemets doit être sur la page ;
  *  3. quand il faut un professionnel (litige, contrat à signer, contrôle, déclaration, comptes), SINA dit lequel et prépare
  *     les questions à lui poser.
- * ÉTEINT tant que le propriétaire n'a pas dit oui (réglage `suivi.brasDroit`) : la façon de dire la limite au client
- * engage sa responsabilité.
+ * ALLUMÉ par défaut (décision du 22 novembre 2026 ; « 0 » dans le réglage `suivi.brasDroit` l'éteint), dans la
+ * conversation de SINA : outil `droit.informer` (`syna-agent/tools/suivi.ts`), qui dit au client, mot pour mot : « Je
+ * t'informe à partir des pages officielles (datées). Pour une décision qui t'engage, voici le professionnel à consulter
+ * et les questions à lui poser. »
  */
 import { L } from "../i18n-server";
 
