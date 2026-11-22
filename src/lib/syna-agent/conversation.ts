@@ -55,12 +55,12 @@ const STEP_TOOLS: Record<number, RegExp | ((p: MomentEtape) => RegExp)> = {
   // L'activité : la fiche et ses produits, ou ses prestations et ses rendez-vous.
   5: (p) => p.services
     ? /^(activity\.|services\.profile$|bookings\.(services|configure)$|catalogue\.(list|create|update)$)/
-    : /^(activity\.|project\.profile$|catalogue\.(list|create|update|photos)$|shop\.offers$)/,
+    : /^(activity\.|project\.profile$|catalogue\.(list|create|update|photos)$|shop\.offers$|prix\.preuve$)/,
   // Le site : avant sa création, ce qu'il faut pour le créer ; ensuite, les retouches en cliquant, sa validation et la
   // galerie de ses produits. catalogue.photos : poser la photo qu'un client envoie sur son produit, avant comme après.
   6: (p) => p.site
     ? /^(custom\.(show|section|edit|structure|photo|undo|choose)$|catalogue\.photos$|gallery\.(plan|create)$)/
-    : /^(site\.create$|catalogue\.(list|photos)$|shop\.(offers|buy_features)$)/,
+    : /^(site\.create$|catalogue\.(list|photos)$|shop\.(offers|buy_features)$|prix\.preuve$)/,
   7: /^(custom\.(install|show|section|edit|structure|photo|undo)$|gallery\.(plan|create)$|mockup\.|site\.(code_from_mockup|images|photo_reject)$|catalogue\.photos$)/,
   8: /^(theme\.|site\.(outline|edit|versions|use_version|pages)$|catalogue\.list$|shop\.)/,
   9: /^(posts\.|catalogue\.list$)/,

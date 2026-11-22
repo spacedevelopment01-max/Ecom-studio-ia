@@ -15,6 +15,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { prouverLesPrix } from "./prix-fixtures";
 import { describe, expect, it } from "vitest";
 import { TENUE_SECTIONS, markMissing, tenueSection, withTenueProducts, type TenueProduct } from "@/lib/syna-agent/custom-theme/tenue";
 import { VENTE_FACONS, VENTE_SECTIONS } from "@/lib/syna-agent/custom-theme/tenue-vente";
@@ -345,6 +346,7 @@ describe("thème unique, vente : dans l'aperçu du Studio et dans Shopify", asyn
     saveBrand(pid, F.FAUTEUIL_BRAND as any);
     createProduct(pid, { title: "Gourde Halte", images: [], price: 3900, compareAt: 4500, productType: "Gourde isotherme", categories: ["Les gourdes"], options: [{ name: "Contenance", values: ["Petite", "Grande"] }], variants: [{ options: ["Petite"], price: 3400 }, { options: ["Grande"], price: 3900 }] } as any);
     createProduct(pid, { title: "Bouchon sport", images: [], price: 900, compareAt: 900, productType: "", categories: ["Les accessoires"] } as any);
+    prouverLesPrix(pid);
     saveCompany(pid, { shipping: "Colissimo, 48 h", returns: "30 jours" });
     const v = JSON.parse(sp(JSON.stringify(D.tenueVitrine(pid)))) as D.TenueVitrine;
     expect(v.produits!["Gourde Halte"]).toEqual({ genre: "Gourde isotherme", compare: "45 €", des: "34 €", versions: 2 });
@@ -508,6 +510,7 @@ describe.runIf(!!process.env.VENTE_OUT)("thème unique, vente : captures de chaq
           createProduct(pid, { title: a.names[i], images: [{ assetId: asset.id }], price: [14900, 3900, 1900, 5900, 8900][i], compareAt: i === 0 ? 17900 : null, productType: ["Pièce phare", "Complément", "Accessoire", "Accessoire", ""][i], categories: [i < 2 ? "La gamme" : "Les accessoires"],
             ...(i === 0 ? { options: [{ name: "Taille", values: ["Petit", "Grand"] }], variants: [{ options: ["Petit"], price: 12900 }, { options: ["Grand"], price: 14900 }] } : {}), ...(i === a.photos.length - 1 && i > 1 ? { variants: [{ options: [], stock: 0 }] } : {}) } as any);
         }
+        prouverLesPrix(pid);
         saveCompany(pid, { shipping: "Colissimo, 48 h, offerte dès 250 € d'achat", returns: "30 jours pour changer d'avis" });
         const products = tenueProducts(pid);
         // Avis d'essai rattachés aux produits de l'allure, pour juger les pièces d'avis remplies (le Studio n'a pas encore de source d'avis).
@@ -613,6 +616,7 @@ describe.runIf(!!process.env.VENTE_DEMO)("thème unique, vente : deux pages enti
     createProduct(pid, { title: "Le Demi-lune noir", images: [{ assetId: idOf(P.noir) }], price: 18900, productType: "Sac en cuir", categories: ["Les sacs"] } as any);
     createProduct(pid, { title: "Le Demi-lune ivoire", images: [{ assetId: idOf(P.ivoire) }], price: 16900, compareAt: 18900, productType: "Sac en cuir", categories: ["Les sacs"] } as any);
     createProduct(pid, { title: "Les lunettes écaille", images: [{ assetId: idOf(P.lunettes) }], price: 7900, productType: "Accessoire", categories: ["Les accessoires"] } as any);
+    prouverLesPrix(pid);
     saveCompany(pid, { shipping: "Offerte en France, sous 48 h", returns: "30 jours pour changer d'avis" });
 
     const bg = (u: string) => `style="background-image:url(${u})"`;

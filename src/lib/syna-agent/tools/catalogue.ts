@@ -1,4 +1,5 @@
 /** Catalogue : mêmes fonctions que l'onglet Catalogue (fiches, variantes, prix en centimes, stock, versions). */
+import { prixBarresSansPreuve, QUESTION_30_JOURS } from "../prix-anterieur";
 import { z } from "zod";
 import { createProduct, getProduct, listProducts, setVariantStock, updateProduct, archiveProduct, type StudioProduct } from "../../products/catalog";
 import { L } from "../../i18n-server";
@@ -25,7 +26,9 @@ const listTool: AgentTool<{ query?: string; includeArchived?: boolean }> = {
       const words = norm(a.query).split(/\s+/).filter((w) => w.length > 2).map((w) => w.replace(/(e|s|es)$/, ""));
       items = items.filter((x) => { const hay = norm(JSON.stringify([x.title, x.options, x.variants.map((v) => v.options)])); return words.some((w) => hay.includes(w)); });
     }
-    return { ok: true, summary: L(`${items.length} produit(s).`, `${items.length} product(s).`), data: items.slice(0, 60) };
+    // Prix barré sans la preuve des 30 jours : il n'est pas affiché ; SINA demande au client (une fois par promotion).
+    const sansPreuve = prixBarresSansPreuve(p.id);
+    return { ok: true, summary: L(`${items.length} produit(s).`, `${items.length} product(s).`), data: items.slice(0, 60), ...(sansPreuve.length ? { hint: `Prix barré pas affiché, faute de preuve des 30 jours, pour : ${sansPreuve.map((x) => `« ${x.titre} »`).join(", ")}. Si le client veut le montrer, demande-lui, une fois par promotion : « ${QUESTION_30_JOURS} » ; puis prix.preuve avec ses mots.` } : {}) };
   },
 };
 

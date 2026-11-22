@@ -6,6 +6,7 @@
  * elles ne doivent jamais apparaître sur le site d'un client. Sans donnée réelle, l'option n'est pas affichée.
  * Gratuit, sans IA : mêmes données, même bloc.
  */
+import { avecPrixProuve } from "../prix-anterieur";
 import { listProducts, type StudioProduct } from "../../products/catalog";
 import { assetUrl } from "../../library";
 import { companyOf } from "../activity";
@@ -60,7 +61,8 @@ export function buyBlockData(projectId: string, productTitle?: string): BuyData 
   let products: StudioProduct[] = [];
   try { products = listProducts(projectId); } catch { return null; }
   if (!products.length) return null;
-  const p = (productTitle && products.find((x) => x.data.title.trim().toLowerCase() === productTitle.trim().toLowerCase())) || products[0];
+  // Prix barré seulement avec la preuve du prix le plus bas des 30 jours (règle européenne) ; c'est lui qui est barré.
+  const p = avecPrixProuve(projectId, (productTitle && products.find((x) => x.data.title.trim().toLowerCase() === productTitle.trim().toLowerCase())) || products[0]);
   const price = euros(p.data.price ?? p.variants.find((v) => v.price != null)?.price ?? null);
   if (price == null) return null; // sans prix réel, on n'affiche pas de bloc d'achat chiffré
   const company = companyOf(projectId) as { shipping?: string; returns?: string };
@@ -247,7 +249,7 @@ export function withTenueAchat(html: string, projectId: string, handle?: string 
 export function venteFacts(projectId: string, handle?: string | null, now = Date.now()): TenueAchatVrai | null {
   const products = listProducts(projectId);
   if (!products.length) return null;
-  const p = (handle && products.find((x) => x.handle === handle)) || products[0];
+  const p = avecPrixProuve(projectId, (handle && products.find((x) => x.handle === handle)) || products[0]);
   const o = loadShopOffers(projectId);
   const co = (() => { try { return companyOf(projectId) as { shipping?: string; returns?: string }; } catch { return {}; } })() as { shipping?: string; returns?: string };
   const versions = p.variants.map((x) => {

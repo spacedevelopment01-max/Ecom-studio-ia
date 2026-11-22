@@ -4,6 +4,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { prouverLesPrix } from "./prix-fixtures";
 import { describe, expect, it } from "vitest";
 import { DEMO_BRANDS, familySections, libSection, sectionByRef, sectionLibrary, withBrandName } from "@/lib/syna-agent/custom-theme/library";
 import { applyStructure, checkCustomTheme, replaceOnce, scopedCss, type CustomTheme } from "@/lib/syna-agent/custom-theme/theme";
@@ -314,6 +315,7 @@ describe("thème sur mesure : outils de SINA", async () => {
     const { saveShopOffers } = await import("@/lib/syna-agent/product-features");
     const { saveCompany } = await import("@/lib/syna-agent/activity");
     createProduct(pid, { title: "Sac Lune", price: 8900, compareAt: 9900, options: [{ name: "Couleur", values: ["Noir", "Cognac"] }], variants: [{ options: ["Noir"], price: 8900, compareAt: 9900 }, { options: ["Cognac"], price: 8900, compareAt: 9900 }] } as any);
+    prouverLesPrix(pid);
     saveShopOffers(pid, { quantity: { kind: "lots", tiers: [{ qty: 2, pct: 12 }] }, gifts: [{ at: 120, label: "Pochette offerte" }] } as any);
     saveCompany(pid, { shipping: "Livraison en 2 à 4 jours, offerte dès 60 €", returns: "Retours acceptés sous 30 jours" } as any);
     await call("theme.family", ctx, { family: "classique" });
