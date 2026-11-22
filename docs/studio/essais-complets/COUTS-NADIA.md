@@ -80,5 +80,6 @@ l'étape de la marque). N° 1 : premier message, tout est écrit en cache.
   l'étape sont relues au prix fort à chaque réponse, et ce morceau grandit à chaque message (4 458 jetons à la 3e
   réponse, 13 137 à la 21e). Une réponse coûte donc de plus en plus cher : 0,029 € à la 3e, environ 0,055 € à la fin.
 - La sortie pèse 25 % : environ 760 jetons par réponse en moyenne, pour des messages qui en font souvent moins de 100
-  (une phrase et une question). L'essentiel est donc la réflexion de SINA avant de répondre.
+  (une phrase et une question). Le reste, c'est sa réflexion avant de répondre et ce qu'elle écrit dans ses outils
+  (notes de la fiche, réponses enregistrées) ; la base ne sépare pas les deux, donc la part de chacun n'est pas vérifiée.
 - Au total : 1,15 € pour 21 réponses, soit 0,055 € en moyenne par réponse.
