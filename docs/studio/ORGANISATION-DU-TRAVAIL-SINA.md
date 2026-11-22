@@ -119,6 +119,25 @@ oublier ».
   jusqu'à la première carte de dépense, puis demander au propriétaire son oui et le plafond (estimation : 8 à 12 € pour
   ses étapes 1 à 3). Son accord doit être écrit dans cette conversation-là.
 
+### « Tout mettre en place » (22 novembre 2026)
+
+- Le propriétaire : « Je t'ai demandé de mettre en place tout ce que l'autre conversation avait trouvé pourquoi tu ne
+  l'a pas fait ? ». Faute du chef d'orchestre : il avait fait proposer au lieu de faire construire. **Règle : ce que le
+  propriétaire a demandé de mettre en place se construit ; seuls une dépense ou un retrait visible pour le client
+  attendent son oui.**
+- Envoyé à « SINA évolue » :
+  - les économies sans baisse de qualité (mise en mémoire chez le fournisseur, outils de l'étape seulement, différé,
+    carte juste, tableau du coût par travail accepté) ;
+  - les juges (carnet de ses verdicts, mesure d'accord, plusieurs versions au choix) ;
+  - deux reprises au plus ;
+  - les ratés de Nadia (questions groupées pendant « faire connaissance », « C'est parti » avant l'accord,
+    vouvoiement de la carte, marché pas proposé) ;
+  - l'essai du grand modèle d'images (1 € au plus, après son oui dans cette conversation).
+- Images aujourd'hui : photos par le petit modèle de la dernière version (`gpt-image-2.6-flare`), logos par le grand de la
+  version d'avant (`gpt-image-2.5-sunburst`). Le meilleur (`gpt-image-2.6-sunburst`) n'est utilisé nulle part. Même
+  tarif officiel ; la consommation n'est pas mesurée.
+- Nadia est en pause avant sa carte de marque (8 € probables, 16,69 € au plus), en attendant les économies.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
