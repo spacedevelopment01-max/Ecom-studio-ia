@@ -154,7 +154,11 @@ describe("les dix règles d'or et la lecture du cahier", () => {
     const regles = [...`\n${partie(2)}\n\n`.matchAll(/\n\d+\. ([\s\S]*?)(?=\n\d+\. |\n\n)/g)].map((m) => flat(m[1]).replace(/\*\*/g, ""));
     expect(regles).toHaveLength(10);
     for (const r of regles) expect(P.REGLES_D_OR, r).toContain(r);
-    for (const system of [DESIGN_SYSTEM, DESIGN_REVIEW_SYSTEM, SR.SECOND_REGARD_SYSTEM]) expect(system).toContain(P.REGLES_D_OR);
+    for (const system of [DESIGN_SYSTEM, DESIGN_REVIEW_SYSTEM]) expect(system).toContain(P.REGLES_D_OR);
+    // Le second regard ne rejuge plus les règles d'or, déjà vérifiées par le juge de l'ordre et par le code (audit du site
+    // du 22 novembre 2026, 6.3) : il ne juge que ce que seul un lecteur voit.
+    expect(SR.SECOND_REGARD_SYSTEM).not.toContain(P.REGLES_D_OR);
+    expect(SR.SECOND_REGARD_SYSTEM).toMatch(/Tu contrôles SEULEMENT ce que seul un lecteur peut voir :\nD\. la raison du choix[\s\S]*\nF\. le premier écran/);
     expect(P.REGLES_D_OR).toMatch(/au moins 10 sections sur chaque page importante/);
     expect(P.REGLES_D_OR).toMatch(/pages utilitaires restent courtes : panier, page introuvable, mentions légales, recherche, remerciement/);
     // Le juge de l'ordre connaît les services autant que les boutiques, la partition et le minimum.
