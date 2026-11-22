@@ -15,6 +15,9 @@ import { recordTraffic } from "./maintenance";
 import { customDomainServable } from "./domains";
 import { receiveSiteRequest } from "./requests";
 import { aCompter, CHEMIN_REFUS, compterVue, MENTION_MESURE, pageRefus } from "./visites";
+import { suiviAllume } from "../suivi/reglages";
+import { appUrl } from "../settings";
+import { BADGE_IA, bulleAssistante, premierMessage } from "../suivi/assistante";
 import { addresses, addressOf, livePublication, publicationDir, type Publication, type SiteAddress } from "./store";
 
 const SECURITY = {
@@ -99,6 +102,16 @@ export function avecMentionMesure(html: string, pathname: string): string {
   return /<\/main>/i.test(html) ? html.replace(/<\/main>/i, `${ligne}</main>`) : html.replace(/<\/body>/i, `${ligne}</body>`);
 }
 
+/**
+ * La bulle de l'assistante IA (recherche 08, point 4), posée par le Studio sur les pages qu'il héberge SEULEMENT quand le
+ * réglage `suivi.assistante` est allumé (éteint par défaut : aucune page ne change).
+ */
+export function avecAssistante(html: string, projectId: string): string {
+  if (!suiviAllume("assistante") || html.includes("data-assistante-ia")) return html;
+  const nom = one<{ name: string }>("SELECT name FROM projects WHERE id=?", projectId)?.name ?? "";
+  return html.replace(/<\/body>/i, `${bulleAssistante(`${appUrl()}/api/public/assistante/${projectId}`, premierMessage(nom, null), L(BADGE_IA.fr, BADGE_IA.en))}</body>`);
+}
+
 export async function serveSite(req: Request, hostname: string, pathname: string): Promise<Response> {
   const site = siteFor(hostname);
   if (!site) return plain(404, L("Site introuvable.", "Site not found."));
@@ -155,7 +168,7 @@ export async function serveSite(req: Request, hostname: string, pathname: string
   if (req.headers.get("if-none-match") === etag && file) return new Response(null, { status: 304, headers: { ETag: etag } });
   const status = file ? 200 : 404;
   const raw = fs.readFileSync(file ?? artifactPath(pub, "404.html")!);
-  const html = status === 200 ? Buffer.from(avecMentionMesure(avecCanonique(raw.toString("utf8"), `${origin}${pathname === "/" ? "/" : pathname}`), pathname)) : raw;
+  const html = status === 200 ? Buffer.from(avecAssistante(avecMentionMesure(avecCanonique(raw.toString("utf8"), `${origin}${pathname === "/" ? "/" : pathname}`), pathname), pub.project_id)) : raw;
   recordTraffic(pub.project_id, html.length);
   // Les pages vues, comptées sans traceur (exemption de la CNIL) : jamais une erreur de compte ne gêne la page.
   if (status === 200 && aCompter(req)) { try { compterVue(pub.project_id, pathname); } catch { /* compte perdu, page servie */ } }
