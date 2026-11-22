@@ -325,6 +325,18 @@ describe("SINA — les faits du client dans son site", async () => {
     expect(vus[0]).toContain("s0a1b2c3d");
   });
 
+  it("l'état du projet relu à chaque réflexion : l'état vrai du site, ni objet coupé, ni Pilote, ni changements recopiés", async () => {
+    const { projectSnapshot } = await import("@/lib/syna-agent/snapshot");
+    const c = await client();
+    theme(c.pid, {});
+    remember(c.pid, { kind: "decision", key: "syna.custom_theme_brouillon", value: JSON.stringify({ pages: [{ key: "home", sections: "x".repeat(900) }] }), source: "test" });
+    remember(c.pid, { kind: "decision", key: "syna.choix_simple", value: "photos du client d'abord", source: "test" });
+    const snap = await fr(() => projectSnapshot(c.ctx));
+    expect(snap).toMatch(/Site : créé par toi, version \d+, 4 pages \(Accueil, Prestations, Réserver, Informations légales\), pas encore validé\./);
+    expect(snap).not.toMatch(/Parcours Pilote|Changements déjà faits|custom_theme_brouillon/);
+    expect(snap).toContain("choix_simple = photos du client d'abord");
+  });
+
   it("budget atteint juste après une création payée : SINA dit sans IA ce qui est fait, puis la carte du budget s'affiche", async () => {
     const { addMessage, createRun, getRun } = await import("@/lib/syna-agent/store");
     const { runAgent } = await import("@/lib/syna-agent/loop");
