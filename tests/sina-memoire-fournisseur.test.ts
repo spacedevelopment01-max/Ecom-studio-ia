@@ -171,3 +171,14 @@ describe("à chaque étape, seulement les notices des outils de l'étape", async
     expect(C.toolInFocus("catalogue.photos", 6, { site: true })).toBe(true);
   });
 });
+
+describe("ses mots corrigés, contrôlés par le code", async () => {
+  const { defautsDuMessage } = await import("@/lib/syna-agent/controle-message");
+  const regle = (motsCorriges: { avoid: string; use: string }[]) => ({ etape: 3, payant: () => false, lance: false, motsCorriges });
+  it("un message qui emploie un mot qu'il a corrigé ne part pas ; le bon mot, même s'il contient l'ancien, passe", () => {
+    expect(defautsDuMessage({ message: "Ta boutique est prête.", actions: [] }, regle([{ avoid: "boutique", use: "atelier" }]))).toEqual(["Le client a corrigé ce mot une fois pour toutes : jamais « boutique », toujours « atelier ». Ton message l'emploie encore."]);
+    expect(defautsDuMessage({ message: "Ton atelier est prêt.", actions: [] }, regle([{ avoid: "boutique", use: "atelier" }]))).toEqual([]);
+    expect(defautsDuMessage({ message: "Ta boutique en ligne est prête.", actions: [] }, regle([{ avoid: "boutique", use: "boutique en ligne" }]))).toEqual([]);
+    expect(defautsDuMessage({ message: "Tes boutiques.", actions: [] }, regle([{ avoid: "boutique", use: "atelier" }]))).toEqual([]);
+  });
+});

@@ -64,3 +64,26 @@ export function memoireReprise(since: number): { lignes: LigneMemoire[]; total: 
   const fin = (x: LigneMemoire) => ({ ...x, partReprise: x.entree ? Math.round((x.reprise / x.entree) * 1000) / 1000 : null, partEcrite: x.entree ? Math.round((x.ecrite / x.entree) * 1000) / 1000 : null });
   return { lignes: [...by.values()].map(fin).sort((a, b) => b.entree - a.entree), total: fin(total) };
 }
+
+/**
+ * Le coût d'une conversation de SINA, recalculé appel par appel sur des jetons RELEVÉS (essai du 22 novembre 2026, relevé
+ * de Nadia) : avant, tout ce qui suit les notices était repayé plein tarif à chaque réponse ; après, le fil déjà lu est
+ * repris de mémoire, seul ce qui s'y ajoute est écrit, et la fiche et l'état (qui changent) restent payés plein tarif.
+ * `contexte` : la part de l'entrée non reprise qui n'est PAS le fil (fiche, parcours, état), estimée par appel ; c'est
+ * la seule hypothèse du calcul, dite dans le compte rendu.
+ */
+export type AppelReleve = { entree: number; lu: number; ecrit: number; sortie: number };
+export type Tarif = { entree: number; lu: number; ecrit: number; sortie: number }; // euros par million de jetons
+export function coutConversation(appels: AppelReleve[], tarif: Tarif, contexte: (i: number) => number): { avant: number; apres: number } {
+  const e = (n: number, prix: number) => (n * prix) / 1e6;
+  let avant = 0, apres = 0, filPrecedent = 0;
+  appels.forEach((a, i) => {
+    avant += e(a.entree, tarif.entree) + e(a.lu, tarif.lu) + e(a.ecrit, tarif.ecrit) + e(a.sortie, tarif.sortie);
+    const ctx = Math.min(a.entree, contexte(i)), fil = a.entree - ctx;
+    // Le fil : ce qui était déjà là est lu en mémoire ; ce qui s'y ajoute est écrit (repris à l'appel suivant).
+    const repris = Math.min(fil, filPrecedent), neuf = fil - repris;
+    apres += e(ctx, tarif.entree) + e(repris + a.lu, tarif.lu) + e(neuf + a.ecrit, tarif.ecrit) + e(a.sortie, tarif.sortie);
+    filPrecedent = fil;
+  });
+  return { avant: Math.round(avant * 1000) / 1000, apres: Math.round(apres * 1000) / 1000 };
+}
