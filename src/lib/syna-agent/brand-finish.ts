@@ -24,7 +24,7 @@ import { cleanArtwork } from "../logo-v2/artwork";
 import type { Territory } from "../logo-v2/types";
 import type { ChainAi } from "./brand-chain";
 import { clientWords, goutsDuClient } from "./brand-chain";
-import { CREATED_SLOTS, ImagerySchema, clientLogoOf, logoOnWhite, onWhite, runBoardImages, type ImageSlot, type Imagery } from "./brand-images";
+import { CREATED_SLOTS, clientLogoOf, logoOnWhite, onWhite, proposalImagery, runBoardImages, type ImageSlot } from "./brand-images";
 import { buildBrandKit } from "./brand-kit";
 import type { Route } from "./brand-routes";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
@@ -57,18 +57,6 @@ export function finishSlots(j: Journey, redo?: readonly ImageSlot[]): ImageSlot[
   // téléphone gardaient l'ancien).
   if (slots.includes("logo")) slots = [...slots, "object", "signs", "post0", "post1", "post2", "site"];
   return CREATED_SLOTS.filter((s) => slots.includes(s));
-}
-
-/** La direction artistique écrite pour la planche au premier temps (même tâche de création) : reprise sans la repayer. */
-function proposalImagery(j: Journey, x: Route): Imagery | undefined {
-  const id = j.identities?.chainJobId, round = j.identities?.round;
-  if (!id || !round) return undefined;
-  try {
-    const cp = parseJson<Record<string, unknown>>(getJob(id)?.checkpoint ?? "{}", {});
-    const key = Object.keys(cp).find((k) => k.startsWith(`brand:imagery:${round}:${x.key}`));
-    const r = key ? ImagerySchema.safeParse(cp[key]) : null;
-    return r?.success ? r.data : undefined;
-  } catch { return undefined; }
 }
 
 /** Demande du symbole seul : le signe du logo, isolé (ou sa lettre la plus reconnaissable quand le logo n'a pas de signe). */
@@ -108,7 +96,9 @@ export async function runBrandFinish(o: {
     const before = route.board.images;
     const r = await runBoardImages({
       ctx, ai, who, brief: o.brief, kind: o.kind, route, round, slots, clientLogo,
-      imagery: mixed || o.guidance ? undefined : proposalImagery(j, route),
+      // Le logo seul, même avec les mots du client (qui ne vont jamais à son dessinateur) : la direction d'origine
+      // ressert pour ce qui le porte (audit du 22 novembre 2026, 2.4).
+      imagery: mixed || (o.guidance && !(o.slots?.length && o.slots.every((s) => s === "logo"))) ? undefined : proposalImagery(j, route),
       // Logo refait avec les mots du client : la consigne écrite par SINA ne va jamais au dessinateur du logo (essai réel
       // du 21 novembre 2026 : « un fil à plomb stylisé, vert profond »), seulement ce qu'on savait de la marque avant ;
       // le relecteur reçoit les mots du client (sa fiche et ce qu'il vient de dire).

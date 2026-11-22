@@ -30,7 +30,7 @@ import { consigneUneFamille, webResearch, webSearchQuoteMicro, type ResearchCate
 import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
-import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, clientLogoOf, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
+import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, clientLogoOf, proposalImagery, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
 import { BoardSchema, WordmarkSchema, type Board } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
@@ -155,7 +155,9 @@ export function boardImagesQuote(routes: number, settings?: ChainSettings, slots
   let max = 0, probable: number | null = 0;
   const list = slots?.length ? CREATED_SLOTS.filter((x) => slots.includes(x)) : CREATED_SLOTS;
   for (const slot of list) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]); max += unit * routes; probable += (unit / 1.25) * routes; }
-  for (const id of ["imagery", "look"] as const) {
+  // Le logo seul ne réécrit jamais la direction artistique (audit du 22 novembre 2026, 2.3) : elle n'est pas comptée.
+  const logoSeul = list.length === 1 && list[0] === "logo";
+  for (const id of (logoSeul ? ["look"] : ["imagery", "look"]) as ("imagery" | "look")[]) {
     // La relecture se fait image par image : une relecture par image.
     const c = CALLS[id], m = id === "look" ? { ...s[c.tier], effort: "high" } : s[c.tier], n = id === "look" ? Math.max(1, list.length) : 1;
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
@@ -589,7 +591,11 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const imagesBrief = logoOnly ? briefBlock(j, p.id) : brief;
     const gouts = goutsDuClient(j, p.id, logoOnly ? clientWords(a.guidance) : undefined);
     for (const x of targets) {
-      const r = await runBoardImages({ ctx, ai, proposition: true, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts });
+      // La direction artistique de la proposition ressert telle quelle (audit du 22 novembre 2026, 2.3) : elle n'est
+      // réécrite que si le client dit ce qu'il veut de différent pour une image autre que le logo (ses mots ne vont
+      // jamais au dessinateur du logo).
+      const reprise = logoOnly || !a.guidance ? proposalImagery(j, x) : undefined;
+      const r = await runBoardImages({ ctx, ai, proposition: true, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts, ...(reprise ? { imagery: reprise } : {}) });
       const fresh = (a.slots ?? CREATED_SLOTS).includes("logo") && r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
       if (fresh) { try { redoneLogos.push(assetData(fresh)); } catch { /* fichier absent */ } }
       list = list.map((o) => (o.key === x.key ? r.route : o));

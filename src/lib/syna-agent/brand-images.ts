@@ -34,10 +34,11 @@ import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { z } from "zod";
-import type { JobContext } from "../jobs";
+import { getJob, type JobContext } from "../jobs";
+import type { Journey } from "./journey";
 import { L } from "../i18n-server";
 import { CostCapReached } from "../ai/trace";
-import { one, run } from "../db";
+import { json as parseJson, one, run } from "../db";
 import { assetData, getAsset, saveAsset } from "../library";
 import { getJsonSetting } from "../settings";
 import { BOARD_OBJECT_LABEL } from "./brand-board";
@@ -389,6 +390,35 @@ export async function photoTransparente(png: Buffer): Promise<{ transparente: bo
  * Crée, relit et pose les images d'UNE planche. Rend la route avec `board.images` (seulement les images acceptées),
  * les notes de la chaîne, et ce qui est dit au client pour chaque image non gardée.
  */
+/** La direction artistique écrite pour la planche au premier temps (même tâche de création) : reprise sans la repayer. */
+export function proposalImagery(j: Journey, x: Route): Imagery | undefined {
+  const id = j.identities?.chainJobId, round = j.identities?.round;
+  if (!id || !round) return undefined;
+  try {
+    const cp = parseJson<Record<string, unknown>>(getJob(id)?.checkpoint ?? "{}", {});
+    const key = Object.keys(cp).find((k) => k.startsWith(`brand:imagery:${round}:${x.key}`));
+    const r = key ? ImagerySchema.safeParse(cp[key]) : null;
+    return r?.success ? r.data : undefined;
+  } catch { return undefined; }
+}
+
+
+/**
+ * La ligne « La marque » du dessinateur du logo, écrite par le code à partir de la planche (audit du 22 novembre 2026,
+ * 2.3) : ce qu'elle croit, ce contre quoi elle se bat, ce qu'elle fait ressentir, son ton. Ce que la règle du 21 novembre
+ * permet (« le nom, le métier, l'idée et le ton de la marque ») ; aucun mot de style écrit par SINA.
+ */
+export function ligneDeLaMarque(x: Route): string {
+  const net = (t?: string) => (t ?? "").trim().replace(/[.\s]+$/, "");
+  const idee = x.board.idea;
+  return [
+    net(idee?.belief) ? `elle croit que ${net(idee.belief).replace(/^./, (c) => c.toLowerCase())}` : "",
+    net(idee?.enemy) ? `elle se bat contre ${net(idee.enemy).replace(/^./, (c) => c.toLowerCase())}` : "",
+    net(x.territory) ? `elle fait ressentir : ${net(x.territory).replace(/^./, (c) => c.toLowerCase())}` : "",
+    x.tone?.adjectives?.filter(Boolean).length ? `son ton : ${x.tone.adjectives.filter(Boolean).join(", ")}` : "",
+  ].filter(Boolean).join(" ; ").replace(/^./, (c) => c.toUpperCase()) + ".";
+}
+
 export async function runBoardImages(o: {
   ctx: JobContext; ai: ChainAi; who: { userId: string; projectId: string }; brief: string; kind: "produits" | "services"; route: Route; round: number;
   /** Seulement ces images (les autres images déjà gardées restent telles quelles) ; par défaut, toutes. */
@@ -421,7 +451,10 @@ export async function runBoardImages(o: {
   // La direction artistique ne reçoit rien des autres logos, ni en image ni en mots (16 novembre 2026 : « ça doit repartir
   // de 0 pour les logos, le seul truc qu'il a c'est le nom et l'identité de marque, et c'est tout »). Seul le dessinateur
   // reçoit les logos déjà faits de CETTE série, pour en faire un complètement différent (20 novembre 2026, plus bas).
-  const imagery = o.imagery ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind, personnes), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}` }));
+  // Le logo seul, refait sans direction d'origine retrouvée : rien n'est réécrit ni payé, la ligne « La marque » est écrite
+  // par le code depuis la planche (la direction artistique n'apportait que cette ligne au dessinateur, audit 2.3).
+  const logoSeul = !o.imagery && wanted.size === 1 && wanted.has("logo");
+  const imagery = o.imagery ?? (logoSeul ? { look: "", logo: (x.board.images?.logoIdea ?? "").trim() || ligneDeLaMarque(x), hero: "", object: "", site: "", signs: "", posts: ["", "", ""] } : undefined) ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind, personnes), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}` }));
 
   const made = new Map<ImageSlot, Made>();
   const bufferOf = (slot: ImageSlot): Buffer | null => { const m = made.get(slot), a = m ? getAsset(m.id) : undefined; return a ? assetData(a) : null; };
