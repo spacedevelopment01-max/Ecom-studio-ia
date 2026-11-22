@@ -100,8 +100,6 @@ export function projectInventory(p: Project): Inventory {
       return durationS>0?[{id:a.id,durationS,role:a.role??""}]:[];
     }),
     screens: screens.map((a) => ({ id: a.id })),
-    // Plan sûr : décor d'ambiance de la marque (sans le produit), déjà créé et validé ; jamais une nouvelle image payée ici.
-    decor: services ? null : ((d) => (d ? { id: d.id } : null))(usableByRole(p.id, "ambiance", 1).find((a) => a.kind === "image")),
   };
 }
 

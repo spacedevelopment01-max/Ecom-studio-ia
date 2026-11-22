@@ -133,10 +133,9 @@ const lum = (hex: string) => {
 export const inkOn = (bg: string) => (lum(bg) > 0.55 ? "#111111" : "#FFFFFF");
 
 /** Packshot du produit RÉEL (détourage aux pixels d'origine) sur le fond de la marque, titre facultatif. */
-export function packshotDoc(o: { w: number; h: number; safe: VideoDocument["safe"]; pal: Palette; typo: Typo; brand: string; cutoutId: string; title?: string; /** Décor de la marque sans produit (plan sûr) ; absent : dégradé de la charte. */ decorId?: string | null }): AdDocument {
+export function packshotDoc(o: { w: number; h: number; safe: VideoDocument["safe"]; pal: Palette; typo: Typo; brand: string; cutoutId: string; title?: string }): AdDocument {
   const { w, h, pal } = o;
   const layers: Layer[] = [rectLayer("bg", "Fond", "background", { x: 0, y: 0, w, h }, { type: "linear", angle: 90, stops: [{ offset: 0, color: pal.light }, { offset: 1, color: pal.secondary }] })];
-  if (o.decorId) layers.push({ ...imageLayer("decor", "Décor", "background", { x: 0, y: 0, w, h }, o.decorId, "cover") });
   const box = { x: w * 0.18, y: h * 0.2, w: w * 0.64, h: h * 0.58 };
   layers.push({ ...imageLayer("product", "Produit", "product", box, o.cutoutId, "contain"), contactShadow: true });
   if (o.title) layers.push(textLayer("title", "Titre", "title", { x: o.safe.side, y: o.safe.top + h * 0.02, w: w - o.safe.side * 2, h: h * 0.14 }, o.title, { family: o.typo.heading, weight: o.typo.headingWeight ?? 600, size: Math.round(Math.min(w, h) * 0.075), color: inkOn(pal.light) }));

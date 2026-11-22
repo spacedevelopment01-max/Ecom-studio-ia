@@ -628,8 +628,9 @@ export function clipFor(s0: ShotPlan, m: Media, a: Pick<AssembleInput, "pal" | "
   // Compositions (calques de l'éditeur publicitaire). Le sujet du plan est une consigne de recherche interne
   // (« le lieu de travail…, sans personne ») : il n'est jamais écrit à l'écran ; à défaut de texte, la marque.
   if (s.part === "cta") return { ...base, source: { kind: "doc", doc: endCardDoc({ ...common, cta: a.strategy.cta, line: a.strategy.message.slice(0, 70), logoId: a.inv.logo?.id ?? null }), animate: "rise" } };
-  // Plan sûr : vrai produit détouré sur le décor de la marque, mouvement de caméra au montage (rapport 09, point 2).
-  if (s.method === "packshot" && a.inv.cutout) return { ...base, source: { kind: "doc", doc: packshotDoc({ ...common, cutoutId: a.inv.cutout.id, decorId: a.inv.decor?.id ?? null, title: s.onScreen || undefined }), animate: "rise", camera: safeCamera(s.camera) } };
+  // Plan sûr : vrai produit détouré sur les couleurs de la marque, mouvement de caméra au montage (rapport 09, point 2).
+  // Jamais sur une photo de décor : « produit collé devant une photo floue », refusé par le propriétaire.
+  if (s.method === "packshot" && a.inv.cutout) return { ...base, source: { kind: "doc", doc: packshotDoc({ ...common, cutoutId: a.inv.cutout.id, title: s.onScreen || undefined }), animate: "rise", camera: safeCamera(s.camera) } };
   if (s.method === "ui_animation") return { ...base, source: { kind: "doc", doc: interfaceDoc({ ...common, text: s.onScreen || s0.onScreen || a.insight.brand }), animate: "rise" } };
   return { ...base, source: { kind: "doc", doc: kineticDoc({ ...common, text: s.onScreen || s0.onScreen || a.insight.brand, dark: s.part === "proof" }), animate: "fade" } };
 }

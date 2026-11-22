@@ -2,8 +2,9 @@
  * Le mélange, réglage de base des vidéos (rapport 09 du 22 novembre 2026, points 2, 3 et 10).
  *
  *  - Le PLAN SÛR est au centre : la vraie photo du produit détourée, posée en calque fixe avec son ombre de contact sur
- *    un décor (ambiance de la marque déjà créée par OpenAI, sinon les couleurs de la marque), le mouvement venant de la
- *    caméra au montage. Rien ne peut déformer le produit ni changer son étiquette.
+ *    les couleurs de la marque, le mouvement venant de la caméra au montage. Rien ne peut déformer le produit ni changer
+ *    son étiquette. Le rapport proposait un décor créé par OpenAI derrière le produit détouré : cela touche la règle du
+ *    propriétaire (« produit collé devant une photo floue », refusé) ; c'est sa décision, rien n'est fait sans elle.
  *  - UN SEUL plan animé par IA par vidéo, quand il apporte quelque chose (l'accroche en priorité, sinon la
  *    démonstration), avec le modèle animé RÉGLÉ dans l'administration (Images & Vidéos › « Vidéos produit »). Le modèle
  *    sera choisi par le propriétaire après l'essai comparatif (point 1) : tant qu'aucun n'est réglé explicitement, la

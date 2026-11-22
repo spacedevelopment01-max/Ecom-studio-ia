@@ -83,9 +83,10 @@ describe("le mélange", async () => {
     });
   });
 
-  it("plan sûr : vrai produit en calque avec son ombre, sur le décor de la marque", () => {
-    const d = packshotDoc({ w: 1080, h: 1920, safe: safeZone("9:16", "reels"), pal: { primary: "#222222", secondary: "#888888", accent: "#cc5500", dark: "#111111", light: "#f5f1ea" }, typo: { heading: "Inter", body: "Inter" }, brand: "Éclat", cutoutId: "cut", decorId: "decor" });
-    expect(d.layers.map((l) => l.id)).toEqual(["bg", "decor", "product"]);
+  it("plan sûr : vrai produit en calque avec son ombre, sur les couleurs de la marque (jamais devant une photo de décor)", () => {
+    const d = packshotDoc({ w: 1080, h: 1920, safe: safeZone("9:16", "reels"), pal: { primary: "#222222", secondary: "#888888", accent: "#cc5500", dark: "#111111", light: "#f5f1ea" }, typo: { heading: "Inter", body: "Inter" }, brand: "Éclat", cutoutId: "cut" });
+    expect(d.layers.map((l) => l.id)).toEqual(["bg", "product"]);
+    expect(d.layers[0].kind).toBe("shape");
     expect(d.layers.find((l) => l.id === "product")).toMatchObject({ assetId: "cut", contactShadow: true });
     expect(safeCamera("static")).toBe("push_in");
     expect(safeCamera("pan_left")).toBe("pan_left");
