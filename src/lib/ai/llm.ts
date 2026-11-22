@@ -93,6 +93,12 @@ export type LlmCall = {
   memoireLongue?: boolean;
   prompt: string;
   images?: LlmImage[];
+  /**
+   * Images qui ne changent jamais d'un appel à l'autre (la planche des 50 logos aimés, 22 novembre 2026) : placées en
+   * tête, avant tout ce qui change, avec leur point de mémoire. Elles sont reprises au lieu d'être relues à chaque
+   * relecture, pour tous les clients. Ni le modèle ni la taille de l'image ne changent.
+   */
+  imagesFixes?: LlmImage[];
   maxTokens?: number;
   /** llmJson : limite de sortie au-delà de laquelle une réponse coupée n'est plus relancée plus longue (défaut 64 000). */
   maxOutputTokens?: number;
@@ -124,11 +130,13 @@ export type LlmCall = {
  * Modèle d'un appel, choisi par le Router V2 (politique centrale + route fixée par l'administration + historique).
  * Un appel arrivé ici est déjà engagé vers l'IA : jamais de bascule silencieuse vers le moteur local.
  */
-export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { userId?: string }): RouteDecision {
+const avecImages = (call: Pick<LlmCall, "images" | "imagesFixes">) => !!(call.images?.length || call.imagesFixes?.length);
+
+export function routeLlm(call: Pick<LlmCall, "task" | "images" | "imagesFixes" | "routing"> & { userId?: string }): RouteDecision {
   const pref = call.routing?.prefer;
   if (pref && pref.provider === "anthropic") {
     const info = modelInfo(pref.provider, pref.model);
-    if (info && (!call.images?.length || info.capabilities.includes("vision"))) {
+    if (info && (!avecImages(call) || info.capabilities.includes("vision"))) {
       return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? undefined) as RouteDecision["effort"], tier: info.tier, reason: "modèle choisi par l'appelant (échange simple)", fallback: false, escalation: false, qualityTarget: null };
     }
   }
@@ -136,7 +144,7 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
   // si le modèle est utilisable (clé active, tarif enregistré, informations confirmées) ; sinon le routage habituel.
   if (pref && pref.provider !== "anthropic") {
     const m = textModel(pref.provider, pref.model);
-    if (m && modelStatus(m).usable && (!call.images?.length || m.vision)) {
+    if (m && modelStatus(m).usable && (!avecImages(call) || m.vision)) {
       return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? m.effort.default ?? undefined) as RouteDecision["effort"], tier: m.tier, reason: "modèle choisi dans l'administration pour cet usage", fallback: false, escalation: false, qualityTarget: null };
     }
   }
@@ -148,7 +156,7 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
     deliverable: call.routing?.deliverable,
     // Historique explicite de l'appel, sinon celui de la reprise en cours (candidat ou étape du plan).
     history: call.routing?.history ?? routingHistoryFor(call.task),
-    inputType: call.images?.length ? "mixed" : "text",
+    inputType: avecImages(call) ? "mixed" : "text",
     aiActive: true,
     allowLocal: false,
     // Clé Anthropic absente : l'erreur explicite vient du client (message d'administration), pas d'un repli.
@@ -164,7 +172,7 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
  * facturé comme entrée par maxCostMicro/otherMaxCostMicro. Images refusées : leur budget est distinct.
  */
 export function strictTextQuoteInput(call: LlmCall, schema: z.ZodType): { maximumTokens: number; typicalTokens: number } {
-  if (call.images?.length) throw new UserFacingError('Le devis texte ne couvre pas des images. / Text quote does not cover images.');
+  if (avecImages(call)) throw new UserFacingError('Le devis texte ne couvre pas des images. / Text quote does not cover images.');
   const content: unknown[] = headBlocks(call);
   const volatile = brainOf(call).volatile;
   if (volatile) content.push({ type: 'text', text: volatile });
@@ -272,9 +280,16 @@ export function headBlocks(call: Pick<LlmCall, "task" | "context" | "reference" 
   ];
 }
 
-async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[]> {
+export async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[]> {
   // Ce qui ne change pas en tête, avec ses points de mémoire (promptHead) : repris au lieu d'être relu à chaque appel.
-  const content: Anthropic.ContentBlockParam[] = headBlocks(call);
+  const content: Anthropic.ContentBlockParam[] = [];
+  // Les images fixes d'abord (même octets pour tous les clients), avec un point de mémoire sur la dernière.
+  const fixes = call.imagesFixes ?? [];
+  for (const [i, img] of fixes.entries()) {
+    content.push({ type: "text", text: `Image jointe à part${img.label ? ` — ${img.label}` : ""} (hors numérotation) :` });
+    content.push(i === fixes.length - 1 ? { ...(await imageBlock(img)), cache_control: pointDeMemoire(call) } : await imageBlock(img));
+  }
+  content.push(...headBlocks(call));
   // Après le point de cache : le contexte volatil (créations récentes) peut changer sans invalider le préfixe.
   const { volatile } = brainOf(call);
   if (volatile) content.push({ type: "text", text: volatile });

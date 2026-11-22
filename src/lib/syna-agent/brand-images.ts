@@ -491,18 +491,18 @@ export async function runBoardImages(o: {
     // Un objet qui porte un logo gardé d'avant : ce logo est joint, en dernier, pour que le relecteur compare.
     const reference = !slots.includes("logo") && logo && slots.some((s) => s !== "hero") ? await onWhite(logo) : null;
     if (reference) seen.push({ data: reference, label: "logo" });
-    // Un logo à juger : la planche des logos que le propriétaire aime, en dernier, comme niveau à atteindre.
+    // Un logo à juger : la planche des logos que le propriétaire aime, comme niveau à atteindre. Jointe à part, en tête
+    // de la relecture et gardée en mémoire chez le fournisseur (la même pour tous les clients, 22 novembre 2026).
     const aimes = slots.includes("logo") ? await planchedesLogosAimes() : null;
-    if (aimes) seen.push({ data: aimes, label: "logos aimés" });
     if (capped) unreviewed();
     else try {
       const review = await ctx.step(`brand:imagecheck:${round}:${key}${pass}${rt}`, () => ai.look(`imagecheck-${round}-${key}${pass}${rt}`, {
         system: P.imageReviewSystem(personnes), schema: ImageReviewSchema,
         prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` La dernière image jointe (${slots.length + 1}) est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`,
-          ...(aimes ? [`La dernière image jointe est la planche des logos que le propriétaire du Studio aime : elle donne le NIVEAU attendu pour le logo, ne la juge pas et ne la recopie pas.`] : []),
+          ...(aimes ? [`L'image jointe à part, en tête (hors numérotation), est la planche des logos que le propriétaire du Studio aime : elle donne le NIVEAU attendu pour le logo, ne la juge pas et ne la recopie pas.`] : []),
           // Ce que le client refuse (essai réel du 20 novembre 2026 : une goutte d'eau refusée par le client, passée au contrôle).
           ...(o.gouts?.trim() ? [`Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut (defect « autre »).`] : []), ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
-        images: seen,
+        images: seen, ...(aimes ? { fixes: [{ data: aimes, label: "logos aimés" }] } : {}),
       }));
       // Le Studio compare la lecture du relecteur aux textes attendus. Quand son jugement et sa propre lecture se
       // contredisent (refus « texte » alors qu'il a tout recopié sans faute, ou accord alors qu'il a lu un texte en

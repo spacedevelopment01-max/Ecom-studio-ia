@@ -207,4 +207,28 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     expect(debutEntier([{ seq: 125 }])).toBe(80);
     expect(ALLEGEMENT).toBe(40);
   });
+
+  it("relecture des images : la planche des 50 logos passe en tête, gardée en mémoire, avant les images qui changent", async () => {
+    const sharp = (await import("sharp")).default;
+    const { buildContent } = await import("@/lib/ai/llm");
+    const png = (c: string) => sharp({ create: { width: 64, height: 64, channels: 3, background: c } }).png().toBuffer();
+    const planche = await png("#ffffff"), logo = await png("#112233");
+    const content: any[] = await buildContent({ task: "quality_control", system: "S", prompt: "Voici 1 image(s).", images: [{ data: logo, label: "logo" }], imagesFixes: [{ data: planche, label: "logos aimés" }] } as any);
+    const images = content.map((b, i) => [b, i] as const).filter(([b]) => b.type === "image");
+    // La planche d'abord, avec son point de mémoire ; l'image jugée ensuite, sans.
+    expect(images).toHaveLength(2);
+    expect(images[0][0].cache_control).toEqual({ type: "ephemeral" });
+    expect(images[1][0].cache_control).toBeUndefined();
+    expect(content[images[0][1] - 1].text).toMatch(/jointe à part — logos aimés \(hors numérotation\)/);
+    expect(content[images[1][1] - 1].text).toBe("Image 1 — logo :");
+    // Mêmes octets d'un appel à l'autre : la mémoire est reprise pour tous les clients.
+    const again: any[] = await buildContent({ task: "quality_control", system: "S", prompt: "autre", images: [{ data: planche, label: "hero" }], imagesFixes: [{ data: planche, label: "logos aimés" }] } as any);
+    expect(again.find((b) => b.type === "image").source.data).toBe(images[0][0].source.data);
+    // La relecture des images de la planche lui donne la planche des logos aimés à part, jamais parmi les images jugées.
+    const fs = await import("node:fs");
+    const src = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
+    expect(src).toContain(`fixes: [{ data: aimes, label: "logos aimés" }]`);
+    expect(src).not.toContain(`seen.push({ data: aimes`);
+  });
 });
+
