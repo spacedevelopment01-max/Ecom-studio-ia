@@ -290,5 +290,14 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     const fs = await import("node:fs");
     expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain(`const UNIQUES = new Set<CallId>(["study", "shortlist", "verify", "reader"]);`);
   });
+
+  it("le journal garde la part écrite pour une heure et le différé raté : le gain affiché est le vrai", async () => {
+    const { gagneSurAppel } = await import("@/lib/ai/memoire");
+    const row = { task: "agent_conversation", prompt_key: "syna-agent-2", provider: "anthropic", requested_model: "claude-opus-5-5", served_model: "claude-opus-5-5", input_tokens: 0, cache_read_tokens: 10000, cache_write_tokens: 4000, routing_reason: null };
+    // Écrire pour une heure coûte 2 fois l'entrée, pas 1,25 : le gain est plus petit, et juste.
+    expect(gagneSurAppel({ ...row, details: JSON.stringify({ ecrit1h: 4000 }) })).toBeLessThan(gagneSurAppel(row));
+    const fs = await import("node:fs");
+    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain(`details: { ...(ecrit1h ? { ecrit1h } : {}), ...(voulu ? { differe: servedDeferred ? "servi" : "rate" } : {}), placeDemandee: params.max_tokens },`);
+  });
 });
 

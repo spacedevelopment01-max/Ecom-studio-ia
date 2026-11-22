@@ -10,11 +10,11 @@
 import { all } from "../db";
 import { L } from "../i18n-server";
 import { priceFor, usdToEur, TASKS, type TaskId } from "./config";
-import { CACHE_WRITE_RATIO, cacheReadRatio, DEFERRED_DISCOUNT } from "./llm";
+import { CACHE_WRITE_1H_RATIO, CACHE_WRITE_RATIO, cacheReadRatio, DEFERRED_DISCOUNT } from "./llm";
 import { EUR } from "../billing";
 
 export type LigneMemoire = {
-  travail: string; appels: number; entree: number; reprise: number; ecrite: number;
+  travail: string; appels: number; entree: number; reprise: number; ecrite: number; /** Appels qui devaient partir en différé et sont partis en direct (plein tarif). */ differesRates?: number;
   partReprise: number | null; partEcrite: number | null; gagneMicro: number;
   /** Appels servis en différé, à moitié prix (le client attendait de toute façon). */
   differes: number;
@@ -32,7 +32,7 @@ export function travailDe(task: string, promptKey: string | null): string {
   return TASKS[task as TaskId]?.label ?? task;
 }
 
-type Row = { task: string; prompt_key: string | null; provider: string; requested_model: string; served_model: string | null; input_tokens: number; cache_read_tokens: number; cache_write_tokens: number; routing_reason: string | null };
+type Row = { task: string; prompt_key: string | null; provider: string; requested_model: string; served_model: string | null; input_tokens: number; cache_read_tokens: number; cache_write_tokens: number; routing_reason: string | null; details?: string | null };
 
 /** Ce que la mémoire a fait gagner sur un appel Anthropic (micro-euros ; 0 pour un autre fournisseur). */
 export function gagneSurAppel(r: Row): number {
@@ -40,14 +40,16 @@ export function gagneSurAppel(r: Row): number {
   const model = r.served_model || r.requested_model, p = priceFor("anthropic", model);
   if (!p || p.unit !== "tokens") return 0;
   const discount = /différé/.test(r.routing_reason ?? "") ? DEFERRED_DISCOUNT : 1;
-  const tokens = r.cache_read_tokens * (1 - cacheReadRatio(model, r.requested_model)) - r.cache_write_tokens * (CACHE_WRITE_RATIO - 1);
+  // L'écriture d'une heure coûte 2 fois l'entrée, celle de 5 minutes 1,25 (la part d'une heure est dans les détails).
+  const h1 = Math.min(r.cache_write_tokens, Number((() => { try { return JSON.parse(r.details ?? "{}").ecrit1h ?? 0; } catch { return 0; } })()) || 0);
+  const tokens = r.cache_read_tokens * (1 - cacheReadRatio(model, r.requested_model)) - (r.cache_write_tokens - h1) * (CACHE_WRITE_RATIO - 1) - h1 * (CACHE_WRITE_1H_RATIO - 1);
   return Math.round((tokens * p.inputPerM / 1e6) * discount * usdToEur() * EUR);
 }
 
 /** Part reprise de mémoire, par travail, depuis `since` (appels réussis, en jetons). */
 export function memoireReprise(since: number): { lignes: LigneMemoire[]; total: LigneMemoire } {
   const rows = all<Row>(
-    "SELECT task, prompt_key, provider, requested_model, served_model, input_tokens, cache_read_tokens, cache_write_tokens, routing_reason FROM ai_calls WHERE created_at >= ? AND unit='tokens' AND status='ok'",
+    "SELECT task, prompt_key, provider, requested_model, served_model, input_tokens, cache_read_tokens, cache_write_tokens, routing_reason, details FROM ai_calls WHERE created_at >= ? AND unit='tokens' AND status='ok'",
     since,
   );
   const vide = (travail: string): LigneMemoire => ({ travail, appels: 0, entree: 0, reprise: 0, ecrite: 0, partReprise: null, partEcrite: null, gagneMicro: 0, differes: 0 });
@@ -58,6 +60,7 @@ export function memoireReprise(since: number): { lignes: LigneMemoire[]; total: 
       x.appels++; x.entree += r.input_tokens + r.cache_read_tokens + r.cache_write_tokens;
       x.reprise += r.cache_read_tokens; x.ecrite += r.cache_write_tokens; x.gagneMicro += g;
       if (/différé/.test(r.routing_reason ?? "")) x.differes++;
+      if (/"differe":"rate"/.test(r.details ?? "")) x.differesRates = (x.differesRates ?? 0) + 1;
     }
     by.set(w, l);
   }

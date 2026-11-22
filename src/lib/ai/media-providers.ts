@@ -303,11 +303,11 @@ async function providerHttpError(r: Response, label: string): Promise<Error> {
 }
 
 /** Après une génération : consommation réelle (budget caché) et décompte du quota. */
-function recordMedia(u: Parameters<typeof recordUsage>[0],reportedModel:string|null=null) {
+function recordMedia(u: Parameters<typeof recordUsage>[0] & { /** Détails de mesure d'une image (taille, qualité, images jointes). */ details?: Record<string, unknown> },reportedModel:string|null=null) {
   const t = mediaTrace.getStore();
   const billed = recordUsage(u, { reservationId: t?.reservation ?? null });
   if (t) t.recorded = true;
-  const callId = recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: reportedModel, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx), ...routingCols(t) });
+  const callId = recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: reportedModel, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , details: u.details ?? null, ...brainCols(t?.ctx), ...routingCols(t) });
   if (t) t.callId = callId;
   const q = quotaFor(u.task === "video_generation" ? "video" : "image");
   if (q) consumeQuota(u.userId, q, 1, u.idempotencyKey ? `${q}:${u.idempotencyKey}` : null);
@@ -1004,7 +1004,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
   const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey, details: { taille: size, qualite: input.quality, jointes: ref ? 1 + oaExtras.length : 0, jetonsImagesJointes: u.input_tokens_details?.image_tokens ?? 0, jetonsTexte: u.input_tokens_details?.text_tokens ?? 0 } });
   // Coût réel de cette image transmis au moteur qui l'a demandée (affiché sur la carte de la proposition).
   if (res.usage && !cost("openai", model, { imageOut: u.output_tokens ?? 0 }).estimated) emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
   return Buffer.from(b64, "base64");

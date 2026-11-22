@@ -717,8 +717,12 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
     throw uncertainProviderFailure(redact(String((e as Error)?.message??e)));
   }
+  // Ce qui sert à mesurer le vrai gain dans l'administration (audit du moteur, 22 novembre 2026).
+  const ecrit1h = Number((msg.usage as { cache_creation?: { ephemeral_1h_input_tokens?: number } } | undefined)?.cache_creation?.ephemeral_1h_input_tokens ?? 0) || 0;
+  const voulu = (call.deferred ?? differeActif()) && !/haiku/.test(route.model);
   recordCall({
     ...trace,
+    details: { ...(ecrit1h ? { ecrit1h } : {}), ...(voulu ? { differe: servedDeferred ? "servi" : "rate" } : {}), placeDemandee: params.max_tokens },
     ...(servedDeferred ? { routingReason: `${decision.reason} · différé (moitié prix)` } : {}),
     servedModel: msg.model ?? null,
     inputTokens: msg.usage?.input_tokens ?? 0,

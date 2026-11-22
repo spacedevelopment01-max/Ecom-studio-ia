@@ -1231,6 +1231,9 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["ai_calls", "routing_escalation", "INTEGER NOT NULL DEFAULT 0"],
   // Compétences (skills) transmises à l'appel : activation vérifiable dans les traces.
   ["ai_calls", "skills", "TEXT"],
+  // Détails de mesure (22 novembre 2026, audit du moteur) : part écrite pour une heure, différé servi ou raté, place
+  // demandée, et pour une image sa taille, sa qualité et ses images jointes.
+  ["ai_calls", "details", "TEXT"],
   ["projects", "store_type", "TEXT NOT NULL DEFAULT 'mono'"],
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
   ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],
