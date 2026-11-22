@@ -499,7 +499,13 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
       expect((e5 as { permanent?: boolean }).permanent).toBe(true);
       expect(llm.calls).toBe(1);
       expect(reservations(u.id).at(-1)!.status).toBe("uncertain");
+      // Rendue avant toute réponse : seul le coût de l'envoi est retenu, jamais le plafond entier (22 novembre 2026).
+      const r5 = reservations(u.id).at(-1)!;
+      expect(r5.actual!).toBeLessThan(r5.amount);
+      expect(r5.actual!).toBeGreaterThan(0);
     }
+    // Coupure après le début de la réponse : la sortie est inconnue, le plafond reste retenu (réconcilié ensuite).
+    expect(reservations(u.id).find((x) => x.status === "uncertain")!.actual).toBe(reservations(u.id).find((x) => x.status === "uncertain")!.amount);
   }, 30_000);
 
   it("tarifs jamais confirmés ou vérifiés il y a plus de 90 jours : toute génération payante bloquée (texte et image)", async () => {

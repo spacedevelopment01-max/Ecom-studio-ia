@@ -542,14 +542,15 @@ export function release(reservationId: string, reason = "") {
  * Résultat incertain (délai dépassé, coupure, erreur après acceptation par le fournisseur) : par prudence, le
  * coût maximal réservé est débité. La facture réelle du fournisseur permet ensuite de rendre la différence.
  */
-export function settleUncertain(reservationId: string, reason: string) {
+export function settleUncertain(reservationId: string, reason: string, /** Ce qui peut au plus avoir été facturé (une erreur rendue avant toute réponse : l'entrée seule). Par défaut, tout le plafond. */ retenuMicro?: number) {
   tx(() => {
     const r = one<ReservationRow>("SELECT * FROM ai_reservations WHERE id = ?", reservationId);
     if (!r || r.status !== "held") return;
     unreserve(r);
-    const d = debit(r.user_id, r.amount, { monthly: r.res_monthly, topup: r.res_topup });
-    run("UPDATE ai_reservations SET status = 'uncertain', actual = ?, debit_monthly = ?, debit_topup = ?, note = ?, settled_at = ?, settled_period_start = (SELECT period_start FROM wallets WHERE user_id=?) WHERE id = ?", r.amount, d.fromMonthly, d.fromTopup, reason.slice(0, 200), now(), r.user_id, r.id);
-    run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "usage", d.fromTopup > 0 ? "topup" : "monthly", -(d.fromMonthly + d.fromTopup), `uncertain:${r.id}`, `Résultat incertain, coût maximal retenu — ${reason.slice(0, 120)}`, now());
+    const montant = retenuMicro != null ? Math.min(r.amount, Math.max(0, Math.round(retenuMicro))) : r.amount;
+    const d = debit(r.user_id, montant, { monthly: r.res_monthly, topup: r.res_topup });
+    run("UPDATE ai_reservations SET status = 'uncertain', actual = ?, debit_monthly = ?, debit_topup = ?, note = ?, settled_at = ?, settled_period_start = (SELECT period_start FROM wallets WHERE user_id=?) WHERE id = ?", montant, d.fromMonthly, d.fromTopup, reason.slice(0, 200), now(), r.user_id, r.id);
+    run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "usage", d.fromTopup > 0 ? "topup" : "monthly", -(d.fromMonthly + d.fromTopup), `uncertain:${r.id}`, `Résultat incertain, ${montant < r.amount ? "coût de l'envoi retenu" : "coût maximal retenu"} — ${reason.slice(0, 120)}`, now());
     recordOverrun(r.user_id, d.overrun, `uncertain:${r.id}`, reason);
   });
 }

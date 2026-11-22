@@ -369,6 +369,14 @@ const INPUT_MARGIN = { ratio: 1.02, tokens: 512 };
  * Bloqué (jamais d'estimation) si : tarif inconnu ou non confirmé, modèle aux limites inconnues, comptage
  * impossible, entrée au-delà de la fenêtre du modèle ou du seuil où un autre barème peut s'appliquer.
  */
+/** La part « sortie » du coût maximal d'un appel (même formule que maxCostMicro). */
+export function sortieMaxMicro(model: string, maxTokens: number): number {
+  const p = requirePrice("anthropic", model);
+  if (p.unit !== "tokens") return 0;
+  const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
+  return Math.floor(((maxTokens * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
+}
+
 export async function maxCostMicro(model: string, params: { system?: { type: "text"; text: string }[]; messages: Anthropic.Beta.BetaMessageParam[]; max_tokens: number }, format?: unknown, count: (p: { model: string; system?: unknown; messages: unknown }) => Promise<number> = countInputTokens) {
   const p = requirePrice("anthropic", model);
   if (p.unit !== "tokens") throw new UserFacingError(L(`Tarif « jetons » attendu pour anthropic:${model} : corrigez-le dans l'administration.`, `A per-token price is expected for anthropic:${model}. Fix it in the admin settings.`));
@@ -690,7 +698,10 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     // Une demande en erreur dans un lot n'est pas facturée (page du différé d'Anthropic) : la réservation est rendue.
     const uncertain = !(e instanceof AgentBoundStop || (e as { nonFacture?: boolean })?.nonFacture || typeof status === "number" && providerRefused(status));
     if (!uncertain) release(reservation, `refus du fournisseur (${status})`);
-    else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+    // Une erreur du fournisseur rendue AVANT toute réponse (500, 529 surcharge) : aucune réponse n'a pu être produite ; au
+    // plus l'envoi a pu être compté. Seul ce coût est retenu, pas le plafond entier (22 novembre 2026, audit du moteur ;
+    // la page officielle ne dit pas si ces erreurs sont facturées : la prudence reste, la retenue est juste).
+    else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160), typeof status === "number" && status >= 500 ? Math.max(0, maxMicro - sortieMaxMicro(route.model, params.max_tokens)) : undefined);
     // L'appel n'est plus en cours : un lot déposé peut être repris dès la prochaine tentative (sa réponse lue, jamais repayée).
     if (uncertain) finishOperationRecovery(reservation);
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
