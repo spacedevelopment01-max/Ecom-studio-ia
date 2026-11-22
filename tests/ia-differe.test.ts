@@ -8,7 +8,7 @@ import http from "node:http";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { account, project } from "./conversation209-fixtures";
 import { all, id } from "@/lib/db";
-import { DEFERRED_DISCOUNT, deferredDeps, deferredLimits, deferredWaitedMs, llmText, type LlmCall } from "@/lib/ai/llm";
+import { DEFERRED_DISCOUNT, deferredDeps, deferredLimits, deferredWaitedMs, enDiffere, llmText, type LlmCall } from "@/lib/ai/llm";
 import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 
 vi.mock("@/lib/ai/config", async (original) => ({ ...(await original<object>()), activeProviderKey: (provider: string) => (provider === "anthropic" ? "cle-factice-du-test-differe" : null) }));
@@ -198,5 +198,31 @@ describe("IA — travail en différé, à moitié prix, avec une attente bornée
     await expect(llmText(g.call({ deferred: true }))).rejects.toThrow();
     expect(direct.length - g.start).toBe(0);
     expect(events(g.user.id)).toEqual([]);
+  });
+  it("angles, site et publications (22 novembre 2026) : toute la tâche part en différé ; un appel qui demande le direct y reste", async () => {
+    const f = await fixture();
+    const log = batches({ polls: 1 });
+    noWait();
+    // Dans la tâche de fond : un appel qui ne dit rien est déposé en différé, à moitié prix.
+    expect(await enDiffere(() => llmText(f.call()))).toBe("Réponse en différé.");
+    expect(log.created).toHaveLength(1);
+    expect(direct.length - f.start).toBe(0);
+    expect(reasons(f.user.id).at(-1)!.r).toMatch(/différé \(moitié prix\)$/);
+    // Une retouche que le client attend devant (« deferred: false ») reste en direct, même dans la tâche.
+    expect(await enDiffere(() => llmText(f.call({ deferred: false })))).toBe("Réponse en direct.");
+    expect(log.created).toHaveLength(1);
+    // Hors d'une tâche en différé, rien ne change.
+    expect(await llmText(f.call())).toBe("Réponse en direct.");
+    expect(log.created).toHaveLength(1);
+  });
+
+  it("les tâches servies en différé : la marque (appel par appel), les angles, le site et les publications ; le réglage les coupe toutes", async () => {
+    const fs = await import("node:fs");
+    const src = fs.readFileSync("worker/handlers.ts", "utf8");
+    for (const t of ["syna.angles", "syna.site", "syna.posts.plan"]) expect(src, t).toMatch(new RegExp(`"${t.replace(/\./g, "\\.")}": async \\(ctx\\) => differe\\(`));
+    expect(src).toContain("return deferredOn() ? enDiffere(fn) : fn();");
+    // « Dessiner puis coder » n'est pas touché (consigne du propriétaire).
+    expect(src).toMatch(/"syna\.dessin": async \(ctx\) => \(await import/);
+    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain("const deferred = deferredOn() && !direct;");
   });
 });

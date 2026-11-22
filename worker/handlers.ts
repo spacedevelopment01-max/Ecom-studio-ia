@@ -49,24 +49,36 @@ import { ACTION_STEPS, findStockPhotos, orchestrated } from "../src/lib/orchestr
 
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
+/**
+ * Le différé à moitié prix là où le client attend de toute façon (22 novembre 2026) : les angles, le site et les
+ * publications, comme la marque (qui le règle appel par appel). Coupé avec le réglage « sina.differe » à false.
+ * Chaque appel attend au plus 10 minutes, une tâche au plus 30 minutes en tout ; au-delà, tout part en direct.
+ */
+const differe = async <T>(fn: () => Promise<T>): Promise<T> => {
+  const [{ enDiffere }, { deferredOn }] = await Promise.all([import("../src/lib/ai/llm"), import("../src/lib/syna-agent/brand-chain")]);
+  return deferredOn() ? enDiffere(fn) : fn();
+};
+/** Les tâches de fond servies en différé (lu par les essais). */
+export const TACHES_EN_DIFFERE = ["syna.brand", "syna.angles", "syna.site", "syna.posts.plan"] as const;
+
 export const handlers: Record<string, Handler> = {
   /** SYNA agent (#492) : une exécution reprenable du fil (raisonnement, outils, vérification). */
   "syna.agent": async (ctx) => (await import("../src/lib/syna-agent/loop")).runAgentJob(ctx),
   // SINA (#492), étape 2 : 3 logos de 3 styles pour l'identité choisie (moteur de logos V2, plafonné au devis).
   "syna.brand": async (ctx) => (await import("../src/lib/syna-agent/brand-chain")).runSinaBrandJob(ctx),
   /** Les trois angles de SINA : trois stratèges séparées, un juge à part, un lecteur qui ne sait rien. */
-  "syna.angles": async (ctx) => (await import("../src/lib/syna-agent/angles-chain")).runSinaAnglesJob(ctx),
+  "syna.angles": async (ctx) => differe(async () => (await import("../src/lib/syna-agent/angles-chain")).runSinaAnglesJob(ctx)),
   // SINA (#492), étape 7 : site codé d'après la maquette choisie (payant, plafonné au devis).
   "syna.mockup.code": async (ctx) => (await import("../src/lib/syna-agent/mockup-code/job")).runMockupCodeJob(ctx),
   // SINA (#492), étape 6 : thème sur mesure monté à la marque du client (textes et photos, payant, plafonné au devis).
-  "syna.site": async (ctx) => (await import("../src/lib/syna-agent/custom-theme/site-job")).runSinaSiteJob(ctx),
+  "syna.site": async (ctx) => differe(async () => (await import("../src/lib/syna-agent/custom-theme/site-job")).runSinaSiteJob(ctx)),
   "syna.dessin": async (ctx) => (await import("../src/lib/syna-agent/dessin/job")).runDessinJob(ctx),
   "syna.custom.brand": async (ctx) => (await import("../src/lib/syna-agent/custom-theme/brand")).runCustomBrandJob(ctx),
   // SINA (#492), étape 6 : galerie de la fiche produit, créée d'après la vraie photo du produit (payant, plafonné au devis).
   "syna.product.gallery": async (ctx) => (await import("../src/lib/syna-agent/custom-theme/gallery")).runGalleryJob(ctx),
   // SINA (#492), étape 6 : thème du Studio monté à la marque du client (textes dans l'angle choisi et images, payant).
   "syna.studio.brand": async (ctx) => (await import("../src/lib/syna-agent/studio-brand")).runStudioBrandJob(ctx),
-  "syna.posts.plan": async (ctx) => (await import("../src/lib/syna-agent/posts-plan")).runPostsPlanJob(ctx),
+  "syna.posts.plan": async (ctx) => differe(async () => (await import("../src/lib/syna-agent/posts-plan")).runPostsPlanJob(ctx)),
   "strategy.prepare":async ctx=>(await import("../src/lib/marketing-strategy/bundle")).runStrategyBundle(ctx),
   "project.prepare": async (ctx) => (await import("../src/lib/preparation/engine")).runPreparation(ctx),
 

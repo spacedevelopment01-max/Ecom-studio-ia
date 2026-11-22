@@ -23,6 +23,7 @@ import type { MediaUsageData } from "./admin-media-usages";
 import { AlibabaSettings, type AlibabaData } from "./admin-alibaba";
 const MediaUsagesPanel = dynamic(() => import("./admin-media-usages").then((m) => m.MediaUsagesPanel), { ssr: false });
 
+type LigneMemoire = { travail: string; appels: number; entree: number; reprise: number; ecrite: number; partReprise: number | null; partEcrite: number | null; gagneMicro: number; differes: number };
 type Overview = {
   appUrl: string;
   providers: { id: string; name: string; role: string; keyHelp: string; docs: string; keyMasked: string; configured: boolean; disabled: boolean }[];
@@ -40,6 +41,8 @@ type Overview = {
   smtp: { configured: boolean; hostMasked: string; port: string; userMasked: string; passwordConfigured: boolean; fromMasked: string };
   users: { id: string; email: string; name: string; role: string; created_at: number; subscription: string; stores: number; projects: number; availableEur: number; usedPct: number }[];
   usage: { provider: string; model: string; unit: string; calls: number; inp: number; out: number; q: number; costEur: number; billedEur: number; est: number }[];
+  /** Mise en mémoire chez le fournisseur (30 j) : part reprise par travail, d'après les reçus. */
+  memoire?: { lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean };
   revenue: { kind: string; cents: number; n: number }[];
   errors: { id: string; scope: string; message: string; user_id: string | null; project_id: string | null; created_at: number }[];
   failedJobs: { id: string; type: string; error: string; attempts: number; updated_at: number }[];
@@ -694,6 +697,7 @@ function Usage({ data }: { data: Overview }) {
         <Card className="p-5"><p className="text-xs text-muted">{t("Débité des enveloppes (30 j)", "Charged to allowances (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, billed)}</p></Card>
         <Card className="p-5"><p className="text-xs text-muted">{t("Encaissements Stripe (30 j)", "Stripe collections (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, rev)}</p></Card>
       </div>
+      {data.memoire && <MemoireCard m={data.memoire} />}
       <Card className="overflow-x-auto p-5">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Fournisseur / modèle", "Provider / model")}</th><th>{t("Unité", "Unit")}</th><th>{t("Appels", "Calls")}</th><th>{t("Entrée", "Input")}</th><th>{t("Sortie / quantité", "Output / quantity")}</th><th>{t("Coût", "Cost")}</th><th>{t("Débité", "Charged")}</th></tr></thead>
@@ -714,6 +718,37 @@ function Usage({ data }: { data: Overview }) {
         </table>
       </Card>
     </>
+  );
+}
+
+/** Ce que le fournisseur a repris de mémoire au lieu de le relire (consignes, notices, cahiers, fil déjà lu). */
+function MemoireCard({ m }: { m: { lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean } }) {
+  const t = useT();
+  const { lang } = useLang();
+  const pct = (x: number | null) => x == null ? "—" : `${Math.round(x * 100)} %`;
+  return (
+    <Card className="overflow-x-auto p-5">
+      <p className="font-display text-lg font-semibold">{t("Mise en mémoire chez le fournisseur (30 j)", "Provider-side memory (30 d)")}</p>
+      <p className="mt-1 text-sm text-ink-2">{t(`Ce qui ne change pas d'un appel à l'autre est repris de mémoire, bien moins cher que relu. Part reprise sur tout le Studio : ${pct(m.total.partReprise)} ; gagné : ${euro(lang, m.total.gagneMicro / 1e6)}.`, `What doesn't change between calls is reused from memory, far cheaper than re-read. Reused across the Studio: ${pct(m.total.partReprise)}; saved: ${euro(lang, m.total.gagneMicro / 1e6)}.`)}</p>
+      <p className="mt-1 text-sm text-ink-2">{m.differe ? t(`Différé à moitié prix (marque, angles, site, publications) : allumé ; ${num(lang, m.total.differes)} appels servis ainsi.`, `Half-price deferred work (brand, angles, site, posts): on; ${num(lang, m.total.differes)} calls served this way.`) : t("Différé à moitié prix : éteint (réglage « sina.differe »).", "Half-price deferred work: off (setting “sina.differe”).")}</p>
+      <table className="mt-3 w-full min-w-[640px] text-sm">
+        <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Travail", "Work")}</th><th>{t("Appels", "Calls")}</th><th>{t("Entrée", "Input")}</th><th>{t("Part reprise", "Reused")}</th><th>{t("Part écrite", "Written")}</th><th>{t("Gagné", "Saved")}</th><th>{t("En différé", "Deferred")}</th></tr></thead>
+        <tbody className="divide-y divide-line">
+          {m.lignes.length === 0 && <tr><td colSpan={7} className="py-4 text-muted">{t("Aucun appel sur 30 jours.", "No calls over the last 30 days.")}</td></tr>}
+          {m.lignes.map((l) => (
+            <tr key={l.travail}>
+              <td className="py-2">{l.travail}</td>
+              <td className="tabular-nums">{num(lang, l.appels)}</td>
+              <td className="tabular-nums">{num(lang, l.entree)}</td>
+              <td className="tabular-nums">{pct(l.partReprise)}</td>
+              <td className="tabular-nums">{pct(l.partEcrite)}</td>
+              <td className="tabular-nums">{euro(lang, l.gagneMicro / 1e6)}</td>
+              <td className="tabular-nums">{num(lang, l.differes)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
   );
 }
 

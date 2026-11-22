@@ -32,17 +32,36 @@ export const OPEN_TOOL = "tools.open";
 /** Toujours sous la main, quelle que soit l'étape : lire la fiche, noter, lire un fichier, suivre une tâche. */
 const ALWAYS = new Set(["start.state", "start.note", "etape.rouvrir", "client.wording", "attachment.read", "jobs.status", "files.list", "brand.read", OPEN_TOOL]);
 
-/** Outils de chaque étape construite du parcours (0 à 8). Une étape absente d'ici n'est pas aiguillée. */
-const STEP_TOOLS: Record<number, RegExp> = {
+/**
+ * Où en est l'étape, pour n'y donner que les notices utiles : le site est-il déjà créé, le client l'a-t-il validé,
+ * vend-il des services plutôt que des produits.
+ */
+export type MomentEtape = { site?: boolean; choisi?: boolean; services?: boolean };
+export const momentDeLEtape = (j: { site?: { at?: number }; customChosenAt?: number; start?: { business?: { value?: string } } }): MomentEtape =>
+  ({ site: !!j.site?.at, choisi: !!j.customChosenAt, services: j.start?.business?.value === "services" });
+
+/**
+ * Outils de chaque étape construite du parcours, dont SINA reçoit la notice complète. Moins de 20 par étape, outils de
+ * toujours compris (économies du 22 novembre 2026 : les notices partent à chaque message ; aux étapes 5 à 7, il y en
+ * avait jusqu'à 30). Rien n'est retiré à SINA : les autres restent nommés en une ligne et s'ouvrent avec tools.open.
+ * Une étape absente d'ici n'est pas aiguillée.
+ */
+const STEP_TOOLS: Record<number, RegExp | ((p: MomentEtape) => RegExp)> = {
   0: /^(start\.|project\.profile$|services\.profile$)/,
   1: /^identity\./,
   2: /^logo\./,
   3: /^brand\.(kit|kit_validate|save)$/,
   4: /^(angles\.|strategy\.read$|research\.read$|pilot\.(state|answer|approve)$|project\.profile$|services\.profile$)/,
-  5: /^(activity\.|catalogue\.|shop\.|project\.profile$|services\.profile$|bookings\.(services|configure)$)/,
-  // catalogue.photos : poser la photo qu'un client envoie sur son produit, avant comme après la création du site.
-  6: /^(site\.create$|custom\.|gallery\.|catalogue\.(list|photos)$|shop\.)/,
-  7: /^(custom\.|gallery\.|mockup\.|site\.(outline|edit|versions|use_version|pages|code_from_mockup|images|photo_reject)$|catalogue\.(list|photos)$|shop\.)/,
+  // L'activité : la fiche et ses produits, ou ses prestations et ses rendez-vous.
+  5: (p) => p.services
+    ? /^(activity\.|services\.profile$|bookings\.(services|configure)$|catalogue\.(list|create|update)$)/
+    : /^(activity\.|project\.profile$|catalogue\.(list|create|update|photos)$|shop\.offers$)/,
+  // Le site : avant sa création, ce qu'il faut pour le créer ; ensuite, les retouches en cliquant, sa validation et la
+  // galerie de ses produits. catalogue.photos : poser la photo qu'un client envoie sur son produit, avant comme après.
+  6: (p) => p.site
+    ? /^(custom\.(show|section|edit|structure|photo|undo|choose)$|catalogue\.photos$|gallery\.(plan|create)$)/
+    : /^(site\.create$|catalogue\.(list|photos)$|shop\.(offers|buy_features)$)/,
+  7: /^(custom\.(install|show|section|edit|structure|photo|undo)$|gallery\.(plan|create)$|mockup\.|site\.(code_from_mockup|images|photo_reject)$|catalogue\.photos$)/,
   8: /^(theme\.|site\.(outline|edit|versions|use_version|pages)$|catalogue\.list$|shop\.)/,
   9: /^(posts\.|catalogue\.list$)/,
   10: /^(ads\.|catalogue\.list$)/,
@@ -55,8 +74,9 @@ const STEP_TOOLS: Record<number, RegExp> = {
 export const routedStep = (step: number | null | undefined): step is number => step != null && !!STEP_TOOLS[step];
 
 /** L'outil fait-il partie de ceux dont SINA reçoit la notice complète à cette étape ? */
-export function toolInFocus(name: string, step: number): boolean {
-  return ALWAYS.has(name) || !!STEP_TOOLS[step]?.test(name);
+export function toolInFocus(name: string, step: number, phase: MomentEtape = {}): boolean {
+  const r = STEP_TOOLS[step];
+  return ALWAYS.has(name) || !!(typeof r === "function" ? r(phase) : r)?.test(name);
 }
 
 /** Première phrase d'une description, pour la liste courte. */
@@ -66,9 +86,9 @@ const firstSentence = (s: string) => { const one = s.replace(/\s+/g, " ").trim()
  * Catalogue aiguillé : la notice complète des outils de l'étape, puis une ligne par autre outil du Studio. Rien n'est
  * retiré à SINA : un autre outil se demande avec tools.open.
  */
-export function routedCatalog(hasProject: boolean, scope: ToolScope, step: number): string {
+export function routedCatalog(hasProject: boolean, scope: ToolScope, step: number, phase: MomentEtape = {}): string {
   const tools = allTools().filter((t) => (hasProject || !t.needsProject) && toolVisible(t.name, { ...scope, routed: true }));
-  const focus = tools.filter((t) => toolInFocus(t.name, step)), others = tools.filter((t) => !toolInFocus(t.name, step));
+  const focus = tools.filter((t) => toolInFocus(t.name, step, phase)), others = tools.filter((t) => !toolInFocus(t.name, step, phase));
   return [
     `## Outils de l'étape en cours (notice complète)`,
     focus.map(toolEntry).join("\n\n"),

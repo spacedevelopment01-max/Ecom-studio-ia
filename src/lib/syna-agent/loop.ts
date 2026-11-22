@@ -29,12 +29,12 @@ import { requirePlan } from "../plan-gates";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { allTools, getTool, isSensitive, toolCatalog, toolEntry, toolVisible, type ToolScope } from "./registry";
-import { conversationSettings, keyMoment, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
+import { conversationSettings, keyMoment, momentDeLEtape, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
 import { loadWordingRules, wordingPromptLine } from "../client-wording";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
 import { planOfProject } from "../plan-gates";
 import { routeCountFor } from "./brand-routes";
-import { authorizedBudget, addMessage, createRun, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
+import { authorizedBudget, addMessage, createRun, filDeConversation, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
 import { budgetState, jobSpentMicro, replyAllowanceMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGET_PCT } from "./budget";
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
@@ -559,7 +559,7 @@ const sawImages = new Map<string, boolean>();
 
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
 async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, note = ""): Promise<StepOutput> {
-  const history = lastMessages(r.conversation_id, 120);
+  const history = filDeConversation(r.conversation_id);
   const scope = toolScope(r), conv = conversationSettings();
   // Variété des réponses : les débuts de tes derniers messages, à ne pas reprendre.
   const openings = history.filter((m) => m.role === "assistant" && m.content?.message).slice(-4).map((m) => String(m.content.message).split(/\s+/).slice(0, 5).join(" "));
@@ -569,9 +569,11 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   const call: LlmCall = {
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
     system: SYNA_SYSTEM, promptKey: "syna-agent-2",
-    reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(!!r.project_id, scope, currentStep(journeyOf(r.conversation_id)))}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
+    reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(!!r.project_id, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
     context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id) })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
-    prompt: `# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
+    // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
+    history: filEnBlocs(history),
+    prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
     maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${note ? ":reprise" : ""}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
   };
@@ -616,6 +618,21 @@ function newAttachmentSinceLastAssistant(h: SynaMessage[]) {
 
 /** Fil lisible par le modèle : paroles exactes, réponses de SINA, résultats d'outils (tronqués), accords. */
 export function serialize(h: SynaMessage[]): string {
+  return serializeLines(h).join("\n");
+}
+
+/** Titre du fil, en tête de son premier bloc. */
+export const FIL_TITRE = "# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)";
+/**
+ * Le fil en blocs pour la mise en mémoire : un bloc par message (le titre sur le premier). D'un pas à l'autre d'une
+ * même demande, les blocs déjà envoyés restent identiques au caractère près et sont repris de mémoire.
+ */
+export function filEnBlocs(h: SynaMessage[]): string[] {
+  const lines = serializeLines(h);
+  return lines.length ? lines.map((l, i) => i === 0 ? `${FIL_TITRE}\n${l}` : l) : [`${FIL_TITRE}\n(vide)`];
+}
+
+function serializeLines(h: SynaMessage[]): string[] {
   // Demande en cours : résultats complets ; demandes précédentes : résumés courts (moins de jetons relus à chaque étape).
   let lastUser = -1;
   h.forEach((m, i) => { if (m.role === "user") lastUser = i; });
@@ -627,7 +644,7 @@ export function serialize(h: SynaMessage[]): string {
     if (c.kind === "confirmation") return `[accord demandé #${m.seq}] ${c.pending?.tool} — ${c.pending?.reason}`;
     if (c.kind === "approved" || c.kind === "declined") return `[client : ${c.kind === "approved" ? "ACCORD" : "REFUS"} pour ${c.tool}]`;
     return `[événement ${c.kind}]`;
-  }).join("\n");
+  });
 }
 
 function clip(v: unknown, max: number): unknown {

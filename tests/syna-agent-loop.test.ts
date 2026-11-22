@@ -217,7 +217,7 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
     const reason = async (call: any) => {
       const step = getRun(r.id)!.step - 1;
       if (step === 0) return { message: "", actions: [{ tool: "video.montage", args: { purpose: "organic", aspect: "1:1", scenes: images.map((assetId) => ({ assetId })), line: "", cta: "", music: "none" } }], done: false };
-      seen = call.prompt;
+      seen = [...(call.history ?? []), call.prompt].join("\n");
       return { message: "Le rendu a échoué ; je vous propose de relancer.", actions: [], done: true };
     };
     await fr(() => runAgent(r.id, r.job_id!, { reason }));
@@ -293,7 +293,7 @@ describe("SINA agent — un fil, des outils natifs, des changements vérifiés",
 
     // Sa réponse finie, la demande en attente reprend et présente le résultat ; plus de note d'arrière-plan.
     let after = "", seen = "";
-    await fr(() => runAgent(r1.id, getRun(r1.id)!.job_id!, { reason: async (call) => { after = call.context ?? ""; seen = call.prompt; return { message: "Ta vidéo est prête.", actions: [], done: true }; } }));
+    await fr(() => runAgent(r1.id, getRun(r1.id)!.job_id!, { reason: async (call) => { after = call.context ?? ""; seen = [...(call.history ?? []), call.prompt].join("\n"); return { message: "Ta vidéo est prête.", actions: [], done: true }; } }));
     expect(seen).toContain("jobs.wait");
     expect(seen).toContain("Au fait, je livre en 48 heures."); // elle a tout le fil sous les yeux, sa réponse comprise
     expect(after).not.toMatch(/Une création est en cours en arrière-plan/);

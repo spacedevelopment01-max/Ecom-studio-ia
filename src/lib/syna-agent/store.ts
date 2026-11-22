@@ -34,6 +34,20 @@ export function lastMessages(conversationId: string, limit: number): SynaMessage
   ).map((r) => ({ id: r.id, seq: r.seq, role: r.role, runId: r.run_id, content: json(r.content_json, {}), createdAt: r.created_at }));
 }
 
+/**
+ * Le fil que SINA relit à chaque pas : au moins les `min` derniers messages, à partir d'un début qui ne bouge que tous
+ * les `pas` messages. Avant (22 novembre 2026), la fenêtre glissait d'un message à chaque fois : le début du fil
+ * changeait sans cesse et le fournisseur ne pouvait rien en reprendre de mémoire. Elle ne montre jamais moins qu'avant.
+ */
+export function filDeConversation(conversationId: string, min = 120, pas = 40): SynaMessage[] {
+  const oldest = one<{ seq: number }>("SELECT seq FROM syna_messages WHERE conversation_id=? ORDER BY seq DESC LIMIT 1 OFFSET ?", conversationId, min - 1);
+  if (!oldest) return lastMessages(conversationId, min);
+  const from = Math.floor(oldest.seq / pas) * pas;
+  return all<{ id: string; seq: number; role: SynaRole; run_id: string | null; content_json: string; created_at: number }>(
+    "SELECT * FROM syna_messages WHERE conversation_id=? AND seq>=? ORDER BY seq", conversationId, from,
+  ).map((r) => ({ id: r.id, seq: r.seq, role: r.role, runId: r.run_id, content: json(r.content_json, {}), createdAt: r.created_at }));
+}
+
 export const getRun = (rid: string) => one<SynaRun>("SELECT * FROM syna_runs WHERE id=?", rid);
 export const activeRun = (cid: string) => one<SynaRun>("SELECT * FROM syna_runs WHERE conversation_id=? AND status IN ('queued','running','waiting_jobs','waiting_confirmation') ORDER BY created_at DESC LIMIT 1", cid);
 export const runByRequest = (cid: string, requestId: string) => one<SynaRun>("SELECT * FROM syna_runs WHERE conversation_id=? AND request_id=?", cid, requestId);

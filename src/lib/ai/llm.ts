@@ -79,6 +79,12 @@ export type LlmCall = {
   context?: string;
   /** Référence stable d'une tâche (catalogue des sections, réglages…) : mise en cache avec le contexte. */
   reference?: string;
+  /**
+   * Fil d'une conversation (SINA), un bloc par message, du plus ancien au plus récent. Placé juste après la référence
+   * et mis en mémoire chez le fournisseur (point de mémoire sur le dernier bloc) : au pas suivant, tout le fil déjà lu
+   * est repris au dixième du prix au lieu d'être relu en entier.
+   */
+  history?: string[];
   prompt: string;
   images?: LlmImage[];
   maxTokens?: number;
@@ -153,9 +159,7 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
  */
 export function strictTextQuoteInput(call: LlmCall, schema: z.ZodType): { maximumTokens: number; typicalTokens: number } {
   if (call.images?.length) throw new UserFacingError('Le devis texte ne couvre pas des images. / Text quote does not cover images.');
-  const { cached: stable, after } = promptHead(call);
-  const content: unknown[] = stable.map((text, i) => i === stable.length - 1 ? { type: 'text', text, cache_control: { type: 'ephemeral' } } : { type: 'text', text });
-  for (const text of after) content.push({ type: 'text', text });
+  const content: unknown[] = headBlocks(call);
   const volatile = brainOf(call).volatile;
   if (volatile) content.push({ type: 'text', text: volatile });
   content.push({ type: 'text', text: call.prompt });
@@ -232,23 +236,36 @@ async function imageBlock(img: LlmImage): Promise<Anthropic.ImageBlockParam> {
 }
 
 /**
- * Blocs de tête et point de cache. D'ordinaire, contexte du projet puis référence de la tâche, tous deux mis en cache.
- * Pour la conversation de SINA, le contexte (parcours, état du projet, budget) change à CHAQUE pas alors que la
- * référence (catalogue des outils, ~19 000 jetons) ne change pas : la référence passe en tête avec le point de cache et
- * le contexte vient après, sinon tout le préfixe était réécrit en cache à chaque pas (coût multiplié par ~3).
+ * Blocs de tête et points de mémoire chez le fournisseur (« mise en cache »). Ce qui ne change pas passe en premier :
+ *  - la référence de la tâche (cahiers, notices des outils) : la même pour tous les clients, elle passe en tête avec
+ *    son point de mémoire (avant, le contexte du projet la précédait : elle n'était reprise que dans le même projet) ;
+ *  - pour une tâche ordinaire, le contexte du projet ensuite, avec son propre point : identique d'un appel à l'autre du
+ *    même projet (corrections, contrôles, retouches) ;
+ *  - pour la conversation de SINA, le fil (un bloc par message, point de mémoire sur le dernier) : au pas suivant, tout
+ *    ce qu'elle a déjà lu est repris ; le contexte (parcours, état du projet, budget) change à CHAQUE pas : il vient
+ *    après, sans point, sinon tout ce qui le suit serait réécrit à chaque pas.
+ * Au plus quatre points par appel (règle du fournisseur) : la consigne générale, la référence, le contexte ou le fil.
  */
-export function promptHead(call: Pick<LlmCall, "task" | "context" | "reference">): { cached: string[]; after: string[] } {
-  if (call.task === "agent_conversation") return { cached: [call.reference].filter(Boolean) as string[], after: [call.context].filter(Boolean) as string[] };
-  return { cached: [call.context, call.reference].filter(Boolean) as string[], after: [] };
+export function promptHead(call: Pick<LlmCall, "task" | "context" | "reference" | "history">): { cached: string[]; history: string[]; after: string[] } {
+  const history = (call.history ?? []).filter(Boolean);
+  if (call.task === "agent_conversation") return { cached: [call.reference].filter(Boolean) as string[], history, after: [call.context].filter(Boolean) as string[] };
+  return { cached: [call.reference, call.context].filter(Boolean) as string[], history, after: [] };
+}
+
+/** Blocs de tête d'un appel, avec leurs points de mémoire (sans les images ni la demande). */
+export function headBlocks(call: Pick<LlmCall, "task" | "context" | "reference" | "history">): { type: "text"; text: string; cache_control?: { type: "ephemeral" } }[] {
+  const { cached, history, after } = promptHead(call);
+  const mark = (text: string) => ({ type: "text" as const, text, cache_control: { type: "ephemeral" as const } });
+  return [
+    ...cached.map(mark),
+    ...history.map((text, i) => i === history.length - 1 ? mark(text) : { type: "text" as const, text }),
+    ...after.map((text) => ({ type: "text" as const, text })),
+  ];
 }
 
 async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[]> {
-  const content: Anthropic.ContentBlockParam[] = [];
-  // Contexte du projet puis référence de la tâche en tête : identiques d'un appel à l'autre (corrections,
-  // contrôles, retouches successives), ils sont mis en cache — réponses plus rapides et moins coûteuses.
-  const { cached: stable, after } = promptHead(call);
-  stable.forEach((text, i) => content.push(i === stable.length - 1 ? { type: "text", text, cache_control: { type: "ephemeral" } } : { type: "text", text }));
-  for (const text of after) content.push({ type: "text", text });
+  // Ce qui ne change pas en tête, avec ses points de mémoire (promptHead) : repris au lieu d'être relu à chaque appel.
+  const content: Anthropic.ContentBlockParam[] = headBlocks(call);
   // Après le point de cache : le contexte volatil (créations récentes) peut changer sans invalider le préfixe.
   const { volatile } = brainOf(call);
   if (volatile) content.push({ type: "text", text: volatile });
@@ -324,13 +341,26 @@ async function countInputTokens(p: { model: string; system?: unknown; messages: 
 const RETRYABLE = (status: number) => status === 429;
 const RETRY_DELAYS_MS = [1000, 4000];
 
+/** Prix d'une écriture en mémoire chez Anthropic (mémoire de 5 minutes) : 1,25 fois le prix d'entrée. */
+export const CACHE_WRITE_RATIO = 1.25;
+/**
+ * Prix d'une lecture en mémoire chez Anthropic, en part du prix d'entrée (grille publique) : 0,05 pour Opus 5.5 (0,20 $
+ * le million au lieu de 4 $) et Sonnet 5.5 (0,10 $ au lieu de 2 $), 0,025 pour Fable 5.1 et 5.2 ; 0,1 pour les autres.
+ * Avant le 22 novembre 2026, le Studio comptait 0,1 partout : il débitait le double de ce qu'Anthropic facture pour la
+ * partie reprise. Servi et demandé différents : le plus cher des deux.
+ */
+export function cacheReadRatio(model: string, requested = model): number {
+  const r = (m: string) => /^claude-(opus|sonnet)-5-5/.test(m) ? 0.05 : /^claude-(fable|mythos)-5-[12]/.test(m) ? 0.025 : 0.1;
+  return Math.max(r(model), r(requested));
+}
+
 function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "", reservationId: string | null = null, requestedModel = model, discount = 1): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
   // Une réponse reçue sans usage exploitable n'est pas supposée gratuite : rawCall conserve sa réserve.
   const counts=[usage?.input_tokens,usage?.output_tokens,...[usage?.cache_creation_input_tokens,usage?.cache_read_input_tokens].filter(n=>n!=null)];
   if(counts.some(n=>!Number.isSafeInteger(n)||n!<0))throw new PermanentError(L("Usage fournisseur incomplet ou invalide : coût maximal retenu, rapprochement nécessaire avant toute relance.","Provider usage is missing or invalid: maximum cost retained; reconciliation required before retrying."));
   const p = requirePrice("anthropic", model), requested = requirePrice("anthropic", requestedModel);
   if (p.unit !== "tokens" || requested.unit !== "tokens") throw new PermanentError(L("Tarif du modèle servi incompatible : rapprochement nécessaire.", "The served model's price is incompatible: reconciliation required."));
-  const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * 1.25 + (usage.cache_read_input_tokens ?? 0) * 0.1;
+  const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * CACHE_WRITE_RATIO + (usage.cache_read_input_tokens ?? 0) * cacheReadRatio(model, requestedModel);
   const output = usage.output_tokens ?? 0;
   const usd = (input * Math.max(p.inputPerM, requested.inputPerM) + output * Math.max(p.outputPerM, requested.outputPerM)) / 1e6;
   const costMicro = Math.round(usd * discount * usdToEur() * EUR);
@@ -359,6 +389,15 @@ type RawResult = { text: string; stop: string | null; model: string };
 export const DEFERRED_DISCOUNT = 0.5;
 /** Patience du différé : par appel, puis pour toute une tâche ; au-delà, les appels partent en direct. */
 export const deferredLimits = { perCallMs: 10 * 60_000, perJobMs: 30 * 60_000, pollMs: 15_000 };
+
+/**
+ * Le différé pour toute une tâche de fond (22 novembre 2026, économies : « là où le client attend de toute façon : marque,
+ * angles, site, publications »). Dans `enDiffere`, un appel qui ne dit rien part en différé ; un appel qui demande
+ * exprès le direct (`deferred: false`, une retouche que le client attend devant) reste en direct.
+ */
+const differeScope = new AsyncLocalStorage<boolean>();
+export const enDiffere = <T>(fn: () => Promise<T>): Promise<T> => differeScope.run(true, fn);
+export const differeActif = (): boolean => differeScope.getStore() === true;
 const deferredWaited = new Map<string, number>();
 /** Remplaçable par les tests (aucun appel réel). */
 export const deferredDeps: { batches?: { create: (p: any) => Promise<any>; retrieve: (id: string) => Promise<any>; cancel: (id: string) => Promise<any>; results: (id: string) => Promise<AsyncIterable<any>> }; sleep?: (ms: number) => Promise<void> } = {};
@@ -494,7 +533,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   };
   try {
     // Relances maison, dans la MÊME réservation, uniquement sur une saturation 429 (rien de produit ni facturé). Une coupure après le début de la réponse n'est jamais relancée ici (résultat incertain).
-    const later = call.deferred && !isHaiku ? await deferredMessage(params, call.jobId ?? call.userId) : null;
+    const later = (call.deferred ?? differeActif()) && !isHaiku ? await deferredMessage(params, call.jobId ?? call.userId) : null;
     if (later) servedDeferred = true;
     msg = later ?? await httpCounter.run(counter, async () => {
       for (let attempt = 0; ; attempt++) {
