@@ -812,3 +812,60 @@ reste éteint tant que tu n'as pas saisi sa clé dans Administration › Fournis
 vérification d'OpenAI ; l'identifiant de Nano Banana 2.1 n'est pas dans le catalogue (l'atelier prend Nano Banana 2) ;
 le montage de l'avant-après n'a pas été rendu en vraie vidéo dans les essais ; les mots qui signalent une personne
 peuvent laisser passer une tournure rare.
+
+## Les limites de l'atelier et Higgsfield
+
+Tout est vérifié par des essais simulés : aucun appel payant, aucune vraie vérification d'OpenAI, aucune publication,
+aucun réglage du Studio en ligne changé.
+
+**1. SINA connaît l'atelier dans sa conversation.**
+
+- Elle le propose d'elle-même, en une phrase, au bon moment : une photo à mettre en scène, une story ou un carré pour une
+  publication, un fond qui gêne, un objet à retirer, une vidéo pour vendre, une fête qui approche, des créations qui
+  n'ont pas encore servi.
+- Elle lit d'abord ce que l'atelier peut faire (gratuit) : le prix de chaque geste en part du budget du mois, l'outil
+  qu'elle conseille, le plafond de vidéos du forfait, et si le client a déjà accepté les conditions.
+- Les trois façons de faire : « Je m'en occupe » (elle choisit tout, toujours avec OpenAI), « On le fait ensemble » (elle
+  remplit la demande, le client choisit l'outil parmi ceux ouverts), « Tu le fais toi-même » (elle donne le lien de
+  l'atelier, sans rien lancer).
+- Une seule façon de faire : elle passe par exactement le même chemin que l'écran (mêmes vérifications, même prix, même
+  accord signé, même tâche, même « Mes créations »). Chaque création montre la carte d'accord avant de partir ; les
+  conditions de l'atelier, le client les accepte lui-même à l'écran, jamais elle. Une vidéo ouvre la vidéo guidée déjà
+  remplie, sous le même plafond (0, 3 et 6 par mois).
+- Les listes d'outils par étape restent courtes : l'atelier est sous la main aux publications et aux publicités
+  seulement (moins de 20 notices, comme la règle le veut) ; ailleurs, il est nommé en une ligne. Les deux listes du site ne changent pas.
+
+**2. Toute photo déposée dans le Studio est vérifiée**, même hors de l'atelier : Fichiers, photos de produit et de
+variantes, pièces jointes du fil de SINA (même avant que le projet existe), logo gardé, photos reprises de son site.
+C'est la même vérification gratuite d'OpenAI, jamais au niveau bas.
+
+- Vérifiée : elle sert normalement.
+- Vérification impossible (clé absente, panne) : la photo est gardée, jamais perdue, mise de côté, et le client lit :
+  « Ta photo est bien enregistrée. Je n'ai pas pu la vérifier pour l'instant : je la garde de côté, elle ne servira à
+  aucune création tant qu'elle n'est pas vérifiée. Je réessaie toute seule dès que tu t'en sers. »
+- Refusée : gardée, mais elle ne sert jamais ; le client lit ce que la vérification a trouvé.
+- Avant tout appel payant qui reçoit des images (images, retouches, vidéos), le Studio regarde si l'une d'elles est une
+  photo mise de côté (même réduite ou recompressée) : la demande s'arrête avant de partir, rien n'est compté. SINA, elle,
+  ne la voit pas et le dit au client. Une image faite à partir d'une photo refusée ne sert pas non plus.
+
+**3. Les liens de « Mes créations » posent vraiment l'image.**
+
+- « Une publication » : un brouillon de publication avec l'image, textes à écrire ; rien n'est publié.
+- « Une publicité » : une publicité préparée avec l'image, en brouillon, textes à écrire ; rien n'est diffusé (seulement
+  avec un forfait qui comprend les publicités).
+- « Mon site » : l'aperçu de son site s'ouvre ; il clique sur la photo à remplacer, puis « Poser ma création ici ».
+- Les règles : une création ratée, « produit modifié », refusée ou pas encore vérifiée ne part nulle part ; les photos de
+  ses produits restent sur leurs emplacements ; jamais deux fois la même photo sur son site. SINA fait la même chose,
+  seulement quand le client le lui demande.
+
+**Higgsfield quitté**, comme tu l'as décidé : il n'est plus dans le catalogue de l'administration ni nulle part dans le
+code (sa carte, ses clés, ses modèles, ses essais). Runware reste le seul intermédiaire de secours. Si un réglage déjà
+enregistré choisissait Higgsfield, le Studio l'ignore et reprend le réglage par défaut, sans toucher à la base.
+
+**Pas vérifié :** aucune vraie vérification d'OpenAI (elle reste à essayer avec ta clé) ; les photos déposées avant ce
+jour n'ont pas de vérification enregistrée : elles servent comme avant (dans l'atelier, elles sont vérifiées à chaque
+devis) ; la reconnaissance d'une photo mise de côté peut manquer une photo très retouchée (détourée sur fond blanc,
+par exemple), et peut arrêter par prudence une photo très ressemblante ; une pièce jointe envoyée avant la création du
+projet n'est revérifiée qu'une fois rangée dans ses Fichiers ; le choix du réseau du brouillon de publication est
+Instagram par défaut, à changer dans le brouillon ; l'écran « Poser ma création ici » n'a pas été regardé en vrai dans
+un navigateur.
