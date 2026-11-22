@@ -247,6 +247,21 @@ Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches
     l'identité légale du Studio ;
   - le petit modèle pour les tâches mécaniques (non transmis, contraire à « le plus fort pour tous »).
 
+### Le coût d'un projet (22 novembre 2026) : à résoudre pour de bon
+
+- Ses mots : « ça coûte beaucoup trop cher à faire un projet et tu dois aller voir sur internet comment régler ce
+  problème, tu ne t'arrêtes pas tant que tu n'as pas réellement trouvé ».
+- Lancé :
+  1. relevé réel des coûts de Nadia, demandé à « Les essais complets » (`docs/studio/essais-complets/COUTS-NADIA.md`) ;
+  2. audit de chaque appel payant d'un projet dans le code ;
+  3. recherche sur les coûts des modèles de texte ;
+  4. recherche sur les coûts des images ;
+  5. recherche sur comment font les concurrents.
+  Rapports dans `docs/studio/couts/`.
+- Règle tenue : « le modèle le plus fort pour tous » là où SINA décide, conseille ou juge. Les recherches montrent où un
+  modèle moins cher servirait sans décider, et le propriétaire tranche.
+- On ne s'arrête qu'avec un coût de projet mesuré avant et après, en vrai.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
