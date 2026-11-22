@@ -214,3 +214,52 @@ Rien n'a été dépensé : tout est essayé sur un fournisseur simulé.
   l'estimait à environ 1,80 €. [À compléter : le gain réel, lu dans l'administration au prochain essai.]
 - **Non vérifié** : la réponse réelle d'Anthropic à la fonction (aucun appel réel fait) ; c'est précisément ce que le retour
   automatique protège.
+
+## Le fil écrit une seule fois (point urgent du chef d'orchestre)
+
+Vérifié dans le code : le Studio n'envoie jamais à Anthropic d'anciens résultats d'outils ni de réflexions à relire tels
+quels ; le fil part comme du texte, dans une seule demande. Le refus (erreur 400) décrit par la page d'Anthropic ne
+peut donc pas arriver ici. Mais un ancien résultat était encore raccourci après coup, tous les 40 messages : corrigé. Un
+message s'écrit maintenant une seule fois, à son entrée dans le fil, puis ne change plus jamais. Un long résultat y est
+court dès son entrée ; il n'est donné en entier qu'à part, pendant la demande qui l'a produit. Épreuve au banc :
+`fil-ecrit-une-seule-fois`.
+
+Vérifié aussi : l'état du projet est bien après le dernier point de mémoire et ne s'empile pas (il est refait à chaque
+pas) ; les pages lues sur Internet ne sont jamais gardées entières (seulement des extraits de 300 à 1 500 caractères) ;
+les réponses de SINA ne sont jamais montrées au client avant leur relecture (aucun flux du brouillon).
+
+## La conversation de SINA (audit fin, environ 3,50 € par projet estimés)
+
+Rien n'a été dépensé ; chaque point a son essai.
+
+1. **Le fil ne glisse plus qu'au changement d'étape** (ou au-delà de 400 messages), au lieu de tous les 40 messages, et
+   parfois deux fois de suite. Environ 1 €.
+2. **Retouche au clic** : le Studio lit lui-même la section cliquée avant la première réflexion de SINA ; elle la reçoit
+   en entier, pour recopier le passage exact. Une réflexion de moins par retouche, environ 0,45 €. La phrase de fin de
+   retouche garde sa réflexion (non changé, comme demandé).
+3. **Activité** : SINA enregistre la réponse (coordonnées, produits, offres, prestations, preuve de prix) en même temps
+   qu'elle pose la question suivante ; la carte « Ton activité » se met à jour seule et lui dit ce qui manque. Une attente
+   au lieu de deux ou trois pour le client, environ 0,40 €.
+4. **Une retouche ne range que ce qui a changé** (version, pages, points nouveaux à revoir), plus la carte entière du
+   site. Environ 0,25 €.
+5. **Une seule liste d'outils pour toute la marque** (étapes 1 à 3), avec `brand.finish` et `identity.choose`, que leurs
+   consignes demandent d'appeler. Environ 0,18 €. **À décider** : une seule liste pour le site avant et après sa
+   création ferait 22 notices complètes, au-delà de la règle « moins de 20 » ; pas fait.
+6. **Les consignes fixes des étapes 0 à 5** rejoignent la partie gardée en mémoire. Environ 0,22 €.
+7. **L'état du projet nettoyé** : l'état vrai du site créé par SINA (avant, « pas encore construit »), plus d'objets
+   coupés, plus de Pilote, plus de changements recopiés. Environ 0,18 €.
+8. **Un simple refus** (argument faux, validation incomplète) n'est plus traité comme un échec à expliquer : ni effort
+   élevé, ni relectrice. Une panne, un travail payant refusé ou un budget insuffisant le restent. Environ 0,17 €.
+9. **Le contrôle gratuit des questions** : « nom » et « site » ne comptent plus comme des coordonnées (« As-tu déjà un
+   nom, un logo ou un site ? » n'est plus réécrite) ; le nettoyage gratuit passe avant le compte ; la relectrice lit la
+   version déjà corrigée. Environ 0,08 €.
+10. **Petits postes** : plus de raison écrite pour chaque action (personne ne la lisait), consigne de la relectrice en
+    mémoire d'une heure, fiche donnée une seule fois, compte rendu de la création du site donné une fois avec le
+    résultat de la tâche (le contexte ne garde que ce qui reste à régler), pièces jointes anciennes en une ligne.
+    Environ 0,30 €.
+11. **Ce qui manquait au client** : pendant les retouches, avant la validation, SINA ne voyait pas son site. Elle reçoit
+    maintenant ses captures ; elles partent après le fil, pour ne pas le faire réécrire à chaque retouche.
+
+Pas fait : les notices écrites plus court (à essayer d'abord au banc, l'audit le demande) ; la fin de retouche sans
+réflexion de plus (à ne pas faire sans le chef). Tout est estimé d'après le code ; le vrai gain se lit dans
+Administration › Consommation au prochain essai. [À compléter : gain mesuré.]
