@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, X, KeyRound, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen , CalendarCheck, Boxes, UtensilsCrossed, Hammer } from "lucide-react";
+import { ArrowRight, X, KeyRound, Search, Bell, BookOpen, Briefcase, CalendarDays, ChevronDown, Compass, FolderTree, Film, Image as ImageIcon, LayoutGrid, LogOut, Megaphone, MoreHorizontal, Newspaper, Package, Palette, Pause, Play, Plug, Send, Settings, Store, Shield, Loader2, PanelLeftClose, PanelLeftOpen , CalendarCheck, Boxes, UtensilsCrossed, Hammer, Sparkles } from "lucide-react";
 import { api, Badge, cx, formatDate, Logo, Progress, ThemeToggle, useApi } from "../ui";
 import { LangSwitch, useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
@@ -27,6 +27,7 @@ export const TABS = [
   { id: "carte", label: "Carte", labelEn: "Menu", icon: UtensilsCrossed },
   { id: "realisations", label: "Réalisations", labelEn: "Projects", icon: Hammer },
   { id: "rendez-vous", label: "Rendez-vous", labelEn: "Bookings", icon: CalendarCheck },
+  { id: "atelier", label: "Atelier", labelEn: "Workshop", icon: Sparkles },
   { id: "images", label: "Images", labelEn: "Images", icon: ImageIcon },
   { id: "videos", label: "Vidéos", labelEn: "Videos", icon: Film },
   { id: "publications", label: "Publications", labelEn: "Posts", icon: Send },

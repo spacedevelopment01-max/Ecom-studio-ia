@@ -72,6 +72,11 @@ export function GuidedVideo({ as,initialSlot }: { as: "post" | "ad";initialSlot?
   const hydrated=useRef(false);
   useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(draftKey)??"null");if(saved){setGeneration(saved.generation);setSubjectKey(saved.subjectKey);setAspect(saved.aspect);setTotalS(saved.totalS);setScenes(saved.scenes);setRequest(saved.request);setMusic(saved.music);setSceneImages(saved.sceneImages??[]);quoteContext.current=saved.context;setScenario(saved.scenario);}}catch{}hydrated.current=true;},[draftKey]);
   useEffect(()=>{if(!hydrated.current)return;localStorage.setItem(draftKey,JSON.stringify({generation,subjectKey,aspect,totalS,scenes,request,music,sceneImages,context:quoteContext.current,scenario}));},[draftKey,generation,subjectKey,aspect,totalS,scenes,request,music,sceneImages,scenario]);
+  // Modèle prêt de l'atelier (rapport 10, point 10) : un clic dans l'atelier remplit la demande ; le client la voit et
+  // peut la changer. Le modèle fixe le geste de caméra côté serveur (jamais de main ni de personne).
+  const [modele,setModele]=useState<{id:string;nom:string}|null>(null);
+  useEffect(()=>{if(initialSlot)return;const q=new URLSearchParams(window.location.search),m=q.get("atelierModele");if(!m||(q.get("atelierAs")??"post")!==as)return;setModele({id:m,nom:q.get("atelierNom")??m});setRequest(q.get("atelierDemande")??"");setScenes(Math.max(1,Math.min(6,Number(q.get("atelierPlans"))||1)));setTotalS(Math.max(6,Math.min(60,Number(q.get("atelierDuree"))||8)));},[as,initialSlot]);
+  const modeleBody=modele?{modele:modele.id}:{};
   // Prix recalculé à chaque réglage (format, durée, scènes, produit ou service).
   useEffect(() => {
     if (!subjects.length) return;
@@ -84,13 +89,13 @@ export function GuidedVideo({ as,initialSlot }: { as: "post" | "ad";initialSlot?
     }
 
     quoteContext.current=context;
-    api<Quote>(`/api/projects/${id}/creative/video`, { body: { action: "quote",angleId,generation,purpose:initialSlot?"site":undefined,initialSlot, as, subject, aspect, totalS, scenes,request,music,sceneImages } })
+    api<Quote>(`/api/projects/${id}/creative/video`, { body: { action: "quote",angleId,generation,purpose:initialSlot?"site":undefined,initialSlot, as, subject, aspect, totalS, scenes,request,music,sceneImages,...modeleBody } })
       .then((q) => {if(off)return;setQuote(q);if(initialSlot&&q.suggestedScenario)setScenario(old=>old??{...q,scenario:q.suggestedScenario});})
       .catch(() => !off && setQuote(null));
     return () => {
       off = true;
     };
-  }, [angleId,id, as,generation,initialSlot, subjectKey, aspect, totalS, scenes, subjects.length,request,music,data?.voice.voiceId,data?.voice.voice,JSON.stringify(sceneImages)]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [angleId,id, as,generation,initialSlot, subjectKey, aspect, totalS, scenes, subjects.length,request,music,data?.voice.voiceId,data?.voice.voice,JSON.stringify(sceneImages),modele?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const running = jobs.length > 0;
   const was = useRef(running);
   useEffect(() => {
@@ -102,8 +107,8 @@ export function GuidedVideo({ as,initialSlot }: { as: "post" | "ad";initialSlot?
     if (!quote?.allowed) return;
     setBusy(true);
     try {
-      if(!scenario?.approvalToken) {setScenario(await api<Quote>(`/api/projects/${id}/creative/video`,{body:{scenarioJobId:scenario?.scenarioJobId,approvedScriptMicro:quote.scriptMicro??0,draftPlan:scenario?.scenario,action:"plan",angleId,generation,purpose:initialSlot?"site":undefined,initialSlot,as,subject,request:request.trim()||undefined,aspect,totalS,scenes,music,sceneImages}}));return;}
-      await api(`/api/projects/${id}/creative/video`, { body: { approvalToken:scenario.approvalToken, action: "create",angleId,generation,purpose:initialSlot?"site":undefined,initialSlot, as, subject, request: request.trim() || undefined, aspect, totalS, scenes, music,sceneImages, approvedEstimateMicro: quote.estimateMicro, rightsConfirmed: generation==="reference" ? rights : undefined } });
+      if(!scenario?.approvalToken) {setScenario(await api<Quote>(`/api/projects/${id}/creative/video`,{body:{scenarioJobId:scenario?.scenarioJobId,approvedScriptMicro:quote.scriptMicro??0,draftPlan:scenario?.scenario,action:"plan",angleId,generation,purpose:initialSlot?"site":undefined,initialSlot,as,subject,request:request.trim()||undefined,aspect,totalS,scenes,music,sceneImages,...modeleBody}}));return;}
+      await api(`/api/projects/${id}/creative/video`, { body: { approvalToken:scenario.approvalToken, action: "create",angleId,generation,purpose:initialSlot?"site":undefined,initialSlot, as, subject, request: request.trim() || undefined, aspect, totalS, scenes, music,sceneImages,...modeleBody, approvedEstimateMicro: quote.estimateMicro, rightsConfirmed: generation==="reference" ? rights : undefined } });
       toast("ok", t("Vidéo en préparation : elle apparaît ici dès qu'elle est prête.", "Video being prepared: it appears here as soon as it's ready."));
     } catch (e) {
       setScenario(old=>old?{...old,approvalToken:undefined}:old);
@@ -134,6 +139,7 @@ export function GuidedVideo({ as,initialSlot }: { as: "post" | "ad";initialSlot?
         <label className="grid min-w-0 gap-2 text-sm">{t("Comment créer les clips ?","How should clips be created?")}<select data-video-generation className="w-full min-w-0 max-w-full rounded-xl border border-line p-2" value={generation} onChange={e=>{setGeneration(e.target.value as typeof generation);if(e.target.value==="direct")setSceneImages([]);}}><option value="direct">{t("Clips IA directs — sans image intermédiaire","Direct AI clips — no intermediate image")}</option><option value="reference">{t("Animer une photo de référence fournie","Animate a supplied reference photo")}</option><option value="staged">{t("Créer d’abord des images — coût supplémentaire","Create images first — additional cost")}</option></select></label>
         {generation==="reference"&&<Button variant="secondary" className="min-w-0 max-w-full py-2 text-left" style={{height:"auto",whiteSpace:"normal"}} data-video-reference onClick={()=>setImageScene(-1)}>{t("Choisir une photo pour les scènes (modifiable par scène)","Choose a photo for the scenes (editable per scene)")}</Button>}
         {jobs[0] && <JobProgress job={jobs[0]} />}
+        {modele&&<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-signal bg-signal-soft px-3 py-2 text-sm" data-video-atelier-modele={modele.id}><span>{t(`Modèle de l'atelier : ${modele.nom}. Aucune main, aucune personne ; image fixe validée d'abord.`,`Workshop template: ${modele.nom}. No hands, no people; still image approved first.`)}</span><button type="button" className="underline" onClick={()=>setModele(null)}>{t("Retirer le modèle","Remove the template")}</button></div>}
         <SubjectPicker subjects={subjects} value={subjectKey} onChange={setSubjectKey} request={request} onRequest={setRequest} idPrefix={`video-${as}`} video photoOptional surface={as === "ad" ? "ad_video" : "post_video"} />
         <div className="grid gap-4 sm:grid-cols-3">
           <div>

@@ -6,7 +6,7 @@ import { dashboardOf } from "@/lib/syna-agent/dashboard";
 import { ProjectDashboard } from "@/components/studio/project-dashboard";
 import { suiviDuProjet } from "@/lib/syna-agent/rendez-vous";
 
-const VALID = ["pilote", "produit", "marque", "strategie", "boutique", "catalogue", "biens", "carte", "realisations", "rendez-vous", "images", "videos", "prompts", "publications", "blog", "calendrier", "publicites", "fichiers", "connexions"];
+const VALID = ["pilote", "produit", "marque", "strategie", "boutique", "catalogue", "biens", "carte", "realisations", "rendez-vous", "atelier", "images", "videos", "prompts", "publications", "blog", "calendrier", "publicites", "fichiers", "connexions"];
 
 export default async function Page({ params }: { params: Promise<{ tab: string; projectId: string }> }) {
   const { tab, projectId } = await params;
