@@ -180,6 +180,21 @@ Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches
 7. calendrier de publication (oublié au départ, ajouté à sa demande) ;
 8. atelier d'images et de vidéos.
 
+### Les fournisseurs d'IA et l'atelier (22 novembre 2026)
+
+- Faute du chef d'orchestre : la référence à jour (`LE-STUDIO-DE-A-A-Z.md`, partie 16, décisions du 18 et du 21 novembre
+  sur les fournisseurs) est sur la branche `ccr-c18fe524-w1pb7o`, pas sur celle que lisaient le chef d'orchestre et ses
+  recherches. Les rapports 06 et 08 du 22 novembre recommandent fal et parlent de Higgsfield. Or sa décision est la
+  suivante :
+  - Higgsfield est à quitter ;
+  - Runware est le seul intermédiaire de secours ;
+  - fal seulement pendant la transition ;
+  - Kling, Vertex, Black Forest Labs et Seedance sont accordés.
+  **Toujours relire la référence sur la branche la plus récente** (`ccr-c18fe524-w1pb7o`, conversation « E-COM STUDIO IA
+  completion », `session_01HSEvS21X7DENKPs367UykR`). « SINA évolue » a été prévenue.
+- L'atelier de création est écrit par cette conversation : `docs/studio/L-ATELIER-DE-CREATION.md` (pas encore envoyé ;
+  ses conditions et sa place dans les lots sont « non encore validées » par le propriétaire).
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
