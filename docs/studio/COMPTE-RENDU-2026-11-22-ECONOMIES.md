@@ -75,3 +75,35 @@ détourées du site, les publications composées (texte posé), les recadrages a
 faudrait que le Studio signe lui-même ses images finales (un manifeste C2PA qui cite l'image d'OpenAI) ; cela demande un
 certificat de signature reconnu par la liste de confiance C2PA (payant, à acheter auprès d'un organisme agréé) et une
 bibliothèque de signature. Décision au propriétaire : [À compléter : prix du certificat, à demander avant].
+
+## Partie 1 des recherches approfondies : l'urgent, le légal, le cassé
+
+Rien n'a été dépensé. Aucun essai sur une vraie boutique (aucune boutique d'essai ouverte) : tout est vérifié par des
+essais du Studio avec Shopify et WooCommerce simulés.
+
+- **Signature « fait par l'IA »** : gardée sur les images de la planche (voir plus haut).
+- **Prix barré** : jamais sans la preuve datée du prix le plus bas des 30 derniers jours. Exemple : une bougie à 30 €
+  « avant 45 € » ; SINA demande « Quel est le prix le plus bas que tu as pratiqué ces 30 derniers jours ? » ; le client
+  répond 40 € ; le site barre 40 € et affiche −25 %. Sans réponse, aucun prix barré. Dans une boutique Shopify, où le prix
+  de comparaison s'affiche de lui-même, la mise en boutique le signale.
+- **« Renoncer au contrat ici »** : dans le pied de chaque page des boutiques (aperçu et thème Shopify). La page du Studio
+  demande le nom, la commande et l'e-mail, puis « Confirmer la rétractation » ; l'acheteur reçoit un accusé daté, le
+  client est prévenu. Si l'envoi des e-mails n'est pas réglé, le client est averti d'envoyer l'accusé lui-même. Pas fait :
+  le lien dans le compte client de la boutique (il dépend de la plateforme).
+- **Mentions légales** : le médiateur de la consommation et l'hébergeur sont demandés à l'étape de l'activité et bloquent
+  la validation tant qu'ils manquent. L'identité du Studio dans `legal.ts` reste « [À compléter] » : à donner par le
+  propriétaire.
+- **L'assistante du site** : aucune assistante IA ne répond aujourd'hui sur les sites des clients (seule une bulle « une
+  personne te répond » mène au formulaire) ; rien d'illégal. Elle sera construite avec son badge « je suis une IA » dans
+  la partie du suivi.
+- **Shopify** : la boutique se relie par l'application du client (Client ID et Client secret, écran guidé), avec un jeton
+  redemandé avant chaque envoi ; interface en version 2026-10 ; produits et collections publiés sur la boutique en ligne ;
+  menus créés ; pages légales envoyées (jamais avec un trou) ; forfait Starter refusé avant l'envoi du thème. À essayer
+  sur une boutique de développement que le propriétaire ouvrira.
+- **Une seule adresse** : quand le domaine du client est relié et servi, l'adresse du Studio y renvoie en permanence, et
+  chaque page dit son adresse principale à Google.
+- **Ventes et visites** : les sites hébergés comptent leurs pages vues sans traceur ni adresse (exemption de la CNIL :
+  rangé par client, lien « ne pas être compté », effacé à 25 mois) ; les commandes et les visites Shopify se lisent par
+  l'application du client ; les commandes WooCommerce aussi, et la boutique se relie en un clic (« Approuver »). Pas fait :
+  la ligne de la mesure d'audience dans les mentions du site (texte prêt : `MENTION_MESURE`), et l'affichage de ces
+  chiffres dans le point du mois (partie du suivi).
