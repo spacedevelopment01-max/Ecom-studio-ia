@@ -164,3 +164,27 @@ it("rapport 09, point 10 : un plan payé puis refusé au contrôle est rendu au 
   expect(rendreAuClient(u.id, { task: "video_generation", projectId, usageKey: "plan-refuse" }, "plan refusé")).toBe(0);
   expect(all<any>("SELECT type FROM ledger WHERE user_id=? AND type IN ('refund','studio')", key).map((r) => r.type).sort()).toEqual(["refund", "studio"]);
 });
+
+it("rapport 09, point 6 : brouillon Seedance 2.5 en 480p, puis version finale tirée du brouillon validé", async () => {
+  const { directDraftTask } = await import("@/lib/ai/media-providers");
+  const u = await createUser(`direct-draft-${crypto.randomUUID()}@test.invalid`, "motdepasse-test", "Fixture"), projectId = seedImageFixture(u.id, "hightech");
+  grantProjectPlan(projectId, "dominer");
+  const model = "dreamina-seedance-2-5-260628";
+  setSetting("provider.byteplus.apiKey", "fixture-byteplus-not-secret");
+  setJsonSetting("ai.media.models", { [`byteplus:${model}`]: { confirmedAt: Date.now(), enabled: true } });
+  const posted: any[] = [];
+  vi.stubGlobal("fetch", vi.fn(async (input: any, init: any) => {
+    if (String(input).includes("fixture.invalid")) return new Response(Buffer.from("CLIP"));
+    if (init?.method === "POST") { posted.push(JSON.parse(init.body)); return Response.json({ id: `t-${posted.length}` }); }
+    return Response.json({ status: "succeeded", content: { video_url: "https://fixture.invalid/clip.mp4" } });
+  }));
+  const image = await sharp({ create: { width: 64, height: 96, channels: 3, background: "#41392a" } }).jpeg().toBuffer();
+  const go = (usageKey: string, extra: Record<string, unknown>) => runForUser(u.id, () => directClip({ userId: u.id, projectId, usageKey }, { provider: "byteplus", image, prompt: "x", aspect: "9:16", seconds: 5, model, ...extra }), "normal", projectId);
+  await go("brouillon", { draft: true });
+  expect(posted[0]).toMatchObject({ draft: true, resolution: "480p" });
+  const draftId = directDraftTask(u.id, projectId, "brouillon");
+  expect(draftId).toBe("t-1");
+  await go("finale", { fromDraftTaskId: draftId });
+  expect(posted[1].content).toEqual([{ type: "draft_task", draft_task: { id: "t-1" } }]);
+  expect(posted[1].draft).toBeUndefined();
+});

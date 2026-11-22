@@ -26,7 +26,7 @@ import { emitMediaProgress, openaiBackground, openaiClient, openaiImage, openaiS
 import {photoEditRequest,type PhotoEditInput} from "../image-v2/edit-request";
 export {photoEditRequest,editPhotoPrompt,type PhotoEditInput} from "../image-v2/edit-request";
 import sharp from "sharp";
-import { claimOperationRecovery, cleDeRelance, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
+import { claimOperationRecovery, cleDeRelance, EUR, existingOperation, operationReceipt, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
 import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
@@ -1450,6 +1450,15 @@ async function directClipImpl(ctx: Ctx, input: { provider: DirectVideoProvider; 
   throw new Error(L(`Délai dépassé chez ${mm.label} : la tâche continue, un nouvel essai reprendra son suivi.`, `Timed out at ${mm.label}: the task continues, a retry will resume tracking it.`));
 }
 export const directClip = traced("video_generation", directClipImpl);
+
+/**
+ * Brouillon avant la version finale (rapport 09, point 6 ; Seedance 2.5 « Draft », 480p au prix du 480p) : après un
+ * `directClip` avec `draft: true`, l'identifiant de la tâche du brouillon, à repasser en `fromDraftTaskId` pour tirer la
+ * version finale du brouillon validé (sans regénérer). null : aucun brouillon payé sous cette clé.
+ */
+export function directDraftTask(userId: string, projectId: string, usageKey: string): string | null {
+  return operationReceipt<{ taskId?: string }>(userId, { task: "video_generation", projectId, usageKey })?.taskId ?? null;
+}
 
 /**
  * Plan vidéo IA chez le fournisseur choisi, avec relais vers le secours compatible si le principal échoue sans coût.

@@ -389,6 +389,12 @@ export function requestHash(value: unknown): string {
   return createHash("sha256").update(JSON.stringify(normalize(value))).digest("hex");
 }
 
+/** Reçu du fournisseur gardé pour une opération (identifiant de tâche…) ; null : aucun. Lecture seule. */
+export function operationReceipt<T = unknown>(user: string, meta: Pick<ReservationMeta, "task" | "projectId" | "usageKey">): T | null {
+  const key = operationKey(user, meta);
+  const r = key ? one<{ provider_receipt: string | null }>("SELECT provider_receipt FROM ai_reservations WHERE operation_key=? AND status!='released'", key) : null;
+  try { return r?.provider_receipt ? (JSON.parse(r.provider_receipt) as T) : null; } catch { return null; }
+}
 /** Diagnostic seulement (rejeu sur une copie, STUDIO_REJEU_ANCIENNES=1) : la réponse déjà payée sous cette clé, même si la demande a changé. */
 export function reponseDejaPayee(user: string, meta: Pick<ReservationMeta, "task" | "projectId" | "usageKey">): string | null {
   const key = operationKey(user, meta);
