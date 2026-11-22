@@ -282,7 +282,7 @@ Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches
   - formats dessinés directement.
 - Estimation (calculs, à mesurer) : environ 22 € → environ 13 € par projet.
 - En attente de lui :
-  - laisser le différé du site attendre plus longtemps (environ −1,30 €, site livré plus tard) ;
+  - laisser le différé du site attendre plus longtemps : REFUSÉ « pas pour le moment » (22 novembre) ; ne pas le reproposer avant qu’il en reparle ;
   - l'essai d'un centime pour le différé des images ;
   - relancer Nadia pour mesurer en vrai.
 
