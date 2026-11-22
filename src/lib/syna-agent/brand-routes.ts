@@ -18,6 +18,7 @@ import { NAME_EXAMPLES } from "./brand-references";
 import { COLOR_RULES, IdentitySchema, bodyFontOk, fontFamily, hueGap, normText, oklch, paletteIssues, refusedColorIssues, wordCount, type Identity } from "./identities";
 import { FIELD_LABEL, START_FIELDS, type Journey } from "./journey";
 import { ligneeDe } from "./variete-marques";
+import type { WordingRule } from "../client-wording";
 
 export const ROUTE_KEYS = ["A", "B", "C", "D"] as const;
 export type RouteKey = (typeof ROUTE_KEYS)[number];
@@ -107,6 +108,14 @@ export function clientFacts(j: Journey): string {
 }
 
 /** Textes d'une route que le client lira comme des affirmations de SA marque. */
+/** Les mots corrigés par le client (« X, jamais Y ») retrouvés dans les textes d'une route, en mot entier. */
+export function wordingSlips(x: Route, wording: WordingRule[]): WordingRule[] {
+  if (!wording.length) return [];
+  const texte = [x.name, ...routeTexts(x)].join("\n");
+  const esc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return wording.filter((w) => w.avoid.trim() && new RegExp(`(?<![\\p{L}])${esc(w.avoid.trim())}(?![\\p{L}])`, "iu").test(texte));
+}
+
 export function routeTexts(x: Route): string[] {
   const b = x.board;
   return [
@@ -200,7 +209,7 @@ export function safeWordmark(w: Wordmark, name: string): Wordmark {
  * Contrôles gratuits (sans IA) d'une série de routes : ce qui se mesure. Le reste (talent du nom, justesse de l'idée,
  * force des phrases) appartient au directeur de création de la chaîne.
  */
-export function routeIssues(list: Route[], j: Journey, count: number): string[] {
+export function routeIssues(list: Route[], j: Journey, count: number, /** Les mots corrigés par le client (« X, jamais Y »). */ wording: WordingRule[] = []): string[] {
   const issues: string[] = [];
   const keys = routeKeys(count);
   const keptName = j.keep.includes("nom") ? (j.keptValues?.name || j.imported[0]?.name || "") : "";
@@ -229,6 +238,9 @@ export function routeIssues(list: Route[], j: Journey, count: number): string[] 
     if (services && !SERVICE_OBJECTS.includes(b.object.kind)) issues.push(`${tag} : une entreprise de services ne se montre pas sur un emballage (« ${b.object.kind} ») ; prends la carte de visite, l'enseigne, le véhicule ou la tenue.`);
     if (b.lines.some((l) => normText(l) === normText(x.slogan))) issues.push(`${tag} : une des phrases de la marque répète la signature.`);
     if (new Set(b.posts.map((p) => normText(p.text))).size < b.posts.length) issues.push(`${tag} : deux publications disent la même chose.`);
+    // Un mot que le client a corrigé une fois ne revient jamais (vocabulaire du client, CLAUDE.md) : vu par le Studio,
+    // pas laissé au seul directeur (audit du 22 novembre 2026, 2.8).
+    for (const w of wordingSlips(x, wording)) issues.push(`${tag} : « ${w.avoid} » est un mot que le client a corrigé ; écris « ${w.use} » à la place, partout.`);
     const claims = unprovenClaims(x, facts);
     if (claims.length) issues.push(`${tag} : ${claims.map((c) => `« ${c} »`).join(", ")} ${claims.length > 1 ? "ne viennent pas" : "ne vient pas"} de la fiche du client ; retire-${claims.length > 1 ? "les" : "le"}, ou annonce-${claims.length > 1 ? "les" : "le"} dans « ce qui reste à prouver ».`);
   }

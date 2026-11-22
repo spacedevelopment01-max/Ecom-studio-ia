@@ -360,7 +360,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect((await chain(u, {}, { review: () => ({ routes: [], series: "" }) })).log.ids).not.toContain("strategy-2");
   });
 
-  it("le contrôle gratuit du Studio nourrit la reprise : un chiffre que le client n'a pas donné est corrigé", async () => {
+  it("un chiffre que le client n'a pas donné : annoncé par le Studio dans « ce qui reste à prouver », sans reprise payée (audit 2.8)", async () => {
     const t = await thread();
     const withNumber = (prompt: string) => (/Fond de page : sombre/.test(prompt) ? { lines: ["Prête en 4 h au frais.", "La nuit porte fruit."] } : {});
     const log = newLog();
@@ -368,11 +368,14 @@ describe("SINA — chaîne de création de la marque", async () => {
     const base = fakeAi(log, { review: () => ({ routes: [], series: "" }), recheck: { routes: [{ key: "A", better: true, remaining: [], score: 8 }] } })();
     C.brandChainDeps.ai = (() => ({ ...base, ask: async (id: string, c: any) => (c.kind === "direction" && /Fond de page : sombre/.test(c.prompt) ? c.schema.parse(draftOf(route("A"), "Bain de Minuit", withNumber(c.prompt))) : base.ask(id, c)) })) as any;
     try { await fr(() => C.runSinaBrandJob(job)); } finally { C.brandChainDeps.ai = undefined; }
-    expect(log.ids).toContain("fix-1-A");
-    expect(log.prompts["fix-1-A"]).toMatch(/« 4 h » ne vient pas de la fiche du client/);
-    const j = J.journeyOf(t.cid);
-    expect(j.identities!.list[0].board!.lines).toEqual(route("A").board.lines);
-    expect(j.identities!.corrected?.join(" ")).toMatch(/4 h/);
+    // Avant : le contrôle partait au directeur, puis à une reprise payée de la planche entière. Le Studio l'annonce
+    // lui-même (ce que la règle permet) ; le directeur ne juge que le talent.
+    expect(log.ids).not.toContain("fix-1-A");
+    expect(log.prompts["review-1"]).not.toMatch(/« 4 h » ne vient pas de la fiche du client/);
+    const j = J.journeyOf(t.cid), a = j.identities!.list[0];
+    expect(a.board!.lines).toContain("Prête en 4 h au frais.");
+    expect(a.board!.toProve.join(" ")).toMatch(/« 4 h » : il ne vient pas de ta fiche ; à confirmer avant de l'utiliser\./);
+    expect(j.identities!.corrected?.join(" ") ?? "").not.toMatch(/4 h/);
     expect(j.identities!.issues).toEqual([]);
   });
 
@@ -431,7 +434,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(site({ opening: open, title: "ailleurs" })).toBe(false);
   });
 
-  it("manière d'ouvrir le haut du site : une ouverture recopiée ou oubliée par la direction est reprise avant d'être montrée", async () => {
+  it("manière d'ouvrir le haut du site : une ouverture recopiée ou oubliée par la direction est corrigée par le Studio, sans reprise payée (audit 2.8)", async () => {
     const t = await thread();
     const log = newLog();
     const job = jobCtx(t.user, t.pid, { projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, images: false });
@@ -444,20 +447,20 @@ describe("SINA — chaîne de création de la marque", async () => {
       return base.ask(id, c);
     } })) as any;
     try { await fr(() => C.runSinaBrandJob(job)); } finally { C.brandChainDeps.ai = undefined; }
-    // Le directeur de création reçoit les deux points ; chaque identité fautive est reprise avec le sien.
-    expect(log.prompts["review-1"]).toMatch(/# Points relevés par le contrôle du Studio\n[\s\S]*- Identité B : la manière d'ouvrir le haut de son site \(board\.site\.layout\.opening\) n'est pas choisie[\s\S]*- Identité C : le haut de son site s'ouvre de la même manière que celui de A/);
-    expect(log.ids.filter((i) => i.startsWith("fix"))).toEqual(["fix-1-B", "fix-1-C"]);
-    expect(log.prompts["fix-1-B"]).toMatch(/la manière d'ouvrir le haut de son site \(board\.site\.layout\.opening\) n'est pas choisie/);
-    expect(log.prompts["fix-1-C"]).toMatch(/le haut de son site s'ouvre de la même manière que celui de A ; choisis une autre manière d'ouvrir/);
-    expect(log.prompts["fix-1-B"]).not.toMatch(/de la même manière que celui de A/);
+    // Le Studio prend pour B et C la première manière d'ouvrir libre de la liste de la consigne : le directeur ne reçoit
+    // plus ces points, et aucune reprise n'est payée pour eux.
+    expect(log.prompts["review-1"]).not.toMatch(/la manière d'ouvrir le haut de son site|s'ouvre de la même manière/);
+    expect(log.ids.filter((i) => i.startsWith("fix"))).toEqual([]);
     // La consigne de la planche demande cette manière d'ouvrir, choisie pour la marque et dite en une courte phrase.
     expect(log.systems["direction-1-A"]).toMatch(/layout\.opening : la MANIÈRE D'OUVRIR la page, choisie pour CETTE marque d'après sa planche \([^)]+\), en une courte phrase/);
     expect(log.systems["direction-1-A"]).toMatch(/Deux identités d'une même série n'ont JAMAIS la même manière d'ouvrir\./);
     expect(log.systems["direction-1-A"]).not.toMatch(/layout : la COMPOSITION/);
-    // Reprise de C : elle sait comment A ouvre son site, pour s'en écarter.
-    expect(log.prompts["fix-1-C"]).toContain(`manière d'ouvrir son site : ${route("A").board.site.layout!.opening} (la tienne doit en différer)`);
     const j = J.journeyOf(t.cid);
-    expect(j.identities!.list.map((x) => x.board!.site.layout)).toEqual([route("A").board.site.layout, route("B").board.site.layout, route("C").board.site.layout]);
+    const { MANIERES_D_OUVRIR } = await import("@/lib/syna-agent/brand-corrections");
+    const [la, lb, lc] = j.identities!.list.map((x) => x.board!.site.layout?.opening);
+    expect(la).toBe(route("A").board.site.layout!.opening);
+    for (const o of [lb, lc]) expect(MANIERES_D_OUVRIR.produits as readonly string[]).toContain(o);
+    expect(new Set([la, lb, lc]).size).toBe(3);
     expect(C.layoutIssues(j.identities!.list as any)).toEqual([]);
     expect(j.identities!.issues).toEqual([]);
   });

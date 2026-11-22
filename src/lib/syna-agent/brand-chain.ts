@@ -39,6 +39,8 @@ import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, r
 import { IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 import { marquesRecentes, varierIdentites, varieteMarquesBrief } from "./variete-marques";
+import { annonceLesChiffres, corrigeCeQuiSeMesure } from "./brand-corrections";
+import { loadWordingRules } from "../client-wording";
 
 export const SINA_BRAND_JOB = "syna.brand";
 
@@ -779,7 +781,12 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // avant les images (`variete-marques.ts`). Le client qui garde tout sauf le nom garde aussi ses polices et ses couleurs.
   const recent = await ctx.step("brand:recent", async () => marquesRecentes(p.id));
   const recentBlock = namesOnly ? "" : varieteMarquesBrief(recent);
-  const vary = (x: Route, others: Route[]): Route => {
+  const vary = (brut: Route, others: Route[]): Route => {
+    // Ce qui se mesure est corrigé par le code avant le directeur (audit du 22 novembre 2026, 2.8) : il ne juge plus
+    // que le talent, et aucune reprise payée ne part pour un blanc pas pur ou un contraste trop faible.
+    const corrige = namesOnly ? annonceLesChiffres(brut, j) : corrigeCeQuiSeMesure(brut, others, j, kind);
+    notes.push(...corrige.changes.map((c) => `corrigé par le Studio : ${c}`));
+    const x = corrige.route;
     if (namesOnly) return x;
     const r = varierIdentites([...others, x], recent, { modifiables: [x.key], j });
     notes.push(...r.changes);
@@ -820,7 +827,8 @@ export async function runSinaBrandJob(ctx: JobContext) {
     }
     if (readerIssues.length) notes.push(`lecteur qui ne sait rien : ${readerIssues.length} phrase(s) à reprendre`);
   } catch (e) { if (e instanceof CostCapReached) throw e; notes.push(`lecture des phrases impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
-  const firstIssues = [...routeIssues(list, j, keys.length), ...layoutIssues(list), ...readerIssues];
+  const wording = loadWordingRules(p.id);
+  const firstIssues = [...routeIssues(list, j, keys.length, wording), ...layoutIssues(list), ...readerIssues];
 
   // Le directeur de création relit, exige une reprise, puis relit la reprise. Plafond atteint : dit, jamais caché.
   const remaining: string[] = [];
@@ -937,7 +945,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const doubt = doubts.get(normText(x.name));
     if (doubt) remaining.push(L(`Identité ${x.key} : je ne suis pas convaincue par le nom « ${x.name} » (${doubt}). Je te le montre faute de mieux : dis-moi si tu veux que je reparte en chercher.`, `Identity ${x.key}: I am not convinced by the name "${x.name}" (${doubt}).`));
   }
-  const issues = [...new Set([...routeIssues(list, j, keys.length), ...remaining])];
+  const issues = [...new Set([...routeIssues(list, j, keys.length, wording), ...remaining])];
   updateJourney(a.conversationId, (x) => {
     x.identities = {
       list, issues, comparison: series, at: Date.now(), round, chainJobId: ctx.job.id,
