@@ -1,7 +1,7 @@
 /**
  * Le suivi dans la durée (recherche 08, points 4 et 5), sans aucun appel réel :
- *  - l'assistante du site se présente comme une IA, ne répond qu'avec la fiche du client, transmet le reste ; éteinte par
- *    défaut (aucune bulle, adresse publique en 404) ;
+ *  - l'assistante du site se présente comme une IA, ne répond qu'avec la fiche du client, transmet le reste ; allumée par
+ *    défaut depuis la décision du 22 novembre 2026 (« 0 » dans le réglage l'éteint : aucune bulle, adresse publique en 404) ;
  *  - les demandes triées en quatre cases (ou « à regarder ») et résumées en cinq champs, par le code ;
  *  - les liens d'un geste : SMS selon le téléphone, WhatsApp, e-mail ; sur ordinateur, pas de SMS.
  */
@@ -13,14 +13,19 @@ describe("suivi : l'assistante du site et la boîte des demandes", async () => {
   const A = await import("@/lib/suivi/assistante");
   const D = await import("@/lib/suivi/demandes");
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
-  afterEach(() => { setSetting("suivi.assistante", null); setSetting("suivi.envoiGeste", null); delete A.assistanteDeps.ecrire; delete A.assistanteDeps.fiche; });
+  afterEach(() => { setSetting("suivi.assistante", null); setSetting("suivi.envoiGeste", null); setSetting("suivi.demandes", null); delete A.assistanteDeps.ecrire; delete A.assistanteDeps.fiche; });
 
-  it("éteinte par défaut : aucune bulle posée sur le site, aucune réponse", async () => {
+  // Décision du 22 novembre 2026 : l'assistante est ALLUMÉE par défaut (ce test vérifiait « éteinte par défaut ») ;
+  // « 0 » dans le réglage l'éteint : aucune bulle, aucune réponse.
+  it("allumée par défaut : la bulle est posée ; « 0 » dans le réglage l'éteint", async () => {
     const { avecAssistante } = await import("@/lib/sites/serve");
     const page = "<html><body><p>x</p></body></html>";
+    setSetting("suivi.assistante", "0");
     expect(avecAssistante(page, "p")).toBe(page);
     await expect(fr(() => A.repondreVisiteur({ id: "p", userId: "u", name: "N" }, "Bonjour"))).rejects.toThrow(/éteinte/);
-    setSetting("suivi.assistante", "1");
+    setSetting("suivi.assistante", "false");
+    expect(avecAssistante(page, "p")).toBe(page);
+    setSetting("suivi.assistante", null);
     const avec = await fr(() => avecAssistante(page, "p"));
     expect(avec).toMatch(/data-assistante-ia/);
     expect(avec).toMatch(/Assistante IA/);
@@ -43,7 +48,6 @@ describe("suivi : l'assistante du site et la boîte des demandes", async () => {
   });
 
   it("une réponse hors fiche est remplacée par la transmission et le formulaire ; une réponse juste passe ; sans fiche, aucun appel ; le plafond transmet", async () => {
-    setSetting("suivi.assistante", "1");
     const p = { id: `assist-${Math.random()}`, userId: "u", name: "Atelier" };
     let calls = 0, reponse = "Oui, comptez 12 € et c'est livré demain.";
     A.assistanteDeps.fiche = () => [{ sujet: "Table en chêne", texte: "prix : 890,00 €" }];
@@ -96,12 +100,51 @@ describe("suivi : l'assistante du site et la boîte des demandes", async () => {
       expect(D.liensEnvoi("x".repeat(D.LONGUEUR_MAX_REPONSE + 1), { appareil: "iphone" }).trop_long).toBe(true);
     });
   });
-  it("chaque fonction du suivi a son réglage, éteint par défaut, que seule l'administration peut allumer", async () => {
+  // Décision du 22 novembre 2026 (ce test vérifiait « tout éteint par défaut ») : cinq fonctions allumées par défaut,
+  // trois éteintes (liens SMS et WhatsApp, devis, carnet) ; chacune garde son réglage, que seule l'administration écrit.
+  it("chaque fonction du suivi a son réglage ; cinq allumées par défaut, SMS/WhatsApp, devis et carnet éteints", async () => {
     const R = await import("@/lib/suivi/reglages");
     const src = (await import("node:fs")).readFileSync("src/app/api/admin/settings/route.ts", "utf8");
+    const allumees = ["assistante", "demandes", "studioPhoto", "ficheGoogle", "brasDroit"];
     for (const k of Object.keys(R.FONCTIONS_DU_SUIVI) as (keyof typeof R.FONCTIONS_DU_SUIVI)[]) {
-      expect(R.suiviAllume(k)).toBe(false);
+      expect(R.suiviAllume(k)).toBe(allumees.includes(k));
       expect(src).toContain(k);
+      setSetting(`suivi.${k}`, "0"); expect(R.suiviAllume(k)).toBe(false);
+      setSetting(`suivi.${k}`, "false"); expect(R.suiviAllume(k)).toBe(false);
+      setSetting(`suivi.${k}`, "1"); expect(R.suiviAllume(k)).toBe(true);
+      setSetting(`suivi.${k}`, "true"); expect(R.suiviAllume(k)).toBe(true);
+      setSetting(`suivi.${k}`, null);
     }
+    expect(R.suiviAllume("envoiGeste")).toBe(false);
+    expect(R.suiviAllume("devis")).toBe(false);
+    expect(R.suiviAllume("carnet")).toBe(false);
+  });
+
+  it("aucun réglage du suivi n'est écrit par le code (seule l'administration les écrit)", async () => {
+    const fs = await import("node:fs"), path = await import("node:path");
+    const fichiers: string[] = [];
+    const walk = (d: string) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) walk(f); else if (/\.(ts|tsx)$/.test(e.name)) fichiers.push(f); } };
+    walk("src"); walk("worker");
+    for (const f of fichiers) expect(fs.readFileSync(f, "utf8"), f).not.toMatch(/setSetting\(\s*[`"']suivi\./);
+  });
+
+  it("la boîte des demandes : début de réponse au prénom, l'e-mail et « copier » ; SMS et WhatsApp seulement si l'administration les allume", async () => {
+    await fr(() => {
+      expect(D.debutReponse({ name: "Julie Martin", message: "x" })).toBe("Bonjour Julie,\n\n");
+      expect(D.debutReponse({ message: "x" })).toBe("Bonjour,\n\n");
+    });
+    const L2 = await import("@/lib/suivi/liens-envoi");
+    expect(L2.lienEmail("j@m.fr", "Votre demande", "Bonjour Julie")).toBe(`mailto:j@m.fr?subject=Votre%20demande&body=${encodeURIComponent("Bonjour Julie")}`);
+    expect(L2.lienEmail("pas-une-adresse", "s", "t")).toBeNull();
+    const fs = await import("node:fs");
+    const route = fs.readFileSync("src/app/api/projects/[id]/site-publication/route.ts", "utf8");
+    expect(route).toMatch(/suiviAllume\("demandes"\) \? siteRequests/);
+    expect(route).toMatch(/envoiGeste: suiviAllume\("envoiGeste"\)/);
+    const ecran = fs.readFileSync("src/components/studio/site-publication.tsx", "utf8");
+    expect(ecran).toMatch(/data-geste="email"/);
+    expect(ecran).toMatch(/data-geste="copier"/);
+    expect(ecran).toMatch(/envoiGeste && liens\.sms/);
+    expect(ecran).toMatch(/envoiGeste && liens\.whatsapp/);
+    expect(ecran).toMatch(/data-assistante-studio/);
   });
 });

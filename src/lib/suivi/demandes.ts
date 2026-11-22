@@ -7,11 +7,12 @@
  *  - les liens pour envoyer la réponse prête d'un geste (4.3) : SMS écrit selon le téléphone (`&body=` sur iPhone,
  *    `?body=` sur Android), WhatsApp (`wa.me`, numéro international sans « + »), e-mail ; sur ordinateur, seulement
  *    « copier », WhatsApp et e-mail (le lien SMS n'y fait rien). Rien ne part sans l'appui du client.
- * Pas encore vérifié sur de vrais téléphones de 2026 (essai gratuit à faire par le propriétaire sur un iPhone et un
- * Android) : le texte prérempli d'un SMS n'est pas garanti par Apple. ÉTEINT tant que le propriétaire n'a pas dit oui
- * (réglage `suivi.envoiGeste`).
+ * Le tri, le résumé, l'e-mail et « copier » sont ALLUMÉS (réglage `suivi.demandes`, décision du 22 novembre 2026). Les
+ * liens SMS et WhatsApp restent ÉTEINTS (réglage `suivi.envoiGeste`) tant que l'essai gratuit sur un vrai iPhone et un
+ * vrai Android de 2026 n'est pas fait : le texte prérempli d'un SMS n'est pas garanti par Apple.
  */
 import { L } from "../i18n-server";
+import { liensEnvoiBruts, type Appareil, type Liens } from "./liens-envoi";
 
 export type Case = "devis" | "rendez-vous" | "question" | "urgence" | "a-regarder";
 export type Tri = { case: Case; raison: string };
@@ -53,35 +54,15 @@ export function resumerDemande(fields: Record<string, string>): Resume {
   };
 }
 
-export type Appareil = "iphone" | "android" | "ordinateur";
-/** L'appareil du client, lu dans l'en-tête de son navigateur (seulement pour écrire le bon lien SMS). */
-export function appareilDe(userAgent: string | null | undefined): Appareil {
-  const ua = String(userAgent ?? "");
-  if (/iPhone|iPad|iPod/i.test(ua)) return "iphone";
-  if (/Android/i.test(ua)) return "android";
-  return "ordinateur";
-}
-
-/** Un numéro français ou international, écrit pour WhatsApp : chiffres seulement, indicatif sans « + » ni 0 de tête. */
-export function numeroInternational(tel: string): string | null {
-  let d = tel.replace(/[^\d+]/g, "");
-  if (d.startsWith("+")) d = d.slice(1);
-  else if (d.startsWith("00")) d = d.slice(2);
-  else if (/^0[1-9]\d{8}$/.test(d)) d = `33${d.slice(1)}`;
-  return /^[1-9]\d{7,14}$/.test(d) ? d : null;
-}
-
-/** Une réponse prête tient en quelques lignes, pour passer dans un lien (un texte trop long peut être coupé). */
-export const LONGUEUR_MAX_REPONSE = 600;
-
-export type Liens = { copier: string; sms: string | null; whatsapp: string | null; email: string | null; trop_long: boolean };
+export { appareilDe, numeroInternational, LONGUEUR_MAX_REPONSE, type Appareil, type Liens } from "./liens-envoi";
 
 /** Les liens d'un geste pour une réponse prête. Le texte est encodé ; rien ne part sans que le client appuie. */
 export function liensEnvoi(texte: string, a: { telephone?: string | null; email?: string | null; sujet?: string; appareil: Appareil }): Liens {
-  const t = texte.trim(), enc = encodeURIComponent(t);
-  const num = a.telephone ? numeroInternational(a.telephone) : null;
-  const sms = a.appareil === "ordinateur" || !a.telephone ? null
-    : a.appareil === "iphone" ? `sms:${a.telephone.replace(/[^\d+]/g, "")}&body=${enc}` : `sms:${a.telephone.replace(/[^\d+]/g, "")}?body=${enc}`;
-  const email = a.email && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(a.email) ? `mailto:${a.email}?subject=${encodeURIComponent(a.sujet ?? L("Votre demande", "Your request"))}&body=${enc}` : null;
-  return { copier: t, sms, whatsapp: num ? `https://wa.me/${num}?text=${enc}` : null, email, trop_long: t.length > LONGUEUR_MAX_REPONSE };
+  return liensEnvoiBruts(texte, { ...a, sujet: a.sujet ?? L("Votre demande", "Your request") });
+}
+
+/** Le début de réponse posé par le code (aucun appel à l'IA) : la salutation, au prénom quand il est donné. Le client écrit la suite. */
+export function debutReponse(fields: Record<string, string>): string {
+  const prenom = (pick(fields, /^(prenom|first_?name)$/i)[0] ?? pick(fields, /^(name|nom|full_name)$/i)[0]?.split(/\s+/)[0] ?? "").trim();
+  return L(prenom ? `Bonjour ${prenom},\n\n` : "Bonjour,\n\n", prenom ? `Hello ${prenom},\n\n` : "Hello,\n\n");
 }

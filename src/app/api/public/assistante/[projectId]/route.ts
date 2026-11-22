@@ -1,6 +1,6 @@
 /**
- * L'adresse publique de l'assistante du site (recherche 08, point 4). Éteinte (404) tant que le propriétaire n'a pas dit
- * oui (réglage `suivi.assistante`), tant que le projet n'a pas de forfait actif (aucun appel à l'IA sans abonnement) et
+ * L'adresse publique de l'assistante du site (recherche 08, point 4). Éteinte (404) si l'administration a écrit « 0 »
+ * dans le réglage `suivi.assistante` (allumée par défaut depuis le 22 novembre 2026), tant que le projet n'a pas de forfait actif (aucun appel à l'IA sans abonnement) et
  * tant que son site n'est pas publié. Débit limité par adresse IP ; aucun cookie.
  */
 import { one } from "@/lib/db";

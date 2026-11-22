@@ -12,9 +12,9 @@
  * remplacer par la transmission (« je pose la question à … »), et le visiteur reçoit le formulaire. Au-delà du plafond du
  * jour (dans le budget d'IA du client), le formulaire aussi : jamais un visiteur sans réponse.
  *
- * ÉTEINTE tant que le propriétaire n'a pas dit oui (réglage `suivi.assistante`) : l'adresse publique répond 404 et aucun
- * site ne reçoit la bulle. Coût estimé (non mesuré) : de l'ordre d'un centime par réponse avec le modèle le plus fort à
- * effort faible ; le plafond par jour est à fixer avec lui.
+ * ALLUMÉE par défaut (décision du 22 novembre 2026) ; « 0 » dans le réglage `suivi.assistante` l'éteint : l'adresse
+ * publique répond alors 404 et aucun site ne reçoit la bulle. Coût estimé (non mesuré) : de l'ordre d'un centime par
+ * réponse avec le modèle le plus fort à effort faible ; 40 réponses par jour et par site au plus.
  */
 import { z } from "zod";
 import { all, id, now, one, run } from "../db";
@@ -84,7 +84,7 @@ function ensure() {
 
 export type Echange = { reponse: string; transmettre: boolean; formulaire: boolean; badge: string; raison?: string };
 
-/** Une question d'un visiteur. Éteinte : refusée. Plafond atteint : le formulaire. Réponse hors fiche : la transmission. */
+/** Une question d'un visiteur. Éteinte (réglage à « 0 ») : refusée. Plafond atteint : le formulaire. Réponse hors fiche : la transmission. */
 export async function repondreVisiteur(p: { id: string; userId: string; name: string }, question: string, o: { prenom?: string | null; at?: number } = {}): Promise<Echange> {
   if (!suiviAllume("assistante")) throw new Error("assistante éteinte");
   ensure();

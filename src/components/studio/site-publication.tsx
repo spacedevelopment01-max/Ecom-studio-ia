@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Badge, Button, Modal, formatDate, useApi, useToast } from "../ui";
 import { useT } from "../i18n";
 import { fieldLabel } from "@/lib/sites/field-label";
+import { appareilDe, liensEnvoiBruts } from "@/lib/suivi/liens-envoi";
 
 type Overview = {
   configured: boolean;
@@ -21,15 +22,54 @@ type Overview = {
   diagnostics?: { ok: boolean; checkedAt: number; checks: { key: string; ok: boolean; detail: string }[] };
   history: { id: string; publication_id: string | null; action: string; at: number }[];
   addresses: { hostname: string; kind: "studio" | "custom"; status: string; checkedAt: number | null; checkError: string | null; dns: { txt: { name: string; value: string | null }; cname: { name: string; value: string } | null } | null }[];
-  requests: { id: string; hostname: string; page: string; fields: Record<string, string>; email: string | null; created_at: number; read_at: number | null; handled_at: number | null; kind: "contact" | "devis"; notification: NotificationState; notification_error: string | null }[];
+  requests: { id: string; hostname: string; page: string; fields: Record<string, string>; email: string | null; created_at: number; read_at: number | null; handled_at: number | null; kind: "contact" | "devis"; notification: NotificationState; notification_error: string | null; tri?: { case: CaseDemande; raison: string }; resume?: { qui: string; quoi: string; ou: string; quand: string; coordonnees: string }; debutReponse?: string }[];
+  /** Les liens SMS et WhatsApp (réglage « suivi.envoiGeste », éteint par défaut). */
+  envoiGeste?: boolean;
+  /** L'assistante IA du site : les échanges du jour (réglage « suivi.assistante », allumée par défaut). */
+  assistante?: { plafond: number; aujourdhui: { question: string; reponse: string; transmis: number; created_at: number }[] } | null;
   notifications: { smtp: boolean; recipients: { id: string; email: string; source: "account" | "manual"; status: "verified" | "pending" }[] };
   policies: { handle: string; title: string; text: string }[];
   reasons?: string[];
 };
 
+type CaseDemande = "devis" | "rendez-vous" | "question" | "urgence" | "a-regarder";
 type NotificationState = "sent" | "pending" | "retrying" | "smtp_not_configured" | "failed" | "partial" | "no_recipient" | "before_email";
 const NAME_KEYS = ["name", "nom", "full_name"];
 const requestName = (f: Record<string, string>) => NAME_KEYS.map((k) => f[k]).find(Boolean) || [f.first_name || f.firstName, f.last_name || f.lastName].filter(Boolean).join(" ") || f.email || "";
+
+/**
+ * La demande triée et résumée par le code (recherche 08, points 4 et 5), et la réponse envoyée d'un geste : l'e-mail
+ * (texte prérempli) et « copier ». Les liens SMS et WhatsApp ne sont montrés que si l'administration les a allumés.
+ * Rien ne part sans l'appui du client.
+ */
+function DemandeTriee({ r, envoiGeste }: { r: Overview["requests"][number]; envoiGeste: boolean }) {
+  const t = useT();
+  const toast = useToast();
+  const [texte, setTexte] = useState(r.debutReponse ?? "");
+  if (!r.tri || !r.resume) return null;
+  const cases: Record<CaseDemande, string> = { devis: t("Devis", "Quote"), "rendez-vous": t("Rendez-vous", "Appointment"), question: t("Question", "Question"), urgence: t("Urgence", "Urgent"), "a-regarder": t("À regarder", "To look at") };
+  const tel = Object.entries(r.fields).find(([k, v]) => /^(phone|telephone|tel|portable|mobile)$/i.test(k) && v.trim())?.[1] ?? null;
+  const liens = liensEnvoiBruts(texte, { email: r.email ?? r.fields.email ?? null, telephone: tel, sujet: t("Votre demande", "Your request"), appareil: appareilDe(typeof navigator === "undefined" ? "" : navigator.userAgent) });
+  const champs: [string, string][] = [[t("Qui", "Who"), r.resume.qui], [t("Quoi", "What"), r.resume.quoi], [t("Où", "Where"), r.resume.ou], [t("Quand", "When"), r.resume.quand], [t("Coordonnées", "Contact"), r.resume.coordonnees]];
+  const lien = "inline-flex h-8 items-center rounded-full border border-line px-3 text-[13px]";
+  return (
+    <div className="grid gap-2 rounded-xl bg-card p-3" data-demande-triee data-case={r.tri.case}>
+      <p className="text-sm"><Badge tone={r.tri.case === "urgence" ? "bad" : r.tri.case === "a-regarder" ? "warn" : "info"}>{cases[r.tri.case]}</Badge> <span className="text-xs text-muted">{r.tri.raison}</span></p>
+      <dl className="grid gap-0.5 text-sm" data-demande-resume>{champs.map(([k, v]) => <div key={k} className="flex gap-2"><dt className="w-24 shrink-0 text-muted">{k}</dt><dd className="min-w-0 break-words">{v}</dd></div>)}</dl>
+      <label className="grid gap-1 text-sm">
+        <span className="text-muted">{t("Ta réponse", "Your reply")}</span>
+        <textarea className="min-h-24 rounded-xl border border-line bg-card p-2 text-sm" value={texte} onChange={(e) => setTexte(e.target.value)} data-reponse-texte />
+      </label>
+      {liens.trop_long && <p className="text-xs text-warn">{t("Réponse longue : certaines applications peuvent la couper. Préfère l'e-mail ou « Copier ».", "Long reply: some apps may cut it. Prefer email or “Copy”.")}</p>}
+      <div className="flex flex-wrap gap-2" data-reponse-gestes>
+        {liens.email && <a className={lien} href={liens.email} data-geste="email">{t("Envoyer par e-mail", "Send by email")}</a>}
+        <Button size="sm" variant="secondary" data-geste="copier" onClick={() => { navigator.clipboard?.writeText(liens.copier).then(() => toast("ok", t("Réponse copiée.", "Reply copied.")), () => toast("bad", t("Copie impossible : sélectionne le texte à la main.", "Copy failed: select the text by hand."))); }}>{t("Copier", "Copy")}</Button>
+        {envoiGeste && liens.sms && <a className={lien} href={liens.sms} data-geste="sms">{t("Envoyer par SMS", "Send by text")}</a>}
+        {envoiGeste && liens.whatsapp && <a className={lien} href={liens.whatsapp} target="_blank" rel="noreferrer" data-geste="whatsapp">WhatsApp</a>}
+      </div>
+    </div>
+  );
+}
 
 export function SitePublication({ open, onClose, projectId, focusRequest }: { open: boolean; onClose: () => void; projectId: string; focusRequest?: string | null }) {
   const t = useT();
@@ -218,9 +258,10 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
                     {openRequest === r.id && (
                       <div className="mt-2 grid gap-2" data-request-detail>
                         <p className="text-xs text-muted">{r.hostname}{r.page}{r.notification_error && <> · {t("motif", "reason")} : <code>{r.notification_error}</code></>}</p>
+                        <DemandeTriee r={r} envoiGeste={!!data.envoiGeste} />
                         <dl className="grid gap-0.5">{Object.entries(r.fields).map(([k, v]) => <div key={k} className="flex gap-2"><dt className="shrink-0 text-muted">{fieldLabel(k)}</dt><dd className="min-w-0 whitespace-pre-wrap break-words">{v}</dd></div>)}</dl>
                         <div className="flex flex-wrap gap-2">
-                          {r.email && <a className="inline-flex h-8 items-center rounded-full border border-line px-3 text-[13px]" href={`mailto:${encodeURIComponent(r.email)}`}>{t("Répondre par e-mail", "Reply by email")}</a>}
+                          {r.email && !r.tri && <a className="inline-flex h-8 items-center rounded-full border border-line px-3 text-[13px]" href={`mailto:${encodeURIComponent(r.email)}`}>{t("Répondre par e-mail", "Reply by email")}</a>}
                           <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => act("request-handled", { id: r.id, handled: !r.handled_at })}>{r.handled_at ? t("Remettre en nouvelle", "Mark as new") : t("Marquer comme traitée", "Mark as handled")}</Button>
                           {(r.notification === "failed" || r.notification === "partial") && <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => act("request-retry", { id: r.id }, t("Nouvel envoi lancé.", "New sending started."))}>{t("Renvoyer l'e-mail", "Send the email again")}</Button>}
                           <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => act("request-delete", { id: r.id }, t("Demande effacée.", "Request deleted."))}>{t("Effacer", "Delete")}</Button>
@@ -233,6 +274,23 @@ export function SitePublication({ open, onClose, projectId, focusRequest }: { op
             )}
             <p className="text-xs text-muted">{t("Les demandes sont conservées 12 mois, puis effacées automatiquement. « Effacer » les supprime tout de suite (droit à l'effacement du visiteur).", "Requests are kept 12 months, then deleted automatically. “Delete” removes them right away (the visitor's right to erasure).")}</p>
           </section>
+
+          {data.assistante && (
+            <section className="grid gap-2" data-assistante-studio>
+              <h3 className="font-semibold">{t("L'assistante IA de ton site", "Your site's AI assistant")}</h3>
+              <p className="text-xs text-muted">{t(`Sur ton site en ligne, une bulle « Assistante IA » répond aux visiteurs. Elle dit dès son premier message qu'elle est une IA, ne répond qu'avec ce que tu as donné (tes produits, leurs prix, tes réponses) et te transmet le reste par le formulaire. ${data.assistante.plafond} réponses par jour au plus, puis le formulaire.`, `On your live site, an “AI assistant” bubble answers visitors. It says from its first message that it is an AI, only answers with what you gave (your products, their prices, your answers) and passes the rest on to you through the form. ${data.assistante.plafond} replies a day at most, then the form.`)}</p>
+              {!data.assistante.aujourdhui.length ? <p className="text-sm text-muted">{t("Aucune question aujourd'hui.", "No question today.")}</p> : (
+                <ul className="grid gap-2" data-assistante-echanges>
+                  {data.assistante.aujourdhui.map((e, i) => (
+                    <li key={i} className="rounded-xl border border-line p-3 text-sm">
+                      <p><span className="text-muted">{t("Visiteur", "Visitor")} :</span> {e.question}</p>
+                      <p><span className="text-muted">{t("Assistante", "Assistant")} :</span> {e.reponse} {e.transmis ? <Badge tone="warn">{t("Transmise à toi", "Passed on to you")}</Badge> : null}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
 
           <section className="grid gap-2">
             <h3 className="font-semibold">{t("Votre propre nom de domaine", "Your own domain name")}</h3>

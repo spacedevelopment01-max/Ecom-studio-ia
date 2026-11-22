@@ -21,7 +21,7 @@ const PriceSchema = z.discriminatedUnion("unit", [
 
 // Réglages SMTP (serveur, identifiant, mot de passe, expéditeur) : chiffrés comme les clés, jamais renvoyés en clair.
 const SECRET_KEYS = /apiKey$|clientSecret$|secretKey$|webhookSecret$|^smtp\.(host|user|password|from)$/;
-const ALLOWED = /^(provider\.(anthropic|openai|google|fal|alibaba|pexels|pixabay)\.(apiKey|disabled)|provider\.alibaba\.(region|endpoint|workspace)|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|smtp\.(host|port|user|password|from)|app\.url|meta\.graphVersion|shopify\.apiVersion|suivi\.(assistante|envoiGeste|studioPhoto|ficheGoogle|devis|carnet|brasDroit))$/;
+const ALLOWED = /^(provider\.(anthropic|openai|google|fal|alibaba|pexels|pixabay)\.(apiKey|disabled)|provider\.alibaba\.(region|endpoint|workspace)|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|smtp\.(host|port|user|password|from)|app\.url|meta\.graphVersion|shopify\.apiVersion|suivi\.(assistante|demandes|envoiGeste|studioPhoto|ficheGoogle|devis|carnet|brasDroit))$/;
 
 /** Réglages d'administration. Les secrets sont chiffrés et jamais renvoyés en clair. */
 export const POST = handle(async (req: Request) => {

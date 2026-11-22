@@ -104,7 +104,7 @@ export function avecMentionMesure(html: string, pathname: string): string {
 
 /**
  * La bulle de l'assistante IA (recherche 08, point 4), posée par le Studio sur les pages qu'il héberge SEULEMENT quand le
- * réglage `suivi.assistante` est allumé (éteint par défaut : aucune page ne change).
+ * réglage `suivi.assistante` est allumé (allumé par défaut depuis le 22 novembre 2026 ; « 0 » l'éteint).
  */
 export function avecAssistante(html: string, projectId: string): string {
   if (!suiviAllume("assistante") || html.includes("data-assistante-ia")) return html;
