@@ -553,10 +553,17 @@ describe("SINA — chaîne de création de la marque", async () => {
 
   it("« seulement les noms » : couleurs, polices et ton gardés à l'identique", async () => {
     const t = await thread();
-    await chain(t, {}, { fix: () => FIXED_LINE });
+    // Un juge qui garde tous les noms : ses verdicts resservent à la proposition suivante (audit du 22 novembre 2026, 2.13).
+    const garde = ["Bain de Minuit", "Lâche le Morceau", "L'Eau Est Bonne", "Nage Libre", "La Main Lourde", "Grand Bain", "Plongeon", "Marée Haute", "Patience"];
+    const judge = (_id: string, names: string[]) => ({ kept: names.filter((n) => garde.includes(n)).map((name) => ({ name, seen: "Une image nette.", why: "On le porterait avec fierté." })), almost: [] });
+    await chain(t, {}, { fix: () => FIXED_LINE, judge });
     const before = J.journeyOf(t.cid).identities!.list;
-    const { log } = await chain(t, { namesOnly: true }, { shortlist: () => [pick("C", "Grand Bain"), pick("A", "Plongeon"), pick("B", "Marée Haute"), pick("A", "Patience", true)], review: () => ({ routes: [], series: "" }) });
+    const { log } = await chain(t, { namesOnly: true }, { judge, shortlist: () => [pick("C", "Grand Bain"), pick("A", "Plongeon"), pick("B", "Marée Haute"), pick("A", "Patience", true)], review: () => ({ routes: [], series: "" }) });
     expect(log.ids.filter((i) => i.startsWith("team") || i === "study" || i === "strategy")).toEqual([]);
+    // Sans nouveaux mots du client, le juge des noms n'est pas relancé sur les mêmes noms.
+    expect(log.ids.filter((i) => i.startsWith("judge"))).toEqual([]);
+    // Les noms déjà montrés ne reviennent jamais devant le client.
+    expect(log.prompts.shortlist).not.toMatch(/^- Bain de Minuit \|/m);
     expect(log.prompts.shortlist).toMatch(/SEULEMENT de nouveaux noms/);
     const after = J.journeyOf(t.cid).identities!.list;
     expect(after.map((x) => x.name)).toEqual(["Grand Bain", "Plongeon", "Marée Haute"]);

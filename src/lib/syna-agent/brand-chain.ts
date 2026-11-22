@@ -679,9 +679,13 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // Noms choisis par le client : ce sont les seuls noms permis, sans passer par le juge (il a déjà choisi).
   if (imposed.length) allowed = imposed.map((name) => pool.find((n) => normText(n.name) === normText(name)) ?? { name, detail: "", second: "", idea: "", team: "client" });
   if (!j.keep.includes("nom") && !imposed.length) {
+    // Une proposition refaite sans nouveaux mots du client reprend l'étude, les idées et les noms : les verdicts du juge
+    // sur ces mêmes noms resservent aussi (audit du 22 novembre 2026, 2.13). Les noms déjà montrés sont écartés avant
+    // lui ; seuls des noms nouveaux (second tour) sont jugés.
+    const verdictsAvant = !a.guidance && (a.redo?.length || a.namesOnly) ? Object.entries(before).filter(([k]) => /^brand:judge:\d+(:2)?$/.test(k)).map(([, v]) => JudgeSchema.safeParse(v)).flatMap((r) => (r.success ? [r.data] : [])) : [];
     const judge = async (tag: string, list: PoolName[]) => {
       if (!list.length) return;
-      const r = await ctx.step(`brand:judge:${round}${tag}`, () => ai.ask(`judge-${round}${tag.replace(":", "-")}`, { kind: "judge", system: P.nameJudgeSystem(kind), schema: JudgeSchema, prompt: `${brief}\n\n# Noms trouvés par les équipes (${list.length})\n${list.map((n) => `- ${n.name} | détail réel : ${n.detail} | deuxième lecture : ${n.second}`).join("\n")}` }));
+      const r = tag === "" && verdictsAvant.length ? { kept: verdictsAvant.flatMap((v) => v.kept), almost: verdictsAvant.flatMap((v) => v.almost) } : await ctx.step(`brand:judge:${round}${tag}`, () => ai.ask(`judge-${round}${tag.replace(":", "-")}`, { kind: "judge", system: P.nameJudgeSystem(kind), schema: JudgeSchema, prompt: `${brief}\n\n# Noms trouvés par les équipes (${list.length})\n${list.map((n) => `- ${n.name} | détail réel : ${n.detail} | deuxième lecture : ${n.second}`).join("\n")}` }));
       // Seuls des noms réellement présents dans la liste comptent : le juge ne trouve pas de noms, il trie.
       const known = (name: string) => list.some((n) => normText(n.name) === normText(name));
       judged.push(...r.kept.filter((k) => known(k.name) && !judged.some((x) => normText(x.name) === normText(k.name))));
