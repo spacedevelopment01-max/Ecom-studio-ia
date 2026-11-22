@@ -4,6 +4,7 @@
  * variantes, pages liées aux gabarits du thème.
  */
 import { redact } from "../redact";
+import { jetonFrais, noterVersionServie, shopifyAppDeps, SHOPIFY_API_VERSION } from "./shopify-app";
 import { getSetting } from "../settings";
 import { decrypt } from "../secrets";
 import { one } from "../db";
@@ -17,15 +18,19 @@ import { L } from "../i18n-server";
 import { sanitizeBlogHtml } from "../blog-html";
 import { offreVide, titreRemise, type OffreBoutique, type PreuveRemises } from "../syna-agent/custom-theme/remises";
 
-const version = () => getSetting("shopify.apiVersion") || "2025-07";
+// 2025-07 n'est plus tenue par Shopify (recherche 04, 22 novembre 2026) : la plus récente tenue est demandée.
+const version = () => getSetting("shopify.apiVersion") || SHOPIFY_API_VERSION;
 
-async function gql(c: Connection, query: string, variables: Record<string, unknown> = {}) {
-  const shop = c.external_id;
-  const r = await fetch(`https://${shop}/admin/api/${version()}/graphql.json`, {
+async function gql(c0: Connection, query: string, variables: Record<string, unknown> = {}) {
+  // Boutique reliée par l'application du client : un jeton frais avant chaque envoi.
+  const c = await jetonFrais(c0 as Connection & { expires_at?: number | null; meta?: string | null });
+  const shop = c.external_id, v = version();
+  const r = await (shopifyAppDeps.fetch ?? fetch)(`https://${shop}/admin/api/${v}/graphql.json`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": decrypt(c.access_token)! },
     body: JSON.stringify({ query, variables }),
   });
+  noterVersionServie(r.headers?.get?.("x-shopify-api-version") ?? null, v);
   if (r.status === 401 || r.status === 403) throw new PermanentError(L("Shopify refuse l'accès : reconnectez la boutique (autorisations manquantes).", "Shopify denied access: reconnect the store (missing permissions)."));
   const j: any = await r.json();
   if (j.errors) throw new Error(L(`Shopify : ${JSON.stringify(j.errors).slice(0, 300)}`, `Shopify: ${JSON.stringify(j.errors).slice(0, 300)}`));
@@ -187,7 +192,7 @@ export async function pushCatalog(c: Connection, spec: ThemeSpec, onProgress?: (
     seo[p.handle] = r.seo;
     onProgress?.(i + 1, products.length);
   }
-  const collections: string[] = [];
+  const collections: string[] = [], collectionIds: string[] = [];
   for (const col of spec.store.collections ?? []) {
     const productIds = col.products.map((h) => ids.get(h)).filter(Boolean);
     const d = await gql(c, `mutation($input: CollectionInput!){ collectionCreate(input: $input){ collection{ id handle } userErrors{ field message } } }`, {
@@ -196,8 +201,69 @@ export async function pushCatalog(c: Connection, spec: ThemeSpec, onProgress?: (
     const errs = d?.collectionCreate?.userErrors ?? [];
     if (errs.length && !errs.some((e: any) => /taken|already/i.test(e.message))) throw new Error(L(`Collection ${col.title} : ${errs.map((e: any) => e.message).join(" ; ")}`, `Collection ${col.title}: ${errs.map((e: any) => e.message).join("; ")}`));
     collections.push(col.handle);
+    if (d?.collectionCreate?.collection?.id) collectionIds.push(d.collectionCreate.collection.id);
   }
-  return { products: [...ids.keys()], collections, seo };
+  // Créés par l'interface, produits et collections ne se voient pas dans la boutique tant qu'ils ne sont pas publiés sur
+  // la boutique en ligne (recherche 04, 22 novembre 2026 : le Studio ne le faisait jamais).
+  const publication = await publierSurLaBoutique(c, [...ids.values(), ...collectionIds]);
+  return { products: [...ids.keys()], collections, seo, publication };
+}
+
+/** La publication « Boutique en ligne » de la boutique (null si Shopify ne la donne pas). */
+async function publicationBoutique(c: Connection): Promise<string | null> {
+  const d = await gql(c, `{ publications(first: 25){ nodes{ id name } } }`);
+  const nodes: { id: string; name: string }[] = d?.publications?.nodes ?? [];
+  return nodes.find((n) => /online store|boutique en ligne/i.test(n.name))?.id ?? null;
+}
+
+/** Publie produits et collections sur la boutique en ligne ; rend combien sont visibles, et ce qui a coincé. */
+export async function publierSurLaBoutique(c: Connection, ids: string[]): Promise<{ publies: number; erreurs: string[] }> {
+  if (!ids.length) return { publies: 0, erreurs: [] };
+  const pub = await publicationBoutique(c);
+  if (!pub) return { publies: 0, erreurs: [L("la boutique en ligne n'a pas été trouvée dans tes canaux de vente : tes produits sont créés mais pas encore visibles", "online store channel not found")] };
+  let publies = 0; const erreurs: string[] = [];
+  for (const rid of ids) {
+    const d = await gql(c, `mutation($id: ID!, $input: [PublicationInput!]!){ publishablePublish(id: $id, input: $input){ userErrors{ field message } } }`, { id: rid, input: [{ publicationId: pub }] });
+    const errs = d?.publishablePublish?.userErrors ?? [];
+    if (errs.length) erreurs.push(errs.map((e: any) => e.message).join(" ; ")); else publies++;
+  }
+  return { publies, erreurs };
+}
+
+/** Les menus du site créés dans la boutique (menu du haut et du bas), au lieu de ceux de Shopify par défaut. */
+export async function pushMenus(c: Connection, spec: ThemeSpec): Promise<string[]> {
+  const items = (links: { title: string; url: string; links?: { title: string; url: string }[] }[]): unknown[] => links.map((l) => ({ title: l.title.slice(0, 255), type: "HTTP", url: l.url, ...(l.links?.length ? { items: items(l.links) } : {}) }));
+  const done: string[] = [];
+  for (const [handle, m] of Object.entries(spec.store.menus ?? {})) {
+    if (!m.links?.length) continue;
+    const d = await gql(c, `mutation($title: String!, $handle: String!, $items: [MenuItemCreateInput!]!){ menuCreate(title: $title, handle: $handle, items: $items){ menu{ id handle } userErrors{ field message } } }`, { title: m.title, handle, items: items(m.links) });
+    const errs = d?.menuCreate?.userErrors ?? [];
+    if (errs.length && !errs.some((e: any) => /taken|already/i.test(e.message))) throw new Error(L(`Menu ${m.title} : ${errs.map((e: any) => e.message).join(" ; ")}`, `Menu ${m.title}: ${errs.map((e: any) => e.message).join("; ")}`));
+    done.push(handle);
+  }
+  return done;
+}
+
+/** Les pages légales de Shopify (remboursement, conditions, confidentialité, mentions) remplies avec celles du site. */
+export const POLICY_TYPES: Record<string, string> = { "refund-policy": "REFUND_POLICY", "terms-of-service": "TERMS_OF_SERVICE", "privacy-policy": "PRIVACY_POLICY", "legal-notice": "LEGAL_NOTICE", "shipping-policy": "SHIPPING_POLICY" };
+export async function pushPolicies(c: Connection, spec: ThemeSpec): Promise<{ faites: string[]; aCompleter: string[] }> {
+  const faites: string[] = [], aCompleter: string[] = [];
+  for (const pol of spec.store.policies ?? []) {
+    const type = POLICY_TYPES[pol.handle];
+    if (!type) continue;
+    // Jamais une page légale avec un trou : elle attend que le client ait tout donné.
+    if (/\[À compléter|\[To complete/.test(pol.body_html)) { aCompleter.push(pol.title); continue; }
+    const d = await gql(c, `mutation($shopPolicy: ShopPolicyInput!){ shopPolicyUpdate(shopPolicy: $shopPolicy){ shopPolicy{ id } userErrors{ field message } } }`, { shopPolicy: { type, body: pol.body_html.slice(0, 500_000) } });
+    userErrors(d, "shopPolicyUpdate");
+    faites.push(pol.title);
+  }
+  return { faites, aCompleter };
+}
+
+/** Le forfait de la boutique, lu avant de monter le site (Starter : refusé, dit avant tout travail). */
+export async function lireForfait(c: Connection): Promise<{ displayName: string | null; partnerDevelopment: boolean } | null> {
+  const d = await gql(c, `{ shop{ plan{ displayName partnerDevelopment } } }`);
+  return d?.shop?.plan ?? null;
 }
 
 export async function pushPages(c: Connection, spec: ThemeSpec) {

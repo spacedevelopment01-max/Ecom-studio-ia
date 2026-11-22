@@ -125,6 +125,7 @@ export default function TabConnexions() {
                 </div>
               ))}
 
+              {p.key === "shopify" && <ShopifyAppForm projectId={id} onDone={reload} />}
               <div className="mt-auto pt-4">
                 {!p.configured ? (
                   <p className="text-xs text-muted">{t(`Bloqué : l'administration doit renseigner les identifiants d'application ${p.label} (${p.needs})`, `Blocked: an administrator needs to add the ${p.label} app credentials (${p.needs})`)}</p>
@@ -142,6 +143,39 @@ export default function TabConnexions() {
         })}
       </div>
       <p className="text-xs text-muted">{t("CapCut ne propose pas d'API publique de montage : le studio prépare un pack (vidéos, plans, sous-titres SRT, musique, textes) à importer dans CapCut depuis l'espace Vidéos ou Fichiers.", "CapCut doesn't offer a public editing API: the studio prepares a pack (videos, shots, SRT subtitles, music, text) to import into CapCut from the Videos or Files area.")}</p>
+    </div>
+  );
+}
+
+/**
+ * Relier Shopify par l'application du client (recherche 04, 22 novembre 2026) : il crée l'application dans sa boutique
+ * (Paramètres › Applications › Développer des applications › Build apps in Dev Dashboard), coche les droits, l'installe,
+ * puis donne ici ses deux identifiants. Aucune attente de validation par Shopify.
+ */
+function ShopifyAppForm({ projectId, onDone }: { projectId: string; onDone: () => void }) {
+  const t = useT();
+  const toast = useToast();
+  const [shop, setShop] = useState(""), [clientId, setClientId] = useState(""), [secret, setSecret] = useState(""), [busy, setBusy] = useState(false), [open, setOpen] = useState(false);
+  const DROITS = "write_themes, write_products, read_locations, write_inventory, write_publications, write_online_store_pages, write_online_store_navigation, write_legal_policies, write_files, write_discounts";
+  if (!open) return <button type="button" className="mt-3 text-left text-sm underline" onClick={() => setOpen(true)}>{t("Relier avec ton application Shopify (Client ID et Client secret)", "Link with your own Shopify app (Client ID and secret)")}</button>;
+  const send = async () => {
+    setBusy(true);
+    try { const r = await api<{ message: string; manque: unknown[] }>("/api/connections/shopify-app", { body: { shop, clientId, clientSecret: secret, projectId } }); toast(r.manque.length ? "bad" : "ok", r.message); setSecret(""); onDone(); }
+    catch (e) { toast("bad", (e as Error).message); } finally { setBusy(false); }
+  };
+  return (
+    <div className="mt-3 space-y-2 text-sm">
+      <ol className="list-decimal space-y-1 pl-5 text-ink-2">
+        <li>{t("Dans ta boutique : Paramètres › Applications › Développer des applications, puis « Build apps in Dev Dashboard ».", "In your store: Settings › Apps › Develop apps, then “Build apps in Dev Dashboard”.")}</li>
+        <li>{t("« Create app », donne-lui un nom (par exemple « Studio »), puis « Create ».", "“Create app”, name it (e.g. “Studio”), then “Create”.")}</li>
+        <li>{t("Dans « Access », colle ces droits :", "In “Access”, paste these permissions:")} <code className="break-all text-xs">{DROITS}</code></li>
+        <li>{t("« Release », puis dans « Installs » : « Install app ».", "“Release”, then in “Installs”: “Install app”.")}</li>
+        <li>{t("Copie le Client ID et le Client secret, et colle-les ici.", "Copy the Client ID and Client secret, and paste them here.")}</li>
+      </ol>
+      <Input value={shop} onChange={(e) => setShop(e.target.value)} placeholder="ma-boutique.myshopify.com" aria-label={t("Adresse de la boutique", "Store address")} />
+      <Input value={clientId} onChange={(e) => setClientId(e.target.value)} placeholder="Client ID" aria-label="Client ID" autoComplete="off" />
+      <Input value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="Client secret" aria-label="Client secret" type="password" autoComplete="off" />
+      <Button onClick={send} disabled={busy || !shop.trim() || !clientId.trim() || !secret.trim()} icon={<Plug className="size-4" />}>{t("J'ai mes deux identifiants", "I have both credentials")}</Button>
     </div>
   );
 }

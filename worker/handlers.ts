@@ -32,7 +32,8 @@ import { localCopy } from "../src/lib/engine/local-copy";
 import { assetData, getAsset, saveAsset, listFolders, addUsage, type Asset } from "../src/lib/library";
 import { publishPost, alreadyPublished, connectionFor, markConnection, type PostRow } from "../src/lib/social/publish";
 import { sendToCanva, importFromCanva } from "../src/lib/integrations/canva";
-import { pushCatalog, pushPages, pushTheme, seoSummary, shopifyConnection, type SeoPushResult } from "../src/lib/integrations/shopify";
+import { lireForfait, publierSurLaBoutique, pushCatalog, pushMenus, pushPages, pushPolicies, pushTheme, seoSummary, shopifyConnection, type SeoPushResult } from "../src/lib/integrations/shopify";
+import { forfaitRefuse, jetonFrais } from "../src/lib/integrations/shopify-app";
 import { hasStudioProducts, withStudioProducts } from "../src/lib/products/catalog";
 import { syncProducts } from "../src/lib/products/sync";
 import { decrypt } from "../src/lib/secrets";
@@ -516,8 +517,12 @@ export const handlers: Record<string, Handler> = {
 
   "shopify.push": async (ctx) => {
     const { projectId, parts } = ctx.payload as { projectId: string; parts: ("theme" | "product" | "pages")[] };
-    const c = shopifyConnection(ctx.job.user_id, projectId);
-    if (!c) throw new PermanentError(L("Connectez votre boutique Shopify dans l'onglet Connexions.", "Connect your Shopify store in the Connections tab."));
+    const c0 = shopifyConnection(ctx.job.user_id, projectId);
+    if (!c0) throw new PermanentError(L("Connectez votre boutique Shopify dans l'onglet Connexions.", "Connect your Shopify store in the Connections tab."));
+    // Boutique reliée par l'application du client : un jeton frais avant l'envoi (recherche 04, 22 novembre 2026).
+    const c = await jetonFrais(c0 as typeof c0 & { expires_at?: number | null; meta?: string | null });
+    // Le forfait d'abord : sur Starter, ni thème, ni collections, ni pages ; c'est dit avant tout envoi.
+    if (parts.includes("theme")) { const refus = forfaitRefuse(await lireForfait(c).catch(() => null)); if (refus) throw new PermanentError(refus); }
     const cur = currentTheme(projectId);
     if (!cur) throw new PermanentError(L("Aucune boutique à installer.", "No store to install."));
     // Contrôles du CMS Engine V2 AVANT tout envoi (même export que le bouton « Exporter ») : un export refusé
@@ -534,10 +539,16 @@ export const handlers: Record<string, Handler> = {
     if (parts.includes("product") && hasStudioProducts(projectId)) out.catalog = await ctx.step("catalog", async () => {
       ctx.progress(0.1, L("Envoi des produits du Studio vers Shopify", "Sending the Studio products to Shopify"));
       const r = await syncProducts(projectId, shopifyConnector({ shop: c.external_id, token: decrypt(c.access_token) ?? "", apiVersion: getSetting("shopify.apiVersion") || undefined }));
-      return r.counts;
+      // Publiés sur la boutique en ligne : sans cela, ils restent invisibles pour les acheteurs.
+      const ids = r.lines.filter((l) => l.remoteId && ["created", "updated", "linked", "unchanged"].includes(l.action)).map((l) => l.remoteId!);
+      const publication = await publierSurLaBoutique(c, ids).catch((e) => ({ publies: 0, erreurs: [String((e as Error)?.message ?? e).slice(0, 200)] }));
+      return { ...r.counts, publies: publication.publies, ...(publication.erreurs.length ? { erreursPublication: publication.erreurs } : {}) };
     });
     else if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, L("Création des produits dans Shopify", "Creating the products in Shopify")), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, L(`Produit ${d}/${t} envoyé`, `Product ${d}/${t} sent`)))));
     if (parts.includes("pages")) out.pages = await ctx.step("pages", async () => (ctx.progress(0.5, L("Création des pages", "Creating the pages")), pushPages(c, cur.spec)));
+    // Les menus du site et les pages légales de Shopify (une page légale avec un trou attend, elle n'est jamais envoyée).
+    if (parts.includes("pages")) out.menus = await ctx.step("menus", async () => pushMenus(c, cur.spec));
+    if (parts.includes("pages")) out.policies = await ctx.step("policies", async () => pushPolicies(c, cur.spec));
     if (parts.includes("theme")) out.theme = await ctx.step("theme", async () => (ctx.progress(0.8, L("Installation du thème (non publié)", "Installing the theme (unpublished)")), pushTheme(c, projectId, cur.version.id, cur.spec.name)));
     // SEO des fiches : envoyé / accepté / refusé / inconnu, jamais présenté comme vérifié.
     const seo = out.product ? seoSummary((out.product as { seo: Record<string, SeoPushResult> }).seo) : null;
