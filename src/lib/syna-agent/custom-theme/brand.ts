@@ -698,21 +698,39 @@ export function factPlaces(plan: SitePlan, uid: string): { mine: string[]; elsew
   return { mine: list.filter((x) => x.sections.includes(uid)).map((x) => x.fait), elsewhere: list.filter((x) => !x.sections.includes(uid)).map((x) => x.fait).slice(0, 20) };
 }
 
-export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string; /** Fiche d'UN produit du catalogue : ses faits. */ product?: string | null; /** Ce que le Studio posera lui-même dans la section (faits exacts). */ shown?: string; /** Formules déjà employées dans REPEAT_SECTIONS_MAX sections déjà écrites (relevé sans IA) : à ne plus employer. */ deja?: string[]; /** Ce que la même pièce dit déjà sur d'autres pages (memePieceAilleurs). */ ailleurs?: string | null }): string {
+const FORMULE_UNE_FOIS = "Une formule de style (une image, une tournure, une fin de phrase qui sonne) ne sert qu'UNE fois sur tout le site : n'en reprends aucune d'un titre ou d'un message d'une autre section.";
+/**
+ * La partie du plan commune à toutes les sections du site (promesse, voix, menu, tous les titres prévus, pages) :
+ * envoyée une fois, gardée en mémoire avec le dossier du client, au lieu d'être renvoyée au plein tarif dans chacune des
+ * 43 à 70 sections et de leurs reprises (audit du site du 22 novembre 2026, partie 3 : environ 1 500 jetons par section).
+ */
+export function planCommun(site: SitePlan | undefined, pages: string): string {
+  if (!site) return pages ? `PAGES DU SITE (clé : nom) : ${pages}` : "";
+  const titres = site.sections.filter((x) => x.titre).map((x) => `« ${x.titre} »`);
+  return [
+    "PLAN DES TEXTES DU SITE, COMMUN À TOUTES LES SECTIONS (à suivre) :",
+    `Promesse : ${site.promesse}`, `Voix : ${site.voix}`, site.menu.length ? `Menu principal : ${site.menu.join(" · ")}` : "",
+    titres.length ? `Titres prévus de toutes les sections du site (chacun ne sert qu'à SA section : ne reprends jamais celui d'une autre) : ${titres.join(", ")}.` : "",
+    FORMULE_UNE_FOIS,
+    pages ? `PAGES DU SITE (clé : nom) : ${pages}` : "",
+  ].filter(Boolean).join("\n");
+}
+
+export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string; /** Fiche d'UN produit du catalogue : ses faits. */ product?: string | null; /** Ce que le Studio posera lui-même dans la section (faits exacts). */ shown?: string; /** Formules déjà employées dans REPEAT_SECTIONS_MAX sections déjà écrites (relevé sans IA) : à ne plus employer. */ deja?: string[]; /** Ce que la même pièce dit déjà sur d'autres pages (memePieceAilleurs). */ ailleurs?: string | null; /** La partie commune à tout le site (`planCommun`) part à part, gardée en mémoire : elle n'est pas répétée ici. */ communAPart?: boolean }): string {
   const mine = plan?.site.sections.find((x) => x.uid === plan.uid);
   const others = plan ? plan.site.sections.filter((x) => x.uid !== plan.uid && x.titre).map((x) => `« ${x.titre} »`) : [];
   const planText = plan ? [
     "PLAN DES TEXTES DU SITE (à suivre) :",
-    `Promesse : ${plan.site.promesse}`, `Voix : ${plan.site.voix}`, plan.site.menu.length ? `Menu principal : ${plan.site.menu.join(" · ")}` : "",
+    ...(design?.communAPart ? [] : [`Promesse : ${plan.site.promesse}`, `Voix : ${plan.site.voix}`, plan.site.menu.length ? `Menu principal : ${plan.site.menu.join(" · ")}` : ""]),
     mine ? `CETTE section : message : ${mine.message}${mine.titre ? ` ; titre : « ${mine.titre} »` : ""}${mine.bouton ? ` ; bouton : « ${mine.bouton} »` : ""} ; faits à utiliser ici (et aucun autre chiffre) : ${mine.faits.length ? mine.faits.join(" ; ") : "aucun"}.` : "",
-    others.length ? `Titres des autres sections (ne les répète pas) : ${others.join(", ")}.` : "",
+    others.length && !design?.communAPart ? `Titres des autres sections (ne les répète pas) : ${others.join(", ")}.` : "",
     ...(plan ? ((r) => [
       r.mine.length ? `Faits forts que CETTE section dit en toutes lettres (c'est l'un des ${FACT_PLACES_MAX} endroits du site où ils se disent) : ${r.mine.join(" ; ")}.` : "",
       r.elsewhere.length ? `Faits forts DITS AILLEURS sur le site (ici, ne les redis PAS en toutes lettres : sous-entends-les ou tais-les) : ${r.elsewhere.join(" ; ")}.` : "",
     ])(factPlaces(plan.site, plan.uid)) : []),
-    "Une formule de style (une image, une tournure, une fin de phrase qui sonne) ne sert qu'UNE fois sur tout le site : n'en reprends aucune d'un titre ou d'un message d'une autre section.",
+    design?.communAPart ? "" : FORMULE_UNE_FOIS,
   ].filter(Boolean).join("\n") : "";
-  const designText = [design?.pages ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${design.product}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : "", design?.shown ?? "",
+  const designText = [design?.pages && !design.communAPart ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${design.product}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : "", design?.shown ?? "",
     design?.ailleurs ?? "",
     design?.deja?.length ? `FORMULES DÉJÀ EMPLOYÉES DANS ${REPEAT_SECTIONS_MAX} SECTIONS DU SITE (relevé du Studio ; ne les emploie plus ici, ni elles ni leurs mots dans le même ordre : dis autre chose, autrement) : ${design.deja.map((x) => `« ${x} »`).join(" ; ")}.` : ""].filter(Boolean).join("\n");
   return [...(brief ? [brief, ""] : []), ...(planText ? [planText, ""] : []), ...(designText ? [designText, ""] : []), `Section à adapter : « ${title} » (${place}). Ce qu'elle fait : ${does}`, "HTML actuel de la section (textes de démonstration à remplacer) :", html].join("\n");
@@ -1033,6 +1051,9 @@ export async function runCustomBrandJob(ctx: JobContext) {
     }
   }
 
+  // La partie du plan commune à tout le site : à part, en mémoire avec le dossier (audit du site, partie 3).
+  const commun = planCommun(sitePlan ?? undefined, t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "));
+  const dossierEtPlan = commun ? `${brief}\n\n${commun}` : brief;
   // 1) Textes, section par section (un point de reprise chacune).
   for (const [i, x] of sections.entries()) {
     const l = libSection(x.s.id);
@@ -1042,15 +1063,15 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const html = withBrandName(sectionHtml(x.s), name);
         // Le résumé du client est le même pour toutes les sections : il part à part (`context`), gardé en mémoire chez le
         // fournisseur après la consigne du rédacteur, au lieu d'être relu au plein prix dans chacune (22 novembre 2026).
-        const prompt = sectionWritePrompt("", x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(html, facts, x.page?.key),
+        const prompt = sectionWritePrompt("", x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), communAPart: true, shown: shownFacts(html, facts, x.page?.key),
           // Les formules déjà dites dans trois sections écrites avant celle-ci (sans IA) : le rédacteur ne les emploie plus.
           deja: repeats(allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts && y.s.uid !== x.s.uid), { atLeast: REPEAT_SECTIONS_MAX }).slice(0, 12).map((r) => r.phrase),
           // La même pièce déjà écrite sur une autre page (sans IA) : le rédacteur y dit autre chose.
           ailleurs: memePieceAilleurs({ uid: x.s.uid, id: x.s.id }, allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts).map((y) => ({ uid: y.s.uid, id: y.s.id, page: y.page?.label ?? y.place, html: sectionHtml(y.s) }))) });
         const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
-        return customBrandDeps.write ? customBrandDeps.write(`${brief}\n\n${prompt}`, usageKey)
+        return customBrandDeps.write ? customBrandDeps.write(`${dossierEtPlan}\n\n${prompt}`, usageKey)
           : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
-              llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", context: brief, prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
+              llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", context: dossierEtPlan, prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
       });
       // Écriture posée une seule fois : à la reprise d'une tâche, une section déjà enregistrée n'est pas réappliquée
       // (sinon tous ses remplacements échouaient sur un texte déjà réécrit, audit du 10 novembre 2026).
@@ -1134,11 +1155,11 @@ export async function runCustomBrandJob(ctx: JobContext) {
           // Texte repris sur les remarques du directeur de création : reprise du Studio, jamais débitée au client.
           const w = await aLaChargeDuStudio(() => ctx.step(`text-fix:${f.uid}`, async () => {
             const cur = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === f.uid) ?? x;
-            const prompt = `${sectionWritePrompt("", cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, product: productFacts(p.id, cur.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(sectionHtml(cur.s), facts, cur.page?.key) })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
+            const prompt = `${sectionWritePrompt("", cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, product: productFacts(p.id, cur.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), communAPart: true, shown: shownFacts(sectionHtml(cur.s), facts, cur.page?.key) })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
             const usageKey = `${ctx.job.id}:text-fix:${f.uid}`;
-            return customBrandDeps.write ? customBrandDeps.write(`${brief}\n\n${prompt}`, usageKey)
+            return customBrandDeps.write ? customBrandDeps.write(`${dossierEtPlan}\n\n${prompt}`, usageKey)
               : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-fix", costCapMicro: a.capMicro }, () =>
-                  llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", context: brief, prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
+                  llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", context: dossierEtPlan, prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
           }));
           const r = await ctx.step(`text-fix-saved:${f.uid}`, async () => {
             t = loadCustomTheme(p.id)!;

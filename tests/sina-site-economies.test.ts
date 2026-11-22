@@ -67,3 +67,17 @@ describe("le site : le juge de l'ordre et la reprise ne rendent que leurs change
     expect(DESIGN_REVIEW_SYSTEM).not.toMatch(/rends la conception CORRIGÉE et complète/);
   });
 });
+
+describe("le site : la partie commune du plan des textes, une fois, en mémoire", () => {
+  it("chaque section ne reçoit plus la promesse, la voix, le menu, les titres ni les pages : ils sont dans la partie commune", async () => {
+    const B = await import("@/lib/syna-agent/custom-theme/brand");
+    const site = { promesse: "Une promesse claire.", voix: "Une voix chaleureuse.", menu: ["Boutique"], sections: [{ uid: "a1", message: "Dire l'offre.", titre: "Le titre A", bouton: null, faits: [] }, { uid: "b2", message: "Rassurer.", titre: "Le titre B", bouton: null, faits: [] }], seo: [] };
+    const commun = B.planCommun(site as any, "home : Accueil");
+    expect(commun).toMatch(/Promesse : Une promesse claire\./);
+    expect(commun).toMatch(/« Le titre A », « Le titre B »/);
+    expect(commun).toMatch(/PAGES DU SITE \(clé : nom\) : home : Accueil/);
+    const p = B.sectionWritePrompt("", "Accueil", "Ouverture", "ouvre", "<h1>x</h1>", { site: site as any, uid: "a1" }, { pages: "home : Accueil", communAPart: true });
+    expect(p).not.toMatch(/Promesse :|Titres des autres sections|PAGES DU SITE/);
+    expect(p).toMatch(/CETTE section : message : Dire l'offre\. ; titre : « Le titre A »/);
+  });
+});

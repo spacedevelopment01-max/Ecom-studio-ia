@@ -279,7 +279,9 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     expect(coupeLeResume("", "fix", "autre")).toEqual({ prompt: "autre" });
     const fs = await import("node:fs");
     const src = fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8");
-    expect(src.match(/promptKey: "syna-custom-section-2", context: brief, prompt/g)).toHaveLength(2);
+    // Depuis l'audit du site (partie 3), la partie du plan commune à tout le site part avec le résumé, en mémoire.
+    expect(src.match(/promptKey: "syna-custom-section-2", context: dossierEtPlan, prompt/g)).toHaveLength(2);
+    expect(src).toMatch(/const dossierEtPlan = commun \? `\$\{brief\}\\n\\n\$\{commun\}` : brief;/);
     expect(src).not.toMatch(/sectionWritePrompt\(brief,/);
   });
 
