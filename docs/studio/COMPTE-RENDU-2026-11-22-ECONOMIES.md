@@ -694,7 +694,7 @@ Administration › Fournisseurs IA et confirmé chaque modèle ; sans clé, le S
   signaler un plan : il est retiré tout de suite, la trace reste.
 
 **Ce que ça coûtera (estimé, d'après les prix officiels du 22 novembre, un dollar compté pour un euro, relecture du
-juge non comptée) :** un plan animé de 5 secondes coûte environ 0,19 € avec Wan 2.6 Flash, 0,15 € avec Veo 3.1 Lite,
+juge non comptée) :** un plan animé de 5 secondes coûte environ 0,19 € avec Wan 2.6 Flash, 0,18 € avec Veo 3.1 Lite (6 secondes, sa durée la plus proche),
 0,40 € avec Seedance 2.0 Mini, 0,79 € avec Kling 4.0, 1,16 € avec Seedance 2.5. Pour le forfait à 99 € (33 € de budget
 d'IA par mois), une publication du mélange prend donc entre environ 0,5 % et 3,5 % de son mois, une publicité (deux
 plans animés) le double. Seul le plan accepté lui est compté.
