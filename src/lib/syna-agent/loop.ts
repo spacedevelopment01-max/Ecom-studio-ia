@@ -367,6 +367,9 @@ export function piecesJointes(cid: string, history: SynaMessage[]): string {
   return toutes.map((a) => (neuves.has(a.id) ? describeAttachment(a) : `- ${a.id} : « ${a.name} »${a.assetId ? ` (asset ${a.assetId})` : ""}`)).join("\n");
 }
 
+/** Une image du parcours qui change souvent (gardée hors de la partie en mémoire). */
+export const imageQuiChange = (label?: string) => /^(Thème sur mesure|Galerie produit|Maquette|Site codé|Accueil dessiné)/.test(label ?? "");
+
 /** La section désignée par le client dans son message (« [Élément désigné · section s1234abcd … »), sinon null. */
 export function sectionDesignee(text: string): string | null {
   return /^\[Élément désigné · section (s[0-9a-f]{8})\b/.exec(text.trim())?.[1] ?? null;
@@ -617,9 +620,12 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   const openings = history.filter((m) => m.role === "assistant" && m.content?.message).slice(-4).map((m) => String(m.content.message).split(/\s+/).slice(0, 5).join(" "));
   // Les photos jointes par le client arrivent avec sa demande ; les images de ce qu'elle a déjà créé (logos, planche,
   // site) restent les mêmes d'un pas à l'autre : elles sont gardées en mémoire chez le fournisseur (22 novembre 2026).
+  // Les images qui changent à chaque retouche ou disparaissent au bout de quelques minutes (captures du site, photos et
+  // galerie récentes, maquettes, accueil dessiné) partent après le fil : en mémoire, chacune ferait réécrire tout le fil.
   const jointes: LlmImage[] = (step === 0 || newAttachmentSinceLastAssistant(history) ? attachmentImages(r.conversation_id, history) : []).slice(0, 12);
-  const duParcours: LlmImage[] = (await journeyImages(journeyOf(r.conversation_id), r.project_id).catch(() => [])).slice(0, 12 - jointes.length);
-  const images = [...jointes, ...duParcours];
+  const parcours: LlmImage[] = (await journeyImages(journeyOf(r.conversation_id), r.project_id).catch(() => [])).slice(0, 12 - jointes.length);
+  const duParcours = parcours.filter((im) => !imageQuiChange(im.label));
+  const images = [...jointes, ...parcours.filter((im) => imageQuiChange(im.label))];
   const guide = guideDeLEtape(journeyOf(r.conversation_id));
   const b = budgetState(user.id, r.project_id, r.conversation_id);
   const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon) : il est créé dès que l'activité et l'offre du client sont connues (start.answer).", "No project linked yet (draft): it is created once the business and offer are known.");
@@ -637,14 +643,14 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
     history: filEnBlocs(history, history[0] ? messagesDuClientAvant(r.conversation_id, history[0].seq) : []),
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
-    images: jointes.length ? jointes : undefined,
+    images: images.length ? images : undefined,
     imagesEnMemoire: duParcours.length ? duParcours : undefined,
     maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${cle}`, routing: { difficulty: "complex", prefer: { ...choix, effort: sinaModels().strong.effort } },
     // L'effort des moments forts passe par un message dans la conversation : l'effort de la demande ne change plus et la
     // mémoire du fil reste (22 novembre 2026). Fonction refusée ou éteinte : l'effort passe dans la demande, comme avant.
     ...(choix.effort && choix.effort !== sinaModels().strong.effort ? { effortDuTour: choix.effort } : {}),
   };
-  sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Identité|Marque du client|Maquette|Site codé|Thème sur mesure|Accueil dessiné)/.test(im.label ?? "")));
+  sawImages.set(r.id, [...images, ...duParcours].some((im) => /^(Logo|Planche|Identité|Marque du client|Maquette|Site codé|Thème sur mesure|Accueil dessiné)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
   // Budget des réponses, plus le reste d'un accord donné sur la carte dans cette demande (pour en rendre compte).
   const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);

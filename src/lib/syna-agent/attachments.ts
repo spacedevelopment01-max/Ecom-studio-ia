@@ -147,7 +147,7 @@ export function describeAttachment(a: Attachment): string {
  */
 type BoardShot = { id: string } | null | undefined;
 type BoardShots = { logo?: BoardShot; hero?: BoardShot; site?: BoardShot; object?: BoardShot; signs?: BoardShot; posts?: BoardShot[] };
-export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number;
+export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number; site?: { at?: number };
   identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
@@ -198,7 +198,9 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
   // sur ordinateur et sur téléphone, capturés par le Studio (gratuit, une fois par version du thème).
   // Découpées en bandes (ordinateur : 1 600 px de haut, téléphone : 1 200 px) : une capture entière serait réduite par le
   // modèle au point de rendre les textes illisibles.
-  if (projectId && (j.siteMode?.mode === "mockup" || j.customChosenAt) && j.steps[7]?.status !== "done") {
+  // Dès que SINA a créé le site (lot 4), pendant les retouches AVANT la validation aussi (audit du 22 novembre 2026 : elle
+  // retouchait sans voir).
+  if (projectId && (j.siteMode?.mode === "mockup" || j.customChosenAt || j.site?.at) && j.steps[7]?.status !== "done") {
     // Photos du thème sur mesure créées ces 20 dernières minutes (custom.photo, montage) : SINA les vérifie elle-même
     // avant d'en parler (sujet entier, aucun texte, fidèle au produit), en pleine définition, les plus récentes d'abord.
     const { all } = await import("../db");

@@ -42,5 +42,14 @@ describe("petits postes de la conversation", async () => {
     expect(out).toContain("- att-ancien : « ancien.txt »");
     expect(out).toMatch(/- att-neuf : document « neuf\.txt », 200 caractères\. Début : Contenu du document\./);
   });
+  it("pendant les retouches, avant la validation, SINA voit son site ; ces captures changeantes partent après le fil", async () => {
+    const { imageQuiChange } = await import("@/lib/syna-agent/loop");
+    expect(imageQuiChange("Thème sur mesure du client — accueil (téléphone), partie 1/3")).toBe(true);
+    expect(imageQuiChange("Galerie produit créée il y a quelques minutes")).toBe(true);
+    expect(imageQuiChange("Marque du client — logo")).toBe(false);
+    expect(imageQuiChange("Identité A")).toBe(false);
+    const src = fs.readFileSync("src/lib/syna-agent/attachments.ts", "utf8");
+    expect(src).toContain(`(j.siteMode?.mode === "mockup" || j.customChosenAt || j.site?.at)`);
+  });
 });
 
