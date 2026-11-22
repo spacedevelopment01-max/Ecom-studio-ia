@@ -157,6 +157,14 @@ const proposeTool: AgentTool<ProposeArgs> = {
 const PARTS = ["name", "slogan", "palette", "fonts", "tone", "logo"] as const;
 type Part = (typeof PARTS)[number];
 
+/** Quelles images de la planche ne sont plus vraies après un mélange ou une retouche : « toutes », « nom » (toutes sauf la grande scène) ou rien. */
+export function imagesAJeter(mix: Partial<Record<Part, Key>>, key: Key, edits: { name?: string; slogan?: string } = {}): "toutes" | "nom" | null {
+  const ailleurs = (part: Part) => !!mix[part] && mix[part] !== key;
+  if (ailleurs("palette") || ailleurs("fonts")) return "toutes";
+  if (edits.name || ailleurs("name")) return "nom";
+  return null;
+}
+
 /** Identité retenue : une base, des éléments pris aux autres (mélange), des retouches du client mot pour mot. */
 export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part, Key>> = {}, edits: { name?: string; slogan?: string } = {}): Identity {
   const pick = (k?: Key) => list.find((x) => x.key === (k ?? key))!;
@@ -175,10 +183,13 @@ export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part
     // Le « pourquoi » d'une identité parle de SES couleurs, polices et ton : il n'est plus vrai après un mélange de ces
     // éléments (essai réel : « fond en dégradé, vert basilic » affiché sur un fond blanc au bouton bleu).
     why: (["palette", "fonts", "tone"] as const).some((part) => mix[part] && mix[part] !== key) ? "" : base.why,
-    // Les images d'une planche (logo, sachet, site) portent SON nom, SES couleurs et SES polices : après un mélange
-    // ou une retouche du nom ou de la signature, elles ne sont plus vraies ; la planche revient aux dessins.
-    ...(base.board?.images && (edits.name || edits.slogan || (["name", "slogan", "palette", "fonts"] as const).some((part) => mix[part] && mix[part] !== key)) ? { board: (({ images: _gone, ...rest }) => rest)(base.board) } : {}),
+    // Les images d'une planche portent SON nom, SES couleurs et SES polices ; aucune ne porte la signature (22 novembre
+    // 2026, audit de la marque : une retouche d'un mot jetait le logo choisi, la grande scène et le téléphone, et
+    // affichait une seconde carte). Couleurs ou polices changées : toutes refaites ; nom changé : toutes sauf la grande
+    // scène, qui n'a aucun texte ; signature seule : rien n'est refait.
+    ...(base.board?.images && imagesAJeter(mix, key, edits) ? { board: { ...base.board, images: imagesAJeter(mix, key, edits) === "toutes" ? undefined : (({ hero }) => (hero ? { hero } : undefined))(base.board.images as Record<string, unknown>) } as typeof base.board } : {}),
   };
+  if (out.board && "images" in out.board && out.board.images === undefined) out.board = (({ images: _gone, ...rest }) => rest)(out.board) as typeof out.board;
   // Le nom de domaine a été contrôlé pour LE nom de la planche : nom retouché ou pris ailleurs, il n'est plus vrai.
   if (out.board?.domains && (edits.name || (mix.name && mix.name !== key))) out.board = (({ domains: _old, ...rest }) => rest)(out.board) as typeof out.board;
   return out;

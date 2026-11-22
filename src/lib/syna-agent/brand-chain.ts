@@ -581,6 +581,13 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const targets = a.redo?.length ? previous.filter((x) => a.redo!.includes(x.key)) : previous, round = j.identities?.round ?? 1;
     let list = (j.identities?.list ?? []) as Route[];
     const said: string[] = [], redoneLogos: Buffer[] = [], siteGardes: string[] = [];
+    // Un logo refait reçoit d'abord les logos des AUTRES planches de la série montrée (règle du propriétaire : chaque logo
+    // reçoit ceux déjà faits, « je veux un logo complètement différent » ; audit du 22 novembre 2026 : il ne recevait que
+    // ceux refaits dans la même tâche).
+    if ((a.slots ?? CREATED_SLOTS).includes("logo")) for (const o of list.filter((y) => !targets.some((t) => t.key === y.key))) {
+      const g = o.board?.images?.logo ? getAsset(o.board.images.logo.id) : undefined;
+      if (g) { try { redoneLogos.push(assetData(g)); } catch { /* fichier absent */ } }
+    }
     // Logo refait seul : la consigne écrite par SINA ne va jamais au dessinateur, même par la fiche de la marque (décision
     // du propriétaire du 21 novembre 2026 : « pas de consigne autre que les 50 logos en exemple » ; essai réel du même
     // jour : SINA y avait mis « logotype sobre, lettres à empattements, un fil à plomb » et neuf signes interdits). Elle
@@ -887,6 +894,12 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // créé, il est donné au dessinateur avec « je veux un logo complètement différent de celui-là » ; le troisième reçoit
   // les deux premiers, et ainsi de suite, avec les mêmes consignes de base. Jamais les logos d'avant.
   const seriesLogos: Buffer[] = [];
+  // Un logo refait avant le choix (une planche reprise, les autres gardées) reçoit les logos des AUTRES planches de la
+  // série montrée, avec « je veux un logo complètement différent » (audit du 22 novembre 2026 : il ne les recevait pas).
+  for (const o of list.filter((y) => !todo.includes(y.key))) {
+    const g = o.board?.images?.logo ? getAsset(o.board.images.logo.id) : undefined;
+    if (g) { try { seriesLogos.push(assetData(g)); } catch { /* fichier absent */ } }
+  }
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {

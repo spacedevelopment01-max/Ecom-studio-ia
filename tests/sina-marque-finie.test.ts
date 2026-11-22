@@ -521,7 +521,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // (La maquette du site appartient à la proposition : elle ne se refait que si le client la demande.)
     expect(F.missingSlots(j)).toEqual(["logo", "hero", "object", "signs", "post0", "post1", "post2"]);
     const est = finishEstimate(j);
-    expect(est.slots).toEqual(["logo", "hero", "object", "signs", "post0", "post1", "post2"]);
+    // Un logo à créer entraîne tout ce qui le porte, le téléphone compris (22 novembre 2026 : jamais l'ancien logo).
+    expect(est.slots).toEqual(["logo", "hero", "object", "signs", "site", "post0", "post1", "post2"]);
     expect(est.maxMicro).toBeGreaterThan(0);
     // Ce qui était déjà couvert par son accord (l'objet, les signes, les publications) n'est pas compté deux fois.
     expect(est.maxMicro).toBe(C.finishQuote(est.slots).maxMicro - C.finishQuote().maxMicro);
@@ -533,11 +534,11 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(r.summary).toMatch(/^Je finis ta marque \(quelques minutes\)/);
     expect(payloadOf(r.jobs![0])).toMatchObject({ finish: true, capMicro: C.finishQuote(est.slots).maxMicro });
     const { log } = await runJob(r.jobs![0]);
-    // Identité mélangée : la direction artistique est réécrite pour elle (un appel « imagery »), puis les sept images
-    // de sa marque (la maquette du site appartient à la proposition : elle ne se refait que si le client la demande).
-    const all8 = ":logo+hero+object+signs+post0+post1+post2";
+    // Identité mélangée : la direction artistique est réécrite pour elle (un appel « imagery »), puis les huit images
+    // de sa marque, le téléphone compris : il portait l'ancien logo et les anciennes couleurs (22 novembre 2026).
+    const all8 = ":logo+hero+object+signs+site+post0+post1+post2";
     // Puis le symbole seul, tiré du logo créé pour l'identité mélangée, et sa relecture.
-    expect(log.ids).toEqual([`imagery-1-A${all8}`, `image-1-A-logo${all8}`, `imagecheck-1-A${all8}:logo`, ...["hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), ...["hero", "object", "signs", "post0", "post1", "post2"].map((sl) => `imagecheck-1-A${all8}:${sl}`), "symbol-1", "symbolcheck-1"]);
+    expect(log.ids).toEqual([`imagery-1-A${all8}`, `image-1-A-logo${all8}`, `imagecheck-1-A${all8}:logo`, ...["hero", "site", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${all8}`), ...["hero", "object", "signs", "site", "post0", "post1", "post2"].map((sl) => `imagecheck-1-A${all8}:${sl}`), "symbol-1", "symbolcheck-1"]);
     expect(log.prompts[`imagery-1-A${all8}`]).toContain(`couleur de marque ${route("B").palette.primary}`);
     const done = J.journeyOf(t.cid);
     {
@@ -554,7 +555,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect((await fr(() => threadView(t.user, t.cid))).journey.identities!.final).toMatchObject({ finished: true, name: "Bain de Minuit" });
   });
 
-  it("brand.finish avec redo « logo » et les mots du client : un autre logo, l'objet et les signes refaits avec lui ; les publications ne bougent pas", async () => {
+  it("brand.finish avec redo « logo » et les mots du client : un autre logo, et tout ce qui le porte refait avec lui (objet, signes, téléphone, les trois publications)", async () => {
     const t = await thread();
     await proposed(t);
     const chosen = await call("identity.choose", t.ctx, { key: "A" });
@@ -563,31 +564,33 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     const logoBefore = loadProject(t.pid).brand!.logo.assetId, symbolBefore = loadProject(t.pid).brand!.logo.markAssetId;
     expect(keptSymbols(t.pid).map((x) => x.id)).toEqual([symbolBefore]);
     // Un nouveau logo entraîne ce qui le porte (jamais deux logos différents sur la marque).
-    expect(F.finishSlots(before, ["logo"])).toEqual(["logo", "object", "signs"]);
+    // Depuis le 22 novembre 2026 : partout où il est posé, publications et téléphone compris (jamais l'ancien logo).
+    expect(F.finishSlots(before, ["logo"])).toEqual(["logo", "object", "signs", "site", "post0", "post1", "post2"]);
     expect(F.finishSlots(before, ["post1"])).toEqual(["post1"]);
     const args = { redo: ["logo"], guidance: "Plus rond, avec une lune." };
     const est = await estimate("brand.finish", t.ctx, args);
-    expect(est.maxMicro).toBe(C.finishQuote(["logo", "object", "signs"]).maxMicro);
+    expect(est.maxMicro).toBe(C.finishQuote(["logo", "object", "signs", "site", "post0", "post1", "post2"]).maxMicro);
     expect(est.maxMicro).toBeGreaterThan(0);
-    expect(est.label).toBe("3 images de ta marque à refaire");
+    expect(est.label).toBe("7 images de ta marque à refaire");
 
     const r = await call("brand.finish", t.ctx, args);
     expect(r.ok).toBe(true);
     expect(r.summary).toBe("Je refais ce que tu m'as demandé (quelques minutes) ; le reste de ta marque ne bouge pas.");
-    expect(payloadOf(r.jobs![0])).toMatchObject({ finish: true, slots: ["logo", "object", "signs"], guidance: "Plus rond, avec une lune.", capMicro: est.maxMicro });
+    expect(payloadOf(r.jobs![0])).toMatchObject({ finish: true, slots: ["logo", "object", "signs", "site", "post0", "post1", "post2"], guidance: "Plus rond, avec une lune.", capMicro: est.maxMicro });
     const { log, out } = await runJob(r.jobs![0], { logoIdea: "Une lune ronde qui porte le nom.", draw: async (id) => (isLogo(id) ? whiteLogo("#7A1F5A") : square("#224466")) });
-    const part = ":logo+object+signs";
+    const part = ":logo+object+signs+site+post0+post1+post2";
     // Le client demande un changement avec ses mots : la direction artistique est réécrite, et l'ancien logo est donné
     // comme ce dont le nouveau doit nettement différer.
     // Un autre logo : son symbole est tiré du NOUVEAU logo (un appel de création, un de relecture).
-    expect(log.ids).toEqual([`imagery-1-A${part}`, `image-1-A-logo${part}`, `imagecheck-1-A${part}:logo`, `image-1-A-object${part}`, `image-1-A-signs${part}`, ...["object", "signs"].map((sl) => `imagecheck-1-A${part}:${sl}`), "symbol-1", "symbolcheck-1"]);
+    // Le logo est relu AVANT ce qui le porte ; puis tout ce qui le porte, puis leurs relectures.
+    expect(log.ids).toEqual([`imagery-1-A${part}`, `image-1-A-logo${part}`, `imagecheck-1-A${part}:logo`, ...["site", "object", "signs", "post0", "post1", "post2"].map((sl) => `image-1-A-${sl}${part}`), ...["object", "signs", "site", "post0", "post1", "post2"].map((sl) => `imagecheck-1-A${part}:${sl}`), "symbol-1", "symbolcheck-1"]);
     expect(log.refs["symbol-1"]).toEqual({ logo: true, scene: false, aspect: "1:1" });
     expect(log.prompts[`imagery-1-A${part}`]).toMatch(/# Ce que le client demande pour cette nouvelle proposition \(ses mots\)\nPlus rond, avec une lune\./);
     // Rien des autres logos n'est transmis, ni en image ni en mots : chaque logo repart de zéro.
     expect(log.prompts[`imagery-1-A${part}`]).not.toMatch(/Logos déjà prévus|AUTRES propositions|logos DÉJÀ/);
     expect(log.refs[`image-1-A-logo${part}`].logo).toBe(false);
     expect(log.refs[`image-1-A-object${part}`].logo).toBe(true);
-    expect(out.created).toEqual(["logo", "object", "signs"]);
+    expect(out.created).toEqual(["logo", "object", "signs", "site", "post0", "post1", "post2"]);
 
     const j = J.journeyOf(t.cid), now = j.brandFinish!.images!;
     expect(now.logo!.id).not.toBe(was.logo!.id);
@@ -595,10 +598,10 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(now.signs!.id).not.toBe(was.signs!.id);
     expect(now.mark!.id).not.toBe(was.mark!.id);
     expect(now.logoIdea).toBe("Une lune ronde qui porte le nom.");
-    // Ce qu'il garde ne bouge pas.
-    expect(now.posts).toEqual(was.posts);
+    // Plus jamais l'ancien logo sur la marque finie : les publications portent le nouveau ; la grande scène, sans logo, reste.
+    expect(now.posts).not.toEqual(was.posts);
     expect(now.hero).toEqual(was.hero);
-    expect(now.site).toEqual(was.site);
+    expect(now.site).not.toEqual(was.site); // le téléphone porte le nouveau logo
     // Le logo de la marque change avec lui ; la charte est refaite avec le nouveau.
     expect(j.brandFinish!.logoFrom).toBe(now.logo!.id);
     expect(j.logoChoice!.assetId).not.toBe(before.logoChoice!.assetId);
@@ -672,7 +675,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(chosen.hint).toMatch(/brand\.finish/);
     const j0 = J.journeyOf(t.cid);
     expect(F.missingSlots(j0)).toEqual(["logo", "object", "signs", "post0", "post1", "post2"]);
-    expect(finishEstimate(j0).maxMicro).toBe(C.finishQuote(F.missingSlots(j0)).maxMicro - C.finishQuote().maxMicro);
+    // Le logo à créer entraîne aussi le téléphone (jamais l'ancien logo).
+    expect(finishEstimate(j0).maxMicro).toBe(C.finishQuote(F.finishSlots(j0)).maxMicro - C.finishQuote().maxMicro);
     const r = await call("brand.finish", t.ctx, {});
     expect(r.ok).toBe(true);
     // Le nouveau logo est refusé par la relecture (une faute dans le nom).

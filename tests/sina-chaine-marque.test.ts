@@ -142,7 +142,7 @@ describe("SINA — chaîne de création de la marque", async () => {
       })();
       return c.schema.parse(c.prepare ? c.prepare(raw) : raw);
     },
-    draw: async (id: string, c: any) => { log.ids.push(id); log.prompts[id] = c.prompt; (log as any).refs = { ...((log as any).refs ?? {}), [id]: { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect } }; return s.draw ? s.draw(id, c) : isLogo(id) ? whiteLogo() : square("#3366CC"); },
+    draw: async (id: string, c: any) => { log.ids.push(id); log.prompts[id] = c.prompt; (log as any).refs = { ...((log as any).refs ?? {}), [id]: { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect } }; if (c.avoid) (log as any).avoid = { ...((log as any).avoid ?? {}), [id]: true }; return s.draw ? s.draw(id, c) : isLogo(id) ? whiteLogo() : square("#3366CC"); },
     look: async (id: string, c: any) => {
       log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system;
       const name = /Marque : « (.+?) »/.exec(c.prompt)?.[1] ?? "";
@@ -1059,6 +1059,17 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(log.systems[Object.keys(log.systems).find((k) => k.startsWith("imagecheck-1-A"))!]).toMatch(/si tu as recopié le texte attendu sans faute, il n'y a pas de faute/);
   });
 
+  it("un logo refait avant le choix reçoit les logos des autres planches de la série, avec « je veux un logo complètement différent »", async () => {
+    const t = await thread();
+    await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
+    // Les planches A et C ont déjà leur logo ; seul celui de B est refait.
+    await chain(t, { imagesOnly: true, redo: ["A", "C"], slots: ["logo"] }, {});
+    const { log } = await chain(t, { imagesOnly: true, redo: ["B"], slots: ["logo"] }, {});
+    const id = log.ids.find((x) => /^image-1-B-logo/.test(x))!;
+    expect((log as any).avoid?.[id]).toBe(true);
+    expect(log.prompts[id]).toMatch(/complètement différent/);
+  });
+
   it("images seules sur des planches déjà écrites : les textes ne bougent pas ; une image en échec n'est pas relancée", async () => {
     const t = await thread();
     await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
@@ -1087,11 +1098,14 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(list[0].board!.images).toBeUndefined();
     expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité A : je n'ai pas pu relire ses images, donc je ne te les montre pas/);
     expect(list[1].board!.images!.logo).toBeTruthy();
-    // Identité prise telle quelle : ses images restent. Nom d'une autre, couleurs d'une autre, nom retouché : elles partent.
+    // Identité prise telle quelle : ses images restent. Couleurs d'une autre : toutes partent. Nom d'une autre ou nom
+    // retouché : toutes sauf la grande scène, qui n'a aucun texte. Signature retouchée : rien ne part, aucune image ne
+    // la porte (22 novembre 2026, audit de la marque).
     expect(mixIdentity(list, "B").board!.images).toBeTruthy();
-    expect(mixIdentity(list, "B", { name: "C" }).board!.images).toBeUndefined();
+    expect(Object.keys(mixIdentity(list, "B", { name: "C" }).board!.images ?? {})).toEqual(list[1].board!.images!.hero ? ["hero"] : []);
     expect(mixIdentity(list, "B", { palette: "C" }).board!.images).toBeUndefined();
-    expect(mixIdentity(list, "B", {}, { name: "Autre Nom" }).board!.images).toBeUndefined();
+    expect(Object.keys(mixIdentity(list, "B", {}, { name: "Autre Nom" }).board!.images ?? {})).toEqual(list[1].board!.images!.hero ? ["hero"] : []);
+    expect(mixIdentity(list, "B", {}, { slogan: "Une autre signature" }).board!.images).toEqual(list[1].board!.images);
     expect(mixIdentity(list, "B", { tone: "C" }).board!.images).toBeTruthy();
   });
 

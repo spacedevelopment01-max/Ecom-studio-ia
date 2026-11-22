@@ -41,7 +41,10 @@ export function missingSlots(j: Journey): ImageSlot[] {
   // La maquette du site appartient à la proposition : absente (refusée, ou jamais demandée), elle ne se refait que si
   // le client la demande (redo « site »), jamais d'office à la fin de la marque, qui reste couverte par son accord.
   // Sauf un logo refait SEUL avant le choix (20 novembre 2026) : la maquette montre encore l'ancien logo, elle est refaite.
-  const ancien = (j.identities?.siteAncienLogo ?? []).includes(x.key);
+  // Nom retouché ou pris à une autre identité : le téléphone portait l'ancien nom, il est refait (sinon la marque finie
+  // restait sans téléphone, audit du 22 novembre 2026).
+  const c = j.identityChoice, nomChange = !!c?.edits?.name || (!!c?.mix?.name && c.mix.name !== c.key);
+  const ancien = (j.identities?.siteAncienLogo ?? []).includes(x.key) || nomChange;
   return CREATED_SLOTS.filter((s) => (s !== "site" || ancien) && !(s === "logo" && j.keep.includes("logo")) && (!has(x.board.images, s) || (s === "site" && ancien)));
 }
 
@@ -49,7 +52,10 @@ export function missingSlots(j: Journey): ImageSlot[] {
 export function finishSlots(j: Journey, redo?: readonly ImageSlot[]): ImageSlot[] {
   let slots: ImageSlot[] = redo?.length ? [...redo] : missingSlots(j);
   if (j.keep.includes("logo")) slots = slots.filter((s) => s !== "logo");
-  if (slots.includes("logo")) slots = [...slots, "object", "signs"];
+  // Un logo refait remplace l'ancien PARTOUT : ce qui le porte (objet, signes, les trois publications, le téléphone) est
+  // refait avec lui (règle « jamais l'ancien logo sur la marque finie » ; audit du 22 novembre 2026 : publications et
+  // téléphone gardaient l'ancien).
+  if (slots.includes("logo")) slots = [...slots, "object", "signs", "post0", "post1", "post2", "site"];
   return CREATED_SLOTS.filter((s) => slots.includes(s));
 }
 
@@ -88,7 +94,10 @@ export async function runBrandFinish(o: {
   const round = j.identities?.round ?? 1, keptLogo = j.keep.includes("logo");
   const clientLogo = keptLogo ? await clientLogoOf(o.projectId) : null;
   const slots = finishSlots(j, o.slots);
-  const mixed = Object.entries(j.identityChoice.mix ?? {}).some(([, k]) => k && k !== j.identityChoice!.key) || !!j.identityChoice.edits;
+  // La direction artistique n'est réécrite que si ce que les images montrent change (couleurs, polices, nom, logo pris
+  // ailleurs) ; une signature retouchée, un ton pris ailleurs ne la touchent pas (audit de la marque, 22 novembre 2026).
+  const c = j.identityChoice, ailleurs = (part: string) => { const k = (c.mix as Record<string, string | undefined> | undefined)?.[part]; return !!k && k !== c.key; };
+  const mixed = ["palette", "fonts", "name", "logo"].some(ailleurs) || !!c.edits?.name;
   const notes: string[] = [], issues: string[] = [];
 
   // 1. Les images. La direction artistique du premier temps ressert telle quelle, sauf si le client a mélangé deux
