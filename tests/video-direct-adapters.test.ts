@@ -141,3 +141,26 @@ it("un refus du fabricant n'est pas facturé : la réservation est rendue", asyn
   expect(all<any>("SELECT * FROM usage_events WHERE project_id=?", projectId)).toHaveLength(0);
   expect(one<any>("SELECT status FROM ai_reservations WHERE project_id=?", projectId)?.status).toBe("released");
 });
+
+it("rapport 09, point 10 : un plan payé puis refusé au contrôle est rendu au client et passe à la charge du Studio", async () => {
+  const { rendreAuClient } = await import("@/lib/billing");
+  const { accountKeyFor } = await import("@/lib/project-billing");
+  const u = await createUser(`direct-rendu-${crypto.randomUUID()}@test.invalid`, "motdepasse-test", "Fixture"), projectId = seedImageFixture(u.id, "hightech");
+  grantProjectPlan(projectId, "dominer");
+  setSetting("provider.kling.apiKey", "fixture-kling-not-secret");
+  setJsonSetting("ai.media.models", { "kling:kling-4.0": { confirmedAt: Date.now(), enabled: true } });
+  vi.stubGlobal("fetch", vi.fn(async (input: any, init: any) => String(input).includes("fixture.invalid") ? new Response(Buffer.from("CLIP")) : init?.method === "POST" ? Response.json({ code: 0, data: { id: "k-9" } }) : Response.json({ code: 0, data: [{ status: "succeeded", outputs: [{ type: "video", url: "https://fixture.invalid/clip.mp4" }] }] })));
+  const image = await sharp({ create: { width: 64, height: 96, channels: 3, background: "#41392a" } }).jpeg().toBuffer();
+  await runForUser(u.id, () => directClip({ userId: u.id, projectId, usageKey: "plan-refuse" }, { provider: "kling", image, prompt: "x", aspect: "9:16", seconds: 5, model: "kling-4.0" }), "normal", projectId);
+  const key = accountKeyFor(u.id, projectId);
+  const used = () => one<any>("SELECT monthly_used FROM wallets WHERE user_id=?", key)!.monthly_used as number;
+  const before = used();
+  expect(before).toBeGreaterThan(0);
+  const rendu = rendreAuClient(u.id, { task: "video_generation", projectId, usageKey: "plan-refuse" }, "plan refusé");
+  expect(rendu).toBe(before);
+  expect(used()).toBe(0);
+  expect(one<any>("SELECT studio FROM ai_reservations WHERE project_id=?", projectId)!.studio).toBe(1);
+  // Une seconde fois : rien de plus (jamais rendu deux fois).
+  expect(rendreAuClient(u.id, { task: "video_generation", projectId, usageKey: "plan-refuse" }, "plan refusé")).toBe(0);
+  expect(all<any>("SELECT type FROM ledger WHERE user_id=? AND type IN ('refund','studio')", key).map((r) => r.type).sort()).toEqual(["refund", "studio"]);
+});

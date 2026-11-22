@@ -548,6 +548,28 @@ export function settle(reservationId: string, billedMicro: number, ref: string |
   });
 }
 
+/**
+ * Essai raté rendu au client (rapport 09, point 10 : « aucun essai raté facturé ») : un plan vidéo créé, payé, puis
+ * refusé par le contrôle n'est jamais à sa charge. Ce qu'il avait payé lui est rendu (budget du mois s'il s'agit du même
+ * mois, packs sinon toujours) et le coût réel passe à la charge du Studio. Idempotent ; renvoie ce qui a été rendu.
+ */
+export function rendreAuClient(user: string, meta: Pick<ReservationMeta, "task" | "projectId" | "usageKey">, note: string): number {
+  const key = operationKey(user, meta);
+  if (!key) return 0;
+  return tx(() => {
+    const r = one<ReservationRow & { studio: number }>("SELECT * FROM ai_reservations WHERE operation_key = ? AND status IN ('settled','reconciled','uncertain')", key);
+    if (!r || r.studio) return 0;
+    const w = one<{ period_start: number }>("SELECT period_start FROM wallets WHERE user_id = ?", r.user_id);
+    const monthly = w && r.settled_period_start === w.period_start ? r.debit_monthly : 0;
+    const topup = r.debit_topup;
+    run("UPDATE wallets SET monthly_used = MAX(0, monthly_used - ?), topup_balance = topup_balance + ?, topup_period_used = MAX(0, topup_period_used - ?), updated_at = ? WHERE user_id = ?", monthly, topup, topup, now(), r.user_id);
+    run("UPDATE ai_reservations SET studio = 1, debit_monthly = debit_monthly - ?, debit_topup = 0, note = ? WHERE id = ?", monthly, `à la charge du Studio — ${note.slice(0, 120)}`, r.id);
+    if (monthly + topup > 0) run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "refund", topup > 0 ? "topup" : "monthly", monthly + topup, `rendu:${r.id}`, `Essai raté rendu au client — ${note.slice(0, 120)}`, now());
+    if ((r.actual ?? 0) > 0) run("INSERT INTO ledger (id, user_id, type, bucket, amount, ref, note, created_at) VALUES (?,?,?,?,?,?,?,?)", id(), r.user_id, "studio", "none", -(r.actual ?? 0), `studio:${r.id}`, `Essai raté à la charge du Studio — ${note.slice(0, 120)}`, now());
+    return monthly + topup;
+  });
+}
+
 /** Libère une réservation : l'appel n'a rien coûté (refusé par le fournisseur avant tout travail, déjà compté). */
 export function release(reservationId: string, reason = "") {
   tx(() => {

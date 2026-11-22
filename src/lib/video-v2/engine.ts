@@ -38,7 +38,7 @@ import { assetData, getAsset, saveAsset } from "../library";
 import { loadProject, type Project } from "../projects";
 import { applyWordingDeep, loadWordingRules } from "../client-wording";
 import { contentLang, L } from "../i18n-server";
-import { EUR } from "../billing";
+import { EUR, rendreAuClient } from "../billing";
 import { budgetPctText } from "../ai/budget-pct";
 import { brandTypo, palette } from "../engine/images";
 import { adInsight } from "../ads-v2/insight";
@@ -51,15 +51,16 @@ import { buildStoryboard, storyboardIssues, type Inventory } from "./storyboard"
 import { planShots } from "./shots";
 import { chooseProvider, estimateMicro, shootDuration, VIDEO_CAPABILITIES } from "./providers";
 import { cuesForVoice, defaultSubtitleStyle, endCardDoc, interfaceDoc, kineticDoc, overlayText, packshotDoc, safeZone, SIZES, timeline, VIDEO_DOC_VERSION, voiceClip, inkOn, enlargeSmallTitles, type Palette } from "./doc";
-import { gateShot, gateVideo, localVideoChecks } from "./quality";
+import { colourSignature, DRIFT_FPS, DRIFT_LIMIT, gateShot, gateVideo, imageSignature, localVideoChecks, productDrift } from "./quality";
 import { NO_PEOPLE_EN } from "../people-policy";
 import { engineVideoKey, keyFrames, rememberShot, renderVideoFile, saveRendered, saveVideoVersion, shotKey, shotMemo, videoUserOwned } from "./store";
 import { honestLine, personaPrompt, personaSheet, ugcScriptIssues, type PersonaSheet } from "./ugc";
 import { realVideoDeps, type VideoV2Deps } from "./deps";
-import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, VideoDocument, VideoReview, VideoRunResult, VideoScript } from "./types";
+import type { Clip, CreativeStrategy, ShotOutcome, ShotPlan, ShotReview, VideoDocument, VideoReview, VideoRunResult, VideoScript } from "./types";
 import type { GateDecision } from "../quality/gate";
 import { execTool } from "../exec-tool";
 import { dressPromo } from "./promo";
+import { safeCamera } from "./melange";
 import { artDirection } from "../art-direction";
 import { adArt } from "../ads-v2/art";
 import { songGrid, songStyleFor } from "../media/song";
@@ -156,8 +157,9 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
     strategy,
     inv,
     allowGeneration: canGenerate,
-    provider: (need) => chooseProvider(need, { available: deps.available, preferred: deps.preferredFor ? deps.preferredFor(!!need.people) : deps.preferred, estimate: deps.estimate ?? estimateMicro }),
+    provider: (need) => chooseProvider(need, { available: deps.available, preferred: deps.preferredFor ? deps.preferredFor(!!need.people) : deps.preferred, estimate: deps.estimate ?? estimateMicro, only: need.people ? null : deps.animated ?? null }),
     budgetMicro: budget.capMicro,
+    ...(deps.animated !== undefined && !intent.generation ? { animated: deps.animated } : {}),
   });
   notes.push(...planning.notes);
   stats.skippedForBudget += planning.skippedForBudget;
@@ -196,7 +198,9 @@ async function engine(ctx: JobContext | null, p: Project, req: VideoRequestV2, d
       media.set(s.id, out.media);
       result.outcomes.push(out.outcome);
       if (out.characterRef && !characterRef) characterRef = out.characterRef;
+      if (out.replaced) shots = shots.map((x) => (x.id === s.id ? asSafe(x, out.replaced!, inv) : x));
     }
+    result.shots = shots;
 
     // 7. Document vidéo (timeline éditable), habillé façon publicité quand des plans réels existent.
     const thumbs = intent.kind === "ugc" ? [] : await promoThumbs(p, media, inv);
@@ -388,7 +392,7 @@ function localMedia(s: ShotPlan): Media {
 }
 
 export async function clipFrames(buf: Buffer): Promise<Buffer[]> {return (await inspectClip(buf)).frames;}
-async function inspectClip(buf:Buffer):Promise<{frames:Buffer[];durationS:number|null}> {
+async function inspectClip(buf:Buffer):Promise<{frames:Buffer[];durationS:number|null;signatures:number[][]}> {
   const dir = tmpDir("video2-frames");
   try {
     const f = path.join(dir, "in.mp4");
@@ -400,7 +404,13 @@ async function inspectClip(buf:Buffer):Promise<{frames:Buffer[];durationS:number
       await exec("ffmpeg", ["-y", "-v", "error", "-ss", String(t), "-i", f, "-frames:v", "1", "-q:v", "3", img]).catch(() => null);
       if (fs.existsSync(img)) out.push(fs.readFileSync(img));
     }
-    return {frames:out,durationS};
+    // Contrôle mécanique : cinq images par seconde en vignettes 32×32 (une seule lecture du fichier, gratuite).
+    const raw = path.join(dir, "sig.rgb");
+    await exec("ffmpeg", ["-y", "-v", "error", "-i", f, "-vf", `fps=${DRIFT_FPS},scale=32:32`, "-f", "rawvideo", "-pix_fmt", "rgb24", raw]).catch(() => null);
+    const bytes = fs.existsSync(raw) ? fs.readFileSync(raw) : Buffer.alloc(0);
+    const signatures: number[][] = [];
+    for (let k = 0; k + 3072 <= bytes.length; k += 3072) signatures.push(colourSignature(bytes.subarray(k, k + 3072)));
+    return {frames:out,durationS,signatures};
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -434,7 +444,7 @@ function stockFor(p: Project, s: ShotPlan): boolean {
   return !s.showsProduct;
 }
 
-async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: ShotOutcome; characterRef?: { assetId: string; data: Buffer } | null }> {
+async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: ShotOutcome; characterRef?: { assetId: string; data: Buffer } | null; /** Plan animé refusé remplacé par ce plan sûr. */ replaced?: ShotPlan["method"] }> {
   const { p, deps, s, stats } = o;
   const base: ShotOutcome = { shotId: s.id, method: s.method, verdict: "FINAL", assetId: null, attempts: 0, reused: false, costMicro: 0, reason: s.why, codes: [] };
   // Image Engine V2 pour un plan sans visuel (recherche d'abord, génération selon ses propres règles et plafond).
@@ -507,14 +517,20 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
       break;
     }
     o.ctx?.progress(0.3, `Tournage du plan ${s.id}`);
-    const buf = await videoReceipt(p.id,`${o.ctx?.job.id??"video2"}:video2:${key}:${attempt}`,()=>withCandidate(`video2:${s.id}`, attempt, () => deps.generateClip({ provider, model, image: start!, prompt: shotPrompt(s, o.strategy, o.persona, feedback, o.intent.people !== false), aspect: o.intent.aspect === "16:9" ? "16:9" : "9:16", seconds, people: s.character }, `${o.ctx?.job.id ?? "video2"}:video2:shot:${key}:${attempt}`)),{readOnlyRecovery:provider==="higgsfield"});
+    const clipKey = `${o.ctx?.job.id ?? "video2"}:video2:shot:${key}:${attempt}`;
+    const buf = await videoReceipt(p.id,`${o.ctx?.job.id??"video2"}:video2:${key}:${attempt}`,()=>withCandidate(`video2:${s.id}`, attempt, () => deps.generateClip({ provider, model, image: start!, prompt: shotPrompt(s, o.strategy, o.persona, feedback, o.intent.people !== false), aspect: o.intent.aspect === "16:9" ? "16:9" : "9:16", seconds, people: s.character }, clipKey)),{readOnlyRecovery:provider==="higgsfield"});
     o.budget.spentMicro += est;
     spent += est;
     stats.generated++;
     const inspected=await inspectClip(buf),frames=inspected.frames;
     let review = null;
     let error: string | null = null;
-    try {
+    // Contrôle mécanique d'abord (gratuit) : un écart arrête le plan sans payer la relecture.
+    const drift = start && inspected.signatures.length ? productDrift(await imageSignature(start), inspected.signatures) : null;
+    if (drift?.drift) {
+      error = null;
+      review = { score: 0, sameProduct: false, productAltered: true, characterConsistent: null, offTopic: false, artifacts: true, personVisible: false, issues: [`contrôle mécanique : écart de couleurs ${drift.gap} à l'image ${drift.atFrame + 1} (limite ${DRIFT_LIMIT})`] } as ShotReview;
+    } else try {
       review = await withCandidate(`video2:${s.id}`, attempt, () => deps.reviewShot(frames, { product: productRef, character: s.character ? (o.characterRef?.data ?? null) : null }, `Plan ${s.id} (${s.part}) : ${s.subject} — ${s.action}. Objectif : ${s.purpose}.`, `${o.ctx?.job.id ?? "video2"}:video2:shotqc:${key}:${attempt}`));
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached) throw e;
@@ -526,6 +542,12 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
     const g = gateSave({ userId: p.userId, projectId: p.id, jobId: o.ctx?.job.id ?? null, candidateId: `video2:${s.id}` }, d);
     const asset = await saveAsset({ projectId: p.id, userId: p.userId, data: buf, name: `plan-${s.id}-${s.part}${attempt ? `-essai-${attempt + 1}` : ""}.mp4`, mime: "video/mp4", role: "clip", folderKey: "videos.ads", origin: "generated", sourceAssetId: startAsset ?? null, status: d.verdict === "FINAL" ? "review" : "rejected", meta: {durationS:inspected.durationS, videoV2Shot: { key, shotId: s.id, provider, model, attempt, verdict: d.verdict }, ...g.meta } });
     last = { verdict: d.verdict, codes: [...d.fatalCodes, ...d.blockingCodes], reason: [d.reason, d.feedback].filter(Boolean).join(" — "), assetId: asset.id };
+    // Aucun essai raté facturé au client (rapport 09, point 10) : le plan refusé passe à la charge du Studio.
+    if (d.verdict !== "FINAL") {
+      rendreAuClient(p.userId, { task: "video_generation", projectId: p.id, usageKey: clipKey }, `plan ${s.id} refusé au contrôle`);
+      o.budget.spentMicro -= est;
+      spent -= est;
+    }
     if (d.verdict === "FINAL") break;
     if (d.verdict !== "RETRY" || d.action !== "regenerate") break;
     stats.retries++;
@@ -533,7 +555,28 @@ async function resolveShot(o: ResolveInput): Promise<{ media: Media; outcome: Sh
   }
   rememberShot(p.id, key, { assetId: last.verdict === "FINAL" ? last.assetId : null, method: s.method, verdict: last.verdict, provider, model, costMicro: spent, attempts: maxAttempts, reason: last.reason });
   if (last.verdict === "FINAL" && last.assetId) return { media: { kind: "video", assetId: last.assetId, generated: true,durationS:Number(JSON.parse(getAsset(last.assetId)?.meta??"{}").durationS)||undefined }, outcome: { ...base, verdict: "FINAL", assetId: last.assetId, attempts: maxAttempts, costMicro: spent, reason: "plan généré accepté au contrôle", codes: [] }, characterRef: s.character && startAsset && start ? { assetId: startAsset, data: start } : null };
+  // Mélange (rapport 09, point 2) : le plan animé refusé n'est jamais montré ; le plan sûr (vrai produit en calque) prend
+  // sa place. Le parcours où le client a demandé des clips IA pour chaque scène garde son refus clair (aucun substitut).
+  if (!o.intent.generation && !s.character) {
+    o.notes.push(`${s.id} : plan animé refusé au contrôle (${last.reason || last.codes.join(", ")}) — plan sûr à la place, essai rendu au client`);
+    stats.localShots++;
+    const safe = safeReplacement(s, o.inv);
+    return { media: safe.media, outcome: { ...base, method: safe.method, verdict: "FINAL", assetId: safe.media.assetId, attempts: maxAttempts, costMicro: 0, reason: "plan sûr à la place du plan animé refusé (aucun coût pour le client)", codes: [] }, replaced: safe.method };
+  }
   throw new Error(`Scène ${s.id} non obtenue ou refusée : ${last.reason || last.codes.join(", ")}. Versions conservées, aucun plan simplifié substitué.`);
+}
+
+/** Le plan, devenu plan sûr (procédé et source locale, aucun coût). */
+function asSafe(s: ShotPlan, method: ShotPlan["method"], inv: Inventory): ShotPlan {
+  return { ...s, method, camera: safeCamera(s.camera), source: method === "packshot" ? { kind: "compose", assetId: inv.cutout?.id ?? null } : method === "animated_image" ? { kind: "asset", assetId: s.reference.assetId } : { kind: "compose" }, why: "plan sûr à la place du plan animé refusé" };
+}
+
+/** Plan sûr qui remplace un plan animé refusé : le produit détouré s'il existe, sinon la photo réelle animée, sinon la typographie. */
+function safeReplacement(s: ShotPlan, inv: Inventory): { method: ShotPlan["method"]; media: Media } {
+  if (inv.cutout) return { method: "packshot", media: { kind: "doc", assetId: null } };
+  const photo = s.reference.assetId && inv.photos.some((x) => x.id === s.reference.assetId) ? s.reference.assetId : inv.photos[0]?.id ?? null;
+  if (photo) return { method: "animated_image", media: { kind: "image", assetId: photo } };
+  return { method: "kinetic_type", media: { kind: "doc", assetId: null } };
 }
 
 // ------------------------------------------------------------------------------------------- assemblage
@@ -577,7 +620,8 @@ export function clipFor(s0: ShotPlan, m: Media, a: Pick<AssembleInput, "pal" | "
   // Compositions (calques de l'éditeur publicitaire). Le sujet du plan est une consigne de recherche interne
   // (« le lieu de travail…, sans personne ») : il n'est jamais écrit à l'écran ; à défaut de texte, la marque.
   if (s.part === "cta") return { ...base, source: { kind: "doc", doc: endCardDoc({ ...common, cta: a.strategy.cta, line: a.strategy.message.slice(0, 70), logoId: a.inv.logo?.id ?? null }), animate: "rise" } };
-  if (s.method === "packshot" && a.inv.cutout) return { ...base, source: { kind: "doc", doc: packshotDoc({ ...common, cutoutId: a.inv.cutout.id, title: s.onScreen || undefined }), animate: "rise" } };
+  // Plan sûr : vrai produit détouré sur le décor de la marque, mouvement de caméra au montage (rapport 09, point 2).
+  if (s.method === "packshot" && a.inv.cutout) return { ...base, source: { kind: "doc", doc: packshotDoc({ ...common, cutoutId: a.inv.cutout.id, decorId: a.inv.decor?.id ?? null, title: s.onScreen || undefined }), animate: "rise", camera: safeCamera(s.camera) } };
   if (s.method === "ui_animation") return { ...base, source: { kind: "doc", doc: interfaceDoc({ ...common, text: s.onScreen || s0.onScreen || a.insight.brand }), animate: "rise" } };
   return { ...base, source: { kind: "doc", doc: kineticDoc({ ...common, text: s.onScreen || s0.onScreen || a.insight.brand, dark: s.part === "proof" }), animate: "fade" } };
 }
@@ -791,7 +835,7 @@ async function targetedFix(o: FixInput): Promise<VideoDocument | null> {
     const out = await resolveShot({ ...o, s, feedback: o.review?.fix.instruction || o.decision.feedback });
     o.media.set(s.id, out.media);
     const prev = doc.clips[k];
-    const next = clipFor(s, out.media, o, k);
+    const next = clipFor(out.replaced ? asSafe(s, out.replaced, o.inv) : s, out.media, o, k);
     // Vidéo habillée : le plan refait garde son habillage (titre, panneau, carte de fin) et sa transition.
     const keep = doc.meta.promo && (next.source.kind === "video" || next.source.kind === "image") ? { overlays: prev.overlays, transitionIn: prev.transitionIn } : {};
     doc.clips[k] = { ...next, ...keep, id: prev.id };
@@ -841,7 +885,7 @@ export async function regenerateClip(ctx: JobContext | null, projectId: string, 
     resolveShot({ p, ctx, deps, s: shot, inv, strategy, intent, budget, stats, persona: intent.kind === "ugc" ? personaSheet(p.id, insight) : null, characterRef: null, notes, pal, typo, size: { w: cur.doc.width, h: cur.doc.height }, safe: cur.doc.safe, insight }),
   );
   const doc = structuredClone(cur.doc);
-  doc.clips[k] = { ...clipFor(shot, out.media, { pal, typo, size: { w: doc.width, h: doc.height }, safe: doc.safe, insight, inv, strategy }, k), id: clip.id, overlays: clip.overlays, transitionIn: clip.transitionIn, durationS: clip.durationS };
+  doc.clips[k] = { ...clipFor(out.replaced ? asSafe(shot, out.replaced, inv) : shot, out.media, { pal, typo, size: { w: doc.width, h: doc.height }, safe: doc.safe, insight, inv, strategy }, k), id: clip.id, overlays: clip.overlays, transitionIn: clip.transitionIn, durationS: clip.durationS };
   doc.meta = { ...doc.meta,retakeCount:(cur.doc.meta.retakeCount??0)+(o.approve?1:0), source: out.media.generated ? "ai" : "user" };
   saveVideoVersion(projectId, docKey, doc, { note: `plan ${clip.shotId} remplacé (${out.outcome.reason})` });
   return { doc, outcome: out.outcome, notes };

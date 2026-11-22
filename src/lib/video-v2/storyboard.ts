@@ -16,6 +16,8 @@ export type Inventory = {
   videos: { id: string; durationS: number; role: string }[];
   /** Captures d'écran (logiciel) importées par le client. */
   screens: { id: string }[];
+  /** Décor de la marque sans produit (ambiance créée par OpenAI) : fond du plan sûr. Absent : couleurs de la marque. */
+  decor?: { id: string } | null;
 };
 
 type Beat = { subject: string; action: string; environment: string; framing: Framing; camera: CameraMove; purpose: string; showsProduct: boolean; character: boolean; sound: string };

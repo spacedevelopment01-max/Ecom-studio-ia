@@ -27,6 +27,18 @@ export function mockMp4(seconds: number, color = "testsrc2"): Buffer {
   return b;
 }
 
+/** Petit MP4 réel tiré d'une image de départ (lente avancée), comme un plan « image vers vidéo ». */
+export function mp4FromImage(img: Buffer, seconds: number): Buffer {
+  const d = tmp();
+  const i = path.join(d, "start.img");
+  const f = path.join(d, "c.mp4");
+  fs.writeFileSync(i, img);
+  execFileSync("ffmpeg", ["-y", "-v", "error", "-loop", "1", "-i", i, "-t", String(seconds), "-r", "12", "-vf", "scale=270:480,format=yuv420p", "-c:v", "libx264", "-preset", "ultrafast", f]);
+  const b = fs.readFileSync(f);
+  fs.rmSync(d, { recursive: true, force: true });
+  return b;
+}
+
 /** Voix simulée : une seconde de silence, puis un son (le silence de début doit être retiré au mixage). */
 export function mockVoice(seconds: number): Buffer {
   const d = tmp();
@@ -93,7 +105,9 @@ export function mockVideoDeps(o: {
     },
     async generateClip(req) {
       log.clips.push({ provider: req.provider, model: req.model, seconds: req.seconds, people: req.people, prompt: req.prompt });
-      return mockMp4(req.seconds);
+      // Rapport 09, point 5 : le contrôle mécanique compare chaque image à l'image de départ. Un vrai plan « image vers
+      // vidéo » part de cette image : le plan simulé aussi (avant : une mire sans rapport, qui serait refusée).
+      return req.image ? mp4FromImage(req.image, req.seconds) : mockMp4(req.seconds);
     },
     stockClip: p.business === "services" && !o.noStock ? async(req,exclude)=>{
       const a=await saveAsset({projectId:p.id,userId:p.userId,data:mockMp4(req.durationS+.2),name:`stock-simule-${exclude.size}.mp4`,mime:"video/mp4",role:"clip",origin:"import",status:"review",meta:{simulation:true,provenance:"Mire synthétique, aucun média Pixabay",durationS:req.durationS+.2,gate:{verdict:"FINAL",checked:true,fatal:false}}});

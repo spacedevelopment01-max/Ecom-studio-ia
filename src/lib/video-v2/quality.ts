@@ -9,6 +9,7 @@
  *    PROVISOIRE (à valider par le client) — une vidéo exportable mais médiocre n'est jamais FINAL.
  */
 import { z } from "zod";
+import sharp from "sharp";
 import { decide, type GateDecision } from "../quality/gate";
 import { personCodes } from "../people-policy";
 import { absoluteCues, MIN_TEXT_RATIO, timeline } from "./doc";
@@ -42,7 +43,7 @@ export const VideoReviewSchema = z.object({
 
 export const SHOT_REVIEW_SYSTEM = `Rôle : chef opérateur et contrôleur qualité d'une agence vidéo exigeante. Tu juges UN plan vidéo généré à partir de trois images (début, milieu, fin) et, si fournies, de l'image de référence du produit réel et de l'image de référence du personnage.
 score : qualité globale du plan sur 10. sameProduct : le produit montré est-il le même que la référence (forme, couleurs, proportions, logo, packaging, textes) ? productAltered : le produit est-il déformé ou transformé à un moment du plan ? characterConsistent : le personnage (visage, tenue) est-il le même que sur la référence ? offTopic : le plan est-il hors du sujet demandé ? artifacts : artefacts majeurs (mains, visages, objets fondus, texte inventé) ? personVisible : une personne, un visage, une main, un corps ou une silhouette est-il visible, même flou ou partiel ?
-Marques tierces : foreignBrands liste toute marque non autorisée visible ; textCorrect vaut false si des lettres inventées ou une faute sont visibles. Trois images ne prouvent ni le mouvement continu, ni le son, ni toutes les images du clip. Sois strict : un produit transformé n'est jamais acceptable.`;
+Marques tierces : foreignBrands liste toute marque non autorisée visible ; textCorrect vaut false si des lettres inventées ou une faute sont visibles. Regarde TOUTE l'image, pas seulement l'étiquette : le défaut le plus fréquent est un texte nouveau à côté du produit (enseigne, étiquette, inscription sur le décor) absent de la référence ; tout texte qui n'est pas sur la référence vaut textCorrect false. Trois images ne prouvent ni le mouvement continu, ni le son, ni toutes les images du clip. Sois strict : un produit transformé n'est jamais acceptable.`;
 
 export const VIDEO_REVIEW_SYSTEM = `Rôle : directeur de création d'une agence vidéo (niveau 2026). Tu juges UNE vidéo commerciale à partir d'images clés, de son script et de ses mesures techniques.
 Note de 0 à 10 : relevance, narrative (le récit tient-il de l'accroche au CTA ?), visual, continuity, product_fidelity, brand, realism, motion, editing, audio, sync, subtitles, commercial (exploitable pour vendre ?). personVisible : une personne, un visage, une main, un corps ou une silhouette est-il visible sur l'une des images, même flou ou partiel ?
@@ -194,4 +195,42 @@ export function gateVideo(o: { local: LocalVideoCheck; review: VideoReview | nul
   if (!o.review) return decide("video_v2", { checker: "local", score: 6 }, { attempt: o.attempt });
   const issues = [...o.review.issues, ...(o.review.fix.target !== "none" && o.review.fix.instruction ? [`${o.review.fix.target}${o.review.fix.shotId ? ` ${o.review.fix.shotId}` : ""} : ${o.review.fix.instruction}`] : [])];
   return decide("video_v2", { checker: "ai", score: videoScore(o.review), criteria: o.review.criteria, codes: reviewVideoCodes(o.review, people), issues }, { attempt: o.attempt });
+}
+
+// ------------------------------------------------------------------------------------------- contrôle mécanique
+
+/** Images du plan regardées par le contrôle mécanique (gratuit) : cinq par seconde, au moins une image sur cinq. */
+export const DRIFT_FPS = 5;
+/** Écart de couleurs au-delà duquel le plan est arrêté (0 : identique ; 2 : rien en commun). À régler au premier essai réel. */
+export const DRIFT_LIMIT = 0.9;
+
+/** Signature de couleurs d'une image : histogramme 4×4×4 normalisé, sur une vignette 32×32. */
+export function colourSignature(rgb: Uint8Array | Buffer): number[] {
+  const h = new Array(64).fill(0);
+  let n = 0;
+  for (let i = 0; i + 2 < rgb.length; i += 3) {
+    h[(rgb[i] >> 6) * 16 + (rgb[i + 1] >> 6) * 4 + (rgb[i + 2] >> 6)]++;
+    n++;
+  }
+  return h.map((x) => x / Math.max(1, n));
+}
+export const signatureGap = (a: number[], b: number[]) => a.reduce((t, x, k) => t + Math.abs(x - (b[k] ?? 0)), 0);
+export async function imageSignature(img: Buffer): Promise<number[]> {
+  return colourSignature(await sharp(img).resize(32, 32, { fit: "fill" }).removeAlpha().raw().toBuffer());
+}
+
+/**
+ * Contrôle mécanique, gratuit, image par image (rapport 09, point 5) : chaque image regardée est comparée à l'image de
+ * départ (la vraie photo du produit dans sa scène). Le plus grand écart de couleurs arrête le plan AVANT la relecture
+ * payante : un produit qui change de couleur, un décor qui se transforme, une image noire. Renvoie l'écart maximal et
+ * l'instant où il a lieu.
+ */
+export function productDrift(start: number[], frames: number[][]): { gap: number; atFrame: number; drift: boolean } {
+  let gap = 0;
+  let atFrame = -1;
+  frames.forEach((f, k) => {
+    const g = signatureGap(start, f);
+    if (g > gap) (gap = g), (atFrame = k);
+  });
+  return { gap: Math.round(gap * 1000) / 1000, atFrame, drift: gap > DRIFT_LIMIT };
 }

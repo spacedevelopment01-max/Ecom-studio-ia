@@ -265,6 +265,15 @@ async function drawClip(ctx: Ctx, doc: VideoDocument, c: Clip, local: number, sr
       ctx.restore();
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
     } else throw new Error(L("Plan vidéo illisible ou absent : aucun plan noir substitué. Document et médias conservés.","Video shot unreadable or missing: no black substitute. Document and media preserved."));
+  } else if (s.camera && s.camera !== "static") {
+    // Plan sûr : la caméra bouge sur la composition entière (le produit reste aux pixels d'origine).
+    const m = motionTransform(s.camera, p, W, H);
+    ctx.save();
+    ctx.translate(W / 2 + m.dx, H / 2 + m.dy);
+    ctx.scale(m.s, m.s);
+    ctx.translate(-W / 2, -H / 2);
+    renderDoc(ctx, animatedDoc(s.doc, local, s.animate), env);
+    ctx.restore();
   } else renderDoc(ctx, animatedDoc(s.doc, local, s.animate), env);
   if (c.overlays.length) {
     const ov: AdDocument = { version: 1, width: W, height: H, background: "transparent", safe: doc.safe, format: { platform: null, aspect: doc.aspect }, layers: c.overlays, brand: doc.brand, meta: { conceptId: null, source: "engine", createdFrom: null } };

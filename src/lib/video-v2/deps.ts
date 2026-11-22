@@ -31,6 +31,7 @@ import { findStockClip, type StockClipRequest } from "../stock/stock-clip";
 import { projectVoice, voiceAvailable, synthLine } from "./voice";
 import { acquiredVoice, isOpenAIVoice } from "./openai-voice";
 import { loadCreativeMemory } from "./creative-memory";
+import { mixAnimatedModel } from "./melange";
 import {videoShotReviewImages,videoShotReviewRequest} from "./shot-review-request";
 import type { ShotReview, VideoReview } from "./types";
 
@@ -53,6 +54,11 @@ export type VideoV2Deps = {
   voice: null | ((text: string, voiceId: string | null, key: string) => Promise<{ data: Buffer; mime: string; assetId?:string }>);
   available: (provider: string) => boolean;
   preferred: { provider: string; model: string } | null;
+  /**
+   * Modèle animé du mélange (rapport 09, point 3) : celui réglé dans l'administration pour « Vidéos produit » ; null :
+   * aucun réglé, la vidéo reste en plans sûrs. Absent (essais simulés) : le moins cher compatible.
+   */
+  animated?: { provider: string; model: string } | null;
   /** Modèle préféré selon l'usage du plan (vidéo produit, ou UGC quand une personne est à l'image). */
   preferredFor?: (people: boolean) => { provider: string; model: string } | null;
   /** Estimation du coût d'un plan (EUR micro) ; par défaut, le tarif de l'administration. */
@@ -92,6 +98,8 @@ export function projectInventory(p: Project): Inventory {
       return durationS>0?[{id:a.id,durationS,role:a.role??""}]:[];
     }),
     screens: screens.map((a) => ({ id: a.id })),
+    // Plan sûr : décor d'ambiance de la marque (sans le produit), déjà créé et validé ; jamais une nouvelle image payée ici.
+    decor: services ? null : ((d) => (d ? { id: d.id } : null))(usableByRole(p.id, "ambiance", 1).find((a) => a.kind === "image")),
   };
 }
 
@@ -153,6 +161,7 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       (style ? await (await import("../music-library")).libraryMusicForProject(p, style, mood, durationS) : null) ?? (await import("../stock/music")).projectMusic(p, mood, durationS, new Set(), style),
     available: (provider) => !!activeProviderKey(provider as never),
     preferred: preferred.product,
+    animated: mixAnimatedModel(),
     preferredFor: (people) => (people ? preferred.ugc : preferred.product),
     inventory: () => projectInventory(p),
     data: (assetId) => {

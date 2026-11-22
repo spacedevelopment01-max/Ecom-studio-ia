@@ -122,13 +122,14 @@ export type ProviderChoice = { provider: string; model: string; shootS: number; 
  * Fournisseur pour un plan : modèles déclarés au Router V2 ET listés ici, clé active, capacités vérifiées
  * compatibles, tarif connu. Préférence : le modèle de la route d'administration s'il convient, puis le moins cher.
  */
-export function chooseProvider(n: ShotNeed, o: { available: (provider: string) => boolean; preferred?: { provider: string; model: string } | null; estimate?: typeof estimateMicro }): ProviderChoice | null {
+export function chooseProvider(n: ShotNeed, o: { available: (provider: string) => boolean; preferred?: { provider: string; model: string } | null; estimate?: typeof estimateMicro; /** Seul modèle permis (modèle animé du mélange). */ only?: { provider: string; model: string } | null }): ProviderChoice | null {
   const est = o.estimate ?? estimateMicro;
   const routed = new Set(capableModels(["video_generation"]).map((m) => `${m.provider}:${m.model}`));
   const rejected: ProviderChoice["rejected"] = [];
   const ok: (ProviderChoice & { pref: boolean })[] = [];
   for (const c of VIDEO_CAPABILITIES) {
     const key = `${c.provider}:${c.model}`;
+    if (o.only && (o.only.provider !== c.provider || o.only.model !== c.model)) continue;
     // Déclaration : Router V2 (modèles historiques) ou catalogue multimédia (vérifié par l'administration ci-dessous).
     if (!routed.has(key) && !mediaModel(c.provider, c.model)) {
       rejected.push({ model: key, why: "non déclaré au Router V2" });

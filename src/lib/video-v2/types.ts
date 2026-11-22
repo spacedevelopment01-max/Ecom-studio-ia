@@ -164,7 +164,7 @@ export type ClipSource =
   | { kind: "image"; assetId: string; motion: CameraMove; crop: { x: number; y: number; w: number; h: number } | null }
   | { kind: "video"; assetId: string; inS: number; outS: number; muted: boolean }
   /** Composition en calques (packshot, typographie animée, carte de fin) : même modèle que l'éditeur publicitaire. */
-  | { kind: "doc"; doc: AdDocument; animate: "rise" | "fade" | "none" }
+  | { kind: "doc"; doc: AdDocument; animate: "rise" | "fade" | "none"; /** Mouvement de caméra sur toute la composition (plan sûr). */ camera?: CameraMove }
   | { kind: "color"; color: string };
 
 export type { SongStyle } from "../media/song";

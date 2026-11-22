@@ -33,7 +33,7 @@ const camera = z.enum(["static", "push_in", "pull_out", "pan_left", "pan_right",
 const source = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("image"), assetId: z.string().max(40), motion: camera, crop: z.object({ x: num, y: num, w: num, h: num }).nullable() }),
   z.object({ kind: z.literal("video"), assetId: z.string().max(40), inS: num.min(0), outS: num.min(0), muted: z.boolean() }),
-  z.object({ kind: z.literal("doc"), doc: AdDocumentSchema, animate: z.enum(["rise", "fade", "none"]) }),
+  z.object({ kind: z.literal("doc"), doc: AdDocumentSchema, animate: z.enum(["rise", "fade", "none"]), camera: camera.optional() }),
   z.object({ kind: z.literal("color"), color: z.string().max(64) }),
 ]);
 const part = z.enum(["hook", "development", "demonstration", "proof", "conclusion", "cta"]).nullable();
