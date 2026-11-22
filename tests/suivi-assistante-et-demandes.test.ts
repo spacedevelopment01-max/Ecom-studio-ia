@@ -96,4 +96,12 @@ describe("suivi : l'assistante du site et la boîte des demandes", async () => {
       expect(D.liensEnvoi("x".repeat(D.LONGUEUR_MAX_REPONSE + 1), { appareil: "iphone" }).trop_long).toBe(true);
     });
   });
+  it("chaque fonction du suivi a son réglage, éteint par défaut, que seule l'administration peut allumer", async () => {
+    const R = await import("@/lib/suivi/reglages");
+    const src = (await import("node:fs")).readFileSync("src/app/api/admin/settings/route.ts", "utf8");
+    for (const k of Object.keys(R.FONCTIONS_DU_SUIVI) as (keyof typeof R.FONCTIONS_DU_SUIVI)[]) {
+      expect(R.suiviAllume(k)).toBe(false);
+      expect(src).toContain(k);
+    }
+  });
 });

@@ -489,3 +489,84 @@ essai.
 - *Le calendrier des temps forts par métier, les événements locaux, « ta semaine est prête » le lundi* (rapport sur le
   calendrier et les légendes) : ce sont de nouvelles fonctions visibles, à construire au lot des publications
   automatiques, avec son accord.
+
+## Le suivi dans la durée
+
+Tout a été vérifié par des essais simulés, sans aucun appel payant, aucun envoi réel (SMS, WhatsApp, e-mail) et aucune
+vraie boutique. Les coûts sont **estimés**, pas mesurés sur une facture.
+
+**Allumé (décision relayée par le chef d'orchestre : engagements 1 et 6, acceptés le 15 novembre)**
+
+- **Ta journée est prête** (point 10 en partie, engagement 6). Sur le tableau de bord, une fois le projet construit : les
+  publications du jour, les demandes reçues par le site depuis hier, les commandes depuis hier. Le rappel du matin (dans
+  le Studio et par e-mail) dit aussi les demandes de la veille. La première semaine après la mise en ligne, le premier
+  résultat s'affiche dès qu'il arrive (première demande, sinon premières pages vues). Aucun appel à l'IA : gratuit.
+- **Le point du mois** (points 2 et 10, engagement 1). Chaque 1er du mois, à partir de 8 h, une tâche part pour chaque
+  projet abonné, une seule fois. Les chiffres sont lus par le code, chacun avec sa source : publications, demandes du
+  site, commandes et montant (Shopify ou WooCommerce), visites (compteur du Studio, ou visites de la boutique Shopify).
+  Un chiffre illisible s'écrit « non disponible » avec sa raison (par exemple « aucune boutique reliée » ou « le droit
+  read_orders manque »). Le code dit si le mois est bon ou faible : un mois faible s'ouvre sur le chiffre honnête et sa
+  raison, puis le plan, et le travail fait vient à la fin ; il n'a jamais de « ce qui a le mieux marché ». Un bilan qui
+  contient un nombre que le code n'a pas compté est refusé. Coût : environ 5 centimes par mois et par client (un appel
+  au modèle le plus fort, en différé).
+- **La mesure d'audience écrite sur le site** (point 3). Le compteur de pages vues existait déjà ; sa ligne (« sans
+  traceur ni adresse… pour ne pas être compté ») est maintenant posée en bas des pages légales des sites hébergés par le
+  Studio. Gratuit.
+
+**Construit mais éteint** (chacun a son interrupteur `suivi.…`, éteint par défaut ; rien ne change pour le client tant
+que tu n'as pas dit oui) :
+
+- **L'assistante du site** (point 4). Elle dit dès son premier message qu'elle est une IA, avec « Assistante IA » visible
+  pendant toute la conversation. Elle ne répond qu'avec ce que le client a donné (ses produits et leurs prix, ses
+  réponses, ce qu'il a dit de son activité). Le code relit chaque réponse : un prix, un délai ou une promesse absents de
+  sa fiche, et la question est transmise au client avec le formulaire. Au-delà de 40 réponses par jour, le formulaire.
+  Coût estimé : environ 1 centime par réponse, donc 40 centimes par jour au plus par site.
+- **Les demandes triées et résumées, et les réponses envoyées d'un geste** (point 5). Chaque demande est rangée par le
+  code (devis, rendez-vous, question, urgence, ou « à regarder » quand le code ne sait pas) et résumée (qui, quoi, où,
+  quand, coordonnées ; « non donné » quand il manque). Les liens d'un geste sont prêts : SMS écrit selon le téléphone,
+  WhatsApp, e-mail ; sur ordinateur, « copier » seulement (le SMS n'y marche pas). Gratuit.
+- **Le studio photo qui garde le vrai produit** (point 6). La photo du téléphone est jugée par le code (trop petite,
+  sombre, floue, produit coupé) avec une phrase pour la refaire, au lieu de payer des images. Un produit avec étiquette
+  est toujours posé tel quel sur la scène. Une image refaite est comparée au produit d'origine (forme, proportions,
+  couleur) : si le produit a changé, l'image est dite ratée. Gratuit.
+- **La fiche Google** (point 7). Le guide geste par geste, avec la page de Google de chaque geste ; le paquet du mois
+  (quatre publications, une par semaine, reprises des publications déjà acceptées, sans téléphone ni mot-dièse) ; une
+  réponse propre à chaque avis, relue par le code (prénom de l'auteur, un détail de son avis, la signature, aucune
+  offre, jamais trop proche d'une réponse déjà donnée). Coût estimé : moins d'un centime par réponse.
+- **Le devis contrôlé** (point 8). Les prix viennent seulement des tarifs du client ; une prestation sans tarif devient
+  une question. Les mentions obligatoires sont vérifiées selon le métier (déchets et assurance pour le bâtiment). La page
+  de signature demande « bon pour accord » et le nom, et garde la preuve (empreinte du devis, date, canal) ; le client
+  est prévenu. Une seule relance, sept jours après l'envoi. Gratuit.
+- **Le carnet de clients** (point 9). Chaque personne a son origine, son accord daté pour les offres, et s'efface trois
+  ans après le dernier contact. Les messages de suivi vont à tous ; les offres seulement à qui a dit oui, ou à un vrai
+  client pour des produits semblables. La demande d'avis : vrais clients seulement, une fois, jamais d'offre dedans.
+  Gratuit.
+- **Le bras droit** (point 11). Une question de droit, de comptabilité ou d'impôts est repérée ; seules les pages
+  officielles d'une liste fixe sont ouvertes, avec la date qu'elles affichent ; chaque phrase citée doit être sur la
+  page ; pour un litige, un contrat, une déclaration ou des comptes, il dit quel professionnel voir et prépare les
+  questions. Ouvrir une page officielle est gratuit.
+
+**Pas fait, en attente :**
+
+- *Allumer chacune des sept fonctions éteintes* : c'est ton oui qui les allume (et, pour l'assistante, son plafond par
+  jour). L'interrupteur se règle aujourd'hui par l'administration du Studio (réglage `suivi.<nom>`) ; le bouton dans
+  l'écran d'administration n'est pas encore posé.
+- *Le guide en six captures pour relier une boutique Shopify, et l'essai sur une vraie boutique* : il faut une boutique
+  de développement que toi seul peux ouvrir. Pas vérifié : qu'un marchand ordinaire voie bien « Dev Dashboard ».
+- *La grille d'auto-évaluation de la CNIL pour le compteur de visites* : c'est le Studio qui la remplit et la garde ; elle
+  engage ta responsabilité, à remplir par toi. La ligne de mesure n'existe pour l'instant qu'en français.
+- *L'essai des liens SMS sur un vrai iPhone et un vrai Android de 2026* (gratuit, sur tes téléphones) avant de montrer les
+  boutons au client ; et les boutons eux-mêmes dans l'écran des demandes. La réponse prête écrite par SINA pour chaque
+  demande n'est pas faite : un appel par demande, à décider avec toi.
+- *Brancher le contrôle de fidélité dans le moteur des images* : une image refusée serait refaite, donc payée ; et coller
+  le vrai produit sur une scène d'OpenAI touche ta règle « images créées par OpenAI » (la scène l'est, le produit reste
+  la photo du client). Ta décision.
+- *Les mentions du devis, la page de signature et le formulaire de rétractation d'un devis signé chez le client* :
+  textes qui engagent ta responsabilité, à relire par toi (le formulaire et le médiateur n'ont pas été recherchés).
+  L'écran où le client enregistre ses tarifs n'est pas fait.
+- *La demande d'avis sans offre rangée à part de la prospection* : c'est notre lecture du texte de la CNIL, pas une
+  position écrite par elle.
+- *Le bras droit dans la conversation de SINA* : la façon de dire au client la limite (« j'informe, je ne conseille
+  pas ») engage ta responsabilité ; le branchement attend ton oui.
+- *« L'idée du jour »* dans ta journée : elle demanderait un appel à l'IA chaque jour ; pas faite, à décider avec toi.
+- *Les « réalisations d'artisans » créées par l'IA* (point 12 du rapport) : ta décision, rien n'a été construit.
