@@ -91,6 +91,11 @@ export type LlmCall = {
    * souvent 5 minutes). L'écriture coûte 2 fois le prix d'entrée au lieu de 1,25 ; la lecture, 0,05 fois.
    */
   memoireLongue?: boolean;
+  /**
+   * Une consigne qui ne sert qu'une fois par projet (l'étude, la vérification, la lecture finale de la marque) : aucun
+   * point de mémoire, elle se paie une fois sans le supplément d'écriture (22 novembre 2026, audit du moteur).
+   */
+  teteUnique?: boolean;
   prompt: string;
   images?: LlmImage[];
   /**
@@ -302,9 +307,9 @@ export function etatEffortParMessage(): { allume: boolean; panne: { model: strin
 }
 
 /** Le point de mémoire d'un appel : 5 minutes, ou une heure (`memoireLongue`). */
-export const pointDeMemoire = (call: Pick<LlmCall, "memoireLongue">): { type: "ephemeral"; ttl?: "1h" } => (call.memoireLongue ? { type: "ephemeral", ttl: "1h" } : { type: "ephemeral" });
+export const pointDeMemoire = (call: Pick<LlmCall, "memoireLongue" | "teteUnique">): { type: "ephemeral"; ttl?: "1h" } | undefined => (call.teteUnique ? undefined : call.memoireLongue ? { type: "ephemeral", ttl: "1h" } : { type: "ephemeral" });
 
-export function headBlocks(call: Pick<LlmCall, "task" | "context" | "reference" | "history" | "memoireLongue">): { type: "text"; text: string; cache_control?: { type: "ephemeral"; ttl?: "1h" } }[] {
+export function headBlocks(call: Pick<LlmCall, "task" | "context" | "reference" | "history" | "memoireLongue" | "teteUnique">): { type: "text"; text: string; cache_control?: { type: "ephemeral"; ttl?: "1h" } }[] {
   const { cached, history, after } = promptHead(call);
   const mark = (text: string) => ({ type: "text" as const, text, cache_control: pointDeMemoire(call) });
   return [
@@ -994,7 +999,7 @@ export function withSelectedStrategy(call: LlmCall): LlmCall {
 }
 
 /** Une tâche en différé attend souvent plus de 5 minutes chez le fournisseur : sa mémoire dure une heure. */
-const avecMemoire = (call: LlmCall): LlmCall => (call.memoireLongue == null && (call.deferred ?? differeActif()) ? { ...call, memoireLongue: true } : call);
+const avecMemoire = (call: LlmCall): LlmCall => (call.memoireLongue == null && !call.teteUnique && (call.deferred ?? differeActif()) ? { ...call, memoireLongue: true } : call);
 
 /** Texte libre (rédaction). */
 export async function llmText(call: LlmCall): Promise<string> {

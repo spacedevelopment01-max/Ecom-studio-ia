@@ -208,7 +208,7 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     expect(L.CACHE_WRITE_1H_RATIO).toBe(2);
     const fs = require("node:fs") as typeof import("node:fs");
     expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toContain("    memoireLongue: true,\n    system: SYNA_SYSTEM");
-    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain("const avecMemoire = (call: LlmCall): LlmCall => (call.memoireLongue == null && (call.deferred ?? differeActif()) ? { ...call, memoireLongue: true } : call);");
+    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain("const avecMemoire = (call: LlmCall): LlmCall => (call.memoireLongue == null && !call.teteUnique && (call.deferred ?? differeActif()) ? { ...call, memoireLongue: true } : call);");
   });
   it("un message s'écrit une fois, à son entrée dans le fil, puis ne change plus ; le résultat entier de la demande en cours est donné à part", () => {
     const m = (seq: number, role: string, content: unknown) => ({ id: String(seq), seq, role, runId: null, content, createdAt: 0 }) as never;
@@ -281,6 +281,14 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     const src = fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8");
     expect(src.match(/promptKey: "syna-custom-section-2", context: brief, prompt/g)).toHaveLength(2);
     expect(src).not.toMatch(/sectionWritePrompt\(brief,/);
+  });
+
+  it("une consigne qui ne sert qu'une fois par projet n'a aucun point de mémoire (se paie une fois, sans supplément)", async () => {
+    const L = await import("@/lib/ai/llm");
+    expect(L.pointDeMemoire({ teteUnique: true, memoireLongue: true })).toBeUndefined();
+    expect(L.headBlocks({ task: "strategy", reference: "R", context: "C", teteUnique: true }).every((b) => !b.cache_control)).toBe(true);
+    const fs = await import("node:fs");
+    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain(`const UNIQUES = new Set<CallId>(["study", "shortlist", "verify", "reader"]);`);
   });
 });
 

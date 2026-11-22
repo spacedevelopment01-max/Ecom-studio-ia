@@ -290,6 +290,8 @@ export const deferredOn = (): boolean => getJsonSetting<boolean>("sina.differe",
 
 /** Les appels de la chaîne qui reviennent, l'un après l'autre, avec la même consigne (un par route). */
 const REPETES = new Set<CallId>(["direction", "fix", "imagery"]);
+/** Les appels de la chaîne dont la consigne ne sert qu'une fois par projet : aucun point de mémoire. */
+const UNIQUES = new Set<CallId>(["study", "shortlist", "verify", "reader"]);
 
 /** Une demande qui commence par le résumé du client, coupée en deux : le résumé à part (gardé en mémoire), le reste. */
 export function coupeLeResume(commun: string, kind: CallId, prompt: string): { context?: string; prompt: string } {
@@ -310,7 +312,7 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
     partage: (brief) => { commun = brief.length >= 400 ? brief : ""; },
     research: async (id, query) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft }, query))).findings,
     ask: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
-      task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, ...coupe(c.kind, c.prompt), promptKey: `syna-brand-${c.kind}-1`,
+      task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, ...coupe(c.kind, c.prompt), ...(UNIQUES.has(c.kind) ? { teteUnique: true } : {}), promptKey: `syna-brand-${c.kind}-1`,
       prepare: c.prepare, maxTokens: CALLS[c.kind].max, maxOutputTokens: CALLS[c.kind].max + 6000, usageKey: `${ctx.job.id}:brand:${id}`, deferred,
       routing: { difficulty: CALLS[c.kind].tier === "strong" ? "complex" : "standard", prefer: s[CALLS[c.kind].tier] },
     }, c.schema)),
