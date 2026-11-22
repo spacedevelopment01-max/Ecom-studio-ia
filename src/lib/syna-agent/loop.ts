@@ -255,10 +255,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         if (e instanceof CostCapReached) return askBudget(r);
         throw e;
       }
-      // Moment qui compte (résultat à présenter, échec, client mécontent) : la réponse est relue avant de partir, et
-      // réécrite une fois si la relectrice la refuse.
-      let relu: "ok" | "repris" | null = null;
-      ({ out, relu } = await reviewedReply(user, r, jobId, step, deps, out));
+      // Le nettoyage gratuit d'abord (une question répétée à la fin, une élision) : il ne fait jamais payer de réécriture.
+      out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
       // Contrôle gratuit des règles du propriétaire (une question à la fois pendant « faire connaissance », jamais
       // « C'est parti » avant l'accord sur la carte) : réécrit une fois avec la remarque (essais complets, Nadia).
       {
@@ -270,6 +268,10 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           try { out = await reason(user, r, jobId, step, deps, noteDeControle(defauts), ":controle"); } catch (e) { if (e instanceof CostCapReached) return askBudget(r); throw e; }
         }
       }
+      // Moment qui compte (résultat à présenter, échec, client mécontent) : la réponse est relue avant de partir, après le
+      // contrôle gratuit (la relectrice lit la version corrigée), et réécrite une fois si elle la refuse.
+      let relu: "ok" | "repris" | null = null;
+      ({ out, relu } = await reviewedReply(user, r, jobId, step, deps, out));
       if (out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
       // Un bouton est une réponse complète, cliquable telle quelle : jamais un gabarit à trous (essai réel du 7 novembre :
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).

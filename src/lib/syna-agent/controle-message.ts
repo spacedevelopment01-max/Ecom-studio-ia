@@ -10,15 +10,17 @@
 export type MessageDeSina = { message: string; question?: { text: string; choices?: string[] } | null; actions: { tool: string; args?: unknown }[] };
 
 /** Les coordonnées qu'on ne demande jamais d'un coup. */
-const COORDONNEES = [/\bnom\b/i, /\badresse\b/i, /\be-?mail\b|\bcourriel\b/i, /\bt[ée]l[ée]phone\b|\bnum[ée]ro\b/i, /\bsiret\b|\bsiren\b/i, /\bsite\b/i];
+// « nom » et « site » n'en sont pas (audit du 22 novembre 2026 : « As-tu déjà un nom, un logo ou un site ? » était réécrit).
+const COORDONNEES = [/\badresse\b(?!\s+(e-?mail|électronique|mail))/i, /\be-?mail\b|\bcourriel\b/i, /\bt[ée]l[ée]phone\b|\bnum[ée]ro de t/i, /\bsiret\b|\bsiren\b/i];
 
 /** Combien de questions un message pose (points d'interrogation, et coordonnées demandées ensemble). */
 export function nombreDeQuestions(m: MessageDeSina): number {
   const text = `${m.message ?? ""}\n${m.question?.text ?? ""}`;
   const marks = (text.match(/\?/g) ?? []).length;
   const asked = m.question?.text ?? text;
-  const coords = COORDONNEES.filter((r) => r.test(asked)).length;
-  return Math.max(marks, coords >= 2 ? coords : 0);
+  // Des coordonnées comptent comme plusieurs questions seulement quand elles sont énumérées, à donner ensemble.
+  const coords = COORDONNEES.filter((r) => r.test(asked)).length, enumerees = /,|\bet\b/i.test(asked) && !/\bou\b/i.test(asked);
+  return Math.max(marks, coords >= 2 && enumerees ? coords : 0);
 }
 
 /** Une annonce de départ (« C'est parti », « je lance »…). */
