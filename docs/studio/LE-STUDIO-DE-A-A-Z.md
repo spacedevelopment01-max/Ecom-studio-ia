@@ -687,3 +687,11 @@ le propriétaire avec son comptable avant de l'envoyer.
 
 Pas encore vérifié : le délai réel d'ouverture chez Kling et ByteDance ; la recharge du solde Kling sans passer par le
 service commercial ; la TVA pour une entreprise française ; le détail des conditions de Vertex.
+
+## 17. L'atelier de création (demande du propriétaire, 18 et 21 novembre 2026)
+
+Une plateforme de création d'images et de vidéos comme Higgsfield, à notre nom, plus simple, avec SINA en direct qui
+conseille quoi faire et quel fournisseur choisir ; des vidéos d'exemple et une partie « vidéos pour vendre » ; le client
+choisit entre les fournisseurs et écrit ses demandes ; trois façons de faire : SINA seule, le client seul, ou les deux
+ensemble. Tout le détail, avec la maquette : `docs/studio/L-ATELIER-DE-CREATION.md`. Pas encore construit ; place dans
+les lots proposée par Claude (images au lot 5, vidéo au lot 9), à valider.
