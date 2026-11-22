@@ -36,13 +36,15 @@ import { noteImageModel } from "./media-alerts";
 import { activeProviderKey, bearer, falAuth, FX_SAFETY, isGatewayKey, requirePrice, routeFor, usdToEur } from "./config";
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
-import { getJsonSetting, setSetting } from "../settings";
+import { getJsonSetting, getSetting, setSetting } from "../settings";
 import { fileExists, putFile, readFile } from "../storage";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
 import { incompatibility, mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
 import { mediaModel, type MediaKind } from "./media-models";
 import { alibabaBase, alibabaError, alibabaHeaders, qwenImageBody, qwenSize, qwenImageUrl, wanTask, wanVideoBody } from "./alibaba";
+import { DIRECT_ORIGINS, DIRECT_VIDEO_PROVIDERS, directPoll, directRead, directStart, directTask, hashedEndUser, type DirectVideoProvider } from "./video-direct";
+import { randomUUID } from "node:crypto";
 
 /** brain : contexte du Brain d'où vient la consigne de la génération (portée, empreinte, version), tracé dans ai_calls. */
 type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string; brain?: { scope: string; hash: string; version: string } };
@@ -237,7 +239,7 @@ function pickModel(provider: string, kind: MediaKind): string {
 }
 
 /** Intervalles d'interrogation des générations longues (réduits dans les tests). */
-export const mediaPoll = { veoMs: 10_000, falVideoMs: 6000, falImageMs: 3000, wanMs: 8000 };
+export const mediaPoll = { veoMs: 10_000, falVideoMs: 6000, falImageMs: 3000, wanMs: 8000, directMs: 8000 };
 
 /** Marge prudente sur le coût d'une génération (jetons d'image variables selon la taille et la qualité). */
 const MEDIA_MAX_FACTOR = 1.25;
@@ -279,7 +281,7 @@ function sent() {
 const providerFetch: typeof fetch = (input, init) => {
   const url=new URL(typeof input==="string"?input:input instanceof URL?input.href:input.url);
   const headers=new Headers(init?.headers??(input instanceof Request?input.headers:undefined));
-  if(headers.has("x-goog-api-key")&&url.origin!=="https://generativelanguage.googleapis.com")throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
+  if(headers.has("x-goog-api-key")&&url.origin!=="https://generativelanguage.googleapis.com"&&!DIRECT_ORIGINS.vertex.test(url.origin))throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
   if(/^Key /i.test(headers.get("authorization")??"")&&url.origin!=="https://queue.fal.run")throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
   sent();
   return fetch(input, {...init,redirect:"error"});
@@ -1028,8 +1030,8 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
   const plan = userPlan(ctx.userId, ctx.projectId);
   const model = plan && PLANS[plan].videoQuality === "fast" ? (FAST_VEO[chosen] ?? chosen) : chosen;
   // Veo facture la durée produite : Veo 3 = 8 s (au moins 8 s réservées) ; Veo 3.1 = 4, 6 ou 8 s demandées.
+  // Durée TOUJOURS envoyée (rapport 09, point 4) : celle qui est réservée est celle qui est demandée et facturée.
   const seconds = veoBilledSeconds(input.seconds, model);
-  const durations = mediaModel("google", model)?.durations ?? [];
   gate(ctx, cost("google", model, { seconds }).micro, "video", "google", model);
   const trace = mediaTrace.getStore()!;
   const previous = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
@@ -1043,7 +1045,7 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
       body: JSON.stringify({
         instances: [{ prompt: input.people ? input.prompt : `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no people in frame; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
         // Veo 3 n'accepte que « allow_adult » à partir d'une image (« dont_allow » est refusé) : l'absence de personnes passe par la consigne.
-        parameters: { aspectRatio: input.aspect, personGeneration: veoPersonGeneration(model, !!input.people), ...(durations.length > 1 ? { durationSeconds: seconds } : {}) },
+        parameters: { aspectRatio: input.aspect, personGeneration: veoPersonGeneration(model, !!input.people), durationSeconds: seconds },
       }),
     });
     if (!start.ok) {
@@ -1365,13 +1367,97 @@ async function wanClipImpl(ctx: Ctx, input: { image: Buffer | null; prompt: stri
   throw new Error(L("Délai dépassé pour la vidéo Wan : la tâche continue chez Alibaba Cloud, un nouvel essai reprendra son suivi.", "Wan video timed out: the task continues at Alibaba Cloud, a retry will resume tracking it."));
 }
 
+/** Durée demandée à un fabricant en direct : la plus courte acceptée qui couvre la demande (la même est réservée et comptée). */
+export function directBilledSeconds(provider: string, model: string, requested?: number) {
+  const d = mediaModel(provider, model)?.durations ?? [];
+  if (!d.length) throw new PermanentError(L(`Modèle vidéo ${provider}:${model} sans durée connue : génération bloquée.`, `Video model ${provider}:${model} has no known duration: generation blocked.`));
+  return d.find((x) => x >= Math.ceil(requested ?? 5)) ?? d[d.length - 1];
+}
+export const isDirectVideoProvider = (p: string): p is DirectVideoProvider => (DIRECT_VIDEO_PROVIDERS as string[]).includes(p);
+
+/**
+ * Plan vidéo chez un fabricant en direct (Vertex, Kling, BytePlus) ou chez Runware (secours) — une seule façon pour
+ * les quatre (rapport 09, point 4). Mêmes garde-fous que Wan : coût maximal réservé avant l'envoi, identifiant de la
+ * tâche gardé dès sa création (une reprise suit la même tâche, jamais une nouvelle génération), coût enregistré quand
+ * la vidéo est prête, AVANT le téléchargement ; la vidéo est copiée chez nous tout de suite (Kling ne la garde que
+ * 30 jours). Une tâche refusée ou en échec chez le fournisseur n'est pas facturée : la réservation est rendue.
+ * Coût : Runware renvoie le coût exact (`includeCost`) ; les autres, le tarif de l'administration.
+ */
+async function directClipImpl(ctx: Ctx, input: { provider: DirectVideoProvider; image: Buffer | null; lastImage?: Buffer | null; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model: string; draft?: boolean; fromDraftTaskId?: string | null; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
+  const { provider } = input;
+  const key = activeProviderKey(provider);
+  if (!key) throw new UserFacingError(L(`Aucune clé ${provider} configurée pour la vidéo.`, `No ${provider} key configured for video.`));
+  const mm = mediaModel(provider, input.model);
+  if (!mm || mm.adapter !== "direct_video") throw new PermanentError(L(`Modèle vidéo inconnu : ${provider}:${input.model}.`, `Unknown video model: ${provider}:${input.model}.`));
+  // Aucun de ces modèles n'est proposé pour une personne (règle du propriétaire : jamais sans photo ou accord écrit).
+  if (input.people) throw new PermanentError(L(`${mm.label} ne sert qu'aux plans sans personne.`, `${mm.label} is only used for shots without people.`));
+  routeMedia("video_generation", undefined, { usage: input.usage ?? "product_video" });
+  const seconds = directBilledSeconds(provider, input.model, input.seconds);
+  const project = provider === "vertex" ? getSetting("provider.vertex.project")?.trim() || null : null;
+  const trace = mediaTrace.getStore()!;
+  type Saved = { taskId: string; model: string; seconds: number; at: number; videoUrl?: string; costUsd?: number | null };
+  const prev: Saved | null = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
+  gate(ctx, cost(provider, input.model, { seconds }).micro, "video", provider, input.model);
+  const record = (costUsd: number | null) => {
+    const exact = costUsd != null && costUsd > 0 ? Math.round(costUsd * usdToEur() * EUR) : null;
+    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider, model: input.model, unit: "video_second", quantity: seconds, costMicro: exact ?? cost(provider, input.model, { seconds }).micro, estimated: exact == null, idempotencyKey: ctx.usageKey });
+  };
+  const download = async (url: string) => {
+    const v = await publicDownload(url);
+    if (!v.ok) throw new PermanentError(L(`Vidéo terminée chez ${provider} mais impossible à télécharger (${v.status}). Un nouvel essai la récupérera sans la repayer.`, `Video finished at ${provider} but could not be downloaded (${v.status}). A retry will fetch it without paying again.`));
+    return Buffer.from(await v.arrayBuffer());
+  };
+  if (prev?.videoUrl) return download(prev.videoUrl);
+  let taskId = prev?.taskId ?? null;
+  if (taskId) onWait?.(L(`Reprise du suivi de la vidéo déjà lancée chez ${provider}…`, `Resuming the video already started at ${provider}…`));
+  else {
+    if (trace.previous) operationPending();
+    const b64 = async (b: Buffer | null | undefined) => (b ? (await sharp(b).jpeg({ quality: 90 }).toBuffer()).toString("base64") : null);
+    const taskUUID = randomUUID();
+    const req = directStart(provider, { model: input.model, prompt: input.prompt, image: await b64(input.image), lastImage: mm.lastFrame ? await b64(input.lastImage) : null, aspect: input.aspect, seconds, people: false, endUser: hashedEndUser(ctx.userId), draft: !!input.draft && !!mm.draft, fromDraftTaskId: input.fromDraftTaskId ?? null }, key, { project, taskUUID });
+    const start = await providerFetch(req.url, { method: req.method, headers: req.headers, body: JSON.stringify(req.body) });
+    const text = await start.text().catch(() => "");
+    if (!start.ok) {
+      const err = new PermanentError(L(`${mm.label} a refusé la demande : `, `${mm.label} rejected the request: `) + redact(text).slice(0, 300));
+      throw refused(start.status) ? refusal(err) : err;
+    }
+    let j: unknown = null;
+    try { j = JSON.parse(text); } catch { /* lu plus bas : identifiant absent */ }
+    taskId = directTask(provider, j, taskUUID);
+    if (!taskId) throw new Error(L(`${mm.label} n'a pas renvoyé d'identifiant de tâche (résultat incertain).`, `${mm.label} returned no task ID (uncertain result).`));
+    saveProviderReceipt(trace.reservation!, { taskId, model: input.model, seconds, at: Date.now() } satisfies Saved);
+  }
+  for (let i = 0; i < 150; i++) {
+    await new Promise((r) => setTimeout(r, mediaPoll.directMs));
+    onWait?.(L(`Génération du plan vidéo par ${mm.label} (${Math.round(((i + 1) * mediaPoll.directMs) / 1000)} s)…`, `${mm.label} is generating the video shot (${Math.round(((i + 1) * mediaPoll.directMs) / 1000)} s)…`));
+    const q = directPoll(provider, input.model, taskId, key, project);
+    const s = await providerFetch(q.url, { method: q.method, headers: q.headers, ...(q.body ? { body: JSON.stringify(q.body) } : {}) });
+    if (!s.ok) {
+      // Suivi momentanément impossible : la tâche continue chez le fournisseur, on réessaie (jamais relancée).
+      if (s.status >= 500 || s.status === 429) continue;
+      throw new Error(L(`Suivi impossible chez ${provider} (${s.status}) : résultat incertain.`, `Tracking failed at ${provider} (${s.status}): uncertain result.`));
+    }
+    const r = directRead(provider, await s.json().catch(() => null));
+    if (r.state === "running") continue;
+    if (r.state === "failed") throw refusal(new PermanentError(L(`La génération a échoué chez ${mm.label} (non facturée) : ${r.message}`, `Generation failed at ${mm.label} (not billed): ${r.message}`)));
+    if (r.state === "unknown") throw new Error(L(`Tâche introuvable chez ${mm.label} (résultat incertain) : ${r.message}`, `Task not found at ${mm.label} (uncertain result): ${r.message}`));
+    record(r.costUsd);
+    if (r.videoBase64) return Buffer.from(r.videoBase64, "base64");
+    if (!r.videoUrl || !/^https:\/\//.test(r.videoUrl)) throw new PermanentError(L(`Vidéo terminée chez ${mm.label} mais livrée hors d'une adresse lisible : à récupérer dans sa console, sans la repayer.`, `Video finished at ${mm.label} but delivered outside a readable address: fetch it from its console without paying again.`));
+    saveProviderReceipt(trace.reservation!, { taskId, model: input.model, seconds, at: Date.now(), videoUrl: r.videoUrl, costUsd: r.costUsd } satisfies Saved);
+    return download(r.videoUrl);
+  }
+  throw new Error(L(`Délai dépassé chez ${mm.label} : la tâche continue, un nouvel essai reprendra son suivi.`, `Timed out at ${mm.label}: the task continues, a retry will resume tracking it.`));
+}
+export const directClip = traced("video_generation", directClipImpl);
+
 /**
  * Plan vidéo IA chez le fournisseur choisi, avec relais vers le secours compatible si le principal échoue sans coût.
  * `provider` : celui annoncé à l'appelant (videoProviderAvailable / Video Engine V2).
  */
-export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
+export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer; lastImage?: Buffer | null; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
   const usage: MediaUsage = input.usage ?? (input.people ? "ugc_video" : "product_video");
-  const run = (p: string, model?: string) => (p === "higgsfield" ? higgsfieldClip(ctx,{...input,usage,model},onWait) : p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : p === "alibaba" ? wanClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
+  const run = (p: string, model?: string) => (isDirectVideoProvider(p) ? directClip(ctx, { provider: p, image: input.image, lastImage: input.lastImage ?? input.image, prompt: input.prompt, aspect: input.aspect, seconds: input.seconds, people: input.people, model: model ?? pickModel(p, "video"), usage }, onWait) : p === "higgsfield" ? higgsfieldClip(ctx,{...input,usage,model},onWait) : p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : p === "alibaba" ? wanClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
   try {
     return await run(provider, input.model);
   } catch (e) {

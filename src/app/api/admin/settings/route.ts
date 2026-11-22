@@ -21,7 +21,7 @@ const PriceSchema = z.discriminatedUnion("unit", [
 
 // Réglages SMTP (serveur, identifiant, mot de passe, expéditeur) : chiffrés comme les clés, jamais renvoyés en clair.
 const SECRET_KEYS = /apiKey$|clientSecret$|secretKey$|webhookSecret$|^smtp\.(host|user|password|from)$/;
-const ALLOWED = /^(provider\.(anthropic|openai|google|fal|alibaba|pexels|pixabay)\.(apiKey|disabled)|provider\.alibaba\.(region|endpoint|workspace)|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|smtp\.(host|port|user|password|from)|app\.url|meta\.graphVersion|shopify\.apiVersion|suivi\.(assistante|demandes|envoiGeste|studioPhoto|ficheGoogle|devis|carnet|brasDroit))$/;
+const ALLOWED = /^(provider\.(anthropic|openai|google|fal|alibaba|pexels|pixabay|vertex|kling|byteplus|runware)\.(apiKey|disabled)|provider\.alibaba\.(region|endpoint|workspace)|provider\.vertex\.project|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|smtp\.(host|port|user|password|from)|app\.url|meta\.graphVersion|shopify\.apiVersion|suivi\.(assistante|demandes|envoiGeste|studioPhoto|ficheGoogle|devis|carnet|brasDroit))$/;
 
 /** Réglages d'administration. Les secrets sont chiffrés et jamais renvoyés en clair. */
 export const POST = handle(async (req: Request) => {
@@ -30,7 +30,7 @@ export const POST = handle(async (req: Request) => {
     req,
     z.object({
       set: z.array(z.object({ key: z.string(), value: z.string().nullable() })).optional(),
-      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba", "higgsfield"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
+      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba", "higgsfield", "vertex", "kling", "byteplus", "runware"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
       // Routage des modèles de texte : manuel (défaut, routage actuel inchangé) ou automatique multifournisseur.
       routingMode: z.enum(["manual", "auto"]).optional(),
       // Effort des moments forts de SINA par un message dans la conversation (fonction en essai d'Anthropic) : s'éteint ici.
@@ -66,9 +66,10 @@ export const POST = handle(async (req: Request) => {
     if (!ALLOWED.test(s.key)) throw new HttpError(400, L(`Réglage non autorisé : ${s.key}`, `Setting not allowed: ${s.key}`));
     if (s.key === "smtp.port" && s.value && !/^\d{2,5}$/.test(s.value.trim())) throw new HttpError(400, L("Port SMTP invalide (ex. 587 ou 465).", "Invalid SMTP port (e.g. 587 or 465)."));
     if (s.key === "smtp.from" && s.value && !/^[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+$|^[^<>]*<[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+>$/.test(s.value.trim())) throw new HttpError(400, L("Adresse d'expédition invalide (ex. studio@exemple.fr ou Studio <studio@exemple.fr>).", "Invalid sender address (e.g. studio@example.com or Studio <studio@example.com>)."));
-    if (s.key === "provider.alibaba.region" && s.value && !["intl", "us", "cn"].includes(s.value)) throw new HttpError(400, L("Région inconnue.", "Unknown region."));
+    if (s.key === "provider.alibaba.region" && s.value && !["intl", "us", "cn", "eu"].includes(s.value)) throw new HttpError(400, L("Région inconnue.", "Unknown region."));
     // Adresse personnalisée : HTTPS vers un domaine Alibaba Cloud seulement (jamais une autre destination).
     if (s.key === "provider.alibaba.endpoint" && s.value && !ALIBABA_ENDPOINT_RE.test(s.value.trim())) throw new HttpError(400, L("Adresse d'API invalide : https://…aliyuncs.com attendu (ex. https://dashscope-intl.aliyuncs.com/api/v1).", "Invalid API address: https://…aliyuncs.com expected (e.g. https://dashscope-intl.aliyuncs.com/api/v1)."));
+    if (s.key === "provider.vertex.project" && s.value && !/^[a-z][a-z0-9-]{4,62}$/.test(s.value.trim())) throw new HttpError(400, L("Identifiant de projet Google Cloud invalide.", "Invalid Google Cloud project ID."));
     if (s.key === "provider.alibaba.workspace" && s.value && !/^[\w-]{1,80}$/.test(s.value.trim())) throw new HttpError(400, L("Identifiant d'espace de travail invalide.", "Invalid workspace ID."));
     // Région ou adresse changée : la connexion doit être testée à nouveau.
     if (/^provider\.alibaba\.(region|endpoint|apiKey|workspace)$/.test(s.key)) setSetting("provider.alibaba.lastTest", null);

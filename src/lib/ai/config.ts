@@ -11,7 +11,7 @@ import { POLICY_ROUTES } from "../orchestrator/policy";
 import { GATEWAY_KEY, gatewayProviders } from "./gateway";
 export { bearer, falAuth, GATEWAY_KEY, gatewayProviders, isGatewayKey } from "./gateway";
 
-export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "alibaba" | "pexels" | "pixabay" | "higgsfield";
+export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "alibaba" | "pexels" | "pixabay" | "higgsfield" | "vertex" | "kling" | "byteplus" | "runware";
 
 // Libellés affichés dans l'administration : accesseurs évalués à la lecture, dans la langue de l'interface.
 const provider = (name: { fr: string; en: string }, role: { fr: string; en: string }, keyHelp: { fr: string; en: string }, docs: string) => ({
@@ -29,6 +29,12 @@ const provider = (name: { fr: string; en: string }, role: { fr: string; en: stri
 
 export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly role: string; readonly keyHelp: string; docs: string }> = {
   higgsfield: provider({fr:"Higgsfield officiel",en:"Official Higgsfield"},{fr:"Plans vidéo produit — tarifs automatiques et approbation groupée",en:"Product video shots — automatic pricing and bulk approval"},{fr:"Identifiant et secret dans la carte dédiée",en:"Key ID and secret in the dedicated card"},"https://docs.higgsfield.ai/docs"),
+  // Fabricants vidéo accordés par le propriétaire (référence, partie 16 : 18 novembre 2026 ; Seedance le 21). Inactifs
+  // tant que leur clé n'est pas saisie ici ; chaque modèle attend aussi la confirmation de l'administration.
+  vertex: provider({ fr: "Google Vertex AI (vidéo Veo 3.1)", en: "Google Vertex AI (Veo 3.1 video)" }, { fr: "Plans vidéo Veo 3.1 Fast et Lite, image de départ et de fin, personnes interdites sans accord (calcul aux États-Unis)", en: "Veo 3.1 Fast and Lite video shots, start and end frame, people disallowed without consent (computed in the United States)" }, { fr: "Clé d'API Google Cloud (mode express) ; ou jeton d'accès avec l'identifiant du projet ci-dessous", en: "Google Cloud API key (express mode); or access token with the project ID below" }, "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/veo/3-1-generate"),
+  kling: provider({ fr: "Kling en direct (vidéo)", en: "Kling direct (video)" }, { fr: "Plans vidéo Kling 4.0, durée toujours envoyée, fichiers copiés tout de suite (gardés 30 jours chez Kling)", en: "Kling 4.0 video shots, duration always sent, files copied right away (kept 30 days at Kling)" }, { fr: "Clé d'API de la console Kling", en: "API key from the Kling console" }, "https://kling.ai/document-api/llms.txt"),
+  byteplus: provider({ fr: "BytePlus ModelArk (vidéo Seedance)", en: "BytePlus ModelArk (Seedance video)" }, { fr: "Plans vidéo Seedance, identifiant haché du client envoyé à chaque appel, brouillon avant la version finale", en: "Seedance video shots, hashed customer ID sent with each call, draft before the final version" }, { fr: "Clé d'API ModelArk (région Asie du Sud-Est)", en: "ModelArk API key (Southeast Asia region)" }, "https://docs.byteplus.com/en/docs/modelark/model-list"),
+  runware: provider({ fr: "Runware (secours vidéo)", en: "Runware (video backup)" }, { fr: "Seul intermédiaire accordé, en secours quand un fabricant est en panne ; coût exact de chaque appel", en: "Only approved intermediary, as backup when a maker is down; exact cost of each call" }, { fr: "Clé d'API Runware", en: "Runware API key" }, "https://runware.ai/docs/llms.txt"),
   anthropic: provider(
     { fr: "Anthropic (Claude)", en: "Anthropic (Claude)" },
     { fr: "Compréhension de l’offre, stratégie, rédaction, code des thèmes, contrôle qualité", en: "Offer understanding, strategy, copywriting, theme code, quality control" },
@@ -172,6 +178,18 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "google:veo-3.0-generate-001": { unit: "video_second", perSecond: 0.4 },
   "google:veo-3.0-fast-generate-001": { unit: "video_second", perSecond: 0.15 },
   "fal:fal-ai/kling-video/v2.1/pro/image-to-video": { unit: "video_second", perSecond: 0.09 },
+  // Vidéo en direct (rapport 09, prix officiels lus le 22 novembre 2026, 720p sans son) : à confirmer dans l'administration.
+  "vertex:veo-3.1-fast-generate-001": { unit: "video_second", perSecond: 0.08 },
+  "vertex:veo-3.1-lite-generate-001": { unit: "video_second", perSecond: 0.03 },
+  "kling:kling-4.0": { unit: "video_second", perSecond: 0.157 },
+  "kling:kling-4.0-flash": { unit: "video_second", perSecond: 0.094 },
+  "byteplus:dreamina-seedance-2-0-mini-260615": { unit: "video_second", perSecond: 0.08 },
+  "byteplus:dreamina-seedance-2-0-fast-260128": { unit: "video_second", perSecond: 0.12 },
+  "byteplus:dreamina-seedance-2-5-260628": { unit: "video_second", perSecond: 0.231 },
+  "runware:alibaba:wan@2.6-flash": { unit: "video_second", perSecond: 0.025 },
+  "runware:google:veo@3.1-lite": { unit: "video_second", perSecond: 0.03 },
+  "runware:klingai:6@1": { unit: "video_second", perSecond: 0.042 },
+  "runware:bytedance:seedance@2.0-mini": { unit: "video_second", perSecond: 0.081 },
   // Alibaba Cloud Model Studio (région internationale) : tarifs lus dans l'API officielle des modèles le 15/10/2026.
   // Qwen-Image 3.0 : facturé par image produite (1K / 2K) + 0,003 $ par image d'entrée. Borne retenue : sortie 2K
   // + deux images d'entrée (le studio en envoie au plus deux) → jamais dépassée.
@@ -268,7 +286,7 @@ export function usdToEur(): number {
  * Clés lues aussi dans l'environnement (ex. secrets GitHub Codespaces) : elles survivent à un codespace recréé,
  * sans passer par la base. La clé saisie dans l'administration reste prioritaire.
  */
-const ENV_KEYS: Record<ProviderId, string[]> = { higgsfield: [], anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], alibaba: ["DASHSCOPE_API_KEY", "ALIBABA_MODEL_STUDIO_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
+const ENV_KEYS: Record<ProviderId, string[]> = { higgsfield: [], vertex: [], kling: [], byteplus: [], runware: [], anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], alibaba: ["DASHSCOPE_API_KEY", "ALIBABA_MODEL_STUDIO_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
 export const providerEnvKey = (p: ProviderId): string | null => ENV_KEYS[p].map((k) => process.env[k]?.trim()).find(Boolean) ?? null;
 
 export function providerKey(p: ProviderId): string | null {
@@ -294,7 +312,7 @@ export function activeProviderKey(p: ProviderId): string | null {
 export function aiAvailability() {
   const llm = providerEnabled("anthropic");
   const image = providerEnabled("openai") || providerEnabled("google") || providerEnabled("alibaba");
-  const video = providerEnabled("google") || providerEnabled("fal") || providerEnabled("alibaba") || providerEnabled("higgsfield");
+  const video = providerEnabled("google") || providerEnabled("fal") || providerEnabled("alibaba") || providerEnabled("higgsfield") || providerEnabled("vertex") || providerEnabled("kling") || providerEnabled("byteplus") || providerEnabled("runware");
   // Vidéo UGC : une personne générée (images) puis animée (vidéo) ; la voix vient de Veo 3 (Google).
   const ugc = image && video;
   const ugcVoice = ugc && providerEnabled("google");

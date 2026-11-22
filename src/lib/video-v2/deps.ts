@@ -134,7 +134,7 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       const usage = { ...base, usageKey: key };
       // Modèle choisi par le moteur (catalogue) ; relais vers le secours compatible si le principal échoue sans coût.
       if(!req.image){if(req.provider==='higgsfield'&&!req.people)return higgsfieldClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:'text_video'});if(req.provider!=="alibaba"||req.people)throw new Error("Adaptateur direct sans personne indisponible pour cette route.");return wanTextClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:"text_video"});}
-      if (req.provider === "google" || req.provider === "fal" || req.provider === "alibaba" || req.provider === "higgsfield") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
+      if (["google", "fal", "alibaba", "higgsfield", "vertex", "kling", "byteplus", "runware"].includes(req.provider)) return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
       throw new Error(`fournisseur vidéo non pris en charge : ${req.provider}`);
     },
     // Choix explicite uniquement : nouveaux timbres OpenAI ou synthèse locale historique.
