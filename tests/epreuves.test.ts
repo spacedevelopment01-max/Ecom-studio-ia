@@ -380,5 +380,13 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toMatch(/aLaChargeDuStudio\(\(\) => reason\(user, r, jobId, step, deps, reviewNote/);
     expect(fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8")).toContain("retry ? aLaChargeDuStudio(");
   });
+  epreuve("refus-du-client-toutes-tournures", async () => {
+    const { clientRefusal } = await import("@/lib/syna-agent/brand-images");
+    for (const refus of ["Pas d'outil dans le logo.", "Aucune goutte.", "Sans goutte d'eau.", "J'aime pas les gouttes.", "Je déteste le rose.", "Évite les clés à molette.", "Il ne veut surtout pas de goutte d'eau."])
+      expect(clientRefusal(refus)).toBe(`Ce que le client refuse, avec ses mots : « ${refus} »`);
+    expect(clientRefusal("J'aime le bleu profond et les lignes fines.")).toBe("");
+    // Un goût et un refus sur deux lignes : seul le refus part.
+    expect(clientRefusal("J'aime le vert.\nJe déteste le rose.")).toBe("Ce que le client refuse, avec ses mots : « Je déteste le rose. »");
+  });
 });
 

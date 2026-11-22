@@ -220,4 +220,10 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Une image ratée refaite, une réponse réécrite après le contrôle ou la relectrice, une réponse coupée redemandée ne prennent rien sur le budget du client, même épuisé ; le coût reste inscrit à la charge du Studio.",
     rejeu: "gratuit",
   },
+  {
+    id: "refus-du-client-toutes-tournures", date: "2026-11-22", source: "CLAUDE.md (Logo, 21 novembre 2026)",
+    verdict: "Seule exception à « les mots du client sur l'image voulue ne vont pas au dessinateur du logo », accordée le 21 novembre 2026 : « sa phrase de refus, mot pour mot (« Il ne veut surtout pas : … ») ».",
+    attendu: "Une phrase de refus arrive mot pour mot au dessinateur du logo, quelle que soit sa tournure : « Pas d'outil », « Aucune goutte », « Sans goutte d'eau », « J'aime pas les gouttes », « Je déteste le rose », « Évite les clés à molette » ; un goût qui n'est pas un refus n'y va pas.",
+    rejeu: "gratuit",
+  },
 ];

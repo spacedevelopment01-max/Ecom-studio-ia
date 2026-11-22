@@ -168,9 +168,19 @@ export const OBJETS_UTILES = "Chaque objet de la scène a un rôle : aucune éti
  * Le refus du client, mot pour mot, pour le dessinateur du logo (accord du propriétaire du 21 novembre 2026 : une seule
  * ligne, le refus du client lui-même, sans autre consigne) : seulement ses phrases de refus, telles qu'il les a écrites.
  */
+/** Les tournures d'un refus du client (sa règle du 21 novembre 2026 : sa phrase de refus, mot pour mot, au dessinateur). */
+const REFUS = new RegExp([
+  // N'importe où dans la phrase.
+  "(?<![\\p{L}])(ne veu[tx]|ne voulons|pas de|surtout pas|jamais|refuse|n['’]aime pas|j['’]aime pas|déteste|non à|hors de question)(?![\\p{L}])",
+  "(?<![\\p{L}])pas d['’]",
+  // En tête de phrase seulement : « sans stress », au milieu d'un goût, n'est pas un refus.
+  "^\\s*(aucune?s?|sans|évite[rsz]?)(?![\\p{L}])",
+].join("|"), "iu");
 export function clientRefusal(words?: string | null): string {
   // Une ligne par chose dite (sa fiche) : un goût sur une ligne voisine n'est jamais pris avec le refus.
-  const phrases = (words ?? "").split(/(?<=[.!?])\s+|\n+/).map((t) => t.trim()).filter((t) => /\b(ne veu[tx]|ne voulons|pas de|surtout pas|jamais|refuse)\b/i.test(t));
+  // « Pas d'outil », « Aucune goutte », « Sans goutte d'eau », « J'aime pas », « Je déteste », « Évite… » étaient manqués
+  // (audit de la marque, 22 novembre 2026) : le relecteur refusait le logo après coup, qui était redessiné et repayé.
+  const phrases = (words ?? "").split(/(?<=[.!?])\s+|\n+/).map((t) => t.trim()).filter((t) => REFUS.test(t));
   return phrases.length ? `Ce que le client refuse, avec ses mots : « ${phrases.join(" ").slice(0, 400)} »` : "";
 }
 export const SIGNS_LINE = "Une vraie photographie haut de gamme, comme dans le livre d'identité d'une grande agence : les signes de la marque sont appliqués sur de vrais objets de son monde, en vraies matières (impression, broderie, gravure, peinture, sérigraphie). Jamais une icône plate, jamais un pictogramme, jamais une grille de cases ni un nuancier dessiné.";
