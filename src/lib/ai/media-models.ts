@@ -13,10 +13,10 @@ import {HIGGS_MODELS} from "./higgsfield/catalog";
  *  - `legacyDefault` : modèle appelé chez ce fournisseur quand aucun n'a été choisi (comportement d'avant).
  */
 export type MediaKind = "image" | "video";
-export type MediaAdapter = "openai_image" | "gemini_image" | "fal_image" | "veo" | "fal_video" | "alibaba_image" | "alibaba_video" | "higgsfield_video" | "direct_video" | null;
+export type MediaAdapter = "openai_image" | "gemini_image" | "fal_image" | "veo" | "fal_video" | "alibaba_image" | "alibaba_video" | "higgsfield_video" | "direct_video" | "bfl_image" | null;
 
 export type MediaModel = {
-  provider: "openai" | "google" | "fal" | "alibaba" | "higgsfield" | "vertex" | "kling" | "byteplus" | "runware";
+  provider: "openai" | "google" | "fal" | "alibaba" | "higgsfield" | "vertex" | "kling" | "byteplus" | "runware" | "bfl";
   /** Image de fin acceptée (même photo, ou la vraie photo sous un autre angle). */
   lastFrame?: boolean;
   /** Brouillon bon marché avant la version finale (Seedance 2.5 « Draft »). */
@@ -560,6 +560,24 @@ MEDIA_MODELS.push(
   DIRECT("runware", "google:veo@3.1-lite", "Veo 3.1 Lite (Runware, secours)", 1, [4, 6, 8], "0,03 $ / s en 720p sans son (fiche Runware, 22/11/2026)", "https://runware.ai/docs/models/google-veo-3-1-lite/schema.json", { lastFrame: true }),
   DIRECT("runware", "klingai:6@1", "Kling 2.5 Turbo Pro (Runware, secours)", 2, [5, 10], "0,042 $ / s en 720p (fiche Runware, 22/11/2026)", "https://runware.ai/docs/models/klingai-2-5-turbo-pro/schema.json"),
   DIRECT("runware", "bytedance:seedance@2.0-mini", "Seedance 2.0 Mini (Runware, secours)", 2, SECONDS(4, 15), "0,081 $ / s en 720p (fiche Runware, 22/11/2026)", "https://runware.ai/docs/models/bytedance-seedance-2-0-mini/schema.json", { lastFrame: true }),
+);
+
+/**
+ * Black Forest Labs (Flux) en direct (rapport 10, points 5 et 8) : seulement au choix du client dans l'atelier ; jamais
+ * proposé pour une personne ; inactif tant que la clé manque et verrouillé tant que l'administration n'a pas confirmé
+ * identifiant et tarif. Adaptateur : `bflImage` / `bflExpand` (media-providers.ts), écrit d'après la documentation,
+ * non vérifié par un appel réel.
+ */
+const FLUX = (model: string, label: string, quality: 1 | 2 | 3, caps: MediaModel["caps"], priceNote: string, use: MediaModel["use"], o: Partial<MediaModel> = {}): MediaModel => ({
+  provider: "bfl", model, label, kind: "image", adapter: "bfl_image", quality,
+  caps: { people: false, ...caps }, aspects: ["1:1", "4:5", "9:16", "16:9", "2:3"], resolution: "environ 1 mégapixel",
+  typical: {}, priceNote, status: "stable", verified: { id: true, price: true }, adminConfirm: true, paramsVerified: false,
+  source: "https://docs.bfl.ai", use, ...o,
+});
+MEDIA_MODELS.push(
+  FLUX("flux-kontext-pro", "FLUX.1 Kontext pro (Black Forest Labs)", 2, { references: 1 }, "0,04 $ / image (bfl.ai/pricing, 22/11/2026)", { fr: "Atelier : changer une chose précise sur une photo (le fond, un objet à retirer).", en: "Workshop: change one precise thing on a photo (background, object to remove)." }, { needsReference: true }),
+  FLUX("flux-2-pro", "FLUX.2 pro (Black Forest Labs)", 3, { references: 8 }, "0,045 $ / image d'un mégapixel avec une référence (bfl.ai/pricing, 22/11/2026)", { fr: "Atelier : scène créée à partir de la photo du produit.", en: "Workshop: scene created from the product photo." }),
+  FLUX("flux-pro-1.0-expand", "FLUX Expand (Black Forest Labs)", 2, { references: 1 }, "0,05 $ / image (borne ; bfl.ai/pricing, 22/11/2026)", { fr: "Atelier : version story ou carrée d'une image, le cadre agrandi autour de la photo intacte.", en: "Workshop: story or square version of an image, the frame extended around the untouched photo." }, { needsReference: true }),
 );
 
 export const mediaModel = (provider: string, model: string): MediaModel | null => MEDIA_MODELS.find((m) => m.provider === provider && m.model === model) ?? null;

@@ -486,9 +486,9 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   return d;
 }
 
-export function imageProviderAvailable(need?: Partial<MediaNeed>): "openai" | "google" | "fal" | "alibaba" | null {
+export function imageProviderAvailable(need?: Partial<MediaNeed>): "openai" | "google" | "fal" | "alibaba" | "bfl" | null {
   const d = routeMedia("image_generation", undefined, need);
-  return d && (d.provider === "openai" || d.provider === "google" || d.provider === "fal" || d.provider === "alibaba") ? d.provider : null;
+  return d && (d.provider === "openai" || d.provider === "google" || d.provider === "fal" || d.provider === "alibaba" || d.provider === "bfl") ? d.provider : null;
 }
 
 /** Pourquoi aucune image IA ne peut être faite maintenant (affiché au client et dans le diagnostic). */
@@ -961,6 +961,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   const nativeSize=provider==="openai"?openaiSize(pickModel("openai","image"),input.aspect):provider==="alibaba"?qwenSize(input.aspect):null;
   input.onRequest?.({provider,requestedModel:selected,aspect:input.aspect,quality:input.quality,nativeSize,prompt:text,references:refs.map((b,i)=>({role:typed[i].role,sha256:createHash("sha256").update(b).digest("hex"),bytes:b.length}))});
   if (provider === "fal") return falImage(ctx, selected, text, refs, input.aspect);
+  if (provider === "bfl") return bflImage(ctx, selected, text, refs, input.aspect);
   if (provider === "alibaba") return alibabaImage(ctx, selected, text, refs, input.aspect, !!input.need?.people, !input.need?.text && !refs.length, input.negative);
   if (provider === "google") {
     const key = activeProviderKey("google")!;
@@ -1256,6 +1257,67 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
 
 
 /**
+ * Image Flux en direct (Black Forest Labs, accordé ; rapport 10, points 5 et 8). Tarif « par image » obligatoire : le
+ * coût maximal est réservé avant l'envoi ; l'adresse de suivi est gardée (une reprise relit le résultat sans repayer) ;
+ * l'image est copiée tout de suite (Black Forest Labs ne la garde que dix minutes). Écrit d'après la documentation,
+ * jamais encore appelé avec une vraie clé.
+ */
+async function bflRun(ctx: Ctx, model: string, request: (key: string) => import("./bfl").BflRequest) {
+  const { bflSubmitted, bflPoll, bflPollRequest } = await import("./bfl");
+  const key = activeProviderKey("bfl");
+  if (!key) throw new UserFacingError(L("Aucune clé Black Forest Labs configurée.", "No Black Forest Labs key configured."));
+  const p = requirePrice("bfl", model);
+  if (p.unit !== "image") throw new PermanentError(L(`Tarif « par image » attendu pour bfl:${model} : coût maximal non borné, génération bloquée.`, `A per-image price is expected for bfl:${model}: maximum cost not bounded, generation blocked.`));
+  const max = cost("bfl", model, { images: 1 }).micro;
+  gate(ctx, max, "image", "bfl", model);
+  const trace = mediaTrace.getStore()!;
+  let q: { id: string; pollingUrl: string } | null = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
+  if (!q) {
+    if (trace.previous) operationPending();
+    const req = request(key);
+    const r = await providerFetch(req.url, { method: req.method, headers: req.headers, body: JSON.stringify(req.body) });
+    if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(L("Clé Black Forest Labs refusée : vérifiez-la dans l'administration.", "Black Forest Labs key rejected: check it in the admin panel.")));
+    if (!r.ok) {
+      const err = new PermanentError(L("Black Forest Labs a refusé la demande : ", "Black Forest Labs rejected the request: ") + (await r.text()).slice(0, 300));
+      throw refused(r.status) ? refusal(err) : err;
+    }
+    q = bflSubmitted(await r.json());
+    saveProviderReceipt(trace.reservation!, q);
+  }
+  for (let i = 0; i < 100; i++) {
+    await new Promise((res) => setTimeout(res, mediaPoll.falImageMs));
+    const pr = bflPollRequest(key, q.pollingUrl);
+    const st = bflPoll(await (await providerFetch(pr.url, { headers: pr.headers })).json());
+    if (st.state === "done") {
+      recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "bfl", model, unit: "image", quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey });
+      const img = await publicDownload(st.imageUrl);
+      if (!img.ok) throw new PermanentError(L("Image produite mais téléchargement impossible.", "Image produced but download failed."));
+      return Buffer.from(await img.arrayBuffer());
+    }
+    if (st.state === "failed") throw new PermanentError(st.message);
+  }
+  throw new Error(L("Délai dépassé pour la génération Black Forest Labs.", "Black Forest Labs generation timed out."));
+}
+
+async function bflImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[], aspect: string) {
+  const { bflImageRequest } = await import("./bfl");
+  if (mediaModel("bfl", model)?.needsReference && !refs.length) throw new PermanentError(L(`${model} exige une image de référence.`, `${model} requires a reference image.`));
+  return bflRun(ctx, model, (key) => bflImageRequest(key, model as import("./bfl").BflModel, { prompt, references: refs.map((r) => r.toString("base64")), aspect }));
+}
+
+/** Agrandir le cadre par Flux Expand (version story ou carrée) : la photo reste intacte au centre. */
+async function bflExpandImpl(ctx: Ctx, input: { image: Buffer; cible: "9:16" | "1:1"; prompt: string }) {
+  const { bflExpandRequest, margesPour } = await import("./bfl");
+  const modele = mediaModel("bfl", "flux-pro-1.0-expand");
+  const etat = modele ? mediaStatus(modele) : null;
+  if (!etat?.usable || !etat.enabled) throw new UserFacingError(L("Flux Agrandir n'est pas encore ouvert (clé ou accord de l'administration manquant). Rien n'a été lancé.", "Flux Expand is not open yet (key or admin approval missing). Nothing was started."));
+  const m = await sharp(input.image).metadata();
+  const marges = margesPour(m.width ?? 1024, m.height ?? 1024, input.cible);
+  const png = await sharp(input.image).png().toBuffer();
+  return bflRun(ctx, "flux-pro-1.0-expand", (key) => bflExpandRequest(key, { image: png.toString("base64"), ...marges, prompt: input.prompt }));
+}
+
+/**
  * Image Qwen-Image (Alibaba Cloud Model Studio, point d'accès synchrone). Tarif « par image » obligatoire : le coût
  * maximal (une image) est réservé avant l'envoi. Aucune personne ajoutée sans photo du client (consigne + negative
  * prompt). Une demande refusée (clé, région, contenu, droits) ne coûte rien : la réservation est rendue.
@@ -1547,6 +1609,8 @@ export const openaiScene = withMediaBackup("image", traced("image_generation", o
 export const productPlate = withMediaBackup("image", traced("image_generation", productPlateImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const productScene = withMediaBackup("image", traced("image_generation", productSceneImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const editPhoto = withMediaBackup("image", traced("image_generation", editPhotoImpl), { usage: (_c, i) => i.usage ?? "ad_visual" });
+/** Atelier : version story ou carrée par Flux Expand (choix du client), sans secours vers un autre fournisseur. */
+export const bflExpand = traced("image_generation", bflExpandImpl);
 /** Produit incomplet sur la photo : reconstruit en entier (même produit), payant, compté comme toute image. */
 export const completeProductImage = withMediaBackup("image", traced("image_generation", completeProductImpl), { usage: () => "product_edit" });
 /** Ancien nom (décor vide) : même génération, par le modèle de l'usage. */

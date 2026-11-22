@@ -21,7 +21,7 @@ const PriceSchema = z.discriminatedUnion("unit", [
 
 // Réglages SMTP (serveur, identifiant, mot de passe, expéditeur) : chiffrés comme les clés, jamais renvoyés en clair.
 const SECRET_KEYS = /apiKey$|clientSecret$|secretKey$|webhookSecret$|^smtp\.(host|user|password|from)$/;
-const ALLOWED = /^(provider\.(anthropic|openai|google|fal|alibaba|pexels|pixabay|vertex|kling|byteplus|runware)\.(apiKey|disabled)|provider\.alibaba\.(region|endpoint|workspace)|provider\.vertex\.project|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|smtp\.(host|port|user|password|from)|app\.url|meta\.graphVersion|shopify\.apiVersion|suivi\.(assistante|demandes|envoiGeste|studioPhoto|ficheGoogle|devis|carnet|brasDroit))$/;
+const ALLOWED = /^(provider\.(anthropic|openai|google|fal|alibaba|pexels|pixabay|vertex|kling|byteplus|runware|bfl)\.(apiKey|disabled)|provider\.alibaba\.(region|endpoint|workspace)|provider\.vertex\.project|oauth\.(meta|tiktok|youtube|pinterest|canva|shopify)\.(clientId|clientSecret)|stripe\.(secretKey|webhookSecret)|smtp\.(host|port|user|password|from)|app\.url|meta\.graphVersion|shopify\.apiVersion|suivi\.(assistante|demandes|envoiGeste|studioPhoto|ficheGoogle|devis|carnet|brasDroit))$/;
 
 /** Réglages d'administration. Les secrets sont chiffrés et jamais renvoyés en clair. */
 export const POST = handle(async (req: Request) => {
@@ -30,7 +30,7 @@ export const POST = handle(async (req: Request) => {
     req,
     z.object({
       set: z.array(z.object({ key: z.string(), value: z.string().nullable() })).optional(),
-      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba", "higgsfield", "vertex", "kling", "byteplus", "runware"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
+      route: z.object({ task: z.string(), provider: z.enum(["anthropic", "openai", "google", "fal", "alibaba", "higgsfield", "vertex", "kling", "byteplus", "runware", "bfl"]), model: z.string().min(2).max(120), effort: z.string().max(20).optional() }).optional(),
       // Routage des modèles de texte : manuel (défaut, routage actuel inchangé) ou automatique multifournisseur.
       routingMode: z.enum(["manual", "auto"]).optional(),
       // Effort des moments forts de SINA par un message dans la conversation (fonction en essai d'Anthropic) : s'éteint ici.

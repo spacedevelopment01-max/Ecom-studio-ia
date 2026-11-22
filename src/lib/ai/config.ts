@@ -11,7 +11,7 @@ import { POLICY_ROUTES } from "../orchestrator/policy";
 import { GATEWAY_KEY, gatewayProviders } from "./gateway";
 export { bearer, falAuth, GATEWAY_KEY, gatewayProviders, isGatewayKey } from "./gateway";
 
-export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "alibaba" | "pexels" | "pixabay" | "higgsfield" | "vertex" | "kling" | "byteplus" | "runware";
+export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "alibaba" | "pexels" | "pixabay" | "higgsfield" | "vertex" | "kling" | "byteplus" | "runware" | "bfl";
 
 // Libellés affichés dans l'administration : accesseurs évalués à la lecture, dans la langue de l'interface.
 const provider = (name: { fr: string; en: string }, role: { fr: string; en: string }, keyHelp: { fr: string; en: string }, docs: string) => ({
@@ -34,6 +34,9 @@ export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly rol
   vertex: provider({ fr: "Google Vertex AI (vidéo Veo 3.1)", en: "Google Vertex AI (Veo 3.1 video)" }, { fr: "Plans vidéo Veo 3.1 Fast et Lite, image de départ et de fin, personnes interdites sans accord (calcul aux États-Unis)", en: "Veo 3.1 Fast and Lite video shots, start and end frame, people disallowed without consent (computed in the United States)" }, { fr: "Clé d'API Google Cloud (mode express) ; ou jeton d'accès avec l'identifiant du projet ci-dessous", en: "Google Cloud API key (express mode); or access token with the project ID below" }, "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/veo/3-1-generate"),
   kling: provider({ fr: "Kling en direct (vidéo)", en: "Kling direct (video)" }, { fr: "Plans vidéo Kling 4.0, durée toujours envoyée, fichiers copiés tout de suite (gardés 30 jours chez Kling)", en: "Kling 4.0 video shots, duration always sent, files copied right away (kept 30 days at Kling)" }, { fr: "Clé d'API de la console Kling", en: "API key from the Kling console" }, "https://kling.ai/document-api/llms.txt"),
   byteplus: provider({ fr: "BytePlus ModelArk (vidéo Seedance)", en: "BytePlus ModelArk (Seedance video)" }, { fr: "Plans vidéo Seedance, identifiant haché du client envoyé à chaque appel, brouillon avant la version finale", en: "Seedance video shots, hashed customer ID sent with each call, draft before the final version" }, { fr: "Clé d'API ModelArk (région Asie du Sud-Est)", en: "ModelArk API key (Southeast Asia region)" }, "https://docs.byteplus.com/en/docs/modelark/model-list"),
+  // Black Forest Labs (Flux), accordé le 18 novembre 2026 (contrat européen) : seulement au choix du client dans
+  // l'atelier (retouche guidée, agrandir le cadre, scène avec référence). Inactif tant que sa clé n'est pas saisie ici.
+  bfl: provider({ fr: "Black Forest Labs (images Flux)", en: "Black Forest Labs (Flux images)" }, { fr: "Atelier : retouche guidée (Kontext), version story ou carrée (agrandir le cadre), scène avec la photo du produit (FLUX.2) ; point d'accès européen", en: "Workshop: guided edits (Kontext), story or square version (expand the frame), scene from the product photo (FLUX.2); European endpoint" }, { fr: "Clé d'API de Black Forest Labs (en-tête x-key)", en: "Black Forest Labs API key (x-key header)" }, "https://docs.bfl.ai"),
   runware: provider({ fr: "Runware (secours vidéo)", en: "Runware (video backup)" }, { fr: "Seul intermédiaire accordé, en secours quand un fabricant est en panne ; coût exact de chaque appel", en: "Only approved intermediary, as backup when a maker is down; exact cost of each call" }, { fr: "Clé d'API Runware", en: "Runware API key" }, "https://runware.ai/docs/llms.txt"),
   anthropic: provider(
     { fr: "Anthropic (Claude)", en: "Anthropic (Claude)" },
@@ -186,6 +189,12 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "byteplus:dreamina-seedance-2-0-mini-260615": { unit: "video_second", perSecond: 0.08 },
   "byteplus:dreamina-seedance-2-0-fast-260128": { unit: "video_second", perSecond: 0.12 },
   "byteplus:dreamina-seedance-2-5-260628": { unit: "video_second", perSecond: 0.231 },
+  // Black Forest Labs (Flux), prix officiels relevés par le rapport 10 du 22 novembre 2026 (https://bfl.ai/pricing),
+  // 1 mégapixel : à confirmer dans l'administration avant tout usage.
+  "bfl:flux-kontext-pro": { unit: "image", perImage: 0.04 },
+  "bfl:flux-2-pro": { unit: "image", perImage: 0.045 },
+  "bfl:flux-pro-1.0-expand": { unit: "image", perImage: 0.05 },
+  "bfl:flux-pro-1.0-fill": { unit: "image", perImage: 0.05 },
   "runware:alibaba:wan@2.6-flash": { unit: "video_second", perSecond: 0.025 },
   "runware:google:veo@3.1-lite": { unit: "video_second", perSecond: 0.03 },
   "runware:klingai:6@1": { unit: "video_second", perSecond: 0.042 },
@@ -286,7 +295,7 @@ export function usdToEur(): number {
  * Clés lues aussi dans l'environnement (ex. secrets GitHub Codespaces) : elles survivent à un codespace recréé,
  * sans passer par la base. La clé saisie dans l'administration reste prioritaire.
  */
-const ENV_KEYS: Record<ProviderId, string[]> = { higgsfield: [], vertex: [], kling: [], byteplus: [], runware: [], anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], alibaba: ["DASHSCOPE_API_KEY", "ALIBABA_MODEL_STUDIO_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
+const ENV_KEYS: Record<ProviderId, string[]> = { higgsfield: [], vertex: [], kling: [], byteplus: [], runware: [], bfl: [], anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], alibaba: ["DASHSCOPE_API_KEY", "ALIBABA_MODEL_STUDIO_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
 export const providerEnvKey = (p: ProviderId): string | null => ENV_KEYS[p].map((k) => process.env[k]?.trim()).find(Boolean) ?? null;
 
 export function providerKey(p: ProviderId): string | null {
