@@ -195,6 +195,27 @@ Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches
 - L'atelier de création est écrit par cette conversation : `docs/studio/L-ATELIER-DE-CREATION.md` (pas encore envoyé ;
   ses conditions et sa place dans les lots sont « non encore validées » par le propriétaire).
 
+### Recherches approfondies (22 novembre 2026, midi)
+
+- Sa demande : « refais les recherches sur toute la partie thème et tout ce qui se passe après pour chaque étape, ainsi que
+  la plateforme que je veux mettre en place, et prends tout ce dont on a besoin pour continuer l'évolution de SINA ».
+- Onze recherches lancées, plus étroites et plus profondes que celles du matin. Elles partent des trous et des points non
+  vérifiés du matin et ont la liste à jour des fournisseurs accordés (`.lecture/CONSIGNES-COMMUNES.md`). Rapports dans
+  `docs/studio/recherches-2026-11-22-approfondies/` :
+  1. dessiner puis coder ;
+  2. qualité des thèmes ;
+  3. contrôle et retouche du site ;
+  4. mise en ligne ;
+  5. composer les publications ;
+  6. calendrier et légendes ;
+  7. publicités ;
+  8. suivi dans la durée ;
+  9. vidéos avec nos fournisseurs ;
+  10. atelier de création ;
+  11. faire évoluer SINA.
+- Ensuite : tout ce qui en sort part à « SINA évolue », en respectant ses décisions. L'atelier y entre aussi, avec la
+  correction du « Déballage » (pas de mains sans accord écrit).
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
