@@ -90,6 +90,10 @@ const createTool: AgentTool<CreateArgs> = {
       });
       // Convention attendue par le calendrier : un groupe = une publication déclinée par réseau, avec son sujet.
       run("UPDATE posts SET group_id=?, hashtags=?, brief=json_set(COALESCE(brief,'{}'),'$.serie',?,'$.synaPlan',?) WHERE plan_id=?", one.planId, g.hashtags.join(" "), POST_SUBJECT_LABEL[g.subject], j.posts.round, one.planId);
+      // Le concept de l'image écrit par la stratège et relu par le juge : il sert tel quel, sans nouvel appel de rédaction,
+      // et le titre accepté par le client est celui de l'image (audit du 22 novembre 2026).
+      const planConcept = planConceptFor(g);
+      if (planConcept) run("UPDATE posts SET brief=json_set(COALESCE(brief,'{}'),'$.planConcept',json(?)) WHERE plan_id=?", JSON.stringify(planConcept), one.planId);
       ids.push(...one.ids);
     }
     if (!ids.length) return { ok: false, summary: L("Aucune publication à créer.", "Nothing to create.") };
@@ -99,6 +103,13 @@ const createTool: AgentTool<CreateArgs> = {
     return { ok: true, jobs: [job.id], summary: L(`Création de ${q.n} publication${q.n > 1 ? "s" : ""} pour ${q.networks.join(", ")} lancée (${q.images} image${q.images > 1 ? "s" : ""}, quelques minutes).`, "Creating the posts."), hint: "À la fin de la tâche : dis honnêtement combien d'images sont prêtes et lesquelles ont échoué (posts.list les montre) ; une image ratée n'est jamais présentée comme bonne. Puis le client valide (posts.validate)." };
   },
 };
+
+/** Concept de l'image tiré du plan (titre, appel, scène et concept), ou null pour un plan d'avant (sans concept). */
+export function planConceptFor(g: PostGroup): { headline: string; subline: string; cta: string; scene: string; concept: NonNullable<PostGroup["concept"]> } | null {
+  if (!g.concept) return null;
+  const ctaStyle = g.concept.ctaStyle;
+  return { headline: g.title, subline: "", cta: ctaStyle === "none" ? "" : g.cta, scene: g.visual, concept: g.concept };
+}
 
 /** Publications du plan qui ont leur image (créées, contrôlées par le moteur). */
 export function createdPosts(projectId: string, postIds: string[]): { id: string; network: string; title: string; status: string; media: string[] }[] {

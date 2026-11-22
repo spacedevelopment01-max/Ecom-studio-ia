@@ -13,8 +13,8 @@
  *  3) Un JUGE séparé lit le plan entier (celui qui écrit n'est jamais celui qui juge) et dit « garde » ou « reprendre ».
  *  4) Les groupes refusés (par le juge ou par les contrôles) sont réécrits UNE fois, puis relus par le juge.
  *     Un groupe encore refusé est montré avec le doute de SINA : rien n'est montré sans avoir été relu.
- * La création des visuels (posts.create) passe ensuite par le moteur de publications du Studio, qui a déjà son
- * rédacteur, son modèle d'images et son contrôle en image.
+ * La création des visuels (posts.create) passe ensuite par le moteur de publications du Studio (modèle d'images et
+ * relecture en image) ; le concept de chaque image est celui du plan (22 novembre 2026), pas réécrit par un rédacteur.
  */
 import { z } from "zod";
 import { L } from "../i18n-server";
@@ -47,6 +47,21 @@ export const postsPlanTypicalMicro = () => POSTS_PLAN_TYPICAL_MICRO + postsKnowl
 export const POST_SUBJECTS = ["produit", "conseil", "coulisses", "usage", "erreurs", "question"] as const;
 export const POST_SUBJECT_LABEL: Record<(typeof POST_SUBJECTS)[number], string> = { produit: "Le produit", conseil: "Un conseil", coulisses: "Les coulisses", usage: "L'usage", erreurs: "Les erreurs à éviter", question: "Une question à la communauté" };
 
+/** Concept de l'image d'un groupe : mêmes champs que celui du rédacteur des publications (social-v2/ai-post.ts). */
+export const PostConceptSchema = z.object({
+  idea: z.string().min(12).max(400),
+  composition: z.string().min(12).max(400),
+  framing: z.string().min(8).max(200),
+  setting: z.string().min(8).max(300),
+  light: z.string().min(8).max(200),
+  materials: z.string().min(8).max(200),
+  typography: z.string().min(8).max(200),
+  effects: z.string().max(200).default(""),
+  rationale: z.string().min(20).max(300),
+  diversity: z.string().min(20).max(300),
+  ctaStyle: z.enum(["none", "link", "button"]),
+});
+
 export const PostGroupSchema = z.object({
   angleId: z.string().min(1).max(40),
   subject: z.enum(POST_SUBJECTS),
@@ -65,6 +80,12 @@ export const PostGroupSchema = z.object({
   look: z.string().min(10).max(200),
   /** Nom exact d'un produit du catalogue quand la photo le montre, sinon null. */
   product: z.string().max(120).nullable().default(null),
+  /**
+   * Le concept de l'image, écrit par la stratège avec le reste et relu par le juge (audit du 22 novembre 2026) : il sert
+   * tel quel à la création de l'image, sans nouvel appel de rédaction, et le titre accepté par le client est celui de
+   * l'image. Absent (plan d'avant) : le rédacteur des publications l'écrit comme avant.
+   */
+  concept: PostConceptSchema.optional(),
 });
 export type PostGroup = z.infer<typeof PostGroupSchema>;
 export const PostsPlanSchema = z.object({ groups: z.array(PostGroupSchema).length(3) });
@@ -102,7 +123,7 @@ export const POSTS_PLAN_SYSTEM = `Tu es la stratège des contenus d'un studio qu
 
 ${RULES}
 
-Pour chaque groupe : angleId = l'identifiant exact d'un des angles choisis par le client (l'angle principal au moins une fois ; un angle secondaire quand il en a) ; subject ; title ; points ; cta ; caption = le texte sous l'image (un vrai texte, 2 à 5 phrases, qui prolonge l'image sans la répéter) ; hashtags ; visual = UNE photo décrite en phrases complètes (type de photo et cadrage, lieu et surface, chaque objet à sa place, la partie calme pour le titre, la lumière) ; look = ce qui rend ce groupe différent des deux autres (cadrage, palette dominante, type de visuel) ; product = le nom exact d'un produit du catalogue si la photo le montre, sinon null.
+Pour chaque groupe : angleId = l'identifiant exact d'un des angles choisis par le client (l'angle principal au moins une fois ; un angle secondaire quand il en a) ; subject ; title ; points ; cta ; caption = le texte sous l'image (un vrai texte, 2 à 5 phrases, qui prolonge l'image sans la répéter) ; hashtags ; visual = UNE photo décrite en phrases complètes (type de photo et cadrage, lieu et surface, chaque objet à sa place, la partie calme pour le titre, la lumière) ; look = ce qui rend ce groupe différent des deux autres (cadrage, palette dominante, type de visuel) ; product = le nom exact d'un produit du catalogue si la photo le montre, sinon null ; concept = l'image finie pensée d'un bloc avec son titre, telle qu'elle sera créée (personne ne la réécrit ensuite) : idea (l'idée de l'image en une phrase), composition (où sont le sujet, le titre, les points et l'appel), framing (cadrage), setting (lieu et surface), light (lumière), materials (matières visibles), typography (allure des lettres, dans la typographie de la marque), effects (aucun effet si rien ne le justifie), rationale (pourquoi cette image sert ce sujet et cet angle), diversity (ce qui la distingue des deux autres), ctaStyle (none, link ou button ; une publication sans vente n'a pas de bouton).
 
 Réponse : uniquement le JSON demandé.`;
 
@@ -115,18 +136,19 @@ Les épreuves :
 2. L'UTILITÉ. Le lecteur apprend-il ou ressent-il quelque chose, ou est-ce une publicité déguisée ?
 3. L'ÉMOTION DE L'ANGLE. Le texte fait-il ressentir l'émotion de l'angle indiqué, avec des mots qu'un client dirait ?
 4. LE TITRE ET LES POINTS. Titre en deux temps, court ; trois points au plus, concrets ; aucun chiffre qui ne vienne pas de la fiche.
-5. LA PHOTO. Une vraie scène, à sa place avec ce texte, qu'un bon photographe saurait faire ; pas un produit seul sur fond uni ; rien d'interdit.
+5. LA PHOTO ET L'IMAGE. Une vraie scène, à sa place avec ce texte, qu'un bon photographe saurait faire ; pas un produit seul sur fond uni ; rien d'interdit. Le concept de l'image (« image ») sera créé tel quel, sans relecture d'un autre rédacteur : il tient avec le titre, la composition laisse une place calme au titre, et rien n'y est inventé.
 6. LES FAITS. Rien d'inventé : ni avis, ni chiffre, ni délai, ni garantie, ni certification absents de la fiche.
 
 Sévère mais juste : un groupe qui passe les épreuves, tu le gardes. Aucune remarque de goût personnel.
 
 Réponse : uniquement le JSON demandé : groups (un avis par groupe : index, verdict, why en une ou deux phrases, fixes = 1 à 4 corrections précises si « reprendre ») et overall (ton avis sur la série en deux phrases).`;
 
-export const POSTS_FIX_SYSTEM = `Tu es la stratège des contenus d'un studio qui crée la marque et le site de petits commerçants. Des groupes de ton plan de publications ont été refusés. Tu réécris SEULEMENT ceux-là, en suivant les corrections, et tu rends chacun en entier avec son index. Tu ne touches pas aux groupes gardés : ils te sont donnés pour que tu ne leur ressembles pas.
-
-${RULES}
-
-Réponse : uniquement le JSON demandé : groups = [{ index, group }] pour chaque groupe réécrit.`;
+/**
+ * La reprise des groupes refusés (audit du 22 novembre 2026) : elle garde la consigne de la stratège (POSTS_PLAN_SYSTEM)
+ * et ses cahiers, relus en mémoire chez le fournisseur ; ce qui change (réécrire seulement les groupes refusés) passe
+ * dans la demande. Avant, une consigne à part réécrivait en mémoire, au double du prix, les mêmes 18 000 jetons.
+ */
+export const POSTS_FIX_ASK = `REPRISE : des groupes de ton plan ont été refusés. Tu réécris SEULEMENT ceux-là, en suivant les corrections, et tu rends chacun en entier avec son index, concept compris. Tu ne touches pas aux groupes gardés : ils te sont donnés pour que tu ne leur ressembles pas. Réponse : uniquement le JSON demandé : groups = [{ index, group }] pour chaque groupe réécrit.`;
 
 /** Hashtags génériques vides (charte § 7) : refusés sans IA. */
 const EMPTY_TAGS = new Set(["love", "instagood", "photooftheday", "picoftheday", "follow", "followme", "like4like", "likeforlike", "instadaily", "happy", "beautiful", "cute", "fashion", "style", "amazing", "bestoftheday", "instalike", "life", "smile", "fun", "tbt", "nofilter", "viral", "fyp", "pourtoi", "foryou"]);
@@ -177,7 +199,7 @@ export function postsPlanPrompt(brief: string, angles: ReturnType<typeof chosenA
   ].filter(Boolean).join("\n\n");
 }
 
-const showGroup = (g: PostGroup, i: number) => ({ index: i, angle: g.angleId, sujet: g.subject, titre: g.title, points: g.points, appel: g.cta, texte: g.caption, hashtags: cleanHashtags(g.hashtags), photo: g.visual, difference: g.look, produit: g.product });
+const showGroup = (g: PostGroup, i: number) => ({ index: i, angle: g.angleId, sujet: g.subject, titre: g.title, points: g.points, appel: g.cta, texte: g.caption, hashtags: cleanHashtags(g.hashtags), photo: g.visual, difference: g.look, produit: g.product, ...(g.concept ? { image: g.concept } : {}) });
 
 /** Remplaçables par les tests (aucun appel réel). */
 export const postsPlanDeps: {
@@ -242,8 +264,9 @@ export async function runPostsPlanJob(ctx: JobContext) {
   if (refused.length) {
     ctx.progress(0.65, L("Je reprends ce qui ne va pas", "Reworking what is off"));
     try {
-      const prompt = `${base}\n\nGROUPES GARDÉS (ne leur ressemble pas) :\n${JSON.stringify(groups.map(showGroup).filter((g) => !refused.some((r) => r.index === g.index)))}\n\nGROUPES À RÉÉCRIRE :\n${JSON.stringify(refused.map((r) => ({ ...showGroup(groups[r.index], r.index), corrections: r.fixes })))}`;
-      const fixed = await ask("fix", postsEducated(POSTS_FIX_SYSTEM, "stratege"), prompt, PostsFixSchema, postsPlanDeps.fix, { task: "strategy", cap: planCap, out: 7000 });
+      const prompt = `${base}\n\n${POSTS_FIX_ASK}\n\nGROUPES GARDÉS (ne leur ressemble pas) :\n${JSON.stringify(groups.map(showGroup).filter((g) => !refused.some((r) => r.index === g.index)))}\n\nGROUPES À RÉÉCRIRE :\n${JSON.stringify(refused.map((r) => ({ ...showGroup(groups[r.index], r.index), corrections: r.fixes })))}`;
+      // La consigne de la stratège, inchangée : ses cahiers sont relus en mémoire au lieu d'être réécrits au double du prix.
+      const fixed = await ask("fix", postsEducated(POSTS_PLAN_SYSTEM, "stratege"), prompt, PostsFixSchema, postsPlanDeps.fix, { task: "strategy", cap: planCap, out: 7000 });
       const redone = refused.map((r) => r.index).filter((i) => fixed.groups.some((x) => x.index === i));
       groups = groups.map((g, i) => fixed.groups.find((x) => x.index === i && redone.includes(i))?.group ?? g);
       if (redone.length) {

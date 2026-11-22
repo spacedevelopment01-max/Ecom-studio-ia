@@ -170,6 +170,8 @@ describe("SINA — étape 9 : le plan des publications, jugé avant toute image"
     expect(fixPrompts).toHaveLength(1);
     expect(fixPrompts[0]).toMatch(/GROUPES À RÉÉCRIRE :[\s\S]*hashtags génériques vides à remplacer : #love[\s\S]*Pose une question qui révèle une habitude du lecteur\./);
     expect(fixPrompts[0]).toMatch(/GROUPES GARDÉS \(ne leur ressemble pas\) :\n\[\{"index":0/);
+    // La reprise garde la consigne de la stratège (cahiers relus en mémoire) ; ce qu'elle doit faire est dans la demande.
+    expect(fixPrompts[0]).toContain(P.POSTS_FIX_ASK);
     // Le juge relit seulement ce qui a été réécrit.
     expect(judges).toHaveLength(2);
     expect(judges[1]).toMatch(/les groupes 2 et 3 viennent d'être réécrits/);
