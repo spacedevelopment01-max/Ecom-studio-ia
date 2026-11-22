@@ -172,6 +172,32 @@ describe("recherche web OpenAI (outil web_search)", async () => {
     expect(res.actual).toBe(Math.round(((25000 * 4 + 1500 * 20) / 1e6 + 3 * 0.01) * usdToEur() * 1e6));
   });
 
+  it("Claude : la recherche est gardée en mémoire, chaque part comptée à son vrai prix ; arrêtée en route, elle est reprise (22 novembre 2026)", async () => {
+    setJsonSetting("ai.routes", { strategy: { provider: "anthropic", model: "claude-opus-5-5", effort: "high" } });
+    setJsonSetting("ai.prices", { "anthropic:claude-opus-5-5": { unit: "tokens", inputPerM: 4, outputPerM: 20 }, "anthropic:web_search": { unit: "call", perCall: 0.01 } });
+    const envois: any[] = [];
+    ws.webSearchDeps.anthropicCount = async () => 700;
+    ws.webSearchDeps.anthropicSend = async (params: any) => {
+      envois.push(params);
+      if (envois.length === 1) return { model: "claude-opus-5-5", stop_reason: "pause_turn", usage: { input_tokens: 1000, cache_creation_input_tokens: 8000, cache_read_input_tokens: 0, output_tokens: 300, server_tool_use: { web_search_requests: 2 } },
+        content: [{ type: "server_tool_use", name: "web_search", input: { query: "sac" } }, { type: "web_search_tool_result", content: [{ type: "web_search_result", url: "https://marque-a.fr/sac", title: "A" }] }] };
+      return { model: "claude-opus-5-5", stop_reason: "end_turn", usage: { input_tokens: 500, cache_creation_input_tokens: 1000, cache_read_input_tokens: 9000, output_tokens: 700, server_tool_use: { web_search_requests: 1 } },
+        content: [{ type: "text", text: JSON.stringify({ sources: [{ url: "https://marque-a.fr/sac", title: "A", category: "competitors", excerpt: excerpt("A") }] }), citations: [] }] };
+    };
+    const u = await client();
+    const r = await search(u.id);
+    // Mémoire automatique demandée ; la recherche arrêtée en route est reprise avec ce qu'elle avait déjà trouvé.
+    expect(envois[0].cache_control).toEqual({ type: "ephemeral" });
+    expect(envois).toHaveLength(2);
+    expect(envois[1].messages.at(-1)).toMatchObject({ role: "assistant" });
+    expect(r.searches).toBe(3);
+    expect(r.findings.map((f) => f.url)).toEqual(["https://marque-a.fr/sac"]);
+    const [res] = all<{ actual: number }>("SELECT actual FROM ai_reservations WHERE user_id = ?", u.id);
+    const { usdToEur } = await import("@/lib/ai/config");
+    // Plein tarif 1 500, écrit 9 000 à 1,25, lu 9 000 à 0,05 (Opus 5.5) ; sortie 1 000 ; 3 recherches.
+    expect(res.actual).toBe(Math.round((((1500 + 9000 * 1.25 + 9000 * 0.05) * 4 + 1000 * 20) / 1e6 + 3 * 0.01) * usdToEur() * 1e6));
+  });
+
   it("recherche native : page lisible lue par le Studio, sinon extrait rapporté marqué ; lien du client sur une place de marché écarté", async () => {
     const p: any = { id: "p", business: "products" };
     const brief: any = { input: { offerUrl: "https://fr.aliexpress.com/item/9.html", referenceUrls: [], target: "étudiants" }, profile: { name: "Sac", category: "bagagerie", summary: "" }, services: { area: "" } };
