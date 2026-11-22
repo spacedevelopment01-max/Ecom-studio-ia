@@ -1,3 +1,4 @@
+import { assertVideoAtelier } from "@/lib/atelier/service";
 import {strategyStamp} from "@/lib/strategy-consumption";
 import { withCommunicationRequest } from "@/lib/marketing-strategy/communication-route";
 import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
@@ -48,6 +49,8 @@ const Req = z.object({
   scenes: z.number().int().min(SCENE_LIMITS.scenes[0]).max(SCENE_LIMITS.scenes[1]).default(3),
   totalS: z.number().int().min(SCENE_LIMITS.totalS[0]).max(SCENE_LIMITS.totalS[1]).default(15),
   music: z.boolean().default(true),
+  /** Modèle prêt de l'atelier (« Le déballage »…) : il fixe le geste de caméra, jamais de main ni de personne. */
+  modele: z.enum(["tourne", "cadeau", "deballage", "vraie-vie", "details", "offre", "pub-15"]).optional(),
 });
 
 /**
@@ -117,7 +120,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
 
   if(b.generation==="direct"&&b.sceneImages?.some(Boolean))throw new HttpError(400,"Choisissez le mode référence pour transmettre une photo, ou retirez cette sélection du mode direct.");
   for(const image of b.sceneImages??[]) {if(!image)continue;const a=getAsset(image.assetId);if(!a||a.project_id!==p.id||a.deleted_at||a.kind!=="image"||assetMeta<any>(a).gate?.fatal)throw new HttpError(400,"Référence image indisponible dans ce projet.");}
-  const r: ThreeScenesRequest = { angleId:strategyStamp(p.id)?.angleId,mode:b.mode,generation:b.generation,purpose:b.purpose,initialSlot:b.initialSlot, sceneImages:b.sceneImages,editorial:b.editorial, as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS, music: b.music };
+  const r: ThreeScenesRequest = { angleId:strategyStamp(p.id)?.angleId,mode:b.mode,generation:b.generation,purpose:b.purpose,initialSlot:b.initialSlot, sceneImages:b.sceneImages,editorial:b.editorial, as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS, music: b.music, ...(b.modele ? { modele: b.modele } : {}) };
   if(r.purpose==="site"){
     const {stateOf}=await import("@/lib/preparation/store");const state=stateOf(p.id);
     if(state?.stages.brand?.status!=="approved")throw new HttpError(409,"Validez l’identité du projet avant sa proposition vidéo.");
@@ -154,6 +157,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   approvedScenePlan(p,r,approval.scenario);
   if((approval.quoteTotalMicro??approval.capMicro)!==q.capMicro) throw new HttpError(409,"Devis modifié : préparez à nouveau le scénario.");
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'video.scenes' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Une vidéo est déjà en préparation.", "A video is already being prepared."));
+  // Modèle prêt de l'atelier (rapport 10, point 1) : au plus les vidéos du forfait ce mois-ci (0, 3 ou 6).
+  if (r.modele) assertVideoAtelier(user.id, p.id);
   const docKey=`vid:${crypto.createHash("sha256").update(guidedRunKey(p,{...r,approval})).digest("hex").slice(0,20)}`;
   const existing=latestVideo(p.id,docKey);if(existing?.version.renderedAssetId)return ok({...q,reused:true,docKey,videoAssetId:existing.version.renderedAssetId});
   assertCanSpend(user.id,approval.capMicro,p.id);

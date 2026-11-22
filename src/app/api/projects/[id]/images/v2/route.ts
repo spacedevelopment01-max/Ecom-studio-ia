@@ -16,6 +16,7 @@ import { stableHash } from "@/lib/brain/hash";
 import {NativeImageRequestSchema,quoteNativeImageGeneration,signedNativeImageApproval,checkedNativeImageApproval,nativeImageJobKey} from '@/lib/image-v2/native-approval';
 import {imageBindingHash} from '@/lib/image-v2/request-binding';
 
+import { gardeFousAtelier } from '@/lib/atelier/service';
 import {quoteNativePhotoEdit,signedNativePhotoEdit,checkedNativePhotoEdit,nativeEditRequestHash,nativeEditJobKey} from '@/lib/image-v2/native-edit-approval';
 
 export const runtime = "nodejs";
@@ -57,7 +58,7 @@ export const GET = handle(async (_req: Request, ctx: Ctx) => {
 
 export const POST = handle(async (req: Request, ctx: Ctx) => {
   const { user, project: p } = await projectFromCtx(ctx);
-  const b = await body(req, z.object({ operationId:z.string().min(8).max(100).optional(), action: z.enum(["quote", "generate", "quote_edit", "edit", "reject", "reject_direction"]), confirmation:z.boolean().optional(),approvalToken:z.string().max(1000000).optional(),assetId: z.string().max(40).optional(), instruction: z.string().max(400).optional(), direction: z.enum(ART_DIRECTIONS).optional(), request: NativeImageRequestSchema.optional() }));
+  const b = await body(req, z.object({ operationId:z.string().min(8).max(100).optional(), action: z.enum(["quote", "generate", "quote_edit", "edit", "reject", "reject_direction"]), confirmation:z.boolean().optional(),approvalToken:z.string().max(1000000).optional(),assetId: z.string().max(40).optional(), instruction: z.string().max(400).optional(), geste: z.enum(["fond", "retirer", "story", "carre", "lot"]).optional(), outil: z.string().max(80).optional(), mode: z.enum(["sina", "ensemble", "moi"]).optional(), direction: z.enum(ART_DIRECTIONS).optional(), request: NativeImageRequestSchema.optional() }));
   if (b.action === "reject") {
     // Image refusée par le client : jamais réutilisée automatiquement (statut refusé, choix humain mémorisé).
     const a = one<{ meta: string }>("SELECT meta FROM assets WHERE id = ? AND project_id = ? AND json_extract(meta, '$.imageV2') IS NOT NULL", b.assetId ?? "", p.id);
@@ -78,9 +79,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     const a = one<{ id: string }>("SELECT id FROM assets WHERE id = ? AND project_id = ? AND deleted_at IS NULL AND mime LIKE 'image/%'", b.assetId ?? "", p.id);
     if (!a) throw new HttpError(404, L("Photo introuvable.", "Photo not found."));
     const instruction = (b.instruction ?? "").trim();
-    if (instruction.length < 3) throw new HttpError(400, L("Décrivez la modification souhaitée.", "Describe the change you want."));
+    // Gestes de l'atelier (rapport 10, point 5) : la version story ou carrée n'a pas besoin de mots ; les autres oui.
+    if (!(b.geste === "story" || b.geste === "carre") && instruction.length < 3) throw new HttpError(400, b.geste ? L("Dis-moi ce que tu veux changer.", "Tell me what you want to change.") : L("Décrivez la modification souhaitée.", "Describe the change you want."));
     if(!b.operationId)throw new HttpError(409,'Vérifiez et confirmez le devis exact avant retouche.','image_consent_required');
-    const request={assetId:a.id,instruction},previous=one<{id:string}>("SELECT id FROM jobs WHERE user_id=? AND project_id=? AND type='image.edit' AND json_extract(payload,'$.nativeEditQuote.operationId')=? AND json_extract(payload,'$.nativeEditQuote.requestHash')=?",user.id,p.id,b.operationId,nativeEditRequestHash(request));
+    // Garde-fous d'entrée de l'atelier (point 2) : conditions acceptées une fois, demande et photo vérifiées avant le devis.
+    if (b.geste && b.action === "quote_edit") await gardeFousAtelier(user.id, p.id, { texte: instruction, assetId: a.id });
+    const request={assetId:a.id,instruction,...(b.geste?{geste:b.geste,...(b.outil?{outil:b.outil}:{}),...(b.mode?{mode:b.mode}:{})}:{})},previous=one<{id:string}>("SELECT id FROM jobs WHERE user_id=? AND project_id=? AND type='image.edit' AND json_extract(payload,'$.nativeEditQuote.operationId')=? AND json_extract(payload,'$.nativeEditQuote.requestHash')=?",user.id,p.id,b.operationId,nativeEditRequestHash(request));
     if(b.action==='quote_edit')return ok(previous?{jobId:previous.id}:await quoteNativePhotoEdit(user,p.id,b.operationId,request));
     if(b.confirmation!==true)throw new HttpError(409,'Confirmez le devis exact avant retouche.','image_consent_required');
     signedNativePhotoEdit(user,p.id,b.operationId,request,b.approvalToken);
@@ -93,6 +97,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const previous=b.operationId?one<{id:string}>("SELECT id FROM jobs WHERE user_id=? AND project_id=? AND type='image.v2' AND json_extract(payload,'$.nativeImageQuote.operationId')=? AND json_extract(payload,'$.nativeImageQuote.requestHash')=?",user.id,p.id,b.operationId,imageBindingHash(r)):null;
   if(b.action==='quote'){
     if(!b.operationId)throw new HttpError(409,'Identifiant de demande nécessaire au devis.','image_consent_required');
+    // Atelier (rapport 10, point 2) : conditions, modération gratuite et contrôle des personnes avant le devis.
+    if(r.atelier)await gardeFousAtelier(user.id,p.id,{texte:r.topic??null});
     if(previous)return ok({jobId:previous.id});
     return ok(await quoteNativeImageGeneration(user,p.id,b.operationId,r));
   }

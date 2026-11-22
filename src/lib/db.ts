@@ -1244,6 +1244,33 @@ CREATE TABLE IF NOT EXISTS prompt_ideas (
   fingerprint TEXT NOT NULL DEFAULT '',
   created_at INTEGER NOT NULL
 );
+
+-- L'atelier de création (rapport 10 du 22 novembre 2026) : chaque création faite dans l'atelier (geste, outil, mode,
+-- coût en micro-euros, ce qu'elle doit porter comme mention), pour « Mes créations » et le plafond des vidéos du mois.
+CREATE TABLE IF NOT EXISTS atelier_creations (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  asset_id TEXT,
+  source_asset_id TEXT,
+  geste TEXT NOT NULL,
+  mode TEXT NOT NULL,                  -- sina | ensemble | moi
+  kind TEXT NOT NULL,                  -- image | video
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  cost_micro INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'ok',   -- ok | rate | produit_modifie
+  mentions TEXT NOT NULL DEFAULT '[]',
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS atelier_creations_project ON atelier_creations(project_id, created_at);
+-- Les conditions de l'atelier, acceptées une fois par compte (version du texte gardée).
+CREATE TABLE IF NOT EXISTS atelier_conditions (
+  user_id TEXT NOT NULL,
+  version TEXT NOT NULL,
+  accepted_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, version)
+);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */

@@ -31,6 +31,7 @@ import { localIdeas } from "../prompt-ideas";
 import { brandTypo, palette } from "../engine/images";
 import { SIZES, VIDEO_DOC_VERSION, defaultSubtitleStyle, endCardDoc, overlayText, safeZone } from "./doc";
 import { songStyleFor } from "../media/song";
+import { gesteDuModele, modeleVideo } from "../atelier/modeles-videos";
 import { latestVideo, renderVideoFile, saveRendered, saveVideoVersion, videoUserOwned } from "./store";
 import type { Clip, VideoDocument, VideoPlatform } from "./types";
 import fs from "node:fs";
@@ -111,6 +112,8 @@ export type ThreeScenesRequest = {
   key?: string;
   /** Musique composée par le studio (défaut) ou aucune : choix du client. */
   music?: boolean;
+  /** Modèle prêt de l'atelier (rapport 10, point 10) : son geste de caméra remplace le mouvement par défaut. */
+  modele?: import("../atelier/modeles-videos").ModeleVideoId;
 };
 
 /**
@@ -132,6 +135,8 @@ export type Scene = {
   stock?: { queries: string[]; must: string[]; need?: string[][] };
   /** Couleur du titre choisie d'après le fond mesuré (texte foncé sur un plan clair). */
   titleColor?: string;
+  /** Ce qui bouge seul, en plus de la caméra et de la lumière (« Le déballage » : le couvercle de la boîte). */
+  moves?: string;
 };
 /** endCard « large » : phrase et bouton de l'écran de fin en grand (au choix). */
 export type ScenePlan = { scenes: Scene[]; line: string; cta: string; endCard?: "standard" | "large"; /** Voix de la carte de fin. */ voiceEnd?: string };
@@ -216,7 +221,9 @@ export function localScenePlan(p: Project, s: SubjectOption | null, req: ThreeSc
     const idea = ideas[k % Math.max(1, ideas.length)]?.prompt ?? name;
     const base = req.generation?C(`${shot?.intent??idea}. Sujet : ${name}. ${subject?.summary||p.product.summary||""}. ${p.business==="services"?"Illustration imaginée du métier, pas une réalisation du client.":"Montrer uniquement les caractéristiques confirmées du produit."} Aucune personne ni texte généré.`,` ${shot?.intent??idea}. Subject: ${name}. ${subject?.summary||p.product.summary||""}. Illustrative scene, no invented facts, people or generated text.`):shot?.still ?? shot?.intent ?? idea;
     const still = k === 0 && req.request?.trim() ? `${req.request.trim()} — ${base}` : base;
-    return { still, motion: req.generation?moves[k % moves.length]:shot?.motion ?? moves[k % moves.length], title: (shot?.title ?? (k === 0 ? name : "")).slice(0, 40), role: shot?.role, intent: shot?.intent, stock: shot?.stock, voice: localVoiceLine(p, name, shot?.role ?? "", shot?.title ?? "", shot?.intent ?? "", k) };
+    const modele = req.modele ? modeleVideo(req.modele) : null;
+    const geste = modele ? gesteDuModele(modele, { photoDuDos: false }) : null;
+    return { still: modele && k === 0 ? `${modele.scene} — ${still}` : still, motion: geste ? `${geste.consigne}; no hands, no people` : req.generation?moves[k % moves.length]:shot?.motion ?? moves[k % moves.length], ...(modele?.id === "deballage" ? { moves: "the lid of the box, lifting open by itself" } : {}), title: (shot?.title ?? (k === 0 ? name : "")).slice(0, 40), role: shot?.role, intent: shot?.intent, stock: shot?.stock, voice: localVoiceLine(p, name, shot?.role ?? "", shot?.title ?? "", shot?.intent ?? "", k) };
   });
   return { scenes, line: usable(p.brand?.tagline) ? p.brand!.tagline.slice(0, 70) : "", cta: ctaOf(p, req.as), voiceEnd: localVoiceEnd(p, req) };
 }
@@ -251,8 +258,19 @@ ${hasReference ? "The product in the reference image is the hero: reproduce it E
 No text, no letters, no brand name, no logo, no watermark anywhere: nothing written on the product (unless printed on the reference), on signs, walls or objects. No people, no hands, no faces, no body parts. Keep calm empty space at the top and bottom.`;
 }
 
+/**
+ * Le modèle prêt de l'atelier s'impose au scénario, même écrit par l'IA : son geste de caméra pour chaque plan, et pour
+ * « Le déballage », le couvercle qui s'ouvre seul (jamais une main). Sans modèle : le scénario reste tel quel.
+ */
+export function avecModele<P extends { scenes: Scene[] }>(plan: P, req: Pick<ThreeScenesRequest, "modele">): P {
+  const modele = req.modele ? modeleVideo(req.modele) : null;
+  if (!modele) return plan;
+  const geste = gesteDuModele(modele, { photoDuDos: false });
+  return { ...plan, scenes: plan.scenes.map((sc) => ({ ...sc, motion: `${geste.consigne}; no hands, no people`, ...(modele.id === "deballage" ? { moves: "the lid of the box, lifting open by itself" } : {}) })) };
+}
+
 /** Consigne du mouvement (Wan) : le décor bouge, le produit reste identique. */
-export const motionPrompt = (scene: Scene) => `${scene.motion}. Only the camera and the light move: nothing else in the scene moves (no flowing water, no leaves, no clouds, no smoke, no liquid). Maintain the documented reference viewpoint; no orbit and no view of an undocumented back or hidden part. The product stays perfectly still and exactly identical (same shape, colours, details, printed text). Photorealistic, smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no brand, no people, no hands.`;
+export const motionPrompt = (scene: Scene) => `${scene.motion}. Only the camera and the light move${scene.moves ? `, and ${scene.moves}` : ""}: nothing else in the scene moves (no flowing water, no leaves, no clouds, no smoke, no liquid). Maintain the documented reference viewpoint; no orbit and no view of an undocumented back or hidden part. The product stays perfectly still and exactly identical (same shape, colours, details, printed text). Photorealistic, smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no brand, no people, no hands.`;
 
 /** Coût maximal (micro-euros) d'une vidéo IA : une image et un plan par scène (`clipMaxMicro` : un plan de la durée découpée). */
 export function scenesMaxMicro(scenes: number, imageMaxMicro: number, clipMaxMicro: number, planMicro = 0): number {
@@ -499,6 +517,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   const plan: ScenePlan = req.approval ? approvedScenePlan(p0,req,written) : applyWordingDeep(written
     ? { ...written, voiceEnd: written.voiceEnd ?? fallback!.voiceEnd, scenes: Array.from({ length: fallback!.scenes.length }, (_, k) => ({ ...(written.scenes[k] ?? fallback!.scenes[k]), role:written.scenes[k]?.role??fallback!.scenes[k].role, intent:written.scenes[k]?.intent??fallback!.scenes[k].intent, stock:written.scenes[k]?.stock??fallback!.scenes[k].stock, voice: written.scenes[k]?.voice ?? fallback!.scenes[k].voice })) }
     : fallback!, wording);
+  if (!req.approval) Object.assign(plan, avecModele(plan, req));
 
   const editorialIssues = editorialVideoIssues(req.editorial, plan.cta);
   if (editorialIssues.length) throw new UserFacingError(editorialIssues.join(" ; "));
@@ -880,5 +899,5 @@ async function runSceneScenarioInScope(ctx:JobContext|null,projectId:string,req:
  const scenario=ScenePlanSchema.parse(JSON.parse(raw.toString()));
  if(scenario.scenes.length!==(req.scenes??3)) throw new UserFacingError("Scénario incomplet : nombre de scènes non respecté, aucun média lancé.");
  if(videoScope(loadProject(projectId),sceneApprovalRequest(req))!==scope) throw new UserFacingError("Projet modifié pendant la rédaction : scénario conservé, validation à reprendre.");
- return {scope,request:sceneApprovalRequest(req),scenario:applyWordingDeep(scenario,loadWordingRules(projectId))};
+ return {scope,request:sceneApprovalRequest(req),scenario:avecModele(applyWordingDeep(scenario,loadWordingRules(projectId)),req)};
 }

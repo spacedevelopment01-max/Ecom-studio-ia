@@ -155,6 +155,18 @@ export const handlers: Record<string, Handler> = {
     if(stockOnly)delivery.message+=' '+L('Recherche gratuite : vérifications locales et de licence, sans contrôle visuel IA.','Free search: local and licence checks, without AI visual review.');
     const tries = Math.max(1, ...r.outcomes.filter((o) => o.assetId).map((o) => o.attempts ?? 1));
     const notice = retryNotice(p.userId, p.id, tries, r.costMicro);
+    // « Mets mon produit dans une scène » depuis l'atelier : chaque image inscrite dans « Mes créations » (une image
+    // refusée par le contrôle y est dite ratée).
+    if (ctx.payload.request?.atelier && !stockOnly) {
+      const { inscrireCreation } = await import("../src/lib/atelier/journal");
+      const { getAsset, assetMeta } = await import("../src/lib/library");
+      const n = Math.max(1, r.outcomes.length);
+      for (const o of r.outcomes) {
+        const a = o.assetId ? getAsset(o.assetId) : null;
+        const [provider, ...model] = String(a ? assetMeta<{ imageV2?: { provider?: string } }>(a).imageV2?.provider ?? "openai" : "openai").split(":");
+        inscrireCreation({ projectId: p.id, userId: p.userId, assetId: o.assetId ?? null, geste: "scene", mode: ctx.payload.request.atelier.mode ?? "ensemble", kind: "image", provider, model: model.join(":") || "image", costMicro: Math.round((r.costMicro ?? 0) / n), status: o.assetId ? "ok" : "rate" });
+      }
+    }
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, delivery, ...(notice ? { notice } : {}) };
   },
 
@@ -198,8 +210,15 @@ export const handlers: Record<string, Handler> = {
     const { aiActiveFor } = await import("../src/lib/ai/access");
     // Plan des scènes écrit par l'IA seulement si l'IA est active pour ce projet (compte sans abonnement ou budget IA épuisé : aucun appel).
     const r = await runThreeScenes(ctx, p.id, ctx.payload.request, realThreeScenesDeps(ctx, { userId: p.userId, projectId: p.id }, { aiText: aiActiveFor(p.userId, p.id) && llmConfigured(),request:ctx.payload.request }));
+    // Vidéo d'un modèle prêt de l'atelier : inscrite dans « Mes créations » et comptée dans le plafond du mois.
+    if (ctx.payload.request?.modele && r.videoAssetId && !ctx.payload.request?.repair) {
+      const { inscrireCreation } = await import("../src/lib/atelier/journal");
+      inscrireCreation({ projectId: p.id, userId: p.userId, assetId: r.videoAssetId, geste: `video:${ctx.payload.request.modele}`, mode: "ensemble", kind: "video", provider: "studio-video", model: r.mode ?? "ai", costMicro: r.costMicro ?? 0 });
+    }
     return { docKey: r.docKey, videoAssetId: r.videoAssetId, costMicro: r.costMicro, mode: r.mode, notes: r.notes,delivery:await videoDelivery(p.id,r.videoAssetId) };
   },
+  /** Atelier : l'avant et l'après, deux vraies photos montées par le Studio (gratuit, aucune IA). */
+  "atelier.avant-apres": async (ctx) => withAiDisabled("montage gratuit de deux vraies photos, aucun appel d'IA", async () => (await import("../src/lib/atelier/avant-apres")).runAvantApres(ctx)),
   /** Vidéo V2 : nouveau rendu du document enregistré (local, gratuit), rangé dans la bibliothèque. */
   "video.v2.render": async (ctx) => {
     const { renderLatest } = await import("../src/lib/video-v2/engine");

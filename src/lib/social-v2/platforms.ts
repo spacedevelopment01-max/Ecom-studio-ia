@@ -12,6 +12,7 @@
 import { NETWORK_RULES } from "../engine/social-quality";
 import { MOTS_DIESE_MAX, sansOrdreEnFin } from "./fin-de-legende";
 import { fold } from "../seo-v2/lang";
+import { legendeAvecMentions, type Mention } from "../atelier/mentions";
 
 export const PLATFORMS = ["instagram", "facebook", "tiktok", "youtube", "pinterest", "linkedin"] as const;
 export type Platform = (typeof PLATFORMS)[number];
@@ -181,7 +182,7 @@ export function nativeFormatFor(p: Platform, wanted: PostFormat): PostFormat {
   return s.formats[0];
 }
 
-export type AdaptInput = { caption: string; title: string; hashtags: string[]; link: string | null; format: PostFormat; mediaCount: number };
+export type AdaptInput = { caption: string; title: string; hashtags: string[]; link: string | null; format: PostFormat; mediaCount: number; /** Mentions obligatoires de l'image (« Images virtuelles »…), posées seules à la fin, jamais coupées. */ mentions?: Mention[] };
 export type Adapted = AdaptInput & { notes: string[] };
 
 /**
@@ -212,6 +213,11 @@ export function adaptForPlatform(p: Platform, x: AdaptInput, lang: "fr" | "en" |
     caption = (end > s.captionMax * 0.5 ? cut.slice(0, end + 1) : cut).trim();
     notes.push(`légende raccourcie à ${s.captionMax} caractères`);
   }
+  // Mentions obligatoires (rapport 10, point 12) : ajoutées après la coupe, pour ne jamais disparaître.
+  if (x.mentions?.length) {
+    const avec = legendeAvecMentions(caption, x.mentions, lang === "en" ? "en" : "fr");
+    if (avec !== caption) { caption = avec.length > s.captionMax ? legendeAvecMentions(caption.slice(0, Math.max(0, s.captionMax - 60)).trim(), x.mentions, lang === "en" ? "en" : "fr") : avec; notes.push("mention obligatoire posée"); }
+  }
   const tags = [...new Set(x.hashtags.map((h) => h.replace(/^#/, "").trim()).filter(Boolean))];
   // De 0 à 3 mots-dièse par légende, sur tous les réseaux (`MOTS_DIESE_MAX`).
   const max = Math.min(s.hashtags[1], MOTS_DIESE_MAX);
@@ -219,7 +225,7 @@ export function adaptForPlatform(p: Platform, x: AdaptInput, lang: "fr" | "en" |
   if (tags.length > hashtags.length) notes.push(`${tags.length - hashtags.length} hashtag(s) retiré(s) (au plus ${max} sur ${s.label})`);
   const mediaCount = Math.min(x.mediaCount, format === "carousel" ? s.carouselMax : 1);
   if (mediaCount < x.mediaCount) notes.push(`médias limités à ${mediaCount}`);
-  return { caption, title: x.title.slice(0, 100), hashtags, link, format, mediaCount, notes };
+  return { caption, title: x.title.slice(0, 100), hashtags, link, format, mediaCount, ...(x.mentions ? { mentions: x.mentions } : {}), notes };
 }
 
 /** Avertissements de fréquence : au-delà des limites connues d'un réseau. */
