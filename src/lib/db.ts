@@ -641,6 +641,20 @@ CREATE TABLE IF NOT EXISTS verdicts_images (
 );
 CREATE INDEX IF NOT EXISTS verdicts_images_attente ON verdicts_images(proprietaire, created_at);
 
+-- La fonction de rétractation en ligne (directive 2023/2673, en vigueur depuis le 19 juin 2026) : chaque déclaration
+-- « Renoncer au contrat ici » confirmée par un acheteur, avec la date et l'heure de l'envoi et celle de son accusé.
+CREATE TABLE IF NOT EXISTS retractations (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  nom TEXT NOT NULL,
+  commande TEXT NOT NULL,
+  email TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  accuse_at INTEGER,
+  accuse_erreur TEXT
+);
+CREATE INDEX IF NOT EXISTS retractations_projet ON retractations(project_id, created_at);
+
 CREATE TABLE IF NOT EXISTS quality_checks (
   id TEXT PRIMARY KEY,
   created_at INTEGER NOT NULL,

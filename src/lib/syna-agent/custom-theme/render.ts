@@ -4,6 +4,7 @@
  * vraies données de son produit. Dans le Studio, un outil permet au client de DÉSIGNER un élément (titre, texte, bouton,
  * image, section) : SINA reçoit sa désignation et ne modifie que lui. Gratuit, sans IA.
  */
+import { avecRetractation, retractationUrl } from "../../sites/retractation";
 import fs from "node:fs";
 import path from "node:path";
 import { loadProject, type Project } from "../../projects";
@@ -587,7 +588,9 @@ export function renderCustomTheme(p: Pick<Project, "id" | "name" | "brand"> & { 
   const sansVide = (html: string) => (mounted ? withoutMissingPhotos(withoutExampleProducts(html, tnProducts.map((x) => x.title)), p.brand?.palette, (uid) => surPhoto.get(uid) === true) : html);
   const title = o.title ?? `${name} — thème sur mesure`;
   const n = o.nonce ? ` nonce="${esc(o.nonce)}"` : "";
-  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><base href="/sections/"><title>${esc(title)}</title>
+  // « Renoncer au contrat ici » dans chaque pied de page d'une boutique (directive 2023/2673 ; page et accusé portés par le Studio).
+  const retractation = (html: string) => (p.business === "services" ? html : avecRetractation(html, retractationUrl(p.id)));
+  return retractation(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><base href="/sections/"><title>${esc(title)}</title>
 ${lib.fonts.map((f) => `<link rel="stylesheet" href="${esc(f)}">`).join("")}
 <link rel="stylesheet" href="/sections/library.css">
 ${tenueFiles("css").map((f) => `<link rel="stylesheet" href="/sections/${f}">`).join("\n")}
@@ -607,5 +610,5 @@ ${tenueFiles("js").map((f) => `<script${n} src="/sections/${f}"></script>`).join
 <script${n}>${NAV_JS}</script><script${n}>${CART_JS}</script><script${n}>${SETTINGS_JS}</script>
 ${o.embed ? `<style>.tb-bar{display:none}.tb-wrap .zm18,.bh,.mz1,.mz2{top:0!important}.ctw-note{top:10px;bottom:auto;left:auto;right:10px;max-width:300px;font-size:11px}</style>` : ""}
 ${o.studio ? `${sampleTexts ? `<div class="ctw-note" aria-hidden="true">Ton site · textes et photos d'exemple encore présents : SINA les remplace par les tiens</div>` : ""}<script${n}>${PICK_JS}</script>` : ""}
-</body></html>`;
+</body></html>`);
 }

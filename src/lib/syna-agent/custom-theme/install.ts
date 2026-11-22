@@ -6,6 +6,7 @@
  * retirer), une photo d'exemple, une section qui n'est pas à la tenue, une section que le contrôle du Studio refuse.
  * La version créée n'est PAS activée : le thème sur mesure reste celui que le client voit dans l'onglet Boutique.
  */
+import { avecRetractation, retractationUrl } from "../../sites/retractation";
 import { prixBarresSansPreuve } from "../prix-anterieur";
 import { loadShopOffers, type ShopOffers } from "../product-features";
 import { companyOf } from "../activity";
@@ -96,6 +97,9 @@ export function customThemeExport(projectId: string, o: { dropMissing?: boolean 
   if (sansPhoto.length) problems.push({ level: "bloquant", text: `${lignePhotosAImporter(sansPhoto)} (dans le fil avec le trombone, ou dans l'onglet Produits ; elles prennent leur place toutes seules)` });
   // La boutique a été interrogée et ne tient pas les remises : c'est dit, même si le client les avait déclarées.
   if (remises?.source === "preuve" && !remises.ok) problems.push({ level: "à savoir", text: `Remises : ${remises.pourquoi} Aucun prix de lot ni de pack ne part tant que la boutique ne les tient pas.` });
+  // « Renoncer au contrat ici » dans chaque pied de page de la boutique (directive 2023/2673) : la page et l'accusé daté
+  // sont portés par le Studio, la boutique seule ne peut pas les envoyer.
+  if (business === "products") for (const s of Object.values(out.spec.customSections)) if (s.liquid.includes("</footer>")) s.liquid = avecRetractation(s.liquid, retractationUrl(projectId));
   for (const s of Object.values(out.spec.customSections)) { const why = validateCustomSection(s.liquid); if (why) problems.push({ level: "bloquant", text: `section « ${s.name} » refusée par le contrôle du Studio : ${why}` }); }
   for (const why of validateSpec(out.spec)) problems.push({ level: "bloquant", text: `thème : ${why}` });
   return { ...out, problems };
