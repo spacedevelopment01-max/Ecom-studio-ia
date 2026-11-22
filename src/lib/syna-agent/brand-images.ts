@@ -27,6 +27,7 @@
 import { peopleAllowed } from "../people-policy";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { noterRelecture, travailDeLImage } from "./juges";
+import { REPRISES_MAX } from "./reprises";
 import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
@@ -67,7 +68,7 @@ export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 1, hero: 0, ob
  * publications ne sont créés que pour l'identité que le client choisit (deux tiers des images ne servaient jamais).
  */
 /** Reprises d'une image refusée à la relecture, avant de montrer la planche (jamais une planche incomplète). */
-export const MAX_IMAGE_RETRIES = 2;
+export const MAX_IMAGE_RETRIES = REPRISES_MAX;
 export const PROPOSAL_SLOTS: ImageSlot[] = ["logo", "hero", "site"];
 export const FINISH_SLOTS: ImageSlot[] = ["object", "signs", "post0", "post1", "post2"];
 /** Les images de planche sont toujours créées par OpenAI (plus aucun dessin en code à leur place). */
