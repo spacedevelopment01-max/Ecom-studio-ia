@@ -473,6 +473,9 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect(read.data.html).toContain("L'été prend");
     expect(read.data.coordonneesEnregistrees).toMatchObject({ legalName: "Atelier Test SAS", address: "3 rue du Port, 13002 Marseille" });
     const ed = await call("custom.edit", ctx, { uid: hero, edits: [{ find: "L'été prend", replace: "La saison s'ouvre" }] });
+    // Une retouche ne range dans le fil que ce qui a changé : la version et les pages, jamais la carte entière du site.
+    expect(Object.keys(ed.data.customTheme).sort()).toEqual(["boutique", "choisi", "href", "open", "pages", "rev"]);
+    expect(ed.data.customTheme.pages[0]).toEqual({ key: "home", label: expect.any(String) });
     expect(ed.ok).toBe(true);
     expect(loadCustomTheme(pid)!.pages[0].sections[0].html).toContain("La saison s'ouvre");
     // Passage absent, script, règle hors section : refusés, rien ne change.

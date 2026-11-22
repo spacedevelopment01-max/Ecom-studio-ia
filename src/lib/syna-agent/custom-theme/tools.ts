@@ -73,6 +73,11 @@ import { briefUsable, misplacedProductPhotos, productSlotSection, showsProductAl
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, MIN_PHOTOS_TO_REVIEW, PHOTO_REVIEW_CAP_MICRO, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
+/** La carte du site dans le fil après une modification : l'aperçu et ses pages, sans le détail (custom.show le donne). */
+export function carteDuFil(projectId: string, t: CustomTheme) {
+  return { href: `/api/projects/${projectId}/custom-theme?studio=1&embed=1&rev=${t.rev}`, boutique: `/studio/${projectId}/boutique`, open: `/api/projects/${projectId}/custom-theme?rev=${t.rev}`, rev: t.rev, choisi: !!t.chosen, pages: t.pages.map((p) => ({ key: p.key, label: p.label })) };
+}
+
 export function themeCard(projectId: string, t: CustomTheme) {
   const desc = (uid: string, id: string) => { const l = libSection(id); return { uid, titre: l?.title ?? id, role: l?.role ?? "?" }; };
   return {
@@ -133,7 +138,7 @@ const familyOrError = (projectId: string) => loadFamilyChoice(projectId) ?? save
  * modification, même celle qui le corrigeait). Les points bloquants restants sont dits, et le devis reste refusé
  * tant qu'il en reste (buildPlan).
  */
-function saved(ctx: ToolContext, t: CustomTheme, what: string, o: { strict?: boolean } = {}) {
+function saved(ctx: ToolContext, t: CustomTheme, what: string, o: { strict?: boolean; /** Une retouche : seulement ce qui a changé dans le fil. */ retouche?: boolean } = {}) {
   const p = project(ctx);
   const site = siteKind(ctx);
   const problems = checkCustomTheme(t, site);
@@ -148,13 +153,17 @@ function saved(ctx: ToolContext, t: CustomTheme, what: string, o: { strict?: boo
   const still = all.filter((x) => known.has(key(x.text))).map((x) => x.text);
   const next = saveCustomTheme(p.id, t);
   const verified = loadCustomTheme(p.id)?.rev === next.rev;
-  const card = themeCard(p.id, next);
+  // Seulement ce qui a changé (audit de la conversation, 22 novembre 2026) : la version, les pages pour la carte du fil, et
+  // les points à revoir nouveaux. La carte entière du site reste dans custom.show.
+  const card = o.retouche ? carteDuFil(p.id, next) : themeCard(p.id, next);
   const review = problems.filter((x) => x.level === "à revoir").map((x) => x.text);
+  const avantARevoir = new Set(before ? checkCustomTheme(before, site).filter((x) => x.level === "à revoir").map((x) => x.text) : []);
+  const nouveaux = review.filter((x) => !avantARevoir.has(x));
   return {
     ok: verified,
     summary: L(`Site ${what} (version ${next.rev}).${still.length ? ` Encore à corriger avant le montage à la marque : ${still.join(" ; ")}.` : ""}${review.length ? ` À revoir : ${review.join(" ; ")}.` : ""}`, "Custom theme saved."),
     hint: "Le thème est en place dans l'onglet Boutique (aperçu en grand, « Désigner un élément ») ; un aperçu et le lien « Ouvrir la Boutique » s'affichent dans le fil. Dis au client ce qui a changé, en deux phrases. Textes et photos d'exemple : dis-le tant qu'ils ne sont pas remplacés (textesClient).",
-    data: { customTheme: card },
+    data: { customTheme: card, ...(nouveaux.length ? { nouveauxARevoir: nouveaux } : {}) },
     changes: [{ module: "site", object: "site", summary: L(what, what), after: { rev: next.rev }, verified }],
   };
 }
@@ -992,7 +1001,7 @@ const structureTool: AgentTool<{ ops: StructureOp[] }> = {
     if (!t) return { ok: false, summary: L("Aucun site encore : il faut d'abord le créer (site.create).", "No custom theme yet.") };
     try {
       const ops = a.ops.map((o) => ("section" in o && o.section ? { ...o, section: ref(o.section) } : o)) as StructureOp[];
-      return saved(ctx, applyStructure(t, ops), `modifié (${a.ops.map((o) => o.op).join(", ")})`);
+      return saved(ctx, applyStructure(t, ops), `modifié (${a.ops.map((o) => o.op).join(", ")})`, { retouche: true });
     } catch (e) { return { ok: false, summary: (e as Error).message, internal: true }; }
   },
 };
@@ -1055,7 +1064,7 @@ const editTool: AgentTool<EditArgs> = {
       if (css.trim() !== (x.s.css ?? "").trim()) x.s.css = css.trim() || undefined;
       if (a.clientTexts !== undefined) x.s.clientTexts = a.clientTexts;
       if (!done.length && a.clientTexts === undefined) return { ok: false, summary: L("Aucune modification demandée.", "Nothing to change."), internal: true };
-      return saved(ctx, next, `: section « ${libSection(x.s.id)?.title} » (${x.place}) modifiée — ${done.join(" ; ") || "textes marqués comme ceux du client"}`);
+      return saved(ctx, next, `: section « ${libSection(x.s.id)?.title} » (${x.place}) modifiée — ${done.join(" ; ") || "textes marqués comme ceux du client"}`, { retouche: true });
     } catch (e) { return { ok: false, summary: L(`Rien n'est modifié : ${(e as Error).message}.`, "Nothing changed."), hint: "Relis la section (custom.section) et recopie le passage exact ; ne dis pas au client que c'est fait." }; }
   },
 };
@@ -1120,11 +1129,11 @@ const menuTool: AgentTool<{ menu?: MenuItem[]; remove?: boolean }> = {
     const p = project(ctx), t = loadCustomTheme(p.id);
     if (!t) return { ok: false, summary: L("Aucun site encore : il faut d'abord le créer (site.create).", "No custom theme yet.") };
     if (!isTenueSection(t.header ? libSection(t.header.id) : null)) return { ok: false, summary: L("Le menu calculé demande l'en-tête à la tenue de la marque : ce thème en a un autre, son menu se change en désignant ses liens.", "Computed menu needs the brand header."), internal: true };
-    if (a.remove) return saved(ctx, applyStructure(t, [{ op: "menu", menu: null }]), "menu : celui écrit dans l'en-tête");
+    if (a.remove) return saved(ctx, applyStructure(t, [{ op: "menu", menu: null }]), "menu : celui écrit dans l'en-tête", { retouche: true });
     const wanted = a.menu ?? proposeMenu(t, menuProducts(p.id), p.business === "services" ? "services" : "products");
     const { menu, dropped } = validMenu(t, wanted);
     if (!menu.length) return { ok: false, summary: L("Aucune entrée de menu ne mène à une page du site : rien n'est changé.", "No valid menu entry."), internal: true };
-    const out = saved(ctx, applyStructure(t, [{ op: "menu", menu }]), a.menu ? "menu corrigé par le client" : "menu calculé depuis le catalogue");
+    const out = saved(ctx, applyStructure(t, [{ op: "menu", menu }]), a.menu ? "menu corrigé par le client" : "menu calculé depuis le catalogue", { retouche: true });
     const grand = menu.some((m) => m.grand);
     return { ...out, data: { ...(out as { data?: object }).data, menu, ...(dropped.length ? { retires: dropped } : {}) },
       hint: `${a.menu ? "Dis au client ce qui a changé dans son menu." : `Montre le menu au client en une ligne par entrée (${grand ? "c'est un grand menu : une colonne par famille de produits, avec quelques produits dessous" : "ses sous-menus viennent de ses familles de produits"}), et demande-lui s'il veut renommer, déplacer ou retirer une entrée.`}${dropped.length ? ` Entrées retirées parce qu'elles ne menaient à aucune page : ${dropped.join(", ")}.` : ""} Le menu suit le catalogue : après un ajout de produits ou de familles, recalcule-le (sans argument).` };
@@ -1160,7 +1169,7 @@ const undoTool: AgentTool<Record<string, never>> = {
   run: (ctx) => {
     const p = project(ctx), back = undoCustomTheme(p.id);
     if (!back) return { ok: false, summary: L("Aucune modification à annuler.", "Nothing to undo.") };
-    return { ok: true, summary: L(`Dernière modification annulée (ton site est revenu à la version d'avant).`, "Last change undone."), data: { customTheme: themeCard(p.id, back) }, changes: [{ module: "site", object: "thème sur mesure", summary: L("modification annulée", "undone"), after: { rev: back.rev }, verified: true }] };
+    return { ok: true, summary: L(`Dernière modification annulée (ton site est revenu à la version d'avant).`, "Last change undone."), data: { customTheme: carteDuFil(p.id, back) }, changes: [{ module: "site", object: "thème sur mesure", summary: L("modification annulée", "undone"), after: { rev: back.rev }, verified: true }] };
   },
 };
 
