@@ -470,11 +470,19 @@ export const deferredLimits = { perCallMs: 10 * 60_000, perJobMs: 30 * 60_000, p
 const differeScope = new AsyncLocalStorage<boolean>();
 export const enDiffere = <T>(fn: () => Promise<T>): Promise<T> => differeScope.run(true, fn);
 export const differeActif = (): boolean => differeScope.getStore() === true;
-const deferredWaited = new Map<string, number>();
+/**
+ * Patience de chaque tâche, en temps RÉEL (22 novembre 2026, audit du moteur) : plusieurs appels qui attendent ensemble
+ * (les équipes de noms, les stratèges des angles) ne comptent qu'une fois. Avant, leurs attentes s'additionnaient : 4
+ * appels de 5 minutes mangeaient 20 minutes de patience.
+ */
+const deferredWaited = new Map<string, { total: number; actifs: number; depuis: number }>();
+const attendu = (jobKey: string, now = Date.now()) => { const w = deferredWaited.get(jobKey); return w ? w.total + (w.actifs ? now - w.depuis : 0) : 0; };
+const debutAttente = (jobKey: string) => { const w = deferredWaited.get(jobKey) ?? { total: 0, actifs: 0, depuis: 0 }; if (!w.actifs) w.depuis = Date.now(); w.actifs++; deferredWaited.set(jobKey, w); };
+const finAttente = (jobKey: string) => { const w = deferredWaited.get(jobKey); if (!w) return; w.actifs = Math.max(0, w.actifs - 1); if (!w.actifs) w.total += Date.now() - w.depuis; if (deferredWaited.size > 500) { for (const [k, v] of deferredWaited) if (!v.actifs) deferredWaited.delete(k); } };
 /** Remplaçable par les tests (aucun appel réel). */
 export const deferredDeps: { batches?: { create: (p: any) => Promise<any>; retrieve: (id: string) => Promise<any>; cancel: (id: string) => Promise<any>; results: (id: string) => Promise<AsyncIterable<any>> }; sleep?: (ms: number) => Promise<void> } = {};
 /** Temps déjà passé à attendre le différé pour une tâche (mesure montrée dans les comptes rendus d'essai). */
-export const deferredWaitedMs = (jobId: string) => deferredWaited.get(jobId) ?? 0;
+export const deferredWaitedMs = (jobId: string) => attendu(jobId);
 
 /**
  * Dépose UN appel en différé et attend sa réponse. Rend le message, ou `null` quand l'appel doit partir en direct :
@@ -482,7 +490,7 @@ export const deferredWaitedMs = (jobId: string) => deferredWaited.get(jobId) ?? 
  * certain : aucun risque de payer deux fois). Une erreur pendant le suivi reste un résultat incertain, jamais relancé.
  */
 async function deferredMessage(params: any, jobKey: string): Promise<Anthropic.Beta.BetaMessage | null> {
-  if ((deferredWaited.get(jobKey) ?? 0) >= deferredLimits.perJobMs) return null;
+  if (attendu(jobKey) >= deferredLimits.perJobMs) return null;
   const b = deferredDeps.batches ?? (client().beta.messages.batches as any), sleep = deferredDeps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   let batch: any;
   try { batch = await b.create({ requests: [{ custom_id: "appel", params }] }); }
@@ -494,6 +502,7 @@ async function deferredMessage(params: any, jobKey: string): Promise<Anthropic.B
   }
   const t0 = Date.now();
   let cancelled = false, misses = 0;
+  debutAttente(jobKey);
   try {
     while (batch.processing_status !== "ended") {
       if (!cancelled && Date.now() - t0 > deferredLimits.perCallMs) { await b.cancel(batch.id); cancelled = true; }
@@ -501,7 +510,7 @@ async function deferredMessage(params: any, jobKey: string): Promise<Anthropic.B
       await sleep(deferredLimits.pollMs);
       try { batch = await b.retrieve(batch.id); misses = 0; } catch (e) { if (++misses >= 5) throw e; }
     }
-  } finally { deferredWaited.set(jobKey, (deferredWaited.get(jobKey) ?? 0) + (Date.now() - t0)); if (deferredWaited.size > 500) deferredWaited.clear(); }
+  } finally { finAttente(jobKey); }
   for await (const r of await b.results(batch.id)) {
     const res = r?.result;
     if (res?.type === "succeeded") return res.message as Anthropic.Beta.BetaMessage;
@@ -614,7 +623,8 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   };
   try {
     // Relances maison, dans la MÊME réservation, uniquement sur une saturation 429 (rien de produit ni facturé). Une coupure après le début de la réponse n'est jamais relancée ici (résultat incertain).
-    const later = (call.deferred ?? differeActif()) && !isHaiku ? await deferredMessage(params, call.jobId ?? call.userId) : null;
+    // Jamais de différé pour un petit contrôle (Haiku) : il gagnerait un dixième de centime et ferait attendre le site.
+    const later = (call.deferred ?? differeActif()) && !/haiku/.test(route.model) ? await deferredMessage(params, call.jobId ?? call.userId) : null;
     if (later) servedDeferred = true;
     msg = later ?? await httpCounter.run(counter, async () => {
       for (let attempt = 0; ; attempt++) {

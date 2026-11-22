@@ -155,6 +155,26 @@ describe("IA — travail en différé, à moitié prix, avec une attente bornée
     expect(events(h.user.id)).toHaveLength(1);
   });
 
+  it("patience comptée en temps réel : trois appels qui attendent ensemble ne la mangent qu'une fois (22 novembre 2026)", async () => {
+    const f = await fixture();
+    batches({ polls: 1 });
+    deferredDeps.sleep = () => new Promise<void>((r) => setTimeout(r, 60));
+    const t0 = Date.now();
+    await Promise.all([1, 2, 3].map(() => llmText(f.call({ deferred: true }))));
+    const reel = Date.now() - t0, compte = deferredWaitedMs(f.jobId);
+    // Avant : environ trois fois l'attente réelle ; maintenant, jamais plus que le temps réellement passé.
+    expect(compte).toBeGreaterThanOrEqual(50);
+    expect(compte).toBeLessThanOrEqual(reel + 5);
+  });
+
+  it("un petit contrôle (Haiku) ne part jamais en différé : il ne fait pas attendre le site", async () => {
+    const f = await fixture();
+    const log = batches();
+    noWait();
+    expect(await llmText(f.call({ deferred: true, routing: { difficulty: "standard", prefer: { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } } }))).toBe("Réponse en direct.");
+    expect(log.created).toHaveLength(0);
+  });
+
   it("patience de la tâche épuisée : les appels suivants partent en direct d'emblée, sans dépôt", async () => {
     const f = await fixture();
     const log = batches({ outcome: "canceled", polls: 1 });
