@@ -13,7 +13,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
-import { balance, cleDeRelance, DemandeChangee, EUR, existingOperation, reponseDejaPayee, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
+import { balance, claimOperationRecovery, cleDeRelance, finishOperationRecovery, saveProviderReceipt, DemandeChangee, EUR, existingOperation, reponseDejaPayee, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
 import {AgentBoundStop,beforeAgentTextAttempt} from './request-bounds';
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
@@ -489,7 +489,33 @@ export const deferredWaitedMs = (jobId: string) => attendu(jobId);
  * patience de la tâche épuisée, dépôt refusé, ou dépôt annulé faute de réponse à temps (rien n'est alors facturé, c'est
  * certain : aucun risque de payer deux fois). Une erreur pendant le suivi reste un résultat incertain, jamais relancé.
  */
-async function deferredMessage(params: any, jobKey: string): Promise<Anthropic.Beta.BetaMessage | null> {
+/** Lit la réponse d'un lot déjà déposé (lecture gratuite, réponses gardées 29 jours) ; null s'il n'a jamais été traité. */
+async function lotDejaDepose(batchId: string): Promise<Anthropic.Beta.BetaMessage | null> {
+  const b = deferredDeps.batches ?? (client().beta.messages.batches as any), sleep = deferredDeps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  let batch = await b.retrieve(batchId);
+  const t0 = Date.now();
+  while (batch.processing_status !== "ended") {
+    if (Date.now() - t0 > deferredLimits.perCallMs) await b.cancel(batchId).catch(() => null);
+    if (Date.now() - t0 > deferredLimits.perCallMs + 5 * 60_000) throw new Error("lot différé repris mais toujours en cours");
+    await sleep(deferredLimits.pollMs);
+    batch = await b.retrieve(batchId);
+  }
+  return resultatDuLot(b, batchId);
+}
+
+/** La réponse d'un lot terminé. Une demande en erreur dans un lot n'est pas facturée : elle est marquée comme telle. */
+async function resultatDuLot(b: any, batchId: string): Promise<Anthropic.Beta.BetaMessage | null> {
+  for await (const r of await b.results(batchId)) {
+    const res = r?.result;
+    if (res?.type === "succeeded") return res.message as Anthropic.Beta.BetaMessage;
+    // Annulé ou expiré : jamais traité, jamais facturé.
+    if (res?.type === "canceled" || res?.type === "expired") return null;
+    if (res?.type === "errored") throw Object.assign(new Error(`appel en différé refusé : ${String(res.error?.error?.message ?? res.error?.message ?? "erreur").slice(0, 200)}`), { status: res.error?.error?.type === "invalid_request_error" ? 400 : 500, nonFacture: true });
+  }
+  throw new Error("dépôt en différé terminé sans réponse");
+}
+
+async function deferredMessage(params: any, jobKey: string, reservationId?: string): Promise<Anthropic.Beta.BetaMessage | null> {
   if (attendu(jobKey) >= deferredLimits.perJobMs) return null;
   const b = deferredDeps.batches ?? (client().beta.messages.batches as any), sleep = deferredDeps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   let batch: any;
@@ -500,6 +526,8 @@ async function deferredMessage(params: any, jobKey: string): Promise<Anthropic.B
     if (typeof status === "number" && status >= 400 && status < 500 && status !== 429) return null;
     throw e;
   }
+  // Le numéro du lot, gardé comme reçu : après une coupure, sa réponse est reprise au lieu d'être repayée.
+  if (reservationId) { try { saveProviderReceipt(reservationId, { differe: batch.id }); } catch { /* reçu facultatif */ } }
   const t0 = Date.now();
   let cancelled = false, misses = 0;
   debutAttente(jobKey);
@@ -511,14 +539,7 @@ async function deferredMessage(params: any, jobKey: string): Promise<Anthropic.B
       try { batch = await b.retrieve(batch.id); misses = 0; } catch (e) { if (++misses >= 5) throw e; }
     }
   } finally { finAttente(jobKey); }
-  for await (const r of await b.results(batch.id)) {
-    const res = r?.result;
-    if (res?.type === "succeeded") return res.message as Anthropic.Beta.BetaMessage;
-    // Annulé ou expiré : jamais traité, jamais facturé.
-    if (res?.type === "canceled" || res?.type === "expired") return null;
-    if (res?.type === "errored") throw Object.assign(new Error(`appel en différé refusé : ${String(res.error?.error?.message ?? res.error?.message ?? "erreur").slice(0, 200)}`), { status: res.error?.error?.type === "invalid_request_error" ? 400 : 500 });
-  }
-  throw new Error("dépôt en différé terminé sans réponse");
+  return resultatDuLot(b, batch.id);
 }
 /** Un coût inconnu reste bloquant pour les moteurs, quelle que soit la langue du message. */
 function uncertainProviderFailure(message:string){return Object.assign(new PermanentError(message),{uncertain:true as const});}
@@ -540,7 +561,18 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   // Relance accordée par le client : l'appel coupé en plein milieu se renvoie une fois, sous sa clé de relance.
   const relance = cleDeRelance(previous, operation.usageKey);
   if (relance) { operation.usageKey = relance; previous = existingOperation(call.userId, operation); }
-  if (previous) {
+  // Un appel déposé en différé avant une coupure (redémarrage du travailleur) : sa réponse est lue chez le fournisseur,
+  // sans nouveau dépôt ni nouvelle réservation (22 novembre 2026, audit du moteur : il était repayé).
+  let reprise: { msg: Anthropic.Beta.BetaMessage | null; reservation: string } | null = null;
+  if (previous && !previous.result) {
+    const recu = (() => { try { return previous.provider_receipt ? JSON.parse(previous.provider_receipt) as { differe?: string } : null; } catch { return null; } })();
+    if (recu?.differe && claimOperationRecovery(previous.id)) {
+      try { reprise = { msg: await lotDejaDepose(recu.differe), reservation: previous.id }; } finally { finishOperationRecovery(previous.id); }
+      // Lot annulé ou expiré : jamais traité, jamais facturé ; la réservation est rendue et l'appel repart normalement.
+      if (!reprise.msg) { release(previous.id, "lot différé annulé ou expiré : rien facturé"); reprise = null; previous = undefined; }
+    }
+  }
+  if (previous && !reprise) {
     if (previous.result) return JSON.parse(previous.result) as RawResult;
     operationPending();
   }
@@ -576,7 +608,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   const maxMicro = await maxCostMicro(route.model, params, format);
   assertUnderCostCap(maxMicro);
   if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
-  const reservation = reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId });
+  const reservation = reprise?.reservation ?? reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
     params.output_config = { effort, ...(format ? { format } : {}) };
@@ -624,7 +656,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   try {
     // Relances maison, dans la MÊME réservation, uniquement sur une saturation 429 (rien de produit ni facturé). Une coupure après le début de la réponse n'est jamais relancée ici (résultat incertain).
     // Jamais de différé pour un petit contrôle (Haiku) : il gagnerait un dixième de centime et ferait attendre le site.
-    const later = (call.deferred ?? differeActif()) && !/haiku/.test(route.model) ? await deferredMessage(params, call.jobId ?? call.userId) : null;
+    const later = reprise?.msg ?? ((call.deferred ?? differeActif()) && !/haiku/.test(route.model) ? await deferredMessage(params, call.jobId ?? call.userId, reservation) : null);
     if (later) servedDeferred = true;
     msg = later ?? await httpCounter.run(counter, async () => {
       for (let attempt = 0; ; attempt++) {
@@ -650,9 +682,12 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   } catch (e) {
     // Seuls les refus nets 4xx hors délai prouvent que l'appel n'a pas produit de résultat.
     const status = (e as { status?: unknown })?.status;
-    const uncertain = !(e instanceof AgentBoundStop || typeof status === "number" && providerRefused(status));
+    // Une demande en erreur dans un lot n'est pas facturée (page du différé d'Anthropic) : la réservation est rendue.
+    const uncertain = !(e instanceof AgentBoundStop || (e as { nonFacture?: boolean })?.nonFacture || typeof status === "number" && providerRefused(status));
     if (!uncertain) release(reservation, `refus du fournisseur (${status})`);
     else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
+    // L'appel n'est plus en cours : un lot déposé peut être repris dès la prochaine tentative (sa réponse lue, jamais repayée).
+    if (uncertain) finishOperationRecovery(reservation);
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof Anthropic.AuthenticationError) throw new PermanentError(L("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.", "The configured Anthropic key was rejected. Check it in the admin settings."));
     if (e instanceof Anthropic.BadRequestError) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));

@@ -167,6 +167,27 @@ describe("IA — travail en différé, à moitié prix, avec une attente bornée
     expect(compte).toBeLessThanOrEqual(reel + 5);
   });
 
+  it("coupure pendant l'attente d'un lot : à la reprise, sa réponse est lue chez le fournisseur, jamais repayée", async () => {
+    const f = await fixture();
+    const log = batches({ polls: 1 });
+    noWait();
+    // Le suivi du lot tombe en panne (le travailleur redémarre) : résultat incertain, coût maximal retenu.
+    const panne = deferredDeps.batches!.retrieve;
+    deferredDeps.batches!.retrieve = async () => { throw new Error("connexion perdue"); };
+    const call = f.call({ deferred: true });
+    await expect(llmText(call)).rejects.toThrow();
+    expect(log.created).toHaveLength(1);
+    // La tâche reprend : même appel, même clé. Le lot déjà déposé est lu ; aucun nouveau dépôt, aucun envoi direct.
+    deferredDeps.batches!.retrieve = panne;
+    const avant = direct.length;
+    expect(await llmText(call)).toBe("Réponse en différé.");
+    expect(log.created).toHaveLength(1);
+    expect(direct.length).toBe(avant);
+    const r = all<{ status: string; provider_receipt: string | null }>("SELECT status, provider_receipt FROM ai_reservations WHERE user_id=? ORDER BY created_at", f.user.id).at(-1)!;
+    expect(JSON.parse(r.provider_receipt!)).toEqual({ differe: "depot-1" });
+    expect(r.status).not.toBe("uncertain");
+  });
+
   it("un petit contrôle (Haiku) ne part jamais en différé : il ne fait pas attendre le site", async () => {
     const f = await fixture();
     const log = batches();
