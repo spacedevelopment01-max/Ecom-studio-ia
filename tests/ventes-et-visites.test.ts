@@ -54,6 +54,7 @@ describe("ventes et visites", async () => {
     expect(lien.origin + lien.pathname).toBe("https://boutique.test/wc-auth/v1/authorize");
     expect(lien.searchParams.get("scope")).toBe("read_write");
     expect(S.etatAutorisationWoo(lien.searchParams.get("user_id")!)).toEqual({ projectId: "p1", userId: "u1", storeUrl: "https://boutique.test" });
-    expect(S.etatAutorisationWoo(lien.searchParams.get("user_id")!.replace(/.$/, "0"))).toBeNull();
+    const signe = lien.searchParams.get("user_id")!, faux = signe.slice(0, -1) + (signe.endsWith("0") ? "1" : "0");
+    expect(S.etatAutorisationWoo(faux)).toBeNull();
   });
 });
