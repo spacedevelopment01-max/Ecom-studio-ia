@@ -663,19 +663,18 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // À la proposition, le logo de A sort sur fond noir : refusé par le contrôle gratuit, la planche n'en a pas.
     const first = await proposed(t, { draw: async (id) => (id.startsWith("image-1-A-logo") ? square("#050505") : isLogo(id) ? whiteLogo() : square("#3366CC")) });
     expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.logo).toBeUndefined();
-    // Sans logo gardé, le haut du site n'est pas dessiné à la proposition (audit du 22 novembre 2026, 2.11) : il le sera
-    // avec le vrai logo si l'identité est choisie ; B, elle, a son logo et sa maquette.
-    expect(first.log.refs[`image-1-A-site${FIRST}`]).toBeUndefined();
+    // Sans logo gardé, la maquette du site ne reçoit que la grande scène : le nom y est écrit seul, sans logo inventé.
+    // Elle est toujours dessinée : jamais une planche incomplète (chef, 22 novembre 2026).
+    expect(first.log.refs[`image-1-A-site${FIRST}`]).toEqual({ logo: false, scene: true, aspect: "9:16" });
     expect(first.log.refs[`image-1-B-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
-    expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.site).toBeUndefined();
-    expect(J.journeyOf(t.cid).identities!.siteAncienLogo).toEqual(["A"]);
+    expect(first.log.prompts[`image-1-A-site${FIRST}`]).toContain(I.NO_INVENTED_MARK);
+    expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.site).toBeTruthy();
     const chosen = await call("identity.choose", t.ctx, { key: "A" });
     // Il manque aussi le logo : la fin n'est plus couverte en entier, elle passe par brand.finish et son prix.
     expect(chosen.jobs).toBeUndefined();
     expect(chosen.hint).toMatch(/brand\.finish/);
     const j0 = J.journeyOf(t.cid);
-    // Le haut du site, pas dessiné sans logo à la proposition, manque aussi : il sera dessiné avec le vrai logo.
-    expect(F.missingSlots(j0)).toEqual(["logo", "object", "signs", "site", "post0", "post1", "post2"]);
+    expect(F.missingSlots(j0)).toEqual(["logo", "object", "signs", "post0", "post1", "post2"]);
     // Le logo à créer entraîne aussi le téléphone (jamais l'ancien logo).
     expect(finishEstimate(j0).maxMicro).toBe(C.finishQuote(F.finishSlots(j0)).maxMicro - C.finishQuote().maxMicro);
     const r = await call("brand.finish", t.ctx, {});

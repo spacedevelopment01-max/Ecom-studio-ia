@@ -597,7 +597,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
       // réécrite que si le client dit ce qu'il veut de différent pour une image autre que le logo (ses mots ne vont
       // jamais au dessinateur du logo).
       const reprise = logoOnly || !a.guidance ? proposalImagery(j, x) : undefined;
-      const r = await runBoardImages({ ctx, ai, proposition: true, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts, ...(reprise ? { imagery: reprise } : {}) });
+      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts, ...(reprise ? { imagery: reprise } : {}) });
       const fresh = (a.slots ?? CREATED_SLOTS).includes("logo") && r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
       if (fresh) { try { redoneLogos.push(assetData(fresh)); } catch { /* fichier absent */ } }
       list = list.map((o) => (o.key === x.key ? r.route : o));
@@ -913,16 +913,13 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const g = o.board?.images?.logo ? getAsset(o.board.images.logo.id) : undefined;
     if (g) { try { seriesLogos.push(assetData(g)); } catch { /* fichier absent */ } }
   }
-  /** Planches dont le haut du site attend le vrai logo (aucun logo gardé) : il sera dessiné si elle est choisie. */
-  const siteAttend: string[] = [];
   if (a.images ?? brandImagesOn()) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, proposition: true, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos], gouts: goutsDuClient(j, p.id) });
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos], gouts: goutsDuClient(j, p.id) });
         const fresh = r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
         if (fresh) { try { seriesLogos.push(assetData(fresh)); } catch { /* fichier absent : rien à montrer */ } }
         list = list.map((o) => (o.key === x.key ? r.route : o));
-        if (r.siteGarde) siteAttend.push(x.key);
         remaining.push(...r.issues); notes.push(...r.notes);
       } catch (e) {
         if (e instanceof CostCapReached) { notes.push("plafond de dépense atteint avant la fin des images"); break; }
@@ -954,7 +951,6 @@ export async function runSinaBrandJob(ctx: JobContext) {
       shownNames: [...new Set([...(x.identities?.shownNames ?? []), ...(x.identities?.list ?? []).map((i) => i.name), ...list.map((i) => i.name)])].slice(-60),
       study: { quotes: study.quotes.slice(0, 8), quoteCount: study.quotes.length, sources: study.sources, competitors: study.competitors.slice(0, 8).map((c) => c.name), mould: study.mould, substitutes: study.substitutes.slice(0, 4), notFound: study.notFound.slice(0, 4) },
       ...(firstIssues.length ? { corrected: firstIssues } : {}), ...(a.guidance ? { guidance: a.guidance } : {}),
-      ...((() => { const k = [...(x.identities?.siteAncienLogo ?? []).filter((y) => !(todo as string[]).includes(y) && list.some((o) => o.key === y)), ...siteAttend]; return k.length ? { siteAncienLogo: [...new Set(k)] } : {}; })()),
     };
     setStep(x, 1, "review");
     // Nouvelle proposition demandée APRÈS un choix : l'ancien choix ne désigne plus ces planches. Tout ce qui en

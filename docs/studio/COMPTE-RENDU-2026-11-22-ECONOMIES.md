@@ -334,9 +334,9 @@ Rien n'a été dépensé ; chaque point a son essai. Les gains sont ceux de l'au
 - **Le refus du client** est mieux repéré pour le dessinateur du logo : « pas d' », « aucune », « sans », « évite »,
   « déteste ». Une épreuve au banc le garantit (`refus-du-client-toutes-tournures`).
 - **L'ordre des images** : la grande scène est relue, et refaite s'il le faut, avant le dessin du téléphone qui la
-  reprend. Si aucun logo n'a été gardé, le téléphone n'est pas dessiné à la proposition, et le client le lit : « je te
-  montrerai le haut de ton site avec ton vrai logo si tu choisis cette identité ». Il est dessiné avec le vrai logo à la
-  fin de la marque. Le téléphone ne montre donc jamais une scène refusée ni un autre logo.
+  reprend. Le logo est relu, et refait avec toutes les raisons de ses refus, avant lui aussi. Le téléphone est toujours
+  dessiné : jamais une planche incomplète (correction du chef, 22 novembre 2026). Si le logo reste refusé après ses deux
+  reprises, SINA le dit au client, avec la raison, et le téléphone porte le nom écrit seul.
 - **Plus de pictogrammes dessinés en code ni de ruban du colis** demandés dans la consigne de la planche. Le nom dessiné
   de secours est en lettres seules, même sur les planches d'avant.
 - **Refaire des planches sans nouveaux mots du client** reprend les verdicts du juge des noms. Une nouvelle proposition
@@ -345,9 +345,8 @@ Rien n'a été dépensé ; chaque point a son essai. Les gains sont ceux de l'au
 
 **Pas fait, en attente :**
 
-- *Limiter à 600 caractères ce que le relecteur des images écrit de ce qu'il voit* (0,05 € par marque). L'audit demande
-  d'abord un essai sur 20 images du carnet des juges, pour vérifier que ses verdicts ne changent pas. Cet essai est
-  payant, environ 0,50 € (estimé). Il attend le oui écrit du propriétaire, et des images du carnet déjà jugées par lui.
+- *Limiter à 600 caractères ce que le relecteur des images écrit de ce qu'il voit* (0,05 € par marque) : laissé de
+  côté, décision du chef (un essai payant d'environ 0,50 € ne vaut pas ce gain).
 - *L'aperçu des noms avant les planches* : pas fait sans le propriétaire, comme demandé.
 
 Vérifié : `npx tsc --noEmit` sans erreur. Suite complète : 5 843 essais passés, épreuves comprises. Les derniers lots ont
