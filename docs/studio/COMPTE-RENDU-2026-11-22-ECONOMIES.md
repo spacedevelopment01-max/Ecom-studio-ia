@@ -190,3 +190,27 @@ Encore possible :
 - le prix réel des images : il se lit maintenant sur les jetons rendus par OpenAI. Si une image coûte environ 0,06 $
   au lieu de 0,12 $, le compte d'un projet baisse encore d'environ 2,40 €. [À compléter : prix réel d'une image, lu au
   prochain essai.]
+
+## L'effort de SINA gardé constant dans la conversation (décision du chef d'orchestre, le propriétaire lui ayant laissé trancher)
+
+Rien n'a été dépensé : tout est essayé sur un fournisseur simulé.
+
+- **Ce qui change** : aux moments forts (SINA présente un résultat, explique un échec, répond à un client mécontent,
+  juge le site), elle réfléchit toujours plus fort, mais l'effort élevé lui est donné par un message à l'intérieur de la
+  conversation (fonction en essai chez Anthropic). L'effort de la demande ne change plus, donc la mémoire du fil n'est
+  plus effacée deux fois par moment fort (en montant, puis en redescendant).
+- **Condition 1, sans panne visible** : si Anthropic refuse la fonction, rien n'est produit ni facturé ; le Studio
+  renvoie aussitôt la même demande à la façon d'avant (l'effort élevé dans la demande) et le client a sa réponse. La
+  fonction est alors mise de côté une heure, puis réessayée. Une tâche en différé garde la façon d'avant.
+- **Condition 2, l'interrupteur** : Administration › Consommation, carte « Mise en mémoire » : « Éteindre » ou
+  « Allumer ». Elle montre aussi le dernier refus du fournisseur, s'il y en a eu un.
+- **Essais des chemins** (`tests/sina-effort-par-message.test.ts`) : fonction acceptée (même effort dans la demande, même
+  début de demande, effort élevé par le message) ; fonction refusée (second envoi à la façon d'avant, réponse quand même,
+  mise de côté une heure) ; réglage éteint et modèle qui ne l'accepte pas (la façon d'avant).
+- **Le coût sur la conversation de référence (Nadia, 21 réponses, jetons relevés appel par appel)** : Nadia en était à
+  « faire connaissance », sans aucun moment fort : pour elle, rien ne change (0,836 €). Avec, sur ces mêmes 21 réponses,
+  4 moments forts (la proportion d'un projet complet selon l'audit) : **1,015 € avec l'effort dans la demande, 0,836 €
+  avec l'effort par message**, soit environ 18 % de moins. Sur un projet complet, où le fil est bien plus long, l'audit
+  l'estimait à environ 1,80 €. [À compléter : le gain réel, lu dans l'administration au prochain essai.]
+- **Non vérifié** : la réponse réelle d'Anthropic à la fonction (aucun appel réel fait) ; c'est précisément ce que le retour
+  automatique protège.
