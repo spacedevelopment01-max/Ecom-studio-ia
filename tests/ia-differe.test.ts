@@ -280,3 +280,52 @@ describe("IA — travail en différé, à moitié prix, avec une attente bornée
     expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain("const deferred = deferredOn() && !direct;");
   });
 });
+
+describe("Réponse coupée et patience du pilote (audit des publications, 22 novembre 2026)", () => {
+  /** Dépôts simulés qui rendent tour à tour les réponses données (texte, raison de fin). */
+  function sequence(replies: { text: string; stop: string }[]) {
+    const created: any[] = [];
+    deferredDeps.batches = {
+      create: async (p: any) => { created.push(p); return { id: `depot-seq-${created.length}`, processing_status: "ended" }; },
+      retrieve: async (bid: string) => ({ id: bid, processing_status: "ended" }),
+      cancel: async (bid: string) => ({ id: bid, processing_status: "canceling" }),
+      results: async () => {
+        const r = replies[created.length - 1], params = created.at(-1).requests[0].params;
+        return (async function* () { yield { custom_id: "appel", result: { type: "succeeded", message: { id: `msg-${created.length}`, type: "message", role: "assistant", model: params.model, content: [{ type: "text", text: r.text }], stop_reason: r.stop, stop_sequence: null, usage: { ...USAGE } } } }; })();
+      },
+    };
+    return created;
+  }
+
+  it("une réponse coupée est redemandée avec PLUS de place que la première fois envoyée, jamais la même", async () => {
+    const { llmJson } = await import("@/lib/ai/llm");
+    const { z } = await import("zod");
+    const f = await fixture();
+    noWait();
+    const created = sequence([{ text: '{"ok": tr', stop: "max_tokens" }, { text: '{"ok": true}', stop: "end_turn" }]);
+    // Demandé : 2 000 jetons ; envoyé : 8 000 (le plancher). Avant, la relance redemandait 4 000, donc encore 8 000.
+    expect(await llmJson(f.call({ deferred: true, maxTokens: 2000 }), z.object({ ok: z.boolean() }))).toEqual({ ok: true });
+    expect(created.map((c) => c.requests[0].params.max_tokens)).toEqual([8000, 16000]);
+  });
+
+  it("le devis suit la même règle : une limite demandée sous le plancher coûte comme le plancher", async () => {
+    const { jsonCallMaxMicro, placeReelle } = await import("@/lib/ai/llm");
+    expect(placeReelle("anthropic", "claude-opus-5-5", 2000)).toBe(8000);
+    expect(placeReelle("anthropic", "claude-haiku-4-5", 2000)).toBe(2000);
+    expect(jsonCallMaxMicro("anthropic", "claude-opus-5-5", 5000, 2000, 64000, "high")).toEqual(jsonCallMaxMicro("anthropic", "claude-opus-5-5", 5000, 8000, 64000, "high"));
+  });
+
+  it("patience d'une tâche : réglable (une heure pour le pilote des publications) ; épuisée, l'appel part en direct", async () => {
+    const { PATIENCE_PILOTE_MS } = await import("../worker/handlers");
+    expect(PATIENCE_PILOTE_MS).toBe(60 * 60_000);
+    const f = await fixture();
+    const log = batches({ polls: 1 });
+    noWait();
+    // Patience nulle : aucun dépôt, l'appel part en direct.
+    expect(await enDiffere(() => llmText(f.call()), { patienceMs: 0 })).toBe("Réponse en direct.");
+    expect(log.created).toHaveLength(0);
+    // Patience par défaut : déposé en différé.
+    expect(await enDiffere(() => llmText(f.call()))).toBe("Réponse en différé.");
+    expect(log.created).toHaveLength(1);
+  });
+});

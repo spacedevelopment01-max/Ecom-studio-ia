@@ -480,9 +480,14 @@ export const deferredLimits = { perCallMs: 10 * 60_000, perJobMs: 30 * 60_000, p
  * angles, site, publications »). Dans `enDiffere`, un appel qui ne dit rien part en différé ; un appel qui demande
  * exprès le direct (`deferred: false`, une retouche que le client attend devant) reste en direct.
  */
-const differeScope = new AsyncLocalStorage<boolean>();
-export const enDiffere = <T>(fn: () => Promise<T>): Promise<T> => differeScope.run(true, fn);
-export const differeActif = (): boolean => differeScope.getStore() === true;
+const differeScope = new AsyncLocalStorage<{ patienceMs: number }>();
+/**
+ * `patienceMs` : patience de toute la tâche (30 minutes par défaut). Plus longue pour un travail dont personne n'attend
+ * le résultat dans l'heure (les visuels du pilote des publications, prêts un à trois jours avant leur date).
+ */
+export const enDiffere = <T>(fn: () => Promise<T>, o: { patienceMs?: number } = {}): Promise<T> => differeScope.run({ patienceMs: o.patienceMs ?? deferredLimits.perJobMs }, fn);
+export const differeActif = (): boolean => !!differeScope.getStore();
+const patienceDeLaTache = (): number => differeScope.getStore()?.patienceMs ?? deferredLimits.perJobMs;
 /**
  * Patience de chaque tâche, en temps RÉEL (22 novembre 2026, audit du moteur) : plusieurs appels qui attendent ensemble
  * (les équipes de noms, les stratèges des angles) ne comptent qu'une fois. Avant, leurs attentes s'additionnaient : 4
@@ -535,7 +540,7 @@ async function resultatDuLot(b: any, batchId: string): Promise<Anthropic.Beta.Be
  */
 export type DepotAbandonne = { abandonne: string };
 async function deferredMessage(params: any, jobKey: string, reservationId?: string): Promise<Anthropic.Beta.BetaMessage | DepotAbandonne | null> {
-  if (attendu(jobKey) >= deferredLimits.perJobMs) return null;
+  if (attendu(jobKey) >= patienceDeLaTache()) return null;
   const b = deferredDeps.batches ?? (client().beta.messages.batches as any), sleep = deferredDeps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   let batch: any;
   try { batch = await b.create({ requests: [{ custom_id: "appel", params }] }); }
@@ -944,6 +949,24 @@ const JSON_FIX_PROMPT_TOKENS = 600;
  * le devis (jsonCallBounds) : une réponse coupée est redemandée avec deux fois plus de place tant que la limite `cap`
  * n'est pas atteinte (sans renvoyer le texte coupé) ; sinon UNE réparation, qui renvoie la réponse précédente.
  */
+/**
+ * Place de sortie RÉELLEMENT envoyée pour une limite demandée (audit des publications, 22 novembre 2026) : chez Anthropic
+ * (sauf Haiku 4.5), jamais moins de 8 000 jetons ; ailleurs, jamais moins de 4 000 ni plus que le modèle. Une réponse
+ * coupée se redemande à partir de cette place-là : doubler une limite demandée de 2 000 donnait 4 000 puis 8 000, soit
+ * trois fois la même place envoyée, donc deux appels repayés pour être très probablement coupés au même endroit.
+ */
+export function placeReelle(provider: string, model: string, maxTokens: number): number {
+  if (provider === "anthropic") return model === "claude-haiku-4-5" ? maxTokens : Math.max(maxTokens, 8000);
+  const m = textModel(provider as "openai" | "google", model);
+  return m ? Math.min(m.limits.maxOutput, Math.max(maxTokens, 4000)) : maxTokens;
+}
+
+/** Place de départ d'un llmJson : celle que le modèle routé recevra vraiment (voir placeReelle). */
+function placeDeDepart(call: LlmCall): number {
+  const asked = call.maxTokens ?? 32000;
+  try { const r = routeLlm(call); return r.mode === "llm" ? placeReelle(r.provider, r.model, asked) : asked; } catch { return asked; }
+}
+
 export function jsonRetry(s: { attempt: number; budget: number; fixes: number }, cut: boolean, cap: number): { attempt: number; budget: number; fixes: number; resend: boolean } | null {
   if (s.attempt + 1 >= JSON_ATTEMPTS) return null;
   if (cut && s.budget < cap) return { attempt: s.attempt + 1, budget: Math.min(cap, s.budget * 2), fixes: s.fixes, resend: false };
@@ -1002,7 +1025,8 @@ export function estimateCallMicro(provider: string, model: string, inputTokens: 
 export function jsonCallMaxMicro(provider: string, model: string, inputTokens: number, maxTokens: number, cap: number, effort: string | null): { maxMicro: number; maxCalls: number } | null {
   let maxMicro = 0;
   let maxCalls = 0;
-  for (const seq of jsonCallPaths(maxTokens, Math.min(MAX_OUTPUT_TOKENS, cap))) {
+  // Même départ que l'exécution : la place réellement envoyée (placeReelle), puis doublée.
+  for (const seq of jsonCallPaths(placeReelle(provider, model, maxTokens), Math.min(MAX_OUTPUT_TOKENS, cap))) {
     let sum = 0;
     for (const c of seq) {
       const one = callCostBoundMicro(provider, model, inputTokens + c.extraInput, c.budget, effort);
@@ -1051,7 +1075,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
     // Réponse coupée faute de place : même demande avec plus de place, jusqu'à maxOutputTokens (essai réel du
     // 10 novembre 2026 : le plan des textes, coupé à 10 000 jetons, n'était jamais relancé en sortie structurée).
     const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
-    let budget = call.maxTokens ?? 32000, attempt = 0;
+    let budget = placeDeDepart(call), attempt = 0;
     for (;;) {
       const r = await rawCall({ ...call, maxTokens: budget }, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text}, attempt ? `:fix${attempt}` : "", attempt);
       if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());
@@ -1073,7 +1097,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
   let last = "";
   let lastIssue = "";
   const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
-  let step = { attempt: 0, budget: call.maxTokens ?? 32000, fixes: 0 };
+  let step = { attempt: 0, budget: placeDeDepart(call), fixes: 0 };
   for (;;) {
     const r = await rawCall({ ...call, maxTokens: step.budget }, messages, undefined, step.attempt ? `:fix${step.attempt}` : "", step.attempt);
     last = r.text;
