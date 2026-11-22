@@ -15,6 +15,7 @@ import { textRoutingOverview } from "@/lib/ai/text-routing-admin";
 import { alibabaReadiness, mediaRoutingOverview, mediaUsageOverview } from "@/lib/ai/media-routing-admin";
 import { memoireReprise } from "@/lib/ai/memoire";
 import { deferredOn } from "@/lib/syna-agent/brand-chain";
+import { coutParTravail } from "@/lib/syna-agent/travaux";
 
 const configurationPrice=(provider:string,model:string)=>{if(provider!=="higgsfield")return null;try{const q=approvedQuote(defaultConfiguration(model));return {unit:"configuration" as const,revision:q.revision};}catch{return null;}};
 const adminPrice=(provider:string,model:string)=>provider==="higgsfield"?configurationPrice(provider,model):priceFor(provider,model);
@@ -53,6 +54,7 @@ export const GET = handle(async () => {
     users,
     usage,
     memoire: { ...memoireReprise(since), differe: deferredOn() },
+    travaux: coutParTravail(since),
     revenue,
     errors: all("SELECT id, scope, message, user_id, project_id, created_at FROM error_log ORDER BY created_at DESC LIMIT 60"),
     failedJobs: all("SELECT id, type, error, attempts, user_id, project_id, updated_at FROM jobs WHERE status = 'failed' ORDER BY updated_at DESC LIMIT 30"),

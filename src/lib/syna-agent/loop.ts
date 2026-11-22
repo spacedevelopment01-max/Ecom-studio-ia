@@ -29,6 +29,7 @@ import { requirePlan } from "../plan-gates";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { allTools, getTool, isSensitive, toolCatalog, toolEntry, toolVisible, type ToolScope } from "./registry";
+import { noterTravail, prixJuste } from "./travaux";
 import { conversationSettings, keyMoment, momentDeLEtape, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
 import { loadWordingRules, wordingPromptLine } from "../client-wording";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
@@ -286,7 +287,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           // Un refus du moteur natif pendant le devis (étape préalable, droits, tarif) est un résultat d'outil : SINA
           // le lit et s'adapte (question au client, autre outil), l'exécution ne s'arrête pas.
           let est: Awaited<ReturnType<NonNullable<AgentTool["estimate"]>>>;
-          try { est = await t.estimate(tctx, parsed.data); }
+          // Carte juste : le prix probable sur les coûts réellement mesurés des derniers travaux du même genre ; le plafond ne change pas.
+          try { est = prixJuste(t.name, await t.estimate(tctx, parsed.data)); }
           catch (e) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, ...((e as { internal?: boolean } | null)?.internal === true ? { internal: true } : {}), summary: L("Refus avant exécution : ", "Refused before running: ") + String(clip(e instanceof Error ? e.message : String(e), (e as { internal?: boolean } | null)?.internal === true ? 1600 : 600)) }, r.id); continue; }
           // Règle du propriétaire : le prix d'abord, puis l'accord écrit du client, pour TOUTE dépense (audit du 10 novembre
           // 2026 : sous un budget autorisé d'office, les créations partaient sans carte). Une action gratuite (devis à 0, ex.
@@ -351,6 +353,8 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
   // Après une validation réussie et confirmée par le parcours relu, le Studio pose le verrou lui-même.
   if (!locked) { try { apresValidation(r.conversation_id, t.name, res); } catch { /* registre illisible : rien n'est verrouillé */ } }
   if (res.changes?.length) recordChanges(r.conversation_id, r.id, t.name, res.changes);
+  // Un travail payant lancé : noté avec son plafond (prix probable mesuré, coût par travail accepté).
+  if (t.estimate && res.ok && res.jobs?.length) { try { noterTravail(t.name, res.jobs, { userId: r.user_id, projectId: r.project_id, conversationId: r.conversation_id }); } catch { /* le carnet ne bloque jamais un travail */ } }
   addMessage(r.conversation_id, "tool", { key, tool: t.name, args, ok: res.ok, summary: res.summary, ...(res.hint ? { hint: res.hint } : {}), ...(res.internal ? { internal: true } : {}), data: clip(res.data, 6000), changes: res.changes, jobs: res.jobs, ambiguous: res.ambiguous }, r.id);
   return res;
 }
@@ -527,7 +531,7 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
   const t = name ? getTool(name) : null;
   if (!t?.estimate || !r.project_id) return "";
   try {
-    const est = await t.estimate(toolContext(user, r), {} as never);
+    const est = prixJuste(name!, await t.estimate(toolContext(user, r), {} as never));
     if (!est.maxMicro) return "";
     // Coût probable annoncé quand l'outil le donne (étape 7 : le plafond au pire n'a pas de sens pour le client).
     if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctText(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctText(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;

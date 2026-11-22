@@ -24,6 +24,7 @@ import { AlibabaSettings, type AlibabaData } from "./admin-alibaba";
 const MediaUsagesPanel = dynamic(() => import("./admin-media-usages").then((m) => m.MediaUsagesPanel), { ssr: false });
 
 type LigneMemoire = { travail: string; appels: number; entree: number; reprise: number; ecrite: number; partReprise: number | null; partEcrite: number | null; gagneMicro: number; differes: number };
+type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number };
 type Overview = {
   appUrl: string;
   providers: { id: string; name: string; role: string; keyHelp: string; docs: string; keyMasked: string; configured: boolean; disabled: boolean }[];
@@ -43,6 +44,8 @@ type Overview = {
   usage: { provider: string; model: string; unit: string; calls: number; inp: number; out: number; q: number; costEur: number; billedEur: number; est: number }[];
   /** Mise en mémoire chez le fournisseur (30 j) : part reprise par travail, d'après les reçus. */
   memoire?: { lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean };
+  /** Coût par travail accepté (30 j) : payé, gardé par le client, jeté (refait), en attente de sa validation. */
+  travaux?: { lignes: LigneTravail[] };
   revenue: { kind: string; cents: number; n: number }[];
   errors: { id: string; scope: string; message: string; user_id: string | null; project_id: string | null; created_at: number }[];
   failedJobs: { id: string; type: string; error: string; attempts: number; updated_at: number }[];
@@ -697,6 +700,7 @@ function Usage({ data }: { data: Overview }) {
         <Card className="p-5"><p className="text-xs text-muted">{t("Débité des enveloppes (30 j)", "Charged to allowances (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, billed)}</p></Card>
         <Card className="p-5"><p className="text-xs text-muted">{t("Encaissements Stripe (30 j)", "Stripe collections (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, rev)}</p></Card>
       </div>
+      {data.travaux && <TravauxCard lignes={data.travaux.lignes} />}
       {data.memoire && <MemoireCard m={data.memoire} />}
       <Card className="overflow-x-auto p-5">
         <table className="w-full min-w-[720px] text-sm">
@@ -718,6 +722,36 @@ function Usage({ data }: { data: Overview }) {
         </table>
       </Card>
     </>
+  );
+}
+
+/** Le coût par travail accepté : ce qui a été payé, ce que le client a gardé, ce qui a été jeté (refait). */
+function TravauxCard({ lignes }: { lignes: LigneTravail[] }) {
+  const t = useT();
+  const { lang } = useLang();
+  const e = (m: number) => euro(lang, m / 1e6);
+  return (
+    <Card className="overflow-x-auto p-5">
+      <p className="font-display text-lg font-semibold">{t("Coût par travail accepté (30 j)", "Cost per accepted work (30 d)")}</p>
+      <p className="mt-1 text-sm text-ink-2">{t("D'après les reçus du fournisseur. Gardé : le dernier travail avant que le client valide la partie ; jeté : ceux d'avant, refaits ; en attente : pas encore validé.", "From provider receipts. Kept: the last work before the client approved that part; thrown: earlier ones, redone; pending: not approved yet.")}</p>
+      <table className="mt-3 w-full min-w-[640px] text-sm">
+        <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Travail", "Work")}</th><th>{t("Lancés", "Started")}</th><th>{t("Payé", "Paid")}</th><th>{t("Gardé", "Kept")}</th><th>{t("Jeté", "Thrown")}</th><th>{t("En attente", "Pending")}</th><th>{t("Plafonds annoncés", "Announced caps")}</th></tr></thead>
+        <tbody className="divide-y divide-line">
+          {lignes.length === 0 && <tr><td colSpan={7} className="py-4 text-muted">{t("Aucun travail payant sur 30 jours.", "No paid work over the last 30 days.")}</td></tr>}
+          {lignes.map((l) => (
+            <tr key={l.tool}>
+              <td className="py-2">{l.travail}</td>
+              <td className="tabular-nums">{num(lang, l.travaux)}</td>
+              <td className="tabular-nums">{e(l.payeMicro)}</td>
+              <td className="tabular-nums">{e(l.gardeMicro)}</td>
+              <td className="tabular-nums">{e(l.jeteMicro)}</td>
+              <td className="tabular-nums">{e(l.attenteMicro)}</td>
+              <td className="tabular-nums">{e(l.capMicro)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
   );
 }
 

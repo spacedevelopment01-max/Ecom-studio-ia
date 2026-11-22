@@ -613,6 +613,19 @@ CREATE INDEX IF NOT EXISTS ai_calls_candidate ON ai_calls(candidate_id);
 
 -- Verdicts de la barrière de qualité (un par contrôle d'un candidat). previous_check_id relie une reprise à
 -- l'essai précédent : gain de qualité = score − score précédent (calculé, non stocké).
+-- Travaux payants lancés par SINA après l'accord du client (22 novembre 2026) : le plafond annoncé et la tâche, pour
+-- calculer le prix probable sur les coûts réellement mesurés et le coût par travail accepté (payé, gardé, jeté).
+CREATE TABLE IF NOT EXISTS travaux_payes (
+  job_id TEXT PRIMARY KEY,
+  tool TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  project_id TEXT,
+  conversation_id TEXT,
+  cap INTEGER NOT NULL DEFAULT 0,      -- plafond annoncé sur la carte, micro-euros
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS travaux_payes_tool ON travaux_payes(tool, created_at);
+
 CREATE TABLE IF NOT EXISTS quality_checks (
   id TEXT PRIMARY KEY,
   created_at INTEGER NOT NULL,
