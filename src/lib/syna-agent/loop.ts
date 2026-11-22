@@ -584,6 +584,8 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon) : il est créé dès que l'activité et l'offre du client sont connues (start.answer).", "No project linked yet (draft): it is created once the business and offer are known.");
   const call: LlmCall = {
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
+    // Mémoire d'une heure : un client qui réfléchit, ou une création en arrière-plan, ne fait plus tout repayer.
+    memoireLongue: true,
     system: SYNA_SYSTEM, promptKey: "syna-agent-2",
     // La même liste d'outils avant et après la création du projet (relevé de Nadia, 22 novembre 2026 : la liste changeait à
     // la 2e réponse et toutes les notices étaient réécrites en mémoire) ; un outil qui demande un projet est refusé sans
@@ -656,12 +658,20 @@ export function filEnBlocs(h: SynaMessage[], avant: SynaMessage[] = []): string[
 /** Rubrique du résumé du début du fil, quand il n'est plus relu. */
 export const DEBUT_COUPE = "# Début de la conversation, qui n'est plus relu en entier\nCe qu'il t'a dit y est noté dans sa fiche (ci-dessous) ; voici, en bref, ce qu'il a écrit (ses mots) :";
 
+/** Tous les combien de messages les anciens résultats sont raccourcis, d'un seul coup. */
+export const ALLEGEMENT = 40;
+/**
+ * À partir de quel message le fil est écrit en entier. Avant le 22 novembre 2026, les résultats de la demande précédente
+ * étaient raccourcis dès le message suivant du client : le début du fil changeait et le fournisseur ne pouvait plus le
+ * reprendre de mémoire. Désormais un message déjà envoyé ne change plus ; les anciens résultats ne sont raccourcis que
+ * tous les 40 messages, d'un seul coup, et les 40 derniers au moins restent toujours entiers.
+ */
+export const debutEntier = (h: Pick<SynaMessage, "seq">[]) => { const last = h.length ? h[h.length - 1].seq : 0; return Math.max(0, Math.floor(last / ALLEGEMENT) * ALLEGEMENT - ALLEGEMENT); };
+
 function serializeLines(h: SynaMessage[]): string[] {
-  // Demande en cours : résultats complets ; demandes précédentes : résumés courts (moins de jetons relus à chaque étape).
-  let lastUser = -1;
-  h.forEach((m, i) => { if (m.role === "user") lastUser = i; });
-  return h.map((m, i) => {
-    const c = m.content, current = i > lastUser, dataMax = current ? 12000 : 300, argsMax = current ? 400 : 160;
+  const entier = debutEntier(h);
+  return h.map((m) => {
+    const c = m.content, current = m.seq >= entier, dataMax = current ? 12000 : 300, argsMax = current ? 400 : 160;
     if (m.role === "user") return `[client #${m.seq}] ${c.text}${c.attachments?.length ? ` (pièces jointes : ${c.attachments.join(", ")})` : ""}`;
     if (m.role === "assistant") return `[SINA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, argsMax)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
     if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.hint ? `\n  consigne (pour toi seule) : ${c.hint}` : ""}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, dataMax)}` : ""}`;

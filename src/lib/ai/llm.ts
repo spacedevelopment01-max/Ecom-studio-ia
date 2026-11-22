@@ -85,6 +85,12 @@ export type LlmCall = {
    * est repris au dixième du prix au lieu d'être relu en entier.
    */
   history?: string[];
+  /**
+   * Mémoire d'une heure chez le fournisseur au lieu de 5 minutes (22 novembre 2026) : pour la conversation de SINA (un
+   * client qui réfléchit, une création en arrière-plan) et les tâches en différé (l'attente chez le fournisseur dépasse
+   * souvent 5 minutes). L'écriture coûte 2 fois le prix d'entrée au lieu de 1,25 ; la lecture, 0,05 fois.
+   */
+  memoireLongue?: boolean;
   prompt: string;
   images?: LlmImage[];
   maxTokens?: number;
@@ -163,7 +169,7 @@ export function strictTextQuoteInput(call: LlmCall, schema: z.ZodType): { maximu
   const volatile = brainOf(call).volatile;
   if (volatile) content.push({ type: 'text', text: volatile });
   content.push({ type: 'text', text: call.prompt });
-  const request = JSON.stringify({ system: [{ type: 'text', text: systemText(call), cache_control: { type: 'ephemeral' } }], messages: [{ role: 'user', content }] });
+  const request = JSON.stringify({ system: [{ type: 'text', text: systemText(call), cache_control: pointDeMemoire(call) }], messages: [{ role: 'user', content }] });
   const format = Buffer.byteLength(JSON.stringify(zodOutputFormat(schema as any)), 'utf8');
   return { maximumTokens: Buffer.byteLength(request, 'utf8') + format + 500, typicalTokens: Math.ceil(request.length / 3.5) + format };
 }
@@ -253,9 +259,12 @@ export function promptHead(call: Pick<LlmCall, "task" | "context" | "reference" 
 }
 
 /** Blocs de tête d'un appel, avec leurs points de mémoire (sans les images ni la demande). */
-export function headBlocks(call: Pick<LlmCall, "task" | "context" | "reference" | "history">): { type: "text"; text: string; cache_control?: { type: "ephemeral" } }[] {
+/** Le point de mémoire d'un appel : 5 minutes, ou une heure (`memoireLongue`). */
+export const pointDeMemoire = (call: Pick<LlmCall, "memoireLongue">): { type: "ephemeral"; ttl?: "1h" } => (call.memoireLongue ? { type: "ephemeral", ttl: "1h" } : { type: "ephemeral" });
+
+export function headBlocks(call: Pick<LlmCall, "task" | "context" | "reference" | "history" | "memoireLongue">): { type: "text"; text: string; cache_control?: { type: "ephemeral"; ttl?: "1h" } }[] {
   const { cached, history, after } = promptHead(call);
-  const mark = (text: string) => ({ type: "text" as const, text, cache_control: { type: "ephemeral" as const } });
+  const mark = (text: string) => ({ type: "text" as const, text, cache_control: pointDeMemoire(call) });
   return [
     ...cached.map(mark),
     ...history.map((text, i) => i === history.length - 1 ? mark(text) : { type: "text" as const, text }),
@@ -310,7 +319,9 @@ export async function maxCostMicro(model: string, params: { system?: { type: "te
   const inTok = Math.ceil((counted + formatTokens) * INPUT_MARGIN.ratio) + INPUT_MARGIN.tokens;
   if (inTok + params.max_tokens > limits.context || inTok > limits.flatPriceUpTo) throw new UserFacingError(L(`Demande trop longue (${counted} jetons) : au-delà de ${limits.flatPriceUpTo} jetons, le tarif du fournisseur n'est pas garanti. Raccourcissez-la.`, `Request too long (${counted} tokens): above ${limits.flatPriceUpTo} tokens the provider's price isn't guaranteed. Shorten it.`));
   const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
-  return Math.ceil(((inTok * 1.25 * p.inputPerM + params.max_tokens * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
+  // Toute l'entrée peut être écrite en mémoire : 2 fois son prix pour une mémoire d'une heure, 1,25 sinon.
+  const ecriture = /"ttl":"1h"/.test(JSON.stringify([params.system, params.messages])) ? CACHE_WRITE_1H_RATIO : CACHE_WRITE_RATIO;
+  return Math.ceil(((inTok * ecriture * p.inputPerM + params.max_tokens * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
 }
 
 /** Comptage refusé : appel bloqué, avec la réponse du fournisseur (sans secret) pour savoir quoi corriger. */
@@ -343,6 +354,8 @@ const RETRY_DELAYS_MS = [1000, 4000];
 
 /** Prix d'une écriture en mémoire chez Anthropic (mémoire de 5 minutes) : 1,25 fois le prix d'entrée. */
 export const CACHE_WRITE_RATIO = 1.25;
+/** Prix d'une écriture en mémoire d'une heure : 2 fois le prix d'entrée (grille publique). */
+export const CACHE_WRITE_1H_RATIO = 2;
 /**
  * Prix d'une lecture en mémoire chez Anthropic, en part du prix d'entrée (grille publique) : 0,05 pour Opus 5.5 (0,20 $
  * le million au lieu de 4 $) et Sonnet 5.5 (0,10 $ au lieu de 2 $), 0,025 pour Fable 5.1 et 5.2 ; 0,1 pour les autres.
@@ -360,7 +373,9 @@ function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage |
   if(counts.some(n=>!Number.isSafeInteger(n)||n!<0))throw new PermanentError(L("Usage fournisseur incomplet ou invalide : coût maximal retenu, rapprochement nécessaire avant toute relance.","Provider usage is missing or invalid: maximum cost retained; reconciliation required before retrying."));
   const p = requirePrice("anthropic", model), requested = requirePrice("anthropic", requestedModel);
   if (p.unit !== "tokens" || requested.unit !== "tokens") throw new PermanentError(L("Tarif du modèle servi incompatible : rapprochement nécessaire.", "The served model's price is incompatible: reconciliation required."));
-  const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * CACHE_WRITE_RATIO + (usage.cache_read_input_tokens ?? 0) * cacheReadRatio(model, requestedModel);
+  // Écritures d'une heure : 2 fois le prix d'entrée ; celles de 5 minutes : 1,25 (détail rendu par le fournisseur).
+  const h1 = Math.min(usage.cache_creation_input_tokens ?? 0, Number((usage as { cache_creation?: { ephemeral_1h_input_tokens?: number } }).cache_creation?.ephemeral_1h_input_tokens ?? 0) || 0);
+  const input = (usage.input_tokens ?? 0) + ((usage.cache_creation_input_tokens ?? 0) - h1) * CACHE_WRITE_RATIO + h1 * CACHE_WRITE_1H_RATIO + (usage.cache_read_input_tokens ?? 0) * cacheReadRatio(model, requestedModel);
   const output = usage.output_tokens ?? 0;
   const usd = (input * Math.max(p.inputPerM, requested.inputPerM) + output * Math.max(p.outputPerM, requested.outputPerM)) / 1e6;
   const costMicro = Math.round(usd * discount * usdToEur() * EUR);
@@ -486,7 +501,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     // Avec réflexion, la limite couvre aussi la réflexion : une limite trop basse coupe la réponse et la fait repayer.
     // Seuls les jetons produits sont facturés, une limite plus haute ne coûte rien de plus.
     max_tokens: isHaiku ? (call.maxTokens ?? 32000) : Math.max(call.maxTokens ?? 32000, 8000),
-    system: [{ type: "text", text: systemText(call), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: systemText(call), cache_control: pointDeMemoire(call) }],
     messages,
   };
   // Coût maximal de l'appel : plafond de la tâche (demande du client, benchmark) puis réservation atomique sur le
@@ -859,9 +874,12 @@ export function withSelectedStrategy(call: LlmCall): LlmCall {
   return { ...call, context: [call.context, selected].filter(Boolean).join("\n\n") };
 }
 
+/** Une tâche en différé attend souvent plus de 5 minutes chez le fournisseur : sa mémoire dure une heure. */
+const avecMemoire = (call: LlmCall): LlmCall => (call.memoireLongue == null && (call.deferred ?? differeActif()) ? { ...call, memoireLongue: true } : call);
+
 /** Texte libre (rédaction). */
 export async function llmText(call: LlmCall): Promise<string> {
-  call = withSelectedStrategy(call);
+  call = avecMemoire(withSelectedStrategy(call));
   const content = await buildContent(call);
   const r = await rawCall(call, [{ role: "user", content: content as any }]);
   return r.text.trim();
@@ -872,7 +890,7 @@ export async function llmText(call: LlmCall): Promise<string> {
  * validé par Zod avec une tentative de correction guidée par l'erreur.
  */
 export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opts: { strict?: boolean } = {}): Promise<z.infer<S>> {
-  call = withSelectedStrategy(call);
+  call = avecMemoire(withSelectedStrategy(call));
   const content = await buildContent(call);
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: content as any }];
   if (opts.strict) {

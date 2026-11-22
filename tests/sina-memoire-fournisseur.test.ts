@@ -182,3 +182,29 @@ describe("ses mots corrigés, contrôlés par le code", async () => {
     expect(defautsDuMessage({ message: "Tes boutiques.", actions: [] }, regle([{ avoid: "boutique", use: "atelier" }]))).toEqual([]);
   });
 });
+
+describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 2026)", async () => {
+  const L = await import("@/lib/ai/llm");
+  const { filEnBlocs, debutEntier, ALLEGEMENT } = await import("@/lib/syna-agent/loop");
+  it("une heure pour la conversation de SINA et les tâches en différé ; 5 minutes ailleurs ; l'écriture d'une heure comptée à 2 fois", () => {
+    expect(L.pointDeMemoire({ memoireLongue: true })).toEqual({ type: "ephemeral", ttl: "1h" });
+    expect(L.pointDeMemoire({})).toEqual({ type: "ephemeral" });
+    const b = L.headBlocks({ task: "agent_conversation", reference: "N", history: ["F"], context: "E", memoireLongue: true });
+    expect(b.filter((x) => x.cache_control).every((x) => x.cache_control!.ttl === "1h")).toBe(true);
+    expect(L.CACHE_WRITE_1H_RATIO).toBe(2);
+    const fs = require("node:fs") as typeof import("node:fs");
+    expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toContain("    memoireLongue: true,\n    system: SYNA_SYSTEM");
+    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain("const avecMemoire = (call: LlmCall): LlmCall => (call.memoireLongue == null && (call.deferred ?? differeActif()) ? { ...call, memoireLongue: true } : call);");
+  });
+  it("un message déjà envoyé ne change plus quand le client écrit de nouveau ; l'allègement ne vient que tous les 40 messages", () => {
+    const m = (seq: number, role: string, content: unknown) => ({ id: String(seq), seq, role, runId: null, content, createdAt: 0 }) as never;
+    const demande1 = [m(1, "user", { text: "Bonjour" }), m(2, "tool", { tool: "start.state", ok: true, summary: "Lu.", data: { x: "y".repeat(2000) } }), m(3, "assistant", { message: "Salut", actions: [] })];
+    const avant = filEnBlocs(demande1);
+    const apres = filEnBlocs([...demande1, m(4, "user", { text: "Je vends des bijoux." })]);
+    expect(apres.slice(0, avant.length)).toEqual(avant);
+    expect(apres[1]).toContain("y".repeat(2000)); // pas raccourci au message suivant
+    expect(debutEntier([{ seq: 39 }])).toBe(0);
+    expect(debutEntier([{ seq: 125 }])).toBe(80);
+    expect(ALLEGEMENT).toBe(40);
+  });
+});
