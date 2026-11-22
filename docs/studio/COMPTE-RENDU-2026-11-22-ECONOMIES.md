@@ -615,3 +615,40 @@ une tournure rare peut lui échapper.
 
 **Pas touché, en attente de ta décision :** « tout dans l'image par OpenAI » ou « les mots posés par le Studio », et
 l'essai du différé des images d'OpenAI.
+
+## Le suivi : cinq fonctions allumées
+
+Décision prise au nom de tes engagements acceptés le 15 novembre (référence, partie 14). Chaque fonction garde son
+interrupteur dans Administration : « 0 » l'éteint. Le Studio n'écrit jamais ces réglages lui-même. Tout est vérifié
+par des essais simulés : aucun appel payant, aucun SMS, aucun WhatsApp, aucun e-mail réellement envoyé.
+
+**Ce que le client voit maintenant, et où :**
+
+- **L'assistante de son site.** Sur son site en ligne, une bulle « Assistante IA » répond aux visiteurs. Elle dit dès
+  son premier message qu'elle est une IA, ne répond qu'avec ce qu'il a donné (ses produits, leurs prix, ses réponses),
+  et lui transmet le reste par le formulaire. 40 réponses par jour au plus, puis le formulaire. Dans l'écran « Publier
+  ton site », il lit les échanges du jour, et voit ceux qu'elle lui a transmis. Coût estimé : environ 1 centime par
+  réponse, pris sur son budget d'IA.
+- **Ses demandes, triées et résumées.** Dans « Publier ton site », partie « Demandes reçues » : chaque demande porte sa
+  case (devis, rendez-vous, question, urgence, ou « à regarder ») avec sa raison, et son résumé (qui, quoi, où, quand,
+  coordonnées ; « non donné » quand il manque). Il écrit sa réponse sous un début déjà posé (« Bonjour Julie, »), puis
+  « Envoyer par e-mail » ou « Copier ». Gratuit.
+- **Le contrôle de ses photos.** Quand SINA pose une photo de son téléphone sur un produit, le Studio la juge (taille,
+  lumière, netteté) : la photo reste posée, et SINA lui dit comment la refaire avant toute image payée. Chaque image
+  créée avec son vrai produit est comparée au produit d'origine (forme, proportions, couleur) : un produit changé rend
+  l'image ratée, elle n'est jamais montrée, et elle n'est pas refaite toute seule. Gratuit.
+- **Sa fiche Google**, dans la conversation avec SINA : le guide geste par geste avec la page d'aide de Google, le
+  paquet du mois (quatre publications reprises de celles qu'il a acceptées, sans téléphone ni mot-dièse ; rien
+  d'inventé s'il n'y en a pas), et la réponse à un avis qu'il colle, relue avant de lui être montrée (une carte
+  d'accord, moins d'un centime estimé).
+- **Le bras droit**, dans la conversation avec SINA : pour une question de droit, de comptabilité ou d'impôts, SINA dit
+  mot pour mot « Je t'informe à partir des pages officielles (datées). Pour une décision qui t'engage, voici le
+  professionnel à consulter et les questions à lui poser. » Elle n'ouvre que des pages officielles d'une liste fixe, en
+  donne la date affichée (« non disponible » quand la page n'en a pas), et relit sa réponse avant de l'envoyer. Gratuit.
+
+**Restent éteints :** les boutons SMS et WhatsApp (tant que l'essai sur un vrai iPhone et un vrai Android n'est pas
+fait, sur tes téléphones, gratuit), le devis et le carnet de clients.
+
+**Pas vérifié :** aucun essai avec la vraie IA ni sur un vrai site en ligne ; le contrôle de fidélité n'a été essayé
+que sur des images simulées (ses seuils restent à régler sur de vraies images) ; « posé tel quel » (coller la vraie
+photo du produit sur une scène) n'est pas branché, parce que tu avais refusé le produit collé devant un décor.
