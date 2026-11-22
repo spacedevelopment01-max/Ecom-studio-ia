@@ -96,3 +96,12 @@ export function demandeDuModele(m: ModeleVideo, o: { aspect?: DemandeVideo["aspe
     },
   };
 }
+
+/**
+ * L'adresse de la vidéo guidée déjà remplie par un modèle : la même pour l'écran de l'atelier et pour SINA dans sa
+ * conversation (une seule façon de faire ; le devis et l'accord sont ceux de la vidéo guidée).
+ */
+export function lienVideoGuidee(projectId: string, m: ModeleVideo, lang: "fr" | "en"): string {
+  const q = new URLSearchParams({ atelierModele: m.id, atelierAs: m.as, atelierNom: m.nom[lang === "fr" ? 0 : 1], atelierPlans: String(m.plans), atelierDuree: String(Math.max(6, m.dureeS)), atelierDemande: `${m.scene}. ${lang === "fr" ? "Aucune personne, aucune main." : "No people, no hands."}` });
+  return m.as === "ad" ? `/studio/${projectId}/publicites?${q}` : `/studio/${projectId}/publications?${q}#video`;
+}

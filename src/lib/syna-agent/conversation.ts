@@ -65,8 +65,10 @@ const STEP_TOOLS: Record<number, RegExp | ((p: MomentEtape) => RegExp)> = {
     : /^(site\.create$|catalogue\.(list|photos)$|shop\.(offers|buy_features)$|prix\.preuve$)/,
   7: /^(custom\.(install|show|section|edit|structure|photo|undo)$|gallery\.(plan|create)$|mockup\.|site\.(code_from_mockup|images|photo_reject)$|catalogue\.photos$)/,
   8: /^(theme\.|site\.(outline|edit|versions|use_version|pages)$|catalogue\.list$|shop\.)/,
-  9: /^(posts\.|catalogue\.list$)/,
-  10: /^(ads\.|catalogue\.list$)/,
+  // Les publications et les publicités : l'atelier sous la main (une story ou un carré, une scène, un fond, une vidéo
+  // pour vendre, une création qui dort) ; ailleurs, il est nommé en une ligne et s'ouvre avec tools.open.
+  9: /^(posts\.|catalogue\.list$|atelier\.(etat|creer|video)$)/,
+  10: /^(ads\.|catalogue\.list$|atelier\.(etat|creer|video)$)/,
   11: /^(calendar\.|posts\.list$|ads\.list$)/,
   12: /^(blog\.|catalogue\.list$)/,
   13: /^(files\.)/,

@@ -15,6 +15,7 @@ import { useCostConfirm } from "./cost-confirm";
 import { PlanRequired, useCreationLocked } from "../billing-client";
 import { avertissement, type Mode } from "@/lib/atelier/conseil";
 import type { OutilMontre } from "@/lib/atelier/outils";
+import { lienVideoGuidee, type ModeleVideo } from "@/lib/atelier/modeles-videos";
 
 type T2 = readonly [string, string];
 type OutilVue = { id: string; nom: T2; mieux: T2; disponible: boolean; conseille: boolean; redessine: boolean; secours: boolean; prixMicro: number | null; prix: string | null };
@@ -294,10 +295,7 @@ function VideosCard({ etat, projectId, services }: { etat: Etat; projectId: stri
   const t = useT();
   const { lang } = useLang();
   const [avantApres, setAvantApres] = useState(false);
-  const lien = (m: ModeleVideoVue) => {
-    const q = new URLSearchParams({ atelierModele: m.id, atelierAs: m.as, atelierNom: pick(m.nom, lang), atelierPlans: String(m.plans), atelierDuree: String(Math.max(6, m.dureeS)), atelierDemande: `${m.scene}. ${t("Aucune personne, aucune main.", "No people, no hands.")}` });
-    return m.as === "ad" ? `/studio/${projectId}/publicites?${q}` : `/studio/${projectId}/publications?${q}#video`;
-  };
+  const lien = (m: ModeleVideoVue) => lienVideoGuidee(projectId, m as unknown as ModeleVideo, lang === "en" ? "en" : "fr");
   return (
     <Card className="p-5" data-atelier-videos>
       <h3 className="flex items-center gap-2 font-semibold"><Clapperboard className="size-4" />{t("Des vidéos pour vendre", "Videos that sell")}</h3>
