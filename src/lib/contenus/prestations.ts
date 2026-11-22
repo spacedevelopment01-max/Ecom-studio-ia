@@ -20,8 +20,8 @@ import { rdvSection, type RdvKind } from "../rendez-vous";
 import type { SectionInstance, ThemeSpec } from "../theme/spec";
 
 export const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-const HOURS = /^\s*$|^\s*\d{2}:\d{2}\s*-\s*\d{2}:\d{2}(\s*,\s*\d{2}:\d{2}\s*-\s*\d{2}:\d{2})*\s*$/;
-const SLOTS = /^\s*$|^\s*\d{2}:\d{2}(\s*,\s*\d{2}:\d{2})*\s*$/;
+const HOURS = /^\s*$|^\s*(?:[01]\d|2[0-3]):[0-5]\d\s*-\s*(?:(?:[01]\d|2[0-3]):[0-5]\d|24:00)(\s*,\s*(?:[01]\d|2[0-3]):[0-5]\d\s*-\s*(?:(?:[01]\d|2[0-3]):[0-5]\d|24:00))*\s*$/;
+const SLOTS = /^\s*$|^\s*(?:[01]\d|2[0-3]):[0-5]\d(\s*,\s*(?:[01]\d|2[0-3]):[0-5]\d)*\s*$/;
 const CLOSURES = /^\s*$|^\s*\d{4}-\d{2}-\d{2}(\.\.\d{4}-\d{2}-\d{2})?(\s*,\s*\d{4}-\d{2}-\d{2}(\.\.\d{4}-\d{2}-\d{2})?)*\s*$/;
 const slug = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "prestation";
 /** Existing IDs are opaque. A new name must never overwrite an acquired identity or exceed the input contract. */
