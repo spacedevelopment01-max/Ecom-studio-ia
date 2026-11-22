@@ -321,6 +321,45 @@ Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches
 - Attendent sa décision : réutiliser les images de la planche sur le site ; l'aperçu des noms avant les planches ;
   les crédits d'API liés à un abonnement (conditions à confirmer).
 
+### Toutes les parties construites (22 novembre 2026, nuit)
+
+« SINA évolue » a fini et envoyé, au total 5 989 essais verts et 30 épreuves sur 30, 0 € dépensé, rien essayé avec la vraie IA :
+- les économies ;
+- la conversation ;
+- le moteur ;
+- la marque ;
+- le site ;
+- les publications et les publicités ;
+- le suivi (5 fonctions allumées ; devis et carnet éteints) ;
+- les vidéos (Kling, Vertex, Seedance et Runware branchés, éteints sans clé) ;
+- l'atelier (« Atelier » dans « Créer »).
+
+Dernière commande :
+- les limites de l'atelier : SINA qui en parle, toutes les photos vérifiées, et les liens de « Mes créations » qui posent
+  l'image ;
+- le retrait de Higgsfield ;
+- les sorties strictes, l'amorce des publications et les notices courtes ;
+- un compte rendu final avec les coûts.
+
+**Ce qui attend le propriétaire** :
+- l'essai réel de Nadia (budget) ;
+- la méthode « dessiner puis coder » montée avec les pièces ;
+- le texte posé sur les publications (essai gratuit côte à côte) ;
+- les réalisations IA ;
+- réécrire les engagements 4, 10 et 12 ;
+- les essais payants : images 1 €, vidéos environ 10 $, différé des images 1 centime, vignettes de l'atelier ;
+- ElevenLabs ;
+- la signature C2PA par le Studio (certificat et juriste) ;
+- « vrais pixels reposés » ;
+- les comptes à ouvrir : Shopify d'essai, Kling, Vertex, BytePlus, Runware, Black Forest Labs ;
+- relire le devis ;
+- la grille de la CNIL ;
+- l'essai sur ses téléphones ;
+- l'identité légale du Studio ;
+- le taux du dollar ;
+- les images de la planche sur le site ;
+- l'aperçu des noms.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
