@@ -216,6 +216,37 @@ Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches
 - Ensuite : tout ce qui en sort part à « SINA évolue », en respectant ses décisions. L'atelier y entre aussi, avec la
   correction du « Déballage » (pas de mains sans accord écrit).
 
+### Recherches approfondies finies et confiées (22 novembre 2026, après-midi)
+
+- Les onze rapports sont enregistrés. Leur partie « Ce qu'il faut construire » est envoyée à « SINA évolue », dans cet
+  ordre :
+  1. légal et cassé ;
+  2. SINA elle-même ;
+  3. site ;
+  4. mise en ligne ;
+  5. publications et calendrier ;
+  6. publicités ;
+  7. suivi ;
+  8. vidéos ;
+  9. atelier.
+- Précision donnée : on peut AMÉLIORER le code du thème, jamais le retirer ni le remplacer (ses mots : « j'ai jamais
+  demandé que tu enlèves le code du thème »).
+- Envoyé en urgence en cours de route :
+  - le cache de la conversation ;
+  - la fiche relue à chaque pas ;
+  - les mots corrigés dans la réflexion de SINA ;
+  - la signature C2PA qu'efface le Studio.
+- **Décisions qui l'attendent** :
+  - A : le dessin de l'accueil monté avec les pièces du thème au lieu du code libre (rapport 01) ;
+  - B : le texte posé par le Studio sur les photos des publications (après un essai gratuit côte à côte) ;
+  - C : les réalisations créées par l'IA (risque d'hypertrucage selon les lignes directrices européennes du 5 novembre
+    2026) ;
+  - D : réécrire ses engagements 4, 10 et 12 pour qu'ils disent vrai ;
+  - E : les essais payants (images 1 €, vidéos environ 10 $) et ElevenLabs (299 $ par mois) ;
+  - F : les comptes à ouvrir par lui (boutique de développement Shopify, compte publicitaire d'essai, BytePlus) et
+    l'identité légale du Studio ;
+  - le petit modèle pour les tâches mécaniques (non transmis, contraire à « le plus fort pour tous »).
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
