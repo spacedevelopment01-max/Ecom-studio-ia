@@ -156,6 +156,13 @@ describe("à chaque étape, seulement les notices des outils de l'étape", async
     }
   });
 
+  it("une seule liste pour toute la marque (étapes 1 à 3) : le choix de l'identité ne réécrit plus le fil ; brand.finish et identity.choose y sont", () => {
+    const [un, deux, trois] = [1, 2, 3].map((step) => C.routedCatalog(true, scope, step, {}));
+    expect(deux).toBe(un);
+    expect(trois).toBe(un);
+    for (const outil of ["identity.choose", "brand.finish", "identity.propose"]) expect(un).toContain(`### ${outil} — `);
+  });
+
   it("rien n'est retiré à SINA : chaque outil visible est en notice complète ou nommé en une ligne (tools.open)", () => {
     for (const [step, m] of [[5, {}], [5, { services: true }], [6, {}], [6, { site: true }], [7, { site: true, choisi: true }]] as const) {
       const cat = C.routedCatalog(true, scope, step, m);

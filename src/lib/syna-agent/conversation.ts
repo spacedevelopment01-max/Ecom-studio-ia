@@ -46,11 +46,13 @@ export const momentDeLEtape = (j: { site?: { at?: number }; customChosenAt?: num
  * avait jusqu'à 30). Rien n'est retiré à SINA : les autres restent nommés en une ligne et s'ouvrent avec tools.open.
  * Une étape absente d'ici n'est pas aiguillée.
  */
+const MARQUE = /^(identity\.(propose|choose|images)$|brand\.(finish|kit_validate|save)$)/;
 const STEP_TOOLS: Record<number, RegExp | ((p: MomentEtape) => RegExp)> = {
   0: /^(start\.|project\.profile$|services\.profile$)/,
-  1: /^identity\./,
-  2: /^logo\./,
-  3: /^brand\.(kit|kit_validate|save)$/,
+  // La marque, de la proposition des identités à la marque finie : une seule liste (22 novembre 2026, audit de la
+  // conversation) ; le choix de l'identité ne réécrit plus tout le fil, et brand.finish et identity.choose, que les
+  // consignes des étapes 2 et 3 demandent d'appeler, sont sous la main.
+  1: MARQUE, 2: MARQUE, 3: MARQUE,
   4: /^(angles\.|strategy\.read$|research\.read$|pilot\.(state|answer|approve)$|project\.profile$|services\.profile$)/,
   // L'activité : la fiche et ses produits, ou ses prestations et ses rendez-vous.
   5: (p) => p.services
