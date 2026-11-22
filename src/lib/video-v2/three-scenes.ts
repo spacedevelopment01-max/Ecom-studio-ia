@@ -45,7 +45,7 @@ import { loadCreativeMemory, productReferences, rememberDirection, rememberMedia
 import { execTool } from "../exec-tool";
 import { requireCreationPlan } from "../plan-gates";
 import { acquiredVoice, isOpenAIVoice } from "./openai-voice";
-import { countWords, subtitleChunks, synthLine, voiceAvailable, wordBudget, measuredCues, projectVoice } from "./voice";
+import { countWords, subtitleChunks, synthLine, voiceAvailable, wordBudget, measuredCues, projectVoice, voicePauses } from "./voice";
 import { brainView } from "../brain/facade";
 import { storagePath, tmpDir } from "../storage";
 import { llmConfigured } from "../ai/llm";
@@ -657,7 +657,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
       if(!quoted||quoted.id!==chosenVoice||quoted.speed!==brief.voice.speed||quoted.lang!==(p.settings?.language==='en'?'en':'fr')||!isDeepStrictEqual(quoted.lines,lines)||(isOpenAIVoice(chosenVoice)&&lines.filter(Boolean).reduce((n,text)=>n+voiceQuote(text).capMicro,0)>quoted.capMicro))throw new UserFacingError("Le texte, la voix, la vitesse, la langue ou le plafond vocal a changé. Clips et anciens audios conservés ; aucun nouvel envoi vocal.");
     }
     await addVoice(projectId,p0.userId,doc,plan,brief,key,guide.script.wordsPer30s,synthLine,preserveClientVersion);
-    notes.push(C("Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot.","Project-selected synthetic voice. Subtitles timed by measured phrase, proportionally split; not word aligned."));
+    notes.push(C("Voix synthétique choisie pour le projet. Sous-titres mot à mot sur la voix mesurée (fins de phrase calées sur les silences) ; minutage estimé, pas une transcription.","Project-selected synthetic voice. Word-by-word subtitles on the measured voice (sentence ends snapped to silences); estimated timing, not a transcript."));
   } else {
     doc.subtitles.cues=doc.clips.flatMap((clip,k)=>{
       const text=[plan.scenes[k]?.voice??"",k===doc.clips.length-1?plan.voiceEnd??"":""].filter(Boolean).join(" ").trim();
@@ -714,7 +714,7 @@ export async function addVoice(projectId: string, userId: string, doc: VideoDocu
       if(!Number.isFinite(durationS)||durationS<=0||durationS>l.clip.durationS-.3) throw new UserFacingError(`Voix de la scène ${k+1} : phrase entière de ${durationS.toFixed(2)} s pour un plan de ${l.clip.durationS} s. Adaptez le texte ou la durée ; aucune phrase supprimée.`);
       const a=acquired??await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,speed:brief.voice.speed,lang,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
       pending.push({id:`voice-${l.clip.id}`,clipId:l.clip.id,assetId:a.id,text:l.text,offsetS:.2,durationS,gainDb:0});
-      cues.push(...measuredCues(l.clip.id,l.text,durationS,doc.subtitles.style.maxChars));
+      cues.push(...measuredCues(l.clip.id,l.text,durationS,doc.subtitles.style.maxChars,.2,await voicePauses(wav)));
     }
     doc.audio.voice=pending;doc.subtitles.cues=cues;doc.audio.voiceId=isOpenAIVoice(brief.voice.kokoroVoice)?brief.voice.kokoroVoice:`kokoro:${brief.voice.kokoroVoice}`;doc.audio.duckingDb=-12;
   } finally {fs.rmSync(dir,{recursive:true,force:true});}

@@ -33,14 +33,14 @@ export function timeline(doc: Pick<VideoDocument, "clips">): { starts: number[];
 }
 
 /** Sous-titres en temps absolus (export SRT / VTT, rendu). */
-export function absoluteCues(doc: Pick<VideoDocument, "clips" | "subtitles">): { start: number; end: number; text: string; cueId: string }[] {
+export function absoluteCues(doc: Pick<VideoDocument, "clips" | "subtitles">): { start: number; end: number; text: string; cueId: string; words?: { start: number; end: number }[] }[] {
   const { starts } = timeline(doc);
   const at = new Map(doc.clips.map((c, k) => [c.id, { start: starts[k], dur: c.durationS }]));
   return doc.subtitles.cues
     .filter((q) => at.has(q.clipId))
     .map((q) => {
       const c = at.get(q.clipId)!;
-      return { cueId: q.id, start: c.start + Math.max(0, Math.min(q.fromS, c.dur)), end: c.start + Math.max(0, Math.min(q.toS, c.dur)), text: q.text };
+      return { cueId: q.id, start: c.start + Math.max(0, Math.min(q.fromS, c.dur)), end: c.start + Math.max(0, Math.min(q.toS, c.dur)), text: q.text, ...(q.words?.length ? { words: q.words.map((w) => ({ start: c.start + w.fromS, end: c.start + w.toS })) } : {}) };
     })
     .filter((q) => q.end - q.start > 0.05)
     .sort((a, b) => a.start - b.start);
@@ -89,10 +89,15 @@ export function cuesForVoice(clipId: string, voice: string, clipS: number, maxCh
   });
 }
 
-/** Sous-titres sans fond noir (choix du propriétaire) : contour sombre autour des lettres. */
+/**
+ * Sous-titres sans fond noir (choix du propriétaire) : contour sombre autour des lettres. Mot dit surligné à la couleur
+ * d'accent de la marque (rapport 09, point 7). En vertical, posés au-dessus du tiers du bas (Meta : les 35 % du bas
+ * restent libres de texte, recouverts par l'interface).
+ */
 export function defaultSubtitleStyle(doc: { width: number; height: number }, typo: Typo, pal: Palette): SubtitleStyle {
   const short = Math.min(doc.width, doc.height);
-  return { enabled: true, family: typo.body, weight: 700, size: Math.round(short * 0.052), color: "#FFFFFF", background: null, position: "bottom", offsetY: 0, maxChars: doc.width > doc.height ? 42 : 28, uppercase: false };
+  const vertical = doc.height > doc.width;
+  return { enabled: true, family: typo.body, weight: 700, size: Math.round(short * 0.052), color: "#FFFFFF", background: null, position: vertical ? "middle" : "bottom", offsetY: vertical ? Math.round(doc.height * 0.1) : 0, maxChars: doc.width > doc.height ? 42 : 28, uppercase: false, highlight: pal.accent };
 }
 
 // ------------------------------------------------------------------------------------------- calques (ad-doc)
@@ -232,4 +237,12 @@ export function voiceClip(clip: Clip, text: string): AudioClip | null {
   if (!text.trim()) return null;
   const words = text.trim().split(/\s+/).length;
   return { id: `voice-${clip.id}`, clipId: clip.id, assetId: null, text, offsetS: 0.15, durationS: Math.min(clip.durationS - 0.2, Math.round((words / WORDS_PER_SECOND) * 100) / 100), gainDb: 0 };
+}
+
+/** Mot dit à l'instant `t` dans une page de sous-titres (le dernier commencé) ; -1 : page sans minutage mot à mot. */
+export function spokenWord(cue: { words?: { start: number; end: number }[] }, t: number): number {
+  if (!cue.words?.length) return -1;
+  let k = 0;
+  cue.words.forEach((w, i) => { if (t >= w.start) k = i; });
+  return k;
 }

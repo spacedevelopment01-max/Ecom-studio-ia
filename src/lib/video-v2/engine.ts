@@ -19,7 +19,7 @@ import { ImageBindingSchema } from "../image-v2/request-binding";
 import { videoScope,type VideoApproval } from "./approval";
 import { videoReceipt } from "./receipts";
 import {requiresClipRevisionQuote}from './clip-revision-contract';
-import { measuredCues,projectVoice,voiceAvailable } from "./voice";
+import { measuredCues,projectVoice,voiceAvailable,voicePauses } from "./voice";
 import {isOpenAIVoice} from "./openai-voice";
 import {loadCreativeMemory} from "./creative-memory";
 import { requireCreationPlan } from "../plan-gates";
@@ -780,12 +780,13 @@ async function recordVoices(p: Project, deps: VideoV2Deps, doc: VideoDocument, j
       v.assetId = a.id;
       const file=path.join(tmpDir("voice-measure"),"voice");
       let actual:number|null=null;
-      try {fs.writeFileSync(file,r.data);actual=await probeDuration(file);} finally {fs.rmSync(path.dirname(file),{recursive:true,force:true});}
+      let pauses:{start:number;end:number}[]=[];
+      try {fs.writeFileSync(file,r.data);actual=await probeDuration(file);pauses=await voicePauses(file);} finally {fs.rmSync(path.dirname(file),{recursive:true,force:true});}
       const clip=doc.clips.find(c=>c.id===v.clipId)!;
       if(!actual || actual>clip.durationS-v.offsetS-.1) throw new Error(`Phrase du plan ${v.clipId} trop longue ou illisible ; adaptez sa durée, aucun texte supprimé.`);
       v.durationS=actual;
       doc.subtitles.cues=doc.subtitles.cues.filter(c=>c.clipId!==v.clipId);
-      doc.subtitles.cues.push(...measuredCues(v.clipId,v.text,actual,doc.subtitles.style.maxChars,v.offsetS));
+      doc.subtitles.cues.push(...measuredCues(v.clipId,v.text,actual,doc.subtitles.style.maxChars,v.offsetS,pauses));
     } catch (e) {
       if (e instanceof JobCancelled || e instanceof JobPaused || e instanceof CostCapReached) throw e;
       throw new Error(`Voix du plan ${v.clipId} incomplète : ${(e as Error).message}. Version et texte conservés.`);

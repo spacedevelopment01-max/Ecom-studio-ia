@@ -12,7 +12,7 @@ import { createCanvas, type Image } from "@napi-rs/canvas";
 import { renderDoc, wrap, type RenderEnv } from "../ad-doc/render";
 import { serverFont } from "../ad-doc/server";
 import type { AdDocument, Layer } from "../ad-doc/types";
-import { absoluteCues, timeline } from "./doc";
+import { absoluteCues, spokenWord, timeline } from "./doc";
 import type { CameraMove, Clip, VideoDocument } from "./types";
 import { TOOL_TIMEOUT_MS } from "../exec-tool";
 import { accentOf } from "./promo";
@@ -179,7 +179,7 @@ function animatedOverlay(doc: AdDocument, local: number, clipS: number, last: bo
   };
 }
 
-function drawSubtitle(ctx: Ctx, doc: VideoDocument, text: string, appear: number) {
+function drawSubtitle(ctx: Ctx, doc: VideoDocument, text: string, appear: number, spoken: number = -1) {
   const s = doc.subtitles.style;
   const W = doc.width;
   const H = doc.height;
@@ -193,6 +193,7 @@ function drawSubtitle(ctx: Ctx, doc: VideoDocument, text: string, appear: number
   const baseY = s.position === "top" ? doc.safe.top + H * 0.04 : s.position === "middle" ? H / 2 - blockH / 2 : H - doc.safe.bottom - blockH - H * 0.02;
   const y0 = Math.max(doc.safe.top, Math.min(H - doc.safe.bottom - blockH, baseY + s.offsetY));
   ctx.globalAlpha = clamp(appear / 0.12);
+  let wordIndex = 0;
   lines.forEach((line: string, k: number) => {
     const y = y0 + k * lh + lh / 2;
     const w = ctx.measureText(line).width;
@@ -206,6 +207,21 @@ function drawSubtitle(ctx: Ctx, doc: VideoDocument, text: string, appear: number
       ctx.lineWidth = Math.max(2, s.size * 0.12);
       ctx.strokeStyle = "rgba(0,0,0,0.85)";
       ctx.strokeText(line, W / 2, y);
+    }
+    if (spoken >= 0 && s.highlight) {
+      // Mot à mot : chaque mot à sa place, celui qui est dit à la couleur d'accent de la marque.
+      const words = line.split(" ");
+      const space = ctx.measureText(" ").width;
+      let x = W / 2 - w / 2;
+      ctx.textAlign = "left";
+      words.forEach((word: string, i: number) => {
+        ctx.fillStyle = wordIndex + i === spoken ? s.highlight! : s.color;
+        ctx.fillText(word, x, y);
+        x += ctx.measureText(word).width + space;
+      });
+      ctx.textAlign = "center";
+      wordIndex += words.length;
+      return;
     }
     ctx.fillStyle = s.color;
     ctx.fillText(line, W / 2, y);
@@ -395,7 +411,7 @@ export async function renderVideoDoc(doc: VideoDocument, src: VideoSources, outF
       if (ci > 0 && hasPrev && c.transitionIn.kind !== "cut" && local < c.transitionIn.durationS) drawTransition(ctx, c.transitionIn.kind, local / c.transitionIn.durationS, prevCanvas, OW, OH, doc.meta.promo ? { a: accentOf(doc.brand.palette as Palette), b: "#FFFFFF" } : undefined);
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       const cue = cues.find((q) => t >= q.start && t < q.end);
-      if (cue) drawSubtitle(ctx, doc, cue.text, t - cue.start);
+      if (cue) drawSubtitle(ctx, doc, cue.text, t - cue.start, spokenWord(cue, t));
       drawDisclosure(ctx, doc);
       if (ffError) throw ffError;
       if (!ff.stdin.write(canvas.data())) await Promise.race([new Promise((r) => ff.stdin.once("drain", r)), done.catch(() => {})]);
@@ -431,7 +447,7 @@ export async function renderStill(doc: VideoDocument, src: VideoSources, atS: nu
   }
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   const cue = absoluteCues(doc).find((q) => atS >= q.start && atS < q.end);
-  if (cue && doc.subtitles.style.enabled) drawSubtitle(ctx, doc, cue.text, 1);
+  if (cue && doc.subtitles.style.enabled) drawSubtitle(ctx, doc, cue.text, 1, spokenWord(cue, atS));
   drawDisclosure(ctx, doc);
   return canvas.encode("jpeg", 88);
 }
