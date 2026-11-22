@@ -286,6 +286,21 @@ Huit recherches lancées à sa demande (« tu dois vraiment faire des recherches
   - l'essai d'un centime pour le différé des images ;
   - relancer Nadia pour mesurer en vrai.
 
+### Coûts : décision d'effort et audit « jusqu'au bout du bout » (22 novembre 2026, fin d'après-midi)
+
+- Fonction en essai d'Anthropic (effort constant dans le fil, jugement élevé par message) : le propriétaire a laissé
+  trancher (« je te laisse faire »). Le chef d'orchestre a dit oui, avec retour automatique à l'ancienne façon en cas de
+  refus et un réglage pour l'éteindre (environ −1,80 € par projet).
+- Ses mots : « on peut encore gagner quelques euros, il faut des recherches jusqu'au bout du bout, le moindre petit bout de
+  code doit être recherché, sans toucher, voire en améliorant l'expérience avec SINA ».
+- Six audits lancés sur la dernière version (`9b67a29a`), rapports dans `docs/studio/couts/approfondi/` :
+  1. conversation ;
+  2. marque ;
+  3. site ;
+  4. angles, publications et tâches de fond ;
+  5. moteur des appels ;
+  6. techniques publiées.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
