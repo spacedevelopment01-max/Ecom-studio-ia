@@ -109,6 +109,19 @@ const UNHAPPY = /(?<![\p{L}])(nuls?|nulles?|moches?|laids?|laides?|horribles?|ca
 type Msg = { role: string; content?: any };
 
 /**
+ * Un vrai échec, à expliquer au client avec soin (effort élevé, relectrice) : une création qui rate, un travail payant
+ * refusé, une panne d'outil, un budget insuffisant. Un refus de règle ou d'argument (« introuvable », « déjà choisi »,
+ * « Impossible de valider : … », « Rien n'est enregistré : … ») est une étape ordinaire : SINA le corrige seule
+ * (audit de la conversation, 22 novembre 2026).
+ */
+export function vraiEchec(c: { tool?: string; summary?: string; jobs?: unknown[] }): boolean {
+  if (c.tool === "jobs.wait") return true;
+  const t = c.tool ? allTools().find((x) => x.name === c.tool) : undefined;
+  if (t?.estimate) return true;
+  return /^(Échec de l'outil|Tool failed)|budget|plafond/i.test(String(c.summary ?? ""));
+}
+
+/**
  * Le moment de cette réflexion, lu dans le fil : les résultats d'outils arrivés depuis la dernière réponse de SINA, ou
  * le dernier message du client. null : un échange ordinaire (question, confirmation, suite du parcours).
  */
@@ -117,7 +130,7 @@ export function keyMoment(history: Msg[]): KeyMoment | null {
   const fresh: Msg[] = [];
   for (; i >= 0 && history[i].role !== "assistant" && history[i].role !== "user"; i--) if (history[i].role === "tool") fresh.push(history[i]);
   // Un échec vrai (pas une erreur d'argument de SINA elle-même, qu'elle corrige seule) passe avant le reste.
-  if (fresh.some((m) => m.content?.ok === false && !m.content?.internal)) return "echec";
+  if (fresh.some((m) => m.content?.ok === false && !m.content?.internal && vraiEchec(m.content))) return "echec";
   if (fresh.some((m) => m.content?.tool === "jobs.wait")) return "resultat";
   const user = [...history].reverse().find((m) => m.role === "user");
   return user && UNHAPPY.test(String(user.content?.text ?? "")) ? "mecontent" : null;

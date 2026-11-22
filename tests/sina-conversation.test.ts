@@ -82,7 +82,12 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     expect(C.keyMoment([user("Bonjour, je vends du thé.")])).toBeNull();
     expect(C.keyMoment([user("Oui vas-y"), sina, tool("jobs.wait")])).toBe("resultat");
     expect(C.keyMoment([user("Oui vas-y"), sina, tool("jobs.wait", false)])).toBe("echec");
-    expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update", false)])).toBe("echec");
+    // Depuis le 22 novembre 2026 : un refus de règle ou d'argument n'est pas un échec à expliquer (ni effort élevé, ni
+    // relectrice) ; une panne d'outil, un travail payant refusé ou un budget insuffisant le sont.
+    expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update", false, { summary: "Produit introuvable." })])).toBeNull();
+    expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update", false, { summary: "Échec de l'outil : base indisponible" })])).toBe("echec");
+    expect(C.keyMoment([user("Crée-les"), sina, tool("identity.propose", false, { summary: "Refusé." })])).toBe("echec");
+    expect(C.keyMoment([user("Valide"), sina, tool("activity.validate", false, { summary: "Impossible de valider : e-mail manquant." })])).toBeNull();
     // Une erreur d'argument de SINA elle-même se corrige seule : pas un moment qui compte.
     expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update", false, { internal: true })])).toBeNull();
     expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update")])).toBeNull();
