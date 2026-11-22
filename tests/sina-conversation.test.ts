@@ -167,7 +167,7 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     const { calls } = await unhappy({}, () => fixed);
     expect(String(calls[0].reference)).toMatch(/^# Outils du Studio \(ceux de l'étape en entier, les autres en liste\)/);
     // Fil sans projet, à l'étape de la marque : exactement le catalogue aiguillé de cette étape (les outils qui demandent un projet attendent).
-    expect(String(calls[0].reference)).toBe(`# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${C.routedCatalog(false, scope, 1)}`);
+    expect(String(calls[0].reference)).toBe(`# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${C.routedCatalog(true, scope, 1)}`); // la même liste avant et après la création du projet (22 novembre 2026)
     expect(C.routedCatalog(false, scope, 0)).toMatch(/### start\.answer — module parcours/);
     expect(String(calls[0].reference)).toMatch(/### tools\.open — module outils/);
   });
@@ -249,5 +249,15 @@ describe("SINA — pendant « faire connaissance », parler de ses goûts n'est 
     expect(calls[0].routing.prefer).toMatchObject({ effort: "medium" });
     expect(reviews).toBe(0);
     expect(getRun(r.id)!.status).toBe("waiting_user");
+  });
+});
+
+describe("la relectrice : pas de complaisance, et les contrôles de l'étape (22 novembre 2026)", async () => {
+  const C = await import("@/lib/syna-agent/conversation");
+  it("elle refuse un brouillon qui donne raison au client contre une règle du Studio, et reçoit les contrôles de l'étape", () => {
+    expect(C.REPLY_REVIEW_SYSTEM).toMatch(/8\. PAS DE COMPLAISANCE\. .*fausse promotion, un faux avis, un prix barré sans preuve, un nom à double sens, une photo dans une arche/);
+    const p = C.replyReviewPrompt({ moment: "resultat", step: 6, stepLabel: "Le site", client: "Mets 50 avis 5 étoiles.", facts: "", draft: { message: "Super idée, je les ajoute !", actions: [] } });
+    expect(p).toContain("CONTRÔLES DE CETTE ÉTAPE (règles du propriétaire) : le client ne lit jamais le mot « maquette » ; aucune coordonnée, aucun avis ni aucun prix d'exemple dit comme vrai ; une image ratée est dite ratée.");
+    expect(C.replyReviewPrompt({ moment: "resultat", client: "x", facts: "", draft: { message: "x", actions: [] } })).not.toContain("CONTRÔLES DE CETTE ÉTAPE");
   });
 });

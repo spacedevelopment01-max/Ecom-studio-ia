@@ -25,7 +25,7 @@ import { AlibabaSettings, type AlibabaData } from "./admin-alibaba";
 const MediaUsagesPanel = dynamic(() => import("./admin-media-usages").then((m) => m.MediaUsagesPanel), { ssr: false });
 
 type LigneMemoire = { travail: string; appels: number; entree: number; reprise: number; ecrite: number; partReprise: number | null; partEcrite: number | null; gagneMicro: number; differes: number };
-type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number };
+type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number; alerte?: boolean };
 type Overview = {
   appUrl: string;
   providers: { id: string; name: string; role: string; keyHelp: string; docs: string; keyMasked: string; configured: boolean; disabled: boolean }[];
@@ -44,7 +44,7 @@ type Overview = {
   users: { id: string; email: string; name: string; role: string; created_at: number; subscription: string; stores: number; projects: number; availableEur: number; usedPct: number }[];
   usage: { provider: string; model: string; unit: string; calls: number; inp: number; out: number; q: number; costEur: number; billedEur: number; est: number }[];
   /** Mise en mémoire chez le fournisseur (30 j) : part reprise par travail, d'après les reçus. */
-  memoire?: { lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean };
+  memoire?: { lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean; etapes?: { etape: string; reflexions: number; plein: number; lu: number; ecrit: number; sortie: number; parReflexionMicro: number }[] };
   /** Coût par travail accepté (30 j) : payé, gardé par le client, jeté (refait), en attente de sa validation. */
   travaux?: { lignes: LigneTravail[] };
   revenue: { kind: string; cents: number; n: number }[];
@@ -743,7 +743,7 @@ function TravauxCard({ lignes }: { lignes: LigneTravail[] }) {
           {lignes.length === 0 && <tr><td colSpan={7} className="py-4 text-muted">{t("Aucun travail payant sur 30 jours.", "No paid work over the last 30 days.")}</td></tr>}
           {lignes.map((l) => (
             <tr key={l.tool}>
-              <td className="py-2">{l.travail}</td>
+              <td className="py-2">{l.travail}{l.alerte ? <Badge tone="bad" className="ml-2">{t("coût doublé cette semaine", "cost doubled this week")}</Badge> : null}</td>
               <td className="tabular-nums">{num(lang, l.travaux)}</td>
               <td className="tabular-nums">{e(l.payeMicro)}</td>
               <td className="tabular-nums">{e(l.gardeMicro)}</td>
@@ -759,7 +759,7 @@ function TravauxCard({ lignes }: { lignes: LigneTravail[] }) {
 }
 
 /** Ce que le fournisseur a repris de mémoire au lieu de le relire (consignes, notices, cahiers, fil déjà lu). */
-function MemoireCard({ m }: { m: { lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean } }) {
+function MemoireCard({ m }: { m: { lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean; etapes?: { etape: string; reflexions: number; plein: number; lu: number; ecrit: number; sortie: number; parReflexionMicro: number }[] } }) {
   const t = useT();
   const { lang } = useLang();
   const pct = (x: number | null) => x == null ? "—" : `${Math.round(x * 100)} %`;
@@ -785,6 +785,7 @@ function MemoireCard({ m }: { m: { lignes: LigneMemoire[]; total: LigneMemoire; 
           ))}
         </tbody>
       </table>
+      {!!m.etapes?.length && <p className="mt-3 text-sm text-ink-2">{t("La conversation de SINA, étape par étape : ", "SINA's conversation, step by step: ")}{m.etapes.map((e) => t(`étape ${e.etape} : ${num(lang, e.reflexions)} réflexions, ${euro(lang, e.parReflexionMicro / 1e6)} chacune, ${num(lang, e.lu)} jetons lus en mémoire, ${num(lang, e.plein)} payés plein tarif`, `step ${e.etape}: ${e.reflexions} replies`)).join(" ; ")}.</p>}
     </Card>
   );
 }

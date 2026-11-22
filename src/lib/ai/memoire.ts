@@ -87,3 +87,15 @@ export function coutConversation(appels: AppelReleve[], tarif: Tarif, contexte: 
   });
   return { avant: Math.round(avant * 1000) / 1000, apres: Math.round(apres * 1000) / 1000 };
 }
+
+/**
+ * Le coût de la conversation de SINA, étape par étape du parcours (recherche 11, point 1) : jetons lus en mémoire, jetons
+ * payés plein tarif, et coût moyen d'une réflexion de SINA. D'après les reçus, jamais estimé.
+ */
+export function coutParEtape(since: number): { etape: string; reflexions: number; plein: number; lu: number; ecrit: number; sortie: number; parReflexionMicro: number }[] {
+  const rows = all<{ step: string | null; n: number; plein: number; lu: number; ecrit: number; sortie: number; cost: number }>(
+    "SELECT step, COUNT(*) n, SUM(input_tokens) plein, SUM(cache_read_tokens) lu, SUM(cache_write_tokens) ecrit, SUM(output_tokens) sortie, SUM(cost) cost FROM ai_calls WHERE created_at >= ? AND status='ok' AND prompt_key LIKE 'syna-agent-%' GROUP BY step ORDER BY step",
+    since,
+  );
+  return rows.map((r) => ({ etape: /etape-(\d+)/.exec(r.step ?? "")?.[1] ?? "?", reflexions: r.n, plein: r.plein, lu: r.lu, ecrit: r.ecrit, sortie: r.sortie, parReflexionMicro: r.n ? Math.round(r.cost / r.n) : 0 }));
+}

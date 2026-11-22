@@ -76,3 +76,33 @@ describe("les travaux payés", async () => {
     expect(src).toContain("const est = prixJuste(name!, await t.estimate(toolContext(user, r), {} as never));");
   });
 });
+
+describe("le coût de SINA étape par étape, et l'alerte quand un travail coûte le double", async () => {
+  const T = await import("@/lib/syna-agent/travaux");
+  const { coutParEtape } = await import("@/lib/ai/memoire");
+  const { run, id } = await import("@/lib/db");
+  const { account, project } = await import("./conversation209-fixtures");
+  const { threadFor } = await import("@/lib/syna-agent/thread");
+  it("par étape : réflexions, jetons lus en mémoire et payés plein tarif, coût moyen ; la trace porte l'étape", async () => {
+    const u = await account(), at = Date.now();
+    for (const [st, cost] of [["syna:etape-0", 40_000], ["syna:etape-0", 60_000], ["syna:etape-1", 90_000]] as const)
+      run("INSERT INTO ai_calls(id,created_at,user_id,task,step,provider,requested_model,unit,input_tokens,cache_read_tokens,cache_write_tokens,output_tokens,cost,status,prompt_key) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", `e-${id()}`, at, u.id, "agent_conversation", st, "anthropic", "claude-opus-5-5", "tokens", 1000, 5000, 0, 500, cost, "ok", "syna-agent-2");
+    const e = coutParEtape(at - 1);
+    expect(e.find((x) => x.etape === "0")).toMatchObject({ reflexions: 2, plein: 2000, lu: 10000, parReflexionMicro: 50_000 });
+    expect(e.find((x) => x.etape === "1")).toMatchObject({ reflexions: 1, parReflexionMicro: 90_000 });
+    const fs = await import("node:fs");
+    expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toContain("step: `syna:etape-${currentStep(journeyOf(r.conversation_id))}`");
+  });
+  it("alerte : le coût moyen de la semaine a doublé par rapport aux 30 jours d'avant", async () => {
+    const u = await account(), pid = project(u) as string, cid = threadFor(u, pid), tool = `essai.alerte.${id()}`;
+    const t = (cost: number, joursAvant: number) => {
+      const at = Date.now() - joursAvant * 86400_000, jid = `job-${id()}`;
+      run("INSERT INTO jobs(id,user_id,project_id,type,payload,status,run_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)", jid, u.id, pid, "syna.brand", "{}", "done", at, at, at);
+      T.noterTravail(tool, [jid], { userId: u.id, projectId: pid, conversationId: cid });
+      run("UPDATE travaux_payes SET created_at=? WHERE job_id=?", at, jid);
+      run("INSERT INTO ai_calls(id,created_at,user_id,project_id,job_id,task,provider,requested_model,unit,cost,status) VALUES(?,?,?,?,?,?,?,?,?,?,?)", `c-${jid}`, at, u.id, pid, jid, "strategy", "anthropic", "m", "tokens", cost, "ok");
+    };
+    t(1_000_000, 20); t(1_000_000, 15); t(2_500_000, 2);
+    expect(T.coutParTravail(Date.now() - 40 * 86400_000).lignes.find((l) => l.tool === tool)!.alerte).toBe(true);
+  });
+});

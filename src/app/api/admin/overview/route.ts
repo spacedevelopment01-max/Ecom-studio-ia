@@ -13,7 +13,7 @@ import { paymentsLive, stripeKeys } from "@/lib/payments";
 import { mailConfigured } from "@/lib/mail";
 import { textRoutingOverview } from "@/lib/ai/text-routing-admin";
 import { alibabaReadiness, mediaRoutingOverview, mediaUsageOverview } from "@/lib/ai/media-routing-admin";
-import { memoireReprise } from "@/lib/ai/memoire";
+import { coutParEtape, memoireReprise } from "@/lib/ai/memoire";
 import { deferredOn } from "@/lib/syna-agent/brand-chain";
 import { coutParTravail } from "@/lib/syna-agent/travaux";
 
@@ -53,7 +53,7 @@ export const GET = handle(async () => {
     smtp: { configured: mailConfigured(), hostMasked: mask(getSetting("smtp.host")), port: getSetting("smtp.port") ?? "", userMasked: mask(getSetting("smtp.user")), passwordConfigured: !!getSetting("smtp.password"), fromMasked: mask(getSetting("smtp.from")) },
     users,
     usage,
-    memoire: { ...memoireReprise(since), differe: deferredOn() },
+    memoire: { ...memoireReprise(since), differe: deferredOn(), etapes: coutParEtape(since) },
     travaux: coutParTravail(since),
     revenue,
     errors: all("SELECT id, scope, message, user_id, project_id, created_at FROM error_log ORDER BY created_at DESC LIMIT 60"),

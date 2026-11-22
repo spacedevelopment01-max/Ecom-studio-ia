@@ -56,7 +56,7 @@ export function prixJuste<E extends { maxMicro: number; probableMicro?: number }
   return { ...est, probableMicro: Math.max(1, Math.round(est.maxMicro * m.part)), mesure: m.n };
 }
 
-export type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number };
+export type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number; /** Le coût moyen des 7 derniers jours a doublé par rapport aux 30 jours d'avant. */ alerte?: boolean };
 
 const TRAVAIL: Record<string, { fr: string; en: string }> = {
   "identity.propose": { fr: "Les identités de marque", en: "Brand identities" },
@@ -96,6 +96,13 @@ export function coutParTravail(since: number): { lignes: LigneTravail[] } {
       if (dernier?.job_id === r.job_id) l.gardeMicro += paye; else l.jeteMicro += paye;
     }
     by.set(r.tool, l);
+  }
+  // Alerte : un travail dont le coût moyen a doublé cette semaine (recherche 11, point 7).
+  const now = Date.now(), semaine = now - 7 * 86400_000, mois = semaine - 30 * 86400_000;
+  for (const l of by.values()) {
+    const moy = (a: number, b: number) => { const xs = rows.filter((r) => r.tool === l.tool && r.created_at >= a && r.created_at < b && r.status === "done").map((r) => depense(r.job_id)); return xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : null; };
+    const recent = moy(semaine, now + 1), avant = moy(mois, semaine);
+    if (recent != null && avant != null && avant > 0 && recent >= 2 * avant) l.alerte = true;
   }
   return { lignes: [...by.values()].sort((a, b) => b.payeMicro - a.payeMicro) };
 }

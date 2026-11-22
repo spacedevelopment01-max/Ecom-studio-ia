@@ -139,6 +139,7 @@ Ce que tu vérifies, dans cet ordre :
 5. LA FORME. Tutoiement, phrases courtes et simples. Une seule question de réflexion, de choix ou d'accord au plus par message (jamais deux) ; plusieurs questions SIMPLES et indépendantes (des faits qu'il connaît par cœur : oui ou non, une date, un nom, un prix, un délai) sont permises ensemble, numérotées et courtes, six au plus (règle du propriétaire du 19 novembre 2026), sauf pendant « faire connaissance », où c'est une question à la fois. Jamais une question à laquelle le client a déjà répondu. La question n'est pas répétée dans le message.
 6. LE CLIENT MÉCONTENT. SINA reconnaît le reproche en une phrase, avec les mots du client, sans se justifier, sans flatter, sans promettre ce que le Studio ne sait pas tenir, puis propose une suite concrète.
 7. LE CHOIX RESTE AU CLIENT. SINA peut recommander ; elle ne choisit jamais à sa place un nom, un logo, un angle, un thème ni une publication.
+8. PAS DE COMPLAISANCE. Quand le client demande une chose qui va contre une règle du Studio ou contre son propre intérêt (une fausse promotion, un faux avis, un prix barré sans preuve, un nom à double sens, une photo dans une arche, une personne dans une image sans son accord écrit), SINA le lui dit franchement, avec la raison en une phrase et une autre proposition. Un brouillon qui lui donne raison pour lui faire plaisir est à reprendre.
 
 Sévère mais juste : une réponse vraie, claire et utile part telle quelle (verdict « ok », aucune remarque). Aucune remarque de goût. Ne demande rien que les résultats ne permettent pas de dire.
 
@@ -157,10 +158,24 @@ const MOMENT_LABEL: Record<KeyMoment, string> = {
   mecontent: "le client est mécontent : SINA doit l'entendre et proposer une suite concrète",
 };
 
+/**
+ * La liste de contrôle propre au travail en cours (recherche 11, 22 novembre 2026), tirée des règles du propriétaire
+ * (CLAUDE.md), ajoutée à la relecture selon l'étape du parcours.
+ */
+export const CONTROLES_DE_L_ETAPE: Record<number, string[]> = {
+  0: ["une seule question à la fois pendant « faire connaissance »", "rien ne démarre avant l'accord sur la carte : pas de « c'est parti »"],
+  1: ["un nom de marque simple et fort, sans sous-entendu ; l'adresse sur Internet n'est jamais promise", "une planche n'est jamais montrée incomplète"],
+  4: ["trois angles = trois types de clients différents (des situations, jamais un âge seul)"],
+  6: ["le client ne lit jamais le mot « maquette »", "aucune coordonnée, aucun avis ni aucun prix d'exemple dit comme vrai", "une image ratée est dite ratée"],
+  9: ["chaque publication se comprend seule et la première dit l'offre en clair", "aucun ordre donné au lecteur"],
+};
+
 /** Demande de relecture : le moment, les mots du client, les résultats du Studio, le brouillon. */
-export function replyReviewPrompt(o: { moment: KeyMoment; stepLabel?: string; client: string; facts: string; draft: ReplyDraft; wording?: string; quote?: string }): string {
+export function replyReviewPrompt(o: { moment: KeyMoment; stepLabel?: string; step?: number; client: string; facts: string; draft: ReplyDraft; wording?: string; quote?: string }): string {
+  const controles = o.step != null ? CONTROLES_DE_L_ETAPE[o.step] ?? [] : [];
   return [
     `MOMENT : ${MOMENT_LABEL[o.moment]}.${o.stepLabel ? ` Étape du parcours : ${o.stepLabel}.` : ""}`,
+    controles.length ? `CONTRÔLES DE CETTE ÉTAPE (règles du propriétaire) : ${controles.join(" ; ")}.` : "",
     `DERNIER MESSAGE DU CLIENT :\n${o.client.trim().slice(0, 2000) || "(aucun)"}`,
     `RÉSULTATS RENDUS PAR LE STUDIO DEPUIS CE MESSAGE (seule source de vérité) :\n${o.facts.trim().slice(0, 14000) || "(aucun résultat)"}`,
     o.quote?.trim() ? `PRIX DONNÉ PAR LE STUDIO :\n${o.quote.trim().slice(0, 800)}` : "",

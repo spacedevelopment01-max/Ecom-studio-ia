@@ -600,7 +600,8 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
   // Budget des réponses, plus le reste d'un accord donné sur la carte dans cette demande (pour en rendre compte).
   const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);
-  return withTrace({ jobId, projectId: r.project_id, step: "syna", costCapMicro: cap }, () => llmJson(call, StepSchema));
+  // L'étape du parcours dans la trace : le coût de SINA se lit étape par étape (recherche 11, point 1).
+  return withTrace({ jobId, projectId: r.project_id, step: `syna:etape-${currentStep(journeyOf(r.conversation_id))}`, costCapMicro: cap }, () => llmJson(call, StepSchema));
 }
 
 /**
@@ -620,7 +621,7 @@ async function reviewedReply(user: User, r: SynaRun, jobId: string, step: number
     const wording = r.project_id ? (() => { try { return wordingPromptLine(loadWordingRules(r.project_id!)); } catch { return ""; } })() : "";
     const call: LlmCall = {
       task: "quality_control", userId: user.id, projectId: r.project_id, jobId, system: REPLY_REVIEW_SYSTEM, promptKey: "syna-reply-review-1",
-      prompt: replyReviewPrompt({ moment, stepLabel: JOURNEY_STEPS.find((s) => s.n === n)?.fr, client: String(history[lastUser]?.content?.text ?? ""), facts: serialize(history.slice(lastUser + 1)), draft, wording, quote: await stepQuote(user, r) }),
+      prompt: replyReviewPrompt({ moment, step: n, stepLabel: JOURNEY_STEPS.find((s) => s.n === n)?.fr, client: String(history[lastUser]?.content?.text ?? ""), facts: serialize(history.slice(lastUser + 1)), draft, wording, quote: await stepQuote(user, r) }),
       maxTokens: 3000, maxOutputTokens: 6000, usageKey: `syna:${r.id}:${step}:relecture`, routing: { difficulty: "standard", prefer: { ...modelFor(0)!, effort: "medium" } },
     };
     const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);
