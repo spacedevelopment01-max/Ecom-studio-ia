@@ -50,7 +50,7 @@ const companyTool: AgentTool<{ fields?: Record<string, string | undefined>; late
     const refused = [...(a.later ?? []).filter((k) => !postponed.includes(k as any)), ...(a.none ?? []).filter((k) => !declined.includes(k as any))];
     return {
       ok: !refused.length,
-      summary: L(`${[Object.keys(a.fields ?? {}).length ? `Coordonnées enregistrées : ${Object.keys(a.fields ?? {}).map(label).join(", ")}` : "", postponed.length ? `à donner plus tard : ${postponed.map(label).join(", ")}` : "", declined.length ? `pas sur le site (ton choix) : ${declined.map(label).join(", ")}` : "", discreet].filter(Boolean).join(" ; ").replace(/^./, (c) => c.toUpperCase()) || "Rien d'enregistré"}${refused.length ? ` ; impossible (obligatoire pour le site) : ${refused.map(label).join(", ")}` : ""}.`, "Company details saved."), hint: "Rappelle activity.plan pour mettre la carte à jour.",
+      summary: L(`${[Object.keys(a.fields ?? {}).length ? `Coordonnées enregistrées : ${Object.keys(a.fields ?? {}).map(label).join(", ")}` : "", postponed.length ? `à donner plus tard : ${postponed.map(label).join(", ")}` : "", declined.length ? `pas sur le site (ton choix) : ${declined.map(label).join(", ")}` : "", discreet].filter(Boolean).join(" ; ").replace(/^./, (c) => c.toUpperCase()) || "Rien d'enregistré"}${refused.length ? ` ; impossible (obligatoire pour le site) : ${refused.map(label).join(", ")}` : ""}.`, "Company details saved."),
       changes: [...Object.entries(a.fields ?? {}).filter((e): e is [string, string] => typeof e[1] === "string").map(([k, v]) => ({ module: "activité", object: COMPANY_FIELDS.find((f) => f.key === k)!.label, summary: v, after: saved?.[k as keyof typeof saved] ?? null, verified: saved?.[k as keyof typeof saved] === v.trim() })),
         ...(typeof a.addressDiscreet === "boolean" ? [{ module: "activité", object: L("Adresse sur le site", "Address on the site"), summary: discreet, after: saved?.addressDiscreet ?? null, verified: saved?.addressDiscreet === a.addressDiscreet }] : [])],
     };
@@ -71,5 +71,23 @@ const validateTool: AgentTool<Record<string, never>> = {
     return { ok: true, summary: L("Activité complète validée. Étape 5 terminée. Prochaine étape : ton site.", "Activity validated."), changes: [{ module: "activité", object: L("plan de l'activité", "activity plan"), summary: L("validé par le client", "validated"), verified: true }] };
   },
 };
+
+/** Les enregistrements gratuits de l'étape 5 : chacun remet la carte « Ton activité » à jour, sans rappel de activity.plan. */
+export const ECRITURES_DE_L_ACTIVITE = new Set(["activity.company", "catalogue.create", "catalogue.update", "services.profile", "shop.offers", "prix.preuve"]);
+
+/**
+ * Après un enregistrement à l'étape 5 : la carte se met à jour seule (gratuit) et ce qui manque encore est rendu en une
+ * ligne (audit de la conversation du 22 novembre 2026 : deux ou trois réflexions par réponse du client). null hors de
+ * l'étape, ou quand la carte n'a pas encore été montrée.
+ */
+export function carteActiviteAJour(projectId: string, conversationId: string): string | null {
+  const j = journeyOf(conversationId);
+  if (j.steps[4]?.status !== "done" || j.steps[5]?.status === "done" || !j.activity) return null;
+  const plan = activityPlan(projectId, j), gaps = activityGaps(plan);
+  updateJourney(conversationId, (x) => { x.activity = plan; setStep(x, 5, gaps.length ? "doing" : "review"); });
+  return gaps.length
+    ? `Carte « Ton activité » mise à jour. Encore à compléter : ${plan.missing.map((m) => `[${m.key}${m.required ? "" : ", facultatif"}] ${m.question}`).join(" ; ")}.`
+    : "Carte « Ton activité » mise à jour : rien ne manque. Demande-lui s'il valide (activity.validate).";
+}
 
 export const activityTools: AgentTool[] = [planTool, companyTool, validateTool];

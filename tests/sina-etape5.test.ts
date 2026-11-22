@@ -80,6 +80,12 @@ describe("SINA — étape 5 : l'activité complète", async () => {
     await call("catalogue.create", ctx, { title: "Confiture d'abricot", price: 7.9 });
     await call("catalogue.create", ctx, { title: "Coffret 3 pots", price: 22 });
     expect(listProducts(pid).map((x) => x.data.title)).toEqual(["Confiture d'abricot", "Coffret 3 pots"]);
+    // Chaque enregistrement remet la carte à jour tout seul (22 novembre 2026) : plus besoin de rappeler activity.plan.
+    const { carteActiviteAJour, ECRITURES_DE_L_ACTIVITE } = await import("@/lib/syna-agent/tools/activity");
+    expect(carteActiviteAJour(pid, cid)).toMatch(/Carte « Ton activité » mise à jour : rien ne manque/);
+    expect(J.journeyOf(cid).steps[5].status).toBe("review");
+    expect([...ECRITURES_DE_L_ACTIVITE]).toEqual(expect.arrayContaining(["activity.company", "catalogue.create", "services.profile", "shop.offers", "prix.preuve"]));
+    expect(SYNA_SYSTEM).toMatch(/client\.wording, et à l'activité : activity\.company, catalogue\.create/);
     // 4) Plan complet : la carte le montre, le client valide ; l'étape 6 s'ouvre.
     const r2 = await call("activity.plan", ctx, {});
     expect(r2.summary).toMatch(/Plan de l'activité complet/);

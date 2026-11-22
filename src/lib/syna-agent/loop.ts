@@ -44,6 +44,7 @@ import { SYNA_SYSTEM } from "./prompt";
 import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
 import { anglesViewOf } from "./angles";
 import { sinaModels } from "./models";
+import { carteActiviteAJour, ECRITURES_DE_L_ACTIVITE } from "./tools/activity";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
 import { chosenRoute } from "./logos";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
@@ -382,6 +383,8 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
   // Après une validation réussie et confirmée par le parcours relu, le Studio pose le verrou lui-même.
   if (!locked) { try { apresValidation(r.conversation_id, t.name, res); } catch { /* registre illisible : rien n'est verrouillé */ } }
   if (res.changes?.length) recordChanges(r.conversation_id, r.id, t.name, res.changes);
+  // Étape 5 : un enregistrement réussi remet la carte « Ton activité » à jour et dit ce qui manque encore (gratuit).
+  if (res.ok && r.project_id && ECRITURES_DE_L_ACTIVITE.has(t.name)) { try { const carte = carteActiviteAJour(r.project_id, r.conversation_id); if (carte) res = { ...res, hint: [res.hint, carte].filter(Boolean).join(" ") }; } catch { /* la carte se refait avec activity.plan */ } }
   // Un travail payant lancé : noté avec son plafond (prix probable mesuré, coût par travail accepté).
   if (t.estimate && res.ok && res.jobs?.length) { try { noterTravail(t.name, res.jobs, { userId: r.user_id, projectId: r.project_id, conversationId: r.conversation_id }); } catch { /* le carnet ne bloque jamais un travail */ } }
   addMessage(r.conversation_id, "tool", { key, tool: t.name, args, ok: res.ok, summary: res.summary, ...(res.hint ? { hint: res.hint } : {}), ...(res.internal ? { internal: true } : {}), data: clip(res.data, t.name === "custom.section" ? 32000 : 6000), changes: res.changes, jobs: res.jobs, ambiguous: res.ambiguous }, r.id);
