@@ -271,7 +271,8 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
   const soon = all<{ id: string }>("SELECT id FROM posts WHERE plan_id = ? AND media = '[]' AND status IN ('planned','draft','review') AND scheduled_at > ? AND scheduled_at < ? ORDER BY scheduled_at LIMIT 15", autoPlanId(p.id), at, at + c.produceDays * 24 * HOUR).map((r) => r.id);
   if (soon.length) {
     // Plafond de la semaine : dépensé + déjà engagé par une tâche de création IA encore en attente (jamais deux fois).
-    const engaged = all<{ payload: string }>("SELECT payload FROM jobs WHERE project_id = ? AND type = 'social.v2.produce' AND status IN ('queued','running') AND created_at > ?", p.id, at - 7 * 24 * HOUR).reduce((t, j) => t + (Number(JSON.parse(j.payload || "{}").approvedEstimateMicro) || 0), 0);
+    // Une tâche du pilote déjà inscrite dans le journal y est déjà comptée (spentThisWeek) : jamais deux fois.
+    const engaged = all<{ id: string; payload: string }>("SELECT id, payload FROM jobs WHERE project_id = ? AND type = 'social.v2.produce' AND status IN ('queued','running') AND created_at > ? AND id NOT IN (SELECT COALESCE(CASE WHEN json_valid(detail) THEN json_extract(detail, '$.jobId') END, '') FROM social_autopilot_log WHERE project_id = ? AND action = 'paid_job' AND json_valid(detail))", p.id, at - 7 * 24 * HOUR, p.id).reduce((t, j) => t + (Number(JSON.parse(j.payload || "{}").approvedEstimateMicro) || 0), 0);
     const left = Math.round(c.paidCapEurWeek * 1_000_000) - spentThisWeek(p.id, at) - engaged;
     // Visuels par l'IA : seulement si le client les a choisis ET a fixé un plafond par semaine.
     const paidWanted = c.visual !== "free" && c.paidCapEurWeek > 0;
@@ -287,9 +288,12 @@ export async function runAutopilot(p: Project, deps: SocialDeps, at = now()): Pr
     const est = paidWanted && deps.aiActive ? estimateProduction(p, soon, deps, { allowPaid: true, aiImages: "aiImages" in vp ? vp.aiImages : undefined }) : null;
     if (est && est.paid > 0 && est.estimateMicro <= left) {
       // Payant, dans le plafond consenti : par la tâche de production existante (réservation atomique du budget).
-      const job = enqueue({ userId: p.userId, projectId: p.id, type: "social.v2.produce", label: L("Pilote : visuels des prochains jours", "Autopilot: upcoming visuals"), payload: { projectId: p.id, ids: soon, allowPaid: true, maxCostEur: left / 1_000_000, approvedEstimateMicro: est.estimateMicro, aiBackground: false, aiImages: "aiImages" in vp ? vp.aiImages : null }, idempotencyKey: `autopilot:${p.id}:${soon.join(",").slice(0, 200)}` });
+      const job = enqueue({ userId: p.userId, projectId: p.id, type: "social.v2.produce", label: L("Pilote : visuels des prochains jours", "Autopilot: upcoming visuals"), payload: { projectId: p.id, ids: soon, allowPaid: true, maxCostEur: left / 1_000_000, approvedEstimateMicro: est.estimateMicro, aiBackground: false, aiImages: "aiImages" in vp ? vp.aiImages : null, pilote: true }, idempotencyKey: `autopilot:${p.id}:${soon.join(",").slice(0, 200)}` });
       out.paidJob = job.id;
-      logAutopilot(p.id, "paid_job", { jobId: job.id, posts: soon.length, estimateMicro: est.estimateMicro });
+      // Tâche déjà lancée à un passage précédent (même clé) : son estimation n'est pas réinscrite, sinon le plafond de la
+      // semaine paraissait atteint sans que rien n'ait été payé (audit du 22 novembre 2026).
+      if (!one("SELECT 1 FROM social_autopilot_log WHERE project_id = ? AND action = 'paid_job' AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.jobId') END = ?", p.id, job.id))
+        logAutopilot(p.id, "paid_job", { jobId: job.id, posts: soon.length, estimateMicro: est.estimateMicro });
     } else {
       if (est && est.paid > 0) out.notes.push(`plafond de la semaine atteint (${budgetPctText(p.userId, Math.round(c.paidCapEurWeek * 1_000_000), p.id)}) : images en attente de l'IA`);
       const r = await produceBatch(p, soon, deps, { allowPaid: false, maxCostEur: 0, batchSize: 15 });

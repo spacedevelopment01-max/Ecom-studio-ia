@@ -61,6 +61,17 @@ const differe = async <T>(fn: () => Promise<T>): Promise<T> => {
 };
 /** Les tâches de fond servies en différé (lu par les essais). */
 export const TACHES_EN_DIFFERE = ["syna.brand", "syna.angles", "syna.site", "syna.posts.plan"] as const;
+/**
+ * Les visuels du pilote des publications (« Ma communication automatique ») : personne ne les attend devant l'écran,
+ * ils servent dans un à trois jours. Leur concept et leurs relectures partent en différé, à moitié prix (audit du
+ * 22 novembre 2026), avec une patience d'une heure pour la tâche entière (un lot de 15 visuels fait une trentaine
+ * d'appels) ; au-delà, le reste part en direct. Les visuels que le client lance lui-même restent en direct.
+ */
+export const PATIENCE_PILOTE_MS = 60 * 60_000;
+const differePilote = async <T>(fn: () => Promise<T>): Promise<T> => {
+  const [{ enDiffere }, { deferredOn }] = await Promise.all([import("../src/lib/ai/llm"), import("../src/lib/syna-agent/brand-chain")]);
+  return deferredOn() ? enDiffere(fn, { patienceMs: PATIENCE_PILOTE_MS }) : fn();
+};
 
 export const handlers: Record<string, Handler> = {
   /** SYNA agent (#492) : une exécution reprenable du fil (raisonnement, outils, vérification). */
@@ -443,7 +454,7 @@ export const handlers: Record<string, Handler> = {
    * vérification anti-doublon côté plateforme, puis publication.
    */
   /** Social V2 — niveau 2 : production d'un lot (payante seulement avec l'estimation acceptée, dans le plafond). */
-  "social.v2.produce": async (ctx) => {
+  "social.v2.produce": async (ctx) => (ctx.payload.pilote ? differePilote : <T,>(f: () => Promise<T>) => f())(async () => {
     const { produceBatch } = await import("../src/lib/social-v2/production");
     const { realSocialDeps } = await import("../src/lib/social-v2/deps");
     const { aiActiveFor } = await import("../src/lib/ai/access");
@@ -453,7 +464,7 @@ export const handlers: Record<string, Handler> = {
     if(!result.produced&&!result.failed&&!ctx.payload.replace){const{preservedApprovedDelivery}=await import('../src/lib/social-v2/preserved-delivery');const preserved=await preservedApprovedDelivery(p,ctx.payload.ids??[]);if(preserved)return{...result,alreadySatisfied:preserved.length,preserved,unchanged:true,partial:false,notice:L('Publications déjà approuvées : versions conservées sans nouvelle production.','Already approved posts: versions kept without new production.')};}
     if(!result.produced)throw new UserFacingError(L("Aucune publication complète produite : ","No complete post produced: ")+(result.notes.join(" ; ")||L("aucun brouillon en attente n’est disponible ; les acquis restent conservés.","no waiting draft is available; acquired work is kept.")));
     return {...result,partial:!!(result.failed||result.skipped)};
-  },
+  }),
   "post.publish": async (ctx) => {
     // Social Engine V2 : prise en charge atomique, version approuvée, journal des tentatives, état incertain en cas
     // de réponse perdue (jamais de nouvel envoi à l'aveugle). Le résultat est enregistré sur la publication.
