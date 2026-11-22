@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — calendrier et publications (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<link rel="stylesheet" href="plein.css">
+<script src="mode.js"></script>
+</head>
+<body>
+<div class="app m-work">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">SILLON <em>· boutique</em></span></div>
+    <nav class="spaces" aria-label="Espaces de travail"><a href="#">Site</a><a href="#">Catalogue</a><a href="#">Marque</a><a href="#">Images</a><a href="#">Vidéos</a><a href="#" aria-current="page">Diffusion</a><a href="#">Projet</a></nav>
+    <div class="meter"><div class="budget"><span>Budget IA du mois · <b>51 %</b> restant</span><div class="gauge"><i style="width:51%"></i></div></div><div class="avatar">TL</div></div>
+  </header>
+  <div class="main">
+    <section class="convo" aria-label="Conversation avec SYNA">
+      <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem">mémoire du projet · à jour</span></div></div>
+      <div class="thread">
+        <div class="msg-user">Prépare la semaine prochaine : trois publications Instagram autour de la finition Cuivre.</div>
+        <article class="card"><div class="card-h"><h4>3 brouillons enregistrés</h4><span class="state s-verified">Vérifié</span></div>
+          <ol class="steps">
+            <li class="step"><span class="n">L</span><div><div class="t">Lundi 3 · « Le cuivre prend la route »</div><div class="d">Image acquise réemployée · aucun achat</div></div><span class="cost">0 %</span></li>
+            <li class="step"><span class="n">M</span><div><div class="t">Mercredi 5 · « Un détail, un geste »</div><div class="d">Image créée · devis accepté 2 %, débité 2 %</div></div><span class="cost">2 %</span></li>
+            <li class="step"><span class="n">V</span><div><div class="t">Vendredi 7 · « Halte au bord du lac »</div><div class="d">Image acquise réemployée</div></div><span class="cost">0 %</span></li>
+          </ol>
+          <div class="card-f"><span class="note">Rien n'est publié : c'est vous qui validez.</span><span></span></div>
+        </article>
+        <div class="msg-syna"><span class="who">Syna</span><p>Je ne publie pas moi-même : la publication réelle se valide dans le calendrier, une par une ou en lot, une fois vos comptes connectés.</p></div>
+      </div>
+      <div class="composer"><div class="ctx"><span class="chip sel">Sélection : semaine du 3 nov. <button aria-label="Retirer">×</button></span></div><div class="field"><span></span><textarea rows="1" placeholder="Demandez à Syna…"></textarea><button class="send" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div></div>
+    </section>
+    <section class="work" aria-label="Calendrier">
+      <div class="work-bar"><div class="left"><span class="crumb">Calendrier<small>3 → 9 novembre</small></span><div class="seg" role="group" aria-label="Vue"><button aria-pressed="false">Jour</button><button aria-pressed="true">Semaine</button><button aria-pressed="false">Mois</button></div></div><div class="right"><button class="btn small">Publicités</button><button class="btn small">Comptes connectés</button><button class="btn small primary">Valider la semaine…</button></div></div>
+      <div class="stage"><div class="wide stack">
+        <div class="banner warn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg><div><b>Instagram n'est pas encore connecté.</b><p>Les brouillons sont prêts. Sans connexion, vous pourrez les télécharger pour les publier vous-même.</p></div><a class="btn small" href="#">Connecter</a></div>
+        <div class="cal">
+          <div class="dh">Lun<b>3</b></div><div class="dh">Mar<b>4</b></div><div class="dh">Mer<b>5</b></div><div class="dh">Jeu<b>6</b></div><div class="dh">Ven<b>7</b></div><div class="dh">Sam<b>8</b></div><div class="dh">Dim<b>9</b></div>
+          <div class="col"><div class="post"><img src="img/sillon-cuivre.jpg" alt=""><div class="pm"><span class="net">INSTAGRAM · 18:00</span><span class="state s-draft">Brouillon</span></div></div></div>
+          <div class="col"></div>
+          <div class="col"><div class="post"><img src="img/sillon-detoure.jpg" alt=""><div class="pm"><span class="net">INSTAGRAM · 12:30</span><span class="state s-draft">Brouillon</span></div></div></div>
+          <div class="col"></div>
+          <div class="col"><div class="post"><img src="img/sillon-lac.jpg" alt=""><div class="pm"><span class="net">INSTAGRAM · 18:00</span><span class="state s-draft">Brouillon</span></div></div></div>
+          <div class="col"><div class="post"><div class="pm"><span class="net">LINKEDIN · 09:00</span><span class="state s-na">À publier vous-même</span></div></div></div>
+          <div class="col"></div>
+        </div>
+      </div></div>
+    </section>
+  </div>
+  <nav class="tabbar" aria-label="Navigation mobile"><a href="#">Syna</a><a href="#" aria-current="page">Calendrier</a><a href="#">Espaces</a><a href="#">Suivi</a></nav>
+</div>
+<script>document.querySelectorAll(".thread").forEach(t=>t.scrollTop=t.scrollHeight)</script>
+</body>
+</html>

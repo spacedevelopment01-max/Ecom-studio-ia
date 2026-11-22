@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — logos et images comparés (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<link rel="stylesheet" href="plein.css">
+<script src="mode.js"></script>
+<style>
+.logo-art { width: 100%; height: 100%; display: grid; place-items: center; background: #F6F3EE; color: #2A2420; }
+.logo-art.dark { background: #1E1B19; color: #E9DCCB; }
+.logo-art .w { font: 600 34px/1 var(--f-ui); letter-spacing: .34em; padding-left: .34em; }
+.logo-art .s { font: italic 400 46px/1 var(--f-voice); }
+.logo-art .m { display: grid; place-items: center; gap: 10px; }
+.logo-art .m i { width: 52px; height: 52px; border: 2px solid currentColor; border-radius: 50%; position: relative; }
+.logo-art .m i::after { content: ""; position: absolute; left: 50%; top: 8px; bottom: 8px; width: 2px; background: currentColor; transform: translateX(-50%); }
+.logo-art .m span { font: 600 18px/1 var(--f-ui); letter-spacing: .3em; }
+.bank { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.bank figure { margin: 0; position: relative; border-radius: 8px; overflow: hidden; }
+.bank img { aspect-ratio: 1; object-fit: cover; width: 100%; }
+.bank figcaption { position: absolute; left: 6px; bottom: 6px; background: rgba(255,255,255,.92); color: #222; border-radius: 4px; padding: 1px 6px; font: 500 10.5px var(--f-mono); }
+.bank .gen { display: grid; place-items: center; aspect-ratio: 1; border: 1px dashed var(--rule-2); border-radius: 8px; color: var(--muted); font-size: 12px; text-align: center; padding: 10px; }
+@media (max-width: 760px) { .bank { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+</head>
+<body>
+<div class="app m-work">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">SILLON <em>· boutique</em></span></div>
+    <nav class="spaces" aria-label="Espaces de travail"><a href="#">Site</a><a href="#">Catalogue</a><a href="#" aria-current="page">Marque</a><a href="#">Images</a><a href="#">Vidéos</a><a href="#">Diffusion</a><a href="#">Projet</a></nav>
+    <div class="meter"><div class="budget"><span>Budget IA du mois · <b>54 %</b> restant</span><div class="gauge"><i style="width:54%"></i></div></div><div class="avatar">TL</div></div>
+  </header>
+  <div class="main">
+    <section class="convo" aria-label="Conversation avec SYNA">
+      <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem">mémoire du projet · à jour</span></div></div>
+      <div class="thread">
+        <article class="card"><div class="card-h"><h4>Trois propositions de logo</h4><span class="state s-verified">Vérifié</span></div>
+          <ol class="steps">
+            <li class="step"><span class="n">A</span><div><div class="t">Mot-symbole espacé</div><div class="d">Qwen-Image 3.0 Pro · contrôle : orthographe exacte</div></div><span class="state s-verified">Conforme</span></li>
+            <li class="step"><span class="n">B</span><div><div class="t">Signature italique</div><div class="d">Qwen-Image 3.0 Pro · contrôle : lettre « L » déformée → reprise par OpenAI</div></div><span class="state s-confirmed">Reprise</span></li>
+            <li class="step"><span class="n">C</span><div><div class="t">Sillon et cercle</div><div class="d">Qwen-Image 3.0 Pro · contrôle : conforme</div></div><span class="state s-verified">Conforme</span></li>
+          </ol>
+          <div class="card-f"><span class="note">Coût réel débité : 8 % du budget (devis : 8 %)</span><span></span></div>
+        </article>
+        <div class="msg-syna"><span class="who">Syna</span><p>Je recommande <strong>C</strong> : il reste lisible en petit (favicon, étiquette) et reprend le geste du sillon. Choisir un logo est gratuit ; l'appliquer à toute la marque se fait dans une seconde étape, avec l'ancienne identité sauvegardée.</p></div>
+      </div>
+      <div class="composer"><div class="ctx"><span class="chip sel">Sélection : proposition C <button aria-label="Retirer">×</button></span></div><div class="field"><span></span><textarea rows="1" placeholder="Demandez à Syna…"></textarea><button class="send" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div></div>
+    </section>
+    <section class="work" aria-label="Marque et images">
+      <div class="work-bar"><div class="left"><span class="crumb">Logo<small>3 propositions · série du 31/10</small></span><div class="seg" role="group" aria-label="Fond"><button aria-pressed="true">Clair</button><button aria-pressed="false">Sombre</button><button aria-pressed="false">Petit</button></div></div><div class="right"><button class="btn small">Importer mon logo</button><button class="btn small">Anciennes séries</button></div></div>
+      <div class="stage"><div class="wide stack">
+        <div class="compare">
+          <div class="opt"><figure><div class="logo-art"><span class="w">SILLON</span></div></figure><div class="meta"><span>A · mot-symbole</span><span class="state s-verified">Conforme</span></div></div>
+          <div class="opt"><figure><div class="logo-art dark"><span class="s">Sillon</span></div></figure><div class="meta"><span>B · reprise OpenAI</span><span class="state s-confirmed">Reprise</span></div></div>
+          <div class="opt chosen"><figure><div class="logo-art"><span class="m"><i></i><span>SILLON</span></span></div></figure><div class="meta"><span>C · recommandé</span><button class="btn primary small">Choisir C</button></div></div>
+        </div>
+        <div class="panel"><div class="panel-h"><h3>Images du projet</h3><span class="mini">12 images · 4 créées par l'IA · aucune personne</span></div>
+          <div style="padding:14px" class="bank">
+            <figure><img src="img/sillon-hero.jpg" alt=""><figcaption>IA · en-tête</figcaption></figure>
+            <figure><img src="img/sillon-lac.jpg" alt=""><figcaption>IA · lac</figcaption></figure>
+            <figure><img src="img/sillon-pierre.jpg" alt=""><figcaption>IA · pierre</figcaption></figure>
+            <div class="gen">Nouvelle image : décrivez-la à Syna.<br>Devis affiché avant toute création.</div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+  </div>
+  <nav class="tabbar" aria-label="Navigation mobile"><a href="#">Syna</a><a href="#" aria-current="page">Marque</a><a href="#">Espaces</a><a href="#">Suivi</a></nav>
+</div>
+<script>document.querySelectorAll(".thread").forEach(t=>t.scrollTop=t.scrollHeight)</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — direction Cockpit</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Direction « Cockpit » : sombre d'abord, précision d'instrument. Bleu signal, lecture des états en mono. */
+:root {
+  --bg: #090D16; --panel: #0F1522; --panel-2: #141B2B; --line: #1F2738; --line-2: #2A3448;
+  --text: #E6EAF2; --dim: #8A93A6; --faint: #5D667A;
+  --blue: #4D7CFF; --blue-2: #A6BCFF; --blue-soft: #15204A;
+  --ok: #46C89A; --warn: #E7B04B; --bad: #FF6B6B;
+  --f-ui: "Instrument Sans", "Helvetica Neue", Arial, sans-serif; --f-mono: "JetBrains Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 13.5px/1.5 var(--f-ui); -webkit-font-smoothing: antialiased; }
+button, textarea { font: inherit; color: inherit; }
+.app { display: grid; grid-template-columns: 64px minmax(0, 1fr) 400px; grid-template-rows: 48px minmax(0, 1fr) 132px; height: 100vh; min-height: 640px; }
+.rail { grid-row: 1 / 4; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 0; background: var(--bg); }
+.rail .logo { font: 700 12px/1 var(--f-mono); color: var(--blue-2); letter-spacing: .1em; margin: 4px 0 16px; }
+.rail a { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 10px; color: var(--dim); text-decoration: none; font: 500 9.5px/1 var(--f-ui); }
+.rail a svg { width: 20px; height: 20px; }
+.rail a[aria-current] { background: var(--panel-2); color: var(--text); box-shadow: inset 2px 0 0 var(--blue); }
+.bar { grid-column: 2 / 4; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid var(--line); }
+.bar .path { font: 500 12px var(--f-mono); color: var(--dim); }
+.bar .path b { color: var(--text); font-weight: 500; }
+.readout { display: flex; gap: 18px; font: 500 11.5px var(--f-mono); color: var(--dim); }
+.readout b { color: var(--text); font-weight: 500; }
+.readout .g { display: inline-block; width: 64px; height: 4px; background: var(--line-2); border-radius: 2px; vertical-align: middle; margin-left: 6px; overflow: hidden; }
+.readout .g i { display: block; height: 100%; width: 62%; background: var(--blue); }
+.center { grid-column: 2; grid-row: 2; display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+.tools { display: flex; gap: 8px; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--line); }
+.pill { height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line-2); background: var(--panel); font: 500 12px var(--f-ui); color: var(--dim); display: inline-flex; align-items: center; }
+.pill.on { color: var(--text); border-color: var(--blue); }
+.tools .sp { flex: 1; }
+.canvas { overflow: hidden; padding: 22px; background: radial-gradient(circle at 50% 0, #111a2e, var(--bg) 70%); display: grid; place-items: start center; }
+.frame { width: min(100%, 900px); border-radius: 10px; overflow: hidden; border: 1px solid var(--line-2); background: #fff; color: #1d1a17; }
+.frame .nav { display: flex; justify-content: space-between; padding: 12px 24px; font: 600 11px var(--f-ui); letter-spacing: .14em; text-transform: uppercase; }
+.hero { position: relative; margin: 0 16px; aspect-ratio: 16/7.4; overflow: hidden; border-radius: 4px; }
+.hero img { width: 100%; height: 100%; object-fit: cover; }
+.hero .t { position: absolute; left: 28px; bottom: 24px; color: #fff; font: 600 32px/1.05 var(--f-ui); letter-spacing: -.02em; max-width: 380px; }
+.hero .box { position: absolute; inset: 0; border: 1.5px solid var(--blue); }
+.hero .corner { position: absolute; width: 10px; height: 10px; border: 2px solid var(--blue); background: #fff; }
+.hero .c1 { left: -5px; top: -5px } .hero .c2 { right: -5px; top: -5px } .hero .c3 { left: -5px; bottom: -5px } .hero .c4 { right: -5px; bottom: -5px }
+.hero .lab { position: absolute; left: 0; top: -1px; transform: translateY(-100%); background: var(--blue); color: #fff; font: 500 11px var(--f-mono); padding: 4px 8px; border-radius: 4px 4px 0 0; }
+.frame .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px 24px; font-size: 13px; color: #5a534c; }
+.frame .row h4 { margin: 0 0 6px; color: #1d1a17; font: 600 18px var(--f-ui); }
+.syna { grid-column: 3; grid-row: 2 / 4; border-left: 1px solid var(--line); background: var(--panel); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; }
+.syna-h { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+.syna-h .id { font: 600 13px var(--f-mono); letter-spacing: .08em; }
+.syna-h .id::after { content: "_"; color: var(--blue); animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.syna-h .st { font: 500 11px var(--f-mono); color: var(--warn); }
+.log { overflow: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+.u { align-self: flex-end; background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 10px; padding: 8px 12px; max-width: 88%; }
+.s { font-size: 14px; line-height: 1.55; color: var(--text); }
+.s .k { font: 500 10.5px var(--f-mono); color: var(--blue-2); letter-spacing: .08em; display: block; margin-bottom: 4px; }
+.plan { border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; }
+.plan .h { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--panel-2); font: 600 12.5px var(--f-ui); }
+.tag { font: 500 10px/1.2 var(--f-mono); letter-spacing: .08em; padding: 3px 6px; border-radius: 4px; border: 1px solid currentColor; white-space: nowrap; align-self: start; display: inline-block; flex: none; justify-self: end; }
+.tag.t-p { color: var(--blue-2); } .tag.t-r { color: var(--warn); } .tag.t-v { color: var(--ok); } .tag.t-f { color: var(--bad); }
+.plan .r { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line); font-size: 12.5px; }
+.plan .r .n { font: 500 11px var(--f-mono); color: var(--faint); }
+.plan .r .c { font: 500 11px var(--f-mono); color: var(--dim); }
+.plan .r small { display: block; color: var(--dim); }
+.plan .f { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.btn { height: 30px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line-2); background: none; font-weight: 600; font-size: 12.5px; }
+.btn.p { background: var(--blue); border-color: var(--blue); color: #fff; }
+.comp { padding: 12px 16px 14px; border-top: 1px solid var(--line); }
+.comp .ctx { font: 500 11px var(--f-mono); color: var(--blue-2); margin-bottom: 8px; }
+.comp .box { display: flex; gap: 8px; align-items: center; border: 1px solid var(--line-2); border-radius: 8px; padding: 6px 6px 6px 12px; background: var(--bg); }
+.comp textarea { flex: 1; border: 0; background: none; outline: none; resize: none; height: 22px; color: var(--text); }
+.comp textarea::placeholder { color: var(--faint); }
+.journal { grid-column: 2; grid-row: 3; border-top: 1px solid var(--line); padding: 12px 18px; display: grid; grid-template-rows: auto 1fr; gap: 10px; background: var(--bg); }
+.journal .h { display: flex; justify-content: space-between; font: 500 11px var(--f-mono); color: var(--dim); letter-spacing: .08em; }
+.tl { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+.tl div { position: relative; padding: 18px 10px 0 0; font-size: 12px; color: var(--dim); }
+.tl div::before { content: ""; position: absolute; left: 0; right: 0; top: 6px; height: 2px; background: var(--line-2); }
+.tl div::after { content: ""; position: absolute; left: 0; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line-2); }
+.tl .done::before, .tl .done::after { background: var(--ok); border-color: var(--ok); }
+.tl .now::after { border-color: var(--warn); background: var(--warn); box-shadow: 0 0 0 4px rgba(231,176,75,.18); }
+.tl b { display: block; color: var(--text); font-weight: 600; }
+.mtab { display: none; }
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 48px minmax(0, 1fr) 60px; }
+  .rail, .center, .journal { display: none; }
+  .bar { grid-column: 1; } .readout span:not(:first-child) { display: none; }
+  .syna { grid-column: 1; grid-row: 2; border-left: 0; }
+  .mtab { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); background: var(--bg); }
+  .mtab a { display: grid; place-items: center; font: 500 11px var(--f-mono); color: var(--dim); text-decoration: none; }
+  .mtab a[aria-current] { color: var(--blue-2); box-shadow: inset 0 2px 0 var(--blue); }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="rail" aria-label="Espaces">
+    <span class="logo">E·S</span>
+    <a href="#" aria-current="page" aria-label="Site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></a>
+    <a href="#" aria-label="Catalogue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7l8-4 8 4-8 4z"/><path d="M4 7v10l8 4 8-4V7"/></svg></a>
+    <a href="#" aria-label="Marque"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/></svg></a>
+    <a href="#" aria-label="Images"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/></svg></a>
+    <a href="#" aria-label="Vidéos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2"/></svg></a>
+    <a href="#" aria-label="Diffusion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></a>
+  </nav>
+  <header class="bar">
+    <span class="path">sillon / site / <b>accueil</b> · v12</span>
+    <div class="readout"><span>BUDGET IA <b>62 %</b><i class="g"><i></i></i></span><span>FORFAIT <b>DÉVELOPPER</b></span><span>TÂCHES <b>1 EN COURS</b></span></div>
+  </header>
+  <main class="center">
+    <div class="tools"><span class="pill on">Accueil</span><span class="pill">Fiche produit</span><span class="pill">Panier</span><span class="sp"></span><span class="pill">1440</span><span class="pill">390</span><span class="pill">Historique</span><span class="pill">Exporter</span></div>
+    <div class="canvas">
+      <div class="frame">
+        <div class="nav"><span>Machine · Rituel</span><b>SILLON</b><span>Panier</span></div>
+        <div class="hero"><img src="img/sillon-hero.jpg" alt="Machine SILLON face à la route"><div class="t">L'espresso suit la route.</div><div class="box"></div><i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i><span class="lab">hero.image · sélection</span></div>
+        <div class="row"><div><h4>Un rituel, partout.</h4>Quatre gestes, vingt-cinq secondes d'extraction.</div><div>Livraison offerte dès 100 €. Garantie : [À compléter].</div></div>
+      </div>
+    </div>
+  </main>
+  <aside class="syna" aria-label="SYNA">
+    <div class="syna-h"><span class="id">SYNA</span><span class="st">● EXÉCUTION 1/2</span></div>
+    <div class="log">
+      <div class="u">Mets la photo du lac en haut de l'accueil et ajoute une finition Cuivre à 139 €.</div>
+      <div class="s"><span class="k">ANALYSE</span>Deux actions sans création IA. Je remplace l'image d'en-tête puis j'ajoute la variante en brouillon.</div>
+      <div class="plan">
+        <div class="h">Plan confirmé <span class="tag t-r">EN COURS</span></div>
+        <div class="r"><span class="n">01</span><span>Image d'en-tête → photo du lac<small>retouche exacte · v13</small></span><span class="tag t-v">VÉRIFIÉ</span></div>
+        <div class="r"><span class="n">02</span><span>Variante Cuivre · 139 €<small>brouillon catalogue</small></span><span class="tag t-r">EN COURS</span></div>
+        <div class="f"><button class="btn">Arrêter après l'étape</button><button class="btn p">Voir le résultat</button></div>
+      </div>
+    </div>
+    <div class="comp"><div class="ctx">› contexte : hero.image (accueil)</div><div class="box"><textarea placeholder="Commande ou question pour SYNA…"></textarea><button class="btn p">↵</button></div></div>
+  </aside>
+  <section class="journal" aria-label="Journal d'exécution">
+    <div class="h"><span>JOURNAL D'EXÉCUTION</span><span>14:02:41 · 0 % du budget</span></div>
+    <div class="tl"><div class="done"><b>Proposé</b>14:02:10</div><div class="done"><b>Confirmé</b>14:02:33</div><div class="done"><b>Étape 1 vérifiée</b>capture v13</div><div class="now"><b>Étape 2</b>en cours</div><div><b>Preuve</b>à venir</div></div>
+  </section>
+  <nav class="mtab" aria-label="Navigation mobile"><a href="#">ESPACE</a><a href="#" aria-current="page">SYNA</a><a href="#">JOURNAL</a></nav>
+</div>
+</body>
+</html>

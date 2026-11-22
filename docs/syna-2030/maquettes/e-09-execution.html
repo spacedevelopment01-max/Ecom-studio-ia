@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — exécution longue, échec et reprise (Encre)</title>
+<link rel="stylesheet" href="encre.css">
+<link rel="stylesheet" href="plein.css">
+<script src="mode.js"></script>
+<style>
+.jobs { display: grid; gap: 14px; }
+.job { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 16px; }
+.job img, .job .ph { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; }
+.job .ph { background: var(--wash); }
+.job h4 { margin: 0 0 4px; font: 600 14px var(--f-ui); }
+.job .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.job .progress { margin-top: 8px; }
+@media (max-width: 760px) { .job { grid-template-columns: 48px minmax(0, 1fr); } .job img, .job .ph { width: 48px; height: 48px; } .job > .actions { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<div class="app m-work">
+  <header class="top">
+    <div class="brand"><span class="studio">E-com Studio</span><span class="project">SILLON <em>· boutique</em></span></div>
+    <nav class="spaces" aria-label="Espaces de travail"><a href="#">Site</a><a href="#">Catalogue</a><a href="#">Marque</a><a href="#" aria-current="page">Images</a><a href="#">Vidéos</a><a href="#">Diffusion</a><a href="#">Projet</a></nav>
+    <div class="meter"><div class="budget"><span>Budget IA du mois · <b>50 %</b> restant</span><div class="gauge"><i style="width:50%"></i></div></div><div class="avatar">TL</div></div>
+  </header>
+  <div class="main">
+    <section class="convo" aria-label="Conversation avec SYNA">
+      <div class="convo-head"><div class="syna-mark"><span class="name">Syna</span><span class="mem">2 tâches en cours</span></div></div>
+      <div class="thread">
+        <div class="msg-syna working"><span class="who">Syna · en cours</span><p>Je crée les trois images. Vous pouvez fermer le Studio : je continue, et je vous préviens à la fin.</p></div>
+        <article class="card"><div class="card-h"><h4>3 images · finition Cuivre</h4><span class="state s-running">En cours 2/3</span></div>
+          <ol class="steps">
+            <li class="step"><span class="n">1</span><div><div class="t">Table en pierre, lumière du matin</div><div class="d">Contrôle : produit entier, aucune lettre ajoutée</div></div><span class="state s-verified">Vérifié</span></li>
+            <li class="step"><span class="n">2</span><div><div class="t">Gros plan sur la ceinture cuivrée</div><div class="d">Le fournisseur n'a pas répondu (erreur 503). Résultat incertain : je ne relance pas sans vous.</div></div><span class="state s-failed">Échec</span></li>
+            <li class="step"><span class="n">3</span><div><div class="t">Machine et tasse, fond clair</div><div class="d">Création en cours…</div><div class="progress indet" style="margin-top:8px"><i></i></div></div><span class="state s-running">En cours</span></li>
+          </ol>
+          <div class="card-f"><span class="note">Débité à ce stade : 2 %. Image 2 : non débitée tant que le fournisseur ne confirme pas.</span><div class="actions"><button class="btn ghost small">Arrêter après l'image 3</button><button class="btn small">Relancer l'image 2 · ≈ 2 %</button></div></div>
+        </article>
+      </div>
+      <div class="composer"><div class="field"><span></span><textarea rows="1" placeholder="Demandez à Syna…"></textarea><button class="send" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button></div></div>
+    </section>
+    <section class="work" aria-label="Suivi des tâches">
+      <div class="work-bar"><div class="left"><span class="crumb">Suivi<small>tâches du projet</small></span><div class="seg" role="group"><button aria-pressed="true">En cours</button><button aria-pressed="false">Terminées</button><button aria-pressed="false">Échecs</button></div></div><div class="right"><span class="version">Le Studio peut être fermé : les tâches continuent</span></div></div>
+      <div class="stage"><div class="wide jobs">
+        <div class="panel job"><img src="img/sillon-pierre.jpg" alt=""><div><h4>Images · finition Cuivre</h4><div class="row"><span class="state s-running">En cours 2/3</span><span>démarré 14:10 · environ 1 min restante</span></div><div class="progress"><i style="width:66%"></i></div></div><div class="actions"><button class="btn small">Détails</button></div></div>
+        <div class="panel job"><div class="ph skel"></div><div><h4>Export Shopify · version 13</h4><div class="row"><span class="state s-confirmed">Confirmé</span><span>en attente d'un créneau · position 1</span></div></div><div class="actions"><button class="btn small ghost">Annuler</button></div></div>
+        <div class="panel job"><img src="img/sillon-hero.jpg" alt=""><div><h4>Image d'en-tête · Accueil</h4><div class="row"><span class="state s-verified">Vérifié</span><span>v13 · capture comparée à 14:02 · annulable</span></div></div><div class="actions"><button class="btn small">Voir</button><button class="btn small ghost">Annuler v13</button></div></div>
+        <div class="panel job"><div class="ph"></div><div><h4>Publication Instagram · lundi 18:00</h4><div class="row"><span class="state s-failed">Échec</span><span>compte non connecté · rien n'a été publié</span></div></div><div class="actions"><button class="btn small">Connecter</button></div></div>
+        <div class="panel job"><div class="ph"></div><div><h4>Composition de toutes les pages par prestation</h4><div class="row"><span class="state s-na">Non disponible</span><span>pas encore prise en charge · page d'accueil seulement</span></div></div><div class="actions"><button class="btn small ghost">Pourquoi ?</button></div></div>
+      </div></div>
+    </section>
+  </div>
+  <nav class="tabbar" aria-label="Navigation mobile"><a href="#">Syna</a><a href="#">Aperçu</a><a href="#">Espaces</a><a href="#" aria-current="page">Suivi</a></nav>
+</div>
+<script>document.querySelectorAll(".thread").forEach(t=>t.scrollTop=t.scrollHeight)</script>
+</body>
+</html>

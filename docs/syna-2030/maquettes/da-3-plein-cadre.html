@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYNA — direction Plein cadre</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Direction « Plein cadre » : le résultat occupe tout l'écran, SYNA est une barre de commande et un « point » cobalt
+   qui se pose sur ce dont elle parle. Clair, galerie, photographie d'abord. */
+:root {
+  --white: #FFFFFF; --stone: #F2F3F5; --stone-2: #E6E8EC; --ink: #101114; --ink-2: #4A4E58; --dim: #7A7F8A;
+  --cobalt: #2443D6; --cobalt-deep: #1A33A8; --cobalt-soft: #E8ECFC; --ok: #1E7A50;
+  --f-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; --f-ui: "Onest", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--stone); color: var(--ink); font: 14px/1.5 var(--f-ui); -webkit-font-smoothing: antialiased; }
+button, textarea { font: inherit; color: inherit; }
+.app { position: relative; height: 100vh; min-height: 640px; overflow: hidden; }
+.menu { position: absolute; z-index: 5; left: 20px; top: 18px; display: flex; gap: 6px; align-items: center; background: var(--white); border-radius: 999px; padding: 6px; box-shadow: 0 10px 30px -18px rgba(16,17,20,.4); }
+.menu b { font: 700 15px var(--f-display); padding: 0 10px 0 8px; letter-spacing: -.01em; }
+.menu a { padding: 7px 12px; border-radius: 999px; font-size: 13px; color: var(--ink-2); text-decoration: none; }
+.menu a[aria-current] { background: var(--ink); color: #fff; }
+.right { position: absolute; z-index: 5; right: 20px; top: 18px; display: flex; gap: 8px; }
+.right span { background: var(--white); border-radius: 999px; padding: 8px 14px; font-size: 12.5px; box-shadow: 0 10px 30px -18px rgba(16,17,20,.4); }
+.right span b { color: var(--cobalt); }
+.stage { position: absolute; inset: 0; padding: 76px 40px 140px; display: grid; place-items: center; }
+.site { width: min(100%, 1180px); height: 100%; border-radius: 18px; overflow: hidden; background: #fff; box-shadow: 0 30px 80px -40px rgba(16,17,20,.45); display: grid; grid-template-rows: auto 1fr; }
+.site .nav { display: flex; justify-content: space-between; padding: 14px 28px; font: 600 11px var(--f-ui); letter-spacing: .16em; text-transform: uppercase; }
+.hero { position: relative; margin: 0 16px 16px; border-radius: 10px; overflow: hidden; }
+.hero img { width: 100%; height: 100%; object-fit: cover; }
+.hero h2 { position: absolute; left: 36px; bottom: 34px; margin: 0; color: #fff; font: 700 52px/0.98 var(--f-display); letter-spacing: -.03em; max-width: 520px; }
+.dot { position: absolute; left: 52%; top: 42%; width: 22px; height: 22px; border-radius: 50%; background: var(--cobalt); box-shadow: 0 0 0 6px rgba(36,67,214,.25), 0 0 0 14px rgba(36,67,214,.12); }
+.dot-lab { position: absolute; left: calc(52% + 30px); top: calc(42% - 6px); background: var(--white); border-radius: 10px; padding: 8px 12px; font-size: 13px; box-shadow: 0 10px 30px -14px rgba(16,17,20,.5); }
+.dot-lab small { display: block; color: var(--dim); font-size: 11.5px; }
+.sheet { position: absolute; z-index: 6; right: 40px; bottom: 120px; width: 420px; background: var(--white); border-radius: 20px; box-shadow: 0 30px 70px -30px rgba(16,17,20,.55); padding: 18px; display: grid; gap: 12px; }
+.sheet .who { font: 700 13px var(--f-display); color: var(--cobalt); display: flex; align-items: center; gap: 8px; }
+.sheet .who::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--cobalt); }
+.sheet p { margin: 0; font-size: 14.5px; color: var(--ink); }
+.choice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.choice figure { margin: 0; border-radius: 12px; overflow: hidden; border: 2px solid transparent; position: relative; }
+.choice figure.on { border-color: var(--cobalt); }
+.choice img { aspect-ratio: 4/3; object-fit: cover; width: 100%; display: block; }
+.choice figcaption { position: absolute; left: 8px; bottom: 8px; background: rgba(255,255,255,.92); border-radius: 6px; padding: 2px 8px; font-size: 11.5px; }
+.cost { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--ink-2); background: var(--stone); border-radius: 12px; padding: 10px 12px; }
+.cost b { color: var(--ok); }
+.btns { display: flex; gap: 8px; justify-content: flex-end; }
+.btn { height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--stone-2); background: var(--white); font-weight: 600; font-size: 13.5px; }
+.btn.p { background: var(--cobalt); border-color: var(--cobalt); color: #fff; }
+.cmd { position: absolute; z-index: 7; left: 50%; bottom: 28px; transform: translateX(-50%); width: min(760px, calc(100% - 32px)); background: var(--ink); color: #fff; border-radius: 22px; padding: 10px 10px 10px 18px; display: flex; gap: 10px; align-items: center; box-shadow: 0 24px 60px -24px rgba(16,17,20,.7); }
+.cmd .ctx { background: rgba(255,255,255,.12); border-radius: 999px; padding: 5px 10px; font-size: 12px; white-space: nowrap; }
+.cmd textarea { flex: 1; border: 0; background: none; outline: none; resize: none; height: 24px; color: #fff; font-size: 15px; }
+.cmd textarea::placeholder { color: rgba(255,255,255,.55); }
+.cmd .go { width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--cobalt); color: #fff; font-size: 18px; }
+@media (max-width: 760px) {
+  .menu a:not([aria-current]), .right span:not(:first-child) { display: none; }
+  .menu { left: 12px; top: 12px; } .right { right: 12px; top: 12px; }
+  .stage { padding: 64px 0 0; place-items: start center; }
+  .site { border-radius: 0; height: 52vh; box-shadow: none; }
+  .hero h2 { font-size: 30px; left: 18px; bottom: 18px; }
+  .dot-lab { display: none; }
+  .sheet { left: 0; right: 0; bottom: 0; width: auto; border-radius: 22px 22px 0 0; padding: 14px 16px 92px; }
+  .sheet::before { content: ""; justify-self: center; width: 40px; height: 4px; border-radius: 4px; background: var(--stone-2); }
+  .cmd { bottom: 14px; border-radius: 18px; }
+  .cmd .ctx { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="menu" aria-label="Espaces"><b>syna</b><a href="#" aria-current="page">Site</a><a href="#">Produits</a><a href="#">Marque</a><a href="#">Médias</a><a href="#">Diffusion</a></nav>
+  <div class="right"><span>Budget IA <b>62 %</b></span><span>v12 · Historique</span><span>Publier</span></div>
+  <div class="stage">
+    <div class="site">
+      <div class="nav"><span>Machine · Rituel</span><b>SILLON</b><span>Panier</span></div>
+      <div class="hero"><img src="img/sillon-hero.jpg" alt="Machine SILLON face à la route"><h2>L'espresso suit la route.</h2><span class="dot" aria-hidden="true"></span><span class="dot-lab">Image d'en-tête<small>Syna parle de cet élément</small></span></div>
+    </div>
+  </div>
+  <section class="sheet" aria-label="Réponse de Syna">
+    <div class="who">Syna</div>
+    <p>Voici la photo du lac à la place de l'image actuelle. Je garde l'ancienne en version 12 : vous pourrez revenir en arrière.</p>
+    <div class="choice"><figure><img src="img/sillon-hero.jpg" alt="Image actuelle"><figcaption>Actuelle</figcaption></figure><figure class="on"><img src="img/sillon-lac.jpg" alt="Photo du lac proposée"><figcaption>Proposée</figcaption></figure></div>
+    <div class="cost"><span>Retouche exacte, sans création</span><b>0 % du budget</b></div>
+    <div class="btns"><button class="btn">Pas maintenant</button><button class="btn p">Appliquer</button></div>
+  </section>
+  <div class="cmd"><span class="ctx">● Image d'en-tête</span><textarea placeholder="Demandez à Syna…"></textarea><button class="go" aria-label="Envoyer">→</button></div>
+</div>
+</body>
+</html>
