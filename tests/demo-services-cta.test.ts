@@ -19,10 +19,12 @@ describe("Services : appel à l'action des publications", async () => {
   it("devis, rendez-vous, appel : le premier appel à l'action est celui du client, sans doublon contradictoire", () => {
     const withMode = (contactMode: "quote" | "booking" | "call") => ({ ...base, business: "services" as const, services: { ...base.services, contactMode } });
     const q = fr(() => socialStrategy(withMode("quote"))).ctas;
-    expect(q[0]).toBe("Demander un devis");
+    // Fins sans ordre au lecteur (décision du 22 novembre 2026) : avant « Demander un devis », « Prendre rendez-vous »,
+    // « Appeler » ; le mode de contact du client reste en tête, dit en question et invitation.
+    expect(q[0]).toBe("Un devis pour votre projet ? Il se demande en un message.");
     expect(q.join(" ")).not.toMatch(/rendez-vous/i);
-    expect(fr(() => socialStrategy(withMode("booking"))).ctas[0]).toBe("Prendre rendez-vous");
-    expect(fr(() => socialStrategy(withMode("call"))).ctas[0]).toBe("Appeler");
+    expect(fr(() => socialStrategy(withMode("booking"))).ctas[0]).toBe("Un rendez-vous ? Tout se passe sur le site.");
+    expect(fr(() => socialStrategy(withMode("call"))).ctas[0]).toBe("Une question ? Un appel suffit.");
   });
 
   it("affiche de publication : sans appel à l'action fourni, celui du mode de contact (plus de « Prendre rendez-vous » imposé)", () => {

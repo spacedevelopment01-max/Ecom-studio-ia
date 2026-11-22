@@ -29,7 +29,9 @@ import { brandTypo, palette } from "../engine/images";
 import { localAdStrategy, type AdStrategy } from "../engine/ads";
 import type { AspectId } from "../image-v2/types";
 import { adInsight } from "./insight";
-import { planAngles } from "./angles";
+import { lienAvecMarqueur } from "./marqueur";
+import { adressePubliqueDuSite } from "../sites/store";
+import { anglesParTypeDeClient, planAngles } from "./angles";
 import { copyPrompt, copySystem, localCopy } from "./copy";
 import { claimIssues, type ClaimIssue } from "./claims";
 import { composeAd, type ComposeInput } from "./compose";
@@ -48,7 +50,7 @@ import { peopleAllowedFor } from "../people-policy";
 import { CTAS, defaultPlatforms, formatsFor, strictestText } from "./platforms";
 import { realAdDeps, type AdsV2Deps } from "./deps";
 import { engineDocKey, latestDoc, saveVersion, userOwned } from "../ad-doc/store";
-import type { AdConcept, AdCopy, AdInsight, AdOutcome, AdReview, AnglePlan, FormatSpec, Platform, VisualConcept } from "./types";
+import type { AdConcept, AdCopy, AdInsight, AdOutcome, AdReview, AnglePlan, ClientType, FormatSpec, Platform, VisualConcept } from "./types";
 import { projectRights } from "../plan-gates";
 
 export const ADS_V2_VERSION = "7.1";
@@ -68,6 +70,8 @@ export type AdRequestV2 = {
   copyOnly?: boolean;
   /** Formats voulus par le client (ex. ["4:5"]) parmi ceux des plateformes ; absent : tous. */
   aspects?: string[];
+  /** Les types de clients de ses angles, le choisi d'abord puis ceux en réserve : une publicité par type. */
+  clientTypes?: ClientType[];
 };
 
 export type AdRunResult = {
@@ -124,16 +128,23 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
   const platforms = req.platforms?.length ? req.platforms : defaultPlatforms(p.business);
   const limits = strictestText(platforms);
   const insight = adInsight(p, { audience: req.audience, offer: req.offer });
+  // Le lien de chaque publicité porte son marqueur (utm_…), posé par le Studio : les visites venues d'une publicité se
+  // comptent sur le site du client, sans branchement aux régies.
+  const site = (() => { try { return adressePubliqueDuSite(p.id); } catch { return null; } })();
+  const campagne = `publicites-${new Date().toISOString().slice(0, 7)}`;
   // Variantes selon le forfait du projet : essentielles (1 annonce), avancées (jusqu'à 3), complètes (jusqu'à 6).
   const rights = projectRights(p.id);
   // (Sans forfait : aucun appel payant possible, la limite ne change rien aux droits.)
   const maxVariants = !rights || rights.ads === "full" ? 6 : rights.ads === "advanced" ? 3 : 1;
   const count = Math.max(1, Math.min(maxVariants, req.count ?? 3));
-  const { angles, missing } = planAngles(insight, count);
-  if (missing) notes.push(`${missing} angle(s) de moins que demandé : pas assez de matière confirmée (rien n'est inventé)`);
+  // Une publicité par type de client quand les angles du client sont connus (le choisi d'abord, puis ceux en réserve).
+  const byClient = req.clientTypes?.length ? anglesParTypeDeClient(insight, req.clientTypes, count) : null;
+  const { angles, missing } = byClient ?? planAngles(insight, count);
+  if (byClient) notes.push(...byClient.notes);
+  if (missing && (!byClient || angles.length < Math.min(count, req.clientTypes!.length))) notes.push(`${missing} angle(s) de moins que demandé : pas assez de matière confirmée (rien n'est inventé)`);
   notes.push(...insight.gaps.map((g) => `à compléter : ${g}`));
   const stats = { copyCalls: 0, reviews: 0, images: 0, reused: 0, retries: 0, layoutChanges: 0 };
-  const strategy = localAdStrategy(p, lang, { count: angles.length, objective: req.objective ?? undefined, audience: req.audience ?? undefined, networks: platforms.map((x) => (x.startsWith("meta") ? "instagram" : x)) });
+  const strategy = localAdStrategy(p, lang, { count: angles.length, objective: req.objective ?? undefined, audience: req.audience ?? undefined, networks: platforms.map((x) => (x.startsWith("meta") ? "instagram" : x)), clientTypes: angles.flatMap((a) => (a.client ? [{ name: a.client.name, who: a.client.who }] : [])) });
   const result: AdRunResult = { runId, insight, concepts: [], outcomes: [], strategy, stats, stoppedByCostCap: false, costMicro: 0, notes, diversity: [] };
   if (!angles.length) {
     notes.push("aucun angle possible : complétez les faits du produit ou les prestations");
@@ -211,7 +222,7 @@ async function engine(ctx: JobContext | null, p: Project, req: AdRequestV2, deps
       let conceptReview: AdReview | null = null;
       let reviewed = false;
       for (const [fi, f] of formats.entries()) {
-        const out = await oneFormat({ p, ctx, deps, concept, f, aspects: formats.map((x) => x.aspect), main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, refPhoto: ownPhotos[0] ?? null, refId, insight, limits, stats, prior: conceptReview, features: feats, maxCostEur:Math.max(0,((currentTrace().costCapMicro ?? (req.maxCostEur ?? DEFAULT_AD_CAP_EUR)*EUR)-(jobId?one<{c:number}>("SELECT COALESCE(SUM(cost),0) c FROM ai_calls WHERE job_id=?",jobId)?.c ?? 0:0))/EUR) });
+        const out = await oneFormat({ p, ctx, deps, concept, f, site, campagne, aspects: formats.map((x) => x.aspect), main: fi === 0 || !reviewed, images, pal, typo, art, logo, logoLight, cut, refPhoto: ownPhotos[0] ?? null, refId, insight, limits, stats, prior: conceptReview, features: feats, maxCostEur:Math.max(0,((currentTrace().costCapMicro ?? (req.maxCostEur ?? DEFAULT_AD_CAP_EUR)*EUR)-(jobId?one<{c:number}>("SELECT COALESCE(SUM(cost),0) c FROM ai_calls WHERE job_id=?",jobId)?.c ?? 0:0))/EUR) });
         if (out.review) {
           conceptReview = out.review;
           reviewed = true;
@@ -274,6 +285,9 @@ export function reusableAd(projectId: string, h: string): Asset | null {
 
 type OneInput = {
   p: Project;
+  /** Adresse du site en ligne et nom de la campagne, pour le marqueur du lien de la publicité. */
+  site?: string | null;
+  campagne?: string;
   ctx: JobContext | null;
   deps: AdsV2Deps;
   concept: AdConcept & { claims: ClaimIssue[] };
@@ -322,7 +336,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
     const aspect = f.aspect;
     const r = await deps.finalAd({ conceptId: concept.id, confirmedOffer:o.insight.offer, campaignContext:JSON.stringify({insight:o.insight,angle:concept.angle,direction:concept.direction,copy:concept.copy,visual:concept.visual,audience:o.insight.audience,platform:f}), platform:f.platform, conceptShare: o.aspects && o.aspects.length > 1 ? { id: hash({ marketingStrategy: strategyReuseKey(p.id), v: ADS_V2_VERSION, c: concept.id, copy: concept.copy, visual: concept.visual, dir: concept.direction ? `${concept.direction.id}:${concept.direction.layout}` : null, offer: o.insight.offer ?? null }), aspects: o.aspects } : undefined, copyApproved:(concept as AdConcept & {copyBy?:string}).copyBy==="ai", angle: concept.angle.type, hook: concept.copy.hook, cta: concept.copy.cta, subject: [concept.visual.subject, concept.copy.visual].filter(Boolean).join(" — "), aspect, maxCostEur: o.maxCostEur ?? DEFAULT_AD_CAP_EUR });
     stats.images++;
-    if (r.assetId) run("UPDATE assets SET meta = json_set(meta, '$.adV2', json(?)) WHERE id = ?", JSON.stringify({ version: ADS_V2_VERSION, hash: h, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy: concept.copy, platform: f.platform, aspect: f.aspect, layout: "ai", aiFinal: true }), r.assetId);
+    if (r.assetId) run("UPDATE assets SET meta = json_set(meta, '$.adV2', json(?)) WHERE id = ?", JSON.stringify({ version: ADS_V2_VERSION, hash: h, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever, ...(concept.angle.client ? { client: concept.angle.client.name, chosen: concept.angle.client.chosen } : {}) }, link: lienAvecMarqueur(o.site, { reseau: f.platform, campagne: o.campagne ?? "publicites", contenu: concept.angle.client?.name ?? concept.angle.type }), copy: concept.copy, platform: f.platform, aspect: f.aspect, layout: "ai", aiFinal: true }), r.assetId);
     return { outcome: { conceptId: concept.id, platform: f.platform, aspect: f.aspect, verdict: r.assetId ? "PROVISIONAL" : "REJECTED", score: null, codes: r.assetId ? [] : ["ai_blocked"], reason: r.assetId ? "publicité entièrement créée par l'IA, contrôlée (textes, produit, logo)" : r.reason ?? "publicité IA non créée", assetId: r.assetId, imageAssetId: null, attempts: 1, reused: false }, review: null };
   }
   let copy = concept.copy;
@@ -411,7 +425,7 @@ async function oneFormat(o: OneInput): Promise<{ outcome: AdOutcome; review: AdR
       sourceAssetId: img?.assetId ?? null,
       status: d.verdict === "REJECTED" ? "rejected" : "review",
       meta: {
-        adV2: { version: ADS_V2_VERSION, docKey: d.verdict === "REJECTED" ? null : docKey, hash: d.verdict === "FINAL" ? h : `trial:${h}`, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever }, copy, platform: f.platform, aspect: f.aspect, layout: used, imageAssetId: img?.assetId ?? null, metrics, claims: claims.map((c) => c.fix), attempt },
+        adV2: { version: ADS_V2_VERSION, docKey: d.verdict === "REJECTED" ? null : docKey, hash: d.verdict === "FINAL" ? h : `trial:${h}`, conceptId: concept.id, angle: { type: concept.angle.type, material: concept.angle.material, lever: concept.angle.lever, ...(concept.angle.client ? { client: concept.angle.client.name, chosen: concept.angle.client.chosen } : {}) }, link: lienAvecMarqueur(o.site, { reseau: f.platform, campagne: o.campagne ?? "publicites", contenu: concept.angle.client?.name ?? concept.angle.type }), copy, platform: f.platform, aspect: f.aspect, layout: used, imageAssetId: img?.assetId ?? null, metrics, claims: claims.map((c) => c.fix), attempt },
         format: f.aspect,
         text: { headline: copy.hook },
         ...g.meta,

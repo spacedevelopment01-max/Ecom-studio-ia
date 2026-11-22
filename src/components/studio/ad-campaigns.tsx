@@ -1,4 +1,5 @@
 "use client";
+import { lienAvecMarqueur } from "@/lib/ads-v2/marqueur";
 import {CommunicationAngleSelector,useCommunicationAngle} from "./communication-angle";
 import { AiWait } from "../wait-time";
 import { useState,useRef } from "react";
@@ -73,7 +74,7 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
   const ctaList = svc ? SERVICE_CTAS : CTAS;
   const objectives = svc ? SERVICE_OBJECTIVES : OBJECTIVES;
   const mainCta = (lang: Lang) => ctaList[lang][svc ? ({ booking: 0, quote: 1, call: 2, form: 4 } as const)[data?.services?.contactMode ?? "form"] ?? 4 : 0];
-  const { data: list, reload } = useApi<{ campaigns: Campaign[] }>(`/api/projects/${id}/campaigns`);
+  const { data: list, reload } = useApi<{ campaigns: Campaign[]; siteUrl?: string | null }>(`/api/projects/${id}/campaigns`);
   const remove = async (c: Campaign) => {
     const posts = c.posts.length ? t(` Ses ${c.posts.length} publication(s) sont gardées.`, ` Its ${c.posts.length} post(s) are kept.`) : "";
     if (!window.confirm(t(`Supprimer la campagne « ${c.name} » ?`, `Delete the “${c.name}” campaign?`) + posts)) return;
@@ -115,8 +116,10 @@ export function CampaignsPanel({ autoNew = false }: { autoNew?: boolean } = {}) 
   const exportCsv = (c: Campaign) => {
     const lang = langOf(c);
     const esc = (v: string) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const rows = [pick(lang, ["Campagne", "Objectif", "Réseau", "Angle", "Accroche (3 s)", "Texte principal", "Titre", "Description", "Bouton", "Création", "Médias"], ["Campaign", "Objective", "Network", "Angle", "Hook (3 s)", "Primary text", "Headline", "Description", "Call to action", "Creative", "Media"]).join(",")];
-    for (const ad of c.plan.ads ?? []) for (const net of c.networks) rows.push([c.name, objectiveIn(c.objective, lang), NETWORKS[net]?.label ?? net, ad.angle, ad.hook ?? "", ad.primary, ad.headline, ad.description ?? "", ad.cta, ad.visual ?? "", ad.media.map((m) => m.name).join(" ")].map(esc).join(","));
+    // Le lien de chaque annonce porte le marqueur du Studio (utm_…) : les visites venues d'une annonce se comptent sur le site.
+    const noLink = pick(lang, "[À compléter : l'adresse de ton site, une fois en ligne]", "[To complete: your website address, once online]");
+    const rows = [pick(lang, ["Campagne", "Objectif", "Réseau", "Angle", "Accroche (3 s)", "Texte principal", "Titre", "Description", "Bouton", "Lien (avec marqueur)", "Création", "Médias"], ["Campaign", "Objective", "Network", "Angle", "Hook (3 s)", "Primary text", "Headline", "Description", "Call to action", "Link (with tracking)", "Creative", "Media"]).join(",")];
+    for (const ad of c.plan.ads ?? []) for (const net of c.networks) rows.push([c.name, objectiveIn(c.objective, lang), NETWORKS[net]?.label ?? net, ad.angle, ad.hook ?? "", ad.primary, ad.headline, ad.description ?? "", ad.cta, lienAvecMarqueur(list?.siteUrl, { reseau: net, campagne: c.name, contenu: ad.angle }) ?? noLink, ad.visual ?? "", ad.media.map((m) => m.name).join(" ")].map(esc).join(","));
     const url = URL.createObjectURL(new Blob(["﻿" + rows.join("\n")], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url;

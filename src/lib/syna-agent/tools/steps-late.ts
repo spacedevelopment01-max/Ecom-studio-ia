@@ -26,6 +26,7 @@ import type { AgentTool } from "../types";
 import { readCalendar } from "../calendar";
 import { journeyOf, setStep, stepAvailable, updateJourney, type Journey } from "../journey";
 import { chosenAngles } from "../posts-plan";
+import { clientTypesOf } from "../angles";
 import { project } from "./common";
 
 const closed = (what: string) => ({ ok: false as const, summary: L(`L'étape ${what} n'est pas encore ouverte dans le parcours.`, "This step is not open yet.") });
@@ -37,12 +38,15 @@ type AdsArgs = { platforms: (typeof AD_PLATFORMS)[number][]; count?: number };
 /** Publicités créées depuis le lancement de l'étape (images qui ont passé le contrôle, non refusées par le client). */
 export const adsMade = (projectId: string, since: number) => count("SELECT COUNT(*) n FROM assets WHERE project_id=? AND role='ad' AND deleted_at IS NULL AND status!='rejected' AND created_at>=?", projectId, since);
 
+/** Autant de publicités que demandé (3 par défaut), mais jamais plus que de types de clients connus dans ses angles. */
+export const adsCount = (asked: number | undefined, clientTypes: number) => (clientTypes ? Math.min(asked ?? 3, clientTypes) : asked ?? 3);
+
 const adsCreateTool: AgentTool<AdsArgs> = {
   name: "ads.create", module: "publicités", kind: "generate", needsProject: true,
-  description: "Étape 10 (PAYANT : le Studio montre le devis sur la carte d'accord) : crée les publicités images du client, d'après son angle choisi : des idées vraiment différentes, une accroche courte et un bouton par visuel, promesses contrôlées avant l'image, chaque image contrôlée avant d'être montrée. platforms = SES régies et formats (meta_feed, meta_story, tiktok, google_display, pinterest, linkedin), jamais devinés ; count = nombre d'idées (3 par défaut, selon son forfait).",
+  description: "Étape 10 (PAYANT : le Studio montre le devis sur la carte d'accord) : crée les publicités images du client, UNE PAR TYPE DE CLIENT de ses angles (l'angle choisi d'abord, puis ceux en réserve ; jamais deux pour le même) : des idées vraiment différentes, une accroche courte et un bouton par visuel, promesses contrôlées avant l'image, chaque image contrôlée avant d'être montrée. platforms = SES régies et formats (meta_feed, meta_story, tiktok, google_display, pinterest, linkedin), jamais devinés ; count = nombre d'idées (3 par défaut, selon son forfait).",
   args: z.object({ platforms: z.array(z.enum(AD_PLATFORMS)).min(1).max(6), count: z.number().int().min(1).max(6).optional() }).strict(),
   estimate: (ctx, a) => {
-    const e = campaignEstimate(project(ctx), { count: a.count ?? 3, platforms: [...new Set(a.platforms)] });
+    const e = campaignEstimate(project(ctx), { count: adsCount(a.count, clientTypesOf(journeyOf(ctx.conversationId)).length), platforms: [...new Set(a.platforms)] });
     return { maxMicro: e.capMicro, probableMicro: e.estimateMicro, label: L(`${e.concepts} publicité${e.concepts > 1 ? "s" : ""} image${e.concepts > 1 ? "s" : ""} (${e.images} visuels) : idées, textes et images, chacune contrôlée avant de t'être montrée`, "image ads: ideas, copy and visuals") };
   },
   run: async (ctx, a) => {
@@ -54,8 +58,10 @@ const adsCreateTool: AgentTool<AdsArgs> = {
     const readiness = await publicationReadiness(p);
     if (!readiness.ready) return { ok: false, summary: String(readiness.reason ?? L("Le moteur d'images n'est pas prêt.", "The image engine is not ready.")) };
     if (pendingJob(p.id, "ads.v2")) return { ok: true, summary: L("Des publicités sont déjà en préparation ; je reprends dès qu'elles sont prêtes.", "Ads are already being prepared.") };
-    const platforms = [...new Set(a.platforms)], e = campaignEstimate(p, { count: a.count ?? 3, platforms });
-    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: "ads.v2", label: L("Publicités : idées, textes et créations (SINA)", "Ads: ideas, copy and creatives (SINA)"), payload: { projectId: p.id, costCapMicro: e.capMicro, request: { count: e.concepts, platforms } }, idempotencyKey: `syna:${ctx.runId}:ads:${e.concepts}:${platforms.join(",")}` });
+    // Une publicité par type de client : celui de l'angle choisi, puis ceux des angles en réserve (jamais deux pour le même).
+    const clientTypes = clientTypesOf(j);
+    const platforms = [...new Set(a.platforms)], e = campaignEstimate(p, { count: adsCount(a.count, clientTypes.length), platforms });
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: "ads.v2", label: L("Publicités : idées, textes et créations (SINA)", "Ads: ideas, copy and creatives (SINA)"), payload: { projectId: p.id, costCapMicro: e.capMicro, request: { count: e.concepts, platforms, ...(clientTypes.length ? { clientTypes } : {}) } }, idempotencyKey: `syna:${ctx.runId}:ads:${e.concepts}:${platforms.join(",")}` });
     updateJourney(ctx.conversationId, (x) => { x.ads = { jobId: job.id, platforms, count: e.concepts, at: Date.now() }; setStep(x, 10, "doing"); });
     return { ok: true, jobs: [job.id], summary: L(`Création de ${e.concepts} publicité${e.concepts > 1 ? "s" : ""} lancée (${e.images} visuels, plusieurs minutes).`, "Creating the ads."), hint: "À la fin de la tâche : dis honnêtement combien de publicités ont passé le contrôle et lesquelles ont été refusées (avec la raison donnée) ; elles sont dans l'onglet Publicités. Puis le client valide (ads.validate)." };
   },

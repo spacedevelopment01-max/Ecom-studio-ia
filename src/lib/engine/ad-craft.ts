@@ -173,6 +173,8 @@ export async function craftLoop<T>(kind: CraftKind, opts: { draft: (feedback?: s
 
 /** Longueurs recommandées par les régies (texte visible sans « Plus », titres, descriptions). */
 export const AD_LIMITS = { primaryFirstLine: 125, headline: 40, description: 30, hookWords: 10, tiktokText: 100 } as const;
+/** Titre d'une publicité Meta (Facebook, Instagram) : 27 caractères au plus, longueur conseillée par Meta (22 novembre 2026). */
+export const META_HEADLINE_MAX = 27;
 
 /** Attributs personnels (règle Meta « Personal attributes », Google « Personalized advertising ») : jamais affirmés ou sous-entendus. */
 const PERSONAL: RegExp[] = [
@@ -229,25 +231,31 @@ export function audienceIssues(audiences: { name: string; who: string }[], p: Pi
  * Budget de test honnête (repères de media buyer, sans promesse de résultat) : par ensemble d'annonces et par jour,
  * durée minimale d'apprentissage, règle de décision par annonce. Le prix, s'il est connu, fixe la règle d'arrêt.
  */
-export function honestTestBudget(p: Pick<Project, "product" | "business">, lang: Lang, adSets = 2): { daily: string; duration: string; total: string; rule: string; note: string } {
+export function honestTestBudget(p: Pick<Project, "product" | "business">, lang: Lang): { daily: string; duration: string; total: string; rule: string; note: string } {
+  // Le budget d'essai CONSEILLÉ (décision du 22 novembre 2026) : un seul ensemble d'annonces et un budget unique de 5 à
+  // 20 € par jour au total, choisi par le client ; dit comme un conseil, jamais une promesse. Avant : 10 à 20 € par jour
+  // et PAR ensemble, avec deux ensembles (140 à 280 € l'essai), au vouvoiement. Le Studio ne dépense jamais rien.
   const price = p.product.price.amount !== null ? p.product.price.amount / 100 : null;
   const cur = p.product.price.currency || "EUR";
   const money = (v: number) => new Intl.NumberFormat(lang === "en" ? "en-US" : "fr-FR", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(v);
-  const perDay = 10;
+  const [low, high] = TEST_BUDGET_PER_DAY;
   const days = 7;
   const services = p.business === "services";
   return {
-    daily: pick(lang, `${money(perDay)} à ${money(perDay * 2)} par jour et par ensemble d'annonces (${adSets} ensembles)`, `${money(perDay)} to ${money(perDay * 2)} per day per ad set (${adSets} ad sets)`),
-    duration: pick(lang, `${days} jours sans toucher aux réglages (phase d'apprentissage des régies)`, `${days} days without touching the settings (the platforms' learning phase)`),
-    total: pick(lang, `${money(perDay * adSets * days)} à ${money(perDay * 2 * adSets * days)} pour l'ensemble du test`, `${money(perDay * adSets * days)} to ${money(perDay * 2 * adSets * days)} for the whole test`),
+    daily: pick(lang, `Conseil : un seul ensemble d'annonces, entre ${money(low)} et ${money(high)} par jour au total, selon ce que tu veux bien y mettre`, `Advice: a single ad set, between ${money(low)} and ${money(high)} per day in total, depending on what you are happy to spend`),
+    duration: pick(lang, `${days} jours sans toucher aux réglages (le temps que la régie apprenne), puis un bilan à 14 jours sur les demandes et les clients obtenus, jamais sur le seul coût du clic`, `${days} days without touching the settings (the platform's learning time), then a review at 14 days on the requests and customers you got, never on the cost per click alone`),
+    total: pick(lang, `soit ${money(low * days)} à ${money(high * days)} pour la première semaine`, `that is ${money(low * days)} to ${money(high * days)} for the first week`),
     rule: services
-      ? pick(lang, "Coupez une annonce qui a dépensé l'équivalent de deux contacts que vous jugez rentables sans en obtenir aucun ; gardez celles qui génèrent des demandes au coût que vous acceptez.", "Pause an ad that has spent the equivalent of two leads you'd consider profitable without getting any; keep the ones bringing requests at a cost you accept.")
+      ? pick(lang, "Conseil : coupe une annonce qui a dépensé l'équivalent de deux contacts que tu juges rentables sans en obtenir aucun ; garde celles qui t'apportent des demandes à un coût qui te convient.", "Advice: pause an ad that has spent the equivalent of two leads you'd consider profitable without getting any; keep the ones bringing requests at a cost you accept.")
       : price
-        ? pick(lang, `Coupez une annonce qui a dépensé ${money(price)} à ${money(price * 2)} (une à deux fois le prix de vente) sans aucune vente ; dupliquez celle qui vend sous votre coût d'acquisition cible.`, `Pause an ad that has spent ${money(price)} to ${money(price * 2)} (one to two times the selling price) without a sale; duplicate the one selling under your target acquisition cost.`)
-        : pick(lang, "Coupez une annonce qui a dépensé une à deux fois le prix de vente sans aucune vente [À compléter : prix de vente et marge] ; dupliquez celle qui vend sous votre coût d'acquisition cible.", "Pause an ad that has spent one to two times the selling price without a sale [To complete: selling price and margin]; duplicate the one selling under your target acquisition cost."),
-    note: pick(lang, "Repères courants des media buyers, pas une garantie : aucun résultat (clics, ventes, coût) n'est promis. Le budget se règle et se dépense dans le gestionnaire de publicités de chaque réseau, jamais depuis le studio.", "Common media-buyer benchmarks, not a guarantee: no result (clicks, sales, cost) is promised. Budget is set and spent in each network's ads manager, never from the studio."),
+        ? pick(lang, `Conseil : coupe une annonce qui a dépensé ${money(price)} à ${money(price * 2)} (une à deux fois ton prix de vente) sans aucune vente ; garde celle qui vend à un coût qui te convient.`, `Advice: pause an ad that has spent ${money(price)} to ${money(price * 2)} (one to two times your selling price) without a sale; keep the one selling at a cost you accept.`)
+        : pick(lang, "Conseil : coupe une annonce qui a dépensé une à deux fois ton prix de vente sans aucune vente [À compléter : prix de vente et marge] ; garde celle qui vend à un coût qui te convient.", "Advice: pause an ad that has spent one to two times your selling price without a sale [To complete: selling price and margin]; keep the one selling at a cost you accept."),
+    note: pick(lang, "C'est un conseil, pas une garantie : aucun résultat (clics, demandes, ventes, coût) n'est promis. Le Studio ne dépense rien et ne lance rien : c'est toi qui fixes et payes le budget, dans le gestionnaire de publicités de chaque réseau.", "This is advice, not a guarantee: no result (clicks, requests, sales, cost) is promised. The studio spends nothing and launches nothing: you set and pay the budget yourself, in each network's ads manager."),
   };
 }
+
+/** Budget d'essai conseillé par jour, au total, pour un seul ensemble d'annonces (en euros). */
+export const TEST_BUDGET_PER_DAY = [5, 20] as const;
 
 // ---------------------------------------------------------------- montage vidéo
 

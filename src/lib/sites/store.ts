@@ -139,3 +139,14 @@ export function defaultStudioAddress(projectId: string, name: string): SiteAddre
   }
   return setStudioAddress(projectId, `site-${id().slice(0, 10)}`);
 }
+
+/**
+ * L'adresse publique du site en ligne (domaine du client actif d'abord, sinon l'adresse du Studio), pour les liens des
+ * publicités ; null tant qu'aucune version n'est en ligne (aucun lien vers un site vide).
+ */
+export function adressePubliqueDuSite(projectId: string): string | null {
+  if (!livePublication(projectId)) return null;
+  const list = addresses(projectId).filter((a) => a.status === "active");
+  const pick = list.find((a) => a.kind === "custom") ?? list.find((a) => a.kind === "studio");
+  return pick ? `https://${pick.hostname}/` : null;
+}
