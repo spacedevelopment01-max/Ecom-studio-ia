@@ -11,7 +11,7 @@
  */
 import type { TaskId } from "./config";
 import { activeProviderKey, FOURNISSEURS_QUITTES, priceFor, priceValid } from "./config";
-import { MEDIA_MODELS, mediaModel, type MediaKind, type MediaModel } from "./media-models";
+import { MEDIA_MODELS, mediaModel, videoNonAccordee, type MediaKind, type MediaModel } from "./media-models";
 import { EUR } from "../billing";
 import { usdToEur } from "./config";
 import { all } from "../db";
@@ -101,8 +101,17 @@ const splitKey = (v: string) => {
   const [provider, ...rest] = v.split(":");
   return { provider, model: rest.join(":") };
 };
-/** Un réglage qui choisit un fournisseur quitté (Higgsfield) est ignoré : retour au réglage par défaut. */
-const quitte = (v: string | null | undefined) => !!v && FOURNISSEURS_QUITTES.has(v.split(":")[0]);
+/**
+ * Un réglage qui choisit un fournisseur quitté (Higgsfield) ou une vidéo plus accordée (API Gemini, 23 novembre 2026 :
+ * Veo seulement par Vertex) est ignoré : retour au réglage par défaut, sans rien changer à la base.
+ */
+const quitte = (v: string | null | undefined) => {
+  if (!v) return false;
+  if (FOURNISSEURS_QUITTES.has(v.split(":")[0])) return true;
+  const { provider, model } = splitKey(v);
+  const m = mediaModel(provider, model);
+  return !!m && videoNonAccordee(m);
+};
 /**
  * Modèle principal des images de publications : celui de l'administration s'il est d'OpenAI, sinon celui des images de
  * SINA (`syna.mockup.image_route`) s'il est d'OpenAI, sinon le modèle d'OpenAI par défaut (social-image-policy.ts).
@@ -179,7 +188,7 @@ export const mediaMode = (kind: MediaKind): MediaMode => (getJsonSetting<Partial
 /** Principal : route de l'administration (ou défaut du studio). */
 export function mediaPrimary(kind: MediaKind): { provider: string; model: string } {
   const r = getJsonSetting<Partial<Record<TaskId, { provider: string; model: string }>>>("ai.routes", {})[MEDIA_TASK[kind]];
-  if (r?.provider && r.model && !FOURNISSEURS_QUITTES.has(r.provider)) return { provider: r.provider, model: r.model };
+  if (r?.provider && r.model && !quitte(`${r.provider}:${r.model}`)) return { provider: r.provider, model: r.model };
   // Défaut du studio : le mieux classé qui est UTILISABLE (ex. Qwen-Image 3.0 Pro une fois confirmé par
   // l'administration) ; sinon le défaut historique, pour qu'une génération ne reste jamais sans modèle.
   const ds = MEDIA_MODELS.filter((m) => m.kind === kind && m.defaultFor === "primary").sort((a, b) => (b.defaultRank ?? 0) - (a.defaultRank ?? 0));
@@ -220,8 +229,10 @@ export function mediaStatus(m: MediaModel, admin: Record<string, MediaAdmin> = m
   // toujours l'accord explicite de l'administration.
   const confirmed = (m.verified.id && m.verified.price && !m.adminConfirm) || !!a.confirmedAt;
   if (!confirmed) reasons.push(L("identifiant ou tarif à confirmer", "ID or price to confirm"));
+  const accordee = !videoNonAccordee(m);
+  if (!accordee) reasons.push(L("plus accordé : Veo seulement par Vertex", "no longer approved: Veo only through Vertex"));
   // Activés par défaut : seulement les modèles déjà en service (vérifiés) ; les nouveaux attendent l'administration.
-  return { key, usable: reasons.length === 0, confirmed, enabled: a.enabled ?? (m.verified.id && m.verified.price && !m.adminConfirm), connected, reasons };
+  return { key, usable: reasons.length === 0, confirmed, enabled: accordee && (a.enabled ?? (m.verified.id && m.verified.price && !m.adminConfirm)), connected, reasons };
 }
 
 /**
@@ -321,7 +332,8 @@ export function rankMedia(n: MediaNeed, o: SelectOptions = {}): { model: MediaMo
     const st = status(m);
     const s = stats[st.key];
     let excluded: string | null = null;
-    if (!st.usable) excluded = st.reasons[0] ?? "inutilisable";
+    if (videoNonAccordee(m)) excluded = L("plus accordé : Veo seulement par Vertex", "no longer approved: Veo only through Vertex");
+    else if (!st.usable) excluded = st.reasons[0] ?? "inutilisable";
     else if (!st.enabled) excluded = L("désactivé", "disabled");
     else excluded = incompatibility(m, n);
     if (!excluded && o.exclude?.includes(st.key)) excluded = L("vient d'échouer", "just failed");
@@ -359,7 +371,7 @@ export function selectMedia(n0: MediaNeed, o: SelectOptions = {}): MediaChoice |
   const fits = (r: { provider: string; model: string } | null, role: "primary" | "backup"): MediaChoice | null => {
     if (!r) return null;
     const m = mediaModel(r.provider, r.model);
-    if (!m) return null;
+    if (!m || videoNonAccordee(m)) return null;
     const key = `${r.provider}:${r.model}`;
     if (o.exclude?.includes(key)) return null;
     const st = status(m);

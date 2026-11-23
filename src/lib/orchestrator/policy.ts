@@ -89,7 +89,8 @@ export const DEFAULT_POLICY: Record<TaskId, TaskPolicy> = {
 /** Fournisseur et modèle par défaut des tâches média (le routeur peut se replier sur un autre fournisseur capable). */
 export const MEDIA_DEFAULTS: Partial<Record<TaskId, Route>> = {
   image_generation: { provider: "openai", model: "gpt-image-1" },
-  video_generation: { provider: "google", model: "veo-3.0-generate-001" },
+  // Veo 3.1 Lite par Vertex, sans son (23 novembre 2026, « le moins cher qui suffit par défaut ») ; plus jamais Veo 3.0.
+  video_generation: { provider: "vertex", model: "veo-3.1-lite-generate-001" },
 };
 
 /** Route par défaut d'une tâche (source de DEFAULT_ROUTES dans config.ts : un seul endroit). */

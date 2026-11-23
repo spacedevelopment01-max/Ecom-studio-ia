@@ -67,13 +67,14 @@ export function prixDuGeste(userId: string, projectId: string, geste: GesteId, o
  * page de réglage et que SINA). `prix` : le coût probable ; `auPlus` : la borne haute de l'accord ; `raison` : pourquoi
  * il n'est pas ouvert. Le modèle gratuit (avant-après) n'a pas de devis.
  */
-export function prixModeleVideo(userId: string, p: Project, m: ModeleVideo): { estimateMicro: number; capMicro: number; prix: string | null; auPlus: string | null; outil: string | null; raison: string | null } {
+export function prixModeleVideo(userId: string, p: Project, m: ModeleVideo): { estimateMicro: number; capMicro: number; prix: string | null; auPlus: string | null; outil: string | null; raison: string | null; planSur: string | null } {
   const lg = lang();
-  if (m.sansIa) return { estimateMicro: 0, capMicro: 0, prix: lg === "fr" ? "Gratuit" : "Free", auPlus: null, outil: null, raison: null };
+  if (m.sansIa) return { estimateMicro: 0, capMicro: 0, prix: lg === "fr" ? "Gratuit" : "Free", auPlus: null, outil: null, raison: null, planSur: null };
   const q = devisVideoGuidee(p, { ...reglagesDuModele(m), subject: null, request: m.scene });
-  if (!q.allowed) return { estimateMicro: 0, capMicro: 0, prix: null, auPlus: null, outil: null, raison: q.reason ?? null };
+  if (!q.allowed) return { estimateMicro: 0, capMicro: 0, prix: null, auPlus: null, outil: null, raison: q.reason ?? null, planSur: null };
   const base = pctBaseFor(userId, p.id), route = q.routes?.clip;
-  return { estimateMicro: q.estimateMicro, capMicro: q.capMicro, prix: prixTexte(q.estimateMicro, base, lg), auPlus: q.capMicro > q.estimateMicro ? auPlusTexte(q.capMicro, base, lg) : null, outil: route ? `${route.provider}:${route.model}` : null, raison: null };
+  // Sans modèle vidéo utilisable : le plan sûr (vrai produit détouré, caméra au montage), dit au client en clair.
+  return { estimateMicro: q.estimateMicro, capMicro: q.capMicro, prix: q.estimateMicro > 0 ? prixTexte(q.estimateMicro, base, lg) : lg === "fr" ? "Gratuit" : "Free", auPlus: q.capMicro > q.estimateMicro ? auPlusTexte(q.capMicro, base, lg) : null, outil: route ? `${route.provider}:${route.model}` : null, raison: null, planSur: q.planSur ?? null };
 }
 
 /** Le plafond des vidéos de l'atelier ce mois-ci, pour ce projet. */
@@ -170,7 +171,7 @@ export function etatAtelier(userId: string, p: Project) {
     modelesImages: modelesPour(new Date(), { offreSaisie: false }).map(({ date: _d, mois: _m, ...m }) => m),
     modelesVideos: MODELES_VIDEOS.map((m) => {
       const d = prixModeleVideo(userId, p, m);
-      return { ...m, outil: d.outil, gratuit: !!m.sansIa, prix: d.prix, auPlus: d.auPlus, raison: d.raison, estimateMicro: d.estimateMicro, capMicro: d.capMicro };
+      return { ...m, outil: d.outil, gratuit: !!m.sansIa, prix: d.prix, auPlus: d.auPlus, raison: d.raison, planSur: d.planSur, estimateMicro: d.estimateMicro, capMicro: d.capMicro };
     }),
     gestesCamera: GESTES_CAMERA.map(({ id, nom }) => ({ id, nom })),
     musique: { style: musique.style, nom: nomMusique(musique.style, lg), elevenlabs: ELEVENLABS_BRANCHE, raison: ELEVENLABS_RAISON },

@@ -147,8 +147,10 @@ describe("routage multimédia par usage", async () => {
     for (const u of o.filter(u => u.usage !== "logo" && u.usage !== "social_image")) {
       expect(u.primaryInherited && u.backupInherited && u.modeInherited).toBe(true);
       expect(u.mode).toBe("manual");
-      expect(u.primary).toBe(u.kind === "image" ? "openai:gpt-image-1" : "google:veo-3.0-generate-001");
-      expect(u.current?.key).toBe(u.primary);
+      // Vidéo : Veo 3.1 Lite par Vertex par défaut depuis le 23 novembre 2026 (avant : Veo 3.0 de l'API Gemini). Sans clé
+      // Vertex confirmée, aucun modèle vidéo n'est pris (le plan sûr remplace le plan animé).
+      expect(u.primary).toBe(u.kind === "image" ? "openai:gpt-image-1" : "vertex:veo-3.1-lite-generate-001");
+      expect(u.current?.key).toBe(u.kind === "image" ? u.primary : undefined);
     }
     // Un réglage général existant (ex. Gemini 2.5 en principal des images) reste suivi par les usages images…
     setJsonSetting("ai.routes", { image_generation: { provider: "google", model: "gemini-2.5-flash-image" } });
@@ -217,18 +219,17 @@ describe("routage multimédia par usage", async () => {
     expect(routing.incompatibility(mediaModel("google", "gemini-3.1-flash-image")!, routing.usageNeed("product_edit"))).toMatch(/masque/);
   });
 
-  it("vidéos : « Vidéos produit » et « Vidéos UGC » ont chacune leur modèle (Veo 3 Fast / Veo 3 / Kling)", async () => {
+  it("vidéos : « Vidéos produit » et « Vidéos UGC » ont chacune leur modèle ; Veo de l'API Gemini n'est plus accordé (Kling)", async () => {
     const c = await client();
+    // Avant le 23 novembre 2026 : Veo 3 Fast pour les vidéos produit et Veo 3 pour les UGC, par l'API Gemini. Ces modèles
+    // ne sont plus accordés (Veo seulement par Vertex) : un réglage qui les choisit est ignoré, jamais appelé.
     setUsage("product_video", { primary: "google:veo-3.0-fast-generate-001" });
-    await fr(() => mp.aiClip("google", ctx(c), { image: png, prompt: "rotation lente", aspect: "9:16", usage: "product_video" }));
-    expect(net.calls.find((x) => x.url.includes(":predictLongRunning"))!.url).toContain("veo-3.0-fast-generate-001");
-    net.calls = [];
-    await fr(() => mp.aiClip("google", ctx(c), { image: png, prompt: "personne qui présente", aspect: "9:16", people: true, usage: "ugc_video" }));
-    expect(net.calls.find((x) => x.url.includes(":predictLongRunning"))!.url).toContain("veo-3.0-generate-001");
-    // Vidéos produit → Kling 2.1 (fal) : la vidéo UGC reste sur Veo 3.
+    expect(fr(() => mp.videoProviderAvailable("product_video"))).toBeNull();
+    expect(fr(() => mp.videoProviderAvailable("ugc_video"))).toBeNull();
+    // Vidéos produit → Kling 2.1 (fal), réglé explicitement : respecté ; la vidéo UGC n'a pas de modèle accordé.
     setUsage("product_video", { primary: "fal:fal-ai/kling-video/v2.1/pro/image-to-video" });
     expect(fr(() => mp.videoProviderAvailable("product_video"))).toBe("fal");
-    expect(fr(() => mp.videoProviderAvailable("ugc_video"))).toBe("google");
+    expect(fr(() => mp.videoProviderAvailable("ugc_video"))).toBeNull();
     net.calls = [];
     await fr(() => mp.aiClip("fal", ctx(c), { image: png, prompt: "rotation", aspect: "9:16", seconds: 5, usage: "product_video" }));
     expect(net.calls[0].url).toBe("https://queue.fal.run/fal-ai/kling-video/v2.1/pro/image-to-video");
@@ -260,7 +261,8 @@ describe("routage multimédia par usage", async () => {
     const o = fr(() => mediaUsageOverview());
     expect(o.find((u) => u.usage === "ugc_video")).toMatchObject({ mode: "auto", modeInherited: false });
     expect(o.find((u) => u.usage === "ugc_video")?.current?.role).toBe("auto");
-    expect(o.find((u) => u.usage === "product_video")).toMatchObject({ mode: "manual", current: { key: "google:veo-3.0-generate-001", role: "primary" } });
+    // Vidéos produit : Veo 3.1 Lite par Vertex par défaut (23 novembre 2026), sans clé Vertex ici : aucun modèle pris.
+    expect(o.find((u) => u.usage === "product_video")).toMatchObject({ mode: "manual", primary: "vertex:veo-3.1-lite-generate-001", current: null });
   });
 
   it("garde-fous inchangés : budget épuisé ou clé absente → rien n'est envoyé, réservation rendue", async () => {

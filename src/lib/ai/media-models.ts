@@ -322,8 +322,9 @@ export const MEDIA_MODELS: MediaModel[] = [
     status: "legacy",
     replacement: "google:veo-3.1-generate-preview",
     verified: { id: true, price: true },
-    defaultFor: "primary",
-    legacyDefault: true,
+    // Plus jamais le modèle par défaut ni le secours (23 novembre 2026, « le moins cher qui suffit par défaut ») : il
+    // coûtait 0,40 $ la seconde avec son, en plans de 8 s seulement. Les vidéos de l'API Gemini ne sont plus accordées
+    // (Veo seulement par Vertex) : voir `videoNonAccordee`.
     source: "https://cloud.google.com/vertex-ai/generative-ai/pricing",
     use: { fr: "Plans produit et vidéos UGC avec voix et son natifs.", en: "Product shots and UGC videos with native voice and sound." },
   },
@@ -549,7 +550,7 @@ const DIRECT = (provider: "vertex" | "kling" | "byteplus" | "runware", model: st
 const SECONDS = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
 MEDIA_MODELS.push(
   DIRECT("vertex", "veo-3.1-fast-generate-001", "Veo 3.1 Fast (Google Vertex, direct)", 2, [4, 6, 8], "0,08 $ / s en 720p sans son (page officielle Vertex, 22/11/2026) ; calcul aux États-Unis", "https://cloud.google.com/vertex-ai/generative-ai/pricing", { lastFrame: true }),
-  DIRECT("vertex", "veo-3.1-lite-generate-001", "Veo 3.1 Lite (Google Vertex, direct, aperçu)", 1, [4, 6, 8], "0,03 $ / s en 720p sans son (page officielle Vertex, 22/11/2026) ; en aperçu : hors garantie de Google sur les droits", "https://cloud.google.com/vertex-ai/generative-ai/pricing", { lastFrame: true, status: "preview" }),
+  DIRECT("vertex", "veo-3.1-lite-generate-001", "Veo 3.1 Lite (Google Vertex, direct, aperçu)", 1, [4, 6, 8], "0,03 $ / s en 720p sans son (page officielle Vertex, 22/11/2026) ; en aperçu : hors garantie de Google sur les droits", "https://cloud.google.com/vertex-ai/generative-ai/pricing", { lastFrame: true, status: "preview", defaultFor: "primary" }),
   DIRECT("kling", "kling-4.0", "Kling 4.0 (direct)", 3, SECONDS(3, 15), "0,157 $ / s en 720p (table officielle de Kling, 22/11/2026) ; durée toujours envoyée", "https://kling.ai/document-api/pricing/base/video.md", { lastFrame: true }),
   DIRECT("kling", "kling-4.0-flash", "Kling 4.0 Flash (direct)", 2, SECONDS(3, 15), "0,094 $ / s en 720p (table officielle de Kling, 22/11/2026) ; image de départ seulement", "https://kling.ai/document-api/pricing/base/video.md"),
   DIRECT("byteplus", "dreamina-seedance-2-0-mini-260615", "Seedance 2.0 Mini (BytePlus, direct)", 2, SECONDS(4, 15), "0,08 $ / s en 720p (BytePlus, 19/11/2026) ; seules les vidéos réussies sont payées", "https://docs.byteplus.com/en/docs/modelark/model-pricing", { lastFrame: true }),
@@ -578,6 +579,14 @@ MEDIA_MODELS.push(
   FLUX("flux-2-pro", "FLUX.2 pro (Black Forest Labs)", 3, { references: 8 }, "0,045 $ / image d'un mégapixel avec une référence (bfl.ai/pricing, 22/11/2026)", { fr: "Atelier : scène créée à partir de la photo du produit.", en: "Workshop: scene created from the product photo." }),
   FLUX("flux-pro-1.0-expand", "FLUX Expand (Black Forest Labs)", 2, { references: 1 }, "0,05 $ / image (borne ; bfl.ai/pricing, 22/11/2026)", { fr: "Atelier : version story ou carrée d'une image, le cadre agrandi autour de la photo intacte.", en: "Workshop: story or square version of an image, the frame extended around the untouched photo." }, { needsReference: true }),
 );
+
+/**
+ * Vidéos de l'API Gemini (`google:veo-*`) : plus accordées par le propriétaire (23 novembre 2026, Veo seulement par
+ * Vertex). Jamais choisies, ni par défaut, ni en secours, ni par le mode automatique, ni réglées dans l'administration.
+ */
+export const videoNonAccordee = (m: Pick<MediaModel, "provider" | "kind">): boolean => m.kind === "video" && m.provider === "google";
+/** Modèle vidéo par défaut du Studio (le moins cher qui suffit) : Veo 3.1 Lite par Vertex, sans son. */
+export const DEFAULT_VIDEO_MODEL = { provider: "vertex", model: "veo-3.1-lite-generate-001" } as const;
 
 export const mediaModel = (provider: string, model: string): MediaModel | null => MEDIA_MODELS.find((m) => m.provider === provider && m.model === model) ?? null;
 

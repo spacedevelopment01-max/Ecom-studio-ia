@@ -472,6 +472,10 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   }
   // Usage réglé explicitement : son choix (principal, secours) est respecté — aucun autre modèle en silence.
   if (usage && usageExplicit(usage)) return null;
+  // Vidéo (23 novembre 2026, « le moins cher qui suffit par défaut ») : le défaut du Studio (Veo 3.1 Lite par Vertex) ou
+  // ce que l'administration a réglé, jamais l'ancien repli du routeur (il prenait Veo 3.0 de l'API Gemini, ou un autre
+  // fournisseur dont la clé se trouvait là). Rien d'utilisable : aucun plan animé, le plan sûr le remplace.
+  if (kind === "video") return null;
   // Besoin précis (nom écrit dans l'image, références, son, personnes) : l'ancien routeur ne connaît que « image »
   // ou « vidéo » et pourrait choisir un modèle incapable (ex. un logo payé avec un nom illisible). Aucun repli.
   if (need && (need.text || (need.references ?? 0) > 0 || need.audio || need.people)) return null;
@@ -545,9 +549,10 @@ export function imageReferencePrompt(text:string,roles:readonly string[]):string
  return text+(roles.length?'\nTRANSMITTED REFERENCES (ordered): '+roles.map((role,i)=>role==='avoid'?`image ${i+1}: logos already made, shown ONLY so that the new one is completely different (not a model: do not reproduce, retouch or imitate it)`:role==='examples'?`image ${i+1} : exemples de logos que j'aime, seulement comme exemples : n'en recopie aucun`:`image ${i+1}: ${role} (essential, reproduce faithfully)`).join('; '):'');
 }
 
-export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | "alibaba" | null {
+/** Fournisseur du plan vidéo de cet usage (fabricants en direct compris : Vertex, le défaut du Studio), null si aucun. */
+export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | "alibaba" | "vertex" | "kling" | "byteplus" | "runware" | null {
   const d = routeMedia("video_generation", undefined, usage ? { usage } : undefined);
-  return d && (d.provider === "google" || d.provider === "fal" || d.provider === "alibaba") ? d.provider : null;
+  return d && (["google", "fal", "alibaba", "vertex", "kling", "byteplus", "runware"] as const).find((x) => x === d.provider) || null;
 }
 
 /**

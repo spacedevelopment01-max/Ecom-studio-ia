@@ -66,6 +66,16 @@ function reviewUsd(units: { input: number; output: number } = IMAGE_REVIEW_UNITS
 }
 /** Coût probable (micro-euros, coefficient compris) d'une relecture d'image de publication. */
 export const publicationReviewMicro = (units?: { input: number; output: number }): number => toMicro(reviewUsd(units));
+/**
+ * Coût probable d'une relecture d'image de départ ou d'un plan de vidéo : le même relecteur (le plus fort, au niveau
+ * élevé, `VIDEO_REVIEW_MODEL` = `IMAGE_REVIEW_MODEL`), aux jetons de cette relecture.
+ */
+export const strongReviewMicro = (units: { input: number; output: number }): number => toMicro(reviewUsd(units));
+/**
+ * Prix PROBABLE d'une image créée par le modèle des publications (estimation au jeton, la même que pour les
+ * publications : `aiPostProbableMicro`). Sa borne haute de réservation reste `aiPostMaxMicro`, montrée « au plus ».
+ */
+export const aiPostImageProbableMicro = (): number => toMicro(usd("image_generation", { images: 1 }, "social_image"));
 
 /** Coût estimé en micro-euros débités de l'enveloppe (coefficient de l'administration compris). */
 export type VideoChoice = "ai" | "edited" | "none";

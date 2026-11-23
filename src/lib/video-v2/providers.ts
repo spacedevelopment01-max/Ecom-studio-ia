@@ -9,7 +9,7 @@
 import { EUR } from "../billing";
 import { priceFor, usdToEur } from "../ai/config";
 import { capableModels } from "../orchestrator/capabilities";
-import { MEDIA_MODELS, mediaModel } from "../ai/media-models";
+import { MEDIA_MODELS, mediaModel, videoNonAccordee } from "../ai/media-models";
 import { mediaStatus } from "../ai/media-routing";
 import type { VideoAspect, VideoCapability } from "./types";
 
@@ -138,6 +138,11 @@ export function chooseProvider(n: ShotNeed, o: { available: (provider: string) =
     }
     // Modèle du catalogue multimédia : utilisable (tarif, vérification) et activé par l'administration.
     const mm = mediaModel(c.provider, c.model);
+    // Vidéos de l'API Gemini : plus accordées (23 novembre 2026, Veo seulement par Vertex), jamais choisies.
+    if (mm && videoNonAccordee(mm)) {
+      rejected.push({ model: key, why: "plus accordé : Veo seulement par Vertex" });
+      continue;
+    }
     const st = mm ? mediaStatus(mm) : null;
     if (st && (!st.confirmed || !st.enabled)) {
       rejected.push({ model: key, why: !st.confirmed ? "à confirmer dans l'administration" : "désactivé" });

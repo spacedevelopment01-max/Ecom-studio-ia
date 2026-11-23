@@ -174,7 +174,8 @@ describe("Phase 3A — intention, plan, routeur", async () => {
       logo_symbol: ["anthropic", "claude-opus-5-5", "medium"], social_planning: ["anthropic", "claude-opus-5-5", "medium"], social_copy: ["anthropic", "claude-sonnet-5-5", "medium"],
       classification: ["anthropic", "claude-haiku-5-5"], video_direction: ["anthropic", "claude-opus-5-5", "medium"], art_direction: ["anthropic", "claude-opus-5-5", "medium"],
       ad_creative: ["anthropic", "claude-opus-5-5", "medium"], blog_topics: ["anthropic", "claude-sonnet-5-5", "low"], blog_writing: ["anthropic", "claude-sonnet-5-5", "medium"],
-      image_generation: ["openai", "gpt-image-1"], video_generation: ["google", "veo-3.0-generate-001"],
+      // Vidéo : Veo 3.1 Lite par Vertex depuis le 23 novembre 2026 (« le moins cher qui suffit par défaut »), plus Veo 3.0.
+      image_generation: ["openai", "gpt-image-1"], video_generation: ["vertex", "veo-3.1-lite-generate-001"],
     };
     for (const [t, [provider, model, effort]] of Object.entries(before)) {
       expect(DEFAULT_ROUTES[t as keyof typeof DEFAULT_ROUTES], t).toEqual({ provider, model, ...(effort ? { effort } : {}) });

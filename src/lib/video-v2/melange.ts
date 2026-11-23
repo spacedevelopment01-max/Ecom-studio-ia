@@ -13,7 +13,7 @@
  *    garde à sa charge ce qu'il refait pour sa qualité).
  */
 import { usageSettings } from "../ai/media-routing";
-import { mediaModel } from "../ai/media-models";
+import { mediaModel, videoNonAccordee } from "../ai/media-models";
 import type { Shot } from "./types";
 
 /** Nombre de plans animés par IA dans une publication du mélange (une publicité de 21 à 30 s en a deux : `grilles.ts`). */
@@ -29,7 +29,7 @@ export function mixAnimatedModel(): { provider: string; model: string } | null {
   const [provider, ...rest] = v.split(":");
   const model = rest.join(":");
   const m = mediaModel(provider, model);
-  return m && m.kind === "video" && m.caps.imageToVideo ? { provider, model } : null;
+  return m && m.kind === "video" && m.caps.imageToVideo && !videoNonAccordee(m) ? { provider, model } : null;
 }
 
 /**
