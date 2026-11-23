@@ -226,3 +226,69 @@ describe("3. jamais de consigne de style pour un logo (retirée par le Studio, s
     expect(res.summary).not.toMatch(/consigne/);
   });
 });
+
+describe("la typographie dans la demande du logo : chaque caractère s'accorde avec « un caractère »", async () => {
+  const { FONT_CHARACTER } = await import("@/lib/syna-agent/identities");
+  const I = await import("@/lib/syna-agent/brand-images");
+  it("« un caractère rond épais » pour Nunito, et aucune forme au féminin dans toute la table", () => {
+    expect(I.typoLine("nunito_n8")).toBe("Typographie de la marque : un caractère rond épais (dans l'esprit de Nunito) ; tu peux le redessiner à ta façon.");
+    expect(I.typoLine("alfa_slab_one_n4")).toBe("Typographie de la marque : un caractère slab très gras (grands titres) (dans l'esprit de Alfa Slab One) ; tu peux le redessiner à ta façon.");
+    // Formes féminines (ou au féminin pluriel) d'adjectifs : jamais après « un caractère ». « capitales », nom, est permis.
+    const FEMININ = /\b(\p{L}*(ée|ées|euse|euses|ronde|grasse|fine|douce|légère|épaisse|ale|ante|ente|ive|ière|ienne)|neutres|élégante|contrastée|condensée|arrondie|liée|brossée|féminine)\b/iu;
+    for (const [k, v] of Object.entries(FONT_CHARACTER)) {
+      const sans = v.replace(/« à l'ancienne »/, "").replace(/capitales condensées d'affiche/, "");
+      expect(sans, `${k} : « un caractère ${v} »`).not.toMatch(FEMININ);
+      expect(I.typoLine(`${k}_n4`)).toMatch(/^Typographie de la marque : un caractère \S/);
+    }
+  });
+});
+
+describe("carte commune Halo + Pénombre : Pénombre (à finir) à la charge du Studio, Halo au client", async () => {
+  const J = await import("@/lib/syna-agent/journey");
+  const C = await import("@/lib/syna-agent/brand-chain");
+  const T = await import("@/lib/syna-agent/tools/identity");
+  const { borneDuStudio, probableDuStudio } = await import("@/lib/ai/borne-du-studio");
+  const { account, project } = await import("./conversation209-fixtures");
+  const { threadFor } = await import("@/lib/syna-agent/thread");
+  const { getTool } = await import("@/lib/syna-agent/registry");
+  const { getJob, JobContext } = await import("@/lib/jobs");
+  const { chargeDuStudio } = await import("@/lib/billing");
+  const { one, run } = await import("@/lib/db");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const sharp = (await import("sharp")).default;
+  const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+  await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
+
+  it("le devis, la tâche et la dépense : B compté au client, C à la charge du Studio, avec les deux plafonds justes", async () => {
+    const user = await account(), pid = project(user) as string, cid = threadFor(user, pid);
+    const noms = { A: "Sillage", B: "Halo", C: "Pénombre" } as const;
+    J.updateJourney(cid, (x) => { x.steps[0] = { status: "done" }; x.identities = { list: (["A", "B", "C"] as const).map((k) => { const r = route(k) as any; return { ...r, name: noms[k], board: { ...r.board, images: { ...(k !== "C" ? { logo: { id: `logo-${k}` } } : {}), hero: { id: `h-${k}` }, site: { id: `s-${k}` } } } }; }), issues: [], comparison: "", at: 1, round: 1 } as any; });
+    const ctx = { user, conversationId: cid, runId: `run-${Math.random()}`, projectId: pid, attachment: () => null } as any;
+    const est: any = await fr(() => getTool("identity.images")!.estimate!(ctx, { keys: ["C", "B"], images: ["logo"] } as never));
+    const q1 = C.boardImagesQuote(1, undefined, ["logo"]);
+    // Le client : un seul logo (Halo). Le Studio : Pénombre en entier, plus les reprises des deux.
+    expect(est.maxMicro).toBe(q1.maxMicro);
+    expect(est.probableMicro).toBe(q1.probableMicro);
+    expect(est.studio).toBeUndefined();
+    expect(est.studioMaxMicro).toBe(borneDuStudio(q1.maxMicro, false, q1.repriseMicro) + borneDuStudio(q1.maxMicro, true, q1.repriseMicro));
+    expect(est.studioProbableMicro).toBe(probableDuStudio(q1.probableMicro ?? q1.maxMicro, false, q1.repriseProbableMicro) + probableDuStudio(q1.probableMicro ?? q1.maxMicro, true, q1.repriseProbableMicro));
+    expect(est.label).toBe("1 image à refaire sur « Halo » ; « Pénombre » finie à ma charge");
+    expect(T.devisDesImages(J.journeyOf(cid), ["B", "C"], ["logo"])).toMatchObject({ client: ["B"], aFinir: ["C"] });
+    // La tâche : plafond du client = sa part ; Pénombre marquée à la charge du Studio.
+    const res = await fr(() => getTool("identity.images")!.run(ctx, { keys: ["C", "B"], images: ["logo"] } as never));
+    const payload = JSON.parse(getJob(res.jobs![0])!.payload);
+    expect(payload).toMatchObject({ redo: ["B", "C"], capMicro: q1.maxMicro, studioCapMicro: est.studioMaxMicro, studioKeys: ["C"] });
+    expect(payload.studio).toBeUndefined();
+    // La dépense : le dessin de Halo est compté au client, celui de Pénombre au Studio.
+    const charge: Record<string, boolean> = {};
+    const logo = () => sharp({ create: { width: 640, height: 480, channels: 3, background: "#FFFFFF" } }).composite([{ input: { create: { width: 300, height: 90, channels: 3 as const, background: "#2B4C8C" } }, left: 170, top: 195 }]).png().toBuffer();
+    C.brandChainDeps.ai = () => ({
+      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
+      draw: async (id) => { charge[id.split("-")[2]] = chargeDuStudio(); return logo(); },
+      look: async (_id, c) => ({ images: [{ slot: "logo", seen: "", score: 9, ok: true, read: [/Marque : « ([^»]+) »/.exec(c.prompt)![1]], why: "net" }] }) as never,
+    });
+    run("UPDATE jobs SET status='running' WHERE id=?", res.jobs![0]);
+    try { await fr(() => C.runSinaBrandJob(new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", res.jobs![0])))); } finally { C.brandChainDeps.ai = undefined; }
+    expect(charge).toEqual({ B: false, C: true });
+  });
+});

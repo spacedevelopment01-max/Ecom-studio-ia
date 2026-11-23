@@ -9,9 +9,8 @@
  * Le code le garantit, quel que soit l'ordre donné par SINA, sans aucun appel à l'IA :
  *  - dans une même tâche, les planches sont toujours faites dans l'ordre des identités (brand-chain, `imagesOnly`) ;
  *  - les clés reçues de SINA sont remises dans l'ordre (`dansLOrdre`) ;
- *  - plusieurs reprises d'images dans une même réponse de SINA : réunies en un seul appel quand elles sont à la même
- *    charge (toutes payées par le client, ou toutes finies par le Studio), sinon celle de la planche la plus tôt passe
- *    d'abord (`reprisesDansLOrdre`) ;
+ *  - plusieurs reprises d'images dans une même réponse de SINA : réunies en un seul appel, clés dans l'ordre ; une
+ *    planche à finir y reste à la charge du Studio (`reprisesDansLOrdre`, `devisDesImages`) ;
  *  - un logo demandé alors qu'un logo d'une planche d'AVANT est à refaire aussi et pas encore fait (il manque à sa
  *    planche, ou le client vient de le demander) : la carte n'est pas montrée, SINA est prévenue avant toute dépense et
  *    les réunit en un seul appel (`logosAvantARefaire`). C'est le choix le plus simple : une seule tâche, dans l'ordre,
@@ -61,26 +60,15 @@ export function phraseDeLOrdre(keys: readonly string[], avant: { key: string; na
 }
 
 type Action = { tool: string; args?: unknown };
-/**
- * Plusieurs reprises d'images de planches dans une même réponse de SINA : réunies en un seul appel, clés dans l'ordre,
- * quand elles sont à la même charge ; sinon, celle de la planche la plus tôt d'abord (une carte à la fois : la suivante
- * est reproposée ensuite). Les autres actions gardent leur place.
- */
-export function reprisesDansLOrdre<T extends Action>(actions: T[], cid: string): T[] {
+/** Plusieurs reprises d'images de planches dans une même réponse de SINA : réunies en un seul appel, clés dans l'ordre. Les autres actions gardent leur place. */
+export function reprisesDansLOrdre<T extends Action>(actions: T[], _cid?: string): T[] {
   const idx = actions.map((a, i) => (a.tool === "identity.images" && a.args && typeof a.args === "object" ? i : -1)).filter((i) => i >= 0);
   if (idx.length < 2) return actions;
-  const j = journeyOf(cid);
   type A = { keys?: string[]; images?: string[]; guidance?: string };
+  // Toujours réunies : sur une carte commune, une planche à finir reste à la charge du Studio (devisDesImages).
   const lot = idx.map((i) => actions[i].args as A);
-  // Même règle que la carte (finirPlanchesGardees) : une planche gardée de côté, finie à la charge du Studio.
-  const inc = planchesIncompletes(j);
-  const charge = (a: A) => !!a.keys?.length && a.keys.every((k) => { const h = inc.find((x) => x.key === k); return !!h && (a.images ?? []).every((s) => h.manque.includes(s)); });
-  const plusTot = (a: A) => Math.min(...(a.keys ?? []).map(rang));
-  let reprises: A[];
-  if (lot.every((a) => charge(a) === charge(lot[0]))) {
-    const images = [...new Set(lot.flatMap((a) => a.images ?? []))], guidance = lot.map((a) => a.guidance?.trim()).filter(Boolean).join("\n").slice(0, 1500);
-    reprises = [{ keys: dansLOrdre(lot.flatMap((a) => a.keys ?? [])), images: ["logo", "hero", "site"].filter((s) => images.includes(s)).concat(images.filter((s) => !["logo", "hero", "site"].includes(s))), ...(guidance ? { guidance } : {}) }];
-  } else reprises = [...lot].sort((a, b) => plusTot(a) - plusTot(b)).map((a) => ({ ...a, keys: dansLOrdre(a.keys ?? []) }));
+  const images = [...new Set(lot.flatMap((a) => a.images ?? []))], guidance = lot.map((a) => a.guidance?.trim()).filter(Boolean).join("\n").slice(0, 1500);
+  const reprises: A[] = [{ keys: dansLOrdre(lot.flatMap((a) => a.keys ?? [])), images: ["logo", "hero", "site"].filter((s) => images.includes(s)).concat(images.filter((s) => !["logo", "hero", "site"].includes(s))), ...(guidance ? { guidance } : {}) }];
   const out: T[] = [];
   actions.forEach((a, i) => {
     if (i === idx[0]) out.push(...reprises.map((args) => ({ ...a, args }) as T));

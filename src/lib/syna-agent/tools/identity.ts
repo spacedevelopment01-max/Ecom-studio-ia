@@ -357,10 +357,13 @@ const imagesTool: AgentTool<ImagesArgs> = {
     // d'avant, à refaire aussi et pas encore fait, passe avant. SINA est prévenue une fois, avant la carte et sans dépense.
     const avant = logosAvantARefaire(ctx.conversationId, a.keys, redoImages(a.images));
     if (avant.length && !dejaPrevenue(ctx.runId)) throw new RefusInterne(phraseDeLOrdre(a.keys, avant));
-    const j = journeyOf(ctx.conversationId), studio = finirPlanchesGardees(j, a.keys, redoImages(a.images));
-    const q = boardImagesQuote(a.keys.length, undefined, redoImages(a.images) as never, []);
+    const d = devisDesImages(journeyOf(ctx.conversationId), a.keys, redoImages(a.images));
+    const names = (ks: string[]) => ks.map((k) => `« ${journeyOf(ctx.conversationId).identities?.list?.find((x) => x.key === k)?.name ?? k} »`).join(" et ");
     // Deux plafonds : le prix du client (« 0 % » quand c'est une reprise de SINA) et la borne des reprises du Studio.
-    return { maxMicro: q.maxMicro, ...(q.probableMicro ? { probableMicro: q.probableMicro } : {}), ...deuxPlafonds(q, studio), label: studio ? L(`finir ${a.keys.length > 1 ? "tes planches" : "ta planche"} : ${n} image${n > 1 ? "s" : ""} qui manque${n > 1 ? "nt" : ""}`, "finish your board: missing images") : `${n} image${n > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}`, ...(studio ? { studio: true } : {}) };
+    const label = d.studio ? L(`finir ${a.keys.length > 1 ? "tes planches" : "ta planche"} : ${n} image${n > 1 ? "s" : ""} qui manque${n > 1 ? "nt" : ""}`, "finish your board: missing images")
+      : d.aFinir.length ? L(`${n} image${n > 1 ? "s" : ""} à refaire sur ${names(d.client)} ; ${names(d.aFinir)} finie${d.aFinir.length > 1 ? "s" : ""} à ma charge`, "images to redo; unfinished boards at my expense")
+      : `${n} image${n > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}`;
+    return { maxMicro: d.maxMicro, ...(d.probableMicro ? { probableMicro: d.probableMicro } : {}), studioMaxMicro: d.studioMaxMicro, studioProbableMicro: d.studioProbableMicro, label, ...(d.studio ? { studio: true } : {}) };
   },
   run: (ctx, a) => {
     const p = project(ctx);
@@ -371,21 +374,37 @@ const imagesTool: AgentTool<ImagesArgs> = {
     if (!keys.length) return { ok: false, summary: L("Il n'y a pas encore de planche à reprendre.", "There is no board to redo yet."), hint: "Les images se refont sur des planches déjà montrées (identity.propose d'abord)." };
     if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Une création de marque est déjà en cours : attends-la.", "A brand job is already running.") };
     const images = redoImages(a.images);
-    const quote = boardImagesQuote(keys.length, undefined, images as never, []);
+    const d = devisDesImages(j, keys, images);
     // Jamais de consigne de style pour un logo : retirée par le Studio, sans IA ; seuls les mots cités du client restent.
     const consigne = consigneSansStyleDuLogo(a.guidance, images);
     const job = enqueue({
       userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L(`Images refaites sur ${keys.length} planche${keys.length > 1 ? "s" : ""} (SINA)`, `Board images redone (SINA)`),
-      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, studioCapMicro: deuxPlafonds(quote, finirPlanchesGardees(j, keys, images)).studioMaxMicro, count: routeCountOfProject(p.id), imagesOnly: true, images: true, redo: keys, slots: images, ...(finirPlanchesGardees(j, keys, images) ? { studio: true } : {}), ...(consigne.guidance ? { guidance: consigne.guidance } : {}) },
+      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: d.maxMicro, studioCapMicro: d.studioMaxMicro, count: routeCountOfProject(p.id), imagesOnly: true, images: true, redo: keys, slots: images, ...(d.studio ? { studio: true } : d.aFinir.length ? { studioKeys: d.aFinir } : {}), ...(consigne.guidance ? { guidance: consigne.guidance } : {}) },
       maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-images:${keys.join("")}:${images.join("+")}`,
     });
     return {
-      ok: true, jobs: [job.id], data: { planches: keys, images, plafondMicro: quote.maxMicro },
+      ok: true, jobs: [job.id], data: { planches: keys, images, plafondMicro: d.maxMicro },
       summary: L(`Je refais ${images.length} image${images.length > 1 ? "s" : ""} sur ${keys.map((k) => `« ${list.find((x) => x.key === k)?.name ?? k} »`).join(" et ")} (quelques minutes) ; le reste des planches ne bouge pas.`, "Redoing the board images."),
       ...(consigne.retire ? { hint: noteConsigneRetiree(consigne.retire) } : {}),
     };
   },
 };
+
+/**
+ * Le devis d'une reprise d'images de planches (23 novembre 2026, carte Halo + Pénombre de l'essai de Nadia) : une planche
+ * à finir (une image y manque) reste à la charge du Studio même sur une carte commune ; seule la part que le client
+ * demande lui est comptée. `aFinir` : les planches finies à la charge du Studio quand la carte en mêle d'autres.
+ */
+export function devisDesImages(j: Journey, keys: readonly string[], images: readonly string[]): { maxMicro: number; probableMicro?: number; studioMaxMicro: number; studioProbableMicro: number; studio: boolean; client: string[]; aFinir: string[] } {
+  const quote = (n: number) => boardImagesQuote(n, undefined, images as never, []);
+  if (finirPlanchesGardees(j, keys, images)) { const q = quote(keys.length); return { maxMicro: q.maxMicro, ...(q.probableMicro ? { probableMicro: q.probableMicro } : {}), ...deuxPlafonds(q, true), studio: true, client: [], aFinir: [...keys] }; }
+  const aFinir = keys.filter((k) => finirPlanchesGardees(j, [k], images)), client = keys.filter((k) => !aFinir.includes(k));
+  const qc = quote(client.length), pc = deuxPlafonds(qc, false);
+  if (!aFinir.length) return { maxMicro: qc.maxMicro, ...(qc.probableMicro ? { probableMicro: qc.probableMicro } : {}), ...pc, studio: false, client, aFinir };
+  // Carte commune : le client paie sa part ; le Studio porte les planches à finir en entier, plus les reprises de tout.
+  const qs = quote(aFinir.length), ps = deuxPlafonds(qs, true);
+  return { maxMicro: qc.maxMicro, ...(qc.probableMicro ? { probableMicro: qc.probableMicro } : {}), studioMaxMicro: pc.studioMaxMicro + ps.studioMaxMicro, studioProbableMicro: pc.studioProbableMicro + ps.studioProbableMicro, studio: false, client, aFinir };
+}
 
 /**
  * Les deux plafonds d'un devis de la marque (23 novembre 2026) : la borne des reprises à la charge du Studio (deux reprises
