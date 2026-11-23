@@ -357,6 +357,38 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
   // Le symbole tiré du logo est un dessin de logo : son devis prend le tarif du modèle imposé des logos (23 novembre 2026).
   await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
 
+  epreuve("marque-finie-jamais-sans-logo", async () => {
+    const T = await import("@/lib/syna-agent/tools/identity");
+    const { threadView, confirmationText } = await import("@/lib/syna-agent/loop");
+    const { getTool } = await import("@/lib/syna-agent/registry");
+    const user = await account(), projectId = project(user, "services") as string, cid = threadFor(user, projectId);
+    // La marque finie, choisie, dont le logo est resté refusé après ses reprises.
+    J.updateJourney(cid, (j) => {
+      const a = { ...route("A"), board: { ...route("A").board, images: { hero: { id: "hero1", w: 1, h: 1 } } } };
+      j.identities = { list: [a as never], issues: [], comparison: "", at: 1, round: 1 };
+      for (const n of [0, 1]) J.setStep(j, n, "done");
+      j.identityChoice = { key: "A", mix: {}, at: 1 };
+      j.brandFinish = { prepaidMicro: 0, images: { hero: { id: "hero1", w: 1, h: 1 } }, at: 2, issues: ["Ta marque n'est pas encore finie : son logo n'a pas passé ma relecture, même après mes reprises."], logoFrom: null, manque: ["logo"] };
+    });
+    const j = J.journeyOf(cid);
+    // Elle n'est pas montrée comme finie ; SINA ne la présente pas et propose de refaire le logo à sa charge.
+    expect(threadView(user, cid).journey.identities!.final).toMatchObject({ finished: false });
+    expect(J.journeyContext(j)).toMatch(/La marque — elle N'EST PAS finie[\s\S]*brand\.finish avec redo \[« logo »\][\s\S]*« À ma charge : 0 % de ton budget »/);
+    expect(J.journeyContext(j)).not.toMatch(/sa marque complète est affichée/);
+    // La carte d'accord : à la charge du Studio, jamais comptée au client.
+    expect(T.finirLogoManquant(j)).toBe(true);
+    expect(T.finirLogoManquant(j, { redo: ["hero"] })).toBe(false); // un autre changement reste un goût du client
+    const ctx: any = { user, conversationId: cid, runId: "epreuve-logo", projectId, attachment: () => null };
+    const est = await getTool("brand.finish")!.estimate!(ctx, {} as never);
+    expect(est).toMatchObject({ studio: true });
+    expect(await confirmationText(getTool("brand.finish")!, {}, ctx, user.id, projectId, est)).toContain("À ma charge : 0 % de ton budget");
+    // Plus aucun nom dessiné en secours dans la marque finie, et la reprise part à la charge du Studio.
+    const fin = fs.readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8");
+    expect(fin).not.toContain("savePlancheLogo(");
+    expect(fin).toContain("if (!manqueLogo && loadProject(o.projectId).brand?.logo.assetId) {");
+    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain('return a.studio && j.brandFinish?.manque?.includes("logo") ? aLaChargeDuStudio(finir) : finir();');
+  });
+
   epreuve("etape-validee-qui-bouge", async () => {
     const user = await account(), projectId = project(user, "services") as string, cid = threadFor(user, projectId);
     J.updateJourney(cid, (j) => { for (const n of [0, 1, 2, 3]) J.setStep(j, n, "done"); j.identityChoice = { key: "A", mix: {}, at: 1 }; });

@@ -138,7 +138,13 @@ export type Journey = {
    * fin (le client a donné son accord une fois pour le tout) ; `images` = les images de l'identité retenue, mélange
    * compris (celles de sa planche, puis l'objet, les signes et les publications créés après le choix).
    */
-  brandFinish?: { prepaidMicro?: number; images?: NonNullable<Board["images"]>; at?: number; issues?: string[]; /** Image de planche dont le logo de la marque est tiré. */ logoFrom?: string | null };
+  brandFinish?: { prepaidMicro?: number; images?: NonNullable<Board["images"]>; at?: number; issues?: string[]; /** Image de planche dont le logo de la marque est tiré. */ logoFrom?: string | null;
+    /**
+     * Ce qui manque encore à la marque finie après les reprises (le logo) : elle n'est pas montrée comme finie, et SINA le
+     * refait à sa charge (règle du propriétaire : « Jamais une planche incomplète : une image refusée est refaite avant
+     * d'être montrée »).
+     */
+    manque?: string[] };
   /** Le logo de la marque, adopté par la fin de marque (`brand-finish.ts`) : celui de la planche, ou le nom dessiné en secours. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
@@ -414,6 +420,12 @@ export const STEP_GUIDES: Partial<Record<number, string>> = {
 export function brandFinishContext(j: Journey): string[] {
   const f = j.brandFinish, k = j.brandKit;
   if (!f?.at) return [fixe("La marque — l'identité est choisie, il reste à la finir : appelle brand.finish (sans argument). Le Studio crée ce qui manque (le logo s'il n'y en a pas, l'objet qui le porte, les signes, trois publications), adopte son logo et prépare sa charte. Quand c'est déjà compris dans l'accord donné pour ses identités, ça part sans carte ; sinon le Studio montre le prix avant. Quelques minutes, en arrière-plan.")];
+  // Le logo manque après les reprises : la marque n'est pas finie, rien n'en est présenté (jamais une planche incomplète).
+  if (f.manque?.includes("logo")) return [
+    "La marque — elle N'EST PAS finie : son logo n'a pas passé la relecture, même après les reprises. Jamais une planche incomplète : tu ne présentes pas sa marque, tu ne la fais pas valider et tu ne parles d'aucun nom dessiné à la place.",
+    ...(f.issues?.length ? [`Ce qui bloque (dis-le honnêtement, en mots simples) : ${f.issues.join(" ; ")}`] : []),
+    fixe("Dis-lui franchement ce qui bloque, puis propose de refaire son logo : brand.finish avec redo [« logo »] (ce qui le porte est refait avec lui). C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». S'il a dit ce qu'il veut de différent, mets ses mots dans guidance. Rien ne part avant qu'il confirme."),
+  ];
   const im = f.images ?? {};
   const made = [im.logo ? "le logo" : "", im.hero ? "la grande scène" : "", im.object ? "l'objet qui porte le logo" : "", im.signs ? "les signes" : "", ...(im.posts ?? []).map((q, i) => (q ? `la publication ${i + 1}` : ""))].filter(Boolean);
   return [

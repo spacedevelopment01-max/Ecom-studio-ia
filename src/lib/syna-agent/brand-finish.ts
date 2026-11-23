@@ -28,7 +28,7 @@ import { CREATED_SLOTS, clientLogoOf, logoOnWhite, onWhite, proposalImagery, run
 import { buildBrandKit } from "./brand-kit";
 import type { Route } from "./brand-routes";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
-import { chosenRoute, freeLogoFacts, saveBoardLogo, savePlancheLogo, singleTerritory, type SinaLogo } from "./logos";
+import { chosenRoute, freeLogoFacts, saveBoardLogo, singleTerritory, type SinaLogo } from "./logos";
 
 type Images = NonNullable<Route["board"]["images"]>;
 const has = (i: Images | undefined, s: ImageSlot): boolean =>
@@ -113,24 +113,21 @@ export async function runBrandFinish(o: {
   }
   const images = current.board.images;
 
-  // 2. Le logo de la marque : celui de la planche, fond retiré. Sans logo validé : le nom dessiné, et c'est dit.
+  // 2. Le logo de la marque : celui de la planche, fond retiré. Sans logo gardé après ses reprises, plus de nom dessiné
+  // en secours (règle du propriétaire : « Jamais une planche incomplète : une image refusée est refaite avant d'être
+  // montrée » ; essai réel de Nadia, 23 novembre 2026) : la marque n'est pas montrée comme finie, SINA dit ce qui bloque
+  // et refait le logo à sa charge (brand.finish, carte « À ma charge : 0 % de ton budget »).
   let logos = j.logos?.list ?? [], logoChoice = j.logoChoice;
   const from = images?.logo?.id ?? null;
-  if (!keptLogo && (!logoChoice || slots.includes("logo") || (j.brandFinish as { logoFrom?: string | null } | undefined)?.logoFrom !== from)) {
+  const boardLogo = images?.logo ? getAsset(images.logo.id) : undefined;
+  const manqueLogo = !keptLogo && !(boardLogo && boardLogo.project_id === o.projectId && !boardLogo.deleted_at);
+  if (manqueLogo) issues.push(L("Ta marque n'est pas encore finie : son logo n'a pas passé ma relecture, même après mes reprises. Je ne te la montre pas sans logo : je le refais, à ma charge, rien n'est compté pour toi.", "Your brand is not finished yet: its logo did not pass my review, even after my retries. I redo it at my expense."));
+  if (!keptLogo && !manqueLogo && (!logoChoice || slots.includes("logo") || (j.brandFinish as { logoFrom?: string | null } | undefined)?.logoFrom !== from)) {
     ctx.progress(0.8, L("Je prépare ton logo", "Preparing your logo"));
     const draft = singleTerritory(freeLogoFacts(p.brand, j), current);
-    const boardAsset = images?.logo ? getAsset(images.logo.id) : undefined;
-    let assetId: string, kind: "image" | "planche";
-    if (boardAsset && boardAsset.project_id === o.projectId && !boardAsset.deleted_at) {
-      assetId = await saveBoardLogo(ctx, who, current, { ...draft, id: "planche-logo", style: "libre" } as Territory, await cleanArtwork(assetData(boardAsset)));
-      kind = "image";
-    } else {
-      assetId = await savePlancheLogo(ctx, who, current, { ...draft, id: "planche", style: "libre" } as Territory);
-      kind = "planche";
-      issues.push(L("Je n'ai pas de logo qui passe ma relecture : ton nom dessiné, exact à la lettre, sert de logo en attendant. Je peux t'en créer un autre, je t'annonce son prix avant.", "No logo passed my review: your drawn name is used meanwhile. I can create another one; I will tell you the price first."));
-    }
+    const assetId = await saveBoardLogo(ctx, who, current, { ...draft, id: "planche-logo", style: "libre" } as Territory, await cleanArtwork(assetData(boardLogo!)));
     await chooseLogoV2(null, o.projectId, assetId);
-    const logo: SinaLogo = { source: "A", name: kind === "image" ? L("Ton logo", "Your logo") : L("Ton nom dessiné", "Your drawn name"), style: "libre", assetId, verdict: "PROVISIONAL", score: null, reason: kind === "image" ? L("créé pour ta marque et relu : ton nom y est exact", "made for your brand and reviewed: your name is exact") : L("dessiné par le Studio, exact à la lettre", "drawn by the Studio, letter-perfect"), kind, choosable: true };
+    const logo: SinaLogo = { source: "A", name: L("Ton logo", "Your logo"), style: "libre", assetId, verdict: "PROVISIONAL", score: null, reason: L("créé pour ta marque et relu : ton nom y est exact", "made for your brand and reviewed: your name is exact"), kind: "image", choosable: true };
     logos = [logo]; logoChoice = { source: "A", assetId, at: Date.now() };
   }
 
@@ -140,7 +137,7 @@ export async function runBrandFinish(o: {
   const brandNow = loadProject(o.projectId).brand, mainLogo = brandNow?.logo.assetId ? getAsset(brandNow.logo.assetId) : undefined;
   const symbolDone = (j.brandFinish as { symbolFor?: string } | undefined)?.symbolFor;
   let symbolFor = symbolDone;
-  if (brandNow && mainLogo && !mainLogo.deleted_at && symbolDone !== mainLogo.id && symbolDone !== `refus:${mainLogo.id}` && !(logos[0]?.kind === "planche")) {
+  if (!manqueLogo && brandNow && mainLogo && !mainLogo.deleted_at && symbolDone !== mainLogo.id && symbolDone !== `refus:${mainLogo.id}` && !(logos[0]?.kind === "planche")) {
     ctx.progress(0.85, L("Je tire le symbole de ton logo", "Deriving the symbol from your logo"));
     try {
       const made = await ctx.step(`brand:symbol:${round}:${mainLogo.id}`, async () => {
@@ -171,14 +168,18 @@ export async function runBrandFinish(o: {
   const b = loadProject(o.projectId).brand;
   if (b?.tagline?.trim() && !(b.validated ?? []).includes("tagline")) saveBrand(o.projectId, { ...b, validated: [...(b.validated ?? []), "tagline"] });
   let kit: Awaited<ReturnType<typeof buildBrandKit>> | null = null;
-  if (loadProject(o.projectId).brand?.logo.assetId) {
+  // Sans logo, pas de charte : la marque n'est pas finie (jamais une planche incomplète).
+  if (!manqueLogo && loadProject(o.projectId).brand?.logo.assetId) {
     try { kit = await buildBrandKit(o.projectId); } catch (e) { notes.push(`charte non préparée : ${String((e as Error)?.message ?? e).slice(0, 140)}`); issues.push(L("Je n'ai pas pu préparer ta charte : je la refais dès que tu me le dis, sans rien compter.", "I could not prepare your guidelines: I will redo them when you ask, at no cost.")); }
   }
 
   updateJourney(o.conversationId, (x) => {
-    x.brandFinish = { ...(x.brandFinish ?? {}), prepaidMicro: 0, ...(images ? { images } : {}), at: Date.now(), issues: [...new Set(issues)], logoFrom: from, ...(symbolFor ? { symbolFor } : {}) } as Journey["brandFinish"];
+    const { manque: _avant, ...avant } = x.brandFinish ?? {};
+    x.brandFinish = { ...avant, prepaidMicro: 0, ...(images ? { images } : {}), at: Date.now(), issues: [...new Set(issues)], logoFrom: from, ...(symbolFor ? { symbolFor } : {}), ...(manqueLogo ? { manque: ["logo"] } : {}) } as Journey["brandFinish"];
     if (!keptLogo && logoChoice) { x.logos = { list: logos, at: Date.now(), round: (x.logos?.round ?? 0) + 1, notes: [] }; x.logoChoice = logoChoice; setStep(x, 2, "done"); }
     if (kit) { x.brandKit = kit; setStep(x, 3, "review"); } else setStep(x, 3, "todo");
+    // Le logo manque : l'étape du logo n'est pas faite, la marque n'est pas montrée comme finie.
+    if (manqueLogo) { x.brandKit = undefined; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "todo"); }
   });
   return { finished: true, name: current.name, created: slots, issues: [...new Set(issues)], notes, kit: !!kit, images: Object.values(images ?? {}).flat().filter((v) => v && typeof v === "object").length };
 }

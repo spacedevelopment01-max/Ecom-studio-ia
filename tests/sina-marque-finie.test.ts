@@ -661,7 +661,10 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(await call("brand.finish", fresh.ctx, {})).toMatchObject({ ok: false, summary: "L'identité doit être choisie avant de finir la marque." });
   });
 
-  it("logo absent de la planche puis refusé à la relecture : le nom dessiné sert de logo, et c'est dit", async () => {
+  // Avant le 23 novembre 2026, le nom dessiné servait de logo de secours. Règle du propriétaire, appliquée aussi à la marque
+  // finie (« Jamais une planche incomplète : une image refusée est refaite avant d'être montrée ») : plus de secours, la
+  // marque n'est pas montrée comme finie, et SINA refait le logo à sa charge.
+  it("logo absent de la planche puis refusé à la relecture : jamais de nom dessiné en secours, la marque n'est pas finie et SINA refait le logo à sa charge", async () => {
     const t = await thread();
     // À la proposition, le logo de A sort sur fond noir : refusé par le contrôle gratuit, la planche n'en a pas.
     const first = await proposed(t, { draw: async (id) => (id.startsWith("image-1-A-logo") ? square("#050505") : isLogo(id) ? whiteLogo() : square("#3366CC")) });
@@ -673,7 +676,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(first.log.refs[`image-1-B-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     expect(J.journeyOf(t.cid).identities!.incompletes).toEqual([{ key: "A", manque: ["logo", "site"] }]);
     expect(await call("identity.choose", t.ctx, { key: "A" })).toMatchObject({ ok: false });
-    // Une planche montrée avant cette règle, sans logo (ancien parcours) : la marque finie garde son secours.
+    // Une planche montrée avant cette règle, sans logo (ancien parcours) : choisie, sa marque finie doit avoir un logo.
     J.updateJourney(t.cid, (x) => { delete x.identities!.incompletes; });
     const chosen = await call("identity.choose", t.ctx, { key: "A" });
     // Il manque aussi le logo : la fin n'est plus couverte en entier, elle passe par brand.finish et son prix.
@@ -688,7 +691,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // Le nouveau logo est refusé par la relecture (une faute dans le nom).
     const { log, out } = await runJob(r.jobs![0], { look: (_id, c) => ({ images: c.images.map((i: any) => (i.label === "logo" ? { slot: "logo", ok: false, defect: "texte", read: ["Bain de Minut"], why: "Le nom est mal écrit." } : { slot: i.label, ok: true, read: [], why: "" })) }) });
     expect(log.ids.filter((i) => i.startsWith("image-1-A-logo"))).toHaveLength(3); // refusé, puis repris deux fois avant d'être dit
-    // Le nom dessiné de secours n'est pas un logo dont on tire un symbole : aucune création, aucune relecture, rien de gardé.
+    // Sans logo, aucun symbole n'est tiré : aucune création, aucune relecture, rien de gardé.
     expect(symbolCalls(log)).toEqual([]);
     expect(keptSymbols(t.pid)).toEqual([]);
     expect((J.journeyOf(t.cid).brandFinish as any).symbolFor).toBeUndefined();
@@ -697,27 +700,35 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(f.images!.logo).toBeUndefined();
     expect(f.images!.mark).toBeUndefined();
     expect(f.logoFrom).toBeNull();
-    // Dit au client, sans « Identité A : » (c'est SA marque) et sans dessin promis à la place d'une image.
+    // Dit au client, sans « Identité A : » (c'est SA marque), sans dessin ni nom dessiné promis à la place du logo.
     const said = f.issues!.join("\n");
     // Le texte attendu qui manque est dit en premier (un mot mal écrit, c'est le nom qui manque).
-    expect(said).toMatch(/Je n'ai pas gardé le logo \(le texte « Bain de Minuit » n'y est pas écrit exactement\) ; tu vois ton nom dessiné à la place\./);
-    expect(said).toMatch(/Je n'ai pas de logo qui passe ma relecture : ton nom dessiné, exact à la lettre, sert de logo en attendant\. Je peux t'en créer un autre, je t'annonce son prix avant\./);
-    expect(said).not.toMatch(/Identité A|mon dessin|forme simple de la planche/);
+    expect(said).toMatch(/Je n'ai pas gardé le logo \(le texte « Bain de Minuit » n'y est pas écrit exactement\) ; je le refais avant de te montrer ta marque\./);
+    expect(said).toMatch(/Ta marque n'est pas encore finie : son logo n'a pas passé ma relecture, même après mes reprises\. Je ne te la montre pas sans logo : je le refais, à ma charge, rien n'est compté pour toi\./);
+    expect(said).not.toMatch(/Identité A|mon dessin|forme simple de la planche|nom dessiné/);
     expect(out.issues).toEqual(f.issues);
-    // Le client finit quand même avec un logo : son nom dessiné par le Studio, adopté et validé, et sa charte.
-    expect(j.logos!.list).toHaveLength(1);
-    expect(j.logos!.list[0]).toMatchObject({ source: "A", name: "Ton nom dessiné", kind: "planche", choosable: true });
-    expect(getAsset(j.logoChoice!.assetId)).toBeTruthy();
-    expect(loadProject(t.pid).brand!.logo).toMatchObject({ status: "validated", assetId: expect.any(String) });
-    expect(j.steps[2].status).toBe("done");
-    expect(j.steps[3].status).toBe("review");
-    expect(j.brandKit).toBeTruthy();
-    // SINA le dit honnêtement, et le fil aussi.
-    expect(J.journeyContext(j)).toMatch(/À dire honnêtement au client, en mots simples \(une image ratée est dite ratée\) : [\s\S]*ton nom dessiné, exact à la lettre, sert de logo en attendant/);
-    expect((await fr(() => threadView(t.user, t.cid))).journey.identities!.final).toMatchObject({ finished: true, finishIssues: f.issues });
-    // Le logo manque toujours : brand.finish peut le recréer, à son prix (l'objet et les signes avec lui).
-    expect(F.missingSlots(j)).toContain("logo");
-    expect(finishEstimate(j).maxMicro).toBeGreaterThan(0);
+    // Aucun logo adopté, aucune charte : la marque n'est pas finie, et c'est noté.
+    expect(f.manque).toEqual(["logo"]);
+    expect(j.logoChoice).toBeUndefined();
+    expect(j.steps[2].status).not.toBe("done");
+    expect(j.steps[3].status).toBe("todo");
+    expect(j.brandKit).toBeFalsy();
+    // SINA ne présente pas la marque : elle dit ce qui bloque et propose de refaire le logo à sa charge ; le fil non plus.
+    expect(J.journeyContext(j)).toMatch(/La marque — elle N'EST PAS finie/);
+    expect(J.journeyContext(j)).toMatch(/« À ma charge : 0 % de ton budget »/);
+    expect((await fr(() => threadView(t.user, t.cid))).journey.identities!.final).toMatchObject({ finished: false });
+    // La carte d'accord : à la charge du Studio ; la tâche refait le logo et ce qui le porte, à la charge du Studio.
+    const est = await estimate("brand.finish", t.ctx, {});
+    expect(est).toMatchObject({ studio: true, label: "finir ta marque : son logo, et ce qui le porte refait avec lui" });
+    const again = await call("brand.finish", t.ctx, {});
+    expect(payloadOf(again.jobs![0])).toMatchObject({ finish: true, studio: true, slots: F.finishSlots(j, ["logo"]) });
+    // Cette fois le logo passe : la marque est finie, avec son logo, et rien n'est compté au client.
+    await runJob(again.jobs![0]);
+    const k = J.journeyOf(t.cid);
+    expect(k.brandFinish!.manque).toBeUndefined();
+    expect(k.brandFinish!.images!.logo).toBeTruthy();
+    expect(k.logos!.list[0]).toMatchObject({ kind: "image" });
+    expect(k.steps[3].status).toBe("review");
   });
 
   it("symbole refusé (relecture, fond non blanc, création en échec) : rien n'est gardé et c'est dit ; la relance de la tâche ne repaie rien", async () => {

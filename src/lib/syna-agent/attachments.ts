@@ -160,7 +160,7 @@ export function describeAttachment(a: Attachment): string {
 type BoardShot = { id: string } | null | undefined;
 type BoardShots = { logo?: BoardShot; hero?: BoardShot; site?: BoardShot; object?: BoardShot; signs?: BoardShot; posts?: BoardShot[] };
 export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number; site?: { at?: number };
-  identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[]; incompletes?: { key: string }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots } }, projectId?: string | null): Promise<LlmImage[]> {
+  identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[]; incompletes?: { key: string }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots; manque?: string[] } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
   const small = async (id: string, size: number) => { const a = getAsset(id); return a && !a.deleted_at ? sharp(assetData(a)).resize(size, size, { fit: "inside", withoutEnlargement: true }).png().toBuffer() : null; };
@@ -179,7 +179,8 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
       if (data) out.push({ data, label: `Identité ${x.key} « ${x.name} » — ${what}, montré au client sur sa planche — relecture : ${phraseDuVerdict(verdictDuRelecteur(id))}` });
     }
   }
-  if (j.identityChoice && j.brandFinish?.at && j.steps[3]?.status !== "done") {
+  // Une marque à laquelle il manque encore le logo n'est pas montrée comme finie (jamais une planche incomplète).
+  if (j.identityChoice && j.brandFinish?.at && !j.brandFinish.manque?.length && j.steps[3]?.status !== "done") {
     const im = j.brandFinish.images ?? {};
     const shown: [string | undefined, string][] = [[im.logo?.id, "son logo"], [im.hero?.id, "la grande scène"], [im.object?.id, "l'objet qui porte le logo"], [im.signs?.id, "les signes de la marque"], ...((im.posts ?? []).map((q, i) => [q?.id, `publication ${i + 1}`] as [string | undefined, string]))];
     for (const [id, what] of shown) { const data = id ? await small(id, 512).catch(() => null) : null; if (data) out.push({ data, label: `Marque du client — ${what}, montré au client` }); }

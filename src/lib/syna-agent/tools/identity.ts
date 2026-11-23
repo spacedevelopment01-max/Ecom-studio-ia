@@ -389,16 +389,26 @@ export function finishEstimate(j: Journey, a: FinishArgs = {}): { maxMicro: numb
   return { maxMicro: q.maxMicro - prepaid, ...(q.probableMicro ? { probableMicro: Math.max(1, q.probableMicro - prepaid) } : {}), slots };
 }
 
+/**
+ * Refaire le logo qui manque à la marque finie (il n'a pas passé la relecture après les reprises) : une reprise du travail
+ * de SINA, à la charge du Studio, jamais comptée au client (règle du propriétaire : « Jamais une planche incomplète : une
+ * image refusée est refaite avant d'être montrée »). Seulement le logo (et ce qui le porte, refait avec lui).
+ */
+export function finirLogoManquant(j: Journey, a: FinishArgs = {}): boolean {
+  return !!j.brandFinish?.manque?.includes("logo") && !a.relancer && (!a.redo?.length || a.redo.every((s) => s === "logo"));
+}
+
 /** Met en file la fin de marque (une seule à la fois). */
 function startFinish(ctx: ToolContext, a: FinishArgs): { jobs?: string[]; refused?: string } {
   const p = project(ctx), j = journeyOf(ctx.conversationId);
   if (pendingJob(p.id, SINA_BRAND_JOB)) return { refused: L("Ta marque est déjà en cours de création : attends-la.", "Your brand is already being created.") };
-  const slots = finishSlots(j, a.redo as ImageSlot[] | undefined);
+  const studio = finirLogoManquant(j, a);
+  const slots = finishSlots(j, (studio ? ["logo"] : a.redo) as ImageSlot[] | undefined);
   const cap = Math.max(1, slots.length ? finishQuote(slots).maxMicro : 1);
   const job = enqueue({
     userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L("Ta marque complète (SINA)", "Your complete brand (SINA)"),
-    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, count: routeCountOfProject(p.id), finish: true, ...(a.redo?.length ? { slots } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
-    maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-finish:${(a.redo ?? []).join("+")}:${j.identityChoice?.at ?? 0}`,
+    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, count: routeCountOfProject(p.id), finish: true, ...(a.redo?.length || studio ? { slots } : {}), ...(studio ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
+    maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-finish:${(a.redo ?? []).join("+")}:${j.identityChoice?.at ?? 0}${studio ? ":logo-manquant" : ""}`,
   });
   updateJourney(ctx.conversationId, (x) => { if (x.brandFinish) x.brandFinish.prepaidMicro = 0; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "doing"); });
   return { jobs: [job.id] };
@@ -410,7 +420,10 @@ const finishTool: AgentTool<FinishArgs> = {
   args: z.object({ redo: z.array(z.enum(FINISH_REDO)).min(1).max(7).optional(), guidance: z.string().max(1500).optional(), relancer: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
     if (a?.relancer) { const c = marqueCoupee(project(ctx).id); if (!c) throw new RefusInterne("Aucune création de marque arrêtée en route à relancer : lance-la sans relancer."); return relanceMarqueQuote(c); }
-    const e = finishEstimate(journeyOf(ctx.conversationId), a);
+    const j = journeyOf(ctx.conversationId);
+    // Le logo manque à la marque finie : le refaire est une reprise de SINA, à la charge du Studio (« À ma charge : 0 % »).
+    if (finirLogoManquant(j, a)) { const e = finishEstimate(j, { ...a, redo: ["logo"] }); return { maxMicro: e.maxMicro, ...(e.probableMicro ? { probableMicro: e.probableMicro } : {}), label: L("finir ta marque : son logo, et ce qui le porte refait avec lui", "finish your brand: its logo"), studio: true }; }
+    const e = finishEstimate(j, a);
     return { maxMicro: e.maxMicro, ...(e.probableMicro ? { probableMicro: e.probableMicro } : {}), label: a.redo?.length ? L(`${e.slots.length} image${e.slots.length > 1 ? "s" : ""} de ta marque à refaire`, "brand images to redo") : L("ta marque complète", "your complete brand") };
   },
   run: (ctx, a) => {

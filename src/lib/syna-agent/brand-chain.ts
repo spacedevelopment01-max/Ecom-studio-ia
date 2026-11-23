@@ -657,7 +657,11 @@ export async function runSinaBrandJob(ctx: JobContext) {
   ai.partage?.(brief);
 
   // La marque finie de l'identité choisie (second temps) : rien d'autre n'est refait.
-  if (a.finish) return (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: a.slots, guidance: a.guidance });
+  if (a.finish) {
+    const finir = async () => (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: a.slots, guidance: a.guidance });
+    // Le logo qui manquait à la marque finie, refait : une reprise du travail de SINA, à la charge du Studio.
+    return a.studio && j.brandFinish?.manque?.includes("logo") ? aLaChargeDuStudio(finir) : finir();
+  }
   // Logo gardé par le client : jamais redessiné ; il est posé tel quel sur ce qui le porte.
   const clientLogo = j.keep.includes("logo") ? await clientLogoOf(p.id) : null;
 

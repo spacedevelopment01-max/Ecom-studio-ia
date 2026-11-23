@@ -855,7 +855,7 @@ export function threadView(user: User, cid: string) {
           // Jamais une planche incomplète (règle du propriétaire) : une planche gardée de côté n'est pas affichée.
           list: planchesMontrees(j).map(cardOf), study: j.identities.study ?? null,
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
-          final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at, finishIssues: j.brandFinish?.issues ?? [] } : null,
+          final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at && !j.brandFinish.manque?.length, finishIssues: j.brandFinish?.issues ?? [] } : null,
         } : null,
         // Le logo de la marque, adopté par la fin de marque (image servie par la bibliothèque du projet).
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,

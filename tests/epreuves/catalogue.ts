@@ -280,4 +280,10 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Le titre du projet se coupe toujours à un mot entier, jamais au milieu d'une idée ni sur un petit mot de liaison, et ne montre jamais « (provisoire) » au client.",
     rejeu: "gratuit",
   },
+  {
+    id: "marque-finie-jamais-sans-logo", date: "2026-11-23", source: "CLAUDE.md (Identité : « Jamais une planche incomplète » ; décision du chef d'orchestre du 23 novembre 2026, après l'essai réel de Nadia)",
+    verdict: "Règle du propriétaire : « Jamais une planche incomplète : une image refusée est refaite avant d'être montrée. » Avant, la marque finie dont le logo restait refusé recevait le nom dessiné du Studio en secours (« Je n'ai pas de logo qui passe ma relecture : ton nom dessiné, exact à la lettre, sert de logo en attendant »).",
+    attendu: "Après le choix, si le logo manque encore après ses reprises, aucun nom dessiné ne le remplace : aucun logo n'est adopté, aucune charte n'est faite, la marque n'est pas montrée comme finie ; SINA dit ce qui bloque et refait le logo (et ce qui le porte) à sa charge, la carte d'accord disant « À ma charge : 0 % de ton budget ».",
+    rejeu: "gratuit",
+  },
 ];
