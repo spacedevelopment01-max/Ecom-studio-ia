@@ -22,6 +22,7 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 23/11 14:17 | Nadia | Identité C « Pénombre », grande scène, 2e essai | 6/10 : « L'étiquette du bocal […] est vierge : un grand cadre vide » | Non | [en attente] |
 | 23/11 14:18 | Nadia | Identité C « Pénombre », grande scène, 3e essai | 5/10 : « ressemble à un pot de confiture (matière rouge granuleuse, aucune mèche) » | Non | [en attente] |
 | 23/11 14:18 | Nadia | Identité C « Pénombre », haut du site | 5/10 : « un bandeau de mois non demandé (JAN à DÉC, avec « JUI » en double) […] le pot de bougie de la photo est coupé par le bord droit » | **Oui, gardée malgré 5/10** (raté du Studio) | [en attente] |
+| 23/11 18:24 | Nadia | Identité A « Sillage », logo refait après réparation (idée en mots simples), 1er essai | 6/10 : « Logo banal par rapport à la planche : la serif élégante avec un swoosh générique est trop chic, contrairement à la demande du client, et la courbe cuivrée coupe maladroitement le bas du S et des « ill » à gauche » | Non | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
