@@ -59,7 +59,7 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
   type Draw = (id: string, slot: string, n: number) => Promise<Buffer>;
   type Verdict = (slot: string, n: number) => { ok: boolean; score?: number; why?: string };
   /** La chaîne des images d'une planche, telle quelle, avec un dessinateur et un relecteur simulés (rien n'est payé). */
-  async function planche(o: { slots: string[]; draw?: Draw; verdict?: Verdict; madeLogos?: Buffer[]; gouts?: string; logoLine?: string; x?: any }) {
+  async function planche(o: { slots: string[]; draw?: Draw; verdict?: Verdict; madeLogos?: Buffer[]; keptLogos?: Buffer[]; gouts?: string; logoLine?: string; x?: any }) {
     const user = await account(), projectId = project(user, "services") as string;
     const x = o.x ?? { ...route("A"), name: "Aplomb" };
     const texts = I.slotTexts(x);
@@ -81,7 +81,7 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
       },
     };
     const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
-    const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "services", route: x, round: 1, slots: o.slots as never, imagery: imagery as never, madeLogos: o.madeLogos, gouts: o.gouts ?? null, logoLine: o.logoLine ?? null });
+    const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "services", route: x, round: 1, slots: o.slots as never, imagery: imagery as never, madeLogos: o.madeLogos, ...(o.keptLogos ? { keptLogos: o.keptLogos } : {}), gouts: o.gouts ?? null, logoLine: o.logoLine ?? null });
     return { r, timeline, x };
   }
 
@@ -90,7 +90,8 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     const gouts = F.goutsPour([{ sujet: "le style plombier", value: "le style plombier avec une goutte d'eau et une clé à molette", genre: "refuse", portee: "logo", at: 1 }, { sujet: "les matières", value: "le laiton brossé", genre: "aime", portee: "images", at: 1 }], ["logo", "images"]).join("\n");
     const { timeline } = await planche({ slots: ["logo"], gouts });
     const dessin = timeline.find((t) => t.kind === "draw" && t.slot === "logo")!, relu = timeline.find((t) => t.kind === "look" && t.slot === "logo")!;
-    expect(dessin.prompt).toContain("Ce que le client refuse, avec ses mots : « Il ne veut pas : le style plombier avec une goutte d'eau et une clé à molette »");
+    // Mot pour mot, dans la formule du propriétaire (« Il ne veut surtout pas : … »), sans « Il ne veut pas » ajouté (23 novembre 2026).
+    expect(dessin.prompt).toContain("Il ne veut surtout pas : « le style plombier avec une goutte d'eau et une clé à molette »");
     // Ses goûts vont au relecteur, jamais au dessinateur du logo (« enlève la 7 », 21 novembre 2026).
     expect(dessin.prompt).not.toContain("laiton");
     expect(relu.prompt).toContain("Il aime : le laiton brossé");
@@ -130,6 +131,52 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     // Fond plein demandé à OpenAI pour toute photo (le logo seul garde un fond retirable).
     const { openaiBackground } = await import("@/lib/ai/openai-images");
     expect(openaiBackground({ transparentCap: true })).toEqual({ background: "opaque" });
+  });
+
+  epreuve("ligne-la-marque-sans-idee-de-dessin", async () => {
+    const ligne = async (simple: string) => {
+      const x = { ...route("A"), name: "Aplomb", tone: { ...route("A").tone, adjectives: ["calme", "franc", "soigneux"] }, board: { ...route("A").board, descriptor: "Plomberie et chauffage à Lyon", idea: { ...route("A").board.idea, simple } } };
+      const { timeline } = await planche({ slots: ["logo"], x });
+      return timeline.find((t) => t.kind === "draw" && t.slot === "logo")!.prompt.split("\n").find((l) => l.startsWith("La marque : "))!;
+    };
+    // La ligne de la directrice artistique (« Piste écrite par SINA : un logotype sobre… ») n'y va jamais.
+    expect(await ligne("elle croit qu'un artisan doit tenir parole, et elle se bat contre les devis qui changent")).toBe("La marque : Elle croit qu'un artisan doit tenir parole, et elle se bat contre les devis qui changent. Son ton : calme, franc, soigneux.");
+    // Une comparaison, un mot concret ou un mot du métier du client : l'idée est retirée, seul le ton reste.
+    for (const idee of ["elle croit qu'on doit être chez soi comme dans une maison qui sent bon", "elle croit qu'un artisan doit venir le soir", "elle croit qu'un chauffage se répare vite"])
+      expect(await ligne(idee), idee).toBe("La marque : Son ton : calme, franc, soigneux.");
+  });
+
+  epreuve("serie-compte-les-logos-refuses", async () => {
+    // Un logo déjà dessiné (refusé) dans la série ; le relecteur refuse tout : trois dessins.
+    const deja = await logoSimple();
+    const { r, timeline } = await planche({ slots: ["logo"], madeLogos: [deja], keptLogos: [], verdict: () => ({ ok: false, score: 5, why: "trop sage" }) });
+    const dessins = timeline.filter((t) => t.kind === "draw" && t.slot === "logo");
+    expect(dessins).toHaveLength(3);
+    expect(dessins.every((d) => d.avoid)).toBe(true);
+    // Le 1er reçoit le logo refusé de la série ; la 1re reprise, en plus, son propre essai refusé ; la 2e, les deux.
+    expect(dessins.map((d) => /montre (le logo déjà fait|les (\d+) logos déjà faits)/.exec(d.prompt)?.[2] ?? "1")).toEqual(["1", "2", "3"]);
+    for (const d of dessins) expect(d.prompt).toMatch(/Je veux un logo complètement différent/);
+    // Tous ses dessins, refusés compris, repartent dans la série pour les planches suivantes.
+    expect(r.logos).toHaveLength(3);
+    const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
+    expect(chain).toContain("seriesLogos.push(...r.logos);");
+    expect(chain).toContain("redoneLogos.push(...r.logos);");
+  });
+
+  epreuve("refus-du-logo-une-seule-fois", async () => {
+    const gouts = ["Calme et franc. Par contre pas de goutte d'eau dans le logo.", "Il ne veut pas : pas de goutte d'eau dans le logo.", "Il ne veut pas : Mes mains oui, mais jamais mon visage."].join("\n");
+    const { timeline } = await planche({ slots: ["logo"], gouts, verdict: () => ({ ok: false, score: 5, why: "trop sage" }) });
+    for (const d of timeline.filter((t) => t.kind === "draw" && t.slot === "logo")) {
+      expect(d.prompt).toContain("Il ne veut surtout pas : « Par contre pas de goutte d'eau dans le logo. »");
+      expect(d.prompt.match(/Il ne veut surtout pas/g)).toHaveLength(1);
+      expect(d.prompt).not.toMatch(/Il ne veut pas|mains|visage|Calme et franc/);
+      expect(d.prompt).not.toMatch(/étiquette, emballage/);
+    }
+    // Un refus qui parle de personnes, noté « pour tout », vaut pour les images, jamais pour le logo.
+    const F = await import("@/lib/syna-agent/fiche");
+    const note = { sujet: "photos", value: "Mes mains oui, mais jamais mon visage.", genre: "refuse" as const, portee: "tout" as const, at: 1 };
+    expect(F.porteeOf(note)).toBe("images");
+    expect(F.refusPourLeLogo([note, { sujet: "couleur", value: "pas de rose", genre: "refuse", portee: "tout", at: 1 }])).toEqual(["pas de rose"]);
   });
 
   epreuve("logo-relu-avant-ce-qui-le-porte", async () => {
@@ -217,6 +264,8 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
   const J = await import("@/lib/syna-agent/journey");
   const F = await import("@/lib/syna-agent/fiche");
   const V = await import("@/lib/syna-agent/verrous");
+  // Le symbole tiré du logo est un dessin de logo : son devis prend le tarif du modèle imposé des logos (23 novembre 2026).
+  await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
 
   epreuve("etape-validee-qui-bouge", async () => {
     const user = await account(), projectId = project(user, "services") as string, cid = threadFor(user, projectId);
@@ -383,10 +432,10 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
   epreuve("refus-du-client-toutes-tournures", async () => {
     const { clientRefusal } = await import("@/lib/syna-agent/brand-images");
     for (const refus of ["Pas d'outil dans le logo.", "Aucune goutte.", "Sans goutte d'eau.", "J'aime pas les gouttes.", "Je déteste le rose.", "Évite les clés à molette.", "Il ne veut surtout pas de goutte d'eau."])
-      expect(clientRefusal(refus)).toBe(`Ce que le client refuse, avec ses mots : « ${refus} »`);
+      expect(clientRefusal(refus)).toBe(`Il ne veut surtout pas : « ${refus} »`);
     expect(clientRefusal("J'aime le bleu profond et les lignes fines.")).toBe("");
     // Un goût et un refus sur deux lignes : seul le refus part.
-    expect(clientRefusal("J'aime le vert.\nJe déteste le rose.")).toBe("Ce que le client refuse, avec ses mots : « Je déteste le rose. »");
+    expect(clientRefusal("J'aime le vert.\nJe déteste le rose.")).toBe("Il ne veut surtout pas : « Je déteste le rose. »");
   });
   epreuve("equipe-coupee-ne-fait-pas-tomber-la-marque", async () => {
     const C = await import("@/lib/syna-agent/brand-chain");

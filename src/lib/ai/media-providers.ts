@@ -740,6 +740,20 @@ export async function aiSiteImageHd(ctx: Ctx, input: { prompt: string; scene?: B
   return generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "scene", need: { references: references.length } });
 }
 
+/** La route du dessin des logos : celle de la politique du propriétaire (logo-policy.ts), sans secours. */
+export const LOGO_ROUTE: { provider: string; model: string } = { provider: REQUIRED_LOGO_PROVIDER, model: REQUIRED_LOGO_MODEL };
+
+/**
+ * Le LOGO d'une planche de marque de SINA, et le symbole tiré du logo (décision du 23 novembre 2026, après l'essai de
+ * Nadia : ces logos passaient par l'usage « scene », et la politique du 18 octobre ne s'appliquait pas) : usage « logo »,
+ * donc le modèle imposé par le propriétaire, sans secours ni autre route. Images jointes : la planche des logos déjà
+ * faits (à ne pas refaire), les 50 logos aimés (seulement comme exemples), ou le logo dont on tire le symbole.
+ */
+export async function aiBoardLogo(ctx: Ctx, input: { prompt: string; avoid?: Buffer | null; examples?: Buffer | null; logo?: Buffer | null; aspect: "1:1" }) {
+  const references = [...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : []), ...(input.avoid ? [{ role: "avoid" as const, data: input.avoid, essential: true }] : []), ...(input.examples ? [{ role: "examples" as const, data: input.examples, essential: false }] : [])];
+  return withQuotedImageRoute(LOGO_ROUTE, () => generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "logo", need: { text: true, references: references.length } }));
+}
+
 /** Coût maximal d'une maquette de site (une planche), null si aucun modèle n'est utilisable. */
 export function siteMockupMaxMicro(references = 2): number | null {
   const r = mediaRouteFor("text_layout", { text: true, references });

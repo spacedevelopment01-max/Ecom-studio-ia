@@ -42,6 +42,7 @@ import { json as parseJson, one, run } from "../db";
 import { assetData, getAsset, saveAsset } from "../library";
 import { getJsonSetting } from "../settings";
 import { BOARD_OBJECT_LABEL } from "./brand-board";
+import { parleDePersonnes } from "./fiche";
 import type { ChainAi } from "./brand-chain";
 import * as P from "./brand-prompts";
 import { RouteSchema, type Route } from "./brand-routes";
@@ -63,7 +64,8 @@ export type ImageAspect = "1:1" | "16:9" | "9:16" | "4:5";
 /** Format demandé pour chaque image (le modèle rend du carré, du paysage 3:2 ou du portrait 2:3). */
 export const SLOT_ASPECT: Record<ImageSlot, ImageAspect> = { logo: "1:1", hero: "16:9", object: "1:1", signs: "1:1", site: "9:16", post0: "4:5", post1: "4:5", post2: "4:5" };
 /** Images de référence envoyées avec chaque demande (le logo pour l'objet et le site ; aucun modèle pour le logo lui-même). */
-export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 1, hero: 0, object: 1, signs: 1, site: 2, post0: 1, post1: 1, post2: 1 };
+/** Le logo : la planche des logos déjà faits de la série et celle des 50 logos aimés (deux au plus). */
+export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 2, hero: 0, object: 1, signs: 1, site: 2, post0: 1, post1: 1, post2: 1 };
 
 /**
  * Les images d'une planche se créent en DEUX temps (lot 2, 15 novembre 2026 : « images complètes pour la seule identité
@@ -84,7 +86,12 @@ export function boardImageRoute(): { provider: string; model: string } {
 
 export const ImagerySchema = z.object({
   look: z.string().max(900).default(""),
-  logo: z.string().min(1).max(1600), hero: z.string().min(1).max(2200), object: z.string().min(1).max(2200), site: z.string().min(1).max(2200),
+  /**
+   * Plus écrite par la directrice artistique (23 novembre 2026 : « comme une maison qui sent bon » a donné 6 maisons sur
+   * 9 logos) : la ligne « La marque » du dessinateur du logo est écrite par le Studio (ligneDeLaMarque). Lue encore sur
+   * les planches d'avant, jamais donnée au dessinateur.
+   */
+  logo: z.string().max(1600).default(""), hero: z.string().min(1).max(2200), object: z.string().min(1).max(2200), site: z.string().min(1).max(2200),
   /** Les signes de la marque posés sur de vrais objets de son monde (remplace les pictogrammes dessinés en code). */
   signs: z.string().max(2200).default(""),
   posts: z.array(z.string().min(1).max(2200)).length(3),
@@ -177,12 +184,44 @@ const REFUS = new RegExp([
   // En tête de phrase seulement : « sans stress », au milieu d'un goût, n'est pas un refus.
   "^\\s*(aucune?s?|sans|évite[rsz]?)(?![\\p{L}])",
 ].join("|"), "iu");
-export function clientRefusal(words?: string | null): string {
+/** La formule du propriétaire, la même pour tous les clients (21 novembre 2026) : jamais le genre deviné, jamais ses mots changés. */
+export const REFUS_FORMULE = "Il ne veut surtout pas";
+const sansPonctuation = (t: string) => t.normalize("NFC").toLowerCase().replace(/[’ʼ`´]/g, "'").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+/**
+ * La phrase de refus du client pour le dessinateur du logo, mot pour mot, chaque refus une seule fois (essai réel de
+ * Nadia, 23 novembre 2026 : sa phrase arrivait deux fois, avec « Il ne veut pas » ajouté, et son refus des mains et du
+ * visage arrivait au logo). `words` : ses réponses libres, dont seules les phrases de refus sont prises (un refus de
+ * personnes n'y est pris que s'il parle du logo) ; `refus` : les refus de sa fiche qui valent pour le logo
+ * (refusPourLeLogo), pris en entier. Les lignes « Il ne veut pas : … » et « Il aime : … » mises en forme par le Studio
+ * (goutsPour) sont relues comme un refus noté et un goût. Un refus contenu dans un autre n'est gardé qu'une fois : le plus long.
+ */
+export function clientRefusal(words?: string | null, refus: readonly string[] = []): string {
   // Une ligne par chose dite (sa fiche) : un goût sur une ligne voisine n'est jamais pris avec le refus.
   // « Pas d'outil », « Aucune goutte », « Sans goutte d'eau », « J'aime pas », « Je déteste », « Évite… » étaient manqués
   // (audit de la marque, 22 novembre 2026) : le relecteur refusait le logo après coup, qui était redessiné et repayé.
-  const phrases = (words ?? "").split(/(?<=[.!?])\s+|\n+/).map((t) => t.trim()).filter((t) => REFUS.test(t));
-  return phrases.length ? `Ce que le client refuse, avec ses mots : « ${phrases.join(" ").slice(0, 400)} »` : "";
+  const libres: string[] = [], notes: string[] = [];
+  for (const line of (words ?? "").split(/\n+/)) {
+    const m = /^\s*Il ne veut pas\s*:\s*(.+)$/iu.exec(line);
+    if (m) notes.push(m[1]);
+    else if (!/^\s*Il aime\s*:/iu.test(line)) libres.push(line);
+  }
+  const pourLeLogo = (t: string) => !parleDePersonnes(t) || /(?<![\p{L}])logos?(?![\p{L}])/iu.test(t);
+  const candidats = [
+    ...libres.flatMap((l) => l.split(/(?<=[.!?])\s+/)).map((t) => t.trim()).filter((t) => t && REFUS.test(t) && pourLeLogo(t)),
+    ...notes.map((t) => t.trim()).filter((t) => t && pourLeLogo(t)),
+    ...refus.map((t) => t.trim()).filter(Boolean),
+  ];
+  const gardes: string[] = [];
+  for (const t of candidats) {
+    const n = sansPonctuation(t);
+    if (!n || gardes.some((g) => sansPonctuation(g).includes(n))) continue;
+    for (let i = gardes.length - 1; i >= 0; i--) if (n.includes(sansPonctuation(gardes[i]))) gardes.splice(i, 1);
+    gardes.push(t);
+  }
+  // Coupé entre deux refus, jamais au milieu d'une phrase.
+  const tenus: string[] = [];
+  for (const g of gardes) if ([...tenus, g].join(" ").length <= 600) tenus.push(g);
+  return tenus.length ? `${REFUS_FORMULE} : ${tenus.map((t) => `« ${t} »`).join(" ; ")}` : "";
 }
 export const SIGNS_LINE = "Une vraie photographie haut de gamme, comme dans le livre d'identité d'une grande agence : les signes de la marque sont appliqués sur de vrais objets de son monde, en vraies matières (impression, broderie, gravure, peinture, sérigraphie). Jamais une icône plate, jamais un pictogramme, jamais une grille de cases ni un nuancier dessiné.";
 /** Le nom épelé (« P, e, l, a, g, e ») : sans modèle d'image, c'est ce qui tient les lettres exactes. */
@@ -225,17 +264,29 @@ const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.da
 /** Toutes les raisons des refus d'une image, de la plus ancienne à la plus récente, pour la redessiner sans revenir en arrière. */
 /** Une raison qui ne dit rien de l'image (relecture impossible) : jamais donnée au dessinateur comme une correction. */
 const TECHNIQUE = /pas pu la (vérifier|relire)|non relue|could not (check|review)/i;
-export const fixLine = (whys: string[], attempt: number): string => {
+/** Seconde reprise d'une photo : moins d'écritures. Jamais pour un logo (essai réel de Nadia, 23 novembre 2026 : hors sujet). */
+export const FAIS_PLUS_SIMPLE = "\nFais plus simple : retire de l'image tout élément qui porte une écriture non demandée (étiquette, emballage, enseigne, écran) ou laisse-le vierge.";
+export const fixLine = (whys: string[], attempt: number, /** Le genre d'image : un logo reçoit toutes les raisons, sans la ligne des écritures. */ slot?: ImageSlot): string => {
   const list = [...new Set(whys.filter((w) => !TECHNIQUE.test(w)).map((w) => w.replace(/\s+/g, " ").trim().slice(0, 300)).filter(Boolean))];
-  if (!list.length) return attempt > 1 ? "\nFais plus simple : retire de l'image tout élément qui porte une écriture non demandée (étiquette, emballage, enseigne, écran) ou laisse-le vierge." : "";
+  const simple = attempt > 1 && slot !== "logo" ? FAIS_PLUS_SIMPLE : "";
+  if (!list.length) return simple;
   const head = list.length > 1
     ? `\nCORRECTION : les images précédentes ont été refusées pour ces raisons, à corriger TOUTES à la fois (corriger la dernière ne doit pas ramener une faute déjà corrigée) :\n${list.map((w, i) => `${i + 1}. « ${w} »`).join("\n")}`
     : `\nCORRECTION : une première image a été refusée pour cette raison : « ${list[0] ?? ""} ». Refais l'image en corrigeant ce point.`;
-  return head + (attempt > 1 ? "\nFais plus simple : retire de l'image tout élément qui porte une écriture non demandée (étiquette, emballage, enseigne, écran) ou laisse-le vierge." : "");
+  return head + simple;
 };
 
 /** Consigne complète d'une image : la direction globale, la consigne de la directrice artistique, les lignes fixes du Studio. */
-export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { logo: boolean; refusal?: string | null; /** Personnes autorisées pour ce client (règle des personnes). */ personnes?: boolean } = { logo: true }): string {
+export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: {
+  logo: boolean;
+  /** Ses mots sur l'image voulue : seules ses phrases de refus vont au dessinateur du logo (clientRefusal). */
+  refusal?: string | null;
+  /** La phrase de refus déjà écrite par le Studio (clientRefusal, refus de sa fiche compris) : prise telle quelle. */
+  refusLogo?: string | null;
+  /** L'idée en mots simples, si elle ne vient pas de la planche (contrôlée comme elle). */
+  idee?: string | null;
+  /** Personnes autorisées pour ce client (règle des personnes). */ personnes?: boolean;
+} = { logo: true }): string {
   const look = imagery.look.trim(), texts = slotTexts(x)[slot];
   if (slot === "logo") {
     // Carte blanche (retour du propriétaire du 15 novembre 2026 : « tu dois laisser libre OpenAI pour faire les logos,
@@ -246,12 +297,12 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: { lo
       `Crée le logo de la marque « ${x.name} ». Tu es totalement libre du dessin : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi.`,
       `Le nom s'écrit exactement « ${x.name} », lettre par lettre : ${spell(x.name)}. Aucune lettre ajoutée, retirée ni changée, accents compris. Aucun autre mot.`,
       x.board.descriptor ? `Métier : ${x.board.descriptor.trim().replace(/\.+$/, "")}.` : "",
-      // Ce que la marque est (son idée, son ton, son métier) ; la lumière et les matières des photos n'y vont plus.
-      imagery.logo.trim() ? `La marque : ${imagery.logo.trim()}` : "",
+      // Ce que la marque est (son idée, son ton) : écrit par le Studio, jamais par la directrice artistique.
+      ((l) => (l ? `La marque : ${l}` : ""))(ligneDeLaMarque(x, o.idee)),
       paletteLine(x),
       `Typographie de la marque : un caractère ${FONT_CHARACTER[x.fonts.heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(x.fonts.heading)}) ; tu peux le redessiner à ta façon.`,
       "Un seul logo, centré, à plat, net et lisible même en tout petit, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni maquette, ni photo, ni cadre, ni ombre portée.",
-      clientRefusal(o.refusal),
+      o.refusLogo != null ? o.refusLogo : clientRefusal(o.refusal),
     ].filter(Boolean).join("\n");
   }
   const brief = slot === "hero" ? imagery.hero : slot === "object" ? imagery.object : slot === "signs" ? imagery.signs : slot === "site" ? imagery.site : imagery.posts[Number(slot.slice(4))];
@@ -325,11 +376,15 @@ export async function traitHorizontal(png: Buffer): Promise<{ trouve: boolean; d
   }
   return { trouve: false, detail: "" };
 }
-/** Planche des logos déjà créés dans la série (côte à côte sur blanc), donnée au dessinateur. Rien : null. */
+/**
+ * Planche des logos déjà dessinés dans la série, gardés ou refusés, en grille sur blanc, donnée au dessinateur. Tous,
+ * sans limite (essai réel de Nadia, 23 novembre 2026 : seuls les 4 derniers logos gardés y allaient). Rien : null.
+ */
 export async function logoSheet(logos: Buffer[]): Promise<Buffer | null> {
-  const tiles = (await Promise.all(logos.slice(-4).map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(512, 512, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
+  const T = 512, tiles = (await Promise.all(logos.map((b) => sharp(b).flatten({ background: "#FFFFFF" }).resize(T, T, { fit: "contain", background: "#FFFFFF" }).png().toBuffer().catch(() => null)))).filter(Boolean) as Buffer[];
   if (!tiles.length) return null;
-  return sharp({ create: { width: 512 * tiles.length, height: 512, channels: 3, background: "#FFFFFF" } }).composite(tiles.map((input, i) => ({ input, left: 512 * i, top: 0 }))).png().toBuffer();
+  const cols = Math.ceil(Math.sqrt(tiles.length)), rows = Math.ceil(tiles.length / cols);
+  return sharp({ create: { width: T * cols, height: T * rows, channels: 3, background: "#FFFFFF" } }).composite(tiles.map((input, i) => ({ input, left: T * (i % cols), top: T * Math.floor(i / cols) }))).png().toBuffer();
 }
 
 /** Le logo que le client garde (sa propre image, déposée dans le Studio). */
@@ -340,7 +395,8 @@ export async function clientLogoOf(projectId: string): Promise<ClientLogo | null
   if (!a) return null;
   try { const data = assetData(a), meta = await sharp(data).metadata(); return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024, data }; } catch { return null; }
 }
-export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[]; /** Haut du site refait et refusé : celui d'avant est gardé (il porte l'ancien logo). */ siteGarde?: boolean };
+export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[]; /** Haut du site refait et refusé : celui d'avant est gardé (il porte l'ancien logo). */ siteGarde?: boolean;
+  /** Tous les logos dessinés ici, gardés ou refusés, dans l'ordre : la série les donne aux dessins suivants. */ logos: Buffer[] };
 
 /** Un logo à fond transparent posé sur du blanc, pour qu'un relecteur le voie comme le client le verra. */
 export const onWhite = (png: Buffer): Promise<Buffer> => sharp(png).flatten({ background: "#FFFFFF" }).png().toBuffer().catch(() => png);
@@ -424,33 +480,78 @@ export function proposalImagery(j: Journey, x: Route): Imagery | undefined {
 
 
 /**
- * La ligne « La marque » du dessinateur du logo, écrite par le code à partir de la planche (audit du 22 novembre 2026,
- * 2.3) : ce qu'elle croit, ce contre quoi elle se bat, ce qu'elle fait ressentir, son ton. Ce que la règle du 21 novembre
- * permet (« le nom, le métier, l'idée et le ton de la marque ») ; aucun mot de style écrit par SINA.
+ * Les mots concrets qui ne vont jamais dans la ligne « La marque » du dessinateur du logo (essai réel de Nadia, 23 novembre
+ * 2026 : « comme une maison qui sent bon », « la chaleur d'une maison le soir », « la maison chaude au retour » ont donné
+ * des maisons sur 6 logos sur 9) : un objet, un lieu, un moment y deviennent un dessin.
  */
-export function ligneDeLaMarque(x: Route): string {
-  const net = (t?: string) => (t ?? "").trim().replace(/[.\s]+$/, "");
-  const idee = x.board.idea;
-  return [
-    net(idee?.belief) ? `elle croit que ${net(idee.belief).replace(/^./, (c) => c.toLowerCase())}` : "",
-    net(idee?.enemy) ? `elle se bat contre ${net(idee.enemy).replace(/^./, (c) => c.toLowerCase())}` : "",
-    net(x.territory) ? `elle fait ressentir : ${net(x.territory).replace(/^./, (c) => c.toLowerCase())}` : "",
-    x.tone?.adjectives?.filter(Boolean).length ? `son ton : ${x.tone.adjectives.filter(Boolean).join(", ")}` : "",
-  ].filter(Boolean).join(" ; ").replace(/^./, (c) => c.toUpperCase()) + ".";
+export const MOTS_CONCRETS = ["maison", "chez", "foyer", "flamme", "feu", "mèche", "pot", "couvercle", "soir", "soirée", "hiver", "nuit", "fenêtre", "marché"];
+/** Une comparaison est une image : jamais dans la ligne « La marque ». */
+export const COMPARAISON = /(?<![\p{L}])(comme|tel(le)?s? que|pareil(le)?s? à|à la manière)(?![\p{L}])/iu;
+const MOTS_VIDES = new Set(["avec", "pour", "dans", "sans", "près", "tout", "toute", "tous", "toutes", "très", "plus", "leur", "leurs", "vous", "nous", "votre", "notre", "elle", "elles", "cette", "entre", "chaque", "bien", "aussi", "comme", "fait", "faits", "faite", "faites"]);
+/** Le mot sans accent, sans pluriel ni e final : « Flammes », « flamme » et « flammé » se rejoignent. */
+const racine = (w: string) => w.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[sx]$/, "").replace(/e$/, "");
+const mots = (t: string) => t.split(/[^\p{L}]+/u).filter(Boolean);
+/**
+ * Les mots du produit et du métier du client, pris dans sa ligne de métier et l'objet de sa planche : sa catégorie (le
+ * premier mot de la ligne de métier, « Bougies ») reste permise, le reste (matières, gestes, lieu) ne l'est pas.
+ */
+function motsDuClient(x: Pick<Route, "board">): Set<string> {
+  const ligne = mots(x.board.descriptor ?? ""), categorie = ligne[0] ? racine(ligne[0]) : "";
+  const objet = mots(BOARD_OBJECT_LABEL[x.board.object?.kind as keyof typeof BOARD_OBJECT_LABEL]?.fr ?? "").filter((w) => w.length >= 3);
+  return new Set([...ligne.filter((w) => w.length >= 4 && !MOTS_VIDES.has(w.toLowerCase())), ...objet].map(racine).filter((r) => r && r !== categorie));
+}
+/** Contrôle gratuit de l'idée donnée au dessinateur du logo : la raison du refus (une comparaison, un mot concret), ou null. */
+export function ideeConcrete(t: string, x: Pick<Route, "board">): string | null {
+  const c = COMPARAISON.exec(t);
+  if (c) return `une comparaison (« ${c[0]} »)`;
+  const interdits = new Set([...MOTS_CONCRETS.map(racine), ...motsDuClient(x)]);
+  const w = mots(t).find((m) => interdits.has(racine(m)));
+  return w ? `un mot concret (« ${w} »)` : null;
+}
+/**
+ * L'idée donnée au dessinateur du logo : le champ « l'idée en mots simples » de la planche (écrit avec l'identité) ; sur
+ * une planche d'avant, ce qu'elle croit et ce contre quoi elle se bat. Refusée par le contrôle gratuit : rien (seul le ton reste).
+ */
+export function ideeDuDessinateur(x: Route, idee?: string | null): { texte: string; refus?: string } {
+  const net = (t?: string | null) => (t ?? "").replace(/\s+/g, " ").trim().replace(/[.;,\s]+$/, "");
+  const bas = (t: string) => t.replace(/^./, (c) => c.toLowerCase());
+  const que = (t: string) => t.replace(/(?<![\p{L}])que ([aeiouyhéèêàâîôû])/giu, "qu'$1");
+  const i = x.board.idea;
+  const brute = net(idee) || net(i?.simple) || [net(i?.belief) ? que(`elle croit que ${bas(net(i.belief))}`) : "", net(i?.enemy) ? `elle se bat contre ${bas(net(i.enemy))}` : ""].filter(Boolean).join(", et ");
+  if (!brute) return { texte: "" };
+  const refus = ideeConcrete(brute, x);
+  return refus ? { texte: "", refus } : { texte: `${brute.replace(/^./, (c) => c.toUpperCase())}.` };
+}
+/**
+ * La ligne « La marque » du dessinateur du logo, TOUJOURS écrite par le Studio, jamais par la directrice artistique
+ * (décision du 23 novembre 2026) : l'idée en mots simples, contrôlée sans IA, puis le ton. Ce que la règle du 21 novembre
+ * permet (« le nom, le métier, l'idée et le ton de la marque ») ; aucun mot de style.
+ */
+export function ligneDeLaMarque(x: Route, idee?: string | null): string {
+  const ton = x.tone?.adjectives?.map((a) => a.trim()).filter(Boolean) ?? [];
+  return [ideeDuDessinateur(x, idee).texte, ton.length ? `Son ton : ${ton.join(", ")}.` : ""].filter(Boolean).join(" ");
 }
 
 export async function runBoardImages(o: {
   ctx: JobContext; ai: ChainAi; who: { userId: string; projectId: string }; brief: string; kind: "produits" | "services"; route: Route; round: number;
   /** Seulement ces images (les autres images déjà gardées restent telles quelles) ; par défaut, toutes. */
   slots?: ImageSlot[];
-  /** Logos déjà créés dans la même série pour ce client : donnés au dessinateur pour qu'il en fasse un complètement différent. */
+  /**
+   * TOUS les logos déjà dessinés dans la même série pour ce client, gardés ou refusés, dans l'ordre : donnés au dessinateur
+   * pour qu'il en fasse un complètement différent (essai réel de Nadia, 23 novembre 2026 : seuls les gardés y allaient).
+   */
   madeLogos?: Buffer[];
+  /** Parmi eux, les logos gardés (montrés au client) : le trait près du nom n'est permis qu'une fois parmi eux. Par défaut : madeLogos. */
+  keptLogos?: Buffer[];
+  /** La phrase de refus du client pour le dessinateur du logo, déjà écrite par le Studio (clientRefusal) ; à défaut, tirée de `gouts`. */
+  refusLogo?: string | null;
   /** Ce que le client a dit de l'image qu'il veut (ses mots, refus compris) : donné au RELECTEUR des images, jamais au
    * dessinateur du logo (propriétaire, 21 novembre 2026 : « enlève la 7 »). */
   gouts?: string | null;
   /**
-   * Ce que le dessinateur du logo sait de la marque, écrit SANS la consigne de SINA (décision du propriétaire du
-   * 21 novembre 2026 : « pas de consigne autre que les 50 logos en exemple ») ; à défaut, la ligne de la direction artistique.
+   * L'idée en mots simples à donner au dessinateur du logo, quand elle ne vient pas de la planche ; contrôlée comme elle
+   * (aucune comparaison, aucun mot concret). Jamais la consigne de SINA (21 novembre 2026 : « pas de consigne autre que
+   * les 50 logos en exemple »).
    */
   logoLine?: string | null;
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
@@ -472,7 +573,7 @@ export async function runBoardImages(o: {
   // Le logo seul, refait sans direction d'origine retrouvée : rien n'est réécrit ni payé, la ligne « La marque » est écrite
   // par le code depuis la planche (la direction artistique n'apportait que cette ligne au dessinateur, audit 2.3).
   const logoSeul = !o.imagery && wanted.size === 1 && wanted.has("logo");
-  const imagery = o.imagery ?? (logoSeul ? { look: "", logo: (x.board.images?.logoIdea ?? "").trim() || ligneDeLaMarque(x), hero: "", object: "", site: "", signs: "", posts: ["", "", ""] } : undefined) ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind, personnes), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}` }));
+  const imagery = o.imagery ?? (logoSeul ? { look: "", logo: "", hero: "", object: "", site: "", signs: "", posts: ["", "", ""] } : undefined) ?? await ctx.step(`brand:imagery:${round}:${key}${pass}`, () => ai.ask(`imagery-${round}-${key}${pass}`, { kind: "imagery", system: P.imagerySystem(o.kind, personnes), schema: ImagerySchema, prompt: `${o.brief}\n\n# La route à mettre en images\n${imageryBrief(x)}` }));
 
   const made = new Map<ImageSlot, Made>();
   const bufferOf = (slot: ImageSlot): Buffer | null => { const m = made.get(slot), a = m ? getAsset(m.id) : undefined; return a ? assetData(a) : null; };
@@ -495,7 +596,8 @@ export async function runBoardImages(o: {
     if (!retry) calls.set(slot, { refs, prompt });
     try {
       made.set(slot, await ctx.step(`brand:image:${round}:${key}:${slot}${pass}${retry}`, async (): Promise<Made> => {
-        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, avoid: refs.avoid ?? null, examples: slot === "logo" ? await planchedesLogosAimes() : null });
+        // Le logo passe par l'usage « logo » : le modèle imposé par le propriétaire (logo-policy.ts), sans secours.
+        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, avoid: refs.avoid ?? null, examples: slot === "logo" ? await planchedesLogosAimes() : null, ...(slot === "logo" ? { usage: "logo" as const } : {}) });
         // Gardée telle quelle si elle est déjà en PNG : sa signature « fait par l'IA » d'OpenAI reste (règlement européen).
         const png = await pngSansPerte(data), meta = await sharp(png).metadata();
         const asset = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-${slot}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "review", meta: { synaBoard: { key, slot, round, name: x.name } } });
@@ -630,30 +732,41 @@ export async function runBoardImages(o: {
   // Toutes les raisons des refus d'une image, pas seulement la dernière (essai réel du 21 novembre 2026 : le 3e logo
   // d'Aplomb, corrigé seulement de « trop sage », a remis la goutte retirée au 2e).
   const whyHistory = new Map<ImageSlot, string[]>();
-  const fix = (slot: ImageSlot, why: string, attempt: number) => { const h = [...(whyHistory.get(slot) ?? []), why]; whyHistory.set(slot, h); return fixLine(h, attempt); };
+  const fix = (slot: ImageSlot, why: string, attempt: number) => { const h = [...(whyHistory.get(slot) ?? []), why]; whyHistory.set(slot, h); return fixLine(h, attempt, slot); };
 
   // 1. Le logo : conçu par OpenAI à partir de la marque, sans modèle. Contrôle gratuit du fond blanc avant toute
   // relecture : un logo sur fond noir ou coloré n'est ni gardé ni posé sur l'objet.
+  // Tous les logos dessinés ici, gardés ou refusés, dans l'ordre : chaque dessin suivant les reçoit (reprises comprises).
+  const dessines: Buffer[] = [];
   if (wanted.has("logo")) {
     ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
-    // Le premier logo d'une série est créé avec les seules consignes de base ; chacun des suivants reçoit en plus ceux
-    // déjà créés dans la série, avec « je veux un logo complètement différent » (mots du propriétaire).
-    // Seulement les logos de CETTE série, dans l'ordre (règle du propriétaire, redite le 20 novembre 2026 : le premier
-    // logo créé est donné pour faire le deuxième, « complètement différent » ; puis les deux premiers pour le troisième).
-    // Jamais les logos d'une série précédente ni d'un autre projet.
-    const already = o.madeLogos ?? [], shown = await logoSheet(already);
-    const n = Math.min(already.length, 4);
-    // Parcimonie du trait : un seul logo par série le porte (contrôle sans IA des logos déjà faits).
-    const traitPris = (await Promise.all(already.map((b) => traitHorizontal(b).then((r) => r.trouve).catch(() => false)))).some(Boolean);
-    await make("logo", shown ? { avoid: shown } : {}, imagePrompt("logo", x, o.logoLine?.trim() ? { ...imagery, logo: o.logoLine.trim() } : imagery, { logo: true, refusal: o.gouts }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "") + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : ""));
-    let drawn = bufferOf("logo");
+    // Le premier logo d'une série est créé avec les seules consignes de base ; chacun des suivants reçoit en plus TOUS
+    // ceux déjà dessinés dans la série, gardés ou refusés, avec « je veux un logo complètement différent » (mots du
+    // propriétaire, redits le 20 novembre 2026). Une reprise reçoit aussi ses propres essais refusés (essai réel de Nadia,
+    // 23 novembre 2026 : B et C ne recevaient rien, les logos de A ayant été refusés). Seulement les logos de CETTE série,
+    // dans l'ordre ; jamais ceux d'une série précédente ni d'un autre projet.
+    const already = o.madeLogos ?? [];
+    // Parcimonie du trait : un seul logo GARDÉ par série le porte (contrôle sans IA des logos déjà montrés).
+    const traitPris = (await Promise.all((o.keptLogos ?? already).map((b) => traitHorizontal(b).then((r) => r.trouve).catch(() => false)))).some(Boolean);
+    const idee = ideeDuDessinateur(x, o.logoLine);
+    if (idee.refus) notes.push(`ligne « La marque » du logo de ${key} réduite au ton : ${idee.refus} (contrôle sans IA)`);
+    const base = imagePrompt("logo", x, imagery, { logo: true, refusal: o.gouts, refusLogo: o.refusLogo, idee: o.logoLine }) + (traitPris ? `\n${LOGO_TRAIT_DEJA_PRIS}` : "");
+    /** Un dessin du logo : la consigne de base, la planche de TOUS les logos déjà dessinés de la série, puis la correction. */
+    const dessine = async (correction: string, retry = "") => {
+      const serie = [...already, ...dessines], shown = await logoSheet(serie), n = serie.length;
+      const prompt = base + (shown ? `\nL'image jointe montre ${n > 1 ? `les ${n} logos déjà faits` : "le logo déjà fait"} pour ce client. Je veux un logo complètement différent de ${n > 1 ? "ceux-là" : "celui-là"}, dans un autre style que ${n > 1 ? "chacun d'eux" : "lui"} : une autre façon de faire (je ne t'impose aucun style), y compris dans la disposition, la place du signe et la façon de poser le nom.` : "") + correction;
+      await make("logo", shown ? { avoid: shown } : {}, prompt, retry);
+      const b = bufferOf("logo");
+      if (b) dessines.push(b);
+      return b;
+    };
+    let drawn = await dessine("");
     // Contrôle sans IA de la parcimonie : un trait alors qu'un logo de la série en a déjà un, le logo est redessiné UNE
     // fois ; s'il le garde encore, il est montré et c'est dit au client. Le premier trait d'une série est gardé.
     if (drawn && traitPris && (await traitHorizontal(drawn)).trouve) {
       mark(made.get("logo")!.id, "rejected", "un trait près du nom, déjà pris par un autre logo de la série"); made.delete("logo");
       notes.push(`logo de ${key} redessiné : un trait près du nom, déjà pris dans la série (contrôle sans IA)`);
-      await make("logo", calls.get("logo")!.refs, `${calls.get("logo")!.prompt}\nLe logo précédent avait lui aussi un trait ou un filet près du nom : refais-le sans trait, sans filet ni ligne.`, ":sans-trait");
-      drawn = bufferOf("logo");
+      drawn = await dessine("\nLe logo précédent avait lui aussi un trait ou un filet près du nom : refais-le sans trait, sans filet ni ligne.", ":sans-trait");
       if (drawn && (await traitHorizontal(drawn)).trouve) issues.push(tag(L("son logo garde un trait sous le nom, malgré un second dessin.", "its logo still has a line under the name.")));
     }
     if (drawn && !(await logoOnWhite(drawn))) {
@@ -666,9 +779,9 @@ export async function runBoardImages(o: {
     if (made.has("logo")) await review(["logo"], ":logo");
     for (let attempt = 1; attempt <= MAX_IMAGE_RETRIES && dropped.has("logo") && calls.has("logo") && !capped && !blind; attempt++) {
       ctx.progress(0.96, L(`Je reprends le logo de la planche ${key}`, `Redoing the logo of board ${key}`));
-      const c = calls.get("logo")!, why = dropped.get("logo")!; dropped.delete("logo");
-      await make("logo", c.refs, c.prompt + fix("logo", why, attempt), `:r${attempt}`);
-      const again = bufferOf("logo");
+      const why = dropped.get("logo")!; dropped.delete("logo");
+      // Toutes les raisons de ses refus, et la planche de tous les logos déjà dessinés, ses essais refusés compris.
+      const again = await dessine(fix("logo", why, attempt), `:r${attempt}`);
       if (!again) { dropped.set("logo", why); continue; }
       if (!(await logoOnWhite(again))) { const w = L("il n'est pas sur un fond blanc net : il ne se lirait pas sur tes supports", "it is not on a clean white background"); mark(made.get("logo")!.id, "rejected", w); made.delete("logo"); dropped.set("logo", w); continue; }
       await review(["logo"], `:logo:r${attempt}`);
@@ -798,5 +911,5 @@ export async function runBoardImages(o: {
   const { images: _old, ...boardRest } = x.board as Route["board"] & { images?: unknown };
   const next = RouteSchema.safeParse({ ...x, board: { ...boardRest, ...(any ? { images } : {}) } });
   if (capped) issues.push(tag(L("le plafond annoncé a été atteint avant la fin de ses images.", "the announced cap was reached before its images were finished.")));
-  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues, siteGarde };
+  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues, siteGarde, logos: dessines };
 }

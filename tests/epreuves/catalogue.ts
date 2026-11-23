@@ -232,4 +232,22 @@ export const EPREUVES: Epreuve[] = [
     attendu: "La demande d'une équipe de noms tient dans sa limite (réflexion prévue et réponse ensemble). Une équipe coupée ou illisible est refaite une seule fois, plus courte, à la charge du Studio ; si elle échoue encore, la création continue avec les noms des autres équipes ; seule une panne de toutes les équipes arrête la création, avec une phrase claire.",
     rejeu: "gratuit",
   },
+  {
+    id: "ligne-la-marque-sans-idee-de-dessin", date: "2026-11-23", source: "CLAUDE.md (Logo ; diagnostic de l'essai réel de Nadia : docs/studio/essais-complets/NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Diagnostic de l'essai réel de Nadia : « Aucune idée de dessin dans la ligne « La marque » du logo (« comme une maison qui sent bon » a donné 6 maisons sur 9 logos). » Règle du propriétaire (21 novembre 2026) : « pas de consigne autre que les 50 logos en exemple et simplement en exemple ».",
+    attendu: "La ligne « La marque » du dessinateur du logo est écrite par le Studio, jamais par la directrice artistique : l'idée en mots simples puis le ton ; une idée qui contient une comparaison (« comme », « tel que ») ou un mot concret (maison, chez, foyer, flamme, feu, mèche, pot, couvercle, soir, hiver, nuit, fenêtre, marché, ou un mot du produit et du métier du client) est retirée, et seul le ton reste.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "serie-compte-les-logos-refuses", date: "2026-11-23", source: "CLAUDE.md (Logo ; diagnostic de l'essai réel de Nadia : docs/studio/essais-complets/NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Diagnostic de l'essai réel de Nadia : « La série des logos compte aussi les logos refusés, pour que chaque nouveau logo parte loin de ceux déjà faits. » (les 3 logos de A refusés, B n'a rien reçu ; ceux de B refusés, C n'a rien reçu). Règle du propriétaire : « je veux un logo complètement différent ».",
+    attendu: "Chaque nouveau dessin de logo, reprises comprises, reçoit tous les logos déjà dessinés pour ce client dans cette série, gardés ou refusés (ses propres essais refusés compris), avec « Je veux un logo complètement différent » ; jamais ceux d'une autre série ni d'un autre projet.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "refus-du-logo-une-seule-fois", date: "2026-11-23", source: "CLAUDE.md (Logo ; diagnostic de l'essai réel de Nadia : docs/studio/essais-complets/NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Diagnostic de l'essai réel de Nadia : « Au dessinateur du logo, seuls les refus qui concernent le logo, une seule fois, tels qu'écrits (pas « Il ne veut pas », pas de doublon, pas le refus des mains et du visage). » Formule du propriétaire : « Il ne veut surtout pas : … ».",
+    attendu: "Le dessinateur du logo reçoit chaque refus du client qui peut toucher un logo une seule fois, mot pour mot, dans la formule « Il ne veut surtout pas : « … » », sans « Il ne veut pas » ajouté ; un refus qui parle de personnes (mains, visage) vaut pour les images et ne lui arrive pas.",
+    rejeu: "gratuit",
+  },
 ];

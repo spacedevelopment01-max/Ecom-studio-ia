@@ -28,6 +28,8 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
   const G = await import("@/lib/syna-agent/logos");
   const sharp = (await import("sharp")).default;
   const { createElement } = await import("react");
+  // Le logo et le symbole sont dessinés par le modèle imposé des logos (23 novembre 2026) : leur devis prend son tarif par image.
+  await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
   const { renderToStaticMarkup } = await import("react-dom/server");
   const { BrandBoards } = await import("@/components/studio/brand-boards");
   /** L'écran des planches tel que le client le voit dans le fil (rendu sans navigateur). */

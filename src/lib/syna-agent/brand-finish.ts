@@ -23,7 +23,7 @@ import { chooseLogoV2 } from "../logo-v2/choose";
 import { cleanArtwork } from "../logo-v2/artwork";
 import type { Territory } from "../logo-v2/types";
 import type { ChainAi } from "./brand-chain";
-import { clientWords, goutsDuClient } from "./brand-chain";
+import { clientWords, goutsDuClient, refusDuClientPourLeLogo } from "./brand-chain";
 import { CREATED_SLOTS, clientLogoOf, logoOnWhite, onWhite, proposalImagery, runBoardImages, type ImageSlot } from "./brand-images";
 import { buildBrandKit } from "./brand-kit";
 import type { Route } from "./brand-routes";
@@ -93,17 +93,17 @@ export async function runBrandFinish(o: {
   let current: Route = route;
   if (slots.length) {
     ctx.progress(0.1, L("Je crée les images de ta marque", "Creating your brand's images"));
-    const before = route.board.images;
     const r = await runBoardImages({
       ctx, ai, who, brief: o.brief, kind: o.kind, route, round, slots, clientLogo,
       // Le logo seul, même avec les mots du client (qui ne vont jamais à son dessinateur) : la direction d'origine
       // ressert pour ce qui le porte (audit du 22 novembre 2026, 2.4).
       imagery: mixed || (o.guidance && !(o.slots?.length && o.slots.every((s) => s === "logo"))) ? undefined : proposalImagery(j, route),
       // Logo refait avec les mots du client : la consigne écrite par SINA ne va jamais au dessinateur du logo (essai réel
-      // du 21 novembre 2026 : « un fil à plomb stylisé, vert profond »), seulement ce qu'on savait de la marque avant ;
-      // le relecteur reçoit les mots du client (sa fiche et ce qu'il vient de dire).
-      ...(slots.includes("logo") && o.guidance ? { logoLine: proposalImagery(j, route)?.logo ?? before?.logoIdea ?? null } : {}),
+      // du 21 novembre 2026 : « un fil à plomb stylisé, vert profond »). Sa ligne « La marque » est écrite par le Studio
+      // depuis la planche (23 novembre 2026) ; il reçoit seulement la phrase de refus du client, mot pour mot ; le
+      // relecteur reçoit les mots du client (sa fiche et ce qu'il vient de dire).
       gouts: goutsDuClient(j, o.projectId, clientWords(o.guidance)),
+      refusLogo: refusDuClientPourLeLogo(j, o.projectId, clientWords(o.guidance)),
     });
     current = r.route; notes.push(...r.notes);
     // La maquette refaite avec le bon logo : la planche n'est plus notée « ancien logo ».
@@ -145,7 +145,8 @@ export async function runBrandFinish(o: {
     try {
       const made = await ctx.step(`brand:symbol:${round}:${mainLogo.id}`, async () => {
         const logoPng = await onWhite(assetData(mainLogo));
-        const data = await ai.draw(`symbol-${round}`, { prompt: symbolPrompt(current), aspect: "1:1", logo: await onWhite(logoPng) });
+        // Le symbole est un dessin du logo : usage « logo », modèle imposé (logo-policy.ts).
+        const data = await ai.draw(`symbol-${round}`, { prompt: symbolPrompt(current), aspect: "1:1", logo: await onWhite(logoPng), usage: "logo" });
         const png = await sharp(data).png().toBuffer();
         if (!(await logoOnWhite(png))) return { ok: false as const, why: L("il n'est pas sur un fond blanc net", "it is not on a clean white background") };
         const seen = await ai.look(`symbolcheck-${round}`, { system: SYMBOL_REVIEW, schema: SymbolReviewSchema, prompt: `Marque : « ${current.name} ». Image 1 : le symbole proposé. Image 2 : le logo de la marque.`, images: [{ data: png, label: "symbole" }, { data: logoPng, label: "logo" }] });

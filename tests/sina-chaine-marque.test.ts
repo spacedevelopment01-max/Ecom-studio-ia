@@ -17,10 +17,12 @@ describe("SINA — chaîne de création de la marque", async () => {
   const { getTool } = await import("@/lib/syna-agent/registry");
   const J = await import("@/lib/syna-agent/journey");
   const C = await import("@/lib/syna-agent/brand-chain");
-  const { photoRequestMaxMicro } = await import("@/lib/ai/media-providers");
+  const { LOGO_ROUTE, photoRequestMaxMicro } = await import("@/lib/ai/media-providers");
   const { boardImageRoute } = await import("@/lib/syna-agent/brand-images");
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
   type Route = ReturnType<typeof route>;
+  // Le logo est dessiné par le modèle imposé des logos (23 novembre 2026) : son devis prend son tarif par image.
+  await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
 
   const ctxOf = (user: any, cid: string) => ({ user, conversationId: cid, runId: "test", projectId: null as string | null, attachment: () => null }) as any;
   const call = async (name: string, ctx: any, args: unknown) => {
@@ -689,7 +691,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     // La règle est écrite pour celle qui rédige, et le lecteur compte dans le devis.
     const P3 = await import("@/lib/syna-agent/brand-prompts");
     // La forme demandée à la directrice artistique nomme TOUTES les consignes, la maquette du site comprise.
-    for (const f of ["look", "logo", "hero", "object", "signs", "site", "posts"]) expect(P3.imagerySystem("produits")).toMatch(new RegExp(`Forme exacte : \\{[^\\n]*"${f}": `));
+    for (const f of ["look", "hero", "object", "signs", "site", "posts"]) expect(P3.imagerySystem("produits")).toMatch(new RegExp(`Forme exacte : \\{[^\\n]*"${f}": `));
+    // La directrice artistique n'écrit plus de ligne pour le logo (23 novembre 2026) : le Studio l'écrit lui-même.
+    expect(P3.imagerySystem("produits")).not.toMatch(/Forme exacte : \{[^\n]*"logo": /);
     expect(P3.HOUSE_RULES).toMatch(/CLAIR D'ABORD, BEAU ENSUITE[\s\S]*comprise à la PREMIÈRE lecture par quelqu'un qui ne connaît ni la marque ni le métier/);
     expect(C.readerTexts(J.journeyOf(t.cid).identities!.list[0] as never, true).some((x) => x.id === "A-s")).toBe(false); // une signature gardée du client n'est pas relue
   });
@@ -1121,8 +1125,10 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     const a = J.journeyOf(t.cid).identities!.list[0];
     const I = await import("@/lib/syna-agent/brand-images");
     const ligne = I.ligneDeLaMarque(a as never);
-    expect(ligne).toMatch(/^Elle croit que /);
-    expect(ligne).toContain(a.board!.idea.enemy.replace(/[.\s]+$/, "").replace(/^./, (c) => c.toLowerCase()));
+    // Sans idée en mots simples (planche d'avant), ce qu'elle croit et ce qu'elle combat, contrôlés sans IA : l'idée de la
+    // planche d'essai parle de fruits (le métier du client), refusée ; seul le ton reste (23 novembre 2026).
+    expect(I.ideeDuDessinateur(a as never).refus).toMatch(/un mot concret/);
+    expect(ligne).toBe(`Son ton : ${a.tone.adjectives.join(", ")}.`);
     const id = log.ids.find((x) => /^image-1-A-logo/.test(x))!;
     expect(log.prompts[id]).toContain(`La marque : ${ligne}`);
   });
@@ -1190,7 +1196,9 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     // Retour du propriétaire du 15 novembre 2026 : « tu dois laisser libre OpenAI pour faire les logos, juste lui donner
     // les indications de métier et identité de marque, couleur, typo ». SINA ne décrit plus le logo ; le dessinateur
     // reçoit le métier, l'identité, les couleurs et la typographie, et il est totalement libre du dessin.
-    expect(P.imagerySystem("services")).toMatch(/Tu ne décris PAS le logo : aucune idée de dessin, aucun signe à y mettre, aucune forme, aucun effet, aucune composition\. Le dessinateur est totalement libre/);
+    // Depuis le 23 novembre 2026, la directrice artistique n'écrit plus rien pour le logo : le Studio écrit sa ligne.
+    expect(P.imagerySystem("services")).toMatch(/Le logo n'est pas à toi : le Studio donne lui-même au dessinateur du logo ce qu'il doit savoir de la marque/);
+    expect(P.imagerySystem("services")).not.toMatch(/- logo : /);
     expect(P.imagerySystem("services")).not.toMatch(/le signe éventuel, pris dans son monde/);
     const freeLogo = I.imagePrompt("logo", route("A"), { look: "x", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never);
     expect(freeLogo).toMatch(/Tu es totalement libre du dessin : l'idée, la forme, le dessin des lettres et le signe éventuel sont à toi/);
@@ -1234,7 +1242,7 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(log.prompts["image-1-A-logo"]).toContain(`lettre par lettre : ${I.spell(ra.name)}`);
     expect(log.prompts["image-1-A-logo"]).toMatch(/Tu es totalement libre du dessin/);
     expect(log.prompts["image-1-A-logo"]).toMatch(/Ni maquette, ni photo, ni cadre, ni ombre portée\./);
-    expect(P.imagerySystem("services")).toMatch(/Tu ne décris PAS le logo/);
+    expect(P.imagerySystem("services")).toMatch(/Le logo n'est pas à toi/);
     // Le vrai matériel du métier (retour du propriétaire : « le camion n'est pas assez grand pour faire du toilettage »).
     expect(P.imagerySystem("services")).toMatch(/LE VRAI MATÉRIEL DU MÉTIER[\s\S]*Un véhicule de travail, un atelier ou un outil trop petit ou mal équipé pour le travail annoncé est une faute\./);
     expect(P.imageReviewSystem()).toMatch(/le matériel du métier n'est pas crédible pour un professionnel de ce métier/);
@@ -1402,9 +1410,10 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(withImages.maxMicro - without.maxMicro).toBeLessThan(C.boardImagesQuote(3).maxMicro);
     expect(firstStep.maxMicro).toBeLessThan(C.boardImagesQuote(3).maxMicro);
     // La fin de marque : l'objet, les signes et les trois publications d'UNE identité ; un seul logo coûte moins.
-    // S'y ajoute le symbole seul, tiré du logo : UNE image carrée avec une référence (le logo), au tarif d'une image de planche.
+    // S'y ajoute le symbole seul, tiré du logo : UNE image carrée avec une référence (le logo), au tarif du modèle imposé
+    // des logos (le symbole est un dessin du logo : usage « logo », 23 novembre 2026).
     const images = C.boardImagesQuote(1, undefined, ["object", "signs", "post0", "post1", "post2"]);
-    const symbol = photoRequestMaxMicro(boardImageRoute(), { prompt: "x".repeat(6000), references: 1, aspect: "1:1", quality: "high" });
+    const symbol = photoRequestMaxMicro(LOGO_ROUTE, { prompt: "x".repeat(6000), references: 1, aspect: "1:1", quality: "high" });
     expect(symbol).toBeGreaterThan(0);
     expect(C.finishQuote()).toEqual({ maxMicro: images.maxMicro + symbol, probableMicro: Math.ceil(images.probableMicro! + symbol / 1.25) });
     // Le symbole coûte ce que coûte l'objet qui porte le logo (même format, même référence) : rien de plus n'est compté.

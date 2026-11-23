@@ -97,6 +97,13 @@ export const BoardSchema = z.object({
     proof: z.string().min(1).max(240),
     /** Ce que l'idée coûte : ce que la marque s'interdit pour rester elle-même. */
     cost: z.string().min(1).max(240),
+    /**
+     * L'idée en mots simples, pour le dessinateur du logo (décision du 23 novembre 2026, après les « maisons » des logos
+     * de Nadia) : ce qu'elle croit et ce contre quoi elle se bat, sans comparaison, sans objet, sans lieu, sans scène.
+     * Écrite avec l'identité (aucun appel de plus) ; contrôlée par le Studio avant d'aller au dessinateur. Absente sur les
+     * planches d'avant.
+     */
+    simple: z.string().max(300).optional(),
   }),
   /** Vérification du nom : seule une recherche sur le web est faite, jamais un dépôt de marque. */
   nameCheck: z.enum(["rien_trouve", "non_verifie"]),

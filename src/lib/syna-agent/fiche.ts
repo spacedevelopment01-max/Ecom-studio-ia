@@ -121,12 +121,30 @@ export function journeyDuProjet(projectId: string): { cid: string; j: Journey } 
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 export const dateFr = (t: number) => { const d = new Date(t); return `${d.getDate()} ${MOIS[d.getMonth()]} ${d.getFullYear()}`; };
 const genreOf = (n: FicheNote): Genre => n.genre ?? "fait";
-const porteeOf = (n: FicheNote): Portee => n.portee ?? "tout";
+/**
+ * Un refus qui parle de personnes (mains, visage, silhouette, corps, enfant…) vaut pour les IMAGES, jamais « pour tout »
+ * (essai réel de Nadia, 23 novembre 2026 : « Mes mains je veux bien de temps en temps mais pas mon visage », noté
+ * « pour tout », arrivait au dessinateur de ses trois logos). Lu ainsi même sur une note écrite avant cette règle.
+ */
+export const PARLE_DE_PERSONNES = /(?<![\p{L}])(mains?|visages?|silhouettes?|corps|personnes?|enfants?|bébés?|gens|humains?|femmes?|hommes?|mannequins?|figurants?|portraits?|têtes?|doigts?|bras|peau|yeux|sourires?|selfies?|moi-même|ma tête|ma photo|ma figure)(?![\p{L}])/iu;
+/** « fait main », « à la main » parlent du métier, pas d'une personne montrée. */
+export const parleDePersonnes = (t: string): boolean => PARLE_DE_PERSONNES.test(t.replace(/(?<![\p{L}])(faite?s?|à la|a la) main(?![\p{L}])/giu, " "));
+export const porteeOf = (n: FicheNote): Portee => {
+  const p = n.portee ?? "tout";
+  return genreOf(n) === "refuse" && (p === "tout" || p === "marque") && parleDePersonnes(n.value) ? "images" : p;
+};
 
 /** Les refus du client qui valent pour cet usage, mot pour mot. */
 const vautPour = (n: FicheNote, usages: Portee | Portee[]) => (Array.isArray(usages) ? usages : [usages]).some((u) => couvre(porteeOf(n), u));
 export function refusPour(notes: FicheNote[], usage: Portee | Portee[]): string[] {
   return notes.filter((n) => genreOf(n) === "refuse" && vautPour(n, usage)).map((n) => n.value);
+}
+/**
+ * Les refus que reçoit le dessinateur du logo, mot pour mot, sans rien ajouté : ceux notés pour le logo, et ceux pour la
+ * marque ou pour tout qui peuvent toucher un logo (« pas de rose »). Jamais ceux des images (personnes, mains, visage).
+ */
+export function refusPourLeLogo(notes: FicheNote[]): string[] {
+  return notes.filter((n) => genreOf(n) === "refuse" && ["logo", "marque", "tout"].includes(porteeOf(n))).map((n) => n.value);
 }
 /** Ce que le client a dit de l'image qu'il veut (ses goûts et ses refus qui valent pour ces usages), mot pour mot. */
 export function goutsPour(notes: FicheNote[], usage: Portee | Portee[]): string[] {
