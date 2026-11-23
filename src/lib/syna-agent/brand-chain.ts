@@ -31,7 +31,7 @@ import { consigneUneFamille, webResearch, webSearchQuote, type ResearchCategory,
 import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
-import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, clientLogoOf, proposalImagery, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
+import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, clientLogoOf, manqueDeLaPlanche, phrasePlancheGardee, proposalImagery, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
 import { BoardSchema, WordmarkSchema, type Board } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
@@ -341,7 +341,7 @@ export type ChainAi = {
   /** Appel d'un spécialiste, réponse contrôlée par son schéma. */
   ask: <S extends z.ZodType>(id: string, call: { system: string; prompt: string; schema: S; kind: CallId; prepare?: (raw: unknown) => unknown }) => Promise<z.infer<S>>;
   /** Création d'UNE image par le modèle d'images du Studio (route des images de SINA), avec ses images de référence. */
-  draw: (id: string, call: { prompt: string; aspect: ImageAspect; logo?: Buffer | null; scene?: Buffer | null; /** Image montrée pour ne pas la refaire. */ avoid?: Buffer | null; /** Les 50 logos aimés du propriétaire, seulement comme exemples. */ examples?: Buffer | null }) => Promise<Buffer>;
+  draw: (id: string, call: { prompt: string; aspect: ImageAspect; logo?: Buffer | null; scene?: Buffer | null; /** Image montrée pour ne pas la refaire. */ avoid?: Buffer | null; /** Les 50 logos aimés du propriétaire, seulement comme exemples. */ examples?: Buffer | null; /** Les vraies photos du produit du client, à reproduire fidèlement. */ product?: Buffer | null }) => Promise<Buffer>;
   /** Relecture par un modèle qui voit : des images et une consigne, réponse contrôlée par son schéma. */
   /**
    * Le résumé du client, le même pour toute la chaîne (22 novembre 2026) : une demande qui commence par lui l'envoie à
@@ -395,7 +395,7 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
       routing: { difficulty: CALLS[c.kind].tier === "strong" ? "complex" : "standard", prefer: modelOf(s, c.kind) },
     }, c.schema)),
     // Route imposée (celle du devis), aucun relais vers un autre modèle ; le plafond de la tâche vaut aussi pour les images.
-    draw: (id, c) => withTrace(scope(`brand-${id}`), () => withQuotedImageRoute(boardImageRoute(), () => aiSiteImageHd({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, { prompt: c.prompt, aspect: c.aspect, logo: c.logo ?? null, scene: c.scene ?? null, avoid: c.avoid ?? null, examples: c.examples ?? null }))),
+    draw: (id, c) => withTrace(scope(`brand-${id}`), () => withQuotedImageRoute(boardImageRoute(), () => aiSiteImageHd({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, { prompt: c.prompt, aspect: c.aspect, logo: c.logo ?? null, scene: c.scene ?? null, product: c.product ?? null, avoid: c.avoid ?? null, examples: c.examples ?? null }))),
     look: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "quality_control", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, images: c.images, ...(c.fixes?.length ? { imagesFixes: c.fixes } : {}), promptKey: "syna-brand-look-1",
       maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, deferred, nouvelleSiChangee: true, routing: { difficulty: "complex", prefer: modelOf(s, "look") },
@@ -610,6 +610,8 @@ const Payload = z.object({
   slots: z.array(z.enum(CREATED_SLOTS)).min(1).optional(),
   /** La marque finie de l'identité CHOISIE : logo adopté, images manquantes (ou `slots` à refaire), charte. */
   finish: z.boolean().optional(),
+  /** Avec `imagesOnly` : finir une planche gardée de côté (une image y manque), à la charge du Studio. */
+  studio: z.boolean().optional(),
 });
 export type BrandJobPayload = z.infer<typeof Payload>;
 
@@ -653,6 +655,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const targets = a.redo?.length ? previous.filter((x) => a.redo!.includes(x.key)) : previous, round = j.identities?.round ?? 1;
     let list = (j.identities?.list ?? []) as Route[];
     const said: string[] = [], redoneLogos: Buffer[] = [], siteGardes: string[] = [];
+    const held = new Map<string, string[]>();
     // Un logo refait reçoit d'abord les logos des AUTRES planches de la série montrée (règle du propriétaire : chaque logo
     // reçoit ceux déjà faits, « je veux un logo complètement différent » ; audit du 22 novembre 2026 : il ne recevait que
     // ceux refaits dans la même tâche).
@@ -672,16 +675,28 @@ export async function runSinaBrandJob(ctx: JobContext) {
       // réécrite que si le client dit ce qu'il veut de différent pour une image autre que le logo (ses mots ne vont
       // jamais au dessinateur du logo).
       const reprise = logoOnly || !a.guidance ? proposalImagery(j, x) : undefined;
-      const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts, ...(reprise ? { imagery: reprise } : {}) });
+      // Une planche gardée de côté, finie par le Studio : ses images manquantes sont une reprise de son propre travail,
+      // jamais comptée au client (LE-STUDIO-DE-A-A-Z, partie 13 : « une erreur de SINA est toujours corrigée sans rien compter »).
+      const faire = () => runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], gouts, ...(reprise ? { imagery: reprise } : {}) });
+      const r = a.studio && (j.identities?.incompletes ?? []).some((y) => y.key === x.key) ? await aLaChargeDuStudio(faire) : await faire();
       const fresh = (a.slots ?? CREATED_SLOTS).includes("logo") && r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
       if (fresh) { try { redoneLogos.push(assetData(fresh)); } catch { /* fichier absent */ } }
       list = list.map((o) => (o.key === x.key ? r.route : o));
       if (r.siteGarde) siteGardes.push(x.key);
-      said.push(...r.issues); notes.push(...r.notes);
+      const manque = manqueDeLaPlanche(r.route, !!clientLogo);
+      if (manque.length) { said.push(phrasePlancheGardee(r.route, manque, r.issues)); held.set(x.key, manque); } else said.push(...r.issues);
+      notes.push(...r.notes);
     }
     // Logo refait sans sa maquette : la planche est notée, sa maquette sera refaite si elle est choisie.
     const seul = (a.slots ?? []).includes("logo") && !(a.slots ?? []).includes("site") ? targets.map((x) => x.key) : [], refaite = (a.slots ?? []).includes("site") ? targets.map((x) => x.key).filter((k) => !siteGardes.includes(k)) : [];
-    updateJourney(a.conversationId, (y) => { if (y.identities) { y.identities.list = list; y.identities.issues = [...new Set([...y.identities.issues, ...said])]; y.identities.at = Date.now(); y.identities.siteAncienLogo = [...new Set([...(y.identities.siteAncienLogo ?? []), ...seul, ...siteGardes])].filter((k) => !(refaite as string[]).includes(k)); } });
+    updateJourney(a.conversationId, (y) => { if (y.identities) { y.identities.list = list; y.identities.issues = [...new Set([...y.identities.issues, ...said])]; y.identities.at = Date.now(); y.identities.siteAncienLogo = [...new Set([...(y.identities.siteAncienLogo ?? []), ...seul, ...siteGardes])].filter((k) => !(refaite as string[]).includes(k));
+      // Une planche gardée de côté et finie redevient visible ; une planche reprise à laquelle il manque une image ne l'est plus.
+      const autres = (y.identities.incompletes ?? []).filter((z) => !targets.some((t) => t.key === z.key)), inc = [...autres, ...[...held].map(([key, manque]) => ({ key, manque }))];
+      if (inc.length) y.identities.incompletes = inc; else delete y.identities.incompletes;
+      // Les anciennes phrases d'une planche finie depuis ne sont plus vraies.
+      const finies = targets.map((t) => t.key).filter((k) => !held.has(k));
+      y.identities.issues = y.identities.issues.filter((l) => !finies.some((k) => l.startsWith(`Identité ${k} « `) && /je ne te montre pas cette planche/.test(l)));
+    } });
     return { routes: list.map((x) => ({ key: x.key, name: x.name, slogan: x.slogan })), issues: said, notes, images: list.reduce((n, x) => n + Object.values(x.board?.images ?? {}).flat().filter((v) => v && typeof v === "object").length, 0) };
   }
 
@@ -993,19 +1008,29 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const g = o.board?.images?.logo ? getAsset(o.board.images.logo.id) : undefined;
     if (g) { try { seriesLogos.push(assetData(g)); } catch { /* fichier absent */ } }
   }
-  if (a.images ?? brandImagesOn()) {
+  // Jamais une planche incomplète (règle du propriétaire ; essai réel de Nadia, 23 novembre 2026 : des planches sans logo
+  // lui ont été montrées) : une planche à laquelle il manque encore une image après les reprises est gardée de côté.
+  const imagesFaites = a.images ?? brandImagesOn();
+  const raisonsDe = new Map<string, string[]>();
+  if (imagesFaites) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
         const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, madeLogos: [...seriesLogos], gouts: goutsDuClient(j, p.id) });
         const fresh = r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;
         if (fresh) { try { seriesLogos.push(assetData(fresh)); } catch { /* fichier absent : rien à montrer */ } }
         list = list.map((o) => (o.key === x.key ? r.route : o));
-        remaining.push(...r.issues); notes.push(...r.notes);
+        raisonsDe.set(x.key, r.issues); notes.push(...r.notes);
       } catch (e) {
-        if (e instanceof CostCapReached) { notes.push("plafond de dépense atteint avant la fin des images"); break; }
+        if (e instanceof CostCapReached) { notes.push("plafond de dépense atteint avant la fin des images"); raisonsDe.set(x.key, [L("le plafond annoncé a été atteint avant la fin de ses images", "the announced cap was reached")]); break; }
         notes.push(`images de ${x.key} non faites : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
       }
     }
+  }
+  const incompletes = imagesFaites ? list.filter((y) => todo.includes(y.key)).map((y) => ({ key: y.key, manque: manqueDeLaPlanche(y, !!clientLogo) as string[] })).filter((y) => y.manque.length) : [];
+  for (const x of list.filter((y) => todo.includes(y.key))) {
+    const held = incompletes.find((y) => y.key === x.key);
+    if (held) { remaining.push(phrasePlancheGardee(x, held.manque, raisonsDe.get(x.key) ?? [])); notes.push(`planche ${x.key} gardée de côté : il lui manque ${held.manque.join(", ")}`); }
+    else remaining.push(...(raisonsDe.get(x.key) ?? []));
   }
 
   // Le nom de domaine de chaque planche neuve (gratuit, sans IA) : le domaine exact, sinon une adresse libre qui garde
@@ -1028,6 +1053,8 @@ export async function runSinaBrandJob(ctx: JobContext) {
   updateJourney(a.conversationId, (x) => {
     x.identities = {
       list, issues, comparison: series, at: Date.now(), round, chainJobId: ctx.job.id,
+      // Une planche refaite seule garde l'état des autres ; les planches de cette tâche prennent le leur.
+      ...((() => { const kept = (x.identities?.incompletes ?? []).filter((y) => !(todo as string[]).includes(y.key) && list.some((o) => o.key === y.key)), all = [...kept, ...incompletes]; return all.length ? { incompletes: all } : {}; })()),
       shownNames: [...new Set([...(x.identities?.shownNames ?? []), ...(x.identities?.list ?? []).map((i) => i.name), ...list.map((i) => i.name)])].slice(-60),
       study: { quotes: study.quotes.slice(0, 8), quoteCount: study.quotes.length, sources: study.sources, competitors: study.competitors.slice(0, 8).map((c) => c.name), mould: study.mould, substitutes: study.substitutes.slice(0, 4), notFound: study.notFound.slice(0, 4) },
       ...(firstIssues.length ? { corrected: firstIssues } : {}), ...(a.guidance ? { guidance: a.guidance } : {}),

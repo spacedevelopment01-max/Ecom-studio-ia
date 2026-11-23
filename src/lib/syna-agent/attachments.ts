@@ -160,7 +160,7 @@ export function describeAttachment(a: Attachment): string {
 type BoardShot = { id: string } | null | undefined;
 type BoardShots = { logo?: BoardShot; hero?: BoardShot; site?: BoardShot; object?: BoardShot; signs?: BoardShot; posts?: BoardShot[] };
 export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number; site?: { at?: number };
-  identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots } }, projectId?: string | null): Promise<LlmImage[]> {
+  identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[]; incompletes?: { key: string }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
   const small = async (id: string, size: number) => { const a = getAsset(id); return a && !a.deleted_at ? sharp(assetData(a)).resize(size, size, { fit: "inside", withoutEnlargement: true }).png().toBuffer() : null; };
@@ -169,10 +169,14 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
   // choisi ; puis sa marque finie (logo, scène, objet, signes, publications) tant qu'il ne l'a pas validée.
   // Tant que la marque n'est pas finie, SINA garde les planches sous les yeux, même après le choix (essai réel du
   // 15 novembre 2026 : après le choix, elle disait au client « je ne vois pas les images moi-même ici »).
+  // Une planche gardée de côté (une image y manque) n'est montrée ni au client ni à SINA (jamais une planche incomplète).
+  // Chaque image porte le verdict du relecteur : c'est ce que SINA en dit (essai réel de Nadia, 23 novembre 2026).
+  const { phraseDuVerdict, verdictDuRelecteur } = await import("./journey");
+  const cachees = new Set((j.identities?.incompletes ?? []).map((x) => x.key));
   if (j.identities?.list.length && !j.brandFinish?.at) {
-    for (const x of j.identities.list) for (const [slot, what] of [["logo", "le logo"], ["hero", "la grande scène"], ["site", "la maquette du haut de son site, sur téléphone"]] as const) {
+    for (const x of j.identities.list.filter((y) => !cachees.has(y.key))) for (const [slot, what] of [["logo", "le logo"], ["hero", "la grande scène"], ["site", "la maquette du haut de son site, sur téléphone"]] as const) {
       const id = x.board?.images?.[slot]?.id, data = id ? await small(id, 512).catch(() => null) : null;
-      if (data) out.push({ data, label: `Identité ${x.key} « ${x.name} » — ${what}, montré au client sur sa planche` });
+      if (data) out.push({ data, label: `Identité ${x.key} « ${x.name} » — ${what}, montré au client sur sa planche — relecture : ${phraseDuVerdict(verdictDuRelecteur(id))}` });
     }
   }
   if (j.identityChoice && j.brandFinish?.at && j.steps[3]?.status !== "done") {

@@ -257,8 +257,9 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(SYNA_SYSTEM).toMatch(/Sa marque est alors finie pour l'identité choisie \(brand\.finish : son logo adopté, l'objet qui le porte, ses signes, trois publications, sa charte\), il la regarde, demande ses changements \(brand\.finish avec redo\), puis la valide \(brand\.kit_validate\)\. Un seul logo : celui créé pour sa marque/);
     expect(SYNA_SYSTEM).not.toMatch(/logo\.propose|logo\.choose|\bbrand\.kit\b(?!_validate)/);
     // SINA voit ce qu'elle présente : le logo, la grande scène et la maquette du site de chaque planche.
-    expect((await journeyImages(j)).map((x) => x.label)).toEqual(j.identities!.list.flatMap((x) => [`Identité ${x.key} « ${x.name} » — le logo, montré au client sur sa planche`, `Identité ${x.key} « ${x.name} » — la grande scène, montré au client sur sa planche`, `Identité ${x.key} « ${x.name} » — la maquette du haut de son site, sur téléphone, montré au client sur sa planche`]));
-    expect(J.journeyContext(j)).toMatch(/Tu VOIS le logo, la grande scène et la maquette du haut du site de chaque planche \(images jointes à ta réponse\) : regarde-les avant d'en parler, et dis franchement si l'une d'elles n'est pas belle\.[\s\S]*la maquette du haut de son site sur téléphone[\s\S]*l'objet qui porte le logo, les signes en photo et trois publications sont créés pour l'identité qu'il choisit, dès son choix \(déjà compris dans son accord\)/);
+    expect((await journeyImages(j)).map((x) => x.label)).toEqual(j.identities!.list.flatMap((x) => [`Identité ${x.key} « ${x.name} » — le logo, montré au client sur sa planche — relecture : gardée, sans remarque`, `Identité ${x.key} « ${x.name} » — la grande scène, montré au client sur sa planche — relecture : gardée, sans remarque`, `Identité ${x.key} « ${x.name} » — la maquette du haut de son site, sur téléphone, montré au client sur sa planche — relecture : gardée, sans remarque`]));
+    // Ce que SINA dit des images vient du relecteur (essai réel de Nadia, 23 novembre 2026 : un haut de site noté 5 dit « soigné »).
+    expect(J.journeyContext(j)).toMatch(/Relecture des images, à reprendre telle quelle quand tu en parles[\s\S]*Tu VOIS le logo, la grande scène et la maquette du haut du site de chaque planche montrée \(images jointes à ta réponse\) : regarde-les avant d'en parler\. Ce que tu en dis vient de la relecture ci-dessus : sa note et ses mots, rien de plus ; ce qui est raté se dit raté\.[\s\S]*la maquette du haut de son site sur téléphone[\s\S]*l'objet qui porte le logo, les signes en photo et trois publications sont créés pour l'identité qu'il choisit, dès son choix \(déjà compris dans son accord\)/);
     // À l'écran : trois planches avec leur logo en image ; aucune publication ni objet dessiné en code à la place
     // d'une image, et une note dit que le reste est créé pour l'identité choisie.
     const html = await screen(t);
@@ -663,12 +664,15 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // À la proposition, le logo de A sort sur fond noir : refusé par le contrôle gratuit, la planche n'en a pas.
     const first = await proposed(t, { draw: async (id) => (id.startsWith("image-1-A-logo") ? square("#050505") : isLogo(id) ? whiteLogo() : square("#3366CC")) });
     expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.logo).toBeUndefined();
-    // Sans logo gardé, la maquette du site ne reçoit que la grande scène : le nom y est écrit seul, sans logo inventé.
-    // Elle est toujours dessinée : jamais une planche incomplète (chef, 22 novembre 2026).
-    expect(first.log.refs[`image-1-A-site${FIRST}`]).toEqual({ logo: false, scene: true, aspect: "9:16" });
+    // Sans logo gardé après ses reprises, la maquette du site n'est pas dessinée (elle serait fausse d'avance), et la
+    // planche A n'est pas montrée (règle du propriétaire : « Jamais une planche incomplète » ; essai réel de Nadia,
+    // 23 novembre 2026 : des planches sans logo lui avaient été montrées). Elle ne se choisit pas.
+    expect(first.log.refs[`image-1-A-site${FIRST}`]).toBeUndefined();
     expect(first.log.refs[`image-1-B-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
-    expect(first.log.prompts[`image-1-A-site${FIRST}`]).toContain(I.NO_INVENTED_MARK);
-    expect(J.journeyOf(t.cid).identities!.list[0].board!.images!.site).toBeTruthy();
+    expect(J.journeyOf(t.cid).identities!.incompletes).toEqual([{ key: "A", manque: ["logo", "site"] }]);
+    expect(await call("identity.choose", t.ctx, { key: "A" })).toMatchObject({ ok: false });
+    // Une planche montrée avant cette règle, sans logo (ancien parcours) : la marque finie garde son secours.
+    J.updateJourney(t.cid, (x) => { delete x.identities!.incompletes; });
     const chosen = await call("identity.choose", t.ctx, { key: "A" });
     // Il manque aussi le logo : la fin n'est plus couverte en entier, elle passe par brand.finish et son prix.
     expect(chosen.jobs).toBeUndefined();
@@ -919,12 +923,14 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(c.board!.images!.site).toBeUndefined();
     // Le reste de la planche ne souffre pas du refus de la maquette.
     for (const x of [b, c]) { expect(x.board!.images!.logo).toBeTruthy(); expect(x.board!.images!.hero).toBeTruthy(); }
-    // C'est dit au client, avec la raison, et jamais remplacé par une page dessinée.
-    expect(j.identities!.issues).toContain("Identité B : je n'ai pas gardé le haut de ton site (il n'est pas au niveau) ; je ne le montre pas."); // une phrase simple du Studio, jamais les mots du relecteur
-    expect(j.identities!.issues).toContain(`Identité C : je n'ai pas gardé le haut de ton site (le texte « ${c.board!.site.headline.slice(0, 60)} » n'y est pas écrit exactement) ; je ne le montre pas.`);
+    // C'est dit au client, avec la raison ; B et C, sans haut de site, ne sont pas montrées (jamais une planche incomplète,
+    // essai réel de Nadia, 23 novembre 2026).
+    expect(j.identities!.issues).toContain(`Identité B « ${b.name} » : je ne te montre pas cette planche, il lui manque le haut du site (le haut de ton site : il n'est pas au niveau). Je ne montre jamais une planche à trou : je peux refaire ce qui manque, à ma charge, rien n'est compté sur ton budget.`); // une phrase simple du Studio, jamais les mots du relecteur
+    expect(j.identities!.issues).toContain(`Identité C « ${c.name} » : je ne te montre pas cette planche, il lui manque le haut du site (le haut de ton site : le texte « ${c.board!.site.headline.slice(0, 60)} » n'y est pas écrit exactement). Je ne montre jamais une planche à trou : je peux refaire ce qui manque, à ma charge, rien n'est compté sur ton budget.`);
+    expect(j.identities!.incompletes).toEqual([{ key: "B", manque: ["site"] }, { key: "C", manque: ["site"] }]);
     expect(j.identities!.issues.some((l) => l.startsWith("Identité A"))).toBe(false);
     expect(j.identities!.issues.join("\n")).not.toMatch(/un texte non demandé/);
-    expect(J.journeyContext(j)).toMatch(/Points que le contrôle du Studio n'a pas pu valider \(dis-les honnêtement au client, en mots simples\) : [\s\S]*Identité B : je n'ai pas gardé le haut de ton site/);
+    expect(J.journeyContext(j)).toMatch(/Planches gardées de côté, NON montrées[\s\S]*B « .+ » \(il manque le haut du site\)[\s\S]*identity\.images \(keys = B, C/);
     // Dans la bibliothèque : la maquette de A est prête, celles de B et de C sont marquées refusées avec leur raison.
     const status = (key: string) => one<{ status: string; why: string | null }>("SELECT status, json_extract(meta,'$.synaBoard.review.why') why FROM assets WHERE project_id=? AND name=?", t.pid, `planche-${key}-site.png`);
     expect(status("A")).toMatchObject({ status: "ready" });
@@ -934,16 +940,17 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     for (const k of ["A", "B", "C"]) { const n = log.ids.filter((i) => i.startsWith(`image-1-${k}-site`)).length; expect(n === 1 || n === 3, `${k} : ${n}`).toBe(true); }
     // SINA ne regarde que la maquette gardée.
     const seen = (await journeyImages(j)).map((x) => x.label ?? "");
-    expect(seen.filter((l) => /la maquette du haut de son site/.test(l))).toEqual([`Identité A « ${a.name} » — la maquette du haut de son site, sur téléphone, montré au client sur sa planche`]);
-    // À l'écran : une seule maquette, celle de A ; les planches B et C n'ont ni maquette ni page dessinée à la place.
+    expect(seen.filter((l) => /la maquette du haut de son site/.test(l))).toEqual([`Identité A « ${a.name} » — la maquette du haut de son site, sur téléphone, montré au client sur sa planche — relecture : gardée, sans remarque`]);
+    // SINA ne voit rien des planches gardées de côté.
+    expect(seen.some((l) => /Identité [BC] /.test(l))).toBe(false);
+    // À l'écran : la seule planche complète, A ; B et C ne sont pas affichées.
     const html = await screen(t), shown = (await fr(() => threadView(t.user, t.cid))).journey.identities!.list as any[];
+    expect(shown.map((x) => x.key)).toEqual(["A"]);
     expect(count(html, 'data-screen="maquette"')).toBe(1);
     expect(count(html, "<figure data-phone")).toBe(1);
     expect(html).not.toContain('data-screen="site"');
     expect(html).toContain(shown[0].board.images.site.url);
-    expect(shown[1].board.images.site).toBeUndefined();
-    expect(shown[2].board.images.site).toBeUndefined();
-    expect(count(html, "<figure data-logo")).toBe(3);
+    expect(count(html, "<figure data-logo")).toBe(1);
   });
 
   it("maquette du site, seconde lecture : un titre mal lu la première fois puis retrouvé la garde, même avec de petits mots en trop ; un titre écrit avec une faute la refuse", async () => {
@@ -974,7 +981,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(c.board!.images!.site).toBeTruthy();
     expect(j.identities!.issues.filter((l) => !l.startsWith("Identité B"))).toEqual([]);
     expect(j.identities!.issues).toHaveLength(1);
-    expect(j.identities!.issues[0]).toMatch(/^Identité B : je n'ai pas gardé le haut de ton site \(.+\) ; je ne le montre pas\.$/);
+    expect(j.identities!.issues[0]).toMatch(/^Identité B « .+ » : je ne te montre pas cette planche, il lui manque le haut du site \(le haut de ton site : .+\)\. Je ne montre jamais une planche à trou/);
     for (const x of [a, b, c]) { expect(x.board!.images!.logo).toBeTruthy(); expect(x.board!.images!.hero).toBeTruthy(); }
     const status = (key: string) => one<{ status: string }>("SELECT status FROM assets WHERE project_id=? AND name=?", t.pid, `planche-${key}-site.png`)!.status;
     expect([status("A"), status("B"), status("C")]).toEqual(["ready", "rejected", "ready"]);
