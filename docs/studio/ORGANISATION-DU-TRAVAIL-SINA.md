@@ -429,6 +429,12 @@ Dernière commande :
   reprise des équipes enfin comptées). Reprise de Nadia : 4,78 € probables au taux de 0,90 du Studio d'essai.
 - Reprise acceptée par le propriétaire à 13 h 40 dans « Les essais complets ». À 13 h 56 : 77 %, 2,32 € dépensés,
   aucune image. Point au propriétaire toutes les 5 minutes.
+- Fin des 3 propositions (14 h 21), 4,67 € dépensés. Ratés graves : 9 logos sur 9 refusés (maisons, flamme malgré le
+  refus de Nadia, une arche) ; planches montrées sans logo ; un haut de site gardé et montré à 5 sur 10, et dit
+  « soigné » ; des grandes scènes avec un pot de confiture au lieu du vrai produit ; un titre coupé. Décision du chef
+  d'orchestre : pause avant le choix de « Sillage » (la marque finie redessinerait le logo avec le même défaut).
+  Diagnostic gratuit demandé à « Les essais complets » ; réparation commandée à « Évolution de SINA », avec la
+  correction du logo à proposer avant d'écrire, dans les règles du propriétaire (aucune consigne de style).
 
 ## 5. À lire avant chaque décision
 
