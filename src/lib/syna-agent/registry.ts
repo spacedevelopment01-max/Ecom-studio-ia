@@ -66,7 +66,59 @@ export function toolEntry(t: AgentTool): string {
   let schema: unknown;
   try { schema = z.toJSONSchema(t.args, { unrepresentable: "any" }); } catch { schema = { type: "object" }; }
   const flags = [t.kind, typeof t.sensitive === "function" ? "accord selon les arguments" : t.sensitive ? "accord explicite" : null, t.estimate ? "payant (budget)" : null].filter(Boolean).join(", ");
-  return `### ${t.name} — module ${t.module} (${flags})\n${t.description}\nArguments : ${JSON.stringify(stripMeta(schema))}`;
+  return `### ${t.name} — module ${t.module} (${flags})\n${t.description}\nArguments : ${argsCourts(schema)}`;
+}
+
+/**
+ * Les arguments d'un outil en écriture courte (23 novembre 2026, notices plus courtes) : la même forme et les mêmes
+ * règles que le schéma JSON (noms, types, valeurs permises, bornes, motifs, valeurs par défaut, champs facultatifs
+ * marqués « ? »), environ deux fois moins de signes. Ce que l'écriture courte ne connaît pas est recopié tel quel.
+ */
+const CONNUS = new Set(["$schema", "type", "properties", "required", "additionalProperties", "items", "minItems", "maxItems", "minLength", "maxLength", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "enum", "const", "anyOf", "oneOf", "pattern", "format", "default", "description", "propertyNames"]);
+const borne = (min: unknown, max: unknown, unite = ""): string => {
+  // Les bornes d'un entier quelconque (± 9 007 199 254 740 991) ne disent rien : elles ne sont pas écrites.
+  const lu = (v: unknown) => (typeof v === "number" && Math.abs(v) < Number.MAX_SAFE_INTEGER ? v : null);
+  const a = lu(min), b = lu(max);
+  return a != null && b != null ? (a === b ? `${a}${unite}` : `${a} à ${b}${unite}`) : b != null ? `≤ ${b}${unite}` : a != null ? `≥ ${a}${unite}` : "";
+};
+export function argsCourts(n: any): string {
+  if (n === true || n == null || typeof n !== "object" || !Object.keys(n).some((k) => k !== "$schema")) return "tout";
+  const precisions: string[] = [];
+  let s: string;
+  if (n.const !== undefined) s = JSON.stringify(n.const);
+  else if (Array.isArray(n.enum)) s = n.enum.map((v: unknown) => JSON.stringify(v)).join("|");
+  else if (Array.isArray(n.anyOf) || Array.isArray(n.oneOf)) s = (n.anyOf ?? n.oneOf).map(argsCourts).join(" | ");
+  else if (Array.isArray(n.type)) s = n.type.map((t: string) => argsCourts({ ...n, type: t, default: undefined, description: undefined })).join(" | ");
+  else if (n.type === "object") {
+    const req = new Set<string>(n.required ?? []);
+    const parts = Object.entries((n.properties ?? {}) as Record<string, unknown>).map(([k, v]) => `${k}${req.has(k) ? "" : "?"}: ${argsCourts(v)}`);
+    if (n.additionalProperties && typeof n.additionalProperties === "object") parts.push(`[clé${n.propertyNames && Object.keys(n.propertyNames).some((k) => k !== "type" || n.propertyNames.type !== "string") ? ` ${argsCourts(n.propertyNames)}` : ""}]: ${argsCourts(n.additionalProperties)}`);
+    else if (n.propertyNames || n.additionalProperties === true) parts.push("[clé]: tout");
+    s = `{${parts.join(", ")}}`;
+  } else if (n.type === "array") {
+    s = `[${argsCourts(n.items ?? {})}]`;
+    const b = borne(n.minItems, n.maxItems, " éléments");
+    if (b) precisions.push(b);
+  } else if (n.type === "string") {
+    s = "texte";
+    const b = borne(n.minLength, n.maxLength, " signes");
+    if (b) precisions.push(b);
+    if (n.pattern) precisions.push(`motif /${n.pattern}/`);
+    if (n.format) precisions.push(`format ${n.format}`);
+  } else if (n.type === "integer" || n.type === "number") {
+    s = n.type === "integer" ? "entier" : "nombre";
+    const b = borne(n.minimum, n.maximum);
+    if (b) precisions.push(b);
+    if (typeof n.exclusiveMinimum === "number") precisions.push(`> ${n.exclusiveMinimum}`);
+    if (typeof n.exclusiveMaximum === "number") precisions.push(`< ${n.exclusiveMaximum}`);
+  } else if (n.type === "boolean") s = "booléen";
+  else if (n.type === "null") s = "null";
+  else s = "tout";
+  if (n.default !== undefined) precisions.push(`défaut ${JSON.stringify(n.default)}`);
+  if (typeof n.description === "string") precisions.push(`« ${n.description} »`);
+  const autres = Object.keys(n).filter((k) => !CONNUS.has(k));
+  if (autres.length) precisions.push(JSON.stringify(Object.fromEntries(autres.map((k) => [k, n[k]]))));
+  return precisions.length ? `${s} (${precisions.join(", ")})` : s;
 }
 
 /** Catalogue envoyé au modèle : la notice de chaque outil proposé à ce fil. */
@@ -78,9 +130,3 @@ export function toolCatalog(hasProject: boolean, scope?: ToolScope): string {
     .join("\n\n");
 }
 
-function stripMeta(s: any): any {
-  if (Array.isArray(s)) return s.map(stripMeta);
-  if (!s || typeof s !== "object") return s;
-  const { $schema, additionalProperties, ...rest } = s;
-  return Object.fromEntries(Object.entries(rest).map(([k, v]) => [k, stripMeta(v)]));
-}

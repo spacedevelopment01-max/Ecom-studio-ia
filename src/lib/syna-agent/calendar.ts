@@ -18,6 +18,7 @@
  * partagent `posts.group_id` ; le « groupe » de l'étape 9 (1 à 3) peut être noté `brief.serie` pour varier les sujets.
  * Les formats d'une même publicité partagent `meta.conceptId` dans leur document.
  */
+import { demandesRecues } from "../suivi/mesures";
 import { formatInTimeZone } from "date-fns-tz";
 import { HttpError } from "../auth";
 import { all, json, logError, now, one, run, tx } from "../db";
@@ -219,9 +220,13 @@ export function buildCalendar(p: Project, req: CalendarRequest, previous: Calend
   }
   const prevOf = new Map((previous?.entries ?? []).map((e) => [e.id, e.prev]));
 
-  const units = varietyOrder(sources.units
+  const ready = sources.units
     .map((u) => ({ ...u, posts: u.posts.filter((x) => networks.includes(x.network as Platform) && !keptRefs.has(x.id)) }))
-    .filter((u) => u.posts.length));
+    .filter((u) => u.posts.length);
+  // Les publications de la marque finie ouvrent le calendrier, dans l'ordre de la planche (référence du propriétaire,
+  // partie 13 ; `publications-de-la-marque.ts`) ; les autres suivent, dans un ordre varié.
+  const marque = (u: SourceUnit) => { const b = json<Record<string, unknown>>(u.posts[0]?.brief ?? "{}", {}); return b.marque === true ? Number(b.ordre ?? 0) : null; };
+  const units = [...ready.filter((u) => marque(u) != null).sort((a, b) => marque(a)! - marque(b)!), ...varietyOrder(ready.filter((u) => marque(u) == null))];
 
   const dates = publishingDates({ startDate, days: req.days });
   const slots: { ymd: string; time: string; at: number }[] = [];
@@ -551,7 +556,10 @@ export async function remindDue(at = now()): Promise<number> {
     if (cal.reminded.includes(today) || Number(formatInTimeZone(at, cal.settings.timezone, "H")) < REMIND_HOUR) continue;
     const due = cal.entries.filter((e) => e.ymd === today && e.status === "a_publier");
     if (!due.length) continue;
-    const body = due.map((e) => `${e.time} · ${networkLabel(e.network)}${e.kind === "publicite" ? L(" (publicité à lancer)", " (ad to launch)") : ""}`).join("\n");
+    // « Ta journée est prête » (engagement 6) : les demandes reçues par le site depuis hier matin, lues par le code.
+    const dem = demandesRecues(r.project_id, at - 86_400_000 - Number(formatInTimeZone(at, cal.settings.timezone, "H")) * 3_600_000, at);
+    const body = due.map((e) => `${e.time} · ${networkLabel(e.network)}${e.kind === "publicite" ? L(" (publicité à lancer)", " (ad to launch)") : ""}`).join("\n")
+      + (dem ? L(`\n${dem} demande${dem > 1 ? "s" : ""} reçue${dem > 1 ? "s" : ""} par ton site depuis hier.`, `\n${dem} request${dem > 1 ? "s" : ""} received by your site since yesterday.`) : "");
     const units = new Set(due.map((e) => e.unit)).size;
     const title = L(`Aujourd'hui : ${units} publication(s) à faire${due.length !== units ? ` (${due.length} envois)` : ""}`, `Today: ${units} post(s) to do${due.length !== units ? ` (${due.length} sends)` : ""}`);
     notify(r.user_id, r.project_id, title, body, "info");

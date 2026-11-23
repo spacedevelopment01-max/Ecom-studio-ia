@@ -182,8 +182,10 @@ describe("routage multimédia V2", async () => {
     expect(mp.veoBilledSeconds(5, "veo-3.1-generate-preview")).toBe(6);
     expect(mp.veoBilledSeconds(5, "veo-3.0-generate-001")).toBe(8);
     confirmModel("google:veo-3.1-generate-preview", { unit: "video_second", perSecond: 0.4 });
+    // 23 novembre 2026 : les vidéos de l'API Gemini ne sont plus accordées ; un réglage qui les choisit est ignoré. Seul
+    // l'adaptateur est vérifié ici, avec le modèle donné explicitement.
     setJsonSetting("ai.routes", { video_generation: { provider: "google", model: "veo-3.1-generate-preview" } });
-    await fr(() => mp.aiClip("google", ctx(c), { image: png, prompt: "lent travelling", aspect: "9:16", seconds: 5 }));
+    await fr(() => mp.aiClip("google", ctx(c), { image: png, prompt: "lent travelling", aspect: "9:16", seconds: 5, model: "veo-3.1-generate-preview" }));
     const start = net.calls.find((x) => x.url.includes(":predictLongRunning"))!;
     expect(start.url).toContain("veo-3.1-generate-preview");
     expect(start.body.parameters.durationSeconds).toBe(6);

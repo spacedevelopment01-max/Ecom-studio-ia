@@ -28,11 +28,11 @@ describe("état unifié", () => {
 
 describe("pourcentages du budget IA", () => {
   it("français avec espace fine, anglais collé, « ≈ » pour un coût probable, « < 1 % » pour un très petit coût", () => {
-    expect(formatPct(6, "fr", true)).toBe("≈ 6 %");
+    expect(formatPct(6, "fr", true)).toBe("≈ 6 %");
     expect(formatPct(6, "en", true)).toBe("≈ 6%");
-    expect(formatPct(0.4, "fr", true)).toBe("< 1 %");
-    expect(formatPct(-3)).toBe("0 %");
-    expect(formatPct(Number.NaN)).toBe("0 %");
+    expect(formatPct(0.4, "fr", true)).toBe("< 1 %");
+    expect(formatPct(-3)).toBe("0 %");
+    expect(formatPct(Number.NaN)).toBe("0 %");
   });
   it("répartition du budget : dépassement signalé, barre jamais au-delà de 100 %", () => {
     expect(synaBudgetSplit(46, 6)).toEqual({ used: 46, cost: 6, thisPart: 6, after: 48, over: false });
@@ -44,9 +44,9 @@ describe("devis et consentement", () => {
   const quote = (p: Partial<Parameters<typeof SynaCostQuote>[0]> = {}) => html(h(SynaCostQuote, { title: "3 images", costPct: 6, usedPct: 46, ...p }));
   it("annonce le coût en % du budget, avec une barre lisible par les lecteurs d'écran, jamais en euros", () => {
     const out = quote({ details: [{ term: "Coût probable", detail: "un essai par image" }] });
-    expect(out).toContain("≈ 6 %");
+    expect(out).toContain("≈ 6 %");
     expect(out).toContain("du budget IA du mois");
-    expect(out).toMatch(/role="img" aria-label="Budget IA du mois : déjà utilisé 46 %, cette création ≈ 6 %, reste après ≈ 48 %\."/);
+    expect(out).toMatch(/role="img" aria-label="Budget IA du mois : déjà utilisé 46 %, cette création ≈ 6 %, reste après ≈ 48 %\."/);
     expect(out).toContain('role="group"');
     expect(out).not.toMatch(/€|EUR/);
     expect(out).not.toContain('role="alert"');
@@ -93,7 +93,7 @@ describe("compteur de budget", () => {
     const ok = html(h(SynaCostMeter, { remainingPct: 54 }));
     expect(ok).toContain('role="meter"');
     expect(ok).toContain('aria-valuenow="54"');
-    expect(ok).toContain('aria-valuetext="54 % restant"');
+    expect(ok).toContain('aria-valuetext="54 % restant"');
     expect(html(h(SynaCostMeter, { remainingPct: 12 }))).toContain('data-level="low"');
     expect(html(h(SynaCostMeter, { remainingPct: -4 }))).toContain('data-level="empty"');
   });

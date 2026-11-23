@@ -103,7 +103,8 @@ describe("règles alignées sur les décisions du propriétaire", async () => {
 
   it("11. la galerie dit son prix à SINA en part du budget d'IA, jamais en euros", () => {
     const src = lire("src/lib/syna-agent/tools/gallery.ts");
-    expect(src).toContain("au plus ${budgetPctText(ctx.user.id, est.maxMicro, p.id)} de ton budget d'IA du mois");
+    // En tutoyant, une seule fois (22 novembre 2026 : « ≈ 3 % de votre budget IA de ton budget d'IA du mois »).
+    expect(src).toContain("au plus ${budgetPctTu(ctx.user.id, est.maxMicro, p.id)} du mois");
     expect(src).not.toMatch(/prixParProduit:[^\n]*€/);
   });
 });

@@ -383,7 +383,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       try {
         const result=await requestCreativeVersion(body=>api(`/api/projects/${projectId}/campaigns/v2`,{body}),quote=>{
           const pct=(n:number)=>new Intl.NumberFormat(undefined,{maximumSignificantDigits:6}).format(n);
-          return window.confirm(t(`Une nouvelle proposition s’ajoutera sans modifier cette création. Devis : estimation ${pct(quote.estimatePct!)} % ; plafond ${pct(quote.maximumPct!)} % du budget IA, pour ${quote.concepts} concept(s) et ${quote.images} image(s). Les reprises restent plafonnées. Continuer ?`,`A new proposal will be added without changing this creative. Quote: estimate ${pct(quote.estimatePct!)}%; cap ${pct(quote.maximumPct!)}% of the AI budget, for ${quote.concepts} concept(s) and ${quote.images} image(s). Retries stay capped. Continue?`));
+          return window.confirm(t(`Une nouvelle proposition s’ajoutera sans modifier cette création. Devis : estimation ${pct(quote.estimatePct!)} % ; plafond ${pct(quote.maximumPct!)} % du budget IA, pour ${quote.concepts} concept(s) et ${quote.images} image(s). Les reprises restent plafonnées. Continuer ?`,`A new proposal will be added without changing this creative. Quote: estimate ${pct(quote.estimatePct!)}%; cap ${pct(quote.maximumPct!)}% of the AI budget, for ${quote.concepts} concept(s) and ${quote.images} image(s). Retries stay capped. Continue?`));
         },creativeOperation);
         if(!result)return;
         toast("ok", t("Nouvelle proposition en préparation : elle apparaîtra dans vos créations.", "New proposal in progress: it will appear in your creatives."));
@@ -579,7 +579,7 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
             <IconBtn label={t("Ajouter une image", "Add an image")} onClick={() => setPicker("add")}><ImagePlus className="size-4" /></IconBtn>
             <span className="mx-1 h-6 w-px bg-line" />
             <IconBtn label={t("Zoom arrière", "Zoom out")} onClick={() => setZoom((z) => Math.max(0.25, z / 1.2))}><Minus className="size-4" /></IconBtn>
-            <button type="button" className="h-8 rounded-lg px-2 text-xs tabular-nums hover:bg-paper-2" onClick={() => setZoom(1)} title={t("Ajuster à l'écran", "Fit to screen")}>{Math.round(scale * 100)} %</button>
+            <button type="button" className="h-8 rounded-lg px-2 text-xs tabular-nums hover:bg-paper-2" onClick={() => setZoom(1)} title={t("Ajuster à l'écran", "Fit to screen")}>{Math.round(scale * 100)} %</button>
             <IconBtn label={t("Zoom avant", "Zoom in")} onClick={() => setZoom((z) => Math.min(6, z * 1.2))}><Plus className="size-4" /></IconBtn>
             <IconBtn label={t("Ajuster à l'écran", "Fit to screen")} onClick={() => setZoom(1)}><Maximize2 className="size-4" /></IconBtn>
           </>

@@ -106,8 +106,12 @@ export function localCopy(i: AdInsight, a: AnglePlan, lang: Lang, limits: { hook
       headline = cut(noDot(a.material), limits.headline);
       break;
   }
+  // Une publicité par type de client : elle prend l'accroche et l'argument de SON angle.
+  if (a.client?.message) { hook = a.client.message; headline = a.client.featured || a.client.name || headline; }
+  if (a.client?.argument && !body.includes(a.client.argument)) body = `${noDot(a.client.argument)}.`;
   const primaryFirst = cut(`${noDot(hook)}.`, limits.primaryFirstLine);
-  const selected = i.marketingStrategy?.angleId==='generalist'?undefined:i.marketingStrategy?.angle;
+  // Sans type de client : l'angle choisi du projet (avec un type de client, jamais son accroche répétée partout).
+  const selected = a.client ? undefined : i.marketingStrategy?.angleId==='generalist'?undefined:i.marketingStrategy?.angle;
   if (selected) { hook = selected.examples.hero; headline = selected.messages[a.type.length % Math.max(1, selected.messages.length)] || selected.examples.hero; }
   const primary = [primaryFirst, selected?.examples.advertisement, body !== primaryFirst ? body : "", proofLine && !body.includes(proofLine) && a.type !== "gift" ? proofLine : ""].filter(Boolean).join("\n\n");
   return {
@@ -150,6 +154,6 @@ export function copyPrompt(i: AdInsight, angles: AnglePlan[], feedback?: string)
 Audience : ${i.audience.declared ?? i.audience.persona ?? "large (adultes)"}.${i.audience.adultsOnly ? " Produit pour enfants : on parle aux parents et à l'entourage adulte." : ""}
 Faits confirmés : ${i.facts.map((f) => `${f.label} : ${f.value}`).join(" ; ") || "aucun"}.
 ${i.offer ? `Offre réelle configurée : ${i.offer}.\n` : "Aucune offre ni promotion configurée.\n"}Angles (un par annonce, dans l'ordre) :
-${angles.map((a, k) => `${k + 1}. ${a.type} — matière : ${a.material} — levier : ${a.lever}`).join("\n")}
+${angles.map((a, k) => `${k + 1}. ${a.type} — matière : ${a.material} — levier : ${a.lever}${a.client ? ` — POUR : ${a.client.name} (${a.client.who})${a.client.wants ? ` ; ce qu'il veut : ${a.client.wants}` : ""}${a.client.featured ? ` ; à mettre en avant : ${a.client.featured}` : ""}${a.client.argument ? ` ; argument : ${a.client.argument}` : ""}${a.client.message ? ` ; accroche de son angle : « ${a.client.message} »` : ""}${a.client.emotion ? ` ; émotion : ${a.client.emotion}` : ""}${a.client.chosen ? " (angle choisi par le client)" : " (angle en réserve)"}` : ""}`).join("\n")}${angles.some((a) => a.client) ? "\nChaque annonce parle à SON type de client (« POUR ») et à lui seul : ses mots, sa situation, son envie ; jamais deux annonces pour le même type de client." : ""}
 ${feedback ? `\nCORRECTIONS EXIGÉES sur la version précédente (toutes, sans rien inventer) :\n${feedback}\n` : ""}Réponds { "ads": [ { "angle": "…", "hook": "…", "hookB": "…", "primary": "…", "headline": "…", "description": "…", "cta": "…", "sub": "…", "visual": "…" } ] }.`;
 }

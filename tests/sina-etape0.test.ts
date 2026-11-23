@@ -63,8 +63,9 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
 
   it("coût de SINA : le catalogue des outils (fixe) est mis en cache AVANT le contexte qui change à chaque pas", async () => {
     const { promptHead } = await import("@/lib/ai/llm");
-    expect(promptHead({ task: "agent_conversation", context: "état du projet", reference: "catalogue" })).toEqual({ cached: ["catalogue"], after: ["état du projet"] });
-    expect(promptHead({ task: "strategy" as any, context: "contexte", reference: "référence" })).toEqual({ cached: ["contexte", "référence"], after: [] });
+    expect(promptHead({ task: "agent_conversation", context: "état du projet", reference: "catalogue" })).toEqual({ cached: ["catalogue"], history: [], after: ["état du projet"] });
+    // Tâche ordinaire : la référence (la même pour tous les clients) passe désormais devant le contexte du projet.
+    expect(promptHead({ task: "strategy" as any, context: "contexte", reference: "référence" })).toEqual({ cached: ["référence", "contexte"], history: [], after: [] });
   });
 
   it("une réponse indispensable ne peut pas être reportée ; une réponse donnée n'est plus demandée", async () => {

@@ -17,6 +17,14 @@ export const budgetPctOf = (userId: string, micro: number, projectId?: string | 
 export const budgetPctText = (userId: string, micro: number, projectId?: string | null) => formatBudgetPct(budgetPctOf(userId, micro, projectId), L("fr", "en") as "fr" | "en");
 
 /**
+ * La même part, dite en tutoyant (« ≈ 3 % de ton budget IA ») : SINA tutoie le client partout, cartes d'accord comprises
+ * (essai réel « Les essais complets », Nadia, 22 novembre 2026 : la carte de dépense vouvoyait).
+ */
+export const budgetPctTu = (userId: string, micro: number, projectId?: string | null) => tutoie(budgetPctText(userId, micro, projectId));
+/** Les mots du budget dits en tutoyant. */
+export const tutoie = (t: string) => t.replace(/\bde votre budget\b/g, "de ton budget").replace(/\bsur votre budget\b/g, "sur ton budget");
+
+/**
  * Reprise débitée (le contrôle a refusé le 1er essai) : le client en est averti, avec ce que la création a coûté en
  * tout (% du budget IA). null : un seul essai, rien à annoncer.
  */

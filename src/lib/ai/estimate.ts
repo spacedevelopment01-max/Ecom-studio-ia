@@ -1,7 +1,4 @@
 import {UserFacingError} from "../jobs";
-import {higgsfieldMessage} from "./higgsfield/errors";
-import {approvedQuote} from "./higgsfield/pricing";
-import {defaultConfiguration} from "./higgsfield/catalog";
 /**
  * Estimation du coût IA d'une action, pour prévenir le client avant une action gourmande.
  * Devis au COÛT PROBABLE (choix du propriétaire, 16/10) : un seul essai et ses contrôles, sans marge de sécurité ni
@@ -13,6 +10,7 @@ import {defaultConfiguration} from "./higgsfield/catalog";
 import { balance, EUR } from "../billing";
 import { getJsonSetting } from "../settings";
 import { priceFor, routeFor, usdToEur, type TaskId } from "./config";
+import { IMAGE_REVIEW_MODEL, IMAGE_REVIEW_UNITS } from "../orchestrator/policy";
 import { mediaRouteFor } from "./media-providers";
 import { usageExplicit, type MediaUsage } from "./media-routing";
 import { L } from "../i18n-server";
@@ -46,12 +44,6 @@ function routeOf(task: TaskId, usage?: MediaUsage): { provider: string; model: s
 
 function usd(task: TaskId, units: { input?: number; output?: number; images?: number; seconds?: number }, usage?: MediaUsage): number {
   const r = routeOf(task, usage);
-  if(r.provider==='higgsfield') {
-    let quote:ReturnType<typeof approvedQuote>;
-    try{quote=approvedQuote(defaultConfiguration(r.model,units.seconds??5));}catch(e){throw new UserFacingError(higgsfieldMessage((e as Error).message));}
-    // This helper feeds legacy USD aggregation: cancel its global FX and retain the sourced video FX exactly.
-    return quote.usd*quote.fx.usdToEur/usdToEur();
-  }
   const p = priceFor(r.provider, r.model);
   if (!p) return 0;
   if (p.unit === "tokens") {
@@ -63,6 +55,27 @@ function usd(task: TaskId, units: { input?: number; output?: number; images?: nu
   if (p.unit === "call") return 0;
   return (units.seconds ?? 0) * p.perSecond;
 }
+
+/**
+ * Relecture d'UNE image de publication ou de publicité, au prix du modèle qui la fait vraiment (le plus fort, règle du
+ * propriétaire : IMAGE_REVIEW_MODEL), pas au prix de la tâche « contrôle » (Sonnet).
+ */
+function reviewUsd(units: { input: number; output: number } = IMAGE_REVIEW_UNITS): number {
+  const p = priceFor(IMAGE_REVIEW_MODEL.provider, IMAGE_REVIEW_MODEL.model);
+  return p && p.unit === "tokens" ? (units.input * p.inputPerM + units.output * p.outputPerM) / 1e6 : usd("quality_control", units);
+}
+/** Coût probable (micro-euros, coefficient compris) d'une relecture d'image de publication. */
+export const publicationReviewMicro = (units?: { input: number; output: number }): number => toMicro(reviewUsd(units));
+/**
+ * Coût probable d'une relecture d'image de départ ou d'un plan de vidéo : le même relecteur (le plus fort, au niveau
+ * élevé, `VIDEO_REVIEW_MODEL` = `IMAGE_REVIEW_MODEL`), aux jetons de cette relecture.
+ */
+export const strongReviewMicro = (units: { input: number; output: number }): number => toMicro(reviewUsd(units));
+/**
+ * Prix PROBABLE d'une image créée par le modèle des publications (estimation au jeton, la même que pour les
+ * publications : `aiPostProbableMicro`). Sa borne haute de réservation reste `aiPostMaxMicro`, montrée « au plus ».
+ */
+export const aiPostImageProbableMicro = (): number => toMicro(usd("image_generation", { images: 1 }, "social_image"));
 
 /** Coût estimé en micro-euros débités de l'enveloppe (coefficient de l'administration compris). */
 export type VideoChoice = "ai" | "edited" | "none";
@@ -139,9 +152,12 @@ export const capMicro = (probableMicro: number) => Math.round(probableMicro * CA
  * Publication (ou visuel avec texte) entièrement conçue par l'IA : coût probable d'UN essai — l'image du modèle des
  * publications, son contrôle lettre par lettre, et l'accroche.
  */
+/** Concept et textes d'une image (rédacteur), une fois : partagé par tous les formats d'une même idée de publicité. */
+export const aiPostConceptMicro = (): number => toMicro(usd("copywriting", { input: 18000, output: 2000 }));
+
 export function aiPostProbableMicro(): number {
   const two = usageExplicit("text_layout");
-  const qc = usd("quality_control", { input: 24000, output: 2000 }) * (two ? 2 : 1);
+  const qc = reviewUsd() * (two ? 2 : 1);
   const concept = usd("copywriting", { input: 18000, output: 2000 });
   return toMicro(usd("image_generation", { images: 1 }, "social_image") + (two ? usd("image_generation", { images: 1 }, "text_layout") : 0) + qc + concept);
 }

@@ -33,6 +33,8 @@ export const NativeImageRequestSchema=z.object({
  support:z.enum(['site','product_page','service_page','social','ad','blog','video','banner','gallery','brand']).optional(),
  aspect:z.enum(['1:1','4:5','2:3','3:2','9:16','16:9','3:1','4:1']).optional(),count:z.number().int().min(1).max(4).optional(),
  topic:z.string().max(200).optional(),allowGenerate:z.boolean().optional(),noStock:z.boolean().optional(),broad:z.boolean().optional(),silhouettes:z.boolean().optional(),
+ /** « Mets mon produit dans une scène » lancé depuis l'atelier (rapport 10, point 3) : inscrit dans « Mes créations ». */
+ atelier:z.object({mode:z.enum(['sina','ensemble','moi'])}).optional(),
 });
 export type NativeImageRequest=z.infer<typeof NativeImageRequestSchema>;
 type Cost=ReturnType<typeof boundedImageRequestsQuote>;

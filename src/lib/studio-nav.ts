@@ -3,7 +3,7 @@
  * chacun avec UNE phrase qui dit à quoi il sert, et les outils avancés (prompts, fichiers, connexions) rangés à part,
  * repliés tant qu'on ne s'en sert pas. Toutes les fonctions restent accessibles : rien n'est supprimé, seulement rangé.
  */
-export type SpaceId = "pilote" | "produit" | "marque" | "strategie" | "boutique" | "catalogue" | "biens" | "carte" | "realisations" | "rendez-vous" | "images" | "videos" | "publications" | "calendrier" | "publicites" | "blog" | "prompts" | "fichiers" | "connexions";
+export type SpaceId = "pilote" | "produit" | "marque" | "strategie" | "boutique" | "catalogue" | "biens" | "carte" | "realisations" | "rendez-vous" | "atelier" | "images" | "videos" | "publications" | "calendrier" | "publicites" | "blog" | "prompts" | "fichiers" | "connexions";
 export type SpaceGroup = "projet" | "creer" | "diffuser" | "avance";
 type Business = "products" | "services" | undefined;
 type T2 = [fr: string, en: string];
@@ -26,6 +26,7 @@ export const SPACES: { id: SpaceId; group: SpaceGroup; purpose: T2; purposeServi
   { id: "carte", group: "creer", purpose: ["Votre carte : catégories et plats, prix, allergènes déclarés, disponibilité. Le site l'affiche tout seul.", "Your menu: categories and dishes, prices, declared allergens, availability. The website shows it by itself."] },
   { id: "realisations", group: "creer", purpose: ["Vos chantiers : photos, demande, travail réalisé, avant / après. L'accueil, la page Réalisations et la fiche de chaque projet les affichent toutes seules.", "Your jobs: photos, request, work done, before / after. The home page, the Projects page and each project page show them by themselves."] },
   { id: "rendez-vous", group: "creer", purpose: ["Vos prestations, horaires, intervenants et réservations : tout le planning du site au même endroit.", "Your services, hours, staff and bookings: the whole website schedule in one place."] },
+  { id: "atelier", group: "creer", purpose: ["L'atelier : ton vrai produit dans de belles images et des vidéos qui vendent, avec SINA, le prix sur chaque bouton.", "The workshop: your real product in beautiful images and videos that sell, with SINA, the price on every button."] },
   { id: "images", group: "creer", purpose: ["Votre banque d'images, sans texte : vos photos, photos libres et images créées.", "Your image bank, no text: your photos, royalty-free photos and created images."] },
   { id: "videos", group: "creer", purpose: ["Votre banque de vidéos, sans texte : vos plans, plans libres et plans créés.", "Your video bank, no text: your clips, royalty-free clips and created clips."] },
   { id: "publications", group: "diffuser", purpose: ["Stratégie, création, calendrier et validation de vos publications : rien ne part sans votre accord.", "Strategy, creation, calendar and approval of your posts: nothing goes out without your approval."] },

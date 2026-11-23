@@ -8,7 +8,7 @@ import http from "node:http";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { account, project } from "./conversation209-fixtures";
 import { all, id } from "@/lib/db";
-import { DEFERRED_DISCOUNT, deferredDeps, deferredLimits, deferredWaitedMs, llmText, type LlmCall } from "@/lib/ai/llm";
+import { DEFERRED_DISCOUNT, deferredDeps, deferredLimits, deferredWaitedMs, enDiffere, llmText, type LlmCall } from "@/lib/ai/llm";
 import { DEFAULT_MODELS } from "@/lib/syna-agent/models";
 
 vi.mock("@/lib/ai/config", async (original) => ({ ...(await original<object>()), activeProviderKey: (provider: string) => (provider === "anthropic" ? "cle-factice-du-test-differe" : null) }));
@@ -155,6 +155,60 @@ describe("IA — travail en différé, à moitié prix, avec une attente bornée
     expect(events(h.user.id)).toHaveLength(1);
   });
 
+  it("dépôt annulé mais encore en cours après la grâce : l'appel repart en direct au lieu d'échouer ; le coût possible du dépôt est retenu au Studio (audit du site)", async () => {
+    const f = await fixture();
+    const log = batches({ polls: 1_000_000 }); // jamais terminé
+    noWait();
+    deferredLimits.perCallMs = -6 * 60_000; // patience et grâce déjà dépassées
+    expect(await llmText(f.call({ deferred: true }))).toBe("Réponse en direct.");
+    expect(log.cancelled).toEqual(["depot-1"]);
+    expect(direct.length - f.start).toBe(1);
+    // Deux réservations : l'appel direct, payé, et le dépôt abandonné, retenu comme incertain à la charge du Studio.
+    const r = all<{ status: string; studio: number }>("SELECT status, studio FROM ai_reservations WHERE user_id=? ORDER BY created_at, rowid", f.user.id);
+    expect(r.some((x) => x.studio === 1 && x.status !== "held")).toBe(true);
+  });
+
+  it("patience comptée en temps réel : trois appels qui attendent ensemble ne la mangent qu'une fois (22 novembre 2026)", async () => {
+    const f = await fixture();
+    batches({ polls: 1 });
+    deferredDeps.sleep = () => new Promise<void>((r) => setTimeout(r, 60));
+    const t0 = Date.now();
+    await Promise.all([1, 2, 3].map(() => llmText(f.call({ deferred: true }))));
+    const reel = Date.now() - t0, compte = deferredWaitedMs(f.jobId);
+    // Avant : environ trois fois l'attente réelle ; maintenant, jamais plus que le temps réellement passé.
+    expect(compte).toBeGreaterThanOrEqual(50);
+    expect(compte).toBeLessThanOrEqual(reel + 5);
+  });
+
+  it("coupure pendant l'attente d'un lot : à la reprise, sa réponse est lue chez le fournisseur, jamais repayée", async () => {
+    const f = await fixture();
+    const log = batches({ polls: 1 });
+    noWait();
+    // Le suivi du lot tombe en panne (le travailleur redémarre) : résultat incertain, coût maximal retenu.
+    const panne = deferredDeps.batches!.retrieve;
+    deferredDeps.batches!.retrieve = async () => { throw new Error("connexion perdue"); };
+    const call = f.call({ deferred: true });
+    await expect(llmText(call)).rejects.toThrow();
+    expect(log.created).toHaveLength(1);
+    // La tâche reprend : même appel, même clé. Le lot déjà déposé est lu ; aucun nouveau dépôt, aucun envoi direct.
+    deferredDeps.batches!.retrieve = panne;
+    const avant = direct.length;
+    expect(await llmText(call)).toBe("Réponse en différé.");
+    expect(log.created).toHaveLength(1);
+    expect(direct.length).toBe(avant);
+    const r = all<{ status: string; provider_receipt: string | null }>("SELECT status, provider_receipt FROM ai_reservations WHERE user_id=? ORDER BY created_at", f.user.id).at(-1)!;
+    expect(JSON.parse(r.provider_receipt!)).toEqual({ differe: "depot-1" });
+    expect(r.status).not.toBe("uncertain");
+  });
+
+  it("un petit contrôle (Haiku) ne part jamais en différé : il ne fait pas attendre le site", async () => {
+    const f = await fixture();
+    const log = batches();
+    noWait();
+    expect(await llmText(f.call({ deferred: true, routing: { difficulty: "standard", prefer: { provider: "anthropic", model: "claude-haiku-5-5", effort: "low" } } }))).toBe("Réponse en direct.");
+    expect(log.created).toHaveLength(0);
+  });
+
   it("patience de la tâche épuisée : les appels suivants partent en direct d'emblée, sans dépôt", async () => {
     const f = await fixture();
     const log = batches({ outcome: "canceled", polls: 1 });
@@ -198,5 +252,80 @@ describe("IA — travail en différé, à moitié prix, avec une attente bornée
     await expect(llmText(g.call({ deferred: true }))).rejects.toThrow();
     expect(direct.length - g.start).toBe(0);
     expect(events(g.user.id)).toEqual([]);
+  });
+  it("angles, site et publications (22 novembre 2026) : toute la tâche part en différé ; un appel qui demande le direct y reste", async () => {
+    const f = await fixture();
+    const log = batches({ polls: 1 });
+    noWait();
+    // Dans la tâche de fond : un appel qui ne dit rien est déposé en différé, à moitié prix.
+    expect(await enDiffere(() => llmText(f.call()))).toBe("Réponse en différé.");
+    expect(log.created).toHaveLength(1);
+    expect(direct.length - f.start).toBe(0);
+    expect(reasons(f.user.id).at(-1)!.r).toMatch(/différé \(moitié prix\)$/);
+    // Une retouche que le client attend devant (« deferred: false ») reste en direct, même dans la tâche.
+    expect(await enDiffere(() => llmText(f.call({ deferred: false })))).toBe("Réponse en direct.");
+    expect(log.created).toHaveLength(1);
+    // Hors d'une tâche en différé, rien ne change.
+    expect(await llmText(f.call())).toBe("Réponse en direct.");
+    expect(log.created).toHaveLength(1);
+  });
+
+  it("les tâches servies en différé : la marque (appel par appel), les angles, le site et les publications ; le réglage les coupe toutes", async () => {
+    const fs = await import("node:fs");
+    const src = fs.readFileSync("worker/handlers.ts", "utf8");
+    for (const t of ["syna.angles", "syna.site", "syna.posts.plan"]) expect(src, t).toMatch(new RegExp(`"${t.replace(/\./g, "\\.")}": async \\(ctx\\) => differe\\(`));
+    expect(src).toContain("return deferredOn() ? enDiffere(fn) : fn();");
+    // « Dessiner puis coder » n'est pas touché (consigne du propriétaire).
+    expect(src).toMatch(/"syna\.dessin": async \(ctx\) => \(await import/);
+    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain("const deferred = deferredOn() && !direct;");
+  });
+});
+
+describe("Réponse coupée et patience du pilote (audit des publications, 22 novembre 2026)", () => {
+  /** Dépôts simulés qui rendent tour à tour les réponses données (texte, raison de fin). */
+  function sequence(replies: { text: string; stop: string }[]) {
+    const created: any[] = [];
+    deferredDeps.batches = {
+      create: async (p: any) => { created.push(p); return { id: `depot-seq-${created.length}`, processing_status: "ended" }; },
+      retrieve: async (bid: string) => ({ id: bid, processing_status: "ended" }),
+      cancel: async (bid: string) => ({ id: bid, processing_status: "canceling" }),
+      results: async () => {
+        const r = replies[created.length - 1], params = created.at(-1).requests[0].params;
+        return (async function* () { yield { custom_id: "appel", result: { type: "succeeded", message: { id: `msg-${created.length}`, type: "message", role: "assistant", model: params.model, content: [{ type: "text", text: r.text }], stop_reason: r.stop, stop_sequence: null, usage: { ...USAGE } } } }; })();
+      },
+    };
+    return created;
+  }
+
+  it("une réponse coupée est redemandée avec PLUS de place que la première fois envoyée, jamais la même", async () => {
+    const { llmJson } = await import("@/lib/ai/llm");
+    const { z } = await import("zod");
+    const f = await fixture();
+    noWait();
+    const created = sequence([{ text: '{"ok": tr', stop: "max_tokens" }, { text: '{"ok": true}', stop: "end_turn" }]);
+    // Demandé : 2 000 jetons ; envoyé : 8 000 (le plancher). Avant, la relance redemandait 4 000, donc encore 8 000.
+    expect(await llmJson(f.call({ deferred: true, maxTokens: 2000 }), z.object({ ok: z.boolean() }))).toEqual({ ok: true });
+    expect(created.map((c) => c.requests[0].params.max_tokens)).toEqual([8000, 16000]);
+  });
+
+  it("le devis suit la même règle : une limite demandée sous le plancher coûte comme le plancher", async () => {
+    const { jsonCallMaxMicro, placeReelle } = await import("@/lib/ai/llm");
+    expect(placeReelle("anthropic", "claude-opus-5-5", 2000)).toBe(8000);
+    expect(placeReelle("anthropic", "claude-haiku-4-5", 2000)).toBe(2000);
+    expect(jsonCallMaxMicro("anthropic", "claude-opus-5-5", 5000, 2000, 64000, "high")).toEqual(jsonCallMaxMicro("anthropic", "claude-opus-5-5", 5000, 8000, 64000, "high"));
+  });
+
+  it("patience d'une tâche : réglable (une heure pour le pilote des publications) ; épuisée, l'appel part en direct", async () => {
+    const { PATIENCE_PILOTE_MS } = await import("../worker/handlers");
+    expect(PATIENCE_PILOTE_MS).toBe(60 * 60_000);
+    const f = await fixture();
+    const log = batches({ polls: 1 });
+    noWait();
+    // Patience nulle : aucun dépôt, l'appel part en direct.
+    expect(await enDiffere(() => llmText(f.call()), { patienceMs: 0 })).toBe("Réponse en direct.");
+    expect(log.created).toHaveLength(0);
+    // Patience par défaut : déposé en différé.
+    expect(await enDiffere(() => llmText(f.call()))).toBe("Réponse en différé.");
+    expect(log.created).toHaveLength(1);
   });
 });

@@ -55,7 +55,9 @@ describe("SINA — le savoir des publications", () => {
     // La règle du propriétaire est dans la consigne : images d'OpenAI, jamais une image créée comme preuve.
     expect(POSTS_PLAN_SYSTEM).toMatch(/modèle d'images d'OpenAI/);
     expect(POSTS_PLAN_SYSTEM).toMatch(/ne prouve jamais rien/);
-    expect(POSTS_PLAN_SYSTEM).toMatch(/Mots-dièse : 3 à 5/);
+    // 0 à 3 mots-dièse et une fin sans ordre (décision du 22 novembre 2026 ; avant : « Mots-dièse : 3 à 5 »).
+    expect(POSTS_PLAN_SYSTEM).toMatch(/Mots-dièse : 0 à 3/);
+    expect(POSTS_PLAN_SYSTEM).toMatch(/ne finit jamais sur un ordre au lecteur/);
     // Coût : la lecture des cahiers est comptée, au plus moins d'un euro par appel.
     expect(K.postsKnowledgeCapMicro("stratege", "strategy")).toBeGreaterThan(0);
     expect(K.postsKnowledgeCapMicro("stratege", "strategy")).toBeLessThan(1_000_000);

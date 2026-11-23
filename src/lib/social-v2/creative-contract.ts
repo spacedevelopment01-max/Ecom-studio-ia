@@ -21,7 +21,7 @@ export const EditorialSchema = z.object({
 export type Editorial = z.infer<typeof EditorialSchema>;
 export type EditorialBlock = z.infer<typeof EditorialBlockSchema>;
 export type CreativePurpose = "ad" | "organic";
-export const commercialCta = (text: string) => /\b(acheter|commander|acheter maintenant|profitez de|devis|réservez|réserver|shop now|buy now|order now|book now|get a quote)\b/i.test(text);
+export const commercialCta = (text: string) => /\b(acheter|commander|acheter maintenant|profitez de|devis|réservez|réserver|réservation|rendez-vous|boutique|démonstration|shop now|buy now|order now|book now|get a quote|a quote|booking|appointment|in the shop|a demo)\b/i.test(text);
 const missing = /\[(?:À|A) compléter[^\]]*\]|\[To complete[^\]]*\]/i;
 
 /** The persisted editorial brief is data, not a slogan. No sector proportions or demo-name rules. */

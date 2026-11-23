@@ -11,7 +11,7 @@ import { derivedKey } from "../secrets";
 import { loadCreativeMemory,productReferences } from "./creative-memory";
 import { assetData,getAsset } from "../library";
 import { routeFor } from "../ai/config";
-import { usagePrimary } from "../ai/media-routing";
+import { selectMedia, usageNeed, usagePrimary } from "../ai/media-routing";
 import type { Project } from "../projects";
 import { UserFacingError } from "../jobs";
 export function videoScope(p:Project,request:unknown) {
@@ -23,8 +23,13 @@ export function videoScope(p:Project,request:unknown) {
  const selected=p.business==='services'&&(serviceSiteScope(p.id)||siteVideoRequest(p.id,request))?null:p.business==='services'&&r?.angleId?communicationStrategy(p.id,{angleId:r.angleId}):strategySelection(p.id)??(p.business==='services'?activeStrategy(p.id):null);
  const marketing=selected?{angleId:selected.angleId,inputDigest:selected.inputDigest}:null;const prep=r?.purpose==="site"?stateOf(p.id):null;const slot=prep?.stages.media?.data.slots.find(s=>s.key===r.initialSlot);
  const initialContext=prep?{upstream:inputHash(prep,"media"),placement:slot?{key:slot.key,page:slot.pageKey,section:slot.sectionKey,purpose:slot.purpose}:null}:undefined;
- return crypto.createHash("sha256").update(JSON.stringify({...bindingDigest?{bindingDigest}:{},...marketing?{marketing}:{},...initialContext?{initialContext}:{},...(request&&typeof request==="object"&&"generation" in request?{wording:loadWordingRules(p.id)}:{}),selectedRefs,request,project:p.id,business:p.business,product:p.product,services:p.services,brand:p.brand,strategy:p.strategy,settings:p.settings,refs,voiceModel:OPENAI_VOICE_MODEL,voice:loadCreativeMemory(p.id,p).preferences,routes:[routeFor("copywriting"),routeFor("quality_control"),usagePrimary("social_image"),usagePrimary("product_video"),...(request&&typeof request==="object"&&"generation" in request?[usagePrimary("text_video")]:[])]})).digest("hex");
+ return crypto.createHash("sha256").update(JSON.stringify({...bindingDigest?{bindingDigest}:{},...marketing?{marketing}:{},...initialContext?{initialContext}:{},...(request&&typeof request==="object"&&"generation" in request?{wording:loadWordingRules(p.id)}:{}),selectedRefs,request,project:p.id,business:p.business,product:p.product,services:p.services,brand:p.brand,strategy:p.strategy,settings:p.settings,refs,voiceModel:OPENAI_VOICE_MODEL,voice:loadCreativeMemory(p.id,p).preferences,routes:[routeFor("copywriting"),routeFor("quality_control"),usagePrimary("social_image"),usagePrimary("product_video"),...(request&&typeof request==="object"&&"generation" in request?[usagePrimary("text_video"),animatedRouteKey()]:[])]})).digest("hex");
 }
+/**
+ * Le modèle vidéo réellement utilisable (ou aucun : plan sûr). Dans la portée de l'accord : une clé ajoutée ou retirée
+ * entre l'accord et le lancement ne change jamais en silence un plan sûr en plan animé payant, ni l'inverse.
+ */
+function animatedRouteKey():string|null{const c=selectMedia(usageNeed("product_video",{imageToVideo:true,people:false}));return c?`${c.provider}:${c.model}`:null;}
 export type VideoApproval<T=unknown>={projectId:string;scope:string;scenario:T;capMicro:number;quoteTotalMicro?:number;retakeMicro?:number;scenarioJobId?:string;expires:number};
 const signature=(payload:string)=>crypto.createHmac("sha256",derivedKey("video-scenario")).update(payload).digest("base64url");
 export function approveVideoScenario<T>(p:Project,request:unknown,scenario:T,capMicro:number,extra?:{quoteTotalMicro?:number;retakeMicro?:number;scenarioJobId?:string}) {

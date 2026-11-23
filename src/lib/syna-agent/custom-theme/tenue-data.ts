@@ -17,6 +17,7 @@
  *    restaurant), data-tn-prestations-options et data-tn-equipe-options (rendez-vous en trois temps). Seule la lecture
  *    de ces deux rubriques (« tenueMetiers », en bas du fichier) touche à la base ; tout le reste est pur.
  */
+import { avecPrixProuve, preuvesDesPrix } from "../prix-anterieur";
 import { withStructuredInfos } from "./theme";
 import { coupe, markMissing, repere, type TenuePrestation, type TenueProduct } from "./tenue";
 import { assetUrl } from "../../library";
@@ -925,7 +926,9 @@ export function venteBoutique(html: string, o: { root: string | null; built?: st
 export function tenueVitrine(projectId: string): TenueVitrine {
   try {
     const produits: NonNullable<TenueVitrine["produits"]> = {};
-    for (const p of listProducts(projectId)) {
+    const preuves = preuvesDesPrix(projectId);
+    for (const p0 of listProducts(projectId)) {
+      const p = avecPrixProuve(projectId, p0, preuves);
       const prices = p.variants.map((v) => v.price ?? p.data.price).filter((x): x is number => x != null), price = p.data.price ?? prices[0] ?? null;
       const low = prices.length ? Math.min(...prices) : price, compare = p.data.compareAt ?? p.variants.find((v) => v.compareAt != null)?.compareAt ?? null;
       produits[p.data.title] = { genre: p.data.productType.trim() || null, compare: compare != null && low != null && compare > low ? euros(compare) : null, des: new Set(prices).size > 1 && low != null ? euros(low) : null, versions: Math.max(1, p.variants.length) };

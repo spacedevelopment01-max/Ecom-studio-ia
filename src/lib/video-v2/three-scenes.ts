@@ -10,7 +10,7 @@ import { assertAdvertising, assertJobEntitlements } from "../job-entitlements";
  * modifiable ensuite, et remis à jour quand la marque change. Aucun personnage généré ; coût maximal annoncé avant.
  */
 import { z } from "zod";
-import {sceneGenerationRoute,type SceneGeneration} from "./scene-generation";
+import {sceneGenerationRoute,noAnimatedModel,type SceneGeneration} from "./scene-generation";
 import { videoReceipt } from "./receipts";
 import { videoScope,sceneApprovalRequest,guidedRunKey,type VideoApproval } from "./approval";
 import { videoContext, organicVideo, videoEditorialInstruction, editorialVideoIssues, type VideoEditorial } from "./editorial";
@@ -29,10 +29,13 @@ import { resolveSubject, type CreativeSubject, type SubjectOption } from "../cre
 import {sceneSubjectContext} from "./subject-binding";
 import { localIdeas } from "../prompt-ideas";
 import { brandTypo, palette } from "../engine/images";
-import { SIZES, VIDEO_DOC_VERSION, defaultSubtitleStyle, endCardDoc, overlayText, safeZone } from "./doc";
+import { SIZES, VIDEO_DOC_VERSION, defaultSubtitleStyle, endCardDoc, overlayText, packshotDoc, safeZone } from "./doc";
+import { safeCamera } from "./melange";
+import { validCutouts } from "../engine/cutouts";
 import { songStyleFor } from "../media/song";
+import { gesteDuModele, modeleVideo } from "../atelier/modeles-videos";
 import { latestVideo, renderVideoFile, saveRendered, saveVideoVersion, videoUserOwned } from "./store";
-import type { Clip, VideoDocument, VideoPlatform } from "./types";
+import type { CameraMove, Clip, VideoDocument, VideoPlatform } from "./types";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -45,7 +48,7 @@ import { loadCreativeMemory, productReferences, rememberDirection, rememberMedia
 import { execTool } from "../exec-tool";
 import { requireCreationPlan } from "../plan-gates";
 import { acquiredVoice, isOpenAIVoice } from "./openai-voice";
-import { countWords, subtitleChunks, synthLine, voiceAvailable, wordBudget, measuredCues, projectVoice } from "./voice";
+import { countWords, subtitleChunks, synthLine, voiceAvailable, wordBudget, measuredCues, projectVoice, voicePauses } from "./voice";
 import { brainView } from "../brain/facade";
 import { storagePath, tmpDir } from "../storage";
 import { llmConfigured } from "../ai/llm";
@@ -72,10 +75,10 @@ export function sceneTiming(scenes = SCENES, totalS = DEFAULT_TOTAL_S, endCardS 
 
 /** Un couple durée/scènes impossible ne doit jamais devenir une vidéo raccourcie silencieusement. */
 export function sceneTimingIssue(scenes = SCENES, totalS = DEFAULT_TOTAL_S): string | null {
-  if(!Number.isInteger(scenes)||scenes<1||scenes>6||!Number.isFinite(totalS)||totalS<6||totalS>60)return L('Choisissez de1à6scènes et une durée de6à60secondes ; aucune limite n’est corrigée implicitement.','Choose1to6shots and a duration of6to60seconds; no limit is implicitly corrected.');
+  if(!Number.isInteger(scenes)||scenes<1||scenes>6||!Number.isFinite(totalS)||totalS<6||totalS>60)return L('Choisis de 1 à 6 scènes et une durée de 6 à 60 secondes.','Choose 1 to 6 shots and a length of 6 to 60 seconds.');
   const t = sceneTiming(scenes, totalS);
   return t.endS > 0
-    ? L("Cette durée exige davantage de scènes (15 secondes au plus par plan). Augmentez le nombre de scènes ou réduisez la durée.", "This length requires more scenes (at most 15 seconds per shot). Add scenes or shorten the video.")
+    ? L("Cette durée demande plus de scènes (15 secondes au plus par plan). Ajoute des scènes ou raccourcis la vidéo.", "This length requires more scenes (at most 15 seconds per shot). Add scenes or shorten the video.")
     : null;
 }
 /** Modèle des plans IA (choix du propriétaire : Wan 2.6, bien moins cher que 3.0). */
@@ -111,6 +114,8 @@ export type ThreeScenesRequest = {
   key?: string;
   /** Musique composée par le studio (défaut) ou aucune : choix du client. */
   music?: boolean;
+  /** Modèle prêt de l'atelier (rapport 10, point 10) : son geste de caméra remplace le mouvement par défaut. */
+  modele?: import("../atelier/modeles-videos").ModeleVideoId;
 };
 
 /**
@@ -132,6 +137,8 @@ export type Scene = {
   stock?: { queries: string[]; must: string[]; need?: string[][] };
   /** Couleur du titre choisie d'après le fond mesuré (texte foncé sur un plan clair). */
   titleColor?: string;
+  /** Ce qui bouge seul, en plus de la caméra et de la lumière (« Le déballage » : le couvercle de la boîte). */
+  moves?: string;
 };
 /** endCard « large » : phrase et bouton de l'écran de fin en grand (au choix). */
 export type ScenePlan = { scenes: Scene[]; line: string; cta: string; endCard?: "standard" | "large"; /** Voix de la carte de fin. */ voiceEnd?: string };
@@ -151,9 +158,9 @@ export function approvedScenePlan(p:Project,req:ThreeScenesRequest,raw:unknown):
  const fields:Record<string,string|undefined>={line:plan.line,cta:plan.cta,voiceEnd:plan.voiceEnd};
  plan.scenes.forEach((s,k)=>Object.assign(fields,{[`title-${k}`]:s.title,[`voice-${k}`]:s.voice}));
  if(brandIssuesInTexts(fields,allowedBrands(p)).length)throw new UserFacingError(L('Le scénario cite une marque tierce : corrigez-le avant validation. Aucun texte retiré ni média lancé.','The scenario mentions a third-party brand: correct it before approval. No text removed or media launched.'));
- if(Object.values(fields).some(t=>!!t&&!usable(t)))throw new UserFacingError(L('Le scénario contient un texte à compléter ou non représentable. Corrigez-le avant validation ; rien n’est supprimé.','The scenario contains incomplete or unrepresentable text. Correct it before approval; nothing is removed.'));
+ if(Object.values(fields).some(t=>!!t&&!usable(t)))throw new UserFacingError(L('Le scénario contient un texte à compléter ou impossible à montrer. Corrige-le avant de valider ; rien n’est supprimé.','The scenario contains incomplete or unrepresentable text. Correct it before approval; nothing is removed.'));
  if(!isDeepStrictEqual(applyWordingDeep(plan,loadWordingRules(p.id)),plan))throw new UserFacingError(L('Le scénario contredit le vocabulaire enregistré : relisez la correction avant validation, aucun remplacement implicite.','The scenario conflicts with saved wording: review the correction before approval; no implicit replacement.'));
- if(req.purpose==='site'&&Object.values(fields).some(t=>!!t?.trim()))throw new UserFacingError(L('Ce scénario d’ambiance contient du texte ou une voix que le moteur retirerait. Validez un scénario sans texte, ou choisissez une vidéo de communication.','This ambience scenario contains text or voice that the engine would remove. Approve a scenario without text, or choose a communication video.'));
+ if(req.purpose==='site'&&Object.values(fields).some(t=>!!t?.trim()))throw new UserFacingError(L('Ce scénario d’ambiance contient du texte ou une voix qui seraient retirés. Valide un scénario sans texte, ou choisis une vidéo de communication.','This ambience scenario contains text or voice that the engine would remove. Approve a scenario without text, or choose a communication video.'));
  return structuredClone(plan);
 }
 
@@ -173,8 +180,33 @@ export type ThreeScenesDeps = {
   frames?: (data:Buffer)=>Promise<Buffer[]>;
   duration?: (data:Buffer)=>Promise<number>;
   reviewMedia?: (frames: Buffer[], reference:Buffer, text:string, key:string) => Promise<ShotReview>;
+  /**
+   * Le plan animé est-il possible (un modèle vidéo utilisable : Veo 3.1 Lite par Vertex par défaut) ? Faux : le plan sûr
+   * le remplace (vidéo guidée « image fixe puis mouvement » seulement). Absent : comme avant (essais simulés).
+   */
+  animated?: (seconds: number, aspect: SceneAspect) => boolean;
   render: (p: Project, docKey: string, doc: VideoDocument, meta: Record<string, unknown>) => Promise<string>;
 };
+
+/**
+ * LE PLAN SÛR À LA PLACE DU PLAN ANIMÉ (23 novembre 2026) : tant qu'aucun modèle vidéo n'est utilisable (la clé de Vertex
+ * manque), la vidéo guidée « image fixe puis mouvement » montre la vraie photo du produit, détourée, sur les couleurs de
+ * la marque, avec un mouvement de caméra au montage (le plan sûr du mélange, écrit le 22 novembre). Aucune image ni aucun
+ * plan créé par l'IA, donc aucun plan animé compté dans le prix. Le client le sait par cette phrase.
+ */
+export const planSurPhrase = () => L(
+  "Le mouvement créé par l'IA n'est pas encore branché : chaque plan montre la vraie photo de ton produit, détourée, sur les couleurs de ta marque, avec la caméra qui bouge doucement. Rien n'est inventé, et aucun plan animé n'est compté dans le prix.",
+  "AI-created motion isn't connected yet: each shot shows the real photo of your product, cut out, on your brand colours, with a gently moving camera. Nothing is invented, and no animated shot is counted in the price.",
+);
+/** Ce que montre le plan sûr : le produit détouré (validé), sinon sa vraie photo ; null pour un service ou sans photo. */
+export function safeShotSource(p: Project, s: SubjectOption | null): { kind: "cutout" | "photo"; assetId: string } | null {
+  if (p.business === "services" || s?.kind === "service") return null;
+  if (s?.referenceAssetId && s.key !== "main" && s.name !== p.product.name) return { kind: "photo", assetId: s.referenceAssetId };
+  const cut = validCutouts(p.id)[0];
+  if (cut) return { kind: "cutout", assetId: cut.id };
+  const ref = productReferences(p.id)[0];
+  return ref ? { kind: "photo", assetId: ref.assetId } : null;
+}
 
 /** Mode par défaut : plans IA pour un produit, plans libres de droits pour un service. */
 export const sceneMode = (p: Project, s: SubjectOption | null, req: ThreeScenesRequest): "ai" | "stock" => req.mode ?? (req.generation ? "ai" : s?.kind === "service" || p.business === "services" ? "stock" : "ai");
@@ -200,7 +232,7 @@ export function localScenePlan(p: Project, s: SubjectOption | null, req: ThreeSc
     const e = req.editorial;
     const blocks = e.blocks.length ? e.blocks.map(b=>b.text) : [e.caption];
     const n = req.scenes ?? SCENES;
-    if (blocks.length > n) throw new UserFacingError("Le contenu comporte davantage de blocs que de scènes. Adaptez le découpage ; aucun bloc supprimé.");
+    if (blocks.length > n) throw new UserFacingError("Il y a plus de blocs que de scènes. Change le découpage ; aucun bloc n’est supprimé.");
     const base = localScenePlan(p,s,{...req,editorial:undefined},board);
     return {...base,cta:organicVideo(e)?"":base.cta,line:"",voiceEnd:"",scenes:base.scenes.map((scene,k)=>({...scene,title:k===0?e.title:"",voice:blocks[k]??"",still:`${scene.still}\nContenu éditorial : ${blocks[k]??e.title}`}))};
   }
@@ -216,7 +248,9 @@ export function localScenePlan(p: Project, s: SubjectOption | null, req: ThreeSc
     const idea = ideas[k % Math.max(1, ideas.length)]?.prompt ?? name;
     const base = req.generation?C(`${shot?.intent??idea}. Sujet : ${name}. ${subject?.summary||p.product.summary||""}. ${p.business==="services"?"Illustration imaginée du métier, pas une réalisation du client.":"Montrer uniquement les caractéristiques confirmées du produit."} Aucune personne ni texte généré.`,` ${shot?.intent??idea}. Subject: ${name}. ${subject?.summary||p.product.summary||""}. Illustrative scene, no invented facts, people or generated text.`):shot?.still ?? shot?.intent ?? idea;
     const still = k === 0 && req.request?.trim() ? `${req.request.trim()} — ${base}` : base;
-    return { still, motion: req.generation?moves[k % moves.length]:shot?.motion ?? moves[k % moves.length], title: (shot?.title ?? (k === 0 ? name : "")).slice(0, 40), role: shot?.role, intent: shot?.intent, stock: shot?.stock, voice: localVoiceLine(p, name, shot?.role ?? "", shot?.title ?? "", shot?.intent ?? "", k) };
+    const modele = req.modele ? modeleVideo(req.modele) : null;
+    const geste = modele ? gesteDuModele(modele, { photoDuDos: false }) : null;
+    return { still: modele && k === 0 ? `${modele.scene} — ${still}` : still, motion: geste ? `${geste.consigne}; no hands, no people` : req.generation?moves[k % moves.length]:shot?.motion ?? moves[k % moves.length], ...(modele?.id === "deballage" ? { moves: "the lid of the box, lifting open by itself" } : {}), title: (shot?.title ?? (k === 0 ? name : "")).slice(0, 40), role: shot?.role, intent: shot?.intent, stock: shot?.stock, voice: localVoiceLine(p, name, shot?.role ?? "", shot?.title ?? "", shot?.intent ?? "", k) };
   });
   return { scenes, line: usable(p.brand?.tagline) ? p.brand!.tagline.slice(0, 70) : "", cta: ctaOf(p, req.as), voiceEnd: localVoiceEnd(p, req) };
 }
@@ -251,8 +285,19 @@ ${hasReference ? "The product in the reference image is the hero: reproduce it E
 No text, no letters, no brand name, no logo, no watermark anywhere: nothing written on the product (unless printed on the reference), on signs, walls or objects. No people, no hands, no faces, no body parts. Keep calm empty space at the top and bottom.`;
 }
 
+/**
+ * Le modèle prêt de l'atelier s'impose au scénario, même écrit par l'IA : son geste de caméra pour chaque plan, et pour
+ * « Le déballage », le couvercle qui s'ouvre seul (jamais une main). Sans modèle : le scénario reste tel quel.
+ */
+export function avecModele<P extends { scenes: Scene[] }>(plan: P, req: Pick<ThreeScenesRequest, "modele">): P {
+  const modele = req.modele ? modeleVideo(req.modele) : null;
+  if (!modele) return plan;
+  const geste = gesteDuModele(modele, { photoDuDos: false });
+  return { ...plan, scenes: plan.scenes.map((sc) => ({ ...sc, motion: `${geste.consigne}; no hands, no people`, ...(modele.id === "deballage" ? { moves: "the lid of the box, lifting open by itself" } : {}) })) };
+}
+
 /** Consigne du mouvement (Wan) : le décor bouge, le produit reste identique. */
-export const motionPrompt = (scene: Scene) => `${scene.motion}. Only the camera and the light move: nothing else in the scene moves (no flowing water, no leaves, no clouds, no smoke, no liquid). Maintain the documented reference viewpoint; no orbit and no view of an undocumented back or hidden part. The product stays perfectly still and exactly identical (same shape, colours, details, printed text). Photorealistic, smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no brand, no people, no hands.`;
+export const motionPrompt = (scene: Scene) => `${scene.motion}. Only the camera and the light move${scene.moves ? `, and ${scene.moves}` : ""}: nothing else in the scene moves (no flowing water, no leaves, no clouds, no smoke, no liquid). Maintain the documented reference viewpoint; no orbit and no view of an undocumented back or hidden part. The product stays perfectly still and exactly identical (same shape, colours, details, printed text). Photorealistic, smooth, slow, elegant motion. Single continuous shot, no cuts. No text, no logo, no brand, no people, no hands.`;
 
 /** Coût maximal (micro-euros) d'une vidéo IA : une image et un plan par scène (`clipMaxMicro` : un plan de la durée découpée). */
 export function scenesMaxMicro(scenes: number, imageMaxMicro: number, clipMaxMicro: number, planMicro = 0): number {
@@ -260,7 +305,7 @@ export function scenesMaxMicro(scenes: number, imageMaxMicro: number, clipMaxMic
 }
 
 /** Montage : vrais plans, titres en calques, logo et conclusion sur le dernier clip, musique du studio. */
-export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: number; generated: boolean }[], plan: ScenePlan, aspect: SceneAspect, as: "post" | "ad", timing = sceneTiming(clips.length), music = true, brief?: CreativeBrief): VideoDocument {
+export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: number; generated: boolean; safe?: { kind: "cutout" | "photo"; camera: CameraMove } }[], plan: ScenePlan, aspect: SceneAspect, as: "post" | "ad", timing = sceneTiming(clips.length), music = true, brief?: CreativeBrief): VideoDocument {
   const pal = palette(p);
   const typo = brandTypo(p);
   const size = SIZES[aspect];
@@ -272,7 +317,8 @@ export function buildSceneDoc(p: Project, clips: { assetId: string; durationS: n
     label: C(`Scène ${k + 1}`, `Scene ${k + 1}`),
     part: null,
     durationS: Math.min(timing.showS, c.durationS),
-    source: { kind: "video", assetId: c.assetId, inS: 0, outS: Math.min(timing.showS, c.durationS), muted: true },
+    // Plan sûr : le vrai produit détouré sur les couleurs de la marque (ou sa vraie photo), la caméra qui bouge au montage.
+    source: c.safe ? (c.safe.kind === "cutout" ? { kind: "doc", doc: packshotDoc({ w: size.w, h: size.h, safe, pal, typo, brand: p.brand?.name ?? "", cutoutId: c.assetId }), animate: "rise", camera: c.safe.camera } : { kind: "image", assetId: c.assetId, motion: c.safe.camera, crop: null }) : { kind: "video", assetId: c.assetId, inS: 0, outS: Math.min(timing.showS, c.durationS), muted: true },
     overlays: plan.scenes[k]?.title
       ? overlayText({
           w: size.w,
@@ -403,6 +449,8 @@ async function sceneClipDuration(data:Buffer){
 }
 
 /** Primitive commune aux scènes et aux reprises : même reçu durable, contrôle obligatoire, aucun secours. */
+import { rendreAuClient } from "../billing";
+import { journalCreation } from "./journal";
 export async function acquireDirectScene(p:Project,o:{ctx:JobContext|null;index:number;key:string;rootKey:string;as:"post"|"ad";aspect:SceneAspect;generation:"direct"|"reference";scene:Scene;reference:Buffer|null;referenceAssetId:string|null;clipS:number;minimumDurationS:number;progress?:number;request?:string|null;folderKey:string;prior:import("../library").Asset|null;beforeAcquire:()=>void},deps:ThreeScenesDeps):Promise<string>{
  const {ctx,index:k,reference,prior}=o,projectId=p.id;
  if(!deps.directClip)throw new UserFacingError("Adaptateur vidéo directe indisponible ; aucune image ou vidéo stock substituée.");
@@ -412,6 +460,7 @@ export async function acquireDirectScene(p:Project,o:{ctx:JobContext|null;index:
  const text=directScenePrompt(p,o.scene,!!reference,o.request),clipKey=`${o.key}:direct:${k}`,reviewKey=`${o.key}:direct-qc:${k}`;
  const mp4=prior?assetData(prior):await videoReceipt(projectId,clipKey,()=>deps.directClip!(reference,text,o.aspect,o.clipS,clipKey,o.generation),{readOnlyRecovery:true});
  const asset=prior??await saveAsset({projectId,userId:p.userId,data:mp4,name:`scene-${k+1}.mp4`,mime:"video/mp4",role:"clip",folderKey:o.folderKey,origin:"generated",status:"review",sourceAssetId:o.referenceAssetId,meta:{scenes:{key:o.key,rootKey:o.rootKey,index:k,as:o.as,generation:o.generation},illustration:p.business==="services",gate:{verdict:"PROVISIONAL",checked:false}}});
+ if(!prior){const r=sceneGenerationRoute(o.generation,o.clipS,o.aspect==="16:9"?"16:9":"9:16");journalCreation({projectId,userId:p.userId,assetId:asset.id,sourceAssetId:o.referenceAssetId,provider:r.allowed?r.provider:"inconnu",model:r.allowed?r.model:"inconnu",prompt:text});}
  const duration=await(deps.duration??sceneClipDuration)(mp4);
  if(duration+.05<o.minimumDurationS)throw new UserFacingError(`Scène ${k+1} trop courte : ${duration} s reçues. Clip conservé, aucun remplacement ni nouvel envoi automatique.`);
  const {run}=await import("../db");run("UPDATE assets SET duration=?,meta=json_set(meta,'$.durationS',?) WHERE id=?",duration,duration,asset.id);
@@ -421,7 +470,11 @@ export async function acquireDirectScene(p:Project,o:{ctx:JobContext|null;index:
  const decision=gateShot({review,expectsProduct,expectsCharacter:false,attempt:0,peopleAllowed:false});
  if(expectsProduct&&review?.sameProduct==null){decision.verdict="PROVISIONAL";decision.checked=false;decision.reason="Identité du produit non vérifiée";}
  const gate=gateSave({userId:p.userId,projectId,jobId:ctx?.job.id??null,assetId:asset.id},decision);run("UPDATE assets SET status=?,meta=? WHERE id=?",statusFor(decision),JSON.stringify({...assetMeta(asset),...gate.meta}),asset.id);
- if(decision.verdict!=="FINAL")throw new UserFacingError(`Scène ${k+1} refusée ou non vérifiée : ${decision.reason}. Version conservée.`);
+ if(decision.verdict!=="FINAL"){
+  // Aucun essai raté facturé au client (rapport 09, point 10) : le clip refusé passe à la charge du Studio.
+  if(!prior)rendreAuClient(p.userId,{task:"video_generation",projectId,usageKey:clipKey},`scène ${k+1} refusée au contrôle`);
+  throw new UserFacingError(`Scène ${k+1} refusée ou non vérifiée : ${decision.reason}. Version gardée, rien ne t’est compté pour ce plan.`);
+ }
  return asset.id;
 }
 
@@ -441,7 +494,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   }
   const aspect = req.aspect ?? "9:16";
   const mode = sceneMode(p0, s, req);
-  if(req.generation&&mode==="ai"&&!req.approval)throw new UserFacingError("Validez le scénario exact et son enveloppe avant les clips IA.");
+  if(req.generation&&mode==="ai"&&!req.approval)throw new UserFacingError("Valide le scénario et son prix avant que les plans soient filmés.");
   let timing = sceneTiming(req.scenes ?? SCENES, req.totalS ?? DEFAULT_TOTAL_S);
   const timingIssue = sceneTimingIssue(req.scenes, req.totalS);
   if (timingIssue) throw new UserFacingError(timingIssue);
@@ -492,6 +545,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   const plan: ScenePlan = req.approval ? approvedScenePlan(p0,req,written) : applyWordingDeep(written
     ? { ...written, voiceEnd: written.voiceEnd ?? fallback!.voiceEnd, scenes: Array.from({ length: fallback!.scenes.length }, (_, k) => ({ ...(written.scenes[k] ?? fallback!.scenes[k]), role:written.scenes[k]?.role??fallback!.scenes[k].role, intent:written.scenes[k]?.intent??fallback!.scenes[k].intent, stock:written.scenes[k]?.stock??fallback!.scenes[k].stock, voice: written.scenes[k]?.voice ?? fallback!.scenes[k].voice })) }
     : fallback!, wording);
+  if (!req.approval) Object.assign(plan, avecModele(plan, req));
 
   const editorialIssues = editorialVideoIssues(req.editorial, plan.cta);
   if (editorialIssues.length) throw new UserFacingError(editorialIssues.join(" ; "));
@@ -519,7 +573,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   if(wantsSpeech&&projectVoice(memory.preferences)) {const max=Math.floor((timing.showS-.3)*2.4);const long=plan.scenes.findIndex((s,k)=>countWords(`${s.voice??""} ${k===n-1?plan.voiceEnd??"":""}`)>max);if(long>=0) throw new UserFacingError(`Voix de la scène ${long+1} trop longue : adaptez le scénario ou la durée avant les médias. Aucun texte supprimé.`);}
   if(wantsSpeech&&isOpenAIVoice(projectVoice(memory.preferences)??"")){requireCreationPlan(null,projectId,"videos");if(!req.approval)throw new UserFacingError("Voix payante : scénario et devis à valider avant lancement.");}
   if(wantsSpeech&&(!projectVoice(memory.preferences)||!voiceAvailable(projectVoice(memory.preferences)))) throw new UserFacingError("La voix du projet est indisponible : aucun média payant lancé.");
-  const clips: { assetId: string; durationS: number; generated: boolean }[] = [];
+  const clips: { assetId: string; durationS: number; generated: boolean; safe?: { kind: "cutout" | "photo"; camera: CameraMove } }[] = [];
   // Scènes réellement obtenues (une étape sans plan est retirée AVEC son titre et sa voix : rien ne se décale).
   const kept: number[] = [];
   if (mode === "ai") {
@@ -528,10 +582,10 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
     const mainProduct = !s || s.kind !== "service" && (!s.referenceAssetId || s.key === "main" || s.name === p0.product.name);
     const stable = !req.binding && mainProduct ? productReferences(projectId)[0] ?? null : null;
     const refId = stable?.assetId ?? s?.referenceAssetId ?? null;
-    if (stable?.reconstructed) notes.push(C("Produit reconstruit (partie manquante complétée à partir de vos photos) : reconstruction plausible, pas une forme retrouvée à l'identique — à vérifier dans l'aperçu.", "Product reconstructed (missing part completed from your photos): a plausible reconstruction, not an exactly recovered shape — check it in the preview."));
+    if (stable?.reconstructed) notes.push(C("Produit reconstruit (la partie manquante est complétée à partir de tes photos) : c'est une reconstruction, pas une copie exacte — vérifie-la dans l'aperçu.", "Product reconstructed (missing part completed from your photos): a plausible reconstruction, not an exactly recovered shape — check it in the preview."));
     const ref = refId ? getAsset(refId) : null;
     const refBuf = ref && ref.project_id===projectId&&ref.kind==="image"&&!ref.deleted_at ? assetData(ref) : null;
-    if (!refBuf && (!req.generation || (req.generation==="reference"&&Array.from({length:n},(_,k)=>req.sceneImages?.[k]).some(photo=>!photo)))) throw new UserFacingError(L("Ajoutez d'abord une photo de ce produit : la vidéo part de votre vrai produit, l'IA ne l'invente pas.", "Add a photo of this product first: the video starts from your real product, the AI never invents it."));
+    if (!refBuf && (!req.generation || (req.generation==="reference"&&Array.from({length:n},(_,k)=>req.sceneImages?.[k]).some(photo=>!photo)))) throw new UserFacingError(L("Ajoute d'abord une photo de ce produit : la vidéo part de ton vrai produit, l'IA ne l'invente pas.", "Add a photo of this product first: the video starts from your real product, the AI never invents it."));
     const direct=req.generation && req.generation!=="staged";
     if(direct){
       if(!deps.directClip)throw new UserFacingError("Adaptateur vidéo directe indisponible ; aucune image ou vidéo stock substituée.");
@@ -539,12 +593,20 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
         const selected=req.sceneImages?.[k],photo=selected?getAsset(selected.assetId):null;
         if(selected&&(!photo||photo.project_id!==projectId||photo.deleted_at||photo.kind!=="image"||assetMeta<any>(photo).gate?.fatal))throw new UserFacingError("Référence indisponible ou refusée.");
         const reference=req.generation==="reference"?(photo?assetData(photo):refBuf):null;
-        if(req.generation==="reference"&&!reference)throw new UserFacingError("Choisissez une photo autorisée de ce produit ou lieu, ou la génération directe sans référence.");
+        if(req.generation==="reference"&&!reference)throw new UserFacingError("Choisis une de tes photos de ce produit ou de ce lieu, ou laisse l’IA filmer directement.");
         const clipId=await step(`${key}:direct-scene-${k}`,async()=>{
           return acquireDirectScene(p,{ctx,index:k,key:assetKey(k,"clip"),rootKey:key,as:req.as,aspect,generation:req.generation as "direct"|"reference",scene,reference,referenceAssetId:photo?.id??(reference?refId:null),clipS:timing.clipS,minimumDurationS:timing.showS,progress:.1+k*.65/n,request:req.request,folderKey,prior:savedScene(k,"clip")??null,beforeAcquire:preserveClientVersion},deps);
         });
         clips.push({assetId:clipId,durationS:timing.clipS,generated:true});kept.push(k);
       }
+    }else if(req.generation==="staged"&&deps.animated&&!deps.animated(timing.clipS,aspect)){
+      // Plan sûr à la place du plan animé (aucun modèle vidéo utilisable) : vrai produit, aucune IA d'image ni de vidéo.
+      const source=safeShotSource(p0,s);
+      if(!source)throw new UserFacingError(L("Ajoute d'abord une photo de ce produit : la vidéo part de ton vrai produit, l'IA ne l'invente pas.","Add a photo of this product first: the video starts from your real product, the AI never invents it."));
+      const m=req.modele?modeleVideo(req.modele):null;
+      const camera=safeCamera(m?gesteDuModele(m,{photoDuDos:false}).camera:"push_in");
+      notes.push(planSurPhrase());
+      for(const k of plan.scenes.keys()){clips.push({assetId:source.assetId,durationS:timing.showS,generated:false,safe:{kind:source.kind,camera}});kept.push(k);}
     }else for (const [k, scene] of plan.scenes.entries()) {
       const selected=req.sceneImages?.[k];
       const photo=selected?getAsset(selected.assetId):null;
@@ -649,7 +711,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   // 5. Voice only after an explicitly saved synthetic choice. A failed/missing requested voice is not a completed result.
   const chosenVoice = wantsSpeech?projectVoice(memory.preferences):null;
   if(chosenVoice) {
-    if(!voiceAvailable(chosenVoice)) throw new UserFacingError("La voix choisie est indisponible : vidéo incomplète, médias conservés. Vérifiez sa configuration ou choisissez explicitement sans voix.");
+    if(!voiceAvailable(chosenVoice)) throw new UserFacingError("La voix choisie n’est pas disponible : vidéo pas terminée, ce qui est fait est gardé. Choisis une autre voix, ou « Sans voix ».");
     brief.voice.kokoroVoice=chosenVoice;
     if(req.quotedGeneration){
       const quoted=req.quotedGeneration.voice,lines=plan.scenes.map((s,k)=>[s.voice??'',k===doc.clips.length-1?plan.voiceEnd??'':''].filter(Boolean).join(' ').trim());
@@ -657,7 +719,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
       if(!quoted||quoted.id!==chosenVoice||quoted.speed!==brief.voice.speed||quoted.lang!==(p.settings?.language==='en'?'en':'fr')||!isDeepStrictEqual(quoted.lines,lines)||(isOpenAIVoice(chosenVoice)&&lines.filter(Boolean).reduce((n,text)=>n+voiceQuote(text).capMicro,0)>quoted.capMicro))throw new UserFacingError("Le texte, la voix, la vitesse, la langue ou le plafond vocal a changé. Clips et anciens audios conservés ; aucun nouvel envoi vocal.");
     }
     await addVoice(projectId,p0.userId,doc,plan,brief,key,guide.script.wordsPer30s,synthLine,preserveClientVersion);
-    notes.push(C("Voix synthétique choisie pour le projet. Sous-titres synchronisés par phrase mesurée, groupes répartis proportionnellement ; pas d'alignement mot à mot.","Project-selected synthetic voice. Subtitles timed by measured phrase, proportionally split; not word aligned."));
+    notes.push(C("Voix synthétique choisie pour le projet. Sous-titres mot à mot sur la voix mesurée (fins de phrase calées sur les silences) ; minutage estimé, pas une transcription.","Project-selected synthetic voice. Word-by-word subtitles on the measured voice (sentence ends snapped to silences); estimated timing, not a transcript."));
   } else {
     doc.subtitles.cues=doc.clips.flatMap((clip,k)=>{
       const text=[plan.scenes[k]?.voice??"",k===doc.clips.length-1?plan.voiceEnd??"":""].filter(Boolean).join(" ").trim();
@@ -683,6 +745,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   try {
     rememberDirection(projectId, brief.concept);
     for (const c of clips) {
+      if (c.safe) continue;
       const a = getAsset(c.assetId);
       const st = a ? assetMeta<{ stock?: { source: string; id: string | number; page?: string; license?: string } }>(a).stock ?? null : null;
       rememberMedia(projectId, { assetId: c.assetId, source: st ? st.source : "generated", ref: st ? String(st.page ?? st.id) : SCENE_VIDEO_MODEL, license: st?.license ?? (c.generated ? "généré pour le projet" : ""), role: "clip" });
@@ -711,10 +774,10 @@ export async function addVoice(projectId: string, userId: string, doc: VideoDocu
       const acquired=synth===synthLine&&isOpenAIVoice(options.voice)?await acquiredVoice({projectId,userId},l.text,options):null;
       if(acquired)fs.writeFileSync(wav,assetData(acquired));
       const durationS=acquired?Number((await execTool("ffprobe",["-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",wav])).stdout.trim()):await synth(l.text,wav,options);
-      if(!Number.isFinite(durationS)||durationS<=0||durationS>l.clip.durationS-.3) throw new UserFacingError(`Voix de la scène ${k+1} : phrase entière de ${durationS.toFixed(2)} s pour un plan de ${l.clip.durationS} s. Adaptez le texte ou la durée ; aucune phrase supprimée.`);
+      if(!Number.isFinite(durationS)||durationS<=0||durationS>l.clip.durationS-.3) throw new UserFacingError(`Voix de la scène ${k+1} : phrase entière de ${durationS.toFixed(2)} s pour un plan de ${l.clip.durationS} s. Raccourcis le texte ou allonge le plan ; aucune phrase n’est supprimée.`);
       const a=acquired??await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,speed:brief.voice.speed,lang,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
       pending.push({id:`voice-${l.clip.id}`,clipId:l.clip.id,assetId:a.id,text:l.text,offsetS:.2,durationS,gainDb:0});
-      cues.push(...measuredCues(l.clip.id,l.text,durationS,doc.subtitles.style.maxChars));
+      cues.push(...measuredCues(l.clip.id,l.text,durationS,doc.subtitles.style.maxChars,.2,await voicePauses(wav)));
     }
     doc.audio.voice=pending;doc.subtitles.cues=cues;doc.audio.voiceId=isOpenAIVoice(brief.voice.kokoroVoice)?brief.voice.kokoroVoice:`kokoro:${brief.voice.kokoroVoice}`;doc.audio.duckingDb=-12;
   } finally {fs.rmSync(dir,{recursive:true,force:true});}
@@ -769,7 +832,7 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
           if(!quoted||images.length>quoted.maximumImages)throw new UserFacingError("Le contrôle ne correspond pas au devis accepté.");
           call={...call,...quoted.envelope,expectedRoute:quoted.route};
           const {strictTextQuoteInput,callCostBoundMicro,withSelectedStrategy}=await import("../ai/llm");call=withSelectedStrategy(call);
-          const tokens=strictTextQuoteInput({...call,images:undefined},BoundedShotReviewSchema),cap=callCostBoundMicro(quoted.route.provider,quoted.route.model,tokens.maximumTokens+images.length*3400,1500,quoted.route.effort??null);
+          const tokens=strictTextQuoteInput({...call,images:undefined},BoundedShotReviewSchema),cap=callCostBoundMicro(quoted.route.provider,quoted.route.model,tokens.maximumTokens+images.length*3400,call.maxTokens??1500,quoted.route.effort??null);
           if(call.prompt!==quoted.prompt||cap==null||cap>quoted.capMicro)throw new UserFacingError("Le texte ou le tarif du contrôle a changé. Aucun nouvel appel de contrôle.");
         }
         return await llmJson(call,BoundedShotReviewSchema,{strict:true});
@@ -779,9 +842,9 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
     } : undefined,
     async directClip(image,prompt,aspect,seconds,key,generation){
       const route=sceneGenerationRoute(generation,seconds,aspect==="16:9"?"16:9":"9:16");if(!route.allowed)throw new UserFacingError(route.reason);
-      const {wanTextClip,aiClip,higgsfieldClip}=await import("../ai/media-providers");
+      const {wanTextClip,aiClip}=await import("../ai/media-providers");
       const context={...base,jobId,usageKey:key};
-      const generate=()=>image?aiClip(route.provider,context,{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false}):(route.provider==='higgsfield'?higgsfieldClip:wanTextClip)(context,{prompt,seconds:route.seconds,model:route.model,usage:"text_video",aspect:aspect==="16:9"?"16:9":"9:16"});
+      const generate=()=>image?aiClip(route.provider,context,{image,prompt,aspect:aspect==="16:9"?"16:9":"9:16",seconds:route.seconds,model:route.model,usage:"product_video",people:false}):wanTextClip(context,{prompt,seconds:route.seconds,model:route.model,usage:"text_video",aspect:aspect==="16:9"?"16:9":"9:16"});
       if(o.request?.quotedGeneration){
         const q=o.request.quotedGeneration,{assertBoundedSceneQuote}=await import("./bounded-quote");assertBoundedSceneQuote(q);
         const index=Number(key.match(/:direct:(\d+)$/)?.[1]),scene=q.scenes[index];
@@ -790,6 +853,7 @@ Reply { "scenes": [{ "still": "", "motion": "", "title": "" }, ...${req.scenes ?
       }
       return generate();
     },
+    animated: (seconds, aspect) => !noAnimatedModel(sceneGenerationRoute("staged", seconds, aspect === "16:9" ? "16:9" : "9:16")),
     async keyframe(prompt, aspect, reference, key) {
       const { aiPostImage } = await import("../ai/media-providers");
       return aiPostImage({ ...base, jobId, usageKey: key }, { prompt, aspect, reference, logo: null,photoOnly:true });
@@ -873,5 +937,5 @@ async function runSceneScenarioInScope(ctx:JobContext|null,projectId:string,req:
  const scenario=ScenePlanSchema.parse(JSON.parse(raw.toString()));
  if(scenario.scenes.length!==(req.scenes??3)) throw new UserFacingError("Scénario incomplet : nombre de scènes non respecté, aucun média lancé.");
  if(videoScope(loadProject(projectId),sceneApprovalRequest(req))!==scope) throw new UserFacingError("Projet modifié pendant la rédaction : scénario conservé, validation à reprendre.");
- return {scope,request:sceneApprovalRequest(req),scenario:applyWordingDeep(scenario,loadWordingRules(projectId))};
+ return {scope,request:sceneApprovalRequest(req),scenario:avecModele(applyWordingDeep(scenario,loadWordingRules(projectId)),req)};
 }

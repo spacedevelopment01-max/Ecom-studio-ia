@@ -20,7 +20,7 @@ import { validCutouts } from "../engine/cutouts";
 import { isAutoUsable } from "../quality/usable";
 import { publishPost, alreadyPublished, type Connection, type PostRow, type PublishResult } from "../social/publish";
 import { platformSpec } from "./platforms";
-import { aiPostProbableMicro, estimateTaskMicro, capMicro, estimateMicro } from "../ai/estimate";
+import { aiPostProbableMicro, estimateTaskMicro, publicationReviewMicro, capMicro, estimateMicro } from "../ai/estimate";
 import { aiPostMaxMicro, textLayoutMaxMicro } from "../ai/media-providers";
 import type { CreativeSubject } from "../creative-subject";
 import { creativeContract, type Editorial } from "./creative-contract";
@@ -240,7 +240,7 @@ export const AI_POST_ATTEMPTS = 3;
 /** PLAFOND d'une publication conçue par l'IA : trois essais au plus (image + contrôle) et l'accroche. Jamais montré comme prix (devis : `aiPostProbableMicro`). */
 export function aiPostEstimate(): number {
   const one = aiPostMaxMicro(2,usageExplicit("text_layout")) ?? estimateMicro("image");
-  return AI_POST_ATTEMPTS * (one + (usageExplicit("text_layout") ? textLayoutMaxMicro() ?? one : 0) + 2 * estimateTaskMicro("quality_control", { input: 24000, output: 2000 })) + estimateTaskMicro("copywriting", { input: 18000, output: 2000 });
+  return AI_POST_ATTEMPTS * (one + (usageExplicit("text_layout") ? textLayoutMaxMicro() ?? one : 0) + 2 * publicationReviewMicro()) + estimateTaskMicro("copywriting", { input: 18000, output: 2000 });
 }
 
 export function realSocialDeps(ctx: JobContext | null, p: Project, aiActive: boolean): SocialDeps {

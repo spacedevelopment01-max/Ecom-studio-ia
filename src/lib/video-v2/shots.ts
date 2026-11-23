@@ -12,6 +12,8 @@
 import type { CreativeStrategy, ShotPlan, Shot, VideoIntent } from "./types";
 import type { Inventory } from "./storyboard";
 import { chooseProvider, type ProviderChoice, type ShotNeed } from "./providers";
+import { animatedShotIds, safeCamera } from "./melange";
+import { gridAnimatedShots, gridFor } from "./grilles";
 
 export type PlanContext = {
   intent: VideoIntent;
@@ -22,6 +24,11 @@ export type PlanContext = {
   provider: (need: ShotNeed) => ProviderChoice | null;
   /** Budget restant pour la génération (EUR micro). */
   budgetMicro: number;
+  /**
+   * Mélange (rapport 09, point 3) : null = aucun modèle animé réglé, aucun plan animé (plans sûrs seulement) ; sinon le
+   * fournisseur choisi par `provider` doit être ce modèle. Absent (essais) : le moins cher compatible.
+   */
+  animated?: { provider: string; model: string } | null;
 };
 
 export type ShotPlanning = { shots: ShotPlan[]; estimateMicro: number; skippedForBudget: number; notes: string[] };
@@ -40,7 +47,13 @@ export function planShots(storyboard: Shot[], ctx: PlanContext): ShotPlanning {
   let skipped = 0;
   const videos = [...ctx.inv.videos];
   const photoIds = new Set(ctx.inv.photos.map((p) => p.id));
-  const shots = storyboard.map((s): ShotPlan => {
+  // Le mélange : UN SEUL plan animé par IA (hors personnage d'une vidéo UGC), choisi d'avance ; les autres sont des plans sûrs.
+  const allowed = gridAnimatedShots(gridFor(ctx.intent));
+  const animatedIds = new Set(ctx.animated === null ? [] : animatedShotIds(storyboard, allowed));
+  let animatedUsed = 0;
+  const shots = storyboard.map((s0): ShotPlan => {
+    // Plan sûr : jamais figé (mouvement de caméra au montage), sauf pour le plan animé qui garde sa consigne.
+    const s = animatedIds.has(s0.id) || s0.character ? s0 : { ...s0, camera: safeCamera(s0.camera) };
     if(ctx.intent.generation&&ctx.allowGeneration){
       const need:ShotNeed={imageToVideo:ctx.intent.generation==="reference",people:false,nativeAudio:false,aspect:ctx.intent.aspect,durationS:s.durationS};
       const choice=ctx.provider(need);
@@ -64,7 +77,9 @@ export function planShots(storyboard: Shot[], ctx: PlanContext): ShotPlanning {
       return { ...s, method: "existing_video", source: { kind: "asset", assetId: v.id }, why: "vidéo réelle de la bibliothèque" };
     }
     // Génération : seulement quand elle sert, autorisée, pas pour une demande simple, et dans le budget.
-    if (ctx.allowGeneration && ctx.intent.complexity !== "simple" && benefitsFromMotion(s, ctx)) {
+    const mixTurn = s.character || (animatedIds.has(s.id) && animatedUsed < allowed);
+    if (!mixTurn && ctx.allowGeneration && benefitsFromMotion(s, ctx) && ctx.intent.complexity !== "simple") notes.push(`${s.id} : plan sûr (le mélange n'anime que ${allowed} plan${allowed > 1 ? "s" : ""} par vidéo)`);
+    if (mixTurn && ctx.allowGeneration && ctx.intent.complexity !== "simple" && (benefitsFromMotion(s, ctx) || animatedIds.has(s.id))) {
       const need: ShotNeed = { imageToVideo: true, people: s.character, nativeAudio: s.character && !!s.voice, aspect: ctx.intent.aspect, durationS: s.durationS };
       let choice = ctx.provider(need);
       // Sans son natif disponible, le personnage parle par la voix off et les sous-titres (dit clairement).
@@ -72,7 +87,9 @@ export function planShots(storyboard: Shot[], ctx: PlanContext): ShotPlanning {
         choice = ctx.provider({ ...need, nativeAudio: false });
         if (choice) notes.push(`${s.id} : aucun fournisseur avec son natif vérifié — voix portée par la piste voix et les sous-titres`);
       }
+      if (choice && ctx.animated && !s.character && (choice.provider !== ctx.animated.provider || choice.model !== ctx.animated.model)) choice = null;
       if (choice && estimate + choice.estimateMicro <= ctx.budgetMicro) {
+        if (!s.character) animatedUsed++;
         estimate += choice.estimateMicro;
         return { ...s, method: s.character ? "avatar" : "ai_video", source: { kind: "generate", assetId: s.reference.assetId, provider: choice.provider, model: choice.model, estimateMicro: choice.estimateMicro }, why: `${s.character ? "personnage synthétique (signalé)" : "mouvement réel utile"} — ${choice.provider}:${choice.model} (${choice.reason}), ${choice.shootS} s tournées` };
       }

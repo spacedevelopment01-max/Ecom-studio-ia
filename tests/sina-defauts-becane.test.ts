@@ -35,7 +35,8 @@ describe("site refait de Bécane : les défauts relevés ne reviennent plus", as
   it("la relecture des photos fait redécrire la seconde demande, puis un second passage pour celles créées par une reprise ; jamais recréée à l'identique sans le dire", () => {
     const src = fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8");
     expect(src).toContain("for (const d of reprisesEnDouble(photosDuSite(), reprises, dejaPosees).filter(relue))");
-    expect(src).toContain('await redecrire(uid, encore.filter((d) => d.uid === uid).map((d) => ({ uid, find: d.find, fixes: [repriseEnDoubleFix(d)] })), i, uids2.length, "photo-fix-double");');
+    // Le second passage, à la charge du Studio depuis le 22 novembre 2026 (une erreur de SINA n'est jamais comptée).
+    expect(src).toContain('redecrire(uid, encore.filter((d) => d.uid === uid).map((d) => ({ uid, find: d.find, fixes: [repriseEnDoubleFix(d)] })), i, uids2.length, "photo-fix-double")');
     expect(src).toContain("elle reprenait une photo déjà sur le site ; créée avec la consigne d'une scène différente");
     expect(B.MAX_DOUBLES_FIXES).toBe(3);
   });

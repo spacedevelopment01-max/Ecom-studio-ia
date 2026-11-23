@@ -88,7 +88,7 @@ export function CustomThemeButton({ projectId, status, reload, onDone }: { proje
             <div className="rounded-2xl border border-line bg-paper-2 p-4" role="status">
               <div className="flex items-center justify-between gap-3">
                 <span className="flex min-w-0 items-center gap-2 font-medium">{job.status === "paused" ? <span className="size-2 shrink-0 rounded-full bg-warn" aria-hidden /> : <Spinner className="shrink-0 text-signal" />} <span className="truncate">{job.status === "paused" ? t("En pause", "Paused") : t("Création en cours", "Creating")}</span></span>
-                <span className="text-xs text-muted">{t(`${Math.round(job.progress * 100)} %`, `${Math.round(job.progress * 100)}%`)}</span>
+                <span className="text-xs text-muted">{t(`${Math.round(job.progress * 100)} %`, `${Math.round(job.progress * 100)}%`)}</span>
               </div>
               <p className="mt-1 text-xs text-muted">{job.message}</p>
               <Progress value={job.progress} className="mt-3" />

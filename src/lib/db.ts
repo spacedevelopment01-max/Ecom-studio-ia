@@ -320,6 +320,16 @@ CREATE TABLE IF NOT EXISTS syna_calendars (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
+-- « Le point du mois » de SINA (engagement 1) : les chiffres comptés par le code, leur empreinte et le bilan écrit.
+-- Un point par projet et par mois ; aucun nouvel appel quand l'empreinte n'a pas changé (src/lib/syna-agent/rendez-vous.ts).
+CREATE TABLE IF NOT EXISTS syna_points_du_mois (
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  month TEXT NOT NULL,
+  empreinte TEXT NOT NULL,
+  point_json TEXT NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (project_id, month)
+);
 CREATE TABLE IF NOT EXISTS agent_request_bounds (
   id TEXT PRIMARY KEY,
   conversation_id TEXT NOT NULL REFERENCES agent_conversations(id) ON DELETE CASCADE,
@@ -613,6 +623,59 @@ CREATE INDEX IF NOT EXISTS ai_calls_candidate ON ai_calls(candidate_id);
 
 -- Verdicts de la barrière de qualité (un par contrôle d'un candidat). previous_check_id relie une reprise à
 -- l'essai précédent : gain de qualité = score − score précédent (calculé, non stocké).
+-- Travaux payants lancés par SINA après l'accord du client (22 novembre 2026) : le plafond annoncé et la tâche, pour
+-- calculer le prix probable sur les coûts réellement mesurés et le coût par travail accepté (payé, gardé, jeté).
+CREATE TABLE IF NOT EXISTS travaux_payes (
+  job_id TEXT PRIMARY KEY,
+  tool TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  project_id TEXT,
+  conversation_id TEXT,
+  cap INTEGER NOT NULL DEFAULT 0,      -- plafond annoncé sur la carte, micro-euros
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS travaux_payes_tool ON travaux_payes(tool, created_at);
+
+-- Le carnet des juges (22 novembre 2026) : pour chaque image relue par le relecteur de SINA, son verdict (gardée ou
+-- refusée, et pourquoi), puis celui du propriétaire (oui ou non) ; l'accord entre les deux se mesure ici.
+CREATE TABLE IF NOT EXISTS verdicts_images (
+  asset_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  project_id TEXT,
+  travail TEXT NOT NULL,               -- ce que l'image est (logo, grande scène, haut du site…)
+  relecteur_garde INTEGER NOT NULL,    -- 1 : gardée et montrée ; 0 : refusée
+  relecteur_raison TEXT NOT NULL DEFAULT '',
+  proprietaire TEXT,                   -- 'oui' | 'non' | NULL (pas encore jugée)
+  proprietaire_at INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS verdicts_images_attente ON verdicts_images(proprietaire, created_at);
+
+-- La fonction de rétractation en ligne (directive 2023/2673, en vigueur depuis le 19 juin 2026) : chaque déclaration
+-- « Renoncer au contrat ici » confirmée par un acheteur, avec la date et l'heure de l'envoi et celle de son accusé.
+CREATE TABLE IF NOT EXISTS retractations (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  nom TEXT NOT NULL,
+  commande TEXT NOT NULL,
+  email TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  accuse_at INTEGER,
+  accuse_erreur TEXT
+);
+CREATE INDEX IF NOT EXISTS retractations_projet ON retractations(project_id, created_at);
+
+-- Les pages vues des sites hébergés par le Studio (22 novembre 2026, exemption de la CNIL pour la mesure d'audience) :
+-- un simple compte par jour et par page, rangé à part pour chaque client ; aucune adresse, aucun identifiant, aucun
+-- traceur ; effacé au bout de 25 mois.
+CREATE TABLE IF NOT EXISTS visites (
+  project_id TEXT NOT NULL,
+  jour TEXT NOT NULL,                  -- AAAA-MM-JJ
+  page TEXT NOT NULL,
+  vues INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (project_id, jour, page)
+);
+
 CREATE TABLE IF NOT EXISTS quality_checks (
   id TEXT PRIMARY KEY,
   created_at INTEGER NOT NULL,
@@ -972,6 +1035,26 @@ CREATE TABLE IF NOT EXISTS ad_documents (
 CREATE UNIQUE INDEX IF NOT EXISTS ad_documents_version ON ad_documents(project_id, doc_key, version);
 CREATE INDEX IF NOT EXISTS ad_documents_project ON ad_documents(project_id, created_at);
 
+-- Journal des créations vidéo par l'IA (rapport 09, point 11 : obligations de « Platform Customer » de Seedance) :
+-- qui, quoi, quand, quel modèle, droits confirmés sur la photo, signalement et retrait.
+CREATE TABLE IF NOT EXISTS video_creations (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  asset_id TEXT,
+  source_asset_id TEXT,
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  prompt_sha TEXT NOT NULL,
+  rights_confirmed_at INTEGER,
+  status TEXT NOT NULL DEFAULT 'ok',   -- ok | retire
+  report_reason TEXT,
+  reported_by TEXT,
+  reported_at INTEGER,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS video_creations_project ON video_creations(project_id, created_at);
+
 -- Video Engine V2 : documents vidéo (timeline éditable) versionnés, comme les documents publicitaires.
 CREATE TABLE IF NOT EXISTS video_documents (
   id TEXT PRIMARY KEY,
@@ -1161,6 +1244,33 @@ CREATE TABLE IF NOT EXISTS prompt_ideas (
   fingerprint TEXT NOT NULL DEFAULT '',
   created_at INTEGER NOT NULL
 );
+
+-- L'atelier de création (rapport 10 du 22 novembre 2026) : chaque création faite dans l'atelier (geste, outil, mode,
+-- coût en micro-euros, ce qu'elle doit porter comme mention), pour « Mes créations » et le plafond des vidéos du mois.
+CREATE TABLE IF NOT EXISTS atelier_creations (
+  id TEXT PRIMARY KEY,
+  project_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  asset_id TEXT,
+  source_asset_id TEXT,
+  geste TEXT NOT NULL,
+  mode TEXT NOT NULL,                  -- sina | ensemble | moi
+  kind TEXT NOT NULL,                  -- image | video
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  cost_micro INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'ok',   -- ok | rate | produit_modifie
+  mentions TEXT NOT NULL DEFAULT '[]',
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS atelier_creations_project ON atelier_creations(project_id, created_at);
+-- Les conditions de l'atelier, acceptées une fois par compte (version du texte gardée).
+CREATE TABLE IF NOT EXISTS atelier_conditions (
+  user_id TEXT NOT NULL,
+  version TEXT NOT NULL,
+  accepted_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, version)
+);
 `;
 
 /** Colonnes ajoutées après la première version (ajout seulement, jamais de suppression). */
@@ -1178,6 +1288,9 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["ai_calls", "routing_escalation", "INTEGER NOT NULL DEFAULT 0"],
   // Compétences (skills) transmises à l'appel : activation vérifiable dans les traces.
   ["ai_calls", "skills", "TEXT"],
+  // Détails de mesure (22 novembre 2026, audit du moteur) : part écrite pour une heure, différé servi ou raté, place
+  // demandée, et pour une image sa taille, sa qualité et ses images jointes.
+  ["ai_calls", "details", "TEXT"],
   ["projects", "store_type", "TEXT NOT NULL DEFAULT 'mono'"],
   ["projects", "catalog_json", "TEXT NOT NULL DEFAULT '[]'"],
   ["projects", "business_type", "TEXT NOT NULL DEFAULT 'products'"],
@@ -1205,6 +1318,8 @@ const ADDED_COLUMNS: [table: string, column: string, ddl: string][] = [
   ["ai_reservations", "result", "TEXT"],
   ["ai_reservations", "provider_receipt", "TEXT"],
   ["ai_reservations", "recovery_until", "INTEGER NOT NULL DEFAULT 0"],
+  // Reprise du Studio (image ratée refaite, réponse réécrite, réponse coupée redemandée) : jamais débitée au client.
+  ["ai_reservations", "studio", "INTEGER NOT NULL DEFAULT 0"],
   // Décompte d'un quota : période et répartition (mois / packs), pour pouvoir le rendre (image refusée au contrôle).
   ["quota_events", "period_start", "INTEGER"],
   ["quota_events", "from_month", "INTEGER"],

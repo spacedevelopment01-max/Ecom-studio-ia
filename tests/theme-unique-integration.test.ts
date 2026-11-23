@@ -9,6 +9,7 @@
  *    sinon de la déclaration du client ; l'outil « shop.discounts_check » interroge la boutique reliée.
  * Gratuit, sans IA, aucun appel réel (la boutique interrogée est simulée). Client et produits inventés pour l'essai.
  */
+import { prouverLesPrix } from "./prix-fixtures";
 import { describe, expect, it } from "vitest";
 import { tenueSection } from "@/lib/syna-agent/custom-theme/tenue";
 import * as S from "@/lib/syna-agent/custom-theme/theme";
@@ -180,6 +181,7 @@ describe("thème unique, intégration : aperçu, données du site et remises (pr
   saveBrand(pid, F.FAUTEUIL_BRAND as never);
   createProduct(pid, { title: "Gourde d'essai", images: [], price: 3900, compareAt: 4500, productType: "Gourde isotherme", categories: ["Les gourdes"], options: [{ name: "Contenance", values: ["Petite", "Grande"] }], variants: [{ options: ["Petite"], price: 3400 }, { options: ["Grande"], price: 3900 }] } as never);
   createProduct(pid, { title: "Bouchon d'essai", images: [], price: 900, productType: "", categories: ["Les accessoires"] } as never);
+  prouverLesPrix(pid);
   saveCompany(pid, { shipping: "Colissimo, 48 h", returns: "30 jours" });
 
   it("l'aperçu : la page d'arrivée affiche SA coque, avec le nom du vrai produit ; rien du site ne s'y pose", () => {

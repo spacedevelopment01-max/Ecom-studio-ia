@@ -161,6 +161,7 @@ function ConnectStore({ onClose, onDone }: { onClose: () => void; onDone: () => 
             {f.platform === "woocommerce" && <Field label={t("Secret client (consumer secret)", "Consumer secret")}><Input type="password" autoComplete="off" value={f.secret} onChange={(e) => setF({ ...f, secret: e.target.value })} required /></Field>}
           </>
         )}
+        {f.platform === "woocommerce" && f.url.trim() && <button type="button" className="text-left text-sm underline" onClick={async () => { try { const r = await api<{ url: string }>(`/api/projects/${id}/products/stores/woo-autorisation`, { method: "POST", body: { url: f.url } }); window.open(r.url, "_blank", "noopener"); } catch (e) { toast("bad", (e as Error).message); } }}>{t("Ou relier en un clic : j'approuve sur ma boutique, sans recopier de clé", "Or link in one click: approve on my store, no key to copy")}</button>}
         <p className="text-xs text-muted">{t("Les accès sont essayés, puis enregistrés chiffrés. Ils ne sont plus jamais affichés.", "Access is tested, then stored encrypted. It is never shown again.")}</p>
         <div className="flex justify-end gap-2"><Button type="button" variant="ghost" onClick={onClose}>{t("Annuler", "Cancel")}</Button><Button type="submit" loading={busy}>{t("Connecter", "Connect")}</Button></div>
       </form>

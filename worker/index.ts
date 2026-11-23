@@ -142,6 +142,9 @@ async function tick() {
     await processOutbox().catch((e) => logError("worker:site-notify", e));
     // Publications interrompues (arrêt pendant l'écriture) : dossiers temporaires de plus d'une heure supprimés.
     try { cleanupInterrupted(); } catch (e) { logError("worker:sites-cleanup", e); }
+    try { (await import("../src/lib/sites/visites")).purgerVisites(); } catch (e) { logError("worker:visites-purge", e); }
+    try { (await import("../src/lib/suivi/assistante")).purgerEchanges(); } catch (e) { logError("worker:assistante-purge", e); }
+    try { (await import("../src/lib/suivi/carnet")).purgerCarnet(); } catch (e) { logError("worker:carnet-purge", e); }
     // Domaines reliés par les clients : preuve DNS revérifiée chaque jour (domaine expiré ou DNS changé → « perdu »).
     if (sitesDomain()) await recheckDomains().catch((e) => logError("worker:sites-domains", e));
     // Liste d'attente (#420) : notifications internes des nouvelles inscriptions encore à envoyer (reprises espacées).
@@ -152,6 +155,8 @@ async function tick() {
     if (now() - lastCalendarReminder > 10 * 60_000) {
       lastCalendarReminder = now();
       try { await (await import("../src/lib/syna-agent/calendar")).remindDue(); } catch (e) { logError("worker:calendar-remind", e); }
+      // Le point du mois (engagement 1) : chaque début de mois, une tâche par projet abonné, pour le mois écoulé.
+      try { (await import("../src/lib/syna-agent/rendez-vous")).planifierPointsDuMois(); } catch (e) { logError("worker:point-du-mois", e); }
     }
     // L'identifiant du worker change à chaque démarrage : les battements des anciens démarrages sont purgés.
     run("DELETE FROM worker_heartbeat WHERE beat_at < ?", now() - 86400_000);

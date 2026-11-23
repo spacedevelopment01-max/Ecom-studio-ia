@@ -601,7 +601,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
       <div className={cx("flex items-center justify-between gap-2 border-b border-line py-2 text-xs text-muted", compact ? "px-3" : "px-5 sm:px-7")}>
         {budgetEdit == null
           ? <button type="button" className="underline-offset-2 hover:underline" onClick={() => setBudgetEdit(String(v.budget.authorizedPct ?? 10))} data-syna-budget>
-              {t("Budget autorisé", "Authorised budget")} : {fmt(v.budget.authorizedPct)} % · {t("engagé", "used")} {fmt(v.budget.spentPct)} %
+              {t("Budget autorisé", "Authorised budget")} : {fmt(v.budget.authorizedPct)} % · {t("engagé", "used")} {fmt(v.budget.spentPct)} %
             </button>
           : <span className="flex items-center gap-1">{t("Budget autorisé (%)", "Authorised budget (%)")}<input className="w-14 rounded border border-line bg-card px-1" value={budgetEdit} onChange={(e) => setBudgetEdit(e.target.value)} inputMode="decimal" aria-label={t("Budget autorisé en pourcentage", "Authorised budget in percent")} /><Button size="sm" variant="secondary" onClick={saveBudget}>OK</Button></span>}
         {(working || background) && <Button size="sm" variant="ghost" onClick={stop}>{t("Arrêter", "Stop")}</Button>}

@@ -92,6 +92,8 @@ export const shortHash = (text: string) => crypto.createHash("sha256").update(te
 export { redact };
 
 export type CallRow = {
+  /** Détails de mesure (part écrite pour une heure, différé servi ou raté, image…), gardés en JSON. */
+  details?: Record<string, unknown> | null;
   userId: string;
   projectId?: string | null;
   jobId?: string | null;
@@ -141,8 +143,8 @@ export function recordCall(c: CallRow): string | null {
   const rid = id();
   try {
     run(
-      `INSERT INTO ai_calls (id, created_at, user_id, project_id, job_id, task, step, candidate_id, attempt, call_try, provider, requested_model, served_model, unit, input_tokens, cache_read_tokens, cache_write_tokens, output_tokens, quantity, latency_ms, http_attempts, stop_reason, effort, cost, estimated, usage_key, usage_event_id, billing_dedup, status, error_kind, prompt_key, prompt_hash, quality_check_id, brain_scope, brain_hash, brain_version, intent, plan_id, step_id, routing_reason, routing_fallback, routing_escalation, skills)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO ai_calls (id, created_at, user_id, project_id, job_id, task, step, candidate_id, attempt, call_try, provider, requested_model, served_model, unit, input_tokens, cache_read_tokens, cache_write_tokens, output_tokens, quantity, latency_ms, http_attempts, stop_reason, effort, cost, estimated, usage_key, usage_event_id, billing_dedup, status, error_kind, prompt_key, prompt_hash, quality_check_id, brain_scope, brain_hash, brain_version, intent, plan_id, step_id, routing_reason, routing_fallback, routing_escalation, skills, details)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       rid,
       now(),
       c.userId,
@@ -186,6 +188,7 @@ export function recordCall(c: CallRow): string | null {
       (c.fallback ?? t.routing?.fallback) ? 1 : 0,
       (c.escalation ?? t.routing?.escalation) ? 1 : 0,
       c.skills ?? null,
+      c.details && Object.keys(c.details).length ? JSON.stringify(c.details) : null,
     );
     return rid;
   } catch (e) {

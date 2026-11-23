@@ -1,4 +1,3 @@
-import {HIGGS_MODELS} from "./higgsfield/catalog";
 /**
  * Catalogue des modèles IMAGES et VIDÉOS (données pures, sans dépendance) : fournisseur, identifiant exact,
  * adaptateur réel du studio, capacités, qualité relative, formats, résolution, durées, statut chez le fournisseur
@@ -13,10 +12,14 @@ import {HIGGS_MODELS} from "./higgsfield/catalog";
  *  - `legacyDefault` : modèle appelé chez ce fournisseur quand aucun n'a été choisi (comportement d'avant).
  */
 export type MediaKind = "image" | "video";
-export type MediaAdapter = "openai_image" | "gemini_image" | "fal_image" | "veo" | "fal_video" | "alibaba_image" | "alibaba_video" | "higgsfield_video" | null;
+export type MediaAdapter = "openai_image" | "gemini_image" | "fal_image" | "veo" | "fal_video" | "alibaba_image" | "alibaba_video" | "direct_video" | "bfl_image" | null;
 
 export type MediaModel = {
-  provider: "openai" | "google" | "fal" | "alibaba" | "higgsfield";
+  provider: "openai" | "google" | "fal" | "alibaba" | "vertex" | "kling" | "byteplus" | "runware" | "bfl";
+  /** Image de fin acceptée (même photo, ou la vraie photo sous un autre angle). */
+  lastFrame?: boolean;
+  /** Brouillon bon marché avant la version finale (Seedance 2.5 « Draft »). */
+  draft?: boolean;
   model: string;
   label: string;
   kind: MediaKind;
@@ -319,8 +322,9 @@ export const MEDIA_MODELS: MediaModel[] = [
     status: "legacy",
     replacement: "google:veo-3.1-generate-preview",
     verified: { id: true, price: true },
-    defaultFor: "primary",
-    legacyDefault: true,
+    // Plus jamais le modèle par défaut ni le secours (23 novembre 2026, « le moins cher qui suffit par défaut ») : il
+    // coûtait 0,40 $ la seconde avec son, en plans de 8 s seulement. Les vidéos de l'API Gemini ne sont plus accordées
+    // (Veo seulement par Vertex) : voir `videoNonAccordee`.
     source: "https://cloud.google.com/vertex-ai/generative-ai/pricing",
     use: { fr: "Plans produit et vidéos UGC avec voix et son natifs.", en: "Product shots and UGC videos with native voice and sound." },
   },
@@ -530,6 +534,59 @@ MEDIA_MODELS.push(
   WAN("wan3.0-video-prime", "Wan 3.0 Prime (Alibaba, rapide)", 3, { imageToVideo: true, textToVideo: true }, "0,14 $ / s en 720P (API officielle, 15/10/2026)", { durations: [...WAN_SECONDS, 20, 25, 30], source: "https://www.alibabacloud.com/help/en/model-studio/wan3-video-generation-api-reference" }),
 );
 
+/**
+ * Vidéo chez les fabricants accordés (rapport 09, point 4) : plans produit SANS personne (aucun de ces modèles n'est
+ * proposé pour une personne) ; inactifs tant que la clé manque, et verrouillés tant que l'administration n'a pas
+ * confirmé identifiant et tarif (`adminConfirm`). Adaptateur unique : `directClip` (media-providers.ts).
+ */
+const DIRECT = (provider: "vertex" | "kling" | "byteplus" | "runware", model: string, label: string, quality: 1 | 2 | 3, durations: number[], priceNote: string, source: string, o: Partial<MediaModel> = {}): MediaModel => ({
+  provider, model, label, kind: "video", adapter: "direct_video", quality,
+  caps: { imageToVideo: true, people: false, audio: false },
+  aspects: ["16:9", "9:16"], resolution: "720p sans son (demandés par le studio)", durations, typical: { seconds: 5 },
+  priceNote, status: "stable", verified: { id: true, price: true }, adminConfirm: true, source,
+  use: { fr: "Le plan animé du mélange : la vraie photo du produit en image de départ et de fin, caméra lente, son coupé.", en: "The mix's animated shot: the real product photo as start and end frame, slow camera, sound off." },
+  ...o,
+});
+const SECONDS = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+MEDIA_MODELS.push(
+  DIRECT("vertex", "veo-3.1-fast-generate-001", "Veo 3.1 Fast (Google Vertex, direct)", 2, [4, 6, 8], "0,08 $ / s en 720p sans son (page officielle Vertex, 22/11/2026) ; calcul aux États-Unis", "https://cloud.google.com/vertex-ai/generative-ai/pricing", { lastFrame: true }),
+  DIRECT("vertex", "veo-3.1-lite-generate-001", "Veo 3.1 Lite (Google Vertex, direct, aperçu)", 1, [4, 6, 8], "0,03 $ / s en 720p sans son (page officielle Vertex, 22/11/2026) ; en aperçu : hors garantie de Google sur les droits", "https://cloud.google.com/vertex-ai/generative-ai/pricing", { lastFrame: true, status: "preview", defaultFor: "primary" }),
+  DIRECT("kling", "kling-4.0", "Kling 4.0 (direct)", 3, SECONDS(3, 15), "0,157 $ / s en 720p (table officielle de Kling, 22/11/2026) ; durée toujours envoyée", "https://kling.ai/document-api/pricing/base/video.md", { lastFrame: true }),
+  DIRECT("kling", "kling-4.0-flash", "Kling 4.0 Flash (direct)", 2, SECONDS(3, 15), "0,094 $ / s en 720p (table officielle de Kling, 22/11/2026) ; image de départ seulement", "https://kling.ai/document-api/pricing/base/video.md"),
+  DIRECT("byteplus", "dreamina-seedance-2-0-mini-260615", "Seedance 2.0 Mini (BytePlus, direct)", 2, SECONDS(4, 15), "0,08 $ / s en 720p (BytePlus, 19/11/2026) ; seules les vidéos réussies sont payées", "https://docs.byteplus.com/en/docs/modelark/model-pricing", { lastFrame: true }),
+  DIRECT("byteplus", "dreamina-seedance-2-0-fast-260128", "Seedance 2.0 Fast (BytePlus, direct)", 2, SECONDS(4, 15), "0,12 $ / s en 720p (BytePlus, 19/11/2026)", "https://docs.byteplus.com/en/docs/modelark/model-pricing", { lastFrame: true }),
+  DIRECT("byteplus", "dreamina-seedance-2-5-260628", "Seedance 2.5 (BytePlus, direct)", 3, SECONDS(4, 15), "0,231 $ / s en 720p, brouillon 480p à 0,103 $ / s (BytePlus, 19/11/2026)", "https://docs.byteplus.com/en/docs/modelark/model-pricing", { lastFrame: true, draft: true }),
+  DIRECT("runware", "alibaba:wan@2.6-flash", "Wan 2.6 Flash (Runware, secours)", 2, [5, 10], "0,025 $ / s en 720p sans son (fiche Runware, 22/11/2026)", "https://runware.ai/docs/models/alibaba-wan2-6-flash/schema.json"),
+  DIRECT("runware", "google:veo@3.1-lite", "Veo 3.1 Lite (Runware, secours)", 1, [4, 6, 8], "0,03 $ / s en 720p sans son (fiche Runware, 22/11/2026)", "https://runware.ai/docs/models/google-veo-3-1-lite/schema.json", { lastFrame: true }),
+  DIRECT("runware", "klingai:6@1", "Kling 2.5 Turbo Pro (Runware, secours)", 2, [5, 10], "0,042 $ / s en 720p (fiche Runware, 22/11/2026)", "https://runware.ai/docs/models/klingai-2-5-turbo-pro/schema.json"),
+  DIRECT("runware", "bytedance:seedance@2.0-mini", "Seedance 2.0 Mini (Runware, secours)", 2, SECONDS(4, 15), "0,081 $ / s en 720p (fiche Runware, 22/11/2026)", "https://runware.ai/docs/models/bytedance-seedance-2-0-mini/schema.json", { lastFrame: true }),
+);
+
+/**
+ * Black Forest Labs (Flux) en direct (rapport 10, points 5 et 8) : seulement au choix du client dans l'atelier ; jamais
+ * proposé pour une personne ; inactif tant que la clé manque et verrouillé tant que l'administration n'a pas confirmé
+ * identifiant et tarif. Adaptateur : `bflImage` / `bflExpand` (media-providers.ts), écrit d'après la documentation,
+ * non vérifié par un appel réel.
+ */
+const FLUX = (model: string, label: string, quality: 1 | 2 | 3, caps: MediaModel["caps"], priceNote: string, use: MediaModel["use"], o: Partial<MediaModel> = {}): MediaModel => ({
+  provider: "bfl", model, label, kind: "image", adapter: "bfl_image", quality,
+  caps: { people: false, ...caps }, aspects: ["1:1", "4:5", "9:16", "16:9", "2:3"], resolution: "environ 1 mégapixel",
+  typical: {}, priceNote, status: "stable", verified: { id: true, price: true }, adminConfirm: true, paramsVerified: false,
+  source: "https://docs.bfl.ai", use, ...o,
+});
+MEDIA_MODELS.push(
+  FLUX("flux-kontext-pro", "FLUX.1 Kontext pro (Black Forest Labs)", 2, { references: 1 }, "0,04 $ / image (bfl.ai/pricing, 22/11/2026)", { fr: "Atelier : changer une chose précise sur une photo (le fond, un objet à retirer).", en: "Workshop: change one precise thing on a photo (background, object to remove)." }, { needsReference: true }),
+  FLUX("flux-2-pro", "FLUX.2 pro (Black Forest Labs)", 3, { references: 8 }, "0,045 $ / image d'un mégapixel avec une référence (bfl.ai/pricing, 22/11/2026)", { fr: "Atelier : scène créée à partir de la photo du produit.", en: "Workshop: scene created from the product photo." }),
+  FLUX("flux-pro-1.0-expand", "FLUX Expand (Black Forest Labs)", 2, { references: 1 }, "0,05 $ / image (borne ; bfl.ai/pricing, 22/11/2026)", { fr: "Atelier : version story ou carrée d'une image, le cadre agrandi autour de la photo intacte.", en: "Workshop: story or square version of an image, the frame extended around the untouched photo." }, { needsReference: true }),
+);
+
+/**
+ * Vidéos de l'API Gemini (`google:veo-*`) : plus accordées par le propriétaire (23 novembre 2026, Veo seulement par
+ * Vertex). Jamais choisies, ni par défaut, ni en secours, ni par le mode automatique, ni réglées dans l'administration.
+ */
+export const videoNonAccordee = (m: Pick<MediaModel, "provider" | "kind">): boolean => m.kind === "video" && m.provider === "google";
+/** Modèle vidéo par défaut du Studio (le moins cher qui suffit) : Veo 3.1 Lite par Vertex, sans son. */
+export const DEFAULT_VIDEO_MODEL = { provider: "vertex", model: "veo-3.1-lite-generate-001" } as const;
+
 export const mediaModel = (provider: string, model: string): MediaModel | null => MEDIA_MODELS.find((m) => m.provider === provider && m.model === model) ?? null;
 
-for(const m of HIGGS_MODELS) MEDIA_MODELS.push({provider:'higgsfield',model:m.id,label:m.label,kind:'video',adapter:'higgsfield_video',quality:3,caps:{imageToVideo:m.mode==='image',textToVideo:m.mode==='text',audio:true,people:false},aspects:['16:9','9:16','1:1'],resolution:m.resolutions.join(', '),durations:Array.from({length:m.max-m.min+1},(_,i)=>m.min+i),typical:{seconds:5},priceNote:'Estimation officielle du compte par configuration ; approbation groupée obligatoire',status:'stable',verified:{id:true,price:false},adminConfirm:true,paramsVerified:true,source:m.docs,use:{fr:'Plans de produit fidèles à la référence, puis montage du studio ; aucun personnage sans référence.',en:'Reference-guided product shots then studio montage; no people without reference.'}});

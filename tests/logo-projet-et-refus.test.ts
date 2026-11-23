@@ -153,7 +153,8 @@ describe("le relecteur des images : le plus fort, une image à la fois, une list
   it("une image jugée bonne mais notée sous 8 est refusée ; le relecteur est le modèle fort ; une relecture par image", () => {
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(img).toContain("if (v.ok && v.score != null && v.score < NOTE_MIN) {");
-    expect(img).toContain("const review = async (slots: ImageSlot[], rt = \"\") => { for (const s of slots) await reviewOne([s], slots.length > 1 ? `${rt}:${s}` : rt); };");
+    // Une relecture par image (la relecture d'une reprise est à la charge du Studio, 22 novembre 2026).
+    expect(img).toContain("for (const s of slots) await reviewOne([s], slots.length > 1 ? `${rt}:${s}` : rt);");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
     expect(chain).toContain('look: { tier: "strong", input: 9_000, output: 2_500, max: 6_000 },');
     expect(chain).toContain('routing: { difficulty: "complex", prefer: { ...s.strong, effort: "high" } },');

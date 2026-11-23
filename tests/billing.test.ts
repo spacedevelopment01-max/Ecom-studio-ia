@@ -92,7 +92,9 @@ describe("avertissement avant une action IA gourmande", () => {
     expect(estimateMicro("ugc", { beats: 5 })).toBeGreaterThan(estimateMicro("ugc", { beats: 2 }));
     const ugc = estimateFor(u.id, "ugc", { beats: 3 });
     expect(["heavy", "very-heavy"]).toContain(ugc.level);
-    expect(ugc.pctOfAvailable).toBeGreaterThan(25);
+    // Avant le 23 novembre 2026 : plus de 25 %, au prix de Veo 3.0 (0,40 $ la seconde). Le modèle vidéo par défaut est
+    // désormais Veo 3.1 Lite par Vertex (0,03 $ la seconde) : l'action reste « gourmande » (au moins 5 %).
+    expect(ugc.pctOfAvailable).toBeGreaterThan(5);
     expect(estimateFor(u.id, "ugc", { beats: 5 }).leftAfterPct).toBeLessThan(ugc.leftAfterPct);
     const poor = await createUser(`pauvre${Date.now()}@test.fr`, "motdepasse-test", "Sans crédit"); // découverte seule (aucun budget IA)
     expect(estimateFor(poor.id, "ugc", { beats: 3 }).level).toBe("insufficient");

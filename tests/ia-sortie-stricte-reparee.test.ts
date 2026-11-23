@@ -21,7 +21,7 @@ describe("sortie structurée : réparation de forme", () => {
     expect(salvage(S, "texte").ok).toBe(false);
   });
   it("la branche stricte de llmJson répare avant de refuser", () => {
-    const src = fs.readFileSync("src/lib/ai/llm.ts", "utf8"), strict = src.slice(src.indexOf("if (opts.strict) {"), src.indexOf("Réponds uniquement avec un objet JSON valide"));
+    const src = fs.readFileSync("src/lib/ai/llm.ts", "utf8"), strict = src.slice(src.indexOf("async function jsonStrict"), src.indexOf("async function jsonLibre"));
     expect(strict).toMatch(/salvage\(schema[^,]*, data\)/);
     expect(strict).toContain("return schema.parse(data)");
   });

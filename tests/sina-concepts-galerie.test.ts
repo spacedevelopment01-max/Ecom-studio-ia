@@ -153,7 +153,7 @@ describe("contrôle de chaque photo créée au montage du thème sur mesure", as
   it("une photo ratée au contrôle n'est jamais posée : la photo d'exemple reste, le défaut est signalé", async () => {
     const G = await import("@/lib/syna-agent/custom-theme/gallery");
     const src = (await import("node:fs")).readFileSync((await import("node:path")).join(process.cwd(), "src/lib/syna-agent/custom-theme/brand.ts"), "utf8");
-    expect(src).toMatch(/checkCreatedImage\([^]*ratée au contrôle[^]*non posée, à refaire avec ton accord[^]*continue;/);
+    expect(src).toMatch(/checkCreatedImage\([^]*ratée au contrôle[^]*non posée, à refaire avec ton accord[^]*return;/); // une photo à la fois dans `unePhoto` (photos créées trois à la fois)
     // Verdict : texte en trop, produit coupé, personne sans accord → défauts en mots simples.
     G.galleryDeps.check = async () => ({ productMatches: true, productWhole: false, texts: [], extraText: ["SOLDES"], people: true, notes: ["bande blanche en bas"] });
     try {
@@ -180,7 +180,7 @@ describe("réponses coupées et référencement manquant (essai Éclat de thé d
   it("la sortie structurée relance une réponse coupée avec plus de place ; le plan des textes a de la place", async () => {
     const fs = await import("node:fs");
     const llm = fs.readFileSync("src/lib/ai/llm.ts", "utf8");
-    expect(llm).toMatch(/if \(opts\.strict\) \{[^]*r\.stop === "max_tokens" && budget < cap[^]*budget \* 2/);
+    expect(llm).toMatch(/async function jsonStrict[^]*r\.stop === "max_tokens" && budget < cap[^]*budget \* 2/);
     expect(fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8")).toMatch(/syna-custom-plan-2", prompt, maxTokens: SITE_PLAN_OUTPUT_TOKENS, maxOutputTokens: SITE_PLAN_OUTPUT_TOKENS \* 1\.5/);
     // Essai réel du 18 novembre 2026 : deux plans coupés à 18 000 jetons, le plus long en a écrit 24 107.
     expect(fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8")).toContain("export const SITE_PLAN_OUTPUT_TOKENS = 36_000;");

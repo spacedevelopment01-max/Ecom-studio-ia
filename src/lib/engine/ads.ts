@@ -19,7 +19,7 @@ import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import { charter, langName, placeholder } from "../ai/prompts";
 import type { Project } from "../projects";
-import { adPolicyIssues, aiCraftReview, audienceIssues, brandCraftBrief, craftLoop, honestTestBudget, type CraftQuality } from "./ad-craft";
+import { META_HEADLINE_MAX, adPolicyIssues, aiCraftReview, audienceIssues, brandCraftBrief, craftLoop, honestTestBudget, type CraftQuality } from "./ad-craft";
 
 export type AdDraft = {
   angle: string;
@@ -98,8 +98,8 @@ Méthode, dans cet ordre :
 1. Audiences : 2 ou 3 hypothèses testables ; « who » (des adultes : pour un produit d'enfant, les parents ou l'entourage, jamais des enfants), « signals » (ciblage large Advantage+, centres d'intérêt, comportements, audience similaire quand des acheteurs existent), « why » ; aucune donnée chiffrée inventée sur la cible.
 2. Leviers : un levier différent par annonce (démonstration, détail qui intrigue, situation d'usage, objection levée, curiosité, idée cadeau), chacun fondé sur un fait confirmé ou un détail visible.
 3. Accroches des 3 premières secondes (« hooks », 3 à 5) : « text » = texte à l'écran, 10 mots au plus, concret et propre au produit ; « visual » = ce qu'on voit dès la première seconde (mouvement, gros plan, geste). Pas de question vague (« Vous cherchez le cadeau idéal ? »), pas de slogan.
-4. Annonces (accroche → bénéfice concret → preuve → appel) : « hook » (l'accroche retenue) ; « primary » : PREMIÈRE LIGNE de 125 caractères au plus qui porte l'accroche écrite, puis 1 ou 2 phrases courtes (bénéfice concret, puis preuve : fait confirmé ou détail visible) ; « headline » 3 à 6 mots, 40 caractères au plus, sans « ! » ni « ? » ; « description » 30 caractères au plus ; « cta » choisi exactement dans : ${ctas.join(" | ")} ; « visual » : la création à utiliser (format 9:16 ou 1:1, premier plan, texte à l'écran) ; « lever » ; « angle » 2 à 5 mots.
-5. Plan de test : « structure » (campagne, ensembles d'annonces, nombre d'annonces par ensemble, placements ; une seule variable testée à la fois, l'accroche d'abord), « tests » (variable + hypothèse), « kpis » (taux d'arrêt sur 3 s, taux de clic, coût par clic, coût par achat ou par contact) ; aucun résultat promis. Le budget de test est calculé par le studio (donné dans la demande) : ne propose pas d'autre montant.
+4. Annonces (accroche → bénéfice concret → preuve → appel) : « hook » (l'accroche retenue) ; « primary » : PREMIÈRE LIGNE de 125 caractères au plus qui porte l'accroche écrite, puis 1 ou 2 phrases courtes (bénéfice concret, puis preuve : fait confirmé ou détail visible) ; « headline » 3 à 6 mots, ${META_HEADLINE_MAX} caractères au plus (titre Meta), sans « ! » ni « ? » ; « description » 30 caractères au plus ; « cta » choisi exactement dans : ${ctas.join(" | ")} ; « visual » : la création à utiliser (format 9:16 ou 1:1, premier plan, texte à l'écran) ; « lever » ; « angle » 2 à 5 mots.
+5. Plan de test : « structure » (une campagne, UN SEUL ensemble d'annonces en ciblage large qui contient toutes les annonces, placements ; jamais un ensemble par audience avec un petit budget ; une seule variable testée à la fois, l'accroche d'abord), « tests » (variable + hypothèse), « kpis » (taux d'arrêt sur 3 s, taux de clic, coût par clic, coût par achat ou par contact) ; aucun résultat promis. Le budget d'essai est un CONSEIL calculé par le studio (donné dans la demande) : ne propose pas d'autre montant, ne promets aucun résultat, et le studio ne dépense jamais rien.
 Règles des régies : Meta : aucun attribut personnel affirmé ou sous-entendu (« Vous êtes stressé ? », « votre acné »), pas d'avant / après corporel ; TikTok : texte de 100 caractères au plus, ton natif ; Google : pas de mots en MAJUSCULES, pas de ponctuation répétée (« !! »), pas de « cliquez ici ». Aucune promotion, aucun avis, aucune note, aucun prix barré, aucun chiffre ni délai absent du contexte.
 Exemple (gourde fictive, faits supposés confirmés) : excellent : hook « Le bouchon se visse d'un quart de tour », visuel « gros plan, la main visse le bouchon dès la 1re seconde » ; médiocre : « Découvrez notre gourde révolutionnaire ! ».
 Langues : « hooks.text », « hook », « angle », « primary », « headline », « description » en ${langName(lang)}, même si le contexte est dans une autre langue (traduis et adapte les faits, sans en ajouter) ; « strategy », « hooks.visual », « hooks.lever », « visual » et « lever » en ${ui} (ils s'adressent au marchand).`;
@@ -144,7 +144,7 @@ Réponds { "strategy": { "summary": "…", "audiences": [ { "name": "…", "who"
     const cut = (t: string, n: number) => (t.length > n ? t.slice(0, n + 1).replace(/\s+\S*$/, "").replace(/[\s,;:·-]+$/, "") : t);
     const ads = r.ads.slice(0, count).map((a) => {
       const clean = scrubClaims({ primary: a.primary, headline: a.headline, angle: a.angle, hook: a.hook ?? "", description: a.description ?? "" }, p).content;
-      return { ...a, ...clean, headline: cut(clean.headline, 40), description: cut(clean.description, 30), cta: ctas.includes(a.cta) ? a.cta : services ? serviceCta(p, lang) : ctas[0] };
+      return { ...a, ...clean, headline: cut(clean.headline, META_HEADLINE_MAX), description: cut(clean.description, 30), cta: ctas.includes(a.cta) ? a.cta : services ? serviceCta(p, lang) : ctas[0] };
     });
     const hooks = r.hooks.map((h) => ({ ...h, text: scrubClaims({ text: h.text }, p).content.text }));
     return { ads, by: "ai", strategy: { ...r.strategy, budget, hooks, quality, by: "ai" } };
@@ -158,7 +158,7 @@ export function adProblems(ads: AdDraft[], p: Project): string[] {
   ads.forEach((a, i) => {
     for (const c of lintClaims({ primary: a.primary, headline: a.headline }, p)) out.push(L(`Annonce ${i + 1}, ${c.path} : « ${c.term} » (${c.label}) n'est pas confirmé, retire-le.`, `Ad ${i + 1}, ${c.path}: "${c.term}" (${c.label}) is not confirmed, remove it.`));
     for (const h of lintHollow({ primary: a.primary, headline: a.headline })) out.push(L(`Annonce ${i + 1}, ${h.path} : formule creuse « ${h.term} », remplace-la par un fait concret.`, `Ad ${i + 1}, ${h.path}: empty phrase "${h.term}", replace it with a concrete fact.`));
-    if (a.headline.length > 40) out.push(L(`Annonce ${i + 1} : titre de ${a.headline.length} caractères, 40 au plus.`, `Ad ${i + 1}: headline is ${a.headline.length} characters, 40 at most.`));
+    if (a.headline.length > META_HEADLINE_MAX) out.push(L(`Annonce ${i + 1} : titre de ${a.headline.length} caractères, ${META_HEADLINE_MAX} au plus (titre Meta).`, `Ad ${i + 1}: headline is ${a.headline.length} characters, ${META_HEADLINE_MAX} at most (Meta headline).`));
   });
   return out;
 }
@@ -203,7 +203,7 @@ export function localAds(p: Project, lang: Lang, count = 3): AdDraft[] {
       lever: a.title,
       hook,
       primary: [idea || (en ? `Meet ${product}.` : `Découvrez ${product}.`), fact ? `${fact}.` : ""].filter(Boolean).join("\n\n"),
-      headline: short(tagline || (en ? `Meet ${product}` : `Découvrez ${product}`), 40),
+      headline: short(tagline || (en ? `Meet ${product}` : `Découvrez ${product}`), META_HEADLINE_MAX),
       description,
       cta: ctas[i % 3 === 0 ? 0 : i % 3 === 1 ? 2 : 3],
       visual: visuals[i % visuals.length],
@@ -215,16 +215,16 @@ export function localAds(p: Project, lang: Lang, count = 3): AdDraft[] {
   const lower = (t: string) => `${t.charAt(0).toLowerCase()}${t.slice(1)}`;
   const generic: AdDraft[] = en
     ? [
-        { angle: "The detail", lever: L("Détail qui intrigue", "Intriguing detail"), hook: v0 && v0.split(/\s+/).length <= 7 ? `Look closely: ${lower(v0)}` : `${product}, up close`, primary: `${v0 && v0.split(/\s+/).length <= 7 ? `Look closely: ${lower(v0)}.` : `${product}, up close.`}\n\n${(v0 && v0.split(/\s+/).length <= 7 ? facts.slice(1, 3) : facts.slice(0, 1)).map((f) => `${f}.`).join("\n") || ph("key benefit, confirmed")}\n\n${who}.`, headline: short(`${product}, up close`, 40), description, cta: ctas[3], visual: visuals[0] },
-        { angle: "Everyday use", lever: L("Situation d'usage", "Use case"), hook: short(`${product}, in real life`, 60), primary: `${product}, in real life.\n\n${ph("how and when it is used")}${facts[1] ? `\n\n${facts[1]}.` : ""}`, headline: short(brand ? `${brand}, every day` : "Made for every day", 40), description, cta: ctas[2], visual: visuals[1] },
-        { angle: "Meet it", lever: L("Découverte", "Discovery"), hook: short(tagline || `Meet ${product}`, 60), primary: `${tagline ? `${tagline.replace(/[.!]+$/, "")}.` : `Meet ${who}.`}\n\n${v1 ? `${facts[1]}.` : ph("what sets it apart, confirmed")}`, headline: short(`Meet ${product}`, 40), description, cta: ctas[0], visual: visuals[2] },
-        { angle: "Why choose it", lever: L("Objection levée", "Objection handled"), hook: `${product}: the essentials`, primary: `${product}: the essentials.\n\n${facts.slice(0, 3).map((f) => `• ${f}`).join("\n") || ph("what sets it apart, confirmed")}\n\nAvailable now${brand ? ` from ${brand}` : ""}.`, headline: short(`${product}, the essentials`, 40), description, cta: ctas[1], visual: visuals[3] },
+        { angle: "The detail", lever: L("Détail qui intrigue", "Intriguing detail"), hook: v0 && v0.split(/\s+/).length <= 7 ? `Look closely: ${lower(v0)}` : `${product}, up close`, primary: `${v0 && v0.split(/\s+/).length <= 7 ? `Look closely: ${lower(v0)}.` : `${product}, up close.`}\n\n${(v0 && v0.split(/\s+/).length <= 7 ? facts.slice(1, 3) : facts.slice(0, 1)).map((f) => `${f}.`).join("\n") || ph("key benefit, confirmed")}\n\n${who}.`, headline: short(`${product}, up close`, META_HEADLINE_MAX), description, cta: ctas[3], visual: visuals[0] },
+        { angle: "Everyday use", lever: L("Situation d'usage", "Use case"), hook: short(`${product}, in real life`, 60), primary: `${product}, in real life.\n\n${ph("how and when it is used")}${facts[1] ? `\n\n${facts[1]}.` : ""}`, headline: short(brand ? `${brand}, every day` : "Made for every day", META_HEADLINE_MAX), description, cta: ctas[2], visual: visuals[1] },
+        { angle: "Meet it", lever: L("Découverte", "Discovery"), hook: short(tagline || `Meet ${product}`, 60), primary: `${tagline ? `${tagline.replace(/[.!]+$/, "")}.` : `Meet ${who}.`}\n\n${v1 ? `${facts[1]}.` : ph("what sets it apart, confirmed")}`, headline: short(`Meet ${product}`, META_HEADLINE_MAX), description, cta: ctas[0], visual: visuals[2] },
+        { angle: "Why choose it", lever: L("Objection levée", "Objection handled"), hook: `${product}: the essentials`, primary: `${product}: the essentials.\n\n${facts.slice(0, 3).map((f) => `• ${f}`).join("\n") || ph("what sets it apart, confirmed")}\n\nAvailable now${brand ? ` from ${brand}` : ""}.`, headline: short(`${product}, the essentials`, META_HEADLINE_MAX), description, cta: ctas[1], visual: visuals[3] },
       ]
     : [
-        { angle: "Le détail", lever: L("Détail qui intrigue", "Intriguing detail"), hook: v0 && v0.split(/\s+/).length <= 7 ? `Regardez de près : ${lower(v0)}` : `${product}, de près`, primary: `${v0 && v0.split(/\s+/).length <= 7 ? `Regardez de près : ${lower(v0)}.` : `${product}, de près.`}\n\n${(v0 && v0.split(/\s+/).length <= 7 ? facts.slice(1, 3) : facts.slice(0, 1)).map((f) => `${f}.`).join("\n") || ph("bénéfice principal, confirmé")}\n\n${who}.`, headline: short(`${product}, de près`, 40), description, cta: ctas[3], visual: visuals[0] },
-        { angle: "Au quotidien", lever: L("Situation d'usage", "Use case"), hook: short(`${product}, dans la vraie vie`, 60), primary: `${product}, dans la vraie vie.\n\n${ph("comment et quand il s'utilise")}${facts[1] ? `\n\n${facts[1]}.` : ""}`, headline: short(brand ? `${brand}, au quotidien` : "Pensé pour tous les jours", 40), description, cta: ctas[2], visual: visuals[1] },
-        { angle: "La découverte", lever: L("Découverte", "Discovery"), hook: short(tagline || `Voici ${product}`, 60), primary: `${tagline ? `${tagline.replace(/[.!]+$/, "")}.` : `Voici ${who}.`}\n\n${v1 ? `${facts[1]}.` : ph("ce qui le distingue, confirmé")}`, headline: short(`Voici ${product}`, 40), description, cta: ctas[0], visual: visuals[2] },
-        { angle: "L'essentiel", lever: L("Objection levée", "Objection handled"), hook: `${product} : l'essentiel`, primary: `${product} : l'essentiel.\n\n${facts.slice(0, 3).map((f) => `• ${f}`).join("\n") || ph("ce qui le distingue, confirmé")}\n\nDisponible dès maintenant${brand ? ` chez ${brand}` : ""}.`, headline: short(`${product}, l'essentiel`, 40), description, cta: ctas[1], visual: visuals[3] },
+        { angle: "Le détail", lever: L("Détail qui intrigue", "Intriguing detail"), hook: v0 && v0.split(/\s+/).length <= 7 ? `Regardez de près : ${lower(v0)}` : `${product}, de près`, primary: `${v0 && v0.split(/\s+/).length <= 7 ? `Regardez de près : ${lower(v0)}.` : `${product}, de près.`}\n\n${(v0 && v0.split(/\s+/).length <= 7 ? facts.slice(1, 3) : facts.slice(0, 1)).map((f) => `${f}.`).join("\n") || ph("bénéfice principal, confirmé")}\n\n${who}.`, headline: short(`${product}, de près`, META_HEADLINE_MAX), description, cta: ctas[3], visual: visuals[0] },
+        { angle: "Au quotidien", lever: L("Situation d'usage", "Use case"), hook: short(`${product}, dans la vraie vie`, 60), primary: `${product}, dans la vraie vie.\n\n${ph("comment et quand il s'utilise")}${facts[1] ? `\n\n${facts[1]}.` : ""}`, headline: short(brand ? `${brand}, au quotidien` : "Pensé pour tous les jours", META_HEADLINE_MAX), description, cta: ctas[2], visual: visuals[1] },
+        { angle: "La découverte", lever: L("Découverte", "Discovery"), hook: short(tagline || `Voici ${product}`, 60), primary: `${tagline ? `${tagline.replace(/[.!]+$/, "")}.` : `Voici ${who}.`}\n\n${v1 ? `${facts[1]}.` : ph("ce qui le distingue, confirmé")}`, headline: short(`Voici ${product}`, META_HEADLINE_MAX), description, cta: ctas[0], visual: visuals[2] },
+        { angle: "L'essentiel", lever: L("Objection levée", "Objection handled"), hook: `${product} : l'essentiel`, primary: `${product} : l'essentiel.\n\n${facts.slice(0, 3).map((f) => `• ${f}`).join("\n") || ph("ce qui le distingue, confirmé")}\n\nDisponible dès maintenant${brand ? ` chez ${brand}` : ""}.`, headline: short(`${product}, l'essentiel`, META_HEADLINE_MAX), description, cta: ctas[1], visual: visuals[3] },
       ];
   for (const g of generic) if (out.length < count) out.push(g);
   return out.slice(0, count);
@@ -234,7 +234,7 @@ export function localAds(p: Project, lang: Lang, count = 3): AdDraft[] {
  * Plan de test sans IA (version du studio) : audiences de départ honnêtes, structure de campagne, budget de test,
  * variable testée, indicateurs et accroches reprises des annonces. Rédigé pour le marchand (langue de l'interface).
  */
-export function localAdStrategy(p: Project, lang: Lang, opts: { count?: number; objective?: string; audience?: string; networks?: string[] } = {}): AdStrategy {
+export function localAdStrategy(p: Project, lang: Lang, opts: { count?: number; objective?: string; audience?: string; networks?: string[]; /** Les types de clients de ses angles (le choisi d'abord) : une publicité pour chacun. */ clientTypes?: { name: string; who: string }[] } = {}): AdStrategy {
   const ui = uiLang();
   const t = (fr: string, en: string) => pick(ui, fr, en);
   const services = p.business === "services";
@@ -245,26 +245,32 @@ export function localAdStrategy(p: Project, lang: Lang, opts: { count?: number; 
   const meta = nets.some((x) => x === "instagram" || x === "facebook");
   const tiktok = nets.includes("tiktok");
   const ads = localAds(p, lang, n);
+  const broad: AdStrategy["audiences"][number] = { name: t("Ciblage large", "Broad targeting"), who: kids ? t("Adultes de 18 ans et plus (parents, entourage), sans autre critère", "Adults 18+ (parents, family circle), no other criteria") : t("Adultes du pays de livraison, sans autre critère", "Adults in the shipping country, no other criteria"), signals: t("Advantage+ / ciblage automatique : l'algorithme cherche lui-même les acheteurs à partir de la création", "Advantage+ / automatic targeting: the algorithm finds buyers from the creative itself"), why: t("Un seul ensemble, ouvert : avec un petit budget, chaque annonce a le temps de se montrer, et la régie trouve elle-même qui répond à quelle annonce.", "One open ad set: with a small budget, every ad gets time to show, and the platform finds who responds to which ad.") };
+  if (services && p.services?.area?.trim()) broad.who = t(`Adultes dans la zone : ${p.services.area.trim()}`, `Adults in the area: ${p.services.area.trim()}`);
+  // Une publicité par type de client (décision du 22 novembre 2026) : les types de clients sont ceux des angles, le
+  // choisi d'abord ; ils disent à qui parle chaque annonce, sans découper le ciblage. Avant : deux audiences, deux ensembles.
+  const types = (opts.clientTypes ?? []).slice(0, n);
   const audiences: AdStrategy["audiences"] = [
-    { name: t("Audience décrite", "Described audience"), who: declared || t("[À compléter : qui achète, âge, situation, centres d'intérêt]", "[To complete: who buys, age, situation, interests]"), signals: t("Centres d'intérêt et comportements correspondant à cette description", "Interests and behaviors matching this description"), why: t("Point de départ issu de votre plateforme de marque : à confirmer par les chiffres.", "Starting point from your brand platform: to be confirmed by the numbers.") },
-    { name: t("Ciblage large", "Broad targeting"), who: kids ? t("Adultes de 18 ans et plus (parents, entourage), sans autre critère", "Adults 18+ (parents, family circle), no other criteria") : t("Adultes du pays de livraison, sans autre critère", "Adults in the shipping country, no other criteria"), signals: t("Advantage+ / ciblage automatique : l'algorithme cherche lui-même les acheteurs à partir de la création", "Advantage+ / automatic targeting: the algorithm finds buyers from the creative itself"), why: t("Souvent le plus efficace quand la création est forte ; sert de témoin face à l'audience décrite.", "Often the most efficient when the creative is strong; acts as a control against the described audience.") },
+    ...(types.length
+      ? types.map((c, k) => ({ name: c.name, who: c.who, signals: t("Parle à ce type de client dans son annonce ; ciblage large, sans le découper", "Spoken to in its own ad; broad targeting, not split"), why: t(k === 0 ? "Le type de client de ton angle choisi." : "Un type de client de tes angles en réserve.", k === 0 ? "The customer type of your chosen angle." : "A customer type from your angles in reserve.") }))
+      : [{ name: t("Audience décrite", "Described audience"), who: declared || t("[À compléter : qui achète, âge, situation, centres d'intérêt]", "[To complete: who buys, age, situation, interests]"), signals: t("Centres d'intérêt et comportements correspondant à cette description", "Interests and behaviors matching this description"), why: t("Point de départ issu de ta plateforme de marque : à confirmer par tes chiffres.", "Starting point from your brand platform: to be confirmed by your numbers.") }]),
+    broad,
   ];
-  if (services && p.services?.area?.trim()) audiences[1] = { ...audiences[1], who: t(`Adultes dans la zone : ${p.services.area.trim()}`, `Adults in the area: ${p.services.area.trim()}`) };
   const structure = [
-    meta ? t(`Meta : une campagne « ${opts.objective || (services ? "Prospects" : "Ventes")} » ; budget fixé par ensemble d'annonces pendant le test`, `Meta: one "${opts.objective || (services ? "Leads" : "Sales")}" campaign; budget set per ad set during the test`) : "",
-    t(`${audiences.length} ensembles d'annonces (un par audience), les ${n} mêmes annonces dans chacun : seule l'audience change`, `${audiences.length} ad sets (one per audience), the same ${n} ads in each: only the audience changes`),
+    meta ? t(`Meta : une campagne « ${opts.objective || (services ? "Prospects" : "Ventes")} », un seul ensemble d'annonces, un seul budget pour l'essai`, `Meta: one "${opts.objective || (services ? "Leads" : "Sales")}" campaign, a single ad set, a single test budget`) : "",
+    t(`Un seul ensemble d'annonces en ciblage large, avec les ${n} annonces dedans${types.length ? " (une par type de client)" : ""} : la régie trouve elle-même qui répond à quelle annonce`, `A single broad ad set holding the ${n} ads${types.length ? " (one per customer type)" : ""}: the platform finds who responds to which ad`),
     t("Placements automatiques ; créations 9:16 pour Reels et Stories, 1:1 ou 4:5 pour le fil", "Automatic placements; 9:16 creatives for Reels and Stories, 1:1 or 4:5 for the feed"),
     tiktok ? t("TikTok : un groupe d'annonces en ciblage large, 3 vidéos 9:16 au ton natif (pas de visuel fixe)", "TikTok: one broad ad group, 3 native-style 9:16 videos (no static image)") : "",
-    t("Après 7 jours : on garde la meilleure accroche, on coupe le reste, puis on augmente le budget de 20 % tous les 2 à 3 jours", "After 7 days: keep the best hook, pause the rest, then raise the budget by 20% every 2 to 3 days"),
+    t("Après 7 jours sans toucher : on garde l'annonce qui apporte des demandes ou des ventes, on coupe le reste ; bilan à 14 jours. Monter le budget reste ton choix", "After 7 untouched days: keep the ad bringing requests or sales, pause the rest; review at 14 days. Raising the budget stays your call"),
   ].filter(Boolean);
   return {
-    summary: t("Plan de test de départ préparé par le studio (version sans IA) : les hypothèses sont à valider par vos propres chiffres.", "Starter test plan prepared by the studio (no-AI version): the hypotheses must be validated by your own numbers."),
+    summary: t("Plan d'essai de départ préparé par le Studio : ce sont des conseils, à confirmer par tes propres chiffres ; aucun résultat n'est promis.", "Starter test plan prepared by the studio: advice to confirm with your own numbers; no result is promised."),
     audiences,
     structure,
-    budget: honestTestBudget(p, ui, audiences.length),
+    budget: honestTestBudget(p, ui),
     tests: [
       { variable: t("Accroche (3 premières secondes)", "Hook (first 3 seconds)"), hypothesis: t("L'accroche fait l'essentiel de l'écart entre deux annonces : on la teste en premier, le reste identique.", "The hook drives most of the gap between two ads: test it first, everything else equal.") },
-      { variable: t("Audience", "Audience"), hypothesis: t("L'audience décrite fait-elle mieux que le ciblage large ?", "Does the described audience beat broad targeting?") },
+      { variable: t("Type de client", "Customer type"), hypothesis: t("Quel type de client répond le mieux ? Chaque annonce parle à un type de client différent, dans le même ensemble.", "Which customer type responds best? Each ad speaks to a different customer type, in the same ad set.") },
     ],
     kpis: services
       ? [t("Taux d'arrêt sur 3 s (vidéo)", "3-second hold rate (video)"), t("Taux de clic", "Click-through rate"), t("Coût par contact", "Cost per lead"), t("Demandes reçues", "Requests received")]
@@ -293,7 +299,7 @@ function localServiceAds(p: Project, lang: Lang, count: number): AdDraft[] {
   const noDot = (t?: string) => (t ?? "").trim().replace(/[.!]+$/, "");
   // Une annonce par prestation décrite (au plus count - 2), puis les modèles génériques.
   offer.filter((x) => x.description?.trim()).slice(0, Math.max(0, count - 2)).forEach((x, i) => {
-    out.push({ angle: x.name, primary: [`${noDot(x.description)}.`, where ? (en ? `Where: ${where}.` : `Où : ${where}.`) : "", book].filter(Boolean).join("\n\n"), headline: x.name.slice(0, 40), cta: i % 2 ? ctas[3] : main });
+    out.push({ angle: x.name, primary: [`${noDot(x.description)}.`, where ? (en ? `Where: ${where}.` : `Où : ${where}.`) : "", book].filter(Boolean).join("\n\n"), headline: x.name.slice(0, META_HEADLINE_MAX), cta: i % 2 ? ctas[3] : main });
   });
   const svc = offer[0];
   const lead = (sep: string) => {
@@ -302,16 +308,16 @@ function localServiceAds(p: Project, lang: Lang, count: number): AdDraft[] {
   };
   const generic: AdDraft[] = en
     ? [
-        { angle: "Book an appointment", primary: `${lead(": ")}\n\n${book}`, headline: (tagline || (where ? `${activity}, ${where}` : activity)).slice(0, 40), cta: main },
-        { angle: "Our services", primary: offer.length ? `What we offer:\n${offer.slice(0, 4).map((x) => `• ${x.name}`).join("\n")}` : unknownText("liste des prestations", "list of services"), headline: brand ? `${brand}'s services`.slice(0, 40) : "Our services", cta: ctas[3] },
-        { angle: "Close to you", primary: `${where ? `We work in ${where}.` : unknownText("zone d'intervention", "service area")}${p.services?.hours?.trim() ? `\nHours: ${p.services.hours.trim()}.` : ""}\n\n${book}`, headline: where ? `In ${where}`.slice(0, 40) : `Near you`, cta: p.services?.phone?.trim() ? ctas[2] : main },
-        { angle: "Why choose us", primary: `${unknownText("ce qui vous distingue, confirmé", "what sets you apart, confirmed")}\n\n${book}`, headline: brand ? `Why ${brand}?`.slice(0, 40) : "Why choose us?", cta: ctas[1] },
+        { angle: "Book an appointment", primary: `${lead(": ")}\n\n${book}`, headline: (tagline || (where ? `${activity}, ${where}` : activity)).slice(0, META_HEADLINE_MAX), cta: main },
+        { angle: "Our services", primary: offer.length ? `What we offer:\n${offer.slice(0, 4).map((x) => `• ${x.name}`).join("\n")}` : unknownText("liste des prestations", "list of services"), headline: brand ? `${brand}'s services`.slice(0, META_HEADLINE_MAX) : "Our services", cta: ctas[3] },
+        { angle: "Close to you", primary: `${where ? `We work in ${where}.` : unknownText("zone d'intervention", "service area")}${p.services?.hours?.trim() ? `\nHours: ${p.services.hours.trim()}.` : ""}\n\n${book}`, headline: where ? `In ${where}`.slice(0, META_HEADLINE_MAX) : `Near you`, cta: p.services?.phone?.trim() ? ctas[2] : main },
+        { angle: "Why choose us", primary: `${unknownText("ce qui vous distingue, confirmé", "what sets you apart, confirmed")}\n\n${book}`, headline: brand ? `Why ${brand}?`.slice(0, META_HEADLINE_MAX) : "Why choose us?", cta: ctas[1] },
       ]
     : [
-        { angle: "Prendre rendez-vous", primary: `${lead(" · ")}\n\n${book}`, headline: (tagline || (where ? `${activity}, ${where}` : activity)).slice(0, 40), cta: main },
-        { angle: "Nos prestations", primary: offer.length ? `Ce que nous proposons :\n${offer.slice(0, 4).map((x) => `• ${x.name}`).join("\n")}` : unknownText("liste des prestations", "list of services"), headline: brand ? `Les prestations ${brand}`.slice(0, 40) : "Nos prestations", cta: ctas[3] },
-        { angle: "Près de chez vous", primary: `${where ? `Nous intervenons : ${where}.` : unknownText("zone d'intervention", "service area")}${p.services?.hours?.trim() ? `\nHoraires : ${p.services.hours.trim()}.` : ""}\n\n${book}`, headline: where ? `${where}`.slice(0, 40) : "Près de chez vous", cta: p.services?.phone?.trim() ? ctas[2] : main },
-        { angle: "Pourquoi nous choisir", primary: `${unknownText("ce qui vous distingue, confirmé", "what sets you apart, confirmed")}\n\n${book}`, headline: brand ? `Pourquoi ${brand} ?`.slice(0, 40) : "Pourquoi nous choisir ?", cta: ctas[1] },
+        { angle: "Prendre rendez-vous", primary: `${lead(" · ")}\n\n${book}`, headline: (tagline || (where ? `${activity}, ${where}` : activity)).slice(0, META_HEADLINE_MAX), cta: main },
+        { angle: "Nos prestations", primary: offer.length ? `Ce que nous proposons :\n${offer.slice(0, 4).map((x) => `• ${x.name}`).join("\n")}` : unknownText("liste des prestations", "list of services"), headline: brand ? `Les prestations ${brand}`.slice(0, META_HEADLINE_MAX) : "Nos prestations", cta: ctas[3] },
+        { angle: "Près de chez vous", primary: `${where ? `Nous intervenons : ${where}.` : unknownText("zone d'intervention", "service area")}${p.services?.hours?.trim() ? `\nHoraires : ${p.services.hours.trim()}.` : ""}\n\n${book}`, headline: where ? `${where}`.slice(0, META_HEADLINE_MAX) : "Près de chez vous", cta: p.services?.phone?.trim() ? ctas[2] : main },
+        { angle: "Pourquoi nous choisir", primary: `${unknownText("ce qui vous distingue, confirmé", "what sets you apart, confirmed")}\n\n${book}`, headline: brand ? `Pourquoi ${brand} ?`.slice(0, META_HEADLINE_MAX) : "Pourquoi nous choisir ?", cta: ctas[1] },
       ];
   for (const g of generic) if (out.length < count) out.push(g);
   // Un projet sur devis garde « Demander un devis » ; sinon le bouton de devis cède la place au bouton principal.

@@ -34,10 +34,25 @@ export type TaskPolicy = {
 
 /** Modèle par défaut de chaque niveau, pour le texte (le reste passe par les capacités). */
 export const TEXT_MODEL_BY_TIER: Record<Exclude<Tier, "local">, string> = {
-  light: "claude-haiku-4-5",
+  // Haiku 5.5 depuis le 22 novembre 2026 (dix fois moins cher que Haiku 4.5, meilleur) : mêmes tâches qu'avant, le tri
+  // et le classement ; aucune tâche où SINA décide, conseille ou juge ne passe sur ce niveau.
+  light: "claude-haiku-5-5",
   standard: "claude-sonnet-5-5",
   strong: "claude-opus-5-5",
 };
+
+/**
+ * Le relecteur des IMAGES des publications et des publicités : le modèle le plus fort, au niveau élevé, une image à la
+ * fois (règle du propriétaire, redite le 22 novembre 2026 : « chaque image relue par le modèle le plus fort »). Avant :
+ * Sonnet 5.5 au niveau faible. Même choix que pour les photos du site (`PHOTO_REVIEW_MODEL`).
+ */
+export const IMAGE_REVIEW_MODEL = { provider: "anthropic" as const, model: TEXT_MODEL_BY_TIER.strong, effort: "high" };
+/** Routage de cette relecture (le même pour l'appel, le devis et le prix montré). */
+export const IMAGE_REVIEW_ROUTING = { difficulty: "complex" as const, deliverable: "image_v2" as const, prefer: IMAGE_REVIEW_MODEL };
+/** Place de sortie de cette relecture (sa réflexion au niveau élevé comprise) ; une relance coupée double à partir d'ici. */
+export const IMAGE_REVIEW_OUTPUT_TOKENS = 8000;
+/** Jetons d'une relecture d'image de publication au déroulé habituel (images allégées le 22 novembre 2026). */
+export const IMAGE_REVIEW_UNITS = { input: 20000, output: 3000 };
 
 const TEXT: Capability[] = ["text", "structured_output"];
 
@@ -74,7 +89,8 @@ export const DEFAULT_POLICY: Record<TaskId, TaskPolicy> = {
 /** Fournisseur et modèle par défaut des tâches média (le routeur peut se replier sur un autre fournisseur capable). */
 export const MEDIA_DEFAULTS: Partial<Record<TaskId, Route>> = {
   image_generation: { provider: "openai", model: "gpt-image-1" },
-  video_generation: { provider: "google", model: "veo-3.0-generate-001" },
+  // Veo 3.1 Lite par Vertex, sans son (23 novembre 2026, « le moins cher qui suffit par défaut ») ; plus jamais Veo 3.0.
+  video_generation: { provider: "vertex", model: "veo-3.1-lite-generate-001" },
 };
 
 /** Route par défaut d'une tâche (source de DEFAULT_ROUTES dans config.ts : un seul endroit). */

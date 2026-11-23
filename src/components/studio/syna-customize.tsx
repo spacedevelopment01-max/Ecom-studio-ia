@@ -60,7 +60,7 @@ export function SynaCustomize({ onClose, docked }: { onClose: () => void; docked
         <div className="ss-field" role="group" aria-label={T("Mode", "Mode")}>
           <span className="ss-field-l">{T("Mode", "Mode")}{own("mode") && <em className="ss-own">{T("ce projet", "this project")}</em>}</span>
           <div className="ss-modes">
-            {([["encre", "Encre", T("La conversation à côté de votre travail", "The conversation next to your work")], ["plein", T("Plein cadre", "Full frame"), T("Le résultat d'abord, SINA en barre de commande", "The result first, SINA in a command bar")]] as const).map(([m, name, hint]) => (
+            {([["encre", T("SINA à côté", "SINA alongside"), T("La conversation à côté de ton travail", "The conversation next to your work")], ["plein", T("Grand écran", "Full screen"), T("Ton travail prend toute la place, SINA en barre en bas", "Your work takes all the room, SINA in a bar at the bottom")]] as const).map(([m, name, hint]) => (
               <button key={m} type="button" className="ss-mode" data-mode={m} aria-pressed={r.mode === m} onClick={() => p.update({ mode: m })}>
                 <span className="ss-mode-art" aria-hidden="true"><i /><b /></span>
                 <span className="ss-mode-n">{name}{r.mode === m && <Check className="size-4" aria-hidden />}</span>
@@ -68,7 +68,7 @@ export function SynaCustomize({ onClose, docked }: { onClose: () => void; docked
               </button>
             ))}
           </div>
-          <p className="sy-small">{isMac ? T("Raccourci : ⌘ Maj M", "Shortcut: ⌘ Shift M") : T("Raccourci : Ctrl Maj M", "Shortcut: Ctrl Shift M")} · {T("ou écrivez « Passe en Plein cadre » dans la barre de commande", "or type “Switch to full frame” in the command bar")}</p>
+          <p className="sy-small">{isMac ? T("Raccourci : ⌘ Maj M", "Shortcut: ⌘ Shift M") : T("Raccourci : Ctrl Maj M", "Shortcut: Ctrl Shift M")} · {T("ou écris « Grand écran » dans la barre de commande", "or type “Full screen” in the command bar")}</p>
         </div>
 
         <Seg label={T("Apparence", "Appearance")} value={p.appearance} overridden={own("appearance")} onChange={(v) => p.update({ appearance: v })} options={[

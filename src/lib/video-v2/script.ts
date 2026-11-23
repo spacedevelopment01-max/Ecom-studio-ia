@@ -123,6 +123,7 @@ function voiceLines(i: AdInsight, st: CreativeStrategy, intent: VideoIntent): Re
   };
 }
 
+import { gridDurations, gridFor, gridParts } from "./grilles";
 /** Script local (gratuit) : la base de toute vidéo, et le repli quand l'IA échoue au contrôle. */
 export function localScript(i: AdInsight, st: CreativeStrategy, intent: VideoIntent): VideoScript {
   if (intent.editorial) {
@@ -133,10 +134,12 @@ export function localScript(i: AdInsight, st: CreativeStrategy, intent: VideoInt
     const sections:ScriptSection[] = lines.map((text,k)=>({part:k===0?"hook":e.blocks[k-1]?.kind==="cta"?"cta":"development",durationS:seconds,voice:text,onScreen:k===0?e.title:""}));
     return {style:st.style.narrative,sections,by:"local",issues:scriptIssues(sections,{proofs:st.proofs,facts:i.facts,ctaRequired:e.purpose==="ad",names:[i.brand,i.offerName]})};
   }
-  const parts: ScriptPart[] = ["hook", "development", "demonstration", ...(st.proofs.length ? (["proof"] as const) : []), "conclusion", ...(intent.purpose === "organic" ? [] : ["cta" as const])];
-  // Vidéo très courte : on garde l'essentiel (accroche, démonstration, CTA).
-  const kept = st.durationS < 10 ? parts.filter((p) => p === "hook" || p === "demonstration" || p === "cta") : parts;
-  const durations = allocate(kept, st.durationS);
+  // Formats courts des réseaux : une des deux grilles (publication 9-15 s, publicité 21-30 s ; rapport 09, point 9).
+  const grid = gridFor(intent);
+  const parts: ScriptPart[] = grid ? gridParts(grid, { proof: st.proofs.length > 0, cta: intent.purpose !== "organic" }) : ["hook", "development", "demonstration", ...(st.proofs.length ? (["proof"] as const) : []), "conclusion", ...(intent.purpose === "organic" ? [] : ["cta" as const])];
+  // Vidéo très courte hors grille : on garde l'essentiel (accroche, démonstration, CTA).
+  const kept = !grid && st.durationS < 10 ? parts.filter((p) => p === "hook" || p === "demonstration" || p === "cta") : parts;
+  const durations = grid ? gridDurations(grid, kept, st.durationS) : allocate(kept, st.durationS);
   const lines = voiceLines(i, st, intent);
   const cap = (x: string) => x.charAt(0).toLocaleUpperCase() + x.slice(1);
   const sections = kept.map((part, k) => ({ part, durationS: durations[k], voice: lines[part].voice, onScreen: cap(lines[part].onScreen.slice(0, 60)) }));

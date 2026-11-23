@@ -124,11 +124,18 @@ it("concepteur et contrôleur réels : brief complet, identité, références pr
   expect(call.prompt).toContain("FIN OBLIGATOIRE");
   expect(call.prompt).toContain("transmitted");
   const labels = call.images.map((i: any) => i.label).join(" | ");
-  expect(labels).toContain("actual transmitted logo");
-  expect(labels).toContain("actual transmitted product");
+  // Relecture allégée (22 novembre 2026) : la photo du produit et le logo joints une seule fois, tels qu'envoyés au
+  // modèle d'images (la version réduite n'était qu'une copie) ; les publications récentes en vignettes.
+  expect(labels).toContain("brand logo reference, as transmitted");
+  expect(labels).toContain("real product/scene reference, as transmitted");
+  expect(labels.match(/reference/g)?.length).toBe(2);
+  expect(labels).toContain("recent post thumbnail");
+  const thumb = await sharp(call.images.find((i: any) => i.label.includes("thumbnail")).data).metadata();
+  expect(Math.max(thumb.width!, thumb.height!)).toBeLessThanOrEqual(512);
+  // Relue par le modèle le plus fort, au niveau élevé (règle du propriétaire).
+  expect(call.routing.prefer).toMatchObject({ model: "claude-opus-5-5", effort: "high" });
   expect(labels).toContain("360px");
   expect(labels).toContain("BEFORE");
-  expect(labels).toContain("recent campaign");
   expect(
     await sharp(
       call.images.find((i: any) => i.label.includes("360px")).data,
@@ -147,6 +154,7 @@ it("le concepteur et le contrôleur reçoivent les deux finalités et le contenu
   expect(requests[start].system).toContain(purpose==='ad'?'advertising creative director':'editorial art director');
   expect(requests[start].prompt).toContain(purpose==='ad'?'PUBLICITÉ COMMERCIALE':'PUBLICATION ORGANIQUE');expect(requests[start].prompt).toContain('Dernière vérification indispensable.');expect(requests[start].prompt).toContain('Document fourni');
   const img=await sharp({create:{width:1080,height:1350,channels:3,background:'#235766'}}).png().toBuffer();await d.review(img,null,['Message exact'],`${purpose}:review`,false,null,context);
-  expect(requests.at(-1).prompt).toContain('never penalize absence of a commercial CTA');expect(requests.at(-1).prompt).toContain('Invented review, attribution, proof or diagram data is fatal');
+  // Les consignes fixes du relecteur sont en tête (gardées en mémoire chez le fournisseur), plus après les images.
+  expect(requests.at(-1).system).toContain('never penalize absence of a commercial CTA');expect(requests.at(-1).system).toContain('Invented review, attribution, proof or diagram data is fatal');
  }
 });

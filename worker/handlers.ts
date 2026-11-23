@@ -32,7 +32,8 @@ import { localCopy } from "../src/lib/engine/local-copy";
 import { assetData, getAsset, saveAsset, listFolders, addUsage, type Asset } from "../src/lib/library";
 import { publishPost, alreadyPublished, connectionFor, markConnection, type PostRow } from "../src/lib/social/publish";
 import { sendToCanva, importFromCanva } from "../src/lib/integrations/canva";
-import { pushCatalog, pushPages, pushTheme, seoSummary, shopifyConnection, type SeoPushResult } from "../src/lib/integrations/shopify";
+import { lireForfait, publierSurLaBoutique, pushCatalog, pushMenus, pushPages, pushPolicies, pushTheme, seoSummary, shopifyConnection, type SeoPushResult } from "../src/lib/integrations/shopify";
+import { forfaitRefuse, jetonFrais } from "../src/lib/integrations/shopify-app";
 import { hasStudioProducts, withStudioProducts } from "../src/lib/products/catalog";
 import { syncProducts } from "../src/lib/products/sync";
 import { decrypt } from "../src/lib/secrets";
@@ -49,24 +50,49 @@ import { ACTION_STEPS, findStockPhotos, orchestrated } from "../src/lib/orchestr
 
 type Handler = (ctx: JobContext) => Promise<unknown>;
 
+/**
+ * Le différé à moitié prix là où le client attend de toute façon (22 novembre 2026) : les angles, le site et les
+ * publications, comme la marque (qui le règle appel par appel). Coupé avec le réglage « sina.differe » à false.
+ * Chaque appel attend au plus 10 minutes, une tâche au plus 30 minutes en tout ; au-delà, tout part en direct.
+ */
+const differe = async <T>(fn: () => Promise<T>): Promise<T> => {
+  const [{ enDiffere }, { deferredOn }] = await Promise.all([import("../src/lib/ai/llm"), import("../src/lib/syna-agent/brand-chain")]);
+  return deferredOn() ? enDiffere(fn) : fn();
+};
+/** Les tâches de fond servies en différé (lu par les essais). */
+export const TACHES_EN_DIFFERE = ["syna.brand", "syna.angles", "syna.site", "syna.posts.plan"] as const;
+/**
+ * Les visuels du pilote des publications (« Ma communication automatique ») : personne ne les attend devant l'écran,
+ * ils servent dans un à trois jours. Leur concept et leurs relectures partent en différé, à moitié prix (audit du
+ * 22 novembre 2026), avec une patience d'une heure pour la tâche entière (un lot de 15 visuels fait une trentaine
+ * d'appels) ; au-delà, le reste part en direct. Les visuels que le client lance lui-même restent en direct.
+ */
+export const PATIENCE_PILOTE_MS = 60 * 60_000;
+const differePilote = async <T>(fn: () => Promise<T>): Promise<T> => {
+  const [{ enDiffere }, { deferredOn }] = await Promise.all([import("../src/lib/ai/llm"), import("../src/lib/syna-agent/brand-chain")]);
+  return deferredOn() ? enDiffere(fn, { patienceMs: PATIENCE_PILOTE_MS }) : fn();
+};
+
 export const handlers: Record<string, Handler> = {
   /** SYNA agent (#492) : une exécution reprenable du fil (raisonnement, outils, vérification). */
   "syna.agent": async (ctx) => (await import("../src/lib/syna-agent/loop")).runAgentJob(ctx),
   // SINA (#492), étape 2 : 3 logos de 3 styles pour l'identité choisie (moteur de logos V2, plafonné au devis).
   "syna.brand": async (ctx) => (await import("../src/lib/syna-agent/brand-chain")).runSinaBrandJob(ctx),
   /** Les trois angles de SINA : trois stratèges séparées, un juge à part, un lecteur qui ne sait rien. */
-  "syna.angles": async (ctx) => (await import("../src/lib/syna-agent/angles-chain")).runSinaAnglesJob(ctx),
+  "syna.angles": async (ctx) => differe(async () => (await import("../src/lib/syna-agent/angles-chain")).runSinaAnglesJob(ctx)),
   // SINA (#492), étape 7 : site codé d'après la maquette choisie (payant, plafonné au devis).
   "syna.mockup.code": async (ctx) => (await import("../src/lib/syna-agent/mockup-code/job")).runMockupCodeJob(ctx),
   // SINA (#492), étape 6 : thème sur mesure monté à la marque du client (textes et photos, payant, plafonné au devis).
-  "syna.site": async (ctx) => (await import("../src/lib/syna-agent/custom-theme/site-job")).runSinaSiteJob(ctx),
+  "syna.site": async (ctx) => differe(async () => (await import("../src/lib/syna-agent/custom-theme/site-job")).runSinaSiteJob(ctx)),
   "syna.dessin": async (ctx) => (await import("../src/lib/syna-agent/dessin/job")).runDessinJob(ctx),
   "syna.custom.brand": async (ctx) => (await import("../src/lib/syna-agent/custom-theme/brand")).runCustomBrandJob(ctx),
   // SINA (#492), étape 6 : galerie de la fiche produit, créée d'après la vraie photo du produit (payant, plafonné au devis).
   "syna.product.gallery": async (ctx) => (await import("../src/lib/syna-agent/custom-theme/gallery")).runGalleryJob(ctx),
   // SINA (#492), étape 6 : thème du Studio monté à la marque du client (textes dans l'angle choisi et images, payant).
   "syna.studio.brand": async (ctx) => (await import("../src/lib/syna-agent/studio-brand")).runStudioBrandJob(ctx),
-  "syna.posts.plan": async (ctx) => (await import("../src/lib/syna-agent/posts-plan")).runPostsPlanJob(ctx),
+  // Le point du mois (engagement 1) : un seul appel au modèle le plus fort, en différé par l'appel lui-même.
+  "syna.point-du-mois": async (ctx) => (await import("../src/lib/syna-agent/rendez-vous")).runPointDuMoisJob(ctx),
+  "syna.posts.plan": async (ctx) => differe(async () => (await import("../src/lib/syna-agent/posts-plan")).runPostsPlanJob(ctx)),
   "strategy.prepare":async ctx=>(await import("../src/lib/marketing-strategy/bundle")).runStrategyBundle(ctx),
   "project.prepare": async (ctx) => (await import("../src/lib/preparation/engine")).runPreparation(ctx),
 
@@ -129,6 +155,18 @@ export const handlers: Record<string, Handler> = {
     if(stockOnly)delivery.message+=' '+L('Recherche gratuite : vérifications locales et de licence, sans contrôle visuel IA.','Free search: local and licence checks, without AI visual review.');
     const tries = Math.max(1, ...r.outcomes.filter((o) => o.assetId).map((o) => o.attempts ?? 1));
     const notice = retryNotice(p.userId, p.id, tries, r.costMicro);
+    // « Mets mon produit dans une scène » depuis l'atelier : chaque image inscrite dans « Mes créations » (une image
+    // refusée par le contrôle y est dite ratée).
+    if (ctx.payload.request?.atelier && !stockOnly) {
+      const { inscrireCreation } = await import("../src/lib/atelier/journal");
+      const { getAsset, assetMeta } = await import("../src/lib/library");
+      const n = Math.max(1, r.outcomes.length);
+      for (const o of r.outcomes) {
+        const a = o.assetId ? getAsset(o.assetId) : null;
+        const [provider, ...model] = String(a ? assetMeta<{ imageV2?: { provider?: string } }>(a).imageV2?.provider ?? "openai" : "openai").split(":");
+        inscrireCreation({ projectId: p.id, userId: p.userId, assetId: o.assetId ?? null, geste: "scene", mode: ctx.payload.request.atelier.mode ?? "ensemble", kind: "image", provider, model: model.join(":") || "image", costMicro: Math.round((r.costMicro ?? 0) / n), status: o.assetId ? "ok" : "rate" });
+      }
+    }
     return { outcomes: r.outcomes.map((o) => ({ verdict: o.verdict, assetId: o.assetId, origin: o.origin, score: o.score })), stoppedByCostCap: r.stoppedByCostCap, stats: r.stats, delivery, ...(notice ? { notice } : {}) };
   },
 
@@ -172,8 +210,15 @@ export const handlers: Record<string, Handler> = {
     const { aiActiveFor } = await import("../src/lib/ai/access");
     // Plan des scènes écrit par l'IA seulement si l'IA est active pour ce projet (compte sans abonnement ou budget IA épuisé : aucun appel).
     const r = await runThreeScenes(ctx, p.id, ctx.payload.request, realThreeScenesDeps(ctx, { userId: p.userId, projectId: p.id }, { aiText: aiActiveFor(p.userId, p.id) && llmConfigured(),request:ctx.payload.request }));
+    // Vidéo d'un modèle prêt de l'atelier : inscrite dans « Mes créations » et comptée dans le plafond du mois.
+    if (ctx.payload.request?.modele && r.videoAssetId && !ctx.payload.request?.repair) {
+      const { inscrireCreation } = await import("../src/lib/atelier/journal");
+      inscrireCreation({ projectId: p.id, userId: p.userId, assetId: r.videoAssetId, geste: `video:${ctx.payload.request.modele}`, mode: "ensemble", kind: "video", provider: "studio-video", model: r.mode ?? "ai", costMicro: r.costMicro ?? 0 });
+    }
     return { docKey: r.docKey, videoAssetId: r.videoAssetId, costMicro: r.costMicro, mode: r.mode, notes: r.notes,delivery:await videoDelivery(p.id,r.videoAssetId) };
   },
+  /** Atelier : l'avant et l'après, deux vraies photos montées par le Studio (gratuit, aucune IA). */
+  "atelier.avant-apres": async (ctx) => withAiDisabled("montage gratuit de deux vraies photos, aucun appel d'IA", async () => (await import("../src/lib/atelier/avant-apres")).runAvantApres(ctx)),
   /** Vidéo V2 : nouveau rendu du document enregistré (local, gratuit), rangé dans la bibliothèque. */
   "video.v2.render": async (ctx) => {
     const { renderLatest } = await import("../src/lib/video-v2/engine");
@@ -430,7 +475,7 @@ export const handlers: Record<string, Handler> = {
    * vérification anti-doublon côté plateforme, puis publication.
    */
   /** Social V2 — niveau 2 : production d'un lot (payante seulement avec l'estimation acceptée, dans le plafond). */
-  "social.v2.produce": async (ctx) => {
+  "social.v2.produce": async (ctx) => (ctx.payload.pilote ? differePilote : <T,>(f: () => Promise<T>) => f())(async () => {
     const { produceBatch } = await import("../src/lib/social-v2/production");
     const { realSocialDeps } = await import("../src/lib/social-v2/deps");
     const { aiActiveFor } = await import("../src/lib/ai/access");
@@ -440,7 +485,7 @@ export const handlers: Record<string, Handler> = {
     if(!result.produced&&!result.failed&&!ctx.payload.replace){const{preservedApprovedDelivery}=await import('../src/lib/social-v2/preserved-delivery');const preserved=await preservedApprovedDelivery(p,ctx.payload.ids??[]);if(preserved)return{...result,alreadySatisfied:preserved.length,preserved,unchanged:true,partial:false,notice:L('Publications déjà approuvées : versions conservées sans nouvelle production.','Already approved posts: versions kept without new production.')};}
     if(!result.produced)throw new UserFacingError(L("Aucune publication complète produite : ","No complete post produced: ")+(result.notes.join(" ; ")||L("aucun brouillon en attente n’est disponible ; les acquis restent conservés.","no waiting draft is available; acquired work is kept.")));
     return {...result,partial:!!(result.failed||result.skipped)};
-  },
+  }),
   "post.publish": async (ctx) => {
     // Social Engine V2 : prise en charge atomique, version approuvée, journal des tentatives, état incertain en cas
     // de réponse perdue (jamais de nouvel envoi à l'aveugle). Le résultat est enregistré sur la publication.
@@ -504,8 +549,12 @@ export const handlers: Record<string, Handler> = {
 
   "shopify.push": async (ctx) => {
     const { projectId, parts } = ctx.payload as { projectId: string; parts: ("theme" | "product" | "pages")[] };
-    const c = shopifyConnection(ctx.job.user_id, projectId);
-    if (!c) throw new PermanentError(L("Connectez votre boutique Shopify dans l'onglet Connexions.", "Connect your Shopify store in the Connections tab."));
+    const c0 = shopifyConnection(ctx.job.user_id, projectId);
+    if (!c0) throw new PermanentError(L("Connectez votre boutique Shopify dans l'onglet Connexions.", "Connect your Shopify store in the Connections tab."));
+    // Boutique reliée par l'application du client : un jeton frais avant l'envoi (recherche 04, 22 novembre 2026).
+    const c = await jetonFrais(c0 as typeof c0 & { expires_at?: number | null; meta?: string | null });
+    // Le forfait d'abord : sur Starter, ni thème, ni collections, ni pages ; c'est dit avant tout envoi.
+    if (parts.includes("theme")) { const refus = forfaitRefuse(await lireForfait(c).catch(() => null)); if (refus) throw new PermanentError(refus); }
     const cur = currentTheme(projectId);
     if (!cur) throw new PermanentError(L("Aucune boutique à installer.", "No store to install."));
     // Contrôles du CMS Engine V2 AVANT tout envoi (même export que le bouton « Exporter ») : un export refusé
@@ -522,10 +571,16 @@ export const handlers: Record<string, Handler> = {
     if (parts.includes("product") && hasStudioProducts(projectId)) out.catalog = await ctx.step("catalog", async () => {
       ctx.progress(0.1, L("Envoi des produits du Studio vers Shopify", "Sending the Studio products to Shopify"));
       const r = await syncProducts(projectId, shopifyConnector({ shop: c.external_id, token: decrypt(c.access_token) ?? "", apiVersion: getSetting("shopify.apiVersion") || undefined }));
-      return r.counts;
+      // Publiés sur la boutique en ligne : sans cela, ils restent invisibles pour les acheteurs.
+      const ids = r.lines.filter((l) => l.remoteId && ["created", "updated", "linked", "unchanged"].includes(l.action)).map((l) => l.remoteId!);
+      const publication = await publierSurLaBoutique(c, ids).catch((e) => ({ publies: 0, erreurs: [String((e as Error)?.message ?? e).slice(0, 200)] }));
+      return { ...r.counts, publies: publication.publies, ...(publication.erreurs.length ? { erreursPublication: publication.erreurs } : {}) };
     });
     else if (parts.includes("product")) out.product = await ctx.step("product", async () => (ctx.progress(0.1, L("Création des produits dans Shopify", "Creating the products in Shopify")), pushCatalog(c, cur.spec, (d, t) => ctx.progress(0.1 + (d / t) * 0.35, L(`Produit ${d}/${t} envoyé`, `Product ${d}/${t} sent`)))));
     if (parts.includes("pages")) out.pages = await ctx.step("pages", async () => (ctx.progress(0.5, L("Création des pages", "Creating the pages")), pushPages(c, cur.spec)));
+    // Les menus du site et les pages légales de Shopify (une page légale avec un trou attend, elle n'est jamais envoyée).
+    if (parts.includes("pages")) out.menus = await ctx.step("menus", async () => pushMenus(c, cur.spec));
+    if (parts.includes("pages")) out.policies = await ctx.step("policies", async () => pushPolicies(c, cur.spec));
     if (parts.includes("theme")) out.theme = await ctx.step("theme", async () => (ctx.progress(0.8, L("Installation du thème (non publié)", "Installing the theme (unpublished)")), pushTheme(c, projectId, cur.version.id, cur.spec.name)));
     // SEO des fiches : envoyé / accepté / refusé / inconnu, jamais présenté comme vérifié.
     const seo = out.product ? seoSummary((out.product as { seo: Record<string, SeoPushResult> }).seo) : null;

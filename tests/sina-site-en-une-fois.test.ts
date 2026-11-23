@@ -159,8 +159,10 @@ describe("SINA — le site créé en une fois (lot 4)", async () => {
       expect(j.site!.report.aCompleter.length).toBeGreaterThan(0);
       expect(out.pret).toBe(false);
       expect(JSON.stringify(out).length).toBeLessThan(1500); // le fil coupe le résultat d'une tâche : il reste court
-      // SINA relit le compte rendu entier à l'étape du site.
-      expect(J.journeyContext(j)).toMatch(/COMPTE RENDU DE LA CRÉATION[^]*aucun visuel validé/);
+      // Le compte rendu entier est donné une fois avec le résultat de la tâche (22 novembre 2026) ; à chaque pas de l'étape,
+      // SINA ne relit que ce qui reste à régler.
+      expect(J.journeyContext(j)).toMatch(/CE QUI RESTE À RÉGLER : [^]*aCompleter/);
+      expect(J.journeyContext(j)).not.toMatch(/"concept"/);
       // Reprise après une coupure : la conception payée n'est pas refaite.
       const before = designs;
       await fr(() => X.runSinaSiteJob(jobCtx("job-site-1", payload, cp)));

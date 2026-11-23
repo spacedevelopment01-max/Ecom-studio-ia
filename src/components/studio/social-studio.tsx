@@ -255,7 +255,7 @@ function StrategyPanel({ data }: { data: Data }) {
                 <div>
                   <p className="font-medium">{f.title}</p>
                   <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-paper-2"><div className={cx("h-full rounded-full", STAGE_TONE[f.id])} style={{ width: `${Math.max(4, f.share)}%` }} /></div>
-                  <p className="mt-0.5 text-[11px] text-muted">{f.share} % {t("du calendrier", "of the calendar")}</p>
+                  <p className="mt-0.5 text-[11px] text-muted">{f.share} % {t("du calendrier", "of the calendar")}</p>
                 </div>
                 <div className="text-sm"><p>{f.goal}</p><p className="text-xs text-muted">{[...f.pillars, ...f.content].join(" · ")}</p></div>
                 <p className="text-xs"><span className="font-medium">{t("Mesure : ", "Measure: ")}</span>{f.kpis.join(", ")}</p>
@@ -290,7 +290,7 @@ function StrategyPanel({ data }: { data: Data }) {
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {s.pillars.map((p) => (
             <div key={p.id} className="rounded-2xl border border-line p-3">
-              <div className="flex items-baseline justify-between gap-2"><p className="font-medium">{p.title}</p><span className="text-xs text-muted">{Math.round(p.share * 100)} %</span></div>
+              <div className="flex items-baseline justify-between gap-2"><p className="font-medium">{p.title}</p><span className="text-xs text-muted">{Math.round(p.share * 100)} %</span></div>
               <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-paper-2"><div className="h-full rounded-full bg-ink" style={{ width: `${Math.round(p.share * 100)}%` }} /></div>
               <p className="mt-2 text-xs text-muted">{p.idea}</p>
               <p className="mt-1 text-[11px] text-muted">{t("Formats : ", "Formats: ")}{p.formats.join(", ")}</p>
@@ -438,7 +438,7 @@ function CreatePanel({ data, onDone, onGo, reload }: { data: Data; onDone: () =>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {(["image", "carousel", "video", "text"] as const).map((k) => (
               <label key={k} className="grid gap-1 text-xs">
-                <span>{t({ image: "Images", carousel: "Carrousels", video: "Vidéos", text: "Textes" }[k], { image: "Images", carousel: "Carousels", video: "Videos", text: "Text" }[k])} : {f.mix[k]} %</span>
+                <span>{t({ image: "Images", carousel: "Carrousels", video: "Vidéos", text: "Textes" }[k], { image: "Images", carousel: "Carousels", video: "Videos", text: "Text" }[k])} : {f.mix[k]} %</span>
                 <input type="range" min={0} max={100} step={5} value={f.mix[k]} onChange={(e) => setF({ ...f, mix: { ...f.mix, [k]: Number(e.target.value) } })} />
               </label>
             ))}

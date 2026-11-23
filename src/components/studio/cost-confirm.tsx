@@ -87,11 +87,11 @@ export function useCostConfirm() {
                     : t("Cette création utilise une part du budget IA de ce projet.", "This uses part of this project's AI budget.")}
                 </span>
               </p>
-              {s.quote&&<p data-exact-image-quote>{s.quote.retriesIncluded ? t(`Plafond de cette demande : ${quotePct(s.quote.maximumPct)} % du budget IA. Les contrôles et reprises éventuelles restent dans ce plafond.`,`Request cap: ${quotePct(s.quote.maximumPct)}% of the AI budget. Checks and any retries stay within this cap.`) : t(`Devis de cette demande : estimation ${quotePct(s.quote.estimatePct)} % ; plafond ${quotePct(s.quote.maximumPct)} % du budget IA. Au plus ${s.quote.maximumCalls} appels, sans relance automatique.`,`Quote for this request: estimate ${quotePct(s.quote.estimatePct)}%; cap ${quotePct(s.quote.maximumPct)}% of the AI budget. At most ${s.quote.maximumCalls} calls, without automatic retry.`)}</p>}
+              {s.quote&&<p data-exact-image-quote>{s.quote.retriesIncluded ? t(`Plafond de cette demande : ${quotePct(s.quote.maximumPct)} % du budget IA. Les contrôles et reprises éventuelles restent dans ce plafond.`,`Request cap: ${quotePct(s.quote.maximumPct)}% of the AI budget. Checks and any retries stay within this cap.`) : t(`Devis de cette demande : estimation ${quotePct(s.quote.estimatePct)} % ; plafond ${quotePct(s.quote.maximumPct)} % du budget IA. Au plus ${s.quote.maximumCalls} appels, sans relance automatique.`,`Quote for this request: estimate ${quotePct(s.quote.estimatePct)}%; cap ${quotePct(s.quote.maximumPct)}% of the AI budget. At most ${s.quote.maximumCalls} calls, without automatic retry.`)}</p>}
               <div>
                 <p className="flex items-center justify-between gap-3 text-xs text-ink-2">
                   <span className="inline-flex items-center gap-1.5"><Gauge className="size-3.5" aria-hidden />{t("Budget IA du projet", "Project AI budget")}</span>
-                  <strong className="tabular-nums text-ink">{t(`Reste ${left} %`, `${left}% left`)}</strong>
+                  <strong className="tabular-nums text-ink">{t(`Reste ${left} %`, `${left}% left`)}</strong>
                 </p>
                 <div className="mt-1.5"><UsageMeter used={100 - left} label={t("Budget IA du projet", "Project AI budget")} /></div>
               </div>
@@ -101,7 +101,7 @@ export function useCostConfirm() {
               <TriangleAlert className="mt-0.5 size-5 shrink-0" aria-hidden />
               <span>
                 {left > 0 ? t(
-                  `Il reste ${left} % du budget IA de ce projet, mais le montant disponible est inférieur au minimum requis pour lancer une création. Les réservations en cours peuvent aussi immobiliser une partie du budget. Aucun nouvel appel n’est lancé.`,
+                  `Il reste ${left} % du budget IA de ce projet, mais le montant disponible est inférieur au minimum requis pour lancer une création. Les réservations en cours peuvent aussi immobiliser une partie du budget. Aucun nouvel appel n’est lancé.`,
                   `${left}% of this project's AI budget remains, but the available amount is below the minimum required to start a creation. Pending reservations may also hold part of the budget. No new call is started.`,
                 ) : t(
                   `Le budget IA de ce projet est utilisé à 100 %. Il repart le ${renews}, ou tout de suite avec une recharge.${s.local ? " En attendant, le moteur local du studio peut le faire sans IA." : ""}`,

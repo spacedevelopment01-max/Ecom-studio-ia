@@ -8,6 +8,7 @@
  *     d'images des sites, dans la direction artistique de la famille choisie (personnes seulement si autorisées).
  * Le thème est ensuite en place dans l'onglet Boutique, où le client demande ses changements.
  */
+import { aLaChargeDuStudio } from "../../billing";
 import { famillePhotoLine } from "./familles";
 import { z } from "zod";
 import { L } from "../../i18n-server";
@@ -37,7 +38,7 @@ import { authenticSection, isCutoutPhoto, isProductPhotoSection, libSection, wit
 import { cutoutPhoto, FOND_A_DETOURER } from "./cutout-photo";
 import { checkCreatedImage, galleryCheckMaxMicro, galleryDeps } from "./gallery";
 import { CHECK_MODEL } from "../mockup-code/check";
-import { customThemePageShots } from "./shots";
+import { bandesDeLaCapture, customThemePageShots } from "./shots";
 import { LOOK_PAGES_MAX, LOOK_SYSTEM, LookSchema, lookProblems, lookPrompt, type LooksReport } from "./looks";
 import { educated } from "./knowledge";
 import { riskCount } from "./risk";
@@ -158,6 +159,32 @@ export const SectionWriteSchema = z.object({
   photos: z.array(z.object({ find: z.string().min(3).max(200), description: z.string().min(20).max(2500), ratio: z.enum(RATIOS), product: z.string().max(160).nullable() })).max(14),
 });
 export type SectionWrite = z.infer<typeof SectionWriteSchema>;
+
+/**
+ * Les textes PAR PAGE (audit du site du 22 novembre 2026, partie 4) : un appel écrit toutes les sections d'une page
+ * (huit au plus ; une page plus longue est écrite en deux fois), et les pièces pratiques (en-tête, pied de page, recherche,
+ * panier…) ensemble. Le rédacteur voit la page entière : il ne répète pas une formule, un fait ou une scène à deux
+ * sections d'écart. Le parcours de la page et la fiche du produit ne partent qu'une fois. 10 à 12 appels au lieu de 43 à 70.
+ */
+export const PAGE_SECTIONS_MAX = 8;
+export const PageWriteSchema = z.object({ sections: z.array(SectionWriteSchema.extend({ uid: z.string().min(1).max(12) })).max(PAGE_SECTIONS_MAX) });
+export type PageWrite = z.infer<typeof PageWriteSchema>;
+/** Les sections à écrire, rangées par page dans l'ordre du site, en morceaux de huit au plus. */
+export function morceauxParPage<T extends { page?: { key: string } | null; s: { uid: string } }>(list: T[]): T[][] {
+  const parPage = new Map<string, T[]>();
+  for (const x of list) { const k = x.page?.key ?? "pratique"; parPage.set(k, [...(parPage.get(k) ?? []), x]); }
+  return [...parPage.values()].flatMap((g) => { const n = Math.ceil(g.length / PAGE_SECTIONS_MAX), taille = Math.ceil(g.length / n); return Array.from({ length: n }, (_, i) => g.slice(i * taille, (i + 1) * taille)); });
+}
+/** La demande d'une page : ce qui vaut pour toute la page une fois, puis chaque section avec son identifiant. */
+export function pageWritePrompt(o: { page: string; journey?: string | null; product?: string | null; sections: { uid: string; prompt: string }[] }): string {
+  return [
+    `TU ÉCRIS ICI ${o.sections.length > 1 ? `LES ${o.sections.length} SECTIONS` : "LA SECTION"} DE LA PAGE « ${o.page} », dans l'ordre où le visiteur les lit. Chaque section suit toutes les règles d'une section ; vois-les ensemble : jamais deux fois la même formule, le même fait ou la même scène sur la page.`,
+    o.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${o.product}` : "",
+    o.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${o.journey}` : "",
+    `Réponse : {"sections": [{"uid": "", "edits": [], "links": [], "photos": []}]}, UNE entrée par section, avec son uid exact, chacune dans la forme d'une section.`,
+    ...o.sections.map((x) => `\n══ SECTION uid « ${x.uid} » ══\n${x.prompt}`),
+  ].filter(Boolean).join("\n");
+}
 
 /**
  * Refaire un site en reprenant ce qui est déjà fait (le propriétaire, 18 novembre 2026 : « tu refais un thème entier mais
@@ -284,6 +311,8 @@ export function brandBrief(p: Project, j: Journey | null): string {
     d.toConfirm?.length ? `NON confirmés, à ne JAMAIS affirmer : ${d.toConfirm.join(" ; ")}.` : "",
     plan?.company.shipping ? `Livraison : ${plan.company.shipping}.` : "",
     plan?.company.returns ? `Retours : ${plan.company.returns}.` : "",
+    plan?.company.mediateur ? `Médiateur de la consommation (à écrire dans les informations légales, tel quel) : ${plan.company.mediateur}.` : "",
+    plan?.company.hebergeur ? `Hébergeur du site (à écrire dans les mentions légales, tel quel) : ${plan.company.hebergeur}.` : "",
     ((c) => (c.length ? `Coordonnées : ${c.join(" · ")}.` : ""))([plan?.company.legalName, plan?.company.email, plan?.company.address, plan?.company.phone].filter((x): x is string => !!x)),
     plan?.company.addressDiscreet === true && plan.company.address ? "ADRESSE DISCRÈTE (demande du client) : son adresse ne s'écrit QUE dans les informations légales, jamais ailleurs sur le site (ni pied de page, ni contact, ni carte, ni itinéraire) ; ailleurs, on dit la zone où il se déplace." : "",
     // Entreprise de services : ce que le profil sait et que les pièces afficheront telles quelles (essai réel du 16
@@ -301,6 +330,15 @@ export function brandBrief(p: Project, j: Journey | null): string {
 
 /** Un fait fort du client se dit en toutes lettres à deux endroits du site au plus (là où il décide). */
 export const FACT_PLACES_MAX = 2;
+/** Photos du site créées en même temps (le prix ne change pas ; le site arrive plus tôt). */
+export const PHOTOS_EN_MEME_TEMPS = 3;
+/** Lance `fn` sur chaque élément, dans l'ordre, `n` au plus en même temps ; attend la fin de tous. */
+export async function enMemeTemps<T>(list: readonly T[], n: number, fn: (i: number, x: T) => Promise<void>): Promise<void> {
+  let k = 0;
+  const run = async () => { while (k < list.length) { const i = k++; await fn(i, list[i]); } };
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(n, list.length)) }, run));
+}
+
 export const SitePlanSchema = z.object({
   promesse: z.string().min(5).max(240),
   voix: z.string().min(5).max(400),
@@ -308,7 +346,7 @@ export const SitePlanSchema = z.object({
   sections: z.array(z.object({
     uid: z.string().max(12), message: z.string().min(3).max(320), titre: z.string().max(110).nullable(),
     bouton: z.string().max(40).nullable(), faits: z.array(z.string().max(160)).max(4),
-  })).max(40),
+  })).max(90),
   /** Référencement de chaque page (décision du propriétaire du 10 novembre 2026) : titre et description pour Google. */
   seo: z.array(z.object({ page: z.string().max(40), titre: z.string().min(5).max(80), description: z.string().min(20).max(200) })).max(20).default([]),
   /**
@@ -686,24 +724,42 @@ export function factPlaces(plan: SitePlan, uid: string): { mine: string[]; elsew
   return { mine: list.filter((x) => x.sections.includes(uid)).map((x) => x.fait), elsewhere: list.filter((x) => !x.sections.includes(uid)).map((x) => x.fait).slice(0, 20) };
 }
 
-export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string; /** Fiche d'UN produit du catalogue : ses faits. */ product?: string | null; /** Ce que le Studio posera lui-même dans la section (faits exacts). */ shown?: string; /** Formules déjà employées dans REPEAT_SECTIONS_MAX sections déjà écrites (relevé sans IA) : à ne plus employer. */ deja?: string[]; /** Ce que la même pièce dit déjà sur d'autres pages (memePieceAilleurs). */ ailleurs?: string | null }): string {
+const FORMULE_UNE_FOIS = "Une formule de style (une image, une tournure, une fin de phrase qui sonne) ne sert qu'UNE fois sur tout le site : n'en reprends aucune d'un titre ou d'un message d'une autre section.";
+/**
+ * La partie du plan commune à toutes les sections du site (promesse, voix, menu, tous les titres prévus, pages) :
+ * envoyée une fois, gardée en mémoire avec le dossier du client, au lieu d'être renvoyée au plein tarif dans chacune des
+ * 43 à 70 sections et de leurs reprises (audit du site du 22 novembre 2026, partie 3 : environ 1 500 jetons par section).
+ */
+export function planCommun(site: SitePlan | undefined, pages: string): string {
+  if (!site) return pages ? `PAGES DU SITE (clé : nom) : ${pages}` : "";
+  const titres = site.sections.filter((x) => x.titre).map((x) => `« ${x.titre} »`);
+  return [
+    "PLAN DES TEXTES DU SITE, COMMUN À TOUTES LES SECTIONS (à suivre) :",
+    `Promesse : ${site.promesse}`, `Voix : ${site.voix}`, site.menu.length ? `Menu principal : ${site.menu.join(" · ")}` : "",
+    titres.length ? `Titres prévus de toutes les sections du site (chacun ne sert qu'à SA section : ne reprends jamais celui d'une autre) : ${titres.join(", ")}.` : "",
+    FORMULE_UNE_FOIS,
+    pages ? `PAGES DU SITE (clé : nom) : ${pages}` : "",
+  ].filter(Boolean).join("\n");
+}
+
+export function sectionWritePrompt(brief: string, place: string, title: string, does: string, html: string, plan?: { site: SitePlan; uid: string }, design?: { intent?: string; journey?: string; pages?: string; /** Fiche d'UN produit du catalogue : ses faits. */ product?: string | null; /** Ce que le Studio posera lui-même dans la section (faits exacts). */ shown?: string; /** Formules déjà employées dans REPEAT_SECTIONS_MAX sections déjà écrites (relevé sans IA) : à ne plus employer. */ deja?: string[]; /** Ce que la même pièce dit déjà sur d'autres pages (memePieceAilleurs). */ ailleurs?: string | null; /** La partie commune à tout le site (`planCommun`) part à part, gardée en mémoire : elle n'est pas répétée ici. */ communAPart?: boolean }): string {
   const mine = plan?.site.sections.find((x) => x.uid === plan.uid);
   const others = plan ? plan.site.sections.filter((x) => x.uid !== plan.uid && x.titre).map((x) => `« ${x.titre} »`) : [];
   const planText = plan ? [
     "PLAN DES TEXTES DU SITE (à suivre) :",
-    `Promesse : ${plan.site.promesse}`, `Voix : ${plan.site.voix}`, plan.site.menu.length ? `Menu principal : ${plan.site.menu.join(" · ")}` : "",
+    ...(design?.communAPart ? [] : [`Promesse : ${plan.site.promesse}`, `Voix : ${plan.site.voix}`, plan.site.menu.length ? `Menu principal : ${plan.site.menu.join(" · ")}` : ""]),
     mine ? `CETTE section : message : ${mine.message}${mine.titre ? ` ; titre : « ${mine.titre} »` : ""}${mine.bouton ? ` ; bouton : « ${mine.bouton} »` : ""} ; faits à utiliser ici (et aucun autre chiffre) : ${mine.faits.length ? mine.faits.join(" ; ") : "aucun"}.` : "",
-    others.length ? `Titres des autres sections (ne les répète pas) : ${others.join(", ")}.` : "",
+    others.length && !design?.communAPart ? `Titres des autres sections (ne les répète pas) : ${others.join(", ")}.` : "",
     ...(plan ? ((r) => [
       r.mine.length ? `Faits forts que CETTE section dit en toutes lettres (c'est l'un des ${FACT_PLACES_MAX} endroits du site où ils se disent) : ${r.mine.join(" ; ")}.` : "",
       r.elsewhere.length ? `Faits forts DITS AILLEURS sur le site (ici, ne les redis PAS en toutes lettres : sous-entends-les ou tais-les) : ${r.elsewhere.join(" ; ")}.` : "",
     ])(factPlaces(plan.site, plan.uid)) : []),
-    "Une formule de style (une image, une tournure, une fin de phrase qui sonne) ne sert qu'UNE fois sur tout le site : n'en reprends aucune d'un titre ou d'un message d'une autre section.",
+    design?.communAPart ? "" : FORMULE_UNE_FOIS,
   ].filter(Boolean).join("\n") : "";
-  const designText = [design?.pages ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${design.product}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : "", design?.shown ?? "",
+  const designText = [design?.pages && !design.communAPart ? `PAGES DU SITE (clé : nom) : ${design.pages}` : "", design?.product ? `CETTE PAGE EST LA FICHE D'UN SEUL PRODUIT : écris pour LUI, avec SES faits, jamais ceux d'un autre produit du catalogue. ${design.product}` : "", design?.journey ? `PARCOURS DU VISITEUR SUR CETTE PAGE : ${design.journey}` : "", design?.intent ? `CONCEPTION DE CETTE SECTION : ${design.intent}` : "", design?.shown ?? "",
     design?.ailleurs ?? "",
     design?.deja?.length ? `FORMULES DÉJÀ EMPLOYÉES DANS ${REPEAT_SECTIONS_MAX} SECTIONS DU SITE (relevé du Studio ; ne les emploie plus ici, ni elles ni leurs mots dans le même ordre : dis autre chose, autrement) : ${design.deja.map((x) => `« ${x} »`).join(" ; ")}.` : ""].filter(Boolean).join("\n");
-  return [brief, "", ...(planText ? [planText, ""] : []), ...(designText ? [designText, ""] : []), `Section à adapter : « ${title} » (${place}). Ce qu'elle fait : ${does}`, "HTML actuel de la section (textes de démonstration à remplacer) :", html].join("\n");
+  return [...(brief ? [brief, ""] : []), ...(planText ? [planText, ""] : []), ...(designText ? [designText, ""] : []), `Section à adapter : « ${title} » (${place}). Ce qu'elle fait : ${does}`, "HTML actuel de la section (textes de démonstration à remplacer) :", html].join("\n");
 }
 
 /** Applique les remplacements d'une écriture : ceux qui ne s'appliquent pas sont comptés, jamais devinés. */
@@ -862,6 +918,8 @@ export const customBrandDeps: {
   seo?: (prompt: string, usageKey: string) => Promise<z.infer<typeof SeoSchema>>;
   photoBrief?: (prompt: string, usageKey: string) => Promise<z.infer<typeof PhotoBriefSchema>>;
   write?: (prompt: string, usageKey: string) => Promise<SectionWrite>;
+  /** Écriture d'une page entière (essais sans IA). */
+  writePage?: (prompt: string, usageKey: string) => Promise<z.input<typeof PageWriteSchema>>;
   /** Relecture de tous les textes par le directeur de création (essais sans IA : seulement si le test la fournit). */
   review?: (prompt: string, usageKey: string) => Promise<z.input<typeof CopyReviewSchema>>;
   /** Relecture de toutes les descriptions de photos par la directrice artistique (essais sans IA : seulement si fournie). */
@@ -987,7 +1045,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text-plan`;
         return customBrandDeps.plan ? SitePlanSchema.parse(await customBrandDeps.plan(prompt, usageKey))
           : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
-              llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SITE_PLAN_SYSTEM, "redacteur"), promptKey: "syna-custom-plan-2", prompt, maxTokens: SITE_PLAN_OUTPUT_TOKENS, maxOutputTokens: SITE_PLAN_OUTPUT_TOKENS * 1.5, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
+              llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, teteUnique: true, system: educated(SITE_PLAN_SYSTEM, "redacteur"), promptKey: "syna-custom-plan-2", prompt, maxTokens: SITE_PLAN_OUTPUT_TOKENS, maxOutputTokens: SITE_PLAN_OUTPUT_TOKENS * 1.5, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
       });
     } catch (e) { report.problems.push(`plan des textes non fait (${(e as Error).message.slice(0, 120)}) : sections écrites sans plan`); }
     // Référencement de chaque page, gardé dans le thème (titre de l'onglet et description pour Google).
@@ -1021,23 +1079,49 @@ export async function runCustomBrandJob(ctx: JobContext) {
     }
   }
 
-  // 1) Textes, section par section (un point de reprise chacune).
+  // La partie du plan commune à tout le site : à part, en mémoire avec le dossier (audit du site, partie 3).
+  const commun = planCommun(sitePlan ?? undefined, t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "));
+  const dossierEtPlan = commun ? `${brief}\n\n${commun}` : brief;
+  // 1) Textes, page par page (un point de reprise par page, puis un par section).
+  const morceaux = morceauxParPage(sections), morceauDe = new Map(morceaux.flatMap((m, k) => m.map((x) => [x.s.uid, k] as const)));
+  const enCours = new Map<number, Promise<Record<string, SectionWrite>>>();
+  const pageDe = (x: (typeof sections)[number]) => x.page?.label ?? x.place;
+  /** La demande d'UNE section : ce qui vaut pour toute la page (parcours, fiche du produit) part avec la page. */
+  const demandeDe = (x: (typeof sections)[number], parPage: boolean) => {
+    const l = libSection(x.s.id);
+    return sectionWritePrompt("", pageDe(x), l?.title ?? x.s.id, l?.does ?? "", withBrandName(sectionHtml(x.s), name), sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: parPage ? undefined : x.page?.journey, product: parPage ? undefined : productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), communAPart: true, shown: shownFacts(sectionHtml(x.s), facts, x.page?.key),
+      // Les formules déjà dites dans trois sections écrites avant (sans IA) : le rédacteur ne les emploie plus.
+      deja: repeats(allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts && y.s.uid !== x.s.uid), { atLeast: REPEAT_SECTIONS_MAX }).slice(0, 12).map((r) => r.phrase),
+      // La même pièce déjà écrite sur une autre page (sans IA) : le rédacteur y dit autre chose.
+      ailleurs: memePieceAilleurs({ uid: x.s.uid, id: x.s.id }, allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts).map((y) => ({ uid: y.s.uid, id: y.s.id, page: y.page?.label ?? y.place, html: sectionHtml(y.s) }))) });
+  };
+  const ecritLaPage = (k: number): Promise<Record<string, SectionWrite>> => {
+    const deja = enCours.get(k);
+    if (deja) return deja;
+    const m = morceaux[k];
+    const run = ctx.step(`text-page:${k}:${m.map((x) => x.s.uid).join("+")}`, async () => {
+      // Essais sans IA qui simulent l'écriture d'une section : chaque section garde son appel simulé.
+      if (customBrandDeps.write && !customBrandDeps.writePage) {
+        const out: Record<string, SectionWrite> = {};
+        for (const x of m) out[x.s.uid] = await customBrandDeps.write(`${dossierEtPlan}\n\n${sectionWritePrompt("", pageDe(x), libSection(x.s.id)?.title ?? x.s.id, libSection(x.s.id)?.does ?? "", withBrandName(sectionHtml(x.s), name), sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), communAPart: true, shown: shownFacts(sectionHtml(x.s), facts, x.page?.key) })}`, `${ctx.job.id}:text:${x.s.uid}`);
+        return out;
+      }
+      const prompt = pageWritePrompt({ page: pageDe(m[0]), journey: m[0].page?.journey, product: productFacts(p.id, m[0].page?.product), sections: m.map((x) => ({ uid: x.s.uid, prompt: demandeDe(x, true) })) });
+      const usageKey = `${ctx.job.id}:text-page:${m.map((x) => x.s.uid).join("+")}`;
+      const r = customBrandDeps.writePage ? PageWriteSchema.parse(await customBrandDeps.writePage(`${dossierEtPlan}\n\n${prompt}`, usageKey))
+        : PageWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
+            llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-page-1", context: dossierEtPlan, prompt, maxTokens: Math.min(64_000, 8000 + 7000 * m.length), maxOutputTokens: 64_000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PageWriteSchema, { strict: true })));
+      return Object.fromEntries(r.sections.filter((x) => m.some((y) => y.s.uid === x.uid)).map(({ uid, ...w }) => [uid, w]));
+    });
+    enCours.set(k, run);
+    return run;
+  };
   for (const [i, x] of sections.entries()) {
     const l = libSection(x.s.id);
     ctx.progress(0.05 + (0.45 * i) / Math.max(1, sections.length), L(`Textes : ${l?.title ?? x.s.id}`, `Copy: ${l?.title ?? x.s.id}`));
     try {
-      const w = await ctx.step(`text:${x.s.uid}`, async () => {
-        const html = withBrandName(sectionHtml(x.s), name);
-        const prompt = sectionWritePrompt(brief, x.page?.label ?? x.place, l?.title ?? x.s.id, l?.does ?? "", html, sitePlan ? { site: sitePlan, uid: x.s.uid } : undefined, { intent: x.s.intent, journey: x.page?.journey, product: productFacts(p.id, x.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(html, facts, x.page?.key),
-          // Les formules déjà dites dans trois sections écrites avant celle-ci (sans IA) : le rédacteur ne les emploie plus.
-          deja: repeats(allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts && y.s.uid !== x.s.uid), { atLeast: REPEAT_SECTIONS_MAX }).slice(0, 12).map((r) => r.phrase),
-          // La même pièce déjà écrite sur une autre page (sans IA) : le rédacteur y dit autre chose.
-          ailleurs: memePieceAilleurs({ uid: x.s.uid, id: x.s.id }, allSections(loadCustomTheme(p.id)!).filter((y) => y.s.clientTexts).map((y) => ({ uid: y.s.uid, id: y.s.id, page: y.page?.label ?? y.place, html: sectionHtml(y.s) }))) });
-        const usageKey = `${ctx.job.id}:text:${x.s.uid}`;
-        return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
-          : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text", costCapMicro: a.capMicro }, () =>
-              llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
-      });
+      // Une section que la page n'a pas rendue reste avec ses textes d'exemple, et c'est dit plus bas.
+      const w = await ctx.step(`text:${x.s.uid}`, async () => (await ecritLaPage(morceauDe.get(x.s.uid)!))[x.s.uid] ?? { edits: [], links: [], photos: [] });
       // Écriture posée une seule fois : à la reprise d'une tâche, une section déjà enregistrée n'est pas réappliquée
       // (sinon tous ses remplacements échouaient sur un texte déjà réécrit, audit du 10 novembre 2026).
       const r = await ctx.step(`text-saved:${x.s.uid}`, async () => {
@@ -1100,7 +1184,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const usageKey = `${ctx.job.id}:text-review`;
         return CopyReviewSchema.parse(customBrandDeps.review ? await customBrandDeps.review(prompt, usageKey)
           : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-review", costCapMicro: a.capMicro }, () =>
-              llmJson({ nouvelleSiChangee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(COPY_REVIEW_SYSTEM, "relecteurTextes"), promptKey: "syna-custom-copy-review-2", prompt, maxTokens: 8000, maxOutputTokens: 16000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, CopyReviewSchema, { strict: true })));
+              llmJson({ nouvelleSiChangee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, teteUnique: true, system: educated(COPY_REVIEW_SYSTEM, "relecteurTextes"), promptKey: "syna-custom-copy-review-2", prompt, maxTokens: 8000, maxOutputTokens: 16000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, CopyReviewSchema, { strict: true })));
       });
       const known = new Map(allSections(loadCustomTheme(p.id)!).map((x) => [x.s.uid, x] as const));
       const refused = review.sections.filter((f, i, all) => known.has(f.uid) && all.findIndex((g) => g.uid === f.uid) === i);
@@ -1109,22 +1193,24 @@ export async function runCustomBrandJob(ctx: JobContext) {
       const drops = repeatDrops(repeats([...known.values()].filter((x) => x.s.clientTexts || sections.some((y) => y.s.uid === x.s.uid)))).filter((d) => known.has(d.uid));
       const todo = planCopyFixes(refused, drops);
       let fixed = 0;
-      for (const [i, f] of todo.entries()) {
-        if (!resteAvantPhotos(SECTION_TEXT_CAP_MICRO)) {
-          report.problems.push(L(`${todo.length - i} reprise(s) de texte laissée(s) de côté pour tenir le prix annoncé : les photos passent avant`, "copy fixes skipped to stay within the announced price"));
-          break;
-        }
+      // Chaque reprise porte sur une section différente : trois partent en même temps (audit du site, partie 5). Le prix
+      // qui reste est revu avant chacune ; dès qu'il ne permet plus les photos, plus aucune ne part.
+      let arret = -1;
+      await enMemeTemps(todo, customBrandDeps.write ? 1 : PHOTOS_EN_MEME_TEMPS, async (i, f) => {
+        if (arret >= 0) return;
+        if (!resteAvantPhotos(SECTION_TEXT_CAP_MICRO)) { arret = i; return; }
         const x = known.get(f.uid)!, l = libSection(x.s.id), label = l?.title ?? x.s.id;
         ctx.progress(0.5 + (0.08 * i) / todo.length, L(`Je reprends : ${label}`, `Reworking: ${label}`));
         try {
-          const w = await ctx.step(`text-fix:${f.uid}`, async () => {
+          // Texte repris sur les remarques du directeur de création : reprise du Studio, jamais débitée au client.
+          const w = await aLaChargeDuStudio(() => ctx.step(`text-fix:${f.uid}`, async () => {
             const cur = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === f.uid) ?? x;
-            const prompt = `${sectionWritePrompt(brief, cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, product: productFacts(p.id, cur.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), shown: shownFacts(sectionHtml(cur.s), facts, cur.page?.key) })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
+            const prompt = `${sectionWritePrompt("", cur.page?.label ?? cur.place, label, l?.does ?? "", withBrandName(sectionHtml(cur.s), name), sitePlan ? { site: sitePlan, uid: f.uid } : undefined, { intent: cur.s.intent, journey: cur.page?.journey, product: productFacts(p.id, cur.page?.product), pages: t!.pages.map((pg) => `${pg.key} : ${pg.label}`).join(" · "), communAPart: true, shown: shownFacts(sectionHtml(cur.s), facts, cur.page?.key) })}\n\nCORRECTIONS EXIGÉES PAR LE DIRECTEUR DE CRÉATION (la section est déjà écrite : ne change QUE ce que ces corrections visent ; chaque « find » porte sur le HTML ci-dessus, tel qu'il est maintenant ; garde les liens et les photos, ne les redonne que s'ils changent) :\n${f.fixes.map((c) => `- ${c}`).join("\n")}`;
             const usageKey = `${ctx.job.id}:text-fix:${f.uid}`;
-            return customBrandDeps.write ? customBrandDeps.write(prompt, usageKey)
+            return customBrandDeps.write ? customBrandDeps.write(`${dossierEtPlan}\n\n${prompt}`, usageKey)
               : SectionWriteSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-fix", costCapMicro: a.capMicro }, () =>
-                  llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
-          });
+                  llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(SECTION_WRITE_SYSTEM, "redacteur"), promptKey: "syna-custom-section-2", context: dossierEtPlan, prompt, maxTokens: 14000, maxOutputTokens: 28000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SectionWriteSchema, { strict: true })));
+          }));
           const r = await ctx.step(`text-fix-saved:${f.uid}`, async () => {
             t = loadCustomTheme(p.id)!;
             const cur = allSections(t).find((y) => y.s.uid === f.uid);
@@ -1142,7 +1228,8 @@ export async function runCustomBrandJob(ctx: JobContext) {
           if (r?.applied) fixed++;
           else report.problems.push(`${label} : ma relecture demandait une reprise (${f.fixes[0].slice(0, 140)}), elle n'a pas pu être posée : à relire`);
         } catch (e) { report.problems.push(`${label} : reprise demandée par ma relecture non faite (${(e as Error).message.slice(0, 100)})`); }
-      }
+      });
+      if (arret >= 0) report.problems.push(L(`${todo.length - arret} reprise(s) de texte laissée(s) de côté pour tenir le prix annoncé : les photos passent avant`, "copy fixes skipped to stay within the announced price"));
       for (const f of refused.filter((r) => !todo.some((d) => d.uid === r.uid))) report.problems.push(`${libSection(known.get(f.uid)!.s.id)?.title ?? f.uid} : à relire (${f.fixes[0].slice(0, 140)})`);
       report.relecture = { reprises: fixed, refusees: refused.length, avis: review.site };
       // Ce que la fiche ne confirme toujours pas après la relecture : dit au client, jamais laissé en silence.
@@ -1252,7 +1339,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
             const usageKey = `${ctx.job.id}:photo-review`;
             return PhotoReviewSchema.parse(customBrandDeps.photoReview ? await customBrandDeps.photoReview(prompt, usageKey)
               : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-photo-review", costCapMicro: a.capMicro }, () =>
-                  llmJson({ nouvelleSiChangee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, system: educated(PHOTO_REVIEW_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-review-2", prompt, maxTokens: 12000, maxOutputTokens: 20000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewWireSchema, { strict: true })));
+                  llmJson({ nouvelleSiChangee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, teteUnique: true, system: educated(PHOTO_REVIEW_SYSTEM, "directriceArtistique"), promptKey: "syna-custom-photo-review-2", prompt, maxTokens: 12000, maxOutputTokens: 20000, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, PhotoReviewWireSchema, { strict: true })));
           });
           // Seules les photos réellement relues comptent (une section ou une source inconnue est ignorée).
           const asked = review.photos.filter((f, i, list) => seen.some((x) => x.y.s.uid === f.uid && x.photos.some((b) => b.find === f.find)) && list.findIndex((g) => g.uid === f.uid && g.find === f.find) === i);
@@ -1308,12 +1395,13 @@ export async function runCustomBrandJob(ctx: JobContext) {
               if (here < mine.length) report.problems.push(`${x.ly.title} : ${mine.length - here} photo(s) que ma relecture voulait revoir n'ont pas pu être redécrites (${mine[0].fixes[0].slice(0, 120)})`);
             } catch (e) { report.problems.push(`${x.ly.title} : photos non redécrites après ma relecture (${(e as Error).message.slice(0, 100)})`); }
           };
-          for (const [i, uid] of uids.slice(0, MAX_PHOTO_FIXES).entries()) await redecrire(uid, refused.filter((f) => f.uid === uid), i, Math.min(uids.length, MAX_PHOTO_FIXES), "photo-fix");
+          // Photos redécrites parce que refusées à la relecture : reprises du Studio, jamais débitées au client.
+          for (const [i, uid] of uids.slice(0, MAX_PHOTO_FIXES).entries()) await aLaChargeDuStudio(() => redecrire(uid, refused.filter((f) => f.uid === uid), i, Math.min(uids.length, MAX_PHOTO_FIXES), "photo-fix"));
           // Une reprise peut en créer une autre en double (Bécane : la correction a demandé « REPRENDRE R2 », déjà prise) :
           // second passage, seulement pour ces doubles-là, puis plus rien n'est recréé à l'identique.
           const encore = reprisesEnDouble(photosDuSite(), reprises, dejaPosees).filter(relue);
           const uids2 = [...new Set(encore.map((d) => d.uid))].slice(0, MAX_DOUBLES_FIXES);
-          for (const [i, uid] of uids2.entries()) await redecrire(uid, encore.filter((d) => d.uid === uid).map((d) => ({ uid, find: d.find, fixes: [repriseEnDoubleFix(d)] })), i, uids2.length, "photo-fix-double");
+          for (const [i, uid] of uids2.entries()) await aLaChargeDuStudio(() => redecrire(uid, encore.filter((d) => d.uid === uid).map((d) => ({ uid, find: d.find, fixes: [repriseEnDoubleFix(d)] })), i, uids2.length, "photo-fix-double"));
           // Refusée pour une personne et pas redécrite (au-delà des reprises, ou reprise ratée) : consigne durcie à la création.
           for (const f of refused.filter(forPeople)) {
             const key = `${f.uid}|${f.find}`, nowText = (briefs[f.uid] ?? []).find((b) => b.find === f.find)?.description.trim();
@@ -1345,13 +1433,16 @@ export async function runCustomBrandJob(ctx: JobContext) {
       const id = x?.data.images[0]?.assetId;
       return id && getAsset(id) && (showsPackaging(ph.description) || briefNamesProduct(ph.description, { title: x!.data.title, type: x!.data.productType, photo: true })) ? id : undefined;
     };
-    for (const [i, { uid, ph: ph0 }] of todo.entries()) {
+    // Les photos partent trois à la fois (audit du site du 22 novembre 2026, partie 7) : aucun prix ne change, le site
+    // arrive une dizaine de minutes plus tôt. Chacune est lancée dans l'ordre, et ce qui touche au site (pose de la
+    // photo, images du client attribuées) se fait sans attente entre deux, donc sans mélange.
+    const unePhoto = async (i: number, { uid, ph: ph0 }: (typeof todo)[number]): Promise<void> => {
       let ph = ph0;
       ctx.progress(0.5 + (0.48 * i) / Math.max(1, todo.length), L(`Photos : ${i + 1} sur ${todo.length}`, `Photos: ${i + 1} of ${todo.length}`));
       const file = ph.find.replace(/^.*\//, "");
       // Photo d'un élément retiré par le rédacteur (carte en trop) : rien à créer, rien à payer.
       const here = allSections(loadCustomTheme(p.id)!).find((y) => y.s.uid === uid);
-      if (!here || !sectionHtml(here.s).includes(ph.find)) continue;
+      if (!here || !sectionHtml(here.s).includes(ph.find)) return;
       try {
         const lib = libSection(here.s.id);
         // Photo impossible à inventer (équipe, photos de clients, biens… ; les réalisations d'artisans, elles, se créent) : seule une vraie photo du client va là,
@@ -1359,12 +1450,12 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const authentic = authenticSection(here.s.id, p.business === "services" ? "services" : "products");
         if (authentic) {
           const given = nextA < reserved ? allOwn[nextA++] : undefined;
-          if (!given) { report.photosToProvide++; continue; }
+          if (!given) { report.photosToProvide++; return; }
           report.photosClient++;
           t = loadCustomTheme(p.id)!;
           const cur0 = allSections(t).find((y) => y.s.uid === uid);
           if (cur0) { cur0.s.html = sectionHtml(cur0.s).split(ph.find).join(assetUrl({ id: given })); t = saveCustomTheme(p.id, t, { history: false }); }
-          continue;
+          return;
         }
         // La vraie photo du produit telle quelle seulement sur sa carte ou dans le bloc d'achat ; ailleurs (ouverture,
         // ambiance), une scène est créée avec elle en référence (audit du 10 novembre 2026 : le même packshot partout).
@@ -1373,7 +1464,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // Emplacement de produit (galerie du bloc d'achat, carte, vignette) : SEULE la vraie photo du produit y va. Sans
         // elle, rien n'est créé ni posé (essai réel : des produits « imaginés » dans la galerie de la fiche) : l'aperçu y
         // montre « Ta photo ici », et la photo du client y prendra sa place dès qu'il l'importe.
-        if (p.business !== "services" && lib && showsProductAlone(lib, ph.description) && !real) { report.photosProduitsAttendues++; continue; }
+        if (p.business !== "services" && lib && showsProductAlone(lib, ph.description) && !real) { report.photosProduitsAttendues++; return; }
         // Une photo déjà faite pour le site d'avant, que le rédacteur a choisi de reprendre : posée telle quelle, sans
         // création ni paiement, jamais deux fois (ni sur un emplacement de produit, écarté juste au-dessus).
         const rep = REPRISE_PHOTO.exec(ph.description);
@@ -1381,7 +1472,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         if (repId && !dejaPosees.has(repId) && getAsset(repId)) {
           t = loadCustomTheme(p.id)!;
           const cur0 = allSections(t).find((y) => y.s.uid === uid);
-          if (cur0) { cur0.s.html = sectionHtml(cur0.s).split(ph.find).join(assetUrl({ id: repId })); t = saveCustomTheme(p.id, t, { history: false }); dejaPosees.add(repId); report.photosReutilisees++; continue; }
+          if (cur0) { cur0.s.html = sectionHtml(cur0.s).split(ph.find).join(assetUrl({ id: repId })); t = saveCustomTheme(p.id, t, { history: false }); dejaPosees.add(repId); report.photosReutilisees++; return; }
         }
         // Reprise refusée (photo déjà sur le site) : la description est celle d'une scène déjà montrée. Elle est créée en
         // scène différente, et c'est dit (dernier recours : la relecture l'a normalement déjà redécrite).
@@ -1390,11 +1481,11 @@ export async function runCustomBrandJob(ctx: JobContext) {
         // Une scène qui montre un produit SANS photo du client : jamais créée (un produit ne s'invente pas). Sa
         // description a déjà eu sa reprise après la relecture ; ce qui reste est dit, le texte de la section prend la place.
         const invented = !real && !(next < own.length) ? unseen(ph) : null;
-        if (invented) { report.photosSansProduit++; report.problems.push(`photo ${file} non créée : sa description montrait « ${invented} », qui n'a pas encore de photo de toi (je n'invente pas un produit)`); continue; }
+        if (invented) { report.photosSansProduit++; report.problems.push(`photo ${file} non créée : sa description montrait « ${invented} », qui n'a pas encore de photo de toi (je n'invente pas un produit)`); return; }
         const mine = !real && next < own.length ? own[next++] : undefined;
         // Montage en deux fois (newPhotos:false) : rien de créé, la photo d'exemple attend le second montage.
-        if (!real && !mine && a.newPhotos === false) { report.photosLeft++; continue; }
-        if (!real && !mine && mode === "client") { report.problems.push(`photo ${file} : aucune image du client pour cet emplacement`); continue; }
+        if (!real && !mine && a.newPhotos === false) { report.photosLeft++; return; }
+        if (!real && !mine && mode === "client") { report.problems.push(`photo ${file} : aucune image du client pour cet emplacement`); return; }
         // Une photo créée : la description ne part jamais avec une personne ou une main que rien n'autorise (contrôle sans
         // IA) ; « retry » : la seule reprise permise, après un refus du contrôle pour une personne, description durcie.
         const create = (retry: boolean) => ctx.step(`${retry ? "photo-retry" : "photo"}:${uid}:${file}`, async () => {
@@ -1434,18 +1525,19 @@ export async function runCustomBrandJob(ctx: JobContext) {
               report.photosReprises++;
               assetId = await create(true);
               const again = await check(assetId, true);
-              if (again.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle deux fois, reprise comprise (${again.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); continue; }
+              if (again.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle deux fois, reprise comprise (${again.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); return; }
               problems = [];
             } else problems = [...problems, go === "inconnu" ? "reprise non tentée : prix d'une photo inconnu" : "reprise non tentée : le plafond accordé ne le permettait pas"];
           }
-          if (problems.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle (${problems.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); continue; }
+          if (problems.length) { report.photosFailed++; report.problems.push(`photo ${file} ratée au contrôle (${problems.join(" ; ").slice(0, 200)}) : non posée, à refaire avec ton accord (un cadre vide tient sa place)`); return; }
         }
         if (real) report.photosReal++; else if (mine) report.photosClient++; else report.photosMade++;
         t = loadCustomTheme(p.id)!;
         const cur = allSections(t).find((y) => y.s.uid === uid);
         if (cur) { cur.s.html = sectionHtml(cur.s).split(ph.find).join(assetUrl({ id: assetId })); t = saveCustomTheme(p.id, t, { history: false }); }
       } catch (e) { report.problems.push(`photo ${file} non créée (${(e as Error).message.slice(0, 120)})`); }
-    }
+    };
+    await enMemeTemps(todo, customBrandDeps.photo ? 1 : PHOTOS_EN_MEME_TEMPS, unePhoto);
   }
 
   // Aucune photo d'exemple ne reste en silence (décision du 10 novembre 2026).
@@ -1472,8 +1564,9 @@ export async function runCustomBrandJob(ctx: JobContext) {
         try {
           const look = await ctx.step(`look:${now.rev}:${s.key}`, async () => {
             const prompt = lookPrompt({ brand: name, sells, page: s.label, concept: now.concept }), usageKey = `${ctx.job.id}:look:${s.key}`;
+            const bandes = customBrandDeps.look ? [s.data] : await bandesDeLaCapture(s.data);
             return LookSchema.parse(customBrandDeps.look ? await customBrandDeps.look(prompt, s.data, usageKey)
-              : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-look", costCapMicro: a.capMicro }, () => llmJson({ nouvelleSiChangee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey, promptKey: "syna-custom-look-1", system: LOOK_SYSTEM, prompt, images: [{ data: s.data, label: `page ${s.label} sur téléphone` }], maxTokens: 1500, maxOutputTokens: 3000, routing: { difficulty: "standard", prefer: CHECK_MODEL } } as LlmCall, LookSchema)));
+              : await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-look", costCapMicro: a.capMicro }, () => llmJson({ nouvelleSiChangee: true, task: "quality_control", userId: p.userId, projectId: p.id, jobId: ctx.job.id, usageKey, promptKey: "syna-custom-look-1", system: LOOK_SYSTEM, prompt, images: bandes.map((data, i, all) => ({ data, label: all.length > 1 ? `page ${s.label} sur téléphone, partie ${i + 1}/${all.length} de haut en bas` : `page ${s.label} sur téléphone` })), maxTokens: 1500, maxOutputTokens: 3000, routing: { difficulty: "standard", prefer: CHECK_MODEL } } as LlmCall, LookSchema)));
           });
           seen.pages.push({ page: s.label, envie: look.cliente.envie, beau: look.directeurArtistique.note, avis: [look.cliente.avis, look.directeurArtistique.avis].filter(Boolean).join(" ").slice(0, 400) });
           const found = lookProblems(s.label, look);

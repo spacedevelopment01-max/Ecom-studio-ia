@@ -1,5 +1,6 @@
 /** Registre commun : chaque module expose ses outils ; aucun aiguillage par formulation. */
 import { rouvrirTool } from "../verrous";
+import { preuvePrixTool } from "../prix-anterieur";
 import type { AgentTool } from "../types";
 import { siteTools } from "./site";
 import { catalogueTools } from "./catalogue";
@@ -23,5 +24,7 @@ import { siteCreateTool } from "../custom-theme/site-job";
 import { postsTools } from "./posts";
 import { lateStepTools } from "./steps-late";
 import { dessinTools } from "../dessin/tools";
+import { suiviTools } from "./suivi";
+import { atelierTools } from "./atelier";
 
-export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools, siteCreateTool, ...galleryTools, ...openTools, ...postsTools, ...lateStepTools, ...dessinTools, rouvrirTool];
+export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools, siteCreateTool, ...galleryTools, ...openTools, ...postsTools, ...lateStepTools, ...dessinTools, ...suiviTools, ...atelierTools, rouvrirTool, preuvePrixTool];

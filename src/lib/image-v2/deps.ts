@@ -19,6 +19,7 @@ import { assetData, getAsset } from "../library";
 import type { Project } from "../projects";
 import { downloadStock } from "../stock/photos";
 import { L } from "../i18n-server";
+import { JUGE_ETIQUETTE } from "../atelier/scene";
 import { personCheckEn } from "../people-policy";
 import { FORMATS, generationAspect } from "./formats";
 import { ImageReviewSchema,BoundedImageReviewSchema,BoundedEditImageReviewSchema, REVIEW_SYSTEM } from "./quality";
@@ -40,7 +41,33 @@ export type ImageV2Deps = {
   generate: (brief: VisualBrief, prompt: string, reference: Buffer | null, key: string) => Promise<{ img: Buffer; provider: string; model: string | null; path: GenerationPath }>;
   /** Détourage (PNG transparent) du produit de référence. */
   reference: (assetId: string) => Buffer | null;
+  /**
+   * Contrôle gratuit de fidélité au produit (studio photo, recherche 08 point 6 ; réglage `suivi.studioPhoto`) : le
+   * produit de l'image créée comparé à celui de la référence (forme, proportions, couleur), par le code. null : contrôle
+   * impossible (détourage indisponible) ; l'image n'est alors ni refusée ni refaite.
+   */
+  fidelity?: (reference: Buffer, img: Buffer) => Promise<{ fidele: boolean; ecarts: string[] } | null>;
 };
+
+/** Le détourage d'une image, s'il n'en est pas déjà un (une image entièrement opaque est détourée par le modèle local). */
+async function enDetourage(img: Buffer): Promise<Buffer> {
+  const { channels, isOpaque } = await sharp(img).stats();
+  if (channels.length === 4 && !isOpaque) return img;
+  return (await (await import("../media/cutout")).cutoutProduct(img)).png;
+}
+
+/**
+ * Le contrôle de fidélité du Studio, sans aucun appel payant : les deux produits détourés par le modèle embarqué, puis
+ * comparés (`suivi/studio-photo.ts`). Éteint si l'administration a écrit « 0 » dans `suivi.studioPhoto`.
+ */
+export async function fideliteLocale(reference: Buffer, img: Buffer): Promise<{ fidele: boolean; ecarts: string[] } | null> {
+  const { suiviAllume } = await import("../suivi/reglages");
+  if (!suiviAllume("studioPhoto")) return null;
+  try {
+    const { controleFidelite } = await import("../suivi/studio-photo");
+    return await controleFidelite(await enDetourage(reference), await enDetourage(img));
+  } catch { return null; }
+}
 
 /** Résumé du brief pour la relecture (structuré, en anglais). */
 export function reviewPrompt(b: VisualBrief): string {
@@ -53,7 +80,7 @@ Art direction: ${b.nativeEdit?'keep the SOURCE composition, camera, subjects and
 ${b.nativeEdit?'TARGETED EDIT: image 2 is the SOURCE image to preserve outside the exact requested change. Other attached references are labelled as style or the real product. sourceAltered MUST be true if any subject, framing, object, inscription, product colour or other detail changed outside that request. requestedChangeApplied MUST be true only if the requested change is visibly applied, false for an unchanged source or a missing change. A style reference only supplies background colours/light, never new objects or people. Include required booleans sourceAltered and requestedChangeApplied in the JSON.':''}
 Relevant concepts: ${b.nativeEdit?'the actual visible source and the requested edit':requestedScene?b.requestedTopic||'the exact client instructions above':b.positive.slice(0, 8).join("; ")}.
 Off-topic (fail relevance if this is all the image shows): ${b.nativeEdit?'replacement subjects, a recreated scene, changes outside the request':requestedScene?'a substituted default scene or objects unrelated to the explicit request; all factual, product fidelity and people constraints below remain mandatory':b.negative.slice(0, 10).join("; ")}.
-${b.productFidelity ? b.nativeEdit?"For product fidelity, use the labelled REAL PRODUCT reference when attached; otherwise preserve the product visible in the SOURCE. The SOURCE is image 2, not the style reference. Preserve the product shape, colours, logo, inscriptions and proportions.\n":"A reference image of the REAL product is attached second: the product in the image must be the same, unchanged (shape, colours, logo, label text, proportions).\n" : ""}Constraints: ${b.facts.slice(0, 9).join("; ")}.
+${b.productFidelity ? b.nativeEdit?"For product fidelity, use the labelled REAL PRODUCT reference when attached; otherwise preserve the product visible in the SOURCE. The SOURCE is image 2, not the style reference. Preserve the product shape, colours, logo, inscriptions and proportions.\n":"A reference image of the REAL product is attached second: the product in the image must be the same, unchanged (shape, colours, logo, label text, proportions).\n" : ""}${b.productFidelity ? JUGE_ETIQUETTE + "\n" : ""}Constraints: ${b.facts.slice(0, 9).join("; ")}.
 ${personCheckEn(b.people !== false)}
 Answer { "criteria": { "relevance": 0, "fidelity": 0, "aesthetics": 0, "composition": 0, "realism": 0, "brand": 0, "brief": 0, "support": 0, "artifacts": 0, "commercial": 0 }, "shows": "…", "offTopic": false, "productAltered": false, "wrongProduct": false, "textInImage": false, "deformed": false, "artifacts": false, "personVisible": false, ${b.nativeEdit?'"sourceAltered": false, "requestedChangeApplied": false, ':''}"issues": [], "fix": { "target": "lighting|composition|background|crop|product|direction|none", "instruction": "…" } }.`;
 }
@@ -151,6 +178,7 @@ export function realImageDeps(p: Project, b: { jobId: string | null; aiActive: b
       return a && a.project_id === p.id && !a.deleted_at ? assetData(a) : null;
     },
     path: pathFor,
+    fidelity: fideliteLocale,
     async review(brief, img, reference, key, origin) {
       const small = await sharp(img, { failOn: "none" }).rotate().resize(1024, 1024, { fit: "inside" }).jpeg({ quality: 85 }).toBuffer();
       const images = [{ data: small, label: L("image à juger", "image to review") }];

@@ -17,28 +17,39 @@ import { getSetting } from "../settings";
 import { isGatewayKey } from "./gateway";
 import { L } from "../i18n-server";
 
-export type AlibabaRegion = "intl" | "us" | "cn";
+export type AlibabaRegion = "intl" | "us" | "cn" | "eu";
 export const ALIBABA_REGIONS: Record<AlibabaRegion, { label: { fr: string; en: string }; base: string }> = {
   intl: { label: { fr: "International (Singapour)", en: "International (Singapore)" }, base: "https://dashscope-intl.aliyuncs.com/api/v1" },
   us: { label: { fr: "États-Unis (Virginie)", en: "United States (Virginia)" }, base: "https://dashscope-us.aliyuncs.com/api/v1" },
   cn: { label: { fr: "Chine (Pékin)", en: "China (Beijing)" }, base: "https://dashscope.aliyuncs.com/api/v1" },
+  // Francfort (rapport 09, 22 novembre 2026) : adresse propre à l'espace de travail, `{espace}.eu-central-1.maas.aliyuncs.com`.
+  // Les fichiers restent à Francfort, mais les modèles vidéo n'y sont listés qu'en portée « Global » : le calcul peut se faire
+  // ailleurs, Chine comprise (à dire au propriétaire). Sans identifiant d'espace de travail, l'adresse de Singapour est gardée.
+  eu: { label: { fr: "Europe (Francfort, avec l'identifiant de l'espace de travail)", en: "Europe (Frankfurt, with the workspace ID)" }, base: "https://{workspace}.eu-central-1.maas.aliyuncs.com/api/v1" },
 };
+
+/** Adresse de Francfort pour un espace de travail (null : identifiant absent ou invalide). */
+export const frankfurtBase = (workspace: string | null | undefined) => (workspace && /^[\w-]{1,80}$/.test(workspace.trim()) ? `https://${workspace.trim().toLowerCase()}.eu-central-1.maas.aliyuncs.com/api/v1` : null);
 
 /** Adresse personnalisée acceptée : HTTPS sur un domaine Alibaba Cloud (aucune autre destination possible). */
 export const ALIBABA_ENDPOINT_RE = /^https:\/\/([a-z0-9-]+\.)*aliyuncs\.com(\/api\/v1)?\/?$/i;
 
 export function alibabaRegion(): AlibabaRegion {
   const r = getSetting("provider.alibaba.region");
-  return r === "us" || r === "cn" ? r : "intl";
+  return r === "us" || r === "cn" || r === "eu" ? r : "intl";
 }
 
 /** Adresse de base de l'API : adresse personnalisée valide de l'administration, sinon celle de la région. */
 export function alibabaBase(): { base: string; problem: string | null } {
   const custom = getSetting("provider.alibaba.endpoint")?.trim();
   if (custom) {
-    if (!ALIBABA_ENDPOINT_RE.test(custom)) return { base: ALIBABA_REGIONS[alibabaRegion()].base, problem: L("Adresse d'API invalide : seule une adresse https://…aliyuncs.com est acceptée (adresse de la région utilisée à la place).", "Invalid API address: only an https://…aliyuncs.com address is accepted (the region's address is used instead).") };
+    if (!ALIBABA_ENDPOINT_RE.test(custom)) return { base: ALIBABA_REGIONS[alibabaRegion() === "eu" ? "intl" : alibabaRegion()].base, problem: L("Adresse d'API invalide : seule une adresse https://…aliyuncs.com est acceptée (adresse de la région utilisée à la place).", "Invalid API address: only an https://…aliyuncs.com address is accepted (the region's address is used instead).") };
     const b = custom.replace(/\/+$/, "");
     return { base: /\/api\/v1$/.test(b) ? b : `${b}/api/v1`, problem: null };
+  }
+  if (alibabaRegion() === "eu") {
+    const eu = frankfurtBase(getSetting("provider.alibaba.workspace"));
+    return eu ? { base: eu, problem: null } : { base: ALIBABA_REGIONS.intl.base, problem: L("Francfort demande l'identifiant de l'espace de travail : adresse de Singapour utilisée en attendant.", "Frankfurt needs the workspace ID: the Singapore address is used meanwhile.") };
   }
   return { base: ALIBABA_REGIONS[alibabaRegion()].base, problem: null };
 }

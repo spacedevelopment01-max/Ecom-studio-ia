@@ -1,4 +1,3 @@
-import {HIGGS_MODELS} from "../src/lib/ai/higgsfield/catalog";
 /**
  * Video & UGC Engine V2 (phase 7A) — modules sans rendu : intention, stratégie, script, storyboard, planification
  * des plans, Router V2 / capacités des fournisseurs, document éditable, opérations, retouches par conversation,
@@ -158,17 +157,20 @@ describe("Video Engine V2 — modules", async () => {
   // ------------------------------------------------------------------ Router V2 et fournisseurs
 
   it("Router V2 : seules les capacités VÉRIFIÉES comptent ; repli sur un fournisseur compatible ; tarif inconnu refusé", () => {
-    // Les adaptateurs directs Alibaba et Higgsfield sont raccordés ; Veo reste documenté seulement.
+    // L'adaptateur direct d'Alibaba est raccordé (Higgsfield quitté le 22 novembre 2026) ; Veo reste documenté seulement.
     // Capacité du code ne signifie ni tarif approuvé ni accès fournisseur effectivement testé.
     const direct = VIDEO_CAPABILITIES.filter(c => verified(c, "textToVideo"));
     expect(direct.length).toBeGreaterThan(0);
-    expect(direct.every(c => c.provider === "alibaba" || c.provider === "higgsfield" && HIGGS_MODELS.some(m=>m.id===c.model && m.mode==="text"))).toBe(true);
+    expect(direct.every(c => c.provider === "alibaba")).toBe(true);
     expect(VIDEO_CAPABILITIES.filter(c => c.provider === "google").every(c => !verified(c, "textToVideo"))).toBe(true);
     expect(chooseProvider({ imageToVideo: false, people: false, nativeAudio: false, aspect: "9:16", durationS: 5 }, { ...allProviders, available: p => p !== "alibaba" })).toBeNull();
     // Son natif : seulement Veo (vérifié par le code UGC) ; Kling n'en a pas.
     const kling = VIDEO_CAPABILITIES.find((c) => c.provider === "fal")!;
     expect(compatible(kling, { imageToVideo: true, people: true, nativeAudio: true, aspect: "9:16", durationS: 8 })).toMatch(/son natif/);
-    expect(chooseProvider({ imageToVideo: true, people: true, nativeAudio: true, aspect: "9:16", durationS: 8 }, allProviders)!.provider).toBe("google");
+    // Avant le 23 novembre 2026 : Veo de l'API Gemini. Il n'est plus accordé (Veo seulement par Vertex, sans son) :
+    // aucun modèle accordé n'a de son natif, donc aucun choix ; Veo est écarté avec sa raison.
+    const sonore = chooseProvider({ imageToVideo: true, people: true, nativeAudio: true, aspect: "9:16", durationS: 8 }, allProviders);
+    expect(sonore).toBeNull();
     // Google indisponible : repli sur fal.ai (compatible pour un plan sans son natif).
     const fb = chooseProvider({ imageToVideo: true, people: false, nativeAudio: false, aspect: "9:16", durationS: 4 }, { ...allProviders, available: (x) => x === "fal" })!;
     expect(fb.provider).toBe("fal");
@@ -176,7 +178,9 @@ describe("Video Engine V2 — modules", async () => {
     expect(fb.rejected.some((r) => /clé inactive/.test(r.why))).toBe(true);
     // Le moins cher compatible, sauf route de l'administration.
     expect(chooseProvider({ imageToVideo: true, people: false, nativeAudio: false, aspect: "16:9", durationS: 4 }, { ...allProviders, estimate: (p, _m, s) => (p === "fal" ? s * 90 : s * 150) })!.provider).toBe("fal");
-    expect(chooseProvider({ imageToVideo: true, people: false, nativeAudio: false, aspect: "16:9", durationS: 4 }, { ...allProviders, preferred: { provider: "google", model: "veo-3.0-fast-generate-001" } })!.model).toBe("veo-3.0-fast-generate-001");
+    // Une route de l'administration vers Veo de l'API Gemini n'est plus suivie (plus accordé, 23 novembre 2026).
+    expect(chooseProvider({ imageToVideo: true, people: false, nativeAudio: false, aspect: "16:9", durationS: 4 }, { ...allProviders, preferred: { provider: "google", model: "veo-3.0-fast-generate-001" } })!.provider).not.toBe("google");
+    expect(chooseProvider({ imageToVideo: true, people: false, nativeAudio: false, aspect: "16:9", durationS: 4 }, { ...allProviders, preferred: { provider: "fal", model: "fal-ai/kling-video/v2.1/pro/image-to-video" } })!.model).toBe("fal-ai/kling-video/v2.1/pro/image-to-video");
     // Tarif inconnu : modèle écarté (jamais compté 0 €).
     expect(chooseProvider({ imageToVideo: true, people: false, nativeAudio: false, aspect: "9:16", durationS: 4 }, { ...allProviders, estimate: () => null })).toBeNull();
   });

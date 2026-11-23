@@ -3,7 +3,6 @@
  * Tout est modifiable dans l'administration ; ces valeurs sont des points de
  * départ. Les clients n'ont jamais besoin de clé : E-COM STUDIO IA fournit l'IA.
  */
-import { credentials as higgsCredentials } from "./higgsfield/http";
 import { getJsonSetting, getSetting } from "../settings";
 import { UserFacingError } from "../jobs";
 import { L } from "../i18n-server";
@@ -11,7 +10,7 @@ import { POLICY_ROUTES } from "../orchestrator/policy";
 import { GATEWAY_KEY, gatewayProviders } from "./gateway";
 export { bearer, falAuth, GATEWAY_KEY, gatewayProviders, isGatewayKey } from "./gateway";
 
-export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "alibaba" | "pexels" | "pixabay" | "higgsfield";
+export type ProviderId = "anthropic" | "openai" | "google" | "fal" | "alibaba" | "pexels" | "pixabay" | "vertex" | "kling" | "byteplus" | "runware" | "bfl";
 
 // Libellés affichés dans l'administration : accesseurs évalués à la lecture, dans la langue de l'interface.
 const provider = (name: { fr: string; en: string }, role: { fr: string; en: string }, keyHelp: { fr: string; en: string }, docs: string) => ({
@@ -28,7 +27,15 @@ const provider = (name: { fr: string; en: string }, role: { fr: string; en: stri
 });
 
 export const PROVIDERS: Record<ProviderId, { readonly name: string; readonly role: string; readonly keyHelp: string; docs: string }> = {
-  higgsfield: provider({fr:"Higgsfield officiel",en:"Official Higgsfield"},{fr:"Plans vidéo produit — tarifs automatiques et approbation groupée",en:"Product video shots — automatic pricing and bulk approval"},{fr:"Identifiant et secret dans la carte dédiée",en:"Key ID and secret in the dedicated card"},"https://docs.higgsfield.ai/docs"),
+  // Fabricants vidéo accordés par le propriétaire (référence, partie 16 : 18 novembre 2026 ; Seedance le 21). Inactifs
+  // tant que leur clé n'est pas saisie ici ; chaque modèle attend aussi la confirmation de l'administration.
+  vertex: provider({ fr: "Google Vertex AI (vidéo Veo 3.1)", en: "Google Vertex AI (Veo 3.1 video)" }, { fr: "Plans vidéo Veo 3.1 Fast et Lite, image de départ et de fin, personnes interdites sans accord (calcul aux États-Unis)", en: "Veo 3.1 Fast and Lite video shots, start and end frame, people disallowed without consent (computed in the United States)" }, { fr: "Clé d'API Google Cloud (mode express) ; ou jeton d'accès avec l'identifiant du projet ci-dessous", en: "Google Cloud API key (express mode); or access token with the project ID below" }, "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/veo/3-1-generate"),
+  kling: provider({ fr: "Kling en direct (vidéo)", en: "Kling direct (video)" }, { fr: "Plans vidéo Kling 4.0, durée toujours envoyée, fichiers copiés tout de suite (gardés 30 jours chez Kling)", en: "Kling 4.0 video shots, duration always sent, files copied right away (kept 30 days at Kling)" }, { fr: "Clé d'API de la console Kling", en: "API key from the Kling console" }, "https://kling.ai/document-api/llms.txt"),
+  byteplus: provider({ fr: "BytePlus ModelArk (vidéo Seedance)", en: "BytePlus ModelArk (Seedance video)" }, { fr: "Plans vidéo Seedance, identifiant haché du client envoyé à chaque appel, brouillon avant la version finale", en: "Seedance video shots, hashed customer ID sent with each call, draft before the final version" }, { fr: "Clé d'API ModelArk (région Asie du Sud-Est)", en: "ModelArk API key (Southeast Asia region)" }, "https://docs.byteplus.com/en/docs/modelark/model-list"),
+  // Black Forest Labs (Flux), accordé le 18 novembre 2026 (contrat européen) : seulement au choix du client dans
+  // l'atelier (retouche guidée, agrandir le cadre, scène avec référence). Inactif tant que sa clé n'est pas saisie ici.
+  bfl: provider({ fr: "Black Forest Labs (images Flux)", en: "Black Forest Labs (Flux images)" }, { fr: "Atelier : retouche guidée (Kontext), version story ou carrée (agrandir le cadre), scène avec la photo du produit (FLUX.2) ; point d'accès européen", en: "Workshop: guided edits (Kontext), story or square version (expand the frame), scene from the product photo (FLUX.2); European endpoint" }, { fr: "Clé d'API de Black Forest Labs (en-tête x-key)", en: "Black Forest Labs API key (x-key header)" }, "https://docs.bfl.ai"),
+  runware: provider({ fr: "Runware (secours vidéo)", en: "Runware (video backup)" }, { fr: "Seul intermédiaire accordé, en secours quand un fabricant est en panne ; coût exact de chaque appel", en: "Only approved intermediary, as backup when a maker is down; exact cost of each call" }, { fr: "Clé d'API Runware", en: "Runware API key" }, "https://runware.ai/docs/llms.txt"),
   anthropic: provider(
     { fr: "Anthropic (Claude)", en: "Anthropic (Claude)" },
     { fr: "Compréhension de l’offre, stratégie, rédaction, code des thèmes, contrôle qualité", en: "Offer understanding, strategy, copywriting, theme code, quality control" },
@@ -144,7 +151,12 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = POLICY_ROUTES;
 /** Tarifs publics (USD) servant au calcul du coût. À vérifier et ajuster dans l'administration. */
 export type Price =
   | { unit: "tokens"; inputPerM: number; outputPerM: number; imageInputPerM?: number; imageOutputPerM?: number }
-  | { unit: "image"; perImage: number; inputPerM?: number }
+  /**
+   * Image au forfait. `perImage` est la borne de réservation (le plafond de la carte) ; quand le fournisseur rend ses
+   * jetons (OpenAI), le coût compté est celui des jetons réels : texte `inputPerM`, image jointe `imageInputPerM`, sortie
+   * `outputPerM` (22 novembre 2026 : 0,12 $ comptés par image quand la facture en dit environ deux fois moins).
+   */
+  | { unit: "image"; perImage: number; inputPerM?: number; imageInputPerM?: number; outputPerM?: number }
   | { unit: "video_second"; perSecond: number }
   /** Outil facturé à l'appel (ex. recherche web OpenAI : `openai:web_search`). */
   | { unit: "call"; perCall: number };
@@ -160,13 +172,31 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   // sortie 30 $/M, comme le 2.5 ; consommation « high » inchangée, « low » et « medium » environ 4 fois plus) : borne PAR
   // IMAGE, la table des jetons de sortie du 2.6 n'étant pas publiée. Mesuré en réel sur le 2.5 Flare « high » : 1 372 à
   // 1 909 jetons de sortie, soit ≈ 0,06 $ ; borne 0,12 $ par prudence, à ajuster après les premiers appels réels.
-  "openai:gpt-image-2.6-flare": { unit: "image", perImage: 0.12, inputPerM: 5 },
-  "openai:gpt-image-2.6-sunburst": { unit: "image", perImage: 0.12, inputPerM: 5 },
+  "openai:gpt-image-2.6-flare": { unit: "image", perImage: 0.12, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 },
+  "openai:gpt-image-2.6-sunburst": { unit: "image", perImage: 0.12, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 },
   "openai:gpt-image-1": { unit: "tokens", inputPerM: 5, outputPerM: 40, imageInputPerM: 10, imageOutputPerM: 40 },
   "google:gemini-2.5-flash-image": { unit: "image", perImage: 0.039, inputPerM: 0.3 },
   "google:veo-3.0-generate-001": { unit: "video_second", perSecond: 0.4 },
   "google:veo-3.0-fast-generate-001": { unit: "video_second", perSecond: 0.15 },
   "fal:fal-ai/kling-video/v2.1/pro/image-to-video": { unit: "video_second", perSecond: 0.09 },
+  // Vidéo en direct (rapport 09, prix officiels lus le 22 novembre 2026, 720p sans son) : à confirmer dans l'administration.
+  "vertex:veo-3.1-fast-generate-001": { unit: "video_second", perSecond: 0.08 },
+  "vertex:veo-3.1-lite-generate-001": { unit: "video_second", perSecond: 0.03 },
+  "kling:kling-4.0": { unit: "video_second", perSecond: 0.157 },
+  "kling:kling-4.0-flash": { unit: "video_second", perSecond: 0.094 },
+  "byteplus:dreamina-seedance-2-0-mini-260615": { unit: "video_second", perSecond: 0.08 },
+  "byteplus:dreamina-seedance-2-0-fast-260128": { unit: "video_second", perSecond: 0.12 },
+  "byteplus:dreamina-seedance-2-5-260628": { unit: "video_second", perSecond: 0.231 },
+  // Black Forest Labs (Flux), prix officiels relevés par le rapport 10 du 22 novembre 2026 (https://bfl.ai/pricing),
+  // 1 mégapixel : à confirmer dans l'administration avant tout usage.
+  "bfl:flux-kontext-pro": { unit: "image", perImage: 0.04 },
+  "bfl:flux-2-pro": { unit: "image", perImage: 0.045 },
+  "bfl:flux-pro-1.0-expand": { unit: "image", perImage: 0.05 },
+  "bfl:flux-pro-1.0-fill": { unit: "image", perImage: 0.05 },
+  "runware:alibaba:wan@2.6-flash": { unit: "video_second", perSecond: 0.025 },
+  "runware:google:veo@3.1-lite": { unit: "video_second", perSecond: 0.03 },
+  "runware:klingai:6@1": { unit: "video_second", perSecond: 0.042 },
+  "runware:bytedance:seedance@2.0-mini": { unit: "video_second", perSecond: 0.081 },
   // Alibaba Cloud Model Studio (région internationale) : tarifs lus dans l'API officielle des modèles le 15/10/2026.
   // Qwen-Image 3.0 : facturé par image produite (1K / 2K) + 0,003 $ par image d'entrée. Borne retenue : sortie 2K
   // + deux images d'entrée (le studio en envoie au plus deux) → jamais dépassée.
@@ -185,9 +215,17 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "alibaba:wan3.0-video-prime": { unit: "video_second", perSecond: 0.14 },
 };
 
+/**
+ * Fournisseurs quittés par le propriétaire (22 novembre 2026 : Higgsfield, remplacé par Runware comme seul intermédiaire
+ * de secours). Un réglage déjà enregistré en base qui en choisit un est ignoré : le Studio retombe sur le réglage par
+ * défaut, sans rien changer à la base.
+ */
+export const FOURNISSEURS_QUITTES: ReadonlySet<string> = new Set(["higgsfield"]);
+
 export function routeFor(task: TaskId): Route {
   const custom = getJsonSetting<Partial<Record<TaskId, Route>>>("ai.routes", {});
-  return { ...DEFAULT_ROUTES[task], ...(custom[task] ?? {}) };
+  const own = custom[task];
+  return { ...DEFAULT_ROUTES[task], ...(own && !FOURNISSEURS_QUITTES.has(String(own.provider ?? "")) ? own : {}) };
 }
 
 export function priceFor(provider: string, model: string): Price | null {
@@ -263,17 +301,15 @@ export function usdToEur(): number {
  * Clés lues aussi dans l'environnement (ex. secrets GitHub Codespaces) : elles survivent à un codespace recréé,
  * sans passer par la base. La clé saisie dans l'administration reste prioritaire.
  */
-const ENV_KEYS: Record<ProviderId, string[]> = { higgsfield: [], anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], alibaba: ["DASHSCOPE_API_KEY", "ALIBABA_MODEL_STUDIO_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
+const ENV_KEYS: Record<ProviderId, string[]> = { vertex: [], kling: [], byteplus: [], runware: [], bfl: [], anthropic: ["ANTHROPIC_API_KEY"], openai: ["OPENAI_API_KEY"], google: ["GOOGLE_API_KEY", "GEMINI_API_KEY"], fal: ["FAL_KEY", "FAL_API_KEY"], alibaba: ["DASHSCOPE_API_KEY", "ALIBABA_MODEL_STUDIO_API_KEY"], pexels: ["PEXELS_API_KEY"], pixabay: ["PIXABAY_API_KEY"] };
 export const providerEnvKey = (p: ProviderId): string | null => ENV_KEYS[p].map((k) => process.env[k]?.trim()).find(Boolean) ?? null;
 
 export function providerKey(p: ProviderId): string | null {
-  if(p === "higgsfield") return higgsCredentials()?.id ?? null;
   // Espaces ou retour à la ligne copiés avec la clé : retirés (sinon le fournisseur la refuse).
   return getSetting(`provider.${p}.apiKey`)?.trim() || providerEnvKey(p) || (gatewayProviders().includes(p) ? GATEWAY_KEY : null);
 }
 
 export function providerEnabled(p: ProviderId): boolean {
-  if(p === "higgsfield") return !!higgsCredentials() && getSetting("provider.higgsfield.disabled")==="0";
   return !!providerKey(p) && getSetting(`provider.${p}.disabled`) !== "1";
 }
 
@@ -289,7 +325,7 @@ export function activeProviderKey(p: ProviderId): string | null {
 export function aiAvailability() {
   const llm = providerEnabled("anthropic");
   const image = providerEnabled("openai") || providerEnabled("google") || providerEnabled("alibaba");
-  const video = providerEnabled("google") || providerEnabled("fal") || providerEnabled("alibaba") || providerEnabled("higgsfield");
+  const video = providerEnabled("google") || providerEnabled("fal") || providerEnabled("alibaba") || providerEnabled("vertex") || providerEnabled("kling") || providerEnabled("byteplus") || providerEnabled("runware");
   // Vidéo UGC : une personne générée (images) puis animée (vidéo) ; la voix vient de Veo 3 (Google).
   const ugc = image && video;
   const ugcVoice = ugc && providerEnabled("google");

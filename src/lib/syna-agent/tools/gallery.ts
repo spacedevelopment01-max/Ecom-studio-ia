@@ -9,7 +9,7 @@ import { enqueue, pendingJob } from "../../jobs";
 import { listProducts } from "../../products/catalog";
 import { loadGalleries } from "../../products/gallery-store";
 import { REGLE_PERSONNES, peopleAllowed } from "../../people-policy";
-import { budgetPctText } from "../../ai/budget-pct";
+import { budgetPctTu } from "../../ai/budget-pct";
 import { ditParLeClient } from "../verrous";
 import type { AgentTool } from "../types";
 import { project } from "./common";
@@ -17,7 +17,7 @@ import { GALLERY_ADVISED, GALLERY_JOB, GALLERY_KINDS, GALLERY_ORDER, galleryEsti
 
 const planTool: AgentTool<Record<string, never>> = {
   name: "gallery.plan", module: "site", kind: "read", needsProject: true,
-  description: "Étape 6 (gratuit), JUSTE APRÈS la création du site : prépare la GALERIE de la fiche produit de CHAQUE produit (série d'images créées d'après sa vraie photo : produit seul, flèches vers ses points forts, promesse, moment de vie, contenu, explication, liste de caractéristiques, chez soi), posée uniquement dans le « Produit vedette » de la fiche produit. Donne pour chaque produit ses photos, les genres d'images et les questions à poser au client.",
+  description: "Étape 6 (gratuit), JUSTE APRÈS la création du site : prépare la GALERIE de la fiche produit de CHAQUE produit (images créées d'après sa vraie photo : produit seul, flèches vers ses points forts, promesse, moment de vie, contenu, explication, liste de caractéristiques, chez soi), posée uniquement dans le « Produit vedette » de la fiche produit. Donne pour chaque produit ses photos, les genres d'images et les questions à poser au client.",
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx);
@@ -40,7 +40,7 @@ const planTool: AgentTool<Record<string, never>> = {
         genres: GALLERY_ORDER.map((k) => ({ genre: k, image: GALLERY_KINDS[k].label, textes: GALLERY_KINDS[k].texts })),
         personnesDejaAutorisees: peopleAllowed(p.id),
         // Le client ne voit jamais d'euros pour l'IA : le prix est dit en part du budget d'IA de son mois.
-        prixParProduit: est ? `${GALLERY_ADVISED} images : au plus ${budgetPctText(ctx.user.id, est.maxMicro, p.id)} de ton budget d'IA du mois (outil de devis du Studio)` : null,
+        prixParProduit: est ? `${GALLERY_ADVISED} images : au plus ${budgetPctTu(ctx.user.id, est.maxMicro, p.id)} du mois (outil de devis du Studio)` : null,
       },
     };
   },
@@ -49,7 +49,7 @@ const planTool: AgentTool<Record<string, never>> = {
 type CreateArgs = { product: string; images: GalleryImageSpec[]; keepOwn: boolean; people: boolean; add?: boolean; accordEcrit?: string };
 const createTool: AgentTool<CreateArgs> = {
   name: "gallery.create", module: "site", kind: "generate", needsProject: true,
-  description: "Étape 6 (PAYANT : prix annoncé par la carte d'accord, accord écrit du client d'abord), APRÈS gallery.plan et les réponses du client : crée la galerie d'UN produit (product = son titre exact ; images toujours CARRÉES, format 1:1) : images = une entrée par image voulue (kind parmi les genres de gallery.plan ; scene = le décor ou le moment, d'après la marque, l'angle et le produit ; les textes de l'image : title, subtitle, labels, promise, bullets, steps, features, UNIQUEMENT avec les faits donnés par le client ; person: true seulement sur l'image où le client veut une personne). keepOwn : sa photo garde-t-elle la première place dans la galerie. people : le client a dit oui à une personne. add: true pour ajouter des images à sa galerie (une image ratée refaite), sinon la galerie est remplacée. Chaque image est contrôlée ; une image ratée n'est pas posée et elle est signalée." + " Une personne sur une image (people: true) demande son accord ÉCRIT : accordEcrit = ses mots exacts, recopiés de son dernier message (sauf s'il a fourni une photo d'une personne).",
+  description: "Étape 6 (PAYANT : prix annoncé par la carte d'accord, accord écrit du client d'abord), APRÈS gallery.plan et ses réponses : crée la galerie d'UN produit (product = titre exact ; images toujours CARRÉES, format 1:1). images = une entrée par image voulue (kind parmi les genres de gallery.plan ; scene = décor ou moment, d'après la marque, l'angle et le produit ; textes de l'image : title, subtitle, labels, promise, bullets, steps, features, UNIQUEMENT avec les faits donnés par le client ; person: true seulement sur l'image où il veut une personne). keepOwn : sa photo garde-t-elle la première place. people : il a dit oui à une personne. add: true ajoute des images (une image ratée refaite), sinon la galerie est remplacée. Chaque image est contrôlée ; une image ratée n'est pas posée et elle est signalée." + " Une personne sur une image (people: true) demande son accord ÉCRIT : accordEcrit = ses mots exacts, recopiés de son dernier message (sauf s'il a fourni une photo d'une personne).",
   args: z.object({ product: z.string().min(1).max(160), images: z.array(GalleryImageSchema).min(1).max(9), keepOwn: z.boolean(), people: z.boolean(), add: z.boolean().optional(), accordEcrit: z.string().max(300).optional() }).strict(),
   estimate: (_ctx, a) => {
     // Galerie incomplète refusée AVANT la carte d'accord (essai réel du 10 novembre 2026 : refusée après le clic).

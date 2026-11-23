@@ -1,5 +1,4 @@
-import {approvedQuote} from '@/lib/ai/higgsfield/pricing';
-import {defaultConfiguration} from '@/lib/ai/higgsfield/catalog';
+import { etatEffortParMessage } from "@/lib/ai/llm";
 import { all, one } from "@/lib/db";
 import { handle, ok } from "@/lib/http";
 import { requireAdmin } from "@/lib/auth";
@@ -13,9 +12,10 @@ import { paymentsLive, stripeKeys } from "@/lib/payments";
 import { mailConfigured } from "@/lib/mail";
 import { textRoutingOverview } from "@/lib/ai/text-routing-admin";
 import { alibabaReadiness, mediaRoutingOverview, mediaUsageOverview } from "@/lib/ai/media-routing-admin";
+import { coutParEtape, memoireReprise } from "@/lib/ai/memoire";
+import { deferredOn } from "@/lib/syna-agent/brand-chain";
+import { coutParTravail } from "@/lib/syna-agent/travaux";
 
-const configurationPrice=(provider:string,model:string)=>{if(provider!=="higgsfield")return null;try{const q=approvedQuote(defaultConfiguration(model));return {unit:"configuration" as const,revision:q.revision};}catch{return null;}};
-const adminPrice=(provider:string,model:string)=>provider==="higgsfield"?configurationPrice(provider,model):priceFor(provider,model);
 export const GET = handle(async () => {
   await requireAdmin();
   const since = Date.now() - 30 * 86400_000;
@@ -30,14 +30,14 @@ export const GET = handle(async () => {
   return ok({
     appUrl: appUrl(),
     providers: (Object.keys(PROVIDERS) as ProviderId[]).map((p) => ({ id: p, ...PROVIDERS[p], keyMasked: isGatewayKey(providerKey(p)) ? L("fournie par l'hébergement", "provided by the hosting") : mask(providerKey(p)), configured: !!providerKey(p), disabled: getSetting(`provider.${p}.disabled`) === "1" })),
-    tasks: (Object.keys(TASKS) as TaskId[]).map((t) => ({ id: t, ...TASKS[t], route: routeFor(t), defaultRoute: DEFAULT_ROUTES[t], price: adminPrice(routeFor(t).provider, routeFor(t).model) })),
+    tasks: (Object.keys(TASKS) as TaskId[]).map((t) => ({ id: t, ...TASKS[t], route: routeFor(t), defaultRoute: DEFAULT_ROUTES[t], price: priceFor(routeFor(t).provider, routeFor(t).model) })),
     prices: { ...DEFAULT_PRICES, ...getJsonSetting<Record<string, unknown>>("ai.prices", {}) },
     usdToEur: usdToEur(),
     pricing: {
       checkedAt: pricesCheckedAt(),
       reviewDays: PRICE_REVIEW_DAYS,
       // Tâches dont le modèle n'a pas de tarif valide : leurs générations sont refusées.
-      missing: (Object.keys(TASKS) as TaskId[]).filter((t) => { const r = routeFor(t); const p = adminPrice(r.provider, r.model); return !p || (p.unit!=="configuration" && !priceValid(p)); }).map((t) => ({ task: t, label: TASKS[t].label, key: `${routeFor(t).provider}:${routeFor(t).model}` })),
+      missing: (Object.keys(TASKS) as TaskId[]).filter((t) => { const r = routeFor(t); const p = priceFor(r.provider, r.model); return !p || !priceValid(p); }).map((t) => ({ task: t, label: TASKS[t].label, key: `${routeFor(t).provider}:${routeFor(t).model}` })),
     },
     markup: getJsonSetting<number>("billing.markup", 1),
     textRouting: textRoutingOverview(),
@@ -50,6 +50,8 @@ export const GET = handle(async () => {
     smtp: { configured: mailConfigured(), hostMasked: mask(getSetting("smtp.host")), port: getSetting("smtp.port") ?? "", userMasked: mask(getSetting("smtp.user")), passwordConfigured: !!getSetting("smtp.password"), fromMasked: mask(getSetting("smtp.from")) },
     users,
     usage,
+    memoire: { ...memoireReprise(since), differe: deferredOn(), etapes: coutParEtape(since), effortParMessage: etatEffortParMessage() },
+    travaux: coutParTravail(since),
     revenue,
     errors: all("SELECT id, scope, message, user_id, project_id, created_at FROM error_log ORDER BY created_at DESC LIMIT 60"),
     failedJobs: all("SELECT id, type, error, attempts, user_id, project_id, updated_at FROM jobs WHERE status = 'failed' ORDER BY updated_at DESC LIMIT 30"),

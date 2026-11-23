@@ -21,3 +21,30 @@ describe("bouton à ombre : jamais coupé", () => {
     }
   });
 });
+
+/**
+ * Même règle pour l'atelier embelli (23 novembre 2026) : sur téléphone comme sur ordinateur, aucun bouton de l'écran
+ * n'a une hauteur fixe qui couperait son texte, aucun ne force une seule ligne, et le bouton doré « Créer » (avec son
+ * ombre) n'est jamais dans un cadre qui le rogne. Contrôlé aussi sur les captures (ordinateur 1440 px, téléphone 390 px).
+ */
+describe("atelier : jamais un bouton coupé", () => {
+  const src = fs.readFileSync("src/components/studio/tab-atelier.tsx", "utf8");
+  it("les boutons du choix d'un modèle, des retouches et de la barre grandissent au lieu d'être coupés", () => {
+    expect(src).toMatch(/const BOUTON_BARRE = "!h-auto min-h-11 !whitespace-normal py-2\.5 text-center leading-tight"/);
+    expect(src.match(/className=\{BOUTON_BARRE\}|cx\(BOUTON_BARRE/g)?.length).toBeGreaterThanOrEqual(6);
+    expect(src).not.toMatch(/whitespace-nowrap|\btruncate\b/);
+  });
+  it("le bouton doré « Créer » a une hauteur minimale, passe à la ligne, et la barre qui le porte ne rogne rien", () => {
+    const creer = src.match(/className=\{cx\("atelier-or [^"]+"/)?.[0] ?? "";
+    expect(creer).toContain("min-h-12");
+    expect(creer).toContain("leading-tight");
+    expect(creer).not.toMatch(/(^|\s|")h-\d/);
+    const barre = src.match(/<div className="([^"]+)" data-atelier-barre=\{type\}>/)?.[1] ?? "";
+    expect(barre).toContain("flex-wrap");
+    expect(barre).not.toMatch(/overflow-(hidden|clip)/);
+  });
+  it("les petits boutons à icône du mur se voient en entier et sont nommés", () => {
+    for (const cible of ["publication", "publicite", "site"]) expect(src).toMatch(new RegExp(`grid size-8 place-items-center[^\\n]*?data-atelier-poser="${cible}" title=`));
+    expect(src).toContain('className={cx("flex shrink-0 gap-1.5", k > 0 && "self-end")}');
+  });
+});

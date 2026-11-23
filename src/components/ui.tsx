@@ -31,6 +31,8 @@ export async function api<T = any>(url: string, opts: { method?: string; body?: 
     data = { error: text };
   }
   if (!r.ok) throw new Error(data?.error ?? `${currentLang() === "en" ? "Error" : "Erreur"} ${r.status}`);
+  // Une photo envoyée gardée de côté (pas encore vérifiée, ou refusée) : la phrase du Studio est montrée au client.
+  if (Array.isArray(data?.avertissements) && typeof window !== "undefined") for (const t of data.avertissements) if (typeof t === "string" && t) window.dispatchEvent(new CustomEvent("studio:avertissement", { detail: t }));
   return data as T;
 }
 
@@ -103,6 +105,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     const id = Date.now() + Math.random();
     setItems((x) => [...x, { id, kind, text }]);
     setTimeout(() => setItems((x) => x.filter((t) => t.id !== id)), kind === "bad" ? 8000 : 4000);
+  }, []);
+  // Avertissement venu du serveur (photo gardée de côté) : montré longtemps, il faut le temps de le lire.
+  useEffect(() => {
+    const on = (e: Event) => { const text = String((e as CustomEvent).detail ?? ""); if (!text) return; const id = Date.now() + Math.random(); setItems((x) => [...x, { id, kind: "info", text }]); setTimeout(() => setItems((x) => x.filter((t) => t.id !== id)), 14000); };
+    addEventListener("studio:avertissement", on);
+    return () => removeEventListener("studio:avertissement", on);
   }, []);
   return (
     <ToastCtx.Provider value={push}>

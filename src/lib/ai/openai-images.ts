@@ -18,7 +18,9 @@ import { isGatewayKey } from "./gateway";
 import { mediaModel } from "./media-models";
 
 /** Images partielles demandées en flux (chacune ≈ 100 jetons d'image en sortie, comptés dans le coût maximal). */
-export const OPENAI_PARTIAL_IMAGES = 2;
+// Aucun aperçu en cours de route (22 novembre 2026) : chacun coûtait 100 jetons de sortie et n'était jamais montré au
+// client. Avec 0, le flux rend une seule image en un seul événement (guide officiel d'OpenAI).
+export const OPENAI_PARTIAL_IMAGES = 0;
 export const OPENAI_PARTIAL_TOKENS = 100;
 
 export type MediaProgress = { phase: "sent" | "partial" | "received" | "billed"; partials?: number; atMs: number; streamed: boolean; costMicro?: number };

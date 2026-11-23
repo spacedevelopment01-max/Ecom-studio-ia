@@ -31,6 +31,9 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
   const [page, setPage] = useState<string | null>(null), [phone, setPhone] = useState(false), [picking, setPicking] = useState(true);
   const [picked, setPicked] = useState<Picked | null>(null), [ask, setAsk] = useState(""), [sending, setSending] = useState(false), [sent, setSent] = useState(""), [error, setError] = useState("");
   const [boxW, setBoxW] = useState(0);
+  // Venu de « Mes créations » › « Mon site » : le clic sur une photo du site y pose la création (atelier, placer.ts).
+  const [poser, setPoser] = useState<string | null>(null), [posant, setPosant] = useState(false), [posee, setPosee] = useState(false);
+  useEffect(() => { try { setPoser(new URLSearchParams(window.location.search).get("poser")); } catch { /* pas d'adresse lisible */ } }, []);
   // Nouvelle version (SINA a modifié le thème) : relecture régulière, l'aperçu se recharge sur la page en cours.
   useEffect(() => { const h = setInterval(() => reload(), 5000); return () => clearInterval(h); }, [reload]);
   useEffect(() => {
@@ -71,8 +74,23 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
     } catch (e) { setError((e as Error).message); } finally { setSending(false); }
   }
 
+  async function poserIci() {
+    if (!poser || !picked?.src) return;
+    setPosant(true); setError("");
+    try {
+      await api(`/api/projects/${projectId}/atelier`, { body: { action: "poser", creationId: poser, cible: "site", uid: picked.uid, src: picked.src } });
+      setPosee(true);
+      setPoser(null); setPicked(null); post({ type: "unpick" }); reload();
+      try { const u = new URL(window.location.href); u.searchParams.delete("poser"); window.history.replaceState(null, "", u.toString()); } catch { /* adresse inchangée */ }
+    } catch (e) { setError((e as Error).message); } finally { setPosant(false); }
+  }
+
   return (
     <div className="space-y-3" data-custom-theme-boutique>
+      {poser && <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink/30 bg-paper-2 p-3 text-sm" data-ct-poser>
+        <p>{t("Clique sur la photo de ton site que ta création doit remplacer. Les photos de tes produits restent à leur place.", "Click the photo on your site your creation should replace. Your product photos stay where they are.")}</p>
+        <Button size="sm" variant="ghost" onClick={() => setPoser(null)} aria-label={t("Ne rien poser", "Don't place anything")}><X className="size-3.5" /></Button>
+      </div>}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-lg font-semibold">{t("Ton site", "Your site")}{info.chosen ? ` · ✓ ${t("validé", "approved")}` : ""}</h2>
@@ -99,9 +117,11 @@ export function CustomThemeBoutique({ projectId, onShowStore }: { projectId: str
         <p className="w-full"><b>{t("Élément désigné", "Selected element")}</b> : {picked.kind}{picked.page ? ` (${label(picked.page)})` : ""}{picked.text ? ` · « ${picked.text.slice(0, 120)} »` : ""}</p>
         <input className="min-w-0 flex-1 rounded-lg border border-line bg-card px-3 py-2" autoFocus value={ask} onChange={(e) => setAsk(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") void send(); }} placeholder={t("Que veux-tu changer ? (texte, photo, couleur, taille, retirer…)", "What should change?")} aria-label={t("Ce que tu veux changer", "What to change")} />
         <Button size="sm" disabled={sending || !ask.trim()} onClick={() => void send()}><Send className="size-3.5" /> {t("Envoyer à SINA", "Send to SINA")}</Button>
+        {poser && picked.src && <Button size="sm" variant="primary" loading={posant} disabled={posant} onClick={() => void poserIci()} data-ct-poser-ici>{t("Poser ma création ici", "Place my creation here")}</Button>}
         <Button size="sm" variant="ghost" onClick={() => { setPicked(null); post({ type: "unpick" }); }} aria-label={t("Retirer la désignation", "Clear selection")}><X className="size-3.5" /></Button>
       </div>}
       {sent && <p className="text-xs text-muted" data-ct-sent>✓ {t(`Demande envoyée à SINA : « ${sent} ». L'aperçu se met à jour dès qu'elle a fini.`, `Sent to SINA: “${sent}”.`)}</p>}
+      {posee && <p className="text-xs text-muted" data-ct-posee>✓ {t("Ta création est posée à cet endroit de ton site.", "Your creation is placed at this spot on your site.")}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div ref={box} className="overflow-hidden rounded-2xl border border-line bg-paper-2" style={{ height }}>
         <div className="mx-auto h-full" style={{ width: phone ? 390 : "100%" }}>

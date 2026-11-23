@@ -13,7 +13,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import sharp from "sharp";
 import type { z } from "zod";
-import { balance, cleDeRelance, DemandeChangee, EUR, existingOperation, reponseDejaPayee, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
+import { balance, claimOperationRecovery, cleDeRelance, finishOperationRecovery, saveProviderReceipt, DemandeChangee, EUR, existingOperation, reponseDejaPayee, operationPending, recordUsage, release, requestHash, reserve, saveOperationResult, settleUncertain } from "../billing";
 import {AgentBoundStop,beforeAgentTextAttempt} from './request-bounds';
 import { assertAiAllowed, currentUserHasAiCredits } from "./access";
 import { PermanentError, UserFacingError } from "../jobs";
@@ -21,7 +21,8 @@ import { activeProviderKey, aiAvailability, FX_SAFETY, priceFor, requirePrice, r
 import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { assertUnderCostCap, recordCall, redact, shortHash, skillsOfReference } from "./trace";
+import { assertUnderCostCap, CostCapReached, recordCall, redact, shortHash, skillsOfReference } from "./trace";
+import { formatStrict, REFUS_DE_SCHEMA, retenirRefus, sansNullsFacultatifs, SchemaRefuse, schemaPourOpenAI, schemaRefuse, seulementContraintes } from "./sortie-stricte";
 import { brainMetaOf } from "../brain/facade";
 import { getJsonSetting } from "../settings";
 import { route, type Difficulty, type RouteDecision, type RoutingHistory } from "../orchestrator/router";
@@ -62,6 +63,8 @@ export type LlmCall = {
   nouvelleSiChangee?: boolean;
   /** Route consentie par devis serveur : un changement impose un nouveau devis, jamais un repli facturé. */
   expectedRoute?: { provider: string; model: string; effort?: string };
+  /** Réparation d'une réponse mal formée (llmJson) : comptée à part dans le journal des appels (reprises à éviter). */
+  motifReprise?: "forme";
   /** Remise en forme de la réponse JSON avant sa vérification (alias, forme d'une liste…). */
   prepare?: (raw: unknown) => unknown;
   userId: string;
@@ -79,8 +82,44 @@ export type LlmCall = {
   context?: string;
   /** Référence stable d'une tâche (catalogue des sections, réglages…) : mise en cache avec le contexte. */
   reference?: string;
+  /**
+   * Fil d'une conversation (SINA), un bloc par message, du plus ancien au plus récent. Placé juste après la référence
+   * et mis en mémoire chez le fournisseur (point de mémoire sur le dernier bloc) : au pas suivant, tout le fil déjà lu
+   * est repris au dixième du prix au lieu d'être relu en entier.
+   */
+  history?: string[];
+  /**
+   * Mémoire d'une heure chez le fournisseur au lieu de 5 minutes (22 novembre 2026) : pour la conversation de SINA (un
+   * client qui réfléchit, une création en arrière-plan) et les tâches en différé (l'attente chez le fournisseur dépasse
+   * souvent 5 minutes). L'écriture coûte 2 fois le prix d'entrée au lieu de 1,25 ; la lecture, 0,05 fois.
+   */
+  memoireLongue?: boolean;
+  /**
+   * Une consigne qui ne sert qu'une fois par projet (l'étude, la vérification, la lecture finale de la marque) : aucun
+   * point de mémoire, elle se paie une fois sans le supplément d'écriture (22 novembre 2026, audit du moteur).
+   */
+  teteUnique?: boolean;
   prompt: string;
   images?: LlmImage[];
+  /**
+   * Images qui ne changent jamais d'un appel à l'autre (la planche des 50 logos aimés, 22 novembre 2026) : placées en
+   * tête, avant tout ce qui change, avec leur point de mémoire. Elles sont reprises au lieu d'être relues à chaque
+   * relecture, pour tous les clients. Ni le modèle ni la taille de l'image ne changent.
+   */
+  imagesFixes?: LlmImage[];
+  /**
+   * Conversation de SINA : images de ce qu'elle a déjà créé (logos, planche, site), les mêmes à chaque pas tant que rien
+   * de nouveau n'est livré (22 novembre 2026). Placées après la référence et avant le fil, avec leur point de mémoire :
+   * reprises au lieu d'être relues au plein prix à chaque pas.
+   */
+  imagesEnMemoire?: LlmImage[];
+  /**
+   * Effort de CETTE réponse, donné par un message à l'intérieur de la conversation (fonction en essai chez Anthropic,
+   * décidée le 22 novembre 2026) : l'effort de la demande reste celui de la route, la mémoire du fil n'est plus effacée
+   * aux moments forts. Refusée par le fournisseur ou éteinte dans l'administration : l'effort passe dans la demande,
+   * comme avant.
+   */
+  effortDuTour?: string;
   maxTokens?: number;
   /** llmJson : limite de sortie au-delà de laquelle une réponse coupée n'est plus relancée plus longue (défaut 64 000). */
   maxOutputTokens?: number;
@@ -112,11 +151,13 @@ export type LlmCall = {
  * Modèle d'un appel, choisi par le Router V2 (politique centrale + route fixée par l'administration + historique).
  * Un appel arrivé ici est déjà engagé vers l'IA : jamais de bascule silencieuse vers le moteur local.
  */
-export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { userId?: string }): RouteDecision {
+const avecImages = (call: Pick<LlmCall, "images" | "imagesFixes" | "imagesEnMemoire">) => !!(call.images?.length || call.imagesFixes?.length || call.imagesEnMemoire?.length);
+
+export function routeLlm(call: Pick<LlmCall, "task" | "images" | "imagesFixes" | "imagesEnMemoire" | "routing"> & { userId?: string }): RouteDecision {
   const pref = call.routing?.prefer;
   if (pref && pref.provider === "anthropic") {
     const info = modelInfo(pref.provider, pref.model);
-    if (info && (!call.images?.length || info.capabilities.includes("vision"))) {
+    if (info && (!avecImages(call) || info.capabilities.includes("vision"))) {
       return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? undefined) as RouteDecision["effort"], tier: info.tier, reason: "modèle choisi par l'appelant (échange simple)", fallback: false, escalation: false, qualityTarget: null };
     }
   }
@@ -124,7 +165,7 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
   // si le modèle est utilisable (clé active, tarif enregistré, informations confirmées) ; sinon le routage habituel.
   if (pref && pref.provider !== "anthropic") {
     const m = textModel(pref.provider, pref.model);
-    if (m && modelStatus(m).usable && (!call.images?.length || m.vision)) {
+    if (m && modelStatus(m).usable && (!avecImages(call) || m.vision)) {
       return { mode: "llm", provider: pref.provider, model: pref.model, effort: (pref.effort ?? m.effort.default ?? undefined) as RouteDecision["effort"], tier: m.tier, reason: "modèle choisi dans l'administration pour cet usage", fallback: false, escalation: false, qualityTarget: null };
     }
   }
@@ -136,7 +177,7 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
     deliverable: call.routing?.deliverable,
     // Historique explicite de l'appel, sinon celui de la reprise en cours (candidat ou étape du plan).
     history: call.routing?.history ?? routingHistoryFor(call.task),
-    inputType: call.images?.length ? "mixed" : "text",
+    inputType: avecImages(call) ? "mixed" : "text",
     aiActive: true,
     allowLocal: false,
     // Clé Anthropic absente : l'erreur explicite vient du client (message d'administration), pas d'un repli.
@@ -152,14 +193,12 @@ export function routeLlm(call: Pick<LlmCall, "task" | "images" | "routing"> & { 
  * facturé comme entrée par maxCostMicro/otherMaxCostMicro. Images refusées : leur budget est distinct.
  */
 export function strictTextQuoteInput(call: LlmCall, schema: z.ZodType): { maximumTokens: number; typicalTokens: number } {
-  if (call.images?.length) throw new UserFacingError('Le devis texte ne couvre pas des images. / Text quote does not cover images.');
-  const { cached: stable, after } = promptHead(call);
-  const content: unknown[] = stable.map((text, i) => i === stable.length - 1 ? { type: 'text', text, cache_control: { type: 'ephemeral' } } : { type: 'text', text });
-  for (const text of after) content.push({ type: 'text', text });
+  if (avecImages(call)) throw new UserFacingError('Le devis texte ne couvre pas des images. / Text quote does not cover images.');
+  const content: unknown[] = headBlocks(call);
   const volatile = brainOf(call).volatile;
   if (volatile) content.push({ type: 'text', text: volatile });
   content.push({ type: 'text', text: call.prompt });
-  const request = JSON.stringify({ system: [{ type: 'text', text: systemText(call), cache_control: { type: 'ephemeral' } }], messages: [{ role: 'user', content }] });
+  const request = JSON.stringify({ system: [{ type: 'text', text: systemText(call), cache_control: pointDeMemoire(call) }], messages: [{ role: 'user', content }] });
   const format = Buffer.byteLength(JSON.stringify(zodOutputFormat(schema as any)), 'utf8');
   return { maximumTokens: Buffer.byteLength(request, 'utf8') + format + 500, typicalTokens: Math.ceil(request.length / 3.5) + format };
 }
@@ -232,23 +271,82 @@ async function imageBlock(img: LlmImage): Promise<Anthropic.ImageBlockParam> {
 }
 
 /**
- * Blocs de tête et point de cache. D'ordinaire, contexte du projet puis référence de la tâche, tous deux mis en cache.
- * Pour la conversation de SINA, le contexte (parcours, état du projet, budget) change à CHAQUE pas alors que la
- * référence (catalogue des outils, ~19 000 jetons) ne change pas : la référence passe en tête avec le point de cache et
- * le contexte vient après, sinon tout le préfixe était réécrit en cache à chaque pas (coût multiplié par ~3).
+ * Blocs de tête et points de mémoire chez le fournisseur (« mise en cache »). Ce qui ne change pas passe en premier :
+ *  - la référence de la tâche (cahiers, notices des outils) : la même pour tous les clients, elle passe en tête avec
+ *    son point de mémoire (avant, le contexte du projet la précédait : elle n'était reprise que dans le même projet) ;
+ *  - pour une tâche ordinaire, le contexte du projet ensuite, avec son propre point : identique d'un appel à l'autre du
+ *    même projet (corrections, contrôles, retouches) ;
+ *  - pour la conversation de SINA, le fil (un bloc par message, point de mémoire sur le dernier) : au pas suivant, tout
+ *    ce qu'elle a déjà lu est repris ; le contexte (parcours, état du projet, budget) change à CHAQUE pas : il vient
+ *    après, sans point, sinon tout ce qui le suit serait réécrit à chaque pas.
+ * Au plus quatre points par appel (règle du fournisseur) : la consigne générale, la référence, le contexte ou le fil.
  */
-export function promptHead(call: Pick<LlmCall, "task" | "context" | "reference">): { cached: string[]; after: string[] } {
-  if (call.task === "agent_conversation") return { cached: [call.reference].filter(Boolean) as string[], after: [call.context].filter(Boolean) as string[] };
-  return { cached: [call.context, call.reference].filter(Boolean) as string[], after: [] };
+export function promptHead(call: Pick<LlmCall, "task" | "context" | "reference" | "history">): { cached: string[]; history: string[]; after: string[] } {
+  const history = (call.history ?? []).filter(Boolean);
+  if (call.task === "agent_conversation") return { cached: [call.reference].filter(Boolean) as string[], history, after: [call.context].filter(Boolean) as string[] };
+  return { cached: [call.reference, call.context].filter(Boolean) as string[], history, after: [] };
 }
 
-async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[]> {
+/** Blocs de tête d'un appel, avec leurs points de mémoire (sans les images ni la demande). */
+/** Fonction en essai d'Anthropic : l'effort changé par un message dans la conversation, sans effacer la mémoire. */
+export const EFFORT_PAR_MESSAGE_BETA = "mid-conversation-output-config-2026-07-01";
+/** Modèles qui l'acceptent (documentation du fournisseur, 22 novembre 2026), réflexion allumée. */
+const EFFORT_PAR_MESSAGE_MODELES = /^claude-(opus-5-5|opus-5|sonnet-5-5|haiku-5-5|fable-5-[12]|mythos-5-[12])$/;
+/** Refus récents du fournisseur, par modèle : la fonction est mise de côté une heure, puis réessayée. */
+const effortPannes = new Map<string, { at: number; why: string }>();
+export const EFFORT_PANNE_MS = 60 * 60_000;
+export function effortParMessageEnPanne(model: string, why: string, at = Date.now()) { effortPannes.set(model, { at, why }); }
+/** Réglage « sina.effortParMessage » (allumé par défaut, s'éteint d'un geste dans l'administration). */
+export function effortParMessageActif(model: string, now = Date.now()): boolean {
+  if (getJsonSetting<boolean>("sina.effortParMessage", true) === false) return false;
+  if (!EFFORT_PAR_MESSAGE_MODELES.test(model)) return false;
+  const p = effortPannes.get(model);
+  return !p || now - p.at > EFFORT_PANNE_MS;
+}
+/** Ce que l'administration montre : allumé ou non, et la dernière panne de la fonction. */
+export function etatEffortParMessage(): { allume: boolean; panne: { model: string; at: number; why: string } | null } {
+  const last = [...effortPannes.entries()].sort((a, b) => b[1].at - a[1].at)[0];
+  return { allume: getJsonSetting<boolean>("sina.effortParMessage", true) !== false, panne: last ? { model: last[0], ...last[1] } : null };
+}
+
+/** Le point de mémoire d'un appel : 5 minutes, ou une heure (`memoireLongue`). */
+export const pointDeMemoire = (call: Pick<LlmCall, "memoireLongue" | "teteUnique">): { type: "ephemeral"; ttl?: "1h" } | undefined => (call.teteUnique ? undefined : call.memoireLongue ? { type: "ephemeral", ttl: "1h" } : { type: "ephemeral" });
+
+export function headBlocks(call: Pick<LlmCall, "task" | "context" | "reference" | "history" | "memoireLongue" | "teteUnique">): { type: "text"; text: string; cache_control?: { type: "ephemeral"; ttl?: "1h" } }[] {
+  const { cached, history, after } = promptHead(call);
+  const mark = (text: string) => ({ type: "text" as const, text, cache_control: pointDeMemoire(call) });
+  return [
+    ...cached.map(mark),
+    ...history.map((text, i) => i === history.length - 1 ? mark(text) : { type: "text" as const, text }),
+    ...after.map((text) => ({ type: "text" as const, text })),
+  ];
+}
+
+export async function buildContent(call: LlmCall): Promise<Anthropic.ContentBlockParam[]> {
+  // Garde central (22 novembre 2026) : une photo du client mise de côté (pas encore vérifiée, ou refusée) n'est jamais
+  // lue par un appel payant ; elle est retirée de la demande, le reste part.
+  if (call.projectId && (call.images?.length || call.imagesEnMemoire?.length)) {
+    const { imagesLisibles } = await import("../atelier/verification-photos");
+    const garder = async (l?: LlmImage[]) => { if (!l?.length) return l; const ok = await imagesLisibles(call.projectId, l.map((im) => im.data)); return l.filter((_, i) => ok[i]); };
+    call = { ...call, images: await garder(call.images), imagesEnMemoire: await garder(call.imagesEnMemoire) };
+  }
+  // Ce qui ne change pas en tête, avec ses points de mémoire (promptHead) : repris au lieu d'être relu à chaque appel.
   const content: Anthropic.ContentBlockParam[] = [];
-  // Contexte du projet puis référence de la tâche en tête : identiques d'un appel à l'autre (corrections,
-  // contrôles, retouches successives), ils sont mis en cache — réponses plus rapides et moins coûteuses.
-  const { cached: stable, after } = promptHead(call);
-  stable.forEach((text, i) => content.push(i === stable.length - 1 ? { type: "text", text, cache_control: { type: "ephemeral" } } : { type: "text", text }));
-  for (const text of after) content.push({ type: "text", text });
+  // Les images fixes d'abord (même octets pour tous les clients), avec un point de mémoire sur la dernière.
+  const fixes = call.imagesFixes ?? [];
+  for (const [i, img] of fixes.entries()) {
+    content.push({ type: "text", text: `Image jointe à part${img.label ? ` — ${img.label}` : ""} (hors numérotation) :` });
+    content.push(i === fixes.length - 1 ? { ...(await imageBlock(img)), cache_control: pointDeMemoire(call) } : await imageBlock(img));
+  }
+  const tete = headBlocks(call), nCaches = promptHead(call).cached.length;
+  content.push(...tete.slice(0, nCaches));
+  // Les images déjà livrées du parcours, entre la référence et le fil, avec leur point de mémoire sur la dernière.
+  const enMemoire = call.imagesEnMemoire ?? [];
+  for (const [i, img] of enMemoire.entries()) {
+    content.push({ type: "text", text: `Image du parcours ${i + 1}${img.label ? ` — ${img.label}` : ""} :` });
+    content.push(i === enMemoire.length - 1 ? { ...(await imageBlock(img)), cache_control: pointDeMemoire(call) } : await imageBlock(img));
+  }
+  content.push(...tete.slice(nCaches));
   // Après le point de cache : le contexte volatil (créations récentes) peut changer sans invalider le préfixe.
   const { volatile } = brainOf(call);
   if (volatile) content.push({ type: "text", text: volatile });
@@ -281,6 +379,14 @@ const INPUT_MARGIN = { ratio: 1.02, tokens: 512 };
  * Bloqué (jamais d'estimation) si : tarif inconnu ou non confirmé, modèle aux limites inconnues, comptage
  * impossible, entrée au-delà de la fenêtre du modèle ou du seuil où un autre barème peut s'appliquer.
  */
+/** La part « sortie » du coût maximal d'un appel (même formule que maxCostMicro). */
+export function sortieMaxMicro(model: string, maxTokens: number): number {
+  const p = requirePrice("anthropic", model);
+  if (p.unit !== "tokens") return 0;
+  const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
+  return Math.floor(((maxTokens * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
+}
+
 export async function maxCostMicro(model: string, params: { system?: { type: "text"; text: string }[]; messages: Anthropic.Beta.BetaMessageParam[]; max_tokens: number }, format?: unknown, count: (p: { model: string; system?: unknown; messages: unknown }) => Promise<number> = countInputTokens) {
   const p = requirePrice("anthropic", model);
   if (p.unit !== "tokens") throw new UserFacingError(L(`Tarif « jetons » attendu pour anthropic:${model} : corrigez-le dans l'administration.`, `A per-token price is expected for anthropic:${model}. Fix it in the admin settings.`));
@@ -293,7 +399,9 @@ export async function maxCostMicro(model: string, params: { system?: { type: "te
   const inTok = Math.ceil((counted + formatTokens) * INPUT_MARGIN.ratio) + INPUT_MARGIN.tokens;
   if (inTok + params.max_tokens > limits.context || inTok > limits.flatPriceUpTo) throw new UserFacingError(L(`Demande trop longue (${counted} jetons) : au-delà de ${limits.flatPriceUpTo} jetons, le tarif du fournisseur n'est pas garanti. Raccourcissez-la.`, `Request too long (${counted} tokens): above ${limits.flatPriceUpTo} tokens the provider's price isn't guaranteed. Shorten it.`));
   const markup = Math.max(1, getJsonSetting<number>("billing.markup", 1));
-  return Math.ceil(((inTok * 1.25 * p.inputPerM + params.max_tokens * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
+  // Toute l'entrée peut être écrite en mémoire : 2 fois son prix pour une mémoire d'une heure, 1,25 sinon.
+  const ecriture = /"ttl":"1h"/.test(JSON.stringify([params.system, params.messages])) ? CACHE_WRITE_1H_RATIO : CACHE_WRITE_RATIO;
+  return Math.ceil(((inTok * ecriture * p.inputPerM + params.max_tokens * p.outputPerM) / 1e6) * usdToEur() * FX_SAFETY * EUR * markup);
 }
 
 /** Comptage refusé : appel bloqué, avec la réponse du fournisseur (sans secret) pour savoir quoi corriger. */
@@ -324,13 +432,30 @@ async function countInputTokens(p: { model: string; system?: unknown; messages: 
 const RETRYABLE = (status: number) => status === 429;
 const RETRY_DELAYS_MS = [1000, 4000];
 
+/** Prix d'une écriture en mémoire chez Anthropic (mémoire de 5 minutes) : 1,25 fois le prix d'entrée. */
+export const CACHE_WRITE_RATIO = 1.25;
+/** Prix d'une écriture en mémoire d'une heure : 2 fois le prix d'entrée (grille publique). */
+export const CACHE_WRITE_1H_RATIO = 2;
+/**
+ * Prix d'une lecture en mémoire chez Anthropic, en part du prix d'entrée (grille publique) : 0,05 pour Opus 5.5 (0,20 $
+ * le million au lieu de 4 $) et Sonnet 5.5 (0,10 $ au lieu de 2 $), 0,025 pour Fable 5.1 et 5.2 ; 0,1 pour les autres.
+ * Avant le 22 novembre 2026, le Studio comptait 0,1 partout : il débitait le double de ce qu'Anthropic facture pour la
+ * partie reprise. Servi et demandé différents : le plus cher des deux.
+ */
+export function cacheReadRatio(model: string, requested = model): number {
+  const r = (m: string) => /^claude-(opus|sonnet)-5-5/.test(m) ? 0.05 : /^claude-(fable|mythos)-5-[12]/.test(m) ? 0.025 : 0.1;
+  return Math.max(r(model), r(requested));
+}
+
 function account(call: LlmCall, model: string, usage: Anthropic.Beta.BetaUsage | Anthropic.Usage, suffix = "", reservationId: string | null = null, requestedModel = model, discount = 1): { costMicro: number; estimated: boolean; eventId: string | null; dedup: boolean } {
   // Une réponse reçue sans usage exploitable n'est pas supposée gratuite : rawCall conserve sa réserve.
   const counts=[usage?.input_tokens,usage?.output_tokens,...[usage?.cache_creation_input_tokens,usage?.cache_read_input_tokens].filter(n=>n!=null)];
   if(counts.some(n=>!Number.isSafeInteger(n)||n!<0))throw new PermanentError(L("Usage fournisseur incomplet ou invalide : coût maximal retenu, rapprochement nécessaire avant toute relance.","Provider usage is missing or invalid: maximum cost retained; reconciliation required before retrying."));
   const p = requirePrice("anthropic", model), requested = requirePrice("anthropic", requestedModel);
   if (p.unit !== "tokens" || requested.unit !== "tokens") throw new PermanentError(L("Tarif du modèle servi incompatible : rapprochement nécessaire.", "The served model's price is incompatible: reconciliation required."));
-  const input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) * 1.25 + (usage.cache_read_input_tokens ?? 0) * 0.1;
+  // Écritures d'une heure : 2 fois le prix d'entrée ; celles de 5 minutes : 1,25 (détail rendu par le fournisseur).
+  const h1 = Math.min(usage.cache_creation_input_tokens ?? 0, Number((usage as { cache_creation?: { ephemeral_1h_input_tokens?: number } }).cache_creation?.ephemeral_1h_input_tokens ?? 0) || 0);
+  const input = (usage.input_tokens ?? 0) + ((usage.cache_creation_input_tokens ?? 0) - h1) * CACHE_WRITE_RATIO + h1 * CACHE_WRITE_1H_RATIO + (usage.cache_read_input_tokens ?? 0) * cacheReadRatio(model, requestedModel);
   const output = usage.output_tokens ?? 0;
   const usd = (input * Math.max(p.inputPerM, requested.inputPerM) + output * Math.max(p.outputPerM, requested.outputPerM)) / 1e6;
   const costMicro = Math.round(usd * discount * usdToEur() * EUR);
@@ -359,19 +484,129 @@ type RawResult = { text: string; stop: string | null; model: string };
 export const DEFERRED_DISCOUNT = 0.5;
 /** Patience du différé : par appel, puis pour toute une tâche ; au-delà, les appels partent en direct. */
 export const deferredLimits = { perCallMs: 10 * 60_000, perJobMs: 30 * 60_000, pollMs: 15_000 };
-const deferredWaited = new Map<string, number>();
+
+/**
+ * Le différé pour toute une tâche de fond (22 novembre 2026, économies : « là où le client attend de toute façon : marque,
+ * angles, site, publications »). Dans `enDiffere`, un appel qui ne dit rien part en différé ; un appel qui demande
+ * exprès le direct (`deferred: false`, une retouche que le client attend devant) reste en direct.
+ */
+const differeScope = new AsyncLocalStorage<{ patienceMs: number }>();
+/**
+ * `patienceMs` : patience de toute la tâche (30 minutes par défaut). Plus longue pour un travail dont personne n'attend
+ * le résultat dans l'heure (les visuels du pilote des publications, prêts un à trois jours avant leur date).
+ */
+export const enDiffere = <T>(fn: () => Promise<T>, o: { patienceMs?: number } = {}): Promise<T> => differeScope.run({ patienceMs: o.patienceMs ?? deferredLimits.perJobMs }, fn);
+export const differeActif = (): boolean => !!differeScope.getStore();
+const patienceDeLaTache = (): number => differeScope.getStore()?.patienceMs ?? deferredLimits.perJobMs;
+/**
+ * Patience de chaque tâche, en temps RÉEL (22 novembre 2026, audit du moteur) : plusieurs appels qui attendent ensemble
+ * (les équipes de noms, les stratèges des angles) ne comptent qu'une fois. Avant, leurs attentes s'additionnaient : 4
+ * appels de 5 minutes mangeaient 20 minutes de patience.
+ */
+const deferredWaited = new Map<string, { total: number; actifs: number; depuis: number }>();
+const attendu = (jobKey: string, now = Date.now()) => { const w = deferredWaited.get(jobKey); return w ? w.total + (w.actifs ? now - w.depuis : 0) : 0; };
+const debutAttente = (jobKey: string) => { const w = deferredWaited.get(jobKey) ?? { total: 0, actifs: 0, depuis: 0 }; if (!w.actifs) w.depuis = Date.now(); w.actifs++; deferredWaited.set(jobKey, w); };
+const finAttente = (jobKey: string) => { const w = deferredWaited.get(jobKey); if (!w) return; w.actifs = Math.max(0, w.actifs - 1); if (!w.actifs) w.total += Date.now() - w.depuis; if (deferredWaited.size > 500) { for (const [k, v] of deferredWaited) if (!v.actifs) deferredWaited.delete(k); } };
 /** Remplaçable par les tests (aucun appel réel). */
 export const deferredDeps: { batches?: { create: (p: any) => Promise<any>; retrieve: (id: string) => Promise<any>; cancel: (id: string) => Promise<any>; results: (id: string) => Promise<AsyncIterable<any>> }; sleep?: (ms: number) => Promise<void> } = {};
 /** Temps déjà passé à attendre le différé pour une tâche (mesure montrée dans les comptes rendus d'essai). */
-export const deferredWaitedMs = (jobId: string) => deferredWaited.get(jobId) ?? 0;
+export const deferredWaitedMs = (jobId: string) => attendu(jobId);
 
 /**
  * Dépose UN appel en différé et attend sa réponse. Rend le message, ou `null` quand l'appel doit partir en direct :
  * patience de la tâche épuisée, dépôt refusé, ou dépôt annulé faute de réponse à temps (rien n'est alors facturé, c'est
  * certain : aucun risque de payer deux fois). Une erreur pendant le suivi reste un résultat incertain, jamais relancé.
  */
-async function deferredMessage(params: any, jobKey: string): Promise<Anthropic.Beta.BetaMessage | null> {
-  if ((deferredWaited.get(jobKey) ?? 0) >= deferredLimits.perJobMs) return null;
+/** Lit la réponse d'un lot déjà déposé (lecture gratuite, réponses gardées 29 jours) ; null s'il n'a jamais été traité. */
+async function lotDejaDepose(batchId: string): Promise<Anthropic.Beta.BetaMessage | null> {
+  const b = deferredDeps.batches ?? (client().beta.messages.batches as any), sleep = deferredDeps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  let batch = await b.retrieve(batchId);
+  const t0 = Date.now();
+  while (batch.processing_status !== "ended") {
+    if (Date.now() - t0 > deferredLimits.perCallMs) await b.cancel(batchId).catch(() => null);
+    if (Date.now() - t0 > deferredLimits.perCallMs + 5 * 60_000) throw new Error("lot différé repris mais toujours en cours");
+    await sleep(deferredLimits.pollMs);
+    batch = await b.retrieve(batchId);
+  }
+  return resultatDuLot(b, batchId);
+}
+
+/** La réponse d'un lot terminé. Une demande en erreur dans un lot n'est pas facturée : elle est marquée comme telle. */
+async function resultatDuLot(b: any, batchId: string): Promise<Anthropic.Beta.BetaMessage | null> {
+  for await (const r of await b.results(batchId)) {
+    const res = r?.result;
+    if (res?.type === "succeeded") return res.message as Anthropic.Beta.BetaMessage;
+    // Annulé ou expiré : jamais traité, jamais facturé.
+    if (res?.type === "canceled" || res?.type === "expired") return null;
+    if (res?.type === "errored") throw Object.assign(new Error(`appel en différé refusé : ${String(res.error?.error?.message ?? res.error?.message ?? "erreur").slice(0, 200)}`), { status: res.error?.error?.type === "invalid_request_error" ? 400 : 500, nonFacture: true });
+  }
+  throw new Error("dépôt en différé terminé sans réponse");
+}
+
+/**
+ * Un dépôt annulé mais encore en cours après la grâce (10 minutes de patience, puis 5) : l'appel repart en direct au lieu
+ * d'échouer (audit du site du 22 novembre 2026 : une conception longue s'arrêtait là, « Conception non faite »). Le dépôt
+ * abandonné a pu être traité quand même : son coût possible (moitié prix) est retenu, à la charge du Studio.
+ */
+export type DepotAbandonne = { abandonne: string };
+
+/**
+ * L'AMORCE (23 novembre 2026, recette officielle d'Anthropic pour le différé avec la mémoire : « une demande avec la
+ * partie commune et sa mémoire d'une heure, puis, dès qu'elle est finie, le reste »). Les demandes d'un dépôt passent
+ * dans n'importe quel ordre : plusieurs demandes déposées en même temps avec la même partie commune l'écrivaient chacune
+ * en mémoire (au double du prix d'entrée pour une heure) au lieu de la relire. La première qui arrive sert d'amorce ;
+ * celles qui ont la même partie commune attendent qu'elle soit finie, puis partent et la relisent (au vingtième du prix).
+ * Rien de plus n'est payé : l'amorce est une vraie demande du travail. Amorce ratée ou partie en direct : les autres
+ * partent comme avant. Seulement pour une partie commune assez longue pour que l'attente rapporte.
+ */
+export const AMORCE_MIN_SIGNES = 14_000;
+const AMORCE_DUREE_MS = 55 * 60_000;
+const amorces = new Map<string, { fin: Promise<void>; finie: boolean; depuis: number }>();
+/** La partie commune mise en mémoire pour une heure (consigne et tête jusqu'au dernier point de mémoire), ou null. */
+export function partieCommune(params: { model?: string; system?: unknown; messages?: Anthropic.Beta.BetaMessageParam[] }): string | null {
+  const tete: unknown[] = [];
+  let derniere = -1;
+  const blocs = [...(Array.isArray(params.system) ? (params.system as any[]).map((b) => ({ ...b, ou: "system" })) : []), ...(((params.messages?.[0]?.content as any[]) ?? []).map((b) => ({ ...b, ou: "message" })))];
+  blocs.forEach((b, i) => { tete.push(b.type === "image" ? { image: shortHash(String(b.source?.data ?? "")) } : b); if (b.cache_control?.ttl === "1h") derniere = i; });
+  if (derniere < 0) return null;
+  const texte = JSON.stringify(tete.slice(0, derniere + 1));
+  return texte.length >= AMORCE_MIN_SIGNES ? `${params.model ?? ""}:${shortHash(texte)}` : null;
+}
+/** Attend l'amorce de cette partie commune si une est en cours ; sinon, cet appel devient l'amorce (rend sa fin). */
+async function amorcer(params: any, jobKey: string): Promise<(() => void) | null> {
+  const cle = partieCommune(params);
+  if (!cle) return null;
+  const now = Date.now();
+  for (const [k, v] of amorces) if (now - v.depuis > AMORCE_DUREE_MS) amorces.delete(k);
+  const deja = amorces.get(cle);
+  if (deja) {
+    if (!deja.finie) { debutAttente(jobKey); try { await deja.fin; } finally { finAttente(jobKey); } }
+    return null;
+  }
+  let fin!: () => void;
+  const entree = { fin: new Promise<void>((r) => { fin = r; }), finie: false, depuis: now };
+  amorces.set(cle, entree);
+  return () => { entree.finie = true; fin(); };
+}
+/** Pour les essais : oublie les amorces. */
+export const oublierAmorces = () => amorces.clear();
+
+async function deferredMessage(params: any, jobKey: string, reservationId?: string): Promise<Anthropic.Beta.BetaMessage | DepotAbandonne | null> {
+  if (attendu(jobKey) >= patienceDeLaTache()) return null;
+  const finAmorce = await amorcer(params, jobKey);
+  // Amorce ratée (rien en mémoire) : la clé est retirée, la suivante devient l'amorce ; les autres partent comme avant.
+  try {
+    const r = await deposer(params, jobKey, reservationId);
+    if (finAmorce && !(r && !("abandonne" in r))) amorces.delete(partieCommune(params) ?? "");
+    return r;
+  } catch (e) {
+    if (finAmorce) amorces.delete(partieCommune(params) ?? "");
+    throw e;
+  } finally { finAmorce?.(); }
+}
+
+async function deposer(params: any, jobKey: string, reservationId?: string): Promise<Anthropic.Beta.BetaMessage | DepotAbandonne | null> {
+  if (attendu(jobKey) >= patienceDeLaTache()) return null;
   const b = deferredDeps.batches ?? (client().beta.messages.batches as any), sleep = deferredDeps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   let batch: any;
   try { batch = await b.create({ requests: [{ custom_id: "appel", params }] }); }
@@ -381,25 +616,24 @@ async function deferredMessage(params: any, jobKey: string): Promise<Anthropic.B
     if (typeof status === "number" && status >= 400 && status < 500 && status !== 429) return null;
     throw e;
   }
+  // Le numéro du lot, gardé comme reçu : après une coupure, sa réponse est reprise au lieu d'être repayée.
+  if (reservationId) { try { saveProviderReceipt(reservationId, { differe: batch.id }); } catch { /* reçu facultatif */ } }
   const t0 = Date.now();
   let cancelled = false, misses = 0;
+  debutAttente(jobKey);
   try {
     while (batch.processing_status !== "ended") {
       if (!cancelled && Date.now() - t0 > deferredLimits.perCallMs) { await b.cancel(batch.id); cancelled = true; }
-      if (cancelled && Date.now() - t0 > deferredLimits.perCallMs + 5 * 60_000) throw new Error("dépôt en différé annulé mais toujours en cours");
+      if (cancelled && Date.now() - t0 > deferredLimits.perCallMs + 5 * 60_000) return { abandonne: batch.id };
       await sleep(deferredLimits.pollMs);
       try { batch = await b.retrieve(batch.id); misses = 0; } catch (e) { if (++misses >= 5) throw e; }
     }
-  } finally { deferredWaited.set(jobKey, (deferredWaited.get(jobKey) ?? 0) + (Date.now() - t0)); if (deferredWaited.size > 500) deferredWaited.clear(); }
-  for await (const r of await b.results(batch.id)) {
-    const res = r?.result;
-    if (res?.type === "succeeded") return res.message as Anthropic.Beta.BetaMessage;
-    // Annulé ou expiré : jamais traité, jamais facturé.
-    if (res?.type === "canceled" || res?.type === "expired") return null;
-    if (res?.type === "errored") throw Object.assign(new Error(`appel en différé refusé : ${String(res.error?.error?.message ?? res.error?.message ?? "erreur").slice(0, 200)}`), { status: res.error?.error?.type === "invalid_request_error" ? 400 : 500 });
-  }
-  throw new Error("dépôt en différé terminé sans réponse");
+  } finally { finAttente(jobKey); }
+  return resultatDuLot(b, batch.id);
 }
+/** Ce que le journal des appels retient de la forme de la réponse : sortie stricte, réparation d'une réponse mal formée. */
+const suiviDeSortie = (call: Pick<LlmCall, "motifReprise">, format: unknown): Record<string, string> | null =>
+  format || call.motifReprise ? { ...(format ? { sortie: "stricte" } : {}), ...(call.motifReprise ? { reprise: call.motifReprise } : {}) } : null;
 /** Un coût inconnu reste bloquant pour les moteurs, quelle que soit la langue du message. */
 function uncertainProviderFailure(message:string){return Object.assign(new PermanentError(message),{uncertain:true as const});}
 
@@ -420,7 +654,18 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   // Relance accordée par le client : l'appel coupé en plein milieu se renvoie une fois, sous sa clé de relance.
   const relance = cleDeRelance(previous, operation.usageKey);
   if (relance) { operation.usageKey = relance; previous = existingOperation(call.userId, operation); }
-  if (previous) {
+  // Un appel déposé en différé avant une coupure (redémarrage du travailleur) : sa réponse est lue chez le fournisseur,
+  // sans nouveau dépôt ni nouvelle réservation (22 novembre 2026, audit du moteur : il était repayé).
+  let reprise: { msg: Anthropic.Beta.BetaMessage | null; reservation: string } | null = null;
+  if (previous && !previous.result) {
+    const recu = (() => { try { return previous.provider_receipt ? JSON.parse(previous.provider_receipt) as { differe?: string } : null; } catch { return null; } })();
+    if (recu?.differe && claimOperationRecovery(previous.id)) {
+      try { reprise = { msg: await lotDejaDepose(recu.differe), reservation: previous.id }; } finally { finishOperationRecovery(previous.id); }
+      // Lot annulé ou expiré : jamais traité, jamais facturé ; la réservation est rendue et l'appel repart normalement.
+      if (!reprise.msg) { release(previous.id, "lot différé annulé ou expiré : rien facturé"); reprise = null; previous = undefined; }
+    }
+  }
+  if (previous && !reprise) {
     if (previous.result) return JSON.parse(previous.result) as RawResult;
     operationPending();
   }
@@ -447,7 +692,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     // Avec réflexion, la limite couvre aussi la réflexion : une limite trop basse coupe la réponse et la fait repayer.
     // Seuls les jetons produits sont facturés, une limite plus haute ne coûte rien de plus.
     max_tokens: isHaiku ? (call.maxTokens ?? 32000) : Math.max(call.maxTokens ?? 32000, 8000),
-    system: [{ type: "text", text: systemText(call), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: systemText(call), cache_control: pointDeMemoire(call) }],
     messages,
   };
   // Coût maximal de l'appel : plafond de la tâche (demande du client, benchmark) puis réservation atomique sur le
@@ -456,16 +701,28 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   const maxMicro = await maxCostMicro(route.model, params, format);
   assertUnderCostCap(maxMicro);
   if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
-  const reservation = reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId });
+  // Une réponse coupée ou mal formée redemandée (callTry > 0) : une reprise du Studio, jamais débitée au client.
+  const reservation = reprise?.reservation ?? reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId, studio: callTry > 0 });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
     params.output_config = { effort, ...(format ? { format } : {}) };
   } else if (format) {
     params.output_config = { format };
   }
+  // Effort de la réponse par un message dans la conversation (jamais en différé : le lot n'accepte pas la fonction).
+  const tour = !isHaiku && call.effortDuTour ? mapEffort("anthropic", route.model, call.effortDuTour) : null;
+  const parMessage = !!tour && tour !== effort && !(call.deferred ?? differeActif()) && effortParMessageActif(route.model);
+  /** Retour à la façon d'avant : l'effort de la réponse dans la demande, sans message ni fonction en essai. */
+  const commeAvant = () => { params.messages = messages; delete params.betas; params.output_config = { ...params.output_config, effort: tour }; };
+  if (parMessage) {
+    params.messages = [...messages, { role: "system", content: [], output_config: { effort: tour } }];
+    params.betas = [EFFORT_PAR_MESSAGE_BETA];
+  } else if (tour && tour !== effort) commeAvant();
   let msg: Anthropic.Beta.BetaMessage;
   // Appel réellement servi en différé (moitié prix) ; faux quand il est parti en direct.
   let servedDeferred = false;
+  // Sortie stricte et réparations d'une réponse mal formée, comptées dans le journal des appels (reprises à éviter).
+  const sortie = suiviDeSortie(call, format);
   // Trace de l'appel (jamais le prompt ni les images : clé et empreinte du prompt système seulement).
   const counter = { n: 0 };
   const started = Date.now();
@@ -478,7 +735,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     provider: "anthropic",
     requestedModel: route.model,
     unit: "tokens" as const,
-    effort: isHaiku ? null : effort,
+    effort: isHaiku ? null : tour && tour !== effort ? `${tour}${parMessage ? " (par message)" : ""}` : effort,
     usageKey: call.usageKey ? `${call.usageKey}${suffix}` : null,
     promptKey: call.promptKey ?? call.task,
     promptHash: shortHash(params.system[0].text),
@@ -494,7 +751,14 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   };
   try {
     // Relances maison, dans la MÊME réservation, uniquement sur une saturation 429 (rien de produit ni facturé). Une coupure après le début de la réponse n'est jamais relancée ici (résultat incertain).
-    const later = call.deferred && !isHaiku ? await deferredMessage(params, call.jobId ?? call.userId) : null;
+    // Jamais de différé pour un petit contrôle (Haiku) : il gagnerait un dixième de centime et ferait attendre le site.
+    const depot = reprise?.msg ?? ((call.deferred ?? differeActif()) && !/haiku/.test(route.model) ? await deferredMessage(params, call.jobId ?? call.userId, reservation) : null);
+    if (depot && "abandonne" in depot) {
+      // Le dépôt abandonné a pu être traité : son coût possible (moitié prix) est retenu à la charge du Studio, jamais du client.
+      const abandon = reserve(call.userId, Math.ceil(maxMicro / 2), { ...operation, usageKey: operation.usageKey ? `${operation.usageKey}:depot-abandonne` : undefined, provider: "anthropic", model: route.model, jobId: call.jobId, studio: true });
+      settleUncertain(abandon, `dépôt en différé ${depot.abandonne} annulé mais encore en cours : l'appel est reparti en direct`);
+    }
+    const later = depot && !("abandonne" in depot) ? depot : null;
     if (later) servedDeferred = true;
     msg = later ?? await httpCounter.run(counter, async () => {
       for (let attempt = 0; ; attempt++) {
@@ -504,6 +768,14 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
           return (await stream.finalMessage()) as Anthropic.Beta.BetaMessage;
         } catch (e) {
           const status = (e as { status?: unknown })?.status;
+          // La fonction en essai refusée (400 : rien n'est produit ni facturé) : retour immédiat à la façon d'avant, sans
+          // panne pour le client, et la fonction est mise de côté une heure.
+          if (params.betas?.includes(EFFORT_PAR_MESSAGE_BETA) && status === 400) {
+            effortParMessageEnPanne(route.model, redact(String((e as Error)?.message ?? e)).slice(0, 200));
+            commeAvant();
+            trace.effort = `${tour} (retour à l'effort dans la demande)`;
+            continue;
+          }
           if (typeof status !== "number" || !RETRYABLE(status) || attempt >= RETRY_DELAYS_MS.length) throw e;
           await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
         }
@@ -512,12 +784,18 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   } catch (e) {
     // Seuls les refus nets 4xx hors délai prouvent que l'appel n'a pas produit de résultat.
     const status = (e as { status?: unknown })?.status;
-    const uncertain = !(e instanceof AgentBoundStop || typeof status === "number" && providerRefused(status));
+    // Une demande en erreur dans un lot n'est pas facturée (page du différé d'Anthropic) : la réservation est rendue.
+    const uncertain = !(e instanceof AgentBoundStop || (e as { nonFacture?: boolean })?.nonFacture || typeof status === "number" && providerRefused(status));
     if (!uncertain) release(reservation, `refus du fournisseur (${status})`);
-    else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160));
-    recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
+    // Une erreur du fournisseur rendue AVANT toute réponse (500, 529 surcharge) : aucune réponse n'a pu être produite ; au
+    // plus l'envoi a pu être compté. Seul ce coût est retenu, pas le plafond entier (22 novembre 2026, audit du moteur ;
+    // la page officielle ne dit pas si ces erreurs sont facturées : la prudence reste, la retenue est juste).
+    else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160), typeof status === "number" && status >= 500 ? Math.max(0, maxMicro - sortieMaxMicro(route.model, params.max_tokens)) : undefined);
+    // L'appel n'est plus en cours : un lot déposé peut être repris dès la prochaine tentative (sa réponse lue, jamais repayée).
+    if (uncertain) finishOperationRecovery(reservation);
+    recordCall({ ...trace, ...(sortie ? { details: sortie } : {}), latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof Anthropic.AuthenticationError) throw new PermanentError(L("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.", "The configured Anthropic key was rejected. Check it in the admin settings."));
-    if (e instanceof Anthropic.BadRequestError) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    if (e instanceof Anthropic.BadRequestError) throw new (format && REFUS_DE_SCHEMA.test(e.message) ? SchemaRefuse : PermanentError)(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (e instanceof Anthropic.NotFoundError) throw new PermanentError(L(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`, `Model not found (${route.model}). Fix the routing in the admin settings.`));
     // Coupure réseau, délai dépassé, flux interrompu : le coût maximal vient d'être retenu ; une relance par la file
     // de tâches repaierait (nouvelle réservation, nouvel appel). Arrêt net, comme pour les autres fournisseurs.
@@ -539,8 +817,12 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
     throw uncertainProviderFailure(redact(String((e as Error)?.message??e)));
   }
+  // Ce qui sert à mesurer le vrai gain dans l'administration (audit du moteur, 22 novembre 2026).
+  const ecrit1h = Number((msg.usage as { cache_creation?: { ephemeral_1h_input_tokens?: number } } | undefined)?.cache_creation?.ephemeral_1h_input_tokens ?? 0) || 0;
+  const voulu = (call.deferred ?? differeActif()) && !/haiku/.test(route.model);
   recordCall({
     ...trace,
+    details: { ...(ecrit1h ? { ecrit1h } : {}), ...(voulu ? { differe: servedDeferred ? "servi" : "rate" } : {}), placeDemandee: params.max_tokens, ...sortie },
     ...(servedDeferred ? { routingReason: `${decision.reason} · différé (moitié prix)` } : {}),
     servedModel: msg.model ?? null,
     inputTokens: msg.usage?.input_tokens ?? 0,
@@ -627,13 +909,13 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   const adapter = textDeps.adapters[provider];
   const effort = mapEffort(provider, model, decision.effort ?? null);
   const schema = format && typeof format === "object" && (format as any).schema ? ((format as any).schema as Record<string, unknown>) : null;
-  const req: TextRequest = { model, system: systemText(call), turns: toTurns(messages), maxOutput: Math.min(m.limits.maxOutput, Math.max(call.maxTokens ?? 16000, 4000)), effort, jsonSchema: schema, ...(call.arrierePlan && provider === "openai" ? { arrierePlan: true } : {}) };
+  const req: TextRequest = { model, system: systemText(call), turns: toTurns(messages), maxOutput: Math.min(m.limits.maxOutput, Math.max(call.maxTokens ?? 16000, 4000)), effort, jsonSchema: schema && provider === "openai" ? schemaPourOpenAI(schema) : schema, ...(call.arrierePlan && provider === "openai" ? { arrierePlan: true } : {}) };
   const { brain } = brainOf(call);
   const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
   assertUnderCostCap(maxMicro);
   if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
-  const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId });
-  const started = Date.now();
+  const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId, studio: callTry > 0 });
+  const started = Date.now(), sortie = suiviDeSortie(call, format);
   let attempts = 0;
   const trace = {
     skills: skillsOfReference(call.reference),
@@ -677,10 +959,10 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     const uncertain = !(e instanceof AgentBoundStop || e instanceof ProviderHttpError && providerRefused(e.status));
     if (!uncertain) release(reservation, `refus du fournisseur (${(e as ProviderHttpError).status})`);
     else settleUncertain(reservation, redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 160));
-    recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: attempts, status: /timeout|timed out|abort/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
+    recordCall({ ...trace, ...(sortie ? { details: sortie } : {}), latencyMs: Date.now() - started, httpAttempts: attempts, status: /timeout|timed out|abort/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof ProviderHttpError && (e.status === 401 || e.status === 403)) throw new PermanentError(L(`La clé ${provider} configurée est refusée. Vérifiez-la dans l'administration.`, `The configured ${provider} key was rejected. Check it in the admin settings.`));
     if (e instanceof ProviderHttpError && e.status === 404) throw new PermanentError(L(`Modèle introuvable (${model}). Corrigez le routage dans l'administration.`, `Model not found (${model}). Fix the routing in the admin settings.`));
-    if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408) throw new (req.jsonSchema && e.status === 400 && REFUS_DE_SCHEMA.test(e.message) ? SchemaRefuse : PermanentError)(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (uncertain) {
       const why = redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 200);
       throw uncertainProviderFailure(L(`Résultat incertain chez ${provider} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${provider} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
@@ -715,6 +997,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     estimated: billed.estimated,
     usageEventId: billed.eventId,
     billingDedup: billed.dedup,
+    ...(sortie ? { details: sortie } : {}),
     status: res!.stop === "refusal" ? "refused" : "ok",
   });
   if (res!.stop === "refusal") throw new UserFacingError(L("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.", "The model declined this request. Rephrase it or remove the element at issue."));
@@ -738,6 +1021,24 @@ const JSON_FIX_PROMPT_TOKENS = 600;
  * le devis (jsonCallBounds) : une réponse coupée est redemandée avec deux fois plus de place tant que la limite `cap`
  * n'est pas atteinte (sans renvoyer le texte coupé) ; sinon UNE réparation, qui renvoie la réponse précédente.
  */
+/**
+ * Place de sortie RÉELLEMENT envoyée pour une limite demandée (audit des publications, 22 novembre 2026) : chez Anthropic
+ * (sauf Haiku 4.5), jamais moins de 8 000 jetons ; ailleurs, jamais moins de 4 000 ni plus que le modèle. Une réponse
+ * coupée se redemande à partir de cette place-là : doubler une limite demandée de 2 000 donnait 4 000 puis 8 000, soit
+ * trois fois la même place envoyée, donc deux appels repayés pour être très probablement coupés au même endroit.
+ */
+export function placeReelle(provider: string, model: string, maxTokens: number): number {
+  if (provider === "anthropic") return model === "claude-haiku-4-5" ? maxTokens : Math.max(maxTokens, 8000);
+  const m = textModel(provider as "openai" | "google", model);
+  return m ? Math.min(m.limits.maxOutput, Math.max(maxTokens, 4000)) : maxTokens;
+}
+
+/** Place de départ d'un llmJson : celle que le modèle routé recevra vraiment (voir placeReelle). */
+function placeDeDepart(call: LlmCall): number {
+  const asked = call.maxTokens ?? 32000;
+  try { const r = routeLlm(call); return r.mode === "llm" ? placeReelle(r.provider, r.model, asked) : asked; } catch { return asked; }
+}
+
 export function jsonRetry(s: { attempt: number; budget: number; fixes: number }, cut: boolean, cap: number): { attempt: number; budget: number; fixes: number; resend: boolean } | null {
   if (s.attempt + 1 >= JSON_ATTEMPTS) return null;
   if (cut && s.budget < cap) return { attempt: s.attempt + 1, budget: Math.min(cap, s.budget * 2), fixes: s.fixes, resend: false };
@@ -796,7 +1097,8 @@ export function estimateCallMicro(provider: string, model: string, inputTokens: 
 export function jsonCallMaxMicro(provider: string, model: string, inputTokens: number, maxTokens: number, cap: number, effort: string | null): { maxMicro: number; maxCalls: number } | null {
   let maxMicro = 0;
   let maxCalls = 0;
-  for (const seq of jsonCallPaths(maxTokens, Math.min(MAX_OUTPUT_TOKENS, cap))) {
+  // Même départ que l'exécution : la place réellement envoyée (placeReelle), puis doublée.
+  for (const seq of jsonCallPaths(placeReelle(provider, model, maxTokens), Math.min(MAX_OUTPUT_TOKENS, cap))) {
     let sum = 0;
     for (const c of seq) {
       const one = callCostBoundMicro(provider, model, inputTokens + c.extraInput, c.budget, effort);
@@ -820,53 +1122,96 @@ export function withSelectedStrategy(call: LlmCall): LlmCall {
   return { ...call, context: [call.context, selected].filter(Boolean).join("\n\n") };
 }
 
+/** Une tâche en différé attend souvent plus de 5 minutes chez le fournisseur : sa mémoire dure une heure. */
+const avecMemoire = (call: LlmCall): LlmCall => (call.memoireLongue == null && !call.teteUnique && (call.deferred ?? differeActif()) ? { ...call, memoireLongue: true } : call);
+
 /** Texte libre (rédaction). */
 export async function llmText(call: LlmCall): Promise<string> {
-  call = withSelectedStrategy(call);
+  call = avecMemoire(withSelectedStrategy(call));
   const content = await buildContent(call);
   const r = await rawCall(call, [{ role: "user", content: content as any }]);
   return r.text.trim();
 }
 
 /**
- * JSON validé. `strict` = sorties structurées (schéma figé) ; sinon JSON libre
- * validé par Zod avec une tentative de correction guidée par l'erreur.
+ * JSON validé. Sortie STRICTE par défaut (23 novembre 2026) : le schéma est envoyé au fournisseur, qui doit répondre
+ * dans sa forme ; plus de reprise payée pour une réponse mal formée. Le schéma part en JSON libre (validé par Zod, une
+ * réparation guidée par l'erreur) quand il ne peut pas partir strict sans rien perdre (sortie-stricte.ts), quand une
+ * remise en forme (`prepare`) précède la validation, quand `strict: false` est demandé, ou en secours : schéma refusé
+ * net par le fournisseur (rien facturé), plafond de la tâche qui ne couvre pas le schéma, réponse déjà payée en libre
+ * (reprise d'une tâche commencée avant ce changement, relue sans repayer). `strict: true` : strict sans secours.
  */
 export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opts: { strict?: boolean } = {}): Promise<z.infer<S>> {
-  call = withSelectedStrategy(call);
+  call = avecMemoire(withSelectedStrategy(call));
   const content = await buildContent(call);
-  const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: content as any }];
-  if (opts.strict) {
-    // Même schéma envoyé au fournisseur. Le SDK garde le texte brut : son parseur local ne doit pas lever
-    // avant l'enregistrement de la réponse et de l'usage. La validation stricte reste obligatoire juste après.
-    // Réponse coupée faute de place : même demande avec plus de place, jusqu'à maxOutputTokens (essai réel du
-    // 10 novembre 2026 : le plan des textes, coupé à 10 000 jetons, n'était jamais relancé en sortie structurée).
-    const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
-    let budget = call.maxTokens ?? 32000, attempt = 0;
-    for (;;) {
-      const r = await rawCall({ ...call, maxTokens: budget }, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text}, attempt ? `:fix${attempt}` : "", attempt);
-      if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());
-      if (r.stop === "max_tokens" && budget < cap) { budget = Math.min(cap, budget * 2); attempt++; continue; }
-      // Un écart de pure forme (un texte un peu trop long, une liste trop longue) ne fait plus perdre un appel
-      // payé : il est réparé comme en JSON libre (essai réel du 16 novembre 2026 : une correction de plus de
-      // 400 signes avait fait sauter toute une relecture). Un écart de fond lève toujours l'erreur du schéma.
-      const data = JSON.parse(r.text), direct = schema.safeParse(data);
-      if (direct.success) return direct.data;
-      const repaired = salvage(schema as z.ZodType<unknown>, data);
-      if (repaired.ok) return repaired.data as z.infer<S>;
-      return schema.parse(data);
+  const auto = opts.strict === undefined;
+  const format = opts.strict === true ? zodOutputFormat(schema as any) : auto && !call.prepare ? formatStrict(schema) : null;
+  const cleRefus = format ? `${(() => { try { return routeLlm(call).provider; } catch { return "?"; } })()}:${shortHash(JSON.stringify(format.schema))}` : "";
+  if (format && !(auto && (schemaRefuse(cleRefus) || dejaPayeEnLibre(call, content)))) {
+    const etat = { attempt: 0 };
+    try { return await jsonStrict(call, content, schema, format, etat); }
+    catch (e) {
+      // Secours, seulement avant toute dépense de cette demande : refus net du schéma (rien facturé) ou plafond.
+      if (!auto || etat.attempt > 0 || !(e instanceof SchemaRefuse || e instanceof CostCapReached)) throw e;
+      if (e instanceof SchemaRefuse) retenirRefus(cleRefus);
+      console.info(`[ia] ${call.task} : sortie stricte ${e instanceof SchemaRefuse ? "refusée par le fournisseur" : "au-delà du plafond"}, la demande part en JSON libre`);
     }
   }
-  messages[0].content = [
-    ...(content as any[]),
-    { type: "text", text: "Réponds uniquement avec un objet JSON valide, sans texte autour ni bloc de code." },
-  ];
+  return jsonLibre(call, content, schema);
+}
+
+/** Demande en JSON libre : le contenu, suivi de la consigne de forme. */
+const messagesLibres = (content: Anthropic.ContentBlockParam[]): Anthropic.Beta.BetaMessageParam[] => [{ role: "user", content: [...(content as any[]), { type: "text", text: "Réponds uniquement avec un objet JSON valide, sans texte autour ni bloc de code." }] }];
+
+/** Cette demande a déjà été payée en JSON libre (tâche reprise après le passage à la sortie stricte) : relue, jamais repayée. */
+function dejaPayeEnLibre(call: LlmCall, content: Anthropic.ContentBlockParam[]): boolean {
+  if (!call.usageKey) return false;
+  const hash = requestHash({ system: systemText(call), messages: messagesLibres(content), format: undefined, maxTokens: placeDeDepart(call) });
+  const cles = [call.usageKey, ...(call.nouvelleSiChangee ? [`${call.usageKey}~${String(hash).slice(0, 12)}`] : [])];
+  return cles.some((usageKey) => { try { return !!existingOperation(call.userId, { task: call.task, projectId: call.projectId, usageKey, requestHash: hash }); } catch { return false; } });
+}
+
+async function jsonStrict<S extends z.ZodType>(call: LlmCall, content: Anthropic.ContentBlockParam[], schema: S, format: ReturnType<typeof zodOutputFormat>, etat: { attempt: number }): Promise<z.infer<S>> {
+  const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: content as any }];
+  // Même schéma envoyé au fournisseur, sans le parseur local du SDK (il ne doit pas lever avant l'enregistrement de la
+  // réponse et de l'usage, et une demande doit pouvoir être copiée telle quelle). La validation stricte reste obligatoire juste après.
+  // Réponse coupée faute de place : même demande avec plus de place, jusqu'à maxOutputTokens (essai réel du
+  // 10 novembre 2026 : le plan des textes, coupé à 10 000 jetons, n'était jamais relancé en sortie structurée).
+  const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
+  let budget = placeDeDepart(call), attempt = 0, fixes = 0, reparation = false;
+  for (;;) {
+    etat.attempt = attempt;
+    const r = await rawCall({ ...call, maxTokens: budget, ...(reparation ? { motifReprise: "forme" as const } : {}) }, messages, { type: format.type, schema: format.schema }, attempt ? `:fix${attempt}` : "", attempt);
+    if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());
+    reparation = false;
+    if (r.stop === "max_tokens" && budget < cap) { budget = Math.min(cap, budget * 2); attempt++; continue; }
+    // Un écart de pure forme (un texte un peu trop long, une liste trop longue) ne fait plus perdre un appel
+    // payé : il est réparé comme en JSON libre (essai réel du 16 novembre 2026 : une correction de plus de
+    // 400 signes avait fait sauter toute une relecture). Un écart de fond lève toujours l'erreur du schéma.
+    const data = sansNullsFacultatifs(JSON.parse(r.text), format.schema as Record<string, unknown>), direct = schema.safeParse(data);
+    if (direct.success) return direct.data;
+    const repaired = salvage(schema as z.ZodType<unknown>, data);
+    if (repaired.ok) return repaired.data as z.infer<S>;
+    // Ce que le fournisseur ne garantit pas (longueur minimale, règle écrite en code) : UNE réparation, comme en libre.
+    if (!fixes && attempt + 1 < JSON_ATTEMPTS && seulementContraintes(direct.error.issues)) {
+      const issue = direct.error.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+      messages.push({ role: "assistant", content: r.text || "{}" });
+      messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue}). Renvoie l'objet complet corrigé, de façon concise.` });
+      fixes = 1; attempt++; reparation = true;
+      continue;
+    }
+    return schema.parse(data);
+  }
+}
+
+async function jsonLibre<S extends z.ZodType>(call: LlmCall, content: Anthropic.ContentBlockParam[], schema: S): Promise<z.infer<S>> {
+  const messages = messagesLibres(content);
   let last = "";
   let lastIssue = "";
   const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
-  let step = { attempt: 0, budget: call.maxTokens ?? 32000, fixes: 0 };
+  let step = { attempt: 0, budget: placeDeDepart(call), fixes: 0 }, reparation = false;
   for (;;) {
-    const r = await rawCall({ ...call, maxTokens: step.budget }, messages, undefined, step.attempt ? `:fix${step.attempt}` : "", step.attempt);
+    const r = await rawCall({ ...call, maxTokens: step.budget, ...(reparation ? { motifReprise: "forme" as const } : {}) }, messages, undefined, step.attempt ? `:fix${step.attempt}` : "", step.attempt);
     last = r.text;
     // Réponse coupée faute de place (réflexion longue, beaucoup de photos) : même demande avec plus de place,
     // sans renvoyer le début tronqué au modèle (jsonRetry).
@@ -893,7 +1238,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
       messages.push({ role: "assistant", content: r.text || "{}" });
       messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue || "JSON illisible"}). Renvoie l'objet complet corrigé, uniquement le JSON, de façon concise.` });
     }
-    step = next;
+    step = next; reparation = next.resend;
   }
   // Détail complet dans les journaux du serveur ; au client, la raison courte (pas le JSON brut).
   console.error(`[ia] ${call.task} : réponse inexploitable (${lastIssue || "JSON illisible"})\n${last.slice(0, 4000)}`);

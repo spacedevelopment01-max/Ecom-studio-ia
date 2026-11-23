@@ -22,7 +22,7 @@ describe("Confirmation avant une création : budget IA du projet", () => {
     const s = src("src/components/studio/cost-confirm.tsx");
     expect(s).not.toMatch(/quotas|PACK_FOR_QUOTA|Ajouter un|Ajoutez un pack|ce mois-ci/);
     expect(s).toContain("/subscription");
-    expect(s).toContain("Reste ${left} %");
+    expect(s).toContain("Reste ${left} %");
     expect(s).toContain("Recharger l'IA");
   });
 

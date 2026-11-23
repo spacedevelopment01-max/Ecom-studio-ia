@@ -4,6 +4,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { prouverLesPrix } from "./prix-fixtures";
 import { describe, expect, it } from "vitest";
 import { DEMO_BRANDS, familySections, libSection, sectionByRef, sectionLibrary, withBrandName } from "@/lib/syna-agent/custom-theme/library";
 import { applyStructure, checkCustomTheme, replaceOnce, scopedCss, type CustomTheme } from "@/lib/syna-agent/custom-theme/theme";
@@ -314,6 +315,7 @@ describe("thème sur mesure : outils de SINA", async () => {
     const { saveShopOffers } = await import("@/lib/syna-agent/product-features");
     const { saveCompany } = await import("@/lib/syna-agent/activity");
     createProduct(pid, { title: "Sac Lune", price: 8900, compareAt: 9900, options: [{ name: "Couleur", values: ["Noir", "Cognac"] }], variants: [{ options: ["Noir"], price: 8900, compareAt: 9900 }, { options: ["Cognac"], price: 8900, compareAt: 9900 }] } as any);
+    prouverLesPrix(pid);
     saveShopOffers(pid, { quantity: { kind: "lots", tiers: [{ qty: 2, pct: 12 }] }, gifts: [{ at: 120, label: "Pochette offerte" }] } as any);
     saveCompany(pid, { shipping: "Livraison en 2 à 4 jours, offerte dès 60 €", returns: "Retours acceptés sous 30 jours" } as any);
     await call("theme.family", ctx, { family: "classique" });
@@ -471,6 +473,9 @@ describe("thème sur mesure : outils de SINA", async () => {
     expect(read.data.html).toContain("L'été prend");
     expect(read.data.coordonneesEnregistrees).toMatchObject({ legalName: "Atelier Test SAS", address: "3 rue du Port, 13002 Marseille" });
     const ed = await call("custom.edit", ctx, { uid: hero, edits: [{ find: "L'été prend", replace: "La saison s'ouvre" }] });
+    // Une retouche ne range dans le fil que ce qui a changé : la version et les pages, jamais la carte entière du site.
+    expect(Object.keys(ed.data.customTheme).sort()).toEqual(["boutique", "choisi", "href", "open", "pages", "rev"]);
+    expect(ed.data.customTheme.pages[0]).toEqual({ key: "home", label: expect.any(String) });
     expect(ed.ok).toBe(true);
     expect(loadCustomTheme(pid)!.pages[0].sections[0].html).toContain("La saison s'ouvre");
     // Passage absent, script, règle hors section : refusés, rien ne change.

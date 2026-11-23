@@ -20,7 +20,7 @@ import { replaceInCustomTheme } from "./custom-theme/theme";
  * et se déplace). L'adresse reste dans la fiche et ne s'écrit alors que dans les informations légales : ni pied de page,
  * ni contact, ni carte, ni « Voir l'itinéraire ».
  */
-export type Company = { legalName?: string; email?: string; phone?: string; address?: string; siret?: string; shipping?: string; returns?: string; addressDiscreet?: boolean };
+export type Company = { legalName?: string; email?: string; phone?: string; address?: string; siret?: string; shipping?: string; returns?: string; mediateur?: string; hebergeur?: string; addressDiscreet?: boolean };
 /** Champs de texte de la fiche (tout sauf le réglage « adresse discrète »). */
 export type CompanyField = Exclude<keyof Company, "addressDiscreet">;
 export const COMPANY_FIELDS: { key: CompanyField; label: string; question: string; required: boolean }[] = [
@@ -30,6 +30,10 @@ export const COMPANY_FIELDS: { key: CompanyField; label: string; question: strin
   { key: "address", label: "Adresse", question: "Quelle est l'adresse de ton entreprise (elle figure dans les mentions légales) ?", required: true },
   { key: "siret", label: "SIRET", question: "Quel est ton numéro SIRET ? Tu peux le donner plus tard si tu ne l'as pas sous la main.", required: false },
   { key: "shipping", label: "Livraison", question: "Comment livres-tu (transporteur, délai, prix de la livraison, livraison offerte à partir d'un montant) ?", required: true },
+  // Mentions légales sans trou (recherche 04, 22 novembre 2026) : tout professionnel qui vend à des particuliers désigne un
+  // médiateur de la consommation (nom, adresse postale, site, affichés sur le site) ; l'hébergeur du site y figure aussi.
+  { key: "mediateur", label: "Médiateur de la consommation", question: "Quel est ton médiateur de la consommation (son nom, son adresse postale et son site) ? C'est obligatoire dès qu'on vend à des particuliers ; si tu n'en as pas encore, la liste officielle est sur entreprendre.service-public.gouv.fr (fiche « Médiation de la consommation »). Si tu ne vends qu'à des professionnels, dis-le-moi.", required: true },
+  { key: "hebergeur", label: "Hébergeur du site", question: "Qui héberge ton site ou ta boutique (Shopify, ton hébergeur WordPress…) ? Son nom, son adresse et son téléphone vont dans tes mentions légales.", required: true },
   { key: "returns", label: "Retours", question: "Acceptes-tu les retours ? Si oui, sous quel délai et à quelles conditions (pour de l'alimentaire, souvent : pas de retour une fois le pot ouvert) ?", required: true },
 ];
 

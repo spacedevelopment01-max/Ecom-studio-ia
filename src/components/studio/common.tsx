@@ -98,7 +98,7 @@ export function AssetThumb({ a, className }: { a: AssetView; className?: string 
   if (a.thumbUrl || a.kind === "image" || a.kind === "logo") {
     return (
       <div className={cx("overflow-hidden bg-[conic-gradient(var(--paper-2)_25%,var(--card)_0_50%,var(--paper-2)_0_75%,var(--card)_0)] bg-[length:16px_16px]", className)}>
-        <img src={a.thumbUrl ?? a.url} alt={a.name} className="size-full object-cover" loading="lazy" />
+        <img src={a.thumbUrl ?? a.url} alt={a.name} className={cx("size-full", a.kind === "logo" || a.role === "logo" ? "object-contain p-2" : "object-cover")} loading="lazy" />
       </div>
     );
   }
@@ -158,7 +158,7 @@ export function JobProgress({ job, className }: { job: JobView | null | undefine
     <div className={cx("rounded-2xl border border-line bg-card p-4", className)} role="status">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="flex items-center gap-2 font-medium">{job.status === "running" || job.status === "queued" ? <Spinner className="text-signal" /> : <span className={cx("size-2 rounded-full", job.status === "done" ? "bg-ok" : "bg-warn")} aria-hidden />} {job.label || job.type}</span>
-        <span className="text-xs text-muted">{job.status === "done" && job.result?.delivery?.state === "partial" ? t("Partiel", "Partial") : t(`${Math.round(job.progress * 100)} %`, `${Math.round(job.progress * 100)}%`)}</span>
+        <span className="text-xs text-muted">{job.status === "done" && job.result?.delivery?.state === "partial" ? t("Partiel", "Partial") : t(`${Math.round(job.progress * 100)} %`, `${Math.round(job.progress * 100)}%`)}</span>
       </div>
       <p className="mt-1 text-xs text-muted">{job.message}</p>
       <Progress value={job.progress} className="mt-3" />

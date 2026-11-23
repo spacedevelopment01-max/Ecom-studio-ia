@@ -5,7 +5,7 @@
  * preuve manquante, pas d'offre non configurée, pas d'idée cadeau pour un service).
  */
 import crypto from "node:crypto";
-import type { AdInsight, AnglePlan, AngleType } from "./types";
+import type { AdInsight, AnglePlan, AngleType, ClientType } from "./types";
 
 type Candidate = Omit<AnglePlan, "id">;
 
@@ -70,4 +70,23 @@ export function planAngles(i: AdInsight, n: number): { angles: AnglePlan[]; miss
     picked.push({ ...c, id: crypto.createHash("sha256").update(`${c.type}|${norm(c.material)}`).digest("hex").slice(0, 10) });
   }
   return { angles: picked, missing: Math.max(0, n - picked.length) };
+}
+
+const cle = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+
+/**
+ * Une publicité par type de client (décision du 22 novembre 2026, règle du propriétaire « Trois angles ») : chaque
+ * publicité part d'un type de client différent, l'angle choisi d'abord, puis ceux en réserve ; jamais deux publicités pour
+ * le même type. Le levier (démonstration, détail, preuve…) reste le second choix, différent lui aussi d'une publicité à
+ * l'autre. Autant de publicités que de types de clients connus au plus, et que de leviers fondés sur une matière vraie.
+ */
+export function anglesParTypeDeClient(i: AdInsight, clients: ClientType[], n: number): { angles: AnglePlan[]; missing: number; notes: string[] } {
+  const seen = new Set<string>();
+  const types = clients.filter((c) => { const k = cle(c.name || c.who); if (!k || seen.has(k)) return false; seen.add(k); return true; });
+  const notes: string[] = [];
+  const wanted = Math.min(n, types.length);
+  if (types.length < n) notes.push(`${types.length} type(s) de client dans ses angles : ${types.length} publicité(s), une par type de client (jamais deux pour le même)`);
+  const { angles: levers } = planAngles(i, wanted);
+  const angles = levers.slice(0, wanted).map((a, k) => ({ ...a, client: types[k], id: crypto.createHash("sha256").update(`${a.id}|${types[k].angleId}|${cle(types[k].name)}`).digest("hex").slice(0, 10) }));
+  return { angles, missing: Math.max(0, n - angles.length), notes };
 }

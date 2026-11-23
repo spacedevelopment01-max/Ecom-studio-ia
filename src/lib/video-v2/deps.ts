@@ -12,7 +12,7 @@ import { tmpDir,storagePath } from "../storage";
 import { llmConfigured, llmJson } from "../ai/llm";
 import { brainView } from "../ai/context";
 import { activeProviderKey, routeFor } from "../ai/config";
-import { aiClip,wanTextClip,higgsfieldClip } from "../ai/media-providers";
+import { aiClip,wanTextClip } from "../ai/media-providers";
 import { selectMedia, usageNeed, usagePrimary, type MediaUsage } from "../ai/media-routing";
 import { all, json,run } from "../db";
 import type { JobContext } from "../jobs";
@@ -31,6 +31,7 @@ import { findStockClip, type StockClipRequest } from "../stock/stock-clip";
 import { projectVoice, voiceAvailable, synthLine } from "./voice";
 import { acquiredVoice, isOpenAIVoice } from "./openai-voice";
 import { loadCreativeMemory } from "./creative-memory";
+import { mixAnimatedModel } from "./melange";
 import {videoShotReviewImages,videoShotReviewRequest} from "./shot-review-request";
 import type { ShotReview, VideoReview } from "./types";
 
@@ -53,6 +54,13 @@ export type VideoV2Deps = {
   voice: null | ((text: string, voiceId: string | null, key: string) => Promise<{ data: Buffer; mime: string; assetId?:string }>);
   available: (provider: string) => boolean;
   preferred: { provider: string; model: string } | null;
+  /**
+   * Modèle animé du mélange (rapport 09, point 3) : celui réglé dans l'administration pour « Vidéos produit » ; null :
+   * aucun réglé, la vidéo reste en plans sûrs. Absent (essais simulés) : le moins cher compatible.
+   */
+  animated?: { provider: string; model: string } | null;
+  /** Essais simulés seulement : droits sur les photos tenus pour confirmés (le Studio réel lit l'accord daté du client). */
+  rightsChecked?: boolean;
   /** Modèle préféré selon l'usage du plan (vidéo produit, ou UGC quand une personne est à l'image). */
   preferredFor?: (people: boolean) => { provider: string; model: string } | null;
   /** Estimation du coût d'un plan (EUR micro) ; par défaut, le tarif de l'administration. */
@@ -133,8 +141,8 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       // Barrières existantes : forfait, budget IA, plafond de la tâche, tarif connu — vérifiées AVANT l'envoi.
       const usage = { ...base, usageKey: key };
       // Modèle choisi par le moteur (catalogue) ; relais vers le secours compatible si le principal échoue sans coût.
-      if(!req.image){if(req.provider==='higgsfield'&&!req.people)return higgsfieldClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:'text_video'});if(req.provider!=="alibaba"||req.people)throw new Error("Adaptateur direct sans personne indisponible pour cette route.");return wanTextClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:"text_video"});}
-      if (req.provider === "google" || req.provider === "fal" || req.provider === "alibaba" || req.provider === "higgsfield") return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
+      if(!req.image){if(req.provider!=="alibaba"||req.people)throw new Error("Adaptateur direct sans personne indisponible pour cette route.");return wanTextClip(usage,{prompt:req.prompt,aspect:req.aspect,seconds:req.seconds,model:req.model,usage:"text_video"});}
+      if (["google", "fal", "alibaba", "vertex", "kling", "byteplus", "runware"].includes(req.provider)) return aiClip(req.provider, usage, { image: req.image, prompt: req.prompt, aspect: req.aspect, seconds: req.seconds, people: req.people, model: req.model, usage: req.people ? "ugc_video" : "product_video" }, (m) => ctx?.progress(ctx.job.progress ?? 0.5, m));
       throw new Error(`fournisseur vidéo non pris en charge : ${req.provider}`);
     },
     // Choix explicite uniquement : nouveaux timbres OpenAI ou synthèse locale historique.
@@ -153,6 +161,7 @@ export function realVideoDeps(ctx: JobContext | null, p: Project, aiActive: bool
       (style ? await (await import("../music-library")).libraryMusicForProject(p, style, mood, durationS) : null) ?? (await import("../stock/music")).projectMusic(p, mood, durationS, new Set(), style),
     available: (provider) => !!activeProviderKey(provider as never),
     preferred: preferred.product,
+    animated: mixAnimatedModel(),
     preferredFor: (people) => (people ? preferred.ugc : preferred.product),
     inventory: () => projectInventory(p),
     data: (assetId) => {

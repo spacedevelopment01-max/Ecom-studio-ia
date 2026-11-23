@@ -165,6 +165,13 @@ describe("Autopilot V2 — pilote", async () => {
     const engaged = JSON.parse(job.payload).approvedEstimateMicro as number;
     expect(engaged).toBeGreaterThan(0);
     expect(engaged).toBeLessThanOrEqual(1_000_000);
+    // Visuels du pilote : personne ne les attend, la tâche est marquée pour le différé (22 novembre 2026).
+    expect(JSON.parse(job.payload).pilote).toBe(true);
+    // Un passage suivant retrouve la même tâche : son estimation n'est pas réinscrite (le plafond ne gonfle plus à tort).
+    ap.saveSettings(q, { paidCapEurWeek: 5 });
+    const again = await fr(() => ap.runAutopilot(q, paid.deps));
+    expect(again.paidJob).toBe(r1.paidJob);
+    expect(all("SELECT 1 FROM social_autopilot_log WHERE project_id = ? AND action = 'paid_job'", q.id)).toHaveLength(1);
     // Nouvelles publications à produire, plafond de la semaine ramené au montant déjà engagé : gratuit.
     ap.saveSettings(q, { paidCapEurWeek: engaged / 1_000_000 });
     run("UPDATE posts SET media = '[]' WHERE plan_id = ?", `auto-${q.id}`);

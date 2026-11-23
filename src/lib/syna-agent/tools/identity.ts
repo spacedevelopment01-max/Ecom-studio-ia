@@ -38,6 +38,17 @@ function workshopReady(j: Journey): boolean {
 }
 
 /**
+ * L'atelier d'une proposition de moins d'un mois : l'étude du marché, les idées et les noms ne changent pas en quelques
+ * jours ; une nouvelle proposition sans les mots du client les reprend sans les repayer (audit de la marque du
+ * 22 novembre 2026, partie 3 : environ 1,60 € par nouvelle proposition).
+ */
+export const ATELIER_MAX_MS = 30 * 24 * 3600 * 1000;
+export function atelierDuMois(j: Journey): boolean {
+  const id = j.identities?.chainJobId, job = id ? getJob(id) : undefined;
+  return !!job && Date.now() - job.created_at < ATELIER_MAX_MS && workshopReady(j);
+}
+
+/**
  * REPRENDRE UNE CRÉATION DE MARQUE COUPÉE, SANS REPAYER (21 novembre 2026). Reprise d'Aplomb arrêtée en route : 2,04 €
  * payés pour 13 images, rien de gardé, parce qu'une nouvelle création repartait de zéro. Comme pour le site et l'accueil
  * dessiné : la MÊME tâche repart (mêmes étapes, mêmes clés d'appel), donc tout ce qui est déjà fait et payé (l'étude, les
@@ -88,7 +99,7 @@ function chainWork(ctx: ToolContext, a: ProposeArgs | undefined) {
   const sameShape = previous.length === count && previous.every((x) => !!x.board);
   const redo = (a?.redo ?? []).filter((k) => routeKeys(count).includes(k));
   const partial = sameShape && redo.length > 0 && redo.length < count;
-  const fresh = !((redo.length || a?.only || a?.guidance) && workshopReady(j));
+  const fresh = !(((redo.length || a?.only || a?.guidance) && workshopReady(j)) || atelierDuMois(j));
   return { j, count, previous, sameShape, redo, routes: partial ? redo.length : count, fresh };
 }
 
@@ -136,7 +147,7 @@ export const identityView = (x: Identity) => ({
 
 const proposeTool: AgentTool<ProposeArgs> = {
   name: "identity.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 1 : crée les identités de marque du client, VRAIMENT différentes : 2, 3 ou 4 selon son forfait (le Studio le sait). Chaque identité est une PLANCHE de marque : l'idée, le nom et sa logique, la signature, les signes, l'objet, le site sur téléphone, des publications, la voix, ce qui reste à prouver ; couleurs, polices et ton compris (chaque planche porte son logo, sa grande image et le haut de son site sur téléphone ; l'objet, les signes en photo et les publications en images sont créés pour l'identité choisie). Tu étudies d'abord son marché sur le web (paroles réelles de clients avec leur page), tu cherches l'idée et les noms, puis tu relis tout : tâche de fond de plusieurs minutes. Payant : le Studio montre le devis au client (carte d'accord) avant de lancer. À appeler quand le client est prêt, ou quand il demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = les identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les phrases (couleurs, polices et le reste gardés). Les planches s'affichent dans le fil." + RELANCER_LIGNE,
+  description: "Étape 1 : crée les identités de marque du client, VRAIMENT différentes : 2, 3 ou 4 selon son forfait (le Studio le sait). Chaque identité est une PLANCHE de marque : l'idée, le nom et sa logique, la signature, les signes, l'objet, le site sur téléphone, des publications, la voix, ce qui reste à prouver, couleurs, polices et ton. Chaque planche porte son logo, sa grande image et le haut de son site sur téléphone ; l'objet, les signes en photo et les publications en images sont créés pour l'identité choisie. Tu étudies d'abord son marché sur le web (paroles réelles de clients avec leur page), tu cherches l'idée et les noms, puis tu relis tout : tâche de fond de plusieurs minutes. Payant : le Studio montre le devis (carte d'accord) avant de lancer. À appeler quand le client est prêt ou demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les phrases (couleurs, polices et le reste gardés). Les planches s'affichent dans le fil." + RELANCER_LIGNE,
   args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(4).optional(), only: z.enum(["noms"]).optional(), relancer: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
     if (a?.relancer) { const c = marqueCoupee(project(ctx).id); if (!c) throw new RefusInterne("Aucune création de marque arrêtée en route à relancer : lance-la sans relancer."); return relanceMarqueQuote(c); }
@@ -157,6 +168,14 @@ const proposeTool: AgentTool<ProposeArgs> = {
 const PARTS = ["name", "slogan", "palette", "fonts", "tone", "logo"] as const;
 type Part = (typeof PARTS)[number];
 
+/** Quelles images de la planche ne sont plus vraies après un mélange ou une retouche : « toutes », « nom » (toutes sauf la grande scène) ou rien. */
+export function imagesAJeter(mix: Partial<Record<Part, Key>>, key: Key, edits: { name?: string; slogan?: string } = {}): "toutes" | "nom" | null {
+  const ailleurs = (part: Part) => !!mix[part] && mix[part] !== key;
+  if (ailleurs("palette") || ailleurs("fonts")) return "toutes";
+  if (edits.name || ailleurs("name")) return "nom";
+  return null;
+}
+
 /** Identité retenue : une base, des éléments pris aux autres (mélange), des retouches du client mot pour mot. */
 export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part, Key>> = {}, edits: { name?: string; slogan?: string } = {}): Identity {
   const pick = (k?: Key) => list.find((x) => x.key === (k ?? key))!;
@@ -175,10 +194,13 @@ export function mixIdentity(list: Identity[], key: Key, mix: Partial<Record<Part
     // Le « pourquoi » d'une identité parle de SES couleurs, polices et ton : il n'est plus vrai après un mélange de ces
     // éléments (essai réel : « fond en dégradé, vert basilic » affiché sur un fond blanc au bouton bleu).
     why: (["palette", "fonts", "tone"] as const).some((part) => mix[part] && mix[part] !== key) ? "" : base.why,
-    // Les images d'une planche (logo, sachet, site) portent SON nom, SES couleurs et SES polices : après un mélange
-    // ou une retouche du nom ou de la signature, elles ne sont plus vraies ; la planche revient aux dessins.
-    ...(base.board?.images && (edits.name || edits.slogan || (["name", "slogan", "palette", "fonts"] as const).some((part) => mix[part] && mix[part] !== key)) ? { board: (({ images: _gone, ...rest }) => rest)(base.board) } : {}),
+    // Les images d'une planche portent SON nom, SES couleurs et SES polices ; aucune ne porte la signature (22 novembre
+    // 2026, audit de la marque : une retouche d'un mot jetait le logo choisi, la grande scène et le téléphone, et
+    // affichait une seconde carte). Couleurs ou polices changées : toutes refaites ; nom changé : toutes sauf la grande
+    // scène, qui n'a aucun texte ; signature seule : rien n'est refait.
+    ...(base.board?.images && imagesAJeter(mix, key, edits) ? { board: { ...base.board, images: imagesAJeter(mix, key, edits) === "toutes" ? undefined : (({ hero }) => (hero ? { hero } : undefined))(base.board.images as Record<string, unknown>) } as typeof base.board } : {}),
   };
+  if (out.board && "images" in out.board && out.board.images === undefined) out.board = (({ images: _gone, ...rest }) => rest)(out.board) as typeof out.board;
   // Le nom de domaine a été contrôlé pour LE nom de la planche : nom retouché ou pris ailleurs, il n'est plus vrai.
   if (out.board?.domains && (edits.name || (mix.name && mix.name !== key))) out.board = (({ domains: _old, ...rest }) => rest)(out.board) as typeof out.board;
   return out;
@@ -224,7 +246,7 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
 const choiceKey = z.enum(KEYS);
 const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?: string; slogan?: string }> = {
   name: "identity.choose", module: "marque", kind: "write", needsProject: true,
-  description: "Étape 1 : enregistre l'identité choisie PAR LE CLIENT (jamais à sa place) comme marque du projet et valide l'étape 1. key = identité de base (A, B, C ou D, parmi celles affichées). mix = éléments pris à une autre identité si le client mélange (ex. le nom de A avec les couleurs de C : key « A », mix {palette: « C »}) ; parties : name, slogan, palette, fonts, tone, logo. name / slogan = retouche du client, reprise mot pour mot. Gratuit.",
+  description: "Étape 1 : enregistre l'identité choisie PAR LE CLIENT (jamais à sa place) comme marque du projet et valide l'étape 1. key = identité de base (A, B, C ou D, parmi celles affichées). mix = éléments pris à une autre identité s'il mélange (le nom de A avec les couleurs de C : key « A », mix {palette: « C »}) ; parties : name, slogan, palette, fonts, tone, logo. name / slogan = sa retouche, reprise mot pour mot. Gratuit.",
   args: z.object({ key: choiceKey, mix: z.object({ name: choiceKey, slogan: choiceKey, palette: choiceKey, fonts: choiceKey, tone: choiceKey, logo: choiceKey }).partial().strict().optional(), name: z.string().min(1).max(60).optional(), slogan: z.string().min(1).max(120).optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);
@@ -295,7 +317,7 @@ type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
 export const redoImages = <T extends string>(images: readonly T[]): T[] => [...new Set(images)];
 const imagesTool: AgentTool<ImagesArgs> = {
   name: "identity.images", module: "marque", kind: "generate", needsProject: true,
-  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») d'une ou plusieurs planches déjà montrées, sans toucher au nom ni aux textes. Refais SEULEMENT les images que le client demande : un logo refait seul laisse le téléphone de la planche avec l'ancien logo jusqu'au choix, puis il est refait pour l'identité choisie (dis-le-lui en une phrase). À utiliser quand une image est fausse ou refusée (la planche le dit) ou quand le client signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
+  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») de planches déjà montrées, sans toucher au nom ni aux textes. Refais SEULEMENT les images que le client demande : un logo refait seul laisse l'ancien logo sur le téléphone de la planche jusqu'au choix, puis il est refait pour l'identité choisie (dis-le-lui en une phrase). Quand une image est fausse ou refusée (la planche le dit) ou qu'il signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
   args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(3), guidance: z.string().max(1500).optional() }).strict(),
   estimate: (_ctx, a) => { const n = redoImages(a.images).length; return { ...boardImagesQuote(a.keys.length, undefined, redoImages(a.images) as never), label: `${n} image${n > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}` }; },
   run: (ctx, a) => {
@@ -352,7 +374,7 @@ function startFinish(ctx: ToolContext, a: FinishArgs): { jobs?: string[]; refuse
 
 const finishTool: AgentTool<FinishArgs> = {
   name: "brand.finish", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape « La marque », après le choix de l'identité : finit la marque du client, ou en refait une partie. Sans argument : crée ce qui manque à son identité (le logo s'il n'y en a pas, l'objet qui porte le logo, les signes, trois publications), adopte son logo (fond retiré, déclinaisons) et prépare sa charte complète ; c'est déjà compris dans son accord quand il a pris une identité telle quelle. redo = les images à refaire quand il le demande ou qu'une image est ratée : « logo » (un AUTRE logo, créé pour sa marque ; l'objet et les signes sont refaits avec lui), « hero » (la grande scène), « object », « signs », « post0 », « post1 », « post2 » ; guidance = ce qu'il veut de différent, avec ses mots. Payant quand ce n'est pas déjà couvert : le Studio montre le prix au client avant. La marque complète s'affiche dans le fil." + RELANCER_LIGNE,
+  description: "Étape « La marque », après le choix de l'identité : finit la marque du client, ou en refait une partie. Sans argument : crée ce qui manque à son identité (le logo s'il n'y en a pas, l'objet qui porte le logo, les signes, trois publications), adopte son logo (fond retiré, déclinaisons) et prépare sa charte complète ; déjà compris dans son accord s'il a pris une identité telle quelle. redo = images à refaire à sa demande ou si une image est ratée : « logo » (un AUTRE logo, créé pour sa marque ; l'objet et les signes sont refaits avec lui), « hero » (la grande scène), « object », « signs », « post0 », « post1 », « post2 » ; guidance = ce qu'il veut de différent, avec ses mots. Payant quand ce n'est pas déjà couvert : le Studio montre le prix avant. La marque complète s'affiche dans le fil." + RELANCER_LIGNE,
   args: z.object({ redo: z.array(z.enum(FINISH_REDO)).min(1).max(7).optional(), guidance: z.string().max(1500).optional(), relancer: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
     if (a?.relancer) { const c = marqueCoupee(project(ctx).id); if (!c) throw new RefusInterne("Aucune création de marque arrêtée en route à relancer : lance-la sans relancer."); return relanceMarqueQuote(c); }

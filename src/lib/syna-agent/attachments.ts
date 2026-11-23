@@ -17,6 +17,7 @@ import { requirePlan } from "../plan-gates";
 import { L } from "../i18n-server";
 import type { LlmImage } from "../ai/llm";
 import type { SynaMessage } from "./store";
+import { phraseVerification, verificationDe, verifierImage, type Verification } from "../atelier/verification-photos";
 
 export const MAX_ATTACHMENT_BYTES = { image: 30 * 1048576, video: 300 * 1048576, document: 30 * 1048576 } as const;
 export type AttachmentKind = "image" | "video" | "document";
@@ -49,15 +50,25 @@ export async function saveAttachment(user: User, cid: string, file: { name: stri
   const ext = path.extname(file.name).toLowerCase().replace(/[^.a-z0-9]/g, "") || "";
   const p = path.join(dir, `${aid}${ext}`);
   fs.writeFileSync(p, file.data);
-  let assetId: string | null = null;
+  let assetId: string | null = null, verification: Verification | null = null;
   if (c.project_id && (kind === "image" || kind === "video")) {
     const asset = await saveAsset({ projectId: c.project_id, userId: user.id, name: file.name, mime, data: file.data, role: "original", origin: "upload", meta: { uploadedAt: now(), synaAttachment: { conversationId: cid, attachmentId: aid } } });
     assetId = asset.id;
-  }
-  const analysis = await analyzeLocally(kind, p, aid, dir);
+    verification = verificationDe(json(asset.meta, {}));
+  } else if (kind === "image") verification = await verifierImage(file.data);
+  // Toute photo jointe est vérifiée (gratuit) ; pas vérifiée ou refusée : gardée, mais SINA ne la lit pas (appel payant).
+  const analysis = { ...(await analyzeLocally(kind, p, aid, dir)), ...(verification ? { verification } : {}) };
   run("INSERT INTO syna_attachments(id,conversation_id,user_id,kind,name,mime,path,asset_id,analysis_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)", aid, cid, user.id, kind, file.name, mime, p, assetId, JSON.stringify(analysis), now());
   return attachmentsOf(cid).find((a) => a.id === aid)!;
 }
+
+/** La vérification d'une photo jointe : celle de la bibliothèque quand elle y est rangée (revérifiée là), sinon la sienne. */
+export function verificationActuelle(a: Attachment): Verification | null {
+  if (a.assetId) { const r = one<{ meta: string }>("SELECT meta FROM assets WHERE id=?", a.assetId); if (r) return verificationDe(json(r.meta, {})); }
+  return verificationDe(a.analysis);
+}
+/** Photo jointe mise de côté (pas encore vérifiée, ou refusée) : SINA ne la lit pas. */
+export const photoDeCote = (a: Attachment) => { const v = verificationActuelle(a); return !!v && v.etat !== "verifiee"; };
 
 /** Analyse locale, gratuite et reproductible. */
 export async function analyzeLocally(kind: AttachmentKind, file: string, aid: string, dir: string): Promise<any> {
@@ -126,6 +137,7 @@ export function attachmentImages(cid: string, history: SynaMessage[]): LlmImage[
   const ids: string[] = lastUser?.content?.attachments ?? [];
   const out: LlmImage[] = [];
   for (const a of attachmentsOf(cid).filter((x) => ids.includes(x.id))) {
+    if (a.kind === "image" && photoDeCote(a)) continue;
     if (a.kind === "image" && fs.existsSync(a.path)) out.push({ data: fs.readFileSync(a.path), label: `Pièce jointe ${a.id} — ${a.name}` });
     if (a.kind === "video") for (const f of (a.analysis?.frames ?? []).slice(0, 6)) if (fs.existsSync(f.file)) out.push({ data: fs.readFileSync(f.file), label: `Vidéo ${a.id} — image à ${f.t} s` });
   }
@@ -135,7 +147,7 @@ export function attachmentImages(cid: string, history: SynaMessage[]): LlmImage[
 /** Ligne de contexte (le texte intégral d'un document se lit avec l'outil attachment.read). */
 export function describeAttachment(a: Attachment): string {
   const x = a.analysis ?? {};
-  if (a.kind === "image") return `- ${a.id} : photo « ${a.name} » ${x.width}×${x.height}${a.assetId ? `, rangée dans la bibliothèque (asset ${a.assetId})` : ""}`;
+  if (a.kind === "image") return `- ${a.id} : photo « ${a.name} » ${x.width}×${x.height}${a.assetId ? `, rangée dans la bibliothèque (asset ${a.assetId})` : ""}${photoDeCote(a) ? ` — GARDÉE DE CÔTÉ (${verificationDe(x)?.etat === "refusee" ? "refusée par la vérification" : "pas encore vérifiée"}) : tu ne la vois pas et elle ne sert à aucune création ; dis-le-lui avec cette phrase : « ${phraseVerification(verificationActuelle(a), L("fr", "en") as "fr" | "en")} »` : ""}`;
   if (a.kind === "video") return `- ${a.id} : vidéo « ${a.name} » ${x.duration} s, ${x.width}×${x.height}, ${x.shotCount} plans (moyenne ${x.averageShot} s, rythme ${x.rhythm}), durées des plans [${(x.shots ?? []).join(", ")}], son : ${x.audio ? "oui" : "non"}${a.assetId ? `, asset ${a.assetId}` : ""}`;
   return `- ${a.id} : document « ${a.name} », ${x.characters ?? 0} caractères. Début : ${String(x.text ?? "").slice(0, 600).replace(/\s+/g, " ")}`;
 }
@@ -147,7 +159,7 @@ export function describeAttachment(a: Attachment): string {
  */
 type BoardShot = { id: string } | null | undefined;
 type BoardShots = { logo?: BoardShot; hero?: BoardShot; site?: BoardShot; object?: BoardShot; signs?: BoardShot; posts?: BoardShot[] };
-export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number;
+export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number; site?: { at?: number };
   identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
@@ -198,7 +210,9 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
   // sur ordinateur et sur téléphone, capturés par le Studio (gratuit, une fois par version du thème).
   // Découpées en bandes (ordinateur : 1 600 px de haut, téléphone : 1 200 px) : une capture entière serait réduite par le
   // modèle au point de rendre les textes illisibles.
-  if (projectId && (j.siteMode?.mode === "mockup" || j.customChosenAt) && j.steps[7]?.status !== "done") {
+  // Dès que SINA a créé le site (lot 4), pendant les retouches AVANT la validation aussi (audit du 22 novembre 2026 : elle
+  // retouchait sans voir).
+  if (projectId && (j.siteMode?.mode === "mockup" || j.customChosenAt || j.site?.at) && j.steps[7]?.status !== "done") {
     // Photos du thème sur mesure créées ces 20 dernières minutes (custom.photo, montage) : SINA les vérifie elle-même
     // avant d'en parler (sujet entier, aucun texte, fidèle au produit), en pleine définition, les plus récentes d'abord.
     const { all } = await import("../db");

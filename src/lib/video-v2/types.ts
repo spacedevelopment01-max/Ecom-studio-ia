@@ -164,7 +164,7 @@ export type ClipSource =
   | { kind: "image"; assetId: string; motion: CameraMove; crop: { x: number; y: number; w: number; h: number } | null }
   | { kind: "video"; assetId: string; inS: number; outS: number; muted: boolean }
   /** Composition en calques (packshot, typographie animée, carte de fin) : même modèle que l'éditeur publicitaire. */
-  | { kind: "doc"; doc: AdDocument; animate: "rise" | "fade" | "none" }
+  | { kind: "doc"; doc: AdDocument; animate: "rise" | "fade" | "none"; /** Mouvement de caméra sur toute la composition (plan sûr). */ camera?: CameraMove }
   | { kind: "color"; color: string };
 
 export type { SongStyle } from "../media/song";
@@ -188,7 +188,7 @@ export type Clip = {
 };
 
 /** Sous-titre attaché à un plan (temps relatifs au début du plan) : couper ou déplacer le plan le garde synchronisé. */
-export type SubtitleCue = { id: string; clipId: string; fromS: number; toS: number; text: string };
+export type SubtitleCue = { id: string; clipId: string; fromS: number; toS: number; text: string; /** Mots de la page et leur heure (relative au plan) : le mot dit est surligné. */ words?: { text: string; fromS: number; toS: number }[] };
 
 export type SubtitleStyle = {
   enabled: boolean;
@@ -204,6 +204,8 @@ export type SubtitleStyle = {
   offsetY: number;
   maxChars: number;
   uppercase: boolean;
+  /** Couleur du mot en train d'être dit (couleur d'accent de la marque) ; absente : aucun surlignage. */
+  highlight?: string | null;
 };
 
 export type MusicMood = "calm" | "pulse" | "warm" | "none";

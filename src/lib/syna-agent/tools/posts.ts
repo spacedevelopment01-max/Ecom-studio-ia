@@ -10,7 +10,7 @@ import { L } from "../../i18n-server";
 import { enqueue, pendingJob } from "../../jobs";
 import { aiActiveFor } from "../../ai/access";
 import { assertPerDayRequest } from "../../plan-gates";
-import { PLATFORMS, type Platform } from "../../social-v2/platforms";
+import { PLATFORMS, platformSpec, type Platform } from "../../social-v2/platforms";
 import { createOnePost, produceParams, quoteOne } from "../../social-v2/single";
 import { probableOf, productionInputVersions } from "../../social-v2/production";
 import { realSocialDeps } from "../../social-v2/deps";
@@ -20,6 +20,7 @@ import type { AgentTool } from "../types";
 import { journeyOf, setStep, stepAvailable, updateJourney } from "../journey";
 import { POST_SUBJECT_LABEL, POSTS_PLAN_JOB, chosenAngles, postsPlanMaxMicro, postsPlanTypicalMicro, type PostGroup } from "../posts-plan";
 import { project } from "./common";
+import { bornerMotsDiese, estUnOrdre } from "../../social-v2/fin-de-legende";
 
 const closed = () => ({ ok: false as const, summary: L("L'étape des publications n'est pas encore ouverte dans le parcours.", "The posts step is not open yet.") });
 
@@ -46,19 +47,27 @@ const planTool: AgentTool<{ redo?: string }> = {
 
 type CreateArgs = { networks: Platform[]; groups?: number[] };
 const groupsOf = (j: ReturnType<typeof journeyOf>, a: CreateArgs) => (j.posts?.groups ?? []).map((g, i) => ({ g, i })).filter((x) => !a.groups?.length || a.groups.includes(x.i + 1));
-/** Devis de la création : une image par groupe et par réseau, au prix du moteur de publications (probable et plafond). */
+/**
+ * Le nombre d'images à créer pour un groupe : une par format, pas par réseau (22 novembre 2026). Instagram et Facebook,
+ * tous deux en 4:5, reçoivent la même image, chacun avec son texte.
+ */
+export function imagesParGroupe(networks: Platform[]): number {
+  return new Set(networks.map((n) => { const d = platformSpec(n).dims.image; return d ? `image:${d.aspect}` : `reseau:${n}`; })).size;
+}
+
+/** Devis de la création : une image par groupe et par format, au prix du moteur de publications (probable et plafond). */
 function createQuote(ctx: Parameters<NonNullable<AgentTool["estimate"]>>[0], a: CreateArgs) {
   const p = project(ctx), j = journeyOf(ctx.conversationId);
   const deps = realSocialDeps(null, p, aiActiveFor(p.userId, p.id));
-  const n = groupsOf(j, a).length, networks = [...new Set(a.networks)];
-  return { p, j, n, networks, probable: n * quoteOne("image", "ai_post", networks.length, (k) => probableOf(deps, k)), cap: n * quoteOne("image", "ai_post", networks.length, deps.estimate) };
+  const n = groupsOf(j, a).length, networks = [...new Set(a.networks)], images = imagesParGroupe(networks);
+  return { p, j, n, networks, images: n * images, probable: n * quoteOne("image", "ai_post", images, (k) => probableOf(deps, k)), cap: n * quoteOne("image", "ai_post", images, deps.estimate) };
 }
 
 const createTool: AgentTool<CreateArgs> = {
   name: "posts.create", module: "publications", kind: "generate", needsProject: true,
   description: "Étape 9 (PAYANT : le Studio montre le devis sur la carte d'accord), seulement quand le plan convient au client : crée les publications du plan, chacune dans le format de chacun de SES réseaux (networks = les réseaux qu'il t'a donnés, jamais devinés). Chaque image est créée puis contrôlée par le Studio avant d'être montrée. groups = les numéros des groupes à créer (1 à 3) s'il n'en veut qu'une partie.",
   args: z.object({ networks: z.array(z.enum(PLATFORMS)).min(1).max(6), groups: z.array(z.number().int().min(1).max(3)).min(1).max(3).optional() }).strict(),
-  estimate: (ctx, a) => { const q = createQuote(ctx, a); return { maxMicro: q.cap, probableMicro: q.probable, label: L(`${q.n} publication${q.n > 1 ? "s" : ""} créée${q.n > 1 ? "s" : ""} pour ${q.networks.join(", ")} (${q.n * q.networks.length} images), chacune contrôlée avant de t'être montrée`, "posts created for your networks") }; },
+  estimate: (ctx, a) => { const q = createQuote(ctx, a); return { maxMicro: q.cap, probableMicro: q.probable, label: L(`${q.n} publication${q.n > 1 ? "s" : ""} créée${q.n > 1 ? "s" : ""} pour ${q.networks.join(", ")} (${q.images} image${q.images > 1 ? "s" : ""}${q.images < q.n * q.networks.length ? ", la même pour les réseaux au même format" : ""}), chacune contrôlée avant de t'être montrée`, "posts created for your networks") }; },
   run: (ctx, a) => {
     const q = createQuote(ctx, a), { p, j } = q;
     if (!stepAvailable(j, 9)) return closed();
@@ -78,19 +87,31 @@ const createTool: AgentTool<CreateArgs> = {
         platforms: q.networks.map((platform) => ({ platform })),
         headline: g.title, caption: g.caption, request: g.visual,
         subject: product ? { kind: "product", key: product.id } : null,
-        editorial: { role: POST_SUBJECT_LABEL[g.subject], structure: STRUCTURE[g.subject], blocks: [...g.points.map((text) => ({ kind: "tip" as const, text })), { kind: "paragraph" as const, text: g.cta }] },
+        // Une pastille qui reste un ordre au lecteur n'est jamais posée (règle « aucun ordre donné au lecteur »).
+        editorial: { role: POST_SUBJECT_LABEL[g.subject], structure: STRUCTURE[g.subject], blocks: [...g.points.map((text) => ({ kind: "tip" as const, text })), ...(estUnOrdre(g.cta) ? [] : [{ kind: "paragraph" as const, text: g.cta }])] },
       });
       // Convention attendue par le calendrier : un groupe = une publication déclinée par réseau, avec son sujet.
-      run("UPDATE posts SET group_id=?, hashtags=?, brief=json_set(COALESCE(brief,'{}'),'$.serie',?,'$.synaPlan',?) WHERE plan_id=?", one.planId, g.hashtags.join(" "), POST_SUBJECT_LABEL[g.subject], j.posts.round, one.planId);
+      run("UPDATE posts SET group_id=?, hashtags=?, brief=json_set(COALESCE(brief,'{}'),'$.serie',?,'$.synaPlan',?) WHERE plan_id=?", one.planId, bornerMotsDiese(g.hashtags).join(" "), POST_SUBJECT_LABEL[g.subject], j.posts.round, one.planId);
+      // Le concept de l'image écrit par la stratège et relu par le juge : il sert tel quel, sans nouvel appel de rédaction,
+      // et le titre accepté par le client est celui de l'image (audit du 22 novembre 2026).
+      const planConcept = planConceptFor(g);
+      if (planConcept) run("UPDATE posts SET brief=json_set(COALESCE(brief,'{}'),'$.planConcept',json(?)) WHERE plan_id=?", JSON.stringify(planConcept), one.planId);
       ids.push(...one.ids);
     }
     if (!ids.length) return { ok: false, summary: L("Aucune publication à créer.", "Nothing to create.") };
     const params = produceParams("image", "ai_post");
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: "social.v2.produce", label: L("Publications du plan (SINA)", "Plan posts (SINA)"), payload: { projectId: p.id, ids, expectedInputs: productionInputVersions(p.id, ids), allowPaid: true, maxCostEur: q.cap / 1e6, approvedEstimateMicro: q.probable, aiImages: params.aiImages ?? null, aiBackground: !!params.aiBackground } });
     updateJourney(ctx.conversationId, (x) => { if (x.posts) x.posts.created = { postIds: ids, jobId: job.id, networks: q.networks, at: Date.now() }; setStep(x, 9, "doing"); });
-    return { ok: true, jobs: [job.id], summary: L(`Création de ${q.n} publication${q.n > 1 ? "s" : ""} pour ${q.networks.join(", ")} lancée (${ids.length} images, quelques minutes).`, "Creating the posts."), hint: "À la fin de la tâche : dis honnêtement combien d'images sont prêtes et lesquelles ont échoué (posts.list les montre) ; une image ratée n'est jamais présentée comme bonne. Puis le client valide (posts.validate)." };
+    return { ok: true, jobs: [job.id], summary: L(`Création de ${q.n} publication${q.n > 1 ? "s" : ""} pour ${q.networks.join(", ")} lancée (${q.images} image${q.images > 1 ? "s" : ""}, quelques minutes).`, "Creating the posts."), hint: "À la fin de la tâche : dis honnêtement combien d'images sont prêtes et lesquelles ont échoué (posts.list les montre) ; une image ratée n'est jamais présentée comme bonne. Puis le client valide (posts.validate)." };
   },
 };
+
+/** Concept de l'image tiré du plan (titre, appel, scène et concept), ou null pour un plan d'avant (sans concept). */
+export function planConceptFor(g: PostGroup): { headline: string; subline: string; cta: string; scene: string; concept: NonNullable<PostGroup["concept"]> } | null {
+  if (!g.concept) return null;
+  const ctaStyle = g.concept.ctaStyle;
+  return { headline: g.title, subline: "", cta: ctaStyle === "none" || estUnOrdre(g.cta) ? "" : g.cta, scene: g.visual, concept: g.concept };
+}
 
 /** Publications du plan qui ont leur image (créées, contrôlées par le moteur). */
 export function createdPosts(projectId: string, postIds: string[]): { id: string; network: string; title: string; status: string; media: string[] }[] {

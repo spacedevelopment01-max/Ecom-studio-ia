@@ -151,7 +151,7 @@ describe("Project Brain 2.1 — façade projectContext", async () => {
     }
   });
 
-  it("ordre des blocs : système, contexte stable, référence, POINT DE CACHE, volatil, images, demande ; trace Brain enregistrée", async () => {
+  it("ordre des blocs : système, référence (POINT DE MÉMOIRE), contexte stable (POINT DE MÉMOIRE), volatil, images, demande ; trace Brain enregistrée", async () => {
     const pid = service();
     asset(pid, "photo-volatile.jpg");
     const p = loadProject(pid);
@@ -163,17 +163,18 @@ describe("Project Brain 2.1 — façade projectContext", async () => {
     const params = sent.at(-1);
     expect(params.system[0].cache_control).toEqual({ type: "ephemeral" });
     const blocks = params.messages[0].content;
-    expect(blocks[0]).toMatchObject({ type: "text", text: ctx });
-    expect(blocks[0].cache_control).toBeUndefined();
-    expect(blocks[1]).toMatchObject({ type: "text", text: "REFERENCE-STABLE", cache_control: { type: "ephemeral" } });
+    // Économies du 22 novembre 2026 : la référence (la même pour tous les clients) passe devant le contexte du projet,
+    // chacun avec son point de mémoire.
+    expect(blocks[0]).toMatchObject({ type: "text", text: "REFERENCE-STABLE", cache_control: { type: "ephemeral" } });
+    expect(blocks[1]).toMatchObject({ type: "text", text: ctx, cache_control: { type: "ephemeral" } });
     expect(blocks[2].type).toBe("text");
     expect(blocks[2].text).toContain("photo-volatile.jpg");
     expect(blocks[2].cache_control).toBeUndefined();
     expect(blocks[3]).toMatchObject({ type: "text", text: "Image 1 — photo :" });
     expect(blocks[4].type).toBe("image");
     expect(blocks.at(-1)).toMatchObject({ type: "text", text: "DEMANDE" });
-    // Deux points de cache seulement (système + dernier bloc stable) ; le volatil est après.
-    expect(blocks.filter((b: any) => b.cache_control).length).toBe(1);
+    // Trois points de mémoire (système, référence, contexte), sous la limite de quatre ; le volatil est après.
+    expect(blocks.filter((b: any) => b.cache_control).length).toBe(2);
     const row = one<any>("SELECT brain_scope, brain_hash, brain_version FROM ai_calls WHERE project_id = ? ORDER BY created_at DESC LIMIT 1", pid);
     expect(row).toEqual({ brain_scope: "legacy:images", brain_hash: view.hash, brain_version: BRAIN_VERSION });
   });

@@ -17,7 +17,7 @@ import { SINA_DESSIN_JOB } from "./dessin/job";
 import { z } from "zod";
 import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId, tx } from "../db";
-import { budgetPctText } from "../ai/budget-pct";
+import { budgetPctTu } from "../ai/budget-pct";
 import { balance } from "../billing";
 import { activityGaps, COMPANY_FIELDS } from "./activity";
 import { loadSiteCopy } from "./mockup-code/copy";
@@ -29,21 +29,25 @@ import { requirePlan } from "../plan-gates";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { allTools, getTool, isSensitive, toolCatalog, toolEntry, toolVisible, type ToolScope } from "./registry";
-import { conversationSettings, keyMoment, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
+import { noterTravail, prixJuste } from "./travaux";
+import { defautsDuMessage, noteDeControle } from "./controle-message";
+import { conversationSettings, keyMoment, momentDeLEtape, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
 import { loadWordingRules, wordingPromptLine } from "../client-wording";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
 import { planOfProject } from "../plan-gates";
 import { routeCountFor } from "./brand-routes";
-import { authorizedBudget, addMessage, createRun, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
+import { authorizedBudget, addMessage, createRun, debutDuFil, FIL_MAX, filDeConversation, messagesDepuis, messagesDuClientAvant, getRun, lastMessages, pendingOf, recordChanges, runByRequest, activeRun, updateRun, type PendingAction, type SynaRun, type SynaMessage } from "./store";
 import { budgetState, jobSpentMicro, replyAllowanceMicro, trackJob, authorizeBudgetPct, DEFAULT_BUDGET_PCT } from "./budget";
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, stepReady, currentStep, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus } from "./journey";
+import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
 import { anglesViewOf } from "./angles";
 import { sinaModels } from "./models";
+import { aLaChargeDuStudio } from "../billing";
+import { carteActiviteAJour, ECRITURES_DE_L_ACTIVITE } from "./tools/activity";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
-import { chosenRoute } from "./logos";
+import { chosenRoute, plancheWordmark } from "./logos";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
 import { safeWordmark } from "./brand-routes";
 import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
@@ -217,9 +221,11 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
     if (waited.length) {
       // Coût RÉEL de chaque tâche (appels enregistrés), même en échec : SINA ne dit jamais « rien n'a été débité » sans ce
       // chiffre (essais réels du 7 novembre : deux recherches échouées avaient coûté 0,29 € et 0,95 €).
-      const results = waited.map((jid) => { const j = getJob(jid); const spent = one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", jid)?.c ?? 0; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctText(j.user_id, spent, j.project_id) : null, coutReelMicro: spent }; });
+      // Le compte rendu entier de la création du site, donné une seule fois, ici (le contexte n'en garde que ce qui reste).
+      const compteRendu = waited.some((jid) => getJob(jid)?.type === "syna.site" && getJob(jid)?.status === "done") ? journeyOf(r.conversation_id).site?.report ?? null : null;
+      const results = waited.map((jid) => { const j = getJob(jid); const spent = one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", jid)?.c ?? 0; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctTu(j.user_id, spent, j.project_id) : null, coutReelMicro: spent }; });
       const failedSpent = results.filter((x) => x.status !== "done" && x.coutReelMicro > 0);
-      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Tâche terminée, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")}.`, "Finished with a failure.") : L("Tâche terminée : je relis le résultat.", "Task finished: reading the result."), ...(failedSpent.length ? { hint: `Dis au client ce coût réel ; ne dis jamais que rien n'a été débité.${results.some((x) => x.status === "failed" && x.type === "syna.site") ? " Pour relancer la création de son site là où elle s'est arrêtée, sans repayer ce qui était fait : site.create avec relancer:true (une carte affiche le prix de ce qui reste)." : ""}${repriseAccueil(r.project_id, results)}` } : {}), data: results }, r.id);
+      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Tâche terminée, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")}.`, "Finished with a failure.") : L("Tâche terminée : je relis le résultat.", "Task finished: reading the result."), ...(failedSpent.length ? { hint: `Dis au client ce coût réel ; ne dis jamais que rien n'a été débité.${results.some((x) => x.status === "failed" && x.type === "syna.site") ? " Pour relancer la création de son site là où elle s'est arrêtée, sans repayer ce qui était fait : site.create avec relancer:true (une carte affiche le prix de ce qui reste)." : ""}${repriseAccueil(r.project_id, results)}` } : {}), data: compteRendu ? { taches: results, compteRenduDuSite: compteRendu } : results }, r.id);
       updateRun(r.id, { waiting_jobs: "[]" });
     }
     // 2. Action approuvée (ou refusée) par le client.
@@ -230,6 +236,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       updateRun(r.id, { pending_json: null });
       if (out.jobs?.length) return suspend(r, out.jobs);
     } else if (pending?.declined) updateRun(r.id, { pending_json: null });
+    // Le client a cliqué sur une partie de son site : le Studio lit lui-même la section (gratuit) avant la première
+    // réflexion, comme si SINA l'avait demandée (audit de la conversation, 22 novembre 2026 : une réflexion de moins).
+    if (r.step === 0) await prelireLaSection(r, tctx);
 
     // 3. Étapes du modèle.
     for (;;) {
@@ -249,8 +258,23 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         if (e instanceof CostCapReached) return askBudget(r);
         throw e;
       }
-      // Moment qui compte (résultat à présenter, échec, client mécontent) : la réponse est relue avant de partir, et
-      // réécrite une fois si la relectrice la refuse.
+      // Le nettoyage gratuit d'abord (une question répétée à la fin, une élision) : il ne fait jamais payer de réécriture.
+      out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
+      // Contrôle gratuit des règles du propriétaire (une question à la fois pendant « faire connaissance », jamais
+      // « C'est parti » avant l'accord sur la carte) : réécrit une fois avec la remarque (essais complets, Nadia).
+      {
+        const lance = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND run_id=? AND role='tool'", r.conversation_id, r.id).some((m) => (json<any>(m.content_json, {}).jobs ?? []).length > 0);
+        const motsCorriges = r.project_id ? (() => { try { return loadWordingRules(r.project_id!); } catch { return []; } })() : [];
+        const regle = { etape: currentStep(journeyOf(r.conversation_id)), payant: (tool: string) => !!getTool(tool)?.estimate, lance, motsCorriges };
+        const defauts = defautsDuMessage(out, regle);
+        if (defauts.length) {
+          // Réécriture après le contrôle : une reprise du Studio, jamais débitée au client (règle du propriétaire).
+          const run0 = r;
+          try { out = await aLaChargeDuStudio(() => reason(user, run0, jobId, step, deps, noteDeControle(defauts), ":controle")); } catch (e) { if (e instanceof CostCapReached) return askBudget(r); throw e; }
+        }
+      }
+      // Moment qui compte (résultat à présenter, échec, client mécontent) : la réponse est relue avant de partir, après le
+      // contrôle gratuit (la relectrice lit la version corrigée), et réécrite une fois si elle la refuse.
       let relu: "ok" | "repris" | null = null;
       ({ out, relu } = await reviewedReply(user, r, jobId, step, deps, out));
       if (out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
@@ -286,7 +310,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           // Un refus du moteur natif pendant le devis (étape préalable, droits, tarif) est un résultat d'outil : SINA
           // le lit et s'adapte (question au client, autre outil), l'exécution ne s'arrête pas.
           let est: Awaited<ReturnType<NonNullable<AgentTool["estimate"]>>>;
-          try { est = await t.estimate(tctx, parsed.data); }
+          // Carte juste : le prix probable sur les coûts réellement mesurés des derniers travaux du même genre ; le plafond ne change pas.
+          try { est = prixJuste(t.name, await t.estimate(tctx, parsed.data)); }
           catch (e) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, ...((e as { internal?: boolean } | null)?.internal === true ? { internal: true } : {}), summary: L("Refus avant exécution : ", "Refused before running: ") + String(clip(e instanceof Error ? e.message : String(e), (e as { internal?: boolean } | null)?.internal === true ? 1600 : 600)) }, r.id); continue; }
           // Règle du propriétaire : le prix d'abord, puis l'accord écrit du client, pour TOUTE dépense (audit du 10 novembre
           // 2026 : sous un budget autorisé d'office, les créations partaient sans carte). Une action gratuite (devis à 0, ex.
@@ -333,6 +358,35 @@ function suspend(r: SynaRun, jobs: string[]) {
 }
 
 /** Exécution d'un outil : idempotente par clé (une reprise ne rejoue jamais une écriture acquise). */
+/**
+ * Les pièces jointes, dans la partie qui change à chaque pas (audit du 22 novembre 2026) : celles du dernier message du
+ * client décrites en entier, les plus anciennes en une ligne (leur identifiant et leur nom), au lieu de tout redécrire.
+ */
+export function piecesJointes(cid: string, history: SynaMessage[]): string {
+  const toutes = attachmentsOf(cid);
+  if (!toutes.length) return "aucune";
+  const derniere = [...history].reverse().find((m) => m.role === "user");
+  const neuves = new Set<string>((derniere?.content?.attachments ?? []).map(String));
+  return toutes.map((a) => (neuves.has(a.id) ? describeAttachment(a) : `- ${a.id} : « ${a.name} »${a.assetId ? ` (asset ${a.assetId})` : ""}`)).join("\n");
+}
+
+/** Une image du parcours qui change souvent (gardée hors de la partie en mémoire). */
+export const imageQuiChange = (label?: string) => /^(Thème sur mesure|Galerie produit|Maquette|Site codé|Accueil dessiné)/.test(label ?? "");
+
+/** La section désignée par le client dans son message (« [Élément désigné · section s1234abcd … »), sinon null. */
+export function sectionDesignee(text: string): string | null {
+  return /^\[Élément désigné · section (s[0-9a-f]{8})\b/.exec(text.trim())?.[1] ?? null;
+}
+
+async function prelireLaSection(r: SynaRun, ctx: ToolContext): Promise<void> {
+  if (!r.project_id) return;
+  const dernier = lastMessages(r.conversation_id, 6).filter((m) => m.role === "user").at(-1);
+  const uid = dernier ? sectionDesignee(String(dernier.content?.text ?? "")) : null;
+  const t = uid ? getTool("custom.section") : null;
+  if (!uid || !t) return;
+  try { await execute(t, { uid }, ctx, `prelecture:${uid}`, r); } catch { /* SINA la lira elle-même */ }
+}
+
 async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: string, r: SynaRun): Promise<ToolResult> {
   const prior = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND run_id=? AND role='tool'", r.conversation_id, r.id)
     .map((m) => json<any>(m.content_json, {})).find((m) => m.key === key && m.tool === t.name);
@@ -351,7 +405,11 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
   // Après une validation réussie et confirmée par le parcours relu, le Studio pose le verrou lui-même.
   if (!locked) { try { apresValidation(r.conversation_id, t.name, res); } catch { /* registre illisible : rien n'est verrouillé */ } }
   if (res.changes?.length) recordChanges(r.conversation_id, r.id, t.name, res.changes);
-  addMessage(r.conversation_id, "tool", { key, tool: t.name, args, ok: res.ok, summary: res.summary, ...(res.hint ? { hint: res.hint } : {}), ...(res.internal ? { internal: true } : {}), data: clip(res.data, 6000), changes: res.changes, jobs: res.jobs, ambiguous: res.ambiguous }, r.id);
+  // Étape 5 : un enregistrement réussi remet la carte « Ton activité » à jour et dit ce qui manque encore (gratuit).
+  if (res.ok && r.project_id && ECRITURES_DE_L_ACTIVITE.has(t.name)) { try { const carte = carteActiviteAJour(r.project_id, r.conversation_id); if (carte) res = { ...res, hint: [res.hint, carte].filter(Boolean).join(" ") }; } catch { /* la carte se refait avec activity.plan */ } }
+  // Un travail payant lancé : noté avec son plafond (prix probable mesuré, coût par travail accepté).
+  if (t.estimate && res.ok && res.jobs?.length) { try { noterTravail(t.name, res.jobs, { userId: r.user_id, projectId: r.project_id, conversationId: r.conversation_id }); } catch { /* le carnet ne bloque jamais un travail */ } }
+  addMessage(r.conversation_id, "tool", { key, tool: t.name, args, ok: res.ok, summary: res.summary, ...(res.hint ? { hint: res.hint } : {}), ...(res.internal ? { internal: true } : {}), data: clip(res.data, t.name === "custom.section" ? 32000 : 6000), changes: res.changes, jobs: res.jobs, ambiguous: res.ambiguous }, r.id);
   return res;
 }
 
@@ -361,7 +419,7 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
  * IA du mois (jamais en euros, jamais le nom technique de l'outil).
  */
 export async function confirmationText(t: AgentTool, args: unknown, ctx: ToolContext, userId: string, projectId: string | null, est?: { label: string; probableMicro?: number; maxMicro: number }): Promise<string> {
-  const pct = (m: number) => budgetPctText(userId, m, projectId);
+  const pct = (m: number) => budgetPctTu(userId, m, projectId);
   const price = est && est.maxMicro > 0 ? (est.probableMicro ? L(`Coût probable : ${pct(est.probableMicro)} ; au plus ${pct(est.maxMicro)}.`, `Likely cost: ${pct(est.probableMicro)}; at most ${pct(est.maxMicro)}.`) : L(`Au plus ${pct(est.maxMicro)}.`, `At most ${pct(est.maxMicro)}.`)) : "";
   const what = t.preview ? await t.preview(ctx, args) : est?.label ? est.label.charAt(0).toUpperCase() + est.label.slice(1) + "." : t.description.split(/(?<=[.:])\s/)[0];
   return [what, price].filter(Boolean).join("\n");
@@ -375,7 +433,7 @@ export function budgetInsuffisant(userId: string, projectId: string | null, maxM
   let b: ReturnType<typeof balance>;
   try { b = balance(userId, projectId); } catch { return null; }
   if (b.available >= maxMicro) return null;
-  const pct = (m: number) => budgetPctText(userId, m, projectId).replace(/de votre budget/, "de ton budget");
+  const pct = (m: number) => budgetPctTu(userId, m, projectId);
   const fin = new Date(b.periodEnd).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
   return L(`Pas lancé, rien n'est payé : ce travail peut coûter jusqu'à ${pct(maxMicro)}, et il ne reste que ${pct(b.available)} pour ce mois. Dis-le simplement au client : il peut recharger l'IA de son projet (Mon compte), puis te redemander ; sinon, son budget repart le ${fin}.`,
     `Not started, nothing paid: this may cost up to ${pct(maxMicro)} and only ${pct(b.available)} is left this month. Tell the client: they can top up the project's AI (My account), or wait until ${fin}.`);
@@ -401,7 +459,7 @@ function reportWithoutAi(r: SynaRun) {
   const last = waits[waits.length - 1];
   // Rien de créé dans cette demande, ou SINA a déjà parlé depuis : rien à ajouter.
   if (!last || msgs.slice(msgs.indexOf(last) + 1).some((m) => m.role === "assistant")) return;
-  const results = (Array.isArray(last.c.data) ? last.c.data : []) as { type?: string; status?: string; coutReel?: string | null }[];
+  const results = (Array.isArray(last.c.data) ? last.c.data : Array.isArray(last.c.data?.taches) ? last.c.data.taches : []) as { type?: string; status?: string; coutReel?: string | null }[];
   const done = results.length > 0 && results.every((x) => x.status === "done");
   const site = results.some((x) => x.type === "syna.site") ? (() => { try { return journeyOf(r.conversation_id).site?.report ?? null; } catch { return null; } })() : null;
   const what = site
@@ -527,11 +585,11 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
   const t = name ? getTool(name) : null;
   if (!t?.estimate || !r.project_id) return "";
   try {
-    const est = await t.estimate(toolContext(user, r), {} as never);
+    const est = prixJuste(name!, await t.estimate(toolContext(user, r), {} as never));
     if (!est.maxMicro) return "";
     // Coût probable annoncé quand l'outil le donne (étape 7 : le plafond au pire n'a pas de sens pour le client).
-    if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctText(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctText(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
-    return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctText(user.id, est.maxMicro, r.project_id)}. Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
+    if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctTu(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctTu(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
+    return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctTu(user.id, est.maxMicro, r.project_id)}. Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
   } catch { return ""; }
 }
 
@@ -558,28 +616,49 @@ export function needsJudgement(history: { role: string; content?: any }[]): bool
 const sawImages = new Map<string, boolean>();
 
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
-async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, note = ""): Promise<StepOutput> {
-  const history = lastMessages(r.conversation_id, 120);
+async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, note = "", cle = note ? ":reprise" : ""): Promise<StepOutput> {
+  const history = filDeConversation(r.conversation_id, debutDuFilDeLEtape(r.conversation_id));
   const scope = toolScope(r), conv = conversationSettings();
   // Variété des réponses : les débuts de tes derniers messages, à ne pas reprendre.
   const openings = history.filter((m) => m.role === "assistant" && m.content?.message).slice(-4).map((m) => String(m.content.message).split(/\s+/).slice(0, 5).join(" "));
-  const images: LlmImage[] = [...(step === 0 || newAttachmentSinceLastAssistant(history) ? attachmentImages(r.conversation_id, history) : []), ...(await journeyImages(journeyOf(r.conversation_id), r.project_id).catch(() => []))].slice(0, 12);
+  // Les photos jointes par le client arrivent avec sa demande ; les images de ce qu'elle a déjà créé (logos, planche,
+  // site) restent les mêmes d'un pas à l'autre : elles sont gardées en mémoire chez le fournisseur (22 novembre 2026).
+  // Les images qui changent à chaque retouche ou disparaissent au bout de quelques minutes (captures du site, photos et
+  // galerie récentes, maquettes, accueil dessiné) partent après le fil : en mémoire, chacune ferait réécrire tout le fil.
+  const jointes: LlmImage[] = (step === 0 || newAttachmentSinceLastAssistant(history) ? attachmentImages(r.conversation_id, history) : []).slice(0, 12);
+  const parcours: LlmImage[] = (await journeyImages(journeyOf(r.conversation_id), r.project_id).catch(() => [])).slice(0, 12 - jointes.length);
+  const duParcours = parcours.filter((im) => !imageQuiChange(im.label));
+  const images = [...jointes, ...parcours.filter((im) => imageQuiChange(im.label))];
+  const guide = guideDeLEtape(journeyOf(r.conversation_id));
   const b = budgetState(user.id, r.project_id, r.conversation_id);
   const snapshot = r.project_id ? await projectSnapshot(toolContext(user, r)) : L("Aucun projet rattaché (brouillon) : il est créé dès que l'activité et l'offre du client sont connues (start.answer).", "No project linked yet (draft): it is created once the business and offer are known.");
+  const choix = (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })();
   const call: LlmCall = {
     task: "agent_conversation", userId: user.id, projectId: r.project_id, jobId,
+    // Mémoire d'une heure : un client qui réfléchit, ou une création en arrière-plan, ne fait plus tout repayer.
+    memoireLongue: true,
     system: SYNA_SYSTEM, promptKey: "syna-agent-2",
-    reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(!!r.project_id, scope, currentStep(journeyOf(r.conversation_id)))}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
-    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id) })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${attachmentsOf(r.conversation_id).map(describeAttachment).join("\n") || "aucune"}${note}`,
-    prompt: `# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)\n${serialize(history)}\n\nÉtape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
+    // La même liste d'outils avant et après la création du projet (relevé de Nadia, 22 novembre 2026 : la liste changeait à
+    // la 2e réponse et toutes les notices étaient réécrites en mémoire) ; un outil qui demande un projet est refusé sans
+    // rien payer tant qu'il n'existe pas.
+    reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(true, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}${guide ? `\n\n# Consigne de l'étape en cours (la même à chaque pas de l'étape)\n${guide}` : ""}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
+    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${piecesJointes(r.conversation_id, history)}${resultatsDeLaDemande(history)}${note}`,
+    // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
+    history: filEnBlocs(history, history[0] ? messagesDuClientAvant(r.conversation_id, history[0].seq) : []),
+    prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
     images: images.length ? images : undefined,
-    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${note ? ":reprise" : ""}`, routing: { difficulty: "complex", prefer: (() => { const j = journeyOf(r.conversation_id); return modelFor(currentStep(j), { customTheme: !!j.customChosenAt, judge: needsJudgement(history), keyMoment: conv.momentsForts ? momentOf(history, currentStep(j)) : null }); })() },
+    imagesEnMemoire: duParcours.length ? duParcours : undefined,
+    maxTokens: 12000, maxOutputTokens: 16000, usageKey: `syna:${r.id}:${step}${cle}`, routing: { difficulty: "complex", prefer: { ...choix, effort: sinaModels().strong.effort } },
+    // L'effort des moments forts passe par un message dans la conversation : l'effort de la demande ne change plus et la
+    // mémoire du fil reste (22 novembre 2026). Fonction refusée ou éteinte : l'effort passe dans la demande, comme avant.
+    ...(choix.effort && choix.effort !== sinaModels().strong.effort ? { effortDuTour: choix.effort } : {}),
   };
-  sawImages.set(r.id, images.some((im) => /^(Logo|Planche|Identité|Marque du client|Maquette|Site codé|Thème sur mesure|Accueil dessiné)/.test(im.label ?? "")));
+  sawImages.set(r.id, [...images, ...duParcours].some((im) => /^(Logo|Planche|Identité|Marque du client|Maquette|Site codé|Thème sur mesure|Accueil dessiné)/.test(im.label ?? "")));
   if (deps.reason) return StepSchema.parse(await deps.reason(call));
   // Budget des réponses, plus le reste d'un accord donné sur la carte dans cette demande (pour en rendre compte).
   const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);
-  return withTrace({ jobId, projectId: r.project_id, step: "syna", costCapMicro: cap }, () => llmJson(call, StepSchema));
+  // L'étape du parcours dans la trace : le coût de SINA se lit étape par étape (recherche 11, point 1).
+  return withTrace({ jobId, projectId: r.project_id, step: `syna:etape-${currentStep(journeyOf(r.conversation_id))}`, costCapMicro: cap }, () => llmJson(call, StepSchema));
 }
 
 /**
@@ -599,13 +678,16 @@ async function reviewedReply(user: User, r: SynaRun, jobId: string, step: number
     const wording = r.project_id ? (() => { try { return wordingPromptLine(loadWordingRules(r.project_id!)); } catch { return ""; } })() : "";
     const call: LlmCall = {
       task: "quality_control", userId: user.id, projectId: r.project_id, jobId, system: REPLY_REVIEW_SYSTEM, promptKey: "syna-reply-review-1",
-      prompt: replyReviewPrompt({ moment, stepLabel: JOURNEY_STEPS.find((s) => s.n === n)?.fr, client: String(history[lastUser]?.content?.text ?? ""), facts: serialize(history.slice(lastUser + 1)), draft, wording, quote: await stepQuote(user, r) }),
+      // Les relectures sont espacées de plus de 5 minutes : une heure, sinon sa consigne serait réécrite à chaque fois.
+      memoireLongue: true,
+      prompt: replyReviewPrompt({ moment, step: n, stepLabel: JOURNEY_STEPS.find((s) => s.n === n)?.fr, client: String(history[lastUser]?.content?.text ?? ""), facts: serialize(history.slice(lastUser + 1)), draft, wording, quote: await stepQuote(user, r) }),
       maxTokens: 3000, maxOutputTokens: 6000, usageKey: `syna:${r.id}:${step}:relecture`, routing: { difficulty: "standard", prefer: { ...modelFor(0)!, effort: "medium" } },
     };
     const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);
     const review = ReplyReviewSchema.parse(deps.review ? await deps.review(call) : await withTrace({ jobId, projectId: r.project_id, step: "syna-relecture", costCapMicro: cap }, () => llmJson(call, ReplyReviewSchema)));
     if (review.verdict !== "reprendre" || !review.issues.length) return { out: draft, relu: "ok" };
-    return { out: await reason(user, r, jobId, step, deps, reviewNote(draft, review.issues)), relu: "repris" };
+    // Réécriture après la relectrice : une reprise du Studio, jamais débitée au client.
+    return { out: await aLaChargeDuStudio(() => reason(user, r, jobId, step, deps, reviewNote(draft, review.issues))), relu: "repris" };
   } catch { return { out: draft, relu: null }; }
 }
 
@@ -614,20 +696,73 @@ function newAttachmentSinceLastAssistant(h: SynaMessage[]) {
   return false;
 }
 
+/**
+ * Le début du fil pour ce pas : le même pendant toute une étape. Il n'est recalculé qu'au changement d'étape (les notices
+ * changent alors, la mémoire est réécrite de toute façon) ou au-delà de `FIL_MAX` messages.
+ */
+export function debutDuFilDeLEtape(cid: string): number {
+  const j = journeyOf(cid), etape = currentStep(j);
+  if (j.fil && j.fil.etape === etape && messagesDepuis(cid, j.fil.depuis) <= FIL_MAX) return j.fil.depuis;
+  const depuis = debutDuFil(cid);
+  updateJourney(cid, (x) => { x.fil = { depuis, etape }; });
+  return depuis;
+}
+
 /** Fil lisible par le modèle : paroles exactes, réponses de SINA, résultats d'outils (tronqués), accords. */
 export function serialize(h: SynaMessage[]): string {
-  // Demande en cours : résultats complets ; demandes précédentes : résumés courts (moins de jetons relus à chaque étape).
-  let lastUser = -1;
-  h.forEach((m, i) => { if (m.role === "user") lastUser = i; });
-  return h.map((m, i) => {
-    const c = m.content, current = i > lastUser, dataMax = current ? 12000 : 300, argsMax = current ? 400 : 160;
-    if (m.role === "user") return `[client #${m.seq}] ${c.text}${c.attachments?.length ? ` (pièces jointes : ${c.attachments.join(", ")})` : ""}`;
-    if (m.role === "assistant") return `[SINA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, argsMax)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
-    if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.hint ? `\n  consigne (pour toi seule) : ${c.hint}` : ""}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, dataMax)}` : ""}`;
-    if (c.kind === "confirmation") return `[accord demandé #${m.seq}] ${c.pending?.tool} — ${c.pending?.reason}`;
-    if (c.kind === "approved" || c.kind === "declined") return `[client : ${c.kind === "approved" ? "ACCORD" : "REFUS"} pour ${c.tool}]`;
-    return `[événement ${c.kind}]`;
-  }).join("\n");
+  return serializeLines(h).join("\n");
+}
+
+/** Titre du fil, en tête de son premier bloc. */
+export const FIL_TITRE = "# Fil de la conversation (le plus ancien d'abord ; tes propres réponses incluses)";
+/**
+ * Le fil en blocs pour la mise en mémoire : un bloc par message (le titre sur le premier). D'un pas à l'autre d'une
+ * même demande, les blocs déjà envoyés restent identiques au caractère près et sont repris de mémoire.
+ */
+export function filEnBlocs(h: SynaMessage[], avant: SynaMessage[] = []): string[] {
+  const lines = serializeLines(h);
+  // Le début du fil n'est plus relu (fil très long) : un résumé à rubrique fixe le remplace, avec les mots du client.
+  const coupe = avant.length ? `${DEBUT_COUPE}\n${avant.map((m) => `- [client #${m.seq}] ${String(m.content?.text ?? "").replace(/\s+/g, " ").slice(0, 200)}`).join("\n")}\n\n` : "";
+  return lines.length ? lines.map((l, i) => i === 0 ? `${coupe}${FIL_TITRE}\n${l}` : l) : [`${coupe}${FIL_TITRE}\n(vide)`];
+}
+/** Rubrique du résumé du début du fil, quand il n'est plus relu. */
+export const DEBUT_COUPE = "# Début de la conversation, qui n'est plus relu en entier\nCe qu'il t'a dit y est noté dans sa fiche (ci-dessous) ; voici, en bref, ce qu'il a écrit (ses mots) :";
+
+/**
+ * Un message s'écrit dans le fil UNE seule fois, au moment où il y entre, puis ne change plus jamais (22 novembre 2026,
+ * demande du chef d'orchestre : réécrire le début d'une demande efface la mémoire du fournisseur, et peut la faire
+ * refuser quand on lui renvoie des résultats d'outils). Les résultats d'outils y sont donc toujours courts ; ceux de la
+ * demande en cours sont donnés en entier à part, dans la partie qui change à chaque pas (`resultatsDeLaDemande`).
+ */
+export const FIL_DONNEES_MAX = 300, FIL_ACTIONS_MAX = 160;
+/** Taille d'un résultat de la demande en cours, donné en entier à part. */
+export const DEMANDE_DONNEES_MAX = 12000;
+
+function serializeLines(h: SynaMessage[]): string[] {
+  return h.map((m) => ligneDuFil(m, FIL_DONNEES_MAX, FIL_ACTIONS_MAX));
+}
+
+/** Un message tel qu'il s'écrit : ne dépend que de lui-même, jamais de sa place dans le fil. */
+function ligneDuFil(m: SynaMessage, dataMax: number, argsMax: number): string {
+  const c = m.content;
+  if (m.role === "user") return `[client #${m.seq}] ${c.text}${c.attachments?.length ? ` (pièces jointes : ${c.attachments.join(", ")})` : ""}`;
+  if (m.role === "assistant") return `[SINA #${m.seq}] ${c.message}${c.actions?.length ? `\n  actions : ${c.actions.map((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.slice(0, argsMax)).join(" | ")}` : ""}${c.question ? `\n  question : ${c.question.text}` : ""}`;
+  if (m.role === "tool") return `[résultat ${c.tool} #${m.seq}] ${c.ok ? "OK" : "ÉCHEC"} — ${c.summary}${c.hint ? `\n  consigne (pour toi seule) : ${c.hint}` : ""}${c.changes?.length ? `\n  changements vérifiés : ${c.changes.map((x: any) => `${x.module}/${x.object} : ${x.summary}${x.verified ? "" : " (non vérifié)"}`).join(" ; ")}` : ""}${c.data != null ? `\n  données : ${JSON.stringify(c.data).slice(0, dataMax)}` : ""}`;
+  if (c.kind === "confirmation") return `[accord demandé #${m.seq}] ${c.pending?.tool} — ${c.pending?.reason}`;
+  if (c.kind === "approved" || c.kind === "declined") return `[client : ${c.kind === "approved" ? "ACCORD" : "REFUS"} pour ${c.tool}]`;
+  return `[événement ${c.kind}]`;
+}
+
+/**
+ * Les résultats d'outils de la demande en cours (depuis le dernier message du client), en entier, avec les actions qui
+ * les ont lancés : donnés à part, après le point de mémoire. Vide quand aucun n'a été raccourci dans le fil.
+ */
+export function resultatsDeLaDemande(h: SynaMessage[]): string {
+  let i = h.length - 1;
+  while (i >= 0 && h[i].role !== "user") i--;
+  const lignes = h.slice(i + 1).filter((m) => (m.role === "tool" && m.content?.data != null && JSON.stringify(m.content.data).length > FIL_DONNEES_MAX) || (m.role === "assistant" && m.content?.actions?.some((a: any) => `${a.tool} ${JSON.stringify(a.args)}`.length > FIL_ACTIONS_MAX)));
+  // La section lue pour une retouche, en entier : SINA y recopie les passages exacts à changer.
+  return lignes.length ? `\n\n# Résultats complets de cette demande (raccourcis dans le fil)\n${lignes.map((m) => ligneDuFil(m, m.content?.tool === "custom.section" ? 32000 : DEMANDE_DONNEES_MAX, 400)).join("\n")}` : "";
 }
 
 function clip(v: unknown, max: number): unknown {
@@ -645,7 +780,7 @@ function drawnName(x: Identity): DrawnWordmark | null {
   if (drawnNames.has(key)) return drawnNames.get(key)!;
   let drawn: DrawnWordmark | null = null;
   // Police illisible ou recette impossible : la planche écrit alors le nom dans la police de titres (jamais d'écran vide).
-  try { drawn = drawWordmark(x.name, safeWordmark(x.board.wordmark, x.name), x.fonts.heading); } catch { drawn = null; }
+  try { drawn = plancheWordmark(x as never); } catch { drawn = null; }
   if (drawnNames.size > 300) drawnNames.clear();
   drawnNames.set(key, drawn);
   return drawn;

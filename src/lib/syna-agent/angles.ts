@@ -14,6 +14,7 @@ import type { Study } from "./brand-chain";
 import { clientFacts } from "./brand-routes";
 import type { Journey } from "./journey";
 import { shownAngles, type AngleRole } from "./angle-roles";
+import type { ClientType } from "../ads-v2/types";
 
 export type SinaAngle = {
   id: string; title: string; audience: string; motivation: string; message: string; emotion: string;
@@ -131,4 +132,33 @@ export function chooseAngle(projectId: string, j: Journey, angleId: string, idem
     const active = activateSinaAngle(projectId, marketingAngleOf(a, role, angleFacts(j, projectId)), idempotencyKey);
     return { ok: active.angleId === role };
   } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+}
+
+/**
+ * Les types de clients de ses angles, pour ses publicités (décision du 22 novembre 2026, règle du propriétaire « Trois
+ * angles » : les angles non choisis « restent en réserve pour ses publications et ses publicités ») : l'angle choisi
+ * d'abord, puis les deux autres montrés, puis ceux gardés en réserve par le juge ; jamais deux fois le même type de client.
+ */
+export function clientTypesOf(j: Journey): ClientType[] {
+  const a = j.angles;
+  if (!a?.list.length) return [];
+  const chosen = j.angleChoice?.id ?? null;
+  const shown = (a.shown ?? []).map((x) => x.id);
+  const order = [...(chosen ? [chosen] : []), ...shown.filter((id) => id !== chosen), ...(a.reserve ?? []).filter((id) => id !== chosen && !shown.includes(id))];
+  const seen = new Set<string>();
+  const out: ClientType[] = [];
+  for (const id of order) {
+    const x = a.list.find((y) => y.id === id);
+    if (!x) continue;
+    const name = (x.client?.name || x.audience || "").trim(), key = name.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      angleId: x.id, name, who: (x.client?.who || x.person || x.audience || "").trim(),
+      wants: [x.client?.wants, x.client?.needs].filter(Boolean).join(" ; ") || x.motivation || "",
+      featured: x.featured?.trim() || null, argument: x.argument?.trim() || null,
+      message: x.message ?? "", emotion: x.emotion ?? "", chosen: x.id === chosen,
+    });
+  }
+  return out;
 }

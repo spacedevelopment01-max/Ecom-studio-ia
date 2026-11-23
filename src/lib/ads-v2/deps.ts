@@ -20,6 +20,7 @@ import type { ImageRequestV2 } from "../image-v2/engine";
 import { z } from "zod";
 import { CopySetSchema, type CopySet } from "./copy";
 import { AD_REVIEW_SYSTEM, AdReviewSchema } from "./quality";
+import { IMAGE_REVIEW_ROUTING } from "../orchestrator/policy";
 import type { AdReview } from "./types";
 
 /** Cases du quadrillage 6 × 6 (A1…F6) où se trouve le produit. */
@@ -63,7 +64,7 @@ export type AdsV2Deps = {
    * référence), contrôlée puis corrigée. Toujours présent dans le branchement réel ; null + raison : bloqué (IA
    * indisponible, budget, essais refusés) — jamais un gabarit à la place.
    */
-  finalAd?: (i: { nativePost?:import('../social-v2/deps').PostBrief;publicationQuote?:import('../social-v2/bounded-production-quote').NativePublicationQuote;assertCurrent?:()=>void;conceptId: string; copyApproved?: boolean; confirmedOffer?:string|null; campaignContext?:string; platform?: string; angle: string; hook: string; cta: string; subject: string; aspect: AspectId; maxCostEur: number }) => Promise<{ assetId: string | null; costMicro: number; reason?: string }>;
+  finalAd?: (i: { nativePost?:import('../social-v2/deps').PostBrief;publicationQuote?:import('../social-v2/bounded-production-quote').NativePublicationQuote;assertCurrent?:()=>void;conceptId: string; conceptShare?: { id: string; aspects: AspectId[] }; copyApproved?: boolean; confirmedOffer?:string|null; campaignContext?:string; platform?: string; angle: string; hook: string; cta: string; subject: string; aspect: AspectId; maxCostEur: number }) => Promise<{ assetId: string | null; costMicro: number; reason?: string }>;
 };
 
 export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean): AdsV2Deps {
@@ -80,7 +81,9 @@ export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean
       const{nativeSocialSubject}=await import('../social-v2/native-subject');if(i.publicationQuote&&(!i.nativePost||i.nativePost.id!==i.publicationQuote.postId))throw new Error('Le devis ne désigne pas cette annonce native.');const selected=i.nativePost?nativeSocialSubject(p,i.nativePost):null,project=selected?.project??p,ref=selected?selected.reference:legacyReference;
       const legacyPost = { entryPoint:"ads-campaign", id: `ad-${i.conceptId}-${i.aspect.replace(":", "x")}`, network: i.platform ?? "instagram", format: "image", title: i.hook, headline: i.hook, caption: campaign.copy?.primary ?? "", advertising:campaign, pillar: i.angle, objective: "convert", request: [i.subject,i.campaignContext,i.confirmedOffer?`Offre réelle confirmée et demandée par le client : ${i.confirmedOffer}`:null].filter(Boolean).join("\n") } as unknown as import("../social-v2/deps").PostBrief;
       const post=i.nativePost?{...i.nativePost,...(selected?{nativeBinding:selected.binding}:{}),entryPoint:'ads-campaign' as const}:legacyPost;
-      const d = {...realAiPostDeps(base,{project:selected?.project,beforeDispatch:i.assertCurrent,quote:i.publicationQuote}),confirmedCommercialTexts:i.confirmedOffer?[i.confirmedOffer]:[]};
+      // Un seul concept d'image par idée, partagé par ses formats (audit du 22 novembre 2026) : une campagne cohérente
+      // d'un format à l'autre, et deux appels de concept de moins par idée.
+      const d = {...realAiPostDeps(base,{project:selected?.project,beforeDispatch:i.assertCurrent,quote:i.publicationQuote}),confirmedCommercialTexts:i.confirmedOffer?[i.confirmedOffer]:[],...(i.conceptShare?{conceptShare:i.conceptShare}:{})};
       // Textes du moteur (contrôlés) gardés tels quels : pas de réécriture par l'IA de texte.
       const r = await designPostWithAi(project, post, { aspect: i.aspect, maxCostEur: i.maxCostEur, reference: ref, as: "ad",...(i.publicationQuote?{mode:i.publicationQuote.mode,maxAttempts:1}:{}) }, i.copyApproved ? withClientTexts(d,{headline:i.hook,subline:campaign.copy?.sub ?? undefined,cta:i.cta}) : d);
       return { assetId: r.assetId, costMicro: r.costMicro, reason: r.note };
@@ -158,7 +161,8 @@ export function realAdDeps(ctx: JobContext | null, p: Project, aiActive: boolean
           ...base,
           usageKey: key,
           promptKey: "ads-v2-review",
-          routing: { difficulty: "complex", deliverable: "ad_v2" },
+          // Chaque image relue par le modèle le plus fort, au niveau élevé (règle du propriétaire).
+          routing: IMAGE_REVIEW_ROUTING,
           system: AD_REVIEW_SYSTEM,
           context: brainView(p, "advertising").stable,
           images: [{ data: small, label: L("création publicitaire à juger", "ad creative to review") }],

@@ -28,13 +28,13 @@ export function parseSynaUiCommand(input: string): SynaUiCommand | null {
   if (has(/\b(ajoute\w*|cree\w*|ecris|ecrire|redige\w*|supprime\w*|modifie\w*|publie\w*|genere\w*|section|sections|bouton|titre|image|images|photo|photos|produit|produits|article|articles|publication|publications|logo|couleur|couleurs|fond|prix|banniere|video|videos|page d accueil|add|create|write|delete|generate|section|button|title|product|post|logo|colour|color|background|price|banner)\b/)) return null;
 
   // Mode
-  if (has(/\bplein (cadre|ecran)\b|\bfull (frame|screen)\b/)) {
-    if (has(/\b(quitte|quitter|sors|sortir|sans|leave|exit)\b/)) return { kind: "set", patch: { mode: "encre" }, say: ["Mode Encre", "Ink mode"] };
-    return { kind: "set", patch: { mode: "plein" }, say: ["Mode Plein cadre", "Full-frame mode"] };
+  if (has(/\b(plein|grand) (cadre|ecran)\b|\bfull (frame|screen)\b/)) {
+    if (has(/\b(quitte|quitter|sors|sortir|sans|leave|exit)\b/)) return { kind: "set", patch: { mode: "encre" }, say: ["SINA à côté", "SINA alongside"] };
+    return { kind: "set", patch: { mode: "plein" }, say: ["Grand écran", "Full screen"] };
   }
-  if (has(/\bencre\b|\bink\b/)) return { kind: "set", patch: { mode: "encre" }, say: ["Mode Encre", "Ink mode"] };
+  if (has(/\bencre\b|\bink\b|\ba cote\b|\balongside\b/)) return { kind: "set", patch: { mode: "encre" }, say: ["SINA à côté", "SINA alongside"] };
   if (has(/^(change|changer|bascule|basculer|switch|toggle)( de| le| the)? (mode|affichage|presentation|layout|interface)$/) || has(/^(autre|other) (mode|affichage)$/)) {
-    return { kind: "ask", question: ["Quel mode voulez-vous ?", "Which mode do you want?"], options: [{ label: ["Encre", "Ink"], command: "Mode Encre" }, { label: ["Plein cadre", "Full frame"], command: "Passe en Plein cadre" }] };
+    return { kind: "ask", question: ["Quel affichage veux-tu ?", "Which layout do you want?"], options: [{ label: ["SINA à côté", "SINA alongside"], command: "SINA à côté" }, { label: ["Grand écran", "Full screen"], command: "Grand écran" }] };
   }
 
   // Apparence

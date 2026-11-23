@@ -8,6 +8,9 @@ import { L } from "../../i18n-server";
 import { PLATFORMS } from "../../social-v2/platforms";
 import type { AgentTool, Change } from "../types";
 import { project, short } from "./common";
+import { all } from "../../db";
+import { journeyOf } from "../journey";
+import { offrirLesPublicationsDeLaMarque } from "../publications-de-la-marque";
 import { CALENDAR_DAYS, calendarView, markDone, moveEntry, planCalendar, readCalendar, type Calendar, type CalendarRequest } from "../calendar";
 
 const YMD = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -29,12 +32,16 @@ const doneEntries = (c: Calendar | null) => (c?.entries ?? []).filter((e) => e.s
 
 const planTool: AgentTool<CalendarRequest> = {
   name: "calendar.plan", module: "calendrier", kind: "write", needsProject: true,
-  description: `Prépare (ou refait) le calendrier de publication MANUEL, gratuitement, à partir des publications et publicités déjà créées : le client publie lui-même, jour par jour. Arguments : days (${CALENDAR_DAYS.join(", ")} ; 7 par défaut), perDay (publications par jour ; 1 par défaut), startDate (AAAA-MM-JJ, demain par défaut), times (heures HH:MM vues avec le client, sinon heures conseillées du Studio), networks (réseaux du client), emojis (false = textes sans emojis), includeAds (publicités à lancer ; non par défaut : décision du propriétaire du 7 novembre, seulement si le client le demande). Les cases déjà cochées « publié » sont gardées. Rien n'est inventé : s'il manque des publications, le nombre manquant est annoncé. Aucune publication automatique.`,
+  description: `Prépare (ou refait) gratuitement le calendrier de publication MANUEL avec les publications et publicités déjà créées : le client publie lui-même, jour par jour. Les 3 publications de sa marque finie l'ouvrent, offertes (Instagram et Facebook). days (${CALENDAR_DAYS.join(", ")} ; 7 par défaut), perDay (1 par défaut), startDate (AAAA-MM-JJ, demain par défaut), times (heures HH:MM vues avec le client, sinon heures conseillées du Studio), networks (ses réseaux), emojis (false = textes sans emojis), includeAds (publicités à lancer ; non par défaut : décision du propriétaire du 7 novembre, seulement si le client le demande). Les cases déjà cochées « publié » sont gardées. Rien n'est inventé : s'il manque des publications, le nombre manquant est annoncé. Aucune publication automatique.`,
   args: PlanArgs,
   sensitive: (_a, ctx) => !!ctx.projectId && openEntries(readCalendar(ctx.projectId)) > 0,
   preview: (ctx) => { const c = ctx.projectId ? readCalendar(ctx.projectId) : null; return L(`Refaire le calendrier : ${openEntries(c)} case(s) non publiée(s) seront replacées ; ${doneEntries(c)} case(s) déjà publiée(s) restent telles quelles.`, `Rebuild the calendar: ${openEntries(c)} unposted entr(ies) will be re-placed; ${doneEntries(c)} posted entr(ies) stay as they are.`); },
   run: (ctx, a) => {
     const p = project(ctx), before = readCalendar(p.id);
+    // Les trois publications de sa marque finie ouvrent le calendrier, offertes (aucun appel payant) : sur ses réseaux.
+    const j = (() => { try { return journeyOf(ctx.conversationId); } catch { return null; } })();
+    const known = all<{ network: string }>("SELECT DISTINCT network FROM posts WHERE project_id=? AND engine='v2'", p.id).map((r) => r.network);
+    const marque = j ? offrirLesPublicationsDeLaMarque(p, ctx.user.id, j, a.networks?.length ? a.networks : [...new Set([...(j.posts?.created?.networks ?? []), ...known])]) : { added: [], kept: [], notes: [] as string[] };
     const saved = planCalendar(p, a);
     const read = readCalendar(p.id);
     const ok = !!read && read.updatedAt === saved.updatedAt;
@@ -42,7 +49,9 @@ const planTool: AgentTool<CalendarRequest> = {
     const pubs = new Set(open.map((e) => e.unit)).size, sends = open.length;
     const ads = read?.entries.filter((e) => e.kind === "publicite" && e.status === "a_publier").length ?? 0;
     const v = read ? calendarView(p, read) : null;
-    const summary = L(
+    const offertes = read?.entries.filter((e) => e.kind === "publication" && e.unit.startsWith("marque:")).map((e) => e.unit) ?? [];
+    const nMarque = new Set(offertes).size;
+    const summary = (nMarque ? L(`Les ${nMarque} publication${nMarque > 1 ? "s" : ""} de ta marque ouvre${nMarque > 1 ? "nt" : ""} le calendrier, offerte${nMarque > 1 ? "s" : ""}. `, `Your brand's ${nMarque} post(s) open the calendar, free. `) : "") + (marque.notes.length ? L(`(${marque.notes.join(" ; ")}) `, "") : "") + L(
       `Calendrier de ${saved.settings.days} jours à partir du ${saved.settings.startDate} : ${pubs} publication(s) à faire${sends !== pubs ? `, soit ${sends} envois sur ${saved.settings.networks.length} réseau(x)` : ""}${ads ? `, ${ads} publicité(s) à lancer` : ""}${saved.missing ? ` ; il manque ${saved.missing} publication(s) pour remplir tous les créneaux` : ""}. Tu publies toi-même (pas de publication automatique pour l'instant).`,
       `${saved.settings.days}-day calendar from ${saved.settings.startDate}: ${pubs} post(s) to do${sends !== pubs ? `, i.e. ${sends} sends on ${saved.settings.networks.length} network(s)` : ""}${ads ? `, ${ads} ad(s) to launch` : ""}${saved.missing ? `; ${saved.missing} post(s) missing to fill every slot` : ""}. You post yourself (no automatic posting for now).`,
     );

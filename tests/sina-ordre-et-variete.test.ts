@@ -154,7 +154,11 @@ describe("les dix règles d'or et la lecture du cahier", () => {
     const regles = [...`\n${partie(2)}\n\n`.matchAll(/\n\d+\. ([\s\S]*?)(?=\n\d+\. |\n\n)/g)].map((m) => flat(m[1]).replace(/\*\*/g, ""));
     expect(regles).toHaveLength(10);
     for (const r of regles) expect(P.REGLES_D_OR, r).toContain(r);
-    for (const system of [DESIGN_SYSTEM, DESIGN_REVIEW_SYSTEM, SR.SECOND_REGARD_SYSTEM]) expect(system).toContain(P.REGLES_D_OR);
+    for (const system of [DESIGN_SYSTEM, DESIGN_REVIEW_SYSTEM]) expect(system).toContain(P.REGLES_D_OR);
+    // Le second regard ne rejuge plus les règles d'or, déjà vérifiées par le juge de l'ordre et par le code (audit du site
+    // du 22 novembre 2026, 6.3) : il ne juge que ce que seul un lecteur voit.
+    expect(SR.SECOND_REGARD_SYSTEM).not.toContain(P.REGLES_D_OR);
+    expect(SR.SECOND_REGARD_SYSTEM).toMatch(/Tu contrôles SEULEMENT ce que seul un lecteur peut voir :\nD\. la raison du choix[\s\S]*\nF\. le premier écran/);
     expect(P.REGLES_D_OR).toMatch(/au moins 10 sections sur chaque page importante/);
     expect(P.REGLES_D_OR).toMatch(/pages utilitaires restent courtes : panier, page introuvable, mentions légales, recherche, remerciement/);
     // Le juge de l'ordre connaît les services autant que les boutiques, la partition et le minimum.
@@ -584,7 +588,9 @@ describe("la conception de bout en bout, IA simulée", async () => {
       // La signature de la famille et le signe de la marque (17 novembre 2026) : dits au concepteur, contrôlés, rendus à sa
       // reprise, puis posés sans IA (fonds de section de la famille, signe complété) ; rien n'en reste « à revoir ».
       expect(calls[0].system).toContain("RÉGLAGES DE CHAQUE SECTION");
-      expect(calls[2].prompt).toMatch(/signe : le signe de la marque n'a pas de forme/);
+      // Depuis l'audit du site du 22 novembre 2026 (6.2), le Studio pose le signe lui-même AVANT de décider la reprise :
+      // ce point ne part plus à la reprise payée du concepteur.
+      expect(calls[2].prompt).not.toMatch(/signe : le signe de la marque n'a pas de forme/);
       expect(r.t.tenue).toMatchObject({ signeForme: "couture" });
       expect(r.t.pages.find((x) => x.key === "home")!.sections.filter((x) => x.reglages?.fond === "doux").length).toBeGreaterThanOrEqual(2);
       expect(r.left.join("\n")).not.toMatch(/^(signature|signe) : /m);

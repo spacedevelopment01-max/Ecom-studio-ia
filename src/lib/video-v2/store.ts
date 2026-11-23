@@ -33,7 +33,7 @@ const camera = z.enum(["static", "push_in", "pull_out", "pan_left", "pan_right",
 const source = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("image"), assetId: z.string().max(40), motion: camera, crop: z.object({ x: num, y: num, w: num, h: num }).nullable() }),
   z.object({ kind: z.literal("video"), assetId: z.string().max(40), inS: num.min(0), outS: num.min(0), muted: z.boolean() }),
-  z.object({ kind: z.literal("doc"), doc: AdDocumentSchema, animate: z.enum(["rise", "fade", "none"]) }),
+  z.object({ kind: z.literal("doc"), doc: AdDocumentSchema, animate: z.enum(["rise", "fade", "none"]), camera: camera.optional() }),
   z.object({ kind: z.literal("color"), color: z.string().max(64) }),
 ]);
 const part = z.enum(["hook", "development", "demonstration", "proof", "conclusion", "cta"]).nullable();
@@ -48,8 +48,8 @@ export const VideoDocumentSchema = z.object({
   safe: z.object({ top: num, bottom: num, side: num }),
   clips: z.array(z.object({ id: z.string().min(1).max(40), shotId: z.string().max(40), label: z.string().max(80), part, durationS: num.min(0.5).max(60), source, overlays: z.array(LayerSchema).max(48), transitionIn: transition, generated: z.boolean().optional(), userEdited: z.boolean().optional() })).min(1).max(120),
   subtitles: z.object({
-    style: z.object({ enabled: z.boolean(), family: z.string().max(60), weight: num, size: num.min(8).max(400), color: z.string().max(64), background: z.string().max(64).nullable(), position: z.enum(["bottom", "middle", "top"]), offsetY: num, maxChars: num.min(8).max(80), uppercase: z.boolean() }),
-    cues: z.array(z.object({ id: z.string().max(60), clipId: z.string().max(40), fromS: num.min(0), toS: num.min(0), text: z.string().max(200) })).max(600),
+    style: z.object({ enabled: z.boolean(), family: z.string().max(60), weight: num, size: num.min(8).max(400), color: z.string().max(64), background: z.string().max(64).nullable(), position: z.enum(["bottom", "middle", "top"]), offsetY: num, maxChars: num.min(8).max(80), uppercase: z.boolean(), highlight: z.string().max(64).nullable().optional() }),
+    cues: z.array(z.object({ id: z.string().max(60), clipId: z.string().max(40), fromS: num.min(0), toS: num.min(0), text: z.string().max(200), words: z.array(z.object({ text: z.string().max(60), fromS: num.min(0), toS: num.min(0) })).max(12).optional() })).max(600),
   }),
   audio: z.object({
     voice: z.array(audioClip).max(200),

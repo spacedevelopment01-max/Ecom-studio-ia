@@ -158,7 +158,8 @@ describe("normalisation d'une publication (réseau, hashtags, emojis, lien)", ()
       expect(ig.caption).not.toMatch(/—|https?:|#/);
       expect(ig.caption).toMatch(/lien en bio/);
       expect(ig.caption.match(/\p{Extended_Pictographic}/gu)).toHaveLength(1);
-      expect(ig.hashtags).toEqual(["Lunelle", "chambreenfant", "decoration", "cadeau", "naissance"]);
+      // De 0 à 3 mots-dièse par légende (décision du 22 novembre 2026 ; avant : 5 sur Instagram).
+      expect(ig.hashtags).toEqual(["Lunelle", "chambreenfant", "decoration"]);
       expect(normalizePost(draft({ caption: "Un détail ✨" }), { emoji: "none" }).caption).toBe("Un détail");
       expect(normalizePost(draft({ network: "facebook", hashtags: ["a1", "b2", "c3", "d4"] })).hashtags).toHaveLength(2);
     });
@@ -168,8 +169,9 @@ describe("normalisation d'une publication (réseau, hashtags, emojis, lien)", ()
     const row = { network: "instagram", format: "image", title: "", caption: "Découvrez notre nouveauté", hashtags: "", angle: "", brief: JSON.stringify({ kind: "creative", headline: "Un titre de visuel beaucoup trop long pour un téléphone", subline: "", layout: "bold" }) };
     const adviceFr = fr(() => postAdvice(row, "fr"));
     expect(adviceFr.join(" ")).toMatch(/Accroche/);
-    expect(adviceFr.join(" ")).toMatch(/appel à l'interaction/);
-    expect(adviceFr.join(" ")).toMatch(/Hashtags insuffisants/);
+    // « Découvrez notre nouveauté » est un ordre au lecteur (décision du 22 novembre 2026) ; 0 mot-dièse est permis.
+    expect(adviceFr.join(" ")).toMatch(/finit sur un ordre/);
+    expect(adviceFr.join(" ")).not.toMatch(/Hashtags insuffisants/);
     expect(adviceFr.join(" ")).toMatch(/Titre du visuel/);
     expect(en(() => postAdvice(row, "en")).join(" ")).toMatch(/first-line hook/);
   });
@@ -215,7 +217,8 @@ function excellent(i: number, net: string) {
     angle: ["Coloris", "Taille", "Vos questions", "Coulisses", "Matière", "Recharge", "Question", "Halloween"][i],
     ...(i === 2 ? { format: "reel" as const } : i === 4 ? { format: "carousel" as const, slides: ["Doux au toucher", "Silicone souple", "14 × 12 cm", "À enregistrer"] } : {}),
     title: `Compagnon lapin, ${["coloris", "taille", "batterie", "coulisses", "matière", "recharge", "question", "Halloween"][i]}`,
-    caption: `${hooks[i]}\n\nCompagnon lapin, de Lunelle.\n\n${["Dites-le-nous en commentaire.", "Enregistrez la publication pour la retrouver.", "Partagez-la à la personne à qui vous pensez."][i % 3]}`,
+    // Fins sans ordre (décision du 22 novembre 2026) : avant, « Dites-le-nous en commentaire », « Enregistrez… », « Partagez-la… ».
+    caption: `${hooks[i]}\n\nCompagnon lapin, de Lunelle.\n\n${["Et vous, qu'en pensez-vous ?", "À garder pour la retrouver le moment venu.", "Elle plairait à quelqu'un autour de vous ?"][i % 3]}`,
     hashtags: net === "facebook" ? ["lunelle"] : ["lunelle", "chambreenfant", ["compagnonenfant", "veilleuse", "rosepoudre", "halloween"][i % 4]],
     headline: ["Rose ou bleu ?", "14 × 12 cm", "Vos questions", "En coulisses", "Doux au toucher", "Recharge USB-C", "Et vous ?", "Halloween"][i],
   };
@@ -295,7 +298,9 @@ describe("boucle de qualité du calendrier : relecture notée, une reprise cibl�
   it("consignes : rôle d'expert, méthode, règles par réseau, grille de relecture", () => {
     const s = systemPrompts("fr");
     expect(s.social).toMatch(/community manager d'une marque reconnue/);
-    expect(s.social).toMatch(/3 à 5 hashtags/);
+    // 0 à 3 mots-dièse et une fin sans ordre (décision du 22 novembre 2026 ; avant : « 3 à 5 hashtags »).
+    expect(s.social).toMatch(/0 à 3 hashtags/);
+    expect(s.social).toMatch(/JAMAIS un ordre au lecteur/);
     expect(s.social).toMatch(/moins de 125 caractères/);
     expect(s.socialReview).toMatch(/moyenne d'au moins 8/);
     expect(s.socialVoice).toMatch(/séries récurrentes/);

@@ -59,6 +59,6 @@ export function synaText(key: SynaTextKey, lang: Lang = "fr"): string {
 export function formatPct(value: number, lang: Lang = "fr", approx = false): string {
   const v = Math.max(0, Number.isFinite(value) ? value : 0);
   const n = v > 0 && v < 1 ? (lang === "en" ? "< 1" : "< 1") : String(Math.round(v));
-  const body = lang === "en" ? `${n}%` : `${n} %`;
+  const body = lang === "en" ? `${n}%` : `${n} %`;
   return approx && !body.startsWith("<") ? `≈ ${body}` : body;
 }

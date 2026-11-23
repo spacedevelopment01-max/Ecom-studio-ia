@@ -32,20 +32,43 @@ export const OPEN_TOOL = "tools.open";
 /** Toujours sous la main, quelle que soit l'étape : lire la fiche, noter, lire un fichier, suivre une tâche. */
 const ALWAYS = new Set(["start.state", "start.note", "etape.rouvrir", "client.wording", "attachment.read", "jobs.status", "files.list", "brand.read", OPEN_TOOL]);
 
-/** Outils de chaque étape construite du parcours (0 à 8). Une étape absente d'ici n'est pas aiguillée. */
-const STEP_TOOLS: Record<number, RegExp> = {
+/**
+ * Où en est l'étape, pour n'y donner que les notices utiles : le site est-il déjà créé, le client l'a-t-il validé,
+ * vend-il des services plutôt que des produits.
+ */
+export type MomentEtape = { site?: boolean; choisi?: boolean; services?: boolean };
+export const momentDeLEtape = (j: { site?: { at?: number }; customChosenAt?: number; start?: { business?: { value?: string } } }): MomentEtape =>
+  ({ site: !!j.site?.at, choisi: !!j.customChosenAt, services: j.start?.business?.value === "services" });
+
+/**
+ * Outils de chaque étape construite du parcours, dont SINA reçoit la notice complète. Moins de 20 par étape, outils de
+ * toujours compris (économies du 22 novembre 2026 : les notices partent à chaque message ; aux étapes 5 à 7, il y en
+ * avait jusqu'à 30). Rien n'est retiré à SINA : les autres restent nommés en une ligne et s'ouvrent avec tools.open.
+ * Une étape absente d'ici n'est pas aiguillée.
+ */
+const MARQUE = /^(identity\.(propose|choose|images)$|brand\.(finish|kit_validate|save)$)/;
+const STEP_TOOLS: Record<number, RegExp | ((p: MomentEtape) => RegExp)> = {
   0: /^(start\.|project\.profile$|services\.profile$)/,
-  1: /^identity\./,
-  2: /^logo\./,
-  3: /^brand\.(kit|kit_validate|save)$/,
+  // La marque, de la proposition des identités à la marque finie : une seule liste (22 novembre 2026, audit de la
+  // conversation) ; le choix de l'identité ne réécrit plus tout le fil, et brand.finish et identity.choose, que les
+  // consignes des étapes 2 et 3 demandent d'appeler, sont sous la main.
+  1: MARQUE, 2: MARQUE, 3: MARQUE,
   4: /^(angles\.|strategy\.read$|research\.read$|pilot\.(state|answer|approve)$|project\.profile$|services\.profile$)/,
-  5: /^(activity\.|catalogue\.|shop\.|project\.profile$|services\.profile$|bookings\.(services|configure)$)/,
-  // catalogue.photos : poser la photo qu'un client envoie sur son produit, avant comme après la création du site.
-  6: /^(site\.create$|custom\.|gallery\.|catalogue\.(list|photos)$|shop\.)/,
-  7: /^(custom\.|gallery\.|mockup\.|site\.(outline|edit|versions|use_version|pages|code_from_mockup|images|photo_reject)$|catalogue\.(list|photos)$|shop\.)/,
+  // L'activité : la fiche et ses produits, ou ses prestations et ses rendez-vous.
+  5: (p) => p.services
+    ? /^(activity\.|services\.profile$|bookings\.(services|configure)$|catalogue\.(list|create|update)$)/
+    : /^(activity\.|project\.profile$|catalogue\.(list|create|update|photos)$|shop\.offers$|prix\.preuve$)/,
+  // Le site : avant sa création, ce qu'il faut pour le créer ; ensuite, les retouches en cliquant, sa validation et la
+  // galerie de ses produits. catalogue.photos : poser la photo qu'un client envoie sur son produit, avant comme après.
+  6: (p) => p.site
+    ? /^(custom\.(show|section|edit|structure|photo|undo|choose)$|catalogue\.photos$|gallery\.(plan|create)$)/
+    : /^(site\.create$|catalogue\.(list|photos)$|shop\.(offers|buy_features)$|prix\.preuve$)/,
+  7: /^(custom\.(install|show|section|edit|structure|photo|undo)$|gallery\.(plan|create)$|mockup\.|site\.(code_from_mockup|images|photo_reject)$|catalogue\.photos$)/,
   8: /^(theme\.|site\.(outline|edit|versions|use_version|pages)$|catalogue\.list$|shop\.)/,
-  9: /^(posts\.|catalogue\.list$)/,
-  10: /^(ads\.|catalogue\.list$)/,
+  // Les publications et les publicités : l'atelier sous la main (une story ou un carré, une scène, un fond, une vidéo
+  // pour vendre, une création qui dort) ; ailleurs, il est nommé en une ligne et s'ouvre avec tools.open.
+  9: /^(posts\.|catalogue\.list$|atelier\.(etat|creer|video|placer)$)/,
+  10: /^(ads\.|catalogue\.list$|atelier\.(etat|creer|video|placer)$)/,
   11: /^(calendar\.|posts\.list$|ads\.list$)/,
   12: /^(blog\.|catalogue\.list$)/,
   13: /^(files\.)/,
@@ -55,8 +78,9 @@ const STEP_TOOLS: Record<number, RegExp> = {
 export const routedStep = (step: number | null | undefined): step is number => step != null && !!STEP_TOOLS[step];
 
 /** L'outil fait-il partie de ceux dont SINA reçoit la notice complète à cette étape ? */
-export function toolInFocus(name: string, step: number): boolean {
-  return ALWAYS.has(name) || !!STEP_TOOLS[step]?.test(name);
+export function toolInFocus(name: string, step: number, phase: MomentEtape = {}): boolean {
+  const r = STEP_TOOLS[step];
+  return ALWAYS.has(name) || !!(typeof r === "function" ? r(phase) : r)?.test(name);
 }
 
 /** Première phrase d'une description, pour la liste courte. */
@@ -66,9 +90,9 @@ const firstSentence = (s: string) => { const one = s.replace(/\s+/g, " ").trim()
  * Catalogue aiguillé : la notice complète des outils de l'étape, puis une ligne par autre outil du Studio. Rien n'est
  * retiré à SINA : un autre outil se demande avec tools.open.
  */
-export function routedCatalog(hasProject: boolean, scope: ToolScope, step: number): string {
+export function routedCatalog(hasProject: boolean, scope: ToolScope, step: number, phase: MomentEtape = {}): string {
   const tools = allTools().filter((t) => (hasProject || !t.needsProject) && toolVisible(t.name, { ...scope, routed: true }));
-  const focus = tools.filter((t) => toolInFocus(t.name, step)), others = tools.filter((t) => !toolInFocus(t.name, step));
+  const focus = tools.filter((t) => toolInFocus(t.name, step, phase)), others = tools.filter((t) => !toolInFocus(t.name, step, phase));
   return [
     `## Outils de l'étape en cours (notice complète)`,
     focus.map(toolEntry).join("\n\n"),
@@ -87,6 +111,19 @@ const UNHAPPY = /(?<![\p{L}])(nuls?|nulles?|moches?|laids?|laides?|horribles?|ca
 type Msg = { role: string; content?: any };
 
 /**
+ * Un vrai échec, à expliquer au client avec soin (effort élevé, relectrice) : une création qui rate, un travail payant
+ * refusé, une panne d'outil, un budget insuffisant. Un refus de règle ou d'argument (« introuvable », « déjà choisi »,
+ * « Impossible de valider : … », « Rien n'est enregistré : … ») est une étape ordinaire : SINA le corrige seule
+ * (audit de la conversation, 22 novembre 2026).
+ */
+export function vraiEchec(c: { tool?: string; summary?: string; jobs?: unknown[] }): boolean {
+  if (c.tool === "jobs.wait") return true;
+  const t = c.tool ? allTools().find((x) => x.name === c.tool) : undefined;
+  if (t?.estimate) return true;
+  return /^(Échec de l'outil|Tool failed)|budget|plafond/i.test(String(c.summary ?? ""));
+}
+
+/**
  * Le moment de cette réflexion, lu dans le fil : les résultats d'outils arrivés depuis la dernière réponse de SINA, ou
  * le dernier message du client. null : un échange ordinaire (question, confirmation, suite du parcours).
  */
@@ -95,7 +132,7 @@ export function keyMoment(history: Msg[]): KeyMoment | null {
   const fresh: Msg[] = [];
   for (; i >= 0 && history[i].role !== "assistant" && history[i].role !== "user"; i--) if (history[i].role === "tool") fresh.push(history[i]);
   // Un échec vrai (pas une erreur d'argument de SINA elle-même, qu'elle corrige seule) passe avant le reste.
-  if (fresh.some((m) => m.content?.ok === false && !m.content?.internal)) return "echec";
+  if (fresh.some((m) => m.content?.ok === false && !m.content?.internal && vraiEchec(m.content))) return "echec";
   if (fresh.some((m) => m.content?.tool === "jobs.wait")) return "resultat";
   const user = [...history].reverse().find((m) => m.role === "user");
   return user && UNHAPPY.test(String(user.content?.text ?? "")) ? "mecontent" : null;
@@ -119,6 +156,7 @@ Ce que tu vérifies, dans cet ordre :
 5. LA FORME. Tutoiement, phrases courtes et simples. Une seule question de réflexion, de choix ou d'accord au plus par message (jamais deux) ; plusieurs questions SIMPLES et indépendantes (des faits qu'il connaît par cœur : oui ou non, une date, un nom, un prix, un délai) sont permises ensemble, numérotées et courtes, six au plus (règle du propriétaire du 19 novembre 2026), sauf pendant « faire connaissance », où c'est une question à la fois. Jamais une question à laquelle le client a déjà répondu. La question n'est pas répétée dans le message.
 6. LE CLIENT MÉCONTENT. SINA reconnaît le reproche en une phrase, avec les mots du client, sans se justifier, sans flatter, sans promettre ce que le Studio ne sait pas tenir, puis propose une suite concrète.
 7. LE CHOIX RESTE AU CLIENT. SINA peut recommander ; elle ne choisit jamais à sa place un nom, un logo, un angle, un thème ni une publication.
+8. PAS DE COMPLAISANCE. Quand le client demande une chose qui va contre une règle du Studio ou contre son propre intérêt (une fausse promotion, un faux avis, un prix barré sans preuve, un nom à double sens, une photo dans une arche, une personne dans une image sans son accord écrit), SINA le lui dit franchement, avec la raison en une phrase et une autre proposition. Un brouillon qui lui donne raison pour lui faire plaisir est à reprendre.
 
 Sévère mais juste : une réponse vraie, claire et utile part telle quelle (verdict « ok », aucune remarque). Aucune remarque de goût. Ne demande rien que les résultats ne permettent pas de dire.
 
@@ -137,10 +175,24 @@ const MOMENT_LABEL: Record<KeyMoment, string> = {
   mecontent: "le client est mécontent : SINA doit l'entendre et proposer une suite concrète",
 };
 
+/**
+ * La liste de contrôle propre au travail en cours (recherche 11, 22 novembre 2026), tirée des règles du propriétaire
+ * (CLAUDE.md), ajoutée à la relecture selon l'étape du parcours.
+ */
+export const CONTROLES_DE_L_ETAPE: Record<number, string[]> = {
+  0: ["une seule question à la fois pendant « faire connaissance »", "rien ne démarre avant l'accord sur la carte : pas de « c'est parti »"],
+  1: ["un nom de marque simple et fort, sans sous-entendu ; l'adresse sur Internet n'est jamais promise", "une planche n'est jamais montrée incomplète"],
+  4: ["trois angles = trois types de clients différents (des situations, jamais un âge seul)"],
+  6: ["le client ne lit jamais le mot « maquette »", "aucune coordonnée, aucun avis ni aucun prix d'exemple dit comme vrai", "une image ratée est dite ratée"],
+  9: ["chaque publication se comprend seule et la première dit l'offre en clair", "aucun ordre donné au lecteur"],
+};
+
 /** Demande de relecture : le moment, les mots du client, les résultats du Studio, le brouillon. */
-export function replyReviewPrompt(o: { moment: KeyMoment; stepLabel?: string; client: string; facts: string; draft: ReplyDraft; wording?: string; quote?: string }): string {
+export function replyReviewPrompt(o: { moment: KeyMoment; stepLabel?: string; step?: number; client: string; facts: string; draft: ReplyDraft; wording?: string; quote?: string }): string {
+  const controles = o.step != null ? CONTROLES_DE_L_ETAPE[o.step] ?? [] : [];
   return [
     `MOMENT : ${MOMENT_LABEL[o.moment]}.${o.stepLabel ? ` Étape du parcours : ${o.stepLabel}.` : ""}`,
+    controles.length ? `CONTRÔLES DE CETTE ÉTAPE (règles du propriétaire) : ${controles.join(" ; ")}.` : "",
     `DERNIER MESSAGE DU CLIENT :\n${o.client.trim().slice(0, 2000) || "(aucun)"}`,
     `RÉSULTATS RENDUS PAR LE STUDIO DEPUIS CE MESSAGE (seule source de vérité) :\n${o.facts.trim().slice(0, 14000) || "(aucun résultat)"}`,
     o.quote?.trim() ? `PRIX DONNÉ PAR LE STUDIO :\n${o.quote.trim().slice(0, 800)}` : "",

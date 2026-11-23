@@ -5,6 +5,7 @@
  * personnalisée du marchand (droits write_products, write_inventory, read_locations).
  * Les identifiants des variantes existantes sont renvoyés à Shopify : elles sont mises à jour, jamais recréées.
  */
+import { SHOPIFY_API_VERSION } from "../../integrations/shopify-app";
 import { L } from "../../i18n-server";
 import { euros, StoreApiError, toCents, type PushProduct, type PushResult, type RemoteProduct, type StoreConnector } from "./types";
 
@@ -19,7 +20,7 @@ export function shopifyConnector(c: ShopifyCredentials, fetcher: typeof fetch = 
   const shop = c.shop.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
   if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/i.test(shop)) throw new Error(L("Adresse Shopify attendue : nom-de-boutique.myshopify.com.", "Expected Shopify address: store-name.myshopify.com."));
   async function gql(query: string, variables: Record<string, unknown> = {}) {
-    const r = await fetcher(`https://${shop}/admin/api/${c.apiVersion || "2025-07"}/graphql.json`, { method: "POST", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": c.token }, body: JSON.stringify({ query, variables }) });
+    const r = await fetcher(`https://${shop}/admin/api/${c.apiVersion || SHOPIFY_API_VERSION}/graphql.json`, { method: "POST", headers: { "Content-Type": "application/json", "X-Shopify-Access-Token": c.token }, body: JSON.stringify({ query, variables }) });
     if (r.status === 401 || r.status === 403) throw new StoreApiError("shopify", r.status, L("Shopify refuse l'accès (droits produits et stock requis).", "Shopify denied access (product and inventory permissions required)."));
     if (!r.ok) throw new StoreApiError("shopify", r.status, L(`Shopify ne répond pas correctement (erreur ${r.status}).`, `Shopify did not answer correctly (error ${r.status}).`));
     const j: any = await r.json();

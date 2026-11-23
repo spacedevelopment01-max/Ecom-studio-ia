@@ -11,11 +11,11 @@ export function pctOfBudget(micro: number, baseMicro: number | null | undefined)
 }
 
 /**
- * « 12 % », « 0,4 % », « < 0,1 % » (fr) ; « 12% », « 0.4% », « < 0.1% » (en). Une décimale sous 10 % (une image
+ * « 12 % », « 0,4 % », « < 0,1 % » (fr, espace insécable avant « % », bien visible) ; « 12% », « 0.4% », « < 0.1% » (en). Une décimale sous 10 % (une image
  * pèse souvent moins de 1 % du budget du mois). Un coût non nul n'est jamais affiché « 0 % ».
  */
 export function formatPct(pct: number, lang: "fr" | "en"): string {
-  const sp = lang === "fr" ? "\u202f" : "";
+  const sp = lang === "fr" ? "\u00a0" : "";
   const dec = (n: number) => (lang === "fr" ? String(n).replace(".", ",") : String(n));
   if (pct > 0 && pct < 0.1) return `< ${dec(0.1)}${sp}%`;
   if (pct < 10) return `${dec(Math.round(pct * 10) / 10)}${sp}%`;
@@ -53,5 +53,5 @@ export const pctToMicro = (pct: number, baseMicro: number | null | undefined) =>
 export function formatMaximumPct(pct:number|null,lang:'fr'|'en'):string {
  if(pct==null||!Number.isFinite(pct))return '—';
  const value=Math.ceil(Math.max(0,pct)*100)/100;
- return value.toLocaleString(lang==='fr'?'fr-FR':'en-GB',{maximumFractionDigits:2})+(lang==='fr'?'\u202f%':'%');
+ return value.toLocaleString(lang==='fr'?'fr-FR':'en-GB',{maximumFractionDigits:2})+(lang==='fr'?'\u00a0%':'%');
 }

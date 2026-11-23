@@ -36,7 +36,7 @@ describe("deux vrais modes à partir des réglages du serveur", () => {
     expect(html).toContain('data-syna-shell="encre"');
     expect(html).toContain('data-variant="rail"');
     expect(html).not.toContain("ss-cmd-zone");
-    expect(html).toMatch(/class="ss-modeswitch"[\s\S]*?aria-pressed="true"[^>]*>Encre</);
+    expect(html).toMatch(/class="ss-modeswitch"[\s\S]*?aria-pressed="true"[^>]*>SINA à côté</);
     expect(html).toContain("lg:grid-cols-[252px_minmax(0,1fr)_auto]");
   });
   it("Plein cadre (réglage du compte) : menu compact, barre de commande dans une zone réservée, plus d'onglet signature", () => {

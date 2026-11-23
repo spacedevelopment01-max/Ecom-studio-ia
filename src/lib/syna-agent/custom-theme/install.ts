@@ -6,6 +6,8 @@
  * retirer), une photo d'exemple, une section qui n'est pas à la tenue, une section que le contrôle du Studio refuse.
  * La version créée n'est PAS activée : le thème sur mesure reste celui que le client voit dans l'onglet Boutique.
  */
+import { avecRetractation, retractationUrl } from "../../sites/retractation";
+import { prixBarresSansPreuve } from "../prix-anterieur";
 import { loadShopOffers, type ShopOffers } from "../product-features";
 import { companyOf } from "../activity";
 import { getAsset } from "../../library";
@@ -95,6 +97,9 @@ export function customThemeExport(projectId: string, o: { dropMissing?: boolean 
   if (sansPhoto.length) problems.push({ level: "bloquant", text: `${lignePhotosAImporter(sansPhoto)} (dans le fil avec le trombone, ou dans l'onglet Produits ; elles prennent leur place toutes seules)` });
   // La boutique a été interrogée et ne tient pas les remises : c'est dit, même si le client les avait déclarées.
   if (remises?.source === "preuve" && !remises.ok) problems.push({ level: "à savoir", text: `Remises : ${remises.pourquoi} Aucun prix de lot ni de pack ne part tant que la boutique ne les tient pas.` });
+  // « Renoncer au contrat ici » dans chaque pied de page de la boutique (directive 2023/2673) : la page et l'accusé daté
+  // sont portés par le Studio, la boutique seule ne peut pas les envoyer.
+  if (business === "products") for (const s of Object.values(out.spec.customSections)) if (s.liquid.includes("</footer>")) s.liquid = avecRetractation(s.liquid, retractationUrl(projectId));
   for (const s of Object.values(out.spec.customSections)) { const why = validateCustomSection(s.liquid); if (why) problems.push({ level: "bloquant", text: `section « ${s.name} » refusée par le contrôle du Studio : ${why}` }); }
   for (const why of validateSpec(out.spec)) problems.push({ level: "bloquant", text: `thème : ${why}` });
   return { ...out, problems };
@@ -105,6 +110,9 @@ export type InstallResult = { ok: true; versionId: string; number: number; secti
 export function installCustomTheme(projectId: string, o: { dropMissing?: boolean; /** Lot 4 : le site de SINA devient la version active du moteur (mise en ligne, envoi en boutique). */ activate?: boolean } = {}): InstallResult {
   const out = customThemeExport(projectId, { dropMissing: o.dropMissing });
   const notes = out.problems.filter((x) => x.level === "à savoir").map((x) => x.text), blocking = out.problems.filter((x) => x.level === "bloquant").map((x) => x.text);
+  // Dans sa boutique, le prix de comparaison s'affiche barré : sans la preuve des 30 jours, il doit le retirer ou la donner.
+  const sansPreuve = prixBarresSansPreuve(projectId);
+  if (sansPreuve.length) notes.push(`Prix barré sans la preuve du prix le plus bas des 30 jours : ${sansPreuve.map((x) => `« ${x.titre} »`).join(", ")}. Dans ta boutique, ce prix s'affiche barré : donne-moi le prix le plus bas de tes 30 derniers jours, ou retire le prix de comparaison.`);
   if (blocking.length) return { ok: false, blocking, notes };
   // Une fiche par produit : chaque produit du catalogue sait quel modèle de page est le sien.
   for (const x of listProducts(projectId)) { const suffix = out.productSuffixes[x.handle] ?? ""; if ((x.data.templateSuffix ?? "") !== suffix) updateProduct(projectId, x.id, { templateSuffix: suffix }); }

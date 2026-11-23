@@ -95,6 +95,28 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
   /** Disponible fixé à `micro` (budget mensuel seul). */
   const setAvailable = (uid: string, micro: number) => run("UPDATE wallets SET monthly_used = monthly_allowance - ?, topup_balance = 0 WHERE user_id = ?", micro, uid);
 
+  it("règle du propriétaire : une reprise du Studio (image ratée refaite, réponse réécrite ou coupée) n'est jamais débitée au client", async () => {
+    const u = await client("vendre");
+    const avant = wallet(u.id);
+    const rid = billing.aLaChargeDuStudio(() => reserve(u.id, 50_000, { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare" }));
+    expect(wallet(u.id).reserved).toBe(avant.reserved); // rien de réservé sur son budget
+    settle(rid, 40_000, "test", "image refaite");
+    const apres = wallet(u.id);
+    expect(apres.monthly_used).toBe(avant.monthly_used);
+    expect(apres.topup_balance).toBe(avant.topup_balance);
+    // Le coût réel reste inscrit, à la charge du Studio.
+    expect(one<{ amount: number }>("SELECT amount FROM ledger WHERE user_id=? AND type='studio'", u.id)!.amount).toBe(-40_000);
+    // Même quand son budget du mois est épuisé, le Studio corrige son erreur.
+    run("UPDATE wallets SET monthly_used = monthly_allowance, topup_balance = 0 WHERE user_id = ?", u.id);
+    expect(() => reserve(u.id, 50_000, { task: "t", provider: "p", model: "m" })).toThrow();
+    const r2 = billing.aLaChargeDuStudio(() => reserve(u.id, 50_000, { task: "t", provider: "p", model: "m" }));
+    settleUncertain(r2, "coupure");
+    expect(wallet(u.id).monthly_used).toBe(wallet(u.id).monthly_allowance);
+    // Une réponse redemandée (coupée, mal formée) est marquée reprise du Studio dans le moteur.
+    const fs = await import("node:fs");
+    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain("jobId: call.jobId, studio: callTry > 0 });");
+  });
+
   it("budget mensuel = 40 % du prix HT ; annuel = 40 % de l'équivalent mensuel HT ; ≤ 40 % pour toutes les formules", () => {
     const cases = [
       ["creer", "month", 49], ["creer", "year", 490 / 12], ["vendre", "month", 89], ["vendre", "year", 890 / 12], ["dominer", "month", 129], ["dominer", "year", 1290 / 12],
@@ -374,7 +396,7 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
   const billing = await import("@/lib/billing");
   const { EUR, balance, syncAllowance, alignPeriod, reserve, settle, release } = billing;
   const { llmText } = await import("@/lib/ai/llm");
-  const { veoClip, falClip, ambianceImage, veoBilledSeconds, falBilledSeconds, openaiImageMax } = await import("@/lib/ai/media-providers");
+  const { veoClip, falClip, ambianceImage, veoBilledSeconds, falBilledSeconds, openaiImageMax, openaiSize, cost: coutMedia } = await import("@/lib/ai/media-providers");
   const { runForUser } = await import("@/lib/ai/access");
   const { setSetting, setJsonSetting } = await import("@/lib/settings");
   const { DEFAULT_PRICES, FX_SAFETY, usdToEur } = await import("@/lib/ai/config");
@@ -499,7 +521,14 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
       expect((e5 as { permanent?: boolean }).permanent).toBe(true);
       expect(llm.calls).toBe(1);
       expect(reservations(u.id).at(-1)!.status).toBe("uncertain");
+      // Rendue avant toute réponse : seul le coût de l'envoi est retenu, jamais le plafond entier (22 novembre 2026).
+      const r5 = reservations(u.id).at(-1)!;
+      expect((r5 as any).actual).toBeLessThan(r5.amount);
+      expect((r5 as any).actual).toBeGreaterThan(0);
     }
+    // Coupure après le début de la réponse : la sortie est inconnue, le plafond reste retenu (réconcilié ensuite).
+    const coupee = reservations(u.id).find((x) => x.status === "uncertain") as any;
+    expect(coupee.actual).toBe(coupee.amount);
   }, 30_000);
 
   it("tarifs jamais confirmés ou vérifiés il y a plus de 90 jours : toute génération payante bloquée (texte et image)", async () => {
@@ -546,10 +575,25 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
   it("images OpenAI : borne documentée par taille et qualité ; taille inconnue : bloquée", () => {
     const high = openaiImageMax("gpt-image-1", { prompt: "x".repeat(1000), images: 2, size: "1024x1536", quality: "high" });
     const medium = openaiImageMax("gpt-image-1", { prompt: "x".repeat(1000), images: 2, size: "1024x1536", quality: "medium" });
-    // 6 240 jetons de sortie (haute qualité, 1024×1536) + 2 aperçus du flux (≈ 100 jetons chacun).
-    expect(high).toBe(Math.round(((1000 * 5 + 3000 * 10 + (6240 + 200) * 40) / 1e6) * usdToEur() * EUR));
+    // 6 240 jetons de sortie (haute qualité, 1024×1536) ; plus aucun aperçu payé (22 novembre 2026).
+    expect(high).toBe(Math.round(((1000 * 5 + 3000 * 10 + 6240 * 40) / 1e6) * usdToEur() * EUR));
     expect(medium).toBeLessThan(high);
     expect(() => openaiImageMax("gpt-image-1", { prompt: "x", images: 0, size: "2048x2048", quality: "high" })).toThrow(/sans borne de coût/);
+  });
+
+  it("GPT Image 2.6 : compté à ses jetons réels (30 $ le million en sortie), la carte garde la borne de 0,12 $ ; 16:9 et 9:16 natifs", () => {
+    // Le 22 novembre 2026 : une image coûtait 0,12 $ au forfait ; comptée à ses jetons, elle coûte ce qu'OpenAI facture.
+    const reel = coutMedia("openai", "gpt-image-2.6-sunburst", { input: 400, imageIn: 1000, imageOut: 3000 });
+    expect(reel.estimated).toBe(false);
+    expect(reel.micro).toBe(Math.round(((400 * 5 + 1000 * 8 + 3000 * 30) / 1e6) * usdToEur() * EUR));
+    // Sans jetons rendus (fournisseur muet) : le forfait de 0,12 $ reste compté, marqué estimé.
+    expect(coutMedia("openai", "gpt-image-2.6-sunburst", { images: 1 })).toMatchObject({ estimated: true, micro: Math.round(0.12 * usdToEur() * EUR) });
+    // La carte de dépense réserve toujours la borne de 0,12 $ par image, sans supplément d'aperçu.
+    expect(openaiImageMax("gpt-image-2.6-sunburst", { prompt: "", images: 2, size: "1824x1024", quality: "high" })).toBe(Math.round(0.12 * usdToEur() * EUR));
+    expect(openaiSize("gpt-image-2.6-sunburst", "16:9")).toBe("1824x1024");
+    expect(openaiSize("gpt-image-2.6-flare", "9:16")).toBe("1152x2048");
+    expect(openaiSize("gpt-image-2.6-flare", "4:5")).toBe("1024x1536");
+    expect(openaiSize("gpt-image-2.5-sunburst", "16:9")).toBe("1536x1024");
   });
 
   it("budgets séparés : la réservation prend l'abonnement puis les packs, chacun rendu ou débité sur son propre budget", async () => {

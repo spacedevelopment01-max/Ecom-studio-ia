@@ -1,5 +1,3 @@
-import {approvedQuote} from "../ai/higgsfield/pricing";
-import {defaultConfiguration} from "../ai/higgsfield/catalog";
 /**
  * Fournisseurs vidéo (Router V2) : capacités DÉCLARÉES et leur niveau de vérification. « code » = adaptateur raccordé dans le studio (chemin écrit, sans garantie de qualité ni recette fournisseur réelle) ; « documented » = annoncée par le fournisseur mais jamais
  * appelée ici — elle n'est donc PAS utilisée par le moteur tant qu'elle n'a pas été vérifiée (benchmark 7B).
@@ -11,7 +9,7 @@ import {defaultConfiguration} from "../ai/higgsfield/catalog";
 import { EUR } from "../billing";
 import { priceFor, usdToEur } from "../ai/config";
 import { capableModels } from "../orchestrator/capabilities";
-import { MEDIA_MODELS, mediaModel } from "../ai/media-models";
+import { MEDIA_MODELS, mediaModel, videoNonAccordee } from "../ai/media-models";
 import { mediaStatus } from "../ai/media-routing";
 import type { VideoAspect, VideoCapability } from "./types";
 
@@ -81,7 +79,7 @@ for (const m of MEDIA_MODELS) {
     people: !!m.caps.people,
     crossShotConsistency: "start_frame",
     nativeAudio: !!m.caps.audio,
-    verification: { imageToVideo: "code", people: "code", ...(m.caps.audio ? { nativeAudio: "code" as const } : {}), ...(m.caps.textToVideo ? { textToVideo: (["alibaba_video","higgsfield_video"].includes(m.adapter)?"code":"documented") as "code"|"documented" } : {}) },
+    verification: { imageToVideo: "code", people: "code", ...(m.caps.audio ? { nativeAudio: "code" as const } : {}), ...(m.caps.textToVideo ? { textToVideo: (m.adapter==="alibaba_video"?"code":"documented") as "code"|"documented" } : {}) },
   });
 }
 
@@ -105,7 +103,6 @@ export function compatible(c: VideoCapability, n: ShotNeed): string | null {
 
 /** Coût estimé d'un plan (EUR micro) au tarif de l'administration ; null : tarif inconnu (génération refusée). */
 export function estimateMicro(provider: string, model: string, seconds: number, aspect: VideoAspect = "16:9"): number | null {
-  if(provider==="higgsfield"){try{return approvedQuote(defaultConfiguration(model,seconds,aspect==="16:9"?"16:9":"9:16")).micro;}catch{return null;}}
   const p = priceFor(provider, model);
   if (!p || p.unit !== "video_second" || !(p.perSecond > 0)) return null;
   return Math.round(seconds * p.perSecond * usdToEur() * EUR);
@@ -122,13 +119,14 @@ export type ProviderChoice = { provider: string; model: string; shootS: number; 
  * Fournisseur pour un plan : modèles déclarés au Router V2 ET listés ici, clé active, capacités vérifiées
  * compatibles, tarif connu. Préférence : le modèle de la route d'administration s'il convient, puis le moins cher.
  */
-export function chooseProvider(n: ShotNeed, o: { available: (provider: string) => boolean; preferred?: { provider: string; model: string } | null; estimate?: typeof estimateMicro }): ProviderChoice | null {
+export function chooseProvider(n: ShotNeed, o: { available: (provider: string) => boolean; preferred?: { provider: string; model: string } | null; estimate?: typeof estimateMicro; /** Seul modèle permis (modèle animé du mélange). */ only?: { provider: string; model: string } | null }): ProviderChoice | null {
   const est = o.estimate ?? estimateMicro;
   const routed = new Set(capableModels(["video_generation"]).map((m) => `${m.provider}:${m.model}`));
   const rejected: ProviderChoice["rejected"] = [];
   const ok: (ProviderChoice & { pref: boolean })[] = [];
   for (const c of VIDEO_CAPABILITIES) {
     const key = `${c.provider}:${c.model}`;
+    if (o.only && (o.only.provider !== c.provider || o.only.model !== c.model)) continue;
     // Déclaration : Router V2 (modèles historiques) ou catalogue multimédia (vérifié par l'administration ci-dessous).
     if (!routed.has(key) && !mediaModel(c.provider, c.model)) {
       rejected.push({ model: key, why: "non déclaré au Router V2" });
@@ -140,6 +138,11 @@ export function chooseProvider(n: ShotNeed, o: { available: (provider: string) =
     }
     // Modèle du catalogue multimédia : utilisable (tarif, vérification) et activé par l'administration.
     const mm = mediaModel(c.provider, c.model);
+    // Vidéos de l'API Gemini : plus accordées (23 novembre 2026, Veo seulement par Vertex), jamais choisies.
+    if (mm && videoNonAccordee(mm)) {
+      rejected.push({ model: key, why: "plus accordé : Veo seulement par Vertex" });
+      continue;
+    }
     const st = mm ? mediaStatus(mm) : null;
     if (st && (!st.confirmed || !st.enabled)) {
       rejected.push({ model: key, why: !st.confirmed ? "à confirmer dans l'administration" : "désactivé" });

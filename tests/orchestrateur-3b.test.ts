@@ -173,12 +173,15 @@ describe("Phase 3B — orchestrateur branché", async () => {
     keys.google = null;
     expect(fr(() => mp.videoProviderAvailable())).toBeNull();
     keys.fal = "fal-key-test-123456";
-    expect(fr(() => mp.videoProviderAvailable())).toBe("fal");
+    // 23 novembre 2026 : plus de repli historique pour la vidéo (il prenait Veo 3.0, ou le fournisseur dont la clé se
+    // trouvait là). Le défaut est Veo 3.1 Lite par Vertex ; sans lui ni réglage de l'administration, aucun plan animé.
+    expect(fr(() => mp.videoProviderAvailable())).toBeNull();
     keys = { ...keys, openai: "sk-openai-test-123456", google: "cle-google-test-123456" };
     setSetting("ai.routes", JSON.stringify({ image_generation: { provider: "google", model: "gemini-2.5-flash-image" } }));
     expect(fr(() => mp.imageProviderAvailable())).toBe("google");
     setSetting("ai.routes", "{}");
-    expect(fr(() => mp.videoProviderAvailable())).toBe("google");
+    // Les vidéos de l'API Gemini ne sont plus accordées (23 novembre 2026) : la clé Google ne donne plus de plan animé.
+    expect(fr(() => mp.videoProviderAvailable())).toBeNull();
   });
 
   it("repli d'image tracé (raison, repli) et soumis à la même barrière de qualité", async () => {

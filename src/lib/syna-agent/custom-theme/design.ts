@@ -66,6 +66,33 @@ export const DesignSchema = z.object({
 export type Design = z.infer<typeof DesignSchema>;
 
 /**
+ * Ce que rendent le juge de l'ordre et la reprise du concepteur : SEULEMENT ce qu'ils changent (audit du site du
+ * 22 novembre 2026, 6.1). Une page changée est rendue entière (son ordre se juge d'un bloc) ; une page non touchée n'est
+ * pas recopiée ; un autre champ n'est rendu que s'il change. Avant, ils recopiaient les 50 à 70 sections pour en changer
+ * quelques-unes : environ 20 000 jetons écrits par appel, 8 minutes, et le risque de dépasser l'attente du différé.
+ */
+export const DesignPatchSchema = DesignSchema.partial().extend({
+  pages: DesignSchema.shape.pages.element.array().max(16).optional(),
+  corrections: z.array(z.string().max(400)).max(20).default([]),
+});
+export type DesignPatch = z.infer<typeof DesignPatchSchema>;
+
+/** Applique les changements rendus : chaque page rendue remplace celle de même clé (ou s'ajoute) ; les partitions se fondent page par page. */
+export function applyDesignPatch(base: Design, patch: DesignPatch): Design {
+  const { pages, partitions, corrections, ...champs } = patch;
+  const out: Design = { ...base };
+  for (const [k, v] of Object.entries(champs)) if (v !== undefined) (out as Record<string, unknown>)[k] = v;
+  if (pages?.length) {
+    const list = base.pages.map((pg) => pages.find((x) => x.key === pg.key) ?? pg);
+    for (const pg of pages) if (!list.some((x) => x.key === pg.key)) list.push(pg);
+    out.pages = list;
+  }
+  if (partitions?.length) out.partitions = [...(base.partitions ?? []).filter((x) => !partitions.some((y) => y.page === x.page)), ...partitions];
+  out.corrections = corrections ?? [];
+  return out;
+}
+
+/**
  * Plafond d'un appel de conception (entrée : toute la bibliothèque de la famille ; sortie : tout le site). Essai réel du
  * 10 novembre 2026 (Éclat de thé) : la réflexion du modèle compte dans la sortie ; à 14 000 jetons, la réponse d'un site
  * complet a été coupée (0,34 € payés pour rien). Sortie portée à 32 000 jetons, plafond et coût probable relevés.
@@ -157,7 +184,7 @@ TON CONTRÔLE, page importante par page importante (accueil, fiches produit, pag
 2. LA PARTITION de la page (champ « partitions ») : est-elle une de celles permises pour ce client ? La page la suit-elle, aux adaptations près que les règles d'or permettent ? La raison donnée (« why ») parle-t-elle de CE client (son angle, ses preuves, ses clients) ? Une raison qui irait à n'importe qui est refusée : réécris-la avec les faits du dossier, ou change de partition. La partition du dernier site du même métier est interdite.
 3. LE NOMBRE : au moins ${MIN_SECTIONS_IMPORTANTE} sections sur chaque page importante, chacune répondant à une vraie question du visiteur. Jamais une section de remplissage ; jamais une section qui demande un contenu que le dossier n'a pas (avis, presse, chiffres, photos de clients) : un moment dont la preuve manque est SAUTÉ. Si le dossier ne permet pas ${MIN_SECTIONS_IMPORTANTE} sections vraies, la page en a moins et tu le dis dans corrections. Les pages utilitaires restent courtes.
 Cherche aussi, page par page : où le visiteur décroche ; chaque objection sans réponse convaincante ; chaque section décorative, faible, mal placée ou sans contenu réel ; le rythme cassé (deux dispositions pareilles, deux fonds sombres ou deux sections denses à la suite) ; l'absence d'appel à agir ; un bouton sans page de destination logique ; un fait annoncé qui n'est pas dans les faits de la marque ; un texte prévu (says) creux, vague ou qui décrit au lieu de faire ressentir.
-Puis rends la conception CORRIGÉE et complète (même format, toutes les pages, le champ « partitions » compris), en gardant ce qui est bon, et liste dans corrections ce que tu as changé et pourquoi (une ligne par changement, avec la règle en cause).
+Puis rends SEULEMENT ce que tu changes, dans le même format : chaque page que tu modifies, ENTIÈRE (key, label, journey et toutes ses sections, dans l'ordre voulu) ; une page que tu ne touches pas n'est pas recopiée. Les autres champs (partitions des pages changées, famille, allure, en-tête, pied de page, tenue, objections…) ne sont rendus que si tu les changes. Liste dans corrections ce que tu as changé et pourquoi (une ligne par changement, avec la règle en cause). Si tout est bon, rends seulement corrections, vide.
 ${PAGE_PATTERNS}
 FAMILLE : vérifie que la famille choisie (champ « famille ») est bien celle que dit la PLANCHE DE MARQUE (couleurs, polices, direction artistique, voix), pas seulement le métier ; si une autre famille lui va mieux, change-la, dis pourquoi dans corrections, et remets l'allure, l'en-tête, le pied de page, l'ouverture et les photos dans les choix de la nouvelle famille. Garde les « reglages » de chaque section (et remets-les dans la signature de la famille si tu la changes), les champs « signeForme » et « signeTexte » de la tenue, les champs « famille », « familleWhy », « pageStyle », « pageStyleWhy », « headerConstruction », « footerConstruction » et « partitions ». Vérifie de même que le style de la page qui vend (« pageStyle ») est celui que demande ce que le client vend vraiment.
 Mêmes exigences que le concepteur (pages riches, aucune section sans contenu réel, une section de cartes par page, « Produit vedette » en haut de la fiche, jamais la même section deux fois sur une page, pages obligatoires, identifiants de la liste uniquement).

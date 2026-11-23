@@ -1,3 +1,4 @@
+import sharp from "sharp";
 /**
  * Captures du thème sur mesure pour SINA (audit du 10 novembre 2026, exigence G11 « SINA voit ce qu'elle commente ») :
  * l'accueil sur ordinateur et sur téléphone, rendus par le Studio dans un Chromium local (gratuit, sans IA). Une seule
@@ -213,4 +214,23 @@ async function shoot(html: string, v: (typeof VIEWS)[number], pageKey?: string, 
   } finally {
     await browser.close().catch(() => {});
   }
+}
+
+/**
+ * Une capture découpée en bandes lisibles, de haut en bas (audit du site du 22 novembre 2026, partie 8) : une page
+ * entière envoyée d'un bloc est réduite à 170 points de large, où aucun texte ne se lit. Téléphone : 1 200 points par
+ * bande ; quatre bandes au plus.
+ */
+export async function bandesDeLaCapture(data: Buffer, o: { band?: number; max?: number } = {}): Promise<Buffer[]> {
+  const band = o.band ?? 1200, max = o.max ?? 4;
+  const meta = await sharp(data).metadata().catch(() => null);
+  if (!meta?.width || !meta.height || meta.height <= band) return [data];
+  const out: Buffer[] = [];
+  for (let top = 0; top < meta.height && out.length < max; top += band) {
+    const height = Math.min(band, meta.height - top);
+    if (height < 120) break;
+    const part = await sharp(data).extract({ left: 0, top, width: meta.width, height }).jpeg({ quality: 78 }).toBuffer().catch(() => null);
+    if (part) out.push(part);
+  }
+  return out.length ? out : [data];
 }

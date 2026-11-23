@@ -116,12 +116,18 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     expect(b.verdict).not.toBe("FINAL");
   }, 120_000);
 
-  it("fidélité produit : un produit transformé est refusé, acquis conservés et aucun substitut local", async () => {
+  // Rapport 09, point 2 (22 novembre 2026) : dans le mélange, un plan animé refusé n'est jamais montré et le plan sûr
+  // (vrai produit détouré) prend sa place ; avant, la vidéo entière s'arrêtait. Le parcours où le client demande des
+  // clips IA pour chaque scène garde son refus clair (« aucun substitut », test des scènes guidées).
+  it("fidélité produit : un produit transformé est refusé, jamais montré ; le plan sûr prend sa place", async () => {
     const p=await cosmetic();const {deps,log}=mockVideoDeps({userId:u.id,projectId:p.id,shot:()=>goodShot({productAltered:true,score:8})});
-    await expect(fr(()=>runVideoEngineV2(null,p.id,{ask:{text:"Publicité Instagram"},approveGeneration:true,...R},deps))).rejects.toThrow(/refusée|refusé/);
-    expect(log.clips).toHaveLength(1);
-    const rejected=all<{status:string}>("SELECT status FROM assets WHERE project_id=? AND role='clip'",p.id);
-    expect(rejected.length).toBe(1);expect(rejected.every(a=>a.status==="rejected")).toBe(true);
+    const r=await fr(()=>runVideoEngineV2(null,p.id,{ask:{text:"Publicité Instagram"},approveGeneration:true,...R},deps));
+    expect(log.clips.length).toBeGreaterThanOrEqual(1);
+    const rejected=all<{id:string;status:string}>("SELECT id,status FROM assets WHERE project_id=? AND role='clip'",p.id);
+    expect(rejected.length).toBe(log.clips.length);expect(rejected.every(a=>a.status==="rejected")).toBe(true);
+    const doc=latestVideo(p.id,r.docKey!)!.doc;
+    expect(JSON.stringify(doc.clips)).not.toMatch(new RegExp(rejected.map(a=>a.id).join("|")));
+    expect(r.notes.join(" ")).toMatch(/plan sûr à la place/);
   },120_000);
 
   it("UGC : personnage synthétique signalé, même image de départ pour tous ses plans ; incohérence → reprise ciblée du plan ; faux témoignage écarté", async () => {
@@ -164,7 +170,9 @@ describe("Video Engine V2 — moteur et rendu", async () => {
     expect(first).toBeGreaterThan(0);
     const b = await fr(() => runVideoEngineV2(null, p.id, { ask: { text: "Publicité Instagram" }, approveGeneration: true, ...R }, deps));
     expect(log.clips.length).toBe(first); // plans FINAL réutilisés
-    expect(b.stats.reused).toBeGreaterThan(0);
+    // Rapport 09 (mélange, un seul plan animé) : le plan accepté au 1er passage est repris tel quel, soit par la mémoire
+    // des plans, soit comme vidéo déjà dans la bibliothèque (avant : plusieurs plans animés, toujours par la mémoire).
+    expect(b.stats.reused + b.shots.filter((s) => s.method === "existing_video").length).toBeGreaterThan(0);
     expect(b.docKey).toBe(a.docKey);
     // Le client modifie la vidéo : une régénération crée une autre lignée.
     const cur = latestVideo(p.id, a.docKey!)!;

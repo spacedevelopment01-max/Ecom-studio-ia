@@ -66,7 +66,7 @@ describe("SINA — les identités de marque : contrôles, choix et mélange", as
     const { stepQuote } = await import("@/lib/syna-agent/loop");
     const { user, cid, pid } = await stepOneThread();
     const q = await stepQuote(user, { id: "run-test", conversation_id: cid, project_id: pid, user_id: user.id } as any);
-    expect(q).toMatch(/# Prix de la prochaine action payante de l'étape\nidentity\.propose \(\d identités de marque\) : (?:coût probable .*% de votre budget IA ; plafond )?.*% de votre budget IA.*Le Studio montre ce prix au client sur la carte d'accord/);
+    expect(q).toMatch(/# Prix de la prochaine action payante de l'étape\nidentity\.propose \(\d identités de marque\) : (?:coût probable .*% de ton budget IA ; plafond )?.*% de ton budget IA.*Le Studio montre ce prix au client sur la carte d'accord/);
   });
 
   it("contrôle gratuit des palettes : fond conforme, vrai dégradé de couleurs, fond sombre vraiment foncé ; couleurs refusées par le client", () => {

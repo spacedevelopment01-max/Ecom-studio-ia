@@ -1,10 +1,4 @@
 import { publicDownload } from "../public-download";
-import {higgsfieldMessage} from './higgsfield/errors';
-import {defaultConfiguration,requestBody} from './higgsfield/catalog';
-import {checkedQuote} from './higgsfield/pricing';
-import {uploadImage,downloadVideo} from './higgsfield/media';
-import {submit as higgsSubmit,poll as higgsPoll,UnchargedTerminal,type Receipt as HiggsReceipt} from './higgsfield/lifecycle';
-import {HiggsfieldHttpError} from './higgsfield/http';
 import { assertStrategyInputsCurrent } from "../strategy-consumption";
 import { falVideoRequest } from "./fal-video-request";
 import { createHash } from "node:crypto";
@@ -26,7 +20,7 @@ import { emitMediaProgress, openaiBackground, openaiClient, openaiImage, openaiS
 import {photoEditRequest,type PhotoEditInput} from "../image-v2/edit-request";
 export {photoEditRequest,editPhotoPrompt,type PhotoEditInput} from "../image-v2/edit-request";
 import sharp from "sharp";
-import { claimOperationRecovery, cleDeRelance, EUR, existingOperation, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
+import { claimOperationRecovery, cleDeRelance, EUR, existingOperation, operationReceipt, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
 import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
 import { all } from "../db";
@@ -36,13 +30,15 @@ import { noteImageModel } from "./media-alerts";
 import { activeProviderKey, bearer, falAuth, FX_SAFETY, isGatewayKey, requirePrice, routeFor, usdToEur } from "./config";
 import { assertUnderCostCap, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
-import { getJsonSetting, setSetting } from "../settings";
+import { getJsonSetting, getSetting, setSetting } from "../settings";
 import { fileExists, putFile, readFile } from "../storage";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
 import { incompatibility, mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
 import { mediaModel, type MediaKind } from "./media-models";
 import { alibabaBase, alibabaError, alibabaHeaders, qwenImageBody, qwenSize, qwenImageUrl, wanTask, wanVideoBody } from "./alibaba";
+import { DIRECT_ORIGINS, DIRECT_VIDEO_PROVIDERS, directPoll, directRead, directStart, directTask, hashedEndUser, type DirectVideoProvider } from "./video-direct";
+import { randomUUID } from "node:crypto";
 
 /** brain : contexte du Brain d'où vient la consigne de la génération (portée, empreinte, version), tracé dans ai_calls. */
 type Ctx = { userId: string; projectId: string; jobId?: string | null; usageKey?: string; brain?: { scope: string; hash: string; version: string } };
@@ -82,6 +78,9 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
     const t: MediaTrace = { task, ctx, requestHash: fingerprint, previous };
     return mediaTrace.run(t, async () => {
       try {
+        // Garde central (22 novembre 2026) : aucune photo du client mise de côté (pas encore vérifiée, ou refusée) ne
+        // part vers un appel payant ; rien n'est envoyé, rien n'est compté.
+        if (!previous?.provider_receipt) { const v = await import("../atelier/verification-photos"); await v.gardePhotosDeCote(ctx.projectId, v.imagesDans(args.slice(1))); }
         // Image synchrone déjà produite et facturée, téléchargement interrompu : lecture seule.
         const receipt = previous?.provider_receipt ? JSON.parse(previous.provider_receipt) : null;
         if (receipt?.downloadUrl && previous) {
@@ -237,7 +236,7 @@ function pickModel(provider: string, kind: MediaKind): string {
 }
 
 /** Intervalles d'interrogation des générations longues (réduits dans les tests). */
-export const mediaPoll = { veoMs: 10_000, falVideoMs: 6000, falImageMs: 3000, wanMs: 8000 };
+export const mediaPoll = { veoMs: 10_000, falVideoMs: 6000, falImageMs: 3000, wanMs: 8000, directMs: 8000 };
 
 /** Marge prudente sur le coût d'une génération (jetons d'image variables selon la taille et la qualité). */
 const MEDIA_MAX_FACTOR = 1.25;
@@ -265,7 +264,7 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   assertUnderCostCap(max);
   // Hors trace (appel direct, jamais en pratique) : la génération serait sans suivi de réservation — refusée.
   t.reservation = reserve(ctx.userId, max, { task: t.task, provider, model, jobId: ctx.jobId, projectId: ctx.projectId, usageKey: ctx.usageKey, requestHash: t.requestHash });
-  const priced = provider==="higgsfield"?{unit:"video_second"}:requirePrice(provider, model);
+  const priced = requirePrice(provider, model);
   Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : priced.unit === "tokens" ? "tokens" : "image", started: Date.now() });
   // Qwen-Image 3.0 Pro inutilisable et image créée ailleurs (souvent OpenAI, plus cher) : administrateur alerté vite.
   if (media === "image") noteImageModel({ provider, model, projectId: ctx.projectId ?? null, usage: t.usage ?? null, excluded: mediaExclude.getStore()?.exclude });
@@ -279,7 +278,7 @@ function sent() {
 const providerFetch: typeof fetch = (input, init) => {
   const url=new URL(typeof input==="string"?input:input instanceof URL?input.href:input.url);
   const headers=new Headers(init?.headers??(input instanceof Request?input.headers:undefined));
-  if(headers.has("x-goog-api-key")&&url.origin!=="https://generativelanguage.googleapis.com")throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
+  if(headers.has("x-goog-api-key")&&url.origin!=="https://generativelanguage.googleapis.com"&&!DIRECT_ORIGINS.vertex.test(url.origin))throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
   if(/^Key /i.test(headers.get("authorization")??"")&&url.origin!=="https://queue.fal.run")throw new PermanentError("Adresse fournisseur refusée / Provider address refused");
   sent();
   return fetch(input, {...init,redirect:"error"});
@@ -303,11 +302,11 @@ async function providerHttpError(r: Response, label: string): Promise<Error> {
 }
 
 /** Après une génération : consommation réelle (budget caché) et décompte du quota. */
-function recordMedia(u: Parameters<typeof recordUsage>[0],reportedModel:string|null=null) {
+function recordMedia(u: Parameters<typeof recordUsage>[0] & { /** Détails de mesure d'une image (taille, qualité, images jointes). */ details?: Record<string, unknown> },reportedModel:string|null=null) {
   const t = mediaTrace.getStore();
   const billed = recordUsage(u, { reservationId: t?.reservation ?? null });
   if (t) t.recorded = true;
-  const callId = recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: reportedModel, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , ...brainCols(t?.ctx), ...routingCols(t) });
+  const callId = recordCall({ userId: u.userId, projectId: u.projectId, jobId: u.jobId, task: u.task, provider: u.provider, requestedModel: t?.model ?? u.model, servedModel: reportedModel, unit: u.unit as "tokens" | "image" | "video_second", inputTokens: u.unit === "tokens" ? u.inputUnits : 0, outputTokens: u.unit === "tokens" ? u.outputUnits : 0, quantity: u.quantity, latencyMs: t?.started ? Date.now() - t.started : null, costMicro: u.costMicro, estimated: u.estimated, usageKey: u.idempotencyKey ?? null, usageEventId: billed.eventId, billingDedup: billed.dedup, status: "ok" , details: u.details ?? null, ...brainCols(t?.ctx), ...routingCols(t) });
   if (t) t.callId = callId;
   const q = quotaFor(u.task === "video_generation" ? "video" : "image");
   if (q) consumeQuota(u.userId, q, 1, u.idempotencyKey ? `${q}:${u.idempotencyKey}` : null);
@@ -332,15 +331,19 @@ function mediaAllowed() {
   return currentUserHasAiCredits() && (!u || !!userPlan(u));
 }
 
-function cost(provider: string, model: string, units: { input?: number; output?: number; imageIn?: number; imageOut?: number; images?: number; seconds?: number }) {
+export function cost(provider: string, model: string, units: { input?: number; output?: number; imageIn?: number; imageOut?: number; images?: number; seconds?: number }) {
   // Sans tarif connu, la génération est refusée (sinon elle serait comptée 0 € hors enveloppe).
   const p = requirePrice(provider, model);
   let usd = 0;
   if (p.unit === "tokens") usd = ((units.input ?? 0) * p.inputPerM + (units.imageIn ?? 0) * (p.imageInputPerM ?? p.inputPerM) + (units.output ?? 0) * p.outputPerM + (units.imageOut ?? 0) * (p.imageOutputPerM ?? p.outputPerM)) / 1e6;
   // Image au forfait (Gemini) : prix de l'image produite + jetons d'entrée (texte, images de référence).
-  if (p.unit === "image") usd = (units.images ?? 1) * p.perImage + ((units.input ?? 0) * (p.inputPerM ?? 0)) / 1e6;
+  // Image comptée aux jetons réels quand le fournisseur les rend (OpenAI) ; sinon au forfait (Gemini, Alibaba).
+  const auJeton = p.unit === "image" && p.outputPerM != null && (units.imageOut ?? 0) > 0;
+  if (p.unit === "image") usd = auJeton
+    ? ((units.input ?? 0) * (p.inputPerM ?? 0) + (units.imageIn ?? 0) * (p.imageInputPerM ?? p.inputPerM ?? 0) + (units.imageOut ?? 0) * p.outputPerM!) / 1e6
+    : (units.images ?? 1) * p.perImage + ((units.input ?? 0) * (p.inputPerM ?? 0)) / 1e6;
   if (p.unit === "video_second") usd = (units.seconds ?? 0) * p.perSecond;
-  return { micro: Math.round(usd * usdToEur() * EUR), estimated: p.unit !== "tokens" };
+  return { micro: Math.round(usd * usdToEur() * EUR), estimated: p.unit !== "tokens" && !auJeton };
 }
 
 /**
@@ -361,11 +364,23 @@ const GEMINI_IMAGE_IN_TOKENS = 1300;
 export const VEO_MIN_BILLED_SECONDS = 8;
 const bytes = (t: string) => Buffer.byteLength(t, "utf8");
 
+/**
+ * La taille demandée à OpenAI. Pour GPT Image 2.6, le 16:9 et le 9:16 se dessinent directement en 1824 × 1024 et
+ * 1152 × 2048 (22 novembre 2026, guide officiel : même prix ou moins, image plus nette, aucun recadrage) ; sinon la
+ * taille 3:2 ou 2:3 la plus proche, recadrée ensuite.
+ */
+export function openaiSize(model: string, aspect: string): string {
+  const [aw, ah] = aspect.split(":").map(Number);
+  if (/^gpt-image-2\.6/.test(model) && aspect === "16:9") return "1824x1024";
+  if (/^gpt-image-2\.6/.test(model) && aspect === "9:16") return "1152x2048";
+  return aw > ah ? "1536x1024" : aw === ah ? "1024x1024" : "1024x1536";
+}
+
 export function openaiImageMax(model: string, o: { prompt: string; images: number; size: string; quality: "medium" | "high" }) {
   // Tarif « par image » saisi dans l'administration : borne directe (une image demandée).
   const p = requirePrice("openai", model);
   // Avec le flux, les aperçus s'ajoutent (≈ 2 × 100 jetons, < 5 % d'une image haute qualité) : +5 % sur le tarif par image.
-  if (p.unit === "image") return Math.ceil(cost("openai", model, { images: 1, input: bytes(o.prompt) }).micro * (openaiStreams(model) ? 1.05 : 1));
+  if (p.unit === "image") return Math.ceil(cost("openai", model, { images: 1, input: bytes(o.prompt) }).micro * (openaiStreams(model) && OPENAI_PARTIAL_IMAGES > 0 ? 1.05 : 1));
   // Au jeton : seulement pour le modèle dont la table officielle des jetons de sortie est connue.
   // gpt-image-1.5 : mêmes jetons de sortie par taille et qualité (page officielle du modèle : « medium » 1024² = 1 056 ;
   // mesuré en réel : « high » 1024×1536 ≈ 6 240 + aperçus).
@@ -457,6 +472,10 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   }
   // Usage réglé explicitement : son choix (principal, secours) est respecté — aucun autre modèle en silence.
   if (usage && usageExplicit(usage)) return null;
+  // Vidéo (23 novembre 2026, « le moins cher qui suffit par défaut ») : le défaut du Studio (Veo 3.1 Lite par Vertex) ou
+  // ce que l'administration a réglé, jamais l'ancien repli du routeur (il prenait Veo 3.0 de l'API Gemini, ou un autre
+  // fournisseur dont la clé se trouvait là). Rien d'utilisable : aucun plan animé, le plan sûr le remplace.
+  if (kind === "video") return null;
   // Besoin précis (nom écrit dans l'image, références, son, personnes) : l'ancien routeur ne connaît que « image »
   // ou « vidéo » et pourrait choisir un modèle incapable (ex. un logo payé avec un nom illisible). Aucun repli.
   if (need && (need.text || (need.references ?? 0) > 0 || need.audio || need.people)) return null;
@@ -468,9 +487,9 @@ export function routeMedia(task: "image_generation" | "video_generation", inputT
   return d;
 }
 
-export function imageProviderAvailable(need?: Partial<MediaNeed>): "openai" | "google" | "fal" | "alibaba" | null {
+export function imageProviderAvailable(need?: Partial<MediaNeed>): "openai" | "google" | "fal" | "alibaba" | "bfl" | null {
   const d = routeMedia("image_generation", undefined, need);
-  return d && (d.provider === "openai" || d.provider === "google" || d.provider === "fal" || d.provider === "alibaba") ? d.provider : null;
+  return d && (d.provider === "openai" || d.provider === "google" || d.provider === "fal" || d.provider === "alibaba" || d.provider === "bfl") ? d.provider : null;
 }
 
 /** Pourquoi aucune image IA ne peut être faite maintenant (affiché au client et dans le diagnostic). */
@@ -517,7 +536,7 @@ export function withQuotedVideoRoute<T>(route:{provider:string;model:string},fn:
 
 /** Borne d'UNE photographie, mêmes formules que sa réservation native. Aucune grille de prix parallèle. */
 export function photoRequestMaxMicro(route:{provider:string;model:string},input:{prompt:string;references:number;aspect:string;quality?:"medium"|"high"}):number{
-  const size=input.aspect==='1:1'?'1024x1024':input.aspect==='16:9'?'1536x1024':'1024x1536';
+  const size=openaiSize(route.model,input.aspect);
   const micro=route.provider==='openai'?openaiImageMax(route.model,{prompt:input.prompt,images:input.references,size,quality:input.quality??'high'}):route.provider==='google'?geminiImageMax(route.model,{prompt:input.prompt,images:input.references}):cost(route.provider,route.model,{images:1,input:Buffer.byteLength(input.prompt,'utf8')}).micro;
   return mediaReservationMaxMicro(micro);
 }
@@ -530,9 +549,10 @@ export function imageReferencePrompt(text:string,roles:readonly string[]):string
  return text+(roles.length?'\nTRANSMITTED REFERENCES (ordered): '+roles.map((role,i)=>role==='avoid'?`image ${i+1}: logos already made, shown ONLY so that the new one is completely different (not a model: do not reproduce, retouch or imitate it)`:role==='examples'?`image ${i+1} : exemples de logos que j'aime, seulement comme exemples : n'en recopie aucun`:`image ${i+1}: ${role} (essential, reproduce faithfully)`).join('; '):'');
 }
 
-export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | "alibaba" | null {
+/** Fournisseur du plan vidéo de cet usage (fabricants en direct compris : Vertex, le défaut du Studio), null si aucun. */
+export function videoProviderAvailable(usage?: MediaUsage): "google" | "fal" | "alibaba" | "vertex" | "kling" | "byteplus" | "runware" | null {
   const d = routeMedia("video_generation", undefined, usage ? { usage } : undefined);
-  return d && (d.provider === "google" || d.provider === "fal" || d.provider === "alibaba") ? d.provider : null;
+  return d && (["google", "fal", "alibaba", "vertex", "kling", "byteplus", "runware"] as const).find((x) => x === d.provider) || null;
 }
 
 /**
@@ -581,7 +601,7 @@ async function openaiSceneImpl(ctx: Ctx, input: { composite: Buffer; productMask
   if (!b64) throw new Error(L("Réponse d'image vide.", "Empty image response."));
   const u = res.usage ?? {};
   const c = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 });
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -608,7 +628,7 @@ async function mockupMaskEditImpl(ctx: Ctx, input: { image: Buffer; mask?: Buffe
   if (!res.b64) throw new Error(L("Réponse d'image vide.", "Empty image response."));
   const u = res.usage ?? {};
   const c = cost("openai", input.model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 });
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model: input.model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || requirePrice("openai", input.model).unit !== "tokens", idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model: input.model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: c.micro, estimated: !res.usage || cost("openai", input.model, { imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey });
   return Buffer.from(res.b64, "base64");
 }
 /** Borne d'une retouche localisée de maquette (image + masque), mêmes formules que sa réservation. */
@@ -940,9 +960,10 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   const max = mediaModel(provider, selected)?.caps.references ?? 0;
   if (refs.length > max) throw new UserFacingError(`Le modèle ${selected} ne peut pas recevoir les ${refs.length} références essentielles. Aucune référence supprimée.`);
   const [aw, ah] = input.aspect.split(":").map(Number);
-  const nativeSize=provider==="openai"?(aw>ah?"1536x1024":aw===ah?"1024x1024":"1024x1536"):provider==="alibaba"?qwenSize(input.aspect):null;
+  const nativeSize=provider==="openai"?openaiSize(pickModel("openai","image"),input.aspect):provider==="alibaba"?qwenSize(input.aspect):null;
   input.onRequest?.({provider,requestedModel:selected,aspect:input.aspect,quality:input.quality,nativeSize,prompt:text,references:refs.map((b,i)=>({role:typed[i].role,sha256:createHash("sha256").update(b).digest("hex"),bytes:b.length}))});
   if (provider === "fal") return falImage(ctx, selected, text, refs, input.aspect);
+  if (provider === "bfl") return bflImage(ctx, selected, text, refs, input.aspect);
   if (provider === "alibaba") return alibabaImage(ctx, selected, text, refs, input.aspect, !!input.need?.people, !input.need?.text && !refs.length, input.negative);
   if (provider === "google") {
     const key = activeProviderKey("google")!;
@@ -968,7 +989,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   }
   const key = activeProviderKey("openai")!;
   const model = pickModel("openai", "image");
-  const size = aw > ah ? "1536x1024" : aw === ah ? "1024x1024" : "1024x1536";
+  const size = openaiSize(model, input.aspect);
   const oaExtras = ref ? extras : [];
   gate(ctx, openaiImageMax(model, { prompt: text, images: ref ? 1 + oaExtras.length : 0, size, quality: input.quality }), "image", "openai", model);
   const client = openaiClient(key);
@@ -988,9 +1009,9 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
   const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey, details: { taille: size, qualite: input.quality, jointes: ref ? 1 + oaExtras.length : 0, jetonsImagesJointes: u.input_tokens_details?.image_tokens ?? 0, jetonsTexte: u.input_tokens_details?.text_tokens ?? 0 } });
   // Coût réel de cette image transmis au moteur qui l'a demandée (affiché sur la carte de la proposition).
-  if (res.usage && requirePrice("openai", model).unit === "tokens") emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
+  if (res.usage && !cost("openai", model, { imageOut: u.output_tokens ?? 0 }).estimated) emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
   return Buffer.from(b64, "base64");
 }
 
@@ -1012,8 +1033,8 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
   const plan = userPlan(ctx.userId, ctx.projectId);
   const model = plan && PLANS[plan].videoQuality === "fast" ? (FAST_VEO[chosen] ?? chosen) : chosen;
   // Veo facture la durée produite : Veo 3 = 8 s (au moins 8 s réservées) ; Veo 3.1 = 4, 6 ou 8 s demandées.
+  // Durée TOUJOURS envoyée (rapport 09, point 4) : celle qui est réservée est celle qui est demandée et facturée.
   const seconds = veoBilledSeconds(input.seconds, model);
-  const durations = mediaModel("google", model)?.durations ?? [];
   gate(ctx, cost("google", model, { seconds }).micro, "video", "google", model);
   const trace = mediaTrace.getStore()!;
   const previous = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
@@ -1027,7 +1048,7 @@ async function veoClipImpl(ctx: Ctx, input: { image: Buffer; prompt: string; asp
       body: JSON.stringify({
         instances: [{ prompt: input.people ? input.prompt : `${input.prompt}. The product must remain exactly identical (shape, label, colors); slow, elegant camera movement; no people in frame; no text overlay.`, image: { bytesBase64Encoded: jpeg.toString("base64"), mimeType: "image/jpeg" } }],
         // Veo 3 n'accepte que « allow_adult » à partir d'une image (« dont_allow » est refusé) : l'absence de personnes passe par la consigne.
-        parameters: { aspectRatio: input.aspect, personGeneration: veoPersonGeneration(model, !!input.people), ...(durations.length > 1 ? { durationSeconds: seconds } : {}) },
+        parameters: { aspectRatio: input.aspect, personGeneration: veoPersonGeneration(model, !!input.people), durationSeconds: seconds },
       }),
     });
     if (!start.ok) {
@@ -1119,7 +1140,7 @@ Authentic smartphone video still, natural light, realistic skin and hands, no te
   const b64 = res.b64;
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage || requirePrice("openai", model).unit !== "tokens", idempotencyKey: ctx.usageKey });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey });
   return Buffer.from(b64, "base64");
 }
 
@@ -1238,6 +1259,67 @@ async function falImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[],
 
 
 /**
+ * Image Flux en direct (Black Forest Labs, accordé ; rapport 10, points 5 et 8). Tarif « par image » obligatoire : le
+ * coût maximal est réservé avant l'envoi ; l'adresse de suivi est gardée (une reprise relit le résultat sans repayer) ;
+ * l'image est copiée tout de suite (Black Forest Labs ne la garde que dix minutes). Écrit d'après la documentation,
+ * jamais encore appelé avec une vraie clé.
+ */
+async function bflRun(ctx: Ctx, model: string, request: (key: string) => import("./bfl").BflRequest) {
+  const { bflSubmitted, bflPoll, bflPollRequest } = await import("./bfl");
+  const key = activeProviderKey("bfl");
+  if (!key) throw new UserFacingError(L("Aucune clé Black Forest Labs configurée.", "No Black Forest Labs key configured."));
+  const p = requirePrice("bfl", model);
+  if (p.unit !== "image") throw new PermanentError(L(`Tarif « par image » attendu pour bfl:${model} : coût maximal non borné, génération bloquée.`, `A per-image price is expected for bfl:${model}: maximum cost not bounded, generation blocked.`));
+  const max = cost("bfl", model, { images: 1 }).micro;
+  gate(ctx, max, "image", "bfl", model);
+  const trace = mediaTrace.getStore()!;
+  let q: { id: string; pollingUrl: string } | null = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
+  if (!q) {
+    if (trace.previous) operationPending();
+    const req = request(key);
+    const r = await providerFetch(req.url, { method: req.method, headers: req.headers, body: JSON.stringify(req.body) });
+    if (r.status === 401 || r.status === 403) throw refusal(new PermanentError(L("Clé Black Forest Labs refusée : vérifiez-la dans l'administration.", "Black Forest Labs key rejected: check it in the admin panel.")));
+    if (!r.ok) {
+      const err = new PermanentError(L("Black Forest Labs a refusé la demande : ", "Black Forest Labs rejected the request: ") + (await r.text()).slice(0, 300));
+      throw refused(r.status) ? refusal(err) : err;
+    }
+    q = bflSubmitted(await r.json());
+    saveProviderReceipt(trace.reservation!, q);
+  }
+  for (let i = 0; i < 100; i++) {
+    await new Promise((res) => setTimeout(res, mediaPoll.falImageMs));
+    const pr = bflPollRequest(key, q.pollingUrl);
+    const st = bflPoll(await (await providerFetch(pr.url, { headers: pr.headers })).json());
+    if (st.state === "done") {
+      recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "bfl", model, unit: "image", quantity: 1, costMicro: max, estimated: true, idempotencyKey: ctx.usageKey });
+      const img = await publicDownload(st.imageUrl);
+      if (!img.ok) throw new PermanentError(L("Image produite mais téléchargement impossible.", "Image produced but download failed."));
+      return Buffer.from(await img.arrayBuffer());
+    }
+    if (st.state === "failed") throw new PermanentError(st.message);
+  }
+  throw new Error(L("Délai dépassé pour la génération Black Forest Labs.", "Black Forest Labs generation timed out."));
+}
+
+async function bflImage(ctx: Ctx, model: string, prompt: string, refs: Buffer[], aspect: string) {
+  const { bflImageRequest } = await import("./bfl");
+  if (mediaModel("bfl", model)?.needsReference && !refs.length) throw new PermanentError(L(`${model} exige une image de référence.`, `${model} requires a reference image.`));
+  return bflRun(ctx, model, (key) => bflImageRequest(key, model as import("./bfl").BflModel, { prompt, references: refs.map((r) => r.toString("base64")), aspect }));
+}
+
+/** Agrandir le cadre par Flux Expand (version story ou carrée) : la photo reste intacte au centre. */
+async function bflExpandImpl(ctx: Ctx, input: { image: Buffer; cible: "9:16" | "1:1"; prompt: string }) {
+  const { bflExpandRequest, margesPour } = await import("./bfl");
+  const modele = mediaModel("bfl", "flux-pro-1.0-expand");
+  const etat = modele ? mediaStatus(modele) : null;
+  if (!etat?.usable || !etat.enabled) throw new UserFacingError(L("Flux Agrandir n'est pas encore ouvert (clé ou accord de l'administration manquant). Rien n'a été lancé.", "Flux Expand is not open yet (key or admin approval missing). Nothing was started."));
+  const m = await sharp(input.image).metadata();
+  const marges = margesPour(m.width ?? 1024, m.height ?? 1024, input.cible);
+  const png = await sharp(input.image).png().toBuffer();
+  return bflRun(ctx, "flux-pro-1.0-expand", (key) => bflExpandRequest(key, { image: png.toString("base64"), ...marges, prompt: input.prompt }));
+}
+
+/**
  * Image Qwen-Image (Alibaba Cloud Model Studio, point d'accès synchrone). Tarif « par image » obligatoire : le coût
  * maximal (une image) est réservé avant l'envoi. Aucune personne ajoutée sans photo du client (consigne + negative
  * prompt). Une demande refusée (clé, région, contenu, droits) ne coûte rien : la réservation est rendue.
@@ -1349,13 +1431,106 @@ async function wanClipImpl(ctx: Ctx, input: { image: Buffer | null; prompt: stri
   throw new Error(L("Délai dépassé pour la vidéo Wan : la tâche continue chez Alibaba Cloud, un nouvel essai reprendra son suivi.", "Wan video timed out: the task continues at Alibaba Cloud, a retry will resume tracking it."));
 }
 
+/** Durée demandée à un fabricant en direct : la plus courte acceptée qui couvre la demande (la même est réservée et comptée). */
+export function directBilledSeconds(provider: string, model: string, requested?: number) {
+  const d = mediaModel(provider, model)?.durations ?? [];
+  if (!d.length) throw new PermanentError(L(`Modèle vidéo ${provider}:${model} sans durée connue : génération bloquée.`, `Video model ${provider}:${model} has no known duration: generation blocked.`));
+  return d.find((x) => x >= Math.ceil(requested ?? 5)) ?? d[d.length - 1];
+}
+export const isDirectVideoProvider = (p: string): p is DirectVideoProvider => (DIRECT_VIDEO_PROVIDERS as string[]).includes(p);
+
+/**
+ * Plan vidéo chez un fabricant en direct (Vertex, Kling, BytePlus) ou chez Runware (secours) — une seule façon pour
+ * les quatre (rapport 09, point 4). Mêmes garde-fous que Wan : coût maximal réservé avant l'envoi, identifiant de la
+ * tâche gardé dès sa création (une reprise suit la même tâche, jamais une nouvelle génération), coût enregistré quand
+ * la vidéo est prête, AVANT le téléchargement ; la vidéo est copiée chez nous tout de suite (Kling ne la garde que
+ * 30 jours). Une tâche refusée ou en échec chez le fournisseur n'est pas facturée : la réservation est rendue.
+ * Coût : Runware renvoie le coût exact (`includeCost`) ; les autres, le tarif de l'administration.
+ */
+async function directClipImpl(ctx: Ctx, input: { provider: DirectVideoProvider; image: Buffer | null; lastImage?: Buffer | null; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model: string; draft?: boolean; fromDraftTaskId?: string | null; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
+  const { provider } = input;
+  const key = activeProviderKey(provider);
+  if (!key) throw new UserFacingError(L(`Aucune clé ${provider} configurée pour la vidéo.`, `No ${provider} key configured for video.`));
+  const mm = mediaModel(provider, input.model);
+  if (!mm || mm.adapter !== "direct_video") throw new PermanentError(L(`Modèle vidéo inconnu : ${provider}:${input.model}.`, `Unknown video model: ${provider}:${input.model}.`));
+  // Aucun de ces modèles n'est proposé pour une personne (règle du propriétaire : jamais sans photo ou accord écrit).
+  if (input.people) throw new PermanentError(L(`${mm.label} ne sert qu'aux plans sans personne.`, `${mm.label} is only used for shots without people.`));
+  routeMedia("video_generation", undefined, { usage: input.usage ?? "product_video" });
+  const seconds = directBilledSeconds(provider, input.model, input.seconds);
+  const project = provider === "vertex" ? getSetting("provider.vertex.project")?.trim() || null : null;
+  const trace = mediaTrace.getStore()!;
+  type Saved = { taskId: string; model: string; seconds: number; at: number; videoUrl?: string; costUsd?: number | null };
+  const prev: Saved | null = trace.previous?.provider_receipt ? JSON.parse(trace.previous.provider_receipt) : null;
+  gate(ctx, cost(provider, input.model, { seconds }).micro, "video", provider, input.model);
+  const record = (costUsd: number | null) => {
+    const exact = costUsd != null && costUsd > 0 ? Math.round(costUsd * usdToEur() * EUR) : null;
+    recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "video_generation", provider, model: input.model, unit: "video_second", quantity: seconds, costMicro: exact ?? cost(provider, input.model, { seconds }).micro, estimated: exact == null, idempotencyKey: ctx.usageKey });
+  };
+  const download = async (url: string) => {
+    const v = await publicDownload(url);
+    if (!v.ok) throw new PermanentError(L(`Vidéo terminée chez ${provider} mais impossible à télécharger (${v.status}). Un nouvel essai la récupérera sans la repayer.`, `Video finished at ${provider} but could not be downloaded (${v.status}). A retry will fetch it without paying again.`));
+    return Buffer.from(await v.arrayBuffer());
+  };
+  if (prev?.videoUrl) return download(prev.videoUrl);
+  let taskId = prev?.taskId ?? null;
+  if (taskId) onWait?.(L(`Reprise du suivi de la vidéo déjà lancée chez ${provider}…`, `Resuming the video already started at ${provider}…`));
+  else {
+    if (trace.previous) operationPending();
+    const b64 = async (b: Buffer | null | undefined) => (b ? (await sharp(b).jpeg({ quality: 90 }).toBuffer()).toString("base64") : null);
+    const taskUUID = randomUUID();
+    const req = directStart(provider, { model: input.model, prompt: input.prompt, image: await b64(input.image), lastImage: mm.lastFrame ? await b64(input.lastImage) : null, aspect: input.aspect, seconds, people: false, endUser: hashedEndUser(ctx.userId), draft: !!input.draft && !!mm.draft, fromDraftTaskId: input.fromDraftTaskId ?? null }, key, { project, taskUUID });
+    const start = await providerFetch(req.url, { method: req.method, headers: req.headers, body: JSON.stringify(req.body) });
+    const text = await start.text().catch(() => "");
+    if (!start.ok) {
+      const err = new PermanentError(L(`${mm.label} a refusé la demande : `, `${mm.label} rejected the request: `) + redact(text).slice(0, 300));
+      throw refused(start.status) ? refusal(err) : err;
+    }
+    let j: unknown = null;
+    try { j = JSON.parse(text); } catch { /* lu plus bas : identifiant absent */ }
+    taskId = directTask(provider, j, taskUUID);
+    if (!taskId) throw new Error(L(`${mm.label} n'a pas renvoyé d'identifiant de tâche (résultat incertain).`, `${mm.label} returned no task ID (uncertain result).`));
+    saveProviderReceipt(trace.reservation!, { taskId, model: input.model, seconds, at: Date.now() } satisfies Saved);
+  }
+  for (let i = 0; i < 150; i++) {
+    await new Promise((r) => setTimeout(r, mediaPoll.directMs));
+    onWait?.(L(`Génération du plan vidéo par ${mm.label} (${Math.round(((i + 1) * mediaPoll.directMs) / 1000)} s)…`, `${mm.label} is generating the video shot (${Math.round(((i + 1) * mediaPoll.directMs) / 1000)} s)…`));
+    const q = directPoll(provider, input.model, taskId, key, project);
+    const s = await providerFetch(q.url, { method: q.method, headers: q.headers, ...(q.body ? { body: JSON.stringify(q.body) } : {}) });
+    if (!s.ok) {
+      // Suivi momentanément impossible : la tâche continue chez le fournisseur, on réessaie (jamais relancée).
+      if (s.status >= 500 || s.status === 429) continue;
+      throw new Error(L(`Suivi impossible chez ${provider} (${s.status}) : résultat incertain.`, `Tracking failed at ${provider} (${s.status}): uncertain result.`));
+    }
+    const r = directRead(provider, await s.json().catch(() => null));
+    if (r.state === "running") continue;
+    if (r.state === "failed") throw refusal(new PermanentError(L(`La génération a échoué chez ${mm.label} (non facturée) : ${r.message}`, `Generation failed at ${mm.label} (not billed): ${r.message}`)));
+    if (r.state === "unknown") throw new Error(L(`Tâche introuvable chez ${mm.label} (résultat incertain) : ${r.message}`, `Task not found at ${mm.label} (uncertain result): ${r.message}`));
+    record(r.costUsd);
+    if (r.videoBase64) return Buffer.from(r.videoBase64, "base64");
+    if (!r.videoUrl || !/^https:\/\//.test(r.videoUrl)) throw new PermanentError(L(`Vidéo terminée chez ${mm.label} mais livrée hors d'une adresse lisible : à récupérer dans sa console, sans la repayer.`, `Video finished at ${mm.label} but delivered outside a readable address: fetch it from its console without paying again.`));
+    saveProviderReceipt(trace.reservation!, { taskId, model: input.model, seconds, at: Date.now(), videoUrl: r.videoUrl, costUsd: r.costUsd } satisfies Saved);
+    return download(r.videoUrl);
+  }
+  throw new Error(L(`Délai dépassé chez ${mm.label} : la tâche continue, un nouvel essai reprendra son suivi.`, `Timed out at ${mm.label}: the task continues, a retry will resume tracking it.`));
+}
+export const directClip = traced("video_generation", directClipImpl);
+
+/**
+ * Brouillon avant la version finale (rapport 09, point 6 ; Seedance 2.5 « Draft », 480p au prix du 480p) : après un
+ * `directClip` avec `draft: true`, l'identifiant de la tâche du brouillon, à repasser en `fromDraftTaskId` pour tirer la
+ * version finale du brouillon validé (sans regénérer). null : aucun brouillon payé sous cette clé.
+ */
+export function directDraftTask(userId: string, projectId: string, usageKey: string): string | null {
+  return operationReceipt<{ taskId?: string }>(userId, { task: "video_generation", projectId, usageKey })?.taskId ?? null;
+}
+
 /**
  * Plan vidéo IA chez le fournisseur choisi, avec relais vers le secours compatible si le principal échoue sans coût.
  * `provider` : celui annoncé à l'appelant (videoProviderAvailable / Video Engine V2).
  */
-export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
+export async function aiClip(provider: string, ctx: Ctx, input: { image: Buffer; lastImage?: Buffer | null; prompt: string; aspect: "16:9" | "9:16"; seconds?: number; people?: boolean; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void): Promise<Buffer> {
   const usage: MediaUsage = input.usage ?? (input.people ? "ugc_video" : "product_video");
-  const run = (p: string, model?: string) => (p === "higgsfield" ? higgsfieldClip(ctx,{...input,usage,model},onWait) : p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : p === "alibaba" ? wanClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
+  const run = (p: string, model?: string) => (isDirectVideoProvider(p) ? directClip(ctx, { provider: p, image: input.image, lastImage: input.lastImage ?? input.image, prompt: input.prompt, aspect: input.aspect, seconds: input.seconds, people: input.people, model: model ?? pickModel(p, "video"), usage }, onWait) : p === "google" ? veoClip(ctx, { ...input, usage, model }, onWait) : p === "alibaba" ? wanClip(ctx, { ...input, usage, model }, onWait) : falClip(ctx, { image: input.image, prompt: input.prompt, seconds: input.seconds, usage, model }, onWait));
   try {
     return await run(provider, input.model);
   } catch (e) {
@@ -1436,6 +1611,8 @@ export const openaiScene = withMediaBackup("image", traced("image_generation", o
 export const productPlate = withMediaBackup("image", traced("image_generation", productPlateImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const productScene = withMediaBackup("image", traced("image_generation", productSceneImpl), { usage: (_c, i) => i.usage ?? "product_image" });
 export const editPhoto = withMediaBackup("image", traced("image_generation", editPhotoImpl), { usage: (_c, i) => i.usage ?? "ad_visual" });
+/** Atelier : version story ou carrée par Flux Expand (choix du client), sans secours vers un autre fournisseur. */
+export const bflExpand = traced("image_generation", bflExpandImpl);
 /** Produit incomplet sur la photo : reconstruit en entier (même produit), payant, compté comme toute image. */
 export const completeProductImage = withMediaBackup("image", traced("image_generation", completeProductImpl), { usage: () => "product_edit" });
 /** Ancien nom (décor vide) : même génération, par le modèle de l'usage. */
@@ -1448,32 +1625,3 @@ export const wanClip = traced("video_generation", wanClipImpl);
 export const wanTextClip = traced("video_generation", (ctx: Ctx, input: { prompt: string; aspect?:"16:9"|"9:16";seconds?: number; model?: string; usage?: MediaUsage }, onWait?: (msg: string) => void) => wanClipImpl(ctx, { ...input, image: null, usage: input.usage ?? "text_video" }, onWait));
 const generateImage = withMediaBackup("image", traced("image_generation", generateImageImpl), { usage: (_c, i) => i.usage });
 
-/** Higgsfield uses the same reservation, access, idempotency and permanent project storage as existing media. */
-async function higgsfieldClipImpl(ctx:Ctx,input:{image?:Buffer;prompt:string;aspect?:'16:9'|'9:16';seconds?:number;people?:boolean;model?:string;usage?:MediaUsage},onWait?:(message:string)=>void):Promise<Buffer>{
- if(input.people)throw new PermanentError(L('Higgsfield : personnages sans référence non autorisés.','Higgsfield: people without a reference are not allowed.'));
- const trace=mediaTrace.getStore()!;
- const model=input.model??pickModel('higgsfield','video');
- let receipt:HiggsReceipt|null=trace.previous?.provider_receipt?JSON.parse(trace.previous.provider_receipt):null;
- if(receipt&&receipt.model!==model)operationPending();
- if(!receipt){
-  assertAiAllowed(ctx.userId,ctx.projectId);assertStrategyInputsCurrent(ctx.projectId);
-  const config=defaultConfiguration(model,input.seconds??5,input.aspect??'16:9');
-  // Validate approved exact pricing BEFORE upload; re-estimate the actual reference/body BEFORE reservation.
-  const {approvedQuote}=await import('./higgsfield/pricing');try{approvedQuote(config);}catch(e){throw new PermanentError(higgsfieldMessage((e as Error).message));}
-  const imageUrl=input.image?await uploadImage(await sharp(input.image).jpeg({quality:90}).toBuffer()):undefined;
-  const body=requestBody(config,`${input.prompt} Preserve the exact reference product, proportions, label, colors and logo. Do not invent people, claims, text or watermarks.`,imageUrl);
-  const quote=await checkedQuote(config,body).catch(e=>{throw new PermanentError(higgsfieldMessage((e as Error).message));});
-  gate(ctx,quote.micro,'video','higgsfield',model);
-  sent();
-  let id:string;
-  try{id=await higgsSubmit(model,body,trace.reservation!);}catch(e){if(e instanceof HiggsfieldHttpError&&e.status>=400&&e.status<500&&e.status!==408)throw refusal(new PermanentError(`HIGGSFIELD_SUBMISSION_REFUSED_${e.status}`));throw e;}
-  receipt={requestId:id,model,body,quoteMicro:quote.micro,quotedUsd:quote.currentUsd,fx:quote.fx,revision:quote.revision,seconds:config.seconds};
-  saveProviderReceipt(trace.reservation!,receipt);
- }else gate(ctx,receipt.quoteMicro,'video','higgsfield',model);
- let url:string;
- try{url=await higgsPoll(receipt.requestId,status=>onWait?.(status==='queued'?L('Plan en attente chez Higgsfield.','Shot queued at Higgsfield.'):status==='completed'?L('Plan produit ; récupération en cours.','Shot generated; downloading.'):L('Plan en cours chez Higgsfield.','Shot processing at Higgsfield.')));}catch(e){if(e instanceof UnchargedTerminal){if(trace.previous?.status==='uncertain')reconcileReservation(trace.reservation!,0);throw refusal(new PermanentError(e.message));}throw new PermanentError(L('Suivi Higgsfield interrompu : reçu conservé, aucun nouveau plan envoyé.','Higgsfield tracking interrupted: receipt kept, no new shot sent.'));}
- // Status endpoint does not provide an invoice amount: preserve estimated=true, never claim a measured cost.
- recordMedia({userId:ctx.userId,projectId:ctx.projectId,jobId:ctx.jobId,task:'video_generation',provider:'higgsfield',model,unit:'request',quantity:1,costMicro:receipt.quoteMicro,estimated:true,idempotencyKey:ctx.usageKey});
- return downloadVideo(url);
-}
-export const higgsfieldClip=traced('video_generation',higgsfieldClipImpl);

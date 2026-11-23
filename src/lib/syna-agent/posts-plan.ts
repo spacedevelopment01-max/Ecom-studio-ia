@@ -4,17 +4,18 @@
  *
  *  1) La STRATÈGE DES CONTENUS écrit trois groupes « sans aucune ressemblance » (charte de qualité § 7) : sujet utile,
  *     titre en deux temps, trois points au plus, appel à l'action, texte, hashtags, et la photo à créer.
- *  2) Le Studio contrôle sans IA : angle choisi par le client, produit du catalogue, 3 à 5 mots-dièse sans générique
- *     vide (Instagram n'en accepte pas plus de 5 depuis décembre 2025), trois sujets différents, aucune promesse non
- *     confirmée.
+ *  2) Le Studio contrôle sans IA : angle choisi par le client, produit du catalogue, 0 à 3 mots-dièse sans générique
+ *     vide, aucune légende ni pastille qui finit sur un ordre au lecteur (décision du 22 novembre 2026, `fin-de-legende.ts`),
+ *     trois sujets différents, aucune promesse non confirmée. Ce qui reste fautif après la reprise est corrigé par le code
+ *     (ordre retiré, mots-dièse ramenés à 3), sans nouvel appel.
  * La stratège et le juge lisent leurs cahiers de métier et les modèles de publication du secteur du client
  * (posts-knowledge.ts, 14 novembre 2026). Les images sont créées par le modèle d'images d'OpenAI, obligatoire
  * (usage « social_image », src/lib/ai/media-routing.ts).
  *  3) Un JUGE séparé lit le plan entier (celui qui écrit n'est jamais celui qui juge) et dit « garde » ou « reprendre ».
  *  4) Les groupes refusés (par le juge ou par les contrôles) sont réécrits UNE fois, puis relus par le juge.
  *     Un groupe encore refusé est montré avec le doute de SINA : rien n'est montré sans avoir été relu.
- * La création des visuels (posts.create) passe ensuite par le moteur de publications du Studio, qui a déjà son
- * rédacteur, son modèle d'images et son contrôle en image.
+ * La création des visuels (posts.create) passe ensuite par le moteur de publications du Studio (modèle d'images et
+ * relecture en image) ; le concept de chaque image est celui du plan (22 novembre 2026), pas réécrit par un rédacteur.
  */
 import { z } from "zod";
 import { L } from "../i18n-server";
@@ -27,6 +28,7 @@ import { listProducts } from "../products/catalog";
 import { peopleAllowed } from "../people-policy";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 import { brandBrief, boardLook } from "./custom-theme/brand";
+import { CONSIGNE_FIN_DE_LEGENDE, MOTS_DIESE_MAX, bornerMotsDiese, estUnOrdre, ordreEnFin, sansOrdreEnFin } from "../social-v2/fin-de-legende";
 import { postsEducated, postsKnowledgeCapMicro, postsKnowledgeReady, postsKnowledgeTypicalMicro, publicationModelsFor } from "./posts-knowledge";
 
 export const POSTS_PLAN_JOB = "syna.posts.plan";
@@ -47,6 +49,21 @@ export const postsPlanTypicalMicro = () => POSTS_PLAN_TYPICAL_MICRO + postsKnowl
 export const POST_SUBJECTS = ["produit", "conseil", "coulisses", "usage", "erreurs", "question"] as const;
 export const POST_SUBJECT_LABEL: Record<(typeof POST_SUBJECTS)[number], string> = { produit: "Le produit", conseil: "Un conseil", coulisses: "Les coulisses", usage: "L'usage", erreurs: "Les erreurs à éviter", question: "Une question à la communauté" };
 
+/** Concept de l'image d'un groupe : mêmes champs que celui du rédacteur des publications (social-v2/ai-post.ts). */
+export const PostConceptSchema = z.object({
+  idea: z.string().min(12).max(400),
+  composition: z.string().min(12).max(400),
+  framing: z.string().min(8).max(200),
+  setting: z.string().min(8).max(300),
+  light: z.string().min(8).max(200),
+  materials: z.string().min(8).max(200),
+  typography: z.string().min(8).max(200),
+  effects: z.string().max(200).default(""),
+  rationale: z.string().min(20).max(300),
+  diversity: z.string().min(20).max(300),
+  ctaStyle: z.enum(["none", "link", "button"]),
+});
+
 export const PostGroupSchema = z.object({
   angleId: z.string().min(1).max(40),
   subject: z.enum(POST_SUBJECTS),
@@ -54,17 +71,24 @@ export const PostGroupSchema = z.object({
   title: z.string().min(6).max(70),
   /** Trois points au plus, courts et concrets (écrits dans l'image). */
   points: z.array(z.string().min(3).max(80)).max(3).default([]),
-  /** Appel à l'action en pastille (« Enregistre ce mémo »). */
+  /** Appel en pastille, sans ordre au lecteur (« À garder pour samedi », « Et toi, sucré ou nature ? »). */
   cta: z.string().min(3).max(40),
   /** Texte de la publication (sous l'image). */
   caption: z.string().min(60).max(900),
-  hashtags: z.array(z.string().min(2).max(40)).min(1).max(20),
+  /** De 0 à 3 mots-dièse (décision du 22 novembre 2026) : une liste vide est permise. */
+  hashtags: z.array(z.string().min(2).max(40)).max(20).default([]),
   /** La photo d'ambiance à créer : UNE scène décrite, sans texte dedans. */
   visual: z.string().min(60).max(700),
   /** Ce qui rend ce groupe différent des deux autres : cadrage, palette dominante, type de visuel. */
   look: z.string().min(10).max(200),
   /** Nom exact d'un produit du catalogue quand la photo le montre, sinon null. */
   product: z.string().max(120).nullable().default(null),
+  /**
+   * Le concept de l'image, écrit par la stratège avec le reste et relu par le juge (audit du 22 novembre 2026) : il sert
+   * tel quel à la création de l'image, sans nouvel appel de rédaction, et le titre accepté par le client est celui de
+   * l'image. Absent (plan d'avant) : le rédacteur des publications l'écrit comme avant.
+   */
+  concept: PostConceptSchema.optional(),
 });
 export type PostGroup = z.infer<typeof PostGroupSchema>;
 export const PostsPlanSchema = z.object({ groups: z.array(PostGroupSchema).length(3) });
@@ -91,9 +115,10 @@ const RULES = `Règles des publications (charte de qualité du Studio) :
 - Un sujet UTILE par publication, jamais une simple publicité : un conseil, des erreurs à éviter, comment choisir, les coulisses, un usage, une question à la communauté. Trois sujets différents parmi : ${POST_SUBJECTS.join(", ")}.
 - Titre accrocheur en deux temps, « Sujet : promesse » (« Bougie : 5 erreurs à éviter »), court.
 - Trois points au plus, phrases courtes et concrètes. Un chiffre affiché est vrai et vient du client, jamais inventé.
-- UN appel à l'action qui fait agir la communauté (« Enregistre ce mémo », « Vote en commentaire », « Partage à un ami ») : enregistrer, envoyer à quelqu'un de précis, répondre à une vraie question, venir. Jamais un appât que les réseaux pénalisent (« like si », « tague un ami », « commente OUI », vote par réaction).
-- Le texte fait RESSENTIR l'émotion de l'angle (une scène, un moment, une sensation), au tutoiement, sans ordre donné au lecteur en dehors de l'appel à l'action. La première phrase tient seule (125 caractères au plus : c'est tout ce qu'on voit avant de déplier).
-- Mots-dièse : 3 à 5 (Instagram n'en accepte pas plus de 5), précis pour CE sujet, CE métier et, pour un commerce local, sa ville ; aucun générique vide (#love, #instagood, #photooftheday…).
+- UN appel en pastille qui donne envie, JAMAIS un ordre au lecteur : une vraie question ou une invitation (« À garder pour samedi », « Et toi, plutôt sucré ou nature ? », « Le coffret t'attend à l'atelier »). Jamais « Enregistre », « Partage », « Commande », « Clique », « Découvre », ni un appât que les réseaux pénalisent (« like si », « tague un ami », « commente OUI », vote par réaction).
+- Le texte fait RESSENTIR l'émotion de l'angle (une scène, un moment, une sensation), au tutoiement, sans aucun ordre donné au lecteur. La première phrase tient seule (125 caractères au plus : c'est tout ce qu'on voit avant de déplier).
+- ${CONSIGNE_FIN_DE_LEGENDE}
+- Mots-dièse : 0 à ${MOTS_DIESE_MAX}, précis pour CE sujet, CE métier et, pour un commerce local, sa ville ; aucun générique vide (#love, #instagood, #photooftheday…).
 - La photo : une vraie scène de vie avec une lumière soignée et une partie calme où le titre se pose ; jamais un produit seul sur fond uni ; aucun texte, aucun logo dans la description ; aucune personne sauf si la fiche l'autorise. Elle est créée par le modèle d'images d'OpenAI : décris-la comme une photo (cadrage, surface, chaque objet à sa place, lumière), le vrai produit du client entier et inchangé.
 - Une image créée ne prouve jamais rien : elle montre une ambiance, un geste, un outil, une matière ou le vrai produit mis en scène, jamais « notre chantier », « notre plat », « une cliente », un bien ou le lieu du client (pratique trompeuse, même avec une mention « IA »). Ce qui exige une vraie photo du client n'entre pas dans le plan.
 - Aucun avis, chiffre, délai, garantie ni certification absent de la fiche du client.`;
@@ -102,7 +127,7 @@ export const POSTS_PLAN_SYSTEM = `Tu es la stratège des contenus d'un studio qu
 
 ${RULES}
 
-Pour chaque groupe : angleId = l'identifiant exact d'un des angles choisis par le client (l'angle principal au moins une fois ; un angle secondaire quand il en a) ; subject ; title ; points ; cta ; caption = le texte sous l'image (un vrai texte, 2 à 5 phrases, qui prolonge l'image sans la répéter) ; hashtags ; visual = UNE photo décrite en phrases complètes (type de photo et cadrage, lieu et surface, chaque objet à sa place, la partie calme pour le titre, la lumière) ; look = ce qui rend ce groupe différent des deux autres (cadrage, palette dominante, type de visuel) ; product = le nom exact d'un produit du catalogue si la photo le montre, sinon null.
+Pour chaque groupe : angleId = l'identifiant exact d'un des angles choisis par le client (l'angle principal au moins une fois ; un angle secondaire quand il en a) ; subject ; title ; points ; cta ; caption = le texte sous l'image (un vrai texte, 2 à 5 phrases, qui prolonge l'image sans la répéter) ; hashtags ; visual = UNE photo décrite en phrases complètes (type de photo et cadrage, lieu et surface, chaque objet à sa place, la partie calme pour le titre, la lumière) ; look = ce qui rend ce groupe différent des deux autres (cadrage, palette dominante, type de visuel) ; product = le nom exact d'un produit du catalogue si la photo le montre, sinon null ; concept = l'image finie pensée d'un bloc avec son titre, telle qu'elle sera créée (personne ne la réécrit ensuite) : idea (l'idée de l'image en une phrase), composition (où sont le sujet, le titre, les points et l'appel), framing (cadrage), setting (lieu et surface), light (lumière), materials (matières visibles), typography (allure des lettres, dans la typographie de la marque), effects (aucun effet si rien ne le justifie), rationale (pourquoi cette image sert ce sujet et cet angle), diversity (ce qui la distingue des deux autres), ctaStyle (none, link ou button ; une publication sans vente n'a pas de bouton).
 
 Réponse : uniquement le JSON demandé.`;
 
@@ -115,18 +140,19 @@ Les épreuves :
 2. L'UTILITÉ. Le lecteur apprend-il ou ressent-il quelque chose, ou est-ce une publicité déguisée ?
 3. L'ÉMOTION DE L'ANGLE. Le texte fait-il ressentir l'émotion de l'angle indiqué, avec des mots qu'un client dirait ?
 4. LE TITRE ET LES POINTS. Titre en deux temps, court ; trois points au plus, concrets ; aucun chiffre qui ne vienne pas de la fiche.
-5. LA PHOTO. Une vraie scène, à sa place avec ce texte, qu'un bon photographe saurait faire ; pas un produit seul sur fond uni ; rien d'interdit.
+5. LA PHOTO ET L'IMAGE. Une vraie scène, à sa place avec ce texte, qu'un bon photographe saurait faire ; pas un produit seul sur fond uni ; rien d'interdit. Le concept de l'image (« image ») sera créé tel quel, sans relecture d'un autre rédacteur : il tient avec le titre, la composition laisse une place calme au titre, et rien n'y est inventé.
 6. LES FAITS. Rien d'inventé : ni avis, ni chiffre, ni délai, ni garantie, ni certification absents de la fiche.
 
 Sévère mais juste : un groupe qui passe les épreuves, tu le gardes. Aucune remarque de goût personnel.
 
 Réponse : uniquement le JSON demandé : groups (un avis par groupe : index, verdict, why en une ou deux phrases, fixes = 1 à 4 corrections précises si « reprendre ») et overall (ton avis sur la série en deux phrases).`;
 
-export const POSTS_FIX_SYSTEM = `Tu es la stratège des contenus d'un studio qui crée la marque et le site de petits commerçants. Des groupes de ton plan de publications ont été refusés. Tu réécris SEULEMENT ceux-là, en suivant les corrections, et tu rends chacun en entier avec son index. Tu ne touches pas aux groupes gardés : ils te sont donnés pour que tu ne leur ressembles pas.
-
-${RULES}
-
-Réponse : uniquement le JSON demandé : groups = [{ index, group }] pour chaque groupe réécrit.`;
+/**
+ * La reprise des groupes refusés (audit du 22 novembre 2026) : elle garde la consigne de la stratège (POSTS_PLAN_SYSTEM)
+ * et ses cahiers, relus en mémoire chez le fournisseur ; ce qui change (réécrire seulement les groupes refusés) passe
+ * dans la demande. Avant, une consigne à part réécrivait en mémoire, au double du prix, les mêmes 18 000 jetons.
+ */
+export const POSTS_FIX_ASK = `REPRISE : des groupes de ton plan ont été refusés. Tu réécris SEULEMENT ceux-là, en suivant les corrections, et tu rends chacun en entier avec son index, concept compris. Tu ne touches pas aux groupes gardés : ils te sont donnés pour que tu ne leur ressembles pas. Réponse : uniquement le JSON demandé : groups = [{ index, group }] pour chaque groupe réécrit.`;
 
 /** Hashtags génériques vides (charte § 7) : refusés sans IA. */
 const EMPTY_TAGS = new Set(["love", "instagood", "photooftheday", "picoftheday", "follow", "followme", "like4like", "likeforlike", "instadaily", "happy", "beautiful", "cute", "fashion", "style", "amazing", "bestoftheday", "instalike", "life", "smile", "fun", "tbt", "nofilter", "viral", "fyp", "pourtoi", "foryou"]);
@@ -138,13 +164,30 @@ export function cleanHashtags(tags: string[]): string[] {
   return tags.map((t) => `#${t.replace(/^#+/, "").replace(/\s+/g, "")}`).filter((t) => { const k = tagKey(t); if (!k || seen.has(k)) return false; seen.add(k); return true; });
 }
 
+/**
+ * Ce qui reste fautif après la reprise, corrigé par le code (à la charge du Studio, sans nouvel appel) : un ordre en fin
+ * de texte est retiré, les mots-dièse ramenés à 3, et une pastille qui reste un ordre n'est pas posée sur l'image.
+ */
+export function finDeLegende(g: PostGroup, notes: string[] = [], index = 0): PostGroup {
+  const fin = sansOrdreEnFin(g.caption);
+  if (fin.retire.length) notes.push(`groupe ${index + 1} : ordre retiré de la fin du texte (« ${fin.retire.join(" ")} »)`);
+  const tags = cleanHashtags(g.hashtags), kept = bornerMotsDiese(tags);
+  if (kept.length < tags.length) notes.push(`groupe ${index + 1} : mots-dièse ramenés à ${MOTS_DIESE_MAX}`);
+  const ordre = estUnOrdre(g.cta);
+  if (ordre) notes.push(`groupe ${index + 1} : l'appel « ${g.cta} » est un ordre, il n'est pas posé sur l'image`);
+  return { ...g, caption: fin.retire.length && fin.caption.trim() ? fin.caption : g.caption, hashtags: kept, ...(ordre && g.concept ? { concept: { ...g.concept, ctaStyle: "none" as const } } : {}) };
+}
+
 /** Contrôles sans IA d'un plan : chaque défaut est rendu avec l'index du groupe (ou -1 pour la série). */
 export function planIssues(p: Project, groups: PostGroup[], o: { angleIds: string[]; products: string[]; people: boolean }): { index: number; issue: string }[] {
   const out: { index: number; issue: string }[] = [];
   groups.forEach((g, i) => {
     if (!o.angleIds.includes(g.angleId)) out.push({ index: i, issue: `angle « ${g.angleId} » inconnu : prends un des angles choisis par le client (${o.angleIds.join(", ")})` });
     const tags = cleanHashtags(g.hashtags);
-    if (tags.length < 3 || tags.length > 5) out.push({ index: i, issue: `${tags.length} mots-dièse : il en faut 3 à 5 (Instagram n'en accepte pas plus de 5)` });
+    if (tags.length > MOTS_DIESE_MAX) out.push({ index: i, issue: `${tags.length} mots-dièse : ${MOTS_DIESE_MAX} au plus (0 est permis)` });
+    const ordre = ordreEnFin(g.caption);
+    if (ordre) out.push({ index: i, issue: `le texte finit sur un ordre au lecteur (« ${ordre} ») : finis sur une vraie question, une invitation qui donne envie ou un fait utile` });
+    if (estUnOrdre(g.cta)) out.push({ index: i, issue: `l'appel « ${g.cta} » est un ordre au lecteur : écris une invitation ou une vraie question` });
     const empty = tags.filter((t) => EMPTY_TAGS.has(tagKey(t)));
     if (empty.length) out.push({ index: i, issue: `hashtags génériques vides à remplacer : ${empty.join(" ")}` });
     if (g.product && !o.products.some((x) => x.trim().toLowerCase() === g.product!.trim().toLowerCase())) out.push({ index: i, issue: `produit « ${g.product} » absent du catalogue : le nom exact d'un produit du client, ou null` });
@@ -177,7 +220,7 @@ export function postsPlanPrompt(brief: string, angles: ReturnType<typeof chosenA
   ].filter(Boolean).join("\n\n");
 }
 
-const showGroup = (g: PostGroup, i: number) => ({ index: i, angle: g.angleId, sujet: g.subject, titre: g.title, points: g.points, appel: g.cta, texte: g.caption, hashtags: cleanHashtags(g.hashtags), photo: g.visual, difference: g.look, produit: g.product });
+const showGroup = (g: PostGroup, i: number) => ({ index: i, angle: g.angleId, sujet: g.subject, titre: g.title, points: g.points, appel: g.cta, texte: g.caption, hashtags: cleanHashtags(g.hashtags), photo: g.visual, difference: g.look, produit: g.product, ...(g.concept ? { image: g.concept } : {}) });
 
 /** Remplaçables par les tests (aucun appel réel). */
 export const postsPlanDeps: {
@@ -242,8 +285,9 @@ export async function runPostsPlanJob(ctx: JobContext) {
   if (refused.length) {
     ctx.progress(0.65, L("Je reprends ce qui ne va pas", "Reworking what is off"));
     try {
-      const prompt = `${base}\n\nGROUPES GARDÉS (ne leur ressemble pas) :\n${JSON.stringify(groups.map(showGroup).filter((g) => !refused.some((r) => r.index === g.index)))}\n\nGROUPES À RÉÉCRIRE :\n${JSON.stringify(refused.map((r) => ({ ...showGroup(groups[r.index], r.index), corrections: r.fixes })))}`;
-      const fixed = await ask("fix", postsEducated(POSTS_FIX_SYSTEM, "stratege"), prompt, PostsFixSchema, postsPlanDeps.fix, { task: "strategy", cap: planCap, out: 7000 });
+      const prompt = `${base}\n\n${POSTS_FIX_ASK}\n\nGROUPES GARDÉS (ne leur ressemble pas) :\n${JSON.stringify(groups.map(showGroup).filter((g) => !refused.some((r) => r.index === g.index)))}\n\nGROUPES À RÉÉCRIRE :\n${JSON.stringify(refused.map((r) => ({ ...showGroup(groups[r.index], r.index), corrections: r.fixes })))}`;
+      // La consigne de la stratège, inchangée : ses cahiers sont relus en mémoire au lieu d'être réécrits au double du prix.
+      const fixed = await ask("fix", postsEducated(POSTS_PLAN_SYSTEM, "stratege"), prompt, PostsFixSchema, postsPlanDeps.fix, { task: "strategy", cap: planCap, out: 7000 });
       const redone = refused.map((r) => r.index).filter((i) => fixed.groups.some((x) => x.index === i));
       groups = groups.map((g, i) => fixed.groups.find((x) => x.index === i && redone.includes(i))?.group ?? g);
       if (redone.length) {
@@ -258,7 +302,7 @@ export async function runPostsPlanJob(ctx: JobContext) {
 
   const plan: SinaPosts = {
     round: (j.posts?.round ?? 0) + 1,
-    groups: groups.map((g, i) => { const r = refused.find((x) => x.index === i); return { ...g, hashtags: cleanHashtags(g.hashtags), ...(r ? { doubt: r.why.slice(0, 320) } : {}) }; }),
+    groups: groups.map((g, i) => { const r = refused.find((x) => x.index === i); return { ...finDeLegende(g, notes, i), ...(r ? { doubt: r.why.slice(0, 320) } : {}) }; }),
     judged, overall, notes, at: Date.now(),
   };
   updateJourney(a.conversationId, (x) => { x.posts = plan; setStep(x, 9, "review", L("plan des publications prêt", "posts plan ready")); });

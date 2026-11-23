@@ -16,6 +16,9 @@ import { withContenus } from "@/lib/contenus";
 import type { ThemeSpec } from "@/lib/theme/spec";
 import { addCustomDomain, customDomains, dnsInstructions, removeCustomDomain, setCustomDomainEnabled, verifyCustomDomain } from "@/lib/sites/domains";
 import { deleteRequest, markRequestHandled, markRequestRead, siteRequests } from "@/lib/sites/requests";
+import { suiviAllume } from "@/lib/suivi/reglages";
+import { debutReponse, resumerDemande, trierDemande } from "@/lib/suivi/demandes";
+import { echangesDuJour, PLAFOND_JOUR } from "@/lib/suivi/assistante";
 import { addRecipient, recipients, removeRecipient, retryNotification, sendVerification } from "@/lib/sites/notify";
 import { mailConfigured } from "@/lib/mail";
 import { siteDiagnostics, storageUsed, STORAGE_LIMIT_BYTES, KEEP_PUBLICATIONS, ensureMaintenanceTables } from "@/lib/sites/maintenance";
@@ -36,7 +39,14 @@ function overview(projectId: string) {
     addresses: addresses(projectId).map((a) => ({ hostname: a.hostname, kind: a.kind, status: a.status, checkedAt: a.checked_at, checkError: a.check_error, dns: a.kind === "custom" ? dnsInstructions(a) : null })),
     // Domaines déjà possédés par le client : état lisible (preuve, pointage, mise en service) et instructions DNS.
     domains: customDomains(projectId),
-    requests: siteRequests(projectId),
+    // Le tri, le résumé et le début de réponse de chaque demande (recherche 08, points 4 et 5) : par le code, sans appel
+    // à l'IA ; allumés par défaut (« suivi.demandes », décision du 22 novembre 2026). L'écran y ajoute l'e-mail et
+    // « copier » ; les liens SMS et WhatsApp seulement si « suivi.envoiGeste » est allumé (éteint par défaut).
+    requests: suiviAllume("demandes") ? siteRequests(projectId).map((r) => ({ ...r, tri: trierDemande(r.fields, r.kind), resume: resumerDemande(r.fields), debutReponse: debutReponse(r.fields) })) : siteRequests(projectId),
+    envoiGeste: suiviAllume("envoiGeste"),
+    // L'assistante IA du site (recherche 08, point 4 ; « suivi.assistante », allumée par défaut) : les échanges du jour,
+    // pour que le client voie ce qu'elle a répondu et ce qu'elle lui a transmis.
+    assistante: suiviAllume("assistante") ? { plafond: PLAFOND_JOUR, aujourdhui: echangesDuJour(projectId, new Date().toISOString().slice(0, 10)) } : null,
     // Envoi des demandes par e-mail : état du SMTP du studio et adresses du professionnel (jamais montrées aux visiteurs).
     notifications: { smtp: mailConfigured(), recipients: recipients(projectId) },
     policies: sitePolicies(projectId),

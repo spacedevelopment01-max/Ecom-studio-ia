@@ -13,6 +13,7 @@ describe("Social V2 — briques locales", async () => {
   const { publishingDates, atZoned, planSlots, weightedSequence } = await import("@/lib/social-v2/planner");
   const { socialStrategy, archetypeOf } = await import("@/lib/social-v2/strategy");
   const { adaptForPlatform, frequencyWarnings, nativeFormatFor, PLATFORM_SPECS } = await import("@/lib/social-v2/platforms");
+  const { estUnOrdre } = await import("@/lib/social-v2/fin-de-legende");
   const { writeLocal } = await import("@/lib/social-v2/copy");
   const { contentHash, approvalValid } = await import("@/lib/social-v2/approval");
   const { moveToWeekday } = await import("@/lib/social-v2/local-edit");
@@ -77,8 +78,10 @@ describe("Social V2 — briques locales", async () => {
     const ids = Object.values(s).map((x) => x.pillars.map((y) => y.id).join(","));
     expect(new Set(ids).size).toBe(5);
     expect(s.artisan.ctas[0]).toMatch(/devis/);
-    expect(s.restaurant.ctas[0]).toMatch(/Réserver/);
-    expect(s.saas.ctas[0]).toMatch(/Essayer/);
+    // Fins sans ordre (décision du 22 novembre 2026) : avant « Réserver une table » et « Essayer ».
+    expect(s.restaurant.ctas[0]).toMatch(/réservation/);
+    expect(s.saas.ctas[0]).toMatch(/essayer \?/);
+    for (const x of Object.values(s)) for (const c of x.ctas) expect(estUnOrdre(c), c).toBe(false);
     expect(s.restaurant.gaps.join(" ")).toMatch(/événements confirmés/);
     expect(s.artisan.gaps.join(" ")).toMatch(/aucune réalisation ne sera inventée/);
     expect(s.artisan.objectives.join(" ")).toMatch(/Mâcon/);
@@ -89,7 +92,12 @@ describe("Social V2 — briques locales", async () => {
     expect(ig.caption).not.toContain("https://");
     expect(ig.caption).toMatch(/Lien en bio\./);
     expect(ig.link).toBeNull();
-    expect(ig.hashtags).toHaveLength(5);
+    // De 0 à 3 mots-dièse par légende (décision du 22 novembre 2026 ; avant : 5 sur Instagram).
+    expect(ig.hashtags).toHaveLength(3);
+    // Un ordre en fin de légende est retiré par le Studio, et c'est noté.
+    const ordre = adaptForPlatform("facebook", { caption: "Le sérum se pose le soir.\n\nCommandez maintenant.", title: "t", hashtags: [], link: null, format: "image", mediaCount: 1 });
+    expect(ordre.caption).toBe("Le sérum se pose le soir.");
+    expect(ordre.notes.join(" ")).toMatch(/fin de légende sans ordre/);
     expect(ig.format).toBe("image");
     const fb = adaptForPlatform("facebook", { caption: "x", title: "t", hashtags: [], link: "https://boutique.test", format: "text", mediaCount: 0 });
     expect(fb.link).toBe("https://boutique.test");

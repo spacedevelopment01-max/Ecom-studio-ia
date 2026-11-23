@@ -1,6 +1,5 @@
 "use client";
 import { ThemeRightsAdmin } from "./admin-theme-rights";
-import {HiggsfieldAdmin} from "./admin-higgsfield";
 import { MusicLibraryAdmin } from "./admin-music";
 import { PACKS, PACKS_FOR_SALE, PLAN_IDS, PLANS } from "@/lib/plans";
 import { useId, useState } from "react";
@@ -15,6 +14,7 @@ import dynamic from "next/dynamic";
 const SubscriptionsAdmin = dynamic(() => import("./admin-plans").then((m) => m.SubscriptionsAdmin), { ssr: false });
 const CallsAdmin = dynamic(() => import("./admin-plans").then((m) => m.CallsAdmin), { ssr: false });
 const AccountingView = dynamic(() => import("./admin-accounting").then((m) => m.AccountingView), { ssr: false });
+const JugesAdmin = dynamic(() => import("./admin-juges").then((m) => m.JugesAdmin), { ssr: false });
 const WaitlistAdmin = dynamic(() => import("./admin-waitlist").then((m) => m.WaitlistAdmin), { ssr: false });
 import { TextRoutingPanel, type TextRoutingData } from "./admin-text-routing";
 import type { MediaRoutingData } from "./admin-media-routing";
@@ -23,6 +23,8 @@ import type { MediaUsageData } from "./admin-media-usages";
 import { AlibabaSettings, type AlibabaData } from "./admin-alibaba";
 const MediaUsagesPanel = dynamic(() => import("./admin-media-usages").then((m) => m.MediaUsagesPanel), { ssr: false });
 
+type LigneMemoire = { travail: string; appels: number; entree: number; reprise: number; ecrite: number; partReprise: number | null; partEcrite: number | null; gagneMicro: number; differes: number; differesRates?: number; strictes?: number; reprisesForme?: number };
+type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number; alerte?: boolean };
 type Overview = {
   appUrl: string;
   providers: { id: string; name: string; role: string; keyHelp: string; docs: string; keyMasked: string; configured: boolean; disabled: boolean }[];
@@ -40,6 +42,10 @@ type Overview = {
   smtp: { configured: boolean; hostMasked: string; port: string; userMasked: string; passwordConfigured: boolean; fromMasked: string };
   users: { id: string; email: string; name: string; role: string; created_at: number; subscription: string; stores: number; projects: number; availableEur: number; usedPct: number }[];
   usage: { provider: string; model: string; unit: string; calls: number; inp: number; out: number; q: number; costEur: number; billedEur: number; est: number }[];
+  /** Mise en mémoire chez le fournisseur (30 j) : part reprise par travail, d'après les reçus. */
+  memoire?: { lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean; etapes?: { etape: string; reflexions: number; plein: number; lu: number; ecrit: number; sortie: number; parReflexionMicro: number }[] };
+  /** Coût par travail accepté (30 j) : payé, gardé par le client, jeté (refait), en attente de sa validation. */
+  travaux?: { lignes: LigneTravail[] };
   revenue: { kind: string; cents: number; n: number }[];
   errors: { id: string; scope: string; message: string; user_id: string | null; project_id: string | null; created_at: number }[];
   failedJobs: { id: string; type: string; error: string; attempts: number; updated_at: number }[];
@@ -63,12 +69,13 @@ const SECTIONS = [
   ["paiements", "Paiements", "Payments"],
   ["emails", "E-mails", "Emails"],
   ["conso", "Consommation", "Usage"],
+  ["juges", "Juges des images", "Image judges"],
   ["sante", "Erreurs et tâches", "Errors and tasks"],
 ] as const;
 
 const euro = (lang: Lang, n: number) => n.toLocaleString(intlLocale(lang), { style: "currency", currency: "EUR", maximumFractionDigits: 4 });
 const num = (lang: Lang, n: number | null | undefined) => n?.toLocaleString(intlLocale(lang));
-const pctTxt = (lang: Lang, n: number) => (lang === "en" ? `${n}%` : `${n} %`);
+const pctTxt = (lang: Lang, n: number) => (lang === "en" ? `${n}%` : `${n} %`);
 
 export function AdminConsole() {
   const t = useT();
@@ -139,11 +146,12 @@ export function AdminConsole() {
             {tab === "bord" && (dash ? <DashboardView d={dash} onClients={() => setTab("clients")} /> : <div className="skeleton h-72 rounded-3xl" />)}
             {tab === "clients" && (dash ? <Clients d={dash} reload={() => { reload(); reloadDash(); }} /> : <div className="skeleton h-72 rounded-3xl" />)}
             {tab === "attente" && <WaitlistAdmin />}
+            {tab === "juges" && <JugesAdmin />}
             {tab === "compta" && <AccountingView />}
             {tab === "abonnements" && <SubscriptionsAdmin />}
             {tab === "themes" && <ThemeRightsAdmin />}
             {tab === "rdv" && <CallsAdmin />}
-            {tab === "conso" && <Usage data={data} />}
+            {tab === "conso" && <Usage data={data} post={post} />}
             {tab === "sante" && <Health data={data} reload={reload} />}
           </div>
         )}
@@ -188,7 +196,7 @@ function AiProviders({ data, set, refreshOverview }: { data: Overview; set: SetF
     <>
       <Card className="p-5 text-sm text-ink-2">{t("Les clés sont chiffrées en base (AES-256-GCM avec APP_SECRET) et ne sont jamais renvoyées au navigateur. Les clients n'ont jamais de clé à fournir. Sans clé, le studio fonctionne avec son moteur intégré (sans IA externe) et l'indique clairement aux clients.", "Keys are encrypted in the database (AES-256-GCM with APP_SECRET) and are never sent back to the browser. Customers never have to provide a key. Without a key, the studio runs on its built-in engine (no external AI) and tells customers so clearly.")}</Card>
       <div className="grid gap-4 md:grid-cols-2">
-        {data.providers.filter(p=>p.id!=="higgsfield").map((p) => (
+        {data.providers.map((p) => (
           <Card key={p.id} className="grid content-start gap-3 p-5">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -213,7 +221,6 @@ function AiProviders({ data, set, refreshOverview }: { data: Overview; set: SetF
           </Card>
         ))}
       </div>
-      <HiggsfieldAdmin onSaved={refreshOverview} />
       <Card className="grid gap-3 p-5">
         <p className="font-display text-lg font-semibold">{t("Adresse publique du studio", "Studio public URL")}</p>
         <p className="text-sm text-ink-2">{t("Utilisée pour les retours OAuth, les médias publiés (Instagram, TikTok, Pinterest récupèrent les fichiers par URL) et l'installation du thème Shopify. Doit être en HTTPS et accessible depuis Internet. Actuelle : ", "Used for OAuth callbacks, published media (Instagram, TikTok and Pinterest fetch files by URL) and Shopify theme installation. Must use HTTPS and be reachable from the internet. Current: ")}<span className="font-mono">{data.appUrl}</span></p>
@@ -372,7 +379,7 @@ function OfferSummary() {
       <p>
         <strong className="text-ink">{t("Packs (TTC, achat ponctuel, n'expirent pas) : ", "Packs (incl. tax, one-off purchase, never expire): ")}</strong>
         {PACKS_FOR_SALE.map((id) => `${PACKS[id].name[lang]} ${eur(PACKS[id].price)}`).join(" · ")}
-        {PLAN_IDS.some((id) => PLANS[id].packDiscount > 0) && <>{" — "}{PLAN_IDS.filter((id) => PLANS[id].packDiscount > 0).map((id) => t(`-${Math.round(PLANS[id].packDiscount * 100)} % avec ${PLANS[id].name.fr}`, `${Math.round(PLANS[id].packDiscount * 100)}% off with ${PLANS[id].name.en}`)).join(", ")}</>}
+        {PLAN_IDS.some((id) => PLANS[id].packDiscount > 0) && <>{" — "}{PLAN_IDS.filter((id) => PLANS[id].packDiscount > 0).map((id) => t(`-${Math.round(PLANS[id].packDiscount * 100)} % avec ${PLANS[id].name.fr}`, `${Math.round(PLANS[id].packDiscount * 100)}% off with ${PLANS[id].name.en}`)).join(", ")}</>}
       </p>
     </div>
   );
@@ -681,7 +688,7 @@ function Clients({ d, reload }: { d: Dashboard; reload: () => void }) {
   );
 }
 
-function Usage({ data }: { data: Overview }) {
+function Usage({ data, post }: { data: Overview; post: (b: Record<string, unknown>, msg?: string) => Promise<void> }) {
   const t = useT();
   const { lang } = useLang();
   const cost = data.usage.reduce((s, u) => s + u.costEur, 0);
@@ -694,6 +701,8 @@ function Usage({ data }: { data: Overview }) {
         <Card className="p-5"><p className="text-xs text-muted">{t("Débité des enveloppes (30 j)", "Charged to allowances (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, billed)}</p></Card>
         <Card className="p-5"><p className="text-xs text-muted">{t("Encaissements Stripe (30 j)", "Stripe collections (30 d)")}</p><p className="mt-1 font-display text-3xl font-semibold">{euro(lang, rev)}</p></Card>
       </div>
+      {data.travaux && <TravauxCard lignes={data.travaux.lignes} />}
+      {data.memoire && <MemoireCard m={data.memoire} post={post} />}
       <Card className="overflow-x-auto p-5">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Fournisseur / modèle", "Provider / model")}</th><th>{t("Unité", "Unit")}</th><th>{t("Appels", "Calls")}</th><th>{t("Entrée", "Input")}</th><th>{t("Sortie / quantité", "Output / quantity")}</th><th>{t("Coût", "Cost")}</th><th>{t("Débité", "Charged")}</th></tr></thead>
@@ -714,6 +723,73 @@ function Usage({ data }: { data: Overview }) {
         </table>
       </Card>
     </>
+  );
+}
+
+/** Le coût par travail accepté : ce qui a été payé, ce que le client a gardé, ce qui a été jeté (refait). */
+function TravauxCard({ lignes }: { lignes: LigneTravail[] }) {
+  const t = useT();
+  const { lang } = useLang();
+  const e = (m: number) => euro(lang, m / 1e6);
+  return (
+    <Card className="overflow-x-auto p-5">
+      <p className="font-display text-lg font-semibold">{t("Coût par travail accepté (30 j)", "Cost per accepted work (30 d)")}</p>
+      <p className="mt-1 text-sm text-ink-2">{t("D'après les reçus du fournisseur. Gardé : le dernier travail avant que le client valide la partie ; jeté : ceux d'avant, refaits ; en attente : pas encore validé.", "From provider receipts. Kept: the last work before the client approved that part; thrown: earlier ones, redone; pending: not approved yet.")}</p>
+      <table className="mt-3 w-full min-w-[640px] text-sm">
+        <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Travail", "Work")}</th><th>{t("Lancés", "Started")}</th><th>{t("Payé", "Paid")}</th><th>{t("Gardé", "Kept")}</th><th>{t("Jeté", "Thrown")}</th><th>{t("En attente", "Pending")}</th><th>{t("Plafonds annoncés", "Announced caps")}</th></tr></thead>
+        <tbody className="divide-y divide-line">
+          {lignes.length === 0 && <tr><td colSpan={7} className="py-4 text-muted">{t("Aucun travail payant sur 30 jours.", "No paid work over the last 30 days.")}</td></tr>}
+          {lignes.map((l) => (
+            <tr key={l.tool}>
+              <td className="py-2">{l.travail}{l.alerte ? <Badge tone="bad" className="ml-2">{t("coût doublé cette semaine", "cost doubled this week")}</Badge> : null}</td>
+              <td className="tabular-nums">{num(lang, l.travaux)}</td>
+              <td className="tabular-nums">{e(l.payeMicro)}</td>
+              <td className="tabular-nums">{e(l.gardeMicro)}</td>
+              <td className="tabular-nums">{e(l.jeteMicro)}</td>
+              <td className="tabular-nums">{e(l.attenteMicro)}</td>
+              <td className="tabular-nums">{e(l.capMicro)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
+  );
+}
+
+/** Ce que le fournisseur a repris de mémoire au lieu de le relire (consignes, notices, cahiers, fil déjà lu). */
+function MemoireCard({ m, post }: { post: (b: Record<string, unknown>, msg?: string) => Promise<void>; m: { effortParMessage?: { allume: boolean; panne: { model: string; at: number; why: string } | null }; lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean; etapes?: { etape: string; reflexions: number; plein: number; lu: number; ecrit: number; sortie: number; parReflexionMicro: number }[] } }) {
+  const t = useT();
+  const { lang } = useLang();
+  const pct = (x: number | null) => x == null ? "—" : `${Math.round(x * 100)} %`;
+  return (
+    <Card className="overflow-x-auto p-5">
+      <p className="font-display text-lg font-semibold">{t("Mise en mémoire chez le fournisseur (30 j)", "Provider-side memory (30 d)")}</p>
+      <p className="mt-1 text-sm text-ink-2">{t(`Ce qui ne change pas d'un appel à l'autre est repris de mémoire, bien moins cher que relu. Part reprise sur tout le Studio : ${pct(m.total.partReprise)} ; gagné : ${euro(lang, m.total.gagneMicro / 1e6)}.`, `What doesn't change between calls is reused from memory, far cheaper than re-read. Reused across the Studio: ${pct(m.total.partReprise)}; saved: ${euro(lang, m.total.gagneMicro / 1e6)}.`)}</p>
+      <p className="mt-1 text-sm text-ink-2">{m.differe ? t(`Différé à moitié prix (marque, angles, site, publications) : allumé ; ${num(lang, m.total.differes)} appels servis ainsi${m.total.differesRates ? `, ${num(lang, m.total.differesRates)} partis en direct faute de patience (plein tarif)` : ""}.`, `Half-price deferred work (brand, angles, site, posts): on; ${num(lang, m.total.differes)} calls served this way.`) : t("Différé à moitié prix : éteint (réglage « sina.differe »).", "Half-price deferred work: off (setting “sina.differe”).")}</p>
+      <p className="mt-1 text-sm text-ink-2">{t(`Sortie stricte (le fournisseur répond dans la forme attendue) : ${num(lang, m.total.strictes ?? 0)} appels ; réponses mal formées repayées pour être réparées : ${num(lang, m.total.reprisesForme ?? 0)}.`, `Strict output (the provider answers in the expected shape): ${num(lang, m.total.strictes ?? 0)} calls; malformed answers paid again to be repaired: ${num(lang, m.total.reprisesForme ?? 0)}.`)}</p>
+      {m.effortParMessage && <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-ink-2">
+        <span>{m.effortParMessage.allume ? t("Effort de SINA aux moments forts par un message dans la conversation (fonction en essai d'Anthropic) : allumé ; la mémoire du fil n'est plus effacée.", "SINA's key-moment effort set by an in-conversation message (Anthropic beta): on.") : t("Effort de SINA aux moments forts par un message dans la conversation : éteint ; l'effort passe dans la demande, comme avant.", "SINA's key-moment effort by in-conversation message: off.")}{m.effortParMessage.panne ? t(` Dernier refus du fournisseur (${m.effortParMessage.panne.model}, ${new Date(m.effortParMessage.panne.at).toLocaleString(lang)}) : retour automatique à l'effort dans la demande pendant une heure.`, ` Last provider refusal (${m.effortParMessage.panne.model}): automatic fallback for one hour.`) : ""}</span>
+        <Button size="sm" variant="ghost" onClick={() => post({ effortParMessage: !m.effortParMessage!.allume })}>{m.effortParMessage.allume ? t("Éteindre", "Turn off") : t("Allumer", "Turn on")}</Button>
+      </div>}
+      <table className="mt-3 w-full min-w-[640px] text-sm">
+        <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Travail", "Work")}</th><th>{t("Appels", "Calls")}</th><th>{t("Entrée", "Input")}</th><th>{t("Part reprise", "Reused")}</th><th>{t("Part écrite", "Written")}</th><th>{t("Gagné", "Saved")}</th><th>{t("En différé", "Deferred")}</th></tr></thead>
+        <tbody className="divide-y divide-line">
+          {m.lignes.length === 0 && <tr><td colSpan={7} className="py-4 text-muted">{t("Aucun appel sur 30 jours.", "No calls over the last 30 days.")}</td></tr>}
+          {m.lignes.map((l) => (
+            <tr key={l.travail}>
+              <td className="py-2">{l.travail}</td>
+              <td className="tabular-nums">{num(lang, l.appels)}</td>
+              <td className="tabular-nums">{num(lang, l.entree)}</td>
+              <td className="tabular-nums">{pct(l.partReprise)}</td>
+              <td className="tabular-nums">{pct(l.partEcrite)}</td>
+              <td className="tabular-nums">{euro(lang, l.gagneMicro / 1e6)}</td>
+              <td className="tabular-nums">{num(lang, l.differes)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {!!m.etapes?.length && <p className="mt-3 text-sm text-ink-2">{t("La conversation de SINA, étape par étape : ", "SINA's conversation, step by step: ")}{m.etapes.map((e) => t(`étape ${e.etape} : ${num(lang, e.reflexions)} réflexions, ${euro(lang, e.parReflexionMicro / 1e6)} chacune, ${num(lang, e.lu)} jetons lus en mémoire, ${num(lang, e.plein)} payés plein tarif`, `step ${e.etape}: ${e.reflexions} replies`)).join(" ; ")}.</p>}
+    </Card>
   );
 }
 

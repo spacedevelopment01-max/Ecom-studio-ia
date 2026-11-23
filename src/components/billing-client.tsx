@@ -118,7 +118,7 @@ export function AiUsageBar({ billing, variant = "compact", className }: { billin
   const date = formatDate(billing.periodEnd, { day: "numeric", month: "long" });
   const left = (u: number) => 100 - u;
   if (variant === "compact") {
-    const title = [t(`Forfait : ${plan.used} % utilisés, reste ${left(plan.used)} %`, `Plan: ${plan.used}% used, ${left(plan.used)}% left`), credits && t(`Crédits achetés : reste ${left(credits.used)} %`, `Purchased credits: ${left(credits.used)}% left`), pending ? t("Budget temporairement engagé dans une génération", "Budget temporarily committed to a generation") : paused && t(`IA en pause jusqu'au ${date}`, `AI paused until ${date}`)].filter(Boolean).join(" · ");
+    const title = [t(`Forfait : ${plan.used} % utilisés, reste ${left(plan.used)} %`, `Plan: ${plan.used}% used, ${left(plan.used)}% left`), credits && t(`Crédits achetés : reste ${left(credits.used)} %`, `Purchased credits: ${left(credits.used)}% left`), pending ? t("Budget temporairement engagé dans une génération", "Budget temporarily committed to a generation") : paused && t(`IA en pause jusqu'au ${date}`, `AI paused until ${date}`)].filter(Boolean).join(" · ");
     return (
       <Link href="/studio/compte#ia" className={cx("hidden h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-card px-3 text-xs font-medium hover:border-ink md:inline-flex", paused ? "text-bad" : "text-ink-2", className)} title={title} aria-label={title}>
         <Gauge className="size-4 shrink-0" aria-hidden />
@@ -126,7 +126,7 @@ export function AiUsageBar({ billing, variant = "compact", className }: { billin
           <UsageMeter used={plan.used} label={t("IA du forfait", "Plan AI")} thin />
           {credits && <UsageMeter used={credits.used} label={t("Crédits achetés", "Purchased credits")} thin />}
         </span>
-        <span className="whitespace-nowrap tabular-nums">{pending ? t("Génération en cours", "Generation in progress") : paused ? t("En pause", "Paused") : plan.used >= 100 && credits ? t(`Crédits : reste ${left(credits.used)} %`, `Credits: ${left(credits.used)}% left`) : t(`Reste ${left(plan.used)} %`, `${left(plan.used)}% left`)}</span>
+        <span className="whitespace-nowrap tabular-nums">{pending ? t("Génération en cours", "Generation in progress") : paused ? t("En pause", "Paused") : plan.used >= 100 && credits ? t(`Crédits : reste ${left(credits.used)} %`, `Credits: ${left(credits.used)}% left`) : t(`Reste ${left(plan.used)} %`, `${left(plan.used)}% left`)}</span>
       </Link>
     );
   }
@@ -134,7 +134,7 @@ export function AiUsageBar({ billing, variant = "compact", className }: { billin
     <div>
       <div className="flex items-baseline justify-between gap-3">
         <p className="font-medium">{title}</p>
-        <p className="text-sm tabular-nums text-ink-2"><strong className={cx("font-display text-xl", used >= 100 && "text-bad")}>{used} %</strong> {t("utilisés", "used")} · {t(`reste ${left(used)} %`, `${left(used)}% left`)}</p>
+        <p className="text-sm tabular-nums text-ink-2"><strong className={cx("font-display text-xl", used >= 100 && "text-bad")}>{used} %</strong> {t("utilisés", "used")} · {t(`reste ${left(used)} %`, `${left(used)}% left`)}</p>
       </div>
       <div className="mt-2"><UsageMeter used={used} label={title} /></div>
       <p className="mt-1.5 text-xs text-muted">{note}</p>

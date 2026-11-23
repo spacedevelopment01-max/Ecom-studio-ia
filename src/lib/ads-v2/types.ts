@@ -59,8 +59,33 @@ export type AdInsight = {
   gaps: string[];
 };
 
+/**
+ * Un type de client tiré des angles du client (règle du propriétaire : un angle = un type de client ; les angles non
+ * choisis « restent en réserve pour ses publications et ses publicités »). Une publicité par type, jamais deux pour le même.
+ */
+export type ClientType = {
+  /** Identifiant de l'angle d'où il vient. */
+  angleId: string;
+  /** Le type de client, en clair (« Les parents pressés du matin »). */
+  name: string;
+  /** Qui il est et dans quelle situation il vient. */
+  who: string;
+  /** Ce qu'il veut, ce dont il a besoin. */
+  wants: string;
+  /** Le produit ou la prestation vedette pour lui, et l'argument de l'angle. */
+  featured: string | null;
+  argument: string | null;
+  /** L'accroche et l'émotion de l'angle. */
+  message: string;
+  emotion: string;
+  /** L'angle choisi par le client (les autres sont en réserve). */
+  chosen: boolean;
+};
+
 export type AnglePlan = {
   id: string;
+  /** Le type de client à qui parle cette publicité (quand les angles du client sont connus). */
+  client?: ClientType;
   type: AngleType;
   /** Matière de l'angle (le fait, l'usage, l'objection…) : deux angles n'utilisent jamais la même. */
   material: string;

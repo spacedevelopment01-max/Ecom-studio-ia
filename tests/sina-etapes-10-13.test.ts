@@ -81,6 +81,9 @@ describe("SINA — étapes 10 à 13 : publicités, calendrier, articles, rangeme
     expect(J.currentStep(J.journeyOf(low.cid))).toBe(11);
 
     const { p, cid, ctx, call } = await ready(9);
+    // Une publicité par type de client (décision du 22 novembre 2026) : l'angle choisi et deux angles en réserve, trois
+    // types de clients, donc trois publicités ; avec un seul angle, il n'y en aurait qu'une.
+    J.updateJourney(cid, (x) => { const g = x.angles!.list[0]; x.angles!.list.push({ ...g, id: "sur", audience: "Les parents du matin" }, { ...g, id: "audacieux", audience: "Les sportives du soir" }); x.angles!.shown = [{ id: "generalist", role: "emotion" }, { id: "sur", role: "sur" }, { id: "audacieux", role: "audacieux" }] as any; });
     const tool = getTool("ads.create")!, args = tool.args.parse({ platforms: ["meta_feed", "meta_story"] });
     const est: any = await fr(() => tool.estimate!(ctx, args));
     expect(est.probableMicro).toBeGreaterThan(0);
@@ -93,6 +96,7 @@ describe("SINA — étapes 10 à 13 : publicités, calendrier, articles, rangeme
       const job = one<any>("SELECT type,payload FROM jobs WHERE id=?", started.jobs[0]);
       expect(job.type).toBe("ads.v2");
       expect(json<any>(job.payload, {})).toMatchObject({ projectId: p.id, costCapMicro: est.maxMicro, request: { count: 3, platforms: ["meta_feed", "meta_story"] } });
+      expect(json<any>(job.payload, {}).request.clientTypes.map((c: any) => c.name)).toEqual(["Adultes fatigués", "Les parents du matin", "Les sportives du soir"]);
       expect(J.journeyOf(cid).ads).toMatchObject({ platforms: ["meta_feed", "meta_story"], count: 3 });
       expect(J.journeyOf(cid).steps[10]?.status).toBe("doing");
     } else {

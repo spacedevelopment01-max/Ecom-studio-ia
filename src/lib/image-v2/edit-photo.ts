@@ -9,6 +9,7 @@ import { assetData, assetMeta, getAsset, saveAsset } from "../library";
 import { editPhoto } from "../ai/media-providers";
 import { UserFacingError, type JobContext } from "../jobs";
 import { L } from "../i18n-server";
+import { estPng } from "../media/signature-ia";
 
 /** Format de génération le plus proche de la photo d'origine (le cadrage de la création reste valable). */
 export function editAspect(width: number, height: number): "1:1" | "4:5" | "9:16" | "16:9" {
@@ -39,14 +40,17 @@ export async function editProjectPhoto(ctx: JobContext, projectId: string, asset
   const aspect = editAspect(meta.width ?? 1, meta.height ?? 1);
   ctx.progress(.2, L("Retouche de la photo par l'IA…", "AI is editing the photo…"));
   const img = await editPhoto({ userId: ctx.job.user_id, projectId, jobId: ctx.job.id, usageKey: `photo-edit:${ctx.job.id}` }, { image: data, instruction: ask, aspect, usage: "ad_visual" });
-  // Même cadre que la photo d'origine (le recadrage enregistré dans la création reste juste).
-  const out = await sharp(img).resize(meta.width ?? undefined, meta.height ?? undefined, { fit: "cover" }).jpeg({ quality: 92 }).toBuffer();
+  // Même cadre que la photo d'origine (le recadrage enregistré dans la création reste juste). Déjà à la bonne taille et
+  // en PNG : l'image est gardée telle quelle, avec sa signature « fait par l'IA » (rapport 10, point 4).
+  const rendu = await sharp(img).metadata();
+  const telle = estPng(img) && rendu.width === meta.width && rendu.height === meta.height;
+  const out = telle ? img : await sharp(img).resize(meta.width ?? undefined, meta.height ?? undefined, { fit: "cover" }).jpeg({ quality: 92 }).toBuffer();
   const a = await saveAsset({
     projectId,
     userId: ctx.job.user_id,
     data: out,
-    name: `${(src.name || "photo").replace(/\.[a-z0-9]+$/i, "")}-retouche.jpg`,
-    mime: "image/jpeg",
+    name: `${(src.name || "photo").replace(/\.[a-z0-9]+$/i, "")}-retouche.${telle ? "png" : "jpg"}`,
+    mime: telle ? "image/png" : "image/jpeg",
     role: src.role ?? "ad",
     folderKey: "images.ads",
     origin: "generated",

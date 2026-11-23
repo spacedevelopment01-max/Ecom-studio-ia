@@ -54,10 +54,15 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     expect(C.routedStep(13)).toBe(true);
     expect(C.routedStep(14)).toBe(false);
     expect(C.routedStep(null)).toBe(false);
-    // Étape 6 : le thème sur mesure en entier, les identités en une ligne.
+    // Étape 6 (économies du 22 novembre 2026) : avant la création, site.create en entier ; l'ancien montage et les
+    // identités en une ligne ; une fois le site créé, les retouches en cliquant et la galerie.
     const six = C.routedCatalog(true, scope, 6);
-    expect(six).toMatch(/### custom\.build — module site/);
+    expect(six).toMatch(/### site\.create — module site/);
+    expect(six).toMatch(/^- custom\.build — site, payant : /m);
     expect(six).toMatch(/^- identity\.propose — marque, payant : /m);
+    const sixApres = C.routedCatalog(true, scope, 6, { site: true });
+    expect(sixApres).toMatch(/### custom\.edit — module site/);
+    expect(sixApres).toMatch(/^- site\.create — site, payant : /m);
     expect(C.toolInFocus("start.state", 6)).toBe(true);
   });
 
@@ -77,7 +82,12 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     expect(C.keyMoment([user("Bonjour, je vends du thé.")])).toBeNull();
     expect(C.keyMoment([user("Oui vas-y"), sina, tool("jobs.wait")])).toBe("resultat");
     expect(C.keyMoment([user("Oui vas-y"), sina, tool("jobs.wait", false)])).toBe("echec");
-    expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update", false)])).toBe("echec");
+    // Depuis le 22 novembre 2026 : un refus de règle ou d'argument n'est pas un échec à expliquer (ni effort élevé, ni
+    // relectrice) ; une panne d'outil, un travail payant refusé ou un budget insuffisant le sont.
+    expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update", false, { summary: "Produit introuvable." })])).toBeNull();
+    expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update", false, { summary: "Échec de l'outil : base indisponible" })])).toBe("echec");
+    expect(C.keyMoment([user("Crée-les"), sina, tool("identity.propose", false, { summary: "Refusé." })])).toBe("echec");
+    expect(C.keyMoment([user("Valide"), sina, tool("activity.validate", false, { summary: "Impossible de valider : e-mail manquant." })])).toBeNull();
     // Une erreur d'argument de SINA elle-même se corrige seule : pas un moment qui compte.
     expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update", false, { internal: true })])).toBeNull();
     expect(C.keyMoment([user("Change le prix"), sina, tool("catalogue.update")])).toBeNull();
@@ -162,7 +172,7 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
     const { calls } = await unhappy({}, () => fixed);
     expect(String(calls[0].reference)).toMatch(/^# Outils du Studio \(ceux de l'étape en entier, les autres en liste\)/);
     // Fil sans projet, à l'étape de la marque : exactement le catalogue aiguillé de cette étape (les outils qui demandent un projet attendent).
-    expect(String(calls[0].reference)).toBe(`# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${C.routedCatalog(false, scope, 1)}`);
+    expect(String(calls[0].reference)).toBe(`# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${C.routedCatalog(true, scope, 1)}`); // la même liste avant et après la création du projet (22 novembre 2026)
     expect(C.routedCatalog(false, scope, 0)).toMatch(/### start\.answer — module parcours/);
     expect(String(calls[0].reference)).toMatch(/### tools\.open — module outils/);
   });
@@ -181,7 +191,10 @@ describe("SINA — la conversation : aiguilleuse, moments qui comptent, relectri
 
   it("moment qui compte : devant un client mécontent, SINA réfléchit plus longtemps", async () => {
     const { calls } = await unhappy({}, () => fixed);
-    expect(calls[0].routing.prefer).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: "high" });
+    // Depuis le 22 novembre 2026 : l'effort de la demande reste le même (la mémoire du fil reste) ; l'effort élevé de ce
+    // moment passe par un message dans la conversation (retour automatique à l'effort dans la demande si refusé).
+    expect(calls[0].routing.prefer).toMatchObject({ model: DEFAULT_MODELS.strong.model, effort: DEFAULT_MODELS.strong.effort });
+    expect(calls[0].effortDuTour).toBe("high");
   });
 
   it("relecture allumée : un brouillon refusé est réécrit UNE fois avec les remarques, qui ne partent jamais chez le client", async () => {
@@ -244,5 +257,15 @@ describe("SINA — pendant « faire connaissance », parler de ses goûts n'est 
     expect(calls[0].routing.prefer).toMatchObject({ effort: "medium" });
     expect(reviews).toBe(0);
     expect(getRun(r.id)!.status).toBe("waiting_user");
+  });
+});
+
+describe("la relectrice : pas de complaisance, et les contrôles de l'étape (22 novembre 2026)", async () => {
+  const C = await import("@/lib/syna-agent/conversation");
+  it("elle refuse un brouillon qui donne raison au client contre une règle du Studio, et reçoit les contrôles de l'étape", () => {
+    expect(C.REPLY_REVIEW_SYSTEM).toMatch(/8\. PAS DE COMPLAISANCE\. .*fausse promotion, un faux avis, un prix barré sans preuve, un nom à double sens, une photo dans une arche/);
+    const p = C.replyReviewPrompt({ moment: "resultat", step: 6, stepLabel: "Le site", client: "Mets 50 avis 5 étoiles.", facts: "", draft: { message: "Super idée, je les ajoute !", actions: [] } });
+    expect(p).toContain("CONTRÔLES DE CETTE ÉTAPE (règles du propriétaire) : le client ne lit jamais le mot « maquette » ; aucune coordonnée, aucun avis ni aucun prix d'exemple dit comme vrai ; une image ratée est dite ratée.");
+    expect(C.replyReviewPrompt({ moment: "resultat", client: "x", facts: "", draft: { message: "x", actions: [] } })).not.toContain("CONTRÔLES DE CETTE ÉTAPE");
   });
 });

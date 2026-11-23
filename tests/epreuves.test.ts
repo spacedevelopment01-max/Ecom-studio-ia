@@ -275,4 +275,118 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     const ctx = J.journeyContext(J.journeyOf(cid), { fiche: F.ficheDuFil(cid, projectId) });
     expect(ctx).toContain("## Ce qu'il refuse\n- le style plombier : « surtout pas de goutte d'eau » (pour le logo,");
   });
+  epreuve("faire-connaissance-une-question-a-la-fois", async () => {
+    const { submitMessage, runAgent } = await import("@/lib/syna-agent/loop");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { defautsDuMessage } = await import("@/lib/syna-agent/controle-message");
+    const regle = { etape: 0, payant: () => false, lance: false };
+    // Quatre coordonnées d'un coup, puis deux questions : refusés ; une seule question : permise.
+    expect(defautsDuMessage({ message: "Super !", question: { text: "Donne-moi ton nom, ton adresse, ton e-mail et ton téléphone." }, actions: [] }, regle)).toHaveLength(1);
+    expect(defautsDuMessage({ message: "Tu vends en ligne ?", question: { text: "Et tu livres où ?" }, actions: [] }, regle)).toHaveLength(1);
+    expect(defautsDuMessage({ message: "Des bougies, j'adore.", question: { text: "Pour qui les fais-tu ?" }, actions: [] }, regle)).toEqual([]);
+    // Dans la vraie boucle : le message groupé ne part pas, SINA le réécrit avec la remarque.
+    const user = await account(), cid = threadFor(user, null);
+    const r = submitMessage(user, cid, { requestId: `epreuve-${Math.random()}`, text: "Je fais des bijoux." });
+    const notes: string[] = [];
+    await runWithLang({ ui: "fr", content: "fr" }, () => runAgent(r.id, r.job_id!, { reason: async (c) => {
+      notes.push(String(c.context ?? ""));
+      return notes.length === 1
+        ? { message: "Top !", actions: [], question: { text: "Quel est ton nom, ton adresse e-mail et ton téléphone ?" }, done: false }
+        : { message: "Top !", actions: [], question: { text: "Comment s'appelle ta marque ?" }, done: false };
+    } }));
+    expect(notes).toHaveLength(2);
+    expect(notes[1]).toContain("c'est une question à la fois");
+    const { all } = await import("@/lib/db");
+    const sent = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='assistant'", cid).map((m) => JSON.parse(m.content_json));
+    expect(sent.at(-1).question.text).toBe("Comment s'appelle ta marque ?");
+  });
+
+  epreuve("c-est-parti-avant-la-carte", async () => {
+    const { defautsDuMessage } = await import("@/lib/syna-agent/controle-message");
+    const payant = (t: string) => t === "identity.propose";
+    expect(defautsDuMessage({ message: "C'est parti, je crée tes identités !", actions: [{ tool: "identity.propose" }] }, { etape: 1, payant, lance: false })).toHaveLength(1);
+    // Rien de lancé pendant la demande : pas de départ annoncé non plus.
+    expect(defautsDuMessage({ message: "C'est parti !", actions: [] }, { etape: 1, payant, lance: false })).toHaveLength(1);
+    // Après l'accord, la création lancée : l'annonce est juste.
+    expect(defautsDuMessage({ message: "C'est parti, tes identités sont en cours.", actions: [] }, { etape: 1, payant, lance: true })).toEqual([]);
+    expect(defautsDuMessage({ message: "Je te propose trois identités ; la carte te montre le prix.", actions: [{ tool: "identity.propose" }] }, { etape: 1, payant, lance: false })).toEqual([]);
+  });
+
+  epreuve("carte-qui-vouvoie", async () => {
+    const { confirmationText } = await import("@/lib/syna-agent/loop");
+    const { tutoie } = await import("@/lib/ai/budget-pct");
+    const user = await account(), projectId = project(user) as string;
+    const t: any = { name: "essai.payant", description: "Essai.", estimate: () => ({ maxMicro: 2_000_000, label: "x" }) };
+    const txt = await confirmationText(t, {}, {} as never, user.id, projectId, { label: "tes trois identités", probableMicro: 1_000_000, maxMicro: 2_000_000 });
+    expect(txt).not.toMatch(/\b(votre|vous|vos)\b/i);
+    expect(txt).toMatch(/de ton budget IA/);
+    expect(tutoie("≈ 3 % de votre budget IA")).toBe("≈ 3 % de ton budget IA");
+  });
+
+  epreuve("acheteuses-inconnues-sina-propose", async () => {
+    const cid = threadFor(await account(), null);
+    J.updateJourney(cid, (j) => { j.start.business = { value: "products", at: Date.now() } as never; j.start.offer = { value: "Des bijoux en argent faits main.", at: Date.now() } as never; });
+    const ctx = J.journeyContext(J.journeyOf(cid));
+    expect(ctx).toContain("S'il ne sait pas, ne lui renvoie pas la question : propose-lui toi-même deux ou trois types d'acheteurs probables pour son offre");
+  });
+  epreuve("mots-corriges-relus-par-sina", async () => {
+    const { submitMessage, runAgent } = await import("@/lib/syna-agent/loop");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { addWordingRule } = await import("@/lib/client-wording");
+    const user = await account(), projectId = project(user) as string, cid = threadFor(user, projectId);
+    addWordingRule(projectId, { avoid: "boutique", use: "atelier" });
+    expect(J.currentStep(J.journeyOf(cid))).toBe(0);
+    const r = submitMessage(user, cid, { requestId: `epreuve-${Math.random()}`, text: "Bonjour." });
+    let ctx = "";
+    await runWithLang({ ui: "fr", content: "fr" }, () => runAgent(r.id, r.job_id!, { reason: async (c) => { ctx = String(c.context ?? ""); return { message: "Bonjour !", actions: [], done: true }; } }));
+    expect(ctx).toContain("## Ses mots (corrigés une fois, valables pour toujours)\n- « atelier », jamais « boutique »");
+  });
+  epreuve("fil-ecrit-une-seule-fois", async () => {
+    const { submitMessage, runAgent } = await import("@/lib/syna-agent/loop");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const user = await account(), cid = threadFor(user, null);
+    const fils: string[][] = [], apart: string[] = [];
+    const reason = async (c: any) => {
+      fils.push(c.history ?? []); apart.push(String(c.context ?? ""));
+      // Premier pas de chaque demande : un outil dont le résultat est long ; second pas : la réponse.
+      return fils.length % 2 === 1 ? { message: "", actions: [{ tool: "start.state", args: {} }], done: false } : { message: "Merci, je note.", actions: [], done: true };
+    };
+    for (const text of ["Je fais des bougies.", "Je les vends en ligne.", "Et sur les marchés."]) {
+      const r = submitMessage(user, cid, { requestId: `epreuve-${Math.random()}`, text });
+      await runWithLang({ ui: "fr", content: "fr" }, () => runAgent(r.id, r.job_id!, { reason }));
+    }
+    expect(fils.length).toBe(6);
+    // Chaque envoi commence par TOUT ce que le précédent avait envoyé, au caractère près.
+    for (let i = 1; i < fils.length; i++) expect(fils[i].slice(0, fils[i - 1].length)).toEqual(fils[i - 1]);
+    // Un résultat d'outil y est court dès son entrée (jamais plus de 300 caractères de données).
+    for (const b of fils.at(-1)!.filter((x) => x.includes("[résultat "))) expect((/données : (.*)$/m.exec(b)?.[1] ?? "").length).toBeLessThanOrEqual(300);
+  });
+  epreuve("erreur-de-sina-jamais-comptee", async () => {
+    const billing = await import("@/lib/billing");
+    const { one, run } = await import("@/lib/db");
+    const user = await account();
+    billing.getSubscription(user.id);
+    run("UPDATE subscriptions SET status='active', plan='vendre', billing='month' WHERE user_id=?", user.id);
+    billing.alignPeriod(user.id, Date.now());
+    billing.syncAllowance(user.id);
+    run("UPDATE wallets SET monthly_used = monthly_allowance, topup_balance = 0 WHERE user_id = ?", user.id);
+    const avant = one<{ monthly_used: number }>("SELECT monthly_used FROM wallets WHERE user_id=?", user.id)!.monthly_used;
+    const rid = billing.aLaChargeDuStudio(() => billing.reserve(user.id, 30_000, { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare" }));
+    billing.settle(rid, 25_000, "epreuve", "image refaite");
+    expect(one<{ monthly_used: number }>("SELECT monthly_used FROM wallets WHERE user_id=?", user.id)!.monthly_used).toBe(avant);
+    expect(one<{ amount: number }>("SELECT amount FROM ledger WHERE user_id=? AND type='studio'", user.id)!.amount).toBe(-25_000);
+    const fs = await import("node:fs");
+    expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toMatch(/aLaChargeDuStudio\(\(\) => reason\(user, run0, jobId, step, deps, noteDeControle/);
+    expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toMatch(/aLaChargeDuStudio\(\(\) => reason\(user, r, jobId, step, deps, reviewNote/);
+    expect(fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8")).toContain("retry ? aLaChargeDuStudio(");
+  });
+  epreuve("refus-du-client-toutes-tournures", async () => {
+    const { clientRefusal } = await import("@/lib/syna-agent/brand-images");
+    for (const refus of ["Pas d'outil dans le logo.", "Aucune goutte.", "Sans goutte d'eau.", "J'aime pas les gouttes.", "Je déteste le rose.", "Évite les clés à molette.", "Il ne veut surtout pas de goutte d'eau."])
+      expect(clientRefusal(refus)).toBe(`Ce que le client refuse, avec ses mots : « ${refus} »`);
+    expect(clientRefusal("J'aime le bleu profond et les lignes fines.")).toBe("");
+    // Un goût et un refus sur deux lignes : seul le refus part.
+    expect(clientRefusal("J'aime le vert.\nJe déteste le rose.")).toBe("Ce que le client refuse, avec ses mots : « Je déteste le rose. »");
+  });
 });
+
