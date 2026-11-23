@@ -869,3 +869,64 @@ par exemple), et peut arrêter par prudence une photo très ressemblante ; une p
 projet n'est revérifiée qu'une fois rangée dans ses Fichiers ; le choix du réseau du brouillon de publication est
 Instagram par défaut, à changer dans le brouillon ; l'écran « Poser ma création ici » n'a pas été regardé en vrai dans
 un navigateur.
+
+## Sorties strictes, amorce et notices
+
+Demande du chef d'orchestre (recherche sur les coûts, lignes 4 et 10), faite sans aucune dépense : aucun appel payant,
+aucune publication, essais simulés seulement.
+
+### 1. Les réponses rangées arrivent dans la bonne forme du premier coup
+
+- **Ce qui change** : partout où le Studio attend une réponse rangée (juges, relectures, plans, textes écrits champ par
+  champ), le fournisseur reçoit maintenant la forme exacte et il est tenu d'y répondre, chez Anthropic comme chez OpenAI.
+  Avant, environ 25 demandes la recevaient ; les quelque 75 autres ne recevaient que « réponds en JSON », et une réponse
+  mal formée pouvait être repayée pour être réparée.
+- **Ce qui ne change pas** : chaque réponse est toujours vérifiée par le Studio avec les mêmes règles. Un texte trop long
+  ou une liste trop longue se réparent toujours gratuitement. Une règle que le fournisseur ne sait pas tenir (une
+  longueur minimale, une règle écrite dans le code) garde sa seule réparation, comme avant.
+- **Ce qui reste en forme libre, et pourquoi** : les réponses dont une partie est libre, comme les actions de SINA dans
+  la conversation (les arguments changent d'un outil à l'autre) ; la forme stricte les aurait fermées. Et les réponses
+  remises en forme par le Studio avant d'être vérifiées.
+- **Les secours** : si le fournisseur refuse la forme (refus net, rien n'est facturé), la demande repart en forme libre
+  et ce refus est retenu ; même chose si le plafond de la tâche ne couvre pas la forme envoyée. Une tâche commencée avant
+  ce changement relit sans repayer ce qui avait déjà été payé.
+- **Où le lire** : Administration › Consommation, une ligne nouvelle : le nombre d'appels en sortie stricte, et le
+  nombre de réponses mal formées repayées pour être réparées (il doit tomber près de zéro).
+- **Gain** : 0,02 à 0,05 $ par reprise de juge évitée (recherche sur les coûts). [À compléter : le nombre de reprises
+  évitées, lu sur cette ligne après les prochains essais.]
+- **Non vérifié** : avec la vraie IA. Une forme trop compliquée pour le fournisseur est refusée la première fois (sans
+  frais, un aller-retour de plus), puis part en forme libre jusqu'au redémarrage du Studio.
+
+### 2. L'amorce du travail en différé
+
+- **Ce que le code fait vraiment** : les publications du mois sont faites une par une ; chaque demande attend la fin de la
+  précédente, donc la deuxième relit déjà ce que la première a mis en mémoire pour une heure. L'amorce n'y change rien :
+  **0 € de gain sur les publications**, et non 0,48 € (la recherche supposait 30 demandes déposées en même temps).
+- **Ce qui est construit, pour tout le différé** : quand plusieurs demandes partent en même temps avec la même longue
+  partie commune (au moins 14 000 signes, environ 4 000 jetons), la première part seule ; les autres attendent qu'elle
+  soit finie, puis la relisent au lieu de l'écrire chacune au double du prix. La première est une vraie demande du
+  travail : rien de plus n'est payé. Si elle rate, les autres partent comme avant. Gain : environ 0,015 € par demande
+  qui attend, pour 4 000 jetons communs sur le modèle le plus fort ; aujourd'hui, aucun travail du Studio n'a une partie
+  commune assez longue lancée en même temps (vérifié dans le code, pas mesuré), donc rien ne change encore pour le client.
+- **Effet pour le client** : quand l'amorce sert, ces demandes partent quelques minutes plus tard.
+
+### 3. Les notices des outils de SINA plus courtes
+
+- **Ce qui change** : les arguments de chaque outil s'écrivent maintenant en écriture courte, avec les mêmes noms, les
+  mêmes valeurs permises, les mêmes bornes, les mêmes motifs et les mêmes valeurs par défaut ; un champ facultatif est
+  marqué « ? ». Vingt notices parmi les plus longues sont resserrées, sans perdre une règle. La notice des coordonnées de
+  l'entreprise est gardée telle quelle : deux essais du Studio en vérifient les mots.
+- **Mesuré** : toutes les notices, 120 684 signes avant, 92 423 après (−23 %, environ 34 500 jetons avant, 26 400 après).
+  Ce que SINA reçoit à chaque étape : 280 603 signes avant sur les 14 étapes, 239 311 après, soit environ 2 950 signes
+  (840 jetons) de moins par étape.
+- **Le banc gratuit** (`tests/notices-courtes.test.ts`, aucune IA) : chaque nom d'argument, valeur permise, borne, motif et
+  valeur par défaut de chaque outil se retrouve dans l'écriture courte ; les règles des vingt notices réécrites sont
+  toujours là ; la longueur totale ne peut pas remonter. Il a trouvé une règle perdue au premier passage (la longueur des
+  noms de couleurs de la marque), corrigée avant l'envoi.
+- **Gain** : à chaque changement d'étape, les notices sont écrites en mémoire pour une heure (2 fois le prix d'entrée) :
+  environ 0,09 € de moins par projet sur les 14 étapes, plus un peu moins de 0,001 € par réponse de SINA. Toujours moins
+  de 20 notices par étape ; les deux listes d'outils du site sont gardées.
+- **Non vérifié** : avec la vraie IA, que SINA remplit aussi bien les arguments écrits ainsi. [À compléter : lu au prochain
+  essai réel, sur les refus d'arguments dans le journal.]
+
+Suite complète des essais : 643 fichiers passés, 2 mis de côté ; banc d'épreuves : 30 sur 30.
