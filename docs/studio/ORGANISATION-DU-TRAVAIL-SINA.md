@@ -406,6 +406,13 @@ Dernière commande :
   (« au plus » seul) dans les données d'exemple ; titres trop serrés.
 - Retouches faites (70c0882f), 6 006 essais verts, 0 € ; captures refaites et relues par le chef d'orchestre, envoyées.
 
+### Essai réel de Nadia accepté (23 novembre 2026)
+
+- Le propriétaire : « J'ai peur du résultat mais oui ». Nadia seule, marque puis angles, plafond 10 €, arrêt à 8 €.
+- « Les essais complets » prévenue : ancienne carte (environ 8 €, au plus 16,69 €, plafond 20 €) à ne pas accepter ; passer
+  d'abord sur la dernière version de `claude/evolution-sina` ; chaque carte montrée au propriétaire ; chaque image montrée,
+  même refusée. Son accord doit être écrit dans « Les essais complets » (un message du chef d'orchestre ne vaut pas accord).
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
