@@ -162,6 +162,11 @@ describe("tâche à la charge du Studio : jamais au budget du client ; chaque pl
     // La correction, sur le projet de Nadia.
     const r1 = rendreLaChargeDuStudio({ projectId: t.pid });
     expect(r1).toMatchObject({ taches: 1, depenses: 4, renduMicro: fuite });
+    // Chaque ligne dit ce qu'elle rend : la réponse de SINA porte le nom de sa vraie tâche (essai de Nadia : deux lignes
+    // affichaient « réponse de SINA qui présente le résultat » alors que l'une rendait les dessins et leurs relectures).
+    const lignesDeLaReponse = r1.lignes.filter((l) => l.quoi.startsWith("réponse de SINA"));
+    expect(lignesDeLaReponse.length).toBeGreaterThan(0);
+    for (const l of lignesDeLaReponse) expect(l.quoi).toMatch(/^réponse de SINA qui présente le résultat : \S/);
     expect(sansLaReponseDavant()).toBeCloseTo(17.04, 2);
     expect(portefeuille().monthly_used - avant.monthly_used).toBe(1000);
     expect(depensesDeLaTache(tache)).toMatchObject({ client: 0 });

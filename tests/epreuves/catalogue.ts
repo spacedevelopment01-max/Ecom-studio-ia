@@ -23,6 +23,23 @@ export type Epreuve = {
   rejeu: "gratuit" | "payant";
   /** Pour une épreuve payante : ce qu'elle coûterait, et ce qui manque pour la construire. */
   prix?: string;
+  /**
+   * Épreuve REMPLACÉE par une décision datée du propriétaire (HORS du sceau : le verdict, l'attendu et le sceau ne bougent
+   * pas). Elle reste au catalogue pour toujours ; le banc ne la rejoue plus et l'affiche « remplacée le … par … ».
+   * `sceau` : son sceau au jour du remplacement, figé ; une épreuve remplacée ne se rescelle jamais.
+   */
+  remplaceePar?: { decision: string; mots: string; epreuve: string; sceau: string };
+};
+
+/**
+ * La décision du propriétaire du 23 novembre 2026 sur le dessinateur du logo, et son accord écrit pour marquer les épreuves
+ * qu'elle remplace (« Oui, marque ces 8 épreuves comme remplacées par ma décision du 23 novembre, mets à jour la partie
+ * Logo de CLAUDE.md, et garde le trait près du nom (un seul par série) côté relecteur. »).
+ */
+const DECISION_DU_23_NOVEMBRE = {
+  decision: "23 novembre 2026",
+  mots: "« je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies tu donne le nom de la marque et rien de plus, pas de le client ne veux pas tel truc dans son logo. Ça doit être le plus libre possible pour la création du logo »",
+  epreuve: "logo-demande-nue",
 };
 
 export const EPREUVES: Epreuve[] = [
@@ -31,24 +48,28 @@ export const EPREUVES: Epreuve[] = [
     verdict: "Le client refuse la goutte (« Il ne veut surtout pas : le style plombier avec une goutte d'eau… ») ; le logo gardé portait une goutte. « on ne peut pas livrer ce genre de résultat pour les clients ».",
     attendu: "Un refus noté pour le logo dans la fiche du client arrive mot pour mot au dessinateur du logo, et au relecteur, qui le compte comme un défaut.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE, sceau: "11b59ef9d8c554aea00963c3794b3a23280a860bd3ea7a160ef5f6307ae3e4f4" },
   },
   {
     id: "consigne-de-sina-au-dessinateur", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
     verdict: "« pas de consigne autre que les 50 logos en exemple et simplement en exemple » (SINA écrivait « un logotype sobre, un fil à plomb stylisé »).",
     attendu: "La consigne écrite par SINA n'arrive jamais au dessinateur d'un logo refait : il reçoit ce qu'on savait de la marque avant.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE, sceau: "170d239bca46b06fb6f59e38739f4e771cfd270174d2a183e734adf828a8468e" },
   },
   {
     id: "logos-de-la-serie-trop-proches", date: "2026-11-20", source: "CLAUDE.md (Logo, redit le 20 novembre 2026)",
     verdict: "« je veux un logo complètement différent » : le 1er est fait sans modèle, le 2e reçoit le 1er, le 3e les deux premiers ; jamais les logos d'une série précédente.",
     attendu: "Le deuxième logo d'une série reçoit le premier en image jointe, avec « Je veux un logo complètement différent » ; le premier n'en reçoit aucune.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE, sceau: "d53bc2a92760171e8c08098857f6e5002d0a15420decc8aa2f4477de551254f2" },
   },
   {
     id: "trait-sous-le-nom-repete", date: "2026-11-20", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
     verdict: "« j'ai toujours les traits en dessous », puis « il doit juste être là par parcimonie » : un seul par série.",
     attendu: "Quand un logo de la série porte déjà un trait près du nom, un nouveau logo avec un trait est redessiné sans trait.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE, sceau: "3af7c2e898ea764a8b92f0f3c20750c3f12c8d489acff13339967eed955d6488" },
   },
   {
     id: "photo-a-brume-ou-taches", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
@@ -225,6 +246,7 @@ export const EPREUVES: Epreuve[] = [
     verdict: "Seule exception à « les mots du client sur l'image voulue ne vont pas au dessinateur du logo », accordée le 21 novembre 2026 : « sa phrase de refus, mot pour mot (« Il ne veut surtout pas : … ») ».",
     attendu: "Une phrase de refus arrive mot pour mot au dessinateur du logo, quelle que soit sa tournure : « Pas d'outil », « Aucune goutte », « Sans goutte d'eau », « J'aime pas les gouttes », « Je déteste le rose », « Évite les clés à molette » ; un goût qui n'est pas un refus n'y va pas.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE, sceau: "3e3cc3152ee87344477da4694b836c3e2f96d13645cfa61847601a8b516ab0ce" },
   },
   {
     id: "equipe-coupee-ne-fait-pas-tomber-la-marque", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/NADIA-2-LA-MARQUE.md, branche des essais)",
@@ -237,18 +259,21 @@ export const EPREUVES: Epreuve[] = [
     verdict: "Diagnostic de l'essai réel de Nadia : « Aucune idée de dessin dans la ligne « La marque » du logo (« comme une maison qui sent bon » a donné 6 maisons sur 9 logos). » Règle du propriétaire (21 novembre 2026) : « pas de consigne autre que les 50 logos en exemple et simplement en exemple ».",
     attendu: "La ligne « La marque » du dessinateur du logo est écrite par le Studio, jamais par la directrice artistique : l'idée en mots simples puis le ton ; une idée qui contient une comparaison (« comme », « tel que ») ou un mot concret (maison, chez, foyer, flamme, feu, mèche, pot, couvercle, soir, hiver, nuit, fenêtre, marché, ou un mot du produit et du métier du client) est retirée, et seul le ton reste.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE, sceau: "3bdc791a2156e60297a7cc54fe372ff22efbc3303ece53970ddb6c7b238c45bc" },
   },
   {
     id: "serie-compte-les-logos-refuses", date: "2026-11-23", source: "CLAUDE.md (Logo ; diagnostic de l'essai réel de Nadia : docs/studio/essais-complets/NADIA-2-DIAGNOSTIC.md, branche des essais)",
     verdict: "Diagnostic de l'essai réel de Nadia : « La série des logos compte aussi les logos refusés, pour que chaque nouveau logo parte loin de ceux déjà faits. » (les 3 logos de A refusés, B n'a rien reçu ; ceux de B refusés, C n'a rien reçu). Règle du propriétaire : « je veux un logo complètement différent ».",
     attendu: "Chaque nouveau dessin de logo, reprises comprises, reçoit tous les logos déjà dessinés pour ce client dans cette série, gardés ou refusés (ses propres essais refusés compris), avec « Je veux un logo complètement différent » ; jamais ceux d'une autre série ni d'un autre projet.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE, sceau: "b3325170274fd075dc1f0af22d52a07ec53e1eb576a32e93315b0cd9d3bbc06a" },
   },
   {
     id: "refus-du-logo-une-seule-fois", date: "2026-11-23", source: "CLAUDE.md (Logo ; diagnostic de l'essai réel de Nadia : docs/studio/essais-complets/NADIA-2-DIAGNOSTIC.md, branche des essais)",
     verdict: "Diagnostic de l'essai réel de Nadia : « Au dessinateur du logo, seuls les refus qui concernent le logo, une seule fois, tels qu'écrits (pas « Il ne veut pas », pas de doublon, pas le refus des mains et du visage). » Formule du propriétaire : « Il ne veut surtout pas : … ».",
     attendu: "Le dessinateur du logo reçoit chaque refus du client qui peut toucher un logo une seule fois, mot pour mot, dans la formule « Il ne veut surtout pas : « … » », sans « Il ne veut pas » ajouté ; un refus qui parle de personnes (mains, visage) vaut pour les images et ne lui arrive pas.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE, sceau: "498d9cda4123dc3586756798ccd76f6099ac14b4265d79986c641c1e25fabe7f" },
   },
   {
     id: "planche-a-trou-jamais-montree", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/verdicts.md et NADIA-2-DIAGNOSTIC.md, branche des essais)",
@@ -308,6 +333,30 @@ export const EPREUVES: Epreuve[] = [
     id: "charge-du-studio-jamais-au-budget-du-client", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia, version 891914dc : les deux plafonds ; logos de Sillage et de Halo refaits)",
     verdict: "Essai réel de Nadia, version 891914dc : la carte annonçait « À ma charge : 0 % de ton budget », et pourtant 1,1 % a été compté à Nadia : son budget engagé est passé de 17,04 % à 17,97 %. Règle : une reprise à la charge du Studio ne doit JAMAIS toucher le budget du client.",
     attendu: "Une tâche dont la carte dit « À ma charge : 0 % de ton budget » ne touche jamais le budget du client, pas d'un centime, appel par appel : la tâche entière (idée en mots simples, logos, relectures, reprises, recherche) et la réponse de SINA qui en présente le résultat sont à la charge du Studio ; une dépense déjà comptée au client lui est rendue par le code, une seule fois.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "logo-demande-nue", date: "2026-11-23", source: "CLAUDE.md (Logo ; décision du propriétaire du 23 novembre 2026, relayée mot pour mot par le chef d'orchestre)",
+    verdict: "« je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies tu donne le nom de la marque et rien de plus, pas de le client ne veux pas tel truc dans son logo. Ça doit être le plus libre possible pour la création du logo »",
+    attendu: "La demande au dessinateur du logo, au premier dessin comme à chaque reprise, ne contient que le métier en mots simples et le nom exact (« Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Sillage ». »), sans aucune image jointe ; les mots du client (« Quelque chose de chaleureux, simple, pas trop chic ») et ses refus n'y figurent jamais, mais restent chez le relecteur ; une reprise repart avec la même demande, à la charge du Studio.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "logo-clair-creux-des-lettres", date: "2026-11-23", source: "CLAUDE.md (Identité : « Sur fond sombre, le logo est toujours clair » ; essai réel du 23 novembre 2026 sur la version 891914dc, relevé par le chef d'orchestre)",
+    verdict: "Règle du propriétaire : « Sur fond sombre, le logo est toujours clair. » Dans l'essai réel, la version claire du logo de Halo, faite pour un fond sombre, laissait l'intérieur du « a » et du « o » en blanc.",
+    attendu: "Dans la version claire d'un logo pour fond sombre, le blanc du fond enfermé dans une lettre fermée (a, o, e) est retiré comme le fond relié au bord : sur le fond sombre, les creux des lettres prennent la couleur du fond, jamais du blanc.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "trait-pres-du-nom-un-par-serie-au-relecteur", date: "2026-11-23", source: "CLAUDE.md (Logo ; accord écrit du propriétaire du 23 novembre 2026, relayé par le chef d'orchestre)",
+    verdict: "« garde le trait près du nom (un seul par série) côté relecteur » (accord écrit du 23 novembre 2026), après « il doit juste être là par parcimonie » (20 novembre 2026).",
+    attendu: "Quand un logo déjà gardé de la série porte un trait près du nom, la demande au dessinateur reste nue (le métier et le nom, aucune image jointe) ; seul le relecteur reçoit la consigne de refuser un deuxième trait dans la série, avec ce logo-là pour comparer ; le logo qu'il refuse est redessiné avec la même demande, à la charge du Studio. Sans trait déjà pris, le relecteur ne reçoit pas cette consigne.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "refus-et-consigne-apres-la-demande-nue", date: "2026-11-23", source: "CLAUDE.md (Logo ; parties toujours vraies des épreuves remplacées le 23 novembre 2026 par logo-demande-nue)",
+    verdict: "Parties toujours vraies des épreuves remplacées : « pas de consigne autre que les 50 logos en exemple » ne vaut plus, mais la consigne écrite par SINA ne va toujours pas au dessinateur ; « enlève la 7 » (21 novembre 2026) : les mots du client vont au relecteur ; un refus des mains et du visage vaut pour les images.",
+    attendu: "La consigne écrite par SINA (« un logotype sobre, un fil à plomb ») n'arrive jamais au dessinateur du logo ; un refus noté pour le logo dans la fiche du client arrive au relecteur, qui le compte comme un défaut, et jamais au dessinateur ; un refus des mains et du visage noté « pour tout » vaut pour les images, pas pour le logo.",
     rejeu: "gratuit",
   },
 ];

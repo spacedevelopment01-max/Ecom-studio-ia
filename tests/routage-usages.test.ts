@@ -171,10 +171,12 @@ describe("routage multimédia par usage", async () => {
     const c = await client();
     confirmModel("openai:gpt-image-2.6-flare", { unit: "image", perImage: 0.12 });
     // Même enveloppé dans la route des photos de SINA (ce que faisait la chaîne avant), le logo part chez le modèle des logos.
-    await fr(() => mp.withQuotedImageRoute({ provider: "openai", model: "gpt-image-2.6-flare" }, () => mp.aiBoardLogo(ctx(c), { prompt: "Crée le logo de la marque « Halo ».", aspect: "1:1", avoid: png, examples: png })));
-    expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-2.5-sunburst", quality: "high" });
-    // Images jointes annoncées : les logos déjà faits (à ne pas refaire), puis les logos aimés (seulement comme exemples).
-    expect(oa.calls.at(-1).prompt).toMatch(/image 1: logos already made[\s\S]*image 2 : exemples de logos que j'aime, seulement comme exemples/);
+    const demande = "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Halo ».";
+    await fr(() => mp.withQuotedImageRoute({ provider: "openai", model: "gpt-image-2.6-flare" }, () => mp.aiBoardLogo(ctx(c), { prompt: demande, aspect: "1:1" })));
+    expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-2.5-sunburst", quality: "high", kind: "generate" });
+    // Décision du 23 novembre 2026 : aucune image jointe, et la demande part telle quelle, sans texte ajouté (ni anglais, ni fond).
+    expect(oa.calls.at(-1).prompt).toBe(demande);
+    expect(oa.calls.at(-1).background).toBeUndefined();
     await fr(() => mp.aiBoardLogo(ctx(c), { prompt: "Crée son symbole seul.", aspect: "1:1", logo: png }));
     expect(oa.calls.at(-1)).toMatchObject({ model: "gpt-image-2.5-sunburst" });
     // Une photo de planche, elle, reste sur la route des photos.

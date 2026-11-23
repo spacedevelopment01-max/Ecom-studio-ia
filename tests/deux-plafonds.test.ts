@@ -164,8 +164,9 @@ describe("planches d'avant la correction : incomplètes d'après leur contenu", 
     expect(finirPlanchesGardees(j, ["A", "B", "C"], ["logo"])).toBe(true);
     const est: any = await fr(() => getTool("identity.images")!.estimate!(t.ctx, getTool("identity.images")!.args.parse({ keys: ["A", "B", "C"], images: ["logo"] }) as never));
     expect(est.studio).toBe(true);
-    const q = C.boardImagesQuote(3, undefined, ["logo"], [], C.planchesSansIdeeSimple(j, ["A", "B", "C"]).length);
-    // La borne du Studio : le premier passage entier (idée en mots simples comprise) et deux reprises de chaque logo relu.
+    const q = C.boardImagesQuote(3, undefined, ["logo"], []);
+    // La borne du Studio : le premier passage entier et deux reprises de chaque logo relu (plus d'idée en mots simples
+    // depuis la décision du 23 novembre 2026).
     expect(est.studioMaxMicro).toBe(borneDuStudio(q.maxMicro, true, q.repriseMicro));
     expect(est.studioMaxMicro).toBe(Math.ceil(q.maxMicro + 2 * q.repriseMicro!));
     expect(est.studioMaxMicro).toBe(deuxPlafonds(q, true).studioMaxMicro);

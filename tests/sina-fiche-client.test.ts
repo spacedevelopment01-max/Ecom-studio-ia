@@ -52,7 +52,7 @@ describe("SINA — la fiche du client", async () => {
     expect(F.ficheOf(cid).notes.filter((n) => /histoire/i.test(n.sujet)).map((n) => n.value)).toEqual(["Seize ans, en fait."]);
   });
 
-  it("le refus pour le logo arrive au dessinateur mot pour mot (et rien d'autre), et au relecteur avec ses goûts", async () => {
+  it("le refus pour le logo arrive au relecteur avec ses goûts, jamais au dessinateur du logo (décision du 23 novembre 2026)", async () => {
     const { projectId, cid } = await setup();
     F.addNotes(cid, [
       { sujet: "le style plombier", value: "le style plombier avec une goutte d'eau", genre: "refuse", portee: "logo" },
@@ -61,9 +61,8 @@ describe("SINA — la fiche du client", async () => {
     ]);
     const gouts = C.goutsDuClient(J.journeyOf(cid), projectId)!;
     expect(gouts.split("\n")).toEqual(["Du vert sapin, sobre.", "Il ne veut pas : le style plombier avec une goutte d'eau", "Il aime : le laiton et le cuivre"]);
-    // Le dessinateur du logo : seulement la phrase de refus (décision du 21 novembre 2026), jamais le goût voisin.
-    // Mot pour mot, dans la formule du propriétaire, sans le « Il ne veut pas » ajouté par le Studio (23 novembre 2026).
-    expect(I.clientRefusal(gouts)).toBe("Il ne veut surtout pas : « le style plombier avec une goutte d'eau »");
+    // Le dessinateur du logo ne reçoit plus la phrase de refus (décision du 23 novembre 2026) : le métier et le nom.
+    expect((I as Record<string, unknown>).clientRefusal).toBeUndefined();
     // Un refus pour les publications ne vaut pas pour les images de la marque.
     expect(gouts).not.toContain("mèmes");
     expect(F.refusPour(F.ficheOf(cid).notes, "publications")).toEqual(["pas de mèmes"]);
@@ -71,7 +70,8 @@ describe("SINA — la fiche du client", async () => {
     // La chaîne de la marque reçoit la fiche entière, et chaque planche reçoit ses goûts.
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
     expect(chain).toContain("const briefBlock = (j: Journey, projectId: string, guidance?: string) => [ficheTexte({ j, notes: notesDuProjet(projectId), projectId })");
-    expect(chain).toContain("gouts: goutsDuClient(j, p.id), refusLogo: refusDuClientPourLeLogo(j, p.id) }");
+    expect(chain).toContain("gouts: goutsDuClient(j, p.id), keptLogos: [...gardesSerie] }");
+    expect(chain).not.toContain("refusLogo");
   });
 
   it("SINA relit la fiche entière à chaque pas après les questions de départ ; ses choix y figurent", async () => {

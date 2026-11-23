@@ -4,9 +4,9 @@
  * et sa fiche, avec la vraie chaîne des images de la planche, un faux dessinateur qui note chaque demande et ses images
  * jointes, et un faux relecteur qui refuse tout, comme dans l'essai réel. Aucun appel payant.
  *
- * Données fidèles au diagnostic : noms, métiers, couleurs, typographies, ton, idées (ce qu'elle croit, ce qu'elle combat),
- * phrase de départ et notes de sa fiche ; « l'idée en mots simples » est celle que la correction du 23 novembre doit
- * donner (lignes écrites par le chef d'orchestre).
+ * Depuis la décision du propriétaire du 23 novembre 2026 (« fait moi un logo pour une marque de bougies tu donne le nom de
+ * la marque et rien de plus ») : chaque demande, premier essai comme reprises, ne porte que le métier et le nom, sans
+ * aucune image jointe ; le relecteur garde ses mots et ses refus ; le fond est retiré par le Studio.
  */
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -53,10 +53,11 @@ describe("rejeu des trois logos de Nadia (faux dessinateur, faux relecteur qui r
   const C = await import("@/lib/syna-agent/brand-chain");
   const F = await import("@/lib/syna-agent/fiche");
   const J = await import("@/lib/syna-agent/journey");
+  const { chargeDuStudio } = await import("@/lib/billing");
   const { threadFor } = await import("@/lib/syna-agent/thread");
   const { account, project } = await import("./conversation209-fixtures");
 
-  /** Un logo différent à chaque dessin (une couleur par dessin), sur fond blanc net, sans trait sous le nom. */
+  /** Un logo différent à chaque dessin (une couleur par dessin), sur fond blanc net. */
   const COULEURS = ["#6E2A5E", "#C77E4F", "#3A1F2B", "#2B4C8C", "#B4450F", "#2A1A22", "#2F6A4E", "#E9A24F", "#1F1714", "#884422", "#226688", "#663399"];
   const logoNumero = (n: number) => sharp({ create: { width: 640, height: 480, channels: 3, background: "#FFFFFF" } }).composite(Array.from({ length: 6 }, (_v, i) => ({ input: { create: { width: 40, height: 90, channels: 3 as const, background: COULEURS[n % COULEURS.length] } }, left: 140 + i * 60, top: 180 }))).png().toBuffer();
 
@@ -65,123 +66,100 @@ describe("rejeu des trois logos de Nadia (faux dessinateur, faux relecteur qui r
     J.updateJourney(cid, (j) => { j.start.image = { value: IMAGE_DE_DEPART, status: "answered", source: "client", at: Date.now() }; });
     F.addNotes(cid, [
       { sujet: "la flamme", value: "pas de flamme dessinée dans le logo, toutes les marques de bougies font ça.", genre: "refuse", portee: "logo" },
-      // Noté « pour tout » dans l'essai réel : c'est ce refus qui arrivait au dessinateur des logos.
       { sujet: "ses photos", value: "Mes mains je veux bien de temps en temps mais pas mon visage.", genre: "refuse", portee: "tout" },
     ]);
     const j = J.journeyOf(cid);
-    const dessins: { id: string; prompt: string; avoid: string | null; examples: string | null; usage?: string; logos: number }[] = [];
-    const sheets: Buffer[] = [];
+    const dessins: { id: string; prompt: string; jointes: number; usage?: string; studio: boolean }[] = [];
+    const relectures: { id: string; prompt: string; labels: string[] }[] = [];
     let n = 0, vus = 0;
     const ai: any = {
       research: async () => [], ask: async () => { throw new Error("aucun appel de texte attendu"); },
       draw: async (id: string, c: any) => {
-        dessins.push({ id, prompt: c.prompt, avoid: sha(c.avoid), examples: sha(c.examples), usage: c.usage, logos: 0 });
-        if (c.avoid) sheets.push(c.avoid);
+        // Toute image jointe, quel que soit son nom, est comptée.
+        const jointes = Object.entries(c).filter(([k, v]) => k !== "prompt" && Buffer.isBuffer(v)).length;
+        dessins.push({ id, prompt: c.prompt, jointes, usage: c.usage, studio: chargeDuStudio() });
         return logoNumero(n++);
       },
       // Comme dans l'essai réel : chaque logo est refusé (note 5), pour une raison de dessin.
-      look: async (_id: string, c: any) => {
+      look: async (id: string, c: any) => {
+        relectures.push({ id, prompt: c.prompt, labels: (c.images as { label: string }[]).map((i) => i.label) });
         const slot = (c.images as { label: string }[]).map((i) => i.label).find((l) => l === "logo")!;
         return { images: [{ slot, seen: "", score: 5, ok: false, read: [], why: `Refus ${++vus} : le symbole maison-fenêtre-cœur est un pictogramme banal ; trop sage face à la planche.`, defect: "autre" }] };
       },
     };
     const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
-    // La série, comme dans la chaîne (brand-chain.ts) : tous les logos dessinés, gardés ou refusés ; les gardés à part.
-    const seriesLogos: Buffer[] = [], seriesKept: Buffer[] = [];
     const parIdentite: Record<string, number[]> = {};
     for (const x of identites()) {
       const avant = dessins.length;
-      const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: { look: "", logo: "", hero: "", object: "", site: "", signs: "", posts: ["", "", ""] }, madeLogos: [...seriesLogos], keptLogos: [...seriesKept], gouts: C.goutsDuClient(j, projectId), refusLogo: C.refusDuClientPourLeLogo(j, projectId) });
-      seriesLogos.push(...r.logos);
+      const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: { look: "", logo: "", hero: "", object: "", site: "", signs: "", posts: ["", "", ""] }, gouts: C.goutsDuClient(j, projectId) });
       parIdentite[x.key] = dessins.slice(avant).map((_d, i) => avant + i);
       expect(r.route.board.images?.logo).toBeUndefined();
     }
-    return { dessins, sheets, parIdentite, projectId, j };
+    return { dessins, relectures, parIdentite, projectId, j };
   }
 
-  it("les trois lignes « La marque » : aucun mot concret, aucun « comme » ; seulement l'idée et le ton", async () => {
+  it("la demande des trois logos, du premier essai comme des reprises : le métier et le nom, rien d'autre, aucune image jointe", async () => {
     const { dessins, parIdentite } = await rejeu();
     const attendu: Record<string, string> = {
-      A: "La marque : Elle croit qu'une bougie doit vraiment sentir, et elle se bat contre les bougies qui sentent à peine. Son ton : chaleureux, simple, proche.",
-      B: "La marque : Elle croit qu'une bougie doit être faite tout près, par quelqu'un qu'on connaît, et elle se bat contre la fabrication lointaine en grande série. Son ton : chaleureux, simple, proche.",
-      C: "La marque : Elle croit qu'une bougie est faite pour servir, et elle se bat contre les bougies de décoration qu'on n'utilise jamais. Son ton : chaleureux, simple, proche.",
+      A: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Sillage ».",
+      B: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Halo ».",
+      C: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Pénombre ».\nIl s'écrit lettre par lettre : P, é, n, o, m, b, r, e.",
     };
-    for (const [k, idx] of Object.entries(parIdentite)) for (const i of idx) {
-      const ligne = dessins[i].prompt.split("\n").find((l) => l.startsWith("La marque : "))!;
-      expect(ligne, k).toBe(attendu[k]);
-      expect(ligne).not.toMatch(I.COMPARAISON);
-      for (const m of I.MOTS_CONCRETS) expect(ligne.toLowerCase()).not.toMatch(new RegExp(`(?<![\\p{L}])${m}s?(?![\\p{L}])`, "u"));
-    }
-  });
-
-  it("les anciennes lignes, avec maison, soir, hiver ou une comparaison, sont refusées : seul le ton reste", () => {
-    const [a, b, c] = identites();
-    expect(I.ideeConcrete("le logo doit donner l'envie de s'approcher et de respirer, comme une maison qui sent bon", a as never)).toMatch(/une comparaison/);
-    expect(I.ideeConcrete("la chaleur d'une maison le soir et la confiance qu'on a envers une voisine", b as never)).toMatch(/un mot concret/);
-    expect(I.ideeConcrete("la maison chaude au retour, l'odeur qui revient chaque octobre", c as never)).toMatch(/un mot concret/);
-    // Les mots du métier de la cliente (sa ligne de métier : matières, geste, lieu) sont refusés aussi ; sa catégorie non.
-    expect(I.ideeConcrete("une bougie en cire de soja", c as never)).toMatch(/« cire »/);
-    expect(I.ideeConcrete("une bougie coulée à Lyon", a as never)).toMatch(/un mot concret/);
-    expect(I.ideeConcrete("une bougie qui sent vraiment", a as never)).toBeNull();
-    // Sans idée en mots simples (planche d'avant, avant sa mise à niveau) : seul le ton va au dessinateur.
-    for (const x of [a, b, c]) {
-      const avant = { ...x, board: { ...x.board, idea: { ...x.board.idea, simple: undefined } } };
-      expect(I.ligneDeLaMarque(avant as never)).toBe("Son ton : chaleureux, simple, proche.");
-    }
-  });
-
-  it("la série : A2 reçoit A1, B1 reçoit A1 à A3, C1 reçoit A1 à B3, avec « je veux un logo complètement différent »", async () => {
-    const { dessins, sheets, parIdentite } = await rejeu();
     expect(dessins).toHaveLength(9);
     expect(Object.values(parIdentite).map((v) => v.length)).toEqual([3, 3, 3]);
-    // Le premier logo de la série est fait sans modèle.
-    expect(dessins[0].avoid).toBeNull();
-    expect(dessins[0].prompt).not.toMatch(/complètement différent/);
-    // Chaque dessin suivant reçoit TOUS les logos déjà dessinés, gardés ou refusés, dans l'ordre (planche en grille).
-    const logos = await Promise.all(Array.from({ length: 9 }, (_v, i) => logoNumero(i)));
-    for (let i = 1; i < 9; i++) {
-      expect(dessins[i].avoid, `dessin ${i + 1}`).toBe(sha(await I.logoSheet(logos.slice(0, i))));
-      expect(dessins[i].prompt).toContain(i > 1 ? `L'image jointe montre les ${i} logos déjà faits pour ce client. Je veux un logo complètement différent de ceux-là` : "L'image jointe montre le logo déjà fait pour ce client. Je veux un logo complètement différent de celui-là");
+    for (const [k, idx] of Object.entries(parIdentite)) for (const i of idx) {
+      expect(dessins[i].prompt, `${k} dessin ${i + 1}`).toBe(attendu[k]);
+      expect(dessins[i].jointes).toBe(0);
+      expect(dessins[i].usage).toBe("logo");
     }
-    // A2 (2e dessin) : A1 ; B1 (4e) : A1 à A3 ; C1 (7e) : A1 à B3. La planche est une grille, sans limite à 4.
-    const taille = async (b: Buffer) => { const m = await sharp(b).metadata(); return `${m.width}x${m.height}`; };
-    expect(await taille(sheets[0])).toBe("512x512");
-    expect(await taille(sheets[2])).toBe("1024x1024"); // B1 : 3 logos en grille de 2 sur 2
-    expect(await taille(sheets[5])).toBe("1536x1024"); // C1 : 6 logos en grille de 3 sur 2
-    expect(await taille(sheets[7])).toBe("1536x1536"); // C3 : 8 logos en grille de 3 sur 3
+    // Rien de ce qui partait avant : ni idée, ni ton, ni couleurs, ni typographie, ni fond, ni refus, ni logos déjà faits.
+    for (const d of dessins) expect(d.prompt).not.toMatch(/La marque :|Son ton|Couleurs|Typographie|BLANC|fond|Il ne veut|flamme|chaleureux|pas trop chic|mains|visage|complètement différent|image jointe|CORRECTION|Refus \d|TRANSMITTED|REFERENCES/);
   });
 
-  it("la phrase de refus : une seule fois, mot pour mot, avec « Il ne veut surtout pas », sans mains ni visage ; aucune ligne des écritures", async () => {
-    const { dessins, projectId, j } = await rejeu();
-    expect(C.refusDuClientPourLeLogo(j, projectId)).toBe(REFUS_ATTENDU);
-    for (const d of dessins) {
-      expect(d.prompt.split(REFUS_ATTENDU)).toHaveLength(2);
-      expect(d.prompt.match(/Il ne veut surtout pas/g)).toHaveLength(1);
-      expect(d.prompt).not.toMatch(/Il ne veut pas|mains|visage|chaleureux, simple, pas trop chic/);
-      expect(d.prompt).not.toMatch(/étiquette, emballage|Fais plus simple/);
+  it("une reprise refusée repart avec la même demande nue, à la charge du Studio, dans la borne des reprises", async () => {
+    const { dessins, parIdentite } = await rejeu();
+    expect(I.MAX_IMAGE_RETRIES).toBe(2);
+    for (const idx of Object.values(parIdentite)) {
+      const [premier, ...reprises] = idx.map((i) => dessins[i]);
+      expect(premier.studio).toBe(false);
+      expect(reprises.map((d) => d.studio)).toEqual([true, true]);
+      expect(reprises.map((d) => d.id)).toEqual([`${premier.id}:r1`, `${premier.id}:r2`]);
+      for (const d of reprises) expect(d.prompt).toBe(premier.prompt);
     }
-    // Les reprises reçoivent toutes les raisons des refus.
-    expect(dessins[2].prompt).toMatch(/à corriger TOUTES à la fois[\s\S]*1\. « Refus 1 : [\s\S]*2\. « Refus 2 : /);
-    // Le refus des mains et du visage est des images, jamais « pour tout » ; le relecteur, lui, le garde dans ses goûts.
-    const notes = F.notesDuProjet(projectId);
-    expect(F.porteeOf(notes.find((x) => x.sujet === "ses photos")!)).toBe("images");
-    expect(F.refusPourLeLogo(notes)).toEqual(["pas de flamme dessinée dans le logo, toutes les marques de bougies font ça."]);
+  });
+
+  it("le relecteur reçoit toujours ses mots et son refus (« pas de flamme dessinée »), avec la planche des logos aimés comme niveau", async () => {
+    const { relectures, projectId, j } = await rejeu();
+    expect(relectures).toHaveLength(9);
+    for (const r of relectures) {
+      expect(r.prompt).toContain(IMAGE_DE_DEPART);
+      expect(r.prompt).toContain("Il ne veut pas : pas de flamme dessinée dans le logo, toutes les marques de bougies font ça.");
+      expect(r.prompt).toMatch(/qui montre ce qu'il refuse est un défaut/);
+      expect(r.prompt).toMatch(/planche des logos que le propriétaire du Studio aime/);
+    }
+    // Le refus des mains et du visage vaut pour les images : le relecteur le garde dans ses goûts.
     expect(C.goutsDuClient(j, projectId)).toContain("Mes mains je veux bien de temps en temps mais pas mon visage.");
+    expect(F.porteeOf(F.notesDuProjet(projectId).find((x) => x.sujet === "ses photos")!)).toBe("images");
+    void TON; void REFUS_ATTENDU; void sha;
   });
 
-  it("la planche des 50 logos aimés jointe à chaque demande, sans changement ; l'usage « logo » partout", async () => {
-    const { dessins } = await rejeu();
-    const aimes = sha(await I.planchedesLogosAimes());
-    expect(aimes).toBeTruthy();
-    // Même fichier, même taille (1200 points au plus), même annonce « seulement comme exemples » qu'avant.
-    const meta = await sharp((await I.planchedesLogosAimes())!).metadata();
-    expect(Math.max(meta.width!, meta.height!)).toBeLessThanOrEqual(1200);
-    const { imageReferencePrompt } = await import("@/lib/ai/media-providers");
-    expect(imageReferencePrompt("x", ["avoid", "examples"])).toContain("image 2 : exemples de logos que j'aime, seulement comme exemples : n'en recopie aucun");
-    for (const d of dessins) {
-      expect(d.examples).toBe(aimes);
-      expect(d.usage).toBe("logo");
-    }
+  it("le métier en mots simples, tiré par le code de la ligne de métier", () => {
+    expect(I.metierEnMotsSimples("Bougies parfumées coulées à la main près de Lyon")).toBe("une marque de bougies");
+    expect(I.metierEnMotsSimples("Bougies parfumées en cire de soja, Brignais")).toBe("une marque de bougies");
+    expect(I.metierEnMotsSimples("Plomberie et chauffage à Lyon")).toBe("une marque de plomberie et chauffage");
+    expect(I.metierEnMotsSimples("Infusions de fruits à boire glacées")).toBe("une marque d'infusions de fruits");
+    expect(I.metierEnMotsSimples("Infusions aux vrais morceaux de fruits")).toBe("une marque d'infusions");
+    expect(I.metierEnMotsSimples("PLÂTRERIE • PEINTURE • ENDUITS")).toBe("une marque de plâtrerie");
+    expect(I.metierEnMotsSimples("Pots de miel de lavande récoltés en Provence")).toBe("une marque de pots de miel de lavande");
+    expect(I.metierEnMotsSimples("Savons artisanaux au lait d'ânesse")).toBe("une marque de savons");
+    expect(I.metierEnMotsSimples("Huiles d'olive pressées à froid")).toBe("une marque d'huiles d'olive");
+    expect(I.metierEnMotsSimples("")).toBe("une marque");
+    expect(I.metierEnMotsSimples(" ")).toBe("une marque");
+    // L'épellation : seulement pour un nom qui porte un accent ou un signe.
+    expect(I.nomAEpeler("Sillage")).toBe(false);
+    expect(I.nomAEpeler("Bain de Minuit")).toBe(false);
+    expect(I.nomAEpeler("Pénombre")).toBe(true);
+    expect(I.nomAEpeler("L'Eau Est Bonne")).toBe(true);
   });
 });
 
@@ -192,20 +170,16 @@ describe("le dessin d'un logo ne passe jamais par un autre usage que « logo » 
     const fin = fs.readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8");
     // Le dessinateur des planches : un logo part chez aiBoardLogo (usage « logo »), jamais chez aiSiteImageHd (usage « scene »).
     expect(chain).toContain('draw: (id, c) => withTrace(scope(`brand-${id}`), () => c.usage === "logo"\n      ? aiBoardLogo(');
-    expect(img).toContain('...(slot === "logo" ? { usage: "logo" as const } : {})');
+    expect(img).toContain('? { prompt, aspect: SLOT_ASPECT[slot], usage: "logo" as const }');
     expect(fin).toContain('logo: await onWhite(logoPng), usage: "logo" });');
-    // Le devis : le logo et le symbole au prix du modèle des logos.
+    // Le devis : le logo et le symbole au prix du modèle des logos ; le logo sans aucune image jointe.
     expect(chain).toContain('const imageUnitMax = (aspect: ImageAspect, references: number, logo = false) => photoRequestMaxMicro(logo ? LOGO_ROUTE : boardImageRoute(),');
     expect(chain).toContain('imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot], slot === "logo")');
     expect(chain).toContain('const unit = imageUnitMax("1:1", 1, true);');
-    // Chaque appel au dessinateur des planches qui joint des logos (déjà faits, aimés) est un dessin de logo.
     const media = fs.readFileSync("src/lib/ai/media-providers.ts", "utf8");
     const corps = media.slice(media.indexOf("export async function aiBoardLogo"), media.indexOf("/** Coût maximal d'une maquette de site"));
     expect(corps).toContain('usage: "logo"');
     expect(corps).toContain("withQuotedImageRoute(LOGO_ROUTE,");
-    for (const f of ["src/lib/syna-agent/brand-chain.ts", "src/lib/syna-agent/brand-finish.ts", "src/lib/syna-agent/brand-images.ts"]) {
-      const src = fs.readFileSync(f, "utf8");
-      for (const m of src.matchAll(/ai\.draw\(([^;]*)\);/g)) if (/examples|avoid|symbol/.test(m[1]) && !/brand-images/.test(f)) expect(m[1], f).toMatch(/usage: "logo"/);
-    }
+    expect(corps).not.toMatch(/avoid|examples/);
   });
 });
