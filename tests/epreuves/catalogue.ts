@@ -54,6 +54,17 @@ const PRECISION_SERIE_DU_23_NOVEMBRE = {
   epreuve: "serie-logo-completement-different",
 };
 
+/**
+ * La décision du propriétaire du 23 novembre 2026 au soir, après l'essai de Pénombre (« Ouai c'est la catastrophe mon
+ * idée »), et son accord écrit pour marquer les épreuves qu'elle remplace (« Oui, marque refus-et-consigne-apres-la-demande-nue
+ * et serie-logo-completement-different comme remplacées par ma décision du 23 novembre au soir, ajoute les épreuves
+ * demande-du-logo-couleurs-typo-fond et relecteur-du-logo-qualite-seule, et mets à jour la partie Logo de CLAUDE.md. »).
+ */
+const DECISION_DU_23_NOVEMBRE_AU_SOIR = {
+  decision: "23 novembre 2026",
+  mots: "« Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies »",
+};
+
 export const EPREUVES: Epreuve[] = [
   {
     id: "logo-goutte-refusee", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
@@ -372,17 +383,49 @@ export const EPREUVES: Epreuve[] = [
     verdict: "Parties toujours vraies des épreuves remplacées : « pas de consigne autre que les 50 logos en exemple » ne vaut plus, mais la consigne écrite par SINA ne va toujours pas au dessinateur ; « enlève la 7 » (21 novembre 2026) : les mots du client vont au relecteur ; un refus des mains et du visage vaut pour les images.",
     attendu: "La consigne écrite par SINA (« un logotype sobre, un fil à plomb ») n'arrive jamais au dessinateur du logo ; un refus noté pour le logo dans la fiche du client arrive au relecteur, qui le compte comme un défaut, et jamais au dessinateur ; un refus des mains et du visage noté « pour tout » vaut pour les images, pas pour le logo.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE_AU_SOIR, epreuve: "relecteur-du-logo-qualite-seule", sceau: "6e8fa553a86f269fd949699c842bc442e94393d46f9e7fb7587041577139eb44" },
   },
   {
     id: "serie-logo-completement-different", date: "2026-11-23", source: "CLAUDE.md (Logo ; précision du propriétaire du 23 novembre 2026, relayée mot pour mot par le chef d'orchestre)",
     verdict: "« En même temps il fallait garder la règle de le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement différent de celui là et pour le 3eme pareil, ou lui donne les 2 première et on lui dit fait moi un autre logo complètement différent des 2 premier. Et moi j'aime bien le 1er logo. Pour rappel on ne demande plus au client ce qu'il veux ou non dans son logo »",
     attendu: "Le 1er logo d'une série part sans image ; le 2e reçoit le 1er avec « Je veux un autre logo complètement différent de celui-là » ; le 3e reçoit les deux premiers avec « Fais-moi un autre logo complètement différent des deux premiers » ; ce sont les logos gardés des identités d'avant, sinon leur dernier dessin, jamais d'une autre série ; la demande reste en français, sans rien d'autre ; un logo gardé n'est jamais redessiné.",
     rejeu: "gratuit",
+    remplaceePar: { ...DECISION_DU_23_NOVEMBRE_AU_SOIR, epreuve: "demande-du-logo-couleurs-typo-fond", sceau: "90a2e27fa462eacf98eea9b5ac1d3bad60cd8814747adfcb82acc3d7bc6c8075" },
   },
   {
     id: "trois-fois-le-meme-dessin", date: "2026-11-23", source: "CLAUDE.md (Logo ; essai réel de Pénombre sur la version 1db7eb3c, 23 novembre 2026, relevé par le chef d'orchestre)",
     verdict: "Essai réel de Pénombre sur la version 1db7eb3c (0,87 €) : ses trois logos, refusés à 3 sur 10, étaient « trois fois le même dessin » : une bougie allumée devant un croissant de lune, dans un disque noir, avec un sous-titre que personne n'avait demandé ; la même demande nue, sans image, avait été envoyée trois fois.",
     attendu: "Chaque reprise reçoit ses propres essais refusés, en plus des logos d'avant de la série, avec une seule phrase « complètement différent », sans jamais la raison du refus ; deux demandes d'une même identité ne sont jamais identiques ; au relecteur seul, un mot non demandé dans le logo est un défaut.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "jamais-de-question-sur-le-logo", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; essai réel de Nadia sur la version 02570ae1, relevé par le chef d'orchestre)",
+    verdict: "Règle du propriétaire : « Pour rappel on ne demande plus au client ce qu'il veux ou non dans son logo » (23 novembre 2026). Dans l'essai réel, Nadia a écrit « Le logo de Halo ne me plaît pas trop, tu peux m'en faire un autre ? », et SINA a répondu « Qu'est-ce qui te gêne dans le logo de Halo : les lettres, le bleu, l'ellipse orange au-dessus, ou l'ensemble ? ». La consigne ne suffisait pas.",
+    attendu: "Le contrôle gratuit des messages, sans IA, fait réécrire à la charge du Studio toute réponse de SINA qui pose au client une question sur le contenu d'un logo (les lettres, la couleur, la forme, le style, ce qui lui plaît ou lui déplaît) ; « Tu veux que je le refasse ? » et le choix entre des planches passent ; quand le client demande un autre logo, SINA dit simplement qu'elle en refait un et la carte d'accord s'ouvre.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "logos-de-la-serie-dans-l-ordre", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; essai réel de Nadia sur la version 02570ae1, relevé par le chef d'orchestre)",
+    verdict: "Règle du propriétaire sur la série : « le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement différent de celui là et pour le 3eme pareil » (23 novembre 2026). Dans l'essai réel, Nadia demandait un autre logo pour Halo (B) et celui de Pénombre (C) manquait : SINA a lancé Pénombre AVANT Halo.",
+    attendu: "Quand plusieurs logos d'une série sont à refaire, ils partent dans l'ordre des identités (A, B, C), quel que soit l'ordre donné par SINA, et chacun reçoit les logos refaits juste avant lui : avec [C, B], Halo part d'abord avec Sillage gardé, puis Pénombre avec Sillage et le nouveau Halo ; deux appels dans une même réponse sont réunis ; un logo demandé alors qu'un logo d'avant est à refaire aussi et pas encore fait n'ouvre pas sa carte : SINA est prévenue, avant toute dépense, de les réunir.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "pas-de-consigne-de-style-pour-un-logo", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; essai réel de Nadia sur la version 02570ae1, relevé par le chef d'orchestre)",
+    verdict: "Décision du propriétaire du 23 novembre 2026 au soir, relayée par le chef d'orchestre : « Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies ». Dans l'essai réel, la consigne de SINA pour la carte Halo + Pénombre contenait « logo dessiné sur un fond blanc parfaitement uni » et « pas de lettres bleues arrondies avec une ellipse orange », et la fiche « pas de flamme dessinée ».",
+    attendu: "Aucun de ces mots de SINA ni de la fiche n'arrive au dessinateur : la demande réelle reçue pour Halo et Pénombre ne porte que le métier et le nom, l'épellation si besoin, la ligne des couleurs de la marque, celle de sa typographie, « Sur un fond blanc uni. », les logos joints et la phrase « complètement différent » ; la consigne de style que SINA donne à l'outil qui refait un logo (fond, couleur, lettres, forme, refus) est retirée par le Studio, sans IA et sans bloquer la carte, et SINA lit qu'elle a été retirée.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "demande-du-logo-couleurs-typo-fond", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; décision du propriétaire du 23 novembre 2026 au soir, relayée mot pour mot par le chef d'orchestre)",
+    verdict: "« Ouai c'est la catastrophe mon idée », puis : « Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies » (23 novembre 2026 au soir, après l'essai de Pénombre).",
+    attendu: "La demande au dessinateur du logo, en français, est exactement : « Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Halo ». », l'épellation seulement si le nom porte un accent ou un signe, la ligne des couleurs de la marque (« Couleurs de la marque : foncé #…, couleur de marque #…, surface #…, accent #…, clair #…. »), celle de sa typographie (« Typographie de la marque : un caractère … (dans l'esprit de …) ; tu peux le redessiner à ta façon. »), « Sur un fond blanc uni. », puis la série (les logos des identités d'avant joints, avec « Je veux un autre logo complètement différent de celui-là. » ou « Fais-moi un autre logo complètement différent des deux premiers. » ; une reprise reçoit aussi ses essais refusés, avec « … de tous ceux-là ») ; jamais l'idée de la marque, le ton, la planche des 50 logos, les refus ni les mots du client ; un logo gardé n'est jamais redessiné.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "relecteur-du-logo-qualite-seule", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; décision du propriétaire du 23 novembre 2026 au soir, relayée mot pour mot par le chef d'orchestre)",
+    verdict: "« on ne demande plus au client ce qu'il veut ou non dans son logo » ; décision du 23 novembre 2026 au soir : « Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies ».",
+    attendu: "Le relecteur du logo juge la qualité seulement : il ne reçoit ni les mots du client, ni ses refus, ni sa fiche de portée logo ; il garde la planche des 50 logos aimés comme niveau, ne garde qu'un logo noté 8 sur 10 ou plus, refuse un mot non demandé (un sous-titre), exige le nom exact, et un fond que le Studio ne sait pas retirer fait redessiner le logo ; la consigne écrite par SINA n'arrive jamais au dessinateur.",
     rejeu: "gratuit",
   },
 ];

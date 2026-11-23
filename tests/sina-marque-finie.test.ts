@@ -201,10 +201,10 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       // Décision du propriétaire du 23 novembre 2026 : chaque logo, le premier comme les suivants, part avec la demande
       // nue (le métier en mots simples et le nom), sans aucune image jointe.
       expect(log.refs[`image-1-${k}-logo${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "1:1" });
-      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/^Fais-moi un logo pour une marque d'infusions( de fruits)?\. Le nom de la marque : « [^»]+ »\.(\nIl s'écrit lettre par lettre : [^\n]+\.)?(\n(Je veux un autre logo complètement différent de celui-là\.|Fais-moi un autre logo complètement différent des deux premiers\.))?$/);
+      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/^Fais-moi un logo pour une marque d'infusions( de fruits)?\. Le nom de la marque : « [^»]+ »\.(\nIl s'écrit lettre par lettre : [^\n]+\.)?\nCouleurs de la marque : [^\n]+\.\nTypographie de la marque : [^\n]+\nSur un fond blanc uni\.(\n(Je veux un autre logo complètement différent de celui-là\.|Fais-moi un autre logo complètement différent des deux premiers\.))?$/);
       // La série (le propriétaire, 23 novembre 2026) : A sans image, B avec le logo de A, C avec ceux de A et B.
       const fin = { A: "»", B: "Je veux un autre logo complètement différent de celui-là.", C: "Fais-moi un autre logo complètement différent des deux premiers." }[k as "A" | "B" | "C"];
-      expect(log.prompts[`image-1-${k}-logo${FIRST}`].endsWith(fin === "»" ? "»." : fin)).toBe(true);
+      expect(log.prompts[`image-1-${k}-logo${FIRST}`].endsWith(fin === "»" ? "Sur un fond blanc uni." : fin)).toBe(true);
       expect((log as any).serie[`image-1-${k}-logo${FIRST}`]).toBe({ A: 0, B: 1, C: 2 }[k as "A" | "B" | "C"]);
       expect(log.refs[`image-1-${k}-hero${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "16:9" });
       expect(log.refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });

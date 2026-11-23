@@ -102,12 +102,15 @@ describe("rejeu des trois logos de Nadia (faux dessinateur, faux relecteur qui r
     return { dessins, relectures, parIdentite, projectId, j };
   }
 
-  it("la série : Sillage sans image ; Halo avec Sillage ; Pénombre avec Sillage et Halo ; tout en français, rien d'autre", async () => {
+  it("la série : Sillage sans image ; Halo avec Sillage ; Pénombre avec Sillage et Halo ; tout en français, avec les couleurs, la typographie et le fond", async () => {
     const { dessins, parIdentite } = await rejeu();
+    // Décision du 23 novembre 2026 au soir : le métier et le nom, l'épellation si besoin, les couleurs, la typographie, le fond.
+    const fin = (x: any) => `\nCouleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.\n${I.typoLine(x.fonts.heading)}\nSur un fond blanc uni.`;
+    const [xa, xb, xc] = identites();
     const base: Record<string, string> = {
-      A: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Sillage ».",
-      B: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Halo ».",
-      C: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Pénombre ».\nIl s'écrit lettre par lettre : P, é, n, o, m, b, r, e.",
+      A: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Sillage »." + fin(xa),
+      B: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Halo »." + fin(xb),
+      C: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Pénombre ».\nIl s'écrit lettre par lettre : P, é, n, o, m, b, r, e." + fin(xc),
     };
     expect(dessins).toHaveLength(9);
     const [a1, b1, c1] = ["A", "B", "C"].map((k) => dessins[parIdentite[k][0]]);
@@ -121,7 +124,7 @@ describe("rejeu des trois logos de Nadia (faux dessinateur, faux relecteur qui r
     expect(c1.serie).toEqual([dernier("A"), dernier("B")]);
     for (const d of dessins) {
       expect(d.usage).toBe("logo");
-      expect(d.prompt).not.toMatch(/La marque :|Son ton|Couleurs|Typographie|BLANC|fond|Il ne veut|flamme|chaleureux|pas trop chic|mains|visage|image jointe|CORRECTION|Refus \d|banal|TRANSMITTED|REFERENCES/);
+      expect(d.prompt).not.toMatch(/La marque :|Son ton|BLANC|Il ne veut|flamme|chaleureux|pas trop chic|mains|visage|image jointe|CORRECTION|Refus \d|banal|TRANSMITTED|REFERENCES/);
     }
   });
 
@@ -175,16 +178,15 @@ describe("rejeu des trois logos de Nadia (faux dessinateur, faux relecteur qui r
     expect(src).not.toContain("l'image qu'il veut donner, en quelques mots, et ce qu'il ne veut surtout pas (couleurs, styles)");
   });
 
-  it("le relecteur reçoit toujours ses mots et son refus (« pas de flamme dessinée »), avec la planche des logos aimés comme niveau", async () => {
+  it("le relecteur du logo juge la qualité seulement : ni les mots du client, ni ses refus (décision du 23 novembre 2026 au soir), avec la planche des logos aimés comme niveau", async () => {
     const { relectures, projectId, j } = await rejeu();
     expect(relectures).toHaveLength(9);
     for (const r of relectures) {
-      expect(r.prompt).toContain(IMAGE_DE_DEPART);
-      expect(r.prompt).toContain("Il ne veut pas : pas de flamme dessinée dans le logo, toutes les marques de bougies font ça.");
-      expect(r.prompt).toMatch(/qui montre ce qu'il refuse est un défaut/);
+      expect(r.prompt).not.toContain(IMAGE_DE_DEPART);
+      expect(r.prompt).not.toMatch(/flamme|Il ne veut pas|qui montre ce qu'il refuse/);
       expect(r.prompt).toMatch(/planche des logos que le propriétaire du Studio aime/);
     }
-    // Le refus des mains et du visage vaut pour les images : le relecteur le garde dans ses goûts.
+    // Le refus des mains et du visage vaut toujours pour les images (pas pour le logo).
     expect(C.goutsDuClient(j, projectId)).toContain("Mes mains je veux bien de temps en temps mais pas mon visage.");
     expect(F.porteeOf(F.notesDuProjet(projectId).find((x) => x.sujet === "ses photos")!)).toBe("images");
     void TON; void REFUS_ATTENDU; void sha;

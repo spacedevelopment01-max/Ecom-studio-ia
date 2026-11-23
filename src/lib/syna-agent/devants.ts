@@ -130,11 +130,19 @@ export function ligneDesPlanchesAFinir(cid: string, projectId: string | null): s
   const list = planchesAFinir(journeyOf(cid));
   if (!list.length || repriseEnCours(cid, projectId) || etatDe(cid).refus === empreinteDuManque(list)) return "";
   const groupes = groupesAFinir(list);
-  return `# À DIRE EN PREMIER, avant tout le reste\nIl manque ${manqueEnMots(list).fr} (planches ${list.map((x) => `${x.key} « ${x.name} »`).join(", ")}). Ces planches ne sont pas montrées au client tant qu'elles sont incomplètes. Dis-le-lui d'abord, en mots simples, et propose-lui de les finir à ta charge : ça ne lui coûte rien. S'il dit oui : identity.images ${groupes.map((g) => `keys = ${g.keys.join(", ")} ; images = ${g.images.join(", ")}`).join(" ; puis ")} (exactement ce qui manque${groupes.length > 1 ? ", un groupe à la fois" : ""}). La carte d'accord dit « À ma charge : 0 % de ton budget ». Ensuite seulement, réponds à ce qu'il vient de dire.\n\n`;
+  return `# À DIRE EN PREMIER, avant tout le reste\nIl manque ${manqueEnMots(list).fr} (planches ${list.map((x) => `${x.key} « ${x.name} »`).join(", ")}). Ces planches ne sont pas montrées au client tant qu'elles sont incomplètes. Dis-le-lui d'abord, en mots simples, et propose-lui de les finir à ta charge : ça ne lui coûte rien. S'il dit oui : identity.images ${groupes.map((g) => `keys = ${g.keys.join(", ")} ; images = ${g.images.join(", ")}`).join(" ; puis ")} (exactement ce qui manque${groupes.length > 1 ? ", un groupe à la fois" : ""}). La carte d'accord dit « À ma charge : 0 % de ton budget ». S'il demande aussi un autre logo d'une planche, ne lance pas d'abord celles à finir : un seul appel identity.images avec toutes ces planches et images = logo ; le Studio fait les logos dans l'ordre des identités (A, puis B, puis C), chacun recevant ceux refaits juste avant lui. Ensuite seulement, réponds à ce qu'il vient de dire.\n\n`;
 }
 
 /** Les planches regroupées par ce qui leur manque (une reprise refait les mêmes images sur chaque planche demandée). */
 export function groupesAFinir(list: readonly PlancheAFinir[]): { keys: string[]; images: string[] }[] {
+  // Les logos qui manquent partent ensemble, d'abord, dans l'ordre des identités (règle de la série : chacun reçoit ceux
+  // refaits juste avant lui ; essai réel de Nadia, 23 novembre 2026). Ce qui manque d'autre suit, groupe par groupe.
+  const sansLogo = list.filter((x) => x.manque.includes("logo"));
+  if (sansLogo.length > 1 && new Set(sansLogo.map((x) => ORDRE.filter((s) => x.manque.includes(s)).join("+"))).size > 1) {
+    const communes = ORDRE.filter((s) => sansLogo.every((x) => x.manque.includes(s)));
+    const reste = list.map((x) => ({ ...x, manque: x.manque.filter((s) => !(sansLogo.includes(x) && (communes as string[]).includes(s))) })).filter((x) => x.manque.length);
+    return [{ keys: sansLogo.map((x) => x.key).sort(), images: communes }, ...groupesAFinir(reste)];
+  }
   const m = new Map<string, { keys: string[]; images: string[] }>();
   for (const x of list) {
     const images = ORDRE.filter((s) => x.manque.includes(s)), k = images.join("+");

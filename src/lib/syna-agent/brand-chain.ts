@@ -641,6 +641,8 @@ const Payload = z.object({
   studio: z.boolean().optional(),
   /** La borne des reprises à la charge du Studio, écrite par le devis (deux plafonds) ; lue par le moteur commun. */
   studioCapMicro: z.number().int().nonnegative().optional(),
+  /** Avec `imagesOnly`, sur une carte commune : les planches à finir, faites à la charge du Studio ; le reste est au client. */
+  studioKeys: z.array(z.enum(["A", "B", "C", "D"])).optional(),
 });
 export type BrandJobPayload = z.infer<typeof Payload>;
 
@@ -710,7 +712,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
       // La série : les logos des identités d'AVANT celle-ci (logo gardé, sinon dernier dessin), refaits ici compris.
       const avant = list.slice(0, Math.max(0, list.findIndex((o) => o.key === x.key))), serieLogos = (a.slots ?? CREATED_SLOTS).includes("logo") ? avant.map((o) => dernierParCle.get(o.key) ?? logoPourLaSerie(p.id, o, round)).filter((b): b is Buffer => !!b) : [];
       const faire = () => runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, gouts, keptLogos: [...gardes], serieLogos, ...(reprise ? { imagery: reprise } : {}) });
-      const r = a.studio && planchesIncompletes(j).some((y) => y.key === x.key) ? await aLaChargeDuStudio(faire) : await faire();
+      const r = (a.studio || a.studioKeys?.includes(x.key as never)) && planchesIncompletes(j).some((y) => y.key === x.key) ? await aLaChargeDuStudio(faire) : await faire();
       list = list.map((o) => (o.key === x.key ? r.route : o));
       if ((a.slots ?? CREATED_SLOTS).includes("logo")) { const b = logoGarde(r.route); if (b) gardes.push(b); const d = b ?? r.dernierLogo; if (d) dernierParCle.set(x.key, d); }
       if (r.siteGarde) siteGardes.push(x.key);

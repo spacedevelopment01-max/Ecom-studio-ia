@@ -105,12 +105,13 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   appellerais ton site comme ça, toi ? ») ; aucun sous-entendu ; le juge ne garde qu'un nom qu'il noterait 8 sur 10 ;
   l'adresse sur Internet est contrôlée, et jamais promise.
 - **Logo** : créé par OpenAI (modèle imposé le 18 octobre, sans secours) pour cette marque-là, jamais repris d'une autre ;
-  aucun pictogramme dessiné en code. **La demande au dessinateur tient en deux choses : le métier en mots simples et le
-  nom exact** (23 novembre 2026 : « je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une
-  marque de bougies tu donne le nom de la marque et rien de plus, pas de le client ne veux pas tel truc dans son logo.
-  Ça doit être le plus libre possible pour la création du logo »). Exemple : « Fais-moi un logo pour une marque de
-  bougies. Le nom de la marque : « Sillage ». » Rien d'autre : ni idée, ni ton, ni couleurs, ni typographie, ni fond,
-  ni refus du client, ni planche d'exemples ; toutes les phrases en français. **La série** (précision du 23 novembre 2026 : « En même temps il fallait garder la
+  aucun pictogramme dessiné en code. **La demande au dessinateur** (23 novembre 2026 au soir, après l'essai de Pénombre : « Et si on enlevait mes 50 logos
+  de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de
+  bougies ») : « Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Halo ». », l'épellation si le nom
+  porte un accent ou un signe, la ligne des couleurs de la marque, celle de sa typographie (« Typographie de la marque :
+  un caractère … (dans l'esprit de …) ; tu peux le redessiner à ta façon. »), puis « Sur un fond blanc uni. », puis la
+  série. Jamais l'idée de la marque, le ton, la planche des 50 logos, les refus ni les mots du client, ni une consigne
+  de style écrite par SINA ; tout en français. **La série** (précision du 23 novembre 2026 : « En même temps il fallait garder la
   règle de le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement
   différent de celui là et pour le 3eme pareil, ou lui donne les 2 première et on lui dit fait moi un autre logo
   complètement différent des 2 premier ») : le 1er logo part sans image ; le 2e reçoit le 1er avec « Je veux un autre
@@ -120,12 +121,13 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   ses propres essais refusés (« … de tous ceux-là »), jamais la raison du refus (essai réel de Pénombre : « trois fois
   le même dessin »). Un logo gardé n'est jamais redessiné. **On ne demande plus au client ce qu'il veut ou non dans
   son logo** (même jour : « Pour rappel on ne demande plus au client ce qu'il veux ou non dans son logo ») : ce qu'il
-  en dit de lui-même va au relecteur, jamais au dessinateur. Le nom n'est épelé que s'il porte un accent ou un signe.
+  en dit de lui-même ne va ni au dessinateur ni au relecteur ; SINA ne pose jamais de question sur le contenu d'un logo
+  (contrôle gratuit) : quand il en demande un autre, elle dit qu'elle le refait et présente la carte. Le nom n'est épelé que s'il porte un accent ou un signe.
   Ces décisions remplacent les règles du 20 et du 21 novembre sur ce que reçoit le dessinateur (les épreuves qui les
-  gardaient sont marquées remplacées, avec l'accord écrit du propriétaire du même jour). Les mots et les refus du client vont au relecteur, le modèle le plus fort au niveau élevé,
-  qui relit chaque logo seul, avec la planche des 50 logos aimés (`docs/sina-savoir/logos-aimes/`) comme niveau, et ne
-  garde que ce qu'il note 8 sur 10 ou plus (un mot non demandé dans le logo, comme un sous-titre, est un défaut ; le nom
-  seul est attendu) ; un logo refusé est redessiné (avec ses essais refusés joints, comme dit plus haut), à la charge du Studio,
+  gardaient sont marquées remplacées, avec l'accord écrit du propriétaire du même jour). **Le relecteur juge la qualité seulement** (même décision) : le modèle le plus fort au niveau élevé relit chaque logo
+  seul, avec la planche des 50 logos aimés (`docs/sina-savoir/logos-aimes/`) comme niveau, et ne garde que ce qu'il note
+  8 sur 10 ou plus (nom exact, aucun mot en trop comme un sous-titre, fond retirable) ; il ne tient plus compte de ce que
+  le client a dit sur son logo. Plusieurs logos d'une série à refaire partent dans l'ordre des identités (A, B, C). Un logo refusé est redessiné (avec ses essais refusés joints, comme dit plus haut), à la charge du Studio,
   dans la borne des reprises. Le trait près du nom avec parcimonie : un seul par série, tenu par le relecteur seulement
   (accord du 23 novembre 2026), jamais dit au dessinateur. Le Studio retire le fond après coup, creux des lettres
   compris, sans carré autour ; un fond qu'il ne sait pas retirer proprement fait redessiner le logo. Le favicon reprend
