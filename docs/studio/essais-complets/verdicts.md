@@ -15,6 +15,9 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 23/11 14:14 | Nadia | Identité B « Halo », logo, 3e essai | 6/10 : « Le toit bleu et le trait-sourire orange forment un pictogramme générique d'agence immobilière ou de dépannage, sans lien avec la bougie coulée main » | Non | [en attente] |
 | 23/11 14:15 | Nadia | Identité B « Halo », grande scène (bougie allumée le soir, branche de figuier) | 8/10, sans remarque | Oui | [en attente] |
 | 23/11 14:15 | Nadia | Identité B « Halo », haut du site sur téléphone (« La lumière du soir, coulée à la main à Brignais. ») | 8/10, sans remarque | Oui | [en attente] |
+| 23/11 14:16 | Nadia | Identité C « Pénombre », logo, 1er essai | 5/10 : « Un arc vert en demi-cercle entoure le pot de bougie au-dessus du nom, ce qui forme une arche interdite » | Non | [en attente] |
+| 23/11 14:16 | Nadia | Identité C « Pénombre », logo, 2e essai | 7/10 : « fait clipart générique et évoque un pot de fleurs » | Non | [en attente] |
+| 23/11 14:17 | Nadia | Identité C « Pénombre », logo, 3e essai | 6/10 : « ressemble à un ramequin de dessert plutôt qu'à une bougie […] manque d'une idée forte liée à la pénombre » | Non | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
