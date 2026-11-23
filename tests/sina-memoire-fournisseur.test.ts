@@ -292,8 +292,8 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     expect(L.pointDeMemoire({ teteUnique: true, memoireLongue: true })).toBeUndefined();
     expect(L.headBlocks({ task: "strategy", reference: "R", context: "C", teteUnique: true }).every((b) => !b.cache_control)).toBe(true);
     const fs = await import("node:fs");
-    // « simple » (23 novembre 2026) : l'idée en mots simples des planches d'avant, un seul appel par projet.
-    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain(`const UNIQUES = new Set<CallId>(["study", "shortlist", "verify", "reader", "simple"]);`);
+    // « simple » retiré avec l'idée en mots simples (décision du 23 novembre 2026 : la demande du logo est nue).
+    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain(`const UNIQUES = new Set<CallId>(["study", "shortlist", "verify", "reader"]);`);
   });
 
   it("le journal garde la part écrite pour une heure et le différé raté : le gain affiché est le vrai", async () => {
