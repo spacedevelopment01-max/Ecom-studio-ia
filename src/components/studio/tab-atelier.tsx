@@ -26,7 +26,7 @@ type T2 = readonly [string, string];
 type OutilVue = { id: string; nom: T2; mieux: T2; disponible: boolean; conseille: boolean; redessine: boolean; secours: boolean; prixMicro: number | null; prix: string | null; prixCourt: string | null };
 type GesteVue = { id: string; nom: T2; aide: T2; kind: "image" | "video"; demande: { label: T2; exemple: T2; min: number } | null; outils: OutilVue[]; conseil: string | null };
 type ModeleImageVue = { id: string; nom: T2; idee: T2; offre?: boolean; format: string; epingle: boolean; dansJours: number | null };
-export type ModeleVideoVue = { id: string; nom: T2; quoi: T2; geste: string; dureeS: number; plans: number; garde: T2; as: "post" | "ad"; scene: string; sansIa?: boolean; offre?: boolean; outil: string | null; gratuit: boolean; prix: string | null; prixCourt: string | null; auPlus: string | null; raison: string | null; planSur?: string | null };
+export type ModeleVideoVue = { id: string; nom: T2; quoi: T2; geste: string; dureeS: number; /** La durée du devis : ce qui est vraiment fait et compté. */ dureeAffichee: number; secondesFilmees: number; plans: number; garde: T2; as: "post" | "ad"; scene: string; sansIa?: boolean; offre?: boolean; outil: string | null; gratuit: boolean; prix: string | null; prixCourt: string | null; auPlus: string | null; raison: string | null; planSur?: string | null };
 type Creation = { id: string; assetId: string | null; url: string | null; thumbUrl: string | null; geste: string; mode: string; kind: "image" | "video"; outil: string; cout: string; costMicro: number; status: "ok" | "rate" | "produit_modifie"; at: number; servie: boolean; usages: string[] };
 type PhotoProduit = { id: string; url: string; thumbUrl: string | null };
 type EnCours = { id: string; kind: "image" | "video"; progress: number | null; sourceUrl: string | null };
@@ -246,7 +246,7 @@ export function Scene({ etat, mode, setMode, type, setType, decor, setDecor, ajo
       {cost.dialog}
       <div className={cx("flex flex-col-reverse gap-6", images.length > 0 && "@4xl:grid @4xl:grid-cols-[minmax(0,1fr)_412px] @4xl:items-start @4xl:gap-8")}>
         <div>
-          <h2 id="atelier-titre" className="max-w-xl font-display text-[30px] font-semibold leading-[1.08] tracking-[-0.01em] @xl:text-[44px]" data-atelier-titre>
+          <h2 id="atelier-titre" className="max-w-xl font-display text-[30px] font-semibold leading-[1.08] @xl:text-[44px]" data-atelier-titre>
             {sujet},<br />{t("comme dans une ", "shot like a ")}<span className="text-[var(--or-1)]">{t("campagne", "campaign")}</span>.
           </h2>
           <p className="mt-3 max-w-[470px] text-[15px] leading-relaxed text-white/75">
@@ -357,7 +357,7 @@ export function VideosSection({ etat, onChoisir }: { etat: Etat; onChoisir: (m: 
                 {photo ? <img src={photo.url} alt="" loading="lazy" className="h-full w-full object-cover" />
                   : <div className="grid h-full place-items-center text-center text-sm text-white/70" data-atelier-ta-photo><span className="grid justify-items-center gap-1.5"><ImageIcon className="size-6" aria-hidden />{t("Ta photo ici", "Your photo here")}</span></div>}
                 <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11.5px] font-medium text-[#2A3246]">{pick(mv.nom, lang)}</span>
-                <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">{t(`${m.dureeS} s`, `${m.dureeS}s`)}</span>
+                <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white" data-atelier-duree={m.id}>{t(`${m.dureeAffichee} s`, `${m.dureeAffichee}s`)}</span>
                 <span className="absolute bottom-3 left-3 grid size-9 place-items-center rounded-full bg-white/90 text-[#0B1220] shadow-[0_6px_16px_rgba(0,0,0,.25)]" aria-hidden><Play className="size-3.5 fill-current" /></span>
               </div>
               <div className="flex flex-1 flex-col p-3 @xl:p-4">
@@ -389,7 +389,7 @@ export function ModeleDialog({ etat, modele: m, onClose, projectId, onAvantApres
       {m && (
         <div className="grid gap-4" data-atelier-modele-choix={m.id}>
           <p className="text-sm">{pick(m.quoi, lang)}</p>
-          <p className="text-sm text-muted">{t(`${m.dureeS} secondes`, `${m.dureeS} seconds`)}{geste ? ` · ${pick(geste.nom, lang)}` : ""}</p>
+          <p className="text-sm text-muted" data-atelier-duree-choix={m.id}>{t(`${m.dureeAffichee} secondes`, `${m.dureeAffichee} seconds`)}{m.plans > 1 && m.secondesFilmees > 0 ? t(`, ${m.plans} plans filmés`, `, ${m.plans} filmed shots`) : ""}{geste ? ` · ${pick(geste.nom, lang)}` : ""}</p>
           <p className="flex items-start gap-2 rounded-2xl bg-warn-soft p-3 text-sm text-warn" data-atelier-garde={m.id}><ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden />{pick(m.garde, lang)}</p>
           {m.offre && <p className="text-sm text-warn">{t("Écris ton offre dans la demande : je ne l'invente pas.", "Write your offer in the request: I don't invent it.")}</p>}
           {etat.produit.services && <p className="text-xs text-muted">{t("Pour une entreprise de services, les vidéos montrent ton métier et tes réalisations, jamais une personne inventée.", "For a service business, videos show your trade and your work, never an invented person.")}</p>}
@@ -521,7 +521,7 @@ function GesteDialog({ etat, ouvert, setOuvert, mode, onStarted, disabled }: { e
           <div className="grid gap-4" data-atelier-geste-dialog={geste.id}>
             {cadre && (
               <div className="inline-flex w-fit rounded-full border border-line p-1" role="radiogroup" aria-label={t("Format du cadre", "Frame format")}>
-                {(["story", "carre"] as const).map((g) => <button key={g} type="button" role="radio" aria-checked={geste.id === g} onClick={() => setOuvert({ geste: g })} data-atelier-format-cadre={g} className={cx("rounded-full px-4 py-1.5 text-sm", geste.id === g ? "bg-ink text-paper" : "text-ink")}>{g === "story" ? t("En hauteur, pour une story", "Tall, for a story") : t("En carré", "Square")}</button>)}
+                {(["story", "carre"] as const).map((g) => <button key={g} type="button" role="radio" aria-checked={geste.id === g} onClick={() => setOuvert({ geste: g })} data-atelier-format-cadre={g} className={cx("rounded-full px-4 py-1.5 text-sm", geste.id === g ? "bg-ink text-paper" : "text-ink")}>{g === "story" ? t("Format vertical", "Story (vertical)") : t("En carré", "Square")}</button>)}
               </div>
             )}
             <p className="text-sm text-muted">{pick(geste.aide, lang)}{geste.id === "lot" ? ` ${t(`Jusqu'à ${etat.lotMax} photos d'un coup ; le prix de toutes est donné avant.`, `Up to ${etat.lotMax} photos at once; the price for all of them is given first.`)}` : ""}</p>

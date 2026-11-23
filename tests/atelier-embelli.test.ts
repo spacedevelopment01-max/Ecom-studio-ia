@@ -33,6 +33,15 @@ import { MODELES_VIDEOS } from "@/lib/atelier/modeles-videos";
 import { LangProvider } from "@/components/i18n";
 import { BarreCreation, imagesDeLaScene, ModeleDialog, MurCreations, RetouchesSection, Scene, VideosSection, type Etat, type ModeleVideoVue } from "@/components/studio/tab-atelier";
 import { seedImageFixture } from "./image-v2-fixtures";
+import { loadProject } from "@/lib/projects";
+import { devisVideoGuidee } from "@/lib/video-v2/guided-quote";
+import { reglagesDuModele } from "@/lib/atelier/modeles-videos";
+import { GESTES } from "@/lib/atelier/gestes";
+import { OUTILS, outilsPour, type GesteId } from "@/lib/atelier/outils";
+import { MODES, conseilOutil } from "@/lib/atelier/conseil";
+import { CONDITIONS } from "@/lib/atelier/garde-fous";
+import { MODELES_IMAGES } from "@/lib/atelier/modeles-images";
+import { SOUS_LE_PRIX } from "@/lib/atelier/prix";
 
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(() => { throw Error("HTTP provider forbidden"); }));
@@ -220,5 +229,54 @@ describe("l'atelier embelli : seule la présentation change", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\.atelier-apercu img, \.atelier-net, \.atelier-barre-indet \{ animation: none !important; \}/);
     // Jamais d'arche, de demi-lune ni de dôme : aucun arrondi seulement en haut, aucune ellipse.
     expect(src).not.toMatch(/rounded-t-|rounded-\[[^\]]*\/|ellipse|border-radius:\s*\d+%\s+\d+%/);
+  });
+
+  it("jamais « story » en français : le client lit « format vertical » partout dans l'atelier (retouché le 23 novembre 2026)", async () => {
+    const fr: string[] = [];
+    for (const g of Object.values(GESTES)) fr.push(g.nom[0], g.aide[0], g.demande?.label[0] ?? "", g.demande?.exemple[0] ?? "");
+    for (const o of OUTILS) fr.push(o.nom[0], o.mieux[0]);
+    for (const m of MODES) fr.push(m.nom[0], m.aide[0]);
+    for (const c of CONDITIONS) fr.push(c[0]);
+    for (const m of MODELES_VIDEOS) fr.push(m.nom[0], m.quoi[0], m.garde[0]);
+    for (const m of MODELES_IMAGES) fr.push(m.nom[0], m.idee[0]);
+    fr.push(SOUS_LE_PRIX[0]);
+    for (const g of Object.keys(GESTES) as GesteId[]) fr.push(conseilOutil(g, outilsPour(g, () => true), "fr") ?? "");
+    // Les libellés de l'écran : le premier texte (français) de chaque t("…", "…").
+    const src = fs.readFileSync("src/components/studio/tab-atelier.tsx", "utf8");
+    for (const m of src.matchAll(/\bt\(\s*(["`])((?:\\.|(?!\1).)*)\1/g)) fr.push(m[2]);
+    expect(fr.filter((x) => /story/i.test(x))).toEqual([]);
+    expect(GESTES.story.nom[0]).toBe("Format vertical");
+    // Et l'écran rendu en français non plus.
+    const { etat } = await projet();
+    const e = await etat();
+    const html = texte(rendu(h("div", null, scene(e), h(VideosSection, { etat: e, onChoisir: () => {} }), h(RetouchesSection, { etat: e, disabled: false, onGeste: () => {}, onScene: () => {}, onAvantApres: () => {} }))));
+    expect(html).not.toMatch(/story/i);
+    for (const g of e.gestes) { expect(g.nom[0]).not.toMatch(/story/i); expect(g.aide[0]).not.toMatch(/story/i); for (const o of g.outils) expect(o.mieux[0]).not.toMatch(/story/i); expect(g.conseil ?? "").not.toMatch(/story/i); }
+  });
+
+  it("la durée d'un modèle de vidéo est celle du devis (ce qui est vraiment fait et compté), sur la carte et dans sa fenêtre", async () => {
+    const { pid, etat } = await projet();
+    const e = await etat();
+    const p = loadProject(pid);
+    const cartes = rendu(h(VideosSection, { etat: e, onChoisir: () => {} }));
+    let filmes = 0;
+    for (const m of MODELES_VIDEOS) {
+      const vue = e.modelesVideos.find((x) => x.id === m.id)!;
+      let attendu = m.dureeS;
+      if (!m.sansIa) {
+        const r = reglagesDuModele(m);
+        const q = devisVideoGuidee(p, { ...r, subject: null, request: m.scene });
+        attendu = (q.generatedSeconds ?? 0) > 0 && r.scenes === 1 ? q.generatedSeconds! : r.totalS;
+        expect(vue.secondesFilmees, m.id).toBe(q.generatedSeconds ?? 0);
+        if ((q.generatedSeconds ?? 0) > 0) filmes++;
+      }
+      expect(vue.dureeAffichee, m.id).toBe(attendu);
+      expect(cartes, m.id).toContain(`data-atelier-duree="${m.id}">${attendu} s<`);
+      const fenetre = rendu(h(ModeleDialog, { etat: e, modele: vue, onClose: () => {}, projectId: pid, onAvantApres: () => {} }));
+      expect(texte(fenetre), m.id).toContain(`${attendu} secondes`);
+    }
+    expect(filmes).toBeGreaterThan(0);
+    // « Le produit qui tourne » et « Les détails » sont écrits 5 s dans le modèle, mais l'outil en fait et en compte plus.
+    for (const id of ["tourne", "details"]) expect(e.modelesVideos.find((x) => x.id === id)!.dureeAffichee, id).toBeGreaterThanOrEqual(6);
   });
 });

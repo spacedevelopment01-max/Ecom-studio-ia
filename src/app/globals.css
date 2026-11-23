@@ -325,3 +325,6 @@ html:not(.js) .hp .reveal { opacity: 1; transform: none; }
   .atelier-apercu img, .atelier-net, .atelier-barre-indet { animation: none !important; }
   .atelier-barre-indet { width: 100%; opacity: .45; }
 }
+/* Titres de l'atelier (23 novembre 2026) : lettres moins serrées que la police d'affichage du Studio, -0,01 em au plus
+   serré, sur ordinateur comme sur téléphone (fenêtres de l'atelier comprises). */
+[data-atelier] .font-display, [data-atelier] h2, [data-atelier] h3, [data-atelier] h4 { letter-spacing: -0.01em; }

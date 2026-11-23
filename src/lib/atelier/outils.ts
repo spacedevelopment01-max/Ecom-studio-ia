@@ -61,7 +61,7 @@ export const OUTILS: Outil[] = [
   {
     id: "bfl:flux-pro-1.0-expand", provider: "bfl", model: "flux-pro-1.0-expand", kind: "image",
     nom: ["Flux Agrandir (Black Forest Labs)", "Flux Expand (Black Forest Labs)"],
-    mieux: ["Agrandit le cadre pour faire la story ou le carré, sans toucher à ta photo.", "Extends the frame to make the story or the square, without touching your photo."],
+    mieux: ["Agrandit le cadre pour faire le format vertical ou le carré, sans toucher à ta photo.", "Extends the frame to make the story or the square, without touching your photo."],
     gestes: ["story", "carre"], redessine: false,
     rang: { story: 2, carre: 2 },
   },

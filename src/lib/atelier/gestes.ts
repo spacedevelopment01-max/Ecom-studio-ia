@@ -4,7 +4,7 @@
  *  - « Mets mon produit dans une scène » : la scène est créée par OpenAI avec la vraie photo en référence, puis
  *    contrôlée (forme, proportions, couleur comparées au détourage ; le juge lit l'étiquette mot à mot) ;
  *  - « Change le fond », « Retire un objet » : une seule chose change, le reste ne bouge pas ;
- *  - « Version story », « Version carrée » : le cadre est agrandi autour de la photo intacte ;
+ *  - « Format vertical » (la story des réseaux ; jamais un mot anglais pour le client), « Version carrée » : le cadre est agrandi autour de la photo intacte ;
  *  - « Tout mon catalogue » : le même geste sur toutes les photos de produit, d'un coup.
  *
  * Les consignes envoyées à l'outil sont écrites ici, une seule fois (la même pour le devis et pour la création). Les
@@ -36,7 +36,7 @@ export const GESTES: Record<GesteId, Geste> = {
     demande: { label: ["Le nouveau fond", "The new background"], exemple: ["un mur de pierre clair", "a light stone wall"], min: 3 },
   },
   story: {
-    id: "story", kind: "image", cible: "9:16", nom: ["Version story", "Story version"],
+    id: "story", kind: "image", cible: "9:16", nom: ["Format vertical", "Story version"],
     aide: ["Le cadre s'agrandit en hauteur autour de ta photo, qui ne change pas.", "The frame grows taller around your photo, which doesn't change."],
   },
   carre: {
