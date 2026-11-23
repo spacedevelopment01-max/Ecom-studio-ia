@@ -26,6 +26,7 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 23/11 18:25 | Nadia | Identité A « Sillage », logo refait, 2e essai (nom en serif, deux vagues cuivre) | 8/10, sans remarque | Oui | [en attente] |
 | 23/11 18:25 | Nadia | Identité B « Halo », logo refait, 1er essai (nom bleu, arc orange et trois rayons) | 8/10, sans remarque | Oui | [en attente] |
 | 23/11 18:26 | Nadia | Halo, version pour fond sombre (faite par le Studio, sans IA) | non relue | Oui | [en attente] — remarque de Claude : l'intérieur du « a » et du « o » reste blanc |
+| 23/11 21:01 | Nadia | Identité C « Pénombre », logo avec la demande nue (« Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Pénombre ». »), 1er essai | 3/10 : « la bougie porte une flamme dessinée, ce que le client refuse explicitement. Le tout est enfermé dans une vignette ronde noire interdite, avec une scène lune-bougie trop chargée et trop chic » | Non | [en attente] — remarque de Claude : le texte « Bougies naturelles » n'a pas été demandé |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
