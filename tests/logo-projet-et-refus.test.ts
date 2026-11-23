@@ -28,16 +28,21 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
     expect(img).toContain("Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
     // Les goûts du client viennent de sa fiche (réponse « image », goûts et refus pour les images) : `goutsDuClient`.
-    expect(chain.match(/gouts: goutsDuClient\(j, p\.id\) \}/g)).toHaveLength(1);
+    expect(chain.match(/gouts: goutsDuClient\(j, p\.id\), keptLogos: \[\.\.\.gardesSerie\] \}/g)).toHaveLength(1);
     expect(chain).toContain("goutsDuClient(j, p.id, logoOnly ? clientWords(a.guidance) : undefined)");
     expect(chain).not.toMatch(/seriesLogos|redoneLogos|refusDuClientPourLeLogo|ideesSimples/);
   });
-  it("plus de consigne de trait au dessinateur, ni de redessin pour un trait (décision du 23 novembre 2026 : « le plus libre possible »)", () => {
+  it("le trait près du nom : rien au dessinateur ; le relecteur seul tient « un seul par série » (accord du 23 novembre 2026)", async () => {
     expect(I.imagePrompt("logo", route("A") as never, imagery)).not.toMatch(/trait|filet/);
     expect((I as Record<string, unknown>).LOGO_TRAIT_DEJA_PRIS).toBeUndefined();
-    expect((I as Record<string, unknown>).traitHorizontal).toBeUndefined();
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(img).not.toContain(":sans-trait");
+    expect(img).toContain("...(trait ? [TRAIT_DEJA_PRIS_RELECTEUR] : []),");
+    // Le contrôle sans IA qui repère un trait (pour dire au relecteur qu'il est déjà pris).
+    const lettres = Array.from({ length: 8 }, (_v, i) => ({ input: { create: { width: 40, height: 70, channels: 3 as const, background: "#1F3D2B" } }, left: 100 + i * 55, top: 200 }));
+    const fond = () => sharp({ create: { width: 640, height: 480, channels: 3, background: "#FFFFFF" } });
+    expect((await I.traitHorizontal(await fond().composite([...lettres, { input: { create: { width: 420, height: 4, channels: 3 as const, background: "#1F3D2B" } }, left: 100, top: 300 }]).png().toBuffer())).trouve).toBe(true);
+    expect((await I.traitHorizontal(await fond().composite(lettres).png().toBuffer())).trouve).toBe(false);
   });
 });
 
