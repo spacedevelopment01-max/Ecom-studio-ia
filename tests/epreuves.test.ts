@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -50,7 +50,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(r.decision).toBe("23 novembre 2026");
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait)/);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo)/);
     }
   });
   it("chaque épreuve gratuite est rejouée ci-dessous", () => {
@@ -1071,5 +1071,71 @@ describe("les épreuves des trois ratés des logos de l'essai réel de Nadia (ve
     expect(payload.guidance).toBe("Le client a dit : « Le logo de Halo ne me plaît pas trop, tu peux m'en faire un autre ? »");
     expect(JSON.stringify(payload)).not.toMatch(/fond blanc|lettres bleues|ellipse/);
     expect(res.hint).toMatch(/Ta consigne pour le logo a été retirée sans être transmise/);
+  });
+
+  epreuve("demande-du-logo-couleurs-typo-fond", async () => {
+    // La série de trois, puis une reprise : la vraie chaîne, avec un faux dessinateur qui note la demande telle qu'elle part.
+    const I = await import("@/lib/syna-agent/brand-images");
+    const t = await nadia(true);
+    J.updateJourney(t.cid, (x) => { delete x.identities!.list[1].board!.images!.logo; });
+    let vus = 0;
+    const dessins: { cle: string; envoye: string; images: number }[] = [];
+    const mp = await import("@/lib/ai/media-providers");
+    C.brandChainDeps.ai = () => ({
+      research: async () => [], ask: async () => { throw new Error("aucun appel de texte attendu"); },
+      draw: async (id, c) => { dessins.push({ cle: id.split("-")[2], envoye: mp.imageReferencePrompt(c.prompt, (c.serie ?? []).map(() => "serie")), images: (c.serie ?? []).length }); return logo(["#B4450F", "#2F6A4E", "#884422", "#226688"][dessins.length % 4]); },
+      // Le 1er logo de Halo refusé (un sous-titre), tout le reste gardé.
+      look: async (_id, c) => { const nom = /Marque : « ([^»]+) »/.exec(c.prompt)![1]; return (nom === "Halo" && ++vus === 1 ? { images: [{ slot: "logo", seen: "", score: 5, ok: false, read: ["Halo", "Bougies"], why: "un sous-titre", defect: "texte" }] } : { images: [{ slot: "logo", seen: "", score: 9, ok: true, read: [nom], why: "net" }] }) as never; },
+    });
+    const jid = `job-epreuve-demande-${Date.now()}`;
+    run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, t.user.id, t.pid, C.SINA_BRAND_JOB, "marque", JSON.stringify({ projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, imagesOnly: true, images: true, slots: ["logo"], redo: ["C", "B"], guidance: CONSIGNE }), "running", Date.now(), Date.now(), Date.now());
+    try { await fr(() => C.runSinaBrandJob(new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid)))); } finally { C.brandChainDeps.ai = undefined; run("UPDATE jobs SET status='done' WHERE id=?", jid); }
+    const list = J.journeyOf(t.cid).identities!.list as any[];
+    const attendue = (x: any, serie: string, epel = "") => ["Fais-moi un logo pour une marque de bougies. Le nom de la marque : « " + x.name + " ».", ...(epel ? [epel] : []), `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`, I.typoLine(x.fonts.heading), "Sur un fond blanc uni.", serie].join("\n");
+    expect(dessins.map((d) => [d.cle, d.images])).toEqual([["B", 1], ["B", 2], ["C", 2]]);
+    expect(dessins.map((d) => d.envoye)).toEqual([
+      attendue(list[1], "Je veux un autre logo complètement différent de celui-là."),
+      attendue(list[1], "Fais-moi un autre logo complètement différent de tous ceux-là."),
+      attendue(list[2], "Fais-moi un autre logo complètement différent des deux premiers.", "Il s'écrit lettre par lettre : P, é, n, o, m, b, r, e."),
+    ]);
+    expect(I.typoLine("nunito_n8")).toContain("un caractère rond épais (dans l'esprit de Nunito)");
+    for (const d of dessins) { expect(d.envoye).not.toMatch(/parfaitement uni|lettres bleues|ellipse|flamme|ne me plaît|chaleureux|sous-titre|Bougies naturelles|planche|exemples|Son ton|Idée/i); expect(d.envoye).not.toMatch(/^La marque :|\nLa marque :/); }
+    // Le logo gardé de Sillage n'est jamais redessiné.
+    expect(dessins.some((d) => d.cle === "A")).toBe(false);
+  });
+
+  epreuve("relecteur-du-logo-qualite-seule", async () => {
+    const I = await import("@/lib/syna-agent/brand-images");
+    const P = await import("@/lib/syna-agent/brand-prompts");
+    const t = await nadia(true);
+    const F = await import("@/lib/syna-agent/fiche");
+    F.addNotes(t.cid, [{ sujet: "la flamme", value: "pas de flamme dessinée dans le logo, toutes les marques de bougies font ça.", genre: "refuse", portee: "logo" }]);
+    const x = J.journeyOf(t.cid).identities!.list[2] as any;
+    const relus: { prompt: string; fixes: number }[] = [], demandes: string[] = [];
+    let n = 0;
+    const ai: any = {
+      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
+      // 1er dessin : un fond impossible à retirer (texture) ; ensuite des logos sur fond blanc net.
+      draw: async (_id: string, c: any) => { demandes.push(c.prompt); n++; if (n === 1) { const w = 320, h = 240, d = Buffer.alloc(w * h * 3); for (let i = 0; i < d.length; i++) d[i] = (i * 7919) % 256; return sharp(d, { raw: { width: w, height: h, channels: 3 } }).png().toBuffer(); } return logo("#2F6A4E"); },
+      // 2e dessin : 7 sur 10 (refusé) ; 3e : 9 sur 10 mais un sous-titre lu (refusé) ; le Studio ne garde rien d'autre.
+      look: async (id: string, c: any) => { if (id.startsWith("imagereread")) return { images: [{ slot: "logo", read: ["Pénombre", "Bougies naturelles"] }] }; relus.push({ prompt: c.prompt, fixes: (c.fixes ?? []).length }); return relus.length === 1 ? { images: [{ slot: "logo", seen: "", score: 7, ok: false, read: ["Pénombre"], why: "banal", defect: "autre" }] } : { images: [{ slot: "logo", seen: "", score: 9, ok: true, read: ["Pénombre", "Bougies naturelles"], why: "beau" }] }; },
+    };
+    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
+    const C2 = await import("@/lib/syna-agent/brand-chain");
+    const r = await I.runBoardImages({ ctx, ai, who: { userId: t.user.id, projectId: t.pid }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: { look: "", logo: "", hero: "", object: "", site: "", signs: "", posts: ["", "", ""] }, gouts: C2.goutsDuClient(J.journeyOf(t.cid), t.pid, "Le logo de Halo ne me plaît pas trop") });
+    // Fond impossible à retirer : refusé sans relecture payée, redessiné ; un logo sous 8 et un mot en trop refusés.
+    expect(r.notes.join(" ")).toMatch(/logo de C refusé par le Studio/);
+    expect(r.route.board.images?.logo).toBeUndefined();
+    expect(relus.length).toBeGreaterThanOrEqual(2);
+    for (const v of relus) {
+      expect(v.prompt).not.toMatch(/flamme|ne me plaît|Ce que le client a dit|qui montre ce qu'il refuse/);
+      expect(v.prompt).toMatch(/planche des logos que le propriétaire du Studio aime/);
+      expect(v.prompt).toContain("un mot non demandé (un sous-titre, une ligne de métier, un slogan, par exemple « Bougies naturelles ») est un défaut");
+      expect(v.prompt).toContain("Textes attendus : « Pénombre »");
+      expect(v.fixes).toBe(1);
+    }
+    expect(P.imageReviewSystem()).toMatch(/pour le LOGO : il n'est pas net et lisible/);
+    // La consigne de SINA et les mots du client n'arrivent jamais au dessinateur.
+    for (const d of demandes) expect(d).not.toMatch(/flamme|ne me plaît|parfaitement uni/);
   });
 });
