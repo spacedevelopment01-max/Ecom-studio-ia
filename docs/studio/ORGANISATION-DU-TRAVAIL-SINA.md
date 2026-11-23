@@ -412,6 +412,18 @@ Dernière commande :
 - « Les essais complets » prévenue : ancienne carte (environ 8 €, au plus 16,69 €, plafond 20 €) à ne pas accepter ; passer
   d'abord sur la dernière version de `claude/evolution-sina` ; chaque carte montrée au propriétaire ; chaque image montrée,
   même refusée. Son accord doit être écrit dans « Les essais complets » (un message du chef d'orchestre ne vaut pas accord).
+- Le propriétaire a accepté la carte de la marque dans « Les essais complets » (garde à 8 €). À 54 %, la création est
+  tombée : une équipe de noms a dépassé sa limite de sortie et sa réponse coupée a fait tomber toute la chaîne. 1,58 €
+  dépensés, aucune image. Carte de reprise refusée (17,21 € au plus, sans prix probable).
+- Devis trop haut : la cause n'est pas un vieux réglage (la base de l'essai n'en a pas), mais la recherche sur le web,
+  comptée 0,79 € probable et 1,58 € au plus par recherche, alors qu'elle coûte environ 0,12 € mesuré.
+- **Faute du chef d'orchestre** : mon calcul à 5,34 $ comptait la recherche à 0 (route vide dans ma copie). Leçon : un
+  devis calculé hors du Studio d'essai doit avoir les mêmes prix et les mêmes routes, sinon il ne se donne pas au propriétaire.
+- Commandé à « Évolution de SINA » : une équipe coupée ne fait plus tomber la création ; les limites des appels sont
+  vérifiées ; une reprise ne compte que ce qui reste ; le probable de la recherche vient des mesures réelles. Le point
+  « vieux réglages » a été annulé, car ce n'était pas la cause.
+- « Les essais complets » a affiché la clé Anthropic du Studio d'essai dans une sortie de commande : le propriétaire est
+  invité à la changer dans Administration › Fournisseurs IA.
 
 ## 5. À lire avant chaque décision
 
