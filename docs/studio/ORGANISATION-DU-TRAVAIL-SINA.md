@@ -467,6 +467,12 @@ Dernière commande :
   Le relecteur juge toujours (8 sur 10, refus du client vérifié) ; un logo refusé est redessiné avec la même demande, à
   la charge du Studio ; le fond est retiré par le Studio. Commandé à « Évolution de SINA », avec la mise à jour de
   CLAUDE.md. Essai des logos de Nadia suspendu jusqu'à cette version.
+- Fait le soir même (1db7eb3c, CLAUDE.md f02802b6), avec l'accord écrit du propriétaire dans « Évolution de SINA » :
+  8 épreuves marquées remplacées, trait près du nom tenu par le relecteur seul, détourage maison (creux des lettres).
+  Aussi fait : deux plafonds (client / Studio), planches incomplètes lues sur leur contenu, images de SINA toujours
+  OpenAI, boutons grisés et SINA qui propose de finir à sa charge, argent de la charge du Studio jamais au client
+  (Nadia remboursée de 0,27 € dans l'essai, 0,044 € laissés). Essai des logos de Nadia avec la règle nue : les trois
+  (Pénombre, Sillage et Halo refaits), devis à présenter au propriétaire par « Les essais complets ».
 
 ## 5. À lire avant chaque décision
 
