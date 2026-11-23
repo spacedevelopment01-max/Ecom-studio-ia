@@ -103,8 +103,8 @@ describe("dessiner puis coder : la méthode", async () => {
     const src = fs.readFileSync("src/lib/syna-agent/dessin/job.ts", "utf8");
     expect((src.match(/sansRelanceCoupee: true/g) ?? []).length).toBe(5);
     const llm = fs.readFileSync("src/lib/ai/llm.ts", "utf8");
-    expect(llm).toContain('if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());');
-    expect(llm).toContain("if (cut && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());");
+    expect(llm).toContain('if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new ReponseInexploitable(REPONSE_COUPEE(), true);');
+    expect(llm).toContain("if (cut && call.sansRelanceCoupee) throw new ReponseInexploitable(REPONSE_COUPEE(), true);");
   });
 });
 

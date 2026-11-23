@@ -17,7 +17,7 @@ import type { Brand } from "../../project-types";
 import type { AgentTool, ToolContext } from "../types";
 import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
 import { fontFamily, type Identity } from "../identities";
-import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, routeCountOfProject } from "../brand-chain";
+import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, namesPreviewQuote, routeCountOfProject } from "../brand-chain";
 import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, type ImageSlot } from "../brand-images";
 import { finishSlots } from "../brand-finish";
 import { chosenRoute } from "../logos";
@@ -69,10 +69,25 @@ export function marqueOuArretee(etapes: string[]): string {
   const faites = [etapes.includes("brand:study") && "l'étude de ton marché", etapes.some((e) => e.startsWith("brand:strategy")) && "l'idée de ta marque", etapes.some((e) => e.startsWith("brand:team:")) && "les pistes de noms", etapes.some((e) => e.startsWith("brand:judge")) && "le tri des noms", images > 0 && `${images} image${images > 1 ? "s" : ""}`].filter(Boolean);
   return faites.length ? `déjà fait et gardé : ${faites.join(", ")}` : "rien de gardé";
 }
-/** Le prix de la reprise : le plafond de la création, moins ce qui est payé et repris (jamais moins d'un cinquième). */
-export function relanceMarqueQuote(c: { id: string; payload: Record<string, any> }): CostEstimate {
-  const cap = Number(c.payload.capMicro) || 0;
-  return { maxMicro: Math.max(Math.round(cap * 0.2), cap - acquisMicro(c.id)), label: L("la suite de ta marque, là où sa création s'était arrêtée : ce qui était déjà fait est repris sans être repayé", "the rest of your brand, from where it stopped") };
+/**
+ * Le prix de la reprise : SEULEMENT ce qui reste à faire, avec son prix probable puis « au plus » (23 novembre 2026,
+ * essai réel de Nadia : la carte annonçait 17,21 € au plus, sans prix probable, l'ancien plafond moins ce qui était
+ * payé, alors que l'étude, la stratégie, les quatre équipes, le premier jugement et trois équipes du second tour étaient
+ * acquis). Les étapes enregistrées sont relues sans être repayées : la création de la marque est comptée étape par
+ * étape (chainQuote avec `done`). La fin de la marque et l'aperçu des noms : leur devis, moins ce qui est payé et repris
+ * (jamais moins d'un cinquième du probable : la fin du travail reste à faire).
+ */
+export function relanceMarqueQuote(c: { id: string; payload: Record<string, any>; etapes?: string[] }): CostEstimate {
+  const p = c.payload, done = c.etapes ?? [], routes = (Array.isArray(p.redo) && p.redo.length) || Number(p.count) || 2;
+  const slots = Array.isArray(p.slots) && p.slots.length ? (p.slots as ImageSlot[]) : undefined;
+  const label = L("la suite de ta marque, là où sa création s'était arrêtée : ce qui était déjà fait est repris sans être repayé", "the rest of your brand, from where it stopped");
+  const q = p.finish || p.namesPreview ? null : p.imagesOnly ? boardImagesQuote(routes, undefined, slots, done) : chainQuote({ routes, images: typeof p.images === "boolean" ? p.images : undefined, imposed: Array.isArray(p.names) && p.names.length > 0, done });
+  if (q) { const probable = Math.min(q.maxMicro, q.probableMicro ?? q.maxMicro); return { probableMicro: probable, maxMicro: Math.max(probable, q.maxMicro), label }; }
+  // Au plus : le plafond de la tâche, moins ce qui est payé et repris (jamais moins d'un cinquième) ; probable : son
+  // devis habituel, moins ce qui est payé, jamais au-dessus.
+  const full = p.finish ? finishQuote(slots ?? FINISH_SLOTS) : namesPreviewQuote(), acquis = acquisMicro(c.id), cap = Number(p.capMicro) || full.maxMicro;
+  const maxMicro = Math.max(Math.round(cap * 0.2), cap - acquis), probable0 = full.probableMicro ?? full.maxMicro;
+  return { probableMicro: Math.min(maxMicro, Math.max(Math.round(probable0 * 0.2), probable0 - acquis)), maxMicro, label };
 }
 function relanceMarque(ctx: ToolContext): ToolResult {
   const p = project(ctx);

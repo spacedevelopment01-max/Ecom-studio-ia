@@ -1006,6 +1006,19 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   return result;
 }
 
+/**
+ * Réponse de l'IA payée mais inexploitable : coupée à sa limite de sortie (« max_tokens ») ou illisible (JSON mal
+ * fermé). Essai réel de Nadia, 23 novembre 2026 : une équipe de noms coupée à 16 000 jetons levait une simple
+ * « Unterminated string in JSON » et faisait tomber toute la marque. L'appelant reconnaît cette erreur et décide : une
+ * reprise plus courte, ou continuer sans cette réponse.
+ */
+export class ReponseInexploitable extends PermanentError {
+  constructor(message: string, readonly coupee: boolean) { super(message); }
+}
+/** La réponse est-elle coupée ou illisible (et non une panne du fournisseur, un refus ou le plafond) ? */
+export const reponseInexploitable = (e: unknown): boolean => e instanceof ReponseInexploitable || e instanceof SyntaxError;
+const REPONSE_ILLISIBLE = () => L("L'IA a renvoyé une réponse illisible (JSON mal fermé).", "The AI returned an unreadable response (malformed JSON).");
+
 /** Message d'une réponse coupée qui n'est pas redemandée (sansRelanceCoupee). */
 const REPONSE_COUPEE = () => L("La réponse de l'IA a été coupée faute de place : elle n'est pas redemandée d'office (rien de plus n'est payé). La suite se décide avec le client.", "The AI response was cut for lack of room: it is not requested again automatically (nothing more is paid).");
 /** Plafond de sortie (réflexion comprise) quand une réponse JSON a été coupée faute de place. */
@@ -1182,13 +1195,16 @@ async function jsonStrict<S extends z.ZodType>(call: LlmCall, content: Anthropic
   for (;;) {
     etat.attempt = attempt;
     const r = await rawCall({ ...call, maxTokens: budget, ...(reparation ? { motifReprise: "forme" as const } : {}) }, messages, { type: format.type, schema: format.schema }, attempt ? `:fix${attempt}` : "", attempt);
-    if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());
+    if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new ReponseInexploitable(REPONSE_COUPEE(), true);
     reparation = false;
     if (r.stop === "max_tokens" && budget < cap) { budget = Math.min(cap, budget * 2); attempt++; continue; }
+    // Coupée à la limite la plus haute, ou mal fermée : une erreur reconnaissable, jamais l'erreur brute du lecteur JSON.
+    const lu = (() => { try { return { ok: true as const, v: JSON.parse(r.text) }; } catch { return { ok: false as const }; } })();
+    if (!lu.ok) throw new ReponseInexploitable(r.stop === "max_tokens" ? REPONSE_COUPEE() : REPONSE_ILLISIBLE(), r.stop === "max_tokens");
     // Un écart de pure forme (un texte un peu trop long, une liste trop longue) ne fait plus perdre un appel
     // payé : il est réparé comme en JSON libre (essai réel du 16 novembre 2026 : une correction de plus de
     // 400 signes avait fait sauter toute une relecture). Un écart de fond lève toujours l'erreur du schéma.
-    const data = sansNullsFacultatifs(JSON.parse(r.text), format.schema as Record<string, unknown>), direct = schema.safeParse(data);
+    const data = sansNullsFacultatifs(lu.v, format.schema as Record<string, unknown>), direct = schema.safeParse(data);
     if (direct.success) return direct.data;
     const repaired = salvage(schema as z.ZodType<unknown>, data);
     if (repaired.ok) return repaired.data as z.infer<S>;
@@ -1216,7 +1232,7 @@ async function jsonLibre<S extends z.ZodType>(call: LlmCall, content: Anthropic.
     // Réponse coupée faute de place (réflexion longue, beaucoup de photos) : même demande avec plus de place,
     // sans renvoyer le début tronqué au modèle (jsonRetry).
     const cut = r.stop === "max_tokens";
-    if (cut && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());
+    if (cut && call.sansRelanceCoupee) throw new ReponseInexploitable(REPONSE_COUPEE(), true);
     let issue = "";
     if (!(cut && step.budget < cap)) {
       const parsed = call.prepare ? call.prepare(extractJson(r.text)) : extractJson(r.text);
@@ -1242,7 +1258,7 @@ async function jsonLibre<S extends z.ZodType>(call: LlmCall, content: Anthropic.
   }
   // Détail complet dans les journaux du serveur ; au client, la raison courte (pas le JSON brut).
   console.error(`[ia] ${call.task} : réponse inexploitable (${lastIssue || "JSON illisible"})\n${last.slice(0, 4000)}`);
-  throw new PermanentError(L(`L'IA a renvoyé une réponse incomplète (${lastIssue || "format illisible"}). Cliquez sur « Reprendre » pour relancer cette étape.`, `The AI returned an incomplete response (${lastIssue || "unreadable format"}). Click "Resume" to run this step again.`));
+  throw new ReponseInexploitable(L(`L'IA a renvoyé une réponse incomplète (${lastIssue || "format illisible"}). Cliquez sur « Reprendre » pour relancer cette étape.`, `The AI returned an incomplete response (${lastIssue || "unreadable format"}). Click "Resume" to run this step again.`), !lastIssue);
 }
 
 type Path = (string | number)[];
