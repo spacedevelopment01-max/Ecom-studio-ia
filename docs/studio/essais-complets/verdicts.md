@@ -23,6 +23,9 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 23/11 14:18 | Nadia | Identité C « Pénombre », grande scène, 3e essai | 5/10 : « ressemble à un pot de confiture (matière rouge granuleuse, aucune mèche) » | Non | [en attente] |
 | 23/11 14:18 | Nadia | Identité C « Pénombre », haut du site | 5/10 : « un bandeau de mois non demandé (JAN à DÉC, avec « JUI » en double) […] le pot de bougie de la photo est coupé par le bord droit » | **Oui, gardée malgré 5/10** (raté du Studio) | [en attente] |
 | 23/11 18:24 | Nadia | Identité A « Sillage », logo refait après réparation (idée en mots simples), 1er essai | 6/10 : « Logo banal par rapport à la planche : la serif élégante avec un swoosh générique est trop chic, contrairement à la demande du client, et la courbe cuivrée coupe maladroitement le bas du S et des « ill » à gauche » | Non | [en attente] |
+| 23/11 18:25 | Nadia | Identité A « Sillage », logo refait, 2e essai (nom en serif, deux vagues cuivre) | 8/10, sans remarque | Oui | [en attente] |
+| 23/11 18:25 | Nadia | Identité B « Halo », logo refait, 1er essai (nom bleu, arc orange et trois rayons) | 8/10, sans remarque | Oui | [en attente] |
+| 23/11 18:26 | Nadia | Halo, version pour fond sombre (faite par le Studio, sans IA) | non relue | Oui | [en attente] — remarque de Claude : l'intérieur du « a » et du « o » reste blanc |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
