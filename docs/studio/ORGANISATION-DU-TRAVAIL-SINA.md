@@ -372,6 +372,25 @@ Dernière commande :
 - Proposé au propriétaire : reprendre Nadia (marque et angles) sur la nouvelle version, plafond 10 €, arrêt à 8 €.
   « Les essais complets » devra d'abord passer sur la dernière version de `claude/evolution-sina`.
 
+### La vidéo moins chère, et les captures de l'atelier (23 novembre 2026, matin)
+
+- Le propriétaire a demandé des captures de la création d'images et de vidéos : huit captures envoyées
+  (`docs/studio/captures-atelier/` sur `claude/evolution-sina`), puis quatre corrigées (01, 04, 05, 07).
+- Les captures ont montré un écart : une vidéo de 8 s coûtait environ 10,5 % du budget (3,13 €), car Veo 3.0 facturait
+  un son inutile. Cinq décisions appliquées par « SINA évolue » : Veo 3.1 Lite par Vertex par défaut, sans son ; Veo 3.0
+  et toutes les vidéos de l'API Gemini écartés ; sans clé Vertex, le plan sûr (vraie photo détourée, mouvement de
+  caméra) ; durées réelles comptées ; prix probable montré, sa borne seulement dans « au plus » ; vidéo relue par le
+  modèle le plus fort, au niveau élevé, une image à la fois. 5 991 essais verts, 30 épreuves sur 30, 0 € dépensé.
+- Nouveaux prix au forfait du milieu (encore à 89 € dans le code) : 8 s environ 1,75 % (0,52 €), au plus 5,84 % ;
+  6 s environ 1,58 % (0,47 €) ; plan sûr 0,19 %.
+- Conséquence à dire au propriétaire : plus de vidéo avec une personne qui parle et du son (seul Veo par l'API Gemini
+  avait le son). Le son viendra d'ElevenLabs si le propriétaire le décide.
+- **Attend son autorisation écrite dans « Évolution de SINA »** (le système de sécurité refuse de toucher au code de SINA
+  sur un message du chef d'orchestre) : quatre changements dans `src/lib/syna-agent/tools/atelier.ts` pour que SINA
+  annonce le même prix que l'atelier (`atelier.etat` lignes 43 et 52, `atelier.video` ligne 131, carte d'accord
+  d'`atelier.creer` lignes 101 à 106 avec `probableMicro`). Phrase à écrire : « Oui, je t'autorise à mettre le même prix
+  dans le code de SINA (atelier.ts) que dans l'atelier. »
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
