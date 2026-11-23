@@ -549,7 +549,63 @@ async function resultatDuLot(b: any, batchId: string): Promise<Anthropic.Beta.Be
  * abandonné a pu être traité quand même : son coût possible (moitié prix) est retenu, à la charge du Studio.
  */
 export type DepotAbandonne = { abandonne: string };
+
+/**
+ * L'AMORCE (23 novembre 2026, recette officielle d'Anthropic pour le différé avec la mémoire : « une demande avec la
+ * partie commune et sa mémoire d'une heure, puis, dès qu'elle est finie, le reste »). Les demandes d'un dépôt passent
+ * dans n'importe quel ordre : plusieurs demandes déposées en même temps avec la même partie commune l'écrivaient chacune
+ * en mémoire (au double du prix d'entrée pour une heure) au lieu de la relire. La première qui arrive sert d'amorce ;
+ * celles qui ont la même partie commune attendent qu'elle soit finie, puis partent et la relisent (au vingtième du prix).
+ * Rien de plus n'est payé : l'amorce est une vraie demande du travail. Amorce ratée ou partie en direct : les autres
+ * partent comme avant. Seulement pour une partie commune assez longue pour que l'attente rapporte.
+ */
+export const AMORCE_MIN_SIGNES = 14_000;
+const AMORCE_DUREE_MS = 55 * 60_000;
+const amorces = new Map<string, { fin: Promise<void>; finie: boolean; depuis: number }>();
+/** La partie commune mise en mémoire pour une heure (consigne et tête jusqu'au dernier point de mémoire), ou null. */
+export function partieCommune(params: { model?: string; system?: unknown; messages?: Anthropic.Beta.BetaMessageParam[] }): string | null {
+  const tete: unknown[] = [];
+  let derniere = -1;
+  const blocs = [...(Array.isArray(params.system) ? (params.system as any[]).map((b) => ({ ...b, ou: "system" })) : []), ...(((params.messages?.[0]?.content as any[]) ?? []).map((b) => ({ ...b, ou: "message" })))];
+  blocs.forEach((b, i) => { tete.push(b.type === "image" ? { image: shortHash(String(b.source?.data ?? "")) } : b); if (b.cache_control?.ttl === "1h") derniere = i; });
+  if (derniere < 0) return null;
+  const texte = JSON.stringify(tete.slice(0, derniere + 1));
+  return texte.length >= AMORCE_MIN_SIGNES ? `${params.model ?? ""}:${shortHash(texte)}` : null;
+}
+/** Attend l'amorce de cette partie commune si une est en cours ; sinon, cet appel devient l'amorce (rend sa fin). */
+async function amorcer(params: any, jobKey: string): Promise<(() => void) | null> {
+  const cle = partieCommune(params);
+  if (!cle) return null;
+  const now = Date.now();
+  for (const [k, v] of amorces) if (now - v.depuis > AMORCE_DUREE_MS) amorces.delete(k);
+  const deja = amorces.get(cle);
+  if (deja) {
+    if (!deja.finie) { debutAttente(jobKey); try { await deja.fin; } finally { finAttente(jobKey); } }
+    return null;
+  }
+  let fin!: () => void;
+  const entree = { fin: new Promise<void>((r) => { fin = r; }), finie: false, depuis: now };
+  amorces.set(cle, entree);
+  return () => { entree.finie = true; fin(); };
+}
+/** Pour les essais : oublie les amorces. */
+export const oublierAmorces = () => amorces.clear();
+
 async function deferredMessage(params: any, jobKey: string, reservationId?: string): Promise<Anthropic.Beta.BetaMessage | DepotAbandonne | null> {
+  if (attendu(jobKey) >= patienceDeLaTache()) return null;
+  const finAmorce = await amorcer(params, jobKey);
+  // Amorce ratée (rien en mémoire) : la clé est retirée, la suivante devient l'amorce ; les autres partent comme avant.
+  try {
+    const r = await deposer(params, jobKey, reservationId);
+    if (finAmorce && !(r && !("abandonne" in r))) amorces.delete(partieCommune(params) ?? "");
+    return r;
+  } catch (e) {
+    if (finAmorce) amorces.delete(partieCommune(params) ?? "");
+    throw e;
+  } finally { finAmorce?.(); }
+}
+
+async function deposer(params: any, jobKey: string, reservationId?: string): Promise<Anthropic.Beta.BetaMessage | DepotAbandonne | null> {
   if (attendu(jobKey) >= patienceDeLaTache()) return null;
   const b = deferredDeps.batches ?? (client().beta.messages.batches as any), sleep = deferredDeps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   let batch: any;
