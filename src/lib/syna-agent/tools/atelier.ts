@@ -33,7 +33,7 @@ const lienAtelier = (projectId: string) => `/studio/${projectId}/atelier`;
 
 const etatTool: AgentTool<Record<string, never>> = {
   name: "atelier.etat", module: "atelier", kind: "read", needsProject: true,
-  description: "Gratuit : ce que l'atelier peut faire pour le client maintenant (mettre son produit dans une scène, changer un fond, version story ou carrée, retirer un objet, tout son catalogue, une vidéo pour vendre), avec l'outil que tu conseilles par geste et son prix en part de son budget du mois, le plafond de vidéos de son forfait, ses conditions de l'atelier (acceptées ou non), les modèles prêts épinglés (fêtes qui approchent, saison, nouveauté) et ses créations qui n'ont pas encore servi. À lire avant de lui proposer l'atelier.",
+  description: "Gratuit, à lire avant de lui proposer l'atelier : ce que l'atelier peut faire maintenant (produit dans une scène, fond changé, version story ou carrée, objet retiré, tout son catalogue, vidéo pour vendre), l'outil conseillé par geste et son prix en part de son budget du mois, le plafond de vidéos de son forfait, ses conditions de l'atelier (acceptées ou non), les modèles prêts épinglés (fêtes proches, saison, nouveauté) et ses créations pas encore servies.",
   args: z.object({}).strict(),
   run: (ctx) => {
     const p = project(ctx), lg = lang();
@@ -89,7 +89,7 @@ async function devisDuGeste(ctx: ToolContext, a: CreerArgs): Promise<Devis[]> {
 
 const creerTool: AgentTool<CreerArgs> = {
   name: "atelier.creer", module: "atelier", kind: "generate", needsProject: true,
-  description: "PAYANT (le Studio montre le prix sur la carte d'accord, en part de son budget du mois ; rien ne part sans sa confirmation) : fait un geste de l'atelier pour le client, par le même chemin que l'écran. geste : scene (son vrai produit dans un décor, toujours fait par OpenAI et relu par le juge qui lit l'étiquette), fond (change le fond), retirer (retire un objet), story, carre, lot (le même fond pour toutes ses photos de produit, 30 au plus). mode : sina (« je m'en occupe » : outil OpenAI) ou ensemble (« on le fait ensemble » : outil = celui qu'IL a choisi parmi ceux d'atelier.etat). assetId : la photo à retoucher (files.list), sauf scene et lot. mots : SES mots, repris tels quels (le décor, le fond, l'objet à retirer) ; story et carre n'en ont pas besoin. aspect : format de la scène. Jamais de personne sans sa photo et son accord écrit. Le résultat arrive dans « Mes créations » ; une image ratée ou dont le produit a changé lui est dite telle quelle.",
+  description: "PAYANT (prix sur la carte d'accord, en part de son budget du mois ; rien ne part sans sa confirmation) : fait un geste de l'atelier, par le même chemin que l'écran. geste : scene (son vrai produit dans un décor, toujours fait par OpenAI et relu par le juge qui lit l'étiquette), fond (change le fond), retirer (retire un objet), story, carre, lot (le même fond pour toutes ses photos de produit, 30 au plus). mode : sina (« je m'en occupe » : outil OpenAI) ou ensemble (« on le fait ensemble » : l'outil qu'IL a choisi dans atelier.etat). assetId : la photo à retoucher (files.list), sauf scene et lot. mots : SES mots tels quels (décor, fond, objet à retirer) ; inutiles pour story et carre. aspect : format de la scène. Jamais de personne sans sa photo et son accord écrit. Le résultat arrive dans « Mes créations » ; une image ratée ou dont le produit a changé lui est dite telle quelle.",
   args: z.object({
     geste: z.enum(["scene", "fond", "story", "carre", "retirer", "lot"]),
     mode: z.enum(["sina", "ensemble"]),
@@ -121,7 +121,7 @@ const creerTool: AgentTool<CreerArgs> = {
 
 const videoTool: AgentTool<{ modele: ModeleVideoId }> = {
   name: "atelier.video", module: "atelier", kind: "read", needsProject: true,
-  description: "Gratuit : prépare une vidéo pour vendre à partir d'un modèle de l'atelier (tourne, cadeau, deballage, vraie-vie, details, avant-apres, offre, pub-15) et rend l'adresse de la vidéo guidée déjà remplie, où le client voit le prix et confirme (même devis, même accord, même plafond de vidéos du mois que l'écran). Vérifie d'abord le plafond de son forfait. avant-apres : gratuit, deux de ses vraies photos montées par le Studio, dans l'atelier ; offre : seulement avec son offre écrite, jamais inventée.",
+  description: "Gratuit : prépare une vidéo pour vendre d'après un modèle de l'atelier (tourne, cadeau, deballage, vraie-vie, details, avant-apres, offre, pub-15) et rend l'adresse de la vidéo guidée déjà remplie, où le client voit le prix et confirme (même devis, même accord, même plafond de vidéos du mois que l'écran). Vérifie d'abord le plafond de son forfait. avant-apres : gratuit, deux de ses vraies photos montées par le Studio ; offre : seulement avec son offre écrite, jamais inventée.",
   args: z.object({ modele: z.enum(["tourne", "cadeau", "deballage", "vraie-vie", "details", "avant-apres", "offre", "pub-15"]) }).strict(),
   run: (ctx, a) => {
     const p = project(ctx), lg = lang(), m = modeleVideo(a.modele)!;
@@ -135,7 +135,7 @@ const videoTool: AgentTool<{ modele: ModeleVideoId }> = {
 type PoserArgs = { creationId: string; cible: "publication" | "publicite" | "site"; uid?: string; src?: string };
 const poserTool: AgentTool<PoserArgs> = {
   name: "atelier.placer", module: "atelier", kind: "write", needsProject: true,
-  description: "Gratuit, SEULEMENT quand le client te le demande : pose une création réussie de « Mes créations » (creationId, lu dans atelier.etat) là où il la veut. cible : publication (un brouillon de publication avec l'image, rien n'est publié), publicite (une publicité préparée avec l'image, en brouillon, textes à écrire avec lui, aucune diffusion), site (la photo d'une section de son site : uid et src de la photo qu'il a désignée sur l'aperçu). Une création ratée, « produit modifié », refusée ou pas encore vérifiée ne part nulle part ; les photos de ses produits restent sur leurs emplacements ; jamais deux fois la même photo sur son site.",
+  description: "Gratuit, SEULEMENT quand le client te le demande : pose une création réussie de « Mes créations » (creationId, lu dans atelier.etat) où il la veut. cible : publication (brouillon de publication avec l'image, rien n'est publié), publicite (publicité préparée en brouillon, textes à écrire avec lui, aucune diffusion), site (photo d'une section : uid et src de la photo qu'il a désignée sur l'aperçu). Une création ratée, « produit modifié », refusée ou pas encore vérifiée ne part nulle part ; les photos de ses produits restent sur leurs emplacements ; jamais deux fois la même photo sur son site.",
   args: z.object({ creationId: z.string().max(40), cible: z.enum(["publication", "publicite", "site"]), uid: z.string().regex(/^s[0-9a-f]{8}$/).optional(), src: z.string().max(400).optional() }).strict(),
   run: (ctx, a) => {
     const p = project(ctx);

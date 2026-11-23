@@ -115,7 +115,7 @@ const archiveTool: AgentTool<{ productId: string }> = {
  */
 const photosTool: AgentTool<{ product: string; photos: string[]; replace?: boolean }> = {
   name: "catalogue.photos", module: "catalogue", kind: "write", needsProject: true,
-  description: "Pose sur UN produit les vraies photos que le client a envoyées (gratuit). product : son titre exact ou son id (catalogue.list). photos : les identifiants des pièces jointes du fil (ou des images de ses Fichiers), dans l'ordre voulu ; la première devient la photo principale. Elles s'ajoutent à celles qu'il a déjà (replace:true pour les remplacer). Jamais une image créée par l'IA : seulement ses photos à lui. Dans l'aperçu de son site, la galerie de sa fiche et ses cartes la montrent tout de suite, sans refaire le site.",
+  description: "Pose sur UN produit les vraies photos envoyées par le client (gratuit). product : titre exact ou id (catalogue.list). photos : identifiants des pièces jointes du fil (ou des images de ses Fichiers), dans l'ordre voulu ; la première devient la photo principale. Elles s'ajoutent aux siennes (replace:true pour les remplacer). Jamais une image créée par l'IA : seulement ses photos à lui. L'aperçu de son site (galerie de sa fiche, cartes) les montre tout de suite, sans refaire le site.",
   args: z.object({ product: z.string().min(1).max(160), photos: z.array(z.string().min(1).max(60)).min(1).max(12), replace: z.boolean().optional() }).strict(),
   run: async (ctx, a) => {
     const p = project(ctx), list = listProducts(p.id);

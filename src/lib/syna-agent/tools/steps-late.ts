@@ -43,7 +43,7 @@ export const adsCount = (asked: number | undefined, clientTypes: number) => (cli
 
 const adsCreateTool: AgentTool<AdsArgs> = {
   name: "ads.create", module: "publicités", kind: "generate", needsProject: true,
-  description: "Étape 10 (PAYANT : le Studio montre le devis sur la carte d'accord) : crée les publicités images du client, UNE PAR TYPE DE CLIENT de ses angles (l'angle choisi d'abord, puis ceux en réserve ; jamais deux pour le même) : des idées vraiment différentes, une accroche courte et un bouton par visuel, promesses contrôlées avant l'image, chaque image contrôlée avant d'être montrée. platforms = SES régies et formats (meta_feed, meta_story, tiktok, google_display, pinterest, linkedin), jamais devinés ; count = nombre d'idées (3 par défaut, selon son forfait).",
+  description: "Étape 10 (PAYANT : devis sur la carte d'accord) : crée ses publicités images, UNE PAR TYPE DE CLIENT de ses angles (l'angle choisi d'abord, puis ceux en réserve ; jamais deux pour le même) : idées vraiment différentes, une accroche courte et un bouton par visuel, promesses contrôlées avant l'image, chaque image contrôlée avant d'être montrée. platforms = SES régies et formats (meta_feed, meta_story, tiktok, google_display, pinterest, linkedin), jamais devinés ; count = nombre d'idées (3 par défaut, selon son forfait).",
   args: z.object({ platforms: z.array(z.enum(AD_PLATFORMS)).min(1).max(6), count: z.number().int().min(1).max(6).optional() }).strict(),
   estimate: (ctx, a) => {
     const e = campaignEstimate(project(ctx), { count: adsCount(a.count, clientTypesOf(journeyOf(ctx.conversationId)).length), platforms: [...new Set(a.platforms)] });
@@ -129,7 +129,7 @@ const blogTopicsTool: AgentTool<Record<string, never>> = {
 type BlogArgs = { topic: string; brief?: string; keyword?: string; intent?: (typeof INTENTS)[number] };
 const blogWriteTool: AgentTool<BlogArgs> = {
   name: "blog.write", module: "blog", kind: "generate", needsProject: true,
-  description: "Étape 12 (PAYANT : le Studio montre le devis sur la carte d'accord) : écrit UN article de blog sur le sujet CHOISI PAR LE CLIENT (700 à 1 200 mots, référencement, liens vers ses produits ou services, aucune promesse non confirmée), relu avant d'être montré ; il arrive en brouillon dans l'onglet Blog. Deux articles pour cette étape : un appel par article. topic = le sujet, brief = ce que le client veut y lire (ses mots), keyword = la requête visée, intent = l'intention de recherche.",
+  description: "Étape 12 (PAYANT : devis sur la carte d'accord) : écrit UN article de blog sur le sujet CHOISI PAR LE CLIENT (700 à 1 200 mots, référencement, liens vers ses produits ou services, aucune promesse non confirmée), relu avant d'être montré, en brouillon dans l'onglet Blog. Deux articles à cette étape : un appel par article. topic = le sujet, brief = ce qu'il veut y lire (ses mots), keyword = la requête visée, intent = l'intention de recherche.",
   args: z.object({ topic: z.string().trim().min(6).max(200), brief: z.string().trim().max(1500).optional(), keyword: z.string().trim().max(80).optional(), intent: z.enum(INTENTS).optional() }).strict(),
   estimate: () => { const probable = estimateMicro("blog"); return { maxMicro: capMicro(probable), probableMicro: probable, label: L("un article de blog écrit pour ton client idéal, relu avant de t'être montré", "one blog article, reviewed before you see it") }; },
   run: (ctx, a) => {
