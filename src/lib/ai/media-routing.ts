@@ -124,6 +124,15 @@ export function socialImagePrimary(): { provider: string; model: string; inherit
   if (sina.provider === REQUIRED_SOCIAL_IMAGE_PROVIDER && sina.model) return { ...sina, inherited: true };
   return { provider: REQUIRED_SOCIAL_IMAGE_PROVIDER, model: DEFAULT_SOCIAL_IMAGE_MODEL, inherited: true };
 }
+/**
+ * La route des images de SINA : le réglage `syna.mockup.image_route` s'il désigne un modèle d'OpenAI, sinon le modèle
+ * d'OpenAI par défaut. Jamais un autre fournisseur (règle du propriétaire : « Images créées par OpenAI pour tout ce que
+ * fait SINA »), même si le réglage en ligne en désigne un.
+ */
+export function routeDesImagesDeSina(): { provider: string; model: string } {
+  const r = splitKey(getJsonSetting<string>("syna.mockup.image_route", `${REQUIRED_SOCIAL_IMAGE_PROVIDER}:${DEFAULT_SOCIAL_IMAGE_MODEL}`));
+  return r.provider === REQUIRED_SOCIAL_IMAGE_PROVIDER && r.model ? r : { provider: REQUIRED_SOCIAL_IMAGE_PROVIDER, model: DEFAULT_SOCIAL_IMAGE_MODEL };
+}
 /** Mode de l'usage (sinon celui de son type). */
 export const usageMode = (u: MediaUsage): MediaMode => u === "logo" || u === "social_image" ? "manual" : usageSettings()[u]?.mode ?? (USAGE_INFO[u].parent ? usageMode(USAGE_INFO[u].parent!) : mediaMode(USAGE_INFO[u].kind));
 /** Principal de l'usage (sinon celui de son type) et son origine. */

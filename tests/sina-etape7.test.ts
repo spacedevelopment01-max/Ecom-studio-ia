@@ -758,13 +758,17 @@ describe("SINA — étapes 6 et 7 : outils et tâche de fond (simulés)", async 
     expect(mockupToolDeps).toHaveProperty("imageMaxMicro");
   });
 
-  it("images des thèmes : OpenAI GPT Image 2.6 Flare par défaut (2.5 le 8 novembre, 2.6 le 10 novembre), modifiable par réglage", async () => {
+  it("images des thèmes : OpenAI GPT Image 2.6 Flare par défaut (2.5 le 8 novembre, 2.6 le 10 novembre), modifiable par réglage parmi les modèles d'OpenAI seulement", async () => {
     const { mockupImageRoute } = await import("@/lib/syna-agent/mockup-code/tools");
     const { setJsonSetting } = await import("@/lib/settings");
     expect(mockupImageRoute()).toEqual({ provider: "openai", model: "gpt-image-2.6-flare" });
+    // « Images créées par OpenAI pour tout ce que fait SINA » (23 novembre 2026) : un réglage hors d'OpenAI est ignoré.
     setJsonSetting("syna.mockup.image_route", "alibaba:qwen-image-3.0-pro");
-    try { expect(mockupImageRoute()).toEqual({ provider: "alibaba", model: "qwen-image-3.0-pro" }); }
-    finally { setJsonSetting("syna.mockup.image_route", "openai:gpt-image-2.6-flare"); }
+    try {
+      expect(mockupImageRoute()).toEqual({ provider: "openai", model: "gpt-image-2.6-flare" });
+      setJsonSetting("syna.mockup.image_route", "openai:gpt-image-2");
+      expect(mockupImageRoute()).toEqual({ provider: "openai", model: "gpt-image-2" });
+    } finally { setJsonSetting("syna.mockup.image_route", "openai:gpt-image-2.6-flare"); }
   });
 
   it("textes imposés posés mot pour mot par le Studio : accroche, slogan, appel à l'action, noms et prix des produits", async () => {

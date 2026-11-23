@@ -678,12 +678,18 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(first.log.refs[`image-1-B-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     expect(J.journeyOf(t.cid).identities!.incompletes).toEqual([{ key: "A", manque: ["logo", "site"] }]);
     expect(await call("identity.choose", t.ctx, { key: "A" })).toMatchObject({ ok: false });
-    // Une planche montrée avant cette règle, sans logo (ancien parcours) : choisie, sa marque finie doit avoir un logo.
+    // Sans le drapeau (planches d'avant la correction, essai réel de Nadia) : ce qui manque se lit sur la planche elle-même,
+    // elle ne se choisit toujours pas.
     J.updateJourney(t.cid, (x) => { delete x.identities!.incompletes; });
-    const chosen = await call("identity.choose", t.ctx, { key: "A" });
-    // Il manque aussi le logo : la fin n'est plus couverte en entier, elle passe par brand.finish et son prix.
-    expect(chosen.jobs).toBeUndefined();
-    expect(chosen.hint).toMatch(/brand\.finish/);
+    expect(await call("identity.choose", t.ctx, { key: "A" })).toMatchObject({ ok: false });
+    // Une planche CHOISIE avant cette règle, sans logo (ancien parcours) : sa marque finie doit avoir un logo.
+    {
+      const { brandFromIdentity } = await import("@/lib/syna-agent/tools/identity");
+      const { loadProject, saveBrand } = await import("@/lib/projects");
+      const j = J.journeyOf(t.cid), list = j.identities!.list;
+      saveBrand(t.pid, brandFromIdentity(loadProject(t.pid), list[0], j, list.slice(1)));
+      J.updateJourney(t.cid, (x) => { x.identityChoice = { key: "A", mix: {}, at: Date.now() }; J.setStep(x, 1, "done"); });
+    }
     const j0 = J.journeyOf(t.cid);
     expect(F.missingSlots(j0)).toEqual(["logo", "object", "signs", "post0", "post1", "post2"]);
     // Le logo à créer entraîne aussi le téléphone (jamais l'ancien logo).

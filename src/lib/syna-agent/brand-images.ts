@@ -24,6 +24,7 @@
  * - les textes écrits dans une image viennent de la planche, lettre pour lettre, jamais du modèle ;
  * - aucune personne.
  */
+import { routeDesImagesDeSina } from "../ai/media-routing";
 import { peopleAllowed } from "../people-policy";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { noterRelecture, travailDeLImage } from "./juges";
@@ -36,6 +37,7 @@ import sharp from "sharp";
 import { z } from "zod";
 import { getJob, type JobContext } from "../jobs";
 import type { Journey } from "./journey";
+import { manqueDeLaPlanche as manqueLu } from "./journey";
 import { L } from "../i18n-server";
 import { CostCapReached } from "../ai/trace";
 import { all, json as parseJson, one, run } from "../db";
@@ -82,8 +84,8 @@ export const FINISH_SLOTS: ImageSlot[] = ["object", "signs", "post0", "post1", "
 export const brandImagesOn = (): boolean => true;
 /** Route des images de SINA (la même que les photos du thème sur mesure : réglage `syna.mockup.image_route`). */
 export function boardImageRoute(): { provider: string; model: string } {
-  const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "openai:gpt-image-2.6-flare").split(":");
-  return { provider, model };
+  // Toujours OpenAI (« Images créées par OpenAI pour tout ce que fait SINA »), même si le réglage en désigne un autre.
+  return routeDesImagesDeSina();
 }
 
 export const ImagerySchema = z.object({
@@ -424,8 +426,7 @@ const MANQUE_LABEL: Record<string, { fr: string; en: string }> = { logo: { fr: "
  * le haut du site. Rien ne manque : [].
  */
 export function manqueDeLaPlanche(x: { board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown } } }, logoDuClient = false): ImageSlot[] {
-  const im = x.board?.images;
-  return PROPOSAL_SLOTS.filter((s) => (s === "logo" ? !logoDuClient && !im?.logo : !im?.[s as "hero" | "site"]));
+  return manqueLu(x, logoDuClient);
 }
 /** « le logo et la grande scène » (en français ou en anglais). */
 export const listeDuManque = (manque: readonly string[]): string => {

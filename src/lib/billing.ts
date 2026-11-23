@@ -22,7 +22,6 @@
  *  5. réservation orpheline (processus arrêté pendant l'appel) : traitée comme incertaine après RESERVATION_TTL_MS.
  * Montants internes en micro-euros (1 € = 1 000 000).
  */
-import { AsyncLocalStorage } from "node:async_hooks";
 import { addMonths } from "date-fns";
 import { all, id, logError, now, one, run, tx } from "./db";
 import { UserFacingError } from "./jobs";
@@ -31,7 +30,7 @@ import { pick } from "./i18n";
 import { L, userLang } from "./i18n-server";
 import { PLANS, type Billing, type PlanId } from "./plans";
 import { accountKeyFor, isNoPlanKey } from "./project-billing";
-import { assertUnderCostCap, currentTrace } from "./ai/trace";
+import { aLaChargeDuStudio, assertUnderCostCap, chargeDuStudio, currentTrace } from "./ai/trace";
 import { assertAgentReservation } from "./ai/request-bounds";
 import { currentRunScope } from "./billing-scope";
 import { createHash } from "node:crypto";
@@ -374,11 +373,11 @@ export type ReservationMeta = { task: string; provider: string; model: string; j
  * RÈGLE DU PROPRIÉTAIRE (LE-STUDIO-DE-A-A-Z, partie 13 : « une erreur de SINA est toujours corrigée sans rien compter ;
  * un changement de goût du client passe par son budget du mois ») : ce que le Studio refait pour sa propre qualité (une
  * image ratée refaite, une réponse réécrite après la relectrice ou le contrôle, une réponse coupée redemandée) n'est
- * jamais débité au client. Le coût réel reste inscrit, à la charge du Studio. Le plafond de la tâche s'applique toujours.
+ * jamais débité au client, même quand son budget du mois est épuisé. Le coût réel reste inscrit, à la charge du Studio.
+ * Une reprise ne regarde que la borne du Studio de la tâche, jamais le plafond de la carte du client ; la tâche s'arrête
+ * toujours à la somme des deux (deux plafonds, 23 novembre 2026 : `assertUnderCostCap`, `borneDuStudio`).
  */
-const studioScope = new AsyncLocalStorage<boolean>();
-export const aLaChargeDuStudio = <T>(fn: () => T): T => studioScope.run(true, fn);
-export const chargeDuStudio = (): boolean => studioScope.getStore() === true;
+export { aLaChargeDuStudio, chargeDuStudio };
 type ReservationRow = { id: string; user_id: string; amount: number; res_monthly: number; res_topup: number; studio?: number; status: "held" | "settled" | "released" | "uncertain" | "reconciled"; debit_monthly: number; debit_topup: number; actual: number | null; created_at: number; settled_at: number | null; settled_period_start: number | null };
 
 type Operation = ReservationRow & { request_hash: string | null; result: string | null; provider_receipt: string | null; recovery_until: number; provider: string; model: string };
@@ -475,12 +474,13 @@ export function reserve(user: string, maxMicro: number, meta: ReservationMeta): 
   // peuvent jamais réserver le même reste. Le coût est réparti : budget de l'abonnement d'abord, puis packs.
   const ok = tx(() => {
     if (existingOperation(user, meta)) operationPending();
-    // Même verrou que le portefeuille : deux appels parallèles ne peuvent pas engager le même plafond de tâche.
-    assertUnderCostCap(amount);
-    assertAgentReservation(user,amount,meta.jobId);
-    const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
     // Une reprise du Studio ne prend rien sur le budget du client (ni réservé, ni débité).
     const studio = !!meta.studio || chargeDuStudio();
+    // Même verrou que le portefeuille : deux appels parallèles ne peuvent pas engager le même plafond de tâche. Une
+    // reprise du Studio ne regarde que la borne du Studio ; une dépense du client, que le plafond de sa carte.
+    assertUnderCostCap(amount, studio);
+    assertAgentReservation(user,amount,meta.jobId);
+    const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
     const fm = freeMonthly(w);
     const ft = freeTopup(w);
     if (!studio && fm + ft < amount) return false;

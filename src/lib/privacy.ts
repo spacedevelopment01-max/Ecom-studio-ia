@@ -12,7 +12,7 @@ import type { User } from "./auth";
 import { redact } from "./redact";
 
 const excluded = new Set(["sessions","password_resets","admin_claims","oauth_states","pending_registrations","settings","error_log","worker_heartbeat","rate_events","asset_cache_entries","wallets","ledger","ai_reservations","ai_calls","usage_events","billing_mutations","stripe_event_claims","stripe_events","stripe_cancellations"]);
-const internalBudgetField=/^(?:cost(?:_micro|Micro)|billed(?:_micro|Micro)?|costCapMicro|internalCost|maxCostMicro|cap(?:_micro|Micro)|estimateMicro|budgetMicro|monthly_allowance|monthly_used|reserved(?:_topup)?|topup_balance|topup_period_used)$/i;
+const internalBudgetField=/^(?:cost(?:_micro|Micro)|billed(?:_micro|Micro)?|costCapMicro|internalCost|maxCostMicro|cap(?:_micro|Micro)|estimateMicro|budgetMicro|studio(?:Cap|Max)Micro|borneStudioMicro|monthly_allowance|monthly_used|reserved(?:_topup)?|topup_balance|topup_period_used)$/i;
 const quote = (name: string) => { if (!/^\w+$/.test(name)) throw new Error("Invalid schema identifier"); return `"${name}"`; };
 const columns = (table: string) => all<{name:string}>(`PRAGMA table_info(${quote(table)})`).map(c=>c.name);
 function withoutCredentials(value:unknown,depth=0):unknown{

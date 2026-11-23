@@ -58,7 +58,10 @@ describe("Alibaba Cloud — Qwen-Image et Wan", async () => {
   const { MEDIA_MODELS, mediaModel } = await import("@/lib/ai/media-models");
   const ali = await import("@/lib/ai/alibaba");
   const { alibabaReadiness } = await import("@/lib/ai/media-routing-admin");
-  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
+  // Depuis le 23 novembre 2026, toutes les images de SINA sont faites par OpenAI ; un autre modèle d'images ne sert plus
+  // qu'à l'outil choisi par le client lui-même dans l'atelier : ces générations passent donc par ce choix.
+  const { avecLOutilDuClient } = await import("@/lib/ai/social-image-policy");
+  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, () => avecLOutilDuClient(fn));
   const png = Buffer.from(PNG, "base64");
   mp.mediaPoll.wanMs = 1;
 

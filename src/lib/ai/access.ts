@@ -5,7 +5,7 @@
  * Le worker exécute chaque tâche « pour » son utilisateur (AsyncLocalStorage), avec la portée de décompte des quotas.
  */
 import { AsyncLocalStorage } from "node:async_hooks";
-import { aiPctBaseMicro, aiReserves, balance, EUR, getSubscription, planOf, UnsentBudgetError } from "../billing";
+import { aiPctBaseMicro, aiReserves, balance, chargeDuStudio, EUR, getSubscription, planOf, UnsentBudgetError } from "../billing";
 import { runScope, type QuotaScope } from "../billing-scope";
 import { accountKeyFor } from "../project-billing";
 import { UserFacingError } from "../jobs";
@@ -56,6 +56,9 @@ export function aiActiveFor(userId: string, projectId?: string | null): boolean 
   const key = accountKeyFor(userId, projectId);
   // Découverte gratuite (aucun forfait) : tout est fait par le moteur local, aucun appel à l'IA.
   if (!planOf(getSubscription(key))) return false;
+  // Une reprise à la charge du Studio ne dépend jamais du budget du mois du client (partie 13 : « une erreur de SINA est
+  // toujours corrigée sans rien compter »), même épuisé.
+  if (chargeDuStudio()) return true;
   return hasAiCredits(key);
 }
 
@@ -107,7 +110,7 @@ export function aiUsage(user: string, projectId?: string | null): AiUsage | null
   return { plan: { used: planUsed }, credits, paused, pending, baseMicro: aiPctBaseMicro(userId) };
 }
 
-export function assertAiAllowed(user: string | null | undefined, projectId?: string | null): void {
+export function assertAiAllowed(user: string | null | undefined, projectId?: string | null, /** Une reprise à la charge du Studio : le budget du mois du client n'est pas regardé. */ studio: boolean = chargeDuStudio()): void {
   const userId = user ? accountKeyFor(user, projectId) : user;
   if (!userId) throw new UserFacingError(L("Appel à l'IA refusé : aucun compte n'est associé à la demande.", "AI call refused: no account is attached to the request."));
   const off = aiOff.getStore();
@@ -120,7 +123,7 @@ export function assertAiAllowed(user: string | null | undefined, projectId?: str
     throw new UserFacingError(L("Appel à l'IA refusé : compte introuvable.", "AI call refused: account not found."));
   }
   if (!planOf(sub)) throw new UserFacingError(L("L'IA n'est pas incluse dans la découverte gratuite : le moteur local du studio est utilisé.", "AI isn't included in the free discovery: the studio's local engine is used."));
-  if (!hasAiCredits(userId)) {
+  if (!studio && !hasAiCredits(userId)) {
     const b = balance(userId);
     if (b.reserved > 0 && b.available + b.reserved >= AI_MIN_AVAILABLE) throw new UnsentBudgetError(L("Une génération utilise temporairement le budget disponible. Attendez son résultat avant de lancer une autre action ; votre travail est conservé.", "A generation is temporarily using the available budget. Wait for its result before starting another action; your work is kept."));
     if (b.available>0 || b.reserved>0) throw new UnsentBudgetError(L("Le budget restant est inférieur au minimum permettant une génération IA. Le reste non dépensé et les étapes acquises sont conservés ; aucun nouvel appel n’a été envoyé. L’IA reprend au renouvellement ou avec une recharge du projet (Mon compte).", "The remaining budget is below the minimum required for an AI generation. Unspent budget and acquired steps are kept; no new call was sent. AI resumes at renewal or with a project top-up (My account)."));

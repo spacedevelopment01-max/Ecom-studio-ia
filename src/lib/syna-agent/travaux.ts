@@ -14,6 +14,7 @@
 import { all, now, one, run } from "../db";
 import { L } from "../i18n-server";
 import { PARTIE_LABEL, REFONT, registreOf, type Partie } from "./verrous";
+import { borneDuStudio, borneDuStudioDe } from "../ai/borne-du-studio";
 
 /** Il faut au moins ce nombre de travaux finis du même genre pour annoncer un prix probable mesuré. */
 export const MESURES_MIN = 3;
@@ -31,15 +32,19 @@ export function noterTravail(tool: string, jobs: string[] | undefined, who: { us
   }
 }
 
-/** Ce qu'une tâche a coûté (reçus du fournisseur, micro-euros). */
+/** Ce qu'une tâche a coûté (reçus du fournisseur, micro-euros), reprises du Studio comprises. */
 const depense = (jobId: string) => one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", jobId)?.c ?? 0;
+/** La part de ce coût prise par les reprises à la charge du Studio (reçus rattachés à une réservation « studio »). */
+const depenseDuStudio = (jobId: string) => one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=? AND usage_event_id IN (SELECT usage_event_id FROM ai_reservations WHERE job_id=? AND studio=1 AND usage_event_id IS NOT NULL)", jobId, jobId)?.c ?? 0;
+/** Ce que la tâche a coûté pour la part du client (le prix probable de sa carte ne compte jamais les reprises du Studio). */
+const depenseDuClient = (jobId: string) => Math.max(0, depense(jobId) - depenseDuStudio(jobId));
 
 /** La part du plafond réellement dépensée par les derniers travaux finis de cet outil (médiane), ou null s'il y en a trop peu. */
 export function partMesuree(tool: string): { part: number; n: number } | null {
   const rows = all<{ job_id: string; cap: number }>(
     "SELECT t.job_id, t.cap FROM travaux_payes t JOIN jobs j ON j.id=t.job_id WHERE t.tool=? AND t.cap>0 AND j.status='done' ORDER BY t.created_at DESC LIMIT ?", tool, MESURES_MAX,
   );
-  const parts = rows.map((r) => depense(r.job_id) / r.cap).filter((x) => Number.isFinite(x) && x > 0).sort((a, b) => a - b);
+  const parts = rows.map((r) => depenseDuClient(r.job_id) / r.cap).filter((x) => Number.isFinite(x) && x > 0).sort((a, b) => a - b);
   if (parts.length < MESURES_MIN) return null;
   const mid = parts.length >> 1, med = parts.length % 2 ? parts[mid] : (parts[mid - 1] + parts[mid]) / 2;
   return { part: Math.min(1, med), n: parts.length };
@@ -49,14 +54,17 @@ export function partMesuree(tool: string): { part: number; n: number } | null {
  * Le prix probable de la carte, sur les coûts mesurés : plafond × part réellement dépensée par les derniers travaux du
  * même genre. Trop peu de mesures : le prix probable de l'outil reste celui de son estimation. Le plafond ne bouge pas.
  */
-export function prixJuste<E extends { maxMicro: number; probableMicro?: number }>(tool: string, est: E): E & { mesure?: number } {
+export function prixJuste<E extends { maxMicro: number; probableMicro?: number; studio?: boolean; studioMaxMicro?: number }>(tool: string, est: E): E & { mesure?: number; studioMaxMicro?: number } {
   if (!(est.maxMicro > 0)) return est;
+  // Le devis porte les deux plafonds : le « au plus » du client (sa carte) et la borne des reprises du Studio, jamais
+  // montrée au client (il ne voit que son prix, ou « 0 % » pour ce qui est à la charge du Studio).
+  const avecBorne = { ...est, studioMaxMicro: est.studioMaxMicro ?? borneDuStudio(est.maxMicro, est.studio === true) };
   const m = partMesuree(tool);
-  if (!m) return est;
-  return { ...est, probableMicro: Math.max(1, Math.round(est.maxMicro * m.part)), mesure: m.n };
+  if (!m) return avecBorne;
+  return { ...avecBorne, probableMicro: Math.max(1, Math.round(est.maxMicro * m.part)), mesure: m.n };
 }
 
-export type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number; /** Le coût moyen des 7 derniers jours a doublé par rapport aux 30 jours d'avant. */ alerte?: boolean };
+export type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number; /** Dont les reprises à la charge du Studio (jamais comptées au client). */ studioMicro: number; /** Bornes du Studio des tâches (deux plafonds) : ce que ses reprises pouvaient coûter au plus. */ borneStudioMicro: number; /** Le coût moyen des 7 derniers jours a doublé par rapport aux 30 jours d'avant. */ alerte?: boolean };
 
 const TRAVAIL: Record<string, { fr: string; en: string }> = {
   "identity.propose": { fr: "Les identités de marque", en: "Brand identities" },
@@ -77,15 +85,16 @@ const nomDu = (tool: string) => { const t = TRAVAIL[tool]; return t ? L(t.fr, t.
  * attente tant que le client n'a rien validé.
  */
 export function coutParTravail(since: number): { lignes: LigneTravail[] } {
-  const rows = all<{ job_id: string; tool: string; conversation_id: string | null; project_id: string | null; cap: number; created_at: number; status: string }>(
-    "SELECT t.job_id, t.tool, t.conversation_id, t.project_id, t.cap, t.created_at, j.status FROM travaux_payes t JOIN jobs j ON j.id=t.job_id WHERE t.created_at >= ? ORDER BY t.created_at", since,
+  const rows = all<{ job_id: string; tool: string; conversation_id: string | null; project_id: string | null; cap: number; created_at: number; status: string; payload: string }>(
+    "SELECT t.job_id, t.tool, t.conversation_id, t.project_id, t.cap, t.created_at, j.status, j.payload FROM travaux_payes t JOIN jobs j ON j.id=t.job_id WHERE t.created_at >= ? ORDER BY t.created_at", since,
   );
   const by = new Map<string, LigneTravail>();
   const registres = new Map<string, ReturnType<typeof registreOf>>();
   for (const r of rows) {
-    const l = by.get(r.tool) ?? { tool: r.tool, travail: nomDu(r.tool), travaux: 0, payeMicro: 0, gardeMicro: 0, jeteMicro: 0, attenteMicro: 0, capMicro: 0 };
+    const l = by.get(r.tool) ?? { tool: r.tool, travail: nomDu(r.tool), travaux: 0, payeMicro: 0, gardeMicro: 0, jeteMicro: 0, attenteMicro: 0, capMicro: 0, studioMicro: 0, borneStudioMicro: 0 };
     const paye = depense(r.job_id);
-    l.travaux++; l.payeMicro += paye; l.capMicro += r.cap;
+    l.travaux++; l.payeMicro += paye; l.capMicro += r.cap; l.studioMicro += depenseDuStudio(r.job_id);
+    try { l.borneStudioMicro += borneDuStudioDe(JSON.parse(r.payload || "{}")) ?? 0; } catch { /* tâche illisible : aucune borne */ }
     const parties: Partie[] = REFONT[r.tool] ?? [];
     const reg = r.conversation_id ? (registres.get(r.conversation_id) ?? (() => { const x = registreOf(r.conversation_id!); registres.set(r.conversation_id!, x); return x; })()) : {};
     const pose = parties.map((p) => reg[p]?.pose).filter((x): x is number => typeof x === "number").sort((a, b) => a - b)[0];

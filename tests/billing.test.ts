@@ -68,6 +68,8 @@ describe("découverte gratuite, forfait et budget épuisé", () => {
     const { imageProviderAvailable } = await import("@/lib/ai/media-providers");
     setSetting("provider.anthropic.apiKey", "sk-test", true);
     setSetting("provider.google.apiKey", "g-test", true);
+    // Images de SINA par OpenAI (23 novembre 2026) : la clé d'OpenAI ouvre les images.
+    setSetting("provider.openai.apiKey", "sk-openai-test", true);
     const free = await createUser(`essai${Date.now()}@test.fr`, "motdepasse-test", "Essai");
     expect(await runForUser(free.id, async () => llmConfigured())).toBe(false);
     expect(await runForUser(free.id, async () => imageProviderAvailable())).toBe(null);

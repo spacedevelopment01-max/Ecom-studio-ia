@@ -19,6 +19,8 @@ describe("GPT Image 2.6", () => {
       // Borne de 0,12 $ par image pour la carte ; compté à ses jetons réels depuis le 22 novembre 2026.
       expect(DEFAULT_PRICES[`openai:${id}`]).toEqual({ unit: "image", perImage: 0.12, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 });
     }
-    expect(fs.readFileSync(path.join(process.cwd(), "src/lib/syna-agent/mockup-code/tools.ts"), "utf8")).toContain('"openai:gpt-image-2.6-flare"');
+    // Les images de SINA : toujours OpenAI, 2.6 Flare par défaut (route commune depuis le 23 novembre 2026).
+    expect(fs.readFileSync(path.join(process.cwd(), "src/lib/syna-agent/mockup-code/tools.ts"), "utf8")).toContain("return routeDesImagesDeSina();");
+    expect(fs.readFileSync(path.join(process.cwd(), "src/lib/ai/social-image-policy.ts"), "utf8")).toContain('export const DEFAULT_SOCIAL_IMAGE_MODEL = "gpt-image-2.6-flare";');
   });
 });

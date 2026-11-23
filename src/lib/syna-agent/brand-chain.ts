@@ -38,7 +38,7 @@ import * as P from "./brand-prompts";
 import { NAME_REFUSALS } from "./brand-references";
 import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
 import { IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
-import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
+import { journeyOf, planchesIncompletes, setStep, updateJourney, type Journey } from "./journey";
 import { marquesRecentes, varierIdentites, varieteMarquesBrief } from "./variete-marques";
 import { annonceLesChiffres, corrigeCeQuiSeMesure } from "./brand-corrections";
 import { loadWordingRules } from "../client-wording";
@@ -134,7 +134,8 @@ function callCounts(routes: number, teams: number, fresh: boolean, images = fals
 /** Une étape enregistrée d'une tâche de la marque : ce qu'elle a déjà fait et payé (relu, jamais repayé). */
 const fait = (done: readonly string[], re: RegExp) => done.filter((k) => re.test(k)).length;
 
-export type ChainQuote = { maxMicro: number; probableMicro?: number };
+/** repriseMicro / repriseProbableMicro : ce qu'un essai de ce qui se reprend coûte (images et relectures), pour la borne du Studio. */
+export type ChainQuote = { maxMicro: number; probableMicro?: number; repriseMicro?: number; repriseProbableMicro?: number };
 /**
  * Devis de la chaîne. Plafond : la somme des coûts MAXIMAUX de tous ses appels (aucun appel ne part au-delà).
  * Coût probable : le déroulé habituel, avec la reprise d'une route sur deux. Mesure du 12 novembre 2026 (essai réel,
@@ -244,7 +245,10 @@ export function boardImagesQuote(routes: number, settings?: ChainSettings, slots
   const list = slots?.length ? CREATED_SLOTS.filter((x) => slots.includes(x)) : CREATED_SLOTS;
   // Images déjà créées (premier essai, sans reprise) : une par planche et par place.
   const faites = (slot: ImageSlot) => new Set(done.filter((k) => !/:r\d+$/.test(k)).map((k) => /^brand:image:\d+:([A-D]):([a-z0-9]+)(?::[a-z0-9+]+)?$/.exec(k)).filter((m) => m?.[2] === slot).map((m) => m![1])).size;
-  for (const slot of list) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot], slot === "logo"), reste = Math.max(0, routes - faites(slot)); max += unit * reste; probable += (unit / 1.25) * reste; }
+  // Ce qui se reprend (deux plafonds) : chaque image et sa relecture, une fois par planche ; jamais l'idée en mots simples
+  // ni la direction artistique, écrites une seule fois.
+  let reprise = 0, repriseProbable = 0;
+  for (const slot of list) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot], slot === "logo"), reste = Math.max(0, routes - faites(slot)); max += unit * reste; probable += (unit / 1.25) * reste; reprise += unit * routes; repriseProbable += (unit / 1.25) * routes; }
   // Le logo seul ne réécrit jamais la direction artistique (audit du 22 novembre 2026, 2.3) : elle n'est pas comptée.
   const logoSeul = list.length === 1 && list[0] === "logo";
   for (const id of (logoSeul ? ["look"] : ["imagery", "look"]) as ("imagery" | "look")[]) {
@@ -255,8 +259,9 @@ export function boardImagesQuote(routes: number, settings?: ChainSettings, slots
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
     max += (bound ?? (usual ?? 0) * 4) * fois;
     probable = probable == null || usual == null ? null : probable + usual * fois;
+    if (id === "look") { reprise += (bound ?? (usual ?? 0) * 4) * routes * n; repriseProbable += (usual ?? 0) * routes * n; }
   }
-  return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
+  return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}), repriseMicro: Math.ceil(reprise), repriseProbableMicro: Math.ceil(repriseProbable) };
 }
 
 /**
@@ -268,7 +273,7 @@ export function finishQuote(slots: readonly ImageSlot[] = FINISH_SLOTS, settings
   const q = boardImagesQuote(1, settings, slots, [], slots.includes("logo") ? simples : 0);
   // Le symbole seul, tiré du logo : une image carrée avec le logo en référence (sa relecture est déjà comptée avec celle des images).
   const unit = imageUnitMax("1:1", 1, true);
-  return { maxMicro: q.maxMicro + unit, ...(q.probableMicro ? { probableMicro: Math.ceil(q.probableMicro + unit / 1.25) } : {}) };
+  return { maxMicro: q.maxMicro + unit, ...(q.probableMicro ? { probableMicro: Math.ceil(q.probableMicro + unit / 1.25) } : {}), repriseMicro: (q.repriseMicro ?? 0) + unit, repriseProbableMicro: Math.ceil((q.repriseProbableMicro ?? 0) + unit / 1.25) };
 }
 
 // ---------------------------------------------------------------- formes rendues par les spécialistes
@@ -641,6 +646,8 @@ const Payload = z.object({
   finish: z.boolean().optional(),
   /** Avec `imagesOnly` : finir une planche gardée de côté (une image y manque), à la charge du Studio. */
   studio: z.boolean().optional(),
+  /** La borne des reprises à la charge du Studio, écrite par le devis (deux plafonds) ; lue par le moteur commun. */
+  studioCapMicro: z.number().int().nonnegative().optional(),
 });
 export type BrandJobPayload = z.infer<typeof Payload>;
 
@@ -713,7 +720,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
       // Une planche gardée de côté, finie par le Studio : ses images manquantes sont une reprise de son propre travail,
       // jamais comptée au client (LE-STUDIO-DE-A-A-Z, partie 13 : « une erreur de SINA est toujours corrigée sans rien compter »).
       const faire = () => runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, madeLogos: [...redoneLogos], keptLogos: [...redoneKept], gouts, refusLogo, ...(reprise ? { imagery: reprise } : {}) });
-      const r = a.studio && (j.identities?.incompletes ?? []).some((y) => y.key === x.key) ? await aLaChargeDuStudio(faire) : await faire();
+      const r = a.studio && planchesIncompletes(j).some((y) => y.key === x.key) ? await aLaChargeDuStudio(faire) : await faire();
       // La série compte TOUS les logos dessinés, gardés ou refusés (essai réel de Nadia, 23 novembre 2026).
       redoneLogos.push(...r.logos);
       const fresh = (a.slots ?? CREATED_SLOTS).includes("logo") && r.route.board.images?.logo ? getAsset(r.route.board.images.logo.id) : undefined;

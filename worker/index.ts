@@ -16,9 +16,13 @@ import { runDueAutopilots } from "../src/lib/social-v2/autopilot";
 import { handlers, HANDLER_TYPES } from "./handlers";
 import { aiActiveFor, runForUser, withAiDisabled } from "../src/lib/ai/access";
 import { withTrace } from "../src/lib/ai/trace";
+import { borneDuStudioDe } from "../src/lib/ai/borne-du-studio";
 import { intentsFromAction } from "../src/lib/orchestrator/intent";
 
-/** Plafond de dépense accepté par le client pour cette tâche (création lancée par une demande), sinon aucun. */
+/**
+ * Plafond de dépense accepté par le client pour cette tâche (création lancée par une demande), sinon aucun. La borne des
+ * reprises à la charge du Studio se calcule sur le plafond enregistré (`borneDuStudioDe`, deux plafonds).
+ */
 const capOf = (payload: unknown) => {
   const c = (payload as { costCapMicro?: unknown } | null)?.costCapMicro;
   return typeof c === "number" && Number.isFinite(c) && c >= 0 ? c : undefined;
@@ -88,7 +92,7 @@ async function runOne() {
       const guarded = (ctx.payload as { aiOff?: boolean })?.aiOff ? () => withAiDisabled("demande lancée sans devis payant accepté", exec) : exec;
       // Seul le rattachement serveur persistant définit la demande commune ; jamais un ID libre du payload.
       const agentBound=one<{bound_id:string}>('SELECT bound_id FROM agent_request_jobs WHERE job_id=?',job.id);
-      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload), relance: relanceOf(ctx.payload),...(agentBound?{agentBoundId:agentBound.bound_id}:{}) }, guarded), "normal", job.project_id ?? null));
+      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload), studioCapMicro: borneDuStudioDe(ctx.payload), relance: relanceOf(ctx.payload),...(agentBound?{agentBoundId:agentBound.bound_id}:{}) }, guarded), "normal", job.project_id ?? null));
       // Écriture du résultat : en cas d'échec (base occupée…), nouvel essai — jamais une relance du traitement,
       // qui referait (et repaierait) ce qui vient d'être fait.
       for (let i = 0; ; i++) {

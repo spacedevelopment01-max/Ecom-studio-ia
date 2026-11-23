@@ -23,7 +23,7 @@ import { activeProviderKey, FX_SAFETY, priceFor, priceValid, requirePrice, usdTo
 import { CACHE_WRITE_RATIO, cacheReadRatio, extractJson, routeLlm } from "./llm";
 import { mapEffort, modelStatus, textModel } from "./text-models";
 import { openaiCountBody, openaiResponses, ProviderHttpError } from "./text-providers";
-import { assertUnderCostCap, recordCall, redact } from "./trace";
+import { assertUnderCostCap, chargeDuStudio, recordCall, redact } from "./trace";
 
 export type WebProvider = "openai" | "anthropic";
 /** Tarif de l'outil, à l'appel, saisi dans l'administration (ex. `anthropic:web_search`). */
@@ -240,7 +240,7 @@ export async function webResearch(call: { userId: string; projectId: string | nu
   }
   if (!Number.isFinite(counted) || counted <= 0) throw new PermanentError(L("Comptage des jetons impossible : recherche web bloquée.", "Token count unavailable: web search blocked."));
   const maxMicro = webSearchMaxMicro(provider, model, counted, searches);
-  assertUnderCostCap(maxMicro);
+  assertUnderCostCap(maxMicro, chargeDuStudio());
   const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId });
   const started = Date.now();
   const trace = { userId: call.userId, projectId: call.projectId, jobId: call.jobId, task, provider, requestedModel: model, unit: "tokens" as const, effort, usageKey: call.usageKey, promptKey: "preparation.research.web", callTry: 0 };

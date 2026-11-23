@@ -28,13 +28,14 @@ import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
 import { noteImageModel } from "./media-alerts";
 import { activeProviderKey, bearer, falAuth, FX_SAFETY, isGatewayKey, requirePrice, routeFor, usdToEur } from "./config";
-import { assertUnderCostCap, recordCall, redact } from "./trace";
+import { assertUnderCostCap, chargeDuStudio, recordCall, redact } from "./trace";
 import { L } from "../i18n-server";
 import { getJsonSetting, getSetting, setSetting } from "../settings";
 import { fileExists, putFile, readFile } from "../storage";
 import { route, type InputType, type RouteDecision } from "../orchestrator/router";
 import { balance } from "../billing";
-import { incompatibility, mediaBackup, mediaStatus, modelForProvider, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
+import { incompatibility, mediaBackup, mediaStatus, modelForProvider, routeDesImagesDeSina, selectMedia, USAGE_INFO, usageBackup, usageExplicit, usageOff, type MediaChoice, type MediaNeed, type MediaUsage } from "./media-routing";
+import { outilChoisiParLeClient, REQUIRED_SOCIAL_IMAGE_PROVIDER } from "./social-image-policy";
 import { mediaModel, type MediaKind } from "./media-models";
 import { alibabaBase, alibabaError, alibabaHeaders, qwenImageBody, qwenSize, qwenImageUrl, wanTask, wanVideoBody } from "./alibaba";
 import { DIRECT_ORIGINS, DIRECT_VIDEO_PROVIDERS, directPoll, directRead, directStart, directTask, hashedEndUser, type DirectVideoProvider } from "./video-direct";
@@ -261,13 +262,16 @@ function gate(ctx: Ctx, micro: number, media: "image" | "video", provider: strin
   const q = quotaFor(media);
   if (q) assertQuota(ctx.userId, q);
   const max = mediaReservationMaxMicro(micro);
-  assertUnderCostCap(max);
+  // Une image refaite à la charge du Studio ne regarde que la borne du Studio de la tâche (deux plafonds).
+  assertUnderCostCap(max, chargeDuStudio());
   // Hors trace (appel direct, jamais en pratique) : la génération serait sans suivi de réservation — refusée.
   t.reservation = reserve(ctx.userId, max, { task: t.task, provider, model, jobId: ctx.jobId, projectId: ctx.projectId, usageKey: ctx.usageKey, requestHash: t.requestHash });
   const priced = requirePrice(provider, model);
   Object.assign(t, { provider, model, unit: media === "video" ? "video_second" : priced.unit === "tokens" ? "tokens" : "image", started: Date.now() });
   // Qwen-Image 3.0 Pro inutilisable et image créée ailleurs (souvent OpenAI, plus cher) : administrateur alerté vite.
-  if (media === "image") noteImageModel({ provider, model, projectId: ctx.projectId ?? null, usage: t.usage ?? null, excluded: mediaExclude.getStore()?.exclude });
+  // Une image de SINA faite par OpenAI est la règle du propriétaire, jamais un incident de Qwen (essai de Nadia : une
+  // alerte « Qwen inutilisable » levée à chaque image de planche).
+  if (media === "image" && (provider !== REQUIRED_SOCIAL_IMAGE_PROVIDER || outilChoisiParLeClient())) noteImageModel({ provider, model, projectId: ctx.projectId ?? null, usage: t.usage ?? null, excluded: mediaExclude.getStore()?.exclude });
 }
 
 /** La demande part chez le fournisseur (à partir d'ici, un échec sans réponse d'erreur est incertain). */
@@ -421,6 +425,22 @@ export function falBilledSeconds(model: string, requested?: number) {
  * masque, vidéo). La barrière de qualité reste la même. La décision est attachée à la trace de la génération.
  */
 export function routeMedia(task: "image_generation" | "video_generation", inputType?: InputType, need?: Partial<MediaNeed>): RouteDecision | null {
+  const d = routeMediaChoisi(task, inputType, need);
+  // Images de SINA : OpenAI seulement (règle du propriétaire : « Images créées par OpenAI pour tout ce que fait SINA »).
+  // Seul un outil choisi par le client lui-même dans l'atelier échappe à la règle.
+  if (!d || task !== "image_generation" || d.provider === REQUIRED_SOCIAL_IMAGE_PROVIDER || outilChoisiParLeClient()) return d;
+  // Une route confirmée par devis ou un secours désigné hors d'OpenAI : refusés, jamais remplacés en silence (leur prix
+  // n'est pas celui d'OpenAI).
+  if (mediaExclude.getStore()) return null;
+  const r = routeDesImagesDeSina(), m = mediaModel(r.provider, r.model), usage = need?.usage;
+  const n = { ...(usage ? USAGE_INFO[usage].need : {}), kind: "image", mask: inputType === "mask", ...need } as MediaNeed;
+  if (!m || !m.adapter || !mediaStatus(m).usable || incompatibility(m, n)) return null;
+  const reason = `images de SINA par OpenAI (règle du propriétaire)${usage ? ` [${usage}]` : ""}`;
+  const t = mediaTrace.getStore();
+  if (t) { t.choice = { provider: m.provider, model: m.model, role: "primary", reason }; t.routing = { reason, fallback: false, escalation: false }; }
+  return { mode: "image", provider: m.provider, model: m.model, tier: "strong", reason, fallback: false, escalation: false, qualityTarget: null };
+}
+function routeMediaChoisi(task: "image_generation" | "video_generation", inputType?: InputType, need?: Partial<MediaNeed>): RouteDecision | null {
   const recovering = mediaTrace.getStore()?.previous;
   if (recovering) {
     const reason = "reprise du résultat déjà engagé";
