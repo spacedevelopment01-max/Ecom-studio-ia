@@ -360,6 +360,18 @@ Dernière commande :
 - les images de la planche sur le site ;
 - l'aperçu des noms.
 
+### Bilan final vérifié (23 novembre 2026, nuit)
+
+- « SINA évolue » a fini, et s'arrête pour préparer l'essai réel. La version `79607341` a été vérifiée par le chef
+  d'orchestre sur une copie propre : contrôle des types sans erreur, 5 970 essais passés (81 mis de côté). 0 € dépensé.
+- Coûts estimés d'après le code :
+  - un projet : environ 22 € → 10 à 13 € ;
+  - un mois courant : 6,10 → environ 4 € (69 €), 12,15 → 8,10 à 9,35 € (99 €), 18,20 → 12,35 à 14,40 € (169 €).
+- Faute avouée : deux demandes de comptage parties chez Anthropic avec une fausse clé pendant un essai, refusées, rien de
+  facturé, essai corrigé.
+- Proposé au propriétaire : reprendre Nadia (marque et angles) sur la nouvelle version, plafond 10 €, arrêt à 8 €.
+  « Les essais complets » devra d'abord passer sur la dernière version de `claude/evolution-sina`.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
