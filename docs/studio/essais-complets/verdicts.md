@@ -18,6 +18,10 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 23/11 14:16 | Nadia | Identité C « Pénombre », logo, 1er essai | 5/10 : « Un arc vert en demi-cercle entoure le pot de bougie au-dessus du nom, ce qui forme une arche interdite » | Non | [en attente] |
 | 23/11 14:16 | Nadia | Identité C « Pénombre », logo, 2e essai | 7/10 : « fait clipart générique et évoque un pot de fleurs » | Non | [en attente] |
 | 23/11 14:17 | Nadia | Identité C « Pénombre », logo, 3e essai | 6/10 : « ressemble à un ramequin de dessert plutôt qu'à une bougie […] manque d'une idée forte liée à la pénombre » | Non | [en attente] |
+| 23/11 14:17 | Nadia | Identité C « Pénombre », grande scène, 1er essai | 5/10 : « un pot de confiture avec une étiquette vierge, et non une bougie en cire de soja » | Non | [en attente] |
+| 23/11 14:17 | Nadia | Identité C « Pénombre », grande scène, 2e essai | 6/10 : « L'étiquette du bocal […] est vierge : un grand cadre vide » | Non | [en attente] |
+| 23/11 14:18 | Nadia | Identité C « Pénombre », grande scène, 3e essai | 5/10 : « ressemble à un pot de confiture (matière rouge granuleuse, aucune mèche) » | Non | [en attente] |
+| 23/11 14:18 | Nadia | Identité C « Pénombre », haut du site | 5/10 : « un bandeau de mois non demandé (JAN à DÉC, avec « JUI » en double) […] le pot de bougie de la photo est coupé par le bord droit » | **Oui, gardée malgré 5/10** (raté du Studio) | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
