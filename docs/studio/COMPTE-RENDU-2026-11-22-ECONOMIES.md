@@ -1174,6 +1174,35 @@ Deux épreuves ajoutées : `reprise-du-studio-jamais-bloquee-par-la-carte`, `ima
 aucun essai réel ; une reprise de logo qui joint plus d'images que le premier essai peut coûter un peu plus que prévu, et
 la borne arrêterait alors la dernière reprise (SINA le dirait, rien ne serait compté au client).
 
+## SINA propose de finir les planches
+
+Demande du propriétaire : « qu'elle prenne les devants ». Ce qui manque à une planche se lit toujours par la même
+fonction (sur son contenu réel : logo, grande scène, haut du site).
+
+- **Les anciens boutons.** Un bouton « Je prends … » d'un ancien message qui choisit une planche incomplète est grisé et
+  ne fait rien ; dessous : « Cette planche n'est pas encore complète : je la finis à ma charge, puis tu pourras la
+  choisir. » (en anglais : « This board isn't complete yet: I'll finish it at my expense, then you can choose it. »). Il
+  redevient actif tout seul dès que la planche est complète. Le refus du choix par SINA reste, en seconde sécurité.
+- **Le message de SINA à l'ouverture.** Quand le client ouvre son projet, le Studio pose lui-même, sans aucun appel à
+  l'IA, un message écrit à partir de ce qui manque vraiment, par exemple : « Il manque le logo de Sillage, de Halo et de
+  Pénombre. Je les finis à ma charge, ça ne te coûte rien. On y va ? » (en anglais : « Still missing: the logo for
+  Sillage, Halo and Pénombre. I'll finish them at my expense, it costs you nothing. Shall we go ahead? »). Deux boutons :
+  « Oui, finis-les » et « Plus tard ». Le message n'est posé qu'une fois pour un même état des planches ; il revient
+  seulement si ce qui manque change, et jamais pendant une reprise.
+- **« Oui, finis-les »** ouvre la carte d'accord habituelle (« À ma charge : 0 % de ton budget ») ; confirmée, la reprise
+  part par le même chemin que si SINA l'avait proposée, à la charge du Studio. Si les planches ne manquent pas des mêmes
+  images, la carte couvre d'abord le plus grand groupe ; le reste est reproposé ensuite.
+- **Au message suivant**, le contexte de SINA commence par ce qui manque, avec la consigne de le dire et de proposer de
+  le finir à sa charge avant tout le reste. Cette ligne disparaît quand il a dit oui (reprise en cours ou carte ouverte)
+  ou non. Le « non » se repère par le clic sur « Plus tard » ou par le refus de la carte de cette reprise : un bouton ne
+  se lit pas de travers et ne coûte aucune lecture par l'IA.
+- Jamais un bouton coupé : les boutons de réponse reviennent à la ligne et grandissent ; vérifié en captures sur
+  téléphone (360 px) et ordinateur (1280 px), rien ne dépasse.
+
+Épreuve ajoutée : `sina-propose-de-finir-les-planches`. Suite complète verte (6 068 essais). Non vérifié : aucun essai
+réel avec un client ; l'écran entier du Studio n'a pas été ouvert dans un navigateur (seuls les boutons et la phrase
+l'ont été, avec les vrais styles).
+
 ## Essai de Nadia : la charge du Studio et la carte annoncée
 
 Deux ratés vus dans l'essai réel de Nadia (version 891914dc, les logos de Sillage et de Halo refaits).
