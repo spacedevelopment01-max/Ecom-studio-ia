@@ -1028,3 +1028,48 @@ coûteraient environ moitié moins : 1,17 €, 2,34 € et 3,51 €.
 
 **Une question de règle :** 24. Une seule liste d'outils pour le site, avant et après sa création, ferait 22 notices,
 au-delà de la règle « moins de 20 ». Rien n'a été fait.
+
+## Le prix d'une vidéo
+
+Le 23 novembre 2026, dans le cadre de tes accords du 18 novembre et de la règle « le moins cher qui suffit par défaut ».
+
+**Ce qui change pour toi :**
+- Le modèle qui anime les vidéos est maintenant, par défaut, **Veo 3.1 Lite par Vertex**, sans son (0,03 $ la seconde).
+  Avant, quand rien n'était réglé, le Studio prenait Veo 3.0 avec son (0,40 $ la seconde, plans de 8 secondes
+  seulement). Veo 3.0 n'est plus jamais pris tout seul, ni en secours. Les vidéos passant par l'ancienne porte de Google
+  (l'API Gemini) ne sont plus utilisées du tout : Veo passe seulement par Vertex. Un modèle accordé que tu règles toi-même
+  dans Administration › Images & Vidéos reste respecté.
+- **Tant que la clé de Vertex n'est pas saisie**, aucune vidéo n'est bloquée : chaque plan montre la vraie photo du
+  produit, détourée, sur les couleurs de la marque, avec la caméra qui bouge doucement (le plan sûr du 22 novembre). Le
+  client le lit en clair sous le prix, et aucun plan animé n'est compté.
+- Un plan de 6 secondes compte 6 secondes (plus arrondi à 8). Un modèle de 5 secondes compte 6 secondes, la durée la
+  plus courte que fait Veo 3.1 Lite (4, 6 ou 8).
+- Le prix montré compte l'image de départ à son **prix probable**, comme pour les publications. Le prix le plus haut
+  possible ne sert plus qu'à la phrase « au plus ».
+- L'image de départ et chaque plan sont relus par **le modèle le plus fort, au niveau élevé**, un à la fois, comme les
+  photos du site et les images des publications. Avant : un modèle moyen au niveau faible.
+
+**Les nouveaux prix** (calculés par un essai simulé, sans appel ; forfait du milieu, budget d'IA de 29,67 € le mois) :
+
+| Modèle de l'atelier | Avec la clé de Vertex : prix | au plus | Sans la clé (plan sûr) |
+|---|---|---|---|
+| Le produit qui tourne (6 s comptées) | 1,6 % (0,47 €) | 5,4 % (1,60 €) | 0,2 % (0,06 €) |
+| Le moment cadeau (8 s) | 1,8 % (0,52 €) | 5,8 % (1,73 €) | 0,2 % (0,06 €) |
+| Le déballage (8 s) | 1,8 % (0,52 €) | 5,8 % (1,73 €) | 0,2 % (0,06 €) |
+| Le produit dans la vraie vie (8 s) | 1,8 % (0,52 €) | 5,8 % (1,73 €) | 0,2 % (0,06 €) |
+| Les détails (6 s comptées) | 1,6 % (0,47 €) | 5,4 % (1,60 €) | 0,2 % (0,06 €) |
+
+Les deux modèles publicitaires demandent le forfait Dominer (budget d'IA de 43 € le mois) : l'offre du moment (6 s)
+1,1 % (0,47 €), au plus 3,7 % (1,60 €) ; la publicité de 15 secondes (trois plans de 6 s) 3,0 % (1,29 €), au plus 7,3 %
+(3,12 €). Sans la clé : 0,1 % (0,06 €). L'avant et l'après reste gratuit.
+
+Pour « Le moment cadeau », le prix probable passe d'environ 3,13 € à 0,52 € : l'écriture du scénario 0,06 €, l'image de
+départ 0,10 €, sa relecture 0,07 €, le plan de 8 s 0,21 €, sa relecture 0,08 €. Les relectures coûtent plus qu'avant
+(modèle le plus fort), le plan beaucoup moins. « Au plus » compte l'image à sa réservation et une scène refaite à ta
+demande. Ce qui n'a pas été vérifié : aucun appel réel ; les jetons des relectures sont des estimations, à mesurer au
+premier essai. Le choix final du modèle attend l'essai comparatif, et ton oui sur son prix.
+
+**Ce qui attend ton accord (le côté de SINA, non touché) :** SINA donne encore un prix de vidéo calculé autrement. Pour
+qu'elle donne le même prix que l'atelier et la page de réglage, trois endroits de ses outils de l'atelier sont à changer :
+ce qu'elle lit de l'atelier, la vidéo qu'elle prépare, et la carte d'accord de ses créations (prix probable avec « au
+plus »).
