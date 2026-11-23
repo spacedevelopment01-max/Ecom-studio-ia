@@ -13,6 +13,8 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 23/11 14:14 | Nadia | Identité B « Halo », logo, 1er essai | 6/10 : « le symbole maison-fenêtre-cœur est un pictogramme banal qui évoque l'immobilier plutôt que la bougie » | Non | [en attente] |
 | 23/11 14:14 | Nadia | Identité B « Halo », logo, 2e essai | 7/10 : « cœur dans une maison avec rayons […] cliché d'agence immobilière ou d'aide à domicile, sans lien avec la bougie » | Non | [en attente] |
 | 23/11 14:14 | Nadia | Identité B « Halo », logo, 3e essai | 6/10 : « Le toit bleu et le trait-sourire orange forment un pictogramme générique d'agence immobilière ou de dépannage, sans lien avec la bougie coulée main » | Non | [en attente] |
+| 23/11 14:15 | Nadia | Identité B « Halo », grande scène (bougie allumée le soir, branche de figuier) | 8/10, sans remarque | Oui | [en attente] |
+| 23/11 14:15 | Nadia | Identité B « Halo », haut du site sur téléphone (« La lumière du soir, coulée à la main à Brignais. ») | 8/10, sans remarque | Oui | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
