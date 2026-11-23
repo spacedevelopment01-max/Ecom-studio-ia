@@ -451,6 +451,11 @@ Dernière commande :
   la politique du 18 octobre (gpt-image-2.5-sunburst) s'applique. Planche des 50 gardée telle quelle : ne pas l'agrandir.
   Constat : les logos de Nadia ressemblent à la rangée « Maison et quotidien » de la planche (n° 10 à 13). Essai réel des
   seuls logos de Nadia à soumettre au propriétaire, avec son prix.
+- Logos réparés (2e11c956, c4a8ae79), vérifiés par le chef d'orchestre (6 045 essais passés). Essai réel des 3 logos
+  soumis au propriétaire : environ 1,50 €, arrêt à 8 € au total. En attente de deux réparations trouvées en préparant
+  l'essai : deux plafonds (client / reprises du Studio) ; planches d'avant non reconnues incomplètes (montrées
+  choisissables, refonte comptée à la cliente) ; devis d'un seul essai par logo ; Qwen choisi pour une scène de
+  planche (règle : images de SINA par OpenAI).
 
 ## 5. À lire avant chaque décision
 
