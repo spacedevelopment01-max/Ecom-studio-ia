@@ -121,7 +121,18 @@ Forme exacte : {"job": "", "confessions": [{"text": "", "quotes": [0]}], "ideas"
  * Les équipes de noms : la partie commune en tête (identique pour les quatre, relue en mémoire), le chemin de l'équipe
  * À LA FIN de la demande (`teamPathBlock`, audit 2.6). Les équipes restent séparées.
  */
-export const teamSystem = (kind: "produits" | "services", _path?: TeamPath) => `Tu es conceptrice de noms de marque dans une agence spécialisée. Tu travailles seule, sur UN seul chemin, donné à la fin de la demande.
+/**
+ * Combien de noms demander à une équipe : la réflexion et la réponse doivent tenir ensemble dans la limite de sortie
+ * de l'appel (essai réel de Nadia, 23 novembre 2026 : une équipe priée de rendre « entre 40 et 70 noms » a réfléchi
+ * puis écrit jusqu'à 16 000 jetons, réponse coupée). Premier tour : 30 à 40 ; second tour (sa demande est plus longue,
+ * avec les noms déjà trouvés) : 25 à 35 ; reprise d'une équipe coupée : 15 à 20, réflexion brève.
+ */
+export type TeamAsk = { min: number; max: number; court?: boolean };
+export const TEAM_ASK = { premier: { min: 30, max: 40 }, second: { min: 25, max: 35 }, reprise: { min: 15, max: 20, court: true } } as const satisfies Record<string, TeamAsk>;
+/** Longueur maximale de « detail » et de « second », en caractères (réponse plus courte, même contenu). */
+export const TEAM_TEXT_MAX = 160;
+
+export const teamSystem = (kind: "produits" | "services", _path?: TeamPath, ask: TeamAsk = TEAM_ASK.premier) => `Tu es conceptrice de noms de marque dans une agence spécialisée. Tu travailles seule, sur UN seul chemin, donné à la fin de la demande.
 
 ${HOUSE_RULES}
 
@@ -130,9 +141,9 @@ ${brandBook("noms")}
 
 ${nameYardstick(kind)}
 
-Ce que tu rends : au moins 40 noms, tous sur TON chemin, sans te censurer (le tri se fait après). Pour chacun : name (4 mots au plus, sans chiffre ni ponctuation), detail (le détail réel du produit ou du métier dont il part, tiré de la fiche du client), second (la deuxième lecture : le sens courant, l'image, le sourire), idea (l'id de l'idée de marque qu'il sert le mieux, ou "" s'il vaut pour plusieurs). Jamais deux noms construits sur le même moule à la suite, jamais le nom d'un concurrent de l'étude, jamais un nom des exemples.
+Ce que tu rends : au moins ${ask.min} noms, tous sur TON chemin, sans te censurer (le tri se fait après). Pour chacun : name (4 mots au plus, sans chiffre ni ponctuation), detail (le détail réel du produit ou du métier dont il part, tiré de la fiche du client), second (la deuxième lecture : le sens courant, l'image, le sourire), idea (l'id de l'idée de marque qu'il sert le mieux, ou "" s'il vaut pour plusieurs). Jamais deux noms construits sur le même moule à la suite, jamais le nom d'un concurrent de l'étude, jamais un nom des exemples.
 
-Longueurs : name 40 caractères au plus ; detail et second 200 au plus chacun. Entre 40 et 70 noms.
+Longueurs : name 40 caractères au plus ; detail et second ${TEAM_TEXT_MAX} au plus chacun, en une phrase courte. Entre ${ask.min} et ${ask.max} noms, jamais plus.${ask.court ? "\n\nRéflexion brève : tu as peu de place. Rends la liste sans délibérer longuement sur chaque nom (le tri se fait après, par un juge)." : ""}
 
 Forme exacte : {"names": [{"name": "", "detail": "", "second": "", "idea": ""}]}`;
 

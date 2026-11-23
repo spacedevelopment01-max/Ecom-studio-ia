@@ -93,6 +93,8 @@ describe("SINA — chaîne de création de la marque", async () => {
     judge?: (id: string, names: string[]) => any;
     /** Noms rendus par une équipe au second tour (quand le juge en a gardé trop peu). */
     team2?: (id: string) => string[];
+    /** Réponse d'un appel coupée à sa limite (essai réel de Nadia, 23 novembre 2026) : l'appel lève l'erreur d'une réponse inexploitable. */
+    cut?: (id: string) => boolean;
     /** Création d'une image (par défaut : un petit carré de couleur ; une erreur simule un appel en échec). */
     draw?: (id: string, call: any) => Promise<Buffer>;
     /** Relecture des images (par défaut : tout est accepté, le nom est lu tel quel). */
@@ -117,12 +119,15 @@ describe("SINA — chaîne de création de la marque", async () => {
       // Le lecteur qui ne sait rien : par défaut il comprend tout, et son appel n'encombre pas les suites d'appels vérifiées.
       if (c.kind === "reader" && !(s as any).reader) return c.schema.parse({ texts: [] });
       log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system;
+      ((log as any).studio ??= {})[id] = (await import("@/lib/billing")).chargeDuStudio();
+      if (s.cut?.(id)) throw new (await import("@/lib/ai/llm")).ReponseInexploitable("La réponse de l'IA a été coupée faute de place.", true);
       const raw: any = (() => {
         if (c.kind === "study") return { quotes: [...REAL.map((text) => ({ text, url: PAGE })), { text: "Cette boisson a changé ma vie, je la recommande à tous.", url: PAGE }, { text: REAL[0], url: "https://inconnu.example/page" }], competitors: [{ name: "Fruits Givrés", url: RIVAL, codes: "pastels, fraîcheur" }], mould: "Des noms de fruits et de fraîcheur, des pastels.", substitutes: ["le soda de l'après-midi"], facts: [{ text: "Une infusion à froid demande au moins une heure au frais.", url: USAGE }, { text: "Fait sans page.", url: "https://inconnu.example/fait" }], notFound: [] };
         if (c.kind === "strategy") return { job: "Le soda était un moment à soi.", confessions: [{ text: "Quand je lis « sans sucre », je cherche ce qu'on me cache.", quotes: [0, 1, 2, 4, 5, 9, 11] }, { text: "Mon soda, c'est mon seul petit plaisir.", quotes: [] }], ideas: ["A", "B", "C", "D", "A", "B", "C", "D"].map((k, i) => ({ id: `i${i + 1}`, belief: i < 4 ? route(k as "A").board.idea.belief : `Idée de réserve ${i}`, confession: k === "D" ? 1 : 0, enemy: route(k as "A").board.idea.enemy, proof: route(k as "A").board.idea.proof, cost: route(k as "A").board.idea.cost, opposite: "les marques pressées", onlyUs: "nos morceaux se voient", tone: "franc", strong: s.strong ? s.strong(id, i) : i !== 7 })) };
-        if (c.kind === "team") {
+        if (c.kind === "team" || c.kind === "teamShort") {
           const mine: Record<string, string[]> = { "team-langue": ["Bain de Minuit", "Lâche le Morceau", "La Main Lourde", "La Mèche Courte", "Sans Rancune"], "team-mots": ["Trempette", "Fruits Givrés", "Thé 2000", "Lâche le Morceau", "Frisquet"], "team-univers": ["Nage Libre", "L'Eau Est Bonne", "Grand Bain", "Plongeon", "Marée Haute"], "team-verite": ["Minute Papillon", "À Tremper", "Sans Bulles", "Patience", "Morceaux Choisis"] };
-          return { names: (id.endsWith("-2") && s.team2 ? s.team2(id) : mine[id] ?? ["Un", "Deux", "Trois", "Quatre", "Cinq"]).map((name) => ({ name, detail: "détail", second: "lecture", idea: "" })) };
+          const base = id.replace(/-court$/, "");
+          return { names: (base.endsWith("-2") && s.team2 ? s.team2(base) : mine[id] ?? (c.kind === "teamShort" ? [`Reprise ${base}`, "Six", "Sept", "Huit", "Neuf"] : ["Un", "Deux", "Trois", "Quatre", "Cinq"])).map((name) => ({ name, detail: "détail", second: "lecture", idea: "" })) };
         }
         if (c.kind === "judge") { const names = [...c.prompt.matchAll(/^- (.+?) \| détail réel/gm)].map((m: RegExpMatchArray) => m[1]); return s.judge ? s.judge(id, names) : { kept: names.slice(0, 12).map((name) => ({ name, seen: "Une image nette.", why: "On le porterait avec fierté." })), almost: [] }; }
         if (c.kind === "shortlist") return { routes: s.shortlist ? s.shortlist(c.prompt) : [...(c.prompt.match(/Compose (\d)/)?.[1] === "2" ? [pick("A"), pick("B")] : c.prompt.match(/Compose (\d)/)?.[1] === "4" ? [pick("A"), pick("B"), pick("C"), pick("D")] : [pick("A"), pick("B"), pick("C")]), pick("B", "Nage Libre", true), pick("C", "La Main Lourde", true)] };
@@ -1289,8 +1294,11 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     const c = T.marqueCoupee(t.pid)!;
     expect(c.id).toBe(first.job.id);
     expect(T.marqueOuArretee(c.etapes)).toBe("déjà fait et gardé : l'étude de ton marché, l'idée de ta marque, les pistes de noms, le tri des noms");
-    // Le prix de la reprise : ce qui reste du plafond (rien de payé ici : le plafond entier, jamais moins d'un cinquième).
-    expect(T.relanceMarqueQuote(c).maxMicro).toBe(9_000_000);
+    // Le prix de la reprise : seulement ce qui reste à faire (23 novembre 2026), avec son prix probable.
+    const reste = T.relanceMarqueQuote(c);
+    expect(reste.maxMicro).toBe(C.chainQuote({ routes: 3, images: false, done: c.etapes }).maxMicro);
+    expect(reste.maxMicro).toBeLessThan(C.chainQuote({ routes: 3, images: false }).maxMicro);
+    expect(reste.probableMicro).toBeGreaterThan(0);
     // SINA relance : la MÊME tâche repart, avec la relance comptée (un appel coupé en plein milieu se renvoie une fois).
     const r = await call("identity.propose", ctxOf(t.user, t.cid), { relancer: true });
     expect(r).toMatchObject({ ok: true, jobs: [first.job.id] });
@@ -1465,6 +1473,76 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     const ids = J.journeyOf(t.cid).identities!;
     expect(ids.list.map((x) => x.name)).toEqual(["Bain de Minuit", "Haut les Pêches", "Tout Feu Tout Fruit"]);
     expect(ids.issues.join("\n")).not.toMatch(/pas convaincue/);
+  });
+
+  // ---------------------------------------------------------------- une équipe coupée ne fait pas tomber la marque (Nadia, 23 novembre 2026)
+
+  it("une équipe coupée au premier tour : une seule reprise, plus courte et à la charge du Studio ; la marque se crée", async () => {
+    const t = await thread();
+    const { log } = await chain(t, {}, { cut: (id) => id === "team-langue", review: () => ({ routes: [], series: "" }) });
+    const i = log.ids.indexOf("team-langue-court");
+    expect(i, "reprise courte de l'équipe coupée").toBeGreaterThan(-1);
+    expect(log.ids.filter((x) => x.startsWith("team-langue"))).toEqual(["team-langue", "team-langue-court"]);
+    // Moins de noms, réflexion brève ; le premier tour garde sa demande normale.
+    expect(log.systems["team-langue-court"]).toMatch(/Entre 15 et 20 noms, jamais plus/);
+    expect(log.systems["team-langue-court"]).toMatch(/Réflexion brève/);
+    expect(log.systems["team-mots"]).toMatch(/Entre 30 et 40 noms, jamais plus/);
+    // C'est la faute du Studio : la reprise n'est pas débitée au client ; le premier appel l'était.
+    expect((log as any).studio["team-langue-court"]).toBe(true);
+    expect((log as any).studio["team-langue"]).toBe(false);
+    // Les noms de la reprise et ceux des autres équipes arrivent au juge.
+    expect(log.prompts["judge-1"]).toMatch(/^- Reprise team-langue \|/m);
+    expect(log.prompts["judge-1"]).toMatch(/^- Trempette \|/m);
+    expect(J.journeyOf(t.cid).identities!.list.length).toBe(3);
+  });
+
+  it("une équipe coupée deux fois : la création continue avec les noms des autres équipes, et c'est noté", async () => {
+    const t = await thread();
+    const { log, out } = await chain(t, {}, { cut: (id) => id.startsWith("team-langue"), review: () => ({ routes: [], series: "" }) });
+    expect(log.ids.filter((x) => x.startsWith("team-langue"))).toEqual(["team-langue", "team-langue-court"]);
+    expect(log.prompts["judge-1"]).not.toMatch(/Bain de Minuit|Lâche le Morceau \| détail réel : détail \| deuxième lecture : lecture\n- La Main/);
+    expect(log.prompts["judge-1"]).toMatch(/^- Trempette \|/m);
+    expect((out as any).notes.join("\n")).toMatch(/équipe de noms « expressions de la langue[^»]*» sans réponse lisible, même plus courte/);
+    expect(J.journeyOf(t.cid).identities!.list.length).toBe(3);
+  });
+
+  it("toutes les équipes coupées, même plus courtes : la création s'arrête proprement, avec une phrase claire ; l'acquis est gardé", async () => {
+    const t = await thread();
+    const job = jobCtx(t.user, t.pid, { projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, images: false });
+    await expect(chain(t, {}, { cut: (id) => id.startsWith("team-") }, job)).rejects.toThrow(/Mes équipes de noms n'ont rendu aucune réponse lisible, même avec une demande plus courte : la création de ta marque s'arrête ici\. Ce qui est déjà fait est gardé et ne sera pas repayé\./);
+    const cp = JSON.parse(one<{ checkpoint: string }>("SELECT checkpoint FROM jobs WHERE id=?", job.job.id)!.checkpoint);
+    expect(Object.keys(cp)).toEqual(expect.arrayContaining(["brand:study", "brand:strategy"]));
+  });
+
+  it("panne de Nadia rejouée : au second tour, l'équipe « langue » coupée puis coupée encore ; la marque se crée avec les trois autres", async () => {
+    const t = await thread();
+    const { log } = await chain(t, {}, {
+      cut: (id) => id === "team-langue-2" || id === "team-langue-2-court",
+      review: () => ({ routes: [], series: "" }),
+      judge: judging(["Bain de Minuit", "Haut les Pêches", "Tout Feu Tout Fruit"]),
+      team2: (id) => (id === "team-mots-2" ? ["Tout Feu Tout Fruit", "Pulpe 3000", "Trempette", "Frisquet", "Plongeon"] : ["Haut les Pêches", "Vitrine", "Patience", "Sans Bulles", "Marée Haute"]),
+      shortlist: () => [pick("A", "Bain de Minuit"), pick("B", "Haut les Pêches"), pick("C", "Tout Feu Tout Fruit")],
+    });
+    expect(log.ids).toContain("team-langue-2-court");
+    expect(log.systems["team-mots-2"]).toMatch(/Entre 25 et 35 noms, jamais plus/);
+    expect(log.ids).toContain("judge-1-2");
+    expect(J.journeyOf(t.cid).identities!.list.map((x) => x.name)).toEqual(["Bain de Minuit", "Haut les Pêches", "Tout Feu Tout Fruit"]);
+  });
+
+  it("reprise après une panne à 54 % (Nadia) : le devis ne compte que ce qui reste, avec un prix probable, nettement sous la création entière", async () => {
+    const T = await import("@/lib/syna-agent/tools/identity");
+    const etapes = ["brand:study", "brand:strategy", "brand:team:langue", "brand:team:mots", "brand:team:univers", "brand:team:verite", "brand:shown", "brand:round", "brand:judge:1", "brand:team:mots:1:2", "brand:team:univers:1:2", "brand:team:verite:1:2"];
+    const entiere = C.chainQuote({ routes: 3, images: true });
+    const q = T.relanceMarqueQuote({ id: "job-inexistant", payload: { capMicro: entiere.maxMicro, count: 3, images: true }, etapes });
+    expect(q.probableMicro, "prix probable").toBeGreaterThan(0);
+    expect(q.probableMicro!).toBeLessThanOrEqual(q.maxMicro);
+    // L'ancienne carte annonçait l'ancien plafond moins ce qui était payé, soit 82 % du plafond (17,21 € sur 20,88 €).
+    expect(q.maxMicro).toBeLessThan(entiere.maxMicro * 0.85);
+    expect(q.probableMicro!).toBeLessThan(entiere.probableMicro!);
+    // Exactement le devis de ce qui reste : sans l'étude, la stratégie, les équipes faites et le premier juge.
+    expect(q.maxMicro).toBe(C.chainQuote({ routes: 3, images: true, done: etapes }).maxMicro);
+    // Une reprise qui n'a encore rien fait coûte la création entière, pas plus.
+    expect(C.chainQuote({ routes: 3, images: true, done: ["brand:shown"] }).maxMicro).toBe(entiere.maxMicro);
   });
 
   it("aucun nom gardé, même au second tour : les noms sont montrés faute de mieux, et le doute est dit franchement", async () => {

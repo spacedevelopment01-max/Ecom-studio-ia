@@ -388,5 +388,31 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     // Un goût et un refus sur deux lignes : seul le refus part.
     expect(clientRefusal("J'aime le vert.\nJe déteste le rose.")).toBe("Ce que le client refuse, avec ses mots : « Je déteste le rose. »");
   });
+  epreuve("equipe-coupee-ne-fait-pas-tomber-la-marque", async () => {
+    const C = await import("@/lib/syna-agent/brand-chain");
+    const P = await import("@/lib/syna-agent/brand-prompts");
+    const billing = await import("@/lib/billing");
+    const { ReponseInexploitable } = await import("@/lib/ai/llm");
+    // La demande tient dans sa limite : réflexion prévue (environ 14 000 jetons chez Nadia) et réponse ensemble.
+    for (const id of ["team", "teamShort"] as const) expect(C.BRAND_CALLS[id].max).toBeGreaterThanOrEqual(C.BRAND_CALLS[id].reflexion + C.BRAND_CALLS[id].reponse);
+    expect(P.teamSystem("produits")).not.toMatch(/Entre 40 et 70 noms/);
+    // L'équipe « langue » du second tour coupée : refaite une fois, plus courte, à la charge du Studio.
+    const vu: string[] = [];
+    const ai = (coupees: string[]) => ({ ask: async (id: string, c: any) => {
+      vu.push(`${id}${billing.chargeDuStudio() ? " (Studio)" : ""}`);
+      if (coupees.includes(id)) throw new ReponseInexploitable("coupée", true);
+      return c.schema.parse({ names: ["Un", "Deux", "Trois", "Quatre", "Cinq"].map((name) => ({ name })) });
+    } });
+    const ctx = { step: async (_k: string, fn: () => Promise<unknown>) => fn() };
+    const path = P.teamPathsFor("produits", 4)[0], notes: string[] = [];
+    const une = (coupees: string[]) => C.equipeDeNoms({ ctx: ctx as any, ai: ai(coupees) as any, kind: "produits", path, step: "brand:team:langue:1:2", id: "team-langue-2", prompt: "", ask: P.TEAM_ASK.second, notes });
+    expect(await une(["team-langue-2"])).toHaveLength(5);
+    expect(vu).toEqual(["team-langue-2", "team-langue-2-court (Studio)"]);
+    // Coupée encore : la création continue sans elle (les autres équipes suffisent).
+    expect(await une(["team-langue-2", "team-langue-2-court"])).toBeNull();
+    expect(notes.join("")).toMatch(/la création continue avec les noms des autres équipes/);
+    // Seule une panne de toutes les équipes arrête la création, avec une phrase claire.
+    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain("if (paths.length && !teams.length) throw new UserFacingError(L(\"Mes équipes de noms n'ont rendu aucune réponse lisible");
+  });
 });
 

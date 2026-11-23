@@ -23,10 +23,11 @@ import { L } from "../i18n-server";
 import { loadProject } from "../projects";
 import { assetData, getAsset } from "../library";
 import { getJsonSetting } from "../settings";
-import { callCostBoundMicro, estimateCallMicro, llmJson } from "../ai/llm";
+import { callCostBoundMicro, estimateCallMicro, llmJson, reponseInexploitable } from "../ai/llm";
+import { aLaChargeDuStudio } from "../billing";
 import { aiSiteImageHd, photoRequestMaxMicro, withQuotedImageRoute } from "../ai/media-providers";
 import { CostCapReached, withTrace } from "../ai/trace";
-import { consigneUneFamille, webResearch, webSearchQuoteMicro, type ResearchCategory, type WebFinding } from "../ai/web-search";
+import { consigneUneFamille, webResearch, webSearchQuote, type ResearchCategory, type WebFinding } from "../ai/web-search";
 import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
@@ -65,29 +66,56 @@ export function chainSettings(): ChainSettings {
   return { teams, strong: { ...DEFAULT_CHAIN.strong, ...(s.strong ?? {}) }, craft: { ...DEFAULT_CHAIN.craft, ...(s.craft ?? {}) } };
 }
 
-/** Déroulé habituel de chaque appel (jetons d'entrée, de sortie avec la réflexion, et limite de sortie). */
-const CALLS = {
-  study: { tier: "craft", input: 30_000, output: 7_000, max: 12_000 },
-  strategy: { tier: "strong", input: 22_000, output: 12_000, max: 20_000 },
-  team: { tier: "craft", input: 12_000, output: 9_000, max: 16_000 },
-  shortlist: { tier: "strong", input: 26_000, output: 9_000, max: 16_000 },
-  // Le juge des noms : il lit tous les noms des équipes et ne rend que ceux qu'il garde (épreuves du propriétaire).
-  judge: { tier: "strong", input: 16_000, output: 3_000, max: 7_000 },
-  verify: { tier: "craft", input: 12_000, output: 2_500, max: 6_000 },
-  direction: { tier: "strong", input: 18_000, output: 10_000, max: 18_000 },
-  review: { tier: "strong", input: 26_000, output: 6_000, max: 10_000 },
-  fix: { tier: "strong", input: 22_000, output: 10_000, max: 18_000 },
-  recheck: { tier: "strong", input: 30_000, output: 4_000, max: 8_000 },
-  // Le lecteur qui ne sait rien : il ne lit que les phrases courtes des planches (très peu de texte).
-  reader: { tier: "strong", input: 2_500, output: 2_500, max: 5_000 },
-  // Images de la planche (réglage `sina.brand_images`) : la direction artistique écrit les consignes ; un modèle
-  // qui voit relit les images d'une planche.
-  imagery: { tier: "strong", input: 7_000, output: 6_000, max: 10_000 },
-  // Le relecteur des images : le modèle le plus fort, une image à la fois (21 novembre 2026).
-  look: { tier: "strong", input: 9_000, output: 2_500, max: 6_000 },
-} as const satisfies Record<string, { tier: Tier; input: number; output: number; max: number }>;
+/**
+ * Déroulé de chaque appel de la chaîne, en jetons (23 novembre 2026, après la panne de l'essai réel de Nadia : une
+ * équipe de noms a réfléchi puis écrit jusqu'à sa limite de 16 000 jetons, réponse coupée, marque tombée) :
+ *  - input : l'entrée habituelle ; output : la sortie habituelle, réflexion comprise (le coût probable) ;
+ *  - reflexion : la réflexion prévue AU PLUS avec l'effort du réglage (mesurée quand elle l'a été, sinon estimée) ;
+ *  - reponse : la réponse attendue AU PLUS, calculée champ par champ sur la forme demandée (3,5 signes par jeton, plus
+ *    la ponctuation du JSON) ;
+ *  - max : la limite de sortie envoyée. Elle couvre TOUJOURS la réflexion plus la réponse, avec de la marge (essai
+ *    `tests/marque-equipe-coupee.test.ts`). Une limite plus haute ne coûte rien de plus : seuls les jetons écrits sont
+ *    payés ; elle ne relève que le prix « au plus ».
+ */
+export const BRAND_CALLS = {
+  // 40 paroles (500 signes et l'adresse : 190 jetons), 20 concurrents (130), 20 faits (155), le moule et le reste (1 600).
+  study: { tier: "craft", input: 30_000, output: 7_000, reflexion: 5_000, reponse: 15_000, max: 22_000 },
+  // 4 aveux (100), 14 idées de neuf phrases de 240 signes au plus (610 chacune), le « travail » (115).
+  strategy: { tier: "strong", input: 22_000, output: 12_000, reflexion: 12_000, reponse: 9_800, max: 26_000 },
+  // Premier tour : 40 noms au plus (TEAM_ASK) de 127 jetons (nom 12, détail 46, deuxième lecture 46, idée et JSON 23).
+  // Réflexion mesurée chez Nadia : environ 14 000 jetons avant 7 007 signes de réponse.
+  team: { tier: "craft", input: 12_000, output: 10_000, reflexion: 14_000, reponse: 5_100, max: 24_000 },
+  // Reprise d'une équipe coupée : 20 noms au plus, effort bas, réflexion brève demandée.
+  teamShort: { tier: "craft", input: 12_000, output: 5_000, reflexion: 5_000, reponse: 2_600, max: 10_000, effort: "low" },
+  // 10 routes au plus, de dix champs (885 jetons chacune).
+  shortlist: { tier: "strong", input: 26_000, output: 9_000, reflexion: 12_000, reponse: 8_900, max: 24_000 },
+  // Le juge des noms : il lit tous les noms des équipes et ne rend que ceux qu'il garde (épreuves du propriétaire) :
+  // 12 gardés (190 jetons), 6 presque (110).
+  judge: { tier: "strong", input: 16_000, output: 3_000, reflexion: 9_000, reponse: 2_900, max: 14_000 },
+  // 12 noms vérifiés (adresse et note : 150 jetons).
+  verify: { tier: "craft", input: 12_000, output: 2_500, reflexion: 4_000, reponse: 1_800, max: 8_000 },
+  // La planche entière d'une route (idée, voix, signes, objet, site, publications, couleurs, polices, ton).
+  direction: { tier: "strong", input: 18_000, output: 10_000, reflexion: 12_000, reponse: 8_000, max: 24_000 },
+  // 4 routes, dix corrections de 400 signes au plus (1 300 jetons chacune), la série (170).
+  review: { tier: "strong", input: 26_000, output: 6_000, reflexion: 9_000, reponse: 5_400, max: 16_000 },
+  fix: { tier: "strong", input: 22_000, output: 10_000, reflexion: 12_000, reponse: 8_000, max: 24_000 },
+  // 4 routes, huit remarques de 400 signes au plus (940 jetons chacune).
+  recheck: { tier: "strong", input: 30_000, output: 4_000, reflexion: 5_000, reponse: 3_800, max: 12_000 },
+  // Le lecteur qui ne sait rien : il ne lit que les phrases courtes des planches, six par route, 4 routes (225 jetons).
+  reader: { tier: "strong", input: 2_500, output: 2_500, reflexion: 3_000, reponse: 5_400, max: 10_000 },
+  // Images de la planche (réglage `sina.brand_images`) : la direction artistique écrit les consignes (17 900 signes au plus).
+  imagery: { tier: "strong", input: 7_000, output: 6_000, reflexion: 7_000, reponse: 5_200, max: 14_000 },
+  // Le relecteur des images : le modèle le plus fort, effort élevé, une image à la fois (21 novembre 2026), avec les
+  // images jointes pour comparer : 3 avis de 1 250 jetons au plus.
+  look: { tier: "strong", input: 9_000, output: 2_500, reflexion: 6_000, reponse: 3_800, max: 12_000 },
+} as const satisfies Record<string, { tier: Tier; input: number; output: number; reflexion: number; reponse: number; max: number; effort?: string }>;
+const CALLS = BRAND_CALLS;
 type CallId = keyof typeof CALLS;
+/** Les appels d'une équipe de noms (le tour normal et sa reprise plus courte). */
+const EQUIPES = new Set<CallId>(["team", "teamShort"]);
 const RESEARCHES = 3;
+/** Recherches au plus par recherche sur le web de la marque : une seule famille de pages chacune (voir web-search.ts). */
+export const BRAND_SEARCHES = 5;
 /** Pages lues par l'étude (les extraits sont raccourcis) : borne l'entrée de l'appel, donc son coût. */
 const MAX_STUDY_PAGES = 45;
 /** Pages relues par le Studio pour vérifier les paroles de clients (lecture gratuite). */
@@ -96,37 +124,75 @@ const MAX_PAGES_REREAD = 16;
 /** Nombre d'appels de chaque sorte selon le travail demandé (série complète, ou reprise de quelques routes). */
 function callCounts(routes: number, teams: number, fresh: boolean, images = false): Record<CallId, number> {
   // strategy : un second tour d'idées quand trop peu passent les deux épreuves ; fix : une reprise OU un remplacement par route.
-  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, reader: 1, imagery: images ? routes : 0, look: images ? routes : 0 };
+  // teamShort : une reprise plus courte au plus par équipe coupée (comptée au plafond seulement).
+  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, teamShort: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, reader: 1, imagery: images ? routes : 0, look: images ? routes : 0 };
 }
+
+/** Une étape enregistrée d'une tâche de la marque : ce qu'elle a déjà fait et payé (relu, jamais repayé). */
+const fait = (done: readonly string[], re: RegExp) => done.filter((k) => re.test(k)).length;
 
 export type ChainQuote = { maxMicro: number; probableMicro?: number };
 /**
  * Devis de la chaîne. Plafond : la somme des coûts MAXIMAUX de tous ses appels (aucun appel ne part au-delà).
  * Coût probable : le déroulé habituel, avec la reprise d'une route sur deux. Mesure du 12 novembre 2026 (essai réel,
  * 3 identités, 20 appels, 14 minutes) : 2,88 € dépensés pour un plafond de 7,83 €.
+ *
+ * `done` (reprise d'une création coupée, 23 novembre 2026) : les étapes déjà enregistrées de la tâche. Elles sont relues
+ * sans être repayées, donc le devis ne compte que ce qui reste à faire (essai réel de Nadia : une reprise annoncée
+ * 17,21 € au plus, sans prix probable, alors que l'étude, la stratégie et sept équipes sur huit étaient acquises).
  */
-export function chainQuote(o: { routes: number; fresh?: boolean; settings?: ChainSettings; images?: boolean; /** Noms choisis par le client : ni recherche, ni juge. */ imposed?: boolean }): ChainQuote {
+export function chainQuote(o: { routes: number; fresh?: boolean; settings?: ChainSettings; images?: boolean; /** Noms choisis par le client : ni recherche, ni juge. */ imposed?: boolean; done?: readonly string[] }): ChainQuote {
   const s = o.settings ?? chainSettings(), fresh = o.fresh !== false, images = o.images ?? brandImagesOn(), n = callCounts(o.routes, s.teams, fresh, images);
-  if (o.imposed) { n.team = 0; n.judge = 0; }
+  if (o.imposed) { n.team = 0; n.teamShort = 0; n.judge = 0; }
   // La direction artistique et la relecture des images sont comptées avec les images (boardImagesQuote), une seule fois.
   if (images) { n.imagery = 0; n.look = 0; }
-  // Recherches sur le web : faites par le modèle « métier » (réglage économe), pas par le modèle le plus fort.
-  const search = webSearchQuoteMicro(s.craft) ?? 0, searches = (fresh ? RESEARCHES : 0) + 1;
-  // Coût probable d'une recherche : la moitié de son maximum (essai réel du 12 novembre 2026 : 0,16 à 0,45 € pour 0,50 € au plus).
-  let max = search * searches, probable: number | null = (search * searches) / 2;
+  // Second tour de noms (une fois au plus, quand trop peu de noms passent le juge) : compté dans le plafond seulement.
+  let second = { team: o.imposed ? 0 : s.teams, teamShort: o.imposed ? 0 : s.teams, judge: o.imposed ? 0 : 1 };
+  let searches = (fresh ? RESEARCHES : 0) + 1;
+  const done = o.done ?? [];
+  if (done.length) {
+    const has = (re: RegExp) => fait(done, re) > 0;
+    if (has(/^brand:study$/)) { n.study = 0; searches -= fresh ? RESEARCHES : 0; }
+    n.strategy = Math.max(0, n.strategy - fait(done, /^brand:strategy(:2)?$/));
+    // Une équipe faite (en entier ou par sa reprise plus courte) ne coûte plus rien, ni sa reprise.
+    const equipes1 = new Set(done.filter((k) => /^brand:team:[a-z]+(:court)?$/.test(k)).map((k) => k.split(":")[2])).size;
+    const equipes2 = new Set(done.filter((k) => /^brand:team:[a-z]+:\d+:2(:court)?$/.test(k)).map((k) => k.split(":")[2])).size;
+    n.team = Math.max(0, n.team - equipes1); n.teamShort = Math.max(0, n.teamShort - equipes1);
+    second = { team: Math.max(0, second.team - equipes2), teamShort: Math.max(0, second.teamShort - equipes2), judge: has(/^brand:judge:\d+:2$/) ? 0 : second.judge };
+    if (has(/^brand:judge:\d+$/)) n.judge = 0;
+    if (has(/^brand:shortlist:/)) n.shortlist = 0;
+    if (has(/^brand:verify:/)) { n.verify = 0; searches -= 1; }
+    n.direction = Math.max(0, n.direction - fait(done, /^brand:direction:/));
+    if (has(/^brand:review:/)) n.review = 0;
+    n.fix = Math.max(0, n.fix - fait(done, /^brand:(fix|replace):/));
+    if (has(/^brand:recheck:/)) n.recheck = 0;
+    if (has(/^brand:reader:/)) n.reader = 0;
+  }
+  const web = webSearchQuote(s.craft, { maxSearches: BRAND_SEARCHES });
+  let max = web.maxMicro * searches, probable: number | null = web.probableMicro * searches;
   const boundOf = {} as Record<CallId, number>;
   for (const id of Object.keys(CALLS) as CallId[]) {
-    const c = CALLS[id], m = s[c.tier];
+    const c = CALLS[id], m = modelOf(s, id);
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort);
     const usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
     boundOf[id] = bound ?? (usual ?? 0) * 4;
-    max += (bound ?? (usual ?? 0) * 4) * n[id];
-    probable = probable == null || usual == null ? null : probable + usual * (id === "fix" ? Math.ceil(n[id] / 2) : n[id]);
+    max += boundOf[id] * n[id];
+    // La reprise courte d'une équipe coupée est comptée au plafond seulement (elle reste rare).
+    const habituel = id === "teamShort" ? 0 : id === "fix" ? Math.ceil(n[id] / 2) : n[id];
+    probable = probable == null || usual == null ? null : probable + usual * habituel;
   }
-  // Second tour de noms (une fois au plus, quand trop peu de noms passent le juge) : compté dans le plafond seulement.
-  if (!o.imposed) max += boundOf.team * s.teams + boundOf.judge;
-  if (images) { const q = boardImagesQuote(o.routes, s, PROPOSAL_SLOTS); max += q.maxMicro; probable = probable == null || q.probableMicro == null ? null : probable + q.probableMicro; }
-  return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
+  max += boundOf.team * second.team + boundOf.teamShort * second.teamShort + boundOf.judge * second.judge;
+  if (images) {
+    const q = boardImagesQuote(o.routes, s, PROPOSAL_SLOTS, done);
+    max += q.maxMicro; probable = probable == null || q.probableMicro == null ? null : probable + q.probableMicro;
+  }
+  return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(Math.min(probable, max)) } : {}) };
+}
+
+/** Le modèle d'un appel : celui de son niveau, avec l'effort propre à l'appel s'il en a un (reprise courte d'une équipe). */
+function modelOf(s: ChainSettings, id: CallId): ChainModel {
+  const c: { tier: Tier; effort?: string } = CALLS[id];
+  return id === "look" ? { ...s.strong, effort: "high" } : { ...s[c.tier], ...(c.effort ? { effort: c.effort } : {}) };
 }
 
 /**
@@ -136,11 +202,11 @@ export function chainQuote(o: { routes: number; fresh?: boolean; settings?: Chai
 export function namesPreviewQuote(settings?: ChainSettings): ChainQuote {
   const s = settings ?? chainSettings();
   let max = 0, probable: number | null = 0;
-  for (const [id, times] of [["judge", 2], ["team", s.teams]] as const) {
-    const c = CALLS[id], m = s[c.tier];
+  for (const [id, times] of [["judge", 2], ["team", s.teams], ["teamShort", s.teams]] as const) {
+    const c = CALLS[id], m = modelOf(s, id);
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
     max += (bound ?? (usual ?? 0) * 4) * times;
-    probable = probable == null || usual == null ? null : probable + usual * times;
+    probable = probable == null || usual == null ? null : probable + usual * (id === "teamShort" ? 0 : times);
   }
   return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
 }
@@ -152,19 +218,23 @@ const imageUnitMax = (aspect: ImageAspect, references: number) => photoRequestMa
  * d'une image est sa borne sans la marge de réservation (un quart) ; une image refusée à la relecture est payée.
  */
 
-export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[]): ChainQuote {
+export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[], /** Étapes déjà enregistrées (reprise) : relues, jamais repayées. */ done: readonly string[] = []): ChainQuote {
   const s = settings ?? chainSettings();
   let max = 0, probable: number | null = 0;
   const list = slots?.length ? CREATED_SLOTS.filter((x) => slots.includes(x)) : CREATED_SLOTS;
-  for (const slot of list) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]); max += unit * routes; probable += (unit / 1.25) * routes; }
+  // Images déjà créées (premier essai, sans reprise) : une par planche et par place.
+  const faites = (slot: ImageSlot) => new Set(done.filter((k) => !/:r\d+$/.test(k)).map((k) => /^brand:image:\d+:([A-D]):([a-z0-9]+)(?::[a-z0-9+]+)?$/.exec(k)).filter((m) => m?.[2] === slot).map((m) => m![1])).size;
+  for (const slot of list) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]), reste = Math.max(0, routes - faites(slot)); max += unit * reste; probable += (unit / 1.25) * reste; }
   // Le logo seul ne réécrit jamais la direction artistique (audit du 22 novembre 2026, 2.3) : elle n'est pas comptée.
   const logoSeul = list.length === 1 && list[0] === "logo";
   for (const id of (logoSeul ? ["look"] : ["imagery", "look"]) as ("imagery" | "look")[]) {
     // La relecture se fait image par image : une relecture par image.
-    const c = CALLS[id], m = id === "look" ? { ...s[c.tier], effort: "high" } : s[c.tier], n = id === "look" ? Math.max(1, list.length) : 1;
+    const c = CALLS[id], m = modelOf(s, id), n = id === "look" ? Math.max(1, list.length) : 1;
+    const deja = id === "imagery" ? fait(done, /^brand:imagery:/) : fait(done, /^brand:imagecheck:/);
+    const fois = Math.max(0, routes * n - deja);
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
-    max += (bound ?? (usual ?? 0) * 4) * routes * n;
-    probable = probable == null || usual == null ? null : probable + usual * routes * n;
+    max += (bound ?? (usual ?? 0) * 4) * fois;
+    probable = probable == null || usual == null ? null : probable + usual * fois;
   }
   return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
 }
@@ -292,7 +362,7 @@ const domainsOn = () => !brandChainDeps.ai || !!domainDeps.lookup;
 export const deferredOn = (): boolean => getJsonSetting<boolean>("sina.differe", true) !== false;
 
 /** Les appels de la chaîne qui reviennent, l'un après l'autre, avec la même consigne (un par route). */
-const REPETES = new Set<CallId>(["direction", "fix", "imagery", "team"]);
+const REPETES = new Set<CallId>(["direction", "fix", "imagery", "team", "teamShort"]);
 /** Les appels de la chaîne dont la consigne ne sert qu'une fois par projet : aucun point de mémoire. */
 const UNIQUES = new Set<CallId>(["study", "shortlist", "verify", "reader"]);
 
@@ -313,17 +383,22 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
   const coupe = (kind: CallId, prompt: string) => coupeLeResume(commun, kind, prompt);
   return {
     partage: (brief) => { commun = brief.length >= 400 ? brief : ""; },
-    research: async (id, query, famille) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft, ...(famille ? { consigne: consigneUneFamille(famille) } : {}) }, query))).findings,
+    research: async (id, query, famille) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft, maxSearches: BRAND_SEARCHES, ...(famille ? { consigne: consigneUneFamille(famille) } : {}) }, query))).findings,
     ask: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, ...coupe(c.kind, c.prompt), ...(UNIQUES.has(c.kind) ? { teteUnique: true } : {}), promptKey: `syna-brand-${c.kind}-1`,
-      prepare: c.prepare, maxTokens: CALLS[c.kind].max, maxOutputTokens: CALLS[c.kind].max + 6000, usageKey: `${ctx.job.id}:brand:${id}`, deferred,
-      routing: { difficulty: CALLS[c.kind].tier === "strong" ? "complex" : "standard", prefer: s[CALLS[c.kind].tier] },
+      prepare: c.prepare, maxTokens: CALLS[c.kind].max, usageKey: `${ctx.job.id}:brand:${id}`, deferred,
+      // Une demande changée depuis un appel coupé (limites du 23 novembre 2026) part sous une clé neuve, jamais refusée.
+      nouvelleSiChangee: true,
+      // Une équipe de noms coupée n'est pas redemandée telle quelle avec plus de place : la chaîne la reprend, une
+      // fois, avec moins de noms (runSinaBrandJob). Les autres appels gardent leur reprise avec plus de place.
+      ...(EQUIPES.has(c.kind) ? { maxOutputTokens: CALLS[c.kind].max, sansRelanceCoupee: true } : { maxOutputTokens: CALLS[c.kind].max + 6000 }),
+      routing: { difficulty: CALLS[c.kind].tier === "strong" ? "complex" : "standard", prefer: modelOf(s, c.kind) },
     }, c.schema)),
     // Route imposée (celle du devis), aucun relais vers un autre modèle ; le plafond de la tâche vaut aussi pour les images.
     draw: (id, c) => withTrace(scope(`brand-${id}`), () => withQuotedImageRoute(boardImageRoute(), () => aiSiteImageHd({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, { prompt: c.prompt, aspect: c.aspect, logo: c.logo ?? null, scene: c.scene ?? null, avoid: c.avoid ?? null, examples: c.examples ?? null }))),
     look: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "quality_control", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, images: c.images, ...(c.fixes?.length ? { imagesFixes: c.fixes } : {}), promptKey: "syna-brand-look-1",
-      maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, deferred, routing: { difficulty: "complex", prefer: { ...s.strong, effort: "high" } },
+      maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, deferred, nouvelleSiChangee: true, routing: { difficulty: "complex", prefer: modelOf(s, "look") },
     }, c.schema)),
   };
 }
@@ -658,11 +733,14 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // 4. Les noms : une équipe par chemin, chacune seule (elle ne voit pas le travail des autres).
   const paths = P.teamPathsFor(kind, settings.teams), teams: { team: string; names: z.infer<typeof TeamSchema>["names"] }[] = [];
   const teamPrompt = `${brief}\n\n# Idées de marque\n${ideas.map((i) => ideaBlock(i, strategy)).join("\n")}\n\n# Le moule de la catégorie (à ne pas refaire)\n${study.mould || "non trouvé"}\n\n# Noms des concurrents (jamais repris)\n${study.competitors.map((c) => c.name).join(", ") || "non trouvé"}`;
+  const equipe = (path: P.TeamPath, step: string, id: string, prompt: string, ask: P.TeamAsk) => equipeDeNoms({ ctx, ai, kind, path, step, id, prompt, ask, notes });
   // Les équipes ne se voient pas : elles cherchent en même temps (une seule attente au lieu de quatre).
   if (!j.keep.includes("nom") && !imposed.length) {
     ctx.progress(0.3, L("Je cherche des noms", "Looking for names"));
-    const found = await Promise.all(paths.map((path) => ctx.step(`brand:team:${path.id}`, () => ai.ask(`team-${path.id}`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: `${teamPrompt}\n\n${P.teamPathBlock(path)}` }))));
-    for (const [i, path] of paths.entries()) teams.push({ team: path.id, names: found[i].names });
+    const found = await Promise.all(paths.map((path) => equipe(path, `brand:team:${path.id}`, `team-${path.id}`, `${teamPrompt}\n\n${P.teamPathBlock(path)}`, P.TEAM_ASK.premier)));
+    for (const [i, path] of paths.entries()) { const names = found[i]; if (names) teams.push({ team: path.id, names }); }
+    // Aucune équipe n'a rendu de réponse lisible : on s'arrête proprement, rien d'acquis n'est perdu ni repayé.
+    if (paths.length && !teams.length) throw new UserFacingError(L("Mes équipes de noms n'ont rendu aucune réponse lisible, même avec une demande plus courte : la création de ta marque s'arrête ici. Ce qui est déjà fait est gardé et ne sera pas repayé.", "None of my naming teams returned a readable answer, even with a shorter request: your brand creation stops here. What is done is kept and will not be paid again."));
   }
   // Noms déjà montrés AVANT cette tâche, fixés une fois : une relance après coup n'écarte pas ses propres noms.
   const shown = await ctx.step("brand:shown", async () => [...new Set((j.identities?.shownNames ?? []).concat(previous.map((x) => x.name)))]);
@@ -705,8 +783,10 @@ export async function runSinaBrandJob(ctx: JobContext) {
       const level = judged.length ? `Noms gardés par le juge (le niveau à atteindre, à ne pas redonner) : ${judged.map((k) => k.name).join(", ")}` : "Le juge n'a gardé AUCUN nom du premier tour.";
       const near = almost.length ? `\nPresque gardés, avec ce qui leur manque :\n${almost.map((k) => `- ${k.name} : ${k.why}`).join("\n")}` : "";
       const more: typeof teams = [];
-      const again = await Promise.all(paths.map((path) => ctx.step(`brand:team:${path.id}:${round}:2`, () => ai.ask(`team-${path.id}-2`, { kind: "team", system: P.teamSystem(kind, path), schema: TeamSchema, prompt: `${teamPrompt}\n\n# Second tour\nLes noms du premier tour n'ont pas suffi. ${level}${near}\n\nCette fois, chaque nom doit tenir SEUL sur l'objet : on doit voir le produit ou son moment sans aucune explication, et le fondateur doit avoir envie de le porter.\n\nNoms déjà trouvés par les équipes (ne les redonne pas) : ${pool.slice(0, 260).map((n) => n.name).join(", ")}\n\n${P.teamPathBlock(path)}` }))));
-      for (const [i, path] of paths.entries()) more.push({ team: path.id, names: again[i].names });
+      const again = await Promise.all(paths.map((path) => equipe(path, `brand:team:${path.id}:${round}:2`, `team-${path.id}-2`, `${teamPrompt}\n\n# Second tour\nLes noms du premier tour n'ont pas suffi. ${level}${near}\n\nCette fois, chaque nom doit tenir SEUL sur l'objet : on doit voir le produit ou son moment sans aucune explication, et le fondateur doit avoir envie de le porter.\n\nNoms déjà trouvés par les équipes (ne les redonne pas) : ${pool.slice(0, 260).map((n) => n.name).join(", ")}\n\n${P.teamPathBlock(path)}`, P.TEAM_ASK.second)));
+      for (const [i, path] of paths.entries()) { const names = again[i]; if (names) more.push({ team: path.id, names }); }
+      // Second tour sans aucune réponse lisible : on garde les noms du premier tour (les « presque », puis les premiers trouvés).
+      if (!more.length) notes.push("second tour de noms sans réponse lisible : je garde les meilleurs noms du premier tour");
       second = namePool(more, { competitors: study.competitors.map((c) => c.name), shown: [...shown, ...pool.map((n) => n.name)] }).filter((n) => freeName(n.name));
       searched += second.length;
       await judge(":2", second);
@@ -958,6 +1038,22 @@ export async function runSinaBrandJob(ctx: JobContext) {
     if (x.identityChoice) { x.identityChoice = undefined; x.brandFinish = { prepaidMicro: 0 }; x.logos = undefined; x.logoChoice = undefined; x.brandKit = undefined; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "todo"); setStep(x, 3, "todo"); }
   });
   return { routes: list.map((x) => ({ key: x.key, name: x.name, slogan: x.slogan })), issues, notes, quotes: study.quotes.length, sources: study.sources, facts: clientFacts(j).length > 0 };
+}
+
+/**
+ * Une équipe de noms (essai réel de Nadia, 23 novembre 2026 : une seule équipe coupée faisait tomber toute la marque).
+ * Réponse coupée ou illisible : UNE reprise de cette équipe seule, avec moins de noms et une réflexion brève, à la
+ * charge du Studio (c'est sa faute) ; encore coupée, la création continue sans elle (null), avec les noms des autres.
+ * Tout appel déjà payé est relu sous sa clé, jamais repayé : une relance de la tâche relit la réponse coupée, puis la
+ * reprise déjà faite. Une autre erreur (plafond atteint, panne du fournisseur) remonte telle quelle.
+ */
+export async function equipeDeNoms(o: { ctx: { step: JobContext["step"] }; ai: { ask: ChainAi["ask"] }; kind: "produits" | "services"; path: P.TeamPath; step: string; id: string; prompt: string; ask: P.TeamAsk; notes: string[] }): Promise<z.infer<typeof TeamSchema>["names"] | null> {
+  try { return (await o.ctx.step(o.step, () => o.ai.ask(o.id, { kind: "team", system: P.teamSystem(o.kind, o.path, o.ask), schema: TeamSchema, prompt: o.prompt }))).names; }
+  catch (e) { if (!reponseInexploitable(e)) throw e; }
+  try { return (await aLaChargeDuStudio(() => o.ctx.step(`${o.step}:court`, () => o.ai.ask(`${o.id}-court`, { kind: "teamShort", system: P.teamSystem(o.kind, o.path, P.TEAM_ASK.reprise), schema: TeamSchema, prompt: o.prompt })))).names; }
+  catch (e) { if (!reponseInexploitable(e)) throw e; }
+  o.notes.push(`équipe de noms « ${o.path.label} » sans réponse lisible, même plus courte : la création continue avec les noms des autres équipes`);
+  return null;
 }
 
 /** Nombre de routes à proposer pour ce projet (forfait du projet). */

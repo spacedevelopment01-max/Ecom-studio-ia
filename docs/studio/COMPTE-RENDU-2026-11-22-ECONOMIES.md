@@ -1073,3 +1073,34 @@ premier essai. Le choix final du modèle attend l'essai comparatif, et ton oui s
 qu'elle donne le même prix que l'atelier et la page de réglage, trois endroits de ses outils de l'atelier sont à changer :
 ce qu'elle lit de l'atelier, la vidéo qu'elle prépare, et la carte d'accord de ses créations (prix probable avec « au
 plus »).
+
+## La marque ne tombe plus sur une équipe coupée
+
+Panne de l'essai réel de Nadia (23 novembre 2026) : la quatrième équipe de noms du deuxième tour a réfléchi puis écrit
+jusqu'à sa limite de 16 000 jetons. Sa réponse coupée n'a pas pu être lue, et toute la création de la marque est tombée
+à 54 %, après 1,58 € dépensés et sans aucune image.
+
+**Ce qui change pour toi :**
+
+- **Une équipe coupée ne fait plus tomber la marque.** Elle est refaite une seule fois, avec moins de noms (15 à 20) et
+  une réflexion brève ; cette reprise est à la charge du Studio, jamais du budget du client. Si elle échoue encore, la
+  création continue avec les noms des autres équipes. Seule une panne de toutes les équipes arrête la création, avec une
+  phrase claire, et ce qui est fait reste gardé.
+- **Chaque demande tient dans sa limite.** Une équipe demande maintenant 30 à 40 noms (25 à 35 au deuxième tour) au lieu
+  de 40 à 70, avec des explications plus courtes, et sa limite passe de 16 000 à 24 000 jetons : la réflexion mesurée
+  chez Nadia (environ 14 000) et la réponse tiennent ensemble. Les autres appels de la marque ont été vérifiés un par
+  un : douze sur treize avaient une limite plus basse que leur réflexion et leur réponse ensemble, et ont été relevés. Une limite plus haute ne coûte rien de plus : seuls les
+  jetons écrits sont payés ; elle ne relève que le prix « au plus ».
+- **La carte de reprise ne compte que ce qui reste,** avec le prix probable, puis « au plus ». Pour la panne de Nadia
+  (essai simulé) : environ 4,57 € probables et 12,70 € au plus, au lieu de « au plus 17,21 € » sans prix probable.
+- **Le prix de la recherche sur le web est juste.** Le probable vient des recherches réellement payées (environ 0,12 €
+  chez Nadia), et plus de la moitié de la borne (0,79 €). Chaque recherche de la marque a droit à 5 recherches au plus
+  au lieu de 8, et une recherche reprise après un arrêt n'a droit qu'à celles qui restent : la borne baisse d'elle-même
+  (de 1,51 € à 1,08 €). Les angles utilisent la même façon de compter.
+- **Le devis d'une marque à 3 planches** (essai simulé, sans la fin de la marque) : avant, 8,37 € probables et 17,66 €
+  au plus ; maintenant, 5,86 € probables et 19,97 € au plus. Le probable baisse parce que la recherche sur le web est
+  comptée à son vrai prix ; le « au plus » monte de 2,31 € parce que les limites couvrent enfin la réflexion et que la
+  reprise d'une équipe coupée y est comptée.
+
+Ce qui n'est pas vérifié : aucun appel réel. La réflexion prévue de chaque appel n'est mesurée que pour les équipes de
+noms (chez Nadia) ; pour les autres, c'est une estimation prudente, à mesurer au prochain essai réel.

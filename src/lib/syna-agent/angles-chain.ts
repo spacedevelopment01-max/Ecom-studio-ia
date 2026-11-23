@@ -27,7 +27,7 @@ import { L } from "../i18n-server";
 import { loadProject } from "../projects";
 import { callCostBoundMicro, estimateCallMicro, llmJson } from "../ai/llm";
 import { CostCapReached, withTrace } from "../ai/trace";
-import { webResearch, webSearchQuoteMicro, type WebFinding } from "../ai/web-search";
+import { webResearch, webSearchQuote, type WebFinding } from "../ai/web-search";
 import { ReaderSchema, StudySchema, chainSettings, quotesReadOnPages, verifiedQuotes, type ChainQuote, type ChainSettings, type Study } from "./brand-chain";
 import * as BP from "./brand-prompts";
 import { unprovenIn } from "./brand-routes";
@@ -72,8 +72,9 @@ export function anglesQuote(o: { listen?: boolean; settings?: ChainSettings } = 
   const s = o.settings ?? chainSettings();
   const most: Record<CallId, number> = { listen: 1, segments: 1, strategist: 3, judge: 1, rework: 3, recheck: 1, reader: 2, clarify: 1 };
   const usual: Record<CallId, number> = { listen: o.listen ? 1 : 0, segments: 1, strategist: 3, judge: 1, rework: 1, recheck: 1, reader: 1, clarify: 1 };
-  const search = webSearchQuoteMicro(s.craft) ?? 0;
-  let max = search, probable: number | null = o.listen ? search / 2 : 0;
+  // La recherche sur le web : borne aux limites envoyées, probable mesuré (une seule fonction pour tous les devis).
+  const search = webSearchQuote(s.craft);
+  let max = search.maxMicro, probable: number | null = o.listen ? search.probableMicro : 0;
   for (const id of Object.keys(CALLS) as CallId[]) {
     const c = CALLS[id], m = s[c.tier];
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), one = estimateCallMicro(m.provider, m.model, c.input, c.output);

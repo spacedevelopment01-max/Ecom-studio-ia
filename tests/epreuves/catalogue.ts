@@ -226,4 +226,10 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Une phrase de refus arrive mot pour mot au dessinateur du logo, quelle que soit sa tournure : « Pas d'outil », « Aucune goutte », « Sans goutte d'eau », « J'aime pas les gouttes », « Je déteste le rose », « Évite les clés à molette » ; un goût qui n'est pas un refus n'y va pas.",
     rejeu: "gratuit",
   },
+  {
+    id: "equipe-coupee-ne-fait-pas-tomber-la-marque", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/NADIA-2-LA-MARQUE.md, branche des essais)",
+    verdict: "Essai réel de Nadia : « une équipe de noms du deuxième tour a écrit jusqu'à la limite de 16 000 jetons ; sa réponse coupée a fait échouer toute la création de la marque, après 1,20 € dépensés. » Ce qui aurait dû se passer : « une équipe de noms ne peut pas écrire autant (sa demande et sa limite doivent tenir ensemble), et une réponse coupée d'une seule équipe ne fait pas tomber toute la création (les autres équipes suffisent, ou seule celle-ci est refaite). »",
+    attendu: "La demande d'une équipe de noms tient dans sa limite (réflexion prévue et réponse ensemble). Une équipe coupée ou illisible est refaite une seule fois, plus courte, à la charge du Studio ; si elle échoue encore, la création continue avec les noms des autres équipes ; seule une panne de toutes les équipes arrête la création, avec une phrase claire.",
+    rejeu: "gratuit",
+  },
 ];
