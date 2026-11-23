@@ -5,6 +5,8 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 
 | Date | Client | Image | Note du relecteur | Gardée par SINA ? | Verdict du propriétaire (ses mots) |
 |---|---|---|---|---|---|
+| 23/11 14:11 | Nadia | Identité A « Sillage », logo, 1er essai | 5/10 : « quatre motifs au trait fin (maison, volutes, vague, bol flottant) : il devient illisible en petit […] ses volutes orange rappellent une flamme, ce que le client refuse » | Non | [en attente] |
+| 23/11 14:14 | Nadia | Identité A « Sillage », logo, 2e essai | 5/10 : « La volute orange sous le toit […] évoque une flamme de bougie, que le client refuse. L'ensemble maison + volute + arc en sourire est banal » | Non | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
