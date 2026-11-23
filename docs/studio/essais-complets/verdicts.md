@@ -6,12 +6,13 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | Date | Client | Image | Note du relecteur | Gardée par SINA ? | Verdict du propriétaire (ses mots) |
 |---|---|---|---|---|---|
 | 23/11 14:11 | Nadia | Identité A « Sillage », logo, 1er essai | 5/10 : « quatre motifs au trait fin (maison, volutes, vague, bol flottant) : il devient illisible en petit […] ses volutes orange rappellent une flamme, ce que le client refuse » | Non | [en attente] |
-| 23/11 14:14 | Nadia | Identité A « Sillage », logo, 2e essai | 5/10 : « La volute orange sous le toit […] évoque une flamme de bougie, que le client refuse. L'ensemble maison + volute + arc en sourire est banal » | Non | [en attente] |
-| 23/11 14:17 | Nadia | Identité A « Sillage », logo, 3e essai | 5/10 : « une petite scène banale qui évoque une soupe maison plutôt qu'une bougie, et la vapeur pêche très pâle disparaît en petit » | Non | [en attente] |
-| 23/11 14:17 | Nadia | Identité A « Sillage », grande scène (pot ouvert, figues, lumière d'hiver) | 8/10, sans remarque | Oui | [en attente] |
-| 23/11 14:17 | Nadia | Identité A « Sillage », haut du site sur téléphone | 8/10, sans remarque | Oui | [en attente] |
+| 23/11 14:11 | Nadia | Identité A « Sillage », logo, 2e essai | 5/10 : « La volute orange sous le toit […] évoque une flamme de bougie, que le client refuse. L'ensemble maison + volute + arc en sourire est banal » | Non | [en attente] |
+| 23/11 14:12 | Nadia | Identité A « Sillage », logo, 3e essai | 5/10 : « une petite scène banale qui évoque une soupe maison plutôt qu'une bougie, et la vapeur pêche très pâle disparaît en petit » | Non | [en attente] |
+| 23/11 14:12 | Nadia | Identité A « Sillage », grande scène (pot ouvert, figues, lumière d'hiver) | 8/10, sans remarque | Oui | [en attente] |
+| 23/11 14:12 | Nadia | Identité A « Sillage », haut du site sur téléphone | 8/10, sans remarque | Oui | [en attente] |
 | 23/11 14:14 | Nadia | Identité B « Halo », logo, 1er essai | 6/10 : « le symbole maison-fenêtre-cœur est un pictogramme banal qui évoque l'immobilier plutôt que la bougie » | Non | [en attente] |
-| 23/11 14:17 | Nadia | Identité B « Halo », logo, 2e essai | 7/10 : « cœur dans une maison avec rayons […] cliché d'agence immobilière ou d'aide à domicile, sans lien avec la bougie » | Non | [en attente] |
+| 23/11 14:14 | Nadia | Identité B « Halo », logo, 2e essai | 7/10 : « cœur dans une maison avec rayons […] cliché d'agence immobilière ou d'aide à domicile, sans lien avec la bougie » | Non | [en attente] |
+| 23/11 14:14 | Nadia | Identité B « Halo », logo, 3e essai | 6/10 : « Le toit bleu et le trait-sourire orange forment un pictogramme générique d'agence immobilière ou de dépannage, sans lien avec la bougie coulée main » | Non | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
