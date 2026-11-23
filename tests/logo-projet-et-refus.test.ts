@@ -19,40 +19,25 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
 
   it("les mots du client ne vont plus au dessinateur du logo (« enlève la 7 »), seulement au relecteur des images", () => {
     expect(I.imagePrompt("logo", route("A") as never, imagery)).not.toMatch(/Ce que le client a dit/);
-    expect(I.imagePrompt("logo", route("A") as never, imagery)).toMatch(/Tu es totalement libre du dessin/);
+    // Décision du 23 novembre 2026 : le métier en mots simples et le nom, rien de plus.
+    expect(I.imagePrompt("logo", route("A") as never, imagery)).toBe(I.demandeDuLogo(route("A") as never));
   });
-
-  it("la consigne « complètement différent » vise aussi la disposition, et la chaîne transmet les goûts du client", () => {
+  it("plus aucun logo de la série au dessinateur (décision du 23 novembre 2026) ; la chaîne transmet les goûts du client au relecteur", () => {
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    // Tous les logos dessinés de la série, gardés ou refusés, et les essais de cette planche (23 novembre 2026).
-    expect(img).toContain("const serie = [...already, ...dessines], shown = await logoSheet(serie), n = serie.length;");
-    expect(img).not.toContain("logosDuProjet");
-    expect(img).toMatch(/dans un autre style que \$\{n > 1 \? "chacun d'eux" : "lui"\} : une autre façon de faire \(je ne t'impose aucun style\)/);
+    expect(img).not.toMatch(/logoSheet|madeLogos|keptLogos|complètement différent/);
     expect(img).toContain("Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
     // Les goûts du client viennent de sa fiche (réponse « image », goûts et refus pour les images) : `goutsDuClient`.
-    expect(chain.match(/gouts: goutsDuClient\(j, p\.id\), refusLogo: refusDuClientPourLeLogo\(j, p\.id\) \}/g)).toHaveLength(1);
+    expect(chain.match(/gouts: goutsDuClient\(j, p\.id\) \}/g)).toHaveLength(1);
     expect(chain).toContain("goutsDuClient(j, p.id, logoOnly ? clientWords(a.guidance) : undefined)");
+    expect(chain).not.toMatch(/seriesLogos|redoneLogos|refusDuClientPourLeLogo|ideesSimples/);
   });
-
-  it("le trait près du nom avec parcimonie : jamais interdit, un seul par série, repéré sans IA sur l'image", async () => {
+  it("plus de consigne de trait au dessinateur, ni de redessin pour un trait (décision du 23 novembre 2026 : « le plus libre possible »)", () => {
     expect(I.imagePrompt("logo", route("A") as never, imagery)).not.toMatch(/trait|filet/);
-    expect(I.LOGO_TRAIT_DEJA_PRIS).toMatch(/Un des logos déjà faits a un trait, un filet ou une ligne près du nom : celui-ci n'en a pas/);
-    // Un nom (des blocs séparés comme des lettres) avec, puis sans, un filet fin dessous.
-    const lettres = Array.from({ length: 8 }, (_v, i) => ({ input: { create: { width: 40, height: 70, channels: 3 as const, background: "#1F3D2B" } }, left: 100 + i * 55, top: 200 }));
-    const filet = { input: { create: { width: 420, height: 4, channels: 3 as const, background: "#1F3D2B" } }, left: 100, top: 300 };
-    const fond = () => sharp({ create: { width: 640, height: 480, channels: 3, background: "#FFFFFF" } });
-    const avec = await fond().composite([...lettres, filet]).png().toBuffer();
-    const sans = await fond().composite(lettres).png().toBuffer();
-    expect((await I.traitHorizontal(avec)).trouve).toBe(true);
-    expect((await I.traitHorizontal(sans)).trouve).toBe(false);
-    // Un aplat épais (un bandeau, un toit plein) n'est pas un trait.
-    const bandeau = await fond().composite([...lettres, { input: { create: { width: 420, height: 60, channels: 3 as const, background: "#1F3D2B" } }, left: 100, top: 300 }]).png().toBuffer();
-    expect((await I.traitHorizontal(bandeau)).trouve).toBe(false);
+    expect((I as Record<string, unknown>).LOGO_TRAIT_DEJA_PRIS).toBeUndefined();
+    expect((I as Record<string, unknown>).traitHorizontal).toBeUndefined();
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).toContain("if (drawn && traitPris && (await traitHorizontal(drawn)).trouve) {");
-    expect(img).toContain("(traitPris ? `\\n${LOGO_TRAIT_DEJA_PRIS}` : \"\")");
-    expect(img).toContain('":sans-trait"');
+    expect(img).not.toContain(":sans-trait");
   });
 });
 
@@ -74,47 +59,41 @@ describe("logos : aucune consigne de style, les 50 logos aimés seulement comme 
   const P = await import("@/lib/syna-agent/brand-prompts");
   const M = await import("@/lib/ai/media-providers");
   const imagery = { look: "Lumière du matin, pierre calcaire.", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
-  it("le dessinateur reçoit la marque (nom, métier, idée, couleurs, typographie, format) et rien d'autre", async () => {
+  it("le dessinateur reçoit le métier en mots simples et le nom, et rien d'autre (décision du 23 novembre 2026)", async () => {
     const p = I.imagePrompt("logo", route("A") as never, imagery);
-    expect(p).toMatch(/Tu es totalement libre du dessin/);
-    // La ligne « La marque » est écrite par le Studio (23 novembre 2026), jamais par la directrice artistique ; la planche
-    // d'essai n'a pas d'idée en mots simples : seul le ton reste.
-    expect(p).toContain("La marque : Son ton : complice, patiente, nocturne.");
-    expect(p).not.toContain("Ce qu'il faut savoir de la marque");
-    expect(p).toMatch(/Typographie de la marque/);
-    // « pas de consigne autre que les 50 logos en exemple » : ni phrase de niveau, ni signes interdits, ni lumière des photos.
-    expect(p).not.toMatch(/tableau|caractère : jamais|EXPRESSIF|refuse ces signes|Lumière du matin|Direction artistique/);
+    expect(p).toBe(`Fais-moi un logo pour ${I.metierEnMotsSimples(route("A").board.descriptor)}. Le nom de la marque : « ${route("A").name} ».`);
+    expect(p).not.toMatch(/La marque :|Son ton|Couleurs|Typographie|BLANC|fond|Il ne veut|Ce qu'il faut savoir|Lumière du matin|Direction artistique/);
     expect((I as Record<string, unknown>).LOGO_NIVEAU).toBeUndefined();
     expect((I as Record<string, unknown>).logoRefus).toBeUndefined();
+    expect((I as Record<string, unknown>).ligneDeLaMarque).toBeUndefined();
     expect(P.imagerySystem("services")).not.toMatch(/- refus :/);
   });
-  it("les 50 logos aimés sont joints au dessin du logo, annoncés seulement comme exemples", async () => {
+  it("les 50 logos aimés ne sont plus joints au dessin du logo ; le relecteur les garde comme niveau", async () => {
     expect(await I.planchedesLogosAimes()).toBeInstanceOf(Buffer);
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).toContain('examples: slot === "logo" ? await planchedesLogosAimes() : null');
-    expect(M.imageReferencePrompt("x", ["avoid", "examples"])).toContain("image 2 : exemples de logos que j'aime, seulement comme exemples : n'en recopie aucun");
-    // Le relecteur les garde aussi comme niveau.
+    expect(img).not.toMatch(/examples:/);
+    expect(img).toContain('? { prompt, aspect: SLOT_ASPECT[slot], usage: "logo" as const }');
     expect(img).toContain('const aimes = slots.includes("logo") ? await planchedesLogosAimes() : null;');
     expect(P.imageReviewSystem()).toMatch(/quand la planche des logos que le propriétaire aime est jointe/);
+    void M;
   });
 });
 
 describe("logos : redessin avec toutes les raisons des refus (21 novembre 2026)", async () => {
   const I = await import("@/lib/syna-agent/brand-images");
-  it("un redessin reçoit toutes les raisons des refus, jamais une raison technique", () => {
+  it("un redessin de photo reçoit toutes les raisons des refus, jamais une raison technique ; un logo, jamais rien", () => {
     const une = I.fixLine(["une goutte d'eau, refusée par le client"], 1);
     expect(une).toMatch(/une première image a été refusée pour cette raison : « une goutte d'eau, refusée par le client »/);
     const deux = I.fixLine(["une goutte d'eau, refusée par le client", "trop sage"], 2);
     expect(deux).toMatch(/à corriger TOUTES à la fois/);
     expect(deux).toMatch(/1\. « une goutte d'eau, refusée par le client »\n2\. « trop sage »/);
     expect(deux).toMatch(/Fais plus simple/);
-    // Un logo : toutes les raisons, jamais la ligne des écritures (étiquette, emballage, enseigne, écran).
-    expect(I.fixLine(["une goutte d'eau, refusée par le client", "trop sage"], 2, "logo")).toMatch(/1\. « une goutte d'eau, refusée par le client »\n2\. « trop sage »$/);
-    expect(I.fixLine(["une goutte d'eau, refusée par le client", "trop sage"], 2, "logo")).not.toMatch(/Fais plus simple|étiquette/);
+    // Un logo : la même demande nue, sans aucune raison (décision du 23 novembre 2026).
+    expect(I.fixLine(["une goutte d'eau, refusée par le client", "trop sage"], 2, "logo")).toBe("");
     expect(I.fixLine(["je n'ai pas pu la vérifier une seconde fois"], 1)).toBe("");
     expect(I.fixLine(["je n'ai pas pu la vérifier une seconde fois", "trop sage"], 1)).toMatch(/une première image a été refusée pour cette raison : « trop sage »/);
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).toContain('await dessine(fix("logo", why, attempt), `:r${attempt}`)');
+    expect(img).toContain("if (await dessine(`:r${attempt}`)) await review([\"logo\"], `:logo:r${attempt}`);");
     expect(img).toContain("c.prompt + fix(s, why, attempt)");
   });
 });
@@ -176,14 +155,11 @@ describe("consignes de base claires et refus du client mot pour mot au dessinate
   const I = await import("@/lib/syna-agent/brand-images");
   const imagery = { look: "calme", logo: "La marque.", signs: "Les signes.", hero: "La scène.", object: "La carte.", site: "Le haut du site.", posts: ["Un.", "Deux.", "Trois."] } as never;
   const gouts = "Faire sérieux et propre, calme, quelqu'un à qui on confie sa maison sans stress. Il aime les tons de pierre, le blanc cassé, un vert profond. Il ne veut surtout pas : le style plombier avec une goutte d'eau et une clé à molette, de bleu électrique, de photos de stock avec un ouvrier qui sourit.";
-  it("le logo reçoit seulement la phrase de refus du client, telle qu'il l'a écrite", () => {
-    expect(I.clientRefusal(gouts)).toBe("Il ne veut surtout pas : « Il ne veut surtout pas : le style plombier avec une goutte d'eau et une clé à molette, de bleu électrique, de photos de stock avec un ouvrier qui sourit. »");
-    expect(I.clientRefusal("Il aime le vert.")).toBe("");
-    const p = I.imagePrompt("logo", route("A") as never, imagery, { logo: true, refusal: gouts });
-    expect(p).toContain("Il ne veut surtout pas : « Il ne veut surtout pas");
-    expect(p).not.toMatch(/tons de pierre|sans stress/);
-    const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).toContain('{ logo: true, refusal: o.gouts, refusLogo: o.refusLogo, idee: o.logoLine })');
+  it("le logo ne reçoit plus la phrase de refus du client (décision du 23 novembre 2026) ; ses mots restent au relecteur", () => {
+    expect((I as Record<string, unknown>).clientRefusal).toBeUndefined();
+    const p = I.imagePrompt("logo", route("A") as never, imagery);
+    expect(p).not.toMatch(/Il ne veut|goutte|tons de pierre|sans stress/);
+    void gouts;
   });
   it("les photos reçoivent les consignes de base, dites en positif", () => {
     for (const sl of ["hero", "object", "signs", "site", "post0"] as const) expect(I.imagePrompt(sl, route("A") as never, imagery)).toContain(I.BORD_A_BORD);
@@ -197,15 +173,11 @@ describe("consignes de base claires et refus du client mot pour mot au dessinate
 
 describe("marque finie, logo refait avec les mots du client : la consigne de SINA ne va pas au dessinateur (21 novembre 2026)", async () => {
   const I = await import("@/lib/syna-agent/brand-images");
-  it("le logo reçoit ce qu'on savait de la marque avant ; le relecteur, les mots du client", () => {
+  it("le logo reçoit le métier et le nom ; le relecteur, les mots du client", () => {
     const imagery = { look: "calme", logo: "Piste : un fil à plomb stylisé, vert profond.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
     const fin = fs.readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8");
-    // La ligne de la directrice artistique ne va plus au dessinateur (23 novembre 2026) : le Studio l'écrit depuis la planche.
-    expect(fin).not.toContain("logoLine");
-    expect(fin).toContain("refusLogo: refusDuClientPourLeLogo(j, o.projectId, clientWords(o.guidance))");
+    expect(fin).not.toMatch(/logoLine|refusLogo|ideesSimples/);
     expect(fin).toContain("gouts: goutsDuClient(j, o.projectId, clientWords(o.guidance))");
-    const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).toContain('imagePrompt("logo", x, imagery, { logo: true, refusal: o.gouts, refusLogo: o.refusLogo, idee: o.logoLine })');
-    expect(I.imagePrompt("logo", route("A") as never, { ...(imagery as object), logo: "Ce qu'on savait de la marque." } as never)).not.toMatch(/fil à plomb/);
+    expect(I.imagePrompt("logo", route("A") as never, imagery)).toBe(I.demandeDuLogo(route("A") as never));
   });
 });

@@ -198,17 +198,10 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     // La maquette : en portrait, avec le logo et la grande scène de SA planche en références ; le logo et la scène,
     // eux, naissent sans modèle.
     for (const k of ["A", "B", "C"]) {
-      // Chaque logo repart de zéro : aucune image jointe (demande du propriétaire du 16 novembre 2026 : « ne joins pas
-      // d'autre logo, fais comme s'il repartait de base »), seulement le métier, les couleurs, la typographie et la
-      // direction artistique de l'identité.
+      // Décision du propriétaire du 23 novembre 2026 : chaque logo, le premier comme les suivants, part avec la demande
+      // nue (le métier en mots simples et le nom), sans aucune image jointe.
       expect(log.refs[`image-1-${k}-logo${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "1:1" });
-      // Demande du propriétaire du 16 novembre 2026 : le premier logo est créé avec les seules consignes de base ; le
-      // deuxième reçoit le premier avec « je veux un logo complètement différent de celui-là » ; le troisième, les deux premiers.
-      if (k === "A") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).not.toMatch(/L'image jointe/);
-      if (k === "B") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/L'image jointe montre le logo déjà fait pour ce client\. Je veux un logo complètement différent de celui-là, dans un autre style que lui/);
-      if (k === "C") expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/L'image jointe montre les 2 logos déjà faits pour ce client\. Je veux un logo complètement différent de ceux-là, dans un autre style que chacun d'eux/);
-      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/La marque : /);
-      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/Typographie de la marque : un caractère /);
+      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/^Fais-moi un logo pour une marque d'infusions( de fruits)?\. Le nom de la marque : « [^»]+ »\.(\nIl s'écrit lettre par lettre : [^\n]+\.)?$/);
       expect(log.refs[`image-1-${k}-hero${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "16:9" });
       expect(log.refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     }
@@ -406,13 +399,9 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     {
       const asked = F.symbolPrompt(route("A"));
       // Le signe du logo, tel quel, sans le nom ni aucun texte ; à défaut de signe, sa lettre la plus reconnaissable.
-      expect(asked).toMatch(/^Voici le logo de la marque « Bain de Minuit » \(image de référence\)\. Crée son SYMBOLE SEUL/);
-      expect(asked).toMatch(/reprends EXACTEMENT le signe du logo \(le même dessin, les mêmes traits, les mêmes couleurs\), sans le nom ni aucun autre texte\./);
-      expect(asked).toMatch(/Si le logo n'a pas de signe à côté du nom, prends sa lettre la plus reconnaissable, dessinée exactement comme dans le logo/);
-      expect(asked).toMatch(/lisible en tout petit \(16 pixels\)/);
-      // Sur un fond blanc uni, seul : ni cadre, ni rond, ni ombre, ni maquette.
-      expect(asked).toMatch(/Un seul symbole, centré, à plat, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour\. Ni cadre, ni rond autour, ni ombre, ni maquette\./);
-      expect(asked.split("\n")).toHaveLength(4);
+      // Décision du 23 novembre 2026 : le logo joint, une phrase, aucune consigne de dessin ni de fond.
+      expect(asked).toBe("Voici le logo de la marque « Bain de Minuit ». Fais-moi son symbole seul, sans le nom, pour l'icône de son site.");
+      expect(asked).not.toMatch(/BLANC|fond|cadre|16 pixels/);
       // Aucun exemple tiré d'une autre marque dans la consigne : seul le nom de celle-ci y figure.
       expect(F.symbolPrompt({ ...route("A"), name: "Tout Autre Nom" }).replace("Tout Autre Nom", "Bain de Minuit")).toBe(asked);
     }
@@ -776,13 +765,13 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     expect(J.journeyOf(t2.cid).brandFinish!.issues).toEqual([NOT_KEPT("il ne reprend pas le logo")]);
     expect(keptSymbols(t2.pid)).toEqual([]);
 
-    // 3. Sur un fond qui n'est pas blanc : refusé par le contrôle gratuit, SANS appel de relecture.
+    // 3. Un symbole dont il ne reste rien une fois le fond retiré par le Studio : refusé sans IA, SANS appel de relecture.
     const t3 = await thread();
     await proposed(t3);
     const chosen3 = await call("identity.choose", t3.ctx, { key: "A" });
     const dark = await runJob(chosen3.jobs![0], { symbol: async () => square("#050505"), symbolLook: () => { throw new Error("la relecture du symbole ne doit pas être appelée"); } });
     expect(symbolCalls(dark.log)).toEqual(["symbol-1"]);
-    expect(J.journeyOf(t3.cid).brandFinish!.issues).toEqual([NOT_KEPT("il n'est pas sur un fond blanc net")]);
+    expect(J.journeyOf(t3.cid).brandFinish!.issues).toEqual([NOT_KEPT("son fond ne peut pas être retiré proprement (il ne reste presque rien du dessin une fois le fond retiré)")]);
     expect(keptSymbols(t3.pid)).toEqual([]);
     expect((J.journeyOf(t3.cid).brandFinish as any).symbolFor).toMatch(/^refus:/); // refusé : pas de nouvel essai tout seul pour ce logo
     expect(dark.out).toMatchObject({ finished: true, kit: true });

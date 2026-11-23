@@ -28,26 +28,36 @@ describe("devis de l'essai réel des trois logos de Nadia (simulé, aucun appel)
     // Un essai d'un logo, au devis du Studio : le dessin (modèle des logos) et sa relecture (le modèle le plus fort).
     const un = C.boardImagesQuote(1, s, ["logo"]);
     const dessinMax = photoRequestMaxMicro(LOGO_ROUTE, { prompt: "x".repeat(6000), references: SLOT_REFERENCES.logo, aspect: "1:1", quality: "high" });
+    // Avant la décision : deux images jointes (planche des logos déjà faits, 50 logos aimés), pour comparer.
+    const dessinMaxAvant = photoRequestMaxMicro(LOGO_ROUTE, { prompt: "x".repeat(6000), references: 2, aspect: "1:1", quality: "high" });
+    // La borne du Studio pour ce modèle est un prix par image : les images jointes ne la changent pas.
+    expect(dessinMax).toBeLessThanOrEqual(dessinMaxAvant);
     const dessinProbable = dessinMax / 1.25, relectureMax = un.maxMicro - dessinMax, relectureProbable = un.probableMicro! - dessinProbable;
     expect(relectureMax).toBeGreaterThan(0);
     // Ce que la carte d'accord montre au client pour « refaire les trois logos » (un essai par identité ; les reprises
     // sont à la charge du Studio, mais comptent dans le plafond de la tâche).
-    // Ses trois planches datent d'avant « l'idée en mots simples » : un appel l'écrit d'abord pour les trois.
-    const simple = C.ideesSimplesQuote(3, s);
-    const carte = C.boardImagesQuote(3, s, ["logo"], [], 3);
+    // Décision du 23 novembre 2026 : plus d'appel « idée en mots simples », plus aucune image jointe au logo.
+    expect(SLOT_REFERENCES.logo).toBe(0);
+    expect((C as Record<string, unknown>).ideesSimplesQuote).toBeUndefined();
+    const carte = C.boardImagesQuote(3, s, ["logo"]);
     const essais = 1 + MAX_IMAGE_RETRIES;
     expect(essais).toBe(3);
     // Probable : comme dans l'essai réel, chaque logo refusé, donc trois essais par identité (9 dessins, 9 relectures).
-    const probable = 3 * essais * (dessinProbable + relectureProbable) + simple.probableMicro!;
-    // Au plus : par identité, trois essais, un dessin de plus sans trait près du nom, et une seconde lecture par relecture.
-    const auPlus = 3 * ((essais + 1) * dessinMax + 2 * essais * relectureMax) + simple.maxMicro;
+    const probable = 3 * essais * (dessinProbable + relectureProbable);
+    // Au plus : par identité, trois essais (plus de dessin « sans trait »), et une seconde lecture par relecture.
+    const auPlus = 3 * (essais * dessinMax + 2 * essais * relectureMax);
+    // La borne des reprises du Studio, telle que la carte la calcule (deux reprises de chaque logo, avec sa relecture).
+    const { deuxPlafonds } = await import("@/lib/syna-agent/tools/identity");
+    const bornes = deuxPlafonds(carte, false);
     const budgetCode = monthlyAllowanceMicro({ status: "active", plan: "vendre", billing: "month" } as never);
     const budget99 = { premier: 0.5 * htEur(99) * EUR, ensuite: 0.4 * htEur(99) * EUR };
     const e = (m: number) => Math.round((m / EUR) * 100) / 100, pct = (m: number, b: number) => Math.round((1000 * m) / b) / 10;
     const out = {
-      ideeSimple: { max: e(simple.maxMicro), probable: e(simple.probableMicro!) }, dessin: { max: e(dessinMax), probable: e(dessinProbable) }, relecture: { max: e(relectureMax), probable: e(relectureProbable) },
+      dessin: { max: e(dessinMax), probable: e(dessinProbable) }, relecture: { max: e(relectureMax), probable: e(relectureProbable) },
       carteDuClient: { max: e(carte.maxMicro), probable: e(carte.probableMicro!) },
+      borneDuStudio: { max: e(bornes.studioMaxMicro), probable: e(bornes.studioProbableMicro) },
       essai: { probable: e(probable), auPlus: e(auPlus) },
+      dessinAvant: { max: e(dessinMaxAvant), probable: e(dessinMaxAvant / 1.25) },
       partDuBudget: {
         codeVendre89: { budget: e(budgetCode), probable: pct(probable, budgetCode), auPlus: pct(auPlus, budgetCode) },
         valide99PremierMois: { budget: e(budget99.premier), probable: pct(probable, budget99.premier), auPlus: pct(auPlus, budget99.premier) },

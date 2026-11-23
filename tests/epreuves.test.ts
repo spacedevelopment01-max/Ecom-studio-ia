@@ -321,6 +321,83 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     const sx = Math.round((120 / 640) * info.width), sy = Math.round((235 / 480) * info.height);
     expect(px(sx, sy)).toBeGreaterThan(200);
   });
+
+  epreuve("logo-demande-nue", async () => {
+    const C = await import("@/lib/syna-agent/brand-chain");
+    const J = await import("@/lib/syna-agent/journey");
+    const { chargeDuStudio } = await import("@/lib/billing");
+    const { threadFor } = await import("@/lib/syna-agent/thread");
+    // La fiche du client : ses mots exacts de l'essai réel de Nadia, et son refus pour le logo.
+    const user = await account(), projectId = project(user, "products") as string, cid = threadFor(user, projectId);
+    const MOTS = "Quelque chose de chaleureux, simple, pas trop chic. Par contre pas de flamme dessinée dans le logo, toutes les marques de bougies font ça.";
+    J.updateJourney(cid, (j) => { j.start.image = { value: MOTS, status: "answered", source: "client", at: Date.now() }; });
+    const gouts = C.goutsDuClient(J.journeyOf(cid), projectId);
+    const x = { ...route("A"), name: "Sillage", board: { ...route("A").board, descriptor: "Bougies parfumées coulées à la main près de Lyon", images: undefined } };
+    const dessins: { prompt: string; jointes: number; usage?: string; studio: boolean }[] = [], relus: string[] = [];
+    const ai: any = {
+      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
+      draw: async (_id: string, c: any) => { dessins.push({ prompt: c.prompt, jointes: Object.values(c).filter((v) => Buffer.isBuffer(v)).length, usage: c.usage, studio: chargeDuStudio() }); return logoSimple(); },
+      // Le relecteur refuse tout : les deux reprises partent.
+      look: async (_id: string, c: any) => { relus.push(c.prompt); return { images: [{ slot: "logo", seen: "", score: 5, ok: false, read: [], why: "une flamme dessinée", defect: "autre" }] }; },
+    };
+    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
+    await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: imagery as never, gouts });
+    expect(dessins).toHaveLength(3);
+    for (const d of dessins) {
+      expect(d.prompt).toBe("Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Sillage ».");
+      expect(d.jointes).toBe(0);
+      expect(d.usage).toBe("logo");
+      expect(d.prompt).not.toMatch(/chaleureux|pas trop chic|flamme|Il ne veut|une flamme dessinée/);
+    }
+    // Les reprises : la même demande, à la charge du Studio.
+    expect(dessins.map((d) => d.studio)).toEqual([false, true, true]);
+    // Le relecteur garde ses mots et son refus.
+    expect(relus).toHaveLength(3);
+    for (const r of relus) { expect(r).toContain(MOTS); expect(r).toMatch(/qui montre ce qu'il refuse est un défaut/); }
+  });
+
+  epreuve("logo-clair-creux-des-lettres", async () => {
+    const { createCanvas } = await import("@napi-rs/canvas");
+    const { font } = await import("@/lib/media/fonts");
+    // « Halo » et « oe » en lettres fermées, bleu foncé sur fond blanc (comme un logo rendu par le dessinateur).
+    const c = createCanvas(900, 320), g = c.getContext("2d");
+    g.fillStyle = "#FFFFFF"; g.fillRect(0, 0, 900, 320);
+    g.fillStyle = "#1E2A44"; g.font = font("Inter", 700, 200); g.textBaseline = "alphabetic"; g.fillText("Halo oe", 40, 240);
+    const png = c.toBuffer("image/png");
+    // Le centre de chaque creux, mesuré sur l'image d'origine : un point blanc entouré d'encre de tous côtés.
+    const src = await sharp(png).raw().toBuffer({ resolveWithObject: true });
+    const blancAt = (xx: number, yy: number) => src.data[(yy * src.info.width + xx) * src.info.channels] > 240;
+    const enferme = (xx: number, yy: number) => {
+      // Au cœur du creux : blanc tout autour, à 4 points près (loin du trait de la lettre).
+      for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) if (!blancAt(xx + dx, yy + dy)) return false;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { let k = 1; while (xx + dx * k >= 0 && xx + dx * k < src.info.width && yy + dy * k >= 0 && yy + dy * k < src.info.height && blancAt(xx + dx * k, yy + dy * k)) k++; if (xx + dx * k < 0 || xx + dx * k >= src.info.width || yy + dy * k < 0 || yy + dy * k >= src.info.height || k > 120) return false; }
+      return true;
+    };
+    const creux: [number, number][] = [];
+    for (let yy = 150; yy < 230; yy += 4) for (let xx = 40; xx < 860; xx += 4) if (enferme(xx, yy)) creux.push([xx, yy]);
+    expect(creux.length).toBeGreaterThan(10);
+    // La version claire posée sur le foncé de la marque : chaque creux prend le fond sombre, jamais du blanc.
+    const x = { ...route("A"), ground: "sombre", palette: { ...route("A").palette, dark: "#101418" } };
+    const clair = (await I.logoForGround(png, x as never))!;
+    const out = await sharp(clair).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    // Les deux images ne font pas la même taille (fond retiré, marges) : on retrouve les creux dans la version claire
+    // par la position relative des lettres (le dessin rogné puis entouré d'une marge égale).
+    const det = await import("@/lib/media/detourage-logo");
+    const d = await det.detourerLeLogo(png);
+    expect(d.ok).toBe(true);
+    const meta = await sharp(png).trim({ threshold: 5 }).toBuffer({ resolveWithObject: true });
+    const ox = -(meta.info.trimOffsetLeft ?? 0), oy = -(meta.info.trimOffsetTop ?? 0);
+    const pad = Math.round((out.info.width - meta.info.width) / 2);
+    let blancs = 0;
+    for (const [xx, yy] of creux) {
+      const X = xx - ox + pad, Y = yy - oy + pad, i = (Y * out.info.width + X) * out.info.channels;
+      const lum = (out.data[i] + out.data[i + 1] + out.data[i + 2]) / 3;
+      if (lum > 200) blancs++;
+    }
+    expect(blancs).toBe(0);
+    // Le dessin, lui, est passé en clair.
+    expect(fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8")).toContain("return onDarkVersion(d?.ok ? d.png : png, null, light);");
+  });
 });
 
 describe("les épreuves du site et des marques (contrôles du Studio)", async () => {

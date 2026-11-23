@@ -298,4 +298,16 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Quel que soit le réglage en ligne, une image de SINA (marque, site, publications, publicités, atelier en mode « SINA s'en occupe ») part chez OpenAI ; une route confirmée hors d'OpenAI est refusée, jamais remplacée en silence ; seul un outil choisi par le client lui-même dans l'atelier peut être un autre modèle.",
     rejeu: "gratuit",
   },
+  {
+    id: "logo-demande-nue", date: "2026-11-23", source: "CLAUDE.md (Logo ; décision du propriétaire du 23 novembre 2026, relayée mot pour mot par le chef d'orchestre)",
+    verdict: "« je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies tu donne le nom de la marque et rien de plus, pas de le client ne veux pas tel truc dans son logo. Ça doit être le plus libre possible pour la création du logo »",
+    attendu: "La demande au dessinateur du logo, au premier dessin comme à chaque reprise, ne contient que le métier en mots simples et le nom exact (« Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Sillage ». »), sans aucune image jointe ; les mots du client (« Quelque chose de chaleureux, simple, pas trop chic ») et ses refus n'y figurent jamais, mais restent chez le relecteur ; une reprise repart avec la même demande, à la charge du Studio.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "logo-clair-creux-des-lettres", date: "2026-11-23", source: "CLAUDE.md (Identité : « Sur fond sombre, le logo est toujours clair » ; essai réel du 23 novembre 2026 sur la version 891914dc, relevé par le chef d'orchestre)",
+    verdict: "Règle du propriétaire : « Sur fond sombre, le logo est toujours clair. » Dans l'essai réel, la version claire du logo de Halo, faite pour un fond sombre, laissait l'intérieur du « a » et du « o » en blanc.",
+    attendu: "Dans la version claire d'un logo pour fond sombre, le blanc du fond enfermé dans une lettre fermée (a, o, e) est retiré comme le fond relié au bord : sur le fond sombre, les creux des lettres prennent la couleur du fond, jamais du blanc.",
+    rejeu: "gratuit",
+  },
 ];

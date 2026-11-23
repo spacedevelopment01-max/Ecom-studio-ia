@@ -20,11 +20,10 @@ import { assetData, getAsset, saveAsset } from "../library";
 import { CostCapReached } from "../ai/trace";
 import { loadProject, saveBrand } from "../projects";
 import { chooseLogoV2 } from "../logo-v2/choose";
-import { cleanArtwork } from "../logo-v2/artwork";
 import type { Territory } from "../logo-v2/types";
 import type { ChainAi } from "./brand-chain";
-import { clientWords, goutsDuClient, ideesSimplesDesAnciennesPlanches, refusDuClientPourLeLogo } from "./brand-chain";
-import { CREATED_SLOTS, clientLogoOf, logoOnWhite, onWhite, proposalImagery, runBoardImages, type ImageSlot } from "./brand-images";
+import { clientWords, goutsDuClient } from "./brand-chain";
+import { CREATED_SLOTS, clientLogoOf, logoDetoure, onWhite, proposalImagery, runBoardImages, sansFond, type ImageSlot } from "./brand-images";
 import { buildBrandKit } from "./brand-kit";
 import type { Route } from "./brand-routes";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
@@ -59,13 +58,13 @@ export function finishSlots(j: Journey, redo?: readonly ImageSlot[]): ImageSlot[
   return CREATED_SLOTS.filter((s) => slots.includes(s));
 }
 
-/** Demande du symbole seul : le signe du logo, isolé (ou sa lettre la plus reconnaissable quand le logo n'a pas de signe). */
-export const symbolPrompt = (x: Route) => [
-  `Voici le logo de la marque « ${x.name} » (image de référence). Crée son SYMBOLE SEUL, celui qui servira d'icône de site et d'avatar : reprends EXACTEMENT le signe du logo (le même dessin, les mêmes traits, les mêmes couleurs), sans le nom ni aucun autre texte.`,
-  "Si le logo n'a pas de signe à côté du nom, prends sa lettre la plus reconnaissable, dessinée exactement comme dans le logo (même forme, même graisse, même couleur).",
-  "Simplifie seulement ce qu'il faut pour qu'il reste lisible en tout petit (16 pixels) : formes pleines, peu de détails. On doit reconnaître le logo au premier regard.",
-  "Un seul symbole, centré, à plat, sur un fond BLANC uni jusqu'aux bords, avec de l'air autour. Ni cadre, ni rond autour, ni ombre, ni maquette.",
-].join("\n");
+/**
+ * Demande du symbole seul, tirée du logo (décision du propriétaire du 23 novembre 2026, « le plus libre possible » : plus
+ * aucune consigne de dessin ni de fond). Le logo est la seule image jointe : sans lui, le symbole ne serait pas tiré du
+ * logo (règle du 15 novembre 2026 : « une corrélation avec le logo »). Le fond est retiré par le Studio ; le relecteur du
+ * symbole juge s'il reprend le logo et reste lisible en petit.
+ */
+export const symbolPrompt = (x: Pick<Route, "name">) => `Voici le logo de la marque « ${x.name.normalize("NFC").trim()} ». Fais-moi son symbole seul, sans le nom, pour l'icône de son site.`;
 const SYMBOL_REVIEW = "Tu contrôles le symbole d'une marque avant qu'il serve d'icône de site. Compare-le au logo fourni. ok = true seulement si : c'est bien le signe du logo (ou une lettre du nom dessinée comme dans le logo), reconnaissable au premier regard, dans ses couleurs ; il est seul, sans le nom entier ni autre texte ; il resterait lisible en tout petit. Sinon ok = false et why dit le défaut en une phrase simple, à la première personne. Réponds UNIQUEMENT avec l'objet JSON {\"ok\": true, \"why\": \"\"}.";
 const SymbolReviewSchema = z.object({ ok: z.boolean(), why: z.string().max(300).default("") });
 
@@ -79,7 +78,7 @@ export async function runBrandFinish(o: {
   const j = journeyOf(o.conversationId), p = loadProject(o.projectId);
   const choisie = chosenRoute(j);
   if (!choisie || !p.brand || !j.identityChoice) throw new UserFacingError(L("Ton identité doit être choisie avant que je finisse ta marque. Rien n'a été décompté.", "Choose your identity first. Nothing was charged."));
-  let route: Route = choisie;
+  const route: Route = choisie;
   const round = j.identities?.round ?? 1, keptLogo = j.keep.includes("logo");
   const clientLogo = keptLogo ? await clientLogoOf(o.projectId) : null;
   const slots = finishSlots(j, o.slots);
@@ -94,23 +93,14 @@ export async function runBrandFinish(o: {
   let current: Route = route;
   if (slots.length) {
     ctx.progress(0.1, L("Je crée les images de ta marque", "Creating your brand's images"));
-    // Une planche d'avant le 23 novembre 2026, sans « l'idée en mots simples » : elle est écrite d'un seul appel avant de
-    // redessiner son logo (à la charge du Studio), rangée dans la planche, puis relue.
-    if (slots.includes("logo") && !keptLogo) {
-      const list = (j.identities?.list ?? []) as Route[], next = await ideesSimplesDesAnciennesPlanches({ ctx, ai, list, keys: [j.identityChoice.key], round, notes });
-      if (next !== list) { updateJourney(o.conversationId, (y) => { if (y.identities) y.identities.list = next; }); route = chosenRoute(journeyOf(o.conversationId)) ?? route; current = route; }
-    }
     const r = await runBoardImages({
       ctx, ai, who, brief: o.brief, kind: o.kind, route, round, slots, clientLogo,
       // Le logo seul, même avec les mots du client (qui ne vont jamais à son dessinateur) : la direction d'origine
       // ressert pour ce qui le porte (audit du 22 novembre 2026, 2.4).
       imagery: mixed || (o.guidance && !(o.slots?.length && o.slots.every((s) => s === "logo"))) ? undefined : proposalImagery(j, route),
-      // Logo refait avec les mots du client : la consigne écrite par SINA ne va jamais au dessinateur du logo (essai réel
-      // du 21 novembre 2026 : « un fil à plomb stylisé, vert profond »). Sa ligne « La marque » est écrite par le Studio
-      // depuis la planche (23 novembre 2026) ; il reçoit seulement la phrase de refus du client, mot pour mot ; le
-      // relecteur reçoit les mots du client (sa fiche et ce qu'il vient de dire).
+      // Logo refait avec les mots du client : le dessinateur du logo ne reçoit que le métier et le nom (décision du 23
+      // novembre 2026) ; le relecteur reçoit les mots du client (sa fiche et ce qu'il vient de dire), refus compris.
       gouts: goutsDuClient(j, o.projectId, clientWords(o.guidance)),
-      refusLogo: refusDuClientPourLeLogo(j, o.projectId, clientWords(o.guidance)),
     });
     current = r.route; notes.push(...r.notes);
     // La maquette refaite avec le bon logo : la planche n'est plus notée « ancien logo ».
@@ -132,7 +122,7 @@ export async function runBrandFinish(o: {
   if (!keptLogo && !manqueLogo && (!logoChoice || slots.includes("logo") || (j.brandFinish as { logoFrom?: string | null } | undefined)?.logoFrom !== from)) {
     ctx.progress(0.8, L("Je prépare ton logo", "Preparing your logo"));
     const draft = singleTerritory(freeLogoFacts(p.brand, j), current);
-    const assetId = await saveBoardLogo(ctx, who, current, { ...draft, id: "planche-logo", style: "libre" } as Territory, await cleanArtwork(assetData(boardLogo!)));
+    const assetId = await saveBoardLogo(ctx, who, current, { ...draft, id: "planche-logo", style: "libre" } as Territory, await sansFond(assetData(boardLogo!), current.palette.dark));
     await chooseLogoV2(null, o.projectId, assetId);
     const logo: SinaLogo = { source: "A", name: L("Ton logo", "Your logo"), style: "libre", assetId, verdict: "PROVISIONAL", score: null, reason: L("créé pour ta marque et relu : ton nom y est exact", "made for your brand and reviewed: your name is exact"), kind: "image", choosable: true };
     logos = [logo]; logoChoice = { source: "A", assetId, at: Date.now() };
@@ -151,11 +141,13 @@ export async function runBrandFinish(o: {
         const logoPng = await onWhite(assetData(mainLogo));
         // Le symbole est un dessin du logo : usage « logo », modèle imposé (logo-policy.ts).
         const data = await ai.draw(`symbol-${round}`, { prompt: symbolPrompt(current), aspect: "1:1", logo: await onWhite(logoPng), usage: "logo" });
-        const png = await sharp(data).png().toBuffer();
-        if (!(await logoOnWhite(png))) return { ok: false as const, why: L("il n'est pas sur un fond blanc net", "it is not on a clean white background") };
+        // Le fond du symbole est retiré par le Studio (creux compris) ; un fond qu'il ne sait pas retirer est un refus.
+        const net = await logoDetoure(await sharp(data).png().toBuffer(), current.palette.dark);
+        if (!net.ok) return { ok: false as const, why: net.why };
+        const png = await onWhite(net.png);
         const seen = await ai.look(`symbolcheck-${round}`, { system: SYMBOL_REVIEW, schema: SymbolReviewSchema, prompt: `Marque : « ${current.name} ». Image 1 : le symbole proposé. Image 2 : le logo de la marque.`, images: [{ data: png, label: "symbole" }, { data: logoPng, label: "logo" }] });
         if (!seen.ok) return { ok: false as const, why: seen.why.replace(/\.+$/, "") || L("il ne reprend pas le logo", "it does not match the logo") };
-        const asset = await saveAsset({ projectId: o.projectId, userId: o.userId, data: await cleanArtwork(png), name: "symbole.png", mime: "image/png", role: "logo-mark", folderKey: "brand.logos", origin: "generated", sourceAssetId: mainLogo.id, meta: { engine: "syna-brand-symbol" } });
+        const asset = await saveAsset({ projectId: o.projectId, userId: o.userId, data: net.png, name: "symbole.png", mime: "image/png", role: "logo-mark", folderKey: "brand.logos", origin: "generated", sourceAssetId: mainLogo.id, meta: { engine: "syna-brand-symbol" } });
         return { ok: true as const, id: asset.id };
       });
       if (made.ok) { const b2 = loadProject(o.projectId).brand!; saveBrand(o.projectId, { ...b2, logo: { ...b2.logo, markAssetId: made.id } }); symbolFor = mainLogo.id; }

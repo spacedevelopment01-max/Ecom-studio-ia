@@ -754,9 +754,9 @@ export async function aiSitePhoto(ctx: Ctx, input: { prompt: string; references:
  * maquettes »). Références : la photo découpée sur la maquette (à reproduire), le logo (s'il figure sur un emballage),
  * la photo du produit (s'il figure sur la photo). Route des maquettes, sans relais (withQuotedImageRoute).
  */
-export async function aiSiteImageHd(ctx: Ctx, input: { prompt: string; scene?: Buffer | null; logo?: Buffer | null; product?: Buffer | null; /** Image montrée pour ne pas la refaire. */ avoid?: Buffer | null; /** Exemples aimés du propriétaire (logos), seulement comme exemples. */ examples?: Buffer | null; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
+export async function aiSiteImageHd(ctx: Ctx, input: { prompt: string; scene?: Buffer | null; logo?: Buffer | null; product?: Buffer | null; aspect: "1:1" | "4:5" | "9:16" | "16:9" | "2:3" }) {
   // Sans photo de maquette (maquettes en code, 8 novembre) : la photo est créée d'après sa seule description.
-  const references = [...(input.scene ? [{ role: "scene" as const, data: input.scene, essential: true }] : []), ...(input.product ? [{ role: "product" as const, data: input.product, essential: true }] : []), ...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : []), ...(input.avoid ? [{ role: "avoid" as const, data: input.avoid, essential: true }] : []), ...(input.examples ? [{ role: "examples" as const, data: input.examples, essential: false }] : [])];
+  const references = [...(input.scene ? [{ role: "scene" as const, data: input.scene, essential: true }] : []), ...(input.product ? [{ role: "product" as const, data: input.product, essential: true }] : []), ...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : [])];
   return generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "scene", need: { references: references.length } });
 }
 
@@ -766,11 +766,11 @@ export const LOGO_ROUTE: { provider: string; model: string } = { provider: REQUI
 /**
  * Le LOGO d'une planche de marque de SINA, et le symbole tiré du logo (décision du 23 novembre 2026, après l'essai de
  * Nadia : ces logos passaient par l'usage « scene », et la politique du 18 octobre ne s'appliquait pas) : usage « logo »,
- * donc le modèle imposé par le propriétaire, sans secours ni autre route. Images jointes : la planche des logos déjà
- * faits (à ne pas refaire), les 50 logos aimés (seulement comme exemples), ou le logo dont on tire le symbole.
+ * donc le modèle imposé par le propriétaire, sans secours ni autre route. Le logo part SANS aucune image jointe (décision du
+ * propriétaire du 23 novembre 2026 : le métier et le nom, rien de plus) ; le symbole reçoit seulement le logo dont il est tiré.
  */
-export async function aiBoardLogo(ctx: Ctx, input: { prompt: string; avoid?: Buffer | null; examples?: Buffer | null; logo?: Buffer | null; aspect: "1:1" }) {
-  const references = [...(input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : []), ...(input.avoid ? [{ role: "avoid" as const, data: input.avoid, essential: true }] : []), ...(input.examples ? [{ role: "examples" as const, data: input.examples, essential: false }] : [])];
+export async function aiBoardLogo(ctx: Ctx, input: { prompt: string; logo?: Buffer | null; aspect: "1:1" }) {
+  const references = input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : [];
   return withQuotedImageRoute(LOGO_ROUTE, () => generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "logo", need: { text: true, references: references.length } }));
 }
 
