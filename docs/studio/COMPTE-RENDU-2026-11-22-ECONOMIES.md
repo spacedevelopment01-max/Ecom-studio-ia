@@ -1264,3 +1264,26 @@ logo. Ça doit être le plus libre possible pour la création du logo ».
   logo-demande-nue » (accord écrit du propriétaire), hors du sceau ; elles restent au catalogue et ne sont plus rejouées.
   Ajoutées : logo-demande-nue, logo-clair-creux-des-lettres, trait-pres-du-nom-un-par-serie-au-relecteur,
   refus-et-consigne-apres-la-demande-nue.
+
+## Le logo : la série dans la demande nue
+
+Précision du propriétaire du 23 novembre 2026 : « En même temps il fallait garder la règle de le premier logo est fait
+donc on le donne à open ia et on lui dit je veux un autre logo complètement différent de celui là et pour le 3eme
+pareil, ou lui donne les 2 première et on lui dit fait moi un autre logo complètement différent des 2 premier. Et moi
+j'aime bien le 1er logo. Pour rappel on ne demande plus au client ce qu'il veux ou non dans son logo ».
+
+- Le 1er logo part sans image ; le 2e reçoit le 1er avec « Je veux un autre logo complètement différent de celui-là. » ;
+  le 3e reçoit les deux premiers avec « Fais-moi un autre logo complètement différent des deux premiers. » ; au-delà,
+  tous les précédents. Ce sont les logos gardés des identités d'avant, sinon leur dernier dessin de ce tour, jamais
+  ceux d'une autre série ni d'un autre projet. Tout en français, rien d'autre.
+- Une reprise reçoit en plus ses propres essais refusés, avec « … de celui-là » ou « … de tous ceux-là », jamais la
+  raison du refus (essai réel de Pénombre sur 1db7eb3c, 0,87 € : « trois fois le même dessin », la même demande nue
+  envoyée trois fois).
+- Au relecteur seul : un mot non demandé dans le logo (un sous-titre) est un défaut ; le nom seul est attendu.
+- SINA ne demande plus au client ce qu'il veut ou non dans son logo ; ce qu'il en dit de lui-même va au relecteur.
+- Un logo gardé (celui de Sillage, que le propriétaire aime) n'est jamais redessiné.
+- Devis pour refaire Halo et Pénombre : carte du client 0,32 € probable, 0,80 € au plus ; borne des reprises du Studio
+  0,32 € probable, 1,60 € au plus.
+- Banc : logo-demande-nue et trait-pres-du-nom-un-par-serie-au-relecteur sont marquées remplacées par
+  serie-logo-completement-different (accord écrit du propriétaire) ; ajoutées et scellées :
+  serie-logo-completement-different et trois-fois-le-meme-dessin.

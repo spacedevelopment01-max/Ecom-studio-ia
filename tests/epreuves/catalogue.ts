@@ -42,6 +42,18 @@ const DECISION_DU_23_NOVEMBRE = {
   epreuve: "logo-demande-nue",
 };
 
+/**
+ * La précision du propriétaire du 23 novembre 2026 sur la série des logos, et son accord écrit pour marquer les épreuves
+ * qu'elle remplace (« Oui, marque logo-demande-nue et trait-pres-du-nom-un-par-serie-au-relecteur comme remplacées par ma
+ * précision du 23 novembre sur la série, ajoute les épreuves serie-logo-completement-different et trois-fois-le-meme-dessin,
+ * et mets à jour la partie Logo de CLAUDE.md. »).
+ */
+const PRECISION_SERIE_DU_23_NOVEMBRE = {
+  decision: "23 novembre 2026",
+  mots: "« En même temps il fallait garder la règle de le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement différent de celui là et pour le 3eme pareil, ou lui donne les 2 première et on lui dit fait moi un autre logo complètement différent des 2 premier. Et moi j'aime bien le 1er logo. Pour rappel on ne demande plus au client ce qu'il veux ou non dans son logo »",
+  epreuve: "serie-logo-completement-different",
+};
+
 export const EPREUVES: Epreuve[] = [
   {
     id: "logo-goutte-refusee", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
@@ -340,6 +352,7 @@ export const EPREUVES: Epreuve[] = [
     verdict: "« je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies tu donne le nom de la marque et rien de plus, pas de le client ne veux pas tel truc dans son logo. Ça doit être le plus libre possible pour la création du logo »",
     attendu: "La demande au dessinateur du logo, au premier dessin comme à chaque reprise, ne contient que le métier en mots simples et le nom exact (« Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Sillage ». »), sans aucune image jointe ; les mots du client (« Quelque chose de chaleureux, simple, pas trop chic ») et ses refus n'y figurent jamais, mais restent chez le relecteur ; une reprise repart avec la même demande, à la charge du Studio.",
     rejeu: "gratuit",
+    remplaceePar: { ...PRECISION_SERIE_DU_23_NOVEMBRE, sceau: "105a62cb416f09a50d83218bad402f2a115a0bfc4e4b91d060adcd860c31155d" },
   },
   {
     id: "logo-clair-creux-des-lettres", date: "2026-11-23", source: "CLAUDE.md (Identité : « Sur fond sombre, le logo est toujours clair » ; essai réel du 23 novembre 2026 sur la version 891914dc, relevé par le chef d'orchestre)",
@@ -352,11 +365,24 @@ export const EPREUVES: Epreuve[] = [
     verdict: "« garde le trait près du nom (un seul par série) côté relecteur » (accord écrit du 23 novembre 2026), après « il doit juste être là par parcimonie » (20 novembre 2026).",
     attendu: "Quand un logo déjà gardé de la série porte un trait près du nom, la demande au dessinateur reste nue (le métier et le nom, aucune image jointe) ; seul le relecteur reçoit la consigne de refuser un deuxième trait dans la série, avec ce logo-là pour comparer ; le logo qu'il refuse est redessiné avec la même demande, à la charge du Studio. Sans trait déjà pris, le relecteur ne reçoit pas cette consigne.",
     rejeu: "gratuit",
+    remplaceePar: { ...PRECISION_SERIE_DU_23_NOVEMBRE, sceau: "1e41e6c9e787c5b9cefd707a58648fe47ee792e51f1ab7ae6a55c81ab361d6d5" },
   },
   {
     id: "refus-et-consigne-apres-la-demande-nue", date: "2026-11-23", source: "CLAUDE.md (Logo ; parties toujours vraies des épreuves remplacées le 23 novembre 2026 par logo-demande-nue)",
     verdict: "Parties toujours vraies des épreuves remplacées : « pas de consigne autre que les 50 logos en exemple » ne vaut plus, mais la consigne écrite par SINA ne va toujours pas au dessinateur ; « enlève la 7 » (21 novembre 2026) : les mots du client vont au relecteur ; un refus des mains et du visage vaut pour les images.",
     attendu: "La consigne écrite par SINA (« un logotype sobre, un fil à plomb ») n'arrive jamais au dessinateur du logo ; un refus noté pour le logo dans la fiche du client arrive au relecteur, qui le compte comme un défaut, et jamais au dessinateur ; un refus des mains et du visage noté « pour tout » vaut pour les images, pas pour le logo.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "serie-logo-completement-different", date: "2026-11-23", source: "CLAUDE.md (Logo ; précision du propriétaire du 23 novembre 2026, relayée mot pour mot par le chef d'orchestre)",
+    verdict: "« En même temps il fallait garder la règle de le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement différent de celui là et pour le 3eme pareil, ou lui donne les 2 première et on lui dit fait moi un autre logo complètement différent des 2 premier. Et moi j'aime bien le 1er logo. Pour rappel on ne demande plus au client ce qu'il veux ou non dans son logo »",
+    attendu: "Le 1er logo d'une série part sans image ; le 2e reçoit le 1er avec « Je veux un autre logo complètement différent de celui-là » ; le 3e reçoit les deux premiers avec « Fais-moi un autre logo complètement différent des deux premiers » ; ce sont les logos gardés des identités d'avant, sinon leur dernier dessin, jamais d'une autre série ; la demande reste en français, sans rien d'autre ; un logo gardé n'est jamais redessiné.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "trois-fois-le-meme-dessin", date: "2026-11-23", source: "CLAUDE.md (Logo ; essai réel de Pénombre sur la version 1db7eb3c, 23 novembre 2026, relevé par le chef d'orchestre)",
+    verdict: "Essai réel de Pénombre sur la version 1db7eb3c (0,87 €) : ses trois logos, refusés à 3 sur 10, étaient « trois fois le même dessin » : une bougie allumée devant un croissant de lune, dans un disque noir, avec un sous-titre que personne n'avait demandé ; la même demande nue, sans image, avait été envoyée trois fois.",
+    attendu: "Chaque reprise reçoit ses propres essais refusés, en plus des logos d'avant de la série, avec une seule phrase « complètement différent », sans jamais la raison du refus ; deux demandes d'une même identité ne sont jamais identiques ; au relecteur seul, un mot non demandé dans le logo est un défaut.",
     rejeu: "gratuit",
   },
 ];

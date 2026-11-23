@@ -68,9 +68,9 @@ export type ImageAspect = "1:1" | "16:9" | "9:16" | "4:5";
 /** Format demandé pour chaque image (le modèle rend du carré, du paysage 3:2 ou du portrait 2:3). */
 export const SLOT_ASPECT: Record<ImageSlot, ImageAspect> = { logo: "1:1", hero: "16:9", object: "1:1", signs: "1:1", site: "9:16", post0: "4:5", post1: "4:5", post2: "4:5" };
 /** Images de référence envoyées avec chaque demande (le logo pour l'objet et le site). Le vrai produit d'une boutique compte
- * pour la grande scène et le haut du site (essai réel de Nadia, 23 novembre 2026). Le logo n'en reçoit AUCUNE (décision du
- * propriétaire du 23 novembre 2026 : le métier et le nom, rien de plus). */
-export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 0, hero: 1, object: 1, signs: 1, site: 3, post0: 1, post1: 1, post2: 1 };
+ * pour la grande scène et le haut du site (essai réel de Nadia, 23 novembre 2026). Le logo : les logos d'avant de la série
+ * (trois au plus, forfait à quatre identités) et ses deux essais refusés (le propriétaire, 23 novembre 2026), cinq au plus. */
+export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 5, hero: 1, object: 1, signs: 1, site: 3, post0: 1, post1: 1, post2: 1 };
 
 /**
  * Les images d'une planche se créent en DEUX temps (lot 2, 15 novembre 2026 : « images complètes pour la seule identité
@@ -297,12 +297,30 @@ export function metierEnMotsSimples(descriptor?: string | null): string {
  * même demande pour un premier dessin et pour chaque reprise. Le relecteur garde les mots et les refus du client ; le fond
  * est retiré par le Studio après coup (detourerLeLogo).
  */
-export function demandeDuLogo(x: Pick<Route, "name" | "board">): string {
+export function demandeDuLogo(x: Pick<Route, "name" | "board">, joints: { precedents?: number; refuses?: number } = {}): string {
   const nom = x.name.normalize("NFC").trim();
   return [
     `Fais-moi un logo pour ${metierEnMotsSimples(x.board?.descriptor)}. Le nom de la marque : « ${nom} ».`,
     nomAEpeler(nom) ? `Il s'écrit lettre par lettre : ${spell(nom)}.` : "",
+    phraseDeLaSerie(joints.precedents ?? 0, joints.refuses ?? 0),
   ].filter(Boolean).join("\n");
+}
+const NOMBRES = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix"];
+/**
+ * La phrase qui accompagne les logos joints (le propriétaire, 23 novembre 2026 : « le premier logo est fait donc on le
+ * donne à open ia et on lui dit je veux un autre logo complètement différent de celui là et pour le 3eme pareil, ou lui
+ * donne les 2 première et on lui dit fait moi un autre logo complètement différent des 2 premier »). `precedents` : les
+ * logos des identités d'avant dans la série ; `refuses` : les essais refusés de CETTE identité (essai réel de Pénombre :
+ * trois fois le même dessin, la même demande nue envoyée trois fois). Une seule image : « de celui-là ». Seulement les
+ * logos d'avant : « des deux premiers », « des trois premiers »… Avec ses propres essais refusés (plusieurs images de deux
+ * sortes) : « de tous ceux-là », une seule phrase simple qui couvre chaque image jointe, sans dire pourquoi.
+ */
+export function phraseDeLaSerie(precedents: number, refuses: number): string {
+  const n = precedents + refuses;
+  if (n <= 0) return "";
+  if (n === 1) return "Je veux un autre logo complètement différent de celui-là.";
+  if (!refuses) return `Fais-moi un autre logo complètement différent des ${NOMBRES[n] ?? n} premiers.`;
+  return "Fais-moi un autre logo complètement différent de tous ceux-là.";
 }
 
 /** Consigne complète d'une image : la direction globale, la consigne de la directrice artistique, les lignes fixes du Studio. */
@@ -353,7 +371,7 @@ const SLOT_LABEL: Record<ImageSlot, { fr: string; en: string }> = {
   post0: { fr: "la première publication", en: "the first post" }, post1: { fr: "la deuxième publication", en: "the second post" }, post2: { fr: "la troisième publication", en: "the third post" },
 };
 export const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
-  logo: "le logo de la marque", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Le bouton principal porte son texte, écrit DANS le bouton : un bouton vide, avec seulement une flèche, est un défaut (defect « autre »). Le logo de l'en-tête est CELUI de la marque (compare-le à l'image « logo » fournie avec les autres) : même signe, même dessin de lettres ; sur un écran sombre, il est dans sa version claire (ses parties foncées en clair), et une nuance de couleur différente n'est pas un défaut. Seul un AUTRE signe ou un autre dessin du nom à la place du sien est un défaut (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
+  logo: "le logo de la marque : seul son nom y est écrit ; un mot non demandé (un sous-titre, une ligne de métier, un slogan, par exemple « Bougies naturelles ») est un défaut (defect « texte »), recopie-le dans read", hero: "la grande image de la marque (aucun texte attendu)", object: "l'objet de la marque, avec le logo posé dessus : EXACTEMENT celui de l'image « logo » (même signe, même dessin de lettres, même graisse) ; une autre police est un défaut", signs: "les signes de la marque posés sur de vrais objets de son monde, le logo fourni compris (aucun autre texte attendu ; une icône plate ou un pictogramme est un défaut)", site: "la maquette du haut de la page d'accueil, dans un téléphone entier vu de face : elle doit être BELLE et donner envie, comme la page d'un studio de design primé (un titre TRÈS grand au caractère affirmé, une photo de campagne au sujet très grand, toute l'image dans la teinte de la marque, un seul bouton, très peu de mots, le logo fourni tel quel et net) ; un titre petit ou timide, une photo d'ambiance banale, une mise en page pauvre, vide ou confuse, un logo flou sont des défauts (defect « autre »). Le bouton principal porte son texte, écrit DANS le bouton : un bouton vide, avec seulement une flèche, est un défaut (defect « autre »). Le logo de l'en-tête est CELUI de la marque (compare-le à l'image « logo » fournie avec les autres) : même signe, même dessin de lettres ; sur un écran sombre, il est dans sa version claire (ses parties foncées en clair), et une nuance de couleur différente n'est pas un défaut. Seul un AUTRE signe ou un autre dessin du nom à la place du sien est un défaut (defect « autre »). Les petits mots d'interface (l'heure, une ligne sous le titre, une entrée secondaire) sont normaux",
   post0: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post1: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post2: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)",
 };
 
@@ -438,7 +456,8 @@ export async function clientLogoOf(projectId: string): Promise<ClientLogo | null
   try { const data = assetData(a), meta = await sharp(data).metadata(); return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024, data }; } catch { return null; }
 }
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[]; /** Haut du site refait et refusé : celui d'avant est gardé (il porte l'ancien logo). */ siteGarde?: boolean;
-  /** Images de la planche qui manquent encore après les reprises (logo, grande scène, haut du site) : la planche n'est pas montrée. */ manque?: ImageSlot[] };
+  /** Images de la planche qui manquent encore après les reprises (logo, grande scène, haut du site) : la planche n'est pas montrée. */ manque?: ImageSlot[];
+  /** Le dernier dessin du logo de cette planche, gardé ou refusé : la série le donne aux identités suivantes à défaut d'un logo gardé. */ dernierLogo?: Buffer };
 
 /** Un logo à fond transparent posé sur du blanc, pour qu'un relecteur le voie comme le client le verra. */
 export const onWhite = (png: Buffer): Promise<Buffer> => sharp(png).flatten({ background: "#FFFFFF" }).png().toBuffer().catch(() => png);
@@ -523,6 +542,12 @@ export async function runBoardImages(o: {
    * dans la série (accord du propriétaire du 23 novembre 2026). Jamais donnés au dessinateur.
    */
   keptLogos?: Buffer[];
+  /**
+   * Les logos des identités d'AVANT dans la même série (le logo gardé de chacune, sinon son dernier dessin), dans l'ordre :
+   * joints au dessinateur avec « je veux un autre logo complètement différent » (le propriétaire, 23 novembre 2026).
+   * Jamais ceux d'une autre série ni d'un autre projet.
+   */
+  serieLogos?: Buffer[];
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
   imagery?: Imagery;
   /** Logo GARDÉ par le client : jamais redessiné ; il est la marque de la planche et se pose sur ce qui le porte. */
@@ -544,7 +569,7 @@ export async function runBoardImages(o: {
   const made = new Map<ImageSlot, Made>();
   const bufferOf = (slot: ImageSlot): Buffer | null => { const m = made.get(slot), a = m ? getAsset(m.id) : undefined; return a ? assetData(a) : null; };
   let capped = false;
-  type Refs = { logo?: Buffer | null; scene?: Buffer | null; product?: Buffer | null };
+  type Refs = { logo?: Buffer | null; scene?: Buffer | null; product?: Buffer | null; /** Logos joints au dessinateur du logo (la série, ses essais refusés). */ serie?: Buffer[] };
   // Le logo sans fond, retiré par le Studio (par image) : c'est lui qui est relu, posé sur ce qui le porte et décliné.
   const nets = new Map<string, Buffer>();
   // Le vrai produit d'une boutique (ses photos envoyées), joint à la grande scène et au haut du site, et au relecteur.
@@ -573,7 +598,7 @@ export async function runBoardImages(o: {
         // Le logo passe par l'usage « logo » : le modèle imposé par le propriétaire (logo-policy.ts), sans secours.
         const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, slot === "logo"
           // Le logo : la demande nue, AUCUNE image jointe (décision du 23 novembre 2026).
-          ? { prompt, aspect: SLOT_ASPECT[slot], usage: "logo" as const }
+          ? { prompt, aspect: SLOT_ASPECT[slot], usage: "logo" as const, ...(refs.serie?.length ? { serie: refs.serie } : {}) }
           : { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, ...(refs.product ? { product: refs.product } : {}) });
         // Gardée telle quelle si elle est déjà en PNG : sa signature « fait par l'IA » d'OpenAI reste (règlement européen).
         const png = await pngSansPerte(data), meta = await sharp(png).metadata();
@@ -730,14 +755,24 @@ export async function runBoardImages(o: {
   // 1. Le logo (décision du propriétaire du 23 novembre 2026) : la demande nue (le métier en mots simples et le nom exact),
   // sans aucune image jointe, la même pour chaque reprise. Le Studio retire le fond après coup (gratuit, sans IA) ; un
   // fond qu'il ne sait pas retirer proprement fait redessiner le logo, comme un refus du relecteur, à la charge du Studio.
+  // Ses essais refusés (dans l'ordre) et son dernier dessin, gardé ou non : la série le donne aux identités suivantes.
+  const essais: Buffer[] = [];
+  let dernierLogo: Buffer | null = null;
   if (wanted.has("logo")) {
     ctx.progress(0.96, L(`Je dessine le logo de la planche ${key}`, `Drawing the logo of board ${key}`));
-    const demande = imagePrompt("logo", x, imagery, { logo: true });
-    /** Un dessin du logo, puis son fond retiré par le Studio : un fond impossible à retirer proprement est un refus. */
+    const precedents = o.serieLogos ?? [];
+    /**
+     * Un dessin du logo : la demande nue, les logos des identités d'avant dans la série, puis ses propres essais refusés,
+     * avec une seule phrase « complètement différent » (essai réel de Pénombre, 23 novembre 2026 : sans eux, trois fois le
+     * même dessin). Jamais la raison d'un refus. Puis son fond retiré par le Studio : un fond impossible à retirer
+     * proprement est un refus.
+     */
     const dessine = async (retry = ""): Promise<boolean> => {
-      await make("logo", {}, demande, retry);
+      const joints = [...precedents, ...essais];
+      await make("logo", joints.length ? { serie: joints } : {}, demandeDuLogo(x, { precedents: precedents.length, refuses: essais.length }), retry);
       const b = bufferOf("logo"), m = made.get("logo");
       if (!b || !m) return false;
+      dernierLogo = b;
       const d = await logoDetoure(b, x.palette.dark);
       if (d.ok) { nets.set(m.id, d.png); return true; }
       mark(m.id, "rejected", d.why); made.delete("logo"); dropped.set("logo", d.why);
@@ -750,7 +785,8 @@ export async function runBoardImages(o: {
     for (let attempt = 1; attempt <= MAX_IMAGE_RETRIES && dropped.has("logo") && calls.has("logo") && !capped && !blind; attempt++) {
       ctx.progress(0.96, L(`Je reprends le logo de la planche ${key}`, `Redoing the logo of board ${key}`));
       const why = dropped.get("logo")!; dropped.delete("logo");
-      // La même demande nue : aucune raison de refus, aucun logo déjà fait n'est donné au dessinateur.
+      // Son essai refusé rejoint les images jointes ; aucune raison du refus n'est donnée au dessinateur.
+      if (dernierLogo) essais.push(dernierLogo);
       if (await dessine(`:r${attempt}`)) await review(["logo"], `:logo:r${attempt}`);
       else if (!dropped.has("logo")) dropped.set("logo", why);
     }
@@ -887,5 +923,5 @@ export async function runBoardImages(o: {
   if (capped) issues.push(tag(L("le plafond annoncé a été atteint avant la fin de ses images.", "the announced cap was reached before its images were finished.")));
   // Les images sans lesquelles la planche n'est pas montrée (le logo, sauf celui du client ; la grande scène ; le haut du site).
   const manque = manqueDeLaPlanche(next.success ? next.data : x, !!own);
-  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues, siteGarde, manque };
+  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues, siteGarde, manque, ...(dernierLogo ? { dernierLogo } : {}) };
 }

@@ -563,6 +563,9 @@ export function photoRequestMaxMicro(route:{provider:string;model:string},input:
 
 /** Texte d'acheminement réellement ajouté à chaque demande ; inclus aussi dans sa borne de coût. */
 export function imageReferencePrompt(text:string,roles:readonly string[]):string{
+ // « serie » : les logos déjà faits joints au dessinateur du logo ; sa demande, en français, dit déjà quoi en faire
+ // (décision du propriétaire du 23 novembre 2026) : rien n'est ajouté, aucune phrase en anglais.
+ if(roles.length&&roles.every(r=>r==='serie'))return text;
  // « avoid » : une image montrée pour ne PAS la refaire (les logos déjà créés pour un client). Essai réel du 16 novembre
  // 2026 : jointe comme une référence ordinaire, elle était annoncée « à reproduire fidèlement », et chaque logo sortait
  // comme une copie du précédent.
@@ -769,8 +772,8 @@ export const LOGO_ROUTE: { provider: string; model: string } = { provider: REQUI
  * donc le modèle imposé par le propriétaire, sans secours ni autre route. Le logo part SANS aucune image jointe (décision du
  * propriétaire du 23 novembre 2026 : le métier et le nom, rien de plus) ; le symbole reçoit seulement le logo dont il est tiré.
  */
-export async function aiBoardLogo(ctx: Ctx, input: { prompt: string; logo?: Buffer | null; aspect: "1:1" }) {
-  const references = input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : [];
+export async function aiBoardLogo(ctx: Ctx, input: { prompt: string; logo?: Buffer | null; /** Les logos déjà faits de la série et ses essais refusés : la demande, en français, dit quoi en faire. */ serie?: Buffer[]; aspect: "1:1" }) {
+  const references = input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : (input.serie ?? []).map((data) => ({ role: "serie" as const, data, essential: true }));
   return withQuotedImageRoute(LOGO_ROUTE, () => generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "logo", need: { text: true, references: references.length } }));
 }
 
@@ -979,7 +982,7 @@ export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "h
   return v === "medium" || v === "high" ? v : asked;
 }
 
-async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: AspectId; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ onRequest?: (receipt:ImageRequestReceipt)=>void; extraRefs?: Buffer[]; references?: { role: "product" | "logo" | "scene" | "style" | "avoid" | "examples"; data: Buffer; essential: boolean }[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: AspectId; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ onRequest?: (receipt:ImageRequestReceipt)=>void; extraRefs?: Buffer[]; references?: { role: "product" | "logo" | "scene" | "style" | "avoid" | "examples" | "serie"; data: Buffer; essential: boolean }[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
   const input = { ...input0, quality: input0.strictQuality ? input0.quality : imageQuality(input0.usage, input0.quality) };
   const typed = input.references ?? [...(input.reference ? [{ role: "product" as const, data: input.reference, essential: true }] : []), ...(input.extraRefs ?? []).map(data => ({ role: "logo" as const, data, essential: true }))];
   // Every supplied reference is required. Routing may reject a model, never silently discard a client's logo.

@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -42,11 +42,15 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       expect(SCEAUX[e.id], e.id).toBe(r.sceau);
       // Rescellée après une réécriture : le sceau figé la refuse.
       expect(sceau({ ...e, attendu: `${e.attendu} (réécrite)` })).not.toBe(r.sceau);
-      // Remplacée par une épreuve qui existe, scellée, rejouée, et qui n'est pas elle-même remplacée ; avec la décision mot pour mot.
-      const par = EPREUVES.find((x) => x.id === r.epreuve);
-      expect(par && SCEAUX[par.id] && par.rejeu === "gratuit" && !par.remplaceePar, `${e.id} → ${r.epreuve}`).toBeTruthy();
+      // Remplacée par une épreuve qui existe et qui est scellée ; en suivant la chaîne des remplacements (sans boucle), la
+      // dernière est rejouée et n'est pas remplacée. Avec la décision mot pour mot.
+      const vus = new Set<string>([e.id]);
+      let par = EPREUVES.find((x) => x.id === r.epreuve);
+      expect(par && SCEAUX[par.id], `${e.id} → ${r.epreuve}`).toBeTruthy();
+      while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
+      expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(r.decision).toBe("23 novembre 2026");
-      expect(r.mots).toMatch(/^« je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies/);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait)/);
     }
   });
   it("chaque épreuve gratuite est rejouée ci-dessous", () => {
@@ -454,6 +458,77 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     // Mains et visage : pour les images, jamais pour le logo.
     expect(F.porteeOf(mains)).toBe("images");
     expect(F.refusPourLeLogo([mains, { sujet: "couleur", value: "pas de rose", genre: "refuse", portee: "tout", at: 1 }])).toEqual(["pas de rose"]);
+  });
+
+  epreuve("serie-logo-completement-different", async () => {
+    const C = await import("@/lib/syna-agent/brand-chain");
+    const { chargeDuStudio } = await import("@/lib/billing");
+    const sha = (b: Buffer) => crypto.createHash("sha256").update(b).digest("hex");
+    const user = await account(), projectId = project(user, "products") as string;
+    const metier = "Bougies parfumées coulées à la main près de Lyon";
+    const routes = (["A", "B", "C"] as const).map((key, i) => ({ ...route(key), name: ["Sillage", "Halo", "Lueur"][i], board: { ...route(key).board, descriptor: metier, images: undefined } }));
+    const dessins: { id: string; prompt: string; serie: string[]; cles: string[]; studio: boolean }[] = [];
+    let n = 0;
+    const couleur = ["#6E2A5E", "#2B4C8C", "#2F6A4E", "#B4450F"];
+    const ai: any = {
+      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
+      draw: async (id: string, c: any) => { dessins.push({ id, prompt: c.prompt, serie: (c.serie ?? []).map(sha), cles: Object.keys(c).filter((k) => Buffer.isBuffer(c[k])), studio: chargeDuStudio() }); return blanc().composite(lettres().map((l) => ({ ...l, input: { create: { ...l.input.create, background: couleur[n % 4] } } }))).png().toBuffer().finally(() => n++); },
+      look: async (_id: string, c: any) => ({ images: [{ slot: "logo", seen: "", score: 9, ok: true, read: [/Marque : « ([^»]+) »/.exec(c.prompt)![1]], why: "" }] }),
+    };
+    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
+    // La série comme dans la chaîne : chaque identité reçoit le logo gardé (sinon le dernier dessin) de celles d'avant.
+    const faites: any[] = [];
+    for (const x of routes) {
+      const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: imagery as never, serieLogos: faites.map((y) => C.logoPourLaSerie(projectId, y, 1)!).filter(Boolean) });
+      faites.push(r.route.board.images?.logo ? r.route : x);
+    }
+    const base = (nom: string) => `Fais-moi un logo pour une marque de bougies. Le nom de la marque : « ${nom} ».`;
+    expect(dessins.map((d) => d.prompt)).toEqual([base("Sillage"), `${base("Halo")}\nJe veux un autre logo complètement différent de celui-là.`, `${base("Lueur")}\nFais-moi un autre logo complètement différent des deux premiers.`]);
+    // Les images jointes : aucune, puis le logo gardé de Sillage, puis ceux de Sillage et de Halo ; rien d'autre.
+    const { getAsset, assetData } = await import("@/lib/library");
+    const garde = (x: any) => sha(assetData(getAsset(x.board.images.logo.id)!));
+    expect(dessins.map((d) => d.serie)).toEqual([[], [garde(faites[0])], [garde(faites[0]), garde(faites[1])]]);
+    for (const d of dessins) { expect(d.cles).toEqual([]); expect(d.prompt).not.toMatch(/REFERENCES|image \d|Couleurs|Typographie|La marque :|exemples/); expect(d.studio).toBe(false); }
+    // Jamais un logo d'un autre projet : le logo d'une identité se cherche dans CE projet.
+    const autre = project(await account(), "products") as string;
+    expect(C.logoPourLaSerie(autre, { ...routes[0], board: { ...routes[0].board, images: undefined } } as never, 1)).toBeNull();
+    // Le dernier dessin, à défaut d'un logo gardé ; un logo gardé n'est jamais redessiné par la série.
+    expect(C.logoPourLaSerie(projectId, { ...routes[0], board: { ...routes[0].board, images: undefined } } as never, 1)).toBeTruthy();
+    const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
+    expect(chain).toContain("const avant = list.slice(0, Math.max(0, list.findIndex((o) => o.key === x.key)))");
+  });
+
+  epreuve("trois-fois-le-meme-dessin", async () => {
+    const { chargeDuStudio } = await import("@/lib/billing");
+    const sha = (b: Buffer) => crypto.createHash("sha256").update(b).digest("hex");
+    const user = await account(), projectId = project(user, "products") as string;
+    const x = { ...route("C"), name: "Pénombre", board: { ...route("C").board, descriptor: "Bougies parfumées en cire de soja, Brignais", images: undefined } };
+    const sillage = await logoSimple(), halo = await logoAvecTrait();
+    const dessins: { prompt: string; serie: string[]; studio: boolean; rendu: Buffer }[] = [];
+    let n = 0;
+    const ai: any = {
+      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
+      draw: async (_id: string, c: any) => { const rendu = await blanc(640 + 16 * n++, 480).composite(lettres()).png().toBuffer(); dessins.push({ prompt: c.prompt, serie: (c.serie ?? []).map(sha), studio: chargeDuStudio(), rendu }); return rendu; },
+      // Comme dans l'essai réel : chaque logo refusé, à 3 sur 10, pour une bougie devant un croissant de lune.
+      look: async () => ({ images: [{ slot: "logo", seen: "", score: 3, ok: false, read: ["Pénombre", "Bougies naturelles"], why: "une bougie allumée devant un croissant de lune, avec un sous-titre", defect: "autre" }] }),
+    };
+    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
+    await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: imagery as never, serieLogos: [sillage, halo] });
+    expect(dessins).toHaveLength(3);
+    const [p1, p2, p3] = dessins;
+    // Le 2e essai reçoit le 1er refusé, le 3e les deux, en plus de Sillage et de Halo.
+    expect(p1.serie).toEqual([sha(sillage), sha(halo)]);
+    expect(p2.serie).toEqual([sha(sillage), sha(halo), sha(p1.rendu)]);
+    expect(p3.serie).toEqual([sha(sillage), sha(halo), sha(p1.rendu), sha(p2.rendu)]);
+    // Jamais deux demandes identiques ; une seule phrase « complètement différent » ; jamais la raison du refus.
+    expect(new Set(dessins.map((d) => `${d.prompt}|${d.serie.join(",")}`)).size).toBe(3);
+    for (const d of dessins) {
+      expect(d.prompt.match(/complètement différent/g)).toHaveLength(1);
+      expect(d.prompt).not.toMatch(/lune|bougie allumée|sous-titre|Bougies naturelles|3 sur 10|CORRECTION/);
+    }
+    expect(dessins.map((d) => d.studio)).toEqual([false, true, true]);
+    // Au relecteur seul : un mot non demandé dans le logo est un défaut.
+    expect(I.ROLE_FOR_REVIEW.logo).toContain("un mot non demandé (un sous-titre, une ligne de métier, un slogan, par exemple « Bougies naturelles ») est un défaut");
   });
 });
 

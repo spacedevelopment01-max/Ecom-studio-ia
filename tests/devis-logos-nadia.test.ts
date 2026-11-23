@@ -37,7 +37,7 @@ describe("devis de l'essai réel des trois logos de Nadia (simulé, aucun appel)
     // Ce que la carte d'accord montre au client pour « refaire les trois logos » (un essai par identité ; les reprises
     // sont à la charge du Studio, mais comptent dans le plafond de la tâche).
     // Décision du 23 novembre 2026 : plus d'appel « idée en mots simples », plus aucune image jointe au logo.
-    expect(SLOT_REFERENCES.logo).toBe(0);
+    expect(SLOT_REFERENCES.logo).toBe(5);
     expect((C as Record<string, unknown>).ideesSimplesQuote).toBeUndefined();
     const carte = C.boardImagesQuote(3, s, ["logo"]);
     const essais = 1 + MAX_IMAGE_RETRIES;
@@ -56,6 +56,8 @@ describe("devis de l'essai réel des trois logos de Nadia (simulé, aucun appel)
       dessin: { max: e(dessinMax), probable: e(dessinProbable) }, relecture: { max: e(relectureMax), probable: e(relectureProbable) },
       carteDuClient: { max: e(carte.maxMicro), probable: e(carte.probableMicro!) },
       borneDuStudio: { max: e(bornes.studioMaxMicro), probable: e(bornes.studioProbableMicro) },
+      // Halo et Pénombre seulement (Halo reçoit Sillage ; Pénombre, Sillage et le nouveau Halo ; chaque reprise ses essais refusés).
+      haloPenombre: (() => { const q = C.boardImagesQuote(2, s, ["logo"]), b = deuxPlafonds(q, false); return { carte: { max: e(q.maxMicro), probable: e(q.probableMicro!) }, borne: { max: e(b.studioMaxMicro), probable: e(b.studioProbableMicro) }, essaiTousRefuses: { probable: e(2 * essais * (dessinProbable + relectureProbable)), auPlus: e(2 * (essais * dessinMax + 2 * essais * relectureMax)) } }; })(),
       essai: { probable: e(probable), auPlus: e(auPlus) },
       dessinAvant: { max: e(dessinMaxAvant), probable: e(dessinMaxAvant / 1.25) },
       partDuBudget: {

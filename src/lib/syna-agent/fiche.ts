@@ -140,8 +140,9 @@ export function refusPour(notes: FicheNote[], usage: Portee | Portee[]): string[
   return notes.filter((n) => genreOf(n) === "refuse" && vautPour(n, usage)).map((n) => n.value);
 }
 /**
- * Les refus que reçoit le dessinateur du logo, mot pour mot, sans rien ajouté : ceux notés pour le logo, et ceux pour la
- * marque ou pour tout qui peuvent toucher un logo (« pas de rose »). Jamais ceux des images (personnes, mains, visage).
+ * Les refus qui touchent un logo, mot pour mot : ceux notés pour le logo, et ceux pour la marque ou pour tout (« pas de
+ * rose »), jamais ceux des images (personnes, mains, visage). Pour le RELECTEUR seulement : depuis le 23 novembre 2026, le
+ * dessinateur du logo ne reçoit que le métier et le nom, et on ne demande plus au client ce qu'il veut dans son logo.
  */
 export function refusPourLeLogo(notes: FicheNote[]): string[] {
   return notes.filter((n) => genreOf(n) === "refuse" && ["logo", "marque", "tout"].includes(porteeOf(n))).map((n) => n.value);

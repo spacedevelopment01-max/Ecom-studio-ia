@@ -138,7 +138,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       return c.schema.parse(c.prepare ? c.prepare(raw) : raw);
     },
     draw: async (id: string, c: any) => {
-      log.ids.push(id); log.prompts[id] = c.prompt; log.refs[id] = { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect };
+      log.ids.push(id); log.prompts[id] = c.prompt; log.refs[id] = { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect }; ((log as any).serie ??= {})[id] = c.serie?.length ?? 0;
       // Le symbole seul a son propre scénario : il sort par défaut comme un logo, sur un fond blanc net.
       if (isSymbol(id)) return s.symbol ? s.symbol(id, c) : whiteLogo();
       return s.draw ? s.draw(id, c) : isLogo(id) ? whiteLogo() : square("#3366CC");
@@ -201,7 +201,11 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
       // Décision du propriétaire du 23 novembre 2026 : chaque logo, le premier comme les suivants, part avec la demande
       // nue (le métier en mots simples et le nom), sans aucune image jointe.
       expect(log.refs[`image-1-${k}-logo${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "1:1" });
-      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/^Fais-moi un logo pour une marque d'infusions( de fruits)?\. Le nom de la marque : « [^»]+ »\.(\nIl s'écrit lettre par lettre : [^\n]+\.)?$/);
+      expect(log.prompts[`image-1-${k}-logo${FIRST}`]).toMatch(/^Fais-moi un logo pour une marque d'infusions( de fruits)?\. Le nom de la marque : « [^»]+ »\.(\nIl s'écrit lettre par lettre : [^\n]+\.)?(\n(Je veux un autre logo complètement différent de celui-là\.|Fais-moi un autre logo complètement différent des deux premiers\.))?$/);
+      // La série (le propriétaire, 23 novembre 2026) : A sans image, B avec le logo de A, C avec ceux de A et B.
+      const fin = { A: "»", B: "Je veux un autre logo complètement différent de celui-là.", C: "Fais-moi un autre logo complètement différent des deux premiers." }[k as "A" | "B" | "C"];
+      expect(log.prompts[`image-1-${k}-logo${FIRST}`].endsWith(fin === "»" ? "»." : fin)).toBe(true);
+      expect((log as any).serie[`image-1-${k}-logo${FIRST}`]).toBe({ A: 0, B: 1, C: 2 }[k as "A" | "B" | "C"]);
       expect(log.refs[`image-1-${k}-hero${FIRST}`]).toEqual({ logo: false, scene: false, aspect: "16:9" });
       expect(log.refs[`image-1-${k}-site${FIRST}`]).toEqual({ logo: true, scene: true, aspect: "9:16" });
     }

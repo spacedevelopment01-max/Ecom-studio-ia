@@ -110,12 +110,22 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   marque de bougies tu donne le nom de la marque et rien de plus, pas de le client ne veux pas tel truc dans son logo.
   Ça doit être le plus libre possible pour la création du logo »). Exemple : « Fais-moi un logo pour une marque de
   bougies. Le nom de la marque : « Sillage ». » Rien d'autre : ni idée, ni ton, ni couleurs, ni typographie, ni fond,
-  ni refus du client, ni logos déjà faits, ni planche d'exemples, aucune image jointe ; la même demande à chaque reprise ;
-  le nom n'est épelé que s'il porte un accent ou un signe. Cette décision remplace les règles du 20 et du 21 novembre
-  sur ce que reçoit le dessinateur (les épreuves qui les gardaient sont marquées remplacées, avec l'accord écrit du
-  propriétaire du même jour). Les mots et les refus du client vont au relecteur, le modèle le plus fort au niveau élevé,
+  ni refus du client, ni planche d'exemples ; toutes les phrases en français. **La série** (précision du 23 novembre 2026 : « En même temps il fallait garder la
+  règle de le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement
+  différent de celui là et pour le 3eme pareil, ou lui donne les 2 première et on lui dit fait moi un autre logo
+  complètement différent des 2 premier ») : le 1er logo part sans image ; le 2e reçoit le 1er avec « Je veux un autre
+  logo complètement différent de celui-là. » ; le 3e reçoit les deux premiers avec « Fais-moi un autre logo
+  complètement différent des deux premiers. » ; au-delà, tous les précédents. Ce sont les logos gardés des identités
+  d'avant (sinon leur dernier dessin), jamais ceux d'une autre série ni d'un autre projet. Une reprise reçoit en plus
+  ses propres essais refusés (« … de tous ceux-là »), jamais la raison du refus (essai réel de Pénombre : « trois fois
+  le même dessin »). Un logo gardé n'est jamais redessiné. **On ne demande plus au client ce qu'il veut ou non dans
+  son logo** (même jour : « Pour rappel on ne demande plus au client ce qu'il veux ou non dans son logo ») : ce qu'il
+  en dit de lui-même va au relecteur, jamais au dessinateur. Le nom n'est épelé que s'il porte un accent ou un signe.
+  Ces décisions remplacent les règles du 20 et du 21 novembre sur ce que reçoit le dessinateur (les épreuves qui les
+  gardaient sont marquées remplacées, avec l'accord écrit du propriétaire du même jour). Les mots et les refus du client vont au relecteur, le modèle le plus fort au niveau élevé,
   qui relit chaque logo seul, avec la planche des 50 logos aimés (`docs/sina-savoir/logos-aimes/`) comme niveau, et ne
-  garde que ce qu'il note 8 sur 10 ou plus ; un logo refusé est redessiné avec la même demande, à la charge du Studio,
+  garde que ce qu'il note 8 sur 10 ou plus (un mot non demandé dans le logo, comme un sous-titre, est un défaut ; le nom
+  seul est attendu) ; un logo refusé est redessiné (avec ses essais refusés joints, comme dit plus haut), à la charge du Studio,
   dans la borne des reprises. Le trait près du nom avec parcimonie : un seul par série, tenu par le relecteur seulement
   (accord du 23 novembre 2026), jamais dit au dessinateur. Le Studio retire le fond après coup, creux des lettres
   compris, sans carré autour ; un fond qu'il ne sait pas retirer proprement fait redessiner le logo. Le favicon reprend
