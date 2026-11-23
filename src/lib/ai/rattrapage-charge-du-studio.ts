@@ -50,6 +50,13 @@ function reservationsDeLaPresentation(jobId: string): string[] {
   return [...ids];
 }
 
+/** Le nom d'une dépense de la présentation : la réponse de SINA elle-même, ou ce qu'elle a fait faire (dessin, relecture…). */
+export function libelleDeLaPresentation(rid: string): string {
+  const r = one<{ task: string | null }>("SELECT task FROM ai_reservations WHERE id=?", rid);
+  const tache = (r?.task ?? "").trim();
+  return tache ? `réponse de SINA qui présente le résultat : ${tache}` : "réponse de SINA qui présente le résultat";
+}
+
 /**
  * Rend au client les dépenses des tâches à la charge du Studio qui lui ont été comptées (sur le projet `projectId`, ou
  * sur toute la base), et les inscrit à la charge du Studio. Idempotent.
@@ -106,7 +113,8 @@ export function rendreLaChargeDuStudio(o: { projectId?: string | null } = {}): R
       });
     }
     // 2. La réponse de SINA qui présente le résultat de la tâche.
-    for (const rid of reservationsDeLaPresentation(t.id)) rendre(rid, "réponse de SINA qui présente le résultat");
+    // Chaque ligne dit ce qu'elle rend vraiment (la tâche de la dépense), pas seulement le moment où elle a eu lieu.
+    for (const rid of reservationsDeLaPresentation(t.id)) rendre(rid, libelleDeLaPresentation(rid));
   }
   return out;
 }
