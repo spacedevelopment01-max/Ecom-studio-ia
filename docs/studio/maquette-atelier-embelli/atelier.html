@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atelier embelli</title>
+<style>
+:root{--ink:#0b1220;--muted:#64708a;--line:#e6e8ef;--bg:#f6f7fa;--card:#fff;--accent:#c9a46a;--stage:#0d0f14}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+aside{background:#fff;border-right:1px solid var(--line);padding:22px 16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;margin-bottom:22px}
+.logo b{width:30px;height:30px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:14px}
+.proj{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:18px;font-size:13px}
+.proj small{display:block;color:var(--muted)}
+.nav h6{font-size:10.5px;letter-spacing:.14em;color:#8a93a8;font-weight:600;margin:14px 8px 6px}
+.nav a{display:block;padding:8px 10px;border-radius:10px;font-size:14px;color:#2a3246;text-decoration:none}
+.nav a.on{background:#eef0f6;font-weight:600}
+main{padding:22px 30px 40px;min-width:0}
+.crumb{font-size:11px;letter-spacing:.16em;color:#8a93a8;font-weight:600}
+h1.page{font-family:'Inter Display',Inter;font-size:28px;font-weight:600;margin:2px 0 16px}
+
+/* La scène */
+.stage{position:relative;border-radius:28px;background:radial-gradient(120% 90% at 78% 30%,#2a2418 0%,#14130f 38%,var(--stage) 70%);color:#fff;padding:34px 36px 28px;min-height:430px}
+.stage .top{display:grid;grid-template-columns:1fr 412px;gap:30px;align-items:start;margin-bottom:22px}
+.stage .mosaic{display:grid;grid-template-columns:250px 150px;grid-template-rows:170px 170px;gap:12px}
+.stage .mosaic img{width:100%;height:100%;object-fit:cover;border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.stage .mosaic .big{grid-row:1/3}
+.stage .mosaic{grid-template-columns:250px 150px;grid-template-rows:170px 170px;gap:12px}
+.stage .mosaic .tag{position:absolute;left:12px;bottom:12px;font-size:11.5px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:5px 9px;border-radius:99px}
+.stage .mosaic div{position:relative}
+.stage h2{font-family:'Inter Display',Inter;font-size:46px;font-weight:600;letter-spacing:-.02em;line-height:1.05;max-width:520px}
+.stage h2 em{font-style:normal;color:var(--accent)}
+.stage p.lead{color:#c8ccd6;font-size:16px;margin:12px 0 26px;max-width:470px;line-height:1.5}
+.toggle{display:inline-flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:4px;margin-bottom:12px}
+.toggle span{padding:8px 18px;border-radius:99px;font-size:14px;color:#d6d9e0;display:flex;gap:7px;align-items:center}
+.toggle span.on{background:#fff;color:var(--ink);font-weight:600}
+.prompt{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.96);border-radius:20px;padding:10px 10px 10px 20px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.prompt .ph{flex:1;color:#7b8396;font-size:15.5px}
+.prompt .ph b{color:var(--ink);font-weight:500}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:8px 12px;font-size:13px;color:#2a3246;background:#fff;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;border-radius:14px;padding:13px 18px;font-weight:600;font-size:14.5px;white-space:nowrap}
+.btn.gold{background:linear-gradient(135deg,#e2c58f,#c49a5a);color:#1b1407}
+.btn .pct{font-weight:500;opacity:.8}
+.ways{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.ways span{font-size:13px;color:#c8ccd6;border:1px solid rgba(255,255,255,.16);border-radius:99px;padding:7px 13px}
+.ways span.on{background:rgba(201,164,106,.18);border-color:rgba(201,164,106,.6);color:#f1dfbd}
+
+section.blk{margin-top:30px}
+.head{display:flex;align-items:end;justify-content:space-between;margin-bottom:14px;gap:12px}
+.head h3{font-family:'Inter Display',Inter;font-size:22px;font-weight:600}
+.head p{color:var(--muted);font-size:14px;margin-top:3px}
+.pill{font-size:12.5px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 12px;color:#2a3246;white-space:nowrap}
+
+/* Modèles de vidéo */
+.vids{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.vid{background:#fff;border-radius:20px;overflow:hidden;border:1px solid var(--line)}
+.vid .th{position:relative;height:200px;overflow:hidden;background:#111}
+.vid .th img{width:100%;height:100%;object-fit:cover}
+.vid .th .ghost{position:absolute;inset:0;opacity:.35;filter:blur(1px)}
+.vid .play{position:absolute;left:14px;bottom:14px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.vid .dur{position:absolute;right:12px;top:12px;font-size:12px;font-weight:600;background:rgba(0,0,0,.6);color:#fff;padding:4px 9px;border-radius:99px}
+.vid .mv{position:absolute;left:12px;top:12px;font-size:11.5px;background:rgba(255,255,255,.88);padding:4px 9px;border-radius:99px;color:#2a3246}
+.vid .bd{padding:14px 16px 16px}
+.vid h4{font-size:16px;font-weight:600}
+.vid .one{font-size:13.5px;color:var(--muted);margin:4px 0 12px;line-height:1.4}
+.vid .ft{display:flex;align-items:center;justify-content:space-between}
+.price{font-size:12.5px;font-weight:600;color:#7a5a22;background:#f7efe1;border-radius:99px;padding:5px 10px}
+.price.free{color:#1f6b45;background:#e5f4ec}
+.use{font-size:13.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:4px}
+.lock{font-size:12px;color:var(--muted)}
+
+/* Retouches */
+.tools{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.tool{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;gap:12px;align-items:center}
+.tool .ic{width:42px;height:42px;border-radius:12px;background:#f3eee5;display:grid;place-items:center;flex:none}
+.tool b{font-size:14px;font-weight:600;display:block}
+.tool small{font-size:12px;color:var(--muted)}
+
+/* Mes créations */
+.wall{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;grid-template-rows:200px 200px;gap:14px}
+.cr{position:relative;border-radius:20px;overflow:hidden;background:#ddd}
+.cr img{width:100%;height:100%;object-fit:cover;display:block}
+.cr.big{grid-row:1/3}
+.cr .ov{position:absolute;left:0;right:0;bottom:0;padding:12px;display:flex;justify-content:space-between;align-items:end;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+.cr .st{font-size:12px;color:#fff;display:flex;gap:6px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:#e2c58f}
+.dot.g{background:#6fd39b}
+.acts{display:flex;gap:6px}
+.acts i{width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.92);display:grid;place-items:center}
+.cr.making img{filter:blur(9px) saturate(.8);transform:scale(1.08)}
+.cr.making .mk{position:absolute;inset:0;display:grid;place-items:center;color:#fff;text-align:center;font-size:13.5px;background:rgba(10,12,18,.18)}
+.bar{width:150px;height:5px;border-radius:9px;background:rgba(255,255,255,.35);margin:9px auto 0;overflow:hidden}
+.bar i{display:block;width:62%;height:100%;background:#fff}
+.vbadge{position:absolute;left:12px;top:12px;background:rgba(0,0,0,.55);color:#fff;font-size:11.5px;padding:4px 9px;border-radius:99px;display:flex;gap:5px;align-items:center}
+.ai{font-size:11px;color:rgba(255,255,255,.75);margin-top:2px}
+
+/* Téléphone */
+@media (max-width:500px){
+ .app{display:block} aside{display:none} main{padding:14px 16px 30px}
+ .stage{padding:22px 18px 20px;min-height:0;border-radius:22px}
+ .stage .top{display:flex;flex-direction:column-reverse;gap:0;margin-bottom:14px}
+ .stage .mosaic{width:100%;grid-template-columns:1.6fr 1fr;grid-template-rows:110px 110px;margin-bottom:18px}
+ .stage h2{font-size:30px}
+ .stage p.lead{font-size:14.5px;margin:8px 0 16px}
+ .prompt{flex-wrap:wrap;padding:12px}
+ .prompt .ph{flex-basis:100%;font-size:14.5px}
+ .prompt .chip{flex:1;justify-content:center}
+ .prompt .btn{flex-basis:100%;justify-content:center}
+ .vids{grid-template-columns:repeat(4,78%);overflow:hidden}
+ .tools{grid-template-columns:1fr 1fr}
+ .tool:nth-child(5){display:none}
+ .wall{grid-template-columns:1fr 1fr;grid-template-rows:240px 150px 150px}
+ .cr.big{grid-column:1/3;grid-row:auto}
+ .head{flex-wrap:wrap}
+}
+</style></head>
+<body><div class="app">
+<aside>
+ <div class="logo"><b>E.</b>E-COM STUDIO ia</div>
+ <div class="proj"><b>Galet</b><small>Maison &amp; décoration</small></div>
+ <nav class="nav">
+  <h6>CRÉER</h6><a>Produit</a><a>Angles</a><a>Marque</a><a>Boutique</a><a>Catalogue</a><a class="on">✦ Atelier</a><a>Images</a><a>Vidéos</a>
+  <h6>DIFFUSER</h6><a>Publications</a><a>Publicités</a><a>Blog</a>
+ </nav>
+</aside>
+<main>
+ <div class="crumb">GALET · CRÉER</div>
+ <h1 class="page">Atelier</h1>
+
+ <div class="stage">
+ <div class="top"><div class="txt">  <h2>Ta bougie,<br>comme dans une <em>campagne</em>.</h2>
+  <p class="lead">Ton vrai produit dans des images et des vidéos qui donnent envie. Chaque création est relue avant de t'être montrée.</p>
+  <div class="toggle"><span class="on">
+   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>Image</span><span>
+   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="15" height="14" rx="3"/><path d="m17 10 5-3v10l-5-3"/></svg>Vidéo</span></div>
+</div>
+  <div class="mosaic">
+   <div class="big"><img src="c1.png" alt=""><span class="tag">▶ Vidéo · Le soir à soi</span></div>
+   <div><img src="c6.png" alt=""></div>
+   <div><img src="c3.png" alt=""></div>
+  </div></div>
+  <div class="prompt">
+   <div class="ph">Que veux-tu créer ? <b>ma bougie sur une table en bois, lumière du matin</b></div>
+   <span class="chip">▢ 4:5</span>
+   <span class="chip">✧ Améliorer avec SINA</span>
+   <span class="btn gold">✦ Créer <span class="pct">· ≈ 0,6 %</span></span>
+  </div>
+  <div class="ways"><span>SINA s'en occupe</span><span class="on">On le fait ensemble</span><span>Je fais moi-même</span></div>
+ </div>
+
+ <section class="blk">
+  <div class="head"><div><h3>Des vidéos pour vendre</h3><p>Une image validée d'abord, puis le mouvement.</p></div><span class="pill">Il te reste 3 vidéos ce mois-ci</span></div>
+  <div class="vids">
+   <div class="vid"><div class="th"><img src="c6.png" style="transform:scale(1.15) rotate(-2deg)" alt=""><span class="mv">↻ tour lent</span><span class="dur">6 s</span><span class="play"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="#0b1220"/></svg></span></div>
+    <div class="bd"><h4>Le produit qui tourne</h4><p class="one">Ton produit seul, sur un socle, qui fait un tour lent.</p><div class="ft"><span class="price">≈ 1,6 %</span><span class="use">Choisir →</span></div></div></div>
+   <div class="vid"><div class="th"><img src="c3.png" style="transform:scale(1.25)" alt=""><span class="mv">⤢ rapprochement</span><span class="dur">8 s</span><span class="play"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="#0b1220"/></svg></span></div>
+    <div class="bd"><h4>Le moment cadeau</h4><p class="one">Emballé, un ruban, une carte écrite par ta marque.</p><div class="ft"><span class="price">≈ 1,8 %</span><span class="use">Choisir →</span></div></div></div>
+   <div class="vid"><div class="th"><img src="c5.png" style="transform:scale(1.12) translateX(-12px)" alt=""><span class="mv">⇢ travelling</span><span class="dur">8 s</span><span class="play"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="#0b1220"/></svg></span></div>
+    <div class="bd"><h4>Dans la vraie vie</h4><p class="one">Ton produit à sa place : salle de bains, salon, atelier.</p><div class="ft"><span class="price">≈ 1,8 %</span><span class="use">Choisir →</span></div></div></div>
+   <div class="vid"><div class="th"><img src="c1.png" style="transform:scale(2.1) translateY(4%)" alt=""><span class="mv">◎ tout près</span><span class="dur">6 s</span><span class="play"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="#0b1220"/></svg></span></div>
+    <div class="bd"><h4>Les détails</h4><p class="one">La matière, l'étiquette, de tout près.</p><div class="ft"><span class="price">≈ 1,6 %</span><span class="use">Choisir →</span></div></div></div>
+  </div>
+ </section>
+
+ <section class="blk">
+  <div class="head"><div><h3>Retoucher une image</h3><p>Un geste, un résultat.</p></div></div>
+  <div class="tools">
+   <div class="tool"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b5a3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></span><div><b>Changer le fond</b><small>≈ 0,4 %</small></div></div>
+   <div class="tool"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b5a3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></svg></span><div><b>Mettre dans une scène</b><small>≈ 0,6 %</small></div></div>
+   <div class="tool"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b5a3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 5H9l-6 7 6 7h11a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="m12 9 6 6m0-6-6 6"/></svg></span><div><b>Retirer un détail</b><small>≈ 0,4 %</small></div></div>
+   <div class="tool"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b5a3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span><div><b>Agrandir le cadre</b><small>≈ 0,4 %</small></div></div>
+   <div class="tool"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b5a3f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg></span><div><b>L'avant et l'après</b><small style="color:#1f6b45">Gratuit</small></div></div>
+  </div>
+ </section>
+
+ <section class="blk">
+  <div class="head"><div><h3>Mes créations</h3><p>4 créations n'ont pas encore servi : je les mets dans ton calendrier ?</p></div><div style="display:flex;gap:8px"><span class="pill" style="background:var(--ink);color:#fff;border-color:var(--ink)">Toutes</span><span class="pill">Pas encore servies (4)</span></div></div>
+  <div class="wall">
+   <div class="cr big"><img src="c1.png" alt=""><span class="vbadge">▶ Vidéo · 8 s</span>
+    <div class="ov"><div class="st"><span class="dot"></span><div>Pas encore servie<div class="ai">22 nov.</div></div></div><div class="acts"><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="#0b1220"/></svg></i><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 9a3 3 0 0 1 0 6"/></svg></i><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></i></div></div></div>
+   <div class="cr"><img src="c3.png" alt=""><div class="ov"><div class="st"><span class="dot"></span>Pas encore servie</div><div class="acts"><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="#0b1220"/></svg></i><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></i></div></div></div>
+   <div class="cr making"><img src="c6.png" alt=""><div class="mk"><div>Ta création apparaît…<div class="bar"><i></i></div></div></div></div>
+   <div class="cr"><img src="c5.png" alt=""><div class="ov"><div class="st"><span class="dot g"></span>Dans une publication</div><div class="acts"><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="#0b1220"/></svg></i></div></div></div>
+   <div class="cr"><img src="c2.png" alt=""><span class="vbadge">▶ 6 s</span><div class="ov"><div class="st"><span class="dot"></span>Pas encore servie</div><div class="acts"><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6" fill="#0b1220"/></svg></i><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></i></div></div></div>
+   <div class="cr"><img src="c3.png" style="transform:scale(1.4)" alt=""><div class="ov"><div class="st"><span class="dot g"></span>Sur ton site</div><div class="acts"><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></i></div></div></div>
+   <div class="cr" style="background:#efe9df;display:grid;place-items:center;text-align:center;color:#6b5a3f;font-size:13.5px;padding:16px">＋<br>Nouvelle création</div>
+  </div>
+ </section>
+</main></div></body></html>

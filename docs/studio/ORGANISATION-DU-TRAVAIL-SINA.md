@@ -397,6 +397,8 @@ Dernière commande :
   les créations, une seule barre « Que veux-tu créer ? » (Image ou Vidéo), modèles de vidéo avec aperçu animé et prix
   en étiquette, retouches en un geste, mur de créations, image qui apparaît pendant la création. Coût en IA : 0. Attend
   son oui avant d'être confié à « Évolution de SINA ».
+- Accord du propriétaire le 23 novembre 2026 (« Yes ») : construction confiée à « Évolution de SINA ». Image d'exemple et
+  page dessinée : `docs/studio/maquette-atelier-embelli/`.
 
 ## 5. À lire avant chaque décision
 
