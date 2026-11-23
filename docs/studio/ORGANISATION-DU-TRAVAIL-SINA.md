@@ -444,6 +444,13 @@ Dernière commande :
   gpt-image-2.6-flare (route des planches), alors que logo-policy.ts impose gpt-image-2.5-sunburst. Remarque : la planche
   des 50 contient une bougie avec flamme (n° 12), à suivre si les flammes reviennent. Proposition de correction demandée
   à « Évolution de SINA » avant d'écrire.
+- Proposition d'« Évolution de SINA » acceptée par le chef d'orchestre (23 novembre, 15 h) : ligne « La marque » écrite
+  par le code, sans comparaison ni mot concret ; série = tous les logos dessinés, refusés compris, reprises comprises ;
+  refus de portée « logo » et « tout » une fois, mot pour mot, avec la formule « Il ne veut surtout pas : « … » » ; refus
+  sur les personnes classés « images » ; plus de ligne des photos dans les reprises ; logos par l'usage « logo », pour que
+  la politique du 18 octobre (gpt-image-2.5-sunburst) s'applique. Planche des 50 gardée telle quelle : ne pas l'agrandir.
+  Constat : les logos de Nadia ressemblent à la rangée « Maison et quotidien » de la planche (n° 10 à 13). Essai réel des
+  seuls logos de Nadia à soumettre au propriétaire, avec son prix.
 
 ## 5. À lire avant chaque décision
 
