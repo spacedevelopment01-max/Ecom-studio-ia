@@ -1325,3 +1325,11 @@ caractère rond épais », et non « ronde épaisse »).
 
 Devis de la carte Halo + Pénombre (prix vérifié du modèle des logos) : part du client 0,16 € probable, 0,38 € au plus
 (le logo de Halo) ; borne du Studio 0,47 € probable, 1,91 € au plus (Pénombre en entier, plus les reprises des deux).
+
+Banc, avec l'accord écrit du propriétaire (« Oui, marque refus-et-consigne-apres-la-demande-nue et
+serie-logo-completement-different comme remplacées par ma décision du 23 novembre au soir, ajoute les épreuves
+demande-du-logo-couleurs-typo-fond et relecteur-du-logo-qualite-seule, et mets à jour la partie Logo de CLAUDE.md. ») :
+refus-et-consigne-apres-la-demande-nue est remplacée par relecteur-du-logo-qualite-seule, serie-logo-completement-different
+par demande-du-logo-couleurs-typo-fond (verdicts, attendus et sceaux inchangés ; la chaîne des remplacements mène à une
+épreuve rejouée). Ajoutées et scellées : jamais-de-question-sur-le-logo, logos-de-la-serie-dans-l-ordre,
+pas-de-consigne-de-style-pour-un-logo, demande-du-logo-couleurs-typo-fond, relecteur-du-logo-qualite-seule.
