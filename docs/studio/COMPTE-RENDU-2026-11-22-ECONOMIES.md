@@ -930,3 +930,101 @@ aucune publication, essais simulés seulement.
   essai réel, sur les refus d'arguments dans le journal.]
 
 Suite complète des essais : 643 fichiers passés, 2 mis de côté ; banc d'épreuves : 30 sur 30.
+
+## Compte rendu final : ce que coûte un projet et un mois, et ce qui attend le propriétaire
+
+Tous les chiffres sont **estimés d'après le code et les recherches**, rien n'a été mesuré sur un vrai essai. Ils se
+liront dans Administration › Consommation après l'essai réel. Rien n'a été dépensé pendant tout ce travail.
+
+Faute à signaler : pendant l'écriture d'un essai de l'amorce, deux demandes de comptage de jetons sont parties vers le
+vrai serveur d'Anthropic avec une fausse clé. Elles ont été refusées net, rien n'a été facturé. L'essai passe
+maintenant par un faux serveur local.
+
+### Un projet complet
+
+Projet de référence : une boutique d'un produit, 3 identités, Instagram et Facebook, de « faire connaissance » aux
+premières publications, sans reprise demandée par le client.
+
+| | Coût estimé |
+|---|---|
+| Avant ce matin | **environ 22 €** |
+| Premières économies (mémoire, une image par format, aperçus, Haiku 5.5) | environ 17,50 € à 18,20 € |
+| Conversation de SINA (audit fin) | environ −3,50 € |
+| Effort gardé constant dans la conversation | −0,20 € à −1,80 € |
+| Moteur des appels (recherche gardée en mémoire, patience du différé) | environ −0,65 € |
+| Marque (recherches, équipes de noms, corrections gratuites) | −0,45 € à −0,75 € |
+| Site (textes par page, partie commune, conception, mémoire non payée), moins la relecture des photos par le modèle le plus fort (+0,80 €) | 0 € à −1,35 € |
+| Notices des outils plus courtes | environ −0,09 € |
+| **Maintenant** | **environ 10 € à 13 €** |
+
+Certaines économies peuvent se recouvrir en partie (la conversation et la mémoire du fil), d'où la fourchette. Encore
+possible : le prix réel d'une image lu sur les jetons d'OpenAI (environ −2,40 € si une image coûte 0,06 $ au lieu de
+0,12 $) et les sorties strictes (reprises évitées) : [À compléter : gain lu au prochain essai].
+
+### Un mois courant, par forfait
+
+Budget d'IA du mois courant : 23 €, 33 € et 56,33 € (forfaits à 69 €, 99 € et 169 €). Publications : 30, 60 et 90
+par mois.
+
+| | 69 € | 99 € | 169 € |
+|---|---|---|---|
+| **Avant ce matin** : images des publications avec leur relecture (modèle moyen, niveau faible) | 4,59 € | 9,17 € | 13,76 € |
+| Avant : concepts des visuels | environ 1,48 € | environ 2,98 € | environ 4,46 € |
+| **Total avant** (sans vidéos ni campagnes) | **environ 6,10 € (26 %)** | **environ 12,15 € (37 %)** | **environ 18,20 € (32 %)** |
+| **Maintenant** : images comptées au vrai prix | 2,34 € | 4,68 € | 7,02 € |
+| Relecture de chaque image par le modèle le plus fort (sa règle), allégée et en partie en différé | +0,80 € à +1,30 € | +2,05 € à +3,30 € | +3,30 € à +5,35 € |
+| Concepts des visuels en différé | environ 0,66 € | environ 1,33 € | environ 1,99 € |
+| « Ta journée est prête » et le point du mois | environ 0,05 € | environ 0,05 € | environ 0,05 € |
+| **Total maintenant** (sans vidéos ni campagnes) | **3,85 € à 4,35 € (17 à 19 %)** | **8,10 € à 9,35 € (25 à 28 %)** | **12,35 € à 14,40 € (22 à 26 %)** |
+| Vidéos du forfait (0, 3 et 6 ; un plan animé de 5 s à 0,18 € à 1,16 € selon le modèle) | 0 € | +0,55 € à +3,50 € | +1,10 € à +7 € |
+
+Pas chiffré : les campagnes préparées (0, 1 et 2), l'assistante du site et le tri des demandes du suivi (ils dépendent
+du nombre de visiteurs et de demandes), les créations libres de l'atelier (chacune affiche son prix avant). [À compléter :
+lu au prochain essai.] Si l'essai d'une image en différé (environ 1 centime) réussit, les images des publications
+coûteraient environ moitié moins : 1,17 €, 2,34 € et 3,51 €.
+
+### Ce qui attend le propriétaire (liste exacte)
+
+**Des essais payants, avec son oui écrit et un prix donné avant :**
+1. L'essai du grand modèle d'images : trois photos par modèle, 1 € au plus.
+2. L'essai d'une seule image en différé : environ 1 centime.
+3. L'essai comparatif des vidéos : environ 10 $.
+4. Les vignettes d'exemple des modèles de l'atelier : un petit essai.
+5. La retouche d'une seule zone d'une image, au lieu de refaire l'image.
+6. L'essai réel de tout le parcours, sur des clients inventés : le prochain pas.
+
+**Des choix qui touchent ses règles ou son goût :**
+7. Les mots des images : « tout dans l'image par OpenAI » ou « les mots posés par le Studio ».
+8. Les vidéos : un décor en photo derrière le produit détouré (retiré, à cause de sa règle « produit collé devant une
+   photo floue »).
+9. L'atelier : poser les vrais pixels du produit dans le décor créé (écrit, éteint ; même règle).
+10. La grande scène de la planche en ouverture du site ; l'aperçu des noms avant les planches.
+11. La vidéo avec un personnage : ajouter d'office la mention « Images virtuelles », ou non.
+
+**Son argent :**
+12. Une version refusée par goût dans l'atelier : comptée ou non (aujourd'hui : un raté de l'outil n'est jamais compté,
+    le reste ne change pas).
+13. La recharge de budget : à décider au lot des forfaits.
+14. ElevenLabs (voix et musique) : un abonnement, et des conditions d'intégration à vérifier. En attendant, la musique
+    vient du compositeur gratuit du Studio.
+15. La signature « faite par l'IA » posée par le Studio lui-même : un certificat payant, et l'avis d'un juriste sur
+    l'article 50 de la loi européenne sur l'IA (obligation possible au 2 décembre 2026).
+
+**Sa responsabilité, et des engagements avec les fournisseurs :**
+16. Les données envoyées hors d'Europe chez les fabricants de vidéos.
+17. La vérification d'identité des clients que demande BytePlus. [À compléter : le texte exact de l'autorisation de
+    ByteDance.]
+18. Imagen Product Recontext et l'agrandissement d'image sur Vertex : non compris dans l'accord du 18 novembre.
+19. Seedance 2.5 et son aperçu bon marché à l'écran : après l'essai comparatif.
+
+**Des fonctions restées éteintes :**
+20. Les devis et le carnet de clients.
+21. Les SMS et WhatsApp pour les demandes, jusqu'à l'essai au téléphone.
+
+**À vérifier par lui :**
+22. Le taux du dollar réglé dans Administration › Fournisseurs IA (0,86 par défaut dans le code).
+23. Les clés des fournisseurs accordés (Vertex, Kling, BytePlus, Runware, Black Forest Labs), à saisir dans
+    Administration › Fournisseurs IA. Chacun reste éteint sans sa clé.
+
+**Une question de règle :** 24. Une seule liste d'outils pour le site, avant et après sa création, ferait 22 notices,
+au-delà de la règle « moins de 20 ». Rien n'a été fait.
