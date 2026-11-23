@@ -88,15 +88,15 @@ export function SynaCommandBar({ variant, agentUi, onOpenSyna, working, workingT
     // La conversation se monte à l'ouverture : on y dépose le texte au rendu suivant, sans l'envoyer.
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const placed = fillConversation(text);
-      setFeedback({ text: placed ? T("Demande placée dans la conversation SINA : relisez-la puis envoyez.", "Request placed in the SINA conversation: review it, then send.") : T("Ce n'est pas une commande d'affichage : écrivez-la à SINA dans la conversation.", "Not a display command: write it to SINA in the conversation.") });
+      setFeedback({ text: placed ? T("Demande placée dans la conversation avec SINA : relis-la, puis envoie-la.", "Request placed in the SINA conversation: review it, then send.") : T("Ce n'est pas une commande d'affichage : écris-la à SINA dans la conversation.", "Not a display command: write it to SINA in the conversation.") });
       if (placed) setValue("");
     }));
   };
 
   const placeholder = !agentUi
-    ? T("Commande d'affichage… ex. « Passe en Encre »", "Display command… e.g. “Back to Ink”")
-    : variant === "bar" ? T("Demandez à Sina…", "Ask Sina…")
-    : T("Commande rapide : « Passe en Plein cadre », « Agrandis l'aperçu »…", "Quick command: “Switch to full frame”, “Enlarge the preview”…");
+    ? T("Commande d'affichage, ex. « SINA à côté »", "Display command, e.g. “SINA alongside”")
+    : variant === "bar" ? T("Demande à SINA…", "Ask SINA…")
+    : T("Commande rapide, ex. « Grand écran »", "Quick command, e.g. “Full screen”");
   return (
     <div className="ss-cmd" data-variant={variant} data-working={working ? "" : undefined}>
       <form className="ss-cmd-form" onSubmit={submit} role="search" aria-label={T("Commande SINA", "SINA command")}>
@@ -112,7 +112,7 @@ export function SynaCommandBar({ variant, agentUi, onOpenSyna, working, workingT
           placeholder={working && workingText ? workingText : placeholder}
           autoComplete="off"
           enterKeyHint="send"
-          title={T("Commandes d'affichage reconnues sur place, sans IA : « Reviens à Encre », « Passe en Plein cadre », « Agrandis l'aperçu », « Mode sombre »…", "Display commands handled locally, no AI: “Back to Ink”, “Switch to full frame”, “Enlarge the preview”, “Dark mode”…")}
+          title={T("Commandes d'affichage reconnues sur place, sans IA : « SINA à côté », « Grand écran », « Agrandis l'aperçu », « Mode sombre »…", "Display commands handled locally, no AI: “SINA alongside”, “Full screen”, “Enlarge the preview”, “Dark mode”…")}
           data-syna-command
         />
         <button type="submit" className="ss-cmd-go" aria-expanded={!value.trim() ? expanded : undefined} aria-controls={!value.trim() && expanded !== undefined ? "syna-panel" : undefined} aria-label={value.trim() ? T("Valider", "Submit") : agentUi ? T("Ouvrir Sina", "Open Sina") : T("Valider", "Submit")}><ArrowRight className="size-4" aria-hidden /></button>

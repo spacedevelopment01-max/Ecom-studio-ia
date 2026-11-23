@@ -53,4 +53,29 @@ describe("l'atelier à l'écran, après les captures", () => {
     expect(sujet).toContain('{t("Idées de demandes", "Prompt ideas")}');
     expect(sujet).not.toContain('t("Idées de prompts"');
   });
+
+  it("la page de réglage d'une vidéo tutoie et parle simplement (ni « clips », ni « image(s) », ni « marge de réservation »)", () => {
+    const fr = [...video.matchAll(/\bt\(\s*(["`])((?:\\.|(?!\1).)*)\1/g)].map((m) => m[2]).join("\n");
+    expect(fr).not.toMatch(/\b(vous|votre|vos)\b/i);
+    expect(fr).not.toMatch(/\bclips?\b/i);
+    expect(video).not.toMatch(/image\(s\)|marge de réservation|reprise ciblée|budget\.label/);
+    expect(video).toContain("pluriel(plans, \"plan filmé par l’IA\", \"plans filmés par l’IA\")");
+    expect(sujet).not.toMatch(/Décrivez|Votre produit|votre marque|ajoutez-en/);
+  });
+
+  it("le pourcentage s'écrit « 1 % » avec une espace insécable bien visible", async () => {
+    const { formatPct } = await import("@/lib/budget-pct");
+    expect(formatPct(1, "fr")).toBe("1\u00a0%");
+  });
+
+  it("l'affichage se nomme « SINA à côté » et « Grand écran », et la commande rapide tient dans sa case", () => {
+    const shell = fs.readFileSync("src/components/studio/syna-shell.tsx", "utf8"), cmd = fs.readFileSync("src/components/studio/syna-command.tsx", "utf8");
+    expect(shell).toContain('{t("SINA à côté", "SINA alongside")}</button>');
+    expect(shell).toContain('{t("Grand écran", "Full screen")}</button>');
+    expect(cmd).toContain('T("Commande rapide, ex. « Grand écran »", "Quick command, e.g. “Full screen”")');
+  });
+
+  it("un logo se voit entier dans sa vignette", () => {
+    expect(fs.readFileSync("src/components/studio/common.tsx", "utf8")).toContain('a.kind === "logo" || a.role === "logo" ? "object-contain p-2" : "object-cover"');
+  });
 });

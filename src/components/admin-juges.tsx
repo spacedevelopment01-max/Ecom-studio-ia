@@ -20,7 +20,7 @@ export function JugesAdmin() {
     try { await api("/api/admin/verdicts", { body: { assetId, verdict } }); reload(); } catch (e) { toast("bad", (e as Error).message); } finally { setBusy(null); }
   };
   if (!data) return <div className="skeleton h-72 rounded-3xl" />;
-  const a = data.accord, pct = (x: number | null) => (x == null ? "—" : `${Math.round(x * 100)} %`);
+  const a = data.accord, pct = (x: number | null) => (x == null ? "—" : `${Math.round(x * 100)} %`);
   return (
     <>
       <Card className="p-5">

@@ -19,11 +19,12 @@ import { palette } from "../engine/images";
 import type { Project } from "../projects";
 import { GESTES, LOT_MAX } from "./gestes";
 import { OUTILS, outil, outilsPour, type GesteId } from "./outils";
-import { chaineGeste, plafondTexte, plafondVideos, prixTexte, SOUS_LE_PRIX, type PlafondVideos } from "./prix";
+import { auPlusTexte, chaineGeste, plafondTexte, plafondVideos, prixTexte, SOUS_LE_PRIX, type PlafondVideos } from "./prix";
+import { devisVideoGuidee } from "../video-v2/guided-quote";
 import { accordValide, CONDITIONS, CONDITIONS_VERSION, controlePersonnes, modererEntree, PHRASE_ACCORD, type AccordPersonne } from "./garde-fous";
 import { MODES, conseilOutil } from "./conseil";
 import { modelesPour } from "./modeles-images";
-import { GESTES_CAMERA, MODELES_VIDEOS } from "./modeles-videos";
+import { GESTES_CAMERA, MODELES_VIDEOS, reglagesDuModele, type ModeleVideo } from "./modeles-videos";
 import { mesCreations, nonServies, phraseNonServies, videosDuMois } from "./journal";
 import { vraisPixelsActifs } from "./scene";
 import { getSetting } from "../settings";
@@ -59,6 +60,20 @@ export function prixDuGeste(userId: string, projectId: string, geste: GesteId, o
   if (unit == null) return null;
   const chaine = chaineGeste({ kind: GESTES[geste].kind, unitMicro: unit, nombre: o.nombre, relu: gesteRelu(geste) });
   return { ...chaine, texte: prixTexte(chaine.totalMicro, pctBaseFor(userId, projectId), lang()) };
+}
+
+/**
+ * Le prix d'un modèle de vidéo : le devis de la vidéo guidée qu'il ouvre (une seule façon de calculer, la même que la
+ * page de réglage et que SINA). `prix` : le coût probable ; `auPlus` : la borne haute de l'accord ; `raison` : pourquoi
+ * il n'est pas ouvert. Le modèle gratuit (avant-après) n'a pas de devis.
+ */
+export function prixModeleVideo(userId: string, p: Project, m: ModeleVideo): { estimateMicro: number; capMicro: number; prix: string | null; auPlus: string | null; outil: string | null; raison: string | null } {
+  const lg = lang();
+  if (m.sansIa) return { estimateMicro: 0, capMicro: 0, prix: lg === "fr" ? "Gratuit" : "Free", auPlus: null, outil: null, raison: null };
+  const q = devisVideoGuidee(p, { ...reglagesDuModele(m), subject: null, request: m.scene });
+  if (!q.allowed) return { estimateMicro: 0, capMicro: 0, prix: null, auPlus: null, outil: null, raison: q.reason ?? null };
+  const base = pctBaseFor(userId, p.id), route = q.routes?.clip;
+  return { estimateMicro: q.estimateMicro, capMicro: q.capMicro, prix: prixTexte(q.estimateMicro, base, lg), auPlus: q.capMicro > q.estimateMicro ? auPlusTexte(q.capMicro, base, lg) : null, outil: route ? `${route.provider}:${route.model}` : null, raison: null };
 }
 
 /** Le plafond des vidéos de l'atelier ce mois-ci, pour ce projet. */
@@ -154,9 +169,8 @@ export function etatAtelier(userId: string, p: Project) {
     plafondVideos: { ...plafond, phrase: plafondTexte(plafond, lg) },
     modelesImages: modelesPour(new Date(), { offreSaisie: false }).map(({ date: _d, mois: _m, ...m }) => m),
     modelesVideos: MODELES_VIDEOS.map((m) => {
-      const id = m.outils.find(outilOuvert) ?? null;
-      const prix = m.sansIa ? null : id ? prixDuGeste(userId, p.id, "video", id, { secondes: Math.ceil(m.dureeS / m.plans), nombre: m.plans }) : null;
-      return { ...m, outil: id, gratuit: !!m.sansIa, prix: m.sansIa ? (lg === "fr" ? "Gratuit" : "Free") : prix?.texte ?? null };
+      const d = prixModeleVideo(userId, p, m);
+      return { ...m, outil: d.outil, gratuit: !!m.sansIa, prix: d.prix, auPlus: d.auPlus, raison: d.raison, estimateMicro: d.estimateMicro, capMicro: d.capMicro };
     }),
     gestesCamera: GESTES_CAMERA.map(({ id, nom }) => ({ id, nom })),
     musique: { style: musique.style, nom: nomMusique(musique.style, lg), elevenlabs: ELEVENLABS_BRANCHE, raison: ELEVENLABS_RAISON },

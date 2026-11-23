@@ -15,19 +15,19 @@ vi.mock("@/lib/ai/media-providers", async (orig) => ({ ...(await orig<object>())
 describe("format des % du budget IA", () => {
   // Français : espace fine insécable avant « % » (typographie).
   it("français : « ≈ 3,2 % de votre budget IA » ; anglais : « ≈ 3.2% of your AI budget »", () => {
-    expect(formatBudgetPct(3.2, "fr")).toBe("≈ 3,2\u202f% de votre budget IA");
+    expect(formatBudgetPct(3.2, "fr")).toBe("≈ 3,2\u00a0% de votre budget IA");
     expect(formatBudgetPct(3.2, "en")).toBe("≈ 3.2% of your AI budget");
-    expect(formatPctShort(12.6, "fr")).toBe("≈ 13\u202f%");
+    expect(formatPctShort(12.6, "fr")).toBe("≈ 13\u00a0%");
     expect(formatPctShort(12.6, "en")).toBe("≈ 13%");
   });
 
   it("une décimale sous 10 % ; un coût non nul n'est jamais affiché « 0 % » ; sans budget connu : aucun chiffre inventé", () => {
-    expect(formatPct(0.38, "fr")).toBe("0,4\u202f%");
+    expect(formatPct(0.38, "fr")).toBe("0,4\u00a0%");
     expect(formatPct(0.38, "en")).toBe("0.4%");
-    expect(formatBudgetPct(0.38, "fr")).toBe("≈ 0,4\u202f% de votre budget IA");
-    expect(formatPct(0.04, "fr")).toBe("< 0,1\u202f%");
-    expect(formatBudgetPct(0.04, "fr")).toBe("< 0,1\u202f% de votre budget IA");
-    expect(formatPct(23.6, "fr")).toBe("24\u202f%");
+    expect(formatBudgetPct(0.38, "fr")).toBe("≈ 0,4\u00a0% de votre budget IA");
+    expect(formatPct(0.04, "fr")).toBe("< 0,1\u00a0%");
+    expect(formatBudgetPct(0.04, "fr")).toBe("< 0,1\u00a0% de votre budget IA");
+    expect(formatPct(23.6, "fr")).toBe("24\u00a0%");
     expect(formatBudgetPct(null, "fr")).toBe("sur votre budget IA");
     expect(formatBudgetPct(null, "en")).toBe("from your AI budget");
     expect(formatPctShort(null, "fr")).toBe("—");
@@ -119,7 +119,7 @@ describe("écrans du client : aucun prix d'IA en euros", () => {
   }
 
   it("devis renvoyés par le serveur : un champ pct (part du budget IA) à côté du montant interne", () => {
-    const routes = ["src/app/api/projects/[id]/images/route.ts", "src/app/api/projects/[id]/creative/image/[assetId]/route.ts", "src/app/api/projects/[id]/campaigns/v2/route.ts", "src/app/api/projects/[id]/social/v2/route.ts", "src/app/api/projects/[id]/creative/video/route.ts"];
+    const routes = ["src/app/api/projects/[id]/images/route.ts", "src/app/api/projects/[id]/creative/image/[assetId]/route.ts", "src/app/api/projects/[id]/campaigns/v2/route.ts", "src/app/api/projects/[id]/social/v2/route.ts", "src/lib/video-v2/guided-quote.ts"]; // le devis de la vidéo guidée (route creative/video) est calculé là, une seule fois
     for (const r of routes) expect(fs.readFileSync(path.join(process.cwd(), r), "utf8"), r).toMatch(/budgetPctOf\(/);
   });
 });

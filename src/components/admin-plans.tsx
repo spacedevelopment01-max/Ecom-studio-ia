@@ -52,7 +52,7 @@ export function SubscriptionsAdmin() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {kpi(t("Abonnements actifs / mois", "Active subscriptions / month"), eur(T.mrrEur), t("TTC, abonnements payés", "Incl. VAT, paid subscriptions"))}
         {kpi(t("Par forfait", "By plan"), PLAN_IDS.map((p) => `${PLANS[p].name[lang]} ${T.byPlan[p] ?? 0}`).join(" · "), t(`${T.complimentary} offert(s) · ${T.pastDue} impayé(s) · ${T.pending} sans projet`, `${T.complimentary} complimentary · ${T.pastDue} unpaid · ${T.pending} without project`))}
-        {kpi(t("Conversion", "Conversion"), `${T.conversionPct.toLocaleString(lang)} %`, t(`${T.subscribers} abonné(s) / ${T.accounts} compte(s)`, `${T.subscribers} subscriber(s) / ${T.accounts} account(s)`))}
+        {kpi(t("Conversion", "Conversion"), `${T.conversionPct.toLocaleString(lang)} %`, t(`${T.subscribers} abonné(s) / ${T.accounts} compte(s)`, `${T.subscribers} subscriber(s) / ${T.accounts} account(s)`))}
         {kpi(t(`Marge estimée (${data.days} j)`, `Estimated margin (${data.days} d)`), eur(T.marginEstimateEur), t(`Encaissé ${eur(T.revenueTtcEur)} TTC − coût IA ${eur(T.aiCostEur)}`, `Collected ${eur(T.revenueTtcEur)} incl. VAT − AI cost ${eur(T.aiCostEur)}`))}
       </div>
       <Card className="p-5">

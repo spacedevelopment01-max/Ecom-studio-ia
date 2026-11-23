@@ -146,7 +146,7 @@ function ProjectAdCreator({ onDone }: { onDone?: () => void }) {
         {tracked && ["failed","cancelled","blocked"].includes(tracked.status) && (
           <div role="alert" className="rounded-xl border border-bad/30 bg-bad/5 p-3 text-sm" data-ai-ad-error>
             <p className="font-medium">{t("La publicité n’a pas été livrée.","The ad was not delivered.")}</p>
-            {Number.isFinite(tracked.progress) && tracked.progress>=0 && tracked.progress<1 && <p>{t(`Arrêt à ${Math.round(tracked.progress*100)} % de progression enregistrée.`,`Stopped at ${Math.round(tracked.progress*100)}% recorded progress.`)}</p>}
+            {Number.isFinite(tracked.progress) && tracked.progress>=0 && tracked.progress<1 && <p>{t(`Arrêt à ${Math.round(tracked.progress*100)} % de progression enregistrée.`,`Stopped at ${Math.round(tracked.progress*100)}% recorded progress.`)}</p>}
             <p>{tracked.error || tracked.message || t("La création a été interrompue.","Creation was interrupted.")}</p>
             <p>{t("Les étapes acquises sont conservées. Aucun nouvel essai payant n’est lancé automatiquement.","Acquired steps are kept. No new paid attempt is started automatically.")}</p>
             {tracked.status==="failed"&&<CopyCorrection key={tracked.id} projectId={id} jobId={tracked.id} quote={quote} onResumed={()=>{setSubmittedJob(tracked.id);finished.current=null;void reload();}}/>}

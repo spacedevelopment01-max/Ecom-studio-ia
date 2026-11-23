@@ -81,9 +81,9 @@ describe("le compteur de l'atelier (point 1)", () => {
     // Forfait à 69 € : 23 € de budget le mois courant ; une vidéo de 8 s Veo 3.1 Lite (0,364 €) + relecture + reprise.
     const total = chaineGeste({ kind: "video", unitMicro: 364_000 }).totalMicro;
     const t = prixBouton("Vidéo de 8 secondes", total, 23_000_000, "fr");
-    expect(t).toMatch(/^Vidéo de 8 secondes : environ \d+(,\d)? % de ton budget du mois$/);
+    expect(t).toMatch(/^Vidéo de 8 secondes : environ \d+(,\d)? % de ton budget du mois$/);
     expect(t).not.toMatch(/€|eur|illimit/i);
-    expect(prixTexte(1_000, 23_000_000, "fr")).toBe("moins de 0,1 % de ton budget du mois");
+    expect(prixTexte(1_000, 23_000_000, "fr")).toBe("moins de 0,1 % de ton budget du mois");
     expect(prixTexte(1_000, 23_000_000, "en")).toBe("less than 0.1% of your monthly budget");
     expect(prixTexte(1_000, null, "fr")).toBe("pris sur ton budget du mois");
     expect(SOUS_LE_PRIX[0]).toMatch(/jamais compté/);

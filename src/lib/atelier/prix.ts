@@ -48,6 +48,17 @@ export function prixTexte(micro: number, baseMicro: number | null | undefined, l
   return lang === "fr" ? `${approx}${bare} de ton budget du mois` : `${approx}${bare} of your monthly budget`;
 }
 
+/**
+ * La borne haute d'un accord, dite partout de la même façon (atelier, page de réglage d'une vidéo) : « au plus 27 % de
+ * ton budget du mois ». Jamais montrée comme le prix : le prix, c'est `prixTexte` du coût probable.
+ */
+export function auPlusTexte(micro: number, baseMicro: number | null | undefined, lang: "fr" | "en"): string | null {
+  const pct = pctOfBudget(micro, baseMicro);
+  if (pct == null) return null;
+  const v = formatPct(pct, lang).replace(/^<\s*/, "");
+  return lang === "fr" ? `au plus ${v} de ton budget du mois` : `at most ${v} of your monthly budget`;
+}
+
 /** La phrase du bouton : « Vidéo de 8 secondes : environ 3 % de ton budget du mois ». */
 export function prixBouton(label: string, micro: number, baseMicro: number | null | undefined, lang: "fr" | "en"): string {
   return `${label} : ${prixTexte(micro, baseMicro, lang)}`;

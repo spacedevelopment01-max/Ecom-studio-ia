@@ -21,7 +21,7 @@ type T2 = readonly [string, string];
 type OutilVue = { id: string; nom: T2; mieux: T2; disponible: boolean; conseille: boolean; redessine: boolean; secours: boolean; prixMicro: number | null; prix: string | null };
 type GesteVue = { id: string; nom: T2; aide: T2; kind: "image" | "video"; demande: { label: T2; exemple: T2; min: number } | null; outils: OutilVue[]; conseil: string | null };
 type ModeleImageVue = { id: string; nom: T2; idee: T2; offre?: boolean; format: string; epingle: boolean; dansJours: number | null };
-type ModeleVideoVue = { id: string; nom: T2; quoi: T2; geste: string; dureeS: number; plans: number; garde: T2; as: "post" | "ad"; scene: string; sansIa?: boolean; offre?: boolean; outil: string | null; gratuit: boolean; prix: string | null };
+type ModeleVideoVue = { id: string; nom: T2; quoi: T2; geste: string; dureeS: number; plans: number; garde: T2; as: "post" | "ad"; scene: string; sansIa?: boolean; offre?: boolean; outil: string | null; gratuit: boolean; prix: string | null; auPlus: string | null; raison: string | null };
 type Creation = { id: string; assetId: string | null; url: string | null; thumbUrl: string | null; geste: string; mode: string; kind: "image" | "video"; outil: string; cout: string; costMicro: number; status: "ok" | "rate" | "produit_modifie"; at: number; servie: boolean; usages: string[] };
 type Etat = {
   modes: { id: Mode; nom: T2; aide: T2 }[];
@@ -314,7 +314,8 @@ function VideosCard({ etat, projectId, services }: { etat: Etat; projectId: stri
               <span className="mt-1 text-xs text-muted">{pick(m.quoi, lang)}</span>
               <span className="mt-1 text-xs">{t(`${m.dureeS} secondes`, `${m.dureeS} seconds`)} · {etat.gestesCamera.find((g) => g.id === m.geste) ? pick(etat.gestesCamera.find((g) => g.id === m.geste)!.nom, lang) : ""}</span>
               <span className="mt-1 text-xs text-warn">{pick(m.garde, lang)}</span>
-              <span className="mt-2 text-xs font-medium">{m.prix ?? t("Pas encore ouvert", "Not open yet")}</span>
+              <span className="mt-2 text-xs font-medium" data-atelier-video-prix={m.id}>{m.prix ?? (m.raison ? <span className="font-normal text-warn">{m.raison}</span> : t("Pas encore ouvert", "Not open yet"))}</span>
+              {m.auPlus && <span className="text-xs text-muted">{m.auPlus}</span>}
               <div className="mt-auto pt-2">
                 {m.gratuit ? <Button size="sm" variant="secondary" className={BOUTON_CARTE} onClick={() => setAvantApres(true)} data-atelier-avant-apres>{t("Choisir mes deux photos", "Choose my two photos")}</Button>
                   : ferme || !m.prix ? <Button size="sm" variant="secondary" className={BOUTON_CARTE} disabled>{t("Utiliser ce modèle", "Use this template")}</Button>

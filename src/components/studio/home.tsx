@@ -239,7 +239,7 @@ function ProjectTile({ p, onManage, onDeleted }: { p: ProjectCard; onManage: () 
         </div>
         {p.ai && (
           <div>
-            <p className="flex justify-between text-xs text-ink-2"><span>{t("IA du forfait", "Plan AI")}</span><span className="tabular-nums">{p.ai.paused ? t("En pause", "Paused") : t(`reste ${100 - p.ai.plan.used} %`, `${100 - p.ai.plan.used}% left`)}</span></p>
+            <p className="flex justify-between text-xs text-ink-2"><span>{t("IA du forfait", "Plan AI")}</span><span className="tabular-nums">{p.ai.paused ? t("En pause", "Paused") : t(`reste ${100 - p.ai.plan.used} %`, `${100 - p.ai.plan.used}% left`)}</span></p>
             <div className="mt-1"><UsageMeter used={p.ai.plan.used} label={t("IA du forfait", "Plan AI")} thin /></div>
           </div>
         )}

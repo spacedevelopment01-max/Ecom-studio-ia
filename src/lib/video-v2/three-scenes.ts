@@ -73,10 +73,10 @@ export function sceneTiming(scenes = SCENES, totalS = DEFAULT_TOTAL_S, endCardS 
 
 /** Un couple durée/scènes impossible ne doit jamais devenir une vidéo raccourcie silencieusement. */
 export function sceneTimingIssue(scenes = SCENES, totalS = DEFAULT_TOTAL_S): string | null {
-  if(!Number.isInteger(scenes)||scenes<1||scenes>6||!Number.isFinite(totalS)||totalS<6||totalS>60)return L('Choisissez de1à6scènes et une durée de6à60secondes ; aucune limite n’est corrigée implicitement.','Choose1to6shots and a duration of6to60seconds; no limit is implicitly corrected.');
+  if(!Number.isInteger(scenes)||scenes<1||scenes>6||!Number.isFinite(totalS)||totalS<6||totalS>60)return L('Choisis de 1 à 6 scènes et une durée de 6 à 60 secondes.','Choose 1 to 6 shots and a length of 6 to 60 seconds.');
   const t = sceneTiming(scenes, totalS);
   return t.endS > 0
-    ? L("Cette durée exige davantage de scènes (15 secondes au plus par plan). Augmentez le nombre de scènes ou réduisez la durée.", "This length requires more scenes (at most 15 seconds per shot). Add scenes or shorten the video.")
+    ? L("Cette durée demande plus de scènes (15 secondes au plus par plan). Ajoute des scènes ou raccourcis la vidéo.", "This length requires more scenes (at most 15 seconds per shot). Add scenes or shorten the video.")
     : null;
 }
 /** Modèle des plans IA (choix du propriétaire : Wan 2.6, bien moins cher que 3.0). */
@@ -156,9 +156,9 @@ export function approvedScenePlan(p:Project,req:ThreeScenesRequest,raw:unknown):
  const fields:Record<string,string|undefined>={line:plan.line,cta:plan.cta,voiceEnd:plan.voiceEnd};
  plan.scenes.forEach((s,k)=>Object.assign(fields,{[`title-${k}`]:s.title,[`voice-${k}`]:s.voice}));
  if(brandIssuesInTexts(fields,allowedBrands(p)).length)throw new UserFacingError(L('Le scénario cite une marque tierce : corrigez-le avant validation. Aucun texte retiré ni média lancé.','The scenario mentions a third-party brand: correct it before approval. No text removed or media launched.'));
- if(Object.values(fields).some(t=>!!t&&!usable(t)))throw new UserFacingError(L('Le scénario contient un texte à compléter ou non représentable. Corrigez-le avant validation ; rien n’est supprimé.','The scenario contains incomplete or unrepresentable text. Correct it before approval; nothing is removed.'));
+ if(Object.values(fields).some(t=>!!t&&!usable(t)))throw new UserFacingError(L('Le scénario contient un texte à compléter ou impossible à montrer. Corrige-le avant de valider ; rien n’est supprimé.','The scenario contains incomplete or unrepresentable text. Correct it before approval; nothing is removed.'));
  if(!isDeepStrictEqual(applyWordingDeep(plan,loadWordingRules(p.id)),plan))throw new UserFacingError(L('Le scénario contredit le vocabulaire enregistré : relisez la correction avant validation, aucun remplacement implicite.','The scenario conflicts with saved wording: review the correction before approval; no implicit replacement.'));
- if(req.purpose==='site'&&Object.values(fields).some(t=>!!t?.trim()))throw new UserFacingError(L('Ce scénario d’ambiance contient du texte ou une voix que le moteur retirerait. Validez un scénario sans texte, ou choisissez une vidéo de communication.','This ambience scenario contains text or voice that the engine would remove. Approve a scenario without text, or choose a communication video.'));
+ if(req.purpose==='site'&&Object.values(fields).some(t=>!!t?.trim()))throw new UserFacingError(L('Ce scénario d’ambiance contient du texte ou une voix qui seraient retirés. Valide un scénario sans texte, ou choisis une vidéo de communication.','This ambience scenario contains text or voice that the engine would remove. Approve a scenario without text, or choose a communication video.'));
  return structuredClone(plan);
 }
 
@@ -205,7 +205,7 @@ export function localScenePlan(p: Project, s: SubjectOption | null, req: ThreeSc
     const e = req.editorial;
     const blocks = e.blocks.length ? e.blocks.map(b=>b.text) : [e.caption];
     const n = req.scenes ?? SCENES;
-    if (blocks.length > n) throw new UserFacingError("Le contenu comporte davantage de blocs que de scènes. Adaptez le découpage ; aucun bloc supprimé.");
+    if (blocks.length > n) throw new UserFacingError("Il y a plus de blocs que de scènes. Change le découpage ; aucun bloc n’est supprimé.");
     const base = localScenePlan(p,s,{...req,editorial:undefined},board);
     return {...base,cta:organicVideo(e)?"":base.cta,line:"",voiceEnd:"",scenes:base.scenes.map((scene,k)=>({...scene,title:k===0?e.title:"",voice:blocks[k]??"",still:`${scene.still}\nContenu éditorial : ${blocks[k]??e.title}`}))};
   }
@@ -445,7 +445,7 @@ export async function acquireDirectScene(p:Project,o:{ctx:JobContext|null;index:
  if(decision.verdict!=="FINAL"){
   // Aucun essai raté facturé au client (rapport 09, point 10) : le clip refusé passe à la charge du Studio.
   if(!prior)rendreAuClient(p.userId,{task:"video_generation",projectId,usageKey:clipKey},`scène ${k+1} refusée au contrôle`);
-  throw new UserFacingError(`Scène ${k+1} refusée ou non vérifiée : ${decision.reason}. Version conservée, rien ne vous est compté pour ce clip.`);
+  throw new UserFacingError(`Scène ${k+1} refusée ou non vérifiée : ${decision.reason}. Version gardée, rien ne t’est compté pour ce plan.`);
  }
  return asset.id;
 }
@@ -466,7 +466,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   }
   const aspect = req.aspect ?? "9:16";
   const mode = sceneMode(p0, s, req);
-  if(req.generation&&mode==="ai"&&!req.approval)throw new UserFacingError("Validez le scénario exact et son enveloppe avant les clips IA.");
+  if(req.generation&&mode==="ai"&&!req.approval)throw new UserFacingError("Valide le scénario et son prix avant que les plans soient filmés.");
   let timing = sceneTiming(req.scenes ?? SCENES, req.totalS ?? DEFAULT_TOTAL_S);
   const timingIssue = sceneTimingIssue(req.scenes, req.totalS);
   if (timingIssue) throw new UserFacingError(timingIssue);
@@ -554,10 +554,10 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
     const mainProduct = !s || s.kind !== "service" && (!s.referenceAssetId || s.key === "main" || s.name === p0.product.name);
     const stable = !req.binding && mainProduct ? productReferences(projectId)[0] ?? null : null;
     const refId = stable?.assetId ?? s?.referenceAssetId ?? null;
-    if (stable?.reconstructed) notes.push(C("Produit reconstruit (partie manquante complétée à partir de vos photos) : reconstruction plausible, pas une forme retrouvée à l'identique — à vérifier dans l'aperçu.", "Product reconstructed (missing part completed from your photos): a plausible reconstruction, not an exactly recovered shape — check it in the preview."));
+    if (stable?.reconstructed) notes.push(C("Produit reconstruit (la partie manquante est complétée à partir de tes photos) : c'est une reconstruction, pas une copie exacte — vérifie-la dans l'aperçu.", "Product reconstructed (missing part completed from your photos): a plausible reconstruction, not an exactly recovered shape — check it in the preview."));
     const ref = refId ? getAsset(refId) : null;
     const refBuf = ref && ref.project_id===projectId&&ref.kind==="image"&&!ref.deleted_at ? assetData(ref) : null;
-    if (!refBuf && (!req.generation || (req.generation==="reference"&&Array.from({length:n},(_,k)=>req.sceneImages?.[k]).some(photo=>!photo)))) throw new UserFacingError(L("Ajoutez d'abord une photo de ce produit : la vidéo part de votre vrai produit, l'IA ne l'invente pas.", "Add a photo of this product first: the video starts from your real product, the AI never invents it."));
+    if (!refBuf && (!req.generation || (req.generation==="reference"&&Array.from({length:n},(_,k)=>req.sceneImages?.[k]).some(photo=>!photo)))) throw new UserFacingError(L("Ajoute d'abord une photo de ce produit : la vidéo part de ton vrai produit, l'IA ne l'invente pas.", "Add a photo of this product first: the video starts from your real product, the AI never invents it."));
     const direct=req.generation && req.generation!=="staged";
     if(direct){
       if(!deps.directClip)throw new UserFacingError("Adaptateur vidéo directe indisponible ; aucune image ou vidéo stock substituée.");
@@ -565,7 +565,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
         const selected=req.sceneImages?.[k],photo=selected?getAsset(selected.assetId):null;
         if(selected&&(!photo||photo.project_id!==projectId||photo.deleted_at||photo.kind!=="image"||assetMeta<any>(photo).gate?.fatal))throw new UserFacingError("Référence indisponible ou refusée.");
         const reference=req.generation==="reference"?(photo?assetData(photo):refBuf):null;
-        if(req.generation==="reference"&&!reference)throw new UserFacingError("Choisissez une photo autorisée de ce produit ou lieu, ou la génération directe sans référence.");
+        if(req.generation==="reference"&&!reference)throw new UserFacingError("Choisis une de tes photos de ce produit ou de ce lieu, ou laisse l’IA filmer directement.");
         const clipId=await step(`${key}:direct-scene-${k}`,async()=>{
           return acquireDirectScene(p,{ctx,index:k,key:assetKey(k,"clip"),rootKey:key,as:req.as,aspect,generation:req.generation as "direct"|"reference",scene,reference,referenceAssetId:photo?.id??(reference?refId:null),clipS:timing.clipS,minimumDurationS:timing.showS,progress:.1+k*.65/n,request:req.request,folderKey,prior:savedScene(k,"clip")??null,beforeAcquire:preserveClientVersion},deps);
         });
@@ -675,7 +675,7 @@ async function runThreeScenesInScope(ctx:JobContext|null,projectId:string,req:Th
   // 5. Voice only after an explicitly saved synthetic choice. A failed/missing requested voice is not a completed result.
   const chosenVoice = wantsSpeech?projectVoice(memory.preferences):null;
   if(chosenVoice) {
-    if(!voiceAvailable(chosenVoice)) throw new UserFacingError("La voix choisie est indisponible : vidéo incomplète, médias conservés. Vérifiez sa configuration ou choisissez explicitement sans voix.");
+    if(!voiceAvailable(chosenVoice)) throw new UserFacingError("La voix choisie n’est pas disponible : vidéo pas terminée, ce qui est fait est gardé. Choisis une autre voix, ou « Sans voix ».");
     brief.voice.kokoroVoice=chosenVoice;
     if(req.quotedGeneration){
       const quoted=req.quotedGeneration.voice,lines=plan.scenes.map((s,k)=>[s.voice??'',k===doc.clips.length-1?plan.voiceEnd??'':''].filter(Boolean).join(' ').trim());
@@ -737,7 +737,7 @@ export async function addVoice(projectId: string, userId: string, doc: VideoDocu
       const acquired=synth===synthLine&&isOpenAIVoice(options.voice)?await acquiredVoice({projectId,userId},l.text,options):null;
       if(acquired)fs.writeFileSync(wav,assetData(acquired));
       const durationS=acquired?Number((await execTool("ffprobe",["-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",wav])).stdout.trim()):await synth(l.text,wav,options);
-      if(!Number.isFinite(durationS)||durationS<=0||durationS>l.clip.durationS-.3) throw new UserFacingError(`Voix de la scène ${k+1} : phrase entière de ${durationS.toFixed(2)} s pour un plan de ${l.clip.durationS} s. Adaptez le texte ou la durée ; aucune phrase supprimée.`);
+      if(!Number.isFinite(durationS)||durationS<=0||durationS>l.clip.durationS-.3) throw new UserFacingError(`Voix de la scène ${k+1} : phrase entière de ${durationS.toFixed(2)} s pour un plan de ${l.clip.durationS} s. Raccourcis le texte ou allonge le plan ; aucune phrase n’est supprimée.`);
       const a=acquired??await saveAsset({projectId,userId,data:fs.readFileSync(wav),name:`voix-${k+1}.wav`,mime:"audio/wav",role:"voice",folderKey:doc.meta.intent==="video_ad"?"videos.ads":"videos.social",origin:"generated",status:"ready",meta:{voice:{engine:"kokoro",id:brief.voice.kokoroVoice,consent:"synthetic",key,text:l.text,speed:brief.voice.speed,lang,measuredDurationS:durationS,alignment:"measured_phrase_proportional_chunks"}}});
       pending.push({id:`voice-${l.clip.id}`,clipId:l.clip.id,assetId:a.id,text:l.text,offsetS:.2,durationS,gainDb:0});
       cues.push(...measuredCues(l.clip.id,l.text,durationS,doc.subtitles.style.maxChars,.2,await voicePauses(wav)));

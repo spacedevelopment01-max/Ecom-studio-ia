@@ -3,15 +3,13 @@ import {strategyStamp} from "@/lib/strategy-consumption";
 import { withCommunicationRequest } from "@/lib/marketing-strategy/communication-route";
 import { strategyVisibilitySql } from "@/lib/marketing-strategy/visibility";
 import { assertAdvertising } from "@/lib/job-entitlements";
-import { planAllowsAds } from "@/lib/plan-entitlements";
-import { projectPlan } from "@/lib/project-billing";
 import {assertCanSpend} from "@/lib/billing";
 import crypto from "node:crypto";
 import {latestVideo} from "@/lib/video-v2/store";
 import { z } from "zod";
 import { getAsset,assetMeta } from "@/lib/library";
 import { hasUncertainVideoReceipt } from "@/lib/video-v2/receipts";
-import { sceneChainQuote } from "@/lib/video-v2/chain-quote";
+import { devisVideoGuidee } from "@/lib/video-v2/guided-quote";
 import { saveGuidedScenario,savedGuidedScenarios,approveVideoScenario,readVideoApproval,sceneApprovalRequest,guidedRunKey,videoScope } from "@/lib/video-v2/approval";
 import { localScenePlan,ApprovedScenePlanSchema,approvedScenePlan,type ScenePlan } from "@/lib/video-v2/three-scenes";
 import { VideoEditorialSchema } from "@/lib/video-v2/editorial";
@@ -23,7 +21,6 @@ import { L } from "@/lib/i18n-server";
 import { aiActiveFor } from "@/lib/ai/access";
 import { projectRights, requirePlan } from "@/lib/plan-gates";
 import { aiPostProbableMicro, estimateMicro } from "@/lib/ai/estimate";
-import { budgetPctOf } from "@/lib/ai/budget-pct";
 import { aiPostMaxMicro, wanClipMaxMicro } from "@/lib/ai/media-providers";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { resolveSubject, subjectOptions } from "@/lib/creative-subject";
@@ -57,7 +54,7 @@ const Req = z.object({
  * Devis au COÛT PROBABLE (une image et un plan par scène, un essai), montré en % du budget IA du mois ; `capMicro` :
  * plafond de la tâche (coûts maximaux, reprises comprises), jamais montré comme prix.
  */
-const quote = (p:Project,r:ThreeScenesRequest) => {const q=sceneChainQuote(p,r);if(r.as==='ad'&&!planAllowsAds(projectPlan(p.id)))return{...q,allowed:false,reason:L('La vidéo publicitaire nécessite Dominer (129 € par mois). Les vidéos existantes sont conservées.','Advertising video requires Dominate (€129 per month). Existing videos are kept.'),estimateMicro:0,capMicro:0,pct:0};return {...q,pct:budgetPctOf(p.userId,q.estimateMicro,p.id)};};
+const quote = devisVideoGuidee;
 
 /** Vidéos en scènes déjà faites (création guidée et création du projet), avec leur sujet et leur demande. */
 function list(projectId: string) {
@@ -95,9 +92,9 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if(b.action === "repair") {
     requirePlan(user,p.id);
     const source=one<{id:string;payload:string;status:string}>("SELECT id,payload,status FROM jobs WHERE id=? AND project_id=? AND type='video.scenes'",b.jobId,p.id);
-    if(!source || source.status!=="failed") throw new HttpError(409,"Choisissez une vidéo incomplète à reprendre.");
+    if(!source || source.status!=="failed") throw new HttpError(409,"Choisis une vidéo pas terminée à reprendre.");
     const payload=json<{request:ThreeScenesRequest;agentVideoGenerationQuote?:unknown}>(source.payload,{} as never),original=payload.request;
-    if(payload.agentVideoGenerationQuote||original?.quotedGeneration)throw new HttpError(409,L("La reprise ciblée de ces clips n’est pas disponible dans ce parcours. Vos fichiers sont conservés ; aucun nouvel appel lancé.","Targeted repair of these clips is unavailable in this workflow. Your files are kept; no new request sent."),"video_repair_quote_required");
+    if(payload.agentVideoGenerationQuote||original?.quotedGeneration)throw new HttpError(409,L("Refaire seulement ces plans n’est pas possible ici. Tes fichiers sont gardés ; rien de nouveau n’est lancé.","Targeted repair of these clips is unavailable in this workflow. Your files are kept; no new request sent."),"video_repair_quote_required");
     if(original?.as==="ad")assertAdvertising(p.id);
     if(!original?.approval || original.repair || original.approval.scope!==videoScope(p,sceneApprovalRequest(original))) throw new HttpError(409,"Le contexte a changé ou la reprise a déjà été utilisée : nouveau scénario requis.");
     if(b.index>=(original.scenes??3)) throw new HttpError(400,"Scène inconnue.");
@@ -118,12 +115,12 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   const subject = b.subject ? resolveSubject(p, b.subject) : null;
   if (b.subject && (!subject || subject.kind !== b.subject.kind || subject.key !== (b.subject.kind === "service" ? b.subject.name.trim() : b.subject.key))) throw new HttpError(400, L("Produit ou service introuvable dans ce projet.", "Product or service not found in this project."));
 
-  if(b.generation==="direct"&&b.sceneImages?.some(Boolean))throw new HttpError(400,"Choisissez le mode référence pour transmettre une photo, ou retirez cette sélection du mode direct.");
+  if(b.generation==="direct"&&b.sceneImages?.some(Boolean))throw new HttpError(400,"Choisis « Animer une de tes photos » pour donner une photo, ou retire-la.");
   for(const image of b.sceneImages??[]) {if(!image)continue;const a=getAsset(image.assetId);if(!a||a.project_id!==p.id||a.deleted_at||a.kind!=="image"||assetMeta<any>(a).gate?.fatal)throw new HttpError(400,"Référence image indisponible dans ce projet.");}
   const r: ThreeScenesRequest = { angleId:strategyStamp(p.id)?.angleId,mode:b.mode,generation:b.generation,purpose:b.purpose,initialSlot:b.initialSlot, sceneImages:b.sceneImages,editorial:b.editorial, as: b.as, subject: b.subject ?? null, request: b.request?.trim() || null, aspect: b.aspect, scenes: b.scenes, totalS: b.totalS, music: b.music, ...(b.modele ? { modele: b.modele } : {}) };
   if(r.purpose==="site"){
     const {stateOf}=await import("@/lib/preparation/store");const state=stateOf(p.id);
-    if(state?.stages.brand?.status!=="approved")throw new HttpError(409,"Validez l’identité du projet avant sa proposition vidéo.");
+    if(state?.stages.brand?.status!=="approved")throw new HttpError(409,"Valide d’abord l’identité de ton projet.");
     r.initialExistingAssetId=state.stages.media?.data.slots.find(s=>s.key===r.initialSlot)?.assetId??null;
     if(!r.initialSlot||!state.stages.media?.data.slots.some(s=>s.key===r.initialSlot&&s.kind==="video"))throw new HttpError(400,"Emplacement vidéo initial inconnu ; aucun livrable ajouté.");
   }
@@ -132,7 +129,7 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if(b.action === "plan") {
     if(q.scriptMicro>0 && !b.draftPlan) {
       requirePlan(user,p.id);
-      if((b.approvedScriptMicro??-1)<q.scriptMicro) throw new HttpError(409,"Acceptez le coût de rédaction du scénario avant l’appel texte. Aucune image ni clip ne sera lancé.");
+      if((b.approvedScriptMicro??-1)<q.scriptMicro) throw new HttpError(409,"Accepte d’abord le prix de l’écriture du scénario. Aucune image ni aucun plan ne sera lancé.");
       if(one("SELECT 1 FROM jobs WHERE project_id=? AND type='video.scenario' AND status IN ('queued','running','paused')",p.id)) throw new HttpError(409,"Un scénario est déjà en préparation.");
       assertCanSpend(user.id,q.scriptMicro,p.id);
       const job=enqueue({userId:user.id,projectId:p.id,type:"video.scenario",label:L("Scénario vidéo à vérifier","Video scenario to review"),payload:{projectId:p.id,request:r,costCapMicro:q.scriptMicro}});

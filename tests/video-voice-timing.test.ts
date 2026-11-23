@@ -32,7 +32,7 @@ describe("Voix : autorisation persistée et phrases entières, outil simulé",()
   const brief=buildCreativeBrief(p,{durationS:15,width:1080,height:1920,platform:"reels"});
   const doc=buildSceneDoc(p,Array.from({length:3},(_,i)=>({assetId:`clip-${i}`,generated:true,durationS:5})),plan,"9:16","post",sceneTiming(3,15));
   const synth=async(_t:string,file:string)=>{fs.writeFileSync(file,Buffer.from("voix simulée"));return 7;};
-  await expect(addVoice(p.id,p.userId,doc,plan,brief,"voice-test",[55,75],synth)).rejects.toThrow(/aucune phrase supprimée/);
+  await expect(addVoice(p.id,p.userId,doc,plan,brief,"voice-test",[55,75],synth)).rejects.toThrow(/aucune phrase n’est supprimée/);
   expect(plan.scenes[0].voice).toContain("Phrase entière");expect(doc.audio.voice).toEqual([]);
   expect(all("SELECT * FROM assets WHERE project_id=? AND role='voice'",p.id)).toHaveLength(0);
  });

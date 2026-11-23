@@ -75,7 +75,7 @@ const SECTIONS = [
 
 const euro = (lang: Lang, n: number) => n.toLocaleString(intlLocale(lang), { style: "currency", currency: "EUR", maximumFractionDigits: 4 });
 const num = (lang: Lang, n: number | null | undefined) => n?.toLocaleString(intlLocale(lang));
-const pctTxt = (lang: Lang, n: number) => (lang === "en" ? `${n}%` : `${n} %`);
+const pctTxt = (lang: Lang, n: number) => (lang === "en" ? `${n}%` : `${n} %`);
 
 export function AdminConsole() {
   const t = useT();
@@ -379,7 +379,7 @@ function OfferSummary() {
       <p>
         <strong className="text-ink">{t("Packs (TTC, achat ponctuel, n'expirent pas) : ", "Packs (incl. tax, one-off purchase, never expire): ")}</strong>
         {PACKS_FOR_SALE.map((id) => `${PACKS[id].name[lang]} ${eur(PACKS[id].price)}`).join(" · ")}
-        {PLAN_IDS.some((id) => PLANS[id].packDiscount > 0) && <>{" — "}{PLAN_IDS.filter((id) => PLANS[id].packDiscount > 0).map((id) => t(`-${Math.round(PLANS[id].packDiscount * 100)} % avec ${PLANS[id].name.fr}`, `${Math.round(PLANS[id].packDiscount * 100)}% off with ${PLANS[id].name.en}`)).join(", ")}</>}
+        {PLAN_IDS.some((id) => PLANS[id].packDiscount > 0) && <>{" — "}{PLAN_IDS.filter((id) => PLANS[id].packDiscount > 0).map((id) => t(`-${Math.round(PLANS[id].packDiscount * 100)} % avec ${PLANS[id].name.fr}`, `${Math.round(PLANS[id].packDiscount * 100)}% off with ${PLANS[id].name.en}`)).join(", ")}</>}
       </p>
     </div>
   );
@@ -760,7 +760,7 @@ function TravauxCard({ lignes }: { lignes: LigneTravail[] }) {
 function MemoireCard({ m, post }: { post: (b: Record<string, unknown>, msg?: string) => Promise<void>; m: { effortParMessage?: { allume: boolean; panne: { model: string; at: number; why: string } | null }; lignes: LigneMemoire[]; total: LigneMemoire; differe: boolean; etapes?: { etape: string; reflexions: number; plein: number; lu: number; ecrit: number; sortie: number; parReflexionMicro: number }[] } }) {
   const t = useT();
   const { lang } = useLang();
-  const pct = (x: number | null) => x == null ? "—" : `${Math.round(x * 100)} %`;
+  const pct = (x: number | null) => x == null ? "—" : `${Math.round(x * 100)} %`;
   return (
     <Card className="overflow-x-auto p-5">
       <p className="font-display text-lg font-semibold">{t("Mise en mémoire chez le fournisseur (30 j)", "Provider-side memory (30 d)")}</p>

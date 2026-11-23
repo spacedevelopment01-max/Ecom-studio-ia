@@ -214,7 +214,7 @@ export function PropertiesPanel({ doc, layer, apply, catalog, onPickImage, onUpl
         )}
         {isAnimatedLayer(l) && <AnimField layer={l} set={set} />}
         <label className="grid gap-1">
-          <span className={lbl}>{t("Opacité", "Opacity")} · {Math.round(l.opacity * 100)} %</span>
+          <span className={lbl}>{t("Opacité", "Opacity")} · {Math.round(l.opacity * 100)} %</span>
           <input type="range" min={0} max={1} step={0.01} value={l.opacity} onChange={(e) => set({ opacity: Number(e.target.value) }, "opacity")} />
         </label>
         <div className="grid grid-cols-4 gap-2">

@@ -105,7 +105,7 @@ function TabProduit() {
             <h3 className="font-display text-lg font-semibold">{t("Ce que montre la photo", "What the photo shows")}</h3>
             {p.visual.colors.length > 0 && (
               <div className="mt-3 flex overflow-hidden rounded-xl">
-                {p.visual.colors.map((c) => <span key={c.hex} title={`${c.hex} · ${c.name} · ${Math.round(c.share * 100)} %`} className="h-10" style={{ background: c.hex, flex: c.share }} />)}
+                {p.visual.colors.map((c) => <span key={c.hex} title={`${c.hex} · ${c.name} · ${Math.round(c.share * 100)} %`} className="h-10" style={{ background: c.hex, flex: c.share }} />)}
               </div>
             )}
             <dl className="mt-4 grid gap-2 text-sm">

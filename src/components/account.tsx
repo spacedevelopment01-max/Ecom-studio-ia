@@ -133,7 +133,7 @@ function Subscriptions({ paymentsOpen }: { paymentsOpen: boolean }) {
                   <p className="text-sm text-ink-2">
                     {PLANS[s.plan].name[lang]} · {s.billing === "year" ? t("annuel", "yearly") : t("mensuel", "monthly")}
                     {s.periodEnd ? ` · ${s.cancelAtPeriodEnd || s.status === "canceled" ? t("fin le", "ends") : t("échéance le", "renews")} ${formatDate(s.periodEnd, { day: "numeric", month: "short" })}` : ""}
-                    {p.ai ? ` · ${t(`IA : reste ${100 - p.ai.plan.used} %`, `AI: ${100 - p.ai.plan.used}% left`)}` : ""}
+                    {p.ai ? ` · ${t(`IA : reste ${100 - p.ai.plan.used} %`, `AI: ${100 - p.ai.plan.used}% left`)}` : ""}
                     {p.ai?.pending ? t(" · génération en cours", " · generation in progress") : ""}
                   </p>
                 </div>

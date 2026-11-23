@@ -150,8 +150,8 @@ function ModeSwitch() {
   const key = isMac ? "⌘ Maj M" : "Ctrl Maj M";
   return (
     <div className="ss-modeswitch" role="group" aria-label={t(`Mode d'affichage (${key})`, `Display mode (${key.replace("Maj", "Shift")})`)}>
-      <button type="button" aria-pressed={p.resolved.mode === "encre"} onClick={() => p.update({ mode: "encre" })} title={t("Encre : la conversation à côté du travail", "Ink: the conversation next to your work")}>Encre</button>
-      <button type="button" aria-pressed={p.resolved.mode === "plein"} onClick={() => p.update({ mode: "plein" })} title={t("Plein cadre : le résultat d'abord", "Full frame: the result first")}>{t("Plein cadre", "Full frame")}</button>
+      <button type="button" aria-pressed={p.resolved.mode === "encre"} onClick={() => p.update({ mode: "encre" })} title={t("SINA à côté : la conversation à côté de ton travail", "SINA alongside: the conversation next to your work")}>{t("SINA à côté", "SINA alongside")}</button>
+      <button type="button" aria-pressed={p.resolved.mode === "plein"} onClick={() => p.update({ mode: "plein" })} title={t("Grand écran : ton travail prend toute la place, SINA en barre en bas", "Full screen: your work takes all the room, SINA in a bar at the bottom")}>{t("Grand écran", "Full screen")}</button>
     </div>
   );
 }
@@ -295,7 +295,7 @@ function ShellInner({ projectId, children, building }: { projectId: string; chil
       const cmd = [...document.querySelectorAll<HTMLInputElement>("[data-syna-command]")].find((x) => x.getClientRects().length);
       if (cmd && cmd !== f) { cmd.focus(); cmd.setSelectionRange(cmd.value.length, cmd.value.length); }
     }
-    setAnnounce(mode === "plein" ? t("Mode Plein cadre", "Full-frame mode") : t("Mode Encre", "Ink mode"));
+    setAnnounce(mode === "plein" ? t("Grand écran", "Full screen") : t("SINA à côté", "SINA alongside"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 

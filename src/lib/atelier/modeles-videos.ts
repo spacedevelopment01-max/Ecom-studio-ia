@@ -98,10 +98,18 @@ export function demandeDuModele(m: ModeleVideo, o: { aspect?: DemandeVideo["aspe
 }
 
 /**
+ * Les réglages de la vidéo guidée ouverte par un modèle (créer d'abord l'image fixe, format vertical, avec musique) :
+ * la MÊME demande donne le prix du modèle dans l'atelier, sur la page de réglage et chez SINA.
+ */
+export function reglagesDuModele(m: ModeleVideo) {
+  return { as: m.as, generation: "staged" as const, aspect: "9:16" as const, scenes: Math.max(1, Math.min(6, m.plans)), totalS: Math.max(6, Math.min(60, m.dureeS)), music: true, modele: m.id as Exclude<ModeleVideoId, "avant-apres"> };
+}
+
+/**
  * L'adresse de la vidéo guidée déjà remplie par un modèle : la même pour l'écran de l'atelier et pour SINA dans sa
  * conversation (une seule façon de faire ; le devis et l'accord sont ceux de la vidéo guidée).
  */
 export function lienVideoGuidee(projectId: string, m: ModeleVideo, lang: "fr" | "en"): string {
-  const q = new URLSearchParams({ atelierModele: m.id, atelierAs: m.as, atelierNom: m.nom[lang === "fr" ? 0 : 1], atelierPlans: String(m.plans), atelierDuree: String(Math.max(6, m.dureeS)), atelierDemande: `${m.scene}. ${lang === "fr" ? "Aucune personne, aucune main." : "No people, no hands."}` });
+  const q = new URLSearchParams({ atelierModele: m.id, atelierAs: m.as, atelierNom: m.nom[lang === "fr" ? 0 : 1], atelierPlans: String(reglagesDuModele(m).scenes), atelierDuree: String(reglagesDuModele(m).totalS), atelierDemande: `${m.scene}. ${lang === "fr" ? "Aucune personne, aucune main." : "No people, no hands."}` });
   return m.as === "ad" ? `/studio/${projectId}/publicites?${q}` : `/studio/${projectId}/publications?${q}#video`;
 }

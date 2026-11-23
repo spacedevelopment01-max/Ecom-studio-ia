@@ -127,7 +127,7 @@ export function ActiveJobs() {
             <div key={j.id} className="border-b border-line py-2.5 last:border-0">
               <div className="flex items-center justify-between gap-2 text-sm">
                 <span className="font-medium">{j.label || j.type}</span>
-                <span className="text-xs text-muted">{j.status === "paused" ? t("En pause · ", "Paused · ") : ""}{t(`${Math.round(j.progress * 100)} %`, `${Math.round(j.progress * 100)}%`)}</span>
+                <span className="text-xs text-muted">{j.status === "paused" ? t("En pause · ", "Paused · ") : ""}{t(`${Math.round(j.progress * 100)} %`, `${Math.round(j.progress * 100)}%`)}</span>
               </div>
               <p className="mt-0.5 truncate text-xs text-muted">{j.message}</p>
               <Progress value={j.progress} className="mt-2" />
