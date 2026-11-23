@@ -180,7 +180,7 @@ describe("réponses coupées et référencement manquant (essai Éclat de thé d
   it("la sortie structurée relance une réponse coupée avec plus de place ; le plan des textes a de la place", async () => {
     const fs = await import("node:fs");
     const llm = fs.readFileSync("src/lib/ai/llm.ts", "utf8");
-    expect(llm).toMatch(/if \(opts\.strict\) \{[^]*r\.stop === "max_tokens" && budget < cap[^]*budget \* 2/);
+    expect(llm).toMatch(/async function jsonStrict[^]*r\.stop === "max_tokens" && budget < cap[^]*budget \* 2/);
     expect(fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8")).toMatch(/syna-custom-plan-2", prompt, maxTokens: SITE_PLAN_OUTPUT_TOKENS, maxOutputTokens: SITE_PLAN_OUTPUT_TOKENS \* 1\.5/);
     // Essai réel du 18 novembre 2026 : deux plans coupés à 18 000 jetons, le plus long en a écrit 24 107.
     expect(fs.readFileSync("src/lib/syna-agent/custom-theme/brand.ts", "utf8")).toContain("export const SITE_PLAN_OUTPUT_TOKENS = 36_000;");

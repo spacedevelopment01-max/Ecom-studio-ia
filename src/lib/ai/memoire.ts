@@ -18,6 +18,10 @@ export type LigneMemoire = {
   partReprise: number | null; partEcrite: number | null; gagneMicro: number;
   /** Appels servis en différé, à moitié prix (le client attendait de toute façon). */
   differes: number;
+  /** Appels en sortie stricte (le fournisseur tenu de répondre dans la forme du schéma). */
+  strictes?: number;
+  /** Appels repayés pour réparer une réponse mal formée (ce que la sortie stricte fait disparaître). */
+  reprisesForme?: number;
 };
 
 /** Le travail d'un appel, dit simplement (d'après la clé de sa consigne, à défaut sa tâche). */
@@ -61,6 +65,8 @@ export function memoireReprise(since: number): { lignes: LigneMemoire[]; total: 
       x.reprise += r.cache_read_tokens; x.ecrite += r.cache_write_tokens; x.gagneMicro += g;
       if (/différé/.test(r.routing_reason ?? "")) x.differes++;
       if (/"differe":"rate"/.test(r.details ?? "")) x.differesRates = (x.differesRates ?? 0) + 1;
+      if (/"sortie":"stricte"/.test(r.details ?? "")) x.strictes = (x.strictes ?? 0) + 1;
+      if (/"reprise":"forme"/.test(r.details ?? "")) x.reprisesForme = (x.reprisesForme ?? 0) + 1;
     }
     by.set(w, l);
   }

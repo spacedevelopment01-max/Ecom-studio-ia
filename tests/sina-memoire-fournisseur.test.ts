@@ -301,7 +301,7 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     // Écrire pour une heure coûte 2 fois l'entrée, pas 1,25 : le gain est plus petit, et juste.
     expect(gagneSurAppel({ ...row, details: JSON.stringify({ ecrit1h: 4000 }) })).toBeLessThan(gagneSurAppel(row));
     const fs = await import("node:fs");
-    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain(`details: { ...(ecrit1h ? { ecrit1h } : {}), ...(voulu ? { differe: servedDeferred ? "servi" : "rate" } : {}), placeDemandee: params.max_tokens },`);
+    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain(`details: { ...(ecrit1h ? { ecrit1h } : {}), ...(voulu ? { differe: servedDeferred ? "servi" : "rate" } : {}), placeDemandee: params.max_tokens, ...sortie },`);
   });
 });
 

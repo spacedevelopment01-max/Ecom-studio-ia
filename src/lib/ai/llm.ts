@@ -21,7 +21,8 @@ import { activeProviderKey, aiAvailability, FX_SAFETY, priceFor, requirePrice, r
 import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { assertUnderCostCap, recordCall, redact, shortHash, skillsOfReference } from "./trace";
+import { assertUnderCostCap, CostCapReached, recordCall, redact, shortHash, skillsOfReference } from "./trace";
+import { formatStrict, REFUS_DE_SCHEMA, retenirRefus, sansNullsFacultatifs, SchemaRefuse, schemaPourOpenAI, schemaRefuse, seulementContraintes } from "./sortie-stricte";
 import { brainMetaOf } from "../brain/facade";
 import { getJsonSetting } from "../settings";
 import { route, type Difficulty, type RouteDecision, type RoutingHistory } from "../orchestrator/router";
@@ -62,6 +63,8 @@ export type LlmCall = {
   nouvelleSiChangee?: boolean;
   /** Route consentie par devis serveur : un changement impose un nouveau devis, jamais un repli facturé. */
   expectedRoute?: { provider: string; model: string; effort?: string };
+  /** Réparation d'une réponse mal formée (llmJson) : comptée à part dans le journal des appels (reprises à éviter). */
+  motifReprise?: "forme";
   /** Remise en forme de la réponse JSON avant sa vérification (alias, forme d'une liste…). */
   prepare?: (raw: unknown) => unknown;
   userId: string;
@@ -572,6 +575,9 @@ async function deferredMessage(params: any, jobKey: string, reservationId?: stri
   } finally { finAttente(jobKey); }
   return resultatDuLot(b, batch.id);
 }
+/** Ce que le journal des appels retient de la forme de la réponse : sortie stricte, réparation d'une réponse mal formée. */
+const suiviDeSortie = (call: Pick<LlmCall, "motifReprise">, format: unknown): Record<string, string> | null =>
+  format || call.motifReprise ? { ...(format ? { sortie: "stricte" } : {}), ...(call.motifReprise ? { reprise: call.motifReprise } : {}) } : null;
 /** Un coût inconnu reste bloquant pour les moteurs, quelle que soit la langue du message. */
 function uncertainProviderFailure(message:string){return Object.assign(new PermanentError(message),{uncertain:true as const});}
 
@@ -659,6 +665,8 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   let msg: Anthropic.Beta.BetaMessage;
   // Appel réellement servi en différé (moitié prix) ; faux quand il est parti en direct.
   let servedDeferred = false;
+  // Sortie stricte et réparations d'une réponse mal formée, comptées dans le journal des appels (reprises à éviter).
+  const sortie = suiviDeSortie(call, format);
   // Trace de l'appel (jamais le prompt ni les images : clé et empreinte du prompt système seulement).
   const counter = { n: 0 };
   const started = Date.now();
@@ -729,9 +737,9 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
     else settleUncertain(reservation, redact(String((e as Error)?.message ?? e)).slice(0, 160), typeof status === "number" && status >= 500 ? Math.max(0, maxMicro - sortieMaxMicro(route.model, params.max_tokens)) : undefined);
     // L'appel n'est plus en cours : un lot déposé peut être repris dès la prochaine tentative (sa réponse lue, jamais repayée).
     if (uncertain) finishOperationRecovery(reservation);
-    recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
+    recordCall({ ...trace, ...(sortie ? { details: sortie } : {}), latencyMs: Date.now() - started, httpAttempts: counter.n || null, status: /timeout|timed out/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof Anthropic.AuthenticationError) throw new PermanentError(L("La clé Anthropic configurée est refusée. Vérifiez-la dans l'administration.", "The configured Anthropic key was rejected. Check it in the admin settings."));
-    if (e instanceof Anthropic.BadRequestError) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    if (e instanceof Anthropic.BadRequestError) throw new (format && REFUS_DE_SCHEMA.test(e.message) ? SchemaRefuse : PermanentError)(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (e instanceof Anthropic.NotFoundError) throw new PermanentError(L(`Modèle introuvable (${route.model}). Corrigez le routage dans l'administration.`, `Model not found (${route.model}). Fix the routing in the admin settings.`));
     // Coupure réseau, délai dépassé, flux interrompu : le coût maximal vient d'être retenu ; une relance par la file
     // de tâches repaierait (nouvelle réservation, nouvel appel). Arrêt net, comme pour les autres fournisseurs.
@@ -758,7 +766,7 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   const voulu = (call.deferred ?? differeActif()) && !/haiku/.test(route.model);
   recordCall({
     ...trace,
-    details: { ...(ecrit1h ? { ecrit1h } : {}), ...(voulu ? { differe: servedDeferred ? "servi" : "rate" } : {}), placeDemandee: params.max_tokens },
+    details: { ...(ecrit1h ? { ecrit1h } : {}), ...(voulu ? { differe: servedDeferred ? "servi" : "rate" } : {}), placeDemandee: params.max_tokens, ...sortie },
     ...(servedDeferred ? { routingReason: `${decision.reason} · différé (moitié prix)` } : {}),
     servedModel: msg.model ?? null,
     inputTokens: msg.usage?.input_tokens ?? 0,
@@ -845,13 +853,13 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   const adapter = textDeps.adapters[provider];
   const effort = mapEffort(provider, model, decision.effort ?? null);
   const schema = format && typeof format === "object" && (format as any).schema ? ((format as any).schema as Record<string, unknown>) : null;
-  const req: TextRequest = { model, system: systemText(call), turns: toTurns(messages), maxOutput: Math.min(m.limits.maxOutput, Math.max(call.maxTokens ?? 16000, 4000)), effort, jsonSchema: schema, ...(call.arrierePlan && provider === "openai" ? { arrierePlan: true } : {}) };
+  const req: TextRequest = { model, system: systemText(call), turns: toTurns(messages), maxOutput: Math.min(m.limits.maxOutput, Math.max(call.maxTokens ?? 16000, 4000)), effort, jsonSchema: schema && provider === "openai" ? schemaPourOpenAI(schema) : schema, ...(call.arrierePlan && provider === "openai" ? { arrierePlan: true } : {}) };
   const { brain } = brainOf(call);
   const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
   assertUnderCostCap(maxMicro);
   if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
   const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId, studio: callTry > 0 });
-  const started = Date.now();
+  const started = Date.now(), sortie = suiviDeSortie(call, format);
   let attempts = 0;
   const trace = {
     skills: skillsOfReference(call.reference),
@@ -895,10 +903,10 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     const uncertain = !(e instanceof AgentBoundStop || e instanceof ProviderHttpError && providerRefused(e.status));
     if (!uncertain) release(reservation, `refus du fournisseur (${(e as ProviderHttpError).status})`);
     else settleUncertain(reservation, redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 160));
-    recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: attempts, status: /timeout|timed out|abort/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
+    recordCall({ ...trace, ...(sortie ? { details: sortie } : {}), latencyMs: Date.now() - started, httpAttempts: attempts, status: /timeout|timed out|abort/i.test(String((e as Error)?.message)) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(String((e as Error)?.message ?? e)).slice(0, 200)}` });
     if (e instanceof ProviderHttpError && (e.status === 401 || e.status === 403)) throw new PermanentError(L(`La clé ${provider} configurée est refusée. Vérifiez-la dans l'administration.`, `The configured ${provider} key was rejected. Check it in the admin settings.`));
     if (e instanceof ProviderHttpError && e.status === 404) throw new PermanentError(L(`Modèle introuvable (${model}). Corrigez le routage dans l'administration.`, `Model not found (${model}). Fix the routing in the admin settings.`));
-    if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408) throw new PermanentError(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
+    if (e instanceof ProviderHttpError && e.status >= 400 && e.status < 500 && e.status !== 429 && e.status !== 408) throw new (req.jsonSchema && e.status === 400 && REFUS_DE_SCHEMA.test(e.message) ? SchemaRefuse : PermanentError)(L(`Requête refusée par le fournisseur : ${e.message}`, `Request rejected by the provider: ${e.message}`));
     if (uncertain) {
       const why = redact(`${e instanceof ProviderHttpError ? `HTTP ${e.status} — ` : ""}${String((e as Error)?.message ?? e)}`).slice(0, 200);
       throw uncertainProviderFailure(L(`Résultat incertain chez ${provider} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${provider} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
@@ -933,6 +941,7 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     estimated: billed.estimated,
     usageEventId: billed.eventId,
     billingDedup: billed.dedup,
+    ...(sortie ? { details: sortie } : {}),
     status: res!.stop === "refusal" ? "refused" : "ok",
   });
   if (res!.stop === "refusal") throw new UserFacingError(L("Le modèle a décliné cette demande. Reformulez-la ou retirez l'élément en cause.", "The model declined this request. Rephrase it or remove the element at issue."));
@@ -1069,44 +1078,84 @@ export async function llmText(call: LlmCall): Promise<string> {
 }
 
 /**
- * JSON validé. `strict` = sorties structurées (schéma figé) ; sinon JSON libre
- * validé par Zod avec une tentative de correction guidée par l'erreur.
+ * JSON validé. Sortie STRICTE par défaut (23 novembre 2026) : le schéma est envoyé au fournisseur, qui doit répondre
+ * dans sa forme ; plus de reprise payée pour une réponse mal formée. Le schéma part en JSON libre (validé par Zod, une
+ * réparation guidée par l'erreur) quand il ne peut pas partir strict sans rien perdre (sortie-stricte.ts), quand une
+ * remise en forme (`prepare`) précède la validation, quand `strict: false` est demandé, ou en secours : schéma refusé
+ * net par le fournisseur (rien facturé), plafond de la tâche qui ne couvre pas le schéma, réponse déjà payée en libre
+ * (reprise d'une tâche commencée avant ce changement, relue sans repayer). `strict: true` : strict sans secours.
  */
 export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opts: { strict?: boolean } = {}): Promise<z.infer<S>> {
   call = avecMemoire(withSelectedStrategy(call));
   const content = await buildContent(call);
-  const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: content as any }];
-  if (opts.strict) {
-    // Même schéma envoyé au fournisseur. Le SDK garde le texte brut : son parseur local ne doit pas lever
-    // avant l'enregistrement de la réponse et de l'usage. La validation stricte reste obligatoire juste après.
-    // Réponse coupée faute de place : même demande avec plus de place, jusqu'à maxOutputTokens (essai réel du
-    // 10 novembre 2026 : le plan des textes, coupé à 10 000 jetons, n'était jamais relancé en sortie structurée).
-    const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
-    let budget = placeDeDepart(call), attempt = 0;
-    for (;;) {
-      const r = await rawCall({ ...call, maxTokens: budget }, messages, {...zodOutputFormat(schema as any),parse:(text:string)=>text}, attempt ? `:fix${attempt}` : "", attempt);
-      if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());
-      if (r.stop === "max_tokens" && budget < cap) { budget = Math.min(cap, budget * 2); attempt++; continue; }
-      // Un écart de pure forme (un texte un peu trop long, une liste trop longue) ne fait plus perdre un appel
-      // payé : il est réparé comme en JSON libre (essai réel du 16 novembre 2026 : une correction de plus de
-      // 400 signes avait fait sauter toute une relecture). Un écart de fond lève toujours l'erreur du schéma.
-      const data = JSON.parse(r.text), direct = schema.safeParse(data);
-      if (direct.success) return direct.data;
-      const repaired = salvage(schema as z.ZodType<unknown>, data);
-      if (repaired.ok) return repaired.data as z.infer<S>;
-      return schema.parse(data);
+  const auto = opts.strict === undefined;
+  const format = opts.strict === true ? zodOutputFormat(schema as any) : auto && !call.prepare ? formatStrict(schema) : null;
+  const cleRefus = format ? `${(() => { try { return routeLlm(call).provider; } catch { return "?"; } })()}:${shortHash(JSON.stringify(format.schema))}` : "";
+  if (format && !(auto && (schemaRefuse(cleRefus) || dejaPayeEnLibre(call, content)))) {
+    const etat = { attempt: 0 };
+    try { return await jsonStrict(call, content, schema, format, etat); }
+    catch (e) {
+      // Secours, seulement avant toute dépense de cette demande : refus net du schéma (rien facturé) ou plafond.
+      if (!auto || etat.attempt > 0 || !(e instanceof SchemaRefuse || e instanceof CostCapReached)) throw e;
+      if (e instanceof SchemaRefuse) retenirRefus(cleRefus);
+      console.info(`[ia] ${call.task} : sortie stricte ${e instanceof SchemaRefuse ? "refusée par le fournisseur" : "au-delà du plafond"}, la demande part en JSON libre`);
     }
   }
-  messages[0].content = [
-    ...(content as any[]),
-    { type: "text", text: "Réponds uniquement avec un objet JSON valide, sans texte autour ni bloc de code." },
-  ];
+  return jsonLibre(call, content, schema);
+}
+
+/** Demande en JSON libre : le contenu, suivi de la consigne de forme. */
+const messagesLibres = (content: Anthropic.ContentBlockParam[]): Anthropic.Beta.BetaMessageParam[] => [{ role: "user", content: [...(content as any[]), { type: "text", text: "Réponds uniquement avec un objet JSON valide, sans texte autour ni bloc de code." }] }];
+
+/** Cette demande a déjà été payée en JSON libre (tâche reprise après le passage à la sortie stricte) : relue, jamais repayée. */
+function dejaPayeEnLibre(call: LlmCall, content: Anthropic.ContentBlockParam[]): boolean {
+  if (!call.usageKey) return false;
+  const hash = requestHash({ system: systemText(call), messages: messagesLibres(content), format: undefined, maxTokens: placeDeDepart(call) });
+  const cles = [call.usageKey, ...(call.nouvelleSiChangee ? [`${call.usageKey}~${String(hash).slice(0, 12)}`] : [])];
+  return cles.some((usageKey) => { try { return !!existingOperation(call.userId, { task: call.task, projectId: call.projectId, usageKey, requestHash: hash }); } catch { return false; } });
+}
+
+async function jsonStrict<S extends z.ZodType>(call: LlmCall, content: Anthropic.ContentBlockParam[], schema: S, format: ReturnType<typeof zodOutputFormat>, etat: { attempt: number }): Promise<z.infer<S>> {
+  const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: content as any }];
+  // Même schéma envoyé au fournisseur, sans le parseur local du SDK (il ne doit pas lever avant l'enregistrement de la
+  // réponse et de l'usage, et une demande doit pouvoir être copiée telle quelle). La validation stricte reste obligatoire juste après.
+  // Réponse coupée faute de place : même demande avec plus de place, jusqu'à maxOutputTokens (essai réel du
+  // 10 novembre 2026 : le plan des textes, coupé à 10 000 jetons, n'était jamais relancé en sortie structurée).
+  const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
+  let budget = placeDeDepart(call), attempt = 0, fixes = 0, reparation = false;
+  for (;;) {
+    etat.attempt = attempt;
+    const r = await rawCall({ ...call, maxTokens: budget, ...(reparation ? { motifReprise: "forme" as const } : {}) }, messages, { type: format.type, schema: format.schema }, attempt ? `:fix${attempt}` : "", attempt);
+    if (r.stop === "max_tokens" && call.sansRelanceCoupee) throw new PermanentError(REPONSE_COUPEE());
+    reparation = false;
+    if (r.stop === "max_tokens" && budget < cap) { budget = Math.min(cap, budget * 2); attempt++; continue; }
+    // Un écart de pure forme (un texte un peu trop long, une liste trop longue) ne fait plus perdre un appel
+    // payé : il est réparé comme en JSON libre (essai réel du 16 novembre 2026 : une correction de plus de
+    // 400 signes avait fait sauter toute une relecture). Un écart de fond lève toujours l'erreur du schéma.
+    const data = sansNullsFacultatifs(JSON.parse(r.text), format.schema as Record<string, unknown>), direct = schema.safeParse(data);
+    if (direct.success) return direct.data;
+    const repaired = salvage(schema as z.ZodType<unknown>, data);
+    if (repaired.ok) return repaired.data as z.infer<S>;
+    // Ce que le fournisseur ne garantit pas (longueur minimale, règle écrite en code) : UNE réparation, comme en libre.
+    if (!fixes && attempt + 1 < JSON_ATTEMPTS && seulementContraintes(direct.error.issues)) {
+      const issue = direct.error.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+      messages.push({ role: "assistant", content: r.text || "{}" });
+      messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue}). Renvoie l'objet complet corrigé, de façon concise.` });
+      fixes = 1; attempt++; reparation = true;
+      continue;
+    }
+    return schema.parse(data);
+  }
+}
+
+async function jsonLibre<S extends z.ZodType>(call: LlmCall, content: Anthropic.ContentBlockParam[], schema: S): Promise<z.infer<S>> {
+  const messages = messagesLibres(content);
   let last = "";
   let lastIssue = "";
   const cap = Math.min(MAX_OUTPUT_TOKENS, call.maxOutputTokens ?? MAX_OUTPUT_TOKENS);
-  let step = { attempt: 0, budget: placeDeDepart(call), fixes: 0 };
+  let step = { attempt: 0, budget: placeDeDepart(call), fixes: 0 }, reparation = false;
   for (;;) {
-    const r = await rawCall({ ...call, maxTokens: step.budget }, messages, undefined, step.attempt ? `:fix${step.attempt}` : "", step.attempt);
+    const r = await rawCall({ ...call, maxTokens: step.budget, ...(reparation ? { motifReprise: "forme" as const } : {}) }, messages, undefined, step.attempt ? `:fix${step.attempt}` : "", step.attempt);
     last = r.text;
     // Réponse coupée faute de place (réflexion longue, beaucoup de photos) : même demande avec plus de place,
     // sans renvoyer le début tronqué au modèle (jsonRetry).
@@ -1133,7 +1182,7 @@ export async function llmJson<S extends z.ZodType>(call: LlmCall, schema: S, opt
       messages.push({ role: "assistant", content: r.text || "{}" });
       messages.push({ role: "user", content: `Le JSON ne respecte pas le format attendu (${issue || "JSON illisible"}). Renvoie l'objet complet corrigé, uniquement le JSON, de façon concise.` });
     }
-    step = next;
+    step = next; reparation = next.resend;
   }
   // Détail complet dans les journaux du serveur ; au client, la raison courte (pas le JSON brut).
   console.error(`[ia] ${call.task} : réponse inexploitable (${lastIssue || "JSON illisible"})\n${last.slice(0, 4000)}`);

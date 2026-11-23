@@ -134,7 +134,7 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
     async territories(brief,n,avoid){
       checkKnownResult();
       const schema=logoTerritoriesSchema(),call={...logoTerritoriesRequest(brief,n,avoid,{...base,usageKey:key("territories")}),...(b.expectedRoutes?.logo_symbol?{expectedRoute:b.expectedRoutes.logo_symbol}:{})};
-      b.beforeRequest?.(call,schema);const r=await llmJson(call,schema,{strict:!!b.singleCall});return r.territories;
+      b.beforeRequest?.(call,schema);const r=await llmJson(call,schema,b.singleCall?{strict:true}:{});return r.territories;
     },
     async drawSymbol(t, brief, feedback, concept) {
       checkKnownResult();
@@ -152,7 +152,7 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
           maxTokens: 6000,
         },
         z.object({ idea: z.string().catch(""), svg: z.string() }),
-        {strict:!!b.singleCall},
+        b.singleCall?{strict:true}:{},
       );
     },
     async exploreSymbol(t, _brief, feedback) {
@@ -195,7 +195,7 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
       const images=[{data:board,label:L("planche de contrôle du logo complet","full logo review board")},...(paletteBoard?[{data:paletteBoard,label:L("palette complète et associations réelles : fond, titres, surfaces, texte, CTA","complete palette and actual uses: background, headings, surfaces, text, CTA")}]:[])];
       if(b.singleCall)for(const image of images)image.data=await sharp(image.data).resize({width:1024,height:1568,fit:'inside',withoutEnlargement:true}).png().toBuffer();
       const call={...logoArtworkReviewRequest(brief,t,expected,{...base,usageKey:key(`art-review:${t.id}:${board.length}`)},images),...(b.expectedRoutes?.quality_control?{expectedRoute:b.expectedRoutes.quality_control}:{})},schema=b.singleCall?BoundedArtworkReviewSchema:ArtworkReviewSchema;
-      b.beforeRequest?.(call,schema);return llmJson(call,schema,{strict:!!b.singleCall})as Promise<ArtworkReview>;
+      b.beforeRequest?.(call,schema);return llmJson(call,schema,b.singleCall?{strict:true}:{})as Promise<ArtworkReview>;
     },
     async review(board, t, brief, expected) {
       checkKnownResult();
@@ -215,7 +215,7 @@ export function realLogoV2Ai(ctx: JobContext | null, b: { userId: string; projec
           maxTokens: 3000,
         },
         LogoReviewSchema,
-        {strict:!!b.singleCall},
+        b.singleCall?{strict:true}:{},
       ) as Promise<LogoReview>;
     },
   };
