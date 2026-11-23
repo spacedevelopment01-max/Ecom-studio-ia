@@ -88,7 +88,8 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     expect(I.CREATED_SLOTS).toEqual([...I.IMAGE_SLOTS]);
     expect(I.PROPOSAL_SLOTS).toEqual(["logo", "hero", "site"]);
     expect(I.SLOT_ASPECT.site).toBe("9:16");
-    expect(I.SLOT_REFERENCES.site).toBe(2); // le logo et la grande scène, comptés dans le devis
+    expect(I.SLOT_REFERENCES.site).toBe(3); // le logo, la grande scène et le vrai produit, comptés dans le devis
+    expect(I.SLOT_REFERENCES.hero).toBe(1); // le vrai produit d'une boutique (essai réel de Nadia, 23 novembre 2026)
     for (const k of ["produits", "services"] as const) {
       const t = P.imagerySystem(k);
       // 15 novembre 2026 (document « 50 accueils mobiles ») : la maquette suit son cahier de métier ; la consigne décrit

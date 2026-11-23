@@ -634,7 +634,8 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère la famille ${title}.`, `I prefer the ${title} family.`))} />}
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
-                {tm.id === lastIdentity && v.journey?.identities && (v.journey.identities.list.some((x) => x.board)
+                {/* Une planche gardée de côté (une image y manque) n'arrive pas ici : jamais une planche incomplète, ni une carte vide. */}
+                {tm.id === lastIdentity && v.journey?.identities && v.journey.identities.list.length > 0 && (v.journey.identities.list.some((x) => x.board)
                   ? <BrandBoards ids={v.journey.identities as unknown as BoardSet} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />
                   : <IdentityCards ids={v.journey.identities} busy={busy || working} onChoose={(k) => send(t(`Je choisis l'identité ${k}.`, `I choose identity ${k}.`))} />)}
                 {/* La marque finie : sa charte (déclinaisons du logo, favicons, avatar, charte PDF) sous sa planche complète. */}

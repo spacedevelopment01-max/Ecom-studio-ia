@@ -270,7 +270,11 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     if (!list?.length) return { ok: false, summary: L("Aucune identité proposée pour l'instant.", "No identity proposed yet."), hint: "Lance d'abord identity.propose." };
     if (j.keep.includes("nom") && a.name) return { ok: false, summary: L("Le client garde son nom tel quel : il ne peut pas être changé ici.", "The name is kept as is.") };
     if (j.keep.includes("slogan") && a.slogan) return { ok: false, summary: L("Le client garde son slogan tel quel : il ne peut pas être changé ici.", "The tagline is kept as is.") };
-    const keysShown = list.map((x) => x.key);
+    // Une planche gardée de côté (une image y manque) n'est pas montrée : elle ne se choisit pas (règle du propriétaire :
+    // « Jamais une planche incomplète »).
+    const cachees = new Set((j.identities?.incompletes ?? []).map((x) => x.key));
+    const keysShown = list.map((x) => x.key).filter((k) => !cachees.has(k));
+    if ([a.key, ...Object.values(a.mix ?? {})].some((k) => k && cachees.has(k))) return { ok: false, summary: L("Cette planche n'est pas encore montrée au client : il lui manque une image. Propose-lui de la finir (identity.images, à la charge du Studio), ou laisse-le choisir parmi celles qui sont montrées.", "This board is not shown yet: an image is missing."), hint: "identity.images avec keys = cette planche et images = ce qui manque (écrit dans ton contexte)." };
     if (!keysShown.includes(a.key) || Object.values(a.mix ?? {}).some((k) => k && !keysShown.includes(k))) return { ok: false, summary: L(`Cette identité n'est pas dans la proposition affichée (${keysShown.join(", ")}).`, "This identity is not in the displayed proposal.") };
     const chosen = mixIdentity(list, a.key, a.mix, { name: a.name, slogan: a.slogan });
     const others = list.filter((x) => x.key !== a.key);
@@ -330,11 +334,24 @@ type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
  * la fin de la marque (jamais l'ancien logo sur la marque finie : retour du 16 novembre 2026, « c'est pas les bons logos »).
  */
 export const redoImages = <T extends string>(images: readonly T[]): T[] => [...new Set(images)];
+/**
+ * Finir des planches gardées de côté (une image y manque encore après les reprises) : chaque planche demandée l'est, et
+ * seules les images qui lui manquent sont refaites. C'est une reprise du travail de SINA : à la charge du Studio, jamais
+ * comptée au client (LE-STUDIO-DE-A-A-Z, partie 13). Une autre demande (un goût du client) reste à son compte.
+ */
+export function finirPlanchesGardees(j: Journey, keys: readonly string[], images: readonly string[]): boolean {
+  const inc = j.identities?.incompletes ?? [];
+  return keys.length > 0 && keys.every((k) => { const h = inc.find((x) => x.key === k); return !!h && images.every((s) => h.manque.includes(s)); });
+}
 const imagesTool: AgentTool<ImagesArgs> = {
   name: "identity.images", module: "marque", kind: "generate", needsProject: true,
   description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») de planches déjà montrées, sans toucher au nom ni aux textes. Refais SEULEMENT les images que le client demande : un logo refait seul laisse l'ancien logo sur le téléphone de la planche jusqu'au choix, puis il est refait pour l'identité choisie (dis-le-lui en une phrase). Quand une image est fausse ou refusée (la planche le dit) ou qu'il signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
   args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(3), guidance: z.string().max(1500).optional() }).strict(),
-  estimate: (_ctx, a) => { const n = redoImages(a.images).length; return { ...boardImagesQuote(a.keys.length, undefined, redoImages(a.images) as never), label: `${n} image${n > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}` }; },
+  estimate: (ctx, a) => {
+    const n = redoImages(a.images).length;
+    const studio = finirPlanchesGardees(journeyOf(ctx.conversationId), a.keys, redoImages(a.images));
+    return { ...boardImagesQuote(a.keys.length, undefined, redoImages(a.images) as never), label: studio ? L(`finir ${a.keys.length > 1 ? "tes planches" : "ta planche"} : ${n} image${n > 1 ? "s" : ""} qui manque${n > 1 ? "nt" : ""}`, "finish your board: missing images") : `${n} image${n > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}`, ...(studio ? { studio: true } : {}) };
+  },
   run: (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
@@ -346,7 +363,7 @@ const imagesTool: AgentTool<ImagesArgs> = {
     const quote = boardImagesQuote(keys.length, undefined, images as never);
     const job = enqueue({
       userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L(`Images refaites sur ${keys.length} planche${keys.length > 1 ? "s" : ""} (SINA)`, `Board images redone (SINA)`),
-      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, count: routeCountOfProject(p.id), imagesOnly: true, images: true, redo: keys, slots: images, ...(a.guidance ? { guidance: a.guidance } : {}) },
+      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, count: routeCountOfProject(p.id), imagesOnly: true, images: true, redo: keys, slots: images, ...(finirPlanchesGardees(j, keys, images) ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
       maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-images:${keys.join("")}:${images.join("+")}`,
     });
     return {

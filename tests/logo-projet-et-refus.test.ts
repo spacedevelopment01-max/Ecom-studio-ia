@@ -159,7 +159,9 @@ describe("le relecteur des images : le plus fort, une image à la fois, une list
   });
   it("une image jugée bonne mais notée sous 8 est refusée ; le relecteur est le modèle fort ; une relecture par image", () => {
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).toContain("if (v.ok && v.score != null && v.score < NOTE_MIN) {");
+    // Toujours, même avec ok = faux ou sans ok (essai réel de Nadia, 23 novembre 2026).
+    expect(img).toContain("if (v.score != null && v.score < NOTE_MIN) {");
+    expect(img).not.toContain("if (v.ok && v.score != null && v.score < NOTE_MIN)");
     // Une relecture par image (la relecture d'une reprise est à la charge du Studio, 22 novembre 2026).
     expect(img).toContain("for (const s of slots) await reviewOne([s], slots.length > 1 ? `${rt}:${s}` : rt);");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");

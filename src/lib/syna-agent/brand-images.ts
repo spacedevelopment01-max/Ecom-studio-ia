@@ -38,7 +38,8 @@ import { getJob, type JobContext } from "../jobs";
 import type { Journey } from "./journey";
 import { L } from "../i18n-server";
 import { CostCapReached } from "../ai/trace";
-import { json as parseJson, one, run } from "../db";
+import { all, json as parseJson, one, run } from "../db";
+import { deCote } from "../atelier/verification-photos";
 import { assetData, getAsset, saveAsset } from "../library";
 import { getJsonSetting } from "../settings";
 import { BOARD_OBJECT_LABEL } from "./brand-board";
@@ -64,8 +65,9 @@ export type ImageAspect = "1:1" | "16:9" | "9:16" | "4:5";
 /** Format demandé pour chaque image (le modèle rend du carré, du paysage 3:2 ou du portrait 2:3). */
 export const SLOT_ASPECT: Record<ImageSlot, ImageAspect> = { logo: "1:1", hero: "16:9", object: "1:1", signs: "1:1", site: "9:16", post0: "4:5", post1: "4:5", post2: "4:5" };
 /** Images de référence envoyées avec chaque demande (le logo pour l'objet et le site ; aucun modèle pour le logo lui-même). */
-/** Le logo : la planche des logos déjà faits de la série et celle des 50 logos aimés (deux au plus). */
-export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 2, hero: 0, object: 1, signs: 1, site: 2, post0: 1, post1: 1, post2: 1 };
+/** Le vrai produit d'une boutique compte pour la grande scène et le haut du site (essai réel de Nadia, 23 novembre 2026) ; le logo :
+ * la planche des logos déjà faits de la série et celle des 50 logos aimés (deux au plus). */
+export const SLOT_REFERENCES: Record<ImageSlot, number> = { logo: 2, hero: 1, object: 1, signs: 1, site: 3, post0: 1, post1: 1, post2: 1 };
 
 /**
  * Les images d'une planche se créent en DEUX temps (lot 2, 15 novembre 2026 : « images complètes pour la seule identité
@@ -104,7 +106,9 @@ export const ImageReviewSchema = z.object({
   // relecteur juge parfois aussi (ses avis sur elles sont ignorés).
   // defect : la nature du défaut d'une image refusée. Seul « texte » peut être contredit par la lecture elle-même ;
   // un défaut non précisé vaut « autre » (l'image reste refusée : c'est le côté sûr).
-  images: z.array(z.object({ slot: z.string().max(12), seen: z.string().max(1500).default(""), score: z.number().min(0).max(10).optional(), ok: z.boolean(), read: z.array(z.string().max(400)).max(14).default([]), why: z.string().max(260).default(""), defect: z.enum(["texte", "personne", "coupe", "abime", "autre"]).default("autre") })).max(12).default([]),
+  images: z.array(z.object({ slot: z.string().max(12), seen: z.string().max(1500).default(""), score: z.number().min(0).max(10).optional(),
+    // ok peut manquer (essai réel de Nadia, 23 novembre 2026) : la note décide alors seule, et jamais en dessous de 8.
+    ok: z.boolean().optional(), read: z.array(z.string().max(400)).max(14).default([]), why: z.string().max(260).default(""), defect: z.enum(["texte", "personne", "coupe", "abime", "autre"]).default("autre") })).max(12).default([]),
 });
 /** Seconde lecture d'une image dont le jugement contredit la lecture : seulement recopier, sans juger. */
 export const ImageRereadSchema = z.object({ images: z.array(z.object({ slot: z.string().max(12), read: z.array(z.string().max(400)).max(14).default([]) })).max(12).default([]) });
@@ -172,6 +176,29 @@ export const BORD_A_BORD = "Image bord à bord : ni vignette, ni cadre arrondi, 
 export const SITE_REMPLI = "Sous le titre et le bouton, la photo de campagne remplit l'écran du téléphone jusqu'en bas : aucune zone blanche vide.";
 export const TEXTE_NET = "Le texte est net, sans ombre ni halo, posé sur une zone calme et unie de l'image, sans vapeur, brume ni fumée derrière lui.";
 export const OBJETS_UTILES = "Chaque objet de la scène a un rôle : aucune étiquette, aucun carton ni cadre vierge posé sans raison.";
+/**
+ * Le VRAI produit du client (essai réel de Nadia, 23 novembre 2026 : ses trois photos n'étaient jamais jointes, et les
+ * grandes scènes de « Pénombre » montraient un pot de confiture sans mèche, à l'étiquette vierge). Ses photos sont jointes
+ * au dessinateur de la grande scène et du haut du site, comme produit à reproduire fidèlement, et au relecteur, qui compare.
+ */
+export const PRODUIT_FIDELE = "La photo jointe « product » montre le VRAI produit du client : c'est lui, et lui seul, que montre l'image, reproduit fidèlement (même forme, même contenant, même matière, mêmes couleurs, mêmes détails qui le font reconnaître, étiquette telle qu'elle est). Il est reconnaissable au premier regard pour ce qu'il est, entier dans le cadre. Aucun autre produit à sa place.";
+export const PRODUIT_A_COMPARER = "La dernière image jointe, « produit », est la photo du VRAI produit du client : ne la juge pas, compare. Le produit montré doit être le sien, reconnaissable au premier regard pour ce qu'il est, avec ce qui le définit (sa matière, les parties qui le distinguent d'un autre objet). Un autre produit, un produit qui ressemble à autre chose, une partie qui le définit absente, une étiquette vierge ou un contenant différent de sa photo sont un défaut (defect « autre ») : dis lequel dans why.";
+/** Photos de produit du client, pour une boutique : ses photos envoyées et vérifiées (jamais son logo, ni une inspiration). */
+export function photosDuProduitIds(projectId: string, max = 3): string[] {
+  const rows = all<{ id: string; meta: string | null; width: number | null; height: number | null }>("SELECT id, meta, width, height FROM assets WHERE project_id=? AND deleted_at IS NULL AND kind='image' AND origin='upload' AND COALESCE(role,'') NOT LIKE 'logo%' AND COALESCE(status,'')!='rejected' ORDER BY created_at", projectId);
+  return rows.filter((r) => {
+    const m = parseJson<Record<string, unknown>>(r.meta ?? "{}", {});
+    if (m.inspiration || deCote(m)) return false;
+    return (r.width == null || r.width >= 300) && (r.height == null || r.height >= 300);
+  }).slice(0, max).map((r) => r.id);
+}
+/** Les photos de produit côte à côte sur blanc (une seule image jointe « product »). Aucune : null. Gratuit, sans IA. */
+export async function planchePhotosDuProduit(projectId: string): Promise<Buffer | null> {
+  const tiles = (await Promise.all(photosDuProduitIds(projectId).map(async (id) => { const a = getAsset(id); if (!a) return null; try { return await sharp(assetData(a)).rotate().resize(512, 512, { fit: "contain", background: "#FFFFFF" }).flatten({ background: "#FFFFFF" }).png().toBuffer(); } catch { return null; } }))).filter(Boolean) as Buffer[];
+  if (!tiles.length) return null;
+  if (tiles.length === 1) return tiles[0];
+  return sharp({ create: { width: 512 * tiles.length, height: 512, channels: 3, background: "#FFFFFF" } }).composite(tiles.map((input, i) => ({ input, left: 512 * i, top: 0 }))).png().toBuffer();
+}
 /**
  * Le refus du client, mot pour mot, pour le dessinateur du logo (accord du propriétaire du 21 novembre 2026 : une seule
  * ligne, le refus du client lui-même, sans autre consigne) : seulement ses phrases de refus, telles qu'il les a écrites.
@@ -286,6 +313,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: {
   /** L'idée en mots simples, si elle ne vient pas de la planche (contrôlée comme elle). */
   idee?: string | null;
   /** Personnes autorisées pour ce client (règle des personnes). */ personnes?: boolean;
+  /** Photo du vrai produit jointe (grande scène, haut du site). */ produit?: boolean;
 } = { logo: true }): string {
   const look = imagery.look.trim(), texts = slotTexts(x)[slot];
   if (slot === "logo") {
@@ -312,6 +340,7 @@ export function imagePrompt(slot: ImageSlot, x: Route, imagery: Imagery, o: {
   // La maquette du site : ses mots sont le titre, le bouton et les entrées du menu ; rien d'autre n'est écrit.
   return [
     look ? `Direction artistique : ${look}` : "", brief.trim(), paletteLine(x),
+    (slot === "hero" || slot === "site") && o.produit ? PRODUIT_FIDELE : "",
     withLogo ? "Le logo fourni en image de référence est reproduit tel quel, à la place indiquée : il n'est ni redessiné, ni recoloré, et aucune de ses lettres ne change." : "",
     slot === "site" ? "Maquette de présentation d'un site, au niveau des plus beaux sites primés de 2026 : UN téléphone récent, entier, vu bien de face, posé sur un fond uni très doux, avec une ombre légère ; son écran montre le haut de la page d'accueil décrit ci-dessus (l'heure et les signes du téléphone en haut, puis l'en-tête du site). Le titre est TRÈS grand et occupe une vraie place sur l'écran ; un seul bouton ; très peu de mots. Le logo de l'en-tête est GRAND et net (au moins un tiers de la largeur de l'écran), recopié tel quel depuis l'image de référence, chaque lettre du nom lisible. Mise en page nette et précise : typographie soignée, alignements exacts, de l'air. Rien autour du téléphone : ni main, ni table, ni décor." : "",
     slot === "site" ? `Si la maquette montre des tuiles, des pastilles ou des entrées de menu, elles ne portent QUE ces mots, écrits tels quels : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucun (pas de tuile ni de pastille)"}. N'invente aucune prestation, aucune catégorie, aucune offre.` : "",
@@ -350,7 +379,7 @@ export const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
 
 type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
-const instead = (_x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? "tu vois ton nom dessiné à la place" : slot === "site" ? "je ne le montre pas" : "je ne la montre pas";
+const instead = (x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? (x.board.images?.logo ? "je garde celui d'avant" : "tu vois ton nom dessiné à la place") : slot === "site" ? "je ne le montre pas" : "je ne la montre pas";
 /**
  * Un trait fin et horizontal dans un logo (filet sous le nom, ligne de chaque côté) : une rangée de pixels sombres
  * presque continue, longue (au moins 22 % du dessin), fine (au plus 4 %, ou 5 points) et isolée. Sans IA. Essayé sur les 43 logos
@@ -387,6 +416,43 @@ export async function logoSheet(logos: Buffer[]): Promise<Buffer | null> {
   return sharp({ create: { width: T * cols, height: T * rows, channels: 3, background: "#FFFFFF" } }).composite(tiles.map((input, i) => ({ input, left: T * (i % cols), top: T * Math.floor(i / cols) }))).png().toBuffer();
 }
 
+/** Ce qu'on appelle chaque image d'une planche, quand elle manque. */
+const MANQUE_LABEL: Record<string, { fr: string; en: string }> = { logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande scène", en: "the main scene" }, site: { fr: "le haut du site", en: "the site header" } };
+/**
+ * Les images sans lesquelles une planche n'est jamais montrée (règle du propriétaire : « Jamais une planche incomplète :
+ * une image refusée est refaite avant d'être montrée ») : le logo (sauf quand le client garde le sien), la grande scène,
+ * le haut du site. Rien ne manque : [].
+ */
+export function manqueDeLaPlanche(x: { board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown } } }, logoDuClient = false): ImageSlot[] {
+  const im = x.board?.images;
+  return PROPOSAL_SLOTS.filter((s) => (s === "logo" ? !logoDuClient && !im?.logo : !im?.[s as "hero" | "site"]));
+}
+/** « le logo et la grande scène » (en français ou en anglais). */
+export const listeDuManque = (manque: readonly string[]): string => {
+  const w = manque.map((s) => L(MANQUE_LABEL[s]?.fr ?? s, MANQUE_LABEL[s]?.en ?? s));
+  return w.length > 1 ? `${w.slice(0, -1).join(", ")} ${L("et", "and")} ${w[w.length - 1]}` : w[0] ?? "";
+};
+/**
+ * Ce que SINA dit d'une planche gardée de côté : ce qui manque, pourquoi (les raisons simples du Studio), et la suite :
+ * refaire ce qui manque, à la charge du Studio (une image refusée par le relecteur est une erreur de SINA : partie 13).
+ */
+export function phrasePlancheGardee(x: { key: string; name: string }, manque: readonly string[], raisons: string[] = []): string {
+  // Seulement la raison simple du Studio pour chaque image (jamais « tu vois ton nom dessiné », qui n'est plus vrai ici).
+  const simple = (r: string) => {
+    const t = r.replace(/^(Identité|Identity) [A-D]\s*:\s*/, "");
+    const kept = /je n'ai pas gardé (.+?) \((.+)\) ;/.exec(t) ?? /I did not keep (.+?) \((.+)\);/.exec(t);
+    if (kept) return `${kept[1]} : ${kept[2].replace(/\.+$/, "")}`;
+    const made = /je n'ai pas pu créer (.+?) ;/.exec(t) ?? /I could not create (.+?);/.exec(t);
+    if (made) return L(`${made[1]} : la création a échoué chez le fournisseur`, `${made[1]}: the provider failed`);
+    return /relire|plafond|review|cap/i.test(t) ? t.replace(/[.\s]+$/, "") : "";
+  };
+  const why = [...new Set(raisons.map(simple).filter(Boolean))].slice(0, 3).join(" ; ");
+  return L(
+    `Identité ${x.key} « ${x.name} » : je ne te montre pas cette planche, il lui manque ${listeDuManque(manque)}${why ? ` (${why})` : ""}. Je ne montre jamais une planche à trou : je peux refaire ce qui manque, à ma charge, rien n'est compté sur ton budget.`,
+    `Identity ${x.key} "${x.name}": I am not showing this board, it is missing ${listeDuManque(manque)}${why ? ` (${why})` : ""}. I never show an incomplete board: I can redo what is missing, at my expense, nothing is taken from your budget.`,
+  );
+}
+
 /** Le logo que le client garde (sa propre image, déposée dans le Studio). */
 export type ClientLogo = { id: string; w: number; h: number; data: Buffer };
 export async function clientLogoOf(projectId: string): Promise<ClientLogo | null> {
@@ -396,7 +462,8 @@ export async function clientLogoOf(projectId: string): Promise<ClientLogo | null
   try { const data = assetData(a), meta = await sharp(data).metadata(); return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024, data }; } catch { return null; }
 }
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[]; /** Haut du site refait et refusé : celui d'avant est gardé (il porte l'ancien logo). */ siteGarde?: boolean;
-  /** Tous les logos dessinés ici, gardés ou refusés, dans l'ordre : la série les donne aux dessins suivants. */ logos: Buffer[] };
+  /** Tous les logos dessinés ici, gardés ou refusés, dans l'ordre : la série les donne aux dessins suivants. */ logos: Buffer[];
+  /** Images de la planche qui manquent encore après les reprises (logo, grande scène, haut du site) : la planche n'est pas montrée. */ manque?: ImageSlot[] };
 
 /** Un logo à fond transparent posé sur du blanc, pour qu'un relecteur le voie comme le client le verra. */
 export const onWhite = (png: Buffer): Promise<Buffer> => sharp(png).flatten({ background: "#FFFFFF" }).png().toBuffer().catch(() => png);
@@ -578,7 +645,11 @@ export async function runBoardImages(o: {
   const made = new Map<ImageSlot, Made>();
   const bufferOf = (slot: ImageSlot): Buffer | null => { const m = made.get(slot), a = m ? getAsset(m.id) : undefined; return a ? assetData(a) : null; };
   let capped = false;
-  type Refs = { logo?: Buffer | null; scene?: Buffer | null; avoid?: Buffer | null };
+  type Refs = { logo?: Buffer | null; scene?: Buffer | null; avoid?: Buffer | null; product?: Buffer | null };
+  // Le vrai produit d'une boutique (ses photos envoyées), joint à la grande scène et au haut du site, et au relecteur.
+  const produit = o.kind === "produits" ? await planchePhotosDuProduit(o.who.projectId).catch(() => null) : null;
+  // Ce que le relecteur a dit de chaque image gardée (sa note, ses mots) : c'est ce que SINA en dira, rien d'autre.
+  const verdicts = new Map<ImageSlot, { score?: number; words: string }>();
   // Ce qui a servi à créer chaque image : repris tel quel pour la refaire quand la relecture la refuse.
   const calls = new Map<ImageSlot, { refs: Refs; prompt: string }>();
   // Les images refusées, avec la raison : refaites avant d'être montrées (règle du propriétaire du 16 novembre 2026 :
@@ -597,7 +668,7 @@ export async function runBoardImages(o: {
     try {
       made.set(slot, await ctx.step(`brand:image:${round}:${key}:${slot}${pass}${retry}`, async (): Promise<Made> => {
         // Le logo passe par l'usage « logo » : le modèle imposé par le propriétaire (logo-policy.ts), sans secours.
-        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, avoid: refs.avoid ?? null, examples: slot === "logo" ? await planchedesLogosAimes() : null, ...(slot === "logo" ? { usage: "logo" as const } : {}) });
+        const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, avoid: refs.avoid ?? null, ...(refs.product ? { product: refs.product } : {}), examples: slot === "logo" ? await planchedesLogosAimes() : null, ...(slot === "logo" ? { usage: "logo" as const } : {}) });
         // Gardée telle quelle si elle est déjà en PNG : sa signature « fait par l'IA » d'OpenAI reste (règlement européen).
         const png = await pngSansPerte(data), meta = await sharp(png).metadata();
         const asset = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-${slot}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "review", meta: { synaBoard: { key, slot, round, name: x.name } } });
@@ -613,8 +684,8 @@ export async function runBoardImages(o: {
 
   // Dans la bibliothèque du client : une image attend sa relecture (« review »), puis elle est gardée (« ready ») ou
   // refusée (« rejected », avec la raison) : une image ratée n'y est jamais rangée comme une bonne image.
-  const mark = (id: string, status: "ready" | "rejected", why = "") => {
-    run("UPDATE assets SET status=?, meta=json_set(meta,'$.synaBoard.review',json(?)) WHERE id=? AND project_id=?", status, JSON.stringify({ status, why: why.slice(0, 240) }), id, o.who.projectId);
+  const mark = (id: string, status: "ready" | "rejected", why = "", v?: { score?: number; words: string }) => {
+    run("UPDATE assets SET status=?, meta=json_set(meta,'$.synaBoard.review',json(?)) WHERE id=? AND project_id=?", status, JSON.stringify({ status, why: why.slice(0, 240), ...(v?.score != null ? { score: v.score } : {}), ...(v?.words ? { words: v.words.slice(0, 400) } : {}) }), id, o.who.projectId);
     // Le carnet des juges : chaque verdict du relecteur, pour que le propriétaire dise oui ou non à son tour (mesure d'accord).
     const slot = [...made.entries()].find(([, m]) => m.id === id)?.[0];
     if (slot && why !== "non relue") { try { noterRelecture({ assetId: id, userId: o.who.userId, projectId: o.who.projectId, travail: travailDeLImage(slot), garde: status === "ready", raison: why }); } catch { /* le carnet ne bloque jamais une planche */ } }
@@ -665,6 +736,9 @@ export async function runBoardImages(o: {
     // Un objet qui porte un logo gardé d'avant : ce logo est joint, en dernier, pour que le relecteur compare.
     const reference = !slots.includes("logo") && logo && slots.some((s) => s !== "hero") ? await onWhite(logo) : null;
     if (reference) seen.push({ data: reference, label: "logo" });
+    // Le vrai produit du client, joint en dernier pour la grande scène et le haut du site : le relecteur compare.
+    const compare = !!produit && slots.some((s) => s === "hero" || s === "site");
+    if (compare) seen.push({ data: produit!, label: "produit" });
     // Un logo à juger : la planche des logos que le propriétaire aime, comme niveau à atteindre. Jointe à part, en tête
     // de la relecture et gardée en mémoire chez le fournisseur (la même pour tous les clients, 22 novembre 2026).
     const aimes = slots.includes("logo") ? await planchedesLogosAimes() : null;
@@ -672,7 +746,8 @@ export async function runBoardImages(o: {
     else try {
       const review = await ctx.step(`brand:imagecheck:${round}:${key}${pass}${rt}`, () => ai.look(`imagecheck-${round}-${key}${pass}${rt}`, {
         system: P.imageReviewSystem(personnes), schema: ImageReviewSchema,
-        prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` La dernière image jointe (${slots.length + 1}) est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`,
+        prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` ${compare ? "L'image jointe n°" : "La dernière image jointe"} ${compare ? slots.length + 1 : `(${slots.length + 1})`} est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`,
+          ...(compare ? [PRODUIT_A_COMPARER] : []),
           ...(aimes ? [`L'image jointe à part, en tête (hors numérotation), est la planche des logos que le propriétaire du Studio aime : elle donne le NIVEAU attendu pour le logo, ne la juge pas et ne la recopie pas.`] : []),
           // Ce que le client refuse (essai réel du 20 novembre 2026 : une goutte d'eau refusée par le client, passée au contrôle).
           ...(o.gouts?.trim() ? [`Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut (defect « autre »).`] : []), ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
@@ -687,10 +762,15 @@ export async function runBoardImages(o: {
         if (!v) { drop(s, L("elle n'a pas pu être relue", "it could not be reviewed")); continue; }
         // Note du relecteur face à une campagne haut de gamme : seule une image notée 8 sur 10 ou plus est montrée
         // (décision du propriétaire du 21 novembre 2026, devant quatre images ratées laissées passer).
-        if (v.ok && v.score != null && v.score < NOTE_MIN) { drop(s, v.why || L(`elle n'est pas au niveau d'une campagne haut de gamme (${v.score}/10)`, `it is not at premium campaign level (${v.score}/10)`), SAID.autre); continue; }
+        // Toujours, même quand le relecteur répond ok = faux ou ne dit rien de ok (essai réel de Nadia, 23 novembre 2026 :
+        // le haut du site de « Pénombre », noté 5, refusé pour un texte, a été gardé après une seconde lecture des textes).
+        // Aucune seconde lecture, aucun « doute » ne repêche une image notée sous 8.
+        if (v.score != null && v.score < NOTE_MIN) { drop(s, v.why || L(`elle n'est pas au niveau d'une campagne haut de gamme (${v.score}/10)`, `it is not at premium campaign level (${v.score}/10)`), v.ok === false ? SAID[v.defect] ?? SAID.autre : SAID.autre); continue; }
+        const ok = v.ok ?? (v.score != null && v.score >= NOTE_MIN);
+        verdicts.set(s, { ...(v.score != null ? { score: v.score } : {}), words: (ok ? v.why || v.seen : v.seen).trim() });
         const c = textCheck(texts[s], v.read, x.name), exact = !c.missing.length && (s === "site" || !c.extra.length);
         if (s === "site" && !c.missing.length) complete.add(s);
-        if (!v.ok) {
+        if (!ok) {
           if (v.defect === "texte" && exact) doubt.push(s);
           else if (v.defect === "texte" && (c.missing.length || c.extra.length) && v.read.length) drop(s, textReason(c));
           else drop(s, v.why || L("elle ne passe pas ma relecture", "it does not pass my review"), SAID[v.defect] ?? SAID.autre);
@@ -795,7 +875,7 @@ export async function runBoardImages(o: {
   // du site reprend, est relue (et refaite s'il le faut) AVANT lui.
   const relusTot = new Set<ImageSlot>(["logo"]);
   if (wanted.has("hero")) {
-    await make("hero", {}, imagePrompt("hero", x, imagery, { logo: false, personnes }));
+    await make("hero", produit ? { product: produit } : {}, imagePrompt("hero", x, imagery, { logo: false, personnes, produit: !!produit }));
     if (made.has("hero") && wanted.has("site") && imagery.site.trim()) {
       relusTot.add("hero");
       await review(["hero"], ":hero");
@@ -806,14 +886,17 @@ export async function runBoardImages(o: {
       }
     }
   }
-  // Jamais une planche incomplète (règle du propriétaire, redite le 22 novembre 2026) : le haut du site est toujours
-  // dessiné, après la grande scène relue et le logo relu (refait avant lui s'il était refusé). Un logo encore refusé après
-  // ses reprises est dit au client ; le haut du site porte alors le nom écrit seul, sans logo inventé.
-  // La maquette du haut de l'accueil : le logo et la grande scène lui sont fournis (elle garde l'identité de la planche).
-  if (wanted.has("site") && imagery.site.trim()) {
-    const heroKept = x.board.images?.hero, heroBuffer = bufferOf("hero") ?? (() => { const a = heroKept ? getAsset(heroKept.id) : undefined; return a ? assetData(a) : null; })();
-    await make("site", { logo: await logoForGround(logo, x), scene: heroBuffer }, imagePrompt("site", x, imagery, { logo: !!logo, personnes }));
-  } else if (wanted.has("site")) {
+  // Jamais une planche incomplète (règle du propriétaire : « Jamais une planche incomplète : une image refusée est refaite
+  // avant d'être montrée ») : le haut du site est dessiné après la grande scène relue et le logo relu (refaits avant lui
+  // s'ils étaient refusés). Un logo ou une grande scène encore refusés après leurs reprises : le haut du site n'est pas
+  // dessiné (il serait faux d'avance), et la planche entière n'est pas montrée au client (brand-chain.ts, `manque`).
+  // La maquette du haut de l'accueil : le logo, la grande scène et le vrai produit lui sont fournis.
+  const heroKept = x.board.images?.hero, heroBuffer = bufferOf("hero") ?? (() => { const a = heroKept ? getAsset(heroKept.id) : undefined; return a ? assetData(a) : null; })();
+  const siteSansBase = wanted.has("site") && ((wanted.has("logo") && !logo) || (wanted.has("hero") && !heroBuffer));
+  if (siteSansBase) notes.push(`haut du site de ${key} non dessiné : ${!logo && wanted.has("logo") ? "le logo" : "la grande scène"} n'a pas passé la relecture (rien n'est payé pour une image fausse d'avance)`);
+  if (wanted.has("site") && imagery.site.trim() && !siteSansBase) {
+    await make("site", { logo: await logoForGround(logo, x), scene: heroBuffer, ...(produit ? { product: produit } : {}) }, imagePrompt("site", x, imagery, { logo: !!logo, personnes, produit: !!produit }));
+  } else if (wanted.has("site") && !siteSansBase) {
     // Sans consigne de maquette, rien n'est créé ni payé, et c'est dit (SINA ne parle jamais d'une maquette absente).
     notes.push(`maquette du site de ${key} non créée : la direction artistique n'a pas rendu sa consigne`);
     issues.push(tag(L("je n'ai pas pu préparer le haut de ton site ; je peux le refaire si tu me le demandes.", "I could not prepare your site mock-up; I can redo it if you ask.")));
@@ -850,9 +933,9 @@ export async function runBoardImages(o: {
     await review(redone, `:r${attempt}`);
   }
   // Ce qui reste refusé après les reprises est dit au client, sans image fausse à la place.
-  for (const [slot, raw] of dropped) { const why = slot === "site" ? (saidWhy.get(slot) ?? raw).replace(/^elle /, "il ") : saidWhy.get(slot) ?? raw; rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? "you see your drawn name instead" : "I am not showing it"}.`))); }
+  for (const [slot, raw] of dropped) { const why = slot === "site" ? (saidWhy.get(slot) ?? raw).replace(/^elle /, "il ") : saidWhy.get(slot) ?? raw; rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); ${slot === "logo" ? (x.board.images?.logo ? "I keep the previous one" : "you see your drawn name instead") : "I am not showing it"}.`))); }
 
-  for (const m of made.values()) mark(m.id, "ready");
+  for (const [slot, m] of made) mark(m.id, "ready", "", verdicts.get(slot));
 
   // 4. Le logo gardé devient la marque de la planche (en tête, dans le haut du site) : fond retiré par le Studio,
   // et une version pour fond sombre. Gratuit, sans IA ; en cas d'échec, le nom dessiné reste à sa place.
@@ -897,9 +980,12 @@ export async function runBoardImages(o: {
   // Pas de logo gardé : l'ancien logo, l'ancien objet qui le porte et l'ancienne marque de planche restent ensemble.
   if (skipCarriers) { if (before.logo) made.set("logo", before.logo); for (const k of ["object", "signs"] as const) if (before[k]) made.set(k, before[k]!); }
   const posts = (["post0", "post1", "post2"] as const).map((s, i) => (wanted.has(s) ? made.get(s) : before.posts?.[i]) ?? null);
-  const logoNow = keep("logo");
+  // Un logo refait et refusé après ses reprises laisse celui d'avant (et sa marque de planche) : jamais une planche qui
+  // perd son logo (règle du propriétaire : « Jamais une planche incomplète »). C'est dit au client.
+  const logoGarde = wanted.has("logo") && !made.get("logo") && !o.clientLogo && !!before.logo;
+  const logoNow = logoGarde ? before.logo : keep("logo");
   const own = o.clientLogo ? { id: o.clientLogo.id, w: o.clientLogo.w, h: o.clientLogo.h } : null;
-  const markNow = own ? { mark: own, markDark: own } : wanted.has("logo") && !skipCarriers ? marks : { mark: before.mark, markDark: lightKept ?? before.markDark };
+  const markNow = own ? { mark: own, markDark: own } : wanted.has("logo") && !skipCarriers && !logoGarde ? marks : { mark: before.mark, markDark: lightKept ?? before.markDark };
   const images = {
     ...(logoNow ? { logo: logoNow } : {}), ...(keep("hero") ? { hero: keep("hero")! } : {}),
     ...(keep("object") ? { object: keep("object")! } : {}), ...(keep("site") ? { site: keep("site")! } : {}), ...(keep("signs") ? { signs: keep("signs")! } : {}),
@@ -911,5 +997,7 @@ export async function runBoardImages(o: {
   const { images: _old, ...boardRest } = x.board as Route["board"] & { images?: unknown };
   const next = RouteSchema.safeParse({ ...x, board: { ...boardRest, ...(any ? { images } : {}) } });
   if (capped) issues.push(tag(L("le plafond annoncé a été atteint avant la fin de ses images.", "the announced cap was reached before its images were finished.")));
-  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues, siteGarde, logos: dessines };
+  // Les images sans lesquelles la planche n'est pas montrée (le logo, sauf celui du client ; la grande scène ; le haut du site).
+  const manque = manqueDeLaPlanche(next.success ? next.data : x, !!own);
+  return { route: next.success ? next.data : x, made: next.success ? made.size : 0, rejected, notes, issues, siteGarde, manque, logos: dessines };
 }

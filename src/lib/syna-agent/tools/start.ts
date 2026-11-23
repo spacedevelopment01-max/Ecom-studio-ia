@@ -60,14 +60,31 @@ const view = (j: Journey, cid: string) => ({
   existantLu: j.imported,
 });
 
-/** Nom provisoire tiré des mots du client (« Coach sportif. Séances… » → « Coach sportif (provisoire) »). */
+/** Petits mots qui ne finissent jamais un titre (« … que je coule à la ») : retirés de la fin, ainsi que la suite d'une phrase. */
+const MOTS_DE_LIAISON = /\s+(?:à|a|au|aux|de|du|des|d'|d’|la|le|les|l'|l’|un|une|et|ou|en|pour|par|avec|sans|sur|sous|dans|chez|que|qui|dont|où|je|j'|j’|nous|on|mon|ma|mes|son|sa|ses|très|plus)$/i;
+/** La longueur au-delà de laquelle le titre du projet est raccourci. */
+export const TITRE_MAX = 40;
+/**
+ * Nom provisoire tiré des mots du client (« Coach sportif. Séances… » → « Coach sportif »). Montré au client comme titre
+ * de son projet : jamais « (provisoire) » (essai réel de Nadia, 23 novembre 2026 : « Bougies parfumées que je coule à la
+ * (provisoire) »). Une phrase longue s'arrête avant sa suite (« que », « qui », « dont », « où ») ; sinon le titre se coupe
+ * à un mot entier, sans petit mot de liaison au bout.
+ */
 export function provisionalName(offer: string): string {
-  const head = offer.trim().split(/[.,;:!?\n(]/)[0].trim().replace(/^(je suis|je fais|je vends|je propose|c'est|nous sommes|nous faisons|on est|on fait)\s+/i, "").replace(/^(de la|de l'|du|des|un|une|le|la|les|l')\s*/i, "");
-  const short = head.length > 40 ? head.slice(0, 40).replace(/\s+\S*$/, "") : head;
+  const head = offer.trim().split(/[.,;:!?\n(]/)[0].trim().replace(/^(je suis|je fais|je vends|je propose|c'est|nous sommes|nous faisons|on est|on fait)\s+/i, "").replace(/^(de la|de l'|du|des|un|une|le|la|les|l')\s*/i, "").replace(/\s+/g, " ");
+  let short = head;
+  if (short.length > TITRE_MAX) {
+    // La suite d'une phrase (« bougies parfumées que je coule à la main ») n'est pas le nom : on garde ce qui la précède.
+    const avant = short.split(/\s+(?:que|qu'|qu’|qui|dont|où)\s+/i)[0].trim();
+    if (avant.length >= 3 && avant.length < short.length) short = avant;
+  }
+  // Coupe à un mot entier : jamais au milieu d'un mot (un titre de 40 signes pile reste entier).
+  if (short.length > TITRE_MAX) short = (short.slice(0, TITRE_MAX + 1).match(/^(.*\S)\s/)?.[1] ?? short.slice(0, TITRE_MAX)).trim();
+  for (let i = 0; i < 4 && MOTS_DE_LIAISON.test(short); i++) short = short.replace(MOTS_DE_LIAISON, "").trim();
   // Une phrase qui commence encore par « je … » n'est pas un nom (essai réel du 14 novembre 2026 : « Je répare les
-  // crevaisons (provisoire) ») : nom neutre, en attendant la marque.
-  if (/^(je|j'|j’|nous|on)\b/i.test(short)) return "Mon projet (provisoire)";
-  return `${(short || "Mon projet").replace(/^./, (c) => c.toUpperCase())} (provisoire)`;
+  // crevaisons ») : nom neutre, en attendant la marque.
+  if (/^(je|j'|j’|nous|on)\b/i.test(short)) return L("Mon projet", "My project");
+  return (short || L("Mon projet", "My project")).replace(/^./, (c) => c.toUpperCase());
 }
 
 /**

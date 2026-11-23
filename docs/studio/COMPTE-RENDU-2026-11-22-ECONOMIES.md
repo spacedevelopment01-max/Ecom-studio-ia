@@ -334,9 +334,10 @@ Rien n'a été dépensé ; chaque point a son essai. Les gains sont ceux de l'au
 - **Le refus du client** est mieux repéré pour le dessinateur du logo : « pas d' », « aucune », « sans », « évite »,
   « déteste ». Une épreuve au banc le garantit (`refus-du-client-toutes-tournures`).
 - **L'ordre des images** : la grande scène est relue, et refaite s'il le faut, avant le dessin du téléphone qui la
-  reprend. Le logo est relu, et refait avec toutes les raisons de ses refus, avant lui aussi. Le téléphone est toujours
-  dessiné : jamais une planche incomplète (correction du chef, 22 novembre 2026). Si le logo reste refusé après ses deux
-  reprises, SINA le dit au client, avec la raison, et le téléphone porte le nom écrit seul.
+  reprend. Le logo est relu, et refait avec toutes les raisons de ses refus, avant lui aussi. Remplacé le 23 novembre
+  2026 (essai de Nadia) : si le logo ou la grande scène restent refusés après leurs reprises, le téléphone n'est pas
+  dessiné et la planche entière n'est pas montrée (règle du propriétaire : « Jamais une planche incomplète : une image
+  refusée est refaite avant d'être montrée ») ; voir « Essai de Nadia : quatre règles fermées », plus bas.
 - **Plus de pictogrammes dessinés en code ni de ruban du colis** demandés dans la consigne de la planche. Le nom dessiné
   de secours est en lettres seules, même sur les planches d'avant.
 - **Refaire des planches sans nouveaux mots du client** reprend les verdicts du juge des noms. Une nouvelle proposition
@@ -1104,3 +1105,38 @@ jusqu'à sa limite de 16 000 jetons. Sa réponse coupée n'a pas pu être lue, e
 
 Ce qui n'est pas vérifié : aucun appel réel. La réflexion prévue de chaque appel n'est mesurée que pour les équipes de
 noms (chez Nadia) ; pour les autres, c'est une estimation prudente, à mesurer au prochain essai réel.
+
+## Essai de Nadia : quatre règles fermées
+
+Tirées du carnet des verdicts et du diagnostic de l'essai réel de Nadia (23 novembre 2026, branche des essais). Aucun
+appel payant : tout est vérifié par des essais simulés (faux dessinateur, faux relecteur).
+
+**Ce qui change pour toi :**
+
+- **Jamais une planche à trou.** Une planche à laquelle il manque encore le logo, la grande scène ou le haut du site
+  après ses reprises n'est plus montrée, ni au client ni à SINA, et ne peut pas être choisie. Les planches complètes de
+  la série restent montrées. SINA dit ce qui bloque, avec la raison simple, puis propose de finir la planche : la carte
+  d'accord dit « À ma charge : 0 % de ton budget » (une image refusée par le relecteur est une erreur de SINA, jamais
+  comptée au client). Si aucune planche n'est complète, rien n'est montré. Le haut du site n'est plus dessiné tant que le
+  logo ou la grande scène manquent : il serait faux d'avance. Un logo refait et refusé laisse celui d'avant. Cela
+  remplace la correction du 22 novembre (« le téléphone porte le nom écrit seul »).
+- **Rien sous 8 sur 10.** Le haut du site de « Pénombre », noté 5, avait été gardé : le relecteur l'avait refusé pour un
+  « texte », et une seconde lecture des textes, qui les trouvait tous, le repêchait sans regarder la note. La note
+  s'applique maintenant toujours, même quand le relecteur dit « non » ou ne dit rien. Et ce que SINA dit d'une image
+  vient du relecteur : sa note et ses mots lui sont donnés avec chaque image, avec l'interdiction d'un éloge qu'il n'a
+  pas dit (elle avait dit « soignés »).
+- **Le vrai produit.** Les photos de Nadia n'étaient jamais jointes : le dessinateur inventait le pot (trois pots de
+  confiture sans mèche). Pour une boutique, ses photos de produit sont maintenant jointes à la grande scène et au haut du
+  site, « à reproduire fidèlement », et au relecteur, qui compare et refuse un autre produit (une partie qui le définit
+  absente, une étiquette vierge, un autre contenant). Le prix de la carte ne change pas.
+- **Le titre du projet.** « Bougies parfumées que je coule à la (provisoire) » devient « Bougies parfumées » : le titre
+  s'arrête avant la suite d'une phrase, se coupe à un mot entier, sans petit mot au bout, et ne montre plus
+  « (provisoire) ».
+
+Cinq épreuves ajoutées au banc : `planche-a-trou-jamais-montree`, `image-sous-8-jamais-gardee`,
+`vrai-produit-du-client-joint`, `bougie-cire-et-meche`, `titre-du-projet-coupe`.
+
+Ce qui n'est pas vérifié : aucun essai réel. On ne sait pas encore si le dessinateur reproduit vraiment le pot de Nadia
+à partir de ses photos, ni si le relecteur repère à coup sûr une mèche absente. La marque finie (après le choix) garde
+son secours du nom dessiné quand le logo manque : elle n'a pas été changée ici. Le dessin des logos est un autre
+chantier, non touché.

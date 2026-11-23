@@ -46,7 +46,8 @@ export type ToolContext = {
 };
 
 /** maxMicro : plafond (jamais dépassé) ; probableMicro : coût probable d'un essai, annoncé au client (règle du propriétaire). */
-export type CostEstimate = { maxMicro: number; label: string; probableMicro?: number };
+/** studio : une reprise du travail de SINA (une planche gardée de côté à finir), à la charge du Studio, jamais comptée au client. */
+export type CostEstimate = { maxMicro: number; label: string; probableMicro?: number; studio?: boolean };
 
 export type AgentTool<A = any> = {
   name: string;

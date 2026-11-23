@@ -33,9 +33,23 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
 
   it("nom provisoire tiré des mots du client", async () => {
     const { provisionalName } = await import("@/lib/syna-agent/tools/start");
-    expect(provisionalName("Je suis coach sportif. Je fais des séances à domicile.")).toBe("Coach sportif (provisoire)");
-    expect(provisionalName("Un sac de voyage modulable en toile kaki, avec plusieurs poches")).toBe("Sac de voyage modulable en toile kaki (provisoire)");
-    expect(provisionalName("Je fais de la plâtrerie, des cloisons et de la peinture.")).toBe("Plâtrerie (provisoire)");
+    // Le titre montré au client ne porte jamais « (provisoire) » (essai réel de Nadia, 23 novembre 2026).
+    expect(provisionalName("Je suis coach sportif. Je fais des séances à domicile.")).toBe("Coach sportif");
+    expect(provisionalName("Un sac de voyage modulable en toile kaki, avec plusieurs poches")).toBe("Sac de voyage modulable en toile kaki");
+    expect(provisionalName("Je fais de la plâtrerie, des cloisons et de la peinture.")).toBe("Plâtrerie");
+  });
+
+  it("essai réel de Nadia (23 novembre 2026) : le titre du projet se coupe à un mot entier, jamais au milieu d'une idée, sans « (provisoire) »", async () => {
+    const { provisionalName, TITRE_MAX } = await import("@/lib/syna-agent/tools/start");
+    // Avant : « Bougies parfumées que je coule à la (provisoire) ».
+    expect(provisionalName("Je fais des bougies parfumées que je coule à la main chez moi, près de Lyon")).toBe("Bougies parfumées");
+    // Une phrase longue sans suite : coupée à un mot entier, sans petit mot de liaison au bout.
+    const long = provisionalName("des savons artisanaux saponifiés à froid au lait de chèvre et aux huiles bio");
+    expect(long).toBe("Savons artisanaux saponifiés à froid");
+    expect(long.length).toBeLessThanOrEqual(TITRE_MAX);
+    // Un titre de 40 signes pile reste entier.
+    expect(provisionalName("Je fais des tabourets en chêne massif tournés main")).toBe("Tabourets en chêne massif tournés main");
+    for (const t of ["Je fais des bougies parfumées que je coule à la main chez moi", "Un sac de voyage modulable en toile kaki, avec plusieurs poches", "Je répare les crevaisons"]) expect(provisionalName(t)).not.toMatch(/provisoire|\s(à|la|le|de|que|qui)$/i);
   });
 
   it("ordre des questions : « garder » seulement s'il existe déjà quelque chose, plateforme seulement pour une boutique", () => {
@@ -98,7 +112,7 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
       const created = await call("start.answer", ctx, { answers: [{ field: "business", value: "services" }, { field: "offer", value: "Peinture intérieure et rénovation de murs." }] });
       expect(created.ok).toBe(true);
       expect(created.summary).toMatch(/projet est créé/);
-      expect(one<any>("SELECT name FROM projects WHERE id=(SELECT project_id FROM agent_conversations WHERE id=?)", cid).name).toMatch(/^Peinture intérieure.*\(provisoire\)$/);
+      expect(one<any>("SELECT name FROM projects WHERE id=(SELECT project_id FROM agent_conversations WHERE id=?)", cid).name).toBe("Peinture intérieure et rénovation"); // coupé à un mot entier, sans « de » au bout ni « (provisoire) »
       const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
       expect(one<any>("SELECT user_id FROM subscriptions WHERE project_id=?", pid).user_id).toBe(chosen);
       expect(loadProject(pid).settings.mode).toBe("guided");
@@ -308,8 +322,8 @@ describe("SINA — étape 0 : questions de départ, existant, refonte", async ()
   });
   it("essai réel du 14 novembre 2026, SINA seule : une question posée attend sa réponse, nom provisoire neutre, pas de nom d'entreprise demandé, nombre exact d'identités", async () => {
     const { provisionalName } = await import("@/lib/syna-agent/tools/start");
-    expect(provisionalName("Je répare les crevaisons, je règle les freins et les vitesses")).toBe("Mon projet (provisoire)");
-    expect(provisionalName("Je suis coach sportif. Je fais des séances à domicile.")).toBe("Coach sportif (provisoire)");
+    expect(provisionalName("Je répare les crevaisons, je règle les freins et les vitesses")).toBe("Mon projet");
+    expect(provisionalName("Je suis coach sportif. Je fais des séances à domicile.")).toBe("Coach sportif");
     // Partir de zéro : le nom viendra avec l'identité ; une refonte qui garde son nom le donne.
     const fresh = J.emptyJourney();
     expect(J.TOPICS.contact(fresh).fr).not.toMatch(/nom de l'entreprise/);
