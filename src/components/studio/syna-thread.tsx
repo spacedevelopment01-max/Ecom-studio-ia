@@ -14,6 +14,7 @@ import { useT } from "../i18n";
 import { AngleCards, type Angles } from "./angle-cards";
 import { useOptionalProject } from "./project-context";
 import { stepLabel } from "./journey-labels";
+import { PHRASE_PLANCHE_INCOMPLETE, plancheDuBouton } from "@/lib/syna-agent/choix-planche";
 
 type Msg = { id: string; seq: number; role: "user" | "assistant" | "tool" | "event"; runId: string | null; content: any; createdAt: number };
 type View = {
@@ -23,6 +24,8 @@ type View = {
   background?: boolean;
   budget: { authorizedPct: number | null; spentPct: number | null };
   attachments: { id: string; kind: string; name: string; analysis: any }[];
+  /** SINA prend les devants (planches incomplètes) : ses boutons ne se montrent que tant que la proposition tient. */
+  devants?: { empreinte: string; ouverte: boolean } | null;
   journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; brandKit?: Kit | null; angles?: Angles | null; posts?: PostsPlan | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
@@ -34,7 +37,9 @@ type IdentityCard = { nameWhy?: string;
   fontStyle: string; tone: { adjectives: string[]; avoid: string[] }; logoStyleLabel: string; logoIdea: string; why: string;
   faces: { heading: Face; body: Face };
 };
-type Identities = { round: number; issues: string[]; chosen: { key: string; mix: Record<string, string> } | null; list: IdentityCard[]; final?: (IdentityCard & { mixLabel?: string }) | null };
+type Identities = { round: number; issues: string[]; chosen: { key: string; mix: Record<string, string> } | null; list: IdentityCard[]; final?: (IdentityCard & { mixLabel?: string }) | null;
+  /** Les planches incomplètes (une image y manque) : un bouton d'un ancien message qui en choisit une est grisé. */
+  incompletes?: { key: string; name: string; manque: string[] }[] };
 
 /** Étape 1 : les 3 identités côte à côte, chacune dans SES couleurs et SES vraies polices. */
 function IdentityCards({ ids, busy, onChoose }: { ids: Identities; busy: boolean; onChoose: (key: string) => void }) {
@@ -569,6 +574,11 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
     if (!v) return; setBusy(true);
     try { setV(await api<View>(`/api/syna/${v.conversationId}/decision`, { body: { pendingId, approve } })); } catch (e: any) { setError(e.message); } finally { setBusy(false); }
   }
+  /** « Oui, finis-les » (la carte d'accord à 0 % s'ouvre) ou « Plus tard ». */
+  async function devants(empreinte: string, oui: boolean) {
+    if (!v || busy) return; setBusy(true); setError("");
+    try { setV(await api<View>(`/api/syna/${v.conversationId}/devants`, { body: { empreinte, oui } })); } catch (e: any) { setError(e.message); load().catch(() => undefined); } finally { setBusy(false); }
+  }
   async function saveBudget() {
     if (!v || budgetEdit == null) return;
     try { setV(await api<View>(`/api/syna/${v.conversationId}/budget`, { body: { pct: Number(budgetEdit.replace(",", ".")) } })); setBudgetEdit(null); } catch (e: any) { setError(e.message); }
@@ -620,7 +630,12 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
               {!!it.m.content.message && <div className={cx("rounded-2xl border border-line bg-card", compact ? "px-3 py-2" : "px-4 py-3")}><RichText text={it.m.content.message} /></div>}
               {it.m.content.question && <div className={cx("rounded-2xl border border-signal/40 bg-signal-soft", compact ? "px-3 py-2" : "px-4 py-3")} data-syna-question>
                 <p className={cx("font-medium", !compact && "text-[1.05em]")}>{it.m.content.question.text}</p>
-                {!!it.m.content.question.choices?.length && <div className="mt-2 flex flex-wrap gap-2">{it.m.content.question.choices.map((c: string) => <Button key={c} size="sm" variant="secondary" disabled={busy || working} onClick={() => send(c)}>{c}</Button>)}</div>}
+                {!!it.m.content.question.choices?.length && <ChoixDeLaQuestion choices={it.m.content.question.choices} incompletes={v.journey?.identities?.incompletes ?? []} disabled={busy || working} onSend={(c) => send(c)} />}
+              </div>}
+              {/* SINA prend les devants : le message posé par le Studio quand des planches sont incomplètes. */}
+              {it.m.content.devants?.kind === "planches" && v.devants?.ouverte && v.devants.empreinte === it.m.content.devants.empreinte && <div className="flex flex-wrap items-start gap-2" data-syna-devants>
+                <Button size="sm" className={CHOIX_ENTIER} disabled={busy || working} onClick={() => devants(it.m.content.devants.empreinte, true)}>{it.m.content.devants.pronom === "les" || !it.m.content.devants.pronom ? t("Oui, finis-les", "Yes, finish them") : t(`Oui, finis-${it.m.content.devants.pronom}`, "Yes, finish it")}</Button>
+                <Button size="sm" variant="secondary" className={CHOIX_ENTIER} disabled={busy || working} onClick={() => devants(it.m.content.devants.empreinte, false)}>{t("Plus tard", "Later")}</Button>
               </div>}
               {it.tools.map((tm) => <div key={tm.id}>
                 <ToolResult m={tm} projectId={v.projectId} onChoose={(n) => send(t(`Je choisis le thème sur mesure ${n}.`, `I choose custom theme ${n}.`))} busy={busy || working} />
@@ -670,6 +685,26 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
     </div>
   );
 }
+
+/**
+ * Les boutons d'une question de SINA. Un bouton qui choisit une planche incomplète est grisé, sans effet, avec la phrase de
+ * SINA dessous ; il redevient actif tout seul dès que la planche est complète (la liste est relue avec le fil).
+ */
+export function ChoixDeLaQuestion({ choices, incompletes, disabled, onSend }: { choices: string[]; incompletes: { key: string; name: string }[]; disabled: boolean; onSend: (c: string) => void }) {
+  const t = useT();
+  return <div className="mt-2 flex flex-wrap items-start gap-2">{choices.map((c) => {
+    const incomplete = plancheDuBouton(c, incompletes);
+    return incomplete
+      ? <div key={c} className="flex max-w-full flex-col items-start gap-1" data-syna-choix-incomplet={incomplete}>
+          <Button size="sm" variant="secondary" disabled aria-disabled className={CHOIX_ENTIER}>{c}</Button>
+          <p className="max-w-full text-xs text-muted sm:max-w-sm" data-syna-choix-phrase>{t(PHRASE_PLANCHE_INCOMPLETE.fr, PHRASE_PLANCHE_INCOMPLETE.en)}</p>
+        </div>
+      : <Button key={c} size="sm" variant="secondary" className={CHOIX_ENTIER} disabled={disabled} onClick={() => onSend(c)} data-syna-choix>{c}</Button>;
+  })}</div>;
+}
+
+/** Jamais un bouton coupé : le texte d'un bouton de réponse revient à la ligne et le bouton grandit, sur téléphone comme sur ordinateur. */
+const CHOIX_ENTIER = "!h-auto min-h-8 max-w-full !whitespace-normal py-1.5 text-left";
 
 const fmt = (n: number | null | undefined) => (n == null ? "—" : n < 1 ? n.toFixed(2).replace(".", ",") : String(Math.round(n * 10) / 10).replace(".", ","));
 

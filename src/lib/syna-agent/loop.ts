@@ -41,17 +41,21 @@ import { budgetState, jobSpentMicro, replyAllowanceMicro, trackJob, authorizeBud
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, planchesMontrees, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
+import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, planchesIncompletes, planchesMontrees, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
 import { anglesViewOf } from "./angles";
 import { sinaModels } from "./models";
-import { aLaChargeDuStudio } from "../billing";
+import { aLaChargeDuStudio, EUR } from "../billing";
+import { chargeDuStudio, depensesDeLaTache } from "../ai/trace";
+import { borneDuStudio, tacheDuStudio } from "../ai/borne-du-studio";
+import { planchesAPresenter, planchesFiniesPar, nonPresentees, presentationDuStudio } from "./planches-a-presenter";
 import { carteActiviteAJour, ECRITURES_DE_L_ACTIVITE } from "./tools/activity";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
 import { chosenRoute, plancheWordmark } from "./logos";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
 import { safeWordmark } from "./brand-routes";
 import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
-import { mixIdentity } from "./tools/identity";
+import { finirPlanchesGardees, mixIdentity } from "./tools/identity";
+import { ligneDesPlanchesAFinir, noterRefus, propositionOuverte } from "./devants";
 import { createdPosts } from "./tools/posts";
 import { assetUrl } from "../library";
 
@@ -79,7 +83,7 @@ function identityCountOf(pid: string | null): number | undefined {
 const userOf = (uid: string) => one<User>("SELECT * FROM users WHERE id=?", uid)!;
 const conversationOf = (cid: string) => one<{ id: string; user_id: string; project_id: string | null }>("SELECT id,user_id,project_id FROM agent_conversations WHERE id=?", cid);
 
-function toolContext(user: User, r: SynaRun): ToolContext {
+export function toolContext(user: User, r: SynaRun): ToolContext {
   return {
     user, projectId: r.project_id, conversationId: r.conversation_id, runId: r.id,
     attachment: (aid) => {
@@ -169,6 +173,9 @@ export function decidePending(user: User, cid: string, input: { pendingId: strin
   if (!input.approve) {
     addMessage(cid, "tool", { key: `pending:${p.id}`, tool: p.tool, ok: false, summary: L("Le client a refusé cette action. Rien n'a été modifié.", "The client declined this action. Nothing was changed.") }, r.id);
     updateRun(r.id, { pending_json: JSON.stringify({ ...p, declined: true }) });
+    // Il refuse la carte d'une reprise qui finit ses planches : c'est un « non », la ligne prioritaire ne revient pas.
+    const a = p.args as { keys?: string[]; images?: string[] } | null;
+    if (p.tool === "identity.images" && a?.keys && a.images && finirPlanchesGardees(journeyOf(cid), a.keys, a.images)) noterRefus(cid);
   } else updateRun(r.id, { pending_json: JSON.stringify({ ...p, approved: true }) });
   schedule(getRun(r.id)!);
   return getRun(r.id)!;
@@ -223,11 +230,25 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       // chiffre (essais réels du 7 novembre : deux recherches échouées avaient coûté 0,29 € et 0,95 €).
       // Le compte rendu entier de la création du site, donné une seule fois, ici (le contexte n'en garde que ce qui reste).
       const compteRendu = waited.some((jid) => getJob(jid)?.type === "syna.site" && getJob(jid)?.status === "done") ? journeyOf(r.conversation_id).site?.report ?? null : null;
-      const results = waited.map((jid) => { const j = getJob(jid); const spent = one<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE job_id=?", jid)?.c ?? 0; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctTu(j.user_id, spent, j.project_id) : null, coutReelMicro: spent }; });
+      // Ce que la tâche a coûté AU CLIENT : une dépense à la charge du Studio n'y est jamais (essai réel de Nadia, 23 novembre
+      // 2026 : la carte disait « À ma charge : 0 % », le coût de la tâche était lu en entier).
+      const results = waited.map((jid) => { const j = getJob(jid); const d = depensesDeLaTache(jid), spent = d.client; return { job: jid, type: j?.type, status: j?.status, message: j?.message, result: clip(j?.result ? json(j.result, j.result) : null, 1500), error: j?.error ? clip(j.error, 400) : undefined, coutReel: j?.user_id ? budgetPctTu(j.user_id, spent, j.project_id) : null, coutReelMicro: spent, ...(d.studio > 0 || tacheDuStudio(json(j?.payload ?? "{}", {})) ? { aMaCharge: true } : {}) }; });
       const failedSpent = results.filter((x) => x.status !== "done" && x.coutReelMicro > 0);
-      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Tâche terminée, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")}.`, "Finished with a failure.") : L("Tâche terminée : je relis le résultat.", "Task finished: reading the result."), ...(failedSpent.length ? { hint: `Dis au client ce coût réel ; ne dis jamais que rien n'a été débité.${results.some((x) => x.status === "failed" && x.type === "syna.site") ? " Pour relancer la création de son site là où elle s'est arrêtée, sans repayer ce qui était fait : site.create avec relancer:true (une carte affiche le prix de ce qui reste)." : ""}${repriseAccueil(r.project_id, results)}` } : {}), data: compteRendu ? { taches: results, compteRenduDuSite: compteRendu } : results }, r.id);
+      // Les planches finies ou refaites par la tâche (montrées au client) : SINA les présente toutes, d'elle-même (essai réel
+      // de Nadia : deux annoncées, une seule présentée). Le contrôle du message et le Studio s'en assurent.
+      const aPresenter = planchesFiniesPar(waited.map((jid) => getJob(jid)), journeyOf(r.conversation_id));
+      const conseils = [
+        failedSpent.length ? `Dis au client ce coût réel ; ne dis jamais que rien n'a été débité.${results.some((x) => x.status === "failed" && x.type === "syna.site") ? " Pour relancer la création de son site là où elle s'est arrêtée, sans repayer ce qui était fait : site.create avec relancer:true (une carte affiche le prix de ce qui reste)." : ""}${repriseAccueil(r.project_id, results)}` : "",
+        results.some((x) => x.aMaCharge) && results.every((x) => !x.coutReelMicro) ? "Ce travail était à ta charge : rien n'est compté pour le client, ne lui donne aucun coût." : "",
+        aPresenter.length ? `Présente d'elle-même, dans ton prochain message, CHACUNE de ces planches finies, sans attendre qu'il la demande : ${aPresenter.map((x) => `${x.key} « ${x.name} »`).join(", ")} (son nom, puis ce que tu en penses : la note et les mots de la relecture).` : "",
+      ].filter(Boolean).join(" ");
+      addMessage(r.conversation_id, "tool", { key: `jobs:${r.step}`, tool: "jobs.wait", ok: results.every((x) => x.status === "done"), summary: failedSpent.length ? L(`Tâche terminée, avec un échec. Coût réellement dépensé par la tâche en échec : ${failedSpent.map((x) => x.coutReel).join(", ")}.`, "Finished with a failure.") : L("Tâche terminée : je relis le résultat.", "Task finished: reading the result."), ...(conseils ? { hint: conseils } : {}), ...(aPresenter.length ? { aPresenter } : {}), data: compteRendu ? { taches: results, compteRenduDuSite: compteRendu } : results }, r.id);
       updateRun(r.id, { waiting_jobs: "[]" });
     }
+    // La réponse qui présente le résultat d'une tâche à la charge du Studio (finir une planche, refaire le logo qui manque)
+    // l'est aussi : elle fait partie de la reprise, jamais comptée au client (essai réel de Nadia, 23 novembre 2026).
+    let pasDuStudio = waited.length > 0 && waited.every((jid) => tacheDuStudio(json(getJob(jid)?.payload ?? "{}", {})));
+    const selonLePas = <T,>(f: () => Promise<T>): Promise<T> => (pasDuStudio ? aLaChargeDuStudio(f) : f());
     // 2. Action approuvée (ou refusée) par le client.
     const pending = pendingOf(r) as (PendingAction & { approved?: boolean; declined?: boolean }) | null;
     if (pending?.approved) {
@@ -251,9 +272,10 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       }
       const step = r.step;
       updateRun(r.id, { step: step + 1 });
+      const ce = r;
       let out: StepOutput;
       try {
-        out = await reason(user, r, jobId, step, deps);
+        out = await selonLePas(() => reason(user, ce, jobId, step, deps));
       } catch (e) {
         if (e instanceof CostCapReached) return askBudget(r);
         throw e;
@@ -265,7 +287,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       {
         const lance = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND run_id=? AND role='tool'", r.conversation_id, r.id).some((m) => (json<any>(m.content_json, {}).jobs ?? []).length > 0);
         const motsCorriges = r.project_id ? (() => { try { return loadWordingRules(r.project_id!); } catch { return []; } })() : [];
-        const regle = { etape: currentStep(journeyOf(r.conversation_id)), payant: (tool: string) => !!getTool(tool)?.estimate, lance, motsCorriges };
+        const regle = { etape: currentStep(journeyOf(r.conversation_id)), payant: (tool: string) => !!getTool(tool)?.estimate, lance, motsCorriges, aPresenter: planchesAPresenter(r.conversation_id, r.id) };
         const defauts = defautsDuMessage(out, regle);
         if (defauts.length) {
           // Réécriture après le contrôle : une reprise du Studio, jamais débitée au client (règle du propriétaire).
@@ -276,7 +298,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       // Moment qui compte (résultat à présenter, échec, client mécontent) : la réponse est relue avant de partir, après le
       // contrôle gratuit (la relectrice lit la version corrigée), et réécrite une fois si elle la refuse.
       let relu: "ok" | "repris" | null = null;
-      ({ out, relu } = await reviewedReply(user, r, jobId, step, deps, out));
+      const brouillon = out;
+      ({ out, relu } = await selonLePas(() => reviewedReply(user, ce, jobId, step, deps, brouillon)));
       if (out.question?.choices?.length && currentStep(journeyOf(r.conversation_id)) === 5) out = { ...out, question: withoutLaterForRequired(out.question) };
       // Un bouton est une réponse complète, cliquable telle quelle : jamais un gabarit à trous (essai réel du 7 novembre :
       // « Oui, sous [À compléter : délai] et à [À compléter : conditions] »).
@@ -285,7 +308,14 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       // « Je ne peux pas voir… » n'est retiré QUE si des images lui étaient jointes (sinon c'est honnête).
       if (currentStep(journeyOf(r.conversation_id)) === 6) out = { ...out, message: sawImages.get(r.id) ? withoutBlindClaim(withoutComposedClaim(out.message)) : withoutComposedClaim(out.message) };
       out = withoutRepeatedQuestion({ ...out, message: fixElision(out.message), ...(out.question ? { question: { ...out.question, text: fixElision(out.question.text) } } : {}) });
+      // Une planche finie que SINA n'a toujours pas présentée, même après la réécriture : le Studio la présente lui-même.
+      {
+        const manquent = nonPresentees(`${out.message} ${out.question?.text ?? ""}`, planchesAPresenter(r.conversation_id, r.id));
+        const ajout = manquent.length ? presentationDuStudio(manquent, journeyOf(r.conversation_id)) : "";
+        if (ajout) out = { ...out, message: [out.message.trim(), ajout].filter(Boolean).join("\n\n") };
+      }
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(relu ? { relu } : {}) }, r.id);
+      pasDuStudio = false;
       if (!out.actions.length) {
         updateRun(r.id, { status: out.question ? "waiting_user" : "done" });
         return { runId, steps: step + 1 };
@@ -441,7 +471,7 @@ export function budgetInsuffisant(userId: string, projectId: string | null, maxM
     `Not started, nothing paid: this may cost up to ${pct(maxMicro)} and only ${pct(b.available)} is left this month. Tell the client: they can top up the project's AI (My account), or wait until ${fin}.`);
 }
 
-async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "cost", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number; studio?: boolean }) {
+export async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "cost", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number; studio?: boolean }) {
   const preview = await confirmationText(t, args, ctx, r.user_id, r.project_id, est);
   const p: PendingAction = { id: newId(), tool: t.name, args, reason, preview, costMaxMicro, createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p) });
@@ -617,6 +647,14 @@ export function needsJudgement(history: { role: string; content?: any }[]): bool
 /** Demandes dont la dernière réflexion avait des images du parcours jointes (logos, planche, thème…). */
 const sawImages = new Map<string, boolean>();
 
+/**
+ * La borne d'une réponse de SINA à la charge du Studio (réécriture après le contrôle ou la relecture, présentation du
+ * résultat d'une reprise du Studio) : jamais bloquée par le budget des réponses du client, même épuisé, mais toujours
+ * bornée (une borne, pas une dépense : la réponse ne coûte que ce qu'elle coûte).
+ */
+export const BORNE_D_UNE_REPONSE_DU_STUDIO = 3 * EUR;
+const borneDeLaReponse = (cap: number) => (chargeDuStudio() ? { studioCapMicro: Math.max(borneDuStudio(cap), BORNE_D_UNE_REPONSE_DU_STUDIO) } : {});
+
 /** Un pas de raisonnement : fil complet + état du projet + pièces jointes (vision) → JSON d'actions. */
 async function reason(user: User, r: SynaRun, jobId: string, step: number, deps: AgentDeps, note = "", cle = note ? ":reprise" : ""): Promise<StepOutput> {
   const history = filDeConversation(r.conversation_id, debutDuFilDeLEtape(r.conversation_id));
@@ -644,7 +682,8 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     // la 2e réponse et toutes les notices étaient réécrites en mémoire) ; un outil qui demande un projet est refusé sans
     // rien payer tant qu'il n'existe pas.
     reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(true, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}${guide ? `\n\n# Consigne de l'étape en cours (la même à chaque pas de l'étape)\n${guide}` : ""}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
-    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${piecesJointes(r.conversation_id, history)}${resultatsDeLaDemande(history)}${note}`,
+    // Planches incomplètes : la ligne prioritaire, en tête (SINA prend les devants, 23 novembre 2026).
+    context: `${ligneDesPlanchesAFinir(r.conversation_id, r.project_id)}${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${piecesJointes(r.conversation_id, history)}${resultatsDeLaDemande(history)}${note}`,
     // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
     history: filEnBlocs(history, history[0] ? messagesDuClientAvant(r.conversation_id, history[0].seq) : []),
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
@@ -660,7 +699,7 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
   // Budget des réponses, plus le reste d'un accord donné sur la carte dans cette demande (pour en rendre compte).
   const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);
   // L'étape du parcours dans la trace : le coût de SINA se lit étape par étape (recherche 11, point 1).
-  return withTrace({ jobId, projectId: r.project_id, step: `syna:etape-${currentStep(journeyOf(r.conversation_id))}`, costCapMicro: cap }, () => llmJson(call, StepSchema));
+  return withTrace({ jobId, projectId: r.project_id, step: `syna:etape-${currentStep(journeyOf(r.conversation_id))}`, costCapMicro: cap, ...borneDeLaReponse(cap) }, () => llmJson(call, StepSchema));
 }
 
 /**
@@ -686,7 +725,7 @@ async function reviewedReply(user: User, r: SynaRun, jobId: string, step: number
       maxTokens: 3000, maxOutputTokens: 6000, usageKey: `syna:${r.id}:${step}:relecture`, routing: { difficulty: "standard", prefer: { ...modelFor(0)!, effort: "medium" } },
     };
     const cap = replyAllowanceMicro(user.id, r.project_id, r.conversation_id, r.id) + jobSpentMicro(jobId);
-    const review = ReplyReviewSchema.parse(deps.review ? await deps.review(call) : await withTrace({ jobId, projectId: r.project_id, step: "syna-relecture", costCapMicro: cap }, () => llmJson(call, ReplyReviewSchema)));
+    const review = ReplyReviewSchema.parse(deps.review ? await deps.review(call) : await withTrace({ jobId, projectId: r.project_id, step: "syna-relecture", costCapMicro: cap, ...borneDeLaReponse(cap) }, () => llmJson(call, ReplyReviewSchema)));
     if (review.verdict !== "reprendre" || !review.issues.length) return { out: draft, relu: "ok" };
     // Réécriture après la relectrice : une reprise du Studio, jamais débitée au client.
     return { out: await aLaChargeDuStudio(() => reason(user, r, jobId, step, deps, reviewNote(draft, review.issues))), relu: "repris" };
@@ -843,6 +882,8 @@ export function threadView(user: User, cid: string) {
     budget: budgetState(user.id, c.project_id, cid),
     attachments: attachmentsOf(cid).map((a) => ({ id: a.id, kind: a.kind, name: a.name, analysis: a.analysis })),
     tools: allTools().length,
+    // SINA prend les devants : ses boutons « Oui, finis-les » / « Plus tard » ne se montrent que tant que la proposition tient.
+    devants: propositionOuverte(cid, c.project_id),
     journey: (() => {
       const j = journeyOf(cid);
       return {
@@ -854,6 +895,8 @@ export function threadView(user: User, cid: string) {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
           // Jamais une planche incomplète (règle du propriétaire) : une planche gardée de côté n'est pas affichée.
           list: planchesMontrees(j).map(cardOf), study: j.identities.study ?? null,
+          // Les planches incomplètes (la seule lecture) : un bouton d'un ancien message qui en choisit une est grisé.
+          incompletes: planchesIncompletes(j).map((h) => ({ key: h.key, name: j.identities!.list.find((x) => x.key === h.key)?.name ?? h.key, manque: h.manque })),
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
           final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at && !j.brandFinish.manque?.length, finishIssues: j.brandFinish?.issues ?? [] } : null,
         } : null,
