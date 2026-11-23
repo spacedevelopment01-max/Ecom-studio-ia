@@ -31,7 +31,7 @@ import { consigneUneFamille, webResearch, webSearchQuote, type ResearchCategory,
 import { safeFetch } from "../engine/import-link";
 import { planOfProject } from "../plan-gates";
 import { json as parseJson } from "../db";
-import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, clientLogoOf, clientRefusal, manqueDeLaPlanche, phrasePlancheGardee, proposalImagery, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
+import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, SLOT_ASPECT, SLOT_REFERENCES, boardImageRoute, brandImagesOn, clientLogoOf, clientRefusal, ideeConcrete, manqueDeLaPlanche, phrasePlancheGardee, proposalImagery, runBoardImages, type ImageAspect, type ImageSlot } from "./brand-images";
 import { BoardSchema, WordmarkSchema, type Board } from "./brand-board";
 import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
@@ -108,6 +108,9 @@ export const BRAND_CALLS = {
   // Le relecteur des images : le modèle le plus fort, effort élevé, une image à la fois (21 novembre 2026), avec les
   // images jointes pour comparer : 3 avis de 1 250 jetons au plus.
   look: { tier: "strong", input: 9_000, output: 2_500, reflexion: 6_000, reponse: 3_800, max: 12_000 },
+  // L'idée en mots simples des planches d'avant le 23 novembre 2026 : un seul appel pour la série, 4 planches au plus
+  // (500 jetons chacune à lire), 4 phrases de 220 signes (75 jetons chacune, plus le JSON).
+  simple: { tier: "strong", input: 4_000, output: 1_200, reflexion: 3_000, reponse: 400, max: 6_000 },
 } as const satisfies Record<string, { tier: Tier; input: number; output: number; reflexion: number; reponse: number; max: number; effort?: string }>;
 const CALLS = BRAND_CALLS;
 type CallId = keyof typeof CALLS;
@@ -125,7 +128,7 @@ const MAX_PAGES_REREAD = 16;
 function callCounts(routes: number, teams: number, fresh: boolean, images = false): Record<CallId, number> {
   // strategy : un second tour d'idées quand trop peu passent les deux épreuves ; fix : une reprise OU un remplacement par route.
   // teamShort : une reprise plus courte au plus par équipe coupée (comptée au plafond seulement).
-  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, teamShort: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, reader: 1, imagery: images ? routes : 0, look: images ? routes : 0 };
+  return { study: fresh ? 1 : 0, strategy: fresh ? 2 : 0, team: fresh ? teams : 0, teamShort: fresh ? teams : 0, shortlist: 1, judge: 1, verify: 1, direction: routes, review: 1, fix: routes, recheck: 1, reader: 1, imagery: images ? routes : 0, look: images ? routes : 0, simple: 0 };
 }
 
 /** Une étape enregistrée d'une tâche de la marque : ce qu'elle a déjà fait et payé (relu, jamais repayé). */
@@ -221,9 +224,23 @@ const imageUnitMax = (aspect: ImageAspect, references: number, logo = false) => 
  * d'une image est sa borne sans la marge de réservation (un quart) ; une image refusée à la relecture est payée.
  */
 
-export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[], /** Étapes déjà enregistrées (reprise) : relues, jamais repayées. */ done: readonly string[] = []): ChainQuote {
+/**
+ * Devis de l'appel qui écrit « l'idée en mots simples » des planches d'avant (un seul pour la série, à la charge du
+ * Studio, montré sur la carte d'accord) ; rien quand aucune planche ne la demande.
+ */
+export function ideesSimplesQuote(planches: number, settings?: ChainSettings): ChainQuote {
+  if (planches <= 0) return { maxMicro: 0, probableMicro: 0 };
+  const s = settings ?? chainSettings(), c = CALLS.simple, m = modelOf(s, "simple");
+  const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output);
+  return { maxMicro: Math.ceil(bound ?? (usual ?? 0) * 4), ...(usual ? { probableMicro: Math.ceil(usual) } : {}) };
+}
+/** Les planches de ces clés qui n'ont pas encore « l'idée en mots simples » (planches d'avant le 23 novembre 2026). */
+export const planchesSansIdeeSimple = (j: Journey, keys: readonly string[]): string[] => (j.identities?.list ?? []).filter((x) => keys.includes(x.key) && !!x.board && !x.board.idea?.simple?.trim()).map((x) => x.key);
+
+export function boardImagesQuote(routes: number, settings?: ChainSettings, slots?: readonly ImageSlot[], /** Étapes déjà enregistrées (reprise) : relues, jamais repayées. */ done: readonly string[] = [], /** Planches d'avant à qui écrire l'idée en mots simples, avant leur logo. */ simples = 0): ChainQuote {
   const s = settings ?? chainSettings();
   let max = 0, probable: number | null = 0;
+  if (simples > 0 && !fait(done, /^brand:simple:/)) { const q = ideesSimplesQuote(simples, s); max += q.maxMicro; probable += q.probableMicro ?? q.maxMicro; }
   const list = slots?.length ? CREATED_SLOTS.filter((x) => slots.includes(x)) : CREATED_SLOTS;
   // Images déjà créées (premier essai, sans reprise) : une par planche et par place.
   const faites = (slot: ImageSlot) => new Set(done.filter((k) => !/:r\d+$/.test(k)).map((k) => /^brand:image:\d+:([A-D]):([a-z0-9]+)(?::[a-z0-9+]+)?$/.exec(k)).filter((m) => m?.[2] === slot).map((m) => m![1])).size;
@@ -247,8 +264,8 @@ export function boardImagesQuote(routes: number, settings?: ChainSettings, slots
  * trois publications), leur relecture, et la direction artistique si elle doit être réécrite. Le logo adopté, ses
  * déclinaisons et la charte sont rendus par le Studio, sans IA.
  */
-export function finishQuote(slots: readonly ImageSlot[] = FINISH_SLOTS, settings?: ChainSettings): ChainQuote {
-  const q = boardImagesQuote(1, settings, slots);
+export function finishQuote(slots: readonly ImageSlot[] = FINISH_SLOTS, settings?: ChainSettings, /** Planche d'avant sans idée en mots simples (1), avant son logo. */ simples = 0): ChainQuote {
+  const q = boardImagesQuote(1, settings, slots, [], slots.includes("logo") ? simples : 0);
   // Le symbole seul, tiré du logo : une image carrée avec le logo en référence (sa relecture est déjà comptée avec celle des images).
   const unit = imageUnitMax("1:1", 1, true);
   return { maxMicro: q.maxMicro + unit, ...(q.probableMicro ? { probableMicro: Math.ceil(q.probableMicro + unit / 1.25) } : {}) };
@@ -367,7 +384,7 @@ export const deferredOn = (): boolean => getJsonSetting<boolean>("sina.differe",
 /** Les appels de la chaîne qui reviennent, l'un après l'autre, avec la même consigne (un par route). */
 const REPETES = new Set<CallId>(["direction", "fix", "imagery", "team", "teamShort"]);
 /** Les appels de la chaîne dont la consigne ne sert qu'une fois par projet : aucun point de mémoire. */
-const UNIQUES = new Set<CallId>(["study", "shortlist", "verify", "reader"]);
+const UNIQUES = new Set<CallId>(["study", "shortlist", "verify", "reader", "simple"]);
 
 /** Une demande qui commence par le résumé du client, coupée en deux : le résumé à part (gardé en mémoire), le reste. */
 export function coupeLeResume(commun: string, kind: CallId, prompt: string): { context?: string; prompt: string } {
@@ -685,6 +702,8 @@ export async function runSinaBrandJob(ctx: JobContext) {
     // va au relecteur, avec les mots du client sur l'image.
     const logoOnly = !!a.slots?.length && a.slots.every((s) => s === "logo");
     const imagesBrief = logoOnly ? briefBlock(j, p.id) : brief;
+    // Planches d'avant sans « l'idée en mots simples » : écrite d'un seul appel avant de redessiner leurs logos.
+    if ((a.slots ?? CREATED_SLOTS).includes("logo") && !clientLogo) list = await ideesSimplesDesAnciennesPlanches({ ctx, ai, list, keys: targets.map((x) => x.key), round, notes });
     const gouts = goutsDuClient(j, p.id, logoOnly ? clientWords(a.guidance) : undefined), refusLogo = refusDuClientPourLeLogo(j, p.id, logoOnly ? clientWords(a.guidance) : undefined);
     for (const x of targets) {
       // La direction artistique de la proposition ressert telle quelle (audit du 22 novembre 2026, 2.3) : elle n'est
@@ -1095,6 +1114,38 @@ export async function runSinaBrandJob(ctx: JobContext) {
  * Tout appel déjà payé est relu sous sa clé, jamais repayé : une relance de la tâche relit la réponse coupée, puis la
  * reprise déjà faite. Une autre erreur (plafond atteint, panne du fournisseur) remonte telle quelle.
  */
+export const IdeesSimplesSchema = z.object({ idees: z.array(z.object({ key: z.string().max(2), simple: z.string().max(300) })).max(4).default([]) });
+/**
+ * Mise à niveau des planches d'avant le 23 novembre 2026 (essai réel de Nadia : sans « l'idée en mots simples », le
+ * dessinateur de leur logo ne recevait que le ton). UN seul appel au modèle le plus fort pour toutes les planches de la
+ * série qui ne l'ont pas, avec la même consigne que pour une identité neuve ; le contrôle gratuit passe derrière. Une
+ * phrase acceptée est rangée dans la planche (relue ensuite, jamais redemandée) ; une phrase refusée n'est pas rangée,
+ * seul le ton reste, et c'est noté. Rien d'autre de la marque n'est refait. Voulue par le Studio : à sa charge.
+ */
+export async function ideesSimplesDesAnciennesPlanches(o: { ctx: { step: JobContext["step"] }; ai: { ask: ChainAi["ask"] }; list: Route[]; keys: readonly string[]; round: number; notes: string[] }): Promise<Route[]> {
+  const sans = o.list.filter((x) => o.keys.includes(x.key) && !!x.board && !x.board.idea?.simple?.trim());
+  if (!sans.length) return o.list;
+  const cles = sans.map((x) => x.key).join("");
+  const net = (t?: string) => (t ?? "").replace(/\s+/g, " ").trim();
+  const planche = (x: Route) => [`# Identité ${x.key} « ${x.name} »`, `Ce qu'elle croit : ${net(x.board.idea.belief)}`, `Ce contre quoi elle se bat : ${net(x.board.idea.enemy)}`, `Ce qu'elle fait ressentir : ${net(x.territory)}`, `Son métier : ${net(x.board.descriptor) || "non précisé"}`, `Son ton : ${(x.tone?.adjectives ?? []).join(", ")}`].join("\n");
+  let r: z.infer<typeof IdeesSimplesSchema>;
+  try {
+    r = await aLaChargeDuStudio(() => o.ctx.step(`brand:simple:${o.round}:${cles}`, () => o.ai.ask(`simple-${o.round}-${cles}`, { kind: "simple", system: P.ideeSimpleSystem(), schema: IdeesSimplesSchema, prompt: sans.map(planche).join("\n\n") })));
+  } catch (e) {
+    if (e instanceof CostCapReached) throw e;
+    o.notes.push(`idée en mots simples des planches ${cles} non écrite : ${String((e as Error)?.message ?? e).slice(0, 120)} ; seul le ton va au dessinateur`);
+    return o.list;
+  }
+  return o.list.map((x) => {
+    if (!sans.includes(x)) return x;
+    const t = net(r.idees.find((i) => i.key === x.key)?.simple).slice(0, 300);
+    if (!t) { o.notes.push(`idée en mots simples de ${x.key} non rendue : seul le ton va au dessinateur`); return x; }
+    const refus = ideeConcrete(t, x);
+    if (refus) { o.notes.push(`idée en mots simples de ${x.key} refusée par le contrôle (${refus}) : non rangée, seul le ton va au dessinateur`); return x; }
+    return { ...x, board: { ...x.board, idea: { ...x.board.idea, simple: t } } };
+  });
+}
+
 export async function equipeDeNoms(o: { ctx: { step: JobContext["step"] }; ai: { ask: ChainAi["ask"] }; kind: "produits" | "services"; path: P.TeamPath; step: string; id: string; prompt: string; ask: P.TeamAsk; notes: string[] }): Promise<z.infer<typeof TeamSchema>["names"] | null> {
   try { return (await o.ctx.step(o.step, () => o.ai.ask(o.id, { kind: "team", system: P.teamSystem(o.kind, o.path, o.ask), schema: TeamSchema, prompt: o.prompt }))).names; }
   catch (e) { if (!reponseInexploitable(e)) throw e; }

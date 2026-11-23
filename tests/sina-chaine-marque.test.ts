@@ -7,6 +7,8 @@ import { describe, expect, it } from "vitest";
 import { journey, route, series } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
+/** L'idée en mots simples que la directrice de marque écrit avec chaque identité neuve (depuis le 23 novembre 2026). */
+const IDEE_SIMPLE_DESSAI = "elle croit qu'un goût vrai demande du temps, et elle se bat contre ce qui est prêt tout de suite";
 
 describe("SINA — chaîne de création de la marque", async () => {
   const { all, one, run } = await import("@/lib/db");
@@ -73,7 +75,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     return {
       name, nameWhy: x.nameWhy, nameAnchor: x.nameAnchor, nameExpression: x.nameExpression, slogan: x.slogan, sloganTone: "", promise: x.promise, territory: x.territory,
       ground: x.ground, ...(x.gradient ? { gradient: x.gradient } : {}), palette: x.palette, paletteFamily: "", fonts: x.fonts, fontStyle: "", tone: x.tone, why: x.why,
-      board: { ...rest, idea: ideaRest, signs: signs.map(({ symbol: _p, ...s }, i) => ({ ...s, symbolSvg: i === 0 ? GOOD_SVG : i === 1 ? BAD_SVG : "" })), wordmark: { ...mark, symbolSvg: "" }, ...over },
+      board: { ...rest, idea: { ...ideaRest, simple: IDEE_SIMPLE_DESSAI }, signs: signs.map(({ symbol: _p, ...s }, i) => ({ ...s, symbolSvg: i === 0 ? GOOD_SVG : i === 1 ? BAD_SVG : "" })), wordmark: { ...mark, symbolSvg: "" }, ...over },
     };
   };
   const pick = (key: "A" | "B" | "C" | "D", name = route(key).name, reserve = false) => ({ idea: `i${"ABCD".indexOf(key) + 1}`, name, detail: route(key).nameAnchor, second: route(key).nameExpression, why: route(key).nameWhy, trials: "Passe les quatre épreuves.", risks: [], tone: "franc", ground: route(key).ground, hue: "teinte", type: "caractère", reserve });
@@ -1134,12 +1136,69 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     const a = J.journeyOf(t.cid).identities!.list[0];
     const I = await import("@/lib/syna-agent/brand-images");
     const ligne = I.ligneDeLaMarque(a as never);
-    // Sans idée en mots simples (planche d'avant), ce qu'elle croit et ce qu'elle combat, contrôlés sans IA : l'idée de la
-    // planche d'essai parle de fruits (le métier du client), refusée ; seul le ton reste (23 novembre 2026).
-    expect(I.ideeDuDessinateur(a as never).refus).toMatch(/un mot concret/);
-    expect(ligne).toBe(`Son ton : ${a.tone.adjectives.join(", ")}.`);
+    // L'idée en mots simples, écrite avec l'identité (23 novembre 2026), contrôlée sans IA, puis le ton.
+    expect(ligne).toBe(`Elle croit qu'un goût vrai demande du temps, et elle se bat contre ce qui est prêt tout de suite. Son ton : ${a.tone.adjectives.join(", ")}.`);
+    // Aucun appel pour l'écrire : elle était déjà dans la planche.
+    expect(log.ids.some((i) => i.startsWith("simple-"))).toBe(false);
     const id = log.ids.find((x) => /^image-1-A-logo/.test(x))!;
     expect(log.prompts[id]).toContain(`La marque : ${ligne}`);
+  });
+
+  it("planches d'avant sans idée en mots simples : un seul appel avant leurs logos, à la charge du Studio, rangée puis relue ; une phrase refusée n'est pas rangée (23 novembre 2026)", async () => {
+    const t = await thread();
+    await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
+    // Trois planches créées avant le champ « l'idée en mots simples ».
+    J.updateJourney(t.cid, (x) => { for (const r of x.identities!.list) delete (r.board!.idea as { simple?: string }).simple; });
+    const { chargeDuStudio } = await import("@/lib/billing");
+    const ideas: Record<string, string> = {
+      A: "elle croit qu'un goût vrai demande du temps, et elle se bat contre ce qui est prêt tout de suite",
+      B: "elle croit qu'on se fait plaisir sans tricher, comme une piscine la nuit",
+      C: "elle croit qu'une boisson peut être franche, et elle se bat contre les promesses floues",
+    };
+    const relance = async (redo: string[]) => {
+      const log = newLog(), base = fakeAi(log)(), asks: { id: string; studio: boolean; prompt: string; system: string }[] = [];
+      C.brandChainDeps.ai = (() => ({ ...base, ask: async (id: string, c: any) => {
+        if (c.kind !== "simple") return base.ask(id, c);
+        asks.push({ id, studio: chargeDuStudio(), prompt: c.prompt, system: c.system });
+        return c.schema.parse({ idees: [...c.prompt.matchAll(/^# Identité ([A-D]) /gm)].map((m: RegExpMatchArray) => ({ key: m[1], simple: ideas[m[1]] })) });
+      } })) as any;
+      try { await fr(() => C.runSinaBrandJob(jobCtx(t.user, t.pid, { projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, imagesOnly: true, images: true, redo, slots: ["logo"] }))); }
+      finally { C.brandChainDeps.ai = undefined; }
+      return { log, asks };
+    };
+    const P = await import("@/lib/syna-agent/brand-prompts");
+    const premier = await relance(["A", "B", "C"]);
+    // UN seul appel pour les trois planches, à la charge du Studio, avec la même consigne qu'une identité neuve.
+    expect(premier.asks).toHaveLength(1);
+    expect(premier.asks[0]).toMatchObject({ id: "simple-1-ABC", studio: true });
+    expect(premier.asks[0].system).toContain(P.IDEE_SIMPLE);
+    expect(premier.asks[0].prompt).toMatch(/# Identité A [\s\S]*Ce qu'elle croit : [\s\S]*# Identité C /);
+    // Rangées dans la planche ; la phrase de B (« comme ») refusée par le contrôle n'est pas rangée : seul son ton reste.
+    const list = J.journeyOf(t.cid).identities!.list;
+    expect(list.map((x) => x.board!.idea.simple)).toEqual([ideas.A, undefined, ideas.C]);
+    const logoA = premier.log.ids.find((x) => /^image-1-A-logo/.test(x))!, logoB = premier.log.ids.find((x) => /^image-1-B-logo/.test(x))!;
+    expect(premier.log.prompts[logoA]).toContain("La marque : Elle croit qu'un goût vrai demande du temps");
+    expect(premier.log.prompts[logoB]).toMatch(/La marque : Son ton : /);
+    // Les autres textes de la marque ne bougent pas.
+    expect(list[0].board!.idea.belief).toBe(route("A").board.idea.belief);
+    // Relue ensuite, jamais redemandée : refaire le logo de A et C ne repart pas à l'IA pour leur idée.
+    const second = await relance(["A", "C"]);
+    expect(second.asks).toHaveLength(0);
+    // Le devis : l'appel est compté tant qu'une planche l'attend, plus ensuite.
+    const j = J.journeyOf(t.cid);
+    expect(C.planchesSansIdeeSimple(j, ["A", "B", "C"])).toEqual(["B"]);
+    const avec = C.boardImagesQuote(3, undefined, ["logo"], [], 1), sans = C.boardImagesQuote(3, undefined, ["logo"]);
+    expect(avec.maxMicro - sans.maxMicro).toBe(C.ideesSimplesQuote(1).maxMicro);
+    expect(avec.probableMicro! - sans.probableMicro!).toBe(C.ideesSimplesQuote(1).probableMicro);
+    expect(C.ideesSimplesQuote(1).maxMicro).toBeGreaterThan(C.ideesSimplesQuote(1).probableMicro!);
+    expect(C.ideesSimplesQuote(0).maxMicro).toBe(0);
+    // La marque finie d'une planche d'avant : son logo refait compte aussi l'appel.
+    expect(C.finishQuote(["logo"], undefined, 1).maxMicro - C.finishQuote(["logo"]).maxMicro).toBe(C.ideesSimplesQuote(1).maxMicro);
+    expect(C.finishQuote(["object"], undefined, 1).maxMicro).toBe(C.finishQuote(["object"]).maxMicro);
+    // La carte d'accord d'identity.images le montre (prix probable puis « au plus »).
+    const est = await fr(() => getTool("identity.images")!.estimate!(ctxOf(t.user, t.cid), { keys: ["A", "B"], images: ["logo"] } as never));
+    expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["logo"], [], 1).maxMicro);
+    expect(est.probableMicro).toBe(C.boardImagesQuote(2, undefined, ["logo"], [], 1).probableMicro);
   });
 
   it("images seules sur des planches déjà écrites : les textes ne bougent pas ; une image en échec n'est pas relancée", async () => {

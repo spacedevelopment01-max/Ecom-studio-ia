@@ -576,15 +576,13 @@ export function ideeConcrete(t: string, x: Pick<Route, "board">): string | null 
   return w ? `un mot concret (« ${w} »)` : null;
 }
 /**
- * L'idée donnée au dessinateur du logo : le champ « l'idée en mots simples » de la planche (écrit avec l'identité) ; sur
- * une planche d'avant, ce qu'elle croit et ce contre quoi elle se bat. Refusée par le contrôle gratuit : rien (seul le ton reste).
+ * L'idée donnée au dessinateur du logo : le champ « l'idée en mots simples » de la planche (écrit avec l'identité, ou par
+ * la mise à niveau d'une planche d'avant : ideesSimplesDesAnciennesPlanches). Absente, ou refusée par le contrôle gratuit :
+ * rien, seul le ton reste (jamais ce qu'elle croit recopié tel quel : il porte des images, essai réel de Nadia).
  */
 export function ideeDuDessinateur(x: Route, idee?: string | null): { texte: string; refus?: string } {
   const net = (t?: string | null) => (t ?? "").replace(/\s+/g, " ").trim().replace(/[.;,\s]+$/, "");
-  const bas = (t: string) => t.replace(/^./, (c) => c.toLowerCase());
-  const que = (t: string) => t.replace(/(?<![\p{L}])que ([aeiouyhéèêàâîôû])/giu, "qu'$1");
-  const i = x.board.idea;
-  const brute = net(idee) || net(i?.simple) || [net(i?.belief) ? que(`elle croit que ${bas(net(i.belief))}`) : "", net(i?.enemy) ? `elle se bat contre ${bas(net(i.enemy))}` : ""].filter(Boolean).join(", et ");
+  const brute = net(idee) || net(x.board.idea?.simple);
   if (!brute) return { texte: "" };
   const refus = ideeConcrete(brute, x);
   return refus ? { texte: "", refus } : { texte: `${brute.replace(/^./, (c) => c.toUpperCase())}.` };

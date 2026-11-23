@@ -123,7 +123,7 @@ describe("rejeu des trois logos de Nadia (faux dessinateur, faux relecteur qui r
     expect(I.ideeConcrete("une bougie en cire de soja", c as never)).toMatch(/« cire »/);
     expect(I.ideeConcrete("une bougie coulée à Lyon", a as never)).toMatch(/un mot concret/);
     expect(I.ideeConcrete("une bougie qui sent vraiment", a as never)).toBeNull();
-    // Sans idée en mots simples (planche d'avant) : ce qu'elle croit et ce qu'elle combat, contrôlés ; ici refusés.
+    // Sans idée en mots simples (planche d'avant, avant sa mise à niveau) : seul le ton va au dessinateur.
     for (const x of [a, b, c]) {
       const avant = { ...x, board: { ...x.board, idea: { ...x.board.idea, simple: undefined } } };
       expect(I.ligneDeLaMarque(avant as never)).toBe("Son ton : chaleureux, simple, proche.");

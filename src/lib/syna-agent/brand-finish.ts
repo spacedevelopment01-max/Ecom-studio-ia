@@ -23,7 +23,7 @@ import { chooseLogoV2 } from "../logo-v2/choose";
 import { cleanArtwork } from "../logo-v2/artwork";
 import type { Territory } from "../logo-v2/types";
 import type { ChainAi } from "./brand-chain";
-import { clientWords, goutsDuClient, refusDuClientPourLeLogo } from "./brand-chain";
+import { clientWords, goutsDuClient, ideesSimplesDesAnciennesPlanches, refusDuClientPourLeLogo } from "./brand-chain";
 import { CREATED_SLOTS, clientLogoOf, logoOnWhite, onWhite, proposalImagery, runBoardImages, type ImageSlot } from "./brand-images";
 import { buildBrandKit } from "./brand-kit";
 import type { Route } from "./brand-routes";
@@ -77,8 +77,9 @@ export async function runBrandFinish(o: {
 }) {
   const { ctx, ai } = o, who = { userId: o.userId, projectId: o.projectId };
   const j = journeyOf(o.conversationId), p = loadProject(o.projectId);
-  const route = chosenRoute(j);
-  if (!route || !p.brand || !j.identityChoice) throw new UserFacingError(L("Ton identité doit être choisie avant que je finisse ta marque. Rien n'a été décompté.", "Choose your identity first. Nothing was charged."));
+  const choisie = chosenRoute(j);
+  if (!choisie || !p.brand || !j.identityChoice) throw new UserFacingError(L("Ton identité doit être choisie avant que je finisse ta marque. Rien n'a été décompté.", "Choose your identity first. Nothing was charged."));
+  let route: Route = choisie;
   const round = j.identities?.round ?? 1, keptLogo = j.keep.includes("logo");
   const clientLogo = keptLogo ? await clientLogoOf(o.projectId) : null;
   const slots = finishSlots(j, o.slots);
@@ -93,6 +94,12 @@ export async function runBrandFinish(o: {
   let current: Route = route;
   if (slots.length) {
     ctx.progress(0.1, L("Je crée les images de ta marque", "Creating your brand's images"));
+    // Une planche d'avant le 23 novembre 2026, sans « l'idée en mots simples » : elle est écrite d'un seul appel avant de
+    // redessiner son logo (à la charge du Studio), rangée dans la planche, puis relue.
+    if (slots.includes("logo") && !keptLogo) {
+      const list = (j.identities?.list ?? []) as Route[], next = await ideesSimplesDesAnciennesPlanches({ ctx, ai, list, keys: [j.identityChoice.key], round, notes });
+      if (next !== list) { updateJourney(o.conversationId, (y) => { if (y.identities) y.identities.list = next; }); route = chosenRoute(journeyOf(o.conversationId)) ?? route; current = route; }
+    }
     const r = await runBoardImages({
       ctx, ai, who, brief: o.brief, kind: o.kind, route, round, slots, clientLogo,
       // Le logo seul, même avec les mots du client (qui ne vont jamais à son dessinateur) : la direction d'origine

@@ -32,18 +32,20 @@ describe("devis de l'essai réel des trois logos de Nadia (simulé, aucun appel)
     expect(relectureMax).toBeGreaterThan(0);
     // Ce que la carte d'accord montre au client pour « refaire les trois logos » (un essai par identité ; les reprises
     // sont à la charge du Studio, mais comptent dans le plafond de la tâche).
-    const carte = C.boardImagesQuote(3, s, ["logo"]);
+    // Ses trois planches datent d'avant « l'idée en mots simples » : un appel l'écrit d'abord pour les trois.
+    const simple = C.ideesSimplesQuote(3, s);
+    const carte = C.boardImagesQuote(3, s, ["logo"], [], 3);
     const essais = 1 + MAX_IMAGE_RETRIES;
     expect(essais).toBe(3);
     // Probable : comme dans l'essai réel, chaque logo refusé, donc trois essais par identité (9 dessins, 9 relectures).
-    const probable = 3 * essais * (dessinProbable + relectureProbable);
+    const probable = 3 * essais * (dessinProbable + relectureProbable) + simple.probableMicro!;
     // Au plus : par identité, trois essais, un dessin de plus sans trait près du nom, et une seconde lecture par relecture.
-    const auPlus = 3 * ((essais + 1) * dessinMax + 2 * essais * relectureMax);
+    const auPlus = 3 * ((essais + 1) * dessinMax + 2 * essais * relectureMax) + simple.maxMicro;
     const budgetCode = monthlyAllowanceMicro({ status: "active", plan: "vendre", billing: "month" } as never);
     const budget99 = { premier: 0.5 * htEur(99) * EUR, ensuite: 0.4 * htEur(99) * EUR };
     const e = (m: number) => Math.round((m / EUR) * 100) / 100, pct = (m: number, b: number) => Math.round((1000 * m) / b) / 10;
     const out = {
-      dessin: { max: e(dessinMax), probable: e(dessinProbable) }, relecture: { max: e(relectureMax), probable: e(relectureProbable) },
+      ideeSimple: { max: e(simple.maxMicro), probable: e(simple.probableMicro!) }, dessin: { max: e(dessinMax), probable: e(dessinProbable) }, relecture: { max: e(relectureMax), probable: e(relectureProbable) },
       carteDuClient: { max: e(carte.maxMicro), probable: e(carte.probableMicro!) },
       essai: { probable: e(probable), auPlus: e(auPlus) },
       partDuBudget: {

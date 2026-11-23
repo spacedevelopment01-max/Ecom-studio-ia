@@ -77,8 +77,8 @@ describe("logos : aucune consigne de style, les 50 logos aimés seulement comme 
   it("le dessinateur reçoit la marque (nom, métier, idée, couleurs, typographie, format) et rien d'autre", async () => {
     const p = I.imagePrompt("logo", route("A") as never, imagery);
     expect(p).toMatch(/Tu es totalement libre du dessin/);
-    // La ligne « La marque » est écrite par le Studio (23 novembre 2026), jamais par la directrice artistique ; l'idée de
-    // la planche d'essai parle de fruits (le métier) : refusée par le contrôle gratuit, seul le ton reste.
+    // La ligne « La marque » est écrite par le Studio (23 novembre 2026), jamais par la directrice artistique ; la planche
+    // d'essai n'a pas d'idée en mots simples : seul le ton reste.
     expect(p).toContain("La marque : Son ton : complice, patiente, nocturne.");
     expect(p).not.toContain("Ce qu'il faut savoir de la marque");
     expect(p).toMatch(/Typographie de la marque/);

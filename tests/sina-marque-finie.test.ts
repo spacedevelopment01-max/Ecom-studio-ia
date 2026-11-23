@@ -8,6 +8,8 @@ import { describe, expect, it } from "vitest";
 import { journey, route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
+/** L'idée en mots simples que la directrice de marque écrit avec chaque identité neuve (depuis le 23 novembre 2026). */
+const IDEE_SIMPLE_DESSAI = "elle croit qu'un goût vrai demande du temps, et elle se bat contre ce qui est prêt tout de suite";
 
 describe("SINA — la marque finie de l'identité choisie", async () => {
   const { all, one, run } = await import("@/lib/db");
@@ -81,7 +83,7 @@ describe("SINA — la marque finie de l'identité choisie", async () => {
     return {
       name, nameWhy: x.nameWhy, nameAnchor: x.nameAnchor, nameExpression: x.nameExpression, slogan: x.slogan, sloganTone: "", promise: x.promise, territory: x.territory,
       ground: x.ground, ...(x.gradient ? { gradient: x.gradient } : {}), palette: x.palette, paletteFamily: "", fonts: x.fonts, fontStyle: "", tone: x.tone, why: x.why,
-      board: { ...rest, idea: ideaRest, signs: signs.map(({ symbol: _p, ...s }) => ({ ...s, symbolSvg: "" })), wordmark: { ...mark, symbolSvg: "" } },
+      board: { ...rest, idea: { ...ideaRest, simple: IDEE_SIMPLE_DESSAI }, signs: signs.map(({ symbol: _p, ...s }) => ({ ...s, symbolSvg: "" })), wordmark: { ...mark, symbolSvg: "" } },
     };
   };
   const pick = (key: "A" | "B" | "C", name = route(key).name, reserve = false) => ({ idea: `i${"ABC".indexOf(key) + 1}`, name, detail: route(key).nameAnchor, second: route(key).nameExpression, why: route(key).nameWhy, trials: "Passe les épreuves.", risks: [], tone: "franc", ground: route(key).ground, hue: "teinte", type: "caractère", reserve });

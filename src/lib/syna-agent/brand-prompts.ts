@@ -235,6 +235,22 @@ const PALETTES = () => PALETTE_EXAMPLES.slice(0, 16).map((p) => `- ${p.name} (${
 
 const ROUTE_SHAPE = `{"name": "", "nameWhy": "", "nameAnchor": "", "nameExpression": "", "slogan": "", "sloganTone": "", "promise": "", "territory": "", "ground": "blanc|degrade|sombre|uni", "gradient": {"from": "#RRGGBB", "to": "#RRGGBB"}, "palette": {"dark": "#RRGGBB", "primary": "#RRGGBB", "secondary": "#RRGGBB", "accent": "#RRGGBB", "light": "#RRGGBB"}, "paletteFamily": "", "fonts": {"heading": "clé_nN", "body": "clé_n4"}, "fontStyle": "", "tone": {"adjectives": ["", "", ""], "avoid": ["", "", ""]}, "why": "", "board": {"idea": {"belief": "", "confession": "", "enemy": "", "proof": "", "cost": "", "simple": ""}, "descriptor": "", "lines": ["", ""], "voice": {"sliders": [{"left": "", "right": "", "value": 50}], "thisNotThat": [{"yes": "", "no": ""}], "houseWords": [""], "bannedWords": [""], "is": ["", "", ""], "micro": [{"where": "", "text": ""}]}, "signs": [{"kind": "${SIGN_KINDS.join("|")}", "title": "", "text": ""}], "wordmark": {"case": "upper|title|lower|asis", "tracking": 0.02, "lines": ["", ""], "align": "gauche|centre", "dot": false, "scale": [1, 1], "tilt": [0, 0], "accentWords": [], "cut": {"at": 0.55}, "note": "", "underline": false}, "object": {"kind": "${BOARD_OBJECTS.join("|")}", "front": [""], "back": [""], "note": ""}, "site": {"headline": "", "text": "", "button": "", "menu": [""]}, "posts": [{"text": "", "look": "fond|couleur|motif|citation", "note": ""}], "toProve": [""]}}`;
 
+/**
+ * « L'idée en mots simples » d'une identité, pour le dessinateur de son logo (23 novembre 2026, après les « maisons » des
+ * logos de Nadia) : la même consigne pour une identité neuve (directionSystem) et pour une planche d'avant (ideeSimpleSystem).
+ */
+export const IDEE_SIMPLE = "la même idée en mots simples, en UNE phrase de la forme « elle croit que…, et elle se bat contre… » : sans comparaison (jamais « comme », jamais « tel que »), sans objet, sans lieu, sans scène, sans moment de la journée ni saison ; seulement ce qu'elle croit et ce qu'elle refuse.";
+
+/**
+ * Mise à niveau des planches d'avant le 23 novembre 2026 (sans « l'idée en mots simples ») : un seul appel pour toute la
+ * série, avant de redessiner leurs logos. Rien d'autre de la marque n'est réécrit.
+ */
+export const ideeSimpleSystem = () => `Tu es directrice de marque d'une agence de premier plan. Des identités de marque sont déjà écrites et validées : tu n'y changes rien. Pour CHACUNE, tu écris seulement son idée en mots simples, qui sera donnée au dessinateur de son logo : ${IDEE_SIMPLE}
+
+Tu pars de ce que la planche contient : ce qu'elle croit, ce contre quoi elle se bat, ce qu'elle fait ressentir, son métier, son ton. Tu gardes l'idée de la marque, tu retires toute image : ni maison, ni lumière, ni moment, ni lieu, ni objet du métier. 220 caractères au plus. Une phrase par identité, dans l'ordre reçu, avec sa lettre (key).
+
+Réponds uniquement par l'objet JSON, sans rien autour. Forme exacte : {"idees": [{"key": "A", "simple": ""}]}`;
+
 export const directionSystem = (kind: "produits" | "services") => `Tu es directrice artistique et conceptrice-rédactrice d'une agence de marque de premier plan. Tu reçois UNE route de marque (une idée, un nom, un ton, un fond, une teinte, un caractère de police) et tu en fais une identité complète avec sa PLANCHE de marque : ce que le client verra pour choisir.
 
 Une identité ne se montre pas en fiche « nom, couleurs, polices » : elle se montre en situation, avec des signes qu'on reconnaît sans lire le nom.
@@ -254,7 +270,7 @@ Ce que tu rends, pour CETTE route :
 - ground, gradient (seulement pour « degrade » : deux couleurs vives et lumineuses), palette (5 couleurs : light = le clair, fond si le fond est blanc ou uni, texte si le fond est sombre ; dark = le foncé teinté, jamais un noir pur, fond si le fond est sombre ; primary = le BOUTON, couleur de marque ; secondary = la SURFACE des cartes ; accent = les détails), paletteFamily (nom d'ambiance en 2 à 4 mots). Contraste d'au moins 4,5:1 pour texte sur fond (sur les deux couleurs d'un dégradé), texte sur surface, texte du bouton sur bouton. Couleurs de 2026 : vives, accordées, jamais boueuses ni criardes ; le client a peut-être refusé des couleurs dans sa fiche : respecte-le.
 - fonts : deux poignées « clé_nN » de la liste autorisée (N = graisse / 100 disponible) ; heading = titres, dans le caractère demandé ; body = textes, lisible (jamais une police de titres, une manuscrite ni une chasse fixe), graisse 4. fontStyle : la famille en mots.
 - tone : 3 adjectifs du ton de voix et 3 choses à ne jamais dire ou faire.
-- board.idea : belief, confession, enemy, proof, cost : repris de l'idée de la route, réécrits court et net pour le client. simple : la même idée en mots simples, en UNE phrase de la forme « elle croit que…, et elle se bat contre… » : sans comparaison (jamais « comme », jamais « tel que »), sans objet, sans lieu, sans scène, sans moment de la journée ni saison ; seulement ce qu'elle croit et ce qu'elle refuse.
+- board.idea : belief, confession, enemy, proof, cost : repris de l'idée de la route, réécrits court et net pour le client. simple : ${IDEE_SIMPLE}
 - board.descriptor : la ligne de métier sous le nom, en mots simples, cinq à huit mots : ce que la marque vend ou fait, sans slogan.
 - board.lines : 2 à 5 autres phrases de la marque (accroches, phrases d'emballage ou de fin de message), toutes différentes de la signature, chacune impossible à signer par un concurrent.
 - board.voice : 4 curseurs de ton (left et right = les deux pôles, value de 0 à 100), 3 « ceci, pas cela » (yes = une phrase que la marque dirait, no = la phrase plate qu'elle ne dirait jamais), houseWords (3 à 8 mots de la maison), bannedWords (3 à 8 mots interdits) ; is : « Elle est » en 3 traits, chacun avec sa limite (« Complice, pas gamine. », « Franche, pas soupçonneuse. ») ; micro : la voix EN SITUATION, 3 petits textes d'interface écrits dans cette voix (where = l'endroit : « Un bouton », « Sur une fiche produit », « Quand le panier est vide », « Quand le paiement échoue » ; text = ce que la marque y écrit).
