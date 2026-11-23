@@ -104,19 +104,24 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Noms de marque** : un mot simple et fort qui dit la matière ou le métier ; l'épreuve du fondateur (« tu
   appellerais ton site comme ça, toi ? ») ; aucun sous-entendu ; le juge ne garde qu'un nom qu'il noterait 8 sur 10 ;
   l'adresse sur Internet est contrôlée, et jamais promise.
-- **Logo** : créé par OpenAI pour cette marque-là, jamais repris d'une autre ; aucun pictogramme dessiné en code ;
-  fond retiré, pas de carré autour. OpenAI est libre du dessin : il reçoit le métier, les couleurs, la typographie et la
-  direction artistique de la marque, jamais un style imposé. Dans une série, chaque logo reçoit ceux déjà faits avec
-  « je veux un logo complètement différent » : le 1er est fait sans modèle, le 2e reçoit le 1er, le 3e les deux
-  premiers ; jamais les logos d'une série précédente ni d'un autre projet (redit le 20 novembre 2026). Les mots du
-  client sur l'image voulue ne vont pas au dessinateur du logo (« enlève la 7 », 21 novembre 2026), seulement au
-  relecteur des images. Seule exception, accordée le même jour : sa phrase de refus, mot pour mot (« Il ne veut surtout pas : … »).
-  Un logo redessiné reçoit toutes les raisons de ses refus, jamais la seule dernière. Aucune consigne de style au dessinateur (21 novembre 2026 : « pas de consigne autre que les 50 logos en exemple et
-  simplement en exemple ») : il reçoit le nom, le métier, l'idée et le ton de la marque, ses couleurs, sa typographie, le fond
-  blanc, la phrase de refus du client mot pour mot, et la planche des 50 logos aimés (`docs/sina-savoir/logos-aimes/`)
-  annoncée « seulement comme exemples ». Les photos reçoivent des consignes de base dites en positif (bord à bord, écran
-  du site rempli, texte net sur une zone calme, aucun objet vierge sans rôle) ; le relecteur, le modèle le plus fort au
-  niveau élevé, relit chaque image seule et ne garde que ce qu'il note 8 sur 10 ou plus. Le trait près du nom avec parcimonie : un seul par série. Le favicon reprend le logo.
+- **Logo** : créé par OpenAI (modèle imposé le 18 octobre, sans secours) pour cette marque-là, jamais repris d'une autre ;
+  aucun pictogramme dessiné en code. **La demande au dessinateur tient en deux choses : le métier en mots simples et le
+  nom exact** (23 novembre 2026 : « je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une
+  marque de bougies tu donne le nom de la marque et rien de plus, pas de le client ne veux pas tel truc dans son logo.
+  Ça doit être le plus libre possible pour la création du logo »). Exemple : « Fais-moi un logo pour une marque de
+  bougies. Le nom de la marque : « Sillage ». » Rien d'autre : ni idée, ni ton, ni couleurs, ni typographie, ni fond,
+  ni refus du client, ni logos déjà faits, ni planche d'exemples, aucune image jointe ; la même demande à chaque reprise ;
+  le nom n'est épelé que s'il porte un accent ou un signe. Cette décision remplace les règles du 20 et du 21 novembre
+  sur ce que reçoit le dessinateur (les épreuves qui les gardaient sont marquées remplacées, avec l'accord écrit du
+  propriétaire du même jour). Les mots et les refus du client vont au relecteur, le modèle le plus fort au niveau élevé,
+  qui relit chaque logo seul, avec la planche des 50 logos aimés (`docs/sina-savoir/logos-aimes/`) comme niveau, et ne
+  garde que ce qu'il note 8 sur 10 ou plus ; un logo refusé est redessiné avec la même demande, à la charge du Studio,
+  dans la borne des reprises. Le trait près du nom avec parcimonie : un seul par série, tenu par le relecteur seulement
+  (accord du 23 novembre 2026), jamais dit au dessinateur. Le Studio retire le fond après coup, creux des lettres
+  compris, sans carré autour ; un fond qu'il ne sait pas retirer proprement fait redessiner le logo. Le favicon reprend
+  le logo. Les photos reçoivent des consignes de base dites en positif (bord à bord, écran du site rempli, texte net sur
+  une zone calme, aucun objet vierge sans rôle) ; le relecteur relit chaque image seule et ne garde que ce qu'il note
+  8 sur 10 ou plus.
 - **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
   image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair.
 - **Trois angles** : un angle, c'est « aller chercher une typologie de client différente, avec des envies et des
