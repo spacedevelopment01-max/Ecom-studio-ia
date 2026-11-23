@@ -1319,6 +1319,9 @@ la série. Le relecteur du logo juge la qualité seulement ; il ne reçoit plus 
 logo. Deux épreuves scellées l'attendent autrement (refus-et-consigne-apres-la-demande-nue,
 serie-logo-completement-different) : rien n'est envoyé tant que le propriétaire ne les a pas marquées remplacées.
 
-Devis pour refaire Halo et Pénombre (prix vérifié du modèle des logos) : sur une seule carte, part du client 0,31 €
-probable, 0,77 € au plus ; borne des reprises du Studio 0,31 € probable, 1,53 € au plus. Séparément : Halo seul, client
-0,16 € / 0,38 € ; Pénombre seule (planche à finir, à la charge du Studio, 0 % pour le client), Studio 0,31 € / 1,15 €.
+Sur une carte commune, une planche à finir (Pénombre, sans logo) reste à la charge du Studio ; seule la part que le
+client redemande (le logo de Halo) lui est comptée. La table des polices est accordée avec « un caractère » (« un
+caractère rond épais », et non « ronde épaisse »).
+
+Devis de la carte Halo + Pénombre (prix vérifié du modèle des logos) : part du client 0,16 € probable, 0,38 € au plus
+(le logo de Halo) ; borne du Studio 0,47 € probable, 1,91 € au plus (Pénombre en entier, plus les reprises des deux).
