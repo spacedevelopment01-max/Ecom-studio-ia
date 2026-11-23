@@ -435,6 +435,15 @@ Dernière commande :
   d'orchestre : pause avant le choix de « Sillage » (la marque finie redessinerait le logo avec le même défaut).
   Diagnostic gratuit demandé à « Les essais complets » ; réparation commandée à « Évolution de SINA », avec la
   correction du logo à proposer avant d'écrire, dans les règles du propriétaire (aucune consigne de style).
+- Le propriétaire : « Il faut impérativement trouver pourquoi les logos ne sont pas faits correctement et proposer des
+  solutions qui fonctionnent avant de continuer quoi que ce soit ». Diagnostic (essais-complets, 2e6dbf39) et lecture du
+  code par le chef d'orchestre. Causes : (1) la ligne « La marque » vient de la directrice artistique et contient « comme
+  une maison… » (6 maisons sur 9) ; (2) la série ne compte que les logos gardés, donc B et C sont partis de zéro, et une
+  reprise ne voit pas ses propres essais refusés ; (3) le refus arrive en double, au masculin, avec le refus « mains et
+  visage » ; (4) une ligne faite pour les photos ajoutée aux reprises ; (5) à vérifier : logo dessiné par
+  gpt-image-2.6-flare (route des planches), alors que logo-policy.ts impose gpt-image-2.5-sunburst. Remarque : la planche
+  des 50 contient une bougie avec flamme (n° 12), à suivre si les flammes reviennent. Proposition de correction demandée
+  à « Évolution de SINA » avant d'écrire.
 
 ## 5. À lire avant chaque décision
 
