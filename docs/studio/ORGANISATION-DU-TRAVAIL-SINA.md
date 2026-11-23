@@ -457,6 +457,17 @@ Dernière commande :
   choisissables, refonte comptée à la cliente) ; devis d'un seul essai par logo ; Qwen choisi pour une scène de
   planche (règle : images de SINA par OpenAI).
 
+### Nouvelle règle du logo (23 novembre 2026, soir)
+
+- Le propriétaire, mot pour mot : « je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque
+  de bougies tu donne le nom de la marque et rien de plus, pas de le client ne veux pas tel truc dans son logo. Ça doit
+  être le plus libre possible pour la création du logo ».
+- Elle remplace les règles du 21 novembre sur ce que reçoit le dessinateur. Il reçoit le métier et le nom, rien d'autre :
+  ni idée, ni ton, ni couleurs, ni typographie, ni refus, ni planche des 50, ni logos déjà faits, ni raisons des refus.
+  Le relecteur juge toujours (8 sur 10, refus du client vérifié) ; un logo refusé est redessiné avec la même demande, à
+  la charge du Studio ; le fond est retiré par le Studio. Commandé à « Évolution de SINA », avec la mise à jour de
+  CLAUDE.md. Essai des logos de Nadia suspendu jusqu'à cette version.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
