@@ -646,3 +646,42 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     }
   });
 });
+
+describe("l'épreuve de SINA qui prend les devants (planches incomplètes, aucun appel)", async () => {
+  const J = await import("@/lib/syna-agent/journey");
+  const { account, project, emptySpend } = await import("./conversation209-fixtures");
+  const { openThread } = await import("@/lib/syna-agent/thread");
+  const { accepterLaProposition } = await import("@/lib/syna-agent/devants-actions");
+  const { ligneDesPlanchesAFinir } = await import("@/lib/syna-agent/devants");
+  const { plancheDuBouton, PHRASE_PLANCHE_INCOMPLETE } = await import("@/lib/syna-agent/choix-planche");
+  const { all, json } = await import("@/lib/db");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+  await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
+
+  epreuve("sina-propose-de-finir-les-planches", async () => {
+    const user = await account(), pid = project(user) as string;
+    const cid = (await fr(() => openThread(user, pid))).conversationId;
+    const noms = { A: "Sillage", B: "Halo", C: "Pénombre" } as const;
+    J.updateJourney(cid, (x) => {
+      x.steps[0] = { status: "done" };
+      x.identities = { list: (["A", "B", "C"] as const).map((k) => { const r = route(k) as any; return { ...r, name: noms[k], board: { ...r.board, images: { hero: { id: `hero-${k}` }, site: { id: `site-${k}` } } } }; }), issues: [], comparison: "", at: 1, round: 1 } as any;
+    });
+    const avant = emptySpend();
+    const v = await fr(() => openThread(user, pid));
+    await fr(() => openThread(user, pid));
+    const poses = all<{ content_json: string }>("SELECT content_json FROM syna_messages WHERE conversation_id=? AND role='assistant'", cid).map((m) => json<any>(m.content_json, {})).filter((c) => c.devants);
+    expect(poses.map((c) => c.message)).toEqual(["Il manque le logo de Sillage, de Halo et de Pénombre. Je les finis à ma charge, ça ne te coûte rien. On y va ?"]);
+    expect(emptySpend()).toEqual(avant);
+    // Les anciens boutons : grisés tant que la planche est incomplète.
+    const inc = v.journey!.identities!.incompletes!;
+    expect(["Je prends Sillage", "Je prends Halo"].map((c) => plancheDuBouton(c, inc))).toEqual(["A", "B"]);
+    expect(PHRASE_PLANCHE_INCOMPLETE.fr).toBe("Cette planche n'est pas encore complète : je la finis à ma charge, puis tu pourras la choisir.");
+    expect(ligneDesPlanchesAFinir(cid, pid)).toMatch(/^# À DIRE EN PREMIER/);
+    // « Oui, finis-les » : la carte à 0 %, aucune dépense pour le client.
+    const w = await fr(() => accepterLaProposition(user, cid, poses[0].devants.empreinte));
+    expect(w.run!.pending!.preview).toMatch(/À ma charge : 0 % de ton budget/);
+    expect(ligneDesPlanchesAFinir(cid, pid)).toBe("");
+    expect(emptySpend().calls).toBe(avant.calls);
+  });
+});

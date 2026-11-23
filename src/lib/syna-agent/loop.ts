@@ -41,7 +41,7 @@ import { budgetState, jobSpentMicro, replyAllowanceMicro, trackJob, authorizeBud
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, planchesMontrees, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
+import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, planchesIncompletes, planchesMontrees, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
 import { anglesViewOf } from "./angles";
 import { sinaModels } from "./models";
 import { aLaChargeDuStudio } from "../billing";
@@ -51,7 +51,8 @@ import { chosenRoute, plancheWordmark } from "./logos";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
 import { safeWordmark } from "./brand-routes";
 import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
-import { mixIdentity } from "./tools/identity";
+import { finirPlanchesGardees, mixIdentity } from "./tools/identity";
+import { ligneDesPlanchesAFinir, noterRefus, propositionOuverte } from "./devants";
 import { createdPosts } from "./tools/posts";
 import { assetUrl } from "../library";
 
@@ -79,7 +80,7 @@ function identityCountOf(pid: string | null): number | undefined {
 const userOf = (uid: string) => one<User>("SELECT * FROM users WHERE id=?", uid)!;
 const conversationOf = (cid: string) => one<{ id: string; user_id: string; project_id: string | null }>("SELECT id,user_id,project_id FROM agent_conversations WHERE id=?", cid);
 
-function toolContext(user: User, r: SynaRun): ToolContext {
+export function toolContext(user: User, r: SynaRun): ToolContext {
   return {
     user, projectId: r.project_id, conversationId: r.conversation_id, runId: r.id,
     attachment: (aid) => {
@@ -169,6 +170,9 @@ export function decidePending(user: User, cid: string, input: { pendingId: strin
   if (!input.approve) {
     addMessage(cid, "tool", { key: `pending:${p.id}`, tool: p.tool, ok: false, summary: L("Le client a refusé cette action. Rien n'a été modifié.", "The client declined this action. Nothing was changed.") }, r.id);
     updateRun(r.id, { pending_json: JSON.stringify({ ...p, declined: true }) });
+    // Il refuse la carte d'une reprise qui finit ses planches : c'est un « non », la ligne prioritaire ne revient pas.
+    const a = p.args as { keys?: string[]; images?: string[] } | null;
+    if (p.tool === "identity.images" && a?.keys && a.images && finirPlanchesGardees(journeyOf(cid), a.keys, a.images)) noterRefus(cid);
   } else updateRun(r.id, { pending_json: JSON.stringify({ ...p, approved: true }) });
   schedule(getRun(r.id)!);
   return getRun(r.id)!;
@@ -441,7 +445,7 @@ export function budgetInsuffisant(userId: string, projectId: string | null, maxM
     `Not started, nothing paid: this may cost up to ${pct(maxMicro)} and only ${pct(b.available)} is left this month. Tell the client: they can top up the project's AI (My account), or wait until ${fin}.`);
 }
 
-async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "cost", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number; studio?: boolean }) {
+export async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "cost", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number; studio?: boolean }) {
   const preview = await confirmationText(t, args, ctx, r.user_id, r.project_id, est);
   const p: PendingAction = { id: newId(), tool: t.name, args, reason, preview, costMaxMicro, createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p) });
@@ -644,7 +648,8 @@ async function reason(user: User, r: SynaRun, jobId: string, step: number, deps:
     // la 2e réponse et toutes les notices étaient réécrites en mémoire) ; un outil qui demande un projet est refusé sans
     // rien payer tant qu'il n'existe pas.
     reference: scope.routed ? `# Outils du Studio (ceux de l'étape en entier, les autres en liste)\n\n${routedCatalog(true, scope, currentStep(journeyOf(r.conversation_id)), momentDeLEtape(journeyOf(r.conversation_id)))}${guide ? `\n\n# Consigne de l'étape en cours (la même à chaque pas de l'étape)\n${guide}` : ""}` : `# Outils disponibles (registre commun)\n\n${toolCatalog(!!r.project_id, scope)}`,
-    context: `${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${piecesJointes(r.conversation_id, history)}${resultatsDeLaDemande(history)}${note}`,
+    // Planches incomplètes : la ligne prioritaire, en tête (SINA prend les devants, 23 novembre 2026).
+    context: `${ligneDesPlanchesAFinir(r.conversation_id, r.project_id)}${backgroundCreation(r) ? BACKGROUND_NOTE : ""}# Parcours de création (relu à cette étape)\n${journeyContext(journeyOf(r.conversation_id), { identityCount: identityCountOf(r.project_id), notes: r.project_id ? notesDuProjet(r.project_id) : ficheOf(r.conversation_id).notes, fiche: ficheDuFil(r.conversation_id, r.project_id), guideAPart: scope.routed })}${openings.length ? `\nDébuts de tes derniers messages (commence autrement) : ${openings.map((o) => `« ${o}… »`).join(" ; ")}.` : ""}\n\n# État actuel du projet (relu à cette étape)\n${snapshot}\n\n# Budget de tes réponses\nAutorisé pour tes réponses : ${b.authorizedPct ?? 0} % du budget IA ; engagé au total dans ce fil : ${b.spentPct ?? 0} %. Chaque création payante passe en plus par la carte d'accord du client.${await stepQuote(user, r)}\n\n# Pièces jointes du fil\n${piecesJointes(r.conversation_id, history)}${resultatsDeLaDemande(history)}${note}`,
     // Le fil, un bloc par message, mis en mémoire chez le fournisseur (promptHead) : au pas suivant, il est repris.
     history: filEnBlocs(history, history[0] ? messagesDuClientAvant(r.conversation_id, history[0].seq) : []),
     prompt: `Étape ${step + 1} de cette demande. Réponds avec l'objet JSON {message, actions, question, done}.`,
@@ -843,6 +848,8 @@ export function threadView(user: User, cid: string) {
     budget: budgetState(user.id, c.project_id, cid),
     attachments: attachmentsOf(cid).map((a) => ({ id: a.id, kind: a.kind, name: a.name, analysis: a.analysis })),
     tools: allTools().length,
+    // SINA prend les devants : ses boutons « Oui, finis-les » / « Plus tard » ne se montrent que tant que la proposition tient.
+    devants: propositionOuverte(cid, c.project_id),
     journey: (() => {
       const j = journeyOf(cid);
       return {
@@ -854,6 +861,8 @@ export function threadView(user: User, cid: string) {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
           // Jamais une planche incomplète (règle du propriétaire) : une planche gardée de côté n'est pas affichée.
           list: planchesMontrees(j).map(cardOf), study: j.identities.study ?? null,
+          // Les planches incomplètes (la seule lecture) : un bouton d'un ancien message qui en choisit une est grisé.
+          incompletes: planchesIncompletes(j).map((h) => ({ key: h.key, name: j.identities!.list.find((x) => x.key === h.key)?.name ?? h.key, manque: h.manque })),
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
           final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at && !j.brandFinish.manque?.length, finishIssues: j.brandFinish?.issues ?? [] } : null,
         } : null,
