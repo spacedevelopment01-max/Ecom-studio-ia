@@ -1173,3 +1173,42 @@ d'environ 3,8 € : [À vérifier sur la base de l'essai].
 Deux épreuves ajoutées : `reprise-du-studio-jamais-bloquee-par-la-carte`, `images-de-sina-toujours-openai`. Non vérifié :
 aucun essai réel ; une reprise de logo qui joint plus d'images que le premier essai peut coûter un peu plus que prévu, et
 la borne arrêterait alors la dernière reprise (SINA le dirait, rien ne serait compté au client).
+
+## Essai de Nadia : la charge du Studio et la carte annoncée
+
+Deux ratés vus dans l'essai réel de Nadia (version 891914dc, les logos de Sillage et de Halo refaits).
+
+**1. « À ma charge : 0 % », et pourtant son budget engagé est passé de 17,04 % à 17,97 %.** Sa base n'est pas dans cette
+session : la cause est lue dans le code, pas sur ses comptes.
+- La tâche elle-même n'était à la charge du Studio que par morceaux : le travailleur lançait toute tâche sans regarder sa
+  carte (`worker/index.ts`, ligne 91 avant correction) ; seuls deux passages de la chaîne de la marque se mettaient à la
+  charge du Studio (`brand-chain.ts`, lignes 687 et 723). Sur le chemin de Nadia (logos, relectures, idée en mots simples),
+  un essai sans IA montre que chaque appel était bien à la charge du Studio ; mais tout autre chemin ne l'aurait pas été.
+- La réponse de SINA qui présente le résultat de cette tâche, sa relecture et sa réécriture étaient comptées au client
+  (`loop.ts`, lignes 256 et 279), et le « budget engagé » du fil les compte (`budget.ts`, ligne 25). C'est la cause la plus
+  probable du mouvement vu : non vérifié sur sa base.
+- Le coût de la tâche dit à SINA était son coût entier, part du Studio comprise (`loop.ts`, ligne 226) : elle pouvait dire
+  au client un pourcentage qui ne lui était pas compté.
+
+Corrigé à la source : une tâche « À ma charge » s'exécute en entier à la charge du Studio, pour toutes ses dépenses
+(`selonLaCharge`, `trace.ts`) ; la réponse qui en présente le résultat aussi, sans être bloquée par le budget des
+réponses du client (borne de 3 € par réponse, une borne et non une dépense) ; SINA ne reçoit plus que la part du client,
+et l'indication « ce travail était à ta charge ». Épreuve ajoutée : `charge-du-studio-jamais-au-budget-du-client`.
+
+Rattrapage par le code, sans geste à la main (`src/lib/ai/rattrapage-charge-du-studio.ts`) : il retrouve les dépenses d'une
+tâche « À ma charge » et de la réponse qui la présente comptées au client, les lui rend par le même chemin que les essais
+ratés rendus, et les inscrit à la charge du Studio, avec une ligne dans le grand livre. Relancé, il ne change rien. Essai sur
+une base simulée comme celle de Nadia : 17,97 % → 17,04 %, puis rien à la seconde exécution. Sur la base de l'essai :
+`DATA_DIR=<dossier du Studio de l'essai> npx tsx scripts/rendre-charge-du-studio.ts --projet <projet de Nadia> --voir`
+(montre sans rien changer), puis la même commande sans `--voir`. Ce qui reste au-delà (la réponse où Nadia a demandé
+Pénombre, par exemple) n'est pas rendu : [À compléter : à décider avec le propriétaire].
+
+**2. Deux planches annoncées, une seule présentée.** Rien dans le code ne garantissait que chaque planche finie soit
+présentée : SINA ne recevait à la fin de la tâche que son résultat brut, sans la liste de ce qu'elle avait fini, et tout
+reposait sur ses mots. Possible aussi (non vérifié) : avec quatre planches, les images jointes à SINA s'arrêtent à douze
+(`loop.ts`, ligne 631), et la dernière planche peut ne pas lui être montrée. Garantie par le code plutôt que par la
+consigne, parce qu'une consigne se manque : à la fin d'une tâche de la marque, le Studio note les planches finies ou
+refaites et montrées (jamais une planche incomplète) ; le message suivant de SINA doit nommer chacune, sinon le contrôle
+gratuit le lui fait réécrire, à la charge du Studio ; si une planche manque encore, le Studio la présente lui-même, une
+fois, avec la note et les mots de la relecture (`planches-a-presenter.ts`). Essai ajouté : deux planches d'une même tâche,
+et deux tâches attendues ensemble, présentées sans nouvelle question du client.

@@ -10,7 +10,7 @@ import { redact } from "../redact";
 import { AsyncLocalStorage } from "node:async_hooks";
 import crypto from "node:crypto";
 import { id, now, one, run } from "../db";
-import { borneDuStudio } from "./borne-du-studio";
+import { borneDuStudio, tacheDuStudio } from "./borne-du-studio";
 
 export type TraceScope = {
   /** Demande persistante de l'agent commun ; impossible de la remplacer dans une sous-portée. */
@@ -75,6 +75,13 @@ export function withCandidate<T>(candidateId: string, attempt: number, fn: () =>
 const studioScope = new AsyncLocalStorage<boolean>();
 export const aLaChargeDuStudio = <T>(fn: () => T): T => studioScope.run(true, fn);
 export const chargeDuStudio = (): boolean => studioScope.getStore() === true;
+/**
+ * Exécute une tâche de fond selon sa charge : une tâche à la charge du Studio (`tacheDuStudio`) l'est en ENTIER, à la
+ * source, pour toutes ses dépenses (texte, images, relectures, idée en mots simples, recherche), quel que soit le chemin
+ * de l'appel ; jamais une dépense sur le budget du client (essai réel de Nadia, 23 novembre 2026). Les autres tâches
+ * restent comptées au client, sauf leurs reprises (`aLaChargeDuStudio`).
+ */
+export const selonLaCharge = <T>(payload: unknown, fn: () => T): T => (tacheDuStudio(payload) ? aLaChargeDuStudio(fn) : fn());
 
 /** Plafond atteint : l'appel n'est pas envoyé (rien n'est payé). `studio` : c'est la borne des reprises du Studio. */
 export class CostCapReached extends Error {

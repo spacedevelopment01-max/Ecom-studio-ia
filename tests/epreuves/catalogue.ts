@@ -298,4 +298,10 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Quel que soit le réglage en ligne, une image de SINA (marque, site, publications, publicités, atelier en mode « SINA s'en occupe ») part chez OpenAI ; une route confirmée hors d'OpenAI est refusée, jamais remplacée en silence ; seul un outil choisi par le client lui-même dans l'atelier peut être un autre modèle.",
     rejeu: "gratuit",
   },
+  {
+    id: "charge-du-studio-jamais-au-budget-du-client", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia, version 891914dc : les deux plafonds ; logos de Sillage et de Halo refaits)",
+    verdict: "Essai réel de Nadia, version 891914dc : la carte annonçait « À ma charge : 0 % de ton budget », et pourtant 1,1 % a été compté à Nadia : son budget engagé est passé de 17,04 % à 17,97 %. Règle : une reprise à la charge du Studio ne doit JAMAIS toucher le budget du client.",
+    attendu: "Une tâche dont la carte dit « À ma charge : 0 % de ton budget » ne touche jamais le budget du client, pas d'un centime, appel par appel : la tâche entière (idée en mots simples, logos, relectures, reprises, recherche) et la réponse de SINA qui en présente le résultat sont à la charge du Studio ; une dépense déjà comptée au client lui est rendue par le code, une seule fois.",
+    rejeu: "gratuit",
+  },
 ];

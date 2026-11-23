@@ -21,7 +21,7 @@ describe("contrôle gratuit des questions", () => {
   });
   it("le nettoyage gratuit passe avant le contrôle, et le contrôle avant la relectrice", () => {
     const src = fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8");
-    const nettoyage = src.indexOf("Le nettoyage gratuit d'abord"), controle = src.indexOf("const defauts = defautsDuMessage(out, regle);"), relecture = src.indexOf("({ out, relu } = await reviewedReply(");
+    const nettoyage = src.indexOf("Le nettoyage gratuit d'abord"), controle = src.indexOf("const defauts = defautsDuMessage(out, regle);"), relecture = src.indexOf("({ out, relu } = await selonLePas(() => reviewedReply(");
     expect(nettoyage).toBeGreaterThan(0);
     expect(nettoyage).toBeLessThan(controle);
     expect(controle).toBeLessThan(relecture);

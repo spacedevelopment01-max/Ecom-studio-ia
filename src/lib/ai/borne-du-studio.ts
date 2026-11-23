@@ -54,3 +54,13 @@ export function borneDuStudioDe(payload: unknown): number | undefined {
   const cap = plafondDuClientDe(payload);
   return cap == null ? undefined : borneDuStudio(cap, (payload as { studio?: unknown } | null)?.studio === true);
 }
+
+/**
+ * Une tâche entièrement à la charge du Studio (`studio: true` dans sa demande : finir une planche gardée de côté, refaire
+ * le logo qui manque à la marque finie). Essai réel de Nadia (23 novembre 2026) : la carte disait « À ma charge : 0 % de
+ * ton budget », et son budget engagé a bougé. Toute dépense d'une telle tâche, quel que soit l'appel qui la fait, est à la
+ * charge du Studio : la tâche entière s'exécute dans `aLaChargeDuStudio` (`selonLaCharge`, src/lib/ai/trace.ts).
+ */
+export function tacheDuStudio(payload: unknown): boolean {
+  return (payload as { studio?: unknown } | null)?.studio === true;
+}

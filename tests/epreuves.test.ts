@@ -583,6 +583,65 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     // Les chaînes ne bloquent pas une reprise du Studio par le reste de la carte : la dépense comptée au client l'exclut.
     expect(fs.readFileSync("src/lib/syna-agent/budget.ts", "utf8")).toContain("return depensesDeLaTache(jobId).client;");
   });
+  epreuve("charge-du-studio-jamais-au-budget-du-client", async () => {
+    const billing = await import("@/lib/billing");
+    const { one, run } = await import("@/lib/db");
+    const { withTrace, selonLaCharge, chargeDuStudio, depensesDeLaTache } = await import("@/lib/ai/trace");
+    const { borneDuStudioDe } = await import("@/lib/ai/borne-du-studio");
+    const { confirmationText } = await import("@/lib/syna-agent/loop");
+    const user = await account();
+    billing.getSubscription(user.id);
+    run("UPDATE subscriptions SET status='active', plan='vendre', billing='month' WHERE user_id=?", user.id);
+    billing.alignPeriod(user.id, Date.now());
+    billing.syncAllowance(user.id);
+    // La carte de Nadia : finir ses planches (les logos de Sillage et de Halo), « À ma charge : 0 % de ton budget ».
+    const est = { label: "finir tes planches : 1 image qui manque", maxMicro: 765_584, studio: true };
+    expect(await confirmationText({ name: "identity.images", description: "x" } as any, {}, {} as any, user.id, null, est)).toContain("À ma charge : 0 % de ton budget, rien n'est compté pour toi.");
+    const payload = { capMicro: est.maxMicro, studioCapMicro: 2_296_752, imagesOnly: true, images: true, redo: ["A", "B"], slots: ["logo"], studio: true };
+    const engage = () => one<{ m: number; r: number; t: number; rt: number }>("SELECT monthly_used m, reserved r, topup_balance t, reserved_topup rt FROM wallets WHERE user_id=?", user.id)!;
+    const jobId = `epreuve-nadia-${Math.random()}`;
+    // Chaque appel tel que le moteur le fait : le texte (llm.ts) ne se dit « reprise » qu'à partir de la portée ; l'image
+    // (media-providers.ts) et la recherche (web-search.ts) ne disent rien : c'est la portée de la tâche qui décide.
+    const appels: { task: string; provider: string; model: string; micro: number; texte?: boolean }[] = [
+      { task: "strategy", provider: "anthropic", model: "claude-opus-5-5", micro: 60_000, texte: true }, // l'idée en mots simples
+      { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare", micro: 170_000 }, // logo de Sillage
+      { task: "quality_control", provider: "anthropic", model: "claude-opus-5-5", micro: 45_000, texte: true }, // sa relecture
+      { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare", micro: 170_000 }, // logo de Halo
+      { task: "quality_control", provider: "anthropic", model: "claude-opus-5-5", micro: 45_000, texte: true }, // sa relecture
+      { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare", micro: 170_000 }, // Halo refait (reprise)
+      { task: "quality_control", provider: "anthropic", model: "claude-opus-5-5", micro: 45_000, texte: true },
+      { task: "web_research", provider: "anthropic", model: "claude-opus-5-5", micro: 20_000 },
+    ];
+    const depart = engage();
+    // Comme le worker : la tâche entière selon sa charge, dans la trace de la tâche (worker/index.ts).
+    await withTrace({ jobId, studioCapMicro: borneDuStudioDe(payload) }, () => selonLaCharge(payload, async () => {
+      for (const a of appels) {
+        const rid = billing.reserve(user.id, Math.ceil(a.micro * 1.25), { task: a.task, provider: a.provider, model: a.model, ...(a.texte ? { studio: chargeDuStudio() } : {}) });
+        expect(engage(), `${a.task} réservé`).toEqual(depart);
+        billing.settle(rid, a.micro, null, a.task);
+        expect(engage(), `${a.task} réglé`).toEqual(depart);
+      }
+      // Un résultat incertain se retient aussi sur le Studio, jamais sur le client.
+      billing.settleUncertain(billing.reserve(user.id, 90_000, { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare" }), "coupure");
+      expect(engage()).toEqual(depart);
+    }));
+    expect(depensesDeLaTache(jobId).client).toBe(0);
+    // Le worker exécute toute tâche selon sa charge ; la réponse de SINA qui présente le résultat l'est aussi.
+    expect(fs.readFileSync("worker/index.ts", "utf8")).toContain("selonLaCharge(ctx.payload, () => handlers[job.type](ctx))");
+    const loop = fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8");
+    expect(loop).toContain("let pasDuStudio = waited.length > 0 && waited.every((jid) => tacheDuStudio(");
+    expect(loop).toContain("out = await selonLePas(() => reason(user, ce, jobId, step, deps));");
+    // Une dépense déjà comptée au client se rend par le code, une seule fois.
+    const fuite = `${jobId}-fuite`;
+    run("INSERT INTO jobs (id, user_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)", fuite, user.id, "syna.brand", "marque", JSON.stringify(payload), "done", Date.now(), Date.now(), Date.now());
+    await withTrace({ jobId: fuite }, async () => { const rid = billing.reserve(user.id, 50_000, { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare", studio: false }); billing.settle(rid, 40_000, null, "logo"); });
+    expect(engage().m - depart.m).toBe(40_000);
+    const { rendreLaChargeDuStudio } = await import("@/lib/ai/rattrapage-charge-du-studio");
+    rendreLaChargeDuStudio();
+    expect(engage()).toEqual(depart);
+    expect(rendreLaChargeDuStudio().lignes.filter((l) => l.tache === fuite)).toEqual([]);
+    expect(engage()).toEqual(depart);
+  });
   epreuve("images-de-sina-toujours-openai", async () => {
     const { setJsonSetting } = await import("@/lib/settings");
     const { routeDesImagesDeSina } = await import("@/lib/ai/media-routing");
