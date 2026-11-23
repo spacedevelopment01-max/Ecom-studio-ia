@@ -15,7 +15,7 @@ import { runDueAutomations } from "../src/lib/social-v2/automations";
 import { runDueAutopilots } from "../src/lib/social-v2/autopilot";
 import { handlers, HANDLER_TYPES } from "./handlers";
 import { aiActiveFor, runForUser, withAiDisabled } from "../src/lib/ai/access";
-import { withTrace } from "../src/lib/ai/trace";
+import { selonLaCharge, withTrace } from "../src/lib/ai/trace";
 import { borneDuStudioDe } from "../src/lib/ai/borne-du-studio";
 import { intentsFromAction } from "../src/lib/orchestrator/intent";
 
@@ -88,7 +88,9 @@ async function runOne() {
     try {
       // Budget IA épuisé : les étapes IA basculent discrètement sur le moteur local (voir src/lib/ai/access.ts).
       // Création lancée par une demande sans devis payant accepté : moteurs locaux seulement (aucune dépense).
-      const exec = () => handlers[job.type](ctx);
+      // Une tâche à la charge du Studio (« À ma charge : 0 % de ton budget ») l'est en entier, pour toutes ses dépenses
+      // (essai réel de Nadia, 23 novembre 2026 : la carte disait 0 %, et son budget engagé a bougé).
+      const exec = () => selonLaCharge(ctx.payload, () => handlers[job.type](ctx));
       const guarded = (ctx.payload as { aiOff?: boolean })?.aiOff ? () => withAiDisabled("demande lancée sans devis payant accepté", exec) : exec;
       // Seul le rattachement serveur persistant définit la demande commune ; jamais un ID libre du payload.
       const agentBound=one<{bound_id:string}>('SELECT bound_id FROM agent_request_jobs WHERE job_id=?',job.id);

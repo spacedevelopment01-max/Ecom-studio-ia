@@ -7,6 +7,7 @@ import { L } from "../i18n-server";
 import { threadView } from "./loop";
 import { authorizedBudget } from "./store";
 import { authorizeBudgetPct, DEFAULT_BUDGET_PCT } from "./budget";
+import { poserLaProposition } from "./devants";
 
 export function threadFor(user: User, projectId: string | null): string {
   if (projectId) {
@@ -35,5 +36,9 @@ export function openThread(user: User, projectId: string | null, subscriptionKey
     const st = JSON.parse(one<{ state_json: string | null }>("SELECT state_json FROM agent_conversations WHERE id=?", cid)?.state_json ?? "{}");
     run("UPDATE agent_conversations SET state_json=? WHERE id=?", JSON.stringify({ ...st, subscriptionKey }), cid);
   }
+  // Le projet s'ouvre : s'il a des planches incomplètes, SINA prend les devants (message écrit par le code, aucun appel à
+  // l'IA ; posé une fois pour un même état des planches, jamais pendant une reprise). Une panne ici n'empêche jamais
+  // d'ouvrir le fil.
+  if (projectId) { try { poserLaProposition(cid, projectId); } catch { /* le fil s'ouvre quand même */ } }
   return threadView(user, cid);
 }

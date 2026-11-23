@@ -298,4 +298,16 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Quel que soit le réglage en ligne, une image de SINA (marque, site, publications, publicités, atelier en mode « SINA s'en occupe ») part chez OpenAI ; une route confirmée hors d'OpenAI est refusée, jamais remplacée en silence ; seul un outil choisi par le client lui-même dans l'atelier peut être un autre modèle.",
     rejeu: "gratuit",
   },
+  {
+    id: "sina-propose-de-finir-les-planches", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « SINA propose de finir les planches » ; demande du propriétaire, relayée par le chef d'orchestre le 23 novembre 2026)",
+    verdict: "Demande du propriétaire : « qu'elle prenne les devants ». Et sa règle : « Jamais une planche incomplète : une image refusée est refaite avant d'être montrée. » Avant, le bouton « Je prends … » d'un ancien message restait cliquable sur une planche à laquelle il manquait le logo (seul identity.choose le refusait ensuite), et rien ne proposait de finir les planches tant que le client n'écrivait pas.",
+    attendu: "Un ancien bouton qui choisit une planche incomplète est grisé, sans effet, avec dessous « Cette planche n'est pas encore complète : je la finis à ma charge, puis tu pourras la choisir. », et redevient actif dès qu'elle est complète. À l'ouverture du projet, sans aucun appel à l'IA, le Studio pose une seule fois par état des planches un message de SINA qui dit ce qui manque avec les vrais noms (« Il manque le logo de Sillage, de Halo et de Pénombre. Je les finis à ma charge, ça ne te coûte rien. On y va ? »), jamais pendant une reprise ; « Oui, finis-les » ouvre la carte « À ma charge : 0 % de ton budget » et lance la reprise à la charge du Studio ; au message suivant, le contexte de SINA porte d'abord ce qui manque, sauf s'il a dit oui ou « Plus tard ».",
+    rejeu: "gratuit",
+  },
+  {
+    id: "charge-du-studio-jamais-au-budget-du-client", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia, version 891914dc : les deux plafonds ; logos de Sillage et de Halo refaits)",
+    verdict: "Essai réel de Nadia, version 891914dc : la carte annonçait « À ma charge : 0 % de ton budget », et pourtant 1,1 % a été compté à Nadia : son budget engagé est passé de 17,04 % à 17,97 %. Règle : une reprise à la charge du Studio ne doit JAMAIS toucher le budget du client.",
+    attendu: "Une tâche dont la carte dit « À ma charge : 0 % de ton budget » ne touche jamais le budget du client, pas d'un centime, appel par appel : la tâche entière (idée en mots simples, logos, relectures, reprises, recherche) et la réponse de SINA qui en présente le résultat sont à la charge du Studio ; une dépense déjà comptée au client lui est rendue par le code, une seule fois.",
+    rejeu: "gratuit",
+  },
 ];

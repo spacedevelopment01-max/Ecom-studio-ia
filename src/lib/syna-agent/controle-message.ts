@@ -26,11 +26,18 @@ export function nombreDeQuestions(m: MessageDeSina): number {
 /** Une annonce de départ (« C'est parti », « je lance »…). */
 const DEPART = /\b(c'est parti|c’est parti|je lance|je m'y mets|je m’y mets|c'est lancé|c’est lancé|je démarre|je commence (la|ta|tes|ton) (création|marque|site|identit|logo|angles|publications))/i;
 
+/** Le texte nomme-t-il ce nom (sans tenir compte des accents ni des majuscules, jamais au milieu d'un mot) ? */
+export function nommee(texte: string, nom: string): boolean {
+  const n = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[’‘`´]/g, "'").toLowerCase();
+  const w = n(nom).trim();
+  return !!w && new RegExp(`(?<![\\p{L}\\p{N}])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}\\p{N}])`, "u").test(n(texte));
+}
+
 /**
  * Les défauts d'un message, dits pour SINA. `payant` : l'outil passe-t-il par la carte d'accord ; `lance` : une création
  * a-t-elle vraiment démarré pendant cette demande.
  */
-export function defautsDuMessage(m: MessageDeSina, o: { etape: number; payant: (tool: string) => boolean; lance: boolean; /** Ses mots corrigés : « jamais X, toujours Y » (règle « ce qu'il corrige une fois vaut pour toujours »). */ motsCorriges?: { avoid: string; use: string }[] }): string[] {
+export function defautsDuMessage(m: MessageDeSina, o: { etape: number; payant: (tool: string) => boolean; lance: boolean; /** Ses mots corrigés : « jamais X, toujours Y » (règle « ce qu'il corrige une fois vaut pour toujours »). */ motsCorriges?: { avoid: string; use: string }[]; /** Les planches finies par la tâche qui vient de finir, pas encore présentées (essai réel de Nadia, 23 novembre 2026). */ aPresenter?: { name: string }[] }): string[] {
   const out: string[] = [];
   const texte = `${m.message ?? ""} ${m.question?.text ?? ""} ${(m.question?.choices ?? []).join(" ")}`;
   const bord = (w: string) => new RegExp(`(?<![\\p{L}])${w.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\p{L}])`, "iu");
@@ -46,6 +53,11 @@ export function defautsDuMessage(m: MessageDeSina, o: { etape: number; payant: (
     else if (!m.actions.length && !o.lance)
       out.push("Rien n'a été lancé pendant cette demande : n'écris pas « C'est parti » ni « je lance ».");
   }
+  // Ce qu'elle annonce, elle le fait : chaque planche finie par la tâche est présentée d'elle-même, sans que le client la
+  // demande (essai réel de Nadia : deux planches annoncées, une seule présentée).
+  const manquent = (o.aPresenter ?? []).filter((x) => !nommee(texte, x.name));
+  if (manquent.length)
+    out.push(`La tâche qui vient de finir a fini ${o.aPresenter!.length > 1 ? `ces planches : ${o.aPresenter!.map((x) => `« ${x.name} »`).join(", ")}` : `la planche « ${o.aPresenter![0].name} »`}. Présente chacune d'elle-même dans ce message, sans attendre qu'il la demande : son nom, puis ce que tu en penses (la note et les mots de la relecture, jamais autre chose). Ton message ne présente pas ${manquent.map((x) => `« ${x.name} »`).join(", ")}.`);
   return out;
 }
 
