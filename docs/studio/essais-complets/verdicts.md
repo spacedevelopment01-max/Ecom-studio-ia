@@ -11,6 +11,7 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 23/11 14:17 | Nadia | Identité A « Sillage », grande scène (pot ouvert, figues, lumière d'hiver) | 8/10, sans remarque | Oui | [en attente] |
 | 23/11 14:17 | Nadia | Identité A « Sillage », haut du site sur téléphone | 8/10, sans remarque | Oui | [en attente] |
 | 23/11 14:14 | Nadia | Identité B « Halo », logo, 1er essai | 6/10 : « le symbole maison-fenêtre-cœur est un pictogramme banal qui évoque l'immobilier plutôt que la bougie » | Non | [en attente] |
+| 23/11 14:17 | Nadia | Identité B « Halo », logo, 2e essai | 7/10 : « cœur dans une maison avec rayons […] cliché d'agence immobilière ou d'aide à domicile, sans lien avec la bougie » | Non | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
