@@ -73,9 +73,10 @@ export function GuidedVideo({ as,initialSlot }: { as: "post" | "ad";initialSlot?
   useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(draftKey)??"null");if(saved){setGeneration(saved.generation);setSubjectKey(saved.subjectKey);setAspect(saved.aspect);setTotalS(saved.totalS);setScenes(saved.scenes);setRequest(saved.request);setMusic(saved.music);setSceneImages(saved.sceneImages??[]);quoteContext.current=saved.context;setScenario(saved.scenario);}}catch{}hydrated.current=true;},[draftKey]);
   useEffect(()=>{if(!hydrated.current)return;localStorage.setItem(draftKey,JSON.stringify({generation,subjectKey,aspect,totalS,scenes,request,music,sceneImages,context:quoteContext.current,scenario}));},[draftKey,generation,subjectKey,aspect,totalS,scenes,request,music,sceneImages,scenario]);
   // Modèle prêt de l'atelier (rapport 10, point 10) : un clic dans l'atelier remplit la demande ; le client la voit et
-  // peut la changer. Le modèle fixe le geste de caméra côté serveur (jamais de main ni de personne).
+  // peut la changer. Le modèle fixe le geste de caméra côté serveur (jamais de main ni de personne). Comme l'atelier
+  // l'annonce (« image fixe validée d'abord »), la vidéo part en « créer d'abord des images ».
   const [modele,setModele]=useState<{id:string;nom:string}|null>(null);
-  useEffect(()=>{if(initialSlot)return;const q=new URLSearchParams(window.location.search),m=q.get("atelierModele");if(!m||(q.get("atelierAs")??"post")!==as)return;setModele({id:m,nom:q.get("atelierNom")??m});setRequest(q.get("atelierDemande")??"");setScenes(Math.max(1,Math.min(6,Number(q.get("atelierPlans"))||1)));setTotalS(Math.max(6,Math.min(60,Number(q.get("atelierDuree"))||8)));},[as,initialSlot]);
+  useEffect(()=>{if(initialSlot)return;const q=new URLSearchParams(window.location.search),m=q.get("atelierModele");if(!m||(q.get("atelierAs")??"post")!==as)return;setModele({id:m,nom:q.get("atelierNom")??m});setGeneration("staged");setRequest(q.get("atelierDemande")??"");setScenes(Math.max(1,Math.min(6,Number(q.get("atelierPlans"))||1)));setTotalS(Math.max(6,Math.min(60,Number(q.get("atelierDuree"))||8)));},[as,initialSlot]);
   const modeleBody=modele?{modele:modele.id}:{};
   // Prix recalculé à chaque réglage (format, durée, scènes, produit ou service).
   useEffect(() => {
@@ -155,7 +156,8 @@ export function GuidedVideo({ as,initialSlot }: { as: "post" | "ad";initialSlot?
           <div>
             <p className="mb-1.5 text-sm font-medium">{t("Durée totale", "Total length")}</p>
             <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("Durée totale", "Total length")}>
-              {DURATIONS.map((d) => (
+              {/* La durée d'un modèle de l'atelier (5 ou 8 s) est montrée et choisie, même hors de la liste habituelle. */}
+              {(DURATIONS.includes(totalS) ? DURATIONS : [...DURATIONS, totalS].sort((a, b) => a - b)).map((d) => (
                 <button key={d} type="button" role="radio" aria-checked={totalS === d} onClick={() => setTotalS(d)} className={cx("rounded-full border px-3 py-1.5 text-sm", totalS === d ? "border-ink bg-ink text-paper" : "border-line")} data-video-duration={d}>
                   {d} s
                 </button>

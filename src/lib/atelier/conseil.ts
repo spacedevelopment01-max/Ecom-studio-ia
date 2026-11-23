@@ -28,7 +28,7 @@ export function conseilOutil(geste: GesteId, outils: OutilMontre[], lang: "fr" |
   const c = outils.find((o) => o.conseille);
   if (!c) return lang === "fr" ? "Aucun outil n'est encore ouvert pour ce geste." : "No tool is open yet for this action.";
   const nom = t(c.nom, lang);
-  const pourquoi = t(c.mieux, lang).replace(/[.;].*$/, "").toLowerCase();
+  const pourquoi = t(c.mieux, lang).replace(/\s*[.;].*$/, "").toLowerCase();
   return lang === "fr" ? `Je prends ${nom} pour « ${t(GESTES[geste].nom, "fr").toLowerCase()} » : ${pourquoi}.` : `I'm using ${nom} for "${t(GESTES[geste].nom, "en").toLowerCase()}": ${pourquoi}.`;
 }
 

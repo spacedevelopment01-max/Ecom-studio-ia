@@ -18,7 +18,7 @@ export const subjectChoice = (s: SubjectView | undefined): SubjectChoice | undef
 export type IdeaSurface = "post_image" | "ad_image" | "post_video" | "ad_video";
 type Ideas = { source: string; subjects: { kind: string; key: string; name: string; ideas: Record<IdeaSurface, { title: string; prompt: string }[]> }[] };
 
-/** Bouton « Idées de prompts » : idées écrites pour CE produit ou service à la création du projet ; un clic remplit la demande. */
+/** Bouton « Idées de demandes » (jamais le mot anglais « prompt » à l'écran) : idées écrites pour CE produit ou service à la création du projet ; un clic remplit la demande. */
 export function PromptIdeas({ subjectKey, surface, onPick }: { subjectKey: string; surface: IdeaSurface; onPick: (prompt: string) => void }) {
   const { id } = useProject();
   const t = useT();
@@ -28,7 +28,7 @@ export function PromptIdeas({ subjectKey, surface, onPick }: { subjectKey: strin
   return (
     <div className="grid gap-2" data-prompt-ideas>
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="inline-flex w-fit items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-sm hover:bg-paper-2" data-prompt-ideas-toggle>
-        <Lightbulb className="size-4" /> {t("Idées de prompts", "Prompt ideas")}
+        <Lightbulb className="size-4" /> {t("Idées de demandes", "Prompt ideas")}
       </button>
       {open && (
         <div className="grid gap-2 rounded-2xl border border-line bg-paper-2 p-3">
@@ -59,12 +59,12 @@ export function SubjectPicker({ subjects, value, onChange, request, onRequest, i
       {subjects.length > 0 && (
         <div>
           <p className="mb-1.5 text-sm font-medium">{kind === "service" ? t("Avec quel service travailler ?", "Which service to work with?") : t("Avec quel produit travailler ?", "Which product to work with?")}</p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label={kind === "service" ? t("Service", "Service") : t("Produit", "Product")}>
+          <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 xl:grid-cols-3" role="radiogroup" aria-label={kind === "service" ? t("Service", "Service") : t("Produit", "Product")}>
             {subjects.map((s) => (
               <button key={`${s.kind}:${s.key}`} type="button" role="radio" aria-checked={value === s.key} onClick={() => onChange(s.key)} data-subject={s.key} className={cx("flex items-center gap-2 rounded-2xl border p-2 text-left text-sm", value === s.key ? "border-ink bg-paper-2" : "border-line hover:border-ink/40")}>
                 {s.photoId ? <img src={`/api/files/${s.photoId}?thumb=1`} alt="" className="size-10 shrink-0 rounded-lg bg-paper-2 object-contain" /> : <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-paper-2 text-xs text-muted" aria-hidden>{s.name.slice(0, 2).toUpperCase()}</span>}
                 <span className="min-w-0">
-                  <span className="block truncate font-medium">{s.name}</span>
+                  <span className="line-clamp-2 block font-medium">{s.name}</span>
                   {s.kind === "product" && !s.hasPhoto&&!photoOptional && <span className="block text-[11px] text-warn">{t("Sans photo : ajoutez-en une pour l'IA", "No photo: add one for the AI")}</span>}
                 </span>
               </button>

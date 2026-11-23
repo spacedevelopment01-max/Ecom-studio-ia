@@ -41,7 +41,8 @@ type Etat = {
   nonServies: { n: number; phrase: string | null };
 };
 
-const pick = (x: T2, lang: string) => (lang === "en" ? x[1] : x[0]);
+/** Le texte dans la langue choisie ; en français, une espace insécable avant « : ; ! ? » (jamais un deux-points seul en début de ligne). */
+export const pick = (x: T2, lang: string) => (lang === "en" ? x[1] : x[0].replace(/ ([:;!?»])/g, "\u00a0$1").replace(/« /g, "«\u00a0"));
 
 /** Suit une tâche jusqu'à sa fin, puis recharge l'atelier (une création ratée est dite ratée). */
 function useSuivi(onDone: () => unknown) {
@@ -121,7 +122,7 @@ export default function TabAtelier() {
         <p className="mt-1 text-sm text-muted">{t("Un clic remplit ta demande ; tu la vois et tu la changes. J'en épingle trois pour le moment de l'année.", "One click fills in your request; you see it and change it. I pin three for this time of year.")}</p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {data.modelesImages.map((m) => (
-            <button key={m.id} type="button" onClick={() => remplir(m)} data-atelier-modele-image={m.id} className={cx("rounded-2xl border p-3 text-left", m.epingle ? "border-signal bg-signal-soft" : "border-line bg-card")}>
+            <button key={m.id} type="button" onClick={() => remplir(m)} data-atelier-modele-image={m.id} className={cx("flex h-full flex-col items-start justify-start rounded-2xl border p-3 text-left", m.epingle ? "border-signal bg-signal-soft" : "border-line bg-card")}>
               <span className="flex items-center gap-1.5 font-medium">{m.epingle && <Pin className="size-3.5" aria-label={t("Épinglé par SINA", "Pinned by SINA")} />}{pick(m.nom, lang)}</span>
               <span className="mt-1 block text-xs text-muted">{pick(m.idee, lang)}</span>
               {m.offre && <span className="mt-1 block text-xs text-warn">{t("Écris ton offre dans la demande : je ne l'invente pas.", "Write your offer in the request: I don't invent it.")}</span>}
@@ -291,6 +292,9 @@ function GestesCard({ etat, mode, onStarted, disabled }: { etat: Etat; mode: Mod
   );
 }
 
+/** Bouton d'une carte étroite : il passe à la ligne et grandit au lieu d'être coupé (jamais un bouton coupé). */
+const BOUTON_CARTE = "!h-auto min-h-8 w-full !whitespace-normal py-1.5 text-center leading-tight";
+
 function VideosCard({ etat, projectId, services }: { etat: Etat; projectId: string; services: boolean }) {
   const t = useT();
   const { lang } = useLang();
@@ -312,9 +316,9 @@ function VideosCard({ etat, projectId, services }: { etat: Etat; projectId: stri
               <span className="mt-1 text-xs text-warn">{pick(m.garde, lang)}</span>
               <span className="mt-2 text-xs font-medium">{m.prix ?? t("Pas encore ouvert", "Not open yet")}</span>
               <div className="mt-auto pt-2">
-                {m.gratuit ? <Button size="sm" variant="secondary" onClick={() => setAvantApres(true)} data-atelier-avant-apres>{t("Choisir mes deux photos", "Choose my two photos")}</Button>
-                  : ferme || !m.prix ? <Button size="sm" variant="secondary" disabled>{t("Utiliser ce modèle", "Use this template")}</Button>
-                  : <a className="inline-flex h-9 items-center rounded-full bg-ink px-3 text-sm text-paper" href={lien(m)} data-atelier-video-go={m.id}>{t("Utiliser ce modèle", "Use this template")}</a>}
+                {m.gratuit ? <Button size="sm" variant="secondary" className={BOUTON_CARTE} onClick={() => setAvantApres(true)} data-atelier-avant-apres>{t("Choisir mes deux photos", "Choose my two photos")}</Button>
+                  : ferme || !m.prix ? <Button size="sm" variant="secondary" className={BOUTON_CARTE} disabled>{t("Utiliser ce modèle", "Use this template")}</Button>
+                  : <a className="inline-flex min-h-9 w-full items-center justify-center rounded-full bg-ink px-3 py-1.5 text-center text-sm leading-tight text-paper" href={lien(m)} data-atelier-video-go={m.id}>{t("Utiliser ce modèle", "Use this template")}</a>}
               </div>
             </div>
           );
@@ -391,7 +395,7 @@ function CreationsCard({ etat, projectId }: { etat: Etat; projectId: string }) {
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {liste.map((c) => (
             <div key={c.id} className="overflow-hidden rounded-2xl border border-line bg-card" data-atelier-creation={c.id}>
-              {c.url ? c.kind === "video" ? <video src={c.url} className="aspect-square w-full object-cover" muted playsInline controls /> : <img src={c.thumbUrl ?? c.url} alt="" className="aspect-square w-full object-cover" loading="lazy" /> : <div className="grid aspect-square place-items-center text-xs text-muted">{t("Aucune image retenue", "No image kept")}</div>}
+              {c.url ? c.kind === "video" ? <video src={c.url} poster={c.thumbUrl ?? undefined} preload="metadata" className="aspect-square w-full object-cover" muted playsInline controls /> : <img src={c.thumbUrl ?? c.url} alt="" className="aspect-square w-full object-cover" loading="lazy" /> : <div className="grid aspect-square place-items-center text-xs text-muted">{t("Aucune image retenue", "No image kept")}</div>}
               <div className="grid gap-1 p-2.5 text-xs">
                 <span className={cx("font-medium", c.status !== "ok" && "text-warn")}>{pick(STATUT[c.status], lang)}</span>
                 <span className="text-muted">{c.outil} · {new Date(c.at).toLocaleDateString(lang === "en" ? "en-GB" : "fr-FR")} · {c.cout}</span>
