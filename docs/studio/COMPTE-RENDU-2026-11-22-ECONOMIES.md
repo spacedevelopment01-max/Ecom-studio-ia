@@ -1241,3 +1241,26 @@ refaites et montrées (jamais une planche incomplète) ; le message suivant de S
 gratuit le lui fait réécrire, à la charge du Studio ; si une planche manque encore, le Studio la présente lui-même, une
 fois, avec la note et les mots de la relecture (`planches-a-presenter.ts`). Essai ajouté : deux planches d'une même tâche,
 et deux tâches attendues ensemble, présentées sans nouvelle question du client.
+
+## Le logo : la demande nue
+
+Décision du propriétaire du 23 novembre 2026 : « je pense qu'il ne faut pas donner d'informations sauf fait moi un logo
+pour une marque de bougies tu donne le nom de la marque et rien de plus, pas de le client ne veux pas tel truc dans son
+logo. Ça doit être le plus libre possible pour la création du logo ».
+
+- La demande au dessinateur tient en deux choses : le métier en mots simples, tiré par le code de la ligne de métier de
+  la planche, et le nom exact (épelé seulement s'il porte un accent ou un signe). Exemple : « Fais-moi un logo pour une
+  marque de bougies. Le nom de la marque : « Sillage ». » Aucune image jointe, la même demande à chaque reprise.
+- Retirés : la ligne « La marque », l'idée en mots simples et son appel, les couleurs, la typographie, le fond blanc,
+  la phrase de refus, les 50 logos aimés et les logos déjà faits au dessinateur, les raisons des refus dans les reprises.
+- Restent côté Studio : le relecteur (mots et refus du client, 50 logos aimés comme niveau, 8 sur 10 au moins) ; le
+  trait près du nom, un seul par série, tenu par le relecteur seul (accord écrit du 23 novembre) ; un logo refusé est
+  redessiné avec la même demande, à la charge du Studio.
+- Le fond est retiré par le Studio, sans IA : un fond uni de n'importe quelle couleur, creux des lettres compris (la
+  version claire de Halo gardait l'intérieur du « a » et du « o » en blanc) ; un fond texturé ne se retire pas
+  proprement : le logo est redessiné, et c'est dit.
+- Devis des trois logos de Nadia : carte du client 0,49 € probable, 1,20 € au plus (avant : 0,52 € et 1,38 €).
+- Banc d'épreuves : huit épreuves de l'ancienne règle sont marquées « remplacées le 23 novembre 2026 par
+  logo-demande-nue » (accord écrit du propriétaire), hors du sceau ; elles restent au catalogue et ne sont plus rejouées.
+  Ajoutées : logo-demande-nue, logo-clair-creux-des-lettres, trait-pres-du-nom-un-par-serie-au-relecteur,
+  refus-et-consigne-apres-la-demande-nue.

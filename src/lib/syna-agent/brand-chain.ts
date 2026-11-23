@@ -576,6 +576,11 @@ export const clientWords = (guidance?: string): string => [...(guidance ?? "").m
 /** Le dossier de chaque création de la marque : la fiche ENTIÈRE du client (le socle, 21 novembre 2026), puis la refonte. */
 const briefBlock = (j: Journey, projectId: string, guidance?: string) => [ficheTexte({ j, notes: notesDuProjet(projectId), projectId }), "", "# Existant et refonte", keepConstraints(j), ...(guidance ? ["", "# Ce que le client demande pour cette nouvelle proposition (ses mots)", guidance] : [])].join("\n");
 /** Ce que le client a dit de l'image qu'il veut : sa réponse de départ, et ses goûts et refus de sa fiche qui valent pour le logo ou les images de la marque. */
+/**
+ * Les logos GARDÉS d'une série (montrés au client), pour le seul relecteur : la règle du trait près du nom, un seul par
+ * série (accord du propriétaire du 23 novembre 2026). Jamais donnés au dessinateur du logo.
+ */
+const logoGarde = (x: Route): Buffer | null => { const g = x.board?.images?.logo ? getAsset(x.board.images.logo.id) : undefined; try { return g ? assetData(g) : null; } catch { return null; } };
 export const goutsDuClient = (j: Journey, projectId: string, ...more: (string | null | undefined)[]): string | null => [j.start.image?.value, ...goutsPour(notesDuProjet(projectId), ["logo", "images"]), ...more].filter((v): v is string => !!v?.trim()).join("\n") || null;
 const ideaBlock = (i: Strategy["ideas"][number], s: Strategy) => `Idée ${i.id} : ${i.belief} | aveu : ${s.confessions[i.confession]?.text ?? s.confessions[0].text} | adversaire : ${i.enemy} | preuve dans l'objet : ${i.proof} | ce qu'elle coûte : ${i.cost} | ton : ${i.tone}`;
 const routeText = (x: Route) => JSON.stringify({ ...x, board: (({ hero: _h, images: _i, ...b }) => ({
@@ -672,6 +677,8 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const targets = a.redo?.length ? previous.filter((x) => a.redo!.includes(x.key)) : previous, round = j.identities?.round ?? 1;
     let list = (j.identities?.list ?? []) as Route[];
     const said: string[] = [], siteGardes: string[] = [];
+    // Les logos gardés des AUTRES planches de la série montrée, puis ceux refaits ici et gardés : pour le relecteur seul.
+    const gardes: Buffer[] = (a.slots ?? CREATED_SLOTS).includes("logo") ? list.filter((y) => !targets.some((t) => t.key === y.key)).map(logoGarde).filter((b): b is Buffer => !!b) : [];
     const held = new Map<string, string[]>();
     // Logo refait seul : la consigne écrite par SINA ne va jamais au dessinateur, même par la fiche de la marque (décision
     // du propriétaire du 21 novembre 2026 : « pas de consigne autre que les 50 logos en exemple » ; essai réel du même
@@ -688,9 +695,10 @@ export async function runSinaBrandJob(ctx: JobContext) {
       const reprise = logoOnly || !a.guidance ? proposalImagery(j, x) : undefined;
       // Une planche gardée de côté, finie par le Studio : ses images manquantes sont une reprise de son propre travail,
       // jamais comptée au client (LE-STUDIO-DE-A-A-Z, partie 13 : « une erreur de SINA est toujours corrigée sans rien compter »).
-      const faire = () => runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, gouts, ...(reprise ? { imagery: reprise } : {}) });
+      const faire = () => runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief: imagesBrief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, gouts, keptLogos: [...gardes], ...(reprise ? { imagery: reprise } : {}) });
       const r = a.studio && planchesIncompletes(j).some((y) => y.key === x.key) ? await aLaChargeDuStudio(faire) : await faire();
       list = list.map((o) => (o.key === x.key ? r.route : o));
+      if ((a.slots ?? CREATED_SLOTS).includes("logo")) { const b = logoGarde(r.route); if (b) gardes.push(b); }
       if (r.siteGarde) siteGardes.push(x.key);
       const manque = manqueDeLaPlanche(r.route, !!clientLogo);
       if (manque.length) { said.push(phrasePlancheGardee(r.route, manque, r.issues)); held.set(x.key, manque); } else said.push(...r.issues);
@@ -1010,12 +1018,15 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // Jamais une planche incomplète (règle du propriétaire ; essai réel de Nadia, 23 novembre 2026 : des planches sans logo
   // lui ont été montrées) : une planche à laquelle il manque encore une image après les reprises est gardée de côté.
   const imagesFaites = a.images ?? brandImagesOn();
+  // Les logos gardés de la série (planches non refaites, puis chaque logo gardé ici) : pour le relecteur seul (trait).
+  const gardesSerie: Buffer[] = list.filter((y) => !todo.includes(y.key)).map(logoGarde).filter((b): b is Buffer => !!b);
   const raisonsDe = new Map<string, string[]>();
   if (imagesFaites) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, gouts: goutsDuClient(j, p.id) });
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, gouts: goutsDuClient(j, p.id), keptLogos: [...gardesSerie] });
         list = list.map((o) => (o.key === x.key ? r.route : o));
+        { const b = logoGarde(r.route); if (b) gardesSerie.push(b); }
         raisonsDe.set(x.key, r.issues); notes.push(...r.notes);
       } catch (e) {
         if (e instanceof CostCapReached) { notes.push("plafond de dépense atteint avant la fin des images"); raisonsDe.set(x.key, [L("le plafond annoncé a été atteint avant la fin de ses images", "the announced cap was reached")]); break; }

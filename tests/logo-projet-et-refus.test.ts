@@ -24,7 +24,7 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
   });
   it("plus aucun logo de la série au dessinateur (décision du 23 novembre 2026) ; la chaîne transmet les goûts du client au relecteur", () => {
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).not.toMatch(/logoSheet|madeLogos|keptLogos|complètement différent/);
+    expect(img).not.toMatch(/logoSheet|madeLogos|complètement différent/);
     expect(img).toContain("Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
     // Les goûts du client viennent de sa fiche (réponse « image », goûts et refus pour les images) : `goutsDuClient`.

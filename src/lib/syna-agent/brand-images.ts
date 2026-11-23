@@ -361,6 +361,38 @@ type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
 const instead = (x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? (x.board.images?.logo ? "je garde celui d'avant" : "je le refais avant de te montrer ta marque") : slot === "site" ? "je ne le montre pas" : "je ne la montre pas";
 
+/**
+ * Un trait fin et horizontal dans un logo (filet sous le nom, ligne de chaque côté) : une rangée de pixels sombres
+ * presque continue, longue (au moins 22 % du dessin), fine (au plus 4 %, ou 5 points) et isolée. Sans IA. Sert seulement à dire au RELECTEUR qu'un trait est déjà pris dans la série (accord du propriétaire du 23 novembre 2026 : « garde le trait près du nom (un seul par série) côté relecteur ») ; rien n'est dit au dessinateur. Essayé sur les 43 logos
+ * du Studio d'essai (20 novembre 2026), puis réglé le 21 : un trait doré de 4 points sous le nom passait pour un aplat.
+ */
+export async function traitHorizontal(png: Buffer): Promise<{ trouve: boolean; detail: string }> {
+  const { data, info } = await sharp(png).flatten({ background: "#FFFFFF" }).resize(400, 400, { fit: "inside" }).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height, sombre = (x: number, y: number) => data[y * W + x] < 215;
+  let x0 = W, x1 = 0, y0 = H, y1 = 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (sombre(x, y)) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+  if (bw < 20 || bh < 20) return { trouve: false, detail: "" };
+  const run = (y: number) => { let best = 0, cur = 0, gap = 0; for (let x = x0; x <= x1; x++) { if (sombre(x, y)) { cur += 1 + gap; gap = 0; } else if (cur && gap < 2) gap++; else { best = Math.max(best, cur); cur = 0; gap = 0; } } return Math.max(best, cur); };
+  const longue = (y: number) => run(y) >= 0.22 * bw;
+  for (let y = y0; y <= y1; y++) {
+    if (!longue(y)) continue;
+    let e = y; while (e + 1 <= y1 && longue(e + 1)) e++;
+    if (e - y + 1 <= Math.max(5, 0.04 * bh)) {
+      const avant = y - 2 >= y0 ? run(y - 2) : 0, apres = e + 2 <= y1 ? run(e + 2) : 0;
+      if (avant < 0.15 * bw && apres < 0.15 * bw) return { trouve: true, detail: `rangée ${y - y0} sur ${bh}, longueur ${Math.round((100 * run(y)) / bw)} %` };
+    }
+    y = e;
+  }
+  return { trouve: false, detail: "" };
+}
+/**
+ * Le trait près du nom avec parcimonie (propriétaire, 20 novembre 2026 : « il doit juste être là par parcimonie » ; puis le
+ * 23 novembre : « garde le trait près du nom (un seul par série) côté relecteur ») : quand un logo déjà gardé de la série
+ * en porte un, le relecteur refuse un deuxième trait. Le logo refusé est redessiné avec la même demande nue.
+ */
+export const TRAIT_DEJA_PRIS_RELECTEUR = "Un logo déjà gardé dans cette série porte un trait, un filet ou une ligne près du nom (règle du propriétaire : un seul par série). Si ce logo-ci en porte un aussi (sous le nom, au-dessus ou de chaque côté), c'est un défaut (defect « autre ») : dis-le dans why. L'image jointe en dernier, « trait déjà pris », montre ce logo déjà gardé : ne la juge pas.";
+
 /** Ce qu'on appelle chaque image d'une planche, quand elle manque. */
 const MANQUE_LABEL: Record<string, { fr: string; en: string }> = { logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande scène", en: "the main scene" }, site: { fr: "le haut du site", en: "the site header" } };
 /**
@@ -486,6 +518,11 @@ export async function runBoardImages(o: {
   /** Ce que le client a dit de l'image qu'il veut (ses mots, refus compris) : donné au RELECTEUR des images, jamais au
    * dessinateur du logo (décision du propriétaire du 23 novembre 2026 : le métier et le nom, rien de plus). */
   gouts?: string | null;
+  /**
+   * Les logos déjà GARDÉS (montrés) de la même série : seulement pour le relecteur, qui refuse un deuxième trait près du nom
+   * dans la série (accord du propriétaire du 23 novembre 2026). Jamais donnés au dessinateur.
+   */
+  keptLogos?: Buffer[];
   /** Direction artistique déjà écrite pour cette planche (premier temps) : reprise telle quelle, jamais repayée. */
   imagery?: Imagery;
   /** Logo GARDÉ par le client : jamais redessiné ; il est la marque de la planche et se pose sur ce qui le porte. */
@@ -512,6 +549,8 @@ export async function runBoardImages(o: {
   const nets = new Map<string, Buffer>();
   // Le vrai produit d'une boutique (ses photos envoyées), joint à la grande scène et au haut du site, et au relecteur.
   const produit = o.kind === "produits" ? await planchePhotosDuProduit(o.who.projectId).catch(() => null) : null;
+  // Un trait près du nom déjà pris par un logo gardé de la série (contrôle sans IA) : dit au relecteur, avec ce logo-là.
+  const traitPris = wanted.has("logo") && o.keptLogos?.length ? (await Promise.all(o.keptLogos.map(async (b) => ((await traitHorizontal(b).catch(() => ({ trouve: false }))).trouve ? b : null)))).find(Boolean) ?? null : null;
   // Ce que le relecteur a dit de chaque image gardée (sa note, ses mots) : c'est ce que SINA en dira, rien d'autre.
   const verdicts = new Map<ImageSlot, { score?: number; words: string }>();
   // Ce qui a servi à créer chaque image : repris tel quel pour la refaire quand la relecture la refuse.
@@ -609,6 +648,9 @@ export async function runBoardImages(o: {
     // Le vrai produit du client, joint en dernier pour la grande scène et le haut du site : le relecteur compare.
     const compare = !!produit && slots.some((s) => s === "hero" || s === "site");
     if (compare) seen.push({ data: produit!, label: "produit" });
+    // Le trait déjà pris dans la série : le logo gardé qui le porte, joint en dernier pour le relecteur du logo.
+    const trait = slots.includes("logo") && traitPris ? await onWhite(traitPris) : null;
+    if (trait) seen.push({ data: trait, label: "trait déjà pris" });
     // Un logo à juger : la planche des logos que le propriétaire aime, comme niveau à atteindre. Jointe à part, en tête
     // de la relecture et gardée en mémoire chez le fournisseur (la même pour tous les clients, 22 novembre 2026).
     const aimes = slots.includes("logo") ? await planchedesLogosAimes() : null;
@@ -618,6 +660,7 @@ export async function runBoardImages(o: {
         system: P.imageReviewSystem(personnes), schema: ImageReviewSchema,
         prompt: [`Marque : « ${x.name} ».${x.board.descriptor ? ` Métier : ${x.board.descriptor}.` : ""} Voici ${slots.length} image(s), dans l'ordre.${reference ? ` ${compare ? "L'image jointe n°" : "La dernière image jointe"} ${compare ? slots.length + 1 : `(${slots.length + 1})`} est seulement le logo de la marque, pour comparer : ne la juge pas.` : ""}`,
           ...(compare ? [PRODUIT_A_COMPARER] : []),
+          ...(trait ? [TRAIT_DEJA_PRIS_RELECTEUR] : []),
           ...(aimes ? [`L'image jointe à part, en tête (hors numérotation), est la planche des logos que le propriétaire du Studio aime : elle donne le NIVEAU attendu pour le logo, ne la juge pas et ne la recopie pas.`] : []),
           // Ce que le client refuse (essai réel du 20 novembre 2026 : une goutte d'eau refusée par le client, passée au contrôle).
           ...(o.gouts?.trim() ? [`Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut (defect « autre »).`] : []), ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
