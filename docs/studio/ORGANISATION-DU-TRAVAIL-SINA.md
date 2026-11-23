@@ -390,6 +390,13 @@ Dernière commande :
   annonce le même prix que l'atelier (`atelier.etat` lignes 43 et 52, `atelier.video` ligne 131, carte d'accord
   d'`atelier.creer` lignes 101 à 106 avec `probableMicro`). Phrase à écrire : « Oui, je t'autorise à mettre le même prix
   dans le code de SINA (atelier.ts) que dans l'atelier. »
+- Fait (8bde92e8), avec l'accord écrit du propriétaire dans « Évolution de SINA » : SINA donne le même prix que l'atelier.
+  Vérifié par le chef d'orchestre sur une copie propre : types sans erreur, 5 993 essais passés (81 mis de côté).
+- Le propriétaire demande un atelier « plus joli, qui fasse plus création d'image et vidéo ». Image d'exemple faite
+  sans IA (page dessinée puis photographiée, avec les vraies créations de Galet) et envoyée : grande scène sombre avec
+  les créations, une seule barre « Que veux-tu créer ? » (Image ou Vidéo), modèles de vidéo avec aperçu animé et prix
+  en étiquette, retouches en un geste, mur de créations, image qui apparaît pendant la création. Coût en IA : 0. Attend
+  son oui avant d'être confié à « Évolution de SINA ».
 
 ## 5. À lire avant chaque décision
 
