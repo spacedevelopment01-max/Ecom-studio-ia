@@ -71,10 +71,10 @@ describe("logos : aucune consigne de style, les 50 logos aimés seulement comme 
   const P = await import("@/lib/syna-agent/brand-prompts");
   const M = await import("@/lib/ai/media-providers");
   const imagery = { look: "Lumière du matin, pierre calcaire.", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never;
-  it("le dessinateur reçoit le métier en mots simples et le nom, et rien d'autre (décision du 23 novembre 2026)", async () => {
+  it("le dessinateur reçoit le métier et le nom, les couleurs, la typographie et le fond, rien d'autre (décision du 23 novembre 2026 au soir)", async () => {
     const p = I.imagePrompt("logo", route("A") as never, imagery);
-    expect(p).toBe(`Fais-moi un logo pour ${I.metierEnMotsSimples(route("A").board.descriptor)}. Le nom de la marque : « ${route("A").name} ».`);
-    expect(p).not.toMatch(/La marque :|Son ton|Couleurs|Typographie|BLANC|fond|Il ne veut|Ce qu'il faut savoir|Lumière du matin|Direction artistique/);
+    expect(p).toBe(`Fais-moi un logo pour ${I.metierEnMotsSimples(route("A").board.descriptor)}. Le nom de la marque : « ${route("A").name} ».` + `\nCouleurs de la marque : foncé ${route("A").palette.dark}, couleur de marque ${route("A").palette.primary}, surface ${route("A").palette.secondary}, accent ${route("A").palette.accent}, clair ${route("A").palette.light}.\n${I.typoLine(route("A").fonts.heading)}\nSur un fond blanc uni.`);
+    expect(p).not.toMatch(/La marque :|Son ton|BLANC|Il ne veut|Ce qu'il faut savoir|Lumière du matin|Direction artistique/);
     expect((I as Record<string, unknown>).LOGO_NIVEAU).toBeUndefined();
     expect((I as Record<string, unknown>).logoRefus).toBeUndefined();
     expect((I as Record<string, unknown>).ligneDeLaMarque).toBeUndefined();

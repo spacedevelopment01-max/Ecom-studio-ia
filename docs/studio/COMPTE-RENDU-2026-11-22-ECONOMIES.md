@@ -1287,3 +1287,38 @@ j'aime bien le 1er logo. Pour rappel on ne demande plus au client ce qu'il veux 
 - Banc : logo-demande-nue et trait-pres-du-nom-un-par-serie-au-relecteur sont marquées remplacées par
   serie-logo-completement-different (accord écrit du propriétaire) ; ajoutées et scellées :
   serie-logo-completement-different et trois-fois-le-meme-dessin.
+
+## Logos : trois ratés de l'essai réel
+
+Essai réel de Nadia sur la version 02570ae1, relevé par le chef d'orchestre le 23 novembre 2026. Tout est corrigé sans
+dépense et rejoué sans IA.
+
+1. **Une question sur le logo.** À « Le logo de Halo ne me plaît pas trop, tu peux m'en faire un autre ? », SINA a
+   répondu « Qu'est-ce qui te gêne dans le logo de Halo : les lettres, le bleu, l'ellipse orange au-dessus, ou
+   l'ensemble ? ». La consigne ne suffisait pas. Le contrôle gratuit des messages (sans IA) fait maintenant réécrire, à
+   la charge du Studio, toute réponse qui questionne le client sur le contenu d'un logo (lettres, couleur, forme, style,
+   ce qui plaît ou déplaît). « Tu veux que je le refasse ? » et le choix entre des planches passent. Sa consigne dit :
+   quand il demande un autre logo, elle en refait un et présente la carte d'accord.
+2. **Pénombre avant Halo.** Le contexte de SINA lui disait de finir d'abord les planches incomplètes (Pénombre n'avait
+   pas de logo), puis de répondre au client : Pénombre est parti seul, avec l'ancien logo de Halo joint. Maintenant :
+   une même tâche fait toujours les planches dans l'ordre A, B, C ; les clés reçues sont remises dans l'ordre ; deux
+   reprises dans une même réponse sont réunies (ou la plus tôt passe d'abord quand l'une est à la charge du Studio et
+   l'autre non) ; un logo demandé alors qu'un logo d'avant est à refaire aussi (il manque, ou le client vient de le
+   demander) n'ouvre pas sa carte : SINA est prévenue une fois, avant toute dépense, de les réunir. Les logos qui
+   manquent aux planches à finir partent ensemble, d'abord.
+3. **Une consigne de style.** La consigne de SINA disait « logo dessiné sur un fond blanc parfaitement uni » et « pas de
+   lettres bleues arrondies avec une ellipse orange ». Vérifié en rejouant la carte jusqu'à l'appel d'OpenAI (simulé) :
+   aucun de ces mots, ni « pas de flamme dessinée » de la fiche, n'arrivait au dessinateur. Le Studio retire en plus,
+   sans IA et sans bloquer la carte, toute consigne de style donnée pour un logo, et SINA lit qu'elle a été retirée.
+
+Décision du propriétaire du 23 novembre 2026 au soir, ajoutée au même travail : « Ouai c'est la catastrophe mon idée »,
+puis « Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et
+juste dire que c'est une marque de bougies ». La demande au dessinateur porte le métier et le nom, l'épellation si
+besoin, la ligne des couleurs de la marque, celle de sa typographie (comme pour Sillage), « Sur un fond blanc uni. » et
+la série. Le relecteur du logo juge la qualité seulement ; il ne reçoit plus les mots ni les refus du client sur son
+logo. Deux épreuves scellées l'attendent autrement (refus-et-consigne-apres-la-demande-nue,
+serie-logo-completement-different) : rien n'est envoyé tant que le propriétaire ne les a pas marquées remplacées.
+
+Devis pour refaire Halo et Pénombre (prix vérifié du modèle des logos) : sur une seule carte, part du client 0,31 €
+probable, 0,77 € au plus ; borne des reprises du Studio 0,31 € probable, 1,53 € au plus. Séparément : Halo seul, client
+0,16 € / 0,38 € ; Pénombre seule (planche à finir, à la charge du Studio, 0 % pour le client), Studio 0,31 € / 1,15 €.

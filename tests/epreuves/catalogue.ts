@@ -385,4 +385,22 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Chaque reprise reçoit ses propres essais refusés, en plus des logos d'avant de la série, avec une seule phrase « complètement différent », sans jamais la raison du refus ; deux demandes d'une même identité ne sont jamais identiques ; au relecteur seul, un mot non demandé dans le logo est un défaut.",
     rejeu: "gratuit",
   },
+  {
+    id: "jamais-de-question-sur-le-logo", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; essai réel de Nadia sur la version 02570ae1, relevé par le chef d'orchestre)",
+    verdict: "Règle du propriétaire : « Pour rappel on ne demande plus au client ce qu'il veux ou non dans son logo » (23 novembre 2026). Dans l'essai réel, Nadia a écrit « Le logo de Halo ne me plaît pas trop, tu peux m'en faire un autre ? », et SINA a répondu « Qu'est-ce qui te gêne dans le logo de Halo : les lettres, le bleu, l'ellipse orange au-dessus, ou l'ensemble ? ». La consigne ne suffisait pas.",
+    attendu: "Le contrôle gratuit des messages, sans IA, fait réécrire à la charge du Studio toute réponse de SINA qui pose au client une question sur le contenu d'un logo (les lettres, la couleur, la forme, le style, ce qui lui plaît ou lui déplaît) ; « Tu veux que je le refasse ? » et le choix entre des planches passent ; quand le client demande un autre logo, SINA dit simplement qu'elle en refait un et la carte d'accord s'ouvre.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "logos-de-la-serie-dans-l-ordre", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; essai réel de Nadia sur la version 02570ae1, relevé par le chef d'orchestre)",
+    verdict: "Règle du propriétaire sur la série : « le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement différent de celui là et pour le 3eme pareil » (23 novembre 2026). Dans l'essai réel, Nadia demandait un autre logo pour Halo (B) et celui de Pénombre (C) manquait : SINA a lancé Pénombre AVANT Halo.",
+    attendu: "Quand plusieurs logos d'une série sont à refaire, ils partent dans l'ordre des identités (A, B, C), quel que soit l'ordre donné par SINA, et chacun reçoit les logos refaits juste avant lui : avec [C, B], Halo part d'abord avec Sillage gardé, puis Pénombre avec Sillage et le nouveau Halo ; deux appels dans une même réponse sont réunis ; un logo demandé alors qu'un logo d'avant est à refaire aussi et pas encore fait n'ouvre pas sa carte : SINA est prévenue, avant toute dépense, de les réunir.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "pas-de-consigne-de-style-pour-un-logo", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; essai réel de Nadia sur la version 02570ae1, relevé par le chef d'orchestre)",
+    verdict: "Décision du propriétaire du 23 novembre 2026 au soir, relayée par le chef d'orchestre : « Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies ». Dans l'essai réel, la consigne de SINA pour la carte Halo + Pénombre contenait « logo dessiné sur un fond blanc parfaitement uni » et « pas de lettres bleues arrondies avec une ellipse orange », et la fiche « pas de flamme dessinée ».",
+    attendu: "Aucun de ces mots de SINA ni de la fiche n'arrive au dessinateur : la demande réelle reçue pour Halo et Pénombre ne porte que le métier et le nom, l'épellation si besoin, la ligne des couleurs de la marque, celle de sa typographie, « Sur un fond blanc uni. », les logos joints et la phrase « complètement différent » ; la consigne de style que SINA donne à l'outil qui refait un logo (fond, couleur, lettres, forme, refus) est retirée par le Studio, sans IA et sans bloquer la carte, et SINA lit qu'elle a été retirée.",
+    rejeu: "gratuit",
+  },
 ];

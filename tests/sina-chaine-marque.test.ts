@@ -718,7 +718,9 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect(r.summary).toMatch(/^Je refais 2 images sur « .+ » et « .+ » \(quelques minutes\) ; le reste des planches ne bouge pas\.$/);
     const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs![0]);
     expect(job.type).toBe(C.SINA_BRAND_JOB);
-    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["logo", "hero"], guidance: "Le logo est trop chargé, je le veux plus simple.", capMicro: est.maxMicro });
+    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["logo", "hero"], capMicro: est.maxMicro });
+    // La consigne qui parle du logo est retirée par le Studio (jamais de consigne de style pour un logo, 23 novembre 2026).
+    expect(JSON.parse(job.payload).guidance).toBeUndefined();
     // Avant le choix, une planche a son logo, sa grande scène et la maquette du haut de son site : ces trois images se
     // refont ici ; l'objet, les signes et les publications se créent (et se refont) pour l'identité choisie, avec brand.finish.
     for (const slot of ["logo", "hero", "site"]) expect(tool.args.safeParse({ keys: ["A"], images: [slot] }).success).toBe(true);
@@ -1127,7 +1129,7 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(serie[idC][1]).toEqual(assetData(getAsset(apres[1].board!.images!.logo!.id)!));
     // Aucune autre image (ni la planche des 50, ni d'autre logo) et rien en anglais.
     expect((log as any).avoid?.[idB]).toBeFalsy();
-    for (const id of [idB, idC]) expect(log.prompts[id]).not.toMatch(/REFERENCES|image \d|Couleurs|Typographie|La marque :/);
+    for (const id of [idB, idC]) expect(log.prompts[id]).not.toMatch(/REFERENCES|image \d|La marque :/);
     // Le logo gardé de Sillage n'est jamais redessiné : il reste le même.
     expect(apres[0].board!.images!.logo).toEqual(logoA);
     expect(log.ids.some((x) => /^image-1-A-logo/.test(x))).toBe(false);
@@ -1157,7 +1159,7 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     const I = await import("@/lib/syna-agent/brand-images");
     const id = log.ids.find((x) => /^image-1-A-logo/.test(x))!;
     expect(log.prompts[id]).toBe(I.demandeDuLogo(a as never));
-    expect(log.prompts[id]).not.toMatch(/La marque :|Son ton|Couleurs|Typographie/);
+    expect(log.prompts[id]).not.toMatch(/La marque :|Son ton|Ce qu'il faut savoir/);
   });
 
   it("planches d'avant sans idée en mots simples : plus aucun appel pour l'écrire, la demande du logo n'en a pas besoin ; le devis ne la compte plus (23 novembre 2026)", async () => {
@@ -1253,7 +1255,7 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     // Depuis le 23 novembre 2026 : le métier en mots simples et le nom, rien de plus.
     const freeLogo = I.imagePrompt("logo", route("A"), { look: "x", logo: "Ce qu'il faut savoir de la marque.", signs: "", hero: "", object: "", site: "", posts: ["", "", ""] } as never);
     expect(freeLogo).toBe(I.demandeDuLogo(route("A")));
-    expect(freeLogo).not.toMatch(/recette|ligne ondulée|image de référence|Ce qu'il faut savoir|Typographie|Couleurs|La marque :/);
+    expect(freeLogo).not.toMatch(/recette|ligne ondulée|image de référence|Ce qu'il faut savoir|La marque :/);
     expect(P.imagerySystem("services")).not.toMatch(/redessine en vrai logo/);
     expect(P.imageReviewSystem()).toMatch(/le logo, l'emblème ou le nom d'une AUTRE marque apparaît \(constructeur/);
     expect(P.imageReviewSystem()).toMatch(/pour le LOGO : il n'est pas net et lisible/);

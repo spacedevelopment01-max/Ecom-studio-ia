@@ -240,7 +240,7 @@ export async function logoForGround(logo: Buffer | null, x: Pick<Route, "ground"
   if (!logo || x.ground !== "sombre") return logo;
   try { return await sharp(await lightLogo(logo)).flatten({ background: /^#[0-9a-f]{6}$/i.test(x.palette.dark) ? x.palette.dark : "#16161A" }).png().toBuffer(); } catch { return logo; }
 }
-const paletteLine = (x: Route) => `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`;
+const paletteLine = (x: Pick<Route, "palette">) => `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`;
 
 /** Toutes les raisons des refus d'une image, de la plus ancienne à la plus récente, pour la redessiner sans revenir en arrière. */
 /** Une raison qui ne dit rien de l'image (relecture impossible) : jamais donnée au dessinateur comme une correction. */
@@ -297,14 +297,27 @@ export function metierEnMotsSimples(descriptor?: string | null): string {
  * même demande pour un premier dessin et pour chaque reprise. Le relecteur garde les mots et les refus du client ; le fond
  * est retiré par le Studio après coup (detourerLeLogo).
  */
-export function demandeDuLogo(x: Pick<Route, "name" | "board">, joints: { precedents?: number; refuses?: number } = {}): string {
+/**
+ * Décision du propriétaire du 23 novembre 2026, au soir, après l'essai de Pénombre (« Ouai c'est la catastrophe mon idée » ;
+ * « Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste
+ * dire que c'est une marque de bougies ») : la demande revient à la façon qui a donné Sillage, sans l'idée ni le ton. Le
+ * métier et le nom, l'épellation si le nom porte un accent ou un signe, la ligne des couleurs de la marque, celle de sa
+ * typographie, le fond en une phrase, puis la série. Jamais l'idée de la marque, le ton, la planche des 50 logos, les
+ * refus ou les mots du client.
+ */
+export function demandeDuLogo(x: Pick<Route, "name" | "board"> & Partial<Pick<Route, "palette" | "fonts">>, joints: { precedents?: number; refuses?: number } = {}): string {
   const nom = x.name.normalize("NFC").trim();
   return [
     `Fais-moi un logo pour ${metierEnMotsSimples(x.board?.descriptor)}. Le nom de la marque : « ${nom} ».`,
     nomAEpeler(nom) ? `Il s'écrit lettre par lettre : ${spell(nom)}.` : "",
+    x.palette ? paletteLine(x as Pick<Route, "palette">) : "",
+    x.fonts?.heading ? typoLine(x.fonts.heading) : "",
+    "Sur un fond blanc uni.",
     phraseDeLaSerie(joints.precedents ?? 0, joints.refuses ?? 0),
   ].filter(Boolean).join("\n");
 }
+/** La ligne de la typographie de la marque, telle qu'avant le 23 novembre 2026 (la façon qui a donné Sillage). */
+export const typoLine = (heading: string) => `Typographie de la marque : un caractère ${FONT_CHARACTER[heading.replace(/_[ni]\d$/, "")] ?? "de titres"} (dans l'esprit de ${fontFamily(heading)}) ; tu peux le redessiner à ta façon.`;
 const NOMBRES = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix"];
 /**
  * La phrase qui accompagne les logos joints (le propriétaire, 23 novembre 2026 : « le premier logo est fait donc on le
@@ -688,7 +701,9 @@ export async function runBoardImages(o: {
           ...(trait ? [TRAIT_DEJA_PRIS_RELECTEUR] : []),
           ...(aimes ? [`L'image jointe à part, en tête (hors numérotation), est la planche des logos que le propriétaire du Studio aime : elle donne le NIVEAU attendu pour le logo, ne la juge pas et ne la recopie pas.`] : []),
           // Ce que le client refuse (essai réel du 20 novembre 2026 : une goutte d'eau refusée par le client, passée au contrôle).
-          ...(o.gouts?.trim() ? [`Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut (defect « autre »).`] : []), ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
+          // Le logo ne tient plus compte de ce que le client en a dit (décision du 23 novembre 2026 au soir : « on ne demande
+          // plus au client ce qu'il veut ou non dans son logo ») : le relecteur du logo juge la qualité seulement.
+          ...(o.gouts?.trim() && !slots.includes("logo") ? [`Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut (defect « autre »).`] : []), ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
         images: seen, ...(aimes ? { fixes: [{ data: aimes, label: "logos aimés" }] } : {}),
       }));
       // Le Studio compare la lecture du relecteur aux textes attendus. Quand son jugement et sa propre lecture se

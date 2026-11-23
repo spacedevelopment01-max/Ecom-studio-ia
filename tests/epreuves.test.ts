@@ -953,3 +953,123 @@ describe("l'épreuve de SINA qui prend les devants (planches incomplètes, aucun
     expect(emptySpend().calls).toBe(avant.calls);
   });
 });
+
+describe("les épreuves des trois ratés des logos de l'essai réel de Nadia (version 02570ae1)", async () => {
+  const J = await import("@/lib/syna-agent/journey");
+  const C = await import("@/lib/syna-agent/brand-chain");
+  const { account, project } = await import("./conversation209-fixtures");
+  const { openThread } = await import("@/lib/syna-agent/thread");
+  const { runAgent, submitMessage, threadView, toolContext } = await import("@/lib/syna-agent/loop");
+  const { addMessage, getRun } = await import("@/lib/syna-agent/store");
+  const { getTool } = await import("@/lib/syna-agent/registry");
+  const { getJob, JobContext } = await import("@/lib/jobs");
+  const { saveAsset, getAsset, assetData } = await import("@/lib/library");
+  const { chargeDuStudio } = await import("@/lib/billing");
+  const { one, run } = await import("@/lib/db");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+  await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
+  const sha = (b: Buffer) => crypto.createHash("sha256").update(b).digest("hex");
+  const PHRASE_DE_NADIA = "Le logo de Halo ne me plaît pas trop, tu peux m'en faire un autre ?";
+  const QUESTION_DE_SINA = "Qu'est-ce qui te gêne dans le logo de Halo : les lettres, le bleu, l'ellipse orange au-dessus, ou l'ensemble ?";
+  const CONSIGNE = "Le client a dit : « Le logo de Halo ne me plaît pas trop, tu peux m'en faire un autre ? » Refaire les logos de Halo et de Pénombre : logo dessiné sur un fond blanc parfaitement uni ; pas de lettres bleues arrondies avec une ellipse orange.";
+  const logo = (c: string) => sharp({ create: { width: 640, height: 480, channels: 3, background: "#FFFFFF" } }).composite(Array.from({ length: 6 }, (_v, i) => ({ input: { create: { width: 40, height: 90, channels: 3 as const, background: c } }, left: 140 + i * 60, top: 180 }))).png().toBuffer();
+
+  /** Les planches de Nadia : Sillage et Halo avec un vrai logo gardé, Pénombre sans le sien (ou avec, selon l'essai). */
+  async function nadia(penombreSansLogo: boolean) {
+    const user = await account(), pid = project(user) as string, cid = (await fr(() => openThread(user, pid))).conversationId;
+    const save = async (k: string, png: Buffer) => (await saveAsset({ projectId: pid, userId: user.id, data: png, name: `planche-${k}-logo.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { synaBoard: { key: k, slot: "logo", round: 1, name: k } } })).id;
+    const sillage = await logo("#6E2A5E");
+    const ids: Record<string, string> = { A: await save("A", sillage), B: await save("B", await logo("#2B4C8C")), ...(penombreSansLogo ? {} : { C: await save("C", await logo("#E9A24F")) }) };
+    const noms = { A: "Sillage", B: "Halo", C: "Pénombre" } as const;
+    J.updateJourney(cid, (x) => {
+      x.steps[0] = { status: "done" };
+      x.identities = { list: (["A", "B", "C"] as const).map((k) => { const r = route(k) as any; return { ...r, name: noms[k], board: { ...r.board, descriptor: k === "C" ? "Bougies parfumées en cire de soja, Brignais" : "Bougies parfumées coulées à la main près de Lyon", images: { ...(ids[k] ? { logo: { id: ids[k] } } : {}), hero: { id: `hero-${k}` }, site: { id: `site-${k}` } } } }; }), issues: [], comparison: "", at: 1, round: 1 } as any;
+    });
+    return { user, pid, cid, sillage };
+  }
+  /** La tâche de la marque, rejouée avec un faux dessinateur (qui note chaque demande) et un faux relecteur qui garde tout. */
+  async function tache(t: Awaited<ReturnType<typeof nadia>>, payload: Record<string, unknown>) {
+    const dessins: { id: string; prompt: string; serie: Buffer[]; envoye: string }[] = [];
+    const mp = await import("@/lib/ai/media-providers");
+    let n = 0;
+    C.brandChainDeps.ai = () => ({
+      research: async () => [], ask: async () => { throw new Error("aucun appel de texte attendu"); },
+      // `envoye` : le texte tel que le chemin du dessin l'envoie au fournisseur (imageReferencePrompt, la vraie fonction).
+      draw: async (id, c) => { dessins.push({ id, prompt: c.prompt, serie: c.serie ?? [], envoye: mp.imageReferencePrompt(c.prompt, (c.serie ?? []).map(() => "serie")) }); return logo(["#B4450F", "#2F6A4E", "#884422"][n++ % 3]); },
+      look: async (_id, c) => ({ images: [{ slot: "logo", seen: "", score: 9, ok: true, read: [/Marque : « ([^»]+) »/.exec(c.prompt)![1]], why: "net" }] }) as never,
+    });
+    const jid = `job-epreuve-logos-${Date.now()}-${Math.random()}`;
+    run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, t.user.id, t.pid, C.SINA_BRAND_JOB, "marque", JSON.stringify({ projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, imagesOnly: true, images: true, slots: ["logo"], ...payload }), "running", Date.now(), Date.now(), Date.now());
+    try { await fr(() => C.runSinaBrandJob(new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid)))); } finally { C.brandChainDeps.ai = undefined; run("UPDATE jobs SET status='done' WHERE id=?", jid); }
+    return dessins;
+  }
+
+  epreuve("jamais-de-question-sur-le-logo", async () => {
+    const { defautsDuMessage, questionSurLeLogo } = await import("@/lib/syna-agent/controle-message");
+    const regle = { etape: 1, payant: () => true, lance: false };
+    expect(defautsDuMessage({ message: QUESTION_DE_SINA, actions: [] }, regle).join(" ")).toMatch(/On ne demande jamais au client ce qu'il veut ou non dans son logo/);
+    for (const q of ["Tu préfères quelle couleur pour le logo ?", "Tu voudrais des lettres plus fines dans ton logo ?", "Qu'est-ce qui ne te plaît pas dans ce logo ?", "Quel style de logo tu imagines ?"]) expect(questionSurLeLogo({ message: q, actions: [] }), q).toBe(true);
+    // Les questions permises passent.
+    for (const q of ["Tu veux que je le refasse ?", "Tu veux que je refasse le logo de Halo ?", "Tu préfères Sillage, Halo ou Pénombre ?"]) expect(defautsDuMessage({ message: "Voici le logo de Halo.", question: { text: q }, actions: [] }, regle), q).toEqual([]);
+    const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
+    expect(SYNA_SYSTEM).toContain("Quand il demande un autre logo, tu dis simplement que tu en refais un, puis tu présentes la carte d'accord");
+    // Dans la conversation : la question de l'essai réel est réécrite, à la charge du Studio ; la carte s'ouvre.
+    const t = await nadia(false);
+    const r = submitMessage(t.user, t.cid, { requestId: `req-${Math.random()}`, text: PHRASE_DE_NADIA });
+    const studio: boolean[] = [];
+    await fr(() => runAgent(r.id, r.job_id!, { reason: async () => { studio.push(chargeDuStudio()); return studio.length === 1 ? { message: QUESTION_DE_SINA, actions: [], question: null, done: false } : { message: "Je t'en refais un autre pour Halo. La carte te montre le prix.", actions: [{ tool: "identity.images", args: { keys: ["B"], images: ["logo"] } }], question: null, done: false }; } }));
+    expect(studio).toEqual([false, true]);
+    const v = await fr(() => threadView(t.user, t.cid));
+    expect(v.messages.filter((m: any) => m.role === "assistant").map((m: any) => m.content?.message)).not.toContain(QUESTION_DE_SINA);
+    expect(v.run!.pending).toMatchObject({ tool: "identity.images", reason: "cost", args: { keys: ["B"], images: ["logo"] } });
+  });
+
+  epreuve("logos-de-la-serie-dans-l-ordre", async () => {
+    // La tâche reçoit [C, B] (l'ordre de SINA) : Halo part d'abord avec Sillage gardé ; Pénombre reçoit Sillage et le nouveau Halo.
+    const t = await nadia(false);
+    const dessins = await tache(t, { redo: ["C", "B"] });
+    expect(dessins.map((d) => d.id.split("-")[2])).toEqual(["B", "C"]);
+    const nouveauHalo = assetData(getAsset(J.journeyOf(t.cid).identities!.list[1].board!.images!.logo!.id)!);
+    expect(dessins[0].serie.map(sha)).toEqual([sha(t.sillage)]);
+    expect(dessins[1].serie.map(sha)).toEqual([sha(t.sillage), sha(nouveauHalo)]);
+    // La carte : les clés remises dans l'ordre dans la tâche.
+    const ctx = { user: t.user, conversationId: t.cid, runId: `run-${Math.random()}`, projectId: t.pid, attachment: () => null } as any;
+    const res = await fr(() => getTool("identity.images")!.run(ctx, { keys: ["C", "B"], images: ["logo"] } as never));
+    expect(JSON.parse(getJob(res.jobs![0])!.payload).redo).toEqual(["B", "C"]);
+    // Deux appels dans la même réponse : réunis en un seul, B puis C.
+    const { reprisesDansLOrdre } = await import("@/lib/syna-agent/ordre-des-logos");
+    expect(reprisesDansLOrdre([{ tool: "identity.images", args: { keys: ["C"], images: ["logo"] } }, { tool: "identity.images", args: { keys: ["B"], images: ["logo"] } }], t.cid)).toEqual([{ tool: "identity.images", args: { keys: ["B", "C"], images: ["logo"] } }]);
+    // L'essai réel : Pénombre demandé seul alors que Nadia demande aussi Halo : pas de carte, SINA est prévenue, sans dépense.
+    const u = await nadia(true);
+    addMessage(u.cid, "user", { text: PHRASE_DE_NADIA, attachments: [] }, null);
+    const uctx = { user: u.user, conversationId: u.cid, runId: `run-${Math.random()}`, projectId: u.pid, attachment: () => null } as any;
+    await expect(fr(() => getTool("identity.images")!.estimate!(uctx, { keys: ["C"], images: ["logo"] } as never))).rejects.toThrow(/« Halo » \(B\) : le client vient de demander aussi un autre logo pour elle.*keys = B, C et images = logo/);
+    expect((await fr(() => getTool("identity.images")!.estimate!(uctx, { keys: ["B", "C"], images: ["logo"] } as never))).maxMicro).toBeGreaterThan(0);
+    void toolContext; void getRun;
+  });
+
+  epreuve("pas-de-consigne-de-style-pour-un-logo", async () => {
+    // La carte B + C rejouée avec la consigne de l'essai réel, dans l'ordre de SINA, et la fiche « pas de flamme dessinée ».
+    const t = await nadia(true);
+    const F = await import("@/lib/syna-agent/fiche");
+    F.addNotes(t.cid, [{ sujet: "la flamme", value: "pas de flamme dessinée dans le logo, toutes les marques de bougies font ça.", genre: "refuse", portee: "logo" }]);
+    const dessins = await tache(t, { redo: ["C", "B"], guidance: CONSIGNE });
+    const I = await import("@/lib/syna-agent/brand-images");
+    const list = J.journeyOf(t.cid).identities!.list as any[];
+    const attendue = (x: any, serie: string, epel = "") => ["Fais-moi un logo pour une marque de bougies. Le nom de la marque : « " + x.name + " ».", ...(epel ? [epel] : []), `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`, I.typoLine(x.fonts.heading), "Sur un fond blanc uni.", serie].join("\n");
+    expect(dessins.map((d) => d.envoye)).toEqual([
+      attendue(list[1], "Je veux un autre logo complètement différent de celui-là."),
+      attendue(list[2], "Fais-moi un autre logo complètement différent des deux premiers.", "Il s'écrit lettre par lettre : P, é, n, o, m, b, r, e."),
+    ]);
+    for (const d of dessins) { expect(d.envoye).not.toMatch(/parfaitement uni|lettres bleues|arrondies|ellipse|orange|flamme|ne me plaît|chaleureux/i); expect(d.envoye).not.toMatch(/^La marque :|\nLa marque :/); }
+    // L'outil qui refait le logo : la consigne de style retirée par le Studio, la carte n'est pas bloquée, SINA le lit.
+    const ctx = { user: t.user, conversationId: t.cid, runId: `run-${Math.random()}`, projectId: t.pid, attachment: () => null } as any;
+    const res = await fr(() => getTool("identity.images")!.run(ctx, { keys: ["C", "B"], images: ["logo"], guidance: CONSIGNE } as never));
+    expect(res.ok).toBe(true);
+    const payload = JSON.parse(getJob(res.jobs![0])!.payload);
+    expect(payload.guidance).toBe("Le client a dit : « Le logo de Halo ne me plaît pas trop, tu peux m'en faire un autre ? »");
+    expect(JSON.stringify(payload)).not.toMatch(/fond blanc|lettres bleues|ellipse/);
+    expect(res.hint).toMatch(/Ta consigne pour le logo a été retirée sans être transmise/);
+  });
+});

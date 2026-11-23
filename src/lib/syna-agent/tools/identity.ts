@@ -27,6 +27,8 @@ import { acquisMicro, RELANCE_JOURS, RefusInterne } from "../custom-theme/site-j
 import { jobSpentMicro } from "../budget";
 import type { CostEstimate, ToolResult } from "../types";
 import { project } from "./common";
+import { dansLOrdre, dejaPrevenue, logosAvantARefaire, phraseDeLOrdre } from "../ordre-des-logos";
+import { consigneSansStyleDuLogo, noteConsigneRetiree } from "../consigne-du-logo";
 
 const KEYS = ROUTE_KEYS;
 type Key = (typeof KEYS)[number];
@@ -351,6 +353,10 @@ const imagesTool: AgentTool<ImagesArgs> = {
   args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(3), guidance: z.string().max(1500).optional() }).strict(),
   estimate: (ctx, a) => {
     const n = redoImages(a.images).length;
+    // L'ordre de la série (essai réel de Nadia, 23 novembre 2026 : Pénombre lancé avant Halo) : un logo d'une planche
+    // d'avant, à refaire aussi et pas encore fait, passe avant. SINA est prévenue une fois, avant la carte et sans dépense.
+    const avant = logosAvantARefaire(ctx.conversationId, a.keys, redoImages(a.images));
+    if (avant.length && !dejaPrevenue(ctx.runId)) throw new RefusInterne(phraseDeLOrdre(a.keys, avant));
     const j = journeyOf(ctx.conversationId), studio = finirPlanchesGardees(j, a.keys, redoImages(a.images));
     const q = boardImagesQuote(a.keys.length, undefined, redoImages(a.images) as never, []);
     // Deux plafonds : le prix du client (« 0 % » quand c'est une reprise de SINA) et la borne des reprises du Studio.
@@ -360,19 +366,23 @@ const imagesTool: AgentTool<ImagesArgs> = {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
     const list = j.identities?.list ?? [];
-    const keys = [...new Set(a.keys)].filter((k) => list.some((x) => x.key === k && !!x.board));
+    // Toujours dans l'ordre des identités (A, B, C), quel que soit l'ordre donné par SINA.
+    const keys = dansLOrdre(a.keys).filter((k) => list.some((x) => x.key === k && !!x.board));
     if (!keys.length) return { ok: false, summary: L("Il n'y a pas encore de planche à reprendre.", "There is no board to redo yet."), hint: "Les images se refont sur des planches déjà montrées (identity.propose d'abord)." };
     if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Une création de marque est déjà en cours : attends-la.", "A brand job is already running.") };
     const images = redoImages(a.images);
     const quote = boardImagesQuote(keys.length, undefined, images as never, []);
+    // Jamais de consigne de style pour un logo : retirée par le Studio, sans IA ; seuls les mots cités du client restent.
+    const consigne = consigneSansStyleDuLogo(a.guidance, images);
     const job = enqueue({
       userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L(`Images refaites sur ${keys.length} planche${keys.length > 1 ? "s" : ""} (SINA)`, `Board images redone (SINA)`),
-      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, studioCapMicro: deuxPlafonds(quote, finirPlanchesGardees(j, keys, images)).studioMaxMicro, count: routeCountOfProject(p.id), imagesOnly: true, images: true, redo: keys, slots: images, ...(finirPlanchesGardees(j, keys, images) ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
+      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, studioCapMicro: deuxPlafonds(quote, finirPlanchesGardees(j, keys, images)).studioMaxMicro, count: routeCountOfProject(p.id), imagesOnly: true, images: true, redo: keys, slots: images, ...(finirPlanchesGardees(j, keys, images) ? { studio: true } : {}), ...(consigne.guidance ? { guidance: consigne.guidance } : {}) },
       maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-images:${keys.join("")}:${images.join("+")}`,
     });
     return {
       ok: true, jobs: [job.id], data: { planches: keys, images, plafondMicro: quote.maxMicro },
       summary: L(`Je refais ${images.length} image${images.length > 1 ? "s" : ""} sur ${keys.map((k) => `« ${list.find((x) => x.key === k)?.name ?? k} »`).join(" et ")} (quelques minutes) ; le reste des planches ne bouge pas.`, "Redoing the board images."),
+      ...(consigne.retire ? { hint: noteConsigneRetiree(consigne.retire) } : {}),
     };
   },
 };
@@ -412,20 +422,22 @@ export function finirLogoManquant(j: Journey, a: FinishArgs = {}): boolean {
 }
 
 /** Met en file la fin de marque (une seule à la fois). */
-function startFinish(ctx: ToolContext, a: FinishArgs): { jobs?: string[]; refused?: string } {
+function startFinish(ctx: ToolContext, a: FinishArgs): { jobs?: string[]; refused?: string; retire?: string } {
   const p = project(ctx), j = journeyOf(ctx.conversationId);
   if (pendingJob(p.id, SINA_BRAND_JOB)) return { refused: L("Ta marque est déjà en cours de création : attends-la.", "Your brand is already being created.") };
   const studio = finirLogoManquant(j, a);
   const slots = finishSlots(j, (studio ? ["logo"] : a.redo) as ImageSlot[] | undefined);
   const fq = slots.length ? finishQuote(slots, undefined) : null;
   const cap = Math.max(1, fq ? fq.maxMicro : 1);
+  // Jamais de consigne de style pour un logo refait : retirée par le Studio, sans IA (consigne-du-logo.ts).
+  const consigne = consigneSansStyleDuLogo(a.guidance, slots.includes("logo") ? slots : []);
   const job = enqueue({
     userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L("Ta marque complète (SINA)", "Your complete brand (SINA)"),
-    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, studioCapMicro: deuxPlafonds(fq ?? { maxMicro: cap }, studio).studioMaxMicro, count: routeCountOfProject(p.id), finish: true, ...(a.redo?.length || studio ? { slots } : {}), ...(studio ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
+    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, studioCapMicro: deuxPlafonds(fq ?? { maxMicro: cap }, studio).studioMaxMicro, count: routeCountOfProject(p.id), finish: true, ...(a.redo?.length || studio ? { slots } : {}), ...(studio ? { studio: true } : {}), ...(consigne.guidance ? { guidance: consigne.guidance } : {}) },
     maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-finish:${(a.redo ?? []).join("+")}:${j.identityChoice?.at ?? 0}${studio ? ":logo-manquant" : ""}`,
   });
   updateJourney(ctx.conversationId, (x) => { if (x.brandFinish) x.brandFinish.prepaidMicro = 0; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "doing"); });
-  return { jobs: [job.id] };
+  return { jobs: [job.id], ...(consigne.retire ? { retire: consigne.retire } : {}) };
 }
 
 const finishTool: AgentTool<FinishArgs> = {
@@ -448,7 +460,7 @@ const finishTool: AgentTool<FinishArgs> = {
     if (a.redo?.includes("logo") && j.keep.includes("logo")) return { ok: false, summary: L("Tu gardes ton logo : je ne le redessine pas.", "You keep your logo: I do not redraw it.") };
     const r = startFinish(ctx, a);
     if (!r.jobs) return { ok: false, summary: r.refused! };
-    return { ok: true, jobs: r.jobs, summary: a.redo?.length ? L("Je refais ce que tu m'as demandé (quelques minutes) ; le reste de ta marque ne bouge pas.", "Redoing what you asked.") : L("Je finis ta marque (quelques minutes) : ton logo, l'objet qui le porte, les signes, trois publications et ta charte.", "Finishing your brand.") };
+    return { ok: true, jobs: r.jobs, ...(r.retire ? { hint: noteConsigneRetiree(r.retire) } : {}), summary: a.redo?.length ? L("Je refais ce que tu m'as demandé (quelques minutes) ; le reste de ta marque ne bouge pas.", "Redoing what you asked.") : L("Je finis ta marque (quelques minutes) : ton logo, l'objet qui le porte, les signes, trois publications et ta charte.", "Finishing your brand.") };
   },
 };
 
