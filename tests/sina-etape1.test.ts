@@ -10,6 +10,8 @@ import { describe, expect, it } from "vitest";
 process.env.STUDIO_SYNA_AGENT = "1";
 
 describe("SINA — les identités de marque : contrôles, choix et mélange", async () => {
+  // Le logo est dessiné par le modèle imposé des logos (23 novembre 2026) : le devis de la marque prend son tarif par image.
+  await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
   const { one } = await import("@/lib/db");
   const { runWithLang } = await import("@/lib/i18n-server");
   const { loadProject } = await import("@/lib/projects");

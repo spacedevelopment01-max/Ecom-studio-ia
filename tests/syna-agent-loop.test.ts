@@ -25,6 +25,8 @@ vi.mock("@/lib/ai/media-providers", async (orig) => ({
 process.env.STUDIO_SYNA_AGENT = "1";
 
 describe("SINA agent — un fil, des outils natifs, des changements vérifiés", async () => {
+  // Le logo est dessiné par le modèle imposé des logos (23 novembre 2026) : le devis de la marque prend son tarif par image.
+  await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
   const { createUser } = await import("@/lib/auth");
   const { json, one, all, run } = await import("@/lib/db");
   const { loadProject, currentTheme } = await import("@/lib/projects");

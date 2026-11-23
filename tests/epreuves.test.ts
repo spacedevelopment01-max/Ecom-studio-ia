@@ -57,32 +57,40 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
   const brume = async () => { const w = 96, h = 96, d = Buffer.alloc(w * h * 4); for (let i = 0; i < w * h; i++) { d[i * 4] = 40; d[i * 4 + 1] = 80; d[i * 4 + 2] = 120; d[i * 4 + 3] = i < (w * h) / 3 ? 90 : 255; } return sharp(d, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer(); };
 
   type Draw = (id: string, slot: string, n: number) => Promise<Buffer>;
-  type Verdict = (slot: string, n: number) => { ok: boolean; score?: number; why?: string };
+  type Verdict = (slot: string, n: number) => { ok?: boolean; score?: number; why?: string; defect?: string; read?: string[] };
   /** La chaîne des images d'une planche, telle quelle, avec un dessinateur et un relecteur simulés (rien n'est payé). */
-  async function planche(o: { slots: string[]; draw?: Draw; verdict?: Verdict; madeLogos?: Buffer[]; gouts?: string; logoLine?: string; x?: any }) {
-    const user = await account(), projectId = project(user, "services") as string;
+  async function planche(o: { slots: string[]; draw?: Draw; verdict?: Verdict; madeLogos?: Buffer[]; keptLogos?: Buffer[]; gouts?: string; logoLine?: string; x?: any; /** Une boutique, avec ses photos de produit envoyées (vérifiées). */ photos?: number }) {
+    const user = await account(), projectId = project(user, o.photos != null ? "products" : "services") as string;
+    if (o.photos) {
+      const { saveAsset } = await import("@/lib/library");
+      const { run } = await import("@/lib/db");
+      for (let i = 0; i < o.photos; i++) {
+        const a = await saveAsset({ projectId, userId: user.id, data: await sharp({ create: { width: 640, height: 640, channels: 3, background: ["#EEE6DA", "#E8DCCB", "#F2ECE2"][i % 3] } }).png().toBuffer(), name: `bougie-${i + 1}.png`, mime: "image/png", role: "original", origin: "upload" });
+        run("UPDATE assets SET meta=json_set(COALESCE(meta,'{}'),'$.verification',json(?)) WHERE id=?", JSON.stringify({ etat: "verifiee", at: Date.now() }), a.id);
+      }
+    }
     const x = o.x ?? { ...route("A"), name: "Aplomb" };
     const texts = I.slotTexts(x);
-    const timeline: { kind: "draw" | "look"; id: string; slot: string; prompt: string; avoid?: boolean }[] = [];
+    const timeline: { kind: "draw" | "look"; id: string; slot: string; prompt: string; avoid?: boolean; product?: boolean; labels?: string[] }[] = [];
     const drawn = new Map<string, number>(), looked = new Map<string, number>();
     const ai: any = {
       research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
       draw: async (id: string, c: any) => {
         const slot = /-(logo|hero|object|signs|site|post\d)(:|$)/.exec(id)![1], n = (drawn.get(slot) ?? 0) + 1; drawn.set(slot, n);
-        timeline.push({ kind: "draw", id, slot, prompt: c.prompt, avoid: !!c.avoid });
+        timeline.push({ kind: "draw", id, slot, prompt: c.prompt, avoid: !!c.avoid, product: !!c.product });
         return o.draw ? o.draw(id, slot, n) : slot === "logo" ? logoSimple() : carre("#224466");
       },
       look: async (id: string, c: any) => {
         const slots = (c.images as { label: string }[]).map((i) => i.label).filter((l) => (I.IMAGE_SLOTS as readonly string[]).includes(l));
         const s = slots[0], n = (looked.get(s) ?? 0) + 1; looked.set(s, n);
-        timeline.push({ kind: "look", id, slot: s, prompt: c.prompt });
+        timeline.push({ kind: "look", id, slot: s, prompt: c.prompt, labels: (c.images as { label: string }[]).map((i) => i.label) });
         const v = o.verdict?.(s, n) ?? { ok: true, score: 9 };
-        return { images: [{ slot: s, seen: "", score: v.score ?? 9, ok: v.ok, read: texts[s as keyof typeof texts] ?? [], why: v.why ?? "", defect: "autre" }] };
+        return { images: [{ slot: s, seen: "", score: v.score ?? 9, ...(v.ok === undefined ? {} : { ok: v.ok }), read: v.read ?? texts[s as keyof typeof texts] ?? [], why: v.why ?? "", defect: v.defect ?? "autre" }] };
       },
     };
     const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
-    const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "services", route: x, round: 1, slots: o.slots as never, imagery: imagery as never, madeLogos: o.madeLogos, gouts: o.gouts ?? null, logoLine: o.logoLine ?? null });
-    return { r, timeline, x };
+    const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: o.photos != null ? "produits" : "services", route: x, round: 1, slots: o.slots as never, imagery: imagery as never, madeLogos: o.madeLogos, ...(o.keptLogos ? { keptLogos: o.keptLogos } : {}), gouts: o.gouts ?? null, logoLine: o.logoLine ?? null });
+    return { r, timeline, x, projectId, user };
   }
 
   epreuve("logo-goutte-refusee", async () => {
@@ -90,7 +98,8 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     const gouts = F.goutsPour([{ sujet: "le style plombier", value: "le style plombier avec une goutte d'eau et une clé à molette", genre: "refuse", portee: "logo", at: 1 }, { sujet: "les matières", value: "le laiton brossé", genre: "aime", portee: "images", at: 1 }], ["logo", "images"]).join("\n");
     const { timeline } = await planche({ slots: ["logo"], gouts });
     const dessin = timeline.find((t) => t.kind === "draw" && t.slot === "logo")!, relu = timeline.find((t) => t.kind === "look" && t.slot === "logo")!;
-    expect(dessin.prompt).toContain("Ce que le client refuse, avec ses mots : « Il ne veut pas : le style plombier avec une goutte d'eau et une clé à molette »");
+    // Mot pour mot, dans la formule du propriétaire (« Il ne veut surtout pas : … »), sans « Il ne veut pas » ajouté (23 novembre 2026).
+    expect(dessin.prompt).toContain("Il ne veut surtout pas : « le style plombier avec une goutte d'eau et une clé à molette »");
     // Ses goûts vont au relecteur, jamais au dessinateur du logo (« enlève la 7 », 21 novembre 2026).
     expect(dessin.prompt).not.toContain("laiton");
     expect(relu.prompt).toContain("Il aime : le laiton brossé");
@@ -132,6 +141,52 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     expect(openaiBackground({ transparentCap: true })).toEqual({ background: "opaque" });
   });
 
+  epreuve("ligne-la-marque-sans-idee-de-dessin", async () => {
+    const ligne = async (simple: string) => {
+      const x = { ...route("A"), name: "Aplomb", tone: { ...route("A").tone, adjectives: ["calme", "franc", "soigneux"] }, board: { ...route("A").board, descriptor: "Plomberie et chauffage à Lyon", idea: { ...route("A").board.idea, simple } } };
+      const { timeline } = await planche({ slots: ["logo"], x });
+      return timeline.find((t) => t.kind === "draw" && t.slot === "logo")!.prompt.split("\n").find((l) => l.startsWith("La marque : "))!;
+    };
+    // La ligne de la directrice artistique (« Piste écrite par SINA : un logotype sobre… ») n'y va jamais.
+    expect(await ligne("elle croit qu'un artisan doit tenir parole, et elle se bat contre les devis qui changent")).toBe("La marque : Elle croit qu'un artisan doit tenir parole, et elle se bat contre les devis qui changent. Son ton : calme, franc, soigneux.");
+    // Une comparaison, un mot concret ou un mot du métier du client : l'idée est retirée, seul le ton reste.
+    for (const idee of ["elle croit qu'on doit être chez soi comme dans une maison qui sent bon", "elle croit qu'un artisan doit venir le soir", "elle croit qu'un chauffage se répare vite"])
+      expect(await ligne(idee), idee).toBe("La marque : Son ton : calme, franc, soigneux.");
+  });
+
+  epreuve("serie-compte-les-logos-refuses", async () => {
+    // Un logo déjà dessiné (refusé) dans la série ; le relecteur refuse tout : trois dessins.
+    const deja = await logoSimple();
+    const { r, timeline } = await planche({ slots: ["logo"], madeLogos: [deja], keptLogos: [], verdict: () => ({ ok: false, score: 5, why: "trop sage" }) });
+    const dessins = timeline.filter((t) => t.kind === "draw" && t.slot === "logo");
+    expect(dessins).toHaveLength(3);
+    expect(dessins.every((d) => d.avoid)).toBe(true);
+    // Le 1er reçoit le logo refusé de la série ; la 1re reprise, en plus, son propre essai refusé ; la 2e, les deux.
+    expect(dessins.map((d) => /montre (le logo déjà fait|les (\d+) logos déjà faits)/.exec(d.prompt)?.[2] ?? "1")).toEqual(["1", "2", "3"]);
+    for (const d of dessins) expect(d.prompt).toMatch(/Je veux un logo complètement différent/);
+    // Tous ses dessins, refusés compris, repartent dans la série pour les planches suivantes.
+    expect(r.logos).toHaveLength(3);
+    const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
+    expect(chain).toContain("seriesLogos.push(...r.logos);");
+    expect(chain).toContain("redoneLogos.push(...r.logos);");
+  });
+
+  epreuve("refus-du-logo-une-seule-fois", async () => {
+    const gouts = ["Calme et franc. Par contre pas de goutte d'eau dans le logo.", "Il ne veut pas : pas de goutte d'eau dans le logo.", "Il ne veut pas : Mes mains oui, mais jamais mon visage."].join("\n");
+    const { timeline } = await planche({ slots: ["logo"], gouts, verdict: () => ({ ok: false, score: 5, why: "trop sage" }) });
+    for (const d of timeline.filter((t) => t.kind === "draw" && t.slot === "logo")) {
+      expect(d.prompt).toContain("Il ne veut surtout pas : « Par contre pas de goutte d'eau dans le logo. »");
+      expect(d.prompt.match(/Il ne veut surtout pas/g)).toHaveLength(1);
+      expect(d.prompt).not.toMatch(/Il ne veut pas|mains|visage|Calme et franc/);
+      expect(d.prompt).not.toMatch(/étiquette, emballage/);
+    }
+    // Un refus qui parle de personnes, noté « pour tout », vaut pour les images, jamais pour le logo.
+    const F = await import("@/lib/syna-agent/fiche");
+    const note = { sujet: "photos", value: "Mes mains oui, mais jamais mon visage.", genre: "refuse" as const, portee: "tout" as const, at: 1 };
+    expect(F.porteeOf(note)).toBe("images");
+    expect(F.refusPourLeLogo([note, { sujet: "couleur", value: "pas de rose", genre: "refuse", portee: "tout", at: 1 }])).toEqual(["pas de rose"]);
+  });
+
   epreuve("logo-relu-avant-ce-qui-le-porte", async () => {
     // Le logo est refusé au premier dessin : rien de ce qui le porte n'est dessiné avec lui.
     const { timeline } = await planche({ slots: ["logo", "hero", "object"], verdict: (s, n) => (s === "logo" && n === 1 ? { ok: false, why: "une goutte d'eau" } : { ok: true, score: 9 }) });
@@ -154,6 +209,88 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     const { timeline } = await planche({ slots: ["hero"], verdict: (_s, n) => (n === 1 ? { ok: true, score: 7, why: "lumière plate" } : { ok: true, score: 9 }) });
     expect(timeline.filter((t) => t.slot === "hero").map((t) => t.kind)).toEqual(["draw", "look", "draw", "look"]);
     expect(I.NOTE_MIN).toBe(8);
+  });
+
+  epreuve("planche-a-trou-jamais-montree", async () => {
+    // Le logo reste refusé après ses reprises : le haut du site n'est pas dessiné, et il manque à la planche.
+    const { r, timeline } = await planche({ slots: ["logo", "hero", "site"], verdict: (s) => (s === "logo" ? { ok: false, score: 5, why: "une maison banale" } : { ok: true, score: 9 }) });
+    expect(timeline.filter((t) => t.kind === "draw" && t.slot === "logo")).toHaveLength(3);
+    expect(timeline.some((t) => t.kind === "draw" && t.slot === "site")).toBe(false);
+    expect(r.manque).toEqual(["logo", "site"]);
+    expect(I.manqueDeLaPlanche(r.route)).toEqual(["logo", "site"]);
+    // Elle n'est ni affichée, ni montrée à SINA, ni choisissable ; la planche complète de la série reste montrée.
+    const J = await import("@/lib/syna-agent/journey");
+    const complete = { ...route("B"), board: { ...route("B").board, images: { logo: { id: "l", w: 1, h: 1 }, hero: { id: "h", w: 1, h: 1 }, site: { id: "s", w: 1, h: 1 } } } };
+    const j = { ...J.emptyJourney(), identities: { list: [r.route, complete], issues: [], comparison: "", at: 1, round: 1, incompletes: [{ key: r.route.key, manque: ["logo", "site"] }] } } as any;
+    J.setStep(j, 0, "done"); J.setStep(j, 1, "review");
+    expect(J.planchesMontrees(j).map((x: any) => x.key)).toEqual(["B"]);
+    const { journeyImages } = await import("@/lib/syna-agent/attachments");
+    expect((await journeyImages(j)).some((x) => (x.label ?? "").startsWith(`Identité ${r.route.key} `))).toBe(false);
+    expect(J.journeyContext(j)).toMatch(/gardée de côté, NON montrée[\s\S]*il manque le logo, le haut du site[\s\S]*identity\.images[\s\S]*À ma charge : 0 % de ton budget/);
+    // SINA dit ce qui bloque et propose la suite, à la charge du Studio : la carte d'accord le dit.
+    const said = I.phrasePlancheGardee(r.route, ["logo", "site"], r.issues);
+    expect(said).toMatch(/je ne te montre pas cette planche, il lui manque le logo et le haut du site \(le logo : .+\)\. Je ne montre jamais une planche à trou : je peux refaire ce qui manque, à ma charge, rien n'est compté sur ton budget\./);
+    expect(said).not.toMatch(/nom dessiné|nom écrit seul/);
+    const T = await import("@/lib/syna-agent/tools/identity");
+    expect(T.finirPlanchesGardees(j, [r.route.key], ["logo", "site"])).toBe(true);
+    expect(T.finirPlanchesGardees(j, [r.route.key, "B"], ["logo"])).toBe(false); // une planche montrée, c'est un goût du client
+    const { confirmationText } = await import("@/lib/syna-agent/loop");
+    const user = await account();
+    expect(await confirmationText({ name: "identity.images", description: "x" } as any, {}, {} as any, user.id, null, { label: "finir ta planche", maxMicro: 50_000, studio: true })).toContain("À ma charge : 0 % de ton budget, rien n'est compté pour toi.");
+  });
+
+  epreuve("image-sous-8-jamais-gardee", async () => {
+    // Le haut du site de « Pénombre » : note 5, ok = faux, défaut « texte », tous les textes attendus présents.
+    const nadia = (_s: string, n: number) => (n === 1 ? { ok: false, score: 5, defect: "texte", why: "un bandeau de mois non demandé (JAN à DÉC, avec « JUI » en double) ; le pot de bougie de la photo est coupé par le bord droit" } : { ok: true, score: 9, why: "titre net, produit entier" });
+    const site = await planche({ slots: ["site"], verdict: (s, n) => (s === "site" ? nadia(s, n) : { ok: true, score: 9 }) });
+    // Aucune seconde lecture ne la repêche : elle est refaite, et seule la nouvelle (9/10) est gardée.
+    expect(site.timeline.filter((t) => t.slot === "site").map((t) => t.kind)).toEqual(["draw", "look", "draw", "look"]);
+    expect(site.timeline.some((t) => t.id.startsWith("imagereread"))).toBe(false);
+    // Sans ok du tout : la note décide seule, jamais en dessous de 8.
+    const sansOk = await planche({ slots: ["hero"], verdict: (_s, n) => (n === 1 ? { score: 6 } : { score: 9 }) });
+    expect(sansOk.timeline.filter((t) => t.slot === "hero").map((t) => t.kind)).toEqual(["draw", "look", "draw", "look"]);
+    expect(sansOk.r.route.board.images?.hero).toBeTruthy();
+    // Ce que SINA en dira : la note et les mots du relecteur, rien d'autre.
+    const J = await import("@/lib/syna-agent/journey");
+    const v = J.verdictDuRelecteur(site.r.route.board.images!.site!.id);
+    expect(v).toEqual({ score: 9, words: "titre net, produit entier" });
+    expect(J.phraseDuVerdict(v)).toBe("note 9 sur 10 : « titre net, produit entier »");
+    const j = { ...J.emptyJourney(), identities: { list: [site.r.route], issues: [], comparison: "", at: 1, round: 1 } } as any;
+    J.setStep(j, 0, "done"); J.setStep(j, 1, "review");
+    expect(J.journeyContext(j)).toMatch(/Relecture des images, à reprendre telle quelle[\s\S]*jamais « soigné »[\s\S]*le haut du site : note 9 sur 10 : « titre net, produit entier »/);
+    const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
+    expect(SYNA_SYSTEM).toContain("tu en parles avec le verdict de sa relecture (sa note et ses mots, donnés avec elle), jamais avec un éloge qu'elle n'a pas dit");
+  });
+
+  epreuve("vrai-produit-du-client-joint", async () => {
+    const { timeline } = await planche({ slots: ["logo", "hero", "site"], photos: 3 });
+    for (const slot of ["hero", "site"]) {
+      const dessin = timeline.find((t) => t.kind === "draw" && t.slot === slot)!, relu = timeline.find((t) => t.kind === "look" && t.slot === slot)!;
+      expect(dessin.product, slot).toBe(true);
+      expect(dessin.prompt).toContain(I.PRODUIT_FIDELE);
+      expect(relu.labels).toContain("produit");
+      expect(relu.prompt).toContain(I.PRODUIT_A_COMPARER);
+    }
+    // Le logo ne reçoit jamais les photos du produit (sa demande ne change pas).
+    expect(timeline.find((t) => t.kind === "draw" && t.slot === "logo")!.product).toBe(false);
+    // Les photos sont jointes en une seule image « product », annoncée « à reproduire fidèlement ».
+    const { imageReferencePrompt } = await import("@/lib/ai/media-providers");
+    expect(imageReferencePrompt("x", ["scene", "product", "logo"])).toContain("image 2: product (essential, reproduce faithfully)");
+    // Sans photo de produit (une prestation), rien n'est joint.
+    const sans = await planche({ slots: ["hero"] });
+    expect(sans.timeline.find((t) => t.kind === "draw")!.product).toBe(false);
+  });
+
+  epreuve("bougie-cire-et-meche", async () => {
+    const { r, timeline } = await planche({ slots: ["hero"], photos: 3, verdict: (_s, n) => (n === 1 ? { ok: false, score: 5, why: "ressemble à un pot de confiture (matière rouge granuleuse, aucune mèche)" } : n === 2 ? { ok: false, score: 6, why: "L'étiquette du bocal est vierge : un grand cadre vide" } : { ok: true, score: 9 }) });
+    const dessins = timeline.filter((t) => t.kind === "draw" && t.slot === "hero");
+    expect(dessins).toHaveLength(3);
+    expect(dessins[1].prompt).toContain("ressemble à un pot de confiture (matière rouge granuleuse, aucune mèche)");
+    expect(dessins[2].prompt).toMatch(/aucune mèche[\s\S]*étiquette du bocal est vierge/);
+    expect(dessins.every((d) => d.product)).toBe(true);
+    // Le relecteur compare au vrai produit : une partie qui le définit absente, une étiquette vierge, un autre contenant.
+    expect(I.PRODUIT_A_COMPARER).toMatch(/une partie qui le définit absente, une étiquette vierge ou un contenant différent de sa photo sont un défaut/);
+    expect(r.route.board.images?.hero).toBeTruthy();
   });
 
   epreuve("personne-sans-accord-ecrit", async () => {
@@ -217,6 +354,40 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
   const J = await import("@/lib/syna-agent/journey");
   const F = await import("@/lib/syna-agent/fiche");
   const V = await import("@/lib/syna-agent/verrous");
+  // Le symbole tiré du logo est un dessin de logo : son devis prend le tarif du modèle imposé des logos (23 novembre 2026).
+  await (await import("./tarif-logo-fixture")).tarifDuModeleDesLogos();
+
+  epreuve("marque-finie-jamais-sans-logo", async () => {
+    const T = await import("@/lib/syna-agent/tools/identity");
+    const { threadView, confirmationText } = await import("@/lib/syna-agent/loop");
+    const { getTool } = await import("@/lib/syna-agent/registry");
+    const user = await account(), projectId = project(user, "services") as string, cid = threadFor(user, projectId);
+    // La marque finie, choisie, dont le logo est resté refusé après ses reprises.
+    J.updateJourney(cid, (j) => {
+      const a = { ...route("A"), board: { ...route("A").board, images: { hero: { id: "hero1", w: 1, h: 1 } } } };
+      j.identities = { list: [a as never], issues: [], comparison: "", at: 1, round: 1 };
+      for (const n of [0, 1]) J.setStep(j, n, "done");
+      j.identityChoice = { key: "A", mix: {}, at: 1 };
+      j.brandFinish = { prepaidMicro: 0, images: { hero: { id: "hero1", w: 1, h: 1 } }, at: 2, issues: ["Ta marque n'est pas encore finie : son logo n'a pas passé ma relecture, même après mes reprises."], logoFrom: null, manque: ["logo"] };
+    });
+    const j = J.journeyOf(cid);
+    // Elle n'est pas montrée comme finie ; SINA ne la présente pas et propose de refaire le logo à sa charge.
+    expect(threadView(user, cid).journey.identities!.final).toMatchObject({ finished: false });
+    expect(J.journeyContext(j)).toMatch(/La marque — elle N'EST PAS finie[\s\S]*brand\.finish avec redo \[« logo »\][\s\S]*« À ma charge : 0 % de ton budget »/);
+    expect(J.journeyContext(j)).not.toMatch(/sa marque complète est affichée/);
+    // La carte d'accord : à la charge du Studio, jamais comptée au client.
+    expect(T.finirLogoManquant(j)).toBe(true);
+    expect(T.finirLogoManquant(j, { redo: ["hero"] })).toBe(false); // un autre changement reste un goût du client
+    const ctx: any = { user, conversationId: cid, runId: "epreuve-logo", projectId, attachment: () => null };
+    const est = await getTool("brand.finish")!.estimate!(ctx, {} as never);
+    expect(est).toMatchObject({ studio: true });
+    expect(await confirmationText(getTool("brand.finish")!, {}, ctx, user.id, projectId, est)).toContain("À ma charge : 0 % de ton budget");
+    // Plus aucun nom dessiné en secours dans la marque finie, et la reprise part à la charge du Studio.
+    const fin = fs.readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8");
+    expect(fin).not.toContain("savePlancheLogo(");
+    expect(fin).toContain("if (!manqueLogo && loadProject(o.projectId).brand?.logo.assetId) {");
+    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain('return a.studio && j.brandFinish?.manque?.includes("logo") ? aLaChargeDuStudio(finir) : finir();');
+  });
 
   epreuve("etape-validee-qui-bouge", async () => {
     const user = await account(), projectId = project(user, "services") as string, cid = threadFor(user, projectId);
@@ -383,10 +554,10 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
   epreuve("refus-du-client-toutes-tournures", async () => {
     const { clientRefusal } = await import("@/lib/syna-agent/brand-images");
     for (const refus of ["Pas d'outil dans le logo.", "Aucune goutte.", "Sans goutte d'eau.", "J'aime pas les gouttes.", "Je déteste le rose.", "Évite les clés à molette.", "Il ne veut surtout pas de goutte d'eau."])
-      expect(clientRefusal(refus)).toBe(`Ce que le client refuse, avec ses mots : « ${refus} »`);
+      expect(clientRefusal(refus)).toBe(`Il ne veut surtout pas : « ${refus} »`);
     expect(clientRefusal("J'aime le bleu profond et les lignes fines.")).toBe("");
     // Un goût et un refus sur deux lignes : seul le refus part.
-    expect(clientRefusal("J'aime le vert.\nJe déteste le rose.")).toBe("Ce que le client refuse, avec ses mots : « Je déteste le rose. »");
+    expect(clientRefusal("J'aime le vert.\nJe déteste le rose.")).toBe("Il ne veut surtout pas : « Je déteste le rose. »");
   });
   epreuve("equipe-coupee-ne-fait-pas-tomber-la-marque", async () => {
     const C = await import("@/lib/syna-agent/brand-chain");
@@ -414,5 +585,17 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     // Seule une panne de toutes les équipes arrête la création, avec une phrase claire.
     expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain("if (paths.length && !teams.length) throw new UserFacingError(L(\"Mes équipes de noms n'ont rendu aucune réponse lisible");
   });
-});
 
+  epreuve("titre-du-projet-coupe", async () => {
+    const { provisionalName, TITRE_MAX } = await import("@/lib/syna-agent/tools/start");
+    expect(provisionalName("Je fais des bougies parfumées que je coule à la main chez moi, près de Lyon")).toBe("Bougies parfumées");
+    for (const t of ["Je fais des bougies parfumées que je coule à la main chez moi", "des savons artisanaux saponifiés à froid au lait de chèvre et aux huiles bio", "Je fais des tabourets en chêne massif tournés main", "Je répare les crevaisons"]) {
+      const n = provisionalName(t);
+      expect(n, t).not.toMatch(/provisoire/i);
+      expect(n.length, t).toBeLessThanOrEqual(TITRE_MAX);
+      expect(n, t).not.toMatch(/\s(à|a|la|le|les|de|du|des|que|qui|et|au|aux)$/i);
+      // Un mot entier : chaque mot du titre est un mot de la phrase du client.
+      if (n !== "Mon projet") for (const w of n.toLowerCase().split(/\s+/)) expect(t.toLowerCase().split(/[\s,.]+/), `${t} → ${n}`).toContain(w);
+    }
+  });
+});

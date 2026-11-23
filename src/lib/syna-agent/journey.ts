@@ -124,6 +124,13 @@ export type Journey = {
     study?: { quotes: { text: string; url: string }[]; quoteCount: number; sources: number; competitors: string[]; mould: string; substitutes: string[]; notFound: string[] };
     /** Planches dont le logo a été refait SEUL : leur maquette du site montre encore l'ancien logo, refaite au choix. */
     siteAncienLogo?: string[];
+    /**
+     * Planches GARDÉES DE CÔTÉ (essai réel de Nadia, 23 novembre 2026 : des planches sans logo lui ont été montrées) : une
+     * image manque encore après les reprises (logo, grande scène ou haut du site). Règle du propriétaire : « Jamais une
+     * planche incomplète : une image refusée est refaite avant d'être montrée ». Elles ne sont ni affichées, ni montrées à
+     * SINA, ni choisissables ; SINA dit ce qui bloque et propose de refaire ce qui manque, à la charge du Studio.
+     */
+    incompletes?: { key: string; manque: string[] }[];
   };
   identityChoice?: { key: "A" | "B" | "C" | "D"; mix: Partial<Record<string, "A" | "B" | "C" | "D">>; edits?: { name?: string; slogan?: string }; at: number };
   /**
@@ -131,7 +138,13 @@ export type Journey = {
    * fin (le client a donné son accord une fois pour le tout) ; `images` = les images de l'identité retenue, mélange
    * compris (celles de sa planche, puis l'objet, les signes et les publications créés après le choix).
    */
-  brandFinish?: { prepaidMicro?: number; images?: NonNullable<Board["images"]>; at?: number; issues?: string[]; /** Image de planche dont le logo de la marque est tiré. */ logoFrom?: string | null };
+  brandFinish?: { prepaidMicro?: number; images?: NonNullable<Board["images"]>; at?: number; issues?: string[]; /** Image de planche dont le logo de la marque est tiré. */ logoFrom?: string | null;
+    /**
+     * Ce qui manque encore à la marque finie après les reprises (le logo) : elle n'est pas montrée comme finie, et SINA le
+     * refait à sa charge (règle du propriétaire : « Jamais une planche incomplète : une image refusée est refaite avant
+     * d'être montrée »).
+     */
+    manque?: string[] };
   /** Le logo de la marque, adopté par la fin de marque (`brand-finish.ts`) : celui de la planche, ou le nom dessiné en secours. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
@@ -407,6 +420,12 @@ export const STEP_GUIDES: Partial<Record<number, string>> = {
 export function brandFinishContext(j: Journey): string[] {
   const f = j.brandFinish, k = j.brandKit;
   if (!f?.at) return [fixe("La marque — l'identité est choisie, il reste à la finir : appelle brand.finish (sans argument). Le Studio crée ce qui manque (le logo s'il n'y en a pas, l'objet qui le porte, les signes, trois publications), adopte son logo et prépare sa charte. Quand c'est déjà compris dans l'accord donné pour ses identités, ça part sans carte ; sinon le Studio montre le prix avant. Quelques minutes, en arrière-plan.")];
+  // Le logo manque après les reprises : la marque n'est pas finie, rien n'en est présenté (jamais une planche incomplète).
+  if (f.manque?.includes("logo")) return [
+    "La marque — elle N'EST PAS finie : son logo n'a pas passé la relecture, même après les reprises. Jamais une planche incomplète : tu ne présentes pas sa marque, tu ne la fais pas valider et tu ne parles d'aucun nom dessiné à la place.",
+    ...(f.issues?.length ? [`Ce qui bloque (dis-le honnêtement, en mots simples) : ${f.issues.join(" ; ")}`] : []),
+    fixe("Dis-lui franchement ce qui bloque, puis propose de refaire son logo : brand.finish avec redo [« logo »] (ce qui le porte est refait avec lui). C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». S'il a dit ce qu'il veut de différent, mets ses mots dans guidance. Rien ne part avant qu'il confirme."),
+  ];
   const im = f.images ?? {};
   const made = [im.logo ? "le logo" : "", im.hero ? "la grande scène" : "", im.object ? "l'objet qui porte le logo" : "", im.signs ? "les signes" : "", ...(im.posts ?? []).map((q, i) => (q ? `la publication ${i + 1}` : ""))].filter(Boolean);
   return [
@@ -414,6 +433,8 @@ export function brandFinishContext(j: Journey): string[] {
     ...(j.keep.includes("logo") ? ["Il garde son logo : il n'a pas été redessiné, il est posé tel quel."] : []),
     ...(f.issues?.length ? [`À dire honnêtement au client, en mots simples (une image ratée est dite ratée) : ${f.issues.join(" ; ")}`] : []),
     ...(k?.notes.length ? [`À dire aussi : ${k.notes.join(" ; ")}`] : []),
+    // Ce que SINA dit des images vient du relecteur (sa note, ses mots), jamais un éloge inventé (essai réel de Nadia).
+    ...((() => { const v = ([[im.logo, "le logo"], [im.hero, "la grande scène"], [im.object, "l'objet qui porte le logo"], [im.signs, "les signes"], ...(im.posts ?? []).map((q, i) => [q, `la publication ${i + 1}`] as const)] as const).filter(([x]) => x).map(([x, w]) => `${w} : ${phraseDuVerdict(verdictDuRelecteur((x as { id: string }).id))}`); return v.length ? [`Relecture de ces images, à reprendre telle quelle (jamais un éloge qu'elle n'a pas dit) : ${v.join(" ; ")}.`] : []; })()),
     fixe("Tu VOIS ces images (jointes à ta réponse) : regarde-les avant d'en parler. Présente sa marque en 3 ou 4 phrases, d'après ce que tu vois vraiment (le nom est-il écrit juste sur le logo et sur l'objet ? le produit est-il entier ?), et dis franchement ce qui te plaît moins. Puis demande s'il la valide. S'il veut changer quelque chose : un AUTRE logo ou une image à refaire → brand.finish avec redo et guidance = ses mots (payant, le prix s'affiche avant) ; une autre identité → identity.choose ; une couleur ou une police → dis-lui que c'est noté et que ce réglage arrive plus tard dans le parcours, sans rien inventer. À sa validation (« oui », « je valide »…), appelle brand.kit_validate. Ne valide jamais à sa place."),
   ];
 }
@@ -488,6 +509,28 @@ export function anglesStepContext(j: Journey): string[] {
   ];
 }
 
+/** Les planches gardées de côté (une image y manque encore) : jamais affichées, ni montrées à SINA, ni choisissables. */
+/**
+ * Ce que le relecteur a dit d'une image gardée (sa note et ses mots), lu dans la bibliothèque : c'est tout ce que SINA en
+ * dit (essai réel de Nadia, 23 novembre 2026 : un haut de site noté 5 sur 10 a été dit « soigné »). Rien : null.
+ */
+export function verdictDuRelecteur(assetId: string | undefined | null): { score?: number; words: string } | null {
+  if (!assetId) return null;
+  const r = one<{ meta: string | null }>("SELECT meta FROM assets WHERE id=?", assetId);
+  const v = json<{ synaBoard?: { review?: { status?: string; score?: number; words?: string } } }>(r?.meta ?? "{}", {}).synaBoard?.review;
+  if (!v || v.status !== "ready") return null;
+  return { ...(typeof v.score === "number" ? { score: v.score } : {}), words: (v.words ?? "").trim() };
+}
+/** « note 9 sur 10 : « … » » ; sans note ni mots : « relue, sans remarque ». */
+export const phraseDuVerdict = (v: { score?: number; words: string } | null): string => !v ? L("pas de relecture enregistrée : n'en dis rien de plus que ce qui s'y voit", "no review recorded") : `${v.score != null ? L(`note ${v.score} sur 10`, `score ${v.score}/10`) : L("gardée", "kept")}${v.words ? ` : « ${v.words.slice(0, 300)} »` : L(", sans remarque", ", no remark")}`;
+
+export const planchesCachees = (j: Pick<Journey, "identities">): Set<string> => new Set((j.identities?.incompletes ?? []).map((x) => x.key));
+/** Les planches montrées au client : toutes, sauf celles gardées de côté. */
+export const planchesMontrees = <T extends { key: string }>(j: { identities?: { list: T[]; incompletes?: { key: string }[] } }): T[] => {
+  const cachees = new Set((j.identities?.incompletes ?? []).map((x) => x.key));
+  return (j.identities?.list ?? []).filter((x) => !cachees.has(x.key));
+};
+
 /** Étape 1 : que faire selon l'état des propositions. */
 function identityStepContext(j: Journey, count?: number): string[] {
   const id = j.identities;
@@ -496,14 +539,27 @@ function identityStepContext(j: Journey, count?: number): string[] {
   if (!id?.list.length) return [
     `Étape 1 (identités de marque : ${how}) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), dis-lui en une phrase ce que tu vas faire (étudier son marché, chercher l'idée et les noms, lui montrer chaque identité en planche de marque), puis appelle identity.propose (sans guidance) : la création prend plusieurs minutes, en arrière-plan. Le prix affiché couvre toute l'étape : ses identités, puis la marque complète de celle qu'il choisira (un seul accord). S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée. Tu es la seule à parler au client : dis « j'étudie », « je cherche », jamais « mon équipe » ni « ma stratège ».`,
   ];
+  // Jamais une planche incomplète : une planche gardée de côté n'est ni affichée, ni décrite (règle du propriétaire).
+  const montrees = planchesMontrees(j), cachees = (id.incompletes ?? []).map((h) => ({ ...h, name: id.list.find((x) => x.key === h.key)?.name ?? h.key }));
+  const MANQUE: Record<string, string> = { logo: "le logo", hero: "la grande scène", site: "le haut du site" };
+  const manqueDe = (m: string[]) => m.map((s) => MANQUE[s] ?? s).join(", ");
+  if (!montrees.length) return [
+    `Étape 1 — proposition n° ${id.round} : AUCUNE planche n'est montrée au client : il manque une image à chacune après mes reprises (${cachees.map((h) => `${h.key} « ${h.name} » : ${manqueDe(h.manque)}`).join(" ; ")}). Jamais une planche incomplète : tu n'en décris aucune et tu n'en présentes aucune.`,
+    fixe("Dis-lui franchement, en mots simples, ce qui bloque (les raisons sont ci-dessous), puis propose la suite : finir ces planches avec identity.images (keys = ces planches, images = exactement ce qui manque à chacune). C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». Rien ne part avant qu'il confirme."),
+    ...(id.issues.length ? [`Ce qui bloque (dis-le honnêtement, en mots simples) : ${id.issues.join(" ; ")}.`] : []),
+  ];
   const out = [
-    `Étape 1 — proposition n° ${id.round} (${id.list.some((x) => x.board) ? "les planches de marque complètes" : "les cartes complètes"} sont affichées au client dans le fil) : ${id.list.map((x) => `${x.key} « ${x.name} » (${x.board ? `idée : ${x.board.idea.belief} ; ` : ""}slogan « ${x.slogan} », territoire ${x.territory}, fond ${x.ground})`).join(" ; ")}.`,
+    `Étape 1 — proposition n° ${id.round} (${montrees.some((x) => x.board) ? "les planches de marque complètes" : "les cartes complètes"} sont affichées au client dans le fil) : ${montrees.map((x) => `${x.key} « ${x.name} » (${x.board ? `idée : ${x.board.idea.belief} ; ` : ""}slogan « ${x.slogan} », territoire ${x.territory}, fond ${x.ground})`).join(" ; ")}.`,
     ...(id.study ? [`Ton étude du marché (affichée au client au-dessus des planches) : ${id.study.sources} page(s) lue(s), ${id.study.quoteCount} parole(s) réelle(s) de clients gardée(s) mot pour mot${id.study.notFound.length ? ` ; non trouvé : ${id.study.notFound.join(" ; ")}` : ""}. Commence par dire en une phrase ce que tu as compris de son marché, à la première personne.`] : []),
-    fixe("Tu VOIS le logo, la grande scène et la maquette du haut du site de chaque planche (images jointes à ta réponse) : regarde-les avant d'en parler, et dis franchement si l'une d'elles n'est pas belle. Chaque planche montre l'idée, le nom, le logo, la grande scène, la maquette du haut de son site sur téléphone, les couleurs, les polices et la voix ; l'objet qui porte le logo, les signes en photo et trois publications sont créés pour l'identité qu'il choisit, dès son choix (déjà compris dans son accord) : dis-le en une phrase. Présente-les en une ligne courte chacune (l'idée de chacune et ce qui la distingue), sans recopier les planches, dis laquelle tu recommandes et pourquoi en une phrase, puis demande laquelle il préfère. Chaque planche dit « ce qui reste à prouver » : ne présente jamais ces points comme acquis. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question."),
+    ...(cachees.length ? [`Planche${cachees.length > 1 ? "s" : ""} gardée${cachees.length > 1 ? "s" : ""} de côté, NON montrée${cachees.length > 1 ? "s" : ""} (une image y manque encore après mes reprises : jamais une planche incomplète) : ${cachees.map((h) => `${h.key} « ${h.name} » (il manque ${manqueDe(h.manque)})`).join(" ; ")}. Tu ne la décris pas. Dis-lui clairement qu'elle arrive : ce qui bloque, puis la suite, la finir avec identity.images (keys = ${cachees.map((h) => h.key).join(", ")} ; images = exactement ce qui manque). C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». Il peut aussi choisir dès maintenant parmi les planches montrées.`] : []),
+    // Ce que SINA dit des images vient du relecteur, jamais d'elle (essai réel de Nadia : « les hauts de site des trois
+    // sont soignés », alors que l'un était noté 5 sur 10).
+    ...(montrees.some((x) => x.board?.images) ? [`Relecture des images, à reprendre telle quelle quand tu en parles (la note et les mots du relecteur ; jamais un éloge qu'il n'a pas dit, jamais « soigné », « magnifique » ni « réussi » sans ses mots) : ${montrees.filter((x) => x.board?.images).map((x) => `${x.key} « ${x.name} » — ${(["logo", "hero", "site"] as const).filter((k) => x.board!.images![k]).map((k) => `${MANQUE[k]} : ${phraseDuVerdict(verdictDuRelecteur(x.board!.images![k]!.id))}`).join(" ; ")}`).join(" | ")}.`] : []),
+    fixe("Tu VOIS le logo, la grande scène et la maquette du haut du site de chaque planche montrée (images jointes à ta réponse) : regarde-les avant d'en parler. Ce que tu en dis vient de la relecture ci-dessus : sa note et ses mots, rien de plus ; ce qui est raté se dit raté. Chaque planche montre l'idée, le nom, le logo, la grande scène, la maquette du haut de son site sur téléphone, les couleurs, les polices et la voix ; l'objet qui porte le logo, les signes en photo et trois publications sont créés pour l'identité qu'il choisit, dès son choix (déjà compris dans son accord) : dis-le en une phrase. Présente-les en une ligne courte chacune (l'idée de chacune et ce qui la distingue), sans recopier les planches, dis laquelle tu recommandes et pourquoi en une phrase, puis demande laquelle il préfère. Chaque planche dit « ce qui reste à prouver » : ne présente jamais ces points comme acquis. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question."),
   ];
   if (id.issues.length) out.push(`Points que le contrôle du Studio n'a pas pu valider (dis-les honnêtement au client, en mots simples) : ${id.issues.join(" ; ")}.`);
   // Le nom de domaine de chaque nom (contrôle gratuit du registre, affiché sur la planche) : SINA le dit tel quel.
-  const domains = id.list.map((x) => (x.board?.domains ? `${x.key} « ${x.name} » : ${domainLine(x.board.domains).replace(/^Nom de domaine : /, "")}` : "")).filter(Boolean);
+  const domains = montrees.map((x) => (x.board?.domains ? `${x.key} « ${x.name} » : ${domainLine(x.board.domains).replace(/^Nom de domaine : /, "")}` : "")).filter(Boolean);
   if (domains.length) out.push(`Noms de domaine (contrôlés à l'instant dans le registre ; le nom de la marque reste entier, une adresse « libre » n'est garantie que par sa réservation ; ne promets jamais une adresse, et n'en invente aucune autre) : ${domains.join(" | ")}`);
   return out;
 }

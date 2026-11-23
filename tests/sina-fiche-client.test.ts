@@ -62,7 +62,8 @@ describe("SINA — la fiche du client", async () => {
     const gouts = C.goutsDuClient(J.journeyOf(cid), projectId)!;
     expect(gouts.split("\n")).toEqual(["Du vert sapin, sobre.", "Il ne veut pas : le style plombier avec une goutte d'eau", "Il aime : le laiton et le cuivre"]);
     // Le dessinateur du logo : seulement la phrase de refus (décision du 21 novembre 2026), jamais le goût voisin.
-    expect(I.clientRefusal(gouts)).toBe("Ce que le client refuse, avec ses mots : « Il ne veut pas : le style plombier avec une goutte d'eau »");
+    // Mot pour mot, dans la formule du propriétaire, sans le « Il ne veut pas » ajouté par le Studio (23 novembre 2026).
+    expect(I.clientRefusal(gouts)).toBe("Il ne veut surtout pas : « le style plombier avec une goutte d'eau »");
     // Un refus pour les publications ne vaut pas pour les images de la marque.
     expect(gouts).not.toContain("mèmes");
     expect(F.refusPour(F.ficheOf(cid).notes, "publications")).toEqual(["pas de mèmes"]);
@@ -70,7 +71,7 @@ describe("SINA — la fiche du client", async () => {
     // La chaîne de la marque reçoit la fiche entière, et chaque planche reçoit ses goûts.
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
     expect(chain).toContain("const briefBlock = (j: Journey, projectId: string, guidance?: string) => [ficheTexte({ j, notes: notesDuProjet(projectId), projectId })");
-    expect(chain).toContain("gouts: goutsDuClient(j, p.id) }");
+    expect(chain).toContain("gouts: goutsDuClient(j, p.id), refusLogo: refusDuClientPourLeLogo(j, p.id) }");
   });
 
   it("SINA relit la fiche entière à chaque pas après les questions de départ ; ses choix y figurent", async () => {

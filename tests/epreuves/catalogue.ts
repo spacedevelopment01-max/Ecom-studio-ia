@@ -232,4 +232,58 @@ export const EPREUVES: Epreuve[] = [
     attendu: "La demande d'une équipe de noms tient dans sa limite (réflexion prévue et réponse ensemble). Une équipe coupée ou illisible est refaite une seule fois, plus courte, à la charge du Studio ; si elle échoue encore, la création continue avec les noms des autres équipes ; seule une panne de toutes les équipes arrête la création, avec une phrase claire.",
     rejeu: "gratuit",
   },
+  {
+    id: "ligne-la-marque-sans-idee-de-dessin", date: "2026-11-23", source: "CLAUDE.md (Logo ; diagnostic de l'essai réel de Nadia : docs/studio/essais-complets/NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Diagnostic de l'essai réel de Nadia : « Aucune idée de dessin dans la ligne « La marque » du logo (« comme une maison qui sent bon » a donné 6 maisons sur 9 logos). » Règle du propriétaire (21 novembre 2026) : « pas de consigne autre que les 50 logos en exemple et simplement en exemple ».",
+    attendu: "La ligne « La marque » du dessinateur du logo est écrite par le Studio, jamais par la directrice artistique : l'idée en mots simples puis le ton ; une idée qui contient une comparaison (« comme », « tel que ») ou un mot concret (maison, chez, foyer, flamme, feu, mèche, pot, couvercle, soir, hiver, nuit, fenêtre, marché, ou un mot du produit et du métier du client) est retirée, et seul le ton reste.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "serie-compte-les-logos-refuses", date: "2026-11-23", source: "CLAUDE.md (Logo ; diagnostic de l'essai réel de Nadia : docs/studio/essais-complets/NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Diagnostic de l'essai réel de Nadia : « La série des logos compte aussi les logos refusés, pour que chaque nouveau logo parte loin de ceux déjà faits. » (les 3 logos de A refusés, B n'a rien reçu ; ceux de B refusés, C n'a rien reçu). Règle du propriétaire : « je veux un logo complètement différent ».",
+    attendu: "Chaque nouveau dessin de logo, reprises comprises, reçoit tous les logos déjà dessinés pour ce client dans cette série, gardés ou refusés (ses propres essais refusés compris), avec « Je veux un logo complètement différent » ; jamais ceux d'une autre série ni d'un autre projet.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "refus-du-logo-une-seule-fois", date: "2026-11-23", source: "CLAUDE.md (Logo ; diagnostic de l'essai réel de Nadia : docs/studio/essais-complets/NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Diagnostic de l'essai réel de Nadia : « Au dessinateur du logo, seuls les refus qui concernent le logo, une seule fois, tels qu'écrits (pas « Il ne veut pas », pas de doublon, pas le refus des mains et du visage). » Formule du propriétaire : « Il ne veut surtout pas : … ».",
+    attendu: "Le dessinateur du logo reçoit chaque refus du client qui peut toucher un logo une seule fois, mot pour mot, dans la formule « Il ne veut surtout pas : « … » », sans « Il ne veut pas » ajouté ; un refus qui parle de personnes (mains, visage) vaut pour les images et ne lui arrive pas.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "planche-a-trou-jamais-montree", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/verdicts.md et NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Règle du propriétaire : « Jamais une planche incomplète : une image refusée est refaite avant d'être montrée. » Essai réel de Nadia : des planches sans logo lui ont été montrées (« Les logos ne l'étaient pas non plus : à la place, tu vois ton nom simplement écrit »), et la grande scène de « Pénombre », refusée trois fois, manquait aussi.",
+    attendu: "Une planche à laquelle il manque encore le logo, la grande scène ou le haut du site après ses reprises n'est ni affichée, ni montrée à SINA, ni choisissable ; les planches complètes de la série restent montrées ; SINA dit ce qui bloque et propose de refaire ce qui manque, à la charge du Studio (0 % du budget du client, sur la carte d'accord).",
+    rejeu: "gratuit",
+  },
+  {
+    id: "image-sous-8-jamais-gardee", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/verdicts.md et NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Carnet des verdicts, Nadia, identité C « Pénombre », haut du site : « 5/10 : « un bandeau de mois non demandé (JAN à DÉC, avec « JUI » en double) […] le pot de bougie de la photo est coupé par le bord droit » » ; gardée par SINA : « Oui, gardée malgré 5/10 (raté du Studio) ». Puis SINA a dit à Nadia que « les hauts de site des trois sont soignés ».",
+    attendu: "Une image notée moins de 8 sur 10 n'est jamais gardée ni montrée, même quand le relecteur répond ok = faux avec un défaut « texte » dont les textes attendus sont présents, ou quand il ne dit rien de ok ; elle est refaite. Ce que SINA dit d'une image vient du verdict du relecteur (sa note et ses mots), jamais d'un éloge inventé.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "vrai-produit-du-client-joint", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/verdicts.md et NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Carnet des verdicts, Nadia, identité C « Pénombre », grande scène, 1er essai : « 5/10 : « un pot de confiture avec une étiquette vierge, et non une bougie en cire de soja » ». Diagnostic : « Les vraies photos de Nadia n'ont jamais été jointes. » Règle : l'ouverture est une scène créée avec son vrai produit.",
+    attendu: "Pour une boutique qui a envoyé ses photos de produit, la demande de la grande scène et celle du haut du site les joignent comme produit à reproduire fidèlement ; la demande de relecture les joint aussi, avec la consigne de comparer et de refuser un autre produit.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "bougie-cire-et-meche", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/verdicts.md et NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Diagnostic de Nadia, épreuve 6 : « Le produit est reconnaissable : une bougie montre sa cire et sa mèche (trois « pots de confiture » refusés). » Carnet : « ressemble à un pot de confiture (matière rouge granuleuse, aucune mèche) » ; « L'étiquette du bocal […] est vierge : un grand cadre vide ».",
+    attendu: "Le relecteur refuse une scène où le produit n'est pas le vrai (un pot sans mèche, une étiquette vierge, un autre contenant que sur sa photo) : elle n'est pas gardée, et elle est refaite avec cette raison.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "titre-du-projet-coupe", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/verdicts.md et NADIA-2-DIAGNOSTIC.md, branche des essais)",
+    verdict: "Essai réel de Nadia : le titre du projet affichait « Bougies parfumées que je coule à la (provisoire) ».",
+    attendu: "Le titre du projet se coupe toujours à un mot entier, jamais au milieu d'une idée ni sur un petit mot de liaison, et ne montre jamais « (provisoire) » au client.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "marque-finie-jamais-sans-logo", date: "2026-11-23", source: "CLAUDE.md (Identité : « Jamais une planche incomplète » ; décision du chef d'orchestre du 23 novembre 2026, après l'essai réel de Nadia)",
+    verdict: "Règle du propriétaire : « Jamais une planche incomplète : une image refusée est refaite avant d'être montrée. » Avant, la marque finie dont le logo restait refusé recevait le nom dessiné du Studio en secours (« Je n'ai pas de logo qui passe ma relecture : ton nom dessiné, exact à la lettre, sert de logo en attendant »).",
+    attendu: "Après le choix, si le logo manque encore après ses reprises, aucun nom dessiné ne le remplace : aucun logo n'est adopté, aucune charte n'est faite, la marque n'est pas montrée comme finie ; SINA dit ce qui bloque et refait le logo (et ce qui le porte) à sa charge, la carte d'accord disant « À ma charge : 0 % de ton budget ».",
+    rejeu: "gratuit",
+  },
 ];

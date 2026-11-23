@@ -44,7 +44,8 @@ describe("le carnet des juges", async () => {
   it("la planche note chaque verdict de son relecteur au carnet ; sa règle de la note de 8 ne change pas", () => {
     const src = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(src).toContain("if (slot && why !== \"non relue\") { try { noterRelecture({ assetId: id, userId: o.who.userId, projectId: o.who.projectId, travail: travailDeLImage(slot), garde: status === \"ready\", raison: why }); }");
-    expect(src).toContain("if (v.ok && v.score != null && v.score < NOTE_MIN)");
+    // La note de 8 vaut toujours, même avec ok = faux ou sans ok (essai réel de Nadia, 23 novembre 2026).
+    expect(src).toContain("if (v.score != null && v.score < NOTE_MIN)");
     expect(J.travailDeLImage("logo")).toBe("le logo");
     expect(J.travailDeLImage("site")).toBe("le haut du site");
   });

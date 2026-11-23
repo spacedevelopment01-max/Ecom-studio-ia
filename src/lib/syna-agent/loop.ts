@@ -41,7 +41,7 @@ import { budgetState, jobSpentMicro, replyAllowanceMicro, trackJob, authorizeBud
 import { attachmentsOf, attachmentImages, describeAttachment, journeyImages } from "./attachments";
 import { projectSnapshot } from "./snapshot";
 import { SYNA_SYSTEM } from "./prompt";
-import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
+import { JOURNEY_STEPS, stepReady, currentStep, guideDeLEtape, journeyContext, journeyOf, planchesMontrees, PHASES, phaseOf, phaseStatus, updateJourney } from "./journey";
 import { anglesViewOf } from "./angles";
 import { sinaModels } from "./models";
 import { aLaChargeDuStudio } from "../billing";
@@ -320,8 +320,9 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           // site confirmée avec un budget presque épuisé s'est arrêtée en route, 4,48 € dépensés pour rien). Rien n'est
           // lancé ni payé ; SINA le dit au client, qui peut recharger l'IA de son projet.
           if (est.maxMicro > 0) {
+            // Une reprise à la charge du Studio ne dépend pas du budget du client ; son accord est quand même demandé.
             const manque = budgetInsuffisant(r.user_id, r.project_id, est.maxMicro);
-            if (manque) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, summary: manque }, r.id); stepFailed = true; continue; }
+            if (manque && !est.studio) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, summary: manque }, r.id); stepFailed = true; continue; }
             return askConfirmation(r, t, parsed.data, tctx, "cost", est.maxMicro, est);
           }
         }
@@ -418,9 +419,10 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
  * se présente toujours en clair : ce qui sera fait, puis pour une dépense le coût probable et le plafond, en % du budget
  * IA du mois (jamais en euros, jamais le nom technique de l'outil).
  */
-export async function confirmationText(t: AgentTool, args: unknown, ctx: ToolContext, userId: string, projectId: string | null, est?: { label: string; probableMicro?: number; maxMicro: number }): Promise<string> {
+export async function confirmationText(t: AgentTool, args: unknown, ctx: ToolContext, userId: string, projectId: string | null, est?: { label: string; probableMicro?: number; maxMicro: number; studio?: boolean }): Promise<string> {
   const pct = (m: number) => budgetPctTu(userId, m, projectId);
-  const price = est && est.maxMicro > 0 ? (est.probableMicro ? L(`Coût probable : ${pct(est.probableMicro)} ; au plus ${pct(est.maxMicro)}.`, `Likely cost: ${pct(est.probableMicro)}; at most ${pct(est.maxMicro)}.`) : L(`Au plus ${pct(est.maxMicro)}.`, `At most ${pct(est.maxMicro)}.`)) : "";
+  // Une reprise du travail de SINA : son prix pour le client est nul, et c'est dit tel quel (partie 13).
+  const price = est?.studio ? L("À ma charge : 0 % de ton budget, rien n'est compté pour toi.", "At my expense: 0% of your budget, nothing is charged to you.") : est && est.maxMicro > 0 ? (est.probableMicro ? L(`Coût probable : ${pct(est.probableMicro)} ; au plus ${pct(est.maxMicro)}.`, `Likely cost: ${pct(est.probableMicro)}; at most ${pct(est.maxMicro)}.`) : L(`Au plus ${pct(est.maxMicro)}.`, `At most ${pct(est.maxMicro)}.`)) : "";
   const what = t.preview ? await t.preview(ctx, args) : est?.label ? est.label.charAt(0).toUpperCase() + est.label.slice(1) + "." : t.description.split(/(?<=[.:])\s/)[0];
   return [what, price].filter(Boolean).join("\n");
 }
@@ -439,7 +441,7 @@ export function budgetInsuffisant(userId: string, projectId: string | null, maxM
     `Not started, nothing paid: this may cost up to ${pct(maxMicro)} and only ${pct(b.available)} is left this month. Tell the client: they can top up the project's AI (My account), or wait until ${fin}.`);
 }
 
-async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "cost", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number }) {
+async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "cost", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number; studio?: boolean }) {
   const preview = await confirmationText(t, args, ctx, r.user_id, r.project_id, est);
   const p: PendingAction = { id: newId(), tool: t.name, args, reason, preview, costMaxMicro, createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p) });
@@ -850,9 +852,10 @@ export function threadView(user: User, cid: string) {
         // Étape 1 : la dernière proposition d'identités (cartes du fil), avec les fichiers de leurs vraies polices.
         identities: j.identities ? {
           round: j.identities.round, issues: j.identities.issues, chosen: j.identityChoice ?? null,
-          list: j.identities.list.map(cardOf), study: j.identities.study ?? null,
+          // Jamais une planche incomplète (règle du propriétaire) : une planche gardée de côté n'est pas affichée.
+          list: planchesMontrees(j).map(cardOf), study: j.identities.study ?? null,
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
-          final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at, finishIssues: j.brandFinish?.issues ?? [] } : null,
+          final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at && !j.brandFinish.manque?.length, finishIssues: j.brandFinish?.issues ?? [] } : null,
         } : null,
         // Le logo de la marque, adopté par la fin de marque (image servie par la bibliothèque du projet).
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,
