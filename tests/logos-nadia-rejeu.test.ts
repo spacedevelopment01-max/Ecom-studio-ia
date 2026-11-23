@@ -69,16 +69,17 @@ describe("rejeu des trois logos de Nadia (faux dessinateur, faux relecteur qui r
       { sujet: "ses photos", value: "Mes mains je veux bien de temps en temps mais pas mon visage.", genre: "refuse", portee: "tout" },
     ]);
     const j = J.journeyOf(cid);
-    const dessins: { id: string; prompt: string; jointes: number; usage?: string; studio: boolean }[] = [];
+    const dessins: { id: string; prompt: string; jointes: number; serie: string[]; usage?: string; studio: boolean; rendu: Buffer }[] = [];
     const relectures: { id: string; prompt: string; labels: string[] }[] = [];
     let n = 0, vus = 0;
     const ai: any = {
       research: async () => [], ask: async () => { throw new Error("aucun appel de texte attendu"); },
       draw: async (id: string, c: any) => {
         // Toute image jointe, quel que soit son nom, est comptée.
-        const jointes = Object.entries(c).filter(([k, v]) => k !== "prompt" && Buffer.isBuffer(v)).length;
-        dessins.push({ id, prompt: c.prompt, jointes, usage: c.usage, studio: chargeDuStudio() });
-        return logoNumero(n++);
+        const jointes = Object.entries(c).filter(([k, v]) => k !== "prompt" && Buffer.isBuffer(v)).length + (c.serie?.length ?? 0);
+        const rendu = await logoNumero(n++);
+        dessins.push({ id, prompt: c.prompt, jointes, serie: (c.serie ?? []).map(sha), usage: c.usage, studio: chargeDuStudio(), rendu });
+        return rendu;
       },
       // Comme dans l'essai réel : chaque logo est refusé (note 5), pour une raison de dessin.
       look: async (id: string, c: any) => {
@@ -89,43 +90,89 @@ describe("rejeu des trois logos de Nadia (faux dessinateur, faux relecteur qui r
     };
     const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
     const parIdentite: Record<string, number[]> = {};
+    // La série, comme dans la chaîne : chaque identité reçoit le dernier dessin (ou le logo gardé) de celles d'avant.
+    const serie: Buffer[] = [];
     for (const x of identites()) {
       const avant = dessins.length;
-      const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: { look: "", logo: "", hero: "", object: "", site: "", signs: "", posts: ["", "", ""] }, gouts: C.goutsDuClient(j, projectId) });
+      const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: { look: "", logo: "", hero: "", object: "", site: "", signs: "", posts: ["", "", ""] }, gouts: C.goutsDuClient(j, projectId), serieLogos: [...serie] });
+      if (r.dernierLogo) serie.push(r.dernierLogo);
       parIdentite[x.key] = dessins.slice(avant).map((_d, i) => avant + i);
       expect(r.route.board.images?.logo).toBeUndefined();
     }
     return { dessins, relectures, parIdentite, projectId, j };
   }
 
-  it("la demande des trois logos, du premier essai comme des reprises : le métier et le nom, rien d'autre, aucune image jointe", async () => {
+  it("la série : Sillage sans image ; Halo avec Sillage ; Pénombre avec Sillage et Halo ; tout en français, rien d'autre", async () => {
     const { dessins, parIdentite } = await rejeu();
-    const attendu: Record<string, string> = {
+    const base: Record<string, string> = {
       A: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Sillage ».",
       B: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Halo ».",
       C: "Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Pénombre ».\nIl s'écrit lettre par lettre : P, é, n, o, m, b, r, e.",
     };
     expect(dessins).toHaveLength(9);
-    expect(Object.values(parIdentite).map((v) => v.length)).toEqual([3, 3, 3]);
-    for (const [k, idx] of Object.entries(parIdentite)) for (const i of idx) {
-      expect(dessins[i].prompt, `${k} dessin ${i + 1}`).toBe(attendu[k]);
-      expect(dessins[i].jointes).toBe(0);
-      expect(dessins[i].usage).toBe("logo");
+    const [a1, b1, c1] = ["A", "B", "C"].map((k) => dessins[parIdentite[k][0]]);
+    expect(a1.prompt).toBe(base.A);
+    expect(a1.jointes).toBe(0);
+    expect(b1.prompt).toBe(`${base.B}\nJe veux un autre logo complètement différent de celui-là.`);
+    expect(c1.prompt).toBe(`${base.C}\nFais-moi un autre logo complètement différent des deux premiers.`);
+    // Halo reçoit le dernier dessin de Sillage ; Pénombre, ceux de Sillage et de Halo.
+    const dernier = (k: string) => sha(dessins[parIdentite[k].at(-1)!].rendu);
+    expect(b1.serie).toEqual([dernier("A")]);
+    expect(c1.serie).toEqual([dernier("A"), dernier("B")]);
+    for (const d of dessins) {
+      expect(d.usage).toBe("logo");
+      expect(d.prompt).not.toMatch(/La marque :|Son ton|Couleurs|Typographie|BLANC|fond|Il ne veut|flamme|chaleureux|pas trop chic|mains|visage|image jointe|CORRECTION|Refus \d|banal|TRANSMITTED|REFERENCES/);
     }
-    // Rien de ce qui partait avant : ni idée, ni ton, ni couleurs, ni typographie, ni fond, ni refus, ni logos déjà faits.
-    for (const d of dessins) expect(d.prompt).not.toMatch(/La marque :|Son ton|Couleurs|Typographie|BLANC|fond|Il ne veut|flamme|chaleureux|pas trop chic|mains|visage|complètement différent|image jointe|CORRECTION|Refus \d|TRANSMITTED|REFERENCES/);
   });
 
-  it("une reprise refusée repart avec la même demande nue, à la charge du Studio, dans la borne des reprises", async () => {
+  it("le cas de Pénombre (essai réel, trois fois le même dessin) : chaque reprise reçoit ses essais refusés en plus de Sillage et de Halo ; trois demandes différentes, sans raison du refus, à la charge du Studio", async () => {
     const { dessins, parIdentite } = await rejeu();
-    expect(I.MAX_IMAGE_RETRIES).toBe(2);
-    for (const idx of Object.values(parIdentite)) {
-      const [premier, ...reprises] = idx.map((i) => dessins[i]);
-      expect(premier.studio).toBe(false);
-      expect(reprises.map((d) => d.studio)).toEqual([true, true]);
-      expect(reprises.map((d) => d.id)).toEqual([`${premier.id}:r1`, `${premier.id}:r2`]);
-      for (const d of reprises) expect(d.prompt).toBe(premier.prompt);
-    }
+    const [p1, p2, p3] = parIdentite.C.map((i) => dessins[i]);
+    const dernier = (k: string) => sha(dessins[parIdentite[k].at(-1)!].rendu);
+    expect(p1.serie).toEqual([dernier("A"), dernier("B")]);
+    expect(p2.serie).toEqual([dernier("A"), dernier("B"), sha(p1.rendu)]);
+    expect(p3.serie).toEqual([dernier("A"), dernier("B"), sha(p1.rendu), sha(p2.rendu)]);
+    // Trois demandes différentes (le texte et les images jointes) : plus jamais la même demande trois fois.
+    expect(new Set([p1, p2, p3].map((d) => `${d.prompt}|${d.serie.join(",")}`)).size).toBe(3);
+    expect(p1.prompt).not.toBe(p2.prompt);
+    expect(p1.prompt.endsWith("Fais-moi un autre logo complètement différent des deux premiers.")).toBe(true);
+    for (const d of [p2, p3]) expect(d.prompt.endsWith("Fais-moi un autre logo complètement différent de tous ceux-là.")).toBe(true);
+    // Les demandes de Pénombre ne diffèrent que par les images jointes et la phrase de la série : jamais la raison du refus.
+    for (const d of [p1, p2, p3]) expect(d.prompt).not.toMatch(/Refus|banal|pictogramme|sage|CORRECTION/);
+    expect([p1, p2, p3].map((d) => d.studio)).toEqual([false, true, true]);
+    // Sillage, seul : sa 2e tentative reçoit son 1er essai, sa 3e les deux.
+    const [s1, s2, s3] = parIdentite.A.map((i) => dessins[i]);
+    expect(s1.serie).toEqual([]);
+    expect(s2.serie).toEqual([sha(s1.rendu)]);
+    expect(s2.prompt.endsWith("Je veux un autre logo complètement différent de celui-là.")).toBe(true);
+    expect(s3.serie).toEqual([sha(s1.rendu), sha(s2.rendu)]);
+    expect(s3.prompt.endsWith("Fais-moi un autre logo complètement différent de tous ceux-là.")).toBe(true);
+  });
+
+  it("le relecteur seul refuse un mot non demandé dans le logo (un sous-titre) ; le dessinateur n'en sait rien", async () => {
+    const { account, project } = await import("./conversation209-fixtures");
+    const user = await account(), projectId = project(user, "products") as string;
+    const x = identites()[2];
+    const vus: string[] = [], demandes: string[] = [];
+    const ai: any = {
+      research: async () => [], ask: async () => { throw new Error("aucun appel de texte attendu"); },
+      draw: async (_id: string, c: any) => { demandes.push(c.prompt); return logoNumero(demandes.length); },
+      // Le relecteur garde le logo, mais y lit un sous-titre que personne n'a demandé.
+      look: async (id: string, c: any) => { vus.push(c.prompt); return id.startsWith("imagereread") ? { images: [{ slot: "logo", read: ["Pénombre", "Bougies naturelles"] }] } : { images: [{ slot: "logo", seen: "", score: 9, ok: true, read: ["Pénombre", "Bougies naturelles"], why: "beau", defect: "autre" }] }; },
+    };
+    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
+    const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: { look: "", logo: "", hero: "", object: "", site: "", signs: "", posts: ["", "", ""] } });
+    expect(r.route.board.images?.logo).toBeUndefined();
+    expect(vus[0]).toContain("un mot non demandé (un sous-titre, une ligne de métier, un slogan, par exemple « Bougies naturelles ») est un défaut");
+    for (const d of demandes) expect(d).not.toMatch(/sous-titre|Bougies naturelles|mot non demandé/);
+  });
+
+  it("SINA ne demande plus au client ce qu'il veut ou ne veut pas dans son logo", async () => {
+    const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
+    expect(SYNA_SYSTEM).toContain("Tu ne lui demandes jamais ce qu'il veut ou ne veut pas dans son logo");
+    const src = fs.readFileSync("src/lib/syna-agent/journey.ts", "utf8");
+    expect(src).toContain("jamais de question sur son logo (ni ce qu'il veut, ni ce qu'il refuse) : il est créé librement");
+    expect(src).not.toContain("l'image qu'il veut donner, en quelques mots, et ce qu'il ne veut surtout pas (couleurs, styles)");
   });
 
   it("le relecteur reçoit toujours ses mots et son refus (« pas de flamme dessinée »), avec la planche des logos aimés comme niveau", async () => {
@@ -170,7 +217,7 @@ describe("le dessin d'un logo ne passe jamais par un autre usage que « logo » 
     const fin = fs.readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8");
     // Le dessinateur des planches : un logo part chez aiBoardLogo (usage « logo »), jamais chez aiSiteImageHd (usage « scene »).
     expect(chain).toContain('draw: (id, c) => withTrace(scope(`brand-${id}`), () => c.usage === "logo"\n      ? aiBoardLogo(');
-    expect(img).toContain('? { prompt, aspect: SLOT_ASPECT[slot], usage: "logo" as const }');
+    expect(img).toContain('? { prompt, aspect: SLOT_ASPECT[slot], usage: "logo" as const, ...(refs.serie?.length ? { serie: refs.serie } : {}) }');
     expect(fin).toContain('logo: await onWhite(logoPng), usage: "logo" });');
     // Le devis : le logo et le symbole au prix du modèle des logos ; le logo sans aucune image jointe.
     expect(chain).toContain('const imageUnitMax = (aspect: ImageAspect, references: number, logo = false) => photoRequestMaxMicro(logo ? LOGO_ROUTE : boardImageRoute(),');

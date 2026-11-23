@@ -151,7 +151,7 @@ describe("SINA — chaîne de création de la marque", async () => {
       })();
       return c.schema.parse(c.prepare ? c.prepare(raw) : raw);
     },
-    draw: async (id: string, c: any) => { log.ids.push(id); log.prompts[id] = c.prompt; (log as any).refs = { ...((log as any).refs ?? {}), [id]: { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect } }; if (c.avoid) (log as any).avoid = { ...((log as any).avoid ?? {}), [id]: true }; return s.draw ? s.draw(id, c) : isLogo(id) ? whiteLogo() : square("#3366CC"); },
+    draw: async (id: string, c: any) => { log.ids.push(id); log.prompts[id] = c.prompt; (log as any).refs = { ...((log as any).refs ?? {}), [id]: { logo: !!c.logo, scene: !!c.scene, aspect: c.aspect } }; if (c.avoid) (log as any).avoid = { ...((log as any).avoid ?? {}), [id]: true }; (log as any).serie = { ...((log as any).serie ?? {}), [id]: c.serie ?? [] }; return s.draw ? s.draw(id, c) : isLogo(id) ? whiteLogo() : square("#3366CC"); },
     look: async (id: string, c: any) => {
       log.ids.push(id); log.prompts[id] = c.prompt; log.systems[id] = c.system;
       const name = /Marque : « (.+?) »/.exec(c.prompt)?.[1] ?? "";
@@ -1103,18 +1103,34 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(log.systems[Object.keys(log.systems).find((k) => k.startsWith("imagecheck-1-A"))!]).toMatch(/si tu as recopié le texte attendu sans faute, il n'y a pas de faute/);
   });
 
-  it("un logo refait avant le choix part avec la demande nue : aucun logo des autres planches, aucune image jointe (décision du 23 novembre 2026)", async () => {
+  it("la série (le propriétaire, 23 novembre 2026) : Halo refait reçoit Sillage gardé, Pénombre reçoit Sillage et le nouveau Halo ; le logo gardé de Sillage ne bouge pas", async () => {
     const t = await thread();
     await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
-    // Les planches A et C ont déjà leur logo ; seul celui de B est refait.
-    await chain(t, { imagesOnly: true, redo: ["A", "C"], slots: ["logo"] }, {});
-    const { log } = await chain(t, { imagesOnly: true, redo: ["B"], slots: ["logo"] }, {});
-    const id = log.ids.find((x) => /^image-1-B-logo/.test(x))!;
+    // Les trois planches ont leur logo ; A (« Sillage » pour le propriétaire) est gardé.
+    await chain(t, { imagesOnly: true, redo: ["A", "B", "C"], slots: ["logo"] }, {});
+    const avant = J.journeyOf(t.cid).identities!.list;
+    const logoA = avant[0].board!.images!.logo!;
+    const { getAsset, assetData } = await import("@/lib/library");
+    const bufA = assetData(getAsset(logoA.id)!);
+    const { log } = await chain(t, { imagesOnly: true, redo: ["B", "C"], slots: ["logo"] }, {});
     const I = await import("@/lib/syna-agent/brand-images");
-    expect((log as any).avoid?.[id]).toBeFalsy();
-    expect((log as any).refs[id]).toMatchObject({ logo: false, scene: false });
-    expect(log.prompts[id]).toBe(I.demandeDuLogo(J.journeyOf(t.cid).identities!.list[1] as never));
-    expect(log.prompts[id]).not.toMatch(/complètement différent|image jointe/);
+    const apres = J.journeyOf(t.cid).identities!.list;
+    const idB = log.ids.find((x) => /^image-1-B-logo/.test(x))!, idC = log.ids.find((x) => /^image-1-C-logo/.test(x))!;
+    expect(log.prompts[idB]).toBe(I.demandeDuLogo(apres[1] as never, { precedents: 1 }));
+    expect(log.prompts[idB].endsWith("Je veux un autre logo complètement différent de celui-là.")).toBe(true);
+    expect(log.prompts[idC]).toBe(I.demandeDuLogo(apres[2] as never, { precedents: 2 }));
+    expect(log.prompts[idC].endsWith("Fais-moi un autre logo complètement différent des deux premiers.")).toBe(true);
+    const serie = (log as any).serie as Record<string, Buffer[]>;
+    expect(serie[idB]).toEqual([bufA]);
+    expect(serie[idC]).toHaveLength(2);
+    expect(serie[idC][0]).toEqual(bufA);
+    expect(serie[idC][1]).toEqual(assetData(getAsset(apres[1].board!.images!.logo!.id)!));
+    // Aucune autre image (ni la planche des 50, ni d'autre logo) et rien en anglais.
+    expect((log as any).avoid?.[idB]).toBeFalsy();
+    for (const id of [idB, idC]) expect(log.prompts[id]).not.toMatch(/REFERENCES|image \d|Couleurs|Typographie|La marque :/);
+    // Le logo gardé de Sillage n'est jamais redessiné : il reste le même.
+    expect(apres[0].board!.images!.logo).toEqual(logoA);
+    expect(log.ids.some((x) => /^image-1-A-logo/.test(x))).toBe(false);
   });
 
   it("nouvelle proposition sans les mots du client : l'étude, les idées, les noms et les verdicts du juge de moins d'un mois resservent (audit, partie 3)", async () => {
@@ -1154,11 +1170,9 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     finally { C.brandChainDeps.ai = undefined; }
     expect(asks).toEqual([]);
     const I = await import("@/lib/syna-agent/brand-images");
-    for (const [i, k] of ["A", "B", "C"].entries()) expect(log.prompts[log.ids.find((x) => new RegExp(`^image-1-${k}-logo`).test(x))!]).toBe(I.demandeDuLogo(J.journeyOf(t.cid).identities!.list[i] as never));
-    // La consigne d'une identité neuve ne demande plus l'idée en mots simples.
+    for (const [i, k] of ["A", "B", "C"].entries()) expect(log.prompts[log.ids.find((x) => new RegExp(`^image-1-${k}-logo`).test(x))!]).toBe(I.demandeDuLogo(J.journeyOf(t.cid).identities!.list[i] as never, { precedents: i }));
     const P = await import("@/lib/syna-agent/brand-prompts");
     expect(P.directionSystem("services")).not.toMatch(/"simple"|idée en mots simples/);
-    // La carte d'accord d'identity.images : le prix des seuls logos et de leur relecture.
     const est = await fr(() => getTool("identity.images")!.estimate!(ctxOf(t.user, t.cid), { keys: ["A", "B"], images: ["logo"] } as never));
     expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["logo"]).maxMicro);
     expect(est.probableMicro).toBe(C.boardImagesQuote(2, undefined, ["logo"]).probableMicro);

@@ -291,7 +291,9 @@ export const TOPICS: Record<StartField, (j: Journey) => { fr: string; en: string
     ? { fr: "ses tarifs et ses durées, même approximatifs", en: "prices and durations" }
     : { fr: "ses prix de vente, même approximatifs, et ses variantes (tailles, formats, couleurs)", en: "selling prices and variants" },
   difference: () => ({ fr: "ce qui le rend différent, avec ses mots : pourquoi lui plutôt qu'un autre", en: "what makes them different" }),
-  image: () => ({ fr: "l'image qu'il veut donner, en quelques mots, et ce qu'il ne veut surtout pas (couleurs, styles)", en: "the image they want to convey and what they refuse" }),
+  // Jamais une question sur son logo (le propriétaire, 23 novembre 2026 : « on ne demande plus au client ce qu'il veux ou
+  // non dans son logo ») : le logo est créé librement ; ses refus pour les autres images restent permis.
+  image: () => ({ fr: "l'image qu'il veut donner à sa marque, en quelques mots, et ce qu'il ne veut surtout pas dans ses images (couleurs, styles) ; jamais de question sur son logo (ni ce qu'il veut, ni ce qu'il refuse) : il est créé librement", en: "the image they want to convey and what they refuse in their images; never ask about the logo" }),
   setup: (j) => j.start.business?.value === "services"
     ? { fr: "comment ses clients le contactent ou réservent : réservation en ligne, demande de devis, appel, formulaire", en: "how clients reach them" }
     : { fr: "combien de produits il vendra au lancement", en: "how many products at launch" },

@@ -22,13 +22,20 @@ describe("logos : seulement ceux de la série en cours montrés, les refus du cl
     // Décision du 23 novembre 2026 : le métier en mots simples et le nom, rien de plus.
     expect(I.imagePrompt("logo", route("A") as never, imagery)).toBe(I.demandeDuLogo(route("A") as never));
   });
-  it("plus aucun logo de la série au dessinateur (décision du 23 novembre 2026) ; la chaîne transmet les goûts du client au relecteur", () => {
+  it("la série revient dans la demande nue (le propriétaire, 23 novembre 2026) ; la chaîne transmet les goûts du client au relecteur", () => {
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(img).not.toMatch(/logoSheet|madeLogos|complètement différent/);
+    expect(img).not.toMatch(/logoSheet|madeLogos/);
+    expect(I.phraseDeLaSerie(0, 0)).toBe("");
+    expect(I.phraseDeLaSerie(1, 0)).toBe("Je veux un autre logo complètement différent de celui-là.");
+    expect(I.phraseDeLaSerie(0, 1)).toBe("Je veux un autre logo complètement différent de celui-là.");
+    expect(I.phraseDeLaSerie(2, 0)).toBe("Fais-moi un autre logo complètement différent des deux premiers.");
+    expect(I.phraseDeLaSerie(3, 0)).toBe("Fais-moi un autre logo complètement différent des trois premiers.");
+    expect(I.phraseDeLaSerie(2, 1)).toBe("Fais-moi un autre logo complètement différent de tous ceux-là.");
+    expect(I.phraseDeLaSerie(0, 2)).toBe("Fais-moi un autre logo complètement différent de tous ceux-là.");
     expect(img).toContain("Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut");
     const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
     // Les goûts du client viennent de sa fiche (réponse « image », goûts et refus pour les images) : `goutsDuClient`.
-    expect(chain.match(/gouts: goutsDuClient\(j, p\.id\), keptLogos: \[\.\.\.gardesSerie\] \}/g)).toHaveLength(1);
+    expect(chain.match(/gouts: goutsDuClient\(j, p\.id\), keptLogos: \[\.\.\.gardesSerie\], serieLogos \}/g)).toHaveLength(1);
     expect(chain).toContain("goutsDuClient(j, p.id, logoOnly ? clientWords(a.guidance) : undefined)");
     expect(chain).not.toMatch(/seriesLogos|redoneLogos|refusDuClientPourLeLogo|ideesSimples/);
   });
@@ -77,7 +84,7 @@ describe("logos : aucune consigne de style, les 50 logos aimés seulement comme 
     expect(await I.planchedesLogosAimes()).toBeInstanceOf(Buffer);
     const img = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
     expect(img).not.toMatch(/examples:/);
-    expect(img).toContain('? { prompt, aspect: SLOT_ASPECT[slot], usage: "logo" as const }');
+    expect(img).toContain('? { prompt, aspect: SLOT_ASPECT[slot], usage: "logo" as const, ...(refs.serie?.length ? { serie: refs.serie } : {}) }');
     expect(img).toContain('const aimes = slots.includes("logo") ? await planchedesLogosAimes() : null;');
     expect(P.imageReviewSystem()).toMatch(/quand la planche des logos que le propriétaire aime est jointe/);
     void M;
