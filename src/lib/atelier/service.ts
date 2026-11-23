@@ -15,6 +15,7 @@ import { marquerVerifiee, PhotoDeCoteError, verificationDe } from "./verificatio
 import { mediaModel } from "../ai/media-models";
 import { mediaStatus, typicalCostMicro } from "../ai/media-routing";
 import { pctBaseFor } from "../ai/budget-pct";
+import { formatPctShort, pctOfBudget } from "../budget-pct";
 import { palette } from "../engine/images";
 import type { Project } from "../projects";
 import { GESTES, LOT_MAX } from "./gestes";
@@ -150,7 +151,7 @@ export function etatAtelier(userId: string, p: Project) {
   const gestes = (Object.keys(GESTES) as GesteId[]).map((g) => {
     const outils = outilsPour(g, outilOuvert).map((o) => {
       const prix = o.disponible ? prixDuGeste(userId, p.id, g, o.id, { nombre: g === "lot" ? 1 : undefined, secondes: g === "video" ? 8 : undefined }) : null;
-      return { id: o.id, nom: o.nom, mieux: o.mieux, disponible: o.disponible, conseille: o.conseille, redessine: o.redessine, secours: !!o.secours, prixMicro: prix?.totalMicro ?? null, prix: prix?.texte ?? null };
+      return { id: o.id, nom: o.nom, mieux: o.mieux, disponible: o.disponible, conseille: o.conseille, redessine: o.redessine, secours: !!o.secours, prixMicro: prix?.totalMicro ?? null, prix: prix?.texte ?? null, prixCourt: prix ? prixCourt(prix.totalMicro, base, lg) : null };
     });
     return { id: g, nom: GESTES[g].nom, aide: GESTES[g].aide, kind: GESTES[g].kind, demande: GESTES[g].demande ?? null, outils, conseil: conseilOutil(g, outilsPour(g, outilOuvert), lg) };
   });
@@ -171,7 +172,7 @@ export function etatAtelier(userId: string, p: Project) {
     modelesImages: modelesPour(new Date(), { offreSaisie: false }).map(({ date: _d, mois: _m, ...m }) => m),
     modelesVideos: MODELES_VIDEOS.map((m) => {
       const d = prixModeleVideo(userId, p, m);
-      return { ...m, outil: d.outil, gratuit: !!m.sansIa, prix: d.prix, auPlus: d.auPlus, raison: d.raison, planSur: d.planSur, estimateMicro: d.estimateMicro, capMicro: d.capMicro };
+      return { ...m, outil: d.outil, gratuit: !!m.sansIa, prix: d.prix, prixCourt: m.sansIa ? d.prix : d.prix && d.estimateMicro > 0 ? prixCourt(d.estimateMicro, base, lg) : d.prix, auPlus: d.auPlus, raison: d.raison, planSur: d.planSur, estimateMicro: d.estimateMicro, capMicro: d.capMicro };
     }),
     gestesCamera: GESTES_CAMERA.map(({ id, nom }) => ({ id, nom })),
     musique: { style: musique.style, nom: nomMusique(musique.style, lg), elevenlabs: ELEVENLABS_BRANCHE, raison: ELEVENLABS_RAISON },
@@ -180,7 +181,53 @@ export function etatAtelier(userId: string, p: Project) {
     creations: creations.map((c) => ({ ...c, outil: nomOutil(c.outil, lg), cout: c.costMicro > 0 ? prixTexte(c.costMicro, base, lg) : lg === "fr" ? "gratuit" : "free" })),
     nonServies: { n: dorment.length, phrase: phraseNonServies(dorment.length, lg) },
     outilsAccordes: OUTILS.length,
+    // Pour la présentation seulement (aucun appel) : le nom du produit, ses vraies photos et les créations en cours.
+    produit: { nom: nomDuProduit(p), services: p.business === "services" },
+    photosProduit: photosDuProduit(p.id),
+    enCours: creationsEnCours(p.id),
   };
+}
+
+/**
+ * La forme courte d'un prix pour une étiquette (« ≈ 1,8 % »), tirée du MÊME coût que `prixTexte` ; null quand la base
+ * du budget est inconnue (l'écran garde alors la phrase entière).
+ */
+export function prixCourt(micro: number, baseMicro: number | null | undefined, lg: "fr" | "en"): string | null {
+  const pct = pctOfBudget(micro, baseMicro);
+  return pct == null ? null : formatPctShort(pct, lg);
+}
+
+/** Le nom du produit tel que le client l'a donné ou validé (jamais un nom seulement deviné). */
+function nomDuProduit(p: Project): string | null {
+  const n = (p.product?.name ?? "").trim();
+  return n && p.product?.nameStatus !== "unknown" ? n.slice(0, 60) : null;
+}
+
+const lireMeta = (m: string | null): unknown => { try { return JSON.parse(m || "{}"); } catch { return {}; } };
+
+/** Les vraies photos de produit du client (jamais une image créée), pour la scène et les cartes de vidéos. */
+export function photosDuProduit(projectId: string, max = 8): { id: string; url: string; thumbUrl: string | null }[] {
+  const rows = all<{ id: string; thumb_key: string | null; meta: string | null }>("SELECT id, thumb_key, meta FROM assets WHERE project_id = ? AND deleted_at IS NULL AND kind = 'image' AND origin IN ('upload','site') AND role IN ('original','packshot','product') ORDER BY created_at LIMIT ?", projectId, max * 2);
+  return rows
+    .filter((r) => verificationDe(lireMeta(r.meta))?.etat !== "refusee")
+    .slice(0, max)
+    .map((r) => ({ id: r.id, url: `/api/files/${r.id}`, thumbUrl: r.thumb_key ? `/api/files/${r.id}?thumb=1` : null }));
+}
+
+/**
+ * Les créations de l'atelier en cours (retouches, scènes, avant-après) : l'avancement est celui de la tâche, jamais un
+ * chiffre inventé ; `progress` est null tant que la tâche n'en a donné aucun.
+ */
+export function creationsEnCours(projectId: string): { id: string; kind: "image" | "video"; progress: number | null; sourceUrl: string | null }[] {
+  const rows = all<{ id: string; type: string; progress: number; payload: string }>("SELECT id, type, progress, payload FROM jobs WHERE project_id = ? AND status IN ('queued','running') AND type IN ('image.edit','image.v2','atelier.avant-apres') ORDER BY created_at DESC LIMIT 6", projectId);
+  return rows.flatMap((r) => {
+    let pl: { assetId?: string; avant?: string; request?: { atelier?: unknown } } = {};
+    try { pl = JSON.parse(r.payload || "{}"); } catch { /* charge illisible : on garde la tâche sans image */ }
+    if (r.type === "image.v2" && !pl.request?.atelier) return [];
+    const src = r.type === "atelier.avant-apres" ? pl.avant : pl.assetId;
+    const a = src ? getAsset(src) : null;
+    return [{ id: r.id, kind: r.type === "atelier.avant-apres" ? "video" as const : "image" as const, progress: r.progress > 0 && r.progress < 1 ? r.progress : null, sourceUrl: a && a.project_id === projectId && !a.deleted_at ? `/api/files/${a.id}` : null }];
+  });
 }
 
 /** Le nom de l'outil montré au client (jamais l'identifiant technique). */

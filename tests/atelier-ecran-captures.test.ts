@@ -25,10 +25,15 @@ describe("l'atelier à l'écran, après les captures", () => {
   });
 
   it("les boutons des cartes de vidéos passent à la ligne et grandissent au lieu d'être coupés", () => {
-    expect(atelier).toMatch(/BOUTON_CARTE = "!h-auto min-h-8 w-full !whitespace-normal/);
-    expect(atelier.match(/className=\{BOUTON_CARTE\}/g)?.length).toBe(2);
-    expect(atelier).toContain('inline-flex min-h-9 w-full items-center justify-center rounded-full bg-ink px-3 py-1.5 text-center text-sm leading-tight');
+    // Écran embelli le 23 novembre 2026 : les boutons « Utiliser ce modèle » et « Choisir mes deux photos » sont passés
+    // de la carte étroite à la fenêtre du choix du modèle (avec ses mises en garde). Même exigence, même contrôle :
+    // chacun passe à la ligne et grandit (hauteur libre, retour à la ligne permis) au lieu d'être coupé.
+    expect(atelier).toMatch(/BOUTON_BARRE = "!h-auto min-h-11 !whitespace-normal/);
+    expect(atelier).toMatch(/className=\{BOUTON_BARRE\} onClick=\{onAvantApres\} data-atelier-avant-apres>/);
+    expect(atelier).toMatch(/className=\{BOUTON_BARRE\} disabled>\{t\("Utiliser ce modèle"/);
+    expect(atelier).toContain('className="atelier-or inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-center text-sm font-semibold leading-tight"');
     expect(atelier).not.toContain('inline-flex h-9 items-center rounded-full bg-ink px-3 text-sm text-paper');
+    expect(atelier).not.toMatch(/whitespace-nowrap|\btruncate\b/);
   });
 
   it("en français, jamais un « : » seul en début de ligne", () => {

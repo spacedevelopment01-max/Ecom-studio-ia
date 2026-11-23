@@ -292,3 +292,36 @@ html:not(.js) .hp .reveal { opacity: 1; transform: none; }
 .hp-wall-rev { animation-direction: reverse; animation-duration: 80s; }
 .group:hover .hp-wall { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .hp-wall { animation: none; } }
+
+/* L'ATELIER (embelli le 23 novembre 2026, maquette approuvée) : la scène sombre, l'or du bouton « Créer », les aperçus
+   animés des modèles de vidéo (faits en CSS sur la vraie photo du produit, sans IA), l'image qui apparaît floue puis
+   nette. Aucun cadre en arche, en demi-lune ni en dôme : seulement des angles arrondis égaux. */
+:root { --or-1: #E2C58F; --or-2: #C49A5A; --or-ink: #1B1407; --or-soft: #F7EFE1; --or-texte: #74531C; }
+:root[data-theme="dark"] { --or-soft: #2A2214; --or-texte: #E9CF9C; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --or-soft: #2A2214; --or-texte: #E9CF9C; } }
+.atelier-scene { background: radial-gradient(120% 90% at 78% 30%, #2A2418 0%, #14130F 38%, #0D0F14 70%); color: #fff; }
+.atelier-or { background: linear-gradient(135deg, var(--or-1), var(--or-2)); color: var(--or-ink); }
+.atelier-apercu img { animation: 7s ease-in-out infinite alternate both; transform-origin: 50% 55%; will-change: transform; }
+.atelier-apercu[data-mouvement="tour"] img { animation-name: at-tour; }
+.atelier-apercu[data-mouvement="rapprochement"] img { animation-name: at-rapproche; }
+.atelier-apercu[data-mouvement="eloignement"] img { animation-name: at-eloigne; }
+.atelier-apercu[data-mouvement="travelling"] img { animation-name: at-travelling; }
+.atelier-apercu[data-mouvement="plongee"] img { animation-name: at-plongee; }
+.atelier-apercu[data-mouvement="pres"] img { animation-name: at-pres; }
+.atelier-apercu[data-mouvement="respire"] img { animation-name: at-respire; }
+@keyframes at-tour { from { transform: perspective(700px) rotateY(-10deg) scale(1.14); } to { transform: perspective(700px) rotateY(10deg) scale(1.14); } }
+@keyframes at-rapproche { from { transform: scale(1.02); } to { transform: scale(1.2); } }
+@keyframes at-eloigne { from { transform: scale(1.22); } to { transform: scale(1.02); } }
+@keyframes at-travelling { from { transform: scale(1.18) translateX(-6%); } to { transform: scale(1.18) translateX(6%); } }
+@keyframes at-plongee { from { transform: scale(1.18) translateY(-5%); } to { transform: scale(1.18) translateY(5%); } }
+@keyframes at-pres { from { transform: scale(1.7) translate(2%, 3%); } to { transform: scale(1.95) translate(-2%, 1%); } }
+@keyframes at-respire { from { transform: scale(1.03); filter: brightness(1); } to { transform: scale(1.07); filter: brightness(1.07); } }
+.atelier-net { animation: at-net 1.2s ease-out both; }
+@keyframes at-net { from { filter: blur(14px) saturate(.8); transform: scale(1.04); } to { filter: none; transform: none; } }
+.atelier-flou { filter: blur(12px) saturate(.85); transform: scale(1.1); }
+.atelier-barre-indet { position: absolute; inset: 0 auto 0 0; width: 35%; border-radius: inherit; background: #fff; animation: at-indet 1.6s ease-in-out infinite; }
+@keyframes at-indet { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+@media (prefers-reduced-motion: reduce) {
+  .atelier-apercu img, .atelier-net, .atelier-barre-indet { animation: none !important; }
+  .atelier-barre-indet { width: 100%; opacity: .45; }
+}
