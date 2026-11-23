@@ -35,3 +35,19 @@ aucune modification. Claude n'a joué que la cliente. Accord du propriétaire po
    (l'étude est comprise dans la carte de la marque).
 
 Remarque sans gravité : SINA a lu la deuxième photo (cire en grains) comme une bougie coulée comme les autres.
+
+## Le prix de la carte dans la nouvelle version (23 novembre 2026, calculé sans aucun appel)
+
+Branche rapprochée de `claude/evolution-sina` (`70c0882`), contrôle des types sans erreur, Studio d'essai relancé. Le
+projet de Nadia, sa fiche et sa carte en attente sont bien relus. Le devis de la nouvelle version, calculé par le code
+du Studio sur le projet de Nadia :
+
+| Travail | Probable | Au plus |
+|---|---|---|
+| Les 3 planches de marque | 8,75 € | 18,48 € |
+| La marque finie de l'identité choisie | 1,37 € | 2,40 € |
+| **Carte de la marque (les deux ensemble)** | **10,12 €** | **20,88 €** |
+| Les 3 angles (carte suivante) | 1,97 € | 4,91 € |
+
+La carte n'a pas baissé : elle est plus chère que l'ancienne (8 € probables, 16,69 € au plus). Son « au plus » dépasse à
+lui seul le plafond de 10 € fixé pour cet essai : elle n'est pas acceptée.
