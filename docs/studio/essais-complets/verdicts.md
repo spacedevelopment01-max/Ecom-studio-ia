@@ -28,6 +28,8 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 23/11 18:26 | Nadia | Halo, version pour fond sombre (faite par le Studio, sans IA) | non relue | Oui | [en attente] — remarque de Claude : l'intérieur du « a » et du « o » reste blanc |
 | 23/11 21:01 | Nadia | Identité C « Pénombre », logo avec la demande nue (« Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Pénombre ». »), 1er essai | 3/10 : « la bougie porte une flamme dessinée, ce que le client refuse explicitement. Le tout est enfermé dans une vignette ronde noire interdite, avec une scène lune-bougie trop chargée et trop chic » | Non | [en attente] — remarque de Claude : le texte « Bougies naturelles » n'a pas été demandé |
 | 23/11 21:02 | Nadia | Identité C « Pénombre », logo avec la demande nue, 2e essai (même demande) | 3/10 : « une bougie à la flamme dessinée, que le client refuse explicitement ; le tout est enfermé dans une vignette ronde noire avec une demi-lune, et le résultat est trop chic, donc pas chaleureux » | Non | [en attente] |
+| 23/11 21:03 | Nadia | Identité C « Pénombre », logo avec la demande nue, 3e essai | 3/10 : « une flamme de bougie dessinée et allumée, que le client refuse explicitement ; le logo est aussi enfermé dans un disque rond, chargé d'illustration détaillée et porte un sous-titre non demandé » | Non | [en attente] |
+| 23/11 21:03 | Nadia | Identité C « Pénombre », grande scène, 4e essai (avec la nouvelle version) | 8/10, sans remarque | Oui | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
