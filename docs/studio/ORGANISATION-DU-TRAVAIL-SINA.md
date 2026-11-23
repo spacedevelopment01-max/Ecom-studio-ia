@@ -404,6 +404,7 @@ Dernière commande :
   demandées : « story » remplacé par « format vertical » (décision du chef d'orchestre, règle « jamais un mot
   d'anglais ») ; durées de 5 s affichées alors que 6 s sont faites et comptées ; ancienne carte d'accord de SINA
   (« au plus » seul) dans les données d'exemple ; titres trop serrés.
+- Retouches faites (70c0882f), 6 006 essais verts, 0 € ; captures refaites et relues par le chef d'orchestre, envoyées.
 
 ## 5. À lire avant chaque décision
 
