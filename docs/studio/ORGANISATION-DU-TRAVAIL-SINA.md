@@ -424,6 +424,11 @@ Dernière commande :
   « vieux réglages » a été annulé, car ce n'était pas la cause.
 - « Les essais complets » a affiché la clé Anthropic du Studio d'essai dans une sortie de commande : le propriétaire est
   invité à la changer dans Administration › Fournisseurs IA.
+- Réparation faite (f0596096) et vérifiée par le chef d'orchestre sur une copie propre : types sans erreur, 6 027 essais
+  passés. Une marque à 3 planches : environ 5,86 € probables au lieu de 8,37 € (« au plus » 19,97 € : réflexion et
+  reprise des équipes enfin comptées). Reprise de Nadia : 4,78 € probables au taux de 0,90 du Studio d'essai.
+- Reprise acceptée par le propriétaire à 13 h 40 dans « Les essais complets ». À 13 h 56 : 77 %, 2,32 € dépensés,
+  aucune image. Point au propriétaire toutes les 5 minutes.
 
 ## 5. À lire avant chaque décision
 
