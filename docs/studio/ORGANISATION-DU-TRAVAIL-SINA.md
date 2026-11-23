@@ -474,6 +474,19 @@ Dernière commande :
   (Nadia remboursée de 0,27 € dans l'essai, 0,044 € laissés). Essai des logos de Nadia avec la règle nue : les trois
   (Pénombre, Sillage et Halo refaits), devis à présenter au propriétaire par « Les essais complets ».
 
+### La demande du logo, suite (23 novembre 2026, nuit)
+
+- Série remise (« le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement
+  différent… »), Sillage gardé (« j'aime bien le 1er logo »), plus aucune question au client sur son logo (02570ae1,
+  CLAUDE.md 3915e213, accord écrit chez « Évolution de SINA »).
+- Essais réels : demande nue → Pénombre trois fois le même dessin (bougie et lune) ; avec la série, encore bougie et lune
+  sur fond noir texturé (fond impossible à retirer). 7,22 € dépensés au total, garde à 8 €.
+- Le propriétaire : « Ouai c'est la catastrophe mon idée », puis « Et si on enlevait mes 50 logos de démo pour lui laisser
+  un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies ». Demande retenue :
+  métier et nom, couleurs, typographie, « Sur un fond blanc uni. », la série ; jamais l'idée, le ton, la planche des 50
+  ni les mots du client. Le relecteur juge la qualité seule. Commandé à « Évolution de SINA » ; accord écrit à faire
+  donner chez elle, puis essai de Halo et de Pénombre (garde à monter à 10 € avec son accord).
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
