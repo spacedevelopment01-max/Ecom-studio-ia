@@ -399,6 +399,11 @@ Dernière commande :
   son oui avant d'être confié à « Évolution de SINA ».
 - Accord du propriétaire le 23 novembre 2026 (« Yes ») : construction confiée à « Évolution de SINA ». Image d'exemple et
   page dessinée : `docs/studio/maquette-atelier-embelli/`.
+- Atelier embelli construit (27882a51 sur `claude/evolution-sina`), présentation seule, 6 004 essais verts, 0 €. Captures
+  dans `docs/studio/captures-atelier-embelli/`, envoyées au propriétaire. Relu par le chef d'orchestre ; retouches
+  demandées : « story » remplacé par « format vertical » (décision du chef d'orchestre, règle « jamais un mot
+  d'anglais ») ; durées de 5 s affichées alors que 6 s sont faites et comptées ; ancienne carte d'accord de SINA
+  (« au plus » seul) dans les données d'exemple ; titres trop serrés.
 
 ## 5. À lire avant chaque décision
 
