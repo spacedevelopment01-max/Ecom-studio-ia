@@ -48,7 +48,8 @@ describe("onglet Images — audit", async () => {
   });
 
   it("une image demandée à l'IA n'est jamais remplacée par une photo libre (même sans « noStock »)", async () => {
-    keys={alibaba:'FAUSSE CLE DE RECETTE',anthropic:'FAUSSE CLE DE RECETTE'};
+    // Images de SINA par OpenAI (23 novembre 2026) : la clé d'OpenAI ouvre la génération.
+    keys={alibaba:'FAUSSE CLE DE RECETTE',openai:'FAUSSE CLE DE RECETTE',anthropic:'FAUSSE CLE DE RECETTE'};
     const r = await postV2({ action: "generate", request: { kind: "ambiance", topic: "table en bois", aspect: "4:5", count: 1, allowGenerate: true } });
     expect(r.status).toBe(200);
     expect((await payloadOf(r)).request).toMatchObject({ allowGenerate: true, noStock: true });
@@ -68,8 +69,8 @@ describe("onglet Images — audit", async () => {
     expect(body.ai).toBe(false);
     expect(body.reason).toMatch(/Alibaba|Qwen/);
     expect(body.quote.ai_image).toBeGreaterThan(0);
-    // Clé Alibaba active : Qwen-Image 3.0 Pro utilisable, l'IA d'images est disponible.
-    keys = { alibaba: "sk-alibaba-test-123456", anthropic: "sk-ant-test-1234567890abcdef" };
+    // Clé d'OpenAI active : les images de SINA sont faites par OpenAI (23 novembre 2026), l'IA d'images est disponible.
+    keys = { alibaba: "sk-alibaba-test-123456", openai: "sk-openai-test-123456", anthropic: "sk-ant-test-1234567890abcdef" };
     const ok = await (await fr(() => images.GET(new Request(`http://localhost:3000/api/projects/${pid}/images`), ctx))).json();
     expect(ok.ai).toBe(true);
     expect(ok.reason).toBeNull();

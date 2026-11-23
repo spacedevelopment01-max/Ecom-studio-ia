@@ -10,6 +10,7 @@ import { redact } from "../redact";
 import { AsyncLocalStorage } from "node:async_hooks";
 import crypto from "node:crypto";
 import { id, now, one, run } from "../db";
+import { borneDuStudio } from "./borne-du-studio";
 
 export type TraceScope = {
   /** Demande persistante de l'agent commun ; impossible de la remplacer dans une sous-portée. */
@@ -31,8 +32,16 @@ export type TraceScope = {
   planId?: string;
   stepId?: string;
   routing?: { reason: string; fallback: boolean; escalation: boolean };
-  /** Plafond de dépense de la tâche (micro-euros) : aucun appel payant ne part au-delà (benchmark --max-cost). */
+  /**
+   * Plafond du CLIENT pour la tâche (micro-euros) : le « au plus » de sa carte d'accord. Il ne couvre que ce qu'il paie ;
+   * aucune dépense comptée au client ne part au-delà (benchmark --max-cost).
+   */
   costCapMicro?: number;
+  /**
+   * Borne du STUDIO pour la tâche (micro-euros) : ce que les reprises à sa charge peuvent coûter au plus (deux plafonds,
+   * 23 novembre 2026). Sans elle, elle se calcule sur le plafond du client (`borneDuStudio`).
+   */
+  studioCapMicro?: number;
   /** Historique de qualité de l'étape du plan en cours (reprise) : transmis au Router V2. */
   history?: { attempt?: number; lastScore?: number | null; lastVerdict?: "FINAL" | "RETRY" | "PROVISIONAL" | "REJECTED"; lastProvider?: string; lastModel?: string; failure?: "quality" | "provider_error" | "parse" | "refusal" };
 };
@@ -48,7 +57,8 @@ export function withTrace<T>(scope: TraceScope, fn: () => Promise<T>): Promise<T
   if(cur.agentBoundId&&scope.agentBoundId&&cur.agentBoundId!==scope.agentBoundId)throw new Error('agent_request_scope_conflict');
   const step = scope.step ? (cur.step ? `${cur.step}/${scope.step}` : scope.step) : cur.step;
   const costCapMicro=cur.costCapMicro==null?scope.costCapMicro:scope.costCapMicro==null?cur.costCapMicro:Math.min(cur.costCapMicro,scope.costCapMicro);
-  return store.run({ ...cur, ...scope, agentBoundId:cur.agentBoundId??scope.agentBoundId,costCapMicro,recoveryOnly: cur.recoveryOnly || scope.recoveryOnly, step }, fn);
+  const studioCapMicro=cur.studioCapMicro==null?scope.studioCapMicro:scope.studioCapMicro==null?cur.studioCapMicro:Math.min(cur.studioCapMicro,scope.studioCapMicro);
+  return store.run({ ...cur, ...scope, agentBoundId:cur.agentBoundId??scope.agentBoundId,costCapMicro,studioCapMicro,recoveryOnly: cur.recoveryOnly || scope.recoveryOnly, step }, fn);
 }
 
 /** Candidat évalué (piste de logo, image…) et sa tentative : les appels faits dans `fn` lui sont rattachés. */
@@ -56,33 +66,67 @@ export function withCandidate<T>(candidateId: string, attempt: number, fn: () =>
   return store.run({ ...currentTrace(), candidateId, attempt }, fn);
 }
 
-/** Plafond de dépense atteint : l'appel n'est pas envoyé (rien n'est payé). */
+/**
+ * RÈGLE DU PROPRIÉTAIRE (LE-STUDIO-DE-A-A-Z, partie 13 : « une erreur de SINA est toujours corrigée sans rien compter ;
+ * un changement de goût du client passe par son budget du mois ») : ce que le Studio refait pour sa propre qualité est à
+ * sa charge. Une reprise du Studio (`aLaChargeDuStudio`) ne prend rien sur le budget du client, et ne regarde que la
+ * borne du Studio de la tâche, jamais le plafond du client (deux plafonds, 23 novembre 2026).
+ */
+const studioScope = new AsyncLocalStorage<boolean>();
+export const aLaChargeDuStudio = <T>(fn: () => T): T => studioScope.run(true, fn);
+export const chargeDuStudio = (): boolean => studioScope.getStore() === true;
+
+/** Plafond atteint : l'appel n'est pas envoyé (rien n'est payé). `studio` : c'est la borne des reprises du Studio. */
 export class CostCapReached extends Error {
   readonly permanent = true;
-  constructor(public spentMicro: number, public estimateMicro: number, public capMicro: number) {
+  constructor(public spentMicro: number, public estimateMicro: number, public capMicro: number, public studio = false) {
     // Message vu par le client (tâche) : jamais de montant en euros ; les chiffres restent dans les champs (journal, admin).
     // Essai réel du 19 novembre 2026 : SINA a lu ce message comme « ton budget d'IA est épuisé » et l'a dit au client.
-    super("plafond de dépense atteint : l'appel suivant n'a pas été envoyé (rien de plus n'est décompté). C'est le plafond de CETTE création, fixé à l'avance par le Studio : le budget d'IA du client n'est pas épuisé.");
+    super(studio
+      ? "borne des reprises du Studio atteinte : la reprise suivante n'a pas été envoyée. Ces reprises sont à la charge du Studio : rien n'est compté au client, et son budget d'IA n'est pas touché."
+      : "plafond de dépense atteint : l'appel suivant n'a pas été envoyé (rien de plus n'est décompté). C'est le plafond de CETTE création, fixé à l'avance par le Studio : le budget d'IA du client n'est pas épuisé.");
     this.name = "CostCapReached";
   }
 }
 
 /**
- * Garde-fou de dépense RÉEL : avant chaque appel payant, coût déjà enregistré pour la tâche (ai_calls) + estimation
- * de l'appel comparés au plafond. Au-delà, exception : l'appel ne part pas.
+ * Ce qu'une tâche a engagé (micro-euros) : en tout, et la part à la charge du Studio (réservations marquées « studio »,
+ * réglées ou non) ; le reste est la part du client. Les règlements liés à usage_events ne sont comptés qu'une fois. Les
+ * coûts incertains et les appels encore réservés sont des engagements, même sans trace finale ai_calls. Les anciennes
+ * réservations sans lien restent retenues : on ne suppose pas gratuitement leur rapprochement avec une ancienne trace.
  */
-export function assertUnderCostCap(estimateMicro: number) {
-  const t = currentTrace();
-  if (t.costCapMicro == null) return;
-  // Les coûts incertains et les appels encore réservés sont des engagements, même sans trace finale ai_calls.
-  // Les règlements liés à usage_events ne sont comptés qu'une fois. Les anciennes réservations sans lien restent
-  // conservativement retenues : on ne suppose pas gratuitement leur rapprochement avec une ancienne trace.
-  const spent = t.jobId ? (one<{ c: number }>(`SELECT
+export function depensesDeLaTache(jobId: string): { total: number; studio: number; client: number } {
+  const r = one<{ total: number; studio: number }>(`SELECT
     COALESCE((SELECT SUM(CASE WHEN status='held' THEN amount ELSE COALESCE(actual,amount) END)
       FROM ai_reservations WHERE job_id=? AND status IN ('held','settled','uncertain','reconciled') AND usage_event_id IS NULL),0)
     + COALESCE((SELECT SUM(billed) FROM usage_events WHERE job_id=?),0)
-    + COALESCE((SELECT SUM(cost) FROM ai_calls WHERE job_id=? AND usage_event_id IS NULL AND billing_dedup=0 AND status='ok'),0) AS c`, t.jobId,t.jobId,t.jobId)?.c ?? 0) : 0;
-  if (spent + estimateMicro > t.costCapMicro) throw new CostCapReached(spent, estimateMicro, t.costCapMicro);
+    + COALESCE((SELECT SUM(cost) FROM ai_calls WHERE job_id=? AND usage_event_id IS NULL AND billing_dedup=0 AND status='ok'),0) AS total,
+    COALESCE((SELECT SUM(CASE WHEN status='held' THEN amount ELSE COALESCE(actual,amount) END)
+      FROM ai_reservations WHERE job_id=? AND studio=1 AND status IN ('held','settled','uncertain','reconciled') AND usage_event_id IS NULL),0)
+    + COALESCE((SELECT SUM(billed) FROM usage_events WHERE job_id=? AND id IN (SELECT usage_event_id FROM ai_reservations WHERE job_id=? AND studio=1 AND usage_event_id IS NOT NULL)),0) AS studio`,
+    jobId, jobId, jobId, jobId, jobId, jobId);
+  const total = r?.total ?? 0, studio = Math.min(total, r?.studio ?? 0);
+  return { total, studio, client: total - studio };
+}
+
+/**
+ * Garde-fou de dépense RÉEL, avec DEUX plafonds (23 novembre 2026) : avant chaque appel payant, ce que la tâche a déjà
+ * engagé plus l'estimation de l'appel.
+ *  - Une dépense comptée au client ne regarde que le plafond du client (le « au plus » de sa carte), sur sa seule part.
+ *  - Une reprise à la charge du Studio (`studio`) ne regarde que la borne du Studio, sur la seule part du Studio.
+ *  - La tâche s'arrête toujours à la somme des deux : aucune dépense sans fin possible.
+ * Sans borne du Studio donnée (ancienne tâche, portée sans devis), elle se calcule sur le plafond du client
+ * (`borneDuStudio`). Au-delà, exception : l'appel ne part pas.
+ */
+export function assertUnderCostCap(estimateMicro: number, studio: boolean = chargeDuStudio()) {
+  const t = currentTrace();
+  const cap = t.costCapMicro;
+  const borne = t.studioCapMicro ?? (cap != null ? borneDuStudio(cap) : undefined);
+  if (cap == null && borne == null) return;
+  const d = t.jobId ? depensesDeLaTache(t.jobId) : { total: 0, studio: 0, client: 0 };
+  if (studio) { if (borne != null && d.studio + estimateMicro > borne) throw new CostCapReached(d.studio, estimateMicro, borne, true); }
+  else if (cap != null && d.client + estimateMicro > cap) throw new CostCapReached(d.client, estimateMicro, cap);
+  if (cap != null && borne != null && d.total + estimateMicro > cap + borne) throw new CostCapReached(d.total, estimateMicro, cap + borne, studio);
 }
 
 /** Empreinte courte d'un texte (version de fait d'un prompt système), sans le conserver. */

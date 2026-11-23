@@ -1140,3 +1140,36 @@ Ce qui n'est pas vérifié : aucun essai réel. On ne sait pas encore si le dess
 à partir de ses photos, ni si le relecteur repère à coup sûr une mèche absente. La marque finie (après le choix) garde
 son secours du nom dessiné quand le logo manque : elle n'a pas été changée ici. Le dessin des logos est un autre
 chantier, non touché.
+
+## Deux plafonds : le client et le Studio
+
+Règle du propriétaire (partie 13) : « une erreur de SINA est toujours corrigée sans rien compter ; un changement de goût
+du client passe par son budget du mois ». Avant, une tâche n'avait qu'un plafond, celui de la carte du client, et les
+reprises à la charge du Studio y étaient comptées : la carte « refaire 3 logos » à 1,38 € ne permettait qu'environ un
+essai par logo, et un client se serait retrouvé avec une planche à trou.
+
+- **Deux plafonds par tâche.** Celui du client : le « au plus » de sa carte, pour ce qu'il paie. Celui du Studio : la
+  borne de ses reprises, deux par image, relectures comprises (`src/lib/ai/borne-du-studio.ts`). Une dépense du client ne
+  regarde que sa carte ; une reprise du Studio ne regarde que la borne du Studio et ne touche jamais le budget du mois du
+  client, même épuisé. La tâche s'arrête toujours à la somme des deux. Tout se fait dans le moteur commun (réservation,
+  trace, accès à l'IA), pour toutes les chaînes.
+- **Les anciennes tâches** reçoivent une borne calculée sur leur plafond (deux fois, trois quand tout est à la charge du
+  Studio) : elles finissent leurs planches au lieu de s'arrêter.
+- **Le devis** porte les deux montants. Le client ne voit que son prix, ou « À ma charge : 0 % de ton budget ».
+  L'administration voit, dans « Coût par travail accepté », ce que les reprises du Studio ont coûté et leurs bornes. Le
+  journal garde le coût réel de chaque reprise, et le prix probable des cartes ne compte plus les reprises du Studio.
+- **Les planches incomplètes** se lisent sur leur contenu (logo, grande scène, haut du site), plus sur un drapeau : les
+  trois planches de Nadia sans logo ne sont plus choisissables, SINA ne les propose plus, et refaire leurs logos est à
+  la charge du Studio.
+- **Images de SINA par OpenAI**, quel que soit le réglage commun des images (il désignait Qwen-Image) ; seul un outil
+  choisi par le client lui-même dans l'atelier peut être un autre modèle. L'alerte « Qwen inutilisable » n'est plus levée
+  pour une image de SINA faite par OpenAI.
+
+Devis des 3 logos de Nadia, maintenant (tarifs vérifiés du Studio de recette) : pour elle, 0 % ; pour le Studio, environ
+0,97 € probables (une reprise par logo en moyenne, hypothèse) et 3,62 € au plus (trois essais par logo, relectures et
+idée en mots simples comprises). Avec les tarifs de la base de l'essai (1,38 € au plus pour un essai), la borne serait
+d'environ 3,8 € : [À vérifier sur la base de l'essai].
+
+Deux épreuves ajoutées : `reprise-du-studio-jamais-bloquee-par-la-carte`, `images-de-sina-toujours-openai`. Non vérifié :
+aucun essai réel ; une reprise de logo qui joint plus d'images que le premier essai peut coûter un peu plus que prévu, et
+la borne arrêterait alors la dernière reprise (SINA le dirait, rien ne serait compté au client).

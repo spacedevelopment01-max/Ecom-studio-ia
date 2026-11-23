@@ -255,7 +255,10 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     const v = J.verdictDuRelecteur(site.r.route.board.images!.site!.id);
     expect(v).toEqual({ score: 9, words: "titre net, produit entier" });
     expect(J.phraseDuVerdict(v)).toBe("note 9 sur 10 : « titre net, produit entier »");
-    const j = { ...J.emptyJourney(), identities: { list: [site.r.route], issues: [], comparison: "", at: 1, round: 1 } } as any;
+    // La planche montrée a ses trois images (une planche à trou n'est jamais montrée, lue sur son contenu) : le logo et la
+    // grande scène de l'essai, le haut du site relu ci-dessus.
+    const montree = { ...site.r.route, board: { ...site.r.route.board, images: { logo: { id: "logo-essai", w: 1, h: 1 }, hero: { id: "scene-essai", w: 1, h: 1 }, ...site.r.route.board.images } } };
+    const j = { ...J.emptyJourney(), identities: { list: [montree], issues: [], comparison: "", at: 1, round: 1 } } as any;
     J.setStep(j, 0, "done"); J.setStep(j, 1, "review");
     expect(J.journeyContext(j)).toMatch(/Relecture des images, à reprendre telle quelle[\s\S]*jamais « soigné »[\s\S]*le haut du site : note 9 sur 10 : « titre net, produit entier »/);
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
@@ -550,6 +553,50 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toMatch(/aLaChargeDuStudio\(\(\) => reason\(user, run0, jobId, step, deps, noteDeControle/);
     expect(fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8")).toMatch(/aLaChargeDuStudio\(\(\) => reason\(user, r, jobId, step, deps, reviewNote/);
     expect(fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8")).toContain("retry ? aLaChargeDuStudio(");
+  });
+  epreuve("reprise-du-studio-jamais-bloquee-par-la-carte", async () => {
+    const billing = await import("@/lib/billing");
+    const { one, run } = await import("@/lib/db");
+    const { withTrace, CostCapReached, depensesDeLaTache } = await import("@/lib/ai/trace");
+    const { borneDuStudioDe } = await import("@/lib/ai/borne-du-studio");
+    const user = await account();
+    billing.getSubscription(user.id);
+    run("UPDATE subscriptions SET status='active', plan='vendre', billing='month' WHERE user_id=?", user.id);
+    billing.alignPeriod(user.id, Date.now());
+    billing.syncAllowance(user.id);
+    const carte = 1_380_000, essai = carte / 3, meta = { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare" };
+    const paye = (studio: boolean) => { const rid = studio ? billing.aLaChargeDuStudio(() => billing.reserve(user.id, essai, meta)) : billing.reserve(user.id, essai, meta); billing.settle(rid, essai, null, "logo"); };
+    const jobId = `epreuve-${Math.random()}`, payload = { capMicro: carte };
+    const avant = one<{ monthly_used: number }>("SELECT monthly_used FROM wallets WHERE user_id=?", user.id)!.monthly_used;
+    await withTrace({ jobId, costCapMicro: carte, studioCapMicro: borneDuStudioDe(payload) }, async () => {
+      // Trois logos, trois essais chacun : le premier compté au client, les deux reprises à la charge du Studio.
+      for (let i = 0; i < 3; i++) { paye(false); paye(true); paye(true); }
+      expect(depensesDeLaTache(jobId)).toMatchObject({ client: carte, studio: 2 * carte });
+      // La carte est pleine : le client ne prend pas la borne du Studio.
+      expect(() => paye(false)).toThrow(CostCapReached);
+      // Budget du mois épuisé : une reprise du Studio n'y est pas soumise (la borne est pleine ici : elle s'arrête là).
+      run("UPDATE wallets SET monthly_used = monthly_allowance WHERE user_id = ?", user.id);
+      expect(() => paye(true)).toThrow(CostCapReached);
+    });
+    expect(one<{ monthly_used: number }>("SELECT monthly_used FROM wallets WHERE user_id=?", user.id)!.monthly_used - avant).toBeGreaterThanOrEqual(carte);
+    await withTrace({ jobId: `${jobId}-2`, costCapMicro: carte, studioCapMicro: borneDuStudioDe(payload) }, async () => { paye(true); });
+    // Les chaînes ne bloquent pas une reprise du Studio par le reste de la carte : la dépense comptée au client l'exclut.
+    expect(fs.readFileSync("src/lib/syna-agent/budget.ts", "utf8")).toContain("return depensesDeLaTache(jobId).client;");
+  });
+  epreuve("images-de-sina-toujours-openai", async () => {
+    const { setJsonSetting } = await import("@/lib/settings");
+    const { routeDesImagesDeSina } = await import("@/lib/ai/media-routing");
+    const { boardImageRoute } = await import("@/lib/syna-agent/brand-images");
+    const { mockupImageRoute } = await import("@/lib/syna-agent/mockup-code/tools");
+    setJsonSetting("syna.mockup.image_route", "alibaba:qwen-image-3.0-pro");
+    try { for (const r of [routeDesImagesDeSina(), boardImageRoute(), mockupImageRoute()]) expect(r.provider).toBe("openai"); }
+    finally { setJsonSetting("syna.mockup.image_route", "openai:gpt-image-2.6-flare"); }
+    // Le moteur commun : toute image hors d'OpenAI est refusée ou remplacée par la route de SINA, sauf l'outil du client.
+    const src = fs.readFileSync("src/lib/ai/media-providers.ts", "utf8");
+    expect(src).toContain('if (!d || task !== "image_generation" || d.provider === REQUIRED_SOCIAL_IMAGE_PROVIDER || outilChoisiParLeClient()) return d;');
+    expect(src).toContain("if (mediaExclude.getStore()) return null;");
+    // Atelier : seul le choix du client lui-même (« ensemble », « moi ») échappe à la règle.
+    expect(fs.readFileSync("src/lib/image-v2/native-edit-approval.ts", "utf8")).toContain("const parLeClient=(r.mode??'moi')!=='sina'&&!!r.outil&&r.outil!==OUTIL_DE_SINA;");
   });
   epreuve("refus-du-client-toutes-tournures", async () => {
     const { clientRefusal } = await import("@/lib/syna-agent/brand-images");

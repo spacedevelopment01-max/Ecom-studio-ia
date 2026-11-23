@@ -9,6 +9,7 @@ vi.mock("@/lib/public-download",()=>import("./public-download-double"));
  */
 import { paidProjects } from "./billing-fixtures";
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
+import { avecLOutilDuClient } from "@/lib/ai/social-image-policy";
 
 const sent: any[] = [];
 vi.mock("@anthropic-ai/sdk", () => {
@@ -47,7 +48,9 @@ describe("Project Brain 2C — contextes ciblés et traces", async () => {
   const { BRAIN_VERSION } = await import("@/lib/brain");
   const { ENGINE_SCOPES, measureEngines } = await import("@/lib/brain/measure");
   const { seedSebastienBlanc, seedSerumEclat, SB_ADDRESS, SB_EMAIL, SB_PHONE } = await import("./brain-fixtures");
-  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
+  // Depuis le 23 novembre 2026, toutes les images de SINA sont faites par OpenAI ; le routage de l'administration vers un
+  // autre modèle ne sert plus qu'à l'outil choisi par le client lui-même dans l'atelier : ces générations passent par ce choix.
+  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, () => avecLOutilDuClient(fn));
 
   const u = await createUser(`contextes2c${Date.now()}@test.fr`, "motdepasse-test", "C");
   getSubscription(u.id);

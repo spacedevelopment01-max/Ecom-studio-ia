@@ -19,6 +19,7 @@ import {mediaModel} from '../ai/media-models';
 import {mediaStatus} from '../ai/media-routing';
 import {consigneGeste} from '../atelier/gestes';
 import {OUTIL_DE_SINA,outil as outilAtelier,outilPermis} from '../atelier/outils';
+import {avecLOutilDuClient} from '../ai/social-image-policy';
 import {agrandirCadre,apresRetouche,estCadre,type GesteRetouche} from '../atelier/retouche';
 /** `geste`, `outil`, `mode` : un geste de l'atelier (rapport 10, point 5), l'outil choisi par le client parmi ceux
  * accordés, et la façon de faire ; absents : la retouche libre d'avant, inchangée. */
@@ -70,6 +71,13 @@ export async function runNativePhotoEdit(ctx:JobContext){
  const user={id:ctx.job.user_id}as User,r:Request={assetId:ctx.payload.assetId,instruction:ctx.payload.instruction,...(ctx.payload.geste?{geste:ctx.payload.geste,...(ctx.payload.outil?{outil:ctx.payload.outil}:{}),...(ctx.payload.mode?{mode:ctx.payload.mode}:{})}:{})},a=await checkedNativePhotoEdit(user,ctx.job.project_id,data.operationId,r,data.token,Object.hasOwn(ctx.checkpoint,'native-photo-edit'));
  if(ctx.job.created_at>a.expiresAt||ctx.payload.costCapMicro!==a.capMicro)throw new HttpError(409,'Tâche hors devis.','image_quote_stale');
  const pid=ctx.job.project_id;
+ // L'outil choisi par le client lui-même dans l'atelier (« On le fait ensemble », « Je fais moi-même ») : le seul cas où
+ // une image n'est pas faite par OpenAI. En « SINA s'en occupe », toujours OpenAI (règle du propriétaire).
+ const parLeClient=(r.mode??'moi')!=='sina'&&!!r.outil&&r.outil!==OUTIL_DE_SINA;
+ if(parLeClient)return avecLOutilDuClient(()=>runEdit(ctx,pid,r,a));
+ return runEdit(ctx,pid,r,a);
+}
+async function runEdit(ctx:JobContext,pid:string,r:Request,a:Approval){
  if(estCadre(r.geste))return withTrace({costCapMicro:a.capMicro},()=>ctx.step('native-photo-edit',()=>withQuotedImageRoute(a.route,()=>agrandirCadre(ctx,pid,r.assetId,r.geste as 'story'|'carre',a.route))));
  const out=await withTrace({costCapMicro:a.capMicro},()=>ctx.step('native-photo-edit',()=>withQuotedImageRoute(a.route,()=>editProjectPhoto(ctx,pid,r.assetId,r.geste?consigneGeste(r.geste,r.instruction):r.instruction))));
  if(r.geste)await ctx.step('atelier-inscription',()=>apresRetouche(ctx,pid,out,{geste:r.geste!,route:a.route,mode:r.mode}).then(()=>true));

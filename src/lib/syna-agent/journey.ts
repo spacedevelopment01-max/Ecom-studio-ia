@@ -129,6 +129,8 @@ export type Journey = {
      * image manque encore après les reprises (logo, grande scène ou haut du site). Règle du propriétaire : « Jamais une
      * planche incomplète : une image refusée est refaite avant d'être montrée ». Elles ne sont ni affichées, ni montrées à
      * SINA, ni choisissables ; SINA dit ce qui bloque et propose de refaire ce qui manque, à la charge du Studio.
+     * Trace de la chaîne seulement : ce qui manque se LIT toujours sur le contenu des planches (`planchesIncompletes`), car
+     * les planches d'avant la correction n'ont pas ce drapeau (essai réel de Nadia).
      */
     incompletes?: { key: string; manque: string[] }[];
   };
@@ -524,10 +526,33 @@ export function verdictDuRelecteur(assetId: string | undefined | null): { score?
 /** « note 9 sur 10 : « … » » ; sans note ni mots : « relue, sans remarque ». */
 export const phraseDuVerdict = (v: { score?: number; words: string } | null): string => !v ? L("pas de relecture enregistrée : n'en dis rien de plus que ce qui s'y voit", "no review recorded") : `${v.score != null ? L(`note ${v.score} sur 10`, `score ${v.score}/10`) : L("gardée", "kept")}${v.words ? ` : « ${v.words.slice(0, 300)} »` : L(", sans remarque", ", no remark")}`;
 
-export const planchesCachees = (j: Pick<Journey, "identities">): Set<string> => new Set((j.identities?.incompletes ?? []).map((x) => x.key));
-/** Les planches montrées au client : toutes, sauf celles gardées de côté. */
-export const planchesMontrees = <T extends { key: string }>(j: { identities?: { list: T[]; incompletes?: { key: string }[] } }): T[] => {
-  const cachees = new Set((j.identities?.incompletes ?? []).map((x) => x.key));
+/** Les images d'une planche de proposition, dans l'ordre où elles se disent. */
+const IMAGES_DE_LA_PLANCHE = ["logo", "hero", "site"] as const;
+/**
+ * Ce qui manque à une planche, d'après son CONTENU RÉEL (logo, grande scène, haut du site gardés ou non), jamais d'après un
+ * drapeau posé à sa création (essai réel de Nadia, 23 novembre 2026 : ses trois planches d'avant la correction n'avaient
+ * pas de logo et aucun drapeau ; elles étaient choisissables). Le logo du client gardé tel quel tient la place du logo.
+ */
+export function manqueDeLaPlanche(x: { board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown } } }, logoDuClient = false): ("logo" | "hero" | "site")[] {
+  const im = x.board?.images;
+  return IMAGES_DE_LA_PLANCHE.filter((s) => (s === "logo" ? !logoDuClient && !im?.logo : !im?.[s]));
+}
+type PlancheLue = { key: string; board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown } } };
+/**
+ * LA SEULE LECTURE des planches incomplètes (règle du propriétaire : « Jamais une planche incomplète : une image refusée
+ * est refaite avant d'être montrée »), lue à la volée sur le contenu de chaque planche de marque. Elle sert à l'écran (les
+ * cartes choisissables), au contexte de SINA, à identity.choose et au calcul de « à la charge du Studio ». Une ancienne
+ * carte sans planche, ou une planche faite sans images (création sans images, essais), n'y est pas : aucune image n'y
+ * était prévue.
+ */
+export function planchesIncompletes(j: { keep?: readonly string[]; identities?: { list: PlancheLue[] } }): { key: string; manque: string[] }[] {
+  const logoDuClient = !!j.keep?.includes("logo");
+  return (j.identities?.list ?? []).filter((x) => !!x.board?.images).map((x) => ({ key: x.key, manque: manqueDeLaPlanche(x, logoDuClient) as string[] })).filter((x) => x.manque.length > 0);
+}
+export const planchesCachees = (j: { keep?: readonly string[]; identities?: { list: PlancheLue[] } }): Set<string> => new Set(planchesIncompletes(j).map((x) => x.key));
+/** Les planches montrées au client : toutes, sauf celles auxquelles il manque une image. */
+export const planchesMontrees = <T extends PlancheLue>(j: { keep?: readonly string[]; identities?: { list: T[] } }): T[] => {
+  const cachees = planchesCachees(j);
   return (j.identities?.list ?? []).filter((x) => !cachees.has(x.key));
 };
 
@@ -540,7 +565,7 @@ function identityStepContext(j: Journey, count?: number): string[] {
     `Étape 1 (identités de marque : ${how}) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), dis-lui en une phrase ce que tu vas faire (étudier son marché, chercher l'idée et les noms, lui montrer chaque identité en planche de marque), puis appelle identity.propose (sans guidance) : la création prend plusieurs minutes, en arrière-plan. Le prix affiché couvre toute l'étape : ses identités, puis la marque complète de celle qu'il choisira (un seul accord). S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée. Tu es la seule à parler au client : dis « j'étudie », « je cherche », jamais « mon équipe » ni « ma stratège ».`,
   ];
   // Jamais une planche incomplète : une planche gardée de côté n'est ni affichée, ni décrite (règle du propriétaire).
-  const montrees = planchesMontrees(j), cachees = (id.incompletes ?? []).map((h) => ({ ...h, name: id.list.find((x) => x.key === h.key)?.name ?? h.key }));
+  const montrees = planchesMontrees(j), cachees = planchesIncompletes(j).map((h) => ({ ...h, name: id.list.find((x) => x.key === h.key)?.name ?? h.key }));
   const MANQUE: Record<string, string> = { logo: "le logo", hero: "la grande scène", site: "le haut du site" };
   const manqueDe = (m: string[]) => m.map((s) => MANQUE[s] ?? s).join(", ");
   if (!montrees.length) return [

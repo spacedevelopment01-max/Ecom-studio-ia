@@ -8,6 +8,7 @@
  *  - site.code_from_mockup : lance l'étape 7 (payante, plafonnée au devis) ;
  *  - mockup.report     : rapport de la dernière étape 7 (page par page).
  */
+import { routeDesImagesDeSina } from "../../ai/media-routing";
 import sharp from "sharp";
 import { z } from "zod";
 import { HttpError } from "../../auth";
@@ -62,8 +63,8 @@ export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | 
  * modèle : la route du devis est la seule permise pendant la création.
  */
 export function mockupImageRoute(): { provider: string; model: string } {
-  const [provider, model] = getJsonSetting<string>("syna.mockup.image_route", "openai:gpt-image-2.6-flare").split(":");
-  return { provider, model };
+  // Toujours OpenAI (« Images créées par OpenAI pour tout ce que fait SINA »), même si le réglage en désigne un autre.
+  return routeDesImagesDeSina();
 }
 const routeUnit = (refs: number) => { try { return photoRequestMaxMicro(mockupImageRoute(), { prompt: "x".repeat(PUBLICATION_PROMPT_MAX_BYTES), references: refs, aspect: "2:3", quality: "high" }); } catch { return null; } };
 const imageUnit = (refs: number) => (mockupToolDeps.imageMaxMicro ?? routeUnit)(refs);

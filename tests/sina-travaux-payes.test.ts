@@ -27,7 +27,8 @@ describe("les travaux payés", async () => {
     const u = await account(), pid = project(u), cid = threadFor(u, pid);
     const tool = `essai.outil.${id()}`;
     const est = { maxMicro: 16_690_000, probableMicro: 8_000_000, label: "la marque" };
-    expect(T.prixJuste(tool, est)).toEqual(est);
+    // Le devis porte aussi la borne des reprises du Studio (deux plafonds, 23 novembre 2026), jamais montrée au client.
+    expect(T.prixJuste(tool, est)).toEqual({ ...est, studioMaxMicro: 2 * est.maxMicro });
     travail(u, pid, cid, tool, 10_000_000, 2_000_000);
     travail(u, pid, cid, tool, 10_000_000, 3_000_000);
     expect(T.prixJuste(tool, est).probableMicro).toBe(8_000_000); // deux mesures : pas assez

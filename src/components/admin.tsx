@@ -24,7 +24,7 @@ import { AlibabaSettings, type AlibabaData } from "./admin-alibaba";
 const MediaUsagesPanel = dynamic(() => import("./admin-media-usages").then((m) => m.MediaUsagesPanel), { ssr: false });
 
 type LigneMemoire = { travail: string; appels: number; entree: number; reprise: number; ecrite: number; partReprise: number | null; partEcrite: number | null; gagneMicro: number; differes: number; differesRates?: number; strictes?: number; reprisesForme?: number };
-type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number; alerte?: boolean };
+type LigneTravail = { tool: string; travail: string; travaux: number; payeMicro: number; gardeMicro: number; jeteMicro: number; attenteMicro: number; capMicro: number; studioMicro?: number; borneStudioMicro?: number; alerte?: boolean };
 type Overview = {
   appUrl: string;
   providers: { id: string; name: string; role: string; keyHelp: string; docs: string; keyMasked: string; configured: boolean; disabled: boolean }[];
@@ -734,11 +734,11 @@ function TravauxCard({ lignes }: { lignes: LigneTravail[] }) {
   return (
     <Card className="overflow-x-auto p-5">
       <p className="font-display text-lg font-semibold">{t("Coût par travail accepté (30 j)", "Cost per accepted work (30 d)")}</p>
-      <p className="mt-1 text-sm text-ink-2">{t("D'après les reçus du fournisseur. Gardé : le dernier travail avant que le client valide la partie ; jeté : ceux d'avant, refaits ; en attente : pas encore validé.", "From provider receipts. Kept: the last work before the client approved that part; thrown: earlier ones, redone; pending: not approved yet.")}</p>
+      <p className="mt-1 text-sm text-ink-2">{t("D'après les reçus du fournisseur. Gardé : le dernier travail avant que le client valide la partie ; jeté : ceux d'avant, refaits ; en attente : pas encore validé. Chaque tâche a deux plafonds : celui de la carte du client, et la borne des reprises à la charge du Studio (jamais comptées au client).", "From provider receipts. Kept: the last work before the client approved that part; thrown: earlier ones, redone; pending: not approved yet. Each task has two caps: the client's card, and the bound of the Studio-paid redos (never charged to the client).")}</p>
       <table className="mt-3 w-full min-w-[640px] text-sm">
-        <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Travail", "Work")}</th><th>{t("Lancés", "Started")}</th><th>{t("Payé", "Paid")}</th><th>{t("Gardé", "Kept")}</th><th>{t("Jeté", "Thrown")}</th><th>{t("En attente", "Pending")}</th><th>{t("Plafonds annoncés", "Announced caps")}</th></tr></thead>
+        <thead className="text-left text-xs text-muted"><tr><th className="py-2">{t("Travail", "Work")}</th><th>{t("Lancés", "Started")}</th><th>{t("Payé", "Paid")}</th><th>{t("Gardé", "Kept")}</th><th>{t("Jeté", "Thrown")}</th><th>{t("En attente", "Pending")}</th><th>{t("Plafonds annoncés", "Announced caps")}</th><th>{t("Dont reprises du Studio", "Of which Studio redos")}</th><th>{t("Bornes du Studio", "Studio bounds")}</th></tr></thead>
         <tbody className="divide-y divide-line">
-          {lignes.length === 0 && <tr><td colSpan={7} className="py-4 text-muted">{t("Aucun travail payant sur 30 jours.", "No paid work over the last 30 days.")}</td></tr>}
+          {lignes.length === 0 && <tr><td colSpan={9} className="py-4 text-muted">{t("Aucun travail payant sur 30 jours.", "No paid work over the last 30 days.")}</td></tr>}
           {lignes.map((l) => (
             <tr key={l.tool}>
               <td className="py-2">{l.travail}{l.alerte ? <Badge tone="bad" className="ml-2">{t("coût doublé cette semaine", "cost doubled this week")}</Badge> : null}</td>
@@ -748,6 +748,8 @@ function TravauxCard({ lignes }: { lignes: LigneTravail[] }) {
               <td className="tabular-nums">{e(l.jeteMicro)}</td>
               <td className="tabular-nums">{e(l.attenteMicro)}</td>
               <td className="tabular-nums">{e(l.capMicro)}</td>
+              <td className="tabular-nums">{e(l.studioMicro ?? 0)}</td>
+              <td className="tabular-nums">{e(l.borneStudioMicro ?? 0)}</td>
             </tr>
           ))}
         </tbody>

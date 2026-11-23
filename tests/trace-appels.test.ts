@@ -6,6 +6,7 @@ vi.mock("@/lib/public-download",()=>import("./public-download-double"));
  * Les étapes de tâche (ctx.step) étiquettent les appels et ne sont jamais rejouées.
  */
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
+import { avecLOutilDuClient } from "@/lib/ai/social-image-policy";
 
 const sent: any[] = [];
 const okReply = async () => ({ model: "claude-sonnet-5-5", stop_reason: "end_turn", content: [{ type: "text", text: "Bonjour" }], usage: { input_tokens: 120, output_tokens: 40, cache_read_input_tokens: 900, cache_creation_input_tokens: 300 } });
@@ -108,9 +109,10 @@ describe("trace des appels", async () => {
     (await import("@/lib/settings")).setJsonSetting("ai.media.usage", { product_image: { primary: "google:gemini-2.5-flash-image" } });
     onTestFinished(async () => (await import("@/lib/settings")).setJsonSetting("ai.media.usage", {}));
     vi.stubGlobal("fetch", async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from("img").toString("base64") } }] } }] }), { status: 200 }));
-    await withTrace({ step: "visuels" }, () => geminiPlate({ userId: "u-img", projectId: "p-img", usageKey: "k-img" }, { prompt: "set", aspect: "1:1" }));
+    // Le modèle réglé hors d'OpenAI ne sert qu'à l'outil choisi par le client lui-même (images de SINA : OpenAI, 23 novembre 2026).
+    await avecLOutilDuClient(() => withTrace({ step: "visuels" }, () => geminiPlate({ userId: "u-img", projectId: "p-img", usageKey: "k-img" }, { prompt: "set", aspect: "1:1" })));
     vi.stubGlobal("fetch", async () => new Response("boom", { status: 500 }));
-    await expect(geminiPlate({ userId: "u-img", projectId: "p-img", usageKey: "k-img-2" }, { prompt: "set", aspect: "1:1" })).rejects.toThrow();
+    await expect(avecLOutilDuClient(() => geminiPlate({ userId: "u-img", projectId: "p-img", usageKey: "k-img-2" }, { prompt: "set", aspect: "1:1" }))).rejects.toThrow();
     const r = rows("user_id = ?", "u-img");
     expect(r.map((x) => [x.provider, x.unit, x.status, x.step])).toEqual([["google", "image", "ok", "visuels"], ["google", "image", "error", null]]);
     expect(r[0].cost).toBeGreaterThan(0);

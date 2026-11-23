@@ -11,3 +11,17 @@ export const REQUIRED_SOCIAL_IMAGE_PROVIDER = "openai";
 /** Le modèle des images de SINA (planches, thème sur mesure) : `syna.mockup.image_route`, par défaut. */
 export const DEFAULT_SOCIAL_IMAGE_MODEL = "gpt-image-2.6-flare";
 export const SOCIAL_IMAGE_POLICY = "Décision du propriétaire du 14 novembre 2026 : les images des publications sont créées par OpenAI.";
+
+/**
+ * TOUTES LES IMAGES DE SINA PAR OPENAI (CLAUDE.md : « Images créées par OpenAI pour tout ce que fait SINA » ; 23 novembre
+ * 2026, essai de Nadia : le réglage commun des images désignait Qwen-Image 3.0 Pro). Marque, site, publications,
+ * publicités, atelier en mode « SINA s'en occupe » : jamais un autre fournisseur, ni en principal, ni en secours, ni par le
+ * repli historique. Seul le client peut prendre un autre outil, lui-même, dans l'atelier (« On le fait ensemble », « Je
+ * fais moi-même ») : `avecLOutilDuClient`.
+ */
+export const IMAGES_DE_SINA_POLICY = "Images créées par OpenAI pour tout ce que fait SINA";
+import { AsyncLocalStorage } from "node:async_hooks";
+const outilDuClient = new AsyncLocalStorage<boolean>();
+/** Une image faite avec l'outil que le client a choisi lui-même dans l'atelier (le seul cas permis hors d'OpenAI). */
+export const avecLOutilDuClient = <T>(fn: () => T): T => outilDuClient.run(true, fn);
+export const outilChoisiParLeClient = (): boolean => outilDuClient.getStore() === true;

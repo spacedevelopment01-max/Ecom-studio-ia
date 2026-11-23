@@ -38,7 +38,10 @@ describe("alerte Qwen-Image 3.0 Pro inutilisable", async () => {
   const { runWithLang } = await import("@/lib/i18n-server");
   const mp = await import("@/lib/ai/media-providers");
   const alerts = await import("@/lib/ai/media-alerts");
-  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
+  // Depuis le 23 novembre 2026, toutes les images de SINA sont faites par OpenAI ; un autre modèle d'images ne sert plus
+  // qu'à l'outil choisi par le client lui-même dans l'atelier : ces générations passent donc par ce choix.
+  const { avecLOutilDuClient } = await import("@/lib/ai/social-image-policy");
+  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, () => avecLOutilDuClient(fn));
 
   const admin = await createUser(`admin-qwen-${Date.now()}@test.fr`, "motdepasse-test", "Admin");
   run("UPDATE users SET role = 'admin' WHERE id = ?", admin.id);

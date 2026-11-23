@@ -9,6 +9,7 @@ vi.mock("@/lib/public-download",()=>import("./public-download-double"));
  *  - jamais de solde négatif ; aucun passe-droit pour l'administrateur.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { avecLOutilDuClient } from "@/lib/ai/social-image-policy";
 
 type Mode = "ok" | "slow" | "status429" | "status500" | "status529" | "timeout" | "huge" | "midstream" | "otherModel" | "unknownModel";
 const llm: { mode: Mode; calls: number; waiting: (() => void)[]; counted: number | null; countStatus: number | null; counts: any[]; sent: any[] } = { mode: "ok", calls: 0, waiting: [], counted: null, countStatus: null, counts: [], sent: [] };
@@ -114,7 +115,9 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     expect(wallet(u.id).monthly_used).toBe(wallet(u.id).monthly_allowance);
     // Une réponse redemandée (coupée, mal formée) est marquée reprise du Studio dans le moteur.
     const fs = await import("node:fs");
-    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain("jobId: call.jobId, studio: callTry > 0 });");
+    // (23 novembre 2026, deux plafonds : la même marque sert à la borne du Studio et au budget du mois non regardé.)
+    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain("const reprisDuStudio = callTry > 0 || chargeDuStudio();");
+    expect(fs.readFileSync("src/lib/ai/llm.ts", "utf8")).toContain("jobId: call.jobId, studio: reprisDuStudio });");
   });
 
   it("budget mensuel = 40 % du prix HT ; annuel = 40 % de l'équivalent mensuel HT ; ≤ 40 % pour toutes les formules", () => {
@@ -255,12 +258,12 @@ describe("budget IA : règle des 40 % / 50 % et réservations", async () => {
     (await import("@/lib/settings")).setJsonSetting("ai.routes", { image_generation: { provider: "google", model: "gemini-2.5-flash-image" } });
     const before = balance(u.id).available;
     fetchImpl = async () => new Response("quota", { status: 429 });
-    await expect(runForUser(u.id, () => ambianceImage(ctx, { prompt: "atelier", aspect: "1:1" }))).rejects.toThrow();
+    await expect(runForUser(u.id, () => avecLOutilDuClient(() => ambianceImage(ctx, { prompt: "atelier", aspect: "1:1" })))).rejects.toThrow();
     expect(reservations(u.id).at(-1)!.status).toBe("released");
     expect(balance(u.id).available).toBe(before);
     // Réponse 200 sans image : le fournisseur a travaillé (et facturé) — résultat incertain, maximum retenu.
     fetchImpl = async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [] } }] }), { status: 200 });
-    await expect(runForUser(u.id, () => ambianceImage(ctx, { prompt: "atelier", aspect: "1:1" }))).rejects.toThrow(/pas renvoyé d'image/);
+    await expect(runForUser(u.id, () => avecLOutilDuClient(() => ambianceImage(ctx, { prompt: "atelier", aspect: "1:1" })))).rejects.toThrow(/pas renvoyé d'image/);
     const r = reservations(u.id).at(-1)!;
     expect(r.status).toBe("uncertain");
     expect(balance(u.id).available).toBe(before - r.amount);
@@ -535,7 +538,7 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
     const u = await client("dominer");
     setSetting("ai.prices.checkedAt", String(Date.now() - 91 * 86_400_000));
     await expect(text(u.id)).rejects.toThrow(/plus de 90 jours/);
-    await expect(runForUser(u.id, () => ambianceImage({ userId: u.id, projectId: "p" }, { prompt: "atelier", aspect: "1:1" }))).rejects.toThrow(/plus de 90 jours/);
+    await expect(runForUser(u.id, () => avecLOutilDuClient(() => ambianceImage({ userId: u.id, projectId: "p" }, { prompt: "atelier", aspect: "1:1" })))).rejects.toThrow(/plus de 90 jours/);
     setSetting("ai.prices.checkedAt", "0");
     await expect(text(u.id)).rejects.toThrow(/jamais confirmés/);
     expect(llm.calls).toBe(0);

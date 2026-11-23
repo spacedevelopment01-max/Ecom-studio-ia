@@ -1486,7 +1486,9 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     const images = C.boardImagesQuote(1, undefined, ["object", "signs", "post0", "post1", "post2"]);
     const symbol = photoRequestMaxMicro(LOGO_ROUTE, { prompt: "x".repeat(6000), references: 1, aspect: "1:1", quality: "high" });
     expect(symbol).toBeGreaterThan(0);
-    expect(C.finishQuote()).toEqual({ maxMicro: images.maxMicro + symbol, probableMicro: Math.ceil(images.probableMicro! + symbol / 1.25) });
+    expect(C.finishQuote()).toMatchObject({ maxMicro: images.maxMicro + symbol, probableMicro: Math.ceil(images.probableMicro! + symbol / 1.25) });
+    // Deux plafonds (23 novembre 2026) : ce qui se reprend (chaque image et sa relecture, le symbole) pour la borne du Studio.
+    expect(C.finishQuote().repriseMicro).toBe(images.repriseMicro! + symbol);
     // Le symbole coûte ce que coûte l'objet qui porte le logo (même format, même référence) : rien de plus n'est compté.
     // (la relecture se fait image par image : la différence entre les deux devis compte aussi la relecture de l'objet)
     expect(symbol).toBeLessThan(C.boardImagesQuote(1, undefined, ["object", "signs"]).maxMicro - C.boardImagesQuote(1, undefined, ["signs"]).maxMicro);

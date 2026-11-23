@@ -286,4 +286,16 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Après le choix, si le logo manque encore après ses reprises, aucun nom dessiné ne le remplace : aucun logo n'est adopté, aucune charte n'est faite, la marque n'est pas montrée comme finie ; SINA dit ce qui bloque et refait le logo (et ce qui le porte) à sa charge, la carte d'accord disant « À ma charge : 0 % de ton budget ».",
     rejeu: "gratuit",
   },
+  {
+    id: "reprise-du-studio-jamais-bloquee-par-la-carte", date: "2026-11-23", source: "docs/studio/LE-STUDIO-DE-A-A-Z.md (partie 13 ; décision du chef d'orchestre du 23 novembre 2026, deux plafonds, avant l'essai réel de Nadia)",
+    verdict: "Règle du propriétaire (partie 13) : « Pas de reprises comptées : une erreur de SINA est toujours corrigée sans rien compter ; un changement de goût du client passe par son budget du mois. » Et : « Jamais une planche incomplète : une image refusée est refaite avant d'être montrée. » Avant, la carte « refaire 3 logos » plafonnait toute la tâche à 1,38 €, environ un essai par identité : les reprises à la charge du Studio y étaient comptées, donc bloquées.",
+    attendu: "Une reprise à la charge du Studio ne regarde que la borne du Studio de la tâche, jamais le plafond de la carte du client, et passe même quand son budget du mois est épuisé, sans le toucher ; avec une carte de 1,38 €, les trois logos ont chacun leurs trois essais ; une dépense du client ne prend jamais la borne du Studio ; la tâche s'arrête à la somme des deux.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "images-de-sina-toujours-openai", date: "2026-11-23", source: "CLAUDE.md (Ses goûts : « Images créées par OpenAI pour tout ce que fait SINA » ; préparation de l'essai réel de Nadia, 23 novembre 2026)",
+    verdict: "Règle du propriétaire : « Images créées par OpenAI pour tout ce que fait SINA ; c'est obligatoire pour les publications. » Dans la base de l'essai de Nadia, le réglage commun des images désignait Qwen-Image 3.0 Pro, et une alerte « Qwen inutilisable » était notée pour une scène de sa planche faite par gpt-image-2.6-flare.",
+    attendu: "Quel que soit le réglage en ligne, une image de SINA (marque, site, publications, publicités, atelier en mode « SINA s'en occupe ») part chez OpenAI ; une route confirmée hors d'OpenAI est refusée, jamais remplacée en silence ; seul un outil choisi par le client lui-même dans l'atelier peut être un autre modèle.",
+    rejeu: "gratuit",
+  },
 ];

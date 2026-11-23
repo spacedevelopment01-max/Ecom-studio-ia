@@ -21,7 +21,7 @@ import { activeProviderKey, aiAvailability, FX_SAFETY, priceFor, requirePrice, r
 import { contentLang, L, uiLang } from "../i18n-server";
 import { languageDirective } from "./prompts";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { assertUnderCostCap, CostCapReached, recordCall, redact, shortHash, skillsOfReference } from "./trace";
+import { assertUnderCostCap, chargeDuStudio, CostCapReached, recordCall, redact, shortHash, skillsOfReference } from "./trace";
 import { formatStrict, REFUS_DE_SCHEMA, retenirRefus, sansNullsFacultatifs, SchemaRefuse, schemaPourOpenAI, schemaRefuse, seulementContraintes } from "./sortie-stricte";
 import { brainMetaOf } from "../brain/facade";
 import { getJsonSetting } from "../settings";
@@ -681,8 +681,10 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   // OpenAI et Gemini : même autorisation, même réservation, même trace, même facturation (aucun contournement).
   if (hasTextAdapter(route.provider)) return otherCall(call, decision, messages, format, suffix, callTry, operation);
   if (route.provider !== "anthropic") throw new PermanentError(L(`La tâche ${call.task} est routée vers ${route.provider}, qui n'est pas un modèle de langage pris en charge.`, `Task ${call.task} is routed to ${route.provider}, which is not a supported language model.`));
-  // Droits du compte vérifiés à chaque appel (forfait, budget), dans une tâche de fond ou non.
-  assertAiAllowed(call.userId, call.projectId);
+  // Droits du compte vérifiés à chaque appel (forfait, budget), dans une tâche de fond ou non. Une réponse redemandée
+  // (callTry > 0) ou une reprise du Studio ne dépend pas du budget du mois du client.
+  const reprisDuStudio = callTry > 0 || chargeDuStudio();
+  assertAiAllowed(call.userId, call.projectId, reprisDuStudio);
   // Seul Haiku 4.5 n'a pas d'effort réglable (réflexion par budget de jetons) ; Haiku 5.5 suit le chemin commun.
   const isHaiku = route.model === "claude-haiku-4-5";
   const effort = mapEffort("anthropic", route.model, route.effort ?? "medium") ?? "medium";
@@ -699,10 +701,10 @@ async function rawCall(call: LlmCall, messages: Anthropic.Beta.BetaMessageParam[
   // budget du compte, AVANT l'envoi. Rien ne part si le maximum ne peut pas être couvert.
   // Aucun repli serveur (`fallbacks`) : un modèle de repli serait facturé à son propre tarif, non couvert.
   const maxMicro = await maxCostMicro(route.model, params, format);
-  assertUnderCostCap(maxMicro);
+  assertUnderCostCap(maxMicro, reprisDuStudio);
   if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
   // Une réponse coupée ou mal formée redemandée (callTry > 0) : une reprise du Studio, jamais débitée au client.
-  const reservation = reprise?.reservation ?? reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId, studio: callTry > 0 });
+  const reservation = reprise?.reservation ?? reserve(call.userId, maxMicro, { ...operation, provider: "anthropic", model: route.model, jobId: call.jobId, studio: reprisDuStudio });
   if (!isHaiku) {
     params.thinking = { type: "adaptive" };
     params.output_config = { effort, ...(format ? { format } : {}) };
@@ -905,16 +907,17 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
   if (!m) throw new PermanentError(L(`Modèle ${provider}:${model} absent du catalogue des modèles de texte.`, `Model ${provider}:${model} isn't in the text model catalog.`));
   const key = activeProviderKey(provider);
   if (!key) throw new UserFacingError(L(`La clé ${provider} est absente ou désactivée dans l'administration.`, `The ${provider} key is missing or disabled in the admin settings.`));
-  assertAiAllowed(call.userId, call.projectId);
+  const reprisDuStudio = callTry > 0 || chargeDuStudio();
+  assertAiAllowed(call.userId, call.projectId, reprisDuStudio);
   const adapter = textDeps.adapters[provider];
   const effort = mapEffort(provider, model, decision.effort ?? null);
   const schema = format && typeof format === "object" && (format as any).schema ? ((format as any).schema as Record<string, unknown>) : null;
   const req: TextRequest = { model, system: systemText(call), turns: toTurns(messages), maxOutput: Math.min(m.limits.maxOutput, Math.max(call.maxTokens ?? 16000, 4000)), effort, jsonSchema: schema && provider === "openai" ? schemaPourOpenAI(schema) : schema, ...(call.arrierePlan && provider === "openai" ? { arrierePlan: true } : {}) };
   const { brain } = brainOf(call);
   const maxMicro = await otherMaxCostMicro(provider, req, (r) => adapter.count(r, key));
-  assertUnderCostCap(maxMicro);
+  assertUnderCostCap(maxMicro, reprisDuStudio);
   if (call.projectId && !reasoningOnly(call)) assertStrategyInputsCurrent(call.projectId);
-  const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId, studio: callTry > 0 });
+  const reservation = reserve(call.userId, maxMicro, { ...operation, provider, model, jobId: call.jobId, studio: reprisDuStudio });
   const started = Date.now(), sortie = suiviDeSortie(call, format);
   let attempts = 0;
   const trace = {

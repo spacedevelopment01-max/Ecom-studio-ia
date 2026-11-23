@@ -159,7 +159,7 @@ export function describeAttachment(a: Attachment): string {
  */
 type BoardShot = { id: string } | null | undefined;
 type BoardShots = { logo?: BoardShot; hero?: BoardShot; site?: BoardShot; object?: BoardShot; signs?: BoardShot; posts?: BoardShot[] };
-export async function journeyImages(j: { steps: Record<number, { status: string } | undefined>; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number; site?: { at?: number };
+export async function journeyImages(j: { keep?: readonly string[]; steps: Record<number, { status: string } | undefined>; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number; site?: { at?: number };
   identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[]; incompletes?: { key: string }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots; manque?: string[] } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
@@ -172,7 +172,8 @@ export async function journeyImages(j: { steps: Record<number, { status: string 
   // Une planche gardée de côté (une image y manque) n'est montrée ni au client ni à SINA (jamais une planche incomplète).
   // Chaque image porte le verdict du relecteur : c'est ce que SINA en dit (essai réel de Nadia, 23 novembre 2026).
   const { phraseDuVerdict, verdictDuRelecteur } = await import("./journey");
-  const cachees = new Set((j.identities?.incompletes ?? []).map((x) => x.key));
+  const { planchesCachees } = await import("./journey");
+  const cachees = planchesCachees(j);
   if (j.identities?.list.length && !j.brandFinish?.at) {
     for (const x of j.identities.list.filter((y) => !cachees.has(y.key))) for (const [slot, what] of [["logo", "le logo"], ["hero", "la grande scène"], ["site", "la maquette du haut de son site, sur téléphone"]] as const) {
       const id = x.board?.images?.[slot]?.id, data = id ? await small(id, 512).catch(() => null) : null;

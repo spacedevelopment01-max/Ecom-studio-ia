@@ -3,18 +3,19 @@
  * logos, angles, thème, photos…) passe en plus par la carte d'accord du client (prix d'abord, accord écrit) : son coût
  * n'entame pas ce budget, sinon SINA ne pourrait plus répondre après une création approuvée.
  */
-import { all, now, one, run } from "../db";
+import { all, now, run } from "../db";
+import { depensesDeLaTache } from "../ai/trace";
 import { budgetPctOf, pctBaseFor } from "../ai/budget-pct";
 import { pctToMicro } from "../budget-pct";
 import { authorizedBudget, setAuthorizedBudget } from "./store";
 
-/** Dépense engagée d'une tâche : mêmes règles que le plafond natif (réservations, usages, appels). */
+/**
+ * Dépense engagée d'une tâche, comptée au CLIENT : mêmes règles que le plafond natif (réservations, usages, appels), sans
+ * les reprises à la charge du Studio (deux plafonds, 23 novembre 2026 : elles ne touchent jamais son budget ni le reste de
+ * sa carte).
+ */
 export function jobSpentMicro(jobId: string): number {
-  return one<{ c: number }>(`SELECT
-    COALESCE((SELECT SUM(CASE WHEN status='held' THEN amount ELSE COALESCE(actual,amount) END)
-      FROM ai_reservations WHERE job_id=? AND status IN ('held','settled','uncertain','reconciled') AND usage_event_id IS NULL),0)
-    + COALESCE((SELECT SUM(billed) FROM usage_events WHERE job_id=?),0)
-    + COALESCE((SELECT SUM(cost) FROM ai_calls WHERE job_id=? AND usage_event_id IS NULL AND billing_dedup=0 AND status='ok'),0) AS c`, jobId, jobId, jobId)?.c ?? 0;
+  return depensesDeLaTache(jobId).client;
 }
 
 export function trackJob(conversationId: string, runId: string, jobId: string, kind: "agent" | "native") {

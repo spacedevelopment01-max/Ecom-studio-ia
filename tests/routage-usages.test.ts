@@ -10,6 +10,7 @@ vi.mock("@/lib/public-download",()=>import("./public-download-double"));
  *  - administration : validation des choix (capacités, tarif, confirmation), retour au réglage général.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { avecLOutilDuClient } from "@/lib/ai/social-image-policy";
 
 vi.hoisted(() => {
   const fs = process.getBuiltinModule("node:fs");
@@ -99,7 +100,9 @@ describe("routage multimédia par usage", async () => {
   const routing = await import("@/lib/ai/media-routing");
   const { mediaUsageOverview } = await import("@/lib/ai/media-routing-admin");
   const { mediaModel } = await import("@/lib/ai/media-models");
-  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
+  // Depuis le 23 novembre 2026, toutes les images de SINA sont faites par OpenAI ; le routage de l'administration vers un
+  // autre modèle ne sert plus qu'à l'outil choisi par le client lui-même dans l'atelier : ces générations passent par ce choix.
+  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, () => avecLOutilDuClient(fn));
   const png = Buffer.from(PNG, "base64");
   mp.mediaPoll.veoMs = 1;
   mp.mediaPoll.falVideoMs = 1;

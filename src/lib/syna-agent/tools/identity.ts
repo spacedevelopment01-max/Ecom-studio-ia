@@ -15,9 +15,10 @@ import { loadProject, remember, saveBrand } from "../../projects";
 import { localBrand } from "../../engine/local";
 import type { Brand } from "../../project-types";
 import type { AgentTool, ToolContext } from "../types";
-import { journeyOf, setStep, updateJourney, type Journey } from "../journey";
+import { journeyOf, planchesCachees, planchesIncompletes, setStep, updateJourney, type Journey } from "../journey";
 import { fontFamily, type Identity } from "../identities";
-import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, namesPreviewQuote, planchesSansIdeeSimple, routeCountOfProject } from "../brand-chain";
+import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, namesPreviewQuote, planchesSansIdeeSimple, routeCountOfProject, type ChainQuote } from "../brand-chain";
+import { borneDuStudio, probableDuStudio } from "../../ai/borne-du-studio";
 import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, type ImageSlot } from "../brand-images";
 import { finishSlots } from "../brand-finish";
 import { chosenRoute } from "../logos";
@@ -272,7 +273,7 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     if (j.keep.includes("slogan") && a.slogan) return { ok: false, summary: L("Le client garde son slogan tel quel : il ne peut pas être changé ici.", "The tagline is kept as is.") };
     // Une planche gardée de côté (une image y manque) n'est pas montrée : elle ne se choisit pas (règle du propriétaire :
     // « Jamais une planche incomplète »).
-    const cachees = new Set((j.identities?.incompletes ?? []).map((x) => x.key));
+    const cachees = planchesCachees(j);
     const keysShown = list.map((x) => x.key).filter((k) => !cachees.has(k));
     if ([a.key, ...Object.values(a.mix ?? {})].some((k) => k && cachees.has(k))) return { ok: false, summary: L("Cette planche n'est pas encore montrée au client : il lui manque une image. Propose-lui de la finir (identity.images, à la charge du Studio), ou laisse-le choisir parmi celles qui sont montrées.", "This board is not shown yet: an image is missing."), hint: "identity.images avec keys = cette planche et images = ce qui manque (écrit dans ton contexte)." };
     if (!keysShown.includes(a.key) || Object.values(a.mix ?? {}).some((k) => k && !keysShown.includes(k))) return { ok: false, summary: L(`Cette identité n'est pas dans la proposition affichée (${keysShown.join(", ")}).`, "This identity is not in the displayed proposal.") };
@@ -340,7 +341,8 @@ export const redoImages = <T extends string>(images: readonly T[]): T[] => [...n
  * comptée au client (LE-STUDIO-DE-A-A-Z, partie 13). Une autre demande (un goût du client) reste à son compte.
  */
 export function finirPlanchesGardees(j: Journey, keys: readonly string[], images: readonly string[]): boolean {
-  const inc = j.identities?.incompletes ?? [];
+  // Lu sur le contenu réel des planches (jamais sur un drapeau posé à leur création : planches d'avant la correction).
+  const inc = planchesIncompletes(j);
   return keys.length > 0 && keys.every((k) => { const h = inc.find((x) => x.key === k); return !!h && images.every((s) => h.manque.includes(s)); });
 }
 const imagesTool: AgentTool<ImagesArgs> = {
@@ -352,7 +354,9 @@ const imagesTool: AgentTool<ImagesArgs> = {
     const j = journeyOf(ctx.conversationId), studio = finirPlanchesGardees(j, a.keys, redoImages(a.images));
     // Un logo d'une planche d'avant : l'appel qui écrit son idée en mots simples est compté au devis (à la charge du Studio).
     const simples = redoImages(a.images).includes("logo") ? planchesSansIdeeSimple(j, a.keys).length : 0;
-    return { ...boardImagesQuote(a.keys.length, undefined, redoImages(a.images) as never, [], simples), label: studio ? L(`finir ${a.keys.length > 1 ? "tes planches" : "ta planche"} : ${n} image${n > 1 ? "s" : ""} qui manque${n > 1 ? "nt" : ""}`, "finish your board: missing images") : `${n} image${n > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}`, ...(studio ? { studio: true } : {}) };
+    const q = boardImagesQuote(a.keys.length, undefined, redoImages(a.images) as never, [], simples);
+    // Deux plafonds : le prix du client (« 0 % » quand c'est une reprise de SINA) et la borne des reprises du Studio.
+    return { maxMicro: q.maxMicro, ...(q.probableMicro ? { probableMicro: q.probableMicro } : {}), ...deuxPlafonds(q, studio), label: studio ? L(`finir ${a.keys.length > 1 ? "tes planches" : "ta planche"} : ${n} image${n > 1 ? "s" : ""} qui manque${n > 1 ? "nt" : ""}`, "finish your board: missing images") : `${n} image${n > 1 ? "s" : ""} à refaire sur ${a.keys.length} planche${a.keys.length > 1 ? "s" : ""}`, ...(studio ? { studio: true } : {}) };
   },
   run: (ctx, a) => {
     const p = project(ctx);
@@ -365,7 +369,7 @@ const imagesTool: AgentTool<ImagesArgs> = {
     const quote = boardImagesQuote(keys.length, undefined, images as never, [], images.includes("logo") ? planchesSansIdeeSimple(j, keys).length : 0);
     const job = enqueue({
       userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L(`Images refaites sur ${keys.length} planche${keys.length > 1 ? "s" : ""} (SINA)`, `Board images redone (SINA)`),
-      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, count: routeCountOfProject(p.id), imagesOnly: true, images: true, redo: keys, slots: images, ...(finirPlanchesGardees(j, keys, images) ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
+      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: quote.maxMicro, studioCapMicro: deuxPlafonds(quote, finirPlanchesGardees(j, keys, images)).studioMaxMicro, count: routeCountOfProject(p.id), imagesOnly: true, images: true, redo: keys, slots: images, ...(finirPlanchesGardees(j, keys, images) ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
       maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-images:${keys.join("")}:${images.join("+")}`,
     });
     return {
@@ -374,6 +378,15 @@ const imagesTool: AgentTool<ImagesArgs> = {
     };
   },
 };
+
+/**
+ * Les deux plafonds d'un devis de la marque (23 novembre 2026) : la borne des reprises à la charge du Studio (deux reprises
+ * de chaque image avec sa relecture ; plus le premier passage entier quand toute la tâche est à sa charge), et son coût
+ * probable. Jamais montrés au client : il ne voit que son prix, ou « 0 % » pour ce qui est à la charge du Studio.
+ */
+export function deuxPlafonds(q: ChainQuote, studio: boolean): { studioMaxMicro: number; studioProbableMicro: number } {
+  return { studioMaxMicro: borneDuStudio(q.maxMicro, studio, q.repriseMicro), studioProbableMicro: probableDuStudio(q.probableMicro ?? q.maxMicro, studio, q.repriseProbableMicro) };
+}
 
 /** Images de la marque finie que le client peut faire refaire. */
 const FINISH_REDO = CREATED_SLOTS as unknown as [string, ...string[]];
@@ -408,10 +421,11 @@ function startFinish(ctx: ToolContext, a: FinishArgs): { jobs?: string[]; refuse
   if (pendingJob(p.id, SINA_BRAND_JOB)) return { refused: L("Ta marque est déjà en cours de création : attends-la.", "Your brand is already being created.") };
   const studio = finirLogoManquant(j, a);
   const slots = finishSlots(j, (studio ? ["logo"] : a.redo) as ImageSlot[] | undefined);
-  const cap = Math.max(1, slots.length ? finishQuote(slots, undefined, simplesDuChoix(j)).maxMicro : 1);
+  const fq = slots.length ? finishQuote(slots, undefined, simplesDuChoix(j)) : null;
+  const cap = Math.max(1, fq ? fq.maxMicro : 1);
   const job = enqueue({
     userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L("Ta marque complète (SINA)", "Your complete brand (SINA)"),
-    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, count: routeCountOfProject(p.id), finish: true, ...(a.redo?.length || studio ? { slots } : {}), ...(studio ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
+    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, studioCapMicro: deuxPlafonds(fq ?? { maxMicro: cap }, studio).studioMaxMicro, count: routeCountOfProject(p.id), finish: true, ...(a.redo?.length || studio ? { slots } : {}), ...(studio ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
     maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-finish:${(a.redo ?? []).join("+")}:${j.identityChoice?.at ?? 0}${studio ? ":logo-manquant" : ""}`,
   });
   updateJourney(ctx.conversationId, (x) => { if (x.brandFinish) x.brandFinish.prepaidMicro = 0; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "doing"); });
@@ -426,7 +440,7 @@ const finishTool: AgentTool<FinishArgs> = {
     if (a?.relancer) { const c = marqueCoupee(project(ctx).id); if (!c) throw new RefusInterne("Aucune création de marque arrêtée en route à relancer : lance-la sans relancer."); return relanceMarqueQuote(c); }
     const j = journeyOf(ctx.conversationId);
     // Le logo manque à la marque finie : le refaire est une reprise de SINA, à la charge du Studio (« À ma charge : 0 % »).
-    if (finirLogoManquant(j, a)) { const e = finishEstimate(j, { ...a, redo: ["logo"] }); return { maxMicro: e.maxMicro, ...(e.probableMicro ? { probableMicro: e.probableMicro } : {}), label: L("finir ta marque : son logo, et ce qui le porte refait avec lui", "finish your brand: its logo"), studio: true }; }
+    if (finirLogoManquant(j, a)) { const e = finishEstimate(j, { ...a, redo: ["logo"] }), fq = finishQuote(e.slots, undefined, simplesDuChoix(j)); return { maxMicro: e.maxMicro, ...(e.probableMicro ? { probableMicro: e.probableMicro } : {}), ...deuxPlafonds(fq, true), label: L("finir ta marque : son logo, et ce qui le porte refait avec lui", "finish your brand: its logo"), studio: true }; }
     const e = finishEstimate(j, a);
     return { maxMicro: e.maxMicro, ...(e.probableMicro ? { probableMicro: e.probableMicro } : {}), label: a.redo?.length ? L(`${e.slots.length} image${e.slots.length > 1 ? "s" : ""} de ta marque à refaire`, "brand images to redo") : L("ta marque complète", "your complete brand") };
   },

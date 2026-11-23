@@ -4,6 +4,7 @@ vi.mock("@/lib/public-download",()=>import("./public-download-double"));
  */
 import { paidProjects } from "./billing-fixtures";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { avecLOutilDuClient } from "@/lib/ai/social-image-policy";
 import type * as o from "@/lib/orchestrator";
 
 const sent: any[] = [];
@@ -52,7 +53,9 @@ describe("Phase 3B — orchestrateur branché", async () => {
   const { handlers } = await import("../worker/handlers");
   const { seedSebastienBlanc, seedSerumEclat } = await import("./brain-fixtures");
   const { allScenarios } = await import("./orchestrator-scenarios");
-  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
+  // Depuis le 23 novembre 2026, toutes les images de SINA sont faites par OpenAI ; le routage de l'administration vers un
+  // autre modèle ne sert plus qu'à l'outil choisi par le client lui-même dans l'atelier : ces générations passent par ce choix.
+  const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, () => avecLOutilDuClient(fn));
 
   const u = await createUser(`orch3b${Date.now()}@test.fr`, "motdepasse-test", "O");
   getSubscription(u.id);
