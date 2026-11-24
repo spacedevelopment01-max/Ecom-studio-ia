@@ -1,0 +1,21 @@
+{
+ "variante": "planche-racine-xhigh",
+ "statut_http": 200,
+ "duree_s": 65.3,
+ "x-request-id": "req_77063f88a8004a868cd30a99e2b868e7",
+ "usage": {
+  "input_tokens": 4161,
+  "input_tokens_details": {
+   "image_tokens": 3057,
+   "text_tokens": 1104
+  },
+  "output_tokens": 3811,
+  "output_tokens_details": {
+   "image_tokens": 3811,
+   "text_tokens": 0
+  },
+  "total_tokens": 7972
+ },
+ "cout_eur": 0.1241,
+ "taille": "1536x2304"
+}
