@@ -238,7 +238,7 @@ export async function essaiDeFinalisation(o: {
       lignes.push("", `Esquisse ${l.numero} : ${l.ok === true ? "logo GARDÉ par le relecteur" : l.ok === false ? `logo NON gardé (${l.raison})` : "non terminée"}`);
       for (const e of l.essais) {
         lignes.push(`  essai ${e.tour} : texte ${e.texte ?? "—"} ; logo brut ${e.brut ?? "—"} ; détouré ${e.detoure ?? "—"}`);
-        if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », idée conservée ${e.verdict.ideeConservee ? "oui" : "non"}, évolution ${e.verdict.evolution ? "oui" : "non"}, arche ${e.verdict.arche ? "oui" : "non"}${e.verdict.phrase ? `, phrase « ${e.verdict.phrase} »` : ""} — ${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`);
+        if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », idée conservée ${e.verdict.ideeConservee ? "oui" : "non"}, arche ${e.verdict.arche ? "oui" : "non"}${e.verdict.phrase ? `, phrase « ${e.verdict.phrase} »` : ""} — ${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`);
         else if (e.raisons?.length) lignes.push(`    refusé sans relecture : ${e.raisons.join(" ; ")}`);
       }
       for (const n of l.notes) lignes.push(`  note : ${n}`);

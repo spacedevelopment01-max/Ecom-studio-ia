@@ -11,11 +11,13 @@
  *    est enregistré dans les détails de l'image et dans la fiche du logo.
  * 6. Le relecteur le plus fort, effort élevé (un autre modèle que le rédacteur), reçoit le logo sur blanc, l'esquisse, le
  *    nom, le vrai métier et le texte envoyé. Il refuse si le nom est mal écrit (le code le compare aussi), si l'idée de
- *    l'esquisse est perdue, si le logo est trop proche de l'esquisse sans évolution, s'il y a une arche, s'il y a une
- *    phrase inventée qui ne dit pas le vrai métier, ou si sa note est sous 8 sur 10 (décision du chef). En plus, gratuits :
- *    le fond se retire proprement (garde `detourerLeLogo`) ; l'écart mesuré entre l'esquisse et le logo lui est donné
- *    comme indice. Refusé : refait UNE fois, avec toutes les raisons à la fin du texte. Refusé deux fois : l'identité
- *    n'est pas construite, SINA le dit et propose une autre esquisse.
+ *    l'esquisse est perdue, s'il y a une arche, s'il y a une phrase inventée qui ne dit pas le vrai métier, ou si sa note
+ *    est sous 8 sur 10 (décision du chef). Il ne refuse JAMAIS un logo parce qu'il est trop proche de l'esquisse : lors de
+ *    l'essai réel du 24 novembre 2026, quatre logos finis propres et fidèles ont tous été refusés pour cette seule raison,
+ *    et le propriétaire a fait retirer la règle (« Ouais », à « Je fais retirer cette règle et je relance la finalisation
+ *    du R bordeaux ? »). La ligne d'évolution du texte de finalisation reste. En plus, gratuit : le fond se retire
+ *    proprement (garde `detourerLeLogo`). Refusé : refait UNE fois, avec toutes les raisons à la fin du texte. Refusé
+ *    deux fois : l'identité n'est pas construite, SINA le dit et propose une autre esquisse.
  * Les couleurs du client ne vont jamais au dessinateur : rien ici ne les lit.
  */
 import sharp from "sharp";
@@ -80,7 +82,6 @@ export function controleDuTexte(texte: string, nom: string, metier: string): str
 export const RelectureDuLogoSchema = z.object({
   nomLu: z.string().max(80).default(""),
   ideeConservee: z.boolean().catch(false),
-  evolution: z.boolean().catch(false),
   arche: z.boolean().catch(true),
   /** Une phrase écrite dans le logo qui n'est pas le nom ; vide s'il n'y en a pas. */
   phrase: z.string().max(200).default(""),
@@ -94,44 +95,27 @@ export type RelectureDuLogo = z.infer<typeof RelectureDuLogoSchema>;
 export const RELECTEUR_DU_LOGO_FINI = `Tu es le relecteur le plus exigeant d'un studio de création de marques. On te montre un logo fini (image 1, sur fond blanc) et l'esquisse dont il est tiré (image 2). Réponds en JSON :
 - nomLu : le nom de la marque tel qu'il est écrit dans le logo, lettre pour lettre, accents compris ;
 - ideeConservee : l'idée centrale de l'esquisse est toujours là ;
-- evolution : le logo a vraiment évolué vers une identité plus aboutie et plus distinctive (faux s'il n'est qu'une copie nettoyée ou agrandie de l'esquisse) ;
 - arche : le dessin est posé dans une arche, une demi-lune ou un cadre arrondi en arc ;
 - phrase : toute phrase écrite dans le logo en plus du nom (vide s'il n'y en a pas) ;
 - phraseDitLeMetier : cette phrase dit exactement le vrai métier donné ci-dessous (faux si elle invente autre chose) ;
 - note : ta note de 0 à 10 face aux logos des meilleures agences ;
 - pourquoi : une ou deux phrases simples.`;
 
-export function demandeAuRelecteurDuLogo(o: { nom: string; metier: string; texte: string; ecart: number | null }): string {
+export function demandeAuRelecteurDuLogo(o: { nom: string; metier: string; texte: string }): string {
   return [
     `Marque : « ${o.nom} ». Son vrai métier : ${o.metier}.`,
     `Le texte envoyé au dessinateur : « ${o.texte} »`,
-    o.ecart != null ? `Indice mesuré par le Studio : l'écart entre l'esquisse et le logo vaut ${Math.round(o.ecart * 100)} sur 100 (0 : identiques).` : "",
-  ].filter(Boolean).join("\n");
+  ].join("\n");
 }
 
-/** Un écart sous ce seuil (sur 100) est donné comme « très proche » au relecteur ; jamais un refus à lui seul. */
-export const ECART_TRES_PROCHE = 0.04;
 /**
- * L'écart mesuré entre l'esquisse et le logo fini (0 : identiques, 1 : tout diffère), gratuit : chacun recadré sur son
- * dessin, posé sur 128 × 128 en niveaux de gris, différence moyenne. Un simple indice pour le relecteur.
+ * Les raisons du refus d'un logo fini : le nom, l'idée perdue, l'arche, la phrase inventée et la note de 8. Vide : gardé.
+ * Jamais « trop proche de l'esquisse » (retiré le 24 novembre 2026 avec le « Ouais » du propriétaire).
  */
-export async function ecartMesure(esquisse: Buffer, logo: Buffer): Promise<number> {
-  const prep = async (b: Buffer) => {
-    const blanc = await sharp(b).flatten({ background: "#FFFFFF" }).png().toBuffer();
-    const t = await sharp(blanc).trim({ background: "#FFFFFF", threshold: 20 }).png().toBuffer().catch(() => blanc);
-    return (await sharp(t).resize(128, 128, { fit: "contain", background: "#FFFFFF" }).greyscale().raw().toBuffer());
-  };
-  const [a, b] = await Promise.all([prep(esquisse), prep(logo)]);
-  let s = 0; for (let i = 0; i < a.length; i++) s += Math.abs(a[i] - b[i]);
-  return Math.min(1, s / (a.length * 255));
-}
-
-/** Les raisons du refus d'un logo fini (les cinq raisons du plan, plus la note de 8). Vide : gardé. */
 export function raisonsDuRefus(v: RelectureDuLogo, nom: string): string[] {
   const r: string[] = [];
   if (!nomExact(v.nomLu, nom)) r.push(v.nomLu ? `le nom est mal écrit (« ${v.nomLu} » au lieu de « ${nom} »)` : `le nom « ${nom} » n'y est pas écrit`);
   if (!v.ideeConservee) r.push("l'idée de l'esquisse est perdue");
-  if (!v.evolution) r.push("le logo est trop proche de l'esquisse, sans évolution");
   if (v.arche) r.push("le dessin est posé dans une arche");
   if (v.phrase.trim() && !v.phraseDitLeMetier) r.push(`la phrase « ${v.phrase.trim()} » est inventée et ne dit pas le vrai métier`);
   if (v.note < NOTE_DU_PROPRIETAIRE) r.push(`il n'est pas au niveau (${v.note}/10, il faut ${NOTE_DU_PROPRIETAIRE})`);
@@ -154,7 +138,7 @@ export type FinalisationDeps = {
   detourer: (png: Buffer) => Promise<{ ok: true; png: Buffer } | { ok: false; why: string }>;
   aLaChargeDuStudio: <T>(fn: () => Promise<T>) => Promise<T>;
 };
-export type EssaiDeFinalisation = { tour: number; texte: string; ideeCentrale: string; png: Buffer | null; detoure: Buffer | null; verdict: RelectureDuLogo | null; ecart: number | null; raisons: string[] };
+export type EssaiDeFinalisation = { tour: number; texte: string; ideeCentrale: string; png: Buffer | null; detoure: Buffer | null; verdict: RelectureDuLogo | null; raisons: string[] };
 export type Finalisation = { ok: true; logo: Buffer; detoure: Buffer; texte: string; essais: EssaiDeFinalisation[]; notes: string[] }
   | { ok: false; raison: string; essais: EssaiDeFinalisation[]; notes: string[] };
 
@@ -176,13 +160,12 @@ export async function finaliserUneEsquisse(deps: FinalisationDeps, o: { nom: str
   }
   const essai = async (tour: number, texte: string): Promise<EssaiDeFinalisation> => {
     const png = await deps.finaliser(o.esquisse, texte, tour);
-    const e: EssaiDeFinalisation = { tour, texte, ideeCentrale: ecrit.idee_centrale, png, detoure: null, verdict: null, ecart: null, raisons: [] };
+    const e: EssaiDeFinalisation = { tour, texte, ideeCentrale: ecrit.idee_centrale, png, detoure: null, verdict: null, raisons: [] };
     const d = await deps.detourer(png);
     if (!d.ok) { e.raisons = [d.why]; return e; }
     e.detoure = d.png;
-    e.ecart = await ecartMesure(o.esquisse, png).catch(() => null);
     const surBlanc = await sharp(d.png).flatten({ background: "#FFFFFF" }).png().toBuffer();
-    e.verdict = await deps.relire(surBlanc, o.esquisse, demandeAuRelecteurDuLogo({ nom: o.nom, metier: o.metier, texte, ecart: e.ecart }), tour);
+    e.verdict = await deps.relire(surBlanc, o.esquisse, demandeAuRelecteurDuLogo({ nom: o.nom, metier: o.metier, texte }), tour);
     e.raisons = raisonsDuRefus(e.verdict, o.nom);
     return e;
   };
@@ -202,7 +185,7 @@ export async function finaliserUneEsquisse(deps: FinalisationDeps, o: { nom: str
  * Un changement de couleur demandé par le client lui-même, une fois les logos finis (plan accepté du 24 novembre 2026) :
  * une retouche sur sa demande, sur son budget, avec une carte. Le logo fini part dans image[], avec ce texte du Studio
  * et les mots du client cités tels quels ; rien d'autre ne change dans le dessin. Le relecteur vérifie le nom, l'idée,
- * l'arche, la phrase et la note (l'évolution n'est pas demandée : c'est une retouche).
+ * l'arche, la phrase et la note, comme pour tout logo fini.
  */
 export const texteDeRetouche = (demande: string) => `Garde ce logo exactement tel qu'il est (son dessin, ses lettres, ses proportions) et change seulement ses couleurs, comme le client le demande : « ${demande.trim().replace(/[«»]/g, "")} ». ${FIN_DU_TEXTE}`;
 export async function retoucherLesCouleurs(deps: FinalisationDeps, o: { nom: string; metier: string; logo: Buffer; demande: string }): Promise<Finalisation> {
@@ -210,13 +193,13 @@ export async function retoucherLesCouleurs(deps: FinalisationDeps, o: { nom: str
   const texte = texteDeRetouche(o.demande);
   const essai = async (tour: number, t: string): Promise<EssaiDeFinalisation> => {
     const png = await deps.finaliser(o.logo, t, tour);
-    const e: EssaiDeFinalisation = { tour, texte: t, ideeCentrale: "", png, detoure: null, verdict: null, ecart: null, raisons: [] };
+    const e: EssaiDeFinalisation = { tour, texte: t, ideeCentrale: "", png, detoure: null, verdict: null, raisons: [] };
     const d = await deps.detourer(png);
     if (!d.ok) { e.raisons = [d.why]; return e; }
     e.detoure = d.png;
     const surBlanc = await sharp(d.png).flatten({ background: "#FFFFFF" }).png().toBuffer();
-    e.verdict = await deps.relire(surBlanc, o.logo, demandeAuRelecteurDuLogo({ nom: o.nom, metier: o.metier, texte: t, ecart: null }), tour);
-    e.raisons = raisonsDuRefus({ ...e.verdict, evolution: true }, o.nom);
+    e.verdict = await deps.relire(surBlanc, o.logo, demandeAuRelecteurDuLogo({ nom: o.nom, metier: o.metier, texte: t }), tour);
+    e.raisons = raisonsDuRefus(e.verdict, o.nom);
     return e;
   };
   const premier = await essai(1, texte);
