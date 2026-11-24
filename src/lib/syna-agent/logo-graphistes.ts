@@ -8,12 +8,11 @@
  *   (couleurs-du-logo.ts) ; 8. « d'autres pistes » et « un autre logo » (outils, sur son budget, avec une carte) ;
  *   11. le devis et les deux plafonds (ici).
  *
- * Elle remplace entièrement l'ancienne série de logos. LE BRANCHEMENT dans la chaîne de la marque attend la réponse du
- * propriétaire au « point 0 » (le client choisit-il son nom d'abord ?) : selon la recommandation, la chaîne s'arrête après
- * les noms vérifiés, le client choisit son nom (identity.nom), la recherche se fait pour ce nom, et les N identités
- * partagent ce nom, chacune avec son logo. Tant que la réponse n'est pas là, l'ancienne série reste en place et ce
- * parcours n'est appelé par aucune chaîne (réglage `sina.logo.graphistes`, éteint par défaut ; aucun réglage en ligne
- * n'est changé).
+ * Elle remplace entièrement l'ancienne série de logos. LE BRANCHEMENT (point 0, « Oui » du propriétaire le 24 novembre
+ * 2026 à « Le client choisit d'abord son nom, puis les logos : tu es d'accord ? ») : la chaîne s'arrête après les noms
+ * vérifiés (`jusquAuxNoms`), le client choisit son nom (identity.nom) ou garde le sien, la recherche se fait pour ce nom,
+ * il choisit ses esquisses, les logos finis sont relus, puis ses 2, 3 ou 4 identités partagent ce nom, chacune avec son
+ * propre logo (`logosGraphistes` de la chaîne). Un seul accord pour toute l'étape (`accordGraphistes`, tools/identity.ts).
  *
  * Anciens projets : rien d'automatique. Ils gardent leurs planches ; un logo manquant n'est refait qu'à la demande du
  * client, par cette méthode, selon la règle de prise en charge en vigueur.
@@ -36,8 +35,11 @@ import { RELECTEUR_DES_ESQUISSES, RelectureEsquissesSchema, demandeAuRelecteurDe
 import { DEMANDE_AU_REDACTEUR, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, TexteDeFinalisationSchema, finaliserUneEsquisse, type Finalisation, type FinalisationDeps } from "./logo-finalisation";
 import { couleursDuLogo, type PaletteDuLogo } from "./couleurs-du-logo";
 
-/** Le parcours n'est appelé par aucune chaîne tant que le propriétaire n'a pas répondu au point 0 (éteint par défaut). */
-export const graphistesActifs = (): boolean => getJsonSetting<boolean>("sina.logo.graphistes", false) === true;
+/**
+ * La méthode des graphistes est LA façon de faire un logo depuis la réponse du propriétaire au point 0 (« Oui », 24 novembre
+ * 2026). Le réglage `sina.logo.graphistes` n'existe que pour un essai de comparaison ; il n'est jamais changé en ligne.
+ */
+export const graphistesActifs = (): boolean => getJsonSetting<boolean>("sina.logo.graphistes", true) !== false;
 
 /** Le nombre d'esquisses que le client peut choisir : celui des identités de son forfait (2, 3 ou 4). */
 export const esquissesAChoisir = (plan: PlanId | null | undefined): number => (plan ? ROUTES_BY_PLAN[plan] : ROUTES_BY_PLAN.creer);
@@ -68,6 +70,8 @@ export function controleDuChoix(etat: Pick<EtatGraphistes, "esquisses" | "max">,
   const connus = new Set(etat.esquisses.map((e) => e.numero));
   const inconnus = uniques.filter((n) => !connus.has(n));
   if (inconnus.length) return L(`Esquisse ${inconnus.map((n) => `n°${n}`).join(", ")} inconnue : elle n'a pas été montrée (une esquisse refusée n'est jamais montrée).`, `Unknown sketch ${inconnus.join(", ")}.`);
+  // Une proposition de marque compte au moins deux identités (forfaits validés : 2, 3 et 4 identités proposées).
+  if (uniques.length < Math.min(2, etat.esquisses.length)) return L("Choisis au moins deux esquisses : chacune devient une identité de ta marque.", "Choose at least two sketches.");
   if (uniques.length > etat.max) return L(`Ton forfait permet ${etat.max} esquisses au plus ; tu en as choisi ${uniques.length}.`, `Your plan allows ${etat.max} sketches at most.`);
   return null;
 }

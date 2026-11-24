@@ -58,7 +58,8 @@ describe("les épreuves proposées de la méthode des graphistes", () => {
     expect([esquissesAChoisir("creer"), esquissesAChoisir("vendre"), esquissesAChoisir("dominer")]).toEqual([2, 3, 4]);
     const etat = { max: 3, esquisses: [3, 7, 11, 12].map((numero) => ({ numero, assetId: "a", modele: "m", piste: "", tour: 1, recherche: 1, requestId: null })) };
     expect(controleDuChoix(etat, [3, 7, 11])).toBeNull();
-    expect(controleDuChoix(etat, [7])).toBeNull();
+    expect(controleDuChoix(etat, [7, 11])).toBeNull();
+    expect(controleDuChoix(etat, [7])).toBeTruthy();
     expect(controleDuChoix(etat, [3, 7, 11, 12])).toBeTruthy();
     expect(controleDuChoix(etat, [5])).toBeTruthy();
     let s: number[] = []; for (const n of [11, 3, 7, 12]) s = basculer(s, n, 3);

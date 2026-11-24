@@ -18,7 +18,7 @@ export const EPREUVES_A_SCELLER: (Epreuve & { remplacerait: string })[] = [
   },
   {
     id: "esquisses-choisies-selon-le-forfait", date: "2026-11-24", source: SOURCE, verdict: VERDICT, rejeu: "gratuit", remplacerait: "logos-de-la-serie-dans-l-ordre",
-    attendu: "Le client choisit ses esquisses, numérotées, au plus 2, 3 ou 4 selon son forfait (moins est permis) ; un numéro inconnu ou refusé est refusé ; la carte n'autorise jamais plus de cases cochées et envoie « Je choisis les esquisses 3, 7 et 11 » ; les logos finis partent dans l'ordre des numéros.",
+    attendu: "Le client choisit ses esquisses, numérotées, au plus 2, 3 ou 4 selon son forfait (moins est permis, deux au moins : chaque esquisse devient une identité) ; un numéro inconnu ou refusé est refusé ; la carte n'autorise jamais plus de cases cochées et envoie « Je choisis les esquisses 3, 7 et 11 » ; les logos finis partent dans l'ordre des numéros.",
   },
   {
     id: "finalisation-ecrite-par-le-plus-fort", date: "2026-11-24", source: SOURCE, verdict: VERDICT, rejeu: "gratuit", remplacerait: "pas-de-consigne-de-style-pour-un-logo",

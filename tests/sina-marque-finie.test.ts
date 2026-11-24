@@ -12,6 +12,10 @@ process.env.STUDIO_SYNA_AGENT = "1";
 const IDEE_SIMPLE_DESSAI = "elle croit qu'un goût vrai demande du temps, et elle se bat contre ce qui est prêt tout de suite";
 
 describe("SINA — la marque finie de l'identité choisie", async () => {
+  // Ces essais rejouent la chaîne des PLANCHES d'une proposition (identity.propose d'avant la méthode des graphistes) et la
+  // marque finie. L'entrée par la méthode des graphistes (noms vérifiés, esquisses, logos finis, puis planches avec leurs
+  // logos) est essayée dans tests/logo-graphistes-*.test.ts et tests/sina-graphistes-chaine.test.ts.
+  (await import("@/lib/settings")).setJsonSetting("sina.logo.graphistes", false);
   const { all, one, run } = await import("@/lib/db");
   const { JobContext } = await import("@/lib/jobs");
   const { runWithLang } = await import("@/lib/i18n-server");

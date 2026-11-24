@@ -11,6 +11,10 @@ process.env.STUDIO_SYNA_AGENT = "1";
 const IDEE_SIMPLE_DESSAI = "elle croit qu'un goût vrai demande du temps, et elle se bat contre ce qui est prêt tout de suite";
 
 describe("SINA — chaîne de création de la marque", async () => {
+  // Ces essais rejouent la chaîne des PLANCHES d'une proposition (identity.propose d'avant la méthode des graphistes) et la
+  // marque finie. L'entrée par la méthode des graphistes (noms vérifiés, esquisses, logos finis, puis planches avec leurs
+  // logos) est essayée dans tests/logo-graphistes-*.test.ts et tests/sina-graphistes-chaine.test.ts.
+  (await import("@/lib/settings")).setJsonSetting("sina.logo.graphistes", false);
   const { all, one, run } = await import("@/lib/db");
   const { JobContext } = await import("@/lib/jobs");
   const { runWithLang } = await import("@/lib/i18n-server");
@@ -707,33 +711,28 @@ describe("SINA — chaîne de création de la marque", async () => {
     expect((await call("identity.images", t.ctx, { keys: ["A"], images: ["hero"] })).ok).toBe(false); // aucune planche encore
     await chain(t, {}, { review: () => ({ routes: [], series: "" }) });
     run("UPDATE jobs SET status='done' WHERE project_id=? AND type=?", t.pid, C.SINA_BRAND_JOB);
-    const est = await tool.estimate!(t.ctx, { keys: ["A", "B"], images: ["logo", "hero"] } as never);
-    // Seulement les images demandées (propriétaire, 20 novembre 2026 : « j'ai juste demandé de refaire les logos ») ;
-    // la maquette gardée avec l'ancien logo est refaite pour l'identité choisie, à la fin de la marque.
+    const est = await tool.estimate!(t.ctx, { keys: ["A", "B"], images: ["hero", "site"] } as never);
     expect(est.label).toBe("2 images à refaire sur 2 planches");
-    expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["logo", "hero"]).maxMicro);
+    expect(est.maxMicro).toBe(C.boardImagesQuote(2, undefined, ["hero", "site"]).maxMicro);
     expect((await tool.estimate!(t.ctx, { keys: ["A"], images: ["hero"] } as never)).maxMicro).toBe(C.boardImagesQuote(1, undefined, ["hero"]).maxMicro);
-    const r = await call("identity.images", t.ctx, { keys: ["A", "B"], images: ["logo", "hero"], guidance: "Le logo est trop chargé, je le veux plus simple." });
+    const r = await call("identity.images", t.ctx, { keys: ["A", "B"], images: ["hero"], guidance: "La grande image est trop sombre." });
     expect(r.ok).toBe(true);
-    expect(r.summary).toMatch(/^Je refais 2 images sur « .+ » et « .+ » \(quelques minutes\) ; le reste des planches ne bouge pas\.$/);
+    expect(r.summary).toMatch(/^Je refais 1 image sur « .+ » et « .+ » \(quelques minutes\) ; le reste des planches ne bouge pas\.$/);
     const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs![0]);
     expect(job.type).toBe(C.SINA_BRAND_JOB);
-    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["logo", "hero"], capMicro: est.maxMicro });
-    // La consigne qui parle du logo est retirée par le Studio (jamais de consigne de style pour un logo, 23 novembre 2026).
-    expect(JSON.parse(job.payload).guidance).toBeUndefined();
-    // Avant le choix, une planche a son logo, sa grande scène et la maquette du haut de son site : ces trois images se
+    expect(JSON.parse(job.payload)).toMatchObject({ imagesOnly: true, images: true, redo: ["A", "B"], slots: ["hero"], capMicro: (await tool.estimate!(t.ctx, { keys: ["A", "B"], images: ["hero"] } as never)).maxMicro });
+    // L'ancienne série de logos est retirée (méthode des graphistes, point 0 tranché le 24 novembre 2026) : le logo d'une
+    // planche ne se refait plus ici (« un autre logo » : logo.autre ou logo.pistes). La grande scène et le haut du site se
     // refont ici ; l'objet, les signes et les publications se créent (et se refont) pour l'identité choisie, avec brand.finish.
-    for (const slot of ["logo", "hero", "site"]) expect(tool.args.safeParse({ keys: ["A"], images: [slot] }).success).toBe(true);
-    for (const slot of ["object", "signs", "post0"]) expect(tool.args.safeParse({ keys: ["A"], images: [slot] }).success).toBe(false);
-    expect(tool.args.safeParse({ keys: ["A"], images: ["logo", "hero", "site"] }).success).toBe(true);
-    expect(tool.args.safeParse({ keys: ["A"], images: ["logo", "hero", "site", "logo"] }).success).toBe(false); // trois au plus
-    expect(tool.description).toMatch(/refait SEULEMENT le logo \(« logo »\), la grande scène \(« hero »\) ou la maquette du haut du site \(« site »\)/);
+    for (const slot of ["hero", "site"]) expect(tool.args.safeParse({ keys: ["A"], images: [slot] }).success).toBe(true);
+    for (const slot of ["logo", "object", "signs", "post0"]) expect(tool.args.safeParse({ keys: ["A"], images: [slot] }).success).toBe(false);
+    expect(tool.description).toMatch(/refait SEULEMENT la grande scène \(« hero »\) ou le haut du site \(« site »\)/);
+    expect(tool.description).toMatch(/logo\.autre ou logo\.pistes/);
     const siteEst = await tool.estimate!(t.ctx, { keys: ["A"], images: ["site"] } as never);
     expect(siteEst.label).toBe("1 image à refaire sur 1 planche");
     expect(siteEst.maxMicro).toBe(C.boardImagesQuote(1, undefined, ["site"]).maxMicro);
     expect(siteEst.maxMicro).toBeGreaterThan(0);
-    expect((await tool.estimate!(t.ctx, { keys: ["A"], images: ["logo", "hero", "site"] } as never)).maxMicro).toBe(C.boardImagesQuote(1, undefined, ["logo", "hero", "site"]).maxMicro);
-    expect((await call("identity.images", t.ctx, { keys: ["A"], images: ["logo"] })).summary).toMatch(/déjà en cours/);
+    expect((await call("identity.images", t.ctx, { keys: ["A"], images: ["site"] })).summary).toMatch(/déjà en cours/);
     // SINA sait que c'est à elle de refaire une image fausse, sans refaire l'identité.
     const { SYNA_SYSTEM } = await import("@/lib/syna-agent/prompt");
     expect(SYNA_SYSTEM).toMatch(/Une image fausse d'une planche se refait avec identity\.images, sans refaire l'identité\./);
@@ -1728,5 +1727,57 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     } finally {
       run("DELETE FROM projects WHERE id=?", `variete-${far}`);
     }
+  });
+
+  // ---------------------------------------------------------------- la méthode des graphistes (point 0 : « Oui »)
+
+  it("méthode des graphistes : identity.propose arrête la chaîne après les noms VÉRIFIÉS ; un seul accord pour l'étape, découpé en morceaux", async () => {
+    const { setJsonSetting } = await import("@/lib/settings");
+    setJsonSetting("sina.logo.graphistes", true);
+    try {
+      const t = await thread();
+      const tool = getTool("identity.propose")!;
+      const { accordGraphistes } = await import("@/lib/syna-agent/tools/identity");
+      const est = await fr(() => tool.estimate!({ ...t.ctx, projectId: t.pid }, {} as never));
+      const count = C.routeCountOfProject(t.pid), g = accordGraphistes(count);
+      expect(est.maxMicro).toBe(g.maxMicro + C.finishQuote().maxMicro);
+      // La somme des morceaux réservés ne dépasse jamais le « au plus » montré.
+      expect(g.nomsMicro + g.rechercheMicro + g.finalisationsMicro + g.planchesMicro).toBeLessThanOrEqual(g.maxMicro);
+      const r = await call("identity.propose", t.ctx, {});
+      expect(r.ok).toBe(true);
+      const job = one<any>("SELECT * FROM jobs WHERE id=?", r.jobs![0]);
+      expect(JSON.parse(job.payload)).toMatchObject({ jusquAuxNoms: true, count, capMicro: g.nomsMicro });
+      expect(J.journeyOf(t.cid).accordGraphistes).toMatchObject({ count, rechercheMicro: g.rechercheMicro, finalisationsMicro: g.finalisationsMicro, planchesMicro: g.planchesMicro });
+      run("UPDATE jobs SET status='done' WHERE id=?", job.id);
+      // La chaîne s'arrête après la vérification des noms : ni composition, ni planche, ni image.
+      const { out, log } = await chain(t, { jusquAuxNoms: true }, { taken: [{ name: "Trempette", url: "https://annuaire.example/boissons" }] });
+      expect(log.ids.slice(-3)).toEqual(["judge-1", "web:verify-noms-1", "verify-noms-1"]);
+      expect(log.ids.some((i) => /^(shortlist|direction|imagery|image-)/.test(i))).toBe(false);
+      const noms = (out as any).noms.map((n: any) => n.name);
+      expect(noms).not.toContain("Trempette");
+      expect(J.journeyOf(t.cid).nomsVerifies).toEqual(noms);
+      expect(J.journeyOf(t.cid).identities).toBeUndefined();
+    } finally { setJsonSetting("sina.logo.graphistes", false); }
+  });
+
+  it("méthode des graphistes : les identités partagent le nom choisi, chacune avec son logo fini posé tel quel ; ses couleurs imposées, le logo joint à la direction ; aucun logo redessiné", async () => {
+    const t = await thread();
+    const { saveAsset } = await import("@/lib/library");
+    // Trois logos finis (ce qu'aurait rendu la méthode des graphistes), avec leurs couleurs tirées par le code.
+    const pal = (primary: string) => ({ dark: "#1A1A1A", primary, secondary: "#F4F4F2", accent: primary, light: "#FFFFFF" });
+    const logos = await Promise.all(["#2B6CB0", "#C05621", "#2F855A"].map(async (c) => ({ assetId: (await saveAsset({ projectId: t.pid, userId: t.user.id, data: await whiteLogo(c, 400, 200), name: "logo.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready" })).id, palette: pal(c) })));
+    const { out, log } = await chain(t, { names: ["Bain de Minuit", "Bain de Minuit", "Bain de Minuit"], logosGraphistes: logos, images: true }, { fix: () => FIXED_LINE });
+    expect((out as any).routes.map((r: any) => r.name)).toEqual(["Bain de Minuit", "Bain de Minuit", "Bain de Minuit"]);
+    const list = J.journeyOf(t.cid).identities!.list as any[];
+    expect(list.map((x) => x.board.images?.logo?.id)).toEqual(logos.map((l) => l.assetId));
+    // Aucun logo dessiné par l'ancienne série : seuls la grande scène et le haut du site sont créés.
+    expect(log.ids.filter((i) => /^image-.*-logo/.test(i))).toEqual([]);
+    expect(log.ids.some((i) => /^image-.*-hero/.test(i))).toBe(true);
+    // La direction reçoit les couleurs du logo, imposées, et la consigne de la police tirée du logo.
+    for (const k of ["A", "B", "C"]) expect(log.prompts[`direction-1-${k}`]).toMatch(/tirées de son logo et IMPOSÉES/);
+    expect(log.prompts["direction-1-B"]).toMatch(/Choisis la police de titres dont le dessin est le plus proche de ses lettres/);
+    // Les routes restent différentes (idée, fond) malgré le même nom ; la couleur de marque est celle du logo, sauf correction de contraste dite.
+    expect(new Set(list.map((x) => x.ground)).size).toBe(3);
+    expect(new Set(list.map((x) => x.fonts.heading.replace(/_[ni]\d$/, ""))).size).toBe(3);
   });
 });

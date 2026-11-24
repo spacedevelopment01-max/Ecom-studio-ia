@@ -74,8 +74,14 @@ describe("la tâche syna.logo.graphistes (faux appels)", async () => {
     expect(c.jobs).toHaveLength(1);
     expect(J.journeyOf(cid).graphistes!.choix).toEqual([2, 7]);
 
+    J.updateJourney(cid, (j) => { j.accordGraphistes = { count: 2, nomsMicro: 1, rechercheMicro: 1, finalisationsMicro: 1, planchesMicro: 7_000_000, at: Date.now() }; j.nomsDeLaMarque = { list: [], verifies: true, atelier: "job-des-noms", count: 2, at: Date.now() }; });
     const r2 = await tache(user, projectId, { conversationId: cid, phase: "finalisation", numeros: [7, 2], capMicro: 5_000_000 }) as any;
     expect(r2.logos).toBe(2);
+    // Chaque esquisse choisie a son logo relu : les planches partent, couvertes par l'accord, le nom partagé, un logo chacune.
+    const planches = JSON.parse(one<{ payload: string }>("SELECT payload FROM jobs WHERE id=?", r2.planchesJob)!.payload);
+    expect(planches).toMatchObject({ count: 2, names: ["Reflet", "Reflet"], capMicro: 7_000_000, atelier: "job-des-noms" });
+    expect(planches.logosGraphistes.map((l: any) => l.assetId)).toEqual(J.journeyOf(cid).graphistes!.logos!.map((l) => l.assetId));
+    run("UPDATE jobs SET status='done' WHERE id=?", r2.planchesJob);
     const logos = J.journeyOf(cid).graphistes!.logos!;
     expect(logos.map((l) => l.numero)).toEqual([2, 7]);
     const meta = JSON.parse(String((getAsset(logos[0].assetId!) as any).meta)).graphistes;
@@ -92,11 +98,11 @@ describe("la tâche syna.logo.graphistes (faux appels)", async () => {
     expect(J.journeyOf(cid).graphistes!.recherches).toBe(2);
   });
 
-  it("préparé pour le point 0 : identity.nom n'accepte qu'un nom vérifié montré, et lance la recherche avec la part des finalisations réservée", async () => {
+  it("point 0 : identity.nom n'accepte qu'un nom vérifié montré, et lance la recherche avec la part des finalisations réservée", async () => {
     const { nomTool, logoTools: outils } = await import("@/lib/syna-agent/tools/logo");
     const { TOOL_LIST } = await import("@/lib/syna-agent/tools");
-    // Pas encore dans le registre : rien ne change pour SINA tant que le propriétaire n'a pas répondu.
-    expect(TOOL_LIST.some((t) => t.name === "identity.nom" || outils.some((o) => o.name === t.name))).toBe(false);
+    // Point 0 tranché (« Oui ») : les outils du nom et du logo sont dans le registre commun.
+    for (const n of ["identity.nom", ...outils.map((o) => o.name)]) expect(TOOL_LIST.some((t) => t.name === n), n).toBe(true);
     const user = await account(), projectId = project(user) as string, cid = threadFor(user, projectId);
     const ctx = { user, projectId, conversationId: cid, runId: `run-nom-${Date.now()}`, attachment: () => null } as any;
     expect((await fr(() => nomTool.run(ctx, { nom: "Reflet" })) as any).ok).toBe(false);
@@ -105,6 +111,6 @@ describe("la tâche syna.logo.graphistes (faux appels)", async () => {
     expect(r.ok).toBe(true);
     const job = one<{ payload: string }>("SELECT payload FROM jobs WHERE id=?", r.jobs[0])!;
     const p = JSON.parse(job.payload);
-    expect(p).toMatchObject({ phase: "recherche", nom: "reflet", finalisationsAccordees: G.devisDesFinalisations(4).maxMicro });
+    expect(p).toMatchObject({ phase: "recherche", nom: "Reflet", finalisationsAccordees: G.devisDesFinalisations(4).maxMicro });
   });
 });

@@ -8,7 +8,8 @@
  * branchement sera fait (voir logo-graphistes.ts).
  */
 import { z } from "zod";
-import { UserFacingError, type JobContext } from "../jobs";
+import { UserFacingError, enqueue, pendingJob, type JobContext } from "../jobs";
+import { SINA_BRAND_JOB } from "./brand-chain";
 import { L } from "../i18n-server";
 import { loadProject } from "../projects";
 import { assetData, getAsset, saveAsset } from "../library";
@@ -116,7 +117,28 @@ async function finaliserLesChoix(ai: GraphistesAi, who: { userId: string; projec
   }
   updateJourney(cid, (x) => { if (x.graphistes) x.graphistes = { ...x.graphistes, logos, at: Date.now() }; });
   const faits = logos.filter((l) => l.ok && numeros.includes(l.numero)).length;
-  return { logos: faits, notice: [L(`${faits} logo${faits > 1 ? "s" : ""} fini${faits > 1 ? "s" : ""}, relu${faits > 1 ? "s" : ""}.`, `${faits} finished logo(s).`), ...dits].join(" ") };
+  const planches = lancerLesPlanches(who, cid);
+  return { logos: faits, ...(planches ? { planchesJob: planches } : {}), notice: [L(`${faits} logo${faits > 1 ? "s" : ""} fini${faits > 1 ? "s" : ""}, relu${faits > 1 ? "s" : ""}.`, `${faits} finished logo(s).`), ...(planches ? [L("Je prépare maintenant tes identités, chacune avec son logo.", "Now preparing your identities, each with its logo.")] : []), ...dits].join(" ") };
+}
+
+/**
+ * Quand chaque esquisse choisie a son logo fini et relu : les planches partent, couvertes par l'accord de l'étape « La
+ * marque ». Ses 2, 3 ou 4 identités partagent le nom choisi, chacune avec son propre logo, dans l'ordre des numéros.
+ * Rien ne part s'il manque un logo (SINA propose une autre esquisse) ou sans accord enregistré.
+ */
+export function lancerLesPlanches(who: { userId: string; projectId: string }, cid: string): string | null {
+  const j = journeyOf(cid), acc = j.accordGraphistes, e = j.graphistes;
+  const choix = [...(e?.choix ?? [])].sort((x, y) => x - y);
+  if (!acc || !e || choix.length < 2 || j.identities?.list.length || pendingJob(who.projectId, SINA_BRAND_JOB)) return null;
+  const logos = choix.map((n) => e.logos?.find((l) => l.numero === n && l.ok && l.assetId));
+  if (logos.some((l) => !l)) return null;
+  const garde = j.keep.includes("nom");
+  const job = enqueue({
+    userId: who.userId, projectId: who.projectId, type: SINA_BRAND_JOB, label: L(`${choix.length} identités de marque (SINA)`, `${choix.length} brand identities (SINA)`),
+    payload: { projectId: who.projectId, conversationId: cid, capMicro: acc.planchesMicro, count: choix.length, ...(garde ? {} : { names: choix.map(() => e.nom) }), logosGraphistes: logos.map((l) => ({ assetId: l!.assetId!, ...(l!.palette ? { palette: l!.palette } : {}) })), ...(j.nomsDeLaMarque?.atelier ? { atelier: j.nomsDeLaMarque.atelier } : {}) },
+    maxAttempts: 1, idempotencyKey: `syna:${cid}:planches:${choix.join("-")}:${logos.map((l) => l!.assetId).join("-")}`,
+  });
+  return job.id;
 }
 
 /** La retouche des couleurs d'un logo fini, sur la demande du client (sur son budget ; la reprise à la charge du Studio). */

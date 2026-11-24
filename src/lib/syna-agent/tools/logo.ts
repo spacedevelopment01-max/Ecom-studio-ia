@@ -32,7 +32,7 @@ const DEJA = { ok: false, summary: L("Un travail sur ton logo est déjà en cour
 
 const choisirTool: AgentTool<{ esquisses: number[] }> = {
   name: "logo.choisir", module: "marque", kind: "write", needsProject: true,
-  description: "Enregistre les esquisses de logo choisies PAR LE CLIENT (jamais à sa place), par leurs numéros : au plus autant que son forfait le permet (2, 3 ou 4), moins est permis. Un numéro inconnu ou refusé est refusé. Gratuit ; les logos finis partent ensuite, déjà couverts par son accord de l'étape « La marque ».",
+  description: "Les esquisses de logo choisies PAR LE CLIENT (2 au moins, au plus selon son forfait). Gratuit : les logos finis partent.",
   args: z.object({ esquisses: z.array(z.number().int().min(1)).min(1).max(8) }).strict(),
   run: (ctx, a) => {
     const etat = etatDe(ctx);
@@ -53,7 +53,7 @@ const choisirTool: AgentTool<{ esquisses: number[] }> = {
 
 const autreTool: AgentTool<{ esquisse: number }> = {
   name: "logo.autre", module: "marque", kind: "generate", needsProject: true,
-  description: "« Un autre logo » après le choix : finit une AUTRE des esquisses déjà montrées (seule la finalisation est payée). Si aucune ne lui plaît, propose d'abord logo.pistes. Sur son budget, avec une carte. Ne pose jamais de question sur le contenu du logo.",
+  description: "« Un autre logo » : finit une autre esquisse déjà montrée. Payant (carte).",
   args: z.object({ esquisse: z.number().int().min(1) }).strict(),
   estimate: () => { const d = devisDUneAutreEsquisse(); return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: L("un autre logo, tiré d'une esquisse déjà vue", "another logo from a sketch already seen") }; },
   run: (ctx, a) => {
@@ -69,7 +69,7 @@ const autreTool: AgentTool<{ esquisse: number }> = {
 
 const pistesTool: AgentTool<Record<string, never>> = {
   name: "logo.pistes", module: "marque", kind: "generate", needsProject: true,
-  description: "« D'autres pistes » : de nouvelles planches de recherche, qui évitent les pistes déjà montrées ; les nouvelles esquisses sont numérotées à la suite. Sur son budget, avec une carte.",
+  description: "« D'autres pistes » de logo : nouvelles esquisses, numérotées à la suite. Payant (carte).",
   args: z.object({}).strict(),
   estimate: () => { const d = devisDesPistes(); return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: L("d'autres pistes de logo", "other logo directions") }; },
   run: (ctx) => {
@@ -84,7 +84,7 @@ const pistesTool: AgentTool<Record<string, never>> = {
 
 const couleursTool: AgentTool<{ esquisse: number; demande: string }> = {
   name: "logo.couleurs", module: "marque", kind: "generate", needsProject: true,
-  description: "Change les couleurs d'un logo FINI, seulement quand le client le demande lui-même (ses mots dans demande, tels quels) : une retouche, le dessin ne change pas. Sur son budget, avec une carte.",
+  description: "Change les couleurs d'un logo fini, sur demande du client (ses mots). Payant (carte).",
   args: z.object({ esquisse: z.number().int().min(1), demande: z.string().min(1).max(600) }).strict(),
   estimate: () => { const d = devisDesFinalisations(1); return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: L("changer les couleurs de ton logo", "change your logo colours") }; },
   run: (ctx, a) => {
@@ -98,24 +98,29 @@ const couleursTool: AgentTool<{ esquisse: number; demande: string }> = {
 };
 
 export const logoTools: AgentTool[] = [choisirTool, autreTool, pistesTool, couleursTool];
+/** Tous les outils du logo et du nom, dans le registre commun. */
+export const outilsDuLogo = (): AgentTool[] => [nomTool, ...logoTools];
 
 /**
- * PRÉPARÉ POUR LE POINT 0 (pas encore dans le registre des outils) : selon la recommandation, la chaîne de la marque
+ * LE POINT 0 (« Oui » du propriétaire, 24 novembre 2026 : « Le client choisit d'abord son nom, puis les logos ») : la chaîne de la marque
  * s'arrête après les noms vérifiés (`noms`), le client choisit son nom, et la recherche des esquisses part pour ce nom,
  * couverte par l'accord unique de l'étape « La marque » (la part des N finalisations y est réservée). Les N identités
- * partagent ensuite ce nom, chacune avec son logo. Branché quand le propriétaire aura répondu.
+ * partagent ensuite ce nom, chacune avec son logo.
  */
 export const nomTool: AgentTool<{ nom: string }> = {
   name: "identity.nom", module: "marque", kind: "write", needsProject: true,
-  description: "Enregistre le nom choisi PAR LE CLIENT parmi les noms vérifiés montrés, puis lance la recherche de son logo (déjà couverte par son accord de l'étape « La marque »). Gratuit.",
+  description: "Le nom choisi PAR LE CLIENT parmi les noms vérifiés montrés ; lance la recherche de son logo. Gratuit.",
   args: z.object({ nom: z.string().min(1).max(60) }).strict(),
   run: (ctx, a) => {
     const nom = a.nom.trim(), noms = journeyOf(ctx.conversationId).nomsVerifies ?? [];
     if (!noms.some((n) => n.normalize("NFC").toLowerCase() === nom.normalize("NFC").toLowerCase())) return { ok: false, summary: L("Ce nom n'est pas parmi ceux que je t'ai montrés, vérifiés.", "This name is not among the verified names shown.") };
-    const p = project(ctx), n = esquissesAChoisir(planOfProject(p.id));
+    const p = project(ctx), j = journeyOf(ctx.conversationId), n = j.accordGraphistes?.count ?? esquissesAChoisir(planOfProject(p.id));
+    // Le nom exact montré (sa casse, ses accents), jamais une autre écriture.
+    const exact = noms.find((x) => x.normalize("NFC").toLowerCase() === nom.normalize("NFC").toLowerCase()) ?? nom;
     const r = devisDeLaRecherche(), f = devisDesFinalisations(n);
-    const job = lancer(ctx, { phase: "recherche", nom, capMicro: r.maxMicro, studioCapMicro: r.studioMaxMicro, finalisationsAccordees: f.maxMicro }, L("Recherche de ton logo (SINA)", "Your logo research (SINA)"), `recherche:${nom}`);
+    const job = lancer(ctx, { phase: "recherche", nom: exact, capMicro: j.accordGraphistes?.rechercheMicro ?? r.maxMicro, studioCapMicro: r.studioMaxMicro, finalisationsAccordees: j.accordGraphistes?.finalisationsMicro ?? f.maxMicro }, L("Recherche de ton logo (SINA)", "Your logo research (SINA)"), `recherche:${exact}`);
     if (!job) return DEJA;
-    return { ok: true, jobs: [job.id], summary: L(`« ${nom} » : c'est noté. Je cherche les pistes de ton logo et je te montre les esquisses numérotées.`, "Noted. Looking for your logo directions.") };
+    updateJourney(ctx.conversationId, (x) => { if (x.nomsDeLaMarque) x.nomsDeLaMarque.choisi = exact; x.graphistes = undefined; });
+    return { ok: true, jobs: [job.id], summary: L(`« ${exact} » : c'est noté. Je cherche les pistes de ton logo et je te montre les esquisses numérotées.`, "Noted. Looking for your logo directions.") };
   },
 };

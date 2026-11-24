@@ -154,6 +154,13 @@ export type Journey = {
   graphistes?: import("./logo-graphistes").EtatGraphistes;
   /** Les noms vérifiés montrés au client, quand la chaîne s'arrête après eux (point 0, préparé ; posé par la chaîne). */
   nomsVerifies?: string[];
+  /**
+   * L'accord unique de l'étape « La marque », méthode des graphistes : ce qui est réservé à chaque morceau (les noms, la
+   * recherche du logo, les N logos finis, les planches et la marque finie). Les morceaux partent sans nouvelle carte.
+   */
+  accordGraphistes?: { count: number; nomsMicro: number; rechercheMicro: number; finalisationsMicro: number; planchesMicro: number; at: number };
+  /** Les noms vérifiés montrés au client, avec ce qu'en dit le juge, et la tâche dont l'atelier sera repris (méthode des graphistes). */
+  nomsDeLaMarque?: { list: { name: string; why: string; detail: string; doute: string | null }[]; verifies: boolean; atelier: string; count: number; at: number; choisi?: string };
   /** Le logo de la marque, adopté par la fin de marque (`brand-finish.ts`) : celui de la planche, ou le nom dessiné en secours. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };

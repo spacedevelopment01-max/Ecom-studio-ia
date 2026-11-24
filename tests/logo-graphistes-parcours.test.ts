@@ -96,9 +96,10 @@ describe("la recherche : découpe, relecture en un appel, reprise unique sous 8,
 describe("le choix limité à N (2, 3 ou 4 selon le forfait ; moins est permis)", async () => {
   const { controleDuChoix, esquissesAChoisir } = await import("@/lib/syna-agent/logo-graphistes");
   const etat = { max: 3, esquisses: [1, 2, 3, 5, 7, 11].map((numero) => ({ numero, assetId: `a${numero}`, modele: "m", piste: "", tour: 1, recherche: 1, requestId: null })) };
-  it("refuse un numéro inconnu ou refusé, et plus de N ; moins est permis", () => {
+  it("refuse un numéro inconnu ou refusé, et plus de N ; moins est permis, jusqu'à deux (une proposition compte au moins deux identités)", () => {
     expect(controleDuChoix(etat, [3, 7, 11])).toBeNull();
-    expect(controleDuChoix(etat, [3])).toBeNull();
+    expect(controleDuChoix(etat, [3, 7])).toBeNull();
+    expect(controleDuChoix(etat, [3])).toMatch(/au moins deux/);
     expect(controleDuChoix(etat, [4])).toMatch(/inconnue/);
     expect(controleDuChoix(etat, [1, 2, 3, 5])).toMatch(/3 esquisses au plus/);
     expect(controleDuChoix(etat, [])).toMatch(/au moins une/);
