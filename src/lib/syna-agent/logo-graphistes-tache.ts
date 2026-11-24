@@ -23,9 +23,19 @@ import { planOfProject } from "../plan-gates";
 import { retoucherLesCouleurs } from "./logo-finalisation";
 import { couleursDuLogo } from "./couleurs-du-logo";
 import { aLaChargeDuStudio } from "../billing";
+import { phraseVoulue } from "./phrase-sous-le-nom";
 import { ecrireLeMetier, esquissesAChoisir, graphistesDeps, phraseDuLogoNonConstruit, uneFinalisation, uneRecherche, vraisAppels, type EtatGraphistes, type GraphistesAi, type LogoFini } from "./logo-graphistes";
 
 export const LOGO_GRAPHISTES_JOB = "syna.logo.graphistes";
+
+/**
+ * La proposition des phrases, en une phrase et sans question (24 novembre 2026 au soir, le propriétaire : « si le client
+ * veux le slogan de la 5 et le logo 1, sina doit pouvoir le faire »). Jamais une question sur le contenu du logo.
+ */
+export const PROPOSITION_DES_PHRASES = () => L(
+  "Tu peux combiner librement : le logo d'une esquisse avec la phrase d'une autre, sans phrase, ou avec ta propre phrase, que je reprendrai mot pour mot.",
+  "You can mix freely: the logo of one sketch with the line of another, no line, or your own line, which I will keep word for word.",
+);
 
 const Payload = z.object({
   projectId: z.string(), conversationId: z.string(),
@@ -79,8 +89,9 @@ async function tacheDuLogo(ctx: JobContext, a: PayloadGraphistes) {
     return { modele: pl.modele, recherche, tour: 1, assetId: asset.id, texteEnvoye: pl.texteEnvoye, requestId: pl.requestId, coutMicro: pl.coutMicro };
   }));
   const esquisses = await Promise.all(r.esquisses.map(async (e) => {
-    const asset = await saveAsset({ ...who, data: e.png, name: `esquisse-${e.numero}.png`, mime: "image/png", role: "logo-esquisse", origin: "generated", status: "ready", meta: { graphistes: { numero: e.numero, modele: e.modele, piste: e.piste, recherche, tour: e.tour, requestId: e.requestId } } });
-    return { numero: e.numero, assetId: asset.id, modele: e.modele, piste: e.piste, tour: e.tour, recherche, requestId: e.requestId };
+    const asset = await saveAsset({ ...who, data: e.png, name: `esquisse-${e.numero}.png`, mime: "image/png", role: "logo-esquisse", origin: "generated", status: "ready", meta: { graphistes: { numero: e.numero, modele: e.modele, piste: e.piste, recherche, tour: e.tour, requestId: e.requestId, ...(e.phrase ? { phrase: e.phrase } : {}) } } });
+    // La phrase sous le nom reste avec l'esquisse (mot pour mot, et si elle est proposable telle quelle).
+    return { numero: e.numero, assetId: asset.id, modele: e.modele, piste: e.piste, tour: e.tour, recherche, requestId: e.requestId, ...(e.phrase ? { phrase: e.phrase } : {}) };
   }));
   const toutes = [...(avant?.esquisses ?? []), ...esquisses];
   const contact = toutes.length ? await (await import("./esquisses")).plancheContact(toutes.map((e) => ({ numero: e.numero, png: assetData(getAsset(e.assetId)!) }))) : null;
@@ -91,7 +102,7 @@ async function tacheDuLogo(ctx: JobContext, a: PayloadGraphistes) {
     nom, metier, max: planche ? 1 : esquissesAChoisir(planOfProject(p.id)), ...(planche ? { planche } : {}), esquisses: toutes, refusees: (avant?.refusees ?? 0) + r.refusees.length,
     ...(contactAsset ? { contactAssetId: contactAsset.id } : {}),
     planches: [...(avant?.planches ?? []), ...planches, ...r.manquees.filter((m) => m.modele !== "relecture").map((m) => ({ modele: m.modele, recherche, tour: 1, texteEnvoye: "", requestId: null, coutMicro: null, manquee: m.raison }))],
-    recherches: recherche, ...(avant?.choix ? { choix: avant.choix } : {}), ...(avant?.logos ? { logos: avant.logos } : {}),
+    recherches: recherche, ...(avant?.choix ? { choix: avant.choix } : {}), ...(avant?.logos ? { logos: avant.logos } : {}), ...(avant?.phrases ? { phrases: avant.phrases } : {}),
     ...((avant?.finalisationsAccordees ?? a.finalisationsAccordees) != null ? { finalisationsAccordees: avant?.finalisationsAccordees ?? a.finalisationsAccordees } : {}),
     notes: [...(avant?.notes ?? []), ...r.notes].slice(-40), at: Date.now(),
   };
@@ -100,7 +111,9 @@ async function tacheDuLogo(ctx: JobContext, a: PayloadGraphistes) {
   return {
     esquisses: nouvelles, total: toutes.length, refusees: r.refusees.length, reprise: r.reprise, manquees: r.manquees.map((m) => m.modele),
     notice: nouvelles
-      ? L(`${nouvelles} esquisse${nouvelles > 1 ? "s" : ""} ${recherche > 1 ? "de plus " : ""}prête${nouvelles > 1 ? "s" : ""}, numérotée${nouvelles > 1 ? "s" : ""}.`, `${nouvelles} sketch(es) ready.`)
+      ? [L(`${nouvelles} esquisse${nouvelles > 1 ? "s" : ""} ${recherche > 1 ? "de plus " : ""}prête${nouvelles > 1 ? "s" : ""}, numérotée${nouvelles > 1 ? "s" : ""}.`, `${nouvelles} sketch(es) ready.`),
+        // Les petites phrases sous le nom donnent des idées de slogan : SINA le propose en une phrase, sans question.
+        ...(toutes.some((e) => e.phrase?.ok) ? [PROPOSITION_DES_PHRASES()] : [])].join(" ")
       : L("Aucune esquisse n'a passé ma relecture : rien ne t'est montré.", "No sketch passed my review."),
   };
 }
@@ -115,7 +128,9 @@ async function finaliserLesChoix(ai: GraphistesAi, who: { userId: string; projec
     const e = etat.esquisses.find((x) => x.numero === numero);
     const data = e ? assetData(getAsset(e.assetId)!) : null;
     if (!e || !data) { dits.push(L(`L'esquisse ${numero} n'est plus là.`, `Sketch ${numero} is gone.`)); continue; }
-    const f = await uneFinalisation(ai, { nom: etat.nom, metier: etat.metier.metier, esquisse: data, numero, detourer: (png) => logoDetoure(png) });
+    // La phrase sous le nom choisie par le client pour ce logo (absente : la règle d'avant).
+    const phrase = phraseVoulue(etat.phrases?.[String(numero)]);
+    const f = await uneFinalisation(ai, { nom: etat.nom, metier: etat.metier.metier, esquisse: data, numero, detourer: (png) => logoDetoure(png), ...(phrase ? { phrase } : {}) });
     const sans = logos.filter((l) => l.numero !== numero);
     if (!f.ok) {
       sans.push({ numero, ok: false, raison: f.raison, essais: f.essais.length });
@@ -199,13 +214,15 @@ async function retoucherUnLogo(ai: GraphistesAi, who: { userId: string; projectI
   const etat = journeyOf(cid).graphistes, l = etat?.logos?.find((x) => x.numero === numero && x.ok && x.assetId);
   if (!etat?.metier || !l?.assetId || !demande.trim()) throw new UserFacingError(L("Ce logo n'est pas encore fini : rien n'a été décompté.", "This logo is not finished yet: nothing was charged."));
   const data = assetData(getAsset(l.assetId)!);
+  // La phrase choisie par le client pour ce logo : la retouche ne la dit jamais « inventée ».
+  const phrase = phraseVoulue(etat.phrases?.[String(numero)]);
   const f = await retoucherLesCouleurs({
     rediger: async () => { throw new Error("aucun texte à écrire pour une retouche"); },
     finaliser: async (logo, t, tour) => (await ai.finaliser(logo, t, `e${numero}-couleurs-${tour}-${Date.now()}`)).png,
     relire: (logo, avant, d, tour) => ai.relireLogo(logo, avant, d, `e${numero}-couleurs-relecture-${tour}`),
     detourer: (png) => logoDetoure(png),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom: etat.nom, metier: etat.metier.metier, logo: data, demande });
+  }, { nom: etat.nom, metier: etat.metier.metier, logo: data, demande, ...(phrase ? { phrase } : {}) });
   if (!f.ok) return { logos: 0, notice: L(`Je n'ai pas réussi à changer les couleurs de ce logo sans l'abîmer (${f.raison}) : je garde celui d'avant.`, "I could not recolour this logo cleanly: I keep the previous one.") };
   const palette = (await couleursDuLogo(f.detoure).catch(() => null))?.palette;
   const logo = await saveAsset({ ...who, data: f.logo, name: `logo-esquisse-${numero}-couleurs.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { graphistes: { numero, texteEnvoye: f.texte, retouche: demande, palette } } });

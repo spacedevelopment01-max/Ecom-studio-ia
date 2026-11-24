@@ -20,6 +20,7 @@
 import sharp from "sharp";
 import { z } from "zod";
 import { demandeDeRecherche, lancerLesPlanches, type Metier, type PlancheManquee, type PlancheRecue } from "./logo-recherche";
+import { phraseDeLEsquisse, type PhraseDeLEsquisse } from "./phrase-sous-le-nom";
 
 // ---------------------------------------------------------------- la découpe (gratuite)
 
@@ -187,6 +188,13 @@ export const RelectureEsquissesSchema = z.object({
     pourquoi: z.string().max(300).default(""),
     /** La piste graphique en quelques mots (« un R dont la boucle dessine une voiture ») : sert à « Évite ces pistes ». */
     piste: z.string().max(160).default(""),
+    /**
+     * La petite phrase écrite sous le nom, relevée mot pour mot, ou « aucune » (24 novembre 2026, le propriétaire : « ça
+     * donne des idées de slogan, […] si le client veux le slogan de la 5 et le logo 1, sina doit pouvoir le faire »).
+     */
+    phraseSousLeNom: z.string().max(200).optional().catch(undefined),
+    /** Le relecteur juge-t-il cette phrase sans aucune faute (orthographe, accents, accords) ? */
+    phraseBienEcrite: z.boolean().optional().catch(false),
   })).max(60).default([]),
 });
 export type RelectureEsquisses = z.infer<typeof RelectureEsquissesSchema>;
@@ -199,7 +207,9 @@ export const RELECTEUR_DES_ESQUISSES = `Tu es le relecteur d'un studio de créat
 - arche : le dessin est posé dans une arche, une demi-lune ou un cadre arrondi en arc (interdit au Studio) ;
 - ok : l'esquisse peut devenir une vraie marque commerciale (un dessin net, lisible, une idée graphique claire) ;
 - pourquoi : une phrase simple qui dit ce qui ne va pas, ou ce qui fait sa force ;
-- piste : la piste graphique en quelques mots (par exemple « un R dont la boucle dessine une voiture »).
+- piste : la piste graphique en quelques mots (par exemple « un R dont la boucle dessine une voiture ») ;
+- phraseSousLeNom : la petite phrase écrite sous le nom, recopiée mot pour mot, lettre pour lettre, accents et ponctuation compris, sans rien corriger (« aucune » s'il n'y en a pas) ;
+- phraseBienEcrite : cette phrase est en bon français, sans aucune faute d'orthographe, d'accent ni d'accord, sans lettre en trop ni en moins (faux s'il n'y en a pas).
 Ne juge que ce que tu vois. Ne propose rien.`;
 export const demandeAuRelecteurDesEsquisses = (nom: string, n: number) => `Marque : « ${nom} ». Voici ${n} esquisse(s), dans l'ordre : l'image n°1 est l'esquisse 1, et ainsi de suite.`;
 
@@ -208,7 +218,8 @@ const normNom = (t: string) => t.normalize("NFC").replace(/[’']/g, "'").toLoca
 export const nomExact = (lu: string, nom: string) => normNom(lu) === normNom(nom);
 
 export type Candidate = { modele: string; index: number; png: Buffer; requestId: string | null };
-export type EsquisseGardee = Candidate & { numero: number; piste: string; pourquoi: string; tour: number };
+/** `phrase` : la petite phrase sous le nom, relevée mot pour mot, et si elle peut être proposée telle quelle (absente : aucune). */
+export type EsquisseGardee = Candidate & { numero: number; piste: string; pourquoi: string; tour: number; phrase?: PhraseDeLEsquisse };
 export type EsquisseRefusee = { modele: string; index: number; raison: string; tour: number };
 
 /** Les verdicts du relecteur, appliqués par le code (le nom est toujours comparé par lui). */
@@ -223,7 +234,9 @@ export function appliquerLaRelecture(nom: string, candidates: Candidate[], r: Re
     if (v.arche) return refus("une arche");
     if (!nomExact(v.nomLu, nom)) return refus(v.nomLu ? `nom mal écrit : « ${v.nomLu} »` : "le nom n'y est pas");
     if (!v.ok) return refus(v.pourquoi || "pas au niveau d'une vraie marque");
-    gardees.push({ ...c, piste: v.piste.trim(), pourquoi: v.pourquoi.trim(), tour });
+    // La phrase sous le nom : gardée avec l'esquisse ; proposée telle quelle seulement si son orthographe est sûre.
+    const phrase = phraseDeLEsquisse(v.phraseSousLeNom, v.phraseBienEcrite);
+    gardees.push({ ...c, piste: v.piste.trim(), pourquoi: v.pourquoi.trim(), tour, ...(phrase ? { phrase } : {}) });
   });
   return { gardees, refusees };
 }
