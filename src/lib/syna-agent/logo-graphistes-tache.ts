@@ -32,6 +32,8 @@ const Payload = z.object({
   nom: z.string().min(1).max(60).optional(),
   numeros: z.array(z.number().int().min(1)).max(4).optional(),
   capMicro: z.number().min(0), studioCapMicro: z.number().min(0).optional(),
+  /** La part de l'accord de l'étape « La marque » réservée aux finalisations (posée par identity.nom, point 0). */
+  finalisationsAccordees: z.number().min(0).optional(),
 });
 export type PayloadGraphistes = z.infer<typeof Payload>;
 
@@ -75,6 +77,7 @@ export async function runLogoGraphistesJob(ctx: JobContext) {
     ...(contactAsset ? { contactAssetId: contactAsset.id } : {}),
     planches: [...(avant?.planches ?? []), ...planches, ...r.manquees.filter((m) => m.modele !== "relecture").map((m) => ({ modele: m.modele, recherche, tour: 1, texteEnvoye: "", requestId: null, coutMicro: null, manquee: m.raison }))],
     recherches: recherche, ...(avant?.choix ? { choix: avant.choix } : {}), ...(avant?.logos ? { logos: avant.logos } : {}),
+    ...((avant?.finalisationsAccordees ?? a.finalisationsAccordees) != null ? { finalisationsAccordees: avant?.finalisationsAccordees ?? a.finalisationsAccordees } : {}),
     notes: [...(avant?.notes ?? []), ...r.notes].slice(-40), at: Date.now(),
   };
   updateJourney(a.conversationId, (x) => { x.graphistes = etat; });

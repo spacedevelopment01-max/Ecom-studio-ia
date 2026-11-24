@@ -152,6 +152,8 @@ export type Journey = {
    * client (2, 3 ou 4 selon son forfait) et les logos finis (`logo-graphistes.ts`). Les anciens projets n'en ont pas.
    */
   graphistes?: import("./logo-graphistes").EtatGraphistes;
+  /** Les noms vérifiés montrés au client, quand la chaîne s'arrête après eux (point 0, préparé ; posé par la chaîne). */
+  nomsVerifies?: string[];
   /** Le logo de la marque, adopté par la fin de marque (`brand-finish.ts`) : celui de la planche, ou le nom dessiné en secours. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };

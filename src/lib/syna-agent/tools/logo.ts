@@ -16,7 +16,8 @@ import { enqueue, pendingJob } from "../../jobs";
 import type { AgentTool, ToolContext } from "../types";
 import { journeyOf, updateJourney } from "../journey";
 import { project } from "./common";
-import { controleDuChoix, devisDesFinalisations, devisDesPistes, devisDUneAutreEsquisse, messageDuChoix } from "../logo-graphistes";
+import { controleDuChoix, devisDeLaRecherche, devisDesFinalisations, devisDesPistes, devisDUneAutreEsquisse, esquissesAChoisir, messageDuChoix } from "../logo-graphistes";
+import { planOfProject } from "../../plan-gates";
 import { LOGO_GRAPHISTES_JOB } from "../logo-graphistes-tache";
 
 const etatDe = (ctx: ToolContext) => journeyOf(ctx.conversationId).graphistes;
@@ -45,7 +46,7 @@ const choisirTool: AgentTool<{ esquisses: number[] }> = {
     return {
       ok: true, data: { choix, message: messageDuChoix(choix) },
       summary: job ? L(`${messageDuChoix(choix)} : c'est noté. Je finis ${choix.length > 1 ? "ces logos" : "ce logo"} et je les relis avant de te les montrer.`, "Noted. I am finishing the logos.") : L(`${messageDuChoix(choix)} : c'est noté.`, "Noted."),
-      ...(job ? { jobs: [job.id] } : couvert ? {} : { hint: "Les logos finis partent avec l'accord de l'étape « La marque » ; s'il n'est pas encore donné, la carte de cette étape le demande." }),
+      ...(job ? { jobs: [job.id] } : couvert ? { hint: "Un travail sur son logo est déjà en cours : ses logos finis partiront quand il sera fini (relance logo.choisir avec les mêmes numéros)." } : { hint: "Les logos finis partent avec l'accord de l'étape « La marque » ; s'il n'est pas encore donné, la carte de cette étape le demande." }),
     };
   },
 };
@@ -97,3 +98,24 @@ const couleursTool: AgentTool<{ esquisse: number; demande: string }> = {
 };
 
 export const logoTools: AgentTool[] = [choisirTool, autreTool, pistesTool, couleursTool];
+
+/**
+ * PRÉPARÉ POUR LE POINT 0 (pas encore dans le registre des outils) : selon la recommandation, la chaîne de la marque
+ * s'arrête après les noms vérifiés (`noms`), le client choisit son nom, et la recherche des esquisses part pour ce nom,
+ * couverte par l'accord unique de l'étape « La marque » (la part des N finalisations y est réservée). Les N identités
+ * partagent ensuite ce nom, chacune avec son logo. Branché quand le propriétaire aura répondu.
+ */
+export const nomTool: AgentTool<{ nom: string }> = {
+  name: "identity.nom", module: "marque", kind: "write", needsProject: true,
+  description: "Enregistre le nom choisi PAR LE CLIENT parmi les noms vérifiés montrés, puis lance la recherche de son logo (déjà couverte par son accord de l'étape « La marque »). Gratuit.",
+  args: z.object({ nom: z.string().min(1).max(60) }).strict(),
+  run: (ctx, a) => {
+    const nom = a.nom.trim(), noms = journeyOf(ctx.conversationId).nomsVerifies ?? [];
+    if (!noms.some((n) => n.normalize("NFC").toLowerCase() === nom.normalize("NFC").toLowerCase())) return { ok: false, summary: L("Ce nom n'est pas parmi ceux que je t'ai montrés, vérifiés.", "This name is not among the verified names shown.") };
+    const p = project(ctx), n = esquissesAChoisir(planOfProject(p.id));
+    const r = devisDeLaRecherche(), f = devisDesFinalisations(n);
+    const job = lancer(ctx, { phase: "recherche", nom, capMicro: r.maxMicro, studioCapMicro: r.studioMaxMicro, finalisationsAccordees: f.maxMicro }, L("Recherche de ton logo (SINA)", "Your logo research (SINA)"), `recherche:${nom}`);
+    if (!job) return DEJA;
+    return { ok: true, jobs: [job.id], summary: L(`« ${nom} » : c'est noté. Je cherche les pistes de ton logo et je te montre les esquisses numérotées.`, "Noted. Looking for your logo directions.") };
+  },
+};
