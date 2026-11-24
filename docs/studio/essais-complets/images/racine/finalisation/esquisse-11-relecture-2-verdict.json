@@ -1,0 +1,17 @@
+{
+  "verdict": {
+    "nomLu": "Racine",
+    "ideeConservee": true,
+    "evolution": false,
+    "arche": false,
+    "phrase": "",
+    "phraseDitLeMetier": false,
+    "note": 5,
+    "pourquoi": "Le logo reprend presque trait pour trait l'esquisse : seules les racines sont un peu simplifiées et les lettres légèrement épaissies, l'écart mesuré de 6/100 le confirme. L'espacement reste irrégulier, avec un « ci » serré et une feuille collée au i, et le signe n'a pas gagné en caractère : on est encore loin du niveau d'une agence."
+  },
+  "raisons": [
+    "le logo est trop proche de l'esquisse, sans évolution",
+    "il n'est pas au niveau (5/10, il faut 8)"
+  ],
+  "garde": false
+}

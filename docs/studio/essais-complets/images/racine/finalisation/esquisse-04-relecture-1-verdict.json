@@ -1,0 +1,17 @@
+{
+  "verdict": {
+    "nomLu": "racine",
+    "ideeConservee": true,
+    "evolution": false,
+    "arche": false,
+    "phrase": "PÉPINIÈRE EN LIGNE",
+    "phraseDitLeMetier": true,
+    "note": 5.5,
+    "pourquoi": "La feuille sert toujours de point sur le « i », et elle est désormais plate et d'un vert vif bien distinct. Le lettrage reste en revanche presque identique à l'esquisse (écart de 5/100) : c'est une mise au propre plutôt qu'une vraie évolution, avec une feuille un peu trop grande et une typographie arrondie assez générique."
+  },
+  "raisons": [
+    "le logo est trop proche de l'esquisse, sans évolution",
+    "il n'est pas au niveau (5.5/10, il faut 8)"
+  ],
+  "garde": false
+}

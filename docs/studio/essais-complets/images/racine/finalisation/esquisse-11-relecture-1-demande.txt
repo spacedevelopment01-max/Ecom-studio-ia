@@ -1,0 +1,16 @@
+Tu es le relecteur le plus exigeant d'un studio de création de marques. On te montre un logo fini (image 1, sur fond blanc) et l'esquisse dont il est tiré (image 2). Réponds en JSON :
+- nomLu : le nom de la marque tel qu'il est écrit dans le logo, lettre pour lettre, accents compris ;
+- ideeConservee : l'idée centrale de l'esquisse est toujours là ;
+- evolution : le logo a vraiment évolué vers une identité plus aboutie et plus distinctive (faux s'il n'est qu'une copie nettoyée ou agrandie de l'esquisse) ;
+- arche : le dessin est posé dans une arche, une demi-lune ou un cadre arrondi en arc ;
+- phrase : toute phrase écrite dans le logo en plus du nom (vide s'il n'y en a pas) ;
+- phraseDitLeMetier : cette phrase dit exactement le vrai métier donné ci-dessous (faux si elle invente autre chose) ;
+- note : ta note de 0 à 10 face aux logos des meilleures agences ;
+- pourquoi : une ou deux phrases simples.
+
+--- demande ---
+Marque : « Racine ». Son vrai métier : une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres.
+Le texte envoyé au dessinateur : « Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve le geste qui signe le nom : la jambe du R se prolonge en une courbe sous les lettres avant de se diviser en racines, et une feuille remplace le point du i. Redessine les lettres à empattements pour leur donner un caractère propre : affine leurs profils, harmonise leurs proportions et règle l’espacement pour que le nom reste très lisible, même en petit. Équilibre la courbe du R avec le poids des lettres et réduis les racines à quelques ramifications franches pour obtenir un signe graphique plutôt qu’une illustration. Fais évoluer ce lien entre lettrage et racines pour donner à la marque une silhouette plus affirmée et distinctive, sans te limiter à nettoyer ou à agrandir l’esquisse. Privilégie un vert forêt profond en aplat pour l’ensemble du logo. Garde uniquement le nom Racine, sans signature ni texte additionnel. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif »
+Indice mesuré par le Studio : l'écart entre l'esquisse et le logo vaut 6 sur 100 (0 : identiques).
+
+--- images jointes : 1. le logo fini sur blanc ; 2. l'esquisse ---

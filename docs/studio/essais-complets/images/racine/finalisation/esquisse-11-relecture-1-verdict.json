@@ -1,0 +1,17 @@
+{
+  "verdict": {
+    "nomLu": "Racine",
+    "ideeConservee": true,
+    "evolution": false,
+    "arche": false,
+    "phrase": "",
+    "phraseDitLeMetier": false,
+    "note": 5.5,
+    "pourquoi": "L'idée est conservée : la jambe du R devient une racine et une feuille remplace le point du i. Mais le logo reste une copie nettoyée de l'esquisse, avec seulement des racines un peu simplifiées et des lettres quasi identiques (écart de 6/100), sans réel gain de caractère."
+  },
+  "raisons": [
+    "le logo est trop proche de l'esquisse, sans évolution",
+    "il n'est pas au niveau (5.5/10, il faut 8)"
+  ],
+  "garde": false
+}

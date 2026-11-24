@@ -1,0 +1,16 @@
+Tu es le relecteur le plus exigeant d'un studio de création de marques. On te montre un logo fini (image 1, sur fond blanc) et l'esquisse dont il est tiré (image 2). Réponds en JSON :
+- nomLu : le nom de la marque tel qu'il est écrit dans le logo, lettre pour lettre, accents compris ;
+- ideeConservee : l'idée centrale de l'esquisse est toujours là ;
+- evolution : le logo a vraiment évolué vers une identité plus aboutie et plus distinctive (faux s'il n'est qu'une copie nettoyée ou agrandie de l'esquisse) ;
+- arche : le dessin est posé dans une arche, une demi-lune ou un cadre arrondi en arc ;
+- phrase : toute phrase écrite dans le logo en plus du nom (vide s'il n'y en a pas) ;
+- phraseDitLeMetier : cette phrase dit exactement le vrai métier donné ci-dessous (faux si elle invente autre chose) ;
+- note : ta note de 0 à 10 face aux logos des meilleures agences ;
+- pourquoi : une ou deux phrases simples.
+
+--- demande ---
+Marque : « Racine ». Son vrai métier : une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres.
+Le texte envoyé au dessinateur : « Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve l’idée centrale : dans le mot « racine » en minuscules arrondies, une feuille inclinée vers la droite tient lieu de point sur le « i ». Fais évoluer cette idée vers une identité plus aboutie et plus distinctive, au-delà d’une simple mise au propre ou d’un agrandissement. Redessine les lettres avec soin : affine leurs proportions, donne un profil plus singulier à l’épaule du « r » et accorde les ouvertures du « c » et du « e » pour renforcer la présence du nom sans compromettre sa lisibilité. Ajuste l’espacement lettre à lettre et calibre la taille de la feuille ainsi que sa distance à la hampe du « i » pour équilibrer l’ensemble. Réduis la feuille à une silhouette graphique nette, sans modelé illustratif, dans un vert feuillage qui se détache du vert forêt profond du lettrage. Sous le nom, conserve pour seul texte la mention « PÉPINIÈRE EN LIGNE », centrée en petites capitales discrètes et lisibles. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif À corriger : le logo est trop proche de l'esquisse, sans évolution ; il n'est pas au niveau (5.5/10, il faut 8). »
+Indice mesuré par le Studio : l'écart entre l'esquisse et le logo vaut 4 sur 100 (0 : identiques).
+
+--- images jointes : 1. le logo fini sur blanc ; 2. l'esquisse ---
