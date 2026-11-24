@@ -1,0 +1,13 @@
+{
+ "endpoint": "POST https://api.openai.com/v1/images/edits (formulaire multipart)",
+ "champs": {
+  "model": "gpt-image-2.6-sunburst",
+  "prompt": "Transforme cette esquisse en véritable identité visuelle contemporaine pour Tenon, une entreprise de menuiserie spécialisée dans les cuisines et dressings sur mesure. Ne te contente pas de l'agrandir. Conserve l'idée originale de l'esquisse et laisse-toi libre de perfectionner son exécution artistique : une recherche typographique poussée, des couleurs affirmées, un dessin graphique soigné, et un travail précis du dessin des lettres, des proportions, de l'espacement et de la composition.",
+  "quality": "high",
+  "size": "auto",
+  "background": "opaque",
+  "output_format": "png",
+  "n": "1"
+ },
+ "image[]": "esquisse-6.png"
+}
