@@ -1,0 +1,22 @@
+{
+ "essai": "B",
+ "statut_http": 200,
+ "duree_s": 43.4,
+ "x-request-id": "req_b1d5348d26fd49819208ca0fac99e03a",
+ "usage": {
+  "input_tokens": 2793,
+  "input_tokens_details": {
+   "image_tokens": 2496,
+   "text_tokens": 297
+  },
+  "output_tokens": 1372,
+  "output_tokens_details": {
+   "image_tokens": 1372,
+   "text_tokens": 0
+  },
+  "total_tokens": 4165
+ },
+ "cout_eur": 0.0538,
+ "taille": "1024x1536",
+ "qualite": "high"
+}
