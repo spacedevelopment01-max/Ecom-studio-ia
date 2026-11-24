@@ -25,6 +25,9 @@ l'ancienne série est retirée, les épreuves sont scellées avec l'accord écri
   donc ajoutée à la demande de recherche (voir « Les deux changements du 24 novembre »).
 - Sur le relecteur du logo fini, le 24 novembre 2026, à la question « Je fais retirer cette règle et je relance la
   finalisation du R bordeaux ? » : « Ouais ».
+- Sur les petites phrases sous le nom, le 24 novembre 2026 au soir, devant la planche de recherche en couleurs de
+  Racine : « Non ça donne des idées de slogan, le seul truc c'est que si le client veux le slogan de la 5 et le logo 1,
+  sina doit pouvoir le faire » (voir « La phrase sous le nom »).
 - Ses règles d'avant qui restent vraies : « Pour rappel on ne demande plus au client ce qu'il veux ou non dans son
   logo » (23 novembre 2026) ; jamais de photo dans une arche (16 novembre 2026) ; un logo noté sous 8 sur 10 n'est jamais
   gardé (21 novembre 2026).
@@ -118,6 +121,58 @@ Préparés sans aucune dépense, sur une branche locale, après l'essai réel de
 **La phrase d'accord à lui proposer :** « Oui, marque planches-de-recherche-demande-exacte et relecteur-du-logo-fini
 comme remplacées par mes deux changements du 24 novembre, ajoute et scelle couleurs-variees-dans-la-recherche et
 relecteur-sans-refus-pour-trop-proche, et mets à jour la partie Logo de CLAUDE.md. »
+
+## La phrase sous le nom (24 novembre au soir)
+
+Préparée sans aucune dépense, sur une branche locale (`phrase-sous-le-nom`), sans rien envoyer.
+
+**Ses mots**, devant la planche de recherche en couleurs de Racine, où 11 esquisses sur 12 portent une petite phrase sous
+le nom : « Non ça donne des idées de slogan, le seul truc c'est que si le client veux le slogan de la 5 et le logo 1, sina
+doit pouvoir le faire ». Les phrases restent donc dans la recherche, et la demande de recherche ne change pas.
+
+**Ce qui change pour le client :**
+
+1. **La lecture.** Le relecteur qui trie les esquisses (le même appel qu'avant, rien de plus à payer) relève aussi, mot
+   pour mot, la phrase écrite sous le nom de chaque esquisse, ou « aucune », et dit si elle est bien orthographiée. La
+   phrase reste avec l'esquisse. Une phrase dont l'orthographe n'est pas sûre n'est jamais proposée telle quelle ; elle
+   ne fait jamais refuser l'esquisse.
+2. **Le choix.** Sur la carte des esquisses, sous chaque esquisse cochée, le client choisit : « Je laisse SINA décider »
+   (la règle d'avant), « Sans phrase », « La phrase de l'esquisse 5 : … », ou « Ma phrase à moi », qu'il écrit. Sans
+   rien toucher, le bouton dit toujours « Je choisis les esquisses 3, 7 et 11 ». SINA le propose en une phrase, sans
+   question : « Tu peux combiner librement : le logo d'une esquisse avec la phrase d'une autre, sans phrase, ou avec ta
+   propre phrase, que je reprendrai mot pour mot. » Ses mots à lui ne sont jamais corrigés : le Studio vérifie qu'ils
+   figurent tels quels dans un de ses messages. En français et en anglais.
+3. **Le logo fini.** Quand il a choisi, la consigne du rédacteur reçoit une seule ligne de plus, juste après la ligne
+   descriptive : écrire exactement sa phrase, en petit sous le nom (ou n'en écrire aucune). Le contrôle gratuit vérifie
+   que sa phrase figure mot pour mot dans le texte, sinon le texte est réécrit une fois aux frais du Studio. Sans son
+   choix, la consigne est exactement celle d'avant.
+4. **La relecture.** Une phrase qu'il a choisie n'est jamais refusée comme « phrase inventée ». Le relecteur la reçoit et
+   recopie ce qu'il lit ; le code compare, lettre pour lettre, comme pour le nom (seuls les majuscules, les espaces, la
+   forme des apostrophes et un point final sont laissés de côté). Mal écrite ou absente, le logo est refusé, puis refait
+   une fois avec la raison. S'il a demandé « sans phrase », toute phrase fait refuser le logo.
+
+**Ce que le code vérifie vraiment pour l'orthographe.** Le dépôt n'a aucun dictionnaire français, et aucun service n'est
+ajouté. Le code refuse seulement les fautes évidentes : des caractères étranges (un @, une lettre grecque…), une lettre
+répétée trois fois, une ponctuation doublée ou une espace avant une virgule, un chiffre ou une majuscule au milieu d'un
+mot, un mot de quatre lettres ou plus sans voyelle, une suite de six consonnes, un mélange de français et d'anglais, une
+phrase de plus de 120 signes. Il ne voit pas un mot mal orthographié mais plausible (« Nettoyagge », « Brilance »), un
+accent oublié ou un accord faux : là, c'est le relecteur seul qui juge, et il peut se tromper. Une phrase n'est proposée
+que si les deux sont d'accord. Ce qui reste sûr : sa phrase à lui est reprise mot pour mot, et le logo fini est comparé
+lettre pour lettre à la phrase choisie.
+
+**Les épreuves.** Une épreuve scellée est contredite : `finalisation-ecrite-par-le-plus-fort` (« la consigne de
+finaliser.py mot pour mot plus la ligne d'évolution » : quand le client a choisi sa phrase, il y a une ligne de plus). Elle
+n'est pas réécrite : elle est marquée remplacée par la nouvelle épreuve `phrase-de-l-esquisse-au-choix-du-client`, scellée
+avec ses mots ci-dessus, dont l'attendu reprend tout ce qui reste vrai d'elle. Son accord écrit manque encore : le banc ne
+l'accepte que pour cette épreuve-là. Les autres ne sont pas contredites : `relecteur-sans-refus-pour-trop-proche` refuse
+« une phrase inventée », et une phrase que le client a choisie n'est pas inventée (sans son choix, la règle reste et
+l'épreuve est rejouée telle quelle) ; `esquisses-choisies-selon-le-forfait` (le bouton dit toujours « Je choisis les
+esquisses 3, 7 et 11 » quand il ne touche à aucune phrase) ; `couleurs-variees-dans-la-recherche` (la demande de recherche
+ne change pas) ; `jamais-de-question-sur-le-logo` (la proposition n'est pas une question).
+
+**La phrase d'accord à lui proposer :** « Oui, marque finalisation-ecrite-par-le-plus-fort comme remplacée par ma décision
+du 24 novembre au soir, ajoute et scelle phrase-de-l-esquisse-au-choix-du-client (le client prend librement, sous le nom
+de son logo, la phrase d'une esquisse, aucune phrase ou la sienne), et mets à jour la partie Logo de CLAUDE.md. »
 
 ## Le point 0 : tranché
 

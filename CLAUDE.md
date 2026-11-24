@@ -118,13 +118,22 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   refuse une case vide, coupée ou collée au bord ; le relecteur le plus fort, effort moyen, relit toutes les esquisses
   en un appel (entière, rien de la voisine, nom exact comparé par le code, pas d'arche) ; une esquisse refusée n'est
   jamais montrée ; moins de huit : les deux planches refaites une fois à la charge du Studio, avec « Évite ces pistes
-  déjà présentées : … » à la toute fin, après la phrase des couleurs. **Le choix** : le client coche ses esquisses, deux au moins, au plus 2, 3 ou 4 selon son
-  forfait. **Le logo fini** : le modèle de texte le plus fort regarde l'esquisse et écrit le texte (consigne de l'essai,
-  « parmi les esquisses proposées », plus l'évolution de l'idée), contrôlé gratuitement ; le modèle d'images de
-  finalisation le dessine à partir de l'esquisse. **La relecture** : le relecteur le plus fort, effort élevé, refuse un
-  nom mal écrit, une idée perdue, une arche, une phrase inventée, une note sous 8 ; jamais un logo parce qu'il est trop
-  proche de son esquisse (« Ouais » du 24 novembre, à « Je fais retirer cette règle et je relance la finalisation du R
-  bordeaux ? ») ; refusé, il
+  déjà présentées : … » à la toute fin, après la phrase des couleurs. **La phrase sous le nom** (24 novembre au soir :
+  « Non ça donne des idées de slogan, le seul truc c'est que si le client veux le slogan de la 5 et le logo 1, sina doit
+  pouvoir le faire ») : les phrases restent dans la recherche, dont la demande ne change pas ; le relecteur des esquisses
+  relève, mot pour mot, la phrase de chaque esquisse (ou « aucune ») et dit si elle est bien écrite, le code refuse en
+  plus les fautes évidentes ; une phrase douteuse n'est jamais proposée telle quelle. **Le choix** : le client coche ses
+  esquisses, deux au moins, au plus 2, 3 ou 4 selon son forfait ; il combine librement le logo d'une esquisse avec la
+  phrase d'une autre, sans phrase, ou avec sa propre phrase, reprise mot pour mot ; SINA le propose en une phrase, sans
+  question. **Le logo fini** : le modèle de texte le plus fort regarde l'esquisse et écrit le texte (consigne de l'essai,
+  « parmi les esquisses proposées », plus l'évolution de l'idée ; quand le client a choisi sa phrase, une ligne de plus
+  qui la fait écrire exactement, en petit sous le nom ; sans son choix, une ligne seulement si elle dit le vrai métier),
+  contrôlé gratuitement (la phrase choisie y figure mot pour mot) ; le modèle d'images de finalisation le dessine à
+  partir de l'esquisse. **La relecture** : le relecteur le plus fort, effort élevé, refuse un nom mal écrit, une idée
+  perdue, une arche, une phrase inventée, une note sous 8 ; une phrase choisie par le client n'est jamais « inventée » :
+  le code la compare lettre pour lettre, et mal écrite, elle fait refuser le logo comme un nom mal écrit ; jamais un logo
+  parce qu'il est trop proche de son esquisse (« Ouais » du 24 novembre, à « Je fais retirer cette règle et je relance
+  la finalisation du R bordeaux ? ») ; refusé, il
   est refait une fois avec ses raisons ; refusé deux fois, SINA propose une autre esquisse. **Le logo d'abord** : les
   couleurs de la marque sont tirées du logo par le Studio, la police de titres choisie au plus près de ses lettres ;
   deux identités n'ont jamais la même police de titres. Les couleurs du client ne vont jamais au dessinateur. On ne

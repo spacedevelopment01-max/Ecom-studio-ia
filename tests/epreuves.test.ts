@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { ACCORD_A_COMPLETER, EPREUVES, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -50,6 +50,9 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026"]).toContain(r.decision);
+      // L'accord écrit encore à recevoir (« [À compléter : …] ») ne vaut que pour finalisation-ecrite-par-le-plus-fort,
+      // contredite par la phrase sous le nom au choix du client (24 novembre 2026 au soir) ; à son arrivée, il remplace ce manque.
+      if (r.mots === ACCORD_A_COMPLETER) { expect(e.id).toBe("finalisation-ecrite-par-le-plus-fort"); expect(r.epreuve).toBe("phrase-de-l-esquisse-au-choix-du-client"); continue; }
       expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte)/);
       // L'accord écrit du 24 novembre 2026 nomme chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
@@ -977,6 +980,79 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
     // Le relecteur est le plus fort, effort élevé, un autre modèle que le rédacteur.
     const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
     expect(src).toContain('logo: { input: 3_500, output: 1_500, max: 10_000, modele: "strong" as const, effort: "high" },');
+  });
+
+  epreuve("phrase-de-l-esquisse-au-choix-du-client", async () => {
+    const E = await import("@/lib/syna-agent/esquisses");
+    const P = await import("@/lib/syna-agent/phrase-sous-le-nom");
+    const F = await import("@/lib/syna-agent/logo-finalisation");
+    const G = await import("@/lib/syna-agent/logo-graphistes");
+    const { messageDuChoixAvecPhrases } = await import("@/lib/syna-agent/choix-esquisses");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+    const SLOGAN = "La lumière coulée à la main";
+    // La demande de recherche ne change pas : la phrase des couleurs, puis rien d'autre.
+    expect(demandeDeRecherche({ nom: NOM, metier: { metier: METIER, court: "la bougie", piste: "savoir-faire" } })).toMatch(/sans maquette de présentation\. Varie les couleurs d'une esquisse à l'autre\.$/);
+    // 1. La lecture : la phrase relevée mot pour mot (ou « aucune »), jugée par le relecteur, puis par le code.
+    expect(E.RELECTEUR_DES_ESQUISSES).toMatch(/phraseSousLeNom : la petite phrase écrite sous le nom, recopiée mot pour mot/);
+    expect(E.RELECTEUR_DES_ESQUISSES).toMatch(/phraseBienEcrite/);
+    const c = [0, 1, 2].map((i) => ({ modele: "m", index: i, png: Buffer.from("x"), requestId: null }));
+    const lu = (i: number, phraseSousLeNom: string, phraseBienEcrite: boolean) => ({ numero: i, entiere: true, morceauDeVoisine: false, nomLu: NOM, arche: false, ok: true, pourquoi: "", piste: `p${i}`, phraseSousLeNom, phraseBienEcrite });
+    const a = E.appliquerLaRelecture(NOM, c, { esquisses: [lu(1, "aucune", false), lu(2, SLOGAN, true), lu(3, "La lumière coullllée", true)] }, 1);
+    expect(a.refusees).toEqual([]);
+    expect(a.gardees.map((g) => g.phrase?.ok)).toEqual([undefined, true, false]);
+    expect(P.fautesEvidentes("Bougies made avec amour")).toContain("un mélange de français et d'anglais");
+    expect(P.phraseDeLEsquisse(SLOGAN, false)?.ok).toBe(false);
+    // Gardée dans la vue des esquisses.
+    const esquisses = a.gardees.map((g, i) => ({ numero: i + 1, assetId: `a${i}`, modele: "m", piste: g.piste, tour: 1, recherche: 1, requestId: null, ...(g.phrase ? { phrase: g.phrase } : {}) }));
+    expect(G.vueDesEsquisses({ nom: NOM, max: 3, esquisses, refusees: 0, planches: [], recherches: 1, notes: [], at: 1 }, (id) => id)!.list[1].phrase).toEqual({ texte: SLOGAN, ok: true });
+    // 2. Le choix : le logo 1 avec la phrase de la 2, le logo 3 sans phrase, ou sa phrase à lui, mot pour mot.
+    expect(await fr(() => G.controleDesPhrases({ esquisses }, [1, 3], [{ logo: 1, de: 2 }, { logo: 3, aucune: true }], []))).toEqual({ ok: true, phrases: { 1: { de: 2, texte: SLOGAN }, 3: { aucune: true } } });
+    expect(await fr(() => G.controleDesPhrases({ esquisses }, [1, 3], [{ logo: 1, de: 3 }], []))).toMatchObject({ ok: false });
+    expect(await fr(() => G.controleDesPhrases({ esquisses }, [1, 3], [{ logo: 1, texte: "Chez nous, la cire est vivante" }], ["Le logo 1 avec ma phrase : Chez nous, la cire est vivante"]))).toMatchObject({ ok: true });
+    expect(await fr(() => G.controleDesPhrases({ esquisses }, [1, 3], [{ logo: 1, texte: "Chez nous la cire vit" }], ["Le logo 1 avec ma phrase : Chez nous, la cire est vivante"]))).toMatchObject({ ok: false });
+    expect(messageDuChoixAvecPhrases([3, 7, 11], {})).toBe("Je choisis les esquisses 3, 7 et 11");
+    expect(messageDuChoixAvecPhrases([1, 3], { 1: { de: 5, texte: SLOGAN } }, "en")).toBe(`I choose sketches 1 and 3. For logo 1: the line from sketch 5, “${SLOGAN}”.`);
+    const T = await import("@/lib/syna-agent/logo-graphistes-tache");
+    expect(T.PROPOSITION_DES_PHRASES()).not.toContain("?");
+    // 3. La finalisation : sans choix, la consigne d'avant ; avec son choix, une seule ligne de plus ; contrôle mot pour mot.
+    const t = await import("@/lib/ai/text-models");
+    expect(t.textModel("openai", "gpt-6.2-astra")).toMatchObject({ tier: "strong", vision: true, verified: true });
+    const sans = consigneDeFinalisation(NOM, METIER);
+    expect(sans).toContain(LIGNE_D_EVOLUTION);
+    expect(sans).toContain("- garde une ligne descriptive discrète seulement si elle dit exactement le métier du client ; toute autre phrase est retirée.\nN'ajoute aucune idée");
+    expect(sans).not.toMatch(/#[0-9a-f]{6}/i);
+    const voulue = { texte: SLOGAN };
+    expect(consigneDeFinalisation(NOM, METIER, voulue).replace(`${F.ligneDeLaPhrase(voulue)}\n`, "")).toBe(sans);
+    expect(F.ligneDeLaPhrase(voulue)).toContain(`exactement « ${SLOGAN} »`);
+    const AVEC = TEXTE.replace("Fais évoluer", `Écris en petit sous le nom, exactement : « ${SLOGAN} ». Fais évoluer`);
+    expect(controleDuTexte(AVEC, NOM, METIER, voulue)).toEqual([]);
+    expect(controleDuTexte(TEXTE, NOM, METIER, voulue)).toHaveLength(1);
+    expect(controleDuTexte(TEXTE, NOM, METIER)).toEqual([]);
+    expect(champsDeFinalisation(AVEC)).toMatchObject({ model: "gpt-image-2.6-sunburst", prompt: AVEC });
+    const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
+    expect(src).toContain('const ASTRA: Modele = { provider: "openai", model: "gpt-6.2-astra", effort: "medium" };');
+    expect(src).toContain('...(a === "redaction" ? { expectedRoute: { provider: m.provider, model: m.model, effort: m.effort } } : {}),');
+    // 4. La relecture : jamais « inventée » ; lettre pour lettre, comparée par le code ; mal écrite, le logo est refusé.
+    const bien = { nomLu: NOM, ideeConservee: true, arche: false, phrase: SLOGAN, phraseDitLeMetier: false, note: 9, pourquoi: "" };
+    expect(raisonsDuRefus(bien, NOM, voulue)).toEqual([]);
+    expect(raisonsDuRefus(bien, NOM)).toHaveLength(1); // sans choix du client : la règle d'avant
+    expect(raisonsDuRefus({ ...bien, phrase: "La lumiere coulée à la main" }, NOM, voulue)).toHaveLength(1);
+    expect(raisonsDuRefus({ ...bien, phrase: "" }, NOM, voulue)).toHaveLength(1);
+    expect(raisonsDuRefus({ ...bien, phrase: "Bougies artisanales", phraseDitLeMetier: true }, NOM, { aucune: true })).toHaveLength(1);
+    expect(F.demandeAuRelecteurDuLogo({ nom: NOM, metier: METIER, texte: AVEC, phrase: voulue })).toContain(`« ${SLOGAN} ». Elle n'est pas inventée`);
+    // De bout en bout : la phrase mal écrite fait refaire le logo une fois, avec la raison.
+    const envoyes: string[] = [];
+    const verdicts = [{ ...bien, phrase: "La lumiere coulée à la main" }, bien];
+    const r = await finaliserUneEsquisse({
+      rediger: async () => ({ idee_centrale: "un halo", texte: AVEC }),
+      finaliser: async (_e, x) => { envoyes.push(x); return png(); },
+      relire: async () => verdicts.shift()!,
+      detourer: async (p) => ({ ok: true, png: p }),
+      aLaChargeDuStudio: async (fn) => fn(),
+    }, { nom: NOM, metier: METIER, esquisse: await png(), phrase: voulue });
+    expect(r.ok).toBe(true);
+    expect(envoyes[1]).toBe(`${AVEC} À corriger : la phrase choisie par le client est mal écrite (« La lumiere coulée à la main » au lieu de « ${SLOGAN} »).`);
   });
 
   epreuve("relecteur-du-logo-fini", () => {

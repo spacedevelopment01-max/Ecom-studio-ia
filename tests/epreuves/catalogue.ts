@@ -87,6 +87,18 @@ const SOURCE_GRAPHISTES = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (méthode 
 const COULEURS_ET_RELECTEUR = { decision: "24 novembre 2026", mots: "« Oui, marque planches-de-recherche-demande-exacte et relecteur-du-logo-fini comme remplacées par mes décisions du 24 novembre au soir, ajoute et scelle couleurs-variees-dans-la-recherche (« Varie les couleurs d'une esquisse à l'autre. » à la fin de la demande de recherche) et relecteur-sans-refus-pour-trop-proche (le relecteur ne refuse plus un logo trop proche de l'esquisse), et mets à jour la partie Logo de CLAUDE.md. »" };
 const SOURCE_COULEURS_ET_RELECTEUR = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (parties « Ce que le propriétaire a dit » et « Les deux changements du 24 novembre » ; ses mots relayés par le chef d'orchestre)";
 
+/**
+ * La phrase sous le nom (24 novembre 2026 au soir, devant la planche de recherche en couleurs de Racine : 11 esquisses sur
+ * 12 portaient une petite phrase sous le nom). Ses mots, relayés par le chef d'orchestre : « Non ça donne des idées de
+ * slogan, le seul truc c'est que si le client veux le slogan de la 5 et le logo 1, sina doit pouvoir le faire ». Elle
+ * contredit finalisation-ecrite-par-le-plus-fort (« la consigne de finaliser.py mot pour mot plus la ligne d'évolution » :
+ * une ligne de plus quand le client a choisi sa phrase). Son accord écrit pour la marquer remplacée est encore à
+ * recevoir : `ACCORD_A_COMPLETER` tient sa place, et le banc n'accepte ce manque que pour cette épreuve-là.
+ */
+export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
+const PHRASE_SOUS_LE_NOM = { decision: "24 novembre 2026", mots: ACCORD_A_COMPLETER };
+const SOURCE_PHRASE_SOUS_LE_NOM = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (partie « La phrase sous le nom » ; ses mots relayés par le chef d'orchestre)";
+
 export const EPREUVES: Epreuve[] = [
   {
     id: "logo-goutte-refusee", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
@@ -472,6 +484,7 @@ export const EPREUVES: Epreuve[] = [
     verdict: VERDICT_GRAPHISTES,
     attendu: "Le texte de finalisation est écrit par GPT-6.2 Astra, qui regarde l'esquisse, avec la consigne de finaliser.py mot pour mot plus la ligne d'évolution ; un contrôle gratuit vérifie le début et la fin attendus, dix phrases au plus et l'évolution, sinon une réécriture à la charge du Studio ; ce texte part tel quel à /v1/images/edits (2.6 Sunburst, l'esquisse dans image[]) ; aucune consigne de SINA, aucune couleur du client n'y entre.",
     rejeu: "gratuit",
+    remplaceePar: { ...PHRASE_SOUS_LE_NOM, epreuve: "phrase-de-l-esquisse-au-choix-du-client", sceau: "d707d56fc0573bbcdc747baf24f00fa00f2619ab039a1b09a0984e65203322f8" },
   },
   {
     id: "planches-de-recherche-demande-exacte", date: "2026-11-24", source: SOURCE_GRAPHISTES,
@@ -497,6 +510,12 @@ export const EPREUVES: Epreuve[] = [
     id: "relecteur-sans-refus-pour-trop-proche", date: "2026-11-24", source: SOURCE_COULEURS_ET_RELECTEUR,
     verdict: "« Ouais » (24 novembre 2026), sa réponse à « Je fais retirer cette règle et je relance la finalisation du R bordeaux ? », après l'essai réel où quatre logos finis propres et fidèles avaient tous été refusés pour la seule raison « trop proche de l'esquisse, sans évolution ».",
     attendu: "Le logo fini est relu par le relecteur le plus fort, effort élevé, un autre modèle que le rédacteur, avec le logo sur blanc, l'esquisse, le nom, le vrai métier et le texte envoyé ; il ne refuse plus jamais un logo parce qu'il est trop proche de l'esquisse (la question ne lui est plus posée, aucun écart mesuré ne lui est donné) ; il est refusé si le nom est mal écrit (le code le compare aussi), si l'idée de l'esquisse est perdue, s'il porte une arche, une phrase inventée qui ne dit pas le vrai métier, ou une note sous 8 ; un fond que le Studio ne retire pas proprement le fait refaire ; la ligne d'évolution du texte de finalisation reste.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "phrase-de-l-esquisse-au-choix-du-client", date: "2026-11-24", source: SOURCE_PHRASE_SOUS_LE_NOM,
+    verdict: "« Non ça donne des idées de slogan, le seul truc c'est que si le client veux le slogan de la 5 et le logo 1, sina doit pouvoir le faire » (24 novembre 2026 au soir, devant la planche de recherche en couleurs de Racine, où 11 esquisses sur 12 portaient une petite phrase sous le nom).",
+    attendu: "La demande de recherche ne change pas. Le relecteur des esquisses relève, mot pour mot, la petite phrase écrite sous le nom de chaque esquisse, ou « aucune », et dit si elle est bien orthographiée ; elle est gardée avec l'esquisse, dans l'état des graphistes et dans la vue des esquisses ; le code refuse en plus les fautes évidentes (caractères étranges, lettre répétée trois fois, ponctuation doublée, chiffre ou majuscule au milieu d'un mot, mot sans voyelle, mélange de français et d'anglais) ; une phrase douteuse n'est jamais proposée telle quelle et ne fait jamais refuser l'esquisse. Le client combine librement, par logo.choisir, logo.autre et la carte des esquisses, en français et en anglais : le logo 1 avec la phrase de la 5, le logo 1 sans phrase, ou le logo 1 avec sa phrase à lui, reprise mot pour mot (elle doit figurer telle quelle dans ses messages) ; il peut toujours écrire la sienne ; sans phrase choisie, la carte envoie toujours « Je choisis les esquisses 3, 7 et 11 » ; quand SINA montre les esquisses, elle le propose en une phrase, sans question sur le contenu du logo. Le texte de finalisation est écrit par le modèle de texte le plus fort d'OpenAI (route imposée), qui regarde l'esquisse, avec la consigne de l'essai mot pour mot, plus la ligne d'évolution et, seulement quand le client a choisi, une seule ligne de plus : écrire exactement sa phrase, en petit sous le nom (ou n'en écrire aucune) ; sans son choix, la consigne est celle d'avant (une ligne seulement si elle dit le vrai métier, sinon aucune) ; un contrôle gratuit vérifie le début et la fin attendus, dix phrases au plus, l'évolution et que la phrase choisie figure mot pour mot dans le texte, sinon une réécriture à la charge du Studio ; ce texte part tel quel au modèle d'images de finalisation, l'esquisse jointe ; aucune consigne de SINA, aucune couleur du client n'y entre. À la relecture du logo fini, une phrase choisie par le client n'est jamais refusée comme « phrase inventée » : le relecteur reçoit la phrase choisie et la lit lettre pour lettre, le code compare ce qu'il lit à cette phrase, comme pour le nom ; mal écrite ou absente, le logo est refusé, comme un nom mal écrit ; avec « aucune », toute phrase le fait refuser.",
     rejeu: "gratuit",
   },
 ];
