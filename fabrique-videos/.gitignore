@@ -1,0 +1,5 @@
+moteur/node_modules/
+moteur/out/
+moteur/controle/
+*.mp4
+moteur/public/sons/musique.wav
