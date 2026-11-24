@@ -57,6 +57,22 @@ export default function TabMarque() {
   }
   const esquisses = s.esquisses ? <Card className="p-4" data-brand-esquisses><SectionTitle title={t("Les pistes de ton logo", "Your logo directions")} /><EsquissesCards esquisses={s.esquisses} busy={sending} onChoose={choisir} />{sent && <p className="mt-2 text-xs text-muted">{t("Envoyé à SINA :", "Sent to SINA:")} {sent}</p>}{error && <p className="mt-2 text-xs text-red-700">{error}</p>}</Card> : null;
   if (esquisses && (s.stage === "none" || s.stage === "proposed")) return <div className="space-y-6">{esquisses}</div>;
+  // Les planches de marque (nouveaux projets) : chacune seule, en entier, sans rien posé dessus ; la case du domaine dessous.
+  const planches = s.planches?.length ? <section data-brand-planches>
+    <SectionTitle title={s.stage === "proposed" ? t("Tes planches de marque", "Your brand boards") : t("Ta planche de marque", "Your brand board")}>{t("Chaque planche est une présentation de ton identité : ta marque finie et ton site garderont tes vraies informations.", "Each board is a presentation of your identity: your finished brand and your site will keep your real information.")}</SectionTitle>
+    <div className="grid gap-4 md:grid-cols-2">
+      {s.planches.map((x) => <figure key={x.key} className="overflow-hidden rounded-2xl border border-line bg-card" data-brand-planche={x.key}>
+        <a href={x.url} target="_blank" rel="noreferrer" className="block cursor-zoom-in" aria-label={t(`Agrandir la planche ${x.name}`, `Enlarge the ${x.name} board`)}><img src={x.url} width={x.w} height={x.h} alt={t(`Planche de marque ${x.name}`, `${x.name} brand board`)} className="block h-auto w-full" loading="lazy" /></a>
+        <figcaption className="space-y-2 border-t border-line px-3 py-2 text-xs">
+          <p>{x.caseDuDomaine}</p>
+          <div className="flex flex-wrap gap-3"><a href={x.url} target="_blank" rel="noreferrer" className="underline">{t("Ouvrir en grand", "Open full size")}</a><a href={x.download} className="inline-flex items-center gap-1 underline"><Download className="size-3.5" />{t("Télécharger", "Download")}</a></div>
+          {s.stage === "proposed" && s.planches.length >= 2 && <Button size="sm" disabled={sending} onClick={() => choisir(t(`Je choisis l'identité ${x.key}.`, `I choose identity ${x.key}.`))}>{t(`Choisir ${x.name}`, `Choose ${x.name}`)}</Button>}
+        </figcaption>
+      </figure>)}
+    </div>
+    {sent && <p className="mt-2 text-xs text-muted">{t("Envoyé à SINA :", "Sent to SINA:")} {sent}</p>}{error && <p className="mt-2 text-xs text-red-700">{error}</p>}
+  </section> : null;
+  if (planches && s.stage === "proposed") return <div className="space-y-6">{planches}</div>;
 
   if (s.stage === "none") return <Empty title={t("Ta marque se crée avec SINA", "Your brand is created with SINA")} action={talk}>{t("Elle étudie ton marché, cherche l'idée et le nom, puis te montre tes identités en planches de marque. Tu choisis, elle finit ta marque : ton logo, tes couleurs, tes polices, ta charte.", "She studies your market, looks for the idea and the name, then shows you your identities as brand boards. You choose, she finishes your brand: logo, colours, fonts, guidelines.")}</Empty>;
   if (s.stage === "proposed") return <Empty title={t("Tes identités t'attendent", "Your identities are waiting")} action={talk}>{t("SINA t'a montré tes identités en planches de marque. Choisis celle que tu préfères dans la conversation : elle finit ta marque juste après.", "SINA showed you your identities as brand boards. Choose your favourite in the conversation: she finishes your brand right after.")}</Empty>;
@@ -88,6 +104,8 @@ export default function TabMarque() {
           {s.images.hero && <div className="min-h-56 md:min-h-0"><img src={s.images.hero.url} alt={t("La scène de ta marque", "Your brand's scene")} className="h-full w-full object-cover" data-brand-hero /></div>}
         </div>
       </section>
+
+      {planches}
 
       {!!s.issues.length && <Card className="border-amber-400 p-4 text-sm" data-brand-issues><p className="font-semibold">{t("Ce que SINA n'a pas pu réussir", "What SINA could not get right")}</p><ul className="mt-1 list-disc pl-5">{s.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></Card>}
 

@@ -13,7 +13,7 @@
  * qu'avec les balises et les attributs de la liste ci-dessous ; la feuille de style est fixe (les couleurs y entrent
  * par des variables posées par React, jamais par du texte collé dans la feuille).
  */
-import { createElement, useId, type CSSProperties, type ReactNode } from "react";
+import { createElement, useId, useState, type CSSProperties, type ReactNode } from "react";
 import { Button, cx } from "../ui";
 import { useT } from "../i18n";
 import { sontLesPublicationsDeLaMethode } from "@/lib/media/bande-publications";
@@ -49,7 +49,10 @@ type Board = {
   posts: { text: string; look: "fond" | "couleur" | "motif" | "citation"; art?: Art; ground?: Role; note?: string }[];
   toProve: string[];
   images?: Shots;
+  /** La planche de marque par OpenAI (nouveaux projets) : l'image entière, montrée seule, et la case du domaine. */
+  planche?: PlancheVue;
 };
+type PlancheVue = { url: string; download: string; w: number; h: number; domaine: string | null; statut: "disponible" | "a_verifier" | "adresse_a_choisir"; caseDuDomaine: string };
 export type BoardCard = {
   key: "A" | "B" | "C" | "D"; name: string; nameWhy?: string; nameAnchor?: string; nameExpression?: string; slogan: string; promise: string; territory: string;
   ground: "blanc" | "degrade" | "sombre" | "uni"; gradient?: { from: string; to: string };
@@ -593,6 +596,36 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
 }
 
 /**
+ * LA PLANCHE DE MARQUE (accord écrit du propriétaire du 24 novembre 2026) : l'image entière faite par OpenAI, montrée seule,
+ * sans rien posé dessus, avec l'agrandissement et le téléchargement ; dessous, la case du domaine et le bouton de choix.
+ */
+function PlancheDeMarque({ x, pl, canChoose, busy, onChoose }: { x: BoardCard; pl: PlancheVue; canChoose: boolean; busy: boolean; onChoose: (key: string) => void }) {
+  const t = useT();
+  const [grand, setGrand] = useState(false);
+  return (
+    <section className="overflow-hidden rounded-2xl border border-line bg-card" data-planche-de-marque={x.key}>
+      <button type="button" className="block w-full cursor-zoom-in" onClick={() => setGrand(true)} aria-label={t(`Agrandir la planche ${x.name}`, `Enlarge the ${x.name} board`)}>
+        <img src={pl.url} width={pl.w} height={pl.h} alt={t(`Planche de marque ${x.name}`, `${x.name} brand board`)} className="block h-auto w-full" loading="lazy" data-planche-image />
+      </button>
+      <div className="space-y-2 px-4 py-3 text-xs">
+        <p className="rounded-lg border border-line bg-paper px-3 py-2" data-planche-domaine={pl.statut}>{pl.caseDuDomaine}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          {canChoose && <Button size="sm" disabled={busy} onClick={() => onChoose(x.key)} data-card-choose={x.key}>{t(`Choisir ${x.name}`, `Choose ${x.name}`)}</Button>}
+          <a href={pl.url} target="_blank" rel="noreferrer" className="underline">{t("Ouvrir en grand", "Open full size")}</a>
+          <a href={pl.download} className="underline" data-planche-download>{t("Télécharger", "Download")}</a>
+        </div>
+      </div>
+      {grand && (
+        <div className="fixed inset-0 z-50 overflow-auto bg-black/85 p-3" role="dialog" aria-modal="true" onClick={() => setGrand(false)} data-planche-agrandie>
+          <button type="button" className="sticky top-0 ml-auto block rounded-full bg-white px-3 py-1 text-xs text-black" onClick={() => setGrand(false)}>{t("Fermer", "Close")}</button>
+          <img src={pl.url} alt={t(`Planche de marque ${x.name}`, `${x.name} brand board`)} className="mx-auto mt-2 block h-auto w-full max-w-[1536px]" />
+        </div>
+      )}
+    </section>
+  );
+}
+
+/**
  * La carte d'une identité proposée (demande du propriétaire du 21 novembre 2026 : « quelque chose de notre temps 2026
  * […] beaucoup plus classe à regarder », « moins de texte […] pas trop barbant pour les clients ») : la grande scène et
  * le nom, le logo, le haut du site, les couleurs, une phrase pour l'idée, le nom et son adresse, puis le choix. Toute la
@@ -600,6 +633,7 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
  */
 function IdentityCard({ x, canChoose, busy, onChoose }: { x: BoardCard; canChoose: boolean; busy: boolean; onChoose: (key: string) => void }) {
   const t = useT();
+  if (x.board.planche) return <PlancheDeMarque x={x} pl={x.board.planche} canChoose={canChoose} busy={busy} onChoose={onChoose} />;
   const b = x.board, k = x.look, p = x.palette, shots: Shots = b.images ?? {};
   const head = x.faces.heading ? `"SINA ${x.faces.heading.family}", serif` : "serif", body = x.faces.body ? `"SINA ${x.faces.body.family}", sans-serif` : "sans-serif";
   const bgs = k.backgrounds.map((c) => safeHex(c, "#FFFFFF")), ink = safeHex(k.text, "#141414"), light = lum(ink) > 0.5;
@@ -675,7 +709,11 @@ export function BrandBoards({ ids, busy, onChoose }: { ids: BoardSet; busy: bool
           {!!ids.final.finishIssues?.length && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-brand-finish-issues><p className="font-semibold">{t("Ce que je n'ai pas pu réussir", "What I could not get right")}</p><ul className="mt-1 list-disc pl-4">{ids.final.finishIssues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
           <p className="text-xs text-muted">{t("Les autres propositions", "The other proposals")} : {ids.list.filter((x) => x.key !== ids.chosen?.key).map((x) => `${x.key} « ${x.name} »`).join(", ")}.</p>
         </>
-      ) : <div className="ic-grid" data-identity-cards>{ids.list.map((x) => <IdentityCard key={x.key} x={x} canChoose={!ids.chosen} busy={busy} onChoose={onChoose} />)}</div>}
+      ) : <>
+        {/* Planches de marque : une présentation ; la marque finie et le site gardent les vraies données. Moins de deux montrées : le choix attend. */}
+        {ids.list.some((x) => x.board.planche) && <p className="text-xs text-muted" data-planche-presentation>{t("Chaque planche est une présentation de ton identité : ta marque finie et ton site garderont tes vraies informations.", "Each board is a presentation of your identity: your finished brand and your site will keep your real information.")}</p>}
+        <div className="ic-grid" data-identity-cards>{ids.list.map((x) => <IdentityCard key={x.key} x={x} canChoose={!ids.chosen && (!ids.list.some((y) => y.board.planche) || ids.list.filter((y) => y.board.planche).length >= 2)} busy={busy} onChoose={onChoose} />)}</div>
+      </>}
       {!ids.chosen && <p className="text-xs text-muted">{t("Tu peux aussi mélanger (par exemple le nom de A avec les couleurs de B), retoucher un nom ou une phrase, ou demander une nouvelle proposition : écris-le simplement.", "You can also mix (e.g. A's name with B's colours), tweak a name or a line, or ask for a new proposal.")}</p>}
       {!!ids.issues.length && !ids.final?.finished && <div className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs text-ink dark:bg-amber-950/30" data-syna-identity-issues><p className="font-semibold">{t("Ce que je n'ai pas pu régler", "What I could not settle")}</p><ul className="mt-1 list-disc pl-4">{ids.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></div>}
     </div>

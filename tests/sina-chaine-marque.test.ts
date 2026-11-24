@@ -1569,4 +1569,67 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     expect(new Set(list.map((x) => x.ground)).size).toBe(3);
     expect(new Set(list.map((x) => x.fonts.heading.replace(/_[ni]\d$/, ""))).size).toBe(3);
   });
+
+  it("planche de marque (nouveaux projets) : une planche entière par logo choisi à la place de la grande scène et du haut du site ; refusée deux fois, pas montrée ; le choix revérifie le domaine", async () => {
+    const T = await import("@/lib/syna-agent/planche-de-marque-tache");
+    const { domainDeps } = await import("@/lib/syna-agent/brand-domains");
+    const t = await thread();
+    J.updateJourney(t.cid, (x) => { x.graphistes = { nom: "Aplomb", metier: { metier: "une marque qui vend des infusions de fruits en vrac à boire froides", court: "les infusions de fruits", piste: "univers" }, max: 3, esquisses: [], refusees: 0, planches: [], recherches: 1, notes: [], at: Date.now() } as never; });
+    const log: string[] = [];
+    let demande = "", texte = "";
+    T.plancheDeps.ai = () => ({
+      valeurs: async (d) => { log.push("valeurs"); demande = d; return { nom: /Le nom de la marque : « (.+?) »/.exec(d)![1], traits: ["franche", "fruitée", "généreuse"], emotion: "la fraîcheur d'un grand verre en été", images: ["carafe au soleil", "morceaux de fruits", "verre embué", "table d'été", "vrac en bocal", "lumière de fin de journée"], produits: ["infusions de fruits", "recettes", "sachets"], appel: "devis" }; },
+      dessiner: async (_l, d, tx, cle) => { log.push(`image:${cle}`); texte ||= tx; expect(d.nom).toBe("disposition:standard"); return { png: await square("#EEEEEE", 1536, 2304), recu: null }; },
+      relire: async (_b, _l, _d, dem, cle) => { log.push(`relecture:${cle}`); const nom = /Marque : « (.+?) »/.exec(dem)![1]; const domaine = /écris exactement « (.+?) » et/.exec(dem)![1]; return { nomLu: nom, logoFidele: true, copyrightLu: `© 2026 ${nom}`, domaineLu: domaine, fautes: [], promesses: [], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [], note: cle.startsWith("C-") ? 5 : 9, pourquoi: "ok" }; },
+    });
+    T.plancheDeps.domaines = async (nom) => ({ taken: [], free: [`${nom.toLowerCase().replace(/[^a-z]/g, "")}.fr`], unknown: [], at: 1 });
+    T.plancheDeps.annee = () => 2026;
+    try {
+      const logos = await logosFinis(t, 3);
+      const first = await chain(t, { images: true, plancheDeMarque: true, logosGraphistes: logos }, { review: () => ({ routes: [], series: "" }) });
+      // Aucune grande scène ni haut du site : la planche de marque les remplace ; UN appel des valeurs pour le client.
+      expect(first.log.ids.some((i) => /^(imagery|image|imagecheck)-/.test(i))).toBe(false);
+      expect(log.filter((l) => l === "valeurs")).toHaveLength(1);
+      expect(demande).toContain("Des infusions de fruits en vrac");
+      expect(log.filter((l) => l.startsWith("image:"))).toEqual(["image:A-1-1", "image:B-1-1", "image:C-1-1", "image:C-1-2"]);
+      expect(texte).toContain("Le site doit sembler être une vraie boutique e-commerce :");
+      expect(texte).toMatch(/écris exactement « .+\.fr — disponible » et « © 2026 .+ » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible\.$/);
+      const list = J.journeyOf(t.cid).identities!.list;
+      expect(list[0].board!.images!.logo!.id).toBe(logos[0].assetId);
+      expect(list[0].board!.planche).toMatchObject({ logo: logos[0].assetId, statut: "disponible", annee: 2026, essais: 1 });
+      expect(list[0].board!.images!.hero).toBeUndefined();
+      expect(list[2].board!.planche!.image).toBeUndefined();
+      // C, refusée deux fois : pas montrée ; SINA le dit et propose de la finir à sa charge.
+      expect(J.planchesMontrees(J.journeyOf(t.cid)).map((x) => x.key)).toEqual(["A", "B"]);
+      expect(J.journeyOf(t.cid).identities!.issues.join("\n")).toMatch(/Identité C « .+ » : je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite\. Je peux la refaire à ma charge/);
+      // Relance de la tâche : rien n'est repayé.
+      const avant = log.length;
+      expect((await chain(t, {}, {}, reload(first.job))).log.ids).toEqual([]);
+      expect(log).toHaveLength(avant);
+      // La vue : la planche seule, la case du domaine ; SINA la voit entière, avec le verdict de son relecteur.
+      const { journeyImages } = await import("@/lib/syna-agent/attachments");
+      const vues = await journeyImages(J.journeyOf(t.cid) as never, t.pid);
+      expect(vues.filter((v) => /sa planche de marque entière/.test(v.label ?? "")).map((v) => v.label!.slice(0, 11))).toEqual(["Identité A ", "Identité B "]);
+      expect(J.journeyContext(J.journeyOf(t.cid)) + J.guideDeLEtape(J.journeyOf(t.cid))).toContain("Chaque planche est une présentation de ton identité : ta marque finie et ton site garderont tes vraies informations.");
+      // Le choix : le domaine revérifié gratuitement.
+      const looked: string[] = [];
+      domainDeps.lookup = async (d) => { looked.push(d); return "libre"; };
+      try {
+        const r = await call("identity.choose", t.ctx, { key: "A" });
+        expect(r.ok).toBe(true);
+        expect(looked).toEqual([list[0].board!.planche!.domaine]);
+        expect(r.summary).toMatch(/est toujours libre aujourd'hui : seule la réservation le garantit\./);
+      } finally { domainDeps.lookup = undefined; }
+    } finally { T.plancheDeps.ai = undefined; T.plancheDeps.domaines = undefined; T.plancheDeps.annee = undefined; }
+  });
+
+  it("planche de marque : s'il reste moins de deux planches montrées, le choix attend", async () => {
+    const t = await thread();
+    J.updateJourney(t.cid, (x) => {
+      x.identities = { list: [route("A"), route("B")].map((r, i) => ({ ...r, board: { ...r.board, images: { logo: { id: `logo${i}abcd`, w: 1, h: 1 } }, planche: { logo: `logo${i}abcd`, domaine: null, statut: "adresse_a_choisir", annee: 2026, essais: 2, at: 1, ...(i === 0 ? { image: { id: "plancheabcd", w: 1536, h: 2304 } } : {}) } } })) as never, issues: [], comparison: "", at: Date.now(), round: 1 };
+    });
+    const r = await call("identity.choose", t.ctx, { key: "A" });
+    expect(r.ok).toBe(false);
+    expect(r.summary).toMatch(/moins de deux planches montrées : le choix attend/);
+  });
 });

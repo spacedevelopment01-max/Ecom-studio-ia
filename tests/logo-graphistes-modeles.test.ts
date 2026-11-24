@@ -44,7 +44,7 @@ describe("la règle des modèles des logos (logo-policy.ts) : une liste, sans ca
   });
   it("le verrou « réservé aux logos » reste seulement sur 2.5 Sunburst : 2.6 Flare sert toujours aux publications et à l'atelier", () => {
     const sun = mediaModel("openai", "gpt-image-2.5-sunburst")!, flare = mediaModel("openai", "gpt-image-2.6-flare")!, sun26 = mediaModel("openai", "gpt-image-2.6-sunburst")!;
-    expect(R.incompatibility(sun, { kind: "image", usage: "social_image" } as never)).toMatch(/réservé au dessin des logos/);
+    expect(R.incompatibility(sun, { kind: "image", usage: "social_image" } as never)).toMatch(/réservé aux logos et à leur planche/);
     expect(R.incompatibility(flare, { kind: "image", usage: "social_image" } as never)).toBeNull();
     expect(R.incompatibility(sun26, { kind: "image", usage: "social_image" } as never)).toBeNull();
     expect(P.estReserveAuxLogos("openai", "gpt-image-2.6-flare")).toBe(false);
