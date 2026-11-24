@@ -53,7 +53,7 @@ const choisirTool: AgentTool<{ esquisses: number[] }> = {
 
 const autreTool: AgentTool<{ esquisse: number }> = {
   name: "logo.autre", module: "marque", kind: "generate", needsProject: true,
-  description: "« Un autre logo » : finit une autre esquisse déjà montrée. Payant (carte).",
+  description: "« Un autre logo » : finit une autre esquisse montrée. Payant (carte).",
   args: z.object({ esquisse: z.number().int().min(1) }).strict(),
   estimate: () => { const d = devisDUneAutreEsquisse(); return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: L("un autre logo, tiré d'une esquisse déjà vue", "another logo from a sketch already seen") }; },
   run: (ctx, a) => {

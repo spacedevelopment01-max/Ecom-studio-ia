@@ -837,8 +837,8 @@ async function logoDirectImpl(ctx: Ctx, input: { temps: "recherche" | "finalisat
   try {
     res = fin
       // multipart : l'esquisse dans image[] (le client OpenAI nomme ainsi un tableau de fichiers), le texte tel quel.
-      ? await openaiImage(client, "edit", { ...corps, image: [await toFile(input.esquisse!, "esquisse.png", { type: "image/png" })] }, sent)
-      : await openaiImage(client, "generate", corps, sent);
+      ? await openaiImage(client, "edit", { ...corps, ...openaiBackground({ transparentCap: false }), image: [await toFile(input.esquisse!, "esquisse.png", { type: "image/png" })] }, sent)
+      : await openaiImage(client, "generate", { ...corps, ...openaiBackground({ transparentCap: false }) }, sent);
   } catch (e) { return erreurOpenAI(e); }
   if (!res.b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};

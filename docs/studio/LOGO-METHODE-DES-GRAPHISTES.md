@@ -94,11 +94,13 @@ Ce qui est branché :
 Tout est couvert par un seul accord, montré au début : les noms, la recherche, les logos finis, les planches, puis la
 marque finie comme avant. Chaque morceau a sa part réservée ; la somme ne dépasse jamais le « au plus » de la carte.
 
-Ce qui est retiré de l'ancienne série : elle n'est plus jamais appelée pour une nouvelle marque, et un logo ne se
-redessine plus en refaisant une planche (« un autre logo » passe par une autre esquisse ou d'autres pistes). Son code
-reste en place pour deux usages seulement, le temps de l'accord sur les épreuves : la marque finie des anciens projets
-(« un autre logo » après le choix, et le logo qui leur manque) et les cinq épreuves scellées qui la rejouent. Les
-supprimer ferait échouer ces épreuves, ce qui bloque l'envoi : cela attend son accord écrit.
+Ce qui est retiré de l'ancienne série : elle n'est plus jamais appelée pour une nouvelle marque, et sur une marque qui a
+ses esquisses, le logo ne se redessine plus en refaisant une planche (« un autre logo » passe par une autre esquisse ou
+d'autres pistes). Son code reste pour les **anciens projets** seulement (leurs planches d'avant, la planche à finir que
+SINA propose de finir à sa charge, « un autre logo » après le choix sur une marque d'avant), le temps de l'accord sur les
+épreuves : le supprimer ferait échouer, en plus des cinq épreuves en conflit, deux épreuves scellées qui rejouent ces
+anciens projets (sina-propose-de-finir-les-planches et jamais-de-question-sur-le-logo). Leur sort se décide avec le
+même accord écrit.
 
 Une précision décidée ici : le client choisit **deux esquisses au moins**, car chaque esquisse devient une identité et
 une proposition de marque en compte au moins deux (forfaits validés : 2, 3 et 4 identités proposées).

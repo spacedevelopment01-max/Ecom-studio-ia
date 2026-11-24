@@ -375,7 +375,10 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
  * L'ancienne série de logos est retirée (méthode des graphistes, point 0 tranché le 24 novembre 2026) : le logo d'une
  * planche ne se redessine plus ici ; « un autre logo » passe par logo.autre ou logo.pistes.
  */
-const REDO_IMAGES = PROPOSAL_SLOTS.filter((s) => s !== "logo") as unknown as [string, ...string[]];
+const REDO_IMAGES = PROPOSAL_SLOTS as unknown as [string, ...string[]];
+/** Le logo ne se refait ici que sur les planches d'avant la méthode des graphistes (anciens projets, planches à finir). */
+const logoParLesGraphistes = (cid: string, images: readonly string[]) => images.includes("logo") && !!journeyOf(cid).graphistes?.esquisses.length;
+const REFUS_LOGO = "Le logo de ces planches vient de la méthode des graphistes : il ne se redessine pas ici. Un autre logo : logo.autre (une autre esquisse déjà vue), sinon logo.pistes.";
 type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
 /**
  * Refaire SEULEMENT certaines images d'une ou plusieurs planches (retour du propriétaire du 14 novembre 2026, sur
@@ -401,9 +404,10 @@ export function finirPlanchesGardees(j: Journey, keys: readonly string[], images
 }
 const imagesTool: AgentTool<ImagesArgs> = {
   name: "identity.images", module: "marque", kind: "generate", needsProject: true,
-  description: "Avant le choix de l'identité : refait SEULEMENT la grande scène (« hero ») ou le haut du site (« site ») de planches déjà montrées, sans toucher au nom, aux textes ni au logo (un autre logo : logo.autre ou logo.pistes). Dis-lui ce que tu refais et pourquoi ; sa correction, avec ses mots, dans guidance. Après le choix : brand.finish. keys = les planches ; images = à refaire.",
+  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») de planches déjà montrées, sans toucher au nom ni aux textes. Logo : planches d'avant les esquisses seulement (sinon logo.autre, logo.pistes). Sa correction, ses mots, dans guidance. Après le choix : brand.finish. keys = les planches ; images = à refaire.",
   args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(3), guidance: z.string().max(1500).optional() }).strict(),
   estimate: (ctx, a) => {
+    if (logoParLesGraphistes(ctx.conversationId, a.images)) throw new RefusInterne(REFUS_LOGO);
     const n = redoImages(a.images).length;
     // L'ordre de la série (essai réel de Nadia, 23 novembre 2026 : Pénombre lancé avant Halo) : un logo d'une planche
     // d'avant, à refaire aussi et pas encore fait, passe avant. SINA est prévenue une fois, avant la carte et sans dépense.
@@ -424,6 +428,7 @@ const imagesTool: AgentTool<ImagesArgs> = {
     // Toujours dans l'ordre des identités (A, B, C), quel que soit l'ordre donné par SINA.
     const keys = dansLOrdre(a.keys).filter((k) => list.some((x) => x.key === k && !!x.board));
     if (!keys.length) return { ok: false, summary: L("Il n'y a pas encore de planche à reprendre.", "There is no board to redo yet."), hint: "Les images se refont sur des planches déjà montrées (identity.propose d'abord)." };
+    if (logoParLesGraphistes(ctx.conversationId, a.images)) return { ok: false, internal: true, summary: REFUS_LOGO };
     if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Une création de marque est déjà en cours : attends-la.", "A brand job is already running.") };
     const images = redoImages(a.images);
     const d = devisDesImages(j, keys, images);

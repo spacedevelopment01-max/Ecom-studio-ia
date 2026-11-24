@@ -163,7 +163,9 @@ export const TEXT_MODELS: TextModel[] = [
     limits: { context: 272_000, maxOutput: 32_000, flatPriceUpTo: 272_000 },
     latency: 2,
     exactCount: true,
-    verified: true,
+    // Verrouillé comme tous les modèles d'OpenAI tant que l'administration ne l'a pas confirmé (un geste, avant l'essai
+    // réel) : sans lui, le texte de finalisation est refusé avant tout envoi, jamais écrit par un autre modèle.
+    verified: false,
     source: "https://developers.openai.com/api/docs/pricing",
     use: { fr: "Écrit le texte de finalisation d'un logo à partir de l'esquisse choisie (méthode des graphistes).", en: "Writes the logo finishing text from the chosen sketch (designers' method)." },
   },

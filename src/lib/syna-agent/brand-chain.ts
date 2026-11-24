@@ -1094,12 +1094,12 @@ export async function runSinaBrandJob(ctx: JobContext) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
         // La série : les logos des identités d'AVANT celle-ci (logo gardé, sinon dernier dessin de ce tour).
-        const avant = list.slice(0, Math.max(0, list.findIndex((o) => o.key === x.key))), serieLogos = avant.map((o) => dernierParCle.get(o.key) ?? logoPourLaSerie(p.id, o, round)).filter((b): b is Buffer => !!b);
         // Méthode des graphistes : le logo fini de cette identité est posé tel quel (jamais redessiné) ; seules la grande
-        // scène et le haut du site sont créés, avec lui.
+        // scène et le haut du site sont créés, avec lui (aucune série de l'ancienne façon).
         const lg = a.logosGraphistes?.[keys.indexOf(x.key as RouteKey)];
-        const avecLogoFini: Route = lg ? await poserLeLogoFini(x, lg.assetId) : x;
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: avecLogoFini, round, slots: lg ? PROPOSAL_SLOTS.filter((sl) => sl !== "logo") : PROPOSAL_SLOTS, clientLogo, gouts: goutsDuClient(j, p.id), keptLogos: [...gardesSerie], serieLogos: lg ? [] : serieLogos });
+        const avant = list.slice(0, Math.max(0, list.findIndex((o) => o.key === x.key))), serieLogos = lg ? [] : avant.map((o) => dernierParCle.get(o.key) ?? logoPourLaSerie(p.id, o, round)).filter((b): b is Buffer => !!b);
+        const route = lg ? await poserLeLogoFini(x, lg.assetId) : x, slots = lg ? PROPOSAL_SLOTS.filter((sl) => sl !== "logo") : PROPOSAL_SLOTS;
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route, round, slots, clientLogo, gouts: goutsDuClient(j, p.id), keptLogos: [...gardesSerie], serieLogos });
         list = list.map((o) => (o.key === x.key ? r.route : o));
         { const b = logoGarde(r.route); if (b) gardesSerie.push(b); const d = b ?? r.dernierLogo; if (d) dernierParCle.set(x.key, d); }
         raisonsDe.set(x.key, r.issues); notes.push(...r.notes);
