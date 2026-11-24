@@ -1,0 +1,17 @@
+Essai des esquisses de logo — client « Racine » (pépiniériste qui vend des plantes en ligne), type « produits »
+Plafond de l'essai : 0,6000 €
+
+Phrase du métier : une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres
+Ce que la piste explore : la culture des plantes (savoir-faire)
+
+Texte exact envoyé aux deux modèles :
+Crée une planche de recherche graphique pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire le savoir-faire de la culture des plantes dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation.
+
+Planche gpt-image-2.5-sunburst : planche-gpt-image-2.5-sunburst.png (requête req_39886472e4f64567a9f86a2d4c81be73), coût lu 0,0810 €
+Planche gpt-image-2.6-flare : planche-gpt-image-2.6-flare.png (requête req_3d064ff714454e89af503849b658541f), coût lu 0,0311 €
+
+Esquisses découpées : 12
+Cases refusées par la découpe :
+- aucune
+
+Dépense réelle comptée par le Studio : 0,1189 €
