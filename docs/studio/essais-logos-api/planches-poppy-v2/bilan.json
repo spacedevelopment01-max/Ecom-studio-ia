@@ -1,0 +1,21 @@
+{
+ "statut_http": 200,
+ "duree_s": 46.9,
+ "x-request-id": "req_03b856ee9faf45298928403519cf81f0",
+ "usage": {
+  "input_tokens": 3645,
+  "input_tokens_details": {
+   "image_tokens": 2560,
+   "text_tokens": 1085
+  },
+  "output_tokens": 2127,
+  "output_tokens_details": {
+   "image_tokens": 2127,
+   "text_tokens": 0
+  },
+  "total_tokens": 5772
+ },
+ "cout_eur": 0.0772,
+ "taille": "1536x2304",
+ "qualite": "high"
+}
