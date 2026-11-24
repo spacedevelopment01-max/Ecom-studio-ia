@@ -63,3 +63,8 @@ ffmpeg -i out/emeus.mp4 -c:v copy -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:a aac -b:
   première vidéo est remplacée par une marche comique en cordes pincées (`outils/musique_marche.py`, à lancer avec
   `public/sons/marche.wav 73` pour la recréer).
 - Chaîne choisie : « Les Ratés de l'Histoire » (`chaine/`).
+
+## Voix de la chaîne (choix du propriétaire, 24 novembre 2026)
+
+« Max le narrateur » : ElevenLabs « Max Doré - Charismatic Narrator », identifiant Xy5q4w05TJGcKXPWeWoz
+(voix d'homme chaude et naturelle). Elle remplace « Julien » pour les vidéos suivantes.
