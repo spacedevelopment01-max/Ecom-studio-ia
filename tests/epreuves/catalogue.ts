@@ -65,6 +65,18 @@ const DECISION_DU_23_NOVEMBRE_AU_SOIR = {
   mots: "« Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies »",
 };
 
+/**
+ * La méthode des graphistes du 24 novembre 2026 (« oui » du propriétaire à sa construction ; « Oui » à « Le client choisit
+ * d'abord son nom, puis les logos : tu es d'accord ? »), et son accord écrit pour marquer les épreuves qu'elle remplace, mot
+ * pour mot (relayé par le chef d'orchestre). Compte rendu : docs/studio/LOGO-METHODE-DES-GRAPHISTES.md.
+ */
+const METHODE_DES_GRAPHISTES = {
+  decision: "24 novembre 2026",
+  mots: "« Oui, marque trois-fois-le-meme-dessin, logos-de-la-serie-dans-l-ordre, pas-de-consigne-de-style-pour-un-logo, demande-du-logo-couleurs-typo-fond et relecteur-du-logo-qualite-seule comme remplacées par la méthode des graphistes du 24 novembre, ajoute et scelle logo-refait-une-fois-avec-ses-raisons, esquisses-choisies-selon-le-forfait, finalisation-ecrite-par-le-plus-fort, planches-de-recherche-demande-exacte et relecteur-du-logo-fini, retire l'ancienne série de logos, et mets à jour la partie Logo de CLAUDE.md. »",
+};
+const VERDICT_GRAPHISTES = "Accord écrit du propriétaire du 24 novembre 2026, mot pour mot : « Oui, marque trois-fois-le-meme-dessin, logos-de-la-serie-dans-l-ordre, pas-de-consigne-de-style-pour-un-logo, demande-du-logo-couleurs-typo-fond et relecteur-du-logo-qualite-seule comme remplacées par la méthode des graphistes du 24 novembre, ajoute et scelle logo-refait-une-fois-avec-ses-raisons, esquisses-choisies-selon-le-forfait, finalisation-ecrite-par-le-plus-fort, planches-de-recherche-demande-exacte et relecteur-du-logo-fini, retire l'ancienne série de logos, et mets à jour la partie Logo de CLAUDE.md. » Et son « oui » à la construction de la méthode des graphistes (24 novembre 2026)."
+const SOURCE_GRAPHISTES = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (méthode des graphistes ; accord écrit du propriétaire du 24 novembre 2026, relayé mot pour mot par le chef d'orchestre)";
+
 export const EPREUVES: Epreuve[] = [
   {
     id: "logo-goutte-refusee", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
@@ -397,6 +409,7 @@ export const EPREUVES: Epreuve[] = [
     verdict: "Essai réel de Pénombre sur la version 1db7eb3c (0,87 €) : ses trois logos, refusés à 3 sur 10, étaient « trois fois le même dessin » : une bougie allumée devant un croissant de lune, dans un disque noir, avec un sous-titre que personne n'avait demandé ; la même demande nue, sans image, avait été envoyée trois fois.",
     attendu: "Chaque reprise reçoit ses propres essais refusés, en plus des logos d'avant de la série, avec une seule phrase « complètement différent », sans jamais la raison du refus ; deux demandes d'une même identité ne sont jamais identiques ; au relecteur seul, un mot non demandé dans le logo est un défaut.",
     rejeu: "gratuit",
+    remplaceePar: { ...METHODE_DES_GRAPHISTES, epreuve: "logo-refait-une-fois-avec-ses-raisons", sceau: "3a78a3e7ebabbeec894601994a3280aa8b2591f5c9241f7b157990d3f28787fb" },
   },
   {
     id: "jamais-de-question-sur-le-logo", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; essai réel de Nadia sur la version 02570ae1, relevé par le chef d'orchestre)",
@@ -409,23 +422,57 @@ export const EPREUVES: Epreuve[] = [
     verdict: "Règle du propriétaire sur la série : « le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement différent de celui là et pour le 3eme pareil » (23 novembre 2026). Dans l'essai réel, Nadia demandait un autre logo pour Halo (B) et celui de Pénombre (C) manquait : SINA a lancé Pénombre AVANT Halo.",
     attendu: "Quand plusieurs logos d'une série sont à refaire, ils partent dans l'ordre des identités (A, B, C), quel que soit l'ordre donné par SINA, et chacun reçoit les logos refaits juste avant lui : avec [C, B], Halo part d'abord avec Sillage gardé, puis Pénombre avec Sillage et le nouveau Halo ; deux appels dans une même réponse sont réunis ; un logo demandé alors qu'un logo d'avant est à refaire aussi et pas encore fait n'ouvre pas sa carte : SINA est prévenue, avant toute dépense, de les réunir.",
     rejeu: "gratuit",
+    remplaceePar: { ...METHODE_DES_GRAPHISTES, epreuve: "esquisses-choisies-selon-le-forfait", sceau: "a2fb9f9d0301ab364d269ef6f7fae7d9fd55e49d29976295416e516605e0088f" },
   },
   {
     id: "pas-de-consigne-de-style-pour-un-logo", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; essai réel de Nadia sur la version 02570ae1, relevé par le chef d'orchestre)",
     verdict: "Décision du propriétaire du 23 novembre 2026 au soir, relayée par le chef d'orchestre : « Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies ». Dans l'essai réel, la consigne de SINA pour la carte Halo + Pénombre contenait « logo dessiné sur un fond blanc parfaitement uni » et « pas de lettres bleues arrondies avec une ellipse orange », et la fiche « pas de flamme dessinée ».",
     attendu: "Aucun de ces mots de SINA ni de la fiche n'arrive au dessinateur : la demande réelle reçue pour Halo et Pénombre ne porte que le métier et le nom, l'épellation si besoin, la ligne des couleurs de la marque, celle de sa typographie, « Sur un fond blanc uni. », les logos joints et la phrase « complètement différent » ; la consigne de style que SINA donne à l'outil qui refait un logo (fond, couleur, lettres, forme, refus) est retirée par le Studio, sans IA et sans bloquer la carte, et SINA lit qu'elle a été retirée.",
     rejeu: "gratuit",
+    remplaceePar: { ...METHODE_DES_GRAPHISTES, epreuve: "finalisation-ecrite-par-le-plus-fort", sceau: "a2ebb898093fe1f420fe7ff993af4236aa793129b15680b23ef8dd9fa6a5c2c1" },
   },
   {
     id: "demande-du-logo-couleurs-typo-fond", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; décision du propriétaire du 23 novembre 2026 au soir, relayée mot pour mot par le chef d'orchestre)",
     verdict: "« Ouai c'est la catastrophe mon idée », puis : « Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies » (23 novembre 2026 au soir, après l'essai de Pénombre).",
     attendu: "La demande au dessinateur du logo, en français, est exactement : « Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Halo ». », l'épellation seulement si le nom porte un accent ou un signe, la ligne des couleurs de la marque (« Couleurs de la marque : foncé #…, couleur de marque #…, surface #…, accent #…, clair #…. »), celle de sa typographie (« Typographie de la marque : un caractère … (dans l'esprit de …) ; tu peux le redessiner à ta façon. »), « Sur un fond blanc uni. », puis la série (les logos des identités d'avant joints, avec « Je veux un autre logo complètement différent de celui-là. » ou « Fais-moi un autre logo complètement différent des deux premiers. » ; une reprise reçoit aussi ses essais refusés, avec « … de tous ceux-là ») ; jamais l'idée de la marque, le ton, la planche des 50 logos, les refus ni les mots du client ; un logo gardé n'est jamais redessiné.",
     rejeu: "gratuit",
+    remplaceePar: { ...METHODE_DES_GRAPHISTES, epreuve: "planches-de-recherche-demande-exacte", sceau: "6ddb596ebf8f3dc82592e63c621b6fd6eef4e3903114f16088d2c316a1431446" },
   },
   {
     id: "relecteur-du-logo-qualite-seule", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (partie « Logos : trois ratés de l'essai réel » ; décision du propriétaire du 23 novembre 2026 au soir, relayée mot pour mot par le chef d'orchestre)",
     verdict: "« on ne demande plus au client ce qu'il veut ou non dans son logo » ; décision du 23 novembre 2026 au soir : « Et si on enlevait mes 50 logos de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de bougies ».",
     attendu: "Le relecteur du logo juge la qualité seulement : il ne reçoit ni les mots du client, ni ses refus, ni sa fiche de portée logo ; il garde la planche des 50 logos aimés comme niveau, ne garde qu'un logo noté 8 sur 10 ou plus, refuse un mot non demandé (un sous-titre), exige le nom exact, et un fond que le Studio ne sait pas retirer fait redessiner le logo ; la consigne écrite par SINA n'arrive jamais au dessinateur.",
+    rejeu: "gratuit",
+    remplaceePar: { ...METHODE_DES_GRAPHISTES, epreuve: "relecteur-du-logo-fini", sceau: "1ef0710794802a9680f01861591d276a01a65d7fdf77a6aa5cf3d1852f402f54" },
+  },
+  {
+    id: "logo-refait-une-fois-avec-ses-raisons", date: "2026-11-24", source: SOURCE_GRAPHISTES,
+    verdict: VERDICT_GRAPHISTES,
+    attendu: "Un logo fini refusé par le relecteur est refait UNE fois, à la charge du Studio, avec toutes les raisons du refus à la fin du texte envoyé ; refusé deux fois, il n'est pas gardé (l'identité n'est pas construite avec lui) et SINA propose une autre esquisse ; jamais un troisième essai.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "esquisses-choisies-selon-le-forfait", date: "2026-11-24", source: SOURCE_GRAPHISTES,
+    verdict: VERDICT_GRAPHISTES,
+    attendu: "Le client choisit ses esquisses, numérotées, au plus 2, 3 ou 4 selon son forfait (moins est permis, deux au moins : chaque esquisse devient une identité) ; un numéro inconnu ou refusé est refusé ; la carte n'autorise jamais plus de cases cochées et envoie « Je choisis les esquisses 3, 7 et 11 » ; les logos finis partent dans l'ordre des numéros.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "finalisation-ecrite-par-le-plus-fort", date: "2026-11-24", source: SOURCE_GRAPHISTES,
+    verdict: VERDICT_GRAPHISTES,
+    attendu: "Le texte de finalisation est écrit par GPT-6.2 Astra, qui regarde l'esquisse, avec la consigne de finaliser.py mot pour mot plus la ligne d'évolution ; un contrôle gratuit vérifie le début et la fin attendus, dix phrases au plus et l'évolution, sinon une réécriture à la charge du Studio ; ce texte part tel quel à /v1/images/edits (2.6 Sunburst, l'esquisse dans image[]) ; aucune consigne de SINA, aucune couleur du client n'y entre.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "planches-de-recherche-demande-exacte", date: "2026-11-24", source: SOURCE_GRAPHISTES,
+    verdict: VERDICT_GRAPHISTES,
+    attendu: "La recherche part en deux appels en même temps (2.5 Sunburst et 2.6 Flare, même texte, mêmes réglages, « complexity » pour Flare seul) avec la demande exacte des preuves : le nom, le métier, « le savoir-faire de … » ou « l'univers de … », rien d'autre (ni couleurs, ni typographie, ni goûts, ni logos joints) ; seule « Évite ces pistes déjà présentées : … » peut s'ajouter à la fin.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "relecteur-du-logo-fini", date: "2026-11-24", source: SOURCE_GRAPHISTES,
+    verdict: VERDICT_GRAPHISTES,
+    attendu: "Le logo fini est relu par le relecteur le plus fort, effort élevé, un autre modèle que le rédacteur, avec le logo sur blanc, l'esquisse, le nom, le vrai métier et le texte envoyé ; il est refusé si le nom est mal écrit (le code le compare aussi), si l'idée de l'esquisse est perdue, s'il est trop proche de l'esquisse sans évolution, s'il porte une arche, une phrase inventée qui ne dit pas le vrai métier, ou une note sous 8 ; un fond que le Studio ne retire pas proprement le fait refaire.",
     rejeu: "gratuit",
   },
 ];

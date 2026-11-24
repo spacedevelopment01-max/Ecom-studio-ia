@@ -150,7 +150,7 @@ export const DEFAULT_ROUTES: Record<TaskId, Route> = POLICY_ROUTES;
 
 /** Tarifs publics (USD) servant au calcul du coût. À vérifier et ajuster dans l'administration. */
 export type Price =
-  | { unit: "tokens"; inputPerM: number; outputPerM: number; imageInputPerM?: number; imageOutputPerM?: number }
+  | { unit: "tokens"; inputPerM: number; outputPerM: number; imageInputPerM?: number; imageOutputPerM?: number; /** Entrée déjà lue (en cache), quand le fournisseur la facture moins cher. */ cachedInputPerM?: number }
   /**
    * Image au forfait. `perImage` est la borne de réservation (le plafond de la carte) ; quand le fournisseur rend ses
    * jetons (OpenAI), le coût compté est celui des jetons réels : texte `inputPerM`, image jointe `imageInputPerM`, sortie
@@ -161,21 +161,27 @@ export type Price =
   /** Outil facturé à l'appel (ex. recherche web OpenAI : `openai:web_search`). */
   | { unit: "call"; perCall: number };
 
+/** Le coût réel le plus haut d'une image GPT Image 2.6 demandée par le Studio : 1 024 × 1 024 en « high », 1 756 jetons à 30 $ le million. */
+export const PRIX_PAR_IMAGE_GPT_IMAGE_26 = 0.0527;
+
 export const DEFAULT_PRICES: Record<string, Price> = {
   "anthropic:claude-fable-5-1": { unit: "tokens", inputPerM: 10, outputPerM: 50 },
   "anthropic:claude-opus-5-5": { unit: "tokens", inputPerM: 4, outputPerM: 20 },
   "anthropic:claude-sonnet-5-5": { unit: "tokens", inputPerM: 2, outputPerM: 10 },
   "anthropic:claude-haiku-5-5": { unit: "tokens", inputPerM: 0.1, outputPerM: 0.5 },
   "anthropic:claude-haiku-4-5": { unit: "tokens", inputPerM: 1, outputPerM: 5 },
-  // Méthode des graphistes : le rédacteur du texte de finalisation du logo (page officielle d'OpenAI lue le 22 novembre 2026).
-  "openai:gpt-6.2-astra": { unit: "tokens", inputPerM: 8, outputPerM: 40 },
+  // Méthode des graphistes : le rédacteur du texte de finalisation du logo. Page officielle d'OpenAI
+  // (https://developers.openai.com/api/docs/pricing), lue le 22 novembre 2026 (docs/studio/couts/02-couts-des-modeles-de-texte.md) :
+  // 8 $ en entrée, 0,40 $ en entrée déjà lue (cache), 40 $ en sortie, par million de jetons.
+  "openai:gpt-6.2-astra": { unit: "tokens", inputPerM: 8, cachedInputPerM: 0.4, outputPerM: 40 },
   "openai:gpt-image-2.5-sunburst": { unit: "tokens", inputPerM: 5, outputPerM: 30, imageInputPerM: 8, imageOutputPerM: 30 },
-  // GPT Image 2.6 (relevé du 10 novembre 2026, pages officielles des modèles : texte entrée 5 $/M, image entrée 8 $/M,
-  // sortie 30 $/M, comme le 2.5 ; consommation « high » inchangée, « low » et « medium » environ 4 fois plus) : borne PAR
-  // IMAGE, la table des jetons de sortie du 2.6 n'étant pas publiée. Mesuré en réel sur le 2.5 Flare « high » : 1 372 à
-  // 1 909 jetons de sortie, soit ≈ 0,06 $ ; borne 0,12 $ par prudence, à ajuster après les premiers appels réels.
-  "openai:gpt-image-2.6-flare": { unit: "image", perImage: 0.12, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 },
-  "openai:gpt-image-2.6-sunburst": { unit: "image", perImage: 0.12, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 },
+  // GPT Image 2.6 (docs/studio/couts/03-couts-des-images.md, page officielle des prix lue le 22 novembre 2026) : 30 $ le
+  // million en sortie image, 8 $ en entrée image, 5 $ en entrée texte, comptés aux jetons réels avec la formule officielle
+  // (jetonsDeSortieGptImage, media-providers.ts). `perImage` ne sert que là où un seul prix par image est lu (coût typique,
+  // réponse sans consommation) : le coût réel le plus haut parmi les tailles et qualités que le Studio demande, un carré
+  // 1024 × 1024 en « high » (1 756 jetons de sortie, soit 0,0527 $).
+  "openai:gpt-image-2.6-flare": { unit: "image", perImage: PRIX_PAR_IMAGE_GPT_IMAGE_26, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 },
+  "openai:gpt-image-2.6-sunburst": { unit: "image", perImage: PRIX_PAR_IMAGE_GPT_IMAGE_26, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 },
   "openai:gpt-image-1": { unit: "tokens", inputPerM: 5, outputPerM: 40, imageInputPerM: 10, imageOutputPerM: 40 },
   "google:gemini-2.5-flash-image": { unit: "image", perImage: 0.039, inputPerM: 0.3 },
   "google:veo-3.0-generate-001": { unit: "video_second", perSecond: 0.4 },

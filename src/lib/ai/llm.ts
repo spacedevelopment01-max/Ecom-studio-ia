@@ -977,8 +977,10 @@ async function otherCall(call: LlmCall, decision: RouteDecision, messages: Anthr
     const requested = requirePrice(provider, model), served = res!.model ? requirePrice(provider, res!.model) : requested;
     if (requested.unit !== "tokens" || served.unit !== "tokens") throw new PermanentError(L("Tarif du modèle servi incompatible : rapprochement nécessaire.", "The served model's price is incompatible: reconciliation required."));
     const p = { ...requested, inputPerM: Math.max(requested.inputPerM, served.inputPerM), outputPerM: Math.max(requested.outputPerM, served.outputPerM) };
-    // Entrée mise en cache comptée au tarif plein (remise du fournisseur non supposée : jamais sous le coût réel).
-    const usd = p && p.unit === "tokens" ? (res!.usage.input * p.inputPerM + res!.usage.output * p.outputPerM) / 1e6 : 0;
+    // Entrée déjà lue (cache) : à son tarif officiel quand il est connu pour les deux modèles, sinon au tarif plein (jamais
+    // sous le coût réel).
+    const lu = Math.min(res!.usage.cachedInput, res!.usage.input), tarifLu = requested.cachedInputPerM != null && served.cachedInputPerM != null ? Math.max(requested.cachedInputPerM, served.cachedInputPerM) : p.inputPerM;
+    const usd = p && p.unit === "tokens" ? ((res!.usage.input - lu) * p.inputPerM + lu * tarifLu + res!.usage.output * p.outputPerM) / 1e6 : 0;
     const costMicro = Math.round(usd * usdToEur() * EUR);
     const b = recordUsage({ userId: call.userId, projectId: call.projectId, jobId: call.jobId, task: call.task, provider, model, unit: "tokens", inputUnits: res!.usage.input, outputUnits: res!.usage.output, costMicro, estimated: !p, idempotencyKey: call.usageKey ? `${call.usageKey}${suffix}` : undefined }, { reservationId: reservation });
     billed = { costMicro, estimated: !p, ...b };

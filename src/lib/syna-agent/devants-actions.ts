@@ -1,7 +1,8 @@
 /**
  * Les deux boutons du message posé par le Studio quand des planches sont incomplètes (`devants.ts`) :
- * - « Oui, finis-les » ouvre la carte d'accord habituelle (« À ma charge : 0 % de ton budget ») pour `identity.images`, par
- *   le même chemin que si SINA l'avait proposé (devis, carte, puis l'accord du client lance la reprise) ;
+ * - « Oui, finis-les » ouvre la carte d'accord habituelle (« À ma charge : 0 % de ton budget ») par le même chemin que si
+ *   SINA l'avait proposé (devis, carte, puis l'accord du client lance la reprise) : d'abord le logo qui manque, par la
+ *   méthode des graphistes (`logo.pistes` pour cette planche), puis le reste par `identity.images` ;
  * - « Plus tard » note le refus de cet état des planches : la ligne prioritaire ne revient plus tant que rien ne change.
  * Aucun appel à l'IA ici.
  */
@@ -14,7 +15,7 @@ import { journeyOf } from "./journey";
 import { getTool } from "./registry";
 import { prixJuste } from "./travaux";
 import { askConfirmation, threadView, toolContext } from "./loop";
-import { boutonsDuMessage, empreinteDuManque, groupesAFinir, noterRefus, planchesAFinir, pronomDuManque, repriseEnCours } from "./devants";
+import { boutonsDuMessage, empreinteDuManque, groupesAFinir, logosAFinir, noterRefus, planchesAFinir, pronomDuManque, repriseEnCours } from "./devants";
 
 function conversation(user: User, cid: string) {
   const c = one<{ user_id: string; project_id: string | null }>("SELECT user_id, project_id FROM agent_conversations WHERE id=?", cid);
@@ -35,10 +36,11 @@ export async function accepterLaProposition(user: User, cid: string, empreinte: 
   const { projectId } = conversation(user, cid);
   const list = etatAJour(cid, empreinte);
   if (repriseEnCours(cid, projectId)) throw new HttpError(409, L("Je finis déjà tes planches : je te les montre dès qu'elles sont prêtes.", "I'm already finishing your boards."), "devants_en_cours");
-  const tool = getTool("identity.images")!;
-  // Une reprise refait les mêmes images sur chaque planche demandée : le plus grand groupe d'abord, les autres ensuite.
-  const g = groupesAFinir(list)[0];
-  const args = tool.args.parse({ keys: g.keys, images: g.images });
+  // Le logo qui manque d'abord (une planche à la fois, par la méthode des graphistes) ; sinon une reprise des images, qui
+  // refait les mêmes images sur chaque planche demandée : le plus grand groupe d'abord, les autres ensuite.
+  const sansLogo = logosAFinir(list), g = groupesAFinir(list)[0];
+  const tool = getTool(sansLogo.length ? "logo.pistes" : "identity.images")!;
+  const args = tool.args.parse(sansLogo.length ? { planche: sansLogo[0] } : { keys: g.keys, images: g.images });
   const r: SynaRun = tx(() => {
     const current = activeRun(cid);
     if (current && current.status !== "waiting_jobs" && current.status !== "waiting_confirmation") throw new HttpError(409, L("SINA travaille encore sur ta demande précédente. Attends sa réponse ou arrête-la.", "SINA is still working on your previous request. Wait or stop it."), "syna_busy");

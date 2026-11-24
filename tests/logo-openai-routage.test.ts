@@ -27,7 +27,8 @@ describe("Logos avec OpenAI seul (routage automatique)", async () => {
   const { UserFacingError } = await import("@/lib/jobs");
   const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, fn);
   const price = (k: string, v: unknown) => setJsonSetting("ai.prices", { ...getJsonSetting<Record<string, unknown>>("ai.prices", {}), [k]: v });
-  const confirm = (...ks: string[]) => setJsonSetting("ai.textModels", Object.fromEntries(ks.map((k) => [k, { confirmedAt: Date.now(), enabled: true }])));
+  // GPT-6.2 Astra est allumé par défaut (méthode des graphistes) : éteint ici à la main, pour essayer les autres modèles seuls.
+  const confirm = (...ks: string[]) => setJsonSetting("ai.textModels", { "openai:gpt-6.2-astra": { enabled: false }, ...Object.fromEntries(ks.map((k) => [k, { confirmedAt: Date.now(), enabled: true }])) });
 
   beforeEach(() => {
     keys = { openai: "sk-openai-test-123456" };

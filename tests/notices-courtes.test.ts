@@ -38,7 +38,8 @@ const GARDEES: Record<string, string[]> = {
   "ads.create": ["PAYANT", "UNE PAR TYPE DE CLIENT", "jamais deux pour le même", "chaque image contrôlée avant d'être montrée", "jamais devinés"],
   "identity.propose": ["VRAIMENT différentes", "2, 3 ou 4 selon son forfait", "PLANCHE", "paroles réelles de clients avec leur page", "le Studio montre le devis", "les autres restent identiques"],
   "identity.choose": ["PAR LE CLIENT (jamais à sa place)", "mot pour mot", "Gratuit"],
-  "brand.finish": ["un AUTRE logo, créé pour sa marque", "le Studio montre le prix avant", "fond retiré"],
+  // L'ancienne série de logos est retirée (accord du 24 novembre 2026) : un autre logo passe par logo.autre ou logo.pistes.
+  "brand.finish": ["logo.autre ou logo.pistes, jamais ici", "le Studio montre le prix avant", "fond retiré"],
   "angles.propose": ["TROIS TYPES DE CLIENTS différents", "un sûr, un d'émotion, un audacieux", "Tu relis chaque angle sévèrement avant de le montrer", "un seul accord pour toute l'étape", "avec SES mots", "les angles déjà montrés ne sont pas refaits"],
   "gallery.create": ["PAYANT", "accord écrit du client d'abord", "CARRÉES", "UNIQUEMENT avec les faits donnés par le client", "une image ratée n'est pas posée et elle est signalée", "accordEcrit = ses mots exacts"],
 };

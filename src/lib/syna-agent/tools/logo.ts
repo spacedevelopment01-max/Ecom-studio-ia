@@ -3,9 +3,14 @@
  *  - logo.choisir : gratuit. Le client choisit ses esquisses (au plus N : 2, 3 ou 4 selon son forfait ; moins est permis).
  *    Un numéro inconnu ou refusé est refusé. Couvert par l'accord de l'étape « La marque », il lance les finalisations.
  *  - logo.autre : « un autre logo » après le choix, c'est d'abord une autre des esquisses déjà montrées (seule la
- *    finalisation est payée). Sur son budget, avec une carte.
+ *    finalisation est payée). Sur son budget, avec une carte. Une fois les planches faites, le logo fini se pose sur la
+ *    planche dite (`planche`), jamais redessiné ensuite.
  *  - logo.pistes : « d'autres pistes » : de nouvelles planches avec « Évite ces pistes déjà présentées : … », la
- *    numérotation continue. Sur son budget, avec une carte.
+ *    numérotation continue. Sur son budget, avec une carte. Avec `planche` : la recherche se fait pour le nom de cette
+ *    planche-là (les anciens projets, dont chaque planche a son propre nom, passent aussi par ici : une seule façon de
+ *    faire un logo, l'ancienne série est retirée).
+ *  Une planche à laquelle il manque son logo se finit par ces deux outils à la charge du Studio (« À ma charge : 0 % ») :
+ *  c'est une reprise du travail de SINA, jamais comptée au client.
  *  - logo.couleurs : un changement de couleur demandé par le client lui-même, une fois les logos finis : une retouche sur
  *    sa demande, sur son budget, avec une carte.
  * Aucun outil ne pose de question sur le contenu d'un logo (règle du 23 novembre 2026, toujours vraie).
@@ -14,7 +19,8 @@ import { z } from "zod";
 import { L } from "../../i18n-server";
 import { enqueue, pendingJob } from "../../jobs";
 import type { AgentTool, ToolContext } from "../types";
-import { journeyOf, updateJourney } from "../journey";
+import { journeyOf, planchesIncompletes, updateJourney, type Journey } from "../journey";
+import { ROUTE_KEYS } from "../brand-routes";
 import { project } from "./common";
 import { controleDuChoix, devisDeLaRecherche, devisDesFinalisations, devisDesPistes, devisDUneAutreEsquisse, esquissesAChoisir, messageDuChoix } from "../logo-graphistes";
 import { planOfProject } from "../../plan-gates";
@@ -37,6 +43,8 @@ const choisirTool: AgentTool<{ esquisses: number[] }> = {
   run: (ctx, a) => {
     const etat = etatDe(ctx);
     if (!etat?.esquisses.length) return PAS_D_ESQUISSES;
+    // Une recherche pour une seule planche : son esquisse se finit par logo.autre (elle devient le logo de cette planche).
+    if (etat.planche) return { ok: false, internal: true, summary: `Ces esquisses sont pour la planche ${etat.planche} : le client en choisit une, finis-la avec logo.autre (esquisse = son numéro, planche = ${etat.planche}).` };
     const faute = controleDuChoix(etat, a.esquisses);
     if (faute) return { ok: false, summary: faute };
     const choix = [...new Set(a.esquisses)].sort((x, y) => x - y);
@@ -51,36 +59,77 @@ const choisirTool: AgentTool<{ esquisses: number[] }> = {
   },
 };
 
-const autreTool: AgentTool<{ esquisse: number }> = {
+/**
+ * La planche à laquelle il manque son logo (planche gardée de côté, ou marque finie sans logo) : la finir est une reprise
+ * du travail de SINA, à la charge du Studio.
+ */
+export function logoAFinir(j: Journey, planche: string | undefined): boolean {
+  if (!planche) return false;
+  if (planchesIncompletes(j).some((x) => x.key === planche && x.manque.includes("logo"))) return true;
+  return j.identityChoice?.key === planche && !!j.brandFinish?.manque?.includes("logo");
+}
+/** La planche qui recevra le logo fini : celle dite, sinon celle de la recherche, sinon l'identité choisie. */
+const plancheVisee = (j: Journey, planche: string | undefined): string | undefined => planche ?? j.graphistes?.planche ?? (j.identities?.list.length ? j.identityChoice?.mix?.logo ?? j.identityChoice?.key : undefined);
+const SANS_PLANCHE = { ok: false as const, internal: true, summary: "Les planches sont déjà faites : dis sur quelle planche poser le logo (planche = A, B, C ou D)." };
+const PLANCHE = z.enum(ROUTE_KEYS).optional();
+
+const autreTool: AgentTool<{ esquisse: number; planche?: (typeof ROUTE_KEYS)[number] }> = {
   name: "logo.autre", module: "marque", kind: "generate", needsProject: true,
-  description: "« Un autre logo » : finit une autre esquisse montrée. Payant (carte).",
-  args: z.object({ esquisse: z.number().int().min(1) }).strict(),
-  estimate: () => { const d = devisDUneAutreEsquisse(); return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: L("un autre logo, tiré d'une esquisse déjà vue", "another logo from a sketch already seen") }; },
+  description: "« Un autre logo » : finit une esquisse montrée. planche = celle qui le reçoit, planches faites. Payant (carte) ; à ta charge si son logo manque.",
+  args: z.object({ esquisse: z.number().int().min(1), planche: PLANCHE }).strict(),
+  estimate: (ctx, a) => {
+    const d = devisDUneAutreEsquisse(), studio = logoAFinir(journeyOf(ctx.conversationId), plancheVisee(journeyOf(ctx.conversationId), a?.planche));
+    return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: studio ? L("finir ta planche : son logo, tiré de l'esquisse choisie", "finish your board: its logo") : L("un autre logo, tiré d'une esquisse déjà vue", "another logo from a sketch already seen"), ...(studio ? { studio: true } : {}) };
+  },
   run: (ctx, a) => {
-    const etat = etatDe(ctx);
-    if (!etat?.esquisses.length) return PAS_D_ESQUISSES;
+    const j = journeyOf(ctx.conversationId), etat = j.graphistes;
+    if (!etat?.esquisses.length) return { ...PAS_D_ESQUISSES, hint: "Sans esquisses : logo.pistes (avec planche = la planche, une fois les planches faites) cherche d'abord les pistes de son logo." };
     if (!etat.esquisses.some((e) => e.numero === a.esquisse)) return { ok: false, summary: L(`L'esquisse ${a.esquisse} n'a pas été montrée.`, "Unknown sketch.") };
-    const d = devisDUneAutreEsquisse();
-    const job = lancer(ctx, { phase: "finalisation", numeros: [a.esquisse], capMicro: d.maxMicro, studioCapMicro: d.studioMaxMicro }, L("Un autre logo (SINA)", "Another logo (SINA)"), `autre:${a.esquisse}`);
+    const planche = plancheVisee(j, a.planche);
+    if (j.identities?.list.length && !planche) return SANS_PLANCHE;
+    if (planche && j.identities?.list.length && !j.identities.list.some((x) => x.key === planche)) return { ok: false, summary: L(`Il n'y a pas de planche ${planche}.`, "Unknown board.") };
+    const d = devisDUneAutreEsquisse(), studio = logoAFinir(j, planche);
+    const job = lancer(ctx, { phase: "finalisation", numeros: [a.esquisse], capMicro: d.maxMicro, studioCapMicro: d.studioMaxMicro, ...(planche && j.identities?.list.length ? { planche } : {}), ...(studio ? { studio: true } : {}) }, L("Un autre logo (SINA)", "Another logo (SINA)"), `autre:${a.esquisse}:${planche ?? ""}`);
     if (!job) return DEJA;
-    return { ok: true, jobs: [job.id], summary: L(`Je refais ton logo à partir de l'esquisse ${a.esquisse}, puis je le relis.`, "Redoing your logo from that sketch.") };
+    return { ok: true, jobs: [job.id], summary: L(`Je fais ton logo à partir de l'esquisse ${a.esquisse}, puis je le relis.`, "Making your logo from that sketch.") };
   },
 };
 
-const pistesTool: AgentTool<Record<string, never>> = {
+const pistesTool: AgentTool<{ planche?: (typeof ROUTE_KEYS)[number] }> = {
   name: "logo.pistes", module: "marque", kind: "generate", needsProject: true,
-  description: "« D'autres pistes » de logo : nouvelles esquisses, numérotées à la suite. Payant (carte).",
-  args: z.object({}).strict(),
-  estimate: () => { const d = devisDesPistes(); return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: L("d'autres pistes de logo", "other logo directions") }; },
-  run: (ctx) => {
-    const etat = etatDe(ctx);
-    if (!etat?.metier) return PAS_D_ESQUISSES;
-    const d = devisDesPistes();
-    const job = lancer(ctx, { phase: "pistes", capMicro: d.maxMicro, studioCapMicro: d.studioMaxMicro }, L("D'autres pistes de logo (SINA)", "Other logo directions (SINA)"), `pistes:${etat.recherches + 1}`);
+  description: "« D'autres pistes » de logo : nouvelles esquisses numérotées. planche = celle visée, planches faites (pistes pour son nom). Payant (carte) ; à ta charge si son logo manque.",
+  args: z.object({ planche: PLANCHE }).strict(),
+  estimate: (ctx, a) => {
+    const j = journeyOf(ctx.conversationId), w = travailDesPistes(j, a?.planche), d = w.neuve ? devisDeLaRecherche() : devisDesPistes();
+    return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: w.studio ? L("finir ta planche : les pistes de son logo", "finish your board: its logo directions") : L("d'autres pistes de logo", "other logo directions"), ...(w.studio ? { studio: true } : {}) };
+  },
+  run: (ctx, a) => {
+    const j = journeyOf(ctx.conversationId), etat = j.graphistes, w = travailDesPistes(j, a.planche);
+    if (w.refus) return w.refus;
+    if (!w.neuve && !etat?.metier) return PAS_D_ESQUISSES;
+    const d = w.neuve ? devisDeLaRecherche() : devisDesPistes();
+    const job = lancer(ctx, { phase: w.neuve ? "recherche" : "pistes", ...(w.neuve ? { nom: w.nom } : {}), ...(w.planche ? { planche: w.planche } : {}), ...(w.studio ? { studio: true } : {}), capMicro: d.maxMicro, studioCapMicro: d.studioMaxMicro }, L("D'autres pistes de logo (SINA)", "Other logo directions (SINA)"), `pistes:${w.planche ?? ""}:${w.neuve ? 1 : (etat?.recherches ?? 0) + 1}`);
     if (!job) return DEJA;
-    return { ok: true, jobs: [job.id], summary: L("Je cherche d'autres pistes, différentes de celles que tu as vues ; je te montre les nouvelles esquisses à la suite.", "Looking for other directions.") };
+    // Une recherche pour une autre planche (un autre nom) repart de zéro : ses esquisses, sa numérotation.
+    if (w.neuve) updateJourney(ctx.conversationId, (x) => { x.graphistes = undefined; });
+    return { ok: true, jobs: [job.id], summary: w.neuve && w.planche ? L(`Je cherche les pistes du logo de « ${w.nom} » ; je te montre les esquisses numérotées, et tu choisis la tienne.`, "Looking for the logo directions.") : L("Je cherche d'autres pistes, différentes de celles que tu as vues ; je te montre les nouvelles esquisses à la suite.", "Looking for other directions.") };
   },
 };
+
+/**
+ * Ce que fait logo.pistes : une première recherche pour le nom d'une planche (ancien projet, ou planche d'un autre nom),
+ * ou d'autres pistes à la suite de la recherche en cours (même nom). Gratuit, sans IA.
+ */
+export function travailDesPistes(j: Journey, planche0: string | undefined): { neuve: boolean; nom?: string; planche?: string; studio: boolean; refus?: { ok: false; internal?: boolean; summary: string } } {
+  const list = j.identities?.list ?? [], etat = j.graphistes;
+  const planche = list.length ? plancheVisee(j, planche0) : undefined;
+  if (list.length && !planche) return { neuve: false, studio: false, refus: SANS_PLANCHE };
+  if (!planche) return { neuve: false, studio: false };
+  const x = list.find((y) => y.key === planche);
+  if (!x) return { neuve: false, studio: false, refus: { ok: false, summary: L(`Il n'y a pas de planche ${planche}.`, "Unknown board.") } };
+  const meme = !!etat?.metier && etat.nom.normalize("NFC").toLowerCase() === x.name.normalize("NFC").toLowerCase();
+  return { neuve: !meme, nom: x.name, planche, studio: logoAFinir(j, planche) };
+}
 
 const couleursTool: AgentTool<{ esquisse: number; demande: string }> = {
   name: "logo.couleurs", module: "marque", kind: "generate", needsProject: true,

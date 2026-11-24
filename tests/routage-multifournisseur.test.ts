@@ -52,8 +52,9 @@ describe("catalogue des modèles de texte et effort par fournisseur", async () =
     expect(validEffort("openai", "gpt-5.6-luna", "low")).toBe("low");
   });
 
-  it("OpenAI et Gemini sont verrouillés tant que leurs informations ne sont pas confirmées", () => {
-    for (const m of TEXT_MODELS.filter((x) => x.provider !== "anthropic")) expect(m.verified).toBe(false);
+  it("OpenAI et Gemini sont verrouillés tant que leurs informations ne sont pas confirmées (sauf GPT-6.2 Astra, confirmé sur la page officielle)", () => {
+    for (const m of TEXT_MODELS.filter((x) => x.provider !== "anthropic" && x.model !== "gpt-6.2-astra")) expect(m.verified).toBe(false);
+    expect(textModel("openai", "gpt-6.2-astra")?.verified).toBe(true);
     expect(textModel("anthropic", "claude-haiku-5-5")?.verified).toBe(true);
   });
 });

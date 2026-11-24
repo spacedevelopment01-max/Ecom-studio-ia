@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -49,8 +49,10 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       expect(par && SCEAUX[par.id], `${e.id} → ${r.epreuve}`).toBeTruthy();
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
-      expect(r.decision).toBe("23 novembre 2026");
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo)/);
+      expect(["23 novembre 2026", "24 novembre 2026"]).toContain(r.decision);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin)/);
+      // L'accord écrit du 24 novembre 2026 nomme chaque épreuve qu'il remplace, et celle qui la remplace.
+      if (r.decision === "24 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
   });
   it("chaque épreuve gratuite est rejouée ci-dessous", () => {
@@ -81,7 +83,7 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
   type Draw = (id: string, slot: string, n: number) => Promise<Buffer>;
   type Verdict = (slot: string, n: number) => { ok?: boolean; score?: number; why?: string; defect?: string; read?: string[] };
   /** La chaîne des images d'une planche, telle quelle, avec un dessinateur et un relecteur simulés (rien n'est payé). */
-  async function planche(o: { slots: string[]; draw?: Draw; verdict?: Verdict; madeLogos?: Buffer[]; keptLogos?: Buffer[]; gouts?: string; logoLine?: string; x?: any; /** Une boutique, avec ses photos de produit envoyées (vérifiées). */ photos?: number }) {
+  async function planche(o: { slots: string[]; draw?: Draw; verdict?: Verdict; gouts?: string; x?: any; /** Une boutique, avec ses photos de produit envoyées (vérifiées). */ photos?: number; /** false : la planche n'a pas encore son logo (il viendra de la méthode des graphistes). */ logoFini?: boolean }) {
     const user = await account(), projectId = project(user, o.photos != null ? "products" : "services") as string;
     if (o.photos) {
       const { saveAsset } = await import("@/lib/library");
@@ -91,7 +93,11 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
         run("UPDATE assets SET meta=json_set(COALESCE(meta,'{}'),'$.verification',json(?)) WHERE id=?", JSON.stringify({ etat: "verifiee", at: Date.now() }), a.id);
       }
     }
-    const x = o.x ?? { ...route("A"), name: "Aplomb" };
+    const x0 = o.x ?? { ...route("A"), name: "Aplomb" };
+    // Le logo fini par la méthode des graphistes, posé tel quel sur la planche (jamais dessiné avec ses images).
+    const { saveAsset: ranger } = await import("@/lib/library");
+    const fini = o.logoFini === false || x0.board.images?.logo ? null : await ranger({ projectId, userId: user.id, data: await logoSimple(), name: "logo-fini.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready" });
+    const x = fini ? await (await import("@/lib/syna-agent/brand-chain")).poserLeLogoFini(x0, fini.id) : x0;
     const texts = I.slotTexts(x);
     const timeline: { kind: "draw" | "look"; id: string; slot: string; prompt: string; avoid?: boolean; product?: boolean; labels?: string[] }[] = [];
     const drawn = new Map<string, number>(), looked = new Map<string, number>();
@@ -111,48 +117,21 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
       },
     };
     const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
-    const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: o.photos != null ? "produits" : "services", route: x, round: 1, slots: o.slots as never, imagery: imagery as never, ...(o.keptLogos ? { keptLogos: o.keptLogos } : {}), gouts: o.gouts ?? null });
+    const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: o.photos != null ? "produits" : "services", route: x, round: 1, slots: o.slots as never, imagery: imagery as never, gouts: o.gouts ?? null });
     return { r, timeline, x, projectId, user };
   }
 
-  epreuve("logo-goutte-refusee", async () => {
-    const F = await import("@/lib/syna-agent/fiche");
-    const gouts = F.goutsPour([{ sujet: "le style plombier", value: "le style plombier avec une goutte d'eau et une clé à molette", genre: "refuse", portee: "logo", at: 1 }, { sujet: "les matières", value: "le laiton brossé", genre: "aime", portee: "images", at: 1 }], ["logo", "images"]).join("\n");
-    const { timeline } = await planche({ slots: ["logo"], gouts });
-    const dessin = timeline.find((t) => t.kind === "draw" && t.slot === "logo")!, relu = timeline.find((t) => t.kind === "look" && t.slot === "logo")!;
-    // Mot pour mot, dans la formule du propriétaire (« Il ne veut surtout pas : … »), sans « Il ne veut pas » ajouté (23 novembre 2026).
-    expect(dessin.prompt).toContain("Il ne veut surtout pas : « le style plombier avec une goutte d'eau et une clé à molette »");
-    // Ses goûts vont au relecteur, jamais au dessinateur du logo (« enlève la 7 », 21 novembre 2026).
-    expect(dessin.prompt).not.toContain("laiton");
-    expect(relu.prompt).toContain("Il aime : le laiton brossé");
-    expect(relu.prompt).toContain("Il ne veut pas : le style plombier avec une goutte d'eau et une clé à molette");
-    expect(relu.prompt).toMatch(/qui montre ce qu'il refuse est un défaut/);
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « logo-demande-nue ».
+  epreuve("logo-goutte-refusee", () => {});
 
-  epreuve("consigne-de-sina-au-dessinateur", async () => {
-    const { timeline } = await planche({ slots: ["logo"], logoLine: "Ce qu'on savait de la marque : un plombier calme et soigneux." });
-    const dessin = timeline.find((t) => t.kind === "draw" && t.slot === "logo")!;
-    expect(dessin.prompt).not.toMatch(/fil à plomb|logotype sobre/);
-    expect(dessin.prompt).toContain("un plombier calme et soigneux");
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « logo-demande-nue ».
+  epreuve("consigne-de-sina-au-dessinateur", () => {});
 
-  epreuve("logos-de-la-serie-trop-proches", async () => {
-    const premier = await planche({ slots: ["logo"] });
-    const d1 = premier.timeline.find((t) => t.kind === "draw")!;
-    expect(d1.avoid).toBe(false);
-    expect(d1.prompt).not.toMatch(/complètement différent/);
-    const second = await planche({ slots: ["logo"], madeLogos: [await logoSimple()] });
-    const d2 = second.timeline.find((t) => t.kind === "draw")!;
-    expect(d2.avoid).toBe(true);
-    expect(d2.prompt).toMatch(/Je veux un logo complètement différent de celui-là/);
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « logo-demande-nue ».
+  epreuve("logos-de-la-serie-trop-proches", () => {});
 
-  epreuve("trait-sous-le-nom-repete", async () => {
-    const { timeline } = await planche({ slots: ["logo"], madeLogos: [await logoAvecTrait()], draw: async (_id, slot, n) => (slot === "logo" && n === 1 ? logoAvecTrait() : logoSimple()) });
-    const dessins = timeline.filter((t) => t.kind === "draw" && t.slot === "logo");
-    expect(dessins.map((d) => d.id.endsWith(":sans-trait"))).toEqual([false, true]);
-    expect(dessins[1].prompt).toMatch(/refais-le sans trait, sans filet ni ligne/);
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « logo-demande-nue ».
+  epreuve("trait-sous-le-nom-repete", () => {});
 
   epreuve("photo-a-brume-ou-taches", async () => {
     const { r, timeline } = await planche({ slots: ["hero"], draw: async (_id, slot, n) => (slot === "hero" && n === 1 ? brume() : carre("#224466")) });
@@ -163,66 +142,44 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     expect(openaiBackground({ transparentCap: true })).toEqual({ background: "opaque" });
   });
 
-  epreuve("ligne-la-marque-sans-idee-de-dessin", async () => {
-    const ligne = async (simple: string) => {
-      const x = { ...route("A"), name: "Aplomb", tone: { ...route("A").tone, adjectives: ["calme", "franc", "soigneux"] }, board: { ...route("A").board, descriptor: "Plomberie et chauffage à Lyon", idea: { ...route("A").board.idea, simple } } };
-      const { timeline } = await planche({ slots: ["logo"], x });
-      return timeline.find((t) => t.kind === "draw" && t.slot === "logo")!.prompt.split("\n").find((l) => l.startsWith("La marque : "))!;
-    };
-    // La ligne de la directrice artistique (« Piste écrite par SINA : un logotype sobre… ») n'y va jamais.
-    expect(await ligne("elle croit qu'un artisan doit tenir parole, et elle se bat contre les devis qui changent")).toBe("La marque : Elle croit qu'un artisan doit tenir parole, et elle se bat contre les devis qui changent. Son ton : calme, franc, soigneux.");
-    // Une comparaison, un mot concret ou un mot du métier du client : l'idée est retirée, seul le ton reste.
-    for (const idee of ["elle croit qu'on doit être chez soi comme dans une maison qui sent bon", "elle croit qu'un artisan doit venir le soir", "elle croit qu'un chauffage se répare vite"])
-      expect(await ligne(idee), idee).toBe("La marque : Son ton : calme, franc, soigneux.");
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « logo-demande-nue ».
+  epreuve("ligne-la-marque-sans-idee-de-dessin", () => {});
 
-  epreuve("serie-compte-les-logos-refuses", async () => {
-    // Un logo déjà dessiné (refusé) dans la série ; le relecteur refuse tout : trois dessins.
-    const deja = await logoSimple();
-    const { r, timeline } = await planche({ slots: ["logo"], madeLogos: [deja], keptLogos: [], verdict: () => ({ ok: false, score: 5, why: "trop sage" }) });
-    const dessins = timeline.filter((t) => t.kind === "draw" && t.slot === "logo");
-    expect(dessins).toHaveLength(3);
-    expect(dessins.every((d) => d.avoid)).toBe(true);
-    // Le 1er reçoit le logo refusé de la série ; la 1re reprise, en plus, son propre essai refusé ; la 2e, les deux.
-    expect(dessins.map((d) => /montre (le logo déjà fait|les (\d+) logos déjà faits)/.exec(d.prompt)?.[2] ?? "1")).toEqual(["1", "2", "3"]);
-    for (const d of dessins) expect(d.prompt).toMatch(/Je veux un logo complètement différent/);
-    // Tous ses dessins, refusés compris, repartent dans la série pour les planches suivantes.
-    expect((r as unknown as { logos: unknown[] }).logos).toHaveLength(3);
-    const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
-    expect(chain).toContain("seriesLogos.push(...r.logos);");
-    expect(chain).toContain("redoneLogos.push(...r.logos);");
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « logo-demande-nue ».
+  epreuve("serie-compte-les-logos-refuses", () => {});
 
-  epreuve("refus-du-logo-une-seule-fois", async () => {
-    const gouts = ["Calme et franc. Par contre pas de goutte d'eau dans le logo.", "Il ne veut pas : pas de goutte d'eau dans le logo.", "Il ne veut pas : Mes mains oui, mais jamais mon visage."].join("\n");
-    const { timeline } = await planche({ slots: ["logo"], gouts, verdict: () => ({ ok: false, score: 5, why: "trop sage" }) });
-    for (const d of timeline.filter((t) => t.kind === "draw" && t.slot === "logo")) {
-      expect(d.prompt).toContain("Il ne veut surtout pas : « Par contre pas de goutte d'eau dans le logo. »");
-      expect(d.prompt.match(/Il ne veut surtout pas/g)).toHaveLength(1);
-      expect(d.prompt).not.toMatch(/Il ne veut pas|mains|visage|Calme et franc/);
-      expect(d.prompt).not.toMatch(/étiquette, emballage/);
-    }
-    // Un refus qui parle de personnes, noté « pour tout », vaut pour les images, jamais pour le logo.
-    const F = await import("@/lib/syna-agent/fiche");
-    const note = { sujet: "photos", value: "Mes mains oui, mais jamais mon visage.", genre: "refuse" as const, portee: "tout" as const, at: 1 };
-    expect(F.porteeOf(note)).toBe("images");
-    expect(F.refusPourLeLogo([note, { sujet: "couleur", value: "pas de rose", genre: "refuse", portee: "tout", at: 1 }])).toEqual(["pas de rose"]);
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « logo-demande-nue ».
+  epreuve("refus-du-logo-une-seule-fois", () => {});
 
   epreuve("logo-relu-avant-ce-qui-le-porte", async () => {
-    // Le logo est refusé au premier dessin : rien de ce qui le porte n'est dessiné avec lui.
-    const { timeline } = await planche({ slots: ["logo", "hero", "object"], verdict: (s, n) => (s === "logo" && n === 1 ? { ok: false, why: "une goutte d'eau" } : { ok: true, score: 9 }) });
-    const order = timeline.map((t) => `${t.kind}:${t.slot}`);
-    const objet = order.indexOf("draw:object");
-    expect(order.slice(0, objet)).toEqual(["draw:logo", "look:logo", "draw:logo", "look:logo", "draw:hero"]);
-    expect(timeline.filter((t) => t.kind === "draw" && t.slot === "object")).toHaveLength(1);
+    // Méthode des graphistes : le logo fini est dessiné et relu (refait une fois s'il est refusé) AVANT d'être rendu ;
+    // la planche ne reçoit que le logo relu et gardé, puis ce qui le porte est dessiné avec lui.
+    const { finaliserUneEsquisse } = await import("@/lib/syna-agent/logo-finalisation");
+    const ordre: string[] = [], dessins: Buffer[] = [];
+    const bon = { nomLu: "Aplomb", ideeConservee: true, evolution: true, arche: false, phrase: "", phraseDitLeMetier: false, note: 9, pourquoi: "" };
+    const f = await finaliserUneEsquisse({
+      rediger: async () => ({ idee_centrale: "un fil à plomb", texte: "Transforme cette esquisse en véritable logo contemporain pour Aplomb, un plombier. Conserve l'idée centrale : un fil à plomb. Fais évoluer cette idée vers une identité plus aboutie et plus distinctive. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif" }),
+      finaliser: async () => { ordre.push("dessin"); const b = await logoSimple(); dessins.push(b); return b; },
+      relire: async () => { ordre.push("relecture"); return ordre.length === 2 ? { ...bon, note: 5 } : bon; },
+      detourer: async (png) => ({ ok: true, png }),
+      aLaChargeDuStudio: async (fn) => fn(),
+    }, { nom: "Aplomb", metier: "un plombier", esquisse: await logoSimple() });
+    expect(ordre).toEqual(["dessin", "relecture", "dessin", "relecture"]);
+    expect(f.ok && f.logo).toBe(dessins[1]);
+    // Sans logo relu et gardé, rien de ce qui le porte n'est dessiné ; avec lui, le haut du site le reçoit, seul logo joint.
+    const sans = await planche({ slots: ["hero", "site", "object"], logoFini: false });
+    expect(sans.timeline.filter((t) => t.kind === "draw").map((t) => t.slot)).toEqual(["hero"]);
+    const avec = await planche({ slots: ["hero", "site"] });
+    const order = avec.timeline.map((t) => `${t.kind}:${t.slot}`);
+    expect(order.indexOf("look:hero")).toBeLessThan(order.indexOf("draw:site"));
+    expect(avec.timeline.some((t) => t.slot === "logo")).toBe(false);
   });
 
   epreuve("planche-incomplete", async () => {
-    const first = await planche({ slots: ["logo", "hero", "site"] });
+    const first = await planche({ slots: ["hero", "site"] });
     const before = first.r.route.board.images!.site!;
     expect(before).toBeTruthy();
-    const again = await planche({ slots: ["logo", "site"], x: first.r.route, verdict: (s) => (s === "site" ? { ok: false, why: "écran à moitié vide" } : { ok: true, score: 9 }) });
+    const again = await planche({ slots: ["site"], x: first.r.route, verdict: (s) => (s === "site" ? { ok: false, why: "écran à moitié vide" } : { ok: true, score: 9 }) });
     expect(again.r.siteGarde).toBe(true);
     expect(again.r.route.board.images!.site).toEqual(before);
   });
@@ -234,10 +191,10 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
   });
 
   epreuve("planche-a-trou-jamais-montree", async () => {
-    // Le logo reste refusé après ses reprises : le haut du site n'est pas dessiné, et il manque à la planche.
-    const { r, timeline } = await planche({ slots: ["logo", "hero", "site"], verdict: (s) => (s === "logo" ? { ok: false, score: 5, why: "une maison banale" } : { ok: true, score: 9 }) });
-    expect(timeline.filter((t) => t.kind === "draw" && t.slot === "logo")).toHaveLength(3);
-    expect(timeline.some((t) => t.kind === "draw" && t.slot === "site")).toBe(false);
+    // La planche n'a pas encore son logo (il vient de la méthode des graphistes) : le haut du site n'est pas dessiné, et il
+    // manque à la planche avec le logo.
+    const { r, timeline } = await planche({ slots: ["hero", "site"], logoFini: false });
+    expect(timeline.some((t) => t.kind === "draw" && (t.slot === "logo" || t.slot === "site"))).toBe(false);
     expect(r.manque).toEqual(["logo", "site"]);
     expect(I.manqueDeLaPlanche(r.route)).toEqual(["logo", "site"]);
     // Elle n'est ni affichée, ni montrée à SINA, ni choisissable ; la planche complète de la série reste montrée.
@@ -251,11 +208,16 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     expect(J.journeyContext(j)).toMatch(/gardée de côté, NON montrée[\s\S]*il manque le logo, le haut du site[\s\S]*identity\.images[\s\S]*À ma charge : 0 % de ton budget/);
     // SINA dit ce qui bloque et propose la suite, à la charge du Studio : la carte d'accord le dit.
     const said = I.phrasePlancheGardee(r.route, ["logo", "site"], r.issues);
-    expect(said).toMatch(/je ne te montre pas cette planche, il lui manque le logo et le haut du site \(le logo : .+\)\. Je ne montre jamais une planche à trou : je peux refaire ce qui manque, à ma charge, rien n'est compté sur ton budget\./);
+    expect(said).toMatch(/je ne te montre pas cette planche, il lui manque le logo et le haut du site.*\. Je ne montre jamais une planche à trou : je peux refaire ce qui manque, à ma charge, rien n'est compté sur ton budget\./);
     expect(said).not.toMatch(/nom dessiné|nom écrit seul/);
     const T = await import("@/lib/syna-agent/tools/identity");
-    expect(T.finirPlanchesGardees(j, [r.route.key], ["logo", "site"])).toBe(true);
-    expect(T.finirPlanchesGardees(j, [r.route.key, "B"], ["logo"])).toBe(false); // une planche montrée, c'est un goût du client
+    expect(T.finirPlanchesGardees(j, [r.route.key], ["site"])).toBe(true);
+    expect(T.finirPlanchesGardees(j, [r.route.key, "B"], ["site"])).toBe(false); // une planche montrée, c'est un goût du client
+    // Son logo se finit par la méthode des graphistes, à la charge du Studio (la carte le dit).
+    const LT = await import("@/lib/syna-agent/tools/logo");
+    expect(LT.logoAFinir(j, r.route.key)).toBe(true);
+    expect(LT.logoAFinir(j, "B")).toBe(false);
+    expect(LT.travailDesPistes(j, r.route.key)).toMatchObject({ neuve: true, nom: r.route.name, planche: r.route.key, studio: true });
     const { confirmationText } = await import("@/lib/syna-agent/loop");
     const user = await account();
     expect(await confirmationText({ name: "identity.images", description: "x" } as any, {}, {} as any, user.id, null, { label: "finir ta planche", maxMicro: 50_000, studio: true })).toContain("À ma charge : 0 % de ton budget, rien n'est compté pour toi.");
@@ -288,7 +250,7 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
   });
 
   epreuve("vrai-produit-du-client-joint", async () => {
-    const { timeline } = await planche({ slots: ["logo", "hero", "site"], photos: 3 });
+    const { timeline } = await planche({ slots: ["hero", "site"], photos: 3 });
     for (const slot of ["hero", "site"]) {
       const dessin = timeline.find((t) => t.kind === "draw" && t.slot === slot)!, relu = timeline.find((t) => t.kind === "look" && t.slot === slot)!;
       expect(dessin.product, slot).toBe(true);
@@ -296,8 +258,8 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
       expect(relu.labels).toContain("produit");
       expect(relu.prompt).toContain(I.PRODUIT_A_COMPARER);
     }
-    // Le logo ne reçoit jamais les photos du produit (sa demande ne change pas).
-    expect(timeline.find((t) => t.kind === "draw" && t.slot === "logo")!.product).toBe(false);
+    // Le logo ne se dessine pas avec les images de la planche (méthode des graphistes) : il ne reçoit jamais ces photos.
+    expect(timeline.some((t) => t.kind === "draw" && t.slot === "logo")).toBe(false);
     // Les photos sont jointes en une seule image « product », annoncée « à reproduire fidèlement ».
     const { imageReferencePrompt } = await import("@/lib/ai/media-providers");
     expect(imageReferencePrompt("x", ["scene", "product", "logo"])).toContain("image 2: product (essential, reproduce faithfully)");
@@ -344,39 +306,8 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     expect(px(sx, sy)).toBeGreaterThan(200);
   });
 
-  epreuve("logo-demande-nue", async () => {
-    const C = await import("@/lib/syna-agent/brand-chain");
-    const J = await import("@/lib/syna-agent/journey");
-    const { chargeDuStudio } = await import("@/lib/billing");
-    const { threadFor } = await import("@/lib/syna-agent/thread");
-    // La fiche du client : ses mots exacts de l'essai réel de Nadia, et son refus pour le logo.
-    const user = await account(), projectId = project(user, "products") as string, cid = threadFor(user, projectId);
-    const MOTS = "Quelque chose de chaleureux, simple, pas trop chic. Par contre pas de flamme dessinée dans le logo, toutes les marques de bougies font ça.";
-    J.updateJourney(cid, (j) => { j.start.image = { value: MOTS, status: "answered", source: "client", at: Date.now() }; });
-    const gouts = C.goutsDuClient(J.journeyOf(cid), projectId);
-    const x = { ...route("A"), name: "Sillage", board: { ...route("A").board, descriptor: "Bougies parfumées coulées à la main près de Lyon", images: undefined } };
-    const dessins: { prompt: string; jointes: number; usage?: string; studio: boolean }[] = [], relus: string[] = [];
-    const ai: any = {
-      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
-      draw: async (_id: string, c: any) => { dessins.push({ prompt: c.prompt, jointes: Object.values(c).filter((v) => Buffer.isBuffer(v)).length, usage: c.usage, studio: chargeDuStudio() }); return logoSimple(); },
-      // Le relecteur refuse tout : les deux reprises partent.
-      look: async (_id: string, c: any) => { relus.push(c.prompt); return { images: [{ slot: "logo", seen: "", score: 5, ok: false, read: [], why: "une flamme dessinée", defect: "autre" }] }; },
-    };
-    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
-    await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: imagery as never, gouts });
-    expect(dessins).toHaveLength(3);
-    for (const d of dessins) {
-      expect(d.prompt).toBe("Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Sillage ».");
-      expect(d.jointes).toBe(0);
-      expect(d.usage).toBe("logo");
-      expect(d.prompt).not.toMatch(/chaleureux|pas trop chic|flamme|Il ne veut|une flamme dessinée/);
-    }
-    // Les reprises : la même demande, à la charge du Studio.
-    expect(dessins.map((d) => d.studio)).toEqual([false, true, true]);
-    // Le relecteur garde ses mots et son refus.
-    expect(relus).toHaveLength(3);
-    for (const r of relus) { expect(r).toContain(MOTS); expect(r).toMatch(/qui montre ce qu'il refuse est un défaut/); }
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « serie-logo-completement-different ».
+  epreuve("logo-demande-nue", () => {});
 
   epreuve("logo-clair-creux-des-lettres", async () => {
     const { createCanvas } = await import("@napi-rs/canvas");
@@ -421,115 +352,17 @@ describe("les épreuves de la planche de marque (vraie chaîne, faux dessinateur
     expect(fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8")).toContain("return onDarkVersion(d?.ok ? d.png : png, null, light);");
   });
 
-  epreuve("trait-pres-du-nom-un-par-serie-au-relecteur", async () => {
-    const { chargeDuStudio } = await import("@/lib/billing");
-    const studio: boolean[] = [];
-    // Un logo déjà gardé de la série porte un trait ; le relecteur refuse le premier dessin (un deuxième trait), puis garde.
-    const { timeline } = await planche({ slots: ["logo"], keptLogos: [await logoAvecTrait()], draw: async (_id, slot, n) => { studio.push(chargeDuStudio()); return slot === "logo" && n === 1 ? logoAvecTrait() : logoSimple(); }, verdict: (_s, n) => (n === 1 ? { ok: false, score: 5, why: "un deuxième trait près du nom dans la série" } : { ok: true, score: 9 }) });
-    const dessins = timeline.filter((t) => t.kind === "draw" && t.slot === "logo"), relus = timeline.filter((t) => t.kind === "look" && t.slot === "logo");
-    expect(dessins).toHaveLength(2);
-    // Rien n'est dit au dessinateur : la même demande nue, sans image jointe ; la reprise à la charge du Studio.
-    for (const d of dessins) { expect(d.prompt).toBe(I.demandeDuLogo({ ...route("A"), name: "Aplomb" } as never)); expect(d.avoid).toBe(false); expect(d.prompt).not.toMatch(/trait|filet/); }
-    expect(studio).toEqual([false, true]);
-    // Le relecteur reçoit la consigne et le logo déjà gardé qui porte le trait.
-    for (const r of relus) { expect(r.prompt).toContain(I.TRAIT_DEJA_PRIS_RELECTEUR); expect(r.labels).toContain("trait déjà pris"); }
-    // Sans trait déjà pris dans la série : pas de consigne, pas d'image en plus.
-    const sans = await planche({ slots: ["logo"], keptLogos: [await logoSimple()] });
-    const relu = sans.timeline.find((t) => t.kind === "look" && t.slot === "logo")!;
-    expect(relu.prompt).not.toContain(I.TRAIT_DEJA_PRIS_RELECTEUR);
-    expect(relu.labels).not.toContain("trait déjà pris");
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « serie-logo-completement-different ».
+  epreuve("trait-pres-du-nom-un-par-serie-au-relecteur", () => {});
 
-  epreuve("refus-et-consigne-apres-la-demande-nue", async () => {
-    const F = await import("@/lib/syna-agent/fiche");
-    const mains = { sujet: "ses photos", value: "Mes mains oui, mais jamais mon visage.", genre: "refuse" as const, portee: "tout" as const, at: 1 };
-    const gouts = F.goutsPour([{ sujet: "le style plombier", value: "le style plombier avec une goutte d'eau et une clé à molette", genre: "refuse", portee: "logo", at: 1 }, mains], ["logo", "images"]).join("\n");
-    // imagery.logo porte la consigne écrite par SINA (« un logotype sobre, un fil à plomb stylisé ») ; le client refuse la goutte.
-    const { timeline } = await planche({ slots: ["logo"], gouts, logoLine: "Ce qu'on savait de la marque : un plombier calme et soigneux." });
-    const dessin = timeline.find((t) => t.kind === "draw" && t.slot === "logo")!, relu = timeline.find((t) => t.kind === "look" && t.slot === "logo")!;
-    expect(dessin.prompt).toBe(I.demandeDuLogo({ ...route("A"), name: "Aplomb" } as never));
-    expect(dessin.prompt).not.toMatch(/fil à plomb|logotype sobre|goutte|plombier calme|mains|visage/);
-    expect(relu.prompt).toContain("Il ne veut pas : le style plombier avec une goutte d'eau et une clé à molette");
-    expect(relu.prompt).toMatch(/qui montre ce qu'il refuse est un défaut/);
-    // Après le choix, logo refait avec les mots du client : ses mots vont au relecteur, la demande reste nue.
-    const fin = fs.readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8");
-    expect(fin).toContain("gouts: goutsDuClient(j, o.projectId, clientWords(o.guidance))");
-    expect(fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8")).toContain('if (slot === "logo") return demandeDuLogo(x);');
-    // Mains et visage : pour les images, jamais pour le logo.
-    expect(F.porteeOf(mains)).toBe("images");
-    expect(F.refusPourLeLogo([mains, { sujet: "couleur", value: "pas de rose", genre: "refuse", portee: "tout", at: 1 }])).toEqual(["pas de rose"]);
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « relecteur-du-logo-qualite-seule ».
+  epreuve("refus-et-consigne-apres-la-demande-nue", () => {});
 
-  epreuve("serie-logo-completement-different", async () => {
-    const C = await import("@/lib/syna-agent/brand-chain");
-    const { chargeDuStudio } = await import("@/lib/billing");
-    const sha = (b: Buffer) => crypto.createHash("sha256").update(b).digest("hex");
-    const user = await account(), projectId = project(user, "products") as string;
-    const metier = "Bougies parfumées coulées à la main près de Lyon";
-    const routes = (["A", "B", "C"] as const).map((key, i) => ({ ...route(key), name: ["Sillage", "Halo", "Lueur"][i], board: { ...route(key).board, descriptor: metier, images: undefined } }));
-    const dessins: { id: string; prompt: string; serie: string[]; cles: string[]; studio: boolean }[] = [];
-    let n = 0;
-    const couleur = ["#6E2A5E", "#2B4C8C", "#2F6A4E", "#B4450F"];
-    const ai: any = {
-      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
-      draw: async (id: string, c: any) => { dessins.push({ id, prompt: c.prompt, serie: (c.serie ?? []).map(sha), cles: Object.keys(c).filter((k) => Buffer.isBuffer(c[k])), studio: chargeDuStudio() }); return blanc().composite(lettres().map((l) => ({ ...l, input: { create: { ...l.input.create, background: couleur[n % 4] } } }))).png().toBuffer().finally(() => n++); },
-      look: async (_id: string, c: any) => ({ images: [{ slot: "logo", seen: "", score: 9, ok: true, read: [/Marque : « ([^»]+) »/.exec(c.prompt)![1]], why: "" }] }),
-    };
-    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
-    // La série comme dans la chaîne : chaque identité reçoit le logo gardé (sinon le dernier dessin) de celles d'avant.
-    const faites: any[] = [];
-    for (const x of routes) {
-      const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: imagery as never, serieLogos: faites.map((y) => C.logoPourLaSerie(projectId, y, 1)!).filter(Boolean) });
-      faites.push(r.route.board.images?.logo ? r.route : x);
-    }
-    const base = (nom: string) => `Fais-moi un logo pour une marque de bougies. Le nom de la marque : « ${nom} ».`;
-    expect(dessins.map((d) => d.prompt)).toEqual([base("Sillage"), `${base("Halo")}\nJe veux un autre logo complètement différent de celui-là.`, `${base("Lueur")}\nFais-moi un autre logo complètement différent des deux premiers.`]);
-    // Les images jointes : aucune, puis le logo gardé de Sillage, puis ceux de Sillage et de Halo ; rien d'autre.
-    const { getAsset, assetData } = await import("@/lib/library");
-    const garde = (x: any) => sha(assetData(getAsset(x.board.images.logo.id)!));
-    expect(dessins.map((d) => d.serie)).toEqual([[], [garde(faites[0])], [garde(faites[0]), garde(faites[1])]]);
-    for (const d of dessins) { expect(d.cles).toEqual([]); expect(d.prompt).not.toMatch(/REFERENCES|image \d|Couleurs|Typographie|La marque :|exemples/); expect(d.studio).toBe(false); }
-    // Jamais un logo d'un autre projet : le logo d'une identité se cherche dans CE projet.
-    const autre = project(await account(), "products") as string;
-    expect(C.logoPourLaSerie(autre, { ...routes[0], board: { ...routes[0].board, images: undefined } } as never, 1)).toBeNull();
-    // Le dernier dessin, à défaut d'un logo gardé ; un logo gardé n'est jamais redessiné par la série.
-    expect(C.logoPourLaSerie(projectId, { ...routes[0], board: { ...routes[0].board, images: undefined } } as never, 1)).toBeTruthy();
-    const chain = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
-    expect(chain).toContain("const avant = list.slice(0, Math.max(0, list.findIndex((o) => o.key === x.key)))");
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « demande-du-logo-couleurs-typo-fond ».
+  epreuve("serie-logo-completement-different", () => {});
 
-  epreuve("trois-fois-le-meme-dessin", async () => {
-    const { chargeDuStudio } = await import("@/lib/billing");
-    const sha = (b: Buffer) => crypto.createHash("sha256").update(b).digest("hex");
-    const user = await account(), projectId = project(user, "products") as string;
-    const x = { ...route("C"), name: "Pénombre", board: { ...route("C").board, descriptor: "Bougies parfumées en cire de soja, Brignais", images: undefined } };
-    const sillage = await logoSimple(), halo = await logoAvecTrait();
-    const dessins: { prompt: string; serie: string[]; studio: boolean; rendu: Buffer }[] = [];
-    let n = 0;
-    const ai: any = {
-      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
-      draw: async (_id: string, c: any) => { const rendu = await blanc(640 + 16 * n++, 480).composite(lettres()).png().toBuffer(); dessins.push({ prompt: c.prompt, serie: (c.serie ?? []).map(sha), studio: chargeDuStudio(), rendu }); return rendu; },
-      // Comme dans l'essai réel : chaque logo refusé, à 3 sur 10, pour une bougie devant un croissant de lune.
-      look: async () => ({ images: [{ slot: "logo", seen: "", score: 3, ok: false, read: ["Pénombre", "Bougies naturelles"], why: "une bougie allumée devant un croissant de lune, avec un sous-titre", defect: "autre" }] }),
-    };
-    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
-    await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: imagery as never, serieLogos: [sillage, halo] });
-    expect(dessins).toHaveLength(3);
-    const [p1, p2, p3] = dessins;
-    // Le 2e essai reçoit le 1er refusé, le 3e les deux, en plus de Sillage et de Halo.
-    expect(p1.serie).toEqual([sha(sillage), sha(halo)]);
-    expect(p2.serie).toEqual([sha(sillage), sha(halo), sha(p1.rendu)]);
-    expect(p3.serie).toEqual([sha(sillage), sha(halo), sha(p1.rendu), sha(p2.rendu)]);
-    // Jamais deux demandes identiques ; une seule phrase « complètement différent » ; jamais la raison du refus.
-    expect(new Set(dessins.map((d) => `${d.prompt}|${d.serie.join(",")}`)).size).toBe(3);
-    for (const d of dessins) {
-      expect(d.prompt.match(/complètement différent/g)).toHaveLength(1);
-      expect(d.prompt).not.toMatch(/lune|bougie allumée|sous-titre|Bougies naturelles|3 sur 10|CORRECTION/);
-    }
-    expect(dessins.map((d) => d.studio)).toEqual([false, true, true]);
-    // Au relecteur seul : un mot non demandé dans le logo est un défaut.
-    expect(I.ROLE_FOR_REVIEW.logo).toContain("un mot non demandé (un sous-titre, une ligne de métier, un slogan, par exemple « Bougies naturelles ») est un défaut");
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « logo-refait-une-fois-avec-ses-raisons ».
+  epreuve("trois-fois-le-meme-dessin", () => {});
 });
 
 describe("les épreuves du site et des marques (contrôles du Studio)", async () => {
@@ -585,20 +418,24 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     const j = J.journeyOf(cid);
     // Elle n'est pas montrée comme finie ; SINA ne la présente pas et propose de refaire le logo à sa charge.
     expect(threadView(user, cid).journey.identities!.final).toMatchObject({ finished: false });
-    expect(J.journeyContext(j)).toMatch(/La marque — elle N'EST PAS finie[\s\S]*brand\.finish avec redo \[« logo »\][\s\S]*« À ma charge : 0 % de ton budget »/);
+    expect(J.journeyContext(j)).toMatch(/La marque — elle N'EST PAS finie[\s\S]*logo\.pistes \(planche = son identité\)[\s\S]*brand\.finish refait ce qui le porte[\s\S]*« À ma charge : 0 % de ton budget »/);
     expect(J.journeyContext(j)).not.toMatch(/sa marque complète est affichée/);
-    // La carte d'accord : à la charge du Studio, jamais comptée au client.
-    expect(T.finirLogoManquant(j)).toBe(true);
-    expect(T.finirLogoManquant(j, { redo: ["hero"] })).toBe(false); // un autre changement reste un goût du client
+    // La carte d'accord : à la charge du Studio, jamais comptée au client. Le logo se fait par la méthode des graphistes.
     const ctx: any = { user, conversationId: cid, runId: "epreuve-logo", projectId, attachment: () => null };
-    const est = await getTool("brand.finish")!.estimate!(ctx, {} as never);
+    await expect(Promise.resolve().then(() => getTool("brand.finish")!.estimate!(ctx, {} as never))).rejects.toThrow(/méthode des graphistes, à ta charge \(logo\.pistes/);
+    const est = await getTool("logo.pistes")!.estimate!(ctx, { planche: "A" } as never);
     expect(est).toMatchObject({ studio: true });
-    expect(await confirmationText(getTool("brand.finish")!, {}, ctx, user.id, projectId, est)).toContain("À ma charge : 0 % de ton budget");
+    expect(await confirmationText(getTool("logo.pistes")!, { planche: "A" }, ctx, user.id, projectId, est)).toContain("À ma charge : 0 % de ton budget");
+    // Le logo posé, ce qui le porte est refait à la charge du Studio.
+    J.updateJourney(cid, (x) => { if (x.brandFinish) { delete x.brandFinish.manque; x.brandFinish.studio = true; } });
+    expect(await getTool("brand.finish")!.estimate!(ctx, {} as never)).toMatchObject({ studio: true });
+    expect((await getTool("brand.finish")!.estimate!(ctx, { redo: ["hero"] } as never)).studio).toBeFalsy(); // un autre changement reste un goût du client
+    void T;
     // Plus aucun nom dessiné en secours dans la marque finie, et la reprise part à la charge du Studio.
     const fin = fs.readFileSync("src/lib/syna-agent/brand-finish.ts", "utf8");
     expect(fin).not.toContain("savePlancheLogo(");
     expect(fin).toContain("if (!manqueLogo && loadProject(o.projectId).brand?.logo.assetId) {");
-    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain('return a.studio && j.brandFinish?.manque?.includes("logo") ? aLaChargeDuStudio(finir) : finir();');
+    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain("return a.studio && j.brandFinish?.studio ? aLaChargeDuStudio(finir) : finir();");
   });
 
   epreuve("etape-validee-qui-bouge", async () => {
@@ -866,14 +703,8 @@ describe("les épreuves du socle (fiche et verrous)", async () => {
     // Atelier : seul le choix du client lui-même (« ensemble », « moi ») échappe à la règle.
     expect(fs.readFileSync("src/lib/image-v2/native-edit-approval.ts", "utf8")).toContain("const parLeClient=(r.mode??'moi')!=='sina'&&!!r.outil&&r.outil!==OUTIL_DE_SINA;");
   });
-  epreuve("refus-du-client-toutes-tournures", async () => {
-    const { clientRefusal } = (await import("@/lib/syna-agent/brand-images")) as unknown as { clientRefusal: (t: string) => string };
-    for (const refus of ["Pas d'outil dans le logo.", "Aucune goutte.", "Sans goutte d'eau.", "J'aime pas les gouttes.", "Je déteste le rose.", "Évite les clés à molette.", "Il ne veut surtout pas de goutte d'eau."])
-      expect(clientRefusal(refus)).toBe(`Il ne veut surtout pas : « ${refus} »`);
-    expect(clientRefusal("J'aime le bleu profond et les lignes fines.")).toBe("");
-    // Un goût et un refus sur deux lignes : seul le refus part.
-    expect(clientRefusal("J'aime le vert.\nJe déteste le rose.")).toBe("Il ne veut surtout pas : « Je déteste le rose. »");
-  });
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « logo-demande-nue ».
+  epreuve("refus-du-client-toutes-tournures", () => {});
   epreuve("equipe-coupee-ne-fait-pas-tomber-la-marque", async () => {
     const C = await import("@/lib/syna-agent/brand-chain");
     const P = await import("@/lib/syna-agent/brand-prompts");
@@ -988,22 +819,6 @@ describe("les épreuves des trois ratés des logos de l'essai réel de Nadia (ve
     });
     return { user, pid, cid, sillage };
   }
-  /** La tâche de la marque, rejouée avec un faux dessinateur (qui note chaque demande) et un faux relecteur qui garde tout. */
-  async function tache(t: Awaited<ReturnType<typeof nadia>>, payload: Record<string, unknown>) {
-    const dessins: { id: string; prompt: string; serie: Buffer[]; envoye: string }[] = [];
-    const mp = await import("@/lib/ai/media-providers");
-    let n = 0;
-    C.brandChainDeps.ai = () => ({
-      research: async () => [], ask: async () => { throw new Error("aucun appel de texte attendu"); },
-      // `envoye` : le texte tel que le chemin du dessin l'envoie au fournisseur (imageReferencePrompt, la vraie fonction).
-      draw: async (id, c) => { dessins.push({ id, prompt: c.prompt, serie: c.serie ?? [], envoye: mp.imageReferencePrompt(c.prompt, (c.serie ?? []).map(() => "serie")) }); return logo(["#B4450F", "#2F6A4E", "#884422"][n++ % 3]); },
-      look: async (_id, c) => ({ images: [{ slot: "logo", seen: "", score: 9, ok: true, read: [/Marque : « ([^»]+) »/.exec(c.prompt)![1]], why: "net" }] }) as never,
-    });
-    const jid = `job-epreuve-logos-${Date.now()}-${Math.random()}`;
-    run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, t.user.id, t.pid, C.SINA_BRAND_JOB, "marque", JSON.stringify({ projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, imagesOnly: true, images: true, slots: ["logo"], ...payload }), "running", Date.now(), Date.now(), Date.now());
-    try { await fr(() => C.runSinaBrandJob(new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid)))); } finally { C.brandChainDeps.ai = undefined; run("UPDATE jobs SET status='done' WHERE id=?", jid); }
-    return dessins;
-  }
 
   epreuve("jamais-de-question-sur-le-logo", async () => {
     const { defautsDuMessage, questionSurLeLogo } = await import("@/lib/syna-agent/controle-message");
@@ -1018,124 +833,105 @@ describe("les épreuves des trois ratés des logos de l'essai réel de Nadia (ve
     const t = await nadia(false);
     const r = submitMessage(t.user, t.cid, { requestId: `req-${Math.random()}`, text: PHRASE_DE_NADIA });
     const studio: boolean[] = [];
-    await fr(() => runAgent(r.id, r.job_id!, { reason: async () => { studio.push(chargeDuStudio()); return studio.length === 1 ? { message: QUESTION_DE_SINA, actions: [], question: null, done: false } : { message: "Je t'en refais un autre pour Halo. La carte te montre le prix.", actions: [{ tool: "identity.images", args: { keys: ["B"], images: ["logo"] } }], question: null, done: false }; } }));
+    await fr(() => runAgent(r.id, r.job_id!, { reason: async () => { studio.push(chargeDuStudio()); return studio.length === 1 ? { message: QUESTION_DE_SINA, actions: [], question: null, done: false } : { message: "Je t'en refais un autre pour Halo. La carte te montre le prix.", actions: [{ tool: "logo.pistes", args: { planche: "B" } }], question: null, done: false }; } }));
     expect(studio).toEqual([false, true]);
     const v = await fr(() => threadView(t.user, t.cid));
     expect(v.messages.filter((m: any) => m.role === "assistant").map((m: any) => m.content?.message)).not.toContain(QUESTION_DE_SINA);
-    expect(v.run!.pending).toMatchObject({ tool: "identity.images", reason: "cost", args: { keys: ["B"], images: ["logo"] } });
+    // Un ancien projet passe lui aussi par la méthode des graphistes : de nouvelles pistes pour le nom de Halo, sur son budget.
+    expect(v.run!.pending).toMatchObject({ tool: "logo.pistes", reason: "cost", args: { planche: "B" } });
+    // Elle choisit ensuite son esquisse ; SINA la finit pour Halo, avec la carte (jamais une question sur le logo).
+    const { travailDesPistes } = await import("@/lib/syna-agent/tools/logo");
+    expect(travailDesPistes(J.journeyOf(t.cid), "B")).toMatchObject({ neuve: true, nom: "Halo", planche: "B", studio: false });
   });
 
-  epreuve("logos-de-la-serie-dans-l-ordre", async () => {
-    // La tâche reçoit [C, B] (l'ordre de SINA) : Halo part d'abord avec Sillage gardé ; Pénombre reçoit Sillage et le nouveau Halo.
-    const t = await nadia(false);
-    const dessins = await tache(t, { redo: ["C", "B"] });
-    expect(dessins.map((d) => d.id.split("-")[2])).toEqual(["B", "C"]);
-    const nouveauHalo = assetData(getAsset(J.journeyOf(t.cid).identities!.list[1].board!.images!.logo!.id)!);
-    expect(dessins[0].serie.map(sha)).toEqual([sha(t.sillage)]);
-    expect(dessins[1].serie.map(sha)).toEqual([sha(t.sillage), sha(nouveauHalo)]);
-    // La carte : les clés remises dans l'ordre dans la tâche.
-    const ctx = { user: t.user, conversationId: t.cid, runId: `run-${Math.random()}`, projectId: t.pid, attachment: () => null } as any;
-    const res = await fr(() => getTool("identity.images")!.run(ctx, { keys: ["C", "B"], images: ["logo"] } as never));
-    expect(JSON.parse(getJob(res.jobs![0])!.payload).redo).toEqual(["B", "C"]);
-    // Deux appels dans la même réponse : réunis en un seul, B puis C.
-    const { reprisesDansLOrdre } = await import("@/lib/syna-agent/ordre-des-logos");
-    expect(reprisesDansLOrdre([{ tool: "identity.images", args: { keys: ["C"], images: ["logo"] } }, { tool: "identity.images", args: { keys: ["B"], images: ["logo"] } }], t.cid)).toEqual([{ tool: "identity.images", args: { keys: ["B", "C"], images: ["logo"] } }]);
-    // L'essai réel : Pénombre demandé seul alors que Nadia demande aussi Halo : pas de carte, SINA est prévenue, sans dépense.
-    const u = await nadia(true);
-    addMessage(u.cid, "user", { text: PHRASE_DE_NADIA, attachments: [] }, null);
-    const uctx = { user: u.user, conversationId: u.cid, runId: `run-${Math.random()}`, projectId: u.pid, attachment: () => null } as any;
-    await expect(fr(() => getTool("identity.images")!.estimate!(uctx, { keys: ["C"], images: ["logo"] } as never))).rejects.toThrow(/« Halo » \(B\) : le client vient de demander aussi un autre logo pour elle.*keys = B, C et images = logo/);
-    expect((await fr(() => getTool("identity.images")!.estimate!(uctx, { keys: ["B", "C"], images: ["logo"] } as never))).maxMicro).toBeGreaterThan(0);
-    void toolContext; void getRun;
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « esquisses-choisies-selon-le-forfait ».
+  epreuve("logos-de-la-serie-dans-l-ordre", () => {});
+
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « finalisation-ecrite-par-le-plus-fort ».
+  epreuve("pas-de-consigne-de-style-pour-un-logo", () => {});
+
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « planches-de-recherche-demande-exacte ».
+  epreuve("demande-du-logo-couleurs-typo-fond", () => {});
+
+  // Remplacée (méthode des graphistes) : l'ancienne série de logos est retirée ; ce qui reste vrai est rejoué par « relecteur-du-logo-fini ».
+  epreuve("relecteur-du-logo-qualite-seule", () => {});
+});
+
+describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async () => {
+  const { finaliserUneEsquisse, consigneDeFinalisation, LIGNE_D_EVOLUTION, controleDuTexte, raisonsDuRefus } = await import("@/lib/syna-agent/logo-finalisation");
+  const { demandeDeRecherche, lancerLesPlanches } = await import("@/lib/syna-agent/logo-recherche");
+  const { requeteDePlanche, champsDeFinalisation } = await import("@/lib/ai/media-providers");
+  const { basculer, messageDuChoix } = await import("@/lib/syna-agent/choix-esquisses");
+  const NOM = "Halo", METIER = "une entreprise qui fabrique des bougies parfumées en cire végétale";
+  const TEXTE = `Transforme cette esquisse en véritable logo contemporain pour ${NOM}, ${METIER}. Conserve l'idée centrale : un halo autour du H. Fais évoluer cette idée vers une identité plus aboutie et plus distinctive. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif`;
+  const bon = { nomLu: NOM, ideeConservee: true, evolution: true, arche: false, phrase: "", phraseDitLeMetier: false, note: 9, pourquoi: "" };
+  const png = () => sharp({ create: { width: 300, height: 120, channels: 3, background: "#FFFFFF" } }).composite([{ input: { create: { width: 200, height: 60, channels: 3, background: "#222222" } }, left: 50, top: 30 }]).png().toBuffer();
+
+  epreuve("logo-refait-une-fois-avec-ses-raisons", async () => {
+    const envoyes: string[] = [];
+    const r = await finaliserUneEsquisse({
+      rediger: async () => ({ idee_centrale: "un halo", texte: TEXTE }),
+      finaliser: async (_e, t) => { envoyes.push(t); return png(); },
+      relire: async () => ({ ...bon, note: 5 }),
+      detourer: async (p) => ({ ok: true, png: p }),
+      aLaChargeDuStudio: async (fn) => fn(),
+    }, { nom: NOM, metier: METIER, esquisse: await png() });
+    // Refusé deux fois : pas gardé, jamais un troisième essai ; la reprise porte les raisons du refus à la fin du texte.
+    expect(r.ok).toBe(false);
+    expect(envoyes).toHaveLength(2);
+    expect(envoyes[1]).toBe(`${TEXTE} À corriger : il n'est pas au niveau (5/10, il faut 8).`);
+    // L'identité n'est pas construite avec lui : SINA propose une autre esquisse.
+    const { phraseDuLogoNonConstruit } = await import("@/lib/syna-agent/logo-graphistes");
+    expect(phraseDuLogoNonConstruit(3, [3, 7, 11])).toMatch(/je ne construis pas cette identité avec lui\. Je te propose une autre esquisse parmi celles que tu as vues \(par exemple la 7\)/);
   });
 
-  epreuve("pas-de-consigne-de-style-pour-un-logo", async () => {
-    // La carte B + C rejouée avec la consigne de l'essai réel, dans l'ordre de SINA, et la fiche « pas de flamme dessinée ».
-    const t = await nadia(true);
-    const F = await import("@/lib/syna-agent/fiche");
-    F.addNotes(t.cid, [{ sujet: "la flamme", value: "pas de flamme dessinée dans le logo, toutes les marques de bougies font ça.", genre: "refuse", portee: "logo" }]);
-    const dessins = await tache(t, { redo: ["C", "B"], guidance: CONSIGNE });
-    const I = await import("@/lib/syna-agent/brand-images");
-    const list = J.journeyOf(t.cid).identities!.list as any[];
-    const attendue = (x: any, serie: string, epel = "") => ["Fais-moi un logo pour une marque de bougies. Le nom de la marque : « " + x.name + " ».", ...(epel ? [epel] : []), `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`, I.typoLine(x.fonts.heading), "Sur un fond blanc uni.", serie].join("\n");
-    expect(dessins.map((d) => d.envoye)).toEqual([
-      attendue(list[1], "Je veux un autre logo complètement différent de celui-là."),
-      attendue(list[2], "Fais-moi un autre logo complètement différent des deux premiers.", "Il s'écrit lettre par lettre : P, é, n, o, m, b, r, e."),
-    ]);
-    for (const d of dessins) { expect(d.envoye).not.toMatch(/parfaitement uni|lettres bleues|arrondies|ellipse|orange|flamme|ne me plaît|chaleureux/i); expect(d.envoye).not.toMatch(/^La marque :|\nLa marque :/); }
-    // L'outil qui refait le logo : la consigne de style retirée par le Studio, la carte n'est pas bloquée, SINA le lit.
-    const ctx = { user: t.user, conversationId: t.cid, runId: `run-${Math.random()}`, projectId: t.pid, attachment: () => null } as any;
-    const res = await fr(() => getTool("identity.images")!.run(ctx, { keys: ["C", "B"], images: ["logo"], guidance: CONSIGNE } as never));
-    expect(res.ok).toBe(true);
-    const payload = JSON.parse(getJob(res.jobs![0])!.payload);
-    expect(payload.guidance).toBe("Le client a dit : « Le logo de Halo ne me plaît pas trop, tu peux m'en faire un autre ? »");
-    expect(JSON.stringify(payload)).not.toMatch(/fond blanc|lettres bleues|ellipse/);
-    expect(res.hint).toMatch(/Ta consigne pour le logo a été retirée sans être transmise/);
+  epreuve("esquisses-choisies-selon-le-forfait", async () => {
+    const { controleDuChoix, esquissesAChoisir } = await import("@/lib/syna-agent/logo-graphistes");
+    expect([esquissesAChoisir("creer"), esquissesAChoisir("vendre"), esquissesAChoisir("dominer")]).toEqual([2, 3, 4]);
+    const etat = { max: 3, esquisses: [3, 7, 11, 12].map((numero) => ({ numero, assetId: "a", modele: "m", piste: "", tour: 1, recherche: 1, requestId: null })) };
+    expect(controleDuChoix(etat, [3, 7, 11])).toBeNull();
+    expect(controleDuChoix(etat, [7, 11])).toBeNull();
+    expect(controleDuChoix(etat, [7])).toBeTruthy();
+    expect(controleDuChoix(etat, [3, 7, 11, 12])).toBeTruthy();
+    expect(controleDuChoix(etat, [5])).toBeTruthy();
+    let sel: number[] = []; for (const n of [11, 3, 7, 12]) sel = basculer(sel, n, 3);
+    expect(sel).toEqual([3, 7, 11]);
+    expect(messageDuChoix(sel)).toBe("Je choisis les esquisses 3, 7 et 11");
+    // Les logos finis partent dans l'ordre des numéros (la tâche les trie, quel que soit l'ordre donné).
+    expect(fs.readFileSync("src/lib/syna-agent/logo-graphistes-tache.ts", "utf8")).toContain("for (const numero of [...new Set(numeros)].sort((x, y) => x - y)) {");
   });
 
-  epreuve("demande-du-logo-couleurs-typo-fond", async () => {
-    // La série de trois, puis une reprise : la vraie chaîne, avec un faux dessinateur qui note la demande telle qu'elle part.
-    const I = await import("@/lib/syna-agent/brand-images");
-    const t = await nadia(true);
-    J.updateJourney(t.cid, (x) => { delete x.identities!.list[1].board!.images!.logo; });
-    let vus = 0;
-    const dessins: { cle: string; envoye: string; images: number }[] = [];
-    const mp = await import("@/lib/ai/media-providers");
-    C.brandChainDeps.ai = () => ({
-      research: async () => [], ask: async () => { throw new Error("aucun appel de texte attendu"); },
-      draw: async (id, c) => { dessins.push({ cle: id.split("-")[2], envoye: mp.imageReferencePrompt(c.prompt, (c.serie ?? []).map(() => "serie")), images: (c.serie ?? []).length }); return logo(["#B4450F", "#2F6A4E", "#884422", "#226688"][dessins.length % 4]); },
-      // Le 1er logo de Halo refusé (un sous-titre), tout le reste gardé.
-      look: async (_id, c) => { const nom = /Marque : « ([^»]+) »/.exec(c.prompt)![1]; return (nom === "Halo" && ++vus === 1 ? { images: [{ slot: "logo", seen: "", score: 5, ok: false, read: ["Halo", "Bougies"], why: "un sous-titre", defect: "texte" }] } : { images: [{ slot: "logo", seen: "", score: 9, ok: true, read: [nom], why: "net" }] }) as never; },
-    });
-    const jid = `job-epreuve-demande-${Date.now()}`;
-    run("INSERT INTO jobs (id, user_id, project_id, type, label, payload, status, run_at, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)", jid, t.user.id, t.pid, C.SINA_BRAND_JOB, "marque", JSON.stringify({ projectId: t.pid, conversationId: t.cid, capMicro: 9_000_000, count: 3, imagesOnly: true, images: true, slots: ["logo"], redo: ["C", "B"], guidance: CONSIGNE }), "running", Date.now(), Date.now(), Date.now());
-    try { await fr(() => C.runSinaBrandJob(new JobContext(one<any>("SELECT * FROM jobs WHERE id = ?", jid)))); } finally { C.brandChainDeps.ai = undefined; run("UPDATE jobs SET status='done' WHERE id=?", jid); }
-    const list = J.journeyOf(t.cid).identities!.list as any[];
-    const attendue = (x: any, serie: string, epel = "") => ["Fais-moi un logo pour une marque de bougies. Le nom de la marque : « " + x.name + " ».", ...(epel ? [epel] : []), `Couleurs de la marque : foncé ${x.palette.dark}, couleur de marque ${x.palette.primary}, surface ${x.palette.secondary}, accent ${x.palette.accent}, clair ${x.palette.light}.`, I.typoLine(x.fonts.heading), "Sur un fond blanc uni.", serie].join("\n");
-    expect(dessins.map((d) => [d.cle, d.images])).toEqual([["B", 1], ["B", 2], ["C", 2]]);
-    expect(dessins.map((d) => d.envoye)).toEqual([
-      attendue(list[1], "Je veux un autre logo complètement différent de celui-là."),
-      attendue(list[1], "Fais-moi un autre logo complètement différent de tous ceux-là."),
-      attendue(list[2], "Fais-moi un autre logo complètement différent des deux premiers.", "Il s'écrit lettre par lettre : P, é, n, o, m, b, r, e."),
-    ]);
-    expect(I.typoLine("nunito_n8")).toContain("un caractère rond épais (dans l'esprit de Nunito)");
-    for (const d of dessins) { expect(d.envoye).not.toMatch(/parfaitement uni|lettres bleues|ellipse|flamme|ne me plaît|chaleureux|sous-titre|Bougies naturelles|planche|exemples|Son ton|Idée/i); expect(d.envoye).not.toMatch(/^La marque :|\nLa marque :/); }
-    // Le logo gardé de Sillage n'est jamais redessiné.
-    expect(dessins.some((d) => d.cle === "A")).toBe(false);
+  epreuve("finalisation-ecrite-par-le-plus-fort", async () => {
+    const t = await import("@/lib/ai/text-models");
+    expect(t.textModel("openai", "gpt-6.2-astra")).toMatchObject({ tier: "strong", vision: true, verified: true });
+    const c = consigneDeFinalisation(NOM, METIER);
+    expect(c).toContain(LIGNE_D_EVOLUTION);
+    expect(c).not.toMatch(/#[0-9a-f]{6}/i);
+    expect(controleDuTexte(TEXTE, NOM, METIER)).toEqual([]);
+    expect(controleDuTexte("Un logo.", NOM, METIER).length).toBeGreaterThan(0);
+    expect(champsDeFinalisation(TEXTE)).toEqual({ model: "gpt-image-2.6-sunburst", prompt: TEXTE, quality: "high", size: "auto", background: "opaque", output_format: "png", n: 1 });
+    // Le rédacteur est GPT-6.2 Astra, route imposée (jamais un autre modèle) ; aucune consigne de SINA n'y entre.
+    const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
+    expect(src).toContain('const ASTRA: Modele = { provider: "openai", model: "gpt-6.2-astra", effort: "medium" };');
+    expect(src).toContain('...(a === "redaction" ? { expectedRoute: { provider: m.provider, model: m.model, effort: m.effort } } : {}),');
   });
 
-  epreuve("relecteur-du-logo-qualite-seule", async () => {
-    const I = await import("@/lib/syna-agent/brand-images");
-    const P = await import("@/lib/syna-agent/brand-prompts");
-    const t = await nadia(true);
-    const F = await import("@/lib/syna-agent/fiche");
-    F.addNotes(t.cid, [{ sujet: "la flamme", value: "pas de flamme dessinée dans le logo, toutes les marques de bougies font ça.", genre: "refuse", portee: "logo" }]);
-    const x = J.journeyOf(t.cid).identities!.list[2] as any;
-    const relus: { prompt: string; fixes: number }[] = [], demandes: string[] = [];
-    let n = 0;
-    const ai: any = {
-      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
-      // 1er dessin : un fond impossible à retirer (texture) ; ensuite des logos sur fond blanc net.
-      draw: async (_id: string, c: any) => { demandes.push(c.prompt); n++; if (n === 1) { const w = 320, h = 240, d = Buffer.alloc(w * h * 3); for (let i = 0; i < d.length; i++) d[i] = (i * 7919) % 256; return sharp(d, { raw: { width: w, height: h, channels: 3 } }).png().toBuffer(); } return logo("#2F6A4E"); },
-      // 2e dessin : 7 sur 10 (refusé) ; 3e : 9 sur 10 mais un sous-titre lu (refusé) ; le Studio ne garde rien d'autre.
-      look: async (id: string, c: any) => { if (id.startsWith("imagereread")) return { images: [{ slot: "logo", read: ["Pénombre", "Bougies naturelles"] }] }; relus.push({ prompt: c.prompt, fixes: (c.fixes ?? []).length }); return relus.length === 1 ? { images: [{ slot: "logo", seen: "", score: 7, ok: false, read: ["Pénombre"], why: "banal", defect: "autre" }] } : { images: [{ slot: "logo", seen: "", score: 9, ok: true, read: ["Pénombre", "Bougies naturelles"], why: "beau" }] }; },
-    };
-    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
-    const C2 = await import("@/lib/syna-agent/brand-chain");
-    const r = await I.runBoardImages({ ctx, ai, who: { userId: t.user.id, projectId: t.pid }, brief: "", kind: "produits", route: x as never, round: 1, slots: ["logo"], imagery: { look: "", logo: "", hero: "", object: "", site: "", signs: "", posts: ["", "", ""] }, gouts: C2.goutsDuClient(J.journeyOf(t.cid), t.pid, "Le logo de Halo ne me plaît pas trop") });
-    // Fond impossible à retirer : refusé sans relecture payée, redessiné ; un logo sous 8 et un mot en trop refusés.
-    expect(r.notes.join(" ")).toMatch(/logo de C refusé par le Studio/);
-    expect(r.route.board.images?.logo).toBeUndefined();
-    expect(relus.length).toBeGreaterThanOrEqual(2);
-    for (const v of relus) {
-      expect(v.prompt).not.toMatch(/flamme|ne me plaît|Ce que le client a dit|qui montre ce qu'il refuse/);
-      expect(v.prompt).toMatch(/planche des logos que le propriétaire du Studio aime/);
-      expect(v.prompt).toContain("un mot non demandé (un sous-titre, une ligne de métier, un slogan, par exemple « Bougies naturelles ») est un défaut");
-      expect(v.prompt).toContain("Textes attendus : « Pénombre »");
-      expect(v.fixes).toBe(1);
-    }
-    expect(P.imageReviewSystem()).toMatch(/pour le LOGO : il n'est pas net et lisible/);
-    // La consigne de SINA et les mots du client n'arrivent jamais au dessinateur.
-    for (const d of demandes) expect(d).not.toMatch(/flamme|ne me plaît|parfaitement uni/);
+  epreuve("planches-de-recherche-demande-exacte", async () => {
+    const prompt = demandeDeRecherche({ nom: NOM, metier: { metier: METIER, court: "la bougie", piste: "savoir-faire" } });
+    expect(prompt).not.toMatch(/couleur|typograph|#|fond blanc uni|refus|client/i);
+    const vus: string[] = [];
+    await lancerLesPlanches(async (m, p) => { vus.push(`${m}|${p}`); return { png: Buffer.from(""), requestId: null, usage: null, coutMicro: null }; }, prompt);
+    expect(vus.sort()).toEqual([`gpt-image-2.5-sunburst|${prompt}`, `gpt-image-2.6-flare|${prompt}`]);
+    expect(requeteDePlanche("gpt-image-2.5-sunburst", prompt)).not.toHaveProperty("complexity");
+    expect(requeteDePlanche("gpt-image-2.6-flare", prompt)).toMatchObject({ complexity: "medium" });
+    expect(demandeDeRecherche({ nom: NOM, metier: { metier: METIER, court: "la bougie", piste: "savoir-faire" }, eviter: ["un H auréolé"] })).toBe(`${prompt} Évite ces pistes déjà présentées : un H auréolé.`);
+  });
+
+  epreuve("relecteur-du-logo-fini", () => {
+    expect(raisonsDuRefus(bon, NOM)).toEqual([]);
+    for (const v of [{ nomLu: "Hal0" }, { ideeConservee: false }, { evolution: false }, { arche: true }, { phrase: "Lumière éternelle", phraseDitLeMetier: false }, { note: 7 }]) expect(raisonsDuRefus({ ...bon, ...v }, NOM)).toHaveLength(1);
+    // Le relecteur est le plus fort, effort élevé, un autre modèle que le rédacteur.
+    const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
+    expect(src).toContain('logo: { input: 3_500, output: 1_500, max: 10_000, modele: "strong" as const, effort: "high" },');
   });
 });

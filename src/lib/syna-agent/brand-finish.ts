@@ -2,14 +2,15 @@
  * La marque FINIE de l'identité choisie (lot 2, 15 novembre 2026). Second temps de l'étape « La marque » : les planches
  * proposées n'ont que leur logo et leur grande scène ; une fois l'identité choisie, le Studio
  *
- *   1. crée les images qui lui manquent (l'objet qui porte le logo, les signes, les trois publications ; et le logo ou
- *      la scène si le client a mélangé deux identités ou demande un autre logo), relues avant d'être montrées ;
+ *   1. crée les images qui lui manquent (l'objet qui porte le logo, les signes, les trois publications ; et ce qui porte
+ *      le logo quand il a changé), relues avant d'être montrées ;
  *   2. adopte son logo comme logo de la marque : celui créé par OpenAI pour sa planche, fond retiré, avec ses
  *      déclinaisons ; s'il n'y en a pas de validé, le nom dessiné (exact à la lettre) sert de secours, et c'est dit ;
  *   3. prépare la charte complète (déclinaisons, favicons, avatar, planche, charte PDF), sans IA.
  *
- * Une seule façon de faire un logo : celui de la planche. « Un autre logo » repasse par ici (`slots` = logo), avec
- * les mots du client, et ce qui porte le logo est refait avec le nouveau.
+ * Une seule façon de faire un logo : la méthode des graphistes (logo-graphistes.ts). Le logo ne se dessine jamais ici :
+ * « un autre logo » passe par logo.autre ou logo.pistes, qui posent le logo fini sur la planche ; ce qui le porte est
+ * alors refait ici, avec lui.
  */
 import { z } from "zod";
 import { UserFacingError, getJob, type JobContext } from "../jobs";
@@ -43,18 +44,17 @@ export function missingSlots(j: Journey): ImageSlot[] {
   // Nom retouché ou pris à une autre identité : le téléphone portait l'ancien nom, il est refait (sinon la marque finie
   // restait sans téléphone, audit du 22 novembre 2026).
   const c = j.identityChoice, nomChange = !!c?.edits?.name || (!!c?.mix?.name && c.mix.name !== c.key);
-  const ancien = (j.identities?.siteAncienLogo ?? []).includes(x.key) || nomChange;
-  return CREATED_SLOTS.filter((s) => (s !== "site" || ancien) && !(s === "logo" && j.keep.includes("logo")) && (!has(x.board.images, s) || (s === "site" && ancien)));
+  // Un logo pris à une autre identité, ou posé depuis la fin de la marque (logo.autre, logo.pistes) : ce qui porte
+  // l'ancien est refait avec lui (jamais deux logos différents sur la marque).
+  const logoPris = !!c?.mix?.logo && c.mix.logo !== c.key;
+  const logoChange = !!j.brandFinish?.logoFrom && !!x.board.images?.logo && x.board.images.logo.id !== j.brandFinish.logoFrom;
+  const ancien = (j.identities?.siteAncienLogo ?? []).includes(x.key) || nomChange || logoPris || logoChange;
+  return CREATED_SLOTS.filter((s) => (s !== "site" || ancien) && (!has(x.board.images, s) || (s === "site" && ancien) || (logoChange && s !== "hero")));
 }
 
 /** Images réellement refaites : un nouveau logo entraîne ce qui le porte (jamais deux logos différents sur la marque). */
 export function finishSlots(j: Journey, redo?: readonly ImageSlot[]): ImageSlot[] {
   let slots: ImageSlot[] = redo?.length ? [...redo] : missingSlots(j);
-  if (j.keep.includes("logo")) slots = slots.filter((s) => s !== "logo");
-  // Un logo refait remplace l'ancien PARTOUT : ce qui le porte (objet, signes, les trois publications, le téléphone) est
-  // refait avec lui (règle « jamais l'ancien logo sur la marque finie » ; audit du 22 novembre 2026 : publications et
-  // téléphone gardaient l'ancien).
-  if (slots.includes("logo")) slots = [...slots, "object", "signs", "post0", "post1", "post2", "site"];
   return CREATED_SLOTS.filter((s) => slots.includes(s));
 }
 
@@ -95,11 +95,8 @@ export async function runBrandFinish(o: {
     ctx.progress(0.1, L("Je crée les images de ta marque", "Creating your brand's images"));
     const r = await runBoardImages({
       ctx, ai, who, brief: o.brief, kind: o.kind, route, round, slots, clientLogo,
-      // Le logo seul, même avec les mots du client (qui ne vont jamais à son dessinateur) : la direction d'origine
-      // ressert pour ce qui le porte (audit du 22 novembre 2026, 2.4).
-      imagery: mixed || (o.guidance && !(o.slots?.length && o.slots.every((s) => s === "logo"))) ? undefined : proposalImagery(j, route),
-      // Logo refait avec les mots du client : le dessinateur du logo ne reçoit que le métier et le nom (décision du 23
-      // novembre 2026) ; le relecteur reçoit les mots du client (sa fiche et ce qu'il vient de dire), refus compris.
+      imagery: mixed || o.guidance ? undefined : proposalImagery(j, route),
+      // Le relecteur reçoit les mots du client (sa fiche et ce qu'il vient de dire), refus compris.
       gouts: goutsDuClient(j, o.projectId, clientWords(o.guidance)),
     });
     current = r.route; notes.push(...r.notes);
@@ -110,16 +107,15 @@ export async function runBrandFinish(o: {
   }
   const images = current.board.images;
 
-  // 2. Le logo de la marque : celui de la planche, fond retiré. Sans logo gardé après ses reprises, plus de nom dessiné
-  // en secours (règle du propriétaire : « Jamais une planche incomplète : une image refusée est refaite avant d'être
-  // montrée » ; essai réel de Nadia, 23 novembre 2026) : la marque n'est pas montrée comme finie, SINA dit ce qui bloque
-  // et refait le logo à sa charge (brand.finish, carte « À ma charge : 0 % de ton budget »).
+  // 2. Le logo de la marque : celui de la planche (fini par la méthode des graphistes), fond retiré. Sans logo, plus de nom
+  // dessiné en secours (règle du propriétaire : « Jamais une planche incomplète ») : la marque n'est pas montrée comme
+  // finie, SINA dit ce qui bloque et cherche les pistes de son logo à sa charge (logo.pistes, « À ma charge : 0 % »).
   let logos = j.logos?.list ?? [], logoChoice = j.logoChoice;
   const from = images?.logo?.id ?? null;
   const boardLogo = images?.logo ? getAsset(images.logo.id) : undefined;
   const manqueLogo = !keptLogo && !(boardLogo && boardLogo.project_id === o.projectId && !boardLogo.deleted_at);
-  if (manqueLogo) issues.push(L("Ta marque n'est pas encore finie : son logo n'a pas passé ma relecture, même après mes reprises. Je ne te la montre pas sans logo : je le refais, à ma charge, rien n'est compté pour toi.", "Your brand is not finished yet: its logo did not pass my review, even after my retries. I redo it at my expense."));
-  if (!keptLogo && !manqueLogo && (!logoChoice || slots.includes("logo") || (j.brandFinish as { logoFrom?: string | null } | undefined)?.logoFrom !== from)) {
+  if (manqueLogo) issues.push(L("Ta marque n'est pas encore finie : il lui manque son logo. Je ne te la montre pas sans logo : je cherche les pistes de ton logo, à ma charge, et tu choisis ton esquisse ; rien n'est compté pour toi.", "Your brand is not finished yet: its logo is missing. I look for your logo directions at my expense, and you choose your sketch."));
+  if (!keptLogo && !manqueLogo && (!logoChoice || (j.brandFinish as { logoFrom?: string | null } | undefined)?.logoFrom !== from)) {
     ctx.progress(0.8, L("Je prépare ton logo", "Preparing your logo"));
     const draft = singleTerritory(freeLogoFacts(p.brand, j), current);
     const assetId = await saveBoardLogo(ctx, who, current, { ...draft, id: "planche-logo", style: "libre" } as Territory, await sansFond(assetData(boardLogo!), current.palette.dark));
@@ -173,7 +169,7 @@ export async function runBrandFinish(o: {
   }
 
   updateJourney(o.conversationId, (x) => {
-    const { manque: _avant, ...avant } = x.brandFinish ?? {};
+    const { manque: _avant, studio: _studio, ...avant } = x.brandFinish ?? {};
     x.brandFinish = { ...avant, prepaidMicro: 0, ...(images ? { images } : {}), at: Date.now(), issues: [...new Set(issues)], logoFrom: from, ...(symbolFor ? { symbolFor } : {}), ...(manqueLogo ? { manque: ["logo"] } : {}) } as Journey["brandFinish"];
     if (!keptLogo && logoChoice) { x.logos = { list: logos, at: Date.now(), round: (x.logos?.round ?? 0) + 1, notes: [] }; x.logoChoice = logoChoice; setStep(x, 2, "done"); }
     if (kit) { x.brandKit = kit; setStep(x, 3, "review"); } else setStep(x, 3, "todo");

@@ -332,7 +332,8 @@ describe("routage multimédia par usage", async () => {
     const c = await client(); const pid = fr(() => seedLogoFixture(c.userId, "artisan"));
     const {prepareGuidedLogo,confirmedGuidedLogo}=await import("./logo295-guided-fixture");
     await fr(()=>prepareGuidedLogo(pid));const authorized=await fr(()=>confirmedGuidedLogo(pid));
-    setJsonSetting("ai.prices", {});
+    // Tarif du modèle des logos absent (la formule officielle borne sinon son coût) : rien ne part.
+    setJsonSetting("ai.prices", { "openai:gpt-image-2.5-sunburst": { unit: "tokens", inputPerM: 0, outputPerM: 0 } });
     await expect(fr(() => runLogoEngineV2(authorized,pid))).rejects.toThrow(/attente|indisponible|Plafond/);
     expect(oa.calls).toHaveLength(0); expect(net.calls).toHaveLength(0); expect(llm.sent).toHaveLength(0);
     expect(all("SELECT id FROM assets WHERE project_id=? AND role IN ('logo-v2','logo-v2-studio')",pid)).toHaveLength(0);

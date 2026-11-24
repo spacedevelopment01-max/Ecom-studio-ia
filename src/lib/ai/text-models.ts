@@ -40,6 +40,8 @@ export type TextModel = {
   verified: boolean;
   /** Source officielle des informations (affichée dans l'administration). */
   source: string;
+  /** Allumé par défaut pour le routage (Anthropic l'est toujours) ; un choix enregistré dans l'administration prime. */
+  enabledByDefault?: boolean;
   use: { fr: string; en: string };
 };
 
@@ -163,9 +165,10 @@ export const TEXT_MODELS: TextModel[] = [
     limits: { context: 272_000, maxOutput: 32_000, flatPriceUpTo: 272_000 },
     latency: 2,
     exactCount: true,
-    // Verrouillé comme tous les modèles d'OpenAI tant que l'administration ne l'a pas confirmé (un geste, avant l'essai
-    // réel) : sans lui, le texte de finalisation est refusé avant tout envoi, jamais écrit par un autre modèle.
-    verified: false,
+    // Confirmé (identifiant et tarif) sur la page officielle des prix, lue le 22 novembre 2026, et allumé par défaut : la
+    // méthode des graphistes en a besoin. Un choix fait à la main dans l'administration n'est jamais écrasé.
+    verified: true,
+    enabledByDefault: true,
     source: "https://developers.openai.com/api/docs/pricing",
     use: { fr: "Écrit le texte de finalisation d'un logo à partir de l'esquisse choisie (méthode des graphistes).", en: "Writes the logo finishing text from the chosen sketch (designers' method)." },
   },
@@ -263,7 +266,8 @@ export function modelStatus(m: TextModel, admin: Record<string, ModelAdmin> = mo
   const confirmed = m.verified || !!a.confirmedAt;
   if (!confirmed) reasons.push(L("identifiant, tarif et limites à confirmer", "ID, price and limits to confirm"));
   const usable = reasons.length === 0;
-  const enabled = a.enabled ?? m.provider === "anthropic";
+  // Le défaut ne s'applique que si rien n'est enregistré pour ce modèle dans l'administration.
+  const enabled = a.enabled ?? (m.provider === "anthropic" || !!m.enabledByDefault);
   return { key, usable, confirmed, enabled, autoEligible: usable && enabled, reasons };
 }
 

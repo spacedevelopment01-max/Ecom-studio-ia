@@ -16,6 +16,10 @@ import { L } from "../i18n-server";
 import { addMessage, type SynaMessage } from "./store";
 import { journeyOf, planchesIncompletes, type Journey } from "./journey";
 import { SINA_BRAND_JOB } from "./brand-chain";
+import { LOGO_GRAPHISTES_JOB } from "./logo-graphistes-tache";
+
+/** Les outils qui finissent une planche : son logo par la méthode des graphistes, le reste par identity.images. */
+const OUTILS_DE_REPRISE = new Set(["identity.images", "logo.pistes", "logo.autre"]);
 
 type Image = "logo" | "hero" | "site";
 const ORDRE: Image[] = ["logo", "hero", "site"];
@@ -81,13 +85,15 @@ function noterEtat(cid: string, change: Partial<Etat>) {
 }
 
 /**
- * Le client a déjà dit oui : une création de la marque tourne (reprise des images ou proposition en cours), ou la carte
- * d'accord d'une reprise des images attend sa réponse.
+ * Le client a déjà dit oui : une création de la marque ou un travail sur un logo tourne, la carte d'accord d'une reprise
+ * attend sa réponse, ou les esquisses du logo d'une planche à finir attendent son choix.
  */
 export function repriseEnCours(cid: string, projectId: string | null): boolean {
-  if (projectId && pendingJob(projectId, SINA_BRAND_JOB)) return true;
+  if (projectId && (pendingJob(projectId, SINA_BRAND_JOB) || pendingJob(projectId, LOGO_GRAPHISTES_JOB))) return true;
   const r = one<{ pending_json: string | null }>("SELECT pending_json FROM syna_runs WHERE conversation_id=? AND status='waiting_confirmation' ORDER BY created_at DESC LIMIT 1", cid);
-  return json<{ tool?: string } | null>(r?.pending_json ?? "null", null)?.tool === "identity.images";
+  if (OUTILS_DE_REPRISE.has(json<{ tool?: string } | null>(r?.pending_json ?? "null", null)?.tool ?? "")) return true;
+  const j = journeyOf(cid), g = j.graphistes;
+  return !!g?.planche && !!g.esquisses.length && planchesAFinir(j).some((x) => x.key === g.planche && x.manque.includes("logo"));
 }
 
 /** Le client a dit non à cet état des planches (« Plus tard », ou la carte de cette reprise refusée). */
@@ -129,20 +135,24 @@ export function poserLaProposition(cid: string, projectId: string | null): SynaM
 export function ligneDesPlanchesAFinir(cid: string, projectId: string | null): string {
   const list = planchesAFinir(journeyOf(cid));
   if (!list.length || repriseEnCours(cid, projectId) || etatDe(cid).refus === empreinteDuManque(list)) return "";
-  const groupes = groupesAFinir(list);
-  return `# À DIRE EN PREMIER, avant tout le reste\nIl manque ${manqueEnMots(list).fr} (planches ${list.map((x) => `${x.key} « ${x.name} »`).join(", ")}). Ces planches ne sont pas montrées au client tant qu'elles sont incomplètes. Dis-le-lui d'abord, en mots simples, et propose-lui de les finir à ta charge : ça ne lui coûte rien. S'il dit oui : identity.images ${groupes.map((g) => `keys = ${g.keys.join(", ")} ; images = ${g.images.join(", ")}`).join(" ; puis ")} (exactement ce qui manque${groupes.length > 1 ? ", un groupe à la fois" : ""}). La carte d'accord dit « À ma charge : 0 % de ton budget ». S'il demande aussi un autre logo d'une planche, ne lance pas d'abord celles à finir : un seul appel identity.images avec toutes ces planches et images = logo ; le Studio fait les logos dans l'ordre des identités (A, puis B, puis C), chacun recevant ceux refaits juste avant lui. Ensuite seulement, réponds à ce qu'il vient de dire.\n\n`;
+  const sansLogo = logosAFinir(list), groupes = groupesAFinir(list);
+  const suite = [
+    ...(sansLogo.length ? [`son logo, par la méthode des graphistes, une planche à la fois : logo.pistes avec planche = ${sansLogo[0]} (puis ${sansLogo.length > 1 ? `${sansLogo.slice(1).join(", ")}, ` : ""}chaque fois qu'un logo est posé) ; il choisit son esquisse, tu la finis avec logo.autre (esquisse = son numéro, planche = la même)`] : []),
+    ...groupes.map((g) => `identity.images keys = ${g.keys.join(", ")} ; images = ${g.images.join(", ")}`),
+  ];
+  return `# À DIRE EN PREMIER, avant tout le reste\nIl manque ${manqueEnMots(list).fr} (planches ${list.map((x) => `${x.key} « ${x.name} »`).join(", ")}). Ces planches ne sont pas montrées au client tant qu'elles sont incomplètes. Dis-le-lui d'abord, en mots simples, et propose-lui de les finir à ta charge : ça ne lui coûte rien. S'il dit oui : ${suite.join(" ; puis ")} (exactement ce qui manque${suite.length > 1 ? ", un appel à la fois" : ""}). La carte d'accord dit « À ma charge : 0 % de ton budget ». Ensuite seulement, réponds à ce qu'il vient de dire.\n\n`;
 }
 
-/** Les planches regroupées par ce qui leur manque (une reprise refait les mêmes images sur chaque planche demandée). */
-export function groupesAFinir(list: readonly PlancheAFinir[]): { keys: string[]; images: string[] }[] {
-  // Les logos qui manquent partent ensemble, d'abord, dans l'ordre des identités (règle de la série : chacun reçoit ceux
-  // refaits juste avant lui ; essai réel de Nadia, 23 novembre 2026). Ce qui manque d'autre suit, groupe par groupe.
-  const sansLogo = list.filter((x) => x.manque.includes("logo"));
-  if (sansLogo.length > 1 && new Set(sansLogo.map((x) => ORDRE.filter((s) => x.manque.includes(s)).join("+"))).size > 1) {
-    const communes = ORDRE.filter((s) => sansLogo.every((x) => x.manque.includes(s)));
-    const reste = list.map((x) => ({ ...x, manque: x.manque.filter((s) => !(sansLogo.includes(x) && (communes as string[]).includes(s))) })).filter((x) => x.manque.length);
-    return [{ keys: sansLogo.map((x) => x.key).sort(), images: communes }, ...groupesAFinir(reste)];
-  }
+/** Les planches à qui il manque leur logo, dans l'ordre des identités : il viendra de la méthode des graphistes, une planche à la fois. */
+export const logosAFinir = (list: readonly PlancheAFinir[]): string[] => list.filter((x) => x.manque.includes("logo")).map((x) => x.key).sort();
+
+/**
+ * Les images d'une planche à refaire par identity.images, regroupées par ce qui leur manque (une reprise refait les mêmes
+ * images sur chaque planche demandée). Jamais le logo, qui vient de la méthode des graphistes ; et le haut du site d'une
+ * planche sans logo attend son logo (il le porte).
+ */
+export function groupesAFinir(list0: readonly PlancheAFinir[]): { keys: string[]; images: string[] }[] {
+  const list = list0.map((x) => ({ ...x, manque: x.manque.filter((s) => s !== "logo" && !(s === "site" && x.manque.includes("logo"))) })).filter((x) => x.manque.length);
   const m = new Map<string, { keys: string[]; images: string[] }>();
   for (const x of list) {
     const images = ORDRE.filter((s) => x.manque.includes(s)), k = images.join("+");

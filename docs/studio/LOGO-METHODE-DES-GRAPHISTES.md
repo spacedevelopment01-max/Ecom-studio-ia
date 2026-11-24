@@ -1,15 +1,26 @@
 # Le logo : la méthode des graphistes
 
-Compte rendu préparé le 24 novembre 2026. Rien n'est encore envoyé : l'envoi attend l'accord écrit du propriétaire sur
-les épreuves, puis l'essai réel.
+Compte rendu préparé le 24 novembre 2026. Mis à jour le même jour : la méthode est envoyée sur la branche de travail,
+l'ancienne série est retirée, les épreuves sont scellées avec l'accord écrit du propriétaire, et l'essai réel des
+12 esquisses de Racine est fait (aucune fusion dans la branche principale sans son oui).
 
 ## Ce que le propriétaire a dit
 
 - Sur la construction de la méthode : « oui » (relayé par le chef d'orchestre le 24 novembre 2026).
 - Sur le « point 0 », le 24 novembre 2026, à la question « Le client choisit d'abord son nom, puis les logos : tu es
   d'accord ? » : « Oui ».
-- [À compléter : ses mots exacts sur la méthode des graphistes, relayés par le chef d'orchestre. Ils serviront de
-  verdict aux cinq nouvelles épreuves ; aucun mot n'a été inventé ici.]
+- Ses mots sur la méthode des graphistes, écrits le 24 novembre 2026, mot pour mot :
+  - sur la méthode : « On commence à être sûr de vrai logo et en plus pour vraiment pas cher on à 12 logos » ;
+  - « C'est surtout qu'on pourrais proposer au clients les 12 logos 6 par 2.5 et 6 par 2.6 et après ils choisi » ;
+  - sur le plan d'intégration (le logo d'abord, le choix selon le forfait, la finalisation écrite par SINA, la
+    relecture) : « Oui » ;
+  - sur le nom choisi d'abord : « Oui » ;
+  - devant les 12 esquisses de Racine faites par SINA seule (essai réel du 24 novembre 2026) : « Moi j'aime beaucoup, ça
+    fait professionnel alors je suis d'accord il faudrais peut être des variantes de couleurs mais franchement c'est 1000
+    fois mieux ».
+- Les variantes de couleurs : la phrase « Varie les couleurs d'une esquisse à l'autre. » a été essayée (3 esquisses sur
+  12 changeaient de couleur) ; il a répondu « C'est bien comme ca ». Elle n'est donc pas ajoutée : la demande de
+  recherche reste exacte.
 - Ses règles d'avant qui restent vraies : « Pour rappel on ne demande plus au client ce qu'il veux ou non dans son
   logo » (23 novembre 2026) ; jamais de photo dans une arche (16 novembre 2026) ; un logo noté sous 8 sur 10 n'est jamais
   gardé (21 novembre 2026).
@@ -118,8 +129,8 @@ pour être marquées remplacées (jamais réécrites) :
 | demande-du-logo-couleurs-typo-fond | planches-de-recherche-demande-exacte |
 | relecteur-du-logo-qualite-seule | relecteur-du-logo-fini |
 
-Les remplaçantes sont écrites dans `tests/epreuves/a-sceller-methode-des-graphistes.ts` et rejouées dès maintenant
-comme des essais ordinaires. Leur verdict attend les mots du propriétaire.
+Les remplaçantes sont maintenant scellées dans `tests/epreuves/catalogue.ts`, avec l'accord écrit du propriétaire du
+24 novembre 2026 ; les cinq anciennes sont marquées remplacées.
 
 **La phrase d'accord à lui proposer :** « Oui, marque trois-fois-le-meme-dessin, logos-de-la-serie-dans-l-ordre,
 pas-de-consigne-de-style-pour-un-logo, demande-du-logo-couleurs-typo-fond et relecteur-du-logo-qualite-seule comme

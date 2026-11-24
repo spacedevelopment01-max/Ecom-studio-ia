@@ -146,7 +146,9 @@ export type Journey = {
      * refait à sa charge (règle du propriétaire : « Jamais une planche incomplète : une image refusée est refaite avant
      * d'être montrée »).
      */
-    manque?: string[] };
+    manque?: string[];
+    /** Le logo qui manquait est posé (méthode des graphistes) : refaire ce qui le porte reste une reprise, à la charge du Studio. */
+    studio?: boolean };
   /**
    * La méthode des graphistes (24 novembre 2026) : le métier, les esquisses montrées (jamais une refusée), le choix du
    * client (2, 3 ou 4 selon son forfait) et les logos finis (`logo-graphistes.ts`). Les anciens projets n'en ont pas.
@@ -437,12 +439,12 @@ export const STEP_GUIDES: Partial<Record<number, string>> = {
  */
 export function brandFinishContext(j: Journey): string[] {
   const f = j.brandFinish, k = j.brandKit;
-  if (!f?.at) return [fixe("La marque — l'identité est choisie, il reste à la finir : appelle brand.finish (sans argument). Le Studio crée ce qui manque (le logo s'il n'y en a pas, l'objet qui le porte, les signes, trois publications), adopte son logo et prépare sa charte. Quand c'est déjà compris dans l'accord donné pour ses identités, ça part sans carte ; sinon le Studio montre le prix avant. Quelques minutes, en arrière-plan.")];
+  if (!f?.at) return [fixe("La marque — l'identité est choisie, il reste à la finir : appelle brand.finish (sans argument). Le Studio crée ce qui manque (l'objet qui porte le logo, les signes, trois publications), adopte son logo et prépare sa charte. Quand c'est déjà compris dans l'accord donné pour ses identités, ça part sans carte ; sinon le Studio montre le prix avant. Quelques minutes, en arrière-plan.")];
   // Le logo manque après les reprises : la marque n'est pas finie, rien n'en est présenté (jamais une planche incomplète).
   if (f.manque?.includes("logo")) return [
-    "La marque — elle N'EST PAS finie : son logo n'a pas passé la relecture, même après les reprises. Jamais une planche incomplète : tu ne présentes pas sa marque, tu ne la fais pas valider et tu ne parles d'aucun nom dessiné à la place.",
+    "La marque — elle N'EST PAS finie : il lui manque son logo. Jamais une planche incomplète : tu ne présentes pas sa marque, tu ne la fais pas valider et tu ne parles d'aucun nom dessiné à la place.",
     ...(f.issues?.length ? [`Ce qui bloque (dis-le honnêtement, en mots simples) : ${f.issues.join(" ; ")}`] : []),
-    fixe("Dis-lui franchement ce qui bloque, puis propose de refaire son logo : brand.finish avec redo [« logo »] (ce qui le porte est refait avec lui). C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». S'il a dit ce qu'il veut de différent, mets ses mots dans guidance. Rien ne part avant qu'il confirme."),
+    fixe("Dis-lui franchement ce qui bloque, puis propose de faire son logo par la méthode des graphistes : logo.pistes (planche = son identité) cherche les pistes, il choisit son esquisse, tu la finis avec logo.autre ; ensuite brand.finish refait ce qui le porte. C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». Rien ne part avant qu'il confirme."),
   ];
   const im = f.images ?? {};
   const made = [im.logo ? "le logo" : "", im.hero ? "la grande scène" : "", im.object ? "l'objet qui porte le logo" : "", im.signs ? "les signes" : "", ...(im.posts ?? []).map((q, i) => (q ? `la publication ${i + 1}` : ""))].filter(Boolean);
@@ -586,13 +588,13 @@ function identityStepContext(j: Journey, count?: number): string[] {
   const manqueDe = (m: string[]) => m.map((s) => MANQUE[s] ?? s).join(", ");
   if (!montrees.length) return [
     `Étape 1 — proposition n° ${id.round} : AUCUNE planche n'est montrée au client : il manque une image à chacune après mes reprises (${cachees.map((h) => `${h.key} « ${h.name} » : ${manqueDe(h.manque)}`).join(" ; ")}). Jamais une planche incomplète : tu n'en décris aucune et tu n'en présentes aucune.`,
-    fixe("Dis-lui franchement, en mots simples, ce qui bloque (les raisons sont ci-dessous), puis propose la suite : finir ces planches avec identity.images (keys = ces planches, images = exactement ce qui manque à chacune). C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». Rien ne part avant qu'il confirme."),
+    fixe("Dis-lui franchement, en mots simples, ce qui bloque (les raisons sont ci-dessous), puis propose la suite : finir ces planches : un logo qui manque par la méthode des graphistes (logo.pistes avec planche = la planche, une à la fois ; puis logo.autre avec l'esquisse qu'il choisit), le reste avec identity.images (keys = ces planches, images = exactement ce qui manque à chacune). C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». Rien ne part avant qu'il confirme."),
     ...(id.issues.length ? [`Ce qui bloque (dis-le honnêtement, en mots simples) : ${id.issues.join(" ; ")}.`] : []),
   ];
   const out = [
     `Étape 1 — proposition n° ${id.round} (${montrees.some((x) => x.board) ? "les planches de marque complètes" : "les cartes complètes"} sont affichées au client dans le fil) : ${montrees.map((x) => `${x.key} « ${x.name} » (${x.board ? `idée : ${x.board.idea.belief} ; ` : ""}slogan « ${x.slogan} », territoire ${x.territory}, fond ${x.ground})`).join(" ; ")}.`,
     ...(id.study ? [`Ton étude du marché (affichée au client au-dessus des planches) : ${id.study.sources} page(s) lue(s), ${id.study.quoteCount} parole(s) réelle(s) de clients gardée(s) mot pour mot${id.study.notFound.length ? ` ; non trouvé : ${id.study.notFound.join(" ; ")}` : ""}. Commence par dire en une phrase ce que tu as compris de son marché, à la première personne.`] : []),
-    ...(cachees.length ? [`Planche${cachees.length > 1 ? "s" : ""} gardée${cachees.length > 1 ? "s" : ""} de côté, NON montrée${cachees.length > 1 ? "s" : ""} (une image y manque encore après mes reprises : jamais une planche incomplète) : ${cachees.map((h) => `${h.key} « ${h.name} » (il manque ${manqueDe(h.manque)})`).join(" ; ")}. Tu ne la décris pas. Dis-lui clairement qu'elle arrive : ce qui bloque, puis la suite, la finir avec identity.images (keys = ${cachees.map((h) => h.key).join(", ")} ; images = exactement ce qui manque). C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». Il peut aussi choisir dès maintenant parmi les planches montrées.`] : []),
+    ...(cachees.length ? [`Planche${cachees.length > 1 ? "s" : ""} gardée${cachees.length > 1 ? "s" : ""} de côté, NON montrée${cachees.length > 1 ? "s" : ""} (une image y manque encore après mes reprises : jamais une planche incomplète) : ${cachees.map((h) => `${h.key} « ${h.name} » (il manque ${manqueDe(h.manque)})`).join(" ; ")}. Tu ne la décris pas. Dis-lui clairement qu'elle arrive : ce qui bloque, puis la suite, la finir : un logo qui manque par logo.pistes (planche = la planche, une à la fois ; puis logo.autre avec l'esquisse qu'il choisit), le reste avec identity.images (keys = ${cachees.map((h) => h.key).join(", ")} ; images = exactement ce qui manque). C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». Il peut aussi choisir dès maintenant parmi les planches montrées.`] : []),
     // Ce que SINA dit des images vient du relecteur, jamais d'elle (essai réel de Nadia : « les hauts de site des trois
     // sont soignés », alors que l'un était noté 5 sur 10).
     ...(montrees.some((x) => x.board?.images) ? [`Relecture des images, à reprendre telle quelle quand tu en parles (la note et les mots du relecteur ; jamais un éloge qu'il n'a pas dit, jamais « soigné », « magnifique » ni « réussi » sans ses mots) : ${montrees.filter((x) => x.board?.images).map((x) => `${x.key} « ${x.name} » — ${(["logo", "hero", "site"] as const).filter((k) => x.board!.images![k]).map((k) => `${MANQUE[k]} : ${phraseDuVerdict(verdictDuRelecteur(x.board!.images![k]!.id))}`).join(" ; ")}`).join(" | ")}.`] : []),

@@ -100,7 +100,14 @@ async function avecIdentifiant(p: unknown): Promise<{ data: any; requestId: stri
   return { data, requestId: (data && typeof data === "object" && typeof data._request_id === "string") ? data._request_id : null };
 }
 
-export async function openaiImage(client: OpenAI, op: "generate" | "edit", params: Record<string, unknown> & { model: string }, onSent: () => void): Promise<{ b64: string | null; usage: any; streamed: boolean; partials: number; ms: number; requestId: string | null }> {
+/**
+ * Ce qu'OpenAI dit avoir rendu pour une image (qualité, taille, fond, format) : gardé avec l'appel pour vérifier son coût
+ * après coup (la formule officielle des jetons dépend de la taille et de la qualité réelles). Rien de secret.
+ */
+export type ImageRenvoyee = { quality: string | null; size: string | null; background: string | null; output_format: string | null };
+export const imageRenvoyee = (r: any): ImageRenvoyee => ({ quality: r?.quality ?? null, size: r?.size ?? null, background: r?.background ?? null, output_format: r?.output_format ?? null });
+
+export async function openaiImage(client: OpenAI, op: "generate" | "edit", params: Record<string, unknown> & { model: string }, onSent: () => void): Promise<{ b64: string | null; usage: any; streamed: boolean; partials: number; ms: number; requestId: string | null; renvoye: ImageRenvoyee }> {
   const t0 = Date.now();
   const stream = openaiStreams(params.model);
   onSent();
@@ -109,7 +116,7 @@ export async function openaiImage(client: OpenAI, op: "generate" | "edit", param
     const { data: res, requestId } = await avecIdentifiant(op === "generate" ? client.images.generate(params as any) : client.images.edit(params as any));
     const b64 = res.data?.[0]?.b64_json ?? null;
     if (b64) emit({ phase: "received", atMs: Date.now() - t0, streamed: false });
-    return { b64, usage: res.usage ?? null, streamed: false, partials: 0, ms: Date.now() - t0, requestId };
+    return { b64, usage: res.usage ?? null, streamed: false, partials: 0, ms: Date.now() - t0, requestId, renvoye: imageRenvoyee(res) };
   }
   const body = { ...params, stream: true, partial_images: OPENAI_PARTIAL_IMAGES };
   const { data: events, requestId } = await avecIdentifiant(op === "generate" ? client.images.generate(body as any) : client.images.edit(body as any));
@@ -127,5 +134,5 @@ export async function openaiImage(client: OpenAI, op: "generate" | "edit", param
   }
   if (!final?.b64_json) throw new StreamInterrupted(`Flux OpenAI terminé sans image finale après ${Math.round((Date.now() - t0) / 1000)} s (${partials} aperçu(s) reçu(s)).`);
   emit({ phase: "received", partials, atMs: Date.now() - t0, streamed: true });
-  return { b64: final.b64_json, usage: final.usage ?? null, streamed: true, partials, ms: Date.now() - t0, requestId };
+  return { b64: final.b64_json, usage: final.usage ?? null, streamed: true, partials, ms: Date.now() - t0, requestId, renvoye: imageRenvoyee(final) };
 }

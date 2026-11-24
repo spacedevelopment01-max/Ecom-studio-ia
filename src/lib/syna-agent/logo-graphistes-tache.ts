@@ -5,15 +5,18 @@
  * n'y est jamais rangée comme une image montrable.
  *
  * La première recherche part d'identity.nom (ou d'identity.propose quand le client garde son nom) ; quand chaque esquisse
- * choisie a son logo relu, les planches partent (`lancerLesPlanches`), couvertes par l'accord de l'étape.
+ * choisie a son logo relu, les planches partent (`lancerLesPlanches`), couvertes par l'accord de l'étape. Une fois les
+ * planches faites (anciens projets compris), une recherche ou une finalisation vise UNE planche (`planche`) : le logo fini
+ * y est posé tel quel (`poserSurLaPlanche`). `studio` : la planche n'a pas son logo, la finir est à la charge du Studio.
  */
 import { z } from "zod";
 import { UserFacingError, enqueue, pendingJob, type JobContext } from "../jobs";
 import { SINA_BRAND_JOB } from "./brand-chain";
 import { L } from "../i18n-server";
 import { loadProject } from "../projects";
+import sharp from "sharp";
 import { assetData, getAsset, saveAsset } from "../library";
-import { logoDetoure } from "./brand-images";
+import { lightLogo, logoDetoure, manqueDeLaPlanche } from "./brand-images";
 import { nameKindsFor } from "./identities";
 import { journeyOf, updateJourney } from "./journey";
 import { planOfProject } from "../plan-gates";
@@ -35,6 +38,10 @@ const Payload = z.object({
   capMicro: z.number().min(0), studioCapMicro: z.number().min(0).optional(),
   /** La part de l'accord de l'étape « La marque » réservée aux finalisations (posée par identity.nom, point 0). */
   finalisationsAccordees: z.number().min(0).optional(),
+  /** Une fois les planches faites : la planche qui reçoit le logo (sa recherche se fait pour son nom). */
+  planche: z.enum(["A", "B", "C", "D"]).optional(),
+  /** Une planche à qui il manque son logo : la finir est une reprise du travail de SINA, à la charge du Studio. */
+  studio: z.boolean().optional(),
 });
 export type PayloadGraphistes = z.infer<typeof Payload>;
 
@@ -42,11 +49,16 @@ const activiteDu = (j: ReturnType<typeof journeyOf>, positionnement?: string) =>
 
 export async function runLogoGraphistesJob(ctx: JobContext) {
   const a = Payload.parse(ctx.payload);
+  // Finir une planche à qui il manque son logo : toute la tâche à la charge du Studio, jamais au budget du client.
+  return a.studio ? aLaChargeDuStudio(() => tacheDuLogo(ctx, a)) : tacheDuLogo(ctx, a);
+}
+
+async function tacheDuLogo(ctx: JobContext, a: PayloadGraphistes) {
   const p = loadProject(a.projectId);
   const who = { userId: p.userId, projectId: p.id };
   const ai: GraphistesAi = graphistesDeps.ai ? graphistesDeps.ai(ctx.job.id) : vraisAppels({ ...who, jobId: ctx.job.id, capMicro: a.capMicro, studioCapMicro: a.studioCapMicro ?? 0 });
   const j = journeyOf(a.conversationId);
-  if (a.phase === "finalisation") return finaliserLesChoix(ai, who, a.conversationId, a.numeros ?? j.graphistes?.choix ?? []);
+  if (a.phase === "finalisation") return finaliserLesChoix(ai, who, a.conversationId, a.numeros ?? j.graphistes?.choix ?? [], a.planche ?? j.graphistes?.planche);
   if (a.phase === "couleurs") return retoucherUnLogo(ai, who, a.conversationId, a.numero ?? 0, a.demande ?? "");
   const avant = j.graphistes;
   if (a.phase === "pistes" && !avant?.metier) throw new UserFacingError(L("Il n'y a pas encore d'esquisses : rien n'a été décompté.", "There are no sketches yet: nothing was charged."));
@@ -73,8 +85,10 @@ export async function runLogoGraphistesJob(ctx: JobContext) {
   const toutes = [...(avant?.esquisses ?? []), ...esquisses];
   const contact = toutes.length ? await (await import("./esquisses")).plancheContact(toutes.map((e) => ({ numero: e.numero, png: assetData(getAsset(e.assetId)!) }))) : null;
   const contactAsset = contact ? await saveAsset({ ...who, data: contact, name: "esquisses-numerotees.png", mime: "image/png", role: "logo-esquisses", origin: "generated", status: "ready", meta: { graphistes: { contact: true } } } as never) : null;
+  const planche = a.planche ?? avant?.planche;
   const etat: EtatGraphistes = {
-    nom, metier, max: esquissesAChoisir(planOfProject(p.id)), esquisses: toutes, refusees: (avant?.refusees ?? 0) + r.refusees.length,
+    // Pour une seule planche, une seule esquisse se choisit (elle devient son logo).
+    nom, metier, max: planche ? 1 : esquissesAChoisir(planOfProject(p.id)), ...(planche ? { planche } : {}), esquisses: toutes, refusees: (avant?.refusees ?? 0) + r.refusees.length,
     ...(contactAsset ? { contactAssetId: contactAsset.id } : {}),
     planches: [...(avant?.planches ?? []), ...planches, ...r.manquees.filter((m) => m.modele !== "relecture").map((m) => ({ modele: m.modele, recherche, tour: 1, texteEnvoye: "", requestId: null, coutMicro: null, manquee: m.raison }))],
     recherches: recherche, ...(avant?.choix ? { choix: avant.choix } : {}), ...(avant?.logos ? { logos: avant.logos } : {}),
@@ -92,7 +106,7 @@ export async function runLogoGraphistesJob(ctx: JobContext) {
 }
 
 /** Les finalisations des esquisses choisies, dans l'ordre de leurs numéros. Un logo refusé deux fois n'est pas gardé. */
-async function finaliserLesChoix(ai: GraphistesAi, who: { userId: string; projectId: string }, cid: string, numeros: number[]) {
+async function finaliserLesChoix(ai: GraphistesAi, who: { userId: string; projectId: string }, cid: string, numeros: number[], planche?: string) {
   const etat = journeyOf(cid).graphistes;
   if (!etat?.metier || !numeros.length) throw new UserFacingError(L("Aucune esquisse choisie : rien n'a été décompté.", "No sketch chosen: nothing was charged."));
   const logos: LogoFini[] = [...(etat.logos ?? [])];
@@ -117,6 +131,12 @@ async function finaliserLesChoix(ai: GraphistesAi, who: { userId: string; projec
   }
   updateJourney(cid, (x) => { if (x.graphistes) x.graphistes = { ...x.graphistes, logos, at: Date.now() }; });
   const faits = logos.filter((l) => l.ok && numeros.includes(l.numero)).length;
+  // Les planches sont déjà faites : le logo fini se pose sur la planche visée, tel quel.
+  if (planche && journeyOf(cid).identities?.list.some((x) => x.key === planche)) {
+    const l = logos.find((y) => y.ok && y.assetId && y.detoureAssetId && numeros.includes(y.numero));
+    const pose = l ? await poserSurLaPlanche(who, cid, planche, l.assetId!, l.detoureAssetId!) : null;
+    return { logos: faits, notice: [pose ? L(`Le logo est posé sur la planche « ${pose} », relu.`, "The logo is on the board, reviewed.") : "", ...dits].filter(Boolean).join(" ") || L("Aucun logo n'a passé ma relecture.", "No logo passed my review.") };
+  }
   const planches = lancerLesPlanches(who, cid);
   return { logos: faits, ...(planches ? { planchesJob: planches } : {}), notice: [L(`${faits} logo${faits > 1 ? "s" : ""} fini${faits > 1 ? "s" : ""}, relu${faits > 1 ? "s" : ""}.`, `${faits} finished logo(s).`), ...(planches ? [L("Je prépare maintenant tes identités, chacune avec son logo.", "Now preparing your identities, each with its logo.")] : []), ...dits].join(" ") };
 }
@@ -139,6 +159,39 @@ export function lancerLesPlanches(who: { userId: string; projectId: string }, ci
     maxAttempts: 1, idempotencyKey: `syna:${cid}:planches:${choix.join("-")}:${logos.map((l) => l!.assetId).join("-")}`,
   });
   return job.id;
+}
+
+/**
+ * Le logo fini posé sur une planche déjà faite (ancien projet, ou « un autre logo » une fois les planches faites) : il
+ * devient son logo, avec sa version sans fond et sa version claire (gratuites, sans IA). Ce qui porte l'ancien logo (le
+ * haut du site) est noté à refaire ; après le choix, la marque finie refait ce qui le porte (brand.finish). Rend le nom de
+ * la planche, ou null.
+ */
+export async function poserSurLaPlanche(who: { userId: string; projectId: string }, cid: string, key: string, logoId: string, detoureId: string): Promise<string | null> {
+  const x = journeyOf(cid).identities?.list.find((y) => y.key === key);
+  const logo = getAsset(logoId), detoure = getAsset(detoureId);
+  if (!x || !logo || !detoure) return null;
+  const dims = async (id: string) => { const m = await sharp(assetData(getAsset(id)!)).metadata().catch(() => ({ width: 1024, height: 1024 })); return { id, w: m.width ?? 1024, h: m.height ?? 1024 }; };
+  const clair = await saveAsset({ ...who, data: await lightLogo(assetData(detoure)), name: `logo-${key}-clair.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { synaBoard: { key, slot: "markDark", name: x.name, from: logoId } } });
+  const images = { logo: await dims(logoId), mark: await dims(detoureId), markDark: await dims(clair.id) };
+  updateJourney(cid, (y) => {
+    const id = y.identities;
+    if (!id) return;
+    id.list = id.list.map((o) => (o.key === key && o.board ? { ...o, board: { ...o.board, images: { ...(o.board.images ?? {}), ...images } } } : o)) as typeof id.list;
+    // Le haut du site montre encore l'ancien logo (ou aucun) : il est refait avec celui-ci.
+    if (id.list.find((o) => o.key === key)?.board?.images?.site) id.siteAncienLogo = [...new Set([...(id.siteAncienLogo ?? []), key])];
+    const inc = (id.incompletes ?? []).map((z) => (z.key === key ? { ...z, manque: manqueDeLaPlanche(id.list.find((o) => o.key === key)!, y.keep.includes("logo")) as string[] } : z)).filter((z) => z.manque.length);
+    if (inc.length) id.incompletes = inc; else delete id.incompletes;
+    id.at = Date.now();
+    // Après le choix : la marque finie prend ce logo, et ce qui le porte est refait avec lui (brand.finish).
+    const c = y.identityChoice;
+    if (c && (c.mix?.logo ?? c.key) === key) {
+      if (y.brandFinish?.images) y.brandFinish.images = { ...y.brandFinish.images, ...images };
+      if (y.brandFinish?.manque?.includes("logo")) { delete y.brandFinish.manque; y.brandFinish.studio = true; }
+      if (y.steps[3]?.status === "done" || y.steps[3]?.status === "review") y.steps[3] = { status: "todo" };
+    }
+  });
+  return x.name;
 }
 
 /** La retouche des couleurs d'un logo fini, sur la demande du client (sur son budget ; la reprise à la charge du Studio). */

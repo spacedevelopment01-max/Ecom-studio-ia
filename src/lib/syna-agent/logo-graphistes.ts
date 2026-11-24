@@ -14,12 +14,12 @@
  * il choisit ses esquisses, les logos finis sont relus, puis ses 2, 3 ou 4 identités partagent ce nom, chacune avec son
  * propre logo (`logosGraphistes` de la chaîne). Un seul accord pour toute l'étape (`accordGraphistes`, tools/identity.ts).
  *
- * Anciens projets : rien d'automatique. Ils gardent leurs planches ; un logo manquant n'est refait qu'à la demande du
- * client, par cette méthode, selon la règle de prise en charge en vigueur.
+ * C'est la seule façon de faire un logo (l'ancienne série est retirée, accord écrit du propriétaire du 24 novembre 2026).
+ * Anciens projets : ils gardent leurs planches ; un autre logo, ou un logo qui manque à une planche, passe par logo.pistes
+ * puis logo.autre pour cette planche (son nom), à la charge du Studio quand le logo manque.
  */
 import { z } from "zod";
 import { L } from "../i18n-server";
-import { getJsonSetting } from "../settings";
 import { callCostBoundMicro, estimateCallMicro, llmJson } from "../ai/llm";
 import { aLaChargeDuStudio } from "../billing";
 import { aiLogoFinalise, aiLogoPlanche, logoFinalisationMaxMicro, logoPlancheMaxMicro, recuDuLogo, type RecuDuLogo } from "../ai/media-providers";
@@ -35,11 +35,6 @@ import { RELECTEUR_DES_ESQUISSES, RelectureEsquissesSchema, demandeAuRelecteurDe
 import { DEMANDE_AU_REDACTEUR, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, TexteDeFinalisationSchema, finaliserUneEsquisse, type Finalisation, type FinalisationDeps } from "./logo-finalisation";
 import { couleursDuLogo, type PaletteDuLogo } from "./couleurs-du-logo";
 
-/**
- * La méthode des graphistes est LA façon de faire un logo depuis la réponse du propriétaire au point 0 (« Oui », 24 novembre
- * 2026). Le réglage `sina.logo.graphistes` n'existe que pour un essai de comparaison ; il n'est jamais changé en ligne.
- */
-export const graphistesActifs = (): boolean => getJsonSetting<boolean>("sina.logo.graphistes", true) !== false;
 
 /** Le nombre d'esquisses que le client peut choisir : celui des identités de son forfait (2, 3 ou 4). */
 export const esquissesAChoisir = (plan: PlanId | null | undefined): number => (plan ? ROUTES_BY_PLAN[plan] : ROUTES_BY_PLAN.creer);
@@ -61,6 +56,11 @@ export type EtatGraphistes = {
    * du client lance les finalisations sans nouvelle carte. Posée par la chaîne quand le branchement sera fait (point 0).
    */
   finalisationsAccordees?: number;
+  /**
+   * Une recherche pour UNE planche déjà faite (ancien projet, ou un autre logo une fois les planches faites) : le client
+   * choisit une seule esquisse (logo.autre), et le logo fini est posé sur cette planche.
+   */
+  planche?: string;
 };
 
 /** Le choix du client, contrôlé par le code. null : bon ; sinon ce qui ne va pas (dit à SINA, jamais une dépense). */
@@ -100,8 +100,25 @@ function appel(a: keyof typeof APPELS): { max: number; probable: number } {
   const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort || null) ?? usual * 4;
   return { max: bound, probable: usual };
 }
-/** Prix mesurés (euros) des images du parcours : recherche 0,009 € + 0,030 € ; logo fini de 0,026 € à 0,061 €. */
-export const PRIX_MESURES = { planche: { "gpt-image-2.5-sunburst": 0.009, "gpt-image-2.6-flare": 0.030 } as Record<string, number>, redaction: 0.015, logoFini: { min: 0.026, max: 0.061 } };
+/**
+ * Un appel de texte du devis, tel que le devis le compte (son modèle, son coût habituel, son maximum, et les jetons
+ * supposés) : pour détailler un devis appel par appel (essais réels), sans un second jeu de chiffres.
+ */
+export function devisDUnAppel(a: keyof typeof APPELS): { max: number; probable: number; modele: Modele; jetons: { input: number; output: number; max: number } } {
+  const c = APPELS[a];
+  return { ...appel(a), modele: modeleDe(a), jetons: { input: c.input, output: c.output, max: c.max } };
+}
+/**
+ * Prix mesurés (euros) des images du parcours, aux tarifs officiels au jeton (30 $ le million en sortie image, 5 $ en
+ * texte) et au taux du Studio (0,86) :
+ *  - planche 2.5 Sunburst : 0,0098 € (essai réel des planches de recherche du 24 novembre 2026, relayé par le chef
+ *    d'orchestre : 343 jetons de sortie, soit 0,0089 € de sortie, plus le texte de la demande). Avant : 0,009 €, la sortie
+ *    seule ; c'est le même essai qui a montré le prix par image faux (0,081 €) du studio d'essai ;
+ *  - planche 2.6 Flare : 0,030 €, vérifié par la formule officielle (« medium » en 1536 × 1024 : 1 132 jetons, 0,0292 € de
+ *    sortie, plus le texte) ;
+ *  - texte de finalisation 0,015 € ; logo fini de 0,026 € à 0,061 € (essais réels du 24 novembre 2026).
+ */
+export const PRIX_MESURES = { planche: { "gpt-image-2.5-sunburst": 0.0098, "gpt-image-2.6-flare": 0.030 } as Record<string, number>, redaction: 0.015, logoFini: { min: 0.026, max: 0.061 } };
 const microDe = (eur: number) => Math.round(eur * EUR);
 
 export type DevisDuLogo = { maxMicro: number; probableMicro: number; repriseMicro: number; repriseProbableMicro: number; studioMaxMicro: number };
