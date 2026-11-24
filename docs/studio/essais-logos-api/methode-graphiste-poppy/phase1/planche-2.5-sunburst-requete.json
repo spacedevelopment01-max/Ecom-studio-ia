@@ -1,0 +1,12 @@
+{
+ "endpoint": "POST https://api.openai.com/v1/images/generations",
+ "corps": {
+  "prompt": "Crée une planche de recherche graphique pour Poppy, une entreprise qui vend des accessoires pour chiens, notamment des harnais, des laisses et des colliers. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire l'univers des accessoires pour chiens dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation.",
+  "size": "1536x1024",
+  "quality": "medium",
+  "background": "opaque",
+  "output_format": "png",
+  "n": 1,
+  "model": "gpt-image-2.5-sunburst"
+ }
+}
