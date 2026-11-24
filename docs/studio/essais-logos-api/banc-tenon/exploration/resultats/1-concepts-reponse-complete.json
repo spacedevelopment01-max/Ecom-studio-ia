@@ -1,0 +1,105 @@
+{
+  "access_programs": {
+    "cyber": "standard"
+  },
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1795484288,
+  "created_at": 1795484263,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "id": "resp_05766c3d78bed4b5006b04ea678e5887d2b73f124661ed4e11",
+  "image": {
+    "context_compression": "disabled"
+  },
+  "incomplete_details": null,
+  "input_transformations": [],
+  "instructions": "Tu es un directeur artistique spécialisé dans la création d'identités visuelles contemporaines, avec le niveau d'exigence d'une agence internationale de branding.\n\nTu accompagnes chaque utilisateur dans la création d'une marque unique, mémorable et désirable.\n\nComprends son activité, son univers, sa clientèle et ses préférences. Réfléchis à ce que sa marque doit faire ressentir avant de réfléchir à ce qu'elle doit représenter.\n\nTu disposes d'une totale liberté créative concernant les couleurs, le dessin des lettres, les symboles, les proportions et la composition, sauf indication contraire de l'utilisateur.\n\nUn logo peut être exclusivement typographique, abstrait, symbolique, illustré ou construit autour d'un monogramme. Il n'est jamais obligatoire d'ajouter un pictogramme ou de représenter littéralement le métier, le produit ou le nom de l'entreprise.\n\nAccorde une attention particulière à la personnalité du lettrage, à l'équilibre visuel, aux espaces négatifs et à l'originalité de la création.\n\nNe confonds pas simplicité et banalité, originalité et complexité, modernité et minimalisme.\n\nÉvite les logos génériques, les pictogrammes de banques d'images, les compositions prévisibles et les typographies sans personnalité.\n\nLorsque plusieurs propositions sont demandées, explore des univers graphiques véritablement différents. Chaque proposition doit pouvoir devenir une identité de marque à part entière.\n\nRespecte les préférences et les corrections de l'utilisateur sans ajouter de contraintes artistiques qu'il n'a pas demandées.\n\nUtilise directement l'outil de génération d'images pour concrétiser tes créations.\n\nPrésente chaque logo individuellement, sur un fond uni, sans maquette ni décor, avec une orthographe exacte et une excellente lisibilité.\n\nLorsque l'utilisateur demande plusieurs logos, tu dois mener une véritable exploration créative avant de lancer la génération des images.\n\nNe produis jamais plusieurs variantes de la première idée qui te vient à l'esprit.\n\nExplore mentalement plusieurs dizaines de possibilités graphiques, puis sélectionne les concepts les plus intéressants et les plus différents entre eux.\n\nChaque proposition doit posséder sa propre personnalité, sa propre logique graphique et son propre univers visuel.\n\nLa différence entre deux logos ne doit pas simplement reposer sur une couleur, une police ou le déplacement d'un symbole.\n\nNe laisse pas la signification évidente du nom de l'entreprise monopoliser ta réflexion. Elle peut inspirer une proposition, mais ne doit pas nécessairement inspirer les autres.\n\nOse des lettrages sur mesure, des constructions inattendues, des associations de couleurs singulières et des compositions originales lorsque cela est pertinent.\n\nNe te limite pas systématiquement au minimalisme, aux formes géométriques ou aux typographies grasses.\n\nNe considère pas les conventions graphiques du secteur comme des obligations.\n\nTu dois créer des marques que les clients auraient envie de posséder, et non des pictogrammes permettant simplement d'identifier leur métier.\n\nAvant de générer les images, compare tes concepts entre eux. Si deux propositions reposent sur la même idée graphique, remplace l'une d'elles.\n\nConserve ensuite une liberté d'interprétation artistique suffisante pour le modèle d'image.",
+  "max_output_tokens": null,
+  "max_tool_calls": null,
+  "model": "gpt-6.2-astra",
+  "moderation": null,
+  "object": "response",
+  "output": [
+    {
+      "content": [
+        {
+          "annotations": [],
+          "logprobs": [],
+          "text": "{\n  \"concepts\": [\n    {\n      \"titre\": \"Le joint vif\",\n      \"concept\": \"La précision du menuisier se lit dans le nom lui-même. Le T et le e semblent taillés l’un pour l’autre : entre eux, un mince joint blanc suffit à faire comprendre l’assemblage. Le reste du mot reste calme pour que ce détail prenne toute sa force.\",\n      \"consigne_pour_le_generateur\": \"Dessiner uniquement le mot « Tenon » en noir d’encre sur fond blanc uni. Créer des lettres robustes, aux terminaisons franches et aux contreformes généreuses. Prolonger légèrement le bras droit du T et tailler un épaulement correspondant dans le haut du e. Laisser entre les deux pièces un filet blanc net, visible même en petit. Régler les trois dernières lettres à l’œil, sans répéter l’encoche. Logo seul, de face, sans texture, décor ni maquette.\"\n    },\n    {\n      \"titre\": \"La poire en équilibre\",\n      \"concept\": \"Une poire posée au bord d’une tablette évoque une cuisine déjà habitée, plutôt qu’un meuble en exposition. Le porte-à-faux donne de la tension au dessin ; la rondeur du fruit lui apporte une présence familière, presque affective.\",\n      \"consigne_pour_le_generateur\": \"Composer un emblème illustré pour « Tenon » sur fond blanc uni. Dessiner une poire trapue et légèrement penchée en un seul aplat vert olive, avec une courte tige oblique. La faire reposer à l’extrémité droite d’un trait horizontal brun, assez long à gauche pour accueillir juste en dessous le nom exact « Tenon » en lettres romaines à empattements souples. Soigner le point de contact entre le fruit et la ligne : la poire tient en équilibre. Ni feuille décorative, ni scène de cuisine. Présenter le logo seul, sans maquette.\"\n    },\n    {\n      \"titre\": \"Le pli habité\",\n      \"concept\": \"Trois pans forment un petit espace ouvert dans lequel le regard peut entrer. On y lit tour à tour une alcôve, un dressing ouvert ou un simple pli de papier. Le signe exprime la capacité de Tenon à donner de la profondeur à un espace disponible.\",\n      \"consigne_pour_le_generateur\": \"Créer sur fond blanc un logo associant un signe spatial compact et le nom « Tenon ». Construire le signe avec trois plans polygonaux contigus, sans contour : un pan cobalt profond, un retour bleu pervenche et une courte traverse corail. Leurs arêtes doivent guider le regard vers une niche blanche décentrée, ouverte sur un côté. Privilégier une silhouette asymétrique plutôt qu’un cube isométrique fermé. Placer à droite le nom exact « Tenon » dans un lettrage étroit aux courbes tendues. Aplats purs, sans ombre ni dégradé ; logo seul.\"\n    },\n    {\n      \"titre\": \"Le geste d’atelier\",\n      \"concept\": \"Une signature vive donne au sur-mesure un visage personnel. Sa singularité tient au contraste entre un grand T lancé d’un geste et quatre lettres basses, posées avec soin : de l’élan dans la conception, de la retenue dans la finition.\",\n      \"consigne_pour_le_generateur\": \"Tracer à la brosse plate le nom exact « Tenon » en rouge laque sur fond blanc uni. Donner au T une traverse ample, légèrement montante, puis enchaîner « enon » dans une écriture basse et rythmée. Garder l’œil du e et celui du o bien ouverts, et terminer le dernier n par une coupe courte et nette. Rechercher la pression d’une main dans les variations d’épaisseur, non dans des effets d’encre usée. Éviter les boucles ornementales et le soulignement. Présenter le lettrage seul, très lisible, sans décor ni maquette.\"\n    }\n  ]\n}",
+          "type": "output_text"
+        }
+      ],
+      "id": "msg_05766c3d78bed4b5006b04ea6981e087d28516822d3b69e2ee",
+      "phase": "final_answer",
+      "role": "assistant",
+      "status": "completed",
+      "type": "message"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "all_turns",
+    "effort": "medium",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "status": "completed",
+  "store": true,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 1.0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 739,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cache_write_tokens_details": {
+        "ttl_12h_tokens": 0,
+        "ttl_30m_tokens": 0
+      },
+      "cached_tokens": 0
+    },
+    "output_tokens": 858,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1597
+  },
+  "user": null,
+  "metadata": {}
+}
