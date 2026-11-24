@@ -1,0 +1,68 @@
+{
+ "total_eur": 0.1779,
+ "posts": [
+  {
+   "post": "post-1-1x1",
+   "statut_http": 200,
+   "duree_s": 43.6,
+   "x-request-id": "req_e44585a57b8f470596d289cd2433f581",
+   "usage": {
+    "input_tokens": 2746,
+    "input_tokens_details": {
+     "image_tokens": 2560,
+     "text_tokens": 186
+    },
+    "output_tokens": 1756,
+    "output_tokens_details": {
+     "image_tokens": 1756,
+     "text_tokens": 0
+    },
+    "total_tokens": 4502
+   },
+   "cout_eur": 0.0637,
+   "taille": "1024x1024"
+  },
+  {
+   "post": "post-2-4x5",
+   "statut_http": 200,
+   "duree_s": 35.6,
+   "x-request-id": "req_c98a620bed1545c0b58eaec54bf61303",
+   "usage": {
+    "input_tokens": 2750,
+    "input_tokens_details": {
+     "image_tokens": 2560,
+     "text_tokens": 190
+    },
+    "output_tokens": 1587,
+    "output_tokens_details": {
+     "image_tokens": 1587,
+     "text_tokens": 0
+    },
+    "total_tokens": 4337
+   },
+   "cout_eur": 0.0594,
+   "taille": "1088x1360"
+  },
+  {
+   "post": "post-3-9x16",
+   "statut_http": 200,
+   "duree_s": 32.8,
+   "x-request-id": "req_3620b6c564364e7fb1294e5f31b94df0",
+   "usage": {
+    "input_tokens": 2741,
+    "input_tokens_details": {
+     "image_tokens": 2560,
+     "text_tokens": 181
+    },
+    "output_tokens": 1413,
+    "output_tokens_details": {
+     "image_tokens": 1413,
+     "text_tokens": 0
+    },
+    "total_tokens": 4154
+   },
+   "cout_eur": 0.0548,
+   "taille": "1152x2048"
+  }
+ ]
+}

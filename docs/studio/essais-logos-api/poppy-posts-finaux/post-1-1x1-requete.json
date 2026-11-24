@@ -1,0 +1,16 @@
+{
+ "endpoint": "POST https://api.openai.com/v1/images/edits (multipart)",
+ "champs": {
+  "model": "gpt-image-2.5-sunburst",
+  "prompt": "Crée une publication finale pour les réseaux sociaux de Poppy, une marque de harnais, laisses et colliers pour chiens. C'est un vrai fichier publiable tel quel, au format exact 1:1 (carré, fil d'actualité), avec un cadrage pensé pour ce format. Elle appartient à l'identité visuelle de la planche jointe (deuxième image) : même univers, même palette, même ton, même style photo, même niveau de qualité. Le logo est celui de la première image, à reproduire sans le redessiner. Objectif : créer une émotion autour du lien entre un chien et son humain. Textes en français, courts et lisibles. Aucun prix, aucun avis, aucune promesse chiffrée.",
+  "quality": "high",
+  "size": "1024x1024",
+  "background": "opaque",
+  "output_format": "png",
+  "n": "1"
+ },
+ "image[]": [
+  "logo-poppy.png",
+  "planche-v2-brute.png"
+ ]
+}
