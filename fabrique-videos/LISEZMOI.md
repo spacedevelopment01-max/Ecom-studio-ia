@@ -55,3 +55,11 @@ npx remotion render src/index.ts Emeus out/emeus.mp4 \
   --browser-executable=/opt/pw-browsers/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
 ffmpeg -i out/emeus.mp4 -c:v copy -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:a aac -b:a 192k out/emeus-final.mp4
 ```
+
+## Deuxième vidéo : « Napoléon contre les lapins » (24 novembre 2026)
+
+- 1 min 11, 30 plans, même voix. Dossier `napoleon/` : texte, voix, minutage, moteur (`moteur/src/plans2.tsx`).
+- **Consignes du propriétaire** : aucun bruit de transition (« style vent », il y en avait trop) ; la musique de la
+  première vidéo est remplacée par une marche comique en cordes pincées (`outils/musique_marche.py`, à lancer avec
+  `public/sons/marche.wav 73` pour la recréer).
+- Chaîne choisie : « Les Ratés de l'Histoire » (`chaine/`).
