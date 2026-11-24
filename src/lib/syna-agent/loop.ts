@@ -8,6 +8,7 @@
  * Les créations natives longues (images, vidéos, thème…) suspendent l'exécution ; une tâche de reprise dépendante
  * repart quand elles sont terminées. Aucune règle par formulation : le choix appartient au modèle.
  */
+import { vueDesEsquisses } from "./logo-graphistes";
 import { ficheDuFil, ficheOf, notesDuProjet } from "./fiche";
 import { apresValidation, refusVerrou } from "./verrous";
 import { marqueCoupee, marqueOuArretee } from "./tools/identity";
@@ -911,6 +912,8 @@ export function threadView(user: User, cid: string) {
         // Étape 6 : cartes des thèmes (site du client composé dans chacun) et thème choisi.
         themes: j.themes ? { ...j.themes, chosen: j.themeChoice?.id ?? null } : null,
         families: j.families ?? null,
+        // Le logo, méthode des graphistes : les esquisses numérotées (jamais une refusée), le choix et les logos finis.
+        esquisses: vueDesEsquisses(j.graphistes, (id) => assetUrl({ id })),
         // Étape 6, maquettes : textes écrits avant la maquette (montrés en entier au client).
         siteCopy: c.project_id ? (() => { const sc = loadSiteCopy(c.project_id!); return sc ? { pages: Object.fromEntries(Object.entries(sc.pages).map(([k, v]) => [k, v])) } : null; })() : null,
         // Étape 9 : le plan des publications (avec le doute éventuel de SINA) et les publications qui ont leur image.

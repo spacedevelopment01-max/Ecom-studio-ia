@@ -1,0 +1,111 @@
+/**
+ * La tâche de fond de la méthode des graphistes (`syna.logo.graphistes`) : une recherche (la première, ou « d'autres
+ * pistes »), ou les finalisations des esquisses choisies. Chaque image est rangée dans la bibliothèque du client avec ce
+ * qui a servi à la faire (le texte envoyé, le modèle, l'identifiant de requête, la consommation). Une esquisse refusée
+ * n'y est jamais rangée comme une image montrable.
+ *
+ * Point 0 en attente : aucune chaîne ne lance encore la première recherche ; elle part par cette tâche quand le
+ * branchement sera fait (voir logo-graphistes.ts).
+ */
+import { z } from "zod";
+import { UserFacingError, type JobContext } from "../jobs";
+import { L } from "../i18n-server";
+import { loadProject } from "../projects";
+import { assetData, getAsset, saveAsset } from "../library";
+import { logoDetoure } from "./brand-images";
+import { nameKindsFor } from "./identities";
+import { journeyOf, updateJourney } from "./journey";
+import { planOfProject } from "../plan-gates";
+import { ecrireLeMetier, esquissesAChoisir, graphistesDeps, phraseDuLogoNonConstruit, uneFinalisation, uneRecherche, vraisAppels, type EtatGraphistes, type GraphistesAi, type LogoFini } from "./logo-graphistes";
+
+export const LOGO_GRAPHISTES_JOB = "syna.logo.graphistes";
+
+const Payload = z.object({
+  projectId: z.string(), conversationId: z.string(),
+  phase: z.enum(["recherche", "pistes", "finalisation"]),
+  /** Le nom choisi par le client (point 0) : seulement pour la première recherche. */
+  nom: z.string().min(1).max(60).optional(),
+  numeros: z.array(z.number().int().min(1)).max(4).optional(),
+  capMicro: z.number().min(0), studioCapMicro: z.number().min(0).optional(),
+});
+export type PayloadGraphistes = z.infer<typeof Payload>;
+
+const activiteDu = (j: ReturnType<typeof journeyOf>, positionnement?: string) => (j.start.offer?.status === "answered" ? j.start.offer.value : "") || positionnement || "";
+
+export async function runLogoGraphistesJob(ctx: JobContext) {
+  const a = Payload.parse(ctx.payload);
+  const p = loadProject(a.projectId);
+  const who = { userId: p.userId, projectId: p.id };
+  const ai: GraphistesAi = graphistesDeps.ai ? graphistesDeps.ai(ctx.job.id) : vraisAppels({ ...who, jobId: ctx.job.id, capMicro: a.capMicro, studioCapMicro: a.studioCapMicro ?? 0 });
+  const j = journeyOf(a.conversationId);
+  if (a.phase === "finalisation") return finaliserLesChoix(ai, who, a.conversationId, a.numeros ?? j.graphistes?.choix ?? []);
+  const avant = j.graphistes;
+  if (a.phase === "pistes" && !avant?.metier) throw new UserFacingError(L("Il n'y a pas encore d'esquisses : rien n'a été décompté.", "There are no sketches yet: nothing was charged."));
+  const nom = avant?.nom ?? a.nom ?? p.brand?.name ?? "";
+  if (!nom.trim()) throw new UserFacingError(L("Le nom de la marque n'est pas encore choisi : rien n'a été décompté.", "The brand name is not chosen yet: nothing was charged."));
+  let metier = avant?.metier;
+  if (!metier) {
+    const m = await ecrireLeMetier(ai, { nom, activite: activiteDu(j, p.brand?.positioning), kind: nameKindsFor(j) });
+    if (!m.ok) throw new UserFacingError(L(`Je n'ai pas réussi à écrire ton métier en mots simples (${m.raison}).`, "I could not write your trade in plain words."));
+    metier = m.metier;
+  }
+  const recherche = (avant?.recherches ?? 0) + 1;
+  const depart = (avant?.esquisses.at(-1)?.numero ?? 0) + 1;
+  const r = await uneRecherche(ai, { nom, metier, depart, eviter: (avant?.esquisses ?? []).map((e) => e.piste).filter(Boolean), recherche });
+  // Les planches, rangées pour le diagnostic (jamais montrées) avec leur reçu ; les esquisses gardées, montrables.
+  const planches = await Promise.all(r.planches.map(async (pl) => {
+    const asset = await saveAsset({ ...who, data: pl.png, name: `recherche-${recherche}-${pl.modele}.png`, mime: "image/png", role: "logo-recherche", origin: "generated", status: "ready", meta: { graphistes: { recherche, modele: pl.modele, texteEnvoye: pl.texteEnvoye, requestId: pl.requestId, usage: pl.usage, coutMicro: pl.coutMicro } } });
+    return { modele: pl.modele, recherche, tour: 1, assetId: asset.id, texteEnvoye: pl.texteEnvoye, requestId: pl.requestId, coutMicro: pl.coutMicro };
+  }));
+  const esquisses = await Promise.all(r.esquisses.map(async (e) => {
+    const asset = await saveAsset({ ...who, data: e.png, name: `esquisse-${e.numero}.png`, mime: "image/png", role: "logo-esquisse", origin: "generated", status: "ready", meta: { graphistes: { numero: e.numero, modele: e.modele, piste: e.piste, recherche, tour: e.tour, requestId: e.requestId } } });
+    return { numero: e.numero, assetId: asset.id, modele: e.modele, piste: e.piste, tour: e.tour, recherche, requestId: e.requestId };
+  }));
+  const toutes = [...(avant?.esquisses ?? []), ...esquisses];
+  const contact = toutes.length ? await (await import("./esquisses")).plancheContact(toutes.map((e) => ({ numero: e.numero, png: assetData(getAsset(e.assetId)!) }))) : null;
+  const contactAsset = contact ? await saveAsset({ ...who, data: contact, name: "esquisses-numerotees.png", mime: "image/png", role: "logo-esquisses", origin: "generated", status: "ready", meta: { graphistes: { contact: true } } } as never) : null;
+  const etat: EtatGraphistes = {
+    nom, metier, max: esquissesAChoisir(planOfProject(p.id)), esquisses: toutes, refusees: (avant?.refusees ?? 0) + r.refusees.length,
+    ...(contactAsset ? { contactAssetId: contactAsset.id } : {}),
+    planches: [...(avant?.planches ?? []), ...planches, ...r.manquees.filter((m) => m.modele !== "relecture").map((m) => ({ modele: m.modele, recherche, tour: 1, texteEnvoye: "", requestId: null, coutMicro: null, manquee: m.raison }))],
+    recherches: recherche, ...(avant?.choix ? { choix: avant.choix } : {}), ...(avant?.logos ? { logos: avant.logos } : {}),
+    notes: [...(avant?.notes ?? []), ...r.notes].slice(-40), at: Date.now(),
+  };
+  updateJourney(a.conversationId, (x) => { x.graphistes = etat; });
+  const nouvelles = esquisses.length;
+  return {
+    esquisses: nouvelles, total: toutes.length, refusees: r.refusees.length, reprise: r.reprise, manquees: r.manquees.map((m) => m.modele),
+    notice: nouvelles
+      ? L(`${nouvelles} esquisse${nouvelles > 1 ? "s" : ""} ${recherche > 1 ? "de plus " : ""}prête${nouvelles > 1 ? "s" : ""}, numérotée${nouvelles > 1 ? "s" : ""}.`, `${nouvelles} sketch(es) ready.`)
+      : L("Aucune esquisse n'a passé ma relecture : rien ne t'est montré.", "No sketch passed my review."),
+  };
+}
+
+/** Les finalisations des esquisses choisies, dans l'ordre de leurs numéros. Un logo refusé deux fois n'est pas gardé. */
+async function finaliserLesChoix(ai: GraphistesAi, who: { userId: string; projectId: string }, cid: string, numeros: number[]) {
+  const etat = journeyOf(cid).graphistes;
+  if (!etat?.metier || !numeros.length) throw new UserFacingError(L("Aucune esquisse choisie : rien n'a été décompté.", "No sketch chosen: nothing was charged."));
+  const logos: LogoFini[] = [...(etat.logos ?? [])];
+  const dits: string[] = [];
+  for (const numero of [...new Set(numeros)].sort((x, y) => x - y)) {
+    const e = etat.esquisses.find((x) => x.numero === numero);
+    const data = e ? assetData(getAsset(e.assetId)!) : null;
+    if (!e || !data) { dits.push(L(`L'esquisse ${numero} n'est plus là.`, `Sketch ${numero} is gone.`)); continue; }
+    const f = await uneFinalisation(ai, { nom: etat.nom, metier: etat.metier.metier, esquisse: data, numero, detourer: (png) => logoDetoure(png) });
+    const sans = logos.filter((l) => l.numero !== numero);
+    if (!f.ok) {
+      sans.push({ numero, ok: false, raison: f.raison, essais: f.essais.length });
+      dits.push(phraseDuLogoNonConstruit(numero, etat.esquisses.map((x) => x.numero).filter((n) => !numeros.includes(n))));
+      logos.splice(0, logos.length, ...sans);
+      continue;
+    }
+    const recu = f.recus.at(-1) ?? null;
+    const logo = await saveAsset({ ...who, data: f.logo, name: `logo-esquisse-${numero}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { graphistes: { numero, texteEnvoye: f.texte, ideeCentrale: f.essais.at(-1)?.ideeCentrale, recu, essais: f.essais.length, palette: f.palette } } });
+    const detoure = await saveAsset({ ...who, data: f.detoure, name: `logo-esquisse-${numero}-sans-fond.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { graphistes: { numero, sansFond: true, de: logo.id } } });
+    sans.push({ numero, ok: true, assetId: logo.id, detoureAssetId: detoure.id, texte: f.texte, ideeCentrale: f.essais.at(-1)?.ideeCentrale, ...(f.palette ? { palette: f.palette } : {}), essais: f.essais.length });
+    logos.splice(0, logos.length, ...sans);
+  }
+  updateJourney(cid, (x) => { if (x.graphistes) x.graphistes = { ...x.graphistes, logos, at: Date.now() }; });
+  const faits = logos.filter((l) => l.ok && numeros.includes(l.numero)).length;
+  return { logos: faits, notice: [L(`${faits} logo${faits > 1 ? "s" : ""} fini${faits > 1 ? "s" : ""}, relu${faits > 1 ? "s" : ""}.`, `${faits} finished logo(s).`), ...dits].join(" ") };
+}

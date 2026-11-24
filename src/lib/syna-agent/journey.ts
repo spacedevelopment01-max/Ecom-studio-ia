@@ -147,6 +147,11 @@ export type Journey = {
      * d'être montrée »).
      */
     manque?: string[] };
+  /**
+   * La méthode des graphistes (24 novembre 2026) : le métier, les esquisses montrées (jamais une refusée), le choix du
+   * client (2, 3 ou 4 selon son forfait) et les logos finis (`logo-graphistes.ts`). Les anciens projets n'en ont pas.
+   */
+  graphistes?: import("./logo-graphistes").EtatGraphistes;
   /** Le logo de la marque, adopté par la fin de marque (`brand-finish.ts`) : celui de la planche, ou le nom dessiné en secours. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };

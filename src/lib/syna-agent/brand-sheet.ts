@@ -8,6 +8,7 @@ import { loadProject } from "../projects";
 import { journeyOfProject } from "./construction";
 import { fontFace } from "./identities";
 import { chosenRoute } from "./logos";
+import { vueDesEsquisses, type VueDesEsquisses } from "./logo-graphistes";
 
 type Shot = { url: string; w: number; h: number };
 export type BrandSheet = {
@@ -21,6 +22,8 @@ export type BrandSheet = {
   images: { hero: Shot | null; object: Shot | null; signs: Shot | null; posts: Shot[] };
   kit: { items: { key: string; label: string; href: string; downloadHref: string | null; dark: boolean }[]; board: string | null; book: string | null; pages: number } | null;
   issues: string[];
+  /** Les esquisses de logo (méthode des graphistes), montrées tant qu'aucune n'est choisie ; sinon null. */
+  esquisses: VueDesEsquisses | null;
 };
 
 const HEX = /^#[0-9a-f]{6}$/i;
@@ -52,5 +55,6 @@ export function brandSheetOf(projectId: string): BrandSheet {
       book: j.brandKit.bookId ? assetUrl({ id: j.brandKit.bookId }) : null, pages: j.brandKit.pageIds.length,
     } : null,
     issues: j?.brandFinish?.issues ?? [],
+    esquisses: j?.graphistes?.choix?.length ? null : vueDesEsquisses(j?.graphistes, (id) => assetUrl({ id })),
   };
 }
