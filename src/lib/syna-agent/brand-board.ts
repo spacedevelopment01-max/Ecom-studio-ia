@@ -188,6 +188,11 @@ export const BoardSchema = z.object({
     ground: z.enum(PALETTE_ROLES).optional(),
     /** Quelques mots écrits à la main sous le texte (« Voilà, c'est dit. »). */
     note: z.string().min(1).max(32).optional(),
+    /**
+     * L'objectif de la publication, en une ou deux phrases (méthode des publications du 24 novembre 2026, seulement quand
+     * elle est allumée) : la partie libre de la demande, écrite avec les textes des publications, contrôlée gratuitement.
+     */
+    objectif: z.string().min(1).max(480).optional(),
   })).length(3),
   /** Ce qui reste à prouver : dit clairement au client, jamais inventé. */
   toProve: z.array(z.string().min(1).max(220)).min(1).max(8),
@@ -204,6 +209,8 @@ export const BoardSchema = z.object({
     mark: BoardImageSchema.optional(), markDark: BoardImageSchema.optional(),
     /** L'idée du logo écrite par la directrice artistique : les autres planches de la série doivent en différer. */
     logoIdea: z.string().max(900).optional(),
+    /** Les trois publications de la méthode posées par le code à même hauteur, à leurs rapports exacts (fichier à part). */
+    bande: BoardImageSchema.optional(),
   }).optional(),
 });
 export type Board = z.infer<typeof BoardSchema>;

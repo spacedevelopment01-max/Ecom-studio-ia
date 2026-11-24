@@ -13,6 +13,15 @@ export const DEFAULT_SOCIAL_IMAGE_MODEL = "gpt-image-2.6-flare";
 export const SOCIAL_IMAGE_POLICY = "Décision du propriétaire du 14 novembre 2026 : les images des publications sont créées par OpenAI.";
 
 /**
+ * LA MÉTHODE DES PUBLICATIONS (validée par le propriétaire le 24 novembre 2026 : « Conserve intégralement la méthode, les
+ * paramètres API, le modèle utilisé et la structure des prompts ») : un SEUL chemin direct, `aiPublicationMethode`
+ * (media-providers.ts), POST /v1/images/edits, prend le modèle réservé aux logos (logo-policy.ts,
+ * `PERMISSION_DES_PUBLICATIONS`). Ce chemin ne passe pas par le routage : partout ailleurs, l'usage « Images réseaux
+ * sociaux » garde son modèle et le verrou des logos reste. Éteint par défaut (`sina.publications.methode`).
+ */
+export const PUBLICATIONS_METHODE_ROUTE = { provider: "openai", model: "gpt-image-2.5-sunburst" } as const;
+
+/**
  * TOUTES LES IMAGES DE SINA PAR OPENAI (CLAUDE.md : « Images créées par OpenAI pour tout ce que fait SINA » ; 23 novembre
  * 2026, essai de Nadia : le réglage commun des images désignait Qwen-Image 3.0 Pro). Marque, site, publications,
  * publicités, atelier en mode « SINA s'en occupe » : jamais un autre fournisseur, ni en principal, ni en secours, ni par le

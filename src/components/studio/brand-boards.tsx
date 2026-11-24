@@ -16,6 +16,7 @@
 import { createElement, useId, type CSSProperties, type ReactNode } from "react";
 import { Button, cx } from "../ui";
 import { useT } from "../i18n";
+import { sontLesPublicationsDeLaMethode } from "@/lib/media/bande-publications";
 
 type Face = { family: string; file: string; weight: number } | null;
 type Shape = { d: string; tone: "main" | "accent"; paint: "fill" | "stroke"; width?: number; rule?: "nonzero" | "evenodd"; transform?: string; part?: "note" };
@@ -205,6 +206,8 @@ const BOARD_CSS = `
 .bb-posts[data-shots]{display:flex;overflow-x:auto;gap:.8rem;padding:.6rem .3rem 1rem;scroll-snap-type:x mandatory;max-width:none;-webkit-overflow-scrolling:touch}
 .bb-posts[data-shots]>.bb-post{flex:0 0 58%;scroll-snap-align:center}
 @container (min-width:42rem){.bb-posts[data-shots]{display:grid;overflow:visible;max-width:46rem}.bb-posts[data-shots]>.bb-post{flex:none}}
+.bb-posts[data-methode]{display:flex;align-items:flex-start;gap:.6rem;max-width:46rem;padding:.6rem .2rem 1rem}
+.bb-posts[data-methode]>.bb-post{flex:var(--bb-r) 1 0;min-width:0;padding:0;transform:none;border-radius:6px}
 .bb-3{display:grid;gap:.6rem}
 @container (min-width:42rem){.bb-3{grid-template-columns:repeat(3,1fr)}.bb-2{grid-template-columns:1fr 1fr}}
 .bb-2{display:grid;gap:.6rem}
@@ -420,6 +423,8 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
   const support = b.idea.confessionSupport;
   const shots: Shots = b.images ?? {};
   const hasPosts = !!shots.posts?.some((q) => shotOk(q));
+  // Les trois publications faites par la méthode des publications (formats exacts 1:1, 4:5, 9:16, dans l'ordre).
+  const methode = b.posts.length === 3 && !!shots.posts?.every((q) => shotOk(q)) && sontLesPublicationsDeLaMethode(shots.posts ?? []);
   // La marque finie (identité choisie) a son objet, ses signes en photo ou ses publications ; une planche proposée, pas encore.
   const finished = !!chosen && (hasPosts || shotOk(shots.object) || shotOk(shots.signs));
   return (
@@ -530,14 +535,17 @@ function Planche({ x, label, chosen, faded, canChoose, busy, onChoose }: { x: Bo
           </div>
           {hasPosts && <figure className="bb-wide" data-posts>
             {/* Avec des images créées : des publications assez grandes pour être lues sur téléphone (on les fait défiler). */}
-            <div className="bb-posts" data-shots={shots.posts?.some((q) => shotOk(q)) ? "" : undefined}>
+            {/* Les publications de la méthode (1:1, 4:5, 9:16) : chacune à son vrai rapport, toutes à même hauteur. */}
+            {methode ? <div className="bb-posts" data-methode>
+              {b.posts.map((q, i) => { const shot = shots.posts![i]!; return <div key={i} className="bb-post" data-post="image" data-methode style={{ "--bb-r": shot.w / shot.h, aspectRatio: `${shot.w} / ${shot.h}` } as CSSProperties}><Photo shot={shot} alt={q.text} /></div>; })}
+            </div> : <div className="bb-posts" data-shots={shots.posts?.some((q) => shotOk(q)) ? "" : undefined}>
               {b.posts.map((q, i) => {
                 const shot = shots.posts?.[i];
                 // Une publication est une vraie image créée et relue : refusée, elle n'est pas remplacée par un aplat de couleur.
                 return shotOk(shot) ? <div key={i} className="bb-post" data-post="image"><Photo shot={shot} alt={q.text} /></div> : null;
               })}
-            </div>
-            <figcaption>{t("Trois publications", "Three posts")}</figcaption>
+            </div>}
+            <figcaption>{methode ? t("Trois publications (1:1, 4:5, 9:16)", "Three posts (1:1, 4:5, 9:16)") : t("Trois publications", "Three posts")}</figcaption>
           </figure>}
         </div>
         {!finished && <p className="bb-note mt-[.7rem]" data-board-later>{t("L'objet qui porte ton logo, tes signes en photo et tes trois premières publications sont créés pour l'identité que tu choisis, dès ton choix.", "The object carrying your logo, your signs as a photo and your first three posts are created for the identity you choose, as soon as you choose.")}</p>}

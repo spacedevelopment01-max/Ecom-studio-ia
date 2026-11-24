@@ -3,7 +3,7 @@ import { assertStrategyInputsCurrent } from "../strategy-consumption";
 import { falVideoRequest } from "./fal-video-request";
 import { createHash } from "node:crypto";
 import type { AspectId } from "../image-v2/types";
-import { LOGO_MODELS, modelePermisPour, REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
+import { LOGO_MODELS, modelePermisPour, PERMISSION_DES_PUBLICATIONS, permisPourLesPublications, REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
 /**
  * Fournisseurs de génération d'images et de vidéo.
  * Principe de fidélité : le produit n'est jamais « réinventé ».
@@ -16,7 +16,7 @@ import { LOGO_MODELS, modelePermisPour, REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVI
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
-import { emitMediaProgress, openaiBackground, openaiClient, openaiImage, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
+import { emitMediaProgress, openaiBackground, openaiClient, openaiImage, openaiImageSansFlux, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
 import {photoEditRequest,type PhotoEditInput} from "../image-v2/edit-request";
 export {photoEditRequest,editPhotoPrompt,type PhotoEditInput} from "../image-v2/edit-request";
 import sharp from "sharp";
@@ -883,6 +883,75 @@ export function aiLogoPlanche(ctx: Ctx, input: { model: string; prompt: string }
 /** Le logo fini d'une esquisse choisie : POST /v1/images/edits en multipart, l'esquisse dans image[], le texte tel quel. */
 export function aiLogoFinalise(ctx: Ctx, input: { esquisse: Buffer; prompt: string }): Promise<Buffer> {
   return logoDirect(ctx, { temps: "finalisation", model: LOGO_MODELS.finalisation, prompt: input.prompt, esquisse: input.esquisse });
+}
+
+// ---------------------------------------------------------------- la méthode des publications (24 novembre 2026)
+
+/**
+ * Ce qui est gardé pour refaire une publication de la méthode : l'adresse appelée, les champs envoyés (texte compris), les
+ * images jointes (rôle, identifiant, empreinte), la taille reçue, l'identifiant de requête, la consommation, ce qu'OpenAI
+ * dit avoir rendu, le coût et la durée. Lu par `recuDePublication(png)` juste après l'appel.
+ */
+export type RecuDePublication = { adresse: string; champs: Record<string, unknown>; jointes: { role: string; assetId: string | null; sha256: string; octets: number }[]; tailleRecue: string | null; requestId: string | null; usage: unknown; renvoye: import("./openai-images").ImageRenvoyee; coutMicro: number; dureeMs: number };
+const recusDePublication = new WeakMap<Buffer, RecuDePublication>();
+export const recuDePublication = (png: Buffer): RecuDePublication | null => recusDePublication.get(png) ?? null;
+export const ADRESSE_DES_PUBLICATIONS = "POST https://api.openai.com/v1/images/edits (multipart)";
+/** LES CHAMPS EXACTS des requêtes de preuve (24 novembre 2026), dans leur ordre ; les images partent dans image[]. */
+export function champsDePublication(texte: string, taille: string): Record<string, unknown> & { model: string } {
+  return { model: PERMISSION_DES_PUBLICATIONS.model, prompt: texte, quality: "high", size: taille, background: "opaque", output_format: "png", n: 1 };
+}
+/** Une image jointe est comptée au plus à ce nombre de jetons d'entrée (même borne que les autres images d'OpenAI). */
+const jetonsMaxDUneJointe = OPENAI_IMAGE_IN_TOKENS;
+const bornePublication = (texte: string, taille: string, jointes: number): number => {
+  const sortie = jetonsDeSortieGptImage(PERMISSION_DES_PUBLICATIONS.model, taille, "high");
+  if (sortie == null) throw new PermanentError(L("Taille de publication sans borne de coût connue : rien n'est envoyé.", "Post size without a known cost bound: nothing sent."));
+  return cost("openai", PERMISSION_DES_PUBLICATIONS.model, { input: bytes(texte), imageIn: jetonsMaxDUneJointe * jointes, imageOut: sortie }).micro;
+};
+/** Coût MAXIMAL d'une publication de la méthode (même calcul que sa réservation, marge comprise), au texte le plus long permis. */
+export function publicationMethodeMaxMicro(format: "1:1" | "4:5" | "9:16", jointes: number): number {
+  const taille = ({ "1:1": "1088x1088", "4:5": "1088x1360", "9:16": "1088x1936" } as const)[format];
+  return mediaReservationMaxMicro(bornePublication("x".repeat(PUBLICATION_METHODE_TEXTE_MAX_OCTETS), taille, jointes));
+}
+export const PUBLICATION_METHODE_TEXTE_MAX_OCTETS = 4000;
+const TAILLES_DES_PUBLICATIONS = ["1088x1088", "1088x1360", "1088x1936"];
+
+async function publicationMethodeImpl(ctx: Ctx, input: { texte: string; taille: string; logo: { assetId: string | null; data: Buffer }; photos: { assetId: string | null; data: Buffer }[] }): Promise<Buffer> {
+  const { provider, model, chemin } = PERMISSION_DES_PUBLICATIONS;
+  if (!permisPourLesPublications(chemin, provider, model)) throw new PermanentError(L("Modèle non permis pour les publications (logo-policy.ts).", "Model not allowed for posts."));
+  if (!TAILLES_DES_PUBLICATIONS.includes(input.taille)) throw new PermanentError(L(`Taille ${input.taille} hors de la méthode des publications : rien n'est envoyé.`, `Size ${input.taille} outside the post method: nothing sent.`));
+  if (!input.logo?.data?.length) throw new PermanentError(L("Aucun logo validé : aucune publication n'est envoyée.", "No approved logo: no post is sent."));
+  if (Buffer.byteLength(input.texte, "utf8") > PUBLICATION_METHODE_TEXTE_MAX_OCTETS) throw new PermanentError(L("Texte de la publication trop long : rien n'est envoyé.", "Post text too long: nothing sent."));
+  const key = activeProviderKey("openai");
+  if (!key) throw new UserFacingError(L("Aucune clé OpenAI configurée pour la génération d'images.", "No OpenAI key configured for image generation."));
+  const t = mediaTrace.getStore();
+  if (t) t.usage = "social_image";
+  const images = [{ role: "logo", ...input.logo }, ...input.photos.map((p) => ({ role: "produit", ...p }))];
+  const corps = champsDePublication(input.texte, input.taille);
+  gate(ctx, bornePublication(input.texte, input.taille, images.length), "image", provider, model);
+  const files = await Promise.all(images.map((im, i) => toFile(im.data, `${i === 0 ? "logo" : `produit-${i}`}.png`, { type: im.data[0] === 137 ? "image/png" : "image/jpeg" })));
+  let res: Awaited<ReturnType<typeof openaiImageSansFlux>>;
+  // Sans flux, sans complexité, une seule image, aucune reprise automatique (une panne n'est jamais relancée).
+  try { res = await openaiImageSansFlux(openaiClient(key), "edit", { ...corps, image: files }, sent); } catch (e) { return erreurOpenAI(e); }
+  if (!res.b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
+  const u = res.usage ?? {};
+  const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
+  const jointes = images.map((im) => ({ role: im.role, assetId: im.assetId, sha256: createHash("sha256").update(im.data).digest("hex"), octets: im.data.length }));
+  const { prompt: _p, ...reglages } = corps;
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider, model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage, idempotencyKey: ctx.usageKey,
+    details: { methode: "publications", texteEnvoye: input.texte, requestId: res.requestId, reglages, jointes, usage: res.usage ?? null, renvoye: res.renvoye } });
+  const png = Buffer.from(res.b64, "base64");
+  const m = await sharp(png).metadata().catch(() => ({ width: undefined, height: undefined }));
+  recusDePublication.set(png, { adresse: ADRESSE_DES_PUBLICATIONS, champs: corps, jointes, tailleRecue: m.width && m.height ? `${m.width}x${m.height}` : null, requestId: res.requestId, usage: res.usage ?? null, renvoye: res.renvoye, coutMicro: billed, dureeMs: res.ms });
+  return png;
+}
+const publicationMethode = traced("image_generation", publicationMethodeImpl);
+/**
+ * UNE publication de la méthode validée : POST /v1/images/edits en multipart, image[] = le logo officiel en premier, puis
+ * les vraies photos du produit ; les champs exacts des requêtes de preuve ; plafond, garde-fou et comptage comme toute
+ * image ; aucune relance automatique. Rend l'image BRUTE (le recadrage exact se fait ensuite, publications-methode.ts).
+ */
+export function aiPublicationMethode(ctx: Ctx, input: { texte: string; taille: string; logo: { assetId: string | null; data: Buffer }; photos: { assetId: string | null; data: Buffer }[] }): Promise<Buffer> {
+  return publicationMethode(ctx, input);
 }
 
 /** Coût maximal d'une maquette de site (une planche), null si aucun modèle n'est utilisable. */

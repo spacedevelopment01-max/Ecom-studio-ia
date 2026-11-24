@@ -32,6 +32,16 @@ export const LOGO_ONLY_MODEL = REQUIRED_LOGO_MODEL;
 export const estUnModeleDeLogo = (provider: string, model: string): boolean => provider === REQUIRED_LOGO_PROVIDER && LOGO_MODEL_LIST.includes(model);
 /** Ce modèle est-il réservé aux logos (aucune autre image ne le prend) ? */
 export const estReserveAuxLogos = (provider: string, model: string): boolean => provider === REQUIRED_LOGO_PROVIDER && model === LOGO_ONLY_MODEL;
+/**
+ * LA SEULE EXCEPTION AU VERROU (méthode des publications validée par le propriétaire le 24 novembre 2026 : « Conserve
+ * intégralement la méthode, les paramètres API, le modèle utilisé et la structure des prompts ») : le chemin direct des
+ * publications de la planche (`aiPublicationMethode`, media-providers.ts) prend le modèle réservé aux logos. Il ne passe
+ * pas par le routage : `estReserveAuxLogos` et le refus du routage (media-routing.ts) restent tels quels partout ailleurs.
+ */
+export const PERMISSION_DES_PUBLICATIONS = { chemin: "aiPublicationMethode", provider: REQUIRED_LOGO_PROVIDER, model: LOGO_ONLY_MODEL } as const;
+/** Ce modèle est-il permis sur le chemin direct des publications (et seulement là) ? */
+export const permisPourLesPublications = (chemin: string, provider: string, model: string): boolean =>
+  chemin === PERMISSION_DES_PUBLICATIONS.chemin && provider === PERMISSION_DES_PUBLICATIONS.provider && model === PERMISSION_DES_PUBLICATIONS.model;
 /** Ce modèle est-il permis pour CE temps du logo ? */
 export function modelePermisPour(temps: TempsDuLogo, provider: string, model: string): boolean {
   if (provider !== REQUIRED_LOGO_PROVIDER) return false;

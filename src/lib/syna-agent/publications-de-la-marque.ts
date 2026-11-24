@@ -19,6 +19,32 @@ import { chosenRoute } from "./logos";
 /** Les réseaux qui reçoivent telle quelle l'image 4:5 d'une publication de la planche. */
 const RESEAUX_4_5 = ["instagram", "facebook"] as const;
 
+/** Les réseaux du calendrier qui peuvent recevoir une publication (ceux du Studio où le client publie lui-même). */
+const RESEAUX_DU_CALENDRIER = ["instagram", "facebook", "tiktok", "youtube", "pinterest"] as const;
+/**
+ * Méthode des publications (24 novembre 2026) : une publication n'est offerte qu'aux réseaux de son format EXACT (1:1, 4:5
+ * ou 9:16), en image ou en story ; jamais une image recadrée pour un autre format. Rend les réseaux et le format de chacun.
+ */
+export function reseauxDuFormat(aspect: string, networks: readonly string[]): { network: (typeof RESEAUX_DU_CALENDRIER)[number]; format: "image" | "story" }[] {
+  const out: { network: (typeof RESEAUX_DU_CALENDRIER)[number]; format: "image" | "story" }[] = [];
+  for (const n of RESEAUX_DU_CALENDRIER) {
+    if (!networks.includes(n)) continue;
+    const dims = platformSpec(n).dims;
+    const f = (["image", "story"] as const).find((k) => dims[k]?.aspect === aspect);
+    if (f) out.push({ network: n, format: f });
+  }
+  return out;
+}
+/** Le format exact d'une publication faite par la méthode (« 1:1 », « 4:5 », « 9:16 »), ou null pour une autre image. */
+function formatDeLaMethode(assetId: string): string | null {
+  const a = getAsset(assetId);
+  if (!a) return null;
+  try {
+    const f = JSON.parse(String(a.meta ?? "{}"))?.publicationMethode?.formatFinal;
+    return f === "1080x1080" ? "1:1" : f === "1080x1350" ? "4:5" : f === "1080x1920" ? "9:16" : null;
+  } catch { return null; }
+}
+
 /** Les publications de la planche de la marque finie qui ont leur image relue, dans l'ordre de la planche. */
 export function publicationsDeLaMarque(j: Journey): { index: number; text: string; assetId: string }[] {
   const x = chosenRoute(j);
@@ -38,6 +64,23 @@ export function offrirLesPublicationsDeLaMarque(p: Project, userId: string, j: J
   const added: string[] = [], kept: string[] = [], notes: string[] = [];
   const posts = publicationsDeLaMarque(j);
   if (!posts.length) return { added, kept, notes };
+  // Les publications faites par la méthode : chacune aux seuls réseaux de son format exact.
+  if (posts.some((post) => formatDeLaMethode(post.assetId))) {
+    for (const post of posts) {
+      const aspect = formatDeLaMethode(post.assetId), a = getAsset(post.assetId);
+      if (!aspect || !a || a.project_id !== p.id || a.deleted_at) { notes.push(`publication ${post.index + 1} de ta marque : image introuvable, elle n'est pas mise au calendrier`); continue; }
+      const cibles = reseauxDuFormat(aspect, networks);
+      if (!cibles.length) { notes.push(`la publication ${post.index + 1} de ta marque est en ${aspect} : aucun de tes réseaux ne prend ce format tel quel, elle n'est pas mise au calendrier`); continue; }
+      for (const { network, format } of cibles) {
+        const postId = idPublicationDeLaMarque(p.id, post.index, network);
+        if (one("SELECT 1 FROM posts WHERE id=?", postId)) { kept.push(postId); continue; }
+        const adapted = adaptForPlatform(network as Platform, { caption: post.text, title: post.text, hashtags: [], link: null, format, mediaCount: 1 });
+        createManualPost(p, userId, { network, format, title: adapted.title.slice(0, 200), caption: adapted.caption, hashtags: "", media: [post.assetId] }, { postId, brief: { unit: `marque:${post.index}`, serie: "La marque", marque: true, offerte: true, ordre: post.index } });
+        added.push(postId);
+      }
+    }
+    return { added, kept, notes };
+  }
   const nets = RESEAUX_4_5.filter((n) => networks.includes(n) && platformSpec(n).dims.image?.aspect === "4:5");
   if (!nets.length) { notes.push("les publications de ta marque sont en 4:5 : elles vont sur Instagram et Facebook, aucun de ces réseaux n'est choisi"); return { added, kept, notes }; }
   for (const post of posts) {
