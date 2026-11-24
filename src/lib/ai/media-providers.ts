@@ -3,7 +3,7 @@ import { assertStrategyInputsCurrent } from "../strategy-consumption";
 import { falVideoRequest } from "./fal-video-request";
 import { createHash } from "node:crypto";
 import type { AspectId } from "../image-v2/types";
-import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
+import { LOGO_MODELS, modelePermisPour, REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
 /**
  * Fournisseurs de génération d'images et de vidéo.
  * Principe de fidélité : le produit n'est jamais « réinventé ».
@@ -775,6 +775,90 @@ export const LOGO_ROUTE: { provider: string; model: string } = { provider: REQUI
 export async function aiBoardLogo(ctx: Ctx, input: { prompt: string; logo?: Buffer | null; /** Les logos déjà faits de la série et ses essais refusés : la demande, en français, dit quoi en faire. */ serie?: Buffer[]; aspect: "1:1" }) {
   const references = input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : (input.serie ?? []).map((data) => ({ role: "serie" as const, data, essential: true }));
   return withQuotedImageRoute(LOGO_ROUTE, () => generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "logo", need: { text: true, references: references.length } }));
+}
+
+// ---------------------------------------------------------------- la méthode des graphistes (24 novembre 2026)
+
+/**
+ * Ce qui est gardé avec chaque image de la méthode des graphistes (règle du plan accepté : « le texte envoyé, le modèle,
+ * l'identifiant de requête et la consommation sont gardés avec l'image »). Lu par `recuDuLogo(png)` juste après l'appel.
+ */
+export type RecuDuLogo = { endpoint: string; modele: string; texteEnvoye: string; reglages: Record<string, unknown>; requestId: string | null; usage: unknown; coutMicro: number; dureeMs: number };
+const recusDuLogo = new WeakMap<Buffer, RecuDuLogo>();
+export const recuDuLogo = (png: Buffer): RecuDuLogo | null => recusDuLogo.get(png) ?? null;
+
+/**
+ * LA DEMANDE EXACTE d'une planche de recherche (preuves : docs/studio/essais-logos-api/methode-graphiste-…/phase1.py,
+ * six projets, 24 novembre 2026). Mêmes réglages pour les deux modèles, « complexity » seulement pour 2.6 Flare.
+ */
+export function requeteDePlanche(model: string, prompt: string): Record<string, unknown> & { model: string } {
+  const commun = { model, prompt, size: "1536x1024", quality: "medium", background: "opaque", output_format: "png", n: 1 };
+  return model === "gpt-image-2.6-flare" ? { ...commun, complexity: "medium" } : commun;
+}
+/** LA DEMANDE EXACTE d'une finalisation (preuve : finalisation-sans-proprietaire/finaliser.py) ; l'esquisse part dans image[]. */
+export function champsDeFinalisation(prompt: string): Record<string, unknown> & { model: string } {
+  return { model: LOGO_MODELS.finalisation, prompt, quality: "high", size: "auto", background: "opaque", output_format: "png", n: 1 };
+}
+
+/** Jetons de sortie au plus d'une planche « medium » en 1536 × 1024 (table d'OpenAI ; mesuré : 343 sur 2.5 Sunburst). */
+const PLANCHE_SORTIE_MAX = 1568;
+/** Jetons de sortie au plus d'un logo fini « high » en taille libre (mesuré : 686 à 2 058 ; table d'OpenAI en 1536 : 6 208). */
+const FINALISATION_SORTIE_MAX = 6240;
+const borneLogo = (model: string, prompt: string, images: number, sortie: number): number => {
+  const p = requirePrice("openai", model);
+  return p.unit === "image" ? cost("openai", model, { images: 1, input: bytes(prompt) }).micro : cost("openai", model, { input: bytes(prompt), imageIn: OPENAI_IMAGE_IN_TOKENS * images, imageOut: sortie }).micro;
+};
+/** Taille au plus d'un texte de logo (planche ou finalisation) : borne le devis. */
+export const LOGO_TEXTE_MAX_OCTETS = 6000;
+/** Coût MAXIMAL d'une planche de recherche (même calcul que sa réservation), avec la marge de réservation. */
+export const logoPlancheMaxMicro = (model: string): number => mediaReservationMaxMicro(borneLogo(model, "x".repeat(LOGO_TEXTE_MAX_OCTETS), 0, PLANCHE_SORTIE_MAX));
+/** Coût MAXIMAL d'une finalisation (une esquisse jointe). */
+export const logoFinalisationMaxMicro = (): number => mediaReservationMaxMicro(borneLogo(LOGO_MODELS.finalisation, "x".repeat(LOGO_TEXTE_MAX_OCTETS), 1, FINALISATION_SORTIE_MAX));
+
+const erreurOpenAI = (e: any): never => {
+  if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
+  if (e?.status === 400) throw refusal(new PermanentError(L(`Requête refusée par OpenAI : ${String(e?.message ?? "").slice(0, 300)}`, `Request rejected by OpenAI: ${String(e?.message ?? "").slice(0, 300)}`)));
+  // Panne, coupure, délai : résultat incertain, JAMAIS relancé tout seul (le parcours le dit au client).
+  throw e;
+};
+
+async function logoDirectImpl(ctx: Ctx, input: { temps: "recherche" | "finalisation"; model: string; prompt: string; esquisse?: Buffer }): Promise<Buffer> {
+  if (!modelePermisPour(input.temps, "openai", input.model)) throw new PermanentError(L(`Modèle ${input.model} non permis pour la ${input.temps} du logo (logo-policy.ts).`, `Model ${input.model} not allowed for logo ${input.temps}.`));
+  if (Buffer.byteLength(input.prompt, "utf8") > LOGO_TEXTE_MAX_OCTETS) throw new PermanentError(L("Texte du logo trop long : rien n'est envoyé.", "Logo text too long: nothing sent."));
+  const key = activeProviderKey("openai");
+  if (!key) throw new UserFacingError(L("Aucune clé OpenAI configurée pour la génération d'images.", "No OpenAI key configured for image generation."));
+  const t = mediaTrace.getStore();
+  if (t) t.usage = "logo";
+  const fin = input.temps === "finalisation";
+  const corps = fin ? champsDeFinalisation(input.prompt) : requeteDePlanche(input.model, input.prompt);
+  gate(ctx, borneLogo(input.model, input.prompt, fin ? 1 : 0, fin ? FINALISATION_SORTIE_MAX : PLANCHE_SORTIE_MAX), "image", "openai", input.model);
+  const client = openaiClient(key);
+  let res: Awaited<ReturnType<typeof openaiImage>>;
+  try {
+    res = fin
+      // multipart : l'esquisse dans image[] (le client OpenAI nomme ainsi un tableau de fichiers), le texte tel quel.
+      ? await openaiImage(client, "edit", { ...corps, image: [await toFile(input.esquisse!, "esquisse.png", { type: "image/png" })] }, sent)
+      : await openaiImage(client, "generate", corps, sent);
+  } catch (e) { return erreurOpenAI(e); }
+  if (!res.b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
+  const u = res.usage ?? {};
+  const billed = cost("openai", input.model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model: input.model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage, idempotencyKey: ctx.usageKey,
+    details: { temps: input.temps, texteEnvoye: input.prompt, requestId: res.requestId, reglages: { ...corps, prompt: undefined }, jointes: fin ? 1 : 0 } });
+  const png = Buffer.from(res.b64, "base64");
+  const { prompt: _p, ...reglages } = corps;
+  recusDuLogo.set(png, { endpoint: fin ? "POST /v1/images/edits (multipart, image[])" : "POST /v1/images/generations", modele: input.model, texteEnvoye: input.prompt, reglages, requestId: res.requestId, usage: res.usage ?? null, coutMicro: billed, dureeMs: res.ms });
+  return png;
+}
+const logoDirect = traced("image_generation", logoDirectImpl);
+
+/** Une planche de recherche (six esquisses) : POST /v1/images/generations, la demande exacte, sans secours. */
+export function aiLogoPlanche(ctx: Ctx, input: { model: string; prompt: string }): Promise<Buffer> {
+  return logoDirect(ctx, { temps: "recherche", model: input.model, prompt: input.prompt });
+}
+/** Le logo fini d'une esquisse choisie : POST /v1/images/edits en multipart, l'esquisse dans image[], le texte tel quel. */
+export function aiLogoFinalise(ctx: Ctx, input: { esquisse: Buffer; prompt: string }): Promise<Buffer> {
+  return logoDirect(ctx, { temps: "finalisation", model: LOGO_MODELS.finalisation, prompt: input.prompt, esquisse: input.esquisse });
 }
 
 /** Coût maximal d'une maquette de site (une planche), null si aucun modèle n'est utilisable. */

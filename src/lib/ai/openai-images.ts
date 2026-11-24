@@ -89,19 +89,30 @@ export class StreamInterrupted extends Error {
  * Une image OpenAI (génération ou retouche), en flux si possible. `onSent` est appelé juste avant l'envoi (la
  * réservation du coût maximal est alors engagée). Renvoie l'image finale (base64) et la consommation facturée.
  */
-export async function openaiImage(client: OpenAI, op: "generate" | "edit", params: Record<string, unknown> & { model: string }, onSent: () => void): Promise<{ b64: string | null; usage: any; streamed: boolean; partials: number; ms: number }> {
+/**
+ * L'identifiant de la requête chez OpenAI (en-tête « x-request-id »), quand le client le rend : gardé avec l'image (méthode
+ * des graphistes, 24 novembre 2026). Sans lui (client simulé d'un essai), null : rien ne change pour l'appel.
+ */
+async function avecIdentifiant(p: unknown): Promise<{ data: any; requestId: string | null }> {
+  const promise = p as { withResponse?: () => Promise<{ data: any; request_id?: string | null }> };
+  if (promise && typeof promise.withResponse === "function") { const r = await promise.withResponse(); return { data: r.data, requestId: r.request_id ?? null }; }
+  const data: any = await p;
+  return { data, requestId: (data && typeof data === "object" && typeof data._request_id === "string") ? data._request_id : null };
+}
+
+export async function openaiImage(client: OpenAI, op: "generate" | "edit", params: Record<string, unknown> & { model: string }, onSent: () => void): Promise<{ b64: string | null; usage: any; streamed: boolean; partials: number; ms: number; requestId: string | null }> {
   const t0 = Date.now();
   const stream = openaiStreams(params.model);
   onSent();
   emit({ phase: "sent", atMs: 0, streamed: stream });
   if (!stream) {
-    const res: any = op === "generate" ? await client.images.generate(params as any) : await client.images.edit(params as any);
+    const { data: res, requestId } = await avecIdentifiant(op === "generate" ? client.images.generate(params as any) : client.images.edit(params as any));
     const b64 = res.data?.[0]?.b64_json ?? null;
     if (b64) emit({ phase: "received", atMs: Date.now() - t0, streamed: false });
-    return { b64, usage: res.usage ?? null, streamed: false, partials: 0, ms: Date.now() - t0 };
+    return { b64, usage: res.usage ?? null, streamed: false, partials: 0, ms: Date.now() - t0, requestId };
   }
   const body = { ...params, stream: true, partial_images: OPENAI_PARTIAL_IMAGES };
-  const events: any = op === "generate" ? await client.images.generate(body as any) : await client.images.edit(body as any);
+  const { data: events, requestId } = await avecIdentifiant(op === "generate" ? client.images.generate(body as any) : client.images.edit(body as any));
   let partials = 0;
   let final: any = null;
   try {
@@ -116,5 +127,5 @@ export async function openaiImage(client: OpenAI, op: "generate" | "edit", param
   }
   if (!final?.b64_json) throw new StreamInterrupted(`Flux OpenAI terminé sans image finale après ${Math.round((Date.now() - t0) / 1000)} s (${partials} aperçu(s) reçu(s)).`);
   emit({ phase: "received", partials, atMs: Date.now() - t0, streamed: true });
-  return { b64: final.b64_json, usage: final.usage ?? null, streamed: true, partials, ms: Date.now() - t0 };
+  return { b64: final.b64_json, usage: final.usage ?? null, streamed: true, partials, ms: Date.now() - t0, requestId };
 }

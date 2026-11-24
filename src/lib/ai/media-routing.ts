@@ -17,7 +17,7 @@ import { usdToEur } from "./config";
 import { all } from "../db";
 import { getJsonSetting } from "../settings";
 import { L } from "../i18n-server";
-import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
+import { estReserveAuxLogos, REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
 import { DEFAULT_SOCIAL_IMAGE_MODEL, REQUIRED_SOCIAL_IMAGE_PROVIDER } from "./social-image-policy";
 
 export const MEDIA_TASK: Record<MediaKind, TaskId> = { image: "image_generation", video: "video_generation" };
@@ -256,7 +256,8 @@ export function priceUnitFits(m: Pick<MediaModel, "kind" | "provider">, unit: st
 
 /** Capacité manquante pour ce besoin (null : compatible). */
 export function incompatibility(m: MediaModel, n: MediaNeed): string | null {
-  if (m.provider === REQUIRED_LOGO_PROVIDER && m.model === REQUIRED_LOGO_MODEL && n.usage !== "logo") return L("réservé au dessin des logos", "reserved for logo artwork");
+  // Seul 2.5 Sunburst est verrouillé (logo-policy.ts) : 2.6 Flare sert aussi aux publications et à l'atelier.
+  if (estReserveAuxLogos(m.provider, m.model) && n.usage !== "logo") return L("réservé au dessin des logos", "reserved for logo artwork");
   if (m.kind !== n.kind) return L("autre type de média", "other media type");
   const c = m.caps;
   if (n.mask && !c.maskEdit) return L("pas de retouche par masque", "no mask editing");
