@@ -1,0 +1,45 @@
+{
+ "endpoint": "POST https://api.openai.com/v1/responses",
+ "references": [
+  "ref1-orwell.png",
+  "ref2-ornato.png",
+  "ref3-hedge-house.png"
+ ],
+ "corps": {
+  "model": "gpt-6.2-astra",
+  "input": [
+   {
+    "role": "user",
+    "content": [
+     {
+      "type": "input_text",
+      "text": "Le nom de mon entreprise c'est Tenon. Je suis menuisier et je réalise des cuisines et des dressings sur mesure. Fais-moi deux logos différents pour que je puisse choisir.\n\nVoici trois logos que j'aime, seulement pour le niveau de qualité que j'attends. Ne reprends ni leurs symboles, ni leurs compositions, ni leurs noms."
+     },
+     {
+      "type": "input_image",
+      "image_url": "data:image/png;base64,iVBORw0KGgoAAAANSU…(image 797090 caractères)"
+     },
+     {
+      "type": "input_image",
+      "image_url": "data:image/png;base64,iVBORw0KGgoAAAANSU…(image 375822 caractères)"
+     },
+     {
+      "type": "input_image",
+      "image_url": "data:image/png;base64,iVBORw0KGgoAAAANSU…(image 636278 caractères)"
+     }
+    ]
+   }
+  ],
+  "tools": [
+   {
+    "type": "image_generation",
+    "model": "gpt-image-2.6-sunburst",
+    "quality": "auto",
+    "complexity": "medium",
+    "background": "opaque",
+    "action": "generate"
+   }
+  ],
+  "max_tool_calls": 2
+ }
+}
