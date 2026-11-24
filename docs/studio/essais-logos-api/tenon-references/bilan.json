@@ -1,0 +1,39 @@
+{
+ "statut_http": 200,
+ "duree_s": 26.7,
+ "x-request-id": "req_3b144ce01b0f4b59ba61705f14f04081",
+ "usage_texte": {
+  "input_tokens": 5130,
+  "input_tokens_details": {
+   "cache_write_tokens": 2940,
+   "cache_write_tokens_details": {
+    "ttl_12h_tokens": 0,
+    "ttl_30m_tokens": 2940
+   },
+   "cached_tokens": 0
+  },
+  "output_tokens": 298,
+  "output_tokens_details": {
+   "reasoning_tokens": 0
+  },
+  "total_tokens": 5428
+ },
+ "cout_texte_eur": 0.0455,
+ "nb_images": 1,
+ "appels_dessin": [
+  {
+   "id": "ig_0bef5505867634c8006b055e17883c87d1a002f4e33deb4d54",
+   "type": "image_generation_call",
+   "status": "completed",
+   "action": "generate",
+   "background": "opaque",
+   "output_format": "png",
+   "quality": "high",
+   "revised_prompt": "Create a polished graphic design presentation of TWO distinctly different original logo proposals for the French bespoke kitchen and dressing room cabinetmaker 'Tenon'. Wide landscape canvas split into two equally sized square-ish panels side by side, each with its own complete logo centered, generous margins. Flat vector-like artwork only, no stationery mockups or texture. Left panel warm ivory ground: a refined, bespoke title-case wordmark 'Tenon' in deep walnut, large beautifully cut contemporary serif letters, with a distinctive subtle stepped joinery notch in the top bar of the T; understated and confident. Beneath it small legible spaced lettering 'MENUISERIE SUR MESURE'. No separate icon on this side. Right panel solid deep petrol blue ground: striking cream graphic emblem, a compact axonometric depiction of two interlocking pieces of timber in a mortise-and-tenon joint, simplified chunky silhouette, using negative space and a few crisp edges, unmistakably crafted as a brand mark rather than technical drawing. Below the emblem set 'TENON' in sturdy custom uppercase humanist sans, then the small caption 'CUISINES ET DRESSINGS'. Exceptionally careful typography and spacing. Equal optical prominence for both alternatives. No additional words or labels. Do not copy the references: no circular stamp, no H monogram, no diagonally sliced ribbons, no background lines, no business cards or photographs.",
+   "size": "1774x887"
+  }
+ ],
+ "message": [
+  ""
+ ]
+}
