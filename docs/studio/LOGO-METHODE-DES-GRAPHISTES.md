@@ -112,8 +112,8 @@ Préparés sans aucune dépense, sur une branche locale, après l'essai réel de
 
 **Les épreuves.** Deux épreuves nouvelles sont ajoutées et scellées (leur verdict est fait de ses mots) :
 `couleurs-variees-dans-la-recherche` et `relecteur-sans-refus-pour-trop-proche`. Elles remplacent
-`planches-de-recherche-demande-exacte` et `relecteur-du-logo-fini`, marquées remplacées sans être réécrites. L'accord
-écrit qui les marque remplacées est encore à recevoir : [À compléter : phrase d'accord écrite du propriétaire].
+`planches-de-recherche-demande-exacte` et `relecteur-du-logo-fini`, marquées remplacées sans être réécrites. Son accord
+écrit, mot pour mot : « Oui, marque planches-de-recherche-demande-exacte et relecteur-du-logo-fini comme remplacées par mes décisions du 24 novembre au soir, ajoute et scelle couleurs-variees-dans-la-recherche (« Varie les couleurs d'une esquisse à l'autre. » à la fin de la demande de recherche) et relecteur-sans-refus-pour-trop-proche (le relecteur ne refuse plus un logo trop proche de l'esquisse), et mets à jour la partie Logo de CLAUDE.md. »
 
 **La phrase d'accord à lui proposer :** « Oui, marque planches-de-recherche-demande-exacte et relecteur-du-logo-fini
 comme remplacées par mes deux changements du 24 novembre, ajoute et scelle couleurs-variees-dans-la-recherche et

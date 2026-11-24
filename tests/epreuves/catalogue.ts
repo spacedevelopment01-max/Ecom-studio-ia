@@ -81,11 +81,10 @@ const SOURCE_GRAPHISTES = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (méthode 
  * Les deux changements du propriétaire du 24 novembre 2026 sur la méthode des graphistes : la phrase des couleurs à la
  * recherche (« Ouais mais c'est ça que je veux dans sina c'est la nouvelle planche avec un peu plus de coloris ») et le
  * relecteur du logo fini qui ne refuse plus un logo trop proche de son esquisse (« Ouais », à « Je fais retirer cette
- * règle et je relance la finalisation du R bordeaux ? »). Son accord écrit pour marquer les épreuves qu'ils remplacent est
- * encore à recevoir : `ACCORD_A_COMPLETER` tient sa place, et le banc n'accepte ce manque que pour ces deux épreuves.
+ * règle et je relance la finalisation du R bordeaux ? »). Son accord écrit pour marquer les épreuves qu'ils remplacent,
+ * mot pour mot (24 novembre 2026 au soir, écrit dans la conversation de construction).
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-const COULEURS_ET_RELECTEUR = { decision: "24 novembre 2026", mots: ACCORD_A_COMPLETER };
+const COULEURS_ET_RELECTEUR = { decision: "24 novembre 2026", mots: "« Oui, marque planches-de-recherche-demande-exacte et relecteur-du-logo-fini comme remplacées par mes décisions du 24 novembre au soir, ajoute et scelle couleurs-variees-dans-la-recherche (« Varie les couleurs d'une esquisse à l'autre. » à la fin de la demande de recherche) et relecteur-sans-refus-pour-trop-proche (le relecteur ne refuse plus un logo trop proche de l'esquisse), et mets à jour la partie Logo de CLAUDE.md. »" };
 const SOURCE_COULEURS_ET_RELECTEUR = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (parties « Ce que le propriétaire a dit » et « Les deux changements du 24 novembre » ; ses mots relayés par le chef d'orchestre)";
 
 export const EPREUVES: Epreuve[] = [
