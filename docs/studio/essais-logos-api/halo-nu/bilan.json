@@ -1,0 +1,40 @@
+{
+ "statut_http": 200,
+ "duree_s": 31.8,
+ "x-request-id": "req_53910c0f1d874306997798d517b31021",
+ "modele_texte_retourne": "gpt-6.2-astra",
+ "usage_texte": {
+  "input_tokens": 2494,
+  "input_tokens_details": {
+   "cache_write_tokens": 0,
+   "cache_write_tokens_details": {
+    "ttl_12h_tokens": 0,
+    "ttl_30m_tokens": 0
+   },
+   "cached_tokens": 0
+  },
+  "output_tokens": 230,
+  "output_tokens_details": {
+   "reasoning_tokens": 0
+  },
+  "total_tokens": 2724
+ },
+ "cout_texte_eur": 0.0251,
+ "nb_images": 1,
+ "appels_dessin": [
+  {
+   "id": "ig_0cfaa60a80ee0ae4006b04eefb963087d2a73f2237b4fa2d07",
+   "type": "image_generation_call",
+   "status": "completed",
+   "action": "generate",
+   "background": "opaque",
+   "output_format": "png",
+   "quality": "high",
+   "revised_prompt": "Créer une planche de deux propositions de logo professionnelles pour la marque française de bougies « Halo ». Format horizontal, deux panneaux carrés égaux côte à côte, chaque logo parfaitement centré avec beaucoup d’espace libre, sans légendes ni numéros, aucun autre mot que Halo sur chacun. À gauche : sur fond ivoire, logo noir en traits fins : une flamme d’un seul geste calligraphique surmontée d’une petite auréole elliptique flottante, au-dessus du nom « Halo » en typographie sérif éditoriale délicate, esprit maison de parfum. À droite : sur fond pêche clair, logo moderne très différent, en bordeaux profond : lettrage « Halo » sur mesure, gras, arrondi et ludique, le H intégrant une petite mèche et une flamme géométrique au sommet d'une hampe comme une bougie allumée. Identités nettes et lisibles, compositions vectorielles simples en aplats, sans ombre, sans mockup ni décor.",
+   "size": "1774x887"
+  }
+ ],
+ "message": [
+  ""
+ ]
+}
