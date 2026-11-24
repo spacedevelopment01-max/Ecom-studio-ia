@@ -32,6 +32,7 @@ import { PLANS, type Billing, type PlanId } from "./plans";
 import { accountKeyFor, isNoPlanKey } from "./project-billing";
 import { aLaChargeDuStudio, assertUnderCostCap, chargeDuStudio, currentTrace } from "./ai/trace";
 import { assertAgentReservation } from "./ai/request-bounds";
+import { assertSousLePlafondDeLEssai } from "./ai/plafond-essai";
 import { currentRunScope } from "./billing-scope";
 import { createHash } from "node:crypto";
 
@@ -466,6 +467,8 @@ export function reserve(user: string, maxMicro: number, meta: ReservationMeta): 
   const userId = accountKeyFor(user, meta.projectId);
   if (isNoPlanKey(userId)) throw budgetError(userId);
   const amount = Math.ceil(maxMicro);
+  // Essai réel (studio privé d'essai seulement) : un appel sans maximum connu est refusé par le plafond de l'essai.
+  if (!Number.isFinite(amount) || amount <= 0) assertSousLePlafondDeLEssai(amount, meta.jobId);
   // Coût maximal inconnu ou non borné : l'opération est bloquée (jamais d'appel « à découvert »).
   if (!Number.isFinite(amount) || amount <= 0) throw new UserFacingError(L("Coût maximal de l'appel d'IA inconnu : opération bloquée par sécurité.", "Maximum cost of the AI call is unknown: operation blocked for safety."));
   ensureWallet(userId);
@@ -479,6 +482,8 @@ export function reserve(user: string, maxMicro: number, meta: ReservationMeta): 
     // Même verrou que le portefeuille : deux appels parallèles ne peuvent pas engager le même plafond de tâche. Une
     // reprise du Studio ne regarde que la borne du Studio ; une dépense du client, que le plafond de sa carte.
     assertUnderCostCap(amount, studio);
+    // Garde-fou des essais réels (inactif sans son réglage) : une seule somme pour tout l'essai, client et Studio.
+    assertSousLePlafondDeLEssai(amount, meta.jobId);
     assertAgentReservation(user,amount,meta.jobId);
     const w = one<Wallet>("SELECT * FROM wallets WHERE user_id = ?", userId)!;
     const fm = freeMonthly(w);

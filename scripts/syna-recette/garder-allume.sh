@@ -9,6 +9,12 @@
 # Usage (depuis la racine du dépôt) :
 #   DATA_DIR=<dossier> COMPTES="email:nom:forfait" bash scripts/syna-recette/garder-allume.sh <journal>
 # Il tourne jusqu'à ce qu'on l'arrête ; chaque relance est écrite dans le journal.
+#
+# Garde-fou de dépense d'un essai réel : ajouter STUDIO_ESSAI_PLAFOND_EUROS=1 devant la commande (1 € pour tout
+# l'essai). Au-delà, l'appel payant est refusé avant de partir et SINA dit que le plafond de l'essai est atteint. Le
+# début de l'essai est gardé dans <DATA_DIR>/essai-debut.txt (les relances continuent la même somme) ; pour un nouvel
+# essai, effacer ce fichier. Détail : scripts/syna-recette/lancer-agent.mts et src/lib/ai/plafond-essai.ts.
+#   STUDIO_ESSAI_PLAFOND_EUROS=1 DATA_DIR=<dossier> COMPTES="…" bash scripts/syna-recette/garder-allume.sh <journal>
 set -u
 JOURNAL="${1:-studio-garde.log}"
 PORT="${PORT492:-3493}"

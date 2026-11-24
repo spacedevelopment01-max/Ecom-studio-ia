@@ -5,6 +5,7 @@
  */
 import "./env";
 import os from "node:os";
+import { arretParLEssai } from "../src/lib/ai/plafond-essai";
 import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, LeaseLost, WORKER_ID, getJob, releaseJob, LEASE_RENEW_MS, markFinished, markRunning, renewLease } from "../src/lib/jobs";
 import { stopInterruptedPaidJob } from "../src/lib/job-recovery";
 import { retryStripeCancellations } from "../src/lib/payments";
@@ -95,6 +96,9 @@ async function runOne() {
       // Seul le rattachement serveur persistant définit la demande commune ; jamais un ID libre du payload.
       const agentBound=one<{bound_id:string}>('SELECT bound_id FROM agent_request_jobs WHERE job_id=?',job.id);
       const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload), studioCapMicro: borneDuStudioDe(ctx.payload), relance: relanceOf(ctx.payload),...(agentBound?{agentBoundId:agentBound.bound_id}:{}) }, guarded), "normal", job.project_id ?? null));
+      // Essai réel : un appel refusé par le plafond de l'essai arrête la tâche (échec définitif, jamais relancée).
+      const arret = arretParLEssai(job.id);
+      if (arret) throw arret;
       // Écriture du résultat : en cas d'échec (base occupée…), nouvel essai — jamais une relance du traitement,
       // qui referait (et repaierait) ce qui vient d'être fait.
       for (let i = 0; ; i++) {
