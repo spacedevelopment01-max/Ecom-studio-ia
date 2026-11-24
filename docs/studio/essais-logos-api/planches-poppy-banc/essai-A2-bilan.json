@@ -1,0 +1,22 @@
+{
+ "essai": "A2",
+ "statut_http": 200,
+ "duree_s": 49.2,
+ "x-request-id": "req_0847e63a9e32486094e338c215866907",
+ "usage": {
+  "input_tokens": 1346,
+  "input_tokens_details": {
+   "image_tokens": 1024,
+   "text_tokens": 322
+  },
+  "output_tokens": 1372,
+  "output_tokens_details": {
+   "image_tokens": 1372,
+   "text_tokens": 0
+  },
+  "total_tokens": 2718
+ },
+ "cout_eur": 0.0438,
+ "taille": "1024x1536",
+ "qualite": "high"
+}

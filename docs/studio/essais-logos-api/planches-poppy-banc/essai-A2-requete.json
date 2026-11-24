@@ -1,0 +1,15 @@
+{
+ "endpoint": "POST https://api.openai.com/v1/images/edits (multipart)",
+ "champs": {
+  "model": "gpt-image-2.5-sunburst",
+  "quality": "high",
+  "size": "1024x1536",
+  "background": "opaque",
+  "output_format": "png",
+  "n": "1",
+  "prompt": "Crée une planche complète de présentation d'identité de marque pour Poppy, une marque de harnais, laisses et colliers pour chiens.\n\nJe veux découvrir ma future marque comme si une agence créative contemporaine me présentait son travail.\n\nCrée une identité moderne, chaleureuse, expressive et commerciale, qui transmet la complicité entre les chiens et leurs propriétaires.\n\nPrésente le système de logos à partir du logo fourni, la palette de couleurs, les typographies, les accroches commerciales, la direction photographique, trois publications originales aux formats 1:1, 4:5 et 9:16, une boutique e-commerce sur ordinateur et téléphone, ainsi que des exemples de packaging et de supports de marque.\n\nAjoute un espace pour le titre SEO, la méta-description et le domaine à vérifier.\n\nFais une présentation visuelle immersive et originale, avec une véritable hiérarchie graphique. Les créations doivent donner envie de découvrir et d'acheter les produits Poppy.\n\nLes textes sont en français.\n\nLes trois publications sont de vraies publications de réseaux sociaux, prêtes à publier : une accroche courte et forte en gros caractères, le logo bien placé, une composition travaillée, et un objectif différent pour chacune (créer une émotion, présenter un produit, faire réagir la communauté). La boutique montre la même page d'accueil sur ordinateur et sur téléphone : en-tête avec le logo et la navigation, grande ouverture avec une accroche commerciale forte et un bouton, puis les collections."
+ },
+ "image[]": [
+  "logo-1-poppy.png"
+ ]
+}

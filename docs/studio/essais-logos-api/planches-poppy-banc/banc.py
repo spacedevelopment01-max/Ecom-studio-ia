@@ -16,8 +16,14 @@ PROMPT = ("Crée une planche complète de présentation d'identité de marque po
 PRECISION_B = ("\n\nLa première image est le logo Poppy à respecter. La deuxième image sert uniquement à comprendre le niveau de design, "
                "la hiérarchie visuelle et la mise en scène commerciale attendus : n'en reprends ni le logo, ni les textes, ni les prix, "
                "ni les avis, ni les affirmations commerciales.")
+AJOUT_A2 = ("\n\nLes trois publications sont de vraies publications de réseaux sociaux, prêtes à publier : une accroche courte et forte en gros caractères, "
+            "le logo bien placé, une composition travaillée, et un objectif différent pour chacune (créer une émotion, présenter un produit, faire réagir la communauté). "
+            "La boutique montre la même page d'accueil sur ordinateur et sur téléphone : en-tête avec le logo et la navigation, grande ouverture avec une accroche "
+            "commerciale forte et un bouton, puis les collections.")
 LOGO = os.path.join(D, "references", "logo-1-poppy.png"); REF = os.path.join(D, "references", "planche-chatgpt-concept-03.png")
-ESSAIS = {"A": (PROMPT, [LOGO]), "B": (PROMPT + PRECISION_B, [LOGO, REF])}
+ESSAIS = {"A": (PROMPT, [LOGO]), "B": (PROMPT + PRECISION_B, [LOGO, REF]), "A2": (PROMPT + AJOUT_A2, [LOGO])}
+QUELS = [a for a in sys.argv[2:] if not a.startswith("--")] or list(ESSAIS)
+ESSAIS = {k: v for k, v in ESSAIS.items() if k in QUELS}
 CHAMPS = {"model": "gpt-image-2.5-sunburst", "quality": "high", "size": "1024x1536", "background": "opaque", "output_format": "png", "n": "1"}
 total = 0.0
 for nom, (prompt, images) in ESSAIS.items():
