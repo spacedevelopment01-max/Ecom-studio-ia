@@ -53,7 +53,6 @@ export const Q03: React.FC = () => (
 					<circle cx={120} cy={70} r={26} fill="#b5322c" stroke={INK} strokeWidth={4} />
 				</g>
 			)}
-			<Ecran><Titre x={540} y={400} texte="RUSSIE" taille={110} k={pop(t, 5.45)} c="#fff" /></Ecran>
 		</>)}
 	</Plan>
 );

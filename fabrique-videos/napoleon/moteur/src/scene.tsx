@@ -1,5 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, useCurrentFrame, Easing} from 'remotion';
+import {versNouveau, versAncien} from './temps';
 import {
 	Arbre,
 	INK, BLE, KHAKI, FONT, rnd, lin, pop, sortie, Ciel, Soleil, Nuage, Collines, Sol, Ble, Buisson, Mare, Termitiere,
@@ -30,7 +31,7 @@ export const Ecran: React.FC<{children: React.ReactNode}> = ({children}) => {
 const ease = Easing.inOut(Easing.cubic);
 export const Plan: React.FC<PlanP> = ({debut, fin, cam, fond = '#000', children, secousse, nuit, sansEntree}) => {
 	const f = useCurrentFrame();
-	const t = debut + f / 30;
+	const t = versAncien(versNouveau(debut) + f / 30);
 	const dir = Math.floor(debut * 7) % 2 ? 1 : -1;
 	const base = cam ? cam(t) : {z: lin(t, [debut, fin], [1.18, 1.34], ease), x: dir * lin(t, [debut, fin], [-120, 120], ease), y: -190};
 	// caméra tenue à la main : elle respire
@@ -44,7 +45,7 @@ export const Plan: React.FC<PlanP> = ({debut, fin, cam, fond = '#000', children,
 	const sx = sk ? (rnd(f) - 0.5) * sk : 0;
 	const sy = sk ? (rnd(f + 99) - 0.5) * sk : 0;
 	// passage rapide et flou d'un plan à l'autre
-	const nb = Math.round((fin - debut) * 30);
+	const nb = Math.round((versNouveau(fin) - versNouveau(debut)) * 30);
 	const eIn = sansEntree ? 1 : lin(f, [0, 6], [0, 1], Easing.out(Easing.cubic));
 	const eOut = lin(f, [nb - 4, nb], [0, 1], Easing.in(Easing.cubic));
 	const glisse = (1 - eIn) * 900 * dir - eOut * 900 * dir;

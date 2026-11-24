@@ -2,9 +2,10 @@ import React, {useEffect, useState} from 'react';
 import {AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame, delayRender, continueRender, interpolate, Easing} from 'remotion';
 import {PLANS2 as PLANS} from './plans2';
 import minutage from './minutage.json';
+import {versNouveau} from './temps';
 
 const FPS = 30;
-export const DUREE = Math.round(71.3 * FPS);
+export const DUREE = Math.round(versNouveau(71.3) * FPS);
 const fr = (s: number) => Math.round(s * FPS);
 
 type Mot = {w: string; s: number; e: number; seg: number};
@@ -59,7 +60,7 @@ export const Film: React.FC = () => {
 	return (
 		<AbsoluteFill style={{background: '#000'}}>
 			{PLANS.map(([a, b, P], i) => (
-				<Sequence key={i} from={fr(a)} durationInFrames={fr(b) - fr(a)}>
+				<Sequence key={i} from={fr(versNouveau(a))} durationInFrames={fr(versNouveau(b)) - fr(versNouveau(a))}>
 					<P />
 				</Sequence>
 			))}
@@ -67,7 +68,7 @@ export const Film: React.FC = () => {
 			<Audio src={staticFile('voix_finale.wav')} />
 			<Audio src={staticFile('sons/marche.wav')} volume={(f) => interpolate(f, [0, 15, DUREE - 60, DUREE], [0, 0.16, 0.16, 0], {extrapolateRight: 'clamp'})} />
 			{SONS.map(([s, n, v], i) => (
-				<Sequence key={'s' + i} from={fr(s)} durationInFrames={fr(1.5)}>
+				<Sequence key={'s' + i} from={fr(versNouveau(s))} durationInFrames={fr(1.5)}>
 					<Audio src={staticFile(`sons/${n}.wav`)} volume={v ?? 0.45} />
 				</Sequence>
 			))}

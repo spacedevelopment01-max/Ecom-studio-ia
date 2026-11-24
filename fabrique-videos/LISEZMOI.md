@@ -68,3 +68,5 @@ ffmpeg -i out/emeus.mp4 -c:v copy -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:a aac -b:
 
 « Max le narrateur » : ElevenLabs « Max Doré - Charismatic Narrator », identifiant Xy5q4w05TJGcKXPWeWoz
 (voix d'homme chaude et naturelle). Elle remplace « Julien » pour les vidéos suivantes.
+- Napoléon refait avec la voix de Max (1 min 17). Les images ont été recalées sans les réécrire :
+  `napoleon/moteur/src/temps.ts` fait correspondre le temps de l'ancienne voix à celui de la nouvelle.
