@@ -1,0 +1,16 @@
+{
+ "endpoint": "POST https://api.openai.com/v1/images/edits (multipart)",
+ "champs": {
+  "model": "gpt-image-2.5-sunburst",
+  "prompt": "Crée une publication pour les réseaux sociaux de Poppy, une marque de harnais, laisses et colliers pour chiens. Format story 1080 × 1920. Accroche, écrite exactement : « POV : tu viens de prononcer le mot balade. » Crée une situation drôle et immédiatement reconnaissable par les propriétaires de chiens. Le contenu doit donner envie de l'envoyer à un ami ou de le partager. Ce n'est pas une publicité produit traditionnelle. Identité Poppy à conserver : palette vert forêt #1E3A32, sauge #8CA695, terracotta #D17F6F, sable #ECDECE, nuage #F8F5EE ; typographies Poppins et Nunito ; ton chaleureux et complice. Le logo de l'image jointe signe la publication sans monopoliser l'image ; ne le redessine pas. Un sujet principal, une accroche forte, une hiérarchie visuelle claire. Pas d'accumulation de slogans, de pictogrammes, de blocs de réassurance ni de textes secondaires. N'invente aucune caractéristique technique, garantie, certification ou performance produit. Textes en français.",
+  "quality": "high",
+  "size": "1088x1936",
+  "background": "opaque",
+  "output_format": "png",
+  "n": "1"
+ },
+ "image[]": [
+  "logo-poppy.png"
+ ],
+ "format_final": "1080x1920"
+}

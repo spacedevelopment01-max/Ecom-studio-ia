@@ -1,0 +1,71 @@
+{
+ "total_eur": 0.1471,
+ "publications": [
+  {
+   "publication": "publication-1-emotion",
+   "statut_http": 200,
+   "duree_s": 40.3,
+   "x-request-id": "req_bc247ec0ad344f8b8302df7aa97d8e71",
+   "usage": {
+    "input_tokens": 1292,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 268
+    },
+    "output_tokens": 1834,
+    "output_tokens_details": {
+     "image_tokens": 1834,
+     "text_tokens": 0
+    },
+    "total_tokens": 3126
+   },
+   "cout_eur": 0.0555,
+   "taille_recue": "1088x1088",
+   "taille_finale": "1080x1080"
+  },
+  {
+   "publication": "publication-2-produit",
+   "statut_http": 200,
+   "duree_s": 33.6,
+   "x-request-id": "req_0fc451cf65b94353a0ad92d3ae669fec",
+   "usage": {
+    "input_tokens": 1275,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 251
+    },
+    "output_tokens": 1587,
+    "output_tokens_details": {
+     "image_tokens": 1587,
+     "text_tokens": 0
+    },
+    "total_tokens": 2862
+   },
+   "cout_eur": 0.0491,
+   "taille_recue": "1088x1360",
+   "taille_finale": "1080x1350"
+  },
+  {
+   "publication": "publication-3-humour",
+   "statut_http": 200,
+   "duree_s": 28.2,
+   "x-request-id": "req_3ba2122e777b4e03a45b0b2f151736cd",
+   "usage": {
+    "input_tokens": 1285,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 261
+    },
+    "output_tokens": 1331,
+    "output_tokens_details": {
+     "image_tokens": 1331,
+     "text_tokens": 0
+    },
+    "total_tokens": 2616
+   },
+   "cout_eur": 0.0425,
+   "taille_recue": "1088x1936",
+   "taille_finale": "1080x1920"
+  }
+ ]
+}
