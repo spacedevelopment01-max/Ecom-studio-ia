@@ -20,7 +20,7 @@ import type { GateDecision, Verdict } from "../quality/gate";
 import { MODELS, TIER_RANK, capableModels, modelInfo, type Capability, type Tier } from "./capabilities";
 import { MEDIA_DEFAULTS, TEXT_MODEL_BY_TIER, routingPolicy, type TaskPolicy } from "./policy";
 import { pickTextModel } from "./text-routing";
-import { REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "../ai/logo-policy";
+import { estReserveAuxLogos } from "../ai/logo-policy";
 
 export type Difficulty = "simple" | "standard" | "complex";
 export type InputType = "text" | "image" | "mixed" | "mask" | "video";
@@ -163,7 +163,7 @@ export function route(req: RouteRequest): RouteDecision {
   // Modèle préféré du niveau (texte) ou fournisseur par défaut (média) ; sinon repli sur un fournisseur capable.
   const preferred = mode === "llm" ? { provider: "anthropic", model: TEXT_MODEL_BY_TIER[tier === "local" ? "light" : tier] } : MEDIA_DEFAULTS[req.task] ?? null;
   // Le dessin logo dispose de son circuit imposé ; il ne devient pas un secours pour les images ordinaires.
-  const usable = (m: { provider: string; model: string }) => m.provider !== "local" && !(m.provider === REQUIRED_LOGO_PROVIDER && m.model === REQUIRED_LOGO_MODEL) && req.available(m.provider as ProviderId) && `${m.provider}:${m.model}` !== failed
+  const usable = (m: { provider: string; model: string }) => m.provider !== "local" && !estReserveAuxLogos(m.provider, m.model) && req.available(m.provider as ProviderId) && `${m.provider}:${m.model}` !== failed
     // Panne d'un fournisseur de médias : le repli passe par un AUTRE fournisseur (un autre modèle du même fournisseur
     // tomberait dans la même panne ; constaté à l'ajout de GPT Image 2.6 le 10 novembre 2026).
     && !(failed && mode !== "llm" && m.provider === h.lastProvider);

@@ -11,6 +11,7 @@ import { SectionTitle } from "./common";
 import { useT } from "../i18n";
 import { useAgentPanel } from "./agent-ui-context";
 import type { BrandSheet } from "@/lib/syna-agent/brand-sheet";
+import { EsquissesCards } from "./syna-thread";
 
 const ROLE: Record<string, { fr: string; en: string }> = {
   light: { fr: "Fond", en: "Background" }, dark: { fr: "Texte", en: "Text" }, primary: { fr: "Bouton", en: "Button" },
@@ -45,6 +46,17 @@ export default function TabMarque() {
     } catch (e) { setError((e as Error).message); } finally { setSending(false); }
   }
   const talk = <Button icon={<MessageCircle className="size-4" />} onClick={() => openSina(true)}>{t("Parler à SINA", "Talk to SINA")}</Button>;
+  // Les esquisses de logo, tant qu'aucune n'est choisie : le choix part à SINA, comme dans la conversation.
+  async function choisir(text: string) {
+    setSending(true); setError("");
+    try {
+      const view = await api<{ conversationId: string }>("/api/syna/open", { body: { projectId: id } });
+      await api(`/api/syna/${view.conversationId}`, { body: { requestId: crypto.randomUUID(), text, attachmentIds: [] } });
+      openSina(true); window.dispatchEvent(new CustomEvent("syna:refresh")); setSent(text);
+    } catch (e) { setError((e as Error).message); } finally { setSending(false); }
+  }
+  const esquisses = s.esquisses ? <Card className="p-4" data-brand-esquisses><SectionTitle title={t("Les pistes de ton logo", "Your logo directions")} /><EsquissesCards esquisses={s.esquisses} busy={sending} onChoose={choisir} />{sent && <p className="mt-2 text-xs text-muted">{t("Envoyé à SINA :", "Sent to SINA:")} {sent}</p>}{error && <p className="mt-2 text-xs text-red-700">{error}</p>}</Card> : null;
+  if (esquisses && (s.stage === "none" || s.stage === "proposed")) return <div className="space-y-6">{esquisses}</div>;
 
   if (s.stage === "none") return <Empty title={t("Ta marque se crée avec SINA", "Your brand is created with SINA")} action={talk}>{t("Elle étudie ton marché, cherche l'idée et le nom, puis te montre tes identités en planches de marque. Tu choisis, elle finit ta marque : ton logo, tes couleurs, tes polices, ta charte.", "She studies your market, looks for the idea and the name, then shows you your identities as brand boards. You choose, she finishes your brand: logo, colours, fonts, guidelines.")}</Empty>;
   if (s.stage === "proposed") return <Empty title={t("Tes identités t'attendent", "Your identities are waiting")} action={talk}>{t("SINA t'a montré tes identités en planches de marque. Choisis celle que tu préfères dans la conversation : elle finit ta marque juste après.", "SINA showed you your identities as brand boards. Choose your favourite in the conversation: she finishes your brand right after.")}</Empty>;

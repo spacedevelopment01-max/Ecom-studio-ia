@@ -150,6 +150,27 @@ export const TEXT_MODELS: TextModel[] = [
   },
   {
     provider: "openai",
+    // Méthode des graphistes (24 novembre 2026) : il regarde l'esquisse choisie et écrit le texte de finalisation du logo
+    // (preuve : docs/studio/essais-logos-api/methode-graphiste-reflet/finalisation-sans-proprietaire, deux textes justes).
+    // Tarif : page officielle d'OpenAI lue le 22 novembre 2026 (docs/studio/couts/02-couts-des-modeles-de-texte.md,
+    // branche du chef d'orchestre) : 8 $ en entrée, 40 $ en sortie par million de jetons, demandes de moins de 272 000 jetons.
+    model: "gpt-6.2-astra",
+    label: "GPT-6.2 Astra",
+    tier: "strong",
+    vision: true,
+    structured: true,
+    effort: { kind: "openai_reasoning", values: ["low", "medium", "high"], default: "medium" },
+    limits: { context: 272_000, maxOutput: 32_000, flatPriceUpTo: 272_000 },
+    latency: 2,
+    exactCount: true,
+    // Verrouillé comme tous les modèles d'OpenAI tant que l'administration ne l'a pas confirmé (un geste, avant l'essai
+    // réel) : sans lui, le texte de finalisation est refusé avant tout envoi, jamais écrit par un autre modèle.
+    verified: false,
+    source: "https://developers.openai.com/api/docs/pricing",
+    use: { fr: "Écrit le texte de finalisation d'un logo à partir de l'esquisse choisie (méthode des graphistes).", en: "Writes the logo finishing text from the chosen sketch (designers' method)." },
+  },
+  {
+    provider: "openai",
     model: "gpt-5.6-terra",
     label: "GPT-5.6 Terra",
     tier: "standard",

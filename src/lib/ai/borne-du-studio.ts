@@ -21,10 +21,17 @@ import { REPRISES_MAX } from "../syna-agent/reprises";
  * être repris coûte au plus (les images et leurs relectures, sans les appels faits une seule fois, comme l'idée en mots
  * simples) ; sans lui, tout le plafond. Une tâche entièrement à la charge du Studio y ajoute son premier passage entier.
  */
-export function borneDuStudio(capMicro: number, toutALaCharge = false, repriseMicro?: number): number {
+export function borneDuStudio(capMicro: number, toutALaCharge = false, repriseMicro?: number,
+  /**
+   * Combien de reprises au plus (par défaut `REPRISES_MAX`, la règle de toutes les chaînes). Les logos de la méthode des
+   * graphistes : 1 (une esquisse refusée n'est jamais reprise, un logo fini refusé est refait UNE fois, la recherche est
+   * refaite une fois quand il reste moins de 8 esquisses ; plan accepté du 24 novembre 2026).
+   */
+  reprises: number = REPRISES_MAX): number {
   if (!Number.isFinite(capMicro) || capMicro <= 0) return 0;
   const unEssai = repriseMicro != null && Number.isFinite(repriseMicro) && repriseMicro >= 0 ? Math.min(repriseMicro, capMicro) : capMicro;
-  return Math.ceil(REPRISES_MAX * unEssai + (toutALaCharge ? capMicro : 0));
+  const n = Number.isFinite(reprises) && reprises >= 0 ? Math.floor(reprises) : REPRISES_MAX;
+  return Math.ceil(n * unEssai + (toutALaCharge ? capMicro : 0));
 }
 
 /**

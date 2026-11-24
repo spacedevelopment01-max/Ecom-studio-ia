@@ -26,5 +26,6 @@ import { lateStepTools } from "./steps-late";
 import { dessinTools } from "../dessin/tools";
 import { suiviTools } from "./suivi";
 import { atelierTools } from "./atelier";
+import { logoTools, nomTool } from "./logo";
 
-export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools, siteCreateTool, ...galleryTools, ...openTools, ...postsTools, ...lateStepTools, ...dessinTools, ...suiviTools, ...atelierTools, rouvrirTool, preuvePrixTool];
+export const TOOL_LIST: AgentTool[] = [...startTools, ...identityTools, nomTool, ...logoTools, ...brandKitTools, ...angleTools, ...activityTools, ...themeTools, ...projectTools, ...siteTools, ...catalogueTools, ...commerceTools, ...mediaTools, ...calendarTools, ...mockupCodeTools, ...offersTools, ...familyTools, ...customThemeTools, siteCreateTool, ...galleryTools, ...openTools, ...postsTools, ...lateStepTools, ...dessinTools, ...suiviTools, ...atelierTools, rouvrirTool, preuvePrixTool];

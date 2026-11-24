@@ -167,6 +167,8 @@ export const DEFAULT_PRICES: Record<string, Price> = {
   "anthropic:claude-sonnet-5-5": { unit: "tokens", inputPerM: 2, outputPerM: 10 },
   "anthropic:claude-haiku-5-5": { unit: "tokens", inputPerM: 0.1, outputPerM: 0.5 },
   "anthropic:claude-haiku-4-5": { unit: "tokens", inputPerM: 1, outputPerM: 5 },
+  // Méthode des graphistes : le rédacteur du texte de finalisation du logo (page officielle d'OpenAI lue le 22 novembre 2026).
+  "openai:gpt-6.2-astra": { unit: "tokens", inputPerM: 8, outputPerM: 40 },
   "openai:gpt-image-2.5-sunburst": { unit: "tokens", inputPerM: 5, outputPerM: 30, imageInputPerM: 8, imageOutputPerM: 30 },
   // GPT Image 2.6 (relevé du 10 novembre 2026, pages officielles des modèles : texte entrée 5 $/M, image entrée 8 $/M,
   // sortie 30 $/M, comme le 2.5 ; consommation « high » inchangée, « low » et « medium » environ 4 fois plus) : borne PAR

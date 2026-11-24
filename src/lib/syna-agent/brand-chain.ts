@@ -37,9 +37,11 @@ import { brandKnowledgeReady } from "./brand-knowledge";
 import * as P from "./brand-prompts";
 import { NAME_REFUSALS } from "./brand-references";
 import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
-import { IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
+import { FONT_CHARACTER, IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
 import { journeyOf, planchesIncompletes, setStep, updateJourney, type Journey } from "./journey";
 import { marquesRecentes, varierIdentites, varieteMarquesBrief } from "./variete-marques";
+import { consigneDeLaPoliceDuLogo, ligneDesCouleursDuLogo, remettreLesCouleursDuLogo } from "./couleurs-du-logo";
+import sharp from "sharp";
 import { annonceLesChiffres, corrigeCeQuiSeMesure } from "./brand-corrections";
 import { loadWordingRules } from "../client-wording";
 
@@ -347,7 +349,7 @@ export type ChainAi = {
   /** Recherche sur le web : les pages trouvées (liens vérifiés, places de marché exclues). */
   research: (id: string, query: string, /** La seule famille de pages cherchée. */ famille?: ResearchCategory) => Promise<WebFinding[]>;
   /** Appel d'un spécialiste, réponse contrôlée par son schéma. */
-  ask: <S extends z.ZodType>(id: string, call: { system: string; prompt: string; schema: S; kind: CallId; prepare?: (raw: unknown) => unknown }) => Promise<z.infer<S>>;
+  ask: <S extends z.ZodType>(id: string, call: { system: string; prompt: string; schema: S; kind: CallId; prepare?: (raw: unknown) => unknown; /** Images jointes (le logo fini, pour la direction artistique). */ images?: { data: Buffer; label?: string }[] }) => Promise<z.infer<S>>;
   /** Création d'UNE image par le modèle d'images du Studio (route des images de SINA), avec ses images de référence. */
   draw: (id: string, call: { prompt: string; aspect: ImageAspect; logo?: Buffer | null; scene?: Buffer | null; /** Logos joints au dessinateur du logo : ceux d'avant dans la série, puis ses essais refusés. */ serie?: Buffer[]; /** Les vraies photos du produit du client, à reproduire fidèlement. */ product?: Buffer | null; /** « logo » : un dessin de logo (ou le symbole tiré du logo), par le modèle imposé des logos. */ usage?: "logo" }) => Promise<Buffer>;
   /** Relecture par un modèle qui voit : des images et une consigne, réponse contrôlée par son schéma. */
@@ -393,7 +395,7 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
     partage: (brief) => { commun = brief.length >= 400 ? brief : ""; },
     research: async (id, query, famille) => (await withTrace(scope(`brand-${id}`), () => webResearch({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:web:${id}`, prefer: s.craft, maxSearches: BRAND_SEARCHES, ...(famille ? { consigne: consigneUneFamille(famille) } : {}) }, query))).findings,
     ask: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
-      task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, ...coupe(c.kind, c.prompt), ...(UNIQUES.has(c.kind) ? { teteUnique: true } : {}), promptKey: `syna-brand-${c.kind}-1`,
+      task: "strategy", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, ...coupe(c.kind, c.prompt), ...(UNIQUES.has(c.kind) ? { teteUnique: true } : {}), ...(c.images?.length ? { images: c.images } : {}), promptKey: `syna-brand-${c.kind}-1`,
       prepare: c.prepare, maxTokens: CALLS[c.kind].max, usageKey: `${ctx.job.id}:brand:${id}`, deferred,
       // Une demande changée depuis un appel coupé (limites du 23 novembre 2026) part sous une clé neuve, jamais refusée.
       nouvelleSiChangee: true,
@@ -585,6 +587,15 @@ const logoGarde = (x: Route): Buffer | null => { const g = x.board?.images?.logo
  * Le logo d'une identité pour la SÉRIE (le propriétaire, 23 novembre 2026 : le 2e logo reçoit le 1er, le 3e les deux
  * premiers) : son logo gardé, sinon son dernier dessin de cette série (même projet, même tour), sinon rien.
  */
+/** Le logo fini d'une esquisse (méthode des graphistes) posé sur la planche, tel quel : il devient le logo de la planche. */
+export async function poserLeLogoFini(x: Route, assetId: string): Promise<Route> {
+  const asset = getAsset(assetId);
+  if (!asset) return x;
+  const meta = await sharp(assetData(asset)).metadata().catch(() => ({ width: 1024, height: 1024 }));
+  const images = { ...(x.board.images ?? {}), logo: { id: assetId, w: meta.width ?? 1024, h: meta.height ?? 1024 } };
+  return { ...x, board: { ...x.board, images } as Route["board"] };
+}
+
 export function logoPourLaSerie(projectId: string, x: Route, round: number): Buffer | null {
   const garde = logoGarde(x);
   if (garde) return garde;
@@ -643,6 +654,19 @@ const Payload = z.object({
   studioCapMicro: z.number().int().nonnegative().optional(),
   /** Avec `imagesOnly`, sur une carte commune : les planches à finir, faites à la charge du Studio ; le reste est au client. */
   studioKeys: z.array(z.enum(["A", "B", "C", "D"])).optional(),
+  /**
+   * Méthode des graphistes (point 0, « Oui » du propriétaire le 24 novembre 2026 : le client choisit d'abord son nom, puis
+   * les logos) : la tâche s'arrête après les noms vérifiés, qui sont enregistrés pour le choix du client (identity.nom).
+   */
+  jusquAuxNoms: z.boolean().optional(),
+  /**
+   * Méthode des graphistes : les logos finis des esquisses choisies, un par identité, dans l'ordre (A, B, C, D). Chaque
+   * planche reçoit son logo tel quel (jamais redessiné) ; ses couleurs sont imposées à la direction artistique, qui voit
+   * le logo pour choisir sa police de titres.
+   */
+  logosGraphistes: z.array(z.object({ assetId: z.string(), palette: z.object({ dark: z.string(), primary: z.string(), secondary: z.string(), accent: z.string(), light: z.string() }).optional() })).max(4).optional(),
+  /** L'atelier de la tâche arrêtée après les noms : étude, idées et noms repris tels quels, jamais repayés. */
+  atelier: z.string().optional(),
 });
 export type BrandJobPayload = z.infer<typeof Payload>;
 
@@ -734,10 +758,11 @@ export async function runSinaBrandJob(ctx: JobContext) {
   }
 
   // Atelier d'une proposition précédente (étude, idées, réserve de noms) : repris tel quel, jamais repayé.
-  const before = j.identities?.chainJobId ? parseJson<Record<string, unknown>>(getJob(j.identities.chainJobId)?.checkpoint ?? "{}", {}) : {};
+  const atelierId = a.atelier ?? j.identities?.chainJobId;
+  const before = atelierId ? parseJson<Record<string, unknown>>(getJob(atelierId)?.checkpoint ?? "{}", {}) : {};
   // Une nouvelle proposition sans les mots du client reprend aussi l'atelier, s'il a moins d'un mois (audit, partie 3).
   const atelierRecent = !!j.identities?.chainJobId && Date.now() - (getJob(j.identities.chainJobId)?.created_at ?? 0) < 30 * 24 * 3600 * 1000;
-  if ((a.redo?.length || a.namesOnly || a.guidance || atelierRecent) && before["brand:strategy"]) for (const [k, v] of Object.entries(before)) if (/^brand:(study|strategy|team:)/.test(k) && !(k in ctx.checkpoint)) ctx.save(k, v);
+  if ((a.redo?.length || a.namesOnly || a.guidance || atelierRecent || a.atelier) && before["brand:strategy"]) for (const [k, v] of Object.entries(before)) if (/^brand:(study|strategy|team:)/.test(k) && !(k in ctx.checkpoint)) ctx.save(k, v);
 
   // 1. Comprendre : trois recherches, puis l'étude. Une recherche qui échoue est dite, jamais remplacée ni relancée.
   ctx.progress(0.03, L("J'étudie ton marché", "Studying your market"));
@@ -845,6 +870,25 @@ export async function runSinaBrandJob(ctx: JobContext) {
     for (const k of almost) { if (allowed.length >= todo.length) break; const n = found(k.name); if (n && !allowed.includes(n)) { allowed.push(n); doubts.set(normText(n.name), k.why.replace(/\.+$/, "")); } }
     for (const n of first) { if (allowed.length >= todo.length) break; if (!allowed.includes(n)) { allowed.push(n); doubts.set(normText(n.name), L("il n'a pas passé mon contrôle le plus sévère", "it did not pass my strictest check")); } }
   }
+  // Méthode des graphistes : la chaîne s'arrête après les noms VÉRIFIÉS (point 0, « Oui » du 24 novembre 2026). Le
+  // client choisit son nom (identity.nom) ; la recherche de son logo part pour ce nom, puis ses identités le partagent.
+  if (a.jusquAuxNoms) {
+    const candidats = allowed.map((n) => n.name).slice(0, 12);
+    const pris = await ctx.step(`brand:verify:noms:${round}`, async () => {
+      try {
+        const findings = await ai.research(`verify-noms-${round}`, P.verifyQuery(candidats, briefFromJourney(j)), "competitors");
+        if (!findings.length) return { done: true, taken: [] as string[] };
+        const r = await ai.ask(`verify-noms-${round}`, { kind: "verify", system: P.VERIFY_SYSTEM, schema: VerifySchema, prompt: `# Noms à vérifier\n${candidats.map((n) => `- ${n}`).join("\n")}\n\n# Pages trouvées\n${findings.map((f) => `${f.url}\n${f.title}\n${f.excerpt}`).join("\n\n")}` });
+        return { done: true, taken: r.checks.filter((c) => c.taken && findings.some((f) => sameUrl(f.url, c.url))).map((c) => c.name) };
+      } catch (e) { if (e instanceof CostCapReached) throw e; return { done: false, taken: [] as string[] }; }
+    });
+    if (!pris.done) notes.push("vérification des noms sur le web impossible : les noms sont montrés sans être vérifiés, et c'est dit");
+    const libres = candidats.filter((n) => !pris.taken.some((t) => normText(t) === normText(n)));
+    if (!libres.length) throw new UserFacingError(L("Aucun des noms gardés n'est libre : dis-moi ce que tu veux de différent et je recommence.", "None of the kept names is free."));
+    const avecPourquoi = libres.map((name) => { const k = judged.find((x) => normText(x.name) === normText(name)); const n = allowed.find((x) => normText(x.name) === normText(name)); return { name, why: k?.why ?? doubts.get(normText(name)) ?? "", detail: n?.detail ?? "", doute: doubts.get(normText(name)) ?? null }; });
+    updateJourney(a.conversationId, (x) => { x.nomsVerifies = libres; x.nomsDeLaMarque = { list: avecPourquoi, verifies: pris.done, atelier: ctx.job.id, count: a.count, at: Date.now() }; });
+    return { noms: avecPourquoi, verifies: pris.done, notes };
+  }
   // Aperçu des noms seuls : rien n'est vérifié, aucune planche n'est faite, le parcours ne change pas.
   if (a.namesPreview) {
     const full = (name: string) => allowed.find((n) => normText(n.name) === normText(name));
@@ -872,7 +916,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const reserves = sound.filter((r) => !picks.includes(r));
   // Noms choisis par le client : une route par nom, dans son ordre, le nom repris lettre pour lettre ; aucune réserve.
   if (imposed.length) {
-    picks = imposed.map((name, i) => ({ ...(shortlist.routes.find((r) => normText(r.name) === normText(name)) ?? shortlist.routes[i] ?? shortlist.routes[0]), name, reserve: false }));
+    // Méthode des graphistes : les identités partagent le nom choisi ; chacune garde sa propre route (son idée, son fond).
+    const memeNom = imposed.every((n) => normText(n) === normText(imposed[0]));
+    picks = imposed.map((name, i) => ({ ...((memeNom ? shortlist.routes[i] : shortlist.routes.find((r) => normText(r.name) === normText(name))) ?? shortlist.routes[i] ?? shortlist.routes[0]), name, reserve: false }));
     reserves.length = 0;
   }
   if (picks.length < todo.length) picks = [...picks, ...reserves.splice(0, todo.length - picks.length)];
@@ -918,7 +964,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     notes.push(...corrige.changes.map((c) => `corrigé par le Studio : ${c}`));
     const x = corrige.route;
     if (namesOnly) return x;
-    const r = varierIdentites([...others, x], recent, { modifiables: [x.key], j });
+    const r = varierIdentites([...others, x], recent, { modifiables: [x.key], j, ...(a.logosGraphistes?.length ? { couleursDuLogo: true } : {}) });
     notes.push(...r.changes);
     return r.list[r.list.length - 1];
   };
@@ -933,14 +979,20 @@ export async function runSinaBrandJob(ctx: JobContext) {
     ...(namesOnly && old ? ["", "# Le client garde TOUT de cette route sauf le nom : reprends à l'identique son fond, son dégradé, sa palette, ses polices, son ton, ses curseurs de voix, ses signes et son objet ; réécris le nom, sa logique, la signature et les phrases qui citaient l'ancien nom.", routeText(old)] : []),
     ...(recentBlock ? ["", recentBlock] : []),
   ].join("\n");
+  /** Le logo fini (méthode des graphistes) de la n-ième identité à faire, s'il y en a un. */
+  const logoDeLIdentite = (n: number) => a.logosGraphistes?.[keys.indexOf(todo[n])] ?? null;
   const planOf = new Map(todo.map((k, n) => [k, picks[n]] as const));
   const drafted: Route[] = [];
   for (const [n, key] of todo.entries()) {
     ctx.progress(0.66 + (0.16 * n) / todo.length, L(`Je prépare la planche ${key}`, `Preparing board ${key}`));
     const r = picks[n], idea = ideaOf(r), old = previous.find((x) => x.key === key);
-    const prompt = routePrompt(r, idea, [...kept, ...drafted], old);
-    const draft = await ctx.step(`brand:direction:${round}:${key}`, () => ai.ask(`direction-${round}-${key}`, { kind: "direction", system: P.directionSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt }));
-    const forced: Draft = namesOnly && old ? { ...draft, ground: old.ground, gradient: old.gradient, palette: old.palette, paletteFamily: old.paletteFamily, fonts: old.fonts, fontStyle: old.fontStyle, tone: old.tone } : draft;
+    // Le logo d'abord (méthode des graphistes) : le logo fini de cette identité est joint ; ses couleurs sont imposées et
+    // remises par le code si le modèle les change ; la police de titres est choisie au plus près de ses lettres.
+    const logoG = logoDeLIdentite(n), logoPng = logoG ? (() => { try { const x = getAsset(logoG.assetId); return x ? assetData(x) : null; } catch { return null; } })() : null;
+    const prompt = routePrompt(r, idea, [...kept, ...drafted], old) + (logoG?.palette ? `\n\n# Le logo de cette identité (joint)\n${ligneDesCouleursDuLogo(logoG.palette)}\n${consigneDeLaPoliceDuLogo(FONT_CHARACTER, [...kept, ...drafted].map((x) => x.fonts.heading))}` : "");
+    const draft = await ctx.step(`brand:direction:${round}:${key}`, () => ai.ask(`direction-${round}-${key}`, { kind: "direction", system: P.directionSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt, ...(logoPng ? { images: [{ data: logoPng, label: "logo de la marque" }] } : {}) }));
+    const avecLogo: Draft = logoG?.palette ? (() => { const rc = remettreLesCouleursDuLogo(draft.palette, logoG.palette); notes.push(...rc.changes.map((c) => `identité ${key} : ${c}`)); return { ...draft, palette: rc.palette }; })() : draft;
+    const forced: Draft = namesOnly && old ? { ...draft, ground: old.ground, gradient: old.gradient, palette: old.palette, paletteFamily: old.paletteFamily, fonts: old.fonts, fontStyle: old.fontStyle, tone: old.tone } : avecLogo;
     drafted.push(vary(finishRoute({ ...forced, name: keptName || r.name, ...(keptSlogan ? { slogan: keptSlogan } : {}) }, key, { support: support(idea), nameCheck: taken.has(normText(r.name)) ? "non_verifie" : nameCheck, ownName: !!keptName }), [...kept, ...drafted]));
   }
   const assemble = (fresh: Route[]) => keys.map((k) => fresh.find((x) => x.key === k) ?? kept.find((x) => x.key === k)).filter((x): x is Route => !!x);
@@ -1042,8 +1094,12 @@ export async function runSinaBrandJob(ctx: JobContext) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
         // La série : les logos des identités d'AVANT celle-ci (logo gardé, sinon dernier dessin de ce tour).
-        const avant = list.slice(0, Math.max(0, list.findIndex((o) => o.key === x.key))), serieLogos = avant.map((o) => dernierParCle.get(o.key) ?? logoPourLaSerie(p.id, o, round)).filter((b): b is Buffer => !!b);
-        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: x, round, slots: PROPOSAL_SLOTS, clientLogo, gouts: goutsDuClient(j, p.id), keptLogos: [...gardesSerie], serieLogos });
+        // Méthode des graphistes : le logo fini de cette identité est posé tel quel (jamais redessiné) ; seules la grande
+        // scène et le haut du site sont créés, avec lui (aucune série de l'ancienne façon).
+        const lg = a.logosGraphistes?.[keys.indexOf(x.key as RouteKey)];
+        const avant = list.slice(0, Math.max(0, list.findIndex((o) => o.key === x.key))), serieLogos = lg ? [] : avant.map((o) => dernierParCle.get(o.key) ?? logoPourLaSerie(p.id, o, round)).filter((b): b is Buffer => !!b);
+        const route = lg ? await poserLeLogoFini(x, lg.assetId) : x, slots = lg ? PROPOSAL_SLOTS.filter((sl) => sl !== "logo") : PROPOSAL_SLOTS;
+        const r = await runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route, round, slots, clientLogo, gouts: goutsDuClient(j, p.id), keptLogos: [...gardesSerie], serieLogos });
         list = list.map((o) => (o.key === x.key ? r.route : o));
         { const b = logoGarde(r.route); if (b) gardesSerie.push(b); const d = b ?? r.dernierLogo; if (d) dernierParCle.set(x.key, d); }
         raisonsDe.set(x.key, r.issues); notes.push(...r.notes);

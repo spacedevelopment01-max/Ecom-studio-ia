@@ -15,6 +15,7 @@ import { AngleCards, type Angles } from "./angle-cards";
 import { useOptionalProject } from "./project-context";
 import { stepLabel } from "./journey-labels";
 import { PHRASE_PLANCHE_INCOMPLETE, plancheDuBouton } from "@/lib/syna-agent/choix-planche";
+import { basculer, messageDuChoix } from "@/lib/syna-agent/choix-esquisses";
 
 type Msg = { id: string; seq: number; role: "user" | "assistant" | "tool" | "event"; runId: string | null; content: any; createdAt: number };
 type View = {
@@ -26,7 +27,7 @@ type View = {
   attachments: { id: string; kind: string; name: string; analysis: any }[];
   /** SINA prend les devants (planches incomplètes) : ses boutons ne se montrent que tant que la proposition tient. */
   devants?: { empreinte: string; ouverte: boolean } | null;
-  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; brandKit?: Kit | null; angles?: Angles | null; posts?: PostsPlan | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
+  journey?: { current: number; mode: "creation" | "refonte"; keep: string[]; steps: { n: number; fr: string; en: string; status: "todo" | "doing" | "review" | "done" | "skipped"; ready?: boolean }[]; identities?: Identities | null; brandKit?: Kit | null; angles?: Angles | null; posts?: PostsPlan | null; activity?: Activity | null; themes?: Themes | null; families?: Families | null; esquisses?: Esquisses | null; siteCopy?: { pages: Record<string, CopyPage> } | null };
 };
 type Face = { family: string; file: string; weight: number } | null;
 type IdentityCard = { nameWhy?: string;
@@ -202,6 +203,47 @@ function PostsPlanCard({ plan }: { plan: PostsPlan }) {
 
 /** Couleurs des bandeaux du plan des publications. */
 const ANGLE_BANDS = ["#9C3343", "#74533F", "#43644A", "#B46D25", "#73507F"];
+
+/** Les esquisses de logo (méthode des graphistes) : numérotées, jamais une refusée ; au plus `max` à choisir. */
+export type Esquisses = { max: number; choix: number[]; list: { numero: number; href: string; piste: string }[]; logos: { numero: number; ok: boolean; href: string | null }[] };
+
+/**
+ * Le choix des esquisses de logo, sur le modèle de ThemeCards : une grille numérotée, au plus N cases à cocher (2, 3 ou
+ * 4 selon le forfait ; moins est permis), et un bouton « Je choisis les esquisses 3, 7 et 11 » qui envoie ce message.
+ * Le bouton s'étire sur sa hauteur (jamais coupé, sur téléphone comme sur ordinateur).
+ */
+export function EsquissesCards({ esquisses, busy, onChoose }: { esquisses: Esquisses; busy: boolean; onChoose: (text: string) => void }) {
+  const t = useT();
+  const [sel, setSel] = useState<number[]>([]);
+  const choisies = esquisses.choix;
+  const fini = choisies.length > 0;
+  const plein = sel.length >= esquisses.max;
+  return (
+    <div className="@container mt-2 space-y-2" data-syna-esquisses>
+      <p className="text-xs text-muted">{fini
+        ? t("Les esquisses que tu as choisies sont entourées.", "The sketches you chose are outlined.")
+        : t(`Voici les pistes de ton logo, numérotées. Coche celles que tu préfères : ${esquisses.max} au plus (moins, c'est possible). Je les transforme ensuite en vrais logos, relus avant de te les montrer.`, `Here are your logo directions, numbered. Tick your favourites: ${esquisses.max} at most (fewer is fine). I then turn them into real logos, reviewed before you see them.`)}</p>
+      <div className="grid grid-cols-2 gap-2 @md:grid-cols-3 @2xl:grid-cols-4">
+        {esquisses.list.map((e) => {
+          const coche = fini ? choisies.includes(e.numero) : sel.includes(e.numero);
+          const bloque = !fini && !coche && plein;
+          return (
+            <label key={e.numero} className={cx("relative block overflow-hidden rounded-xl border bg-card", coche ? "border-accent ring-2 ring-accent" : "border-line", (bloque || (fini && !coche)) && "opacity-60", !fini && !bloque && "cursor-pointer")} data-esquisse={e.numero}>
+              <img src={e.href} alt={t(`Esquisse ${e.numero}`, `Sketch ${e.numero}`)} className="aspect-square w-full bg-white object-contain" loading="lazy" />
+              <span className="absolute left-2 top-2 rounded-md bg-ink px-2 py-0.5 text-xs font-bold text-paper">{e.numero}</span>
+              {!fini && <input type="checkbox" className="absolute right-2 top-2 size-5 accent-[var(--accent)]" checked={coche} disabled={busy || bloque} onChange={() => setSel((x) => basculer(x, e.numero, esquisses.max))} aria-label={t(`Choisir l'esquisse ${e.numero}`, `Choose sketch ${e.numero}`)} data-esquisse-case={e.numero} />}
+            </label>
+          );
+        })}
+      </div>
+      {!fini && <div className="flex flex-wrap items-start gap-2">
+        <Button size="sm" className={CHOIX_ENTIER} disabled={busy || !sel.length} onClick={() => onChoose(t(messageDuChoix(sel, "fr"), messageDuChoix(sel, "en")))} data-esquisses-choisir>
+          {sel.length ? t(messageDuChoix(sel, "fr"), messageDuChoix(sel, "en")) : t("Coche au moins une esquisse", "Tick at least one sketch")}
+        </Button>
+      </div>}
+    </div>
+  );
+}
 
 type Themes = { list: { id: string; name: string; tagline: string; preview: string; why: string; recommended: boolean; allowed: boolean; blocked?: string; demo: boolean }[]; recommendedId: string | null; all: boolean; chosen: string | null };
 
@@ -600,6 +642,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
   const lastSite = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && m.content?.tool === "jobs.wait" && /"syna\.site"/.test(JSON.stringify(m.content?.data ?? "")))?.id, [v?.messages]);
   const lastConcepts = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "custom.concepts" && m.content?.ok && m.content?.data?.concepts)?.id, [v?.messages]);
   const lastFamilies = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.families" && m.content?.ok)?.id, [v?.messages]);
+  const lastEsquisses = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && ((m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.logo.graphistes")) || m.content?.tool === "logo.choisir"))?.id, [v?.messages]);
   const lastThemes = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.tool === "theme.propose" && m.content?.ok)?.id, [v?.messages]);
   // Identités : sous la fin de la tâche de fond de la chaîne (ou sous une proposition déjà rangée dans le fil).
   const lastIdentity = useMemo(() => [...(v?.messages ?? [])].reverse().find((m) => m.role === "tool" && m.content?.ok && ((m.content?.tool === "identity.propose" && !m.content?.jobs?.length) || (m.content?.tool === "jobs.wait" && JSON.stringify(m.content?.data ?? "").includes("syna.brand"))))?.id, [v?.messages]);
@@ -647,6 +690,7 @@ export function SynaThread({ projectId, compact = false, subscriptionKey }: { pr
                 {tm.id === lastSite && !lastCustomAfter(v.messages, lastSite, lastCustom) && v.projectId && <SiteCard projectId={v.projectId} busy={busy || working} onSend={(text) => send(text)} />}
                 {tm.id === lastConcepts && v.projectId && <ConceptCards concepts={tm.content.data.concepts} busy={busy || working} onChoose={(k) => send(t(`Je choisis le concept ${k}.`, `I choose concept ${k}.`))} />}
                 {tm.id === lastFamilies && v.journey?.families && v.projectId && <FamilyCards families={v.journey.families} busy={busy || working} onChoose={(title) => send(t(`Je préfère la famille ${title}.`, `I prefer the ${title} family.`))} />}
+                {tm.id === lastEsquisses && v.journey?.esquisses && <EsquissesCards esquisses={v.journey.esquisses} busy={busy || working} onChoose={(text) => send(text)} />}
                 {tm.id === lastThemes && v.journey?.themes && v.projectId && <ThemeCards themes={v.journey.themes} busy={busy || working} onChoose={(name) => send(t(`Je choisis le thème ${name}.`, `I choose the ${name} theme.`))} onAll={() => send(t("Je veux voir tous les thèmes.", "I want to see all themes."))} onMockup={() => send(t("Je préfère un thème sur mesure.", "I'd rather have a custom theme."))} />}
                 {tm.id === lastCalendar && v.projectId && <CalendarCard projectId={v.projectId} refreshKey={tm.id} />}
                 {/* Une planche gardée de côté (une image y manque) n'arrive pas ici : jamais une planche incomplète, ni une carte vide. */}

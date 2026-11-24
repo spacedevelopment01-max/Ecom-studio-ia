@@ -279,8 +279,16 @@ function swapText<T>(v: T, from: string, to: string): T {
  * de la série : remplacée ; fond clair trop proche d'une marque récente : remplacé. Rien ne change quand le client garde
  * ses polices ou ses couleurs, ni sur ses propres couleurs, ni sur la couleur du bouton.
  */
-export function varierIdentites<T extends Identity>(list: T[], recent: MarqueRecente[], o: { modifiables: string[]; j?: Journey }): { list: T[]; changes: string[] } {
+export function varierIdentites<T extends Identity>(list: T[], recent: MarqueRecente[], o: { modifiables: string[]; j?: Journey;
+  /**
+   * Méthode des graphistes (24 novembre 2026, décision du chef d'orchestre : « le logo l'emporte ») : les couleurs et la
+   * police de titres viennent du logo fini. La variété ne touche alors que le fond de page (le blanc reste toujours permis).
+   */
+  couleursDuLogo?: boolean }): { list: T[]; changes: string[] } {
   const keepFonts = !!o.j?.keep.includes("polices"), keepColors = !!o.j?.keep.includes("couleurs");
+  // Avec les couleurs du logo, la police de titres vient du logo : une marque récente ne la fait plus changer ; seule une
+  // police déjà prise DANS la série est remplacée (deux identités n'ont jamais la même police de titres).
+  const recentCompte = !o.couleursDuLogo;
   const own = clientColors(o.j), changes: string[] = [];
   const recentFonts = new Set(recent.flatMap((m) => (m.heading ? [ligneeDe(m.heading)] : [])));
   const lights = recent.slice(0, FONDS_COMPARES).flatMap((m) => (m.light ? [m.light] : []));
@@ -290,8 +298,8 @@ export function varierIdentites<T extends Identity>(list: T[], recent: MarqueRec
     let y: T = x;
     if (!keepFonts) {
       const lin = ligneeDe(y.fonts.heading);
-      if (recentFonts.has(lin) || serie.has(lin)) {
-        const next = policeDeRemplacement(y.fonts, new Set([...recentFonts, ...serie]));
+      if ((recentCompte && recentFonts.has(lin)) || serie.has(lin)) {
+        const next = policeDeRemplacement(y.fonts, new Set([...(recentCompte ? recentFonts : []), ...serie]));
         if (next) {
           const before = fontFamily(y.fonts.heading), after = fontFamily(next.heading);
           y = { ...swapText(y, before, after), fonts: next };

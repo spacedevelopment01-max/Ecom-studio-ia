@@ -17,6 +17,8 @@ import type { Brand } from "../../project-types";
 import type { AgentTool, ToolContext } from "../types";
 import { journeyOf, planchesCachees, planchesIncompletes, setStep, updateJourney, type Journey } from "../journey";
 import { fontFamily, type Identity } from "../identities";
+import { devisDeLaRecherche, devisDesFinalisations, graphistesActifs } from "../logo-graphistes";
+import { LOGO_GRAPHISTES_JOB } from "../logo-graphistes-tache";
 import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, namesPreviewQuote, routeCountOfProject, type ChainQuote } from "../brand-chain";
 import { borneDuStudio, probableDuStudio } from "../../ai/borne-du-studio";
 import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, type ImageSlot } from "../brand-images";
@@ -125,7 +127,30 @@ function chainWork(ctx: ToolContext, a: ProposeArgs | undefined) {
  * Devis montré au client pour ses identités : la création des planches, PLUS la fin de la marque de celle qu'il
  * choisira (un seul accord pour toute l'étape « La marque »). Une reprise après le choix ne recompte pas la fin.
  */
+/**
+ * MÉTHODE DES GRAPHISTES (point 0, « Oui » du propriétaire le 24 novembre 2026 : « Le client choisit d'abord son nom, puis
+ * les logos »). Un seul accord pour toute l'étape « La marque », découpé en morceaux réservés : les noms vérifiés, la
+ * recherche du logo, les N logos finis, puis les planches (avec leurs logos) ; la fin de la marque à part, comme avant.
+ * La somme des morceaux ne dépasse jamais le « au plus » montré.
+ */
+export function accordGraphistes(count: number, fresh = true) {
+  const entier = chainQuote({ routes: count, fresh });
+  // Les planches, une fois le nom choisi : l'étude et les idées sont reprises de la tâche des noms, jamais repayées.
+  const planches = chainQuote({ routes: count, imposed: true, done: ["brand:study", "brand:strategy", "brand:strategy:2"] });
+  const recherche = devisDeLaRecherche(), finalisations = devisDesFinalisations(count);
+  const nomsMicro = Math.max(0, entier.maxMicro - planches.maxMicro);
+  return { count, nomsMicro, rechercheMicro: recherche.maxMicro, finalisationsMicro: finalisations.maxMicro, planchesMicro: planches.maxMicro,
+    maxMicro: entier.maxMicro + recherche.maxMicro + finalisations.maxMicro,
+    probableMicro: (entier.probableMicro ?? entier.maxMicro) + recherche.probableMicro + finalisations.probableMicro };
+}
+/** La méthode des graphistes s'applique à une proposition entière, neuve, sans planche gardée (les anciens projets ne bougent pas). */
+const parLesGraphistes = (w: ReturnType<typeof chainWork>) => graphistesActifs() && !w.redo.length && w.routes === w.count && !w.j.identityChoice;
+
 function proposalQuote(w: ReturnType<typeof chainWork>) {
+  if (parLesGraphistes(w)) {
+    const g = accordGraphistes(w.count, w.fresh), f = finishQuote(FINISH_SLOTS);
+    return { maxMicro: g.maxMicro + f.maxMicro, ...(f.probableMicro ? { probableMicro: g.probableMicro + f.probableMicro } : {}) };
+  }
   const q = chainQuote({ routes: w.routes, fresh: w.fresh });
   if (w.j.identityChoice) return q;
   const f = finishQuote(FINISH_SLOTS);
@@ -139,6 +164,7 @@ function proposeByChain(ctx: ToolContext, a: ProposeArgs) {
   if ((a.redo?.length || a.only) && !w.sameShape) return { ok: false, summary: L("Aucune proposition à refaire pour l'instant.", "Nothing to redo yet."), hint: "Lance d'abord une proposition complète (identity.propose sans redo ni only)." };
   // Une seule création à la fois (jamais deux chaînes payées en parallèle).
   if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Tes identités sont déjà en cours de création : attends-les.", "Your identities are already being created.") };
+  if (parLesGraphistes(w) && !a.only) return proposeParLesGraphistes(ctx, w, a);
   const quote = chainQuote({ routes: w.routes, fresh: w.fresh });
   const round = (w.j.identities?.round ?? 0) + 1;
   // L'accord du client couvre aussi la fin de sa marque (devis affiché : `estimate`) : elle partira dès son choix.
@@ -155,6 +181,28 @@ function proposeByChain(ctx: ToolContext, a: ProposeArgs) {
   };
 }
 
+/**
+ * La proposition par la méthode des graphistes : la chaîne s'arrête après les noms vérifiés (le client choisit son nom
+ * avec identity.nom) ; s'il garde son nom, la recherche de son logo part tout de suite. Tout est couvert par l'accord
+ * montré sur la carte (devis : `accordGraphistes`).
+ */
+function proposeParLesGraphistes(ctx: ToolContext, w: ReturnType<typeof chainWork>, a: ProposeArgs) {
+  const p = project(ctx), g = accordGraphistes(w.count, w.fresh);
+  updateJourney(ctx.conversationId, (x) => { x.accordGraphistes = { count: g.count, nomsMicro: g.nomsMicro, rechercheMicro: g.rechercheMicro, finalisationsMicro: g.finalisationsMicro, planchesMicro: g.planchesMicro, at: Date.now() }; x.brandFinish = { prepaidMicro: finishQuote().maxMicro }; x.graphistes = undefined; x.nomsVerifies = undefined; x.nomsDeLaMarque = undefined; setStep(x, 1, "doing"); });
+  const garde = w.j.keep.includes("nom") ? (w.j.keptValues?.name || w.j.imported[0]?.name || p.brand?.name || "").trim() : "";
+  if (garde) {
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: LOGO_GRAPHISTES_JOB, label: L("Recherche de ton logo (SINA)", "Your logo research (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, phase: "recherche", nom: garde, capMicro: g.rechercheMicro, studioCapMicro: g.rechercheMicro, finalisationsAccordees: g.finalisationsMicro }, maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:logo:recherche:garde` });
+    return { ok: true, jobs: [job.id], summary: L(`Tu gardes ton nom « ${garde} » : je cherche d'abord les pistes de ton logo, puis je te montre les esquisses numérotées pour que tu choisisses.`, "You keep your name: I am looking for your logo directions first.") };
+  }
+  const job = enqueue({
+    userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L("Les noms de ta marque (SINA)", "Your brand names (SINA)"),
+    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: g.nomsMicro, count: w.count, jusquAuxNoms: true, ...(a.guidance ? { guidance: a.guidance } : {}) },
+    maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand:noms`,
+  });
+  return { ok: true, jobs: [job.id], data: { identites: w.count, plafondMicro: g.maxMicro },
+    summary: L("C'est parti : j'étudie ton marché, je cherche l'idée et les noms, puis je vérifie qu'ils sont libres. Tu choisis ensuite ton nom, puis les pistes de ton logo.", "Starting: market study, idea and names, then you choose your name and logo directions.") };
+}
+
 /** Vue courte d'une identité (lue par SINA et montrée dans le fil). */
 export const identityView = (x: Identity) => ({
   cle: x.key, nom: x.name, slogan: x.slogan, promesse: x.promise, territoire: x.territory,
@@ -165,7 +213,7 @@ export const identityView = (x: Identity) => ({
 
 const proposeTool: AgentTool<ProposeArgs> = {
   name: "identity.propose", module: "marque", kind: "generate", needsProject: true,
-  description: "Étape 1 : crée les identités de marque du client, VRAIMENT différentes : 2, 3 ou 4 selon son forfait (le Studio le sait). Chaque identité est une PLANCHE de marque : l'idée, le nom et sa logique, la signature, les signes, l'objet, le site sur téléphone, des publications, la voix, ce qui reste à prouver, couleurs, polices et ton. Chaque planche porte son logo, sa grande image et le haut de son site sur téléphone ; l'objet, les signes en photo et les publications en images sont créés pour l'identité choisie. Tu étudies d'abord son marché sur le web (paroles réelles de clients avec leur page), tu cherches l'idée et les noms, puis tu relis tout : tâche de fond de plusieurs minutes. Payant : le Studio montre le devis (carte d'accord) avant de lancer. À appeler quand le client est prêt ou demande une nouvelle proposition : guidance = ce qu'il veut de différent (ses mots) ; redo = identités à refaire (les autres restent identiques) ; only « noms » = refaire seulement les noms et les phrases (couleurs, polices et le reste gardés). Les planches s'affichent dans le fil." + RELANCER_LIGNE,
+  description: "Étape 1 : identités de marque VRAIMENT différentes, 2, 3 ou 4 selon son forfait. Tu étudies son marché (paroles réelles de clients avec leur page), cherches l'idée et les noms, vérifies qu'ils sont libres (tâche de fond). Il choisit son nom (identity.nom), puis ses esquisses de logo (logo.choisir) ; chaque identité est une PLANCHE qui partage ce nom, avec son logo. Payant : le Studio montre le devis, un seul accord. guidance = ses mots ; redo = à refaire (les autres restent identiques) ; only « noms » = noms et phrases seuls." + RELANCER_LIGNE,
   args: z.object({ guidance: z.string().max(1500).optional(), redo: z.array(z.enum(KEYS)).min(1).max(4).optional(), only: z.enum(["noms"]).optional(), relancer: z.boolean().optional() }).strict(),
   estimate: (ctx, a) => {
     if (a?.relancer) { const c = marqueCoupee(project(ctx).id); if (!c) throw new RefusInterne("Aucune création de marque arrêtée en route à relancer : lance-la sans relancer."); return relanceMarqueQuote(c); }
@@ -323,7 +371,14 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
 };
 
 /** Les images d'une planche que SINA peut refaire (le haut du site est une vraie page, jamais une image). */
+/**
+ * L'ancienne série de logos est retirée (méthode des graphistes, point 0 tranché le 24 novembre 2026) : le logo d'une
+ * planche ne se redessine plus ici ; « un autre logo » passe par logo.autre ou logo.pistes.
+ */
 const REDO_IMAGES = PROPOSAL_SLOTS as unknown as [string, ...string[]];
+/** Le logo ne se refait ici que sur les planches d'avant la méthode des graphistes (anciens projets, planches à finir). */
+const logoParLesGraphistes = (cid: string, images: readonly string[]) => images.includes("logo") && !!journeyOf(cid).graphistes?.esquisses.length;
+const REFUS_LOGO = "Le logo de ces planches vient de la méthode des graphistes : il ne se redessine pas ici. Un autre logo : logo.autre (une autre esquisse déjà vue), sinon logo.pistes.";
 type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
 /**
  * Refaire SEULEMENT certaines images d'une ou plusieurs planches (retour du propriétaire du 14 novembre 2026, sur
@@ -349,9 +404,10 @@ export function finirPlanchesGardees(j: Journey, keys: readonly string[], images
 }
 const imagesTool: AgentTool<ImagesArgs> = {
   name: "identity.images", module: "marque", kind: "generate", needsProject: true,
-  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») de planches déjà montrées, sans toucher au nom ni aux textes. Refais SEULEMENT les images que le client demande : un logo refait seul laisse l'ancien logo sur le téléphone de la planche jusqu'au choix, puis il est refait pour l'identité choisie (dis-le-lui en une phrase). Quand une image est fausse ou refusée (la planche le dit) ou qu'il signale un défaut : dis-lui ce que tu refais et pourquoi, et mets sa correction, avec ses mots, dans guidance. Après le choix, les images de sa marque se refont avec brand.finish. keys = les planches (A, B, C, D) ; images = les images à refaire.",
+  description: "Avant le choix de l'identité : refait SEULEMENT le logo (« logo »), la grande scène (« hero ») ou la maquette du haut du site (« site ») de planches déjà montrées, sans toucher au nom ni aux textes. Logo : planches d'avant les esquisses seulement (sinon logo.autre, logo.pistes). Sa correction, ses mots, dans guidance. Après le choix : brand.finish. keys = les planches ; images = à refaire.",
   args: z.object({ keys: z.array(z.enum(KEYS)).min(1).max(4), images: z.array(z.enum(REDO_IMAGES)).min(1).max(3), guidance: z.string().max(1500).optional() }).strict(),
   estimate: (ctx, a) => {
+    if (logoParLesGraphistes(ctx.conversationId, a.images)) throw new RefusInterne(REFUS_LOGO);
     const n = redoImages(a.images).length;
     // L'ordre de la série (essai réel de Nadia, 23 novembre 2026 : Pénombre lancé avant Halo) : un logo d'une planche
     // d'avant, à refaire aussi et pas encore fait, passe avant. SINA est prévenue une fois, avant la carte et sans dépense.
@@ -372,6 +428,7 @@ const imagesTool: AgentTool<ImagesArgs> = {
     // Toujours dans l'ordre des identités (A, B, C), quel que soit l'ordre donné par SINA.
     const keys = dansLOrdre(a.keys).filter((k) => list.some((x) => x.key === k && !!x.board));
     if (!keys.length) return { ok: false, summary: L("Il n'y a pas encore de planche à reprendre.", "There is no board to redo yet."), hint: "Les images se refont sur des planches déjà montrées (identity.propose d'abord)." };
+    if (logoParLesGraphistes(ctx.conversationId, a.images)) return { ok: false, internal: true, summary: REFUS_LOGO };
     if (pendingJob(p.id, SINA_BRAND_JOB)) return { ok: false, summary: L("Une création de marque est déjà en cours : attends-la.", "A brand job is already running.") };
     const images = redoImages(a.images);
     const d = devisDesImages(j, keys, images);

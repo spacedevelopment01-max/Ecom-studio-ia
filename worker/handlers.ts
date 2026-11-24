@@ -78,6 +78,8 @@ export const handlers: Record<string, Handler> = {
   "syna.agent": async (ctx) => (await import("../src/lib/syna-agent/loop")).runAgentJob(ctx),
   // SINA (#492), étape 2 : 3 logos de 3 styles pour l'identité choisie (moteur de logos V2, plafonné au devis).
   "syna.brand": async (ctx) => (await import("../src/lib/syna-agent/brand-chain")).runSinaBrandJob(ctx),
+  /** Le logo, méthode des graphistes (24 novembre 2026) : une recherche d'esquisses, ou les logos finis des esquisses choisies. */
+  "syna.logo.graphistes": async (ctx) => (await import("../src/lib/syna-agent/logo-graphistes-tache")).runLogoGraphistesJob(ctx),
   /** Les trois angles de SINA : trois stratèges séparées, un juge à part, un lecteur qui ne sait rien. */
   "syna.angles": async (ctx) => differe(async () => (await import("../src/lib/syna-agent/angles-chain")).runSinaAnglesJob(ctx)),
   // SINA (#492), étape 7 : site codé d'après la maquette choisie (payant, plafonné au devis).
