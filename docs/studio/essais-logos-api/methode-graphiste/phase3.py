@@ -19,11 +19,14 @@ def formulaire(champs, fichier):
                     + open(fichier, "rb").read() + b"\r\n")
     morceaux.append(f"--{b}--\r\n".encode())
     return b"".join(morceaux), f"multipart/form-data; boundary={b}"
-for n in ("6", "11"):
+QUELLES = [a for a in sys.argv[2:] if not a.startswith("--")] or ["6", "11"]
+for n in QUELLES:
+    p = os.path.join(D, f"prompt-logo-{n}-du-proprietaire.txt")
+    champs = dict(CHAMPS, prompt=open(p).read().rstrip("\n")) if os.path.exists(p) else CHAMPS
     esquisse = os.path.join(D, f"esquisse-{n}.png")
-    json.dump({"endpoint": "POST " + URL + " (formulaire multipart)", "champs": CHAMPS, "image[]": os.path.basename(esquisse)},
+    json.dump({"endpoint": "POST " + URL + " (formulaire multipart)", "champs": champs, "image[]": os.path.basename(esquisse)},
               open(os.path.join(D, f"logo-{n}-requete.json"), "w"), ensure_ascii=False, indent=1)
-    corps, type_ = formulaire(CHAMPS, esquisse)
+    corps, type_ = formulaire(champs, esquisse)
     if VERIFIER: print(n, "requête construite,", len(corps), "octets, rien envoyé"); continue
     req = urllib.request.Request(URL, data=corps, headers={"Content-Type": type_, "Authorization": "Bearer x"})
     t0 = time.time()

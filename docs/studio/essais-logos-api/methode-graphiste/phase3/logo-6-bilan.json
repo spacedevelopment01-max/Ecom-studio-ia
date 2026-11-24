@@ -1,0 +1,28 @@
+{
+ "esquisse": "6",
+ "statut_http": 200,
+ "duree_s": 30.5,
+ "x-request-id": "req_b18a6bedee0647408d8a5a7e6198af8c",
+ "usage": {
+  "input_tokens": 1262,
+  "input_tokens_details": {
+   "image_tokens": 1024,
+   "text_tokens": 238
+  },
+  "output_tokens": 2058,
+  "output_tokens_details": {
+   "image_tokens": 2058,
+   "text_tokens": 0
+  },
+  "total_tokens": 3320
+ },
+ "cout_eur": 0.0612,
+ "autres_champs": {
+  "created": 1795514899,
+  "background": "opaque",
+  "output_format": "png",
+  "quality": "high",
+  "safety_identifier": null,
+  "size": "1254x1254"
+ }
+}

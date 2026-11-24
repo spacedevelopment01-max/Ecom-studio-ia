@@ -2,7 +2,7 @@
  "endpoint": "POST https://api.openai.com/v1/images/edits (formulaire multipart)",
  "champs": {
   "model": "gpt-image-2.6-sunburst",
-  "prompt": "Transforme cette esquisse en véritable identité visuelle contemporaine pour Tenon, une entreprise de menuiserie spécialisée dans les cuisines et dressings sur mesure. Ne te contente pas de l'agrandir. Conserve l'idée originale de l'esquisse et laisse-toi libre de perfectionner son exécution artistique : une recherche typographique poussée, des couleurs affirmées, un dessin graphique soigné, et un travail précis du dessin des lettres, des proportions, de l'espacement et de la composition.",
+  "prompt": "Transforme cette esquisse en véritable logo contemporain pour Tenon, entreprise de menuiserie spécialisée dans les cuisines et dressings sur mesure.\nConserve l’idée centrale : le O évoque clairement le bois grâce à un motif de veinage intégré.\nAméliore fortement la qualité du dessin du logotype : typographie plus distinctive, plus maîtrisée, plus premium, avec un meilleur équilibre visuel, des proportions plus justes, un espacement plus élégant et une meilleure présence de marque.\nLe résultat doit rester sobre, haut de gamme, lisible et professionnel, avec un style de vraie agence de branding.\nSimplifie le motif bois pour qu’il reste graphique et logo-compatible, sans tomber dans l’illustration.\nPalette élégante et chaleureuse, liée à l’univers du bois et de l’aménagement intérieur.\nStyle vectoriel, fond blanc uni, pas de mockup, pas d’ombre, pas d’effet 3D, pas de texture réaliste, pas de dégradé excessif.\nSi une ligne descriptive est conservée, elle doit rester très discrète et raffinée.",
   "quality": "high",
   "size": "auto",
   "background": "opaque",

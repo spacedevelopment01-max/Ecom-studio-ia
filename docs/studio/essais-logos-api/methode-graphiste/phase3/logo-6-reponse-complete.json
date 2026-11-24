@@ -1,0 +1,27 @@
+{
+ "created": 1795514899,
+ "background": "opaque",
+ "data": [
+  {
+   "b64_json": "…(image, 1357340 caractères, enregistrée à part)",
+   "generation_id": "efa130de-be35-4e63-8955-df1966f36ced"
+  }
+ ],
+ "output_format": "png",
+ "quality": "high",
+ "safety_identifier": null,
+ "size": "1254x1254",
+ "usage": {
+  "input_tokens": 1262,
+  "input_tokens_details": {
+   "image_tokens": 1024,
+   "text_tokens": 238
+  },
+  "output_tokens": 2058,
+  "output_tokens_details": {
+   "image_tokens": 2058,
+   "text_tokens": 0
+  },
+  "total_tokens": 3320
+ }
+}
