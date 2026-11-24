@@ -161,7 +161,10 @@ const AVEC_EVOLUTION = TEXTE_REFLET_4.replace("Redessine en profondeur", "Fais �
 describe("la finalisation : la consigne de finaliser.py mot pour mot, plus la ligne d'évolution", () => {
   it("la consigne est celle de la preuve, avec une seule ligne ajoutée", () => {
     const c = consigneDeFinalisation(NOM, METIER);
-    expect(c.replace(`${LIGNE_D_EVOLUTION}\n`, "")).toBe(CONSIGNE_DE_LA_PREUVE);
+    // Deux écarts seulement avec la preuve : la ligne d'évolution, et « parmi douze » devenu « parmi les esquisses
+    // proposées » (décision du chef d'orchestre du 24 novembre 2026 : le client en voit de 8 à 24, la consigne dit vrai).
+    expect(c).not.toContain("parmi douze");
+    expect(c.replace(`${LIGNE_D_EVOLUTION}\n`, "")).toBe(CONSIGNE_DE_LA_PREUVE.replace("parmi douze.", "parmi les esquisses proposées."));
     expect(c).toContain("- demande toujours de faire évoluer l'idée de l'esquisse vers une identité plus aboutie et plus distinctive, jamais de seulement la nettoyer ou l'agrandir ;");
   });
   it("le contrôle gratuit du texte : le texte de la preuve passe tout, sauf l'évolution (il ne la demandait pas)", () => {

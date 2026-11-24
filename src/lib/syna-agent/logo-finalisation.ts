@@ -39,7 +39,7 @@ export const debutDuTexte = (nom: string, metier: string) => `Transforme cette e
  */
 export function consigneDeFinalisation(nom: string, metier: string): string {
   return `Tu es la directrice artistique d'un studio de création de marques. Le client ${nom} (${metier}) a choisi
-l'esquisse de logo jointe parmi douze. Tu écris le texte qui sera envoyé tel quel à un modèle d'image pour transformer
+l'esquisse de logo jointe parmi les esquisses proposées. Tu écris le texte qui sera envoyé tel quel à un modèle d'image pour transformer
 cette esquisse en logo fini. Ce texte, en français :
 - commence par « ${debutDuTexte(nom, metier)} » ;
 - nomme précisément l'idée centrale de l'esquisse, celle qui la distingue, et demande de la conserver ;

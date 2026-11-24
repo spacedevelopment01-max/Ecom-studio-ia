@@ -146,9 +146,8 @@ immédiat s'il est atteint, et chaque image montrée tout de suite, y compris ce
 
 ## Un point à trancher
 
-La consigne de finalisation est reprise mot pour mot de l'essai. Elle dit « l'esquisse de logo jointe parmi douze ».
-Avec la nouvelle méthode, le client peut en voir entre 8 et 24. Le mot reste tel quel, comme demandé ; à corriger
-seulement si le chef d'orchestre le juge utile.
+La consigne de finalisation est reprise mot pour mot de l'essai, à un mot près : « parmi douze » devient « parmi les
+esquisses proposées », puisque le client en voit de 8 à 24 (décision du chef d'orchestre du 24 novembre 2026).
 
 ## Texte proposé pour la partie Logo de CLAUDE.md
 
