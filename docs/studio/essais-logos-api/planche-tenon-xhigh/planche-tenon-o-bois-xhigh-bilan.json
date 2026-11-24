@@ -1,0 +1,21 @@
+{
+ "variante": "planche-tenon-o-bois-xhigh",
+ "statut_http": 200,
+ "duree_s": 64.2,
+ "x-request-id": "req_cd1b7b754b924eb991e07a80e2f1bbb4",
+ "usage": {
+  "input_tokens": 4153,
+  "input_tokens_details": {
+   "image_tokens": 3057,
+   "text_tokens": 1096
+  },
+  "output_tokens": 3811,
+  "output_tokens_details": {
+   "image_tokens": 3811,
+   "text_tokens": 0
+  },
+  "total_tokens": 7964
+ },
+ "cout_eur": 0.1241,
+ "taille": "1536x2304"
+}

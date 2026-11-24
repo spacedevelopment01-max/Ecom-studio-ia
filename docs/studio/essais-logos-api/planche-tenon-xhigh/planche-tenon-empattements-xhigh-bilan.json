@@ -1,0 +1,21 @@
+{
+ "variante": "planche-tenon-empattements-xhigh",
+ "statut_http": 200,
+ "duree_s": 63.6,
+ "x-request-id": "req_d56af94ba09542f5b95ab4697c0dd661",
+ "usage": {
+  "input_tokens": 3656,
+  "input_tokens_details": {
+   "image_tokens": 2560,
+   "text_tokens": 1096
+  },
+  "output_tokens": 3811,
+  "output_tokens_details": {
+   "image_tokens": 3811,
+   "text_tokens": 0
+  },
+  "total_tokens": 7467
+ },
+ "cout_eur": 0.1206,
+ "taille": "1536x2304"
+}
