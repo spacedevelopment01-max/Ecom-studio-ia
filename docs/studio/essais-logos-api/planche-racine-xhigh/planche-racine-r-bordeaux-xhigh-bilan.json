@@ -1,0 +1,21 @@
+{
+ "variante": "planche-racine-r-bordeaux-xhigh",
+ "statut_http": 200,
+ "duree_s": 69.6,
+ "x-request-id": "req_6f3cb218082744fe8f960cf956e6402e",
+ "usage": {
+  "input_tokens": 3664,
+  "input_tokens_details": {
+   "image_tokens": 2560,
+   "text_tokens": 1104
+  },
+  "output_tokens": 3811,
+  "output_tokens_details": {
+   "image_tokens": 3811,
+   "text_tokens": 0
+  },
+  "total_tokens": 7475
+ },
+ "cout_eur": 0.1207,
+ "taille": "1536x2304"
+}

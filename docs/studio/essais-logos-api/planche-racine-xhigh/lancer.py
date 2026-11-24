@@ -1,9 +1,10 @@
 """Racine : planche complète en xhigh, disposition de la variante 2 de Poppy (24 novembre 2026), hors de SINA. Même configuration que la V2 :
 GPT Image 2.5 Sunburst, /v1/images/edits, high, 1536x2304, opaque, png, n 1 ; une seule image jointe : le logo. Aucune reprise. Arrêt à 0,20 €."""
 import base64, json, os, sys, time, uuid, urllib.request, urllib.error
-D = sys.argv[1]; EUR, PLAFOND = 0.86, 0.20
+D = sys.argv[1]; EUR, PLAFOND = 0.86, 0.30
 PROMPT = open(os.path.join(D, sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else "prompt.txt")).read()
 VARIANTES = {"planche-racine-xhigh": ["logo-racine.png", "disposition-variante-2.png"]}
+if "--variantes" in sys.argv: VARIANTES = {"planche-racine-feuille-sur-le-i-xhigh": ["logo-racine-feuille-sur-le-i.png", "disposition-variante-2.png"], "planche-racine-r-bordeaux-xhigh": ["logo-racine-r-bordeaux.png", "disposition-variante-2.png"]}
 total = 0.0
 for nom, logo in VARIANTES.items():
     if total + (0.15 if "--xhigh" in sys.argv else 0.09) > PLAFOND: print("ARRÊT plafond"); break
