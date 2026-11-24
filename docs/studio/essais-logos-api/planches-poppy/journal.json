@@ -1,0 +1,263 @@
+{
+ "total_eur": 0.6033,
+ "journal": [
+  {
+   "etape": "harnais",
+   "statut": 200,
+   "duree_s": 16.8,
+   "usage": {
+    "input_tokens": 105,
+    "input_tokens_details": {
+     "image_tokens": 0,
+     "text_tokens": 105
+    },
+    "output_tokens": 1449,
+    "output_tokens_details": {
+     "image_tokens": 1449,
+     "text_tokens": 0
+    },
+    "total_tokens": 1554
+   },
+   "taille": "1024x1024",
+   "qualite": "medium",
+   "cout_eur": 0.0378
+  },
+  {
+   "etape": "laisse",
+   "statut": 200,
+   "duree_s": 13.4,
+   "usage": {
+    "input_tokens": 101,
+    "input_tokens_details": {
+     "image_tokens": 0,
+     "text_tokens": 101
+    },
+    "output_tokens": 1449,
+    "output_tokens_details": {
+     "image_tokens": 1449,
+     "text_tokens": 0
+    },
+    "total_tokens": 1550
+   },
+   "taille": "1024x1024",
+   "qualite": "medium",
+   "cout_eur": 0.0378
+  },
+  {
+   "etape": "collier",
+   "statut": 200,
+   "duree_s": 13.6,
+   "usage": {
+    "input_tokens": 97,
+    "input_tokens_details": {
+     "image_tokens": 0,
+     "text_tokens": 97
+    },
+    "output_tokens": 1449,
+    "output_tokens_details": {
+     "image_tokens": 1449,
+     "text_tokens": 0
+    },
+    "total_tokens": 1546
+   },
+   "taille": "1024x1024",
+   "qualite": "medium",
+   "cout_eur": 0.0378
+  },
+  {
+   "etape": "logo-4-texte",
+   "statut": 200,
+   "duree_s": 10.4,
+   "usage": {
+    "input_tokens": 691,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cache_write_tokens_details": {
+      "ttl_12h_tokens": 0,
+      "ttl_30m_tokens": 0
+     },
+     "cached_tokens": 0
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 1034
+   },
+   "cout_eur": 0.0166
+  },
+  {
+   "etape": "logo-4",
+   "statut": 200,
+   "duree_s": 31.6,
+   "usage": {
+    "input_tokens": 1327,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 303
+    },
+    "output_tokens": 2058,
+    "output_tokens_details": {
+     "image_tokens": 2058,
+     "text_tokens": 0
+    },
+    "total_tokens": 3385
+   },
+   "taille": "1254x1254",
+   "qualite": "high",
+   "cout_eur": 0.0614
+  },
+  {
+   "etape": "logo-6-texte",
+   "statut": 200,
+   "duree_s": 9.0,
+   "usage": {
+    "input_tokens": 691,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cache_write_tokens_details": {
+      "ttl_12h_tokens": 0,
+      "ttl_30m_tokens": 0
+     },
+     "cached_tokens": 0
+    },
+    "output_tokens": 355,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 1046
+   },
+   "cout_eur": 0.017
+  },
+  {
+   "etape": "logo-6",
+   "statut": 200,
+   "duree_s": 30.0,
+   "usage": {
+    "input_tokens": 1337,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 313
+    },
+    "output_tokens": 2058,
+    "output_tokens_details": {
+     "image_tokens": 2058,
+     "text_tokens": 0
+    },
+    "total_tokens": 3395
+   },
+   "taille": "1254x1254",
+   "qualite": "high",
+   "cout_eur": 0.0615
+  },
+  {
+   "etape": "logo-8-texte",
+   "statut": 200,
+   "duree_s": 11.4,
+   "usage": {
+    "input_tokens": 691,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cache_write_tokens_details": {
+      "ttl_12h_tokens": 0,
+      "ttl_30m_tokens": 0
+     },
+     "cached_tokens": 0
+    },
+    "output_tokens": 366,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 1057
+   },
+   "cout_eur": 0.0173
+  },
+  {
+   "etape": "logo-8",
+   "statut": 200,
+   "duree_s": 25.1,
+   "usage": {
+    "input_tokens": 1345,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 321
+    },
+    "output_tokens": 1372,
+    "output_tokens_details": {
+     "image_tokens": 1372,
+     "text_tokens": 0
+    },
+    "total_tokens": 2717
+   },
+   "taille": "1536x1024",
+   "qualite": "high",
+   "cout_eur": 0.0438
+  },
+  {
+   "etape": "planches-contenu",
+   "statut": 200,
+   "duree_s": 108.0,
+   "usage": {
+    "input_tokens": 10148,
+    "input_tokens_details": {
+     "cache_write_tokens": 9388,
+     "cache_write_tokens_details": {
+      "ttl_12h_tokens": 0,
+      "ttl_30m_tokens": 9388
+     },
+     "cached_tokens": 0
+    },
+    "output_tokens": 3787,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 13935
+   },
+   "cout_eur": 0.2001
+  },
+  {
+   "etape": "planche-1-domaines",
+   "verifications": {
+    "atelierpoppy.fr": "pris",
+    "maisonpoppy.fr": "libre",
+    "poppysellerie.fr": "libre",
+    "poppycognac.fr": "libre"
+   },
+   "retenu": "maisonpoppy.fr"
+  },
+  {
+   "etape": "planche-1",
+   "statut": 200,
+   "duree_s": 37.4,
+   "usage": {
+    "input_tokens": 5789,
+    "input_tokens_details": {
+     "image_tokens": 4593,
+     "text_tokens": 1196
+    },
+    "output_tokens": 1372,
+    "output_tokens_details": {
+     "image_tokens": 1372,
+     "text_tokens": 0
+    },
+    "total_tokens": 7161
+   },
+   "taille": "1024x1536",
+   "qualite": "high",
+   "cout_eur": 0.0721
+  },
+  {
+   "etape": "planche-2-domaines",
+   "verifications": {
+    "poppyquai.fr": "libre",
+    "poppyport.fr": "libre",
+    "poppyrive.fr": "libre",
+    "poppylarge.fr": "libre"
+   },
+   "retenu": "poppyquai.fr"
+  },
+  {
+   "arret": "plafond : 0.603 € dépensés + 0.1 € prévus > 0.7 €"
+  }
+ ]
+}

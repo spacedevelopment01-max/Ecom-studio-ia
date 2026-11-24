@@ -1,0 +1,14 @@
+{
+ "requete": {
+  "model": "gpt-image-2.6-sunburst",
+  "prompt": "Transforme cette esquisse en véritable logo contemporain pour Poppy, une entreprise qui vend des accessoires pour chiens, notamment des harnais, des laisses et des colliers. Conserve le geste distinctif de l’esquisse : la descendante du dernier « p » devient une laisse qui ondule sous le « y » et se termine à droite par un mousqueton. Fais évoluer ce geste en une signature de marque plus aboutie et plus distinctive en dessinant les lettres et la laisse comme un seul signe. Redessine avec précision les minuscules arrondies, affine leurs proportions et leurs contreformes, puis ajuste l’espacement pour donner du caractère au mot sans compromettre sa lisibilité. Équilibre l’amplitude de la courbe avec la largeur du mot pour que la laisse souligne le nom sans lui voler la vedette. Réduis le mousqueton à une silhouette graphique reconnaissable à petite taille, sans détails de quincaillerie superflus. Privilégie un bleu nuit profond pour le lettrage et la laisse, avec un accent laiton chaud réservé au mousqueton. Sous le nom, conserve en petites capitales discrètes la seule mention « ACCESSOIRES POUR CHIENS » ; retire toute autre phrase. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+  "quality": "high",
+  "size": "auto",
+  "background": "opaque",
+  "output_format": "png",
+  "n": "1",
+  "images": [
+   "esquisse-6.png"
+  ]
+ }
+}

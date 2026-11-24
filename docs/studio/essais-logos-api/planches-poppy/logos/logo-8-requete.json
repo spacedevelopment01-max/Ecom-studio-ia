@@ -1,0 +1,14 @@
+{
+ "requete": {
+  "model": "gpt-image-2.6-sunburst",
+  "prompt": "Transforme cette esquisse en véritable logo contemporain pour Poppy, une entreprise qui vend des accessoires pour chiens, notamment des harnais, des laisses et des colliers. Conserve la double lecture du P initial : sa panse dessine une tête de chien de profil tournée vers la droite, sa hampe prolonge le cou, et le collier à boucle traverse la lettre. Fais de cette fusion entre lettre et silhouette le principe d’une identité plus aboutie et plus distinctive, en dessinant tout le mot d’un même geste souple et arrondi. Redessine soigneusement les lettres de « oppy » : donne du caractère à leurs courbes, affine leurs proportions et règle les espaces pour que le nom reste immédiatement lisible. Équilibre le poids du P avec celui des minuscules pour renforcer la présence de marque sans laisser la tête dominer le mot. Réduis l’œil, l’oreille en réserve et la boucle du collier à des formes franches pour que le signe reste graphique, même en petit. Garde le vert forêt profond pour le mot et réserve le corail vif au collier et à sa boucle pour mettre l’accessoire en évidence. Ne conserve une ligne descriptive discrète que si elle indique exactement le métier de Poppy ; retire toute autre phrase. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+  "quality": "high",
+  "size": "auto",
+  "background": "opaque",
+  "output_format": "png",
+  "n": "1",
+  "images": [
+   "esquisse-8.png"
+  ]
+ }
+}

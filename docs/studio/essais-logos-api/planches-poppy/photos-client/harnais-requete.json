@@ -1,0 +1,11 @@
+{
+ "requete": {
+  "model": "gpt-image-2.6-sunburst",
+  "prompt": "Photo prise au téléphone par la créatrice d'une petite marque d'accessoires pour chiens, pour montrer son produit : un harnais pour chien en sangle souple couleur corail, avec deux boucles noires et un anneau métallique doré, posé à plat sur une table en bois clair, près d'une fenêtre, lumière du jour. Photo simple et ordinaire, cadrage centré, produit entier et bien visible. Aucun chien, aucune personne, aucun texte, aucun logo.",
+  "quality": "medium",
+  "size": "1024x1024",
+  "background": "opaque",
+  "output_format": "png",
+  "n": 1
+ }
+}
