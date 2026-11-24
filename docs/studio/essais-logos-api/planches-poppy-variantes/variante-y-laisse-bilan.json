@@ -1,0 +1,21 @@
+{
+ "variante": "variante-y-laisse",
+ "statut_http": 200,
+ "duree_s": 52.6,
+ "x-request-id": "req_571a5f7b13384c92a5600db98d02db14",
+ "usage": {
+  "input_tokens": 2492,
+  "input_tokens_details": {
+   "image_tokens": 1521,
+   "text_tokens": 971
+  },
+  "output_tokens": 2127,
+  "output_tokens_details": {
+   "image_tokens": 2127,
+   "text_tokens": 0
+  },
+  "total_tokens": 4619
+ },
+ "cout_eur": 0.0695,
+ "taille": "1536x2304"
+}

@@ -1,0 +1,21 @@
+{
+ "variante": "variante-p-tete-de-chien",
+ "statut_http": 200,
+ "duree_s": 51.3,
+ "x-request-id": "req_8232e20e2dd84910a5fd087565d9fc4d",
+ "usage": {
+  "input_tokens": 2507,
+  "input_tokens_details": {
+   "image_tokens": 1536,
+   "text_tokens": 971
+  },
+  "output_tokens": 2127,
+  "output_tokens_details": {
+   "image_tokens": 2127,
+   "text_tokens": 0
+  },
+  "total_tokens": 4634
+ },
+ "cout_eur": 0.0696,
+ "taille": "1536x2304"
+}
