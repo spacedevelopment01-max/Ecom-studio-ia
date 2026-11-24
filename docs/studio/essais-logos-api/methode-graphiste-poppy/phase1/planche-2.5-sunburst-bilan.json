@@ -1,0 +1,28 @@
+{
+ "modele": "gpt-image-2.5-sunburst",
+ "statut_http": 200,
+ "duree_s": 19.6,
+ "x-request-id": "req_81195af461c74f69ae57695149d3e394",
+ "usage": {
+  "input_tokens": 106,
+  "input_tokens_details": {
+   "image_tokens": 0,
+   "text_tokens": 106
+  },
+  "output_tokens": 343,
+  "output_tokens_details": {
+   "image_tokens": 343,
+   "text_tokens": 0
+  },
+  "total_tokens": 449
+ },
+ "cout_eur": 0.0093,
+ "autres_champs": {
+  "created": 1795515265,
+  "background": "opaque",
+  "output_format": "png",
+  "quality": "medium",
+  "safety_identifier": null,
+  "size": "1536x1024"
+ }
+}
