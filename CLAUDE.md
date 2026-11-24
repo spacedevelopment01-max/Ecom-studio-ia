@@ -104,34 +104,31 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
 - **Noms de marque** : un mot simple et fort qui dit la matière ou le métier ; l'épreuve du fondateur (« tu
   appellerais ton site comme ça, toi ? ») ; aucun sous-entendu ; le juge ne garde qu'un nom qu'il noterait 8 sur 10 ;
   l'adresse sur Internet est contrôlée, et jamais promise.
-- **Logo** : créé par OpenAI (modèle imposé le 18 octobre, sans secours) pour cette marque-là, jamais repris d'une autre ;
-  aucun pictogramme dessiné en code. **La demande au dessinateur** (23 novembre 2026 au soir, après l'essai de Pénombre : « Et si on enlevait mes 50 logos
-  de démo pour lui laisser un peu plus de liberté et enlever l'idée de la marque et juste dire que c'est une marque de
-  bougies ») : « Fais-moi un logo pour une marque de bougies. Le nom de la marque : « Halo ». », l'épellation si le nom
-  porte un accent ou un signe, la ligne des couleurs de la marque, celle de sa typographie (« Typographie de la marque :
-  un caractère … (dans l'esprit de …) ; tu peux le redessiner à ta façon. »), puis « Sur un fond blanc uni. », puis la
-  série. Jamais l'idée de la marque, le ton, la planche des 50 logos, les refus ni les mots du client, ni une consigne
-  de style écrite par SINA ; tout en français. **La série** (précision du 23 novembre 2026 : « En même temps il fallait garder la
-  règle de le premier logo est fait donc on le donne à open ia et on lui dit je veux un autre logo complètement
-  différent de celui là et pour le 3eme pareil, ou lui donne les 2 première et on lui dit fait moi un autre logo
-  complètement différent des 2 premier ») : le 1er logo part sans image ; le 2e reçoit le 1er avec « Je veux un autre
-  logo complètement différent de celui-là. » ; le 3e reçoit les deux premiers avec « Fais-moi un autre logo
-  complètement différent des deux premiers. » ; au-delà, tous les précédents. Ce sont les logos gardés des identités
-  d'avant (sinon leur dernier dessin), jamais ceux d'une autre série ni d'un autre projet. Une reprise reçoit en plus
-  ses propres essais refusés (« … de tous ceux-là »), jamais la raison du refus (essai réel de Pénombre : « trois fois
-  le même dessin »). Un logo gardé n'est jamais redessiné. **On ne demande plus au client ce qu'il veut ou non dans
-  son logo** (même jour : « Pour rappel on ne demande plus au client ce qu'il veux ou non dans son logo ») : ce qu'il
-  en dit de lui-même ne va ni au dessinateur ni au relecteur ; SINA ne pose jamais de question sur le contenu d'un logo
-  (contrôle gratuit) : quand il en demande un autre, elle dit qu'elle le refait et présente la carte. Le nom n'est épelé que s'il porte un accent ou un signe.
-  Ces décisions remplacent les règles du 20 et du 21 novembre sur ce que reçoit le dessinateur (les épreuves qui les
-  gardaient sont marquées remplacées, avec l'accord écrit du propriétaire du même jour). **Le relecteur juge la qualité seulement** (même décision) : le modèle le plus fort au niveau élevé relit chaque logo
-  seul, avec la planche des 50 logos aimés (`docs/sina-savoir/logos-aimes/`) comme niveau, et ne garde que ce qu'il note
-  8 sur 10 ou plus (nom exact, aucun mot en trop comme un sous-titre, fond retirable) ; il ne tient plus compte de ce que
-  le client a dit sur son logo. Plusieurs logos d'une série à refaire partent dans l'ordre des identités (A, B, C). Un logo refusé est redessiné (avec ses essais refusés joints, comme dit plus haut), à la charge du Studio,
-  dans la borne des reprises. Le trait près du nom avec parcimonie : un seul par série, tenu par le relecteur seulement
-  (accord du 23 novembre 2026), jamais dit au dessinateur. Le Studio retire le fond après coup, creux des lettres
-  compris, sans carré autour ; un fond qu'il ne sait pas retirer proprement fait redessiner le logo. Le favicon reprend
-  le logo. Les photos reçoivent des consignes de base dites en positif (bord à bord, écran du site rempli, texte net sur
+- **Logo, la méthode des graphistes** (24 novembre 2026, « oui » du propriétaire à la construction ; « Oui » à « Le
+  client choisit d'abord son nom, puis les logos : tu es d'accord ? » ; elle remplace la série de logos d'avant, retirée
+  avec son accord écrit du même jour) : créé par OpenAI, pour cette marque-là, jamais repris d'une autre ; aucun
+  pictogramme dessiné en code. **Le nom d'abord** : la création s'arrête sur les noms vérifiés ; le client choisit le
+  sien (ou garde le sien), puis ses logos ; ses 2, 3 ou 4 identités partagent ce nom, chacune avec son propre logo ; un
+  seul accord pour toute l'étape. **Le métier** : un petit appel écrit le métier en mots simples et la piste (« le
+  savoir-faire de … » pour un artisan, « l'univers de … » pour un commerce), contrôlés gratuitement. **La recherche** :
+  deux planches de six esquisses en même temps, par les deux modèles d'images des essais du 24 novembre, avec le même
+  texte exact, rien d'autre (ni couleurs, ni goûts, ni logos joints). **Le tri** : le Studio découpe gratuitement,
+  refuse une case vide, coupée ou collée au bord ; le relecteur le plus fort, effort moyen, relit toutes les esquisses
+  en un appel (entière, rien de la voisine, nom exact comparé par le code, pas d'arche) ; une esquisse refusée n'est
+  jamais montrée ; moins de huit : les deux planches refaites une fois à la charge du Studio, avec « Évite ces pistes
+  déjà présentées : … ». **Le choix** : le client coche ses esquisses, deux au moins, au plus 2, 3 ou 4 selon son
+  forfait. **Le logo fini** : le modèle de texte le plus fort regarde l'esquisse et écrit le texte (consigne de l'essai,
+  « parmi les esquisses proposées », plus l'évolution de l'idée), contrôlé gratuitement ; le modèle d'images de
+  finalisation le dessine à partir de l'esquisse. **La relecture** : le relecteur le plus fort, effort élevé, refuse un
+  nom mal écrit, une idée perdue, un logo sans évolution, une arche, une phrase inventée, une note sous 8 ; refusé, il
+  est refait une fois avec ses raisons ; refusé deux fois, SINA propose une autre esquisse. **Le logo d'abord** : les
+  couleurs de la marque sont tirées du logo par le Studio, la police de titres choisie au plus près de ses lettres ;
+  deux identités n'ont jamais la même police de titres. Les couleurs du client ne vont jamais au dessinateur. On ne
+  demande jamais au client ce qu'il veut dans son logo. « Un autre logo » : d'abord une autre esquisse déjà vue, puis
+  « d'autres pistes » ; un changement de couleur demandé par le client est une retouche ; les trois sur son budget,
+  avec une carte. Le Studio retire le fond, creux des lettres compris ; un fond qu'il ne sait pas retirer fait refaire
+  le logo. Le favicon reprend le logo. Détail : `docs/studio/LOGO-METHODE-DES-GRAPHISTES.md`.
+- **Photos de la marque** : les photos reçoivent des consignes de base dites en positif (bord à bord, écran du site rempli, texte net sur
   une zone calme, aucun objet vierge sans rôle) ; le relecteur relit chaque image seule et ne garde que ce qu'il note
   8 sur 10 ou plus.
 - **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
