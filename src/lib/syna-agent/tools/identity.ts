@@ -146,8 +146,14 @@ export function accordGraphistes(count: number, fresh = true) {
  * La méthode des graphistes, seule façon de faire un logo, s'applique à toute proposition entière (une nouvelle proposition
  * après le choix comprise). Une planche refaite seule garde son logo si elle garde son nom ; sinon son logo vient de
  * logo.pistes. Les noms seuls (only « noms ») ne touchent pas aux logos.
+ *
+ * Le client qui GARDE SON LOGO n'a aucun logo à chercher (24 novembre 2026, défaut accepté pour correction) : ni
+ * recherche, ni finalisation, ni relecture de logo, et rien de cela dans le devis. Sa proposition passe par la chaîne
+ * entière, comme avant la méthode, qui pose son logo tel quel sur chaque planche (`clientLogoOf`, brand-chain.ts) : avec
+ * son nom gardé, chaque identité reprend ce nom ; sans son nom, la chaîne cherche les noms et chaque identité a le sien.
  */
-const parLesGraphistes = (w: ReturnType<typeof chainWork>) => !w.redo.length && w.routes === w.count;
+export const logoGardeParLeClient = (j: Journey) => j.keep.includes("logo");
+const parLesGraphistes = (w: ReturnType<typeof chainWork>) => !logoGardeParLeClient(w.j) && !w.redo.length && w.routes === w.count;
 
 function proposalQuote(w: ReturnType<typeof chainWork>) {
   if (parLesGraphistes(w)) {
