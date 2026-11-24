@@ -25,7 +25,7 @@ const brandRead: AgentTool<{}> = {
 
 const brandSave: AgentTool<{ name?: string; tagline?: string; palette?: Record<string, string>; fonts?: { heading: string; body: string }; validate?: string[]; applyToSite?: boolean }> = {
   name: "brand.save", module: "marque", kind: "write", needsProject: true,
-  description: "Enregistre l'identité (gratuit) : nom, signature, couleurs de palette (#RRGGBB par rôle existant), polices, éléments à verrouiller (validate : name, tagline, palette, fonts, logo). Sans marque existante, une base locale est construite à partir de la fiche de l'offre puis vos valeurs sont appliquées. Le logo existant est conservé. applyToSite propage la palette au site.",
+  description: "Enregistre l'identité (gratuit) : nom, signature, couleurs de palette (#RRGGBB par rôle existant), polices, éléments à verrouiller (validate : name, tagline, palette, fonts, logo). Sans marque, une base est faite d'après la fiche de l'offre, puis ces valeurs s'appliquent. Le logo existant est conservé. applyToSite propage la palette au site.",
   args: z.object({ name: z.string().min(1).max(80).optional(), tagline: z.string().max(160).optional(), palette: z.record(z.string().max(30), z.string().regex(/^#[0-9a-fA-F]{6}$/)).optional(), fonts: z.object({ heading: z.string().max(60), body: z.string().max(60) }).optional(), validate: z.array(z.enum(["name", "tagline", "palette", "fonts", "logo"])).optional(), applyToSite: z.boolean().optional() }).strict(),
   run: async (ctx, a) => {
     const p = project(ctx), before = p.brand;

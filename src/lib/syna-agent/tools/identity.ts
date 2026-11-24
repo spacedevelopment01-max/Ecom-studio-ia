@@ -107,7 +107,7 @@ function relanceMarque(ctx: ToolContext): ToolResult {
     summary: L(`Création de ta marque relancée, là où elle s'était arrêtée (${marqueOuArretee(c.etapes)}) : ce qui était déjà fait est repris sans être repayé. Je reprends quand c'est prêt.`, "Your brand creation was restarted from where it stopped."),
     hint: "Dis-lui que ce qui était fait est repris sans être repayé. N'annonce jamais que sa marque est prête avant la fin de la tâche." };
 }
-const RELANCER_LIGNE = " relancer:true quand la création de sa marque s'est arrêtée en route (le Studio te le dit) : la même création repart là où elle s'était arrêtée, ce qui est déjà fait et payé est repris sans être repayé ; la carte montre le prix de ce qui reste.";
+const RELANCER_LIGNE = " relancer:true quand la création de sa marque s'est arrêtée en route (le Studio te le dit) : elle repart où elle s'était arrêtée, ce qui est fait et payé est repris sans être repayé ; la carte montre le prix du reste.";
 
 type ProposeArgs = { guidance?: string; redo?: Key[]; only?: "noms"; relancer?: boolean };
 /** Travail demandé à la chaîne : combien d'identités à faire, et si l'atelier précédent ressert. */

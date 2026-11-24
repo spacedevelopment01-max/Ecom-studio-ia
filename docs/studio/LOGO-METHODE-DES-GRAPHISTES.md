@@ -141,7 +141,8 @@ doit pouvoir le faire ». Les phrases restent donc dans la recherche, et la dema
    rien toucher, le bouton dit toujours « Je choisis les esquisses 3, 7 et 11 ». SINA le propose en une phrase, sans
    question : « Tu peux combiner librement : le logo d'une esquisse avec la phrase d'une autre, sans phrase, ou avec ta
    propre phrase, que je reprendrai mot pour mot. » Ses mots à lui ne sont jamais corrigés : le Studio vérifie qu'ils
-   figurent tels quels dans un de ses messages. En français et en anglais.
+   figurent tels quels dans un de ses messages. Les mêmes choix valent pour « un autre logo », une fois les esquisses
+   vues : la phrase d'une esquisse, sans phrase, ou la sienne. En français et en anglais.
 3. **Le logo fini.** Quand il a choisi, la consigne du rédacteur reçoit une seule ligne de plus, juste après la ligne
    descriptive : écrire exactement sa phrase, en petit sous le nom (ou n'en écrire aucune). Le contrôle gratuit vérifie
    que sa phrase figure mot pour mot dans le texte, sinon le texte est réécrit une fois aux frais du Studio. Sans son

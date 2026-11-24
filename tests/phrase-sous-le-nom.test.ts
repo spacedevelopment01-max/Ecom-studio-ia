@@ -122,7 +122,7 @@ describe("2 bis. l'outil logo.choisir", async () => {
   const J = await import("@/lib/syna-agent/journey");
   const G = await import("@/lib/syna-agent/logo-graphistes");
   const { logoTools } = await import("@/lib/syna-agent/tools/logo");
-  const { one } = await import("@/lib/db");
+  const { one, run } = await import("@/lib/db");
   const { runWithLang } = await import("@/lib/i18n-server");
   const fr = <T,>(fn: () => Promise<T> | T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
   const preparer = async () => {
@@ -153,6 +153,31 @@ describe("2 bis. l'outil logo.choisir", async () => {
     expect(r.ok).toBe(true);
     expect(J.journeyOf(t.cid).graphistes!.phrases).toEqual({});
     expect(r.summary).not.toContain("Noté aussi");
+  });
+  it("logo.autre : la phrase d'une autre esquisse, puis la phrase du client, reprise mot pour mot", async () => {
+    const t = await preparer();
+    const autre = logoTools.find((x) => x.name === "logo.autre")!;
+    expect(autre.args.safeParse({ esquisse: 2, phrase: 5 }).success).toBe(true);
+    expect(autre.args.safeParse({ esquisse: 2, phrase: true }).success).toBe(false);
+    // La phrase douteuse de la 6 n'est pas proposée telle quelle : rien ne part.
+    expect(await fr(() => autre.run(t.ctx, { esquisse: 2, phrase: 6 }))).toMatchObject({ ok: false });
+    expect(one<any>("SELECT COUNT(*) n FROM jobs WHERE project_id=?", t.projectId).n).toBe(0);
+    // La phrase de la 5 pour le logo tiré de la 2.
+    const r1 = await fr(() => autre.run(t.ctx, { esquisse: 2, phrase: 5 })) as any;
+    expect(r1.ok).toBe(true);
+    expect(J.journeyOf(t.cid).graphistes!.phrases).toEqual({ 2: { de: 5, texte: "L'éclat de votre voiture" } });
+    expect(JSON.parse(one<any>("SELECT payload FROM jobs WHERE id=?", r1.jobs[0]).payload)).toMatchObject({ phase: "finalisation", numeros: [2] });
+    run("UPDATE jobs SET status='done' WHERE id=?", r1.jobs[0]);
+    // Sa phrase à lui : refusée si SINA la reformule, gardée mot pour mot si elle figure dans son message.
+    addMessage(t.cid, "user", { text: "Un autre logo avec la 1, et ma phrase : Chez vous, comme neuve", attachments: [] });
+    expect(await fr(() => autre.run({ ...t.ctx, runId: `${t.ctx.runId}-b` }, { esquisse: 1, phrase: "Chez vous comme neuve" }))).toMatchObject({ ok: false, internal: true });
+    const r2 = await fr(() => autre.run({ ...t.ctx, runId: `${t.ctx.runId}-c` }, { esquisse: 1, phrase: "Chez vous, comme neuve" })) as any;
+    expect(r2.ok).toBe(true);
+    expect(J.journeyOf(t.cid).graphistes!.phrases).toEqual({ 2: { de: 5, texte: "L'éclat de votre voiture" }, 1: { sienne: true, texte: "Chez vous, comme neuve" } });
+    // Sans phrase dite, ce qu'il a dit avant reste.
+    run("UPDATE jobs SET status='done' WHERE id=?", r2.jobs[0]);
+    expect((await fr(() => autre.run({ ...t.ctx, runId: `${t.ctx.runId}-d` }, { esquisse: 2 })) as any).ok).toBe(true);
+    expect(J.journeyOf(t.cid).graphistes!.phrases![2]).toEqual({ de: 5, texte: "L'éclat de votre voiture" });
   });
   it("la forme courte dite à SINA : un numéro, « aucune » ou ses mots", async () => {
     const { phrasesDites } = await import("@/lib/syna-agent/tools/logo");

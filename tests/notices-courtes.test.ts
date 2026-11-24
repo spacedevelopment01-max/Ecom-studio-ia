@@ -36,11 +36,15 @@ const GARDEES: Record<string, string[]> = {
   "shop.discounts_check": ["Gratuit, sans IA", "que si la boutique le tient", "l'emporte ensuite sur ce que le client a déclaré", "(data.guide)"],
   "catalogue.photos": ["(gratuit)", "la première devient la photo principale", "replace:true", "Jamais une image créée par l'IA", "sans refaire le site"],
   "ads.create": ["PAYANT", "UNE PAR TYPE DE CLIENT", "jamais deux pour le même", "chaque image contrôlée avant d'être montrée", "jamais devinés"],
-  "identity.propose": ["VRAIMENT différentes", "2, 3 ou 4 selon son forfait", "PLANCHE", "paroles réelles de clients avec leur page", "le Studio montre le devis", "les autres restent identiques"],
+  "identity.propose": ["relancer:true quand la création de sa marque s'est arrêtée en route", "(le Studio te le dit)", "repart où elle s'était arrêtée", "repris sans être repayé", "la carte montre le prix du reste", "VRAIMENT différentes", "2, 3 ou 4 selon son forfait", "PLANCHE", "paroles réelles de clients avec leur page", "le Studio montre le devis", "les autres restent identiques"],
   "identity.choose": ["PAR LE CLIENT (jamais à sa place)", "mot pour mot", "Gratuit"],
   // L'ancienne série de logos est retirée (accord du 24 novembre 2026) : un autre logo passe par logo.autre ou logo.pistes.
-  "brand.finish": ["logo.autre ou logo.pistes, jamais ici", "le Studio montre le prix avant", "fond retiré"],
+  "brand.finish": ["relancer:true quand la création de sa marque s'est arrêtée en route", "repris sans être repayé", "la carte montre le prix du reste", "logo.autre ou logo.pistes, jamais ici", "le Studio montre le prix avant", "fond retiré"],
   "angles.propose": ["TROIS TYPES DE CLIENTS différents", "un sûr, un d'émotion, un audacieux", "Tu relis chaque angle sévèrement avant de le montrer", "un seul accord pour toute l'étape", "avec SES mots", "les angles déjà montrés ne sont pas refaits"],
+  // Raccourcies le 24 novembre 2026 au soir (la phrase sous le nom gagne logo.autre) : chaque règle reste.
+  "brand.save": ["(gratuit)", "nom, signature, couleurs de palette (#RRGGBB par rôle existant), polices", "validate : name, tagline, palette, fonts, logo", "Sans marque", "d'après la fiche de l'offre", "Le logo existant est conservé", "applyToSite propage la palette au site"],
+  "logo.choisir": ["PAR LE CLIENT", "de 2 au max du forfait", "s'il le dit", "n° d'esquisse", "« aucune »", "ses mots", "Gratuit"],
+  "logo.autre": ["finit une esquisse montrée", "planche = celle qui le reçoit", "phrase : comme logo.choisir", "Payant (carte)", "à ta charge si son logo manque"],
   "gallery.create": ["PAYANT", "accord écrit du client d'abord", "CARRÉES", "UNIQUEMENT avec les faits donnés par le client", "une image ratée n'est pas posée et elle est signalée", "accordEcrit = ses mots exacts"],
 };
 

@@ -14,7 +14,7 @@
  *  - logo.couleurs : un changement de couleur demandé par le client lui-même, une fois les logos finis : une retouche sur
  *    sa demande, sur son budget, avec une carte.
  *  La phrase sous le nom (24 novembre 2026 au soir, « si le client veux le slogan de la 5 et le logo 1, sina doit pouvoir
- *  le faire ») : logo.choisir (`phrases`) prend, pour un logo, la phrase d'une autre esquisse
+ *  le faire ») : logo.choisir (`phrases`) et logo.autre (`phrase`) prennent, pour un logo, la phrase d'une autre esquisse
  *  (seulement si son orthographe est sûre), aucune phrase, ou la sienne, qui doit figurer mot pour mot dans ses messages.
  *  Sans rien de lui, la règle d'avant reste.
  * Aucun outil ne pose de question sur le contenu d'un logo (règle du 23 novembre 2026, toujours vraie).
@@ -104,10 +104,10 @@ const plancheVisee = (j: Journey, planche: string | undefined): string | undefin
 const SANS_PLANCHE = { ok: false as const, internal: true, summary: "Les planches sont déjà faites : dis sur quelle planche poser le logo (planche = A, B, C ou D)." };
 const PLANCHE = z.enum(ROUTE_KEYS).optional();
 
-const autreTool: AgentTool<{ esquisse: number; planche?: (typeof ROUTE_KEYS)[number] }> = {
+const autreTool: AgentTool<{ esquisse: number; planche?: (typeof ROUTE_KEYS)[number]; phrase?: number | string }> = {
   name: "logo.autre", module: "marque", kind: "generate", needsProject: true,
-  description: "« Un autre logo » : finit une esquisse montrée. planche = celle qui le reçoit, planches faites. Payant (carte) ; à ta charge si son logo manque.",
-  args: z.object({ esquisse: z.number().int().min(1), planche: PLANCHE }).strict(),
+  description: "« Un autre logo » : finit une esquisse montrée. planche = celle qui le reçoit, planches faites. phrase : comme logo.choisir. Payant (carte) ; à ta charge si son logo manque.",
+  args: z.object({ esquisse: z.number().int().min(1), planche: PLANCHE, phrase: z.union([z.number().int(), z.string()]).optional() }).strict(),
   estimate: (ctx, a) => {
     const d = devisDUneAutreEsquisse(), studio = logoAFinir(journeyOf(ctx.conversationId), plancheVisee(journeyOf(ctx.conversationId), a?.planche));
     return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: studio ? L("finir ta planche : son logo, tiré de l'esquisse choisie", "finish your board: its logo") : L("un autre logo, tiré d'une esquisse déjà vue", "another logo from a sketch already seen"), ...(studio ? { studio: true } : {}) };
@@ -120,6 +120,14 @@ const autreTool: AgentTool<{ esquisse: number; planche?: (typeof ROUTE_KEYS)[num
     if (j.identities?.list.length && !planche) return SANS_PLANCHE;
     if (planche && j.identities?.list.length && !j.identities.list.some((x) => x.key === planche)) return { ok: false, summary: L(`Il n'y a pas de planche ${planche}.`, "Unknown board.") };
     const d = devisDUneAutreEsquisse(), studio = logoAFinir(j, planche);
+    // La phrase sous le nom, s'il l'a dite : mêmes choix et mêmes contrôles que logo.choisir ; sinon ce qu'il a dit avant reste.
+    if (a.phrase != null) {
+      const dites = phrasesDites({ [String(a.esquisse)]: a.phrase });
+      const ph = controleDesPhrases(etat, [a.esquisse], dites, dites.some((p) => p.texte != null) ? motsDuClient(ctx) : []);
+      if (!ph.ok) return { ok: false, summary: ph.faute, ...(ph.interne ? { internal: true } : {}) };
+      if (pendingJob(project(ctx).id, LOGO_GRAPHISTES_JOB)) return DEJA;
+      updateJourney(ctx.conversationId, (x) => { if (x.graphistes) x.graphistes = { ...x.graphistes, phrases: { ...(x.graphistes.phrases ?? {}), ...ph.phrases } }; });
+    }
     const job = lancer(ctx, { phase: "finalisation", numeros: [a.esquisse], capMicro: d.maxMicro, studioCapMicro: d.studioMaxMicro, ...(planche && j.identities?.list.length ? { planche } : {}), ...(studio ? { studio: true } : {}) }, L("Un autre logo (SINA)", "Another logo (SINA)"), `autre:${a.esquisse}:${planche ?? ""}`);
     if (!job) return DEJA;
     return { ok: true, jobs: [job.id], summary: L(`Je fais ton logo à partir de l'esquisse ${a.esquisse}, puis je le relis.`, "Making your logo from that sketch.") };
