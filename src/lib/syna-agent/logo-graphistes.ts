@@ -79,7 +79,7 @@ export const PhraseDuClientSchema = z.object({
   /** Aucune phrase sous le nom. */
   aucune: z.literal(true).optional(),
   /** Sa phrase à lui, recopiée mot pour mot depuis son message. */
-  texte: z.string().min(1).max(PHRASE_MAX).optional(),
+  texte: z.string().max(PHRASE_MAX).optional(),
 }).strict();
 export type PhraseDuClient = z.infer<typeof PhraseDuClientSchema>;
 
@@ -106,7 +106,7 @@ export function controleDesPhrases(etat: Pick<EtatGraphistes, "esquisses">, logo
     }
     // Sa phrase à lui : reprise mot pour mot, jamais réécrite. Elle doit figurer telle quelle dans un de ses messages.
     const texte = d.texte!.normalize("NFC").trim();
-    if (!texte || /[\n\r]/.test(texte)) return { ok: false, interne: true, faute: `Sa phrase pour le logo ${d.logo} tient sur une ligne.` };
+    if (!texte || /[\n\r]/.test(texte) || texte.length > PHRASE_MAX) return { ok: false, interne: true, faute: `Sa phrase pour le logo ${d.logo} tient sur une ligne, en ${PHRASE_MAX} signes au plus.` };
     if (!motsDuClient.some((m) => m.normalize("NFC").includes(texte))) return { ok: false, interne: true, faute: `La phrase « ${texte} » ne figure pas mot pour mot dans ses messages : recopie-la exactement, caractère pour caractère, depuis ce qu'il a écrit (jamais corrigée ni reformulée).` };
     phrases[String(d.logo)] = { sienne: true, texte };
   }

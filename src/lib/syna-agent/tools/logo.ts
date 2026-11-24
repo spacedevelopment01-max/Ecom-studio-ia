@@ -14,7 +14,7 @@
  *  - logo.couleurs : un changement de couleur demandé par le client lui-même, une fois les logos finis : une retouche sur
  *    sa demande, sur son budget, avec une carte.
  *  La phrase sous le nom (24 novembre 2026 au soir, « si le client veux le slogan de la 5 et le logo 1, sina doit pouvoir
- *  le faire ») : logo.choisir (`phrases`) et logo.autre (`phrase`) prennent, pour un logo, la phrase d'une autre esquisse
+ *  le faire ») : logo.choisir (`phrases`) prend, pour un logo, la phrase d'une autre esquisse
  *  (seulement si son orthographe est sûre), aucune phrase, ou la sienne, qui doit figurer mot pour mot dans ses messages.
  *  Sans rien de lui, la règle d'avant reste.
  * Aucun outil ne pose de question sur le contenu d'un logo (règle du 23 novembre 2026, toujours vraie).
@@ -28,7 +28,7 @@ import { ROUTE_KEYS } from "../brand-routes";
 import { project } from "./common";
 import { lastMessages } from "../store";
 import type { PhraseChoisie } from "../phrase-sous-le-nom";
-import { PhraseDuClientSchema, controleDesPhrases, type PhraseDuClient, controleDuChoix, devisDeLaRecherche, devisDesFinalisations, devisDesPistes, devisDUneAutreEsquisse, esquissesAChoisir, messageDuChoix } from "../logo-graphistes";
+import { controleDesPhrases, type PhraseDuClient, controleDuChoix, devisDeLaRecherche, devisDesFinalisations, devisDesPistes, devisDUneAutreEsquisse, esquissesAChoisir, messageDuChoix } from "../logo-graphistes";
 import { planOfProject } from "../../plan-gates";
 import { LOGO_GRAPHISTES_JOB } from "../logo-graphistes-tache";
 
@@ -54,10 +54,19 @@ function resumeDesPhrases(phrases: Record<string, PhraseChoisie>): string {
 /** Les derniers messages du client, pour vérifier que sa phrase à lui est reprise mot pour mot. */
 const motsDuClient = (ctx: ToolContext): string[] => lastMessages(ctx.conversationId, 40).filter((m) => m.role === "user").map((m) => String(m.content?.text ?? ""));
 
-const choisirTool: AgentTool<{ esquisses: number[]; phrases?: PhraseDuClient[] }> = {
+/**
+ * La phrase de chaque logo, dite en court à SINA (clé : le logo) : un numéro = la phrase de cette esquisse, « aucune » =
+ * sans phrase, tout autre texte = ses mots à lui, mot pour mot. Traduit ici dans la forme contrôlée par le code.
+ */
+const PhrasesCourtes = z.record(z.string(), z.union([z.number().int(), z.string()]));
+export function phrasesDites(p: Record<string, number | string> | undefined): PhraseDuClient[] {
+  return Object.entries(p ?? {}).map(([logo, v]) => ({ logo: Number(logo), ...(typeof v === "number" ? { de: v } : /^aucune$/i.test(v.trim()) ? { aucune: true as const } : { texte: v }) }));
+}
+
+const choisirTool: AgentTool<{ esquisses: number[]; phrases?: Record<string, number | string> }> = {
   name: "logo.choisir", module: "marque", kind: "write", needsProject: true,
-  description: "Les esquisses de logo choisies PAR LE CLIENT (2 au moins, au plus selon son forfait). phrases = seulement s'il le dit, pour un logo : de = l'esquisse dont il veut la phrase sous le nom, aucune = sans phrase, texte = sa phrase, recopiée mot pour mot de son message. Gratuit : les logos finis partent.",
-  args: z.object({ esquisses: z.array(z.number().int().min(1)).min(1).max(8), phrases: z.array(PhraseDuClientSchema).max(8).optional() }).strict(),
+  description: "Esquisses choisies PAR LE CLIENT (de 2 au max du forfait). phrases (par logo) s'il le dit : n° d'esquisse, « aucune », ses mots. Gratuit ; lance les logos finis.",
+  args: z.object({ esquisses: z.array(z.number().int().min(1)).min(1).max(8), phrases: PhrasesCourtes.optional() }).strict(),
   run: (ctx, a) => {
     const etat = etatDe(ctx);
     if (!etat?.esquisses.length) return PAS_D_ESQUISSES;
@@ -67,7 +76,8 @@ const choisirTool: AgentTool<{ esquisses: number[]; phrases?: PhraseDuClient[] }
     if (faute) return { ok: false, summary: faute };
     const choix = [...new Set(a.esquisses)].sort((x, y) => x - y);
     // La phrase sous le nom, au choix du client : celle d'une autre esquisse (orthographe sûre), aucune, ou la sienne mot pour mot.
-    const ph = controleDesPhrases(etat, choix, a.phrases ?? [], a.phrases?.some((p) => p.texte != null) ? motsDuClient(ctx) : []);
+    const dites = phrasesDites(a.phrases);
+    const ph = controleDesPhrases(etat, choix, dites, dites.some((p) => p.texte != null) ? motsDuClient(ctx) : []);
     if (!ph.ok) return { ok: false, summary: ph.faute, ...(ph.interne ? { internal: true } : {}) };
     updateJourney(ctx.conversationId, (x) => { if (x.graphistes) x.graphistes = { ...x.graphistes, choix, phrases: ph.phrases, at: Date.now() }; });
     const couvert = (etat.finalisationsAccordees ?? 0) >= devisDesFinalisations(choix.length).maxMicro;
@@ -94,10 +104,10 @@ const plancheVisee = (j: Journey, planche: string | undefined): string | undefin
 const SANS_PLANCHE = { ok: false as const, internal: true, summary: "Les planches sont déjà faites : dis sur quelle planche poser le logo (planche = A, B, C ou D)." };
 const PLANCHE = z.enum(ROUTE_KEYS).optional();
 
-const autreTool: AgentTool<{ esquisse: number; planche?: (typeof ROUTE_KEYS)[number]; phrase?: Omit<PhraseDuClient, "logo"> }> = {
+const autreTool: AgentTool<{ esquisse: number; planche?: (typeof ROUTE_KEYS)[number] }> = {
   name: "logo.autre", module: "marque", kind: "generate", needsProject: true,
-  description: "« Un autre logo » : finit une esquisse montrée. planche = celle qui le reçoit, planches faites. phrase = seulement s'il le dit (de, aucune ou texte, comme logo.choisir). Payant (carte) ; à ta charge si son logo manque.",
-  args: z.object({ esquisse: z.number().int().min(1), planche: PLANCHE, phrase: PhraseDuClientSchema.omit({ logo: true }).optional() }).strict(),
+  description: "« Un autre logo » : finit une esquisse montrée. planche = celle qui le reçoit, planches faites. Payant (carte) ; à ta charge si son logo manque.",
+  args: z.object({ esquisse: z.number().int().min(1), planche: PLANCHE }).strict(),
   estimate: (ctx, a) => {
     const d = devisDUneAutreEsquisse(), studio = logoAFinir(journeyOf(ctx.conversationId), plancheVisee(journeyOf(ctx.conversationId), a?.planche));
     return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: studio ? L("finir ta planche : son logo, tiré de l'esquisse choisie", "finish your board: its logo") : L("un autre logo, tiré d'une esquisse déjà vue", "another logo from a sketch already seen"), ...(studio ? { studio: true } : {}) };
@@ -110,13 +120,6 @@ const autreTool: AgentTool<{ esquisse: number; planche?: (typeof ROUTE_KEYS)[num
     if (j.identities?.list.length && !planche) return SANS_PLANCHE;
     if (planche && j.identities?.list.length && !j.identities.list.some((x) => x.key === planche)) return { ok: false, summary: L(`Il n'y a pas de planche ${planche}.`, "Unknown board.") };
     const d = devisDUneAutreEsquisse(), studio = logoAFinir(j, planche);
-    // La phrase sous le nom, s'il l'a dite : contrôlée comme pour logo.choisir ; sinon ce qu'il a dit avant reste.
-    if (a.phrase) {
-      const ph = controleDesPhrases(etat, [a.esquisse], [{ logo: a.esquisse, ...a.phrase }], a.phrase.texte != null ? motsDuClient(ctx) : []);
-      if (!ph.ok) return { ok: false, summary: ph.faute, ...(ph.interne ? { internal: true } : {}) };
-      if (pendingJob(project(ctx).id, LOGO_GRAPHISTES_JOB)) return DEJA;
-      updateJourney(ctx.conversationId, (x) => { if (x.graphistes) x.graphistes = { ...x.graphistes, phrases: { ...(x.graphistes.phrases ?? {}), ...ph.phrases } }; });
-    }
     const job = lancer(ctx, { phase: "finalisation", numeros: [a.esquisse], capMicro: d.maxMicro, studioCapMicro: d.studioMaxMicro, ...(planche && j.identities?.list.length ? { planche } : {}), ...(studio ? { studio: true } : {}) }, L("Un autre logo (SINA)", "Another logo (SINA)"), `autre:${a.esquisse}:${planche ?? ""}`);
     if (!job) return DEJA;
     return { ok: true, jobs: [job.id], summary: L(`Je fais ton logo à partir de l'esquisse ${a.esquisse}, puis je le relis.`, "Making your logo from that sketch.") };

@@ -115,7 +115,7 @@ describe("2. le choix : librement, la phrase d'une autre esquisse, aucune, ou la
   });
 });
 
-describe("2 bis. les outils logo.choisir et logo.autre", async () => {
+describe("2 bis. l'outil logo.choisir", async () => {
   const { account, project } = await import("./conversation209-fixtures");
   const { threadFor } = await import("@/lib/syna-agent/thread");
   const { addMessage } = await import("@/lib/syna-agent/store");
@@ -135,12 +135,12 @@ describe("2 bis. les outils logo.choisir et logo.autre", async () => {
     const choisir = logoTools.find((x) => x.name === "logo.choisir")!;
     addMessage(t.cid, "user", { text: "Je choisis les esquisses 1, 2 et 5. Pour le logo 1 : la phrase de l'esquisse 5. Pour le logo 2 : ma phrase « Lavage à domicile, 7j/7 ». Pour le logo 5 : sans phrase.", attachments: [] });
     // Une phrase reformulée par SINA est refusée, sans rien lancer.
-    const mauvais = await fr(() => choisir.run(t.ctx, { esquisses: [1, 2, 5], phrases: [{ logo: 2, texte: "Lavage à domicile 7 jours sur 7" }] })) as any;
+    const mauvais = await fr(() => choisir.run(t.ctx, { esquisses: [1, 2, 5], phrases: { 2: "Lavage à domicile 7 jours sur 7" } })) as any;
     expect(mauvais).toMatchObject({ ok: false, internal: true });
     expect(J.journeyOf(t.cid).graphistes!.choix).toBeUndefined();
     // La phrase douteuse de la 6 n'est pas proposée.
-    expect(await fr(() => choisir.run(t.ctx, { esquisses: [1, 2, 5], phrases: [{ logo: 1, de: 6 }] }))).toMatchObject({ ok: false });
-    const r = await fr(() => choisir.run(t.ctx, { esquisses: [5, 2, 1], phrases: [{ logo: 1, de: 5 }, { logo: 2, texte: "Lavage à domicile, 7j/7" }, { logo: 5, aucune: true }] })) as any;
+    expect(await fr(() => choisir.run(t.ctx, { esquisses: [1, 2, 5], phrases: { 1: 6 } }))).toMatchObject({ ok: false });
+    const r = await fr(() => choisir.run(t.ctx, { esquisses: [5, 2, 1], phrases: { 1: 5, 2: "Lavage à domicile, 7j/7", 5: "aucune" } })) as any;
     expect(r.ok).toBe(true);
     expect(J.journeyOf(t.cid).graphistes!.phrases).toEqual({ 1: { de: 5, texte: "L'éclat de votre voiture" }, 2: { sienne: true, texte: "Lavage à domicile, 7j/7" }, 5: { aucune: true } });
     expect(r.summary).toContain("Noté aussi : le logo 1 avec la phrase de l'esquisse 5, « L'éclat de votre voiture » ; le logo 2 avec ta phrase, mot pour mot : « Lavage à domicile, 7j/7 » ; le logo 5 sans phrase.");
@@ -154,15 +154,17 @@ describe("2 bis. les outils logo.choisir et logo.autre", async () => {
     expect(J.journeyOf(t.cid).graphistes!.phrases).toEqual({});
     expect(r.summary).not.toContain("Noté aussi");
   });
-  it("logo.autre prend aussi la phrase d'une autre esquisse", async () => {
+  it("la forme courte dite à SINA : un numéro, « aucune » ou ses mots", async () => {
+    const { phrasesDites } = await import("@/lib/syna-agent/tools/logo");
+    expect(phrasesDites({ 1: 5, 3: "Aucune", 7: "Ma cire, mon savoir" })).toEqual([{ logo: 1, de: 5 }, { logo: 3, aucune: true }, { logo: 7, texte: "Ma cire, mon savoir" }]);
+    expect(phrasesDites(undefined)).toEqual([]);
+    const choisir = logoTools.find((x) => x.name === "logo.choisir")!;
+    expect(choisir.args.safeParse({ esquisses: [1, 2], phrases: { 1: 5 } }).success).toBe(true);
+    expect(choisir.args.safeParse({ esquisses: [1, 2], phrases: { 1: true } }).success).toBe(false);
+    // Une clé qui n'est pas un logo choisi est refusée par le code.
     const t = await preparer();
-    const autre = logoTools.find((x) => x.name === "logo.autre")!;
-    expect(autre.args.safeParse({ esquisse: 2, phrase: { de: 5 } }).success).toBe(true);
-    expect(autre.args.safeParse({ esquisse: 2, phrase: { de: 5, logo: 1 } }).success).toBe(false);
-    const r = await fr(() => autre.run(t.ctx, { esquisse: 2, phrase: { de: 5 } })) as any;
-    expect(r.ok).toBe(true);
-    expect(J.journeyOf(t.cid).graphistes!.phrases).toEqual({ 2: { de: 5, texte: "L'éclat de votre voiture" } });
-    expect(JSON.parse(one<any>("SELECT payload FROM jobs WHERE id=?", r.jobs[0]).payload)).toMatchObject({ phase: "finalisation", numeros: [2] });
+    expect(await fr(() => choisir.run(t.ctx, { esquisses: [1, 2], phrases: { x: 5 } }))).toMatchObject({ ok: false });
+    expect(one<any>("SELECT COUNT(*) n FROM jobs WHERE project_id=?", t.projectId).n).toBe(0);
   });
 });
 
