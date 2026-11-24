@@ -83,12 +83,12 @@ const APPELS = {
   // Le relecteur des esquisses : jusqu'à 12 esquisses de 512 px (environ 350 jetons chacune), un avis court par esquisse.
   esquisses: { input: 6_000, output: 3_500, max: 12_000, modele: "strong" as const, effort: "medium" },
   // Le rédacteur du texte de finalisation (GPT-6.2 Astra) : mesuré 638 jetons en entrée, 298 en sortie (Reflet).
-  redaction: { input: 1_200, output: 600, max: 6_000, modele: "astra" as const, effort: null },
+  redaction: { input: 1_200, output: 600, max: 6_000, modele: "astra" as const, effort: "medium" },
   // Le relecteur du logo fini : deux images, le texte envoyé.
   logo: { input: 3_500, output: 1_500, max: 10_000, modele: "strong" as const, effort: "high" },
 };
 type Modele = { provider: "anthropic" | "openai"; model: string; effort: string };
-const ASTRA: Modele = { provider: "openai", model: "gpt-6.2-astra", effort: "" };
+const ASTRA: Modele = { provider: "openai", model: "gpt-6.2-astra", effort: "medium" };
 const modeleDe = (a: keyof typeof APPELS): Modele => APPELS[a].modele === "astra" ? ASTRA : { ...DEFAULT_MODELS.strong, effort: APPELS[a].effort ?? DEFAULT_MODELS.strong.effort };
 function appel(a: keyof typeof APPELS): { max: number; probable: number } {
   const c = APPELS[a], m = modeleDe(a);
@@ -160,6 +160,9 @@ export function vraisAppels(o: { userId: string; projectId: string; jobId: strin
       task: a === "metier" ? "strategy" : "quality_control", userId: o.userId, projectId: o.projectId, jobId: o.jobId, system, prompt, ...(images?.length ? { images } : {}),
       promptKey: `syna-logo-${a}-1`, maxTokens: APPELS[a].max, maxOutputTokens: APPELS[a].max, usageKey: `${o.jobId}:logo:${cle}`, nouvelleSiChangee: true,
       routing: { difficulty: "complex", prefer: { provider: m.provider as "anthropic" | "openai", model: m.model, ...(m.effort ? { effort: m.effort } : {}) } },
+      // Le rédacteur est GPT-6.2 Astra, jamais un autre : sans lui (clé, tarif), l'appel est refusé avant tout envoi, pour
+      // que celui qui écrit ne soit jamais celui qui relit.
+      ...(a === "redaction" ? { expectedRoute: { provider: m.provider, model: m.model, effort: m.effort } } : {}),
     }, schema)) as Promise<z.infer<S>>;
   };
   const image = async (cle: string, fn: () => Promise<Buffer>) => { const png = await withTrace(scope(`logo-${cle}`), fn); return { png, recu: recuDuLogo(png) }; };

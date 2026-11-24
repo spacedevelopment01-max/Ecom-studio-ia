@@ -117,3 +117,15 @@ describe("le devis et les deux plafonds", async () => {
     expect(G.devisDUneAutreEsquisse().maxMicro).toBe(G.devisDesFinalisations(1).maxMicro);
   });
 });
+
+describe("celui qui écrit n'est jamais celui qui relit", async () => {
+  const { account, project } = await import("./conversation209-fixtures");
+  const G = await import("@/lib/syna-agent/logo-graphistes");
+  it("sans GPT-6.2 Astra utilisable, le texte de finalisation n'est jamais écrit par un autre modèle : refusé avant tout envoi", async () => {
+    keys = { anthropic: "sk-ant-test-1234567890abcdef" };
+    const u = await account(), pid = project(u) as string;
+    const ai = G.vraisAppels({ userId: u.id, projectId: pid, jobId: `job-${Date.now()}`, capMicro: 1_000_000, studioCapMicro: 1_000_000 });
+    const png = await sharp({ create: { width: 64, height: 64, channels: 3, background: "#FFFFFF" } }).png().toBuffer();
+    await expect(ai.rediger("consigne", png, "e1-texte-1")).rejects.toThrow(/route IA a changé/);
+  });
+});
