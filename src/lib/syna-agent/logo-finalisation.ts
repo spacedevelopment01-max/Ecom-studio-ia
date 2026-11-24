@@ -195,3 +195,34 @@ export async function finaliserUneEsquisse(deps: FinalisationDeps, o: { nom: str
   if (!second.raisons.length) return { ok: true, logo: second.png!, detoure: second.detoure!, texte: second.texte, essais, notes };
   return { ok: false, raison: `refusé deux fois (${second.raisons.join(" ; ")})`, essais, notes };
 }
+
+// ---------------------------------------------------------------- la retouche des couleurs, sur la demande du client
+
+/**
+ * Un changement de couleur demandé par le client lui-même, une fois les logos finis (plan accepté du 24 novembre 2026) :
+ * une retouche sur sa demande, sur son budget, avec une carte. Le logo fini part dans image[], avec ce texte du Studio
+ * et les mots du client cités tels quels ; rien d'autre ne change dans le dessin. Le relecteur vérifie le nom, l'idée,
+ * l'arche, la phrase et la note (l'évolution n'est pas demandée : c'est une retouche).
+ */
+export const texteDeRetouche = (demande: string) => `Garde ce logo exactement tel qu'il est (son dessin, ses lettres, ses proportions) et change seulement ses couleurs, comme le client le demande : « ${demande.trim().replace(/[«»]/g, "")} ». ${FIN_DU_TEXTE}`;
+export async function retoucherLesCouleurs(deps: FinalisationDeps, o: { nom: string; metier: string; logo: Buffer; demande: string }): Promise<Finalisation> {
+  const notes: string[] = [], essais: EssaiDeFinalisation[] = [];
+  const texte = texteDeRetouche(o.demande);
+  const essai = async (tour: number, t: string): Promise<EssaiDeFinalisation> => {
+    const png = await deps.finaliser(o.logo, t, tour);
+    const e: EssaiDeFinalisation = { tour, texte: t, ideeCentrale: "", png, detoure: null, verdict: null, ecart: null, raisons: [] };
+    const d = await deps.detourer(png);
+    if (!d.ok) { e.raisons = [d.why]; return e; }
+    e.detoure = d.png;
+    const surBlanc = await sharp(d.png).flatten({ background: "#FFFFFF" }).png().toBuffer();
+    e.verdict = await deps.relire(surBlanc, o.logo, demandeAuRelecteurDuLogo({ nom: o.nom, metier: o.metier, texte: t, ecart: null }), tour);
+    e.raisons = raisonsDuRefus({ ...e.verdict, evolution: true }, o.nom);
+    return e;
+  };
+  const premier = await essai(1, texte);
+  essais.push(premier);
+  if (!premier.raisons.length) return { ok: true, logo: premier.png!, detoure: premier.detoure!, texte, essais, notes };
+  const second = await deps.aLaChargeDuStudio(() => essai(2, `${texte} ${finDeReprise(premier.raisons)}`));
+  essais.push(second);
+  return second.raisons.length ? { ok: false, raison: `refusé deux fois (${second.raisons.join(" ; ")})`, essais, notes } : { ok: true, logo: second.png!, detoure: second.detoure!, texte: second.texte, essais, notes };
+}

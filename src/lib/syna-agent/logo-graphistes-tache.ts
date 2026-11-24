@@ -16,13 +16,18 @@ import { logoDetoure } from "./brand-images";
 import { nameKindsFor } from "./identities";
 import { journeyOf, updateJourney } from "./journey";
 import { planOfProject } from "../plan-gates";
+import { retoucherLesCouleurs } from "./logo-finalisation";
+import { couleursDuLogo } from "./couleurs-du-logo";
+import { aLaChargeDuStudio } from "../billing";
 import { ecrireLeMetier, esquissesAChoisir, graphistesDeps, phraseDuLogoNonConstruit, uneFinalisation, uneRecherche, vraisAppels, type EtatGraphistes, type GraphistesAi, type LogoFini } from "./logo-graphistes";
 
 export const LOGO_GRAPHISTES_JOB = "syna.logo.graphistes";
 
 const Payload = z.object({
   projectId: z.string(), conversationId: z.string(),
-  phase: z.enum(["recherche", "pistes", "finalisation"]),
+  phase: z.enum(["recherche", "pistes", "finalisation", "couleurs"]),
+  /** La retouche des couleurs : le logo fini (son numéro d'esquisse) et la demande du client, ses mots. */
+  numero: z.number().int().min(1).optional(), demande: z.string().min(1).max(600).optional(),
   /** Le nom choisi par le client (point 0) : seulement pour la première recherche. */
   nom: z.string().min(1).max(60).optional(),
   numeros: z.array(z.number().int().min(1)).max(4).optional(),
@@ -39,6 +44,7 @@ export async function runLogoGraphistesJob(ctx: JobContext) {
   const ai: GraphistesAi = graphistesDeps.ai ? graphistesDeps.ai(ctx.job.id) : vraisAppels({ ...who, jobId: ctx.job.id, capMicro: a.capMicro, studioCapMicro: a.studioCapMicro ?? 0 });
   const j = journeyOf(a.conversationId);
   if (a.phase === "finalisation") return finaliserLesChoix(ai, who, a.conversationId, a.numeros ?? j.graphistes?.choix ?? []);
+  if (a.phase === "couleurs") return retoucherUnLogo(ai, who, a.conversationId, a.numero ?? 0, a.demande ?? "");
   const avant = j.graphistes;
   if (a.phase === "pistes" && !avant?.metier) throw new UserFacingError(L("Il n'y a pas encore d'esquisses : rien n'a été décompté.", "There are no sketches yet: nothing was charged."));
   const nom = avant?.nom ?? a.nom ?? p.brand?.name ?? "";
@@ -108,4 +114,24 @@ async function finaliserLesChoix(ai: GraphistesAi, who: { userId: string; projec
   updateJourney(cid, (x) => { if (x.graphistes) x.graphistes = { ...x.graphistes, logos, at: Date.now() }; });
   const faits = logos.filter((l) => l.ok && numeros.includes(l.numero)).length;
   return { logos: faits, notice: [L(`${faits} logo${faits > 1 ? "s" : ""} fini${faits > 1 ? "s" : ""}, relu${faits > 1 ? "s" : ""}.`, `${faits} finished logo(s).`), ...dits].join(" ") };
+}
+
+/** La retouche des couleurs d'un logo fini, sur la demande du client (sur son budget ; la reprise à la charge du Studio). */
+async function retoucherUnLogo(ai: GraphistesAi, who: { userId: string; projectId: string }, cid: string, numero: number, demande: string) {
+  const etat = journeyOf(cid).graphistes, l = etat?.logos?.find((x) => x.numero === numero && x.ok && x.assetId);
+  if (!etat?.metier || !l?.assetId || !demande.trim()) throw new UserFacingError(L("Ce logo n'est pas encore fini : rien n'a été décompté.", "This logo is not finished yet: nothing was charged."));
+  const data = assetData(getAsset(l.assetId)!);
+  const f = await retoucherLesCouleurs({
+    rediger: async () => { throw new Error("aucun texte à écrire pour une retouche"); },
+    finaliser: async (logo, t, tour) => (await ai.finaliser(logo, t, `e${numero}-couleurs-${tour}-${Date.now()}`)).png,
+    relire: (logo, avant, d, tour) => ai.relireLogo(logo, avant, d, `e${numero}-couleurs-relecture-${tour}`),
+    detourer: (png) => logoDetoure(png),
+    aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
+  }, { nom: etat.nom, metier: etat.metier.metier, logo: data, demande });
+  if (!f.ok) return { logos: 0, notice: L(`Je n'ai pas réussi à changer les couleurs de ce logo sans l'abîmer (${f.raison}) : je garde celui d'avant.`, "I could not recolour this logo cleanly: I keep the previous one.") };
+  const palette = (await couleursDuLogo(f.detoure).catch(() => null))?.palette;
+  const logo = await saveAsset({ ...who, data: f.logo, name: `logo-esquisse-${numero}-couleurs.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { graphistes: { numero, texteEnvoye: f.texte, retouche: demande, palette } } });
+  const detoure = await saveAsset({ ...who, data: f.detoure, name: `logo-esquisse-${numero}-couleurs-sans-fond.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { graphistes: { numero, sansFond: true, de: logo.id } } });
+  updateJourney(cid, (x) => { if (x.graphistes?.logos) x.graphistes.logos = x.graphistes.logos.map((y) => (y.numero === numero ? { ...y, assetId: logo.id, detoureAssetId: detoure.id, texte: f.texte, ...(palette ? { palette } : {}) } : y)); });
+  return { logos: 1, notice: L("Les couleurs de ton logo sont changées, relues.", "Your logo colours are changed, reviewed.") };
 }

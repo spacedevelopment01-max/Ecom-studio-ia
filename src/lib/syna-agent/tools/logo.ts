@@ -81,4 +81,19 @@ const pistesTool: AgentTool<Record<string, never>> = {
   },
 };
 
-export const logoTools: AgentTool[] = [choisirTool, autreTool, pistesTool];
+const couleursTool: AgentTool<{ esquisse: number; demande: string }> = {
+  name: "logo.couleurs", module: "marque", kind: "generate", needsProject: true,
+  description: "Change les couleurs d'un logo FINI, seulement quand le client le demande lui-même (ses mots dans demande, tels quels) : une retouche, le dessin ne change pas. Sur son budget, avec une carte.",
+  args: z.object({ esquisse: z.number().int().min(1), demande: z.string().min(1).max(600) }).strict(),
+  estimate: () => { const d = devisDesFinalisations(1); return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: L("changer les couleurs de ton logo", "change your logo colours") }; },
+  run: (ctx, a) => {
+    const etat = etatDe(ctx);
+    if (!etat?.logos?.some((l) => l.numero === a.esquisse && l.ok)) return { ok: false, summary: L("Ce logo n'est pas encore fini.", "This logo is not finished yet.") };
+    const d = devisDesFinalisations(1);
+    const job = lancer(ctx, { phase: "couleurs", numero: a.esquisse, demande: a.demande, capMicro: d.maxMicro, studioCapMicro: d.studioMaxMicro }, L("Couleurs du logo (SINA)", "Logo colours (SINA)"), `couleurs:${a.esquisse}:${a.demande.length}`);
+    if (!job) return DEJA;
+    return { ok: true, jobs: [job.id], summary: L("Je change les couleurs de ton logo, sans toucher à son dessin, puis je le relis.", "Changing your logo colours.") };
+  },
+};
+
+export const logoTools: AgentTool[] = [choisirTool, autreTool, pistesTool, couleursTool];

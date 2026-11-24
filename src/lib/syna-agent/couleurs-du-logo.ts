@@ -112,3 +112,11 @@ export function memePoliceDeTitres(list: { key: string; fonts: { heading: string
   for (const x of list) { const h = x.fonts.heading.replace(/_[ni]\d$/, ""); if (vu.has(h)) doubles.push(x.key); else vu.set(h, x.key); }
   return doubles;
 }
+
+/**
+ * La consigne donnée à l'appel « direction » quand le logo fini y est joint (le logo d'abord) : la police de titres la
+ * plus proche du dessin de ses lettres, parmi les caractères du catalogue (`FONT_CHARACTER`), avec une police de texte
+ * lisible. Prête ; elle est branchée avec la chaîne (point 0).
+ */
+export const consigneDeLaPoliceDuLogo = (caracteres: Record<string, string>, prises: readonly string[] = []) =>
+  `Le logo fini de cette identité est joint. Choisis la police de titres dont le dessin est le plus proche de ses lettres, parmi : ${Object.entries(caracteres).map(([k, v]) => `${k} (${v})`).join(", ")}${prises.length ? ` ; jamais une police de titres déjà prise dans la série (${prises.join(", ")})` : ""}. Choisis aussi une police de texte très lisible qui l'accompagne.`;
