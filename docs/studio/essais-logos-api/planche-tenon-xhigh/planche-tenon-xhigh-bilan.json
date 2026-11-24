@@ -1,0 +1,21 @@
+{
+ "variante": "planche-tenon-xhigh",
+ "statut_http": 200,
+ "duree_s": 67.7,
+ "x-request-id": "req_0f798eef57954b57a8983b1bc36ecc09",
+ "usage": {
+  "input_tokens": 4153,
+  "input_tokens_details": {
+   "image_tokens": 3057,
+   "text_tokens": 1096
+  },
+  "output_tokens": 3811,
+  "output_tokens_details": {
+   "image_tokens": 3811,
+   "text_tokens": 0
+  },
+  "total_tokens": 7964
+ },
+ "cout_eur": 0.1241,
+ "taille": "1536x2304"
+}
