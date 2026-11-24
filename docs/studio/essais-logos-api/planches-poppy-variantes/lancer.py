@@ -2,16 +2,17 @@
 GPT Image 2.5 Sunburst, /v1/images/edits, high, 1536x2304, opaque, png, n 1 ; une seule image jointe : le logo. Aucune reprise. Arrêt à 0,20 €."""
 import base64, json, os, sys, time, uuid, urllib.request, urllib.error
 D = sys.argv[1]; EUR, PLAFOND = 0.86, 0.20
-PROMPT = open(os.path.join(D, "prompt.txt")).read()
-VARIANTES = {"variante-y-laisse": "logo-y-laisse.png", "variante-p-tete-de-chien": "logo-p-tete-de-chien.png"}
+PROMPT = open(os.path.join(D, sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else "prompt.txt")).read()
+VARIANTES = {"variante-y-laisse": ["logo-y-laisse.png"], "variante-p-tete-de-chien": ["logo-p-tete-de-chien.png"]}
+if "--disposition" in sys.argv: VARIANTES = {"variante-y-laisse-disposition-2": ["logo-y-laisse.png", "variante-p-tete-de-chien.png"]}
 total = 0.0
 for nom, logo in VARIANTES.items():
     if total + 0.09 > PLAFOND: print("ARRÊT plafond"); break
     champs = {"model": "gpt-image-2.5-sunburst", "prompt": PROMPT, "quality": "high", "size": "1536x2304", "background": "opaque", "output_format": "png", "n": "1"}
-    json.dump({"endpoint": "POST https://api.openai.com/v1/images/edits (multipart)", "champs": champs, "image[]": [logo]}, open(os.path.join(D, nom + "-requete.json"), "w"), ensure_ascii=False, indent=1)
+    json.dump({"endpoint": "POST https://api.openai.com/v1/images/edits (multipart)", "champs": champs, "image[]": logo}, open(os.path.join(D, nom + "-requete.json"), "w"), ensure_ascii=False, indent=1)
     if "--verifier" in sys.argv: print(nom, "construit"); continue
     b = uuid.uuid4().hex; m = [f'--{b}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode() for k, v in champs.items()]
-    m.append(f'--{b}\r\nContent-Disposition: form-data; name="image[]"; filename="{logo}"\r\nContent-Type: image/png\r\n\r\n'.encode() + open(os.path.join(D, logo), "rb").read() + b"\r\n")
+    for f in logo: m.append(f'--{b}\r\nContent-Disposition: form-data; name="image[]"; filename="{f}"\r\nContent-Type: image/png\r\n\r\n'.encode() + open(os.path.join(D, f), "rb").read() + b"\r\n")
     m.append(f"--{b}--\r\n".encode())
     req = urllib.request.Request("https://api.openai.com/v1/images/edits", data=b"".join(m), headers={"Content-Type": f"multipart/form-data; boundary={b}", "Authorization": "Bearer x"})
     t0 = time.time()

@@ -1,0 +1,21 @@
+{
+ "variante": "variante-y-laisse-disposition-2",
+ "statut_http": 200,
+ "duree_s": 52.3,
+ "x-request-id": "req_86053eb0443d4be0af9b8dbb6985e881",
+ "usage": {
+  "input_tokens": 4128,
+  "input_tokens_details": {
+   "image_tokens": 3057,
+   "text_tokens": 1071
+  },
+  "output_tokens": 2127,
+  "output_tokens_details": {
+   "image_tokens": 2127,
+   "text_tokens": 0
+  },
+  "total_tokens": 6255
+ },
+ "cout_eur": 0.0805,
+ "taille": "1536x2304"
+}
