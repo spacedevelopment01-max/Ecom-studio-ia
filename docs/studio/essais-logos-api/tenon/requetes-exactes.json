@@ -1,0 +1,95 @@
+[
+ {
+  "appel": "tour 1 (logos 1, 2 et 3 en une seule requête)",
+  "endpoint": "POST https://api.openai.com/v1/responses",
+  "corps": {
+   "model": "gpt-6.2-astra",
+   "instructions": "Tu crées les logos de petites marques. Tu travailles seul : personne ne te guidera.\nCe que tu sais d'avance :\n- Le nom de la marque n'est pas une idée de dessin : on ne dessine pas ce que le nom raconte.\n- Chaque logo montre le service du client avec un signe dessiné : on comprend ce qu'il fait sans lire aucun texte.\n- Ce signe est simple, net et moderne, comme dans les identités des marques récentes : jamais une illustration détaillée, jamais un rendu brillant, flou ou néon.\n- Le logo ne porte aucun autre texte que le nom de la marque : ni métier écrit, ni slogan, ni ville.\n- Les logos proposés sont très différents les uns des autres.\n- Le nom est écrit exactement, lettre par lettre.\nDessine chaque logo seul, sur sa propre image carrée, sur un fond uni : appelle l'outil de dessin une fois par logo.",
+   "input": "Le nom de mon entreprise c'est Tenon et je fais des cuisines et des dressings en bois sur mesure, à Nantes. Fais-moi 3 logos différents pour que je puisse choisir.",
+   "tools": [
+    {
+     "type": "image_generation",
+     "model": "gpt-image-2.6-sunburst",
+     "quality": "high",
+     "size": "1024x1024"
+    }
+   ]
+  }
+ },
+ {
+  "appel": "reprise du logo 1 (donne le logo 4)",
+  "endpoint": "POST https://api.openai.com/v1/responses",
+  "corps": {
+   "model": "gpt-6.2-astra",
+   "instructions": "Tu crées les logos de petites marques. Tu travailles seul : personne ne te guidera.\nCe que tu sais d'avance :\n- Le nom de la marque n'est pas une idée de dessin : on ne dessine pas ce que le nom raconte.\n- Chaque logo montre le service du client avec un signe dessiné : on comprend ce qu'il fait sans lire aucun texte.\n- Ce signe est simple, net et moderne, comme dans les identités des marques récentes : jamais une illustration détaillée, jamais un rendu brillant, flou ou néon.\n- Le logo ne porte aucun autre texte que le nom de la marque : ni métier écrit, ni slogan, ni ville.\n- Les logos proposés sont très différents les uns des autres.\n- Le nom est écrit exactement, lettre par lettre.\nDessine chaque logo seul, sur sa propre image carrée, sur un fond uni : appelle l'outil de dessin une fois par logo.",
+   "input": "Le logo n°1 ne me plaît pas. Fais-m'en un autre complètement différent de tous ceux déjà faits.",
+   "tools": [
+    {
+     "type": "image_generation",
+     "model": "gpt-image-2.6-sunburst",
+     "quality": "high",
+     "size": "1024x1024"
+    }
+   ],
+   "previous_response_id": "<identifiant de la réponse précédente, non enregistré>"
+  }
+ },
+ {
+  "appel": "reprise du logo 2 (donne le logo 5)",
+  "endpoint": "POST https://api.openai.com/v1/responses",
+  "corps": {
+   "model": "gpt-6.2-astra",
+   "instructions": "Tu crées les logos de petites marques. Tu travailles seul : personne ne te guidera.\nCe que tu sais d'avance :\n- Le nom de la marque n'est pas une idée de dessin : on ne dessine pas ce que le nom raconte.\n- Chaque logo montre le service du client avec un signe dessiné : on comprend ce qu'il fait sans lire aucun texte.\n- Ce signe est simple, net et moderne, comme dans les identités des marques récentes : jamais une illustration détaillée, jamais un rendu brillant, flou ou néon.\n- Le logo ne porte aucun autre texte que le nom de la marque : ni métier écrit, ni slogan, ni ville.\n- Les logos proposés sont très différents les uns des autres.\n- Le nom est écrit exactement, lettre par lettre.\nDessine chaque logo seul, sur sa propre image carrée, sur un fond uni : appelle l'outil de dessin une fois par logo.",
+   "input": "Le logo n°2 ne me plaît pas. Fais-m'en un autre complètement différent de tous ceux déjà faits.",
+   "tools": [
+    {
+     "type": "image_generation",
+     "model": "gpt-image-2.6-sunburst",
+     "quality": "high",
+     "size": "1024x1024"
+    }
+   ],
+   "previous_response_id": "<identifiant de la réponse précédente, non enregistré>"
+  }
+ },
+ {
+  "appel": "reprise du logo 3 (donne le logo 6)",
+  "endpoint": "POST https://api.openai.com/v1/responses",
+  "corps": {
+   "model": "gpt-6.2-astra",
+   "instructions": "Tu crées les logos de petites marques. Tu travailles seul : personne ne te guidera.\nCe que tu sais d'avance :\n- Le nom de la marque n'est pas une idée de dessin : on ne dessine pas ce que le nom raconte.\n- Chaque logo montre le service du client avec un signe dessiné : on comprend ce qu'il fait sans lire aucun texte.\n- Ce signe est simple, net et moderne, comme dans les identités des marques récentes : jamais une illustration détaillée, jamais un rendu brillant, flou ou néon.\n- Le logo ne porte aucun autre texte que le nom de la marque : ni métier écrit, ni slogan, ni ville.\n- Les logos proposés sont très différents les uns des autres.\n- Le nom est écrit exactement, lettre par lettre.\nDessine chaque logo seul, sur sa propre image carrée, sur un fond uni : appelle l'outil de dessin une fois par logo.",
+   "input": "Le logo n°3 ne me plaît pas. Fais-m'en un autre complètement différent de tous ceux déjà faits.",
+   "tools": [
+    {
+     "type": "image_generation",
+     "model": "gpt-image-2.6-sunburst",
+     "quality": "high",
+     "size": "1024x1024"
+    }
+   ],
+   "previous_response_id": "<identifiant de la réponse précédente, non enregistré>"
+  }
+ },
+ {
+  "appel": "relecture de chaque logo (6 appels, n'influence pas le dessin)",
+  "endpoint": "POST https://api.openai.com/v1/responses",
+  "corps": {
+   "model": "gpt-6.2-sol",
+   "input": [
+    {
+     "role": "user",
+     "content": [
+      {
+       "type": "input_text",
+       "text": "Tu es le relecteur exigeant d'un studio de design. Voici un logo proposé pour la marque « Tenon » (je fais des cuisines et des dressings en bois sur mesure, à Nantes).\nNote-le sur 10 comme un directeur de création : un logo qu'on publierait tel quel pour un client exigeant vaut 8 ou plus.\nPremier critère : sans lire aucun texte, comprend-on ce que fait le client ? Sinon, la note est 5 au plus. Autres défauts graves : un autre texte que le nom de la marque, rendu daté (années 80 ou 90), illustration détaillée ou petit dessin tout fait, rendu flou ou néon, nom mal écrit, dessin qui illustre le nom au lieu du métier, logo banal.\nRéponds en JSON : {\"note\": 0-10, \"raison\": \"une phrase en français\"}"
+      },
+      {
+       "type": "input_image",
+       "image_url": "data:image/png;base64,<le logo>"
+      }
+     ]
+    }
+   ]
+  }
+ }
+]
