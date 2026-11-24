@@ -1,7 +1,8 @@
 # Le logo : la méthode des graphistes
 
-Compte rendu préparé le 24 novembre 2026. Rien n'est encore envoyé : l'envoi attend l'accord écrit du propriétaire sur
-les épreuves, puis l'essai réel.
+Compte rendu préparé le 24 novembre 2026. Mis à jour le même jour : la méthode est envoyée sur la branche de travail,
+l'ancienne série est retirée, les épreuves sont scellées avec l'accord écrit du propriétaire, et l'essai réel des
+12 esquisses de Racine est fait (aucune fusion dans la branche principale sans son oui).
 
 ## Ce que le propriétaire a dit
 
@@ -128,8 +129,8 @@ pour être marquées remplacées (jamais réécrites) :
 | demande-du-logo-couleurs-typo-fond | planches-de-recherche-demande-exacte |
 | relecteur-du-logo-qualite-seule | relecteur-du-logo-fini |
 
-Les remplaçantes sont écrites dans `tests/epreuves/a-sceller-methode-des-graphistes.ts` et rejouées dès maintenant
-comme des essais ordinaires. Leur verdict attend les mots du propriétaire.
+Les remplaçantes sont maintenant scellées dans `tests/epreuves/catalogue.ts`, avec l'accord écrit du propriétaire du
+24 novembre 2026 ; les cinq anciennes sont marquées remplacées.
 
 **La phrase d'accord à lui proposer :** « Oui, marque trois-fois-le-meme-dessin, logos-de-la-serie-dans-l-ordre,
 pas-de-consigne-de-style-pour-un-logo, demande-du-logo-couleurs-typo-fond et relecteur-du-logo-qualite-seule comme
