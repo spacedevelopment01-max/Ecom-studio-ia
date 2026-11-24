@@ -73,3 +73,5 @@ ffmpeg -i out/emeus.mp4 -c:v copy -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:a aac -b:
 - Remarque du propriétaire sur Max : « il fait voix triste ». Essai de deux accroches joyeuses avec Max, puis version
   avec **Paul** (MBIQRZjHPU6xEjGuB3b8, réglages plus joueurs : stability 0.35, style 0.6), 1 min 25, silences
   de plus de 0,6 s raccourcis. Les versions Max et Paul sont gardées (`napoleon/max/`, `napoleon/paul/`).
+- « Augmente un peu la cadence » : voix de Paul accélérée de 12 % sans changer sa hauteur (ffmpeg atempo=1.12,
+  gratuit), vidéo de 1 min 16. C'est la version actuelle du moteur.
