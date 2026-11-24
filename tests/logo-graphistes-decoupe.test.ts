@@ -18,20 +18,22 @@ const dessin = (cx: number, cy: number, c = "#1F3D5B"): Bloc[] => [
 const planche = async (list: Bloc[], w = W, h = H) => sharp({ create: { width: w, height: h, channels: 3, background: "#FFFFFF" } }).composite(blocs(list)).png().toBuffer();
 const grille = (dx = 0, decaleBas = 0) => [0, 1].flatMap((r) => [0, 1, 2].map((c) => dessin(256 + c * 512 + dx + (r ? decaleBas : 0), 256 + r * 512)));
 
-describe("la demande exacte de la recherche (mot pour mot celle des preuves)", () => {
+describe("la demande exacte de la recherche (mot pour mot celle des preuves, plus la phrase des couleurs du 24 novembre)", () => {
   it("Reflet, un artisan : « le savoir-faire du nettoyage automobile »", () => {
     const t = demandeDeRecherche({ nom: "Reflet", metier: { metier: "une entreprise de nettoyage de voitures, intérieur et extérieur", court: "le nettoyage automobile", piste: "savoir-faire" } });
-    expect(t).toBe("Crée une planche de recherche graphique pour Reflet, une entreprise de nettoyage de voitures, intérieur et extérieur. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire le savoir-faire du nettoyage automobile dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation.");
+    expect(t).toBe("Crée une planche de recherche graphique pour Reflet, une entreprise de nettoyage de voitures, intérieur et extérieur. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire le savoir-faire du nettoyage automobile dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation. Varie les couleurs d'une esquisse à l'autre.");
   });
   it("Poppy, un commerce : « l'univers des accessoires pour chiens »", () => {
     const t = demandeDeRecherche({ nom: "Poppy", metier: { metier: "une entreprise qui vend des accessoires pour chiens, notamment des harnais, des laisses et des colliers", court: "les accessoires pour chiens", piste: "univers" } });
-    expect(t).toBe("Crée une planche de recherche graphique pour Poppy, une entreprise qui vend des accessoires pour chiens, notamment des harnais, des laisses et des colliers. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire l'univers des accessoires pour chiens dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation.");
+    expect(t).toBe("Crée une planche de recherche graphique pour Poppy, une entreprise qui vend des accessoires pour chiens, notamment des harnais, des laisses et des colliers. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire l'univers des accessoires pour chiens dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation. Varie les couleurs d'une esquisse à l'autre.");
   });
-  it("« Évite ces pistes déjà présentées » : une seule phrase, ajoutée à la fin, rien d'autre ne change", () => {
+  it("« Évite ces pistes déjà présentées » : une seule phrase, ajoutée à la fin après celle des couleurs, rien d'autre ne change", () => {
     const metier = { metier: "une entreprise de menuiserie spécialisée dans les cuisines et dressings sur mesure", court: "la menuiserie", piste: "savoir-faire" as const };
     const nue = demandeDeRecherche({ nom: "Tenon", metier });
     const avec = demandeDeRecherche({ nom: "Tenon", metier, eviter: ["un T en assemblage à tenon", "un rabot stylisé."] });
     expect(avec).toBe(`${nue} Évite ces pistes déjà présentées : un T en assemblage à tenon ; un rabot stylisé.`);
+    // « Évite ces pistes » vient APRÈS la phrase des couleurs, à la toute fin.
+    expect(avec).toMatch(/sans maquette de présentation\. Varie les couleurs d'une esquisse à l'autre\. Évite ces pistes déjà présentées : un T en assemblage à tenon ; un rabot stylisé\.$/);
     expect(phraseEvite(["a"])).toBe("Évite ces pistes déjà présentées : a.");
     expect(laPiste({ court: "l'ébénisterie", piste: "savoir-faire" })).toBe("le savoir-faire de l'ébénisterie");
     expect(deLArticle("les bougies")).toBe("des bougies");

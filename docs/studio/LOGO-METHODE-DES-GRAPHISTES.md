@@ -19,8 +19,12 @@ l'ancienne série est retirée, les épreuves sont scellées avec l'accord écri
     fait professionnel alors je suis d'accord il faudrais peut être des variantes de couleurs mais franchement c'est 1000
     fois mieux ».
 - Les variantes de couleurs : la phrase « Varie les couleurs d'une esquisse à l'autre. » a été essayée (3 esquisses sur
-  12 changeaient de couleur) ; il a répondu « C'est bien comme ca ». Elle n'est donc pas ajoutée : la demande de
-  recherche reste exacte.
+  12 changeaient de couleur) ; il a répondu « C'est bien comme ca ». Ce « C'est bien comme ca » avait été mal compris :
+  on l'avait pris pour un non à la phrase, et elle n'avait pas été ajoutée. Il a écrit ensuite, le 24 novembre 2026 :
+  « Ouais mais c'est ça que je veux dans sina c'est la nouvelle planche avec un peu plus de coloris ». La phrase est
+  donc ajoutée à la demande de recherche (voir « Les deux changements du 24 novembre »).
+- Sur le relecteur du logo fini, le 24 novembre 2026, à la question « Je fais retirer cette règle et je relance la
+  finalisation du R bordeaux ? » : « Ouais ».
 - Ses règles d'avant qui restent vraies : « Pour rappel on ne demande plus au client ce qu'il veux ou non dans son
   logo » (23 novembre 2026) ; jamais de photo dans une arche (16 novembre 2026) ; un logo noté sous 8 sur 10 n'est jamais
   gardé (21 novembre 2026).
@@ -31,11 +35,13 @@ Avant, le Studio demandait un logo à la fois, avec des consignes. Maintenant, i
 
 1. **Une vraie recherche.** Le Studio écrit le métier du client en mots simples, puis demande deux planches de recherche
    en même temps, chacune avec six esquisses de logo. C'est la demande exacte des essais faits sur six marques
-   inventées (Tenon, Argile, Mouture, Poppy, Reflet, Tenon 2), rien de plus.
+   inventées (Tenon, Argile, Mouture, Poppy, Reflet, Tenon 2), suivie d'une seule phrase : « Varie les couleurs d'une
+   esquisse à l'autre. », pour un peu plus de coloris.
 2. **Un tri sévère, sans le montrer.** Le Studio découpe les planches lui-même (gratuit), refuse une esquisse coupée,
    vide ou collée au bord, puis un relecteur regarde toutes les esquisses en une fois : nom bien écrit, pas d'arche,
    rien de la voisine, une vraie piste de marque. Une esquisse refusée n'est jamais montrée. S'il en reste moins de
-   huit, les deux planches sont refaites une fois, aux frais du Studio, en évitant les pistes déjà vues.
+   huit, les deux planches sont refaites une fois, aux frais du Studio, en évitant les pistes déjà vues (la phrase
+   « Évite ces pistes déjà présentées : … » vient à la toute fin, après celle des couleurs).
 3. **Le client choisit.** Il voit les esquisses numérotées et en coche deux au moins, au plus 2, 3 ou 4 selon son
    forfait. Le bouton dit : « Je choisis les esquisses 3, 7 et 11 ».
 4. **Le logo fini.** Pour chaque esquisse choisie, le modèle d'OpenAI le plus fort pour l'écriture (GPT-6.2 Astra)
@@ -43,9 +49,9 @@ Avant, le Studio demandait un logo à la fois, avec des consignes. Maintenant, i
    une phrase : faire évoluer l'idée vers une identité plus aboutie, jamais seulement la nettoyer. Le logo est dessiné
    à partir de l'esquisse.
 5. **Une relecture qui refuse.** Le relecteur le plus fort (un autre modèle que celui qui a écrit) refuse un logo au nom
-   mal écrit, qui perd l'idée de l'esquisse, qui ne l'a pas fait évoluer, qui porte une arche, une phrase inventée, ou
-   qu'il note sous 8 sur 10. Un logo refusé est refait une fois, avec les raisons. Refusé deux fois, SINA le dit et
-   propose une autre esquisse.
+   mal écrit, qui perd l'idée de l'esquisse, qui porte une arche, une phrase inventée, ou qu'il note sous 8 sur 10. Il
+   ne refuse jamais un logo parce qu'il est trop proche de son esquisse. Un logo refusé est refait une fois, avec les
+   raisons. Refusé deux fois, SINA le dit et propose une autre esquisse.
 6. **Le logo d'abord.** Les couleurs de la marque sont tirées du logo fini par le Studio (gratuit), et la police de
    titres est choisie au plus près de ses lettres. Les couleurs données par le client ne vont jamais au dessinateur.
 7. **Plus tard, sur son budget, avec une carte :** « un autre logo » (d'abord une autre des esquisses déjà vues : seule
@@ -86,6 +92,32 @@ Studio, une seule fois pour les logos.
 - Le devis, et la borne des reprises du Studio réglée à une reprise pour les logos.
 - La tâche de fond et les outils : choisir le nom, choisir les esquisses, un autre logo, d'autres pistes, changer les
   couleurs.
+
+## Les deux changements du 24 novembre
+
+Préparés sans aucune dépense, sur une branche locale, après l'essai réel de la finalisation.
+
+1. **Un peu plus de coloris dans la recherche.** Ses mots : « Ouais mais c'est ça que je veux dans sina c'est la
+   nouvelle planche avec un peu plus de coloris ». La demande de recherche garde le texte exact des essais, suivi de
+   « Varie les couleurs d'une esquisse à l'autre. ». Quand le Studio refait les planches ou cherche d'autres pistes,
+   « Évite ces pistes déjà présentées : … » vient après, à la toute fin. Rien d'autre n'y entre : ni les couleurs du
+   client, ni ses goûts, ni typographie, ni logos joints.
+2. **Le relecteur ne refuse plus un logo trop proche de son esquisse.** Lors de l'essai réel, quatre logos finis propres
+   et fidèles ont tous été refusés pour cette seule raison. À la question « Je fais retirer cette règle et je relance la
+   finalisation du R bordeaux ? », il a répondu « Ouais ». La question n'est plus posée au relecteur, et l'écart mesuré
+   entre l'esquisse et le logo ne lui est plus donné. Restent les refus pour un nom mal écrit (comparé aussi par le
+   code), une idée de l'esquisse perdue, une arche, une phrase inventée qui ne dit pas le vrai métier, une note sous 8 ;
+   un fond que le Studio ne sait pas retirer fait toujours refaire le logo. La phrase qui demande, dans le texte de
+   finalisation, de faire évoluer l'idée de l'esquisse reste.
+
+**Les épreuves.** Deux épreuves nouvelles sont ajoutées et scellées (leur verdict est fait de ses mots) :
+`couleurs-variees-dans-la-recherche` et `relecteur-sans-refus-pour-trop-proche`. Elles remplacent
+`planches-de-recherche-demande-exacte` et `relecteur-du-logo-fini`, marquées remplacées sans être réécrites. L'accord
+écrit qui les marque remplacées est encore à recevoir : [À compléter : phrase d'accord écrite du propriétaire].
+
+**La phrase d'accord à lui proposer :** « Oui, marque planches-de-recherche-demande-exacte et relecteur-du-logo-fini
+comme remplacées par mes deux changements du 24 novembre, ajoute et scelle couleurs-variees-dans-la-recherche et
+relecteur-sans-refus-pour-trop-proche, et mets à jour la partie Logo de CLAUDE.md. »
 
 ## Le point 0 : tranché
 
@@ -162,7 +194,9 @@ esquisses proposées », puisque le client en voit de 8 à 24 (décision du chef
 
 ## Texte proposé pour la partie Logo de CLAUDE.md
 
-À mettre à la place du passage « Logo » de « Ses goûts, en règles générales », après l'accord écrit du propriétaire :
+Ce texte a été mis dans CLAUDE.md, puis mis à jour le 24 novembre 2026 avec les deux changements ci-dessus (la phrase des
+couleurs à la recherche ; plus de refus pour un logo trop proche de son esquisse) : c'est CLAUDE.md qui fait foi. Texte
+d'origine, gardé pour mémoire :
 
 > - **Logo, la méthode des graphistes** (24 novembre 2026, « oui » du propriétaire à la construction ; « Oui » à « Le
 >   client choisit d'abord son nom, puis les logos : tu es d'accord ? ») : créé par OpenAI, pour cette marque-là, jamais

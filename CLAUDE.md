@@ -112,15 +112,19 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   seul accord pour toute l'étape. **Le métier** : un petit appel écrit le métier en mots simples et la piste (« le
   savoir-faire de … » pour un artisan, « l'univers de … » pour un commerce), contrôlés gratuitement. **La recherche** :
   deux planches de six esquisses en même temps, par les deux modèles d'images des essais du 24 novembre, avec le même
-  texte exact, rien d'autre (ni couleurs, ni goûts, ni logos joints). **Le tri** : le Studio découpe gratuitement,
+  texte exact suivi de « Varie les couleurs d'une esquisse à l'autre. » (ses mots du 24 novembre : « Ouais mais c'est ça
+  que je veux dans sina c'est la nouvelle planche avec un peu plus de coloris »), rien d'autre (ni couleurs du client,
+  ni goûts, ni logos joints). **Le tri** : le Studio découpe gratuitement,
   refuse une case vide, coupée ou collée au bord ; le relecteur le plus fort, effort moyen, relit toutes les esquisses
   en un appel (entière, rien de la voisine, nom exact comparé par le code, pas d'arche) ; une esquisse refusée n'est
   jamais montrée ; moins de huit : les deux planches refaites une fois à la charge du Studio, avec « Évite ces pistes
-  déjà présentées : … ». **Le choix** : le client coche ses esquisses, deux au moins, au plus 2, 3 ou 4 selon son
+  déjà présentées : … » à la toute fin, après la phrase des couleurs. **Le choix** : le client coche ses esquisses, deux au moins, au plus 2, 3 ou 4 selon son
   forfait. **Le logo fini** : le modèle de texte le plus fort regarde l'esquisse et écrit le texte (consigne de l'essai,
   « parmi les esquisses proposées », plus l'évolution de l'idée), contrôlé gratuitement ; le modèle d'images de
   finalisation le dessine à partir de l'esquisse. **La relecture** : le relecteur le plus fort, effort élevé, refuse un
-  nom mal écrit, une idée perdue, un logo sans évolution, une arche, une phrase inventée, une note sous 8 ; refusé, il
+  nom mal écrit, une idée perdue, une arche, une phrase inventée, une note sous 8 ; jamais un logo parce qu'il est trop
+  proche de son esquisse (« Ouais » du 24 novembre, à « Je fais retirer cette règle et je relance la finalisation du R
+  bordeaux ? ») ; refusé, il
   est refait une fois avec ses raisons ; refusé deux fois, SINA propose une autre esquisse. **Le logo d'abord** : les
   couleurs de la marque sont tirées du logo par le Studio, la police de titres choisie au plus près de ses lettres ;
   deux identités n'ont jamais la même police de titres. Les couleurs du client ne vont jamais au dessinateur. On ne

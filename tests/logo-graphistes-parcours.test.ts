@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { ESQUISSES_MIN, appliquerLaRelecture, nomExact, rechercheDesEsquisses, type RechercheDeps, type RelectureEsquisses } from "@/lib/syna-agent/esquisses";
-import { LIGNE_D_EVOLUTION, consigneDeFinalisation, controleDuTexte, finDeReprise, finaliserUneEsquisse, phrasesDe, raisonsDuRefus, type FinalisationDeps, type RelectureDuLogo } from "@/lib/syna-agent/logo-finalisation";
+import { LIGNE_D_EVOLUTION, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, consigneDeFinalisation, demandeAuRelecteurDuLogo, controleDuTexte, finDeReprise, finaliserUneEsquisse, phrasesDe, raisonsDuRefus, type FinalisationDeps, type RelectureDuLogo } from "@/lib/syna-agent/logo-finalisation";
 import { basculer, messageDuChoix } from "@/lib/syna-agent/choix-esquisses";
 import { couleursDuLogo, memePoliceDeTitres, paletteDesGroupes, remettreLesCouleursDuLogo } from "@/lib/syna-agent/couleurs-du-logo";
 import { contrast } from "@/lib/color";
@@ -53,7 +53,8 @@ describe("la recherche : découpe, relecture en un appel, reprise unique sous 8,
     expect(t.prompts).toHaveLength(4);
     expect(t.prompts.filter((p) => p.tour === 2)).toHaveLength(2);
     const second = t.prompts.find((p) => p.tour === 2)!.prompt;
-    expect(second).toMatch(/ Évite ces pistes déjà présentées : piste 1 ; piste 2 ; piste 3 ; piste 4 ; piste 5\.$/);
+    expect(second).toMatch(/ Varie les couleurs d'une esquisse à l'autre\. Évite ces pistes déjà présentées : piste 1 ; piste 2 ; piste 3 ; piste 4 ; piste 5\.$/);
+    expect(t.prompts[0].prompt).toMatch(/ Varie les couleurs d'une esquisse à l'autre\.$/);
     expect(second.startsWith(t.prompts[0].prompt)).toBe(true);
     expect(t.studio).toEqual([2]);
     expect(r.reprise).toBe(true);
@@ -74,7 +75,7 @@ describe("la recherche : découpe, relecture en un appel, reprise unique sous 8,
     const t = deps({ garder: () => true });
     const r = await rechercheDesEsquisses(t.d, { nom: "Reflet", metier, depart: 13, eviter: ["un R dont la boucle dessine une voiture"] });
     expect(r.esquisses[0].numero).toBe(13);
-    expect(t.prompts[0].prompt).toMatch(/Évite ces pistes déjà présentées : un R dont la boucle dessine une voiture\.$/);
+    expect(t.prompts[0].prompt).toMatch(/ Varie les couleurs d'une esquisse à l'autre\. Évite ces pistes déjà présentées : un R dont la boucle dessine une voiture\.$/);
   });
   it("le nom est comparé par le code ; une esquisse refusée n'est jamais gardée", () => {
     const c = [0, 1, 2, 3, 4].map((i) => ({ modele: "m", index: i, png: Buffer.from("x"), requestId: null }));
@@ -177,17 +178,27 @@ describe("la finalisation : la consigne de finaliser.py mot pour mot, plus la li
   });
 });
 
-const bon: RelectureDuLogo = { nomLu: "Reflet", ideeConservee: true, evolution: true, arche: false, phrase: "Nettoyage automobile", phraseDitLeMetier: true, note: 9, pourquoi: "net" };
-describe("la relecture du logo fini : cinq raisons et la note de 8", () => {
+const bon: RelectureDuLogo = { nomLu: "Reflet", ideeConservee: true, arche: false, phrase: "Nettoyage automobile", phraseDitLeMetier: true, note: 9, pourquoi: "net" };
+describe("la relecture du logo fini : le nom, l'idée, l'arche, la phrase et la note de 8 ; jamais « trop proche de l'esquisse »", () => {
   it("chaque raison refuse, seule ; le bon logo passe", () => {
     expect(raisonsDuRefus(bon, NOM)).toEqual([]);
     expect(raisonsDuRefus({ ...bon, nomLu: "Refl3t" }, NOM)[0]).toMatch(/nom est mal écrit/);
     expect(raisonsDuRefus({ ...bon, ideeConservee: false }, NOM)).toEqual(["l'idée de l'esquisse est perdue"]);
-    expect(raisonsDuRefus({ ...bon, evolution: false }, NOM)).toEqual(["le logo est trop proche de l'esquisse, sans évolution"]);
     expect(raisonsDuRefus({ ...bon, arche: true }, NOM)).toEqual(["le dessin est posé dans une arche"]);
     expect(raisonsDuRefus({ ...bon, phrase: "Brillance garantie", phraseDitLeMetier: false }, NOM)[0]).toMatch(/inventée et ne dit pas le vrai métier/);
     expect(raisonsDuRefus({ ...bon, note: 7.5 }, NOM)[0]).toMatch(/pas au niveau \(7\.5\/10, il faut 8\)/);
     expect(raisonsDuRefus({ ...bon, note: 8 }, NOM)).toEqual([]);
+  });
+  it("un logo fidèle à son esquisse n'est jamais refusé pour être trop proche (24 novembre 2026, « Ouais » du propriétaire)", () => {
+    // Le relecteur ne juge plus l'évolution : la question n'est plus posée, une réponse d'ancien format est ignorée.
+    expect(RELECTEUR_DU_LOGO_FINI).not.toMatch(/evolution|évolu|trop proche|copie nettoyée/i);
+    expect(Object.keys(RelectureDuLogoSchema.shape)).not.toContain("evolution");
+    const ancien = RelectureDuLogoSchema.parse({ ...bon, evolution: false });
+    expect(raisonsDuRefus(ancien, NOM)).toEqual([]);
+    // Aucun indice d'écart entre l'esquisse et le logo n'est donné au relecteur.
+    expect(demandeAuRelecteurDuLogo({ nom: NOM, metier: METIER, texte: AVEC_EVOLUTION })).not.toMatch(/écart|indice|identiques/i);
+    // La ligne d'évolution du texte de finalisation reste.
+    expect(consigneDeFinalisation(NOM, METIER)).toContain(LIGNE_D_EVOLUTION);
   });
 });
 
@@ -215,11 +226,11 @@ describe("la finalisation entière : texte réécrit une fois, logo refait une f
     expect(t.vu.finaliser).toEqual([AVEC_EVOLUTION]);
   });
   it("refusé une fois : refait UNE fois avec toutes les raisons à la fin du texte, à la charge du Studio", async () => {
-    const t = f({ textes: [AVEC_EVOLUTION], verdicts: [{ ...bon, evolution: false, note: 6 }, bon] });
+    const t = f({ textes: [AVEC_EVOLUTION], verdicts: [{ ...bon, ideeConservee: false, note: 6 }, bon] });
     const r = await finaliserUneEsquisse(t.d, { nom: NOM, metier: METIER, esquisse: await esquisse() });
     expect(r.ok).toBe(true);
-    expect(t.vu.finaliser).toEqual([AVEC_EVOLUTION, `${AVEC_EVOLUTION} ${finDeReprise(["le logo est trop proche de l'esquisse, sans évolution", "il n'est pas au niveau (6/10, il faut 8)"])}`]);
-    expect(t.vu.finaliser[1]).toMatch(/À corriger : le logo est trop proche de l'esquisse, sans évolution ; il n'est pas au niveau \(6\/10, il faut 8\)\.$/);
+    expect(t.vu.finaliser).toEqual([AVEC_EVOLUTION, `${AVEC_EVOLUTION} ${finDeReprise(["l'idée de l'esquisse est perdue", "il n'est pas au niveau (6/10, il faut 8)"])}`]);
+    expect(t.vu.finaliser[1]).toMatch(/À corriger : l'idée de l'esquisse est perdue ; il n'est pas au niveau \(6\/10, il faut 8\)\.$/);
     expect(t.vu.studio).toEqual(["finaliser"]);
   });
   it("refusé deux fois : l'identité n'est pas construite, jamais de troisième essai", async () => {

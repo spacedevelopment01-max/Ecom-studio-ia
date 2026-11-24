@@ -28,7 +28,7 @@ async function serveur() {
   return { recu, fermer: () => new Promise<void>((r) => s.close(() => r())) };
 }
 
-const TEXTE = "Crée une planche de recherche graphique pour Reflet, une entreprise de nettoyage de voitures, intérieur et extérieur. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire le savoir-faire du nettoyage automobile dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation.";
+const TEXTE = "Crée une planche de recherche graphique pour Reflet, une entreprise de nettoyage de voitures, intérieur et extérieur. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire le savoir-faire du nettoyage automobile dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation. Varie les couleurs d'une esquisse à l'autre.";
 
 describe("les requêtes exactes de la méthode des graphistes (SDK réel)", () => {
   it("recherche : generations, mêmes réglages pour les deux modèles, « complexity » seulement pour 2.6 Flare", async () => {

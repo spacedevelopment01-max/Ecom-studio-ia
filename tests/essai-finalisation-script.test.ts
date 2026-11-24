@@ -39,7 +39,7 @@ describe("le script de l'essai de la finalisation (appels simulés)", async () =
     relireLogo: async (_l: Buffer, _e: Buffer, _d: string, cle: string) => {
       appels.push(cle); await paye(q, RELECTURE, "quality_control");
       const v = verdicts[cle] ?? { note: 9 };
-      return { nomLu: v.nomLu ?? CLIENT.nom, ideeConservee: true, evolution: true, arche: !!v.arche, phrase: "", phraseDitLeMetier: false, note: v.note, pourquoi: "simulé" };
+      return { nomLu: v.nomLu ?? CLIENT.nom, ideeConservee: true, arche: !!v.arche, phrase: "", phraseDitLeMetier: false, note: v.note, pourquoi: "simulé" };
     },
   });
   const preparer = async () => {

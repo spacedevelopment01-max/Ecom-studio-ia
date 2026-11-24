@@ -77,6 +77,17 @@ const METHODE_DES_GRAPHISTES = {
 const VERDICT_GRAPHISTES = "Accord écrit du propriétaire du 24 novembre 2026, mot pour mot : « Oui, marque trois-fois-le-meme-dessin, logos-de-la-serie-dans-l-ordre, pas-de-consigne-de-style-pour-un-logo, demande-du-logo-couleurs-typo-fond et relecteur-du-logo-qualite-seule comme remplacées par la méthode des graphistes du 24 novembre, ajoute et scelle logo-refait-une-fois-avec-ses-raisons, esquisses-choisies-selon-le-forfait, finalisation-ecrite-par-le-plus-fort, planches-de-recherche-demande-exacte et relecteur-du-logo-fini, retire l'ancienne série de logos, et mets à jour la partie Logo de CLAUDE.md. » Et son « oui » à la construction de la méthode des graphistes (24 novembre 2026)."
 const SOURCE_GRAPHISTES = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (méthode des graphistes ; accord écrit du propriétaire du 24 novembre 2026, relayé mot pour mot par le chef d'orchestre)";
 
+/**
+ * Les deux changements du propriétaire du 24 novembre 2026 sur la méthode des graphistes : la phrase des couleurs à la
+ * recherche (« Ouais mais c'est ça que je veux dans sina c'est la nouvelle planche avec un peu plus de coloris ») et le
+ * relecteur du logo fini qui ne refuse plus un logo trop proche de son esquisse (« Ouais », à « Je fais retirer cette
+ * règle et je relance la finalisation du R bordeaux ? »). Son accord écrit pour marquer les épreuves qu'ils remplacent est
+ * encore à recevoir : `ACCORD_A_COMPLETER` tient sa place, et le banc n'accepte ce manque que pour ces deux épreuves.
+ */
+export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
+const COULEURS_ET_RELECTEUR = { decision: "24 novembre 2026", mots: ACCORD_A_COMPLETER };
+const SOURCE_COULEURS_ET_RELECTEUR = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (parties « Ce que le propriétaire a dit » et « Les deux changements du 24 novembre » ; ses mots relayés par le chef d'orchestre)";
+
 export const EPREUVES: Epreuve[] = [
   {
     id: "logo-goutte-refusee", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
@@ -468,11 +479,25 @@ export const EPREUVES: Epreuve[] = [
     verdict: VERDICT_GRAPHISTES,
     attendu: "La recherche part en deux appels en même temps (2.5 Sunburst et 2.6 Flare, même texte, mêmes réglages, « complexity » pour Flare seul) avec la demande exacte des preuves : le nom, le métier, « le savoir-faire de … » ou « l'univers de … », rien d'autre (ni couleurs, ni typographie, ni goûts, ni logos joints) ; seule « Évite ces pistes déjà présentées : … » peut s'ajouter à la fin.",
     rejeu: "gratuit",
+    remplaceePar: { ...COULEURS_ET_RELECTEUR, epreuve: "couleurs-variees-dans-la-recherche", sceau: "b7b2e0fa6fa9611769e8944c16871ba0c622db31a47762e4d67f55ca290f7ef9" },
   },
   {
     id: "relecteur-du-logo-fini", date: "2026-11-24", source: SOURCE_GRAPHISTES,
     verdict: VERDICT_GRAPHISTES,
     attendu: "Le logo fini est relu par le relecteur le plus fort, effort élevé, un autre modèle que le rédacteur, avec le logo sur blanc, l'esquisse, le nom, le vrai métier et le texte envoyé ; il est refusé si le nom est mal écrit (le code le compare aussi), si l'idée de l'esquisse est perdue, s'il est trop proche de l'esquisse sans évolution, s'il porte une arche, une phrase inventée qui ne dit pas le vrai métier, ou une note sous 8 ; un fond que le Studio ne retire pas proprement le fait refaire.",
+    rejeu: "gratuit",
+    remplaceePar: { ...COULEURS_ET_RELECTEUR, epreuve: "relecteur-sans-refus-pour-trop-proche", sceau: "007b160d87ccb26c58c26df0565cc38c1f917b07979d3d3073e3a0b77d41014b" },
+  },
+  {
+    id: "couleurs-variees-dans-la-recherche", date: "2026-11-24", source: SOURCE_COULEURS_ET_RELECTEUR,
+    verdict: "« Ouais mais c'est ça que je veux dans sina c'est la nouvelle planche avec un peu plus de coloris » (24 novembre 2026, devant la planche de recherche essayée avec la phrase « Varie les couleurs d'une esquisse à l'autre. »).",
+    attendu: "La recherche part en deux appels en même temps (les deux modèles d'images de la recherche, même texte, mêmes réglages, « complexity » pour un seul des deux comme dans les preuves) avec la demande exacte des preuves : le nom, le métier, « le savoir-faire de … » ou « l'univers de … », suivie de « Varie les couleurs d'une esquisse à l'autre. » ; seule « Évite ces pistes déjà présentées : … » peut s'ajouter, à la toute fin, après elle ; rien d'autre (ni typographie, ni goûts, ni logos joints, ni couleurs du client).",
+    rejeu: "gratuit",
+  },
+  {
+    id: "relecteur-sans-refus-pour-trop-proche", date: "2026-11-24", source: SOURCE_COULEURS_ET_RELECTEUR,
+    verdict: "« Ouais » (24 novembre 2026), sa réponse à « Je fais retirer cette règle et je relance la finalisation du R bordeaux ? », après l'essai réel où quatre logos finis propres et fidèles avaient tous été refusés pour la seule raison « trop proche de l'esquisse, sans évolution ».",
+    attendu: "Le logo fini est relu par le relecteur le plus fort, effort élevé, un autre modèle que le rédacteur, avec le logo sur blanc, l'esquisse, le nom, le vrai métier et le texte envoyé ; il ne refuse plus jamais un logo parce qu'il est trop proche de l'esquisse (la question ne lui est plus posée, aucun écart mesuré ne lui est donné) ; il est refusé si le nom est mal écrit (le code le compare aussi), si l'idée de l'esquisse est perdue, s'il porte une arche, une phrase inventée qui ne dit pas le vrai métier, ou une note sous 8 ; un fond que le Studio ne retire pas proprement le fait refaire ; la ligne d'évolution du texte de finalisation reste.",
     rejeu: "gratuit",
   },
 ];

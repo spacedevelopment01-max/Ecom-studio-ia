@@ -6,9 +6,11 @@
  *    savoir-faire de … » pour un artisan, « l'univers de … » pour un commerce). Un contrôle gratuit vérifie la forme.
  * 2. La recherche : deux appels POST /v1/images/generations, en même temps, GPT Image 2.5 Sunburst et GPT Image 2.6 Flare,
  *    avec le même texte EXACT (preuves : docs/studio/essais-logos-api/methode-graphiste-…/phase1.py, six projets, branche
- *    du chef d'orchestre). Rien d'autre : ni couleurs, ni goûts du client, ni planche des logos aimés. Pour « à éviter » et
- *    « d'autres pistes », une seule phrase est ajoutée à la fin : « Évite ces pistes déjà présentées : … » (décision du
- *    chef : pas de retouche de planche).
+ *    du chef d'orchestre), suivi de « Varie les couleurs d'une esquisse à l'autre. » (24 novembre 2026, le propriétaire
+ *    devant la planche essayée avec cette phrase : « Ouais mais c'est ça que je veux dans sina c'est la nouvelle planche
+ *    avec un peu plus de coloris »). Rien d'autre : ni couleurs du client, ni goûts du client, ni planche des logos aimés.
+ *    Pour « à éviter » et « d'autres pistes », une seule phrase est ajoutée à la toute fin, après celle des couleurs :
+ *    « Évite ces pistes déjà présentées : … » (décision du chef : pas de retouche de planche).
  * Une panne du fournisseur n'est jamais relancée toute seule : la planche manque, c'est dit.
  */
 import { z } from "zod";
@@ -63,12 +65,16 @@ export const laPiste = (m: Pick<Metier, "court" | "piste">) => `${m.piste === "s
 /** Les deux modèles de la recherche (logo-policy.ts), lancés en même temps. */
 export const MODELES_DE_RECHERCHE = LOGO_MODELS.recherche;
 
+/** La phrase des couleurs, ajoutée à la demande des preuves (24 novembre 2026, « un peu plus de coloris »). */
+export const PHRASE_DES_COULEURS = "Varie les couleurs d'une esquisse à l'autre.";
+
 /**
- * LE TEXTE EXACT d'une planche de recherche (mot pour mot celui des preuves). `eviter` : les pistes déjà présentées, en
- * mots (« d'autres pistes », ou la reprise quand il reste moins de 8 esquisses) ; une seule phrase ajoutée à la fin.
+ * LE TEXTE EXACT d'une planche de recherche : mot pour mot celui des preuves, suivi de la phrase des couleurs. `eviter` :
+ * les pistes déjà présentées, en mots (« d'autres pistes », ou la reprise quand il reste moins de 8 esquisses) ; une
+ * seule phrase ajoutée à la toute fin, après celle des couleurs.
  */
 export function demandeDeRecherche(o: { nom: string; metier: Pick<Metier, "metier" | "court" | "piste">; eviter?: readonly string[] }): string {
-  const base = `Crée une planche de recherche graphique pour ${o.nom}, ${o.metier.metier.trim()}. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire ${laPiste(o.metier)} dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation.`;
+  const base = `Crée une planche de recherche graphique pour ${o.nom}, ${o.metier.metier.trim()}. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire ${laPiste(o.metier)} dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation. ${PHRASE_DES_COULEURS}`;
   const pistes = (o.eviter ?? []).map((p) => p.trim().replace(/[.;]+$/, "")).filter(Boolean);
   return pistes.length ? `${base} ${phraseEvite(pistes)}` : base;
 }
