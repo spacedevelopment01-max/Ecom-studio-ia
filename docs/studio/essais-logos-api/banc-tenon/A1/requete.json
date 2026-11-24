@@ -1,0 +1,22 @@
+{
+ "endpoint": "POST https://api.openai.com/v1/responses",
+ "corps": {
+  "model": "gpt-6.2-astra",
+  "input": "Crée un logo moderne et original pour mon entreprise Tenon. Je suis menuisier et je réalise des cuisines et des dressings sur mesure. Fond blanc.",
+  "tools": [
+   {
+    "type": "image_generation",
+    "model": "gpt-image-2.6-sunburst",
+    "quality": "high",
+    "complexity": "high",
+    "size": "1024x1024",
+    "background": "opaque",
+    "output_format": "png",
+    "action": "generate"
+   }
+  ],
+  "tool_choice": {
+   "type": "image_generation"
+  }
+ }
+}
