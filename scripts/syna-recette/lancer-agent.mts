@@ -23,6 +23,20 @@ process.env.APP_SECRET = fs.readFileSync(secretFile, "utf8").trim();
 const env: Record<string, string> = { OPENAI_API_KEY: "sk-proxy-injected", DASHSCOPE_API_KEY: "sk-proxy-injected", FAL_KEY: "proxy-injected", ANTHROPIC_API_KEY: "", GOOGLE_API_KEY: "" };
 Object.assign(process.env, env);
 
+// GARDE-FOU DE DÉPENSE DE L'ESSAI (src/lib/ai/plafond-essai.ts) : STUDIO_ESSAI_PLAFOND_EUROS=1 l'allume (1 € pour tout
+// l'essai : appels du client et reprises du Studio, textes, images, recherches). Le début de l'essai est gardé dans
+// <DATA_DIR>/essai-debut.txt, pour que les relances du gardien (garder-allume.sh) continuent la même somme ; un nouvel
+// essai : effacer ce fichier, ou donner STUDIO_ESSAI_DEBUT (millisecondes ou date ISO). Le site et le worker reçoivent
+// les deux réglages. Sans STUDIO_ESSAI_PLAFOND_EUROS, rien ne change.
+if (process.env.STUDIO_ESSAI_PLAFOND_EUROS?.trim()) {
+  const debutFile = path.join(dir, "essai-debut.txt");
+  if (!process.env.STUDIO_ESSAI_DEBUT?.trim()) {
+    if (!fs.existsSync(debutFile)) fs.writeFileSync(debutFile, String(Date.now()));
+    process.env.STUDIO_ESSAI_DEBUT = fs.readFileSync(debutFile, "utf8").trim();
+  }
+  console.log(`Garde-fou de l'essai allumé : plafond ${process.env.STUDIO_ESSAI_PLAFOND_EUROS} €, compté depuis ${new Date(Number(process.env.STUDIO_ESSAI_DEBUT) || Date.parse(process.env.STUDIO_ESSAI_DEBUT!)).toISOString()}.`);
+}
+
 const PASSWORD = "Recette-492-fictif";
 const { one, run } = await import("../../src/lib/db");
 const { account } = await import("../../tests/conversation209-fixtures");

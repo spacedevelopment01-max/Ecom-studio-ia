@@ -102,12 +102,19 @@ export class CostCapReached extends Error {
  * coûts incertains et les appels encore réservés sont des engagements, même sans trace finale ai_calls. Les anciennes
  * réservations sans lien restent retenues : on ne suppose pas gratuitement leur rapprochement avec une ancienne trace.
  */
-export function depensesDeLaTache(jobId: string): { total: number; studio: number; client: number } {
-  const r = one<{ total: number; studio: number }>(`SELECT
+/**
+ * La somme engagée, en une seule façon de compter (réservations encore tenues à leur maximum, réglées à leur coût réel,
+ * facturations, traces sans facture) : pour une tâche (`job_id=?`) ou pour tout ce qui part depuis un instant
+ * (`created_at>=?`, le garde-fou des essais réels, `plafond-essai.ts`). `filtre` porte un seul « ? ».
+ */
+export const sommeEngageeSql = (filtre: "job_id=?" | "created_at>=?") => `
     COALESCE((SELECT SUM(CASE WHEN status='held' THEN amount ELSE COALESCE(actual,amount) END)
-      FROM ai_reservations WHERE job_id=? AND status IN ('held','settled','uncertain','reconciled') AND usage_event_id IS NULL),0)
-    + COALESCE((SELECT SUM(billed) FROM usage_events WHERE job_id=?),0)
-    + COALESCE((SELECT SUM(cost) FROM ai_calls WHERE job_id=? AND usage_event_id IS NULL AND billing_dedup=0 AND status='ok'),0) AS total,
+      FROM ai_reservations WHERE ${filtre} AND status IN ('held','settled','uncertain','reconciled') AND usage_event_id IS NULL),0)
+    + COALESCE((SELECT SUM(billed) FROM usage_events WHERE ${filtre}),0)
+    + COALESCE((SELECT SUM(cost) FROM ai_calls WHERE ${filtre} AND usage_event_id IS NULL AND billing_dedup=0 AND status='ok'),0)`;
+
+export function depensesDeLaTache(jobId: string): { total: number; studio: number; client: number } {
+  const r = one<{ total: number; studio: number }>(`SELECT ${sommeEngageeSql("job_id=?")} AS total,
     COALESCE((SELECT SUM(CASE WHEN status='held' THEN amount ELSE COALESCE(actual,amount) END)
       FROM ai_reservations WHERE job_id=? AND studio=1 AND status IN ('held','settled','uncertain','reconciled') AND usage_event_id IS NULL),0)
     + COALESCE((SELECT SUM(billed) FROM usage_events WHERE job_id=? AND id IN (SELECT usage_event_id FROM ai_reservations WHERE job_id=? AND studio=1 AND usage_event_id IS NOT NULL)),0) AS studio`,

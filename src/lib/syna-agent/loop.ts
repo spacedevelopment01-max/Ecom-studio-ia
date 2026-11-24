@@ -26,6 +26,7 @@ import { loadMockupSet } from "./mockup-code/mockup-set";
 import { enqueue, getJob, type JobContext } from "../jobs";
 import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
+import { PlafondDeLEssaiAtteint } from "../ai/plafond-essai";
 import { requirePlan } from "../plan-gates";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
@@ -279,6 +280,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
       try {
         out = await selonLePas(() => reason(user, ce, jobId, step, deps));
       } catch (e) {
+        if (e instanceof PlafondDeLEssaiAtteint) return stopEssai(r);
         if (e instanceof CostCapReached) return askBudget(r);
         throw e;
       }
@@ -294,7 +296,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         if (defauts.length) {
           // Réécriture après le contrôle : une reprise du Studio, jamais débitée au client (règle du propriétaire).
           const run0 = r;
-          try { out = await aLaChargeDuStudio(() => reason(user, run0, jobId, step, deps, noteDeControle(defauts), ":controle")); } catch (e) { if (e instanceof CostCapReached) return askBudget(r); throw e; }
+          try { out = await aLaChargeDuStudio(() => reason(user, run0, jobId, step, deps, noteDeControle(defauts), ":controle")); } catch (e) { if (e instanceof PlafondDeLEssaiAtteint) return stopEssai(r); if (e instanceof CostCapReached) return askBudget(r); throw e; }
         }
       }
       // Moment qui compte (résultat à présenter, échec, client mécontent) : la réponse est relue avant de partir, après le
@@ -504,6 +506,17 @@ function reportWithoutAi(r: SynaRun) {
     : done ? L("Ce que tu m'as demandé de créer est terminé et enregistré dans ton projet.", "What you asked me to create is finished and saved in your project.")
     : L(`La création s'est arrêtée avant la fin.${results.some((x) => x.coutReel) ? ` Ce qu'elle a réellement dépensé : ${results.map((x) => x.coutReel).filter(Boolean).join(", ")}.` : ""}`, "The creation stopped before the end.");
   addMessage(r.conversation_id, "assistant", { message: L(`${what} Le budget de mes réponses est atteint : je ne peux pas encore te présenter ce travail ni te dire ce que j'y reprendrais. Relève-le juste en dessous, et je te fais le compte rendu tout de suite.`, `${what} My reply budget is used up: raise it below and I will report on this work right away.`), actions: [], done: false, sansIa: true }, r.id);
+}
+
+/**
+ * Essai réel (studio privé d'essai) : le plafond de l'essai est atteint. SINA le dit et s'arrête ; aucun appel n'est
+ * relancé, aucune carte de budget n'est proposée (ce n'est pas le budget du client).
+ */
+export const MESSAGE_PLAFOND_ESSAI = () => L("Le plafond de dépense fixé pour cet essai est atteint : je m'arrête ici. L'appel suivant n'est pas parti, donc rien de plus n'a été dépensé, et je ne relance rien.", "The spending cap set for this trial is reached: I'm stopping here. The next call was not sent, so nothing more was spent, and nothing is retried.");
+function stopEssai(r: SynaRun) {
+  addMessage(r.conversation_id, "assistant", { message: MESSAGE_PLAFOND_ESSAI(), actions: [], done: true }, r.id);
+  updateRun(r.id, { status: "done" });
+  return { runId: r.id, stopped: "plafond_essai" as const };
 }
 
 function askBudget(r: SynaRun) {
