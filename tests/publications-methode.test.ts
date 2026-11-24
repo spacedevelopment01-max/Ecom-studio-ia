@@ -392,7 +392,10 @@ describe("le calendrier : une publication de la méthode n'est offerte qu'aux r�
   const D = await import("@/lib/syna-agent/publications-de-la-marque");
   it("1:1, 4:5, 9:16", () => {
     const tous = ["instagram", "facebook", "tiktok", "youtube", "pinterest", "linkedin"];
-    expect(D.reseauxDuFormat("1:1", tous)).toEqual([]);
+    // Le carré : Instagram (vérifié, documentation officielle de Meta) et Facebook (non vérifié, décision du chef
+    // d'orchestre) ; jamais LinkedIn, qui n'est pas au calendrier.
+    expect(D.reseauxDuFormat("1:1", tous)).toEqual([{ network: "instagram", format: "image" }, { network: "facebook", format: "image" }]);
+    expect(D.reseauxDuFormat("1:1", ["linkedin", "pinterest", "tiktok"])).toEqual([]);
     expect(D.reseauxDuFormat("4:5", tous)).toEqual([{ network: "instagram", format: "image" }, { network: "facebook", format: "image" }]);
     expect(D.reseauxDuFormat("9:16", tous)).toEqual([{ network: "instagram", format: "story" }]);
     expect(D.reseauxDuFormat("9:16", ["facebook"])).toEqual([]);

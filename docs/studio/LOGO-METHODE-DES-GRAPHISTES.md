@@ -171,7 +171,7 @@ l'épreuve est rejouée telle quelle) ; `esquisses-choisies-selon-le-forfait` (l
 esquisses 3, 7 et 11 » quand il ne touche à aucune phrase) ; `couleurs-variees-dans-la-recherche` (la demande de recherche
 ne change pas) ; `jamais-de-question-sur-le-logo` (la proposition n'est pas une question).
 
-**La phrase d'accord à lui proposer :** « Oui, marque finalisation-ecrite-par-le-plus-fort comme remplacée par ma décision
+**Son accord écrit, mot pour mot (24 novembre 2026 au soir) :** « Oui, marque finalisation-ecrite-par-le-plus-fort comme remplacée par ma décision
 du 24 novembre au soir, ajoute et scelle phrase-de-l-esquisse-au-choix-du-client (le client prend librement, sous le nom
 de son logo, la phrase d'une esquisse, aucune phrase ou la sienne), et mets à jour la partie Logo de CLAUDE.md. »
 

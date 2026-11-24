@@ -19,6 +19,16 @@ import { chosenRoute } from "./logos";
 /** Les réseaux qui reçoivent telle quelle l'image 4:5 d'une publication de la planche. */
 const RESEAUX_4_5 = ["instagram", "facebook"] as const;
 
+/**
+ * Les autres formats qu'un réseau prend tels quels pour une image du fil (en plus de celui de sa fiche, platforms.ts).
+ * - Instagram : 1:1 (vérifié : documentation officielle de Meta pour la publication, référence ig-user/media,
+ *   « Image Specifications » : « Aspect ratio: Must be within a 4:5 to 1.91:1 range », lue le 24 novembre 2026).
+ * - Facebook : 1:1, NON VÉRIFIÉ par une page officielle pour une publication de page (seul le guide des publicités a été
+ *   lu, qui donne le 4:5) ; décision du chef d'orchestre du 24 novembre 2026 : une image carrée s'affiche sans perte.
+ * LinkedIn n'est pas au calendrier.
+ */
+const AUTRES_FORMATS_DU_FIL: Partial<Record<string, readonly string[]>> = { instagram: ["1:1"], facebook: ["1:1"] };
+
 /** Les réseaux du calendrier qui peuvent recevoir une publication (ceux du Studio où le client publie lui-même). */
 const RESEAUX_DU_CALENDRIER = ["instagram", "facebook", "tiktok", "youtube", "pinterest"] as const;
 /**
@@ -30,7 +40,7 @@ export function reseauxDuFormat(aspect: string, networks: readonly string[]): { 
   for (const n of RESEAUX_DU_CALENDRIER) {
     if (!networks.includes(n)) continue;
     const dims = platformSpec(n).dims;
-    const f = (["image", "story"] as const).find((k) => dims[k]?.aspect === aspect);
+    const f = (["image", "story"] as const).find((k) => dims[k]?.aspect === aspect || (k === "image" && (AUTRES_FORMATS_DU_FIL[n] ?? []).includes(aspect)));
     if (f) out.push({ network: n, format: f });
   }
   return out;

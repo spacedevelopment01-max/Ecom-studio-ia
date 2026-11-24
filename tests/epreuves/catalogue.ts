@@ -92,11 +92,10 @@ const SOURCE_COULEURS_ET_RELECTEUR = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md
  * 12 portaient une petite phrase sous le nom). Ses mots, relayés par le chef d'orchestre : « Non ça donne des idées de
  * slogan, le seul truc c'est que si le client veux le slogan de la 5 et le logo 1, sina doit pouvoir le faire ». Elle
  * contredit finalisation-ecrite-par-le-plus-fort (« la consigne de finaliser.py mot pour mot plus la ligne d'évolution » :
- * une ligne de plus quand le client a choisi sa phrase). Son accord écrit pour la marquer remplacée est encore à
- * recevoir : `ACCORD_A_COMPLETER` tient sa place, et le banc n'accepte ce manque que pour cette épreuve-là.
+ * une ligne de plus quand le client a choisi sa phrase). Son accord écrit pour la marquer remplacée, mot pour mot
+ * (24 novembre 2026 au soir, écrit dans la conversation de construction).
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-const PHRASE_SOUS_LE_NOM = { decision: "24 novembre 2026", mots: ACCORD_A_COMPLETER };
+const PHRASE_SOUS_LE_NOM = { decision: "24 novembre 2026", mots: "« Oui, marque finalisation-ecrite-par-le-plus-fort comme remplacée par ma décision du 24 novembre au soir, ajoute et scelle phrase-de-l-esquisse-au-choix-du-client (le client prend librement, sous le nom de son logo, la phrase d'une esquisse, aucune phrase ou la sienne), et mets à jour la partie Logo de CLAUDE.md. »" };
 const SOURCE_PHRASE_SOUS_LE_NOM = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (partie « La phrase sous le nom » ; ses mots relayés par le chef d'orchestre)";
 
 export const EPREUVES: Epreuve[] = [
