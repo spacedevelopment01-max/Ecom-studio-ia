@@ -101,6 +101,14 @@ function appel(a: keyof typeof APPELS): { max: number; probable: number } {
   return { max: bound, probable: usual };
 }
 /**
+ * Un appel de texte du devis, tel que le devis le compte (son modèle, son coût habituel, son maximum, et les jetons
+ * supposés) : pour détailler un devis appel par appel (essais réels), sans un second jeu de chiffres.
+ */
+export function devisDUnAppel(a: keyof typeof APPELS): { max: number; probable: number; modele: Modele; jetons: { input: number; output: number; max: number } } {
+  const c = APPELS[a];
+  return { ...appel(a), modele: modeleDe(a), jetons: { input: c.input, output: c.output, max: c.max } };
+}
+/**
  * Prix mesurés (euros) des images du parcours, aux tarifs officiels au jeton (30 $ le million en sortie image, 5 $ en
  * texte) et au taux du Studio (0,86) :
  *  - planche 2.5 Sunburst : 0,0098 € (essai réel des planches de recherche du 24 novembre 2026, relayé par le chef
