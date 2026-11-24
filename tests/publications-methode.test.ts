@@ -202,7 +202,7 @@ describe("l'appel à OpenAI simulé : la demande exacte, la trace, aucune relanc
     const { mediaModel } = await import("@/lib/ai/media-models");
     const S = await import("@/lib/ai/social-image-policy");
     const sun = mediaModel("openai", "gpt-image-2.5-sunburst")!;
-    expect(R.incompatibility(sun, { kind: "image", usage: "social_image" } as never)).toMatch(/réservé au dessin des logos/);
+    expect(R.incompatibility(sun, { kind: "image", usage: "social_image" } as never)).toMatch(/réservé aux logos et à leur planche/);
     expect(P.estReserveAuxLogos("openai", "gpt-image-2.5-sunburst")).toBe(true);
     expect(P.permisPourLesPublications("aiPublicationMethode", "openai", "gpt-image-2.5-sunburst")).toBe(true);
     expect(P.permisPourLesPublications("aiPostImage", "openai", "gpt-image-2.5-sunburst")).toBe(false);

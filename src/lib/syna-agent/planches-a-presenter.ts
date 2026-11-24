@@ -18,8 +18,10 @@ import { planchesMontrees, verdictDuRelecteur, type Journey } from "./journey";
 /** Une planche à présenter : sa lettre, son nom, les images que la tâche a faites ou refaites. */
 export type PlancheAPresenter = { key: string; name: string; images: string[] };
 
-const IMAGES = ["logo", "hero", "site"] as const;
-const DIT: Record<(typeof IMAGES)[number], { fr: string; en: string }> = { logo: { fr: "son logo", en: "its logo" }, hero: { fr: "sa grande scène", en: "its main scene" }, site: { fr: "le haut de son site", en: "its site header" } };
+const IMAGES = ["logo", "hero", "site", "planche"] as const;
+const DIT: Record<(typeof IMAGES)[number], { fr: string; en: string }> = { logo: { fr: "son logo", en: "its logo" }, hero: { fr: "sa grande scène", en: "its main scene" }, site: { fr: "le haut de son site", en: "its site header" }, planche: { fr: "sa planche de marque", en: "its brand board" } };
+/** L'image d'une place : la planche de marque (nouveaux projets) est rangée à part, sur `board.planche.image`. */
+const idDeLImage = (board: { images?: Record<string, { id?: string } | undefined>; planche?: { image?: { id?: string } } } | undefined, s: string) => (s === "planche" ? board?.planche?.image?.id : board?.images?.[s]?.id);
 
 /**
  * Les planches finies ou refaites par les tâches attendues, montrées au client (une planche à laquelle il manque une image
@@ -34,7 +36,8 @@ export function planchesFiniesPar(jobs: ({ type?: string | null; status?: string
     if (p.finish || p.namesPreview) continue;
     const keys = p.redo?.length ? p.redo : montrees.map((x) => x.key);
     const images = p.imagesOnly && p.slots?.length ? p.slots.filter((s) => (IMAGES as readonly string[]).includes(s)) : [...IMAGES];
-    for (const x of montrees) if (x.board && keys.includes(x.key) && !out.some((o) => o.key === x.key)) out.push({ key: x.key, name: x.name, images });
+    // Une planche de marque (nouveaux projets) se présente par son image entière, celle d'avant par son logo, sa scène et son site.
+    for (const x of montrees) if (x.board && keys.includes(x.key) && !out.some((o) => o.key === x.key)) out.push({ key: x.key, name: x.name, images: (x.board as { planche?: unknown }).planche ? images.filter((s) => s === "planche") : images.filter((s) => s !== "planche") });
   }
   return out;
 }
@@ -63,12 +66,12 @@ export function planchesAPresenter(conversationId: string, runId: string): Planc
  * dit de chaque image faite (note et mots), en tutoyant ; jamais une planche qui n'est plus montrée.
  */
 export function presentationDuStudio(planches: readonly PlancheAPresenter[], j: Pick<Journey, "keep" | "identities">): string {
-  const montrees = planchesMontrees(j as never) as { key: string; name: string; board?: { images?: Record<string, { id?: string } | undefined> } }[];
+  const montrees = planchesMontrees(j as never) as { key: string; name: string; board?: { images?: Record<string, { id?: string } | undefined>; planche?: { image?: { id?: string } } } }[];
   return planches.map((p) => {
     const x = montrees.find((m) => m.key === p.key);
     if (!x) return "";
     const avis = p.images.flatMap((s) => {
-      const v = verdictDuRelecteur(x.board?.images?.[s]?.id);
+      const v = verdictDuRelecteur(idDeLImage(x.board, s));
       if (!v) return [];
       const d = DIT[s as keyof typeof DIT] ?? { fr: s, en: s };
       return [L(`${d.fr} : ${v.score != null ? `${v.score} sur 10` : "gardé"}${v.words ? `, « ${v.words.slice(0, 220)} »` : ""}`, `${d.en}: ${v.score != null ? `${v.score}/10` : "kept"}${v.words ? `, “${v.words.slice(0, 220)}”` : ""}`)];

@@ -987,3 +987,93 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
     expect(src).toContain('logo: { input: 3_500, output: 1_500, max: 10_000, modele: "strong" as const, effort: "high" },');
   });
 });
+
+describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, faux dessinateur et faux relecteur)", async () => {
+  const P = await import("@/lib/syna-agent/planche-de-marque");
+  const T = await import("@/lib/syna-agent/planche-de-marque-tache");
+  const J = await import("@/lib/syna-agent/journey");
+  const mp = await import("@/lib/ai/media-providers");
+  const { account, project } = await import("./conversation209-fixtures");
+  const { saveAsset } = await import("@/lib/library");
+  const { chargeDuStudio } = await import("@/lib/billing");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const fr = <X,>(fn: () => Promise<X>) => runWithLang({ ui: "fr", content: "fr" }, fn);
+  const F = "tests/fixtures/planche-de-marque";
+  const TENON = { metier: "une entreprise de menuiserie qui réalise des cuisines et des dressings sur mesure", traits: ["artisanale", "chaleureuse", "précise", "haut de gamme"], emotion: "la vie dans une cuisine sur mesure", site: "marque" as const, appel: "devis" as const, images: ["famille dans sa cuisine sur mesure", "dressing rangé", "gros plan bois / assemblage", "atelier et savoir-faire", "détail de quincaillerie", "lumière naturelle intérieure"], produits: ["cuisines", "dressings", "rangements sur mesure"] };
+  const RACINE = { metier: "une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres", traits: ["vivante", "chaleureuse", "généreuse", "naturelle"], emotion: "le plaisir de voir pousser ses plantes", site: "boutique" as const, images: ["plante dans un intérieur lumineux", "jardin qui pousse", "gros plan feuillage / terre / racines", "plante seule en studio ou lifestyle", "pépinière et serres", "mise en pot"], produits: ["plantes d'intérieur", "arbustes", "jeunes arbres"] };
+  const bon = (nom: string, mention: string, annee = 2026) => ({ nomLu: nom, logoFidele: true, copyrightLu: `© ${annee} ${nom}`, domaineLu: mention, fautes: [] as string[], promesses: [] as string[], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [] as string[], note: 9, pourquoi: "Nette." });
+  /** Une planche passée par la vraie tâche, avec un faux dessinateur et un faux relecteur (rien n'est payé). */
+  async function tache(o: { verdicts: (demande: string, tour: number) => any; domaines?: any; personnes?: boolean }) {
+    const u = await account(), pid = project(u, "services") as string;
+    const logo = await saveAsset({ projectId: pid, userId: u.id, data: await sharp({ create: { width: 256, height: 256, channels: 3, background: "#FFFFFF" } }).png().toBuffer(), name: "logo-fini.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready" });
+    const appels: { texte: string; logo: Buffer; disposition: Buffer; studio: boolean }[] = [];
+    const ai = {
+      valeurs: async () => { throw new Error("aucun appel attendu"); },
+      dessiner: async (l: { data: Buffer }, d: { data: Buffer }, texte: string) => { appels.push({ texte, logo: l.data, disposition: d.data, studio: chargeDuStudio() }); return { png: await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#EEE" } }).png().toBuffer(), recu: null }; },
+      relire: async (_b: Buffer[], _l: Buffer, _d: Buffer, demande: string) => o.verdicts(demande, appels.length),
+    };
+    T.plancheDeps.domaines = async () => o.domaines ?? { taken: [], free: ["tenon.fr"], unknown: [], at: 1 };
+    T.plancheDeps.annee = () => 2026;
+    try {
+      const x = { ...route("A"), name: "Tenon" };
+      const r = await fr(() => T.plancheDeLaRoute({ ctx: { step: async (_k: string, fn: () => Promise<any>) => fn() }, ai, who: { userId: u.id, projectId: pid }, route: x as never, round: 1, valeurs: { ok: true, valeurs: TENON }, logoAssetId: logo.id, personnes: o.personnes ?? false }));
+      return { r, appels, logo };
+    } finally { T.plancheDeps.domaines = undefined; T.plancheDeps.annee = undefined; }
+  }
+
+  epreuve("planche-de-marque-openai", async () => {
+    // Les champs exacts des requêtes de preuve, le chemin permis, sans secours.
+    const preuve = JSON.parse(fs.readFileSync(`${F}/tenon-requete.json`, "utf8"));
+    const { prompt: _p, n, ...reglages } = preuve.champs;
+    const { prompt: _q, ...champs } = mp.champsDeLaPlanche("t");
+    expect(champs).toEqual({ ...reglages, n: Number(n) });
+    expect(champs).toMatchObject({ model: "gpt-image-2.5-sunburst", quality: "xhigh", size: "1536x2304" });
+    expect(preuve["image[]"]).toEqual(["logo-tenon.png", "disposition-variante-2.png"]);
+    // Le texte de base mot pour mot : Tenon et Racine refaits à l'identique ; seules les six parties changent.
+    expect(P.texteDesPreuves("Tenon", TENON)).toBe(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"));
+    expect(P.texteDesPreuves("Racine", RACINE)).toBe(fs.readFileSync(`${F}/racine-prompt.txt`, "utf8"));
+    expect(crypto.createHash("sha256").update(fs.readFileSync("assets/planche-de-marque/disposition.png")).digest("hex")).toBe(P.DISPOSITION.sha256);
+    // Un produit absent de la fiche n'entre jamais dans le texte.
+    expect(P.controleDesValeurs({ nom: "Tenon", traits: TENON.traits, emotion: "un repas en famille", images: TENON.images.slice(1), produits: ["cuisines", "escaliers"], appel: "devis" }, { nom: "Tenon", metier: TENON.metier, fiche: "Je fais des cuisines.", personnes: true, kind: "services" }).valeurs.produits).toEqual(["cuisines"]);
+    // La vraie tâche : image[] = le logo fini, puis la disposition ; le texte des preuves suivi de la phrase des données.
+    const { r, appels, logo } = await tache({ verdicts: () => bon("Tenon", "tenon.fr — disponible") });
+    expect(appels).toHaveLength(1);
+    const { assetData, getAsset } = await import("@/lib/library");
+    expect(appels[0].logo.equals(assetData(getAsset(logo.id)!))).toBe(true);
+    expect(crypto.createHash("sha256").update(appels[0].disposition).digest("hex")).toBe(P.DISPOSITION.sha256);
+    expect(appels[0].texte.startsWith(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"))).toBe(true);
+    expect(r.route.board.planche!.image).toBeTruthy();
+  });
+
+  epreuve("planche-donnees-verifiees", async () => {
+    const libre = await tache({ verdicts: () => bon("Tenon", "tenon.fr — disponible") });
+    expect(libre.appels[0].texte.endsWith("écris exactement « tenon.fr — disponible » et « © 2026 Tenon » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.")).toBe(true);
+    const doute = await tache({ domaines: { taken: [], free: [], unknown: ["tenon.fr"], at: 1 }, personnes: true, verdicts: () => bon("Tenon", "tenon.fr — à vérifier") });
+    expect(doute.appels[0].texte.endsWith("écris exactement « tenon.fr — à vérifier » et « © 2026 Tenon » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis.")).toBe(true);
+    expect(doute.r.route.board.planche).toMatchObject({ statut: "a_verifier", domaine: "tenon.fr", annee: 2026 });
+    // Lettre pour lettre : une année fausse, un domaine différent ou « disponible » à la place de « à vérifier » font refaire.
+    const faux = await tache({ verdicts: (_d, n) => (n === 1 ? bon("Tenon", "tenon.fr — disponible", 2025) : bon("Tenon", "tenon.com — disponible")) });
+    expect(faux.appels).toHaveLength(2);
+    expect(faux.appels[1].texte.endsWith("À corriger : le copyright doit être exactement « © 2026 Tenon » (lu : « © 2025 Tenon »).")).toBe(true);
+    expect(faux.r.route.board.planche!.image).toBeUndefined();
+    expect(P.raisonsDuRefusDeLaPlanche(bon("Tenon", "tenon.fr — disponible"), { nom: "Tenon", annee: 2026, domaine: { domaine: "tenon.fr", statut: "a_verifier" }, personnes: true, animaux: false }).join(" ")).toMatch(/« tenon.fr — à vérifier »/);
+  });
+
+  epreuve("planche-refusee-deux-fois-jamais-montree", async () => {
+    const une = await tache({ verdicts: (_d, n) => (n === 1 ? { ...bon("Tenon", "tenon.fr — disponible"), copies: ["le harnais de la disposition"] } : bon("Tenon", "tenon.fr — disponible")) });
+    expect(une.appels.map((a) => a.studio)).toEqual([false, true]);
+    expect(une.appels[1].texte.endsWith("À corriger : éléments recopiés de la disposition : le harnais de la disposition.")).toBe(true);
+    expect(une.r.route.board.planche!.image).toBeTruthy();
+    const deux = await tache({ verdicts: () => ({ ...bon("Tenon", "tenon.fr — disponible"), note: 6 }) });
+    expect(deux.appels).toHaveLength(2);
+    expect(deux.r.route.board.planche!.image).toBeUndefined();
+    expect(deux.r.issues.join(" ")).toMatch(/je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite\. Je peux la refaire à ma charge : rien n'est compté sur ton budget\./);
+    const j = { keep: [], identities: { list: [{ ...deux.r.route, board: { ...deux.r.route.board, images: { logo: { id: "logoabcd", w: 1, h: 1 } } } }] } };
+    expect(J.planchesMontrees(j as never)).toEqual([]);
+    expect(J.planchesIncompletes(j as never)).toEqual([{ key: "A", manque: ["planche"] }]);
+    // La reprise, à la charge du Studio, passe par identity.images (images « planche ») ; le choix attend sous deux planches.
+    const I = await import("@/lib/syna-agent/tools/identity");
+    expect(I.finirPlanchesGardees(j as never, ["A"], ["planche"])).toBe(true);
+    expect(I.devisDesImages(j as never, ["A"], ["planche"])).toMatchObject({ studio: true });
+  });
+});

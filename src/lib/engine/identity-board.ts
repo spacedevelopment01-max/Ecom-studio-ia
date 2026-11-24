@@ -45,6 +45,16 @@ export function publicationsDeLaMethodeDuProjet(projectId: string): Asset[] | nu
   return parFormat.every(Boolean) ? (parFormat as Asset[]) : null;
 }
 
+/** Un nouveau projet : son identité choisie a sa planche de marque faite par OpenAI (accord du propriétaire du 24 novembre 2026). */
+async function avecPlancheDeMarque(projectId: string): Promise<boolean> {
+  try {
+    const { journeyOfProject } = await import("../syna-agent/construction");
+    const { chosenRoute } = await import("../syna-agent/logos");
+    const j = journeyOfProject(projectId);
+    return !!(j && chosenRoute(j)?.board.planche);
+  } catch { return false; }
+}
+
 export async function saveIdentityBoard(projectId: string, brandOverride?: Brand): Promise<Asset | null> {
   const p = loadProject(projectId);
   const b = brandOverride ?? p.brand;
@@ -77,8 +87,9 @@ export async function saveIdentityBoard(projectId: string, brandOverride?: Brand
     icons: boardIcons(text, business),
     photos: photos.map(assetData),
     product: cutout ? assetData(cutout) : null,
-    // Les publications de la méthode, posées par le code sur la planche (aucune sans les trois).
-    publications: publicationsDeLaMethodeDuProjet(projectId)?.map(assetData) ?? null,
+    // Les publications de la méthode, posées par le code sur la planche (aucune sans les trois). Nouveaux projets (planche
+    // de marque par OpenAI) : la bande n'est plus posée sur une planche, elle reste un fichier livrable à part.
+    publications: (await avecPlancheDeMarque(projectId)) ? null : publicationsDeLaMethodeDuProjet(projectId)?.map(assetData) ?? null,
   });
   const prev = latest("brand-board");
   return saveAsset({ projectId, userId: p.userId, data: png, name: C("planche-identite.png", "identity-board.png"), mime: "image/png", role: "brand-board", folderKey: "brand.logos", origin: "generated", sourceAssetId: main.id, versionOf: prev ? prev.version_of ?? prev.id : null, meta: { engine: "identity-board" } });

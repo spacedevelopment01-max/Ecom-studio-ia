@@ -310,13 +310,13 @@ type Made = { id: string; w: number; h: number };
 const instead = (x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? (x.board.images?.logo ? "je garde celui d'avant" : "je le refais avant de te montrer ta marque") : slot === "site" ? "je ne le montre pas" : "je ne la montre pas";
 
 /** Ce qu'on appelle chaque image d'une planche, quand elle manque. */
-const MANQUE_LABEL: Record<string, { fr: string; en: string }> = { logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande scène", en: "the main scene" }, site: { fr: "le haut du site", en: "the site header" } };
+const MANQUE_LABEL: Record<string, { fr: string; en: string }> = { logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande scène", en: "the main scene" }, site: { fr: "le haut du site", en: "the site header" }, planche: { fr: "la planche de marque", en: "the brand board" } };
 /**
  * Les images sans lesquelles une planche n'est jamais montrée (règle du propriétaire : « Jamais une planche incomplète :
  * une image refusée est refaite avant d'être montrée ») : le logo (sauf quand le client garde le sien), la grande scène,
  * le haut du site. Rien ne manque : [].
  */
-export function manqueDeLaPlanche(x: { board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown } } }, logoDuClient = false): ImageSlot[] {
+export function manqueDeLaPlanche(x: { board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown }; planche?: { image?: unknown } } }, logoDuClient = false): (ImageSlot | "planche")[] {
   return manqueLu(x, logoDuClient);
 }
 /** « le logo et la grande scène » (en français ou en anglais). */
@@ -354,7 +354,7 @@ export async function clientLogoOf(projectId: string): Promise<ClientLogo | null
   try { const data = assetData(a), meta = await sharp(data).metadata(); return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024, data }; } catch { return null; }
 }
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[]; /** Haut du site refait et refusé : celui d'avant est gardé (il porte l'ancien logo). */ siteGarde?: boolean;
-  /** Images de la planche qui manquent encore après les reprises (logo, grande scène, haut du site) : la planche n'est pas montrée. */ manque?: ImageSlot[];
+  /** Images de la planche qui manquent encore après les reprises (logo, grande scène, haut du site) : la planche n'est pas montrée. */ manque?: (ImageSlot | "planche")[];
 };
 
 /** Un logo à fond transparent posé sur du blanc, pour qu'un relecteur le voie comme le client le verra. */

@@ -212,5 +212,24 @@ export const BoardSchema = z.object({
     /** Les trois publications de la méthode posées par le code à même hauteur, à leurs rapports exacts (fichier à part). */
     bande: BoardImageSchema.optional(),
   }).optional(),
+  /**
+   * LA PLANCHE DE MARQUE PAR OPENAI (nouveaux projets ; accord écrit du propriétaire du 24 novembre 2026) : une image
+   * entière, faite à partir du logo fini choisi et de la disposition, relue. Présente, elle EST la planche montrée au
+   * client ; sans `image` (refusée deux fois, ou pas encore faite), la planche n'est jamais montrée (`manqueDeLaPlanche`).
+   */
+  planche: z.object({
+    image: BoardImageSchema.optional(),
+    /** Le logo fini joint en première image. */
+    logo: z.string().regex(/^[A-Za-z0-9_-]{4,80}$/),
+    domaine: z.string().max(80).nullable(), statut: z.enum(["disponible", "a_verifier", "adresse_a_choisir"]), annee: z.number().int().min(2000).max(2200),
+    /** Les essais faits (1 ou 2 : une reprise au plus, à la charge du Studio). */
+    essais: z.number().int().min(0).max(2),
+    note: z.number().min(0).max(10).optional(),
+    /** Pourquoi elle n'est pas montrée (refusée deux fois, valeurs du métier impossibles, panne). */
+    raison: z.string().max(800).optional(),
+    /** La revérification gratuite du domaine au moment du choix. */
+    revu: z.object({ statut: z.enum(["disponible", "a_verifier", "adresse_a_choisir"]), at: z.number() }).optional(),
+    at: z.number(),
+  }).optional(),
 });
 export type Board = z.infer<typeof BoardSchema>;

@@ -87,6 +87,15 @@ const SOURCE_GRAPHISTES = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (méthode 
 const COULEURS_ET_RELECTEUR = { decision: "24 novembre 2026", mots: "« Oui, marque planches-de-recherche-demande-exacte et relecteur-du-logo-fini comme remplacées par mes décisions du 24 novembre au soir, ajoute et scelle couleurs-variees-dans-la-recherche (« Varie les couleurs d'une esquisse à l'autre. » à la fin de la demande de recherche) et relecteur-sans-refus-pour-trop-proche (le relecteur ne refuse plus un logo trop proche de l'esquisse), et mets à jour la partie Logo de CLAUDE.md. »" };
 const SOURCE_COULEURS_ET_RELECTEUR = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (parties « Ce que le propriétaire a dit » et « Les deux changements du 24 novembre » ; ses mots relayés par le chef d'orchestre)";
 
+/**
+ * LA PLANCHE DE MARQUE PAR OPENAI : l'accord écrit du propriétaire du 24 novembre 2026, mot pour mot, et sa demande de
+ * départ (relayés par le chef d'orchestre). Compte rendu : docs/studio/PLANCHE-DE-MARQUE.md.
+ */
+const ACCORD_PLANCHE = "« Oui, garde vrai-produit-du-client-joint et publication-incomprehensible pour la marque finie, le site et les vraies publications, ajoute et scelle planche-de-marque-openai (une planche par logo choisi, 2.5 Sunburst xhigh 1536x2304, le logo puis la disposition, le texte de base mot pour mot sauf les six parties du métier et la phrase des données vérifiées), planche-donnees-verifiees (l'année en cours et le domaine vérifié, « disponible » ou « à vérifier », comparés lettre pour lettre) et planche-refusee-deux-fois-jamais-montree (une reprise à la charge du Studio avec les raisons ; refusée deux fois, elle n'est pas montrée et SINA propose de la finir à sa charge), et mets à jour les parties Identité et Maquette du site sur la planche de CLAUDE.md. »";
+const DEMANDE_PLANCHE = "« Oui et cette partie là en xhigh, quand le client reçois ses 12 logos il peut en choisir jusqu'à 2 dans le 1er forfait 3 dans le forfait du milieu et 4 dans le dernier forfait et chaque logo choisi à sa planche comme tu viens de le faire et je veux exactement les même planche dans sina »";
+const VERDICT_PLANCHE = `Accord écrit du propriétaire du 24 novembre 2026, mot pour mot : ${ACCORD_PLANCHE} Sa demande de départ, mot pour mot : ${DEMANDE_PLANCHE}`;
+const SOURCE_PLANCHE = "docs/studio/PLANCHE-DE-MARQUE.md (accord écrit du propriétaire du 24 novembre 2026 et sa demande de départ, relayés mot pour mot par le chef d'orchestre ; preuves : docs/studio/essais-logos-api/planche-tenon-xhigh et planche-racine-xhigh, branche du chef d'orchestre)";
+
 export const EPREUVES: Epreuve[] = [
   {
     id: "logo-goutte-refusee", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
@@ -260,6 +269,9 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Le client demande une photo dans une arche : SINA explique que ce cadre n'est plus utilisé et propose un cadre droit.",
     rejeu: "payant", prix: "[À compléter : prix d'un rejeu en différé, à mesurer avant de le lancer].",
   },
+  // Gardée telle quelle par l'accord écrit du propriétaire du 24 novembre 2026 (« Oui, garde vrai-produit-du-client-joint et
+  // publication-incomprehensible pour la marque finie, le site et les vraies publications, … ») : elle reste valable pour
+  // les vraies publications ; la planche de marque ne la remplace pas.
   {
     id: "publication-incomprehensible", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
     verdict: "Une publication d'escalier pour un plombier, incompréhensible pour un inconnu : « Personne ne juge l'idée d'une publication avant de payer le dessin ».",
@@ -332,6 +344,9 @@ export const EPREUVES: Epreuve[] = [
     attendu: "Une image notée moins de 8 sur 10 n'est jamais gardée ni montrée, même quand le relecteur répond ok = faux avec un défaut « texte » dont les textes attendus sont présents, ou quand il ne dit rien de ok ; elle est refaite. Ce que SINA dit d'une image vient du verdict du relecteur (sa note et ses mots), jamais d'un éloge inventé.",
     rejeu: "gratuit",
   },
+  // Gardée telle quelle par l'accord écrit du propriétaire du 24 novembre 2026 (« Oui, garde vrai-produit-du-client-joint et
+  // publication-incomprehensible pour la marque finie, le site et les vraies publications, … ») : elle reste valable pour
+  // la marque finie, le site et les vraies publications ; la planche de marque ne la remplace pas.
   {
     id: "vrai-produit-du-client-joint", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/verdicts.md et NADIA-2-DIAGNOSTIC.md, branche des essais)",
     verdict: "Carnet des verdicts, Nadia, identité C « Pénombre », grande scène, 1er essai : « 5/10 : « un pot de confiture avec une étiquette vierge, et non une bougie en cire de soja » ». Diagnostic : « Les vraies photos de Nadia n'ont jamais été jointes. » Règle : l'ouverture est une scène créée avec son vrai produit.",
@@ -497,6 +512,24 @@ export const EPREUVES: Epreuve[] = [
     id: "relecteur-sans-refus-pour-trop-proche", date: "2026-11-24", source: SOURCE_COULEURS_ET_RELECTEUR,
     verdict: "« Ouais » (24 novembre 2026), sa réponse à « Je fais retirer cette règle et je relance la finalisation du R bordeaux ? », après l'essai réel où quatre logos finis propres et fidèles avaient tous été refusés pour la seule raison « trop proche de l'esquisse, sans évolution ».",
     attendu: "Le logo fini est relu par le relecteur le plus fort, effort élevé, un autre modèle que le rédacteur, avec le logo sur blanc, l'esquisse, le nom, le vrai métier et le texte envoyé ; il ne refuse plus jamais un logo parce qu'il est trop proche de l'esquisse (la question ne lui est plus posée, aucun écart mesuré ne lui est donné) ; il est refusé si le nom est mal écrit (le code le compare aussi), si l'idée de l'esquisse est perdue, s'il porte une arche, une phrase inventée qui ne dit pas le vrai métier, ou une note sous 8 ; un fond que le Studio ne retire pas proprement le fait refaire ; la ligne d'évolution du texte de finalisation reste.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "planche-de-marque-openai", date: "2026-11-24", source: SOURCE_PLANCHE,
+    verdict: VERDICT_PLANCHE,
+    attendu: "Chaque logo choisi a sa planche de marque, une seule image entière : un appel POST /v1/images/edits par planche, avec les champs exacts des requêtes de preuve (gpt-image-2.5-sunburst, quality xhigh, size 1536x2304, fond opaque, png, n 1), image[] = le logo fini choisi en premier, puis la disposition des preuves (empreinte vérifiée), et rien d'autre, sans secours ni relance après une panne ; le texte envoyé est le texte de base des preuves mot pour mot (Tenon et Racine refaits à l'identique), sauf les six parties du métier (le nom à cinq endroits, la ligne de la marque, l'exemple d'émotion du 1:1, le type de site en quatre lignes liées, les images de référence, les produits ou prestations retrouvés dans la fiche du client, jamais inventés) et la phrase des données vérifiées, à la toute fin ; elle remplace, pour les nouveaux projets, la grande scène et le haut du site des planches proposées.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "planche-donnees-verifiees", date: "2026-11-24", source: SOURCE_PLANCHE,
+    verdict: VERDICT_PLANCHE,
+    attendu: "La phrase des données vérifiées porte l'année de l'horloge et le domaine vérifié par le registre AVANT le dessin : « {domaine} — disponible » s'il est libre, « {domaine} — à vérifier » s'il n'a pas pu l'être, « Adresse à choisir » si tout est pris, et « © {année} {Nom} » ; sans photo de personne ni accord écrit, elle ajoute « aucune personne visible » ; après le dessin, le relecteur recopie le nom, le copyright et la mention du domaine, et le code les compare lettre pour lettre : une année fausse ou un domaine différent fait refuser la planche.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "planche-refusee-deux-fois-jamais-montree", date: "2026-11-24", source: SOURCE_PLANCHE,
+    verdict: VERDICT_PLANCHE,
+    attendu: "Une planche refusée par le relecteur (nom ou logo faux ou redessiné, faute, promesse ou chiffre inventé, année fausse, domaine différent, personne sans accord, logo foncé sur fond sombre, mot « maquette » ou « mockup », élément recopié de la disposition, note sous 8) est refaite UNE fois, à la charge du Studio, avec toutes ses raisons à la fin du texte ; refusée deux fois, elle n'est montrée ni au client ni à SINA, ni choisissable (avec moins de deux planches montrées, le choix attend), jamais un troisième essai ; SINA dit qu'elle ne la montre pas et propose de la refaire à sa charge, rien n'est compté sur le budget du client.",
     rejeu: "gratuit",
   },
 ];

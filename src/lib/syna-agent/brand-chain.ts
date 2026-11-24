@@ -644,7 +644,7 @@ const Payload = z.object({
   /** Seulement les images, sur les planches déjà écrites (celles de `redo`, ou toutes) : rien d'autre n'est refait. */
   imagesOnly: z.boolean().optional(),
   /** Avec `imagesOnly` : seulement ces images (ex. le logo et l'objet qui le porte) ; les autres images gardées restent. */
-  slots: z.array(z.enum(CREATED_SLOTS)).min(1).optional(),
+  slots: z.array(z.enum([...CREATED_SLOTS, "planche"] as const)).min(1).optional(),
   /** La marque finie de l'identité CHOISIE : logo adopté, images manquantes (ou `slots` à refaire), charte. */
   finish: z.boolean().optional(),
   /** Avec `imagesOnly` : finir une planche gardée de côté (une image y manque), à la charge du Studio. */
@@ -666,8 +666,20 @@ const Payload = z.object({
   logosGraphistes: z.array(z.object({ assetId: z.string(), palette: z.object({ dark: z.string(), primary: z.string(), secondary: z.string(), accent: z.string(), light: z.string() }).optional() })).max(4).optional(),
   /** L'atelier de la tâche arrêtée après les noms : étude, idées et noms repris tels quels, jamais repayés. */
   atelier: z.string().optional(),
+  /**
+   * LA PLANCHE DE MARQUE PAR OPENAI (accord écrit du propriétaire du 24 novembre 2026), posée par `lancerLesPlanches` pour
+   * les nouveaux projets : avec `logosGraphistes`, chaque identité reçoit une planche entière à la place de la grande
+   * scène et du haut du site. Sans elle (tâches d'avant), l'ancien code reste.
+   */
+  plancheDeMarque: z.boolean().optional(),
 });
 export type BrandJobPayload = z.infer<typeof Payload>;
+
+/** Les places d'images d'une demande (« planche » à part : la planche de marque se refait entière, par son propre chemin). */
+const imagesDesPlaces = (slots?: readonly string[]): ImageSlot[] | undefined => {
+  const l = (slots ?? []).filter((s): s is ImageSlot => (CREATED_SLOTS as readonly string[]).includes(s));
+  return l.length ? l : undefined;
+};
 
 export async function runSinaBrandJob(ctx: JobContext) {
   const a = Payload.parse(ctx.payload);
@@ -703,7 +715,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
 
   // La marque finie de l'identité choisie (second temps) : rien d'autre n'est refait.
   if (a.finish) {
-    const finir = async () => (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: a.slots, guidance: a.guidance });
+    const finir = async () => (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: imagesDesPlaces(a.slots), guidance: a.guidance });
     // Ce qui porte le logo qui manquait à la marque finie (posé depuis par la méthode des graphistes) : une reprise du
     // travail de SINA, à la charge du Studio.
     return a.studio && j.brandFinish?.studio ? aLaChargeDuStudio(finir) : finir();
@@ -725,12 +737,30 @@ export async function runSinaBrandJob(ctx: JobContext) {
       const reprise = !a.guidance ? proposalImagery(j, x) : undefined;
       // Une planche gardée de côté, finie par le Studio : ses images manquantes sont une reprise de son propre travail,
       // jamais comptée au client (LE-STUDIO-DE-A-A-Z, partie 13 : « une erreur de SINA est toujours corrigée sans rien compter »).
-      const faire = () => runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, gouts, ...(reprise ? { imagery: reprise } : {}) });
+      const places = imagesDesPlaces(a.slots);
+      // La planche de marque par OpenAI (nouveaux projets) : refaite entière, avec son logo fini et les valeurs déjà écrites.
+      const refairePlanche = !!a.slots?.includes("planche") && !!x.board.planche;
+      const faire = async (): Promise<Awaited<ReturnType<typeof runBoardImages>>> => {
+        const route0 = list.find((o) => o.key === x.key) ?? x;
+        if (refairePlanche && route0.board.planche) {
+          const T = await import("./planche-de-marque-tache");
+          const plancheAi = T.plancheDeps.ai ? T.plancheDeps.ai(ctx.job.id) : T.vraisAppelsDeLaPlanche({ userId: p.userId, projectId: p.id, jobId: ctx.job.id });
+          const personnes = peopleAllowed(p.id), metier = j.graphistes?.metier?.metier ?? "";
+          // Les valeurs du métier déjà écrites par la tâche qui a fait les planches : reprises telles quelles, jamais repayées.
+          const avant = j.identities?.chainJobId ? parseJson<Record<string, unknown>>(getJob(j.identities.chainJobId)?.checkpoint ?? "{}", {}) : {};
+          for (const [k, v] of Object.entries(avant)) if (k.startsWith("brand:planche:valeurs:") && !(k in ctx.checkpoint)) ctx.save(k, v);
+          const valeurs = metier ? await T.valeursDuClient(ctx, plancheAi, { nom: route0.name, metier, fiche: ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id }), personnes, kind }) : { ok: false as const, raison: L("le métier n'est pas encore écrit", "the trade is not written yet"), notes: [] };
+          const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route: route0, round, valeurs, logoAssetId: route0.board.planche.logo, personnes });
+          return { route: r.route, made: r.route.board.planche?.image ? 1 : 0, rejected: r.route.board.planche?.image ? 0 : 1, notes: [...valeurs.notes, ...r.notes], issues: r.issues, manque: manqueDeLaPlanche(r.route, !!clientLogo) };
+        }
+        return runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: route0, round, slots: places, clientLogo, gouts, ...(reprise ? { imagery: reprise } : {}) });
+      };
       const r = (a.studio || a.studioKeys?.includes(x.key as never)) && planchesIncompletes(j).some((y) => y.key === x.key) ? await aLaChargeDuStudio(faire) : await faire();
       list = list.map((o) => (o.key === x.key ? r.route : o));
       if (r.siteGarde) siteGardes.push(x.key);
       const manque = manqueDeLaPlanche(r.route, !!clientLogo);
-      if (manque.length) { said.push(phrasePlancheGardee(r.route, manque, r.issues)); held.set(x.key, manque); } else said.push(...r.issues);
+      if (manque.includes("planche")) { said.push(...r.issues); held.set(x.key, manque); }
+      else if (manque.length) { said.push(phrasePlancheGardee(r.route, manque, r.issues)); held.set(x.key, manque); } else said.push(...r.issues);
       notes.push(...r.notes);
     }
     const seul: string[] = [], refaite = (a.slots ?? []).includes("site") ? targets.map((x) => x.key).filter((k) => !siteGardes.includes(k)) : [];
@@ -1075,7 +1105,28 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // lui ont été montrées) : une planche à laquelle il manque encore une image après les reprises est gardée de côté.
   const imagesFaites = a.images ?? brandImagesOn();
   const raisonsDe = new Map<string, string[]>();
-  if (imagesFaites) {
+  // LA PLANCHE DE MARQUE PAR OPENAI (nouveaux projets ; accord écrit du propriétaire du 24 novembre 2026) : avec les logos
+  // des graphistes, chaque identité reçoit son logo fini tel quel, puis UNE planche entière faite à partir de ce logo et de
+  // la disposition, relue, à la place de la grande scène et du haut du site. Les anciens projets gardent l'ancien code.
+  const parLaPlanche = imagesFaites && !!a.plancheDeMarque && !!a.logosGraphistes?.length;
+  if (parLaPlanche) {
+    const T = await import("./planche-de-marque-tache");
+    const plancheAi = T.plancheDeps.ai ? T.plancheDeps.ai(ctx.job.id) : T.vraisAppelsDeLaPlanche({ userId: p.userId, projectId: p.id, jobId: ctx.job.id });
+    const personnes = peopleAllowed(p.id), metier = j.graphistes?.metier?.metier ?? "";
+    const premier = list.find((y) => todo.includes(y.key));
+    // Les valeurs du métier : UN appel pour le client (ses planches partagent le nom et le métier), jamais repayé.
+    const valeurs = premier && metier ? await T.valeursDuClient(ctx, plancheAi, { nom: premier.name, metier, fiche: ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id }), personnes, kind }).catch((e) => { if (e instanceof CostCapReached) return { ok: false as const, raison: L("le plafond annoncé a été atteint", "the announced cap was reached"), notes: [] }; throw e; })
+      : { ok: false as const, raison: L("le métier n'est pas encore écrit", "the trade is not written yet"), notes: [] };
+    notes.push(...valeurs.notes);
+    for (const x of list.filter((y) => todo.includes(y.key))) {
+      const lg = a.logosGraphistes?.[keys.indexOf(x.key as RouteKey)];
+      if (!lg) continue;
+      const route = await poserLeLogoFini(x, lg.assetId);
+      const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route, round, valeurs, logoAssetId: lg.assetId, personnes });
+      list = list.map((o) => (o.key === x.key ? r.route : o));
+      raisonsDe.set(x.key, r.issues); notes.push(...r.notes);
+    }
+  } else if (imagesFaites) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
         // Le logo vient de la méthode des graphistes (une seule façon de faire) : le logo fini de cette identité est posé
@@ -1096,13 +1147,16 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const incompletes = imagesFaites ? list.filter((y) => todo.includes(y.key)).map((y) => ({ key: y.key, manque: manqueDeLaPlanche(y, !!clientLogo) as string[] })).filter((y) => y.manque.length) : [];
   for (const x of list.filter((y) => todo.includes(y.key))) {
     const held = incompletes.find((y) => y.key === x.key);
-    if (held) { remaining.push(phrasePlancheGardee(x, held.manque, raisonsDe.get(x.key) ?? [])); notes.push(`planche ${x.key} gardée de côté : il lui manque ${held.manque.join(", ")}`); }
+    // Une planche de marque refusée deux fois : sa phrase est déjà dite (raisonsDe), SINA propose de la finir à sa charge.
+    if (held && held.manque.includes("planche")) { remaining.push(...(raisonsDe.get(x.key) ?? [])); notes.push(`planche ${x.key} gardée de côté : il lui manque ${held.manque.join(", ")}`); }
+    else if (held) { remaining.push(phrasePlancheGardee(x, held.manque, raisonsDe.get(x.key) ?? [])); notes.push(`planche ${x.key} gardée de côté : il lui manque ${held.manque.join(", ")}`); }
     else remaining.push(...(raisonsDe.get(x.key) ?? []));
   }
 
   // Le nom de domaine de chaque planche neuve (gratuit, sans IA) : le domaine exact, sinon une adresse libre qui garde
   // le nom entier (« pulpefrance.fr »). Un contrôle impossible n'affirme rien.
-  if (domainsOn()) for (const x of list.filter((y) => todo.includes(y.key))) {
+  // Une planche de marque a déjà vérifié son domaine avant le dessin : rien n'est revérifié ici.
+  if (domainsOn()) for (const x of list.filter((y) => todo.includes(y.key) && !y.board.planche)) {
     try {
       const d = await ctx.step(`brand:domains:${round}:${x.key}:${normText(x.name)}`, () => findDomains(x.name, x.board.descriptor));
       list = list.map((o) => (o.key === x.key ? { ...o, board: { ...o.board, domains: d } } : o));

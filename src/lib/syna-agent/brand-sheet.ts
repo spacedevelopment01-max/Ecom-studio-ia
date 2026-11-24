@@ -9,6 +9,8 @@ import { journeyOfProject } from "./construction";
 import { fontFace } from "./identities";
 import { chosenRoute } from "./logos";
 import { vueDesEsquisses, type VueDesEsquisses } from "./logo-graphistes";
+import { planchesMontrees } from "./journey";
+import { caseDuDomaine } from "./planche-de-marque";
 
 type Shot = { url: string; w: number; h: number };
 export type BrandSheet = {
@@ -24,6 +26,11 @@ export type BrandSheet = {
   issues: string[];
   /** Les esquisses de logo (méthode des graphistes), montrées tant qu'aucune n'est choisie ; sinon null. */
   esquisses: VueDesEsquisses | null;
+  /**
+   * Les planches de marque (nouveaux projets) : montrées seules, en entier, avec le téléchargement et la case du domaine ;
+   * jamais une planche non montrée (refusée deux fois). Après le choix : seulement celle de l'identité choisie.
+   */
+  planches: { key: string; name: string; url: string; download: string; w: number; h: number; caseDuDomaine: string }[];
 };
 
 const HEX = /^#[0-9a-f]{6}$/i;
@@ -56,5 +63,10 @@ export function brandSheetOf(projectId: string): BrandSheet {
     } : null,
     issues: j?.brandFinish?.issues ?? [],
     esquisses: j?.graphistes?.choix?.length ? null : vueDesEsquisses(j?.graphistes, (id) => assetUrl({ id })),
+    planches: (j ? planchesMontrees(j) : []).filter((x) => !chosen || x.key === (j?.identityChoice?.mix?.logo ?? j?.identityChoice?.key)).flatMap((x) => {
+      const pl = x.board?.planche;
+      if (!pl?.image) return [];
+      return [{ key: x.key, name: x.name, url: assetUrl({ id: pl.image.id }), download: assetUrl({ id: pl.image.id }, { download: true }), w: pl.image.w, h: pl.image.h, caseDuDomaine: caseDuDomaine({ domaine: pl.domaine, statut: pl.revu?.statut ?? pl.statut }) }];
+    }),
   };
 }

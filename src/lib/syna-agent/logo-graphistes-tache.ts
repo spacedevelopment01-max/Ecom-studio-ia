@@ -155,7 +155,7 @@ export function lancerLesPlanches(who: { userId: string; projectId: string }, ci
   const garde = j.keep.includes("nom");
   const job = enqueue({
     userId: who.userId, projectId: who.projectId, type: SINA_BRAND_JOB, label: L(`${choix.length} identités de marque (SINA)`, `${choix.length} brand identities (SINA)`),
-    payload: { projectId: who.projectId, conversationId: cid, capMicro: acc.planchesMicro, count: choix.length, ...(garde ? {} : { names: choix.map(() => e.nom) }), logosGraphistes: logos.map((l) => ({ assetId: l!.assetId!, ...(l!.palette ? { palette: l!.palette } : {}) })), ...(j.nomsDeLaMarque?.atelier ? { atelier: j.nomsDeLaMarque.atelier } : {}) },
+    payload: { projectId: who.projectId, conversationId: cid, capMicro: acc.planchesMicro, ...(acc.planchesStudioMicro != null ? { studioCapMicro: acc.planchesStudioMicro } : {}), count: choix.length, ...(garde ? {} : { names: choix.map(() => e.nom) }), logosGraphistes: logos.map((l) => ({ assetId: l!.assetId!, ...(l!.palette ? { palette: l!.palette } : {}) })), plancheDeMarque: true, ...(j.nomsDeLaMarque?.atelier ? { atelier: j.nomsDeLaMarque.atelier } : {}) },
     maxAttempts: 1, idempotencyKey: `syna:${cid}:planches:${choix.join("-")}:${logos.map((l) => l!.assetId).join("-")}`,
   });
   return job.id;
