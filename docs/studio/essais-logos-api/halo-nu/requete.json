@@ -1,0 +1,17 @@
+{
+ "endpoint": "POST https://api.openai.com/v1/responses",
+ "corps": {
+  "model": "gpt-6.2-astra",
+  "input": "Le nom de mon entreprise c'est Halo et je vends des bougies. Fais-moi deux logos différents pour que je puisse choisir.",
+  "tools": [
+   {
+    "type": "image_generation",
+    "model": "gpt-image-2.6-sunburst",
+    "quality": "auto",
+    "complexity": "medium",
+    "background": "opaque"
+   }
+  ],
+  "max_tool_calls": 2
+ }
+}
