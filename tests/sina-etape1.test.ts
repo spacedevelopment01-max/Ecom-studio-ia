@@ -199,11 +199,9 @@ describe("SINA — les identités de marque : contrôles, choix et mélange", as
     const j = J.journeyOf(cid);
     expect(j.steps[2].status).toBe("skipped");
     expect(J.currentStep(j)).toBe(3);
-    // Logo gardé : la marque se finit par brand.finish, qui ne redessine jamais le logo du client.
+    // Logo gardé : la marque se finit par brand.finish, qui ne dessine jamais de logo (ni le sien ni un autre).
     expect(J.journeyContext(j)).toMatch(/brand\.finish/);
-    const redo = await call("brand.finish", ctx, { redo: ["logo"] });
-    expect(redo.ok).toBe(false);
-    expect(redo.summary).toMatch(/Tu gardes ton logo/);
+    expect(() => getTool("brand.finish")!.args.parse({ redo: ["logo"] })).toThrow();
   });
 
   it("essai réel du mélange : carte « Ton identité » avec le vrai résultat, élision corrigée, pas de faux dégradé", async () => {

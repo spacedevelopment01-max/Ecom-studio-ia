@@ -16,8 +16,8 @@ describe("GPT Image 2.6", () => {
       expect(m, id).toBeTruthy();
       expect(m.verified.price).toBe(true);
       expect((m as { defaultFor?: unknown }).defaultFor).toBeUndefined();
-      // Borne de 0,12 $ par image pour la carte ; compté à ses jetons réels depuis le 22 novembre 2026.
-      expect(DEFAULT_PRICES[`openai:${id}`]).toEqual({ unit: "image", perImage: 0.12, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 });
+      // Compté à ses jetons réels (formule officielle) ; le prix par image, quand seul lui est lu : le carré « high », 0,0527 $.
+      expect(DEFAULT_PRICES[`openai:${id}`]).toEqual({ unit: "image", perImage: 0.0527, inputPerM: 5, imageInputPerM: 8, outputPerM: 30 });
     }
     // Les images de SINA : toujours OpenAI, 2.6 Flare par défaut (route commune depuis le 23 novembre 2026).
     expect(fs.readFileSync(path.join(process.cwd(), "src/lib/syna-agent/mockup-code/tools.ts"), "utf8")).toContain("return routeDesImagesDeSina();");

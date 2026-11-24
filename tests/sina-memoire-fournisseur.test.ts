@@ -241,11 +241,11 @@ describe("mémoire d'une heure et fil qui ne fait que s'allonger (22 novembre 20
     // Mêmes octets d'un appel à l'autre : la mémoire est reprise pour tous les clients.
     const again: any[] = await buildContent({ task: "quality_control", system: "S", prompt: "autre", images: [{ data: planche, label: "hero" }], imagesFixes: [{ data: planche, label: "logos aimés" }] } as any);
     expect(again.find((b) => b.type === "image").source.data).toBe(images[0][0].source.data);
-    // La relecture des images de la planche lui donne la planche des logos aimés à part, jamais parmi les images jugées.
+    // Le logo ne se relit plus avec les images de la planche (méthode des graphistes) : la planche des logos aimés n'y est
+    // plus jointe, ni à part, ni parmi les images jugées.
     const fs = await import("node:fs");
     const src = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    expect(src).toContain(`fixes: [{ data: aimes, label: "logos aimés" }]`);
-    expect(src).not.toContain(`seen.push({ data: aimes`);
+    expect(src).not.toContain("aimes");
   });
 
   it("conversation de SINA : les images de ce qu'elle a créé passent entre les notices et le fil, gardées en mémoire ; les photos jointes restent après", async () => {

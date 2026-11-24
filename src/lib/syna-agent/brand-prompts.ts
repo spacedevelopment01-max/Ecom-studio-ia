@@ -343,7 +343,6 @@ ${personnes ? "" : "- une personne, un visage ou une main apparaît ;\n"}- le lo
 - un bouton coupé, vide ou séparé de son texte ;
 - le matériel du métier n'est pas crédible pour un professionnel de ce métier ;
 - ce que le client refuse (ses mots, quand ils sont donnés) apparaît, même petit, même dans un logo posé sur un objet ;
-- pour le LOGO : il n'est pas net et lisible d'un coup d'œil en tout petit, sur fond blanc ; ou, quand la planche des logos que le propriétaire aime est jointe (elle donne le niveau, jamais un style), il est nettement plus sage ou banal, ou c'est une scène, un décor ou un dessin chargé plutôt qu'un logo.
 
 Puis score = ta note de 1 à 10 face à une campagne haut de gamme d'une grande marque (10 : on la publierait telle quelle ; 8 : très belle, rien à reprendre ; 6 : correcte mais banale ou avec un détail raté ; 4 : ratée). Sois sévère : une image ordinaire vaut 6. Une image n'est gardée que sans aucun défaut de la liste ET avec une note d'au moins 8.
 

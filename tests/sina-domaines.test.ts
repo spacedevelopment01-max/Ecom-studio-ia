@@ -84,9 +84,10 @@ describe("SINA — nom de domaine : l'exact, sinon une adresse libre qui garde l
     // Retour du propriétaire du 15 novembre 2026 : la maquette du haut de l'accueil est de nouveau une image créée par
     // le modèle d'images, sur écran de téléphone, en portrait ; elle fait partie de la proposition de chaque identité.
     const I = await import("@/lib/syna-agent/brand-images");
-    expect(I.CREATED_SLOTS).toEqual(["logo", "hero", "object", "signs", "site", "post0", "post1", "post2"]); // les signes en vraie photo (14 novembre 2026)
-    expect(I.CREATED_SLOTS).toEqual([...I.IMAGE_SLOTS]);
-    expect(I.PROPOSAL_SLOTS).toEqual(["logo", "hero", "site"]);
+    // Le logo n'est pas une image créée avec la planche : il vient de la méthode des graphistes (24 novembre 2026).
+    expect(I.CREATED_SLOTS).toEqual(["hero", "object", "signs", "site", "post0", "post1", "post2"]); // les signes en vraie photo (14 novembre 2026)
+    expect(I.CREATED_SLOTS).toEqual(I.IMAGE_SLOTS.filter((s) => s !== "logo"));
+    expect(I.PROPOSAL_SLOTS).toEqual(["hero", "site"]);
     expect(I.SLOT_ASPECT.site).toBe("9:16");
     expect(I.SLOT_REFERENCES.site).toBe(3); // le logo, la grande scène et le vrai produit, comptés dans le devis
     expect(I.SLOT_REFERENCES.hero).toBe(1); // le vrai produit d'une boutique (essai réel de Nadia, 23 novembre 2026)

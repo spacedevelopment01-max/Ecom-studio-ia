@@ -160,18 +160,16 @@ describe("planches d'avant la correction : incomplètes d'après leur contenu", 
     // identity.choose les refuse.
     const choix = await fr(() => getTool("identity.choose")!.run(t.ctx, getTool("identity.choose")!.args.parse({ key: "A" })));
     expect(choix).toMatchObject({ ok: false });
-    // Les finir (refaire leur logo) : une reprise de SINA, à la charge du Studio.
-    expect(finirPlanchesGardees(j, ["A", "B", "C"], ["logo"])).toBe(true);
-    const est: any = await fr(() => getTool("identity.images")!.estimate!(t.ctx, getTool("identity.images")!.args.parse({ keys: ["A", "B", "C"], images: ["logo"] }) as never));
+    // Les finir (faire leur logo, par la méthode des graphistes, une planche à la fois) : une reprise de SINA, à la charge
+    // du Studio, avec ses deux montants (le prix de la recherche et la borne des reprises du Studio).
+    const est: any = await fr(() => getTool("logo.pistes")!.estimate!(t.ctx, getTool("logo.pistes")!.args.parse({ planche: "A" }) as never));
     expect(est.studio).toBe(true);
-    const q = C.boardImagesQuote(3, undefined, ["logo"], []);
-    // La borne du Studio : le premier passage entier et deux reprises de chaque logo relu (plus d'idée en mots simples
-    // depuis la décision du 23 novembre 2026).
-    expect(est.studioMaxMicro).toBe(borneDuStudio(q.maxMicro, true, q.repriseMicro));
-    expect(est.studioMaxMicro).toBe(Math.ceil(q.maxMicro + 2 * q.repriseMicro!));
-    expect(est.studioMaxMicro).toBe(deuxPlafonds(q, true).studioMaxMicro);
+    const { devisDeLaRecherche } = await import("@/lib/syna-agent/logo-graphistes");
+    const d = devisDeLaRecherche();
+    expect(est).toMatchObject({ maxMicro: d.maxMicro, studioMaxMicro: d.studioMaxMicro });
+    void C; void borneDuStudio; void deuxPlafonds; void finirPlanchesGardees;
     // La carte du client dit « 0 % ».
     const { confirmationText } = await import("@/lib/syna-agent/loop");
-    expect(await fr(() => confirmationText(getTool("identity.images")!, { keys: ["A", "B", "C"], images: ["logo"] }, t.ctx, t.user.id, t.pid, est))).toMatch(/À ma charge : 0 % de ton budget/);
+    expect(await fr(() => confirmationText(getTool("logo.pistes")!, { planche: "A" }, t.ctx, t.user.id, t.pid, est))).toMatch(/À ma charge : 0 % de ton budget/);
   });
 });

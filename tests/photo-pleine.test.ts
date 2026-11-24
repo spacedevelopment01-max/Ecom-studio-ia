@@ -42,11 +42,12 @@ describe("photos pleines", () => {
     expect((await photoTransparente(await brume(PART_TRANSPARENTE_MAX / 2))).transparente).toBe(false);
   });
 
-  it("la planche : le logo est relu avant de dessiner ce qui le porte, et une photo transparente est refusée sans relecture payée", () => {
+  it("la planche : seul le logo déjà relu (méthode des graphistes) est posé sur ce qui le porte, et une photo transparente est refusée sans relecture payée", () => {
     const src = fs.readFileSync("src/lib/syna-agent/brand-images.ts", "utf8");
-    const relu = src.indexOf('await review(["logo"], ":logo")'), porteurs = src.indexOf('await make("object", { logo }');
-    expect(relu).toBeGreaterThan(0);
-    expect(porteurs).toBeGreaterThan(relu);
+    const pose = src.indexOf("const logo = currentLogo();"), porteurs = src.indexOf('await make("object", { logo }');
+    expect(src).toContain('wanted.delete("logo");');
+    expect(pose).toBeGreaterThan(0);
+    expect(porteurs).toBeGreaterThan(pose);
     const controle = src.indexOf("await photoTransparente(png)"), relecture = src.indexOf("ai.look(`imagecheck-");
     expect(controle).toBeGreaterThan(0);
     expect(relecture).toBeGreaterThan(controle);

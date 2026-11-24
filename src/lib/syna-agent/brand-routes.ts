@@ -21,6 +21,8 @@ import { ligneeDe } from "./variete-marques";
 import type { WordingRule } from "../client-wording";
 
 export const ROUTE_KEYS = ["A", "B", "C", "D"] as const;
+/** Les clés des planches remises dans l'ordre des identités (A, B, C, D), sans doublon, quel que soit l'ordre reçu. */
+export const dansLOrdre = <T extends string>(keys: readonly T[]): T[] => { const r = (k: string) => { const i = (ROUTE_KEYS as readonly string[]).indexOf(k); return i < 0 ? ROUTE_KEYS.length : i; }; return [...new Set(keys)].sort((a, b) => r(a) - r(b)); };
 export type RouteKey = (typeof ROUTE_KEYS)[number];
 
 /** Nombre d'identités proposées selon le forfait (décision du propriétaire du 12 novembre 2026). */

@@ -380,9 +380,33 @@ export function openaiSize(model: string, aspect: string): string {
   return aw > ah ? "1536x1024" : aw === ah ? "1024x1024" : "1024x1536";
 }
 
+/**
+ * LA FORMULE OFFICIELLE des jetons d'une image produite par GPT Image 2.5 et 2.6 (calculateur du guide d'OpenAI, recopié
+ * le 22 novembre 2026 : docs/studio/couts/03-couts-des-images.md, partie 1.2) : chaque qualité a un nombre de base (low 16,
+ * medium 24, high 48, xhigh 64, max 96) ; le grand côté le reçoit, le petit côté ce nombre divisé par le rapport des côtés ;
+ * on multiplie les deux, puis par (2 millions + nombre de points) ÷ 4 millions ; pour la 2.6 seulement, encore par 4,2 en
+ * « low », 3,3 en « medium », 1 au-delà. « auto » : la plus chère des trois tailles que le modèle peut choisir. null : un
+ * autre modèle.
+ */
+export function jetonsDeSortieGptImage(model: string, size: string, quality: string): number | null {
+  const v = /^gpt-image-2\.(5|6)(-|$)/.exec(model);
+  if (!v) return null;
+  if (size === "auto") return Math.max(...["1024x1024", "1024x1536", "1536x1024"].map((t) => jetonsDeSortieGptImage(model, t, quality) ?? 0));
+  const base = ({ low: 16, medium: 24, high: 48, xhigh: 64, max: 96 } as Record<string, number>)[quality];
+  const [w, h] = size.split("x").map(Number);
+  if (!base || !w || !h) return null;
+  const long = Math.max(w, h), court = Math.min(w, h), mult = v[1] === "6" ? (({ low: 4.2, medium: 3.3 } as Record<string, number>)[quality] ?? 1) : 1;
+  return Math.ceil(base * Math.ceil(base / (long / court)) * ((2_000_000 + w * h) / 4_000_000) * mult);
+}
+/** Tarif aux jetons d'un modèle d'images (texte, image jointe, sortie) : la formule officielle s'applique. */
+const auxJetons = (p: ReturnType<typeof requirePrice>) => p.unit === "image" ? p.outputPerM != null : p.unit === "tokens";
+
 export function openaiImageMax(model: string, o: { prompt: string; images: number; size: string; quality: "medium" | "high" }) {
-  // Tarif « par image » saisi dans l'administration : borne directe (une image demandée).
   const p = requirePrice("openai", model);
+  // GPT Image 2.5 et 2.6 : la formule officielle des jetons, au tarif aux jetons (texte, images jointes, sortie).
+  const officiels = auxJetons(p) ? jetonsDeSortieGptImage(model, o.size, o.quality) : null;
+  if (officiels != null) return cost("openai", model, { input: bytes(o.prompt), imageIn: OPENAI_IMAGE_IN_TOKENS * o.images, imageOut: officiels + (openaiStreams(model) ? OPENAI_PARTIAL_IMAGES * OPENAI_PARTIAL_TOKENS : 0) }).micro;
+  // Tarif « par image » saisi dans l'administration : borne directe (une image demandée).
   // Avec le flux, les aperçus s'ajoutent (≈ 2 × 100 jetons, < 5 % d'une image haute qualité) : +5 % sur le tarif par image.
   if (p.unit === "image") return Math.ceil(cost("openai", model, { images: 1, input: bytes(o.prompt) }).micro * (openaiStreams(model) && OPENAI_PARTIAL_IMAGES > 0 ? 1.05 : 1));
   // Au jeton : seulement pour le modèle dont la table officielle des jetons de sortie est connue.
@@ -563,9 +587,6 @@ export function photoRequestMaxMicro(route:{provider:string;model:string},input:
 
 /** Texte d'acheminement réellement ajouté à chaque demande ; inclus aussi dans sa borne de coût. */
 export function imageReferencePrompt(text:string,roles:readonly string[]):string{
- // « serie » : les logos déjà faits joints au dessinateur du logo ; sa demande, en français, dit déjà quoi en faire
- // (décision du propriétaire du 23 novembre 2026) : rien n'est ajouté, aucune phrase en anglais.
- if(roles.length&&roles.every(r=>r==='serie'))return text;
  // « avoid » : une image montrée pour ne PAS la refaire (les logos déjà créés pour un client). Essai réel du 16 novembre
  // 2026 : jointe comme une référence ordinaire, elle était annoncée « à reproduire fidèlement », et chaque logo sortait
  // comme une copie du précédent.
@@ -767,13 +788,12 @@ export async function aiSiteImageHd(ctx: Ctx, input: { prompt: string; scene?: B
 export const LOGO_ROUTE: { provider: string; model: string } = { provider: REQUIRED_LOGO_PROVIDER, model: REQUIRED_LOGO_MODEL };
 
 /**
- * Le LOGO d'une planche de marque de SINA, et le symbole tiré du logo (décision du 23 novembre 2026, après l'essai de
- * Nadia : ces logos passaient par l'usage « scene », et la politique du 18 octobre ne s'appliquait pas) : usage « logo »,
- * donc le modèle imposé par le propriétaire, sans secours ni autre route. Le logo part SANS aucune image jointe (décision du
- * propriétaire du 23 novembre 2026 : le métier et le nom, rien de plus) ; le symbole reçoit seulement le logo dont il est tiré.
+ * Le symbole tiré du logo de la marque (le logo lui-même vient de la méthode des graphistes : aiLogoPlanche, aiLogoFinalise) :
+ * usage « logo », donc le modèle imposé par le propriétaire, sans secours ni autre route ; il reçoit seulement le logo dont
+ * il est tiré.
  */
-export async function aiBoardLogo(ctx: Ctx, input: { prompt: string; logo?: Buffer | null; /** Les logos déjà faits de la série et ses essais refusés : la demande, en français, dit quoi en faire. */ serie?: Buffer[]; aspect: "1:1" }) {
-  const references = input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : (input.serie ?? []).map((data) => ({ role: "serie" as const, data, essential: true }));
+export async function aiBoardLogo(ctx: Ctx, input: { prompt: string; logo?: Buffer | null; aspect: "1:1" }) {
+  const references = input.logo ? [{ role: "logo" as const, data: input.logo, essential: true }] : [];
   return withQuotedImageRoute(LOGO_ROUTE, () => generateImage(ctx, { text: input.prompt, aspect: input.aspect, reference: null, refMax: 1024, references, quality: "high", strictQuality: true, usage: "logo", need: { text: true, references: references.length } }));
 }
 
@@ -783,7 +803,7 @@ export async function aiBoardLogo(ctx: Ctx, input: { prompt: string; logo?: Buff
  * Ce qui est gardé avec chaque image de la méthode des graphistes (règle du plan accepté : « le texte envoyé, le modèle,
  * l'identifiant de requête et la consommation sont gardés avec l'image »). Lu par `recuDuLogo(png)` juste après l'appel.
  */
-export type RecuDuLogo = { endpoint: string; modele: string; texteEnvoye: string; reglages: Record<string, unknown>; requestId: string | null; usage: unknown; coutMicro: number; dureeMs: number };
+export type RecuDuLogo = { endpoint: string; modele: string; texteEnvoye: string; reglages: Record<string, unknown>; requestId: string | null; usage: unknown; coutMicro: number; dureeMs: number; /** Ce qu'OpenAI dit avoir rendu : qualité, taille, fond, format. */ renvoye?: import("./openai-images").ImageRenvoyee };
 const recusDuLogo = new WeakMap<Buffer, RecuDuLogo>();
 export const recuDuLogo = (png: Buffer): RecuDuLogo | null => recusDuLogo.get(png) ?? null;
 
@@ -800,20 +820,22 @@ export function champsDeFinalisation(prompt: string): Record<string, unknown> & 
   return { model: LOGO_MODELS.finalisation, prompt, quality: "high", size: "auto", background: "opaque", output_format: "png", n: 1 };
 }
 
-/** Jetons de sortie au plus d'une planche « medium » en 1536 × 1024 (table d'OpenAI ; mesuré : 343 sur 2.5 Sunburst). */
-const PLANCHE_SORTIE_MAX = 1568;
-/** Jetons de sortie au plus d'un logo fini « high » en taille libre (mesuré : 686 à 2 058 ; table d'OpenAI en 1536 : 6 208). */
-const FINALISATION_SORTIE_MAX = 6240;
-const borneLogo = (model: string, prompt: string, images: number, sortie: number): number => {
-  const p = requirePrice("openai", model);
-  return p.unit === "image" ? cost("openai", model, { images: 1, input: bytes(prompt) }).micro : cost("openai", model, { input: bytes(prompt), imageIn: OPENAI_IMAGE_IN_TOKENS * images, imageOut: sortie }).micro;
+/**
+ * Borne d'une image de la méthode des graphistes : la formule officielle des jetons (planche « medium » en 1536 × 1024 :
+ * 343 jetons sur 2.5 Sunburst, mesuré ; logo fini « high » en taille libre : la plus chère des trois tailles), au tarif aux
+ * jetons. Un tarif saisi seulement par image : ce prix-là.
+ */
+const borneLogo = (model: string, prompt: string, images: number, temps: "recherche" | "finalisation"): number => {
+  const p = requirePrice("openai", model), corps = temps === "finalisation" ? champsDeFinalisation(prompt) : requeteDePlanche(model, prompt);
+  const sortie = auxJetons(p) ? jetonsDeSortieGptImage(model, String(corps.size), String(corps.quality)) : null;
+  return sortie == null ? cost("openai", model, { images: 1, input: bytes(prompt) }).micro : cost("openai", model, { input: bytes(prompt), imageIn: OPENAI_IMAGE_IN_TOKENS * images, imageOut: sortie }).micro;
 };
 /** Taille au plus d'un texte de logo (planche ou finalisation) : borne le devis. */
 export const LOGO_TEXTE_MAX_OCTETS = 6000;
 /** Coût MAXIMAL d'une planche de recherche (même calcul que sa réservation), avec la marge de réservation. */
-export const logoPlancheMaxMicro = (model: string): number => mediaReservationMaxMicro(borneLogo(model, "x".repeat(LOGO_TEXTE_MAX_OCTETS), 0, PLANCHE_SORTIE_MAX));
+export const logoPlancheMaxMicro = (model: string): number => mediaReservationMaxMicro(borneLogo(model, "x".repeat(LOGO_TEXTE_MAX_OCTETS), 0, "recherche"));
 /** Coût MAXIMAL d'une finalisation (une esquisse jointe). */
-export const logoFinalisationMaxMicro = (): number => mediaReservationMaxMicro(borneLogo(LOGO_MODELS.finalisation, "x".repeat(LOGO_TEXTE_MAX_OCTETS), 1, FINALISATION_SORTIE_MAX));
+export const logoFinalisationMaxMicro = (): number => mediaReservationMaxMicro(borneLogo(LOGO_MODELS.finalisation, "x".repeat(LOGO_TEXTE_MAX_OCTETS), 1, "finalisation"));
 
 const erreurOpenAI = (e: any): never => {
   if (e?.status === 401 || e?.status === 403) throw refusal(new PermanentError(L("Clé OpenAI refusée : vérifiez-la dans l'administration.", "OpenAI key rejected: check it in the admin panel.")));
@@ -831,7 +853,7 @@ async function logoDirectImpl(ctx: Ctx, input: { temps: "recherche" | "finalisat
   if (t) t.usage = "logo";
   const fin = input.temps === "finalisation";
   const corps = fin ? champsDeFinalisation(input.prompt) : requeteDePlanche(input.model, input.prompt);
-  gate(ctx, borneLogo(input.model, input.prompt, fin ? 1 : 0, fin ? FINALISATION_SORTIE_MAX : PLANCHE_SORTIE_MAX), "image", "openai", input.model);
+  gate(ctx, borneLogo(input.model, input.prompt, fin ? 1 : 0, input.temps), "image", "openai", input.model);
   const client = openaiClient(key);
   let res: Awaited<ReturnType<typeof openaiImage>>;
   try {
@@ -844,10 +866,12 @@ async function logoDirectImpl(ctx: Ctx, input: { temps: "recherche" | "finalisat
   const u = res.usage ?? {};
   const billed = cost("openai", input.model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
   recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model: input.model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage, idempotencyKey: ctx.usageKey,
-    details: { temps: input.temps, texteEnvoye: input.prompt, requestId: res.requestId, reglages: { ...corps, prompt: undefined }, jointes: fin ? 1 : 0 } });
+    // Le détail de l'usage (jetons de texte et d'image, en entrée et en sortie) et ce qu'OpenAI dit avoir rendu (qualité,
+    // taille, fond, format) : de quoi vérifier le coût après coup. Rien de secret.
+    details: { temps: input.temps, texteEnvoye: input.prompt, requestId: res.requestId, reglages: { ...corps, prompt: undefined }, jointes: fin ? 1 : 0, usage: res.usage ?? null, renvoye: res.renvoye } });
   const png = Buffer.from(res.b64, "base64");
   const { prompt: _p, ...reglages } = corps;
-  recusDuLogo.set(png, { endpoint: fin ? "POST /v1/images/edits (multipart, image[])" : "POST /v1/images/generations", modele: input.model, texteEnvoye: input.prompt, reglages, requestId: res.requestId, usage: res.usage ?? null, coutMicro: billed, dureeMs: res.ms });
+  recusDuLogo.set(png, { endpoint: fin ? "POST /v1/images/edits (multipart, image[])" : "POST /v1/images/generations", modele: input.model, texteEnvoye: input.prompt, reglages, requestId: res.requestId, usage: res.usage ?? null, coutMicro: billed, dureeMs: res.ms, renvoye: res.renvoye });
   return png;
 }
 const logoDirect = traced("image_generation", logoDirectImpl);
@@ -1066,7 +1090,7 @@ export function imageQuality(usage: MediaUsage | undefined, asked: "medium" | "h
   return v === "medium" || v === "high" ? v : asked;
 }
 
-async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: AspectId; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ onRequest?: (receipt:ImageRequestReceipt)=>void; extraRefs?: Buffer[]; references?: { role: "product" | "logo" | "scene" | "style" | "avoid" | "examples" | "serie"; data: Buffer; essential: boolean }[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
+async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: AspectId; reference: Buffer | null; /** Taille maximale de la référence envoyée (768 px par défaut ; photo à mettre en page : plus grande). */ refMax?: number; /** Images de référence en plus (logo de la marque), pour les modèles qui en acceptent plusieurs. */ onRequest?: (receipt:ImageRequestReceipt)=>void; extraRefs?: Buffer[]; references?: { role: "product" | "logo" | "scene" | "style" | "avoid" | "examples"; data: Buffer; essential: boolean }[]; quality: "medium" | "high"; transparent?: boolean; usage?: MediaUsage; need?: Partial<MediaNeed>; /** Qualité demandée gardée (publication complète conçue par l'IA : texte net). */ strictQuality?: boolean; /** Exclusions en plus pour le négatif du modèle (Qwen-Image). */ negative?: string }) {
   const input = { ...input0, quality: input0.strictQuality ? input0.quality : imageQuality(input0.usage, input0.quality) };
   const typed = input.references ?? [...(input.reference ? [{ role: "product" as const, data: input.reference, essential: true }] : []), ...(input.extraRefs ?? []).map(data => ({ role: "logo" as const, data, essential: true }))];
   // Every supplied reference is required. Routing may reject a model, never silently discard a client's logo.
@@ -1130,7 +1154,7 @@ async function generateImageImpl(ctx: Ctx, input0: { text: string; aspect: Aspec
   if (!b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
   const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
-  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey, details: { taille: size, qualite: input.quality, jointes: ref ? 1 + oaExtras.length : 0, jetonsImagesJointes: u.input_tokens_details?.image_tokens ?? 0, jetonsTexte: u.input_tokens_details?.text_tokens ?? 0 } });
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider: "openai", model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage || cost("openai", model, { input: 0, imageIn: 0, imageOut: u.output_tokens ?? 0 }).estimated, idempotencyKey: ctx.usageKey, details: { taille: size, qualite: input.quality, jointes: ref ? 1 + oaExtras.length : 0, jetonsImagesJointes: u.input_tokens_details?.image_tokens ?? 0, jetonsTexte: u.input_tokens_details?.text_tokens ?? 0, usage: res.usage ?? null, renvoye: res.renvoye } });
   // Coût réel de cette image transmis au moteur qui l'a demandée (affiché sur la carte de la proposition).
   if (res.usage && !cost("openai", model, { imageOut: u.output_tokens ?? 0 }).estimated) emitMediaProgress({ phase: "billed", atMs: res.ms, streamed: res.streamed, costMicro: billed });
   return Buffer.from(b64, "base64");

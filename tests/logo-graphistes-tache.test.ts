@@ -113,4 +113,59 @@ describe("la tâche syna.logo.graphistes (faux appels)", async () => {
     const p = JSON.parse(job.payload);
     expect(p).toMatchObject({ phase: "recherche", nom: "Reflet", finalisationsAccordees: G.devisDesFinalisations(4).maxMicro });
   });
+
+  it("ancien projet (une planche par nom) : un autre logo pour Halo passe par la méthode des graphistes et se pose sur sa planche ; un logo qui manque se finit à la charge du Studio", async () => {
+    const { route } = await import("./sina-routes-fixtures");
+    const { getTool } = await import("@/lib/syna-agent/registry");
+    const { saveAsset } = await import("@/lib/library");
+    const user = await account(), projectId = project(user) as string, cid = threadFor(user, projectId);
+    const ancien = (await saveAsset({ projectId, userId: user.id, data: await logoFini(), name: "planche-B-logo.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready" })).id;
+    J.updateJourney(cid, (j) => {
+      j.steps[0] = { status: "done" };
+      j.start.offer = { value: "Des bougies parfumées coulées à la main.", status: "answered", source: "client", at: Date.now() } as never;
+      j.identities = { list: [
+        { ...route("A"), name: "Sillage", board: { ...route("A").board, images: { hero: { id: "hero-A", w: 1, h: 1 }, site: { id: "site-A", w: 1, h: 1 } } } },
+        { ...route("B"), name: "Halo", board: { ...route("B").board, images: { logo: { id: ancien, w: 800, h: 300 }, hero: { id: "hero-B", w: 1, h: 1 }, site: { id: "site-B", w: 1, h: 1 } } } },
+      ] as never, issues: [], comparison: "", at: 1, round: 1 };
+    });
+    const ctx = { user, projectId, conversationId: cid, runId: `run-ancien-${Date.now()}`, attachment: () => null } as any;
+    const pistes = getTool("logo.pistes")!, autre = getTool("logo.autre")!;
+    // Les planches sont faites : sans planche dite, SINA est renvoyée à la dire (rien n'est lancé).
+    expect(await fr(() => pistes.run(ctx, {} as never))).toMatchObject({ ok: false, internal: true });
+    // Halo a son logo : un autre logo est un goût du client, sur son budget ; Sillage n'a pas le sien : à la charge du Studio.
+    expect((await fr(() => pistes.estimate!(ctx, { planche: "B" } as never))).studio).toBeFalsy();
+    expect(await fr(() => pistes.estimate!(ctx, { planche: "A" } as never))).toMatchObject({ studio: true });
+    const lance = await fr(() => pistes.run(ctx, { planche: "B" } as never)) as any;
+    expect(lance.ok).toBe(true);
+    const payload = JSON.parse(one<any>("SELECT payload FROM jobs WHERE id=?", lance.jobs[0]).payload);
+    expect(payload).toMatchObject({ phase: "recherche", nom: "Halo", planche: "B" });
+    expect(payload.studio).toBeUndefined();
+    run("UPDATE jobs SET status='done' WHERE id=?", lance.jobs[0]);
+    // La recherche, pour le nom de la planche : ses esquisses, une seule à choisir.
+    G.graphistesDeps.ai = () => ({ ...faux(), relireEsquisses: async (images: Buffer[], nom: string) => ({ esquisses: images.map((_b: Buffer, i: number) => ({ numero: i + 1, entiere: true, morceauDeVoisine: false, nomLu: nom, arche: false, ok: true, pourquoi: "", piste: `piste ${i + 1}` })) }), rediger: async () => ({ idee_centrale: "un éclat", texte: "Transforme cette esquisse en véritable logo contemporain pour Halo, une entreprise de nettoyage de voitures, intérieur et extérieur. Fais évoluer l'idée vers une identité plus aboutie. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif" }), relireLogo: async () => ({ nomLu: "Halo", ideeConservee: true, evolution: true, arche: false, phrase: "", phraseDitLeMetier: false, note: 9, pourquoi: "" }) }) as never;
+    await tache(user, projectId, { conversationId: cid, ...payload });
+    const etat = J.journeyOf(cid).graphistes!;
+    expect(etat).toMatchObject({ nom: "Halo", planche: "B", max: 1 });
+    expect(etat.esquisses.length).toBeGreaterThan(0);
+    // Le client choisit son esquisse : SINA la finit avec logo.autre (logo.choisir est pour les identités d'une nouvelle marque).
+    expect(await fr(() => getTool("logo.choisir")!.run(ctx, { esquisses: [1] } as never))).toMatchObject({ ok: false, internal: true });
+    const fin = await fr(() => autre.run(ctx, { esquisse: 1 } as never)) as any;
+    expect(fin.ok).toBe(true);
+    const p2 = JSON.parse(one<any>("SELECT payload FROM jobs WHERE id=?", fin.jobs[0]).payload);
+    expect(p2).toMatchObject({ phase: "finalisation", numeros: [1], planche: "B" });
+    run("UPDATE jobs SET status='done' WHERE id=?", fin.jobs[0]);
+    await tache(user, projectId, { conversationId: cid, ...p2 });
+    // Le logo fini est posé sur Halo, tel quel, avec sa version sans fond et sa version claire ; aucune nouvelle identité.
+    const apres = J.journeyOf(cid);
+    const b = apres.identities!.list[1].board!.images!;
+    expect(b.logo!.id).not.toBe(ancien);
+    expect(b.logo!.id).toBe(apres.graphistes!.logos!.find((l) => l.numero === 1)!.assetId);
+    expect(b.mark!.id).toBe(apres.graphistes!.logos!.find((l) => l.numero === 1)!.detoureAssetId);
+    expect(b.markDark).toBeTruthy();
+    expect(b.hero!.id).toBe("hero-B");
+    expect(apres.identities!.list).toHaveLength(2);
+    // Le haut du site montre encore l'ancien logo : il sera refait avec le nouveau.
+    expect(apres.identities!.siteAncienLogo).toEqual(["B"]);
+  });
+
 });

@@ -19,7 +19,7 @@ async function serveur() {
     const parts: Buffer[] = []; for await (const c of req) parts.push(c as Buffer);
     recu.push({ url: req.url!, type: String(req.headers["content-type"]), body: Buffer.concat(parts) });
     res.setHeader("content-type", "application/json"); res.setHeader("x-request-id", "req_essai_local");
-    res.end(JSON.stringify({ data: [{ b64_json: Buffer.from("png").toString("base64") }], usage: { input_tokens: 95, output_tokens: 343, input_tokens_details: { text_tokens: 95, image_tokens: 0 } } }));
+    res.end(JSON.stringify({ data: [{ b64_json: Buffer.from("png").toString("base64") }], quality: "medium", size: "1536x1024", background: "opaque", output_format: "png", usage: { input_tokens: 95, output_tokens: 343, input_tokens_details: { text_tokens: 95, image_tokens: 0 }, output_tokens_details: { image_tokens: 343, text_tokens: 0 } } }));
   });
   s.listen(0, "127.0.0.1"); await once(s, "listening");
   const port = (s.address() as net.AddressInfo).port;
@@ -69,4 +69,23 @@ describe("les requêtes exactes de la méthode des graphistes (SDK réel)", () =
       expect(corps).toContain("octets-de-l-esquisse-4");
     } finally { await srv.fermer(); }
   });
+  it("le détail de l'usage et ce qu'OpenAI dit avoir rendu (qualité, taille, fond, format) sont gardés avec l'appel, rien de secret", async () => {
+    const { openaiImage, imageRenvoyee } = await import("@/lib/ai/openai-images");
+    const { setJsonSetting } = await import("@/lib/settings");
+    setJsonSetting("ai.media.openaiStream", false);
+    const srv = await serveur();
+    try {
+      const r = await openaiImage(openaiClient("fausse-cle-locale-pas-une-cle"), "generate", requeteDePlanche("gpt-image-2.5-sunburst", TEXTE), () => {});
+      expect(r.renvoye).toEqual({ quality: "medium", size: "1536x1024", background: "opaque", output_format: "png" });
+      expect(r.usage).toEqual({ input_tokens: 95, output_tokens: 343, input_tokens_details: { text_tokens: 95, image_tokens: 0 }, output_tokens_details: { image_tokens: 343, text_tokens: 0 } });
+      expect(r.requestId).toBe("req_essai_local");
+    } finally { await srv.fermer(); setJsonSetting("ai.media.openaiStream", true); }
+    expect(imageRenvoyee({})).toEqual({ quality: null, size: null, background: null, output_format: null });
+    // Le détail de l'appel enregistré (ai_calls) et le reçu de l'image les gardent ; aucune clé n'y entre.
+    const src = (await import("node:fs")).readFileSync("src/lib/ai/media-providers.ts", "utf8");
+    expect(src).toContain("jointes: fin ? 1 : 0, usage: res.usage ?? null, renvoye: res.renvoye } });");
+    expect(src).toContain("coutMicro: billed, dureeMs: res.ms, renvoye: res.renvoye });");
+    expect(src).toContain("jetonsTexte: u.input_tokens_details?.text_tokens ?? 0, usage: res.usage ?? null, renvoye: res.renvoye } });");
+  });
+
 });

@@ -13,8 +13,8 @@ import { ALIBABA_ENDPOINT_RE } from "@/lib/ai/alibaba";
 const pos = z.number().positive().finite();
 /** Un tarif incomplet serait compté 0 € : chaque champ de coût doit être un nombre positif. */
 const PriceSchema = z.discriminatedUnion("unit", [
-  z.object({ unit: z.literal("tokens"), inputPerM: pos, outputPerM: pos, imageInputPerM: pos.optional(), imageOutputPerM: pos.optional() }),
-  z.object({ unit: z.literal("image"), perImage: pos }),
+  z.object({ unit: z.literal("tokens"), inputPerM: pos, outputPerM: pos, imageInputPerM: pos.optional(), imageOutputPerM: pos.optional(), cachedInputPerM: pos.optional() }),
+  z.object({ unit: z.literal("image"), perImage: pos, inputPerM: pos.optional(), imageInputPerM: pos.optional(), outputPerM: pos.optional() }),
   z.object({ unit: z.literal("video_second"), perSecond: pos }),
   z.object({ unit: z.literal("call"), perCall: pos }),
 ]);

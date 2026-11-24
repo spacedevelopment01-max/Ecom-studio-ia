@@ -129,7 +129,8 @@ describe("SINA propose de finir les planches, sans dépense pour le client", asy
     const avant = emptySpend();
     const v = await fr(() => accepterLaProposition(t.user, t.cid, empreinte));
     expect(v.run!.status).toBe("waiting_confirmation");
-    expect(v.run!.pending).toMatchObject({ tool: "identity.images", reason: "cost", args: { keys: ["A", "B", "C"], images: ["logo"] } });
+    // Le logo qui manque se fait par la méthode des graphistes, une planche à la fois (Sillage d'abord).
+    expect(v.run!.pending).toMatchObject({ tool: "logo.pistes", reason: "cost", args: { planche: "A" } });
     expect(v.run!.pending!.preview).toMatch(/À ma charge : 0 % de ton budget/);
     expect(v.run!.pending!.preview).not.toMatch(/€/);
     // Les boutons du message disparaissent : il a dit oui ; la ligne prioritaire aussi.
@@ -141,8 +142,10 @@ describe("SINA propose de finir les planches, sans dépense pour le client", asy
     let raisonne = 0;
     await fr(() => runAgent(r.id, getRun(r.id)!.job_id!, { reason: async () => { raisonne++; return { message: "", actions: [], question: null, done: true }; } }));
     expect(raisonne).toBe(0); // SINA attend la fin de la reprise
-    const job = one<{ payload: string }>("SELECT payload FROM jobs WHERE project_id=? AND type=? ORDER BY created_at DESC LIMIT 1", t.pid, SINA_BRAND_JOB)!;
-    expect(json<any>(job.payload, {})).toMatchObject({ studio: true, imagesOnly: true, redo: ["A", "B", "C"], slots: ["logo"] });
+    const { LOGO_GRAPHISTES_JOB } = await import("@/lib/syna-agent/logo-graphistes-tache");
+    const job = one<{ payload: string }>("SELECT payload FROM jobs WHERE project_id=? AND type=? ORDER BY created_at DESC LIMIT 1", t.pid, LOGO_GRAPHISTES_JOB)!;
+    expect(json<any>(job.payload, {})).toMatchObject({ studio: true, phase: "recherche", nom: "Sillage", planche: "A" });
+    void SINA_BRAND_JOB;
     expect(emptySpend().calls).toBe(avant.calls);
     // Rien de nouveau posé pendant la reprise.
     await fr(() => openThread(t.user, t.pid));
@@ -160,7 +163,7 @@ describe("SINA propose de finir les planches, sans dépense pour le client", asy
     };
     const avec = await contexte("Bonjour, on en est où ?");
     expect(avec.startsWith("# À DIRE EN PREMIER, avant tout le reste\nIl manque le logo de Sillage, de Halo et de Pénombre")).toBe(true);
-    expect(avec).toMatch(/identity\.images keys = A, B, C ; images = logo/);
+    expect(avec).toMatch(/logo\.pistes avec planche = A \(puis B, C, chaque fois qu'un logo est posé\)[\s\S]*logo\.autre/);
     expect(avec).toMatch(/À ma charge : 0 % de ton budget/);
     // « Plus tard » : c'est un non, la ligne ne revient pas (et les boutons disparaissent).
     const v = await fr(() => refuserLaProposition(t.user, t.cid, proposes(t.cid)[0].devants.empreinte));

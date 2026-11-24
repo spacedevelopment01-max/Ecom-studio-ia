@@ -33,7 +33,6 @@ import { getJsonSetting } from "../settings";
 import { allTools, getTool, isSensitive, toolCatalog, toolEntry, toolVisible, type ToolScope } from "./registry";
 import { noterTravail, prixJuste } from "./travaux";
 import { defautsDuMessage, noteDeControle } from "./controle-message";
-import { reprisesDansLOrdre } from "./ordre-des-logos";
 import { conversationSettings, keyMoment, momentDeLEtape, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
 import { loadWordingRules, wordingPromptLine } from "../client-wording";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
@@ -58,6 +57,7 @@ import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from
 import { safeWordmark } from "./brand-routes";
 import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
 import { finirPlanchesGardees, mixIdentity } from "./tools/identity";
+import { logoAFinir } from "./tools/logo";
 import { ligneDesPlanchesAFinir, noterRefus, propositionOuverte } from "./devants";
 import { createdPosts } from "./tools/posts";
 import { assetUrl } from "../library";
@@ -177,8 +177,9 @@ export function decidePending(user: User, cid: string, input: { pendingId: strin
     addMessage(cid, "tool", { key: `pending:${p.id}`, tool: p.tool, ok: false, summary: L("Le client a refusé cette action. Rien n'a été modifié.", "The client declined this action. Nothing was changed.") }, r.id);
     updateRun(r.id, { pending_json: JSON.stringify({ ...p, declined: true }) });
     // Il refuse la carte d'une reprise qui finit ses planches : c'est un « non », la ligne prioritaire ne revient pas.
-    const a = p.args as { keys?: string[]; images?: string[] } | null;
+    const a = p.args as { keys?: string[]; images?: string[]; planche?: string } | null;
     if (p.tool === "identity.images" && a?.keys && a.images && finirPlanchesGardees(journeyOf(cid), a.keys, a.images)) noterRefus(cid);
+    if ((p.tool === "logo.pistes" || p.tool === "logo.autre") && logoAFinir(journeyOf(cid), a?.planche)) noterRefus(cid);
   } else updateRun(r.id, { pending_json: JSON.stringify({ ...p, approved: true }) });
   schedule(getRun(r.id)!);
   return getRun(r.id)!;
@@ -318,9 +319,6 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
         const ajout = manquent.length ? presentationDuStudio(manquent, journeyOf(r.conversation_id)) : "";
         if (ajout) out = { ...out, message: [out.message.trim(), ajout].filter(Boolean).join("\n\n") };
       }
-      // Plusieurs logos d'une série à refaire dans une même réponse : un seul appel, dans l'ordre des identités (essai réel
-      // de Nadia, 23 novembre 2026 : Pénombre lancé avant Halo). Gratuit, sans IA (ordre-des-logos.ts).
-      out = { ...out, actions: reprisesDansLOrdre(out.actions, r.conversation_id) };
       addMessage(r.conversation_id, "assistant", { ...out, step, ...(relu ? { relu } : {}) }, r.id);
       pasDuStudio = false;
       if (!out.actions.length) {

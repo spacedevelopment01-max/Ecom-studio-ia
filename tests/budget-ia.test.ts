@@ -584,15 +584,18 @@ describe("plafond fournisseur : coût maximal réellement borné", async () => {
     expect(() => openaiImageMax("gpt-image-1", { prompt: "x", images: 0, size: "2048x2048", quality: "high" })).toThrow(/sans borne de coût/);
   });
 
-  it("GPT Image 2.6 : compté à ses jetons réels (30 $ le million en sortie), la carte garde la borne de 0,12 $ ; 16:9 et 9:16 natifs", () => {
+  it("GPT Image 2.6 : compté à ses jetons réels (30 $ le million en sortie), la carte réserve la formule officielle ; 16:9 et 9:16 natifs", () => {
     // Le 22 novembre 2026 : une image coûtait 0,12 $ au forfait ; comptée à ses jetons, elle coûte ce qu'OpenAI facture.
     const reel = coutMedia("openai", "gpt-image-2.6-sunburst", { input: 400, imageIn: 1000, imageOut: 3000 });
     expect(reel.estimated).toBe(false);
     expect(reel.micro).toBe(Math.round(((400 * 5 + 1000 * 8 + 3000 * 30) / 1e6) * usdToEur() * EUR));
-    // Sans jetons rendus (fournisseur muet) : le forfait de 0,12 $ reste compté, marqué estimé.
-    expect(coutMedia("openai", "gpt-image-2.6-sunburst", { images: 1 })).toMatchObject({ estimated: true, micro: Math.round(0.12 * usdToEur() * EUR) });
-    // La carte de dépense réserve toujours la borne de 0,12 $ par image, sans supplément d'aperçu.
-    expect(openaiImageMax("gpt-image-2.6-sunburst", { prompt: "", images: 2, size: "1824x1024", quality: "high" })).toBe(Math.round(0.12 * usdToEur() * EUR));
+    // Sans jetons rendus (fournisseur muet) : le prix par image (le carré « high », 0,0527 $) est compté, marqué estimé.
+    expect(coutMedia("openai", "gpt-image-2.6-sunburst", { images: 1 })).toMatchObject({ estimated: true, micro: Math.round(0.0527 * usdToEur() * EUR) });
+    // La carte de dépense réserve la formule officielle : 1 254 jetons en 1824 × 1024 « high », deux images jointes (au plus
+    // 1 500 jetons chacune), et les aperçus du flux s'il y en a (au plus deux fois 100 jetons).
+    const borne = openaiImageMax("gpt-image-2.6-sunburst", { prompt: "", images: 2, size: "1824x1024", quality: "high" });
+    expect(borne).toBeGreaterThanOrEqual(Math.round(((3000 * 8 + 1254 * 30) / 1e6) * usdToEur() * EUR) - 1);
+    expect(borne).toBeLessThanOrEqual(Math.round(((3000 * 8 + 1454 * 30) / 1e6) * usdToEur() * EUR) + 1);
     expect(openaiSize("gpt-image-2.6-sunburst", "16:9")).toBe("1824x1024");
     expect(openaiSize("gpt-image-2.6-flare", "9:16")).toBe("1152x2048");
     expect(openaiSize("gpt-image-2.6-flare", "4:5")).toBe("1024x1536");

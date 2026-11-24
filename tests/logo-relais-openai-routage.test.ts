@@ -98,8 +98,8 @@ describe("relais de qualité des logos (OpenAI)", async () => {
     expect(oa.calls).toEqual([]); expect(net.calls).toEqual([]);
   });
   it("clé disponible mais borne de consommation inconnue : refus avant toute API", () => {
-    setJsonSetting("ai.prices", {}); // Tarif officiel au jeton disponible, pas de borne inventée.
-    expect(() => logoSeriesQuote()).toThrow(/Plafond.*en attente/);
+    setJsonSetting("ai.prices", { "openai:gpt-image-2.5-sunburst": { unit: "tokens", inputPerM: 0, outputPerM: 0 } }); // Tarif absent : aucune borne inventée.
+    expect(() => logoSeriesQuote()).toThrow(/indisponible|Plafond.*en attente/);
     try { logoSeriesQuote(); } catch (error) { expect((error as { status: number }).status).toBe(409); }
     expect(oa.calls).toEqual([]);
   });

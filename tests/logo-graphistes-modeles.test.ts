@@ -105,12 +105,21 @@ describe("le devis et les deux plafonds", async () => {
     expect(borneDuStudio(1000, true, 400, 1)).toBe(1400);
     expect(borneDuStudio(0, false, 400, 1)).toBe(0);
   });
-  it("recherche, finalisations, accord unique : « au plus » au-dessus du probable ; la borne du Studio vaut UNE reprise", () => {
+  it("recherche, finalisations, accord unique : « au plus » au-dessus du probable ; la borne du Studio vaut UNE reprise", async () => {
     const r = G.devisDeLaRecherche(), f = G.devisDesFinalisations(3), tout = G.devisDuLogo(3);
     for (const d of [r, f, tout]) { expect(d.maxMicro).toBeGreaterThanOrEqual(d.probableMicro); expect(d.studioMaxMicro).toBe(Math.ceil(Math.min(d.repriseMicro, d.maxMicro))); }
     expect(tout.maxMicro).toBe(r.maxMicro + f.maxMicro);
-    // Les prix mesurés : recherche 0,009 € + 0,030 € ; texte 0,015 € ; logo fini de 0,026 € à 0,061 €.
-    expect(G.PRIX_MESURES).toEqual({ planche: { "gpt-image-2.5-sunburst": 0.009, "gpt-image-2.6-flare": 0.03 }, redaction: 0.015, logoFini: { min: 0.026, max: 0.061 } });
+    // Les prix mesurés : recherche 0,0098 € (essai réel du 24 novembre 2026 : 343 jetons) + 0,030 € ; texte 0,015 € ;
+    // logo fini de 0,026 € à 0,061 €.
+    expect(G.PRIX_MESURES).toEqual({ planche: { "gpt-image-2.5-sunburst": 0.0098, "gpt-image-2.6-flare": 0.03 }, redaction: 0.015, logoFini: { min: 0.026, max: 0.061 } });
+    // Chaque planche vaut sa sortie d'après la formule officielle, plus un texte de demande (au plus 400 jetons à 5 $).
+    const { jetonsDeSortieGptImage, requeteDePlanche } = await import("@/lib/ai/media-providers");
+    for (const m of ["gpt-image-2.5-sunburst", "gpt-image-2.6-flare"]) {
+      const r0 = requeteDePlanche(m, "x"), sortie = jetonsDeSortieGptImage(m, String(r0.size), String(r0.quality))!;
+      expect(sortie, m).toBe(m === "gpt-image-2.5-sunburst" ? 343 : 1132);
+      expect(G.PRIX_MESURES.planche[m], m).toBeGreaterThanOrEqual(Math.floor(((sortie * 30) / 1e6) * 0.86 * 1e4) / 1e4);
+      expect(G.PRIX_MESURES.planche[m], m).toBeLessThanOrEqual(((sortie * 30 + 400 * 5) / 1e6) * 0.86);
+    }
     expect(f.probableMicro).toBeGreaterThanOrEqual(Math.round(3 * (0.015 + 0.0435) * EUR));
     // « D'autres pistes » : sans le métier (déjà écrit) ; « un autre logo » : une seule finalisation.
     expect(G.devisDesPistes().maxMicro).toBeLessThan(r.maxMicro);

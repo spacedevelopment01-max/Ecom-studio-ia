@@ -63,22 +63,13 @@ describe("détourage du logo par le Studio", () => {
     if (d.ok) expect((await centre(d.png))[3]).toBe(0);
   });
 
-  it("dans la planche : un logo rendu sur un fond coloré est gardé, relu sur blanc sans son fond, et décliné sans carré autour", async () => {
-    const { account, project } = await import("./conversation209-fixtures");
-    const user = await account(), projectId = project(user, "services") as string;
-    const vus: Buffer[] = [];
-    const ai: any = {
-      research: async () => [], ask: async () => { throw new Error("aucun appel attendu"); },
-      draw: async () => anneau("#E8D9C4", "#1E2A44"),
-      look: async (_id: string, c: any) => { vus.push(c.images.find((x: any) => x.label === "logo").data); return { images: [{ slot: "logo", seen: "", score: 9, ok: true, read: [route("A").name], why: "net" }] }; },
-    };
-    const ctx: any = { step: async (_k: string, fn: () => unknown) => fn(), progress: () => {} };
-    const r = await I.runBoardImages({ ctx, ai, who: { userId: user.id, projectId }, brief: "", kind: "services", route: route("A") as never, round: 1, slots: ["logo"], imagery: { look: "", logo: "", hero: "", object: "", site: "", signs: "", posts: ["", "", ""] } });
-    expect(r.route.board.images?.logo).toBeTruthy();
-    // Le relecteur voit le logo sans son fond beige, posé sur blanc.
-    expect(await px(vus[0], 0, 0)).toEqual([255, 255, 255, 255]);
-    const { getAsset, assetData } = await import("@/lib/library");
-    const mark = assetData(getAsset(r.route.board.images!.mark!.id)!), dark = assetData(getAsset(r.route.board.images!.markDark!.id)!);
-    for (const m of [mark, dark]) { expect((await px(m, 0, 0))[3]).toBe(0); expect((await centre(m))[3]).toBe(0); }
+  it("un logo fini rendu sur un fond coloré : son fond est retiré, il est relu sur blanc, et sa version claire n'a pas de carré autour", async () => {
+    // Méthode des graphistes : le logo fini est détouré (logoDetoure), relu posé sur blanc, et posé sur la planche avec
+    // sa version claire (poserSurLaPlanche).
+    const d = await I.logoDetoure(await anneau("#E8D9C4", "#1E2A44"));
+    expect(d.ok).toBe(true);
+    const net = (d as { ok: true; png: Buffer }).png;
+    expect(await px(await I.onWhite(net), 0, 0)).toEqual([255, 255, 255, 255]);
+    for (const m of [net, await I.lightLogo(net)]) { expect((await px(m, 0, 0))[3]).toBe(0); expect((await centre(m))[3]).toBe(0); }
   });
 });
