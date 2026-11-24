@@ -487,6 +487,28 @@ Dernière commande :
   ni les mots du client. Le relecteur juge la qualité seule. Commandé à « Évolution de SINA » ; accord écrit à faire
   donner chez elle, puis essai de Halo et de Pénombre (garde à monter à 10 € avec son accord).
 
+### Les logos hors de SINA, puis la méthode des graphistes (24 novembre 2026)
+
+Tous les essais sont faits par le chef d'orchestre, hors de SINA, et rangés dans `docs/studio/essais-logos-api/`
+(requêtes exactes, réponses complètes, images brutes, durées, coûts).
+- Audit de l'essai Tenon (`tenon/CONFIGURATION.md`) : le faux « néon flou » venait de mon affichage, qui ne gérait pas
+  la transparence ; mes instructions système imposaient un signe du métier (erreur relevée par le propriétaire).
+- Banc contrôlé, instructions de directeur artistique du propriétaire, exploration en 4 concepts : arrêtés par lui.
+- Demande nue par la Responses API (Halo, puis Tenon) : 2 logos sur une seule image, environ 0,10 € chacun.
+- Références visuelles choisies par lui (Orwell, Ornato, Hedge House) : finition meilleure, idée identique.
+- **Méthode des graphistes, retenue** : deux planches de six esquisses (2.5 Sunburst et 2.6 Flare, Images API,
+  0,04 €), le choix d'un humain parmi les douze, puis la finalisation de chaque esquisse choisie (2.6 Sunburst, retouche,
+  qualité high, environ 0,06 €). Essayée sur Tenon (deux fois), Poppy, Mouture, Argile et Reflet. Leçons : la 2.5 varie
+  plus que Flare ; Flare se répète d'un tirage à l'autre ; les métiers pleins de signes tout faits (café, lavage auto)
+  donnent des pistes banales ; la découpe doit être vérifiée.
+- Finalisation sans le propriétaire (Reflet) : le modèle le plus fort écrit seul les textes, à son niveau ; il manque
+  l'obligation de faire évoluer l'esquisse (esquisse 8 revenue presque identique). 0,12 €.
+- Le propriétaire : « on pourrait proposer au client les 12 logos, 6 par 2.5 et 6 par 2.6, et après il choisit »,
+  puis « Oui » au plan d'intégration (logo d'abord, choix du client selon son forfait, texte de finalisation écrit par
+  SINA, relecture, une seule façon de faire). Construction confiée le jour même à « Évolution de SINA » ; tout appel
+  payant y attend son oui écrit. Dépensé depuis la demande nue de Halo : environ 0,80 € (comptés dans chaque dossier) ; les essais de la nuit
+  d'avant sont estimés dans leurs propres dossiers.
+
 ## 5. À lire avant chaque décision
 
 1. `docs/studio/LE-STUDIO-DE-A-A-Z.md` : la référence du propriétaire et ses décisions (elles priment toujours).
