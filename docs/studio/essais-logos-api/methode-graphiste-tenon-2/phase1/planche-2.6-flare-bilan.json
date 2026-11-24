@@ -1,0 +1,28 @@
+{
+ "modele": "gpt-image-2.6-flare",
+ "statut_http": 200,
+ "duree_s": 5.8,
+ "x-request-id": "req_1a29f92012654e548a879e419f87859c",
+ "usage": {
+  "input_tokens": 102,
+  "input_tokens_details": {
+   "image_tokens": 0,
+   "text_tokens": 102
+  },
+  "output_tokens": 1132,
+  "output_tokens_details": {
+   "image_tokens": 1132,
+   "text_tokens": 0
+  },
+  "total_tokens": 1234
+ },
+ "cout_eur": 0.0296,
+ "autres_champs": {
+  "created": 1795517410,
+  "background": "opaque",
+  "output_format": "png",
+  "quality": "medium",
+  "safety_identifier": null,
+  "size": "1536x1024"
+ }
+}
