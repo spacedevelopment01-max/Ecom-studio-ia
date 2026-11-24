@@ -1,0 +1,207 @@
+{
+ "demande": "Crée un logo moderne et original pour mon entreprise Tenon. Je suis menuisier et je réalise des cuisines et des dressings sur mesure. Fond blanc.",
+ "instructions_da": "Tu es un directeur artistique spécialisé dans la création d'identités visuelles contemporaines, avec le niveau d'exigence d'une agence internationale de branding.\n\nTu accompagnes chaque utilisateur dans la création d'une marque unique, mémorable et désirable.\n\nComprends son activité, son univers, sa clientèle et ses préférences. Réfléchis à ce que sa marque doit faire ressentir avant de réfléchir à ce qu'elle doit représenter.\n\nTu disposes d'une totale liberté créative concernant les couleurs, le dessin des lettres, les symboles, les proportions et la composition, sauf indication contraire de l'utilisateur.\n\nUn logo peut être exclusivement typographique, abstrait, symbolique, illustré ou construit autour d'un monogramme. Il n'est jamais obligatoire d'ajouter un pictogramme ou de représenter littéralement le métier, le produit ou le nom de l'entreprise.\n\nAccorde une attention particulière à la personnalité du lettrage, à l'équilibre visuel, aux espaces négatifs et à l'originalité de la création.\n\nNe confonds pas simplicité et banalité, originalité et complexité, modernité et minimalisme.\n\nÉvite les logos génériques, les pictogrammes de banques d'images, les compositions prévisibles et les typographies sans personnalité.\n\nLorsque plusieurs propositions sont demandées, explore des univers graphiques véritablement différents. Chaque proposition doit pouvoir devenir une identité de marque à part entière.\n\nRespecte les préférences et les corrections de l'utilisateur sans ajouter de contraintes artistiques qu'il n'a pas demandées.\n\nUtilise directement l'outil de génération d'images pour concrétiser tes créations.\n\nPrésente chaque logo individuellement, sur un fond uni, sans maquette ni décor, avec une orthographe exacte et une excellente lisibilité.",
+ "total_eur_estime": 0.184,
+ "essais": [
+  {
+   "essai": "SANS1",
+   "porte": "responses",
+   "statut_http": 200,
+   "duree_s": 33.5,
+   "entetes": {
+    "Date": "Tue, 24 Nov 2026 01:30:59 GMT",
+    "Openai-Processing-Ms": "32891",
+    "Openai-Version": "2020-10-01",
+    "X-Request-Id": "req_dc80571ada724cf3b9def5fd3dd653e1"
+   },
+   "modele_demande_texte": "gpt-6.2-astra",
+   "modele_retourne_texte": "gpt-6.2-astra",
+   "modele_demande_dessin": "gpt-image-2.6-sunburst",
+   "usage_texte": {
+    "input_tokens": 1880,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cache_write_tokens_details": {
+      "ttl_12h_tokens": 0,
+      "ttl_30m_tokens": 0
+     },
+     "cached_tokens": 0
+    },
+    "output_tokens": 263,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 2143
+   },
+   "nb_images": 1,
+   "id_reponse": "resp_009ca264983ae23c006b04e8b300dc87d2a396ea34f7f06fd4",
+   "appels_dessin": [
+    {
+     "id": "ig_009ca264983ae23c006b04e8b46b7887d29385d0dd5d3c6c83",
+     "type": "image_generation_call",
+     "status": "completed",
+     "action": "generate",
+     "background": "opaque",
+     "output_format": "png",
+     "quality": "high",
+     "revised_prompt": "Crée un logo professionnel, original et minimaliste pour « Tenon », artisan menuisier créateur de cuisines et dressings sur mesure. Un seul logo final sur fond blanc pur, présenté de face, centré avec de belles marges, sans mockup. Composition horizontale élégante : à gauche un emblème abstrait compact dessinant la lettre T par l'emboîtement très lisible de deux pièces en aplats, inspiré du profil en escalier d'une véritable liaison tenon-mortaise, en teintes noyer brun profond et ocre chêne. À droite le nom exact « Tenon » dans un lettrage sur mesure brun profond, moderne, chaleureux, robuste, avec un subtil rappel de l'encoche dans le T, excellente lisibilité. Sous le nom, petite signature en capitales très lisibles : « CUISINES & DRESSINGS SUR MESURE ». Identité graphique vectorielle soignée et intemporelle, équilibre optique, très peu de formes, pas de grain, pas de dégradé, pas d'outils de bricolage, ni maison ni arbre. Travail digne d'un studio de design d'identité visuelle.",
+     "size": "1024x1024"
+    }
+   ],
+   "message_texte": [
+    ""
+   ],
+   "cout_dessin_eur_estime": 0.046
+  },
+  {
+   "essai": "SANS2",
+   "porte": "responses",
+   "statut_http": 200,
+   "duree_s": 32.8,
+   "entetes": {
+    "Date": "Tue, 24 Nov 2026 01:31:32 GMT",
+    "Openai-Processing-Ms": "32506",
+    "Openai-Version": "2020-10-01",
+    "X-Request-Id": "req_ae0bc3077aea408f8a53e694fc2203da"
+   },
+   "modele_demande_texte": "gpt-6.2-astra",
+   "modele_retourne_texte": "gpt-6.2-astra",
+   "modele_demande_dessin": "gpt-image-2.6-sunburst",
+   "usage_texte": {
+    "input_tokens": 1856,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cache_write_tokens_details": {
+      "ttl_12h_tokens": 0,
+      "ttl_30m_tokens": 0
+     },
+     "cached_tokens": 0
+    },
+    "output_tokens": 239,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 2095
+   },
+   "nb_images": 1,
+   "id_reponse": "resp_01ca54b9eb778be9006b04e8d4484087d2bc487faa4fd4a28a",
+   "appels_dessin": [
+    {
+     "id": "ig_01ca54b9eb778be9006b04e8d5ae1887d2b901885664f63fa2",
+     "type": "image_generation_call",
+     "status": "completed",
+     "action": "generate",
+     "background": "opaque",
+     "output_format": "png",
+     "quality": "high",
+     "revised_prompt": "Créer un seul logo vectoriel moderne, original et haut de gamme pour la menuiserie française « Tenon », spécialisée en cuisines et dressings sur mesure. Sur fond blanc pur, une composition horizontale parfaitement centrée, généreux espace blanc : à gauche un monogramme T géométrique ingénieux évoquant l’emboîtement précis de deux pièces de bois, un tenon et une mortaise ; aplats de brun noyer profond et de chêne miel, silhouette forte et simple, lignes de séparation en réserve blanche. À droite, mot-symbole exact « Tenon » dans un lettrage contemporain distinctif, sobre, couleur brun noyer très sombre, dessin finement ajusté. Sous le nom, petite signature bien lisible en capitales espacées : « CUISINES & DRESSINGS SUR MESURE ». Équilibre entre signature d’architecte d’intérieur et savoir-faire artisanal. Rendu graphique plat, net, sans ombre, sans dégradé, sans texture ni mockup, ni outils de menuiserie clichés.",
+     "size": "1024x1024"
+    }
+   ],
+   "message_texte": [
+    ""
+   ],
+   "cout_dessin_eur_estime": 0.046
+  },
+  {
+   "essai": "DA1",
+   "porte": "responses",
+   "statut_http": 200,
+   "duree_s": 38.9,
+   "entetes": {
+    "Date": "Tue, 24 Nov 2026 01:32:11 GMT",
+    "Openai-Processing-Ms": "38419",
+    "Openai-Version": "2020-10-01",
+    "X-Request-Id": "req_30dd71bb9730425a9b2eee3ba1d849dd"
+   },
+   "modele_demande_texte": "gpt-6.2-astra",
+   "modele_retourne_texte": "gpt-6.2-astra",
+   "modele_demande_dessin": "gpt-image-2.6-sunburst",
+   "usage_texte": {
+    "input_tokens": 2276,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cache_write_tokens_details": {
+      "ttl_12h_tokens": 0,
+      "ttl_30m_tokens": 0
+     },
+     "cached_tokens": 0
+    },
+    "output_tokens": 291,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 2567
+   },
+   "nb_images": 1,
+   "id_reponse": "resp_068244e93bbdceca006b04e8f5440487d29f604c709b79df8f",
+   "appels_dessin": [
+    {
+     "id": "ig_068244e93bbdceca006b04e8f6d91087d2aa21d2b9ca7f65f5",
+     "type": "image_generation_call",
+     "status": "completed",
+     "action": "generate",
+     "background": "opaque",
+     "output_format": "png",
+     "quality": "high",
+     "revised_prompt": "Un unique logo d'agence de branding pour « Tenon », menuisier créateur de cuisines et dressings sur mesure. Fond parfaitement blanc uni. Créer un mot-symbole sur mesure, avec exactement le texte « Tenon » (T majuscule, enon minuscules). Aucune autre inscription. Sensation de précision architecturale et de tactilité artisanale, sophistication chaleureuse. Encre unique brun noyer très foncé. Dessiner de vraies lettres originales, charnues, aux contreformes ouvertes ; la traverse du T et son fût s'emboîtent par une subtile découpe blanche en escalier de type assemblage à mi-bois, un détail structurel net plutôt qu'une illustration. Les deux n identiques ont une épaule en arche légèrement aplatie et des pieds coupés droit, o légèrement carré aux angles adoucis, e d'excellente lisibilité. Silhouette du nom cohérente et mémorable, crénage optique soigné. Mot centré sur le blanc avec ample respiration, grande taille, aplats vectoriels à bords impeccables. Pas de symbole séparé, pas d'outils, pas de dessin de cuisine, pas de grain de bois, ni texture, ni ombre, ni effet 3D, ni mockup.",
+     "size": "1024x1024"
+    }
+   ],
+   "message_texte": [
+    ""
+   ],
+   "cout_dessin_eur_estime": 0.046
+  },
+  {
+   "essai": "DA2",
+   "porte": "responses",
+   "statut_http": 200,
+   "duree_s": 38.7,
+   "entetes": {
+    "Date": "Tue, 24 Nov 2026 01:32:50 GMT",
+    "Openai-Processing-Ms": "38280",
+    "Openai-Version": "2020-10-01",
+    "X-Request-Id": "req_dc27cd40ba444a45aa806037ff5a08bc"
+   },
+   "modele_demande_texte": "gpt-6.2-astra",
+   "modele_retourne_texte": "gpt-6.2-astra",
+   "modele_demande_dessin": "gpt-image-2.6-sunburst",
+   "usage_texte": {
+    "input_tokens": 2295,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cache_write_tokens_details": {
+      "ttl_12h_tokens": 0,
+      "ttl_30m_tokens": 0
+     },
+     "cached_tokens": 0
+    },
+    "output_tokens": 310,
+    "output_tokens_details": {
+     "reasoning_tokens": 0
+    },
+    "total_tokens": 2605
+   },
+   "nb_images": 1,
+   "id_reponse": "resp_0cb98875484357c2006b04e91c240487d2b30f13b250c1398e",
+   "appels_dessin": [
+    {
+     "id": "ig_0cb98875484357c2006b04e91dc3e887d28a6b629696cb7585",
+     "type": "image_generation_call",
+     "status": "completed",
+     "action": "generate",
+     "background": "opaque",
+     "output_format": "png",
+     "quality": "high",
+     "revised_prompt": "Crée une seule identité graphique haut de gamme : un logotype original qui écrit exactement « Tenon » (T majuscule, enon minuscules), pour un artisan menuisier français créant cuisines et dressings sur mesure. Fond blanc pur uni. Le logo est exclusivement typographique : dessiner les cinq lettres comme un alphabet sur mesure, aux courbes extérieures subtilement tendues et aux contreformes chaleureuses, une silhouette solide et basse en encre brun noyer très sombre. Détail signature : la traverse du grand T est emboîtée sur son fût, indiquée par une fine découpe blanche en escalier dessinant le profil précis d'un tenon de bois ; ce détail très simple et intentionnel reste discret, préserve l'évidence de lecture. Les deux n identiques ont des épaules généreuses à la jonction légèrement carrée, le e est ouvert, le o parfaitement maîtrisé. Style graphique de maison d'agencement contemporaine, sincère, tactile sans texture, architectural sans froideur. Crénage optique soigné, lettres proches mais distinctes. Composition centrée avec belle marge blanche, logo assez grand. Aplats vectoriels nets. Aucun autre texte, aucun slogan, aucune icône annexe, aucun décor, aucun effet 3D, ni ombre ni dégradé. Présentation frontale d'un logo final, pas une maquette.",
+     "size": "1024x1024"
+    }
+   ],
+   "message_texte": [
+    ""
+   ],
+   "cout_dessin_eur_estime": 0.046
+  }
+ ]
+}

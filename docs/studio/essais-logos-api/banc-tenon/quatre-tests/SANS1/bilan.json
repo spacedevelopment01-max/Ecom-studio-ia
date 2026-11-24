@@ -1,0 +1,50 @@
+{
+ "essai": "SANS1",
+ "porte": "responses",
+ "statut_http": 200,
+ "duree_s": 33.5,
+ "entetes": {
+  "Date": "Tue, 24 Nov 2026 01:30:59 GMT",
+  "Openai-Processing-Ms": "32891",
+  "Openai-Version": "2020-10-01",
+  "X-Request-Id": "req_dc80571ada724cf3b9def5fd3dd653e1"
+ },
+ "modele_demande_texte": "gpt-6.2-astra",
+ "modele_retourne_texte": "gpt-6.2-astra",
+ "modele_demande_dessin": "gpt-image-2.6-sunburst",
+ "usage_texte": {
+  "input_tokens": 1880,
+  "input_tokens_details": {
+   "cache_write_tokens": 0,
+   "cache_write_tokens_details": {
+    "ttl_12h_tokens": 0,
+    "ttl_30m_tokens": 0
+   },
+   "cached_tokens": 0
+  },
+  "output_tokens": 263,
+  "output_tokens_details": {
+   "reasoning_tokens": 0
+  },
+  "total_tokens": 2143
+ },
+ "nb_images": 1,
+ "id_reponse": "resp_009ca264983ae23c006b04e8b300dc87d2a396ea34f7f06fd4",
+ "appels_dessin": [
+  {
+   "id": "ig_009ca264983ae23c006b04e8b46b7887d29385d0dd5d3c6c83",
+   "type": "image_generation_call",
+   "status": "completed",
+   "action": "generate",
+   "background": "opaque",
+   "output_format": "png",
+   "quality": "high",
+   "revised_prompt": "Crée un logo professionnel, original et minimaliste pour « Tenon », artisan menuisier créateur de cuisines et dressings sur mesure. Un seul logo final sur fond blanc pur, présenté de face, centré avec de belles marges, sans mockup. Composition horizontale élégante : à gauche un emblème abstrait compact dessinant la lettre T par l'emboîtement très lisible de deux pièces en aplats, inspiré du profil en escalier d'une véritable liaison tenon-mortaise, en teintes noyer brun profond et ocre chêne. À droite le nom exact « Tenon » dans un lettrage sur mesure brun profond, moderne, chaleureux, robuste, avec un subtil rappel de l'encoche dans le T, excellente lisibilité. Sous le nom, petite signature en capitales très lisibles : « CUISINES & DRESSINGS SUR MESURE ». Identité graphique vectorielle soignée et intemporelle, équilibre optique, très peu de formes, pas de grain, pas de dégradé, pas d'outils de bricolage, ni maison ni arbre. Travail digne d'un studio de design d'identité visuelle.",
+   "size": "1024x1024"
+  }
+ ],
+ "message_texte": [
+  ""
+ ],
+ "cout_dessin_eur_estime": 0.046
+}

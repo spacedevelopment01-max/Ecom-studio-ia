@@ -1,0 +1,50 @@
+{
+ "essai": "SANS2",
+ "porte": "responses",
+ "statut_http": 200,
+ "duree_s": 32.8,
+ "entetes": {
+  "Date": "Tue, 24 Nov 2026 01:31:32 GMT",
+  "Openai-Processing-Ms": "32506",
+  "Openai-Version": "2020-10-01",
+  "X-Request-Id": "req_ae0bc3077aea408f8a53e694fc2203da"
+ },
+ "modele_demande_texte": "gpt-6.2-astra",
+ "modele_retourne_texte": "gpt-6.2-astra",
+ "modele_demande_dessin": "gpt-image-2.6-sunburst",
+ "usage_texte": {
+  "input_tokens": 1856,
+  "input_tokens_details": {
+   "cache_write_tokens": 0,
+   "cache_write_tokens_details": {
+    "ttl_12h_tokens": 0,
+    "ttl_30m_tokens": 0
+   },
+   "cached_tokens": 0
+  },
+  "output_tokens": 239,
+  "output_tokens_details": {
+   "reasoning_tokens": 0
+  },
+  "total_tokens": 2095
+ },
+ "nb_images": 1,
+ "id_reponse": "resp_01ca54b9eb778be9006b04e8d4484087d2bc487faa4fd4a28a",
+ "appels_dessin": [
+  {
+   "id": "ig_01ca54b9eb778be9006b04e8d5ae1887d2b901885664f63fa2",
+   "type": "image_generation_call",
+   "status": "completed",
+   "action": "generate",
+   "background": "opaque",
+   "output_format": "png",
+   "quality": "high",
+   "revised_prompt": "Créer un seul logo vectoriel moderne, original et haut de gamme pour la menuiserie française « Tenon », spécialisée en cuisines et dressings sur mesure. Sur fond blanc pur, une composition horizontale parfaitement centrée, généreux espace blanc : à gauche un monogramme T géométrique ingénieux évoquant l’emboîtement précis de deux pièces de bois, un tenon et une mortaise ; aplats de brun noyer profond et de chêne miel, silhouette forte et simple, lignes de séparation en réserve blanche. À droite, mot-symbole exact « Tenon » dans un lettrage contemporain distinctif, sobre, couleur brun noyer très sombre, dessin finement ajusté. Sous le nom, petite signature bien lisible en capitales espacées : « CUISINES & DRESSINGS SUR MESURE ». Équilibre entre signature d’architecte d’intérieur et savoir-faire artisanal. Rendu graphique plat, net, sans ombre, sans dégradé, sans texture ni mockup, ni outils de menuiserie clichés.",
+   "size": "1024x1024"
+  }
+ ],
+ "message_texte": [
+  ""
+ ],
+ "cout_dessin_eur_estime": 0.046
+}

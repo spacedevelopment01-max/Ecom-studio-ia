@@ -1,0 +1,50 @@
+{
+ "essai": "DA1",
+ "porte": "responses",
+ "statut_http": 200,
+ "duree_s": 38.9,
+ "entetes": {
+  "Date": "Tue, 24 Nov 2026 01:32:11 GMT",
+  "Openai-Processing-Ms": "38419",
+  "Openai-Version": "2020-10-01",
+  "X-Request-Id": "req_30dd71bb9730425a9b2eee3ba1d849dd"
+ },
+ "modele_demande_texte": "gpt-6.2-astra",
+ "modele_retourne_texte": "gpt-6.2-astra",
+ "modele_demande_dessin": "gpt-image-2.6-sunburst",
+ "usage_texte": {
+  "input_tokens": 2276,
+  "input_tokens_details": {
+   "cache_write_tokens": 0,
+   "cache_write_tokens_details": {
+    "ttl_12h_tokens": 0,
+    "ttl_30m_tokens": 0
+   },
+   "cached_tokens": 0
+  },
+  "output_tokens": 291,
+  "output_tokens_details": {
+   "reasoning_tokens": 0
+  },
+  "total_tokens": 2567
+ },
+ "nb_images": 1,
+ "id_reponse": "resp_068244e93bbdceca006b04e8f5440487d29f604c709b79df8f",
+ "appels_dessin": [
+  {
+   "id": "ig_068244e93bbdceca006b04e8f6d91087d2aa21d2b9ca7f65f5",
+   "type": "image_generation_call",
+   "status": "completed",
+   "action": "generate",
+   "background": "opaque",
+   "output_format": "png",
+   "quality": "high",
+   "revised_prompt": "Un unique logo d'agence de branding pour « Tenon », menuisier créateur de cuisines et dressings sur mesure. Fond parfaitement blanc uni. Créer un mot-symbole sur mesure, avec exactement le texte « Tenon » (T majuscule, enon minuscules). Aucune autre inscription. Sensation de précision architecturale et de tactilité artisanale, sophistication chaleureuse. Encre unique brun noyer très foncé. Dessiner de vraies lettres originales, charnues, aux contreformes ouvertes ; la traverse du T et son fût s'emboîtent par une subtile découpe blanche en escalier de type assemblage à mi-bois, un détail structurel net plutôt qu'une illustration. Les deux n identiques ont une épaule en arche légèrement aplatie et des pieds coupés droit, o légèrement carré aux angles adoucis, e d'excellente lisibilité. Silhouette du nom cohérente et mémorable, crénage optique soigné. Mot centré sur le blanc avec ample respiration, grande taille, aplats vectoriels à bords impeccables. Pas de symbole séparé, pas d'outils, pas de dessin de cuisine, pas de grain de bois, ni texture, ni ombre, ni effet 3D, ni mockup.",
+   "size": "1024x1024"
+  }
+ ],
+ "message_texte": [
+  ""
+ ],
+ "cout_dessin_eur_estime": 0.046
+}
