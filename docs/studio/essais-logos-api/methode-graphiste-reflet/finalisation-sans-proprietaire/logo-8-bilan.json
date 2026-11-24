@@ -1,0 +1,48 @@
+{
+ "esquisse": "8",
+ "texte": {
+  "statut_http": 200,
+  "duree_s": 8.7,
+  "x-request-id": "req_7fc3a90c477c4b9ea56427950bfc9f50",
+  "usage": {
+   "input_tokens": 638,
+   "input_tokens_details": {
+    "cache_write_tokens": 0,
+    "cache_write_tokens_details": {
+     "ttl_12h_tokens": 0,
+     "ttl_30m_tokens": 0
+    },
+    "cached_tokens": 0
+   },
+   "output_tokens": 309,
+   "output_tokens_details": {
+    "reasoning_tokens": 0
+   },
+   "total_tokens": 947
+  },
+  "cout_eur": 0.015,
+  "idee_centrale": "Un grand R bleu nuit dans lequel le profil blanc d’une voiture se découpe en réserve, avec un éclat à quatre pointes dans la boucle de la lettre.",
+  "texte_ecrit": "Transforme cette esquisse en véritable logo contemporain pour Reflet, une entreprise de nettoyage de voitures, intérieur et extérieur. Conserve l’idée centrale : le profil d’une voiture se découpe en réserve dans un grand R bleu nuit, avec un éclat blanc à quatre pointes dans sa boucle. Simplifie le tracé de la carrosserie et du pavillon pour que la voiture se lise en quelques courbes nettes sans affaiblir le dessin du R. Redessine avec soin les capitales de REFLET pour leur donner un caractère plus distinctif, en accord avec les angles du monogramme. Affine les proportions du signe, ajuste l’espacement entre les lettres et équilibre le monogramme avec le nom pour renforcer la présence de la marque tout en préservant une excellente lisibilité. Privilégie le bleu nuit profond et le blanc franc de l’esquisse pour exprimer la netteté du nettoyage. Sous le nom, garde pour seule ligne descriptive « NETTOYAGE AUTO », discrète mais lisible ; retire toute autre phrase. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif"
+ },
+ "image": {
+  "statut_http": 200,
+  "duree_s": 33.3,
+  "x-request-id": "req_a33d170d8f014115b35ea13f0cf46e69",
+  "usage": {
+   "input_tokens": 1296,
+   "input_tokens_details": {
+    "image_tokens": 1024,
+    "text_tokens": 272
+   },
+   "output_tokens": 2058,
+   "output_tokens_details": {
+    "image_tokens": 2058,
+    "text_tokens": 0
+   },
+   "total_tokens": 3354
+  },
+  "cout_eur": 0.0613,
+  "taille": "1254x1254"
+ },
+ "total_cumule_eur": 0.1169
+}
