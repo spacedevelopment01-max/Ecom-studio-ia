@@ -34,6 +34,7 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 23/11 22:33 | Nadia | Identité C « Pénombre », logo avec la règle de la série, 2e essai | non relu : même refus du Studio (fond impossible à retirer) | Non | [en attente] |
 | 23/11 22:34 | Nadia | Identité C « Pénombre », logo avec la règle de la série, 3e essai | 3/10 : « une flamme de bougie dessinée, que le client refuse explicitement. Elle est entourée d'une demi-lune et d'un arc de cercle, interdits, avec des ombres noires baveuses. Ce rendu réaliste reste illisible en tout petit » | Non | [en attente] |
 | 24/11 00:05 | Nadia | Identité B « Halo », nouveau logo (demande : métier, nom, couleurs, typographie, fond blanc), 1er essai | 6/10 : « Les deux arcs orange qui entourent la bougie, au centre, forment un cadre rond ou une arche autour du sujet, ce que le propriétaire interdit » | Non | [en attente] — remarque de Claude : il porte une flamme, que Nadia refuse, et le relecteur n'en parle pas |
+| 24/11 00:05 | Nadia | Identité B « Halo », nouveau logo, 2e essai (reçoit le 1er avec « complètement différent ») | 5/10 : « Le symbole est enfermé dans une arche bleue au sommet arrondi, avec un disque rond derrière la flamme : supprimer cette arche et cette vignette ronde » | Non | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
