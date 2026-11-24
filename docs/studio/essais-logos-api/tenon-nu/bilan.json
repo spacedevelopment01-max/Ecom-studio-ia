@@ -1,0 +1,40 @@
+{
+ "statut_http": 200,
+ "duree_s": 25.0,
+ "x-request-id": "req_e683b4854be441a8a7c6c4c4a67da954",
+ "modele_texte_retourne": "gpt-6.2-astra",
+ "usage_texte": {
+  "input_tokens": 2555,
+  "input_tokens_details": {
+   "cache_write_tokens": 0,
+   "cache_write_tokens_details": {
+    "ttl_12h_tokens": 0,
+    "ttl_30m_tokens": 0
+   },
+   "cached_tokens": 0
+  },
+  "output_tokens": 280,
+  "output_tokens_details": {
+   "reasoning_tokens": 0
+  },
+  "total_tokens": 2835
+ },
+ "cout_texte_eur": 0.0272,
+ "nb_images": 1,
+ "appels_dessin": [
+  {
+   "id": "ig_033a3578982856d9006b04efa3aeb887d285b93a7246f45343",
+   "type": "image_generation_call",
+   "status": "completed",
+   "action": "generate",
+   "background": "opaque",
+   "output_format": "png",
+   "quality": "high",
+   "revised_prompt": "Crée une planche de présentation avec exactement deux propositions de logo bien différentes pour « Tenon », entreprise française de menuiserie spécialisée en cuisines et dressings sur mesure. Format paysage, deux panneaux carrés de même taille côte à côte, marges généreuses, logos optiquement centrés, même poids visuel. À gauche : identité artisanale contemporaine, fond ivoire, encre brun noyer ; un emblème simple de deux pièces de bois en perspective isométrique dont le tenon rectangulaire s'emboîte dans la mortaise, tracé robuste et lisible, au-dessus du mot exact « Tenon » en lettres à empattements chaleureux soigneusement dessinées. À droite : identité d'architecte d'intérieur minimaliste, fond vert sapin profond, tracés crème ; monogramme T géométrique original évoquant les montants et étagères asymétriques d'un dressing dans un carré ouvert, accompagné du mot exact « TENON » en capitales sans empattement espacées. Deux vraies signatures graphiques professionnelles, vectorielles en aplats, élégantes et reproductibles en gravure. Aucun autre texte, aucune numérotation, aucun mockup, pas de dégradés ni d'ombres ni de photographie.",
+   "size": "1774x887"
+  }
+ ],
+ "message": [
+  ""
+ ]
+}
