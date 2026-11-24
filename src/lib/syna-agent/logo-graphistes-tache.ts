@@ -4,8 +4,8 @@
  * qui a servi à la faire (le texte envoyé, le modèle, l'identifiant de requête, la consommation). Une esquisse refusée
  * n'y est jamais rangée comme une image montrable.
  *
- * Point 0 en attente : aucune chaîne ne lance encore la première recherche ; elle part par cette tâche quand le
- * branchement sera fait (voir logo-graphistes.ts).
+ * La première recherche part d'identity.nom (ou d'identity.propose quand le client garde son nom) ; quand chaque esquisse
+ * choisie a son logo relu, les planches partent (`lancerLesPlanches`), couvertes par l'accord de l'étape.
  */
 import { z } from "zod";
 import { UserFacingError, enqueue, pendingJob, type JobContext } from "../jobs";

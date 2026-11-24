@@ -1,11 +1,13 @@
 # Le logo : la méthode des graphistes
 
-Compte rendu préparé le 24 novembre 2026. Rien n'est encore envoyé : l'envoi attend la réponse du propriétaire au
-« point 0 » et son accord écrit sur les épreuves.
+Compte rendu préparé le 24 novembre 2026. Rien n'est encore envoyé : l'envoi attend l'accord écrit du propriétaire sur
+les épreuves, puis l'essai réel.
 
 ## Ce que le propriétaire a dit
 
 - Sur la construction de la méthode : « oui » (relayé par le chef d'orchestre le 24 novembre 2026).
+- Sur le « point 0 », le 24 novembre 2026, à la question « Le client choisit d'abord son nom, puis les logos : tu es
+  d'accord ? » : « Oui ».
 - [À compléter : ses mots exacts sur la méthode des graphistes, relayés par le chef d'orchestre. Ils serviront de
   verdict aux cinq nouvelles épreuves ; aucun mot n'a été inventé ici.]
 - Ses règles d'avant qui restent vraies : « Pour rappel on ne demande plus au client ce qu'il veux ou non dans son
@@ -23,8 +25,8 @@ Avant, le Studio demandait un logo à la fois, avec des consignes. Maintenant, i
    vide ou collée au bord, puis un relecteur regarde toutes les esquisses en une fois : nom bien écrit, pas d'arche,
    rien de la voisine, une vraie piste de marque. Une esquisse refusée n'est jamais montrée. S'il en reste moins de
    huit, les deux planches sont refaites une fois, aux frais du Studio, en évitant les pistes déjà vues.
-3. **Le client choisit.** Il voit les esquisses numérotées et en coche 2, 3 ou 4 selon son forfait (moins, c'est
-   possible). Le bouton dit : « Je choisis les esquisses 3, 7 et 11 ».
+3. **Le client choisit.** Il voit les esquisses numérotées et en coche deux au moins, au plus 2, 3 ou 4 selon son
+   forfait. Le bouton dit : « Je choisis les esquisses 3, 7 et 11 ».
 4. **Le logo fini.** Pour chaque esquisse choisie, le modèle d'OpenAI le plus fort pour l'écriture (GPT-6.2 Astra)
    regarde l'esquisse et écrit le texte qui la transforme en vrai logo, avec la consigne essayée le 24 novembre, plus
    une phrase : faire évoluer l'idée vers une identité plus aboutie, jamais seulement la nettoyer. Le logo est dessiné
@@ -67,20 +69,39 @@ Studio, une seule fois pour les logos.
 - Le texte de finalisation et son contrôle gratuit, le logo fini (l'esquisse jointe comme le faisait l'essai), la
   relecture, la reprise unique.
 - Les couleurs tirées du logo, la variété des marques qui ne touche plus que le fond de page quand le logo décide, le
-  contrôle « jamais deux fois la même police de titres ». La consigne qui fait choisir la police de titres d'après le logo
-  est écrite ; elle sera jointe à l'appel de la direction artistique avec le branchement (point 0).
+  contrôle « jamais deux fois la même police de titres ». La direction artistique reçoit le logo fini, ses couleurs
+  imposées et la consigne qui fait choisir la police de titres d'après lui.
 - La carte des esquisses dans la conversation et dans l'onglet Marque, en français et en anglais.
 - Le devis, et la borne des reprises du Studio réglée à une reprise pour les logos.
-- La tâche de fond et les outils : choisir, un autre logo, d'autres pistes, changer les couleurs.
+- La tâche de fond et les outils : choisir le nom, choisir les esquisses, un autre logo, d'autres pistes, changer les
+  couleurs.
 
-## Ce qui attend le point 0
+## Le point 0 : tranché
 
-**La question :** le client choisit-il son nom d'abord ? **La recommandation :** oui. La création s'arrête après les
-noms vérifiés, le client choisit son nom, la recherche se fait pour ce nom, et ses 2, 3 ou 4 identités partagent ce nom,
-chacune avec son logo.
+**La question :** « Le client choisit d'abord son nom, puis les logos : tu es d'accord ? » **Sa réponse :** « Oui »
+(24 novembre 2026).
 
-Tant que la réponse n'est pas là : la nouvelle méthode n'est branchée sur aucune création, l'ancienne série reste en
-place, et les nouveaux outils ne sont pas encore proposés à SINA.
+Ce qui est branché :
+
+1. SINA étudie le marché, cherche l'idée et les noms, puis vérifie qu'ils sont libres. Là, elle s'arrête et montre les
+   noms vérifiés.
+2. Le client choisit son nom (ou garde le sien : la recherche du logo part alors tout de suite).
+3. Le Studio cherche les pistes de son logo pour ce nom et montre les esquisses numérotées.
+4. Le client en coche deux au moins, au plus selon son forfait. Les logos finis sont faits et relus.
+5. Quand chaque esquisse choisie a son logo relu, ses identités sont créées : elles partagent le nom choisi, chacune avec
+   son propre logo, ses couleurs tirées du logo et une police de titres choisie d'après lui.
+
+Tout est couvert par un seul accord, montré au début : les noms, la recherche, les logos finis, les planches, puis la
+marque finie comme avant. Chaque morceau a sa part réservée ; la somme ne dépasse jamais le « au plus » de la carte.
+
+Ce qui est retiré de l'ancienne série : elle n'est plus jamais appelée pour une nouvelle marque, et un logo ne se
+redessine plus en refaisant une planche (« un autre logo » passe par une autre esquisse ou d'autres pistes). Son code
+reste en place pour deux usages seulement, le temps de l'accord sur les épreuves : la marque finie des anciens projets
+(« un autre logo » après le choix, et le logo qui leur manque) et les cinq épreuves scellées qui la rejouent. Les
+supprimer ferait échouer ces épreuves, ce qui bloque l'envoi : cela attend son accord écrit.
+
+Une précision décidée ici : le client choisit **deux esquisses au moins**, car chaque esquisse devient une identité et
+une proposition de marque en compte au moins deux (forfaits validés : 2, 3 et 4 identités proposées).
 
 ## Les épreuves
 
@@ -98,6 +119,29 @@ pour être marquées remplacées (jamais réécrites) :
 Les remplaçantes sont écrites dans `tests/epreuves/a-sceller-methode-des-graphistes.ts` et rejouées dès maintenant
 comme des essais ordinaires. Leur verdict attend les mots du propriétaire.
 
+**La phrase d'accord à lui proposer :** « Oui, marque trois-fois-le-meme-dessin, logos-de-la-serie-dans-l-ordre,
+pas-de-consigne-de-style-pour-un-logo, demande-du-logo-couleurs-typo-fond et relecteur-du-logo-qualite-seule comme
+remplacées par la méthode des graphistes du 24 novembre, ajoute et scelle logo-refait-une-fois-avec-ses-raisons,
+esquisses-choisies-selon-le-forfait, finalisation-ecrite-par-le-plus-fort, planches-de-recherche-demande-exacte et
+relecteur-du-logo-fini, retire l'ancienne série de logos, et mets à jour la partie Logo de CLAUDE.md. »
+
+## Le prix proposé pour l'essai réel
+
+Calculé par le devis du Studio (tarifs enregistrés), pour un client inventé avec trois identités (forfait à 99 €), du
+nom jusqu'aux logos finis et aux planches, sans la marque finie :
+
+| Morceau | Probable | Au plus |
+|---|---|---|
+| Étude, idée, noms vérifiés, planches (chaîne entière) | 5,21 € | 15,45 € |
+| Recherche du logo (deux planches et leur tri) | 0,15 € | 0,69 € |
+| Trois logos finis et leurs relectures | 0,29 € | 1,83 € |
+| **Un client** | **5,65 €** | **17,97 €** |
+| **Trois clients inventés** | **environ 17 €** | **environ 54 €** |
+
+Les reprises sont aux frais du Studio, une fois pour les logos : au plus 2,36 € de plus par client. Ces prix sont des
+calculs, pas des mesures ; l'essai les mesurera. Proposition : un plafond de 20 € pour les trois clients, arrêt
+immédiat s'il est atteint, et chaque image montrée tout de suite, y compris celles refusées.
+
 ## Un point à trancher
 
 La consigne de finalisation est reprise mot pour mot de l'essai. Elle dit « l'esquisse de logo jointe parmi douze ».
@@ -108,8 +152,11 @@ seulement si le chef d'orchestre le juge utile.
 
 À mettre à la place du passage « Logo » de « Ses goûts, en règles générales », après l'accord écrit du propriétaire :
 
-> - **Logo, la méthode des graphistes** (24 novembre 2026, « oui » du propriétaire à la construction ; [À compléter :
->   ses mots]) : créé par OpenAI, pour cette marque-là, jamais repris d'une autre ; aucun pictogramme dessiné en code.
+> - **Logo, la méthode des graphistes** (24 novembre 2026, « oui » du propriétaire à la construction ; « Oui » à « Le
+>   client choisit d'abord son nom, puis les logos : tu es d'accord ? ») : créé par OpenAI, pour cette marque-là, jamais
+>   repris d'une autre ; aucun pictogramme dessiné en code. **Le nom d'abord** : la création s'arrête sur les noms
+>   vérifiés ; le client choisit le sien (ou garde le sien), puis ses logos ; ses 2, 3 ou 4 identités partagent ce nom,
+>   chacune avec son propre logo ; un seul accord pour toute l'étape.
 >   **Le métier** : un petit appel écrit le métier en mots simples et la piste (« le savoir-faire de … » pour un artisan,
 >   « l'univers de … » pour un commerce), contrôlés gratuitement. **La recherche** : deux planches de six esquisses en
 >   même temps (GPT Image 2.5 Sunburst et 2.6 Flare, même texte exact des essais du 24 novembre, rien d'autre ; ni
@@ -117,7 +164,7 @@ seulement si le chef d'orchestre le juge utile.
 >   collée au bord ; un relecteur le plus fort, effort moyen, relit toutes les esquisses en un appel (entière, rien de la
 >   voisine, nom exact comparé par le code, pas d'arche) ; une esquisse refusée n'est jamais montrée ; moins de huit :
 >   les deux planches refaites une fois à la charge du Studio, avec « Évite ces pistes déjà présentées : … ». **Le
->   choix** : le client coche 2, 3 ou 4 esquisses selon son forfait (moins est permis). **Le logo fini** : GPT-6.2
+>   choix** : le client coche ses esquisses, deux au moins, au plus 2, 3 ou 4 selon son forfait. **Le logo fini** : GPT-6.2
 >   Astra regarde l'esquisse et écrit le texte (consigne de l'essai, plus l'évolution de l'idée), contrôlé gratuitement ;
 >   GPT Image 2.6 Sunburst le dessine à partir de l'esquisse. **La relecture** : le relecteur le plus fort, effort élevé,
 >   refuse un nom mal écrit, une idée perdue, un logo sans évolution, une arche, une phrase inventée, une note sous 8 ;
