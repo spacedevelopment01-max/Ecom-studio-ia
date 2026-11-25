@@ -190,3 +190,8 @@ Le propriétaire a comparé v4 et v3 (même texte, mêmes voix) sur une histoire
 Désormais : model_id `eleven_v4` pour tout (histoires avec Paul, sketchs avec /v1/text-to-dialogue), stabilité 0, indications entre crochets.
 La v4 rit vraiment quand on écrit [laughs], enchaîne plus vite (sketch : 43 s contre 58 s en v3), même prix que la v3.
 Toujours vérifier la liste des modèles (GET /v1/models) avant de choisir : une version plus récente peut être sortie.
+
+## Leçon (25 novembre 2026) : la v4 déraille sur un long dialogue
+35 répliques d'un coup en v4 : phrases répétées, désordre, une réplique perdue (50 c perdus).
+Règle : dialogue en morceaux de 7 répliques au plus, chaque morceau contrôlé (`outils/controle.py`) avant le montage.
+Montage du sketch papa en v4 : `sketch-papa/v4/bornes.py` (bornes dans les vrais silences) puis `monte.py`.
