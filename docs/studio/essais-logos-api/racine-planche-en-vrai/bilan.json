@@ -1,0 +1,93 @@
+{
+ "total_eur": 0.1957,
+ "elements": [
+  {
+   "element": "publication-1x1",
+   "statut_http": 200,
+   "duree_s": 41.1,
+   "x-request-id": "req_b2f39826ea9b4d7897b4d525ed8d824e",
+   "usage": {
+    "input_tokens": 1941,
+    "input_tokens_details": {
+     "image_tokens": 1793,
+     "text_tokens": 148
+    },
+    "output_tokens": 1834,
+    "output_tokens_details": {
+     "image_tokens": 1834,
+     "text_tokens": 0
+    },
+    "total_tokens": 3775
+   },
+   "cout_eur": 0.0603,
+   "taille_recue": "1088x1088",
+   "taille_finale": "1080x1080"
+  },
+  {
+   "element": "publication-4x5",
+   "statut_http": 200,
+   "duree_s": 34.5,
+   "x-request-id": "req_759a23bd8407451d83def6455b95f0fa",
+   "usage": {
+    "input_tokens": 2004,
+    "input_tokens_details": {
+     "image_tokens": 1857,
+     "text_tokens": 147
+    },
+    "output_tokens": 1587,
+    "output_tokens_details": {
+     "image_tokens": 1587,
+     "text_tokens": 0
+    },
+    "total_tokens": 3591
+   },
+   "cout_eur": 0.0544,
+   "taille_recue": "1088x1360",
+   "taille_finale": "1080x1350"
+  },
+  {
+   "element": "publication-9x16",
+   "statut_http": 200,
+   "duree_s": 30.6,
+   "x-request-id": "req_78c8fc0cfa4c414d8140284557658412",
+   "usage": {
+    "input_tokens": 1966,
+    "input_tokens_details": {
+     "image_tokens": 1820,
+     "text_tokens": 146
+    },
+    "output_tokens": 1331,
+    "output_tokens_details": {
+     "image_tokens": 1331,
+     "text_tokens": 0
+    },
+    "total_tokens": 3297
+   },
+   "cout_eur": 0.0475,
+   "taille_recue": "1088x1936",
+   "taille_finale": "1080x1920"
+  },
+  {
+   "element": "ouverture-site",
+   "statut_http": 200,
+   "duree_s": 25.0,
+   "x-request-id": "req_59c1dc6a6420484eb7ed836c07dbe670",
+   "usage": {
+    "input_tokens": 2045,
+    "input_tokens_details": {
+     "image_tokens": 1884,
+     "text_tokens": 161
+    },
+    "output_tokens": 772,
+    "output_tokens_details": {
+     "image_tokens": 772,
+     "text_tokens": 0
+    },
+    "total_tokens": 2817
+   },
+   "cout_eur": 0.0336,
+   "taille_recue": "2048x768",
+   "taille_finale": "1920x720"
+  }
+ ]
+}
