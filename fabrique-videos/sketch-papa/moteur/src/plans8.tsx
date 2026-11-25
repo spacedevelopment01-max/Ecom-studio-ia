@@ -4,6 +4,7 @@ import {Plan, Ecran} from './scene';
 import {INK, lin, pop, Humain, Bulle, Canape} from './dessins';
 import minutage from './minutage.json';
 import bouche from './bouche.json';
+import jeu from './jeu.json';
 
 type Ligne = {qui: string; s: number; e: number};
 const LIGNES = (minutage as unknown as {lignes: Ligne[]}).lignes;
@@ -13,15 +14,17 @@ const ease = Easing.inOut(Easing.cubic);
 const FILS = {couleur: '#2f6fb0', chapeau: 'aucun' as const, cheveux: '#3b2a1e', jambesC: '#2f3e5a'};
 const PERE = {couleur: '#8a6a4a', chapeau: 'aucun' as const, cheveux: '#cfcfcf', jambesC: '#2f3e5a', moustache: true, lunettes: true};
 // visage du fils pendant chaque réplique (quand il écoute ou parle)
-const HUMEUR = ['perplexe', 'perplexe', 'neutre', 'choc', 'perplexe', 'choc', 'neutre', 'perplexe', 'perplexe', 'perplexe', 'triste', 'triste', 'neutre', 'perplexe', 'choc', 'choc', 'triste', 'perplexe', 'triste', 'perplexe', 'triste', 'perplexe', 'triste', 'choc', 'neutre', 'content', 'content', 'pouffe'];
+const HUMEUR = (jeu as {humeur: string[]}).humeur;
 const ligneA = (t: number) => { let i = 0; for (let k = 0; k < LIGNES.length; k++) if (LIGNES[k].s - 0.05 <= t) i = k; return i; };
-const COUPS = [10, 16, 25];
+const COUPS = (jeu as {coups: number[]}).coups;
+const SELFIE = (jeu as {selfie: number[]}).selfie;
 
 const Salon: React.FC<{t: number; f: number}> = ({t, f}) => {
 	const i = ligneA(t); const l = LIGNES[i];
 	const parle = l.qui === 'F' && t >= l.s - 0.05 && t <= l.e + 0.1;
 	const ouv = parle ? (ENV[Math.floor(t * 30)] || 0) : 0;
-	const selfie = (i >= 7 && i <= 11) || i === 23 || i === 27;
+	const selfie = SELFIE.includes(i);
+	const debutSelfie = SELFIE.includes(i - 1) ? LIGNES[SELFIE.filter((k) => k <= i).reduce((a, k) => (SELFIE.includes(k - 1) ? a : k), i)].s : l.s;
 	return (
 		<>
 			<rect x={-800} y={-800} width={2680} height={3600} fill="#f1dcc0" />
@@ -35,9 +38,9 @@ const Salon: React.FC<{t: number; f: number}> = ({t, f}) => {
 			<Humain x={460} y={1600} s={1.45} f={f} {...FILS} pose="tel" humeur={HUMEUR[i] as never} ouverture={ouv} regard={0} />
 			{selfie && (
 				<Ecran>
-					<Bulle x={780} y={620} w={420} h={420} k={pop(t, LIGNES[i === 23 || i === 27 ? i : 7].s + 0.2, 0.4)} queue={[-170, 260]}>
+					<Bulle x={780} y={620} w={420} h={420} k={pop(t, debutSelfie + 0.2, 0.4)} queue={[-170, 260]}>
 						<defs><clipPath id="selfie"><rect x={-190} y={-190} width={380} height={380} rx={40} /></clipPath></defs>
-						<g clipPath="url(#selfie)"><rect x={-200} y={-200} width={400} height={400} fill="#d9e4f2" /><Humain x={0} y={330} s={1.1} f={f} {...PERE} humeur={i === 11 ? 'content' : 'perplexe'} /></g>
+						<g clipPath="url(#selfie)"><rect x={-200} y={-200} width={400} height={400} fill="#d9e4f2" /><Humain x={0} y={330} s={1.1} f={f} {...PERE} humeur={HUMEUR[i] === 'perplexe' ? 'content' : 'perplexe'} /></g>
 					</Bulle>
 				</Ecran>
 			)}

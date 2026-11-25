@@ -173,3 +173,7 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
 - Leçons du sketch « Schwartz » appliquées : **bouche calée sur le volume réel de la voix** (`bouche.json`, une valeur
   par image) au lieu d'un battement automatique ; pas de bras levé ; visage qui réagit seulement. Bulle « selfie » du
   père à lunettes quand on parle du « monsieur ».
+- Version 2 (« c'est trop lent ») : voix accélérée de 12 %, blancs serrés, mais pour rester au-dessus d'une minute,
+  trois échanges ajoutés (la langue tirée, le message « Fiston a essayé de vous joindre », la mère qui a tout filmé),
+  joués à part (~10 c) et insérés au montage (`monte_mix.py`). 1 min 10. **Règle** : pour plus de rythme sans passer
+  sous la minute, ajouter des répliques plutôt que de ralentir.
