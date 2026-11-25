@@ -139,3 +139,7 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
   des répliques, réglage le plus expressif (stability 0), **aucune accélération** ; le rythme vient du montage
   (réponses courtes qui chevauchent la fin de la phrase précédente, `v2/monte.py`). 1 min 55. Environ 0,90 €.
   Leçon : accélérer une voix la fait sonner « lue » ; pour du réel, chevaucher et couper plutôt qu'accélérer.
+- Version 3 (« il y a des coupures dans les voix… accélère un peu ») : `v2/monte2.py` coupe chaque réplique au milieu
+  du blanc qui l'entoure (jamais dans la voix), ne raccourcit que les silences internes de plus de 0,7 s avec un fondu
+  de 30 ms, puis accélère l'ensemble de 8 %. 1 min 48. Leçon : ne jamais retailler l'intérieur d'une réplique par
+  tranches courtes, ça hache les syllabes douces et les respirations.
