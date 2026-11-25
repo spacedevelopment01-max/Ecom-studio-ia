@@ -28,6 +28,7 @@ import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { DOSSIER_DE_LA_PLANCHE } from "./planche-de-marque";
+import { libelleDeLElement } from "./planche-en-vrai-libelles";
 
 // ---------------------------------------------------------------- 0. le réglage
 
@@ -496,9 +497,9 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
 
 // ---------------------------------------------------------------- 9. ce que SINA dit
 
-export const phraseDeLImageGardeeEnApercu = (elements: readonly string[]) => L(
+export const phraseDeLImageGardeeEnApercu = (cases: readonly string[]) => { const elements = cases.map(libelleDeLElement); return L(
   `Sur ta planche en vrai, ${elements.length > 1 ? `${elements.length} images n'ont pas passé ma relecture, même refaites` : "une image n'a pas passé ma relecture, même refaite"} (${elements.join(", ")}) : ${elements.length > 1 ? "leurs cases gardent" : "sa case garde"} l'aperçu de ta planche choisie, sans fichier en haute définition. Je peux ${elements.length > 1 ? "les" : "la"} refaire à ma charge : rien n'est compté sur ton budget.`,
-  `On your full-resolution board, ${elements.length} image(s) did not pass my review, even redone (${elements.join(", ")}): their slot keeps the preview of your chosen board. I can redo them at my expense.`);
+  `On your full-resolution board, ${elements.length} image(s) did not pass my review, even redone (${elements.join(", ")}): their slot keeps the preview of your chosen board. I can redo them at my expense.`); };
 export const phraseDeLaPoliceRemplacee = (lue: string, prise: string) => L(
   `La police « ${lue} » de ta planche n'est pas dans le catalogue du Studio : j'ai pris la plus proche, « ${prise} ».`,
   `The “${lue}” font of your board is not in the Studio catalogue: I used the closest one, “${prise}”.`);

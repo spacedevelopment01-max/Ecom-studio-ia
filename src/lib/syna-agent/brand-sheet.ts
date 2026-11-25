@@ -14,6 +14,7 @@ import { caseDuDomaine } from "./planche-de-marque";
 import { L } from "../i18n-server";
 import { ETIQUETTE_AMBIANCE, type EtatPlancheEnVrai } from "./planche-en-vrai";
 import { LIBELLE_DES_VERSIONS } from "./planche-en-vrai-code";
+import { libelleDeLElement, sansIdentifiantsDeCase } from "./planche-en-vrai-libelles";
 
 type Shot = { url: string; w: number; h: number };
 export type BrandSheet = {
@@ -44,26 +45,25 @@ export type BrandSheet = {
 export type VueEnVrai = {
   planche: { url: string; download: string; w: number; h: number } | null;
   logos: { version: string; label: string; url: string; download: string }[];
-  couleurs: { hex: string; nom: string }[];
+  /**
+   * Chaque couleur mesurée, son code et son nom ; `roles` : ce qu'elle fait dans la marque (fond, texte, bouton…), dit sous
+   * sa pastille (25 novembre 2026 : avec la planche en vrai, une seule section des couleurs, celle-ci, qui fait foi).
+   */
+  couleurs: { hex: string; nom: string; roles: BrandSheet["colors"][number]["role"][] }[];
   polices: { role: "titres" | "textes"; famille: string; fichier: string; url: string; lue: string; remplacee: boolean }[];
   images: { element: string; label: string; url: string; download: string; w: number; h: number; ambiance: boolean }[];
   /** Les images refusées deux fois : l'aperçu agrandi garde leur case, sans fichier en haute définition. */
   sansFichier: string[];
   zip: string;
 };
-const LIBELLE_DES_IMAGES: Record<string, [string, string]> = {
-  "publication-1x1": ["Publication carrée", "Square post"], "publication-4x5": ["Publication portrait", "Portrait post"], "publication-9x16": ["Story", "Story"],
-  "ouverture-site": ["Ouverture du site (1920 × 720)", "Site hero (1920 × 720)"], "ouverture-planche": ["Bandeau de la planche", "Board banner"],
-  "site-ordinateur": ["Site sur ordinateur", "Site on desktop"], "site-telephone": ["Site sur téléphone", "Site on phone"], emballage: ["Emballage et supports", "Packaging"],
-};
 /** La vue de la planche en vrai pour l'onglet Marque (sans base : les adresses sont faites par `url`). */
 export function vueEnVrai(ev: EtatPlancheEnVrai | undefined, projectId: string, url: (id: string, download?: boolean) => string): VueEnVrai | null {
   if (!ev?.planche) return null;
-  const libelle = (e: string) => { const l = LIBELLE_DES_IMAGES[e]; if (l) return L(l[0], l[1]); const m = /^(produit|reference)-(\d)$/.exec(e); return m ? (m[1] === "produit" ? L(`Produit ${m[2]}`, `Product ${m[2]}`) : L(`Image de référence ${m[2]}`, `Reference image ${m[2]}`)) : e; };
+  const libelle = libelleDeLElement;
   return {
     planche: { url: url(ev.planche.id), download: url(ev.planche.id, true), w: ev.planche.w, h: ev.planche.h },
     logos: ev.logos.map((x) => ({ version: x.version, label: L(LIBELLE_DES_VERSIONS[x.version].fr, LIBELLE_DES_VERSIONS[x.version].en), url: url(x.id), download: url(x.id, true) })),
-    couleurs: ev.palette.map((c) => ({ hex: c.hex, nom: c.nom })),
+    couleurs: ev.palette.map((c) => ({ hex: c.hex, nom: c.nom, roles: [] })),
     polices: ev.polices ? (["titres", "textes"] as const).map((role) => { const p = ev.polices![role]; return { role, famille: p.famille, fichier: p.fichier, url: `/api/syna/fonts/${p.fichier}`, lue: p.lue, remplacee: p.remplacee }; }) : [],
     images: ev.elements.filter((e) => e.id).map((e) => ({ element: e.element, label: e.ambiance ? `${libelle(e.element)} — ${L(ETIQUETTE_AMBIANCE.fr, ETIQUETTE_AMBIANCE.en)}` : libelle(e.element), url: url(e.id!), download: url(e.id!, true), w: e.w ?? 0, h: e.h ?? 0, ambiance: !!e.ambiance })),
     sansFichier: ev.elements.filter((e) => !e.id).map((e) => libelle(e.element)),
@@ -80,6 +80,7 @@ export function brandSheetOf(projectId: string): BrandSheet {
   const done = (n: number) => j?.steps[n]?.status === "done";
   const stage: BrandSheet["stage"] = !j || (!j.identities?.list.length && !b?.logo?.assetId) ? "none" : !j.identityChoice ? (j.identities?.list.length ? "proposed" : "none") : done(3) ? "validated" : j.brandFinish?.at ? "finished" : "chosen";
   const chosen = stage !== "none" && stage !== "proposed";
+  const colors: BrandSheet["colors"] = chosen && b?.palette ? (["light", "dark", "primary", "secondary", "accent"] as const).filter((r) => HEX.test(String(b.palette[r] ?? ""))).map((r) => ({ role: r, hex: b.palette[r] })) : [];
   const face = (k?: string) => { try { return k ? fontFace(k) ?? null : null; } catch { return null; } };
   return {
     stage,
@@ -88,7 +89,7 @@ export function brandSheetOf(projectId: string): BrandSheet {
     promise: chosen ? b?.positioning?.trim() || null : null,
     descriptor: route?.board.descriptor?.trim() || null,
     logo: chosen && b?.logo?.assetId ? assetUrl({ id: b.logo.assetId }) : null,
-    colors: chosen && b?.palette ? (["light", "dark", "primary", "secondary", "accent"] as const).filter((r) => HEX.test(String(b.palette[r] ?? ""))).map((r) => ({ role: r, hex: b.palette[r] })) : [],
+    colors,
     fonts: { heading: chosen ? (face(b?.fonts?.heading) as BrandSheet["fonts"]["heading"]) : null, body: chosen ? (face(b?.fonts?.body) as BrandSheet["fonts"]["body"]) : null },
     tone: chosen ? b?.personality ?? [] : [],
     houseWords: route?.board.voice.houseWords ?? [], bannedWords: route?.board.voice.bannedWords ?? [],
@@ -99,13 +100,19 @@ export function brandSheetOf(projectId: string): BrandSheet {
       board: j.brandKit.boardId ? assetUrl({ id: j.brandKit.boardId }) : null,
       book: j.brandKit.bookId ? assetUrl({ id: j.brandKit.bookId }) : null, pages: j.brandKit.pageIds.length,
     } : null,
-    issues: j?.brandFinish?.issues ?? [],
+    issues: (j?.brandFinish?.issues ?? []).map(sansIdentifiantsDeCase),
     esquisses: j?.graphistes?.choix?.length ? null : vueDesEsquisses(j?.graphistes, (id) => assetUrl({ id })),
     planches: (j ? planchesMontrees(j) : []).filter((x) => !chosen || x.key === (j?.identityChoice?.mix?.logo ?? j?.identityChoice?.key)).flatMap((x) => {
       const pl = x.board?.planche;
       if (!pl?.image) return [];
       return [{ key: x.key, name: x.name, url: assetUrl({ id: pl.image.id }), download: assetUrl({ id: pl.image.id }, { download: true }), w: pl.image.w, h: pl.image.h, caseDuDomaine: caseDuDomaine({ domaine: pl.domaine, statut: pl.revu?.statut ?? pl.statut }) }];
     }),
-    enVrai: chosen ? vueEnVrai(j?.plancheEnVrai, projectId, (id, download) => assetUrl({ id }, download ? { download: true } : undefined)) : null,
+    enVrai: chosen ? avecLesRoles(vueEnVrai(j?.plancheEnVrai, projectId, (id, download) => assetUrl({ id }, download ? { download: true } : undefined)), colors) : null,
   };
+}
+
+/** Le rôle de chaque couleur de la planche en vrai, lu dans la marque du projet (la palette mesurée, rôles donnés par le code). */
+export function avecLesRoles(v: VueEnVrai | null, colors: BrandSheet["colors"]): VueEnVrai | null {
+  if (!v) return v;
+  return { ...v, couleurs: v.couleurs.map((c) => ({ ...c, roles: colors.filter((x) => x.hex.toLowerCase() === c.hex.toLowerCase()).map((x) => x.role) })) };
 }

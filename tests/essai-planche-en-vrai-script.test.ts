@@ -228,6 +228,12 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     expect(j.identities?.list.map((x) => x.key)).toEqual(["A"]);
     expect(j.identityChoice?.key).toBe("A");
     expect(j.plancheEnVrai?.planche?.id).toBe(r.etat!.planche!.id);
+    // Comme la fin de la marque (brand-finish.ts) : la charte est préparée et l'étape « Image de marque complète » attend
+    // la validation du client ; le logo est fait ; les angles, l'activité, le site et la suite restent à faire.
+    expect(j.brandKit?.items.length).toBeGreaterThan(0);
+    expect([0, 1, 2].map((n) => j.steps[n]?.status)).toEqual(["done", "done", "done"]);
+    expect(j.steps[3]?.status).toBe("review");
+    for (const n of [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) expect(j.steps[n]?.status).toBe("todo");
     const s = runWithLang({ ui: "fr", content: "fr" }, () => brandSheetOf(r.projectId!));
     expect(s.stage).toBe("finished");
     expect(s.name).toBe("Racine");
@@ -283,6 +289,53 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     // Le script n'appelle ni l'IA ni le réseau, et n'a aucune clé.
     const src = fs.readFileSync("scripts/syna-recette/ecran-planche-en-vrai.mts", "utf8") + fs.readFileSync("scripts/syna-recette/ecran-planche-en-vrai-outil.ts", "utf8");
     expect(src).not.toMatch(/fetch\(|llmJson|vraisAppelsEnVrai|sk-ant-|sk-proj-|https:\/\//);
+  });
+
+  it("REFAIRE_LOGOS : les logos refaits par le code corrigé à partir du logo fini, sans aucun appel ; l'état, les médias, la marque et le parcours mis à jour", async () => {
+    const { r, sortie } = await lancer();
+    const { preparerLEcran } = await import("../scripts/syna-recette/ecran-planche-en-vrai-outil");
+    const { saveAsset, getAsset, assetData } = await import("@/lib/library");
+    const { one } = await import("@/lib/db");
+    const { journeyOfProject } = await import("@/lib/syna-agent/construction");
+    const { loadProject } = await import("@/lib/projects");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    // Une base d'avant la correction : le logo fini est le vrai logo de Racine, les versions montrent le logo complet.
+    const userId = one<{ user_id: string }>("SELECT user_id FROM projects WHERE id=?", r.projectId)!.user_id;
+    const fini = await saveAsset({ userId, projectId: r.projectId!, data: fs.readFileSync("tests/fixtures/planche-en-vrai/esquisse-11-logo-garde-512.png"), name: "logo-fini.png", mime: "image/png", role: "logo", origin: "generated", status: "ready" });
+    const fichier = path.join(sortie, "etat.json");
+    const avant = JSON.parse(fs.readFileSync(fichier, "utf8"));
+    avant.logo = fini.id; avant.symboleComplet = true;
+    avant.issues = [...avant.issues, runWithLang({ ui: "fr", content: "fr" }, () => P.phraseDuSymboleComplet())];
+    fs.writeFileSync(fichier, JSON.stringify(avant));
+    const appelsAvant = appels.length;
+    const e = await runWithLang({ ui: "fr", content: "fr" }, () => preparerLEcran({ projectId: r.projectId!, etat: fichier, email: "logos-refaits@example.com", refaireLesLogos: true }));
+    expect(appels.length).toBe(appelsAvant);
+    expect(e.logosRefaits?.symboleComplet).toBe(false);
+    const apres = JSON.parse(fs.readFileSync(fichier, "utf8"));
+    // L'ancien état est gardé ; le nouveau a dix nouvelles versions, de nouveaux favicons, la phrase du symbole complet retirée.
+    expect(JSON.parse(fs.readFileSync(path.join(sortie, "etat-avant-logos.json"), "utf8")).logos).toEqual(avant.logos);
+    expect(apres.logos).toHaveLength(10);
+    for (const [i, l] of apres.logos.entries()) { expect(l.version).toBe(avant.logos[i].version); expect(l.id).not.toBe(avant.logos[i].id); expect(assetData(getAsset(l.id)!).length).toBeGreaterThan(0); }
+    expect(apres.favicons.f32).not.toBe(avant.favicons.f32);
+    expect(apres.symboleComplet).toBe(false);
+    expect(apres.issues.some((l: string) => /séparer proprement le symbole/.test(l))).toBe(false);
+    // Les images refaites ne sont jamais touchées ; avec l'inventaire, la planche est réassemblée.
+    expect(apres.elements).toEqual(avant.elements);
+    if (avant.inventaire) { expect(e.logosRefaits?.plancheReassemblee).toBe(true); expect(apres.planche.id).not.toBe(avant.planche.id); }
+    // Le parcours et la marque lisent le nouvel état : le symbole seul, tiré du vrai logo.
+    const j = journeyOfProject(r.projectId!)!;
+    expect(j.plancheEnVrai?.logos.map((l) => l.id)).toEqual(apres.logos.map((l: { id: string }) => l.id));
+    expect(j.brandFinish?.issues).toEqual(apres.issues);
+    const mark = loadProject(r.projectId!).brand?.logo.markAssetId;
+    expect(mark && getAsset(mark)?.role).toBe("logo-mark");
+    const compact = await sharp(assetData(getAsset(apres.logos.find((l: { version: string }) => l.version === "logo-compact").id)!)).metadata();
+    const complet = await sharp(assetData(getAsset(apres.logos.find((l: { version: string }) => l.version === "logo-principal").id)!)).metadata();
+    // Le compact ne montre que le symbole : bien moins haut par rapport à sa largeur que le logo complet empilé.
+    expect(compact.width! / compact.height!).not.toBeCloseTo(complet.width! / complet.height!, 1);
+    // L'option ne passe par aucun appel.
+    const src = fs.readFileSync("scripts/syna-recette/ecran-planche-en-vrai.mts", "utf8") + fs.readFileSync("scripts/syna-recette/ecran-planche-en-vrai-outil.ts", "utf8");
+    expect(src).toContain('refaireLesLogos: process.env.REFAIRE_LOGOS === "1"');
+    expect(src).not.toMatch(/fetch\(|llmJson|vraisAppelsEnVrai|aiElementDeLaPlanche/);
   });
 
   it("le script n'écrit jamais une clé : la clé Anthropic vient de STUDIO_ANTHROPIC_KEY ; il ne passe que par les fonctions du Studio", () => {

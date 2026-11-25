@@ -191,3 +191,16 @@ Pour une base d'essai déjà faite, `scripts/syna-recette/ecran-planche-en-vrai.
 écrit ce parcours depuis l'`etat.json` de l'essai, refuse si un média désigné manque, donne au propriétaire du projet un
 compte fictif connu (`planche-en-vrai@example.com`, mot de passe fictif de recette) et affiche l'adresse de la page
 Marque (`/studio/<projet>/marque`).
+
+## L'onglet Marque, corrigé après les captures de Racine (25 novembre 2026, sans dépense)
+
+- Aucun identifiant technique de case n'arrive au client : SINA nomme les cases comme sous la planche (« Bandeau de la
+  planche, Produit 1, Image de référence 6 »), en français et en anglais (`planche-en-vrai-libelles.ts`) ; une phrase
+  déjà enregistrée avec les anciens identifiants est relue avec les noms lisibles (onglet Marque, fil, ce que SINA lit).
+- Avec la planche en vrai, une seule section des couleurs (le rôle de chaque couleur sous sa pastille) et une seule des
+  polices (le nom de la police écrit dans cette police) ; sans planche en vrai, rien ne change.
+- « Tes images en haute définition » : chaque image entière, à ses proportions, sur un fond neutre, jamais recadrée.
+- Le bandeau « Ton projet est en construction » et « Étape 2 sur 9 » sont justes : la marque attend la validation du
+  client, puis viennent les angles et le site. Le parcours écrit par les scripts d'essai suit maintenant la vraie tâche :
+  la charte préparée, l'étape de la marque « à valider », la suite à faire.
+- `REFAIRE_LOGOS=1` (gratuit) refait les logos d'une base d'essai avec le code corrigé, à partir du logo fini.

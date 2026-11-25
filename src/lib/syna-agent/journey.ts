@@ -16,6 +16,7 @@ import { json, now, one, run, tx } from "../db";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { domainLine } from "./brand-domains";
+import { sansIdentifiantsDeCase } from "./planche-en-vrai-libelles";
 import type { Board } from "./brand-board";
 import type { Identity } from "./identities";
 import type { SinaPosts } from "./posts-plan";
@@ -452,7 +453,7 @@ export function brandFinishContext(j: Journey): string[] {
   // Le logo manque après les reprises : la marque n'est pas finie, rien n'en est présenté (jamais une planche incomplète).
   if (f.manque?.includes("logo")) return [
     "La marque — elle N'EST PAS finie : il lui manque son logo. Jamais une planche incomplète : tu ne présentes pas sa marque, tu ne la fais pas valider et tu ne parles d'aucun nom dessiné à la place.",
-    ...(f.issues?.length ? [`Ce qui bloque (dis-le honnêtement, en mots simples) : ${f.issues.join(" ; ")}`] : []),
+    ...(f.issues?.length ? [`Ce qui bloque (dis-le honnêtement, en mots simples) : ${f.issues.map(sansIdentifiantsDeCase).join(" ; ")}`] : []),
     fixe("Dis-lui franchement ce qui bloque, puis propose de faire son logo par la méthode des graphistes : logo.pistes (planche = son identité) cherche les pistes, il choisit son esquisse, tu la finis avec logo.autre ; ensuite brand.finish refait ce qui le porte. C'est une reprise de ton travail, à ta charge : la carte d'accord dit « À ma charge : 0 % de ton budget ». Rien ne part avant qu'il confirme."),
   ];
   const im = f.images ?? {};
@@ -460,7 +461,7 @@ export function brandFinishContext(j: Journey): string[] {
   return [
     `La marque — sa marque complète est affichée dans le fil : ${made.join(", ") || "aucune image gardée"}${k ? ` ; sa charte : ${k.items.map((x) => x.label).join(", ")}${k.bookId ? `, charte PDF (${k.pageIds.length} pages)` : ""}` : " ; charte pas encore prête"}.`,
     ...(j.keep.includes("logo") ? ["Il garde son logo : il n'a pas été redessiné, il est posé tel quel."] : []),
-    ...(f.issues?.length ? [`À dire honnêtement au client, en mots simples (une image ratée est dite ratée) : ${f.issues.join(" ; ")}`] : []),
+    ...(f.issues?.length ? [`À dire honnêtement au client, en mots simples (une image ratée est dite ratée) : ${f.issues.map(sansIdentifiantsDeCase).join(" ; ")}`] : []),
     ...(k?.notes.length ? [`À dire aussi : ${k.notes.join(" ; ")}`] : []),
     // Ce que SINA dit des images vient du relecteur (sa note, ses mots), jamais un éloge inventé (essai réel de Nadia).
     ...((() => { const v = ([[im.logo, "le logo"], [im.hero, "la grande scène"], [im.object, "l'objet qui porte le logo"], [im.signs, "les signes"], ...(im.posts ?? []).map((q, i) => [q, `la publication ${i + 1}`] as const)] as const).filter(([x]) => x).map(([x, w]) => `${w} : ${phraseDuVerdict(verdictDuRelecteur((x as { id: string }).id))}`); return v.length ? [`Relecture de ces images, à reprendre telle quelle (jamais un éloge qu'elle n'a pas dit) : ${v.join(" ; ")}.`] : []; })()),

@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from "react";
 import { Copy, Download, MessageCircle } from "lucide-react";
-import { api, Button, Card, Empty, Textarea, useApi } from "../ui";
+import { api, Button, Card, cx, Empty, Textarea, useApi } from "../ui";
 import { useProject } from "./project-context";
 import { SectionTitle } from "./common";
 import { useT } from "../i18n";
@@ -58,7 +58,7 @@ export function PlancheEnVrai({ v }: { v: VueEnVrai }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5" data-brand-envrai-couleurs>
         {v.couleurs.map((c) => <div key={c.hex} className="overflow-hidden rounded-2xl border border-line">
           <div className="h-20" style={{ background: c.hex }} />
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-card px-3 py-2 text-xs"><span><b>{c.nom}</b> <span className="font-mono">{c.hex}</span></span><BoutonCopier texte={c.hex} /></div>
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-card px-3 py-2 text-xs"><span><b>{c.nom}</b> <span className="font-mono">{c.hex}</span>{!!c.roles?.length && <span className="block text-muted" data-couleur-role>{c.roles.map((r) => t(ROLE[r].fr, ROLE[r].en)).join(" · ")}</span>}</span><BoutonCopier texte={c.hex} /></div>
         </div>)}
       </div>
     </div>}
@@ -76,8 +76,8 @@ export function PlancheEnVrai({ v }: { v: VueEnVrai }) {
     {!!v.images.length && <div>
       <SectionTitle title={t("Tes images en haute définition", "Your high-definition images")} />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4" data-brand-envrai-images>
-        {v.images.map((x) => <figure key={x.element} className="overflow-hidden rounded-2xl border border-line">
-          <a href={x.url} target="_blank" rel="noreferrer" className="block"><img src={x.url} alt={x.label} className="aspect-square h-auto w-full object-cover" loading="lazy" /></a>
+        {v.images.map((x) => <figure key={x.element} className={cx("overflow-hidden rounded-2xl border border-line", x.w && x.h && x.w / x.h >= 2 ? "col-span-2" : "")} data-image-entiere={x.element}>
+          <a href={x.url} target="_blank" rel="noreferrer" className={cx("flex items-center justify-center bg-[#ECECEA] p-2", x.w && x.h && x.w / x.h >= 2 ? "aspect-[8/3]" : "aspect-[4/5]")}><img src={x.url} alt={x.label} {...(x.w && x.h ? { width: x.w, height: x.h } : {})} className="block h-auto max-h-full w-auto max-w-full object-contain" loading="lazy" /></a>
           <figcaption className="flex items-center justify-between gap-2 border-t border-line bg-card px-3 py-2 text-xs"><span>{x.label}</span><a href={x.download} className="underline" aria-label={`${t("Télécharger", "Download")} : ${x.label}`}><Download className="size-3.5" /></a></figcaption>
         </figure>)}
       </div>
@@ -177,7 +177,7 @@ export default function TabMarque() {
 
       {!!s.issues.length && <Card className="border-amber-400 p-4 text-sm" data-brand-issues><p className="font-semibold">{t("Ce que SINA n'a pas pu réussir", "What SINA could not get right")}</p><ul className="mt-1 list-disc pl-5">{s.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></Card>}
 
-      {!!s.colors.length && <section>
+      {!s.enVrai && !!s.colors.length && <section>
         <SectionTitle title={t("Tes couleurs", "Your colours")} />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5" data-brand-colors>
           {s.colors.map((c) => <div key={c.role} className="overflow-hidden rounded-2xl border border-line">
@@ -187,7 +187,7 @@ export default function TabMarque() {
         </div>
       </section>}
 
-      {(s.fonts.heading || s.fonts.body) && <section>
+      {!s.enVrai && (s.fonts.heading || s.fonts.body) && <section>
         <SectionTitle title={t("Tes polices", "Your fonts")} />
         <div className="grid gap-3 sm:grid-cols-2" data-brand-fonts>
           {s.fonts.heading && <Card className="p-5"><p className="text-xs text-muted">{t("Pour tes titres", "For your headings")} · {s.fonts.heading.family}</p><p className="mt-2 text-3xl leading-tight [overflow-wrap:anywhere]" style={{ fontFamily: head, fontWeight: s.fonts.heading.weight }}>{s.slogan ?? s.name}</p></Card>}
