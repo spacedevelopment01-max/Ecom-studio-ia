@@ -121,3 +121,8 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
   voix au téléphone (comme dans la vidéo de référence). Effet téléphone réglé d'après la mesure de la référence :
   graves coupés sous ~450 Hz, présence renforcée vers 2 500 Hz, aigus gardés jusqu'à ~5 500 Hz (« net, mais pas
   vraiment »). Bouche du conseiller qui bouge quand il parle, nom tapé à l'écran, petit coup de zoom sur « Hé Bernard ».
+- Version 3 : **les intonations du propriétaire gardées, timbres changés** avec la transformation de voix d'ElevenLabs
+  (speech-to-speech, modèle eleven_multilingual_sts_v2) : client → Hugo (3Tp5mYhT9wrfnry9pzvV), conseiller → Julien
+  (papd083UqIoSWdSkh3fG). Chaque voix est transformée à part (répliques séparées par 0,7 s), puis redécoupée : la durée
+  est conservée à l'identique. Blancs retirés (0,17 s entre répliques, 0,5 s avant les deux chutes), vidéo de 1 min 02,
+  juste au-dessus de la minute exigée par TikTok.
