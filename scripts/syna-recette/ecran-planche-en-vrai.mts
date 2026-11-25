@@ -11,6 +11,8 @@
  * Usage (depuis la racine du dépôt) :
  *   DATA_DIR=data/essai-planche-en-vrai node_modules/.bin/tsx scripts/syna-recette/ecran-planche-en-vrai.mts \
  *     <identifiant du projet> data/essai-planche-en-vrai/sortie/etat.json
+ * Avec REFAIRE_LOGOS=1 (gratuit, aucun appel à l'IA) : les logos sont d'abord refaits par le code corrigé à partir du logo
+ * fini, l'état (etat.json, l'ancien gardé en etat-avant-logos.json), les médias et le parcours sont mis à jour.
  * Puis lancer le studio privé sur la même base (lancer-agent.mts ou garder-allume.sh) et ouvrir l'adresse affichée.
  */
 import fs from "node:fs";
@@ -28,7 +30,8 @@ import path from "node:path";
   Object.assign(process.env, { DATA_DIR: dir, APP_SECRET: fs.readFileSync(secretFile, "utf8").trim(), OPENAI_API_KEY: "", DASHSCOPE_API_KEY: "", FAL_KEY: "", ANTHROPIC_API_KEY: "", GOOGLE_API_KEY: "" });
   const { preparerLEcran } = await import("./ecran-planche-en-vrai-outil");
   try {
-    const e = await preparerLEcran({ projectId, etat: path.resolve(etat), ...(process.env.EMAIL ? { email: process.env.EMAIL } : {}) });
+    const e = await preparerLEcran({ projectId, etat: path.resolve(etat), ...(process.env.EMAIL ? { email: process.env.EMAIL } : {}), refaireLesLogos: process.env.REFAIRE_LOGOS === "1" });
+    if (e.logosRefaits) console.log(`Logos refaits par le code (aucun appel) : ${e.logosRefaits.symboleComplet ? "symbole et nom toujours pas séparés, logo complet gardé" : "symbole et nom séparés"} ; planche ${e.logosRefaits.plancheReassemblee ? "réassemblée" : "gardée telle quelle (sans inventaire)"}.`);
     console.log(`Parcours écrit pour « ${e.nom} » (projet ${e.projectId}, fil ${e.conversationId}).`);
     console.log(`Page Marque : ${e.url}`);
     console.log(`Compte fictif : ${e.email} — mot de passe fictif de recette : ${e.motDePasse}`);

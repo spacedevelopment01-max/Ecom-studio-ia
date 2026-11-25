@@ -7,8 +7,14 @@
  * l'etat.json de l'essai), puis donne au propriétaire du projet un compte fictif connu pour se connecter, comme
  * lancer-agent.mts (un e-mail fictif en example.com, le mot de passe fictif de recette). Aucun appel à l'IA ni au réseau.
  * Un média que l'état désigne et qui manque fait tout refuser, sans rien écrire.
+ *
+ * `refaireLesLogos` (REFAIRE_LOGOS=1 dans le script, gratuit, aucun appel) : les logos d'une base faite avant la correction
+ * de la séparation du symbole et du nom sont refaits par le code corrigé, à partir du logo fini (`refaireLesLogosEnVrai`) ;
+ * le parcours, la marque et l'etat.json sont mis à jour (l'ancien gardé en etat-avant-logos.json). L'inventaire de l'essai,
+ * s'il n'est pas dans l'état, est lu dans inventaire-reponse.json à côté de l'etat.json : la planche est alors réassemblée.
  */
 import fs from "node:fs";
+import path from "node:path";
 import type { EtatPlancheEnVrai } from "../../src/lib/syna-agent/planche-en-vrai";
 import { clientDeLEssai, donneesDeLaPlanche, enregistrerLeParcours, fichiersManquants } from "./essai-planche-en-vrai-outil";
 
@@ -16,9 +22,9 @@ import { clientDeLEssai, donneesDeLaPlanche, enregistrerLeParcours, fichiersManq
 export const MOT_DE_PASSE_DE_RECETTE = "Recette-492-fictif";
 export const EMAIL_PAR_DEFAUT = "planche-en-vrai@example.com";
 
-export type Ecran = { url: string; email: string; motDePasse: string; projectId: string; conversationId: string; nom: string };
+export type Ecran = { url: string; email: string; motDePasse: string; projectId: string; conversationId: string; nom: string; logosRefaits?: { symboleComplet: boolean; plancheReassemblee: boolean } };
 
-export async function preparerLEcran(o: { projectId: string; etat: string; email?: string; port?: number; env?: Record<string, string | undefined> }): Promise<Ecran> {
+export async function preparerLEcran(o: { projectId: string; etat: string; email?: string; port?: number; env?: Record<string, string | undefined>; refaireLesLogos?: boolean }): Promise<Ecran> {
   const env = o.env ?? process.env;
   const email = (o.email ?? EMAIL_PAR_DEFAUT).trim().toLowerCase();
   if (!/^[^@\s]+@example\.com$/.test(email)) throw new Error(`L'e-mail du compte doit être fictif, en example.com (${email}) : rien n'est écrit.`);
@@ -38,10 +44,28 @@ export async function preparerLEcran(o: { projectId: string; etat: string; email
 
   const client = clientDeLEssai(env), donnees = donneesDeLaPlanche(client, env);
   const nom = p.name?.trim() || client.nom;
-  const r = await enregistrerLeParcours({ userId: p.user_id, projectId: o.projectId, nom, etat, donnees });
+  let r = await enregistrerLeParcours({ userId: p.user_id, projectId: o.projectId, nom, etat, donnees });
+  let logosRefaits: Ecran["logosRefaits"];
+  if (o.refaireLesLogos) {
+    const { journeyOfProject } = await import("../../src/lib/syna-agent/construction");
+    const { chosenRoute } = await import("../../src/lib/syna-agent/logos");
+    const { refaireLesLogosEnVrai } = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
+    const { InventaireSchema } = await import("../../src/lib/syna-agent/planche-en-vrai");
+    const route = chosenRoute(journeyOfProject(o.projectId)!);
+    if (!route) throw new Error("Identité choisie introuvable après l'écriture du parcours : les logos ne sont pas refaits.");
+    const fichierInventaire = path.join(path.dirname(o.etat), "inventaire-reponse.json");
+    const inventaire = etat.inventaire ?? (fs.existsSync(fichierInventaire) ? InventaireSchema.parse(JSON.parse(fs.readFileSync(fichierInventaire, "utf8"))) : undefined);
+    const avant = etat.planche?.id;
+    const nouveau = await refaireLesLogosEnVrai({ who: { userId: p.user_id, projectId: o.projectId }, route, etat: { ...etat, ...(inventaire ? { inventaire } : {}) }, phrase: donnees.phrase });
+    const sauvegarde = path.join(path.dirname(o.etat), "etat-avant-logos.json");
+    if (!fs.existsSync(sauvegarde)) fs.copyFileSync(o.etat, sauvegarde);
+    fs.writeFileSync(o.etat, JSON.stringify(nouveau, null, 2));
+    r = await enregistrerLeParcours({ userId: p.user_id, projectId: o.projectId, nom, etat: nouveau, donnees });
+    logosRefaits = { symboleComplet: nouveau.symboleComplet, plancheReassemblee: nouveau.planche?.id !== avant };
+  }
   // Le compte fictif du propriétaire du projet, comme lancer-agent.mts.
   const bcrypt = (await import("bcryptjs")).default;
   run("UPDATE users SET email=?, name=?, password_hash=?, role='client' WHERE id=?", email, `${nom} (fictif)`, await bcrypt.hash(MOT_DE_PASSE_DE_RECETTE, 10), p.user_id);
   const port = o.port ?? Number(env.PORT492 ?? 3493);
-  return { url: `http://localhost:${port}/studio/${o.projectId}/marque`, email, motDePasse: MOT_DE_PASSE_DE_RECETTE, projectId: o.projectId, conversationId: r.conversationId, nom };
+  return { url: `http://localhost:${port}/studio/${o.projectId}/marque`, email, motDePasse: MOT_DE_PASSE_DE_RECETTE, projectId: o.projectId, conversationId: r.conversationId, nom, ...(logosRefaits ? { logosRefaits } : {}) };
 }

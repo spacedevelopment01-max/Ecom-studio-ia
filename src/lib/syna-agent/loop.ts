@@ -8,6 +8,7 @@
  * Les créations natives longues (images, vidéos, thème…) suspendent l'exécution ; une tâche de reprise dépendante
  * repart quand elles sont terminées. Aucune règle par formulation : le choix appartient au modèle.
  */
+import { sansIdentifiantsDeCase } from "./planche-en-vrai-libelles";
 import { vueDesEsquisses } from "./logo-graphistes";
 import { ficheDuFil, ficheOf, notesDuProjet } from "./fiche";
 import { apresValidation, refusVerrou } from "./verrous";
@@ -924,7 +925,7 @@ export function threadView(user: User, cid: string) {
           // Les planches incomplètes (la seule lecture) : un bouton d'un ancien message qui en choisit une est grisé.
           incompletes: planchesIncompletes(j).map((h) => ({ key: h.key, name: j.identities!.list.find((x) => x.key === h.key)?.name ?? h.key, manque: h.manque })),
           // Identité retenue telle qu'enregistrée (mélange compris) : la carte « Ton identité » montre le vrai résultat.
-          final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at && !j.brandFinish.manque?.length, finishIssues: j.brandFinish?.issues ?? [] } : null,
+          final: j.identityChoice ? { ...cardOf(chosenRoute(j) ?? mixIdentity(j.identities.list, j.identityChoice.key, j.identityChoice.mix as any, j.identityChoice.edits ?? {})), mixLabel: mixLabel(j.identities.list, j.identityChoice), finished: !!j.brandFinish?.at && !j.brandFinish.manque?.length, finishIssues: (j.brandFinish?.issues ?? []).map(sansIdentifiantsDeCase) } : null,
         } : null,
         // Le logo de la marque, adopté par la fin de marque (image servie par la bibliothèque du projet).
         logos: j.logos ? { round: j.logos.round, chosen: j.logoChoice?.source ?? null, list: j.logos.list.map((x) => ({ ...x, href: x.assetId ? assetUrl({ id: x.assetId }) : null })) } : null,

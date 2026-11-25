@@ -216,6 +216,13 @@ export async function enregistrerLeParcours(o: { userId: string; projectId: stri
   const symbole = one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='logo-mark' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", o.projectId)?.id;
   const b = brandFromIdentity(loadProject(o.projectId), identite, j, [], etat.logo);
   saveBrand(o.projectId, { ...b, palette: { ...b.palette, ...roles }, fonts: identite.fonts, logo: { ...b.logo, ...(symbole ? { markAssetId: symbole } : {}) } });
+  // La fin de la marque, comme brand-finish.ts : la charte (gratuite, rendue par le Studio), puis l'étape « Image de marque
+  // complète » en attente de la validation du client (« review ») ; sans charte, elle reste à faire. Les étapes suivantes
+  // (les angles, l'activité, le site…) restent à faire : rien ne fait croire que le site est fait.
+  const { buildBrandKit } = await import("../../src/lib/syna-agent/brand-kit");
+  let kit: Awaited<ReturnType<typeof buildBrandKit>> | null = null;
+  try { kit = await buildBrandKit(o.projectId); } catch { kit = null; }
+  updateJourney(cid, (x) => { if (kit) { x.brandKit = kit; setStep(x, 3, "review"); } else setStep(x, 3, "todo"); });
   return { conversationId: cid };
 }
 

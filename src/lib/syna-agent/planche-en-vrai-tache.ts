@@ -380,3 +380,48 @@ export function enVraiOuArretee(etapes: readonly string[]): string[] {
   const images = e.filter((k) => !/^brand:envrai:(inventaire|relecture:)/.test(k)).length, relectures = e.filter((k) => k.startsWith("brand:envrai:relecture:")).length;
   return [e.includes("brand:envrai:inventaire") && "l'inventaire de ta planche", images > 0 && `${images} image${images > 1 ? "s" : ""} de ta planche en vrai`, relectures > 0 && `${relectures} relecture${relectures > 1 ? "s" : ""}`].filter(Boolean) as string[];
 }
+
+// ---------------------------------------------------------------- les logos refaits par le code (gratuit)
+
+/**
+ * LES LOGOS REFAITS PAR LE CODE, SANS AUCUN APPEL (25 novembre 2026, onglet Marque de Racine : les logos de la base
+ * d'essai dataient d'avant la correction de la séparation du symbole et du nom). À partir du logo fini de l'état (le fond
+ * retiré une seconde fois, comme dans la tâche) : la séparation, les dix versions, les favicons, l'avatar et le symbole,
+ * rangés comme dans la tâche ; la marque du projet prend le nouveau symbole ; la phrase du symbole complet n'est dite que
+ * si la séparation n'est toujours pas fiable. Avec l'inventaire, la planche est réassemblée (gratuit) ; sans lui, elle est
+ * gardée telle quelle, et c'est écrit dans les notes. Rend l'état mis à jour ; les images refaites ne sont jamais touchées.
+ */
+export async function refaireLesLogosEnVrai(o: { who: { userId: string; projectId: string }; route: Route; etat: EtatPlancheEnVrai; phrase?: string; ligneDuLogo?: string | null; metierCourt?: string | null }): Promise<EtatPlancheEnVrai> {
+  const ev = o.etat, nom = o.route.name.trim();
+  const logoAsset = getAsset(ev.logo);
+  if (!logoAsset) throw new Error("Logo fini de la planche en vrai introuvable.");
+  const logoBrut = assetData(logoAsset), det = await logoDetoure(logoBrut, o.route.palette.dark);
+  const logo = det.ok ? det.png : logoBrut;
+  const separation = await separerSymbole(logo);
+  const hex = ev.palette.map((p) => p.hex);
+  const encre = o.route.palette.dark && luminance(o.route.palette.dark) < 0.35 ? o.route.palette.dark : "#1C2A24";
+  const roles = rolesDeLaPalette(hex, encre);
+  const textes = ev.polices?.textes ?? policeDuCatalogue({ nom: "Montserrat", genre: "sans" }, 400);
+  const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase ?? o.route.slogan ?? "" });
+  const v = await versionsDuLogo({ logo, separation, couleur: await couleurDuLogo(logo), sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(hex), nom, bas, police: textes });
+  const logos: EtatPlancheEnVrai["logos"] = [];
+  for (const version of VERSIONS_DU_LOGO) {
+    const a = await saveAsset({ ...o.who, data: v.versions[version], name: `logo-${version}.png`, mime: "image/png", role: "logo-version", folderKey: "brand.logos", origin: "generated", sourceAssetId: ev.logo, meta: { plancheEnVrai: { version, refaitParLeCode: true } } });
+    logos.push({ version, id: a.id });
+  }
+  const fav = await faviconsEtAvatar(v.versions.favicon, v.symbole, roles.light);
+  const ranger = async (role: string, name: string, data: Buffer) => (await saveAsset({ ...o.who, data, name, mime: "image/png", role, folderKey: "brand.logos", origin: "generated", sourceAssetId: ev.logo, meta: { engine: "syna-planche-en-vrai" } })).id;
+  const symboleId = await ranger("logo-mark", "symbole.png", v.symbole);
+  const favicons = { f32: await ranger("favicon-32", "favicon-32.png", fav.f32), f64: await ranger("favicon-64", "favicon-64.png", fav.f64), f512: await ranger("favicon-512", "icone-512.png", fav.f512), avatar: await ranger("social-avatar", "avatar-reseaux.png", fav.avatar) };
+  const b = loadProject(o.who.projectId).brand;
+  if (b) saveBrand(o.who.projectId, { ...b, logo: { ...b.logo, markAssetId: symboleId } });
+  const dejaDites = ev.issues.filter((l) => !/séparer proprement le symbole|separate your logo.s symbol/.test(l));
+  const issues = [...dejaDites, ...(v.symboleComplet ? [phraseDuSymboleComplet()] : [])];
+  const notes = [...ev.notes, `logos refaits par le code (séparation ${separation.fiable ? "fiable" : `non fiable : ${separation.raison ?? "?"}`})`];
+  const etat: EtatPlancheEnVrai = { ...ev, logos, favicons, symboleComplet: v.symboleComplet, issues: [...new Set(issues)], notes, at: Date.now() };
+  if (!ev.inventaire || !o.route.board.planche || !getAsset(ev.demo)) return { ...etat, notes: [...notes, "planche gardée telle quelle : sans l'inventaire, elle n'est pas réassemblée"] };
+  const demo = assetData(getAsset(ev.demo)!), decoupe = await decouperLesApercus(demo, ev.laquelle);
+  const images = new Map<NomElement, Buffer>();
+  for (const e of ev.elements) if (e.id && getAsset(e.id)) images.set(e.element, assetData(getAsset(e.id)!));
+  return { ...etat, planche: await assemblerEtRanger({ who: o.who, route: o.route, etat, demo, boites: decoupe.boites, images, versions: v.versions, encre }) };
+}
