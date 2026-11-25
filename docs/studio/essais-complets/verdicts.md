@@ -52,6 +52,7 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 25/11 | Racine | Planche B, reprise à la charge du Studio | 7,5/10 : « les alphabets des spécimens typographiques restent déformés et la réassurance du site garde « Livraison soignée » et « Conseils jardinage » » | Non | [en attente] |
 | 25/11 | Racine | Planche en vrai (planche A du R bordeaux), 17 images refaites en grand | 14 gardées (8 à 9/10) ; refusées deux fois : ouverture de la planche (7/10 : « de larges marges blanches encadrent désormais le bandeau »), produit 1 (7/10 : « son motif gravé devient une texture mouchetée »), image de référence 6 (6/10 : « Le mot « RACINE », absent de l'aperçu, a été ajouté sous le logo ») ; téléphone gardé à la reprise (heure 9:41 au lieu de 12:01) | 14 sur 17 | [en attente] |
 | 25/11 | Écume | 12 esquisses de logo (deux planches de six) | 8 gardées, toutes avec « SAVONNERIE ARTISANALE » ; écartées : deux arches, une esquisse coupée au bord, une où « La feuille qui remplace une partie du M déforme la lettre » | 8 sur 12 | [en attente] |
+| 25/11 | Écume | 12 esquisses de logo, relancées en entier (découpe et relecture corrigées) | 12 correctes dès les deux planches, aucune remplacée ; lignes sous le nom toutes relevées | 12 sur 12 | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 

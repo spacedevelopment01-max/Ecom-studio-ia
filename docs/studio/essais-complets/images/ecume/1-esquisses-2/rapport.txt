@@ -1,0 +1,59 @@
+Essai des esquisses de logo — client « Écume » (savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes), type « produits »
+Plafond de l'essai : 1,8300 €
+
+Devis de l'essai des esquisses (fonctions du devis du Studio, aucun appel) :
+- métier · anthropic:claude-opus-5-5 (effort low) · toujours · charge client · probable 0,0258 € · au plus 0,1572 €
+- métier réécrit (une fois) · anthropic:claude-opus-5-5 (effort low) · si le contrôle refuse le métier · charge Studio · probable 0,0258 € · au plus 0,1572 €
+- planche de six esquisses · openai:gpt-image-2.5-sunburst · toujours · charge client · probable 0,0098 € · au plus 0,0455 €
+- planche de six esquisses · openai:gpt-image-2.6-flare · toujours · charge client · probable 0,0300 € · au plus 0,0722 €
+- relecture des esquisses (un appel) · anthropic:claude-opus-5-5 (effort medium) · toujours · charge client · probable 0,0808 € · au plus 0,2605 €
+- remplacement 1 : nouvelle planche du même modèle · openai:gpt-image-2.5-sunburst · si une esquisse est écartée · charge Studio · probable 0,0098 € · au plus 0,0455 €
+- remplacement 1 : nouvelle planche du même modèle · openai:gpt-image-2.6-flare · si une esquisse est écartée · charge Studio · probable 0,0300 € · au plus 0,0722 €
+- relecture du remplacement 1 · anthropic:claude-opus-5-5 (effort medium) · si une esquisse est écartée · charge Studio · probable 0,0808 € · au plus 0,2605 €
+- remplacement 2 : nouvelle planche du même modèle · openai:gpt-image-2.5-sunburst · si une esquisse est encore écartée (tour 2) · charge Studio · probable 0,0098 € · au plus 0,0455 €
+- remplacement 2 : nouvelle planche du même modèle · openai:gpt-image-2.6-flare · si une esquisse est encore écartée (tour 2) · charge Studio · probable 0,0300 € · au plus 0,0722 €
+- relecture du remplacement 2 · anthropic:claude-opus-5-5 (effort medium) · si une esquisse est encore écartée (tour 2) · charge Studio · probable 0,0808 € · au plus 0,2605 €
+- remplacement 3 : nouvelle planche du même modèle · openai:gpt-image-2.5-sunburst · si une esquisse est encore écartée (tour 3) · charge Studio · probable 0,0098 € · au plus 0,0455 €
+- remplacement 3 : nouvelle planche du même modèle · openai:gpt-image-2.6-flare · si une esquisse est encore écartée (tour 3) · charge Studio · probable 0,0300 € · au plus 0,0722 €
+- relecture du remplacement 3 · anthropic:claude-opus-5-5 (effort medium) · si une esquisse est encore écartée (tour 3) · charge Studio · probable 0,0808 € · au plus 0,2605 €
+Probable, sans reprise : 0,1464 € (devis du Studio : 0,1464 €)
+Probable, si le métier est réécrit et un tour de remplacement fait (deux planches et leur relecture) : 0,2929 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, remplacements compris jusqu'à la borne) : 1,8269 €
+  dont plafond du client de la tâche 0,5353 € et borne du Studio 1,2916 € (devisDeLaRecherche)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 1,6675 € de plus en tout.
+
+Phrase du métier : une savonnerie artisanale qui fabrique et vend en ligne des savons solides, des shampoings solides et des baumes
+Ce que la piste explore : la savonnerie artisanale (savoir-faire)
+
+Texte exact envoyé aux deux modèles (premier tour) :
+Crée une planche de recherche graphique pour Écume, une savonnerie artisanale qui fabrique et vend en ligne des savons solides, des shampoings solides et des baumes. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire le savoir-faire de la savonnerie artisanale dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation. Varie les couleurs d'une esquisse à l'autre.
+
+Vrai résultat : 12 esquisse(s) correcte(s) sur 12 dès les deux planches.
+Remplacées : 0.
+
+Esquisses gardées par le relecteur : 12 — planche-contact.png
+Esquisse 01 : esquisse-01.png ; piste « un disque où des vagues et des bulles dessinent l'écume » ; phrase sous le nom : « SAVONS NATURELS / POUR DEMAIN » (proposable telle quelle)
+Esquisse 02 : esquisse-02.png ; piste « un « é » minuscule dont l'accent devient une feuille » ; phrase sous le nom : « SAVONNERIE ARTISANALE / CORPS · CHEVEUX · BAUMES » (proposable telle quelle)
+Esquisse 03 : esquisse-03.png ; piste « un galet bleu, façon savon, souligné d'une vague » ; phrase sous le nom : « SAVONNERIE ARTISANALE / SIMPLES ESSENTIELS NATURELS » (proposable telle quelle)
+Esquisse 04 : esquisse-04.png ; piste « une arche avec une plante, un soleil et des vagues de sable » ; phrase sous le nom : « SAVONNERIE ARTISANALE / NATURELLEMENT VRAI » (proposable telle quelle)
+Esquisse 05 : esquisse-05.png ; piste « un U et un M fusionnés en une vague » ; phrase sous le nom : « SAVONS · SHAMPOINGS · BAUMES / FAITS À LA MAIN » (proposable telle quelle)
+Esquisse 06 : esquisse-06.png ; piste « des bulles de savon qui s'élèvent au-dessus du nom » ; phrase sous le nom : « SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » (proposable telle quelle)
+Esquisse 07 : esquisse-07.png ; piste « un arc de bulle accompagné de deux petites bulles » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 08 : esquisse-08.png ; piste « un pain de savon et des bulles au-dessus d'un nom en écriture manuscrite » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 09 : esquisse-09.png ; piste « une goutte d'eau qui contient une vague » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 10 : esquisse-10.png ; piste « des lettres bulles sous un nuage de mousse » ; phrase sous le nom : « SAVONNERIE / ARTISANALE » (proposable telle quelle)
+Esquisse 11 : esquisse-11.png ; piste « une vague en volute qui projette des bulles » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 12 : esquisse-12.png ; piste « un cercle avec des feuilles en haut et des vagues en bas » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+
+Esquisses écartées (jamais montrées au client) : 0 — planche-contact-complete.png
+- aucune
+
+Verdict complet du relecteur : relecture-1-verdict.json
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 3e06f55140631ece71d66ec6ecb24b2e6bb55963e772881a963bb13dbc4a936e · anthropic:claude-opus-5-5 · charge du client · réservé 0,1531 € → réglé 0,0067 € (settled)
+- f5ff95cb69ae4b2242668e64203178aa62154bed9df6b88940a8ee4122138f85 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0149 € → réglé 0,0094 € (settled)
+- 2ed65dbb0a74a7d5b6ac64ce3aa98457ac394bbcfa55954f601354035ebf5792 · openai:gpt-image-2.6-flare · charge du client · réservé 0,0416 € → réglé 0,0298 € (settled)
+- 465ae95ea4291a15e75a11b03040abc94dc768088d5da576727053883403f447 · anthropic:claude-opus-5-5 · charge du client · réservé 0,2512 € → réglé 0,0703 € (settled)
+
+Dépense réelle comptée par le Studio : 0,1161 €

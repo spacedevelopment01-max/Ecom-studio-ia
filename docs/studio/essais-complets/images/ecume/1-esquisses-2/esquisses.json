@@ -1,0 +1,204 @@
+{
+  "nom": "Écume",
+  "metier": {
+    "metier": "une savonnerie artisanale qui fabrique et vend en ligne des savons solides, des shampoings solides et des baumes",
+    "court": "la savonnerie artisanale",
+    "piste": "savoir-faire"
+  },
+  "compte": {
+    "voulues": 12,
+    "correctesDesLesPlanches": 12,
+    "remplacees": 0,
+    "lesquelles": [],
+    "toursDeRemplacement": 0,
+    "complete": true
+  },
+  "gardees": [
+    {
+      "numero": 1,
+      "fichier": "esquisse-01.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 1,
+      "piste": "un disque où des vagues et des bulles dessinent l'écume",
+      "pourquoi": "Un symbole rond, clair et doux, avec un nom en capitales élégantes bien lisible.",
+      "phrase": {
+        "texte": "SAVONS NATURELS / POUR DEMAIN",
+        "lignes": [
+          "SAVONS NATURELS",
+          "POUR DEMAIN"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 2,
+      "fichier": "esquisse-02.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 2,
+      "piste": "un « é » minuscule dont l'accent devient une feuille",
+      "pourquoi": "Un logotype sobre et chaleureux : l'accent en forme de feuille suffit à porter l'idée.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE / CORPS · CHEVEUX · BAUMES",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "CORPS · CHEVEUX · BAUMES"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 3,
+      "fichier": "esquisse-03.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 3,
+      "piste": "un galet bleu, façon savon, souligné d'une vague",
+      "pourquoi": "Une forme de galet simple et facile à reconnaître, mais le trait fin du nom reste un peu fragile en petit format.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE / SIMPLES ESSENTIELS NATURELS",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "SIMPLES ESSENTIELS NATURELS"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 4,
+      "fichier": "esquisse-04.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 4,
+      "piste": "une arche avec une plante, un soleil et des vagues de sable",
+      "pourquoi": "Une composition soignée et cohérente, avec des détails fins qui risquent de se perdre en petit.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE / NATURELLEMENT VRAI",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "NATURELLEMENT VRAI"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 5,
+      "fichier": "esquisse-05.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 5,
+      "piste": "un U et un M fusionnés en une vague",
+      "pourquoi": "La ligature U-M en vague est originale et forte, même si elle demande un léger temps de lecture.",
+      "phrase": {
+        "texte": "SAVONS · SHAMPOINGS · BAUMES / FAITS À LA MAIN",
+        "lignes": [
+          "SAVONS · SHAMPOINGS · BAUMES",
+          "FAITS À LA MAIN"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 6,
+      "fichier": "esquisse-06.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 6,
+      "piste": "des bulles de savon qui s'élèvent au-dessus du nom",
+      "pourquoi": "Un nom élégant en minuscules, avec des bulles légères qui évoquent tout de suite le savon.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 7,
+      "fichier": "esquisse-07.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 1,
+      "piste": "un arc de bulle accompagné de deux petites bulles",
+      "pourquoi": "Un nom très lisible et une typographie forte ; l'arc et les bulles restent toutefois un peu vagues.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 8,
+      "fichier": "esquisse-08.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 2,
+      "piste": "un pain de savon et des bulles au-dessus d'un nom en écriture manuscrite",
+      "pourquoi": "Une idée claire et amicale, mais le pain de savon en volume sera difficile à réduire.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 9,
+      "fichier": "esquisse-09.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 3,
+      "piste": "une goutte d'eau qui contient une vague",
+      "pourquoi": "Un symbole net et lisible ; la goutte et la vague sont cependant des images courantes.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 10,
+      "fichier": "esquisse-10.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 4,
+      "piste": "des lettres bulles sous un nuage de mousse",
+      "pourquoi": "Des lettres rondes et gourmandes, et une mousse en nuage : un logo joyeux et très lisible.",
+      "phrase": {
+        "texte": "SAVONNERIE / ARTISANALE",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 11,
+      "fichier": "esquisse-11.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 5,
+      "piste": "une vague en volute qui projette des bulles",
+      "pourquoi": "Une vague-volute élégante avec des bulles, qui s'accorde bien à un nom bien lisible.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 12,
+      "fichier": "esquisse-12.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 6,
+      "piste": "un cercle avec des feuilles en haut et des vagues en bas",
+      "pourquoi": "Un sceau rond bien construit, efficace comme tampon, mais assez classique.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    }
+  ],
+  "ecartees": [],
+  "reprise": false
+}
