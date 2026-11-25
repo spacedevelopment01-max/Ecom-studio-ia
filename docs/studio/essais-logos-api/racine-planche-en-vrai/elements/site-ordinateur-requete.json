@@ -1,0 +1,16 @@
+{
+ "endpoint": "POST https://api.openai.com/v1/images/edits (multipart)",
+ "champs": {
+  "model": "gpt-image-2.5-sunburst",
+  "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la maquette de la page d'accueil du site sur un ordinateur portable ; tous les textes de l'écran restent nets et lisibles.",
+  "quality": "high",
+  "size": "1520x1024",
+  "background": "opaque",
+  "output_format": "png",
+  "n": "1"
+ },
+ "image[]": [
+  "apercus/site-ordinateur.png",
+  "logo-fini.png"
+ ]
+}

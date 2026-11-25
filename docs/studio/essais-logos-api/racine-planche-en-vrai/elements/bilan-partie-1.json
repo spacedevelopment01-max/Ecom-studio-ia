@@ -1,0 +1,198 @@
+{
+ "deja_eur": 0.1957,
+ "total_eur": 0.5717,
+ "elements": [
+  {
+   "element": "ouverture-planche",
+   "statut_http": 200,
+   "duree_s": 26.1,
+   "x-request-id": "req_dbd348ac9f7e4a1b8b2a0ad844d3d0b9",
+   "usage": {
+    "input_tokens": 2039,
+    "input_tokens_details": {
+     "image_tokens": 1884,
+     "text_tokens": 155
+    },
+    "output_tokens": 724,
+    "output_tokens_details": {
+     "image_tokens": 724,
+     "text_tokens": 0
+    },
+    "total_tokens": 2763
+   },
+   "cout_eur": 0.0323,
+   "taille": [
+    2304,
+    768
+   ]
+  },
+  {
+   "element": "produit-1",
+   "statut_http": 200,
+   "duree_s": 40.7,
+   "x-request-id": "req_2d42c645891c43b29c9b09c8af38ccdd",
+   "usage": {
+    "input_tokens": 1913,
+    "input_tokens_details": {
+     "image_tokens": 1776,
+     "text_tokens": 137
+    },
+    "output_tokens": 1437,
+    "output_tokens_details": {
+     "image_tokens": 1437,
+     "text_tokens": 0
+    },
+    "total_tokens": 3350
+   },
+   "cout_eur": 0.0499,
+   "taille": [
+    912,
+    1088
+   ]
+  },
+  {
+   "element": "produit-2",
+   "statut_http": 200,
+   "duree_s": 40.2,
+   "x-request-id": "req_47e66ffeaf754412b9dc1de167ad9ea8",
+   "usage": {
+    "input_tokens": 1912,
+    "input_tokens_details": {
+     "image_tokens": 1776,
+     "text_tokens": 136
+    },
+    "output_tokens": 1437,
+    "output_tokens_details": {
+     "image_tokens": 1437,
+     "text_tokens": 0
+    },
+    "total_tokens": 3349
+   },
+   "cout_eur": 0.0499,
+   "taille": [
+    912,
+    1088
+   ]
+  },
+  {
+   "element": "produit-3",
+   "statut_http": 200,
+   "duree_s": 43.5,
+   "x-request-id": "req_720230ffb50a43d7a6cce88f9bdfec8c",
+   "usage": {
+    "input_tokens": 1912,
+    "input_tokens_details": {
+     "image_tokens": 1776,
+     "text_tokens": 136
+    },
+    "output_tokens": 1437,
+    "output_tokens_details": {
+     "image_tokens": 1437,
+     "text_tokens": 0
+    },
+    "total_tokens": 3349
+   },
+   "cout_eur": 0.0499,
+   "taille": [
+    912,
+    1088
+   ]
+  },
+  {
+   "element": "emballage",
+   "statut_http": 200,
+   "duree_s": 41.9,
+   "x-request-id": "req_57a9cc69d5114562979b48587fa784ce",
+   "usage": {
+    "input_tokens": 2471,
+    "input_tokens_details": {
+     "image_tokens": 2321,
+     "text_tokens": 150
+    },
+    "output_tokens": 1500,
+    "output_tokens_details": {
+     "image_tokens": 1500,
+     "text_tokens": 0
+    },
+    "total_tokens": 3971
+   },
+   "cout_eur": 0.0553,
+   "taille": [
+    1344,
+    1024
+   ]
+  },
+  {
+   "element": "site-ordinateur",
+   "statut_http": 200,
+   "duree_s": 38.3,
+   "x-request-id": "req_4669f1625f17455fa6650be2ebae73b0",
+   "usage": {
+    "input_tokens": 2378,
+    "input_tokens_details": {
+     "image_tokens": 2225,
+     "text_tokens": 153
+    },
+    "output_tokens": 1366,
+    "output_tokens_details": {
+     "image_tokens": 1366,
+     "text_tokens": 0
+    },
+    "total_tokens": 3744
+   },
+   "cout_eur": 0.0512,
+   "taille": [
+    1520,
+    1024
+   ]
+  },
+  {
+   "element": "site-telephone",
+   "statut_http": 200,
+   "duree_s": 29.8,
+   "x-request-id": "req_372659da9b864f61acc3fbd88c214521",
+   "usage": {
+    "input_tokens": 1997,
+    "input_tokens_details": {
+     "image_tokens": 1845,
+     "text_tokens": 152
+    },
+    "output_tokens": 876,
+    "output_tokens_details": {
+     "image_tokens": 876,
+     "text_tokens": 0
+    },
+    "total_tokens": 2873
+   },
+   "cout_eur": 0.0359,
+   "taille": [
+    768,
+    1712
+   ]
+  },
+  {
+   "element": "reference-1",
+   "statut_http": 200,
+   "duree_s": 51.1,
+   "x-request-id": "req_7fcd6580055042c88efef706581091b9",
+   "usage": {
+    "input_tokens": 1866,
+    "input_tokens_details": {
+     "image_tokens": 1731,
+     "text_tokens": 135
+    },
+    "output_tokens": 1514,
+    "output_tokens_details": {
+     "image_tokens": 1514,
+     "text_tokens": 0
+    },
+    "total_tokens": 3380
+   },
+   "cout_eur": 0.0516,
+   "taille": [
+    1024,
+    912
+   ]
+  }
+ ]
+}

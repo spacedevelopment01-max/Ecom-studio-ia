@@ -1,0 +1,102 @@
+{
+ "deja_eur": 0.5717,
+ "total_eur": 0.7779,
+ "elements": [
+  {
+   "element": "reference-2",
+   "statut_http": 200,
+   "duree_s": 41.6,
+   "x-request-id": "req_6931ecbf42f14f8596dbe778bc7a45a3",
+   "usage": {
+    "input_tokens": 1866,
+    "input_tokens_details": {
+     "image_tokens": 1731,
+     "text_tokens": 135
+    },
+    "output_tokens": 1514,
+    "output_tokens_details": {
+     "image_tokens": 1514,
+     "text_tokens": 0
+    },
+    "total_tokens": 3380
+   },
+   "cout_eur": 0.0516,
+   "taille": [
+    1024,
+    912
+   ]
+  },
+  {
+   "element": "reference-3",
+   "statut_http": 200,
+   "duree_s": 41.0,
+   "x-request-id": "req_c8dd904ddc6c44f192f5acc7f97716d0",
+   "usage": {
+    "input_tokens": 1866,
+    "input_tokens_details": {
+     "image_tokens": 1731,
+     "text_tokens": 135
+    },
+    "output_tokens": 1514,
+    "output_tokens_details": {
+     "image_tokens": 1514,
+     "text_tokens": 0
+    },
+    "total_tokens": 3380
+   },
+   "cout_eur": 0.0516,
+   "taille": [
+    1024,
+    912
+   ]
+  },
+  {
+   "element": "reference-4",
+   "statut_http": 200,
+   "duree_s": 47.2,
+   "x-request-id": "req_ac1038d99d314e9aa1943519b3f02dd2",
+   "usage": {
+    "input_tokens": 1866,
+    "input_tokens_details": {
+     "image_tokens": 1731,
+     "text_tokens": 135
+    },
+    "output_tokens": 1514,
+    "output_tokens_details": {
+     "image_tokens": 1514,
+     "text_tokens": 0
+    },
+    "total_tokens": 3380
+   },
+   "cout_eur": 0.0516,
+   "taille": [
+    1024,
+    912
+   ]
+  },
+  {
+   "element": "reference-5",
+   "statut_http": 200,
+   "duree_s": 39.3,
+   "x-request-id": "req_c264e3f416da4bbea5b11a2dc91a9f8c",
+   "usage": {
+    "input_tokens": 1866,
+    "input_tokens_details": {
+     "image_tokens": 1731,
+     "text_tokens": 135
+    },
+    "output_tokens": 1514,
+    "output_tokens_details": {
+     "image_tokens": 1514,
+     "text_tokens": 0
+    },
+    "total_tokens": 3380
+   },
+   "cout_eur": 0.0516,
+   "taille": [
+    1024,
+    912
+   ]
+  }
+ ]
+}
