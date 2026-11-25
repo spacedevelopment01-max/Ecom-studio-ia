@@ -54,6 +54,7 @@ import { carteActiviteAJour, ECRITURES_DE_L_ACTIVITE } from "./tools/activity";
 import { LOGO_STYLE_LABEL, fontFace, groundPresentation, type Identity } from "./identities";
 import { chosenRoute, plancheWordmark } from "./logos";
 import { BOARD_OBJECT_LABEL, SIGN_KIND_LABEL, type Board, type BoardImage } from "./brand-board";
+import { caseDuDomaine } from "./planche-de-marque";
 import { safeWordmark } from "./brand-routes";
 import { drawWordmark, type DrawnWordmark } from "./brand-wordmark";
 import { finirPlanchesGardees, mixIdentity } from "./tools/identity";
@@ -851,12 +852,21 @@ function boardShots(i: NonNullable<Board["images"]>) {
     ...(i.mark ? { mark: shot(i.mark)! } : {}), ...(i.markDark ? { markDark: shot(i.markDark)! } : {}), ...(i.signs ? { signs: shot(i.signs)! } : {}),
   };
 }
+/**
+ * La planche de marque par OpenAI (nouveaux projets) : l'image entière, son adresse de téléchargement et la case du domaine
+ * (« libre aujourd'hui, seule la réservation le garantit »), revérifié au moment du choix. Sans image : rien (non montrée).
+ */
+function plancheVue(pl: Board["planche"]) {
+  if (!pl?.image) return { planche: undefined };
+  const statut = pl.revu?.statut ?? pl.statut;
+  return { planche: { url: assetUrl({ id: pl.image.id }), download: assetUrl({ id: pl.image.id }, { download: true }), w: pl.image.w, h: pl.image.h, domaine: pl.domaine, statut, caseDuDomaine: caseDuDomaine({ domaine: pl.domaine, statut }) } };
+}
 /** Planche de marque d'une identité (routes du 12 novembre 2026) : couleurs d'affichage, nom dessiné, libellés. */
 function boardOf(x: Identity) {
   if (!x.board) return {};
   return {
     look: groundPresentation(x.palette, x.ground, x.gradient), drawn: drawnName(x),
-    board: { ...x.board, ...(x.board.images ? { images: boardShots(x.board.images) } : {}), signs: x.board.signs.map((s) => ({ ...s, kindLabel: L(SIGN_KIND_LABEL[s.kind].fr, SIGN_KIND_LABEL[s.kind].en) })), object: { ...x.board.object, label: L(BOARD_OBJECT_LABEL[x.board.object.kind].fr, BOARD_OBJECT_LABEL[x.board.object.kind].en) } },
+    board: { ...x.board, ...(x.board.images ? { images: boardShots(x.board.images) } : {}), ...plancheVue(x.board.planche), signs: x.board.signs.map((s) => ({ ...s, kindLabel: L(SIGN_KIND_LABEL[s.kind].fr, SIGN_KIND_LABEL[s.kind].en) })), object: { ...x.board.object, label: L(BOARD_OBJECT_LABEL[x.board.object.kind].fr, BOARD_OBJECT_LABEL[x.board.object.kind].en) } },
   };
 }
 const cardOf = (x: Identity) => ({ ...x, logoStyleLabel: LOGO_STYLE_LABEL[x.logoStyle], faces: { heading: fontFace(x.fonts.heading), body: fontFace(x.fonts.body) }, ...boardOf(x) });

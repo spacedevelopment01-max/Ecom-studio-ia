@@ -35,6 +35,26 @@ export function boardIcons(text: string, business: "products" | "services"): str
   return [...new Set([...trade.slice(0, 3), ...GENERIC[business]])].slice(0, 6);
 }
 
+/**
+ * Les trois publications de la méthode (24 novembre 2026) gardées pour ce projet, une par format (1:1, 4:5, 9:16), les
+ * plus récentes ; toutes les trois, ou aucune (jamais une bande à trou).
+ */
+export function publicationsDeLaMethodeDuProjet(projectId: string): Asset[] | null {
+  const rows = all<Asset>("SELECT * FROM assets WHERE project_id = ? AND kind = 'image' AND deleted_at IS NULL AND status = 'ready' AND json_extract(meta, '$.publicationMethode.formatFinal') IS NOT NULL ORDER BY created_at DESC", projectId);
+  const parFormat = ["1080x1080", "1080x1350", "1080x1920"].map((f) => rows.find((a) => { try { return JSON.parse(String(a.meta ?? "{}"))?.publicationMethode?.formatFinal === f; } catch { return false; } }));
+  return parFormat.every(Boolean) ? (parFormat as Asset[]) : null;
+}
+
+/** Un nouveau projet : son identité choisie a sa planche de marque faite par OpenAI (accord du propriétaire du 24 novembre 2026). */
+async function avecPlancheDeMarque(projectId: string): Promise<boolean> {
+  try {
+    const { journeyOfProject } = await import("../syna-agent/construction");
+    const { chosenRoute } = await import("../syna-agent/logos");
+    const j = journeyOfProject(projectId);
+    return !!(j && chosenRoute(j)?.board.planche);
+  } catch { return false; }
+}
+
 export async function saveIdentityBoard(projectId: string, brandOverride?: Brand): Promise<Asset | null> {
   const p = loadProject(projectId);
   const b = brandOverride ?? p.brand;
@@ -67,6 +87,9 @@ export async function saveIdentityBoard(projectId: string, brandOverride?: Brand
     icons: boardIcons(text, business),
     photos: photos.map(assetData),
     product: cutout ? assetData(cutout) : null,
+    // Les publications de la méthode, posées par le code sur la planche (aucune sans les trois). Nouveaux projets (planche
+    // de marque par OpenAI) : la bande n'est plus posée sur une planche, elle reste un fichier livrable à part.
+    publications: (await avecPlancheDeMarque(projectId)) ? null : publicationsDeLaMethodeDuProjet(projectId)?.map(assetData) ?? null,
   });
   const prev = latest("brand-board");
   return saveAsset({ projectId, userId: p.userId, data: png, name: C("planche-identite.png", "identity-board.png"), mime: "image/png", role: "brand-board", folderKey: "brand.logos", origin: "generated", sourceAssetId: main.id, versionOf: prev ? prev.version_of ?? prev.id : null, meta: { engine: "identity-board" } });

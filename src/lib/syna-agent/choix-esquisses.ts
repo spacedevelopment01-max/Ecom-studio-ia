@@ -13,3 +13,27 @@ export function basculer(selection: readonly number[], numero: number, max: numb
   if (selection.includes(numero)) return selection.filter((x) => x !== numero);
   return selection.length >= max ? [...selection] : [...selection, numero].sort((a, b) => a - b);
 }
+
+/**
+ * Ce que le client choisit sur la carte pour la phrase sous le nom d'un logo (24 novembre 2026 au soir) : rien (la règle
+ * d'avant, SINA décide), la phrase d'une esquisse (`de`, seulement une phrase proposable), aucune, ou la sienne.
+ */
+export type PhraseSurLaCarte = { de: number; texte: string } | { aucune: true } | { sienne: string };
+
+/**
+ * Le message de la carte avec les phrases : exactement « Je choisis les esquisses 3, 7 et 11 » quand il ne touche à
+ * aucune phrase ; sinon, une phrase de plus par logo (« Pour le logo 1 : la phrase de l'esquisse 5, « … ». »). Sa phrase à
+ * lui est reprise telle quelle, entre guillemets.
+ */
+export function messageDuChoixAvecPhrases(numeros: readonly number[], phrases: Readonly<Record<number, PhraseSurLaCarte | undefined>>, lang: "fr" | "en" = "fr"): string {
+  const n = [...new Set(numeros)].sort((a, b) => a - b);
+  const parts = n.flatMap((logo) => {
+    const p = phrases[logo];
+    if (!p || ("sienne" in p && !p.sienne.trim())) return [];
+    if ("aucune" in p) return [lang === "en" ? `For logo ${logo}: no line.` : `Pour le logo ${logo} : sans phrase.`];
+    if ("de" in p) return [lang === "en" ? `For logo ${logo}: the line from sketch ${p.de}, “${p.texte}”.` : `Pour le logo ${logo} : la phrase de l'esquisse ${p.de}, « ${p.texte} ».`];
+    return [lang === "en" ? `For logo ${logo}: my line “${p.sienne.trim()}”.` : `Pour le logo ${logo} : ma phrase « ${p.sienne.trim()} ».`];
+  });
+  const base = messageDuChoix(n, lang);
+  return parts.length ? `${base}. ${parts.join(" ")}` : base;
+}

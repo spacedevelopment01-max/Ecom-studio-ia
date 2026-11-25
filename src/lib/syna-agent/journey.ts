@@ -160,7 +160,7 @@ export type Journey = {
    * L'accord unique de l'étape « La marque », méthode des graphistes : ce qui est réservé à chaque morceau (les noms, la
    * recherche du logo, les N logos finis, les planches et la marque finie). Les morceaux partent sans nouvelle carte.
    */
-  accordGraphistes?: { count: number; nomsMicro: number; rechercheMicro: number; finalisationsMicro: number; planchesMicro: number; at: number };
+  accordGraphistes?: { count: number; nomsMicro: number; rechercheMicro: number; finalisationsMicro: number; planchesMicro: number; /** La borne du Studio des planches de marque (une reprise par planche, une réécriture des valeurs). */ planchesStudioMicro?: number; at: number };
   /** Les noms vérifiés montrés au client, avec ce qu'en dit le juge, et la tâche dont l'atelier sera repris (méthode des graphistes). */
   nomsDeLaMarque?: { list: { name: string; why: string; detail: string; doute: string | null }[]; verifies: boolean; atelier: string; count: number; at: number; choisi?: string };
   /** Le logo de la marque, adopté par la fin de marque (`brand-finish.ts`) : celui de la planche, ou le nom dessiné en secours. */
@@ -345,6 +345,8 @@ export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
 /** Repère d'un texte de consigne qui ne dépend que de l'étape et de son état : donné à part, dans la partie en mémoire. */
 const FIXE = "\u0000fixe\u0000";
 const fixe = (t: string) => `${FIXE}${t}`;
+/** Ce que SINA dit en une phrase en présentant les planches de marque (accord écrit du propriétaire du 24 novembre 2026). */
+export const PHRASE_DE_LA_PLANCHE = { fr: "Chaque planche est une présentation de ton identité : ta marque finie et ton site garderont tes vraies informations.", en: "Each board is a presentation of your identity: your finished brand and your site will keep your real information." };
 /** Les lignes du contexte : sans repère (tout dans le contexte), ou sans les consignes fixes (données à part). */
 const tri = (lines: string[], aPart: boolean | undefined) => (aPart ? lines.filter((l) => !l.startsWith(FIXE)) : lines.map((l) => (l.startsWith(FIXE) ? l.slice(FIXE.length) : l)));
 
@@ -551,11 +553,14 @@ const IMAGES_DE_LA_PLANCHE = ["logo", "hero", "site"] as const;
  * drapeau posé à sa création (essai réel de Nadia, 23 novembre 2026 : ses trois planches d'avant la correction n'avaient
  * pas de logo et aucun drapeau ; elles étaient choisissables). Le logo du client gardé tel quel tient la place du logo.
  */
-export function manqueDeLaPlanche(x: { board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown } } }, logoDuClient = false): ("logo" | "hero" | "site")[] {
+export function manqueDeLaPlanche(x: { board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown }; planche?: { image?: unknown } } }, logoDuClient = false): ("logo" | "hero" | "site" | "planche")[] {
   const im = x.board?.images;
+  // La planche de marque par OpenAI (nouveaux projets) : le logo fini et la planche entière relue, rien d'autre ; refusée
+  // deux fois, elle manque et n'est jamais montrée.
+  if (x.board?.planche) return [...(!logoDuClient && !im?.logo ? ["logo" as const] : []), ...(!x.board.planche.image ? ["planche" as const] : [])];
   return IMAGES_DE_LA_PLANCHE.filter((s) => (s === "logo" ? !logoDuClient && !im?.logo : !im?.[s]));
 }
-type PlancheLue = { key: string; board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown } } };
+type PlancheLue = { key: string; board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown }; planche?: { image?: unknown } } };
 /**
  * LA SEULE LECTURE des planches incomplètes (règle du propriétaire : « Jamais une planche incomplète : une image refusée
  * est refaite avant d'être montrée »), lue à la volée sur le contenu de chaque planche de marque. Elle sert à l'écran (les
@@ -565,7 +570,7 @@ type PlancheLue = { key: string; board?: { images?: { logo?: unknown; hero?: unk
  */
 export function planchesIncompletes(j: { keep?: readonly string[]; identities?: { list: PlancheLue[] } }): { key: string; manque: string[] }[] {
   const logoDuClient = !!j.keep?.includes("logo");
-  return (j.identities?.list ?? []).filter((x) => !!x.board?.images).map((x) => ({ key: x.key, manque: manqueDeLaPlanche(x, logoDuClient) as string[] })).filter((x) => x.manque.length > 0);
+  return (j.identities?.list ?? []).filter((x) => !!x.board?.images || !!x.board?.planche).map((x) => ({ key: x.key, manque: manqueDeLaPlanche(x, logoDuClient) as string[] })).filter((x) => x.manque.length > 0);
 }
 export const planchesCachees = (j: { keep?: readonly string[]; identities?: { list: PlancheLue[] } }): Set<string> => new Set(planchesIncompletes(j).map((x) => x.key));
 /** Les planches montrées au client : toutes, sauf celles auxquelles il manque une image. */
@@ -584,7 +589,7 @@ function identityStepContext(j: Journey, count?: number): string[] {
   ];
   // Jamais une planche incomplète : une planche gardée de côté n'est ni affichée, ni décrite (règle du propriétaire).
   const montrees = planchesMontrees(j), cachees = planchesIncompletes(j).map((h) => ({ ...h, name: id.list.find((x) => x.key === h.key)?.name ?? h.key }));
-  const MANQUE: Record<string, string> = { logo: "le logo", hero: "la grande scène", site: "le haut du site" };
+  const MANQUE: Record<string, string> = { logo: "le logo", hero: "la grande scène", site: "le haut du site", planche: "la planche de marque" };
   const manqueDe = (m: string[]) => m.map((s) => MANQUE[s] ?? s).join(", ");
   if (!montrees.length) return [
     `Étape 1 — proposition n° ${id.round} : AUCUNE planche n'est montrée au client : il manque une image à chacune après mes reprises (${cachees.map((h) => `${h.key} « ${h.name} » : ${manqueDe(h.manque)}`).join(" ; ")}). Jamais une planche incomplète : tu n'en décris aucune et tu n'en présentes aucune.`,
@@ -601,6 +606,9 @@ function identityStepContext(j: Journey, count?: number): string[] {
     fixe("Tu VOIS le logo, la grande scène et la maquette du haut du site de chaque planche montrée (images jointes à ta réponse) : regarde-les avant d'en parler. Ce que tu en dis vient de la relecture ci-dessus : sa note et ses mots, rien de plus ; ce qui est raté se dit raté. Chaque planche montre l'idée, le nom, le logo, la grande scène, la maquette du haut de son site sur téléphone, les couleurs, les polices et la voix ; l'objet qui porte le logo, les signes en photo et trois publications sont créés pour l'identité qu'il choisit, dès son choix (déjà compris dans son accord) : dis-le en une phrase. Présente-les en une ligne courte chacune (l'idée de chacune et ce qui la distingue), sans recopier les planches, dis laquelle tu recommandes et pourquoi en une phrase, puis demande laquelle il préfère. Chaque planche dit « ce qui reste à prouver » : ne présente jamais ces points comme acquis. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question."),
   ];
   if (id.issues.length) out.push(`Points que le contrôle du Studio n'a pas pu valider (dis-les honnêtement au client, en mots simples) : ${id.issues.join(" ; ")}.`);
+  // La planche de marque par OpenAI (nouveaux projets) : une présentation ; la marque finie et le site gardent les vraies
+  // données. S'il reste moins de deux planches montrées, le choix attend.
+  if (montrees.some((x) => x.board?.planche?.image)) out.push(fixe(`Les planches montrées sont des planches de marque entières, une par logo choisi, relues. Dis-lui en une phrase : « ${PHRASE_DE_LA_PLANCHE.fr} »${montrees.length < 2 ? " Il reste moins de deux planches montrées : le choix attend ; propose de finir les autres à ta charge (identity.images, images « planche »)." : ""}`));
   // Le nom de domaine de chaque nom (contrôle gratuit du registre, affiché sur la planche) : SINA le dit tel quel.
   const domains = montrees.map((x) => (x.board?.domains ? `${x.key} « ${x.name} » : ${domainLine(x.board.domains).replace(/^Nom de domaine : /, "")}` : "")).filter(Boolean);
   if (domains.length) out.push(`Noms de domaine (contrôlés à l'instant dans le registre ; le nom de la marque reste entier, une adresse « libre » n'est garantie que par sa réservation ; ne promets jamais une adresse, et n'en invente aucune autre) : ${domains.join(" | ")}`);

@@ -188,6 +188,11 @@ export const BoardSchema = z.object({
     ground: z.enum(PALETTE_ROLES).optional(),
     /** Quelques mots écrits à la main sous le texte (« Voilà, c'est dit. »). */
     note: z.string().min(1).max(32).optional(),
+    /**
+     * L'objectif de la publication, en une ou deux phrases (méthode des publications du 24 novembre 2026, seulement quand
+     * elle est allumée) : la partie libre de la demande, écrite avec les textes des publications, contrôlée gratuitement.
+     */
+    objectif: z.string().min(1).max(480).optional(),
   })).length(3),
   /** Ce qui reste à prouver : dit clairement au client, jamais inventé. */
   toProve: z.array(z.string().min(1).max(220)).min(1).max(8),
@@ -204,6 +209,27 @@ export const BoardSchema = z.object({
     mark: BoardImageSchema.optional(), markDark: BoardImageSchema.optional(),
     /** L'idée du logo écrite par la directrice artistique : les autres planches de la série doivent en différer. */
     logoIdea: z.string().max(900).optional(),
+    /** Les trois publications de la méthode posées par le code à même hauteur, à leurs rapports exacts (fichier à part). */
+    bande: BoardImageSchema.optional(),
+  }).optional(),
+  /**
+   * LA PLANCHE DE MARQUE PAR OPENAI (nouveaux projets ; accord écrit du propriétaire du 24 novembre 2026) : une image
+   * entière, faite à partir du logo fini choisi et de la disposition, relue. Présente, elle EST la planche montrée au
+   * client ; sans `image` (refusée deux fois, ou pas encore faite), la planche n'est jamais montrée (`manqueDeLaPlanche`).
+   */
+  planche: z.object({
+    image: BoardImageSchema.optional(),
+    /** Le logo fini joint en première image. */
+    logo: z.string().regex(/^[A-Za-z0-9_-]{4,80}$/),
+    domaine: z.string().max(80).nullable(), statut: z.enum(["disponible", "a_verifier", "adresse_a_choisir"]), annee: z.number().int().min(2000).max(2200),
+    /** Les essais faits (1 ou 2 : une reprise au plus, à la charge du Studio). */
+    essais: z.number().int().min(0).max(2),
+    note: z.number().min(0).max(10).optional(),
+    /** Pourquoi elle n'est pas montrée (refusée deux fois, valeurs du métier impossibles, panne). */
+    raison: z.string().max(800).optional(),
+    /** La revérification gratuite du domaine au moment du choix. */
+    revu: z.object({ statut: z.enum(["disponible", "a_verifier", "adresse_a_choisir"]), at: z.number() }).optional(),
+    at: z.number(),
   }).optional(),
 });
 export type Board = z.infer<typeof BoardSchema>;

@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -50,7 +50,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026"]).toContain(r.decision);
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte)/);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort)/);
       // L'accord écrit du 24 novembre 2026 nomme chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
@@ -979,11 +979,174 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
     expect(src).toContain('logo: { input: 3_500, output: 1_500, max: 10_000, modele: "strong" as const, effort: "high" },');
   });
 
+  epreuve("phrase-de-l-esquisse-au-choix-du-client", async () => {
+    const E = await import("@/lib/syna-agent/esquisses");
+    const P = await import("@/lib/syna-agent/phrase-sous-le-nom");
+    const F = await import("@/lib/syna-agent/logo-finalisation");
+    const G = await import("@/lib/syna-agent/logo-graphistes");
+    const { messageDuChoixAvecPhrases } = await import("@/lib/syna-agent/choix-esquisses");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const fr = <T,>(fn: () => T) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+    const SLOGAN = "La lumière coulée à la main";
+    // La demande de recherche ne change pas : la phrase des couleurs, puis rien d'autre.
+    expect(demandeDeRecherche({ nom: NOM, metier: { metier: METIER, court: "la bougie", piste: "savoir-faire" } })).toMatch(/sans maquette de présentation\. Varie les couleurs d'une esquisse à l'autre\.$/);
+    // 1. La lecture : la phrase relevée mot pour mot (ou « aucune »), jugée par le relecteur, puis par le code.
+    expect(E.RELECTEUR_DES_ESQUISSES).toMatch(/phraseSousLeNom : la petite phrase écrite sous le nom, recopiée mot pour mot/);
+    expect(E.RELECTEUR_DES_ESQUISSES).toMatch(/phraseBienEcrite/);
+    const c = [0, 1, 2].map((i) => ({ modele: "m", index: i, png: Buffer.from("x"), requestId: null }));
+    const lu = (i: number, phraseSousLeNom: string, phraseBienEcrite: boolean) => ({ numero: i, entiere: true, morceauDeVoisine: false, nomLu: NOM, arche: false, ok: true, pourquoi: "", piste: `p${i}`, phraseSousLeNom, phraseBienEcrite });
+    const a = E.appliquerLaRelecture(NOM, c, { esquisses: [lu(1, "aucune", false), lu(2, SLOGAN, true), lu(3, "La lumière coullllée", true)] }, 1);
+    expect(a.refusees).toEqual([]);
+    expect(a.gardees.map((g) => g.phrase?.ok)).toEqual([undefined, true, false]);
+    expect(P.fautesEvidentes("Bougies made avec amour")).toContain("un mélange de français et d'anglais");
+    expect(P.phraseDeLEsquisse(SLOGAN, false)?.ok).toBe(false);
+    // Gardée dans la vue des esquisses.
+    const esquisses = a.gardees.map((g, i) => ({ numero: i + 1, assetId: `a${i}`, modele: "m", piste: g.piste, tour: 1, recherche: 1, requestId: null, ...(g.phrase ? { phrase: g.phrase } : {}) }));
+    expect(G.vueDesEsquisses({ nom: NOM, max: 3, esquisses, refusees: 0, planches: [], recherches: 1, notes: [], at: 1 }, (id) => id)!.list[1].phrase).toEqual({ texte: SLOGAN, ok: true });
+    // 2. Le choix : le logo 1 avec la phrase de la 2, le logo 3 sans phrase, ou sa phrase à lui, mot pour mot.
+    expect(await fr(() => G.controleDesPhrases({ esquisses }, [1, 3], [{ logo: 1, de: 2 }, { logo: 3, aucune: true }], []))).toEqual({ ok: true, phrases: { 1: { de: 2, texte: SLOGAN }, 3: { aucune: true } } });
+    expect(await fr(() => G.controleDesPhrases({ esquisses }, [1, 3], [{ logo: 1, de: 3 }], []))).toMatchObject({ ok: false });
+    expect(await fr(() => G.controleDesPhrases({ esquisses }, [1, 3], [{ logo: 1, texte: "Chez nous, la cire est vivante" }], ["Le logo 1 avec ma phrase : Chez nous, la cire est vivante"]))).toMatchObject({ ok: true });
+    expect(await fr(() => G.controleDesPhrases({ esquisses }, [1, 3], [{ logo: 1, texte: "Chez nous la cire vit" }], ["Le logo 1 avec ma phrase : Chez nous, la cire est vivante"]))).toMatchObject({ ok: false });
+    expect(messageDuChoixAvecPhrases([3, 7, 11], {})).toBe("Je choisis les esquisses 3, 7 et 11");
+    expect(messageDuChoixAvecPhrases([1, 3], { 1: { de: 5, texte: SLOGAN } }, "en")).toBe(`I choose sketches 1 and 3. For logo 1: the line from sketch 5, “${SLOGAN}”.`);
+    const T = await import("@/lib/syna-agent/logo-graphistes-tache");
+    expect(T.PROPOSITION_DES_PHRASES()).not.toContain("?");
+    // 3. La finalisation : sans choix, la consigne d'avant ; avec son choix, une seule ligne de plus ; contrôle mot pour mot.
+    const t = await import("@/lib/ai/text-models");
+    expect(t.textModel("openai", "gpt-6.2-astra")).toMatchObject({ tier: "strong", vision: true, verified: true });
+    const sans = consigneDeFinalisation(NOM, METIER);
+    expect(sans).toContain(LIGNE_D_EVOLUTION);
+    expect(sans).toContain("- garde une ligne descriptive discrète seulement si elle dit exactement le métier du client ; toute autre phrase est retirée.\nN'ajoute aucune idée");
+    expect(sans).not.toMatch(/#[0-9a-f]{6}/i);
+    const voulue = { texte: SLOGAN };
+    expect(consigneDeFinalisation(NOM, METIER, voulue).replace(`${F.ligneDeLaPhrase(voulue)}\n`, "")).toBe(sans);
+    expect(F.ligneDeLaPhrase(voulue)).toContain(`exactement « ${SLOGAN} »`);
+    const AVEC = TEXTE.replace("Fais évoluer", `Écris en petit sous le nom, exactement : « ${SLOGAN} ». Fais évoluer`);
+    expect(controleDuTexte(AVEC, NOM, METIER, voulue)).toEqual([]);
+    expect(controleDuTexte(TEXTE, NOM, METIER, voulue)).toHaveLength(1);
+    expect(controleDuTexte(TEXTE, NOM, METIER)).toEqual([]);
+    expect(champsDeFinalisation(AVEC)).toMatchObject({ model: "gpt-image-2.6-sunburst", prompt: AVEC });
+    const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
+    expect(src).toContain('const ASTRA: Modele = { provider: "openai", model: "gpt-6.2-astra", effort: "medium" };');
+    expect(src).toContain('...(a === "redaction" ? { expectedRoute: { provider: m.provider, model: m.model, effort: m.effort } } : {}),');
+    // 4. La relecture : jamais « inventée » ; lettre pour lettre, comparée par le code ; mal écrite, le logo est refusé.
+    const bien = { nomLu: NOM, ideeConservee: true, arche: false, phrase: SLOGAN, phraseDitLeMetier: false, note: 9, pourquoi: "" };
+    expect(raisonsDuRefus(bien, NOM, voulue)).toEqual([]);
+    expect(raisonsDuRefus(bien, NOM)).toHaveLength(1); // sans choix du client : la règle d'avant
+    expect(raisonsDuRefus({ ...bien, phrase: "La lumiere coulée à la main" }, NOM, voulue)).toHaveLength(1);
+    expect(raisonsDuRefus({ ...bien, phrase: "" }, NOM, voulue)).toHaveLength(1);
+    expect(raisonsDuRefus({ ...bien, phrase: "Bougies artisanales", phraseDitLeMetier: true }, NOM, { aucune: true })).toHaveLength(1);
+    expect(F.demandeAuRelecteurDuLogo({ nom: NOM, metier: METIER, texte: AVEC, phrase: voulue })).toContain(`« ${SLOGAN} ». Elle n'est pas inventée`);
+    // De bout en bout : la phrase mal écrite fait refaire le logo une fois, avec la raison.
+    const envoyes: string[] = [];
+    const verdicts = [{ ...bien, phrase: "La lumiere coulée à la main" }, bien];
+    const r = await finaliserUneEsquisse({
+      rediger: async () => ({ idee_centrale: "un halo", texte: AVEC }),
+      finaliser: async (_e, x) => { envoyes.push(x); return png(); },
+      relire: async () => verdicts.shift()!,
+      detourer: async (p) => ({ ok: true, png: p }),
+      aLaChargeDuStudio: async (fn) => fn(),
+    }, { nom: NOM, metier: METIER, esquisse: await png(), phrase: voulue });
+    expect(r.ok).toBe(true);
+    expect(envoyes[1]).toBe(`${AVEC} À corriger : la phrase choisie par le client est mal écrite (« La lumiere coulée à la main » au lieu de « ${SLOGAN} »).`);
+  });
+
   epreuve("relecteur-du-logo-fini", () => {
     expect(raisonsDuRefus(bon, NOM)).toEqual([]);
     for (const v of [{ nomLu: "Hal0" }, { ideeConservee: false }, { evolution: false }, { arche: true }, { phrase: "Lumière éternelle", phraseDitLeMetier: false }, { note: 7 }]) expect(raisonsDuRefus({ ...bon, ...v }, NOM)).toHaveLength(1);
     // Le relecteur est le plus fort, effort élevé, un autre modèle que le rédacteur.
     const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
     expect(src).toContain('logo: { input: 3_500, output: 1_500, max: 10_000, modele: "strong" as const, effort: "high" },');
+  });
+});
+
+describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, faux dessinateur et faux relecteur)", async () => {
+  const P = await import("@/lib/syna-agent/planche-de-marque");
+  const T = await import("@/lib/syna-agent/planche-de-marque-tache");
+  const J = await import("@/lib/syna-agent/journey");
+  const mp = await import("@/lib/ai/media-providers");
+  const { account, project } = await import("./conversation209-fixtures");
+  const { saveAsset } = await import("@/lib/library");
+  const { chargeDuStudio } = await import("@/lib/billing");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const fr = <X,>(fn: () => Promise<X>) => runWithLang({ ui: "fr", content: "fr" }, fn);
+  const F = "tests/fixtures/planche-de-marque";
+  const TENON = { metier: "une entreprise de menuiserie qui réalise des cuisines et des dressings sur mesure", traits: ["artisanale", "chaleureuse", "précise", "haut de gamme"], emotion: "la vie dans une cuisine sur mesure", site: "marque" as const, appel: "devis" as const, images: ["famille dans sa cuisine sur mesure", "dressing rangé", "gros plan bois / assemblage", "atelier et savoir-faire", "détail de quincaillerie", "lumière naturelle intérieure"], produits: ["cuisines", "dressings", "rangements sur mesure"] };
+  const RACINE = { metier: "une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres", traits: ["vivante", "chaleureuse", "généreuse", "naturelle"], emotion: "le plaisir de voir pousser ses plantes", site: "boutique" as const, images: ["plante dans un intérieur lumineux", "jardin qui pousse", "gros plan feuillage / terre / racines", "plante seule en studio ou lifestyle", "pépinière et serres", "mise en pot"], produits: ["plantes d'intérieur", "arbustes", "jeunes arbres"] };
+  const bon = (nom: string, mention: string, annee = 2026) => ({ nomLu: nom, logoFidele: true, copyrightLu: `© ${annee} ${nom}`, domaineLu: mention, fautes: [] as string[], promesses: [] as string[], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [] as string[], note: 9, pourquoi: "Nette." });
+  /** Une planche passée par la vraie tâche, avec un faux dessinateur et un faux relecteur (rien n'est payé). */
+  async function tache(o: { verdicts: (demande: string, tour: number) => any; domaines?: any; personnes?: boolean }) {
+    const u = await account(), pid = project(u, "services") as string;
+    const logo = await saveAsset({ projectId: pid, userId: u.id, data: await sharp({ create: { width: 256, height: 256, channels: 3, background: "#FFFFFF" } }).png().toBuffer(), name: "logo-fini.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready" });
+    const appels: { texte: string; logo: Buffer; disposition: Buffer; studio: boolean }[] = [];
+    const ai = {
+      valeurs: async () => { throw new Error("aucun appel attendu"); },
+      dessiner: async (l: { data: Buffer }, d: { data: Buffer }, texte: string) => { appels.push({ texte, logo: l.data, disposition: d.data, studio: chargeDuStudio() }); return { png: await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#EEE" } }).png().toBuffer(), recu: null }; },
+      relire: async (_b: Buffer[], _l: Buffer, _d: Buffer, demande: string) => o.verdicts(demande, appels.length),
+    };
+    T.plancheDeps.domaines = async () => o.domaines ?? { taken: [], free: ["tenon.fr"], unknown: [], at: 1 };
+    T.plancheDeps.annee = () => 2026;
+    try {
+      const x = { ...route("A"), name: "Tenon" };
+      const r = await fr(() => T.plancheDeLaRoute({ ctx: { step: async (_k: string, fn: () => Promise<any>) => fn() }, ai, who: { userId: u.id, projectId: pid }, route: x as never, round: 1, valeurs: { ok: true, valeurs: TENON }, logoAssetId: logo.id, personnes: o.personnes ?? false }));
+      return { r, appels, logo };
+    } finally { T.plancheDeps.domaines = undefined; T.plancheDeps.annee = undefined; }
+  }
+
+  epreuve("planche-de-marque-openai", async () => {
+    // Les champs exacts des requêtes de preuve, le chemin permis, sans secours.
+    const preuve = JSON.parse(fs.readFileSync(`${F}/tenon-requete.json`, "utf8"));
+    const { prompt: _p, n, ...reglages } = preuve.champs;
+    const { prompt: _q, ...champs } = mp.champsDeLaPlanche("t");
+    expect(champs).toEqual({ ...reglages, n: Number(n) });
+    expect(champs).toMatchObject({ model: "gpt-image-2.5-sunburst", quality: "xhigh", size: "1536x2304" });
+    expect(preuve["image[]"]).toEqual(["logo-tenon.png", "disposition-variante-2.png"]);
+    // Le texte de base mot pour mot : Tenon et Racine refaits à l'identique ; seules les six parties changent.
+    expect(P.texteDesPreuves("Tenon", TENON)).toBe(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"));
+    expect(P.texteDesPreuves("Racine", RACINE)).toBe(fs.readFileSync(`${F}/racine-prompt.txt`, "utf8"));
+    expect(crypto.createHash("sha256").update(fs.readFileSync("assets/planche-de-marque/disposition.png")).digest("hex")).toBe(P.DISPOSITION.sha256);
+    // Un produit absent de la fiche n'entre jamais dans le texte.
+    expect(P.controleDesValeurs({ nom: "Tenon", traits: TENON.traits, emotion: "un repas en famille", images: TENON.images.slice(1), produits: ["cuisines", "escaliers"], appel: "devis" }, { nom: "Tenon", metier: TENON.metier, fiche: "Je fais des cuisines.", personnes: true, kind: "services" }).valeurs.produits).toEqual(["cuisines"]);
+    // La vraie tâche : image[] = le logo fini, puis la disposition ; le texte des preuves suivi de la phrase des données.
+    const { r, appels, logo } = await tache({ verdicts: () => bon("Tenon", "tenon.fr — disponible") });
+    expect(appels).toHaveLength(1);
+    const { assetData, getAsset } = await import("@/lib/library");
+    expect(appels[0].logo.equals(assetData(getAsset(logo.id)!))).toBe(true);
+    expect(crypto.createHash("sha256").update(appels[0].disposition).digest("hex")).toBe(P.DISPOSITION.sha256);
+    expect(appels[0].texte.startsWith(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"))).toBe(true);
+    expect(r.route.board.planche!.image).toBeTruthy();
+  });
+
+  epreuve("planche-donnees-verifiees", async () => {
+    const libre = await tache({ verdicts: () => bon("Tenon", "tenon.fr — disponible") });
+    expect(libre.appels[0].texte.endsWith("écris exactement « tenon.fr — disponible » et « © 2026 Tenon » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.")).toBe(true);
+    const doute = await tache({ domaines: { taken: [], free: [], unknown: ["tenon.fr"], at: 1 }, personnes: true, verdicts: () => bon("Tenon", "tenon.fr — à vérifier") });
+    expect(doute.appels[0].texte.endsWith("écris exactement « tenon.fr — à vérifier » et « © 2026 Tenon » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis.")).toBe(true);
+    expect(doute.r.route.board.planche).toMatchObject({ statut: "a_verifier", domaine: "tenon.fr", annee: 2026 });
+    // Lettre pour lettre : une année fausse, un domaine différent ou « disponible » à la place de « à vérifier » font refaire.
+    const faux = await tache({ verdicts: (_d, n) => (n === 1 ? bon("Tenon", "tenon.fr — disponible", 2025) : bon("Tenon", "tenon.com — disponible")) });
+    expect(faux.appels).toHaveLength(2);
+    expect(faux.appels[1].texte.endsWith("À corriger : le copyright doit être exactement « © 2026 Tenon » (lu : « © 2025 Tenon »).")).toBe(true);
+    expect(faux.r.route.board.planche!.image).toBeUndefined();
+    expect(P.raisonsDuRefusDeLaPlanche(bon("Tenon", "tenon.fr — disponible"), { nom: "Tenon", annee: 2026, domaine: { domaine: "tenon.fr", statut: "a_verifier" }, personnes: true, animaux: false }).join(" ")).toMatch(/« tenon.fr — à vérifier »/);
+  });
+
+  epreuve("planche-refusee-deux-fois-jamais-montree", async () => {
+    const une = await tache({ verdicts: (_d, n) => (n === 1 ? { ...bon("Tenon", "tenon.fr — disponible"), copies: ["le harnais de la disposition"] } : bon("Tenon", "tenon.fr — disponible")) });
+    expect(une.appels.map((a) => a.studio)).toEqual([false, true]);
+    expect(une.appels[1].texte.endsWith("À corriger : éléments recopiés de la disposition : le harnais de la disposition.")).toBe(true);
+    expect(une.r.route.board.planche!.image).toBeTruthy();
+    const deux = await tache({ verdicts: () => ({ ...bon("Tenon", "tenon.fr — disponible"), note: 6 }) });
+    expect(deux.appels).toHaveLength(2);
+    expect(deux.r.route.board.planche!.image).toBeUndefined();
+    expect(deux.r.issues.join(" ")).toMatch(/je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite\. Je peux la refaire à ma charge : rien n'est compté sur ton budget\./);
+    const j = { keep: [], identities: { list: [{ ...deux.r.route, board: { ...deux.r.route.board, images: { logo: { id: "logoabcd", w: 1, h: 1 } } } }] } };
+    expect(J.planchesMontrees(j as never)).toEqual([]);
+    expect(J.planchesIncompletes(j as never)).toEqual([{ key: "A", manque: ["planche"] }]);
+    // La reprise, à la charge du Studio, passe par identity.images (images « planche ») ; le choix attend sous deux planches.
+    const I = await import("@/lib/syna-agent/tools/identity");
+    expect(I.finirPlanchesGardees(j as never, ["A"], ["planche"])).toBe(true);
+    expect(I.devisDesImages(j as never, ["A"], ["planche"])).toMatchObject({ studio: true });
   });
 });

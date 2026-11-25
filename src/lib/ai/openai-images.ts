@@ -107,6 +107,20 @@ async function avecIdentifiant(p: unknown): Promise<{ data: any; requestId: stri
 export type ImageRenvoyee = { quality: string | null; size: string | null; background: string | null; output_format: string | null };
 export const imageRenvoyee = (r: any): ImageRenvoyee => ({ quality: r?.quality ?? null, size: r?.size ?? null, background: r?.background ?? null, output_format: r?.output_format ?? null });
 
+/**
+ * Une image OpenAI SANS FLUX, quel que soit le catalogue : la méthode des publications validée le 24 novembre 2026
+ * (« Conserve intégralement la méthode, les paramètres API ») a été prouvée sans flux, donc elle part toujours ainsi.
+ */
+export async function openaiImageSansFlux(client: OpenAI, op: "generate" | "edit", params: Record<string, unknown> & { model: string }, onSent: () => void): Promise<{ b64: string | null; usage: any; ms: number; requestId: string | null; renvoye: ImageRenvoyee }> {
+  const t0 = Date.now();
+  onSent();
+  emit({ phase: "sent", atMs: 0, streamed: false });
+  const { data: res, requestId } = await avecIdentifiant(op === "generate" ? client.images.generate(params as any) : client.images.edit(params as any));
+  const b64 = res.data?.[0]?.b64_json ?? null;
+  if (b64) emit({ phase: "received", atMs: Date.now() - t0, streamed: false });
+  return { b64, usage: res.usage ?? null, ms: Date.now() - t0, requestId, renvoye: imageRenvoyee(res) };
+}
+
 export async function openaiImage(client: OpenAI, op: "generate" | "edit", params: Record<string, unknown> & { model: string }, onSent: () => void): Promise<{ b64: string | null; usage: any; streamed: boolean; partials: number; ms: number; requestId: string | null; renvoye: ImageRenvoyee }> {
   const t0 = Date.now();
   const stream = openaiStreams(params.model);

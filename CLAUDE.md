@@ -118,13 +118,22 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   refuse une case vide, coupée ou collée au bord ; le relecteur le plus fort, effort moyen, relit toutes les esquisses
   en un appel (entière, rien de la voisine, nom exact comparé par le code, pas d'arche) ; une esquisse refusée n'est
   jamais montrée ; moins de huit : les deux planches refaites une fois à la charge du Studio, avec « Évite ces pistes
-  déjà présentées : … » à la toute fin, après la phrase des couleurs. **Le choix** : le client coche ses esquisses, deux au moins, au plus 2, 3 ou 4 selon son
-  forfait. **Le logo fini** : le modèle de texte le plus fort regarde l'esquisse et écrit le texte (consigne de l'essai,
-  « parmi les esquisses proposées », plus l'évolution de l'idée), contrôlé gratuitement ; le modèle d'images de
-  finalisation le dessine à partir de l'esquisse. **La relecture** : le relecteur le plus fort, effort élevé, refuse un
-  nom mal écrit, une idée perdue, une arche, une phrase inventée, une note sous 8 ; jamais un logo parce qu'il est trop
-  proche de son esquisse (« Ouais » du 24 novembre, à « Je fais retirer cette règle et je relance la finalisation du R
-  bordeaux ? ») ; refusé, il
+  déjà présentées : … » à la toute fin, après la phrase des couleurs. **La phrase sous le nom** (24 novembre au soir :
+  « Non ça donne des idées de slogan, le seul truc c'est que si le client veux le slogan de la 5 et le logo 1, sina doit
+  pouvoir le faire ») : les phrases restent dans la recherche, dont la demande ne change pas ; le relecteur des esquisses
+  relève, mot pour mot, la phrase de chaque esquisse (ou « aucune ») et dit si elle est bien écrite, le code refuse en
+  plus les fautes évidentes ; une phrase douteuse n'est jamais proposée telle quelle. **Le choix** : le client coche ses
+  esquisses, deux au moins, au plus 2, 3 ou 4 selon son forfait ; il combine librement le logo d'une esquisse avec la
+  phrase d'une autre, sans phrase, ou avec sa propre phrase, reprise mot pour mot ; SINA le propose en une phrase, sans
+  question. **Le logo fini** : le modèle de texte le plus fort regarde l'esquisse et écrit le texte (consigne de l'essai,
+  « parmi les esquisses proposées », plus l'évolution de l'idée ; quand le client a choisi sa phrase, une ligne de plus
+  qui la fait écrire exactement, en petit sous le nom ; sans son choix, une ligne seulement si elle dit le vrai métier),
+  contrôlé gratuitement (la phrase choisie y figure mot pour mot) ; le modèle d'images de finalisation le dessine à
+  partir de l'esquisse. **La relecture** : le relecteur le plus fort, effort élevé, refuse un nom mal écrit, une idée
+  perdue, une arche, une phrase inventée, une note sous 8 ; une phrase choisie par le client n'est jamais « inventée » :
+  le code la compare lettre pour lettre, et mal écrite, elle fait refuser le logo comme un nom mal écrit ; jamais un logo
+  parce qu'il est trop proche de son esquisse (« Ouais » du 24 novembre, à « Je fais retirer cette règle et je relance
+  la finalisation du R bordeaux ? ») ; refusé, il
   est refait une fois avec ses raisons ; refusé deux fois, SINA propose une autre esquisse. **Le logo d'abord** : les
   couleurs de la marque sont tirées du logo par le Studio, la police de titres choisie au plus près de ses lettres ;
   deux identités n'ont jamais la même police de titres. Les couleurs du client ne vont jamais au dessinateur. On ne
@@ -136,7 +145,22 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   une zone calme, aucun objet vierge sans rôle) ; le relecteur relit chaque image seule et ne garde que ce qu'il note
   8 sur 10 ou plus.
 - **Identité** : montrée en planche de marque complète, jamais en simple fiche. Jamais une planche incomplète : une
-  image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair.
+  image refusée est refaite avant d'être montrée. Sur fond sombre, le logo est toujours clair. **La planche de marque**
+  (24 novembre 2026, accord écrit : « ajoute et scelle planche-de-marque-openai (une planche par logo choisi, … le logo
+  puis la disposition, le texte de base mot pour mot sauf les six parties du métier et la phrase des données
+  vérifiées) … ») : chaque logo choisi a sa planche, une seule image entière créée par le modèle d'images des logos, en
+  qualité la plus haute, en 1536 × 2304, avec le logo fini joint d'abord, puis la disposition des essais ; le texte est
+  celui des essais mot pour mot, sauf les six parties du métier (le nom, la ligne de la marque, l'émotion du carré, le
+  type de site, les images de référence, les produits, retrouvés dans la fiche du client, jamais inventés), écrites par
+  le modèle de texte le plus fort et contrôlées gratuitement, puis la phrase des données vérifiées : l'année en cours et
+  le domaine vérifié avant le dessin, « disponible » ou « à vérifier » (« Adresse à choisir » si tout est pris), et
+  « aucune personne visible » sans son accord. Le relecteur le plus fort, effort élevé, la relit en bandes ; le code
+  compare le nom, l'année et le domaine lettre pour lettre ; refusée, elle est refaite une fois à la charge du Studio
+  avec ses raisons ; refusée deux fois, elle n'est pas montrée et SINA propose de la finir à sa charge ; avec moins de
+  deux planches montrées, le choix attend. Elle est montrée seule, en entier, sans rien posé dessus, à agrandir et à
+  télécharger, avec la case du domaine (revérifié au choix) ; SINA dit qu'elle est une présentation : la marque finie et
+  le site gardent les vraies données. La marque finie, le site et les vraies publications gardent leurs règles (épreuves
+  vrai-produit-du-client-joint et publication-incomprehensible). Détail : `docs/studio/PLANCHE-DE-MARQUE.md`.
 - **Trois angles** : un angle, c'est « aller chercher une typologie de client différente, avec des envies et des
   besoins différents, mais qui recherche le même produit ; c'est juste qu'il n'est pas mis en avant et en valeur de la
   même façon sur le site et la communication » (ses mots du 16 novembre). Donc trois angles = trois types de clients
@@ -174,8 +198,11 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   photo de chaque produit ? ») : « Ou alors elle lui dit qu'elle peux monter le site mais qu'elle devra importer ses
   photos par la suite. » SINA ne bloque donc pas : elle le dit avant la carte de dépense, n'invente jamais le produit
   (« Ta photo ici » tient sa place), et le site ne part en boutique qu'une fois ses photos importées.
-- **Maquette du site sur la planche** : créée par OpenAI, sur un téléphone et dans le téléphone, belle, différente
-  d'un client à l'autre, à l'identité de la planche, avec le bon logo (clair sur fond sombre).
+- **Maquette du site sur la planche** : créée par OpenAI, belle, différente d'un client à l'autre, à l'identité de la
+  planche, avec le bon logo (clair sur fond sombre). Sur la planche de marque (24 novembre 2026), elle fait partie de
+  l'image entière : un ordinateur et un téléphone, le même site, au bloc prévu par la disposition ; une boutique pour un
+  client qui vend des produits, un site de marque avec sa demande (devis, rendez-vous ou réservation) pour un client qui
+  vend des prestations ; jamais le mot « maquette » écrit dessus. Les anciens projets gardent leur maquette sur un téléphone.
 - **Publications** : chacune se comprend seule par quelqu'un qui ne connaît pas la marque, la première dit l'offre en
   clair, chacune porte le logo ; le niveau des meilleurs community managers avec Canva ; pour les vidéos, celui de CapCut.
   Toujours une vraie image. Les exemples montrés à un client sont très différents les uns des autres (couleur, sujet,

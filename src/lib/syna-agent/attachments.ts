@@ -160,7 +160,7 @@ export function describeAttachment(a: Attachment): string {
 type BoardShot = { id: string } | null | undefined;
 type BoardShots = { logo?: BoardShot; hero?: BoardShot; site?: BoardShot; object?: BoardShot; signs?: BoardShot; posts?: BoardShot[] };
 export async function journeyImages(j: { keep?: readonly string[]; steps: Record<number, { status: string } | undefined>; brandKit?: { boardId: string | null }; siteMode?: { mode: string }; customChosenAt?: number; site?: { at?: number };
-  identities?: { list: { key: string; name: string; board?: { images?: BoardShots } }[]; incompletes?: { key: string }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots; manque?: string[] } }, projectId?: string | null): Promise<LlmImage[]> {
+  identities?: { list: { key: string; name: string; board?: { images?: BoardShots; planche?: { image?: { id: string } } } }[]; incompletes?: { key: string }[] }; identityChoice?: unknown; brandFinish?: { at?: number; images?: BoardShots; manque?: string[] } }, projectId?: string | null): Promise<LlmImage[]> {
   const { getAsset, assetData } = await import("../library");
   const sharp = (await import("sharp")).default;
   const small = async (id: string, size: number) => { const a = getAsset(id); return a && !a.deleted_at ? sharp(assetData(a)).resize(size, size, { fit: "inside", withoutEnlargement: true }).png().toBuffer() : null; };
@@ -175,7 +175,12 @@ export async function journeyImages(j: { keep?: readonly string[]; steps: Record
   const { planchesCachees } = await import("./journey");
   const cachees = planchesCachees(j);
   if (j.identities?.list.length && !j.brandFinish?.at) {
-    for (const x of j.identities.list.filter((y) => !cachees.has(y.key))) for (const [slot, what] of [["logo", "le logo"], ["hero", "la grande scène"], ["site", "la maquette du haut de son site, sur téléphone"]] as const) {
+    // La planche de marque (nouveaux projets) : l'image entière, réduite à 1 024 px, avec le verdict de son relecteur.
+    for (const x of j.identities.list.filter((y) => !cachees.has(y.key) && y.board?.planche?.image)) {
+      const id = x.board!.planche!.image!.id, data = await small(id, 1024).catch(() => null);
+      if (data) out.push({ data, label: `Identité ${x.key} « ${x.name} » — sa planche de marque entière, montrée au client — relecture : ${phraseDuVerdict(verdictDuRelecteur(id))}` });
+    }
+    for (const x of j.identities.list.filter((y) => !cachees.has(y.key) && !y.board?.planche)) for (const [slot, what] of [["logo", "le logo"], ["hero", "la grande scène"], ["site", "la maquette du haut de son site, sur téléphone"]] as const) {
       const id = x.board?.images?.[slot]?.id, data = id ? await small(id, 512).catch(() => null) : null;
       if (data) out.push({ data, label: `Identité ${x.key} « ${x.name} » — ${what}, montré au client sur sa planche — relecture : ${phraseDuVerdict(verdictDuRelecteur(id))}` });
     }

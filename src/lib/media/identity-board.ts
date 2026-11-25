@@ -45,6 +45,11 @@ export type IdentityBoardInput = {
   /** Produit détouré (produits) : posé sur un socle à côté du sac. */
   product?: Buffer | null;
   year?: number;
+  /**
+   * Les trois publications de la méthode (1:1, 4:5, 9:16, fichiers finaux) : posées par le code dans une ligne de plus,
+   * à même hauteur et à leurs rapports exacts (planche-publications.ts), jamais redessinées.
+   */
+  publications?: Buffer[] | null;
 };
 
 const W = 2400, P = 56, G = 20;
@@ -399,7 +404,9 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   const tagline = (b.tagline ?? "").replace(/[.\s]+$/, "");
 
   const HEAD = 120, RA = 560, RB = 500, RC = 640;
-  const H = P + HEAD + RA + G + RB + G + RC + P;
+  // Ligne D (seulement avec les trois publications de la méthode) : la bande des publications, posée par le code.
+  const pubs = b.publications?.length === 3 ? b.publications : null, RD = 820;
+  const H = P + HEAD + RA + G + RB + G + RC + (pubs ? G + RD : 0) + P;
   const c = createCanvas(W, H);
   const ctx = c.getContext("2d");
   ctx.fillStyle = mix(col.cream, "#FFFFFF", 0.25);
@@ -745,5 +752,11 @@ export async function renderIdentityBoard(b: IdentityBoardInput): Promise<Buffer
   ctx.restore();
   label(ctx, C("Site internet", "Website"), xc4 + 30, y + RC - 28, mix(col.ink, col.cream, 0.45), BF);
 
-  return c.encode("png");
+  if (!pubs) return c.encode("png");
+  // ── Ligne D : les publications réseaux sociaux (1:1, 4:5, 9:16), fichiers originaux réduits, rapports exacts.
+  y += RC + G;
+  rr(ctx, P, y, IW, RD, 8, mix(col.cream, col.ink, 0.04));
+  label(ctx, C("Publications réseaux sociaux (1:1, 4:5, 9:16)", "Social media posts (1:1, 4:5, 9:16)"), P + 30, y + RD - 28, mix(col.ink, col.cream, 0.45), BF);
+  const { poserLaBande } = await import("./planche-publications");
+  return poserLaBande(await c.encode("png"), pubs.map((data) => ({ data })), { x: P + 30, y: y + 30, w: IW - 60, h: RD - 100 }, { ecart: 44 });
 }

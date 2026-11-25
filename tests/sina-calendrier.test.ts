@@ -225,6 +225,11 @@ describe("SINA — étape 11 : calendrier de publication manuel", async () => {
   });
 
   it("lecture par SINA et rappel du jour dans le Studio et par e-mail (une seule fois par jour)", async () => {
+    // Indépendant de l'heure (24 novembre 2026) : lancée vers minuit à Paris, la suite voyait « aujourd'hui » changer
+    // entre la préparation et la lecture. L'horloge est posée à midi, heure de Paris, le jour même ; rien d'autre ne change.
+    const { atZoned: midi } = await import("@/lib/social-v2/planner");
+    vi.useFakeTimers({ toFake: ["Date"], now: midi(plus(0), "12:00", TZ) });
+    try {
     const s = await setup(2);
     await call("calendar.plan", s.ctx, { days: 7, perDay: 1, startDate: plus(0), times: ["23:59"] });
     const r = await call("calendar.read", s.ctx, { today: true });
@@ -255,6 +260,7 @@ describe("SINA — étape 11 : calendrier de publication manuel", async () => {
       expect(mails.filter((m) => m.to === s.u.email)).toHaveLength(1);
     } finally { C.calendarDeps.sendMail = undefined; }
     expect(fetch).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
   });
 
   it("refaire un calendrier demande l'accord du client ; une publication sortie du calendrier retrouve sa date", async () => {

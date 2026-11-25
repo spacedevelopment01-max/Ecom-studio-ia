@@ -25,7 +25,7 @@ import { assetData, getAsset } from "../library";
 import { getJsonSetting } from "../settings";
 import { callCostBoundMicro, estimateCallMicro, llmJson, reponseInexploitable } from "../ai/llm";
 import { aLaChargeDuStudio } from "../billing";
-import { LOGO_ROUTE, aiBoardLogo, aiSiteImageHd, photoRequestMaxMicro, withQuotedImageRoute } from "../ai/media-providers";
+import { LOGO_ROUTE, aiBoardLogo, aiPublicationMethode, aiSiteImageHd, photoRequestMaxMicro, publicationMethodeMaxMicro, withQuotedImageRoute } from "../ai/media-providers";
 import { CostCapReached, withTrace } from "../ai/trace";
 import { consigneUneFamille, webResearch, webSearchQuote, type ResearchCategory, type WebFinding } from "../ai/web-search";
 import { safeFetch } from "../engine/import-link";
@@ -44,6 +44,8 @@ import { consigneDeLaPoliceDuLogo, ligneDesCouleursDuLogo, remettreLesCouleursDu
 import sharp from "sharp";
 import { annonceLesChiffres, corrigeCeQuiSeMesure } from "./brand-corrections";
 import { loadWordingRules } from "../client-wording";
+import { peopleAllowed } from "../people-policy";
+import { FORMAT_DES_PLACES, PHOTOS_MAX, estUnePlaceDePublication, methodeActive } from "./publications-methode";
 
 export const SINA_BRAND_JOB = "syna.brand";
 
@@ -220,6 +222,11 @@ export function namesPreviewQuote(settings?: ChainSettings): ChainQuote {
  */
 const imageUnitMax = (aspect: ImageAspect, references: number, logo = false) => photoRequestMaxMicro(logo ? LOGO_ROUTE : boardImageRoute(), { prompt: "x".repeat(6000), references, aspect, quality: "high" });
 /**
+ * Borne d'UNE image d'une place de la planche. Méthode des publications allumée : une publication (post0 à post2) au prix
+ * de son chemin direct, à son format, avec le logo et les photos du produit jointes au plus. Éteinte : rien ne change.
+ */
+const uniteDeLaPlace = (slot: ImageSlot): number => methodeActive() && estUnePlaceDePublication(slot) ? publicationMethodeMaxMicro(FORMAT_DES_PLACES[slot], 1 + PHOTOS_MAX) : imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]);
+/**
  * Devis des images de planche SEULES (direction artistique, six images, relecture, par planche). Le coût probable
  * d'une image est sa borne sans la marge de réservation (un quart) ; une image refusée à la relecture est payée.
  */
@@ -235,7 +242,7 @@ export function boardImagesQuote(routes: number, settings?: ChainSettings, slots
   // Ce qui se reprend (deux plafonds) : chaque image et sa relecture, une fois par planche ; jamais la direction
   // artistique, écrite une seule fois.
   let reprise = 0, repriseProbable = 0;
-  for (const slot of list) { const unit = imageUnitMax(SLOT_ASPECT[slot], SLOT_REFERENCES[slot]), reste = Math.max(0, routes - faites(slot)); max += unit * reste; probable += (unit / 1.25) * reste; reprise += unit * routes; repriseProbable += (unit / 1.25) * routes; }
+  for (const slot of list) { const unit = uniteDeLaPlace(slot), reste = Math.max(0, routes - faites(slot)); max += unit * reste; probable += (unit / 1.25) * reste; reprise += unit * routes; repriseProbable += (unit / 1.25) * routes; }
   for (const id of ["imagery", "look"] as const) {
     // La relecture se fait image par image : une relecture par image.
     const c = CALLS[id], m = modelOf(s, id), n = id === "look" ? Math.max(1, list.length) : 1;
@@ -352,6 +359,11 @@ export type ChainAi = {
   ask: <S extends z.ZodType>(id: string, call: { system: string; prompt: string; schema: S; kind: CallId; prepare?: (raw: unknown) => unknown; /** Images jointes (le logo fini, pour la direction artistique). */ images?: { data: Buffer; label?: string }[] }) => Promise<z.infer<S>>;
   /** Création d'UNE image par le modèle d'images du Studio (route des images de SINA), avec ses images de référence. */
   draw: (id: string, call: { prompt: string; aspect: ImageAspect; logo?: Buffer | null; scene?: Buffer | null; /** Les vraies photos du produit du client, à reproduire fidèlement. */ product?: Buffer | null; /** « logo » : le symbole tiré du logo, par le modèle imposé des logos. */ usage?: "logo" }) => Promise<Buffer>;
+  /**
+   * UNE publication de la méthode validée (publications-methode.ts) : le texte assemblé par le code, la taille demandée,
+   * le logo officiel puis les vraies photos du produit. Rend l'image brute (le recadrage exact se fait ensuite).
+   */
+  publier?: (id: string, call: { texte: string; taille: string; logo: { assetId: string | null; data: Buffer }; photos: { assetId: string | null; data: Buffer }[] }) => Promise<Buffer>;
   /** Relecture par un modèle qui voit : des images et une consigne, réponse contrôlée par son schéma. */
   /**
    * Le résumé du client, le même pour toute la chaîne (22 novembre 2026) : une demande qui commence par lui l'envoie à
@@ -409,6 +421,8 @@ function realAi(ctx: JobContext, who: { userId: string; projectId: string }, s: 
     draw: (id, c) => withTrace(scope(`brand-${id}`), () => c.usage === "logo"
       ? aiBoardLogo({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, { prompt: c.prompt, aspect: "1:1", logo: c.logo ?? null })
       : withQuotedImageRoute(boardImageRoute(), () => aiSiteImageHd({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, { prompt: c.prompt, aspect: c.aspect, logo: c.logo ?? null, scene: c.scene ?? null, product: c.product ?? null }))),
+    // Le seul chemin direct des publications de la méthode (logo-policy.ts) ; le plafond de la tâche vaut aussi pour lui.
+    publier: (id, c) => withTrace(scope(`brand-${id}`), () => aiPublicationMethode({ userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:brand:${id}` }, c)),
     look: (id, c) => withTrace(scope(`brand-${id}`), () => llmJson({
       task: "quality_control", userId: who.userId, projectId: who.projectId, jobId: ctx.job.id, system: c.system, prompt: c.prompt, images: c.images, ...(c.fixes?.length ? { imagesFixes: c.fixes } : {}), promptKey: "syna-brand-look-1",
       maxTokens: CALLS.look.max, maxOutputTokens: CALLS.look.max + 2000, usageKey: `${ctx.job.id}:brand:${id}`, deferred, nouvelleSiChangee: true, routing: { difficulty: "complex", prefer: modelOf(s, "look") },
@@ -555,7 +569,7 @@ export function pruneDraft(raw: any): any {
   }
   if (b.object && typeof b.object === "object") { drop(b.object, ["note"]); strip(b.object, ["art"]); }
   strip(b.site, ["art"]);
-  for (const q of Array.isArray(b.posts) ? b.posts : []) { drop(q, ["note", "ground"]); strip(q, ["art"]); }
+  for (const q of Array.isArray(b.posts) ? b.posts : []) { drop(q, ["note", "ground", "objectif"]); strip(q, ["art"]); if (q && typeof q.objectif === "string" && q.objectif.length > 480) delete q.objectif; }
   for (const g of Array.isArray(b.signs) ? b.signs : []) { drop(g, ["sample", "ground"]); strip(g, ["art"]); if (g && g.hand === false) delete g.hand; }
   return raw;
 }
@@ -630,7 +644,7 @@ const Payload = z.object({
   /** Seulement les images, sur les planches déjà écrites (celles de `redo`, ou toutes) : rien d'autre n'est refait. */
   imagesOnly: z.boolean().optional(),
   /** Avec `imagesOnly` : seulement ces images (ex. le logo et l'objet qui le porte) ; les autres images gardées restent. */
-  slots: z.array(z.enum(CREATED_SLOTS)).min(1).optional(),
+  slots: z.array(z.enum([...CREATED_SLOTS, "planche"] as const)).min(1).optional(),
   /** La marque finie de l'identité CHOISIE : logo adopté, images manquantes (ou `slots` à refaire), charte. */
   finish: z.boolean().optional(),
   /** Avec `imagesOnly` : finir une planche gardée de côté (une image y manque), à la charge du Studio. */
@@ -652,8 +666,20 @@ const Payload = z.object({
   logosGraphistes: z.array(z.object({ assetId: z.string(), palette: z.object({ dark: z.string(), primary: z.string(), secondary: z.string(), accent: z.string(), light: z.string() }).optional() })).max(4).optional(),
   /** L'atelier de la tâche arrêtée après les noms : étude, idées et noms repris tels quels, jamais repayés. */
   atelier: z.string().optional(),
+  /**
+   * LA PLANCHE DE MARQUE PAR OPENAI (accord écrit du propriétaire du 24 novembre 2026), posée par `lancerLesPlanches` pour
+   * les nouveaux projets : avec `logosGraphistes`, chaque identité reçoit une planche entière à la place de la grande
+   * scène et du haut du site. Sans elle (tâches d'avant), l'ancien code reste.
+   */
+  plancheDeMarque: z.boolean().optional(),
 });
 export type BrandJobPayload = z.infer<typeof Payload>;
+
+/** Les places d'images d'une demande (« planche » à part : la planche de marque se refait entière, par son propre chemin). */
+const imagesDesPlaces = (slots?: readonly string[]): ImageSlot[] | undefined => {
+  const l = (slots ?? []).filter((s): s is ImageSlot => (CREATED_SLOTS as readonly string[]).includes(s));
+  return l.length ? l : undefined;
+};
 
 export async function runSinaBrandJob(ctx: JobContext) {
   const a = Payload.parse(ctx.payload);
@@ -664,6 +690,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const settings = chainSettings();
   const ai = brandChainDeps.ai ? brandChainDeps.ai(ctx) : realAi(ctx, { userId: p.userId, projectId: p.id }, settings, a.capMicro, !!a.imagesOnly || !!a.finish);
   const kind = nameKindsFor(j), keys = routeKeys(a.count), notes: string[] = [];
+  // Méthode des publications allumée (et seulement alors) : chaque publication de la planche reçoit son objectif, écrit
+  // dans l'appel qui écrit déjà leurs textes (aucun appel de plus). Éteinte : la consigne ne change pas.
+  const consigneDirection = methodeActive() ? { objectifs: { personnes: peopleAllowed(p.id) } } : {};
   // Refonte : le nom ou le slogan gardés par le client sont repris mot pour mot, quoi que rende un spécialiste.
   const keptName = j.keep.includes("nom") ? (j.keptValues?.name || j.imported[0]?.name || "").trim() : "";
   const keptSlogan = j.keep.includes("slogan") ? (j.keptValues?.slogan || j.imported[0]?.tagline || "").trim() : "";
@@ -686,7 +715,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
 
   // La marque finie de l'identité choisie (second temps) : rien d'autre n'est refait.
   if (a.finish) {
-    const finir = async () => (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: a.slots, guidance: a.guidance });
+    const finir = async () => (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: imagesDesPlaces(a.slots), guidance: a.guidance });
     // Ce qui porte le logo qui manquait à la marque finie (posé depuis par la méthode des graphistes) : une reprise du
     // travail de SINA, à la charge du Studio.
     return a.studio && j.brandFinish?.studio ? aLaChargeDuStudio(finir) : finir();
@@ -708,12 +737,30 @@ export async function runSinaBrandJob(ctx: JobContext) {
       const reprise = !a.guidance ? proposalImagery(j, x) : undefined;
       // Une planche gardée de côté, finie par le Studio : ses images manquantes sont une reprise de son propre travail,
       // jamais comptée au client (LE-STUDIO-DE-A-A-Z, partie 13 : « une erreur de SINA est toujours corrigée sans rien compter »).
-      const faire = () => runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: list.find((o) => o.key === x.key) ?? x, round, slots: a.slots, clientLogo, gouts, ...(reprise ? { imagery: reprise } : {}) });
+      const places = imagesDesPlaces(a.slots);
+      // La planche de marque par OpenAI (nouveaux projets) : refaite entière, avec son logo fini et les valeurs déjà écrites.
+      const refairePlanche = !!a.slots?.includes("planche") && !!x.board.planche;
+      const faire = async (): Promise<Awaited<ReturnType<typeof runBoardImages>>> => {
+        const route0 = list.find((o) => o.key === x.key) ?? x;
+        if (refairePlanche && route0.board.planche) {
+          const T = await import("./planche-de-marque-tache");
+          const plancheAi = T.plancheDeps.ai ? T.plancheDeps.ai(ctx.job.id) : T.vraisAppelsDeLaPlanche({ userId: p.userId, projectId: p.id, jobId: ctx.job.id });
+          const personnes = peopleAllowed(p.id), metier = j.graphistes?.metier?.metier ?? "";
+          // Les valeurs du métier déjà écrites par la tâche qui a fait les planches : reprises telles quelles, jamais repayées.
+          const avant = j.identities?.chainJobId ? parseJson<Record<string, unknown>>(getJob(j.identities.chainJobId)?.checkpoint ?? "{}", {}) : {};
+          for (const [k, v] of Object.entries(avant)) if (k.startsWith("brand:planche:valeurs:") && !(k in ctx.checkpoint)) ctx.save(k, v);
+          const valeurs = metier ? await T.valeursDuClient(ctx, plancheAi, { nom: route0.name, metier, fiche: ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id }), personnes, kind }) : { ok: false as const, raison: L("le métier n'est pas encore écrit", "the trade is not written yet"), notes: [] };
+          const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route: route0, round, valeurs, logoAssetId: route0.board.planche.logo, personnes });
+          return { route: r.route, made: r.route.board.planche?.image ? 1 : 0, rejected: r.route.board.planche?.image ? 0 : 1, notes: [...valeurs.notes, ...r.notes], issues: r.issues, manque: manqueDeLaPlanche(r.route, !!clientLogo) };
+        }
+        return runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: route0, round, slots: places, clientLogo, gouts, ...(reprise ? { imagery: reprise } : {}) });
+      };
       const r = (a.studio || a.studioKeys?.includes(x.key as never)) && planchesIncompletes(j).some((y) => y.key === x.key) ? await aLaChargeDuStudio(faire) : await faire();
       list = list.map((o) => (o.key === x.key ? r.route : o));
       if (r.siteGarde) siteGardes.push(x.key);
       const manque = manqueDeLaPlanche(r.route, !!clientLogo);
-      if (manque.length) { said.push(phrasePlancheGardee(r.route, manque, r.issues)); held.set(x.key, manque); } else said.push(...r.issues);
+      if (manque.includes("planche")) { said.push(...r.issues); held.set(x.key, manque); }
+      else if (manque.length) { said.push(phrasePlancheGardee(r.route, manque, r.issues)); held.set(x.key, manque); } else said.push(...r.issues);
       notes.push(...r.notes);
     }
     const seul: string[] = [], refaite = (a.slots ?? []).includes("site") ? targets.map((x) => x.key).filter((k) => !siteGardes.includes(k)) : [];
@@ -961,7 +1008,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     // remises par le code si le modèle les change ; la police de titres est choisie au plus près de ses lettres.
     const logoG = logoDeLIdentite(n), logoPng = logoG ? (() => { try { const x = getAsset(logoG.assetId); return x ? assetData(x) : null; } catch { return null; } })() : null;
     const prompt = routePrompt(r, idea, [...kept, ...drafted], old) + (logoG?.palette ? `\n\n# Le logo de cette identité (joint)\n${ligneDesCouleursDuLogo(logoG.palette)}\n${consigneDeLaPoliceDuLogo(FONT_CHARACTER, [...kept, ...drafted].map((x) => x.fonts.heading))}` : "");
-    const draft = await ctx.step(`brand:direction:${round}:${key}`, () => ai.ask(`direction-${round}-${key}`, { kind: "direction", system: P.directionSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt, ...(logoPng ? { images: [{ data: logoPng, label: "logo de la marque" }] } : {}) }));
+    const draft = await ctx.step(`brand:direction:${round}:${key}`, () => ai.ask(`direction-${round}-${key}`, { kind: "direction", system: P.directionSystem(kind, consigneDirection), schema: DraftSchema, prepare: prepareDraft, prompt, ...(logoPng ? { images: [{ data: logoPng, label: "logo de la marque" }] } : {}) }));
     const avecLogo: Draft = logoG?.palette ? (() => { const rc = remettreLesCouleursDuLogo(draft.palette, logoG.palette); notes.push(...rc.changes.map((c) => `identité ${key} : ${c}`)); return { ...draft, palette: rc.palette }; })() : draft;
     const forced: Draft = namesOnly && old ? { ...draft, ground: old.ground, gradient: old.gradient, palette: old.palette, paletteFamily: old.paletteFamily, fonts: old.fonts, fontStyle: old.fontStyle, tone: old.tone } : avecLogo;
     drafted.push(vary(finishRoute({ ...forced, name: keptName || r.name, ...(keptSlogan ? { slogan: keptSlogan } : {}) }, key, { support: support(idea), nameCheck: taken.has(normText(r.name)) ? "non_verifie" : nameCheck, ownName: !!keptName }), [...kept, ...drafted]));
@@ -1009,7 +1056,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
       const [spare] = reserves.splice(at, 1), plan = planOf.get(x.key);
       const r: Pick = { ...spare, ground: x.ground, hue: plan?.hue ?? spare.hue, type: plan?.type ?? spare.type, reserve: false };
       ctx.progress(0.87, L(`Je refais la planche ${x.key} avec un autre nom`, `Redoing board ${x.key} with another name`));
-      const draft = await ctx.step(`brand:replace:${round}:${x.key}`, () => ai.ask(`replace-${round}-${x.key}`, { kind: "direction", system: P.directionSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt: routePrompt(r, ideaOf(r), current().filter((o) => o.key !== x.key)) }));
+      const draft = await ctx.step(`brand:replace:${round}:${x.key}`, () => ai.ask(`replace-${round}-${x.key}`, { kind: "direction", system: P.directionSystem(kind, consigneDirection), schema: DraftSchema, prepare: prepareDraft, prompt: routePrompt(r, ideaOf(r), current().filter((o) => o.key !== x.key)) }));
       redone.push(finishRoute({ ...draft, name: r.name, ...(keptSlogan ? { slogan: keptSlogan } : {}) }, x.key, { support: support(ideaOf(r)), nameCheck }));
       asked.set(x.key, [L(`Nom « ${x.name} » refusé : ${doubt}. Nouvelle route avec le nom de réserve « ${r.name} ».`, `Name "${x.name}" refused: ${doubt}. New route with the spare name "${r.name}".`)]);
     }
@@ -1018,7 +1065,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     for (const [n, x] of toFix.entries()) {
       ctx.progress(0.88 + (0.06 * n) / toFix.length, L(`Je reprends la planche ${x.key}`, `Reworking board ${x.key}`));
       const others = current().filter((o) => o.key !== x.key);
-      const draft = await ctx.step(`brand:fix:${round}:${x.key}`, () => ai.ask(`fix-${round}-${x.key}`, { kind: "fix", system: P.fixSystem(kind), schema: DraftSchema, prepare: prepareDraft, prompt: `${brief}\n\n# Reprise\n${P.FIX_HEAD}\n\n# Ta route\n${routeText(x)}\n\n# Ce qui ne change pas\nLe nom « ${x.name} » (déjà jugé et vérifié) et le fond de page « ${x.ground} » (fixé pour la série) restent tels quels.\n\n# Corrections exigées\n${fixesOf(x).map((f) => `- ${f}`).join("\n")}${series ? `\n\n# Sur l'ensemble de la série\n${series}` : ""}${others.length ? `\n\n# Les autres routes de la série (ne reprends ni leurs phrases, ni leur bouton, ni leurs images, ni leur police de titres)\n${others.map(seen).join("\n")}` : ""}${recentBlock ? `\n\n${recentBlock}` : ""}` }));
+      const draft = await ctx.step(`brand:fix:${round}:${x.key}`, () => ai.ask(`fix-${round}-${x.key}`, { kind: "fix", system: P.fixSystem(kind, consigneDirection), schema: DraftSchema, prepare: prepareDraft, prompt: `${brief}\n\n# Reprise\n${P.FIX_HEAD}\n\n# Ta route\n${routeText(x)}\n\n# Ce qui ne change pas\nLe nom « ${x.name} » (déjà jugé et vérifié) et le fond de page « ${x.ground} » (fixé pour la série) restent tels quels.\n\n# Corrections exigées\n${fixesOf(x).map((f) => `- ${f}`).join("\n")}${series ? `\n\n# Sur l'ensemble de la série\n${series}` : ""}${others.length ? `\n\n# Les autres routes de la série (ne reprends ni leurs phrases, ni leur bouton, ni leurs images, ni leur police de titres)\n${others.map(seen).join("\n")}` : ""}${recentBlock ? `\n\n${recentBlock}` : ""}` }));
       // Une reprise qui change le nom ou le fond de la série n'est pas une reprise : la première version reste, et c'est dit.
       if (normText(draft.name) !== normText(x.name) || (draft.ground !== x.ground && !namesOnly)) {
         notes.push(`reprise de ${x.key} écartée : elle changeait ${normText(draft.name) !== normText(x.name) ? "le nom" : "le fond de page"}`);
@@ -1058,7 +1105,28 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // lui ont été montrées) : une planche à laquelle il manque encore une image après les reprises est gardée de côté.
   const imagesFaites = a.images ?? brandImagesOn();
   const raisonsDe = new Map<string, string[]>();
-  if (imagesFaites) {
+  // LA PLANCHE DE MARQUE PAR OPENAI (nouveaux projets ; accord écrit du propriétaire du 24 novembre 2026) : avec les logos
+  // des graphistes, chaque identité reçoit son logo fini tel quel, puis UNE planche entière faite à partir de ce logo et de
+  // la disposition, relue, à la place de la grande scène et du haut du site. Les anciens projets gardent l'ancien code.
+  const parLaPlanche = imagesFaites && !!a.plancheDeMarque && !!a.logosGraphistes?.length;
+  if (parLaPlanche) {
+    const T = await import("./planche-de-marque-tache");
+    const plancheAi = T.plancheDeps.ai ? T.plancheDeps.ai(ctx.job.id) : T.vraisAppelsDeLaPlanche({ userId: p.userId, projectId: p.id, jobId: ctx.job.id });
+    const personnes = peopleAllowed(p.id), metier = j.graphistes?.metier?.metier ?? "";
+    const premier = list.find((y) => todo.includes(y.key));
+    // Les valeurs du métier : UN appel pour le client (ses planches partagent le nom et le métier), jamais repayé.
+    const valeurs = premier && metier ? await T.valeursDuClient(ctx, plancheAi, { nom: premier.name, metier, fiche: ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id }), personnes, kind }).catch((e) => { if (e instanceof CostCapReached) return { ok: false as const, raison: L("le plafond annoncé a été atteint", "the announced cap was reached"), notes: [] }; throw e; })
+      : { ok: false as const, raison: L("le métier n'est pas encore écrit", "the trade is not written yet"), notes: [] };
+    notes.push(...valeurs.notes);
+    for (const x of list.filter((y) => todo.includes(y.key))) {
+      const lg = a.logosGraphistes?.[keys.indexOf(x.key as RouteKey)];
+      if (!lg) continue;
+      const route = await poserLeLogoFini(x, lg.assetId);
+      const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route, round, valeurs, logoAssetId: lg.assetId, personnes });
+      list = list.map((o) => (o.key === x.key ? r.route : o));
+      raisonsDe.set(x.key, r.issues); notes.push(...r.notes);
+    }
+  } else if (imagesFaites) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       try {
         // Le logo vient de la méthode des graphistes (une seule façon de faire) : le logo fini de cette identité est posé
@@ -1079,13 +1147,16 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const incompletes = imagesFaites ? list.filter((y) => todo.includes(y.key)).map((y) => ({ key: y.key, manque: manqueDeLaPlanche(y, !!clientLogo) as string[] })).filter((y) => y.manque.length) : [];
   for (const x of list.filter((y) => todo.includes(y.key))) {
     const held = incompletes.find((y) => y.key === x.key);
-    if (held) { remaining.push(phrasePlancheGardee(x, held.manque, raisonsDe.get(x.key) ?? [])); notes.push(`planche ${x.key} gardée de côté : il lui manque ${held.manque.join(", ")}`); }
+    // Une planche de marque refusée deux fois : sa phrase est déjà dite (raisonsDe), SINA propose de la finir à sa charge.
+    if (held && held.manque.includes("planche")) { remaining.push(...(raisonsDe.get(x.key) ?? [])); notes.push(`planche ${x.key} gardée de côté : il lui manque ${held.manque.join(", ")}`); }
+    else if (held) { remaining.push(phrasePlancheGardee(x, held.manque, raisonsDe.get(x.key) ?? [])); notes.push(`planche ${x.key} gardée de côté : il lui manque ${held.manque.join(", ")}`); }
     else remaining.push(...(raisonsDe.get(x.key) ?? []));
   }
 
   // Le nom de domaine de chaque planche neuve (gratuit, sans IA) : le domaine exact, sinon une adresse libre qui garde
   // le nom entier (« pulpefrance.fr »). Un contrôle impossible n'affirme rien.
-  if (domainsOn()) for (const x of list.filter((y) => todo.includes(y.key))) {
+  // Une planche de marque a déjà vérifié son domaine avant le dessin : rien n'est revérifié ici.
+  if (domainsOn()) for (const x of list.filter((y) => todo.includes(y.key) && !y.board.planche)) {
     try {
       const d = await ctx.step(`brand:domains:${round}:${x.key}:${normText(x.name)}`, () => findDomains(x.name, x.board.descriptor));
       list = list.map((o) => (o.key === x.key ? { ...o, board: { ...o.board, domains: d } } : o));

@@ -19,6 +19,7 @@ import { journeyOf, planchesCachees, planchesIncompletes, setStep, updateJourney
 import { fontFamily, type Identity } from "../identities";
 import { devisDeLaRecherche, devisDesFinalisations } from "../logo-graphistes";
 import { LOGO_GRAPHISTES_JOB } from "../logo-graphistes-tache";
+import { devisDesPlanchesDeMarque } from "../planche-de-marque-tache";
 import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, namesPreviewQuote, routeCountOfProject, type ChainQuote } from "../brand-chain";
 import { borneDuStudio, probableDuStudio } from "../../ai/borne-du-studio";
 import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, type ImageSlot } from "../brand-images";
@@ -107,7 +108,7 @@ function relanceMarque(ctx: ToolContext): ToolResult {
     summary: L(`Création de ta marque relancée, là où elle s'était arrêtée (${marqueOuArretee(c.etapes)}) : ce qui était déjà fait est repris sans être repayé. Je reprends quand c'est prêt.`, "Your brand creation was restarted from where it stopped."),
     hint: "Dis-lui que ce qui était fait est repris sans être repayé. N'annonce jamais que sa marque est prête avant la fin de la tâche." };
 }
-const RELANCER_LIGNE = " relancer:true quand la création de sa marque s'est arrêtée en route (le Studio te le dit) : la même création repart là où elle s'était arrêtée, ce qui est déjà fait et payé est repris sans être repayé ; la carte montre le prix de ce qui reste.";
+const RELANCER_LIGNE = " relancer:true quand la création de sa marque s'est arrêtée en route (le Studio te le dit) : elle repart où elle s'était arrêtée, ce qui est fait et payé est repris sans être repayé ; la carte montre le prix du reste.";
 
 type ProposeArgs = { guidance?: string; redo?: Key[]; only?: "noms"; relancer?: boolean };
 /** Travail demandé à la chaîne : combien d'identités à faire, et si l'atelier précédent ressert. */
@@ -133,14 +134,29 @@ function chainWork(ctx: ToolContext, a: ProposeArgs | undefined) {
  * La somme des morceaux ne dépasse jamais le « au plus » montré.
  */
 export function accordGraphistes(count: number, fresh = true) {
-  const entier = chainQuote({ routes: count, fresh });
+  // Les textes de la chaîne seulement : les images des planches proposées sont remplacées par la planche de marque.
+  const entier = chainQuote({ routes: count, fresh, images: false });
   // Les planches, une fois le nom choisi : l'étude et les idées sont reprises de la tâche des noms, jamais repayées.
-  const planches = chainQuote({ routes: count, imposed: true, done: ["brand:study", "brand:strategy", "brand:strategy:2"] });
+  const textes = chainQuote({ routes: count, imposed: true, images: false, done: ["brand:study", "brand:strategy", "brand:strategy:2"] });
+  // LA PLANCHE DE MARQUE PAR OPENAI (accord écrit du propriétaire du 24 novembre 2026) : une par logo choisi.
+  const planches = devisDesPlanchesDeMarque(count);
   const recherche = devisDeLaRecherche(), finalisations = devisDesFinalisations(count);
-  const nomsMicro = Math.max(0, entier.maxMicro - planches.maxMicro);
-  return { count, nomsMicro, rechercheMicro: recherche.maxMicro, finalisationsMicro: finalisations.maxMicro, planchesMicro: planches.maxMicro,
-    maxMicro: entier.maxMicro + recherche.maxMicro + finalisations.maxMicro,
-    probableMicro: (entier.probableMicro ?? entier.maxMicro) + recherche.probableMicro + finalisations.probableMicro };
+  const nomsMicro = Math.max(0, entier.maxMicro - textes.maxMicro);
+  return { count, nomsMicro, rechercheMicro: recherche.maxMicro, finalisationsMicro: finalisations.maxMicro, planchesMicro: textes.maxMicro + planches.maxMicro,
+    // La borne du Studio des planches : une reprise par planche et une réécriture des valeurs du métier.
+    planchesStudioMicro: planches.studioMaxMicro,
+    maxMicro: entier.maxMicro + planches.maxMicro + recherche.maxMicro + finalisations.maxMicro + sceneDeLaFin().maxMicro,
+    probableMicro: (entier.probableMicro ?? entier.maxMicro) + planches.probableMicro + recherche.probableMicro + finalisations.probableMicro + sceneDeLaFin().probableMicro };
+}
+/**
+ * La marque finie d'un nouveau projet (planche de marque) : sa grande scène n'existe pas encore (la planche de marque a
+ * remplacé celle des planches proposées). Elle est comptée dans l'accord unique de l'étape, et couverte à la fin de la
+ * marque quand l'identité choisie a sa planche de marque (`finishEstimate`).
+ */
+export const FINISH_SLOTS_PLANCHE: ImageSlot[] = ["hero", ...FINISH_SLOTS];
+export function sceneDeLaFin(): { maxMicro: number; probableMicro: number } {
+  const avec = finishQuote(FINISH_SLOTS_PLANCHE), sans = finishQuote(FINISH_SLOTS);
+  return { maxMicro: Math.max(0, avec.maxMicro - sans.maxMicro), probableMicro: Math.max(0, (avec.probableMicro ?? 0) - (sans.probableMicro ?? 0)) };
 }
 /**
  * La méthode des graphistes, seule façon de faire un logo, s'applique à toute proposition entière (une nouvelle proposition
@@ -197,7 +213,7 @@ function proposeByChain(ctx: ToolContext, a: ProposeArgs) {
  */
 function proposeParLesGraphistes(ctx: ToolContext, w: ReturnType<typeof chainWork>, a: ProposeArgs) {
   const p = project(ctx), g = accordGraphistes(w.count, w.fresh);
-  updateJourney(ctx.conversationId, (x) => { x.accordGraphistes = { count: g.count, nomsMicro: g.nomsMicro, rechercheMicro: g.rechercheMicro, finalisationsMicro: g.finalisationsMicro, planchesMicro: g.planchesMicro, at: Date.now() }; x.brandFinish = { prepaidMicro: finishQuote().maxMicro }; x.graphistes = undefined; x.nomsVerifies = undefined; x.nomsDeLaMarque = undefined; setStep(x, 1, "doing"); });
+  updateJourney(ctx.conversationId, (x) => { x.accordGraphistes = { count: g.count, nomsMicro: g.nomsMicro, rechercheMicro: g.rechercheMicro, finalisationsMicro: g.finalisationsMicro, planchesMicro: g.planchesMicro, planchesStudioMicro: g.planchesStudioMicro, at: Date.now() }; x.brandFinish = { prepaidMicro: finishQuote().maxMicro }; x.graphistes = undefined; x.nomsVerifies = undefined; x.nomsDeLaMarque = undefined; setStep(x, 1, "doing"); });
   const garde = w.j.keep.includes("nom") ? (w.j.keptValues?.name || w.j.imported[0]?.name || p.brand?.name || "").trim() : "";
   if (garde) {
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: LOGO_GRAPHISTES_JOB, label: L("Recherche de ton logo (SINA)", "Your logo research (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, phase: "recherche", nom: garde, capMicro: g.rechercheMicro, studioCapMicro: g.rechercheMicro, finalisationsAccordees: g.finalisationsMicro }, maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:logo:recherche:garde` });
@@ -322,16 +338,36 @@ export function brandFromIdentity(p: ReturnType<typeof loadProject>, x: Identity
   };
 }
 
+/**
+ * La revérification gratuite du domaine d'une planche de marque, au moment du choix (RDAP, sans IA). Rend la phrase à dire
+ * au client (« libre aujourd'hui, seule la réservation le garantit » ou ce qui a changé), ou null sans planche de marque.
+ */
+async function revoirLeDomaine(cid: string, x: Identity | undefined): Promise<string | null> {
+  const pl = x?.board?.planche;
+  if (!x || !pl?.domaine) return null;
+  const { domainStatus } = await import("../brand-domains");
+  const st = await domainStatus(pl.domaine).catch(() => "inconnu" as const);
+  const statut = st === "libre" ? "disponible" as const : st === "pris" ? "adresse_a_choisir" as const : "a_verifier" as const;
+  updateJourney(cid, (y) => { const id = y.identities; if (!id) return; id.list = id.list.map((o) => (o.key === x.key && o.board?.planche ? { ...o, board: { ...o.board, planche: { ...o.board.planche, revu: { statut, at: Date.now() } } } } : o)) as typeof id.list; });
+  return statut === "disponible" ? L(`${pl.domaine} est toujours libre aujourd'hui : seule la réservation le garantit.`, `${pl.domaine} is still free today: only booking guarantees it.`)
+    : statut === "adresse_a_choisir" ? L(`${pl.domaine} vient d'être pris : il faudra choisir une autre adresse.`, `${pl.domaine} has just been taken: another address is needed.`)
+      : L(`Je n'ai pas pu revérifier ${pl.domaine} aujourd'hui.`, `I could not recheck ${pl.domaine} today.`);
+}
+
 const choiceKey = z.enum(KEYS);
 const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?: string; slogan?: string }> = {
   name: "identity.choose", module: "marque", kind: "write", needsProject: true,
   description: "Étape 1 : enregistre l'identité choisie PAR LE CLIENT (jamais à sa place) comme marque du projet et valide l'étape 1. key = identité de base (A, B, C ou D, parmi celles affichées). mix = éléments pris à une autre identité s'il mélange (le nom de A avec les couleurs de C : key « A », mix {palette: « C »}) ; parties : name, slogan, palette, fonts, tone, logo. name / slogan = sa retouche, reprise mot pour mot. Gratuit.",
   args: z.object({ key: choiceKey, mix: z.object({ name: choiceKey, slogan: choiceKey, palette: choiceKey, fonts: choiceKey, tone: choiceKey, logo: choiceKey }).partial().strict().optional(), name: z.string().min(1).max(60).optional(), slogan: z.string().min(1).max(120).optional() }).strict(),
-  run: (ctx, a) => {
+  run: async (ctx, a) => {
     const p = project(ctx);
     const j = journeyOf(ctx.conversationId);
     const list = j.identities?.list;
     if (!list?.length) return { ok: false, summary: L("Aucune identité proposée pour l'instant.", "No identity proposed yet."), hint: "Lance d'abord identity.propose." };
+    // Planches de marque (nouveaux projets) : s'il reste moins de deux planches montrées, le choix attend (accord écrit du
+    // propriétaire du 24 novembre 2026 : refusée deux fois, une planche n'est pas montrée et SINA propose de la finir à sa charge).
+    const montrees = list.filter((x) => !planchesCachees(j).has(x.key));
+    if (list.some((x) => x.board?.planche) && montrees.length < 2) return { ok: false, summary: L("Il reste moins de deux planches montrées : le choix attend. Propose-lui de finir les autres à ta charge (identity.images, images « planche »).", "Fewer than two boards are shown: the choice waits."), hint: "identity.images avec keys = les planches non montrées et images = [« planche »] : à ta charge." };
     if (j.keep.includes("nom") && a.name) return { ok: false, summary: L("Le client garde son nom tel quel : il ne peut pas être changé ici.", "The name is kept as is.") };
     if (j.keep.includes("slogan") && a.slogan) return { ok: false, summary: L("Le client garde son slogan tel quel : il ne peut pas être changé ici.", "The tagline is kept as is.") };
     // Une planche gardée de côté (une image y manque) n'est pas montrée : elle ne se choisit pas (règle du propriétaire :
@@ -341,6 +377,8 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     if ([a.key, ...Object.values(a.mix ?? {})].some((k) => k && cachees.has(k))) return { ok: false, summary: L("Cette planche n'est pas encore montrée au client : il lui manque une image. Propose-lui de la finir à la charge du Studio (son logo : logo.pistes avec planche = cette planche ; la grande scène ou le haut du site : identity.images), ou laisse-le choisir parmi celles qui sont montrées.", "This board is not shown yet: an image is missing."), hint: "Ce qui manque est écrit dans ton contexte : le logo par logo.pistes (planche = cette planche), le reste par identity.images." };
     if (!keysShown.includes(a.key) || Object.values(a.mix ?? {}).some((k) => k && !keysShown.includes(k))) return { ok: false, summary: L(`Cette identité n'est pas dans la proposition affichée (${keysShown.join(", ")}).`, "This identity is not in the displayed proposal.") };
     const chosen = mixIdentity(list, a.key, a.mix, { name: a.name, slogan: a.slogan });
+    // La planche de marque montre un domaine vérifié avant son dessin : il est revérifié gratuitement au moment du choix.
+    const revu = await revoirLeDomaine(ctx.conversationId, list.find((x) => x.key === a.key));
     const others = list.filter((x) => x.key !== a.key);
     const logo = j.keep.includes("logo") ? one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='logo' AND origin='upload' AND deleted_at IS NULL ORDER BY created_at DESC", p.id)?.id : undefined;
     const before = p.brand ? { name: p.brand.name, tagline: p.brand.tagline } : null;
@@ -374,7 +412,7 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     return {
       ok: verified,
       summary: verified
-        ? L(`Identité ${a.key}${mixed.length ? ` (avec ${mixed.join(", ")})` : ""} enregistrée comme marque du projet : « ${chosen.name} » — « ${chosen.slogan} ». ${finish?.jobs ? "Je finis maintenant ta marque (ton logo, l'objet qui le porte, les signes, trois publications, ta charte) : quelques minutes, déjà compris dans ton accord." : "Reste à finir ta marque : appelle brand.finish."}`, "Identity saved.")
+        ? L(`Identité ${a.key}${mixed.length ? ` (avec ${mixed.join(", ")})` : ""} enregistrée comme marque du projet : « ${chosen.name} » — « ${chosen.slogan} ». ${finish?.jobs ? "Je finis maintenant ta marque (ton logo, l'objet qui le porte, les signes, trois publications, ta charte) : quelques minutes, déjà compris dans ton accord." : "Reste à finir ta marque : appelle brand.finish."}${revu ? ` ${revu}` : ""}`, "Identity saved.")
         : L("La marque n'a pas pu être relue après l'enregistrement.", "Brand could not be verified."),
       ...(finish?.jobs ? { jobs: finish.jobs } : verified ? { hint: "Appelle maintenant brand.finish (sans argument) : le Studio montre son prix au client s'il n'est pas déjà couvert par son accord." } : {}),
       data: { identite: identityView(chosen), etapeSuivante: logoKept ? 3 : 2 },
@@ -387,7 +425,7 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
  * Les images d'une planche que SINA peut refaire : la grande scène et le haut du site. Le logo ne se redessine jamais ici
  * (méthode des graphistes, seule façon de faire) : « un autre logo » passe par logo.autre ou logo.pistes.
  */
-const REDO_IMAGES = PROPOSAL_SLOTS as unknown as [string, ...string[]];
+const REDO_IMAGES = [...PROPOSAL_SLOTS, "planche"] as unknown as [string, ...string[]];
 type ImagesArgs = { keys: Key[]; images: string[]; guidance?: string };
 /**
  * Refaire SEULEMENT certaines images d'une ou plusieurs planches (retour du propriétaire du 14 novembre 2026, sur
@@ -453,7 +491,13 @@ const imagesTool: AgentTool<ImagesArgs> = {
  * demande lui est comptée. `aFinir` : les planches finies à la charge du Studio quand la carte en mêle d'autres.
  */
 export function devisDesImages(j: Journey, keys: readonly string[], images: readonly string[]): { maxMicro: number; probableMicro?: number; studioMaxMicro: number; studioProbableMicro: number; studio: boolean; client: string[]; aFinir: string[] } {
-  const quote = (n: number) => boardImagesQuote(n, undefined, images as never, []);
+  // La planche de marque (nouveaux projets) se refait entière, avec son propre devis (les valeurs du métier sont reprises).
+  const quote = (n: number): ChainQuote => {
+    const q = boardImagesQuote(n, undefined, images.filter((s) => s !== "planche") as never, []);
+    if (!images.includes("planche") || !n) return q;
+    const d = devisDesPlanchesDeMarque(n);
+    return { maxMicro: q.maxMicro + d.maxMicro, probableMicro: (q.probableMicro ?? 0) + d.probableMicro, repriseMicro: (q.repriseMicro ?? 0) + d.repriseMicro, repriseProbableMicro: (q.repriseProbableMicro ?? 0) + d.repriseProbableMicro };
+  };
   if (finirPlanchesGardees(j, keys, images)) { const q = quote(keys.length); return { maxMicro: q.maxMicro, ...(q.probableMicro ? { probableMicro: q.probableMicro } : {}), ...deuxPlafonds(q, true), studio: true, client: [], aFinir: [...keys] }; }
   const aFinir = keys.filter((k) => finirPlanchesGardees(j, [k], images)), client = keys.filter((k) => !aFinir.includes(k));
   const qc = quote(client.length), pc = deuxPlafonds(qc, false);
@@ -483,7 +527,9 @@ type FinishArgs = { relancer?: boolean; redo?: string[]; guidance?: string };
 export function finishEstimate(j: Journey, a: FinishArgs = {}): { maxMicro: number; probableMicro?: number; slots: ImageSlot[] } {
   const slots = finishSlots(j, a.redo as ImageSlot[] | undefined);
   if (!slots.length) return { maxMicro: 0, slots };
-  const q = finishQuote(slots, undefined), prepaid = a.redo?.length ? 0 : j.brandFinish?.prepaidMicro ?? 0;
+  // Planche de marque : la grande scène de la fin est déjà comptée dans l'accord de l'étape (`sceneDeLaFin`).
+  const scene = !a.redo?.length && slots.includes("hero") && !!chosenRoute(j)?.board.planche ? sceneDeLaFin().maxMicro : 0;
+  const q = finishQuote(slots, undefined), prepaid = a.redo?.length ? 0 : (j.brandFinish?.prepaidMicro ?? 0) + scene;
   if (prepaid >= q.maxMicro) return { maxMicro: 0, slots };
   return { maxMicro: q.maxMicro - prepaid, ...(q.probableMicro ? { probableMicro: Math.max(1, q.probableMicro - prepaid) } : {}), slots };
 }

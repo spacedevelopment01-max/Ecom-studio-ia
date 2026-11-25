@@ -28,7 +28,7 @@ import { routeDesImagesDeSina } from "../ai/media-routing";
 import { peopleAllowed } from "../people-policy";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { noterRelecture, travailDeLImage } from "./juges";
-import { REPRISES_MAX } from "./reprises";
+import { REPRISES_DES_PUBLICATIONS_METHODE, REPRISES_MAX } from "./reprises";
 import { aLaChargeDuStudio } from "../billing";
 import { pngSansPerte } from "../media/signature-ia";
 import fs from "node:fs";
@@ -52,6 +52,10 @@ import { RouteSchema, type Route } from "./brand-routes";
 import { cleanArtwork, onDarkVersion } from "../logo-v2/artwork";
 import { detourerLeLogo } from "../media/detourage-logo";
 import { FONT_CHARACTER, fontFamily, normText } from "./identities";
+import { createHash } from "node:crypto";
+import { recuDePublication } from "../ai/media-providers";
+import { bandeEnFichier } from "../media/planche-publications";
+import { FORMATS, FORMAT_DES_PLACES, PHOTOS_MAX, TEXTE_MAX_OCTETS, controleDesObjectifs, estUnePlaceDePublication, metierDe, methodeActive, phraseIdentite, recadrer, textePublication } from "./publications-methode";
 
 export const IMAGE_SLOTS = ["logo", "hero", "object", "signs", "site", "post0", "post1", "post2"] as const;
 /**
@@ -294,18 +298,25 @@ export const ROLE_FOR_REVIEW: Record<ImageSlot, string> = {
   post0: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post1: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)", post2: "une publication (le logo de la marque, quand il est fourni, y figure en petit : ce n'est pas un texte en trop)",
 };
 
+/**
+ * Le relecteur d'une publication de la méthode (24 novembre 2026) : il juge et ne réécrit rien ; la demande envoyée ne
+ * change jamais. Note 8 au moins, accroche exacte (comparée aussi par le code), logo présent et non redessiné, produit
+ * fidèle ; la règle des personnes est celle de sa consigne.
+ */
+export const ROLE_PUBLICATION_METHODE = "une publication de réseau social, au niveau des meilleures campagnes : elle porte l'accroche écrite exactement, et le logo de la marque (l'image « logo » jointe pour comparer) y figure, entier, tel quel : un logo absent, redessiné, déformé ou dont une lettre change est un défaut (defect « autre ») ; le logo n'est pas un texte en trop. Quand la photo « produit » est jointe, le produit montré est le sien, fidèle (sinon defect « autre »). Aucune autre accroche, aucun slogan ni texte secondaire inventé, aucune caractéristique, garantie ou performance inventée";
+
 type Made = { id: string; w: number; h: number };
 /** Ce que le client voit à la place d'une image non gardée (dit tel quel, jamais un dessin qui n'existe pas). */
 const instead = (x: Route, slot: ImageSlot): string => slot === "signs" ? "les signes restent décrits en mots" : slot === "logo" ? (x.board.images?.logo ? "je garde celui d'avant" : "je le refais avant de te montrer ta marque") : slot === "site" ? "je ne le montre pas" : "je ne la montre pas";
 
 /** Ce qu'on appelle chaque image d'une planche, quand elle manque. */
-const MANQUE_LABEL: Record<string, { fr: string; en: string }> = { logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande scène", en: "the main scene" }, site: { fr: "le haut du site", en: "the site header" } };
+const MANQUE_LABEL: Record<string, { fr: string; en: string }> = { logo: { fr: "le logo", en: "the logo" }, hero: { fr: "la grande scène", en: "the main scene" }, site: { fr: "le haut du site", en: "the site header" }, planche: { fr: "la planche de marque", en: "the brand board" } };
 /**
  * Les images sans lesquelles une planche n'est jamais montrée (règle du propriétaire : « Jamais une planche incomplète :
  * une image refusée est refaite avant d'être montrée ») : le logo (sauf quand le client garde le sien), la grande scène,
  * le haut du site. Rien ne manque : [].
  */
-export function manqueDeLaPlanche(x: { board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown } } }, logoDuClient = false): ImageSlot[] {
+export function manqueDeLaPlanche(x: { board?: { images?: { logo?: unknown; hero?: unknown; site?: unknown }; planche?: { image?: unknown } } }, logoDuClient = false): (ImageSlot | "planche")[] {
   return manqueLu(x, logoDuClient);
 }
 /** « le logo et la grande scène » (en français ou en anglais). */
@@ -343,7 +354,7 @@ export async function clientLogoOf(projectId: string): Promise<ClientLogo | null
   try { const data = assetData(a), meta = await sharp(data).metadata(); return { id: a.id, w: meta.width ?? 1024, h: meta.height ?? 1024, data }; } catch { return null; }
 }
 export type BoardImagesResult = { route: Route; made: number; rejected: number; notes: string[]; issues: string[]; /** Haut du site refait et refusé : celui d'avant est gardé (il porte l'ancien logo). */ siteGarde?: boolean;
-  /** Images de la planche qui manquent encore après les reprises (logo, grande scène, haut du site) : la planche n'est pas montrée. */ manque?: ImageSlot[];
+  /** Images de la planche qui manquent encore après les reprises (logo, grande scène, haut du site) : la planche n'est pas montrée. */ manque?: (ImageSlot | "planche")[];
 };
 
 /** Un logo à fond transparent posé sur du blanc, pour qu'un relecteur le voie comme le client le verra. */
@@ -449,6 +460,13 @@ export async function runBoardImages(o: {
   const nets = new Map<string, Buffer>();
   // Le vrai produit d'une boutique (ses photos envoyées), joint à la grande scène et au haut du site, et au relecteur.
   const produit = o.kind === "produits" ? await planchePhotosDuProduit(o.who.projectId).catch(() => null) : null;
+  // LA MÉTHODE DES PUBLICATIONS (24 novembre 2026), seulement quand elle est allumée : post0, post1 et post2 partent par
+  // le module, chacun à son format (1:1, 4:5, 9:16), avec la demande assemblée par le code. Éteinte : rien ne change ici.
+  const methode = methodeActive();
+  type Publication = { texte: string; taille: string; logo: { assetId: string | null; data: Buffer }; photos: { assetId: string | null; data: Buffer }[] };
+  const publications = new Map<ImageSlot, Publication>();
+  const estMethode = (s: ImageSlot) => publications.has(s);
+  const aspectDe = (s: ImageSlot): string => (estMethode(s) && estUnePlaceDePublication(s) ? FORMAT_DES_PLACES[s] : SLOT_ASPECT[s]);
   // Ce que le relecteur a dit de chaque image gardée (sa note, ses mots) : c'est ce que SINA en dira, rien d'autre.
   const verdicts = new Map<ImageSlot, { score?: number; words: string }>();
   // Ce qui a servi à créer chaque image : repris tel quel pour la refaire quand la relecture la refuse.
@@ -468,6 +486,8 @@ export async function runBoardImages(o: {
     if (!retry) calls.set(slot, { refs, prompt });
     try {
       made.set(slot, await ctx.step(`brand:image:${round}:${key}:${slot}${pass}${retry}`, async (): Promise<Made> => {
+        const pub = publications.get(slot);
+        if (pub) return publicationFaite(slot, pub, `image-${round}-${key}-${slot}${pass}${retry}`);
         const data = await ai.draw(`image-${round}-${key}-${slot}${pass}${retry}`, { prompt, aspect: SLOT_ASPECT[slot], logo: refs.logo ? await onWhite(refs.logo) : null, scene: refs.scene ?? null, ...(refs.product ? { product: refs.product } : {}) });
         // Gardée telle quelle si elle est déjà en PNG : sa signature « fait par l'IA » d'OpenAI reste (règlement européen).
         const png = await pngSansPerte(data), meta = await sharp(png).metadata();
@@ -482,10 +502,37 @@ export async function runBoardImages(o: {
     }
   };
 
+  /**
+   * Une publication de la méthode : l'appel direct (la demande exacte), l'image BRUTE rangée à part, le recadrage central
+   * exact au format final (une image plus petite est refusée, jamais agrandie), puis l'image finale, liée à la brute, avec
+   * la trace qui permet de la refaire. Chaque fichier reste téléchargeable seul, en haute définition.
+   */
+  const publicationFaite = async (slot: ImageSlot, pub: Publication, id: string): Promise<Made> => {
+    if (!ai.publier || !estUnePlaceDePublication(slot)) throw new Error(L("la méthode des publications n'est pas disponible ici", "the post method is not available here"));
+    const format = FORMAT_DES_PLACES[slot], f = FORMATS[format];
+    const brute = await ai.publier(id, pub);
+    const recu = recuDePublication(brute), metaBrute = await sharp(brute).metadata();
+    const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
+    const trace = {
+      adresse: recu?.adresse ?? "POST https://api.openai.com/v1/images/edits (multipart)",
+      champs: recu?.champs ?? { prompt: pub.texte, size: pub.taille },
+      jointes: [{ role: "logo", assetId: pub.logo.assetId, sha256: sha(pub.logo.data) }, ...pub.photos.map((p) => ({ role: "produit", assetId: p.assetId, sha256: sha(p.data) }))],
+      formatFinal: `${f.w}x${f.h}`, tailleRecue: `${metaBrute.width ?? 0}x${metaBrute.height ?? 0}`,
+      requestId: recu?.requestId ?? null, usage: recu?.usage ?? null, renvoye: recu?.renvoye ?? null, coutMicro: recu?.coutMicro ?? null, dureeMs: recu?.dureeMs ?? null,
+    };
+    const brutePng = await pngSansPerte(brute);
+    const a0 = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: brutePng, name: `planche-${key}-${slot}-brute.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "review", meta: { synaBoard: { key, slot: `${slot}-brute`, round, name: x.name }, publicationMethode: { ...trace, formatFinal: null, brute: true } } });
+    const fin = await recadrer(brute, format);
+    const a = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: fin, name: `planche-${key}-${slot}.png`, mime: "image/png", role: "brand-board", origin: "generated", sourceAssetId: a0.id, status: "review", meta: { synaBoard: { key, slot, round, name: x.name }, publicationMethode: { ...trace, brute: a0.id } } });
+    return { id: a.id, w: f.w, h: f.h };
+  };
+
   // Dans la bibliothèque du client : une image attend sa relecture (« review »), puis elle est gardée (« ready ») ou
   // refusée (« rejected », avec la raison) : une image ratée n'y est jamais rangée comme une bonne image.
   const mark = (id: string, status: "ready" | "rejected", why = "", v?: { score?: number; words: string }) => {
     run("UPDATE assets SET status=?, meta=json_set(meta,'$.synaBoard.review',json(?)) WHERE id=? AND project_id=?", status, JSON.stringify({ status, why: why.slice(0, 240), ...(v?.score != null ? { score: v.score } : {}), ...(v?.words ? { words: v.words.slice(0, 400) } : {}) }), id, o.who.projectId);
+    // L'image brute d'une publication de la méthode suit le sort de sa finale (jamais rangée comme bonne si elle est refusée).
+    run("UPDATE assets SET status=? WHERE project_id=? AND id=(SELECT json_extract(meta,'$.publicationMethode.brute') FROM assets WHERE id=? AND project_id=?)", status, o.who.projectId, id, o.who.projectId);
     // Le carnet des juges : chaque verdict du relecteur, pour que le propriétaire dise oui ou non à son tour (mesure d'accord).
     const slot = [...made.entries()].find(([, m]) => m.id === id)?.[0];
     if (slot && why !== "non relue") { try { noterRelecture({ assetId: id, userId: o.who.userId, projectId: o.who.projectId, travail: travailDeLImage(slot), garde: status === "ready", raison: why }); } catch { /* le carnet ne bloque jamais une planche */ } }
@@ -514,7 +561,7 @@ export async function runBoardImages(o: {
         notes.push(`${SLOT_LABEL[s].fr} de ${key} refusé(e) sans relecture payée : ${Math.round(t.part * 1000) / 10} % de l'image transparente (contrôle sans IA)`);
         continue;
       }
-      const vide = png ? await photoVideOuMalFormee(png, SLOT_ASPECT[s]) : null;
+      const vide = png ? await photoVideOuMalFormee(png, aspectDe(s)) : null;
       if (vide) {
         mark(made.get(s)!.id, "rejected", vide); made.delete(s); dropped.set(s, vide); saidWhy.set(s, SAID.abime);
         notes.push(`${SLOT_LABEL[s].fr} de ${key} refusé(e) sans relecture payée : ${vide} (contrôle sans IA)`);
@@ -540,7 +587,7 @@ export async function runBoardImages(o: {
     const reference = !slots.includes("logo") && logo && slots.some((s) => s !== "hero") ? await onWhite(logo) : null;
     if (reference) seen.push({ data: reference, label: "logo" });
     // Le vrai produit du client, joint en dernier pour la grande scène et le haut du site : le relecteur compare.
-    const compare = !!produit && slots.some((s) => s === "hero" || s === "site");
+    const compare = !!produit && slots.some((s) => s === "hero" || s === "site" || (estMethode(s) && !!publications.get(s)?.photos.length));
     if (compare) seen.push({ data: produit!, label: "produit" });
     if (capped) unreviewed();
     else try {
@@ -551,7 +598,7 @@ export async function runBoardImages(o: {
           // Ce que le client refuse (essai réel du 20 novembre 2026 : une goutte d'eau refusée par le client, passée au contrôle).
           // Le logo ne tient plus compte de ce que le client en a dit (décision du 23 novembre 2026 au soir : « on ne demande
           // plus au client ce qu'il veut ou non dans son logo ») : le relecteur du logo juge la qualité seulement.
-          ...(o.gouts?.trim() && !slots.includes("logo") ? [`Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut (defect « autre »).`] : []), ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
+          ...(o.gouts?.trim() && !slots.includes("logo") ? [`Ce que le client a dit de l'image qu'il veut, avec ses mots : « ${o.gouts.trim()} ». Une image, et surtout le logo, qui montre ce qu'il refuse est un défaut (defect « autre »).`] : []), ...slots.map((s, i) => `Image ${i + 1} — slot "${s}" : ${(s === "object" || s === "signs") && !logo ? "l'objet ou les signes de la marque SANS logo fourni : le nom seul en lettres simples ; un logo, une patte, une silhouette ou un symbole inventés sont un défaut (defect « autre »)" : estMethode(s) ? ROLE_PUBLICATION_METHODE : ROLE_FOR_REVIEW[s]}. Textes attendus : ${texts[s].length ? texts[s].map((t) => `« ${t} »`).join(" ; ") : "aucun"}.${s === "site" ? ` Seules entrées permises sur des tuiles, des pastilles ou un menu : ${x.board.site.menu.length ? x.board.site.menu.map((t) => `« ${t} »`).join(", ") : "aucune"} ; une autre prestation, catégorie ou offre affichée (que le client ne propose pas) est un défaut (defect « texte »).` : ""}`)].join("\n"),
         images: seen,
       }));
       // Le Studio compare la lecture du relecteur aux textes attendus. Quand son jugement et sa propre lecture se
@@ -615,6 +662,12 @@ export async function runBoardImages(o: {
   const whyHistory = new Map<ImageSlot, string[]>();
   const fix = (slot: ImageSlot, why: string, attempt: number) => { const h = [...(whyHistory.get(slot) ?? []), why]; whyHistory.set(slot, h); return fixLine(h, attempt); };
 
+  /** Le logo officiel validé, tel qu'il est rangé (méthode des publications) : celui du client, sinon celui de la planche. */
+  const logoOfficiel = async (): Promise<{ assetId: string; data: Buffer } | null> => {
+    if (o.clientLogo) return { assetId: o.clientLogo.id, data: o.clientLogo.data };
+    for (const im of [x.board.images?.mark, x.board.images?.logo]) { const a = im ? getAsset(im.id) : undefined; if (a) return { assetId: a.id, data: assetData(a) }; }
+    return null;
+  };
   // Le logo à poser sur ce qui le porte : celui du client, sinon celui de la planche (fini par la méthode des graphistes).
   const logo = currentLogo();
   // 2. La grande scène, puis ce qui porte le logo, puis les publications.
@@ -660,7 +713,28 @@ export async function runBoardImages(o: {
   }
   if (wanted.has("object") && !skipCarriers) await make("object", { logo }, imagePrompt("object", x, imagery, { logo: !!logo, personnes }));
   if (wanted.has("signs") && !skipCarriers && imagery.signs.trim()) await make("signs", { logo }, imagePrompt("signs", x, imagery, { logo: !!logo, personnes }));
-  for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, { logo }, imagePrompt(slot, x, imagery, { logo: !!logo, personnes }));
+  if (!methode) {
+    for (const slot of ["post0", "post1", "post2"] as const) if (wanted.has(slot)) await make(slot, { logo }, imagePrompt(slot, x, imagery, { logo: !!logo, personnes }));
+  } else {
+    // La méthode des publications : la demande assemblée par le code, sans modèle de texte ; sans logo validé, rien ne part.
+    const posts = (["post0", "post1", "post2"] as const).filter((s) => wanted.has(s));
+    const officiel = await logoOfficiel();
+    const metier = metierDe(x.board.descriptor);
+    const ctrl = controleDesObjectifs(x.board.posts.map((p) => p.objectif), personnes);
+    const photos = o.kind === "produits" ? photosDuProduitIds(o.who.projectId, PHOTOS_MAX).map((id) => { const a = getAsset(id); return a ? { assetId: id, data: assetData(a) } : null; }).filter((p): p is { assetId: string; data: Buffer } => !!p) : [];
+    const pasFaite = (slot: ImageSlot, fr: string, en: string) => { notes.push(`${SLOT_LABEL[slot].fr} de ${key} non créée : ${fr}`); issues.push(tag(L(`je n'ai pas créé ${SLOT_LABEL[slot].fr} : ${fr}.`, `I did not create ${SLOT_LABEL[slot].en}: ${en}.`))); };
+    for (const slot of posts) {
+      const i = Number(slot.slice(4));
+      if (!officiel) { pasFaite(slot, "aucun logo validé, rien n'est envoyé", "no approved logo, nothing is sent"); continue; }
+      if (!metier) { pasFaite(slot, "la ligne de métier de ta marque manque", "your brand's trade line is missing"); continue; }
+      const objectif = ctrl.objectifs[i];
+      if (!objectif) { pasFaite(slot, ctrl.raisons[i] ?? "objectif manquant", "its goal did not pass my check"); continue; }
+      const texte = textePublication({ marque: x.name, metier, format: FORMAT_DES_PLACES[slot], accroche: x.board.posts[i].text, objectif, identite: phraseIdentite(x) });
+      if (Buffer.byteLength(texte, "utf8") > TEXTE_MAX_OCTETS) { pasFaite(slot, "sa demande est trop longue", "its request is too long"); continue; }
+      publications.set(slot, { texte, taille: FORMATS[FORMAT_DES_PLACES[slot]].demande, logo: officiel, photos });
+      await make(slot, { logo: officiel.data }, texte);
+    }
+  }
 
   const aRelire = IMAGE_SLOTS.filter((s) => !relusTot.has(s) && made.has(s));
   await review(aRelire, aRelire.length === 1 && relusTot.size > 1 ? `:${aRelire[0]}` : "");
@@ -669,7 +743,7 @@ export async function runBoardImages(o: {
   // données au modèle ; à la seconde, la consigne est simplifiée. Les reprises restent dans le plafond déjà accepté par
   // le client. Le logo, lui, est déjà relu et gardé : ce qui le porte n'est jamais refait à cause de lui.
   for (let attempt = 1; attempt <= MAX_IMAGE_RETRIES && dropped.size && !capped && !blind; attempt++) {
-    const again = IMAGE_SLOTS.filter((s) => !relusTot.has(s) && dropped.has(s) && calls.has(s));
+    const again = IMAGE_SLOTS.filter((s) => !relusTot.has(s) && !estMethode(s) && dropped.has(s) && calls.has(s));
     if (!again.length) break;
     ctx.progress(0.97, L(`Je reprends ${again.length > 1 ? "des images" : "une image"} de la planche ${key}`, `Redoing images of board ${key}`));
     const redone: ImageSlot[] = [];
@@ -680,6 +754,32 @@ export async function runBoardImages(o: {
       if (made.has(s)) redone.push(s); else dropped.set(s, why);
     }
     await review(redone, `:r${attempt}`);
+  }
+  // Une publication de la méthode refusée est refaite UNE seule fois (exception à REPRISES_MAX, reprises.ts), à la charge du
+  // Studio, avec la MÊME demande exacte, sans raison ajoutée ; refusée deux fois, elle n'est pas montrée, et c'est dit.
+  for (let n = 1; n <= REPRISES_DES_PUBLICATIONS_METHODE && !capped && !blind; n++) {
+    const aRefaire = [...publications.keys()].filter((s) => dropped.has(s) && calls.has(s));
+    if (!aRefaire.length) break;
+    const refaites: ImageSlot[] = [];
+    for (const s of aRefaire) {
+      const c = calls.get(s)!, why = dropped.get(s)!; dropped.delete(s);
+      await make(s, c.refs, c.prompt, `:r${n}`);
+      if (made.has(s)) refaites.push(s); else dropped.set(s, why);
+    }
+    await review(refaites, `:r${n}:methode`);
+  }
+  // Les trois publications de la méthode gardées : la bande posée par le code, aussi en fichier à part (gratuit, sans IA).
+  let bande: Made | undefined;
+  const troisGardees = (["post0", "post1", "post2"] as const).every((s) => estMethode(s) && made.has(s));
+  if (troisGardees) {
+    try {
+      bande = await ctx.step(`brand:bande:${round}:${key}${pass}:${(["post0", "post1", "post2"] as const).map((s) => made.get(s)!.id).join("+")}`, async () => {
+        const png = await bandeEnFichier((["post0", "post1", "post2"] as const).map((s) => ({ data: bufferOf(s)! })));
+        const meta = await sharp(png).metadata();
+        const a = await saveAsset({ projectId: o.who.projectId, userId: o.who.userId, data: png, name: `planche-${key}-publications.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { synaBoard: { key, slot: "bande", round, name: x.name } } });
+        return { id: a.id, w: meta.width ?? 1, h: meta.height ?? 1 };
+      });
+    } catch (e) { notes.push(`bande des publications de ${key} non posée : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
   }
   // Ce qui reste refusé après les reprises est dit au client, sans image fausse à la place.
   for (const [slot, raw] of dropped) { const why = slot === "site" ? (saidWhy.get(slot) ?? raw).replace(/^elle /, "il ") : saidWhy.get(slot) ?? raw; rejected++; issues.push(tag(L(`je n'ai pas gardé ${SLOT_LABEL[slot].fr} (${why.replace(/\.+$/, "")}) ; ${instead(x, slot)}.`, `I did not keep ${SLOT_LABEL[slot].en} (${why}); I am not showing it.`))); }
@@ -738,7 +838,10 @@ export async function runBoardImages(o: {
   const images = {
     ...(logoNow ? { logo: logoNow } : {}), ...(keep("hero") ? { hero: keep("hero")! } : {}),
     ...(keep("object") ? { object: keep("object")! } : {}), ...(keep("site") ? { site: keep("site")! } : {}), ...(keep("signs") ? { signs: keep("signs")! } : {}),
-    ...(posts.some(Boolean) ? { posts } : {}), ...(imagery.look.trim() ? { look: imagery.look.trim().slice(0, 700) } : before.look ? { look: before.look } : {}),
+    ...(posts.some(Boolean) ? { posts } : {}),
+    // La bande des publications de la méthode : la nouvelle quand les trois viennent d'être gardées, celle d'avant quand les publications ne sont pas refaites.
+    ...((bande ?? ((["post0", "post1", "post2"] as const).some((s) => wanted.has(s)) ? undefined : before.bande)) ? { bande: bande ?? before.bande } : {}),
+    ...(imagery.look.trim() ? { look: imagery.look.trim().slice(0, 700) } : before.look ? { look: before.look } : {}),
     ...((logoNow || own) && markNow.mark ? { mark: markNow.mark } : {}), ...((logoNow || own) && markNow.markDark ? { markDark: markNow.markDark } : {}),
     ...(imagery.logo.trim() ? { logoIdea: imagery.logo.trim().slice(0, 900) } : before.logoIdea ? { logoIdea: before.logoIdea } : {}),
   };

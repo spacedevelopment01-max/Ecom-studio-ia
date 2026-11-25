@@ -25,13 +25,36 @@ export type TempsDuLogo = keyof typeof LOGO_MODELS;
 /** Tous les modèles permis pour un logo (sans doublon, dans l'ordre de la liste). */
 export const LOGO_MODEL_LIST: readonly string[] = [...new Set<string>([...LOGO_MODELS.recherche, LOGO_MODELS.finalisation, LOGO_MODELS.symbole])];
 
-/** Le seul modèle verrouillé « réservé aux logos » : jamais pour une autre image. */
+/**
+ * Le seul modèle verrouillé « réservé aux logos et à leur planche » (planche de marque, accord écrit du propriétaire du
+ * 24 novembre 2026) : jamais pour une autre image passée par le routage. Les publications passent par leur propre chemin
+ * direct, déjà permis (`PERMISSION_DES_PUBLICATIONS`) ; la planche de marque par le sien (`PERMISSION_DE_LA_PLANCHE`).
+ */
 export const LOGO_ONLY_MODEL = REQUIRED_LOGO_MODEL;
 
 /** Ce modèle est-il permis pour un logo (n'importe quel temps) ? */
 export const estUnModeleDeLogo = (provider: string, model: string): boolean => provider === REQUIRED_LOGO_PROVIDER && LOGO_MODEL_LIST.includes(model);
 /** Ce modèle est-il réservé aux logos (aucune autre image ne le prend) ? */
 export const estReserveAuxLogos = (provider: string, model: string): boolean => provider === REQUIRED_LOGO_PROVIDER && model === LOGO_ONLY_MODEL;
+/**
+ * LA SEULE EXCEPTION AU VERROU (méthode des publications validée par le propriétaire le 24 novembre 2026 : « Conserve
+ * intégralement la méthode, les paramètres API, le modèle utilisé et la structure des prompts ») : le chemin direct des
+ * publications de la planche (`aiPublicationMethode`, media-providers.ts) prend le modèle réservé aux logos. Il ne passe
+ * pas par le routage : `estReserveAuxLogos` et le refus du routage (media-routing.ts) restent tels quels partout ailleurs.
+ */
+export const PERMISSION_DES_PUBLICATIONS = { chemin: "aiPublicationMethode", provider: REQUIRED_LOGO_PROVIDER, model: LOGO_ONLY_MODEL } as const;
+/** Ce modèle est-il permis sur le chemin direct des publications (et seulement là) ? */
+export const permisPourLesPublications = (chemin: string, provider: string, model: string): boolean =>
+  chemin === PERMISSION_DES_PUBLICATIONS.chemin && provider === PERMISSION_DES_PUBLICATIONS.provider && model === PERMISSION_DES_PUBLICATIONS.model;
+/**
+ * LA PLANCHE DE MARQUE (accord écrit du propriétaire du 24 novembre 2026 : « une planche par logo choisi, 2.5 Sunburst
+ * xhigh 1536x2304, le logo puis la disposition ») : le chemin direct `aiPlancheDeMarque` (media-providers.ts) prend le
+ * modèle réservé aux logos et à leur planche, sans passer par le routage, sans secours.
+ */
+export const PERMISSION_DE_LA_PLANCHE = { chemin: "aiPlancheDeMarque", provider: REQUIRED_LOGO_PROVIDER, model: LOGO_ONLY_MODEL } as const;
+/** Ce modèle est-il permis sur le chemin direct de la planche de marque (et seulement là) ? */
+export const permisPourLaPlanche = (chemin: string, provider: string, model: string): boolean =>
+  chemin === PERMISSION_DE_LA_PLANCHE.chemin && provider === PERMISSION_DE_LA_PLANCHE.provider && model === PERMISSION_DE_LA_PLANCHE.model;
 /** Ce modèle est-il permis pour CE temps du logo ? */
 export function modelePermisPour(temps: TempsDuLogo, provider: string, model: string): boolean {
   if (provider !== REQUIRED_LOGO_PROVIDER) return false;

@@ -10,6 +10,7 @@ import { BOARD_OBJECTS, SERVICE_OBJECTS, SIGN_KINDS } from "./brand-board";
 import { brandBook } from "./brand-knowledge";
 import { NAME_EXAMPLES, NAME_KEEP_SCORE, PALETTE_EXAMPLES } from "./brand-references";
 import { FONT_CHARACTER } from "./identities";
+import { consigneDesObjectifs } from "./publications-methode";
 
 /** Règles communes à tous les spécialistes (règles permanentes du propriétaire). */
 export const HOUSE_RULES = `Règles de la maison, sans exception :
@@ -235,7 +236,16 @@ const PALETTES = () => PALETTE_EXAMPLES.slice(0, 16).map((p) => `- ${p.name} (${
 
 const ROUTE_SHAPE = `{"name": "", "nameWhy": "", "nameAnchor": "", "nameExpression": "", "slogan": "", "sloganTone": "", "promise": "", "territory": "", "ground": "blanc|degrade|sombre|uni", "gradient": {"from": "#RRGGBB", "to": "#RRGGBB"}, "palette": {"dark": "#RRGGBB", "primary": "#RRGGBB", "secondary": "#RRGGBB", "accent": "#RRGGBB", "light": "#RRGGBB"}, "paletteFamily": "", "fonts": {"heading": "clé_nN", "body": "clé_n4"}, "fontStyle": "", "tone": {"adjectives": ["", "", ""], "avoid": ["", "", ""]}, "why": "", "board": {"idea": {"belief": "", "confession": "", "enemy": "", "proof": "", "cost": ""}, "descriptor": "", "lines": ["", ""], "voice": {"sliders": [{"left": "", "right": "", "value": 50}], "thisNotThat": [{"yes": "", "no": ""}], "houseWords": [""], "bannedWords": [""], "is": ["", "", ""], "micro": [{"where": "", "text": ""}]}, "signs": [{"kind": "${SIGN_KINDS.join("|")}", "title": "", "text": ""}], "wordmark": {"case": "upper|title|lower|asis", "tracking": 0.02, "lines": ["", ""], "align": "gauche|centre", "dot": false, "scale": [1, 1], "tilt": [0, 0], "accentWords": [], "cut": {"at": 0.55}, "note": "", "underline": false}, "object": {"kind": "${BOARD_OBJECTS.join("|")}", "front": [""], "back": [""], "note": ""}, "site": {"headline": "", "text": "", "button": "", "menu": [""]}, "posts": [{"text": "", "look": "fond|couleur|motif|citation", "note": ""}], "toProve": [""]}}`;
 
-export const directionSystem = (kind: "produits" | "services") => `Tu es directrice artistique et conceptrice-rédactrice d'une agence de marque de premier plan. Tu reçois UNE route de marque (une idée, un nom, un ton, un fond, une teinte, un caractère de police) et tu en fais une identité complète avec sa PLANCHE de marque : ce que le client verra pour choisir.
+/**
+ * La direction de la planche. Avec la méthode des publications allumée (`objectifs`), et seulement alors, chaque
+ * publication reçoit aussi son objectif, dans ce même appel (aucun appel de plus) ; éteinte, la consigne est inchangée.
+ */
+export const directionSystem = (kind: "produits" | "services", o: { objectifs?: { personnes: boolean } } = {}): string => {
+  const base = directionBase(kind);
+  if (!o.objectifs) return base;
+  return base.replace("\n- board.toProve :", `\n${consigneDesObjectifs(o.objectifs.personnes)}\n- board.toProve :`).replace(`"look": "fond|couleur|motif|citation", "note": ""}]`, `"look": "fond|couleur|motif|citation", "note": "", "objectif": ""}]`);
+};
+const directionBase = (kind: "produits" | "services") => `Tu es directrice artistique et conceptrice-rédactrice d'une agence de marque de premier plan. Tu reçois UNE route de marque (une idée, un nom, un ton, un fond, une teinte, un caractère de police) et tu en fais une identité complète avec sa PLANCHE de marque : ce que le client verra pour choisir.
 
 Une identité ne se montre pas en fiche « nom, couleurs, polices » : elle se montre en situation, avec des signes qu'on reconnaît sans lire le nom.
 
@@ -385,7 +395,7 @@ Forme exacte : {"routes": [{"key": "A", "score": 0, "verdict": "garder|reprendre
  * La reprise d'une planche reçoit EXACTEMENT la consigne de la planche (relue en mémoire chez le fournisseur, audit 2.5) ;
  * ce qui est propre à la reprise part en tête de la demande (`FIX_HEAD`).
  */
-export const fixSystem = (kind: "produits" | "services") => directionSystem(kind);
+export const fixSystem = (kind: "produits" | "services", o: { objectifs?: { personnes: boolean } } = {}) => directionSystem(kind, o);
 
 export const FIX_HEAD = `REPRISE : tu reçois ta route telle que tu l'as rendue et les corrections exigées par le directeur de création et par le contrôle du Studio. Applique CHAQUE correction, garde tout ce qui n'est pas visé à l'identique (mêmes couleurs, mêmes polices, sauf si une correction les vise), et rends la route entière dans la même forme. Le NOM et le FOND DE PAGE ne changent jamais pendant une reprise : n'écris aucun autre nom à la place du sien, nulle part, et garde son fond. Ne reprends ni les phrases, ni le bouton, ni les images des autres routes de la série.`;
 

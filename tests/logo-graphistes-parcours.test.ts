@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { ESQUISSES_MIN, appliquerLaRelecture, nomExact, rechercheDesEsquisses, type RechercheDeps, type RelectureEsquisses } from "@/lib/syna-agent/esquisses";
-import { LIGNE_D_EVOLUTION, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, consigneDeFinalisation, demandeAuRelecteurDuLogo, controleDuTexte, finDeReprise, finaliserUneEsquisse, phrasesDe, raisonsDuRefus, type FinalisationDeps, type RelectureDuLogo } from "@/lib/syna-agent/logo-finalisation";
+import { LIGNE_D_EVOLUTION, ligneDeLaPhrase, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, consigneDeFinalisation, demandeAuRelecteurDuLogo, controleDuTexte, finDeReprise, finaliserUneEsquisse, phrasesDe, raisonsDuRefus, type FinalisationDeps, type RelectureDuLogo } from "@/lib/syna-agent/logo-finalisation";
 import { basculer, messageDuChoix } from "@/lib/syna-agent/choix-esquisses";
 import { couleursDuLogo, memePoliceDeTitres, paletteDesGroupes, remettreLesCouleursDuLogo } from "@/lib/syna-agent/couleurs-du-logo";
 import { contrast } from "@/lib/color";
@@ -167,6 +167,12 @@ describe("la finalisation : la consigne de finaliser.py mot pour mot, plus la li
     expect(c).not.toContain("parmi douze");
     expect(c.replace(`${LIGNE_D_EVOLUTION}\n`, "")).toBe(CONSIGNE_DE_LA_PREUVE.replace("parmi douze.", "parmi les esquisses proposées."));
     expect(c).toContain("- demande toujours de faire évoluer l'idée de l'esquisse vers une identité plus aboutie et plus distinctive, jamais de seulement la nettoyer ou l'agrandir ;");
+    // La phrase sous le nom choisie par le client (24 novembre 2026 au soir) : un troisième écart, seulement quand il a
+    // choisi, et d'une seule ligne, placée juste après la ligne descriptive ; sans son choix, la consigne est celle d'avant.
+    const p = { texte: "Nettoyage automobile intérieur & extérieur" };
+    expect(consigneDeFinalisation(NOM, METIER, p).replace(`${LIGNE_D_EVOLUTION}\n`, "").replace(`${ligneDeLaPhrase(p)}\n`, "")).toBe(CONSIGNE_DE_LA_PREUVE.replace("parmi douze.", "parmi les esquisses proposées."));
+    expect(consigneDeFinalisation(NOM, METIER, { aucune: true }).replace(`${LIGNE_D_EVOLUTION}\n`, "").replace(`${ligneDeLaPhrase({ aucune: true })}\n`, "")).toBe(CONSIGNE_DE_LA_PREUVE.replace("parmi douze.", "parmi les esquisses proposées."));
+    expect(consigneDeFinalisation(NOM, METIER, p).split("\n").length).toBe(c.split("\n").length + 1);
   });
   it("le contrôle gratuit du texte : le texte de la preuve passe tout, sauf l'évolution (il ne la demandait pas)", () => {
     expect(phrasesDe(TEXTE_REFLET_4).length).toBeLessThanOrEqual(10);

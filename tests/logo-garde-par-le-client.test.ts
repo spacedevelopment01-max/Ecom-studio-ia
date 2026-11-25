@@ -85,8 +85,14 @@ describe("logo gardé par le client : aucune recherche de logo", async () => {
       const q = C.chainQuote({ routes: count, fresh: true }), f = C.finishQuote();
       expect(est.maxMicro).toBe(q.maxMicro + f.maxMicro);
       expect(est.probableMicro).toBe(q.probableMicro! + f.probableMicro!);
-      // Plus bas que l'accord des graphistes de la même taille d'au moins la recherche et les finalisations.
-      expect(accordGraphistes(count).maxMicro + f.maxMicro - est.maxMicro).toBeGreaterThanOrEqual(devisDeLaRecherche().maxMicro + devisDesFinalisations(count).maxMicro);
+      // L'accord des graphistes compte la recherche et les finalisations ; celui du client qui garde son logo, jamais.
+      // (Depuis la planche de marque du 24 novembre 2026, accord écrit du propriétaire, l'accord des graphistes compte les
+      // planches de marque à la place des images des planches proposées : la comparaison se fait morceau par morceau.)
+      const g = accordGraphistes(count);
+      expect(g.rechercheMicro).toBe(devisDeLaRecherche().maxMicro);
+      expect(g.finalisationsMicro).toBe(devisDesFinalisations(count).maxMicro);
+      expect(g.maxMicro - g.rechercheMicro - g.finalisationsMicro).toBeGreaterThan(0);
+      expect(est.maxMicro).toBe(C.chainQuote({ routes: count, fresh: true }).maxMicro + f.maxMicro);
     }
   });
 
