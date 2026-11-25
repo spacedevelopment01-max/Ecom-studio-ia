@@ -118,8 +118,10 @@ Pour toute l'étape « La marque » (la carte unique) :
 
 - Aucun essai réel : ni l'inventaire, ni les 17 images, ni les relectures n'ont été faits par la vraie IA dans le Studio.
 - L'assemblage a été essayé sur les images des preuves (planche choisie, logo fini, éléments refaits de l'essai) : il
-  ressemble à la démonstration ; les titres, les typographies, la palette et les logos sont redessinés par le code. Le
-  bord droit du badge de la démonstration peut dépasser de sa tuile.
+  ressemble à la démonstration ; les titres, les typographies, la palette et les logos sont redessinés par le code. Chaque
+  version du logo, badge compris, tient entière dans sa tuile avec une petite marge : la rangée des tuiles est effacée
+  avant d'être reposée (le badge de la démonstration en dépassait), et chaque version est réduite si besoin, sans être
+  déformée ni coupée (vérifié par un test sur les deux dispositions, avec des logos très large, très haut et carré).
 - L'ouverture du site (1920 × 720) n'est pas posée sur la planche : l'écran de l'ordinateur la montre déjà ; elle
   sert au site.
 - La séparation du symbole et du nom, le recalage des cases et la mesure de la palette n'ont été vérifiés que sur la

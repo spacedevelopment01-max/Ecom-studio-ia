@@ -187,6 +187,42 @@ describe("le code seul : les dix versions, la palette, les polices", async () =>
     expect((await C.separerSymbole(bloc)).fiable).toBe(false);
     expect(P.phraseDuSymboleComplet()).toMatch(/ton icône et ton favicon reprennent ton logo complet/);
   });
+  it("chaque version, badge compris, tient entière dans sa tuile avec sa marge, réduite sans être déformée ni coupée (logos très large, très haut et carré ; deux dispositions)", async () => {
+    const transparent = { r: 0, g: 0, b: 0, alpha: 0 };
+    const forme = async (w: number, h: number) => {
+      // Un symbole au-dessus d'un nom, dans un cadre aux proportions voulues ; encre jusqu'aux bords du cadre.
+      const sh = Math.round(h * 0.45), nh = Math.round(h * 0.35);
+      return sharp({ create: { width: w, height: h, channels: 4, background: transparent } }).composite([
+        { input: await sharp({ create: { width: Math.max(8, Math.round(Math.min(w, sh))), height: sh, channels: 4, background: { r: 99, g: 10, b: 41, alpha: 1 } } }).png().toBuffer(), left: Math.round((w - Math.max(8, Math.round(Math.min(w, sh)))) / 2), top: 0 },
+        { input: await sharp({ create: { width: w, height: nh, channels: 4, background: { r: 99, g: 10, b: 41, alpha: 1 } } }).png().toBuffer(), left: 0, top: h - nh },
+      ]).png().toBuffer();
+    };
+    const logos = { "très large": await forme(1800, 200), "très haut": await forme(160, 1400), carre: await forme(700, 700) };
+    const MARGES: Record<string, number> = { favicon: 0.3, icone: 0.2, badge: 0.06, inverse: 0.05 };
+    for (const [quoi, lg] of Object.entries(logos)) {
+      const sep = await C.separerSymbole(lg);
+      const v = await C.versionsDuLogo({ logo: lg, separation: sep, iconeReprendLeLogo: true, couleur: "#630A29", sombre: "#630A29", clair: "#F7F3EC", monoClair: "#A0B79B", nom: "Aplomb", phrase: "Le bois bien fait", police });
+      for (const l of ["standard", "animaux"] as const) {
+        for (const [i, k] of C.VERSIONS_DU_LOGO.entries()) {
+          const t = P.lesCases(l).cases[`logo-${i + 1}`].map((n) => n * 2) as [number, number, number, number];
+          const r = await C.rendreDansLaTuile(v.versions[k], t, MARGES[k] ?? 0.14);
+          const { data, info } = await sharp(r.png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+          const [ix0, iy0, ix1, iy1] = r.interieur;
+          let dehors = 0, dedans = 0;
+          for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) {
+            if (data[(y * info.width + x) * 4 + 3] === 0) continue;
+            if (x < ix0 || y < iy0 || x >= ix1 || y >= iy1) dehors++; else dedans++;
+          }
+          expect(dehors, `${quoi} · ${l} · ${k}`).toBe(0);
+          expect(dedans, `${quoi} · ${l} · ${k}`).toBeGreaterThan(0);
+          // Jamais déformée : le rapport des côtés posé est celui de la version, au pixel près.
+          const m = await sharp(v.versions[k]).metadata(), p = C.poseDansLaTuile(m.width!, m.height!, t, MARGES[k] ?? 0.14);
+          expect(Math.abs(p.w / p.h - m.width! / m.height!), `${quoi} · ${l} · ${k}`).toBeLessThan(Math.max(1 / p.w, 1 / p.h) * (m.width! / m.height!) + 0.02);
+          expect(p.interieur[0] >= t[0] && p.interieur[2] <= t[2] && p.interieur[1] >= t[1] && p.interieur[3] <= t[3]).toBe(true);
+        }
+      }
+    }
+  });
   it("le badge est refait par le code : un anneau et le texte autour du symbole du logo", async () => {
     const lg = await logo(), sep = await C.separerSymbole(lg);
     const b = await C.badge(sep.symbole, "#630A29", "Aplomb", "Le bois bien fait", police);

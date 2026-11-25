@@ -341,6 +341,32 @@ function fondDe(data: Buffer, W: number, b: Boite): string {
   for (let y = b[1] + 2; y < b[3] - 2; y += 2) { add(b[0] + 2, y); add(b[2] - 3, y); }
   return hexDe(c.map(mediane));
 }
+/** La marge la plus petite d'une version du logo dans sa tuile (part de chaque côté). */
+export const MARGE_MIN_DE_TUILE = 0.05;
+/**
+ * La place d'une version du logo dans sa tuile : réduite si besoin, jamais agrandie au-delà de la tuile, jamais déformée
+ * (même rapport des côtés), jamais coupée ; elle tient entière dans la tuile moins sa marge (au moins MARGE_MIN_DE_TUILE),
+ * en pixels entiers, pour qu'aucun bord adouci ne déborde.
+ */
+export function poseDansLaTuile(w: number, h: number, b: Boite, marge = MARGE_MIN_DE_TUILE): { x: number; y: number; w: number; h: number; interieur: Boite } {
+  const W = b[2] - b[0], H = b[3] - b[1], m = Math.max(marge, MARGE_MIN_DE_TUILE);
+  const ix0 = Math.ceil(b[0] + W * m), iy0 = Math.ceil(b[1] + H * m), ix1 = Math.floor(b[2] - W * m), iy1 = Math.floor(b[3] - H * m);
+  const k = Math.min((ix1 - ix0) / w, (iy1 - iy0) / h);
+  const pw = Math.max(1, Math.floor(w * k)), ph = Math.max(1, Math.floor(h * k));
+  return { x: ix0 + Math.floor((ix1 - ix0 - pw) / 2), y: iy0 + Math.floor((iy1 - iy0 - ph) / 2), w: pw, h: ph, interieur: [ix0, iy0, ix1, iy1] };
+}
+async function poserDansLaTuile(x: SKRSContext2D, png: Buffer, b: Boite, marge: number) {
+  const i = await img(png), r = poseDansLaTuile(i.width, i.height, b, marge);
+  x.save(); x.beginPath(); x.rect(r.interieur[0], r.interieur[1], r.interieur[2] - r.interieur[0], r.interieur[3] - r.interieur[1]); x.clip();
+  dessiner(x, i, r.x, r.y, r.w, r.h); x.restore();
+}
+/** Une version posée seule dans sa tuile, sur fond transparent (canevas de la tuile et d'un pourtour) : pour les contrôles. */
+export async function rendreDansLaTuile(png: Buffer, tuile: Boite, marge: number, pourtour = 16): Promise<{ png: Buffer; interieur: Boite }> {
+  const b: Boite = [pourtour, pourtour, pourtour + tuile[2] - tuile[0], pourtour + tuile[3] - tuile[1]];
+  const c = createCanvas(b[2] + pourtour, b[3] + pourtour), x = c.getContext("2d");
+  await poserDansLaTuile(x, png, b, marge);
+  return { png: await c.encode("png"), interieur: poseDansLaTuile(1, 1, b, marge).interieur };
+}
 async function poser(x: SKRSContext2D, png: Buffer, b: Boite, marge = 0) {
   const i = await img(png), W = b[2] - b[0], H = b[3] - b[1], k = Math.min((W * (1 - 2 * marge)) / i.width, (H * (1 - 2 * marge)) / i.height);
   dessiner(x, i, b[0] + (W - i.width * k) / 2, b[1] + (H - i.height * k) / 2, i.width * k, i.height * k);
@@ -392,12 +418,23 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   if (ob && ouv) await couvrir(x, await sansMargesBlanches(ouv), X(ob), 0);
   // Les dix versions du logo.
   const MARGES: Partial<Record<VersionDuLogo, number>> = { favicon: 0.3, icone: 0.2, badge: 0.06, inverse: 0.05 };
+  // La rangée des tuiles est d'abord effacée (fond de la page, un peu au-delà des tuiles) : un logo de la démonstration
+  // plus grand que sa tuile n'en dépasse plus ; le trait entre le favicon et les monochromes est redessiné.
+  const tuiles = VERSIONS_DU_LOGO.map((_, i) => B(`logo-${i + 1}`)).filter((t): t is Boite => !!t);
+  if (tuiles.length) {
+    const u: Boite = [Math.max(0, Math.min(...tuiles.map((t) => t[0])) - 8), Math.max(0, Math.min(...tuiles.map((t) => t[1])) - 6), Math.min(TAILLE_DEMO.w, Math.max(...tuiles.map((t) => t[2])) + 8), Math.min(TAILLE_DEMO.h, Math.max(...tuiles.map((t) => t[3])) + 6)];
+    const ux = X(u);
+    x.fillStyle = fond(u); x.fillRect(ux[0], ux[1], ux[2] - ux[0], ux[3] - ux[1]);
+    const t6 = B("logo-6"), t7 = B("logo-7");
+    if (t6 && t7 && t7[0] - t6[2] > 6) { const sx = ((t6[2] + t7[0]) / 2) * S; x.strokeStyle = "#D7D3CB"; x.lineWidth = 2; x.beginPath(); x.moveTo(sx, (t6[1] + 6) * S); x.lineTo(sx, (t6[3] + 14) * S); x.stroke(); }
+  }
   for (const [i, v] of VERSIONS_DU_LOGO.entries()) {
     const t = B(`logo-${i + 1}`);
     if (!t) continue;
     const f = fond(t), b = X(t);
     x.fillStyle = f; arrondi(x, b[0], b[1], b[2] - b[0], b[3] - b[1], 20 * S); x.fill();
-    await poser(x, o.versions[v], b, MARGES[v] ?? 0.14);
+    // Chaque version tient entière dans sa tuile, avec sa marge : réduite si besoin, jamais déformée ni coupée.
+    await poserDansLaTuile(x, o.versions[v], b, MARGES[v] ?? 0.14);
   }
   // La palette, couleurs mesurées sur la planche.
   const pal = B("palette");
