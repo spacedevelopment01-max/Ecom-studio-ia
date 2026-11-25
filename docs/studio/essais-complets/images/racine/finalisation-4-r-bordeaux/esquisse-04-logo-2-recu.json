@@ -1,0 +1,35 @@
+{
+  "endpoint": "POST /v1/images/edits (multipart, image[])",
+  "modele": "gpt-image-2.6-sunburst",
+  "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve l’idée centrale : une feuille unique, inclinée vers la droite, tient lieu de point sur le i de « racine ». Fais évoluer cette idée vers une identité plus aboutie et plus distinctive, au-delà d’une simple mise au propre ou d’un agrandissement. Redessine les minuscules arrondies : affine les proportions, donne du caractère aux terminaisons et règle l’espacement lettre par lettre pour obtenir un mot équilibré, très lisible et doté d’une forte présence de marque. Réduis la feuille à une silhouette graphique sans détail illustratif et ajuste sa taille et sa distance au i pour qu’elle se lise naturellement comme son point. Privilégie un vert forêt profond pour le lettrage et un vert feuillage légèrement plus clair pour la feuille. Garde sous le nom la seule mention « PÉPINIÈRE EN LIGNE », centrée, discrète et lisible ; retire toute autre phrase. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif À corriger : il n'est pas au niveau (6.5/10, il faut 8).",
+  "reglages": {
+    "model": "gpt-image-2.6-sunburst",
+    "quality": "high",
+    "size": "auto",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "requestId": "req_c82a8f27c52148949cb5679780f45150",
+  "usage": {
+    "input_tokens": 1332,
+    "input_tokens_details": {
+      "image_tokens": 1024,
+      "text_tokens": 308
+    },
+    "output_tokens": 2058,
+    "output_tokens_details": {
+      "image_tokens": 2058,
+      "text_tokens": 0
+    },
+    "total_tokens": 3390
+  },
+  "coutMicro": 61466,
+  "dureeMs": 31818,
+  "renvoye": {
+    "quality": "high",
+    "size": "1254x1254",
+    "background": "opaque",
+    "output_format": "png"
+  }
+}

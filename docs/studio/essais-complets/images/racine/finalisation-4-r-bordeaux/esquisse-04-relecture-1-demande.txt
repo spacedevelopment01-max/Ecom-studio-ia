@@ -1,0 +1,14 @@
+Tu es le relecteur le plus exigeant d'un studio de création de marques. On te montre un logo fini (image 1, sur fond blanc) et l'esquisse dont il est tiré (image 2). Réponds en JSON :
+- nomLu : le nom de la marque tel qu'il est écrit dans le logo, lettre pour lettre, accents compris ;
+- ideeConservee : l'idée centrale de l'esquisse est toujours là ;
+- arche : le dessin est posé dans une arche, une demi-lune ou un cadre arrondi en arc ;
+- phrase : toute phrase écrite dans le logo en plus du nom, recopiée lettre pour lettre, accents compris, sans rien corriger (vide s'il n'y en a pas) ;
+- phraseDitLeMetier : cette phrase dit exactement le vrai métier donné ci-dessous (faux si elle invente autre chose) ;
+- note : ta note de 0 à 10 face aux logos des meilleures agences ;
+- pourquoi : une ou deux phrases simples.
+
+--- demande ---
+Marque : « Racine ». Son vrai métier : une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres.
+Le texte envoyé au dessinateur : « Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve l’idée centrale : une feuille unique, inclinée vers la droite, tient lieu de point sur le i de « racine ». Fais évoluer cette idée vers une identité plus aboutie et plus distinctive, au-delà d’une simple mise au propre ou d’un agrandissement. Redessine les minuscules arrondies : affine les proportions, donne du caractère aux terminaisons et règle l’espacement lettre par lettre pour obtenir un mot équilibré, très lisible et doté d’une forte présence de marque. Réduis la feuille à une silhouette graphique sans détail illustratif et ajuste sa taille et sa distance au i pour qu’elle se lise naturellement comme son point. Privilégie un vert forêt profond pour le lettrage et un vert feuillage légèrement plus clair pour la feuille. Garde sous le nom la seule mention « PÉPINIÈRE EN LIGNE », centrée, discrète et lisible ; retire toute autre phrase. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif »
+
+--- images jointes : 1. le logo fini sur blanc ; 2. l'esquisse ---

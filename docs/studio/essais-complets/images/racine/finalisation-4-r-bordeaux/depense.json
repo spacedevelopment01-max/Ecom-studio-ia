@@ -1,0 +1,436 @@
+[
+  {
+    "cle": "33eba74d64b9dc1eb1a2e7e91d2b99f0847da17d7a3cad2ec70fa224ca4e360d",
+    "task": "quality_control",
+    "modele": "openai:gpt-6.2-astra",
+    "studio": false,
+    "reserveMicro": 231010,
+    "reelMicro": 19037,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e4-texte-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-6.2-astra",
+      "modeleServi": "gpt-6.2-astra",
+      "unite": "tokens",
+      "jetonsEntree": 1107,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 332,
+      "quantite": 0,
+      "effort": "medium",
+      "fin": "end_turn",
+      "dureeMs": 8474,
+      "coutMicro": 19037,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e4-texte-1",
+      "details": {
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "429f81c9c4eae6f2bf8623806570775afdafea2420f1d3c412468ef4e083c293",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.6-sunburst",
+    "studio": false,
+    "reserveMicro": 79752,
+    "reelMicro": 61371,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e4-logo-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.6-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1310,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 2058,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 31740,
+      "coutMicro": 61371,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e4-logo-1",
+      "details": {
+        "temps": "finalisation",
+        "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve l’idée centrale : une feuille unique, inclinée vers la droite, tient lieu de point sur le i de « racine ». Fais évoluer cette idée vers une identité plus aboutie et plus distinctive, au-delà d’une simple mise au propre ou d’un agrandissement. Redessine les minuscules arrondies : affine les proportions, donne du caractère aux terminaisons et règle l’espacement lettre par lettre pour obtenir un mot équilibré, très lisible et doté d’une forte présence de marque. Réduis la feuille à une silhouette graphique sans détail illustratif et ajuste sa taille et sa distance au i pour qu’elle se lise naturellement comme son point. Privilégie un vert forêt profond pour le lettrage et un vert feuillage légèrement plus clair pour la feuille. Garde sous le nom la seule mention « PÉPINIÈRE EN LIGNE », centrée, discrète et lisible ; retire toute autre phrase. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+        "requestId": "req_7f563cfaff204c9cb8952cc3877737d0",
+        "reglages": {
+          "model": "gpt-image-2.6-sunburst",
+          "quality": "high",
+          "size": "auto",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": 1,
+        "usage": {
+          "input_tokens": 1310,
+          "input_tokens_details": {
+            "image_tokens": 1024,
+            "text_tokens": 286
+          },
+          "output_tokens": 2058,
+          "output_tokens_details": {
+            "image_tokens": 2058,
+            "text_tokens": 0
+          },
+          "total_tokens": 3368
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1254x1254",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "ad87e7679e64282892b361c29a74e34e6d5b11a0112f79baa9a82ccfbb81a2d4",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 198430,
+    "reelMicro": 19464,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e4-relecture-1",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 1753,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 1388,
+      "jetonsSortie": 434,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 6636,
+      "coutMicro": 19464,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e4-relecture-1",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "24089d48a21a8e82665efb399793624e316380c5ec97340e6351761cbecc9b8b",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.6-sunburst",
+    "studio": true,
+    "reserveMicro": 80080,
+    "reelMicro": 61466,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e4-logo-2",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.6-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1332,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 2058,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 31819,
+      "coutMicro": 61466,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e4-logo-2",
+      "details": {
+        "temps": "finalisation",
+        "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve l’idée centrale : une feuille unique, inclinée vers la droite, tient lieu de point sur le i de « racine ». Fais évoluer cette idée vers une identité plus aboutie et plus distinctive, au-delà d’une simple mise au propre ou d’un agrandissement. Redessine les minuscules arrondies : affine les proportions, donne du caractère aux terminaisons et règle l’espacement lettre par lettre pour obtenir un mot équilibré, très lisible et doté d’une forte présence de marque. Réduis la feuille à une silhouette graphique sans détail illustratif et ajuste sa taille et sa distance au i pour qu’elle se lise naturellement comme son point. Privilégie un vert forêt profond pour le lettrage et un vert feuillage légèrement plus clair pour la feuille. Garde sous le nom la seule mention « PÉPINIÈRE EN LIGNE », centrée, discrète et lisible ; retire toute autre phrase. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif À corriger : il n'est pas au niveau (6.5/10, il faut 8).",
+        "requestId": "req_c82a8f27c52148949cb5679780f45150",
+        "reglages": {
+          "model": "gpt-image-2.6-sunburst",
+          "quality": "high",
+          "size": "auto",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": 1,
+        "usage": {
+          "input_tokens": 1332,
+          "input_tokens_details": {
+            "image_tokens": 1024,
+            "text_tokens": 308
+          },
+          "output_tokens": 2058,
+          "output_tokens_details": {
+            "image_tokens": 2058,
+            "text_tokens": 0
+          },
+          "total_tokens": 3390
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1254x1254",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "9296a6ba80920a3d50a28e3f2a4a719e353cece784252235b279f2fee33eeb7c",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": true,
+    "reserveMicro": 198651,
+    "reelMicro": 15069,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e4-relecture-2",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 1801,
+      "jetonsCacheLus": 1388,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 502,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 6639,
+      "coutMicro": 15069,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e4-relecture-2",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "f7eea7d494880ff8f32043fadac6350274e01d8784a38dbf71903fd897d6a9af",
+    "task": "quality_control",
+    "modele": "openai:gpt-6.2-astra",
+    "studio": false,
+    "reserveMicro": 231010,
+    "reelMicro": 19209,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e11-texte-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-6.2-astra",
+      "modeleServi": "gpt-6.2-astra",
+      "unite": "tokens",
+      "jetonsEntree": 1107,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 337,
+      "quantite": 0,
+      "effort": "medium",
+      "fin": "end_turn",
+      "dureeMs": 9164,
+      "coutMicro": 19209,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e11-texte-1",
+      "details": {
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "fc0f98ee64e4406dd8453e57117a589305a3bfe61657580ff8ea15140a7bb879",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.6-sunburst",
+    "studio": false,
+    "reserveMicro": 79560,
+    "reelMicro": 61410,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e11-logo-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.6-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1319,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 2058,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 35413,
+      "coutMicro": 61410,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e11-logo-1",
+      "details": {
+        "temps": "finalisation",
+        "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve l’idée qui distingue le signe : la feuille se lit dans le blanc de la boucle du R, tandis qu’une même courbe dessine sa nervure et sa tige. Fais évoluer ce monogramme au-delà d’une simple mise au propre : rééquilibre la boucle et la jambe du R, affine les pointes et simplifie le tracé végétal pour que la lettre et la feuille restent toutes deux lisibles en petit. Redessine les capitales de RACINE sous le signe, en donnant au R du nom une terminaison qui rappelle celle du monogramme sans en reprendre la feuille. Ajuste l’espacement lettre par lettre, la largeur du nom et la distance qui le sépare du signe pour obtenir une identité plus aboutie, distinctive et présente. Privilégie le bordeaux profond de l’esquisse, en aplat sur blanc, pour évoquer les feuillages pourpres. Ne conserve sous le signe que le nom RACINE. Rendu : style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+        "requestId": "req_079ddaa90350432881c67ebb17295b1b",
+        "reglages": {
+          "model": "gpt-image-2.6-sunburst",
+          "quality": "high",
+          "size": "auto",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": 1,
+        "usage": {
+          "input_tokens": 1319,
+          "input_tokens_details": {
+            "image_tokens": 1024,
+            "text_tokens": 295
+          },
+          "output_tokens": 2058,
+          "output_tokens_details": {
+            "image_tokens": 2058,
+            "text_tokens": 0
+          },
+          "total_tokens": 3377
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1254x1254",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "6cb622afc9cd969c7d6af5ca1097399230905b115e5330a45f13f2ccb7b58300",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 200575,
+    "reelMicro": 14735,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e11-relecture-1",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 2219,
+      "jetonsCacheLus": 1388,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 399,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 5287,
+      "coutMicro": 14735,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e11-relecture-1",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "95842edaf6aa4c02fd44cfed7493134699f44152d204a53aac0c07497948a78a",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.6-sunburst",
+    "studio": true,
+    "reserveMicro": 79877,
+    "reelMicro": 61496,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e11-logo-2",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.6-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1339,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 2058,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 37653,
+      "coutMicro": 61496,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e11-logo-2",
+      "details": {
+        "temps": "finalisation",
+        "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve l’idée qui distingue le signe : la feuille se lit dans le blanc de la boucle du R, tandis qu’une même courbe dessine sa nervure et sa tige. Fais évoluer ce monogramme au-delà d’une simple mise au propre : rééquilibre la boucle et la jambe du R, affine les pointes et simplifie le tracé végétal pour que la lettre et la feuille restent toutes deux lisibles en petit. Redessine les capitales de RACINE sous le signe, en donnant au R du nom une terminaison qui rappelle celle du monogramme sans en reprendre la feuille. Ajuste l’espacement lettre par lettre, la largeur du nom et la distance qui le sépare du signe pour obtenir une identité plus aboutie, distinctive et présente. Privilégie le bordeaux profond de l’esquisse, en aplat sur blanc, pour évoquer les feuillages pourpres. Ne conserve sous le signe que le nom RACINE. Rendu : style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif À corriger : il n'est pas au niveau (7/10, il faut 8).",
+        "requestId": "req_1a835a877d334e3e876e49a0d62e46c2",
+        "reglages": {
+          "model": "gpt-image-2.6-sunburst",
+          "quality": "high",
+          "size": "auto",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": 1,
+        "usage": {
+          "input_tokens": 1339,
+          "input_tokens_details": {
+            "image_tokens": 1024,
+            "text_tokens": 315
+          },
+          "output_tokens": 2058,
+          "output_tokens_details": {
+            "image_tokens": 2058,
+            "text_tokens": 0
+          },
+          "total_tokens": 3397
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1254x1254",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "c59568a2406945bb7d7a509ce9f228a2d8f88aaa275abf8b52bb70895dfe793a",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": true,
+    "reserveMicro": 201221,
+    "reelMicro": 17676,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e11-relecture-2",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 2359,
+      "jetonsCacheLus": 1388,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 542,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 7256,
+      "coutMicro": 17676,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-k5u4dehz1fmu9t3j:logo:e11-relecture-2",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  }
+]

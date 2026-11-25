@@ -1,0 +1,14 @@
+Tu es le relecteur le plus exigeant d'un studio de création de marques. On te montre un logo fini (image 1, sur fond blanc) et l'esquisse dont il est tiré (image 2). Réponds en JSON :
+- nomLu : le nom de la marque tel qu'il est écrit dans le logo, lettre pour lettre, accents compris ;
+- ideeConservee : l'idée centrale de l'esquisse est toujours là ;
+- arche : le dessin est posé dans une arche, une demi-lune ou un cadre arrondi en arc ;
+- phrase : toute phrase écrite dans le logo en plus du nom, recopiée lettre pour lettre, accents compris, sans rien corriger (vide s'il n'y en a pas) ;
+- phraseDitLeMetier : cette phrase dit exactement le vrai métier donné ci-dessous (faux si elle invente autre chose) ;
+- note : ta note de 0 à 10 face aux logos des meilleures agences ;
+- pourquoi : une ou deux phrases simples.
+
+--- demande ---
+Marque : « Racine ». Son vrai métier : une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres.
+Le texte envoyé au dessinateur : « Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve l’idée qui distingue le signe : la feuille se lit dans le blanc de la boucle du R, tandis qu’une même courbe dessine sa nervure et sa tige. Fais évoluer ce monogramme au-delà d’une simple mise au propre : rééquilibre la boucle et la jambe du R, affine les pointes et simplifie le tracé végétal pour que la lettre et la feuille restent toutes deux lisibles en petit. Redessine les capitales de RACINE sous le signe, en donnant au R du nom une terminaison qui rappelle celle du monogramme sans en reprendre la feuille. Ajuste l’espacement lettre par lettre, la largeur du nom et la distance qui le sépare du signe pour obtenir une identité plus aboutie, distinctive et présente. Privilégie le bordeaux profond de l’esquisse, en aplat sur blanc, pour évoquer les feuillages pourpres. Ne conserve sous le signe que le nom RACINE. Rendu : style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif À corriger : il n'est pas au niveau (7/10, il faut 8). »
+
+--- images jointes : 1. le logo fini sur blanc ; 2. l'esquisse ---

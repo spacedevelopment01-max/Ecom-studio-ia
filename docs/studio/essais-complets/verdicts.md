@@ -39,6 +39,10 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 24/11 00:07 | Nadia | Identité C « Pénombre », logo (demande : métier, nom, couleurs, typographie, fond blanc), 1er essai | 5/10 : « La bougie est enfermée dans une grande arche brun foncé arrondie, ce que le propriétaire interdit ; le bas droit de cette arche montre aussi une encoche maladroite » | Non | [en attente] |
 | 24/11 00:07 | Nadia | Identité C « Pénombre », logo, 2e essai | 6/10 : « L'emblème du haut est enfermé dans une arche arrondie autour de la bougie, ce que le propriétaire interdit : retirer l'arche et garder la bougie et sa flamme seules au-dessus du nom » | Non | [en attente] — remarque de Claude : le relecteur propose de garder la flamme, que Nadia refuse |
 | 24/11 00:08 | Nadia | Identité C « Pénombre », logo, 3e essai | 6/10 : « Le croissant de lune vert forme une demi-lune autour de la bougie au centre, ce que le propriétaire interdit. L'ensemble bougie, lune et étoile reste une idée attendue » | Non | [en attente] |
+| 25/11 | Racine | Logo fini de l'esquisse 4 (feuille sur le i), 1er essai | 6,5/10 : « L'idée reste toutefois un cliché courant du secteur végétal, et la feuille, un peu grosse, flotte légèrement loin du i » | Non | [en attente] |
+| 25/11 | Racine | Logo fini de l'esquisse 4, reprise à la charge du Studio | 7/10 : « L'idée de la feuille sur le i reste toutefois un cliché très répandu, et la feuille, un peu détachée du fût, n'apporte pas encore assez de singularité » | Non | [en attente] |
+| 25/11 | Racine | Logo fini du R bordeaux, 1er essai | 7/10 : « Le signe reste toutefois massif et un peu brut : les jonctions entre la tige et le fût laissent des formes de blanc maladroites » | Non | [en attente] |
+| 25/11 | Racine | Logo fini du R bordeaux, reprise à la charge du Studio | 7/10 : « La jambe du monogramme reste lourde et molle, la fine tige risque de disparaître en petit, et le crochet du R de RACINE paraît un peu forcé » | Non | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 

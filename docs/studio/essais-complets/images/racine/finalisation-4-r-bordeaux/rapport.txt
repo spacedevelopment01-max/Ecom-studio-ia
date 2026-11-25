@@ -1,0 +1,58 @@
+Essai de la finalisation des logos — client « Racine » (pépiniériste qui vend des plantes en ligne), type « produits »
+Plafond de l'essai : 1,1000 €
+Phrase du métier (essai des esquisses, jamais réécrite) : une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres
+Esquisses : 4 (/home/user/Ecom-studio-ia/work/essai-finalisation-4r/esquisse-04.png), 11 (/home/user/Ecom-studio-ia/work/essai-finalisation-4r/esquisse-11.png)
+
+Devis de l'essai (fonctions du devis du Studio, aucun appel) :
+- esquisse 4 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 4 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 4 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 4 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 4 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 4 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 11 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 11 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 11 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 11 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 11 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 11 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+Probable, sans refus : 0,1927 € (devis du Studio : 0,1927 €)
+Probable, si chaque logo est refait une fois et son texte réécrit : 0,3854 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima) : 2,1906 €
+  dont plafond du client de la tâche 1,0953 € et borne du Studio 1,0953 € (devisDesFinalisations)
+Écart entre le probable et ce plafond : 1,9979 €
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 2,1529 € de plus en tout ; la tâche du parcours ne la couvre pas (elle s'arrêterait sur sa propre borne).
+
+
+Esquisse 4 : logo NON gardé (refusé deux fois (il n'est pas au niveau (7/10, il faut 8)))
+  essai 1 : texte esquisse-04-logo-1-texte-envoye.txt ; logo brut esquisse-04-logo-1-brut.png ; détouré esquisse-04-logo-1-detoure.png
+    verdict : note 6.5/10, nom lu « racine », idée conservée oui, arche non, phrase « PÉPINIÈRE EN LIGNE » — La feuille qui sert de point sur le i est conservée. Le lettrage, plus affirmé, a des terminaisons travaillées et le contraste des verts fonctionne. L'idée reste toutefois un cliché courant du secteur végétal, et la feuille, un peu grosse, flotte légèrement loin du i.
+    raisons du refus : il n'est pas au niveau (6.5/10, il faut 8)
+  essai 2 : texte esquisse-04-logo-2-texte-envoye.txt ; logo brut esquisse-04-logo-2-brut.png ; détouré esquisse-04-logo-2-detoure.png
+    verdict : note 7/10, nom lu « racine », idée conservée oui, arche non, phrase « PÉPINIÈRE EN LIGNE » — Le lettrage est plus affirmé que dans l'esquisse, avec des terminaisons travaillées et une bonne lisibilité, et la feuille reste bien le point du i. L'idée de la feuille sur le i reste toutefois un cliché très répandu, et la feuille, un peu détachée du fût, n'apporte pas encore assez de singularité pour atteindre le niveau d'une grande agence.
+    raisons du refus : il n'est pas au niveau (7/10, il faut 8)
+  note : logo refusé (il n'est pas au niveau (6.5/10, il faut 8)) : refait une fois, à la charge du Studio, avec ces raisons à la fin du texte
+
+Esquisse 11 : logo NON gardé (refusé deux fois (il n'est pas au niveau (7/10, il faut 8)))
+  essai 1 : texte esquisse-11-logo-1-texte-envoye.txt ; logo brut esquisse-11-logo-1-brut.png ; détouré esquisse-11-logo-1-detoure.png
+    verdict : note 7/10, nom lu « RACINE », idée conservée oui, arche non — La feuille se lit toujours dans le blanc de la boucle du R, avec la même courbe pour la nervure et la tige, et le R du nom reprend bien la terminaison du monogramme. Le signe reste toutefois massif et un peu brut : les jonctions entre la tige et le fût laissent des formes de blanc maladroites et l'ensemble manque encore de finesse face au travail d'une grande agence.
+    raisons du refus : il n'est pas au niveau (7/10, il faut 8)
+  essai 2 : texte esquisse-11-logo-2-texte-envoye.txt ; logo brut esquisse-11-logo-2-brut.png ; détouré esquisse-11-logo-2-detoure.png
+    verdict : note 7/10, nom lu « RACINE », idée conservée oui, arche non — L’idée est intacte : la feuille se lit dans le blanc de la boucle et la nervure devient tige, avec un nom bien espacé et un R qui fait écho au signe. La jambe du monogramme reste lourde et molle, la fine tige risque de disparaître en petit, et le crochet du R de RACINE paraît un peu forcé : c’est propre, mais pas encore au niveau d’une agence.
+    raisons du refus : il n'est pas au niveau (7/10, il faut 8)
+  note : logo refusé (il n'est pas au niveau (7/10, il faut 8)) : refait une fois, à la charge du Studio, avec ces raisons à la fin du texte
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 33eba74d64b9dc1eb1a2e7e91d2b99f0847da17d7a3cad2ec70fa224ca4e360d · openai:gpt-6.2-astra · charge du client · réservé 0,2310 € → réglé 0,0190 € (settled) · jetons 1107 en entrée, 332 en sortie
+- 429f81c9c4eae6f2bf8623806570775afdafea2420f1d3c412468ef4e083c293 · openai:gpt-image-2.6-sunburst · charge du client · réservé 0,0798 € → réglé 0,0614 € (settled) · jetons 1310 en entrée, 2058 en sortie
+- ad87e7679e64282892b361c29a74e34e6d5b11a0112f79baa9a82ccfbb81a2d4 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1984 € → réglé 0,0195 € (settled) · jetons 1753 en entrée, 434 en sortie
+- 24089d48a21a8e82665efb399793624e316380c5ec97340e6351761cbecc9b8b · openai:gpt-image-2.6-sunburst · charge du Studio · réservé 0,0801 € → réglé 0,0615 € (settled) · jetons 1332 en entrée, 2058 en sortie
+- 9296a6ba80920a3d50a28e3f2a4a719e353cece784252235b279f2fee33eeb7c · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1987 € → réglé 0,0151 € (settled) · jetons 1801 en entrée, 502 en sortie
+- f7eea7d494880ff8f32043fadac6350274e01d8784a38dbf71903fd897d6a9af · openai:gpt-6.2-astra · charge du client · réservé 0,2310 € → réglé 0,0192 € (settled) · jetons 1107 en entrée, 337 en sortie
+- fc0f98ee64e4406dd8453e57117a589305a3bfe61657580ff8ea15140a7bb879 · openai:gpt-image-2.6-sunburst · charge du client · réservé 0,0796 € → réglé 0,0614 € (settled) · jetons 1319 en entrée, 2058 en sortie
+- 6cb622afc9cd969c7d6af5ca1097399230905b115e5330a45f13f2ccb7b58300 · anthropic:claude-opus-5-5 · charge du client · réservé 0,2006 € → réglé 0,0147 € (settled) · jetons 2219 en entrée, 399 en sortie
+- 95842edaf6aa4c02fd44cfed7493134699f44152d204a53aac0c07497948a78a · openai:gpt-image-2.6-sunburst · charge du Studio · réservé 0,0799 € → réglé 0,0615 € (settled) · jetons 1339 en entrée, 2058 en sortie
+- c59568a2406945bb7d7a509ce9f228a2d8f88aaa275abf8b52bb70895dfe793a · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,2012 € → réglé 0,0177 € (settled) · jetons 2359 en entrée, 542 en sortie
+
+Dépense réelle comptée par le Studio : 0,3509 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).
