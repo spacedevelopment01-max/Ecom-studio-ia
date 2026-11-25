@@ -177,3 +177,10 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
   trois échanges ajoutés (la langue tirée, le message « Fiston a essayé de vous joindre », la mère qui a tout filmé),
   joués à part (~10 c) et insérés au montage (`monte_mix.py`). 1 min 10. **Règle** : pour plus de rythme sans passer
   sous la minute, ajouter des répliques plutôt que de ralentir.
+
+## Leçon (baleine, 25 novembre 2026) : ne jamais couper la voix d'après la transcription
+Les temps de whisper sont imprécis : couper les blancs d'après eux mange des syllabes (« tu as coupé la voix un peu partout »).
+On coupe uniquement dans le vrai silence mesuré au son (`outils/silences.py` : tranches de 20 ms, silence de plus de 0,5 s ramené à 0,36 s),
+puis on accélère au plus de 1,12. Après chaque montage, retranscrire et comparer mot à mot au texte.
+Voix jouée : modèle eleven_v3, stabilité 0, indications en anglais entre crochets ([shouting], [whispers], [laughs]…),
+majuscules seulement sur des mots courts (Paul écorche « LAXATIF », « CAMPING-CAR »). Voix retenue par le propriétaire : Paul.
