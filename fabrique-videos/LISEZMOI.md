@@ -75,3 +75,12 @@ ffmpeg -i out/emeus.mp4 -c:v copy -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:a aac -b:
   de plus de 0,6 s raccourcis. Les versions Max et Paul sont gardées (`napoleon/max/`, `napoleon/paul/`).
 - « Augmente un peu la cadence » : voix de Paul accélérée de 12 % sans changer sa hauteur (ffmpeg atempo=1.12,
   gratuit), vidéo de 1 min 16. C'est la version actuelle du moteur.
+
+## Troisième vidéo : « Le jour où Blockbuster a refusé Netflix » (25 novembre 2026)
+
+- Demande du propriétaire : une histoire « qui captiverait vraiment les gens ». 1 min 13, 21 plans, voix de Paul
+  (même réglage enjoué, silences raccourcis, accélérée de 12 %), sans bruit de transition, marche en cordes pincées.
+- Sources : Fortune, Business Insider, Newsweek, Yahoo. Le rire du patron vient du récit d'un fondateur de Netflix
+  (« d'après eux »). Magasins et enveloppes dessinés sans les vrais logos.
+- Idées suivantes proposées : Kodak et l'appareil photo numérique (1975), la sonde de la NASA perdue à cause des
+  unités de mesure.
