@@ -126,3 +126,11 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
   (papd083UqIoSWdSkh3fG). Chaque voix est transformée à part (répliques séparées par 0,7 s), puis redécoupée : la durée
   est conservée à l'identique. Blancs retirés (0,17 s entre répliques, 0,5 s avant les deux chutes), vidéo de 1 min 02,
   juste au-dessus de la minute exigée par TikTok.
+
+## Sketch « Bernard et la perceuse » (version qui part en vrille)
+
+- Demandes du propriétaire : « que ça parte encore plus en couille », lettres plus longues (vraies tirades), puis
+  « fais-la comme ça et mets du rythme ». Dialogue ElevenLabs (eleven_v3, text-to-dialogue) : client Hugo, conseiller
+  Julien, émotions indiquées réplique par réplique ; cri « Hé, Bernard ! La perceuse ! » du conseiller fait à part et
+  superposé. Montage : blancs à 0,1 s sauf avant les chutes, effet téléphone sur le client, voix accélérée de 12 %.
+  1 min 36. Chute : le conseiller s'appelle Bernard ; la perceuse apparaît sur son bureau.
