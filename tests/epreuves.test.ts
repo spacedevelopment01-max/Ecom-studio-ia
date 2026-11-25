@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { ACCORD_A_COMPLETER, EPREUVES, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -50,6 +50,11 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026"]).toContain(r.decision);
+      // L'accord écrit encore à recevoir (« [À compléter : …] ») ne vaut que pour logo-refait-une-fois-avec-ses-raisons
+      // (contredite par la reprise du logo à partir du refusé), relecteur-juge-l-execution-pas-l-idee (contredite par les
+      // petites finitions sans refus) et planche-refusee-deux-fois-jamais-montree (contredite par le texte lisible et les
+      // promesses mesurables), toutes du 25 novembre 2026 ; à son arrivée, il remplace ce manque.
+      if (r.mots === ACCORD_A_COMPLETER) { expect({ "logo-refait-une-fois-avec-ses-raisons": "reprise-du-logo-a-partir-du-refuse", "relecteur-juge-l-execution-pas-l-idee": "relecteur-petites-finitions-sans-refus", "planche-refusee-deux-fois-jamais-montree": "relecteur-de-planche-texte-lisible-et-promesses-mesurables" }[e.id], e.id).toBe(r.epreuve); expect(r.decision).toBe("25 novembre 2026"); continue; }
       expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche)/);
       // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
@@ -876,10 +881,11 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
       detourer: async (p) => ({ ok: true, png: p }),
       aLaChargeDuStudio: async (fn) => fn(),
     }, { nom: NOM, metier: METIER, esquisse: await png() });
-    // Refusé deux fois : pas gardé, jamais un troisième essai ; la reprise porte les raisons du refus à la fin du texte.
+    // Refusé deux fois : pas gardé, jamais un troisième essai ; la reprise porte les raisons du refus, en corrections au
+    // début du texte (25 novembre 2026, reprise-du-logo-a-partir-du-refuse).
     expect(r.ok).toBe(false);
     expect(envoyes).toHaveLength(2);
-    expect(envoyes[1]).toBe(`${TEXTE} À corriger : il n'est pas au niveau (5/10, il faut 8).`);
+    expect(envoyes[1]).toBe(`Corrige uniquement : il n'est pas au niveau (5/10, il faut 8) ; garde tout le reste à l'identique.\n\n${TEXTE}`);
     // L'identité n'est pas construite avec lui : SINA propose une autre esquisse.
     const { phraseDuLogoNonConstruit } = await import("@/lib/syna-agent/logo-graphistes");
     expect(phraseDuLogoNonConstruit(3, [3, 7, 11])).toMatch(/je ne construis pas cette identité avec lui\. Je te propose une autre esquisse parmi celles que tu as vues \(par exemple la 7\)/);
@@ -971,7 +977,7 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
       aLaChargeDuStudio: async (fn) => fn(),
     }, { nom: NOM, metier: METIER, esquisse: await png() });
     expect(r.ok).toBe(true);
-    expect(envoyes).toEqual([TEXTE, `${TEXTE} À corriger : le fond ne se retire pas proprement.`]);
+    expect(envoyes).toEqual([TEXTE, `Corrige uniquement : le fond ne se retire pas proprement ; garde tout le reste à l'identique.\n\n${TEXTE}`]);
     // La ligne d'évolution du texte de finalisation reste.
     expect(consigneDeFinalisation(NOM, METIER)).toContain(LIGNE_D_EVOLUTION);
     // Le relecteur est le plus fort, effort élevé, un autre modèle que le rédacteur.
@@ -1049,7 +1055,7 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
       aLaChargeDuStudio: async (fn) => fn(),
     }, { nom: NOM, metier: METIER, esquisse: await png(), phrase: voulue });
     expect(r.ok).toBe(true);
-    expect(envoyes[1]).toBe(`${AVEC} À corriger : la phrase choisie par le client est mal écrite (« La lumiere coulée à la main » au lieu de « ${SLOGAN} »).`);
+    expect(envoyes[1]).toBe(`Corrige uniquement : la phrase choisie par le client est mal écrite (« La lumiere coulée à la main » au lieu de « ${SLOGAN} ») ; garde tout le reste à l'identique.\n\n${AVEC}`);
   });
 
   epreuve("relecteur-du-logo-fini", () => {
@@ -1139,7 +1145,7 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
     // Refusé pour l'exécution : refait une fois, à la charge du Studio, avec son défaut dans les raisons ; jamais un troisième essai.
     const refait = await finir([{ ...base, note: 7, defauts: [cliche, tige] }, { ...base, note: 9 }]);
     expect(refait.r.ok).toBe(true);
-    expect(refait.envoyes).toEqual([TEXTE_R, `${TEXTE_R} À corriger : il n'est pas au niveau (7/10, il faut 8) : ${tige}.`]);
+    expect(refait.envoyes).toEqual([TEXTE_R, `Corrige uniquement : ${tige} ; garde tout le reste à l'identique.\n\n${TEXTE_R}`]);
     expect(refait.studio).toEqual([false, true]);
     const deuxFois = await finir([{ ...base, note: 6, defauts: [tige] }, { ...base, note: 6, defauts: [tige] }]);
     expect(deuxFois.r.ok).toBe(false);
@@ -1148,9 +1154,183 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
     let detourages = 0;
     const fond = await finir([{ ...base, note: 9 }], async (p) => (++detourages === 1 ? { ok: false, why: "le fond ne se retire pas proprement" } : { ok: true, png: p }));
     expect(fond.r.ok).toBe(true);
-    expect(fond.envoyes).toEqual([TEXTE_R, `${TEXTE_R} À corriger : le fond ne se retire pas proprement.`]);
+    expect(fond.envoyes).toEqual([TEXTE_R, `Corrige uniquement : le fond ne se retire pas proprement ; garde tout le reste à l'identique.\n\n${TEXTE_R}`]);
     // La ligne d'évolution du texte de finalisation reste.
     expect(consigneDeFinalisation(RACINE, PEPINIERE)).toContain(LIGNE_D_EVOLUTION);
+  });
+
+  epreuve("relecteur-petites-finitions-sans-refus", async () => {
+    const F = await import("@/lib/syna-agent/logo-finalisation");
+    const { NOTE_DU_PROPRIETAIRE } = await import("@/lib/syna-agent/note-du-proprietaire");
+    const RACINE = "Racine", PEPINIERE = "une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres";
+    // 1. La consigne : l'exécution seule ; les défauts graves et les petites finitions séparés ; les deux repères mot pour mot.
+    expect(NOTE_DU_PROPRIETAIRE).toBe(8);
+    const R = F.RELECTEUR_DU_LOGO_FINI;
+    expect(R).toContain("Tu ne juges jamais l'idée : ni son originalité, ni si elle est courante dans son métier, ni si elle est assez marquante.");
+    expect(R).toContain("Tu juges seulement l'exécution : le nom écrit exactement, l'idée de l'esquisse bien gardée, un dessin net (raccords propres, proportions justes, lisible en petit), pas d'arche, pas de phrase inventée, un fond blanc uni qui se retire.");
+    expect(R).toContain("- defauts : la liste des défauts d'exécution graves, ceux qu'un client verrait comme une faute, un seul par ligne, en mots simples : une lettre fausse, manquante ou illisible ; un nom qui se lit autrement de façon évidente ; une forme cassée ; un fond qui n'est pas blanc uni ;");
+    expect(R).toContain("- finitions : la liste des petits défauts de finition, ceux qu'un client ne remarquerait pas comme une faute (par exemple une feuille qui sert de point un peu haute ou décalée, une coupe en biais, un raccord un peu lourd)");
+    expect(R).toContain("Un logo propre et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus. Une petite finition ne fait jamais descendre la note sous 8 ; une note sous 8 s'explique par au moins un défaut grave écrit dans defauts.");
+    expect(R).toContain("à la question « Ces logos finis te paraissent assez bons pour être montrés à un client ? », posée devant des logos finis propres et fidèles à leurs esquisses, le propriétaire du Studio a répondu : « Oui très bien je mettrais 9/10 »");
+    expect(R).toContain("il a dit : « Le racine du milieu est très bien aussi »");
+    expect(R).not.toMatch(/agence|evolution|évolu|trop proche|copie nettoyée|bordeaux/i);
+    const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
+    expect(src).toContain('relireLogo: (logo, esquisse, demande, cle) => texte(cle, "logo", RELECTEUR_DU_LOGO_FINI, demande, RelectureDuLogoSchema, [{ data: logo, label: "logo fini" }, { data: esquisse, label: "esquisse" }]),');
+    expect(src).toContain('logo: { input: 3_500, output: 1_500, max: 10_000, modele: "strong" as const, effort: "high" },');
+    expect(consigneDeFinalisation(RACINE, PEPINIERE)).toContain(LIGNE_D_EVOLUTION);
+
+    // 2. Les quatre relectures réelles du premier essai de Racine (avant les défauts écrits) : toujours « gardé ».
+    const anciens = ["04-relecture-1", "04-relecture-2", "11-relecture-1", "11-relecture-2"].map((n) => F.RelectureDuLogoSchema.parse(JSON.parse(fs.readFileSync(`tests/fixtures/relecteur-racine/esquisse-${n}-verdict.json`, "utf8")).verdict));
+    for (const v of anciens) expect(F.raisonsDuRefus(v, RACINE)).toEqual([]);
+
+    // 3. L'essai réel d'exécution (commit 06750e4), verdicts copiés tels quels dans tests/fixtures/relecteur-execution.
+    const lu = (n: string) => JSON.parse(fs.readFileSync(`tests/fixtures/relecteur-execution/esquisse-${n}-verdict.json`, "utf8"));
+    // Le R bordeaux, gardé à 8 : reste gardé (une note de 8 ne fait jamais refuser).
+    const r8 = lu("11-relecture-1");
+    expect(r8.garde).toBe(true);
+    expect(F.raisonsDuRefus(F.RelectureDuLogoSchema.parse(r8.verdict), RACINE)).toEqual([]);
+    // Le second essai de la feuille sur le i (esquisse-04-logo-2), refusé à 7. Le verdict est de l'ancienne forme : il ne
+    // sépare pas les finitions. Lu tel quel, ses deux reproches comptent comme graves : refusé, comme ce jour-là.
+    const reel = lu("04-relecture-2");
+    expect(reel.garde).toBe(false);
+    const tel = F.RelectureDuLogoSchema.parse(reel.verdict);
+    expect(tel.note).toBe(7);
+    expect(tel.finitions).toEqual([]);
+    expect(F.raisonsDuRefus(tel, RACINE)).toEqual(reel.raisons);
+    // Ce qu'il reproche, mot pour mot : la feuille-point décalée et le haut du i coupé en biais, les deux exemples de
+    // finitions de la consigne. Aucun ne relève d'un défaut grave : le nom est lu exactement (« racine », comparé par le
+    // code), l'idée est gardée, pas d'arche, pas de forme cassée, le fond est uni ; le « racíne » n'est qu'un risque de
+    // lecture (« peut faire lire »), pas un nom qui se lit autrement de façon évidente.
+    const [feuille, coupe] = tel.defauts!;
+    expect(feuille).toBe("La feuille est encore décalée vers la droite du « i » : elle se lit moins bien comme le point de la lettre.");
+    expect(coupe).toBe("Le haut du « i » est toujours coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne ».");
+    expect(feuille).toMatch(/feuille.*décalée/);
+    expect(coupe).toMatch(/coupé en biais/);
+    expect(coupe).toMatch(/peut faire lire/);
+    expect(R).toMatch(/feuille qui sert de point un peu haute ou décalée, une coupe en biais/);
+    expect(F.raisonsDuRefus({ ...tel, defauts: [] }, RACINE).filter((x) => !x.startsWith("il n'est pas au niveau"))).toEqual([]);
+    // Rangés en finitions, sans changer un mot ni la note : gardé, la note de 7 non comptée, les finitions écrites au compte rendu.
+    const range = F.RelectureDuLogoSchema.parse({ ...reel.verdict, defauts: [], finitions: reel.verdict.defauts });
+    expect(range.finitions).toEqual(reel.verdict.defauts);
+    expect(range.note).toBe(7);
+    expect(F.raisonsDuRefus(range, RACINE)).toEqual([]);
+    expect(F.noteEcartee(range)).toMatch(/^note de 7\/10 non comptée : elle ne tenait qu'à de petites finitions/);
+    expect(F.finitionsNotees(range)).toBe(`petites finitions notées, sans refus : ${feuille} ; ${coupe}`);
+
+    // 4. De bout en bout : un logo qui n'a que des finitions est gardé du premier coup, sans reprise, finitions au compte rendu.
+    const TEXTE_R = `Transforme cette esquisse en véritable logo contemporain pour ${RACINE}, ${PEPINIERE}. Conserve l'idée centrale : une feuille tient lieu de point sur le i. Fais évoluer cette idée vers une identité plus aboutie et plus distinctive. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif`;
+    const finir = async (suite: any[]) => {
+      const envoyes: string[] = [], studio: boolean[] = [];
+      let dansLeStudio = false;
+      const r = await finaliserUneEsquisse({
+        rediger: async () => ({ idee_centrale: "une feuille sur le i", texte: TEXTE_R }),
+        finaliser: async (_j, t) => { envoyes.push(t); studio.push(dansLeStudio); return png(); },
+        relire: async () => suite.shift(),
+        detourer: async (p) => ({ ok: true, png: p }),
+        aLaChargeDuStudio: async (fn) => { dansLeStudio = true; try { return await fn(); } finally { dansLeStudio = false; } },
+      }, { nom: RACINE, metier: PEPINIERE, esquisse: await png() });
+      return { r, envoyes, studio };
+    };
+    const garde = await finir([range]);
+    expect(garde.r.ok).toBe(true);
+    expect(garde.envoyes).toEqual([TEXTE_R]);
+    expect(garde.r.notes.join(" | ")).toContain(`logo 1 : petites finitions notées, sans refus : ${feuille} ; ${coupe}`);
+    // 5. Un défaut grave, avec une note sous 8, fait toujours refuser : refait une fois, à la charge du Studio, le défaut
+    //    et les finitions dans les corrections ; jamais un troisième essai.
+    const grave = "le « c » est mal fermé et se lit comme un « e »";
+    const refait = await finir([{ ...range, note: 6, defauts: [grave], finitions: ["la feuille est un peu haute"] }, { ...range, note: 9, finitions: [] }]);
+    expect(refait.r.ok).toBe(true);
+    expect(refait.envoyes[1]).toBe(`Corrige uniquement : ${grave} ; la feuille est un peu haute ; garde tout le reste à l'identique.\n\n${TEXTE_R}`);
+    expect(refait.studio).toEqual([false, true]);
+    const deuxFois = await finir([{ ...range, note: 6, defauts: [grave] }, { ...range, note: 6, defauts: [grave] }]);
+    expect(deuxFois.r.ok).toBe(false);
+    expect(deuxFois.envoyes).toHaveLength(2);
+    // 6. L'idée ne fait jamais refuser, même rangée en défaut ou en finition ; une note sous 8 sans rien d'écrit reste un refus.
+    const cliche = "un cliché courant du secteur végétal";
+    for (const v of [{ defauts: [cliche] }, { defauts: [], finitions: [cliche] }, { defauts: [], finitions: [], pourquoi: cliche }]) expect(F.raisonsDuRefus({ ...tel, note: 5, ...v }, RACINE)).toEqual([]);
+    expect(F.raisonsDuRefus({ ...tel, note: 7, defauts: [], finitions: [], pourquoi: "" }, RACINE)).toEqual(["il n'est pas au niveau (7/10, il faut 8)"]);
+    // Le nom (comparé par le code), l'idée perdue, l'arche, la phrase inventée restent des refus, même avec des finitions seulement.
+    for (const v of [{ nomLu: "Racines" }, { ideeConservee: false }, { arche: true }, { phrase: "Le jardin éternel", phraseDitLeMetier: false }]) expect(F.raisonsDuRefus({ ...range, note: 9, phrase: "", ...v }, RACINE)).toHaveLength(1);
+    const choisie = { texte: "PÉPINIÈRE EN LIGNE" };
+    expect(F.raisonsDuRefus({ ...range, note: 9, phrase: "PEPINIERE EN LIGNE" }, RACINE, choisie)).toHaveLength(1);
+    expect(F.raisonsDuRefus({ ...range, note: 9, phrase: "PÉPINIÈRE EN LIGNE" }, RACINE, choisie)).toEqual([]);
+  });
+
+  epreuve("reprise-du-logo-a-partir-du-refuse", async () => {
+    const F = await import("@/lib/syna-agent/logo-finalisation");
+    const RACINE = "Racine", PEPINIERE = "une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres";
+    const TEXTE_R = `Transforme cette esquisse en véritable logo contemporain pour ${RACINE}, ${PEPINIERE}. Conserve l'idée centrale : une feuille tient lieu de point sur le i. Fais évoluer cette idée vers une identité plus aboutie et plus distinctive. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif`;
+    // Les défauts du premier essai de la feuille sur le i (essai réel du 25 novembre 2026 avec le relecteur qui juge
+    // l'exécution, branche claude/essais-complets, commit 06750e4), recopiés mot pour mot.
+    const DEFAUTS = ["La feuille est trop haute et décalée vers la droite du « i » : on ne la lit plus aussi bien comme le point de la lettre.", "Le haut du « i » est coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne »."];
+    const refuse = F.RelectureDuLogoSchema.parse({ nomLu: "racine", ideeConservee: true, arche: false, phrase: "", phraseDitLeMetier: false, defauts: DEFAUTS, note: 7, pourquoi: "Le logo est propre, garde bien l'esquisse et sa phrase descriptive, sur un fond blanc uni. En revanche, la feuille est trop éloignée du « i » et le haut de la lettre, coupé en biais, brouille l'idée du point." });
+    const bien = { ...refuse, note: 9, defauts: [] };
+    const teinte = (c: string) => sharp({ create: { width: 300, height: 120, channels: 3, background: "#FFFFFF" } }).composite([{ input: { create: { width: 200, height: 60, channels: 3, background: c } }, left: 50, top: 30 }]).png().toBuffer();
+    const esquisse = await teinte("#6B4E2E");
+    const finir = async (suite: any[], o: { detourer?: (p: Buffer) => Promise<any> } = {}) => {
+      const envoyes: string[] = [], jointes: Buffer[] = [], dessines: Buffer[] = [], references: Buffer[] = [], studio: boolean[] = [];
+      let dansLeStudio = false;
+      const r = await finaliserUneEsquisse({
+        rediger: async () => ({ idee_centrale: "une feuille sur le i", texte: TEXTE_R }),
+        finaliser: async (jointe, t) => { envoyes.push(t); jointes.push(jointe); studio.push(dansLeStudio); const p = await teinte(["#1F5B2E", "#2E1F5B", "#5B2E1F"][dessines.length]); dessines.push(p); return p; },
+        relire: async (_l, reference) => { references.push(reference); return suite.shift(); },
+        detourer: o.detourer ?? (async (p) => ({ ok: true, png: p })),
+        aLaChargeDuStudio: async (fn) => { dansLeStudio = true; try { return await fn(); } finally { dansLeStudio = false; } },
+      }, { nom: RACINE, metier: PEPINIERE, esquisse });
+      return { r, envoyes, jointes, dessines, references, studio };
+    };
+    // 1. Refusé pour l'exécution : au premier essai le texte part tel quel, l'esquisse jointe ; à la reprise, le logo refusé
+    //    est joint, jamais l'esquisse ; les corrections précises d'abord, puis le texte tel qu'il était ; le relecteur
+    //    reçoit toujours l'esquisse ; la reprise est à la charge du Studio.
+    const a = await finir([refuse, bien]);
+    expect(a.r.ok).toBe(true);
+    expect(a.envoyes[0]).toBe(TEXTE_R);
+    expect(a.jointes[0].equals(esquisse)).toBe(true);
+    expect(a.jointes[1].equals(a.dessines[0])).toBe(true);
+    expect(a.jointes[1].equals(esquisse)).toBe(false);
+    expect(a.references.map((b) => b.equals(esquisse))).toEqual([true, true]);
+    expect(a.envoyes[1]).toBe(`Corrige uniquement : ${DEFAUTS.map((d) => d.replace(/\.$/, "")).join(" ; ")} ; garde tout le reste à l'identique.\n\n${TEXTE_R}`);
+    expect(a.envoyes[1].startsWith("Corrige uniquement : ")).toBe(true);
+    expect(a.envoyes[1].endsWith(TEXTE_R)).toBe(true);
+    expect(a.envoyes[1]).not.toMatch(/À corriger/);
+    expect(a.studio).toEqual([false, true]);
+    // Toutes les raisons du refus deviennent des corrections, sous la même forme stable.
+    expect(F.debutDeReprise(["le nom est mal écrit (« Racines » au lieu de « Racine »)", "le dessin est posé dans une arche"])).toBe("Corrige uniquement : le nom est mal écrit (« Racines » au lieu de « Racine ») ; le dessin est posé dans une arche ; garde tout le reste à l'identique.");
+    expect(F.debutDeReprise(["il n'est pas au niveau (7/10, il faut 8)"])).toBe("Corrige uniquement : il n'est pas au niveau (7/10, il faut 8) ; garde tout le reste à l'identique.");
+    // Les petites finitions notées au premier essai s'ajoutent aux corrections d'une reprise faite pour une autre raison.
+    const avecFinitions = await finir([{ ...refuse, arche: true, defauts: [], finitions: ["la feuille est un peu haute"] }, bien]);
+    expect(avecFinitions.envoyes[1]).toBe(`Corrige uniquement : le dessin est posé dans une arche ; la feuille est un peu haute ; garde tout le reste à l'identique.\n\n${TEXTE_R}`);
+    // 2. Un fond qui ne se retire pas : refait une fois, à partir du logo refusé, la correction au début.
+    let detourages = 0;
+    const fond = await finir([bien], { detourer: async (p) => (++detourages === 1 ? { ok: false, why: "le fond ne se retire pas proprement" } : { ok: true, png: p }) });
+    expect(fond.r.ok).toBe(true);
+    expect(fond.jointes[1].equals(fond.dessines[0])).toBe(true);
+    expect(fond.envoyes[1]).toBe(`Corrige uniquement : le fond ne se retire pas proprement ; garde tout le reste à l'identique.\n\n${TEXTE_R}`);
+    // 3. Refusé deux fois : pas gardé, jamais un troisième essai ; SINA propose une autre esquisse.
+    const deux = await finir([refuse, refuse, bien]);
+    expect(deux.r.ok).toBe(false);
+    expect(deux.envoyes).toHaveLength(2);
+    const { phraseDuLogoNonConstruit } = await import("@/lib/syna-agent/logo-graphistes");
+    expect(phraseDuLogoNonConstruit(4, [4, 11])).toMatch(/je ne construis pas cette identité avec lui\. Je te propose une autre esquisse parmi celles que tu as vues \(par exemple la 11\)/);
+    // 4. La retouche des couleurs : sa reprise part de la retouche refusée, le relecteur la compare au logo d'origine.
+    const origine = await teinte("#000000");
+    const vus: { jointes: Buffer[]; dessines: Buffer[]; references: Buffer[]; textes: string[] } = { jointes: [], dessines: [], references: [], textes: [] };
+    const suite = [{ ...refuse, defauts: ["le vert déborde sur le contour du R"] }, bien];
+    const t = await F.retoucherLesCouleurs({
+      rediger: async () => { throw new Error("aucun texte à écrire"); },
+      finaliser: async (jointe, x) => { vus.jointes.push(jointe); vus.textes.push(x); const p = await teinte(["#1F5B2E", "#2E1F5B"][vus.dessines.length]); vus.dessines.push(p); return p; },
+      relire: async (_l, reference) => { vus.references.push(reference); return suite.shift()!; },
+      detourer: async (p) => ({ ok: true, png: p }),
+      aLaChargeDuStudio: async (fn) => fn(),
+    }, { nom: RACINE, metier: PEPINIERE, logo: origine, demande: "en vert sapin" });
+    expect(t.ok).toBe(true);
+    expect(vus.jointes[0].equals(origine)).toBe(true);
+    expect(vus.jointes[1].equals(vus.dessines[0])).toBe(true);
+    expect(vus.references.map((b) => b.equals(origine))).toEqual([true, true]);
+    expect(vus.textes[1]).toBe(`Corrige uniquement : le vert déborde sur le contour du R ; garde tout le reste à l'identique.\n\n${F.texteDeRetouche("en vert sapin")}`);
+    // La planche de marque garde sa propre reprise (ses raisons à la fin du texte) : rien n'y change.
+    expect(fs.readFileSync("src/lib/syna-agent/planche-de-marque.ts", "utf8")).toContain("export const finDeReprise = (raisons: readonly string[]) => `À corriger : ${raisons.join(\" ; \")}.`;");
+    expect(fs.readFileSync("src/lib/syna-agent/logo-finalisation.ts", "utf8")).not.toContain("À corriger");
   });
 });
 
@@ -1223,6 +1403,87 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     expect(faux.appels[1].texte.endsWith("À corriger : le copyright doit être exactement « © 2026 Tenon » (lu : « © 2025 Tenon »).")).toBe(true);
     expect(faux.r.route.board.planche!.image).toBeUndefined();
     expect(P.raisonsDuRefusDeLaPlanche(bon("Tenon", "tenon.fr — disponible"), { nom: "Tenon", annee: 2026, domaine: { domaine: "tenon.fr", statut: "a_verifier" }, personnes: true, animaux: false }).join(" ")).toMatch(/« tenon.fr — à vérifier »/);
+  });
+
+  epreuve("relecteur-de-planche-texte-lisible-et-promesses-mesurables", async () => {
+    const R = P.RELECTEUR_DE_LA_PLANCHE;
+    // 1. La consigne : les micro-textes à part, les promesses mesurables seules, le repère mot pour mot, sans image d'essai.
+    expect(R).toContain("- fautes : chaque faute d'orthographe ou mot mal écrit dans un texte lisible à taille normale (le nom, les accroches, les titres des blocs, les mentions, le domaine, l'année), recopié ;");
+    expect(R).toContain("- microTextes : les micro-textes décoratifs, illisibles à taille normale, que tu ne juges pas : les lignes d'alphabet des spécimens de polices, le petit texte circulaire d'un badge, l'heure de la barre d'état d'un téléphone ; recopiés s'ils sont déformés, jamais mis dans fautes ;");
+    expect(R).toContain("un mot qualitatif ordinaire (soigné, sélectionné, conseils, qualité) n'est pas une promesse ;");
+    expect(R).toContain("Une planche complète, juste dans ses textes lisibles et soignée vaut 8 ou plus ; un micro-texte décoratif ou un mot qualitatif ne fait jamais descendre la note sous 8.");
+    expect(R).toContain("à la question « Ces deux planches te paraissent montrables à un client telles quelles ? », posée devant deux planches dont seuls les alphabets des spécimens, le petit texte circulaire du badge et des mots qualitatifs de réassurance étaient reprochés, le propriétaire du Studio a répondu : « C'est très bien »");
+    expect(R).not.toMatch(/meilleures agences|racine|tenon/i);
+    const { NOTE_DU_PROPRIETAIRE } = await import("@/lib/syna-agent/note-du-proprietaire");
+    expect(NOTE_DU_PROPRIETAIRE).toBe(8);
+    // 2. Le code : les micro-textes et les mots qualitatifs écartés ; un texte lisible faux, une promesse mesurable refusent.
+    const a = { nom: "Tenon", annee: 2026, domaine: { domaine: "tenon.fr", statut: "disponible" as const }, personnes: false, animaux: false };
+    const ok = bon("Tenon", "tenon.fr — disponible");
+    for (const f of ["abcdefgljujbirimopootywxyz", "ABCDEFFGIHJLLNMMCCEWWXYZ (alphabet déformé)", "texte du badge déformé", "Texte circulaire illisible", "0-6T (heure de la barre d'état du téléphone)"]) {
+      expect(P.microTexteDecoratif(f), f).toBe(true);
+      expect(P.raisonsDuRefusDeLaPlanche({ ...ok, fautes: [f] }, a), f).toEqual([]);
+    }
+    for (const f of ["menuserie", "Tenonn", "Fabriqué a la main"]) expect(P.raisonsDuRefusDeLaPlanche({ ...ok, fautes: [f] }, a).join(" "), f).toMatch(/fautes/);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...ok, microTextes: ["abcxyz déformé"] }, a)).toEqual([]);
+    for (const p of ["Livraison soignée", "Conseils pratiques", "Emballage soigné", "Plantes de qualité", "Bois sélectionné"]) {
+      expect(P.promesseMesurable(p), p).toBe(false);
+      expect(P.raisonsDuRefusDeLaPlanche({ ...ok, promesses: [p] }, a), p).toEqual([]);
+    }
+    for (const p of ["Livraison offerte", "Livraison gratuite", "Livré en 48 h", "Satisfait ou remboursé", "Garantie 10 ans", "4,9/5", "Plus de 2 000 clients", "Avis vérifiés", "Paiement sécurisé", "Le meilleur bois", "-20 % sur tout"]) {
+      expect(P.promesseMesurable(p), p).toBe(true);
+      expect(P.raisonsDuRefusDeLaPlanche({ ...ok, promesses: [p] }, a).join(" "), p).toMatch(/promesses ou chiffres inventés/);
+    }
+    // Le nom, l'année et le domaine toujours lettre pour lettre, même avec tout le reste écarté.
+    expect(P.raisonsDuRefusDeLaPlanche({ ...ok, copyrightLu: "© 2025 Tenon", microTextes: ["x"] }, a).join(" ")).toMatch(/copyright/);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...ok, domaineLu: "tenon.com — disponible" }, a).join(" ")).toMatch(/bloc 10/);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...ok, nomLu: "Tenom" }, a).join(" ")).toMatch(/nom est mal écrit/);
+    // La note : non comptée quand elle ne tenait qu'à ce qui est écarté ; sans rien d'écrit, toujours un refus.
+    expect(P.raisonsDuRefusDeLaPlanche({ ...ok, note: 7, fautes: ["abcdefghijklmnopq"], promesses: ["Livraison soignée"] }, a)).toEqual([]);
+    expect(P.lectureDeLaPlanche({ ...ok, note: 7, promesses: ["Livraison soignée"] }, a).ecartes.join(" | ")).toMatch(/note de 7\/10 non comptée/);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...ok, note: 7 }, a)).toEqual(["elle n'est pas au niveau (7/10, il faut 8)"]);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...ok, note: 7, promesses: ["Livraison soignée"], copies: ["le harnais"] }, a)).toHaveLength(2);
+
+    // 3. Les verdicts réels de l'essai de Racine (planches-execution, commit 86645c7), copiés tels quels.
+    const R26 = { nom: "Racine", annee: 2026, domaine: { domaine: "racine-officiel.fr", statut: "disponible" as const }, personnes: false, animaux: false };
+    const reel = (n: string) => JSON.parse(fs.readFileSync(`tests/fixtures/relecteur-planche/planche-${n}-relecture-verdict.json`, "utf8"));
+    const lu = (n: string) => P.lectureDeLaPlanche(P.RelectureDeLaPlancheSchema.parse(reel(n).verdict), R26);
+    for (const n of ["A-1", "A-2", "B-1", "B-2"]) expect(reel(n).gardee, n).toBe(false); // ce que décidait le code d'avant
+    // A-2 (note 7) et B-2 (note 7,5) : ce qu'ils reprochaient, ce sont les alphabets des spécimens, le texte circulaire du
+    // badge (A-2), l'heure de la barre d'état (B-2) et des mots qualitatifs ; le nom, le copyright et le domaine sont justes,
+    // le logo fidèle, aucune personne, aucune copie : « gardée », la note non comptée et écrite au compte rendu.
+    for (const n of ["A-2", "B-2"]) {
+      const v = reel(n).verdict;
+      expect([v.copyrightLu, v.domaineLu, v.logoFidele, v.personnes, v.copies], n).toEqual(["© 2026 Racine", "racine-officiel.fr — disponible", true, false, []]);
+      expect(v.fautes.every((f: string) => P.microTexteDecoratif(f)), n).toBe(true);
+      expect(v.promesses.some((p: string) => P.promesseMesurable(p)), n).toBe(false);
+      expect(lu(n).raisons, n).toEqual([]);
+      expect(lu(n).ecartes.join(" | "), n).toMatch(/note de 7(\.5)?\/10 non comptée/);
+    }
+    // A-1 : des mains sont visibles sans l'accord du client : toujours « refusée » (avec aussi une faute d'un texte lisible et
+    // « Paiement sécurisé », une garantie). B-1 : l'emballage recopié de la disposition : toujours « refusée ».
+    expect(reel("A-1").verdict.personnes).toBe(true);
+    expect(lu("A-1").raisons).toContain("une personne est visible sans l'accord du client");
+    expect(lu("B-1").raisons.join(" ")).toMatch(/éléments recopiés de la disposition/);
+
+    // 4. La reprise unique et la planche refusée deux fois ne changent pas.
+    const une = await tache({ verdicts: (_d, n) => (n === 1 ? { ...bon("Tenon", "tenon.fr — disponible"), copies: ["le harnais de la disposition"] } : bon("Tenon", "tenon.fr — disponible")) });
+    expect(une.appels.map((x) => x.studio)).toEqual([false, true]);
+    expect(une.appels[1].texte.endsWith("À corriger : éléments recopiés de la disposition : le harnais de la disposition.")).toBe(true);
+    expect(une.r.route.board.planche!.image).toBeTruthy();
+    // Une planche aux seuls micro-textes et mots qualitatifs, notée 7 : gardée du premier coup, sans reprise.
+    const garde = await tache({ verdicts: () => ({ ...bon("Tenon", "tenon.fr — disponible"), note: 7, fautes: ["abcdefghijklmnopqrstuvwxyz"], promesses: ["Livraison soignée"] }) });
+    expect(garde.appels).toHaveLength(1);
+    expect(garde.r.route.board.planche!.image).toBeTruthy();
+    const deux = await tache({ verdicts: () => ({ ...bon("Tenon", "tenon.fr — disponible"), note: 6 }) });
+    expect(deux.appels).toHaveLength(2);
+    expect(deux.r.route.board.planche!.image).toBeUndefined();
+    expect(deux.r.issues.join(" ")).toMatch(/je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite\. Je peux la refaire à ma charge : rien n'est compté sur ton budget\./);
+    const j = { keep: [], identities: { list: [{ ...deux.r.route, board: { ...deux.r.route.board, images: { logo: { id: "logoabcd", w: 1, h: 1 } } } }] } };
+    expect(J.planchesMontrees(j as never)).toEqual([]);
+    expect(J.planchesIncompletes(j as never)).toEqual([{ key: "A", manque: ["planche"] }]);
+    const I = await import("@/lib/syna-agent/tools/identity");
+    expect(I.finirPlanchesGardees(j as never, ["A"], ["planche"])).toBe(true);
+    expect(I.devisDesImages(j as never, ["A"], ["planche"])).toMatchObject({ studio: true });
   });
 
   epreuve("planche-refusee-deux-fois-jamais-montree", async () => {

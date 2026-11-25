@@ -252,7 +252,7 @@ describe("4. la relecture du logo fini : jamais « inventée », écrite lettre 
     expect(r.ok).toBe(true);
     expect(vu.consignes[0]).toContain(ligneDeLaPhrase(p));
     expect(vu.demandes.every((x) => x.includes("« L'éclat de votre voiture »"))).toBe(true);
-    expect(vu.textes[1]).toBe(`${avecPhrase(p.texte)} À corriger : la phrase choisie par le client est mal écrite (« L'eclat de votre voiture » au lieu de « L'éclat de votre voiture »).`);
+    expect(vu.textes[1]).toBe(`Corrige uniquement : la phrase choisie par le client est mal écrite (« L'eclat de votre voiture » au lieu de « L'éclat de votre voiture ») ; garde tout le reste à l'identique.\n\n${avecPhrase(p.texte)}`);
   });
   it("phraseVoulue : de l'esquisse et la sienne donnent un texte exact, « aucune » donne aucune", () => {
     expect(phraseVoulue(undefined)).toBeUndefined();

@@ -1,0 +1,19 @@
+{
+  "verdict": {
+    "nomLu": "racine",
+    "ideeConservee": true,
+    "arche": false,
+    "phrase": "PÉPINIÈRE EN LIGNE",
+    "phraseDitLeMetier": true,
+    "defauts": [
+      "La feuille est trop haute et décalée vers la droite du « i » : on ne la lit plus aussi bien comme le point de la lettre.",
+      "Le haut du « i » est coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne »."
+    ],
+    "note": 7,
+    "pourquoi": "Le logo est propre, garde bien l'esquisse et sa phrase descriptive, sur un fond blanc uni. En revanche, la feuille est trop éloignée du « i » et le haut de la lettre, coupé en biais, brouille l'idée du point."
+  },
+  "raisons": [
+    "il n'est pas au niveau (7/10, il faut 8) : La feuille est trop haute et décalée vers la droite du « i » : on ne la lit plus aussi bien comme le point de la lettre. ; Le haut du « i » est coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne »."
+  ],
+  "garde": false
+}

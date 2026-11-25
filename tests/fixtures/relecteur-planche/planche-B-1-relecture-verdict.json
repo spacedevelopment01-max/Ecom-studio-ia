@@ -1,0 +1,37 @@
+{
+  "verdict": {
+    "nomLu": "racine",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Racine",
+    "domaineLu": "racine-officiel.fr — disponible",
+    "fautes": [
+      "ABCDEFFGJJILLMNDEEFPOOI/WXYZ (spécimen Poppins, alphabet déformé)",
+      "abcdefgĝgjiliiṅnappotriywxyz (spécimen Poppins, alphabet déformé)",
+      "ABCDEFGIJ ILLMNEBPBOWXYZ (spécimen Nunito, alphabet déformé)",
+      "abcdefgĝjiiinnopoti yvwxyz (spécimen Nunito, alphabet déformé)",
+      "PÉPINIÈRE EN LIGEK (badge / sceau)"
+    ],
+    "promesses": [
+      "Paiement sécurisé",
+      "Conseils d'experts",
+      "Plantes de qualité",
+      "Livraison soignée",
+      "Plantes saines"
+    ],
+    "personnes": false,
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [
+      "Scène packaging calquée sur la disposition : carton kraft, rouleau d'adhésif, carte de remerciement et sac vert placés de la même façon"
+    ],
+    "note": 7.5,
+    "pourquoi": "Planche riche, cohérente et désirable, avec un logo fidèle et des consignes du bloc 10 respectées. En revanche, les alphabets des typographies sont illisibles, le badge contient une faute et des promesses de réassurance non demandées apparaissent (paiement sécurisé, conseils d'experts)."
+  },
+  "raisons": [
+    "fautes : « ABCDEFFGJJILLMNDEEFPOOI/WXYZ (spécimen Poppins, alphabet déformé) », « abcdefgĝgjiliiṅnappotriywxyz (spécimen Poppins, alphabet déformé) », « ABCDEFGIJ ILLMNEBPBOWXYZ (spécimen Nunito, alphabet déformé) », « abcdefgĝjiiinnopoti yvwxyz (spécimen Nunito, alphabet déformé) », « PÉPINIÈRE EN LIGEK (badge / sceau) »",
+    "promesses ou chiffres inventés : « Paiement sécurisé », « Conseils d'experts », « Plantes de qualité », « Livraison soignée », « Plantes saines »",
+    "éléments recopiés de la disposition : Scène packaging calquée sur la disposition : carton kraft, rouleau d'adhésif, carte de remerciement et sac vert placés de la même façon",
+    "elle n'est pas au niveau (7.5/10, il faut 8)"
+  ],
+  "gardee": false
+}

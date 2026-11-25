@@ -1,0 +1,34 @@
+{
+  "verdict": {
+    "nomLu": "RACINE",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Racine",
+    "domaineLu": "racine-officiel.fr — disponible",
+    "fautes": [
+      "ABCDEFGHJLIJLNUAI(KRRTJVWXYZ",
+      "abcdefhjjkiklnopoprstruywxyz",
+      "ABCDEFFGHJLIJLN.IAIQRRTJVWXYZ",
+      "abcdeffgjjhkiklnopopstcuywxyz",
+      "buing (texte déformé dans le badge / sceau)",
+      "CULTIVER AUJOURD'HUI DES DEMAINS PLUS VERTS"
+    ],
+    "promesses": [
+      "Paiement sécurisé",
+      "Livraison soignée",
+      "Conseils d'experts"
+    ],
+    "personnes": true,
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "note": 6,
+    "pourquoi": "La planche est riche, cohérente et fidèle au logo, avec de beaux formats réseaux et un site crédible. Mais des mains sont visibles dans l'image « Racines et terre », les alphabets des typographies sont illisibles et le texte du badge est déformé, ce qui l'éloigne du niveau d'une grande agence."
+  },
+  "raisons": [
+    "fautes : « ABCDEFGHJLIJLNUAI(KRRTJVWXYZ », « abcdefhjjkiklnopoprstruywxyz », « ABCDEFFGHJLIJLN.IAIQRRTJVWXYZ », « abcdeffgjjhkiklnopopstcuywxyz », « buing (texte déformé dans le badge / sceau) », « CULTIVER AUJOURD'HUI DES DEMAINS PLUS VERTS »",
+    "promesses ou chiffres inventés : « Paiement sécurisé », « Livraison soignée », « Conseils d'experts »",
+    "une personne est visible sans l'accord du client",
+    "elle n'est pas au niveau (6/10, il faut 8)"
+  ],
+  "gardee": false
+}

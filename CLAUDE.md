@@ -140,9 +140,19 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   net (raccords, proportions, lisible en petit), pas d'arche, pas de phrase inventée, un fond qui se retire ; un logo
   propre, fidèle à l'esquisse et sans défaut visible vaut 8 ou plus, avec ces mots du propriétaire pour repère, sans
   aucune image d'essai ; une raison qui juge l'idée (cliché du secteur, idée banale, peu originale) ne fait jamais
-  refuser : le code l'écarte, même si le relecteur la donne, et une note sous 8 doit tenir à un défaut d'exécution écrit
-  (`logo-finalisation.ts`) ; refusé, il
-  est refait une fois avec ses raisons ; refusé deux fois, SINA propose une autre esquisse. **Le logo d'abord** : les
+  refuser : le code l'écarte, même si le relecteur la donne ; **les petites finitions ne font pas refuser** (25 novembre
+  2026 au soir, devant le second essai de la feuille sur le i refusé à 7 : « Le racine du milieu est très bien aussi ») :
+  le relecteur sépare les défauts graves (une lettre fausse, manquante ou illisible, un nom qui se lit autrement de façon
+  évidente, une forme cassée, un fond qui n'est pas uni) des petites finitions qu'un client ne verrait pas comme une
+  faute (une feuille-point un peu haute ou décalée, une coupe en biais), avec ces mots-là pour second repère ; une
+  finition ne fait pas descendre la note sous 8, une note sous 8 doit tenir à un défaut grave écrit ; un logo qui n'a que
+  des finitions est gardé, ses finitions écrites au compte rendu, et elles deviennent des corrections seulement s'il est
+  repris pour une autre raison (`logo-finalisation.ts`) ; refusé, il
+  est refait une fois, à la charge du Studio, **à partir du logo refusé**, jamais de l'esquisse (essai du 25 novembre
+  2026 : redonner l'esquisse, qui porte déjà le défaut, faisait redessiner les mêmes défauts), avec au début du texte les
+  corrections précises, « Corrige uniquement : … ; garde tout le reste à l'identique. », puis le texte d'origine tel
+  qu'il était ; le relecteur garde l'esquisse pour référence de l'idée ; une retouche de couleurs refusée reprend de même,
+  à partir de la retouche refusée ; refusé deux fois, SINA propose une autre esquisse. **Le logo d'abord** : les
   couleurs de la marque sont tirées du logo par le Studio, la police de titres choisie au plus près de ses lettres ;
   deux identités n'ont jamais la même police de titres. Les couleurs du client ne vont jamais au dessinateur. On ne
   demande jamais au client ce qu'il veut dans son logo. « Un autre logo » : d'abord une autre esquisse déjà vue, puis
@@ -163,7 +173,13 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   le modèle de texte le plus fort et contrôlées gratuitement, puis la phrase des données vérifiées : l'année en cours et
   le domaine vérifié avant le dessin, « disponible » ou « à vérifier » (« Adresse à choisir » si tout est pris), et
   « aucune personne visible » sans son accord. Le relecteur le plus fort, effort élevé, la relit en bandes ; le code
-  compare le nom, l'année et le domaine lettre pour lettre ; refusée, elle est refaite une fois à la charge du Studio
+  compare le nom, l'année et le domaine lettre pour lettre ; **il ne juge pas les micro-textes décoratifs**, illisibles à
+  taille normale (les lignes d'alphabet des spécimens de polices, le petit texte circulaire d'un badge, l'heure d'une
+  barre d'état), mais tout texte lisible reste juste ; **seules les promesses mesurables ou les garanties font refuser**
+  (gratuit, délai, montant, remboursement, chiffre, note, avis, nombre de clients), jamais un mot qualitatif (soigné,
+  sélectionné, conseils, qualité), que le code écarte ; une note sous 8 qui ne tient qu'à eux ne compte pas ; repère, ses
+  mots du 25 novembre 2026 devant deux planches de Racine : « C'est très bien », à « Ces deux planches te paraissent
+  montrables à un client telles quelles ? » (`planche-de-marque.ts`) ; refusée, elle est refaite une fois à la charge du Studio
   avec ses raisons ; refusée deux fois, elle n'est pas montrée et SINA propose de la finir à sa charge ; avec moins de
   deux planches montrées, le choix attend. Elle est montrée seule, en entier, sans rien posé dessus, à agrandir et à
   télécharger, avec la case du domaine (revérifié au choix) ; SINA dit qu'elle est une présentation : la marque finie et

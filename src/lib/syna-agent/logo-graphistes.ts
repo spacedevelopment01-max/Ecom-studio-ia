@@ -212,7 +212,8 @@ export type GraphistesAi = {
   planche: (modele: string, prompt: string, cle: string) => Promise<{ png: Buffer; recu: RecuDuLogo | null }>;
   relireEsquisses: (images: Buffer[], nom: string, cle: string) => Promise<z.infer<typeof RelectureEsquissesSchema>>;
   rediger: (consigne: string, esquisse: Buffer, cle: string) => Promise<z.infer<typeof TexteDeFinalisationSchema>>;
-  finaliser: (esquisse: Buffer, texte: string, cle: string) => Promise<{ png: Buffer; recu: RecuDuLogo | null }>;
+  /** L'image jointe : l'esquisse au premier essai, le logo refusé à la reprise (25 novembre 2026). */
+  finaliser: (jointe: Buffer, texte: string, cle: string) => Promise<{ png: Buffer; recu: RecuDuLogo | null }>;
   relireLogo: (logo: Buffer, esquisse: Buffer, demande: string, cle: string) => Promise<RelectureDuLogo>;
 };
 export const graphistesDeps: { ai?: (cle: string) => GraphistesAi } = {};
@@ -242,7 +243,7 @@ export function vraisAppels(o: { userId: string; projectId: string; jobId: strin
     planche: (modele, prompt, cle) => image(cle, () => aiLogoPlanche(ctx(cle), { model: modele, prompt })),
     relireEsquisses: (images, nom, cle) => texte(cle, "esquisses", RELECTEUR_DES_ESQUISSES, demandeAuRelecteurDesEsquisses(nom, images.length), RelectureEsquissesSchema, images.map((data, i) => ({ data, label: `esquisse ${i + 1}` }))),
     rediger: (consigne, esquisse, cle) => texte(cle, "redaction", consigne, DEMANDE_AU_REDACTEUR, TexteDeFinalisationSchema, [{ data: esquisse, label: "esquisse choisie" }]),
-    finaliser: (esquisse, t, cle) => image(cle, () => aiLogoFinalise(ctx(cle), { esquisse, prompt: t })),
+    finaliser: (jointe, t, cle) => image(cle, () => aiLogoFinalise(ctx(cle), { esquisse: jointe, prompt: t })),
     relireLogo: (logo, esquisse, demande, cle) => texte(cle, "logo", RELECTEUR_DU_LOGO_FINI, demande, RelectureDuLogoSchema, [{ data: logo, label: "logo fini" }, { data: esquisse, label: "esquisse" }]),
   };
 }
@@ -275,7 +276,7 @@ export async function uneFinalisation(ai: GraphistesAi, o: { nom: string; metier
   const recus: (RecuDuLogo | null)[] = [];
   const f = await finaliserUneEsquisse({
     rediger: (consigne, esq, tour) => ai.rediger(consigne, esq, `e${o.numero}-texte-${tour}`),
-    finaliser: async (esq, t, tour) => { const r = await ai.finaliser(esq, t, `e${o.numero}-logo-${tour}`); recus.push(r.recu); return r.png; },
+    finaliser: async (jointe, t, tour) => { const r = await ai.finaliser(jointe, t, `e${o.numero}-logo-${tour}`); recus.push(r.recu); return r.png; },
     relire: (logo, esq, demande, tour) => ai.relireLogo(logo, esq, demande, `e${o.numero}-relecture-${tour}`),
     detourer: o.detourer,
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
