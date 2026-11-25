@@ -155,3 +155,12 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
 - Voix du propriétaire, gardée telle quelle (aucune accélération, aucune coupe). 1 min 17, 18 plans.
   Sources : Wikipédia (Third-pound burger), A&W, Mental Floss, CBC, Tasting Table, Snopes.
 - Texte suivant prêt : Kodak.
+
+## Sketch « Schwartz » (quand tu demandes au conseiller d'épeler un mot)
+
+- Après relecture de la vidéo de référence : c'est **le conseiller (à l'écran) qui épelle** ; les vannes mélangent
+  lettres normales, exemple trop long, message vocal qui ne commence même pas par la bonne lettre, **moquerie du
+  client en l'imitant**, plan de soirée qui embarque le client ; la vérification fait revenir le message le plus fou.
+- Voix ElevenLabs (dialogue eleven_v3, stability 0) : conseiller Julien (imitations), client Hugo (téléphone).
+  Limites des 28 répliques imposées d'après le volume du son (la transcription se trompe), montage vérifié par
+  retranscription. 1 min 20. Environ 2 160 caractères, autour de 60 centimes.
