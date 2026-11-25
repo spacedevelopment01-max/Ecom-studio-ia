@@ -130,11 +130,10 @@ const SOURCE_RELECTEUR_EXECUTION = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (
  * note sous 8 » font refuser : un micro-texte décoratif, un mot qualitatif, une note qui ne tient qu'à eux ne font plus
  * refuser).
  *
- * Son accord écrit pour marquer ces trois épreuves remplacées est encore à recevoir : `ACCORD_A_COMPLETER` tient sa
- * place, et le banc n'accepte ce manque que pour elles.
+ * Son accord écrit pour marquer ces trois épreuves remplacées, mot pour mot (25 novembre 2026, écrit dans la
+ * conversation de construction).
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-const REPRISE_DU_REFUSE = { decision: "25 novembre 2026", mots: ACCORD_A_COMPLETER };
+const REPRISE_DU_REFUSE = { decision: "25 novembre 2026", mots: "« Oui, marque logo-refait-une-fois-avec-ses-raisons, relecteur-juge-l-execution-pas-l-idee et planche-refusee-deux-fois-jamais-montree comme remplacées par mes décisions du 25 novembre, ajoute et scelle reprise-du-logo-a-partir-du-refuse (à la reprise, le dessinateur reçoit le logo refusé et, au début du texte, les corrections précises ; tout le reste à l'identique), relecteur-petites-finitions-sans-refus (un petit défaut de finition est transmis comme correction mais ne fait pas refuser ; « Le racine du milieu est très bien aussi ») et relecteur-de-planche-texte-lisible-et-promesses-mesurables (les micro-textes décoratifs illisibles ne sont pas jugés et seules les promesses mesurables ou les garanties font refuser ; « C'est très bien »), et mets à jour les parties Logo et Identité de CLAUDE.md. »" };
 const SOURCE_PETITES_FINITIONS = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (partie « Les petites finitions ne font pas refuser (25 novembre au soir) » ; preuves : docs/studio/essais-complets/images/racine/finalisation-execution/esquisse-04-logo-2-brut.png, branche claude/essais-complets, commit 06750e4 ; ses mots relayés par le chef d'orchestre)";
 const SOURCE_PLANCHE_LISIBLE = "docs/studio/PLANCHE-DE-MARQUE.md (partie « Le relecteur de la planche : le texte lisible et les promesses mesurables (25 novembre) » ; preuves : docs/studio/essais-complets/images/racine/planches-execution, branche claude/essais-complets, commit 86645c7 ; ses mots relayés par le chef d'orchestre)";
 const SOURCE_REPRISE_DU_REFUSE = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (partie « La reprise part du logo refusé (25 novembre) » ; preuves : docs/studio/essais-complets/images/racine/finalisation-execution, branche claude/essais-complets, commit 06750e4 ; constat du chef d'orchestre)";
@@ -153,13 +152,10 @@ const SOURCE_PLANCHE = "docs/studio/PLANCHE-DE-MARQUE.md (accord écrit du propr
  * son « Oui lance la construction ». Elle contredit vrai-produit-du-client-joint (« la demande de la grande scène et celle
  * du haut du site les joignent » : pour les nouveaux projets, la grande scène et le haut du site ne sont plus créés à la fin
  * de la marque ; c'est la planche choisie qui est refaite en vrai, sa photo jointe à chaque case où le produit se voit).
- * L'accord écrit pour la marquer remplacée est encore à recevoir : `ACCORD_A_COMPLETER` tient sa place, et le banc
- * n'accepte ce manque que pour elle et pour les trois de la reprise du logo refusé. La phrase d'accord attendue, mot pour
- * mot : « Oui, marque vrai-produit-du-client-joint comme remplacée par ma décision du 25 novembre, ajoute et scelle
- * vrai-produit-dans-la-planche-en-vrai (…) et planche-en-vrai-a-l-identique (…), et mets à jour la partie Identité de
- * CLAUDE.md. » (texte entier : docs/studio/PLANCHE-EN-VRAI.md).
+ * Son accord écrit pour la marquer remplacée, mot pour mot (25 novembre 2026, écrit dans la conversation de
+ * construction).
  */
-const PLANCHE_EN_VRAI = { decision: "25 novembre 2026", mots: ACCORD_A_COMPLETER };
+const PLANCHE_EN_VRAI = { decision: "25 novembre 2026", mots: "« Oui, marque vrai-produit-du-client-joint comme remplacée par ma décision du 25 novembre, ajoute et scelle vrai-produit-dans-la-planche-en-vrai (sa photo jointe à chaque case où le produit se voit, mise en scène gardée à l'identique, relecture qui compare et refuse un autre produit ; sans photo, image d'ambiance jamais posée comme son produit) et planche-en-vrai-a-l-identique (17 images refaites en 2.5 Sunburst high à partir de leur aperçu, logo joint seulement s'il y est, marges des formats larges, 10 versions, palette mesurée et polices par le code, assemblage 3072×4608, une reprise à la charge du Studio, l'aperçu gardé si elle est refusée deux fois ; une fois la planche de marque faite, le mélange de deux identités n'est plus proposé), et mets à jour la partie Identité de CLAUDE.md. »" };
 const DEMANDE_EN_VRAI = "« En soit c'est juste une planche de démonstration et une fois que le client à choisi sa planche sina doit lui refaire à l'identique mais cette fois ci en vrai sur son studio. Tu vois ça que je veux dire et ça doit être à l'identique en visuel » ; « Le clients pourra télécharger les logo image au besoin et les code couleur seront la aussi en copier coller ? », puis « Oui lance la construction »";
 const VERDICT_EN_VRAI = `Demande du propriétaire du 25 novembre 2026, mot pour mot : ${DEMANDE_EN_VRAI}.`;
 const SOURCE_EN_VRAI = "docs/studio/PLANCHE-EN-VRAI.md (demande du propriétaire du 25 novembre 2026, relayée mot pour mot par le chef d'orchestre ; preuves : docs/studio/essais-logos-api/racine-planche-en-vrai, branche claude/chef-orchestre-sina)";

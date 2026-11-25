@@ -320,7 +320,7 @@ La même construction change aussi le relecteur de la planche de marque (voir `d
 `planche-refusee-deux-fois-jamais-montree` y est marquée remplacée par
 `relecteur-de-planche-texte-lisible-et-promesses-mesurables`.
 
-**La phrase d'accord à lui proposer, une seule pour tout :** « Oui, marque logo-refait-une-fois-avec-ses-raisons,
+**Son accord écrit, mot pour mot (25 novembre 2026) :** « Oui, marque logo-refait-une-fois-avec-ses-raisons,
 relecteur-juge-l-execution-pas-l-idee et planche-refusee-deux-fois-jamais-montree comme remplacées par mes décisions du
 25 novembre, ajoute et scelle reprise-du-logo-a-partir-du-refuse (à la reprise, le dessinateur reçoit le logo refusé et,
 au début du texte, les corrections précises ; tout le reste à l'identique), relecteur-petites-finitions-sans-refus (un

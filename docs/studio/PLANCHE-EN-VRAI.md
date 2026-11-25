@@ -14,7 +14,7 @@ Mot pour mot (25 novembre 2026, relayé par le chef d'orchestre) :
 - « Le clients pourra télécharger les logo image au besoin et les code couleur seront la aussi en copier coller ? », puis
   « Oui lance la construction ».
 
-La phrase d'accord attendue pour les épreuves, exacte (pas encore reçue : `ACCORD_A_COMPLETER` tient sa place) :
+Son accord écrit pour les épreuves, mot pour mot (25 novembre 2026) :
 
 « Oui, marque vrai-produit-du-client-joint comme remplacée par ma décision du 25 novembre, ajoute et scelle
 vrai-produit-dans-la-planche-en-vrai (sa photo jointe à chaque case où le produit se voit, mise en scène gardée à
