@@ -8,7 +8,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { ESQUISSES_MIN, appliquerLaRelecture, nomExact, rechercheDesEsquisses, type RechercheDeps, type RelectureEsquisses } from "@/lib/syna-agent/esquisses";
+import { ESQUISSES_MONTREES, REMPLACEMENTS_MAX, appliquerLaRelecture, nomExact, rechercheDesEsquisses, type RechercheDeps, type RelectureEsquisses } from "@/lib/syna-agent/esquisses";
 import { LIGNE_D_EVOLUTION, ligneDeLaPhrase, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, consigneDeFinalisation, demandeAuRelecteurDuLogo, controleDuTexte, debutDeReprise, texteDeReprise, finaliserUneEsquisse, retoucherLesCouleurs, texteDeRetouche, phrasesDe, raisonsDuRefus, type FinalisationDeps, type RelectureDuLogo } from "@/lib/syna-agent/logo-finalisation";
 import { basculer, messageDuChoix } from "@/lib/syna-agent/choix-esquisses";
 import { couleursDuLogo, memePoliceDeTitres, paletteDesGroupes, remettreLesCouleursDuLogo } from "@/lib/syna-agent/couleurs-du-logo";
@@ -22,7 +22,7 @@ const dessin = (cx: number, cy: number) => [
 ];
 const planche = () => sharp({ create: { width: 1536, height: 1024, channels: 3, background: "#FFFFFF" } }).composite([0, 1].flatMap((r) => [0, 1, 2].flatMap((c) => dessin(256 + c * 512, 256 + r * 512)))).png().toBuffer();
 const metier = { metier: "une entreprise de nettoyage de voitures, intérieur et extérieur", court: "le nettoyage automobile", piste: "savoir-faire" as const };
-const relecture = (n: number, garder: (i: number) => boolean, nom = "Reflet"): RelectureEsquisses => ({ esquisses: Array.from({ length: n }, (_v, i) => ({ numero: i + 1, entiere: true, morceauDeVoisine: false, nomLu: garder(i) ? nom : "Refelt", arche: false, ok: true, pourquoi: "net", piste: `piste ${i + 1}` })) });
+const relecture = (n: number, garder: (i: number) => boolean, nom = "Reflet"): RelectureEsquisses => ({ esquisses: Array.from({ length: n }, (_v, i) => ({ numero: i + 1, entiere: true, morceauDeVoisine: false, nomLu: garder(i) ? nom : "Refelt", ok: true, pourquoi: "net", piste: `piste ${i + 1}` })) });
 
 function deps(o: { garder: (tour: number, i: number) => boolean; panne?: string }) {
   const prompts: { modele: string; prompt: string; tour: number }[] = [], studio: number[] = [];
@@ -35,7 +35,7 @@ function deps(o: { garder: (tour: number, i: number) => boolean; panne?: string 
   return { d, prompts, studio };
 }
 
-describe("la recherche : découpe, relecture en un appel, reprise unique sous 8, panne jamais relancée", () => {
+describe("la recherche : découpe, relecture en un appel, 12 toujours (remplacements), panne jamais relancée", () => {
   it("12 esquisses gardées : aucune reprise, numérotées sans trou à partir de 1", async () => {
     const t = deps({ garder: () => true });
     const r = await rechercheDesEsquisses(t.d, { nom: "Reflet", metier });
@@ -46,30 +46,35 @@ describe("la recherche : découpe, relecture en un appel, reprise unique sous 8,
     expect(r.esquisses.map((e) => e.numero)).toEqual(Array.from({ length: 12 }, (_v, i) => i + 1));
     expect(r.contact).toBeTruthy();
   });
-  it("moins de 8 gardées : les deux planches refaites UNE fois, à la charge du Studio, avec « Évite ces pistes déjà présentées : … »", async () => {
-    // Premier tour : 5 gardées (nom mal écrit sur les autres) ; second tour : toujours peu ; jamais de troisième tour.
-    const t = deps({ garder: (tour, i) => (tour === 1 ? i < 5 : i < 2) });
+  it("des écartées : remplacées par une nouvelle planche du même modèle, à la charge du Studio, avec « Évite ces pistes déjà présentées : … », jusqu'à 12", async () => {
+    // Premier tour : les cases 6 de chaque planche ont un nom mal écrit ; le remplacement les remplace.
+    const t = deps({ garder: (tour, i) => (tour === 1 ? i % 6 !== 5 : true) });
     const r = await rechercheDesEsquisses(t.d, { nom: "Reflet", metier });
     expect(t.prompts).toHaveLength(4);
-    expect(t.prompts.filter((p) => p.tour === 2)).toHaveLength(2);
+    expect(t.prompts.filter((p) => p.tour === 2).map((p) => p.modele).sort()).toEqual(["gpt-image-2.5-sunburst", "gpt-image-2.6-flare"]);
     const second = t.prompts.find((p) => p.tour === 2)!.prompt;
-    expect(second).toMatch(/ Varie les couleurs d'une esquisse à l'autre\. Évite ces pistes déjà présentées : piste 1 ; piste 2 ; piste 3 ; piste 4 ; piste 5\.$/);
+    expect(second).toMatch(/ Varie les couleurs d'une esquisse à l'autre\. Évite ces pistes déjà présentées : piste 1 ; piste 2 ; piste 3 ; piste 4 ; piste 5 ; piste 7 ; piste 8 ; piste 9 ; piste 10 ; piste 11\.$/);
     expect(t.prompts[0].prompt).toMatch(/ Varie les couleurs d'une esquisse à l'autre\.$/);
     expect(second.startsWith(t.prompts[0].prompt)).toBe(true);
     expect(t.studio).toEqual([2]);
     expect(r.reprise).toBe(true);
-    expect(r.esquisses).toHaveLength(7);
-    expect(r.esquisses.map((e) => e.numero)).toEqual([1, 2, 3, 4, 5, 6, 7]);
-    expect(ESQUISSES_MIN).toBe(8);
+    expect(r.complete).toBe(true);
+    expect(r.correctesDesLesPlanches).toBe(10);
+    expect(r.remplacees.map((x) => [x.modele, x.index])).toEqual([["gpt-image-2.5-sunburst", 5], ["gpt-image-2.6-flare", 5]]);
+    expect(r.esquisses).toHaveLength(ESQUISSES_MONTREES);
+    expect(r.esquisses.map((e) => e.numero)).toEqual(Array.from({ length: 12 }, (_v, i) => i + 1));
+    expect(REMPLACEMENTS_MAX).toBe(3);
   });
-  it("une panne du fournisseur n'est jamais relancée : pas de reprise, l'autre planche sert", async () => {
+  it("une panne du fournisseur n'est jamais relancée : la recherche est incomplète, rien n'est montré", async () => {
     const t = deps({ garder: () => true, panne: "gpt-image-2.6-flare" });
     const r = await rechercheDesEsquisses(t.d, { nom: "Reflet", metier });
     expect(t.prompts.filter((p) => p.modele === "gpt-image-2.6-flare")).toHaveLength(1);
     expect(t.prompts).toHaveLength(2);
     expect(r.reprise).toBe(false);
+    expect(r.complete).toBe(false);
     expect(r.manquees.map((m) => m.modele)).toEqual(["gpt-image-2.6-flare"]);
-    expect(r.esquisses).toHaveLength(6);
+    expect(r.esquisses).toHaveLength(0);
+    expect(r.contact).toBeNull();
   });
   it("« d'autres pistes » : la numérotation continue, les pistes vues sont évitées", async () => {
     const t = deps({ garder: () => true });
@@ -77,18 +82,19 @@ describe("la recherche : découpe, relecture en un appel, reprise unique sous 8,
     expect(r.esquisses[0].numero).toBe(13);
     expect(t.prompts[0].prompt).toMatch(/ Varie les couleurs d'une esquisse à l'autre\. Évite ces pistes déjà présentées : un R dont la boucle dessine une voiture\.$/);
   });
-  it("le nom est comparé par le code ; une esquisse refusée n'est jamais gardée", () => {
+  it("le nom est comparé par le code ; une esquisse refusée n'est jamais gardée ; une arche ou un badge rond ne font plus écarter", () => {
     const c = [0, 1, 2, 3, 4].map((i) => ({ modele: "m", index: i, png: Buffer.from("x"), requestId: null }));
     const v: RelectureEsquisses = { esquisses: [
-      { numero: 1, entiere: true, morceauDeVoisine: false, nomLu: "REFLET", arche: false, ok: true, pourquoi: "", piste: "a" },
-      { numero: 2, entiere: false, morceauDeVoisine: false, nomLu: "Reflet", arche: false, ok: true, pourquoi: "coupée", piste: "b" },
-      { numero: 3, entiere: true, morceauDeVoisine: true, nomLu: "Reflet", arche: false, ok: true, pourquoi: "", piste: "c" },
-      { numero: 4, entiere: true, morceauDeVoisine: false, nomLu: "Reflet", arche: true, ok: true, pourquoi: "", piste: "d" },
-      { numero: 5, entiere: true, morceauDeVoisine: false, nomLu: "Réflet", arche: false, ok: true, pourquoi: "", piste: "e" },
+      { numero: 1, entiere: true, morceauDeVoisine: false, nomLu: "REFLET", ok: true, pourquoi: "", piste: "a" },
+      { numero: 2, entiere: false, morceauDeVoisine: false, nomLu: "Reflet", ok: true, pourquoi: "coupée", piste: "b" },
+      { numero: 3, entiere: true, morceauDeVoisine: true, nomLu: "Reflet", ok: true, pourquoi: "", piste: "c" },
+      // Une réponse d'avant qui dit « arche » : le champ est ignoré, l'esquisse est gardée (25 novembre 2026).
+      { numero: 4, entiere: true, morceauDeVoisine: false, nomLu: "Reflet", ...({ arche: true } as object), ok: true, pourquoi: "", piste: "d" },
+      { numero: 5, entiere: true, morceauDeVoisine: false, nomLu: "Réflet", ok: true, pourquoi: "", piste: "e" },
     ] };
     const a = appliquerLaRelecture("Reflet", c, v, 1);
-    expect(a.gardees.map((g) => g.piste)).toEqual(["a"]);
-    expect(a.refusees.map((r) => r.raison)).toEqual(["pas entière : coupée", "un morceau de la voisine", "une arche", "nom mal écrit : « Réflet »"]);
+    expect(a.gardees.map((g) => g.piste)).toEqual(["a", "d"]);
+    expect(a.refusees.map((r) => r.raison)).toEqual(["pas entière : coupée", "un morceau de la voisine", "nom mal écrit : « Réflet »"]);
     expect(nomExact("  reflet ", "Reflet")).toBe(true);
     expect(nomExact("Pénombre", "Penombre")).toBe(false);
   });
@@ -184,13 +190,15 @@ describe("la finalisation : la consigne de finaliser.py mot pour mot, plus la li
   });
 });
 
-const bon: RelectureDuLogo = { nomLu: "Reflet", ideeConservee: true, arche: false, phrase: "Nettoyage automobile", phraseDitLeMetier: true, note: 9, pourquoi: "net" };
-describe("la relecture du logo fini : le nom, l'idée, l'arche, la phrase et la note de 8 ; jamais « trop proche de l'esquisse »", () => {
+const bon: RelectureDuLogo = { nomLu: "Reflet", ideeConservee: true, phrase: "Nettoyage automobile", phraseDitLeMetier: true, note: 9, pourquoi: "net" };
+describe("la relecture du logo fini : le nom, l'idée, la phrase et la note de 8 ; jamais « trop proche de l'esquisse », jamais l'arche", () => {
   it("chaque raison refuse, seule ; le bon logo passe", () => {
     expect(raisonsDuRefus(bon, NOM)).toEqual([]);
     expect(raisonsDuRefus({ ...bon, nomLu: "Refl3t" }, NOM)[0]).toMatch(/nom est mal écrit/);
     expect(raisonsDuRefus({ ...bon, ideeConservee: false }, NOM)).toEqual(["l'idée de l'esquisse est perdue"]);
-    expect(raisonsDuRefus({ ...bon, arche: true }, NOM)).toEqual(["le dessin est posé dans une arche"]);
+    // Une arche, un médaillon ou un badge rond ne font plus refuser (25 novembre 2026) ; un verdict d'avant qui le dit est ignoré.
+    expect(raisonsDuRefus({ ...bon, ...({ arche: true } as object) } as RelectureDuLogo, NOM)).toEqual([]);
+    expect(RelectureDuLogoSchema.parse({ ...bon, arche: true })).not.toHaveProperty("arche");
     expect(raisonsDuRefus({ ...bon, phrase: "Brillance garantie", phraseDitLeMetier: false }, NOM)[0]).toMatch(/inventée et ne dit pas le vrai métier/);
     expect(raisonsDuRefus({ ...bon, note: 7.5 }, NOM)[0]).toMatch(/pas au niveau \(7\.5\/10, il faut 8\)/);
     expect(raisonsDuRefus({ ...bon, note: 8 }, NOM)).toEqual([]);
@@ -276,11 +284,11 @@ describe("la finalisation entière : texte réécrit une fois, logo refait une f
     expect(t.vu.studio).toEqual(["finaliser"]);
   });
   it("refusé deux fois : l'identité n'est pas construite, jamais de troisième essai", async () => {
-    const t = f({ textes: [AVEC_EVOLUTION], verdicts: [{ ...bon, arche: true }, { ...bon, arche: true }, bon] });
+    const t = f({ textes: [AVEC_EVOLUTION], verdicts: [{ ...bon, ideeConservee: false }, { ...bon, ideeConservee: false }, bon] });
     const r = await finaliserUneEsquisse(t.d, { nom: NOM, metier: METIER, esquisse: await esquisse() });
     expect(r.ok).toBe(false);
     expect(t.vu.finaliser).toHaveLength(2);
-    if (!r.ok) expect(r.raison).toMatch(/refusé deux fois \(le dessin est posé dans une arche\)/);
+    if (!r.ok) expect(r.raison).toMatch(/refusé deux fois \(l'idée de l'esquisse est perdue\)/);
     const { phraseDuLogoNonConstruit } = await import("@/lib/syna-agent/logo-graphistes");
     expect(phraseDuLogoNonConstruit(4, [4, 8])).toMatch(/je ne construis pas cette identité.*l'esquisse|la 8/);
   });

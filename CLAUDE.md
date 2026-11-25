@@ -114,14 +114,19 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   deux planches de six esquisses en même temps, par les deux modèles d'images des essais du 24 novembre, avec le même
   texte exact suivi de « Varie les couleurs d'une esquisse à l'autre. » (ses mots du 24 novembre : « Ouais mais c'est ça
   que je veux dans sina c'est la nouvelle planche avec un peu plus de coloris »), rien d'autre (ni couleurs du client,
-  ni goûts, ni logos joints). **Le tri** : le Studio découpe gratuitement,
-  refuse une case vide, coupée ou collée au bord ; le relecteur le plus fort, effort moyen, relit toutes les esquisses
-  en un appel (entière, rien de la voisine, nom exact comparé par le code, pas d'arche) ; une esquisse refusée n'est
-  jamais montrée ; moins de huit : les deux planches refaites une fois à la charge du Studio, avec « Évite ces pistes
-  déjà présentées : … » à la toute fin, après la phrase des couleurs. **La phrase sous le nom** (24 novembre au soir :
+  ni goûts, ni logos joints). **Le tri** : le Studio découpe gratuitement (le fond comparé à sa vraie couleur, mesurée :
+  aucune forme visible coupée, une marge gardée), refuse une case vide, coupée ou collée au bord ; le relecteur le plus
+  fort, effort moyen, relit toutes les esquisses en un appel (entière, rien de la voisine, nom exact comparé par le
+  code, pas d'arche) ; une esquisse refusée n'est jamais montrée. **Toujours 12 esquisses correctes** (25 novembre 2026 :
+  « La création de la planche de logo, et jamais au grand jamais on propose une planche de logo sans les 12 logos fait
+  correctement », puis « Non sina doit réussir à faire les 12 logos correctement sur la planche ») : 6 de chaque modèle ;
+  chaque écartée est remplacée avec le même modèle, par une nouvelle planche de six (moins chère qu'une esquisse seule),
+  avec « Évite ces pistes déjà présentées : … » à la toute fin, après la phrase des couleurs, puis relue ; à la charge du
+  Studio, au plus trois tours ; borne atteinte : erreur visible au Studio, rien de montré au client, jamais moins de 12.
+  Le script d'essai dit combien des 12 étaient correctes dès les deux planches, et lesquelles ont été remplacées. **La phrase sous le nom** (24 novembre au soir :
   « Non ça donne des idées de slogan, le seul truc c'est que si le client veux le slogan de la 5 et le logo 1, sina doit
   pouvoir le faire ») : les phrases restent dans la recherche, dont la demande ne change pas ; le relecteur des esquisses
-  relève, mot pour mot, la phrase de chaque esquisse (ou « aucune ») et dit si elle est bien écrite, le code refuse en
+  relève, mot pour mot, la phrase de chaque esquisse (ou « aucune »), toutes ses lignes dans l'ordre (25 novembre 2026 : une seconde ligne manquée dans l'essai d'Écume) et dit si elle est bien écrite, le code refuse en
   plus les fautes évidentes ; une phrase douteuse n'est jamais proposée telle quelle. **Le choix** : le client coche ses
   esquisses, deux au moins, au plus 2, 3 ou 4 selon son forfait ; il combine librement le logo d'une esquisse avec la
   phrase d'une autre, sans phrase, ou avec sa propre phrase, reprise mot pour mot ; SINA le propose en une phrase, sans

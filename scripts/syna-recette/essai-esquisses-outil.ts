@@ -5,8 +5,10 @@
  *
  * La recherche est EXACTEMENT celle du parcours (logo-graphistes-tache.ts) : `ecrireLeMetier`, puis `uneRecherche` avec
  * les vrais appels (`vraisAppels`) : deux planches, la découpe, un seul appel au relecteur, une esquisse refusée jamais
- * montrée, moins de huit esquisses gardées : les deux planches refaites une fois à la charge du Studio avec « Évite ces
- * pistes déjà présentées : … », la phrase sous le nom relevée pour chaque esquisse gardée.
+ * montrée, chaque esquisse écartée remplacée par le même modèle (une nouvelle planche de six, avec « Évite ces pistes
+ * déjà présentées : … », à la charge du Studio) jusqu'à 12 correctes, au plus `REMPLACEMENTS_MAX` tours ; la phrase sous
+ * le nom relevée en entier pour chaque esquisse gardée. Le compte rendu et esquisses.json disent le vrai résultat :
+ * combien des 12 étaient correctes dès les deux planches, combien ont dû être remplacées, lesquelles et pourquoi.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -20,14 +22,14 @@ export type { ClientDeLEssai };
 
 // ---------------------------------------------------------------- le devis, sans aucun appel
 
-export type LigneDuDevisDesEsquisses = { appel: string; modele: string; quand: "toujours" | "si le contrôle refuse le métier" | "si moins de 8 esquisses sont gardées"; charge: "client" | "Studio"; probableMicro: number; maxMicro: number };
+export type LigneDuDevisDesEsquisses = { appel: string; modele: string; quand: string; charge: "client" | "Studio"; probableMicro: number; maxMicro: number };
 export type DevisDesEsquisses = {
   lignes: LigneDuDevisDesEsquisses[];
   /** Sans réécriture du métier ni reprise des planches. */
   probableMicro: number;
-  /** Si le métier est réécrit une fois et les deux planches refaites une fois (avec leur relecture). */
+  /** Si le métier est réécrit une fois et un tour de remplacement fait (les deux planches et leur relecture). */
   probableAvecReprisesMicro: number;
-  /** La somme des maxima de tous les appels possibles, reprise comprise : le plafond minimal pour aller au bout à coup sûr. */
+  /** La somme des maxima de tous les appels possibles, remplacements compris jusqu'à la borne : le plafond minimal pour aller au bout à coup sûr. */
   plafondMinimalMicro: number;
   /** Le devis du Studio pour la recherche (`devisDeLaRecherche`) : plafond du client et borne du Studio. */
   devisDuStudio: { maxMicro: number; studioMaxMicro: number; probableMicro: number };
@@ -37,24 +39,28 @@ export type DevisDesEsquisses = {
 
 /**
  * Le devis de l'essai, appel par appel, avec les fonctions du devis du Studio (aucun appel) : le métier (et sa réécriture
- * unique, à la charge du Studio), les deux planches, la relecture des esquisses, puis la reprise unique (les deux planches
- * et leur relecture, à la charge du Studio) si moins de 8 esquisses sont gardées.
+ * unique, à la charge du Studio), les deux planches, la relecture des esquisses, puis jusqu'à `REMPLACEMENTS_MAX` tours de
+ * remplacement (une planche par modèle à qui il manque des esquisses, et leur relecture, à la charge du Studio).
  */
 export async function devisDesEsquisses(): Promise<DevisDesEsquisses> {
   const { devisDUnAppel, devisDeLaRecherche, PRIX_MESURES } = await import("../../src/lib/syna-agent/logo-graphistes");
   const { logoPlancheMaxMicro } = await import("../../src/lib/ai/media-providers");
   const { LOGO_MODELS } = await import("../../src/lib/ai/logo-policy");
   const { jsonCallMaxMicro } = await import("../../src/lib/ai/llm");
+  const { REMPLACEMENTS_MAX } = await import("../../src/lib/syna-agent/esquisses");
   const m = devisDUnAppel("metier"), r = devisDUnAppel("esquisses");
   const nomDe = (a: typeof m) => `${a.modele.provider}:${a.modele.model}${a.modele.effort ? ` (effort ${a.modele.effort})` : ""}`;
-  const planches = (quand: LigneDuDevisDesEsquisses["quand"], charge: LigneDuDevisDesEsquisses["charge"]) => LOGO_MODELS.recherche.map((modele) => ({ appel: quand === "toujours" ? "planche de six esquisses" : "planche refaite (reprise unique)", modele: `openai:${modele}`, quand, charge, probableMicro: Math.round((PRIX_MESURES.planche[modele] ?? 0.03) * 1_000_000), maxMicro: logoPlancheMaxMicro(modele) }));
+  const planches = (quand: string, charge: LigneDuDevisDesEsquisses["charge"], appel: string) => LOGO_MODELS.recherche.map((modele) => ({ appel, modele: `openai:${modele}`, quand, charge, probableMicro: Math.round((PRIX_MESURES.planche[modele] ?? 0.03) * 1_000_000), maxMicro: logoPlancheMaxMicro(modele) }));
+  const remplacements = Array.from({ length: REMPLACEMENTS_MAX }, (_v, i) => {
+    const quand = i === 0 ? "si une esquisse est écartée" : `si une esquisse est encore écartée (tour ${i + 1})`;
+    return [...planches(quand, "Studio", `remplacement ${i + 1} : nouvelle planche du même modèle`), { appel: `relecture du remplacement ${i + 1}`, modele: nomDe(r), quand, charge: "Studio" as const, probableMicro: r.probable, maxMicro: r.max }];
+  }).flat();
   const lignes: LigneDuDevisDesEsquisses[] = [
     { appel: "métier", modele: nomDe(m), quand: "toujours", charge: "client", probableMicro: m.probable, maxMicro: m.max },
     { appel: "métier réécrit (une fois)", modele: nomDe(m), quand: "si le contrôle refuse le métier", charge: "Studio", probableMicro: m.probable, maxMicro: m.max },
-    ...planches("toujours", "client"),
+    ...planches("toujours", "client", "planche de six esquisses"),
     { appel: "relecture des esquisses (un appel)", modele: nomDe(r), quand: "toujours", charge: "client", probableMicro: r.probable, maxMicro: r.max },
-    ...planches("si moins de 8 esquisses sont gardées", "Studio"),
-    { appel: "relecture des esquisses refaites", modele: nomDe(r), quand: "si moins de 8 esquisses sont gardées", charge: "Studio", probableMicro: r.probable, maxMicro: r.max },
+    ...remplacements,
   ];
   const somme = (f: (l: LigneDuDevisDesEsquisses) => boolean, k: "probableMicro" | "maxMicro") => lignes.filter(f).reduce((s, l) => s + l[k], 0);
   const reparation = (a: typeof m) => Math.max(0, (jsonCallMaxMicro(a.modele.provider, a.modele.model, a.jetons.input * 1.5, a.jetons.max, a.jetons.max, a.modele.effort || null)?.maxMicro ?? a.max) - a.max);
@@ -62,10 +68,10 @@ export async function devisDesEsquisses(): Promise<DevisDesEsquisses> {
   return {
     lignes,
     probableMicro: Math.ceil(somme((l) => l.quand === "toujours", "probableMicro")),
-    probableAvecReprisesMicro: Math.ceil(somme(() => true, "probableMicro")),
+    probableAvecReprisesMicro: Math.ceil(somme((l) => l.quand === "toujours" || l.quand === "si le contrôle refuse le métier" || l.quand === "si une esquisse est écartée", "probableMicro")),
     plafondMinimalMicro: Math.ceil(somme(() => true, "maxMicro")),
     devisDuStudio: { maxMicro: d.maxMicro, studioMaxMicro: d.studioMaxMicro, probableMicro: d.probableMicro },
-    reparationsMicro: Math.ceil(2 * reparation(m) + 2 * reparation(r)),
+    reparationsMicro: Math.ceil(2 * reparation(m) + (1 + REMPLACEMENTS_MAX) * reparation(r)),
   };
 }
 
@@ -75,8 +81,8 @@ export function devisDesEsquissesEnTexte(d: DevisDesEsquisses): string[] {
     "Devis de l'essai des esquisses (fonctions du devis du Studio, aucun appel) :",
     ...d.lignes.map((x) => `- ${x.appel} · ${x.modele} · ${x.quand} · charge ${x.charge} · probable ${euros(x.probableMicro)} · au plus ${euros(x.maxMicro)}`),
     `Probable, sans reprise : ${euros(d.probableMicro)} (devis du Studio : ${euros(d.devisDuStudio.probableMicro)})`,
-    `Probable, si le métier est réécrit et les planches refaites une fois : ${euros(d.probableAvecReprisesMicro)}`,
-    `Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprise comprise) : ${euros(d.plafondMinimalMicro)}`,
+    `Probable, si le métier est réécrit et un tour de remplacement fait (deux planches et leur relecture) : ${euros(d.probableAvecReprisesMicro)}`,
+    `Plafond minimal pour aller au bout à coup sûr (somme des maxima, remplacements compris jusqu'à la borne) : ${euros(d.plafondMinimalMicro)}`,
     `  dont plafond du client de la tâche ${euros(d.devisDuStudio.maxMicro)} et borne du Studio ${euros(d.devisDuStudio.studioMaxMicro)} (devisDeLaRecherche)`,
     `Hors plafond : une réponse de texte mal formée à réparer coûterait au plus ${euros(d.reparationsMicro)} de plus en tout.`,
   ];
@@ -96,7 +102,8 @@ export const raisonCourte = (r: string): string[] => {
   return lignes.slice(0, 2);
 };
 
-export type CaseDecoupee = { tour: number; modele: string; index: number; png: Buffer | null; numero?: number; raison?: string };
+/** `enPlus` : correcte, mais pas nécessaire (les 6 de son modèle étaient déjà là) : un bandeau gris « EN PLUS », pas rouge. */
+export type CaseDecoupee = { tour: number; modele: string; index: number; png: Buffer | null; numero?: number; raison?: string; enPlus?: boolean };
 
 /**
  * La planche-contact COMPLÈTE, pour le propriétaire : toutes les esquisses découpées, dans l'ordre des planches ; les gardées
@@ -113,13 +120,14 @@ export async function plancheContactComplete(cases: CaseDecoupee[], colonnes = 6
     const fond = c.png ? await sharp(c.png).resize(cote, cote, { fit: "contain", background: "#FFFFFF" }).png().toBuffer()
       : await sharp({ create: { width: cote, height: cote, channels: 3, background: "#FFFFFF" } }).png().toBuffer();
     // Ce que le propriétaire lit : la planche (1 ou 2, dans l'ordre des modèles de recherche) et la case, jamais un nom de modèle.
-    const origine = `${c.tour === 2 ? "reprise · " : ""}planche ${(LOGO_MODELS.recherche as readonly string[]).indexOf(c.modele) + 1 || "?"} · case ${c.index + 1}`;
+    const origine = `${c.tour > 1 ? `remplacement ${c.tour - 1} · ` : ""}planche ${(LOGO_MODELS.recherche as readonly string[]).indexOf(c.modele) + 1 || "?"} · case ${c.index + 1}`;
     let svg: string;
     if (c.numero != null) {
       svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${cote}" height="${cote}"><rect x="6" y="6" width="44" height="34" rx="8" fill="#111111"/><text x="28" y="30" font-family="sans-serif" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">${c.numero}</text><text x="${cote - 6}" y="${cote - 8}" font-family="sans-serif" font-size="11" fill="#666666" text-anchor="end">${echapper(origine)}</text></svg>`;
     } else {
       const r = raisonCourte(c.raison ?? "écartée");
-      svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${cote}" height="${cote}"><rect width="${cote}" height="${cote}" fill="#FFFFFF" fill-opacity="0.45"/><rect x="2" y="2" width="${cote - 4}" height="${cote - 4}" fill="none" stroke="#C62828" stroke-width="4"/><line x1="0" y1="0" x2="${cote}" y2="${cote}" stroke="#C62828" stroke-width="3" stroke-opacity="0.55"/><rect x="0" y="${cote - 78}" width="${cote}" height="78" fill="#C62828"/><text x="${cote / 2}" y="${cote - 54}" font-family="sans-serif" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">ÉCARTÉE</text>${r.map((l, k) => `<text x="${cote / 2}" y="${cote - 34 + k * 16}" font-family="sans-serif" font-size="13" fill="#FFFFFF" text-anchor="middle">${echapper(l)}</text>`).join("")}<text x="${cote - 6}" y="16" font-family="sans-serif" font-size="11" fill="#C62828" text-anchor="end">${echapper(origine)}</text></svg>`;
+      const teinte = c.enPlus ? "#6B6B6B" : "#C62828", titre = c.enPlus ? "EN PLUS" : "ÉCARTÉE";
+      svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${cote}" height="${cote}"><rect width="${cote}" height="${cote}" fill="#FFFFFF" fill-opacity="0.45"/><rect x="2" y="2" width="${cote - 4}" height="${cote - 4}" fill="none" stroke="${teinte}" stroke-width="4"/>${c.enPlus ? "" : `<line x1="0" y1="0" x2="${cote}" y2="${cote}" stroke="#C62828" stroke-width="3" stroke-opacity="0.55"/>`}<rect x="0" y="${cote - 78}" width="${cote}" height="78" fill="${teinte}"/><text x="${cote / 2}" y="${cote - 54}" font-family="sans-serif" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">${titre}</text>${r.map((l, k) => `<text x="${cote / 2}" y="${cote - 34 + k * 16}" font-family="sans-serif" font-size="13" fill="#FFFFFF" text-anchor="middle">${echapper(l)}</text>`).join("")}<text x="${cote - 6}" y="16" font-family="sans-serif" font-size="11" fill="${teinte}" text-anchor="end">${echapper(origine)}</text></svg>`;
     }
     return [{ input: fond, left: x, top: y }, { input: Buffer.from(svg), left: x, top: y }];
   }));
@@ -130,11 +138,23 @@ export async function plancheContactComplete(cases: CaseDecoupee[], colonnes = 6
 
 export type EsquisseDeLEssai = { numero: number; fichier: string; modele: string; tour: number; case: number; piste: string; pourquoi: string; phrase?: PhraseDeLEsquisse };
 export type EcarteeDeLEssai = { fichier: string | null; modele: string; tour: number; case: number; raison: string };
+/** Le vrai résultat : combien des 12 étaient correctes dès les deux planches ; combien ont dû être remplacées, et lesquelles. */
+export type CompteDesDouze = { voulues: number; correctesDesLesPlanches: number; remplacees: number; lesquelles: { modele: string; case: number; raison: string }[]; toursDeRemplacement: number; complete: boolean };
 export type ResultatDeLEssai = {
   arret?: string; metier?: string; texte?: string; planches: string[]; esquisses: number; gardees: EsquisseDeLEssai[]; ecartees: EcarteeDeLEssai[];
   /** Les écartées, en mots (« modèle, case N : raison »). */
   refusees: string[]; manquees: string[]; reprise: boolean; notes: string[]; depenseMicro: number;
+  compte?: CompteDesDouze;
 };
+
+/** Le compte des 12, en mots, pour le compte rendu. */
+export function compteEnTexte(c: CompteDesDouze): string[] {
+  return [
+    `Vrai résultat : ${c.correctesDesLesPlanches} esquisse(s) correcte(s) sur ${c.voulues} dès les deux planches.`,
+    `Remplacées : ${c.remplacees}${c.remplacees ? ` (en ${c.toursDeRemplacement} tour(s) de remplacement, à la charge du Studio)` : ""}${c.complete ? "" : ` ; INCOMPLÈTE : moins de ${c.voulues} esquisses correctes, rien ne serait montré au client`}.`,
+    ...c.lesquelles.map((x) => `- planche ${x.modele}, case ${x.case} : ${x.raison}`),
+  ];
+}
 
 /**
  * L'essai lui-même. `ai` : les appels (par défaut `graphistesDeps.ai`, sinon les vrais appels de SINA, sous le plafond du
@@ -157,7 +177,7 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
   const { account, project } = await import("../../tests/conversation209-fixtures");
   const { graphistesDeps, vraisAppels, ecrireLeMetier, uneRecherche } = await import("../../src/lib/syna-agent/logo-graphistes");
   const { demandeDeRecherche } = await import("../../src/lib/syna-agent/logo-recherche");
-  const { decouperLaPlanche, RELECTEUR_DES_ESQUISSES, demandeAuRelecteurDesEsquisses } = await import("../../src/lib/syna-agent/esquisses");
+  const { decouperLaPlanche, RELECTEUR_DES_ESQUISSES, demandeAuRelecteurDesEsquisses, ESQUISSES_MONTREES } = await import("../../src/lib/syna-agent/esquisses");
   const { depensesDeLaTache, withTrace } = await import("../../src/lib/ai/trace");
   const { PlafondDeLEssaiAtteint, depensesDeLEssai, arretParLEssai } = await import("../../src/lib/ai/plafond-essai");
   const { runForUser } = await import("../../src/lib/ai/access");
@@ -184,10 +204,10 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
     ...brut,
     planche: async (modele, prompt, cle) => {
       const tour = Number(/-t(\d+)-/.exec(cle)?.[1] ?? 1);
-      ecrireFichier(`${tour === 2 ? "reprise-" : ""}texte-envoye.txt`, `${prompt}\n`);
+      ecrireFichier(`${tour > 1 ? `remplacement-${tour - 1}-${modele}-` : ""}texte-envoye.txt`, `${prompt}\n`);
       const r = await brut.planche(modele, prompt, cle);
       planchesRecues.push({ tour, modele, png: r.png });
-      res.planches.push(ecrireFichier(`planche-${tour === 2 ? "reprise-" : ""}${modele}.png`, r.png));
+      res.planches.push(ecrireFichier(`planche-${tour > 1 ? `remplacement-${tour - 1}-` : ""}${modele}.png`, r.png));
       return r;
     },
     relireEsquisses: async (images, nom, cle) => {
@@ -236,9 +256,10 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
     lignes.push(`Phrase du métier : ${metier.metier}`, `Ce que la piste explore : ${metier.court} (${metier.piste})`);
     res.texte = demandeDeRecherche({ nom: CLIENT.nom, metier });
     lignes.push("", "Texte exact envoyé aux deux modèles (premier tour) :", res.texte, "");
-    // La recherche du parcours, telle quelle : planches, découpe, une relecture, reprise unique si moins de 8.
+    // La recherche du parcours, telle quelle : planches, découpe, une relecture, remplacements jusqu'à 12 correctes.
     const r = await uneRecherche(ai, { nom: CLIENT.nom, metier, depart: 1, eviter: [], recherche: 1 });
     res.reprise = r.reprise; res.notes = r.notes;
+    res.compte = { voulues: ESQUISSES_MONTREES, correctesDesLesPlanches: r.correctesDesLesPlanches, remplacees: r.remplacees.length, lesquelles: r.remplacees.map((x) => ({ modele: x.modele, case: x.index + 1, raison: x.raison })), toursDeRemplacement: r.tours, complete: r.complete };
     res.manquees = r.manquees.map((m) => `${m.modele} : ${m.raison}${m.plafond ? " (plafond)" : ""}`);
     // Les esquisses gardées, numérotées comme le Studio les montre ; leur phrase sous le nom.
     for (const e of r.esquisses) {
@@ -252,11 +273,11 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
     for (const p of planchesRecues) { const d = await decouperLaPlanche(p.png); decoupes.set(`${p.tour}:${p.modele}`, d.ok ? d.cases.map((c) => c.png ?? null) : []); }
     for (const x of r.refusees) {
       const png = decoupes.get(`${x.tour}:${x.modele}`)?.[x.index] ?? null;
-      const fichier = png ? ecrireFichier(`ecartee-${x.tour === 2 ? "reprise-" : ""}${x.modele}-case-${x.index + 1}.png`, png) : null;
+      const fichier = png ? ecrireFichier(`ecartee-${x.tour > 1 ? `remplacement-${x.tour - 1}-` : ""}${x.modele}-case-${x.index + 1}.png`, png) : null;
       res.ecartees.push({ fichier, modele: x.modele, tour: x.tour, case: x.index + 1, raison: x.raison });
     }
     for (const pr of r.planchesRefusees) res.ecartees.push({ fichier: null, modele: pr.modele, tour: pr.tour, case: 0, raison: `planche entière refusée à la découpe : ${pr.raison}` });
-    res.refusees = res.ecartees.map((x) => `${x.tour === 2 ? "reprise, " : ""}${x.modele}, ${x.case ? `case ${x.case}` : "planche entière"} : ${x.raison}`);
+    res.refusees = res.ecartees.map((x) => `${x.tour > 1 ? `remplacement ${x.tour - 1}, ` : ""}${x.modele}, ${x.case ? `case ${x.case}` : "planche entière"} : ${x.raison}`);
     // La planche-contact complète : toutes les cases découpées, les écartées marquées.
     const cases: CaseDecoupee[] = [];
     for (const p of planchesRecues) {
@@ -264,21 +285,23 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
       d.forEach((png, index) => {
         const g = r.esquisses.find((e) => e.tour === p.tour && e.modele === p.modele && e.index === index);
         const x = r.refusees.find((e) => e.tour === p.tour && e.modele === p.modele && e.index === index);
-        cases.push({ tour: p.tour, modele: p.modele, index, png, ...(g ? { numero: g.numero } : { raison: x?.raison ?? "écartée" }) });
+        cases.push({ tour: p.tour, modele: p.modele, index, png, ...(g ? { numero: g.numero } : { raison: x?.raison ?? "écartée", ...(x?.enPlus ? { enPlus: true } : {}) }) });
       });
     }
     if (cases.length) ecrireFichier("planche-contact-complete.png", await plancheContactComplete(cases));
-    ecrireFichier("esquisses.json", json({ nom: CLIENT.nom, metier, gardees: res.gardees, ecartees: res.ecartees, reprise: res.reprise }));
-    lignes.push(`Esquisses gardées par le relecteur : ${res.gardees.length}${res.reprise ? " (après la reprise unique des deux planches, à la charge du Studio)" : ""} — planche-contact.png`,
+    ecrireFichier("esquisses.json", json({ nom: CLIENT.nom, metier, compte: res.compte, gardees: res.gardees, ecartees: res.ecartees, reprise: res.reprise }));
+    lignes.push(...compteEnTexte(res.compte), "",
+      `Esquisses gardées par le relecteur : ${res.gardees.length}${res.reprise ? " (remplacements compris, à la charge du Studio)" : ""} — ${r.contact ? "planche-contact.png" : "aucune planche-contact : moins de 12, rien ne serait montré au client"}`,
       ...res.gardees.map((g) => `Esquisse ${nn(g.numero)} : ${g.fichier} ; piste « ${g.piste} » ; phrase sous le nom : ${g.phrase ? `« ${g.phrase.texte} » (${g.phrase.ok ? "proposable telle quelle" : `jamais proposée telle quelle : ${(g.phrase.raisons ?? []).join(", ")}`})` : "aucune"}`),
       "", `Esquisses écartées (jamais montrées au client) : ${res.ecartees.length} — planche-contact-complete.png`,
-      ...(res.ecartees.length ? res.ecartees.map((x) => `- ${x.tour === 2 ? "reprise, " : ""}${x.modele}, ${x.case ? `case ${x.case}` : "planche entière"} : ${x.raison}${x.fichier ? ` (${x.fichier})` : ""}`) : ["- aucune"]),
+      ...(res.ecartees.length ? res.ecartees.map((x) => `- ${x.tour > 1 ? `remplacement ${x.tour - 1}, ` : ""}${x.modele}, ${x.case ? `case ${x.case}` : "planche entière"} : ${x.raison}${x.fichier ? ` (${x.fichier})` : ""}`) : ["- aucune"]),
       "", `Verdict complet du relecteur : ${verdicts.map((v) => `relecture-${v.tour}-verdict.json`).join(", ") || "aucun"}`);
     const refusParLEssai = arretParLEssai(jobId) ?? null;
     const plafondDeLEssai = r.manquees.find((m) => m.plafond && /essai/.test(m.raison));
     if (refusParLEssai) res.arret = `le garde-fou de l'essai a refusé un appel : ${refusParLEssai.message}`;
     else if (plafondDeLEssai) res.arret = `le garde-fou de l'essai a refusé ${plafondDeLEssai.modele} : ${plafondDeLEssai.raison}`;
     else if (r.manquees.some((m) => m.plafond)) res.arret = `un plafond a refusé : ${r.manquees.filter((m) => m.plafond).map((m) => m.modele).join(", ")}`;
+    else if (!r.complete) res.arret = `recherche incomplète : moins de ${ESQUISSES_MONTREES} esquisses correctes après ${r.tours} tour(s) de remplacement ; dans le parcours, la tâche s'arrêterait en erreur visible au Studio et rien ne serait montré au client`;
     return ecrire();
   })));
 }

@@ -51,11 +51,13 @@ describe("la tâche syna.logo.graphistes (faux appels)", async () => {
     J.updateJourney(cid, (j) => { j.start.offer = { value: "Je nettoie les voitures à domicile, dedans et dehors.", status: "answered", source: "client", at: Date.now() } as never; });
     G.graphistesDeps.ai = () => faux();
     const r1 = await tache(user, projectId, { conversationId: cid, phase: "recherche", nom: "Reflet", capMicro: 5_000_000 }) as any;
-    // 12 esquisses découpées, une sur trois refusée par le relecteur : 8 gardées, aucune reprise.
-    expect(r1.esquisses).toBe(8);
-    expect(appels.filter((a) => a.startsWith("planche"))).toHaveLength(2);
+    // 12 esquisses découpées, une sur trois refusée par le relecteur : 8 correctes ; un tour de remplacement (une planche
+    // de chaque modèle, à la charge du Studio) donne les 4 qui manquent : toujours 12 montrées.
+    expect(r1.esquisses).toBe(12);
+    expect(r1.correctes).toBe(8);
+    expect(appels.filter((a) => a.startsWith("planche"))).toHaveLength(4);
     const e1 = J.journeyOf(cid).graphistes!;
-    expect(e1.esquisses.map((e) => e.numero)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(e1.esquisses.map((e) => e.numero)).toEqual(Array.from({ length: 12 }, (_v, i) => i + 1));
     expect(e1.max).toBe(4); // forfait « dominer » de la fixture
     expect(getAsset(e1.contactAssetId!)).toBeTruthy();
     // Chaque planche garde son reçu (texte envoyé, modèle, identifiant).
@@ -66,7 +68,7 @@ describe("la tâche syna.logo.graphistes (faux appels)", async () => {
     const ctx = { user, projectId, conversationId: cid, runId: `run-${Date.now()}`, attachment: () => null } as any;
     const choisir = logoTools.find((t) => t.name === "logo.choisir")!;
     expect((await fr(() => choisir.run(ctx, { esquisses: [1, 2, 3, 4, 5] })) as any).ok).toBe(false);
-    expect((await fr(() => choisir.run(ctx, { esquisses: [9] })) as any).ok).toBe(false);
+    expect((await fr(() => choisir.run(ctx, { esquisses: [13] })) as any).ok).toBe(false);
     J.updateJourney(cid, (j) => { j.graphistes!.finalisationsAccordees = G.devisDesFinalisations(2).maxMicro; });
     const c = await fr(() => choisir.run(ctx, { esquisses: [7, 2] })) as any;
     expect(c.ok).toBe(true);
@@ -93,8 +95,9 @@ describe("la tâche syna.logo.graphistes (faux appels)", async () => {
     const avant = appels.filter((a) => a === "metier").length;
     await tache(user, projectId, { conversationId: cid, phase: "pistes", capMicro: 5_000_000 });
     expect(appels.filter((a) => a === "metier").length).toBe(avant);
-    expect(appels.filter((a) => a.endsWith("évite"))).toHaveLength(2);
-    expect(J.journeyOf(cid).graphistes!.esquisses.map((e) => e.numero)).toEqual(Array.from({ length: 16 }, (_v, i) => i + 1));
+    // Le remplacement de la première recherche (2) et les deux tours de la seconde (4) évitent les pistes vues.
+    expect(appels.filter((a) => a.endsWith("évite"))).toHaveLength(6);
+    expect(J.journeyOf(cid).graphistes!.esquisses.map((e) => e.numero)).toEqual(Array.from({ length: 24 }, (_v, i) => i + 1));
     expect(J.journeyOf(cid).graphistes!.recherches).toBe(2);
   });
 

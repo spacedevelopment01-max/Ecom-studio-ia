@@ -55,17 +55,26 @@ function resumeDesPhrases(phrases: Record<string, PhraseChoisie>): string {
 const motsDuClient = (ctx: ToolContext): string[] => lastMessages(ctx.conversationId, 40).filter((m) => m.role === "user").map((m) => String(m.content?.text ?? ""));
 
 /**
- * La phrase de chaque logo, dite en court à SINA (clé : le logo) : un numéro = la phrase de cette esquisse, « aucune » =
- * sans phrase, tout autre texte = ses mots à lui, mot pour mot. Traduit ici dans la forme contrôlée par le code.
+ * La phrase de chaque logo, dite en court à SINA (clé : le logo) : un numéro = la phrase de cette esquisse, toutes ses
+ * lignes dans l'ordre ; « 5:1 » ou « 5:1,3 » = seulement ces lignes-là de sa phrase (25 novembre 2026 : le texte sous le nom peut
+ * avoir plusieurs lignes) ; « aucune » = sans phrase ; tout autre texte = ses mots à lui, mot pour mot, « / » entre ses
+ * lignes. Traduit ici dans la forme contrôlée par le code.
  */
-const PhrasesCourtes = z.record(z.string(), z.union([z.number().int(), z.string()]));
-export function phrasesDites(p: Record<string, number | string> | undefined): PhraseDuClient[] {
-  return Object.entries(p ?? {}).map(([logo, v]) => ({ logo: Number(logo), ...(typeof v === "number" ? { de: v } : /^aucune$/i.test(v.trim()) ? { aucune: true as const } : { texte: v }) }));
+const PhraseCourte = z.union([z.number().int(), z.string()]);
+const PhrasesCourtes = z.record(z.string(), PhraseCourte);
+type PhraseCourteDite = z.infer<typeof PhraseCourte>;
+/** « 5:1 » ou « 5:1,3 » : les lignes 1 (et 3) de la phrase de l'esquisse 5. */
+const DES_LIGNES = /^\s*(\d+)\s*:\s*(\d+(?:\s*,\s*\d+)*)\s*$/;
+export function phrasesDites(p: Record<string, PhraseCourteDite> | undefined): PhraseDuClient[] {
+  return Object.entries(p ?? {}).map(([logo, v]) => {
+    const l = typeof v === "string" ? DES_LIGNES.exec(v) : null;
+    return { logo: Number(logo), ...(typeof v === "number" ? { de: v } : l ? { de: Number(l[1]), lignes: l[2].split(",").map(Number) } : /^aucune$/i.test(v.trim()) ? { aucune: true as const } : { texte: v }) };
+  });
 }
 
-const choisirTool: AgentTool<{ esquisses: number[]; phrases?: Record<string, number | string> }> = {
+const choisirTool: AgentTool<{ esquisses: number[]; phrases?: Record<string, PhraseCourteDite> }> = {
   name: "logo.choisir", module: "marque", kind: "write", needsProject: true,
-  description: "Esquisses choisies PAR LE CLIENT (de 2 au max du forfait). phrases (par logo) s'il le dit : n° d'esquisse, « aucune », ses mots. Gratuit ; lance les logos finis.",
+  description: "Esquisses PAR LE CLIENT (de 2 au max du forfait). phrases s'il le dit : n° d'esquisse, 5:1 (ligne 1), « aucune », ses mots (/ en lignes). Gratuit ; lance les logos.",
   args: z.object({ esquisses: z.array(z.number().int().min(1)).min(1).max(8), phrases: PhrasesCourtes.optional() }).strict(),
   run: (ctx, a) => {
     const etat = etatDe(ctx);
@@ -104,10 +113,10 @@ const plancheVisee = (j: Journey, planche: string | undefined): string | undefin
 const SANS_PLANCHE = { ok: false as const, internal: true, summary: "Les planches sont déjà faites : dis sur quelle planche poser le logo (planche = A, B, C ou D)." };
 const PLANCHE = z.enum(ROUTE_KEYS).optional();
 
-const autreTool: AgentTool<{ esquisse: number; planche?: (typeof ROUTE_KEYS)[number]; phrase?: number | string }> = {
+const autreTool: AgentTool<{ esquisse: number; planche?: (typeof ROUTE_KEYS)[number]; phrase?: PhraseCourteDite }> = {
   name: "logo.autre", module: "marque", kind: "generate", needsProject: true,
   description: "« Un autre logo » : finit une esquisse montrée. planche = celle qui le reçoit, planches faites. phrase : comme logo.choisir. Payant (carte) ; à ta charge si son logo manque.",
-  args: z.object({ esquisse: z.number().int().min(1), planche: PLANCHE, phrase: z.union([z.number().int(), z.string()]).optional() }).strict(),
+  args: z.object({ esquisse: z.number().int().min(1), planche: PLANCHE, phrase: PhraseCourte.optional() }).strict(),
   estimate: (ctx, a) => {
     const d = devisDUneAutreEsquisse(), studio = logoAFinir(journeyOf(ctx.conversationId), plancheVisee(journeyOf(ctx.conversationId), a?.planche));
     return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, studioMaxMicro: d.studioMaxMicro, label: studio ? L("finir ta planche : son logo, tiré de l'esquisse choisie", "finish your board: its logo") : L("un autre logo, tiré d'une esquisse déjà vue", "another logo from a sketch already seen"), ...(studio ? { studio: true } : {}) };

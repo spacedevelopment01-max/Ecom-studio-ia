@@ -9,20 +9,48 @@
  *    lui (reprise mot pour mot). Sans choix de sa part, la règle d'avant reste (une ligne seulement si elle dit le vrai
  *    métier, sinon aucune).
  *
+ * PLUSIEURS LIGNES (25 novembre 2026, essai réel d'Écume : quatre esquisses portaient « SAVONNERIE ARTISANALE », puis
+ * « SAVONS · SHAMPOINGS · BAUMES », et le relecteur n'avait relevé que la première). Le texte sous le nom est relevé en
+ * entier, ligne par ligne, dans l'ordre : `lignes` (présent seulement à partir de deux lignes) ; `texte` les réunit avec
+ * « / » pour les montrer et les dire. Le client prend toutes les lignes d'une esquisse, une seule (`de` et `lignes`), ou
+ * écrit la sienne, avec « / » entre ses lignes. Une seule ligne : rien ne change (`texte` seul).
+ *
  * Sans rien du serveur : lu par la carte des esquisses (client) comme par les outils et la finalisation (serveur).
  */
 
-/** La phrase d'une esquisse : son texte relevé mot pour mot, et si elle peut être proposée telle quelle (`ok`). */
-export type PhraseDeLEsquisse = { texte: string; ok: boolean; raisons?: string[] };
+/**
+ * La phrase d'une esquisse : son texte relevé mot pour mot, et si elle peut être proposée telle quelle (`ok`). `lignes` :
+ * ses lignes, dans l'ordre, quand il y en a plusieurs (`texte` les réunit avec « / »).
+ */
+export type PhraseDeLEsquisse = { texte: string; ok: boolean; raisons?: string[]; lignes?: string[] };
 
 /** Le choix du client pour un logo : la phrase d'une esquisse (`de`), aucune phrase, ou la sienne, mot pour mot. */
-export type PhraseChoisie = { de: number; texte: string } | { aucune: true } | { sienne: true; texte: string };
-/** Ce que la finalisation et la relecture doivent tenir : une phrase exacte, ou aucune (absent : la règle d'avant). */
-export type PhraseVoulue = { texte: string } | { aucune: true };
-export const phraseVoulue = (c: PhraseChoisie | undefined): PhraseVoulue | undefined => (!c ? undefined : "aucune" in c ? { aucune: true } : { texte: c.texte });
+export type PhraseChoisie = { de: number; texte: string; lignes?: string[] } | { aucune: true } | { sienne: true; texte: string; lignes?: string[] };
+/** Ce que la finalisation et la relecture doivent tenir : une phrase exacte (ses lignes, dans l'ordre), ou aucune (absent : la règle d'avant). */
+export type PhraseVoulue = { texte: string; lignes?: string[] } | { aucune: true };
+export const phraseVoulue = (c: PhraseChoisie | undefined): PhraseVoulue | undefined => (!c ? undefined : "aucune" in c ? { aucune: true } : { texte: c.texte, ...(c.lignes && c.lignes.length > 1 ? { lignes: [...c.lignes] } : {}) });
 
-/** Une phrase sous le nom tient en une ligne : au plus 120 caractères. */
+/** Une ligne sous le nom : au plus 120 caractères. */
 export const PHRASE_MAX = 120;
+/** Au plus quatre lignes sous le nom. */
+export const LIGNES_MAX = 4;
+/** Le séparateur des lignes quand elles sont dites sur une seule ligne. */
+export const SEPARATEUR_DES_LIGNES = " / ";
+
+/**
+ * Les lignes d'un texte, dans l'ordre : coupé à chaque retour à la ligne et à chaque « / » qui touche une espace (« A / B »,
+ * « A/ B ») ; un « / » collé des deux côtés reste dans la ligne (« 7j/7 »). Chaque ligne est nettoyée (espaces, guillemets
+ * autour) ; les lignes vides et « aucune » sont retirées.
+ */
+export function lignesDuTexte(t: string): string[] {
+  return t.normalize("NFC").split(/\s*[\r\n]+\s*|\s+\/\s*|\s*\/\s+/u).map(nettoyer).filter((l) => l && !AUCUNE.test(l));
+}
+const AUCUNE = /^(aucune|aucun|none|néant|rien|vide)\.?$/iu;
+const nettoyer = (l: string) => l.normalize("NFC").replace(/\s+/g, " ").trim().replace(/^[«"“]\s*/u, "").replace(/\s*[»"”]$/u, "").trim();
+/** Les lignes d'une phrase (une seule quand `lignes` est absent). */
+export const lignesDe = (p: { texte: string; lignes?: string[] }): string[] => (p.lignes && p.lignes.length ? p.lignes : [p.texte]);
+/** Une phrase faite de ses lignes : `texte` seul pour une ligne ; `texte` (réuni avec « / ») et `lignes` à partir de deux. */
+export const deLignes = (lignes: readonly string[]): { texte: string; lignes?: string[] } => (lignes.length > 1 ? { texte: lignes.join(SEPARATEUR_DES_LIGNES), lignes: [...lignes] } : { texte: lignes[0] ?? "" });
 
 const LETTRE_LATINE = /\p{Script=Latin}/u;
 const PONCTUATION_PERMISE = new Set([..." '’-–,.;:!?&«»\"·/+()…%€"]);
@@ -60,12 +88,29 @@ export function fautesEvidentes(phrase: string): string[] {
   return [...new Set(f)];
 }
 
-/** La phrase relevée par le relecteur (« aucune », vide ou absente : pas de phrase), jugée par lui, puis par le code. */
-export function phraseDeLEsquisse(lue: string | undefined, bienEcrite: boolean | undefined): PhraseDeLEsquisse | undefined {
-  const t = (lue ?? "").normalize("NFC").replace(/\s+/g, " ").trim().replace(/^[«"“]\s*/u, "").replace(/\s*[»"”]$/u, "").trim();
-  if (!t || /^(aucune|aucun|none|néant|rien|vide)\.?$/iu.test(t)) return undefined;
-  const raisons = [...(bienEcrite === true ? [] : ["le relecteur n'est pas sûr de son orthographe"]), ...fautesEvidentes(t)];
-  return raisons.length ? { texte: t, ok: false, raisons } : { texte: t, ok: true };
+/**
+ * Les fautes évidentes de chaque ligne (« ligne 2 : … » à partir de deux lignes), plus le mélange de français et
+ * d'anglais d'une ligne à l'autre et trop de lignes. Une liste vide : rien d'évident.
+ */
+export function fautesDesLignes(lignes: readonly string[]): string[] {
+  if (lignes.length <= 1) return fautesEvidentes(lignes[0] ?? "");
+  const f = lignes.flatMap((l, i) => fautesEvidentes(l).map((x) => `ligne ${i + 1} : ${x}`));
+  if (lignes.length > LIGNES_MAX) f.push(`trop de lignes (${lignes.length}, ${LIGNES_MAX} au plus)`);
+  const tout = fautesEvidentes(lignes.join(" ")).filter((x) => x === "un mélange de français et d'anglais");
+  if (tout.length && !f.some((x) => x.endsWith(tout[0]))) f.push(tout[0]);
+  return [...new Set(f)];
+}
+
+/**
+ * Le texte relevé par le relecteur sous le nom (« aucune », vide ou absent : pas de phrase), jugé par lui, puis par le
+ * code ligne par ligne. Une liste : ses lignes, dans l'ordre ; une chaîne (réponse d'avant) : coupée à chaque retour à la
+ * ligne ou « / » entre deux lignes. Une seule ligne douteuse rend toute la phrase non proposable telle quelle.
+ */
+export function phraseDeLEsquisse(lue: string | readonly string[] | undefined, bienEcrite: boolean | undefined): PhraseDeLEsquisse | undefined {
+  const lignes = (typeof lue === "string" ? [lue] : [...(lue ?? [])]).flatMap((x) => (typeof x === "string" ? lignesDuTexte(x) : []));
+  if (!lignes.length) return undefined;
+  const raisons = [...(bienEcrite === true ? [] : ["le relecteur n'est pas sûr de son orthographe"]), ...fautesDesLignes(lignes)];
+  return { ...deLignes(lignes), ...(raisons.length ? { ok: false, raisons } : { ok: true }) };
 }
 
 const plate = (t: string) => t.normalize("NFC").replace(/[’ʼ]/g, "'").replace(/[“”«»"]/g, "").replace(/\s+/g, " ").trim().replace(/[.\s]+$/u, "").toLocaleLowerCase("fr");
@@ -75,3 +120,28 @@ const plate = (t: string) => t.normalize("NFC").replace(/[’ʼ]/g, "'").replace
  * final sont laissés de côté, comme pour le nom.
  */
 export const phraseExacte = (lue: string, voulue: string) => plate(lue) === plate(voulue);
+
+/**
+ * Les lignes lues dans le logo comparées aux lignes voulues, lettre pour lettre : `manquantes` (une ligne voulue qui n'y
+ * est pas), `malEcrites` (lue à sa place, mais autrement), `enTrop` (une ligne qui n'était pas voulue), `desordre` (toutes
+ * là, mais pas dans l'ordre). Le relecteur sépare les lignes par « / » ou un retour à la ligne ; s'il les a réunies sans
+ * séparateur, le texte entier est comparé. Tout vide et `desordre` faux : les lignes sont exactes.
+ */
+export function comparerLesLignes(lue: string, voulues: readonly string[]): { manquantes: string[]; malEcrites: { lue: string; voulue: string }[]; enTrop: string[]; desordre: boolean } {
+  const lues = lignesDuTexte(lue);
+  const r = { manquantes: [] as string[], malEcrites: [] as { lue: string; voulue: string }[], enTrop: [] as string[], desordre: false };
+  if (lues.length === voulues.length && lues.every((l, i) => phraseExacte(l, voulues[i]))) return r;
+  if (lues.length && phraseExacte(lues.join(" "), voulues.join(" "))) return r;
+  const prises = new Set<number>();
+  const trouvees = voulues.map((v) => { const k = lues.findIndex((l, j) => !prises.has(j) && phraseExacte(l, v)); if (k >= 0) prises.add(k); return k; });
+  const restantes = lues.map((l, j) => ({ l, j })).filter(({ j }) => !prises.has(j));
+  voulues.forEach((v, i) => {
+    if (trouvees[i] >= 0) return;
+    const l = restantes.shift();
+    if (l) r.malEcrites.push({ lue: l.l, voulue: v }); else r.manquantes.push(v);
+  });
+  r.enTrop.push(...restantes.map(({ l }) => l));
+  const ordre = trouvees.filter((k) => k >= 0);
+  r.desordre = ordre.some((k, i) => i > 0 && k < ordre[i - 1]);
+  return r;
+}
