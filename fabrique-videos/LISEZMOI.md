@@ -92,3 +92,11 @@ Demande du propriétaire : « Mets plus de rythme stp sur chaque video ». Voix 
 lieu de ×1,12 (1 min 08 et 1 min 06). Les émeus suivent aussi les consignes de Napoléon : aucun bruit de transition,
 marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul accélérée de 25 %, et écrire environ
 230 mots pour rester au-dessus d'une minute.
+
+## Quatrième vidéo : « Le roi qui a fouetté la mer » (Xerxès, 480 av. J.-C.)
+
+- Le propriétaire a fait **la voix lui-même** à partir du texte et de la consigne fournis (blocs à copier).
+  Méthode pour une voix fournie : transcription gratuite mot par mot (`outils/mots.py`, faster-whisper), puis
+  calage du texte exact sur ces temps (orthographe juste dans les sous-titres). 1 min 08, 25 plans.
+- Source : Hérodote (fouet, chaînes, phrase à la mer, ponts emportés au retour), de mémoire, à vérifier.
+- Voix gratuites testées et refusées par le propriétaire (Piper : Siwis, Tom, Pierre, Gilles, MLS).
