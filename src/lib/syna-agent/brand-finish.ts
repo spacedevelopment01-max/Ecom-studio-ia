@@ -183,7 +183,11 @@ export async function runBrandFinish(o: {
     else if (logoId) {
       const enVraiAi = T.plancheEnVraiDeps.ai ? T.plancheEnVraiDeps.ai(ctx.job.id) : T.vraisAppelsEnVrai({ ...who, jobId: ctx.job.id });
       try {
-        etatEnVrai = await T.plancheEnVrai({ ctx, ai: enVraiAi, who, route: current, logoAssetId: logoId, personnes: peopleAllowed(o.projectId), phrase: loadProject(o.projectId).brand?.tagline?.trim() || current.slogan || "" });
+        // Le texte du bas du badge : la phrase sous le nom choisie pour ce logo, sinon le métier court de la recherche.
+        const g = journeyOf(o.conversationId).graphistes, fini = g?.logos?.find((l) => l.assetId === logoId || l.detoureAssetId === logoId);
+        const choisie = fini ? g?.phrases?.[String(fini.numero)] : undefined;
+        etatEnVrai = await T.plancheEnVrai({ ctx, ai: enVraiAi, who, route: current, logoAssetId: logoId, personnes: peopleAllowed(o.projectId), phrase: loadProject(o.projectId).brand?.tagline?.trim() || current.slogan || "",
+          ligneDuLogo: choisie && "texte" in choisie ? choisie.texte : null, metierCourt: g?.metier?.court ?? null });
         issues.push(...etatEnVrai.issues); notes.push(...etatEnVrai.notes);
       } catch (e) {
         if (e instanceof CostCapReached) issues.push(L("Le plafond annoncé a été atteint avant la fin de ta planche en vrai : ce qui est fait est gardé, je la reprends là sans rien repayer.", "The announced cap was reached before your board was finished."));

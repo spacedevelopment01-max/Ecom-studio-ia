@@ -162,7 +162,7 @@ describe("le code seul : les dix versions, la palette, les polices", async () =>
   it("les dix versions du logo, en PNG haute définition sur fond transparent ; l'inversé est clair sur fond sombre", async () => {
     const lg = await logo(), sep = await C.separerSymbole(lg);
     expect(sep).toMatchObject({ fiable: true, sens: "dessus" });
-    const v = await C.versionsDuLogo({ logo: lg, separation: sep, iconeReprendLeLogo: true, couleur: "#630A29", sombre: "#630A29", clair: "#F7F3EC", monoClair: "#A0B79B", nom: "Aplomb", phrase: "Le bois bien fait", police });
+    const v = await C.versionsDuLogo({ logo: lg, separation: sep, couleur: "#630A29", sombre: "#630A29", clair: "#F7F3EC", monoClair: "#A0B79B", nom: "Aplomb", bas: "Le bois bien fait", police });
     expect(Object.keys(v.versions)).toEqual([...C.VERSIONS_DU_LOGO]);
     expect(v.symboleComplet).toBe(false);
     for (const k of C.VERSIONS_DU_LOGO) { const m = await sharp(v.versions[k]).metadata(); expect(m.format).toBe("png"); expect(m.hasAlpha, k).toBe(true); }
@@ -179,12 +179,15 @@ describe("le code seul : les dix versions, la palette, les polices", async () =>
     const f = await C.faviconsEtAvatar(v.versions.favicon, v.symbole, "#F7F3EC");
     for (const [b, t] of [[f.f32, 32], [f.f64, 64], [f.f512, 512]] as const) expect((await sharp(b).metadata()).width).toBe(t);
   });
-  it("le symbole n'est séparé que s'il est fiable et que l'icône de la planche reprend le logo ; sinon le symbole complet, et c'est dit", async () => {
+  it("le symbole est séparé dès que la séparation est fiable (l'icône de la démonstration n'y change rien) ; sinon le symbole complet, et c'est dit", async () => {
     const lg = await logo(), sep = await C.separerSymbole(lg);
-    const v = await C.versionsDuLogo({ logo: lg, separation: sep, iconeReprendLeLogo: false, couleur: "#630A29", sombre: "#630A29", clair: "#FFFFFF", monoClair: "#A0B79B", nom: "Aplomb", phrase: "", police });
-    expect(v.symboleComplet).toBe(true);
+    const v = await C.versionsDuLogo({ logo: lg, separation: sep, couleur: "#630A29", sombre: "#630A29", clair: "#FFFFFF", monoClair: "#A0B79B", nom: "Aplomb", bas: "", police });
+    expect(v.symboleComplet).toBe(false);
     const bloc = await sharp({ create: { width: 300, height: 300, channels: 4, background: { r: 10, g: 10, b: 10, alpha: 1 } } }).png().toBuffer();
-    expect((await C.separerSymbole(bloc)).fiable).toBe(false);
+    const sepBloc = await C.separerSymbole(bloc);
+    expect(sepBloc.fiable).toBe(false);
+    const vb = await C.versionsDuLogo({ logo: bloc, separation: sepBloc, couleur: "#0A0A0A", sombre: "#0A0A0A", clair: "#FFFFFF", monoClair: "#A0B79B", nom: "Aplomb", bas: "", police });
+    expect(vb.symboleComplet).toBe(true);
     expect(P.phraseDuSymboleComplet()).toMatch(/ton icône et ton favicon reprennent ton logo complet/);
   });
   it("chaque version, badge compris, tient entière dans sa tuile avec sa marge, réduite sans être déformée ni coupée (logos très large, très haut et carré ; deux dispositions)", async () => {
@@ -201,7 +204,7 @@ describe("le code seul : les dix versions, la palette, les polices", async () =>
     const MARGES: Record<string, number> = { favicon: 0.3, icone: 0.2, badge: 0.06, inverse: 0.05 };
     for (const [quoi, lg] of Object.entries(logos)) {
       const sep = await C.separerSymbole(lg);
-      const v = await C.versionsDuLogo({ logo: lg, separation: sep, iconeReprendLeLogo: true, couleur: "#630A29", sombre: "#630A29", clair: "#F7F3EC", monoClair: "#A0B79B", nom: "Aplomb", phrase: "Le bois bien fait", police });
+      const v = await C.versionsDuLogo({ logo: lg, separation: sep, couleur: "#630A29", sombre: "#630A29", clair: "#F7F3EC", monoClair: "#A0B79B", nom: "Aplomb", bas: "Le bois bien fait", police });
       for (const l of ["standard", "animaux"] as const) {
         for (const [i, k] of C.VERSIONS_DU_LOGO.entries()) {
           const t = P.lesCases(l).cases[`logo-${i + 1}`].map((n) => n * 2) as [number, number, number, number];

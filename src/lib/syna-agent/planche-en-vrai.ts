@@ -75,6 +75,8 @@ export type DefElement = {
   groupe: Groupe;
   /** Format large : une marge généreuse est demandée, pour qu'aucun texte ne touche les bords. */
   large?: boolean;
+  /** Les bandes blanches ajoutées en haut et en bas sont rognées par le code AVANT la relecture (`rognerLesMargesBlanches`). */
+  sansMargesBlanches?: boolean;
 };
 const MARGE_LARGE = "Garde des marges généreuses : aucun texte ne touche les bords.";
 export const ELEMENTS = {
@@ -82,7 +84,7 @@ export const ELEMENTS = {
   "publication-4x5": { taille: "1088x1360", final: { w: 1080, h: 1350, mode: "recadrer" }, quoi: "C'est une publication portrait pour les réseaux sociaux, 1080 × 1350.", groupe: "publications" },
   "publication-9x16": { taille: "1088x1936", final: { w: 1080, h: 1920, mode: "recadrer" }, quoi: "C'est une story pour les réseaux sociaux, 1080 × 1920.", groupe: "publications" },
   "ouverture-site": { taille: "2048x768", final: { w: 1920, h: 720, mode: "reduire" }, quoi: "C'est la grande image d'ouverture du site, au format bandeau 1920 × 720 ; garde chaque élément à sa place.", groupe: "site", large: true },
-  "ouverture-planche": { taille: "2304x768", quoi: "C'est le bandeau d'ouverture de la planche ; garde des marges généreuses en haut et en bas, rien ne touche les bords.", groupe: "site", large: true },
+  "ouverture-planche": { taille: "2304x768", quoi: "C'est le bandeau d'ouverture de la planche ; garde des marges généreuses en haut et en bas, rien ne touche les bords.", groupe: "site", large: true, sansMargesBlanches: true },
   "site-ordinateur": { taille: "1520x1024", quoi: "C'est la page d'accueil du site, montrée sur un ordinateur portable ; tous les textes de l'écran restent nets et lisibles.", groupe: "site" },
   "site-telephone": { taille: "768x1712", quoi: "C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles.", groupe: "site" },
   "produit-1": { taille: "912x1088", quoi: "C'est une photo produit de la marque.", groupe: "produits" },
@@ -200,6 +202,13 @@ export const REGLE_APERCU = "La première image est un aperçu en petit, découp
 export const regleDuLogo = (nom: string) => `La deuxième image est le logo officiel de ${nom.trim()} : là où il apparaît, reproduis-le exactement, sans le redessiner.`;
 /** REGLE mot pour mot (logo joint). */
 export const regle = (nom: string) => `${REGLE_APERCU} ${regleDuLogo(nom)}`;
+/**
+ * LE SYMBOLE SEUL (essai réel du 25 novembre 2026, sixième image de référence : le logo complet joint, le dessinateur a
+ * ajouté le nom sous le monogramme et changé sa couleur). Quand l'inventaire ne voit que le symbole dans la case, c'est le
+ * symbole seul qui est joint, avec cette phrase à la place de celle du logo : sa forme exacte, la couleur et la matière
+ * qu'il a sur l'aperçu, aucun nom ajouté.
+ */
+export const regleDuSymbole = (nom: string) => `La deuxième image est le symbole du logo officiel de ${nom.trim()}, seul, sans son nom : là où il apparaît, reproduis sa forme exactement, avec la couleur et la matière qu'il a sur l'aperçu, sans le redessiner ; n'ajoute ni le nom ni aucun texte à côté de lui.`;
 const RANG = ["première", "deuxième", "troisième"];
 export const phraseDuProduit = (rang: number) => `La ${RANG[rang - 1]} image est la photo du vrai produit du client : remplace le produit par celui de la photo jointe, garde la mise en scène à l'identique.`;
 export const SANS_PERSONNE_EN_VRAI = "Aucune personne n'apparaît.";
@@ -210,18 +219,28 @@ export function ligneDeLElement(n: NomElement, personnes: boolean): string {
 }
 export const finDeRepriseEnVrai = (raisons: readonly string[]) => `À corriger : ${raisons.join(" ; ")}.`;
 /** LE TEXTE ENVOYÉ : REGLE mot pour mot (sa phrase du logo seulement si le logo est joint), la photo du produit, la ligne. */
-export function texteDeLElement(o: { element: NomElement; nom: string; logo: boolean; photo: boolean; personnes: boolean; raisons?: readonly string[] }): string {
+export function texteDeLElement(o: { element: NomElement; nom: string; logo: boolean; photo: boolean; personnes: boolean; raisons?: readonly string[]; /** Le symbole seul est joint (jamais avec le logo complet). */ symbole?: boolean }): string {
   const parts = [REGLE_APERCU];
   if (o.logo) parts.push(regleDuLogo(o.nom));
-  if (o.photo) parts.push(phraseDuProduit(o.logo ? 3 : 2));
+  else if (o.symbole) parts.push(regleDuSymbole(o.nom));
+  if (o.photo) parts.push(phraseDuProduit(o.logo || o.symbole ? 3 : 2));
   parts.push(ligneDeLElement(o.element, o.personnes));
   const t = parts.join(" ");
   return o.raisons?.length ? `${t}\n\n${finDeRepriseEnVrai(o.raisons)}` : t;
 }
-/** Les images jointes, dans l'ordre : l'aperçu, le logo s'il est présent, la photo du produit s'il se voit et qu'elle existe. */
-export function jointesDeLElement(o: { apercu: Buffer; logo: Buffer; photo: Buffer | null; inventaire: CaseLue | undefined }): { role: "apercu" | "logo" | "produit"; data: Buffer }[] {
-  const out: { role: "apercu" | "logo" | "produit"; data: Buffer }[] = [{ role: "apercu", data: o.apercu }];
-  if (o.inventaire?.logo) out.push({ role: "logo", data: o.logo });
+export type RoleDUneJointe = "apercu" | "logo" | "symbole" | "produit";
+/**
+ * Les images jointes, dans l'ordre : l'aperçu, le logo s'il est présent, la photo du produit s'il se voit et qu'elle existe.
+ * Quand l'inventaire ne voit que le SYMBOLE dans la case (`logoVu` « symbole »), c'est le symbole seul qui est joint, tiré
+ * de la séparation du code ; sans séparation fiable, rien n'est joint, jamais le logo complet. Une réponse d'avant ce champ
+ * (`logoVu` absent) garde la règle d'avant : le logo complet.
+ */
+export function jointesDeLElement(o: { apercu: Buffer; logo: Buffer; photo: Buffer | null; inventaire: CaseLue | undefined; symbole?: Buffer | null }): { role: RoleDUneJointe; data: Buffer }[] {
+  const out: { role: RoleDUneJointe; data: Buffer }[] = [{ role: "apercu", data: o.apercu }];
+  if (o.inventaire?.logo) {
+    if (o.inventaire.logoVu !== "symbole") out.push({ role: "logo", data: o.logo });
+    else if (o.symbole?.length) out.push({ role: "symbole", data: o.symbole });
+  }
   if (o.photo && o.inventaire?.produit) out.push({ role: "produit", data: o.photo });
   return out;
 }
@@ -244,11 +263,54 @@ export async function auFormatFinal(n: NomElement, png: Buffer): Promise<{ ok: t
   return { ok: true, png: await sharp(png).resize(W, H, { fit: "fill", kernel: "lanczos3" }).png().toBuffer(), w: W, h: H };
 }
 
+/**
+ * LES MARGES BLANCHES D'UN BANDEAU, rognées par le code (essai réel du 25 novembre 2026 : le bandeau d'ouverture de la
+ * planche, demandé en 2304 × 768, soit 3 pour 1, est revenu deux fois avec de larges bandes blanches en haut et en bas, et
+ * a été refusé deux fois pour elles ; l'essai du chef d'orchestre les retirait en gardant les lignes dont la moitié droite
+ * est plus sombre que 245).
+ *
+ * La règle, adaptée : une ligne est une MARGE quand elle est blanche sur TOUTE sa largeur (moyenne de gris au-dessus de
+ * 245 et au moins 97 % de ses points au-dessus de 240), pas seulement sur sa moitié droite : un bandeau dont la photo est à
+ * gauche et un fond clair à droite n'est jamais rogné dans son dessin. Seules les marges continues depuis le bord haut et
+ * depuis le bord bas sont retirées, jamais une ligne blanche du milieu. Un bord n'est pas rogné quand l'aperçu a lui-même
+ * une bande blanche de ce côté (au moins 8 % de sa hauteur) : c'est alors le dessin de la planche. Si les marges font plus
+ * de la moitié de la hauteur, rien n'est rogné (l'image serait vidée). La largeur n'est jamais touchée ; l'image n'est
+ * jamais déformée.
+ */
+export const SEUIL_DE_LA_MARGE = { moyenne: 245, point: 240, part: 0.97, partDeLApercu: 0.08 } as const;
+async function lignesDeMarge(png: Buffer): Promise<{ h: number; haut: number; bas: number }> {
+  const { data, info } = await sharp(png).flatten({ background: "#FFFFFF" }).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height, pas = Math.max(1, Math.floor(W / 600));
+  const marge = (y: number) => {
+    let s = 0, n = 0, clairs = 0;
+    for (let x = 0; x < W; x += pas) { const v = data[y * W + x]; s += v; n++; if (v >= SEUIL_DE_LA_MARGE.point) clairs++; }
+    return s / n > SEUIL_DE_LA_MARGE.moyenne && clairs / n >= SEUIL_DE_LA_MARGE.part;
+  };
+  let haut = 0; while (haut < H && marge(haut)) haut++;
+  let bas = 0; while (bas < H - haut && marge(H - 1 - bas)) bas++;
+  return { h: H, haut, bas };
+}
+export async function rognerLesMargesBlanches(png: Buffer, apercu?: Buffer): Promise<Buffer> {
+  const m = await lignesDeMarge(png);
+  const a = apercu ? await lignesDeMarge(apercu) : null;
+  const haut = a && a.haut >= a.h * SEUIL_DE_LA_MARGE.partDeLApercu ? 0 : m.haut;
+  const bas = a && a.bas >= a.h * SEUIL_DE_LA_MARGE.partDeLApercu ? 0 : m.bas;
+  if (!haut && !bas) return png;
+  if (haut + bas > m.h / 2) return png;
+  const { width } = await sharp(png).metadata();
+  return sharp(png).extract({ left: 0, top: haut, width: width!, height: m.h - haut - bas }).png().toBuffer();
+}
+
 // ---------------------------------------------------------------- 6. l'inventaire (un appel, avant toute retouche)
 
 export const CaseLueSchema = z.object({
   case: z.string().max(40),
   logo: z.boolean().catch(false),
+  /**
+   * Ce que la case montre du logo : « complet » (le symbole et le nom), « symbole » (le symbole seul, sans le nom écrit à
+   * côté) ; null sans logo, ou dans une réponse d'avant ce champ (écartée sans risque : la règle d'avant s'applique).
+   */
+  logoVu: z.enum(["complet", "symbole"]).nullable().optional().catch(null),
   /** Les textes lisibles, mot pour mot, un par ligne. */
   textes: z.array(z.string().max(300)).max(40).catch([]),
   produit: z.boolean().catch(false),
@@ -267,14 +329,18 @@ export const InventaireSchema = z.object({
   couleurs: z.array(z.object({ nom: z.string().max(40).catch(""), mots: z.array(z.string().max(40)).max(3).catch([]) })).max(8).catch([]),
   icone: z.string().max(200).catch(""),
   favicon: z.string().max(200).catch(""),
-  /** L'icône et le favicon de la planche montrent le symbole du logo (ou une lettre dessinée comme dans le logo). */
+  /**
+   * L'icône et le favicon de la planche montrent le symbole du logo (ou une lettre dessinée comme dans le logo). Relevé pour
+   * le compte rendu seulement : depuis l'essai réel du 25 novembre 2026, il ne décide plus du symbole (seule la fiabilité de
+   * la séparation en décide).
+   */
   iconeReprendLeLogo: z.boolean().catch(false),
 });
 export type Inventaire = z.infer<typeof InventaireSchema>;
 export type PoliceDeLInventaire = Inventaire["polices"]["titres"];
 
 export const INVENTAIRE_SYSTEM = `Tu fais l'inventaire d'une planche d'identité visuelle, découpée en cases, AVANT qu'elle soit refaite en haute définition. Chaque image porte le nom de sa case ; la dernière, « logo », est le logo officiel de la marque. Ne juge rien : relève ce que tu vois. Réponds en JSON :
-- cases : pour chaque case (son nom exact) : logo (le logo de la marque y apparaît), textes (chaque texte lisible, mot pour mot, une ligne par élément, sans rien corriger), produit (un produit de la marque est visible), personne (une personne, un visage ou une main est visible), comprehensible (seulement pour les cases « publication-… » : quelqu'un qui ne connaît pas la marque comprend ce qu'elle propose ; null pour les autres cases), description (ce que montre l'image, en une phrase simple) ;
+- cases : pour chaque case (son nom exact) : logo (le logo de la marque y apparaît), logoVu (seulement quand le logo y apparaît : « complet » si on y voit le symbole et le nom de la marque, « symbole » si on n'y voit que le symbole, sans le nom écrit à côté ; null sinon), textes (chaque texte lisible, mot pour mot, une ligne par élément, sans rien corriger), produit (un produit de la marque est visible), personne (une personne, un visage ou une main est visible), comprehensible (seulement pour les cases « publication-… » : quelqu'un qui ne connaît pas la marque comprend ce qu'elle propose ; null pour les autres cases), description (ce que montre l'image, en une phrase simple) ;
 - polices : le nom de la police des titres et celui de la police des textes, tels qu'ils sont écrits dans la case « typographies », avec leur genre (serif, sans, manuscrite, chasse-fixe ou affiche) ;
 - couleurs : pour chaque pastille de la case « palette », de gauche à droite, son nom et les mots écrits dessous (sans le code de la couleur) ;
 - icone et favicon : ce que montrent l'icône seule et le favicon de la case « logos », en quelques mots ;
@@ -367,7 +433,7 @@ export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire:
 
 // ---------------------------------------------------------------- 8. les 17 images : refaites, relues, une reprise
 
-export type DemandeDElement = { element: NomElement; texte: string; taille: string; jointes: { role: "apercu" | "logo" | "produit"; data: Buffer }[] };
+export type DemandeDElement = { element: NomElement; texte: string; taille: string; jointes: { role: RoleDUneJointe; data: Buffer }[] };
 export type ElementsDeps = {
   /** POST /v1/images/edits : image[] = les jointes dans l'ordre ; le texte tel quel. Rend l'image brute. */
   refaire: (d: DemandeDElement, tour: number) => Promise<Buffer>;
@@ -386,13 +452,15 @@ export type ResultatDElement = { element: NomElement; ok: boolean; png: Buffer |
  */
 export async function refaireLesElements(deps: ElementsDeps, o: {
   nom: string; personnes: boolean; logo: Buffer; photo: Buffer | null; apercus: Map<string, Buffer>; inventaire: Inventaire; elements?: readonly NomElement[];
+  /** Le symbole seul, sur fond blanc (séparation fiable du code), joint là où l'inventaire ne voit que lui ; null : jamais joint. */
+  symbole?: Buffer | null;
 }): Promise<Map<NomElement, ResultatDElement>> {
   const noms = (o.elements ?? NOMS_DES_ELEMENTS).filter((n) => o.apercus.has(n));
   const res = new Map<NomElement, ResultatDElement>();
   const demande = (n: NomElement, raisons?: string[]): DemandeDElement => {
-    const inv = caseLue(o.inventaire, n), jointes = jointesDeLElement({ apercu: o.apercus.get(n)!, logo: o.logo, photo: o.photo, inventaire: inv });
-    const logo = jointes.some((j) => j.role === "logo"), photo = jointes.some((j) => j.role === "produit");
-    return { element: n, texte: texteDeLElement({ element: n, nom: o.nom, logo, photo, personnes: o.personnes, raisons }), taille: def(n).taille, jointes };
+    const inv = caseLue(o.inventaire, n), jointes = jointesDeLElement({ apercu: o.apercus.get(n)!, logo: o.logo, photo: o.photo, inventaire: inv, symbole: o.symbole ?? null });
+    const logo = jointes.some((j) => j.role === "logo"), symbole = jointes.some((j) => j.role === "symbole"), photo = jointes.some((j) => j.role === "produit");
+    return { element: n, texte: texteDeLElement({ element: n, nom: o.nom, logo, photo, personnes: o.personnes, raisons, symbole }), taille: def(n).taille, jointes };
   };
   const unTour = async (liste: NomElement[], tour: number, raisonsDe: (n: NomElement) => string[] | undefined) => {
     const faits = new Map<NomElement, { d: DemandeDElement; png: Buffer | null; raison?: string }>();
@@ -400,7 +468,10 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
       const d = demande(n, raisonsDe(n));
       const brut = await deps.refaire(d, tour);
       const f = await auFormatFinal(n, brut);
-      faits.set(n, f.ok ? { d, png: f.png } : { d, png: null, raison: f.raison });
+      // Les marges blanches d'un bandeau sont rognées par le code AVANT la relecture : c'est l'image rognée qui est relue
+      // face à son aperçu, gardée en haute définition et posée dans sa case.
+      const png = f.ok ? (def(n).sansMargesBlanches ? await rognerLesMargesBlanches(f.png, o.apercus.get(n)) : f.png) : null;
+      faits.set(n, png ? { d, png } : { d, png: null, raison: f.ok ? "image illisible" : f.raison });
     }
     for (const g of GROUPES) {
       const items = liste.filter((n) => def(n).groupe === g && faits.get(n)?.png);

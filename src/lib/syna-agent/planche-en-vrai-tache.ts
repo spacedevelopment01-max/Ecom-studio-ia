@@ -32,7 +32,7 @@ import {
 } from "./planche-en-vrai";
 import {
   VERSIONS_DU_LOGO, assemblerLaPlanche, couleurDuLogo, faviconsEtAvatar, luminance, mesurerLaPalette, monoClairDe, policeDuCatalogue, rolesDeLaPalette,
-  separerSymbole, versionsDuLogo, type BlocDeTexte, type VersionDuLogo,
+  separerSymbole, texteDuBasDuBadge, versionsDuLogo, type BlocDeTexte, type VersionDuLogo,
 } from "./planche-en-vrai-code";
 
 // ---------------------------------------------------------------- le devis
@@ -137,7 +137,13 @@ export const phraseDuLogoChange = () => L(
  * (jamais relancée toute seule) ; ce qui est payé est gardé par les points de reprise.
  */
 export async function plancheEnVrai(o: {
-  ctx: Etape; ai: PlancheEnVraiAi; who: { userId: string; projectId: string }; route: Route; logoAssetId: string; personnes: boolean; phrase: string;
+  ctx: Etape; ai: PlancheEnVraiAi; who: { userId: string; projectId: string }; route: Route; logoAssetId: string; personnes: boolean;
+  /** La signature de la marque (dernier recours du texte du bas du badge). */
+  phrase: string;
+  /** La phrase sous le nom choisie par le client pour ce logo (la ligne descriptive du logo), s'il en a une. */
+  ligneDuLogo?: string | null;
+  /** Le métier court écrit pour la recherche du logo (« les plantes d'intérieur »). */
+  metierCourt?: string | null;
 }): Promise<EtatPlancheEnVrai> {
   const { ctx, ai, route } = o, pl = route.board.planche;
   if (!pl?.image) throw new Error("Aucune planche de démonstration choisie.");
@@ -156,6 +162,10 @@ export async function plancheEnVrai(o: {
   if (!det.ok) notes.push(`fond du logo non retiré une seconde fois (${det.why}) : le logo adopté, déjà détouré, est pris tel quel`);
   const logo = det.ok ? det.png : logoBrut;
   const logoSurBlanc = await sharp(logo).flatten({ background: "#FFFFFF" }).png().toBuffer();
+  // Le symbole et le nom, séparés par le code (gratuit) AVANT les retouches : là où l'inventaire ne voit que le symbole,
+  // c'est lui seul qui est joint ; sans séparation fiable, rien n'est joint, jamais le logo complet.
+  const separation = await separerSymbole(logo);
+  const symboleSurBlanc = separation.fiable ? await sharp(separation.symbole).flatten({ background: "#FFFFFF" }).png().toBuffer() : null;
 
   // La photo du produit du client (la première) ; sans photo, les produits sont des images d'ambiance.
   const photoId = photosDuProduitIds(o.who.projectId, 1)[0], photo = photoId && getAsset(photoId) ? assetData(getAsset(photoId)!) : null;
@@ -183,7 +193,7 @@ export async function plancheEnVrai(o: {
       items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]),
       demande, `relecture-${groupe}${tour > 1 ? "-r1" : ""}`)),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom, personnes: o.personnes, logo: logoSurBlanc, photo, apercus: decoupe.apercus, inventaire });
+  }, { nom, personnes: o.personnes, logo: logoSurBlanc, symbole: symboleSurBlanc, photo, apercus: decoupe.apercus, inventaire });
 
   // Les images gardées, rangées en haute définition ; les produits sans photo du client sont marqués « image d'ambiance ».
   const elements: EtatPlancheEnVrai["elements"] = [], images = new Map<NomElement, Buffer>(), refusees: string[] = [];
@@ -211,9 +221,9 @@ export async function plancheEnVrai(o: {
   const palette = palette0.map((hex, i) => ({ hex, nom: inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 2) }));
   const titres = policeDuCatalogue(inventaire.polices.titres, 700), textes = policeDuCatalogue(inventaire.polices.textes, 400);
   for (const p of [titres, textes]) if (p.remplacee && p.lue) issues.push(phraseDeLaPoliceRemplacee(p.lue, p.famille));
-  const separation = await separerSymbole(logo);
   const couleur = await couleurDuLogo(logo);
-  const v = await versionsDuLogo({ logo, separation, iconeReprendLeLogo: inventaire.iconeReprendLeLogo, couleur, sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(palette0), nom, phrase: o.phrase, police: textes });
+  const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase });
+  const v = await versionsDuLogo({ logo, separation, couleur, sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(palette0), nom, bas, police: textes });
   if (v.symboleComplet) issues.push(phraseDuSymboleComplet());
   const logos: EtatPlancheEnVrai["logos"] = [];
   for (const version of VERSIONS_DU_LOGO) {

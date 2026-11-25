@@ -1,10 +1,10 @@
 /**
  * LA PLANCHE EN VRAI : CE QUE FAIT LE CODE SEUL, SANS OPENAI (plan accepté du 25 novembre 2026 ; voir planche-en-vrai.ts).
  *
- * - les dix versions du logo, d'après assembler-planche.py (preuves, branche du chef d'orchestre), mais avec le masque
- *   du logo au fond retiré par le Studio (`logoDetoure` : creux des lettres compris) au lieu d'un seuil de luminosité ;
- * - la séparation du symbole et du nom ; si elle n'est pas fiable, ou si l'icône de la planche ne reprend pas le logo,
- *   le symbole complet est gardé, et c'est dit ;
+ * - les dix versions du logo, d'après assembler-planche.py (preuves, branche du chef d'orchestre), tirées du logo au fond
+ *   retiré par le Studio (`logoDetoure` : creux des lettres compris) ;
+ * - la séparation du symbole et du nom, sur le masque d'encre d'assembler-planche.py (le masque du fond retiré ne sert
+ *   qu'au fond) ; si elle n'est pas fiable, le symbole complet est gardé, et c'est dit ;
  * - les favicons 32, 64 et 512, et l'avatar ;
  * - la palette : la médiane des pixels de chaque pastille de la planche choisie (ces codes font foi), les rôles donnés
  *   par le code ;
@@ -20,7 +20,7 @@ import sharp from "sharp";
 import { createCanvas, GlobalFonts, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
 import { FONT_FILES } from "../theme/render";
 import { FONT_DIR } from "../media/fonts";
-import { ECHELLE, TAILLE_DEMO, TAILLE_EN_VRAI, type Boite, type NomElement, type PoliceDeLInventaire } from "./planche-en-vrai";
+import { ECHELLE, TAILLE_DEMO, TAILLE_EN_VRAI, rognerLesMargesBlanches, type Boite, type NomElement, type PoliceDeLInventaire } from "./planche-en-vrai";
 
 // ---------------------------------------------------------------- couleurs
 
@@ -46,45 +46,80 @@ function decouper(r: Rgba, b: [number, number, number, number]): Rgba {
   for (let y = 0; y < h; y++) r.data.copy(out, y * w * 4, ((b[1] + y) * r.w + b[0]) * 4, ((b[1] + y) * r.w + b[2]) * 4);
   return { data: out, w, h };
 }
-const aireOpaque = (r: Rgba) => { let n = 0; for (let i = 3; i < r.data.length; i += 4) if (r.data[i] >= 20) n++; return n; };
 
 export type Separation = { symbole: Buffer; nom: Buffer | null; fiable: boolean; raison: string | null; sens: "dessus" | "gauche" | null };
+
 /**
- * LE SYMBOLE ET LE NOM, séparés sur le masque du logo au fond retiré : la plus grande bande vide entre deux parties
- * (symbole au-dessus du nom, ou à sa gauche). Fiable seulement si les deux parties pèsent chacune au moins 8 % de l'encre,
- * si le nom est nettement plus large que haut et si le symbole est d'une forme ramassée. Sinon : le logo complet.
+ * LE MASQUE D'ENCRE du logo (assembler-planche.py, branche du chef d'orchestre) : le logo posé sur du blanc, puis chaque
+ * point compté comme encre selon sa noirceur (plus clair que 235 : rien ; plus foncé que 120 : de l'encre pleine ; entre
+ * les deux, en proportion). Il ne sert qu'à TROUVER le symbole et le nom : les pixels gardés viennent toujours du logo au
+ * fond retiré (`logoDetoure`), dont le masque ne sert qu'au fond (ses franges presque transparentes empêchaient de voir le
+ * blanc entre le symbole et le nom). Un logo très clair, sans encre lisible ainsi, prend son masque d'opacité (au moins 128).
+ */
+function masqueDEncre(r: Rgba): Uint8Array {
+  const m = new Uint8Array(r.w * r.h);
+  let n = 0;
+  for (let i = 0; i < r.w * r.h; i++) {
+    const a = r.data[i * 4 + 3] / 255;
+    // Le point posé sur du blanc, en gris.
+    const v = 255 * (1 - a) + a * (0.299 * r.data[i * 4] + 0.587 * r.data[i * 4 + 1] + 0.114 * r.data[i * 4 + 2]);
+    m[i] = v > 235 ? 0 : v < 120 ? 255 : Math.round(((235 - v) * 255) / 115);
+    if (m[i] >= 20) n++;
+  }
+  if (n < r.w * r.h * 0.002) for (let i = 0; i < r.w * r.h; i++) m[i] = r.data[i * 4 + 3] >= 128 ? 255 : 0;
+  return m;
+}
+const ENCRE = 20;
+function boiteDEncre(m: Uint8Array, w: number, b: [number, number, number, number]): [number, number, number, number] | null {
+  let a = b[2], c = b[3], d = -1, e = -1;
+  for (let y = b[1]; y < b[3]; y++) for (let x = b[0]; x < b[2]; x++) if (m[y * w + x] >= ENCRE) { if (x < a) a = x; if (y < c) c = y; if (x > d) d = x; if (y > e) e = y; }
+  return d < 0 ? null : [a, c, d + 1, e + 1];
+}
+
+/**
+ * LE SYMBOLE ET LE NOM, séparés comme dans assembler-planche.py : sur le masque d'encre, la plus grande bande vide entre
+ * le symbole et le nom ; HORIZONTALE pour un logo empilé (le symbole au-dessus du nom), VERTICALE pour un logo en ligne (le
+ * symbole à gauche du nom). Une ligne (ou une colonne) est vide quand aucun point n'y atteint l'encre. Les bandes sont
+ * essayées de la plus grande à la plus petite, dans les deux sens ; la première qui donne une séparation fiable est
+ * gardée. Fiable seulement si la bande fait au moins 1,5 % du côté, si les deux parties pèsent chacune au moins 8 % de
+ * l'encre, si le nom est nettement plus large que haut et si le symbole est d'une forme ramassée. Sinon : le symbole
+ * complet (le logo entier), et c'est dit.
  */
 export async function separerSymbole(logoDetoure: Buffer): Promise<Separation> {
-  const r0 = await rgba(logoDetoure), bb = boiteOpaque(r0);
+  const r0 = await rgba(logoDetoure), m0 = masqueDEncre(r0), bb = boiteDEncre(m0, r0.w, [0, 0, r0.w, r0.h]);
   if (!bb) return { symbole: logoDetoure, nom: null, fiable: false, raison: "logo vide", sens: null };
-  const r = decouper(r0, bb), total = aireOpaque(r);
+  const r = decouper(r0, bb), m = new Uint8Array(r.w * r.h);
+  for (let y = 0; y < r.h; y++) m.set(m0.subarray((bb[1] + y) * r0.w + bb[0], (bb[1] + y) * r0.w + bb[2]), y * r.w);
+  const encreDe = (b: [number, number, number, number]) => { let s = 0; for (let y = b[1]; y < b[3]; y++) for (let x = b[0]; x < b[2]; x++) s += m[y * r.w + x]; return s; };
+  const total = encreDe([0, 0, r.w, r.h]);
   const entier = async (raison: string): Promise<Separation> => ({ symbole: await versPng(r), nom: null, fiable: false, raison, sens: null });
-  const plusGrandeBande = (n: number, vide: (i: number) => boolean) => {
-    let best: [number, number] | null = null, deb = -1;
+  /** Les bandes vides intérieures (jamais au bord), de la plus grande à la plus petite. */
+  const bandes = (n: number, vide: (i: number) => boolean) => {
+    const out: [number, number][] = [];
+    let deb = -1;
     for (let i = 0; i <= n; i++) {
       const v = i < n && vide(i);
       if (v && deb < 0) deb = i;
-      if (!v && deb >= 0) { if (deb > 0 && i < n && (!best || i - deb > best[1] - best[0])) best = [deb, i]; deb = -1; }
+      if (!v && deb >= 0) { if (deb > 0 && i < n) out.push([deb, i]); deb = -1; }
     }
-    return best;
+    return out.sort((a, b) => b[1] - b[0] - (a[1] - a[0]));
   };
-  const ligneVide = (y: number) => { for (let x = 0; x < r.w; x++) if (r.data[(y * r.w + x) * 4 + 3] >= 20) return false; return true; };
-  const colonneVide = (x: number) => { for (let y = 0; y < r.h; y++) if (r.data[(y * r.w + x) * 4 + 3] >= 20) return false; return true; };
-  const essais: { sens: "dessus" | "gauche"; a: [number, number, number, number]; b: [number, number, number, number]; bande: number; long: number }[] = [];
-  const bh = plusGrandeBande(r.h, ligneVide);
-  if (bh) essais.push({ sens: "dessus", a: [0, 0, r.w, bh[0]], b: [0, bh[1], r.w, r.h], bande: bh[1] - bh[0], long: r.h });
-  const bv = plusGrandeBande(r.w, colonneVide);
-  if (bv) essais.push({ sens: "gauche", a: [0, 0, bv[0], r.h], b: [bv[1], 0, r.w, r.h], bande: bv[1] - bv[0], long: r.w });
+  const ligneVide = (y: number) => { for (let x = 0; x < r.w; x++) if (m[y * r.w + x] >= ENCRE) return false; return true; };
+  const colonneVide = (x: number) => { for (let y = 0; y < r.h; y++) if (m[y * r.w + x] >= ENCRE) return false; return true; };
+  const essais: { sens: "dessus" | "gauche"; a: [number, number, number, number]; b: [number, number, number, number]; part: number }[] = [
+    ...bandes(r.h, ligneVide).map(([d, f]) => ({ sens: "dessus" as const, a: [0, 0, r.w, d] as [number, number, number, number], b: [0, f, r.w, r.h] as [number, number, number, number], part: (f - d) / r.h })),
+    ...bandes(r.w, colonneVide).map(([d, f]) => ({ sens: "gauche" as const, a: [0, 0, d, r.h] as [number, number, number, number], b: [f, 0, r.w, r.h] as [number, number, number, number], part: (f - d) / r.w })),
+  ].sort((x, y) => y.part - x.part);
   for (const e of essais) {
-    if (e.bande < e.long * 0.015) continue;
-    const ba = boiteOpaque(r, ...e.a), bb2 = boiteOpaque(r, ...e.b);
+    if (e.part < 0.015) continue;
+    const ba = boiteDEncre(m, r.w, e.a), bb2 = boiteDEncre(m, r.w, e.b);
     if (!ba || !bb2) continue;
-    const sa = decouper(r, ba), sb = decouper(r, bb2);
-    const pa = aireOpaque(sa) / total, pb = aireOpaque(sb) / total;
-    const rapportA = sa.w / sa.h, rapportB = sb.w / sb.h;
+    const pa = encreDe(ba) / total, pb = encreDe(bb2) / total;
+    const rapportA = (ba[2] - ba[0]) / (ba[3] - ba[1]), rapportB = (bb2[2] - bb2[0]) / (bb2[3] - bb2[1]);
     if (pa < 0.08 || pb < 0.08) continue;
     if (rapportB < 1.8 || rapportA < 0.33 || rapportA > 3) continue;
-    return { symbole: await versPng(sa), nom: await versPng(sb), fiable: true, raison: null, sens: e.sens };
+    // Les pixels du logo au fond retiré, découpés aux boîtes d'encre (les franges du fond retiré n'y entrent pas).
+    return { symbole: await versPng(decouper(r, ba)), nom: await versPng(decouper(r, bb2)), fiable: true, raison: null, sens: e.sens };
   }
   return entier("aucune séparation nette entre un symbole et le nom");
 }
@@ -204,14 +239,34 @@ const fonte = (p: Pick<PoliceChoisie, "cle" | "poids">, taille: number, poids?: 
 
 // ---------------------------------------------------------------- le badge
 
+/**
+ * LE TEXTE DU BAS DU BADGE, comme sur la planche : la ligne descriptive du logo (la phrase sous le nom choisie par le
+ * client) si elle existe ; sinon le métier court (« les plantes d'intérieur » : écrit sans son article sur le sceau) ; à
+ * défaut des deux, la signature de la marque. Vide : rien en bas.
+ */
+export function texteDuBasDuBadge(o: { ligneDuLogo?: string | null; metierCourt?: string | null; signature?: string | null }): string {
+  const ligne = (o.ligneDuLogo ?? "").trim();
+  if (ligne) return ligne;
+  const court = (o.metierCourt ?? "").trim().replace(/^(la|le|les)\s+|^l['’]/i, "").trim();
+  if (court) return court;
+  return (o.signature ?? "").trim();
+}
+
 /** LE BADGE, refait par le code : un anneau et un texte autour du symbole du logo ; jamais un pictogramme inventé. */
 export async function badge(symbole: Buffer, couleur: string, haut: string, bas: string, police: Pick<PoliceChoisie, "cle" | "poids">, t = 1024): Promise<Buffer> {
   const c = createCanvas(t, t), x = c.getContext("2d");
   x.strokeStyle = couleur; x.lineWidth = t * 0.011; x.beginPath(); x.arc(t / 2, t / 2, t / 2 - t * 0.012, 0, Math.PI * 2); x.stroke();
   const s = await img(await teinte(symbole, couleur)), k = (t * 0.36) / Math.max(s.width, s.height);
   dessiner(x, s, (t - s.width * k) / 2, (t - s.height * k) / 2, s.width * k, s.height * k);
-  const arc = (texte: string, rayon: number, taille: number, enHaut: boolean) => {
-    if (!texte) return;
+  const arc = (texte0: string, rayon: number, taille0: number, enHaut: boolean) => {
+    if (!texte0) return;
+    // Un texte long est écrit plus petit (jusqu'aux deux tiers), puis coupé à un mot entier : il tient toujours sur son
+    // arc, sans lettres serrées les unes sur les autres.
+    const largeur = (t: string, taille: number) => { x.font = fonte(police, taille, 700); return [...t].reduce((s, l) => s + x.measureText(l).width + taille * 0.12, 0); };
+    const place = rayon * Math.PI * 0.9;
+    let texte = texte0, taille = taille0;
+    if (largeur(texte, taille) > place) taille = Math.max(taille0 * 0.66, (taille0 * place) / largeur(texte, taille0));
+    while (largeur(texte, taille) > place && texte.includes(" ")) texte = texte.slice(0, texte.lastIndexOf(" ")).replace(/[\s,;:–—-]+$/, "");
     x.font = fonte(police, taille, 700); x.fillStyle = couleur; x.textAlign = "center"; x.textBaseline = "middle";
     const lettres = [...texte], larg = lettres.map((l) => x.measureText(l).width + taille * 0.12), total = larg.reduce((a, b) => a + b, 0);
     const angle = Math.min(total / rayon, Math.PI * 0.95);
@@ -229,18 +284,21 @@ export async function badge(symbole: Buffer, couleur: string, haut: string, bas:
 
 /**
  * LES DIX VERSIONS DU LOGO (assembler-planche.py), en PNG haute définition sur fond transparent, à partir du logo au fond
- * retiré. Le symbole séparé n'est pris que s'il est fiable ET que l'icône de la planche reprend le logo ; sinon le symbole
- * est le logo complet (`symboleComplet`).
+ * retiré. Avec une séparation fiable : le compact, l'icône et le favicon montrent le symbole seul, l'horizontal le symbole
+ * à gauche du nom, l'empilé le symbole au-dessus du nom (essai réel du 25 novembre 2026 : la condition d'avant, « l'icône
+ * de la planche reprend le logo », gardait le logo complet partout dès que l'icône de la démonstration montrait un autre
+ * dessin). Sans séparation fiable, le symbole est le logo complet (`symboleComplet`), et c'est dit.
+ * `bas` : le texte du bas du badge (`texteDuBasDuBadge`).
  */
-export async function versionsDuLogo(o: { logo: Buffer; separation: Separation; iconeReprendLeLogo: boolean; couleur: string; sombre: string; clair: string; monoClair: string; nom: string; phrase: string; police: Pick<PoliceChoisie, "cle" | "poids"> }): Promise<{ versions: Record<VersionDuLogo, Buffer>; symboleComplet: boolean; symbole: Buffer }> {
-  const sep = o.separation.fiable && o.separation.nom && o.iconeReprendLeLogo ? o.separation : null;
+export async function versionsDuLogo(o: { logo: Buffer; separation: Separation; couleur: string; sombre: string; clair: string; monoClair: string; nom: string; bas: string; police: Pick<PoliceChoisie, "cle" | "poids"> }): Promise<{ versions: Record<VersionDuLogo, Buffer>; symboleComplet: boolean; symbole: Buffer }> {
+  const sep = o.separation.fiable && o.separation.nom ? o.separation : null;
   const r = await rgba(o.logo), bb = boiteOpaque(r), logo = bb ? await versPng(decouper(r, bb)) : o.logo;
   const symbole = sep ? sep.symbole : logo, nom = sep?.nom ?? null;
   const blanc = "#FFFFFF";
   const versions: Record<VersionDuLogo, Buffer> = {
     "logo-principal": logo,
     "logo-horizontal": sep && nom ? (sep.sens === "gauche" ? logo : await horizontal(symbole, nom)) : logo,
-    "logo-empile": sep && nom ? (sep.sens === "dessus" ? await empile(symbole, nom, 0.14) : await empile(symbole, nom, 0.14)) : logo,
+    "logo-empile": sep && nom ? await empile(symbole, nom, 0.14) : logo,
     "logo-compact": symbole,
     icone: await carre(await teinte(symbole, blanc), o.sombre, 0.18, 0.2),
     favicon: await carre(await teinte(symbole, blanc), o.sombre, 0.22, 0.16),
@@ -248,7 +306,7 @@ export async function versionsDuLogo(o: { logo: Buffer; separation: Separation; 
     "monochrome-clair": await teinte(logo, o.monoClair),
     // Sur fond sombre, le logo est toujours clair.
     inverse: await inverse(await teinte(logo, blanc), o.sombre),
-    badge: await badge(symbole, o.couleur, o.nom, o.phrase.length <= 40 ? o.phrase : "", o.police),
+    badge: await badge(symbole, o.couleur, o.nom, o.bas, o.police),
   };
   return { versions, symboleComplet: !sep, symbole };
 }
@@ -376,14 +434,10 @@ async function couvrir(x: SKRSContext2D, png: Buffer, b: Boite, rayon = 14 * S) 
   x.save(); arrondi(x, b[0], b[1], W, H, rayon); x.clip();
   x.drawImage(i, (i.width - sw) / 2, (i.height - sh) / 2, sw, sh, b[0], b[1], W, H); x.restore();
 }
-/** Retire les marges blanches demandées au bandeau (lignes presque blanches en haut et en bas). */
-async function sansMargesBlanches(png: Buffer): Promise<Buffer> {
-  const { data, info } = await sharp(png).greyscale().raw().toBuffer({ resolveWithObject: true });
-  const utiles: number[] = [];
-  for (let y = 0; y < info.height; y++) { let s = 0, n = 0; for (let x = info.width >> 1; x < info.width; x += 8) { s += data[y * info.width + x]; n++; } if (s / n < 245) utiles.push(y); }
-  if (utiles.length < info.height * 0.5) return png;
-  return sharp(png).extract({ left: 0, top: utiles[0], width: info.width, height: utiles.at(-1)! - utiles[0] + 1 }).png().toBuffer();
-}
+/** La part coupée de chaque côté quand une image de w × h couvre une case de W × H (sans être déformée). */
+export const coupeDuPleinCadre = (w: number, h: number, W: number, H: number) => { const k = Math.max(W / w, H / h); return Math.max(1 - W / k / w, 1 - H / k / h) / 2; };
+/** Le bandeau d'ouverture n'est posé en plein cadre que s'il n'y perd pas plus de 1,5 % de chaque côté. */
+export const COUPE_MAX_DU_BANDEAU = 0.015;
 function texte(x: SKRSContext2D, t: string, px: number, py: number, f: string, couleur: string, align: CanvasTextAlign = "left", maxW?: number) {
   x.font = f; x.fillStyle = couleur; x.textAlign = align; x.textBaseline = "middle";
   if (maxW) x.fillText(t, px, py, maxW); else x.fillText(t, px, py);
@@ -419,7 +473,14 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   }
   // Le bandeau d'ouverture de la planche.
   const ob = B("ouverture-planche"), ouv = o.images.get("ouverture-planche");
-  if (ob && ouv) await couvrir(x, await sansMargesBlanches(ouv), X(ob), 0);
+  // Déjà rogné avant sa relecture (`rognerLesMargesBlanches`), puis posé sans jamais être déformé : en plein cadre quand
+  // le plein cadre n'en coupe presque rien ; sinon entier, sur le fond de la case, pour qu'aucun texte près d'un bord ne
+  // soit coupé.
+  if (ob && ouv) {
+    const r = await rognerLesMargesBlanches(ouv), m = await sharp(r).metadata(), b = X(ob);
+    if (coupeDuPleinCadre(m.width!, m.height!, b[2] - b[0], b[3] - b[1]) <= COUPE_MAX_DU_BANDEAU) await couvrir(x, r, b, 0);
+    else { x.fillStyle = fond(ob); x.fillRect(b[0], b[1], b[2] - b[0], b[3] - b[1]); await poser(x, r, b); }
+  }
   // Les dix versions du logo.
   const MARGES: Partial<Record<VersionDuLogo, number>> = { favicon: 0.3, icone: 0.2, badge: 0.06, inverse: 0.05 };
   // La rangée des tuiles est d'abord effacée (fond de la page, un peu au-delà des tuiles) : un logo de la démonstration

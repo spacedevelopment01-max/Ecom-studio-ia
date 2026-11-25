@@ -78,12 +78,13 @@ Preuves (branche `claude/chef-orchestre-sina`, `docs/studio/essais-logos-api/rac
   aucune personne sans accord, logo clair sur fond sombre, produit comparé quand sa photo est jointe, aucun texte coupé
   ou collé au bord, fidélité de 8 au moins. Une reprise à la charge du Studio avec ses raisons ; refusée deux fois,
   l'image n'a pas de fichier en haute définition et l'aperçu agrandi garde sa case.
-- **Le code seul** (`planche-en-vrai-code.ts`) : les dix versions du logo à partir du masque du logo au fond retiré ; la
-  séparation du symbole et du nom (gardée complète si elle n'est pas fiable ou si l'icône de la planche ne reprend pas le
-  logo, et c'est dit) ; favicons 32, 64, 512 et avatar ; la palette (médiane de chaque pastille, rôles donnés par le
+- **Le code seul** (`planche-en-vrai-code.ts`) : les dix versions du logo à partir du logo au fond retiré ; la
+  séparation du symbole et du nom sur le masque d'encre d'`assembler-planche.py` (gardée complète si elle n'est pas
+  fiable, et c'est dit ; voir « Les corrections après l'essai réel ») ; favicons 32, 64, 512 et avatar ; la palette (médiane de chaque pastille, rôles donnés par le
   code) ; les polices cherchées dans le catalogue du Studio, la plus proche sinon (et SINA le dit) ; les titres redessinés
   avec les textes de l'inventaire ; le ton et le bloc 10 gardés s'ils passent le contrôle (pas de promesse mesurable ;
-  copyright et domaine vérifiés exacts), sinon redessinés corrigés ; le badge refait (anneau et texte autour du symbole).
+  copyright et domaine vérifiés exacts), sinon redessinés corrigés ; le badge refait (anneau, le nom en haut, en bas la
+  phrase sous le nom choisie pour ce logo, sinon le métier court).
 - **L'assemblage** en 3072 × 4608 : le décor agrandi deux fois, les images dans leurs cases, les écrans et les
   publications entiers ; rangée comme planche de marque (« brand-board »), mention « planche-en-vrai ».
 - **La tâche de fond** (`planche-en-vrai-tache.ts`, appelée par `brand-finish.ts`) : points de reprise
@@ -127,3 +128,66 @@ Pour toute l'étape « La marque » (la carte unique) :
 - La séparation du symbole et du nom, le recalage des cases et la mesure de la palette n'ont été vérifiés que sur la
   planche des preuves et sur des planches fabriquées par le code.
 - Les écrans n'ont pas été regardés dans un navigateur.
+
+## Les corrections après l'essai réel (25 novembre 2026, sans dépense)
+
+L'essai réel de Racine (preuves : `docs/studio/essais-complets/images/racine/planche-en-vrai/`, branche
+`claude/essais-complets`) a gardé 14 images sur 17, pour 1,25 € comptés par le Studio. Trois défauts ont été corrigés par
+le code, sans aucun appel payant, sur la branche locale `corrections-en-vrai`. Le chef d'orchestre a présenté ces
+constats ; le propriétaire n'a pas de mots propres sur ce point.
+
+1. **Les logos.** Toutes les versions montraient le logo complet. La vraie cause : le symbole n'était pris que si
+   l'inventaire disait que l'icône de la démonstration reprenait le logo ; sur la planche de Racine, l'icône montre une
+   feuille, pas le R, donc le logo complet partout. Cette condition est retirée (le champ reste relevé pour le compte
+   rendu). La séparation reprend aussi la méthode d'`assembler-planche.py` : un masque d'encre (le logo posé sur du blanc,
+   compté selon sa noirceur : plus clair que 235, rien ; plus foncé que 120, de l'encre pleine), puis la plus grande bande
+   vide entre le symbole et le nom, horizontale pour un logo empilé, verticale pour un logo en ligne ; les bandes sont
+   essayées de la plus grande à la plus petite, et la première fiable est gardée. Le masque du fond retiré ne sert qu'au
+   fond : ses franges presque transparentes pouvaient cacher le blanc entre les deux. Les pixels gardés viennent toujours
+   du logo au fond retiré. Résultat sur le vrai logo : le compact, l'icône et le favicon montrent le R seul, l'horizontal
+   met le R à gauche de RACINE. Le badge porte en bas la phrase sous le nom choisie pour ce logo ; sans elle, le métier
+   court écrit pour la recherche du logo (sans son article) ; à défaut, la signature de la marque ; un texte long est
+   écrit plus petit puis coupé à un mot entier. Sans séparation fiable : le symbole complet, et SINA le dit.
+2. **La sixième image de référence.** Le logo complet joint poussait le dessinateur à ajouter « RACINE » sous le
+   monogramme et à changer sa couleur. L'inventaire dit maintenant, pour chaque case où il voit le logo, `logoVu` :
+   « complet » ou « symbole ». Là où il ne voit que le symbole, le symbole seul est joint (tiré de la séparation du point
+   1, sur fond blanc), avec la phrase `regleDuSymbole` : sa forme exacte, la couleur et la matière qu'il a sur l'aperçu,
+   ni nom ni texte ajouté. Sans séparation fiable, rien n'est joint, jamais le logo complet. Une réponse d'avant ce champ
+   se lit toujours et garde la règle d'avant (le logo complet). La séparation se fait désormais avant les retouches.
+3. **Le bandeau d'ouverture de la planche.** Demandé en 3 pour 1 avec des marges généreuses, il est revenu deux fois
+   avec de larges bandes blanches, refusé deux fois pour elles. Le code les rogne maintenant AVANT la relecture
+   (`rognerLesMargesBlanches`). L'essai du chef d'orchestre gardait les lignes dont la moitié droite est plus sombre que
+   245 ; la règle est adaptée : une ligne n'est une marge que blanche sur TOUTE sa largeur (moyenne au-dessus de 245 et
+   97 % de ses points au-dessus de 240), pour qu'un bandeau au fond clair d'un côté ne soit jamais rogné dans son dessin ;
+   seules les marges continues depuis le haut et depuis le bas partent, jamais une ligne du milieu ; un bord n'est pas
+   rogné quand l'aperçu a lui-même une bande blanche de ce côté (8 % de sa hauteur au moins) ; rien n'est rogné si les
+   marges dépassent la moitié de la hauteur ; la largeur n'est jamais touchée. C'est l'image rognée qui est relue face à
+   son aperçu et gardée en haute définition. Dans l'assemblage, elle n'est jamais déformée : en plein cadre si le plein
+   cadre n'en coupe pas plus de 1,5 % de chaque côté, sinon entière sur le fond de sa case, pour qu'aucun texte près d'un
+   bord ne soit coupé (sur l'essai : 2304 × 582 après rognage, posée entière, deux filets clairs fins en haut et en bas).
+
+Inchangé : les publications 1 et 3, jugées incompréhensibles par l'inventaire, restent sur la planche et hors du
+calendrier.
+
+Épreuve ajoutée et scellée : `planche-en-vrai-symbole-seul-et-bandeau-sans-marges` (aucune épreuve scellée n'est
+contredite : le logo n'est toujours joint que là où l'inventaire le voit, les versions viennent toujours du logo au fond
+retiré, chaque image est toujours relue face à son aperçu). Tests : `tests/planche-en-vrai-corrections.test.ts`, avec le
+vrai logo de l'essai réduit en 512 × 512 (`tests/fixtures/planche-en-vrai/esquisse-11-logo-garde-512.png`).
+
+Vérifié sans IA : un assemblage de contrôle avec les 14 images gardées de l'essai, le premier bandeau (refusé à 7 pour
+ses seules marges) rogné, et les logos corrigés. Pas vérifié : la nouvelle question de l'inventaire (`logoVu`) et la
+phrase du symbole n'ont pas été essayées avec la vraie IA ; on ne sait donc pas encore si la sixième référence et le
+bandeau rogné passent la relecture.
+
+## Voir la planche en vrai dans l'écran du Studio (essai, gratuit)
+
+Le script d'essai (`scripts/syna-recette/essai-planche-en-vrai.mts`) enregistre maintenant l'état dans le parcours du
+projet comme la vraie tâche (`enregistrerLeParcours` : le fil du projet, l'identité A choisie avec sa planche, la marque
+finie avec ce que SINA dit, `plancheEnVrai`, et la marque du projet relue sur la planche en vrai) : l'onglet Marque du
+studio privé la montre. L'identité n'a que ce que l'essai connaît ; les textes que la chaîne écrit d'habitude restent
+vides, jamais inventés.
+
+Pour une base d'essai déjà faite, `scripts/syna-recette/ecran-planche-en-vrai.mts` (aucun appel à l'IA ni au réseau)
+écrit ce parcours depuis l'`etat.json` de l'essai, refuse si un média désigné manque, donne au propriétaire du projet un
+compte fictif connu (`planche-en-vrai@example.com`, mot de passe fictif de recette) et affiche l'adresse de la page
+Marque (`/studio/<projet>/marque`).
