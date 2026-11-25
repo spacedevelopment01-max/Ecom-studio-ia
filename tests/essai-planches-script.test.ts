@@ -55,7 +55,8 @@ describe("le script de l'essai des planches de marque (appels simulés)", async 
   const preparer = async (n = 2) => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "essai-planches-"));
     const entree = path.join(dir, "entree"); fs.mkdirSync(entree);
-    const logos = await Promise.all(["#3A7D44", "#7A4EB0", "#B04E4E", "#4E7AB0"].slice(0, n).map(async (c, i) => { const f = path.join(entree, `esquisse-0${i + 1}-logo-garde.png`); fs.writeFileSync(f, await logo(c)); return f; }));
+    // Comme l'essai de finalisation : à côté de chaque logo gardé, le fichier de sa phrase (vide : aucune phrase).
+    const logos = await Promise.all(["#3A7D44", "#7A4EB0", "#B04E4E", "#4E7AB0"].slice(0, n).map(async (c, i) => { const f = path.join(entree, `esquisse-0${i + 1}-logo-garde.png`); fs.writeFileSync(f, await logo(c)); fs.writeFileSync(path.join(entree, `esquisse-0${i + 1}-phrase-du-logo.txt`), ""); return f; }));
     return { sortie: path.join(dir, "sortie"), logos };
   };
   afterEach(() => { appels.length = 0; envoyes.length = 0; textes.length = 0; dispositions.length = 0; verdicts = {}; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; });
@@ -98,6 +99,70 @@ describe("le script de l'essai des planches de marque (appels simulés)", async 
       expect(rapport).toContain("Dépense réelle comptée par le Studio : 0,2750 €");
       expect(rapport).toContain("Plafond minimal pour aller au bout à coup sûr");
     } finally { T.plancheDeps.domaines = avant; }
+  });
+
+  it("la phrase de chaque logo est lue dans esquisse-NN-phrase-du-logo.txt, à côté de lui : A reçoit la sienne, B la sienne, mot pour mot ; relue lettre pour lettre", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "essai-planches-phrase-"));
+    const etape2 = path.join(dir, "2-finalisation"); fs.mkdirSync(etape2);
+    const logos = [path.join(etape2, "esquisse-06-logo-garde.png"), path.join(etape2, "esquisse-10-logo-garde.png")];
+    fs.writeFileSync(logos[0], await logo("#3A7D44")); fs.writeFileSync(logos[1], await logo("#7A4EB0"));
+    fs.writeFileSync(path.join(etape2, "esquisse-06-phrase-du-logo.txt"), "SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES");
+    fs.writeFileSync(path.join(etape2, "esquisse-10-phrase-du-logo.txt"), "La douceur du savon à froid\n");
+    const { phraseDuLogoDeLEssai } = await import("../scripts/syna-recette/essai-planches-outil");
+    expect(await phraseDuLogoDeLEssai(logos[0])).toEqual({ fichier: path.join(etape2, "esquisse-06-phrase-du-logo.txt"), lignes: ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"] });
+    expect(await phraseDuLogoDeLEssai(logos[1])).toMatchObject({ lignes: ["La douceur du savon à froid"] });
+    // Le relecteur simulé lit ce que le texte a demandé ; sa réponse porte les endroits où il lit la phrase.
+    const avecPhrase: Record<string, boolean | undefined> = {};
+    const lu: Record<string, string> = { A: "SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES", B: "La douceur du savon a froid" };
+    const ai = (q: { userId: string; projectId: string; jobId: string }) => {
+      const s = simule(q);
+      return { ...s, relire: async (b: Buffer[], l: Buffer, d: Buffer, demande: string, cle: string, avec?: boolean) => { avecPhrase[cle] = avec; return { ...(await s.relire(b, l, d, demande, cle)), phrasesLues: [lu[cle[0]]] }; } };
+    };
+    const sortie = path.join(dir, "3-planches");
+    const avant = valeursSimulees;
+    valeursSimulees = (nom) => ({ nom, traits: ["douce", "artisanale", "généreuse"], emotion: "le parfum doux d'un savon qui sèche sur une étagère", images: ["savon posé sur une pierre humide", "mousse épaisse", "gros plan de la pâte à savon", "savon seul en studio", "atelier de fabrication", "emballage en papier kraft"], produits: ["savons solides", "shampoings solides", "baumes"], appel: "devis" as const });
+    let r: Awaited<ReturnType<typeof essaiDesPlanches>>;
+    try { r = await essaiDesPlanches({ sortie, plafondEuros: "2", logos, client: ECUME, ai: ai as never }); } finally { valeursSimulees = avant; }
+    expect(r.arret).toBeUndefined();
+    // A avec son logo et sa phrase en deux lignes ; B avec le sien et sa phrase ; jamais celle de l'autre.
+    expect(textes[0]).toContain("« SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES »");
+    expect(textes[0]).not.toContain("La douceur du savon à froid");
+    expect(textes.filter((t) => t.includes("« La douceur du savon à froid »")).length).toBeGreaterThan(0);
+    expect(textes.every((t) => !t.includes("« La douceur du savon à froid »") || !t.includes("SAVONNERIE ARTISANALE"))).toBe(true);
+    // La demande des valeurs ne la voit jamais.
+    expect(envoyes[0]).toContain("Le nom de la marque : « Écume »");
+    expect(envoyes[0]).not.toMatch(/SAVONNERIE ARTISANALE|douceur du savon/);
+    expect(Object.values(avecPhrase).every((x) => x === true)).toBe(true);
+    // A : lue exactement, gardée du premier coup. B : « a » au lieu de « à », refusée comme un nom mal écrit, puis refaite
+    // une fois à la charge du Studio avec cette raison à la fin du texte.
+    expect(r.planches[0]).toMatchObject({ key: "A", gardee: true, phrase: ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"] });
+    expect(r.planches[0].essais).toHaveLength(1);
+    expect(r.planches[1].essais[0].raisons).toEqual(["la phrase choisie par le client est mal écrite (« La douceur du savon a froid » au lieu de « La douceur du savon à froid »)"]);
+    expect(textes.at(-1)!.endsWith("À corriger : la phrase choisie par le client est mal écrite (« La douceur du savon a froid » au lieu de « La douceur du savon à froid »).")).toBe(true);
+    expect(r.planches[1].gardee).toBe(false);
+    const rapport = fs.readFileSync(path.join(sortie, "rapport.txt"), "utf8");
+    expect(rapport).toContain("Phrase sous le logo A : « SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES », reprise mot pour mot sur la planche");
+    expect(JSON.parse(fs.readFileSync(path.join(sortie, "planche-A-resultat.json"), "utf8"))).toMatchObject({ phrase: ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"], planche: { phrase: ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"] } });
+    // Le fichier de phrase manque à côté d'un logo de l'étape 2 : rien n'est lancé (la phrase serait perdue).
+    fs.rmSync(path.join(etape2, "esquisse-10-phrase-du-logo.txt"));
+    appels.length = 0;
+    await expect(essaiDesPlanches({ sortie: path.join(dir, "autre"), plafondEuros: "2", logos, client: ECUME, ai: ai as never })).rejects.toThrow(/esquisse-10-phrase-du-logo\.txt.*Rien n'est lancé/);
+    expect(appels).toEqual([]);
+    // Un fichier vide : aucune phrase, rien ne change (les autres essais de ce fichier).
+    fs.writeFileSync(path.join(etape2, "esquisse-10-phrase-du-logo.txt"), "");
+    expect(await phraseDuLogoDeLEssai(logos[1])).toEqual({ fichier: path.join(etape2, "esquisse-10-phrase-du-logo.txt") });
+  });
+
+  it("le plafond sous le plafond minimal du devis : le script refuse de partir", async () => {
+    const { refusDuPlafond } = await import("../scripts/syna-recette/essai-planches-outil");
+    const d = await devisDeLEssai(2);
+    const juste = (Math.ceil(d.plafondMinimalMicro / 10_000) / 100).toFixed(2);
+    expect(refusDuPlafond(juste, d)).toBeNull();
+    expect(refusDuPlafond(((Math.ceil(d.plafondMinimalMicro / 10_000) - 1) / 100).toFixed(2), d)).toMatch(/sous le plafond minimal .* rien n'est lancé/);
+    expect(refusDuPlafond("abc", d)).toMatch(/illisible/);
+    const src = fs.readFileSync("scripts/syna-recette/essai-planches.mts", "utf8");
+    expect(src).toContain("const refus = refusDuPlafond(process.env.PLAFOND_ESSAI_EUR, devis);");
+    expect(src).toContain("if (refus) { console.error(refus); process.exit(1); }");
   });
 
   it("une planche refusée est refaite une fois, avec ses raisons, à la charge du Studio", async () => {

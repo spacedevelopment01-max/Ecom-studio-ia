@@ -750,7 +750,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
           const avant = j.identities?.chainJobId ? parseJson<Record<string, unknown>>(getJob(j.identities.chainJobId)?.checkpoint ?? "{}", {}) : {};
           for (const [k, v] of Object.entries(avant)) if (k.startsWith("brand:planche:valeurs:") && !(k in ctx.checkpoint)) ctx.save(k, v);
           const valeurs = metier ? await T.valeursDuClient(ctx, plancheAi, { nom: route0.name, metier, fiche: ficheTexte({ j, notes: notesDuProjet(p.id), projectId: p.id }), personnes, kind }) : { ok: false as const, raison: L("le métier n'est pas encore écrit", "the trade is not written yet"), notes: [] };
-          const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route: route0, round, valeurs, logoAssetId: route0.board.planche.logo, personnes });
+          // La phrase choisie par le client sous ce logo, reprise mot pour mot sur la planche refaite.
+          const phrase = (await import("./planche-de-marque")).phraseDuLogoFini(j.graphistes, route0.board.planche.logo);
+          const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route: route0, round, valeurs, logoAssetId: route0.board.planche.logo, personnes, ...(phrase ? { phrase } : {}) });
           return { route: r.route, made: r.route.board.planche?.image ? 1 : 0, rejected: r.route.board.planche?.image ? 0 : 1, notes: [...valeurs.notes, ...r.notes], issues: r.issues, manque: manqueDeLaPlanche(r.route, !!clientLogo) };
         }
         return runBoardImages({ ctx, ai, who: { userId: p.userId, projectId: p.id }, brief, kind, route: route0, round, slots: places, clientLogo, gouts, ...(reprise ? { imagery: reprise } : {}) });
@@ -1111,6 +1113,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const parLaPlanche = imagesFaites && !!a.plancheDeMarque && !!a.logosGraphistes?.length;
   if (parLaPlanche) {
     const T = await import("./planche-de-marque-tache");
+    const { phraseDuLogoFini } = await import("./planche-de-marque");
     const plancheAi = T.plancheDeps.ai ? T.plancheDeps.ai(ctx.job.id) : T.vraisAppelsDeLaPlanche({ userId: p.userId, projectId: p.id, jobId: ctx.job.id });
     const personnes = peopleAllowed(p.id), metier = j.graphistes?.metier?.metier ?? "";
     const premier = list.find((y) => todo.includes(y.key));
@@ -1122,7 +1125,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
       const lg = a.logosGraphistes?.[keys.indexOf(x.key as RouteKey)];
       if (!lg) continue;
       const route = await poserLeLogoFini(x, lg.assetId);
-      const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route, round, valeurs, logoAssetId: lg.assetId, personnes });
+      // La phrase choisie par le client sous ce logo (méthode des graphistes), reprise mot pour mot sur sa planche.
+      const phrase = phraseDuLogoFini(j.graphistes, lg.assetId);
+      const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route, round, valeurs, logoAssetId: lg.assetId, personnes, ...(phrase ? { phrase } : {}) });
       list = list.map((o) => (o.key === x.key ? r.route : o));
       raisonsDe.set(x.key, r.issues); notes.push(...r.notes);
     }

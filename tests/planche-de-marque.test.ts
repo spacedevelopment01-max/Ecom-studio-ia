@@ -375,3 +375,101 @@ describe("la tâche : points de reprise, planche refusée deux fois jamais montr
     expect(I.FINISH_SLOTS_PLANCHE).toContain("hero");
   });
 });
+
+describe("la phrase choisie sous le logo, reprise mot pour mot sur sa planche (25 novembre 2026)", async () => {
+  const P = await import("@/lib/syna-agent/planche-de-marque");
+  const { aLaChargeDuStudio } = await import("@/lib/billing");
+  const DEUX = ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"], UNE = ["La douceur du savon à froid"];
+  const attendu: import("@/lib/syna-agent/planche-de-marque").AttenduDeLaPlanche = { nom: "Tenon", annee: 2026, domaine: { domaine: "tenon.fr", statut: "disponible" }, personnes: false, animaux: false };
+  const bon = { nomLu: "TENON", logoFidele: true, copyrightLu: "© 2026 Tenon", domaineLu: "tenon.fr — disponible", fautes: [] as string[], promesses: [] as string[], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [] as string[], note: 9, pourquoi: "Belle planche." };
+  const donnees = { nom: "Tenon", valeurs: TENON, annee: 2026, domaine: { domaine: "tenon.fr", statut: "disponible" as const }, personnes: false };
+
+  it("le code pose la phrase dans la ligne de la marque, toutes ses lignes dans l'ordre ; le reste du texte ne bouge pas d'un mot", () => {
+    const sans = P.texteDesPreuves("Tenon", TENON).split("\n"), avec = P.texteDesPreuves("Tenon", TENON, DEUX).split("\n");
+    expect(avec.length).toBe(sans.length);
+    const diff = avec.map((l, i) => (l === sans[i] ? null : i)).filter((i) => i != null) as number[];
+    expect(diff).toHaveLength(1);
+    expect(sans[diff[0]]).toBe("- Tenon, une entreprise de menuiserie qui réalise des cuisines et des dressings sur mesure : marque artisanale, chaleureuse, précise et haut de gamme.");
+    expect(avec[diff[0]]).toBe(`${sans[diff[0]]} Sa phrase, choisie par le client et écrite sous le logo, en 2 lignes, dans cet ordre : « SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, toutes ses lignes dans cet ordre, sans en changer une lettre ni un accent.`);
+    expect(P.ligneDeLaMarque("Tenon", TENON, UNE)).toBe(`${sans[diff[0]]} Sa phrase, choisie par le client et écrite sous le logo : « La douceur du savon à froid » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, sans en changer une lettre ni un accent.`);
+    // Les lignes du fichier de l'essai (« / » entre elles) ou d'un choix : nettoyées, dans l'ordre ; « aucune » ou vide : aucune.
+    expect(P.lignesDeLaPhrase("SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES\n")).toEqual(DEUX);
+    for (const rien of ["", "  \n", "aucune", null, undefined, []]) expect(P.lignesDeLaPhrase(rien as never)).toBeUndefined();
+  });
+
+  it("l'appel des valeurs ne la réécrit jamais : quoi qu'il écrive, la phrase reste celle du client, lettre pour lettre", () => {
+    // Des valeurs qui parlent d'une autre phrase, ou d'une phrase déformée : elles ne touchent que leurs propres parties.
+    const v = { ...TENON, traits: ["savonnerie artisanal", "savons et shampoings", "douce"], emotion: "la douceur du savon a froid" };
+    const t = P.texteDeLaPlanche({ ...donnees, valeurs: v, phrase: UNE });
+    expect(t).toContain("« La douceur du savon à froid »");
+    expect(t.split("« La douceur du savon à froid »")).toHaveLength(2);
+    // La demande des valeurs ne reçoit pas la phrase : rien à réécrire.
+    expect(P.demandeDesValeurs.length).toBe(1);
+    expect(P.demandeDesValeurs({ nom: "Tenon", metier: TENON.metier, fiche: "Je fais des cuisines.", personnes: false, kind: "services" })).not.toMatch(/phrase|slogan/i);
+  });
+
+  it("le contrôle gratuit : chaque ligne figure mot pour mot dans le texte envoyé, sinon rien n'est envoyé", () => {
+    const t = P.texteDeLaPlanche({ ...donnees, phrase: DEUX });
+    expect(P.controleDeLaPhrase(t, DEUX)).toEqual([]);
+    expect(P.controleDeLaPhrase(t.replace("SHAMPOINGS", "SHAMPOOINGS"), DEUX)).toEqual(["la phrase choisie par le client n'est pas reprise mot pour mot dans le texte de la planche : il manque « SAVONS · SHAMPOINGS · BAUMES »"]);
+    expect(P.controleDeLaPhrase(P.texteDeLaPlanche(donnees), DEUX)).toHaveLength(2);
+    expect(P.controleDeLaPhrase("n'importe quoi", undefined)).toEqual([]);
+    // La reprise garde la phrase (les raisons viennent à la toute fin).
+    const reprise = P.texteDeLaPlanche({ ...donnees, phrase: DEUX, raisons: ["la phrase choisie par le client est mal écrite"] });
+    expect(reprise.startsWith(t)).toBe(true);
+  });
+
+  it("le relecteur la reçoit ; le code compare lettre pour lettre chaque endroit où elle est lue ; mal écrite, la planche est refusée ; jamais un micro-texte décoratif", () => {
+    const a = { ...attendu, phrase: DEUX };
+    expect(P.demandeAuRelecteurDeLaPlanche({ ...a, texte: "t" })).toContain("Le client a choisi la phrase écrite sous son logo, en 2 lignes, dans cet ordre : « SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES ». Elle n'est pas inventée, et ce n'est jamais un micro-texte décoratif");
+    expect(P.RelectureAvecPhraseSchema.parse({ phrasesLues: ["x"] }).phrasesLues).toEqual(["x"]);
+    const r = (v: Partial<typeof bon> & { phrasesLues?: string[]; microTextes?: string[] }, o = a) => P.raisonsDuRefusDeLaPlanche({ ...bon, ...v }, o);
+    // Juste : sous le logo et comme slogan (la casse, les espaces et un point final mis à part, comme pour le nom).
+    expect(r({ phrasesLues: ["SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES", "Savonnerie artisanale / Savons · shampoings · baumes."] })).toEqual([]);
+    // Une lettre, une ligne manquante, en trop ou hors de l'ordre, un signe changé : refusée, comme un nom mal écrit.
+    for (const lue of ["SAVONERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES", "SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES / SAVONNERIE ARTISANALE", "SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES / FAIT MAIN", "SAVONNERIE ARTISANALE / SAVONS - SHAMPOINGS - BAUMES"]) {
+      expect(r({ phrasesLues: ["SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES", lue] }).join(" | "), lue).toMatch(/la phrase choisie par le client est mal écrite \(« .+ » au lieu de « SAVONNERIE ARTISANALE » \/ « SAVONS · SHAMPOINGS · BAUMES »\)/);
+    }
+    expect(r({ phrasesLues: [] }).join(" ")).toMatch(/n'est lue nulle part sur la planche/);
+    expect(r({}).join(" ")).toMatch(/n'est lue nulle part sur la planche/);
+    // Ce qui touche la phrase n'est jamais écarté comme micro-texte décoratif, même rangé là ou dit « du badge ».
+    expect(r({ phrasesLues: ["SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES"], microTextes: ["SAVONERIE ARTISANAL (texte circulaire)"] }).join(" ")).toMatch(/la phrase choisie par le client est mal écrite : « SAVONERIE ARTISANAL/);
+    expect(r({ phrasesLues: ["SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES"], fautes: ["SAVONS · SHAMPOING · BAUME (texte du badge)"] }).join(" ")).toMatch(/fautes : « SAVONS · SHAMPOING · BAUME \(texte du badge\) »/);
+    // Les autres micro-textes restent écartés, comme avant.
+    expect(r({ phrasesLues: ["SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES"], microTextes: ["abcdefghijklmnop"], fautes: ["ABCDEFGHIJ (alphabet déformé)"] })).toEqual([]);
+    expect(P.touchePhrase("abcdefghijklmnop", DEUX)).toBe(false);
+  });
+
+  it("sans phrase (« aucune » ou rien de choisi) : le texte, la demande au relecteur, sa réponse et l'appel sont ceux d'avant", async () => {
+    expect(P.texteDeLaPlanche({ ...donnees, phrase: undefined })).toBe(P.texteDeLaPlanche(donnees));
+    expect(P.texteDeLaPlanche({ ...donnees, phrase: [] })).toBe(`${fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8")}\n${P.phraseDesDonneesVerifiees(donnees)}`);
+    expect(P.demandeAuRelecteurDeLaPlanche({ ...attendu, phrase: [], texte: "t" })).toBe(P.demandeAuRelecteurDeLaPlanche({ ...attendu, texte: "t" }));
+    expect(P.demandeAuRelecteurDeLaPlanche({ ...attendu, texte: "t" })).not.toMatch(/phrasesLues|phrase écrite sous son logo/);
+    // Une réponse qui porterait des phrases lues sans phrase choisie : ignorée, rien ne change.
+    expect(P.raisonsDuRefusDeLaPlanche({ ...bon, phrasesLues: ["autre chose"] } as never, attendu)).toEqual([]);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...bon, microTextes: ["SAVONERIE (badge)"] }, attendu)).toEqual([]);
+    // L'appel au relecteur : cinq paramètres, comme avant ; avec la phrase, un sixième qui demande `phrasesLues`.
+    const png = await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#FFFFFF" } }).png().toBuffer();
+    const nbArgs: number[] = [], textes: string[] = [];
+    const deps = { dessiner: async (_l: Buffer, _d: Buffer, texte: string) => { textes.push(texte); return png; }, relire: async (...args: unknown[]) => { nbArgs.push(args.length); return { ...bon, phrasesLues: ["SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES"] }; }, aLaChargeDuStudio };
+    expect((await P.dessinerLaPlanche(deps, { ...attendu, valeurs: TENON, logo: png, disposition: png })).ok).toBe(true);
+    expect((await P.dessinerLaPlanche(deps, { ...attendu, phrase: DEUX, valeurs: TENON, logo: png, disposition: png })).ok).toBe(true);
+    expect(nbArgs).toEqual([5, 6]);
+    expect(textes[0]).toBe(P.texteDeLaPlanche(donnees));
+    expect(textes[1]).toBe(P.texteDeLaPlanche({ ...donnees, phrase: DEUX }));
+  });
+
+  it("dans le Studio : la phrase choisie pour CE logo fini (graphistes.phrases, par numéro d'esquisse) ; « aucune » ou rien : aucune", () => {
+    const g = {
+      logos: [{ numero: 6, assetId: "logo6abcd", detoureAssetId: "logo6sansfond" }, { numero: 10, assetId: "logo10abcd" }, { numero: 3, assetId: "logo3abcd" }, { numero: 4, assetId: "logo4abcd" }],
+      phrases: { "6": { de: 1, texte: DEUX.join(" / "), lignes: DEUX }, "10": { sienne: true as const, texte: UNE[0] }, "3": { aucune: true as const } },
+    };
+    expect(P.phraseDuLogoFini(g, "logo6abcd")).toEqual(DEUX);
+    expect(P.phraseDuLogoFini(g, "logo6sansfond")).toEqual(DEUX);
+    expect(P.phraseDuLogoFini(g, "logo10abcd")).toEqual(UNE);
+    expect(P.phraseDuLogoFini(g, "logo3abcd")).toBeUndefined();
+    expect(P.phraseDuLogoFini(g, "logo4abcd")).toBeUndefined();
+    expect(P.phraseDuLogoFini(g, "inconnu")).toBeUndefined();
+    expect(P.phraseDuLogoFini(undefined, "logo6abcd")).toBeUndefined();
+  });
+});

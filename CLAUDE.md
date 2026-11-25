@@ -179,7 +179,10 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   le modèle de texte le plus fort et contrôlées gratuitement, puis la phrase des données vérifiées : l'année en cours et
   le domaine vérifié avant le dessin, « disponible » ou « à vérifier » (« Adresse à choisir » si tout est pris), et
   « aucune personne visible » sans son accord. Le relecteur le plus fort, effort élevé, la relit en bandes ; le code
-  compare le nom, l'année et le domaine lettre pour lettre ; **il ne juge pas les micro-textes décoratifs**, illisibles à
+  compare le nom, l'année et le domaine lettre pour lettre ; **la phrase choisie sous le logo est reprise mot pour mot sur
+  sa planche** (25 novembre 2026), toutes ses lignes, posée par le code dans la ligne de la marque après l'appel des
+  valeurs, relue et comparée lettre pour lettre comme le nom, jamais prise pour un micro-texte ; **il ne juge pas les
+  micro-textes décoratifs**, illisibles à
   taille normale (les lignes d'alphabet des spécimens de polices, le petit texte circulaire d'un badge, l'heure d'une
   barre d'état), mais tout texte lisible reste juste ; **seules les promesses mesurables ou les garanties font refuser**
   (gratuit, délai, montant, remboursement, chiffre, note, avis, nombre de clients), jamais un mot qualitatif (soigné,

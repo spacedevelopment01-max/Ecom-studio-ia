@@ -1454,21 +1454,22 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
   const RACINE = { metier: "une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres", traits: ["vivante", "chaleureuse", "généreuse", "naturelle"], emotion: "le plaisir de voir pousser ses plantes", site: "boutique" as const, images: ["plante dans un intérieur lumineux", "jardin qui pousse", "gros plan feuillage / terre / racines", "plante seule en studio ou lifestyle", "pépinière et serres", "mise en pot"], produits: ["plantes d'intérieur", "arbustes", "jeunes arbres"] };
   const bon = (nom: string, mention: string, annee = 2026) => ({ nomLu: nom, logoFidele: true, copyrightLu: `© ${annee} ${nom}`, domaineLu: mention, fautes: [] as string[], promesses: [] as string[], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [] as string[], note: 9, pourquoi: "Nette." });
   /** Une planche passée par la vraie tâche, avec un faux dessinateur et un faux relecteur (rien n'est payé). */
-  async function tache(o: { verdicts: (demande: string, tour: number) => any; domaines?: any; personnes?: boolean }) {
+  async function tache(o: { verdicts: (demande: string, tour: number) => any; domaines?: any; personnes?: boolean; phrase?: string[] }) {
     const u = await account(), pid = project(u, "services") as string;
     const logo = await saveAsset({ projectId: pid, userId: u.id, data: await sharp({ create: { width: 256, height: 256, channels: 3, background: "#FFFFFF" } }).png().toBuffer(), name: "logo-fini.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready" });
     const appels: { texte: string; logo: Buffer; disposition: Buffer; studio: boolean }[] = [];
+    const relectures: { demande: string; nbArgs: number; avecPhrase?: boolean }[] = [];
     const ai = {
       valeurs: async () => { throw new Error("aucun appel attendu"); },
       dessiner: async (l: { data: Buffer }, d: { data: Buffer }, texte: string) => { appels.push({ texte, logo: l.data, disposition: d.data, studio: chargeDuStudio() }); return { png: await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#EEE" } }).png().toBuffer(), recu: null }; },
-      relire: async (_b: Buffer[], _l: Buffer, _d: Buffer, demande: string) => o.verdicts(demande, appels.length),
+      relire: async (...a: [Buffer[], Buffer, Buffer, string, string, boolean?]) => { relectures.push({ demande: a[3], nbArgs: a.length, avecPhrase: a[5] }); return o.verdicts(a[3], appels.length); },
     };
     T.plancheDeps.domaines = async () => o.domaines ?? { taken: [], free: ["tenon.fr"], unknown: [], at: 1 };
     T.plancheDeps.annee = () => 2026;
     try {
       const x = { ...route("A"), name: "Tenon" };
-      const r = await fr(() => T.plancheDeLaRoute({ ctx: { step: async (_k: string, fn: () => Promise<any>) => fn() }, ai, who: { userId: u.id, projectId: pid }, route: x as never, round: 1, valeurs: { ok: true, valeurs: TENON }, logoAssetId: logo.id, personnes: o.personnes ?? false }));
-      return { r, appels, logo };
+      const r = await fr(() => T.plancheDeLaRoute({ ctx: { step: async (_k: string, fn: () => Promise<any>) => fn() }, ai, who: { userId: u.id, projectId: pid }, route: x as never, round: 1, valeurs: { ok: true, valeurs: TENON }, logoAssetId: logo.id, personnes: o.personnes ?? false, ...(o.phrase ? { phrase: o.phrase } : {}) }));
+      return { r, appels, logo, relectures };
     } finally { T.plancheDeps.domaines = undefined; T.plancheDeps.annee = undefined; }
   }
 
@@ -1607,6 +1608,49 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     const I = await import("@/lib/syna-agent/tools/identity");
     expect(I.finirPlanchesGardees(j as never, ["A"], ["planche"])).toBe(true);
     expect(I.devisDesImages(j as never, ["A"], ["planche"])).toMatchObject({ studio: true });
+  });
+
+  epreuve("planche-reprend-la-phrase-du-logo", async () => {
+    const DEUX = ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"];
+    const lue = (l: string[]) => ({ phrasesLues: [l.join(" / ")] });
+    // 1. Le Studio retrouve la phrase choisie pour CE logo fini (par le numéro de son esquisse) ; « aucune » : aucune.
+    const g = { logos: [{ numero: 6, assetId: "logo6abcd" }, { numero: 10, assetId: "logo10abcd" }, { numero: 2, assetId: "logo2abcd" }], phrases: { "6": { de: 6, texte: DEUX.join(" / "), lignes: DEUX }, "10": { sienne: true as const, texte: "Le savon à froid" }, "2": { aucune: true as const } } };
+    expect([P.phraseDuLogoFini(g, "logo6abcd"), P.phraseDuLogoFini(g, "logo10abcd"), P.phraseDuLogoFini(g, "logo2abcd")]).toEqual([DEUX, ["Le savon à froid"], undefined]);
+    // 2. Le texte : la phrase, toutes ses lignes dans l'ordre, posée par le code dans la ligne de la marque ; le reste du
+    // texte des preuves mot pour mot (une seule ligne diffère), la phrase des données vérifiées toujours à la toute fin.
+    const avec = await tache({ phrase: DEUX, verdicts: () => ({ ...bon("Tenon", "tenon.fr — disponible"), ...lue(DEUX) }) });
+    const preuve = fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8").split("\n"), envoye = avec.appels[0].texte.split("\n");
+    expect(envoye.slice(0, preuve.length).filter((l, i) => l !== preuve[i])).toEqual([`- Tenon, ${TENON.metier} : marque artisanale, chaleureuse, précise et haut de gamme. Sa phrase, choisie par le client et écrite sous le logo, en 2 lignes, dans cet ordre : « SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, toutes ses lignes dans cet ordre, sans en changer une lettre ni un accent.`]);
+    expect(avec.appels[0].texte.endsWith("écris exactement « tenon.fr — disponible » et « © 2026 Tenon » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.")).toBe(true);
+    // L'appel des valeurs ne la voit jamais (sa demande ne la porte pas) ; le contrôle gratuit la retrouve mot pour mot.
+    expect(P.demandeDesValeurs({ nom: "Tenon", metier: TENON.metier, fiche: "Je fais des cuisines.", personnes: false, kind: "services" })).not.toMatch(/SAVONNERIE/);
+    expect(P.controleDeLaPhrase(avec.appels[0].texte, DEUX)).toEqual([]);
+    expect(P.controleDeLaPhrase(avec.appels[0].texte.replace("BAUMES", "BAUME"), DEUX)).toHaveLength(1);
+    // 3. Le relecteur la reçoit et dit où il la lit ; juste partout : gardée du premier coup.
+    expect(avec.relectures[0]).toMatchObject({ nbArgs: 6, avecPhrase: true });
+    expect(avec.relectures[0].demande).toContain("Le client a choisi la phrase écrite sous son logo, en 2 lignes, dans cet ordre : « SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES ». Elle n'est pas inventée, et ce n'est jamais un micro-texte décoratif");
+    expect(avec.r.route.board.planche).toMatchObject({ phrase: DEUX, essais: 1 });
+    expect(avec.r.route.board.planche!.image).toBeTruthy();
+    // Mal écrite à un endroit (une lettre), ou rangée dans les micro-textes : refusée comme un nom mal écrit, refaite une
+    // fois à la charge du Studio avec cette raison.
+    const faute = await tache({ phrase: DEUX, verdicts: (_d, n) => ({ ...bon("Tenon", "tenon.fr — disponible"), phrasesLues: n === 1 ? [DEUX.join(" / "), "SAVONNERIE ARTISANALE / SAVONS · SHAMPOOINGS · BAUMES"] : [DEUX.join(" / ")] }) });
+    expect(faute.appels.map((a) => a.studio)).toEqual([false, true]);
+    expect(faute.appels[1].texte.endsWith("À corriger : la phrase choisie par le client est mal écrite (« SAVONNERIE ARTISANALE / SAVONS · SHAMPOOINGS · BAUMES » au lieu de « SAVONNERIE ARTISANALE » / « SAVONS · SHAMPOINGS · BAUMES »).")).toBe(true);
+    const a = { nom: "Tenon", annee: 2026, domaine: { domaine: "tenon.fr", statut: "disponible" as const }, personnes: false, animaux: false, phrase: DEUX };
+    expect(P.raisonsDuRefusDeLaPlanche({ ...bon("Tenon", "tenon.fr — disponible"), ...lue(DEUX), microTextes: ["SAVONERIE ARTISANAL (texte circulaire du badge)"] }, a).join(" ")).toMatch(/la phrase choisie par le client est mal écrite/);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...bon("Tenon", "tenon.fr — disponible"), ...lue(DEUX), fautes: ["SAVONS · SHAMPOING · BAUMES (badge)"] }, a).join(" ")).toMatch(/fautes/);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...bon("Tenon", "tenon.fr — disponible"), ...lue(["SAVONNERIE ARTISANALE"]) }, a).join(" ")).toMatch(/mal écrite/);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...bon("Tenon", "tenon.fr — disponible") }, a).join(" ")).toMatch(/n'est lue nulle part/);
+    // 4. Sans phrase (« aucune » ou rien de choisi) : rien ne change (le texte des preuves, cinq paramètres au relecteur).
+    const sans = await tache({ verdicts: () => bon("Tenon", "tenon.fr — disponible") });
+    expect(sans.appels[0].texte.startsWith(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"))).toBe(true);
+    expect(sans.relectures[0]).toMatchObject({ nbArgs: 5 });
+    expect(sans.relectures[0].demande).not.toMatch(/phrase écrite sous son logo|phrasesLues/);
+    expect(sans.r.route.board.planche!.phrase).toBeUndefined();
+    // 5. Le script d'essai lit la phrase à côté du logo fini de l'étape 2 (esquisse-NN-phrase-du-logo.txt).
+    const src = fs.readFileSync("scripts/syna-recette/essai-planches-outil.ts", "utf8");
+    expect(src).toContain("`${m[1]}-phrase-du-logo.txt`");
+    expect(src).toContain("...(l.phrase ? { phrase: l.phrase } : {}) });");
   });
 });
 

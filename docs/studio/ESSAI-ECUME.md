@@ -108,17 +108,34 @@ sortie), au même prix par logo.
 
 ## Étape 3 — une planche de marque par logo
 
+Les logos choisis : A = le logo de l'esquisse 6, B = celui de l'esquisse 10.
+
 ```
 NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
   PLAFOND_ESSAI_EUR=2.14 node_modules/.bin/tsx scripts/syna-recette/essai-planches.mts data/essai-ecume/3-planches \
-  data/essai-ecume/2-finalisation/esquisse-NN-logo-garde.png data/essai-ecume/2-finalisation/esquisse-MM-logo-garde.png
+  data/essai-ecume/2-finalisation/esquisse-06-logo-garde.png data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png
 ```
 
 Les mots du métier (contrôlés), le domaine vérifié par le Studio avant le dessin, la disposition standard (Écume n'est
 pas un métier des animaux), puis chaque planche et sa relecture.
-Probable 0,43 € (0,86 € si chaque planche est refaite une fois) ; plafond minimal 2,14 €.
 
-**Pause.** Montrer `planche-A-gardee.png` (le logo NN) et `planche-B-gardee.png` (le logo MM), seules les gardées, en
+**La phrase sous le logo** (25 novembre 2026) : le script lit, à côté de chaque logo, la phrase qu'il porte
+(`esquisse-06-phrase-du-logo.txt` et `esquisse-10-phrase-du-logo.txt`, écrits par l'étape 2 ; vide : aucune). Chaque
+planche reçoit la phrase de son logo, toutes ses lignes dans l'ordre, posée mot pour mot dans la ligne de la marque après
+l'appel des valeurs du métier ; le relecteur dit où il la lit et le code compare lettre pour lettre (mal écrite : la
+planche est refaite une fois, à la charge du Studio). Si le fichier de phrase manque à côté d'un logo, rien n'est lancé.
+Le rapport écrit, en tête, la phrase de chaque logo.
+
+Recalculé le 25 novembre 2026 par le devis du script (`DEVIS_SEULEMENT=1`, aucun appel), pour deux planches avec la
+reprise possible de chacune à la charge du Studio : probable 0,4322 € sans refus (0,8645 € si les mots du métier sont
+réécrits et chaque planche refaite une fois) ; **plafond minimal exact 2,1341 €** (somme des maxima : 1,0670 € pour le
+client et 1,0670 € de borne du Studio). La phrase ne change pas le devis : le prix au plus d'une planche est compté au
+texte le plus long permis, et celui du relecteur sur une demande plus longue que la vraie. Le script **refuse de partir**
+si `PLAFOND_ESSAI_EUR` est sous ce plafond minimal : 2,14 € passe (marge de 0,0059 €). Hors plafond : une réponse de texte
+mal formée à réparer coûterait au plus 1,5898 € de plus en tout ; elle n'est pas couverte, l'essai s'arrêterait en le
+disant, sans rien dépenser de plus.
+
+**Pause.** Montrer `planche-A-gardee.png` (le logo 6) et `planche-B-gardee.png` (le logo 10), seules les gardées, en
 entier. Le domaine écrit est dans `domaine.json`. Il choisit **sa planche** : A ou B.
 
 ## Étape 4 — la planche choisie, refaite en vrai
@@ -156,7 +173,7 @@ n'est pas faite) et prendre les captures avec `capture.cjs` (ordinateur 1440 de 
 |---|---|---|---|
 | 1. Esquisses triées (refaite) | 0,15 € | 0,29 € | 1,83 € |
 | 2. Deux logos finis | 0,19 € | 0,39 € | 2,20 € |
-| 3. Deux planches | 0,43 € | 0,86 € | 2,14 € |
+| 3. Deux planches (avec la phrase de chaque logo) | 0,43 € | 0,86 € | 2,14 € |
 | 4. Planche en vrai | 1,50 € | 2,78 € | 6,70 € |
 | 5. Écran | 0 € | 0 € | 0 € |
 | **Total** | **2,27 €** | **4,32 €** | **12,87 €** |

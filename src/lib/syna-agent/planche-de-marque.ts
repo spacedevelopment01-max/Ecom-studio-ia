@@ -17,6 +17,16 @@
  * Ce module est pur (aucune base, aucun appel payant) : le texte envoyé, le contrôle gratuit des valeurs du métier, la
  * phrase des données vérifiées, la découpe de la planche en bandes, la relecture et la reprise unique. La tâche de fond
  * est dans planche-de-marque-tache.ts ; l'appel d'image dans media-providers.ts (`aiPlancheDeMarque`).
+ *
+ * LA PHRASE SOUS LE LOGO (25 novembre 2026 ; constat de l'essai réel d'Écume, présenté par le chef d'orchestre : « la
+ * planche de marque ne connaît pas la phrase choisie sous le logo. Sa « ligne de la marque » est écrite par les valeurs du
+ * métier, sans lien avec la phrase du logo. Or le choix du client se reprend mot pour mot. »). Quand le client a choisi
+ * une phrase pour ce logo (toutes ses lignes, dans l'ordre), le code la pose dans la ligne de la marque, mot pour mot,
+ * APRÈS l'appel des valeurs, qui ne la voit ni ne l'écrit jamais (`ligneDeLaMarque`) ; le contrôle gratuit vérifie
+ * qu'elle figure mot pour mot dans le texte envoyé (`controleDeLaPhrase`) ; le relecteur recopie chaque endroit où elle
+ * est écrite sur la planche et le code compare lettre pour lettre (`lectureDeLaPlanche`) : mal écrite, elle fait refuser
+ * la planche comme un nom mal écrit, et ce n'est jamais un micro-texte décoratif. Sans phrase (« aucune », ou rien de
+ * choisi), rien ne change : le texte, la demande au relecteur et sa réponse sont ceux d'avant.
  */
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -27,6 +37,7 @@ import { L } from "../i18n-server";
 import { parleDePersonnes } from "./fiche";
 import { nomExact } from "./esquisses";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
+import { comparerLesLignes, lignesDe, lignesDuTexte, phraseVoulue, type PhraseChoisie } from "./phrase-sous-le-nom";
 import type { NameDomains } from "./brand-domains";
 
 // ---------------------------------------------------------------- 1. les fichiers fixes
@@ -123,12 +134,58 @@ function partiesDeBase(t: string) {
   return { nom, marque, emotion, images, produits };
 }
 
+// ---------------------------------------------------------------- 2 bis. la phrase sous le logo
+
+/**
+ * Les lignes de la phrase choisie pour un logo, dans l'ordre, nettoyées (une ligne par entrée, jamais de retour à la
+ * ligne dedans) ; `undefined` sans phrase (« aucune », vide, ou rien de choisi).
+ */
+export function lignesDeLaPhrase(p: readonly string[] | string | null | undefined): string[] | undefined {
+  if (p == null) return undefined;
+  const l = (typeof p === "string" ? [p] : [...p]).flatMap((x) => lignesDuTexte(String(x)));
+  return l.length ? l : undefined;
+}
+/**
+ * La phrase choisie par le client pour le logo fini `assetId` (méthode des graphistes : `graphistes.phrases`, par numéro
+ * d'esquisse ; le logo est retrouvé par son image sur fond blanc ou sa version sans fond). Ses lignes, dans l'ordre ;
+ * `undefined` s'il n'a rien choisi ou s'il ne veut aucune phrase.
+ */
+export function phraseDuLogoFini(g: { logos?: { numero: number; assetId?: string; detoureAssetId?: string }[]; phrases?: Record<string, PhraseChoisie> } | null | undefined, assetId: string | null | undefined): string[] | undefined {
+  if (!g || !assetId) return undefined;
+  const fini = g.logos?.find((l) => l.assetId === assetId || l.detoureAssetId === assetId);
+  const v = fini ? phraseVoulue(g.phrases?.[String(fini.numero)]) : undefined;
+  return v && "texte" in v ? lignesDeLaPhrase(lignesDe(v)) : undefined;
+}
+/** Les lignes dites dans un texte : « A » ou « A » puis « B ». */
+const lignesDites = (l: readonly string[]) => l.map((x) => `« ${x} »`).join(" puis ");
+/**
+ * LA LIGNE DE LA MARQUE (l'une des six parties) : le nom, le métier et les traits, puis, quand le client a choisi une
+ * phrase pour ce logo, cette phrase, posée par le code mot pour mot, toutes ses lignes dans l'ordre. Sans phrase : la
+ * ligne d'avant, à l'identique.
+ */
+export function ligneDeLaMarque(nom: string, v: Pick<ValeursDuMetier, "metier" | "traits">, phrase?: readonly string[]): string {
+  const base = `- ${nom.trim()}, ${v.metier.trim()} : marque ${enumerer(v.traits.map((x) => x.trim()))}.`;
+  if (!phrase?.length) return base;
+  return phrase.length > 1
+    ? `${base} Sa phrase, choisie par le client et écrite sous le logo, en ${phrase.length} lignes, dans cet ordre : ${lignesDites(phrase)} ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, toutes ses lignes dans cet ordre, sans en changer une lettre ni un accent.`
+    : `${base} Sa phrase, choisie par le client et écrite sous le logo : ${lignesDites(phrase)} ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, sans en changer une lettre ni un accent.`;
+}
+/**
+ * LE CONTRÔLE GRATUIT de la phrase dans le texte envoyé : chaque ligne y figure mot pour mot, entre guillemets. Une liste
+ * vide : bon. Le code la pose lui-même ; ce contrôle garantit qu'aucune réécriture ne l'a changée avant l'envoi.
+ */
+export function controleDeLaPhrase(texte: string, phrase: readonly string[] | undefined): string[] {
+  if (!phrase?.length) return [];
+  return phrase.filter((l) => !texte.includes(`« ${l} »`)).map((l) => `la phrase choisie par le client n'est pas reprise mot pour mot dans le texte de la planche : il manque « ${l} »`);
+}
+
 /**
  * LE TEXTE DES PREUVES, refabriqué à partir des valeurs : le texte de base mot pour mot, sauf ses six parties (le nom à
  * cinq endroits, la ligne de la marque, l'exemple d'émotion du 1:1, le type de site en quatre lignes liées, les images de
  * référence, les produits). Refait exactement les prompt.txt de Tenon et de Racine (tests/planche-de-marque.test.ts).
+ * `phrase` : les lignes de la phrase choisie sous le logo, posées par le code dans la ligne de la marque (`ligneDeLaMarque`).
  */
-export function texteDesPreuves(nom: string, v: ValeursDuMetier): string {
+export function texteDesPreuves(nom: string, v: ValeursDuMetier, phrase?: readonly string[]): string {
   const n = nom.trim();
   let t = texteDeBase();
   const b = partiesDeBase(t);
@@ -136,7 +193,7 @@ export function texteDesPreuves(nom: string, v: ValeursDuMetier): string {
   if (t.split(b.nom).length - 1 !== 4) throw new Error("Texte de base inattendu : le nom doit y être quatre fois.");
   t = t.split(b.nom).join(n);
   // 2. La ligne de la marque.
-  t = remplacer(t, `\n${b.marque}\n`, `\n- ${n}, ${v.metier.trim()} : marque ${enumerer(v.traits.map((x) => x.trim()))}.\n`);
+  t = remplacer(t, `\n${b.marque}\n`, `\n${ligneDeLaMarque(n, v, phrase)}\n`);
   // 3. L'exemple d'émotion du 1:1.
   t = remplacer(t, b.emotion, `- 1:1 = émotion / ${v.emotion.trim()}`);
   // 4. Le type de site, en quatre lignes liées.
@@ -187,10 +244,17 @@ export function phraseDesDonneesVerifiees(o: { nom: string; annee: number; domai
   return `Dans le bloc 10, à la place de la mention « disponibilité à vérifier », écris exactement « ${mentionDuDomaine(o.domaine)} » et « ${c} » ; ${fin}`;
 }
 
-/** LE TEXTE ENVOYÉ : celui des preuves, puis la phrase des données vérifiées, puis (reprise) les raisons du refus. */
-export function texteDeLaPlanche(o: { nom: string; valeurs: ValeursDuMetier; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; raisons?: readonly string[] }): string {
-  const base = `${texteDesPreuves(o.nom, o.valeurs)}\n${phraseDesDonneesVerifiees(o)}`;
-  return o.raisons?.length ? `${base}\n\n${finDeReprise(o.raisons)}` : base;
+/**
+ * LE TEXTE ENVOYÉ : celui des preuves (avec la phrase sous le logo, s'il y en a une), puis la phrase des données
+ * vérifiées, puis (reprise) les raisons du refus. La phrase est contrôlée mot pour mot avant l'envoi : absente, rien
+ * n'est envoyé.
+ */
+export function texteDeLaPlanche(o: { nom: string; valeurs: ValeursDuMetier; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; raisons?: readonly string[]; phrase?: readonly string[] }): string {
+  const base = `${texteDesPreuves(o.nom, o.valeurs, o.phrase)}\n${phraseDesDonneesVerifiees(o)}`;
+  const t = o.raisons?.length ? `${base}\n\n${finDeReprise(o.raisons)}` : base;
+  const fautes = controleDeLaPhrase(t, o.phrase);
+  if (fautes.length) throw new Error(`${fautes.join(" ; ")}. Rien n'est envoyé.`);
+  return t;
 }
 /** Les raisons du refus, ajoutées à la toute fin du texte pour la reprise unique. */
 export const finDeReprise = (raisons: readonly string[]) => `À corriger : ${raisons.join(" ; ")}.`;
@@ -319,8 +383,19 @@ export const RelectureDeLaPlancheSchema = z.object({
   note: z.number().min(0).max(10).catch(0),
   pourquoi: z.string().max(600).default(""),
 });
-/** Un verdict du relecteur ; `microTextes` est absent d'un verdict d'avant le 25 novembre 2026. */
-export type RelectureDeLaPlanche = Omit<z.infer<typeof RelectureDeLaPlancheSchema>, "microTextes"> & { microTextes?: string[] };
+/**
+ * La réponse du relecteur quand le client a choisi une phrase sous le logo (25 novembre 2026) : en plus, chaque endroit
+ * de la planche où elle est écrite, recopié lettre pour lettre, ses lignes séparées par « / ». Sans phrase, la réponse
+ * demandée reste celle d'avant (`RelectureDeLaPlancheSchema`).
+ */
+export const RelectureAvecPhraseSchema = RelectureDeLaPlancheSchema.extend({
+  phrasesLues: z.array(z.string().max(400)).max(20).catch([]),
+});
+/**
+ * Un verdict du relecteur ; `microTextes` est absent d'un verdict d'avant le 25 novembre 2026 ; `phrasesLues` n'existe
+ * que quand le client a choisi une phrase sous le logo.
+ */
+export type RelectureDeLaPlanche = Omit<z.infer<typeof RelectureDeLaPlancheSchema>, "microTextes"> & { microTextes?: string[]; phrasesLues?: string[] };
 
 /**
  * Le repère du propriétaire, mot pour mot (25 novembre 2026) : devant les planches A-2 et B-2 de l'essai réel de Racine
@@ -370,14 +445,43 @@ export const RELECTEUR_DE_LA_PLANCHE = `Tu es le relecteur le plus exigeant d'un
 - pourquoi : une ou deux phrases simples.
 Ne juge que ce que tu vois.`;
 
-export type AttenduDeLaPlanche = { nom: string; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; animaux: boolean };
+/** `phrase` : les lignes de la phrase choisie sous le logo, dans l'ordre (absente : aucune phrase choisie). */
+export type AttenduDeLaPlanche = { nom: string; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; animaux: boolean; phrase?: readonly string[] };
+/** Ce que la demande au relecteur dit de la phrase choisie sous le logo (vide sans phrase). */
+export const demandeDeLaPhrase = (phrase: readonly string[] | undefined): string[] => !phrase?.length ? [] : [
+  `Le client a choisi la phrase écrite sous son logo${phrase.length > 1 ? `, en ${phrase.length} lignes, dans cet ordre` : ""} : ${lignesDites(phrase)}. Elle n'est pas inventée, et ce n'est jamais un micro-texte décoratif : vérifie qu'elle est écrite exactement, lettre pour lettre, partout où elle apparaît sur la planche (sous le logo et ses variantes, comme slogan, ailleurs), et recopie dans « phrasesLues » chaque endroit où elle apparaît, ce que tu lis vraiment, ${phrase.length > 1 ? "toutes ses lignes dans l'ordre, séparées par « / »" : "sans rien corriger"} ; une faute dans cette phrase va aussi dans fautes.`,
+];
 export function demandeAuRelecteurDeLaPlanche(o: AttenduDeLaPlanche & { texte: string }): string {
   return [
     `Marque : « ${o.nom} ».`,
     o.personnes ? "Le client a donné son accord pour des personnes." : "Le client n'a donné ni photo de personne ni accord : aucune personne ne doit être visible.",
+    ...demandeDeLaPhrase(o.phrase),
     ...(o.animaux ? ["La marque travaille, comme celle de la disposition, autour des animaux : sois particulièrement attentif à toute copie de la disposition (ses produits, ses photos, son emballage, son nom, son logo)."] : []),
     `Le texte envoyé au dessinateur : « ${o.texte} »`,
   ].join("\n");
+}
+/** Les mots d'un texte, sans accents ni casse, d'au moins trois lettres. */
+const motsDe = (t: string) => t.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().split(/[^a-z0-9]+/u).filter((w) => w.length >= 3);
+/** La distance d'édition entre deux mots (lettres ajoutées, retirées ou changées). */
+function distance(a: string, b: string): number {
+  let prec = Array.from({ length: b.length + 1 }, (_x, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prec[j] + 1, cur[j - 1] + 1, prec[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prec = cur;
+  }
+  return prec[b.length];
+}
+/** Un mot relevé ressemble-t-il à un mot de la phrase ? Le même, ou mal écrit d'une lettre (deux pour un mot long). */
+const ressemble = (lu: string, voulu: string) => lu === voulu || (voulu.length >= 5 && Math.abs(lu.length - voulu.length) <= 2 && distance(lu, voulu) <= (voulu.length >= 8 ? 2 : 1));
+/**
+ * Un texte relevé par le relecteur touche-t-il la phrase choisie ? Au moins la moitié des mots d'une de ses lignes s'y
+ * retrouvent, même mal écrits. Ce qui la touche n'est jamais écarté comme micro-texte décoratif.
+ */
+export function touchePhrase(f: string, phrase: readonly string[] | undefined): boolean {
+  if (!phrase?.length) return false;
+  const dans = motsDe(f);
+  return phrase.some((l) => { const m = motsDe(l); return m.length > 0 && m.filter((w) => dans.some((d) => ressemble(d, w))).length * 2 >= m.length; });
 }
 const lettreALettre = (t: string) => t.normalize("NFC").replace(/\s+/g, " ").replace(/\s*[—–-]\s*(?=disponible|à vérifier)/u, " — ").trim();
 /**
@@ -397,14 +501,29 @@ export function raisonsDuRefusDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeL
  */
 export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): { raisons: string[]; ecartes: string[] } {
   const r: string[] = [];
+  const phrase = o.phrase?.length ? [...o.phrase] : undefined;
+  // Ce qui touche la phrase choisie n'est jamais un micro-texte décoratif à ignorer.
+  const decoratif = (f: string) => microTexteDecoratif(f) && !touchePhrase(f, phrase);
   if (!nomExact(v.nomLu, o.nom)) r.push(v.nomLu ? `le nom est mal écrit (« ${v.nomLu} » au lieu de « ${o.nom} »)` : `le nom « ${o.nom} » n'y est pas écrit`);
   if (!v.logoFidele) r.push("le logo est faux ou redessiné : il doit être exactement celui de la première image");
   const c = copyright(o.annee, o.nom);
   if (lettreALettre(v.copyrightLu) !== lettreALettre(c)) r.push(`le copyright doit être exactement « ${c} »${v.copyrightLu ? ` (lu : « ${v.copyrightLu} »)` : ""}`);
   const m = mentionDuDomaine(o.domaine);
   if (lettreALettre(v.domaineLu) !== lettreALettre(m)) r.push(`le bloc 10 doit dire exactement « ${m} »${v.domaineLu ? ` (lu : « ${v.domaineLu} »)` : ""}`);
-  const fautes = v.fautes.filter((f) => !microTexteDecoratif(f)), promesses = v.promesses.filter(promesseMesurable);
-  const ecartes = [...(v.microTextes ?? []), ...v.fautes.filter(microTexteDecoratif)].map((f) => `micro-texte décoratif, non jugé : « ${f} »`)
+  if (phrase) {
+    // La phrase choisie par le client, comparée lettre pour lettre par le code à chaque endroit où le relecteur la lit.
+    const dite = phrase.map((l) => `« ${l} »`).join(" / ");
+    const lues = (v.phrasesLues ?? []).map((x) => x.trim()).filter((x) => x && !/^(aucune|aucun|none|rien)\.?$/iu.test(x));
+    if (!lues.length) r.push(`la phrase choisie par le client (${dite}) n'est lue nulle part sur la planche`);
+    for (const lue of [...new Set(lues)]) {
+      const c = comparerLesLignes(lue, phrase);
+      if (c.manquantes.length || c.malEcrites.length || c.enTrop.length || c.desordre) r.push(`la phrase choisie par le client est mal écrite (« ${lue} » au lieu de ${dite})`);
+    }
+    const microSurLaPhrase = (v.microTextes ?? []).filter((f) => touchePhrase(f, phrase));
+    if (microSurLaPhrase.length) r.push(`la phrase choisie par le client est mal écrite : ${microSurLaPhrase.map((f) => `« ${f} »`).join(", ")}`);
+  }
+  const fautes = v.fautes.filter((f) => !decoratif(f)), promesses = v.promesses.filter(promesseMesurable);
+  const ecartes = [...(v.microTextes ?? []).filter((f) => !touchePhrase(f, phrase)), ...v.fautes.filter(decoratif)].map((f) => `micro-texte décoratif, non jugé : « ${f} »`)
     .concat(v.promesses.filter((p) => !promesseMesurable(p)).map((p) => `mot qualitatif, pas une promesse : « ${p} »`));
   if (fautes.length) r.push(`fautes : ${fautes.map((f) => `« ${f} »`).join(", ")}`);
   if (promesses.length) r.push(`promesses ou chiffres inventés : ${promesses.map((f) => `« ${f} »`).join(", ")}`);
@@ -424,8 +543,11 @@ export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanch
 export type PlancheDeps = {
   /** POST /v1/images/edits : image[] = le logo, puis la disposition ; le texte tel quel. */
   dessiner: (logo: Buffer, disposition: Buffer, texte: string, tour: number) => Promise<Buffer>;
-  /** Le relecteur le plus fort, effort élevé : les bandes, le logo, la disposition. */
-  relire: (bandes: Buffer[], logo: Buffer, disposition: Buffer, demande: string, tour: number) => Promise<RelectureDeLaPlanche>;
+  /**
+   * Le relecteur le plus fort, effort élevé : les bandes, le logo, la disposition. `avecPhrase` : le client a choisi une
+   * phrase sous le logo, la réponse demandée porte en plus `phrasesLues` (`RelectureAvecPhraseSchema`).
+   */
+  relire: (bandes: Buffer[], logo: Buffer, disposition: Buffer, demande: string, tour: number, avecPhrase?: boolean) => Promise<RelectureDeLaPlanche>;
   aLaChargeDuStudio: <T>(fn: () => Promise<T>) => Promise<T>;
 };
 /** `ecartes` : ce que le code n'a pas compté (micro-textes décoratifs, mots qualitatifs, note qui n'y tenait), pour le compte rendu. */
@@ -442,7 +564,9 @@ export async function dessinerLaPlanche(deps: PlancheDeps, o: AttenduDeLaPlanche
   const essai = async (tour: number, raisons?: readonly string[]): Promise<EssaiDePlanche> => {
     const texte = texteDeLaPlanche({ ...o, raisons });
     const png = await deps.dessiner(o.logo, o.disposition, texte, tour);
-    const verdict = await deps.relire(await bandesDeLaPlanche(png), o.logo, o.disposition, demandeAuRelecteurDeLaPlanche({ ...o, texte }), tour);
+    const bandes = await bandesDeLaPlanche(png), demande = demandeAuRelecteurDeLaPlanche({ ...o, texte });
+    // Sans phrase, l'appel est exactement celui d'avant (cinq paramètres).
+    const verdict = o.phrase?.length ? await deps.relire(bandes, o.logo, o.disposition, demande, tour, true) : await deps.relire(bandes, o.logo, o.disposition, demande, tour);
     const lu = lectureDeLaPlanche(verdict, o);
     return { tour, texte, png, verdict, raisons: lu.raisons, ...(lu.ecartes.length ? { ecartes: lu.ecartes } : {}) };
   };
