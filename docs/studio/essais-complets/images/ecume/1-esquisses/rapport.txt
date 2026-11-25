@@ -1,0 +1,49 @@
+Essai des esquisses de logo — client « Écume » (savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes), type « produits »
+Plafond de l'essai : 1,0800 €
+
+Devis de l'essai des esquisses (fonctions du devis du Studio, aucun appel) :
+- métier · anthropic:claude-opus-5-5 (effort low) · toujours · charge client · probable 0,0258 € · au plus 0,1572 €
+- métier réécrit (une fois) · anthropic:claude-opus-5-5 (effort low) · si le contrôle refuse le métier · charge Studio · probable 0,0258 € · au plus 0,1572 €
+- planche de six esquisses · openai:gpt-image-2.5-sunburst · toujours · charge client · probable 0,0098 € · au plus 0,0455 €
+- planche de six esquisses · openai:gpt-image-2.6-flare · toujours · charge client · probable 0,0300 € · au plus 0,0722 €
+- relecture des esquisses (un appel) · anthropic:claude-opus-5-5 (effort medium) · toujours · charge client · probable 0,0808 € · au plus 0,2605 €
+- planche refaite (reprise unique) · openai:gpt-image-2.5-sunburst · si moins de 8 esquisses sont gardées · charge Studio · probable 0,0098 € · au plus 0,0455 €
+- planche refaite (reprise unique) · openai:gpt-image-2.6-flare · si moins de 8 esquisses sont gardées · charge Studio · probable 0,0300 € · au plus 0,0722 €
+- relecture des esquisses refaites · anthropic:claude-opus-5-5 (effort medium) · si moins de 8 esquisses sont gardées · charge Studio · probable 0,0808 € · au plus 0,2605 €
+Probable, sans reprise : 0,1464 € (devis du Studio : 0,1464 €)
+Probable, si le métier est réécrit et les planches refaites une fois : 0,2929 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprise comprise) : 1,0706 €
+  dont plafond du client de la tâche 0,5353 € et borne du Studio 0,5353 € (devisDeLaRecherche)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 1,0305 € de plus en tout.
+
+Phrase du métier : une savonnerie artisanale qui fabrique et vend en ligne des savons solides, des shampoings solides et des baumes
+Ce que la piste explore : la savonnerie artisanale (savoir-faire)
+
+Texte exact envoyé aux deux modèles (premier tour) :
+Crée une planche de recherche graphique pour Écume, une savonnerie artisanale qui fabrique et vend en ligne des savons solides, des shampoings solides et des baumes. Présente six esquisses de logos contemporains sur une grille de trois colonnes et deux lignes. Explore différentes manières de traduire le savoir-faire de la savonnerie artisanale dans le dessin des lettres et des signes graphiques. Chaque piste doit pouvoir devenir une véritable marque commerciale. Travaille sur fond blanc, sans maquette de présentation. Varie les couleurs d'une esquisse à l'autre.
+
+Esquisses gardées par le relecteur : 8 — planche-contact.png
+Esquisse 01 : esquisse-01.png ; piste « un galet de savon avec une vague et des bulles » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 02 : esquisse-02.png ; piste « une vague d'écume surmontée de bulles » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 03 : esquisse-03.png ; piste « des galets de savon empilés en équilibre » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 04 : esquisse-04.png ; piste « une feuille d'où tombe une goutte » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 05 : esquisse-05.png ; piste « des vagues en arabesques autour du nom, avec des bulles » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 06 : esquisse-06.png ; piste « un nom manuscrit au pinceau entouré de bulles » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 07 : esquisse-07.png ; piste « un nuage de mousse avec des bulles et des vagues » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+Esquisse 08 : esquisse-08.png ; piste « une goutte d'eau qui renferme une vague » ; phrase sous le nom : « SAVONNERIE ARTISANALE » (proposable telle quelle)
+
+Esquisses écartées (jamais montrées au client) : 4 — planche-contact-complete.png
+- gpt-image-2.5-sunburst, case 2 : une arche (ecartee-gpt-image-2.5-sunburst-case-2.png)
+- gpt-image-2.5-sunburst, case 6 : pas entière : Le dessin beige au-dessus du nom est coupé net au bord supérieur, il ne reste qu'un morceau illisible. (ecartee-gpt-image-2.5-sunburst-case-6.png)
+- gpt-image-2.6-flare, case 2 : une arche (ecartee-gpt-image-2.6-flare-case-2.png)
+- gpt-image-2.6-flare, case 4 : La feuille qui remplace une partie du M déforme la lettre : le nom se lit mal. (ecartee-gpt-image-2.6-flare-case-4.png)
+
+Verdict complet du relecteur : relecture-1-verdict.json
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 0e10f82c7f9463eb1e53b9388eb537368f9c87bb629a809d005a24e18867037f · anthropic:claude-opus-5-5 · charge du client · réservé 0,1531 € → réglé 0,0067 € (settled)
+- b115d8692ae78439da4e5d4ada82fdeb3a250adcc39000ef7de9b464c6b4c35f · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0149 € → réglé 0,0094 € (settled)
+- 3e403a11d5934492245e45fb7eb3ddbe24948d2e0cd61b45fa2cf7a6878d20c4 · openai:gpt-image-2.6-flare · charge du client · réservé 0,0416 € → réglé 0,0298 € (settled)
+- 7d110f235b63ca4c036036ef068859f94a5fce046a56671fed53d9596a05c6a3 · anthropic:claude-opus-5-5 · charge du client · réservé 0,2507 € → réglé 0,0742 € (settled)
+
+Dépense réelle comptée par le Studio : 0,1201 €

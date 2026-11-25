@@ -1,0 +1,148 @@
+{
+  "esquisses": [
+    {
+      "numero": 1,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "Écume",
+      "arche": false,
+      "ok": true,
+      "pourquoi": "Un galet de savon traversé d'une vague et surmonté de bulles : l'idée est claire, douce et bien liée au nom.",
+      "piste": "un galet de savon avec une vague et des bulles",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 2,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "ÉCUME",
+      "arche": true,
+      "ok": false,
+      "pourquoi": "L'ensemble est enfermé dans un cadre rond en arc, ce qui est interdit au Studio.",
+      "piste": "une feuille et une vague dans un médaillon rond",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 3,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "Écume",
+      "arche": false,
+      "ok": true,
+      "pourquoi": "Une vague et des bulles au-dessus d'un nom élégant : simple, lisible et évocateur.",
+      "piste": "une vague d'écume surmontée de bulles",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 4,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "écume",
+      "arche": false,
+      "ok": true,
+      "pourquoi": "Les galets empilés évoquent les savons et le calme ; l'écriture manuscrite reste lisible et chaleureuse.",
+      "piste": "des galets de savon empilés en équilibre",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 5,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "ÉCUME",
+      "arche": false,
+      "ok": true,
+      "pourquoi": "Un trait fin et naturel : la feuille qui laisse tomber une goutte est nette et facile à retenir.",
+      "piste": "une feuille d'où tombe une goutte",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 6,
+      "entiere": false,
+      "morceauDeVoisine": false,
+      "nomLu": "Écume",
+      "arche": false,
+      "ok": false,
+      "pourquoi": "Le dessin beige au-dessus du nom est coupé net au bord supérieur, il ne reste qu'un morceau illisible.",
+      "piste": "une vague pâle derrière le nom",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 7,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "Écume",
+      "arche": false,
+      "ok": true,
+      "pourquoi": "Les arabesques qui encadrent le nom et les bulles donnent du mouvement, et l'ensemble reste lisible.",
+      "piste": "des vagues en arabesques autour du nom, avec des bulles",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 8,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "ÉCUME",
+      "arche": true,
+      "ok": false,
+      "pourquoi": "Le savon et les vagues sont posés dans des arcs de cercle qui forment un cadre arrondi, ce qui est interdit au Studio.",
+      "piste": "un pain de savon et des vagues dans un badge rond",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 9,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "Écume",
+      "arche": false,
+      "ok": true,
+      "pourquoi": "Une écriture au pinceau vivante, avec des bulles et un trait de soulignement : le dessin est clair et chaleureux.",
+      "piste": "un nom manuscrit au pinceau entouré de bulles",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 10,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "ÉCUME",
+      "arche": false,
+      "ok": false,
+      "pourquoi": "La feuille qui remplace une partie du M déforme la lettre : le nom se lit mal.",
+      "piste": "un M dont une jambe devient une feuille, avec des bulles",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 11,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "Écume",
+      "arche": false,
+      "ok": true,
+      "pourquoi": "Le nuage de mousse qui porte le nom est une idée simple, douce et immédiatement liée à l'écume.",
+      "piste": "un nuage de mousse avec des bulles et des vagues",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    },
+    {
+      "numero": 12,
+      "entiere": true,
+      "morceauDeVoisine": false,
+      "nomLu": "ÉCUME",
+      "arche": false,
+      "ok": true,
+      "pourquoi": "Une goutte qui contient une vague : le symbole est net, équilibré et facile à reconnaître.",
+      "piste": "une goutte d'eau qui renferme une vague",
+      "phraseSousLeNom": "SAVONNERIE ARTISANALE",
+      "phraseBienEcrite": true
+    }
+  ]
+}

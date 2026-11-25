@@ -1,0 +1,145 @@
+{
+  "nom": "Écume",
+  "metier": {
+    "metier": "une savonnerie artisanale qui fabrique et vend en ligne des savons solides, des shampoings solides et des baumes",
+    "court": "la savonnerie artisanale",
+    "piste": "savoir-faire"
+  },
+  "gardees": [
+    {
+      "numero": 1,
+      "fichier": "esquisse-01.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 1,
+      "piste": "un galet de savon avec une vague et des bulles",
+      "pourquoi": "Un galet de savon traversé d'une vague et surmonté de bulles : l'idée est claire, douce et bien liée au nom.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 2,
+      "fichier": "esquisse-02.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 3,
+      "piste": "une vague d'écume surmontée de bulles",
+      "pourquoi": "Une vague et des bulles au-dessus d'un nom élégant : simple, lisible et évocateur.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 3,
+      "fichier": "esquisse-03.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 4,
+      "piste": "des galets de savon empilés en équilibre",
+      "pourquoi": "Les galets empilés évoquent les savons et le calme ; l'écriture manuscrite reste lisible et chaleureuse.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 4,
+      "fichier": "esquisse-04.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 5,
+      "piste": "une feuille d'où tombe une goutte",
+      "pourquoi": "Un trait fin et naturel : la feuille qui laisse tomber une goutte est nette et facile à retenir.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 5,
+      "fichier": "esquisse-05.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 1,
+      "piste": "des vagues en arabesques autour du nom, avec des bulles",
+      "pourquoi": "Les arabesques qui encadrent le nom et les bulles donnent du mouvement, et l'ensemble reste lisible.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 6,
+      "fichier": "esquisse-06.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 3,
+      "piste": "un nom manuscrit au pinceau entouré de bulles",
+      "pourquoi": "Une écriture au pinceau vivante, avec des bulles et un trait de soulignement : le dessin est clair et chaleureux.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 7,
+      "fichier": "esquisse-07.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 5,
+      "piste": "un nuage de mousse avec des bulles et des vagues",
+      "pourquoi": "Le nuage de mousse qui porte le nom est une idée simple, douce et immédiatement liée à l'écume.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 8,
+      "fichier": "esquisse-08.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 6,
+      "piste": "une goutte d'eau qui renferme une vague",
+      "pourquoi": "Une goutte qui contient une vague : le symbole est net, équilibré et facile à reconnaître.",
+      "phrase": {
+        "texte": "SAVONNERIE ARTISANALE",
+        "ok": true
+      }
+    }
+  ],
+  "ecartees": [
+    {
+      "fichier": "ecartee-gpt-image-2.5-sunburst-case-2.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 2,
+      "raison": "une arche"
+    },
+    {
+      "fichier": "ecartee-gpt-image-2.5-sunburst-case-6.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 6,
+      "raison": "pas entière : Le dessin beige au-dessus du nom est coupé net au bord supérieur, il ne reste qu'un morceau illisible."
+    },
+    {
+      "fichier": "ecartee-gpt-image-2.6-flare-case-2.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 2,
+      "raison": "une arche"
+    },
+    {
+      "fichier": "ecartee-gpt-image-2.6-flare-case-4.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 4,
+      "raison": "La feuille qui remplace une partie du M déforme la lettre : le nom se lit mal."
+    }
+  ],
+  "reprise": false
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "cle": "0e10f82c7f9463eb1e53b9388eb537368f9c87bb629a809d005a24e18867037f",
+    "task": "strategy",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 153104,
+    "reelMicro": 6722,
+    "statut": "settled"
+  },
+  {
+    "cle": "b115d8692ae78439da4e5d4ada82fdeb3a250adcc39000ef7de9b464c6b4c35f",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 14866,
+    "reelMicro": 9396,
+    "statut": "settled"
+  },
+  {
+    "cle": "3e403a11d5934492245e45fb7eb3ddbe24948d2e0cd61b45fa2cf7a6878d20c4",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.6-flare",
+    "studio": false,
+    "reserveMicro": 41583,
+    "reelMicro": 29752,
+    "statut": "settled"
+  },
+  {
+    "cle": "7d110f235b63ca4c036036ef068859f94a5fce046a56671fed53d9596a05c6a3",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 250705,
+    "reelMicro": 74213,
+    "statut": "settled"
+  }
+]

@@ -1,0 +1,21 @@
+(node:147) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:158) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Devis de l'essai des esquisses (fonctions du devis du Studio, aucun appel) :
+- métier · anthropic:claude-opus-5-5 (effort low) · toujours · charge client · probable 0,0258 € · au plus 0,1572 €
+- métier réécrit (une fois) · anthropic:claude-opus-5-5 (effort low) · si le contrôle refuse le métier · charge Studio · probable 0,0258 € · au plus 0,1572 €
+- planche de six esquisses · openai:gpt-image-2.5-sunburst · toujours · charge client · probable 0,0098 € · au plus 0,0455 €
+- planche de six esquisses · openai:gpt-image-2.6-flare · toujours · charge client · probable 0,0300 € · au plus 0,0722 €
+- relecture des esquisses (un appel) · anthropic:claude-opus-5-5 (effort medium) · toujours · charge client · probable 0,0808 € · au plus 0,2605 €
+- planche refaite (reprise unique) · openai:gpt-image-2.5-sunburst · si moins de 8 esquisses sont gardées · charge Studio · probable 0,0098 € · au plus 0,0455 €
+- planche refaite (reprise unique) · openai:gpt-image-2.6-flare · si moins de 8 esquisses sont gardées · charge Studio · probable 0,0300 € · au plus 0,0722 €
+- relecture des esquisses refaites · anthropic:claude-opus-5-5 (effort medium) · si moins de 8 esquisses sont gardées · charge Studio · probable 0,0808 € · au plus 0,2605 €
+Probable, sans reprise : 0,1464 € (devis du Studio : 0,1464 €)
+Probable, si le métier est réécrit et les planches refaites une fois : 0,2929 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprise comprise) : 1,0706 €
+  dont plafond du client de la tâche 0,5353 € et borne du Studio 0,5353 € (devisDeLaRecherche)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 1,0305 € de plus en tout.
+(node:158) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+8 esquisse(s) gardée(s) par le relecteur, 4 écartée(s), 2 planche(s), dépense comptée 0,1201 €. Rapport : /home/user/Ecom-studio-ia/data/essai-ecume/1-esquisses/rapport.txt
