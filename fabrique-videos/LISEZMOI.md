@@ -100,3 +100,9 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
   calage du texte exact sur ces temps (orthographe juste dans les sous-titres). 1 min 08, 25 plans.
 - Source : Hérodote (fouet, chaînes, phrase à la mer, ponts emportés au retour), de mémoire, à vérifier.
 - Voix gratuites testées et refusées par le propriétaire (Piper : Siwis, Tom, Pierre, Gilles, MLS).
+
+## Cinquième vidéo : « L'avion de chasse à points Pepsi » (1996)
+
+- Voix fournie par le propriétaire, calée gratuitement. 1 min 15, 19 plans. Nom « Pepsi » écrit, sans le vrai logo.
+- Sources : Wikipédia (Leonard v. PepsiCo), Netflix Tudum, CBS News, Mental Floss, The Hustle, Snopes.
+- Texte suivant prêt : Kodak et l'appareil photo numérique (dans la conversation du 25 novembre).
