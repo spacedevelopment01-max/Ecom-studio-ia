@@ -20,6 +20,9 @@ import { fontFamily, type Identity } from "../identities";
 import { devisDeLaRecherche, devisDesFinalisations } from "../logo-graphistes";
 import { LOGO_GRAPHISTES_JOB } from "../logo-graphistes-tache";
 import { devisDesPlanchesDeMarque } from "../planche-de-marque-tache";
+import { devisDeLaPlancheEnVrai, devisDesProduitsEnVrai, enVraiOuArretee, produitsImagines } from "../planche-en-vrai-tache";
+import { photosDuProduitIds } from "../brand-images";
+import { phraseDuMelangeRefuse, plancheEnVraiActive } from "../planche-en-vrai";
 import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, namesPreviewQuote, routeCountOfProject, type ChainQuote } from "../brand-chain";
 import { borneDuStudio, probableDuStudio } from "../../ai/borne-du-studio";
 import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, type ImageSlot } from "../brand-images";
@@ -71,7 +74,7 @@ export function marqueCoupee(projectId: string): { id: string; payload: Record<s
 /** Ce qui est déjà fait dans la création coupée, dit simplement (SINA le redit au client). */
 export function marqueOuArretee(etapes: string[]): string {
   const images = etapes.filter((e) => e.startsWith("brand:image:")).length;
-  const faites = [etapes.includes("brand:study") && "l'étude de ton marché", etapes.some((e) => e.startsWith("brand:strategy")) && "l'idée de ta marque", etapes.some((e) => e.startsWith("brand:team:")) && "les pistes de noms", etapes.some((e) => e.startsWith("brand:judge")) && "le tri des noms", images > 0 && `${images} image${images > 1 ? "s" : ""}`].filter(Boolean);
+  const faites = [etapes.includes("brand:study") && "l'étude de ton marché", etapes.some((e) => e.startsWith("brand:strategy")) && "l'idée de ta marque", etapes.some((e) => e.startsWith("brand:team:")) && "les pistes de noms", etapes.some((e) => e.startsWith("brand:judge")) && "le tri des noms", images > 0 && `${images} image${images > 1 ? "s" : ""}`, ...enVraiOuArretee(etapes)].filter(Boolean);
   return faites.length ? `déjà fait et gardé : ${faites.join(", ")}` : "rien de gardé";
 }
 /**
@@ -90,6 +93,8 @@ export function relanceMarqueQuote(c: { id: string; payload: Record<string, any>
   if (q) { const probable = Math.min(q.maxMicro, q.probableMicro ?? q.maxMicro); return { probableMicro: probable, maxMicro: Math.max(probable, q.maxMicro), label }; }
   // Au plus : le plafond de la tâche, moins ce qui est payé et repris (jamais moins d'un cinquième) ; probable : son
   // devis habituel, moins ce qui est payé, jamais au-dessus.
+  // La planche en vrai (25 novembre 2026) : seulement ce qui reste, ses points de reprise déjà payés ne sont pas recomptés.
+  if (p.finish && p.enVrai) { const d = devisDeLaPlancheEnVrai(done); return { probableMicro: Math.min(d.maxMicro, d.probableMicro), maxMicro: Math.max(1, d.maxMicro), label }; }
   const full = p.finish ? finishQuote(slots ?? FINISH_SLOTS) : namesPreviewQuote(), acquis = acquisMicro(c.id), cap = Number(p.capMicro) || full.maxMicro;
   const maxMicro = Math.max(Math.round(cap * 0.2), cap - acquis), probable0 = full.probableMicro ?? full.maxMicro;
   return { probableMicro: Math.min(maxMicro, Math.max(Math.round(probable0 * 0.2), probable0 - acquis)), maxMicro, label };
@@ -145,8 +150,8 @@ export function accordGraphistes(count: number, fresh = true) {
   return { count, nomsMicro, rechercheMicro: recherche.maxMicro, finalisationsMicro: finalisations.maxMicro, planchesMicro: textes.maxMicro + planches.maxMicro,
     // La borne du Studio des planches : une reprise par planche et une réécriture des valeurs du métier.
     planchesStudioMicro: planches.studioMaxMicro,
-    maxMicro: entier.maxMicro + planches.maxMicro + recherche.maxMicro + finalisations.maxMicro + sceneDeLaFin().maxMicro,
-    probableMicro: (entier.probableMicro ?? entier.maxMicro) + planches.probableMicro + recherche.probableMicro + finalisations.probableMicro + sceneDeLaFin().probableMicro };
+    maxMicro: entier.maxMicro + planches.maxMicro + recherche.maxMicro + finalisations.maxMicro + laFin().maxMicro,
+    probableMicro: (entier.probableMicro ?? entier.maxMicro) + planches.probableMicro + recherche.probableMicro + finalisations.probableMicro + laFin().probableMicro };
 }
 /**
  * La marque finie d'un nouveau projet (planche de marque) : sa grande scène n'existe pas encore (la planche de marque a
@@ -154,6 +159,11 @@ export function accordGraphistes(count: number, fresh = true) {
  * marque quand l'identité choisie a sa planche de marque (`finishEstimate`).
  */
 export const FINISH_SLOTS_PLANCHE: ImageSlot[] = ["hero", ...FINISH_SLOTS];
+/**
+ * La marque finie dans l'accord unique : la grande scène de la fin (« sceneDeLaFin ») ; réglage de la planche en vrai allumé
+ * (25 novembre 2026), la planche en vrai la remplace (« devisDeLaPlancheEnVrai »), avec la marque finie de `proposalQuote`.
+ */
+const laFin = (): { maxMicro: number; probableMicro: number } => (plancheEnVraiActive() ? devisDeLaPlancheEnVrai() : sceneDeLaFin());
 export function sceneDeLaFin(): { maxMicro: number; probableMicro: number } {
   const avec = finishQuote(FINISH_SLOTS_PLANCHE), sans = finishQuote(FINISH_SLOTS);
   return { maxMicro: Math.max(0, avec.maxMicro - sans.maxMicro), probableMicro: Math.max(0, (avec.probableMicro ?? 0) - (sans.probableMicro ?? 0)) };
@@ -173,8 +183,9 @@ const parLesGraphistes = (w: ReturnType<typeof chainWork>) => !logoGardeParLeCli
 
 function proposalQuote(w: ReturnType<typeof chainWork>) {
   if (parLesGraphistes(w)) {
-    const g = accordGraphistes(w.count, w.fresh), f = finishQuote(FINISH_SLOTS);
-    return { maxMicro: g.maxMicro + f.maxMicro, ...(f.probableMicro ? { probableMicro: g.probableMicro + f.probableMicro } : {}) };
+    // Planche en vrai : elle est déjà dans l'accord (`laFin`) et remplace la marque finie.
+    const g = accordGraphistes(w.count, w.fresh), f = plancheEnVraiActive() ? { maxMicro: 0, probableMicro: 0 } : finishQuote(FINISH_SLOTS);
+    return { maxMicro: g.maxMicro + f.maxMicro, ...(f.probableMicro || plancheEnVraiActive() ? { probableMicro: g.probableMicro + (f.probableMicro ?? 0) } : {}) };
   }
   const q = chainQuote({ routes: w.routes, fresh: w.fresh });
   if (w.j.identityChoice) return q;
@@ -213,7 +224,7 @@ function proposeByChain(ctx: ToolContext, a: ProposeArgs) {
  */
 function proposeParLesGraphistes(ctx: ToolContext, w: ReturnType<typeof chainWork>, a: ProposeArgs) {
   const p = project(ctx), g = accordGraphistes(w.count, w.fresh);
-  updateJourney(ctx.conversationId, (x) => { x.accordGraphistes = { count: g.count, nomsMicro: g.nomsMicro, rechercheMicro: g.rechercheMicro, finalisationsMicro: g.finalisationsMicro, planchesMicro: g.planchesMicro, planchesStudioMicro: g.planchesStudioMicro, at: Date.now() }; x.brandFinish = { prepaidMicro: finishQuote().maxMicro }; x.graphistes = undefined; x.nomsVerifies = undefined; x.nomsDeLaMarque = undefined; setStep(x, 1, "doing"); });
+  updateJourney(ctx.conversationId, (x) => { x.accordGraphistes = { count: g.count, nomsMicro: g.nomsMicro, rechercheMicro: g.rechercheMicro, finalisationsMicro: g.finalisationsMicro, planchesMicro: g.planchesMicro, planchesStudioMicro: g.planchesStudioMicro, at: Date.now() }; x.brandFinish = { prepaidMicro: plancheEnVraiActive() ? devisDeLaPlancheEnVrai().maxMicro : finishQuote().maxMicro }; x.graphistes = undefined; x.nomsVerifies = undefined; x.nomsDeLaMarque = undefined; setStep(x, 1, "doing"); });
   const garde = w.j.keep.includes("nom") ? (w.j.keptValues?.name || w.j.imported[0]?.name || p.brand?.name || "").trim() : "";
   if (garde) {
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: LOGO_GRAPHISTES_JOB, label: L("Recherche de ton logo (SINA)", "Your logo research (SINA)"), payload: { projectId: p.id, conversationId: ctx.conversationId, phase: "recherche", nom: garde, capMicro: g.rechercheMicro, studioCapMicro: g.rechercheMicro, finalisationsAccordees: g.finalisationsMicro }, maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:logo:recherche:garde` });
@@ -376,6 +387,9 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     const keysShown = list.map((x) => x.key).filter((k) => !cachees.has(k));
     if ([a.key, ...Object.values(a.mix ?? {})].some((k) => k && cachees.has(k))) return { ok: false, summary: L("Cette planche n'est pas encore montrée au client : il lui manque une image. Propose-lui de la finir à la charge du Studio (son logo : logo.pistes avec planche = cette planche ; la grande scène ou le haut du site : identity.images), ou laisse-le choisir parmi celles qui sont montrées.", "This board is not shown yet: an image is missing."), hint: "Ce qui manque est écrit dans ton contexte : le logo par logo.pistes (planche = cette planche), le reste par identity.images." };
     if (!keysShown.includes(a.key) || Object.values(a.mix ?? {}).some((k) => k && !keysShown.includes(k))) return { ok: false, summary: L(`Cette identité n'est pas dans la proposition affichée (${keysShown.join(", ")}).`, "This identity is not in the displayed proposal.") };
+    // Planche en vrai (25 novembre 2026) : une fois la planche de marque faite, le mélange de deux identités n'est plus
+    // proposé ; demandé, il est refusé proprement (la planche choisie est refaite telle quelle, à l'identique).
+    if (plancheEnVraiActive() && list.some((x) => x.board?.planche?.image) && Object.entries(a.mix ?? {}).some(([, k]) => k && k !== a.key)) return { ok: false, summary: phraseDuMelangeRefuse(), hint: "Le client choisit une planche telle qu'elle est (identity.choose sans mix) ; une retouche de sa marque se fait ensuite avec ses mots." };
     const chosen = mixIdentity(list, a.key, a.mix, { name: a.name, slogan: a.slogan });
     // La planche de marque montre un domaine vérifié avant son dessin : il est revérifié gratuitement au moment du choix.
     const revu = await revoirLeDomaine(ctx.conversationId, list.find((x) => x.key === a.key));
@@ -412,7 +426,7 @@ const chooseTool: AgentTool<{ key: Key; mix?: Partial<Record<Part, Key>>; name?:
     return {
       ok: verified,
       summary: verified
-        ? L(`Identité ${a.key}${mixed.length ? ` (avec ${mixed.join(", ")})` : ""} enregistrée comme marque du projet : « ${chosen.name} » — « ${chosen.slogan} ». ${finish?.jobs ? "Je finis maintenant ta marque (ton logo, l'objet qui le porte, les signes, trois publications, ta charte) : quelques minutes, déjà compris dans ton accord." : "Reste à finir ta marque : appelle brand.finish."}${revu ? ` ${revu}` : ""}`, "Identity saved.")
+        ? L(`Identité ${a.key}${mixed.length ? ` (avec ${mixed.join(", ")})` : ""} enregistrée comme marque du projet : « ${chosen.name} » — « ${chosen.slogan} ». ${finish?.jobs ? (enVraiPour(journeyOf(ctx.conversationId)) ? "Je refais maintenant ta planche en vrai, à l'identique : ses images en haute définition, tes logos, tes couleurs et tes polices, puis ta charte ; quelques minutes, déjà compris dans ton accord." : "Je finis maintenant ta marque (ton logo, l'objet qui le porte, les signes, trois publications, ta charte) : quelques minutes, déjà compris dans ton accord.") : "Reste à finir ta marque : appelle brand.finish."}${revu ? ` ${revu}` : ""}`, "Identity saved.")
         : L("La marque n'a pas pu être relue après l'enregistrement.", "Brand could not be verified."),
       ...(finish?.jobs ? { jobs: finish.jobs } : verified ? { hint: "Appelle maintenant brand.finish (sans argument) : le Studio montre son prix au client s'il n'est pas déjà couvert par son accord." } : {}),
       data: { identite: identityView(chosen), etapeSuivante: logoKept ? 3 : 2 },
@@ -517,7 +531,7 @@ export function deuxPlafonds(q: ChainQuote, studio: boolean): { studioMaxMicro: 
 }
 
 /** Images de la marque finie que le client peut faire refaire. */
-const FINISH_REDO = CREATED_SLOTS as unknown as [string, ...string[]];
+const FINISH_REDO = [...CREATED_SLOTS, "produits"] as unknown as [string, ...string[]];
 type FinishArgs = { relancer?: boolean; redo?: string[]; guidance?: string };
 
 /**
@@ -525,6 +539,11 @@ type FinishArgs = { relancer?: boolean; redo?: string[]; guidance?: string };
  * prise telle quelle) ; sinon le prix des images à créer, moins ce qui était déjà couvert.
  */
 export function finishEstimate(j: Journey, a: FinishArgs = {}): { maxMicro: number; probableMicro?: number; slots: ImageSlot[] } {
+  // La planche en vrai : son devis, moins ce que l'accord de l'étape couvre déjà.
+  if (enVraiPour(j) && !a.redo?.length) {
+    const d = devisDeLaPlancheEnVrai(), prepaid = j.brandFinish?.prepaidMicro ?? 0;
+    return prepaid >= d.maxMicro ? { maxMicro: 0, slots: [] } : { maxMicro: d.maxMicro - prepaid, probableMicro: Math.max(1, d.probableMicro - prepaid), slots: [] };
+  }
   const slots = finishSlots(j, a.redo as ImageSlot[] | undefined);
   if (!slots.length) return { maxMicro: 0, slots };
   // Planche de marque : la grande scène de la fin est déjà comptée dans l'accord de l'étape (`sceneDeLaFin`).
@@ -534,18 +553,33 @@ export function finishEstimate(j: Journey, a: FinishArgs = {}): { maxMicro: numb
   return { maxMicro: q.maxMicro - prepaid, ...(q.probableMicro ? { probableMicro: Math.max(1, q.probableMicro - prepaid) } : {}), slots };
 }
 
+/** La fin de marque passe-t-elle par la planche en vrai ? Réglage allumé, planche de marque choisie, logo du Studio. */
+export const enVraiPour = (j: Journey): boolean => plancheEnVraiActive() && !j.keep.includes("logo") && !!chosenRoute(j)?.board.planche?.image;
+/** Le nombre de produits imaginés de la planche en vrai à refaire avec ses photos (0 sans planche en vrai ou sans photo). */
+export const produitsEnVraiARefaire = (j: Journey, projectId: string): number => (photosDuProduitIds(projectId, 1).length ? produitsImagines(j.plancheEnVrai).length : 0);
 /** Met en file la fin de marque (une seule à la fois). */
 function startFinish(ctx: ToolContext, a: FinishArgs): { jobs?: string[]; refused?: string } {
   const p = project(ctx), j = journeyOf(ctx.conversationId);
   if (pendingJob(p.id, SINA_BRAND_JOB)) return { refused: L("Ta marque est déjà en cours de création : attends-la.", "Your brand is already being created.") };
+  // Les produits de la planche en vrai refaits avec ses photos : leur propre carte, sur son budget.
+  if (a.redo?.includes("produits")) {
+    const n = produitsEnVraiARefaire(j, p.id);
+    if (!n) return { refused: L("Je n'ai aucun produit imaginé à refaire avec tes photos.", "No imagined product to redo with your photos.") };
+    const d = devisDesProduitsEnVrai(n);
+    const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L("Tes produits refaits avec tes photos (SINA)", "Your products redone with your photos (SINA)"),
+      payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: d.maxMicro, studioCapMicro: d.studioMaxMicro, count: routeCountOfProject(p.id), finish: true, enVraiProduits: true },
+      maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-envrai-produits:${j.plancheEnVrai?.at ?? 0}` });
+    return { jobs: [job.id] };
+  }
   // Ce qui porte un logo qui manquait (posé depuis par la méthode des graphistes) : une reprise, à la charge du Studio.
   const studio = !!j.brandFinish?.studio && !a.redo?.length && !a.relancer;
   const slots = finishSlots(j, a.redo as ImageSlot[] | undefined);
-  const fq = slots.length ? finishQuote(slots, undefined) : null;
+  const enVrai = enVraiPour(j) && !a.redo?.length, dv = enVrai ? devisDeLaPlancheEnVrai() : null;
+  const fq = dv ? { maxMicro: dv.maxMicro, probableMicro: dv.probableMicro, repriseMicro: dv.repriseMicro, repriseProbableMicro: dv.repriseProbableMicro } : slots.length ? finishQuote(slots, undefined) : null;
   const cap = Math.max(1, fq ? fq.maxMicro : 1);
   const job = enqueue({
     userId: ctx.user.id, projectId: p.id, type: SINA_BRAND_JOB, label: L("Ta marque complète (SINA)", "Your complete brand (SINA)"),
-    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, studioCapMicro: deuxPlafonds(fq ?? { maxMicro: cap }, studio).studioMaxMicro, count: routeCountOfProject(p.id), finish: true, ...(a.redo?.length || studio ? { slots } : {}), ...(studio ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
+    payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: cap, studioCapMicro: dv ? dv.studioMaxMicro : deuxPlafonds(fq ?? { maxMicro: cap }, studio).studioMaxMicro, count: routeCountOfProject(p.id), finish: true, ...(enVrai ? { enVrai: true } : {}), ...(a.redo?.length || studio ? { slots } : {}), ...(studio ? { studio: true } : {}), ...(a.guidance ? { guidance: a.guidance } : {}) },
     maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-finish:${(a.redo ?? []).join("+")}:${j.identityChoice?.at ?? 0}${studio ? `:studio:${j.brandFinish?.images?.logo?.id ?? ""}` : ""}`,
   });
   updateJourney(ctx.conversationId, (x) => { if (x.brandFinish) x.brandFinish.prepaidMicro = 0; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "doing"); });
@@ -559,6 +593,8 @@ const finishTool: AgentTool<FinishArgs> = {
   estimate: (ctx, a) => {
     if (a?.relancer) { const c = marqueCoupee(project(ctx).id); if (!c) throw new RefusInterne("Aucune création de marque arrêtée en route à relancer : lance-la sans relancer."); return relanceMarqueQuote(c); }
     const j = journeyOf(ctx.conversationId);
+    // La planche en vrai : ses produits imaginés refaits avec les photos qu'il vient d'envoyer, sur son budget.
+    if (a?.redo?.includes("produits")) { const n = produitsEnVraiARefaire(j, project(ctx).id); if (!n) throw new RefusInterne("Aucun produit imaginé à refaire avec ses photos (il faut sa planche en vrai et au moins une photo de son produit)."); const d = devisDesProduitsEnVrai(n); return { maxMicro: d.maxMicro, probableMicro: d.probableMicro, label: L(`refaire ${n} produit${n > 1 ? "s" : ""} de ta planche avec tes photos`, "redo your board's products with your photos") }; }
     const e = finishEstimate(j, a);
     // Le logo manque à la marque finie : il se fait par la méthode des graphistes (logo.pistes), jamais ici.
     if (j.brandFinish?.manque?.includes("logo")) throw new RefusInterne("Il manque son logo : il se fait par la méthode des graphistes, à ta charge (logo.pistes avec planche = son identité, puis logo.autre avec l'esquisse qu'il choisit) ; ensuite brand.finish refait ce qui le porte.");

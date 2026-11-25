@@ -142,7 +142,7 @@ export function devisEnTexte(d: DevisDeLEssai): string[] {
 
 // ---------------------------------------------------------------- l'essai
 
-export type EssaiEcrit = { tour: number; texte?: string; brut?: string; bandes?: string[]; demande?: string; verdict?: RelectureDeLaPlanche; raisons?: string[] };
+export type EssaiEcrit = { tour: number; texte?: string; brut?: string; bandes?: string[]; demande?: string; verdict?: RelectureDeLaPlanche; raisons?: string[]; ecartes?: string[] };
 export type PlancheDeLEssai = { key: string; fichier: string; gardee?: boolean; fichierGarde?: string; raison?: string; note?: number; essais: EssaiEcrit[]; notes: string[]; issues: string[] };
 export type LigneDeDepense = { cle: string | null; task: string | null; modele: string | null; studio: boolean; reserveMicro: number; reelMicro: number | null; statut: string; appel?: Record<string, unknown> };
 export type ResultatDesPlanches = {
@@ -240,9 +240,10 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
       e.verdict = v;
       if (res.domaine && res.valeurs?.ok) {
         const d = P.laDisposition(res.valeurs.valeurs.metier);
-        e.raisons = P.raisonsDuRefusDeLaPlanche(v, { nom: client.nom, annee, domaine: { domaine: res.domaine.domaine, statut: res.domaine.statut as never }, personnes, animaux: d.animaux && d.laquelle === "standard" });
+        const lu = P.lectureDeLaPlanche(v, { nom: client.nom, annee, domaine: { domaine: res.domaine.domaine, statut: res.domaine.statut as never }, personnes, animaux: d.animaux && d.laquelle === "standard" });
+        e.raisons = lu.raisons; e.ecartes = lu.ecartes;
       }
-      ecrireFichier(`planche-${key}-${tour}-relecture-verdict.json`, json({ verdict: v, raisons: e.raisons ?? null, gardee: e.raisons ? !e.raisons.length : null }));
+      ecrireFichier(`planche-${key}-${tour}-relecture-verdict.json`, json({ verdict: v, raisons: e.raisons ?? null, ecartes: e.ecartes ?? [], gardee: e.raisons ? !e.raisons.length : null }));
       return v;
     },
   };
@@ -297,7 +298,7 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
       lignes.push("", `Planche ${p.key} (${p.fichier}) : ${p.gardee === true ? `GARDÉE par le relecteur (${p.fichierGarde}, note ${p.note}/10)` : p.gardee === false ? `NON gardée, jamais montrée (${p.raison})` : "non terminée"}`);
       for (const e of p.essais) {
         lignes.push(`  essai ${e.tour}${e.tour === 2 ? " (reprise à la charge du Studio)" : ""} : texte ${e.texte ?? "—"} ; planche brute ${e.brut ?? "—"} ; bandes ${e.bandes?.join(", ") ?? "—"}`);
-        if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », copyright lu « ${e.verdict.copyrightLu} », domaine lu « ${e.verdict.domaineLu} », logo fidèle ${e.verdict.logoFidele ? "oui" : "non"} — ${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`);
+        if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », copyright lu « ${e.verdict.copyrightLu} », domaine lu « ${e.verdict.domaineLu} », logo fidèle ${e.verdict.logoFidele ? "oui" : "non"} — ${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`, ...(e.ecartes?.length ? [`    non compté : ${e.ecartes.join(" ; ")}`] : []));
       }
       for (const n of p.notes) lignes.push(`  note : ${n}`);
       for (const n of p.issues) lignes.push(`  SINA dirait : ${n}`);

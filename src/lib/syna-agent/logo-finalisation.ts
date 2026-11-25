@@ -23,8 +23,13 @@
  *    et 7, dont la feuille sur le i pour « un cliché courant du secteur végétal » ; le propriétaire, à la question « Ces
  *    logos finis te paraissent assez bons pour être montrés à un client ? » : « Oui très bien je mettrais 9/10 ». La
  *    ligne d'évolution du texte de finalisation reste. En plus, gratuit : le fond se retire
- *    proprement (garde `detourerLeLogo`). Refusé : refait UNE fois, avec toutes les raisons à la fin du texte. Refusé
+ *    proprement (garde `detourerLeLogo`). Refusé : refait UNE fois, à la charge du Studio, à partir du logo refusé (et non
+ *    plus de l'esquisse), avec les corrections précises au début du texte (`debutDeReprise`, 25 novembre 2026). Refusé
  *    deux fois : l'identité n'est pas construite, SINA le dit et propose une autre esquisse.
+ *    Les petites finitions (25 novembre 2026 au soir, devant le second essai de la feuille sur le i refusé à 7 : « Le
+ *    racine du milieu est très bien aussi ») : le relecteur sépare les défauts graves (`defauts`) des petites finitions
+ *    (`finitions`) ; une finition ne fait jamais refuser, elle est écrite au compte rendu et devient une correction
+ *    seulement s'il y a une reprise pour une autre raison.
  * La phrase sous le nom choisie par le client (24 novembre 2026 au soir, phrase-sous-le-nom.ts) : une ligne de plus dans
  * la consigne (`ligneDeLaPhrase`), le contrôle gratuit vérifie qu'elle figure mot pour mot dans le texte, et la relecture
  * ne la dit jamais « inventée » : le code la compare, lettre pour lettre, à ce que lit le relecteur ; mal écrite, le logo
@@ -106,6 +111,7 @@ export function controleDuTexte(texte: string, nom: string, metier: string, phra
 
 // ---------------------------------------------------------------- 6. la relecture du logo fini
 
+const listeDeLignes = z.preprocess((x) => (typeof x === "string" ? x.split(/\s*[;\n]\s*/) : x), z.array(z.string().max(400)).max(12)).catch([]).transform((d) => d.map((x) => x.trim()).filter(Boolean));
 export const RelectureDuLogoSchema = z.object({
   nomLu: z.string().max(80).default(""),
   ideeConservee: z.boolean().catch(false),
@@ -114,13 +120,23 @@ export const RelectureDuLogoSchema = z.object({
   phrase: z.string().max(200).default(""),
   /** Cette phrase dit-elle exactement le vrai métier du client ? */
   phraseDitLeMetier: z.boolean().catch(false),
-  /** Les défauts d'exécution vus, un par ligne (25 novembre 2026) ; jamais un reproche sur l'idée. */
-  defauts: z.preprocess((x) => (typeof x === "string" ? x.split(/\s*[;\n]\s*/) : x), z.array(z.string().max(400)).max(12)).catch([]).transform((d) => d.map((x) => x.trim()).filter(Boolean)),
+  /**
+   * Les défauts d'exécution GRAVES, un par ligne (25 novembre 2026) : ceux qui font refuser (une lettre fausse, manquante
+   * ou illisible, un nom qui se lit autrement de façon évidente, une forme cassée, un fond qui n'est pas blanc uni…) ;
+   * jamais un reproche sur l'idée. Dans un verdict d'avant les finitions, tous les défauts écrits sont ici.
+   */
+  defauts: listeDeLignes,
+  /**
+   * Les petites finitions, une par ligne (25 novembre 2026 au soir, « Le racine du milieu est très bien aussi ») : un petit
+   * défaut qu'un client ne remarquerait pas comme une faute (une feuille-point un peu haute ou décalée, une coupe en biais).
+   * Elles ne font jamais refuser ; elles servent de corrections seulement s'il y a une reprise pour une autre raison.
+   */
+  finitions: listeDeLignes,
   note: z.number().min(0).max(10).catch(0),
   pourquoi: z.string().max(500).default(""),
 });
-/** Un verdict du relecteur ; `defauts` est absent d'un verdict d'avant le 25 novembre 2026. */
-export type RelectureDuLogo = Omit<z.infer<typeof RelectureDuLogoSchema>, "defauts"> & { defauts?: readonly string[] };
+/** Un verdict du relecteur ; `defauts` est absent d'un verdict d'avant le 25 novembre 2026, `finitions` d'un verdict d'avant le soir du 25. */
+export type RelectureDuLogo = Omit<z.infer<typeof RelectureDuLogoSchema>, "defauts" | "finitions"> & { defauts?: readonly string[]; finitions?: readonly string[] };
 
 /**
  * Le repère du propriétaire, mot pour mot (25 novembre 2026) : devant les quatre logos finis de l'essai de Racine, tous
@@ -129,6 +145,13 @@ export type RelectureDuLogo = Omit<z.infer<typeof RelectureDuLogoSchema>, "defau
  */
 export const QUESTION_DU_REPERE = "Ces logos finis te paraissent assez bons pour être montrés à un client ?";
 export const REPONSE_DU_PROPRIETAIRE = "Oui très bien je mettrais 9/10";
+/**
+ * Le second repère, mot pour mot (25 novembre 2026 au soir) : devant le second essai de la feuille sur le i
+ * (essai finalisation-execution, esquisse-04-logo-2-brut.png), refusé à 7 pour une feuille-point un peu décalée et le
+ * haut du i coupé en biais. Le relecteur était plus sévère que lui sur les petites finitions. Ces mots nomment un client
+ * d'essai : ils ne vont JAMAIS au relecteur (CLAUDE.md) ; sa consigne porte la règle, dite sans nom ni exemple d'essai.
+ */
+export const SECOND_REPERE_DU_PROPRIETAIRE = "Le racine du milieu est très bien aussi";
 
 /**
  * LE RELECTEUR DU LOGO FINI juge l'exécution, jamais l'idée (25 novembre 2026) : c'est le client qui a choisi l'idée
@@ -144,8 +167,9 @@ Réponds en JSON :
 - arche : le dessin est posé dans une arche, une demi-lune ou un cadre arrondi en arc ;
 - phrase : toute phrase écrite dans le logo en plus du nom, recopiée lettre pour lettre, accents compris, sans rien corriger (vide s'il n'y en a pas) ;
 - phraseDitLeMetier : cette phrase dit exactement le vrai métier donné ci-dessous (faux si elle invente autre chose) ;
-- defauts : la liste des défauts d'exécution que tu vois, un seul par ligne, en mots simples (un raccord mal fait, une proportion fausse, une partie qui ne se lit plus en petit, une lettre mal dessinée, un fond qui n'est pas blanc uni) ; jamais un reproche sur l'idée ; une liste vide s'il n'y en a pas ;
-- note : ta note de 0 à 10 sur l'exécution seule. Un logo propre et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus. Une note sous 8 s'explique par au moins un défaut écrit dans defauts. Ton repère : à la question « ${QUESTION_DU_REPERE} », posée devant des logos finis propres et fidèles à leurs esquisses, le propriétaire du Studio a répondu : « ${REPONSE_DU_PROPRIETAIRE} » ;
+- defauts : la liste des défauts d'exécution graves, ceux qu'un client verrait comme une faute, un seul par ligne, en mots simples : une lettre fausse, manquante ou illisible ; un nom qui se lit autrement de façon évidente ; une forme cassée ; un fond qui n'est pas blanc uni ; jamais un reproche sur l'idée ; une liste vide s'il n'y en a pas ;
+- finitions : la liste des petits défauts de finition, ceux qu'un client ne remarquerait pas comme une faute, un seul par ligne, en mots simples ; ils sont transmis comme corrections si le logo est repris, mais ne le font jamais refuser ; une liste vide s'il n'y en a pas ;
+- note : ta note de 0 à 10 sur l'exécution seule. Un logo propre et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus. Une petite finition ne fait jamais descendre la note sous 8 ; une note sous 8 s'explique par au moins un défaut grave écrit dans defauts. Ton repère : à la question « ${QUESTION_DU_REPERE} », posée devant des logos finis propres et fidèles à leurs esquisses, le propriétaire du Studio a répondu : « ${REPONSE_DU_PROPRIETAIRE} » ;
 - pourquoi : une ou deux phrases simples.`;
 
 export function demandeAuRelecteurDuLogo(o: { nom: string; metier: string; texte: string; /** La phrase choisie par le client (absente : la règle d'avant). */ phrase?: PhraseVoulue }): string {
@@ -170,19 +194,23 @@ const sansAccents = (t: string) => t.normalize("NFD").replace(/\p{M}/gu, "").rep
 export const jugeLIdee = (t: string): boolean => JUGE_L_IDEE.test(sansAccents(t));
 
 /**
- * Ce que le code retient de la note : les défauts d'exécution (ceux qui jugent l'idée sont écartés) et, quand la note est
- * sous 8, si elle compte. Elle ne compte pas quand elle ne tient qu'à l'idée : des défauts écrits qui jugent tous l'idée,
- * ou, sans défaut écrit (verdict d'avant le 25 novembre), un « pourquoi » qui juge l'idée. Une note sous 8 sans aucune
- * explication reste un refus, par prudence.
+ * Ce que le code retient du verdict : les défauts graves (ceux qui jugent l'idée sont écartés), les petites finitions
+ * (idem) et, quand la note est sous 8, si elle compte (une note de 8 ou plus ne fait jamais refuser, comme avant). Elle
+ * compte pour un défaut grave écrit. Elle ne compte pas quand
+ * elle ne tient qu'à l'idée (25 novembre 2026) ou qu'à de petites finitions (25 novembre 2026 au soir, « Le racine du
+ * milieu est très bien aussi »), ni, sans rien d'écrit, quand le « pourquoi » juge l'idée. Une note sous 8 sans aucune
+ * explication reste un refus, par prudence. Un verdict d'avant les finitions : tous ses défauts écrits sont graves.
  */
-export function lectureDeLaNote(v: Pick<RelectureDuLogo, "note" | "pourquoi" | "defauts">): { compte: boolean; defauts: string[]; ecartes: string[] } {
-  const ecrits = (v.defauts ?? []).map((d) => d.trim()).filter(Boolean);
-  const defauts = ecrits.filter((d) => !jugeLIdee(d)), ecartes = ecrits.filter((d) => jugeLIdee(d));
-  if (v.note >= NOTE_DU_PROPRIETAIRE) return { compte: false, defauts, ecartes };
-  if (defauts.length) return { compte: true, defauts, ecartes };
-  if (ecartes.length) return { compte: false, defauts, ecartes };
-  if (jugeLIdee(v.pourquoi)) return { compte: false, defauts, ecartes: [v.pourquoi.trim()] };
-  return { compte: true, defauts, ecartes };
+export function lectureDeLaNote(v: Pick<RelectureDuLogo, "note" | "pourquoi" | "defauts" | "finitions">): { compte: boolean; defauts: string[]; finitions: string[]; ecartes: string[] } {
+  const propre = (l?: readonly string[]) => (l ?? []).map((d) => d.trim()).filter(Boolean);
+  const ecrits = propre(v.defauts), petites = propre(v.finitions);
+  const defauts = ecrits.filter((d) => !jugeLIdee(d)), finitions = petites.filter((d) => !jugeLIdee(d));
+  const ecartes = [...ecrits, ...petites].filter((d) => jugeLIdee(d));
+  if (v.note >= NOTE_DU_PROPRIETAIRE) return { compte: false, defauts, finitions, ecartes };
+  if (defauts.length) return { compte: true, defauts, finitions, ecartes };
+  if (finitions.length || ecartes.length) return { compte: false, defauts, finitions, ecartes };
+  if (jugeLIdee(v.pourquoi)) return { compte: false, defauts, finitions, ecartes: [v.pourquoi.trim()] };
+  return { compte: true, defauts, finitions, ecartes };
 }
 
 /**
@@ -211,22 +239,56 @@ export function raisonsDuRefus(v: RelectureDuLogo, nom: string, phrase?: PhraseV
   return r;
 }
 
-/** Pour le compte rendu : une note sous 8 qui n'a pas été comptée parce qu'elle jugeait l'idée ; null sinon. */
+/** Pour le compte rendu : une note sous 8 qui n'a pas été comptée (elle jugeait l'idée, ou de petites finitions) ; null sinon. */
 export function noteEcartee(v: RelectureDuLogo): string | null {
   const n = lectureDeLaNote(v);
-  return v.note < NOTE_DU_PROPRIETAIRE && !n.compte ? `note de ${v.note}/10 non comptée : elle jugeait l'idée choisie par le client, pas l'exécution (« ${n.ecartes.join(" ; ")} »)` : null;
+  if (v.note >= NOTE_DU_PROPRIETAIRE || n.compte) return null;
+  if (n.ecartes.length && !n.finitions.length) return `note de ${v.note}/10 non comptée : elle jugeait l'idée choisie par le client, pas l'exécution (« ${n.ecartes.join(" ; ")} »)`;
+  return `note de ${v.note}/10 non comptée : elle ne tenait qu'à de petites finitions (« ${n.finitions.join(" ; ")} »)${n.ecartes.length ? ` et à l'idée choisie par le client (« ${n.ecartes.join(" ; ")} »)` : ""}`;
+}
+/** Pour le compte rendu : les petites finitions notées par le relecteur, qui ne font pas refuser ; null sans finition. */
+export function finitionsNotees(v: RelectureDuLogo): string | null {
+  const f = lectureDeLaNote(v).finitions;
+  return f.length ? `petites finitions notées, sans refus : ${f.join(" ; ")}` : null;
 }
 
-/** Ce qui est ajouté à la fin du texte pour la reprise unique : toutes les raisons du refus. */
-export const finDeReprise = (raisons: readonly string[]) => `À corriger : ${raisons.join(" ; ")}.`;
+/**
+ * LA REPRISE UNIQUE (25 novembre 2026, décision du chef d'orchestre après l'essai réel de Racine : la feuille sur le i,
+ * refusée deux fois à 7 pour les mêmes défauts ; son constat : « il redessine les mêmes défauts, parce qu'on lui redonne
+ * l'esquisse, qui porte déjà ce i coupé »). À la reprise, le dessinateur reçoit le logo refusé (et non plus l'esquisse) et,
+ * AU DÉBUT du texte, les corrections précises ; le texte de finalisation suit, tel qu'il était. Le relecteur de la reprise
+ * reçoit toujours l'esquisse, comme référence de l'idée.
+ *
+ * Les corrections : les raisons du refus, sauf celle de la note, remplacée par ses défauts d'exécution écrits (« il n'est
+ * pas au niveau (7/10, il faut 8) : A ; B » donne « A » et « B ») ; une note sous 8 sans défaut écrit reste telle quelle.
+ */
+const RAISON_DE_LA_NOTE = /^il n'est pas au niveau \([^)]*\) : /;
+/**
+ * Les corrections de la reprise : les raisons du refus (la raison de la note remplacée par ses défauts écrits), puis les
+ * petites finitions notées au premier essai (25 novembre 2026 au soir : elles ne font pas refuser, mais une reprise faite
+ * pour une autre raison les corrige aussi). Sans doublon.
+ */
+export const correctionsDeLaReprise = (raisons: readonly string[], finitions: readonly string[] = []): string[] => [...new Set([...raisons
+  .flatMap((r) => { const m = r.match(RAISON_DE_LA_NOTE); return m ? r.slice(m[0].length).split(" ; ") : [r]; }), ...finitions]
+  .map((c) => c.trim().replace(/[\s.;]+$/u, ""))
+  .filter(Boolean))];
+/** Le début du texte de la reprise, forme stable : « Corrige uniquement : A ; B ; garde tout le reste à l'identique. » */
+export const debutDeReprise = (raisons: readonly string[], finitions: readonly string[] = []) => `Corrige uniquement : ${correctionsDeLaReprise(raisons, finitions).join(" ; ")} ; garde tout le reste à l'identique.`;
+/** Le texte de la reprise : les corrections d'abord, puis le texte d'origine, tel qu'il était. */
+export const texteDeReprise = (raisons: readonly string[], texte: string, finitions: readonly string[] = []) => `${debutDeReprise(raisons, finitions)}\n\n${texte}`;
+/** Les petites finitions d'un essai relu (vides sans relecture), pour la reprise. */
+const finitionsDe = (e: EssaiDeFinalisation): string[] => (e.verdict ? lectureDeLaNote(e.verdict).finitions : []);
 
 // ---------------------------------------------------------------- la finalisation entière
 
 export type FinalisationDeps = {
   /** GPT-6.2 Astra regarde l'esquisse et écrit le texte (consigne de finaliser.py). */
   rediger: (consigne: string, esquisse: Buffer, tour: number) => Promise<TexteDeFinalisation>;
-  /** POST /v1/images/edits (multipart, image[]) : le logo fini. */
-  finaliser: (esquisse: Buffer, texte: string, tour: number) => Promise<Buffer>;
+  /**
+   * POST /v1/images/edits (multipart, image[]) : le logo fini. L'image jointe : l'esquisse au premier essai, le logo
+   * refusé à la reprise (pour la retouche : le logo à retoucher, puis la retouche refusée).
+   */
+  finaliser: (jointe: Buffer, texte: string, tour: number) => Promise<Buffer>;
   /** Le relecteur le plus fort, effort élevé. */
   relire: (logoSurBlanc: Buffer, esquisse: Buffer, demande: string, tour: number) => Promise<RelectureDuLogo>;
   /** Le fond retiré par le Studio (detourerLeLogo). */
@@ -239,7 +301,8 @@ export type Finalisation = { ok: true; logo: Buffer; detoure: Buffer; texte: str
 
 /**
  * Une esquisse choisie devient un logo fini : le texte écrit (et contrôlé), le logo dessiné, relu ; refusé une fois, il
- * est refait avec toutes les raisons à la fin du texte, à la charge du Studio ; refusé deux fois, il n'est pas gardé.
+ * est refait à partir du logo refusé, les corrections au début du texte, à la charge du Studio ; refusé deux fois, il
+ * n'est pas gardé.
  * Une panne du fournisseur n'est jamais relancée toute seule (l'erreur remonte, le parcours le dit).
  */
 export async function finaliserUneEsquisse(deps: FinalisationDeps, o: { nom: string; metier: string; esquisse: Buffer; /** La phrase choisie par le client (absente : la règle d'avant). */ phrase?: PhraseVoulue }): Promise<Finalisation> {
@@ -253,8 +316,10 @@ export async function finaliserUneEsquisse(deps: FinalisationDeps, o: { nom: str
     fautes = controleDuTexte(ecrit.texte, o.nom, o.metier, o.phrase);
     if (fautes.length) return { ok: false, raison: `le texte de finalisation ne tient pas la forme attendue (${fautes.join(" ; ")})`, essais, notes };
   }
-  const essai = async (tour: number, texte: string): Promise<EssaiDeFinalisation> => {
-    const png = await deps.finaliser(o.esquisse, texte, tour);
+  // L'image jointe au dessinateur : l'esquisse au premier essai, le logo refusé à la reprise. Le relecteur reçoit toujours
+  // l'esquisse, référence de l'idée.
+  const essai = async (tour: number, texte: string, jointe: Buffer): Promise<EssaiDeFinalisation> => {
+    const png = await deps.finaliser(jointe, texte, tour);
     const e: EssaiDeFinalisation = { tour, texte, ideeCentrale: ecrit.idee_centrale, png, detoure: null, verdict: null, raisons: [] };
     const d = await deps.detourer(png);
     if (!d.ok) { e.raisons = [d.why]; return e; }
@@ -264,13 +329,15 @@ export async function finaliserUneEsquisse(deps: FinalisationDeps, o: { nom: str
     e.raisons = raisonsDuRefus(e.verdict, o.nom, o.phrase);
     const ecartee = noteEcartee(e.verdict);
     if (ecartee) notes.push(`logo ${tour} : ${ecartee}`);
+    const finitions = finitionsNotees(e.verdict);
+    if (finitions) notes.push(`logo ${tour} : ${finitions}`);
     return e;
   };
-  const premier = await essai(1, ecrit.texte);
+  const premier = await essai(1, ecrit.texte, o.esquisse);
   essais.push(premier);
   if (!premier.raisons.length) return { ok: true, logo: premier.png!, detoure: premier.detoure!, texte: premier.texte, essais, notes };
-  notes.push(`logo refusé (${premier.raisons.join(" ; ")}) : refait une fois, à la charge du Studio, avec ces raisons à la fin du texte`);
-  const second = await deps.aLaChargeDuStudio(() => essai(2, `${ecrit.texte} ${finDeReprise(premier.raisons)}`));
+  notes.push(`logo refusé (${premier.raisons.join(" ; ")}) : refait une fois, à la charge du Studio, à partir du logo refusé, avec les corrections au début du texte`);
+  const second = await deps.aLaChargeDuStudio(() => essai(2, texteDeReprise(premier.raisons, ecrit.texte, finitionsDe(premier)), premier.png!));
   essais.push(second);
   if (!second.raisons.length) return { ok: true, logo: second.png!, detoure: second.detoure!, texte: second.texte, essais, notes };
   return { ok: false, raison: `refusé deux fois (${second.raisons.join(" ; ")})`, essais, notes };
@@ -288,8 +355,9 @@ export const texteDeRetouche = (demande: string) => `Garde ce logo exactement te
 export async function retoucherLesCouleurs(deps: FinalisationDeps, o: { nom: string; metier: string; logo: Buffer; demande: string; /** La phrase choisie par le client pour ce logo : la retouche la garde, la relecture la compare. */ phrase?: PhraseVoulue }): Promise<Finalisation> {
   const notes: string[] = [], essais: EssaiDeFinalisation[] = [];
   const texte = texteDeRetouche(o.demande);
-  const essai = async (tour: number, t: string): Promise<EssaiDeFinalisation> => {
-    const png = await deps.finaliser(o.logo, t, tour);
+  // La reprise part de la retouche refusée ; le relecteur compare toujours au logo d'origine, référence de l'idée.
+  const essai = async (tour: number, t: string, jointe: Buffer): Promise<EssaiDeFinalisation> => {
+    const png = await deps.finaliser(jointe, t, tour);
     const e: EssaiDeFinalisation = { tour, texte: t, ideeCentrale: "", png, detoure: null, verdict: null, raisons: [] };
     const d = await deps.detourer(png);
     if (!d.ok) { e.raisons = [d.why]; return e; }
@@ -297,12 +365,14 @@ export async function retoucherLesCouleurs(deps: FinalisationDeps, o: { nom: str
     const surBlanc = await sharp(d.png).flatten({ background: "#FFFFFF" }).png().toBuffer();
     e.verdict = await deps.relire(surBlanc, o.logo, demandeAuRelecteurDuLogo({ nom: o.nom, metier: o.metier, texte: t, ...(o.phrase ? { phrase: o.phrase } : {}) }), tour);
     e.raisons = raisonsDuRefus(e.verdict, o.nom, o.phrase);
+    const finitions = finitionsNotees(e.verdict);
+    if (finitions) notes.push(`retouche ${tour} : ${finitions}`);
     return e;
   };
-  const premier = await essai(1, texte);
+  const premier = await essai(1, texte, o.logo);
   essais.push(premier);
   if (!premier.raisons.length) return { ok: true, logo: premier.png!, detoure: premier.detoure!, texte, essais, notes };
-  const second = await deps.aLaChargeDuStudio(() => essai(2, `${texte} ${finDeReprise(premier.raisons)}`));
+  const second = await deps.aLaChargeDuStudio(() => essai(2, texteDeReprise(premier.raisons, texte, finitionsDe(premier)), premier.png!));
   essais.push(second);
   return second.raisons.length ? { ok: false, raison: `refusé deux fois (${second.raisons.join(" ; ")})`, essais, notes } : { ok: true, logo: second.png!, detoure: second.detoure!, texte: second.texte, essais, notes };
 }

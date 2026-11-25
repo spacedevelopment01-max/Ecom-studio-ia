@@ -306,7 +306,10 @@ export const RelectureDeLaPlancheSchema = z.object({
   copyrightLu: z.string().max(120).default(""),
   /** Ce qui est écrit à la place de la disponibilité du domaine, recopié lettre pour lettre. */
   domaineLu: z.string().max(160).default(""),
+  /** Les fautes dans les textes lisibles à taille normale (le nom, les accroches, les titres des blocs, les mentions…). */
   fautes: z.array(z.string().max(200)).max(20).catch([]),
+  /** Les micro-textes décoratifs déformés, illisibles à taille normale (25 novembre 2026) : notés, jamais un refus. */
+  microTextes: z.array(z.string().max(200)).max(20).catch([]),
   promesses: z.array(z.string().max(200)).max(20).catch([]),
   personnes: z.boolean().catch(true),
   logoFonceSurFondSombre: z.boolean().catch(true),
@@ -316,20 +319,54 @@ export const RelectureDeLaPlancheSchema = z.object({
   note: z.number().min(0).max(10).catch(0),
   pourquoi: z.string().max(600).default(""),
 });
-export type RelectureDeLaPlanche = z.infer<typeof RelectureDeLaPlancheSchema>;
+/** Un verdict du relecteur ; `microTextes` est absent d'un verdict d'avant le 25 novembre 2026. */
+export type RelectureDeLaPlanche = Omit<z.infer<typeof RelectureDeLaPlancheSchema>, "microTextes"> & { microTextes?: string[] };
+
+/**
+ * Le repère du propriétaire, mot pour mot (25 novembre 2026) : devant les planches A-2 et B-2 de l'essai réel de Racine
+ * (planches-execution), refusées à 7 et 7,5 pour les alphabets des spécimens, le petit texte circulaire du badge et des
+ * mots de réassurance pris pour des promesses. Aucune image d'essai n'est montrée au relecteur : seulement ces mots.
+ */
+export const QUESTION_DU_REPERE_DE_PLANCHE = "Ces deux planches te paraissent montrables à un client telles quelles ?";
+export const REPONSE_DU_PROPRIETAIRE_PLANCHE = "C'est très bien";
+
+/**
+ * Un micro-texte décoratif, illisible à taille normale (25 novembre 2026) : une ligne d'alphabet d'un spécimen de police,
+ * le petit texte circulaire d'un badge, l'heure de la barre d'état d'un téléphone. Le code l'écarte des fautes, même dans
+ * un verdict d'avant ce partage : il le reconnaît à ces mots, ou à une ligne qui commence par « abc » sans espace.
+ */
+const MICRO_TEXTE = /alphabet|bas de casse|sp[ée]cimen|texte circulaire|badge|sceau|barre d'[ée]tat/iu;
+export const microTexteDecoratif = (f: string): boolean => {
+  const t = f.normalize("NFD").replace(/\p{M}/gu, "").replace(/[’ʼ]/g, "'").toLowerCase();
+  if (MICRO_TEXTE.test(t)) return true;
+  const mot = t.replace(/\(.*\)/g, "").trim();
+  return /^abc\S{12,}$/u.test(mot);
+};
+/**
+ * Une promesse qui fait refuser (25 novembre 2026) : mesurable ou garantie (un chiffre, gratuit, offert, un délai, un
+ * montant, un prix, un remboursement, une garantie, une note, un avis, un nombre de clients, une sécurité promise…). Le
+ * code écarte, de façon sûre, ce qui n'est qu'un mot qualitatif : jamais une phrase qui porte un chiffre ou un de ces
+ * mots, jamais une phrase de plus de six mots.
+ */
+const MESURABLE = /\p{N}|[%€$£]|gratuit|offert|delai|express|rapide|24 ?h|48 ?h|heure|jour|semaine|minute|rembours|garanti|satisfait|securis|certifi|label|note|avis|etoile|client|meilleur|n ?° ?1|numero (un|1)|leader|premier|prix|cher|promo|reduction|remise|solde|retour|echange|sans frais|frais de port|illimit|a vie|toujours|jamais|100|unique/u;
+export const promesseMesurable = (p: string): boolean => {
+  const t = p.normalize("NFD").replace(/\p{M}/gu, "").replace(/[’ʼ]/g, "'").toLowerCase().trim();
+  return MESURABLE.test(t) || t.split(/\s+/).filter(Boolean).length > 6;
+};
 
 export const RELECTEUR_DE_LA_PLANCHE = `Tu es le relecteur le plus exigeant d'un studio de création de marques. On te montre une planche d'identité visuelle découpée en bandes, de haut en bas (« bande 1 » à « bande 4 », elles se chevauchent un peu), le logo de la marque (« logo ») et la disposition imposée (« disposition », celle d'une AUTRE marque, qui ne donne que l'emplacement des blocs). Réponds en JSON :
 - nomLu : le nom de la marque tel qu'il est écrit en grand sur la planche, lettre pour lettre ;
 - logoFidele : le logo de la planche est exactement celui de l'image « logo » (même dessin, mêmes lettres), jamais redessiné ;
 - copyrightLu : la ligne du copyright du bloc 10, recopiée lettre pour lettre (« © … ») ;
 - domaineLu : ce qui est écrit dans le bloc 10 pour le nom de domaine et sa disponibilité, recopié lettre pour lettre ;
-- fautes : chaque faute d'orthographe ou mot mal écrit, recopié ;
-- promesses : chaque promesse, chiffre ou avis inventé (prix, délai, garantie, note, « livraison offerte »…), recopié ;
+- fautes : chaque faute d'orthographe ou mot mal écrit dans un texte lisible à taille normale (le nom, les accroches, les titres des blocs, les mentions, le domaine, l'année), recopié ;
+- microTextes : les micro-textes décoratifs, illisibles à taille normale, que tu ne juges pas : les lignes d'alphabet des spécimens de polices, le petit texte circulaire d'un badge, l'heure de la barre d'état d'un téléphone ; recopiés s'ils sont déformés, jamais mis dans fautes ;
+- promesses : chaque promesse mesurable ou garantie inventée (gratuit, offert, délai, montant, prix, remboursement, garantie, chiffre, note, avis, nombre de clients…), recopiée ; un mot qualitatif ordinaire (soigné, sélectionné, conseils, qualité) n'est pas une promesse ;
 - personnes : une personne, un visage ou une main est visible ;
 - logoFonceSurFondSombre : un logo foncé posé sur un fond sombre (il doit y être clair) ;
 - motMaquette : le mot « maquette » ou « mockup » est écrit sur la planche ;
 - copies : chaque élément recopié de la disposition (ses produits, ses photos, son emballage, son nom ou son logo) ;
-- note : ta note de 0 à 10 face aux planches des meilleures agences ;
+- note : ta note de 0 à 10. Une planche complète, juste dans ses textes lisibles et soignée vaut 8 ou plus ; un micro-texte décoratif ou un mot qualitatif ne fait jamais descendre la note sous 8. Ton repère : à la question « ${QUESTION_DU_REPERE_DE_PLANCHE} », posée devant deux planches dont seuls les alphabets des spécimens, le petit texte circulaire du badge et des mots qualitatifs de réassurance étaient reprochés, le propriétaire du Studio a répondu : « ${REPONSE_DU_PROPRIETAIRE_PLANCHE} » ;
 - pourquoi : une ou deux phrases simples.
 Ne juge que ce que tu vois.`;
 
@@ -349,6 +386,16 @@ const lettreALettre = (t: string) => t.normalize("NFC").replace(/\s+/g, " ").rep
  * mot « maquette », les copies de la disposition, et sa note (8 au moins). Vide : gardée.
  */
 export function raisonsDuRefusDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): string[] {
+  return lectureDeLaPlanche(v, o).raisons;
+}
+
+/**
+ * Ce que le code retient du verdict (25 novembre 2026) : les raisons du refus, et ce qu'il écarte (les micro-textes
+ * décoratifs et les mots qualitatifs pris pour des promesses), pour le compte rendu. Une note sous 8 ne compte pas quand
+ * elle ne tenait qu'à ce qui est écarté (rien d'autre n'est reproché) ; sans rien d'écrit, elle reste un refus, par
+ * prudence. Le nom, l'année et le domaine sont toujours comparés lettre pour lettre.
+ */
+export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): { raisons: string[]; ecartes: string[] } {
   const r: string[] = [];
   if (!nomExact(v.nomLu, o.nom)) r.push(v.nomLu ? `le nom est mal écrit (« ${v.nomLu} » au lieu de « ${o.nom} »)` : `le nom « ${o.nom} » n'y est pas écrit`);
   if (!v.logoFidele) r.push("le logo est faux ou redessiné : il doit être exactement celui de la première image");
@@ -356,14 +403,20 @@ export function raisonsDuRefusDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeL
   if (lettreALettre(v.copyrightLu) !== lettreALettre(c)) r.push(`le copyright doit être exactement « ${c} »${v.copyrightLu ? ` (lu : « ${v.copyrightLu} »)` : ""}`);
   const m = mentionDuDomaine(o.domaine);
   if (lettreALettre(v.domaineLu) !== lettreALettre(m)) r.push(`le bloc 10 doit dire exactement « ${m} »${v.domaineLu ? ` (lu : « ${v.domaineLu} »)` : ""}`);
-  if (v.fautes.length) r.push(`fautes : ${v.fautes.map((f) => `« ${f} »`).join(", ")}`);
-  if (v.promesses.length) r.push(`promesses ou chiffres inventés : ${v.promesses.map((f) => `« ${f} »`).join(", ")}`);
+  const fautes = v.fautes.filter((f) => !microTexteDecoratif(f)), promesses = v.promesses.filter(promesseMesurable);
+  const ecartes = [...(v.microTextes ?? []), ...v.fautes.filter(microTexteDecoratif)].map((f) => `micro-texte décoratif, non jugé : « ${f} »`)
+    .concat(v.promesses.filter((p) => !promesseMesurable(p)).map((p) => `mot qualitatif, pas une promesse : « ${p} »`));
+  if (fautes.length) r.push(`fautes : ${fautes.map((f) => `« ${f} »`).join(", ")}`);
+  if (promesses.length) r.push(`promesses ou chiffres inventés : ${promesses.map((f) => `« ${f} »`).join(", ")}`);
   if (v.personnes && !o.personnes) r.push("une personne est visible sans l'accord du client");
   if (v.logoFonceSurFondSombre) r.push("un logo foncé est posé sur un fond sombre : il doit y être clair");
   if (v.motMaquette) r.push("le mot « maquette » ou « mockup » est écrit");
   if (v.copies.length) r.push(`éléments recopiés de la disposition : ${v.copies.join(", ")}`);
-  if (v.note < NOTE_DU_PROPRIETAIRE) r.push(`elle n'est pas au niveau (${v.note}/10, il faut ${NOTE_DU_PROPRIETAIRE})`);
-  return r;
+  if (v.note < NOTE_DU_PROPRIETAIRE) {
+    if (r.length || !ecartes.length) r.push(`elle n'est pas au niveau (${v.note}/10, il faut ${NOTE_DU_PROPRIETAIRE})`);
+    else ecartes.push(`note de ${v.note}/10 non comptée : elle ne tenait qu'à des micro-textes décoratifs ou à des mots qualitatifs`);
+  }
+  return { raisons: r, ecartes };
 }
 
 // ---------------------------------------------------------------- 6. la planche entière : dessin, relecture, reprise unique
@@ -375,7 +428,8 @@ export type PlancheDeps = {
   relire: (bandes: Buffer[], logo: Buffer, disposition: Buffer, demande: string, tour: number) => Promise<RelectureDeLaPlanche>;
   aLaChargeDuStudio: <T>(fn: () => Promise<T>) => Promise<T>;
 };
-export type EssaiDePlanche = { tour: number; texte: string; png: Buffer; verdict: RelectureDeLaPlanche; raisons: string[] };
+/** `ecartes` : ce que le code n'a pas compté (micro-textes décoratifs, mots qualitatifs, note qui n'y tenait), pour le compte rendu. */
+export type EssaiDePlanche = { tour: number; texte: string; png: Buffer; verdict: RelectureDeLaPlanche; raisons: string[]; ecartes?: string[] };
 export type ResultatDeLaPlanche = { ok: true; png: Buffer; texte: string; essais: EssaiDePlanche[] } | { ok: false; raison: string; essais: EssaiDePlanche[] };
 
 /**
@@ -389,7 +443,8 @@ export async function dessinerLaPlanche(deps: PlancheDeps, o: AttenduDeLaPlanche
     const texte = texteDeLaPlanche({ ...o, raisons });
     const png = await deps.dessiner(o.logo, o.disposition, texte, tour);
     const verdict = await deps.relire(await bandesDeLaPlanche(png), o.logo, o.disposition, demandeAuRelecteurDeLaPlanche({ ...o, texte }), tour);
-    return { tour, texte, png, verdict, raisons: raisonsDuRefusDeLaPlanche(verdict, o) };
+    const lu = lectureDeLaPlanche(verdict, o);
+    return { tour, texte, png, verdict, raisons: lu.raisons, ...(lu.ecartes.length ? { ecartes: lu.ecartes } : {}) };
   };
   const premier = await essai(1);
   essais.push(premier);

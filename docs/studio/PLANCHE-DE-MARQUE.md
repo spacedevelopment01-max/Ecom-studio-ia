@@ -117,3 +117,55 @@ entier (une main dans une image de référence).
 - Le modèle d'images n'a jamais reçu la phrase des données vérifiées : on ne sait pas encore s'il écrit l'année et le
   domaine exactement (les planches d'essai portaient « © 2024 »).
 - Les écrans n'ont pas été regardés dans un navigateur.
+
+## Le relecteur de la planche : le texte lisible et les promesses mesurables (25 novembre)
+
+Préparé sans aucune dépense, sur une branche locale (`reprise-du-logo`), sans rien envoyer.
+
+**Ce qui s'est passé.** L'essai réel des planches de Racine (preuves :
+`docs/studio/essais-complets/images/racine/planches-execution`, branche `claude/essais-complets`, commit 86645c7) a vu
+toutes les planches refusées, à 6, 7, 7,5 et 7,5. Les raisons : les lignes d'alphabet sous les polices, déformées ; le
+petit texte circulaire du badge, déformé ; des mots de réassurance du site (« Livraison soignée », « Conseils
+pratiques », « Emballage soigné »…) pris pour des promesses ; des mains sur A-1. Ce que les planches tiennent bien :
+© 2026 juste, « racine-officiel.fr — disponible », aucune personne (sauf A-1), aucun prix, aucun chiffre.
+
+**Ses mots.** Devant A-2 et B-2, à la question « Ces deux planches te paraissent montrables à un client telles
+quelles ? » : « C'est très bien ».
+
+**Ce qui change.**
+
+1. **Les micro-textes décoratifs.** Le relecteur ne juge pas ceux qui sont illisibles à taille normale : les lignes
+   d'alphabet des spécimens de polices, le petit texte circulaire d'un badge, l'heure de la barre d'état d'un téléphone.
+   Il les range à part (`microTextes`). Le code les écarte aussi des fautes d'un verdict d'avant, à des mots sûrs
+   (alphabet, spécimen, bas de casse, badge, sceau, texte circulaire, barre d'état) ou à une ligne qui commence par
+   « abc » sans espace. Tout texte lisible reste juste ; le nom, l'année et le domaine sont toujours comparés lettre pour
+   lettre par le code.
+2. **Les promesses.** Seules font refuser les promesses mesurables ou les garanties : un chiffre, gratuit, offert, un
+   délai, un montant, un prix, un remboursement, une garantie, une note, un avis, un nombre de clients, une sécurité
+   promise (« Paiement sécurisé » reste un refus). Le code écarte, de façon sûre, un mot qualitatif ordinaire (soigné,
+   sélectionné, conseils, qualité) : jamais une phrase qui porte un chiffre ou un de ces mots, jamais plus de six mots.
+3. **Le repère.** La consigne lui donne la question et sa réponse, mot pour mot, sans image d'essai. La comparaison aux
+   « meilleures agences » est retirée. Le seuil reste 8. Une note sous 8 qui ne tient qu'à ce qui est écarté ne compte
+   pas ; sans rien d'écrit, elle reste un refus. Ce qui est écarté est écrit au compte rendu.
+4. La reprise de la planche ne change pas (une fois, à la charge du Studio, ses raisons à la fin du texte).
+
+**Le rejeu, honnête.** Les quatre verdicts réels sont copiés tels quels dans `tests/fixtures/relecteur-planche`.
+- A-2 (7) : quatre lignes d'alphabet et le texte circulaire du badge ; « Plantes de qualité », « Conseils pratiques »,
+  « Emballage soigné ». Rien d'autre. « Gardée », la note non comptée.
+- B-2 (7,5) : quatre lignes d'alphabet et l'heure de la barre d'état du téléphone (« 0-6T ») ; « Livraison soignée »,
+  « Conseils jardinage ». « Gardée », la note non comptée. À savoir : l'heure du téléphone n'était pas dans les deux
+  exemples donnés ; elle est rangée avec les micro-textes illisibles à taille normale. Sans cela, B-2 resterait refusée.
+- A-1 (6) : des mains, sans accord : « refusée », comme il se doit. Restent aussi une faute d'un texte lisible
+  (« CULTIVER AUJOURD'HUI DES DEMAINS PLUS VERTS ») et « Paiement sécurisé ».
+- B-1 (7,5) : l'emballage recopié de la disposition : « refusée ». Reste aussi « Paiement sécurisé ».
+
+Ce qui a été vérifié : le code. Ce qui ne l'a pas été : ce que le vrai relecteur rangera et notera avec sa nouvelle
+consigne ; seul un essai réel le dira.
+
+**Les épreuves.** Une épreuve nouvelle est scellée : `relecteur-de-planche-texte-lisible-et-promesses-mesurables`, avec
+ses mots et la question. Une épreuve scellée est contredite et marquée remplacée, sans être réécrite :
+`planche-refusee-deux-fois-jamais-montree` (« faute, promesse ou chiffre inventé, …, note sous 8 » font refuser). L'attendu
+de la nouvelle reprend tout ce qui reste vrai d'elle. Ne sont pas contredites : `planche-donnees-verifiees` (le nom,
+l'année et le domaine restent comparés lettre pour lettre) et `planche-de-marque-openai` (la requête et le texte ne
+changent pas). L'accord écrit manque encore ; la phrase qui couvre tout est dans
+`docs/studio/LOGO-METHODE-DES-GRAPHISTES.md`.

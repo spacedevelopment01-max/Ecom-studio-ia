@@ -31,7 +31,7 @@ import { jobSpentMicro } from "../budget";
 import { journeyOf, setStep, updateJourney } from "../journey";
 import type { AgentTool, CostEstimate, ToolContext } from "../types";
 import { project } from "../tools/common";
-import { clientImages, photothequeDe, sectionSkeleton, type PhotoReprise, productSlotSection, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, PHOTO_REVIEW_CAP_MICRO, runCustomBrandJob, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, type CustomBrandPayload } from "./brand";
+import { clientImages, photothequeDe, photothequeDeLaPlanche, sectionSkeleton, type PhotoReprise, productSlotSection, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, PHOTO_REVIEW_CAP_MICRO, runCustomBrandJob, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, type CustomBrandPayload } from "./brand";
 import { galleryCheckMaxMicro } from "./gallery";
 import { installCustomTheme } from "./install";
 import { LOOK_CAP_MICRO, LOOK_PAGES_MAX, LOOK_TYPICAL_MICRO } from "./looks";
@@ -127,12 +127,14 @@ export function siteQuote(o: { business: "products" | "services"; products: numb
 export const PART_REPRISE = 0.5;
 /** Nombre de photos du site actuel qui se reprendraient si le client le fait refaire. */
 const reprisesPossibles = (ctx: ToolContext, refaire: boolean | undefined): number => {
-  if (!refaire) return 0;
+  // Les photos de la planche en vrai (ouverture, références, emballage) se reprennent sans être refaites ni payées.
+  const planche = (() => { try { return photothequeDeLaPlanche(journeyOf(ctx.conversationId)).length; } catch { return 0; } })();
+  if (!refaire) return planche;
   try {
     const p = project(ctx);
     const seen = p.business === "services" ? [] : listProducts(p.id).map((x) => ({ title: x.data.title, type: x.data.productType, photo: x.data.images.some((i) => !!i.assetId) }));
-    return photothequeDe(p.id, loadCustomTheme(p.id), p.business === "services" ? "services" : "products", seen).length;
-  } catch { return 0; }
+    return planche + photothequeDe(p.id, loadCustomTheme(p.id), p.business === "services" ? "services" : "products", seen).length;
+  } catch { return planche; }
 };
 /** Le devis d'un site d'une taille donnée (sections à écrire et photos à créer, au plus et d'ordinaire). */
 export function siteQuoteFor(g: ReturnType<typeof siteSizeGuess>): CostEstimate & { sections: number; photos: number } {
@@ -365,8 +367,10 @@ export async function runSinaSiteJob(ctx: JobContext) {
   class EtapeRatee extends Error {}
   const designed = await ctx.step("site:design", async () => {
     // Le concepteur reçoit le nombre de photos que le prix annoncé permet (celui du devis) : il les répartit sur les pages.
-    const photoBudget = (() => { try { return siteSizeGuess(kindOf(tc)).photos; } catch { return undefined; } })();
-    const r = await (siteJobDeps.design ?? ((c, x) => runDesign(c, x, { kind: "full" })))(tc, { consigne: a.consigne ?? undefined, jobId: ctx.job.id, photoBudget });
+    // Les photos de la planche en vrai se reprennent sans être créées : elles s'ajoutent au nombre permis.
+    const photosDeLaPlanche = (() => { try { return photothequeDeLaPlanche(a.conversationId ? journeyOf(a.conversationId) : null).length; } catch { return 0; } })();
+    const photoBudget = (() => { try { return siteSizeGuess(kindOf(tc)).photos + photosDeLaPlanche; } catch { return undefined; } })();
+    const r = await (siteJobDeps.design ?? ((c, x) => runDesign(c, x, { kind: "full" })))(tc, { consigne: a.consigne ?? undefined, ...(photosDeLaPlanche ? { photosDeLaPlanche } : {}), jobId: ctx.job.id, photoBudget });
     if (!r.ok) throw new EtapeRatee(r.result.summary);
     return { ok: true as const, t: r.t, concept: r.d.concept ?? null, signe: r.d.tenue?.signe ?? null, left: r.left, famille: r.d.famille ?? null, familleWhy: r.d.familleWhy ?? null };
   }).catch((e) => { if (e instanceof EtapeRatee) return { ok: false as const, why: e.message }; throw e; });
@@ -386,6 +390,9 @@ export async function runSinaSiteJob(ctx: JobContext) {
       return { phototheque, matiere: lignes.join("\n").slice(0, 12000) || null };
     } catch { return { phototheque: [], matiere: null }; }
   });
+  // La planche en vrai (25 novembre 2026) : ses photos (ouverture 1920 × 720, images de son univers, emballage) se
+  // reprennent comme celles du site d'avant, sans être créées ni payées ; jamais un produit imaginé.
+  reprise.phototheque = [...photothequeDeLaPlanche((() => { try { return a.conversationId ? journeyOf(a.conversationId) : null; } catch { return null; } })()), ...reprise.phototheque];
 
   // 2) Le site conçu est rangé ; chaque produit reçoit sa fiche ; le menu est calculé depuis les pages et le catalogue.
   await ctx.step("site:structure", async () => {

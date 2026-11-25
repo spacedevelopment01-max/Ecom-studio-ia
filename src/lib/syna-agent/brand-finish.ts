@@ -29,6 +29,8 @@ import { buildBrandKit } from "./brand-kit";
 import type { Route } from "./brand-routes";
 import { journeyOf, setStep, updateJourney, type Journey } from "./journey";
 import { chosenRoute, freeLogoFacts, saveBoardLogo, singleTerritory, type SinaLogo } from "./logos";
+import { plancheEnVraiActive, type EtatPlancheEnVrai } from "./planche-en-vrai";
+import { peopleAllowed } from "../people-policy";
 
 type Images = NonNullable<Route["board"]["images"]>;
 const has = (i: Images | undefined, s: ImageSlot): boolean =>
@@ -72,16 +74,29 @@ export const FinishPayload = z.object({ slots: z.array(z.enum(CREATED_SLOTS)).op
 
 export async function runBrandFinish(o: {
   ctx: JobContext; ai: ChainAi; projectId: string; userId: string; conversationId: string; brief: string; kind: "produits" | "services";
-  slots?: ImageSlot[]; guidance?: string;
+  slots?: ImageSlot[]; guidance?: string; /** La planche en vrai : ses produits imaginés refaits avec les photos du client. */ produitsEnVrai?: boolean;
 }) {
   const { ctx, ai } = o, who = { userId: o.userId, projectId: o.projectId };
   const j = journeyOf(o.conversationId), p = loadProject(o.projectId);
+  if (o.produitsEnVrai) {
+    const r0 = chosenRoute(j), ev = j.plancheEnVrai;
+    if (!r0 || !ev) throw new UserFacingError(L("Ta planche en vrai n'est pas encore faite : rien n'a été décompté.", "Your full-resolution board is not done yet. Nothing was charged."));
+    const T = await import("./planche-en-vrai-tache");
+    ctx.progress(0.1, L("Je refais tes produits avec tes photos", "Redoing your products with your photos"));
+    const enVraiAi = T.plancheEnVraiDeps.ai ? T.plancheEnVraiDeps.ai(ctx.job.id) : T.vraisAppelsEnVrai({ ...who, jobId: ctx.job.id });
+    const etat = await T.refaireLesProduitsEnVrai({ ctx, ai: enVraiAi, who, route: r0, etat: ev, personnes: peopleAllowed(o.projectId) });
+    updateJourney(o.conversationId, (x) => { x.plancheEnVrai = etat; if (x.brandFinish) x.brandFinish.issues = [...new Set([...(x.brandFinish.issues ?? []).filter((l) => !/image d'ambiance|mood image/.test(l)), ...etat.issues])]; });
+    return { finished: true, name: r0.name, created: [], issues: etat.issues, notes: etat.notes, kit: !!j.brandKit, images: etat.elements.filter((e) => e.id).length };
+  }
   const choisie = chosenRoute(j);
   if (!choisie || !p.brand || !j.identityChoice) throw new UserFacingError(L("Ton identité doit être choisie avant que je finisse ta marque. Rien n'a été décompté.", "Choose your identity first. Nothing was charged."));
   const route: Route = choisie;
   const round = j.identities?.round ?? 1, keptLogo = j.keep.includes("logo");
   const clientLogo = keptLogo ? await clientLogoOf(o.projectId) : null;
-  const slots = finishSlots(j, o.slots);
+  // LA PLANCHE EN VRAI (25 novembre 2026, réglage sina.planche.envrai) : un nouveau projet dont la planche de marque est
+  // choisie n'a plus d'images créées ici ni de symbole tiré du logo ; sa planche de démonstration est refaite en vrai.
+  const enVrai = plancheEnVraiActive() && !keptLogo && !!route.board.planche?.image;
+  const slots = enVrai ? [] : finishSlots(j, o.slots);
   // La direction artistique n'est réécrite que si ce que les images montrent change (couleurs, polices, nom, logo pris
   // ailleurs) ; une signature retouchée, un ton pris ailleurs ne la touchent pas (audit de la marque, 22 novembre 2026).
   const c = j.identityChoice, ailleurs = (part: string) => { const k = (c.mix as Record<string, string | undefined> | undefined)?.[part]; return !!k && k !== c.key; };
@@ -130,7 +145,7 @@ export async function runBrandFinish(o: {
   const brandNow = loadProject(o.projectId).brand, mainLogo = brandNow?.logo.assetId ? getAsset(brandNow.logo.assetId) : undefined;
   const symbolDone = (j.brandFinish as { symbolFor?: string } | undefined)?.symbolFor;
   let symbolFor = symbolDone;
-  if (!manqueLogo && brandNow && mainLogo && !mainLogo.deleted_at && symbolDone !== mainLogo.id && symbolDone !== `refus:${mainLogo.id}` && !(logos[0]?.kind === "planche")) {
+  if (!manqueLogo && brandNow && mainLogo && !mainLogo.deleted_at && symbolDone !== mainLogo.id && symbolDone !== `refus:${mainLogo.id}` && !(logos[0]?.kind === "planche") && !enVrai) {
     ctx.progress(0.85, L("Je tire le symbole de ton logo", "Deriving the symbol from your logo"));
     try {
       const made = await ctx.step(`brand:symbol:${round}:${mainLogo.id}`, async () => {
@@ -158,6 +173,25 @@ export async function runBrandFinish(o: {
   // Symbole déjà refusé pour ce logo : pas de nouvel essai tout seul, mais le refus reste dit au client.
   if (mainLogo && symbolDone === `refus:${mainLogo.id}`) issues.push(...(j.brandFinish?.issues ?? []).filter((l) => /symbole/i.test(l)));
 
+  // 2 ter. La planche en vrai : la planche choisie refaite à l'identique, ses logos, sa palette et ses polices.
+  let etatEnVrai: EtatPlancheEnVrai | null = null;
+  if (enVrai && !manqueLogo) {
+    const T = await import("./planche-en-vrai-tache");
+    const logoId = loadProject(o.projectId).brand?.logo.assetId;
+    // Le logo a changé après le choix : la démonstration est refaite d'abord (jamais deux logos différents).
+    if (T.logoChangeDepuisLaDemo(route, from)) issues.push(T.phraseDuLogoChange());
+    else if (logoId) {
+      const enVraiAi = T.plancheEnVraiDeps.ai ? T.plancheEnVraiDeps.ai(ctx.job.id) : T.vraisAppelsEnVrai({ ...who, jobId: ctx.job.id });
+      try {
+        etatEnVrai = await T.plancheEnVrai({ ctx, ai: enVraiAi, who, route: current, logoAssetId: logoId, personnes: peopleAllowed(o.projectId), phrase: loadProject(o.projectId).brand?.tagline?.trim() || current.slogan || "" });
+        issues.push(...etatEnVrai.issues); notes.push(...etatEnVrai.notes);
+      } catch (e) {
+        if (e instanceof CostCapReached) issues.push(L("Le plafond annoncé a été atteint avant la fin de ta planche en vrai : ce qui est fait est gardé, je la reprends là sans rien repayer.", "The announced cap was reached before your board was finished."));
+        else throw e;
+      }
+    }
+  }
+
   // 3. La charte complète (gratuite, rendue par le Studio). Le slogan choisi est validé : la planche et la charte l'écrivent.
   ctx.progress(0.9, L("Je prépare ta charte", "Preparing your brand guidelines"));
   const b = loadProject(o.projectId).brand;
@@ -173,6 +207,7 @@ export async function runBrandFinish(o: {
     x.brandFinish = { ...avant, prepaidMicro: 0, ...(images ? { images } : {}), at: Date.now(), issues: [...new Set(issues)], logoFrom: from, ...(symbolFor ? { symbolFor } : {}), ...(manqueLogo ? { manque: ["logo"] } : {}) } as Journey["brandFinish"];
     if (!keptLogo && logoChoice) { x.logos = { list: logos, at: Date.now(), round: (x.logos?.round ?? 0) + 1, notes: [] }; x.logoChoice = logoChoice; setStep(x, 2, "done"); }
     if (kit) { x.brandKit = kit; setStep(x, 3, "review"); } else setStep(x, 3, "todo");
+    if (etatEnVrai) x.plancheEnVrai = etatEnVrai;
     // Le logo manque : l'étape du logo n'est pas faite, la marque n'est pas montrée comme finie.
     if (manqueLogo) { x.brandKit = undefined; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "todo"); }
   });

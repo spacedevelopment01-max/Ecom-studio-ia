@@ -224,6 +224,111 @@ note sous 8 sans explication reste un refus), `phrase-de-l-esquisse-au-choix-du-
 
 **Son accord écrit, mot pour mot (25 novembre 2026) :** « Oui, marque relecteur-sans-refus-pour-trop-proche comme remplacée par ma décision du 25 novembre, ajoute et scelle relecteur-juge-l-execution-pas-l-idee (le relecteur du logo fini juge l'exécution, jamais l'idée que le client a choisie ; une raison comme « cliché du secteur » ne fait jamais refuser), et mets à jour la partie Logo de CLAUDE.md »
 
+## La reprise part du logo refusé (25 novembre)
+
+Préparé sans aucune dépense, sur une branche locale (`reprise-du-logo`), sans rien envoyer. Décision du chef
+d'orchestre ; le propriétaire n'a pas de mots propres sur ce point.
+
+**Ce qui s'est passé.** Essai réel du 25 novembre avec le nouveau relecteur (preuves :
+`docs/studio/essais-complets/images/racine/finalisation-execution`, branche `claude/essais-complets`, commit 06750e4).
+Le R bordeaux est gardé, à 8. La feuille sur le i est refusée deux fois, à 7, pour de vrais défauts d'exécution : le
+haut du i coupé en biais se lit comme un accent (« racíne »), et la feuille est trop haute et décalée. Le relecteur juge
+bien. Les raisons arrivaient bien au dessinateur, à la fin du texte. Le constat du chef d'orchestre : « il redessine les
+mêmes défauts, parce qu'on lui redonne l'esquisse, qui porte déjà ce i coupé ».
+
+**Ce qui change.**
+
+1. **L'image jointe.** À la reprise unique, le dessinateur reçoit le logo refusé du premier essai, et non plus
+   l'esquisse. Le relecteur de la reprise reçoit toujours l'esquisse, comme référence de l'idée. Même chose pour la
+   retouche des couleurs : sa reprise part de la retouche refusée, et le relecteur compare au logo d'origine.
+2. **Le texte.** Les corrections passent au début, toujours sous la même forme (`debutDeReprise`) :
+   « Corrige uniquement : {correction 1} ; {correction 2} ; garde tout le reste à l'identique. » Puis une ligne vide, puis
+   le texte de finalisation, tel qu'il était. Les corrections sont toutes les raisons du refus ; pour une note sous 8,
+   ce sont ses défauts d'exécution écrits, sans la phrase « il n'est pas au niveau » ; puis les petites finitions notées
+   au premier essai (voir plus bas). Pour la feuille sur le i, cela
+   donnerait : « Corrige uniquement : La feuille est trop haute et décalée vers la droite du « i » : on ne la lit plus
+   aussi bien comme le point de la lettre ; Le haut du « i » est coupé en biais et ressemble à un accent, ce qui peut
+   faire lire « racíne » ; garde tout le reste à l'identique. » Le texte d'un logo ne finit plus jamais par
+   « À corriger : … ». La planche de marque garde sa propre reprise.
+3. **Le reste ne bouge pas.** La reprise reste unique, à la charge du Studio. Refusé deux fois, le logo n'est pas gardé,
+   et SINA propose une autre esquisse.
+4. **Le script d'essai** écrit l'image jointe de chaque essai (`esquisse-NN-logo-T-image-jointe.png`).
+
+**Le prix d'une reprise.** Le prix réservé ne change pas : il compte toujours une image jointe. Le prix réel devrait
+rester presque le même : dans l'essai, l'image jointe comptait 1 024 jetons, soit moins d'un centime sur environ 0,06 €
+par logo fini ; le dessin rendu, qui fait l'essentiel du prix, ne change pas. Le logo refusé est plus grand que
+l'esquisse (1254 × 1254 contre 512 × 512) : il pourrait compter un peu plus de jetons. Pas vérifié : le premier vrai
+essai le dira (fichier « reçu » de la reprise).
+
+**Les épreuves** : voir plus bas, avec les petites finitions (même accord).
+
+## Les petites finitions ne font pas refuser (25 novembre au soir)
+
+Préparé dans la même construction, sans aucune dépense.
+
+**Ses mots.** Devant le second essai de la feuille sur le i (`esquisse-04-logo-2-brut.png`, même essai), que le
+relecteur avait refusé à 7, il a dit : « Le racine du milieu est très bien aussi ». Le relecteur est plus sévère que lui
+sur les petits défauts de finition.
+
+**Ce qui change.**
+
+1. **Deux sortes de défauts.** Le relecteur les sépare dans sa réponse. Les défauts graves (`defauts`) : une lettre
+   fausse, manquante ou illisible ; un nom qui se lit autrement de façon évidente ; une forme cassée ; un fond qui n'est
+   pas blanc uni. Les petites finitions (`finitions`) : ce qu'un client ne remarquerait pas comme une faute, par exemple
+   une feuille qui sert de point un peu haute ou décalée, une coupe en biais. Le code décide sans deviner.
+2. **La règle, sans ses mots.** La consigne dit qu'un petit défaut de finition, qu'un client ne remarquerait pas comme
+   une faute, est noté dans `finitions`, transmis comme correction si le logo est repris, et ne fait jamais descendre la
+   note sous 8. Ses mots nomment un client d'essai (« racine ») : CLAUDE.md interdit qu'un exemple d'un projet d'essai
+   parte à l'IA. Ils restent mot pour mot dans le verdict de l'épreuve, les commentaires du code et ce compte rendu, et
+   jamais dans une consigne ; la consigne ne donne pas non plus d'exemple tiré de l'essai.
+3. **Ce que fait le code.** Une note sous 8 ne compte que pour un défaut grave écrit (ou sans aucune explication). Un
+   logo qui n'a que des finitions est gardé ; ses finitions sont écrites au compte rendu. Elles deviennent des
+   corrections seulement s'il y a une reprise pour une autre raison, après les raisons du refus. Restent toujours des
+   refus : le nom mal écrit (comparé par le code), l'idée perdue, l'arche, la phrase inventée, le fond qui ne se retire
+   pas. Une note de 8 ou plus ne fait toujours pas refuser. Un verdict d'avant cette règle garde sa lecture : tous ses
+   défauts écrits comptent comme graves (sinon le code devinerait).
+
+**Le rejeu, honnête.** Le verdict réel du second essai est copié tel quel dans `tests/fixtures/relecteur-execution`. Il
+a l'ancienne forme : il ne sépare pas les finitions. Lu tel quel, il est refusé, comme ce jour-là. Ses deux reproches,
+mot pour mot : la feuille « encore décalée vers la droite du « i » » et le haut du i « toujours coupé en biais », qui
+« peut faire lire « racíne » ». Ce sont les deux exemples de finitions de la consigne. Aucun n'est un défaut grave : le
+relecteur a lu le nom exactement (« racine », comparé par le code), l'idée gardée, pas d'arche, fond uni ; « racíne »
+est un risque de lecture, pas un nom qui se lit autrement de façon évidente. Rangés en finitions, sans changer un mot ni
+la note, le verdict donne « gardé » ; la note de 7 n'est pas comptée, et le compte rendu le dit. Ce qui a été vérifié :
+le code. Ce qui ne l'a pas été : comment le vrai relecteur rangera ces défauts avec sa nouvelle consigne ; seul un
+essai réel le dira. Le R bordeaux, gardé à 8, reste gardé.
+
+Un test garantit qu'aucune consigne des relecteurs (logo fini, esquisses, planche) ne porte un nom de projet d'essai
+(Racine, Tenon, Poppy et les autres) ni un exemple tiré des essais (la feuille sur le i, le R bordeaux, une esquisse
+numérotée).
+
+**Les épreuves.** Deux épreuves nouvelles sont scellées : `reprise-du-logo-a-partir-du-refuse` (verdict : le constat du
+chef d'orchestre, mot pour mot, présenté comme le sien) et `relecteur-petites-finitions-sans-refus` (verdict : ses mots).
+Deux épreuves scellées sont contredites et marquées remplacées, sans être réécrites :
+
+| Épreuve d'avant | Ce qui est contredit | Remplacée par |
+|---|---|---|
+| logo-refait-une-fois-avec-ses-raisons | « avec toutes les raisons du refus à la fin du texte envoyé » | reprise-du-logo-a-partir-du-refuse |
+| relecteur-juge-l-execution-pas-l-idee | « une note sous 8 ne compte que pour un défaut d'exécution écrit » ; « un défaut d'exécution écrit fait toujours refuser » | relecteur-petites-finitions-sans-refus |
+
+Les attendus des nouvelles reprennent tout ce qui reste vrai des anciennes. Leur accord écrit manque encore : le banc ne
+l'accepte que pour elles deux. N'est pas contredite : `phrase-de-l-esquisse-au-choix-du-client` (« ce texte part tel
+quel …, l'esquisse jointe » décrit le premier essai, qui ne change pas ; la reprise y a toujours eu ses ajouts) ; son
+rejeu suit le nouveau texte.
+
+La même construction change aussi le relecteur de la planche de marque (voir `docs/studio/PLANCHE-DE-MARQUE.md`) :
+`planche-refusee-deux-fois-jamais-montree` y est marquée remplacée par
+`relecteur-de-planche-texte-lisible-et-promesses-mesurables`.
+
+**Son accord écrit, mot pour mot (25 novembre 2026) :** « Oui, marque logo-refait-une-fois-avec-ses-raisons,
+relecteur-juge-l-execution-pas-l-idee et planche-refusee-deux-fois-jamais-montree comme remplacées par mes décisions du
+25 novembre, ajoute et scelle reprise-du-logo-a-partir-du-refuse (à la reprise, le dessinateur reçoit le logo refusé et,
+au début du texte, les corrections précises ; tout le reste à l'identique), relecteur-petites-finitions-sans-refus (un
+petit défaut de finition est transmis comme correction mais ne fait pas refuser ; « Le racine du milieu est très bien
+aussi ») et relecteur-de-planche-texte-lisible-et-promesses-mesurables (les micro-textes décoratifs illisibles ne sont
+pas jugés et seules les promesses mesurables ou les garanties font refuser ; « C'est très bien »), et mets à jour les
+parties Logo et Identité de CLAUDE.md. »
+
 ## Le point 0 : tranché
 
 **La question :** « Le client choisit d'abord son nom, puis les logos : tu es d'accord ? » **Sa réponse :** « Oui »

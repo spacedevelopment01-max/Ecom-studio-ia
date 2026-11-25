@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { ESQUISSES_MIN, appliquerLaRelecture, nomExact, rechercheDesEsquisses, type RechercheDeps, type RelectureEsquisses } from "@/lib/syna-agent/esquisses";
-import { LIGNE_D_EVOLUTION, ligneDeLaPhrase, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, consigneDeFinalisation, demandeAuRelecteurDuLogo, controleDuTexte, finDeReprise, finaliserUneEsquisse, phrasesDe, raisonsDuRefus, type FinalisationDeps, type RelectureDuLogo } from "@/lib/syna-agent/logo-finalisation";
+import { LIGNE_D_EVOLUTION, ligneDeLaPhrase, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, consigneDeFinalisation, demandeAuRelecteurDuLogo, controleDuTexte, debutDeReprise, texteDeReprise, finaliserUneEsquisse, retoucherLesCouleurs, texteDeRetouche, phrasesDe, raisonsDuRefus, type FinalisationDeps, type RelectureDuLogo } from "@/lib/syna-agent/logo-finalisation";
 import { basculer, messageDuChoix } from "@/lib/syna-agent/choix-esquisses";
 import { couleursDuLogo, memePoliceDeTitres, paletteDesGroupes, remettreLesCouleursDuLogo } from "@/lib/syna-agent/couleurs-du-logo";
 import { contrast } from "@/lib/color";
@@ -208,16 +208,17 @@ describe("la relecture du logo fini : le nom, l'idée, l'arche, la phrase et la 
   });
 });
 
-describe("la finalisation entière : texte réécrit une fois, logo refait une fois avec ses raisons, refusé deux fois : pas gardé", () => {
+describe("la finalisation entière : texte réécrit une fois, logo refait une fois à partir du logo refusé, refusé deux fois : pas gardé", () => {
   const logo = (c: string) => sharp({ create: { width: 900, height: 400, channels: 3, background: "#FFFFFF" } }).composite([{ input: { create: { width: 500, height: 120, channels: 3, background: c } }, left: 200, top: 140 }]).png().toBuffer();
   const esquisse = () => sharp({ create: { width: 512, height: 512, channels: 3, background: "#FFFFFF" } }).composite([{ input: { create: { width: 300, height: 90, channels: 3, background: "#1F3D5B" } }, left: 106, top: 211 }]).png().toBuffer();
   function f(o: { textes: string[]; verdicts: RelectureDuLogo[] }) {
-    const vu = { rediger: [] as string[], finaliser: [] as string[], studio: [] as string[] };
+    const vu = { rediger: [] as string[], finaliser: [] as string[], studio: [] as string[], jointes: [] as Buffer[], dessines: [] as Buffer[], references: [] as Buffer[] };
     let enStudio = false;
+    const teintes = ["#1F3D5B", "#5B1F2E", "#2E5B1F"];
     const d: FinalisationDeps = {
       rediger: async (consigne) => { vu.rediger.push(consigne); if (enStudio) vu.studio.push("rediger"); return { idee_centrale: "un trait de lumière", texte: o.textes.shift()! }; },
-      finaliser: async (_e, texte) => { vu.finaliser.push(texte); if (enStudio) vu.studio.push("finaliser"); return logo("#1F3D5B"); },
-      relire: async () => o.verdicts.shift()!,
+      finaliser: async (jointe, texte) => { vu.finaliser.push(texte); vu.jointes.push(jointe); if (enStudio) vu.studio.push("finaliser"); const png = await logo(teintes[vu.dessines.length % teintes.length]); vu.dessines.push(png); return png; },
+      relire: async (_l, reference) => { vu.references.push(reference); return o.verdicts.shift()!; },
       detourer: async (png) => ({ ok: true, png }),
       aLaChargeDuStudio: async (fn) => { enStudio = true; try { return await fn(); } finally { enStudio = false; } },
     };
@@ -231,12 +232,47 @@ describe("la finalisation entière : texte réécrit une fois, logo refait une f
     expect(t.vu.studio).toEqual(["rediger"]);
     expect(t.vu.finaliser).toEqual([AVEC_EVOLUTION]);
   });
-  it("refusé une fois : refait UNE fois avec toutes les raisons à la fin du texte, à la charge du Studio", async () => {
+  it("refusé une fois : refait UNE fois, à la charge du Studio, les corrections au début du texte, puis le texte tel qu'il était", async () => {
     const t = f({ textes: [AVEC_EVOLUTION], verdicts: [{ ...bon, ideeConservee: false, note: 6 }, bon] });
     const r = await finaliserUneEsquisse(t.d, { nom: NOM, metier: METIER, esquisse: await esquisse() });
     expect(r.ok).toBe(true);
-    expect(t.vu.finaliser).toEqual([AVEC_EVOLUTION, `${AVEC_EVOLUTION} ${finDeReprise(["l'idée de l'esquisse est perdue", "il n'est pas au niveau (6/10, il faut 8)"])}`]);
-    expect(t.vu.finaliser[1]).toMatch(/À corriger : l'idée de l'esquisse est perdue ; il n'est pas au niveau \(6\/10, il faut 8\)\.$/);
+    expect(t.vu.finaliser).toEqual([AVEC_EVOLUTION, `Corrige uniquement : l'idée de l'esquisse est perdue ; il n'est pas au niveau (6/10, il faut 8) ; garde tout le reste à l'identique.\n\n${AVEC_EVOLUTION}`]);
+    expect(t.vu.finaliser[1]).toBe(texteDeReprise(["l'idée de l'esquisse est perdue", "il n'est pas au niveau (6/10, il faut 8)"], AVEC_EVOLUTION));
+    expect(t.vu.finaliser[1]).not.toMatch(/À corriger/);
+    expect(t.vu.finaliser[1].endsWith(AVEC_EVOLUTION)).toBe(true);
+    expect(t.vu.studio).toEqual(["finaliser"]);
+  });
+  it("la reprise : le dessinateur reçoit le logo refusé (plus l'esquisse), le relecteur toujours l'esquisse ; les corrections d'abord, puis le texte", async () => {
+    // Le constat de l'essai réel de Racine (25 novembre 2026) : la feuille sur le i refusée deux fois à 7 pour les mêmes défauts.
+    const defauts = ["La feuille est trop haute et décalée vers la droite du « i » : on ne la lit plus aussi bien comme le point de la lettre.", "Le haut du « i » est coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne »."];
+    const t = f({ textes: [AVEC_EVOLUTION], verdicts: [{ ...bon, note: 7, defauts }, bon] });
+    const esq = await esquisse();
+    const r = await finaliserUneEsquisse(t.d, { nom: NOM, metier: METIER, esquisse: esq });
+    expect(r.ok).toBe(true);
+    // L'image jointe : l'esquisse au premier essai, le logo refusé (le premier dessiné) à la reprise.
+    expect(t.vu.jointes).toHaveLength(2);
+    expect(t.vu.jointes[0].equals(esq)).toBe(true);
+    expect(t.vu.jointes[1].equals(t.vu.dessines[0])).toBe(true);
+    expect(t.vu.jointes[1].equals(esq)).toBe(false);
+    // Le relecteur des deux essais reçoit l'esquisse, référence de l'idée.
+    expect(t.vu.references.map((b) => b.equals(esq))).toEqual([true, true]);
+    // Le texte : les corrections précises d'abord (les défauts écrits, sans la phrase de la note), puis le texte tel qu'il était.
+    expect(debutDeReprise(r.essais[0].raisons)).toBe("Corrige uniquement : La feuille est trop haute et décalée vers la droite du « i » : on ne la lit plus aussi bien comme le point de la lettre ; Le haut du « i » est coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne » ; garde tout le reste à l'identique.");
+    expect(t.vu.finaliser[1]).toBe(`${debutDeReprise(r.essais[0].raisons)}\n\n${AVEC_EVOLUTION}`);
+    expect(t.vu.finaliser[1].indexOf("Corrige uniquement")).toBe(0);
+    expect(t.vu.finaliser[1]).not.toMatch(/À corriger|il n'est pas au niveau/);
+    expect(r.ok && r.texte).toBe(t.vu.finaliser[1]);
+    expect(t.vu.studio).toEqual(["finaliser"]);
+  });
+  it("la retouche des couleurs : sa reprise part de la retouche refusée, le relecteur compare au logo d'origine", async () => {
+    const t = f({ textes: [], verdicts: [{ ...bon, note: 6, defauts: ["le vert déborde sur le contour du R"] }, bon] });
+    const origine = await logo("#000000");
+    const r = await retoucherLesCouleurs(t.d, { nom: NOM, metier: METIER, logo: origine, demande: "en vert sapin" });
+    expect(r.ok).toBe(true);
+    expect(t.vu.jointes[0].equals(origine)).toBe(true);
+    expect(t.vu.jointes[1].equals(t.vu.dessines[0])).toBe(true);
+    expect(t.vu.references.map((b) => b.equals(origine))).toEqual([true, true]);
+    expect(t.vu.finaliser).toEqual([texteDeRetouche("en vert sapin"), `Corrige uniquement : le vert déborde sur le contour du R ; garde tout le reste à l'identique.\n\n${texteDeRetouche("en vert sapin")}`]);
     expect(t.vu.studio).toEqual(["finaliser"]);
   });
   it("refusé deux fois : l'identité n'est pas construite, jamais de troisième essai", async () => {
@@ -254,7 +290,8 @@ describe("la finalisation entière : texte réécrit une fois, logo refait une f
     t.d.detourer = async (png) => (n++ === 0 ? { ok: false, why: "son fond ne peut pas être retiré proprement (dégradé)" } : { ok: true, png });
     const r = await finaliserUneEsquisse(t.d, { nom: NOM, metier: METIER, esquisse: await esquisse() });
     expect(r.ok).toBe(true);
-    expect(t.vu.finaliser[1]).toMatch(/À corriger : son fond ne peut pas être retiré proprement \(dégradé\)\.$/);
+    expect(t.vu.finaliser[1]).toBe(`Corrige uniquement : son fond ne peut pas être retiré proprement (dégradé) ; garde tout le reste à l'identique.\n\n${AVEC_EVOLUTION}`);
+    expect(t.vu.jointes[1].equals(t.vu.dessines[0])).toBe(true);
   });
 });
 
@@ -316,5 +353,47 @@ describe("la variété, avec les couleurs du logo, ne touche que le fond de page
     expect(avec.changes.every((c) => /fond clair/.test(c))).toBe(true);
     const sans = varierIdentites([x], recent, { modifiables: ["A"] });
     expect(sans.changes.some((c) => /police de titres/.test(c))).toBe(true);
+  });
+});
+
+describe("les consignes des relecteurs ne portent aucun nom ni exemple d'un projet d'essai (CLAUDE.md)", () => {
+  // Les clients et projets d'essai connus (essais réels et anciens projets mis de côté) ; un nom de plus s'ajoute ici.
+  const PROJETS_D_ESSAI = ["Racine", "Tenon", "Poppy", "Reflet", "Pénombre", "Sillage", "Tintamarre", "Gorgée", "Fruit Nu", "Pulpe", "Zeste", "Pelage", "infusion", "tisane", "toilettage", "toiletteuse"];
+  const EXEMPLES_D_ESSAI = [/feuille sur le i/i, /R bordeaux/i, /esquisse[- ]0?\d+\b/i, /racíne/i, /Le racine du milieu/i];
+  it("relecteur du logo fini, relecteur des esquisses, relecteur de la planche : ni nom, ni exemple d'essai", async () => {
+    const F = await import("@/lib/syna-agent/logo-finalisation");
+    const E = await import("@/lib/syna-agent/esquisses");
+    const P = await import("@/lib/syna-agent/planche-de-marque");
+    const consignes: Record<string, string> = {
+      "relecteur du logo fini": F.RELECTEUR_DU_LOGO_FINI,
+      "demande au relecteur du logo": F.demandeAuRelecteurDuLogo({ nom: "Aplomb", metier: "une menuiserie", texte: "t" }),
+      "relecteur des esquisses": E.RELECTEUR_DES_ESQUISSES,
+      "relecteur de la planche": P.RELECTEUR_DE_LA_PLANCHE,
+      "demande au relecteur de la planche": P.demandeAuRelecteurDeLaPlanche({ nom: "Aplomb", annee: 2026, domaine: { domaine: "aplomb.fr", statut: "disponible" }, personnes: false, animaux: true, texte: "t" }),
+    };
+    for (const [qui, texte] of Object.entries(consignes)) {
+      for (const n of PROJETS_D_ESSAI) expect(texte.toLowerCase(), `${qui} : ${n}`).not.toContain(n.toLowerCase());
+      for (const x of EXEMPLES_D_ESSAI) expect(texte, `${qui} : ${x}`).not.toMatch(x);
+    }
+    // Les deux repères envoyés à l'IA sont la question et la réponse du propriétaire, mot pour mot, sans rien d'autre de l'essai.
+    expect(F.RELECTEUR_DU_LOGO_FINI).toContain(`à la question « ${F.QUESTION_DU_REPERE} », posée devant des logos finis propres et fidèles à leurs esquisses, le propriétaire du Studio a répondu : « ${F.REPONSE_DU_PROPRIETAIRE} » ;`);
+    expect(P.RELECTEUR_DE_LA_PLANCHE).toContain(`à la question « ${P.QUESTION_DU_REPERE_DE_PLANCHE} »`);
+    expect(P.RELECTEUR_DE_LA_PLANCHE).toContain(`a répondu : « ${P.REPONSE_DU_PROPRIETAIRE_PLANCHE} » ;`);
+    // Le second repère du logo nomme un client d'essai : il reste dans le code et le compte rendu, jamais dans la consigne.
+    expect(F.RELECTEUR_DU_LOGO_FINI).not.toContain(F.SECOND_REPERE_DU_PROPRIETAIRE);
+    expect(F.RELECTEUR_DU_LOGO_FINI).toContain("- finitions : la liste des petits défauts de finition, ceux qu'un client ne remarquerait pas comme une faute, un seul par ligne, en mots simples ; ils sont transmis comme corrections si le logo est repris, mais ne le font jamais refuser ;");
+    expect(F.RELECTEUR_DU_LOGO_FINI).toContain("Une petite finition ne fait jamais descendre la note sous 8");
+  });
+  it("la planche en vrai : la règle, les lignes des 17 images, l'inventaire et les relectures ne portent ni nom, ni exemple d'essai", async () => {
+    const V = await import("@/lib/syna-agent/planche-en-vrai");
+    const consignes: Record<string, string> = {
+      inventaire: V.INVENTAIRE_SYSTEM, "demande de l'inventaire": V.demandeDeLInventaire("Aplomb"), relecteur: V.RELECTEUR_EN_VRAI,
+      ...Object.fromEntries(V.GROUPES.map((g) => [`relecture ${g}`, V.demandeAuRelecteurEnVrai({ nom: "Aplomb", personnes: false, groupe: g, cases: [{ element: "produit-1", photo: true }] })])),
+      ...Object.fromEntries(V.NOMS_DES_ELEMENTS.map((n) => [n, V.texteDeLElement({ element: n, nom: "Aplomb", logo: true, photo: true, personnes: false, raisons: ["une raison"] })])),
+    };
+    for (const [qui, texte] of Object.entries(consignes)) {
+      for (const n of [...PROJETS_D_ESSAI, "pépinière", "plante", "pot"]) expect(texte.toLowerCase().split(/[^\p{L}]+/u), `${qui} : ${n}`).not.toContain(n.toLowerCase());
+      for (const x of EXEMPLES_D_ESSAI) expect(texte, `${qui} : ${x}`).not.toMatch(x);
+    }
   });
 });

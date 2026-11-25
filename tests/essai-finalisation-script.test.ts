@@ -1,7 +1,7 @@
 /**
  * Le script de l'essai réel de la finalisation de deux esquisses (scripts/syna-recette/essai-finalisation.mts), avec des
  * appels SIMULÉS : aucun appel payant. Chaque appel simulé passe par la réservation du Studio, comme les vrais, pour que le
- * garde-fou de l'essai le voie. Parcours sans refus, un logo refusé puis repris une fois avec toutes ses raisons, un logo
+ * garde-fou de l'essai le voie. Parcours sans refus, un logo refusé puis repris une fois à partir du logo refusé, les corrections au début du texte, un logo
  * refusé deux fois (pas de troisième essai), le garde-fou qui refuse un appel, aucune clé dans le code, le devis.
  */
 import fs from "node:fs";
@@ -18,7 +18,7 @@ const dessin = (teinte: string) => sharp({ create: { width: 512, height: 512, ch
 describe("le script de l'essai de la finalisation (appels simulés)", async () => {
   const billing = await import("@/lib/billing");
   const { withTrace } = await import("@/lib/ai/trace");
-  const { debutDuTexte, FIN_DU_TEXTE, finDeReprise } = await import("@/lib/syna-agent/logo-finalisation");
+  const { debutDuTexte, FIN_DU_TEXTE, texteDeReprise } = await import("@/lib/syna-agent/logo-finalisation");
   const { CLIENT, essaiDeFinalisation, metierDeLEssai, metierDuRapport, devisDeLEssai } = await import("../scripts/syna-recette/essai-finalisation-outil");
   const { devisDesFinalisations } = await import("@/lib/syna-agent/logo-graphistes");
   const { all } = await import("@/lib/db");
@@ -26,6 +26,8 @@ describe("le script de l'essai de la finalisation (appels simulés)", async () =
   const REDACTION = 20_000, LOGO = 120_000, RELECTURE = 40_000;
   const appels: string[] = [];
   const textesEnvoyes: string[] = [];
+  const jointes: Buffer[] = [];
+  const relues: Buffer[] = [];
   let verdicts: Record<string, { note: number; arche?: boolean; nomLu?: string }> = {};
   const paye = (q: { userId: string; jobId: string }, max: number, task: string) =>
     withTrace({ jobId: q.jobId }, async () => { const rid = billing.reserve(q.userId, max, { task, provider: "openai", model: "simule", jobId: q.jobId }); billing.settle(rid, Math.round(max / 2), null, task); });
@@ -35,9 +37,9 @@ describe("le script de l'essai de la finalisation (appels simulés)", async () =
     planche: async () => { appels.push("planche"); throw new Error("interdit"); },
     relireEsquisses: async () => { appels.push("relireEsquisses"); throw new Error("interdit"); },
     rediger: async (_c: string, _e: Buffer, cle: string) => { appels.push(cle); await paye(q, REDACTION, "quality_control"); return { idee_centrale: "la feuille qui forme le R", texte: bonTexte }; },
-    finaliser: async (_e: Buffer, texte: string, cle: string) => { appels.push(cle); textesEnvoyes.push(texte); await paye(q, LOGO, "image_generation"); return { png: await dessin("#3A7D44"), recu: { endpoint: "simulé", modele: "gpt-image-2.6-sunburst", texteEnvoye: texte, reglages: { quality: "high" }, requestId: `req-${cle}`, usage: { output_tokens: 1000 }, coutMicro: LOGO / 2, dureeMs: 1, renvoye: { quality: "high", size: "1024x1024", background: "opaque", output_format: "png" } } as never }; },
-    relireLogo: async (_l: Buffer, _e: Buffer, _d: string, cle: string) => {
-      appels.push(cle); await paye(q, RELECTURE, "quality_control");
+    finaliser: async (jointe: Buffer, texte: string, cle: string) => { appels.push(cle); textesEnvoyes.push(texte); jointes.push(jointe); await paye(q, LOGO, "image_generation"); return { png: await dessin("#3A7D44"), recu: { endpoint: "simulé", modele: "gpt-image-2.6-sunburst", texteEnvoye: texte, reglages: { quality: "high" }, requestId: `req-${cle}`, usage: { output_tokens: 1000 }, coutMicro: LOGO / 2, dureeMs: 1, renvoye: { quality: "high", size: "1024x1024", background: "opaque", output_format: "png" } } as never }; },
+    relireLogo: async (_l: Buffer, esquisse: Buffer, _d: string, cle: string) => {
+      appels.push(cle); relues.push(esquisse); await paye(q, RELECTURE, "quality_control");
       const v = verdicts[cle] ?? { note: 9 };
       return { nomLu: v.nomLu ?? CLIENT.nom, ideeConservee: true, arche: !!v.arche, phrase: "", phraseDitLeMetier: false, note: v.note, pourquoi: "simulé" };
     },
@@ -49,7 +51,7 @@ describe("le script de l'essai de la finalisation (appels simulés)", async () =
     fs.writeFileSync(a, await dessin("#E0703A")); fs.writeFileSync(b, await dessin("#7A4EB0"));
     return { sortie: path.join(dir, "sortie"), esquisses: [a, b] };
   };
-  afterEach(() => { appels.length = 0; textesEnvoyes.length = 0; verdicts = {}; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; });
+  afterEach(() => { appels.length = 0; textesEnvoyes.length = 0; jointes.length = 0; relues.length = 0; verdicts = {}; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; });
 
   it("sans refus : texte, logo, relecture pour chaque esquisse, rien d'autre ; tout est écrit", async () => {
     const { sortie, esquisses } = await preparer();
@@ -79,7 +81,7 @@ describe("le script de l'essai de la finalisation (appels simulés)", async () =
     expect(appels).not.toContain("metier");
   });
 
-  it("un logo refusé est repris une fois, avec toutes ses raisons, à la charge du Studio", async () => {
+  it("un logo refusé est repris une fois, à partir du logo refusé, les corrections au début du texte, à la charge du Studio", async () => {
     const { sortie, esquisses } = await preparer();
     verdicts = { "e4-relecture-1": { note: 6, arche: true } };
     const r = await essaiDeFinalisation({ sortie, plafondEuros: "2", esquisses, metier: METIER, ai: simule as never });
@@ -87,7 +89,18 @@ describe("le script de l'essai de la finalisation (appels simulés)", async () =
     expect(appels.filter((a) => a.startsWith("e4-"))).toEqual(["e4-texte-1", "e4-logo-1", "e4-relecture-1", "e4-logo-2", "e4-relecture-2"]);
     const raisons = r.logos[0].essais[0].raisons!;
     expect(raisons).toEqual(["le dessin est posé dans une arche", "il n'est pas au niveau (6/10, il faut 8)"]);
-    expect(textesEnvoyes[1]).toBe(`${bonTexte} ${finDeReprise(raisons)}`);
+    expect(textesEnvoyes[1]).toBe(texteDeReprise(raisons, bonTexte));
+    expect(textesEnvoyes[1]).toBe(`Corrige uniquement : le dessin est posé dans une arche ; il n'est pas au niveau (6/10, il faut 8) ; garde tout le reste à l'identique.\n\n${bonTexte}`);
+    // L'image jointe : l'esquisse au premier essai, le logo refusé à la reprise ; le relecteur reçoit toujours l'esquisse.
+    const esquisse = fs.readFileSync(esquisses[0]), refuse = fs.readFileSync(path.join(sortie, "esquisse-04-logo-1-brut.png"));
+    expect(jointes[0].equals(esquisse)).toBe(true);
+    expect(jointes[1].equals(refuse)).toBe(true);
+    expect(jointes[1].equals(esquisse)).toBe(false);
+    expect(relues.slice(0, 2).every((b) => b.equals(esquisse))).toBe(true);
+    // Le script écrit l'image jointe de chaque essai.
+    expect(fs.readFileSync(path.join(sortie, "esquisse-04-logo-1-image-jointe.png")).equals(esquisse)).toBe(true);
+    expect(fs.readFileSync(path.join(sortie, "esquisse-04-logo-2-image-jointe.png")).equals(refuse)).toBe(true);
+    expect(fs.readFileSync(path.join(sortie, "rapport.txt"), "utf8")).toContain("image jointe esquisse-04-logo-2-image-jointe.png");
     expect(r.logos[0].ok).toBe(true);
     expect(fs.existsSync(path.join(sortie, "esquisse-04-logo-1-brut.png"))).toBe(true); // le refusé est gardé
     expect(fs.existsSync(path.join(sortie, "esquisse-04-logo-2-brut.png"))).toBe(true);

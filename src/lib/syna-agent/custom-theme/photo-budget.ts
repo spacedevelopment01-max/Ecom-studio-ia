@@ -38,6 +38,8 @@ export function designPhotos(pages: { key: string; label?: string; sections: str
 }
 
 /** Ce qui est dit au concepteur et à celui qui le relit : le nombre de photos, et la règle de répartition. */
+/** La planche en vrai (25 novembre 2026) : ses photos sont déjà faites ; le site les lit sans rien refaire (comprises dans le budget). */
+export const lignePhotosDeLaPlanche = (n: number): string => (n > 0 ? `Dont ${n} photo${n > 1 ? "s" : ""} déjà faite${n > 1 ? "s" : ""} sur sa planche de marque (l'ouverture en bandeau et les images de son univers) : elles sont reprises telles quelles, jamais recréées ; donne à l'ouverture de l'accueil une pièce à grande photo en bandeau.` : "");
 export function photoBudgetBrief(budget: number, o: PhotoSite): string {
   const fiches = fichesDuSite(o);
   return [

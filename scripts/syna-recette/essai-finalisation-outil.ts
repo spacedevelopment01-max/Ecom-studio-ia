@@ -118,7 +118,8 @@ export function devisEnTexte(d: DevisDeLEssai): string[] {
 
 // ---------------------------------------------------------------- l'essai
 
-export type EssaiEcrit = { tour: number; texte?: string; brut?: string; detoure?: string; verdict?: RelectureDuLogo; raisons?: string[] };
+/** `jointe` : l'image jointe au dessinateur (l'esquisse au premier essai, le logo refusé à la reprise). */
+export type EssaiEcrit = { tour: number; texte?: string; jointe?: string; brut?: string; detoure?: string; verdict?: RelectureDuLogo; raisons?: string[] };
 export type LogoDeLEssai = { numero: number; fichier: string; ok?: boolean; raison?: string; essais: EssaiEcrit[]; notes: string[]; palette?: unknown };
 export type LigneDeDepense = { cle: string | null; task: string | null; modele: string | null; studio: boolean; reserveMicro: number; reelMicro: number | null; statut: string; appel?: Record<string, unknown> };
 export type ResultatDeLaFinalisation = { arret?: string; metier: string; logos: LogoDeLEssai[]; depenseMicro: number; appels: LigneDeDepense[]; devis: DevisDeLEssai };
@@ -188,11 +189,13 @@ export async function essaiDeFinalisation(o: {
       ecrireFichier(`esquisse-${nn(numero)}-redaction-${tour}-reponse.json`, json(t));
       return t;
     },
-    finaliser: async (esquisse, texte, cle) => {
+    finaliser: async (jointe, texte, cle) => {
       const { numero, tour } = cleDe(cle);
       const e = essaiDe(numero, tour);
       e.texte = ecrireFichier(`esquisse-${nn(numero)}-logo-${tour}-texte-envoye.txt`, `${texte}\n`);
-      const r = await brut.finaliser(esquisse, texte, cle);
+      // L'image jointe telle qu'elle part : l'esquisse au premier essai, le logo refusé à la reprise.
+      e.jointe = ecrireFichier(`esquisse-${nn(numero)}-logo-${tour}-image-jointe.png`, jointe);
+      const r = await brut.finaliser(jointe, texte, cle);
       e.brut = ecrireFichier(`esquisse-${nn(numero)}-logo-${tour}-brut.png`, r.png);
       if (r.recu) ecrireFichier(`esquisse-${nn(numero)}-logo-${tour}-recu.json`, json(r.recu));
       return r;
@@ -237,8 +240,8 @@ export async function essaiDeFinalisation(o: {
     for (const l of res.logos) {
       lignes.push("", `Esquisse ${l.numero} : ${l.ok === true ? "logo GARDÉ par le relecteur" : l.ok === false ? `logo NON gardé (${l.raison})` : "non terminée"}`);
       for (const e of l.essais) {
-        lignes.push(`  essai ${e.tour} : texte ${e.texte ?? "—"} ; logo brut ${e.brut ?? "—"} ; détouré ${e.detoure ?? "—"}`);
-        if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », idée conservée ${e.verdict.ideeConservee ? "oui" : "non"}, arche ${e.verdict.arche ? "oui" : "non"}${e.verdict.phrase ? `, phrase « ${e.verdict.phrase} »` : ""}, défauts d'exécution ${e.verdict.defauts?.length ? `« ${e.verdict.defauts.join(" ; ")} »` : "aucun"} — ${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`);
+        lignes.push(`  essai ${e.tour} : texte ${e.texte ?? "—"} ; image jointe ${e.jointe ?? "—"} ; logo brut ${e.brut ?? "—"} ; détouré ${e.detoure ?? "—"}`);
+        if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », idée conservée ${e.verdict.ideeConservee ? "oui" : "non"}, arche ${e.verdict.arche ? "oui" : "non"}${e.verdict.phrase ? `, phrase « ${e.verdict.phrase} »` : ""}, défauts graves ${e.verdict.defauts?.length ? `« ${e.verdict.defauts.join(" ; ")} »` : "aucun"}, petites finitions ${e.verdict.finitions?.length ? `« ${e.verdict.finitions.join(" ; ")} »` : "aucune"} —${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`);
         else if (e.raisons?.length) lignes.push(`    refusé sans relecture : ${e.raisons.join(" ; ")}`);
       }
       for (const n of l.notes) lignes.push(`  note : ${n}`);

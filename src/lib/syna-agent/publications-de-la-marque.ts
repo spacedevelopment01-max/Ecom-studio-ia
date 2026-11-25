@@ -57,6 +57,10 @@ function formatDeLaMethode(assetId: string): string | null {
 
 /** Les publications de la planche de la marque finie qui ont leur image relue, dans l'ordre de la planche. */
 export function publicationsDeLaMarque(j: Journey): { index: number; text: string; assetId: string }[] {
+  // La planche en vrai (25 novembre 2026) : ses trois publications refaites deviennent les premières du calendrier ; une
+  // publication que l'inventaire juge incompréhensible pour un inconnu reste sur la planche, jamais au calendrier.
+  const ev = j.plancheEnVrai?.publications;
+  if (ev?.length) return ev.map((p, index) => ({ index, text: p.texte.trim(), assetId: p.comprehensible ? p.id : "" })).filter((p) => p.text && p.assetId);
   const x = chosenRoute(j);
   if (!x) return [];
   const images = x.board.images?.posts ?? [];

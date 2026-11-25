@@ -4,19 +4,87 @@
  * un changement ; aucune création n'y est lancée ni payée (tout passe par SINA, qui annonce le prix avant).
  */
 import { useEffect, useState } from "react";
-import { Download, MessageCircle } from "lucide-react";
+import { Copy, Download, MessageCircle } from "lucide-react";
 import { api, Button, Card, Empty, Textarea, useApi } from "../ui";
 import { useProject } from "./project-context";
 import { SectionTitle } from "./common";
 import { useT } from "../i18n";
 import { useAgentPanel } from "./agent-ui-context";
-import type { BrandSheet } from "@/lib/syna-agent/brand-sheet";
+import type { BrandSheet, VueEnVrai } from "@/lib/syna-agent/brand-sheet";
 import { EsquissesCards } from "./syna-thread";
 
 const ROLE: Record<string, { fr: string; en: string }> = {
   light: { fr: "Fond", en: "Background" }, dark: { fr: "Texte", en: "Text" }, primary: { fr: "Bouton", en: "Button" },
   secondary: { fr: "Surface", en: "Surface" }, accent: { fr: "Accent", en: "Accent" },
 };
+/** Le bouton « Copier » d'un code (couleur, nom de police) : le texte part dans le presse-papiers, tel quel. */
+export function BoutonCopier({ texte }: { texte: string }) {
+  const t = useT();
+  const [fait, setFait] = useState(false);
+  return <button type="button" className="inline-flex h-auto min-h-7 items-center gap-1 whitespace-normal rounded-full border border-line px-2.5 py-1 text-xs" data-copier={texte}
+    onClick={() => { void navigator.clipboard?.writeText(texte).then(() => { setFait(true); setTimeout(() => setFait(false), 1500); }).catch(() => undefined); }}>
+    <Copy className="size-3.5" />{fait ? t("Copié", "Copied") : t("Copier", "Copy")}
+  </button>;
+}
+
+/**
+ * La planche en vrai dans l'onglet Marque (25 novembre 2026) : la planche entière, « Tout télécharger », les dix versions
+ * du logo en PNG haute définition, chaque couleur avec son code et « Copier », les deux polices (nom à copier, fichier),
+ * chaque image en haute définition, téléchargeable seule.
+ */
+export function PlancheEnVrai({ v }: { v: VueEnVrai }) {
+  const t = useT();
+  const faces = v.polices.filter((f) => /^[\w .-]+$/.test(f.famille) && /^[\w.-]+$/.test(f.fichier));
+  const css = faces.map((f) => `@font-face{font-family:"SINA ${f.famille}";src:url(${f.url}) format("truetype");font-display:swap}`).join("");
+  return <section className="space-y-6" data-brand-envrai>
+    <style>{css}</style>
+    <SectionTitle title={t("Ta planche de marque, en vrai", "Your brand board, full resolution")} action={<a href={v.zip} className="inline-flex h-auto min-h-9 items-center gap-1.5 whitespace-normal rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper" data-brand-zip><Download className="size-4" />{t("Tout télécharger", "Download everything")}</a>} />
+    {v.planche && <figure className="overflow-hidden rounded-2xl border border-line bg-card" data-brand-envrai-planche>
+      <a href={v.planche.url} target="_blank" rel="noreferrer" className="block cursor-zoom-in"><img src={v.planche.url} width={v.planche.w} height={v.planche.h} alt={t("Ta planche de marque en vrai", "Your full-resolution brand board")} className="block h-auto w-full" loading="lazy" /></a>
+      <figcaption className="flex flex-wrap gap-3 border-t border-line px-3 py-2 text-xs"><a href={v.planche.url} target="_blank" rel="noreferrer" className="underline">{t("Ouvrir en grand", "Open full size")}</a><a href={v.planche.download} className="inline-flex items-center gap-1 underline"><Download className="size-3.5" />{t("Télécharger", "Download")}</a></figcaption>
+    </figure>}
+    {!!v.sansFichier.length && <p className="text-xs text-muted">{t("Sans fichier en haute définition pour l'instant (l'aperçu de ta planche choisie garde leur case) :", "No high-definition file yet (the preview keeps their slot):")} {v.sansFichier.join(", ")}.</p>}
+    <div>
+      <SectionTitle title={t("Tes logos", "Your logos")}>{t("En PNG haute définition, sur fond transparent.", "High-definition PNG, transparent background.")}</SectionTitle>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5" data-brand-envrai-logos>
+        {v.logos.map((l) => <figure key={l.version} className="overflow-hidden rounded-2xl border border-line">
+          <div className="flex h-28 items-center justify-center bg-[repeating-conic-gradient(#f1f1f1_0%_25%,#ffffff_0%_50%)] bg-[length:16px_16px] p-3"><img src={l.url} alt={l.label} className="max-h-full max-w-full object-contain" loading="lazy" /></div>
+          <figcaption className="flex items-center justify-between gap-2 border-t border-line bg-card px-3 py-2 text-xs"><span>{l.label}</span><a href={l.download} className="underline" aria-label={`${t("Télécharger", "Download")} : ${l.label}`}><Download className="size-3.5" /></a></figcaption>
+        </figure>)}
+      </div>
+    </div>
+    {!!v.couleurs.length && <div>
+      <SectionTitle title={t("Tes couleurs", "Your colours")}>{t("Mesurées sur ta planche choisie : copie chaque code tel quel.", "Measured on your chosen board: copy each code as is.")}</SectionTitle>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5" data-brand-envrai-couleurs>
+        {v.couleurs.map((c) => <div key={c.hex} className="overflow-hidden rounded-2xl border border-line">
+          <div className="h-20" style={{ background: c.hex }} />
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-card px-3 py-2 text-xs"><span><b>{c.nom}</b> <span className="font-mono">{c.hex}</span></span><BoutonCopier texte={c.hex} /></div>
+        </div>)}
+      </div>
+    </div>}
+    {!!v.polices.length && <div>
+      <SectionTitle title={t("Tes polices", "Your fonts")} />
+      <div className="grid gap-3 sm:grid-cols-2" data-brand-envrai-polices>
+        {v.polices.map((f) => <Card key={f.role} className="space-y-2 p-5">
+          <p className="text-xs text-muted">{f.role === "titres" ? t("Pour tes titres", "For your headings") : t("Pour tes textes", "For your texts")}</p>
+          <p className="text-3xl leading-tight [overflow-wrap:anywhere]" style={{ fontFamily: `"SINA ${f.famille}"` }}>{f.famille}</p>
+          {f.remplacee && f.lue && <p className="text-xs text-muted">{t(`La plus proche de « ${f.lue} », qui n'est pas dans le catalogue du Studio.`, `The closest to “${f.lue}”, which is not in the Studio catalogue.`)}</p>}
+          <div className="flex flex-wrap items-center gap-3"><BoutonCopier texte={f.famille} /><a href={f.url} download={f.fichier} className="inline-flex items-center gap-1 text-xs underline"><Download className="size-3.5" />{t("Le fichier de la police", "The font file")}</a></div>
+        </Card>)}
+      </div>
+    </div>}
+    {!!v.images.length && <div>
+      <SectionTitle title={t("Tes images en haute définition", "Your high-definition images")} />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4" data-brand-envrai-images>
+        {v.images.map((x) => <figure key={x.element} className="overflow-hidden rounded-2xl border border-line">
+          <a href={x.url} target="_blank" rel="noreferrer" className="block"><img src={x.url} alt={x.label} className="aspect-square h-auto w-full object-cover" loading="lazy" /></a>
+          <figcaption className="flex items-center justify-between gap-2 border-t border-line bg-card px-3 py-2 text-xs"><span>{x.label}</span><a href={x.download} className="underline" aria-label={`${t("Télécharger", "Download")} : ${x.label}`}><Download className="size-3.5" /></a></figcaption>
+        </figure>)}
+      </div>
+    </div>}
+  </section>;
+}
+
 /** Couleur de texte lisible sur une couleur de fond (clair ou foncé). */
 function inkOn(hex: string): string {
   const n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
@@ -105,7 +173,7 @@ export default function TabMarque() {
         </div>
       </section>
 
-      {planches}
+      {s.enVrai ? <PlancheEnVrai v={s.enVrai} /> : planches}
 
       {!!s.issues.length && <Card className="border-amber-400 p-4 text-sm" data-brand-issues><p className="font-semibold">{t("Ce que SINA n'a pas pu réussir", "What SINA could not get right")}</p><ul className="mt-1 list-disc pl-5">{s.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></Card>}
 
