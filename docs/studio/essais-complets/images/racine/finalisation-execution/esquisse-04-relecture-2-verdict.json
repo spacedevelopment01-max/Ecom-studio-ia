@@ -1,0 +1,19 @@
+{
+  "verdict": {
+    "nomLu": "racine",
+    "ideeConservee": true,
+    "arche": false,
+    "phrase": "PÉPINIÈRE EN LIGNE",
+    "phraseDitLeMetier": true,
+    "defauts": [
+      "La feuille est encore décalée vers la droite du « i » : elle se lit moins bien comme le point de la lettre.",
+      "Le haut du « i » est toujours coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne »."
+    ],
+    "note": 7,
+    "pourquoi": "Le nom, la ligne descriptive, les couleurs et le fond blanc uni sont justes, et la feuille qui sert de point sur le « i » est bien gardée. En revanche, les deux défauts déjà signalés sont toujours visibles : la feuille est mal centrée sur le « i » et le haut de la lettre, coupé en biais, ressemble à un accent."
+  },
+  "raisons": [
+    "il n'est pas au niveau (7/10, il faut 8) : La feuille est encore décalée vers la droite du « i » : elle se lit moins bien comme le point de la lettre. ; Le haut du « i » est toujours coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne »."
+  ],
+  "garde": false
+}

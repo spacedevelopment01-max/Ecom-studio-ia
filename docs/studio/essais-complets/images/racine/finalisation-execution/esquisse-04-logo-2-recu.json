@@ -1,0 +1,35 @@
+{
+  "endpoint": "POST /v1/images/edits (multipart, image[])",
+  "modele": "gpt-image-2.6-sunburst",
+  "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Racine, une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres. Conserve l’idée qui distingue le signe : la feuille inclinée qui tient lieu de point sur le « i » de « racine ». Fais évoluer cette idée vers une identité plus aboutie et plus distinctive, au-delà d’une simple mise au propre ou d’un agrandissement. Redessine les minuscules en gardant leur rondeur : affine les courbes, donne aux terminaisons un dessin plus personnel et ajuste les proportions ainsi que l’espacement entre les lettres pour renforcer la présence du nom sans nuire à sa lisibilité. Réduis la feuille à une silhouette graphique sans détail illustratif et règle sa taille et sa position pour équilibrer l’ensemble. Choisis un vert forêt profond pour le nom et un vert feuillage légèrement plus clair pour la feuille. Conserve pour seule ligne descriptive « PÉPINIÈRE EN LIGNE », centrée sous le nom, en petites capitales discrètes et lisibles. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif À corriger : il n'est pas au niveau (7/10, il faut 8) : La feuille est trop haute et décalée vers la droite du « i » : on ne la lit plus aussi bien comme le point de la lettre. ; Le haut du « i » est coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne »..",
+  "reglages": {
+    "model": "gpt-image-2.6-sunburst",
+    "quality": "high",
+    "size": "auto",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "requestId": "req_f8e1d75ba3984792b3f5f39ebda274a8",
+  "usage": {
+    "input_tokens": 1385,
+    "input_tokens_details": {
+      "image_tokens": 1024,
+      "text_tokens": 361
+    },
+    "output_tokens": 2058,
+    "output_tokens_details": {
+      "image_tokens": 2058,
+      "text_tokens": 0
+    },
+    "total_tokens": 3443
+  },
+  "coutMicro": 61694,
+  "dureeMs": 32396,
+  "renvoye": {
+    "quality": "high",
+    "size": "1254x1254",
+    "background": "opaque",
+    "output_format": "png"
+  }
+}

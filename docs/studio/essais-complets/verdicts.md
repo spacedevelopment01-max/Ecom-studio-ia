@@ -43,6 +43,9 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 25/11 | Racine | Logo fini de l'esquisse 4, reprise à la charge du Studio | 7/10 : « L'idée de la feuille sur le i reste toutefois un cliché très répandu, et la feuille, un peu détachée du fût, n'apporte pas encore assez de singularité » | Non | « Oui très bien je mettrais 9/10 » (dit au chef d'orchestre, rapporté par lui le 25/11) |
 | 25/11 | Racine | Logo fini du R bordeaux, 1er essai | 7/10 : « Le signe reste toutefois massif et un peu brut : les jonctions entre la tige et le fût laissent des formes de blanc maladroites » | Non | « Oui très bien je mettrais 9/10 » (dit au chef d'orchestre, rapporté par lui le 25/11) |
 | 25/11 | Racine | Logo fini du R bordeaux, reprise à la charge du Studio | 7/10 : « La jambe du monogramme reste lourde et molle, la fine tige risque de disparaître en petit, et le crochet du R de RACINE paraît un peu forcé » | Non | « Oui très bien je mettrais 9/10 » (dit au chef d'orchestre, rapporté par lui le 25/11) |
+| 25/11 | Racine | Logo fini de l'esquisse 4, nouveau relecteur (exécution seule), 1er essai | 7/10 : « La feuille est trop haute et décalée vers la droite du « i » ; le haut du « i » est coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne » » | Non | [en attente] |
+| 25/11 | Racine | Logo fini de l'esquisse 4, nouveau relecteur, reprise à la charge du Studio | 7/10 : « les deux défauts déjà signalés sont toujours visibles : la feuille est mal centrée sur le « i » et le haut de la lettre, coupé en biais, ressemble à un accent » | Non | [en attente] |
+| 25/11 | Racine | Logo fini du R bordeaux, nouveau relecteur, 1er essai | 8/10 : « Le logo est propre et fidèle à l'esquisse … Seule la nervure très fine et son raccord en bas de la feuille pourraient se perdre en petit » | Oui | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 

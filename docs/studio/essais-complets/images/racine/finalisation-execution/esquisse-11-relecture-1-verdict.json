@@ -1,0 +1,17 @@
+{
+  "verdict": {
+    "nomLu": "RACINE",
+    "ideeConservee": true,
+    "arche": false,
+    "phrase": "",
+    "phraseDitLeMetier": true,
+    "defauts": [
+      "La nervure de la feuille est un trait très fin qui risque de disparaître quand le logo est affiché en petit.",
+      "En bas de la feuille, la nervure laisse deux pointes blanches très fines contre le fût du R, ce qui rend ce raccord un peu fragile en petit."
+    ],
+    "note": 8,
+    "pourquoi": "Le logo est propre et fidèle à l'esquisse : feuille découpée dans le R, jambe en forme de feuille, nom RACINE bien dessiné sur un fond blanc uni. Seule la nervure très fine et son raccord en bas de la feuille pourraient se perdre en petit."
+  },
+  "raisons": [],
+  "garde": true
+}
