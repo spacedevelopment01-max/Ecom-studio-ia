@@ -195,3 +195,18 @@ Toujours vérifier la liste des modèles (GET /v1/models) avant de choisir : une
 35 répliques d'un coup en v4 : phrases répétées, désordre, une réplique perdue (50 c perdus).
 Règle : dialogue en morceaux de 7 répliques au plus, chaque morceau contrôlé (`outils/controle.py`) avant le montage.
 Montage du sketch papa en v4 : `sketch-papa/v4/bornes.py` (bornes dans les vrais silences) puis `monte.py`.
+
+## Méthode pour que les gens restent (25 novembre 2026, à appliquer à chaque vidéo)
+Écriture :
+1. Première phrase = le fait le plus fou, avec le lieu, l'époque et le problème. Aucune introduction.
+2. Avant 5 s, une promesse précise gardée pour la fin (« et ce que le bourreau a demandé après est encore pire »). Toujours la tenir.
+3. Toutes les 10 à 15 s, une relance : on répond à une question et on en ouvre une nouvelle.
+4. Le plus gros rebondissement vers le milieu (30 à 40 s), là où l'attention baisse.
+5. Fin sèche, sans « abonne-toi » ; la dernière phrase renvoie à la première pour que la vidéo boucle (TikTok compte le revisionnage, pas YouTube).
+6. Entre 61 et 75 s ; chaque phrase apporte une info ou un rire, sinon elle saute.
+Montage :
+7. Une nouveauté à l'écran toutes les 2 à 4 s (changement de plan, zoom, objet qui surgit) ; plus de plans de 6 à 8 s fixes.
+8. Première image = l'image la plus folle de l'histoire, sans fondu d'entrée.
+9. Un bruitage sur chaque chute ; sous-titres mot par mot (déjà fait).
+Mesure : relever la courbe de rétention de chaque vidéo (TikTok Studio) et noter où les gens partent. Les chiffres trouvés en ligne
+(blogs de créateurs) ne sont pas fiables ; seules nos courbes comptent.
