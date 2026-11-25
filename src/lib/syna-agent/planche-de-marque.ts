@@ -37,12 +37,14 @@ export const DISPOSITION = { fichier: "disposition.png", sha256: "b4e2e0438d9467
 /** Le texte de base des preuves (prompt-disposition.txt), mot pour mot. */
 export const TEXTE_DE_BASE = { fichier: "texte-de-base.txt", sha256: "c513497fb4a90e0d99e066c819c89f2891d8202f85619421f3d4a8532d50d543" } as const;
 /**
- * LA DISPOSITION DES MÉTIERS DES ANIMAUX : un EMPLACEMENT VIDE. La disposition standard montre une marque d'accessoires pour
- * chiens : pour un métier proche des animaux, le risque de copie est réel. Aucune image n'est rangée ici sans la validation
- * du propriétaire. Tant que l'emplacement est vide, ce métier prend la disposition standard, et le relecteur reçoit en plus
- * la consigne de refuser toute copie (`metierDesAnimaux`).
+ * LA DISPOSITION DES MÉTIERS DES ANIMAUX. La disposition standard montre une marque d'accessoires pour chiens : pour un
+ * métier proche des animaux, OpenAI en recopiait les produits, les photos et l'emballage (essai réel). Ces métiers prennent
+ * donc la planche de Racine (mêmes blocs aux mêmes places, une boutique, aucun animal), validée par le propriétaire le
+ * 25 novembre 2026 : « Oui », à « Tu valides la planche de Racine comme modèle pour les marques d'animaux ? » (relayé mot
+ * pour mot par le chef d'orchestre ; fichier : docs/studio/essais-logos-api/planche-racine-xhigh/planche-racine-xhigh.png,
+ * branche du chef d'orchestre). Le relecteur refuse toujours toute copie de la disposition.
  */
-export const DISPOSITION_DES_ANIMAUX: { fichier: string; sha256: string } | null = null;
+export const DISPOSITION_DES_ANIMAUX: { fichier: string; sha256: string } | null = { fichier: "disposition-animaux.png", sha256: "d183d5f879c4946c8c169c67fc10f52219e70c90c6c01c3421fe1a77c44926ff" };
 
 const sha = (b: Buffer | string) => crypto.createHash("sha256").update(b).digest("hex");
 const lireFixe = (f: { fichier: string; sha256: string }): Buffer => {

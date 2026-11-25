@@ -60,8 +60,13 @@ describe("les fichiers fixes et le texte des preuves", async () => {
     const t = fs.readFileSync(`assets/planche-de-marque/${P.TEXTE_DE_BASE.fichier}`);
     expect(sha(t)).toBe(P.TEXTE_DE_BASE.sha256);
     expect(P.texteDeBase()).toBe(t.toString("utf8"));
-    // L'emplacement des métiers des animaux reste vide tant que le propriétaire ne l'a pas validé.
-    expect(P.DISPOSITION_DES_ANIMAUX).toBeNull();
+    // Les métiers des animaux : la planche de Racine, validée par le propriétaire le 25 novembre 2026 (« Oui »), rangée telle
+    // quelle (empreinte vérifiée, même taille que la disposition standard).
+    expect(P.DISPOSITION_DES_ANIMAUX).not.toBeNull();
+    const a = fs.readFileSync(`assets/planche-de-marque/${P.DISPOSITION_DES_ANIMAUX!.fichier}`);
+    expect(sha(a)).toBe(P.DISPOSITION_DES_ANIMAUX!.sha256);
+    const ma = await sharp(a).metadata();
+    expect([ma.width, ma.height]).toEqual([1536, 2304]);
   });
   it("refait EXACTEMENT les prompt.txt de Tenon et de Racine à partir de leurs valeurs (le reste mot pour mot)", () => {
     expect(P.texteDesPreuves("Tenon", TENON)).toBe(fs.readFileSync(`${F}/tenon-prompt.txt`, "utf8"));
@@ -340,13 +345,16 @@ describe("la tâche : points de reprise, planche refusée deux fois jamais montr
       expect(r.route.board.planche!.image).toBeUndefined();
     } finally { T.plancheDeps.domaines = async () => ({ taken: [], free: ["aplomb.fr"], unknown: [], at: 1 }); }
   });
-  it("les métiers des animaux : la disposition standard tant que leur emplacement est vide", () => {
+  it("les métiers des animaux : la planche de Racine, jamais la disposition standard ; les autres métiers : la standard", () => {
     expect(P.metierDesAnimaux("une boutique d'accessoires pour chiens : harnais, laisses et colliers")).toBe(true);
     expect(P.metierDesAnimaux("un salon de toilettage")).toBe(true);
     expect(P.metierDesAnimaux("une entreprise de menuiserie")).toBe(false);
     const d = P.laDisposition("un salon de toilettage pour chiens");
-    expect(d).toMatchObject({ laquelle: "standard", animaux: true });
-    expect(sha(d.png)).toBe(P.DISPOSITION.sha256);
+    expect(d).toMatchObject({ laquelle: "animaux", animaux: true });
+    expect(sha(d.png)).toBe(P.DISPOSITION_DES_ANIMAUX!.sha256);
+    const m = P.laDisposition("une entreprise de menuiserie");
+    expect(m).toMatchObject({ laquelle: "standard", animaux: false });
+    expect(sha(m.png)).toBe(P.DISPOSITION.sha256);
   });
   it("le devis : une planche par logo choisi (2, 3, 4) ; la borne du Studio compte une reprise par planche et une réécriture des valeurs", async () => {
     const { borneDuStudio } = await import("@/lib/ai/borne-du-studio");

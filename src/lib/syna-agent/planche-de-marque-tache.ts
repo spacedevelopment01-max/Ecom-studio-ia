@@ -145,7 +145,7 @@ export async function plancheDeLaRoute(o: {
       },
       relire: (bandes, lg, disp, demande, tour) => ctx.step(`brand:planche:relecture:${o.round}:${key}:${tour}${pass}`, () => ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`)),
       aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-    }, { nom: x.name, annee, domaine: dom, personnes: o.personnes, animaux: disposition.animaux, valeurs, logo, disposition: disposition.png });
+    }, { nom: x.name, annee, domaine: dom, personnes: o.personnes, animaux: disposition.animaux && disposition.laquelle === "standard", valeurs, logo, disposition: disposition.png });
     const dernier = r.essais.at(-1)!;
     for (const e of r.essais) if (e.raisons.length) notes.push(`planche ${key}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
     if (!r.ok) {
