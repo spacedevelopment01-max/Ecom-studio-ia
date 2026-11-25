@@ -106,3 +106,14 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
 - Voix fournie par le propriétaire, calée gratuitement. 1 min 15, 19 plans. Nom « Pepsi » écrit, sans le vrai logo.
 - Sources : Wikipédia (Leonard v. PepsiCo), Netflix Tudum, CBS News, Mental Floss, The Hustle, Snopes.
 - Texte suivant prêt : Kodak et l'appareil photo numérique (dans la conversation du 25 novembre).
+
+## Sketch « Quand tu dois épeler ton nom au téléphone » (25 novembre 2026)
+
+- Nouveau format demandé par le propriétaire, inspiré d'une vidéo Facebook (même principe : chaque lettre devient une
+  phrase de la vie du client, l'autre répond sans broncher, la phrase la plus folle revient à la fin), avec nos
+  propres répliques. Voix enregistrées par le propriétaire (deux voix d'homme).
+- Son retravaillé gratuitement : silence du début coupé, blancs resserrés, volume égalisé, souffle retiré, effet
+  téléphone sur le client. Vidéo : alternance conseiller (bureau, casque, nom qui s'écrit à l'écran) et client
+  (salon, téléphone), bulles qui illustrent chaque phrase, un mot à la fois en couleurs, bandeau permanent en haut.
+- Essais ElevenLabs avant l'enregistrement du propriétaire (dialogue Hugo et Martin, puis Hugo et Julien) :
+  environ 1 € au total ; le propriétaire a préféré sa propre voix.
