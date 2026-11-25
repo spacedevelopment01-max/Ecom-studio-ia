@@ -1,0 +1,24 @@
+(node:147) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:158) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Devis de l'essai pour 2 planches (fonctions du devis du Studio, aucun appel) :
+- le client · valeurs du métier · anthropic:claude-opus-5-5 (effort medium) · toujours · charge client · probable 0,0361 € · au plus 0,1675 €
+- le client · valeurs réécrites (une fois) · anthropic:claude-opus-5-5 (effort medium) · si le contrôle refuse les valeurs · charge Studio · probable 0,0361 € · au plus 0,1675 €
+- planche 1 · planche, 1er essai · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · toujours · charge client · probable 0,1241 € · au plus 0,2047 €
+- planche 1 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0740 € · au plus 0,2451 €
+- planche 1 · planche, reprise unique · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · si le relecteur refuse la planche · charge Studio · probable 0,1241 € · au plus 0,2047 €
+- planche 1 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse la planche · charge Studio · probable 0,0740 € · au plus 0,2451 €
+- planche 2 · planche, 1er essai · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · toujours · charge client · probable 0,1241 € · au plus 0,2047 €
+- planche 2 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0740 € · au plus 0,2451 €
+- planche 2 · planche, reprise unique · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · si le relecteur refuse la planche · charge Studio · probable 0,1241 € · au plus 0,2047 €
+- planche 2 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse la planche · charge Studio · probable 0,0740 € · au plus 0,2451 €
+Probable, sans refus : 0,4322 € (devis du Studio : 0,4322 €)
+Probable, si les valeurs sont réécrites et chaque planche refaite une fois : 0,8645 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 2,1341 €
+  dont plafond du client de la tâche 1,0670 € et borne du Studio 1,0670 € (devisDesPlanchesDeMarque)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 1,5898 € de plus en tout ; la tâche ne la couvre pas (elle s'arrêterait sur sa propre borne).
+(node:158) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+0 planche(s) gardée(s) sur 1, dépense comptée 0,2348 €. Rapport : /home/user/Ecom-studio-ia/data/essai-ecume/3-planches/rapport.txt
+Arrêt : un appel a échoué (planche A), jamais relancé : Texte de la planche trop long : rien n'est envoyé.

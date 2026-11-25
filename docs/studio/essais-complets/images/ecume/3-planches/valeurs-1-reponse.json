@@ -1,0 +1,24 @@
+{
+  "nom": "Écume",
+  "traits": [
+    "artisanale",
+    "douce",
+    "naturelle",
+    "soignée"
+  ],
+  "emotion": "la douceur d'un moment de soin au quotidien",
+  "images": [
+    "savons solides posés sur une pierre claire",
+    "mousse légère sur un fond de lin blanc",
+    "lumière du matin dans une salle de bain épurée",
+    "copeaux de savon sur une planche de bois brut",
+    "baumes ouverts aux textures crémeuses",
+    "shampoings solides alignés près d'une fenêtre"
+  ],
+  "produits": [
+    "savons solides",
+    "shampoings solides",
+    "baumes"
+  ],
+  "appel": "devis"
+}

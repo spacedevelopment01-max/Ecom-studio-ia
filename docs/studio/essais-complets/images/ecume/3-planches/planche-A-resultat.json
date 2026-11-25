@@ -1,0 +1,31 @@
+{
+  "nom": "Écume",
+  "disposition": "standard",
+  "logo": {
+    "fichier": "/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-06-logo-garde.png",
+    "sha256": "aef4c142653308da4d028f919767728f451be67a787add3cd2c6fc295936112e"
+  },
+  "phrase": [
+    "SAVONNERIE ARTISANALE",
+    "BULLES DE SOIN AU NATUREL"
+  ],
+  "planche": {
+    "logo": "rnargij9ktplkeks",
+    "domaine": "ecumefrance.fr",
+    "statut": "disponible",
+    "annee": 2026,
+    "phrase": [
+      "SAVONNERIE ARTISANALE",
+      "BULLES DE SOIN AU NATUREL"
+    ],
+    "at": 1795648404154,
+    "essais": 1,
+    "raison": "la création a échoué chez le fournisseur"
+  },
+  "notes": [
+    "planche A non faite : Texte de la planche trop long : rien n'est envoyé."
+  ],
+  "issues": [
+    "Identité A « Écume » : je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite. Je peux la refaire à ma charge : rien n'est compté sur ton budget."
+  ]
+}

@@ -1,0 +1,53 @@
+Essai des planches de marque — client « Écume » (savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes), type « produits »
+Produits ou prestations de sa fiche : savons solides ; shampoings solides ; baumes
+Plafond de l'essai : 2,1400 €
+Personnes permises : non (aucune photo de personne ni accord)
+Logos finis : A (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-06-logo-garde.png), B (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png)
+Phrase sous le logo A : « SAVONNERIE ARTISANALE » puis « BULLES DE SOIN AU NATUREL », reprise mot pour mot sur la planche (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-06-phrase-du-logo.txt)
+Phrase sous le logo B : « SAVONNERIE » puis « ARTISANALE », reprise mot pour mot sur la planche (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-10-phrase-du-logo.txt)
+
+Devis de l'essai pour 2 planches (fonctions du devis du Studio, aucun appel) :
+- le client · valeurs du métier · anthropic:claude-opus-5-5 (effort medium) · toujours · charge client · probable 0,0361 € · au plus 0,1675 €
+- le client · valeurs réécrites (une fois) · anthropic:claude-opus-5-5 (effort medium) · si le contrôle refuse les valeurs · charge Studio · probable 0,0361 € · au plus 0,1675 €
+- planche 1 · planche, 1er essai · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · toujours · charge client · probable 0,1241 € · au plus 0,2047 €
+- planche 1 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0740 € · au plus 0,2451 €
+- planche 1 · planche, reprise unique · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · si le relecteur refuse la planche · charge Studio · probable 0,1241 € · au plus 0,2047 €
+- planche 1 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse la planche · charge Studio · probable 0,0740 € · au plus 0,2451 €
+- planche 2 · planche, 1er essai · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · toujours · charge client · probable 0,1241 € · au plus 0,2047 €
+- planche 2 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0740 € · au plus 0,2451 €
+- planche 2 · planche, reprise unique · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · si le relecteur refuse la planche · charge Studio · probable 0,1241 € · au plus 0,2047 €
+- planche 2 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse la planche · charge Studio · probable 0,0740 € · au plus 0,2451 €
+Probable, sans refus : 0,4322 € (devis du Studio : 0,4322 €)
+Probable, si les valeurs sont réécrites et chaque planche refaite une fois : 0,8645 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 2,1341 €
+  dont plafond du client de la tâche 1,0670 € et borne du Studio 1,0670 € (devisDesPlanchesDeMarque)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 1,5898 € de plus en tout ; la tâche ne la couvre pas (elle s'arrêterait sur sa propre borne).
+
+Valeurs du métier (contrôlées) :
+  métier : savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes
+  traits : artisanale, douce, naturelle, soignée
+  émotion : la douceur d'un moment de soin au quotidien
+  site : boutique
+  images : savons solides posés sur une pierre claire ; mousse légère sur un fond de lin blanc ; lumière du matin dans une salle de bain épurée ; copeaux de savon sur une planche de bois brut ; baumes ouverts aux textures crémeuses ; shampoings solides alignés près d'une fenêtre
+  produits : savons solides ; shampoings solides ; baumes
+Domaine vérifié avant le dessin : ecumefrance.fr — disponible (libres : ecumefrance.fr, ecumefrance.com ; pris : ecume.fr, ecume.com ; à vérifier : aucun) ; année 2026
+Disposition jointe : standard
+
+Planche A (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-06-logo-garde.png) : NON gardée, jamais montrée (la création a échoué chez le fournisseur)
+  essai 1 : texte planche-A-1-texte-envoye.txt ; planche brute planche-A-1-brute.png ; bandes planche-A-1-bande-1.png, planche-A-1-bande-2.png, planche-A-1-bande-3.png, planche-A-1-bande-4.png
+    verdict : note 5/10, nom lu « écume », copyright lu « © 2026 Écume », domaine lu « ecumefrance.fr — disponible », logo fidèle oui — Planche complète, soignée et fidèle au logo, mais une main est visible dans l'image de référence « Mousse délicate » alors qu'aucune personne ne doit apparaître. S'y ajoutent la faute « Dites-le nous ! » et la phrase du client déformée sur le sac en tissu.
+    raisons du refus : la phrase choisie par le client est mal écrite (« Ouverture, sous le logo principal : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« Ouverture, sous l'accroche : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 01 Logo principal : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 01 Logo horizontal : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 01 Logo empilé : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 01 Monochrome foncé : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 01 Monochrome clair : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 01 Inversé sur fond sombre : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 01 Badge / sceau (texte circulaire) : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 04 Ton, slogan : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 07 Format 1:1 : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 07 Format 4:5 : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 08 Site ordinateur : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 09 Boîte : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 09 Carte : SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; la phrase choisie par le client est mal écrite (« 09 Sac en tissu : [1re ligne masquée par l'étiquette] / [illisible] AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; fautes : « Dites-le nous ! (il faut « Dites-le-nous ! ») », « Sac en tissu (bloc 09) : la 2e ligne de la phrase sous le logo est déformée, « BULLES DE SOIN » illisible, la 1re ligne est masquée par l'étiquette » ; une personne est visible sans l'accord du client ; elle n'est pas au niveau (5/10, il faut 8)
+    non compté : micro-texte décoratif, non jugé : « ABCDEFRỊÇUᒧLLNMΩPRRTOVWXYZ (alphabet Playfair Display) » ; micro-texte décoratif, non jugé : « abcdefgliiıııımopoptuvwxyz (alphabet Playfair Display) » ; micro-texte décoratif, non jugé : « ABCDEFRỊÇUᒧLLNMΩPRRTOVWYZ (alphabet Montserrat) » ; micro-texte décoratif, non jugé : « abcdeffgliıdınidmopoptuvwxyz (alphabet Montserrat) » ; micro-texte décoratif, non jugé : « S:61 (heure de la barre d'état du téléphone) »
+  essai 2 (reprise à la charge du Studio) : texte planche-A-2-texte-envoye.txt ; planche brute — ; bandes —
+  note : planche A non faite : Texte de la planche trop long : rien n'est envoyé.
+  SINA dirait : Identité A « Écume » : je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite. Je peux la refaire à ma charge : rien n'est compté sur ton budget.
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- a5616c3d8842bb1ab15792a5c1ee36b86507aba859e11f36b93611c907174f5f · anthropic:claude-opus-5-5 · charge du client · réservé 0,1571 € → réglé 0,0134 € (settled) · jetons 299 en entrée, 310 en sortie
+- 7afeaa2ee02a49ba428a7aeb83451826f7806903f669a6882ece01b820671499 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,1953 € → réglé 0,1248 € (settled) · jetons 4330 en entrée, 3811 en sortie
+- c19c039f53c00b4e9d92a01bc567f43d9650a7f539ab5468644601ec0342f91f · anthropic:claude-opus-5-5 · charge du client · réservé 0,2458 € → réglé 0,0966 € (settled) · jetons 10239 en entrée, 2880 en sortie
+
+Dépense réelle comptée par le Studio : 0,2348 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).
+
+ARRÊT : un appel a échoué (planche A), jamais relancé : Texte de la planche trop long : rien n'est envoyé.
