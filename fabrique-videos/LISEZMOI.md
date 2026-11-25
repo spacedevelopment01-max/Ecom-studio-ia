@@ -149,3 +149,9 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
   (`v2/brut_aligne.json`), fin vérifiée en la retranscrivant : tout est dans l'ordre. 2 min 00.
   **Règle** : après chaque montage, retranscrire le résultat pour vérifier l'ordre ; se méfier des répliques
   chuchotées ou très courtes, que la transcription rate.
+
+## Vidéo histoire « Le burger raté à cause des maths » (A&W, années 80)
+
+- Voix du propriétaire, gardée telle quelle (aucune accélération, aucune coupe). 1 min 17, 18 plans.
+  Sources : Wikipédia (Third-pound burger), A&W, Mental Floss, CBC, Tasting Table, Snopes.
+- Texte suivant prêt : Kodak.
