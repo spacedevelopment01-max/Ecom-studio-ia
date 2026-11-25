@@ -715,7 +715,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
 
   // La marque finie de l'identité choisie (second temps) : rien d'autre n'est refait.
   if (a.finish) {
-    const finir = async () => (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: imagesDesPlaces(a.slots), guidance: a.guidance });
+    const finir = async () => (await import("./brand-finish")).runBrandFinish({ ctx, ai, projectId: p.id, userId: p.userId, conversationId: a.conversationId, brief, kind, slots: imagesDesPlaces(a.slots), guidance: a.guidance, ...((a as { enVraiProduits?: boolean }).enVraiProduits ? { produitsEnVrai: true } : {}) });
     // Ce qui porte le logo qui manquait à la marque finie (posé depuis par la méthode des graphistes) : une reprise du
     // travail de SINA, à la charge du Studio.
     return a.studio && j.brandFinish?.studio ? aLaChargeDuStudio(finir) : finir();

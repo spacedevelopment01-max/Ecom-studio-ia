@@ -384,4 +384,16 @@ describe("les consignes des relecteurs ne portent aucun nom ni exemple d'un proj
     expect(F.RELECTEUR_DU_LOGO_FINI).toContain("- finitions : la liste des petits défauts de finition, ceux qu'un client ne remarquerait pas comme une faute, un seul par ligne, en mots simples ; ils sont transmis comme corrections si le logo est repris, mais ne le font jamais refuser ;");
     expect(F.RELECTEUR_DU_LOGO_FINI).toContain("Une petite finition ne fait jamais descendre la note sous 8");
   });
+  it("la planche en vrai : la règle, les lignes des 17 images, l'inventaire et les relectures ne portent ni nom, ni exemple d'essai", async () => {
+    const V = await import("@/lib/syna-agent/planche-en-vrai");
+    const consignes: Record<string, string> = {
+      inventaire: V.INVENTAIRE_SYSTEM, "demande de l'inventaire": V.demandeDeLInventaire("Aplomb"), relecteur: V.RELECTEUR_EN_VRAI,
+      ...Object.fromEntries(V.GROUPES.map((g) => [`relecture ${g}`, V.demandeAuRelecteurEnVrai({ nom: "Aplomb", personnes: false, groupe: g, cases: [{ element: "produit-1", photo: true }] })])),
+      ...Object.fromEntries(V.NOMS_DES_ELEMENTS.map((n) => [n, V.texteDeLElement({ element: n, nom: "Aplomb", logo: true, photo: true, personnes: false, raisons: ["une raison"] })])),
+    };
+    for (const [qui, texte] of Object.entries(consignes)) {
+      for (const n of [...PROJETS_D_ESSAI, "pépinière", "plante", "pot"]) expect(texte.toLowerCase().split(/[^\p{L}]+/u), `${qui} : ${n}`).not.toContain(n.toLowerCase());
+      for (const x of EXEMPLES_D_ESSAI) expect(texte, `${qui} : ${x}`).not.toMatch(x);
+    }
+  });
 });

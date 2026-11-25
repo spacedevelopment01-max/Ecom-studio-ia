@@ -239,6 +239,24 @@ export function photothequeDe(projectId: string, t: CustomTheme | null, business
   }
   return out.slice(0, 60);
 }
+/**
+ * LES PHOTOS DE LA PLANCHE EN VRAI (25 novembre 2026), reprises par le site sans rien refaire : l'ouverture 1920 × 720
+ * (pour la grande photo de l'accueil), les images de référence et l'emballage. Jamais un produit imaginé (« image
+ * d'ambiance, ce n'est pas ton produit ») : il ne va ni sur un emplacement produit, ni ailleurs comme si c'était le sien.
+ */
+export function photothequeDeLaPlanche(j: Journey | null): PhotoReprise[] {
+  const ev = j?.plancheEnVrai;
+  if (!ev) return [];
+  const out: PhotoReprise[] = [];
+  for (const e of ev.elements) {
+    if (!e.id || e.ambiance || !(e.element === "ouverture-site" || e.element === "emballage" || e.element.startsWith("reference-"))) continue;
+    const a = getAsset(e.id);
+    if (!a || a.deleted_at) continue;
+    const d = e.description?.trim() || (e.element === "emballage" ? "les supports de la marque (carton, sac, ruban, carte)" : "une photo d'ambiance de la marque");
+    out.push({ id: e.id, description: e.element === "ouverture-site" ? `GRANDE PHOTO D'OUVERTURE DE L'ACCUEIL (bandeau 1920 × 720, de sa planche) : ${d}` : `Photo de sa planche : ${d}` });
+  }
+  return out;
+}
 /** Ce que les rédacteurs lisent : les photos déjà faites, numérotées. */
 export function photothequeBrief(list: PhotoReprise[]): string {
   if (!list.length) return "";

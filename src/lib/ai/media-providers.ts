@@ -3,7 +3,7 @@ import { assertStrategyInputsCurrent } from "../strategy-consumption";
 import { falVideoRequest } from "./fal-video-request";
 import { createHash } from "node:crypto";
 import type { AspectId } from "../image-v2/types";
-import { LOGO_MODELS, modelePermisPour, PERMISSION_DE_LA_PLANCHE, PERMISSION_DES_PUBLICATIONS, permisPourLaPlanche, permisPourLesPublications, REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
+import { LOGO_MODELS, modelePermisPour, PERMISSION_DE_LA_PLANCHE, PERMISSION_DE_LA_PLANCHE_EN_VRAI, PERMISSION_DES_PUBLICATIONS, permisPourLaPlanche, permisPourLaPlancheEnVrai, permisPourLesPublications, REQUIRED_LOGO_MODEL, REQUIRED_LOGO_PROVIDER } from "./logo-policy";
 /**
  * Fournisseurs de génération d'images et de vidéo.
  * Principe de fidélité : le produit n'est jamais « réinventé ».
@@ -1022,6 +1022,71 @@ const plancheDeMarque = traced("image_generation", plancheDeMarqueImpl);
  */
 export function aiPlancheDeMarque(ctx: Ctx, input: { logo: { assetId: string | null; data: Buffer }; disposition: { nom: string; data: Buffer }; prompt: string }): Promise<Buffer> {
   return plancheDeMarque(ctx, input);
+}
+
+// ---------------------------------------------------------------- la planche en vrai (25 novembre 2026)
+
+/** Ce qui est gardé pour refaire une image de la planche en vrai (même reçu que la planche de marque). */
+export type RecuDElementDeLaPlanche = RecuDePublication;
+const recusDesElements = new WeakMap<Buffer, RecuDElementDeLaPlanche>();
+export const recuDElementDeLaPlanche = (png: Buffer): RecuDElementDeLaPlanche | null => recusDesElements.get(png) ?? null;
+/** Les tailles des preuves (lancer.py, refaire-elements.py) : aucune autre n'est envoyée. */
+export const TAILLES_DE_LA_PLANCHE_EN_VRAI = ["1088x1088", "1088x1360", "1088x1936", "2048x768", "2304x768", "1520x1024", "768x1712", "912x1088", "1344x1024", "1024x912"] as const;
+/** LES CHAMPS EXACTS des requêtes de preuve (lancer.py) : 2.5 Sunburst, high, la taille de l'élément, fond opaque, png, n 1. */
+export function champsDElementDeLaPlanche(texte: string, taille: string): Record<string, unknown> & { model: string } {
+  return { model: PERMISSION_DE_LA_PLANCHE_EN_VRAI.model, prompt: texte, quality: "high", size: taille, background: "opaque", output_format: "png", n: 1 };
+}
+export const ELEMENT_TEXTE_MAX_OCTETS = 3000;
+/** Une image jointe est comptée au plus à 2 000 jetons (1 793 à 1 884 mesurés pour l'aperçu et le logo ensemble). */
+const JETONS_MAX_D_UNE_JOINTE_D_ELEMENT = 2000;
+/** La borne d'une image : la formule officielle des jetons, `jetonsDeSortieGptImage(taille, "high")`, au tarif aux jetons. */
+const borneElement = (texte: string, taille: string, jointes: number): number => {
+  const sortie = jetonsDeSortieGptImage(PERMISSION_DE_LA_PLANCHE_EN_VRAI.model, taille, "high");
+  if (sortie == null) throw new PermanentError(L("Image de la planche sans borne de coût connue : rien n'est envoyé.", "Board image without a known cost bound: nothing sent."));
+  return cost("openai", PERMISSION_DE_LA_PLANCHE_EN_VRAI.model, { input: bytes(texte), imageIn: JETONS_MAX_D_UNE_JOINTE_D_ELEMENT * jointes, imageOut: sortie }).micro;
+};
+/** Coût MAXIMAL d'une image de la planche en vrai (même calcul que sa réservation, marge comprise), au texte le plus long. */
+export const elementDeLaPlancheMaxMicro = (taille: string, jointes = 3): number => mediaReservationMaxMicro(borneElement("x".repeat(ELEMENT_TEXTE_MAX_OCTETS), taille, jointes));
+
+type JointeDElement = { role: "apercu" | "logo" | "produit"; assetId: string | null; data: Buffer };
+async function elementDeLaPlancheImpl(ctx: Ctx, input: { element: string; texte: string; taille: string; jointes: JointeDElement[] }): Promise<Buffer> {
+  const { provider, model, chemin } = PERMISSION_DE_LA_PLANCHE_EN_VRAI;
+  if (!permisPourLaPlancheEnVrai(chemin, provider, model)) throw new PermanentError(L("Modèle non permis pour la planche en vrai (logo-policy.ts).", "Model not allowed for the full-resolution board."));
+  if (!(TAILLES_DE_LA_PLANCHE_EN_VRAI as readonly string[]).includes(input.taille)) throw new PermanentError(L(`Taille ${input.taille} hors des preuves : rien n'est envoyé.`, `Size ${input.taille} not allowed: nothing sent.`));
+  if (input.jointes[0]?.role !== "apercu" || !input.jointes[0].data.length) throw new PermanentError(L("L'aperçu doit être la première image : rien n'est envoyé.", "The preview must come first: nothing sent."));
+  if (input.jointes.length > 3) throw new PermanentError(L("Trop d'images jointes : rien n'est envoyé.", "Too many images: nothing sent."));
+  if (Buffer.byteLength(input.texte, "utf8") > ELEMENT_TEXTE_MAX_OCTETS) throw new PermanentError(L("Texte trop long : rien n'est envoyé.", "Text too long: nothing sent."));
+  const key = activeProviderKey("openai");
+  if (!key) throw new UserFacingError(L("Aucune clé OpenAI configurée pour la génération d'images.", "No OpenAI key configured for image generation."));
+  const t = mediaTrace.getStore();
+  if (t) t.usage = "logo";
+  const corps = champsDElementDeLaPlanche(input.texte, input.taille);
+  gate(ctx, borneElement(input.texte, input.taille, input.jointes.length), "image", provider, model);
+  const files = await Promise.all(input.jointes.map((im) => toFile(im.data, `${im.role}.png`, { type: im.data[0] === 137 ? "image/png" : "image/jpeg" })));
+  let res: Awaited<ReturnType<typeof openaiImageSansFlux>>;
+  // Sans flux, une seule image, aucune reprise automatique (une panne n'est jamais relancée), aucun secours.
+  try { res = await openaiImageSansFlux(openaiClient(key), "edit", { ...corps, image: files }, sent); } catch (e) { return erreurOpenAI(e); }
+  if (!res.b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
+  const u = res.usage ?? {};
+  const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
+  const jointes = input.jointes.map((im) => ({ role: im.role, assetId: im.assetId, sha256: createHash("sha256").update(im.data).digest("hex"), octets: im.data.length }));
+  const { prompt: _p, ...reglages } = corps;
+  recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider, model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage, idempotencyKey: ctx.usageKey,
+    details: { methode: "planche-en-vrai", element: input.element, texteEnvoye: input.texte, requestId: res.requestId, reglages, jointes, usage: res.usage ?? null, renvoye: res.renvoye } });
+  const png = Buffer.from(res.b64, "base64");
+  const m = await sharp(png).metadata().catch(() => ({ width: undefined, height: undefined }));
+  // Le reçu complet : l'adresse, les champs, les jointes, la taille reçue, l'identifiant, la consommation, le coût, la durée.
+  recusDesElements.set(png, { adresse: ADRESSE_DE_LA_PLANCHE, champs: corps, jointes, tailleRecue: m.width && m.height ? `${m.width}x${m.height}` : null, requestId: res.requestId, usage: res.usage ?? null, renvoye: res.renvoye, coutMicro: billed, dureeMs: res.ms });
+  return png;
+}
+const elementDeLaPlanche = traced("image_generation", elementDeLaPlancheImpl);
+/**
+ * UNE image de la planche en vrai : POST /v1/images/edits en multipart, image[] = l'aperçu, puis le logo s'il y est, puis
+ * la photo du produit ; 2.5 Sunburst, high, la taille de l'élément, fond opaque, png, n 1 ; plafond, garde-fou et comptage
+ * comme toute image ; aucun secours ; aucune relance après une panne. Rend l'image BRUTE (le format final est fait ensuite).
+ */
+export function aiElementDeLaPlanche(ctx: Ctx, input: { element: string; texte: string; taille: string; jointes: JointeDElement[] }): Promise<Buffer> {
+  return elementDeLaPlanche(ctx, input);
 }
 
 /** Coût maximal d'une maquette de site (une planche), null si aucun modèle n'est utilisable. */

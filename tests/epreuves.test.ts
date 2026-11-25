@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -54,7 +54,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       // (contredite par la reprise du logo à partir du refusé), relecteur-juge-l-execution-pas-l-idee (contredite par les
       // petites finitions sans refus) et planche-refusee-deux-fois-jamais-montree (contredite par le texte lisible et les
       // promesses mesurables), toutes du 25 novembre 2026 ; à son arrivée, il remplace ce manque.
-      if (r.mots === ACCORD_A_COMPLETER) { expect({ "logo-refait-une-fois-avec-ses-raisons": "reprise-du-logo-a-partir-du-refuse", "relecteur-juge-l-execution-pas-l-idee": "relecteur-petites-finitions-sans-refus", "planche-refusee-deux-fois-jamais-montree": "relecteur-de-planche-texte-lisible-et-promesses-mesurables" }[e.id], e.id).toBe(r.epreuve); expect(r.decision).toBe("25 novembre 2026"); continue; }
+      if (r.mots === ACCORD_A_COMPLETER) { expect({ "logo-refait-une-fois-avec-ses-raisons": "reprise-du-logo-a-partir-du-refuse", "relecteur-juge-l-execution-pas-l-idee": "relecteur-petites-finitions-sans-refus", "planche-refusee-deux-fois-jamais-montree": "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "vrai-produit-du-client-joint": "vrai-produit-dans-la-planche-en-vrai" }[e.id], e.id).toBe(r.epreuve); expect(r.decision).toBe("25 novembre 2026"); continue; }
       expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche)/);
       // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
@@ -1504,5 +1504,75 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     const I = await import("@/lib/syna-agent/tools/identity");
     expect(I.finirPlanchesGardees(j as never, ["A"], ["planche"])).toBe(true);
     expect(I.devisDesImages(j as never, ["A"], ["planche"])).toMatchObject({ studio: true });
+  });
+});
+
+describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", async () => {
+  const V = await import("@/lib/syna-agent/planche-en-vrai");
+  const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+  const T = await import("@/lib/syna-agent/planche-en-vrai-tache");
+  const mp = await import("@/lib/ai/media-providers");
+  const { aLaChargeDuStudio, chargeDuStudio } = await import("@/lib/billing");
+  const uni = (w: number, h: number, c: string) => sharp({ create: { width: w, height: h, channels: 3, background: c } }).png().toBuffer();
+  const bon = { identique: true, textesLus: [] as string[], logoPresent: false, personne: false, logoFonceSurFondSombre: false, produitFidele: null as boolean | null, texteCoupe: false, note: 9, pourquoi: "" };
+
+  epreuve("vrai-produit-dans-la-planche-en-vrai", async () => {
+    // Sa photo jointe là où l'inventaire voit le produit, en dernier, avec la phrase ; jamais ailleurs.
+    const inv = (produit: boolean, logo = true) => ({ case: "produit-1", logo, textes: [], produit, personne: false, comprehensible: null, description: "" });
+    const a = Buffer.from("a"), l = Buffer.from("l"), ph = Buffer.from("p");
+    expect(V.jointesDeLElement({ apercu: a, logo: l, photo: ph, inventaire: inv(true) }).map((j) => j.role)).toEqual(["apercu", "logo", "produit"]);
+    expect(V.jointesDeLElement({ apercu: a, logo: l, photo: ph, inventaire: inv(false) }).map((j) => j.role)).toEqual(["apercu", "logo"]);
+    expect(V.texteDeLElement({ element: "produit-1", nom: "Aplomb", logo: true, photo: true, personnes: false })).toContain("remplace le produit par celui de la photo jointe, garde la mise en scène à l'identique");
+    // La relecture reçoit la photo, compare, et refuse un autre produit.
+    const vus: string[] = [];
+    const r = await V.refaireLesElements({
+      refaire: async () => uni(912, 1088, "#777777"),
+      relire: async (_g, items, demande) => { vus.push(...items.flatMap((it) => (it.photo ? [`${it.element}:photo`] : [])), demande); return { images: items.map((it) => ({ case: it.element, ...bon, produitFidele: false })) }; },
+      aLaChargeDuStudio,
+    }, { nom: "Aplomb", personnes: false, logo: l, photo: await uni(64, 64, "#222222"), apercus: new Map([["produit-1", await uni(229, 272, "#666666")]]), inventaire: V.InventaireSchema.parse({ cases: [inv(true)], polices: { titres: {}, textes: {} } }), elements: ["produit-1"] });
+    expect(vus).toContain("produit-1:photo");
+    expect(vus.join(" ")).toMatch(/produit-1 \(photo du produit jointe\)/);
+    expect(r.get("produit-1")).toMatchObject({ ok: false });
+    expect(r.get("produit-1")!.essais[0].raisons.join(" ")).toMatch(/pas celui de la photo du client/);
+    // Sans photo : image d'ambiance, jamais reprise par le site.
+    const { photothequeDeLaPlanche } = await import("@/lib/syna-agent/custom-theme/brand");
+    expect(photothequeDeLaPlanche({ plancheEnVrai: { elements: [{ element: "produit-1", id: "x", essais: 1, ambiance: true }] } } as never)).toEqual([]);
+    expect(V.phraseDuProduitImagine()).toMatch(/« image d'ambiance, ce n'est pas ton produit »\) : ils ne vont jamais sur les emplacements produit de ton site, où « Ta photo ici » attend tes photos/);
+    expect(T.produitsImagines({ elements: [{ element: "produit-2", id: "y", essais: 1, ambiance: true }] } as never)).toEqual(["produit-2"]);
+  });
+
+  epreuve("planche-en-vrai-a-l-identique", async () => {
+    // Les 17 images, leurs tailles des preuves, les champs exacts.
+    expect(V.NOMS_DES_ELEMENTS).toHaveLength(17);
+    expect(mp.champsDElementDeLaPlanche("t", "1088x1088")).toEqual({ model: "gpt-image-2.5-sunburst", prompt: "t", quality: "high", size: "1088x1088", background: "opaque", output_format: "png", n: 1 });
+    for (const n of V.NOMS_DES_ELEMENTS) expect(mp.TAILLES_DE_LA_PLANCHE_EN_VRAI as readonly string[]).toContain(V.ELEMENTS[n].taille);
+    // Les cases fixes, empreinte vérifiée.
+    expect(crypto.createHash("sha256").update(fs.readFileSync("assets/planche-de-marque/cases.json")).digest("hex")).toBe(V.CASES.sha256);
+    // La règle des preuves mot pour mot, plus la ligne ; le logo seulement s'il y est ; les marges des formats larges.
+    expect(V.texteDeLElement({ element: "reference-1", nom: "Aplomb", logo: true, photo: false, personnes: true })).toBe(`${V.REGLE_APERCU} ${V.regleDuLogo("Aplomb")} C'est une photo d'ambiance de la marque.`);
+    expect(V.jointesDeLElement({ apercu: Buffer.from("a"), logo: Buffer.from("l"), photo: null, inventaire: undefined }).map((j) => j.role)).toEqual(["apercu"]);
+    expect(V.ligneDeLElement("ouverture-site", true)).toContain("Garde des marges généreuses : aucun texte ne touche les bords.");
+    // Les formats : publications recadrées, ouverture réduite, jamais rognée.
+    const o = await V.auFormatFinal("ouverture-site", await uni(2048, 768, "#AAAAAA"));
+    expect(o.ok && [o.w, o.h]).toEqual([1920, 720]);
+    expect((await V.auFormatFinal("ouverture-site", await uni(2048, 1088, "#AAAAAA"))).ok).toBe(false);
+    const p = await V.auFormatFinal("publication-9x16", await uni(1088, 1936, "#AAAAAA"));
+    expect(p.ok && [p.w, p.h]).toEqual([1080, 1920]);
+    // Une reprise à la charge du Studio ; refusée deux fois, pas de fichier (l'aperçu garde sa case).
+    const tours: boolean[] = [];
+    const r = await V.refaireLesElements({ refaire: async () => { tours.push(chargeDuStudio()); return uni(1024, 912, "#777777"); }, relire: async (_g, items) => ({ images: items.map((it) => ({ case: it.element, ...bon, note: 5 })) }), aLaChargeDuStudio },
+      { nom: "Aplomb", personnes: false, logo: Buffer.alloc(0), photo: null, apercus: new Map([["reference-3", await uni(236, 211, "#555555")]]), inventaire: V.InventaireSchema.parse({ polices: { titres: {}, textes: {} } }), elements: ["reference-3"] });
+    expect(tours).toEqual([false, true]);
+    expect(r.get("reference-3")).toMatchObject({ ok: false, png: null });
+    // La palette mesurée et les polices du catalogue ; les dix versions.
+    const past = V.lesCases("animaux").pastilles;
+    expect(await C.mesurerLaPalette(await C.plancheDeTest(past, ["#0A4E2B", "#6B8F5A", "#A7C0A0", "#F8F6EE", "#D9B89A"]), past)).toEqual(["#0A4E2B", "#6B8F5A", "#A7C0A0", "#F8F6EE", "#D9B89A"]);
+    expect(C.policeDuCatalogue({ nom: "Inter", genre: "sans" }, 400)).toMatchObject({ famille: "Inter", remplacee: false });
+    expect(C.VERSIONS_DU_LOGO).toHaveLength(10);
+    // L'assemblage en 3072 × 4608.
+    expect(V.TAILLE_EN_VRAI).toEqual({ w: 3072, h: 4608 });
+    // Plus de mélange une fois la planche de marque faite.
+    expect(V.phraseDuMelangeRefuse()).toMatch(/le mélange de deux identités n'est plus possible/);
+    expect(fs.readFileSync("src/lib/syna-agent/tools/identity.ts", "utf8")).toContain("return { ok: false, summary: phraseDuMelangeRefuse()");
   });
 });

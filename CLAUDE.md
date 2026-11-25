@@ -186,6 +186,26 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   télécharger, avec la case du domaine (revérifié au choix) ; SINA dit qu'elle est une présentation : la marque finie et
   le site gardent les vraies données. La marque finie, le site et les vraies publications gardent leurs règles (épreuves
   vrai-produit-du-client-joint et publication-incomprehensible). Détail : `docs/studio/PLANCHE-DE-MARQUE.md`.
+  **La planche en vrai** (25 novembre 2026, ses mots : « une fois que le client à choisi sa planche sina doit lui refaire
+  à l'identique mais cette fois ci en vrai sur son studio […] ça doit être à l'identique en visuel », puis « Oui lance la
+  construction » ; réglage `sina.planche.envrai`, éteint par défaut, nouveaux projets seulement) : après le choix, chacune
+  des 17 images de la planche choisie (trois publications, l'ouverture du site, le bandeau, le site sur ordinateur et sur
+  téléphone, trois produits, l'emballage, six images de référence) est découpée dans ses cases fixes (empreinte vérifiée)
+  et refaite à l'identique en haute définition par le modèle d'images des logos, en qualité haute, aux tailles des essais,
+  à partir de son aperçu, avec la règle des essais mot pour mot plus une ligne qui dit l'élément ; le logo n'est joint que
+  si l'inventaire (un appel au relecteur le plus fort, avant toute retouche) le voit dans la case ; sa photo du produit
+  est jointe là où le produit se voit (« remplace le produit par celui de la photo jointe, garde la mise en scène à
+  l'identique ») ; les formats larges ont des marges généreuses ; publications recadrées en 1080 × 1080, 1080 × 1350 et
+  1080 × 1920, ouverture réduite en 1920 × 720, jamais rognée. Chaque image est relue face à son aperçu (textes comparés
+  lettre pour lettre par le code, aucun logo ajouté, aucune personne sans accord, logo clair sur fond sombre, produit
+  comparé, note de 8 au moins) ; une reprise à la charge du Studio ; refusée deux fois, l'aperçu agrandi garde sa case et
+  SINA propose de la refaire à sa charge. **Après le choix, la palette et les polices sont mesurées et lues sur la planche
+  choisie** (médiane de chaque pastille, ces codes font foi ; polices du catalogue du Studio, la plus proche sinon, et
+  c'est dit) ; les dix versions du logo, les favicons, l'avatar et le badge sont faits par le code ; l'assemblage se fait
+  en 3072 × 4608, publications entières. Sans photo de son produit, les produits restent des images d'ambiance (« image
+  d'ambiance, ce n'est pas ton produit »), jamais sur les emplacements produit ni posés comme son produit. Une fois la
+  planche de marque faite, le mélange de deux identités n'est plus proposé. L'onglet Marque donne tout à télécharger
+  (zip) et chaque code couleur à copier. Détail : `docs/studio/PLANCHE-EN-VRAI.md`.
 - **Trois angles** : un angle, c'est « aller chercher une typologie de client différente, avec des envies et des
   besoins différents, mais qui recherche le même produit ; c'est juste qu'il n'est pas mis en avant et en valeur de la
   même façon sur le site et la communication » (ses mots du 16 novembre). Donc trois angles = trois types de clients

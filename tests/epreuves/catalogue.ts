@@ -148,6 +148,22 @@ const DEMANDE_PLANCHE = "« Oui et cette partie là en xhigh, quand le client re
 const VERDICT_PLANCHE = `Accord écrit du propriétaire du 24 novembre 2026, mot pour mot : ${ACCORD_PLANCHE} Sa demande de départ, mot pour mot : ${DEMANDE_PLANCHE}`;
 const SOURCE_PLANCHE = "docs/studio/PLANCHE-DE-MARQUE.md (accord écrit du propriétaire du 24 novembre 2026 et sa demande de départ, relayés mot pour mot par le chef d'orchestre ; preuves : docs/studio/essais-logos-api/planche-tenon-xhigh et planche-racine-xhigh, branche du chef d'orchestre)";
 
+/**
+ * LA PLANCHE EN VRAI (25 novembre 2026). La demande du propriétaire, mot pour mot (relayée par le chef d'orchestre), et
+ * son « Oui lance la construction ». Elle contredit vrai-produit-du-client-joint (« la demande de la grande scène et celle
+ * du haut du site les joignent » : pour les nouveaux projets, la grande scène et le haut du site ne sont plus créés à la fin
+ * de la marque ; c'est la planche choisie qui est refaite en vrai, sa photo jointe à chaque case où le produit se voit).
+ * L'accord écrit pour la marquer remplacée est encore à recevoir : `ACCORD_A_COMPLETER` tient sa place, et le banc
+ * n'accepte ce manque que pour elle et pour les trois de la reprise du logo refusé. La phrase d'accord attendue, mot pour
+ * mot : « Oui, marque vrai-produit-du-client-joint comme remplacée par ma décision du 25 novembre, ajoute et scelle
+ * vrai-produit-dans-la-planche-en-vrai (…) et planche-en-vrai-a-l-identique (…), et mets à jour la partie Identité de
+ * CLAUDE.md. » (texte entier : docs/studio/PLANCHE-EN-VRAI.md).
+ */
+const PLANCHE_EN_VRAI = { decision: "25 novembre 2026", mots: ACCORD_A_COMPLETER };
+const DEMANDE_EN_VRAI = "« En soit c'est juste une planche de démonstration et une fois que le client à choisi sa planche sina doit lui refaire à l'identique mais cette fois ci en vrai sur son studio. Tu vois ça que je veux dire et ça doit être à l'identique en visuel » ; « Le clients pourra télécharger les logo image au besoin et les code couleur seront la aussi en copier coller ? », puis « Oui lance la construction »";
+const VERDICT_EN_VRAI = `Demande du propriétaire du 25 novembre 2026, mot pour mot : ${DEMANDE_EN_VRAI}.`;
+const SOURCE_EN_VRAI = "docs/studio/PLANCHE-EN-VRAI.md (demande du propriétaire du 25 novembre 2026, relayée mot pour mot par le chef d'orchestre ; preuves : docs/studio/essais-logos-api/racine-planche-en-vrai, branche claude/chef-orchestre-sina)";
+
 export const EPREUVES: Epreuve[] = [
   {
     id: "logo-goutte-refusee", date: "2026-11-21", source: "docs/studio/COMPTE-RENDU-2026-11-21-SINA.md",
@@ -404,6 +420,7 @@ export const EPREUVES: Epreuve[] = [
     verdict: "Carnet des verdicts, Nadia, identité C « Pénombre », grande scène, 1er essai : « 5/10 : « un pot de confiture avec une étiquette vierge, et non une bougie en cire de soja » ». Diagnostic : « Les vraies photos de Nadia n'ont jamais été jointes. » Règle : l'ouverture est une scène créée avec son vrai produit.",
     attendu: "Pour une boutique qui a envoyé ses photos de produit, la demande de la grande scène et celle du haut du site les joignent comme produit à reproduire fidèlement ; la demande de relecture les joint aussi, avec la consigne de comparer et de refuser un autre produit.",
     rejeu: "gratuit",
+    remplaceePar: { ...PLANCHE_EN_VRAI, epreuve: "vrai-produit-dans-la-planche-en-vrai", sceau: "fde3f452b420e4de48dd7fb4d86c7131716970e04fabbbbaddd2e4e01b5b6f0b" },
   },
   {
     id: "bougie-cire-et-meche", date: "2026-11-23", source: "docs/studio/COMPTE-RENDU-2026-11-22-ECONOMIES.md (essai réel de Nadia : docs/studio/essais-complets/verdicts.md et NADIA-2-DIAGNOSTIC.md, branche des essais)",
@@ -611,6 +628,18 @@ export const EPREUVES: Epreuve[] = [
     id: "relecteur-petites-finitions-sans-refus", date: "2026-11-25", source: SOURCE_PETITES_FINITIONS,
     verdict: "« Le racine du milieu est très bien aussi » (25 novembre 2026), dit par le propriétaire du second essai de la feuille sur le i (essai réel finalisation-execution de Racine, esquisse-04-logo-2-brut.png), que le relecteur avait refusé à 7 pour la feuille encore décalée vers la droite du i et le haut du i coupé en biais ; ses mots relayés par le chef d'orchestre.",
     attendu: "Le relecteur du logo fini ne juge jamais l'idée ni son originalité : le client l'a choisie parmi les esquisses. Il juge seulement l'exécution : le nom exact (le code le compare aussi), l'idée de l'esquisse bien gardée, un dessin net (raccords, proportions, lisibilité en petit), pas d'arche, pas de phrase inventée (une phrase choisie par le client n'est jamais inventée : le code la compare lettre pour lettre), un fond qui se retire (sinon le logo est refait). Il sépare dans sa réponse les défauts graves (une lettre fausse, manquante ou illisible, un nom qui se lit autrement de façon évidente, une forme cassée, un fond qui n'est pas blanc uni) et les petites finitions, qu'un client ne remarquerait pas comme une faute. Sa consigne dit qu'un logo propre et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus, qu'une petite finition est transmise comme correction si le logo est repris mais ne fait jamais refuser ni descendre la note sous 8, et lui donne pour repère, mot pour mot, la question et la réponse du propriétaire (« Oui très bien je mettrais 9/10 »), sans aucune image d'essai ; ses mots « Le racine du milieu est très bien aussi » nomment un client d'essai et ne vont jamais au relecteur : aucune de ses consignes ne porte un nom ni un exemple d'un projet d'essai ; le seuil reste 8. Une raison qui juge l'idée (« cliché du secteur », « idée banale », « peu originale », pas assez singulière, la comparaison aux agences, « trop proche de l'esquisse ») ne fait jamais refuser un logo, même donnée par le modèle : le code l'écarte en entier. Une note sous 8 ne compte que pour un défaut grave écrit, ou sans aucune explication ; elle ne compte pas quand elle ne tient qu'à l'idée ou qu'à de petites finitions. Un logo qui n'a que des finitions est gardé, ses finitions écrites au compte rendu ; elles ne deviennent des corrections que s'il y a une reprise pour une autre raison. Un défaut grave écrit, avec une note sous 8, fait toujours refuser, et le logo refusé est refait une fois, à la charge du Studio, avec ce défaut dans ses corrections. Un verdict d'avant les finitions garde sa lecture : tous ses défauts écrits comptent comme graves. Rejouées par le code, les quatre relectures réelles de Racine du premier essai donnent « gardé » ; le R bordeaux gardé à 8 reste gardé ; le verdict réel du second essai de la feuille sur le i (note 7, nom lu exact), lu tel quel, reste refusé, et ses deux reproches, mot pour mot, sont de petites finitions (la feuille-point décalée, le haut du i coupé en biais) : rangés en finitions sans changer un mot, il donne « gardé ». La ligne d'évolution du texte de finalisation reste ; le relecteur est le plus fort, effort élevé, un autre modèle que le rédacteur.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "vrai-produit-dans-la-planche-en-vrai", date: "2026-11-25", source: SOURCE_EN_VRAI,
+    verdict: VERDICT_EN_VRAI,
+    attendu: "Sur la planche en vrai, quand le client a une photo de son produit, elle est jointe à chaque case où l'inventaire voit le produit (après l'aperçu, et après le logo s'il y est), avec la phrase « remplace le produit par celui de la photo jointe, garde la mise en scène à l'identique » ; la relecture reçoit la photo, compare et refuse un autre produit que le sien. Sans photo, les produits imaginés restent sur la planche, marqués « image d'ambiance, ce n'est pas ton produit » : ils ne vont jamais sur les emplacements produit du site, où « Ta photo ici » reste, ni dans les photos reprises par le site, ni dans une publication comme si c'était son produit ; quand il envoie ses photos, ces cases se refont sur son budget, avec une carte.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "planche-en-vrai-a-l-identique", date: "2026-11-25", source: SOURCE_EN_VRAI,
+    verdict: VERDICT_EN_VRAI,
+    attendu: "Une fois la planche choisie, ses 17 images (trois publications, l'ouverture du site, le bandeau de la planche, le site sur ordinateur et sur téléphone, trois produits, l'emballage, six images de référence) sont refaites une à une en gpt-image-2.5-sunburst, quality high, aux tailles des preuves, fond opaque, n 1, sans secours ni relance, à partir de leur aperçu découpé sur la planche choisie (cases fixes, empreinte vérifiée), avec la règle des preuves mot pour mot plus une ligne qui dit ce qu'est l'élément ; le logo n'est joint que si l'inventaire le voit dans la case ; les formats larges demandent des marges généreuses ; les publications sont recadrées en 1080 × 1080, 1080 × 1350 et 1080 × 1920, l'ouverture du site réduite en 1920 × 720, jamais rognée. Les dix versions du logo sont faites par le code (fond retiré, creux des lettres compris), la palette est mesurée sur les pastilles de la planche choisie (médiane) et les polices sont lues sur elle, prises dans le catalogue du Studio ; l'assemblage se fait en 3072 × 4608, les publications entières. Chaque image est relue face à son aperçu ; refusée, elle est refaite une fois à la charge du Studio avec ses raisons ; refusée deux fois, elle n'a pas de fichier en haute définition et l'aperçu agrandi garde sa case : la planche n'est jamais incomplète. Une fois la planche de marque faite, le mélange de deux identités n'est plus proposé, et il est refusé s'il est demandé.",
     rejeu: "gratuit",
   },
   {

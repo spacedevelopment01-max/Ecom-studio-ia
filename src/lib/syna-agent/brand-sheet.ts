@@ -11,6 +11,9 @@ import { chosenRoute } from "./logos";
 import { vueDesEsquisses, type VueDesEsquisses } from "./logo-graphistes";
 import { planchesMontrees } from "./journey";
 import { caseDuDomaine } from "./planche-de-marque";
+import { L } from "../i18n-server";
+import { ETIQUETTE_AMBIANCE, type EtatPlancheEnVrai } from "./planche-en-vrai";
+import { LIBELLE_DES_VERSIONS } from "./planche-en-vrai-code";
 
 type Shot = { url: string; w: number; h: number };
 export type BrandSheet = {
@@ -31,7 +34,42 @@ export type BrandSheet = {
    * jamais une planche non montrée (refusée deux fois). Après le choix : seulement celle de l'identité choisie.
    */
   planches: { key: string; name: string; url: string; download: string; w: number; h: number; caseDuDomaine: string }[];
+  /**
+   * La planche en vrai (25 novembre 2026) : les dix versions du logo en PNG haute définition sur fond transparent, chaque
+   * couleur avec son code à copier, les deux polices avec leur nom à copier et leur fichier, chaque image en haute
+   * définition, la planche entière, et « Tout télécharger » (zip). Null sans planche en vrai.
+   */
+  enVrai: VueEnVrai | null;
 };
+export type VueEnVrai = {
+  planche: { url: string; download: string; w: number; h: number } | null;
+  logos: { version: string; label: string; url: string; download: string }[];
+  couleurs: { hex: string; nom: string }[];
+  polices: { role: "titres" | "textes"; famille: string; fichier: string; url: string; lue: string; remplacee: boolean }[];
+  images: { element: string; label: string; url: string; download: string; w: number; h: number; ambiance: boolean }[];
+  /** Les images refusées deux fois : l'aperçu agrandi garde leur case, sans fichier en haute définition. */
+  sansFichier: string[];
+  zip: string;
+};
+const LIBELLE_DES_IMAGES: Record<string, [string, string]> = {
+  "publication-1x1": ["Publication carrée", "Square post"], "publication-4x5": ["Publication portrait", "Portrait post"], "publication-9x16": ["Story", "Story"],
+  "ouverture-site": ["Ouverture du site (1920 × 720)", "Site hero (1920 × 720)"], "ouverture-planche": ["Bandeau de la planche", "Board banner"],
+  "site-ordinateur": ["Site sur ordinateur", "Site on desktop"], "site-telephone": ["Site sur téléphone", "Site on phone"], emballage: ["Emballage et supports", "Packaging"],
+};
+/** La vue de la planche en vrai pour l'onglet Marque (sans base : les adresses sont faites par `url`). */
+export function vueEnVrai(ev: EtatPlancheEnVrai | undefined, projectId: string, url: (id: string, download?: boolean) => string): VueEnVrai | null {
+  if (!ev?.planche) return null;
+  const libelle = (e: string) => { const l = LIBELLE_DES_IMAGES[e]; if (l) return L(l[0], l[1]); const m = /^(produit|reference)-(\d)$/.exec(e); return m ? (m[1] === "produit" ? L(`Produit ${m[2]}`, `Product ${m[2]}`) : L(`Image de référence ${m[2]}`, `Reference image ${m[2]}`)) : e; };
+  return {
+    planche: { url: url(ev.planche.id), download: url(ev.planche.id, true), w: ev.planche.w, h: ev.planche.h },
+    logos: ev.logos.map((x) => ({ version: x.version, label: L(LIBELLE_DES_VERSIONS[x.version].fr, LIBELLE_DES_VERSIONS[x.version].en), url: url(x.id), download: url(x.id, true) })),
+    couleurs: ev.palette.map((c) => ({ hex: c.hex, nom: c.nom })),
+    polices: ev.polices ? (["titres", "textes"] as const).map((role) => { const p = ev.polices![role]; return { role, famille: p.famille, fichier: p.fichier, url: `/api/syna/fonts/${p.fichier}`, lue: p.lue, remplacee: p.remplacee }; }) : [],
+    images: ev.elements.filter((e) => e.id).map((e) => ({ element: e.element, label: e.ambiance ? `${libelle(e.element)} — ${L(ETIQUETTE_AMBIANCE.fr, ETIQUETTE_AMBIANCE.en)}` : libelle(e.element), url: url(e.id!), download: url(e.id!, true), w: e.w ?? 0, h: e.h ?? 0, ambiance: !!e.ambiance })),
+    sansFichier: ev.elements.filter((e) => !e.id).map((e) => libelle(e.element)),
+    zip: `/api/projects/${projectId}/brand/zip`,
+  };
+}
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -68,5 +106,6 @@ export function brandSheetOf(projectId: string): BrandSheet {
       if (!pl?.image) return [];
       return [{ key: x.key, name: x.name, url: assetUrl({ id: pl.image.id }), download: assetUrl({ id: pl.image.id }, { download: true }), w: pl.image.w, h: pl.image.h, caseDuDomaine: caseDuDomaine({ domaine: pl.domaine, statut: pl.revu?.statut ?? pl.statut }) }];
     }),
+    enVrai: chosen ? vueEnVrai(j?.plancheEnVrai, projectId, (id, download) => assetUrl({ id }, download ? { download: true } : undefined)) : null,
   };
 }

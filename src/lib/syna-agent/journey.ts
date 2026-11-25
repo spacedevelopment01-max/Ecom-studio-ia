@@ -150,6 +150,11 @@ export type Journey = {
     /** Le logo qui manquait est posé (méthode des graphistes) : refaire ce qui le porte reste une reprise, à la charge du Studio. */
     studio?: boolean };
   /**
+   * La planche en vrai de l'identité choisie (25 novembre 2026, réglage `sina.planche.envrai`) : la planche de
+   * démonstration refaite à l'identique en haute définition, ses dix versions du logo, sa palette mesurée et ses polices.
+   */
+  plancheEnVrai?: import("./planche-en-vrai").EtatPlancheEnVrai;
+  /**
    * La méthode des graphistes (24 novembre 2026) : le métier, les esquisses montrées (jamais une refusée), le choix du
    * client (2, 3 ou 4 selon son forfait) et les logos finis (`logo-graphistes.ts`). Les anciens projets n'en ont pas.
    */
@@ -346,6 +351,8 @@ export const FIELD_LABEL: Record<StartField, { fr: string; en: string }> = {
 const FIXE = "\u0000fixe\u0000";
 const fixe = (t: string) => `${FIXE}${t}`;
 /** Ce que SINA dit en une phrase en présentant les planches de marque (accord écrit du propriétaire du 24 novembre 2026). */
+/** Ce que SINA sait quand la planche en vrai est allumée et la planche de marque faite (plus de mélange). */
+export const PHRASE_SANS_MELANGE = "Le mélange de deux identités n'est plus proposé : il choisit une planche telle qu'elle est, et je la refais en vrai, à l'identique ; s'il le demande, dis-le-lui simplement.";
 export const PHRASE_DE_LA_PLANCHE = { fr: "Chaque planche est une présentation de ton identité : ta marque finie et ton site garderont tes vraies informations.", en: "Each board is a presentation of your identity: your finished brand and your site will keep your real information." };
 /** Les lignes du contexte : sans repère (tout dans le contexte), ou sans les consignes fixes (données à part). */
 const tri = (lines: string[], aPart: boolean | undefined) => (aPart ? lines.filter((l) => !l.startsWith(FIXE)) : lines.map((l) => (l.startsWith(FIXE) ? l.slice(FIXE.length) : l)));
@@ -589,6 +596,9 @@ function identityStepContext(j: Journey, count?: number): string[] {
   ];
   // Jamais une planche incomplète : une planche gardée de côté n'est ni affichée, ni décrite (règle du propriétaire).
   const montrees = planchesMontrees(j), cachees = planchesIncompletes(j).map((h) => ({ ...h, name: id.list.find((x) => x.key === h.key)?.name ?? h.key }));
+  // La planche en vrai (25 novembre 2026, réglage « sina.planche.envrai », REGLAGE_PLANCHE_EN_VRAI) : une fois la planche de
+  // marque faite, le mélange de deux identités n'est plus proposé (identity.choose le refuse proprement).
+  const sansMelange = getJsonSetting<boolean>("sina.planche.envrai", false) === true && montrees.some((x) => x.board?.planche?.image);
   const MANQUE: Record<string, string> = { logo: "le logo", hero: "la grande scène", site: "le haut du site", planche: "la planche de marque" };
   const manqueDe = (m: string[]) => m.map((s) => MANQUE[s] ?? s).join(", ");
   if (!montrees.length) return [
@@ -603,7 +613,7 @@ function identityStepContext(j: Journey, count?: number): string[] {
     // Ce que SINA dit des images vient du relecteur, jamais d'elle (essai réel de Nadia : « les hauts de site des trois
     // sont soignés », alors que l'un était noté 5 sur 10).
     ...(montrees.some((x) => x.board?.images) ? [`Relecture des images, à reprendre telle quelle quand tu en parles (la note et les mots du relecteur ; jamais un éloge qu'il n'a pas dit, jamais « soigné », « magnifique » ni « réussi » sans ses mots) : ${montrees.filter((x) => x.board?.images).map((x) => `${x.key} « ${x.name} » — ${(["logo", "hero", "site"] as const).filter((k) => x.board!.images![k]).map((k) => `${MANQUE[k]} : ${phraseDuVerdict(verdictDuRelecteur(x.board!.images![k]!.id))}`).join(" ; ")}`).join(" | ")}.`] : []),
-    fixe("Tu VOIS le logo, la grande scène et la maquette du haut du site de chaque planche montrée (images jointes à ta réponse) : regarde-les avant d'en parler. Ce que tu en dis vient de la relecture ci-dessus : sa note et ses mots, rien de plus ; ce qui est raté se dit raté. Chaque planche montre l'idée, le nom, le logo, la grande scène, la maquette du haut de son site sur téléphone, les couleurs, les polices et la voix ; l'objet qui porte le logo, les signes en photo et trois publications sont créés pour l'identité qu'il choisit, dès son choix (déjà compris dans son accord) : dis-le en une phrase. Présente-les en une ligne courte chacune (l'idée de chacune et ce qui la distingue), sans recopier les planches, dis laquelle tu recommandes et pourquoi en une phrase, puis demande laquelle il préfère. Chaque planche dit « ce qui reste à prouver » : ne présente jamais ces points comme acquis. Il peut : en choisir une ; MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question."),
+    fixe(`Tu VOIS le logo, la grande scène et la maquette du haut du site de chaque planche montrée (images jointes à ta réponse) : regarde-les avant d'en parler. Ce que tu en dis vient de la relecture ci-dessus : sa note et ses mots, rien de plus ; ce qui est raté se dit raté. Chaque planche montre l'idée, le nom, le logo, la grande scène, la maquette du haut de son site sur téléphone, les couleurs, les polices et la voix ; l'objet qui porte le logo, les signes en photo et trois publications sont créés pour l'identité qu'il choisit, dès son choix (déjà compris dans son accord) : dis-le en une phrase. Présente-les en une ligne courte chacune (l'idée de chacune et ce qui la distingue), sans recopier les planches, dis laquelle tu recommandes et pourquoi en une phrase, puis demande laquelle il préfère. Chaque planche dit « ce qui reste à prouver » : ne présente jamais ces points comme acquis. Il peut : en choisir une ; ${sansMelange ? "" : "MÉLANGER (ex. le nom de A avec les couleurs de C → identity.choose key « A », mix {palette: « C »}) ; "}retoucher le nom ou le slogan avec ses mots (identity.choose name / slogan) ; ou demander une nouvelle proposition (identity.propose avec guidance = ses mots, et redo = les identités à refaire s'il en garde certaines). Ne choisis jamais à sa place ; en cas de doute sur son choix, pose UNE question.${sansMelange ? ` ${PHRASE_SANS_MELANGE}` : ""}`),
   ];
   if (id.issues.length) out.push(`Points que le contrôle du Studio n'a pas pu valider (dis-les honnêtement au client, en mots simples) : ${id.issues.join(" ; ")}.`);
   // La planche de marque par OpenAI (nouveaux projets) : une présentation ; la marque finie et le site gardent les vraies

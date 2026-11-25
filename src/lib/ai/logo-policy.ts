@@ -55,6 +55,15 @@ export const PERMISSION_DE_LA_PLANCHE = { chemin: "aiPlancheDeMarque", provider:
 /** Ce modèle est-il permis sur le chemin direct de la planche de marque (et seulement là) ? */
 export const permisPourLaPlanche = (chemin: string, provider: string, model: string): boolean =>
   chemin === PERMISSION_DE_LA_PLANCHE.chemin && provider === PERMISSION_DE_LA_PLANCHE.provider && model === PERMISSION_DE_LA_PLANCHE.model;
+/**
+ * LA PLANCHE EN VRAI (demande du propriétaire du 25 novembre 2026, « Oui lance la construction ») : le chemin direct
+ * `aiElementDeLaPlanche` (media-providers.ts) refait chaque image de la planche choisie, à l'identique, avec le modèle
+ * réservé aux logos et à leur planche, sans passer par le routage, sans secours. Le verrou reste partout ailleurs.
+ */
+export const PERMISSION_DE_LA_PLANCHE_EN_VRAI = { chemin: "aiElementDeLaPlanche", provider: REQUIRED_LOGO_PROVIDER, model: LOGO_ONLY_MODEL } as const;
+/** Ce modèle est-il permis sur le chemin direct de la planche en vrai (et seulement là) ? */
+export const permisPourLaPlancheEnVrai = (chemin: string, provider: string, model: string): boolean =>
+  chemin === PERMISSION_DE_LA_PLANCHE_EN_VRAI.chemin && provider === PERMISSION_DE_LA_PLANCHE_EN_VRAI.provider && model === PERMISSION_DE_LA_PLANCHE_EN_VRAI.model;
 /** Ce modèle est-il permis pour CE temps du logo ? */
 export function modelePermisPour(temps: TempsDuLogo, provider: string, model: string): boolean {
   if (provider !== REQUIRED_LOGO_PROVIDER) return false;
