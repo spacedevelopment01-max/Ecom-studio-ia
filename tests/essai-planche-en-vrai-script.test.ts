@@ -10,6 +10,7 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { afterEach, describe, expect, it } from "vitest";
+import { VERSIONS_DU_LOGO } from "@/lib/syna-agent/planche-en-vrai-code";
 
 const MAGENTA = "#FF00FF";
 const uni = (w: number, h: number, c: string) => sharp({ create: { width: w, height: h, channels: 3, background: c } }).png().toBuffer();
@@ -238,7 +239,8 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     expect(s.stage).toBe("finished");
     expect(s.name).toBe("Racine");
     expect(s.enVrai?.planche).toMatchObject({ w: 3072, h: 4608 });
-    expect(s.enVrai?.logos).toHaveLength(10);
+    // Les dix versions, puis le symbole seul, le favicon 32, l'icône 512 et l'avatar : une seule section des logos.
+    expect(s.enVrai?.logos.map((l) => l.version)).toEqual([...VERSIONS_DU_LOGO, "symbole", "favicon-32", "icone-512", "avatar"]);
     expect(s.enVrai?.couleurs.map((c) => c.hex)).toEqual(r.etat!.palette.map((p) => p.hex));
     expect(s.enVrai?.polices.map((p) => p.famille)).toEqual(["Playfair Display", "Montserrat"]);
     expect(s.enVrai?.images).toHaveLength(17);
@@ -281,7 +283,8 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     const { runWithLang } = await import("@/lib/i18n-server");
     const { brandSheetOf } = await import("@/lib/syna-agent/brand-sheet");
     const s = runWithLang({ ui: "fr", content: "fr" }, () => brandSheetOf(r.projectId!));
-    expect(s.enVrai?.logos).toHaveLength(10);
+    // Les dix versions, puis le symbole seul, le favicon 32, l'icône 512 et l'avatar : une seule section des logos.
+    expect(s.enVrai?.logos.map((l) => l.version)).toEqual([...VERSIONS_DU_LOGO, "symbole", "favicon-32", "icone-512", "avatar"]);
     expect(s.enVrai?.planche).toMatchObject({ w: 3072, h: 4608 });
     // Relancé une seconde fois : le même fil, rien n'est doublé.
     const e2 = await preparerLEcran({ projectId: r.projectId!, etat, port: 3493 });

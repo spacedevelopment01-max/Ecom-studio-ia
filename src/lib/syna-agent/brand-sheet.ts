@@ -107,8 +107,26 @@ export function brandSheetOf(projectId: string): BrandSheet {
       if (!pl?.image) return [];
       return [{ key: x.key, name: x.name, url: assetUrl({ id: pl.image.id }), download: assetUrl({ id: pl.image.id }, { download: true }), w: pl.image.w, h: pl.image.h, caseDuDomaine: caseDuDomaine({ domaine: pl.domaine, statut: pl.revu?.statut ?? pl.statut }) }];
     }),
-    enVrai: chosen ? avecLesRoles(vueEnVrai(j?.plancheEnVrai, projectId, (id, download) => assetUrl({ id }, download ? { download: true } : undefined)), colors) : null,
+    enVrai: chosen ? avecLesFichiersDuLogo(avecLesRoles(vueEnVrai(j?.plancheEnVrai, projectId, (id, download) => assetUrl({ id }, download ? { download: true } : undefined)), colors), {
+      symbole: b?.logo?.markAssetId ?? null, favicons: j?.plancheEnVrai?.favicons ?? null, svg: j?.brandKit?.items.find((x) => x.key === "svg")?.assetId ?? null,
+    }, (id, download) => assetUrl({ id }, download ? { download: true } : undefined)) : null,
   };
+}
+
+/**
+ * Avec la planche en vrai, une seule section des logos (25 novembre 2026 : « Ta charte et tes fichiers » répétait « Tes
+ * logos ») : après les dix versions, le symbole seul, le favicon 32, l'icône 512, l'avatar des réseaux et le logo vectoriel,
+ * chacun en haute définition à télécharger seul ; jamais un fichier en double.
+ */
+export function avecLesFichiersDuLogo(v: VueEnVrai | null, f: { symbole?: string | null; favicons?: { f32: string; f512: string; avatar: string } | null; svg?: string | null }, url: (id: string, download?: boolean) => string): VueEnVrai | null {
+  if (!v) return v;
+  const deja = new Set(v.logos.map((l) => l.url));
+  const autres = ([
+    ["symbole", f.symbole, "Symbole seul", "Symbol only"], ["favicon-32", f.favicons?.f32, "Favicon 32 px", "Favicon 32 px"],
+    ["icone-512", f.favicons?.f512, "Icône 512 px", "Icon 512 px"], ["avatar", f.favicons?.avatar, "Avatar des réseaux", "Social avatar"],
+    ["svg", f.svg, "Logo vectoriel (SVG)", "Vector logo (SVG)"],
+  ] as const).filter(([, id]) => id && !deja.has(url(id))).map(([version, id, fr, en]) => ({ version, label: L(fr, en), url: url(id!), download: url(id!, true) }));
+  return { ...v, logos: [...v.logos, ...autres] };
 }
 
 /** Le rôle de chaque couleur de la planche en vrai, lu dans la marque du projet (la palette mesurée, rôles donnés par le code). */
