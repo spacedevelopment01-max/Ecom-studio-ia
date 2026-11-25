@@ -1,0 +1,52 @@
+Essai de la finalisation des logos — client « Écume » (savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes), type « produits »
+Plafond de l'essai : 2,2000 €
+Phrase du métier (essai des esquisses, jamais réécrite) : une savonnerie artisanale qui fabrique et vend en ligne des savons solides, des shampoings solides et des baumes
+Esquisses : 6 (/home/user/Ecom-studio-ia/data/essai-ecume/1-esquisses-2/esquisse-06.png), 10 (/home/user/Ecom-studio-ia/data/essai-ecume/1-esquisses-2/esquisse-10.png)
+Phrase sous le nom du logo 6 : 2 lignes, dans l'ordre, « SAVONNERIE ARTISANALE » puis « BULLES DE SOIN AU NATUREL », mot pour mot
+Phrase sous le nom du logo 10 : 2 lignes, dans l'ordre, « SAVONNERIE » puis « ARTISANALE », mot pour mot
+
+Devis de l'essai (fonctions du devis du Studio, aucun appel) :
+- esquisse 6 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 6 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 6 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 6 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 6 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 6 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 10 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 10 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 10 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 10 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 10 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 10 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+Probable, sans refus : 0,1927 € (devis du Studio : 0,1927 €)
+Probable, si chaque logo est refait une fois et son texte réécrit : 0,3854 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima) : 2,1906 €
+  dont plafond du client de la tâche 1,0953 € et borne du Studio 1,0953 € (devisDesFinalisations)
+Écart entre le probable et ce plafond : 1,9979 €
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 2,1529 € de plus en tout ; la tâche du parcours ne la couvre pas (elle s'arrêterait sur sa propre borne).
+
+
+Esquisse 6 : logo GARDÉ par le relecteur
+  essai 1 : texte esquisse-06-logo-1-texte-envoye.txt ; image jointe esquisse-06-logo-1-image-jointe.png ; logo brut esquisse-06-logo-1-brut.png ; détouré esquisse-06-logo-1-detoure.png
+    verdict : note 9/10, nom lu « écume », idée conservée oui, phrase « SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL », défauts graves aucun, petites finitions « Le « u » et le « m » sont très serrés et semblent presque se toucher : un peu plus d'espace entre eux rendrait la lecture plus fluide en petit. » —Le nom est écrit exactement, avec son accent. Les trois bulles au-dessus du « m » sont bien gardées et simplifiées, et les deux lignes sont recopiées lettre pour lettre sur un fond blanc uni. Le seul point à reprendre est un petit resserrement entre le « u » et le « m ».
+    raisons du refus : aucune
+  phrase portée par le logo gardé : « SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL » (esquisse-06-phrase-du-logo.txt, à redonner en PHRASE à la planche en vrai)
+  note : logo 1 : petites finitions notées, sans refus : Le « u » et le « m » sont très serrés et semblent presque se toucher : un peu plus d'espace entre eux rendrait la lecture plus fluide en petit.
+
+Esquisse 10 : logo GARDÉ par le relecteur
+  essai 1 : texte esquisse-10-logo-1-texte-envoye.txt ; image jointe esquisse-10-logo-1-image-jointe.png ; logo brut esquisse-10-logo-1-brut.png ; détouré esquisse-10-logo-1-detoure.png
+    verdict : note 9/10, nom lu « Écume », idée conservée oui, phrase « SAVONNERIE / ARTISANALE », défauts graves aucun, petites finitions « L'accent du É est un peu décalé vers la gauche par rapport à la lettre. ; Le jambage du milieu du m est un peu plus court que les deux autres. ; L'épaisseur des arcs de mousse varie un peu d'un arc à l'autre. » —Le nom est bien écrit, accent compris, et l'idée de l'esquisse est gardée : la crête de mousse et ses deux bulles au-dessus, la vague effilée en dessous. Le dessin est net, les deux lignes sont exactes et le fond est blanc uni ; il ne reste que de petites finitions.
+    raisons du refus : aucune
+  phrase portée par le logo gardé : « SAVONNERIE / ARTISANALE » (esquisse-10-phrase-du-logo.txt, à redonner en PHRASE à la planche en vrai)
+  note : logo 1 : petites finitions notées, sans refus : L'accent du É est un peu décalé vers la gauche par rapport à la lettre. ; Le jambage du milieu du m est un peu plus court que les deux autres. ; L'épaisseur des arcs de mousse varie un peu d'un arc à l'autre.
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 90b1584b16b0112b81cd5d6cf0a0bbe1770dd187a8c643482ef1b92376279755 · openai:gpt-6.2-astra · charge du client · réservé 0,2316 € → réglé 0,0232 € (settled) · jetons 1187 en entrée, 436 en sortie
+- 5bfe627f682408049d575a56a4e3b1f643be317468e610ac3665143442ff2ec7 · openai:gpt-image-2.6-sunburst · charge du client · réservé 0,0822 € → réglé 0,0618 € (settled) · jetons 1408 en entrée, 2058 en sortie
+- 12e1f7ac7f23a1ebaef927ef929ea7e63ecc97eb8e7bd1aae4ff2dc3f4bf1195 · anthropic:claude-opus-5-5 · charge du client · réservé 0,2012 € → réglé 0,0265 € (settled) · jetons 2537 en entrée, 674 en sortie
+- 602bb549610698b42cb0386e7121045d59a2fee46b783fd42bee502b30c50936 · openai:gpt-6.2-astra · charge du client · réservé 0,2315 € → réglé 0,0220 € (settled) · jetons 1178 en entrée, 403 en sortie
+- 1b13e6eb998d9fc1672fd7ea48a0a165ea9ef661a6ad1fbded5de4edae89039f · openai:gpt-image-2.6-sunburst · charge du client · réservé 0,0813 € → réglé 0,0617 € (settled) · jetons 1376 en entrée, 2058 en sortie
+- 9d1029523a6cc8385288960b32af1774f6f80a6b3324b9abd6af8ade4799a8bd · anthropic:claude-opus-5-5 · charge du client · réservé 0,2022 € → réglé 0,0203 € (settled) · jetons 2741 en entrée, 620 en sortie
+
+Dépense réelle comptée par le Studio : 0,2154 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).

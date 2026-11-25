@@ -1,0 +1,35 @@
+{
+  "endpoint": "POST /v1/images/edits (multipart, image[])",
+  "modele": "gpt-image-2.6-sunburst",
+  "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Écume, une savonnerie artisanale qui fabrique et vend en ligne des savons solides, des shampoings solides et des baumes. Conserve l’idée centrale : trois bulles de tailles différentes s’élèvent au-dessus du « m » et leurs contours fins font écho aux déliés du nom « écume ». Redessine les lettres pour donner au nom une silhouette plus distinctive : affine les empattements, précise le galbe des deux « e » et soigne la forme de l’accent aigu sans compromettre la lisibilité. Retravaille les proportions des lettres et l’espace entre chaque paire, puis ajuste la hauteur du groupe de bulles pour équilibrer la composition et renforcer la présence du nom. Simplifie les bulles en supprimant les traits de reflet : le rythme des trois cercles doit suffire à évoquer la mousse. Fais évoluer ce dialogue entre les courbes du lettrage et celles des bulles vers une identité plus aboutie et reconnaissable, plutôt que de simplement nettoyer ou agrandir l’esquisse. Reste dans le violet grisé de l’esquisse, en aplat suffisamment soutenu pour que même les petits caractères restent nets sur blanc. Sous le nom, compose en petites capitales discrètes les deux lignes suivantes, exactement dans cet ordre, chacune sur sa ligne, sans modifier ni omettre une seule lettre ni un seul accent ; elles remplacent toute ligne descriptive, sans autre texte :\nSAVONNERIE ARTISANALE\nBULLES DE SOIN AU NATUREL\n\nstyle vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+  "reglages": {
+    "model": "gpt-image-2.6-sunburst",
+    "quality": "high",
+    "size": "auto",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "requestId": "req_22ff9703d26b41f3be83379d33a08636",
+  "usage": {
+    "input_tokens": 1408,
+    "input_tokens_details": {
+      "image_tokens": 1024,
+      "text_tokens": 384
+    },
+    "output_tokens": 2058,
+    "output_tokens_details": {
+      "image_tokens": 2058,
+      "text_tokens": 0
+    },
+    "total_tokens": 3466
+  },
+  "coutMicro": 61793,
+  "dureeMs": 33120,
+  "renvoye": {
+    "quality": "high",
+    "size": "1254x1254",
+    "background": "opaque",
+    "output_format": "png"
+  }
+}

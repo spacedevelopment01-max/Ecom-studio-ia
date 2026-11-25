@@ -1,0 +1,28 @@
+(node:147) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:158) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Phrase sous le nom du logo 6 : 2 lignes, dans l'ordre, « SAVONNERIE ARTISANALE » puis « BULLES DE SOIN AU NATUREL », mot pour mot
+Phrase sous le nom du logo 10 : 2 lignes, dans l'ordre, « SAVONNERIE » puis « ARTISANALE », mot pour mot
+Devis de l'essai (fonctions du devis du Studio, aucun appel) :
+- esquisse 6 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 6 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 6 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 6 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 6 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 6 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 10 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 10 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 10 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 10 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 10 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 10 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+Probable, sans refus : 0,1927 € (devis du Studio : 0,1927 €)
+Probable, si chaque logo est refait une fois et son texte réécrit : 0,3854 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima) : 2,1906 €
+  dont plafond du client de la tâche 1,0953 € et borne du Studio 1,0953 € (devisDesFinalisations)
+Écart entre le probable et ce plafond : 1,9979 €
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 2,1529 € de plus en tout ; la tâche du parcours ne la couvre pas (elle s'arrêterait sur sa propre borne).
+(node:158) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+2 logo(s) gardé(s) sur 2, dépense comptée 0,2154 €. Rapport : /home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/rapport.txt
