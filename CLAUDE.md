@@ -117,7 +117,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   ni goûts, ni logos joints). **Le tri** : le Studio découpe gratuitement (le fond comparé à sa vraie couleur, mesurée :
   aucune forme visible coupée, une marge gardée), refuse une case vide, coupée ou collée au bord ; le relecteur le plus
   fort, effort moyen, relit toutes les esquisses en un appel (entière, rien de la voisine, nom exact comparé par le
-  code, pas d'arche) ; une esquisse refusée n'est jamais montrée. **Toujours 12 esquisses correctes** (25 novembre 2026 :
+  code ; une arche, un médaillon ou un badge rond sont permis) ; une esquisse refusée n'est jamais montrée. **Toujours 12 esquisses correctes** (25 novembre 2026 :
   « La création de la planche de logo, et jamais au grand jamais on propose une planche de logo sans les 12 logos fait
   correctement », puis « Non sina doit réussir à faire les 12 logos correctement sur la planche ») : 6 de chaque modèle ;
   chaque écartée est remplacée avec le même modèle, par une nouvelle planche de six (moins chère qu'une esquisse seule),
@@ -135,14 +135,14 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   qui la fait écrire exactement, en petit sous le nom ; sans son choix, une ligne seulement si elle dit le vrai métier),
   contrôlé gratuitement (la phrase choisie y figure mot pour mot) ; le modèle d'images de finalisation le dessine à
   partir de l'esquisse. **La relecture** : le relecteur le plus fort, effort élevé, refuse un nom mal écrit, une idée
-  perdue, une arche, une phrase inventée, une note sous 8 ; une phrase choisie par le client n'est jamais « inventée » :
+  perdue, une phrase inventée, une note sous 8 ; une phrase choisie par le client n'est jamais « inventée » :
   le code la compare lettre pour lettre, et mal écrite, elle fait refuser le logo comme un nom mal écrit ; jamais un logo
   parce qu'il est trop proche de son esquisse (« Ouais » du 24 novembre, à « Je fais retirer cette règle et je relance
   la finalisation du R bordeaux ? ») ; **il juge l'exécution, jamais l'idée**, que le client a choisie parmi les
   esquisses (25 novembre 2026 : quatre logos finis de Racine refusés à 6,5, 7, 7 et 7, dont la feuille sur le i pour « un
   cliché courant du secteur végétal » ; à la question « Ces logos finis te paraissent assez bons pour être montrés à un
   client ? », sa réponse : « Oui très bien je mettrais 9/10 ») : il regarde le nom exact, l'idée bien gardée, un dessin
-  net (raccords, proportions, lisible en petit), pas d'arche, pas de phrase inventée, un fond qui se retire ; un logo
+  net (raccords, proportions, lisible en petit), pas de phrase inventée, un fond qui se retire ; un logo
   propre, fidèle à l'esquisse et sans défaut visible vaut 8 ou plus, avec ces mots du propriétaire pour repère, sans
   aucune image d'essai ; une raison qui juge l'idée (cliché du secteur, idée banale, peu originale) ne fait jamais
   refuser : le code l'écarte, même si le relecteur la donne ; **les petites finitions ne font pas refuser** (25 novembre
@@ -164,7 +164,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   demande jamais au client ce qu'il veut dans son logo. « Un autre logo » : d'abord une autre esquisse déjà vue, puis
   « d'autres pistes » ; un changement de couleur demandé par le client est une retouche ; les trois sur son budget,
   avec une carte. Le Studio retire le fond, creux des lettres compris ; un fond qu'il ne sait pas retirer fait refaire
-  le logo. Le favicon reprend le logo. Détail : `docs/studio/LOGO-METHODE-DES-GRAPHISTES.md`.
+  le logo. Le favicon reprend le logo. **Pas de critère « arche » pour les logos** (25 novembre 2026, accord écrit : « une arche, un médaillon ou un badge rond ne font plus écarter une esquisse ni refuser un logo fini ; la règle sans arche reste pour les photos du site ») : la règle `sansArche` ne vaut que pour les photos du site. Détail : `docs/studio/LOGO-METHODE-DES-GRAPHISTES.md`.
 - **Photos de la marque** : les photos reçoivent des consignes de base dites en positif (bord à bord, écran du site rempli, texte net sur
   une zone calme, aucun objet vierge sans rôle) ; le relecteur relit chaque image seule et ne garde que ce qu'il note
   8 sur 10 ou plus.

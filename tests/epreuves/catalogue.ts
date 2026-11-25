@@ -135,14 +135,11 @@ const SOURCE_RELECTEUR_EXECUTION = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (
  */
 const REPRISE_DU_REFUSE = { decision: "25 novembre 2026", mots: "« Oui, marque logo-refait-une-fois-avec-ses-raisons, relecteur-juge-l-execution-pas-l-idee et planche-refusee-deux-fois-jamais-montree comme remplacées par mes décisions du 25 novembre, ajoute et scelle reprise-du-logo-a-partir-du-refuse (à la reprise, le dessinateur reçoit le logo refusé et, au début du texte, les corrections précises ; tout le reste à l'identique), relecteur-petites-finitions-sans-refus (un petit défaut de finition est transmis comme correction mais ne fait pas refuser ; « Le racine du milieu est très bien aussi ») et relecteur-de-planche-texte-lisible-et-promesses-mesurables (les micro-textes décoratifs illisibles ne sont pas jugés et seules les promesses mesurables ou les garanties font refuser ; « C'est très bien »), et mets à jour les parties Logo et Identité de CLAUDE.md. »" };
 /**
- * L'ACCORD ÉCRIT ENCORE À RECEVOIR (25 novembre 2026). Une décision du propriétaire, relayée par le chef d'orchestre,
- * contredit une épreuve scellée : l'épreuve est marquée remplacée, et sa phrase d'accord écrite, mot pour mot, n'est pas
- * encore là. `ACCORD_A_COMPLETER` tient sa place ; le banc n'accepte ce manque que pour les épreuves nommées dans son
- * test, et la phrase d'accord le remplacera à son arrivée.
+ * Le critère « arche » retiré pour les logos (25 novembre 2026, décision relayée par le chef d'orchestre). Son accord
+ * écrit pour marquer relecteur-petites-finitions-sans-refus remplacée, mot pour mot (25 novembre 2026, écrit dans la
+ * conversation de construction).
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-/** Le critère « arche » retiré pour les logos (25 novembre 2026, décision relayée par le chef d'orchestre). */
-const SANS_ARCHE = { decision: "25 novembre 2026", mots: ACCORD_A_COMPLETER };
+const SANS_ARCHE = { decision: "25 novembre 2026", mots: "« Oui, marque relecteur-petites-finitions-sans-refus comme remplacée par ma décision du 25 novembre, ajoute et scelle relecteur-du-logo-sans-arche (une arche, un médaillon ou un badge rond ne font plus écarter une esquisse ni refuser un logo fini ; la règle sans arche reste pour les photos du site), et mets à jour la partie Logo de CLAUDE.md. »" };
 const SOURCE_ESSAI_ECUME = "docs/studio/ESSAI-ECUME.md (essai réel d'Écume du 25 novembre 2026, étape 1 : docs/studio/essais-complets/images/ecume/1-esquisses, branche claude/essais-complets ; décisions du propriétaire relayées mot pour mot par le chef d'orchestre)";
 const SOURCE_PETITES_FINITIONS = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (partie « Les petites finitions ne font pas refuser (25 novembre au soir) » ; preuves : docs/studio/essais-complets/images/racine/finalisation-execution/esquisse-04-logo-2-brut.png, branche claude/essais-complets, commit 06750e4 ; ses mots relayés par le chef d'orchestre)";
 const SOURCE_PLANCHE_LISIBLE = "docs/studio/PLANCHE-DE-MARQUE.md (partie « Le relecteur de la planche : le texte lisible et les promesses mesurables (25 novembre) » ; preuves : docs/studio/essais-complets/images/racine/planches-execution, branche claude/essais-complets, commit 86645c7 ; ses mots relayés par le chef d'orchestre)";
