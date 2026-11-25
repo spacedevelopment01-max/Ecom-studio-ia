@@ -164,3 +164,12 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
 - Voix ElevenLabs (dialogue eleven_v3, stability 0) : conseiller Julien (imitations), client Hugo (téléphone).
   Limites des 28 répliques imposées d'après le volume du son (la transcription se trompe), montage vérifié par
   retranscription. 1 min 20. Environ 2 160 caractères, autour de 60 centimes.
+
+## Sketch « Quand ton père t'appelle pour un problème de téléphone »
+
+- Voix ElevenLabs (dialogue eleven_v3, stability 0) : fils Julien (papd083UqIoSWdSkh3fG), père Olivier
+  (GFj5Qf6cNQ3Lgp8VKBwc, vieux monsieur de dessin animé), effet téléphone sur le père, bip et sonnerie fabriqués
+  par le code. 1 min 02 (sans accélération, pour rester au-dessus de la minute). Environ 1 500 caractères, ~45 c.
+- Leçons du sketch « Schwartz » appliquées : **bouche calée sur le volume réel de la voix** (`bouche.json`, une valeur
+  par image) au lieu d'un battement automatique ; pas de bras levé ; visage qui réagit seulement. Bulle « selfie » du
+  père à lunettes quand on parle du « monsieur ».
