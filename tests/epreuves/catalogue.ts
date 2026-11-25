@@ -104,11 +104,10 @@ const SOURCE_PHRASE_SOUS_LE_NOM = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (p
  * feuille sur le i pour « un cliché courant du secteur végétal », l'idée même que le client avait choisie. Le propriétaire,
  * à la question « Ces logos finis te paraissent assez bons pour être montrés à un client ? » : « Oui très bien je
  * mettrais 9/10 ». Cela contredit relecteur-sans-refus-pour-trop-proche (« il est refusé si … une note sous 8 » : une
- * note sous 8 qui ne tient qu'à l'idée ne fait plus refuser). Son accord écrit pour la marquer remplacée est encore à
- * recevoir : `ACCORD_A_COMPLETER` tient sa place, et le banc n'accepte ce manque que pour elle.
+ * note sous 8 qui ne tient qu'à l'idée ne fait plus refuser). Son accord écrit pour la marquer remplacée, mot pour
+ * mot (25 novembre 2026, écrit dans la conversation de construction, sans point final).
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-const RELECTEUR_EXECUTION = { decision: "25 novembre 2026", mots: ACCORD_A_COMPLETER };
+const RELECTEUR_EXECUTION = { decision: "25 novembre 2026", mots: "« Oui, marque relecteur-sans-refus-pour-trop-proche comme remplacée par ma décision du 25 novembre, ajoute et scelle relecteur-juge-l-execution-pas-l-idee (le relecteur du logo fini juge l'exécution, jamais l'idée que le client a choisie ; une raison comme « cliché du secteur » ne fait jamais refuser), et mets à jour la partie Logo de CLAUDE.md »" };
 const SOURCE_RELECTEUR_EXECUTION = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (partie « Le relecteur juge l'exécution, pas l'idée (25 novembre) » ; preuves : docs/studio/essais-complets/images/racine/finalisation-4-r-bordeaux, branche claude/essais-complets ; ses mots relayés par le chef d'orchestre)";
 
 /**

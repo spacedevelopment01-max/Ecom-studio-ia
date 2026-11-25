@@ -222,10 +222,7 @@ contredites : `logo-refait-une-fois-avec-ses-raisons` (un logo refusé est toujo
 note sous 8 sans explication reste un refus), `phrase-de-l-esquisse-au-choix-du-client` (rien ne change pour la phrase),
 `logo-relu-avant-ce-qui-le-porte` (rien ne change dans l'ordre).
 
-**La phrase d'accord à lui proposer :** « Oui, marque relecteur-sans-refus-pour-trop-proche comme remplacée par ma
-décision du 25 novembre, ajoute et scelle relecteur-juge-l-execution-pas-l-idee (le relecteur du logo fini juge
-l'exécution, jamais l'idée que le client a choisie ; une raison comme « cliché du secteur » ne fait jamais refuser), et
-mets à jour la partie Logo de CLAUDE.md. »
+**Son accord écrit, mot pour mot (25 novembre 2026) :** « Oui, marque relecteur-sans-refus-pour-trop-proche comme remplacée par ma décision du 25 novembre, ajoute et scelle relecteur-juge-l-execution-pas-l-idee (le relecteur du logo fini juge l'exécution, jamais l'idée que le client a choisie ; une raison comme « cliché du secteur » ne fait jamais refuser), et mets à jour la partie Logo de CLAUDE.md »
 
 ## Le point 0 : tranché
 
