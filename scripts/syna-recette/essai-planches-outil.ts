@@ -4,68 +4,17 @@
  * dit tout. Il n'appelle que les fonctions du Studio (planche-de-marque.ts, planche-de-marque-tache.ts :
  * `valeursDuClient`, `plancheDeLaRoute`, `vraisAppelsDeLaPlanche`) et s'arrête aux planches relues. Rien n'est relancé.
  */
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { PlancheAi } from "../../src/lib/syna-agent/planche-de-marque-tache";
 import type { RelectureDeLaPlanche, ValeursDuMetier } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
-import { euros } from "./essai-esquisses-outil";
+import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 
-export { euros };
-
-// ---------------------------------------------------------------- les entrées
-
-/** Le client inventé de l'essai : ce que sa fiche dit, avec ses mots. */
-export type ClientDeLEssai = {
-  nom: string;
-  /** Le métier en mots simples, tel que la recherche du logo l'a écrit (« pépiniériste qui vend des plantes en ligne »). */
-  metier: string;
-  kind: "produits" | "services";
-  /** Ses produits ou prestations réels, avec ses mots. */
-  produits: string[];
-  /** Le mot du métier pour les adresses de remplacement (findDomains), facultatif. */
-  descripteur?: string | null;
-};
-
-/** Racine, par défaut : le client des essais des esquisses et de la finalisation ; ses produits, ceux de sa planche d'essai. */
-export const RACINE: ClientDeLEssai = { nom: "Racine", metier: "pépiniériste qui vend des plantes en ligne", kind: "produits", produits: ["plantes d'intérieur", "arbustes", "jeunes arbres"] };
-
-/**
- * Le client de l'essai : un fichier JSON (CLIENT_JSON) ou les variables CLIENT_NOM, CLIENT_METIER, CLIENT_TYPE
- * (« produits » ou « services »), CLIENT_PRODUITS (séparés par « ; »), CLIENT_DESCRIPTEUR ; sinon Racine. Rien d'incomplet
- * n'est lancé.
- */
-export function clientDeLEssai(env: Record<string, string | undefined> = process.env): ClientDeLEssai {
-  const brut: Partial<ClientDeLEssai> = env.CLIENT_JSON ? JSON.parse(fs.readFileSync(env.CLIENT_JSON, "utf8")) : {};
-  const liste = (t?: string) => t?.split(";").map((x) => x.trim()).filter(Boolean);
-  const donne = env.CLIENT_JSON || env.CLIENT_NOM || env.CLIENT_METIER || env.CLIENT_TYPE || env.CLIENT_PRODUITS;
-  const c: ClientDeLEssai = donne ? {
-    nom: (env.CLIENT_NOM ?? brut.nom ?? "").trim(),
-    metier: (env.CLIENT_METIER ?? brut.metier ?? "").trim(),
-    kind: (env.CLIENT_TYPE ?? brut.kind ?? "") as ClientDeLEssai["kind"],
-    produits: liste(env.CLIENT_PRODUITS) ?? (brut.produits ?? []).map((x) => String(x).trim()).filter(Boolean),
-    descripteur: (env.CLIENT_DESCRIPTEUR ?? brut.descripteur ?? null) || null,
-  } : { ...RACINE, descripteur: env.CLIENT_DESCRIPTEUR?.trim() || null };
-  if (!c.nom) throw new Error("Nom du client manquant (CLIENT_NOM) : rien n'est lancé.");
-  if (!c.metier) throw new Error("Métier du client manquant (CLIENT_METIER) : rien n'est lancé.");
-  if (c.kind !== "produits" && c.kind !== "services") throw new Error("Type du client manquant ou faux (CLIENT_TYPE : « produits » ou « services ») : rien n'est lancé.");
-  if (!c.produits.length) throw new Error("Produits ou prestations du client manquants (CLIENT_PRODUITS, séparés par « ; ») : rien n'est lancé.");
-  return c;
-}
-
-/** La fiche du client telle que le Studio l'écrit (`ficheTexte`), à partir de ses réponses : son activité et son offre. */
-export async function ficheDuClient(c: ClientDeLEssai, projectId?: string): Promise<string> {
-  const { ficheTexte } = await import("../../src/lib/syna-agent/fiche");
-  const at = Date.now();
-  const j = {
-    start: {
-      business: { value: c.kind === "produits" ? "products" : "services", status: "answered", source: "client", at },
-      offer: { value: `${c.metier} : ${c.produits.join(", ")}`, status: "answered", source: "client", at },
-    },
-    keep: [], steps: {},
-  };
-  return ficheTexte({ j: j as never, notes: [], projectId: projectId ?? null });
-}
+// Le client inventé de l'essai (client-de-l-essai.ts) : aucun client n'est pris par défaut.
+export { clientDeLEssai, euros, ficheDuClient };
+export type { ClientDeLEssai };
 
 // ---------------------------------------------------------------- le devis, sans aucun appel
 
@@ -194,7 +143,7 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
   const devis = await devisDeLEssai(logos.length);
   // 1. Le client inventé et son projet.
   const u = await account();
-  const projectId = project(u, client.kind === "produits" ? "products" : "services") as string;
+  const projectId = project(u, typeDuProjet(client)) as string;
   run("UPDATE projects SET name=? WHERE id=?", client.nom, projectId);
   const jobId = `essai-planches-${id()}`;
   const qui: Qui = { userId: u.id, projectId, jobId };
@@ -341,7 +290,7 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
         p.gardee = !!pl?.image; p.note = pl?.note;
         if (pl?.image) { const dernier = p.essais.at(-1); if (dernier?.brut) p.fichierGarde = ecrireFichier(`planche-${l.key}-gardee.png`, fs.readFileSync(path.join(o.sortie, dernier.brut))); }
         else p.raison = typeof pl?.raison === "string" ? pl.raison : "non faite";
-        ecrireFichier(`planche-${l.key}-resultat.json`, json({ planche: pl ?? null, notes: r.notes, issues: r.issues }));
+        ecrireFichier(`planche-${l.key}-resultat.json`, json({ nom: client.nom, disposition: P.laDisposition(res.valeurs?.ok ? res.valeurs.valeurs.metier : client.metier).laquelle, logo: { fichier: l.fichier, sha256: crypto.createHash("sha256").update(l.png).digest("hex") }, planche: pl ?? null, notes: r.notes, issues: r.issues }));
         if (erreur) { res.arret = raisonDeLArret(erreur, `planche ${l.key}`); break; }
         const parLEssai = arretParLEssai(jobId);
         if (parLEssai) { res.arret = raisonDeLArret(parLEssai, `planche ${l.key}`); break; }

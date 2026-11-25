@@ -1,18 +1,52 @@
 /**
- * L'essai réel de la finalisation de deux esquisses choisies (client « Racine ») : la partie qui se teste (appels simulés
- * dans les essais). Le script à lancer est scripts/syna-recette/essai-finalisation.mts, qui l'utilise ; son en-tête dit
- * tout. Il n'appelle que les fonctions de SINA (`uneFinalisation`, `vraisAppels`) et s'arrête au logo fini relu : ni
- * planche de marque, ni couleurs au-delà de ce que `uneFinalisation` tire déjà du logo, gratuitement. Rien n'est relancé.
+ * L'essai réel de la finalisation de deux esquisses choisies (le client inventé donné, client-de-l-essai.ts) : la partie
+ * qui se teste (appels simulés dans les essais). Le script à lancer est scripts/syna-recette/essai-finalisation.mts, qui
+ * l'utilise ; son en-tête dit tout. Il n'appelle que les fonctions de SINA (`uneFinalisation`, `vraisAppels`) et s'arrête
+ * au logo fini relu : ni planche de marque, ni couleurs au-delà de ce que `uneFinalisation` tire déjà du logo,
+ * gratuitement. Rien n'est relancé.
  */
 import fs from "node:fs";
 import path from "node:path";
 import type { GraphistesAi } from "../../src/lib/syna-agent/logo-graphistes";
 import type { RelectureDuLogo } from "../../src/lib/syna-agent/logo-finalisation";
-import { CLIENT, euros } from "./essai-esquisses-outil";
+import type { PhraseVoulue } from "../../src/lib/syna-agent/phrase-sous-le-nom";
+import { clientDeLEssai, euros, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 
-export { CLIENT, euros };
+export { clientDeLEssai, euros };
+export type { ClientDeLEssai };
 
 // ---------------------------------------------------------------- les entrées
+
+/**
+ * La phrase sous le nom choisie par le client, logo par logo, comme dans le parcours (logo-graphistes.ts,
+ * `controleDesPhrases` puis `phraseVoulue`) : PHRASE vaut pour tous les logos, PHRASE_<numéro> (PHRASE_4) pour le logo
+ * de cette esquisse et l'emporte. « aucune » : le logo sans phrase. Rien de donné pour un logo : la règle d'avant (une
+ * ligne seulement si elle dit le vrai métier, sinon aucune). La phrase est reprise mot pour mot, jamais corrigée ; une
+ * faute évidente (`fautesEvidentes`) fait tout refuser avant la moindre dépense, car elle ferait refuser le logo.
+ */
+export async function phrasesDeLEssai(numeros: readonly number[], env: Record<string, string | undefined> = process.env): Promise<Record<number, PhraseVoulue>> {
+  const { controleDesPhrases } = await import("../../src/lib/syna-agent/logo-graphistes");
+  const { fautesEvidentes, phraseVoulue } = await import("../../src/lib/syna-agent/phrase-sous-le-nom");
+  const demandes: { logo: number; aucune?: true; texte?: string }[] = [];
+  const mots: string[] = [];
+  for (const n of numeros) {
+    const brut = env[`PHRASE_${n}`] ?? env[`PHRASE_${String(n).padStart(2, "0")}`] ?? env.PHRASE;
+    if (brut == null || !brut.trim()) continue;
+    const t = brut.normalize("NFC").trim();
+    if (/^aucune$/i.test(t)) { demandes.push({ logo: n, aucune: true }); continue; }
+    const f = fautesEvidentes(t);
+    if (f.length) throw new Error(`La phrase « ${t} » du logo ${n} a une faute évidente (${f.join(", ")}) : elle ferait refuser le logo. Rien n'est lancé.`);
+    demandes.push({ logo: n, texte: t }); mots.push(t);
+  }
+  const c = controleDesPhrases({ esquisses: [] }, numeros, demandes, mots);
+  if (!c.ok) throw new Error(`Phrase sous le nom refusée : ${c.faute} Rien n'est lancé.`);
+  const out: Record<number, PhraseVoulue> = {};
+  for (const [k, v] of Object.entries(c.phrases)) { const p = phraseVoulue(v); if (p) out[Number(k)] = p; }
+  return out;
+}
+
+/** La phrase d'un logo, en mots (rapport et console). */
+export const phraseEnMots = (p: PhraseVoulue | undefined) => (!p ? "règle d'avant (une ligne seulement si elle dit le vrai métier)" : "aucune" in p ? "aucune phrase" : `« ${p.texte} », mot pour mot`);
 
 /** La phrase du métier écrite par l'essai des esquisses dans son rapport (« Phrase du métier : … »). */
 export function metierDuRapport(texte: string): string | null {
@@ -120,7 +154,7 @@ export function devisEnTexte(d: DevisDeLEssai): string[] {
 
 /** `jointe` : l'image jointe au dessinateur (l'esquisse au premier essai, le logo refusé à la reprise). */
 export type EssaiEcrit = { tour: number; texte?: string; jointe?: string; brut?: string; detoure?: string; verdict?: RelectureDuLogo; raisons?: string[] };
-export type LogoDeLEssai = { numero: number; fichier: string; ok?: boolean; raison?: string; essais: EssaiEcrit[]; notes: string[]; palette?: unknown };
+export type LogoDeLEssai = { numero: number; fichier: string; ok?: boolean; raison?: string; essais: EssaiEcrit[]; notes: string[]; palette?: unknown; /** La phrase que porte le logo gardé (vide : aucune). */ phrase?: string };
 export type LigneDeDepense = { cle: string | null; task: string | null; modele: string | null; studio: boolean; reserveMicro: number; reelMicro: number | null; statut: string; appel?: Record<string, unknown> };
 export type ResultatDeLaFinalisation = { arret?: string; metier: string; logos: LogoDeLEssai[]; depenseMicro: number; appels: LigneDeDepense[]; devis: DevisDeLEssai };
 
@@ -133,6 +167,10 @@ type Qui = { userId: string; projectId: string; jobId: string; capMicro: number 
  */
 export async function essaiDeFinalisation(o: {
   sortie: string; plafondEuros: string; esquisses: string[]; metier: string;
+  /** Le client inventé de l'essai (son nom est celui du logo). */
+  client: ClientDeLEssai;
+  /** La phrase choisie pour chaque logo (clé : le numéro de son esquisse) ; absente : la règle d'avant. */
+  phrases?: Record<number, PhraseVoulue>;
   ai?: (q: Qui) => GraphistesAi;
   detourer?: (png: Buffer) => Promise<{ ok: true; png: Buffer } | { ok: false; why: string }>;
 }): Promise<ResultatDeLaFinalisation> {
@@ -141,11 +179,16 @@ export async function essaiDeFinalisation(o: {
   if (!o.esquisses.length) throw new Error("Aucune esquisse donnée : rien n'est lancé.");
   const metier = o.metier.trim();
   if (!metier) throw new Error("Métier manquant : rien n'est lancé.");
+  if (!o.client?.nom) throw new Error("Client de l'essai manquant (son nom) : rien n'est lancé.");
+  const CLIENT = { nom: o.client.nom, activite: o.client.metier, kind: o.client.kind };
+  const phrases = o.phrases ?? {};
   const images = o.esquisses.map((f, i) => {
     if (!fs.existsSync(f)) throw new Error(`Esquisse introuvable : ${f}. Rien n'est lancé.`);
     return { fichier: f, numero: numeroDe(f, i), png: fs.readFileSync(f) };
   });
   if (new Set(images.map((x) => x.numero)).size !== images.length) throw new Error("Deux esquisses portent le même numéro : rien n'est lancé.");
+  const inconnues = Object.keys(phrases).map(Number).filter((n) => !images.some((x) => x.numero === n));
+  if (inconnues.length) throw new Error(`Phrase donnée pour une esquisse qui n'est pas finalisée (${inconnues.join(", ")}) : rien n'est lancé.`);
   // Le garde-fou de l'essai, compté depuis le début du script.
   process.env.STUDIO_ESSAI_PLAFOND_EUROS = String(plafond);
   const debut = Date.now();
@@ -165,7 +208,7 @@ export async function essaiDeFinalisation(o: {
   const devis = await devisDeLEssai(images.map((x) => x.numero));
   // 1. Le client fictif et son projet.
   const u = await account();
-  const projectId = project(u) as string;
+  const projectId = project(u, typeDuProjet(o.client)) as string;
   run("UPDATE projects SET name=? WHERE id=?", CLIENT.nom, projectId);
   const jobId = `essai-finalisation-${id()}`;
   const qui: Qui = { userId: u.id, projectId, jobId, capMicro: devis.devisDuStudio.maxMicro };
@@ -206,7 +249,7 @@ export async function essaiDeFinalisation(o: {
       const v = await brut.relireLogo(logo, esquisse, demande, cle);
       const e = essaiDe(numero, tour);
       e.verdict = v;
-      e.raisons = raisonsDuRefus(v, CLIENT.nom);
+      e.raisons = raisonsDuRefus(v, CLIENT.nom, phrases[numero]);
       ecrireFichier(`esquisse-${nn(numero)}-relecture-${tour}-verdict.json`, json({ verdict: v, raisons: e.raisons, garde: !e.raisons.length }));
       return v;
     },
@@ -218,6 +261,7 @@ export async function essaiDeFinalisation(o: {
     `Plafond de l'essai : ${euros(Math.floor(plafond * 1_000_000))}`,
     `Phrase du métier (essai des esquisses, jamais réécrite) : ${metier}`,
     `Esquisses : ${images.map((x) => `${x.numero} (${x.fichier})`).join(", ")}`,
+    ...images.map((x) => `Phrase sous le nom du logo ${x.numero} : ${phraseEnMots(phrases[x.numero])}`),
     "", ...devisEnTexte(devis), "",
   ];
   const lireLaDepense = () => {
@@ -244,6 +288,7 @@ export async function essaiDeFinalisation(o: {
         if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », idée conservée ${e.verdict.ideeConservee ? "oui" : "non"}, arche ${e.verdict.arche ? "oui" : "non"}${e.verdict.phrase ? `, phrase « ${e.verdict.phrase} »` : ""}, défauts graves ${e.verdict.defauts?.length ? `« ${e.verdict.defauts.join(" ; ")} »` : "aucun"}, petites finitions ${e.verdict.finitions?.length ? `« ${e.verdict.finitions.join(" ; ")} »` : "aucune"} —${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`);
         else if (e.raisons?.length) lignes.push(`    refusé sans relecture : ${e.raisons.join(" ; ")}`);
       }
+      if (l.ok) lignes.push(`  phrase portée par le logo gardé : ${l.phrase ? `« ${l.phrase} »` : "aucune"} (esquisse-${nn(l.numero)}-phrase-du-logo.txt, à redonner en PHRASE à la planche en vrai)`);
       for (const n of l.notes) lignes.push(`  note : ${n}`);
     }
     lignes.push("", "Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :",
@@ -260,7 +305,8 @@ export async function essaiDeFinalisation(o: {
       const l: LogoDeLEssai = { numero: x.numero, fichier: x.fichier, essais: [], notes: [] };
       res.logos.push(l);
       ecrireFichier(`esquisse-${nn(x.numero)}-recue.png`, x.png);
-      ecrireFichier(`esquisse-${nn(x.numero)}-consigne-du-redacteur.txt`, `${consigneDeFinalisation(CLIENT.nom, metier)}\n`);
+      const phrase = phrases[x.numero];
+      ecrireFichier(`esquisse-${nn(x.numero)}-consigne-du-redacteur.txt`, `${consigneDeFinalisation(CLIENT.nom, metier, phrase)}\n`);
       let tours = 0;
       const detourerIci = async (png: Buffer) => {
         tours += 1;
@@ -271,11 +317,15 @@ export async function essaiDeFinalisation(o: {
         return d;
       };
       try {
-        const f = await uneFinalisation(ai, { nom: CLIENT.nom, metier, esquisse: x.png, numero: x.numero, detourer: detourerIci });
+        const f = await uneFinalisation(ai, { nom: CLIENT.nom, metier, esquisse: x.png, numero: x.numero, detourer: detourerIci, ...(phrase ? { phrase } : {}) });
         l.ok = f.ok; l.notes = f.notes;
         if (!f.ok) l.raison = f.raison;
         else {
           ecrireFichier(`esquisse-${nn(x.numero)}-logo-garde.png`, f.logo);
+          // La phrase que porte le logo gardé (vide sans phrase) : celle à redonner à la planche en vrai (PHRASE).
+          const lue = l.essais.at(-1)?.verdict?.phrase?.trim() ?? "";
+          l.phrase = phrase ? ("aucune" in phrase ? "" : phrase.texte) : /^(aucune|aucun|none)?\.?$/i.test(lue) ? "" : lue;
+          ecrireFichier(`esquisse-${nn(x.numero)}-phrase-du-logo.txt`, l.phrase);
           ecrireFichier(`esquisse-${nn(x.numero)}-logo-garde-detoure.png`, f.detoure);
           if (f.palette) { l.palette = f.palette; ecrireFichier(`esquisse-${nn(x.numero)}-couleurs-du-logo.json`, json(f.palette)); }
         }

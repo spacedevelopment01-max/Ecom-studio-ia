@@ -16,11 +16,31 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { EtatPlancheEnVrai } from "../../src/lib/syna-agent/planche-en-vrai";
-import { clientDeLEssai, donneesDeLaPlanche, enregistrerLeParcours, fichiersManquants } from "./essai-planche-en-vrai-outil";
+import { clientDeLEssai, donneesDeLaPlanche, enregistrerLeParcours, fichiersManquants, type ClientDeLEssai, type DonneesDeLaPlanche } from "./essai-planche-en-vrai-outil";
 
 /** Le mot de passe fictif de recette (lancer-agent.mts) : jamais un vrai secret. */
 export const MOT_DE_PASSE_DE_RECETTE = "Recette-492-fictif";
 export const EMAIL_PAR_DEFAUT = "planche-en-vrai@example.com";
+
+/** Ce que l'essai de la planche en vrai a écrit à côté de son etat.json (essai.json) : le client, les données, le projet. */
+export type EssaiEcrit = { client: ClientDeLEssai; donnees: DonneesDeLaPlanche; projectId?: string };
+
+/**
+ * Le client et les données de la planche de l'essai : lus dans l'essai.json écrit à côté de l'etat.json par l'essai de la
+ * planche en vrai ; sans lui (base plus ancienne), les variables du client et de la planche (CLIENT_JSON, RESULTAT_PLANCHE
+ * ou DOMAINE…), sans aucune valeur imposée ni appel au réseau. Ce qui manque est dit.
+ */
+export function essaiDeLEtat(etat: string, env: Record<string, string | undefined> = process.env): EssaiEcrit {
+  const f = path.join(path.dirname(etat), "essai.json");
+  if (fs.existsSync(f)) {
+    let e: EssaiEcrit;
+    try { e = JSON.parse(fs.readFileSync(f, "utf8")) as EssaiEcrit; } catch { throw new Error(`${f} illisible : rien n'est écrit.`); }
+    if (!e?.client?.nom || !e.donnees?.statut || !e.donnees.annee) throw new Error(`${f} ne dit pas le client et les données de la planche : rien n'est écrit.`);
+    return e;
+  }
+  const client = clientDeLEssai(env);
+  return { client, donnees: donneesDeLaPlanche(client, env) };
+}
 
 export type Ecran = { url: string; email: string; motDePasse: string; projectId: string; conversationId: string; nom: string; logosRefaits?: { symboleComplet: boolean; plancheReassemblee: boolean } };
 
@@ -42,7 +62,7 @@ export async function preparerLEcran(o: { projectId: string; etat: string; email
   const autre = one<{ id: string }>("SELECT id FROM users WHERE email=? AND id<>?", email, p.user_id);
   if (autre) throw new Error(`L'e-mail ${email} est déjà pris par un autre compte de cette base : rien n'est écrit.`);
 
-  const client = clientDeLEssai(env), donnees = donneesDeLaPlanche(client, env);
+  const { client, donnees } = essaiDeLEtat(o.etat, env);
   const nom = p.name?.trim() || client.nom;
   let r = await enregistrerLeParcours({ userId: p.user_id, projectId: o.projectId, nom, etat, donnees });
   let logosRefaits: Ecran["logosRefaits"];

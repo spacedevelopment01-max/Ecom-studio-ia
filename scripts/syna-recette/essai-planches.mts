@@ -3,35 +3,38 @@
  * déjà construites (planche-de-marque.ts et planche-de-marque-tache.ts : `valeursDuClient`, `plancheDeLaRoute`,
  * `vraisAppelsDeLaPlanche`) et s'arrête aux planches relues : ni choix, ni marque finie, ni site.
  *
- *  1. un compte et un projet fictifs pour un client inventé (par défaut « Racine », pépiniériste qui vend des plantes en
- *     ligne, type « produits ») et sa fiche, écrite comme le Studio l'écrit (`ficheTexte`) avec ses produits réels ;
+ *  1. un compte et un projet fictifs pour le client inventé donné (aucun client par défaut) et sa fiche, écrite comme le
+ *     Studio l'écrit (`ficheTexte`) avec ses produits réels ;
  *  2. le garde-fou de dépense de l'essai allumé avec PLAFOND_ESSAI_EUR (src/lib/ai/plafond-essai.ts) : un appel dont le
  *     maximum ferait dépasser ne part pas, et le script s'arrête en le disant (code de sortie 2) ;
  *  3. les valeurs du métier, un appel pour le client, avec leur contrôle gratuit (une réécriture au plus, à la charge du
  *     Studio) ;
- *  4. le domaine vérifié gratuitement (RDAP) avant le premier dessin ;
+ *  4. le domaine vérifié gratuitement avant le premier dessin, par la vérification du Studio (`findDomains`,
+ *     brand-domains.ts : les annuaires RDAP de l'AFNIC et de Verisign), avec le nom et CLIENT_DESCRIPTEUR ;
  *  5. pour chaque logo fini donné (2 à 4) : la planche (le logo, puis la disposition), sa relecture en quatre bandes, et
  *     si elle est refusée la reprise unique avec ses raisons, à la charge du Studio. Refusée deux fois : elle n'est pas
  *     gardée, rien n'est tenté de plus.
  * Aucun appel n'est relancé tout seul : une panne arrête l'essai et est écrite comme telle.
  *
  * Le client : CLIENT_JSON (un fichier { nom, metier, kind, produits, descripteur }) ou CLIENT_NOM, CLIENT_METIER,
- * CLIENT_TYPE (« produits » ou « services »), CLIENT_PRODUITS (séparés par « ; »), CLIENT_DESCRIPTEUR ; sinon Racine.
+ * CLIENT_TYPE (« produits » ou « services »), CLIENT_PRODUITS (séparés par « ; »), CLIENT_DESCRIPTEUR ; rien d'autre.
  * Les logos : les logos finis gardés par l'essai de finalisation (esquisse-NN-logo-garde.png, sur fond blanc, pas la
  * version détourée), dans l'ordre des identités A, B, C, D.
  *
  * Ce qu'il écrit dans le dossier de sortie : fiche-du-client.txt ; valeurs-N-demande.txt, valeurs-N-reponse.json et
  * valeurs-du-metier.json ; domaine.json ; disposition-*.png ; pour chaque planche X et chaque essai N, le texte envoyé, la
  * planche brute (refusées comprises), le reçu, les quatre bandes données au relecteur, sa demande et son verdict complet
- * (avec les raisons du refus comptées par le code), puis planche-X-gardee.png si elle est gardée et planche-X-resultat.json ;
+ * (avec les raisons du refus comptées par le code), puis planche-X-gardee.png si elle est gardée et planche-X-resultat.json
+ * (le domaine, son statut, l'année, la disposition et le logo de la planche : à redonner à la planche en vrai) ;
  * enfin depense.json (appel par appel, réservé et réglé, client ou Studio), usage.json (le détail gardé par le Studio pour
  * chaque appel) et rapport.txt.
  *
  * Usage (depuis la racine du dépôt ; clé OpenAI injectée par le proxy de la session, clé Anthropic par
  * STUDIO_ANTHROPIC_KEY dans les réglages de l'environnement, jamais dans le code ni dans la commande) :
- *   NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=work/essai-planches \
- *     PLAFOND_ESSAI_EUR=1.20 node_modules/.bin/tsx scripts/syna-recette/essai-planches.mts work/essai-planches/sortie \
- *     <dossier de la finalisation>/esquisse-04-logo-garde.png <dossier de la finalisation>/esquisse-11-logo-garde.png
+ *   NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio \
+ *     CLIENT_JSON=scripts/syna-recette/clients/ecume.json PLAFOND_ESSAI_EUR=… \
+ *     node_modules/.bin/tsx scripts/syna-recette/essai-planches.mts data/essai-ecume/3-planches \
+ *     <dossier de la finalisation>/esquisse-NN-logo-garde.png <dossier de la finalisation>/esquisse-MM-logo-garde.png
  * Devis seul, sans aucun appel ni clé : DEVIS_SEULEMENT=1 DATA_DIR=… node_modules/.bin/tsx scripts/syna-recette/essai-planches.mts
  * (pour 2 et 3 planches ; avec des logos donnés, pour leur nombre).
  */

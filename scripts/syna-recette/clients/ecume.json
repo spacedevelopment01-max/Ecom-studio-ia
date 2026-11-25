@@ -1,0 +1,7 @@
+{
+  "nom": "Écume",
+  "metier": "savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes",
+  "kind": "produits",
+  "produits": ["savons solides", "shampoings solides", "baumes"],
+  "descripteur": "savonnerie"
+}
