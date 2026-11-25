@@ -1,0 +1,31 @@
+{
+  "verdict": {
+    "nomLu": "racine",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Racine",
+    "domaineLu": "racine-officiel.fr — disponible",
+    "fautes": [
+      "ABCEFFECJJLIMMKCRTEVWXYZ (spécimen Poppins, alphabet déformé)",
+      "abcdefgljujbirimopootywxyz (spécimen Poppins, alphabet déformé)",
+      "ABCDEPFCJJLLMNKCGRTCVWXYZ (spécimen Nunito, alphabet déformé)",
+      "abcdefgljujbicimnopootywxyz (spécimen Nunito, alphabet déformé)",
+      "0-6T (heure de la barre d'état du téléphone, illisible)"
+    ],
+    "promesses": [
+      "Livraison soignée",
+      "Conseils jardinage"
+    ],
+    "personnes": false,
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "note": 7.5,
+    "pourquoi": "La planche est belle et cohérente, avec un logo fidèle, un badge corrigé et un packaging qui ne calque plus la disposition. En revanche, les alphabets des spécimens typographiques restent déformés et la réassurance du site garde « Livraison soignée » et « Conseils jardinage »."
+  },
+  "raisons": [
+    "fautes : « ABCEFFECJJLIMMKCRTEVWXYZ (spécimen Poppins, alphabet déformé) », « abcdefgljujbirimopootywxyz (spécimen Poppins, alphabet déformé) », « ABCDEPFCJJLLMNKCGRTCVWXYZ (spécimen Nunito, alphabet déformé) », « abcdefgljujbicimnopootywxyz (spécimen Nunito, alphabet déformé) », « 0-6T (heure de la barre d'état du téléphone, illisible) »",
+    "promesses ou chiffres inventés : « Livraison soignée », « Conseils jardinage »",
+    "elle n'est pas au niveau (7.5/10, il faut 8)"
+  ],
+  "gardee": false
+}

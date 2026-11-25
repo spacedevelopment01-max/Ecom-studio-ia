@@ -1,0 +1,24 @@
+{
+  "nom": "Racine",
+  "traits": [
+    "vivante",
+    "naturelle",
+    "soignée",
+    "généreuse"
+  ],
+  "emotion": "la joie de voir une plante prendre racine chez soi",
+  "images": [
+    "rangées de jeunes arbres en pépinière au petit matin",
+    "feuillage d'intérieur près d'une fenêtre baignée de soleil",
+    "terre fraîche et racines dans un pot en terre cuite",
+    "serre lumineuse aux vitres embuées",
+    "arbustes en fleurs sous une lumière dorée",
+    "colis en carton kraft d'où dépassent des feuilles vertes"
+  ],
+  "produits": [
+    "plantes d'intérieur",
+    "arbustes",
+    "jeunes arbres"
+  ],
+  "appel": "devis"
+}

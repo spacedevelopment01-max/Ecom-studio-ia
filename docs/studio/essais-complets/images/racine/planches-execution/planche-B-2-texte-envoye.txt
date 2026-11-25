@@ -1,0 +1,126 @@
+La première image est le logo Racine : il sert de base à tout le système de logos et ne doit pas être redessiné. Construis l'univers graphique de la marque à partir de ce logo.
+
+La deuxième image montre la disposition obligatoire de la planche : reprends exactement le même emplacement, le même ordre et les mêmes proportions pour chaque bloc (l'ouverture en haut, puis les blocs 01 à 10 aux mêmes places et avec les mêmes formats d'aperçus). N'en reprends ni les couleurs, ni le logo, ni les photographies, ni les textes : l'identité vient uniquement du logo de la première image.
+
+Racine — Planche d’identité visuelle
+
+Crée la planche complète d’identité visuelle de Racine, avec une structure, une cohérence et une lisibilité fortes.
+
+Objectif :
+Créer une planche d’identité visuelle premium, moderne, commerciale et très propre, digne d’une vraie agence de branding, avec une hiérarchie forte et des éléments bien présentés.
+
+Important :
+- Racine, pépiniériste qui vend des plantes en ligne : marque vivante, naturelle, soignée et généreuse.
+- Ne pas revenir à une charte austère ou trop scolaire.
+- Garder une présentation immersive et désirable.
+
+Contenu obligatoire
+
+1. Système de logos plus complet
+Je veux un vrai système de logo avec davantage de variantes :
+- logo principal
+- logo secondaire horizontal
+- logo empilé
+- logo compact
+- icône seule
+- favicon
+- version monochrome foncée
+- version monochrome claire
+- version inversée sur fond sombre
+- version badge / sceau
+Toutes les variantes doivent rester cohérentes entre elles.
+
+2. Réseaux sociaux : vrais formats
+Je veux 3 publications montrées dans leurs vrais formats visuels, et pas comme de petites vignettes approximatives.
+Formats exacts :
+- 1:1 feed carré
+- 4:5 publication portrait
+- 9:16 story / reel
+Chaque publication doit avoir :
+- un objectif différent,
+- une composition différente,
+- une vraie accroche,
+- un vrai rôle marketing.
+Exemples :
+- 1:1 = émotion / la joie de voir une plante prendre racine chez soi
+- 4:5 = focus produit / bénéfices
+- 9:16 = contenu communauté / engagement / story
+Les trois doivent être lisibles et paraître publiables telles quelles.
+
+3. Site web : mockups réellement crédibles
+Je veux deux mockups distincts :
+- un mockup ordinateur réaliste, au bon ratio d’écran, large et lisible
+- un mockup téléphone réaliste, vertical, avec un vrai ratio mobile
+Les deux doivent montrer le même univers de site Racine, avec adaptation responsive réelle :
+- même DA,
+- même palette,
+- même logo,
+- même ton,
+- mais mise en page adaptée à chaque support.
+Le site doit sembler être une vraie boutique e-commerce :
+- header
+- hero
+- accroche
+- CTA
+- produits / collections
+- éléments de réassurance
+
+4. Ajouter une section “Images de référence”
+Je veux une vraie section de direction visuelle / inspiration photo.
+Cette section doit montrer 4 à 6 petites images de référence cohérentes, par exemple :
+- rangées de jeunes arbres en pépinière au petit matin
+- feuillage d'intérieur près d'une fenêtre baignée de soleil
+- terre fraîche et racines dans un pot en terre cuite
+- serre lumineuse aux vitres embuées
+- arbustes en fleurs sous une lumière dorée
+- colis en carton kraft d'où dépassent des feuilles vertes
+But :
+montrer l’univers photographique et émotionnel de la marque.
+Attention :
+ce sont des images de référence d’univers, pas des logos supplémentaires.
+
+5. Produits
+La section produits doit être mieux mise en scène et plus premium.
+Montrer clairement :
+- plantes d'intérieur
+- arbustes
+- jeunes arbres
+Les visuels doivent être propres, désirables, e-commerce, avec une sensation plus “marque” et moins “simple catalogue”.
+
+6. Structure générale de la planche
+La planche doit rester dense mais plus claire.
+Je veux une hiérarchie visuelle très lisible avec ces blocs :
+1. titre / identité
+2. système de logos
+3. palette + typographies
+4. ton / slogan / valeurs
+5. images de référence
+6. produits
+7. 3 publications réseaux
+8. site web desktop + mobile
+9. packaging / supports de marque
+10. SEO / nom de domaine / copyright
+
+7. SEO / domaine / mentions
+Conserver un bloc avec :
+- titre SEO
+- méta-description
+- nom de domaine suggéré
+- mention “disponibilité à vérifier”
+- copyright
+Ne pas inventer de disponibilité comme un fait certain si elle n’est pas vérifiée.
+
+8. Niveau graphique attendu
+Je veux une planche :
+- plus forte graphiquement,
+- plus structurée,
+- plus moderne,
+- plus cohérente,
+- plus proche d’une vraie présentation de studio de branding.
+La planche ne doit pas ressembler à un simple tableau d’éléments posés.
+Je veux quelque chose que l’on regarde en se disant :
+“oui, cette marque existe déjà”.
+
+Dans le bloc 10, à la place de la mention « disponibilité à vérifier », écris exactement « racine-officiel.fr — disponible » et « © 2026 Racine » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.
+
+À corriger : fautes : « ABCDEFFGJJILLMNDEEFPOOI/WXYZ (spécimen Poppins, alphabet déformé) », « abcdefgĝgjiliiṅnappotriywxyz (spécimen Poppins, alphabet déformé) », « ABCDEFGIJ ILLMNEBPBOWXYZ (spécimen Nunito, alphabet déformé) », « abcdefgĝjiiinnopoti yvwxyz (spécimen Nunito, alphabet déformé) », « PÉPINIÈRE EN LIGEK (badge / sceau) » ; promesses ou chiffres inventés : « Paiement sécurisé », « Conseils d'experts », « Plantes de qualité », « Livraison soignée », « Plantes saines » ; éléments recopiés de la disposition : Scène packaging calquée sur la disposition : carton kraft, rouleau d'adhésif, carte de remerciement et sac vert placés de la même façon ; elle n'est pas au niveau (7.5/10, il faut 8).

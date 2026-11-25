@@ -46,6 +46,10 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 25/11 | Racine | Logo fini de l'esquisse 4, nouveau relecteur (exécution seule), 1er essai | 7/10 : « La feuille est trop haute et décalée vers la droite du « i » ; le haut du « i » est coupé en biais et ressemble à un accent, ce qui peut faire lire « racíne » » | Non | [en attente] |
 | 25/11 | Racine | Logo fini de l'esquisse 4, nouveau relecteur, reprise à la charge du Studio | 7/10 : « les deux défauts déjà signalés sont toujours visibles : la feuille est mal centrée sur le « i » et le haut de la lettre, coupé en biais, ressemble à un accent » | Non | [en attente] |
 | 25/11 | Racine | Logo fini du R bordeaux, nouveau relecteur, 1er essai | 8/10 : « Le logo est propre et fidèle à l'esquisse … Seule la nervure très fine et son raccord en bas de la feuille pourraient se perdre en petit » | Oui | [en attente] |
+| 25/11 | Racine | Planche A (logo R bordeaux), 1er essai | 6/10 : « des mains sont visibles dans l'image « Racines et terre », les alphabets des typographies sont illisibles et le texte du badge est déformé » | Non | [en attente] |
+| 25/11 | Racine | Planche A (logo R bordeaux), reprise à la charge du Studio | 7/10 : « les spécimens typographiques et le texte du badge restent déformés, et la réassurance du site garde de petites promesses non demandées » | Non | [en attente] |
+| 25/11 | Racine | Planche B (feuille sur le i, 1er essai du logo — Claude a pris celui du milieu alors que le propriétaire voulait celui de droite), 1er essai | 7,5/10 : « les alphabets des typographies sont illisibles, le badge contient une faute (« LIGEK ») et des promesses de réassurance non demandées apparaissent » | Non | [en attente] |
+| 25/11 | Racine | Planche B, reprise à la charge du Studio | 7,5/10 : « les alphabets des spécimens typographiques restent déformés et la réassurance du site garde « Livraison soignée » et « Conseils jardinage » » | Non | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 

@@ -1,0 +1,19 @@
+Tu prépares, en français simple, les mots d'une planche d'identité visuelle pour une marque. Réponds en JSON :
+- nom : le nom de la marque, recopié lettre pour lettre ;
+- traits : trois ou quatre adjectifs qui disent la marque (par exemple « artisanale », « chaleureuse », « précise », « haut de gamme ») ;
+- emotion : en quelques mots, le moment ou la sensation que vit son client (par exemple « le plaisir de recevoir chez soi »), sans verbe à l'impératif ;
+- images : six images de référence de l'univers photo de la marque, quelques mots chacune (lieux, matières, gestes, lumière) ;
+- produits : les trois produits ou prestations principaux du client, pris dans ses mots, au pluriel s'il en vend plusieurs ; jamais un produit qu'il n'a pas cité ;
+- appel : « devis », « rendez-vous » ou « réservation » : ce que son client demande d'abord.
+Chaque valeur en minuscules, sans point final, sans guillemets. Aucun chiffre, aucune promesse (prix, délai, garantie, « le meilleur »), aucun avis.
+
+--- demande ---
+Le nom de la marque : « Racine ».
+Son métier, déjà écrit : pépiniériste qui vend des plantes en ligne.
+Elle vend surtout des produits (boutique en ligne).
+Aucune personne n'apparaît : ni dans l'émotion, ni dans les images (pas de famille, de client, de main, de visage).
+Ce que le client a dit de son entreprise et de ses produits, avec ses mots :
+# La fiche du client (tout ce qu'il a dit, avec ses mots ; relue en entier)
+## Ses réponses
+- Activité : des produits (25 novembre 2026)
+- Offre : « pépiniériste qui vend des plantes en ligne : plantes d'intérieur, arbustes, jeunes arbres » (25 novembre 2026)

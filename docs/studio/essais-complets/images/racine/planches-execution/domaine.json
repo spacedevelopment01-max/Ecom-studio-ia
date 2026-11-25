@@ -1,0 +1,23 @@
+{
+  "nom": "Racine",
+  "descripteur": null,
+  "verifie": {
+    "taken": [
+      "racine.fr",
+      "racine.com",
+      "racinefrance.fr",
+      "racinefrance.com",
+      "maisonracine.fr"
+    ],
+    "free": [
+      "racine-officiel.fr",
+      "racineboutique.fr"
+    ],
+    "unknown": [],
+    "at": 1795605192108
+  },
+  "domaine": "racine-officiel.fr",
+  "statut": "disponible",
+  "mention": "racine-officiel.fr — disponible",
+  "caseSousLaPlanche": "racine-officiel.fr : libre aujourd'hui, seule la réservation le garantit."
+}
