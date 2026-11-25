@@ -479,3 +479,74 @@ describe("le réglage, le mélange, les publications et le produit sans photo", 
     expect(d.maxMicro).toBeGreaterThan(d.probableMicro);
   });
 });
+
+describe("jamais une case de texte vide (l'inventaire n'y a rien lu)", async () => {
+  const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+  const P = await import("@/lib/syna-agent/planche-en-vrai");
+  const T = await import("@/lib/syna-agent/planche-en-vrai-tache");
+  const police = C.policeDuCatalogue({ nom: "Inter", genre: "sans" }, 400);
+  const route = (o: { revu?: "disponible" | "a_verifier"; slogan?: string } = {}) => ({ key: "A", name: "Racine", slogan: o.slogan ?? "", palette: { dark: "#5D0126" }, board: { planche: { image: { id: "pl", w: 1536, h: 2304 }, logo: "lg", domaine: "racine-officiel.fr", statut: "disponible", annee: 2026, essais: 1, at: 1, ...(o.revu ? { revu: { statut: o.revu, at: 2 } } : {}) } } }) as any;
+  const inventaire = (cases: Record<string, string[]>) => P.InventaireSchema.parse({ cases: Object.entries(cases).map(([c, textes]) => ({ case: c, textes })), polices: { titres: { nom: "Inter" }, textes: { nom: "Inter" } } });
+  /** La démonstration : un fond, la case du bloc 10 en vert, celle du ton en bleu, le bas de la case « haut » en orange. */
+  const demo = async () => {
+    const c = P.lesCases("standard").cases;
+    const [s, t, h] = [c.seo, c.ton, c.haut];
+    return sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#F9F8F4" } }).composite([
+      { input: await uni(s[2] - s[0], s[3] - s[1], "#33AA33"), left: s[0], top: s[1] },
+      { input: await uni(t[2] - t[0], t[3] - t[1], "#3333AA"), left: t[0], top: t[1] },
+      { input: await uni(h[2] - h[0], Math.round((h[3] - h[1]) * 0.2), "#EE8822"), left: h[0], top: h[1] + Math.round((h[3] - h[1]) * 0.8) },
+    ]).png().toBuffer();
+  };
+  const assembler = async (t: { titres: ReadonlyMap<string, string>; blocs: ReadonlyMap<"ton" | "seo", { lignes: string[] } | null>; haut: string[] }) => {
+    const c = P.lesCases("standard"), lg = await sharp({ create: { width: 100, height: 60, channels: 4, background: { r: 99, g: 10, b: 41, alpha: 1 } } }).png().toBuffer();
+    const versions = Object.fromEntries(C.VERSIONS_DU_LOGO.map((k) => [k, lg])) as never;
+    return C.assemblerLaPlanche({ demo: await demo(), boites: new Map(Object.entries(c.cases)), pastilles: c.pastilles, images: new Map(), versions, palette: [], polices: { titres: police, textes: police }, signature: t.haut, titres: t.titres, blocs: t.blocs, encre: "#1C2A24" });
+  };
+  /** Le centre d'une case sur la planche en vrai (deux fois plus grande). */
+  const centre = (n: string): [number, number] => { const b = P.lesCases("standard").cases[n]; return [b[0] + b[2], b[1] + b[3]]; };
+
+  it("rien lu dans le bloc 10, aucun contrôle en échec : l'aperçu de la démonstration est gardé tel quel, jamais effacé", async () => {
+    const t = T.textesDeLaPlanche(inventaire({}), route());
+    expect(t.blocs.get("seo")).toBeNull();
+    expect(t.notes.join(" ")).toMatch(/bloc 10 : l'inventaire n'y a rien lu ; l'aperçu de la démonstration est gardé tel quel/);
+    expect(await px(await assembler(t), ...centre("seo"))).toEqual([0x33, 0xaa, 0x33]);
+  });
+
+  it("rien lu dans le bloc 10, mais le domaine revérifié a changé : redessiné avec les données vérifiées du Studio, jamais vide", async () => {
+    const t = T.textesDeLaPlanche(inventaire({}), route({ revu: "a_verifier" }));
+    expect(t.blocs.get("seo")).toEqual({ lignes: ["© 2026 Racine", "racine-officiel.fr — à vérifier"] });
+    // Le bloc est redessiné sur son fond, avec ses deux lignes : des pixels de texte apparaissent dans la case.
+    const s = P.lesCases("standard").cases.seo;
+    const { data } = await sharp(await assembler(t)).extract({ left: s[0] * 2, top: s[1] * 2, width: (s[2] - s[0]) * 2, height: (s[3] - s[1]) * 2 }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    let texte = 0;
+    for (let i = 0; i < data.length; i += 3) if (Math.abs(data[i] - 0x33) + Math.abs(data[i + 1] - 0xaa) + Math.abs(data[i + 2] - 0x33) > 60) texte++;
+    expect(texte).toBeGreaterThan(500);
+  });
+
+  it("un bloc 10 redessiné porte toujours le copyright et la mention vérifiés, même s'ils n'ont pas été lus", () => {
+    expect(T.textesDeLaPlanche(inventaire({ seo: ["Livraison gratuite en 48 h"] }), route()).blocs.get("seo")).toEqual({ lignes: ["© 2026 Racine", "racine-officiel.fr — disponible"] });
+    expect(T.textesDeLaPlanche(inventaire({ seo: ["Plantes en ligne", "racine.fr"] }), route()).blocs.get("seo")).toEqual({ lignes: ["Plantes en ligne", "racine.fr", "© 2026 Racine", "racine-officiel.fr — disponible"] });
+    // Juste : le décor est gardé.
+    expect(T.textesDeLaPlanche(inventaire({ seo: ["© 2026 Racine", "racine-officiel.fr — disponible"] }), route()).blocs.get("seo")).toBeNull();
+  });
+
+  it("le ton : rien lu, le décor est gardé ; toutes ses lignes promettent, il garde une ligne sans promesse, jamais vide", async () => {
+    const vide = T.textesDeLaPlanche(inventaire({}), route());
+    expect(vide.blocs.get("ton")).toBeNull();
+    expect(await px(await assembler(vide), ...centre("ton"))).toEqual([0x33, 0x33, 0xaa]);
+    expect(T.textesDeLaPlanche(inventaire({ ton: ["Livraison offerte", "Satisfait ou remboursé"] }), route({ slogan: "Des plantes pour des espaces plus vivants" })).blocs.get("ton")).toEqual({ lignes: ["Des plantes pour des espaces plus vivants"] });
+    expect(T.textesDeLaPlanche(inventaire({ ton: ["Livraison offerte"] }), route({ slogan: "Livraison en 24 h" })).blocs.get("ton")).toEqual({ lignes: ["Racine"] });
+  });
+
+  it("les autres cases de texte : un titre ou une signature non lus gardent le décor ; un bloc sans ligne n'est jamais effacé", async () => {
+    const t = T.textesDeLaPlanche(inventaire({ "titre-01": [] }), route());
+    expect(t.titres.size).toBe(0);
+    expect(t.haut).toEqual([]);
+    const out = await assembler({ ...t, blocs: new Map([["ton", { lignes: [] }], ["seo", { lignes: ["  "] }]]) });
+    // La ligne sous le logo (orange) reste ; le ton (bleu) et le bloc 10 (vert) ne sont pas effacés.
+    const h = P.lesCases("standard").cases.haut;
+    expect(await px(out, h[0] + h[2], Math.round(2 * (h[1] + (h[3] - h[1]) * 0.9)))).toEqual([0xee, 0x88, 0x22]);
+    expect(await px(out, ...centre("ton"))).toEqual([0x33, 0x33, 0xaa]);
+    expect(await px(out, ...centre("seo"))).toEqual([0x33, 0xaa, 0x33]);
+  });
+});

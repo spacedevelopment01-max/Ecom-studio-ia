@@ -395,6 +395,8 @@ function texte(x: SKRSContext2D, t: string, px: number, py: number, f: string, c
  * posées dans leurs cases (photos en plein cadre, écrans et publications ENTIERS, à leurs proportions) ; les titres et les
  * blocs à redessiner le sont avec les textes de l'inventaire. Rend la planche en vrai, 3072 × 4608.
  */
+/** La part haute de la case « haut » réservée au logo (la signature commence en dessous, vers 79 %). */
+export const HAUT_DU_LOGO = 0.76;
 export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   const demoPng = (await sharp(o.demo).metadata()).width === TAILLE_DEMO.w ? o.demo : await sharp(o.demo).resize(TAILLE_DEMO.w, TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
   const { data: d0, info } = await sharp(demoPng).removeAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -409,7 +411,9 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   const haut = B("haut");
   if (haut) {
     const h = X(haut), W = h[2] - h[0], H = h[3] - h[1], f = fond(haut);
-    x.fillStyle = f; x.fillRect(h[0], h[1], W, H);
+    // Sans signature lue, seule la place du logo est effacée : la ligne de la démonstration sous le logo est gardée telle
+    // quelle (jamais une case vidée de son texte).
+    x.fillStyle = f; x.fillRect(h[0], h[1], W, o.signature.some((l) => l.trim()) ? H : H * HAUT_DU_LOGO);
     await poser(x, o.versions["logo-principal"], [h[0] + W * 0.146, h[1] + H * 0.078, h[2] - W * 0.142, h[1] + H * 0.727]);
     o.signature.slice(0, 2).forEach((l, i) => texte(x, l, h[0] + W / 2, h[1] + H * (0.794 + i * 0.067), fonte(pX, H * 0.044, 600), o.encre, "center", W * 0.9));
   }
@@ -493,8 +497,10 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   // Les blocs de texte qui n'ont pas passé le contrôle : redessinés avec les textes corrigés.
   for (const [n, bloc] of o.blocs) {
     const b = B(n);
-    if (!b || !bloc) continue;
-    const bb = X(b), W = bb[2] - bb[0], H = bb[3] - bb[1], lignes = bloc.lignes.slice(0, 12);
+    const lignes = (bloc?.lignes ?? []).map((l) => l.trim()).filter(Boolean).slice(0, 12);
+    // Un bloc sans aucune ligne n'est jamais effacé : le décor de la démonstration reste.
+    if (!b || !lignes.length) continue;
+    const bb = X(b), W = bb[2] - bb[0], H = bb[3] - bb[1];
     x.fillStyle = fond(b); x.fillRect(bb[0], bb[1], W, H);
     const pas = Math.min(H / (lignes.length + 1), 34 * S);
     lignes.forEach((l, i) => texte(x, l, bb[0] + 20 * S, bb[1] + pas * (i + 0.9), i === 0 ? fonte(pT, pas * 0.62, pT.poids) : fonte(pX, pas * 0.5, 400), i === 0 ? o.encre : gris, "left", W - 40 * S));

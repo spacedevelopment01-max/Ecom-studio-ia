@@ -255,6 +255,13 @@ export async function plancheEnVrai(o: {
  * Les titres et les blocs de texte, contrôlés contre les valeurs du métier et les données vérifiées : un titre qui porte
  * une promesse garde le décor ; le bloc du ton sans promesse mesurable garde le décor, sinon il est redessiné sans elle ;
  * le bloc 10 garde le décor s'il porte exactement le copyright et le domaine vérifiés, sinon il est redessiné avec eux.
+ *
+ * JAMAIS UNE CASE VIDE (chef d'orchestre, 25 novembre 2026) : une case où l'inventaire n'a rien lu garde l'aperçu de la
+ * démonstration tel quel. Sans rien lu, le bloc 10 n'est redessiné que si un contrôle du Studio échoue (le domaine
+ * revérifié au choix n'a plus le statut écrit sur la démonstration) : alors avec les données vérifiées, « © {année} {Nom} »
+ * et la mention du domaine. Un bloc redessiné a toujours au moins une ligne : le bloc 10 porte toujours le copyright et la
+ * mention vérifiés ; le ton dont toutes les lignes sont des promesses prend la phrase de la marque sans promesse, sinon
+ * son nom.
  */
 export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titres: Map<string, string>; blocs: Map<"ton" | "seo", BlocDeTexte | null>; haut: string[]; notes: string[] } {
   const pl = route.board.planche!, nom = route.name.trim(), notes: string[] = [];
@@ -263,14 +270,39 @@ export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titre
   for (const t of TITRES) { const l = lignes(t).join(" "); if (l && !promessesDuBloc([l]).length) titres.set(t, l); }
   const mention = mentionDuDomaine({ domaine: pl.domaine, statut: pl.revu?.statut ?? pl.statut }), droit = copyright(pl.annee, nom);
   const blocs = new Map<"ton" | "seo", BlocDeTexte | null>();
+  // Le ton : rien lu ou aucune promesse, le décor est gardé ; sinon redessiné sans les promesses, jamais vide.
   const ton = lignes("ton"), promesses = promessesDuBloc(ton);
-  blocs.set("ton", promesses.length ? { lignes: ton.filter((l) => !promesses.includes(l)) } : null);
-  if (promesses.length) notes.push(`bloc du ton redessiné sans : ${promesses.join(" ; ")}`);
+  if (promesses.length) {
+    const reste = ton.filter((l) => !promesses.includes(l)), slogan = (route.slogan ?? "").trim();
+    blocs.set("ton", { lignes: reste.length ? reste : [slogan && !promessesDuBloc([slogan]).length ? slogan : nom] });
+    notes.push(`bloc du ton redessiné sans : ${promesses.join(" ; ")}`);
+  } else blocs.set("ton", null);
+  if (!ton.length) notes.push("bloc du ton : l'inventaire n'y a rien lu ; l'aperçu de la démonstration est gardé tel quel");
+  // Le bloc 10.
   const tiret = (l: string) => l.replace(/\s*[—–-]\s*/g, " — ");
-  const seo = lignes("seo"), seoJuste = seo.some((l) => l.includes(droit)) && seo.some((l) => tiret(l).includes(tiret(mention)));
-  const seoPromesses = promessesDuBloc(seo, [droit, mention, String(pl.annee)]);
-  blocs.set("seo", seoJuste && !seoPromesses.length ? null : { lignes: seo.filter((l) => !seoPromesses.includes(l)).map((l) => (/©/.test(l) ? droit : pl.domaine && l.includes(pl.domaine) ? mention : l)) });
-  if (!seoJuste) notes.push(`bloc 10 redessiné avec « ${droit} » et « ${mention} »`);
+  const porteLaMention = (l: string) => tiret(l).includes(tiret(mention));
+  const seo = lignes("seo"), domaineRevuChange = !!pl.revu && pl.revu.statut !== pl.statut;
+  if (!seo.length) {
+    if (domaineRevuChange) {
+      blocs.set("seo", { lignes: [droit, mention] });
+      notes.push(`bloc 10 : l'inventaire n'y a rien lu, mais le domaine revérifié a changé depuis la démonstration : redessiné avec « ${droit} » et « ${mention} »`);
+    } else {
+      blocs.set("seo", null);
+      notes.push("bloc 10 : l'inventaire n'y a rien lu ; l'aperçu de la démonstration est gardé tel quel");
+    }
+  } else {
+    const seoJuste = seo.some((l) => l.includes(droit)) && seo.some(porteLaMention);
+    const seoPromesses = promessesDuBloc(seo, [droit, mention, String(pl.annee)]);
+    if (seoJuste && !seoPromesses.length) blocs.set("seo", null);
+    else {
+      const l = seo.filter((x) => !seoPromesses.includes(x)).map((x) => (/©/.test(x) ? droit : pl.domaine && x.includes(pl.domaine) ? mention : x));
+      // Le bloc redessiné porte toujours les données vérifiées, même quand l'inventaire ne les a pas lues.
+      if (!l.some((x) => x.includes(droit))) l.push(droit);
+      if (!l.some(porteLaMention)) l.push(mention);
+      blocs.set("seo", { lignes: [...new Set(l)] });
+      notes.push(`bloc 10 redessiné avec « ${droit} » et « ${mention} »`);
+    }
+  }
   return { titres, blocs, haut: lignes("haut").filter((l) => l.toLowerCase() !== nom.toLowerCase()), notes };
 }
 
