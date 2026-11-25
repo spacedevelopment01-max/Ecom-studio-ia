@@ -32,7 +32,7 @@ import { DEFAULT_MODELS } from "./models";
 import { ROUTES_BY_PLAN } from "./brand-routes";
 import { METIER_SYSTEM, MetierSchema, controleDuMetier, demandeDuMetier, type Metier } from "./logo-recherche";
 import { RELECTEUR_DES_ESQUISSES, RelectureEsquissesSchema, demandeAuRelecteurDesEsquisses, rechercheDesEsquisses, type ResultatDeRecherche } from "./esquisses";
-import { DEMANDE_AU_REDACTEUR, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, TexteDeFinalisationSchema, finaliserUneEsquisse, type Finalisation, type FinalisationDeps } from "./logo-finalisation";
+import { DEMANDE_AU_REDACTEUR, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, TexteDeFinalisationSchema, finaliserUneEsquisse, type Finalisation, type FinalisationDeps, type RelectureDuLogo } from "./logo-finalisation";
 import { couleursDuLogo, type PaletteDuLogo } from "./couleurs-du-logo";
 import { PHRASE_MAX, type PhraseChoisie, type PhraseDeLEsquisse, type PhraseVoulue } from "./phrase-sous-le-nom";
 
@@ -213,7 +213,7 @@ export type GraphistesAi = {
   relireEsquisses: (images: Buffer[], nom: string, cle: string) => Promise<z.infer<typeof RelectureEsquissesSchema>>;
   rediger: (consigne: string, esquisse: Buffer, cle: string) => Promise<z.infer<typeof TexteDeFinalisationSchema>>;
   finaliser: (esquisse: Buffer, texte: string, cle: string) => Promise<{ png: Buffer; recu: RecuDuLogo | null }>;
-  relireLogo: (logo: Buffer, esquisse: Buffer, demande: string, cle: string) => Promise<z.infer<typeof RelectureDuLogoSchema>>;
+  relireLogo: (logo: Buffer, esquisse: Buffer, demande: string, cle: string) => Promise<RelectureDuLogo>;
 };
 export const graphistesDeps: { ai?: (cle: string) => GraphistesAi } = {};
 

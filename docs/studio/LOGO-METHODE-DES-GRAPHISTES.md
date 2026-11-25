@@ -175,6 +175,55 @@ ne change pas) ; `jamais-de-question-sur-le-logo` (la proposition n'est pas une 
 du 24 novembre au soir, ajoute et scelle phrase-de-l-esquisse-au-choix-du-client (le client prend librement, sous le nom
 de son logo, la phrase d'une esquisse, aucune phrase ou la sienne), et mets à jour la partie Logo de CLAUDE.md. »
 
+## Le relecteur juge l'exécution, pas l'idée (25 novembre)
+
+Préparé sans aucune dépense, sur une branche locale (`relecteur-execution`), sans rien envoyer.
+
+**Ce qui s'est passé.** L'essai réel du 25 novembre a refait la finalisation de Racine : l'esquisse 4 (la feuille sur
+le i) et l'esquisse 11 (le R bordeaux), deux essais chacune, soit quatre logos finis (preuves :
+`docs/studio/essais-complets/images/racine/finalisation-4-r-bordeaux`, branche `claude/essais-complets`). Le relecteur
+les a tous refusés, avec 6,5, 7, 7 et 7. Pour la feuille sur le i, il a reproché l'idée elle-même : « un cliché courant
+du secteur végétal », alors que c'est l'idée que le client avait choisie. Pour le R, il a reproché le dessin, en le
+comparant au « travail d'une grande agence ».
+
+**Ses mots.** À la question « Ces logos finis te paraissent assez bons pour être montrés à un client ? », il a répondu :
+« Oui très bien je mettrais 9/10 ».
+
+**Ce qui change.**
+
+1. **Ce que juge le relecteur.** Il ne juge plus l'idée, ni son originalité, ni si elle est courante dans le métier :
+   c'est le client qui l'a choisie parmi les esquisses. Il juge seulement l'exécution : le nom écrit exactement (le
+   code le compare aussi), l'idée de l'esquisse bien gardée, un dessin net (raccords, proportions, lisible en petit),
+   pas d'arche, pas de phrase inventée (une phrase choisie par le client n'est jamais inventée, les règles de la phrase
+   sous le nom restent), un fond qui se retire. Il écrit ses défauts d'exécution un par un, dans une liste à part.
+2. **Le code écarte ce qui juge l'idée, même si le relecteur l'écrit.** Une raison qui parle de cliché, d'idée banale,
+   courante, répandue ou propre au secteur, de manque d'originalité ou de singularité, qui compare aux agences, ou qui
+   dit « trop proche de l'esquisse », est écartée en entier. Une note sous 8 ne fait refuser que pour un défaut
+   d'exécution écrit ; quand son explication ne juge que l'idée, elle n'est pas comptée, et le compte rendu le dit.
+   Une note sous 8 sans aucune explication reste un refus, par prudence. Refusé pour l'exécution, le logo est refait une
+   fois, à la charge du Studio, avec ce défaut dans ses raisons.
+3. **La note est étalonnée.** La consigne dit qu'un logo propre et fidèle à l'esquisse choisie, au dessin net et sans
+   défaut visible, vaut 8 ou plus. Elle lui donne pour repère la question et la réponse du propriétaire, mot pour mot,
+   sans lui montrer aucune image d'essai. Le seuil reste 8. La comparaison aux « meilleures agences » est retirée de la
+   consigne.
+
+**Le rejeu, gratuit.** Les quatre verdicts réels sont copiés dans `tests/fixtures/relecteur-racine`. Rejoués par le code
+d'aujourd'hui, ils donnent tous « gardé », du premier coup. Ce qui a été vérifié : le code. Ce qui ne l'a pas été : ce que
+le vrai relecteur notera avec sa nouvelle consigne ; seul l'essai réel le dira. Pour le R, ses reproches sur le dessin
+(« la fine tige risque de disparaître en petit ») étaient écrits avec la comparaison aux agences : ils ne comptent pas
+ici. Le même reproche, écrit seul comme défaut d'exécution avec une note sous 8, fait toujours refuser.
+
+**Les épreuves.** Une épreuve nouvelle est scellée, avec ses mots : `relecteur-juge-l-execution-pas-l-idee`. Une
+épreuve scellée est contredite : `relecteur-sans-refus-pour-trop-proche` dit « il est refusé si … une note sous 8 », et
+une note sous 8 qui ne tient qu'à l'idée ne fait plus refuser. Elle n'est pas réécrite : elle est marquée remplacée par
+la nouvelle, dont l'attendu reprend tout ce qui reste vrai d'elle (son rejeu passerait encore ; c'est la règle écrite qui
+ne l'est plus tout à fait). Son accord écrit manque encore : le banc ne l'accepte que pour elle. Les autres ne sont pas
+contredites : `logo-refait-une-fois-avec-ses-raisons` (un logo refusé est toujours refait une fois avec ses raisons ; une
+note sous 8 sans explication reste un refus), `phrase-de-l-esquisse-au-choix-du-client` (rien ne change pour la phrase),
+`logo-relu-avant-ce-qui-le-porte` (rien ne change dans l'ordre).
+
+**Son accord écrit, mot pour mot (25 novembre 2026) :** « Oui, marque relecteur-sans-refus-pour-trop-proche comme remplacée par ma décision du 25 novembre, ajoute et scelle relecteur-juge-l-execution-pas-l-idee (le relecteur du logo fini juge l'exécution, jamais l'idée que le client a choisie ; une raison comme « cliché du secteur » ne fait jamais refuser), et mets à jour la partie Logo de CLAUDE.md »
+
 ## Le point 0 : tranché
 
 **La question :** « Le client choisit d'abord son nom, puis les logos : tu es d'accord ? » **Sa réponse :** « Oui »

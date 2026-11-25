@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -49,10 +49,10 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       expect(par && SCEAUX[par.id], `${e.id} → ${r.epreuve}`).toBeTruthy();
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
-      expect(["23 novembre 2026", "24 novembre 2026"]).toContain(r.decision);
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort)/);
-      // L'accord écrit du 24 novembre 2026 nomme chaque épreuve qu'il remplace, et celle qui la remplace.
-      if (r.decision === "24 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
+      expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026"]).toContain(r.decision);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche)/);
+      // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
+      if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
   });
   it("chaque épreuve gratuite est rejouée ci-dessous", () => {
@@ -1058,6 +1058,99 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
     // Le relecteur est le plus fort, effort élevé, un autre modèle que le rédacteur.
     const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
     expect(src).toContain('logo: { input: 3_500, output: 1_500, max: 10_000, modele: "strong" as const, effort: "high" },');
+  });
+
+  epreuve("relecteur-juge-l-execution-pas-l-idee", async () => {
+    const F = await import("@/lib/syna-agent/logo-finalisation");
+    const { NOTE_DU_PROPRIETAIRE } = await import("@/lib/syna-agent/note-du-proprietaire");
+    const RACINE = "Racine", PEPINIERE = "une pépinière qui cultive et vend en ligne des plantes, des arbustes et des jeunes arbres";
+    // 1. La consigne : l'exécution seule, jamais l'idée ; l'étalonnage ; les mots du propriétaire mot pour mot ; le seuil reste 8.
+    expect(NOTE_DU_PROPRIETAIRE).toBe(8);
+    const R = F.RELECTEUR_DU_LOGO_FINI;
+    expect(R).toContain("Le client a choisi lui-même cette esquisse, et son idée, parmi celles qu'on lui a proposées. Tu ne juges jamais l'idée : ni son originalité, ni si elle est courante dans son métier, ni si elle est assez marquante.");
+    expect(R).toContain("Tu juges seulement l'exécution : le nom écrit exactement, l'idée de l'esquisse bien gardée, un dessin net (raccords propres, proportions justes, lisible en petit), pas d'arche, pas de phrase inventée, un fond blanc uni qui se retire.");
+    expect(R).toContain("Un logo propre et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus.");
+    expect(R).toContain("à la question « Ces logos finis te paraissent assez bons pour être montrés à un client ? », posée devant des logos finis propres et fidèles à leurs esquisses, le propriétaire du Studio a répondu : « Oui très bien je mettrais 9/10 »");
+    expect(R).not.toMatch(/agence|evolution|évolu|trop proche|copie nettoyée|racine|feuille|bordeaux/i);
+    // Aucune image d'essai : le relecteur reçoit seulement le logo fini et son esquisse ; le plus fort, effort élevé.
+    const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
+    expect(src).toContain('relireLogo: (logo, esquisse, demande, cle) => texte(cle, "logo", RELECTEUR_DU_LOGO_FINI, demande, RelectureDuLogoSchema, [{ data: logo, label: "logo fini" }, { data: esquisse, label: "esquisse" }]),');
+    expect(src).toContain('logo: { input: 3_500, output: 1_500, max: 10_000, modele: "strong" as const, effort: "high" },');
+    expect(F.demandeAuRelecteurDuLogo({ nom: NOM, metier: METIER, texte: TEXTE })).not.toMatch(/écart|indice|identiques|9\/10/i);
+
+    // 2. Le rejeu des quatre relectures réelles de Racine (25 novembre 2026), telles qu'elles sont arrivées.
+    const reels = ["04-relecture-1", "04-relecture-2", "11-relecture-1", "11-relecture-2"].map((n) => JSON.parse(fs.readFileSync(`tests/fixtures/relecteur-racine/esquisse-${n}-verdict.json`, "utf8")));
+    expect(reels.map((r) => r.verdict.note)).toEqual([6.5, 7, 7, 7]);
+    expect(reels.map((r) => r.garde)).toEqual([false, false, false, false]); // ce que décidait le code d'avant
+    expect(reels[0].verdict.pourquoi).toContain("un cliché courant du secteur végétal");
+    const verdicts = reels.map((r) => F.RelectureDuLogoSchema.parse(r.verdict));
+    for (const v of verdicts) expect(F.raisonsDuRefus(v, RACINE)).toEqual([]);
+    // De bout en bout, avec la vraie finalisation : la feuille sur le i est gardée du premier coup, sans reprise.
+    const TEXTE_R = `Transforme cette esquisse en véritable logo contemporain pour ${RACINE}, ${PEPINIERE}. Conserve l'idée centrale : une feuille tient lieu de point sur le i. Fais évoluer cette idée vers une identité plus aboutie et plus distinctive. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif`;
+    expect(controleDuTexte(TEXTE_R, RACINE, PEPINIERE)).toEqual([]);
+    const finir = async (suite: any[], detourer?: (p: Buffer) => Promise<any>) => {
+      const envoyes: string[] = [], studio: boolean[] = [];
+      let dansLeStudio = false;
+      const r = await finaliserUneEsquisse({
+        rediger: async () => ({ idee_centrale: "une feuille sur le i", texte: TEXTE_R }),
+        finaliser: async (_e, t) => { envoyes.push(t); studio.push(dansLeStudio); return png(); },
+        relire: async () => suite.shift(),
+        detourer: detourer ?? (async (p) => ({ ok: true, png: p })),
+        aLaChargeDuStudio: async (fn) => { dansLeStudio = true; try { return await fn(); } finally { dansLeStudio = false; } },
+      }, { nom: RACINE, metier: PEPINIERE, esquisse: await png() });
+      return { r, envoyes, studio };
+    };
+    for (const v of verdicts) {
+      const { r, envoyes } = await finir([v]);
+      expect(r.ok).toBe(true);
+      expect(envoyes).toEqual([TEXTE_R]);
+      expect(r.notes.join(" ")).toMatch(/non comptée : elle jugeait l'idée choisie par le client/);
+    }
+
+    // 3. « Cliché du secteur » et toute raison qui juge l'idée ne font jamais refuser, même écrites par le modèle en défaut.
+    const base = verdicts[0];
+    const cliche = "L'idée reste toutefois un cliché courant du secteur végétal";
+    expect(reels[0].verdict.pourquoi).toContain(cliche);
+    for (const d of [cliche, "un cliché du secteur", "UNE IDÉE BANALE", "idée peu originale", "pas assez de singularité pour atteindre le niveau d'une grande agence", "une idée très répandue", "trop proche de l'esquisse, sans évolution"]) {
+      expect(F.jugeLIdee(d), d).toBe(true);
+      expect(F.raisonsDuRefus({ ...base, note: 5, defauts: [d] }, RACINE), d).toEqual([]);
+      expect(F.raisonsDuRefus({ ...base, note: 5, defauts: [d], pourquoi: d }, RACINE), d).toEqual([]);
+      expect(F.raisonsDuRefus({ ...base, note: 5, defauts: [], pourquoi: d }, RACINE), d).toEqual([]);
+    }
+    // Une réponse en texte plutôt qu'en liste est lue de même ; l'ancien format « evolution » reste ignoré.
+    expect(F.RelectureDuLogoSchema.parse({ ...reels[0].verdict, defauts: `${cliche} ; idée banale` }).defauts).toEqual([cliche, "idée banale"]);
+    expect(F.raisonsDuRefus(F.RelectureDuLogoSchema.parse({ ...reels[0].verdict, defauts: `${cliche} ; idée banale` }), RACINE)).toEqual([]);
+    expect(Object.keys(F.RelectureDuLogoSchema.shape)).not.toContain("evolution");
+
+    // 4. L'exécution reste jugée : un défaut d'exécution écrit fait refuser, avec lui dans la raison ; le cliché à côté est écarté.
+    const tige = "la fine tige risque de disparaître en petit";
+    expect(reels[3].verdict.pourquoi).toContain(tige);
+    for (const d of [tige, "les jonctions entre la tige et le fût laissent des formes de blanc maladroites", "la feuille, un peu grosse, flotte légèrement loin du i", "le fond n'est pas blanc uni", "les lettres ne se lisent pas distinctement en petit", "la jambe du R est trop lourde"]) expect(F.jugeLIdee(d), d).toBe(false);
+    expect(F.raisonsDuRefus({ ...base, note: 7, defauts: [cliche, tige] }, RACINE)).toEqual([`il n'est pas au niveau (7/10, il faut 8) : ${tige}`]);
+    expect(F.raisonsDuRefus({ ...base, note: 8, defauts: [tige] }, RACINE)).toEqual([]);
+    // Une note sous 8 sans aucune explication reste un refus, par prudence.
+    expect(F.raisonsDuRefus({ ...base, note: 7, defauts: [], pourquoi: "" }, RACINE)).toEqual(["il n'est pas au niveau (7/10, il faut 8)"]);
+    // Le nom (comparé par le code), l'idée perdue, l'arche, la phrase inventée restent des refus, chacun seul.
+    for (const v of [{ nomLu: "Racines" }, { ideeConservee: false }, { arche: true }, { phrase: "Le jardin éternel", phraseDitLeMetier: false }]) expect(F.raisonsDuRefus({ ...base, note: 9, ...v }, RACINE)).toHaveLength(1);
+    // Une phrase choisie par le client n'est jamais inventée : comparée lettre pour lettre ; mal écrite, le logo est refusé.
+    const choisie = { texte: "PÉPINIÈRE EN LIGNE" };
+    expect(F.raisonsDuRefus({ ...base, note: 9, phraseDitLeMetier: false }, RACINE, choisie)).toEqual([]);
+    expect(F.raisonsDuRefus({ ...base, note: 9, phrase: "PEPINIERE EN LIGNE" }, RACINE, choisie)).toHaveLength(1);
+    // Refusé pour l'exécution : refait une fois, à la charge du Studio, avec son défaut dans les raisons ; jamais un troisième essai.
+    const refait = await finir([{ ...base, note: 7, defauts: [cliche, tige] }, { ...base, note: 9 }]);
+    expect(refait.r.ok).toBe(true);
+    expect(refait.envoyes).toEqual([TEXTE_R, `${TEXTE_R} À corriger : il n'est pas au niveau (7/10, il faut 8) : ${tige}.`]);
+    expect(refait.studio).toEqual([false, true]);
+    const deuxFois = await finir([{ ...base, note: 6, defauts: [tige] }, { ...base, note: 6, defauts: [tige] }]);
+    expect(deuxFois.r.ok).toBe(false);
+    expect(deuxFois.envoyes).toHaveLength(2);
+    // Un fond que le Studio ne retire pas proprement fait refaire le logo.
+    let detourages = 0;
+    const fond = await finir([{ ...base, note: 9 }], async (p) => (++detourages === 1 ? { ok: false, why: "le fond ne se retire pas proprement" } : { ok: true, png: p }));
+    expect(fond.r.ok).toBe(true);
+    expect(fond.envoyes).toEqual([TEXTE_R, `${TEXTE_R} À corriger : le fond ne se retire pas proprement.`]);
+    // La ligne d'évolution du texte de finalisation reste.
+    expect(consigneDeFinalisation(RACINE, PEPINIERE)).toContain(LIGNE_D_EVOLUTION);
   });
 });
 

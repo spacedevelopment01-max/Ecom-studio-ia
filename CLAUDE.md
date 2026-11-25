@@ -133,7 +133,15 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   perdue, une arche, une phrase inventée, une note sous 8 ; une phrase choisie par le client n'est jamais « inventée » :
   le code la compare lettre pour lettre, et mal écrite, elle fait refuser le logo comme un nom mal écrit ; jamais un logo
   parce qu'il est trop proche de son esquisse (« Ouais » du 24 novembre, à « Je fais retirer cette règle et je relance
-  la finalisation du R bordeaux ? ») ; refusé, il
+  la finalisation du R bordeaux ? ») ; **il juge l'exécution, jamais l'idée**, que le client a choisie parmi les
+  esquisses (25 novembre 2026 : quatre logos finis de Racine refusés à 6,5, 7, 7 et 7, dont la feuille sur le i pour « un
+  cliché courant du secteur végétal » ; à la question « Ces logos finis te paraissent assez bons pour être montrés à un
+  client ? », sa réponse : « Oui très bien je mettrais 9/10 ») : il regarde le nom exact, l'idée bien gardée, un dessin
+  net (raccords, proportions, lisible en petit), pas d'arche, pas de phrase inventée, un fond qui se retire ; un logo
+  propre, fidèle à l'esquisse et sans défaut visible vaut 8 ou plus, avec ces mots du propriétaire pour repère, sans
+  aucune image d'essai ; une raison qui juge l'idée (cliché du secteur, idée banale, peu originale) ne fait jamais
+  refuser : le code l'écarte, même si le relecteur la donne, et une note sous 8 doit tenir à un défaut d'exécution écrit
+  (`logo-finalisation.ts`) ; refusé, il
   est refait une fois avec ses raisons ; refusé deux fois, SINA propose une autre esquisse. **Le logo d'abord** : les
   couleurs de la marque sont tirées du logo par le Studio, la police de titres choisie au plus près de ses lettres ;
   deux identités n'ont jamais la même police de titres. Les couleurs du client ne vont jamais au dessinateur. On ne

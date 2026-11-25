@@ -99,6 +99,18 @@ const PHRASE_SOUS_LE_NOM = { decision: "24 novembre 2026", mots: "« Oui, marque
 const SOURCE_PHRASE_SOUS_LE_NOM = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (partie « La phrase sous le nom » ; ses mots relayés par le chef d'orchestre)";
 
 /**
+ * Le relecteur du logo fini juge l'exécution, pas l'idée (25 novembre 2026). Essai réel de la finalisation de Racine : les
+ * quatre logos finis (la feuille sur le i et le R bordeaux, deux essais chacun) ont tous été refusés, à 6,5, 7, 7 et 7, la
+ * feuille sur le i pour « un cliché courant du secteur végétal », l'idée même que le client avait choisie. Le propriétaire,
+ * à la question « Ces logos finis te paraissent assez bons pour être montrés à un client ? » : « Oui très bien je
+ * mettrais 9/10 ». Cela contredit relecteur-sans-refus-pour-trop-proche (« il est refusé si … une note sous 8 » : une
+ * note sous 8 qui ne tient qu'à l'idée ne fait plus refuser). Son accord écrit pour la marquer remplacée, mot pour
+ * mot (25 novembre 2026, écrit dans la conversation de construction, sans point final).
+ */
+const RELECTEUR_EXECUTION = { decision: "25 novembre 2026", mots: "« Oui, marque relecteur-sans-refus-pour-trop-proche comme remplacée par ma décision du 25 novembre, ajoute et scelle relecteur-juge-l-execution-pas-l-idee (le relecteur du logo fini juge l'exécution, jamais l'idée que le client a choisie ; une raison comme « cliché du secteur » ne fait jamais refuser), et mets à jour la partie Logo de CLAUDE.md »" };
+const SOURCE_RELECTEUR_EXECUTION = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (partie « Le relecteur juge l'exécution, pas l'idée (25 novembre) » ; preuves : docs/studio/essais-complets/images/racine/finalisation-4-r-bordeaux, branche claude/essais-complets ; ses mots relayés par le chef d'orchestre)";
+
+/**
  * LA PLANCHE DE MARQUE PAR OPENAI : l'accord écrit du propriétaire du 24 novembre 2026, mot pour mot, et sa demande de
  * départ (relayés par le chef d'orchestre). Compte rendu : docs/studio/PLANCHE-DE-MARQUE.md.
  */
@@ -525,6 +537,7 @@ export const EPREUVES: Epreuve[] = [
     verdict: "« Ouais » (24 novembre 2026), sa réponse à « Je fais retirer cette règle et je relance la finalisation du R bordeaux ? », après l'essai réel où quatre logos finis propres et fidèles avaient tous été refusés pour la seule raison « trop proche de l'esquisse, sans évolution ».",
     attendu: "Le logo fini est relu par le relecteur le plus fort, effort élevé, un autre modèle que le rédacteur, avec le logo sur blanc, l'esquisse, le nom, le vrai métier et le texte envoyé ; il ne refuse plus jamais un logo parce qu'il est trop proche de l'esquisse (la question ne lui est plus posée, aucun écart mesuré ne lui est donné) ; il est refusé si le nom est mal écrit (le code le compare aussi), si l'idée de l'esquisse est perdue, s'il porte une arche, une phrase inventée qui ne dit pas le vrai métier, ou une note sous 8 ; un fond que le Studio ne retire pas proprement le fait refaire ; la ligne d'évolution du texte de finalisation reste.",
     rejeu: "gratuit",
+    remplaceePar: { ...RELECTEUR_EXECUTION, epreuve: "relecteur-juge-l-execution-pas-l-idee", sceau: "ed00e4052bba98413135c61d3fc550e10d74240353ba6af705f82ae36cb88b40" },
   },
   {
     id: "phrase-de-l-esquisse-au-choix-du-client", date: "2026-11-24", source: SOURCE_PHRASE_SOUS_LE_NOM,
@@ -548,6 +561,12 @@ export const EPREUVES: Epreuve[] = [
     id: "planche-refusee-deux-fois-jamais-montree", date: "2026-11-24", source: SOURCE_PLANCHE,
     verdict: VERDICT_PLANCHE,
     attendu: "Une planche refusée par le relecteur (nom ou logo faux ou redessiné, faute, promesse ou chiffre inventé, année fausse, domaine différent, personne sans accord, logo foncé sur fond sombre, mot « maquette » ou « mockup », élément recopié de la disposition, note sous 8) est refaite UNE fois, à la charge du Studio, avec toutes ses raisons à la fin du texte ; refusée deux fois, elle n'est montrée ni au client ni à SINA, ni choisissable (avec moins de deux planches montrées, le choix attend), jamais un troisième essai ; SINA dit qu'elle ne la montre pas et propose de la refaire à sa charge, rien n'est compté sur le budget du client.",
+    rejeu: "gratuit",
+  },
+  {
+    id: "relecteur-juge-l-execution-pas-l-idee", date: "2026-11-25", source: SOURCE_RELECTEUR_EXECUTION,
+    verdict: "« Oui très bien je mettrais 9/10 » (25 novembre 2026), sa réponse à « Ces logos finis te paraissent assez bons pour être montrés à un client ? », devant les quatre logos finis de l'essai réel de Racine (la feuille sur le i et le R bordeaux, deux essais chacun), tous refusés par le relecteur à 6,5, 7, 7 et 7 : la feuille sur le i pour « un cliché courant du secteur végétal », l'idée même que le client avait choisie, et le R pour son dessin.",
+    attendu: "Le relecteur du logo fini ne juge jamais l'idée ni son originalité : le client l'a choisie parmi les esquisses. Il juge seulement l'exécution : le nom exact (le code le compare aussi), l'idée de l'esquisse bien gardée, un dessin net (raccords, proportions, lisibilité en petit), pas d'arche, pas de phrase inventée (une phrase choisie par le client n'est jamais inventée : le code la compare lettre pour lettre), un fond qui se retire (sinon le logo est refait). Sa consigne dit qu'un logo propre et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus, et lui donne pour repère, mot pour mot, la question et la réponse du propriétaire, sans aucune image d'essai ; le seuil reste 8. Une raison qui juge l'idée (« cliché du secteur », « idée banale », « peu originale », pas assez singulière, la comparaison aux agences, « trop proche de l'esquisse ») ne fait jamais refuser un logo, même donnée par le modèle : le code l'écarte en entier ; une note sous 8 ne compte que pour un défaut d'exécution écrit, ou sans aucune explication ; elle ne compte pas quand son explication juge l'idée. Rejouées par le code, les quatre relectures réelles de Racine donnent « gardé » ; un défaut d'exécution écrit fait toujours refuser, et le logo refusé est refait une fois, à la charge du Studio, avec ce défaut dans ses raisons ; la ligne d'évolution du texte de finalisation reste ; le relecteur est le plus fort, effort élevé, un autre modèle que le rédacteur.",
     rejeu: "gratuit",
   },
 ];
