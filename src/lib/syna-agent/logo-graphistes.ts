@@ -180,7 +180,9 @@ export function devisDeLaRecherche(o: { metier?: boolean } = {}): DevisDuLogo {
   const r = appel("esquisses"), m = o.metier === false ? { max: 0, probable: 0 } : appel("metier");
   const repriseMicro = planches + r.max, repriseProbableMicro = planchesProbable + r.probable;
   const maxMicro = Math.ceil(m.max + repriseMicro);
-  return { maxMicro, probableMicro: Math.ceil(m.probable + repriseProbableMicro), repriseMicro, repriseProbableMicro, studioMaxMicro: borneDuStudio(maxMicro, false, repriseMicro, 1) };
+  // La borne du Studio couvre ses DEUX reprises possibles dans la même recherche (25 novembre 2026) : les planches refaites
+  // une fois avec leur relecture, ET la réécriture du métier quand son contrôle gratuit le refuse.
+  return { maxMicro, probableMicro: Math.ceil(m.probable + repriseProbableMicro), repriseMicro, repriseProbableMicro, studioMaxMicro: Math.ceil(borneDuStudio(maxMicro, false, repriseMicro, 1) + m.max) };
 }
 /** N finalisations : le texte (GPT-6.2 Astra), le logo fini (2.6 Sunburst), sa relecture. */
 export function devisDesFinalisations(n: number): DevisDuLogo {
@@ -197,7 +199,7 @@ export function devisDesFinalisations(n: number): DevisDuLogo {
 export function devisDuLogo(n: number): DevisDuLogo {
   const a = devisDeLaRecherche(), b = devisDesFinalisations(n);
   const maxMicro = a.maxMicro + b.maxMicro, repriseMicro = a.repriseMicro + b.repriseMicro;
-  return { maxMicro, probableMicro: a.probableMicro + b.probableMicro, repriseMicro, repriseProbableMicro: a.repriseProbableMicro + b.repriseProbableMicro, studioMaxMicro: borneDuStudio(maxMicro, false, repriseMicro, 1) };
+  return { maxMicro, probableMicro: a.probableMicro + b.probableMicro, repriseMicro, repriseProbableMicro: a.repriseProbableMicro + b.repriseProbableMicro, studioMaxMicro: a.studioMaxMicro + b.studioMaxMicro };
 }
 /** « D'autres pistes » : de nouvelles planches (le métier est déjà écrit). Sur le budget du client, avec une carte. */
 export const devisDesPistes = (): DevisDuLogo => devisDeLaRecherche({ metier: false });

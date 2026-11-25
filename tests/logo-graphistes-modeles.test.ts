@@ -107,7 +107,20 @@ describe("le devis et les deux plafonds", async () => {
   });
   it("recherche, finalisations, accord unique : « au plus » au-dessus du probable ; la borne du Studio vaut UNE reprise", async () => {
     const r = G.devisDeLaRecherche(), f = G.devisDesFinalisations(3), tout = G.devisDuLogo(3);
-    for (const d of [r, f, tout]) { expect(d.maxMicro).toBeGreaterThanOrEqual(d.probableMicro); expect(d.studioMaxMicro).toBe(Math.ceil(Math.min(d.repriseMicro, d.maxMicro))); }
+    for (const d of [r, f, tout]) expect(d.maxMicro).toBeGreaterThanOrEqual(d.probableMicro);
+    // Les finalisations : une reprise (le texte réécrit OU le logo refait, jamais plus qu'un essai entier).
+    expect(f.studioMaxMicro).toBe(Math.ceil(Math.min(f.repriseMicro, f.maxMicro)));
+    // La recherche (25 novembre 2026) : ses DEUX reprises à la charge du Studio dans la même recherche, les planches
+    // refaites avec leur relecture ET la réécriture du métier ; la borne les couvre ensemble.
+    const metier = G.devisDeLaRecherche().maxMicro - G.devisDeLaRecherche({ metier: false }).maxMicro;
+    expect(metier).toBeGreaterThan(0);
+    expect(r.studioMaxMicro).toBeGreaterThanOrEqual(r.repriseMicro + metier);
+    expect(r.studioMaxMicro - Math.ceil(Math.min(r.repriseMicro, r.maxMicro))).toBeLessThanOrEqual(Math.ceil(metier) + 1);
+    // Sans métier à écrire (« d'autres pistes »), seule la reprise des planches.
+    const p = G.devisDeLaRecherche({ metier: false });
+    expect(p.studioMaxMicro).toBe(Math.ceil(Math.min(p.repriseMicro, p.maxMicro)));
+    // L'accord unique additionne les deux bornes.
+    expect(tout.studioMaxMicro).toBe(r.studioMaxMicro + f.studioMaxMicro);
     expect(tout.maxMicro).toBe(r.maxMicro + f.maxMicro);
     // Les prix mesurés : recherche 0,0098 € (essai réel du 24 novembre 2026 : 343 jetons) + 0,030 € ; texte 0,015 € ;
     // logo fini de 0,026 € à 0,061 €.
