@@ -1,17 +1,22 @@
 /**
- * ESSAI RÉEL DES 12 ESQUISSES DE LOGO (studio privé d'essai, jamais déployé). Il n'utilise que les fonctions de SINA déjà
- * construites et s'arrête après la découpe : ni relecteur des esquisses, ni finalisation, ni relecture.
+ * ESSAI RÉEL DES ESQUISSES DE LOGO, TRIÉES PAR LE RELECTEUR (studio privé d'essai, jamais déployé). La recherche est
+ * exactement celle du parcours (logo-graphistes-tache.ts) : `ecrireLeMetier`, puis `uneRecherche` avec `vraisAppels`.
+ * Ni finalisation, ni relecture de logo.
  *
  *  1. un compte et un projet fictifs pour le client inventé donné (client-de-l-essai.ts : CLIENT_JSON, ou CLIENT_NOM,
  *     CLIENT_METIER, CLIENT_TYPE, CLIENT_PRODUITS ; aucun client par défaut) ;
  *  2. le garde-fou de dépense de l'essai allumé avec PLAFOND_ESSAI_EUR (src/lib/ai/plafond-essai.ts) : un appel dont le
  *     maximum ferait dépasser ne part pas, et le script s'arrête en le disant ;
- *  3. le métier (`ecrireLeMetier`, contrôle compris) ; 4. la demande exacte (`demandeDeRecherche`) ;
- *  5. les deux planches en même temps (`lancerLesPlanches`, `ai.planche` : le chemin des images du Studio, compté comme
- *     d'habitude) ; 6. la découpe gratuite (`decouperLaPlanche`) et la planche-contact (`plancheContact`).
- * Aucun appel n'est relancé tout seul : une planche manquée est écrite comme manquée.
+ *  3. le métier (contrôle compris) ; 4. les deux planches, la découpe gratuite, UN appel au relecteur ; une esquisse
+ *     refusée n'est jamais montrée ; moins de 8 gardées : les deux planches refaites une fois, à la charge du Studio, avec
+ *     « Évite ces pistes déjà présentées : … » ; la phrase sous le nom relevée pour chaque esquisse.
+ * Aucun appel n'est relancé tout seul : une planche ou une relecture manquée est écrite comme manquée.
  *
- * Ce qu'il écrit dans le dossier de sortie : planche-<modèle>.png, esquisse-NN.png, planche-contact.png, rapport.txt.
+ * Ce qu'il écrit dans le dossier de sortie : planche-<modèle>.png (et planche-reprise-<modèle>.png) ; esquisse-NN.png (les
+ * gardées, numérotées comme le client les voit) ; planche-contact.png (les gardées) ; planche-contact-complete.png (toutes
+ * les esquisses découpées, les écartées barrées « ÉCARTÉE » avec leur raison) ; ecartee-*.png ; esquisses.json (gardées
+ * avec leur phrase, écartées avec leur raison : relu par l'essai de la finalisation) ; relecture-N-demande.txt et
+ * relecture-N-verdict.json ; depense.json ; rapport.txt.
  *
  * Usage (depuis la racine du dépôt ; clés OpenAI injectées par le proxy de la session, clé Anthropic par
  * STUDIO_ANTHROPIC_KEY, jamais dans le code) :
@@ -54,7 +59,7 @@ import path from "node:path";
   if (plafond < devis.plafondMinimalMicro) console.log(`Attention : le plafond ${euros(plafond)} est sous le plafond minimal ${euros(devis.plafondMinimalMicro)} ; le garde-fou peut arrêter l'essai avant la fin (sans rien dépenser de plus).`);
   const sortie = path.resolve(sortieArg);
   const r = await essaiDesEsquisses({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, client });
-  console.log(`${r.esquisses} esquisses découpées, ${r.planches.length} planche(s), dépense comptée ${euros(r.depenseMicro)}. Rapport : ${path.join(sortie, "rapport.txt")}`);
+  console.log(`${r.esquisses} esquisse(s) gardée(s) par le relecteur, ${r.ecartees.length} écartée(s)${r.reprise ? " (planches refaites une fois, à la charge du Studio)" : ""}, ${r.planches.length} planche(s), dépense comptée ${euros(r.depenseMicro)}. Rapport : ${path.join(sortie, "rapport.txt")}`);
   if (r.arret) { console.log(`Arrêt : ${r.arret}`); process.exit(2); }
   process.exit(0);
 }

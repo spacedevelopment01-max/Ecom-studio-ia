@@ -16,7 +16,9 @@
  * Le métier : la phrase de l'essai des esquisses, lue dans son rapport (RAPPORT_ESQUISSES), sinon METIER_ESSAI. Jamais
  * réécrite par un appel.
  * La phrase sous le nom choisie par le client (comme dans le parcours) : PHRASE pour tous les logos, PHRASE_<numéro>
- * (PHRASE_4) pour un logo, « aucune » pour un logo sans phrase ; rien de donné : la règle d'avant. Reprise mot pour mot.
+ * (PHRASE_4) pour un logo, « aucune » pour un logo sans phrase, « esquisse 5 » pour la phrase relevée sous l'esquisse 5 ;
+ * rien de donné : la règle d'avant. Reprise mot pour mot. Les esquisses données doivent être des esquisses gardées par le
+ * relecteur (esquisses.json, à côté de RAPPORT_ESQUISSES).
  *
  * Ce qu'il écrit dans le dossier de sortie : pour chaque esquisse NN, la consigne du rédacteur, ses réponses, le texte
  * envoyé au dessinateur à chaque essai, les logos bruts (refusés compris) et détourés, le reçu de chaque image (usage,
@@ -47,7 +49,7 @@ import path from "node:path";
   Object.assign(process.env, { DATA_DIR: dir, APP_SECRET: fs.readFileSync(secretFile, "utf8").trim(), OPENAI_API_KEY: "sk-proxy-injected", DASHSCOPE_API_KEY: "sk-proxy-injected", FAL_KEY: "proxy-injected", ANTHROPIC_API_KEY: "", GOOGLE_API_KEY: "" });
   const { appliquerTarifsVerifies } = await import("./tarifs-verifies");
   await appliquerTarifsVerifies();
-  const { clientDeLEssai, devisDeLEssai, devisEnTexte, essaiDeFinalisation, euros, metierDeLEssai, numeroDe, phraseEnMots, phrasesDeLEssai } = await import("./essai-finalisation-outil");
+  const { clientDeLEssai, devisDeLEssai, devisEnTexte, esquissesGardees, essaiDeFinalisation, euros, metierDeLEssai, nonGardees, numeroDe, phraseEnMots, phrasesDeLEssai } = await import("./essai-finalisation-outil");
 
   const [sortieArg, ...esquisses] = process.argv.slice(2);
   if (devisSeul) {
@@ -64,7 +66,10 @@ import path from "node:path";
   try {
     client = clientDeLEssai(process.env);
     metier = metierDeLEssai({ rapport: process.env.RAPPORT_ESQUISSES, metier: process.env.METIER_ESSAI });
-    phrases = await phrasesDeLEssai(esquisses.map(numeroDe), process.env);
+    // Les esquisses gardées par le relecteur (esquisses.json à côté du rapport) : une écartée n'est jamais finalisée.
+    const gardees = esquissesGardees(process.env.RAPPORT_ESQUISSES);
+    if (gardees) { const non = nonGardees(esquisses, gardees); if (non.length) throw new Error(`${non.join(", ")} : pas parmi les esquisses gardées par le relecteur (${gardees.map((g) => g.numero).join(", ")}). Rien n'est lancé.`); }
+    phrases = await phrasesDeLEssai(esquisses.map(numeroDe), process.env, gardees ?? []);
   } catch (e) { console.error((e as Error).message); process.exit(1); }
   for (const [i, e] of esquisses.entries()) console.log(`Phrase sous le nom du logo ${numeroDe(e, i)} : ${phraseEnMots(phrases[numeroDe(e, i)])}`);
   // Le studio privé d'essai, comme lancer-agent.mts : clé Anthropic (le relecteur) chiffrée depuis l'environnement.

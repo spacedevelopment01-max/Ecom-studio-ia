@@ -40,20 +40,27 @@ DEVIS_SEULEMENT=1 DATA_DIR=data/essai-ecume/studio node_modules/.bin/tsx scripts
 DEVIS_SEULEMENT=1 DATA_DIR=data/essai-ecume/studio node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts
 ```
 
-## Étape 1 — les 12 esquisses
+## Étape 1 — les esquisses, triées par le relecteur
 
 ```
 NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
-  PLAFOND_ESSAI_EUR=0.44 node_modules/.bin/tsx scripts/syna-recette/essai-esquisses.mts data/essai-ecume/1-esquisses
+  PLAFOND_ESSAI_EUR=1.08 node_modules/.bin/tsx scripts/syna-recette/essai-esquisses.mts data/essai-ecume/1-esquisses
 ```
 
-Le métier écrit en mots simples, puis les deux planches de six esquisses, découpées gratuitement.
-Probable 0,07 € (0,09 € si le métier est réécrit une fois) ; plafond minimal 0,44 €.
+Exactement la recherche du parcours : le métier en mots simples, les deux planches de six esquisses, la découpe
+gratuite, puis un seul appel au relecteur. Une esquisse refusée n'est jamais montrée. S'il en reste moins de huit, les
+deux planches sont refaites une fois, à la charge du Studio, en évitant les pistes déjà présentées. La phrase sous le nom
+de chaque esquisse est relevée.
+Probable 0,15 € (0,29 € si le métier est réécrit et les planches refaites) ; plafond minimal 1,08 €, reprise comprise.
 
-**Pause.** Montrer au propriétaire `data/essai-ecume/1-esquisses/planche-contact.png` (les esquisses numérotées) et les
-deux planches entières (`planche-*.png`). Ce script s'arrête à la découpe : les esquisses ne sont pas relues avant
-d'être montrées. Il choisit **deux esquisses** (leurs numéros NN et MM) et, s'il le veut, **une phrase sous le nom** :
-celle écrite sur une esquisse, recopiée lettre pour lettre, ou la sienne, ou « aucune ».
+**Pause.** Montrer au propriétaire :
+- `data/essai-ecume/1-esquisses/planche-contact.png` : les esquisses gardées, numérotées comme le client les voit ;
+- `planche-contact-complete.png` : toutes les esquisses découpées, les écartées barrées d'un bandeau rouge « ÉCARTÉE »
+  avec leur raison, pour qu'il voie ce que SINA a écarté ;
+- dans `rapport.txt`, la phrase relevée sous chaque esquisse gardée (« proposable telle quelle » ou non).
+
+Il choisit **deux esquisses gardées** (leurs numéros NN et MM, ceux de la planche des gardées) et, s'il le veut, **une
+phrase sous le nom** : celle d'une esquisse gardée (« esquisse 5 »), la sienne, ou « aucune ».
 
 ## Étape 2 — les deux logos finis
 
@@ -64,10 +71,13 @@ NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/
   data/essai-ecume/1-esquisses/esquisse-NN.png data/essai-ecume/1-esquisses/esquisse-MM.png
 ```
 
-- La phrase : `PHRASE` vaut pour les deux logos ; `PHRASE_NN` (par exemple `PHRASE_4`) pour un seul logo ; « aucune »
-  pour un logo sans phrase ; rien du tout : la règle d'avant (une ligne seulement si elle dit le vrai métier). Elle est
-  reprise mot pour mot, contrôlée par la fonction du Studio, et une faute évidente fait tout refuser avant la dépense.
-- Le métier est relu dans le rapport de l'étape 1, jamais réécrit.
+- La phrase : `PHRASE` vaut pour les deux logos ; `PHRASE_NN` (par exemple `PHRASE_4`) pour un seul logo ;
+  `PHRASE="esquisse 5"` pour la phrase relevée sous l'esquisse 5 (refusée si son orthographe n'est pas sûre, comme dans
+  le parcours) ; sa phrase à lui, entre guillemets ; « aucune » pour un logo sans phrase ; rien du tout : la règle
+  d'avant (une ligne seulement si elle dit le vrai métier). Elle est reprise mot pour mot, contrôlée par la fonction du
+  Studio, et une faute évidente fait tout refuser avant la dépense.
+- Le métier est relu dans le rapport de l'étape 1, jamais réécrit. Les esquisses données doivent être des esquisses
+  gardées par le relecteur (`esquisses.json`, à côté du rapport) : une écartée fait tout refuser.
 
 Probable 0,19 € (0,39 € si chaque logo est refait une fois) ; plafond minimal 2,20 €.
 
@@ -124,13 +134,13 @@ n'est pas faite) et prendre les captures avec `capture.cjs` (ordinateur 1440 de 
 
 | Étape | Probable | Si tout est refait une fois | Plafond minimal |
 |---|---|---|---|
-| 1. Esquisses | 0,07 € | 0,09 € | 0,44 € |
+| 1. Esquisses triées | 0,15 € | 0,29 € | 1,08 € |
 | 2. Deux logos finis | 0,19 € | 0,39 € | 2,20 € |
 | 3. Deux planches | 0,43 € | 0,86 € | 2,14 € |
 | 4. Planche en vrai | 1,50 € | 2,78 € | 6,70 € |
 | 5. Écran | 0 € | 0 € | 0 € |
-| **Total** | **2,19 €** | **4,12 €** | **11,48 €** |
+| **Total** | **2,27 €** | **4,32 €** | **12,12 €** |
 
-Chiffres tirés des devis gratuits du 25 novembre 2026 (somme exacte des plafonds minimaux : 11,45 € ; arrondis aux
-plafonds donnés ci-dessus : 11,48 €). Le plafond minimal est la somme de tous les maxima, reprises comprises : il
+Chiffres tirés des devis gratuits du 25 novembre 2026 (somme exacte des plafonds minimaux : 12,09 € ; arrondis aux
+plafonds donnés ci-dessus : 12,12 €). Le plafond minimal est la somme de tous les maxima, reprises comprises : il
 garantit d'aller au bout, il ne sera presque jamais dépensé.

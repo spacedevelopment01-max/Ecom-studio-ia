@@ -17,28 +17,58 @@ export type { ClientDeLEssai };
 
 // ---------------------------------------------------------------- les entrées
 
+/** Une esquisse gardée par l'essai des esquisses (esquisses.json) : son numéro, son fichier, sa phrase relevée. */
+export type EsquisseGardeeLue = { numero: number; fichier?: string; phrase?: { texte: string; ok: boolean; raisons?: string[] } };
+
+/**
+ * Les esquisses gardées par l'essai des esquisses, lues dans esquisses.json à côté de son rapport (RAPPORT_ESQUISSES).
+ * null : un rapport d'avant le tri du relecteur (aucun esquisses.json).
+ */
+export function esquissesGardees(rapport?: string): EsquisseGardeeLue[] | null {
+  if (!rapport) return null;
+  const f = path.join(path.dirname(rapport), "esquisses.json");
+  if (!fs.existsSync(f)) return null;
+  try {
+    const g = JSON.parse(fs.readFileSync(f, "utf8"))?.gardees;
+    if (!Array.isArray(g)) throw new Error();
+    return g as EsquisseGardeeLue[];
+  } catch { throw new Error(`${f} illisible : rien n'est lancé.`); }
+}
+
+/**
+ * Les esquisses données sont-elles des esquisses gardées par le relecteur ? Une esquisse écartée n'est jamais montrée,
+ * donc jamais finalisée. Rend la liste des numéros refusés (vide : tout va bien).
+ */
+export function nonGardees(fichiers: readonly string[], gardees: readonly EsquisseGardeeLue[]): string[] {
+  return fichiers.map((f, i) => ({ f, n: numeroDe(f, i) })).filter(({ f, n }) => !/^esquisse-\d+\.png$/i.test(path.basename(f)) || !gardees.some((g) => g.numero === n)).map(({ f }) => path.basename(f));
+}
+
 /**
  * La phrase sous le nom choisie par le client, logo par logo, comme dans le parcours (logo-graphistes.ts,
  * `controleDesPhrases` puis `phraseVoulue`) : PHRASE vaut pour tous les logos, PHRASE_<numéro> (PHRASE_4) pour le logo
- * de cette esquisse et l'emporte. « aucune » : le logo sans phrase. Rien de donné pour un logo : la règle d'avant (une
+ * de cette esquisse et l'emporte. « aucune » : le logo sans phrase. « esquisse 5 » : la phrase relevée sous l'esquisse 5
+ * (`gardees`, lues dans esquisses.json), refusée si elle n'est pas proposable telle quelle. Rien de donné pour un logo : la règle d'avant (une
  * ligne seulement si elle dit le vrai métier, sinon aucune). La phrase est reprise mot pour mot, jamais corrigée ; une
  * faute évidente (`fautesEvidentes`) fait tout refuser avant la moindre dépense, car elle ferait refuser le logo.
  */
-export async function phrasesDeLEssai(numeros: readonly number[], env: Record<string, string | undefined> = process.env): Promise<Record<number, PhraseVoulue>> {
+export async function phrasesDeLEssai(numeros: readonly number[], env: Record<string, string | undefined> = process.env, gardees: readonly EsquisseGardeeLue[] = []): Promise<Record<number, PhraseVoulue>> {
   const { controleDesPhrases } = await import("../../src/lib/syna-agent/logo-graphistes");
   const { fautesEvidentes, phraseVoulue } = await import("../../src/lib/syna-agent/phrase-sous-le-nom");
-  const demandes: { logo: number; aucune?: true; texte?: string }[] = [];
+  const demandes: { logo: number; aucune?: true; texte?: string; de?: number }[] = [];
   const mots: string[] = [];
   for (const n of numeros) {
     const brut = env[`PHRASE_${n}`] ?? env[`PHRASE_${String(n).padStart(2, "0")}`] ?? env.PHRASE;
     if (brut == null || !brut.trim()) continue;
     const t = brut.normalize("NFC").trim();
     if (/^aucune$/i.test(t)) { demandes.push({ logo: n, aucune: true }); continue; }
+    // « esquisse 5 » : la phrase relevée par le relecteur sous l'esquisse 5, comme dans le parcours (jamais une douteuse).
+    const de = /^esquisse\s+0*(\d+)$/i.exec(t);
+    if (de) { demandes.push({ logo: n, de: Number(de[1]) }); continue; }
     const f = fautesEvidentes(t);
     if (f.length) throw new Error(`La phrase « ${t} » du logo ${n} a une faute évidente (${f.join(", ")}) : elle ferait refuser le logo. Rien n'est lancé.`);
     demandes.push({ logo: n, texte: t }); mots.push(t);
   }
-  const c = controleDesPhrases({ esquisses: [] }, numeros, demandes, mots);
+  const c = controleDesPhrases({ esquisses: gardees.map((g) => ({ numero: g.numero, ...(g.phrase ? { phrase: g.phrase } : {}) })) as never }, numeros, demandes, mots);
   if (!c.ok) throw new Error(`Phrase sous le nom refusée : ${c.faute} Rien n'est lancé.`);
   const out: Record<number, PhraseVoulue> = {};
   for (const [k, v] of Object.entries(c.phrases)) { const p = phraseVoulue(v); if (p) out[Number(k)] = p; }
