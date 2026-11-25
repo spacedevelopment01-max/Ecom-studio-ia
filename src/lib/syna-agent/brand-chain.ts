@@ -1113,7 +1113,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
   const parLaPlanche = imagesFaites && !!a.plancheDeMarque && !!a.logosGraphistes?.length;
   if (parLaPlanche) {
     const T = await import("./planche-de-marque-tache");
-    const { phraseDuLogoFini } = await import("./planche-de-marque");
+    const { phraseDuLogoFini, phraseDeLaPlancheNonMontree } = await import("./planche-de-marque");
     const plancheAi = T.plancheDeps.ai ? T.plancheDeps.ai(ctx.job.id) : T.vraisAppelsDeLaPlanche({ userId: p.userId, projectId: p.id, jobId: ctx.job.id });
     const personnes = peopleAllowed(p.id), metier = j.graphistes?.metier?.metier ?? "";
     const premier = list.find((y) => todo.includes(y.key));
@@ -1124,12 +1124,24 @@ export async function runSinaBrandJob(ctx: JobContext) {
     for (const x of list.filter((y) => todo.includes(y.key))) {
       const lg = a.logosGraphistes?.[keys.indexOf(x.key as RouteKey)];
       if (!lg) continue;
-      const route = await poserLeLogoFini(x, lg.assetId);
-      // La phrase choisie par le client sous ce logo (méthode des graphistes), reprise mot pour mot sur sa planche.
-      const phrase = phraseDuLogoFini(j.graphistes, lg.assetId);
-      const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route, round, valeurs, logoAssetId: lg.assetId, personnes, ...(phrase ? { phrase } : {}) });
-      list = list.map((o) => (o.key === x.key ? r.route : o));
-      raisonsDe.set(x.key, r.issues); notes.push(...r.notes);
+      // Chaque planche est indépendante (essai réel d'Écume, 25 novembre 2026 : l'échec de A avait empêché B) : une erreur
+      // inattendue autour d'une planche la laisse sans image (jamais montrée), signalée au Studio, et la suivante part.
+      try {
+        const route = await poserLeLogoFini(x, lg.assetId);
+        // La phrase choisie par le client sous ce logo (méthode des graphistes), reprise mot pour mot sur sa planche.
+        const phrase = phraseDuLogoFini(j.graphistes, lg.assetId);
+        const r = await T.plancheDeLaRoute({ ctx, ai: plancheAi, who: { userId: p.userId, projectId: p.id }, route, round, valeurs, logoAssetId: lg.assetId, personnes, ...(phrase ? { phrase } : {}) });
+        list = list.map((o) => (o.key === x.key ? r.route : o));
+        raisonsDe.set(x.key, r.issues); notes.push(...r.notes);
+      } catch (e) {
+        const plafond = e instanceof CostCapReached, message = String((e as Error)?.message ?? e).slice(0, 400);
+        // La planche reste sans image : elle manque (« planche »), n'est jamais montrée, et SINA le dit.
+        const raison = plafond ? L("le plafond annoncé a été atteint avant la fin de la planche", "the announced cap was reached before the board was finished") : L(`la planche s'est arrêtée en erreur (${message.slice(0, 160)})`, "the board stopped with an error");
+        list = list.map((o) => (o.key === x.key ? { ...o, board: { ...o.board, planche: { logo: lg.assetId, domaine: null, statut: "a_verifier" as const, annee: T.anneeEnCours(), essais: 0, ...(plafond ? {} : { erreur: true }), raison, at: Date.now() } } } : o));
+        notes.push(`planche ${x.key} non faite : ${message.slice(0, 160)}`);
+        raisonsDe.set(x.key, [phraseDeLaPlancheNonMontree(x.name, x.key)]);
+        if (!plafond) await T.signalerAuStudio({ userId: p.userId, projectId: p.id, key: x.key, nom: x.name, message, e });
+      }
     }
   } else if (imagesFaites) {
     for (const x of list.filter((y) => todo.includes(y.key))) {

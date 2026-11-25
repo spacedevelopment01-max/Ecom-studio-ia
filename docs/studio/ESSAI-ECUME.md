@@ -135,6 +135,67 @@ si `PLAFOND_ESSAI_EUR` est sous ce plafond minimal : 2,14 € passe (marge de 0,
 mal formée à réparer coûterait au plus 1,5898 € de plus en tout ; elle n'est pas couverte, l'essai s'arrêterait en le
 disant, sans rien dépenser de plus.
 
+**Premier passage (25 novembre 2026) : arrêt en erreur, 0,23 € dépensés.** La planche A a été dessinée et relue
+(0,2348 € comptés : les mots du métier, la planche, sa relecture), puis tout s'est arrêté : la reprise n'est jamais partie
+(« Texte de la planche trop long », 8 939 octets) et la planche B n'a jamais été lancée. Fichiers : branche
+`claude/essais-complets`, `docs/studio/essais-complets/images/ecume/3-planches/`. Les quatre défauts sont corrigés sans
+dépense (détail : `docs/studio/PLANCHE-DE-MARQUE.md`, dernière partie) : la phrase est comparée par ses lignes seulement ;
+une ligne cachée en partie par un objet n'est plus une faute ; la reprise part toujours (raisons dédoublonnées, rangées,
+bornées) ; l'échec d'une planche n'empêche plus les autres.
+
+Rejouées par le code corrigé, sans aucun appel, les raisons du refus de A sont maintenant : une personne visible (une main
+dans l'image de référence « Mousse délicate ») ; « Dites-le nous ! » au lieu de « Dites-le-nous ! » ; la phrase déformée
+sur le sac en tissu (sa 2e ligne est « illisible ») ; la note de 5. Les quinze refus faux de la phrase ont disparu. Le
+texte de la reprise fait 6 062 octets (7 000 permis).
+
+### Le chemin d'essai : reprendre A, faire B
+
+La planche A n'est pas refaite depuis le début : son premier essai, déjà payé, est repris (`REPRENDRE_A`). Son image et
+son verdict deviennent le point de reprise du Studio, sans aucun appel ; le code recalcule ses raisons à partir du verdict
+réel (`planche-A-1-relecture-verdict-recalcule.json`, l'original n'est jamais réécrit) ; seule la reprise unique part, à
+la charge du Studio. Le script vérifie avant tout appel que le logo A est bien celui du premier essai (empreinte du reçu)
+et que le texte du premier essai est exactement celui que le Studio enverrait aujourd'hui (mêmes mots du métier, même
+domaine, même année, même phrase) ; sinon rien n'est lancé. Les mots du métier ne sont pas refaits (ils sont lus dans
+`valeurs-du-metier.json`) et le domaine n'est pas revérifié (celui du premier dessin, `domaine.json`). La planche B part
+depuis le début. Si une planche s'arrête en erreur, l'autre continue ; le script le dit et finit avec le code 2.
+
+Si `data/essai-ecume/` n'est plus là, copier d'abord les fichiers de la branche des essais (depuis la racine du dépôt) :
+
+```
+git fetch origin claude/essais-complets
+mkdir -p data/essai-ecume/2-finalisation data/essai-ecume/3-planches
+for f in planche-A-1-brute.png planche-A-1-relecture-verdict.json planche-A-1-texte-envoye.txt planche-A-1-recu.json domaine.json valeurs-du-metier.json; do
+  git show FETCH_HEAD:docs/studio/essais-complets/images/ecume/3-planches/$f > data/essai-ecume/3-planches/$f; done
+for f in esquisse-06-logo-garde.png esquisse-06-phrase-du-logo.txt esquisse-10-logo-garde.png esquisse-10-phrase-du-logo.txt; do
+  git show FETCH_HEAD:docs/studio/essais-complets/images/ecume/2-finalisation/$f > data/essai-ecume/2-finalisation/$f; done
+```
+
+(`planche-A-1.png` est accepté aussi à la place de `planche-A-1-brute.png`.) Le devis, gratuit :
+
+```
+DEVIS_SEULEMENT=1 DATA_DIR=data/essai-ecume/studio REPRENDRE_A=data/essai-ecume/3-planches \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planches.mts data/essai-ecume/3-planches \
+  data/essai-ecume/2-finalisation/esquisse-06-logo-garde.png data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png
+```
+
+Calculé le 25 novembre 2026 par ce devis (aucun appel) : la reprise de A et sa relecture (à la charge du Studio, 0,1981 €
+probable), la planche B et sa relecture (0,1981 € probable), et la reprise possible de B. **Probable 0,3961 €** sans
+refus de B (0,5942 € si B est refaite une fois) ; **plafond minimal exact 1,3493 €** (somme des maxima : 3 × 0,2047 € pour
+les images et 3 × 0,2451 € pour les relectures). Le script refuse de partir sous ce plafond : 1,35 € passe (marge de
+0,0007 €). Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 0,8817 € de plus ; elle n'est pas
+couverte, l'essai s'arrêterait en le disant.
+
+```
+NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
+  PLAFOND_ESSAI_EUR=1.35 REPRENDRE_A=data/essai-ecume/3-planches node_modules/.bin/tsx scripts/syna-recette/essai-planches.mts data/essai-ecume/3-planches \
+  data/essai-ecume/2-finalisation/esquisse-06-logo-garde.png data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png
+```
+
+Vérifié sans dépense le 25 novembre 2026 : sur les vrais fichiers de la branche des essais, avec des appels simulés, le
+script reprend A (logo et texte reconnus), n'appelle ni les mots du métier ni le domaine, envoie la reprise de A (6 062
+octets) puis fait B. Le rapport et `depense.json` de ce passage remplacent ceux du premier : les premiers restent sur la
+branche des essais.
+
 **Pause.** Montrer `planche-A-gardee.png` (le logo 6) et `planche-B-gardee.png` (le logo 10), seules les gardées, en
 entier. Le domaine écrit est dans `domaine.json`. Il choisit **sa planche** : A ou B.
 
@@ -174,11 +235,14 @@ n'est pas faite) et prendre les captures avec `capture.cjs` (ordinateur 1440 de 
 | 1. Esquisses triées (refaite) | 0,15 € | 0,29 € | 1,83 € |
 | 2. Deux logos finis | 0,19 € | 0,39 € | 2,20 € |
 | 3. Deux planches (avec la phrase de chaque logo) | 0,43 € | 0,86 € | 2,14 € |
+| 3 bis. Reprise de A et planche B (après l'arrêt du premier passage) | 0,40 € | 0,59 € | 1,35 € |
 | 4. Planche en vrai | 1,50 € | 2,78 € | 6,70 € |
 | 5. Écran | 0 € | 0 € | 0 € |
 | **Total** | **2,27 €** | **4,32 €** | **12,87 €** |
 
 Chiffres tirés des devis gratuits du 25 novembre 2026 (somme exacte des plafonds minimaux : 12,85 € ; arrondis aux
 plafonds donnés ci-dessus : 12,87 €). Le plafond de l'étape 1 compte les trois tours de remplacement, à la charge du
-Studio. Déjà dépensé : 0,12 € pour le premier passage de l'étape 1, mis de côté. Le plafond minimal est la somme de tous les maxima, reprises comprises : il
+Studio. Déjà dépensé : 0,12 € pour le premier passage de l'étape 1, mis de côté, et 0,23 € pour le premier passage de
+l'étape 3, arrêté en erreur (son premier essai de A est repris, la ligne 3 bis remplace la ligne 3 ; le total du tableau
+compte encore la ligne 3). Le plafond minimal est la somme de tous les maxima, reprises comprises : il
 garantit d'aller au bout, il ne sera presque jamais dépensé.
