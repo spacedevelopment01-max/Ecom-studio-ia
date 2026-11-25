@@ -148,7 +148,8 @@ export const REPONSE_DU_PROPRIETAIRE = "Oui très bien je mettrais 9/10";
 /**
  * Le second repère, mot pour mot (25 novembre 2026 au soir) : devant le second essai de la feuille sur le i
  * (essai finalisation-execution, esquisse-04-logo-2-brut.png), refusé à 7 pour une feuille-point un peu décalée et le
- * haut du i coupé en biais. Le relecteur était plus sévère que lui sur les petites finitions.
+ * haut du i coupé en biais. Le relecteur était plus sévère que lui sur les petites finitions. Ces mots nomment un client
+ * d'essai : ils ne vont JAMAIS au relecteur (CLAUDE.md) ; sa consigne porte la règle, dite sans nom ni exemple d'essai.
  */
 export const SECOND_REPERE_DU_PROPRIETAIRE = "Le racine du milieu est très bien aussi";
 
@@ -167,8 +168,8 @@ Réponds en JSON :
 - phrase : toute phrase écrite dans le logo en plus du nom, recopiée lettre pour lettre, accents compris, sans rien corriger (vide s'il n'y en a pas) ;
 - phraseDitLeMetier : cette phrase dit exactement le vrai métier donné ci-dessous (faux si elle invente autre chose) ;
 - defauts : la liste des défauts d'exécution graves, ceux qu'un client verrait comme une faute, un seul par ligne, en mots simples : une lettre fausse, manquante ou illisible ; un nom qui se lit autrement de façon évidente ; une forme cassée ; un fond qui n'est pas blanc uni ; jamais un reproche sur l'idée ; une liste vide s'il n'y en a pas ;
-- finitions : la liste des petits défauts de finition, ceux qu'un client ne remarquerait pas comme une faute (par exemple une feuille qui sert de point un peu haute ou décalée, une coupe en biais, un raccord un peu lourd), un seul par ligne, en mots simples ; une liste vide s'il n'y en a pas ;
-- note : ta note de 0 à 10 sur l'exécution seule. Un logo propre et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus. Une petite finition ne fait jamais descendre la note sous 8 ; une note sous 8 s'explique par au moins un défaut grave écrit dans defauts. Ton repère : à la question « ${QUESTION_DU_REPERE} », posée devant des logos finis propres et fidèles à leurs esquisses, le propriétaire du Studio a répondu : « ${REPONSE_DU_PROPRIETAIRE} ». Ton second repère : devant un logo fini d'essai, pour une autre marque, dont la feuille qui sert de point sur le i était un peu décalée et le haut du i coupé en biais, il a dit : « ${SECOND_REPERE_DU_PROPRIETAIRE} » ;
+- finitions : la liste des petits défauts de finition, ceux qu'un client ne remarquerait pas comme une faute, un seul par ligne, en mots simples ; ils sont transmis comme corrections si le logo est repris, mais ne le font jamais refuser ; une liste vide s'il n'y en a pas ;
+- note : ta note de 0 à 10 sur l'exécution seule. Un logo propre et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus. Une petite finition ne fait jamais descendre la note sous 8 ; une note sous 8 s'explique par au moins un défaut grave écrit dans defauts. Ton repère : à la question « ${QUESTION_DU_REPERE} », posée devant des logos finis propres et fidèles à leurs esquisses, le propriétaire du Studio a répondu : « ${REPONSE_DU_PROPRIETAIRE} » ;
 - pourquoi : une ou deux phrases simples.`;
 
 export function demandeAuRelecteurDuLogo(o: { nom: string; metier: string; texte: string; /** La phrase choisie par le client (absente : la règle d'avant). */ phrase?: PhraseVoulue }): string {

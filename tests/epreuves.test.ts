@@ -1169,10 +1169,13 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
     expect(R).toContain("Tu ne juges jamais l'idée : ni son originalité, ni si elle est courante dans son métier, ni si elle est assez marquante.");
     expect(R).toContain("Tu juges seulement l'exécution : le nom écrit exactement, l'idée de l'esquisse bien gardée, un dessin net (raccords propres, proportions justes, lisible en petit), pas d'arche, pas de phrase inventée, un fond blanc uni qui se retire.");
     expect(R).toContain("- defauts : la liste des défauts d'exécution graves, ceux qu'un client verrait comme une faute, un seul par ligne, en mots simples : une lettre fausse, manquante ou illisible ; un nom qui se lit autrement de façon évidente ; une forme cassée ; un fond qui n'est pas blanc uni ;");
-    expect(R).toContain("- finitions : la liste des petits défauts de finition, ceux qu'un client ne remarquerait pas comme une faute (par exemple une feuille qui sert de point un peu haute ou décalée, une coupe en biais, un raccord un peu lourd)");
+    expect(R).toContain("- finitions : la liste des petits défauts de finition, ceux qu'un client ne remarquerait pas comme une faute, un seul par ligne, en mots simples ; ils sont transmis comme corrections si le logo est repris, mais ne le font jamais refuser ;");
     expect(R).toContain("Un logo propre et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus. Une petite finition ne fait jamais descendre la note sous 8 ; une note sous 8 s'explique par au moins un défaut grave écrit dans defauts.");
     expect(R).toContain("à la question « Ces logos finis te paraissent assez bons pour être montrés à un client ? », posée devant des logos finis propres et fidèles à leurs esquisses, le propriétaire du Studio a répondu : « Oui très bien je mettrais 9/10 »");
-    expect(R).toContain("il a dit : « Le racine du milieu est très bien aussi »");
+    // Ses mots nomment un client d'essai : ils ne vont jamais au relecteur ; la règle y est, sans nom ni exemple d'essai.
+    expect(F.SECOND_REPERE_DU_PROPRIETAIRE).toBe("Le racine du milieu est très bien aussi");
+    expect(R).not.toContain(F.SECOND_REPERE_DU_PROPRIETAIRE);
+    expect(R).not.toMatch(/racine|feuille|esquisse \d|« R »|\bdu i\b|sur le i|en biais/i);
     expect(R).not.toMatch(/agence|evolution|évolu|trop proche|copie nettoyée|bordeaux/i);
     const src = fs.readFileSync("src/lib/syna-agent/logo-graphistes.ts", "utf8");
     expect(src).toContain('relireLogo: (logo, esquisse, demande, cle) => texte(cle, "logo", RELECTEUR_DU_LOGO_FINI, demande, RelectureDuLogoSchema, [{ data: logo, label: "logo fini" }, { data: esquisse, label: "esquisse" }]),');
@@ -1197,8 +1200,8 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
     expect(tel.note).toBe(7);
     expect(tel.finitions).toEqual([]);
     expect(F.raisonsDuRefus(tel, RACINE)).toEqual(reel.raisons);
-    // Ce qu'il reproche, mot pour mot : la feuille-point décalée et le haut du i coupé en biais, les deux exemples de
-    // finitions de la consigne. Aucun ne relève d'un défaut grave : le nom est lu exactement (« racine », comparé par le
+    // Ce qu'il reproche, mot pour mot : la feuille-point décalée et le haut du i coupé en biais, deux petits défauts de
+    // finition (les exemples que le propriétaire a jugés sans gravité, « Le racine du milieu est très bien aussi »). Aucun ne relève d'un défaut grave : le nom est lu exactement (« racine », comparé par le
     // code), l'idée est gardée, pas d'arche, pas de forme cassée, le fond est uni ; le « racíne » n'est qu'un risque de
     // lecture (« peut faire lire »), pas un nom qui se lit autrement de façon évidente.
     const [feuille, coupe] = tel.defauts!;
@@ -1207,7 +1210,6 @@ describe("les épreuves de la méthode des graphistes (24 novembre 2026)", async
     expect(feuille).toMatch(/feuille.*décalée/);
     expect(coupe).toMatch(/coupé en biais/);
     expect(coupe).toMatch(/peut faire lire/);
-    expect(R).toMatch(/feuille qui sert de point un peu haute ou décalée, une coupe en biais/);
     expect(F.raisonsDuRefus({ ...tel, defauts: [] }, RACINE).filter((x) => !x.startsWith("il n'est pas au niveau"))).toEqual([]);
     // Rangés en finitions, sans changer un mot ni la note : gardé, la note de 7 non comptée, les finitions écrites au compte rendu.
     const range = F.RelectureDuLogoSchema.parse({ ...reel.verdict, defauts: [], finitions: reel.verdict.defauts });

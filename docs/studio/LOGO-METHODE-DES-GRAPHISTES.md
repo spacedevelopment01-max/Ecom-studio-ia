@@ -276,8 +276,11 @@ sur les petits défauts de finition.
    fausse, manquante ou illisible ; un nom qui se lit autrement de façon évidente ; une forme cassée ; un fond qui n'est
    pas blanc uni. Les petites finitions (`finitions`) : ce qu'un client ne remarquerait pas comme une faute, par exemple
    une feuille qui sert de point un peu haute ou décalée, une coupe en biais. Le code décide sans deviner.
-2. **Le second repère.** La consigne dit qu'une petite finition ne fait jamais descendre la note sous 8, et lui donne ses
-   mots pour repère, avec ce qu'il regardait (sans l'image).
+2. **La règle, sans ses mots.** La consigne dit qu'un petit défaut de finition, qu'un client ne remarquerait pas comme
+   une faute, est noté dans `finitions`, transmis comme correction si le logo est repris, et ne fait jamais descendre la
+   note sous 8. Ses mots nomment un client d'essai (« racine ») : CLAUDE.md interdit qu'un exemple d'un projet d'essai
+   parte à l'IA. Ils restent mot pour mot dans le verdict de l'épreuve, les commentaires du code et ce compte rendu, et
+   jamais dans une consigne ; la consigne ne donne pas non plus d'exemple tiré de l'essai.
 3. **Ce que fait le code.** Une note sous 8 ne compte que pour un défaut grave écrit (ou sans aucune explication). Un
    logo qui n'a que des finitions est gardé ; ses finitions sont écrites au compte rendu. Elles deviennent des
    corrections seulement s'il y a une reprise pour une autre raison, après les raisons du refus. Restent toujours des
@@ -295,8 +298,9 @@ la note, le verdict donne « gardé » ; la note de 7 n'est pas comptée, et le 
 le code. Ce qui ne l'a pas été : comment le vrai relecteur rangera ces défauts avec sa nouvelle consigne ; seul un
 essai réel le dira. Le R bordeaux, gardé à 8, reste gardé.
 
-Un point à savoir : ses mots contiennent « racine », le nom d'un client d'essai. Ils entrent tels quels dans la
-consigne du relecteur, présentés comme un logo d'une autre marque.
+Un test garantit qu'aucune consigne des relecteurs (logo fini, esquisses, planche) ne porte un nom de projet d'essai
+(Racine, Tenon, Poppy et les autres) ni un exemple tiré des essais (la feuille sur le i, le R bordeaux, une esquisse
+numérotée).
 
 **Les épreuves.** Deux épreuves nouvelles sont scellées : `reprise-du-logo-a-partir-du-refuse` (verdict : le constat du
 chef d'orchestre, mot pour mot, présenté comme le sien) et `relecteur-petites-finitions-sans-refus` (verdict : ses mots).

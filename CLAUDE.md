@@ -144,7 +144,8 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   2026 au soir, devant le second essai de la feuille sur le i refusé à 7 : « Le racine du milieu est très bien aussi ») :
   le relecteur sépare les défauts graves (une lettre fausse, manquante ou illisible, un nom qui se lit autrement de façon
   évidente, une forme cassée, un fond qui n'est pas uni) des petites finitions qu'un client ne verrait pas comme une
-  faute (une feuille-point un peu haute ou décalée, une coupe en biais), avec ces mots-là pour second repère ; une
+  faute (une feuille-point un peu haute ou décalée, une coupe en biais) ; ses mots, qui nomment un client d'essai, ne
+  vont jamais au relecteur : sa consigne porte la règle, sans nom ni exemple d'essai (un test le garantit) ; une
   finition ne fait pas descendre la note sous 8, une note sous 8 doit tenir à un défaut grave écrit ; un logo qui n'a que
   des finitions est gardé, ses finitions écrites au compte rendu, et elles deviennent des corrections seulement s'il est
   repris pour une autre raison (`logo-finalisation.ts`) ; refusé, il

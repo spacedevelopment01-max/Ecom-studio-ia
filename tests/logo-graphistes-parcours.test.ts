@@ -355,3 +355,33 @@ describe("la variété, avec les couleurs du logo, ne touche que le fond de page
     expect(sans.changes.some((c) => /police de titres/.test(c))).toBe(true);
   });
 });
+
+describe("les consignes des relecteurs ne portent aucun nom ni exemple d'un projet d'essai (CLAUDE.md)", () => {
+  // Les clients et projets d'essai connus (essais réels et anciens projets mis de côté) ; un nom de plus s'ajoute ici.
+  const PROJETS_D_ESSAI = ["Racine", "Tenon", "Poppy", "Reflet", "Pénombre", "Sillage", "Tintamarre", "Gorgée", "Fruit Nu", "Pulpe", "Zeste", "Pelage", "infusion", "tisane", "toilettage", "toiletteuse"];
+  const EXEMPLES_D_ESSAI = [/feuille sur le i/i, /R bordeaux/i, /esquisse[- ]0?\d+\b/i, /racíne/i, /Le racine du milieu/i];
+  it("relecteur du logo fini, relecteur des esquisses, relecteur de la planche : ni nom, ni exemple d'essai", async () => {
+    const F = await import("@/lib/syna-agent/logo-finalisation");
+    const E = await import("@/lib/syna-agent/esquisses");
+    const P = await import("@/lib/syna-agent/planche-de-marque");
+    const consignes: Record<string, string> = {
+      "relecteur du logo fini": F.RELECTEUR_DU_LOGO_FINI,
+      "demande au relecteur du logo": F.demandeAuRelecteurDuLogo({ nom: "Aplomb", metier: "une menuiserie", texte: "t" }),
+      "relecteur des esquisses": E.RELECTEUR_DES_ESQUISSES,
+      "relecteur de la planche": P.RELECTEUR_DE_LA_PLANCHE,
+      "demande au relecteur de la planche": P.demandeAuRelecteurDeLaPlanche({ nom: "Aplomb", annee: 2026, domaine: { domaine: "aplomb.fr", statut: "disponible" }, personnes: false, animaux: true, texte: "t" }),
+    };
+    for (const [qui, texte] of Object.entries(consignes)) {
+      for (const n of PROJETS_D_ESSAI) expect(texte.toLowerCase(), `${qui} : ${n}`).not.toContain(n.toLowerCase());
+      for (const x of EXEMPLES_D_ESSAI) expect(texte, `${qui} : ${x}`).not.toMatch(x);
+    }
+    // Les deux repères envoyés à l'IA sont la question et la réponse du propriétaire, mot pour mot, sans rien d'autre de l'essai.
+    expect(F.RELECTEUR_DU_LOGO_FINI).toContain(`à la question « ${F.QUESTION_DU_REPERE} », posée devant des logos finis propres et fidèles à leurs esquisses, le propriétaire du Studio a répondu : « ${F.REPONSE_DU_PROPRIETAIRE} » ;`);
+    expect(P.RELECTEUR_DE_LA_PLANCHE).toContain(`à la question « ${P.QUESTION_DU_REPERE_DE_PLANCHE} »`);
+    expect(P.RELECTEUR_DE_LA_PLANCHE).toContain(`a répondu : « ${P.REPONSE_DU_PROPRIETAIRE_PLANCHE} » ;`);
+    // Le second repère du logo nomme un client d'essai : il reste dans le code et le compte rendu, jamais dans la consigne.
+    expect(F.RELECTEUR_DU_LOGO_FINI).not.toContain(F.SECOND_REPERE_DU_PROPRIETAIRE);
+    expect(F.RELECTEUR_DU_LOGO_FINI).toContain("- finitions : la liste des petits défauts de finition, ceux qu'un client ne remarquerait pas comme une faute, un seul par ligne, en mots simples ; ils sont transmis comme corrections si le logo est repris, mais ne le font jamais refuser ;");
+    expect(F.RELECTEUR_DU_LOGO_FINI).toContain("Une petite finition ne fait jamais descendre la note sous 8");
+  });
+});
