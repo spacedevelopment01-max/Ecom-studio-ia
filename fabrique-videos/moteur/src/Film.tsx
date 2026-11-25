@@ -2,9 +2,10 @@ import React, {useEffect, useState} from 'react';
 import {AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame, delayRender, continueRender, interpolate, Easing} from 'remotion';
 import {PLANS} from './plans';
 import minutage from './minutage.json';
+import {versNouveau} from './temps';
 
 const FPS = 30;
-export const DUREE = Math.round(74.7 * FPS);
+export const DUREE = Math.round(versNouveau(74.7) * FPS);
 const fr = (s: number) => Math.round(s * FPS);
 
 type Mot = {w: string; s: number; e: number; seg: number};
@@ -42,17 +43,16 @@ const SousTitres: React.FC = () => {
 };
 
 const SONS: [number, string, number?][] = [
-	[0.19, 'tampon'], [2.87, 'boing', 0.6], [3.3, 'triste', 0.7], [4.57, 'whoosh'], [5.9, 'pop'], [6.41, 'whoosh'], [6.65, 'pop'],
-	[10.5, 'pop'], [12.04, 'whoosh'], [12.77, 'pop'], [13.77, 'pop', 0.5], [15.56, 'ping', 0.4], [16.66, 'pop'], [18.15, 'pop'],
-	[20.32, 'tampon'], [21.24, 'whoosh'], [21.87, 'pop'], [22.06, 'pop'], [22.95, 'caisse'], [23.13, 'caisse'], [23.3, 'caisse'], [23.46, 'caisse'], [23.64, 'caisse'],
-	[24.39, 'pop'], [26.95, 'whoosh'], [29.78, 'boing', 0.5], [31.8, 'pop'], [36.6, 'pop'], [38.37, 'whoosh'], [39.77, 'tampon'], [39.9, 'rafale'],
-	[41.3, 'clic'], [41.75, 'clic'], [43.02, 'ampoule'], [43.94, 'whoosh'], [45.26, 'pop'],
-	[46.3, 'boing', 0.6], [46.75, 'boing', 0.6], [47.2, 'boing', 0.6], [47.65, 'boing', 0.6], [48.1, 'boing', 0.6], [48.55, 'boing', 0.6], [48.8, 'pop'], [49.42, 'whoosh'],
+	[0.19, 'tampon'], [2.87, 'boing', 0.6], [3.3, 'triste', 0.7], [5.9, 'pop'], [6.65, 'pop'],
+	[10.5, 'pop'], [12.77, 'pop'], [13.77, 'pop', 0.5], [15.56, 'ping', 0.4], [16.66, 'pop'], [18.15, 'pop'],
+	[20.32, 'tampon'], [21.87, 'pop'], [22.06, 'pop'], [22.95, 'caisse'], [23.13, 'caisse'], [23.3, 'caisse'], [23.46, 'caisse'], [23.64, 'caisse'],
+	[24.39, 'pop'], [29.78, 'boing', 0.5], [31.8, 'pop'], [36.6, 'pop'], [39.77, 'tampon'], [39.9, 'rafale'],
+	[41.3, 'clic'], [41.75, 'clic'], [43.02, 'ampoule'], [45.26, 'pop'],
+	[46.3, 'boing', 0.6], [46.75, 'boing', 0.6], [47.2, 'boing', 0.6], [47.65, 'boing', 0.6], [48.1, 'boing', 0.6], [48.55, 'boing', 0.6], [48.8, 'pop'], 
 	[51.76, 'pop'], [52.85, 'ping'], [53.1, 'ping'], [53.35, 'ping'], [53.6, 'ping'], [53.85, 'ping'], [53.97, 'caisse'],
-	[55.3, 'pop'], [57.68, 'whoosh'], [58.88, 'pop'], [61.49, 'pop'], [64.04, 'tampon'], [64.6, 'pop'], [66.8, 'pop'], [67.64, 'boing', 0.6], [72.4, 'tampon'],
+	[55.3, 'pop'], [58.88, 'pop'], [61.49, 'pop'], [64.04, 'tampon'], [64.6, 'pop'], [66.8, 'pop'], [67.64, 'boing', 0.6], [72.4, 'tampon'],
 ];
 
-const COUPES = PLANS.slice(1).map(([a]) => a).filter((a) => !SONS.some(([t, n]) => n === 'whoosh' && Math.abs(t - a) < 0.3));
 export const Film: React.FC = () => {
 	const [h] = useState(() => delayRender('police'));
 	useEffect(() => {
@@ -62,20 +62,15 @@ export const Film: React.FC = () => {
 	return (
 		<AbsoluteFill style={{background: '#000'}}>
 			{PLANS.map(([a, b, P], i) => (
-				<Sequence key={i} from={fr(a)} durationInFrames={fr(b) - fr(a)}>
+				<Sequence key={i} from={fr(versNouveau(a))} durationInFrames={fr(versNouveau(b)) - fr(versNouveau(a))}>
 					<P />
 				</Sequence>
 			))}
 			<SousTitres />
 			<Audio src={staticFile('voix_finale.wav')} />
-			<Audio src={staticFile('sons/musique.wav')} volume={(f) => interpolate(f, [0, 15, DUREE - 60, DUREE], [0, 0.13, 0.13, 0], {extrapolateRight: 'clamp'})} />
-			{COUPES.map((a, i) => (
-				<Sequence key={'c' + i} from={Math.max(0, fr(a) - 4)} durationInFrames={fr(1)}>
-					<Audio src={staticFile('sons/whoosh.wav')} volume={0.28} />
-				</Sequence>
-			))}
+			<Audio src={staticFile('sons/marche.wav')} volume={(f) => interpolate(f, [0, 15, DUREE - 60, DUREE], [0, 0.16, 0.16, 0], {extrapolateRight: 'clamp'})} />
 			{SONS.map(([s, n, v], i) => (
-				<Sequence key={'s' + i} from={fr(s)} durationInFrames={fr(1.5)}>
+				<Sequence key={'s' + i} from={fr(versNouveau(s))} durationInFrames={fr(1.5)}>
 					<Audio src={staticFile(`sons/${n}.wav`)} volume={v ?? 0.45} />
 				</Sequence>
 			))}

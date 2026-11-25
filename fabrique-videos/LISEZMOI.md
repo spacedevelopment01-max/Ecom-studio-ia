@@ -84,3 +84,11 @@ ffmpeg -i out/emeus.mp4 -c:v copy -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:a aac -b:
   (« d'après eux »). Magasins et enveloppes dessinés sans les vrais logos.
 - Idées suivantes proposées : Kodak et l'appareil photo numérique (1975), la sonde de la NASA perdue à cause des
   unités de mesure.
+
+## Plus de rythme sur chaque vidéo (25 novembre 2026)
+
+Demande du propriétaire : « Mets plus de rythme stp sur chaque video ». Voix accélérées sans changer leur hauteur
+(ffmpeg atempo, gratuit), images recalées par `temps.ts` : émeus ×1,15 (1 min 05), Napoléon et Netflix ×1,25 au
+lieu de ×1,12 (1 min 08 et 1 min 06). Les émeus suivent aussi les consignes de Napoléon : aucun bruit de transition,
+marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul accélérée de 25 %, et écrire environ
+230 mots pour rester au-dessus d'une minute.
