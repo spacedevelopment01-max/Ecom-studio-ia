@@ -38,13 +38,15 @@ import {
 // ---------------------------------------------------------------- le devis
 
 /** Les appels de texte de la planche en vrai, en jetons (entrée habituelle, sortie habituelle, limite de sortie), et leur effort. */
-const APPELS = {
+export const APPELS_EN_VRAI = {
   // L'inventaire : 17 aperçus, les blocs du code, la rangée des logos, les titres et le logo ; une réponse longue. Effort élevé.
   inventaire: { input: 32_000, output: 6_000, max: 16_000, effort: "high" },
   // Une relecture de groupe : jusqu'à 6 paires (aperçu et image refaite), une photo du produit. Effort élevé.
   relecture: { input: 18_000, output: 3_000, max: 8_000, effort: "high" },
 } as const;
-const modeleDe = (a: keyof typeof APPELS) => ({ ...DEFAULT_MODELS.strong, effort: APPELS[a].effort });
+const APPELS = APPELS_EN_VRAI;
+/** Le modèle d'un appel de texte de la planche en vrai (le relecteur le plus fort, avec l'effort de l'appel). */
+export const modeleDe = (a: keyof typeof APPELS) => ({ ...DEFAULT_MODELS.strong, effort: APPELS[a].effort });
 const appel = (a: keyof typeof APPELS) => {
   const c = APPELS[a], m = modeleDe(a), usual = estimateCallMicro(m.provider, m.model, c.input, c.output) ?? 0;
   return { max: callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort) ?? usual * 4, probable: usual };
