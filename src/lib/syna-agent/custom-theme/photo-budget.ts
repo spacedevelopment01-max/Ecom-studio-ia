@@ -38,12 +38,12 @@ export function designPhotos(pages: { key: string; label?: string; sections: str
 }
 
 /** Ce qui est dit au concepteur et à celui qui le relit : le nombre de photos, et la règle de répartition. */
-export function photoBudgetBrief(budget: number, o: PhotoSite, deLaPlanche = 0): string {
+/** La planche en vrai (25 novembre 2026) : ses photos sont déjà faites ; le site les lit sans rien refaire (comprises dans le budget). */
+export const lignePhotosDeLaPlanche = (n: number): string => (n > 0 ? `Dont ${n} photo${n > 1 ? "s" : ""} déjà faite${n > 1 ? "s" : ""} sur sa planche de marque (l'ouverture en bandeau et les images de son univers) : elles sont reprises telles quelles, jamais recréées ; donne à l'ouverture de l'accueil une pièce à grande photo en bandeau.` : "");
+export function photoBudgetBrief(budget: number, o: PhotoSite): string {
   const fiches = fichesDuSite(o);
   return [
     `BUDGET DE PHOTOS À CRÉER : ${budget} photos au plus sur TOUT le site. C'est ce que le prix annoncé au client permet : au-delà, des pages resteraient sans photo. Le nombre de photos de chaque pièce est écrit dans la bibliothèque (« N photo(s) »).`,
-    // La planche en vrai (25 novembre 2026) : ses photos sont déjà faites ; le site les lit sans rien refaire.
-    deLaPlanche > 0 ? `Dont ${deLaPlanche} photo${deLaPlanche > 1 ? "s" : ""} déjà faite${deLaPlanche > 1 ? "s" : ""} sur sa planche de marque (l'ouverture en bandeau et les images de son univers) : elles sont reprises telles quelles, jamais recréées ; donne à l'ouverture de l'accueil une pièce à grande photo en bandeau.` : "",
     o.business === "products" ? "Ne comptent PAS : les emplacements de produit (galerie du bloc d'achat, cartes de produits, vignettes : la vraie photo du produit y va, ou « Ta photo ici » en attendant celle du client) et les photos que seul le client peut donner." : "Ne comptent PAS : les photos que seul le client peut donner (réalisations, équipe, biens).",
     fiches > 1 ? `Chaque produit a SA fiche, bâtie comme la fiche produit que tu conçois, avec ses propres photos : une pièce à photo de la fiche produit compte donc ${fiches} fois (${fiches} fiches).` : "",
     "RÉPARTITION : chaque page importante garde des photos (l'accueil d'abord, puis la page qui vend, puis les autres) ; aucune page importante n'est laissée nue pour en donner plus à une autre. Une pièce à photo qui n'aurait pas sa photo ne se CHOISIT pas : à sa place, prends une pièce qui tient sans photo (elles sont nombreuses dans la bibliothèque).",

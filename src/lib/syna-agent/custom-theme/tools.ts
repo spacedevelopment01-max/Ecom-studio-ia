@@ -68,7 +68,7 @@ import { enqueue, pendingJob } from "../../jobs";
 import { stateOf } from "../../preparation/store";
 import { journeyOf, setStep as setJourneyStep, updateJourney as updateJourneyConv } from "../journey";
 import { galleryCheckMaxMicro } from "./gallery";
-import { designPhotos, photoBudgetBrief, photoBudgetGaps } from "./photo-budget";
+import { designPhotos, lignePhotosDeLaPlanche, photoBudgetBrief, photoBudgetGaps } from "./photo-budget";
 import { briefUsable, misplacedProductPhotos, productSlotSection, showsProductAlone } from "./brand";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, MIN_PHOTOS_TO_REVIEW, PHOTO_REVIEW_CAP_MICRO, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
 
@@ -362,7 +362,7 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
   const partitionsText = partitionsBrief({ business: site.business, types: oc.types, dossier: { preuves: preuves.ids, products: site.products }, angle: oc.angle, prises, ...(mode.kind === "concept" ? { kinds: ["accueil", sellKind] as PageKind[] } : {}) });
   // Le budget de photos (17 novembre 2026) : le concepteur sait combien de photos il peut demander et les répartit.
   const photoSiteOf = { business: site.business, products: site.products };
-  const photosText = a.photoBudget != null && mode.kind === "full" ? photoBudgetBrief(a.photoBudget, photoSiteOf, a.photosDeLaPlanche ?? 0) : "";
+  const photosText = a.photoBudget != null && mode.kind === "full" ? [photoBudgetBrief(a.photoBudget, photoSiteOf), lignePhotosDeLaPlanche(a.photosDeLaPlanche ?? 0)].filter(Boolean).join(" ") : "";
   // Boutique dont des produits n'ont pas encore de photo du client : dit au concepteur (les pièces qui ne vivent que de la photo du produit attendent).
   const sansPhoto = site.business === "products" ? (() => { try { return listProducts(p.id).filter((x) => !x.data.images.some((i) => !!i.assetId)).map((x) => x.data.title); } catch { return []; } })() : [];
   const sansPhotoText = sansPhoto.length ? `PRODUITS SANS PHOTO DU CLIENT POUR L'INSTANT (il les importera après la création) : ${sansPhoto.map((x) => `« ${x} »`).join(", ")}. Un produit ne s'invente jamais : aucune photo créée ne le montrera. Ses emplacements de produit (bloc d'achat, cartes) afficheront « Ta photo ici ». Dans le champ « photos » de chaque section, prévois des scènes SANS ce produit : la matière, l'outil, l'atelier, le lieu, le geste sans personne, le moment d'usage sans lui. Ne choisis pas une pièce qui n'a de sens qu'avec la photo du produit lui-même.` : "";

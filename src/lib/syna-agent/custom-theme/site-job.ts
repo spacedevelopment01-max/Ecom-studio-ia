@@ -370,7 +370,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
     // Les photos de la planche en vrai se reprennent sans être créées : elles s'ajoutent au nombre permis.
     const photosDeLaPlanche = (() => { try { return photothequeDeLaPlanche(a.conversationId ? journeyOf(a.conversationId) : null).length; } catch { return 0; } })();
     const photoBudget = (() => { try { return siteSizeGuess(kindOf(tc)).photos + photosDeLaPlanche; } catch { return undefined; } })();
-    const r = await (siteJobDeps.design ?? ((c, x) => runDesign(c, x, { kind: "full" })))(tc, { consigne: a.consigne ?? undefined, jobId: ctx.job.id, photoBudget, ...(photosDeLaPlanche ? { photosDeLaPlanche } : {}) });
+    const r = await (siteJobDeps.design ?? ((c, x) => runDesign(c, x, { kind: "full" })))(tc, { consigne: a.consigne ?? undefined, ...(photosDeLaPlanche ? { photosDeLaPlanche } : {}), jobId: ctx.job.id, photoBudget });
     if (!r.ok) throw new EtapeRatee(r.result.summary);
     return { ok: true as const, t: r.t, concept: r.d.concept ?? null, signe: r.d.tenue?.signe ?? null, left: r.left, famille: r.d.famille ?? null, familleWhy: r.d.familleWhy ?? null };
   }).catch((e) => { if (e instanceof EtapeRatee) return { ok: false as const, why: e.message }; throw e; });
@@ -390,6 +390,9 @@ export async function runSinaSiteJob(ctx: JobContext) {
       return { phototheque, matiere: lignes.join("\n").slice(0, 12000) || null };
     } catch { return { phototheque: [], matiere: null }; }
   });
+  // La planche en vrai (25 novembre 2026) : ses photos (ouverture 1920 × 720, images de son univers, emballage) se
+  // reprennent comme celles du site d'avant, sans être créées ni payées ; jamais un produit imaginé.
+  reprise.phototheque = [...photothequeDeLaPlanche((() => { try { return a.conversationId ? journeyOf(a.conversationId) : null; } catch { return null; } })()), ...reprise.phototheque];
 
   // 2) Le site conçu est rangé ; chaque produit reçoit sa fiche ; le menu est calculé depuis les pages et le catalogue.
   await ctx.step("site:structure", async () => {
@@ -431,7 +434,7 @@ export async function runSinaSiteJob(ctx: JobContext) {
   const real = await ctx.step("site:quote", async () => { const est = await (siteJobDeps.estimate ?? buildTool.estimate!)(tc, args); return est.probableMicro ?? est.maxMicro; });
   const tight = real > left();
   const sub: CustomBrandPayload = { projectId: p.id, capMicro: jobSpentMicro(ctx.job.id) + left(), conversationId: a.conversationId, photos: true, newPhotos: true,
-    pages: tight ? ["home", selling] : null, images: args.images, clientAssets: own, rewrite: false, consigne: a.consigne ?? null, phototheque: [...photothequeDeLaPlanche((() => { try { return a.conversationId ? journeyOf(a.conversationId) : null; } catch { return null; } })()), ...reprise.phototheque], matiere: reprise.matiere };
+    pages: tight ? ["home", selling] : null, images: args.images, clientAssets: own, rewrite: false, consigne: a.consigne ?? null, phototheque: reprise.phototheque, matiere: reprise.matiere };
   const child = Object.create(ctx, { payload: { get: () => sub } }) as JobContext;
   let montage: unknown = null;
   try { montage = await (siteJobDeps.build ?? runCustomBrandJob)(child); }

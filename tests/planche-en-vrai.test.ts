@@ -429,6 +429,11 @@ describe("le réglage, le mélange, les publications et le produit sans photo", 
     expect(ph.map((x) => x.id)).toEqual([ouv.id, ref.id]);
     expect(ph[0].description).toMatch(/^GRANDE PHOTO D'OUVERTURE DE L'ACCUEIL \(bandeau 1920 × 720/);
     expect(T.produitsImagines(ev)).toEqual(["produit-1"]);
+    // Le concepteur du site sait que ces photos sont déjà faites : reprises, jamais recréées.
+    const PB = await import("@/lib/syna-agent/custom-theme/photo-budget");
+    expect(PB.lignePhotosDeLaPlanche(2)).toMatch(/^Dont 2 photos déjà faites sur sa planche de marque/);
+    expect(PB.lignePhotosDeLaPlanche(0)).toBe("");
+    expect(fs.readFileSync("src/lib/syna-agent/custom-theme/site-job.ts", "utf8")).toContain("reprise.phototheque = [...photothequeDeLaPlanche(");
     expect(P.phraseDuProduitImagine()).toMatch(/« image d'ambiance, ce n'est pas ton produit »/);
     expect(P.phraseDuProduitImagine()).toMatch(/« Ta photo ici »/);
     // Sans photo du client, rien à refaire ; la carte des produits a son propre prix.
