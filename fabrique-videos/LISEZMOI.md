@@ -143,3 +143,9 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
   du blanc qui l'entoure (jamais dans la voix), ne raccourcit que les silences internes de plus de 0,7 s avec un fondu
   de 30 ms, puis accélère l'ensemble de 8 %. 1 min 48. Leçon : ne jamais retailler l'intérieur d'une réplique par
   tranches courtes, ça hache les syllabes douces et les respirations.
+- Version 4 (« de 1 min à la fin, plusieurs voix en même temps, tout est mélangé ») : la transcription automatique
+  n'avait pas entendu trois répliques (le chuchotement du coiffeur, « Bisous », la tirade chez Stéphane) ; leurs
+  limites avaient été devinées de travers et tout s'est décalé. Limites corrigées à la main d'après le volume du son
+  (`v2/brut_aligne.json`), fin vérifiée en la retranscrivant : tout est dans l'ordre. 2 min 00.
+  **Règle** : après chaque montage, retranscrire le résultat pour vérifier l'ordre ; se méfier des répliques
+  chuchotées ou très courtes, que la transcription rate.
