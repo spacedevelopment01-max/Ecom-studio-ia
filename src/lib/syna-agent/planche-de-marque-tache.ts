@@ -34,11 +34,16 @@ const APPELS = {
   relecture: { input: 9_000, output: 2_500, max: 10_000, effort: "high" },
 } as const;
 const modeleDe = (a: keyof typeof APPELS) => ({ ...DEFAULT_MODELS.strong, effort: APPELS[a].effort });
-function appel(a: keyof typeof APPELS): { max: number; probable: number } {
+/**
+ * Le devis d'UN appel de texte de la planche (aucun appel) : son maximum (celui que réserve le garde-fou), son coût
+ * habituel, son modèle et ses jetons. Lu aussi par le script de l'essai réel (scripts/syna-recette/essai-planches-outil.ts).
+ */
+export function devisDUnAppelDeLaPlanche(a: keyof typeof APPELS): { max: number; probable: number; modele: ReturnType<typeof modeleDe>; jetons: (typeof APPELS)[typeof a] } {
   const c = APPELS[a], m = modeleDe(a);
   const usual = estimateCallMicro(m.provider, m.model, c.input, c.output) ?? 0;
-  return { max: callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort) ?? usual * 4, probable: usual };
+  return { max: callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort) ?? usual * 4, probable: usual, modele: m, jetons: c };
 }
+const appel = devisDUnAppelDeLaPlanche;
 /** Prix mesuré d'une planche (euros) : 0,1241 € (Tenon et Racine en xhigh, 24 novembre 2026, 3 057 + 1 096 jetons en entrée, 3 811 en sortie). */
 export const PRIX_MESURE_DE_LA_PLANCHE = 0.1241;
 
