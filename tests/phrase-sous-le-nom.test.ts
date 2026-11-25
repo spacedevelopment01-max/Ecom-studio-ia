@@ -21,10 +21,10 @@ const avecPhrase = (p: string) => TEXTE.replace("Fais évoluer", `Écris en peti
 
 describe("1. la lecture : le relecteur relève la phrase mot pour mot, le code vérifie l'orthographe", () => {
   it("la consigne du relecteur des esquisses demande la phrase mot pour mot (ou « aucune ») et si elle est bien écrite", () => {
-    expect(RELECTEUR_DES_ESQUISSES).toContain("phraseSousLeNom : la petite phrase écrite sous le nom, recopiée mot pour mot, lettre pour lettre, accents et ponctuation compris, sans rien corriger (« aucune » s'il n'y en a pas)");
-    expect(RELECTEUR_DES_ESQUISSES).toMatch(/phraseBienEcrite : cette phrase est en bon français, sans aucune faute d'orthographe/);
+    expect(RELECTEUR_DES_ESQUISSES).toContain("phraseSousLeNom : la petite phrase écrite sous le nom, recopiée mot pour mot, lettre pour lettre, accents et ponctuation compris, sans rien corriger : TOUT le texte écrit sous le nom, ligne par ligne, dans l'ordre");
+    expect(RELECTEUR_DES_ESQUISSES).toMatch(/phraseBienEcrite : chacune de ces lignes est en bon français, sans aucune faute d'orthographe/);
     // Une réponse d'avant, sans ces champs, se lit encore (aucune phrase).
-    const ancien = RelectureEsquissesSchema.parse({ esquisses: [{ numero: 1, entiere: true, morceauDeVoisine: false, nomLu: NOM, arche: false, ok: true, pourquoi: "", piste: "" }] });
+    const ancien = RelectureEsquissesSchema.parse({ esquisses: [{ numero: 1, entiere: true, morceauDeVoisine: false, nomLu: NOM, ok: true, pourquoi: "", piste: "" }] });
     expect(ancien.esquisses[0].phraseSousLeNom).toBeUndefined();
   });
   it("les fautes évidentes sont refusées par le code ; une phrase propre passe", () => {
@@ -52,9 +52,9 @@ describe("1. la lecture : le relecteur relève la phrase mot pour mot, le code v
   it("la phrase est gardée avec l'esquisse ; une esquisse sans phrase n'en a pas ; la phrase ne fait jamais refuser l'esquisse", () => {
     const c = [0, 1, 2].map((i) => ({ modele: "m", index: i, png: Buffer.from("x"), requestId: null }));
     const v: RelectureEsquisses = { esquisses: [
-      { numero: 1, entiere: true, morceauDeVoisine: false, nomLu: NOM, arche: false, ok: true, pourquoi: "", piste: "a", phraseSousLeNom: "Nettoyage automobile", phraseBienEcrite: true },
-      { numero: 2, entiere: true, morceauDeVoisine: false, nomLu: NOM, arche: false, ok: true, pourquoi: "", piste: "b", phraseSousLeNom: "aucune", phraseBienEcrite: false },
-      { numero: 3, entiere: true, morceauDeVoisine: false, nomLu: NOM, arche: false, ok: true, pourquoi: "", piste: "c", phraseSousLeNom: "Brilance garantie", phraseBienEcrite: false },
+      { numero: 1, entiere: true, morceauDeVoisine: false, nomLu: NOM, ok: true, pourquoi: "", piste: "a", phraseSousLeNom: "Nettoyage automobile", phraseBienEcrite: true },
+      { numero: 2, entiere: true, morceauDeVoisine: false, nomLu: NOM, ok: true, pourquoi: "", piste: "b", phraseSousLeNom: "aucune", phraseBienEcrite: false },
+      { numero: 3, entiere: true, morceauDeVoisine: false, nomLu: NOM, ok: true, pourquoi: "", piste: "c", phraseSousLeNom: "Brilance garantie", phraseBienEcrite: false },
     ] };
     const a = appliquerLaRelecture(NOM, c, v, 1);
     expect(a.refusees).toEqual([]);
@@ -215,7 +215,7 @@ describe("3. la finalisation : la phrase choisie écrite exactement, une seule l
 });
 
 describe("4. la relecture du logo fini : jamais « inventée », écrite lettre pour lettre", () => {
-  const bon: RelectureDuLogo = { nomLu: NOM, ideeConservee: true, arche: false, phrase: "", phraseDitLeMetier: false, note: 9, pourquoi: "" };
+  const bon: RelectureDuLogo = { nomLu: NOM, ideeConservee: true, phrase: "", phraseDitLeMetier: false, note: 9, pourquoi: "" };
   const p = { texte: "L'éclat de votre voiture" };
   it("une phrase choisie qui ne dit pas le métier n'est jamais refusée comme inventée ; mal écrite ou absente, le logo est refusé", () => {
     expect(raisonsDuRefus({ ...bon, phrase: "L’ÉCLAT DE VOTRE VOITURE", phraseDitLeMetier: false }, NOM, p)).toEqual([]);
@@ -293,10 +293,10 @@ describe("la tâche de fond : la phrase relevée est rangée, proposée en une p
     G.graphistesDeps.ai = () => ({
       metier: async () => ({ metier: METIER, court: "le nettoyage automobile", piste: "savoir-faire" }),
       planche: async (modele, prompt) => ({ png: await planche(), recu: { endpoint: "POST /v1/images/generations", modele, texteEnvoye: prompt, reglages: {}, requestId: `req_${modele}`, usage: null, coutMicro: 1, dureeMs: 1 } }),
-      relireEsquisses: async (images) => ({ esquisses: images.map((_b, i) => ({ numero: i + 1, entiere: true, morceauDeVoisine: false, nomLu: NOM, arche: false, ok: true, pourquoi: "", piste: `piste ${i + 1}`, phraseSousLeNom: i === 4 ? "L'éclat de votre voiture" : i === 5 ? "Brillannnce garantie" : "aucune", phraseBienEcrite: i === 4 || i === 5 })) }),
+      relireEsquisses: async (images) => ({ esquisses: images.map((_b, i) => ({ numero: i + 1, entiere: true, morceauDeVoisine: false, nomLu: NOM, ok: true, pourquoi: "", piste: `piste ${i + 1}`, phraseSousLeNom: i === 4 ? "L'éclat de votre voiture" : i === 5 ? "Brillannnce garantie" : "aucune", phraseBienEcrite: i === 4 || i === 5 })) }),
       rediger: async (consigne) => { vu.consignes.push(consigne); return { idee_centrale: "un éclat", texte: avecPhrase("L'éclat de votre voiture") }; },
       finaliser: async (_e, t) => ({ png: await logoFini(), recu: { endpoint: "POST /v1/images/edits (multipart, image[])", modele: "gpt-image-2.6-sunburst", texteEnvoye: t, reglages: {}, requestId: "req_edit", usage: null, coutMicro: 1, dureeMs: 1 } }),
-      relireLogo: async (_l, _e, demande) => { vu.demandes.push(demande); return { nomLu: NOM, ideeConservee: true, arche: false, phrase: demande.includes("a choisi la phrase") ? "L'éclat de votre voiture" : "", phraseDitLeMetier: false, note: 9, pourquoi: "" }; },
+      relireLogo: async (_l, _e, demande) => { vu.demandes.push(demande); return { nomLu: NOM, ideeConservee: true, phrase: demande.includes("a choisi la phrase") ? "L'éclat de votre voiture" : "", phraseDitLeMetier: false, note: 9, pourquoi: "" }; },
     });
     try {
       const r1 = await tache(user, projectId, { conversationId: cid, phase: "recherche", nom: NOM, capMicro: 5_000_000 }) as any;

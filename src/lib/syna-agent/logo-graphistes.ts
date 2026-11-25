@@ -31,10 +31,10 @@ import type { PlanId } from "../plans";
 import { DEFAULT_MODELS } from "./models";
 import { ROUTES_BY_PLAN } from "./brand-routes";
 import { METIER_SYSTEM, MetierSchema, controleDuMetier, demandeDuMetier, type Metier } from "./logo-recherche";
-import { RELECTEUR_DES_ESQUISSES, RelectureEsquissesSchema, demandeAuRelecteurDesEsquisses, rechercheDesEsquisses, type ResultatDeRecherche } from "./esquisses";
+import { REMPLACEMENTS_MAX, RELECTEUR_DES_ESQUISSES, RelectureEsquissesSchema, demandeAuRelecteurDesEsquisses, rechercheDesEsquisses, type ResultatDeRecherche } from "./esquisses";
 import { DEMANDE_AU_REDACTEUR, RELECTEUR_DU_LOGO_FINI, RelectureDuLogoSchema, TexteDeFinalisationSchema, finaliserUneEsquisse, type Finalisation, type FinalisationDeps, type RelectureDuLogo } from "./logo-finalisation";
 import { couleursDuLogo, type PaletteDuLogo } from "./couleurs-du-logo";
-import { PHRASE_MAX, type PhraseChoisie, type PhraseDeLEsquisse, type PhraseVoulue } from "./phrase-sous-le-nom";
+import { LIGNES_MAX, PHRASE_MAX, deLignes, lignesDe, lignesDuTexte, type PhraseChoisie, type PhraseDeLEsquisse, type PhraseVoulue } from "./phrase-sous-le-nom";
 
 
 /** Le nombre d'esquisses que le client peut choisir : celui des identités de son forfait (2, 3 ou 4). */
@@ -74,12 +74,14 @@ export type EtatGraphistes = {
 /** Ce que le client a dit pour la phrase d'un logo : `logo` (le numéro de son esquisse), puis `de`, `aucune` ou `texte`. */
 export const PhraseDuClientSchema = z.object({
   logo: z.number().int().min(1),
-  /** La phrase de cette esquisse-là (son numéro). */
+  /** La phrase de cette esquisse-là (son numéro) : toutes ses lignes, dans l'ordre. */
   de: z.number().int().min(1).optional(),
+  /** Avec `de` : seulement ces lignes-là de sa phrase (numérotées à partir de 1), dans l'ordre de l'esquisse. */
+  lignes: z.array(z.number().int().min(1).max(8)).min(1).max(8).optional(),
   /** Aucune phrase sous le nom. */
   aucune: z.literal(true).optional(),
-  /** Sa phrase à lui, recopiée mot pour mot depuis son message. */
-  texte: z.string().max(PHRASE_MAX).optional(),
+  /** Sa phrase à lui, recopiée mot pour mot depuis son message ; plusieurs lignes : « / » entre elles. */
+  texte: z.string().max(PHRASE_MAX * LIGNES_MAX + 3 * LIGNES_MAX).optional(),
 }).strict();
 export type PhraseDuClient = z.infer<typeof PhraseDuClientSchema>;
 
@@ -101,14 +103,24 @@ export function controleDesPhrases(etat: Pick<EtatGraphistes, "esquisses">, logo
       if (!e.phrase) return { ok: false, faute: L(`L'esquisse ${d.de} n'a pas de phrase sous son nom. Tu peux écrire la tienne.`, `Sketch ${d.de} has no line under its name. You can write your own.`) };
       // Une phrase dont l'orthographe n'est pas sûre n'est jamais proposée telle quelle ; il peut toujours écrire la sienne.
       if (!e.phrase.ok) return { ok: false, faute: L(`La phrase de l'esquisse ${d.de} n'est pas proposée telle quelle : son orthographe n'est pas sûre. Tu peux écrire la tienne, je la reprendrai mot pour mot.`, `The line from sketch ${d.de} is not offered as is: its spelling is not certain. You can write your own.`) };
-      phrases[String(d.logo)] = { de: d.de, texte: e.phrase.texte };
+      // Toutes ses lignes, dans l'ordre ; ou seulement celles qu'il garde (`lignes`), dans l'ordre de l'esquisse.
+      const toutes = lignesDe(e.phrase);
+      if (d.lignes) {
+        const hors = d.lignes.filter((k) => k > toutes.length);
+        if (hors.length) return { ok: false, faute: L(`La phrase de l'esquisse ${d.de} a ${toutes.length} ligne${toutes.length > 1 ? "s" : ""} : la ligne ${hors.join(", ")} n'existe pas.`, `The line under sketch ${d.de} has ${toutes.length} line(s).`) };
+        phrases[String(d.logo)] = { de: d.de, ...deLignes([...new Set(d.lignes)].sort((x, y) => x - y).map((k) => toutes[k - 1])) };
+      } else phrases[String(d.logo)] = { de: d.de, ...deLignes(toutes) };
       continue;
     }
-    // Sa phrase à lui : reprise mot pour mot, jamais réécrite. Elle doit figurer telle quelle dans un de ses messages.
+    if (d.lignes) return { ok: false, interne: true, faute: `Pour le logo ${d.logo}, lignes ne va qu'avec de (le numéro de l'esquisse dont il garde ces lignes).` };
+    // Sa phrase à lui : reprise mot pour mot, jamais réécrite ; plusieurs lignes : « / » entre elles. Elle doit figurer
+    // telle quelle dans un de ses messages, le « / » mis à part (chaque ligne, mot pour mot, dans le même message).
     const texte = d.texte!.normalize("NFC").trim();
-    if (!texte || /[\n\r]/.test(texte) || texte.length > PHRASE_MAX) return { ok: false, interne: true, faute: `Sa phrase pour le logo ${d.logo} tient sur une ligne, en ${PHRASE_MAX} signes au plus.` };
-    if (!motsDuClient.some((m) => m.normalize("NFC").includes(texte))) return { ok: false, interne: true, faute: `La phrase « ${texte} » ne figure pas mot pour mot dans ses messages : recopie-la exactement, caractère pour caractère, depuis ce qu'il a écrit (jamais corrigée ni reformulée).` };
-    phrases[String(d.logo)] = { sienne: true, texte };
+    const lignes = lignesDuTexte(texte);
+    if (!lignes.length || lignes.length > LIGNES_MAX || lignes.some((l) => l.length > PHRASE_MAX)) return { ok: false, interne: true, faute: `Sa phrase pour le logo ${d.logo} tient en ${LIGNES_MAX} lignes au plus (« / » entre elles), chacune en ${PHRASE_MAX} signes au plus.` };
+    const absente = lignes.find((l) => !motsDuClient.some((m) => m.normalize("NFC").includes(l)));
+    if (absente != null || !motsDuClient.some((m) => lignes.every((l) => m.normalize("NFC").includes(l)))) return { ok: false, interne: true, faute: `La phrase « ${absente ?? texte} » ne figure pas mot pour mot dans ses messages : recopie-la exactement, caractère pour caractère, depuis ce qu'il a écrit (jamais corrigée ni reformulée ; plusieurs lignes : « / » entre elles).` };
+    phrases[String(d.logo)] = { sienne: true, ...deLignes(lignes) };
   }
   return { ok: true, phrases };
 }
@@ -180,9 +192,11 @@ export function devisDeLaRecherche(o: { metier?: boolean } = {}): DevisDuLogo {
   const r = appel("esquisses"), m = o.metier === false ? { max: 0, probable: 0 } : appel("metier");
   const repriseMicro = planches + r.max, repriseProbableMicro = planchesProbable + r.probable;
   const maxMicro = Math.ceil(m.max + repriseMicro);
-  // La borne du Studio couvre ses DEUX reprises possibles dans la même recherche (25 novembre 2026) : les planches refaites
-  // une fois avec leur relecture, ET la réécriture du métier quand son contrôle gratuit le refuse.
-  return { maxMicro, probableMicro: Math.ceil(m.probable + repriseProbableMicro), repriseMicro, repriseProbableMicro, studioMaxMicro: Math.ceil(borneDuStudio(maxMicro, false, repriseMicro, 1) + m.max) };
+  // La borne du Studio couvre ses reprises possibles dans la même recherche (25 novembre 2026) : les remplacements des
+  // esquisses écartées, au plus `REMPLACEMENTS_MAX` tours d'une planche par modèle et d'une relecture (« jamais au grand
+  // jamais on propose une planche de logo sans les 12 logos fait correctement »), ET la réécriture du métier quand son
+  // contrôle gratuit le refuse.
+  return { maxMicro, probableMicro: Math.ceil(m.probable + repriseProbableMicro), repriseMicro, repriseProbableMicro, studioMaxMicro: Math.ceil(borneDuStudio(maxMicro, false, repriseMicro, REMPLACEMENTS_MAX) + m.max) };
 }
 /** N finalisations : le texte (GPT-6.2 Astra), le logo fini (2.6 Sunburst), sa relecture. */
 export function devisDesFinalisations(n: number): DevisDuLogo {
@@ -299,13 +313,13 @@ export function phraseDuLogoNonConstruit(numero: number, autres: readonly number
 // ---------------------------------------------------------------- ce que voit le client
 
 /** `phrase` : la phrase sous le nom de l'esquisse, et si elle est proposée telle quelle (`ok`) ; `phrases` : ses choix. */
-export type VueDesEsquisses = { max: number; choix: number[]; list: { numero: number; href: string; piste: string; phrase?: { texte: string; ok: boolean } }[]; logos: { numero: number; ok: boolean; href: string | null }[]; phrases?: Record<string, PhraseChoisie> };
+export type VueDesEsquisses = { max: number; choix: number[]; list: { numero: number; href: string; piste: string; phrase?: { texte: string; ok: boolean; lignes?: string[] } }[]; logos: { numero: number; ok: boolean; href: string | null }[]; phrases?: Record<string, PhraseChoisie> };
 /** La vue des esquisses (fil et onglet Marque) : seulement celles montrées, jamais une refusée ; null sans esquisses. */
 export function vueDesEsquisses(etat: EtatGraphistes | undefined, url: (assetId: string) => string): VueDesEsquisses | null {
   if (!etat?.esquisses.length) return null;
   return {
     max: etat.max, choix: etat.choix ?? [], ...(etat.phrases && Object.keys(etat.phrases).length ? { phrases: etat.phrases } : {}),
-    list: etat.esquisses.map((e) => ({ numero: e.numero, href: url(e.assetId), piste: e.piste, ...(e.phrase ? { phrase: { texte: e.phrase.texte, ok: e.phrase.ok } } : {}) })),
+    list: etat.esquisses.map((e) => ({ numero: e.numero, href: url(e.assetId), piste: e.piste, ...(e.phrase ? { phrase: { texte: e.phrase.texte, ok: e.phrase.ok, ...(e.phrase.lignes && e.phrase.lignes.length > 1 ? { lignes: e.phrase.lignes } : {}) } } : {}) })),
     logos: (etat.logos ?? []).map((l) => ({ numero: l.numero, ok: l.ok, href: l.ok && l.assetId ? url(l.assetId) : null })),
   };
 }

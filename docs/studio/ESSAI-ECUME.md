@@ -40,42 +40,62 @@ DEVIS_SEULEMENT=1 DATA_DIR=data/essai-ecume/studio node_modules/.bin/tsx scripts
 DEVIS_SEULEMENT=1 DATA_DIR=data/essai-ecume/studio node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts
 ```
 
-## Étape 1 — les esquisses, triées par le relecteur
+## Étape 1 — les esquisses, triées par le relecteur (à refaire en entier)
+
+Le premier passage du 25 novembre 2026 (0,12 € comptés, 8 esquisses gardées sur 12) a montré trois défauts, corrigés
+depuis sans dépense : la découpe tranchait la grande forme beige pâle de la case 6 (le fond est maintenant mesuré) ; le
+relecteur écartait les médaillons et badges ronds pour « arche » (critère retiré pour les logos) ; il ne relevait que la
+première des deux lignes sous le nom (tout le texte est maintenant relevé, ligne par ligne). Le propriétaire : « Non sina
+doit réussir à faire les 12 logos correctement sur la planche ». L'étape 1 est donc refaite en entier, avec de nouvelles
+planches, sur son oui ; on ne reprend pas les anciennes.
 
 ```
 NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
-  PLAFOND_ESSAI_EUR=1.08 node_modules/.bin/tsx scripts/syna-recette/essai-esquisses.mts data/essai-ecume/1-esquisses
+  PLAFOND_ESSAI_EUR=1.83 node_modules/.bin/tsx scripts/syna-recette/essai-esquisses.mts data/essai-ecume/1-esquisses-2
 ```
 
-Exactement la recherche du parcours : le métier en mots simples, les deux planches de six esquisses, la découpe
-gratuite, puis un seul appel au relecteur. Une esquisse refusée n'est jamais montrée. S'il en reste moins de huit, les
-deux planches sont refaites une fois, à la charge du Studio, en évitant les pistes déjà présentées. La phrase sous le nom
-de chaque esquisse est relevée.
-Probable 0,15 € (0,29 € si le métier est réécrit et les planches refaites) ; plafond minimal 1,08 €, reprise comprise.
+Exactement la recherche du parcours : le métier en mots simples, les deux planches de six esquisses (qualité inchangée),
+la découpe gratuite, puis un seul appel au relecteur (effort moyen). Une esquisse refusée n'est jamais montrée. **Toujours
+12 esquisses correctes** : chaque écartée est remplacée avec le même modèle, par une nouvelle planche de six de ce modèle
+(« Évite ces pistes déjà présentées : … »), relue, à la charge du Studio, au plus trois tours ; si la borne est atteinte,
+rien n'est montré (jamais moins de 12) et le compte rendu le dit. Le texte sous le nom est relevé en entier, ligne par
+ligne, dans l'ordre.
+Probable 0,15 € (0,29 € si le métier est réécrit et un tour de remplacement fait) ; plafond minimal 1,83 €, les trois
+tours de remplacement compris (devis gratuit du 25 novembre 2026).
 
 **Pause.** Montrer au propriétaire :
-- `data/essai-ecume/1-esquisses/planche-contact.png` : les esquisses gardées, numérotées comme le client les voit ;
-- `planche-contact-complete.png` : toutes les esquisses découpées, les écartées barrées d'un bandeau rouge « ÉCARTÉE »
-  avec leur raison, pour qu'il voie ce que SINA a écarté ;
-- dans `rapport.txt`, la phrase relevée sous chaque esquisse gardée (« proposable telle quelle » ou non).
+- en tête de `rapport.txt` (et dans `esquisses.json`, champ `compte`) : **le vrai résultat**, combien des 12 étaient
+  correctes dès les deux planches, puis combien ont dû être remplacées, lesquelles et pourquoi ;
+- `data/essai-ecume/1-esquisses-2/planche-contact.png` : les 12 esquisses, numérotées comme le client les voit ;
+- `planche-contact-complete.png` : toutes les esquisses découpées, remplacements compris, les écartées barrées d'un
+  bandeau rouge « ÉCARTÉE » avec leur raison, les correctes en trop d'une planche de remplacement sous un bandeau gris
+  « EN PLUS » ;
+- dans `rapport.txt`, le texte relevé sous chaque esquisse, toutes ses lignes (« proposable tel quel » ou non).
 
-Il choisit **deux esquisses gardées** (leurs numéros NN et MM, ceux de la planche des gardées) et, s'il le veut, **une
-phrase sous le nom** : celle d'une esquisse gardée (« esquisse 5 »), la sienne, ou « aucune ».
+Il choisit **deux esquisses** (leurs numéros NN et MM) et, s'il le veut, **une phrase sous le nom** : celle d'une
+esquisse, toutes ses lignes (« esquisse 5 ») ou une seule (« esquisse 5 ligne 1 »), la sienne (« / » entre ses lignes),
+ou « aucune ».
 
 ## Étape 2 — les deux logos finis
 
 ```
 NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
-  PLAFOND_ESSAI_EUR=2.20 RAPPORT_ESQUISSES=data/essai-ecume/1-esquisses/rapport.txt PHRASE="<sa phrase>" \
+  PLAFOND_ESSAI_EUR=2.20 RAPPORT_ESQUISSES=data/essai-ecume/1-esquisses-2/rapport.txt PHRASE="<sa phrase>" \
   node_modules/.bin/tsx scripts/syna-recette/essai-finalisation.mts data/essai-ecume/2-finalisation \
-  data/essai-ecume/1-esquisses/esquisse-NN.png data/essai-ecume/1-esquisses/esquisse-MM.png
+  data/essai-ecume/1-esquisses-2/esquisse-NN.png data/essai-ecume/1-esquisses-2/esquisse-MM.png
 ```
 
 - La phrase : `PHRASE` vaut pour les deux logos ; `PHRASE_NN` (par exemple `PHRASE_4`) pour un seul logo ;
-  `PHRASE="esquisse 5"` pour la phrase relevée sous l'esquisse 5 (refusée si son orthographe n'est pas sûre, comme dans
-  le parcours) ; sa phrase à lui, entre guillemets ; « aucune » pour un logo sans phrase ; rien du tout : la règle
-  d'avant (une ligne seulement si elle dit le vrai métier). Elle est reprise mot pour mot, contrôlée par la fonction du
-  Studio, et une faute évidente fait tout refuser avant la dépense.
+  `PHRASE="esquisse 5"` pour toutes les lignes relevées sous l'esquisse 5, dans l'ordre (refusée si l'orthographe d'une
+  seule ligne n'est pas sûre, comme dans le parcours) ; `PHRASE="esquisse 5 ligne 1"` pour sa première ligne seulement ;
+  sa phrase à lui, entre guillemets, avec « / » entre ses lignes (par exemple
+  `PHRASE="SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES"`) ; « aucune » pour un logo sans phrase ; rien du tout :
+  la règle d'avant (une ligne seulement si elle dit le vrai métier). Chaque ligne est reprise mot pour mot, contrôlée par
+  la fonction du Studio, et une faute évidente fait tout refuser avant la dépense. Le logo fini doit porter exactement ces
+  lignes, dans cet ordre : une ligne manquante, mal écrite ou en trop le fait refuser, jamais « inventée ».
+- `esquisses.json` peut être corrigé à la main avant l'étape 2 (le script le relit tel quel, le contrôle d'orthographe du
+  code s'applique à chaque ligne) : la phrase d'une esquisse en tableau de lignes
+  (`"phrase": { "lignes": ["…", "…"], "ok": true }` ou `"phrase": ["…", "…"]`), ou une chaîne avec « / » entre les lignes.
 - Le métier est relu dans le rapport de l'étape 1, jamais réécrit. Les esquisses données doivent être des esquisses
   gardées par le relecteur (`esquisses.json`, à côté du rapport) : une écartée fait tout refuser.
 
@@ -134,13 +154,14 @@ n'est pas faite) et prendre les captures avec `capture.cjs` (ordinateur 1440 de 
 
 | Étape | Probable | Si tout est refait une fois | Plafond minimal |
 |---|---|---|---|
-| 1. Esquisses triées | 0,15 € | 0,29 € | 1,08 € |
+| 1. Esquisses triées (refaite) | 0,15 € | 0,29 € | 1,83 € |
 | 2. Deux logos finis | 0,19 € | 0,39 € | 2,20 € |
 | 3. Deux planches | 0,43 € | 0,86 € | 2,14 € |
 | 4. Planche en vrai | 1,50 € | 2,78 € | 6,70 € |
 | 5. Écran | 0 € | 0 € | 0 € |
-| **Total** | **2,27 €** | **4,32 €** | **12,12 €** |
+| **Total** | **2,27 €** | **4,32 €** | **12,87 €** |
 
-Chiffres tirés des devis gratuits du 25 novembre 2026 (somme exacte des plafonds minimaux : 12,09 € ; arrondis aux
-plafonds donnés ci-dessus : 12,12 €). Le plafond minimal est la somme de tous les maxima, reprises comprises : il
+Chiffres tirés des devis gratuits du 25 novembre 2026 (somme exacte des plafonds minimaux : 12,85 € ; arrondis aux
+plafonds donnés ci-dessus : 12,87 €). Le plafond de l'étape 1 compte les trois tours de remplacement, à la charge du
+Studio. Déjà dépensé : 0,12 € pour le premier passage de l'étape 1, mis de côté. Le plafond minimal est la somme de tous les maxima, reprises comprises : il
 garantit d'aller au bout, il ne sera presque jamais dépensé.

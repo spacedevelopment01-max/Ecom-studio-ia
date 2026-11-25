@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { GraphistesAi } from "../../src/lib/syna-agent/logo-graphistes";
 import type { RelectureDuLogo } from "../../src/lib/syna-agent/logo-finalisation";
-import type { PhraseVoulue } from "../../src/lib/syna-agent/phrase-sous-le-nom";
+import { phraseDeLEsquisse, type PhraseDeLEsquisse, type PhraseVoulue } from "../../src/lib/syna-agent/phrase-sous-le-nom";
 import { clientDeLEssai, euros, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 
 export { clientDeLEssai, euros };
@@ -18,21 +18,53 @@ export type { ClientDeLEssai };
 // ---------------------------------------------------------------- les entrées
 
 /** Une esquisse gardée par l'essai des esquisses (esquisses.json) : son numéro, son fichier, sa phrase relevée. */
-export type EsquisseGardeeLue = { numero: number; fichier?: string; phrase?: { texte: string; ok: boolean; raisons?: string[] } };
+export type EsquisseGardeeLue = { numero: number; fichier?: string; phrase?: PhraseDeLEsquisse };
 
 /**
- * Les esquisses gardées par l'essai des esquisses, lues dans esquisses.json à côté de son rapport (RAPPORT_ESQUISSES).
- * null : un rapport d'avant le tri du relecteur (aucun esquisses.json).
+ * La phrase d'une esquisse telle qu'elle est écrite dans esquisses.json, éventuellement corrigée à la main (25 novembre
+ * 2026, essai d'Écume : le relecteur n'avait relevé que la première des deux lignes, et une relecture n'est jamais
+ * gratuite). Formes acceptées :
+ *  - { "texte": "…", "ok": true } (celle de l'essai), ou { "lignes": ["…", "…"], "ok": true } ; un texte avec « / »
+ *    entre ses lignes donne plusieurs lignes ;
+ *  - un tableau de lignes : ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"] ;
+ *  - une chaîne, « / » entre les lignes : "SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES".
+ * Le fichier est relu tel quel, puis jugé par la fonction du Studio (`phraseDeLEsquisse`) : le contrôle d'orthographe du
+ * code s'applique à chaque ligne. Le « ok » du fichier tient lieu de l'avis du relecteur ; une phrase écrite à la main
+ * sans « ok » (tableau ou chaîne) est tenue pour relue par celui qui l'a écrite. Une seule ligne douteuse : la phrase
+ * n'est pas proposable telle quelle.
+ */
+export function phraseDuFichier(brut: unknown): PhraseDeLEsquisse | undefined {
+  if (brut == null) return undefined;
+  if (typeof brut === "string" || Array.isArray(brut)) {
+    if (Array.isArray(brut) && brut.some((l) => typeof l !== "string")) throw new Error("une phrase en tableau ne contient que des lignes de texte");
+    return phraseDeLEsquisse(brut as string | string[], true);
+  }
+  if (typeof brut !== "object") throw new Error("phrase illisible");
+  const o = brut as { texte?: unknown; lignes?: unknown; ok?: unknown };
+  const lignes = Array.isArray(o.lignes) ? o.lignes : typeof o.texte === "string" ? o.texte : undefined;
+  if (lignes === undefined || (Array.isArray(lignes) && lignes.some((l) => typeof l !== "string"))) throw new Error("une phrase a besoin de « texte » ou de « lignes » (des lignes de texte)");
+  return phraseDeLEsquisse(lignes as string | string[], o.ok === undefined ? true : o.ok === true);
+}
+
+/**
+ * Les esquisses gardées par l'essai des esquisses, lues dans esquisses.json à côté de son rapport (RAPPORT_ESQUISSES),
+ * leur phrase relue par `phraseDuFichier` (corrigée à la main ou non). null : un rapport d'avant le tri du relecteur (aucun
+ * esquisses.json).
  */
 export function esquissesGardees(rapport?: string): EsquisseGardeeLue[] | null {
   if (!rapport) return null;
   const f = path.join(path.dirname(rapport), "esquisses.json");
   if (!fs.existsSync(f)) return null;
+  let g: unknown;
   try {
-    const g = JSON.parse(fs.readFileSync(f, "utf8"))?.gardees;
+    g = JSON.parse(fs.readFileSync(f, "utf8"))?.gardees;
     if (!Array.isArray(g)) throw new Error();
-    return g as EsquisseGardeeLue[];
   } catch { throw new Error(`${f} illisible : rien n'est lancé.`); }
+  return (g as { numero: number; fichier?: string; phrase?: unknown }[]).map((e) => {
+    let phrase: PhraseDeLEsquisse | undefined;
+    try { phrase = phraseDuFichier(e.phrase); } catch (x) { throw new Error(`${f}, esquisse ${e.numero} : ${(x as Error).message}. Rien n'est lancé.`); }
+    return { numero: e.numero, ...(e.fichier ? { fichier: e.fichier } : {}), ...(phrase ? { phrase } : {}) };
+  });
 }
 
 /**
@@ -46,15 +78,17 @@ export function nonGardees(fichiers: readonly string[], gardees: readonly Esquis
 /**
  * La phrase sous le nom choisie par le client, logo par logo, comme dans le parcours (logo-graphistes.ts,
  * `controleDesPhrases` puis `phraseVoulue`) : PHRASE vaut pour tous les logos, PHRASE_<numéro> (PHRASE_4) pour le logo
- * de cette esquisse et l'emporte. « aucune » : le logo sans phrase. « esquisse 5 » : la phrase relevée sous l'esquisse 5
+ * de cette esquisse et l'emporte. « aucune » : le logo sans phrase. « esquisse 5 » : toutes les lignes relevées sous
+ * l'esquisse 5, dans l'ordre ; « esquisse 5 ligne 1 » (ou « lignes 1,2 ») : seulement celles-là. Sa phrase à lui : « / »
+ * entre ses lignes (« SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES »). « esquisse 5 » : la phrase relevée sous l'esquisse 5
  * (`gardees`, lues dans esquisses.json), refusée si elle n'est pas proposable telle quelle. Rien de donné pour un logo : la règle d'avant (une
  * ligne seulement si elle dit le vrai métier, sinon aucune). La phrase est reprise mot pour mot, jamais corrigée ; une
  * faute évidente (`fautesEvidentes`) fait tout refuser avant la moindre dépense, car elle ferait refuser le logo.
  */
 export async function phrasesDeLEssai(numeros: readonly number[], env: Record<string, string | undefined> = process.env, gardees: readonly EsquisseGardeeLue[] = []): Promise<Record<number, PhraseVoulue>> {
   const { controleDesPhrases } = await import("../../src/lib/syna-agent/logo-graphistes");
-  const { fautesEvidentes, phraseVoulue } = await import("../../src/lib/syna-agent/phrase-sous-le-nom");
-  const demandes: { logo: number; aucune?: true; texte?: string; de?: number }[] = [];
+  const { fautesDesLignes, lignesDuTexte, phraseVoulue } = await import("../../src/lib/syna-agent/phrase-sous-le-nom");
+  const demandes: { logo: number; aucune?: true; texte?: string; de?: number; lignes?: number[] }[] = [];
   const mots: string[] = [];
   for (const n of numeros) {
     const brut = env[`PHRASE_${n}`] ?? env[`PHRASE_${String(n).padStart(2, "0")}`] ?? env.PHRASE;
@@ -62,9 +96,9 @@ export async function phrasesDeLEssai(numeros: readonly number[], env: Record<st
     const t = brut.normalize("NFC").trim();
     if (/^aucune$/i.test(t)) { demandes.push({ logo: n, aucune: true }); continue; }
     // « esquisse 5 » : la phrase relevée par le relecteur sous l'esquisse 5, comme dans le parcours (jamais une douteuse).
-    const de = /^esquisse\s+0*(\d+)$/i.exec(t);
-    if (de) { demandes.push({ logo: n, de: Number(de[1]) }); continue; }
-    const f = fautesEvidentes(t);
+    const de = /^esquisse\s+0*(\d+)(?:\s+lignes?\s+(\d+(?:\s*,\s*\d+)*))?$/i.exec(t);
+    if (de) { demandes.push({ logo: n, de: Number(de[1]), ...(de[2] ? { lignes: de[2].split(",").map(Number) } : {}) }); continue; }
+    const f = fautesDesLignes(lignesDuTexte(t));
     if (f.length) throw new Error(`La phrase « ${t} » du logo ${n} a une faute évidente (${f.join(", ")}) : elle ferait refuser le logo. Rien n'est lancé.`);
     demandes.push({ logo: n, texte: t }); mots.push(t);
   }
@@ -76,7 +110,7 @@ export async function phrasesDeLEssai(numeros: readonly number[], env: Record<st
 }
 
 /** La phrase d'un logo, en mots (rapport et console). */
-export const phraseEnMots = (p: PhraseVoulue | undefined) => (!p ? "règle d'avant (une ligne seulement si elle dit le vrai métier)" : "aucune" in p ? "aucune phrase" : `« ${p.texte} », mot pour mot`);
+export const phraseEnMots = (p: PhraseVoulue | undefined) => (!p ? "règle d'avant (une ligne seulement si elle dit le vrai métier)" : "aucune" in p ? "aucune phrase" : p.lignes && p.lignes.length > 1 ? `${p.lignes.length} lignes, dans l'ordre, ${p.lignes.map((l) => `« ${l} »`).join(" puis ")}, mot pour mot` : `« ${p.texte} », mot pour mot`);
 
 /** La phrase du métier écrite par l'essai des esquisses dans son rapport (« Phrase du métier : … »). */
 export function metierDuRapport(texte: string): string | null {
@@ -315,7 +349,7 @@ export async function essaiDeFinalisation(o: {
       lignes.push("", `Esquisse ${l.numero} : ${l.ok === true ? "logo GARDÉ par le relecteur" : l.ok === false ? `logo NON gardé (${l.raison})` : "non terminée"}`);
       for (const e of l.essais) {
         lignes.push(`  essai ${e.tour} : texte ${e.texte ?? "—"} ; image jointe ${e.jointe ?? "—"} ; logo brut ${e.brut ?? "—"} ; détouré ${e.detoure ?? "—"}`);
-        if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », idée conservée ${e.verdict.ideeConservee ? "oui" : "non"}, arche ${e.verdict.arche ? "oui" : "non"}${e.verdict.phrase ? `, phrase « ${e.verdict.phrase} »` : ""}, défauts graves ${e.verdict.defauts?.length ? `« ${e.verdict.defauts.join(" ; ")} »` : "aucun"}, petites finitions ${e.verdict.finitions?.length ? `« ${e.verdict.finitions.join(" ; ")} »` : "aucune"} —${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`);
+        if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », idée conservée ${e.verdict.ideeConservee ? "oui" : "non"}${e.verdict.phrase ? `, phrase « ${e.verdict.phrase} »` : ""}, défauts graves ${e.verdict.defauts?.length ? `« ${e.verdict.defauts.join(" ; ")} »` : "aucun"}, petites finitions ${e.verdict.finitions?.length ? `« ${e.verdict.finitions.join(" ; ")} »` : "aucune"} —${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`);
         else if (e.raisons?.length) lignes.push(`    refusé sans relecture : ${e.raisons.join(" ; ")}`);
       }
       if (l.ok) lignes.push(`  phrase portée par le logo gardé : ${l.phrase ? `« ${l.phrase} »` : "aucune"} (esquisse-${nn(l.numero)}-phrase-du-logo.txt, à redonner en PHRASE à la planche en vrai)`);

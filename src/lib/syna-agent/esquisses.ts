@@ -10,16 +10,21 @@
  *  - un dessin qui touche le bord : l'esquisse est refusée ;
  *  - une case vide ou d'une seule couleur : refusée ;
  *  - recadrage carré d'environ 512 px, avec une marge.
+ * LE FOND MESURÉ (25 novembre 2026, essai réel d'Écume : la case 6 de la planche 2.5 avait sa grande forme beige pâle
+ * tranchée en haut par la découpe, pas par le modèle) : l'encre n'est plus comparée à un seuil fixe (« plus clair que 215 »
+ * passait le beige très clair pour du fond), mais à la vraie couleur du fond, mesurée sur le pourtour de la planche
+ * (médiane) ; tout ce qui s'en écarte visiblement est du dessin. Aucune forme visible n'est coupée ; une marge de sécurité
+ * (`PAS_DE_SECURITE`) est gardée autour du dessin, dans sa case.
  * Puis UN appel au relecteur le plus fort, effort moyen, pour toutes les esquisses numérotées : entière, morceau de
- * voisine, nom lu (comparé par le code au nom exact), arche, ok, pourquoi, et la piste en quelques mots (elle sert à
+ * voisine, nom lu (comparé par le code au nom exact), ok, pourquoi, et la piste en quelques mots (elle sert à
  * « Évite ces pistes déjà présentées », sans autre appel). Une esquisse refusée n'est jamais montrée ni jointe à SINA ; les
- * gardées sont renumérotées sans trou. S'il en reste moins de 8, les deux planches sont refaites UNE fois, à la charge du
- * Studio, avec « Évite ces pistes déjà présentées : … ». Une panne du fournisseur n'est jamais relancée toute seule.
+ * gardées sont renumérotées sans trou. Chaque esquisse écartée est remplacée par le même modèle jusqu'à 12 correctes
+ * (`rechercheDesEsquisses`, 25 novembre 2026). Une panne du fournisseur n'est jamais relancée toute seule.
  * Une planche-contact numérotée est faite par le code, gratuitement, pour SINA.
  */
 import sharp from "sharp";
 import { z } from "zod";
-import { demandeDeRecherche, lancerLesPlanches, type Metier, type PlancheManquee, type PlancheRecue } from "./logo-recherche";
+import { MODELES_DE_RECHERCHE, demandeDeRecherche, lancerLesPlanches, type Metier, type PlancheManquee, type PlancheRecue } from "./logo-recherche";
 import { phraseDeLEsquisse, type PhraseDeLEsquisse } from "./phrase-sous-le-nom";
 
 // ---------------------------------------------------------------- la découpe (gratuite)
@@ -31,11 +36,27 @@ const MARGE = 0.12;
 /** Tolérance de la recherche d'une bande blanche : 15 % d'une case. */
 const TOLERANCE = 0.15;
 
-type Brut = { data: Buffer; w: number; h: number };
+type Brut = { data: Buffer; w: number; h: number; fond: [number, number, number] };
+/**
+ * L'écart visible au fond : au-delà, c'est du dessin. Mesuré sur les planches réelles d'Écume (fond 254, 254, 254) : le
+ * grain du fond reste sous 9, un beige très pâle (240, 235, 230) s'en écarte de 24.
+ */
+export const ECART_AU_FOND = 12;
+/** La marge de sécurité gardée autour du dessin, dans sa case, avant la marge du recadrage (en pixels de la planche). */
+export const PAS_DE_SECURITE = 6;
+/** La couleur du fond, mesurée : la médiane de chaque canal sur le pourtour de la planche (2 pixels d'épaisseur). */
+export function fondMesure(data: Buffer, w: number, h: number): [number, number, number] {
+  const c: number[][] = [[], [], []];
+  const prendre = (x: number, y: number) => { const i = (y * w + x) * 3; c[0].push(data[i]); c[1].push(data[i + 1]); c[2].push(data[i + 2]); };
+  for (let k = 0; k < 2; k++) {
+    for (let x = 0; x < w; x++) { prendre(x, k); prendre(x, h - 1 - k); }
+    for (let y = 2; y < h - 2; y++) { prendre(k, y); prendre(w - 1 - k, y); }
+  }
+  return c.map((v) => v.sort((a, b) => a - b)[v.length >> 1]) as [number, number, number];
+}
 const encreEn = (b: Brut, x: number, y: number): boolean => {
-  const i = (y * b.w + x) * 3, r = b.data[i], g = b.data[i + 1], bl = b.data[i + 2];
-  const mn = Math.min(r, g, bl), mx = Math.max(r, g, bl);
-  return mn < 215 || mx - mn > 35;
+  const i = (y * b.w + x) * 3;
+  return Math.abs(b.data[i] - b.fond[0]) > ECART_AU_FOND || Math.abs(b.data[i + 1] - b.fond[1]) > ECART_AU_FOND || Math.abs(b.data[i + 2] - b.fond[2]) > ECART_AU_FOND;
 };
 
 /** Le masque d'encre de la planche, sans les traits de grille (une ligne qui court sur presque toute la planche). */
@@ -119,13 +140,16 @@ function lireLaCase(m: Uint8Array, w: number, x0: number, x1: number, y0: number
   for (let y = ky0; y <= ky1; y++) for (let x = kx0; x <= kx1; x++) if (m[y * w + x]) { if (x < bx0) bx0 = x; if (x > bx1) bx1 = x; if (y < by0) by0 = y; if (y > by1) by1 = y; }
   if (bx1 < 0) return { refus: "case vide", recadree };
   if (bx0 - x0 <= bord || x1 - 1 - bx1 <= bord || by0 - y0 <= bord || y1 - 1 - by1 <= bord) return { refus: "le dessin touche le bord de sa case", recadree };
-  return { zone: [bx0, bx1, by0, by1], recadree };
+  // La marge de sécurité : quelques pixels de plus autour du dessin (bords adoucis, traits très pâles), sans sortir de ce
+  // qui a été gardé de la case.
+  const p = PAS_DE_SECURITE;
+  return { zone: [Math.max(kx0, bx0 - p), Math.min(kx1, bx1 + p), Math.max(ky0, by0 - p), Math.min(ky1, by1 + p)], recadree };
 }
 
 /** La découpe d'une planche en six esquisses carrées (gratuite, sans IA). */
 export async function decouperLaPlanche(png: Buffer): Promise<Decoupe> {
   const { data, info } = await sharp(png).flatten({ background: "#FFFFFF" }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-  const b: Brut = { data, w: info.width, h: info.height };
+  const b: Brut = { data, w: info.width, h: info.height, fond: fondMesure(data, info.width, info.height) };
   const m = masqueDEncre(b);
   const lignesProfil: number[] = [];
   for (let y = 0; y < b.h; y++) { let n = 0; for (let x = 0; x < b.w; x++) n += m[y * b.w + x]; lignesProfil.push(n); }
@@ -183,17 +207,18 @@ export const RelectureEsquissesSchema = z.object({
     entiere: z.boolean().catch(false),
     morceauDeVoisine: z.boolean().catch(true),
     nomLu: z.string().max(80).default(""),
-    arche: z.boolean().catch(true),
     ok: z.boolean().catch(false),
     pourquoi: z.string().max(300).default(""),
     /** La piste graphique en quelques mots (« un R dont la boucle dessine une voiture ») : sert à « Évite ces pistes ». */
     piste: z.string().max(160).default(""),
     /**
-     * La petite phrase écrite sous le nom, relevée mot pour mot, ou « aucune » (24 novembre 2026, le propriétaire : « ça
-     * donne des idées de slogan, […] si le client veux le slogan de la 5 et le logo 1, sina doit pouvoir le faire »).
+     * La petite phrase écrite sous le nom, relevée mot pour mot (24 novembre 2026, le propriétaire : « ça donne des idées
+     * de slogan, […] si le client veux le slogan de la 5 et le logo 1, sina doit pouvoir le faire »). Depuis le 25 novembre
+     * 2026 (essai d'Écume : la seconde ligne n'était pas relevée), TOUT le texte sous le nom, une ligne par élément, dans
+     * l'ordre ([] s'il n'y en a pas). Une réponse d'avant, en une chaîne (« aucune » ou la phrase), se lit encore.
      */
-    phraseSousLeNom: z.string().max(200).optional().catch(undefined),
-    /** Le relecteur juge-t-il cette phrase sans aucune faute (orthographe, accents, accords) ? */
+    phraseSousLeNom: z.union([z.array(z.string().max(200)).max(8), z.string().max(200)]).optional().catch(undefined),
+    /** Le relecteur juge-t-il ces lignes sans aucune faute (orthographe, accents, accords) ? */
     phraseBienEcrite: z.boolean().optional().catch(false),
   })).max(60).default([]),
 });
@@ -204,12 +229,11 @@ export const RELECTEUR_DES_ESQUISSES = `Tu es le relecteur d'un studio de créat
 - entiere : l'esquisse est entière (rien de coupé, aucune lettre ni aucun signe tronqué au bord) ;
 - morceauDeVoisine : on voit un bout d'une autre esquisse (un fragment de lettre ou de dessin qui n'appartient pas à celle-ci) ;
 - nomLu : le nom de la marque tel qu'il est écrit dans l'esquisse, lettre pour lettre, accents compris (vide s'il n'y est pas) ;
-- arche : le dessin est posé dans une arche, une demi-lune ou un cadre arrondi en arc (interdit au Studio) ;
 - ok : l'esquisse peut devenir une vraie marque commerciale (un dessin net, lisible, une idée graphique claire) ;
 - pourquoi : une phrase simple qui dit ce qui ne va pas, ou ce qui fait sa force ;
 - piste : la piste graphique en quelques mots (par exemple « un R dont la boucle dessine une voiture ») ;
-- phraseSousLeNom : la petite phrase écrite sous le nom, recopiée mot pour mot, lettre pour lettre, accents et ponctuation compris, sans rien corriger (« aucune » s'il n'y en a pas) ;
-- phraseBienEcrite : cette phrase est en bon français, sans aucune faute d'orthographe, d'accent ni d'accord, sans lettre en trop ni en moins (faux s'il n'y en a pas).
+- phraseSousLeNom : la petite phrase écrite sous le nom, recopiée mot pour mot, lettre pour lettre, accents et ponctuation compris, sans rien corriger : TOUT le texte écrit sous le nom, ligne par ligne, dans l'ordre, une ligne par élément de la liste, sans en oublier aucune ([] s'il n'y en a pas) ;
+- phraseBienEcrite : chacune de ces lignes est en bon français, sans aucune faute d'orthographe, d'accent ni d'accord, sans lettre en trop ni en moins (faux s'il n'y en a pas, ou si une seule ligne a un doute).
 Ne juge que ce que tu vois. Ne propose rien.`;
 export const demandeAuRelecteurDesEsquisses = (nom: string, n: number) => `Marque : « ${nom} ». Voici ${n} esquisse(s), dans l'ordre : l'image n°1 est l'esquisse 1, et ainsi de suite.`;
 
@@ -218,9 +242,13 @@ const normNom = (t: string) => t.normalize("NFC").replace(/[’']/g, "'").toLoca
 export const nomExact = (lu: string, nom: string) => normNom(lu) === normNom(nom);
 
 export type Candidate = { modele: string; index: number; png: Buffer; requestId: string | null };
-/** `phrase` : la petite phrase sous le nom, relevée mot pour mot, et si elle peut être proposée telle quelle (absente : aucune). */
+/**
+ * `phrase` : le texte sous le nom, relevé mot pour mot (ses lignes dans l'ordre, à partir de deux), et s'il peut être
+ * proposé tel quel (absente : aucune).
+ */
 export type EsquisseGardee = Candidate & { numero: number; piste: string; pourquoi: string; tour: number; phrase?: PhraseDeLEsquisse };
-export type EsquisseRefusee = { modele: string; index: number; raison: string; tour: number };
+/** `enPlus` : correcte, mais pas nécessaire (les 6 de ce modèle étaient déjà là) ; jamais montrée. */
+export type EsquisseRefusee = { modele: string; index: number; raison: string; tour: number; enPlus?: boolean };
 
 /** Les verdicts du relecteur, appliqués par le code (le nom est toujours comparé par lui). */
 export function appliquerLaRelecture(nom: string, candidates: Candidate[], r: RelectureEsquisses | null, tour: number): { gardees: Omit<EsquisseGardee, "numero">[]; refusees: EsquisseRefusee[] } {
@@ -231,10 +259,11 @@ export function appliquerLaRelecture(nom: string, candidates: Candidate[], r: Re
     if (!v) return refus("non relue");
     if (!v.entiere) return refus(`pas entière${v.pourquoi ? ` : ${v.pourquoi}` : ""}`);
     if (v.morceauDeVoisine) return refus("un morceau de la voisine");
-    if (v.arche) return refus("une arche");
+    // Une arche, un médaillon ou un badge rond sont permis pour un logo (25 novembre 2026) : jamais une raison d'écarter.
     if (!nomExact(v.nomLu, nom)) return refus(v.nomLu ? `nom mal écrit : « ${v.nomLu} »` : "le nom n'y est pas");
     if (!v.ok) return refus(v.pourquoi || "pas au niveau d'une vraie marque");
-    // La phrase sous le nom : gardée avec l'esquisse ; proposée telle quelle seulement si son orthographe est sûre.
+    // La phrase sous le nom, toutes ses lignes : gardée avec l'esquisse ; proposée telle quelle seulement si l'orthographe
+    // de chaque ligne est sûre.
     const phrase = phraseDeLEsquisse(v.phraseSousLeNom, v.phraseBienEcrite);
     gardees.push({ ...c, piste: v.piste.trim(), pourquoi: v.pourquoi.trim(), tour, ...(phrase ? { phrase } : {}) });
   });
@@ -259,36 +288,70 @@ export async function plancheContact(esquisses: { numero: number; png: Buffer }[
 
 // ---------------------------------------------------------------- la recherche entière
 
-/** Il faut au moins 8 esquisses gardées ; en dessous, les deux planches sont refaites une fois (à la charge du Studio). */
-export const ESQUISSES_MIN = 8;
+/**
+ * LES 12 ESQUISSES TOUJOURS CORRECTES (25 novembre 2026, le propriétaire, mot pour mot : « La création de la planche de
+ * logo, et jamais au grand jamais on propose une planche de logo sans les 12 logos fait correctement », puis « Non sina
+ * doit réussir à faire les 12 logos correctement sur la planche »). Elle remplace « moins de huit : les deux planches
+ * refaites une fois ».
+ *  - Le client voit toujours exactement 12 esquisses correctes : 6 de chaque modèle de la recherche.
+ *  - Chaque esquisse écartée est remplacée, avec LE MÊME MODÈLE (6 et 6 restent la règle), puis relue.
+ *  - La façon la moins chère qui donne de vraies pistes différentes : une NOUVELLE PLANCHE de six du modèle à qui il en
+ *    manque, avec la demande exacte suivie de « Évite ces pistes déjà présentées : … » (les pistes gardées). Chiffres de la
+ *    formule officielle des jetons (« medium ») : une planche de six en 1536 × 1024 produit 343 jetons en 2.5 Sunburst
+ *    (1 132 en 2.6 Flare), une seule esquisse en 1024 × 1024, la plus petite image carrée, 439 (1 449) : une planche
+ *    entière coûte moins qu'une esquisse seule, et donne six pistes au lieu d'une. On y prend, dans l'ordre, ce qui manque.
+ *  - Une borne : `REMPLACEMENTS_MAX` tours de remplacement au plus (chaque tour : au plus une planche par modèle à qui il
+ *    en manque, et une relecture), dans la borne du Studio de la tâche. Atteinte, ou une panne, un plafond : la recherche
+ *    est INCOMPLÈTE ; la tâche s'arrête en erreur visible au Studio, et rien n'est montré au client (jamais moins de 12).
+ *  - Les remplacements sont payés par le Studio (`aLaChargeDuStudio`), comme les autres reprises.
+ * Une panne du fournisseur n'est jamais relancée toute seule.
+ */
+export const ESQUISSES_PAR_MODELE = 6;
+/** Le nombre d'esquisses montrées au client : 6 par modèle de la recherche, 12 en tout. */
+export const ESQUISSES_MONTREES = ESQUISSES_PAR_MODELE * MODELES_DE_RECHERCHE.length;
+/** Au plus trois tours de remplacement (chacun : une planche par modèle à qui il en manque, une relecture). */
+export const REMPLACEMENTS_MAX = 3;
 
 export type RechercheDeps = {
   /** Une planche de recherche (la demande exacte, sans secours). */
   planche: (modele: string, prompt: string, tour: number) => Promise<Omit<PlancheRecue, "modele" | "texteEnvoye">>;
-  /** UN appel au relecteur le plus fort, effort moyen, pour toutes les esquisses numérotées. */
+  /** UN appel au relecteur le plus fort, effort moyen, pour toutes les esquisses numérotées du tour. */
   relire: (images: Buffer[], nom: string, tour: number) => Promise<RelectureEsquisses>;
-  /** Ce qui suit est à la charge du Studio (la reprise quand il reste moins de 8 esquisses). */
+  /** Ce qui suit est à la charge du Studio (les remplacements). */
   aLaChargeDuStudio: <T>(fn: () => Promise<T>) => Promise<T>;
   /** Plafond de dépense atteint (jamais une panne du fournisseur). */
   estPlafond?: (e: unknown) => boolean;
 };
 export type ResultatDeRecherche = {
   esquisses: EsquisseGardee[]; refusees: EsquisseRefusee[]; planches: PlancheRecue[]; manquees: PlancheManquee[];
-  planchesRefusees: { modele: string; raison: string; tour: number }[]; reprise: boolean; notes: string[]; contact: Buffer | null;
+  planchesRefusees: { modele: string; raison: string; tour: number }[];
+  /** Vrai dès qu'il a fallu remplacer au moins une esquisse. */
+  reprise: boolean;
+  /** Les 12 esquisses correctes sont là (6 par modèle). Faux : rien n'est montré au client. */
+  complete: boolean;
+  /** Le vrai résultat : combien des 12 étaient correctes dès les deux premières planches. */
+  correctesDesLesPlanches: number;
+  /** Combien ont dû être remplacées (12 moins les correctes du premier tour), et lesquelles, avec leur raison. */
+  remplacees: EsquisseRefusee[];
+  /** Les tours de remplacement faits (0 à `REMPLACEMENTS_MAX`). */
+  tours: number;
+  notes: string[]; contact: Buffer | null;
 };
 
 /**
- * La recherche : deux planches en même temps, découpées, relues en un seul appel ; moins de 8 esquisses gardées : une
- * seule reprise des deux planches, à la charge du Studio, avec « Évite ces pistes déjà présentées : … ». Jamais de reprise
- * après une panne ou un plafond (une panne n'est jamais relancée toute seule). `depart` : le premier numéro (la
- * numérotation continue pour « d'autres pistes ») ; `eviter` : les pistes déjà présentées au client.
+ * La recherche : deux planches en même temps (une par modèle), découpées, relues en un seul appel ; chaque esquisse
+ * écartée est remplacée par le même modèle jusqu'à 6 par modèle, au plus `REMPLACEMENTS_MAX` tours, à la charge du
+ * Studio. `depart` : le premier numéro (la numérotation continue pour « d'autres pistes ») ; `eviter` : les pistes déjà
+ * présentées au client. Les gardées sont numérotées modèle par modèle (les 6 du premier, puis les 6 du second).
  */
-export async function rechercheDesEsquisses(deps: RechercheDeps, o: { nom: string; metier: Pick<Metier, "metier" | "court" | "piste">; depart?: number; eviter?: readonly string[]; repriseSiMoinsDe8?: boolean }): Promise<ResultatDeRecherche> {
+export async function rechercheDesEsquisses(deps: RechercheDeps, o: { nom: string; metier: Pick<Metier, "metier" | "court" | "piste">; depart?: number; eviter?: readonly string[]; remplacementsMax?: number }): Promise<ResultatDeRecherche> {
   const notes: string[] = [], planches: PlancheRecue[] = [], manquees: PlancheManquee[] = [], refusees: EsquisseRefusee[] = [], planchesRefusees: ResultatDeRecherche["planchesRefusees"] = [];
-  const gardees: Omit<EsquisseGardee, "numero">[] = [];
-  const unTour = async (tour: number, eviter: readonly string[]) => {
+  const modeles: string[] = [...MODELES_DE_RECHERCHE];
+  const parModele = new Map<string, Omit<EsquisseGardee, "numero">[]>(modeles.map((m) => [m, []]));
+  const manque = (m: string) => ESQUISSES_PAR_MODELE - (parModele.get(m)?.length ?? 0);
+  const unTour = async (tour: number, pour: readonly string[], eviter: readonly string[]) => {
     const prompt = demandeDeRecherche({ nom: o.nom, metier: o.metier, eviter });
-    const r = await lancerLesPlanches((m, p) => deps.planche(m, p, tour), prompt, deps.estPlafond);
+    const r = await lancerLesPlanches((m, p) => deps.planche(m, p, tour), prompt, deps.estPlafond, pour);
     planches.push(...r.planches); manquees.push(...r.manquees);
     const candidates: Candidate[] = [];
     for (const p of r.planches) {
@@ -303,22 +366,39 @@ export async function rechercheDesEsquisses(deps: RechercheDeps, o: { nom: strin
     let lu: RelectureEsquisses | null = null;
     try { lu = await deps.relire(candidates.map((c) => c.png), o.nom, tour); }
     catch (e) { notes.push(`relecture des esquisses impossible : ${String((e as Error)?.message ?? e).slice(0, 200)} ; aucune esquisse non relue n'est montrée`); if (deps.estPlafond?.(e)) manquees.push({ modele: "relecture", raison: "plafond", plafond: true }); else manquees.push({ modele: "relecture", raison: String((e as Error)?.message ?? e).slice(0, 200) }); }
+    if (!lu) { for (const c of candidates) refusees.push({ modele: c.modele, index: c.index, raison: "non relue", tour }); return; }
     const a = appliquerLaRelecture(o.nom, candidates, lu, tour);
-    gardees.push(...a.gardees); refusees.push(...a.refusees);
+    refusees.push(...a.refusees);
+    // Dans l'ordre des cases : on prend ce qui manque à ce modèle ; une esquisse correcte en plus n'est pas montrée.
+    for (const g of a.gardees) {
+      if (manque(g.modele) > 0) parModele.get(g.modele)!.push(g);
+      else refusees.push({ modele: g.modele, index: g.index, raison: `correcte, mais pas nécessaire : les ${ESQUISSES_PAR_MODELE} de ce modèle étaient déjà là`, tour, enPlus: true });
+    }
   };
   const eviter = [...(o.eviter ?? [])];
-  await unTour(1, eviter);
-  let reprise = false;
-  if (gardees.length < ESQUISSES_MIN && o.repriseSiMoinsDe8 !== false) {
-    if (manquees.length) notes.push(`moins de ${ESQUISSES_MIN} esquisses, mais une planche ou la relecture n'est pas venue (${manquees.map((m) => m.modele).join(", ")}) : rien n'est relancé tout seul`);
-    else {
-      reprise = true;
-      notes.push(`${gardees.length} esquisse(s) gardée(s) sur ${ESQUISSES_MIN} au moins : les deux planches sont refaites une fois, à la charge du Studio`);
-      await deps.aLaChargeDuStudio(() => unTour(2, [...eviter, ...gardees.map((g) => g.piste).filter(Boolean)]));
-    }
+  await unTour(1, modeles, eviter);
+  const correctesDesLesPlanches = modeles.reduce((n, m) => n + (parModele.get(m)?.length ?? 0), 0);
+  // Celles qui ont dû être remplacées : les écartées du premier tour (cases refusées par la découpe ou le relecteur,
+  // planche refusée entière ou venue en panne), dans la limite de ce qui manquait.
+  const remplacees: EsquisseRefusee[] = [
+    ...refusees.filter((x) => x.tour === 1 && !x.enPlus),
+    ...planchesRefusees.filter((x) => x.tour === 1).flatMap((x) => Array.from({ length: ESQUISSES_PAR_MODELE }, (_v, i) => ({ modele: x.modele, index: i, raison: `planche entière refusée : ${x.raison}`, tour: 1 }))),
+  ].sort((x, y) => modeles.indexOf(x.modele) - modeles.indexOf(y.modele) || x.index - y.index);
+  const max = o.remplacementsMax ?? REMPLACEMENTS_MAX;
+  let tours = 0;
+  while (modeles.some((m) => manque(m) > 0) && tours < max) {
+    if (manquees.length) { notes.push(`il manque des esquisses, mais une planche ou la relecture n'est pas venue (${manquees.map((m) => m.modele).join(", ")}) : rien n'est relancé tout seul`); break; }
+    tours += 1;
+    const pour = modeles.filter((m) => manque(m) > 0);
+    notes.push(`remplacement ${tours} : ${pour.map((m) => `${manque(m)} esquisse(s) de ${m}`).join(", ")}, à la charge du Studio`);
+    const dejaGardees = modeles.flatMap((m) => parModele.get(m)!.map((g) => g.piste)).filter(Boolean);
+    await deps.aLaChargeDuStudio(() => unTour(tours + 1, pour, [...eviter, ...dejaGardees]));
   }
+  const complete = modeles.every((m) => manque(m) <= 0);
+  if (!complete) notes.push(`recherche incomplète : ${modeles.map((m) => `${parModele.get(m)!.length}/${ESQUISSES_PAR_MODELE} de ${m}`).join(", ")} après ${tours} tour(s) de remplacement (borne : ${max}) ; rien n'est montré au client`);
   const depart = o.depart ?? 1;
-  const esquisses = gardees.map((g, i) => ({ ...g, numero: depart + i }));
-  const contact = esquisses.length ? await plancheContact(esquisses) : null;
-  return { esquisses, refusees, planches, manquees, planchesRefusees, reprise, notes, contact };
+  const ordre = modeles.flatMap((m) => parModele.get(m)!);
+  const esquisses = complete ? ordre.map((g, i) => ({ ...g, numero: depart + i })) : [];
+  const contact = complete ? await plancheContact(esquisses) : null;
+  return { esquisses, refusees, planches, manquees, planchesRefusees, reprise: tours > 0, complete, correctesDesLesPlanches, remplacees, tours, notes, contact };
 }

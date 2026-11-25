@@ -205,7 +205,7 @@ function PostsPlanCard({ plan }: { plan: PostsPlan }) {
 const ANGLE_BANDS = ["#9C3343", "#74533F", "#43644A", "#B46D25", "#73507F"];
 
 /** Les esquisses de logo (méthode des graphistes) : numérotées, jamais une refusée ; au plus `max` à choisir. */
-export type Esquisses = { max: number; choix: number[]; list: { numero: number; href: string; piste: string; phrase?: { texte: string; ok: boolean } }[]; logos: { numero: number; ok: boolean; href: string | null }[]; phrases?: Record<string, unknown> };
+export type Esquisses = { max: number; choix: number[]; list: { numero: number; href: string; piste: string; phrase?: { texte: string; ok: boolean; lignes?: string[] } }[]; logos: { numero: number; ok: boolean; href: string | null }[]; phrases?: Record<string, unknown> };
 
 /**
  * Le choix des esquisses de logo, sur le modèle de ThemeCards : une grille numérotée, au plus N cases à cocher (2, 3 ou
@@ -222,10 +222,13 @@ export function EsquissesCards({ esquisses, busy, onChoose }: { esquisses: Esqui
   const plein = sel.length >= esquisses.max;
   const proposables = esquisses.list.filter((e) => e.phrase?.ok);
   const message = (lang: "fr" | "en") => messageDuChoixAvecPhrases(sel, phr, lang);
-  const valeur = (p: PhraseSurLaCarte | undefined) => (!p ? "" : "aucune" in p ? "aucune" : "de" in p ? `de:${p.de}` : "sienne");
+  // « de:5 » : toutes les lignes de la phrase de l'esquisse 5, dans l'ordre ; « de:5:2 » : seulement sa ligne 2.
+  const valeur = (p: PhraseSurLaCarte | undefined) => (!p ? "" : "aucune" in p ? "aucune" : "de" in p ? `de:${p.de}${p.ligne ? `:${p.ligne}` : ""}` : "sienne");
   const changer = (logo: number, v: string) => setPhr((x) => {
-    const e = v.startsWith("de:") ? proposables.find((y) => y.numero === Number(v.slice(3))) : undefined;
-    return { ...x, [logo]: v === "aucune" ? { aucune: true } : v === "sienne" ? { sienne: "" } : e?.phrase ? { de: e.numero, texte: e.phrase.texte } : undefined };
+    const [, n, l] = v.split(":");
+    const e = v.startsWith("de:") ? proposables.find((y) => y.numero === Number(n)) : undefined;
+    const ligne = l ? Number(l) : 0, lignes = e?.phrase?.lignes;
+    return { ...x, [logo]: v === "aucune" ? { aucune: true } : v === "sienne" ? { sienne: "" } : e?.phrase ? (ligne && lignes?.[ligne - 1] ? { de: e.numero, texte: lignes[ligne - 1], ligne } : { de: e.numero, texte: e.phrase.texte }) : undefined };
   });
   return (
     <div className="@container mt-2 space-y-2" data-syna-esquisses>
@@ -258,10 +261,12 @@ export function EsquissesCards({ esquisses, busy, onChoose }: { esquisses: Esqui
               <select className="max-w-full rounded-md border border-line bg-card px-2 py-1" value={valeur(p)} disabled={busy} onChange={(ev) => changer(logo, ev.target.value)} aria-label={t(`La phrase sous le nom du logo ${logo}`, `The line under the name of logo ${logo}`)}>
                 <option value="">{t("Je laisse SINA décider", "Let SINA decide")}</option>
                 <option value="aucune">{t("Sans phrase", "No line")}</option>
-                {proposables.map((e) => <option key={e.numero} value={`de:${e.numero}`}>{t(`La phrase de l'esquisse ${e.numero} : « ${e.phrase!.texte} »`, `The line from sketch ${e.numero}: “${e.phrase!.texte}”`)}</option>)}
+                {proposables.flatMap((e) => [<option key={e.numero} value={`de:${e.numero}`}>{t(`La phrase de l'esquisse ${e.numero} : « ${e.phrase!.texte} »`, `The line from sketch ${e.numero}: “${e.phrase!.texte}”`)}</option>,
+                  // Une phrase de plusieurs lignes : il peut n'en garder qu'une.
+                  ...(e.phrase!.lignes && e.phrase!.lignes.length > 1 ? e.phrase!.lignes.map((l, i) => <option key={`${e.numero}:${i + 1}`} value={`de:${e.numero}:${i + 1}`}>{t(`Seulement la ligne ${i + 1} de l'esquisse ${e.numero} : « ${l} »`, `Only line ${i + 1} from sketch ${e.numero}: “${l}”`)}</option>) : [])])}
                 <option value="sienne">{t("Ma phrase à moi", "My own line")}</option>
               </select>
-              {p && "sienne" in p && <input type="text" maxLength={120} className="min-w-0 flex-1 rounded-md border border-line bg-card px-2 py-1" value={p.sienne} disabled={busy} onChange={(ev) => setPhr((x) => ({ ...x, [logo]: { sienne: ev.target.value.replace(/[\r\n]+/g, " ") } }))} placeholder={t("Écris ta phrase, je la reprends mot pour mot", "Write your line, I keep it word for word")} data-esquisse-phrase-sienne={logo} />}
+              {p && "sienne" in p && <input type="text" maxLength={500} className="min-w-0 flex-1 rounded-md border border-line bg-card px-2 py-1" value={p.sienne} disabled={busy} onChange={(ev) => setPhr((x) => ({ ...x, [logo]: { sienne: ev.target.value.replace(/[\r\n]+/g, " ") } }))} placeholder={t("Écris ta phrase, je la reprends mot pour mot (« / » pour passer à la ligne)", "Write your line, I keep it word for word (“/” for a new line)")} data-esquisse-phrase-sienne={logo} />}
             </div>
           );
         })}

@@ -10,7 +10,7 @@
  * y est posé tel quel (`poserSurLaPlanche`). `studio` : la planche n'a pas son logo, la finir est à la charge du Studio.
  */
 import { z } from "zod";
-import { UserFacingError, enqueue, pendingJob, type JobContext } from "../jobs";
+import { PermanentError, UserFacingError, enqueue, pendingJob, type JobContext } from "../jobs";
 import { SINA_BRAND_JOB } from "./brand-chain";
 import { L } from "../i18n-server";
 import { loadProject } from "../projects";
@@ -24,6 +24,7 @@ import { retoucherLesCouleurs } from "./logo-finalisation";
 import { couleursDuLogo } from "./couleurs-du-logo";
 import { aLaChargeDuStudio } from "../billing";
 import { phraseVoulue } from "./phrase-sous-le-nom";
+import { ESQUISSES_MONTREES, REMPLACEMENTS_MAX } from "./esquisses";
 import { ecrireLeMetier, esquissesAChoisir, graphistesDeps, phraseDuLogoNonConstruit, uneFinalisation, uneRecherche, vraisAppels, type EtatGraphistes, type GraphistesAi, type LogoFini } from "./logo-graphistes";
 
 export const LOGO_GRAPHISTES_JOB = "syna.logo.graphistes";
@@ -83,6 +84,10 @@ async function tacheDuLogo(ctx: JobContext, a: PayloadGraphistes) {
   const recherche = (avant?.recherches ?? 0) + 1;
   const depart = (avant?.esquisses.at(-1)?.numero ?? 0) + 1;
   const r = await uneRecherche(ai, { nom, metier, depart, eviter: (avant?.esquisses ?? []).map((e) => e.piste).filter(Boolean), recherche });
+  // Jamais moins de 12 esquisses correctes montrées (25 novembre 2026, « jamais au grand jamais on propose une planche de
+  // logo sans les 12 logos fait correctement ») : une recherche incomplète (borne des remplacements atteinte, panne,
+  // plafond) s'arrête en erreur visible au Studio ; rien n'est enregistré ni montré au client.
+  if (!r.complete) throw new PermanentError(`Recherche du logo incomplète : ${r.correctesDesLesPlanches} esquisse(s) correcte(s) sur ${ESQUISSES_MONTREES} au premier tour, ${r.tours} tour(s) de remplacement (borne : ${REMPLACEMENTS_MAX}) ; rien n'est montré au client. ${r.notes.slice(-3).join(" ; ")}`.slice(0, 900));
   // Les planches, rangées pour le diagnostic (jamais montrées) avec leur reçu ; les esquisses gardées, montrables.
   const planches = await Promise.all(r.planches.map(async (pl) => {
     const asset = await saveAsset({ ...who, data: pl.png, name: `recherche-${recherche}-${pl.modele}.png`, mime: "image/png", role: "logo-recherche", origin: "generated", status: "ready", meta: { graphistes: { recherche, modele: pl.modele, texteEnvoye: pl.texteEnvoye, requestId: pl.requestId, usage: pl.usage, coutMicro: pl.coutMicro } } });
@@ -110,6 +115,8 @@ async function tacheDuLogo(ctx: JobContext, a: PayloadGraphistes) {
   const nouvelles = esquisses.length;
   return {
     esquisses: nouvelles, total: toutes.length, refusees: r.refusees.length, reprise: r.reprise, manquees: r.manquees.map((m) => m.modele),
+    // Le vrai résultat de la recherche : combien des 12 étaient correctes dès les deux planches, combien remplacées.
+    correctes: r.correctesDesLesPlanches, remplacees: r.remplacees.length,
     notice: nouvelles
       ? [L(`${nouvelles} esquisse${nouvelles > 1 ? "s" : ""} ${recherche > 1 ? "de plus " : ""}prête${nouvelles > 1 ? "s" : ""}, numérotée${nouvelles > 1 ? "s" : ""}.`, `${nouvelles} sketch(es) ready.`),
         // Les petites phrases sous le nom donnent des idées de slogan : SINA le propose en une phrase, sans question.

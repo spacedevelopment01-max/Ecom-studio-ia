@@ -70,7 +70,7 @@ export const PHRASE_DES_COULEURS = "Varie les couleurs d'une esquisse à l'autre
 
 /**
  * LE TEXTE EXACT d'une planche de recherche : mot pour mot celui des preuves, suivi de la phrase des couleurs. `eviter` :
- * les pistes déjà présentées, en mots (« d'autres pistes », ou la reprise quand il reste moins de 8 esquisses) ; une
+ * les pistes déjà présentées, en mots (« d'autres pistes », ou le remplacement des esquisses écartées) ; une
  * seule phrase ajoutée à la toute fin, après celle des couleurs.
  */
 export function demandeDeRecherche(o: { nom: string; metier: Pick<Metier, "metier" | "court" | "piste">; eviter?: readonly string[] }): string {
@@ -90,11 +90,13 @@ export type PlancheManquee = { modele: string; raison: string; plafond?: boolean
  * Les deux planches, EN MÊME TEMPS, avec le même texte. Un échec n'empêche pas l'autre et n'est jamais relancé ; un
  * plafond de dépense atteint est dit à part (`plafond`).
  */
-export async function lancerLesPlanches(draw: (modele: string, prompt: string) => Promise<Omit<PlancheRecue, "modele" | "texteEnvoye">>, prompt: string, estPlafond: (e: unknown) => boolean = () => false): Promise<{ planches: PlancheRecue[]; manquees: PlancheManquee[] }> {
-  const res = await Promise.allSettled(MODELES_DE_RECHERCHE.map((m) => draw(m, prompt)));
+export async function lancerLesPlanches(draw: (modele: string, prompt: string) => Promise<Omit<PlancheRecue, "modele" | "texteEnvoye">>, prompt: string, estPlafond: (e: unknown) => boolean = () => false,
+  /** Les modèles à lancer (par défaut les deux de la recherche ; un remplacement : celui à qui il manque des esquisses). */
+  modeles: readonly string[] = MODELES_DE_RECHERCHE): Promise<{ planches: PlancheRecue[]; manquees: PlancheManquee[] }> {
+  const res = await Promise.allSettled(modeles.map((m) => draw(m, prompt)));
   const planches: PlancheRecue[] = [], manquees: PlancheManquee[] = [];
   res.forEach((r, i) => {
-    const modele = MODELES_DE_RECHERCHE[i];
+    const modele = modeles[i];
     if (r.status === "fulfilled") planches.push({ modele, texteEnvoye: prompt, ...r.value });
     else manquees.push({ modele, raison: String((r.reason as Error)?.message ?? r.reason).slice(0, 300), ...(estPlafond(r.reason) ? { plafond: true } : {}) });
   });

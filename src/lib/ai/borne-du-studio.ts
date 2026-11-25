@@ -24,8 +24,8 @@ import { REPRISES_MAX } from "../syna-agent/reprises";
 export function borneDuStudio(capMicro: number, toutALaCharge = false, repriseMicro?: number,
   /**
    * Combien de reprises au plus (par défaut `REPRISES_MAX`, la règle de toutes les chaînes). Les logos de la méthode des
-   * graphistes : 1 (une esquisse refusée n'est jamais reprise, un logo fini refusé est refait UNE fois, la recherche est
-   * refaite une fois quand il reste moins de 8 esquisses ; plan accepté du 24 novembre 2026).
+   * graphistes : 1 pour un logo fini (refait UNE fois) ; la recherche : `REMPLACEMENTS_MAX` tours de remplacement des
+   * esquisses écartées, jusqu'à 12 correctes (25 novembre 2026).
    */
   reprises: number = REPRISES_MAX): number {
   if (!Number.isFinite(capMicro) || capMicro <= 0) return 0;

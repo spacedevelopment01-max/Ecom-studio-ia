@@ -11,13 +11,15 @@
  *    est enregistré dans les détails de l'image et dans la fiche du logo.
  * 6. Le relecteur le plus fort, effort élevé (un autre modèle que le rédacteur), reçoit le logo sur blanc, l'esquisse, le
  *    nom, le vrai métier et le texte envoyé. Il refuse si le nom est mal écrit (le code le compare aussi), si l'idée de
- *    l'esquisse est perdue, s'il y a une arche, s'il y a une phrase inventée qui ne dit pas le vrai métier, ou si sa note
+ *    l'esquisse est perdue, s'il y a une phrase inventée qui ne dit pas le vrai métier, ou si sa note
  *    est sous 8 sur 10 (décision du chef). Il ne refuse JAMAIS un logo parce qu'il est trop proche de l'esquisse : lors de
  *    l'essai réel du 24 novembre 2026, quatre logos finis propres et fidèles ont tous été refusés pour cette seule raison,
  *    et le propriétaire a fait retirer la règle (« Ouais », à « Je fais retirer cette règle et je relance la finalisation
  *    du R bordeaux ? »). Il ne juge plus l'idée non plus (25 novembre 2026) : c'est le client qui l'a choisie parmi les
- *    esquisses ; il juge seulement l'exécution (le nom, l'idée bien gardée, un dessin net, pas d'arche, pas de phrase
- *    inventée, un fond qui se retire), une note sous 8 doit tenir à un défaut d'exécution écrit, et le code écarte toute
+ *    esquisses ; il juge seulement l'exécution (le nom, l'idée bien gardée, un dessin net, pas de phrase inventée, un
+ *    fond qui se retire). Une arche, un médaillon ou un badge rond sont permis pour un logo (25 novembre 2026, décision du propriétaire relayée
+ *    par le chef d'orchestre : « Retire le critère « arche » pour les logos. Un médaillon ou un badge rond est permis. ») ; la règle
+ *    sans arche reste pour les photos du site. Une note sous 8 doit tenir à un défaut d'exécution écrit, et le code écarte toute
  *    raison qui juge l'idée (« cliché du secteur », « idée banale », « peu originale »…), même si le modèle la donne
  *    (`lectureDeLaNote`). Lors de l'essai réel du 25 novembre, quatre logos finis de Racine ont été refusés à 6,5, 7, 7
  *    et 7, dont la feuille sur le i pour « un cliché courant du secteur végétal » ; le propriétaire, à la question « Ces
@@ -34,13 +36,16 @@
  * la consigne (`ligneDeLaPhrase`), le contrôle gratuit vérifie qu'elle figure mot pour mot dans le texte, et la relecture
  * ne la dit jamais « inventée » : le code la compare, lettre pour lettre, à ce que lit le relecteur ; mal écrite, le logo
  * est refusé. Sans choix du client, rien ne change.
+ * Plusieurs lignes (25 novembre 2026, essai d'Écume) : la phrase choisie peut avoir plusieurs lignes ; la consigne demande
+ * de les écrire exactement, dans cet ordre ; le contrôle gratuit vérifie chacune mot pour mot ; la relecture compare
+ * chacune lettre pour lettre (`comparerLesLignes`) et ne dit jamais « inventée » une ligne choisie.
  * Les couleurs du client ne vont jamais au dessinateur : rien ici ne les lit.
  */
 import sharp from "sharp";
 import { z } from "zod";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { nomExact } from "./esquisses";
-import { phraseExacte, type PhraseVoulue } from "./phrase-sous-le-nom";
+import { comparerLesLignes, lignesDe, phraseExacte, type PhraseVoulue } from "./phrase-sous-le-nom";
 
 // ---------------------------------------------------------------- 5. le texte de finalisation
 
@@ -59,7 +64,9 @@ export const debutDuTexte = (nom: string, metier: string) => `Transforme cette e
  */
 export const ligneDeLaPhrase = (p: PhraseVoulue): string => "aucune" in p
   ? "- le client ne veut aucune phrase sous le nom : demande de n'en écrire aucune, pas même une ligne descriptive."
-  : `- le client a choisi la phrase à écrire en petit sous le nom : demande de l'écrire exactement « ${p.texte} », sans en changer une lettre ni un accent ; elle remplace la ligne descriptive.`;
+  : lignesDe(p).length > 1
+    ? `- le client a choisi les lignes à écrire en petit sous le nom : demande de les écrire exactement, dans cet ordre, chacune sur sa ligne, ${lignesDe(p).map((l) => `« ${l} »`).join(" puis ")}, sans en changer une lettre ni un accent ni en oublier une ; elles remplacent la ligne descriptive.`
+    : `- le client a choisi la phrase à écrire en petit sous le nom : demande de l'écrire exactement « ${p.texte} », sans en changer une lettre ni un accent ; elle remplace la ligne descriptive.`;
 
 /**
  * LA CONSIGNE DU RÉDACTEUR : celle de finaliser.py, MOT POUR MOT (le nom et le métier y sont mis), plus la ligne
@@ -101,9 +108,11 @@ export function controleDuTexte(texte: string, nom: string, metier: string, phra
   const t = plat(texte), fautes: string[] = [];
   if (!t.startsWith(plat(debutDuTexte(nom, metier)))) fautes.push(`il doit commencer exactement par « ${debutDuTexte(nom, metier)} »`);
   if (!t.replace(/[.\s]+$/, "").toLowerCase().endsWith(plat(FIN_DU_TEXTE).toLowerCase())) fautes.push(`il doit finir exactement par « ${FIN_DU_TEXTE} »`);
-  const voulue = phrase && "texte" in phrase ? plat(phrase.texte) : "";
-  if (voulue && !t.includes(voulue)) fautes.push(`il doit demander d'écrire sous le nom, exactement, la phrase choisie par le client : « ${phrase && "texte" in phrase ? phrase.texte : ""} »`);
-  const n = phrasesDe(voulue ? t.split(voulue).join("phrase du client") : t).length;
+  // Chaque ligne choisie, mot pour mot (une seule ligne : la phrase entière, comme avant).
+  const voulues = phrase && "texte" in phrase ? lignesDe(phrase).map(plat).filter(Boolean) : [];
+  const plusieurs = voulues.length > 1;
+  for (const v of voulues) if (!t.includes(v)) fautes.push(plusieurs ? `il doit demander d'écrire sous le nom, exactement, chacune des lignes choisies par le client ; il manque « ${v} »` : `il doit demander d'écrire sous le nom, exactement, la phrase choisie par le client : « ${phrase && "texte" in phrase ? phrase.texte : ""} »`);
+  const n = phrasesDe(voulues.reduce((x, v) => x.split(v).join("phrase du client"), t)).length;
   if (n > 10) fautes.push(`dix phrases au plus (il en a ${n})`);
   if (!EVOLUTION.test(t)) fautes.push("il doit demander de faire évoluer l'idée de l'esquisse vers une identité plus aboutie et plus distinctive");
   return fautes;
@@ -115,7 +124,6 @@ const listeDeLignes = z.preprocess((x) => (typeof x === "string" ? x.split(/\s*[
 export const RelectureDuLogoSchema = z.object({
   nomLu: z.string().max(80).default(""),
   ideeConservee: z.boolean().catch(false),
-  arche: z.boolean().catch(true),
   /** Une phrase écrite dans le logo qui n'est pas le nom ; vide s'il n'y en a pas. */
   phrase: z.string().max(200).default(""),
   /** Cette phrase dit-elle exactement le vrai métier du client ? */
@@ -156,15 +164,14 @@ export const SECOND_REPERE_DU_PROPRIETAIRE = "Le racine du milieu est très bien
 /**
  * LE RELECTEUR DU LOGO FINI juge l'exécution, jamais l'idée (25 novembre 2026) : c'est le client qui a choisi l'idée
  * parmi les esquisses. Il juge le nom exact, l'idée de l'esquisse bien gardée, un dessin net (raccords, proportions,
- * lisibilité en petit), pas d'arche, pas de phrase inventée, un fond qui se retire. Sa note est étalonnée : un logo propre
+ * lisibilité en petit), pas de phrase inventée, un fond qui se retire (une arche, un médaillon ou un badge rond sont permis). Sa note est étalonnée : un logo propre
  * et fidèle à l'esquisse choisie, au dessin net et sans défaut visible, vaut 8 ou plus.
  */
 export const RELECTEUR_DU_LOGO_FINI = `Tu es le relecteur d'un studio de création de marques. On te montre un logo fini (image 1, sur fond blanc) et l'esquisse dont il est tiré (image 2).
-Le client a choisi lui-même cette esquisse, et son idée, parmi celles qu'on lui a proposées. Tu ne juges jamais l'idée : ni son originalité, ni si elle est courante dans son métier, ni si elle est assez marquante. Tu juges seulement l'exécution : le nom écrit exactement, l'idée de l'esquisse bien gardée, un dessin net (raccords propres, proportions justes, lisible en petit), pas d'arche, pas de phrase inventée, un fond blanc uni qui se retire.
+Le client a choisi lui-même cette esquisse, et son idée, parmi celles qu'on lui a proposées. Tu ne juges jamais l'idée : ni son originalité, ni si elle est courante dans son métier, ni si elle est assez marquante. Tu juges seulement l'exécution : le nom écrit exactement, l'idée de l'esquisse bien gardée, un dessin net (raccords propres, proportions justes, lisible en petit), pas de phrase inventée, un fond blanc uni qui se retire.
 Réponds en JSON :
 - nomLu : le nom de la marque tel qu'il est écrit dans le logo, lettre pour lettre, accents compris ;
 - ideeConservee : l'idée centrale de l'esquisse est toujours là, bien gardée ;
-- arche : le dessin est posé dans une arche, une demi-lune ou un cadre arrondi en arc ;
 - phrase : toute phrase écrite dans le logo en plus du nom, recopiée lettre pour lettre, accents compris, sans rien corriger (vide s'il n'y en a pas) ;
 - phraseDitLeMetier : cette phrase dit exactement le vrai métier donné ci-dessous (faux si elle invente autre chose) ;
 - defauts : la liste des défauts d'exécution graves, ceux qu'un client verrait comme une faute, un seul par ligne, en mots simples : une lettre fausse, manquante ou illisible ; un nom qui se lit autrement de façon évidente ; une forme cassée ; un fond qui n'est pas blanc uni ; jamais un reproche sur l'idée ; une liste vide s'il n'y en a pas ;
@@ -177,7 +184,9 @@ export function demandeAuRelecteurDuLogo(o: { nom: string; metier: string; texte
     `Marque : « ${o.nom} ». Son vrai métier : ${o.metier}.`,
     ...(!o.phrase ? [] : "aucune" in o.phrase
       ? ["Le client ne veut aucune phrase sous le nom."]
-      : [`Le client a choisi la phrase à écrire sous le nom : « ${o.phrase.texte} ». Elle n'est pas inventée : vérifie seulement qu'elle est écrite exactement, lettre pour lettre, et recopie dans « phrase » ce que tu lis vraiment.`]),
+      : lignesDe(o.phrase).length > 1
+        ? [`Le client a choisi les lignes à écrire sous le nom, dans cet ordre : ${lignesDe(o.phrase).map((l) => `« ${l} »`).join(" puis ")}. Elles ne sont pas inventées : vérifie seulement que chacune est écrite exactement, lettre pour lettre, et recopie dans « phrase » ce que tu lis vraiment, toutes les lignes dans l'ordre, séparées par « / ».`]
+        : [`Le client a choisi la phrase à écrire sous le nom : « ${o.phrase.texte} ». Elle n'est pas inventée : vérifie seulement qu'elle est écrite exactement, lettre pour lettre, et recopie dans « phrase » ce que tu lis vraiment.`]),
     `Le texte envoyé au dessinateur : « ${o.texte} »`,
   ].join("\n");
 }
@@ -214,7 +223,8 @@ export function lectureDeLaNote(v: Pick<RelectureDuLogo, "note" | "pourquoi" | "
 }
 
 /**
- * Les raisons du refus d'un logo fini : le nom, l'idée perdue, l'arche, la phrase inventée et la note de 8. Vide : gardé.
+ * Les raisons du refus d'un logo fini : le nom, l'idée perdue, la phrase inventée et la note de 8. Vide : gardé. Jamais une
+ * arche, un médaillon ni un badge rond (25 novembre 2026).
  * Jamais « trop proche de l'esquisse » (retiré le 24 novembre 2026 avec le « Ouais » du propriétaire), et jamais l'idée
  * elle-même (25 novembre 2026, « Oui très bien je mettrais 9/10 » devant quatre logos refusés pour elle) : une note sous 8
  * ne fait refuser que pour l'exécution (`lectureDeLaNote`), avec ses défauts dans la raison.
@@ -226,9 +236,19 @@ export function raisonsDuRefus(v: RelectureDuLogo, nom: string, phrase?: PhraseV
   const r: string[] = [];
   if (!nomExact(v.nomLu, nom)) r.push(v.nomLu ? `le nom est mal écrit (« ${v.nomLu} » au lieu de « ${nom} »)` : `le nom « ${nom} » n'y est pas écrit`);
   if (!v.ideeConservee) r.push("l'idée de l'esquisse est perdue");
-  if (v.arche) r.push("le dessin est posé dans une arche");
   const lue = v.phrase.trim();
-  if (phrase && "texte" in phrase) {
+  if (phrase && "texte" in phrase && lignesDe(phrase).length > 1) {
+    // Plusieurs lignes choisies : jamais « inventées » ; chacune comparée lettre pour lettre, à sa place.
+    const voulues = lignesDe(phrase);
+    if (!lue) r.push(`les lignes choisies par le client (« ${voulues.join(" » / « ")} ») n'y sont pas écrites`);
+    else {
+      const c = comparerLesLignes(lue, voulues);
+      for (const m of c.manquantes) r.push(`la ligne choisie par le client « ${m} » n'y est pas écrite`);
+      for (const m of c.malEcrites) r.push(`une ligne choisie par le client est mal écrite (« ${m.lue} » au lieu de « ${m.voulue} »)`);
+      for (const m of c.enTrop) r.push(`le logo porte une ligne que le client n'a pas choisie (« ${m} »)`);
+      if (c.desordre) r.push(`les lignes choisies par le client ne sont pas dans l'ordre (« ${voulues.join(" » puis « ")} »)`);
+    }
+  } else if (phrase && "texte" in phrase) {
     if (!lue) r.push(`la phrase choisie par le client (« ${phrase.texte} ») n'y est pas écrite`);
     else if (!phraseExacte(lue, phrase.texte)) r.push(`la phrase choisie par le client est mal écrite (« ${lue} » au lieu de « ${phrase.texte} »)`);
   } else if (phrase) {
@@ -349,7 +369,7 @@ export async function finaliserUneEsquisse(deps: FinalisationDeps, o: { nom: str
  * Un changement de couleur demandé par le client lui-même, une fois les logos finis (plan accepté du 24 novembre 2026) :
  * une retouche sur sa demande, sur son budget, avec une carte. Le logo fini part dans image[], avec ce texte du Studio
  * et les mots du client cités tels quels ; rien d'autre ne change dans le dessin. Le relecteur vérifie le nom, l'idée,
- * l'arche, la phrase et la note, comme pour tout logo fini.
+ * la phrase et la note, comme pour tout logo fini.
  */
 export const texteDeRetouche = (demande: string) => `Garde ce logo exactement tel qu'il est (son dessin, ses lettres, ses proportions) et change seulement ses couleurs, comme le client le demande : « ${demande.trim().replace(/[«»]/g, "")} ». ${FIN_DU_TEXTE}`;
 export async function retoucherLesCouleurs(deps: FinalisationDeps, o: { nom: string; metier: string; logo: Buffer; demande: string; /** La phrase choisie par le client pour ce logo : la retouche la garde, la relecture la compare. */ phrase?: PhraseVoulue }): Promise<Finalisation> {

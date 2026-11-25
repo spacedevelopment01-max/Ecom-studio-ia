@@ -30,7 +30,7 @@ describe("le script de l'essai de la finalisation (appels simulés)", async () =
   const textesEnvoyes: string[] = [];
   const jointes: Buffer[] = [];
   const relues: Buffer[] = [];
-  let verdicts: Record<string, { note: number; arche?: boolean; nomLu?: string; phrase?: string }> = {};
+  let verdicts: Record<string, { note: number; perdue?: boolean; nomLu?: string; phrase?: string }> = {};
   const paye = (q: { userId: string; jobId: string }, max: number, task: string) =>
     withTrace({ jobId: q.jobId }, async () => { const rid = billing.reserve(q.userId, max, { task, provider: "openai", model: "simule", jobId: q.jobId }); billing.settle(rid, Math.round(max / 2), null, task); });
   const bonTexte = `${debutDuTexte(CLIENT.nom, METIER)} Garde la feuille qui forme le R. Fais évoluer l'idée vers une identité plus aboutie. Palette vert sauge. ${FIN_DU_TEXTE}.`;
@@ -49,7 +49,7 @@ describe("le script de l'essai de la finalisation (appels simulés)", async () =
       appels.push(cle); relues.push(esquisse); envoyes.push(demande); await paye(q, RELECTURE, "quality_control");
       const v = verdicts[cle] ?? { note: 9 };
       const nom = /Marque : « (.+?) »/.exec(demande)![1], phrase = /phrase à écrire sous le nom : « (.+?) »/.exec(demande)?.[1] ?? "";
-      return { nomLu: v.nomLu ?? nom, ideeConservee: true, arche: !!v.arche, phrase: v.phrase ?? phrase, phraseDitLeMetier: false, note: v.note, pourquoi: "simulé" };
+      return { nomLu: v.nomLu ?? nom, ideeConservee: !v.perdue, phrase: v.phrase ?? phrase, phraseDitLeMetier: false, note: v.note, pourquoi: "simulé" };
     },
   });
   /** Tout ce qui part vers l'IA : la consigne du rédacteur, le texte du dessinateur, la demande au relecteur. */
@@ -93,14 +93,14 @@ describe("le script de l'essai de la finalisation (appels simulés)", async () =
 
   it("un logo refusé est repris une fois, à partir du logo refusé, les corrections au début du texte, à la charge du Studio", async () => {
     const { sortie, esquisses } = await preparer();
-    verdicts = { "e4-relecture-1": { note: 6, arche: true } };
+    verdicts = { "e4-relecture-1": { note: 6, perdue: true } };
     const r = await essaiDeFinalisation({ sortie, plafondEuros: "2", esquisses, metier: METIER, client: RACINE, ai: simule as never });
     expect(r.arret).toBeUndefined();
     expect(appels.filter((a) => a.startsWith("e4-"))).toEqual(["e4-texte-1", "e4-logo-1", "e4-relecture-1", "e4-logo-2", "e4-relecture-2"]);
     const raisons = r.logos[0].essais[0].raisons!;
-    expect(raisons).toEqual(["le dessin est posé dans une arche", "il n'est pas au niveau (6/10, il faut 8)"]);
+    expect(raisons).toEqual(["l'idée de l'esquisse est perdue", "il n'est pas au niveau (6/10, il faut 8)"]);
     expect(textesEnvoyes[1]).toBe(texteDeReprise(raisons, bonTexte));
-    expect(textesEnvoyes[1]).toBe(`Corrige uniquement : le dessin est posé dans une arche ; il n'est pas au niveau (6/10, il faut 8) ; garde tout le reste à l'identique.\n\n${bonTexte}`);
+    expect(textesEnvoyes[1]).toBe(`Corrige uniquement : l'idée de l'esquisse est perdue ; il n'est pas au niveau (6/10, il faut 8) ; garde tout le reste à l'identique.\n\n${bonTexte}`);
     // L'image jointe : l'esquisse au premier essai, le logo refusé à la reprise ; le relecteur reçoit toujours l'esquisse.
     const esquisse = fs.readFileSync(esquisses[0]), refuse = fs.readFileSync(path.join(sortie, "esquisse-04-logo-1-brut.png"));
     expect(jointes[0].equals(esquisse)).toBe(true);

@@ -18,7 +18,7 @@ export function basculer(selection: readonly number[], numero: number, max: numb
  * Ce que le client choisit sur la carte pour la phrase sous le nom d'un logo (24 novembre 2026 au soir) : rien (la règle
  * d'avant, SINA décide), la phrase d'une esquisse (`de`, seulement une phrase proposable), aucune, ou la sienne.
  */
-export type PhraseSurLaCarte = { de: number; texte: string } | { aucune: true } | { sienne: string };
+export type PhraseSurLaCarte = { de: number; texte: string; /** Seulement cette ligne de sa phrase (à partir de 1). */ ligne?: number } | { aucune: true } | { sienne: string };
 
 /**
  * Le message de la carte avec les phrases : exactement « Je choisis les esquisses 3, 7 et 11 » quand il ne touche à
@@ -31,6 +31,7 @@ export function messageDuChoixAvecPhrases(numeros: readonly number[], phrases: R
     const p = phrases[logo];
     if (!p || ("sienne" in p && !p.sienne.trim())) return [];
     if ("aucune" in p) return [lang === "en" ? `For logo ${logo}: no line.` : `Pour le logo ${logo} : sans phrase.`];
+    if ("de" in p && p.ligne) return [lang === "en" ? `For logo ${logo}: only line ${p.ligne} of the line from sketch ${p.de}, “${p.texte}”.` : `Pour le logo ${logo} : seulement la ligne ${p.ligne} de la phrase de l'esquisse ${p.de}, « ${p.texte} ».`];
     if ("de" in p) return [lang === "en" ? `For logo ${logo}: the line from sketch ${p.de}, “${p.texte}”.` : `Pour le logo ${logo} : la phrase de l'esquisse ${p.de}, « ${p.texte} ».`];
     return [lang === "en" ? `For logo ${logo}: my line “${p.sienne.trim()}”.` : `Pour le logo ${logo} : ma phrase « ${p.sienne.trim()} ».`];
   });

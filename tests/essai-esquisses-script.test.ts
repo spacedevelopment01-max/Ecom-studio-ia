@@ -2,8 +2,9 @@
  * Le script de l'essai réel des esquisses (scripts/syna-recette/essai-esquisses.mts), avec des appels SIMULÉS : aucun appel
  * payant. Les appels simulés passent par la réservation du Studio, comme les vrais, pour que le garde-fou de l'essai les
  * voie. La recherche est celle du parcours (`uneRecherche`) : découpe, un seul appel de relecture, une esquisse refusée
- * jamais montrée (mais marquée sur la planche-contact complète), moins de 8 gardées : une seule reprise à la charge du
- * Studio ; puis l'étape 2 retrouve les esquisses gardées et leurs phrases.
+ * jamais montrée (mais marquée sur la planche-contact complète), chaque écartée remplacée par le même modèle jusqu'à 12, à
+ * la charge du Studio, dans la borne ; le compte des 12 écrit ; puis l'étape 2 retrouve les esquisses gardées et leurs
+ * phrases.
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -47,7 +48,7 @@ describe("le script de l'essai des esquisses (appels simulés)", async () => {
     relireEsquisses: async (images: Buffer[], nom: string, cle: string) => {
       appels.push(`relecture:${cle}`); envoyes.push(nom); await paye(q, RELECTURE, "quality_control");
       const tour = Number(/-t(\d+)-/.exec(cle)![1]);
-      return { esquisses: images.map((_im, i) => ({ numero: i + 1, entiere: true, morceauDeVoisine: false, nomLu: nom, arche: false, ok: !refuser[tour]?.has(i + 1), pourquoi: refuser[tour]?.has(i + 1) ? "le dessin est confus" : "net", piste: `piste ${tour}-${i + 1}`, phraseSousLeNom: i === 0 ? "Savons solides faits main" : i === 1 ? "Savonn solide" : "aucune", phraseBienEcrite: i === 0 })) };
+      return { esquisses: images.map((_im, i) => ({ numero: i + 1, entiere: true, morceauDeVoisine: false, nomLu: nom, ok: !refuser[tour]?.has(i + 1), pourquoi: refuser[tour]?.has(i + 1) ? "le dessin est confus" : "net", piste: `piste ${tour}-${i + 1}`, phraseSousLeNom: i === 0 ? "Savons solides faits main" : i === 1 ? "Savonn solide" : "aucune", phraseBienEcrite: i === 0 })) };
     },
     rediger: async () => { appels.push("rediger"); throw new Error("interdit"); },
     finaliser: async () => { appels.push("finaliser"); throw new Error("interdit"); },
@@ -56,70 +57,78 @@ describe("le script de l'essai des esquisses (appels simulés)", async () => {
   const sortie = () => fs.mkdtempSync(path.join(os.tmpdir(), "essai-esquisses-"));
   afterEach(() => { appels.length = 0; envoyes.length = 0; refuser = {}; RELECTURE = 60_000; delete graphistesDeps.ai; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; });
 
-  it("le tri du relecteur : une esquisse refusée n'est jamais dans la planche des gardées, elle est marquée dans la complète ; tout est écrit", async () => {
+  it("le tri du relecteur et les remplacements : 12 correctes, le compte des 12 écrit, les écartées marquées dans la complète", async () => {
     const dir = sortie();
+    // Premier tour : 11 cases découpées (la 5 de la planche 2.6 est vide), le relecteur écarte les places 3 et 5 (planche 2.5).
     refuser = { 1: new Set([3, 5]) };
     const r = await essaiDesEsquisses({ sortie: dir, plafondEuros: "2", client: ECUME, ai: simule as never });
     expect(r.arret).toBeUndefined();
-    // Un seul appel de relecture, aucune reprise (9 gardées sur 11 découpées).
-    expect(appels.slice().sort()).toEqual(["metier", "planche:r1-t1-gpt-image-2.5-sunburst", "planche:r1-t1-gpt-image-2.6-flare", "relecture:r1-t1-relecture"]);
-    expect(r.reprise).toBe(false);
-    expect(r.esquisses).toBe(9);
-    expect(r.gardees.map((g) => g.numero)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    // Écartées : les deux refusées par le relecteur, avec leur image, et la case vide de la découpe.
-    expect(r.ecartees).toHaveLength(3);
+    // Un tour de remplacement : une planche de chaque modèle (il en manque aux deux), une relecture.
+    expect(appels.slice().sort()).toEqual(["metier", "planche:r1-t1-gpt-image-2.5-sunburst", "planche:r1-t1-gpt-image-2.6-flare", "planche:r1-t2-gpt-image-2.5-sunburst", "planche:r1-t2-gpt-image-2.6-flare", "relecture:r1-t1-relecture", "relecture:r1-t2-relecture"]);
+    expect(r.reprise).toBe(true);
+    expect(r.esquisses).toBe(12);
+    expect(r.gardees.map((g) => g.numero)).toEqual(Array.from({ length: 12 }, (_v, i) => i + 1));
+    // 6 et 6 : les remplaçantes viennent du même modèle que les écartées.
+    expect(r.gardees.map((g) => `${g.modele}:${g.tour}`)).toEqual([...Array(4).fill("gpt-image-2.5-sunburst:1"), ...Array(2).fill("gpt-image-2.5-sunburst:2"), ...Array(5).fill("gpt-image-2.6-flare:1"), "gpt-image-2.6-flare:2"]);
+    // Le vrai résultat : 9 correctes dès les deux planches, 3 remplacées, avec leur raison.
+    expect(r.compte).toEqual({ voulues: 12, correctesDesLesPlanches: 9, remplacees: 3, toursDeRemplacement: 1, complete: true, lesquelles: [
+      { modele: "gpt-image-2.5-sunburst", case: 3, raison: "le dessin est confus" }, { modele: "gpt-image-2.5-sunburst", case: 5, raison: "le dessin est confus" }, { modele: "gpt-image-2.6-flare", case: 5, raison: "case vide" }] });
+    const j = JSON.parse(fs.readFileSync(path.join(dir, "esquisses.json"), "utf8"));
+    expect(j.compte).toEqual(r.compte);
+    const rapport = fs.readFileSync(path.join(dir, "rapport.txt"), "utf8");
+    expect(rapport).toContain("Vrai résultat : 9 esquisse(s) correcte(s) sur 12 dès les deux planches.");
+    expect(rapport).toContain("Remplacées : 3 (en 1 tour(s) de remplacement, à la charge du Studio).");
+    expect(rapport).toContain("- planche gpt-image-2.6-flare, case 5 : case vide");
+    // Écartées : les deux refusées par le relecteur, avec leur image, et la case vide de la découpe (les deux tours), plus
+    // les correctes en plus du remplacement (jamais montrées).
     expect(r.ecartees.filter((x) => x.raison === "le dessin est confus").every((x) => x.fichier)).toBe(true);
     expect(r.ecartees.some((x) => x.raison === "case vide" && !x.fichier)).toBe(true);
     const f = fs.readdirSync(dir);
-    expect(f).toEqual(expect.arrayContaining(["planche-contact.png", "planche-contact-complete.png", "esquisses.json", "relecture-1-demande.txt", "relecture-1-verdict.json", "depense.json", "rapport.txt", "esquisse-01.png", "esquisse-09.png"]));
-    expect(f).not.toContain("esquisse-10.png");
-    expect(f.filter((x) => x.startsWith("ecartee-"))).toHaveLength(2);
-    // La planche des gardées : 9 cases, aucune marque ; la complète : 11 cases découpées et 1 vide, 3 barrées de rouge.
+    expect(f).toEqual(expect.arrayContaining(["planche-contact.png", "planche-contact-complete.png", "esquisses.json", "relecture-1-demande.txt", "relecture-1-verdict.json", "relecture-2-verdict.json", "depense.json", "rapport.txt", "esquisse-01.png", "esquisse-12.png", "planche-remplacement-1-gpt-image-2.5-sunburst.png"]));
+    expect(f).not.toContain("esquisse-13.png");
+    // La planche des gardées : 12 cases, aucune marque ; la complète : les deux tours (24 cases), les écartées barrées de rouge.
     const contact = fs.readFileSync(path.join(dir, "planche-contact.png")), complete = fs.readFileSync(path.join(dir, "planche-contact-complete.png"));
     expect((await sharp(contact).metadata()).height).toBe(3 * 272 + 16);
-    expect((await sharp(complete).metadata()).height).toBe(2 * 272 + 16);
+    expect((await sharp(complete).metadata()).height).toBe(4 * 272 + 16);
     expect(await rouges(contact)).toBe(0);
-    expect(await rouges(complete)).toBeGreaterThan(3 * 256 * 60);
+    expect(await rouges(complete)).toBeGreaterThan(4 * 256 * 60);
     // Chaque gardée avec son numéro et sa phrase ; la douteuse n'est jamais proposée telle quelle.
-    const j = JSON.parse(fs.readFileSync(path.join(dir, "esquisses.json"), "utf8"));
     expect(j.gardees[0]).toMatchObject({ numero: 1, fichier: "esquisse-01.png", phrase: { texte: "Savons solides faits main", ok: true } });
     expect(j.gardees[1].phrase).toMatchObject({ texte: "Savonn solide", ok: false });
     expect(j.gardees[2].phrase).toBeUndefined();
-    const rapport = fs.readFileSync(path.join(dir, "rapport.txt"), "utf8");
     expect(rapport).toContain(`Phrase du métier : ${METIER_ECUME.metier}`);
     expect(rapport).toContain("Esquisse 01 : esquisse-01.png ; piste « piste 1-1 » ; phrase sous le nom : « Savons solides faits main » (proposable telle quelle)");
-    expect(rapport).toMatch(/Esquisses écartées \(jamais montrées au client\) : 3/);
-    expect(rapport).toContain("Dépense réelle comptée par le Studio : 0,0800 €");
     expect(JSON.parse(fs.readFileSync(path.join(dir, "relecture-1-verdict.json"), "utf8")).esquisses).toHaveLength(11);
-    expect(JSON.parse(fs.readFileSync(path.join(dir, "depense.json"), "utf8"))).toHaveLength(4);
+    // Les remplacements sont à la charge du Studio : leurs trois appels, et eux seuls.
+    const dep = JSON.parse(fs.readFileSync(path.join(dir, "depense.json"), "utf8")) as { studio: boolean }[];
+    expect(dep.filter((d) => d.studio)).toHaveLength(3);
+    expect(dep.filter((d) => !d.studio)).toHaveLength(4);
+    const remplacement = envoyes.filter((t) => t.includes("Évite ces pistes déjà présentées :"));
+    expect(remplacement).toHaveLength(2);
+    expect(remplacement[0]).toContain("piste 1-1");
     // Rien de Racine n'est parti, rien d'autre n'a été appelé.
     for (const t of envoyes) expect(sansRacine(t), t).toBe(true);
     expect(envoyes[0]).toContain(ECUME.metier);
     expect(appels).not.toContain("rediger");
   });
 
-  it("moins de huit esquisses gardées : les deux planches refaites une seule fois, à la charge du Studio, en évitant les pistes déjà présentées", async () => {
+  it("la borne : au plus trois tours de remplacement ; atteinte, rien n'est montré (jamais moins de 12), l'arrêt est dit", async () => {
     const dir = sortie();
-    refuser = { 1: new Set([1, 2, 3, 4, 5, 6]), 2: new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) };
+    // La planche 2.6 est toujours écartée en entier : places 7 à 11 au premier tour, 1 à 5 aux remplacements.
+    refuser = { 1: new Set([7, 8, 9, 10, 11]), 2: new Set([1, 2, 3, 4, 5]), 3: new Set([1, 2, 3, 4, 5]), 4: new Set([1, 2, 3, 4, 5]) };
     const r = await essaiDesEsquisses({ sortie: dir, plafondEuros: "3", client: ECUME, ai: simule as never });
-    expect(r.arret).toBeUndefined();
-    expect(r.reprise).toBe(true);
-    // Une seule reprise : deux planches et une relecture de plus, jamais un troisième tour (même avec 6 gardées).
-    expect(appels.filter((a) => a.startsWith("planche:"))).toHaveLength(4);
-    expect(appels.filter((a) => a.startsWith("relecture:"))).toEqual(["relecture:r1-t1-relecture", "relecture:r1-t2-relecture"]);
-    expect(r.esquisses).toBe(5 + 1);
-    expect(r.gardees.map((g) => [g.numero, g.tour])).toEqual([[1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 2]]);
-    const reprise = envoyes.filter((t) => t.includes("Évite ces pistes déjà présentées :"));
-    expect(reprise).toHaveLength(2);
-    expect(reprise[0]).toContain("piste 1-7");
-    // La reprise est à la charge du Studio : ses trois appels, et eux seuls.
+    // Trois remplacements, du seul modèle à qui il manque des esquisses ; jamais un quatrième.
+    expect(appels.filter((a) => a.startsWith("planche:"))).toEqual(expect.arrayContaining(["planche:r1-t2-gpt-image-2.6-flare", "planche:r1-t3-gpt-image-2.6-flare", "planche:r1-t4-gpt-image-2.6-flare"]));
+    expect(appels.filter((a) => a.startsWith("planche:"))).toHaveLength(5);
+    expect(appels.filter((a) => a.startsWith("relecture:"))).toHaveLength(4);
+    expect(r.arret).toMatch(/recherche incomplète : moins de 12 esquisses correctes après 3 tour\(s\) de remplacement/);
+    expect(r.esquisses).toBe(0);
+    expect(fs.existsSync(path.join(dir, "planche-contact.png"))).toBe(false);
+    expect(fs.existsSync(path.join(dir, "esquisse-01.png"))).toBe(false);
+    expect(fs.existsSync(path.join(dir, "planche-contact-complete.png"))).toBe(true);
+    expect(r.compte).toMatchObject({ correctesDesLesPlanches: 6, remplacees: 6, toursDeRemplacement: 3, complete: false });
     const dep = JSON.parse(fs.readFileSync(path.join(dir, "depense.json"), "utf8")) as { studio: boolean }[];
-    expect(dep.filter((d) => d.studio)).toHaveLength(3);
-    expect(dep.filter((d) => !d.studio)).toHaveLength(4);
-    expect(fs.existsSync(path.join(dir, "planche-reprise-gpt-image-2.6-flare.png"))).toBe(true);
-    expect(fs.existsSync(path.join(dir, "relecture-2-verdict.json"))).toBe(true);
-    expect(r.ecartees.filter((x) => x.tour === 2)).toHaveLength(11);
-    expect(fs.readFileSync(path.join(dir, "rapport.txt"), "utf8")).toContain("(après la reprise unique des deux planches, à la charge du Studio)");
+    expect(dep.filter((d) => d.studio)).toHaveLength(6);
   });
 
   it("le garde-fou : la relecture au-dessus du plafond ne part pas, aucune esquisse non relue n'est montrée, rien n'est relancé", async () => {
@@ -152,11 +161,11 @@ describe("le script de l'essai des esquisses (appels simulés)", async () => {
     const rapport = path.join(dir, "rapport.txt");
     expect(F.metierDeLEssai({ rapport })).toBe(METIER_ECUME.metier);
     const gardees = F.esquissesGardees(rapport)!;
-    expect(gardees.map((g) => g.numero)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(gardees.map((g) => g.numero)).toEqual(Array.from({ length: 12 }, (_v, i) => i + 1));
     const choisies = [path.join(dir, "esquisse-01.png"), path.join(dir, "esquisse-04.png")];
     for (const c of choisies) expect(fs.existsSync(c)).toBe(true);
     expect(F.nonGardees(choisies, gardees)).toEqual([]);
-    expect(F.nonGardees([path.join(dir, "esquisse-10.png")], gardees)).toEqual(["esquisse-10.png"]);
+    expect(F.nonGardees([path.join(dir, "esquisse-13.png")], gardees)).toEqual(["esquisse-13.png"]);
     expect(F.nonGardees([path.join(dir, fs.readdirSync(dir).find((x) => x.startsWith("ecartee-"))!)], gardees)).toHaveLength(1);
     // La phrase relevée sous l'esquisse 1, choisie pour le logo 4 : reprise mot pour mot ; celle de la 2 (douteuse) refusée.
     expect(await F.phrasesDeLEssai([1, 4], { PHRASE_4: "esquisse 1" }, gardees)).toEqual({ 4: { texte: "Savons solides faits main" } });
@@ -180,17 +189,19 @@ describe("le script de l'essai des esquisses (appels simulés)", async () => {
     expect(sansRacine(src)).toBe(true);
   });
 
-  it("le devis, sans appel : le métier, les deux planches, la relecture, puis la reprise unique à la charge du Studio", async () => {
+  it("le devis, sans appel : le métier, les deux planches, la relecture, puis jusqu'à trois tours de remplacement à la charge du Studio", async () => {
     const d = await devisDesEsquisses();
     const { devisDeLaRecherche } = await import("@/lib/syna-agent/logo-graphistes");
     const s = devisDeLaRecherche();
     expect(d.devisDuStudio).toEqual({ maxMicro: s.maxMicro, studioMaxMicro: s.studioMaxMicro, probableMicro: s.probableMicro });
-    expect(d.lignes).toHaveLength(8);
-    expect(d.lignes.filter((l) => l.charge === "Studio")).toHaveLength(4);
+    expect(d.lignes).toHaveLength(4 + 1 + 3 * 3);
+    expect(d.lignes.filter((l) => l.charge === "Studio")).toHaveLength(1 + 3 * 3);
     expect(Math.abs(d.probableMicro - s.probableMicro)).toBeLessThanOrEqual(2);
-    // Le plafond du client de la recherche, plus la réécriture du métier et la reprise, toutes deux à la charge du Studio.
+    // Le plafond du client de la recherche, plus la réécriture du métier et les trois tours de remplacement, à la charge du Studio.
     expect(d.plafondMinimalMicro).toBe(Math.ceil(d.lignes.reduce((n, l) => n + l.maxMicro, 0)));
-    expect(Math.abs(d.plafondMinimalMicro - (s.maxMicro + s.repriseMicro + d.lignes[1].maxMicro))).toBeLessThanOrEqual(3);
+    expect(Math.abs(d.plafondMinimalMicro - (s.maxMicro + 3 * s.repriseMicro + d.lignes[1].maxMicro))).toBeLessThanOrEqual(5);
+    // La borne du Studio de la tâche couvre exactement ces reprises.
+    expect(Math.abs(s.studioMaxMicro - (3 * s.repriseMicro + d.lignes[1].maxMicro))).toBeLessThanOrEqual(5);
     expect(d.probableAvecReprisesMicro).toBeGreaterThan(d.probableMicro);
   });
 

@@ -105,20 +105,22 @@ describe("le devis et les deux plafonds", async () => {
     expect(borneDuStudio(1000, true, 400, 1)).toBe(1400);
     expect(borneDuStudio(0, false, 400, 1)).toBe(0);
   });
-  it("recherche, finalisations, accord unique : « au plus » au-dessus du probable ; la borne du Studio vaut UNE reprise", async () => {
+  it("recherche, finalisations, accord unique : « au plus » au-dessus du probable ; la borne du Studio : une reprise par finalisation, trois tours de remplacement pour la recherche", async () => {
     const r = G.devisDeLaRecherche(), f = G.devisDesFinalisations(3), tout = G.devisDuLogo(3);
     for (const d of [r, f, tout]) expect(d.maxMicro).toBeGreaterThanOrEqual(d.probableMicro);
     // Les finalisations : une reprise (le texte réécrit OU le logo refait, jamais plus qu'un essai entier).
     expect(f.studioMaxMicro).toBe(Math.ceil(Math.min(f.repriseMicro, f.maxMicro)));
-    // La recherche (25 novembre 2026) : ses DEUX reprises à la charge du Studio dans la même recherche, les planches
-    // refaites avec leur relecture ET la réécriture du métier ; la borne les couvre ensemble.
+    // La recherche (25 novembre 2026) : ses reprises à la charge du Studio dans la même recherche, les trois tours de
+    // remplacement (deux planches et leur relecture chacun, « jamais au grand jamais on propose une planche de logo sans
+    // les 12 logos fait correctement ») ET la réécriture du métier ; la borne les couvre ensemble.
+    const { REMPLACEMENTS_MAX } = await import("@/lib/syna-agent/esquisses");
     const metier = G.devisDeLaRecherche().maxMicro - G.devisDeLaRecherche({ metier: false }).maxMicro;
     expect(metier).toBeGreaterThan(0);
-    expect(r.studioMaxMicro).toBeGreaterThanOrEqual(r.repriseMicro + metier);
-    expect(r.studioMaxMicro - Math.ceil(Math.min(r.repriseMicro, r.maxMicro))).toBeLessThanOrEqual(Math.ceil(metier) + 1);
-    // Sans métier à écrire (« d'autres pistes »), seule la reprise des planches.
+    expect(r.studioMaxMicro).toBeGreaterThanOrEqual(REMPLACEMENTS_MAX * r.repriseMicro + metier);
+    expect(r.studioMaxMicro - REMPLACEMENTS_MAX * Math.ceil(Math.min(r.repriseMicro, r.maxMicro))).toBeLessThanOrEqual(Math.ceil(metier) + 1);
+    // Sans métier à écrire (« d'autres pistes »), seuls les remplacements.
     const p = G.devisDeLaRecherche({ metier: false });
-    expect(p.studioMaxMicro).toBe(Math.ceil(Math.min(p.repriseMicro, p.maxMicro)));
+    expect(p.studioMaxMicro).toBe(Math.ceil(REMPLACEMENTS_MAX * Math.min(p.repriseMicro, p.maxMicro)));
     // L'accord unique additionne les deux bornes.
     expect(tout.studioMaxMicro).toBe(r.studioMaxMicro + f.studioMaxMicro);
     expect(tout.maxMicro).toBe(r.maxMicro + f.maxMicro);
