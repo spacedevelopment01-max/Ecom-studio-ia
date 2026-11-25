@@ -32,13 +32,13 @@ export function BoutonCopier({ texte }: { texte: string }) {
  * du logo en PNG haute définition, chaque couleur avec son code et « Copier », les deux polices (nom à copier, fichier),
  * chaque image en haute définition, téléchargeable seule.
  */
-export function PlancheEnVrai({ v }: { v: VueEnVrai }) {
+export function PlancheEnVrai({ v, charte }: { v: VueEnVrai; charte?: { book: string; pages: number } | null }) {
   const t = useT();
   const faces = v.polices.filter((f) => /^[\w .-]+$/.test(f.famille) && /^[\w.-]+$/.test(f.fichier));
   const css = faces.map((f) => `@font-face{font-family:"SINA ${f.famille}";src:url(${f.url}) format("truetype");font-display:swap}`).join("");
   return <section className="space-y-6" data-brand-envrai>
     <style>{css}</style>
-    <SectionTitle title={t("Ta planche de marque, en vrai", "Your brand board, full resolution")} action={<a href={v.zip} className="inline-flex h-auto min-h-9 items-center gap-1.5 whitespace-normal rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper" data-brand-zip><Download className="size-4" />{t("Tout télécharger", "Download everything")}</a>} />
+    <SectionTitle title={t("Ta planche de marque, en vrai", "Your brand board, full resolution")} action={<div className="flex flex-wrap gap-2"><a href={v.zip} className="inline-flex h-auto min-h-9 items-center gap-1.5 whitespace-normal rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper" data-brand-zip><Download className="size-4" />{t("Tout télécharger", "Download everything")}</a>{charte && <a href={charte.book} target="_blank" rel="noreferrer" className="inline-flex h-auto min-h-9 items-center gap-1.5 whitespace-normal rounded-full border border-line px-4 py-2 text-sm font-medium" data-brand-book><Download className="size-4" />{t(`Ta charte (PDF, ${charte.pages} pages)`, `Your guidelines (PDF, ${charte.pages} pages)`)}</a>}</div>} />
     {v.planche && <figure className="overflow-hidden rounded-2xl border border-line bg-card" data-brand-envrai-planche>
       <a href={v.planche.url} target="_blank" rel="noreferrer" className="block cursor-zoom-in"><img src={v.planche.url} width={v.planche.w} height={v.planche.h} alt={t("Ta planche de marque en vrai", "Your full-resolution brand board")} className="block h-auto w-full" loading="lazy" /></a>
       <figcaption className="flex flex-wrap gap-3 border-t border-line px-3 py-2 text-xs"><a href={v.planche.url} target="_blank" rel="noreferrer" className="underline">{t("Ouvrir en grand", "Open full size")}</a><a href={v.planche.download} className="inline-flex items-center gap-1 underline"><Download className="size-3.5" />{t("Télécharger", "Download")}</a></figcaption>
@@ -173,7 +173,7 @@ export default function TabMarque() {
         </div>
       </section>
 
-      {s.enVrai ? <PlancheEnVrai v={s.enVrai} /> : planches}
+      {s.enVrai ? <PlancheEnVrai v={s.enVrai} charte={s.kit?.book ? { book: s.kit.book, pages: s.kit.pages } : null} /> : planches}
 
       {!!s.issues.length && <Card className="border-amber-400 p-4 text-sm" data-brand-issues><p className="font-semibold">{t("Ce que SINA n'a pas pu réussir", "What SINA could not get right")}</p><ul className="mt-1 list-disc pl-5">{s.issues.map((l, i) => <li key={i}>{l}</li>)}</ul></Card>}
 
@@ -212,7 +212,7 @@ export default function TabMarque() {
         </div>
       </section>}
 
-      {s.kit && <section>
+      {!s.enVrai && s.kit && <section>
         <SectionTitle title={t("Ta charte et tes fichiers", "Your guidelines and files")} action={s.kit.book ? <a href={s.kit.book} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-paper" data-brand-book><Download className="size-4" />{t(`Ta charte (PDF, ${s.kit.pages} pages)`, `Your guidelines (PDF, ${s.kit.pages} pages)`)}</a> : undefined} />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" data-brand-kit>
           {s.kit.items.map((x) => <figure key={x.key} className="overflow-hidden rounded-2xl border border-line">

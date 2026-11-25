@@ -16,7 +16,7 @@ import TabMarque from "@/components/studio/tab-marque";
 import { runWithLang } from "@/lib/i18n-server";
 import { LIBELLES_DES_ELEMENTS, libelleDeLElement, sansIdentifiantsDeCase } from "@/lib/syna-agent/planche-en-vrai-libelles";
 import { NOMS_DES_ELEMENTS, phraseDeLImageGardeeEnApercu, type EtatPlancheEnVrai } from "@/lib/syna-agent/planche-en-vrai";
-import { avecLesRoles, vueEnVrai, type BrandSheet } from "@/lib/syna-agent/brand-sheet";
+import { avecLesFichiersDuLogo, avecLesRoles, vueEnVrai, type BrandSheet } from "@/lib/syna-agent/brand-sheet";
 import { brandFinishContext, type Journey } from "@/lib/syna-agent/journey";
 
 const etatDeLEcran: { sheet: BrandSheet | null } = { sheet: null };
@@ -43,12 +43,19 @@ const etat = (): EtatPlancheEnVrai => ({
   symboleComplet: false, publications: [], issues: [ANCIENNE], notes: ["produit-1, essai 2 refusé : interne"],
 });
 const COULEURS: BrandSheet["colors"] = [{ role: "light", hex: "#F7F3EC" }, { role: "dark", hex: "#25583B" }, { role: "primary", hex: "#640B29" }, { role: "secondary", hex: "#EDDECB" }, { role: "accent", hex: "#A1B89B" }];
+const URL = (id: string, d?: boolean) => `/api/files/${id}${d ? "?download=1" : ""}`;
+const KIT: BrandSheet["kit"] = {
+  items: [["logo", "Logo principal", "l1"], ["symbole", "Symbole seul", "k-sym"], ["favicon-32", "Favicon 32 px", "k-f32"], ["favicon-512", "Icône 512 px", "k-f512"], ["avatar", "Avatar des réseaux", "k-av"]]
+    .map(([key, label, id]) => ({ key, label, href: URL(id), downloadHref: null, dark: false })),
+  board: null, book: "/api/files/charte.pdf", pages: 11,
+};
+const FICHIERS = { symbole: "sym", favicons: { f32: "f32", f512: "f512", avatar: "av" }, svg: null };
 const feuille = (enVrai: boolean): BrandSheet => ({
   stage: "finished", name: "Racine", slogan: null, promise: null, descriptor: null, logo: "/api/files/logo", colors: COULEURS,
   fonts: { heading: { family: "Playfair Display", file: "PlayfairDisplay-700.ttf", weight: 700 }, body: { family: "Montserrat", file: "Montserrat-400.ttf", weight: 400 } },
-  tone: [], houseWords: [], bannedWords: [], lines: [], toProve: [], images: { hero: null, object: null, signs: null, posts: [] }, kit: null,
+  tone: [], houseWords: [], bannedWords: [], lines: [], toProve: [], images: { hero: null, object: null, signs: null, posts: [] }, kit: KIT,
   issues: [sansIdentifiantsDeCase(ANCIENNE)], esquisses: null, planches: [],
-  enVrai: enVrai ? avecLesRoles(vueEnVrai(etat(), "p1", (id, d) => `/api/files/${id}${d ? "?download=1" : ""}`), COULEURS) : null,
+  enVrai: enVrai ? avecLesFichiersDuLogo(avecLesRoles(vueEnVrai(etat(), "p1", URL), COULEURS), FICHIERS, URL) : null,
 });
 
 describe("l'onglet Marque avec la planche en vrai", () => {
@@ -127,5 +134,36 @@ describe("l'onglet Marque avec la planche en vrai", () => {
     expect(bloc).toMatch(/width="1920" height="720"/);
     expect(bloc).toMatch(/width="1080" height="1920"/);
     expect(bloc).toContain("bg-[#ECECEA]");
+  });
+
+  it("avec la planche en vrai, une seule section des logos : le symbole, le favicon 32, l'icône 512 et l'avatar y sont, chacun à télécharger seul ; la charte à côté de « Tout télécharger »", () => {
+    etatDeLEcran.sheet = runWithLang({ ui: "fr", content: "fr" }, () => feuille(true));
+    const html = rendu(h(TabMarque));
+    expect(html).not.toContain("Ta charte et tes fichiers");
+    expect(html).not.toContain("data-brand-kit");
+    expect(html.match(/Tes logos/g)).toHaveLength(1);
+    const logos = html.slice(html.indexOf("data-brand-envrai-logos"), html.indexOf("data-brand-envrai-couleurs"));
+    for (const [label, id] of [["Symbole seul", "sym"], ["Favicon 32 px", "f32"], ["Icône 512 px", "f512"], ["Avatar des réseaux", "av"]]) {
+      expect(logos.match(new RegExp(label, "g"))).toHaveLength(3); // le texte de l'image, la légende et le libellé du téléchargement
+      expect(logos).toContain(`src="/api/files/${id}"`);
+      expect(logos).toContain(`href="/api/files/${id}?download=1"`);
+    }
+    // Le bouton de la charte est dans l'en-tête de la planche, à côté de « Tout télécharger », une seule fois.
+    const tete = html.slice(html.indexOf("data-brand-zip"), html.indexOf("data-brand-envrai-planche"));
+    expect(tete).toContain("data-brand-book");
+    expect(tete).toContain("Ta charte (PDF, 11 pages)");
+    expect(html.match(/data-brand-book/g)).toHaveLength(1);
+    // Jamais un fichier en double : un symbole déjà parmi les versions n'est pas ajouté une seconde fois.
+    const v = runWithLang({ ui: "fr", content: "fr" }, () => avecLesFichiersDuLogo(vueEnVrai(etat(), "p1", URL), { symbole: "l2", favicons: null }, URL))!;
+    expect(v.logos.map((l) => l.url)).toEqual(["/api/files/l1", "/api/files/l2"]);
+    expect(avecLesFichiersDuLogo(null, FICHIERS, URL)).toBeNull();
+  });
+
+  it("sans planche en vrai, « Ta charte et tes fichiers » reste comme avant, avec son bouton", () => {
+    etatDeLEcran.sheet = runWithLang({ ui: "fr", content: "fr" }, () => feuille(false));
+    const html = rendu(h(TabMarque));
+    expect(html).toContain("Ta charte et tes fichiers");
+    expect(html).toContain("data-brand-kit");
+    expect(html.match(/data-brand-book/g)).toHaveLength(1);
   });
 });

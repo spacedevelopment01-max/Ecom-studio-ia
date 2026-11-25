@@ -10,10 +10,11 @@ import path from "node:path";
 import type { PlancheEnVraiAi } from "../../src/lib/syna-agent/planche-en-vrai-tache";
 import type { EtatPlancheEnVrai, Inventaire, Laquelle, NomElement, RelectureDuGroupe } from "../../src/lib/syna-agent/planche-en-vrai";
 import type { StatutDuDomaine } from "../../src/lib/syna-agent/planche-de-marque";
-import { RACINE, clientDeLEssai, ficheDuClient, type ClientDeLEssai, type LigneDeDepense } from "./essai-planches-outil";
-import { euros } from "./essai-esquisses-outil";
+import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
+import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import type { LigneDeDepense } from "./essai-planches-outil";
 
-export { RACINE, clientDeLEssai, euros };
+export { clientDeLEssai, euros };
 export type { ClientDeLEssai };
 
 // ---------------------------------------------------------------- les entrées
@@ -21,23 +22,70 @@ export type { ClientDeLEssai };
 /** Ce que la planche choisie porte déjà (son bloc 10) et ce que le code en garde : le domaine, l'année, la disposition, la phrase. */
 export type DonneesDeLaPlanche = { domaine: string | null; statut: StatutDuDomaine; annee: number; disposition: Laquelle; phrase: string };
 
+/** Ce que l'essai des planches a écrit pour la planche choisie (planche-X-resultat.json). */
+export type ResultatDeLaPlanche = { nom: string; domaine: string | null; statut: StatutDuDomaine; annee: number; disposition?: Laquelle; logo?: { fichier: string; sha256: string } };
+
 /**
- * Les données de la planche choisie : DOMAINE, DOMAINE_STATUT (« disponible », « a_verifier » ou « adresse_a_choisir »),
- * ANNEE, DISPOSITION (« standard » ou « animaux »), PHRASE (la phrase choisie sous le nom, vide sans elle). Pour Racine par
- * défaut, celles de sa planche A (essai du 25 novembre 2026 : « racine-officiel.fr — disponible », « © 2026 Racine »,
- * disposition standard, logo sans phrase). Pour un autre client, le domaine et l'année sont exigés : rien n'est deviné.
+ * Le résultat de la planche choisie, écrit par l'essai des planches (RESULTAT_PLANCHE, planche-X-resultat.json) : le
+ * domaine et son statut tels que la vérification du Studio les a trouvés avant le dessin, l'année du « © », la
+ * disposition et le logo joint. Une planche qui n'a pas été gardée n'est jamais refaite.
+ */
+export function resultatDeLaPlanche(fichier: string): ResultatDeLaPlanche {
+  if (!fs.existsSync(fichier)) throw new Error(`Résultat de la planche choisie introuvable (RESULTAT_PLANCHE) : ${fichier}. Rien n'est lancé.`);
+  let r: { nom?: string; disposition?: Laquelle; logo?: { fichier: string; sha256: string }; planche?: { image?: unknown; domaine?: string | null; statut?: StatutDuDomaine; annee?: number } | null };
+  try { r = JSON.parse(fs.readFileSync(fichier, "utf8")); } catch { throw new Error(`Résultat de la planche choisie illisible (RESULTAT_PLANCHE) : ${fichier}. Rien n'est lancé.`); }
+  if (!r?.planche) throw new Error(`${fichier} n'est pas le résultat d'une planche de l'essai des planches : rien n'est lancé.`);
+  if (!r.planche.image) throw new Error(`La planche de ${fichier} n'a pas été gardée par le relecteur : elle n'est jamais montrée, ni refaite en vrai. Rien n'est lancé.`);
+  if (!r.planche.statut || !r.planche.annee) throw new Error(`${fichier} ne dit pas le domaine et l'année de la planche : rien n'est lancé.`);
+  return { nom: String(r.nom ?? ""), domaine: r.planche.domaine ?? null, statut: r.planche.statut, annee: r.planche.annee, ...(r.disposition ? { disposition: r.disposition } : {}), ...(r.logo ? { logo: r.logo } : {}) };
+}
+
+/**
+ * Les données de la planche choisie, sans rien deviner et sans aucune valeur imposée : d'abord le résultat de la planche
+ * choisie (RESULTAT_PLANCHE), sinon les variables DOMAINE, DOMAINE_STATUT (« disponible », « a_verifier » ou
+ * « adresse_a_choisir »), ANNEE et DISPOSITION (« standard » ou « animaux », standard sans elle) ; PHRASE : la phrase que
+ * porte le logo choisi (vide sans elle). Une variable donnée qui contredit le résultat fait tout refuser. Ce qui manque est
+ * dit (voir `donneesVerifiees` pour un domaine vérifié par le Studio quand rien n'est donné).
  */
 export function donneesDeLaPlanche(client: ClientDeLEssai, env: Record<string, string | undefined> = process.env): DonneesDeLaPlanche {
-  const racine = client.nom === RACINE.nom && client.metier === RACINE.metier;
-  const statut = (env.DOMAINE_STATUT?.trim() || (racine || env.DOMAINE ? "disponible" : "")) as StatutDuDomaine;
-  if (!["disponible", "a_verifier", "adresse_a_choisir"].includes(statut)) throw new Error("Statut du domaine manquant ou faux (DOMAINE_STATUT : « disponible », « a_verifier » ou « adresse_a_choisir ») : rien n'est lancé.");
-  const domaine = env.DOMAINE?.trim() || (racine ? "racine-officiel.fr" : null);
-  if (!domaine && statut !== "adresse_a_choisir") throw new Error("Domaine de la planche manquant (DOMAINE, tel qu'il est écrit sur la planche choisie) : rien n'est lancé.");
-  const annee = Number(env.ANNEE?.trim() || (racine ? "2026" : ""));
-  if (!Number.isInteger(annee) || annee < 2000 || annee > 2200) throw new Error("Année de la planche manquante ou fausse (ANNEE, celle du « © » de la planche choisie) : rien n'est lancé.");
-  const disposition = (env.DISPOSITION?.trim() || "standard") as Laquelle;
+  const lu = env.RESULTAT_PLANCHE?.trim() ? resultatDeLaPlanche(env.RESULTAT_PLANCHE.trim()) : null;
+  if (lu && lu.nom && lu.nom !== client.nom) throw new Error(`La planche choisie est celle de « ${lu.nom} », pas de « ${client.nom} » : rien n'est lancé.`);
+  const donne = (k: string) => env[k]?.trim() || "";
+  const contredit = (k: string, v: string, attendu: string | null | undefined) => { if (lu && v && attendu != null && v !== String(attendu)) throw new Error(`${k} (« ${v} ») contredit la planche choisie (« ${attendu} ») : rien n'est lancé.`); };
+  contredit("DOMAINE", donne("DOMAINE"), lu?.domaine); contredit("DOMAINE_STATUT", donne("DOMAINE_STATUT"), lu?.statut); contredit("ANNEE", donne("ANNEE"), lu ? String(lu.annee) : null); contredit("DISPOSITION", donne("DISPOSITION"), lu?.disposition);
+  const statut = (donne("DOMAINE_STATUT") || lu?.statut || (donne("DOMAINE") ? "disponible" : "")) as StatutDuDomaine;
+  if (!["disponible", "a_verifier", "adresse_a_choisir"].includes(statut)) throw new Error("Statut du domaine manquant ou faux (RESULTAT_PLANCHE, ou DOMAINE_STATUT : « disponible », « a_verifier » ou « adresse_a_choisir ») : rien n'est lancé.");
+  const domaine = donne("DOMAINE") || lu?.domaine || null;
+  if (!domaine && statut !== "adresse_a_choisir") throw new Error("Domaine de la planche manquant (RESULTAT_PLANCHE, ou DOMAINE tel qu'il est écrit sur la planche choisie) : rien n'est lancé.");
+  const annee = Number(donne("ANNEE") || (lu ? String(lu.annee) : ""));
+  if (!Number.isInteger(annee) || annee < 2000 || annee > 2200) throw new Error("Année de la planche manquante ou fausse (RESULTAT_PLANCHE, ou ANNEE, celle du « © » de la planche choisie) : rien n'est lancé.");
+  const disposition = (donne("DISPOSITION") || lu?.disposition || "standard") as Laquelle;
   if (disposition !== "standard" && disposition !== "animaux") throw new Error("Disposition fausse (DISPOSITION : « standard » ou « animaux ») : rien n'est lancé.");
-  return { domaine: statut === "adresse_a_choisir" ? null : domaine, statut, annee, disposition, phrase: env.PHRASE?.trim() ?? "" };
+  return { domaine: statut === "adresse_a_choisir" ? null : domaine, statut, annee, disposition, phrase: env.PHRASE?.normalize("NFC").trim() ?? "" };
+}
+
+/**
+ * Les données de la planche choisie, avec le domaine vérifié par le Studio quand ni le résultat de la planche ni le
+ * domaine ne sont donnés : la vérification gratuite du Studio (`findDomains`, brand-domains.ts, annuaires RDAP), avec le
+ * nom et le descripteur du client, lue comme la planche la lit (`domaineDeLaPlanche`), et l'année du Studio
+ * (`anneeEnCours`) sans ANNEE. `trouver` : remplaçable par les essais (aucun réseau).
+ */
+export async function donneesVerifiees(client: ClientDeLEssai, env: Record<string, string | undefined> = process.env, trouver?: (nom: string, descripteur?: string | null) => Promise<NameDomains>): Promise<{ donnees: DonneesDeLaPlanche; verifie?: NameDomains }> {
+  if (env.RESULTAT_PLANCHE?.trim() || env.DOMAINE?.trim() || env.DOMAINE_STATUT?.trim()) return { donnees: donneesDeLaPlanche(client, env) };
+  const { findDomains } = await import("../../src/lib/syna-agent/brand-domains");
+  const { domaineDeLaPlanche } = await import("../../src/lib/syna-agent/planche-de-marque");
+  const { anneeEnCours } = await import("../../src/lib/syna-agent/planche-de-marque-tache");
+  const verifie = await (trouver ?? findDomains)(client.nom, client.descripteur ?? null);
+  const d = domaineDeLaPlanche(verifie, client.nom);
+  return { donnees: donneesDeLaPlanche(client, { ...env, DOMAINE: d.domaine ?? "", DOMAINE_STATUT: d.statut, ANNEE: env.ANNEE?.trim() || String(anneeEnCours()) }), verifie };
+}
+
+/** Le logo donné est-il celui que la planche choisie a reçu ? (empreinte écrite par l'essai des planches). */
+export function logoDeLaPlancheVerifie(env: Record<string, string | undefined>, logo: Buffer): void {
+  const f = env.RESULTAT_PLANCHE?.trim();
+  if (!f) return;
+  const lu = resultatDeLaPlanche(f);
+  if (lu.logo && crypto.createHash("sha256").update(logo).digest("hex") !== lu.logo.sha256) throw new Error(`Le logo donné n'est pas celui de la planche choisie (${lu.logo.fichier}) : rien n'est lancé.`);
 }
 
 // ---------------------------------------------------------------- le devis, sans aucun appel
@@ -292,7 +340,7 @@ export async function essaiDeLaPlancheEnVrai(o: { sortie: string; plafondEuros: 
 
   // 1. Le client inventé, son projet (sans aucune photo de produit), la planche choisie et le logo fini.
   const u = await account();
-  const projectId = project(u, client.kind === "produits" ? "products" : "services") as string;
+  const projectId = project(u, typeDuProjet(client)) as string;
   run("UPDATE projects SET name=? WHERE id=?", client.nom, projectId);
   const jobId = `essai-planche-en-vrai-${id()}`;
   const qui: Qui = { userId: u.id, projectId, jobId };
@@ -470,6 +518,8 @@ export async function essaiDeLaPlancheEnVrai(o: { sortie: string; plafondEuros: 
     // Le parcours du projet, comme la vraie tâche : l'onglet Marque du studio privé montre la planche en vrai.
     res.conversationId = (await enregistrerLeParcours({ userId: u.id, projectId, nom: client.nom, etat, donnees })).conversationId;
     res.projectId = projectId;
+    // Ce que l'écran de la planche en vrai relit (ecran-planche-en-vrai.mts) : le client, les données de la planche, le projet.
+    ecrireFichier("essai.json", json({ client, donnees, projectId, conversationId: res.conversationId }));
     const parLEssai = arretParLEssai(jobId);
     if (parLEssai) res.arret = raisonDeLArret(parLEssai);
     return ecrire();

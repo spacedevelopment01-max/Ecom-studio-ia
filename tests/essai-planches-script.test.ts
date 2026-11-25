@@ -21,11 +21,14 @@ describe("le script de l'essai des planches de marque (appels simulés)", async 
   const { withTrace } = await import("@/lib/ai/trace");
   const T = await import("@/lib/syna-agent/planche-de-marque-tache");
   const P = await import("@/lib/syna-agent/planche-de-marque");
-  const { RACINE, clientDeLEssai, devisDeLEssai, essaiDesPlanches } = await import("../scripts/syna-recette/essai-planches-outil");
+  const { clientDeLEssai, devisDeLEssai, essaiDesPlanches } = await import("../scripts/syna-recette/essai-planches-outil");
+  const { RACINE, ECUME, sansRacine } = await import("./clients-d-essai");
   const { all } = await import("@/lib/db");
 
   const VALEURS = 30_000, IMAGE = 200_000, RELECTURE = 60_000;
   const appels: string[] = [];
+  /** Tout ce qui part vers l'IA : la demande des valeurs, le texte de la planche, la demande au relecteur. */
+  const envoyes: string[] = [];
   const textes: string[] = [];
   const dispositions: string[] = [];
   let verdicts: Record<string, Partial<{ note: number; nomLu: string; motMaquette: boolean }>> = {};
@@ -33,16 +36,18 @@ describe("le script de l'essai des planches de marque (appels simulés)", async 
   const paye = (q: { userId: string; jobId: string }, max: number, task: string) =>
     withTrace({ jobId: q.jobId }, async () => { const rid = billing.reserve(q.userId, max, { task, provider: "openai", model: "simule", jobId: q.jobId }); billing.settle(rid, Math.round(max / 2), null, task); });
   const simule = (q: { userId: string; projectId: string; jobId: string }) => ({
-    valeurs: async (demande: string, tour: number) => { appels.push(`valeurs-${tour}`); await paye(q, VALEURS, "strategy"); return valeursSimulees(/Le nom de la marque : « (.+?) »/.exec(demande)![1]); },
+    valeurs: async (demande: string, tour: number) => { appels.push(`valeurs-${tour}`); envoyes.push(demande); await paye(q, VALEURS, "strategy"); return valeursSimulees(/Le nom de la marque : « (.+?) »/.exec(demande)![1]); },
     dessiner: async (_l: { assetId: string; data: Buffer }, d: { nom: string; data: Buffer }, texte: string, cle: string) => {
-      appels.push(`image:${cle}`); textes.push(texte); dispositions.push(sha(d.data)); await paye(q, IMAGE, "image_generation");
+      appels.push(`image:${cle}`); textes.push(texte); envoyes.push(texte); dispositions.push(sha(d.data)); await paye(q, IMAGE, "image_generation");
       return { png: await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#F4EFE6" } }).png().toBuffer(), recu: null };
     },
     relire: async (bandes: Buffer[], _l: Buffer, _d: Buffer, demande: string, cle: string) => {
-      appels.push(`relecture:${cle}`); await paye(q, RELECTURE, "quality_control");
+      appels.push(`relecture:${cle}`); envoyes.push(demande); await paye(q, RELECTURE, "quality_control");
       expect(bandes).toHaveLength(4);
       const nom = /Marque : « (.+?) »/.exec(demande)![1];
-      return { nomLu: nom, logoFidele: true, copyrightLu: `© 2026 ${nom}`, domaineLu: `${nom.toLowerCase()}.fr — disponible`, fautes: [], promesses: [], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [], note: 9, pourquoi: "simulé", ...verdicts[cle] };
+      // Ce que le relecteur lit sur la planche : ce que le texte a demandé d'écrire exactement.
+      const ecrit = /écris exactement « (.+?) » et « (.+?) »/.exec(demande);
+      return { nomLu: nom, logoFidele: true, copyrightLu: ecrit?.[2] ?? `© 2026 ${nom}`, domaineLu: ecrit?.[1] ?? `${nom.toLowerCase()}.fr — disponible`, fautes: [], promesses: [], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [], note: 9, pourquoi: "simulé", ...verdicts[cle] };
     },
   });
   T.plancheDeps.domaines = async (nom: string) => ({ taken: [], free: [`${nom.toLowerCase()}.fr`], unknown: [], at: 1 });
@@ -53,7 +58,7 @@ describe("le script de l'essai des planches de marque (appels simulés)", async 
     const logos = await Promise.all(["#3A7D44", "#7A4EB0", "#B04E4E", "#4E7AB0"].slice(0, n).map(async (c, i) => { const f = path.join(entree, `esquisse-0${i + 1}-logo-garde.png`); fs.writeFileSync(f, await logo(c)); return f; }));
     return { sortie: path.join(dir, "sortie"), logos };
   };
-  afterEach(() => { appels.length = 0; textes.length = 0; dispositions.length = 0; verdicts = {}; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; });
+  afterEach(() => { appels.length = 0; envoyes.length = 0; textes.length = 0; dispositions.length = 0; verdicts = {}; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; });
 
   it("sans refus : les valeurs une fois, le domaine une fois, puis planche et relecture par logo ; tout est écrit", async () => {
     const { sortie, logos } = await preparer();
@@ -157,8 +162,40 @@ describe("le script de l'essai des planches de marque (appels simulés)", async 
     } finally { valeursSimulees = avant; }
   });
 
-  it("le client : Racine par défaut, sinon ce qui est donné ; rien d'incomplet n'est lancé", () => {
-    expect(clientDeLEssai({})).toEqual({ ...RACINE, descripteur: null });
+  it("le client Écume : le domaine passe par la vraie vérification du Studio (findDomains, annuaires simulés), disposition standard, aucune trace de Racine", async () => {
+    const { domainDeps } = await import("@/lib/syna-agent/brand-domains");
+    const { sortie, logos } = await preparer();
+    const avant = valeursSimulees, domainesAvant = T.plancheDeps.domaines;
+    valeursSimulees = (nom) => ({ nom, traits: ["douce", "artisanale", "généreuse", "naturelle"], emotion: "le parfum doux d'un savon qui sèche sur une étagère", images: ["savon posé sur une pierre humide", "mousse épaisse sur une pierre", "gros plan de la pâte à savon", "savon seul en studio", "atelier de fabrication", "emballage en papier kraft"], produits: ["savons solides", "shampoings solides", "baumes"], appel: "devis" as const });
+    // Pas de raccourci des essais : la tâche appelle findDomains, qui interroge les annuaires (simulés ici, aucun réseau).
+    delete T.plancheDeps.domaines;
+    const regardes: string[] = [];
+    domainDeps.lookup = async (d) => { regardes.push(d); return d.startsWith("ecume.") || d.startsWith("ecumefrance.") ? "pris" : "libre"; };
+    try {
+      const r = await essaiDesPlanches({ sortie, plafondEuros: "2", logos, client: ECUME, ai: simule as never });
+      expect(r.arret).toBeUndefined();
+      expect(regardes.slice(0, 5)).toEqual(["ecume.fr", "ecume.com", "ecumefrance.fr", "ecumefrance.com", "ecume-savonnerie.fr"]);
+      expect(r.domaine).toMatchObject({ domaine: "ecume-savonnerie.fr", statut: "disponible", mention: "ecume-savonnerie.fr — disponible" });
+      expect(r.valeurs?.ok ? "" : (r.valeurs as { raison: string }).raison).toBe("");
+      expect(r.disposition).toBe("standard");
+      expect(dispositions.every((d) => d === P.DISPOSITION.sha256)).toBe(true);
+      expect(r.planches.map((p) => [p.key, p.gardee])).toEqual([["A", true], ["B", true]]);
+      expect(textes[0].endsWith("écris exactement « ecume-savonnerie.fr — disponible » et « © 2026 Écume » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.")).toBe(true);
+      expect(envoyes.length).toBe(5);
+      expect(envoyes[0]).toContain("Le nom de la marque : « Écume »");
+      for (const t of envoyes) expect(sansRacine(t), t).toBe(true);
+      expect(fs.readFileSync(path.join(sortie, "fiche-du-client.txt"), "utf8")).toContain("savons solides, shampoings solides, baumes");
+      // Ce que la planche en vrai relira : le domaine, son statut, l'année, la disposition et le logo de la planche.
+      const res = JSON.parse(fs.readFileSync(path.join(sortie, "planche-B-resultat.json"), "utf8"));
+      expect(res).toMatchObject({ nom: "Écume", disposition: "standard", logo: { fichier: logos[1], sha256: sha(fs.readFileSync(logos[1])) }, planche: { domaine: "ecume-savonnerie.fr", statut: "disponible", annee: 2026 } });
+      expect(sansRacine(fs.readFileSync(path.join(sortie, "rapport.txt"), "utf8"))).toBe(true);
+    } finally { valeursSimulees = avant; T.plancheDeps.domaines = domainesAvant; delete domainDeps.lookup; }
+  });
+
+  it("le client : aucun par défaut, ce qui est donné ; rien d'incomplet n'est lancé", () => {
+    expect(() => clientDeLEssai({})).toThrow(/Client de l'essai manquant/);
+    const src = fs.readFileSync("scripts/syna-recette/essai-planches.mts", "utf8") + fs.readFileSync("scripts/syna-recette/essai-planches-outil.ts", "utf8");
+    expect(sansRacine(src)).toBe(true);
     expect(clientDeLEssai({ CLIENT_NOM: "Tenon", CLIENT_METIER: "menuisier", CLIENT_TYPE: "services", CLIENT_PRODUITS: "cuisines ; dressings" })).toMatchObject({ nom: "Tenon", kind: "services", produits: ["cuisines", "dressings"] });
     expect(() => clientDeLEssai({ CLIENT_NOM: "Tenon" })).toThrow(/Métier du client manquant/);
     expect(() => clientDeLEssai({ CLIENT_NOM: "Tenon", CLIENT_METIER: "menuisier", CLIENT_TYPE: "autre", CLIENT_PRODUITS: "x" })).toThrow(/Type du client/);
