@@ -117,3 +117,7 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
   (salon, téléphone), bulles qui illustrent chaque phrase, un mot à la fois en couleurs, bandeau permanent en haut.
 - Essais ElevenLabs avant l'enregistrement du propriétaire (dialogue Hugo et Martin, puis Hugo et Julien) :
   environ 1 € au total ; le propriétaire a préféré sa propre voix.
+- Version 2, après la remarque du propriétaire : **un seul plan sur le conseiller**, le client n'existe que par sa
+  voix au téléphone (comme dans la vidéo de référence). Effet téléphone réglé d'après la mesure de la référence :
+  graves coupés sous ~450 Hz, présence renforcée vers 2 500 Hz, aigus gardés jusqu'à ~5 500 Hz (« net, mais pas
+  vraiment »). Bouche du conseiller qui bouge quand il parle, nom tapé à l'écran, petit coup de zoom sur « Hé Bernard ».

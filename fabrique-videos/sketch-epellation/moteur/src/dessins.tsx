@@ -227,7 +227,7 @@ export const Emu: React.FC<EmuP> = ({x, y, s = 1, f, court, vitesse = 0.42, mang
 };
 
 /* ---------- les humains ---------- */
-type Humeur = 'content' | 'fache' | 'choc' | 'triste' | 'perplexe' | 'neutre' | 'crie' | 'pouffe';
+type Humeur = 'content' | 'fache' | 'choc' | 'triste' | 'perplexe' | 'neutre' | 'crie' | 'pouffe' | 'parle';
 type Pose = 'debout' | 'drapeau' | 'blanc' | 'vise' | 'crie' | 'salut' | 'marche' | 'accroupi' | 'ecrit' | 'main' | 'baton' | 'fouet' | 'tirair' | 'tel';
 type HP = {
 	x: number; y: number; s?: number; f: number; pose?: Pose; humeur?: Humeur; chapeau?: 'brousse' | 'kepi' | 'paille' | 'bicorne' | 'plume' | 'haut' | 'aucun' | 'tiare' | 'bonnet';
@@ -341,6 +341,7 @@ export const Humain: React.FC<HP> = ({x, y, s = 1, f, pose = 'debout', humeur = 
 	};
 	const bouche = () => {
 		const my = hy + 32;
+		if (humeur === 'parle') return <ellipse cx={0} cy={my + 8} rx={18} ry={6 + Math.abs(Math.sin(f * 0.9)) * 14} fill="#7a2a20" stroke={INK} strokeWidth={5} />;
 		if (humeur === 'pouffe') return (<><ellipse cx={-40} cy={my - 4} rx={20} ry={14} fill="#f19a8a" /><ellipse cx={40} cy={my - 4} rx={20} ry={14} fill="#f19a8a" /><path d={`M -18 ${my + 2} q 6 -6 12 0 q 6 6 12 0 q 6 -6 12 0`} stroke={INK} strokeWidth={6} fill="none" strokeLinecap="round" /></>);
 		if (humeur === 'content') return <path d={`M -24 ${my} q 24 26 48 0`} stroke={INK} strokeWidth={6} fill="#7a2a20" strokeLinecap="round" />;
 		if (humeur === 'choc') return <ellipse cx={0} cy={my + 6} rx={14} ry={18} fill="#7a2a20" stroke={INK} strokeWidth={5} />;
