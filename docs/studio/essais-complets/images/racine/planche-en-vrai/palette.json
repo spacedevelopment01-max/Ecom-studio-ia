@@ -1,0 +1,59 @@
+{
+  "couleurs": [
+    {
+      "hex": "#640B29",
+      "nom": "Bordeaux",
+      "mots": [
+        "Élégance",
+        "Nature"
+      ]
+    },
+    {
+      "hex": "#25583B",
+      "nom": "Vert forêt",
+      "mots": [
+        "Végétal",
+        "Croissance"
+      ]
+    },
+    {
+      "hex": "#A1B89B",
+      "nom": "Sauge",
+      "mots": [
+        "Sérénité",
+        "Équilibre"
+      ]
+    },
+    {
+      "hex": "#EDDECB",
+      "nom": "Beige naturel",
+      "mots": [
+        "Douceur",
+        "Authenticité"
+      ]
+    },
+    {
+      "hex": "#F7F3EC",
+      "nom": "Lin",
+      "mots": [
+        "Pureté",
+        "Lumière"
+      ]
+    }
+  ],
+  "roles": {
+    "light": "#F7F3EC",
+    "dark": "#25583B",
+    "primary": "#640B29",
+    "secondary": "#EDDECB",
+    "accent": "#A1B89B"
+  },
+  "couleursDuLogo": {
+    "dark": "#5D0126",
+    "primary": "#5D0126",
+    "secondary": "#E8DBE1",
+    "accent": "#5D0126",
+    "light": "#F7F2F4"
+  },
+  "encre": "#5D0126"
+}

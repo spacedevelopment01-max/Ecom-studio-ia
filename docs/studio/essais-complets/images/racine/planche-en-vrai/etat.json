@@ -1,0 +1,296 @@
+{
+  "key": "A",
+  "demo": "ttnlct7w2s9ujbdb",
+  "logo": "lq8sv9dp5j6wx6rb",
+  "laquelle": "standard",
+  "at": 1795623183684,
+  "elements": [
+    {
+      "element": "publication-1x1",
+      "id": "wumj5inaqjs79dva",
+      "w": 1080,
+      "h": 1080,
+      "essais": 1,
+      "description": "Gros plan sur une plante verte devant un fond bordeaux, avec le R blanc du logo en haut à gauche et un slogan en blanc."
+    },
+    {
+      "element": "publication-4x5",
+      "id": "nvfzvjbc55lyrs4j",
+      "w": 1080,
+      "h": 1350,
+      "essais": 1,
+      "description": "Visuel beige avec un titre, trois arguments cochés, un bouton bordeaux et une plante verte à droite."
+    },
+    {
+      "element": "publication-9x16",
+      "id": "x8og1cqh8gftjcg9",
+      "w": 1080,
+      "h": 1920,
+      "essais": 1,
+      "description": "Format vertical montrant une plante aromatique dans un pot en terre cuite, avec le R du logo en haut, un titre blanc et un bouton."
+    },
+    {
+      "element": "ouverture-site",
+      "id": "waja2xheub0gntxm",
+      "w": 1920,
+      "h": 720,
+      "essais": 1,
+      "description": "Bannière de site avec des plantes en pot sur un rebord de fenêtre ensoleillé, un titre blanc et un bouton bordeaux."
+    },
+    {
+      "element": "ouverture-planche",
+      "id": null,
+      "essais": 2,
+      "raison": "elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    },
+    {
+      "element": "site-ordinateur",
+      "id": "l2caj5xb7o9oiwg5",
+      "w": 1520,
+      "h": 1024,
+      "essais": 1,
+      "description": "Ordinateur portable affichant la page d’accueil du site Racine, avec menu, bannière de plantes et quatre engagements illustrés."
+    },
+    {
+      "element": "site-telephone",
+      "id": "t4yo36r3xtrhxte0",
+      "w": 768,
+      "h": 1712,
+      "essais": 2,
+      "description": "Smartphone affichant la version mobile du site, avec des plantes en pot, un titre, un bouton et trois catégories illustrées."
+    },
+    {
+      "element": "produit-1",
+      "id": null,
+      "essais": 2,
+      "raison": "elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    },
+    {
+      "element": "produit-2",
+      "id": "rn4nvrw0ne672p8i",
+      "w": 912,
+      "h": 1088,
+      "essais": 1,
+      "ambiance": true,
+      "description": "Un hortensia aux fleurs crème dans un pot gris, à la lumière du soleil."
+    },
+    {
+      "element": "produit-3",
+      "id": "5qob1vgo9gyjae36",
+      "w": 912,
+      "h": 1088,
+      "essais": 1,
+      "ambiance": true,
+      "description": "Un petit olivier sur tige dans un pot en terre cuite, devant un mur clair ensoleillé."
+    },
+    {
+      "element": "emballage",
+      "id": "lx28gt2n5no6wf5s",
+      "w": 1344,
+      "h": 1024,
+      "essais": 1,
+      "description": "Carton kraft, sac vert foncé, carte de remerciement et rouleau d’adhésif, tous décorés de feuillages et du logo Racine."
+    },
+    {
+      "element": "reference-1",
+      "id": "rq8azf09zs8dwitg",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Allée d’une serre bordée de rangées de jeunes arbres en pot, au soleil couchant."
+    },
+    {
+      "element": "reference-2",
+      "id": "uslxbzc157t4mbim",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Plantes d’intérieur en pot posées sur un rebord de fenêtre lumineux."
+    },
+    {
+      "element": "reference-3",
+      "id": "4imr66krijpngocn",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Gros plan sur des racines et du terreau dans un pot en terre cuite."
+    },
+    {
+      "element": "reference-4",
+      "id": "kreekipzorgoj0zv",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Intérieur d’une serre vitrée remplie de plantes vertes et fleuries."
+    },
+    {
+      "element": "reference-5",
+      "id": "ummax3d5gzg5h25m",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Gros plan sur un arbuste couvert de petites fleurs blanches."
+    },
+    {
+      "element": "reference-6",
+      "id": null,
+      "essais": 2,
+      "raison": "elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)"
+    }
+  ],
+  "logos": [
+    {
+      "version": "logo-principal",
+      "id": "3xdygyqzq6a20h32"
+    },
+    {
+      "version": "logo-horizontal",
+      "id": "etiavp6lt5uq8fbf"
+    },
+    {
+      "version": "logo-empile",
+      "id": "8opxf2m1rqfacupz"
+    },
+    {
+      "version": "logo-compact",
+      "id": "f5aer8y4cktbpsrn"
+    },
+    {
+      "version": "icone",
+      "id": "htfneaol5dqk8awv"
+    },
+    {
+      "version": "favicon",
+      "id": "8w6al853v36atev1"
+    },
+    {
+      "version": "monochrome-fonce",
+      "id": "oj4q7xlpot74gqbk"
+    },
+    {
+      "version": "monochrome-clair",
+      "id": "gngr91y7383kvhi4"
+    },
+    {
+      "version": "inverse",
+      "id": "js60a0kfk5hwhnmv"
+    },
+    {
+      "version": "badge",
+      "id": "81eaq7gzgyktru32"
+    }
+  ],
+  "favicons": {
+    "f32": "lpnyzn6h8952qm2a",
+    "f64": "k6gglrc0sqgtgrsb",
+    "f512": "t1yjarqq7z2d1sy7",
+    "avatar": "mcwdzvtluhswk7yj"
+  },
+  "palette": [
+    {
+      "hex": "#640B29",
+      "nom": "Bordeaux",
+      "mots": [
+        "Élégance",
+        "Nature"
+      ]
+    },
+    {
+      "hex": "#25583B",
+      "nom": "Vert forêt",
+      "mots": [
+        "Végétal",
+        "Croissance"
+      ]
+    },
+    {
+      "hex": "#A1B89B",
+      "nom": "Sauge",
+      "mots": [
+        "Sérénité",
+        "Équilibre"
+      ]
+    },
+    {
+      "hex": "#EDDECB",
+      "nom": "Beige naturel",
+      "mots": [
+        "Douceur",
+        "Authenticité"
+      ]
+    },
+    {
+      "hex": "#F7F3EC",
+      "nom": "Lin",
+      "mots": [
+        "Pureté",
+        "Lumière"
+      ]
+    }
+  ],
+  "polices": {
+    "titres": {
+      "cle": "playfair_display",
+      "famille": "Playfair Display",
+      "fichier": "PlayfairDisplay-700.ttf",
+      "poids": 700,
+      "handle": "playfair_display_n7",
+      "lue": "Playfair Display",
+      "remplacee": false
+    },
+    "textes": {
+      "cle": "montserrat",
+      "famille": "Montserrat",
+      "fichier": "Montserrat-400.ttf",
+      "poids": 400,
+      "handle": "montserrat_n4",
+      "lue": "Montserrat",
+      "remplacee": false
+    }
+  },
+  "symboleComplet": true,
+  "publications": [
+    {
+      "element": "publication-1x1",
+      "id": "wumj5inaqjs79dva",
+      "texte": "La magie prend racine chez vous.",
+      "comprehensible": false,
+      "format": "1:1"
+    },
+    {
+      "element": "publication-4x5",
+      "id": "nvfzvjbc55lyrs4j",
+      "texte": "Des plantes qui font la différence. Sélectionnées avec soin Adaptées à votre espace Pour un quotidien plus vert Découvrir",
+      "comprehensible": true,
+      "format": "4:5"
+    },
+    {
+      "element": "publication-9x16",
+      "id": "x8og1cqh8gftjcg9",
+      "texte": "Chaque plante raconte une histoire. Rejoignez notre univers",
+      "comprehensible": false,
+      "format": "9:16"
+    }
+  ],
+  "issues": [
+    "Sur ta planche en vrai, 3 images n'ont pas passé ma relecture, même refaites (ouverture-planche, produit-1, reference-6) : leurs cases gardent l'aperçu de ta planche choisie, sans fichier en haute définition. Je peux les refaire à ma charge : rien n'est compté sur ton budget.",
+    "Tes produits sur la planche en vrai sont des images d'ambiance (« image d'ambiance, ce n'est pas ton produit ») : ils ne vont jamais sur les emplacements produit de ton site, où « Ta photo ici » attend tes photos. Quand tu m'envoies tes photos, je peux refaire ces cases avec ton vrai produit, je t'annonce le prix avant.",
+    "Je n'ai pas pu séparer proprement le symbole et le nom de ton logo : ton icône et ton favicon reprennent ton logo complet.",
+    "La publication 1 de ta planche reste sur ta planche, mais je ne la mets pas à ton calendrier : quelqu'un qui ne connaît pas ta marque ne comprendrait pas ce qu'elle propose.",
+    "La publication 3 de ta planche reste sur ta planche, mais je ne la mets pas à ton calendrier : quelqu'un qui ne connaît pas ta marque ne comprendrait pas ce qu'elle propose."
+  ],
+  "notes": [
+    "ouverture-planche, essai 1 refusé : sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "ouverture-planche, essai 2 refusé : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "site-telephone, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 12:01 ») (en trop ou mal écrits : « 9:41 »)",
+    "produit-1, essai 1 refusé : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "produit-1, essai 2 refusé : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "reference-6, essai 1 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)",
+    "reference-6, essai 2 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)"
+  ],
+  "planche": {
+    "id": "sfixjkl2eq52qwgp",
+    "w": 3072,
+    "h": 4608
+  }
+}

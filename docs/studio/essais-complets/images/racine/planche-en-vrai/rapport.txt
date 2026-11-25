@@ -1,0 +1,199 @@
+Essai de la planche en vrai — client « Racine » (pépiniériste qui vend des plantes en ligne), type « produits »
+Produits ou prestations de sa fiche : plantes d'intérieur ; arbustes ; jeunes arbres
+Photos de produit du client : 0 (les produits de la planche restent des images d'ambiance sans elles)
+Plafond de l'essai : 7,6000 €
+Personnes permises : non (aucune photo de personne ni accord)
+Planche choisie : /home/user/Ecom-studio-ia/data/essai-planche-en-vrai/entree/planche-A-2-brute.png (sha256 b3bc48ce0de2f11cfa9d02def32732a0878fec6727f108f0e6d34eacc9ec15be) ; disposition standard
+Logo fini : /home/user/Ecom-studio-ia/data/essai-planche-en-vrai/entree/esquisse-11-logo-garde.png (sha256 4e60688d59952ed746378ba90ad4166c7729610b7959ff320b35f4da272a4c54)
+Données de la planche : © 2026 Racine ; racine-officiel.fr — disponible ; phrase sous le nom : aucune
+Couleurs tirées du logo par le Studio : dark #5D0126, primary #5D0126, secondary #E8DBE1, accent #5D0126, light #F7F2F4
+Réglage sina.planche.envrai : allumé dans la base de l'essai seulement
+
+Devis de l'essai de la planche en vrai (fonctions du devis du Studio, aucun appel) :
+- inventaire · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,2133 € · au plus 0,5123 €
+- retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1622 € · au plus 0,3757 €
+- retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1530 € · au plus 0,4125 €
+- retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,2050 € · au plus 0,4849 €
+- retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,3096 € · au plus 0,7343 €
+- relecture · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- reprise d'une retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1622 € · au plus 0,3757 €
+- reprise d'une retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1530 € · au plus 0,4125 €
+- reprise d'une retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,2050 € · au plus 0,4849 €
+- reprise d'une retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,3096 € · au plus 0,7343 €
+- relecture de la reprise · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+Probable, sans refus : 1,4972 € (devis du Studio : 1,4972 €)
+Probable, si chaque image est refaite une fois : 2,7810 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 6,6960 €
+  dont plafond du client de la tâche 3,6042 € et borne du Studio 3,0918 € (devisDeLaPlancheEnVrai)
+Hors plafond minimal : une réponse de texte mal formée à réparer coûterait au plus 3,0747 € de plus en tout.
+Plafond conseillé (plafond minimal, une réparation de l'inventaire et une de relecture, arrondi) : 7,6000 €
+
+Découpe : 42 aperçus (apercus/) ; aucune case refusée
+
+Inventaire (inventaire-demande.txt, inventaire-reponse.json) :
+  polices lues : titres « Playfair Display » (serif), textes « Montserrat » (sans)
+  couleurs lues : Bordeaux (Élégance, Nature) ; Vert forêt (Végétal, Croissance) ; Sauge (Sérénité, Équilibre) ; Beige naturel (Douceur, Authenticité) ; Lin (Pureté, Lumière)
+  icône : Une feuille blanche sur un carré bordeaux aux coins arrondis ; favicon : Une feuille blanche sur un petit carré bordeaux aux coins arrondis ; reprennent le logo : non
+  publication-1x1 : logo oui, produit oui, personne non, compréhensible non ; textes : « La magie prend racine chez vous. »
+  publication-4x5 : logo non, produit oui, personne non, compréhensible oui ; textes : « Des plantes qui font la différence. » « Sélectionnées avec soin » « Adaptées à votre espace » « Pour un quotidien plus vert » « Découvrir »
+  publication-9x16 : logo oui, produit oui, personne non, compréhensible non ; textes : « Chaque plante raconte une histoire. » « Rejoignez notre univers »
+  ouverture-site : logo non, produit oui, personne non ; textes : « Des plantes pour des espaces plus vivants. » « Découvrez notre sélection de plantes, arbustes et arbres pour embellir votre quotidien. » « Voir nos collections → »
+  ouverture-planche : logo oui, produit oui, personne non ; textes : « Plus qu’une pépinière, un monde à cultiver. » « Des plantes pour des espaces plus vivants, naturellement. » « Des racines pour de plus beaux horizons. »
+  site-ordinateur : logo oui, produit oui, personne non ; textes : « RACINE » « Plantes » « Arbustes » « Arbres » « Accessoires » « À propos » « Des plantes pour des espaces plus vivants. » « Découvrez notre sélection de plantes, arbustes et arbres pour embellir votre quotidien. » « Voir nos collections → » « Plantes de qualité » « Conseils pratiques » « Emballage soigné » « Une passion du végétal »
+  site-telephone : logo oui, produit oui, personne non ; textes : « 12:01 » « RACINE » « Des plantes pour aujourd'hui et demain. » « Découvrir → » « Plantes d’intérieur » « Arbustes » « Arbres »
+  produit-1 : logo non, produit oui, personne non ; textes : aucun
+  produit-2 : logo non, produit oui, personne non ; textes : aucun
+  produit-3 : logo non, produit oui, personne non ; textes : aucun
+  emballage : logo oui, produit non, personne non ; textes : « RACINE » « RACINE » « PLANTES POUR AUJOURD'HUI ET DEMAIN » « RACINE » « Merci de faire grandir un monde plus vivant. »
+  reference-1 : logo non, produit non, personne non ; textes : aucun
+  reference-2 : logo non, produit non, personne non ; textes : aucun
+  reference-3 : logo non, produit non, personne non ; textes : aucun
+  reference-4 : logo non, produit non, personne non ; textes : aucun
+  reference-5 : logo non, produit non, personne non ; textes : aucun
+  reference-6 : logo oui, produit oui, personne non ; textes : aucun
+
+Les images, case par case (cases/ : texte envoyé, images jointes, image HD reçue, refusées comprises) :
+  publication-1x1 : GARDÉE (cases/publication-1x1-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/publication-1x1-1-hd.png
+      relecture : note 9/10 — Même composition, même fond bordeaux et même plante que l'aperçu ; le logo blanc ressort bien et le texte est net, sans faute.
+      raisons du refus : aucune
+  publication-4x5 : GARDÉE (cases/publication-4x5-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/publication-4x5-1-hd.png
+      relecture : note 9/10 — Fidèle à l'aperçu : même mise en page, mêmes coches, même bouton bordeaux. Les textes sont nets et sans faute ; le logo est absent, comme sur l'aperçu.
+      raisons du refus : aucune
+  publication-9x16 : GARDÉE (cases/publication-9x16-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/publication-9x16-1-hd.png
+      relecture : note 9/10 — Même composition que l'aperçu, avec le logo blanc, le titre et la plante en pot. Le bouton est bien lisible, les textes sont nets et rien n'est coupé.
+      raisons du refus : aucune
+  ouverture-site : GARDÉE (cases/ouverture-site-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/ouverture-site-1-hd.png
+      relecture : note 9/10 — L'image refaite reprend l'aperçu à l'identique : même scène de plantes en lumière naturelle, même titre et même bouton bordeaux. Le rendu est net et ne présente aucun défaut visible.
+      raisons du refus : aucune
+  ouverture-planche : NON gardée, l'aperçu garde sa case (elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8))
+    essai 1 : jointes apercu, logo ; image HD cases/ouverture-planche-1-hd.png
+      relecture : note 7/10 — La composition, les textes et le logo R gravé sur le pot en terre cuite sont fidèles à l'aperçu. En revanche, de larges bandes blanches ont été ajoutées en haut et en bas, ce qui rétrécit la bannière.
+      raisons du refus : sa fidélité n'est pas au niveau (7/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/ouverture-planche-2-hd.png
+      relecture : note 7/10 — La composition, la photo et les textes sont fidèles et nets. En revanche, le logo « R » du pot, gravé ton sur ton dans l’aperçu, est devenu bordeaux imprimé, et de larges marges blanches encadrent désormais le bandeau.
+      raisons du refus : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  site-ordinateur : GARDÉE (cases/site-ordinateur-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/site-ordinateur-1-hd.png
+      relecture : note 9/10 — La maquette sur ordinateur est fidèle à l'aperçu : même menu, même visuel d'accueil et mêmes pictogrammes. Tous les textes sont nets et le logo Racine, bordeaux sur fond blanc, est bien lisible.
+      raisons du refus : aucune
+  site-telephone : GARDÉE (cases/site-telephone-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/site-telephone-1-hd.png
+      relecture : note 9/10 — La maquette sur téléphone reprend fidèlement l'aperçu : même logo, mêmes deux plantes en pot, même titre et mêmes trois catégories. Seule l'heure affichée change, et l'ensemble est net.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 12:01 ») (en trop ou mal écrits : « 9:41 »)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/site-telephone-2-hd.png
+      relecture : note 9/10 — La maquette reprend fidèlement l’aperçu : même en-tête avec le logo, même photo des deux plantes en pot, même titre, même bouton et mêmes icônes, le tout net et sans défaut visible.
+      raisons du refus : aucune
+  produit-1 : NON gardée, l'aperçu garde sa case (elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8))
+    essai 1 : jointes apercu ; image HD cases/produit-1-1-hd.png
+      relecture : note 7/10 — La plante, le cadrage et la lumière correspondent à l'aperçu, mais le motif gravé géométrique du pot devient une texture mouchetée. Les feuilles de droite sont aussi plus panachées.
+      raisons du refus : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu ; image HD cases/produit-1-2-hd.png
+      relecture : note 7/10 — La composition, la lumière et la plante sont très proches de l'aperçu, et l'image est nette, sans personne ni texte. Le pot diffère en revanche : son motif gravé devient une texture mouchetée et sa forme est plus droite, ce qui modifie le contenant.
+      raisons du refus : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  produit-2 : GARDÉE (cases/produit-2-gardee-hd.png) — image d'ambiance, ce n'est pas son produit
+    essai 1 : jointes apercu ; image HD cases/produit-2-1-hd.png
+      relecture : note 8/10 — L'image reprend fidèlement l'hortensia aux fleurs crème et pêche, le pot en béton et la lumière rasante de l'aperçu. Elle est nette, sans défaut visible.
+      raisons du refus : aucune
+  produit-3 : GARDÉE (cases/produit-3-gardee-hd.png) — image d'ambiance, ce n'est pas son produit
+    essai 1 : jointes apercu ; image HD cases/produit-3-1-hd.png
+      relecture : note 8/10 — On retrouve l'olivier sur tige, le pot couleur terre cuite, les plantes de part et d'autre et les ombres sur le mur. Le pot est un peu plus haut et plus texturé, mais l'ensemble reste fidèle.
+      raisons du refus : aucune
+  emballage : GARDÉE (cases/emballage-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/emballage-1-hd.png
+      relecture : note 9/10 — La composition est identique : boîte kraft, sac vert, ruban et carte de remerciement, avec des textes exacts et nets. Le logo clair est bien lisible sur le sac foncé.
+      raisons du refus : aucune
+  reference-1 : GARDÉE (cases/reference-1-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-1-1-hd.png
+      relecture : note 9/10 — La serre, les rangées d'arbres en pots noirs, l'allée centrale et le contre-jour doré reprennent fidèlement l'aperçu. L'image est nette et ne présente aucun défaut visible.
+      raisons du refus : aucune
+  reference-2 : GARDÉE (cases/reference-2-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-2-1-hd.png
+      relecture : note 9/10 — La grande plante en pot de terre cuite devant la fenêtre, les petits pots sur le rebord et la lumière latérale correspondent à l'aperçu. Le rendu est net et fidèle.
+      raisons du refus : aucune
+  reference-3 : GARDÉE (cases/reference-3-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-3-1-hd.png
+      relecture : note 9/10 — Le pot en terre cuite, les racines blanches dans le terreau sombre et le feuillage au premier plan reprennent exactement le cadrage et les tons de l'aperçu.
+      raisons du refus : aucune
+  reference-4 : GARDÉE (cases/reference-4-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-4-1-hd.png
+      relecture : note 8/10 — On retrouve la serre vitrée, l'allée dallée et les plantes en pots sous un contre-jour lumineux, comme dans l'aperçu. Les fleurs rouges sont un peu plus présentes, mais la composition reste fidèle.
+      raisons du refus : aucune
+  reference-5 : GARDÉE (cases/reference-5-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-5-1-hd.png
+      relecture : note 9/10 — Les fleurs blanches à cœur jaune, le feuillage sombre et le fond flou chaud correspondent fidèlement à l'aperçu. L'image est nette.
+      raisons du refus : aucune
+  reference-6 : NON gardée, l'aperçu garde sa case (elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8))
+    essai 1 : jointes apercu, logo ; image HD cases/reference-6-1-hd.png
+      relecture : note 6/10 — Le carton et les plantes reprennent l'aperçu, mais le mot « RACINE » a été ajouté sous le monogramme, absent de l'aperçu. Le logo, passé du brun au bordeaux, est aussi plus grand et décentré.
+      raisons du refus : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/reference-6-2-hd.png
+      relecture : note 6/10 — La composition (carton kraft, plantes, fond vert flou) reprend bien l'aperçu, mais le logo passe d'un brun ton sur ton à un bordeaux vif. Le mot « RACINE », absent de l'aperçu, a été ajouté sous le logo.
+      raisons du refus : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+
+Relectures : publications (essai 1, relectures/publications-1-verdict.json) ; site (essai 1, relectures/site-1-verdict.json) ; produits (essai 1, relectures/produits-1-verdict.json) ; references (essai 1, relectures/references-1-verdict.json) ; site (essai 2, relectures/site-2-verdict.json) ; produits (essai 2, relectures/produits-2-verdict.json) ; references (essai 2, relectures/references-2-verdict.json)
+
+Logos (logos/) : logos/logo-principal.png, logos/logo-horizontal.png, logos/logo-empile.png, logos/logo-compact.png, logos/icone.png, logos/favicon.png, logos/monochrome-fonce.png, logos/monochrome-clair.png, logos/inverse.png, logos/badge.png, logos/favicon-32.png, logos/favicon-64.png, logos/icone-512.png, logos/avatar-reseaux.png, logos/symbole.png — symbole complet (séparation non fiable ou icône qui ne reprend pas le logo)
+Palette mesurée (palette.json) : #640B29 Bordeaux ; #25583B Vert forêt ; #A1B89B Sauge ; #EDDECB Beige naturel ; #F7F3EC Lin
+Police des titres (polices.json) : lue « Playfair Display », prise « Playfair Display » (PlayfairDisplay-700.ttf, 700)
+Police des textes (polices.json) : lue « Montserrat », prise « Montserrat » (Montserrat-400.ttf, 400)
+Publications pour le calendrier : publication-1x1 (incompréhensible, reste sur la planche) ; publication-4x5 (compréhensible) ; publication-9x16 (incompréhensible, reste sur la planche)
+  note : ouverture-planche, essai 1 refusé : sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : ouverture-planche, essai 2 refusé : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : site-telephone, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 12:01 ») (en trop ou mal écrits : « 9:41 »)
+  note : produit-1, essai 1 refusé : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : produit-1, essai 2 refusé : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : reference-6, essai 1 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  note : reference-6, essai 2 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  SINA dirait : Sur ta planche en vrai, 3 images n'ont pas passé ma relecture, même refaites (ouverture-planche, produit-1, reference-6) : leurs cases gardent l'aperçu de ta planche choisie, sans fichier en haute définition. Je peux les refaire à ma charge : rien n'est compté sur ton budget.
+  SINA dirait : Tes produits sur la planche en vrai sont des images d'ambiance (« image d'ambiance, ce n'est pas ton produit ») : ils ne vont jamais sur les emplacements produit de ton site, où « Ta photo ici » attend tes photos. Quand tu m'envoies tes photos, je peux refaire ces cases avec ton vrai produit, je t'annonce le prix avant.
+  SINA dirait : Je n'ai pas pu séparer proprement le symbole et le nom de ton logo : ton icône et ton favicon reprennent ton logo complet.
+  SINA dirait : La publication 1 de ta planche reste sur ta planche, mais je ne la mets pas à ton calendrier : quelqu'un qui ne connaît pas ta marque ne comprendrait pas ce qu'elle propose.
+  SINA dirait : La publication 3 de ta planche reste sur ta planche, mais je ne la mets pas à ton calendrier : quelqu'un qui ne connaît pas ta marque ne comprendrait pas ce qu'elle propose.
+
+Planche assemblée : planche-en-vrai.png (3072 × 4608)
+
+Étapes : Je découpe ta planche choisie → Je fais l'inventaire de ta planche → Je refais chaque image de ta planche en haute définition → Je prépare tes logos, tes couleurs et tes polices → J'assemble ta planche en vrai
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- d130705f3b723b48a7200930c8fb3b80d2467466a177366fe9bea80611b3b059 · anthropic:claude-opus-5-5 · charge du client · réservé 0,3325 € → réglé 0,1433 € (settled) · jetons 5681 en entrée, 6578 en sortie
+- a1ae37dae4350e614863598c1208e64dfea7226eb9981832f5f26b9c43f602a3 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,1014 € → réglé 0,0584 € (settled) · jetons 1676 en entrée, 1834 en sortie
+- d2ee1cccd203b5bd952e512f40202dc1de42e90eb00a74b143c16a143a133710 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0758 € → réglé 0,0438 € (settled) · jetons 454 en entrée, 1587 en sortie
+- 59d56253e43f5b7ceeeba7b3667fefe923f7cfa9168d019acfc8dda56ff22f09 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0843 € → réglé 0,0456 € (settled) · jetons 1701 en entrée, 1331 en sortie
+- 540e186c143e68da1691937f8b8523d55446a4626b9d4f11b5e37b5d861777be · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0473 € → réglé 0,0241 € (settled) · jetons 656 en entrée, 772 en sortie
+- c77c9d74b0e4e52e5fa51e8a9bb48f7a821c767f83d61ce9521b7c4d3d6ccc3e · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0641 € → réglé 0,0305 € (settled) · jetons 1779 en entrée, 724 en sortie
+- a204efd89c8e457ec9a8e0c665b8183b6ee128a9f669fbe4d6559a6af3520dcd · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0873 € → réglé 0,0494 € (settled) · jetons 2117 en entrée, 1366 en sortie
+- 421cfd3c519855e4ac92cbbed59fc1e0c9cbfa596245fa62d806f58db041a434 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0692 € → réglé 0,0341 € (settled) · jetons 1736 en entrée, 876 en sortie
+- e61aeb2085420a4a14c5395eecdd8bc02a698e4b447b968ea7b78dadabe338b1 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0703 € → réglé 0,0393 € (settled) · jetons 364 en entrée, 1437 en sortie
+- 0044827b850d81225185a0f8ff7fd3282a9a1cef05a08844097efa20a42f9920 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0703 € → réglé 0,0393 € (settled) · jetons 364 en entrée, 1437 en sortie
+- d0f990657642b5f9c42549c6e4ecbe2a4b99e5b1733b62b5df8006a8f4d4e746 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0703 € → réglé 0,0393 € (settled) · jetons 364 en entrée, 1437 en sortie
+- f594b21399727caa38d8c4794a1cdb6648b04393af6a511f30e8e3f8ff390910 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0902 € → réglé 0,0535 € (settled) · jetons 2211 en entrée, 1500 en sortie
+- ced5328e1bf283681987d0b572880348c96fb824eb9343bd79252aab19abecc0 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- 2dc234a66939549a2affa8b04e09bc8958daa82ec41965d503e112fd1c169ac1 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- bcac77bf9b69491d1852f16b90534217d1f3993d6917545d30d1b72e088c026d · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- c310366a71447e016ab6f7e756a00762a4b1159944c462ac2d192c9677e49323 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- 53daedbbcb0d93aa744bd230284c383a7da04a7c3fb84d86ed806ca11b755eb6 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- fbfdd1b2af8fd316c24d58199f7067e26008169885b4a9572a48336819046e98 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0904 € → réglé 0,0497 € (settled) · jetons 1606 en entrée, 1514 en sortie
+- 21d3621d62ae2179000abde59058718d9898844821569bc7c2af9cf1ab78ebde · anthropic:claude-opus-5-5 · charge du client · réservé 0,1839 € → réglé 0,0374 € (settled) · jetons 5736 en entrée, 558 en sortie
+- 09b4c569a5dc62b86d3873d32182572ee4d95ab73cb77bf4a3dcde4dc6f8a935 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1900 € → réglé 0,0568 € (settled) · jetons 7056 en entrée, 1873 en sortie
+- bd865464905ec0dadabf5e9e16395e38817cda1eaf76daed844219ba23c7dc00 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1875 € → réglé 0,0438 € (settled) · jetons 6519 en entrée, 1224 en sortie
+- 4a59846a89ef0b455305ced567bb228aa513d5f9b291b5d42070764025e7f477 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1947 € → réglé 0,0504 € (settled) · jetons 8084 en entrée, 1296 en sortie
+- 7085fc96c25d68ee6a9f50f7ccfea862eb75d1332e730ac2f34530e4def0c264 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0645 € → réglé 0,0306 € (settled) · jetons 1801 en entrée, 724 en sortie
+- 60b3aaf0a5543044175267af10174d5ecc21227a5b49acb0b5a1d0bf02d520ba · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0700 € → réglé 0,0343 € (settled) · jetons 1781 en entrée, 876 en sortie
+- bdf7837a88f17668a6836ec5e2ffe462026ff3c582e0fb526704fb9bfc15e036 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0709 € → réglé 0,0394 € (settled) · jetons 396 en entrée, 1437 en sortie
+- 71b8320987ed62e2417b28e518e710a3f4d9e5f581c0a0f85ecff9ef8d2756ac · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0916 € → réglé 0,0500 € (settled) · jetons 1667 en entrée, 1514 en sortie
+- e0072b31e9080e3eaca845e71d11ba7fffa66dda2a67ef7c1c2be247b03b11e2 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1723 € → réglé 0,0265 € (settled) · jetons 3207 en entrée, 883 en sortie
+- eacb75bf85e55ef2ce8deaf4ec5f1a2a1d7c257d067e42d5639de79a5ea3913f · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1644 € → réglé 0,0131 € (settled) · jetons 1488 en entrée, 443 en sortie
+- aa56ce84a9de6c0b9df3ce455f4e1317e5ac1e3ceb4833f92b56e8dc13789c11 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1640 € → réglé 0,0113 € (settled) · jetons 1399 en entrée, 361 en sortie
+
+Dépense réelle comptée par le Studio : 1,2489 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).

@@ -1,0 +1,25 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "produit-1",
+        "identique": false,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 7,
+        "pourquoi": "La composition, la lumière et la plante sont très proches de l'aperçu, et l'image est nette, sans personne ni texte. Le pot diffère en revanche : son motif gravé devient une texture mouchetée et sa forme est plus droite, ce qui modifie le contenant."
+      }
+    ]
+  },
+  "raisons": {
+    "produit-1": [
+      "elle n'est pas identique à son aperçu",
+      "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    ]
+  },
+  "gardees": []
+}

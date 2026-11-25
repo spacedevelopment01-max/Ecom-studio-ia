@@ -1,0 +1,1506 @@
+[
+  {
+    "etape": "envrai-inventaire",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 5681,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 2458,
+    "jetonsSortie": 6578,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 51092,
+    "coutMicro": 143254,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:inventaire",
+    "details": {
+      "placeDemandee": 16000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-publication-1x1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1676,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1834,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 41715,
+    "coutMicro": 58446,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:publication-1x1",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "publication-1x1",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une publication carrée pour les réseaux sociaux, 1080 × 1080. Aucune personne n'apparaît.",
+      "requestId": "req_cede8e50408a4ab4ac1b2ee90cfd4163",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "5dba925c30b764ef12268371dd77db9808643421777048a22099c92534020627",
+          "octets": 163658
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 1676,
+        "input_tokens_details": {
+          "image_tokens": 1520,
+          "text_tokens": 156
+        },
+        "output_tokens": 1834,
+        "output_tokens_details": {
+          "image_tokens": 1834,
+          "text_tokens": 0
+        },
+        "total_tokens": 3510
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1088x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-publication-4x5",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 454,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1587,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 35420,
+    "coutMicro": 43764,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:publication-4x5",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "publication-4x5",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une publication portrait pour les réseaux sociaux, 1080 × 1350. Aucune personne n'apparaît.",
+      "requestId": "req_201cc2409b244fb4905a14152b4f4f85",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1088x1360",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "ebe9deba8fdc44359fb41e43c8e726b2f5325dc453591905f0d97a1eae489050",
+          "octets": 169027
+        }
+      ],
+      "usage": {
+        "input_tokens": 454,
+        "input_tokens_details": {
+          "image_tokens": 336,
+          "text_tokens": 118
+        },
+        "output_tokens": 1587,
+        "output_tokens_details": {
+          "image_tokens": 1587,
+          "text_tokens": 0
+        },
+        "total_tokens": 2041
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1088x1360",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-publication-9x16",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1701,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1331,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 29560,
+    "coutMicro": 45645,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:publication-9x16",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "publication-9x16",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une story pour les réseaux sociaux, 1080 × 1920. Aucune personne n'apparaît.",
+      "requestId": "req_2a5b7a089b114716b7930ab99fd33915",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1088x1936",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "52f37dc2904c8c1d2ab48b53b8df5304ba41cab70e1f86c01e3bc8062b57b847",
+          "octets": 172969
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 1701,
+        "input_tokens_details": {
+          "image_tokens": 1547,
+          "text_tokens": 154
+        },
+        "output_tokens": 1331,
+        "output_tokens_details": {
+          "image_tokens": 1331,
+          "text_tokens": 0
+        },
+        "total_tokens": 3032
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1088x1936",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-ouverture-site",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 656,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 772,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 22626,
+    "coutMicro": 24059,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:ouverture-site",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "ouverture-site",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est la grande image d'ouverture du site, au format bandeau 1920 × 720 ; garde chaque élément à sa place. Garde des marges généreuses : aucun texte ne touche les bords. Aucune personne n'apparaît.",
+      "requestId": "req_a1c3d48397cf400997856b28381a3386",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "2048x768",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "088958d89edd66f4833f5e54b4e82f37104beacb2bd7a25f73f6552f43f25ee3",
+          "octets": 328889
+        }
+      ],
+      "usage": {
+        "input_tokens": 656,
+        "input_tokens_details": {
+          "image_tokens": 512,
+          "text_tokens": 144
+        },
+        "output_tokens": 772,
+        "output_tokens_details": {
+          "image_tokens": 772,
+          "text_tokens": 0
+        },
+        "total_tokens": 1428
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "2048x768",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-ouverture-planche",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1779,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 724,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 20356,
+    "coutMicro": 30485,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:ouverture-planche",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "ouverture-planche",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est le bandeau d'ouverture de la planche ; garde des marges généreuses en haut et en bas, rien ne touche les bords. Aucune personne n'apparaît.",
+      "requestId": "req_5a48d05afbf84d0f8f0c9531847da198",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "2304x768",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "7a74ab19e4c9d43086e41f556a51105aab5612c8302598ab53b23c2215f95773",
+          "octets": 700266
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 1779,
+        "input_tokens_details": {
+          "image_tokens": 1611,
+          "text_tokens": 168
+        },
+        "output_tokens": 724,
+        "output_tokens_details": {
+          "image_tokens": 724,
+          "text_tokens": 0
+        },
+        "total_tokens": 2503
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "2304x768",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-site-ordinateur",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 2117,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1366,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 32655,
+    "coutMicro": 49382,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:site-ordinateur",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "site-ordinateur",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un ordinateur portable ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.",
+      "requestId": "req_7a8d4f8282f84fa4a129c26ac824d5c7",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1520x1024",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "8de088caf11a89db8eaf6723c413510991706cb7f0138315a5a1c5e1e46e7403",
+          "octets": 485576
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 2117,
+        "input_tokens_details": {
+          "image_tokens": 1952,
+          "text_tokens": 165
+        },
+        "output_tokens": 1366,
+        "output_tokens_details": {
+          "image_tokens": 1366,
+          "text_tokens": 0
+        },
+        "total_tokens": 3483
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1520x1024",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-site-telephone",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1736,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 876,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 26978,
+    "coutMicro": 34121,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:site-telephone",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "site-telephone",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.",
+      "requestId": "req_a70bf17c4014493c9475ff7c16b52d3d",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "768x1712",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "d0a1d0fe2b48097eb80594d53f3af9d864f1c8468c88da673eb35f0f4baaec89",
+          "octets": 139193
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 1736,
+        "input_tokens_details": {
+          "image_tokens": 1572,
+          "text_tokens": 164
+        },
+        "output_tokens": 876,
+        "output_tokens_details": {
+          "image_tokens": 876,
+          "text_tokens": 0
+        },
+        "total_tokens": 2612
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "768x1712",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-produit-1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 364,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1437,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 32543,
+    "coutMicro": 39298,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:produit-1",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "produit-1",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo produit de la marque. Aucune personne n'apparaît.",
+      "requestId": "req_4a46af347d9a49fc813146594e6c4332",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "021c58d3609c80ec328341176f005b86c8fc68c4c7fb1c6c30ca23ebc6a6882b",
+          "octets": 154341
+        }
+      ],
+      "usage": {
+        "input_tokens": 364,
+        "input_tokens_details": {
+          "image_tokens": 255,
+          "text_tokens": 109
+        },
+        "output_tokens": 1437,
+        "output_tokens_details": {
+          "image_tokens": 1437,
+          "text_tokens": 0
+        },
+        "total_tokens": 1801
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-produit-2",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 364,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1437,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 32248,
+    "coutMicro": 39298,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:produit-2",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "produit-2",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo produit de la marque. Aucune personne n'apparaît.",
+      "requestId": "req_df0078392c714741ba586272270cd008",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "94e03c55ee4ac4cf47a4a310bfb25a5635fbca9878440a2c06298577f873073a",
+          "octets": 155417
+        }
+      ],
+      "usage": {
+        "input_tokens": 364,
+        "input_tokens_details": {
+          "image_tokens": 255,
+          "text_tokens": 109
+        },
+        "output_tokens": 1437,
+        "output_tokens_details": {
+          "image_tokens": 1437,
+          "text_tokens": 0
+        },
+        "total_tokens": 1801
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-produit-3",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 364,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1437,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 33205,
+    "coutMicro": 39298,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:produit-3",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "produit-3",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo produit de la marque. Aucune personne n'apparaît.",
+      "requestId": "req_e452134b49b24428a358490c20ef530a",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "3b51157bfbcac1abe4694216591f3055045ea395f8bd4c33711b120e0f4570cc",
+          "octets": 156144
+        }
+      ],
+      "usage": {
+        "input_tokens": 364,
+        "input_tokens_details": {
+          "image_tokens": 255,
+          "text_tokens": 109
+        },
+        "output_tokens": 1437,
+        "output_tokens_details": {
+          "image_tokens": 1437,
+          "text_tokens": 0
+        },
+        "total_tokens": 1801
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-emballage",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 2211,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1500,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 33556,
+    "coutMicro": 53491,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:emballage",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "emballage",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la photo des supports de marque (carton, sac, ruban adhésif, carte de remerciement). Aucune personne n'apparaît.",
+      "requestId": "req_96b4aec1e0fd4b7ab65c29606fc00e5d",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1344x1024",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "b66d5114b869064725902a0aa687a97cbb0db8e2b2d93588899b421539761b3d",
+          "octets": 722618
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 2211,
+        "input_tokens_details": {
+          "image_tokens": 2048,
+          "text_tokens": 163
+        },
+        "output_tokens": 1500,
+        "output_tokens_details": {
+          "image_tokens": 1500,
+          "text_tokens": 0
+        },
+        "total_tokens": 3711
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1344x1024",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 321,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 37302,
+    "coutMicro": 40983,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:reference-1",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-1",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+      "requestId": "req_2b87728311e944bc83e596e8e799d293",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "3df229c4eb07e1afdf75bd53e99af2d901b1904e4d7026c6ec625cca8b51156a",
+          "octets": 139693
+        }
+      ],
+      "usage": {
+        "input_tokens": 321,
+        "input_tokens_details": {
+          "image_tokens": 210,
+          "text_tokens": 111
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 1835
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-2",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 321,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 35579,
+    "coutMicro": 40983,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:reference-2",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-2",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+      "requestId": "req_e59c8f6c79714611bffa7a0827f2478b",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "a003deb9feffed18903ef01f4ee399014eafbdc04cdbf51697402cf76b2fd8c7",
+          "octets": 143750
+        }
+      ],
+      "usage": {
+        "input_tokens": 321,
+        "input_tokens_details": {
+          "image_tokens": 210,
+          "text_tokens": 111
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 1835
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-3",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 321,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 36813,
+    "coutMicro": 40983,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:reference-3",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-3",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+      "requestId": "req_6d91e77541c84c97b5fafbccf3b89872",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "5d550fde477b350495ffd5b4340f1396380b5a420aad5e353dcfd1e38b8edb50",
+          "octets": 126712
+        }
+      ],
+      "usage": {
+        "input_tokens": 321,
+        "input_tokens_details": {
+          "image_tokens": 210,
+          "text_tokens": 111
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 1835
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-4",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 321,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 37019,
+    "coutMicro": 40983,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:reference-4",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-4",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+      "requestId": "req_494351c3beb94fd3b0024813b0952872",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "478517a2f6ec5528de5bb6d78bd8ef8204c4825a4677199bc5a1b03b31e9abfc",
+          "octets": 144388
+        }
+      ],
+      "usage": {
+        "input_tokens": 321,
+        "input_tokens_details": {
+          "image_tokens": 210,
+          "text_tokens": 111
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 1835
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-5",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 321,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 34725,
+    "coutMicro": 40983,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:reference-5",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-5",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+      "requestId": "req_1af78d36a22d4bdd95bf9397812a9f37",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "3a41cf34cedbe0d6ae67a6c57bced3ed1b01d993621440f7e2b7755ebdca6032",
+          "octets": 149390
+        }
+      ],
+      "usage": {
+        "input_tokens": 321,
+        "input_tokens_details": {
+          "image_tokens": 210,
+          "text_tokens": 111
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 1835
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-6",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1606,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 35110,
+    "coutMicro": 49729,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:reference-6",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-6",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+      "requestId": "req_b5207dee49e64712b552fccff12a06a0",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "7182a36c065a05c6082167bead17e9a173390aee5de41a6cbe86baed0dd0ffc7",
+          "octets": 143324
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 1606,
+        "input_tokens_details": {
+          "image_tokens": 1458,
+          "text_tokens": 148
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 3120
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-relecture-publications",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 5736,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 1874,
+    "jetonsSortie": 558,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 6556,
+    "coutMicro": 37388,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:relecture-publications",
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-relecture-site",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 7056,
+    "jetonsCacheLus": 1874,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1873,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 16335,
+    "coutMicro": 56811,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:relecture-site",
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-relecture-produits",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 6519,
+    "jetonsCacheLus": 1874,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1224,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 11911,
+    "coutMicro": 43800,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:relecture-produits",
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-relecture-references",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 8084,
+    "jetonsCacheLus": 1874,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1296,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 12234,
+    "coutMicro": 50422,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:relecture-references",
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-ouverture-planche-r1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1801,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 724,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 20004,
+    "coutMicro": 30580,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:ouverture-planche-r1",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "ouverture-planche",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est le bandeau d'ouverture de la planche ; garde des marges généreuses en haut et en bas, rien ne touche les bords. Aucune personne n'apparaît.\n\nÀ corriger : sa fidélité n'est pas au niveau (7/10, il faut 8).",
+      "requestId": "req_edafcee0d3ca443dba570eefc5afe98a",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "2304x768",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "7a74ab19e4c9d43086e41f556a51105aab5612c8302598ab53b23c2215f95773",
+          "octets": 700266
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 1801,
+        "input_tokens_details": {
+          "image_tokens": 1611,
+          "text_tokens": 190
+        },
+        "output_tokens": 724,
+        "output_tokens_details": {
+          "image_tokens": 724,
+          "text_tokens": 0
+        },
+        "total_tokens": 2525
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "2304x768",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-site-telephone-r1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1781,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 876,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 24341,
+    "coutMicro": 34315,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:site-telephone-r1",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "site-telephone",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 12:01 ») (en trop ou mal écrits : « 9:41 »).",
+      "requestId": "req_d473f56870b04c028b1c2198c7525c41",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "768x1712",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "d0a1d0fe2b48097eb80594d53f3af9d864f1c8468c88da673eb35f0f4baaec89",
+          "octets": 139193
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 1781,
+        "input_tokens_details": {
+          "image_tokens": 1572,
+          "text_tokens": 209
+        },
+        "output_tokens": 876,
+        "output_tokens_details": {
+          "image_tokens": 876,
+          "text_tokens": 0
+        },
+        "total_tokens": 2657
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "768x1712",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-produit-1-r1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 396,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1437,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 32356,
+    "coutMicro": 39435,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:produit-1-r1",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "produit-1",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo produit de la marque. Aucune personne n'apparaît.\n\nÀ corriger : elle n'est pas identique à son aperçu ; sa fidélité n'est pas au niveau (7/10, il faut 8).",
+      "requestId": "req_358475822c32451fa966eff2f994dcfe",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "021c58d3609c80ec328341176f005b86c8fc68c4c7fb1c6c30ca23ebc6a6882b",
+          "octets": 154341
+        }
+      ],
+      "usage": {
+        "input_tokens": 396,
+        "input_tokens_details": {
+          "image_tokens": 255,
+          "text_tokens": 141
+        },
+        "output_tokens": 1437,
+        "output_tokens_details": {
+          "image_tokens": 1437,
+          "text_tokens": 0
+        },
+        "total_tokens": 1833
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "912x1088",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-reference-6-r1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.5-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1667,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1514,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 35744,
+    "coutMicro": 49991,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:reference-6-r1",
+    "details": {
+      "methode": "planche-en-vrai",
+      "element": "reference-6",
+      "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.\n\nÀ corriger : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE ») ; sa fidélité n'est pas au niveau (6/10, il faut 8).",
+      "requestId": "req_a71fd472d7ca4516ab165dafb454a503",
+      "reglages": {
+        "model": "gpt-image-2.5-sunburst",
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": [
+        {
+          "role": "apercu",
+          "assetId": null,
+          "sha256": "7182a36c065a05c6082167bead17e9a173390aee5de41a6cbe86baed0dd0ffc7",
+          "octets": 143324
+        },
+        {
+          "role": "logo",
+          "assetId": null,
+          "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+          "octets": 327843
+        }
+      ],
+      "usage": {
+        "input_tokens": 1667,
+        "input_tokens_details": {
+          "image_tokens": 1458,
+          "text_tokens": 209
+        },
+        "output_tokens": 1514,
+        "output_tokens_details": {
+          "image_tokens": 1514,
+          "text_tokens": 0
+        },
+        "total_tokens": 3181
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1024x912",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "envrai-relecture-site-r1",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 3207,
+    "jetonsCacheLus": 1874,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 883,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 8809,
+    "coutMicro": 26542,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:relecture-site-r1",
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-relecture-produits-r1",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 1488,
+    "jetonsCacheLus": 1874,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 443,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 4668,
+    "coutMicro": 13061,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:relecture-produits-r1",
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "envrai-relecture-references-r1",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 1399,
+    "jetonsCacheLus": 1874,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 361,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 4611,
+    "coutMicro": 11344,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-planche-en-vrai-jujpglhzl6vmckzz:envrai:relecture-references-r1",
+    "details": {
+      "placeDemandee": 8000,
+      "sortie": "stricte"
+    }
+  }
+]

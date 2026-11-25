@@ -1,0 +1,49 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Racine : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 12:01 ») (en trop ou mal écrits : « 9:41 »).",
+    "quality": "high",
+    "size": "768x1712",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "d0a1d0fe2b48097eb80594d53f3af9d864f1c8468c88da673eb35f0f4baaec89",
+      "octets": 139193
+    },
+    {
+      "role": "logo",
+      "assetId": null,
+      "sha256": "ddaa819351fc40ad5924e355f089488444e5e792be5724daed5f192b3b7cb4c1",
+      "octets": 327843
+    }
+  ],
+  "tailleRecue": "768x1712",
+  "requestId": "req_d473f56870b04c028b1c2198c7525c41",
+  "usage": {
+    "input_tokens": 1781,
+    "input_tokens_details": {
+      "image_tokens": 1572,
+      "text_tokens": 209
+    },
+    "output_tokens": 876,
+    "output_tokens_details": {
+      "image_tokens": 876,
+      "text_tokens": 0
+    },
+    "total_tokens": 2657
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "768x1712",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 34315,
+  "dureeMs": 24338
+}

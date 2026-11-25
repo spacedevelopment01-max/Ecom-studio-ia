@@ -1,0 +1,77 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "produit-1",
+        "identique": false,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 7,
+        "pourquoi": "La plante, le cadrage et la lumière correspondent à l'aperçu, mais le motif gravé géométrique du pot devient une texture mouchetée. Les feuilles de droite sont aussi plus panachées."
+      },
+      {
+        "case": "produit-2",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "L'image reprend fidèlement l'hortensia aux fleurs crème et pêche, le pot en béton et la lumière rasante de l'aperçu. Elle est nette, sans défaut visible."
+      },
+      {
+        "case": "produit-3",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "On retrouve l'olivier sur tige, le pot couleur terre cuite, les plantes de part et d'autre et les ombres sur le mur. Le pot est un peu plus haut et plus texturé, mais l'ensemble reste fidèle."
+      },
+      {
+        "case": "emballage",
+        "identique": true,
+        "textesLus": [
+          "RACINE",
+          "RACINE",
+          "PLANTES POUR",
+          "AUJOURD'HUI ET DEMAIN",
+          "RACINE",
+          "Merci",
+          "de faire grandir",
+          "un monde plus vivant."
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La composition est identique : boîte kraft, sac vert, ruban et carte de remerciement, avec des textes exacts et nets. Le logo clair est bien lisible sur le sac foncé."
+      }
+    ]
+  },
+  "raisons": {
+    "produit-1": [
+      "elle n'est pas identique à son aperçu",
+      "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    ],
+    "produit-2": [],
+    "produit-3": [],
+    "emballage": []
+  },
+  "gardees": [
+    "produit-2",
+    "produit-3",
+    "emballage"
+  ]
+}

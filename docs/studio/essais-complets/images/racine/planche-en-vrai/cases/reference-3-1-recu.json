@@ -1,0 +1,43 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+    "quality": "high",
+    "size": "1024x912",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "5d550fde477b350495ffd5b4340f1396380b5a420aad5e353dcfd1e38b8edb50",
+      "octets": 126712
+    }
+  ],
+  "tailleRecue": "1024x912",
+  "requestId": "req_6d91e77541c84c97b5fafbccf3b89872",
+  "usage": {
+    "input_tokens": 321,
+    "input_tokens_details": {
+      "image_tokens": 210,
+      "text_tokens": 111
+    },
+    "output_tokens": 1514,
+    "output_tokens_details": {
+      "image_tokens": 1514,
+      "text_tokens": 0
+    },
+    "total_tokens": 1835
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "1024x912",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 40983,
+  "dureeMs": 36812
+}

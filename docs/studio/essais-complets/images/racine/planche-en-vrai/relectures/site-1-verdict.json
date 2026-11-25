@@ -1,0 +1,113 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "ouverture-site",
+        "identique": true,
+        "textesLus": [
+          "Des plantes",
+          "pour des espaces",
+          "plus vivants.",
+          "Découvrez notre sélection de plantes,",
+          "arbustes et arbres pour embellir votre quotidien.",
+          "Voir nos collections →"
+        ],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "L'image refaite reprend l'aperçu à l'identique : même scène de plantes en lumière naturelle, même titre et même bouton bordeaux. Le rendu est net et ne présente aucun défaut visible."
+      },
+      {
+        "case": "ouverture-planche",
+        "identique": true,
+        "textesLus": [
+          "Plus qu’une",
+          "pépinière,",
+          "un monde",
+          "à cultiver.",
+          "Des plantes pour des espaces",
+          "plus vivants, naturellement.",
+          "Des racines",
+          "pour de plus",
+          "beaux horizons."
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 7,
+        "pourquoi": "La composition, les textes et le logo R gravé sur le pot en terre cuite sont fidèles à l'aperçu. En revanche, de larges bandes blanches ont été ajoutées en haut et en bas, ce qui rétrécit la bannière."
+      },
+      {
+        "case": "site-ordinateur",
+        "identique": true,
+        "textesLus": [
+          "RACINE",
+          "Plantes",
+          "Arbustes",
+          "Arbres",
+          "Accessoires",
+          "À propos",
+          "Des plantes",
+          "pour des espaces",
+          "plus vivants.",
+          "Découvrez notre sélection de plantes,",
+          "arbustes et arbres pour embellir votre quotidien.",
+          "Voir nos collections →",
+          "Plantes de qualité",
+          "Conseils pratiques",
+          "Emballage soigné",
+          "Une passion du végétal"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La maquette sur ordinateur est fidèle à l'aperçu : même menu, même visuel d'accueil et mêmes pictogrammes. Tous les textes sont nets et le logo Racine, bordeaux sur fond blanc, est bien lisible."
+      },
+      {
+        "case": "site-telephone",
+        "identique": true,
+        "textesLus": [
+          "9:41",
+          "RACINE",
+          "Des plantes",
+          "pour aujourd’hui",
+          "et demain.",
+          "Découvrir →",
+          "Plantes",
+          "d’intérieur",
+          "Arbustes",
+          "Arbres"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La maquette sur téléphone reprend fidèlement l'aperçu : même logo, mêmes deux plantes en pot, même titre et mêmes trois catégories. Seule l'heure affichée change, et l'ensemble est net."
+      }
+    ]
+  },
+  "raisons": {
+    "ouverture-site": [],
+    "ouverture-planche": [
+      "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    ],
+    "site-ordinateur": [],
+    "site-telephone": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « 12:01 ») (en trop ou mal écrits : « 9:41 »)"
+    ]
+  },
+  "gardees": [
+    "ouverture-site",
+    "site-ordinateur"
+  ]
+}

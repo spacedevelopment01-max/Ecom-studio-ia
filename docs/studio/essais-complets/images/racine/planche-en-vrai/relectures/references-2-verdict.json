@@ -1,0 +1,28 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "reference-6",
+        "identique": false,
+        "textesLus": [
+          "RACINE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 6,
+        "pourquoi": "La composition (carton kraft, plantes, fond vert flou) reprend bien l'aperçu, mais le logo passe d'un brun ton sur ton à un bordeaux vif. Le mot « RACINE », absent de l'aperçu, a été ajouté sous le logo."
+      }
+    ]
+  },
+  "raisons": {
+    "reference-6": [
+      "elle n'est pas identique à son aperçu",
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE »)",
+      "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+    ]
+  },
+  "gardees": []
+}

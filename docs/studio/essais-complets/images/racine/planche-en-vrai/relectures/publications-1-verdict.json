@@ -1,0 +1,73 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "publication-1x1",
+        "identique": true,
+        "textesLus": [
+          "La magie",
+          "prend racine",
+          "chez vous."
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Même composition, même fond bordeaux et même plante que l'aperçu ; le logo blanc ressort bien et le texte est net, sans faute."
+      },
+      {
+        "case": "publication-4x5",
+        "identique": true,
+        "textesLus": [
+          "Des plantes",
+          "qui font la",
+          "différence.",
+          "Sélectionnées",
+          "avec soin",
+          "Adaptées à votre espace",
+          "Pour un quotidien",
+          "plus vert",
+          "Découvrir"
+        ],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Fidèle à l'aperçu : même mise en page, mêmes coches, même bouton bordeaux. Les textes sont nets et sans faute ; le logo est absent, comme sur l'aperçu."
+      },
+      {
+        "case": "publication-9x16",
+        "identique": true,
+        "textesLus": [
+          "Chaque",
+          "plante",
+          "raconte",
+          "une histoire.",
+          "Rejoignez",
+          "notre univers"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Même composition que l'aperçu, avec le logo blanc, le titre et la plante en pot. Le bouton est bien lisible, les textes sont nets et rien n'est coupé."
+      }
+    ]
+  },
+  "raisons": {
+    "publication-1x1": [],
+    "publication-4x5": [],
+    "publication-9x16": []
+  },
+  "gardees": [
+    "publication-1x1",
+    "publication-4x5",
+    "publication-9x16"
+  ]
+}

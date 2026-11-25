@@ -1,0 +1,99 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "reference-1",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La serre, les rangées d'arbres en pots noirs, l'allée centrale et le contre-jour doré reprennent fidèlement l'aperçu. L'image est nette et ne présente aucun défaut visible."
+      },
+      {
+        "case": "reference-2",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La grande plante en pot de terre cuite devant la fenêtre, les petits pots sur le rebord et la lumière latérale correspondent à l'aperçu. Le rendu est net et fidèle."
+      },
+      {
+        "case": "reference-3",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Le pot en terre cuite, les racines blanches dans le terreau sombre et le feuillage au premier plan reprennent exactement le cadrage et les tons de l'aperçu."
+      },
+      {
+        "case": "reference-4",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "On retrouve la serre vitrée, l'allée dallée et les plantes en pots sous un contre-jour lumineux, comme dans l'aperçu. Les fleurs rouges sont un peu plus présentes, mais la composition reste fidèle."
+      },
+      {
+        "case": "reference-5",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Les fleurs blanches à cœur jaune, le feuillage sombre et le fond flou chaud correspondent fidèlement à l'aperçu. L'image est nette."
+      },
+      {
+        "case": "reference-6",
+        "identique": false,
+        "textesLus": [
+          "RACINE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 6,
+        "pourquoi": "Le carton et les plantes reprennent l'aperçu, mais le mot « RACINE » a été ajouté sous le monogramme, absent de l'aperçu. Le logo, passé du brun au bordeaux, est aussi plus grand et décentré."
+      }
+    ]
+  },
+  "raisons": {
+    "reference-1": [],
+    "reference-2": [],
+    "reference-3": [],
+    "reference-4": [],
+    "reference-5": [],
+    "reference-6": [
+      "elle n'est pas identique à son aperçu",
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « RACINE »)",
+      "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+    ]
+  },
+  "gardees": [
+    "reference-1",
+    "reference-2",
+    "reference-3",
+    "reference-4",
+    "reference-5"
+  ]
+}

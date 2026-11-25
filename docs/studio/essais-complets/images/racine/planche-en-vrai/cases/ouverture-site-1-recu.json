@@ -1,0 +1,43 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est la grande image d'ouverture du site, au format bandeau 1920 × 720 ; garde chaque élément à sa place. Garde des marges généreuses : aucun texte ne touche les bords. Aucune personne n'apparaît.",
+    "quality": "high",
+    "size": "2048x768",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "088958d89edd66f4833f5e54b4e82f37104beacb2bd7a25f73f6552f43f25ee3",
+      "octets": 328889
+    }
+  ],
+  "tailleRecue": "2048x768",
+  "requestId": "req_a1c3d48397cf400997856b28381a3386",
+  "usage": {
+    "input_tokens": 656,
+    "input_tokens_details": {
+      "image_tokens": 512,
+      "text_tokens": 144
+    },
+    "output_tokens": 772,
+    "output_tokens_details": {
+      "image_tokens": 772,
+      "text_tokens": 0
+    },
+    "total_tokens": 1428
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "2048x768",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 24059,
+  "dureeMs": 22624
+}

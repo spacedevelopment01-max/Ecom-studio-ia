@@ -1,0 +1,493 @@
+{
+  "cases": [
+    {
+      "case": "publication-1x1",
+      "logo": true,
+      "textes": [
+        "La magie prend racine chez vous."
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": false,
+      "description": "Gros plan sur une plante verte devant un fond bordeaux, avec le R blanc du logo en haut à gauche et un slogan en blanc."
+    },
+    {
+      "case": "publication-4x5",
+      "logo": false,
+      "textes": [
+        "Des plantes qui font la différence.",
+        "Sélectionnées avec soin",
+        "Adaptées à votre espace",
+        "Pour un quotidien plus vert",
+        "Découvrir"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": true,
+      "description": "Visuel beige avec un titre, trois arguments cochés, un bouton bordeaux et une plante verte à droite."
+    },
+    {
+      "case": "publication-9x16",
+      "logo": true,
+      "textes": [
+        "Chaque plante raconte une histoire.",
+        "Rejoignez notre univers"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": false,
+      "description": "Format vertical montrant une plante aromatique dans un pot en terre cuite, avec le R du logo en haut, un titre blanc et un bouton."
+    },
+    {
+      "case": "ouverture-site",
+      "logo": false,
+      "textes": [
+        "Des plantes pour des espaces plus vivants.",
+        "Découvrez notre sélection de plantes, arbustes et arbres pour embellir votre quotidien.",
+        "Voir nos collections →"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Bannière de site avec des plantes en pot sur un rebord de fenêtre ensoleillé, un titre blanc et un bouton bordeaux."
+    },
+    {
+      "case": "ouverture-planche",
+      "logo": true,
+      "textes": [
+        "Plus qu’une pépinière, un monde à cultiver.",
+        "Des plantes pour des espaces plus vivants, naturellement.",
+        "Des racines pour de plus beaux horizons."
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Bandeau large avec un titre vert foncé à gauche et un arbuste dans un pot en terre cuite gravé du R du logo à droite."
+    },
+    {
+      "case": "site-ordinateur",
+      "logo": true,
+      "textes": [
+        "RACINE",
+        "Plantes",
+        "Arbustes",
+        "Arbres",
+        "Accessoires",
+        "À propos",
+        "Des plantes pour des espaces plus vivants.",
+        "Découvrez notre sélection de plantes, arbustes et arbres pour embellir votre quotidien.",
+        "Voir nos collections →",
+        "Plantes de qualité",
+        "Conseils pratiques",
+        "Emballage soigné",
+        "Une passion du végétal"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Ordinateur portable affichant la page d’accueil du site Racine, avec menu, bannière de plantes et quatre engagements illustrés."
+    },
+    {
+      "case": "site-telephone",
+      "logo": true,
+      "textes": [
+        "12:01",
+        "RACINE",
+        "Des plantes pour aujourd'hui et demain.",
+        "Découvrir →",
+        "Plantes d’intérieur",
+        "Arbustes",
+        "Arbres"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Smartphone affichant la version mobile du site, avec des plantes en pot, un titre, un bouton et trois catégories illustrées."
+    },
+    {
+      "case": "produit-1",
+      "logo": false,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un monstera dans un pot en céramique texturée beige, sur fond clair."
+    },
+    {
+      "case": "produit-2",
+      "logo": false,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un hortensia aux fleurs crème dans un pot gris, à la lumière du soleil."
+    },
+    {
+      "case": "produit-3",
+      "logo": false,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un petit olivier sur tige dans un pot en terre cuite, devant un mur clair ensoleillé."
+    },
+    {
+      "case": "emballage",
+      "logo": true,
+      "textes": [
+        "RACINE",
+        "RACINE",
+        "PLANTES POUR AUJOURD'HUI ET DEMAIN",
+        "RACINE",
+        "Merci de faire grandir un monde plus vivant."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Carton kraft, sac vert foncé, carte de remerciement et rouleau d’adhésif, tous décorés de feuillages et du logo Racine."
+    },
+    {
+      "case": "reference-1",
+      "logo": false,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Allée d’une serre bordée de rangées de jeunes arbres en pot, au soleil couchant."
+    },
+    {
+      "case": "reference-2",
+      "logo": false,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Plantes d’intérieur en pot posées sur un rebord de fenêtre lumineux."
+    },
+    {
+      "case": "reference-3",
+      "logo": false,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Gros plan sur des racines et du terreau dans un pot en terre cuite."
+    },
+    {
+      "case": "reference-4",
+      "logo": false,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Intérieur d’une serre vitrée remplie de plantes vertes et fleuries."
+    },
+    {
+      "case": "reference-5",
+      "logo": false,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Gros plan sur un arbuste couvert de petites fleurs blanches."
+    },
+    {
+      "case": "reference-6",
+      "logo": true,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Carton kraft marqué du R du logo, contenant de jeunes plantes vertes."
+    },
+    {
+      "case": "haut",
+      "logo": true,
+      "textes": [
+        "RACINE",
+        "PLANTES POUR AUJOURD'HUI ET DEMAIN"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Logo Racine bordeaux, un R avec une feuille, le nom et le slogan, sur fond crème."
+    },
+    {
+      "case": "palette",
+      "logo": false,
+      "textes": [
+        "Bordeaux",
+        "#6B0D2D",
+        "Élégance",
+        "Nature",
+        "Vert forêt",
+        "#1F5A3A",
+        "Végétal",
+        "Croissance",
+        "Sauge",
+        "#A7C09F",
+        "Sérénité",
+        "Équilibre",
+        "Beige naturel",
+        "#EADCC9",
+        "Douceur",
+        "Authenticité",
+        "Lin",
+        "#F8F5EF",
+        "Pureté",
+        "Lumière"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Cinq pastilles de couleur avec leur nom, leur code et deux mots chacune."
+    },
+    {
+      "case": "typographies",
+      "logo": false,
+      "textes": [
+        "Playfair Display",
+        "Élégante, naturelle, intemporelle.",
+        "ABCDEFFGIHJLLNMMCCDEWWXYZ",
+        "abcdefgijiilmnooptrujwxyz",
+        "0123456789",
+        "Montserrat",
+        "Moderne, lisible, polyvalente.",
+        "ABCDEFFGHIJLLNMACCOEZWWXYZ",
+        "abcdefghijjlmnooptrijwxyz",
+        "0123456789"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Présentation de deux polices avec leur nom, une description et des alphabets d’exemple."
+    },
+    {
+      "case": "ton",
+      "logo": false,
+      "textes": [
+        "Des plantes pour des espaces plus vivants.",
+        "Naturel",
+        "Au rythme des saisons.",
+        "Soin",
+        "Des plantes sélectionnées avec attention.",
+        "Durabilité",
+        "Pour aujourd'hui et demain.",
+        "Partage",
+        "Le plaisir des belles plantes, simplement."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Slogan bordeaux suivi de quatre valeurs accompagnées d’icônes vertes et bordeaux."
+    },
+    {
+      "case": "seo",
+      "logo": false,
+      "textes": [
+        "Titre SEO",
+        "Racine – Plantes, arbustes et arbres en ligne | Pépinière pour jardins et intérieurs",
+        "Méta-description",
+        "Racine vous propose une sélection de plantes, arbustes et arbres de qualité pour embellir vos espaces, du jardin à la maison.",
+        "Nom de domaine suggéré",
+        "racine-officiel.fr — disponible",
+        "© 2026 Racine",
+        "Tous droits réservés.",
+        "Une marque née de la nature, pour toutes celles et ceux qui la cultivent."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Bandeau de textes présentant le titre SEO, la méta-description, le nom de domaine et le copyright."
+    },
+    {
+      "case": "logos : icône seule",
+      "logo": false,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Carré bordeaux aux coins arrondis avec une feuille blanche."
+    },
+    {
+      "case": "logos : favicon",
+      "logo": false,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Petit carré bordeaux aux coins arrondis avec une feuille blanche."
+    },
+    {
+      "case": "titre-01",
+      "logo": false,
+      "textes": [
+        "SYSTÈME DE LOGOS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "titre-02",
+      "logo": false,
+      "textes": [
+        "PALETTE DE COULEURS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "titre-03",
+      "logo": false,
+      "textes": [
+        "TYPOGRAPHIES"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "titre-04",
+      "logo": false,
+      "textes": [
+        "TON, SLOGAN, VALEURS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "titre-05",
+      "logo": false,
+      "textes": [
+        "IMAGES DE RÉFÉRENCE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "titre-06",
+      "logo": false,
+      "textes": [
+        "PRODUITS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "titre-07",
+      "logo": false,
+      "textes": [
+        "RÉSEAUX SOCIAUX"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "titre-08",
+      "logo": false,
+      "textes": [
+        "SITE WEB"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "titre-09",
+      "logo": false,
+      "textes": [
+        "PACKAGING & SUPPORTS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "titre-10",
+      "logo": false,
+      "textes": [
+        "SEO / NOM DE DOMAINE / COPYRIGHT"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section en lettres capitales vert foncé."
+    },
+    {
+      "case": "logo",
+      "logo": true,
+      "textes": [
+        "RACINE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Logo officiel bordeaux : un grand R intégrant une feuille, au-dessus du nom RACINE."
+    }
+  ],
+  "polices": {
+    "titres": {
+      "nom": "Playfair Display",
+      "genre": "serif"
+    },
+    "textes": {
+      "nom": "Montserrat",
+      "genre": "sans"
+    }
+  },
+  "couleurs": [
+    {
+      "nom": "Bordeaux",
+      "mots": [
+        "Élégance",
+        "Nature"
+      ]
+    },
+    {
+      "nom": "Vert forêt",
+      "mots": [
+        "Végétal",
+        "Croissance"
+      ]
+    },
+    {
+      "nom": "Sauge",
+      "mots": [
+        "Sérénité",
+        "Équilibre"
+      ]
+    },
+    {
+      "nom": "Beige naturel",
+      "mots": [
+        "Douceur",
+        "Authenticité"
+      ]
+    },
+    {
+      "nom": "Lin",
+      "mots": [
+        "Pureté",
+        "Lumière"
+      ]
+    }
+  ],
+  "icone": "Une feuille blanche sur un carré bordeaux aux coins arrondis",
+  "favicon": "Une feuille blanche sur un petit carré bordeaux aux coins arrondis",
+  "iconeReprendLeLogo": false
+}

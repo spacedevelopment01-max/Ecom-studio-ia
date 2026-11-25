@@ -1,0 +1,61 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "ouverture-planche",
+        "identique": false,
+        "textesLus": [
+          "Plus qu’une",
+          "pépinière,",
+          "un monde",
+          "à cultiver.",
+          "Des plantes pour des espaces",
+          "plus vivants, naturellement.",
+          "Des racines",
+          "pour de plus",
+          "beaux horizons."
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 7,
+        "pourquoi": "La composition, la photo et les textes sont fidèles et nets. En revanche, le logo « R » du pot, gravé ton sur ton dans l’aperçu, est devenu bordeaux imprimé, et de larges marges blanches encadrent désormais le bandeau."
+      },
+      {
+        "case": "site-telephone",
+        "identique": true,
+        "textesLus": [
+          "12:01",
+          "RACINE",
+          "Des plantes",
+          "pour aujourd’hui",
+          "et demain.",
+          "Découvrir →",
+          "Plantes",
+          "d’intérieur",
+          "Arbustes",
+          "Arbres"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La maquette reprend fidèlement l’aperçu : même en-tête avec le logo, même photo des deux plantes en pot, même titre, même bouton et mêmes icônes, le tout net et sans défaut visible."
+      }
+    ]
+  },
+  "raisons": {
+    "ouverture-planche": [
+      "elle n'est pas identique à son aperçu",
+      "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    ],
+    "site-telephone": []
+  },
+  "gardees": [
+    "site-telephone"
+  ]
+}
