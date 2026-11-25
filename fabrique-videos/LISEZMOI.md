@@ -134,3 +134,8 @@ marche en cordes pincées. **Règle pour les prochaines vidéos** : voix de Paul
   Julien, émotions indiquées réplique par réplique ; cri « Hé, Bernard ! La perceuse ! » du conseiller fait à part et
   superposé. Montage : blancs à 0,1 s sauf avant les chutes, effet téléphone sur le client, voix accélérée de 12 %.
   1 min 36. Chute : le conseiller s'appelle Bernard ; la perceuse apparaît sur son bureau.
+- Version 2 de « Bernard », après « ça fait trop voix IA… ça doit faire réel, comme une vraie conversation » :
+  texte réécrit en langage parlé (euh, ben, nan mais, genre, répétitions, rires), indications de jeu À L'INTÉRIEUR
+  des répliques, réglage le plus expressif (stability 0), **aucune accélération** ; le rythme vient du montage
+  (réponses courtes qui chevauchent la fin de la phrase précédente, `v2/monte.py`). 1 min 55. Environ 0,90 €.
+  Leçon : accélérer une voix la fait sonner « lue » ; pour du réel, chevaucher et couper plutôt qu'accélérer.
