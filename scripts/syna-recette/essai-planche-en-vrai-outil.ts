@@ -130,6 +130,95 @@ export function devisEnTexteEnVrai(d: DevisDeLEssaiEnVrai): string[] {
   ];
 }
 
+// ---------------------------------------------------------------- le parcours du projet, comme la vraie tâche
+
+/** Les médias qu'un état de la planche en vrai désigne : la démonstration, le logo, la planche, les images, les logos, les favicons. */
+export function idsDeLEtat(etat: EtatPlancheEnVrai): { quoi: string; id: string }[] {
+  return [
+    { quoi: "planche choisie", id: etat.demo }, { quoi: "logo fini", id: etat.logo },
+    ...(etat.planche ? [{ quoi: "planche en vrai", id: etat.planche.id }] : []),
+    ...etat.elements.filter((e) => e.id).map((e) => ({ quoi: `image ${e.element}`, id: e.id! })),
+    ...etat.logos.map((l) => ({ quoi: `logo ${l.version}`, id: l.id })),
+    ...Object.entries(etat.favicons ?? {}).map(([k, id]) => ({ quoi: `favicon ${k}`, id })),
+  ];
+}
+
+/**
+ * Chaque média désigné par l'état existe dans ce projet, avec son fichier lisible. Rend la liste de ce qui manque (vide :
+ * tout est là). Rien n'est réparé ni deviné.
+ */
+export async function fichiersManquants(projectId: string, etat: EtatPlancheEnVrai): Promise<string[]> {
+  const { projectAsset, assetData } = await import("../../src/lib/library");
+  const manque: string[] = [];
+  for (const x of idsDeLEtat(etat)) {
+    try { if (!assetData(projectAsset(projectId, x.id)).length) manque.push(`${x.quoi} (${x.id}) : fichier vide`); } catch { manque.push(`${x.quoi} (${x.id})`); }
+  }
+  return manque;
+}
+
+/**
+ * LE PARCOURS DU PROJET, écrit comme le font le choix de l'identité (`identity.choose`) et la fin de la marque
+ * (`brand-finish.ts`), avec les fonctions du Studio : le fil du projet (`threadFor`), `updateJourney` et `setStep`
+ * (journey.ts), `brandFromIdentity` et `saveBrand`, et la marque relue sur la planche en vrai comme dans
+ * planche-en-vrai-tache.ts (palette mesurée, polices lues, symbole). Il pose : l'identité A (`identities`) avec sa planche
+ * de démonstration, son choix (`identityChoice`), la marque finie (`brandFinish`, avec ce que SINA dit) et `plancheEnVrai`.
+ *
+ * L'identité n'a que ce que l'essai connaît (le nom, la phrase, la palette mesurée, les polices lues, la planche) : les
+ * textes que la chaîne de la marque écrit d'habitude (promesse, idée, mots de la maison) restent vides, jamais inventés.
+ * Le fil d'un vrai parcours est ouvert AVANT son projet (le brouillon de l'étape 0) ; un fil ouvert plus tard serait lu
+ * comme celui d'un projet existant, hors parcours : sa date est donc ramenée à celle du projet, une seule fois.
+ */
+export async function enregistrerLeParcours(o: { userId: string; projectId: string; nom: string; etat: EtatPlancheEnVrai; donnees: DonneesDeLaPlanche }): Promise<{ conversationId: string }> {
+  const { one, run } = await import("../../src/lib/db");
+  const { threadFor } = await import("../../src/lib/syna-agent/thread");
+  const { setStep, updateJourney } = await import("../../src/lib/syna-agent/journey");
+  const { brandFromIdentity } = await import("../../src/lib/syna-agent/tools/identity");
+  const { loadProject, saveBrand } = await import("../../src/lib/projects");
+  const { rolesDeLaPalette } = await import("../../src/lib/syna-agent/planche-en-vrai-code");
+  const { assetData, getAsset } = await import("../../src/lib/library");
+  const sharp = (await import("sharp")).default;
+  type User = import("../../src/lib/auth").User;
+  const user = one<User>("SELECT id, email, name, role, timezone, created_at FROM users WHERE id=?", o.userId);
+  if (!user) throw new Error(`Compte ${o.userId} introuvable : rien n'est écrit.`);
+  const cid = threadFor(user, o.projectId);
+  const st = JSON.parse(one<{ state_json: string | null }>("SELECT state_json FROM agent_conversations WHERE id=?", cid)?.state_json ?? "{}");
+  if (!st.parcours) run("UPDATE agent_conversations SET created_at=(SELECT created_at FROM projects WHERE id=?) WHERE id=?", o.projectId, cid);
+
+  const etat = o.etat, roles = rolesDeLaPalette(etat.palette.map((p) => p.hex), "#1C2A24");
+  // La planche choisie et le logo fini, à leurs vraies tailles (le logo fini tient sa place sur la planche, comme après la
+  // méthode des graphistes : sans lui, la planche serait lue comme incomplète et jamais montrée).
+  const taille = async (id: string) => { const a = getAsset(id); const m = a ? await sharp(assetData(a)).metadata() : null; return { id, w: m?.width ?? 1, h: m?.height ?? 1 }; };
+  const dims = await taille(etat.demo), logoFini = await taille(etat.logo);
+  const at = etat.at || Date.now();
+  const identite = {
+    key: "A" as const, name: o.nom, nameStyle: "", nameWhy: "", nameAnchor: "", nameTest: "", nameExpression: "", nameCandidates: [],
+    slogan: o.donnees.phrase, sloganTone: "", promise: "", territory: "", ground: "blanc" as const, palette: roles, paletteFamily: "",
+    fonts: { heading: etat.polices?.titres.handle ?? "inter_n7", body: etat.polices?.textes.handle ?? "inter_n4" }, fontStyle: "",
+    tone: { adjectives: [], avoid: [] }, logoStyle: "lettrage" as const, logoIdea: "", why: "",
+    board: {
+      idea: { belief: "", confession: "", confessionSupport: 0, enemy: "", proof: "", cost: "" }, nameCheck: "non_verifie" as const,
+      lines: [], toProve: [], voice: { sliders: [], thisNotThat: [], houseWords: [], bannedWords: [] }, signs: [],
+      wordmark: { case: "asis" as const, tracking: 0, align: "gauche" as const, dot: false, symbolPlace: "gauche" as const },
+      object: { kind: "carte" as const, front: [o.nom], back: [] },
+      images: { logo: logoFini },
+      planche: { image: dims, logo: etat.logo, domaine: o.donnees.domaine, statut: o.donnees.statut, annee: o.donnees.annee, essais: 1, at },
+    },
+  } as unknown as import("../../src/lib/syna-agent/identities").Identity;
+
+  const j = updateJourney(cid, (x) => {
+    x.identities = { list: [identite], issues: [], comparison: "", at, round: 1 };
+    x.identityChoice = { key: "A", mix: {}, at };
+    x.brandFinish = { prepaidMicro: 0, at, issues: etat.issues, logoFrom: etat.logo };
+    x.plancheEnVrai = etat;
+    setStep(x, 0, "done"); setStep(x, 1, "done"); setStep(x, 2, "done"); setStep(x, 3, "todo");
+  });
+  // La marque du projet : celle du choix de l'identité, puis relue sur la planche en vrai (planche-en-vrai-tache.ts).
+  const symbole = one<{ id: string }>("SELECT id FROM assets WHERE project_id=? AND role='logo-mark' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", o.projectId)?.id;
+  const b = brandFromIdentity(loadProject(o.projectId), identite, j, [], etat.logo);
+  saveBrand(o.projectId, { ...b, palette: { ...b.palette, ...roles }, fonts: identite.fonts, logo: { ...b.logo, ...(symbole ? { markAssetId: symbole } : {}) } });
+  return { conversationId: cid };
+}
+
 // ---------------------------------------------------------------- l'essai
 
 export type EssaiDeCase = { tour: number; texte?: string; jointes?: { role: string; fichier: string }[]; brute?: string; recu?: string; raisons?: string[]; verdict?: unknown };
@@ -144,6 +233,8 @@ export type ResultatEnVrai = {
   planche?: { fichier: string; w: number; h: number };
   logos: string[];
   depenseMicro: number; appels: LigneDeDepense[]; devis: DevisDeLEssaiEnVrai;
+  /** Le projet de l'essai et le fil où son parcours est enregistré (l'onglet Marque le lit). */
+  projectId?: string; conversationId?: string;
 };
 type Qui = { userId: string; projectId: string; jobId: string };
 
@@ -369,6 +460,9 @@ export async function essaiDeLaPlancheEnVrai(o: { sortie: string; plafondEuros: 
       res.planche = { fichier: ecrireFichier("planche-en-vrai.png", b), w: m.width ?? 0, h: m.height ?? 0 };
     }
     ecrireFichier("etat.json", json({ ...etat, inventaire: undefined }));
+    // Le parcours du projet, comme la vraie tâche : l'onglet Marque du studio privé montre la planche en vrai.
+    res.conversationId = (await enregistrerLeParcours({ userId: u.id, projectId, nom: client.nom, etat, donnees })).conversationId;
+    res.projectId = projectId;
     const parLEssai = arretParLEssai(jobId);
     if (parLEssai) res.arret = raisonDeLArret(parLEssai);
     return ecrire();

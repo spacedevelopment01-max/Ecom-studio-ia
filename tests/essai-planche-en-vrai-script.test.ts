@@ -217,6 +217,74 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     expect(d.plafondConseilleMicro % 100_000).toBe(0);
   });
 
+  it("le parcours est enregistré comme la vraie tâche : l'onglet Marque trouve la planche en vrai, les logos, la palette et les polices ; le fil se lit", async () => {
+    const { r } = await lancer();
+    expect(r.arret).toBeUndefined();
+    const { brandSheetOf } = await import("@/lib/syna-agent/brand-sheet");
+    const { journeyOfProject } = await import("@/lib/syna-agent/construction");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const j = journeyOfProject(r.projectId!)!;
+    expect(j).toBeTruthy();
+    expect(j.identities?.list.map((x) => x.key)).toEqual(["A"]);
+    expect(j.identityChoice?.key).toBe("A");
+    expect(j.plancheEnVrai?.planche?.id).toBe(r.etat!.planche!.id);
+    const s = runWithLang({ ui: "fr", content: "fr" }, () => brandSheetOf(r.projectId!));
+    expect(s.stage).toBe("finished");
+    expect(s.name).toBe("Racine");
+    expect(s.enVrai?.planche).toMatchObject({ w: 3072, h: 4608 });
+    expect(s.enVrai?.logos).toHaveLength(10);
+    expect(s.enVrai?.couleurs.map((c) => c.hex)).toEqual(r.etat!.palette.map((p) => p.hex));
+    expect(s.enVrai?.polices.map((p) => p.famille)).toEqual(["Playfair Display", "Montserrat"]);
+    expect(s.enVrai?.images).toHaveLength(17);
+    expect(s.planches.map((p) => p.key)).toEqual(["A"]);
+    // La marque du projet porte la palette mesurée et les polices lues ; ses couleurs s'affichent.
+    expect(s.colors.length).toBe(5);
+    expect(s.fonts.heading?.family).toBe("Playfair Display");
+    // Le fil du projet se lit sans erreur (les cartes des identités sont préparées pour l'écran).
+    const { threadView } = await import("@/lib/syna-agent/loop");
+    const { one } = await import("@/lib/db");
+    const user = one<any>("SELECT id, email, name, role, timezone, created_at FROM users WHERE id=(SELECT user_id FROM projects WHERE id=?)", r.projectId);
+    const v = await runWithLang({ ui: "fr", content: "fr" }, async () => threadView(user, r.conversationId!));
+    expect((v as { journey: { identities?: { list: unknown[] } } }).journey.identities?.list).toHaveLength(1);
+  });
+
+  it("l'écran de la planche en vrai : le parcours écrit depuis etat.json, un compte fictif connu, l'adresse de la page Marque ; un média manquant fait tout refuser", async () => {
+    const { r, sortie } = await lancer();
+    const { preparerLEcran, MOT_DE_PASSE_DE_RECETTE } = await import("../scripts/syna-recette/ecran-planche-en-vrai-outil");
+    const { one, run } = await import("@/lib/db");
+    const etat = path.join(sortie, "etat.json");
+    // Une base où le projet n'a encore aucun parcours (comme celle de l'essai du 25 novembre 2026).
+    run("DELETE FROM agent_conversations WHERE project_id=?", r.projectId);
+    expect((await import("@/lib/syna-agent/construction")).journeyOfProject(r.projectId!)).toBeNull();
+    // Refus propres, sans rien écrire.
+    await expect(preparerLEcran({ projectId: r.projectId!, etat: path.join(sortie, "absent.json") })).rejects.toThrow(/introuvable/);
+    await expect(preparerLEcran({ projectId: r.projectId!, etat, email: "quelqu.un@gmail.com" })).rejects.toThrow(/example\.com/);
+    await expect(preparerLEcran({ projectId: "inconnu", etat })).rejects.toThrow(/Projet inconnu introuvable/);
+    const casse = JSON.parse(fs.readFileSync(etat, "utf8"));
+    casse.logos[3].id = "media-absent";
+    const etatCasse = path.join(sortie, "etat-casse.json"); fs.writeFileSync(etatCasse, JSON.stringify(casse));
+    await expect(preparerLEcran({ projectId: r.projectId!, etat: etatCasse })).rejects.toThrow(/logo logo-compact \(media-absent\)/);
+    expect(one("SELECT 1 FROM agent_conversations WHERE project_id=?", r.projectId)).toBeUndefined();
+    // Le bon état : le parcours, le compte, l'adresse.
+    const e = await preparerLEcran({ projectId: r.projectId!, etat, port: 3493 });
+    expect(e.url).toBe(`http://localhost:3493/studio/${r.projectId}/marque`);
+    expect(e).toMatchObject({ email: "planche-en-vrai@example.com", motDePasse: "Recette-492-fictif" });
+    expect(MOT_DE_PASSE_DE_RECETTE).toBe("Recette-492-fictif");
+    const u = one<{ password_hash: string }>("SELECT password_hash FROM users WHERE email=?", e.email)!;
+    expect(await (await import("bcryptjs")).default.compare(MOT_DE_PASSE_DE_RECETTE, u.password_hash)).toBe(true);
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { brandSheetOf } = await import("@/lib/syna-agent/brand-sheet");
+    const s = runWithLang({ ui: "fr", content: "fr" }, () => brandSheetOf(r.projectId!));
+    expect(s.enVrai?.logos).toHaveLength(10);
+    expect(s.enVrai?.planche).toMatchObject({ w: 3072, h: 4608 });
+    // Relancé une seconde fois : le même fil, rien n'est doublé.
+    const e2 = await preparerLEcran({ projectId: r.projectId!, etat, port: 3493 });
+    expect(e2.conversationId).toBe(e.conversationId);
+    // Le script n'appelle ni l'IA ni le réseau, et n'a aucune clé.
+    const src = fs.readFileSync("scripts/syna-recette/ecran-planche-en-vrai.mts", "utf8") + fs.readFileSync("scripts/syna-recette/ecran-planche-en-vrai-outil.ts", "utf8");
+    expect(src).not.toMatch(/fetch\(|llmJson|vraisAppelsEnVrai|sk-ant-|sk-proj-|https:\/\//);
+  });
+
   it("le script n'écrit jamais une clé : la clé Anthropic vient de STUDIO_ANTHROPIC_KEY ; il ne passe que par les fonctions du Studio", () => {
     const src = fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai.mts", "utf8") + fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai-outil.ts", "utf8");
     expect(src).toContain("process.env.STUDIO_ANTHROPIC_KEY");

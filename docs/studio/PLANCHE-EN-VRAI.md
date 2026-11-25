@@ -178,3 +178,16 @@ Vérifié sans IA : un assemblage de contrôle avec les 14 images gardées de l'
 ses seules marges) rogné, et les logos corrigés. Pas vérifié : la nouvelle question de l'inventaire (`logoVu`) et la
 phrase du symbole n'ont pas été essayées avec la vraie IA ; on ne sait donc pas encore si la sixième référence et le
 bandeau rogné passent la relecture.
+
+## Voir la planche en vrai dans l'écran du Studio (essai, gratuit)
+
+Le script d'essai (`scripts/syna-recette/essai-planche-en-vrai.mts`) enregistre maintenant l'état dans le parcours du
+projet comme la vraie tâche (`enregistrerLeParcours` : le fil du projet, l'identité A choisie avec sa planche, la marque
+finie avec ce que SINA dit, `plancheEnVrai`, et la marque du projet relue sur la planche en vrai) : l'onglet Marque du
+studio privé la montre. L'identité n'a que ce que l'essai connaît ; les textes que la chaîne écrit d'habitude restent
+vides, jamais inventés.
+
+Pour une base d'essai déjà faite, `scripts/syna-recette/ecran-planche-en-vrai.mts` (aucun appel à l'IA ni au réseau)
+écrit ce parcours depuis l'`etat.json` de l'essai, refuse si un média désigné manque, donne au propriétaire du projet un
+compte fictif connu (`planche-en-vrai@example.com`, mot de passe fictif de recette) et affiche l'adresse de la page
+Marque (`/studio/<projet>/marque`).
