@@ -20,8 +20,8 @@ import { DEFAULT_MODELS } from "./models";
 import { findDomains, type NameDomains } from "./brand-domains";
 import type { Route } from "./brand-routes";
 import {
-  DISPOSITION, RELECTEUR_DE_LA_PLANCHE, RelectureDeLaPlancheSchema, VALEURS_SYSTEM, ValeursEcritesSchema, dessinerLaPlanche, domaineDeLaPlanche,
-  ecrireLesValeurs, laDisposition, phraseDeLaPlancheNonMontree, type RelectureDeLaPlanche, type ValeursDuMetier, type ValeursEcrites,
+  DISPOSITION, RELECTEUR_DE_LA_PLANCHE, RelectureAvecPhraseSchema, RelectureDeLaPlancheSchema, VALEURS_SYSTEM, ValeursEcritesSchema, dessinerLaPlanche, domaineDeLaPlanche,
+  ecrireLesValeurs, laDisposition, lignesDeLaPhrase, phraseDeLaPlancheNonMontree, type RelectureDeLaPlanche, type ValeursDuMetier, type ValeursEcrites,
 } from "./planche-de-marque";
 
 // ---------------------------------------------------------------- le devis et les deux plafonds
@@ -65,7 +65,8 @@ export function devisDesPlanchesDeMarque(n: number): DevisDesPlanches {
 export type PlancheAi = {
   valeurs: (demande: string, tour: number) => Promise<ValeursEcrites>;
   dessiner: (logo: { assetId: string; data: Buffer }, disposition: { nom: string; data: Buffer }, texte: string, cle: string) => Promise<{ png: Buffer; recu: RecuDeLaPlanche | null }>;
-  relire: (bandes: Buffer[], logo: Buffer, disposition: Buffer, demande: string, cle: string) => Promise<RelectureDeLaPlanche>;
+  /** `avecPhrase` : le client a choisi une phrase sous le logo ; la réponse porte en plus `phrasesLues`. */
+  relire: (bandes: Buffer[], logo: Buffer, disposition: Buffer, demande: string, cle: string, avecPhrase?: boolean) => Promise<RelectureDeLaPlanche>;
 };
 /** Remplaçables par les essais : aucun appel payant, aucune vérification réseau, une horloge fixe. */
 export const plancheDeps: { ai?: (jobId: string) => PlancheAi; domaines?: (nom: string, descriptor?: string | null) => Promise<NameDomains>; annee?: () => number } = {};
@@ -89,9 +90,10 @@ export function vraisAppelsDeLaPlanche(o: { userId: string; projectId: string; j
       const png = await withTrace(scope(`planche-${cle}`), () => aiPlancheDeMarque({ userId: o.userId, projectId: o.projectId, jobId: o.jobId, usageKey: `${o.jobId}:planche:${cle}` }, { logo, disposition, prompt: t }));
       return { png, recu: recuDeLaPlanche(png) };
     },
-    relire: async (bandes, logo, disposition, demande, cle) => {
+    relire: async (bandes, logo, disposition, demande, cle, avecPhrase) => {
       const petite = await sharp(disposition).resize(768, 768, { fit: "inside" }).png().toBuffer();
-      return texte(cle, "relecture", RELECTEUR_DE_LA_PLANCHE, demande, RelectureDeLaPlancheSchema, [...bandes.map((data, i) => ({ data, label: `bande ${i + 1}` })), { data: logo, label: "logo" }, { data: petite, label: "disposition" }]);
+      // Sans phrase choisie sous le logo, la réponse demandée est exactement celle d'avant.
+      return texte(cle, "relecture", RELECTEUR_DE_LA_PLANCHE, demande, avecPhrase ? RelectureAvecPhraseSchema : RelectureDeLaPlancheSchema, [...bandes.map((data, i) => ({ data, label: `bande ${i + 1}` })), { data: logo, label: "logo" }, { data: petite, label: "disposition" }]);
     },
   };
 }
@@ -110,16 +112,20 @@ export async function valeursDuClient(ctx: Etape, ai: PlancheAi, o: { nom: strin
  * La planche de marque d'une identité : le domaine vérifié AVANT le dessin, la disposition, le logo fini en première
  * image ; dessinée et relue ; une reprise au plus, à la charge du Studio. Refusée deux fois, ou en panne : la planche
  * n'est pas montrée (`board.planche` sans image) et SINA propose de la finir à sa charge. Rend la route mise à jour.
+ * `phrase` : la phrase choisie par le client sous ce logo, toutes ses lignes dans l'ordre (`phraseDuLogoFini`) ; elle est
+ * reprise mot pour mot sur la planche et relue lettre pour lettre. Absente : rien ne change.
  */
 export async function plancheDeLaRoute(o: {
   ctx: Etape; ai: PlancheAi; who: { userId: string; projectId: string }; route: Route; round: number;
   valeurs: { ok: true; valeurs: ValeursDuMetier } | { ok: false; raison: string }; logoAssetId: string; personnes: boolean; pass?: string;
+  phrase?: readonly string[] | null;
 }): Promise<{ route: Route; issues: string[]; notes: string[] }> {
   const { ctx, ai, route: x } = o, key = x.key, notes: string[] = [], issues: string[] = [], pass = o.pass ?? "";
   const annee = anneeEnCours();
+  const phrase = lignesDeLaPhrase(o.phrase);
   const d = await ctx.step(`brand:planche:domaine:${norm(x.name)}${pass}`, () => verifierLesDomaines(x.name, x.board.descriptor));
   const dom = domaineDeLaPlanche(d, x.name);
-  const base = { logo: o.logoAssetId, domaine: dom.domaine, statut: dom.statut, annee, at: Date.now() };
+  const base = { logo: o.logoAssetId, domaine: dom.domaine, statut: dom.statut, annee, ...(phrase ? { phrase } : {}), at: Date.now() };
   const avec = (planche: NonNullable<Route["board"]["planche"]>): Route => ({ ...x, board: { ...x.board, domains: d, planche } });
   if (!o.valeurs.ok) {
     issues.push(phraseDeLaPlancheNonMontree(x.name, key));
@@ -148,9 +154,9 @@ export async function plancheDeLaRoute(o: {
         ids.set(tour, im);
         return assetData(getAsset(im.id)!);
       },
-      relire: (bandes, lg, disp, demande, tour) => ctx.step(`brand:planche:relecture:${o.round}:${key}:${tour}${pass}`, () => ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`)),
+      relire: (bandes, lg, disp, demande, tour, avecPhrase) => ctx.step(`brand:planche:relecture:${o.round}:${key}:${tour}${pass}`, () => (avecPhrase ? ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`, true) : ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`))),
       aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-    }, { nom: x.name, annee, domaine: dom, personnes: o.personnes, animaux: disposition.animaux && disposition.laquelle === "standard", valeurs, logo, disposition: disposition.png });
+    }, { nom: x.name, annee, domaine: dom, personnes: o.personnes, animaux: disposition.animaux && disposition.laquelle === "standard", valeurs, logo, disposition: disposition.png, ...(phrase ? { phrase } : {}) });
     const dernier = r.essais.at(-1)!;
     for (const e of r.essais) if (e.raisons.length) notes.push(`planche ${key}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
     if (!r.ok) {

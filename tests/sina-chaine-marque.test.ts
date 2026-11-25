@@ -1623,6 +1623,54 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
     } finally { T.plancheDeps.ai = undefined; T.plancheDeps.domaines = undefined; T.plancheDeps.annee = undefined; }
   });
 
+  it("planche de marque : chaque planche reçoit la phrase choisie sous SON logo, mot pour mot, toutes ses lignes ; l'appel des valeurs ne la voit jamais ; sans phrase, rien ne change", async () => {
+    const T = await import("@/lib/syna-agent/planche-de-marque-tache");
+    const t = await thread();
+    const logos = await logosFinis(t, 3);
+    // Le logo A vient de l'esquisse 6 (la phrase de l'esquisse 6, deux lignes), le B de l'esquisse 10 (sa phrase à lui), le C
+    // de l'esquisse 2 (« aucune »).
+    const A = ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"], B = ["La douceur du savon à froid"];
+    J.updateJourney(t.cid, (x) => { x.graphistes = { nom: "Aplomb", metier: { metier: "une savonnerie artisanale qui vend des savons solides", court: "les savons solides", piste: "savoir-faire" }, max: 3, esquisses: [], refusees: 0, planches: [], recherches: 1, notes: [], at: Date.now(),
+      logos: [{ numero: 6, ok: true, assetId: logos[0].assetId, essais: 1 }, { numero: 10, ok: true, assetId: logos[1].assetId, essais: 1 }, { numero: 2, ok: true, assetId: logos[2].assetId, essais: 1 }],
+      phrases: { "6": { de: 6, texte: A.join(" / "), lignes: A }, "10": { sienne: true, texte: B[0] }, "2": { aucune: true } } } as never; });
+    const textes: Record<string, string> = {}, demandes: Record<string, string> = {}, avec: Record<string, boolean | undefined> = {};
+    let valeursDemande = "";
+    T.plancheDeps.ai = () => ({
+      // Les valeurs écrivent leurs traits ; même si elles parlaient d'une phrase, elles ne la posent jamais.
+      valeurs: async (d) => { valeursDemande = d; return { nom: /Le nom de la marque : « (.+?) »/.exec(d)![1], traits: ["franche", "fruitée", "généreuse"], emotion: "la fraîcheur d'un grand verre en été", images: ["carafe au soleil", "morceaux de fruits", "verre embué", "table d'été", "vrac en bocal", "lumière de fin de journée"], produits: ["infusions de fruits"], appel: "devis" }; },
+      dessiner: async (_l, _d, tx, cle) => { textes[cle] = tx; return { png: await square("#EEEEEE", 1536, 2304), recu: null }; },
+      relire: async (_b, _l, _d, dem, cle, avecPhrase) => {
+        demandes[cle] = dem; avec[cle] = avecPhrase;
+        const nom = /Marque : « (.+?) »/.exec(dem)![1], domaine = /écris exactement « (.+?) » et/.exec(dem)![1];
+        const lues = cle.startsWith("A-") ? [A.join(" / ").toUpperCase()] : cle.startsWith("B-") ? [B[0], B[0]] : undefined;
+        return { nomLu: nom, logoFidele: true, copyrightLu: `© 2026 ${nom}`, domaineLu: domaine, fautes: [], promesses: [], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [], note: 9, pourquoi: "ok", ...(lues ? { phrasesLues: lues } : {}) };
+      },
+    });
+    T.plancheDeps.domaines = async (nom) => ({ taken: [], free: [`${nom.toLowerCase().replace(/[^a-z]/g, "")}.fr`], unknown: [], at: 1 });
+    T.plancheDeps.annee = () => 2026;
+    try {
+      await chain(t, { images: true, plancheDeMarque: true, logosGraphistes: logos }, { review: () => ({ routes: [], series: "" }) });
+      // A avec son logo : les deux lignes de l'esquisse 6, dans l'ordre ; B avec le sien : sa phrase ; jamais celle de l'autre.
+      expect(textes["A-1-1"]).toContain("Sa phrase, choisie par le client et écrite sous le logo, en 2 lignes, dans cet ordre : « SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES » ;");
+      expect(textes["A-1-1"]).not.toContain(B[0]);
+      expect(textes["B-1-1"]).toContain("Sa phrase, choisie par le client et écrite sous le logo : « La douceur du savon à froid » ;");
+      expect(textes["B-1-1"]).not.toContain("SAVONNERIE ARTISANALE");
+      // Le relecteur reçoit la phrase de SA planche et la réponse demandée porte les endroits où il la lit.
+      expect(demandes["A-1-1-relecture"]).toContain("en 2 lignes, dans cet ordre : « SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES »");
+      expect(demandes["B-1-1-relecture"]).toContain("« La douceur du savon à froid »");
+      expect([avec["A-1-1-relecture"], avec["B-1-1-relecture"]]).toEqual([true, true]);
+      // C, « aucune » : rien ne change (aucune phrase, la réponse d'avant, cinq paramètres).
+      expect(textes["C-1-1"]).not.toMatch(/Sa phrase, choisie par le client/);
+      expect(demandes["C-1-1-relecture"]).not.toMatch(/phrasesLues/);
+      expect(avec["C-1-1-relecture"]).toBeUndefined();
+      // L'appel des valeurs ne voit jamais la phrase (le code la pose après lui).
+      expect(valeursDemande).not.toMatch(/SAVONNERIE ARTISANALE|douceur du savon à froid/);
+      const list = J.journeyOf(t.cid).identities!.list;
+      expect(list.map((x) => x.board!.planche!.phrase)).toEqual([A, B, undefined]);
+      expect(list.map((x) => !!x.board!.planche!.image)).toEqual([true, true, true]);
+    } finally { T.plancheDeps.ai = undefined; T.plancheDeps.domaines = undefined; T.plancheDeps.annee = undefined; }
+  });
+
   it("planche de marque : s'il reste moins de deux planches montrées, le choix attend", async () => {
     const t = await thread();
     J.updateJourney(t.cid, (x) => {

@@ -169,3 +169,42 @@ de la nouvelle reprend tout ce qui reste vrai d'elle. Ne sont pas contredites : 
 l'année et le domaine restent comparés lettre pour lettre) et `planche-de-marque-openai` (la requête et le texte ne
 changent pas). L'accord écrit manque encore ; la phrase qui couvre tout est dans
 `docs/studio/LOGO-METHODE-DES-GRAPHISTES.md`.
+
+## La phrase sous le logo, reprise mot pour mot sur sa planche (25 novembre)
+
+Préparé sans aucune dépense, sur une branche locale, sans rien envoyer.
+
+**Ce qui s'est passé.** Constat de l'essai réel d'Écume du 25 novembre 2026, présenté par le chef d'orchestre : la
+planche de marque ne connaît pas la phrase choisie sous le logo. Sa « ligne de la marque » est écrite par les valeurs du
+métier, sans lien avec la phrase du logo. Or le choix du client se reprend mot pour mot.
+
+**Ce qui change.**
+
+1. **Chaque planche reçoit la phrase de son logo**, toutes ses lignes, dans l'ordre. Dans le Studio, c'est la phrase
+   choisie pour l'esquisse dont ce logo est tiré (méthode des graphistes) ; dans l'essai, celle du fichier
+   `esquisse-NN-phrase-du-logo.txt`, à côté du logo fini (s'il manque, rien n'est lancé).
+2. **Le code la pose dans la ligne de la marque**, mot pour mot, après l'appel des valeurs du métier, qui ne la reçoit
+   pas et ne peut pas la réécrire. La ligne garde le nom, le métier et les traits, puis : « Sa phrase, choisie par le
+   client et écrite sous le logo […] : « … » puis « … » ; c'est aussi son slogan : partout où la planche l'écrit,
+   écris-la exactement […] ». Le reste du texte de base ne change pas d'un mot ; la phrase des données vérifiées reste à
+   la toute fin. Le contrôle gratuit vérifie que chaque ligne figure mot pour mot dans le texte envoyé, sinon rien n'est
+   envoyé.
+3. **Le relecteur la reçoit** et recopie chaque endroit où elle est écrite sur la planche ; le code compare lettre pour
+   lettre, comme le nom, l'année et le domaine (la casse, les espaces et un point final mis à part). Une lettre, une
+   ligne manquante, en trop ou hors de l'ordre, ou la phrase lue nulle part : la planche est refusée comme un nom mal
+   écrit, puis refaite une fois à la charge du Studio avec cette raison. Ce qui touche la phrase n'est jamais rangé avec
+   les micro-textes décoratifs, même sur un badge.
+4. **Sans phrase** (« aucune », ou rien de choisi) : rien ne change, ni le texte, ni la demande au relecteur, ni sa
+   réponse.
+5. La phrase est gardée avec la planche (`phrase`), et dans le résultat de l'essai (`planche-X-resultat.json`).
+
+**Le prix ne change pas** : le prix au plus d'une planche est déjà compté au texte le plus long permis.
+
+**L'épreuve.** `planche-reprend-la-phrase-du-logo` est ajoutée et scellée, rejouée gratuitement. Aucune épreuve scellée
+n'est contredite : `planche-de-marque-openai` dit « le texte de base mot pour mot sauf les six parties du métier et la
+phrase des données vérifiées », et la phrase entre dans l'une de ces six parties, la ligne de la marque ;
+`planche-donnees-verifiees` (la phrase des données vérifiées reste à la toute fin) et
+`relecteur-de-planche-texte-lisible-et-promesses-mesurables` (tout texte lisible reste juste) restent vraies.
+
+**Ce qui n'est pas vérifié.** Aucun essai réel : on ne sait pas encore si le modèle d'images écrit la phrase exactement
+sur la planche, ni ce que le vrai relecteur relèvera.

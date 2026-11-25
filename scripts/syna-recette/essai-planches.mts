@@ -19,7 +19,10 @@
  * Le client : CLIENT_JSON (un fichier { nom, metier, kind, produits, descripteur }) ou CLIENT_NOM, CLIENT_METIER,
  * CLIENT_TYPE (« produits » ou « services »), CLIENT_PRODUITS (séparés par « ; »), CLIENT_DESCRIPTEUR ; rien d'autre.
  * Les logos : les logos finis gardés par l'essai de finalisation (esquisse-NN-logo-garde.png, sur fond blanc, pas la
- * version détourée), dans l'ordre des identités A, B, C, D.
+ * version détourée), dans l'ordre des identités A, B, C, D. La phrase de chaque logo est lue à côté de lui, dans
+ * esquisse-NN-phrase-du-logo.txt (écrit par l'essai de finalisation ; vide : aucune) : elle est reprise mot pour mot sur sa
+ * planche, toutes ses lignes dans l'ordre, et relue lettre pour lettre. Le fichier manque : rien n'est lancé.
+ * Le plafond : PLAFOND_ESSAI_EUR sous le plafond minimal du devis (somme des maxima, reprises comprises) : rien n'est lancé.
  *
  * Ce qu'il écrit dans le dossier de sortie : fiche-du-client.txt ; valeurs-N-demande.txt, valeurs-N-reponse.json et
  * valeurs-du-metier.json ; domaine.json ; disposition-*.png ; pour chaque planche X et chaque essai N, le texte envoyé, la
@@ -52,7 +55,7 @@ import path from "node:path";
   Object.assign(process.env, { DATA_DIR: dir, APP_SECRET: fs.readFileSync(secretFile, "utf8").trim(), OPENAI_API_KEY: "sk-proxy-injected", DASHSCOPE_API_KEY: "sk-proxy-injected", FAL_KEY: "proxy-injected", ANTHROPIC_API_KEY: "", GOOGLE_API_KEY: "" });
   const { appliquerTarifsVerifies } = await import("./tarifs-verifies");
   await appliquerTarifsVerifies();
-  const { clientDeLEssai, devisDeLEssai, devisEnTexte, essaiDesPlanches, euros } = await import("./essai-planches-outil");
+  const { clientDeLEssai, devisDeLEssai, devisEnTexte, essaiDesPlanches, euros, refusDuPlafond } = await import("./essai-planches-outil");
 
   const [sortieArg, ...logos] = process.argv.slice(2);
   if (devisSeul) {
@@ -73,8 +76,8 @@ import path from "node:path";
 
   const devis = await devisDeLEssai(logos.length);
   console.log(devisEnTexte(devis).join("\n"));
-  const plafond = Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000);
-  if (plafond < devis.plafondMinimalMicro) console.log(`Attention : le plafond ${euros(plafond)} est sous le plafond minimal ${euros(devis.plafondMinimalMicro)} ; le garde-fou peut arrêter l'essai avant la fin (sans rien dépenser de plus).`);
+  const refus = refusDuPlafond(process.env.PLAFOND_ESSAI_EUR, devis);
+  if (refus) { console.error(refus); process.exit(1); }
   const sortie = path.resolve(sortieArg);
   const r = await essaiDesPlanches({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, logos: logos.map((l) => path.resolve(l)), client });
   console.log(`${r.planches.filter((p) => p.gardee).length} planche(s) gardée(s) sur ${r.planches.length}, dépense comptée ${euros(r.depenseMicro)}. Rapport : ${path.join(sortie, "rapport.txt")}`);

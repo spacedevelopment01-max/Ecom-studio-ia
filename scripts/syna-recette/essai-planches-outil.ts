@@ -76,6 +76,35 @@ export async function devisDeLEssai(n: number): Promise<DevisDeLEssai> {
   };
 }
 
+/**
+ * Le plafond de l'essai est-il assez haut ? Sous le plafond minimal (la somme des maxima, reprises comprises), l'essai
+ * pourrait s'arrêter avant la fin : le script refuse de partir. Rend la raison du refus, ou null.
+ */
+export function refusDuPlafond(plafondEuros: string, d: Pick<DevisDeLEssai, "plafondMinimalMicro">): string | null {
+  const plafond = Number(plafondEuros.replace(",", "."));
+  if (!Number.isFinite(plafond) || plafond <= 0) return "PLAFOND_ESSAI_EUR manquant ou illisible : rien n'est lancé.";
+  const micro = Math.floor(plafond * 1_000_000);
+  return micro < d.plafondMinimalMicro ? `Le plafond ${euros(micro)} est sous le plafond minimal ${euros(d.plafondMinimalMicro)} (somme des maxima, reprises à la charge du Studio comprises) : rien n'est lancé.` : null;
+}
+
+// ---------------------------------------------------------------- la phrase de chaque logo
+
+/**
+ * La phrase que porte un logo fini de l'essai de finalisation (étape 2) : le fichier esquisse-NN-phrase-du-logo.txt, à
+ * côté de esquisse-NN-logo-garde.png (vide : aucune ; plusieurs lignes : « / » entre elles). Ses lignes, dans l'ordre,
+ * reprises mot pour mot ; `undefined` sans phrase. Un logo nommé comme ceux de l'étape 2 dont le fichier de phrase manque :
+ * une erreur (la phrase serait perdue), rien n'est lancé. Un logo nommé autrement : aucune phrase.
+ */
+export async function phraseDuLogoDeLEssai(fichierDuLogo: string): Promise<{ fichier: string | null; lignes?: string[] }> {
+  const { lignesDeLaPhrase } = await import("../../src/lib/syna-agent/planche-de-marque");
+  const m = /^(esquisse-\d+)-logo-garde\.png$/i.exec(path.basename(fichierDuLogo));
+  if (!m) return { fichier: null };
+  const fichier = path.join(path.dirname(fichierDuLogo), `${m[1]}-phrase-du-logo.txt`);
+  if (!fs.existsSync(fichier)) throw new Error(`La phrase du logo ${fichierDuLogo} est introuvable (${fichier}, écrit par l'essai de finalisation ; vide s'il n'y a aucune phrase). Rien n'est lancé.`);
+  const lignes = lignesDeLaPhrase(fs.readFileSync(fichier, "utf8"));
+  return { fichier, ...(lignes ? { lignes } : {}) };
+}
+
 /** Le devis en texte, pour le rapport et la console. */
 export function devisEnTexte(d: DevisDeLEssai): string[] {
   return [
@@ -92,7 +121,7 @@ export function devisEnTexte(d: DevisDeLEssai): string[] {
 // ---------------------------------------------------------------- l'essai
 
 export type EssaiEcrit = { tour: number; texte?: string; brut?: string; bandes?: string[]; demande?: string; verdict?: RelectureDeLaPlanche; raisons?: string[]; ecartes?: string[] };
-export type PlancheDeLEssai = { key: string; fichier: string; gardee?: boolean; fichierGarde?: string; raison?: string; note?: number; essais: EssaiEcrit[]; notes: string[]; issues: string[] };
+export type PlancheDeLEssai = { key: string; fichier: string; phrase?: string[]; fichierDeLaPhrase?: string | null; gardee?: boolean; fichierGarde?: string; raison?: string; note?: number; essais: EssaiEcrit[]; notes: string[]; issues: string[] };
 export type LigneDeDepense = { cle: string | null; task: string | null; modele: string | null; studio: boolean; reserveMicro: number; reelMicro: number | null; statut: string; appel?: Record<string, unknown> };
 export type ResultatDesPlanches = {
   arret?: string; client: ClientDeLEssai; fiche: string;
@@ -115,12 +144,14 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
   const plafond = Number(o.plafondEuros.replace(",", "."));
   if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible : rien n'est lancé.");
   if (o.logos.length < 2 || o.logos.length > 4) throw new Error(`Il faut de 2 à 4 logos finis, pas ${o.logos.length} : rien n'est lancé.`);
-  const logos = o.logos.map((f, i) => {
+  const logos = await Promise.all(o.logos.map(async (f, i) => {
     if (!fs.existsSync(f)) throw new Error(`Logo fini introuvable : ${f}. Rien n'est lancé.`);
     const png = fs.readFileSync(f);
     if (png[0] !== 137 || png[1] !== 80) throw new Error(`Le logo ${f} n'est pas un PNG : rien n'est lancé.`);
-    return { key: KEYS[i], fichier: f, png };
-  });
+    // La phrase choisie sous ce logo (étape 2), reprise mot pour mot sur sa planche.
+    const ph = await phraseDuLogoDeLEssai(f);
+    return { key: KEYS[i], fichier: f, png, phrase: ph.lignes, fichierDeLaPhrase: ph.fichier };
+  }));
   const client = o.client;
   // Le garde-fou de l'essai, compté depuis le début du script.
   process.env.STUDIO_ESSAI_PLAFOND_EUROS = String(plafond);
@@ -180,16 +211,17 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
       if (r.recu) ecrireFichier(`planche-${key}-${tour}-recu.json`, json(r.recu));
       return r;
     },
-    relire: async (bandes, logo, disposition, demande, cle) => {
+    relire: async (bandes, logo, disposition, demande, cle, avecPhrase) => {
       const { key, tour } = cleDe(cle);
       const e = essaiDe(key, tour);
       e.bandes = bandes.map((b, i) => ecrireFichier(`planche-${key}-${tour}-bande-${i + 1}.png`, b));
       e.demande = ecrireFichier(`planche-${key}-${tour}-relecture-demande.txt`, `${P.RELECTEUR_DE_LA_PLANCHE}\n\n--- demande ---\n${demande}\n\n--- images jointes : ${bandes.map((_b, i) => `bande ${i + 1}`).join(", ")}, logo, disposition (réduite à 768 px par les vrais appels) ---\n`);
-      const v = await garder(() => brut.relire(bandes, logo, disposition, demande, cle));
+      const v = await garder(() => (avecPhrase ? brut.relire(bandes, logo, disposition, demande, cle, true) : brut.relire(bandes, logo, disposition, demande, cle)));
       e.verdict = v;
       if (res.domaine && res.valeurs?.ok) {
         const d = P.laDisposition(res.valeurs.valeurs.metier);
-        const lu = P.lectureDeLaPlanche(v, { nom: client.nom, annee, domaine: { domaine: res.domaine.domaine, statut: res.domaine.statut as never }, personnes, animaux: d.animaux && d.laquelle === "standard" });
+        const phrase = logos.find((l) => l.key === key)?.phrase;
+        const lu = P.lectureDeLaPlanche(v, { nom: client.nom, annee, domaine: { domaine: res.domaine.domaine, statut: res.domaine.statut as never }, personnes, animaux: d.animaux && d.laquelle === "standard", ...(phrase ? { phrase } : {}) });
         e.raisons = lu.raisons; e.ecartes = lu.ecartes;
       }
       ecrireFichier(`planche-${key}-${tour}-relecture-verdict.json`, json({ verdict: v, raisons: e.raisons ?? null, ecartes: e.ecartes ?? [], gardee: e.raisons ? !e.raisons.length : null }));
@@ -215,6 +247,7 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
     `Plafond de l'essai : ${euros(Math.floor(plafond * 1_000_000))}`,
     `Personnes permises : ${personnes ? "oui" : "non (aucune photo de personne ni accord)"}`,
     `Logos finis : ${logos.map((l) => `${l.key} (${l.fichier})`).join(", ")}`,
+    ...logos.map((l) => `Phrase sous le logo ${l.key} : ${l.phrase ? `${l.phrase.map((x) => `« ${x} »`).join(" puis ")}, reprise mot pour mot sur la planche` : "aucune"}${l.fichierDeLaPhrase ? ` (${l.fichierDeLaPhrase})` : " (aucun fichier de phrase à côté du logo)"}`),
     "", ...devisEnTexte(devis), "",
   ];
   const lireLaDepense = () => {
@@ -279,18 +312,18 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
       }
       // 4. Chaque logo, dans l'ordre : sa planche (domaine vérifié avant le dessin), sa relecture, sa reprise unique.
       for (const l of logos) {
-        const p: PlancheDeLEssai = { key: l.key, fichier: l.fichier, essais: [], notes: [], issues: [] };
+        const p: PlancheDeLEssai = { key: l.key, fichier: l.fichier, ...(l.phrase ? { phrase: l.phrase } : {}), fichierDeLaPhrase: l.fichierDeLaPhrase, essais: [], notes: [], issues: [] };
         res.planches.push(p);
         ecrireFichier(`planche-${l.key}-logo-recu.png`, l.png);
         const a = await saveAsset({ userId: u.id, projectId, data: l.png, name: `logo-fini-${l.key}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready" });
         const route = { key: l.key, name: client.nom, board: { descriptor: client.descripteur ?? null } };
-        const r = await T.plancheDeLaRoute({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, round: 1, valeurs: res.valeurs, logoAssetId: a.id, personnes });
+        const r = await T.plancheDeLaRoute({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, round: 1, valeurs: res.valeurs, logoAssetId: a.id, personnes, ...(l.phrase ? { phrase: l.phrase } : {}) });
         const pl = r.route.board.planche;
         p.notes = r.notes; p.issues = r.issues;
         p.gardee = !!pl?.image; p.note = pl?.note;
         if (pl?.image) { const dernier = p.essais.at(-1); if (dernier?.brut) p.fichierGarde = ecrireFichier(`planche-${l.key}-gardee.png`, fs.readFileSync(path.join(o.sortie, dernier.brut))); }
         else p.raison = typeof pl?.raison === "string" ? pl.raison : "non faite";
-        ecrireFichier(`planche-${l.key}-resultat.json`, json({ nom: client.nom, disposition: P.laDisposition(res.valeurs?.ok ? res.valeurs.valeurs.metier : client.metier).laquelle, logo: { fichier: l.fichier, sha256: crypto.createHash("sha256").update(l.png).digest("hex") }, planche: pl ?? null, notes: r.notes, issues: r.issues }));
+        ecrireFichier(`planche-${l.key}-resultat.json`, json({ nom: client.nom, disposition: P.laDisposition(res.valeurs?.ok ? res.valeurs.valeurs.metier : client.metier).laquelle, logo: { fichier: l.fichier, sha256: crypto.createHash("sha256").update(l.png).digest("hex") }, phrase: l.phrase ?? null, planche: pl ?? null, notes: r.notes, issues: r.issues }));
         if (erreur) { res.arret = raisonDeLArret(erreur, `planche ${l.key}`); break; }
         const parLEssai = arretParLEssai(jobId);
         if (parLEssai) { res.arret = raisonDeLArret(parLEssai, `planche ${l.key}`); break; }

@@ -222,6 +222,8 @@ export const BoardSchema = z.object({
     /** Le logo fini joint en première image. */
     logo: z.string().regex(/^[A-Za-z0-9_-]{4,80}$/),
     domaine: z.string().max(80).nullable(), statut: z.enum(["disponible", "a_verifier", "adresse_a_choisir"]), annee: z.number().int().min(2000).max(2200),
+    /** La phrase choisie par le client sous ce logo, ses lignes dans l'ordre, reprise mot pour mot sur la planche (absente : aucune). */
+    phrase: z.array(z.string().max(200)).max(6).optional(),
     /** Les essais faits (1 ou 2 : une reprise au plus, à la charge du Studio). */
     essais: z.number().int().min(0).max(2),
     note: z.number().min(0).max(10).optional(),
