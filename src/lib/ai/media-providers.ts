@@ -1048,7 +1048,7 @@ const borneElement = (texte: string, taille: string, jointes: number): number =>
 /** Coût MAXIMAL d'une image de la planche en vrai (même calcul que sa réservation, marge comprise), au texte le plus long. */
 export const elementDeLaPlancheMaxMicro = (taille: string, jointes = 3): number => mediaReservationMaxMicro(borneElement("x".repeat(ELEMENT_TEXTE_MAX_OCTETS), taille, jointes));
 
-type JointeDElement = { role: "apercu" | "logo" | "produit"; assetId: string | null; data: Buffer };
+type JointeDElement = { role: "apercu" | "logo" | "symbole" | "produit"; assetId: string | null; data: Buffer };
 async function elementDeLaPlancheImpl(ctx: Ctx, input: { element: string; texte: string; taille: string; jointes: JointeDElement[] }): Promise<Buffer> {
   const { provider, model, chemin } = PERMISSION_DE_LA_PLANCHE_EN_VRAI;
   if (!permisPourLaPlancheEnVrai(chemin, provider, model)) throw new PermanentError(L("Modèle non permis pour la planche en vrai (logo-policy.ts).", "Model not allowed for the full-resolution board."));

@@ -1570,4 +1570,40 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect(V.phraseDuMelangeRefuse()).toMatch(/le mélange de deux identités n'est plus possible/);
     expect(fs.readFileSync("src/lib/syna-agent/tools/identity.ts", "utf8")).toContain("return { ok: false, summary: phraseDuMelangeRefuse()");
   });
+
+  epreuve("planche-en-vrai-symbole-seul-et-bandeau-sans-marges", async () => {
+    // 1. Le vrai logo de l'essai : symbole et nom séparés sur le masque d'encre ; le compact, l'icône et le favicon en symbole seul.
+    const logo = fs.readFileSync("tests/fixtures/planche-en-vrai/esquisse-11-logo-garde-512.png");
+    const sep = await C.separerSymbole(logo);
+    expect(sep).toMatchObject({ fiable: true, sens: "dessus" });
+    const police = C.policeDuCatalogue({ nom: "Montserrat", genre: "sans" }, 400);
+    const bas = C.texteDuBasDuBadge({ ligneDuLogo: "", metierCourt: "les plantes d'intérieur" });
+    expect(bas).toBe("plantes d'intérieur");
+    expect(C.texteDuBasDuBadge({ ligneDuLogo: "Le bois bien fait", metierCourt: "la menuiserie" })).toBe("Le bois bien fait");
+    const v = await C.versionsDuLogo({ logo, separation: sep, couleur: "#5D0126", sombre: "#640B29", clair: "#F7F3EC", monoClair: "#A1B89B", nom: "Aplomb", bas, police });
+    expect(v.symboleComplet).toBe(false);
+    const sym = await sharp(sep.symbole).metadata(), compact = await sharp(v.versions["logo-compact"]).metadata();
+    expect([compact.width, compact.height]).toEqual([sym.width, sym.height]);
+    const hz = await sharp(v.versions["logo-horizontal"]).metadata();
+    expect(hz.width! / hz.height!).toBeGreaterThan(3);
+    const bloc = await uni(300, 300, "#0A0A0A");
+    expect((await C.separerSymbole(bloc)).fiable).toBe(false);
+    // 2. Le symbole seul joint là où l'inventaire ne voit que lui ; sans séparation fiable, rien ; une ancienne réponse garde la règle d'avant.
+    const cas = (x: Record<string, unknown>) => V.CaseLueSchema.parse({ case: "reference-6", logo: true, textes: [], produit: false, personne: false, comprehensible: null, description: "", ...x });
+    const a = Buffer.from("a"), l = Buffer.from("l"), s = Buffer.from("s");
+    expect(V.jointesDeLElement({ apercu: a, logo: l, photo: null, inventaire: cas({ logoVu: "symbole" }), symbole: s }).map((j) => j.role)).toEqual(["apercu", "symbole"]);
+    expect(V.jointesDeLElement({ apercu: a, logo: l, photo: null, inventaire: cas({ logoVu: "symbole" }), symbole: null }).map((j) => j.role)).toEqual(["apercu"]);
+    expect(V.jointesDeLElement({ apercu: a, logo: l, photo: null, inventaire: cas({}), symbole: s }).map((j) => j.role)).toEqual(["apercu", "logo"]);
+    expect(V.texteDeLElement({ element: "reference-6", nom: "Aplomb", logo: false, symbole: true, photo: false, personnes: false })).toContain(V.regleDuSymbole("Aplomb"));
+    // 3. Le bandeau : marges blanches rognées avant la relecture, l'image rognée gardée.
+    const photo = await sharp({ create: { width: 2304, height: 558, channels: 3, background: "#3A5A40" } }).png().toBuffer();
+    const avecMarges = await sharp({ create: { width: 2304, height: 768, channels: 3, background: "#FFFFFF" } }).composite([{ input: photo, left: 0, top: 120 }]).png().toBuffer();
+    const relues: number[] = [];
+    const r = await V.refaireLesElements({ refaire: async () => avecMarges, relire: async (_g, items) => { for (const it of items) relues.push((await sharp(it.image).metadata()).height!); return { images: items.map((it) => ({ case: it.element, ...bon })) }; }, aLaChargeDuStudio },
+      { nom: "Aplomb", personnes: false, logo: Buffer.alloc(0), photo: null, apercus: new Map([["ouverture-planche", await uni(1056, 285, "#3A5A40")]]), inventaire: V.InventaireSchema.parse({ polices: { titres: {}, textes: {} } }), elements: ["ouverture-planche"] });
+    expect(relues).toEqual([558]);
+    expect(r.get("ouverture-planche")).toMatchObject({ ok: true, w: 2304, h: 558 });
+    // Les publications incompréhensibles restent hors du calendrier.
+    expect(V.phraseDeLaPublicationIncomprehensible(1)).toMatch(/je ne la mets pas à ton calendrier/);
+  });
 });
