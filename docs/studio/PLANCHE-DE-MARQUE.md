@@ -282,5 +282,4 @@ Verdicts réels copiés tels quels : `tests/fixtures/torrefacteur-planches`.
 (« sachet Éthiopie »). Désormais, les raisons envoyées pour la reprise ne recopient jamais un nom inventé : la raison des
 produits inventés dit seulement où, en termes neutres, et rappelle les noms du client ; dans les autres raisons, les noms
 inventés, les pays et les mots d'origine, de variété ou de gamme absents de la fiche sont retirés. Le compte rendu garde
-les noms exacts. `planche-produits-de-la-fiche-seulement` est marquée remplacée par `planche-reprise-sans-nom-invente`,
-avec l'accord écrit du propriétaire encore à recevoir.
+les noms exacts. L'épreuve `planche-produits-de-la-fiche-seulement`, jamais envoyée, est corrigée et rescellée.
