@@ -43,6 +43,8 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
   const AVEC_LOGO = new Set(["publication-1x1", "site-ordinateur", "site-telephone", "emballage"]);
   let verdicts: Record<string, Record<string, unknown>> = {};
   let accroche = "Une plante qui pousse chez toi";
+  /** Les polices que l'inventaire lit dans la case « typographies ». */
+  let policesLues: Record<string, { nom: string; genre: string }> = { titres: { nom: "Playfair Display", genre: "serif" }, textes: { nom: "Montserrat", genre: "sans" } };
   const textesDe = (n: string) => (n.startsWith("publication-") ? [`${accroche} (${n.slice(12)})`] : []);
   const paye = (q: { userId: string; jobId: string }, max: number, task: string) =>
     withTrace({ jobId: q.jobId }, async () => { const rid = billing.reserve(q.userId, max, { task, provider: "openai", model: "simule", jobId: q.jobId }); billing.settle(rid, Math.round(max / 2), null, task); });
@@ -54,7 +56,7 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
       const cases = images.map((im) => im.label).filter((l) => (P.NOMS_DES_ELEMENTS as string[]).includes(l));
       return P.InventaireSchema.parse({
         cases: cases.map((c) => ({ case: c, logo: AVEC_LOGO.has(c), textes: textesDe(c), produit: c.startsWith("produit-"), personne: false, comprehensible: c.startsWith("publication-") ? true : null, description: `la case ${c}` })),
-        polices: { titres: { nom: "Playfair Display", genre: "serif" }, textes: { nom: "Montserrat", genre: "sans" } },
+        polices: policesLues,
         couleurs: [{ nom: "Bordeaux", mots: ["profond"] }], icone: "le R", favicon: "le R", iconeReprendLeLogo: false,
       });
     },
@@ -82,7 +84,7 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     const r = await essaiDeLaPlancheEnVrai({ sortie, plafondEuros, planche: DEMO, logo: l, client, donnees: donneesDeLaPlanche(client, env), ai: simule as never });
     return { r, sortie, lire: (f: string) => fs.readFileSync(path.join(sortie, f), "utf8"), existe: (f: string) => fs.existsSync(path.join(sortie, f)) };
   };
-  afterEach(() => { appels.length = 0; envoyes.length = 0; demandes.length = 0; verdicts = {}; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; setJsonSetting(P.REGLAGE_PLANCHE_EN_VRAI, false); });
+  afterEach(() => { policesLues = { titres: { nom: "Playfair Display", genre: "serif" }, textes: { nom: "Montserrat", genre: "sans" } }; appels.length = 0; envoyes.length = 0; demandes.length = 0; verdicts = {}; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; setJsonSetting(P.REGLAGE_PLANCHE_EN_VRAI, false); });
 
   it("sans refus : l'inventaire, les 17 retouches, les 4 relectures, puis les logos, la palette, les polices et la planche en 3072 × 4608 ; tout est écrit", async () => {
     const { r, sortie, lire, existe } = await lancer();
@@ -429,5 +431,39 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     expect(src).toContain("T.vraisAppelsEnVrai(qui)");
     expect(src).toContain("T.devisDeLaPlancheEnVrai()");
     expect(src).not.toMatch(/aiElementDeLaPlanche\(|llmJson\(|refaireLesElements\(|assemblerLaPlanche\(/);
+  });
+
+  it("la planche B d'Écume (26 novembre 2026) : la phrase sur deux lignes lue dans son résultat, jamais le « / » ; « Nunito » montrée en manuscrite, remplacée et dite", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "essai-envrai-b-"));
+    const { logo: l } = await preparer();
+    const resultat = path.join(dir, "planche-B-resultat.json");
+    const reel = JSON.parse(fs.readFileSync("tests/fixtures/ecume-planches-2/planche-B-resultat.json", "utf8"));
+    expect(reel.phrase).toEqual(["SAVONNERIE", "ARTISANALE"]);
+    fs.writeFileSync(resultat, JSON.stringify({ ...reel, logo: { fichier: l, sha256: crypto.createHash("sha256").update(fs.readFileSync(l)).digest("hex") } }));
+    // Sans PHRASE : les lignes du résultat ; avec le fichier de phrase de l'étape 2 (« SAVONNERIE / ARTISANALE ») : les mêmes lignes.
+    expect(donneesDeLaPlanche(ECUME, { RESULTAT_PLANCHE: resultat }).phrase).toBe("SAVONNERIE / ARTISANALE");
+    const donnees = donneesDeLaPlanche(ECUME, { RESULTAT_PLANCHE: resultat, PHRASE: "SAVONNERIE / ARTISANALE" });
+    expect(donnees).toEqual({ domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, disposition: "standard", phrase: "SAVONNERIE / ARTISANALE" });
+    expect(donneesDeLaPlanche(ECUME, { RESULTAT_PLANCHE: resultat, PHRASE: "SAVONNERIE\nARTISANALE" }).phrase).toBe("SAVONNERIE / ARTISANALE");
+    expect(() => donneesDeLaPlanche(ECUME, { RESULTAT_PLANCHE: resultat, PHRASE: "SAVONNERIE ARTISANALE" })).toThrow(/contredit la phrase de la planche choisie/);
+    policesLues = { titres: { nom: "Playfair Display", genre: "serif" }, textes: { nom: "Nunito", genre: "manuscrite" } };
+    const r = await essaiDeLaPlancheEnVrai({ sortie: path.join(dir, "sortie"), plafondEuros: "5", planche: DEMO, logo: l, client: ECUME, donnees, ai: simule as never });
+    expect(r.arret).toBeUndefined();
+    const etat = JSON.parse(fs.readFileSync(path.join(dir, "sortie", "etat.json"), "utf8"));
+    expect(etat.polices.textes).toMatchObject({ famille: "Dancing Script", remplacee: true, pourquoi: "genre", lue: "Nunito" });
+    expect(etat.issues.join(" ")).toContain("Sur ta planche, la police nommée « Nunito » était montrée en écriture manuscrite : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Dancing Script ».");
+    const rapport = fs.readFileSync(path.join(dir, "sortie", "rapport.txt"), "utf8");
+    expect(rapport).toContain("phrase sous le nom : « SAVONNERIE » puis « ARTISANALE »");
+    // Le « / » n'est jamais écrit : ni au bas du badge, ni dans le ton redessiné, ni dans ce qui part vers l'IA.
+    const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+    expect(C.texteDuBasDuBadge({ signature: donnees.phrase })).toBe("SAVONNERIE ARTISANALE");
+    expect(C.texteDuBasDuBadge({ ligneDuLogo: ["SAVONNERIE", "ARTISANALE"] })).toBe("SAVONNERIE ARTISANALE");
+    expect(C.texteDuBasDuBadge({ ligneDuLogo: "SAVONNERIE / ARTISANALE" })).toBe("SAVONNERIE ARTISANALE");
+    expect(C.texteDuBasDuBadge({ ligneDuLogo: "Ouvert 7j/7" })).toBe("Ouvert 7j/7");
+    for (const t of envoyes) expect(t).not.toContain("SAVONNERIE / ARTISANALE");
+    const T2 = await import("@/lib/syna-agent/planche-en-vrai-tache");
+    const inv = P.InventaireSchema.parse({ cases: [{ case: "ton", textes: ["Livraison offerte en 24 h"] }], polices: policesLues });
+    const route = { key: "B", name: "Écume", slogan: donnees.phrase, palette: {}, board: { planche: { image: { id: "x", w: 1536, h: 2304 }, logo: "lg", domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, essais: 2, at: 1 } } } as never;
+    expect(T2.textesDeLaPlanche(inv, route).blocs.get("ton")).toEqual({ lignes: ["SAVONNERIE", "ARTISANALE"] });
   });
 });

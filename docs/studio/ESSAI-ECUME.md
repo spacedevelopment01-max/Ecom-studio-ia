@@ -251,7 +251,39 @@ entier. Le domaine écrit est dans `domaine.json`. Il choisit **sa planche** : A
 
 ## Étape 4 — la planche choisie, refaite en vrai
 
-Avec X la planche choisie et NN l'esquisse de son logo :
+**Le propriétaire a choisi la planche B** (logo de l'esquisse 10, phrase « SAVONNERIE » puis « ARTISANALE »). Si les
+dossiers manquent, copier d'abord `3-planches-2` (voir l'étape 3) et `2-finalisation` (depuis la racine du dépôt) :
+
+```
+git fetch origin claude/essais-complets
+mkdir -p data/essai-ecume/2-finalisation
+git archive -o data/essai-ecume/2-finalisation.tar FETCH_HEAD docs/studio/essais-complets/images/ecume/2-finalisation
+tar -x --strip-components=6 -C data/essai-ecume/2-finalisation -f data/essai-ecume/2-finalisation.tar
+rm data/essai-ecume/2-finalisation.tar
+```
+
+Le devis, gratuit (`DEVIS_SEULEMENT=1`, aucun appel), calculé le 26 novembre 2026 : **probable 1,4972 €** sans refus
+(2,7810 € si chaque image est refaite une fois) ; **plafond minimal exact 6,6960 €** (3,6042 € pour le client et
+3,0918 € de borne du Studio) ; hors plafond, une réponse de texte mal formée à réparer coûterait au plus 3,0747 € de
+plus ; plafond conseillé 7,60 €. Le devis ne dépend pas de la planche choisie.
+
+```
+NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
+  PLAFOND_ESSAI_EUR=7.60 RESULTAT_PLANCHE=data/essai-ecume/3-planches-2/planche-B-resultat.json \
+  PHRASE="$(cat data/essai-ecume/2-finalisation/esquisse-10-phrase-du-logo.txt)" \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-ecume/4-planche-en-vrai \
+  data/essai-ecume/3-planches-2/planche-B-gardee.png data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png
+```
+
+Vérifié sans dépense le 26 novembre 2026, avec des appels simulés sur les vrais fichiers de la branche des essais : le
+script accepte la planche B, son résultat (domaine, année, disposition), le logo 10 (empreinte reconnue) et sa phrase ;
+la phrase est lue par ses lignes, « SAVONNERIE » puis « ARTISANALE » (le « / » du fichier n'est jamais écrit : le bas du
+badge porte « SAVONNERIE ARTISANALE ») ; si l'inventaire lit « Nunito » en écriture manuscrite, comme le relecteur l'a
+vu, la police des textes devient Dancing Script et SINA le dit. La planche est assemblée en 3072 × 4608. La phrase donnée
+par `PHRASE` doit dire les mêmes lignes que le résultat de la planche, sinon rien n'est lancé ; sans `PHRASE`, ce sont
+celles du résultat.
+
+Pour une autre planche, avec X la planche choisie et NN l'esquisse de son logo :
 
 ```
 NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \

@@ -1,0 +1,34 @@
+{
+  "nom": "Écume",
+  "disposition": "standard",
+  "logo": {
+    "fichier": "/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png",
+    "sha256": "9bd4cefbb9df27e2b2b4f41ad3f289f1a6f7841664460b88ea853299b749fd0b"
+  },
+  "phrase": [
+    "SAVONNERIE",
+    "ARTISANALE"
+  ],
+  "planche": {
+    "logo": "qoj5x6u2ufhx3l4a",
+    "domaine": "ecumefrance.fr",
+    "statut": "disponible",
+    "annee": 2026,
+    "phrase": [
+      "SAVONNERIE",
+      "ARTISANALE"
+    ],
+    "at": 1795655392023,
+    "image": {
+      "id": "9xchx604rd4oaxat",
+      "w": 1536,
+      "h": 2304
+    },
+    "essais": 2,
+    "note": 8.5
+  },
+  "notes": [
+    "planche B, essai 1 refusé : fautes : « 05 PRODUITS (numéro de bloc en double après 05 IMAGES DE RÉFÉRENCE, il devrait être 06) », « Écumee (réassurance du site sur ordinateur) », « Fabrmotion (réassurance du site sur ordinateur) », « Ingrédieeement (réassurance du site sur ordinateur) », « selectionnés (réassurance du site mobile, au lieu de sélectionnés) » ; elle n'est pas au niveau (7/10, il faut 8)"
+  ],
+  "issues": []
+}

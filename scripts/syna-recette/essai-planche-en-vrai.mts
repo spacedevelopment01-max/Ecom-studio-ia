@@ -65,7 +65,7 @@ import path from "node:path";
     const v = await donneesVerifiees(client, process.env);
     donnees = v.donnees;
     if (v.verifie) console.log(`Domaine vérifié par le Studio (findDomains, gratuit) : libres ${v.verifie.free.join(", ") || "aucun"} ; pris ${v.verifie.taken.join(", ") || "aucun"} ; à vérifier ${v.verifie.unknown.join(", ") || "aucun"}.`);
-    console.log(`Données de la planche : domaine ${donnees.domaine ?? "à choisir"} (${donnees.statut}), année ${donnees.annee}, disposition ${donnees.disposition}, phrase ${donnees.phrase ? `« ${donnees.phrase} »` : "aucune"}.`);
+    console.log(`Données de la planche : domaine ${donnees.domaine ?? "à choisir"} (${donnees.statut}), année ${donnees.annee}, disposition ${donnees.disposition}, phrase ${donnees.phrase ? donnees.phrase.split(" / ").map((l) => `« ${l} »`).join(" puis ") : "aucune"}.`);
   } catch (e) { console.error((e as Error).message); process.exit(1); }
   if (/d[ée]tour/i.test(path.basename(logo))) console.log(`Attention : ${logo} semble être la version détourée ; le Studio prend le logo fini sur fond blanc et retire le fond lui-même.`);
   // Le studio privé d'essai, comme lancer-agent.mts : clé Anthropic (inventaire et relectures) chiffrée depuis l'environnement.

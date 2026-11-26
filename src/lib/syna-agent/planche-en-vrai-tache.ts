@@ -23,6 +23,7 @@ import { loadProject, saveBrand } from "../projects";
 import { DEFAULT_MODELS } from "./models";
 import { logoDetoure, photosDuProduitIds } from "./brand-images";
 import type { Route } from "./brand-routes";
+import { lignesDuTexte } from "./phrase-sous-le-nom";
 import { blocDeLaFinition, copyright, mentionDuDomaine, nettoyerLesSignesIsoles, porteUnSigneParasite, texteDeLaFinition } from "./planche-de-marque";
 import {
   CASES_DU_CODE, ELEMENTS, GROUPES, INVENTAIRE_SYSTEM, InventaireSchema, NOMS_DES_ELEMENTS, RELECTEUR_EN_VRAI, RelectureDuGroupeSchema, TITRES, TUILES_DU_LOGO,
@@ -304,8 +305,9 @@ export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titre
   // Le ton : rien lu ou aucune promesse ni finition, le décor est gardé ; sinon redessiné sans elles, jamais vide.
   const ton = lignes("ton"), promesses = promessesDuBloc(ton), finitionsDuTon = notees("ton"), tonANettoyer = finitionsDuTon.length > 0 || luesAvecUnSigne("ton").length > 0;
   if (promesses.length || tonANettoyer) {
-    const reste = avecLesFinitions(ton.filter((l) => !promesses.includes(l)), finitionsDuTon).filter((l) => !promessesDuBloc([l]).length), slogan = (route.slogan ?? "").trim();
-    blocs.set("ton", { lignes: reste.length ? reste : [slogan && !promessesDuBloc([slogan]).length ? slogan : nom] });
+    // La phrase de la marque, par ses lignes (jamais le « / » qui les sépare dans le texte enregistré).
+    const reste = avecLesFinitions(ton.filter((l) => !promesses.includes(l)), finitionsDuTon).filter((l) => !promessesDuBloc([l]).length), slogan = lignesDuTexte(route.slogan ?? "");
+    blocs.set("ton", { lignes: reste.length ? reste : slogan.length && !promessesDuBloc(slogan).length ? slogan : [nom] });
     if (promesses.length) notes.push(`bloc du ton redessiné sans : ${promesses.join(" ; ")}`);
     if (tonANettoyer) dire("bloc du ton redessiné", "ton", finitionsDuTon);
   } else blocs.set("ton", null);

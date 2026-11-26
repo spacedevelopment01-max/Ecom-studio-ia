@@ -20,6 +20,7 @@ import sharp from "sharp";
 import { createCanvas, GlobalFonts, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
 import { FONT_FILES } from "../theme/render";
 import { FONT_DIR } from "../media/fonts";
+import { lignesDuTexte } from "./phrase-sous-le-nom";
 import { ECHELLE, TAILLE_DEMO, TAILLE_EN_VRAI, rognerLesMargesBlanches, type Boite, type NomElement, type PoliceDeLInventaire } from "./planche-en-vrai";
 
 // ---------------------------------------------------------------- couleurs
@@ -273,12 +274,14 @@ const fonte = (p: Pick<PoliceChoisie, "cle" | "poids">, taille: number, poids?: 
  * client) si elle existe ; sinon le métier court (« les plantes d'intérieur » : écrit sans son article sur le sceau) ; à
  * défaut des deux, la signature de la marque. Vide : rien en bas.
  */
-export function texteDuBasDuBadge(o: { ligneDuLogo?: string | null; metierCourt?: string | null; signature?: string | null }): string {
-  const ligne = (o.ligneDuLogo ?? "").trim();
+export function texteDuBasDuBadge(o: { ligneDuLogo?: string | readonly string[] | null; metierCourt?: string | null; signature?: string | readonly string[] | null }): string {
+  // Une phrase de plusieurs lignes (« A / B », des retours à la ligne, ou ses lignes) : ses lignes, à la suite, jamais le « / ».
+  const enLignes = (t: string | readonly string[] | null | undefined) => (typeof t === "string" ? [t] : [...(t ?? [])]).flatMap((x) => lignesDuTexte(String(x))).join(" ");
+  const ligne = enLignes(o.ligneDuLogo);
   if (ligne) return ligne;
   const court = (o.metierCourt ?? "").trim().replace(/^(la|le|les)\s+|^l['’]/i, "").trim();
   if (court) return court;
-  return (o.signature ?? "").trim();
+  return enLignes(o.signature);
 }
 
 /** LE BADGE, refait par le code : un anneau et un texte autour du symbole du logo ; jamais un pictogramme inventé. */
