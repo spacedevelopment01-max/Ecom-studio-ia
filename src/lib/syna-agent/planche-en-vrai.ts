@@ -169,7 +169,49 @@ export async function refusDUneCase(g: Gris, b: Boite, mesuree: Boite, o: { auBo
 const AU_BORD = new Set(["ouverture-planche", "haut"]);
 /** Les cases recalées : les photos et les publications (un grain net) ; les écrans (et l'ouverture dans l'écran de l'ordinateur), les tuiles, les blocs du code et les titres gardent leur case mesurée. */
 const RECALEES = new Set<string>(["publication-1x1", "publication-4x5", "publication-9x16", "produit-1", "produit-2", "produit-3", "emballage", "reference-1", "reference-2", "reference-3", "reference-4", "reference-5", "reference-6"]);
-export type Decoupe = { apercus: Map<string, Buffer>; boites: Map<string, Boite>; refus: { case: string; raison: string }[] };
+/**
+ * LES BANDES DES TITRES DE BLOC (essai réel d'Écume, 26 novembre 2026 : la case de la publication portrait, recalée vers
+ * le haut, prenait la fin du sous-titre du bloc 07, « s contenus qui inspirent au quoti », et la story son « en » ;
+ * l'inventaire les relevait comme textes de la case, et la relecture les réclamait). La bande d'un titre : la ligne du
+ * titre (4 pixels de marge en haut et en bas), de son début jusqu'au titre suivant de la même ligne, sinon jusqu'au bord
+ * droit de la page : le titre et son sous-titre y sont écrits.
+ */
+export function bandesDesTitres(laquelle: Laquelle): Map<string, Boite> {
+  const c = lesCases(laquelle).cases, out = new Map<string, Boite>();
+  const titres = TITRES.filter((t) => c[t]).map((t) => [t, c[t]] as const);
+  for (const [t, b] of titres) {
+    const suivants = titres.filter(([u, x]) => u !== t && x[0] > b[0] && x[1] < b[3] && x[3] > b[1]).map(([, x]) => x[0]);
+    out.set(t, [b[0], b[1] - 4, suivants.length ? Math.min(...suivants) - 1 : TAILLE_DEMO.w - 16, b[3] + 4]);
+  }
+  return out;
+}
+/**
+ * La part d'une case qui entre dans la bande d'un titre de bloc, quand cette part est la page (le fond et les lettres du
+ * sous-titre) et non l'image : au moins 70 % de ses points à 20 niveaux de gris au plus du fond de la page, lu sur la
+ * ligne juste au-dessus de la bande. Rend la bande touchée, ou null.
+ */
+export function bandeDeTitreTouchee(g: { data: Buffer; w: number; h: number }, laquelle: Laquelle, b: Boite): Boite | null {
+  for (const [, t] of bandesDesTitres(laquelle)) {
+    const x0 = Math.max(b[0], t[0]), x1 = Math.min(b[2], t[2]);
+    if (x1 - x0 < 8 || !(b[1] < t[3] && b[3] > t[3] && b[1] >= t[1] - 6)) continue;
+    const yf = Math.max(0, t[1] - 3), fond: number[] = [];
+    for (let x = x0; x < x1; x++) fond.push(g.data[yf * g.w + x]);
+    fond.sort((a, c) => a - c);
+    const f = fond[fond.length >> 1];
+    let n = 0, proches = 0;
+    for (let y = Math.max(0, b[1]); y < t[3]; y++) for (let x = x0; x < x1; x++) { n++; if (Math.abs(g.data[y * g.w + x] - f) <= 20) proches++; }
+    if (n && proches / n >= 0.7) return t;
+  }
+  return null;
+}
+/** La boîte d'une case touche-t-elle la bande d'un titre de bloc (au moins 4 pixels de chaque côté) ? */
+export const entreDansUneBandeDeTitre = (laquelle: Laquelle, b: Boite): boolean =>
+  [...bandesDesTitres(laquelle).values()].some((t) => Math.min(b[2], t[2]) - Math.max(b[0], t[0]) >= 4 && Math.min(b[3], t[3]) - Math.max(b[1], t[1]) >= 4);
+/**
+ * `debordes` : les cases dont l'aperçu touche encore la bande d'un titre de bloc (un bout du titre ou du sous-titre peut
+ * y être lu, sur un côté). Quand la part prise dans la bande est la page, le haut de la case est d'abord ramené sous la bande.
+ */
+export type Decoupe = { apercus: Map<string, Buffer>; boites: Map<string, Boite>; refus: { case: string; raison: string }[]; debordes?: string[] };
 /**
  * LA DÉCOUPE DES APERÇUS (gratuite, sans appel) : chaque case de la disposition, recalée sur la planche choisie, puis
  * contrôlée. Une planche qui n'est pas à la taille des cases est ramenée à cette taille avant la découpe.
@@ -178,17 +220,22 @@ export async function decouperLesApercus(planche: Buffer, laquelle: Laquelle, no
   const m = await sharp(planche).metadata();
   const png = m.width === TAILLE_DEMO.w && m.height === TAILLE_DEMO.h ? planche : await sharp(planche).resize(TAILLE_DEMO.w, TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
   const g = await gris(png), c = lesCases(laquelle);
-  const apercus = new Map<string, Buffer>(), boites = new Map<string, Boite>(), refus: Decoupe["refus"] = [];
+  const apercus = new Map<string, Buffer>(), boites = new Map<string, Boite>(), refus: Decoupe["refus"] = [], debordes: string[] = [];
   for (const [nom, mesuree] of Object.entries(c.cases)) {
     if (noms && !noms.includes(nom)) continue;
     // Seules les photos et les publications se recalent sur les bords de leur panneau (RECALEES).
-    const b = RECALEES.has(nom) ? recalerUneCase(g, mesuree) : mesuree;
+    let b = RECALEES.has(nom) ? recalerUneCase(g, mesuree) : mesuree;
+    // Jamais le titre ni le sous-titre d'un bloc dans l'aperçu d'une image : son haut est ramené sous la bande du titre.
+    const image = !TITRES.includes(nom) && !(CASES_DU_CODE as readonly string[]).includes(nom) && !nom.startsWith("logo-");
+    const bande = image ? bandeDeTitreTouchee(g, laquelle, b) : null;
+    if (bande) b = [b[0], bande[3] + 1, b[2], b[3]];
+    if (image && entreDansUneBandeDeTitre(laquelle, b)) debordes.push(nom);
     const r = await refusDUneCase(g, b, mesuree, { auBord: AU_BORD.has(nom) });
     if (r) { refus.push({ case: nom, raison: r }); continue; }
     boites.set(nom, b);
     apercus.set(nom, await sharp(png).extract({ left: b[0], top: b[1], width: b[2] - b[0], height: b[3] - b[1] }).png().toBuffer());
   }
-  return { apercus, boites, refus };
+  return { apercus, boites, refus, debordes };
 }
 
 // ---------------------------------------------------------------- 4. le texte envoyé
@@ -410,9 +457,19 @@ export const motsDe = (t: string): string[] => t.normalize("NFC").replace(/[’�
 export function comparerLesTextes(attendus: readonly string[], lus: readonly string[]): { manquants: string[]; enTrop: string[] } {
   const reste = new Map<string, number>();
   for (const w of attendus.flatMap(motsDe)) reste.set(w, (reste.get(w) ?? 0) + 1);
-  const enTrop: string[] = [];
+  let enTrop: string[] = [];
   for (const w of lus.flatMap(motsDe)) { const n = reste.get(w) ?? 0; if (n > 0) reste.set(w, n - 1); else enTrop.push(w); }
-  const manquants = [...reste.entries()].flatMap(([w, n]) => Array(n).fill(w) as string[]);
+  let manquants = [...reste.entries()].flatMap(([w, n]) => Array(n).fill(w) as string[]);
+  // UN MOT COUPÉ PAR LE BORD DE L'APERÇU (26 novembre 2026 : « nature » pour « naturels », « fa » pour « famille ») : le
+  // dernier mot d'une ligne attendue, coupé à droite, est le début d'un mot lu ; le premier, coupé à gauche, en est la fin.
+  // Ils vont ensemble ; aucun autre mot n'est excusé.
+  const bouts = new Set(attendus.flatMap((l) => { const m = motsDe(l); return m.length ? [`fin:${m.at(-1)}`, `debut:${m[0]}`] : []; }));
+  for (const w of [...manquants]) {
+    const i = enTrop.findIndex((x) => x !== w && ((bouts.has(`fin:${w}`) && x.startsWith(w)) || (bouts.has(`debut:${w}`) && x.endsWith(w))));
+    if (i < 0) continue;
+    enTrop = enTrop.filter((_, k) => k !== i);
+    const j = manquants.indexOf(w); manquants = manquants.filter((_, k) => k !== j);
+  }
   return { manquants, enTrop };
 }
 
@@ -421,11 +478,33 @@ export function comparerLesTextes(attendus: readonly string[], lus: readonly str
  * pour lettre par le code) ; logo ajouté ; personne sans accord ; logo foncé sur fond sombre ; autre produit que celui de
  * la photo jointe ; texte coupé ou collé au bord ; note de fidélité sous 8. Vide : gardée.
  */
-export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire: CaseLue | undefined; personnes: boolean; photo: boolean }): string[] {
+/** Les cases qui montrent un téléphone avec sa barre d'état : l'heure n'y est jamais comparée ni reprochée. */
+export const CASES_AVEC_BARRE_D_ETAT: ReadonlySet<string> = new Set(["site-telephone"]);
+/** L'heure d'une barre d'état (« 9:41 », « 12.01 », « 9h41 ») : un micro-texte décoratif, jamais jugé. */
+export const estUneHeure = (t: string) => /^\s*\d{1,2}\s*[:.h]\s*\d{2}\s*$/i.test(t);
+/**
+ * LES TEXTES ATTENDUS D'UNE CASE : seulement ceux de sa zone (essai réel d'Écume, 26 novembre 2026). `deborde` : l'aperçu
+ * relu par l'inventaire entrait dans la bande d'un titre de bloc (`bandeDeTitreTouchee`, une découpe d'avant la règle) ;
+ * alors les premières lignes de l'inventaire dont aucun mot n'est dans l'image refaite sont le titre ou le sous-titre du
+ * bloc, hors de la case, et ne sont pas attendues. Dans une case à barre d'état, l'heure n'est ni attendue ni reprochée.
+ */
+export function textesDeLaZone(attendus: readonly string[], lus: readonly string[], o: { element?: string; deborde?: boolean } = {}): { attendus: string[]; lus: string[] } {
+  let a = [...attendus], l = [...lus];
+  if (o.deborde) {
+    // Seulement les premières lignes qui commencent au milieu d'un mot (une minuscule : un texte coupé par le bord de la
+    // case) et dont aucun mot n'est dans l'image refaite ; un vrai titre de la case, qui commence par une majuscule, reste attendu.
+    const vus = new Set(l.flatMap(motsDe));
+    while (a.length && /^\s*\p{Ll}/u.test(a[0]) && !motsDe(a[0]).some((w) => vus.has(w))) a = a.slice(1);
+  }
+  if (o.element && CASES_AVEC_BARRE_D_ETAT.has(o.element)) { a = a.filter((t) => !estUneHeure(t)); l = l.filter((t) => !estUneHeure(t)); }
+  return { attendus: a, lus: l };
+}
+export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire: CaseLue | undefined; personnes: boolean; photo: boolean; element?: string; deborde?: boolean }): string[] {
   if (!v) return ["le relecteur ne l'a pas relue"];
   const r: string[] = [];
   if (!v.identique) r.push("elle n'est pas identique à son aperçu");
-  const t = comparerLesTextes(o.inventaire?.textes ?? [], v.textesLus);
+  const z = textesDeLaZone(o.inventaire?.textes ?? [], v.textesLus, { element: o.element ?? o.inventaire?.case, deborde: o.deborde });
+  const t = comparerLesTextes(z.attendus, z.lus);
   if (t.manquants.length || t.enTrop.length) r.push(`ses textes ne sont pas ceux de l'aperçu, lettre pour lettre${t.manquants.length ? ` (manquent : ${t.manquants.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}${t.enTrop.length ? ` (en trop ou mal écrits : ${t.enTrop.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}`);
   if (v.logoPresent && !o.inventaire?.logo) r.push("un logo a été ajouté là où l'aperçu n'en a pas");
   if (v.personne && !o.personnes) r.push("une personne est visible sans l'accord du client");
@@ -459,6 +538,13 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
   nom: string; personnes: boolean; logo: Buffer; photo: Buffer | null; apercus: Map<string, Buffer>; inventaire: Inventaire; elements?: readonly NomElement[];
   /** Le symbole seul, sur fond blanc (séparation fiable du code), joint là où l'inventaire ne voit que lui ; null : jamais joint. */
   symbole?: Buffer | null;
+  /** Les cases dont l'aperçu touche la bande d'un titre de bloc (`Decoupe.debordes`). */
+  debordes?: readonly string[];
+  /**
+   * UNE REPRISE SEULE, à la charge du Studio (le réassemblage d'un essai, 26 novembre 2026) : les cases données sont refaites
+   * une fois, avec leurs raisons au début du texte, puis relues ; il n'y a pas d'autre tour.
+   */
+  reprise?: ReadonlyMap<NomElement, readonly string[]>;
 }): Promise<Map<NomElement, ResultatDElement>> {
   const noms = (o.elements ?? NOMS_DES_ELEMENTS).filter((n) => o.apercus.has(n));
   const res = new Map<NomElement, ResultatDElement>();
@@ -485,7 +571,7 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
       for (const n of liste.filter((x) => def(x).groupe === g)) {
         const f = faits.get(n)!, photo = f.d.jointes.some((j) => j.role === "produit");
         const v = verdicts.images.find((x) => x.case === n);
-        const raisons = f.png ? raisonsDuRefusEnVrai(v, { inventaire: caseLue(o.inventaire, n), personnes: o.personnes, photo }) : [f.raison ?? "image illisible"];
+        const raisons = f.png ? raisonsDuRefusEnVrai(v, { inventaire: caseLue(o.inventaire, n), personnes: o.personnes, photo, element: n, deborde: o.debordes?.includes(n) }) : [f.raison ?? "image illisible"];
         const avant = res.get(n);
         const essai: EssaiDElement = { tour, texte: f.d.texte, png: f.png, raisons, ...(v ? { verdict: v } : {}) };
         const m = f.png ? await sharp(f.png).metadata() : null;
@@ -493,6 +579,11 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
       }
     }
   };
+  if (o.reprise) {
+    const aReprendre = noms.filter((n) => o.reprise!.has(n));
+    if (aReprendre.length) await deps.aLaChargeDuStudio(() => unTour(aReprendre, 2, (n) => [...(o.reprise!.get(n) ?? [])]));
+    return res;
+  }
   await unTour(noms, 1, () => undefined);
   const refusees = noms.filter((n) => !res.get(n)!.ok);
   if (refusees.length) await deps.aLaChargeDuStudio(() => unTour(refusees, 2, (n) => res.get(n)!.essais.at(-1)!.raisons));
@@ -516,6 +607,11 @@ export const phraseDeLaPoliceRemplacee = (lue: string, prise: string, genreLu?: 
   `On your board, the font named “${lue}” was shown as ${GENRE_DIT[genreLu]?.[1] ?? genreLu}: I used the Studio catalogue font closest to what you saw, “${prise}”.`) : L(
   `La police « ${lue} » de ta planche n'est pas dans le catalogue du Studio : j'ai pris la plus proche, « ${prise} ».`,
   `The “${lue}” font of your board is not in the Studio catalogue: I used the closest one, “${prise}”.`);
+/** Les versions du logo reprises de la planche choisie, agrandies (aucune séparation fiable du symbole). */
+export const phraseDesLogosDeLApercu = (versions: readonly string[]) => L(
+  `Ton logo ne se sépare pas proprement en un symbole et un nom : ${versions.length > 1 ? "ces versions sont reprises" : "cette version est reprise"} de ta planche choisie, agrandie${versions.length > 1 ? "s" : ""}, telle${versions.length > 1 ? "s" : ""} que tu ${versions.length > 1 ? "les" : "l'"}as vue${versions.length > 1 ? "s" : ""} (${versions.map((v) => LIBELLE_VERSION_FR[v] ?? v).join(", ")}). Je peux ${versions.length > 1 ? "les" : "la"} refaire en haute définition, je t'annonce le prix avant.`,
+  `Your logo does not split cleanly into a symbol and a name: ${versions.length > 1 ? "these versions are" : "this version is"} taken from your chosen board, enlarged, as you saw ${versions.length > 1 ? "them" : "it"} (${versions.join(", ")}). I can redo ${versions.length > 1 ? "them" : "it"} in high definition; I give you the price first.`);
+const LIBELLE_VERSION_FR: Record<string, string> = { "logo-compact": "le logo compact", icone: "l'icône", favicon: "le favicon", badge: "le badge" };
 export const phraseDuSymboleComplet = () => L(
   "Je n'ai pas pu séparer proprement le symbole et le nom de ton logo : ton icône et ton favicon reprennent ton logo complet.",
   "I could not cleanly separate your logo's symbol from its name: your icon and favicon use your full logo.");
@@ -553,4 +649,6 @@ export type EtatPlancheEnVrai = {
   issues: string[]; notes: string[];
   /** L'inventaire fait avant toute retouche : il sert au réassemblage (produits refaits avec ses photos) sans être repayé. */
   inventaire?: Inventaire;
+  /** Les versions du logo reprises de leur tuile de l'aperçu (sans symbole séparable) : leur case garde l'aperçu agrandi. */
+  logosDeLApercu?: import("./planche-en-vrai-code").VersionDuLogo[];
 };

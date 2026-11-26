@@ -6,8 +6,10 @@
  * - la séparation du symbole et du nom, sur le masque d'encre d'assembler-planche.py (le masque du fond retiré ne sert
  *   qu'au fond) ; si elle n'est pas fiable, le symbole complet est gardé, et c'est dit ;
  * - les favicons 32, 64 et 512, et l'avatar ;
- * - la palette : la médiane des pixels de chaque pastille de la planche choisie (ces codes font foi), les rôles donnés
- *   par le code ;
+ * - la palette : la médiane des pixels de chaque pastille de la planche choisie, puis le code écrit sous la pastille sur
+ *   l'aperçu quand la couleur peinte en est proche (`paletteRetenue`, 26 novembre 2026 : ces codes retenus font foi) ;
+ *   les rôles donnés par le code ;
+ * - la police de mise en page de l'aperçu (Nunito Sans) pour tout ce qui n'est pas le spécimen des polices de la marque ;
  * - les polices : le nom lu sur la planche, cherché dans le catalogue du Studio (FONT_FILES, assets/fonts) ; absente,
  *   la plus proche du catalogue, et SINA le dit ; aucune source en ligne ;
  * - les blocs de texte, redessinés avec les textes de l'inventaire ;
@@ -124,6 +126,71 @@ export async function separerSymbole(logoDetoure: Buffer): Promise<Separation> {
   }
   return entier("aucune séparation nette entre un symbole et le nom");
 }
+
+/**
+ * LA MARQUE ET SA PHRASE (essai réel d'Écume, 26 novembre 2026) : quand le symbole ne se sépare pas du nom (un mot-symbole
+ * avec ses bulles et sa vague), la phrase écrite sous le logo se sépare souvent, elle : la plus basse bande vide
+ * horizontale, sous laquelle il ne reste que des lignes de texte fines (au moins deux fois et demie plus larges que hautes,
+ * moins d'un tiers de la hauteur). Le logo horizontal de l'aperçu met alors la marque à gauche et la phrase à droite.
+ * Null quand il n'y a pas de phrase nette.
+ */
+export async function separerLaPhrase(logoDetoure: Buffer): Promise<{ marque: Buffer; phrase: Buffer } | null> {
+  const r0 = await rgba(logoDetoure), m0 = masqueDEncre(r0), bb = boiteDEncre(m0, r0.w, [0, 0, r0.w, r0.h]);
+  if (!bb) return null;
+  const r = decouper(r0, bb), m = new Uint8Array(r.w * r.h);
+  for (let y = 0; y < r.h; y++) m.set(m0.subarray((bb[1] + y) * r0.w + bb[0], (bb[1] + y) * r0.w + bb[2]), y * r.w);
+  const vide = (y: number) => { for (let x = 0; x < r.w; x++) if (m[y * r.w + x] >= ENCRE) return false; return true; };
+  // Les blocs de lignes pleines, de haut en bas (séparés par des lignes vides).
+  const blocs: [number, number][] = [];
+  let deb = -1;
+  for (let y = 0; y <= r.h; y++) { const v = y >= r.h || vide(y); if (!v && deb < 0) deb = y; if (v && deb >= 0) { blocs.push([deb, y]); deb = -1; } }
+  // Depuis le bas : les blocs qui sont des lignes de texte (au moins deux fois et demie plus larges que hautes, chacune
+  // sous 20 % de la hauteur du logo) forment la phrase ; le premier bloc qui n'en est pas une arrête.
+  let i = blocs.length;
+  while (i > 1) {
+    const [y0, y1] = blocs[i - 1], b = boiteDEncre(m, r.w, [0, y0, r.w, y1]);
+    if (!b || (b[2] - b[0]) / (b[3] - b[1]) < 2.5 || b[3] - b[1] > r.h * 0.2) break;
+    i--;
+  }
+  if (i >= blocs.length || i < 1) return null;
+  const d = blocs[i - 1][1], f = blocs[i][0];
+  if (f - d < r.h * 0.012) return null;
+  const a = boiteDEncre(m, r.w, [0, 0, r.w, d]), b = boiteDEncre(m, r.w, [0, f, r.w, r.h]);
+  if (!a || !b || b[3] - b[1] > (a[3] - a[1]) / 2) return null;
+  return { marque: await versPng(decouper(r, a)), phrase: await versPng(decouper(r, b)) };
+}
+/** Le logo horizontal sans symbole séparé : la marque à gauche, la phrase à droite, centrée sur sa hauteur. */
+async function marqueEtPhrase(marque: Buffer, phrase: Buffer): Promise<Buffer> {
+  const a = await img(marque), p = await img(phrase), hp = Math.round(a.height * 0.34), wp = Math.round((p.width * hp) / p.height), g = Math.round(a.height * 0.12);
+  const c = createCanvas(a.width + g + wp, a.height), x = c.getContext("2d");
+  dessiner(x, a, 0, 0, a.width, a.height); dessiner(x, p, a.width + g, (a.height - hp) / 2, wp, hp);
+  return c.encode("png");
+}
+/**
+ * UNE VERSION REPRISE DE L'APERÇU (essai réel d'Écume, 26 novembre 2026) : sans symbole séparable, le compact, l'icône, le
+ * favicon et le badge de la planche choisie sont des dessins que le logo seul ne donne pas (« É » et ses bulles, la vague,
+ * le sceau). Ils sont repris de leur tuile de l'aperçu, agrandis quatre fois, le fond de la tuile retiré (le fond est la
+ * couleur médiane du pourtour ; un point s'en écartant de plus de 40 niveaux est plein, en fondu entre 12 et 40).
+ */
+export async function versionDepuisLApercu(tuile: Buffer): Promise<Buffer> {
+  const m = await sharp(tuile).metadata(), w = (m.width ?? 1) * 4, h = (m.height ?? 1) * 4;
+  const { data } = await sharp(tuile).resize(w, h, { kernel: "lanczos3" }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const c: number[][] = [[], [], []], add = (x: number, y: number) => { const i = (y * w + x) * 3; for (let k = 0; k < 3; k++) c[k].push(data[i + k]); };
+  for (let x = 0; x < w; x += 2) { add(x, 2); add(x, h - 3); }
+  for (let y = 0; y < h; y += 2) { add(2, y); add(w - 3, y); }
+  const f = c.map(mediane), out = Buffer.alloc(w * h * 4);
+  for (let i = 0; i < w * h; i++) {
+    const d = Math.max(Math.abs(data[i * 3] - f[0]), Math.abs(data[i * 3 + 1] - f[1]), Math.abs(data[i * 3 + 2] - f[2]));
+    out[i * 4] = data[i * 3]; out[i * 4 + 1] = data[i * 3 + 1]; out[i * 4 + 2] = data[i * 3 + 2];
+    out[i * 4 + 3] = d >= 40 ? 255 : d <= 12 ? 0 : Math.round(((d - 12) * 255) / 28);
+  }
+  const r: Rgba = { data: out, w, h }, b = boiteOpaque(r);
+  return versPng(b ? decouper(r, [Math.max(0, b[0] - 4), Math.max(0, b[1] - 4), Math.min(w, b[2] + 4), Math.min(h, b[3] + 4)]) : r);
+}
+/** Les versions reprises de l'aperçu quand le symbole ne se sépare pas : leurs tuiles (logo-4, logo-5, logo-6, logo-10). */
+export const VERSIONS_DE_L_APERCU = ["logo-compact", "icone", "favicon", "badge"] as const satisfies readonly VersionDuLogoPre[];
+type VersionDuLogoPre = "logo-compact" | "icone" | "favicon" | "badge";
+export const TUILE_DE_LA_VERSION: Record<VersionDuLogoPre, string> = { "logo-compact": "logo-4", icone: "logo-5", favicon: "logo-6", badge: "logo-10" };
 
 /** La couleur du logo : la médiane de ses pixels opaques (son encre principale). */
 export async function couleurDuLogo(logo: Buffer): Promise<string> {
@@ -285,6 +352,20 @@ const fonte = (p: Pick<PoliceChoisie, "cle" | "poids">, taille: number, poids?: 
   return `${Math.round(taille)}px "${ALIAS(p.cle, w)}"`;
 };
 
+/**
+ * LA POLICE DE MISE EN PAGE (essai réel d'Écume, 26 novembre 2026 : la police des textes de la marque, une écriture
+ * manuscrite, servait aussi aux titres des blocs, aux noms et aux codes de la palette, aux légendes et au badge ; tout
+ * devenait illisible). Les titres de blocs, les libellés, les codes, les légendes et le badge gardent la police de la mise
+ * en page de l'aperçu, en lettres simples : la disposition est la même pour toutes les marques, écrite dans une linéale
+ * ronde ; la plus proche du catalogue du Studio est Nunito Sans. Les polices de la marque ne servent que dans leur
+ * spécimen (bloc 03).
+ */
+export const POLICE_DE_MISE_EN_PAGE = { cle: "nunito_sans", poids: 400 } as const;
+/** Les graisses de la mise en page : titres des blocs, noms des couleurs et badge en gras ; codes et légendes en normal. */
+export const GRAISSE_DE_MISE_EN_PAGE = { titre: 800, nom: 800, code: 600, legende: 400 } as const;
+/** La police de mise en page, à une taille et une graisse (toujours une police du catalogue, jamais celle de la marque). */
+export const fonteDeMiseEnPage = (taille: number, poids: number = POLICE_DE_MISE_EN_PAGE.poids) => fonte(POLICE_DE_MISE_EN_PAGE, taille, poids);
+
 // ---------------------------------------------------------------- le badge
 
 /**
@@ -340,25 +421,40 @@ export async function badge(symbole: Buffer, couleur: string, haut: string, bas:
  * dessin). Sans séparation fiable, le symbole est le logo complet (`symboleComplet`), et c'est dit.
  * `bas` : le texte du bas du badge (`texteDuBasDuBadge`).
  */
-export async function versionsDuLogo(o: { logo: Buffer; separation: Separation; couleur: string; sombre: string; clair: string; monoClair: string; nom: string; bas: string; police: Pick<PoliceChoisie, "cle" | "poids"> }): Promise<{ versions: Record<VersionDuLogo, Buffer>; symboleComplet: boolean; symbole: Buffer }> {
+export async function versionsDuLogo(o: {
+  logo: Buffer; separation: Separation; couleur: string; sombre: string; clair: string; monoClair: string; nom: string; bas: string; police: Pick<PoliceChoisie, "cle" | "poids">;
+  /** Les tuiles du bloc 01 de l'aperçu (logo-1 à logo-10) : sans symbole séparable, le compact, l'icône, le favicon et le badge en sont repris. */
+  tuiles?: ReadonlyMap<string, Buffer>;
+}): Promise<{ versions: Record<VersionDuLogo, Buffer>; symboleComplet: boolean; symbole: Buffer; depuisLApercu: VersionDuLogo[] }> {
   const sep = o.separation.fiable && o.separation.nom ? o.separation : null;
   const r = await rgba(o.logo), bb = boiteOpaque(r), logo = bb ? await versPng(decouper(r, bb)) : o.logo;
   const symbole = sep ? sep.symbole : logo, nom = sep?.nom ?? null;
   const blanc = "#FFFFFF";
+  // Sans symbole séparable : la marque et sa phrase pour l'horizontal ; le compact, l'icône, le favicon et le badge repris
+  // de leur tuile de l'aperçu (jamais le logo entier en tout petit).
+  const phrase = sep ? null : await separerLaPhrase(o.logo);
+  const depuisLApercu: VersionDuLogo[] = [];
+  const apercu = async (v: VersionDuLogoPre, sinon: () => Promise<Buffer>) => {
+    const t = sep ? undefined : o.tuiles?.get(TUILE_DE_LA_VERSION[v]);
+    if (!t) return sinon();
+    depuisLApercu.push(v);
+    return versionDepuisLApercu(t);
+  };
   const versions: Record<VersionDuLogo, Buffer> = {
     "logo-principal": logo,
-    "logo-horizontal": sep && nom ? (sep.sens === "gauche" ? logo : await horizontal(symbole, nom)) : logo,
+    "logo-horizontal": sep && nom ? (sep.sens === "gauche" ? logo : await horizontal(symbole, nom)) : phrase ? await marqueEtPhrase(phrase.marque, phrase.phrase) : logo,
     "logo-empile": sep && nom ? await empile(symbole, nom, 0.14) : logo,
-    "logo-compact": symbole,
-    icone: await carre(await teinte(symbole, blanc), o.sombre, 0.18, 0.2),
-    favicon: await carre(await teinte(symbole, blanc), o.sombre, 0.22, 0.16),
+    "logo-compact": await apercu("logo-compact", async () => symbole),
+    icone: await apercu("icone", async () => carre(await teinte(symbole, blanc), o.sombre, 0.18, 0.2)),
+    favicon: await apercu("favicon", async () => carre(await teinte(symbole, blanc), o.sombre, 0.22, 0.16)),
     "monochrome-fonce": await teinte(logo, "#222222"),
     "monochrome-clair": await teinte(logo, o.monoClair),
     // Sur fond sombre, le logo est toujours clair.
     inverse: await inverse(await teinte(logo, blanc), o.sombre),
-    badge: await badge(symbole, o.couleur, o.nom, o.bas, o.police),
+    badge: await apercu("badge", async () => badge(symbole, o.couleur, o.nom, o.bas, o.police)),
   };
-  return { versions, symboleComplet: !sep, symbole };
+  // Le symbole de la marque (le site, l'avatar) : le compact repris de l'aperçu quand il l'est.
+  return { versions, symboleComplet: !sep, symbole: depuisLApercu.includes("logo-compact") ? versions["logo-compact"] : symbole, depuisLApercu };
 }
 
 /** Les favicons 32, 64 et 512, et l'avatar des réseaux (le symbole sur le fond clair de la marque). */
@@ -402,6 +498,58 @@ export async function mesurerLaPalette(planche: Buffer, pastilles: readonly [num
   });
 }
 
+/** Le passage en Lab (D65) d'un code couleur. */
+function lab(h: string): [number, number, number] {
+  const f = (c: number) => { const v = c / 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  const [r, g, b] = rgbDe(h).map(f);
+  const X = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047, Y = 0.2126 * r + 0.7152 * g + 0.0722 * b, Z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+  const t = (v: number) => (v > 216 / 24389 ? Math.cbrt(v) : (24389 / 27 * v + 16) / 116);
+  return [116 * t(Y) - 16, 500 * (t(X) - t(Y)), 200 * (t(Y) - t(Z))];
+}
+/** L'écart perceptuel entre deux couleurs (CIEDE2000) : sous 2,3 l'œil ne voit pas la différence. */
+export function ecartPerceptuel(a: string, b: string): number {
+  const [L1, a1, b1] = lab(a), [L2, a2, b2] = lab(b), rad = Math.PI / 180;
+  const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2), Cm = (C1 + C2) / 2, G = 0.5 * (1 - Math.sqrt(Cm ** 7 / (Cm ** 7 + 25 ** 7)));
+  const ap1 = (1 + G) * a1, ap2 = (1 + G) * a2, Cp1 = Math.hypot(ap1, b1), Cp2 = Math.hypot(ap2, b2);
+  const hp = (x: number, y: number) => { if (x === 0 && y === 0) return 0; const h = Math.atan2(y, x) / rad; return h < 0 ? h + 360 : h; };
+  const h1 = hp(ap1, b1), h2 = hp(ap2, b2), dL = L2 - L1, dC = Cp2 - Cp1;
+  let dh = 0; if (Cp1 * Cp2 !== 0) { dh = h2 - h1; if (dh > 180) dh -= 360; else if (dh < -180) dh += 360; }
+  const dH = 2 * Math.sqrt(Cp1 * Cp2) * Math.sin((dh * rad) / 2), Lm = (L1 + L2) / 2, Cpm = (Cp1 + Cp2) / 2;
+  let hm = h1 + h2; if (Cp1 * Cp2 !== 0) hm = Math.abs(h1 - h2) <= 180 ? (h1 + h2) / 2 : h1 + h2 < 360 ? (h1 + h2 + 360) / 2 : (h1 + h2 - 360) / 2;
+  const T = 1 - 0.17 * Math.cos((hm - 30) * rad) + 0.24 * Math.cos(2 * hm * rad) + 0.32 * Math.cos((3 * hm + 6) * rad) - 0.2 * Math.cos((4 * hm - 63) * rad);
+  const dTh = 30 * Math.exp(-(((hm - 275) / 25) ** 2)), Rc = 2 * Math.sqrt(Cpm ** 7 / (Cpm ** 7 + 25 ** 7));
+  const Sl = 1 + (0.015 * (Lm - 50) ** 2) / Math.sqrt(20 + (Lm - 50) ** 2), Sc = 1 + 0.045 * Cpm, Sh = 1 + 0.015 * Cpm * T, Rt = -Math.sin(2 * dTh * rad) * Rc;
+  return Math.sqrt((dL / Sl) ** 2 + (dC / Sc) ** 2 + (dH / Sh) ** 2 + Rt * (dC / Sc) * (dH / Sh));
+}
+/**
+ * LE SEUIL DES CODES ÉCRITS (26 novembre 2026) : un code écrit sous une pastille est gardé quand la couleur peinte en est
+ * à un écart perceptuel de 10 au plus. Le dessinateur peint la pastille avec un grain, une lumière et une compression qui
+ * la déplacent de quelques unités (sur l'essai réel d'Écume, de 0,7 à 3,2 entre les codes écrits et les couleurs
+ * mesurées) ; 10, c'est encore la même couleur pour l'œil, la même famille de teinte ; au-delà, le code écrit ne décrit
+ * plus la pastille (un code d'une autre pastille, une faute de frappe) et la mesure fait foi.
+ */
+export const SEUIL_DU_CODE_ECRIT = 10;
+/** Les codes couleur écrits sur la case de la palette, lus par l'inventaire, dans l'ordre (de gauche à droite). */
+export const codesEcritsDeLaPalette = (textes: readonly string[]): string[] => textes.flatMap((t) => [...t.matchAll(/#[0-9A-F]{6}\b/gi)].map((m) => m[0].toUpperCase()));
+/**
+ * LA PALETTE RETENUE (essai réel d'Écume, 26 novembre 2026 : l'aperçu écrivait #C44912, #D97A52, #F6E8DA, #A7B89B,
+ * #8C6F4E, la planche en vrai écrivait les mesures, #C7470C… ; le client a vu les premiers). Pour chaque pastille : le code
+ * écrit dessous sur l'aperçu, quand la couleur peinte en est proche (`SEUIL_DU_CODE_ECRIT`), et la pastille est peinte de
+ * ce code ; la mesure seulement si l'aperçu n'écrit pas de code, ou si le code écrit est loin de la couleur peinte. Ces
+ * codes font foi partout ensuite (la marque, le site, l'onglet Marque).
+ */
+export function paletteRetenue(mesurees: readonly string[], ecrits: readonly string[]): { hex: string[]; source: ("ecrit" | "mesure")[]; ecarts: (number | null)[] } {
+  const hex: string[] = [], source: ("ecrit" | "mesure")[] = [], ecarts: (number | null)[] = [];
+  // Les codes écrits ne valent, dans l'ordre, que s'il y en a un par pastille.
+  const parPastille = ecrits.length === mesurees.length ? ecrits : [];
+  mesurees.forEach((m, i) => {
+    const e = parPastille[i], d = e ? ecartPerceptuel(m, e) : null;
+    ecarts.push(d == null ? null : Math.round(d * 10) / 10);
+    if (e && d != null && d <= SEUIL_DU_CODE_ECRIT) { hex.push(e); source.push("ecrit"); } else { hex.push(m.toUpperCase()); source.push("mesure"); }
+  });
+  return { hex, source, ecarts };
+}
+
 export type RolesDeLaPalette = { light: string; dark: string; primary: string; secondary: string; accent: string };
 /**
  * LES RÔLES, donnés par le code : le fond est la plus claire ; le bouton est la plus saturée des autres (la couleur qui
@@ -439,7 +587,60 @@ export type AssemblageEntree = {
   /** Les blocs à redessiner (null : le décor est gardé, ses textes ayant passé le contrôle). */
   blocs: ReadonlyMap<"ton" | "seo", BlocDeTexte | null>;
   encre: string;
+  /** Les versions reprises de l'aperçu (`versionsDuLogo`, `depuisLApercu`) : leur tuile garde l'aperçu agrandi, comme le décor. */
+  tuilesDeLApercu?: readonly VersionDuLogo[];
+  /** Tous les textes du haut sont portés par le logo (son nom, sa phrase) : le haut est effacé en entier, rien n'y est ajouté. */
+  hautDansLeLogo?: boolean;
+  /** Les phrases de présentation des deux polices, lues sous leur nom dans le spécimen de l'aperçu (titres, textes). */
+  typos?: readonly [string | null | undefined, string | null | undefined];
 };
+/**
+ * LA ZONE D'UN TITRE À REDESSINER, mesurée sur l'aperçu (essai réel d'Écume, 26 novembre 2026 : aux blocs 08 et 09,
+ * l'ancien titre restait visible sous le nouveau, et au bloc 10 un « r » égaré traînait au bout ; la planche choisie ne
+ * pose pas ses titres au pixel près de la case fixe). Partant de la case du titre : les lignes voisines qui portent de
+ * l'encre (un point à plus de 50 niveaux du fond) sont prises, jusqu'à 10 pixels au-dessus et au-dessous ; puis, vers la
+ * droite, les colonnes d'encre qui suivent avec un écart de 3 pixels au plus (une lettre du même mot ; l'espace avant le
+ * tiret du sous-titre est plus large), jusqu'à 120 pixels. Rend la zone (taille de l'aperçu) ; elle est effacée en entier,
+ * avec 2 pixels de marge, avant d'écrire.
+ */
+export function zoneDuTitre(data: Buffer, W: number, H: number, b: Boite, fond: string): Boite {
+  const f = rgbDe(fond), encre = (x: number, y: number) => { const i = (y * W + x) * 3; return Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])) > 50; };
+  const ligne = (y: number, x0: number, x1: number) => { for (let x = x0; x < x1; x++) if (encre(x, y)) return true; return false; };
+  const [x0, , x1] = b;
+  let y0 = b[1], y1 = b[3];
+  for (let k = 0; k < 10 && y0 > 0 && ligne(y0 - 1, x0, x1); k++) y0--;
+  for (let k = 0; k < 10 && y1 < H && ligne(y1, x0, x1); k++) y1++;
+  const colonne = (x: number) => { for (let y = y0; y < y1; y++) if (encre(x, y)) return true; return false; };
+  // L'encre réelle : de sa première colonne dans la case à sa dernière, au-delà de la case tant que les lettres se suivent.
+  let debut = -1, fin = -1, vide = 0;
+  for (let x = x0; x < Math.min(W, b[2] + 120); x++) {
+    if (colonne(x)) { if (debut < 0) debut = x; fin = x + 1; vide = 0; } else if (x >= x1 && ++vide > 3) break;
+  }
+  return debut < 0 ? [x0, y0, x1, y1] : [debut, y0, fin, y1];
+}
+/**
+ * La hauteur des lettres de l'ancien titre : les lignes de la zone où l'encre est dense (au moins 8 % de la ligne la plus
+ * chargée ; un accent isolé n'en fait pas partie). Rend le haut et le bas des capitales, en pixels de l'aperçu.
+ */
+export function lettresDuTitre(data: Buffer, W: number, z: Boite, fond: string): { haut: number; bas: number } {
+  const f = rgbDe(fond), compte: number[] = [];
+  for (let y = z[1]; y < z[3]; y++) { let n = 0; for (let x = z[0]; x < z[2]; x++) { const i = (y * W + x) * 3; if (Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])) > 50) n++; } compte.push(n); }
+  const max = Math.max(1, ...compte), dense = compte.map((n) => n >= max * 0.08);
+  // Le plus long bloc de lignes denses (les capitales).
+  let best: [number, number] = [0, compte.length], deb = -1;
+  for (let i = 0; i <= dense.length; i++) { if (i < dense.length && dense[i]) { if (deb < 0) deb = i; } else if (deb >= 0) { if (i - deb > best[1] - best[0] || best[1] - best[0] === compte.length) best = [deb, i]; deb = -1; } }
+  return { haut: z[1] + best[0], bas: z[1] + best[1] };
+}
+/** La boîte de l'encre d'une case de l'aperçu (un point à plus de 60 niveaux de son fond) ; null si presque rien. */
+function boiteDEncreDeLApercu(data: Buffer, W: number, b: Boite, fond: string): Boite | null {
+  const f = rgbDe(fond);
+  let a = b[2], c = b[3], d = -1, e = -1;
+  for (let y = b[1]; y < b[3]; y++) for (let x = b[0]; x < b[2]; x++) {
+    const i = (y * W + x) * 3;
+    if (Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])) > 60) { if (x < a) a = x; if (y < c) c = y; if (x > d) d = x; if (y > e) e = y; }
+  }
+  return d < 0 ? null : [a, c, d + 1, e + 1];
+}
 const S = ECHELLE;
 const X = (b: Boite): Boite => [b[0] * S, b[1] * S, b[2] * S, b[3] * S];
 /** La couleur médiane du pourtour intérieur d'une case : le fond de son panneau. */
@@ -509,17 +710,22 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   const c = createCanvas(TAILLE_EN_VRAI.w, TAILLE_EN_VRAI.h), x = c.getContext("2d");
   x.drawImage(await img(grand), 0, 0);
   const B = (n: string) => o.boites.get(n);
-  const pT = o.polices.titres, pX = o.polices.textes, gris = "#5A605C";
+  // Les polices de la marque ne servent que dans leur spécimen (bloc 03) ; tout le reste est écrit dans la police de mise
+  // en page de l'aperçu, en lettres simples.
+  const pT = o.polices.titres, pX = o.polices.textes, gris = "#5A605C", mp = fonteDeMiseEnPage, G = GRAISSE_DE_MISE_EN_PAGE;
 
   // Le haut : le logo principal et la signature.
   const haut = B("haut");
   if (haut) {
-    const h = X(haut), W = h[2] - h[0], H = h[3] - h[1], f = fond(haut);
+    const h = X(haut), W = h[2] - h[0], H = h[3] - h[1], f = fond(haut), signature = o.signature.filter((l) => l.trim());
     // Sans signature lue, seule la place du logo est effacée : la ligne de la démonstration sous le logo est gardée telle
-    // quelle (jamais une case vidée de son texte).
-    x.fillStyle = f; x.fillRect(h[0], h[1], W, o.signature.some((l) => l.trim()) ? H : H * HAUT_DU_LOGO);
-    await poser(x, o.versions["logo-principal"], [h[0] + W * 0.146, h[1] + H * 0.078, h[2] - W * 0.142, h[1] + H * 0.727]);
-    o.signature.slice(0, 2).forEach((l, i) => texte(x, l, h[0] + W / 2, h[1] + H * (0.794 + i * 0.067), fonte(pX, H * 0.044, 600), o.encre, "center", W * 0.9));
+    // quelle (jamais une case vidée de son texte). Quand tous les textes du haut sont portés par le logo, le haut est
+    // effacé en entier et le logo est posé à la place exacte du logo de l'aperçu (la boîte de son encre) : rien ne s'ajoute.
+    const ink = o.hautDansLeLogo && !signature.length ? boiteDEncreDeLApercu(d0, info.width, haut, f) : null;
+    x.fillStyle = f; x.fillRect(h[0], h[1], W, signature.length || o.hautDansLeLogo ? H : H * HAUT_DU_LOGO);
+    const plausible = ink && (ink[2] - ink[0]) * (ink[3] - ink[1]) >= (haut[2] - haut[0]) * (haut[3] - haut[1]) * 0.1;
+    await poser(x, o.versions["logo-principal"], plausible ? X(ink!) : [h[0] + W * 0.146, h[1] + H * 0.078, h[2] - W * 0.142, h[1] + H * 0.727]);
+    signature.slice(0, 2).forEach((l, i) => texte(x, l, h[0] + W / 2, h[1] + H * (0.794 + i * 0.067), mp(H * 0.044, G.code), o.encre, "center", W * 0.9));
   }
   // Le bandeau d'ouverture de la planche.
   const ob = B("ouverture-planche"), ouv = o.images.get("ouverture-planche");
@@ -543,10 +749,13 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     const t6 = B("logo-6"), t7 = B("logo-7");
     if (t6 && t7 && t7[0] - t6[2] > 6) { const sx = ((t6[2] + t7[0]) / 2) * S; x.strokeStyle = "#D7D3CB"; x.lineWidth = 2; x.beginPath(); x.moveTo(sx, (t6[1] + 6) * S); x.lineTo(sx, (t6[3] + 14) * S); x.stroke(); }
   }
+  const grandImg = o.tuilesDeLApercu?.length ? await img(grand) : null;
   for (const [i, v] of VERSIONS_DU_LOGO.entries()) {
     const t = B(`logo-${i + 1}`);
     if (!t) continue;
     const f = fond(t), b = X(t);
+    // Une version reprise de l'aperçu : sa tuile agrandie, telle que le client l'a vue.
+    if (grandImg && o.tuilesDeLApercu!.includes(v)) { x.drawImage(grandImg, b[0], b[1], b[2] - b[0], b[3] - b[1], b[0], b[1], b[2] - b[0], b[3] - b[1]); continue; }
     x.fillStyle = f; arrondi(x, b[0], b[1], b[2] - b[0], b[3] - b[1], 20 * S); x.fill();
     // Chaque version tient entière dans sa tuile, avec sa marge : réduite si besoin, jamais déformée ni coupée.
     await poserDansLaTuile(x, o.versions[v], b, MARGES[v] ?? 0.14);
@@ -561,9 +770,9 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
       if (!p) return;
       x.beginPath(); x.arc(cx * S, cy * S, r * S, 0, Math.PI * 2); x.fillStyle = p.hex; x.fill();
       if (luminance(p.hex) > 0.9) { x.strokeStyle = "#E4E0D8"; x.lineWidth = 2; x.stroke(); }
-      if (p.nom) texte(x, p.nom, cx * S, (cy + 68) * S, fonte(pX, 26, 700), o.encre, "center", r * 2.4 * S);
-      texte(x, p.hex, cx * S, (cy + 89) * S, fonte(pX, 24, 500), gris, "center");
-      p.mots.slice(0, 2).forEach((m, k) => texte(x, m, cx * S, (cy + 112 + k * 18) * S, fonte(pX, 23, 400), gris, "center", r * 2.4 * S));
+      if (p.nom) texte(x, p.nom, cx * S, (cy + 68) * S, mp(26, G.nom), o.encre, "center", r * 2.4 * S);
+      texte(x, p.hex, cx * S, (cy + 89) * S, mp(24, G.code), gris, "center");
+      p.mots.slice(0, 2).forEach((m, k) => texte(x, m, cx * S, (cy + 112 + k * 18) * S, mp(23, G.legende), gris, "center", r * 2.4 * S));
     });
   }
   // Les typographies, avec les vraies polices du catalogue.
@@ -574,6 +783,9 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     for (const [k, p] of [[0, pT], [1, pX]] as const) {
       const x0 = b[0] + (k === 0 ? 22 * S : W * 0.567);
       texte(x, p.famille, x0, b[1] + 30 * S, fonte(p, 64, k === 0 ? p.poids : 500), o.encre, "left", W * 0.42);
+      // Sa phrase de présentation, comme sur l'aperçu, en police de mise en page.
+      const desc = o.typos?.[k]?.trim();
+      if (desc) texte(x, desc, x0, b[1] + 62 * S, mp(24, G.legende), gris, "left", W * 0.42);
       for (const [i, l] of ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", "0123456789"].entries()) texte(x, l, x0, b[1] + (122 + i * 22) * S, fonte(p, 28, 400), o.encre, "left", W * 0.42);
     }
     x.strokeStyle = "#D7D3CB"; x.lineWidth = 2; x.beginPath(); x.moveTo(b[0] + W * 0.519, b[1] + 22 * S); x.lineTo(b[0] + W * 0.519, b[3] - 15 * S); x.stroke();
@@ -594,16 +806,23 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   for (const [n, t] of o.titres) {
     const b = B(n);
     if (!b || !t.trim()) continue;
-    const bb = X(b), H = bb[3] - bb[1];
-    x.fillStyle = fond(b); x.fillRect(bb[0], bb[1], bb[2] - bb[0], H);
-    // La case du titre est mesurée sur le texte lui-même : le titre redessiné en reprend la largeur (lettres espacées), sans
-    // dépasser la hauteur de la ligne.
-    const T = t.toUpperCase(), Wt = bb[2] - bb[0] - 4 * S;
-    x.font = fonte(pX, 100, 500);
-    const brut = x.measureText(T).width, taille = Math.min(H * 0.72, (100 * Wt) / Math.max(1, brut * 1.08));
-    x.font = fonte(pX, taille, 500); (x as unknown as { letterSpacing: string }).letterSpacing = `${Math.max(0, (Wt - x.measureText(T).width) / Math.max(1, T.length - 1)).toFixed(1)}px`;
-    texte(x, T, bb[0] + 2 * S, bb[1] + H / 2, fonte(pX, taille, 500), o.encre, "left", Wt);
-    (x as unknown as { letterSpacing: string }).letterSpacing = "0px";
+    const f = fond(b), z = zoneDuTitre(d0, info.width, info.height, b, f), l = lettresDuTitre(d0, info.width, z, f);
+    // Le titre redessiné a la hauteur de capitales de l'ancien, posé sur sa ligne de base, sans lettres espacées.
+    const T = t.toUpperCase(), capH = Math.max(4, l.bas - l.haut) * S;
+    x.font = mp(100, G.titre);
+    const m100 = x.measureText(T), cap100 = Math.max(1, x.measureText("H").actualBoundingBoxAscent);
+    let taille = (100 * capH) / cap100;
+    const largeur = (m100.width * taille) / 100, place = (z[2] - z[0]) * S;
+    // Un ancien titre qui dépasse à droite de sa case a été lu coupé par l'inventaire (« PACKAGING & SUPPORT » pour
+    // « PACKAGING & SUPPORTS ») ; un texte lu nettement plus court que lui aussi : il ne le remplace jamais, l'aperçu garde
+    // son titre tel quel, rien n'est perdu ni inventé.
+    if (z[2] > b[2] + 2 || largeur < place * 0.9) continue;
+    if (largeur > place) taille *= place / largeur;
+    // La zone de l'ancien titre, mesurée sur l'aperçu, et sa case sont effacées en entier (2 pixels de marge) avant d'écrire.
+    const zz = X([Math.min(z[0], b[0]) - 2, Math.min(z[1], b[1]) - 2, Math.max(z[2], b[2]) + 2, Math.max(z[3], b[3]) + 2]);
+    x.fillStyle = f; x.fillRect(zz[0], zz[1], zz[2] - zz[0], zz[3] - zz[1]);
+    x.font = mp(taille, G.titre); x.fillStyle = o.encre; x.textAlign = "left"; x.textBaseline = "alphabetic";
+    x.fillText(T, z[0] * S, l.bas * S, (z[2] - z[0]) * S);
   }
   // Les blocs de texte qui n'ont pas passé le contrôle : redessinés avec les textes corrigés.
   for (const [n, bloc] of o.blocs) {
@@ -614,7 +833,7 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     const bb = X(b), W = bb[2] - bb[0], H = bb[3] - bb[1];
     x.fillStyle = fond(b); x.fillRect(bb[0], bb[1], W, H);
     const pas = Math.min(H / (lignes.length + 1), 34 * S);
-    lignes.forEach((l, i) => texte(x, l, bb[0] + 20 * S, bb[1] + pas * (i + 0.9), i === 0 ? fonte(pT, pas * 0.62, pT.poids) : fonte(pX, pas * 0.5, 400), i === 0 ? o.encre : gris, "left", W - 40 * S));
+    lignes.forEach((l, i) => texte(x, l, bb[0] + 20 * S, bb[1] + pas * (i + 0.9), i === 0 ? mp(pas * 0.62, G.titre) : mp(pas * 0.5, G.legende), i === 0 ? o.encre : gris, "left", W - 40 * S));
   }
   return c.encode("png");
 }

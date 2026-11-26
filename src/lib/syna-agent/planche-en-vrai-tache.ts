@@ -28,12 +28,12 @@ import { blocDeLaFinition, copyright, mentionDuDomaine, nettoyerLesSignesIsoles,
 import {
   CASES_DU_CODE, ELEMENTS, GROUPES, INVENTAIRE_SYSTEM, InventaireSchema, NOMS_DES_ELEMENTS, RELECTEUR_EN_VRAI, RelectureDuGroupeSchema, TITRES, TUILES_DU_LOGO,
   caseLue, decouperLesApercus, demandeDeLInventaire, inventaireIncomplet, lesCases, phraseDeLaPoliceRemplacee, phraseDeLaPublicationIncomprehensible,
-  phraseDeLImageGardeeEnApercu, phraseDuProduitImagine, phraseDuSymboleComplet, promessesDuBloc, refaireLesElements, ETIQUETTE_AMBIANCE,
-  type DemandeDElement, type EtatPlancheEnVrai, type Groupe, type Inventaire, type Laquelle, type NomElement, type RelectureDuGroupe,
+  phraseDeLImageGardeeEnApercu, phraseDesLogosDeLApercu, phraseDuProduitImagine, phraseDuSymboleComplet, promessesDuBloc, refaireLesElements, ETIQUETTE_AMBIANCE,
+  type Decoupe, type DemandeDElement, type EtatPlancheEnVrai, type Groupe, type Inventaire, type Laquelle, type NomElement, type RelectureDuGroupe,
 } from "./planche-en-vrai";
 import {
-  VERSIONS_DU_LOGO, assemblerLaPlanche, catalogueDesPolicesParGenre, couleurDuLogo, faviconsEtAvatar, luminance, mesurerLaPalette, monoClairDe, policeDuCatalogue, rolesDeLaPalette,
-  separerSymbole, texteDuBasDuBadge, versionsDuLogo, type BlocDeTexte, type VersionDuLogo,
+  GRAISSE_DE_MISE_EN_PAGE, POLICE_DE_MISE_EN_PAGE, VERSIONS_DU_LOGO, assemblerLaPlanche, catalogueDesPolicesParGenre, codesEcritsDeLaPalette, couleurDuLogo, faviconsEtAvatar, luminance,
+  mesurerLaPalette, monoClairDe, paletteRetenue, policeDuCatalogue, rolesDeLaPalette, separerSymbole, texteDuBasDuBadge, versionsDuLogo, type BlocDeTexte, type Separation, type VersionDuLogo,
 } from "./planche-en-vrai-code";
 
 // ---------------------------------------------------------------- le devis
@@ -195,7 +195,7 @@ export async function plancheEnVrai(o: {
       items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]),
       demande, `relecture-${groupe}${tour > 1 ? "-r1" : ""}`)),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom, personnes: o.personnes, logo: logoSurBlanc, symbole: symboleSurBlanc, photo, apercus: decoupe.apercus, inventaire });
+  }, { nom, personnes: o.personnes, logo: logoSurBlanc, symbole: symboleSurBlanc, photo, apercus: decoupe.apercus, inventaire, debordes: decoupe.debordes });
 
   // Les images gardées, rangées en haute définition ; les produits sans photo du client sont marqués « image d'ambiance ».
   const elements: EtatPlancheEnVrai["elements"] = [], images = new Map<NomElement, Buffer>(), refusees: string[] = [];
@@ -217,7 +217,9 @@ export async function plancheEnVrai(o: {
 
   // 4. Le code seul : logos, palette, polices, textes.
   ctx.progress?.(0.85, L("Je prépare tes logos, tes couleurs et tes polices", "Preparing your logos, colours and fonts"));
-  const palette0 = await mesurerLaPalette(demo, cases.pastilles);
+  const retenue = paletteDeLaPlanche(await mesurerLaPalette(demo, cases.pastilles), inventaire);
+  const palette0 = retenue.hex;
+  notes.push(retenue.note);
   const encre = route.palette.dark && luminance(route.palette.dark) < 0.35 ? route.palette.dark : "#1C2A24";
   const roles = rolesDeLaPalette(palette0, encre);
   const palette = palette0.map((hex, i) => ({ hex, nom: inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 2) }));
@@ -225,8 +227,9 @@ export async function plancheEnVrai(o: {
   for (const p of [titres, textes]) if (p.remplacee && p.lue) issues.push(p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : p.pourquoi === "apercu" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, undefined, true) : phraseDeLaPoliceRemplacee(p.lue, p.famille));
   const couleur = await couleurDuLogo(logo);
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase });
-  const v = await versionsDuLogo({ logo, separation, couleur, sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(palette0), nom, bas, police: textes });
-  if (v.symboleComplet) issues.push(phraseDuSymboleComplet());
+  const v = await versionsDuLogo({ logo, separation, couleur, sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(palette0), nom, bas, police: POLICE_DU_BADGE, tuiles: decoupe.apercus });
+  if (v.depuisLApercu.length) issues.push(phraseDesLogosDeLApercu(v.depuisLApercu));
+  else if (v.symboleComplet) issues.push(phraseDuSymboleComplet());
   const logos: EtatPlancheEnVrai["logos"] = [];
   for (const version of VERSIONS_DU_LOGO) {
     const a = await saveAsset({ ...o.who, data: v.versions[version], name: `logo-${version}.png`, mime: "image/png", role: "logo-version", folderKey: "brand.logos", origin: "generated", sourceAssetId: o.logoAssetId, meta: { plancheEnVrai: { version } } });
@@ -257,6 +260,7 @@ export async function plancheEnVrai(o: {
   const etat: EtatPlancheEnVrai = {
     key: route.key, demo: pl.image.id, logo: o.logoAssetId, laquelle, at: Date.now(),
     elements, logos, favicons, palette, polices: { titres, textes }, symboleComplet: v.symboleComplet, publications, issues: [...new Set(issues)], notes, inventaire,
+    ...(v.depuisLApercu.length ? { logosDeLApercu: v.depuisLApercu } : {}),
   };
   const t = textesDeLaPlanche(inventaire, route);
   notes.push(...t.notes);
@@ -282,7 +286,7 @@ export async function plancheEnVrai(o: {
  * (`planche.finitions`), ou à l'inventaire (une ligne lue qui porte un signe parasite). Le texte de la finition, nettoyé,
  * remplace sa ligne quand l'inventaire ne l'a pas lue.
  */
-export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titres: Map<string, string>; blocs: Map<"ton" | "seo", BlocDeTexte | null>; haut: string[]; notes: string[] } {
+export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titres: Map<string, string>; blocs: Map<"ton" | "seo", BlocDeTexte | null>; haut: string[]; hautDansLeLogo: boolean; notes: string[] } {
   const pl = route.board.planche!, nom = route.name.trim(), notes: string[] = [];
   const brutes = (n: string) => caseLue(inventaire, n)?.textes.map((t) => t.trim()).filter(Boolean) ?? [];
   const lignes = (n: string) => brutes(n).map(nettoyerLesSignesIsoles).filter(Boolean);
@@ -342,13 +346,44 @@ export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titre
     if (seoJuste && !seoPromesses.length && !seoANettoyer) blocs.set("seo", null);
     else redessiner(seo, seoPromesses);
   }
-  return { titres, blocs, haut: lignes("haut").filter((l) => l.toLowerCase() !== nom.toLowerCase()), notes };
+  // LE HAUT (essai réel d'Écume, 26 novembre 2026 : « SAVONNERIE ARTISANALE » était écrit une seconde fois sous le logo,
+  // qui la porte déjà) : rien ne s'ajoute qui ne soit pas sur l'aperçu. Une ligne du haut que le logo porte déjà (son nom,
+  // sa phrase, lus à l'inventaire sur le logo, ou la phrase de la marque) n'est jamais réécrite ; quand toutes le sont, le
+  // haut est effacé en entier et seul le logo y est posé.
+  const duLogo = new Set([nom, ...(caseLue(inventaire, "logo")?.textes ?? []), ...lignesDuTexte(route.slogan ?? "")].map(plat).filter(Boolean));
+  const portee = (l: string) => duLogo.has(plat(l)) || [...duLogo].some((d) => d.length > 3 && plat(l).length > 3 && (d.includes(plat(l)) || plat(l).includes(d)));
+  const hautLu = lignes("haut");
+  return { titres, blocs, haut: hautLu.filter((l) => !portee(l)), hautDansLeLogo: hautLu.length > 0 && hautLu.every(portee), notes };
+}
+/**
+ * LES PHRASES DE PRÉSENTATION DES POLICES, lues à l'inventaire dans la case des typographies : la ligne qui suit le nom de
+ * chaque police, si ce n'est ni une ligne d'alphabet ni une ligne de chiffres.
+ */
+export function phrasesDesPolices(inventaire: Inventaire): [string | null, string | null] {
+  const t = caseLue(inventaire, "typographies")?.textes.map((x) => x.trim()) ?? [];
+  const plat = (x: string) => x.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const specimen = (x: string) => /^[\p{Lu}\s]{10,}$/u.test(x) || /^[\p{Ll}\s]{20,}$/u.test(x) && !/\s/.test(x.trim()) || /^[\d\s]+$/.test(x);
+  const apres = (nom: string) => { const i = t.findIndex((x) => plat(x) === plat(nom)); const s = i >= 0 ? t[i + 1] : undefined; return s && !specimen(s) && plat(s) !== "" ? nettoyerLesSignesIsoles(s) : null; };
+  return [apres(inventaire.polices.titres.nom), apres(inventaire.polices.textes.nom)];
+}
+/** La police du badge refait par le code : la police de mise en page, en gras (jamais la police de la marque). */
+export const POLICE_DU_BADGE = { cle: POLICE_DE_MISE_EN_PAGE.cle, poids: GRAISSE_DE_MISE_EN_PAGE.nom } as const;
+/**
+ * LA PALETTE DE LA PLANCHE EN VRAI : les codes écrits sur l'aperçu (lus par l'inventaire dans la case de la palette) quand la
+ * couleur peinte en est proche, sinon la mesure (`paletteRetenue`). Rend les codes et une note pour le compte rendu.
+ */
+export function paletteDeLaPlanche(mesurees: readonly string[], inventaire: Inventaire): { hex: string[]; note: string } {
+  const ecrits = codesEcritsDeLaPalette(caseLue(inventaire, "palette")?.textes ?? []);
+  const r = paletteRetenue(mesurees, ecrits);
+  const detail = r.hex.map((h, i) => `${h} (${r.source[i] === "ecrit" ? `écrit sur l'aperçu, mesuré ${mesurees[i]}, écart ${r.ecarts[i]}` : ecrits.length === mesurees.length ? `mesuré : le code écrit ${ecrits[i]} est trop loin, écart ${r.ecarts[i]}` : "mesuré : aucun code écrit lu"})`);
+  return { hex: r.hex, note: `palette : ${detail.join(" ; ")}` };
 }
 
 /** L'assemblage (gratuit, se refait) et le rangement de la planche en vrai comme planche de marque, mention « planche-en-vrai ». */
 async function assemblerEtRanger(o: { who: { userId: string; projectId: string }; route: Route; etat: EtatPlancheEnVrai; demo: Buffer; boites: ReadonlyMap<string, [number, number, number, number]>; images: ReadonlyMap<NomElement, Buffer>; versions: Record<VersionDuLogo, Buffer>; encre: string }): Promise<NonNullable<EtatPlancheEnVrai["planche"]>> {
   const t = textesDeLaPlanche(o.etat.inventaire!, o.route);
-  const png = await assemblerLaPlanche({ demo: o.demo, boites: o.boites, pastilles: lesCases(o.etat.laquelle).pastilles, images: o.images, versions: o.versions, palette: o.etat.palette, polices: o.etat.polices!, signature: t.haut, titres: t.titres, blocs: t.blocs, encre: o.encre });
+  const png = await assemblerLaPlanche({ demo: o.demo, boites: o.boites, pastilles: lesCases(o.etat.laquelle).pastilles, images: o.images, versions: o.versions, palette: o.etat.palette, polices: o.etat.polices!, signature: t.haut, titres: t.titres, blocs: t.blocs, encre: o.encre,
+    hautDansLeLogo: t.hautDansLeLogo, typos: phrasesDesPolices(o.etat.inventaire!), tuilesDeLApercu: o.etat.logosDeLApercu ?? [] });
   const m = await sharp(png).metadata();
   const pa = await saveAsset({ ...o.who, data: png, name: "planche-en-vrai.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready",
     meta: { mention: "planche-en-vrai", plancheEnVrai: { key: o.etat.key, demo: o.etat.demo, laquelle: o.etat.laquelle, refusees: o.etat.elements.filter((e) => !e.id).map((e) => e.element), symboleComplet: o.etat.symboleComplet } } });
@@ -364,6 +399,17 @@ export function devisDesProduitsEnVrai(n: number): { maxMicro: number; probableM
   const rel = appel("relecture"), m = elementDeLaPlancheMaxMicro(ELEMENTS["produit-1"].taille, 3), p = Math.round(PRIX_MESURES["produit-1"] * EUR);
   const maxMicro = Math.ceil(n * m + rel.max);
   return { maxMicro, probableMicro: Math.ceil(n * p + rel.probable), studioMaxMicro: borneDuStudio(Math.max(1, maxMicro), false, maxMicro, 1) };
+}
+/**
+ * Le devis d'UNE REPRISE de quelques cases, à la charge du Studio (aucun appel) : chaque image refaite (au plus : trois
+ * images jointes, la borne officielle en « high ») et la relecture de chaque groupe concerné. `maxMicro` est la borne du
+ * Studio à donner à la tâche.
+ */
+export function devisDUneReprise(elements: readonly NomElement[]): { maxMicro: number; probableMicro: number; images: number; relectures: number } {
+  const rel = appel("relecture"), groupes = new Set(elements.map((n) => ELEMENTS[n].groupe));
+  const max = elements.reduce((s, n) => s + elementDeLaPlancheMaxMicro(ELEMENTS[n].taille, 3), 0) + groupes.size * rel.max;
+  const probable = elements.reduce((s, n) => s + Math.round(PRIX_MESURES[n] * EUR), 0) + groupes.size * rel.probable;
+  return { maxMicro: Math.ceil(max), probableMicro: Math.ceil(probable), images: elements.length, relectures: groupes.size };
 }
 /**
  * QUAND LE CLIENT ENVOIE SES PHOTOS : les cases des produits imaginés sont refaites avec sa photo jointe (mise en scène
@@ -385,7 +431,7 @@ export async function refaireLesProduitsEnVrai(o: { ctx: Etape; ai: PlancheEnVra
     },
     relire: (groupe, items, demande, tour) => o.ctx.step(`brand:envrai:relecture:${groupe}:photo${tour > 1 ? ":r1" : ""}`, () => o.ai.relire(items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]), demande, `relecture-${groupe}-photo`)),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom: o.route.name.trim(), personnes: o.personnes, logo, photo, apercus: decoupe.apercus, inventaire, elements: aRefaire });
+  }, { nom: o.route.name.trim(), personnes: o.personnes, logo, photo, apercus: decoupe.apercus, inventaire, elements: aRefaire, debordes: decoupe.debordes });
   const elements = [...ev.elements], issues: string[] = [];
   for (const n of aRefaire) {
     const r = res.get(n);
@@ -430,9 +476,9 @@ export async function refaireLesLogosEnVrai(o: { who: { userId: string; projectI
   const hex = ev.palette.map((p) => p.hex);
   const encre = o.route.palette.dark && luminance(o.route.palette.dark) < 0.35 ? o.route.palette.dark : "#1C2A24";
   const roles = rolesDeLaPalette(hex, encre);
-  const textes = ev.polices?.textes ?? policeDuCatalogue({ nom: "Montserrat", genre: "sans" }, 400);
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase ?? o.route.slogan ?? "" });
-  const v = await versionsDuLogo({ logo, separation, couleur: await couleurDuLogo(logo), sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(hex), nom, bas, police: textes });
+  const decoupe0 = getAsset(ev.demo) ? await decouperLesApercus(assetData(getAsset(ev.demo)!), ev.laquelle) : null;
+  const v = await versionsDuLogo({ logo, separation, couleur: await couleurDuLogo(logo), sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(hex), nom, bas, police: POLICE_DU_BADGE, tuiles: decoupe0?.apercus });
   const logos: EtatPlancheEnVrai["logos"] = [];
   for (const version of VERSIONS_DU_LOGO) {
     const a = await saveAsset({ ...o.who, data: v.versions[version], name: `logo-${version}.png`, mime: "image/png", role: "logo-version", folderKey: "brand.logos", origin: "generated", sourceAssetId: ev.logo, meta: { plancheEnVrai: { version, refaitParLeCode: true } } });
@@ -444,13 +490,59 @@ export async function refaireLesLogosEnVrai(o: { who: { userId: string; projectI
   const favicons = { f32: await ranger("favicon-32", "favicon-32.png", fav.f32), f64: await ranger("favicon-64", "favicon-64.png", fav.f64), f512: await ranger("favicon-512", "icone-512.png", fav.f512), avatar: await ranger("social-avatar", "avatar-reseaux.png", fav.avatar) };
   const b = loadProject(o.who.projectId).brand;
   if (b) saveBrand(o.who.projectId, { ...b, logo: { ...b.logo, markAssetId: symboleId } });
-  const dejaDites = ev.issues.filter((l) => !/séparer proprement le symbole|separate your logo.s symbol/.test(l));
-  const issues = [...dejaDites, ...(v.symboleComplet ? [phraseDuSymboleComplet()] : [])];
+  const dejaDites = ev.issues.filter((l) => !/séparer proprement le symbole|separate your logo.s symbol|repris de ta planche choisie|taken from your chosen board/.test(l));
+  const issues = [...dejaDites, ...(v.depuisLApercu.length ? [phraseDesLogosDeLApercu(v.depuisLApercu)] : v.symboleComplet ? [phraseDuSymboleComplet()] : [])];
   const notes = [...ev.notes, `logos refaits par le code (séparation ${separation.fiable ? "fiable" : `non fiable : ${separation.raison ?? "?"}`})`];
-  const etat: EtatPlancheEnVrai = { ...ev, logos, favicons, symboleComplet: v.symboleComplet, issues: [...new Set(issues)], notes, at: Date.now() };
+  const { logosDeLApercu: _avant, ...ev0 } = ev;
+  const etat: EtatPlancheEnVrai = { ...ev0, logos, favicons, symboleComplet: v.symboleComplet, issues: [...new Set(issues)], notes, at: Date.now(), ...(v.depuisLApercu.length ? { logosDeLApercu: v.depuisLApercu } : {}) };
   if (!ev.inventaire || !o.route.board.planche || !getAsset(ev.demo)) return { ...etat, notes: [...notes, "planche gardée telle quelle : sans l'inventaire, elle n'est pas réassemblée"] };
-  const demo = assetData(getAsset(ev.demo)!), decoupe = await decouperLesApercus(demo, ev.laquelle);
+  const demo = assetData(getAsset(ev.demo)!), decoupe = decoupe0 ?? await decouperLesApercus(demo, ev.laquelle);
   const images = new Map<NomElement, Buffer>();
   for (const e of ev.elements) if (e.id && getAsset(e.id)) images.set(e.element, assetData(getAsset(e.id)!));
   return { ...etat, planche: await assemblerEtRanger({ who: o.who, route: o.route, etat, demo, boites: decoupe.boites, images, versions: v.versions, encre }) };
+}
+
+// ---------------------------------------------------------------- le réassemblage sans appel (26 novembre 2026)
+
+/**
+ * LA PLANCHE EN VRAI PAR LE CODE SEUL, SANS AUCUN APPEL, à partir de la planche choisie, de son inventaire, du logo fini
+ * (au fond retiré) et des images gardées : les mêmes étapes que la tâche (`plancheEnVrai`, partie 4 et assemblage), sans
+ * rien ranger. Sert au réassemblage d'un essai (scripts/syna-recette/essai-planche-en-vrai.mts, REASSEMBLER).
+ */
+export async function plancheEnVraiParLeCode(o: { demo: Buffer; laquelle: Laquelle; inventaire: Inventaire; route: Route; logo: Buffer; images: ReadonlyMap<NomElement, Buffer>; phrase?: string; ligneDuLogo?: string | null; metierCourt?: string | null }) {
+  const decoupe = await decouperLesApercus(o.demo, o.laquelle), notes: string[] = [];
+  const separation = await separerSymbole(o.logo);
+  const ret = paletteDeLaPlanche(await mesurerLaPalette(o.demo, lesCases(o.laquelle).pastilles), o.inventaire);
+  notes.push(ret.note);
+  const encre = o.route.palette.dark && luminance(o.route.palette.dark) < 0.35 ? o.route.palette.dark : "#1C2A24";
+  const roles = rolesDeLaPalette(ret.hex, encre);
+  const palette = ret.hex.map((hex, i) => ({ hex, nom: o.inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (o.inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 2) }));
+  const polices = { titres: policeDuCatalogue(o.inventaire.polices.titres, 700), textes: policeDuCatalogue(o.inventaire.polices.textes, 400) };
+  const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase ?? o.route.slogan ?? "" });
+  const v = await versionsDuLogo({ logo: o.logo, separation, couleur: await couleurDuLogo(o.logo), sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(ret.hex), nom: o.route.name.trim(), bas, police: POLICE_DU_BADGE, tuiles: decoupe.apercus });
+  const t = textesDeLaPlanche(o.inventaire, o.route);
+  notes.push(...t.notes);
+  const planche = await assemblerLaPlanche({ demo: o.demo, boites: decoupe.boites, pastilles: lesCases(o.laquelle).pastilles, images: o.images, versions: v.versions, palette, polices, signature: t.haut, titres: t.titres, blocs: t.blocs, encre,
+    hautDansLeLogo: t.hautDansLeLogo, typos: phrasesDesPolices(o.inventaire), tuilesDeLApercu: v.depuisLApercu });
+  return { planche, versions: v.versions, depuisLApercu: v.depuisLApercu, symboleComplet: v.symboleComplet, separation, palette, roles, polices, notes, decoupe };
+}
+
+/**
+ * UNE REPRISE DE QUELQUES CASES, à la charge du Studio (le réassemblage d'un essai, 26 novembre 2026) : chaque case donnée
+ * est refaite une fois avec ses raisons au début du texte, puis relue face à son aperçu, comme une reprise de la tâche ; il
+ * n'y a pas d'autre tour. Rend, pour chaque case, son résultat (l'image au format final si elle est gardée).
+ */
+export async function reprendreDesCasesEnVrai(o: {
+  ai: PlancheEnVraiAi; nom: string; personnes: boolean; logo: Buffer; separation: Separation; inventaire: Inventaire; decoupe: Decoupe;
+  elements: readonly NomElement[]; raisons: ReadonlyMap<NomElement, readonly string[]>;
+  /** Les cases dont l'aperçu LU PAR L'INVENTAIRE touchait la bande d'un titre (sinon, celles de la découpe d'aujourd'hui). */
+  debordes?: readonly string[];
+}) {
+  const logoSurBlanc = await sharp(o.logo).flatten({ background: "#FFFFFF" }).png().toBuffer();
+  const symbole = o.separation.fiable ? await sharp(o.separation.symbole).flatten({ background: "#FFFFFF" }).png().toBuffer() : null;
+  return refaireLesElements({
+    refaire: async (d) => (await o.ai.refaire(d, `${d.element}-reprise`)).png,
+    relire: (g, items, demande) => o.ai.relire(items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]), demande, `relecture-${g}-reprise`),
+    aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
+  }, { nom: o.nom, personnes: o.personnes, logo: logoSurBlanc, symbole, photo: null, apercus: o.decoupe.apercus, inventaire: o.inventaire, debordes: o.debordes ?? o.decoupe.debordes, elements: o.elements, reprise: o.raisons });
 }

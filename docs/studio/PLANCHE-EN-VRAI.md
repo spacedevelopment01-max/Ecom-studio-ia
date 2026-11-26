@@ -234,3 +234,75 @@ l'identique en visuel »). Deux écarts vus sur l'essai réel d'Écume (étape 3
   6,6978 €).
 
 Épreuve : `planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu`.
+
+## Identique à l'aperçu : l'assemblage corrigé après l'étape 4 d'Écume (26 novembre 2026)
+
+L'essai réel de l'étape 4 d'Écume (planche B, logo 10 ; preuves : `docs/studio/essais-complets/images/ecume/4-planche-en-vrai/`,
+branche `claude/essais-complets`) a coûté 1,28 € ; 13 images gardées sur 17. Le constat du chef d'orchestre, mot pour mot :
+« Les images sont belles, mais la planche en vrai n'est pas identique à l'aperçu. Les défauts viennent surtout de
+l'assemblage par le code. » Corrigé sans aucune dépense, dans le Studio (`planche-en-vrai.ts`, `planche-en-vrai-code.ts`,
+`planche-en-vrai-tache.ts`) et donc dans le script, qui n'appelle que les fonctions du Studio :
+
+1. **La police de mise en page.** Les titres des blocs, les noms, codes et mots de la palette, les légendes, les blocs
+   redessinés et le badge refait sont écrits dans la police de la mise en page de l'aperçu, en lettres simples : la
+   disposition est la même pour toutes les marques, écrite dans une linéale ronde ; la plus proche du catalogue est
+   **Nunito Sans** (`POLICE_DE_MISE_EN_PAGE`). Les polices de la marque ne servent que dans leur spécimen (bloc 03), avec
+   la phrase de présentation de chaque police lue sous son nom (« Moderne, ronde, accessible. »). Rejoué : la même
+   planche avec Sacramento ou Inter pour la marque a des titres, une palette et un bloc 10 identiques au pixel près.
+2. **Rien ne s'ajoute sous le logo du haut.** La ligne « SAVONNERIE ARTISANALE » en manuscrite venait du code (la
+   signature du haut, relue à l'inventaire), pas de la demande de l'image d'ouverture. Une ligne du haut que le logo porte
+   déjà (son nom, sa phrase, lus sur le logo, ou la phrase de la marque) n'est plus jamais réécrite ; quand toutes le sont,
+   le haut est effacé en entier et le logo est posé à la place de l'encre du logo de l'aperçu (il a donc la même taille).
+3. **Les titres redessinés.** La zone de l'ancien titre est mesurée sur l'aperçu (`zoneDuTitre` : les lignes d'encre
+   au-dessus et au-dessous de la case, les lettres qui continuent à droite), puis effacée en entier avec sa case et une
+   marge ; le nouveau est écrit à la hauteur de capitales et sur la ligne de base de l'ancien (`lettresDuTitre`), sans
+   lettres espacées. Un ancien titre qui dépasse à droite de sa case a été lu coupé par l'inventaire (« PACKAGING &
+   SUPPORT ») : il n'est jamais remplacé, l'aperçu garde son titre (c'était l'origine du « S » et du « r » égarés).
+4. **Le bloc 01.** Le logo 10 ne se sépare pas en un symbole et un nom (les bulles et la vague sont collées au mot). Les
+   quatre cases que le logo seul ne donne pas (le « É » et ses bulles, la vague, le favicon, le sceau) sont reprises de
+   leur tuile de l'aperçu (`versionDepuisLApercu` : agrandie quatre fois, fond de la tuile retiré) ; sur la planche en
+   vrai, ces quatre tuiles gardent l'aperçu agrandi, comme tout le décor ; le symbole de la marque (site, avatar) est ce
+   compact. Le logo horizontal met la marque à gauche et sa phrase à droite (`separerLaPhrase` : les lignes de texte fines
+   sous la marque), comme l'aperçu. SINA le dit : « ces versions sont reprises de ta planche choisie, agrandies […] Je
+   peux les refaire en haute définition, je t'annonce le prix avant. » Gratuit ; vérifié sur le vrai logo 10.
+5. **La palette.** Les codes écrits sous les pastilles de l'aperçu (lus par l'inventaire) sont gardés quand la couleur
+   peinte en est proche, et la pastille est peinte de ce code (`paletteRetenue`). Le seuil : un écart perceptuel
+   CIEDE2000 de 10 au plus (`SEUIL_DU_CODE_ECRIT`). Pourquoi 10 : sous 2,3 l'œil ne voit aucune différence ; le
+   dessinateur déplace la couleur peinte de quelques unités (grain, lumière, compression : sur Écume, de 0,7 à 3,2) ;
+   jusqu'à 10, c'est encore la même couleur, la même famille de teinte ; au-delà, le code écrit ne décrit plus la pastille
+   (code d'une autre pastille, faute de frappe) et la mesure fait foi. Sans un code par pastille, la mesure. Les codes
+   retenus font foi pour la marque du projet, le site et l'onglet Marque. Sur Écume : #C44912, #D97A52, #F6E8DA, #A7B89B,
+   #8C6F4E, ceux que le client a vus.
+6. **Les deux refus faux du relecteur.** La zone d'une case : à la découpe, quand la case d'une image entre dans la bande
+   d'un titre de bloc et que cette part est la page, son haut est ramené sous la bande (`bandesDesTitres`,
+   `bandeDeTitreTouchee`) ; quand l'aperçu touche encore la bande (`entreDansUneBandeDeTitre`), les premières lignes de
+   l'inventaire qui commencent au milieu d'un mot et dont aucun mot n'est dans l'image refaite ne sont pas attendues
+   (`textesDeLaZone`) ; un mot coupé par le bord de l'aperçu (« nature », « fa », « our ») va avec le mot entier lu. Dans la
+   case du téléphone, l'heure de la barre d'état n'est ni attendue ni reprochée (`estUneHeure`). Rejoués sur les verdicts
+   réels : la story du premier essai (note 8, refusée pour le seul « en » de « quotidien ») est gardée ; la publication
+   portrait reste refusée pour le texte collé au bord et sa note ; la reprise du téléphone (8,5) est gardée.
+
+Le réassemblage d'un essai (`REASSEMBLER`, script de la planche en vrai) : a) le code refait logos, palette, polices,
+textes et assemblage (`plancheEnVraiParLeCode`), gratuit ; b) chaque image de l'essai est rejugée sur son verdict réel,
+gratuit ; c) avec `REPRENDRE` et un plafond, les cases nommées encore refusées sont reprises une fois à la charge du Studio
+(`reprendreDesCasesEnVrai`, devis `devisDUneReprise`). Sur Écume, a) + b) : **15 images gardées sur 17** (la story et le
+téléphone en plus) ; comparaison : `comparaison-apercu-et-reassemblee.jpg` du dossier de sortie.
+
+Ce qui reste différent de l'aperçu, dit franchement :
+- la publication portrait et l'emballage gardent leur aperçu agrandi (refusés pour de vraies raisons) ;
+- la story est posée dans sa case fixe, qui commence 36 pixels trop à gauche sur cette planche : elle recouvre la fin du
+  sous-titre du bloc 07 (« quotidi… ») ; le recalage ne cherche qu'à 30 pixels ;
+- le haut perd les ombres de feuillage de l'aperçu (fond uni) ; le spécimen montre « Sacramento », la police réelle la
+  plus proche, au lieu du mot « Nunito » écrit en manuscrite ; la palette garde deux mots par couleur (l'aperçu en
+  montre trois sur deux lignes) ;
+- les quatre tuiles reprises de l'aperçu sont nettes à la taille de la planche, mais leurs fichiers à télécharger sont
+  des agrandissements (environ 460 pixels de côté), pas de la haute définition.
+
+Le prix d'une option qui refait le bloc 01 en haute définition (non construite) : les quatre cases (compact, icône,
+favicon, badge) refaites par le modèle d'images des logos à partir de leur tuile, logo joint, au prix des images de la
+planche en vrai (1088 × 1088, qualité haute), relues en un appel : probable 0,35 €, au plus 0,80 €.
+
+Épreuve : `planche-en-vrai-identique-a-l-apercu` (scellée) ; `planche-en-vrai-a-l-identique` (la palette mesurée) et
+`planche-en-vrai-symbole-seul-et-bandeau-sans-marges` (sans séparation, le logo complet) sont marquées remplacées, accord
+écrit à compléter. Tests : `tests/planche-en-vrai-identique-ecume.test.ts` et le réassemblage dans
+`tests/essai-planche-en-vrai-script.test.ts`, sur les vrais fichiers de l'essai (`tests/fixtures/ecume-planche-en-vrai`).

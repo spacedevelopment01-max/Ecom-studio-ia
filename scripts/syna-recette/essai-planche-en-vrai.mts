@@ -36,6 +36,13 @@
  *     node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-ecume/4-planche-en-vrai \
  *     data/essai-ecume/3-planches/planche-X-gardee.png data/essai-ecume/2-finalisation/esquisse-NN-logo-garde.png
  * Devis seul, sans aucun appel ni clé : DEVIS_SEULEMENT=1 DATA_DIR=… node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts
+ *
+ * LE RÉASSEMBLAGE D'UN ESSAI DÉJÀ FAIT (26 novembre 2026, `reassemblerLEssaiEnVrai`) : REASSEMBLER=<dossier de l'essai>
+ * (essai.json, inventaire-reponse.json, apercus/, cases/, relectures/), puis le dossier de sortie, la planche choisie et le
+ * logo fini. a) le code refait les logos, la palette, les polices, les textes et l'assemblage, gratuit ; b) chaque image
+ * de l'essai est rejugée sur son verdict réel par le code d'aujourd'hui, gratuit ; c) avec REPRENDRE=<case>,<case> et
+ * PLAFOND_ESSAI_EUR, les cases nommées encore refusées sont reprises une fois, à la charge du Studio (vrais appels).
+ * Sans REPRENDRE, aucun appel ni clé. Devis de c), sans appel : DEVIS_SEULEMENT=1 REPRENDRE=… (même commande).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -53,7 +60,26 @@ import path from "node:path";
   await appliquerTarifsVerifies();
   const { clientDeLEssai, donneesVerifiees, devisDeLEssaiEnVrai, devisEnTexteEnVrai, essaiDeLaPlancheEnVrai, euros, logoDeLaPlancheVerifie } = await import("./essai-planche-en-vrai-outil");
 
+  const reprendre = (process.env.REPRENDRE ?? "").split(",").map((x) => x.trim()).filter(Boolean) as import("../../src/lib/syna-agent/planche-en-vrai").NomElement[];
+  if (devisSeul && (process.env.REASSEMBLER || reprendre.length)) { const { devisDuReassemblage } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuReassemblage(reprendre)).join("\n")); process.exit(0); }
   if (devisSeul) { console.log(devisEnTexteEnVrai(await devisDeLEssaiEnVrai()).join("\n")); process.exit(0); }
+  if (process.env.REASSEMBLER) {
+    const { reassemblerLEssaiEnVrai } = await import("./essai-planche-en-vrai-outil");
+    const [sortie0, planche0, logo0] = process.argv.slice(2);
+    if (!sortie0 || !planche0 || !logo0) { console.error("Il faut le dossier de sortie, la planche choisie (PNG) puis le logo fini (PNG)."); process.exit(1); }
+    if (reprendre.length) {
+      if (!process.env.PLAFOND_ESSAI_EUR) { console.error("PLAFOND_ESSAI_EUR manquant pour la reprise : rien n'est lancé."); process.exit(1); }
+      if (!process.env.STUDIO_ANTHROPIC_KEY) { console.error("STUDIO_ANTHROPIC_KEY absente : la relecture de la reprise ne peut pas être faite. Rien n'est lancé."); process.exit(1); }
+      const { setSetting } = await import("../../src/lib/settings");
+      setSetting("provider.anthropic.apiKey", process.env.STUDIO_ANTHROPIC_KEY.trim(), true);
+    }
+    try {
+      const r = await reassemblerLEssaiEnVrai({ dossier: path.resolve(process.env.REASSEMBLER), sortie: path.resolve(sortie0), planche: path.resolve(planche0), logo: path.resolve(logo0), reprendre, plafondEuros: process.env.PLAFOND_ESSAI_EUR });
+      console.log(`${r.gardees} image(s) gardée(s) sur 17 ; planche réassemblée : ${path.join(path.resolve(sortie0), r.planche)} ; comparaison : ${path.join(path.resolve(sortie0), r.comparaison)}${r.reprise ? ` ; reprise : dépense comptée ${euros(r.reprise.depenseMicro)}` : ""}`);
+      if (r.arret) { console.log(`Arrêt de la reprise : ${r.arret}`); process.exit(2); }
+    } catch (e) { console.error((e as Error).message); process.exit(1); }
+    process.exit(0);
+  }
   const [sortieArg, planche, logo] = process.argv.slice(2);
   if (!sortieArg) { console.error("Dossier de sortie manquant (premier paramètre)."); process.exit(1); }
   if (!planche || !logo) { console.error("Il faut la planche choisie (PNG) puis le logo fini (PNG), après le dossier de sortie."); process.exit(1); }

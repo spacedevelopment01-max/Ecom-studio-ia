@@ -466,4 +466,47 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     const route = { key: "B", name: "Écume", slogan: donnees.phrase, palette: {}, board: { planche: { image: { id: "x", w: 1536, h: 2304 }, logo: "lg", domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, essais: 2, at: 1 } } } as never;
     expect(T2.textesDeLaPlanche(inv, route).blocs.get("ton")).toEqual({ lignes: ["SAVONNERIE", "ARTISANALE"] });
   });
+  it("le réassemblage d'un essai d'Écume (26 novembre 2026) : rejugé sans appel sur les verdicts réels, puis une seule reprise à la charge du Studio pour la case encore refusée", async () => {
+    const { reassemblerLEssaiEnVrai, devisDuReassemblage } = await import("../scripts/syna-recette/essai-planche-en-vrai-outil");
+    const Fx = "tests/fixtures/ecume-planche-en-vrai";
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reassemblage-"));
+    const essai = path.join(dir, "essai"); fs.mkdirSync(path.join(essai, "apercus"), { recursive: true }); fs.mkdirSync(path.join(essai, "cases")); fs.mkdirSync(path.join(essai, "relectures"));
+    fs.writeFileSync(path.join(essai, "essai.json"), JSON.stringify({ client: ECUME, donnees: { domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, disposition: "standard", phrase: "SAVONNERIE / ARTISANALE" } }));
+    fs.copyFileSync(`${Fx}/inventaire-reponse.json`, path.join(essai, "inventaire-reponse.json"));
+    fs.copyFileSync(`${Fx}/cases-de-l-essai.json`, path.join(essai, "apercus", "cases.json"));
+    for (const [f, g] of [["publications-1-verdict.json", "publications-1"], ["publications-2-verdict.json", "publications-2"], ["site-2-verdict.json", "site-2"]]) fs.copyFileSync(`${Fx}/${f}`, path.join(essai, "relectures", `${g}-verdict.json`));
+    for (const [n, t, w, h] of [["publication-1x1", 1, 1088, 1088], ["publication-4x5", 1, 1088, 1360], ["publication-4x5", 2, 1088, 1360], ["publication-9x16", 1, 1088, 1936], ["publication-9x16", 2, 1088, 1936], ["site-telephone", 2, 1024, 1536]] as const)
+      fs.writeFileSync(path.join(essai, "cases", `${n}-${t}-hd.png`), await uni(w, h, "#8899AA"));
+    const planche = path.join(dir, "planche-B.png"); fs.writeFileSync(planche, await sharp(fs.readFileSync(`${Fx}/planche-B-gardee.jpg`)).png().toBuffer());
+    const logoF = path.join(dir, "logo-10.png"); fs.copyFileSync(`${Fx}/esquisse-10-logo-garde-512.png`, logoF);
+    // a) et b) : aucun appel.
+    const sansAppel = { inventaire: async () => { throw new Error("aucun appel"); }, refaire: async () => { throw new Error("aucun appel"); }, relire: async () => { throw new Error("aucun appel"); } };
+    const r = await reassemblerLEssaiEnVrai({ dossier: essai, sortie: path.join(dir, "a-b"), planche, logo: logoF, ai: () => sansAppel as never });
+    const cas = (n: string) => r.cases.find((c) => c.element === n)!;
+    expect(cas("publication-1x1").gardee).toBe(1);
+    expect(cas("publication-9x16").gardee).toBe(1);
+    expect(cas("site-telephone").gardee).toBe(2);
+    expect(cas("publication-4x5").gardee).toBeNull();
+    expect(cas("publication-4x5").essais.at(-1)!.raisonsApres).toEqual(["un texte est coupé ou collé au bord", "sa fidélité n'est pas au niveau (7/10, il faut 8)"]);
+    expect(r.palette.map((p) => p.hex)).toEqual(["#C44912", "#D97A52", "#F6E8DA", "#A7B89B", "#8C6F4E"]);
+    expect(r.logosDeLApercu.sort()).toEqual(["badge", "favicon", "icone", "logo-compact"]);
+    expect((await sharp(path.join(dir, "a-b", "planche-en-vrai.png")).metadata()).width).toBe(3072);
+    expect(fs.existsSync(path.join(dir, "a-b", "comparaison-apercu-et-reassemblee.jpg"))).toBe(true);
+    // c) : la seule case encore refusée, reprise une fois avec ses raisons d'aujourd'hui, relue.
+    const vus: string[] = [];
+    const inv = P.InventaireSchema.parse(JSON.parse(fs.readFileSync(`${Fx}/inventaire-reponse.json`, "utf8")));
+    const ai = () => ({
+      inventaire: sansAppel.inventaire,
+      refaire: async (d: { element: string; texte: string; taille: string }, cle: string) => { vus.push(`image:${cle}`, d.texte); const [w, h] = d.taille.split("x").map(Number); return { png: await uni(w, h, "#8899AA"), recu: null }; },
+      relire: async (images: { label: string }[], _demande: string, cle: string) => { vus.push(`relecture:${cle}`); return { images: images.filter((i) => i.label.endsWith(" refaite")).map((i) => ({ case: i.label.replace(/ refaite$/, ""), identique: true, textesLus: P.caseLue(inv, "publication-4x5")!.textes.slice(1), logoPresent: false, personne: false, logoFonceSurFondSombre: false, produitFidele: null, texteCoupe: false, note: 9, pourquoi: "" })) }; },
+    });
+    await expect(reassemblerLEssaiEnVrai({ dossier: essai, sortie: path.join(dir, "c0"), planche, logo: logoF, reprendre: ["publication-4x5"], ai: ai as never })).rejects.toThrow(/PLAFOND_ESSAI_EUR/);
+    const c = await reassemblerLEssaiEnVrai({ dossier: essai, sortie: path.join(dir, "c"), planche, logo: logoF, reprendre: ["publication-4x5", "publication-9x16"], plafondEuros: "0.80", ai: ai as never });
+    expect(vus.filter((v) => /^(image|relecture):/.test(v))).toEqual(["image:publication-4x5-reprise", "relecture:relecture-publications-reprise"]);
+    expect(vus[1]).toMatch(/À corriger : un texte est coupé ou collé au bord/);
+    expect(c.reprise).toMatchObject({ elements: ["publication-4x5"], gardees: ["publication-4x5"] });
+    expect(c.cases.find((x) => x.element === "publication-4x5")!.gardee).toBe("reprise");
+    expect(c.gardees).toBe(r.gardees + 1);
+    expect((await devisDuReassemblage(["publication-4x5", "emballage"])).join("\n")).toMatch(/a\) réassemblage par le code : 0 € ; b\) rejugement des images de l'essai : 0 €[\s\S]*Plafond minimal exact pour la reprise/);
+  });
 });
