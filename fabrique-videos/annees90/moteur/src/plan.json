@@ -1,0 +1,142 @@
+[
+{
+"debut": 0.0,
+"fin": 3.6,
+"fichier": "img_modem_663396.jpg",
+"type": "photo",
+"page": "https://pixabay.com/photos/computer-hardware-technology-pc-663396/"
+},
+{
+"debut": 3.6,
+"fin": 5.9,
+"fichier": "modem_380318.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-380318/"
+},
+{
+"debut": 5.9,
+"fin": 8.1,
+"fichier": "tele_303669.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-303669/"
+},
+{
+"debut": 8.1,
+"fin": 11.7,
+"fichier": "img_photo_7666143.jpg",
+"type": "photo",
+"page": "https://pixabay.com/photos/photos-nostalgia-retro-photography-7666143/"
+},
+{
+"debut": 11.7,
+"fin": 12.8,
+"fichier": "tele_364930.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-364930/"
+},
+{
+"debut": 12.8,
+"fin": 17.1,
+"fichier": "img_cassette_1285165.jpg",
+"type": "photo",
+"page": "https://pixabay.com/photos/music-cassette-tape-cassette-retro-1285165/"
+},
+{
+"debut": 17.1,
+"fin": 19.6,
+"fichier": "img_console_3912103.jpg",
+"type": "photo",
+"page": "https://pixabay.com/photos/game-boy-nintendo-tetris-3912103/"
+},
+{
+"debut": 19.6,
+"fin": 22.0,
+"fichier": "img_console_6267794.jpg",
+"type": "photo",
+"page": "https://pixabay.com/photos/gamepad-joystick-controller-console-6267794/"
+},
+{
+"debut": 22.0,
+"fin": 26.9,
+"fichier": "telephone_119507.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-119507/"
+},
+{
+"debut": 26.9,
+"fin": 30.0,
+"fichier": "img_tel_4397880.jpg",
+"type": "photo",
+"page": "https://pixabay.com/photos/nostalgia-phone-old-4397880/"
+},
+{
+"debut": 30.0,
+"fin": 32.7,
+"fichier": "img_photo_263381.jpg",
+"type": "photo",
+"page": "https://pixabay.com/photos/photographer-girl-child-photo-263381/"
+},
+{
+"debut": 32.7,
+"fin": 35.5,
+"fichier": "img_photo_256887.jpg",
+"type": "photo",
+"page": "https://pixabay.com/photos/photos-hands-hold-old-256887/"
+},
+{
+"debut": 35.5,
+"fin": 39.6,
+"fichier": "tele_364921.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-364921/"
+},
+{
+"debut": 39.6,
+"fin": 43.9,
+"fichier": "radio_33219.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-33219/"
+},
+{
+"debut": 43.9,
+"fin": 46.1,
+"fichier": "cassette_185557.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-185557/"
+},
+{
+"debut": 46.1,
+"fin": 49.7,
+"fichier": "rdv_8812.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-8812/"
+},
+{
+"debut": 49.7,
+"fin": 54.2,
+"fichier": "rdv_115774.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-115774/"
+},
+{
+"debut": 54.2,
+"fin": 57.1,
+"fichier": "ennui_62524.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-62524/"
+},
+{
+"debut": 57.1,
+"fin": 60.5,
+"fichier": "parents_38045.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-38045/"
+},
+{
+"debut": 60.5,
+"fin": 67.0,
+"fichier": "parents_253997.mp4",
+"type": "video",
+"page": "https://pixabay.com/videos/id-253997/"
+}
+]

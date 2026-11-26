@@ -1,0 +1,22 @@
+# Sources des images (Pixabay, licence Pixabay)
+
+- 0.0–3.6 s : https://pixabay.com/photos/computer-hardware-technology-pc-663396/
+- 3.6–5.9 s : https://pixabay.com/videos/id-380318/
+- 5.9–8.1 s : https://pixabay.com/videos/id-303669/
+- 8.1–11.7 s : https://pixabay.com/photos/photos-nostalgia-retro-photography-7666143/
+- 11.7–12.8 s : https://pixabay.com/videos/id-364930/
+- 12.8–17.1 s : https://pixabay.com/photos/music-cassette-tape-cassette-retro-1285165/
+- 17.1–19.6 s : https://pixabay.com/photos/game-boy-nintendo-tetris-3912103/
+- 19.6–22.0 s : https://pixabay.com/photos/gamepad-joystick-controller-console-6267794/
+- 22.0–26.9 s : https://pixabay.com/videos/id-119507/
+- 26.9–30.0 s : https://pixabay.com/photos/nostalgia-phone-old-4397880/
+- 30.0–32.7 s : https://pixabay.com/photos/photographer-girl-child-photo-263381/
+- 32.7–35.5 s : https://pixabay.com/photos/photos-hands-hold-old-256887/
+- 35.5–39.6 s : https://pixabay.com/videos/id-364921/
+- 39.6–43.9 s : https://pixabay.com/videos/id-33219/
+- 43.9–46.1 s : https://pixabay.com/videos/id-185557/
+- 46.1–49.7 s : https://pixabay.com/videos/id-8812/
+- 49.7–54.2 s : https://pixabay.com/videos/id-115774/
+- 54.2–57.1 s : https://pixabay.com/videos/id-62524/
+- 57.1–60.5 s : https://pixabay.com/videos/id-38045/
+- 60.5–67.0 s : https://pixabay.com/videos/id-253997/
