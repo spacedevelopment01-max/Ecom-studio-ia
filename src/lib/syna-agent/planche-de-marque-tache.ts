@@ -100,12 +100,37 @@ export function vraisAppelsDeLaPlanche(o: { userId: string; projectId: string; j
 
 // ---------------------------------------------------------------- les temps de la tâche
 
+/**
+ * L'ERREUR D'UNE PLANCHE, VISIBLE AU STUDIO (25 novembre 2026) : écrite au journal des erreurs et envoyée en notification
+ * aux administrateurs, jamais au client. Remplaçable par les essais. Ne fait jamais échouer la tâche.
+ */
+export const signalement: { auStudio?: (o: { userId: string; projectId: string; key: string; nom: string; message: string }) => void | Promise<void> } = {};
+export async function signalerAuStudio(o: { userId: string; projectId: string; key: string; nom: string; message: string; e: unknown }): Promise<void> {
+  try {
+    if (signalement.auStudio) return await signalement.auStudio(o);
+    const { logError } = await import("../db");
+    const { notifyAdmins } = await import("../payments");
+    logError("planche-de-marque", o.e, { userId: o.userId, projectId: o.projectId, details: { identite: o.key, nom: o.nom } });
+    notifyAdmins(`Planche de marque ${o.key} « ${o.nom} » en erreur`, `La planche ${o.key} du projet ${o.projectId} s'est arrêtée en erreur, rien n'est relancé tout seul et elle n'est pas montrée au client ; les autres planches continuent. Erreur : ${o.message}`);
+  } catch { /* le signalement ne fait jamais échouer la tâche */ }
+}
+
 type Etape = { step: <T>(key: string, fn: () => Promise<T>) => Promise<T> };
 const norm = (t: string) => t.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+/**
+ * Les points de reprise de la planche : un appel payé est rangé sous sa clé et jamais repayé par une relance de la tâche.
+ * Lus aussi par le script d'essai, qui reprend une planche à partir de son premier essai déjà payé.
+ */
+export const clesDeLaPlanche = {
+  valeurs: (nom: string) => `brand:planche:valeurs:${norm(nom)}`,
+  domaine: (nom: string, pass = "") => `brand:planche:domaine:${norm(nom)}${pass}`,
+  image: (round: number, key: string, tour: number, pass = "") => `brand:planche:image:${round}:${key}:${tour}${pass}`,
+  relecture: (round: number, key: string, tour: number, pass = "") => `brand:planche:relecture:${round}:${key}:${tour}${pass}`,
+};
 
 /** Les valeurs du métier, UNE fois par client (point de reprise : jamais repayées). */
 export async function valeursDuClient(ctx: Etape, ai: PlancheAi, o: { nom: string; metier: string; fiche: string; personnes: boolean; kind: "produits" | "services" }) {
-  return ctx.step(`brand:planche:valeurs:${norm(o.nom)}`, () => ecrireLesValeurs({ ecrire: (d, tour) => ai.valeurs(d, tour), aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn) }, o));
+  return ctx.step(clesDeLaPlanche.valeurs(o.nom), () => ecrireLesValeurs({ ecrire: (d, tour) => ai.valeurs(d, tour), aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn) }, o));
 }
 
 /**
@@ -123,7 +148,7 @@ export async function plancheDeLaRoute(o: {
   const { ctx, ai, route: x } = o, key = x.key, notes: string[] = [], issues: string[] = [], pass = o.pass ?? "";
   const annee = anneeEnCours();
   const phrase = lignesDeLaPhrase(o.phrase);
-  const d = await ctx.step(`brand:planche:domaine:${norm(x.name)}${pass}`, () => verifierLesDomaines(x.name, x.board.descriptor));
+  const d = await ctx.step(clesDeLaPlanche.domaine(x.name, pass), () => verifierLesDomaines(x.name, x.board.descriptor));
   const dom = domaineDeLaPlanche(d, x.name);
   const base = { logo: o.logoAssetId, domaine: dom.domaine, statut: dom.statut, annee, ...(phrase ? { phrase } : {}), at: Date.now() };
   const avec = (planche: NonNullable<Route["board"]["planche"]>): Route => ({ ...x, board: { ...x.board, domains: d, planche } });
@@ -150,11 +175,11 @@ export async function plancheDeLaRoute(o: {
     const r = await dessinerLaPlanche({
       // Point de reprise : l'image payée est rangée tout de suite (jamais repayée par une relance de la tâche).
       dessiner: async (lg, disp, texte, tour) => {
-        const im = await ctx.step(`brand:planche:image:${o.round}:${key}:${tour}${pass}`, async () => { const r = await ai.dessiner({ assetId: o.logoAssetId, data: lg }, { nom: `disposition:${disposition.laquelle}`, data: disp }, texte, `${key}-${o.round}-${tour}${pass}`); return ranger(r.png, tour, false, texte, r.recu); });
+        const im = await ctx.step(clesDeLaPlanche.image(o.round, key, tour, pass), async () => { const r = await ai.dessiner({ assetId: o.logoAssetId, data: lg }, { nom: `disposition:${disposition.laquelle}`, data: disp }, texte, `${key}-${o.round}-${tour}${pass}`); return ranger(r.png, tour, false, texte, r.recu); });
         ids.set(tour, im);
         return assetData(getAsset(im.id)!);
       },
-      relire: (bandes, lg, disp, demande, tour, avecPhrase) => ctx.step(`brand:planche:relecture:${o.round}:${key}:${tour}${pass}`, () => (avecPhrase ? ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`, true) : ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`))),
+      relire: (bandes, lg, disp, demande, tour, avecPhrase) => ctx.step(clesDeLaPlanche.relecture(o.round, key, tour, pass), () => (avecPhrase ? ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`, true) : ai.relire(bandes, lg, disp, demande, `${key}-${o.round}-${tour}${pass}-relecture`))),
       aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
     }, { nom: x.name, annee, domaine: dom, personnes: o.personnes, animaux: disposition.animaux && disposition.laquelle === "standard", valeurs, logo, disposition: disposition.png, ...(phrase ? { phrase } : {}) });
     const dernier = r.essais.at(-1)!;
@@ -171,9 +196,14 @@ export async function plancheDeLaRoute(o: {
     return { route: avec({ ...base, image: im, essais: r.essais.length, note: dernier.verdict.note }), issues, notes };
   } catch (e) {
     if (e instanceof CostCapReached) { issues.push(phraseDeLaPlancheNonMontree(x.name, key)); return { route: avec({ ...base, essais: ids.size, raison: L("le plafond annoncé a été atteint avant la fin de la planche", "the announced cap was reached before the board was finished") }), issues, notes }; }
-    // Une panne du fournisseur n'est jamais relancée toute seule : la planche manque, c'est dit.
+    // Une panne n'est jamais relancée toute seule : la planche manque, c'est dit. Elle ne retient jamais les autres planches
+    // (essai réel d'Écume, 25 novembre 2026 : l'échec de A avait empêché B) : chaque planche est indépendante. L'erreur est
+    // visible au Studio, pour le propriétaire (journal des erreurs et notification de l'administration) ; le client ne voit
+    // que la phrase de SINA, et jamais la planche.
+    const message = String((e as Error)?.message ?? e).slice(0, 400);
     issues.push(phraseDeLaPlancheNonMontree(x.name, key));
-    notes.push(`planche ${key} non faite : ${String((e as Error)?.message ?? e).slice(0, 160)}`);
-    return { route: avec({ ...base, essais: ids.size, raison: L("la création a échoué chez le fournisseur", "the provider failed") }), issues, notes };
+    notes.push(`planche ${key} non faite : ${message.slice(0, 160)}`);
+    await signalerAuStudio({ ...o.who, key, nom: x.name, message, e });
+    return { route: avec({ ...base, essais: ids.size, erreur: true, raison: L(`la planche s'est arrêtée en erreur (${message.slice(0, 160)})`, "the board stopped with an error") }), issues, notes };
   }
 }

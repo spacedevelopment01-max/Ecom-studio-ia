@@ -422,7 +422,10 @@ describe("la phrase choisie sous le logo, reprise mot pour mot sur sa planche (2
   it("le relecteur la reçoit ; le code compare lettre pour lettre chaque endroit où elle est lue ; mal écrite, la planche est refusée ; jamais un micro-texte décoratif", () => {
     const a = { ...attendu, phrase: DEUX };
     expect(P.demandeAuRelecteurDeLaPlanche({ ...a, texte: "t" })).toContain("Le client a choisi la phrase écrite sous son logo, en 2 lignes, dans cet ordre : « SAVONNERIE ARTISANALE » puis « SAVONS · SHAMPOINGS · BAUMES ». Elle n'est pas inventée, et ce n'est jamais un micro-texte décoratif");
-    expect(P.RelectureAvecPhraseSchema.parse({ phrasesLues: ["x"] }).phrasesLues).toEqual(["x"]);
+    // Le relecteur répond sous forme structurée (essai réel d'Écume) ; la forme d'avant (des chaînes) se relit encore dans un
+    // verdict déjà rangé.
+    expect(P.RelectureAvecPhraseSchema.parse({ phrasesLues: [{ emplacement: "e", lignes: ["x"], cachee: false }] }).phrasesLues).toEqual([{ emplacement: "e", lignes: ["x"], cachee: false }]);
+    expect(P.VerdictRangeDeLaPlancheSchema.parse({ phrasesLues: ["x"] }).phrasesLues).toEqual(["x"]);
     const r = (v: Partial<typeof bon> & { phrasesLues?: string[]; microTextes?: string[] }, o = a) => P.raisonsDuRefusDeLaPlanche({ ...bon, ...v }, o);
     // Juste : sous le logo et comme slogan (la casse, les espaces et un point final mis à part, comme pour le nom).
     expect(r({ phrasesLues: ["SAVONNERIE ARTISANALE / SAVONS · SHAMPOINGS · BAUMES", "Savonnerie artisanale / Savons · shampoings · baumes."] })).toEqual([]);

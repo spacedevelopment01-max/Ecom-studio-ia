@@ -229,6 +229,8 @@ export const BoardSchema = z.object({
     note: z.number().min(0).max(10).optional(),
     /** Pourquoi elle n'est pas montrée (refusée deux fois, valeurs du métier impossibles, panne). */
     raison: z.string().max(800).optional(),
+    /** Arrêtée en erreur (panne, texte refusé avant l'envoi) : signalée au Studio, jamais montrée ; les autres planches continuent. */
+    erreur: z.boolean().optional(),
     /** La revérification gratuite du domaine au moment du choix. */
     revu: z.object({ statut: z.enum(["disponible", "a_verifier", "adresse_a_choisir"]), at: z.number() }).optional(),
     at: z.number(),

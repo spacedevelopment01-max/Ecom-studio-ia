@@ -7,6 +7,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 import type { PlancheAi } from "../../src/lib/syna-agent/planche-de-marque-tache";
 import type { RelectureDeLaPlanche, ValeursDuMetier } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
@@ -20,12 +21,16 @@ export type { ClientDeLEssai };
 
 export type LigneDuDevis = {
   planche: number | null; appel: string; modele: string;
-  quand: "toujours" | "si le contrôle refuse les valeurs" | "si le relecteur refuse la planche";
+  quand: "toujours" | "si le contrôle refuse les valeurs" | "si le relecteur refuse la planche" | "toujours (son premier essai, déjà payé, est refusé)";
   charge: "client" | "Studio";
   probableMicro: number; maxMicro: number;
 };
 export type DevisDeLEssai = {
   planches: number;
+  /** Les valeurs du métier déjà écrites (valeurs-du-metier.json du dossier d'essai) : aucun appel. */
+  valeursFaites?: boolean;
+  /** Les planches reprises à partir de leur premier essai déjà payé (1 = A) : seule la reprise unique part. */
+  reprises?: number[];
   lignes: LigneDuDevis[];
   /** Sans aucun refus (le probable du devis du Studio). */
   probableMicro: number;
@@ -39,8 +44,13 @@ export type DevisDeLEssai = {
   reparationsMicro: number;
 };
 
-/** Le devis de l'essai pour N planches, appel par appel, avec les fonctions du devis du Studio (aucun appel). */
-export async function devisDeLEssai(n: number): Promise<DevisDeLEssai> {
+/**
+ * Le devis de l'essai pour N planches, appel par appel, avec les fonctions du devis du Studio (aucun appel). `valeursFaites` :
+ * les valeurs du métier sont déjà écrites, rien n'est compté pour elles. `reprises` : les planches (1 = A) reprises à
+ * partir de leur premier essai déjà payé et refusé ; seules leur reprise unique et sa relecture partent, à la charge du
+ * Studio, toujours.
+ */
+export async function devisDeLEssai(n: number, o: { valeursFaites?: boolean; reprises?: readonly number[] } = {}): Promise<DevisDeLEssai> {
   const { devisDUnAppelDeLaPlanche, devisDesPlanchesDeMarque, PRIX_MESURE_DE_LA_PLANCHE } = await import("../../src/lib/syna-agent/planche-de-marque-tache");
   const { plancheDeMarqueMaxMicro } = await import("../../src/lib/ai/media-providers");
   const { jsonCallMaxMicro } = await import("../../src/lib/ai/llm");
@@ -49,11 +59,20 @@ export async function devisDeLEssai(n: number): Promise<DevisDeLEssai> {
   const imageMax = plancheDeMarqueMaxMicro(), imageProbable = Math.round(PRIX_MESURE_DE_LA_PLANCHE * 1_000_000);
   const nomDe = (m: { provider: string; model: string; effort: string }) => `${m.provider}:${m.model}${m.effort ? ` (effort ${m.effort})` : ""}`;
   const image = `openai:${PERMISSION_DE_LA_PLANCHE.model} (xhigh, 1536 × 2304)`;
-  const lignes: LigneDuDevis[] = [
+  const lignes: LigneDuDevis[] = o.valeursFaites ? [] : [
     { planche: null, appel: "valeurs du métier", modele: nomDe(v.modele), quand: "toujours", charge: "client", probableMicro: v.probable, maxMicro: v.max },
     { planche: null, appel: "valeurs réécrites (une fois)", modele: nomDe(v.modele), quand: "si le contrôle refuse les valeurs", charge: "Studio", probableMicro: v.probable, maxMicro: v.max },
   ];
+  const reprises = [...new Set(o.reprises ?? [])].filter((k) => k >= 1 && k <= n).sort();
   for (let k = 1; k <= n; k++) {
+    if (reprises.includes(k)) {
+      const deja = "toujours (son premier essai, déjà payé, est refusé)" as const;
+      lignes.push(
+        { planche: k, appel: "planche, reprise unique", modele: image, quand: deja, charge: "Studio", probableMicro: imageProbable, maxMicro: imageMax },
+        { planche: k, appel: "relecture de la reprise", modele: nomDe(r.modele), quand: deja, charge: "Studio", probableMicro: r.probable, maxMicro: r.max },
+      );
+      continue;
+    }
     lignes.push(
       { planche: k, appel: "planche, 1er essai", modele: image, quand: "toujours", charge: "client", probableMicro: imageProbable, maxMicro: imageMax },
       { planche: k, appel: "relecture du 1er essai", modele: nomDe(r.modele), quand: "toujours", charge: "client", probableMicro: r.probable, maxMicro: r.max },
@@ -67,12 +86,14 @@ export async function devisDeLEssai(n: number): Promise<DevisDeLEssai> {
   const reparation = (a: typeof v) => Math.max(0, (jsonCallMaxMicro(a.modele.provider, a.modele.model, a.jetons.input * 1.5, a.jetons.max, a.jetons.max, a.modele.effort || null)?.maxMicro ?? a.max) - a.max);
   return {
     planches: n,
+    ...(o.valeursFaites ? { valeursFaites: true } : {}),
+    ...(reprises.length ? { reprises } : {}),
     lignes,
-    probableMicro: Math.ceil(somme((l) => l.quand === "toujours", "probableMicro")),
+    probableMicro: Math.ceil(somme((l) => l.quand.startsWith("toujours"), "probableMicro")),
     probableAvecReprisesMicro: Math.ceil(somme(() => true, "probableMicro")),
     plafondMinimalMicro: Math.ceil(somme(() => true, "maxMicro")),
     devisDuStudio: { maxMicro: d.maxMicro, studioMaxMicro: d.studioMaxMicro, probableMicro: d.probableMicro },
-    reparationsMicro: Math.ceil(2 * reparation(v) + 2 * n * reparation(r)),
+    reparationsMicro: Math.ceil((o.valeursFaites ? 0 : 2 * reparation(v)) + (2 * n - reprises.length) * reparation(r)),
   };
 }
 
@@ -109,9 +130,11 @@ export async function phraseDuLogoDeLEssai(fichierDuLogo: string): Promise<{ fic
 export function devisEnTexte(d: DevisDeLEssai): string[] {
   return [
     `Devis de l'essai pour ${d.planches} planches (fonctions du devis du Studio, aucun appel) :`,
+    ...(d.valeursFaites ? ["- les valeurs du métier sont déjà écrites (valeurs-du-metier.json du dossier d'essai) : aucun appel"] : []),
+    ...(d.reprises?.length ? [`- reprise à partir du premier essai déjà payé : planche ${d.reprises.map((k) => KEYS[k - 1]).join(", ")} (seule sa reprise unique part, à la charge du Studio)`] : []),
     ...d.lignes.map((x) => `- ${x.planche == null ? "le client" : `planche ${x.planche}`} · ${x.appel} · ${x.modele} · ${x.quand} · charge ${x.charge} · probable ${euros(x.probableMicro)} · au plus ${euros(x.maxMicro)}`),
     `Probable, sans refus : ${euros(d.probableMicro)} (devis du Studio : ${euros(d.devisDuStudio.probableMicro)})`,
-    `Probable, si les valeurs sont réécrites et chaque planche refaite une fois : ${euros(d.probableAvecReprisesMicro)}`,
+    `Probable, si ${d.valeursFaites ? "" : "les valeurs sont réécrites et "}chaque planche refaite une fois : ${euros(d.probableAvecReprisesMicro)}`,
     `Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : ${euros(d.plafondMinimalMicro)}`,
     `  dont plafond du client de la tâche ${euros(d.devisDuStudio.maxMicro)} et borne du Studio ${euros(d.devisDuStudio.studioMaxMicro)} (devisDesPlanchesDeMarque)`,
     `Hors plafond : une réponse de texte mal formée à réparer coûterait au plus ${euros(d.reparationsMicro)} de plus en tout ; la tâche ne la couvre pas (elle s'arrêterait sur sa propre borne).`,
@@ -120,11 +143,53 @@ export function devisEnTexte(d: DevisDeLEssai): string[] {
 
 // ---------------------------------------------------------------- l'essai
 
-export type EssaiEcrit = { tour: number; texte?: string; brut?: string; bandes?: string[]; demande?: string; verdict?: RelectureDeLaPlanche; raisons?: string[]; ecartes?: string[] };
-export type PlancheDeLEssai = { key: string; fichier: string; phrase?: string[]; fichierDeLaPhrase?: string | null; gardee?: boolean; fichierGarde?: string; raison?: string; note?: number; essais: EssaiEcrit[]; notes: string[]; issues: string[] };
+export type EssaiEcrit = { tour: number; texte?: string; brut?: string; bandes?: string[]; demande?: string; verdict?: RelectureDeLaPlanche; raisons?: string[]; ecartes?: string[]; repris?: string };
+/** `erreur` : la planche s'est arrêtée en erreur (jamais relancée) ; les autres planches continuent. */
+export type PlancheDeLEssai = { key: string; fichier: string; phrase?: string[]; fichierDeLaPhrase?: string | null; gardee?: boolean; fichierGarde?: string; raison?: string; note?: number; essais: EssaiEcrit[]; notes: string[]; issues: string[]; erreur?: string; signale?: string };
+
+// ---------------------------------------------------------------- reprendre une planche déjà payée
+
+/** Les valeurs du métier déjà écrites dans le dossier d'essai (valeurs-du-metier.json), pour ce client ; null sinon. */
+export function valeursDejaEcrites(sortie: string, client: ClientDeLEssai): { ok: true; valeurs: ValeursDuMetier; notes: string[] } | null {
+  const f = path.join(sortie, "valeurs-du-metier.json");
+  if (!fs.existsSync(f)) return null;
+  const v = JSON.parse(fs.readFileSync(f, "utf8")) as { ok?: boolean; valeurs?: ValeursDuMetier; notes?: string[] };
+  if (!v.ok || !v.valeurs) return null;
+  if (v.valeurs.metier !== client.metier.trim().replace(/[.]+$/, "")) throw new Error(`${f} est celui d'un autre métier (« ${v.valeurs.metier} », pas « ${client.metier} ») : rien n'est lancé.`);
+  return { ok: true, valeurs: v.valeurs, notes: v.notes ?? [] };
+}
+
+/** Ce qu'il faut pour reprendre une planche à partir de son premier essai déjà payé (fichiers écrits par l'essai). */
+export type RepriseDePlanche = { dossier: string; key: string; png: Buffer; fichierPng: string; verdict: RelectureDeLaPlanche; texte: string | null; logoSha: string | null; domaine: { verifie: NameDomains; domaine: string | null; statut: string; mention: string } };
+/**
+ * Lit, dans `dossier`, le premier essai déjà payé de la planche `key` : planche-X-1-brute.png (ou planche-X-1.png), son
+ * verdict (planche-X-1-relecture-verdict.json, forme d'avant comprise), le texte envoyé, l'empreinte du logo joint et le
+ * domaine vérifié avant le dessin (domaine.json). Un fichier qui manque : une erreur, rien n'est lancé.
+ */
+export async function lireLaReprise(dossier: string, key: string): Promise<RepriseDePlanche> {
+  const P = await import("../../src/lib/syna-agent/planche-de-marque");
+  const f = (n: string) => path.join(dossier, n);
+  const fichierPng = [`planche-${key}-1-brute.png`, `planche-${key}-1.png`].map(f).find((x) => fs.existsSync(x));
+  if (!fichierPng) throw new Error(`Reprise de la planche ${key} : ni planche-${key}-1-brute.png ni planche-${key}-1.png dans ${dossier}. Rien n'est lancé.`);
+  const png = fs.readFileSync(fichierPng);
+  if (png[0] !== 137 || png[1] !== 80) throw new Error(`Reprise de la planche ${key} : ${fichierPng} n'est pas un PNG. Rien n'est lancé.`);
+  const fv = f(`planche-${key}-1-relecture-verdict.json`);
+  if (!fs.existsSync(fv)) throw new Error(`Reprise de la planche ${key} : ${fv} manque (le verdict du premier essai). Rien n'est lancé.`);
+  const brut = JSON.parse(fs.readFileSync(fv, "utf8"));
+  const verdict = P.VerdictRangeDeLaPlancheSchema.parse(brut.verdict ?? brut) as RelectureDeLaPlanche;
+  const fd = f("domaine.json");
+  if (!fs.existsSync(fd)) throw new Error(`Reprise de la planche ${key} : ${fd} manque (le domaine vérifié avant le premier dessin). Rien n'est lancé.`);
+  const d = JSON.parse(fs.readFileSync(fd, "utf8"));
+  const ft = f(`planche-${key}-1-texte-envoye.txt`), fr = f(`planche-${key}-1-recu.json`), fres = f(`planche-${key}-resultat.json`);
+  const logoSha: string | null = fs.existsSync(fr) ? (JSON.parse(fs.readFileSync(fr, "utf8")).jointes ?? []).find((j: { role: string }) => j.role === "logo")?.sha256 ?? null
+    : fs.existsSync(fres) ? JSON.parse(fs.readFileSync(fres, "utf8")).logo?.sha256 ?? null : null;
+  return { dossier, key, png, fichierPng, verdict, texte: fs.existsSync(ft) ? fs.readFileSync(ft, "utf8") : null, logoSha, domaine: { verifie: d.verifie, domaine: d.domaine ?? null, statut: d.statut, mention: d.mention } };
+}
 export type LigneDeDepense = { cle: string | null; task: string | null; modele: string | null; studio: boolean; reserveMicro: number; reelMicro: number | null; statut: string; appel?: Record<string, unknown> };
 export type ResultatDesPlanches = {
   arret?: string; client: ClientDeLEssai; fiche: string;
+  /** Les planches arrêtées en erreur (les autres ont continué). */
+  erreurs?: string[];
   valeurs?: { ok: true; valeurs: ValeursDuMetier; notes: string[] } | { ok: false; raison: string; notes: string[] };
   domaine?: { verifie: NameDomains; domaine: string | null; statut: string; mention: string };
   disposition?: string;
@@ -140,7 +205,7 @@ const KEYS = ["A", "B", "C", "D"] as const;
  * euros, allume le garde-fou de l'essai pour toute la durée du script. Le domaine : `findDomains` (RDAP, gratuit), sauf
  * `plancheDeps.domaines` dans les essais.
  */
-export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string; logos: string[]; client: ClientDeLEssai; ai?: (q: Qui) => PlancheAi }): Promise<ResultatDesPlanches> {
+export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string; logos: string[]; client: ClientDeLEssai; ai?: (q: Qui) => PlancheAi; reprendre?: Partial<Record<string, string>> }): Promise<ResultatDesPlanches> {
   const plafond = Number(o.plafondEuros.replace(",", "."));
   if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible : rien n'est lancé.");
   if (o.logos.length < 2 || o.logos.length > 4) throw new Error(`Il faut de 2 à 4 logos finis, pas ${o.logos.length} : rien n'est lancé.`);
@@ -153,6 +218,17 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
     return { key: KEYS[i], fichier: f, png, phrase: ph.lignes, fichierDeLaPhrase: ph.fichier };
   }));
   const client = o.client;
+  // Les valeurs déjà écrites et les planches à reprendre : tout est lu et vérifié AVANT le premier appel.
+  const dejaEcrites = valeursDejaEcrites(o.sortie, client);
+  const aReprendre = await Promise.all(Object.entries(o.reprendre ?? {}).filter(([, d]) => d).map(([k, d]) => lireLaReprise(path.resolve(d!), k)));
+  for (const r of aReprendre) {
+    const l = logos.find((x) => x.key === r.key);
+    if (!l) throw new Error(`Reprise de la planche ${r.key} : aucun logo ${r.key} donné. Rien n'est lancé.`);
+    if (!dejaEcrites) throw new Error(`Reprise de la planche ${r.key} : les valeurs du métier de son premier essai (valeurs-du-metier.json) manquent dans ${o.sortie}. Rien n'est lancé.`);
+    const sha = crypto.createHash("sha256").update(l.png).digest("hex");
+    if (r.logoSha && r.logoSha !== sha) throw new Error(`Reprise de la planche ${r.key} : le logo donné (${sha.slice(0, 12)}…) n'est pas celui de son premier essai (${r.logoSha.slice(0, 12)}…). Rien n'est lancé.`);
+  }
+  if (aReprendre.length > 1 && new Set(aReprendre.map((r) => JSON.stringify(r.domaine.verifie))).size > 1) throw new Error("Les planches reprises n'ont pas été dessinées avec le même domaine vérifié : rien n'est lancé.");
   // Le garde-fou de l'essai, compté depuis le début du script.
   process.env.STUDIO_ESSAI_PLAFOND_EUROS = String(plafond);
   const debut = Date.now();
@@ -171,7 +247,7 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
   const { runForUser } = await import("../../src/lib/ai/access");
   const { runWithLang } = await import("../../src/lib/i18n-server");
 
-  const devis = await devisDeLEssai(logos.length);
+  const devis = await devisDeLEssai(logos.length, { valeursFaites: !!dejaEcrites, reprises: aReprendre.map((r) => KEYS.indexOf(r.key as never) + 1) });
   // 1. Le client inventé et son projet.
   const u = await account();
   const projectId = project(u, typeDuProjet(client)) as string;
@@ -190,8 +266,9 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
   const essaiDe = (key: string, tour: number) => { const p = plancheDe(key); let e = p.essais.find((x) => x.tour === tour); if (!e) { e = { tour }; p.essais.push(e); } return e; };
   let annee = T.anneeEnCours();
 
-  // Toute erreur d'un appel (panne, plafond) est gardée : la tâche du Studio la transforme en planche non montrée, l'essai
-  // s'arrête là (jamais de relance).
+  // Toute erreur d'un appel (panne, plafond) est gardée : la tâche du Studio la transforme en planche non montrée, jamais
+  // relancée. Chaque planche est indépendante (essai réel d'Écume, 25 novembre 2026 : l'échec de A avait empêché B) : seul
+  // le garde-fou de l'essai arrête tout.
   let erreur: unknown = null;
   const garder = async <X>(fn: () => Promise<X>): Promise<X> => { try { return await fn(); } catch (e) { erreur ??= e; throw e; } };
   // 2. Les appels du Studio, tels quels, avec ce qui part et ce qui revient écrit tout de suite (un arrêt ne perd rien).
@@ -240,6 +317,18 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
   // Les points de reprise de la tâche, en mémoire : le domaine (même nom pour toutes les planches) n'est vérifié qu'une fois.
   const reprises = new Map<string, unknown>();
   const ctx = { step: async <X>(k: string, fn: () => Promise<X>): Promise<X> => { if (reprises.has(k)) return reprises.get(k) as X; const v = await fn(); reprises.set(k, v); return v; } };
+  // Les valeurs déjà écrites : le point de reprise du Studio, jamais repayé. Le domaine d'une planche reprise : celui de
+  // son premier dessin (même nom : les autres planches le reprennent aussi, comme une tâche relancée du Studio).
+  if (dejaEcrites) reprises.set(T.clesDeLaPlanche.valeurs(client.nom), dejaEcrites);
+  if (aReprendre[0]) {
+    const d = aReprendre[0].domaine;
+    reprises.set(T.clesDeLaPlanche.domaine(client.nom), d.verifie);
+    res.domaine = { verifie: d.verifie, domaine: d.domaine, statut: d.statut, mention: d.mention };
+    ecrireFichier("domaine.json", json({ nom: client.nom, descripteur: client.descripteur ?? null, ...res.domaine, caseSousLaPlanche: P.caseDuDomaine({ domaine: d.domaine, statut: d.statut as never }), repris: aReprendre[0].dossier }));
+  }
+  // L'erreur d'une planche, signalée au Studio : gardée pour le rapport.
+  const signalementAvant = T.signalement.auStudio;
+  T.signalement.auStudio = (s) => { const p = res.planches.find((x) => x.key === s.key); if (p) p.signale = s.message; };
 
   const lignes: string[] = [
     `Essai des planches de marque — client « ${client.nom} » (${client.metier}), type « ${client.kind} »`,
@@ -278,8 +367,9 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
     if (res.disposition) lignes.push(`Disposition jointe : ${res.disposition}`);
     for (const p of res.planches) {
       lignes.push("", `Planche ${p.key} (${p.fichier}) : ${p.gardee === true ? `GARDÉE par le relecteur (${p.fichierGarde}, note ${p.note}/10)` : p.gardee === false ? `NON gardée, jamais montrée (${p.raison})` : "non terminée"}`);
+      if (p.erreur) lignes.push(`  ERREUR (planche arrêtée, jamais relancée ; les autres planches ont continué) : ${p.erreur}${p.signale ? " — signalée au Studio" : ""}`);
       for (const e of p.essais) {
-        lignes.push(`  essai ${e.tour}${e.tour === 2 ? " (reprise à la charge du Studio)" : ""} : texte ${e.texte ?? "—"} ; planche brute ${e.brut ?? "—"} ; bandes ${e.bandes?.join(", ") ?? "—"}`);
+        lignes.push(`  essai ${e.tour}${e.tour === 2 ? " (reprise à la charge du Studio)" : ""}${e.repris ? ` (déjà payé, repris de ${e.repris} : aucun appel ; raisons recalculées par le code)` : ""} : texte ${e.texte ?? "—"} ; planche brute ${e.brut ?? "—"} ; bandes ${e.bandes?.join(", ") ?? "—"}`);
         if (e.verdict) lignes.push(`    verdict : note ${e.verdict.note}/10, nom lu « ${e.verdict.nomLu} », copyright lu « ${e.verdict.copyrightLu} », domaine lu « ${e.verdict.domaineLu} », logo fidèle ${e.verdict.logoFidele ? "oui" : "non"} — ${e.verdict.pourquoi}`, `    raisons du refus : ${e.raisons?.length ? e.raisons.join(" ; ") : "aucune"}`, ...(e.ecartes?.length ? [`    non compté : ${e.ecartes.join(" ; ")}`] : []));
       }
       for (const n of p.notes) lignes.push(`  note : ${n}`);
@@ -288,6 +378,7 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
     lignes.push("", "Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :",
       ...(res.appels.length ? res.appels.map((a) => `- ${a.cle ?? a.task ?? "?"} · ${a.modele ?? "?"} · ${a.studio ? "charge du Studio" : "charge du client"} · réservé ${euros(a.reserveMicro)} → réglé ${a.reelMicro == null ? "—" : euros(a.reelMicro)} (${a.statut})${a.appel ? ` · jetons ${a.appel.jetonsEntree} en entrée, ${a.appel.jetonsSortie} en sortie` : ""}`) : ["- aucun appel"]),
       "", `Dépense réelle comptée par le Studio : ${euros(res.depenseMicro)}`, "Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).");
+    if (res.erreurs?.length) lignes.push("", ...res.erreurs.map((x) => `PLANCHE EN ERREUR : ${x}`));
     if (res.arret) lignes.push("", `ARRÊT : ${res.arret}`);
     ecrireFichier("rapport.txt", `${lignes.join("\n")}\n`);
     return res;
@@ -303,7 +394,8 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
       // 3. Les valeurs du métier : un appel pour le client, contrôlé, une réécriture au plus à la charge du Studio.
       try {
         res.valeurs = await T.valeursDuClient(ctx, ai, { nom: client.nom, metier: client.metier, fiche, personnes, kind: client.kind });
-        ecrireFichier("valeurs-du-metier.json", json(res.valeurs));
+        if (!dejaEcrites) ecrireFichier("valeurs-du-metier.json", json(res.valeurs));
+        else res.valeurs = { ...res.valeurs, notes: [...res.valeurs.notes, "valeurs reprises de valeurs-du-metier.json (déjà écrites et payées), aucun appel"] };
       } catch (e) { res.arret = raisonDeLArret(e, "valeurs du métier"); return ecrire(); }
       if (res.valeurs.ok) {
         const d = P.laDisposition(res.valeurs.valeurs.metier);
@@ -314,23 +406,46 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
       for (const l of logos) {
         const p: PlancheDeLEssai = { key: l.key, fichier: l.fichier, ...(l.phrase ? { phrase: l.phrase } : {}), fichierDeLaPhrase: l.fichierDeLaPhrase, essais: [], notes: [], issues: [] };
         res.planches.push(p);
+        erreur = null;
         ecrireFichier(`planche-${l.key}-logo-recu.png`, l.png);
         const a = await saveAsset({ userId: u.id, projectId, data: l.png, name: `logo-fini-${l.key}.png`, mime: "image/png", role: "brand-board", origin: "generated", status: "ready" });
         const route = { key: l.key, name: client.nom, board: { descriptor: client.descripteur ?? null } };
-        const r = await T.plancheDeLaRoute({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, round: 1, valeurs: res.valeurs, logoAssetId: a.id, personnes, ...(l.phrase ? { phrase: l.phrase } : {}) });
-        const pl = r.route.board.planche;
-        p.notes = r.notes; p.issues = r.issues;
-        p.gardee = !!pl?.image; p.note = pl?.note;
-        if (pl?.image) { const dernier = p.essais.at(-1); if (dernier?.brut) p.fichierGarde = ecrireFichier(`planche-${l.key}-gardee.png`, fs.readFileSync(path.join(o.sortie, dernier.brut))); }
-        else p.raison = typeof pl?.raison === "string" ? pl.raison : "non faite";
-        ecrireFichier(`planche-${l.key}-resultat.json`, json({ nom: client.nom, disposition: P.laDisposition(res.valeurs?.ok ? res.valeurs.valeurs.metier : client.metier).laquelle, logo: { fichier: l.fichier, sha256: crypto.createHash("sha256").update(l.png).digest("hex") }, phrase: l.phrase ?? null, planche: pl ?? null, notes: r.notes, issues: r.issues }));
-        if (erreur) { res.arret = raisonDeLArret(erreur, `planche ${l.key}`); break; }
+        // Une planche reprise : son premier essai déjà payé (l'image et le verdict) devient le point de reprise du Studio ;
+        // le code corrigé recalcule ses raisons, et seule la reprise unique part, à la charge du Studio.
+        const rep = aReprendre.find((x) => x.key === l.key);
+        if (rep && res.valeurs.ok && res.domaine) {
+          const dp = { domaine: res.domaine.domaine, statut: res.domaine.statut as never };
+          const texte1 = P.texteDeLaPlanche({ nom: client.nom, valeurs: res.valeurs.valeurs, annee, domaine: dp, personnes, ...(l.phrase ? { phrase: l.phrase } : {}) });
+          if (rep.texte != null && rep.texte !== texte1) { p.erreur = `le texte du premier essai repris (${rep.dossier}) n'est pas celui que le Studio enverrait aujourd'hui avec ces valeurs, ce domaine et cette année : rien n'est repris`; (res.erreurs ??= []).push(`planche ${l.key} : ${p.erreur}`); continue; }
+          const m = await sharp(rep.png).metadata();
+          const im = await saveAsset({ userId: u.id, projectId, data: rep.png, name: `planche-de-marque-${l.key}-1.png`, mime: "image/png", role: "planche-refusee", origin: "generated", status: "ready", meta: { plancheDeMarque: { key: l.key, tour: 1, nom: client.nom, texteEnvoye: texte1, recu: null, repris: rep.fichierPng, verdict: rep.verdict } } as never });
+          reprises.set(T.clesDeLaPlanche.image(1, l.key, 1), { id: im.id, w: m.width ?? 1536, h: m.height ?? 2304 });
+          reprises.set(T.clesDeLaPlanche.relecture(1, l.key, 1), rep.verdict);
+          const d = P.laDisposition(res.valeurs.valeurs.metier);
+          const lu = P.lectureDeLaPlanche(rep.verdict, { nom: client.nom, annee, domaine: dp, personnes, animaux: d.animaux && d.laquelle === "standard", ...(l.phrase ? { phrase: l.phrase } : {}) });
+          const brutLocal = path.resolve(rep.fichierPng) === path.resolve(o.sortie, `planche-${l.key}-1-brute.png`) ? `planche-${l.key}-1-brute.png` : ecrireFichier(`planche-${l.key}-1-brute.png`, rep.png);
+          if (rep.texte == null) ecrireFichier(`planche-${l.key}-1-texte-envoye.txt`, texte1);
+          p.essais.push({ tour: 1, texte: `planche-${l.key}-1-texte-envoye.txt`, brut: brutLocal, verdict: rep.verdict, raisons: lu.raisons, ecartes: lu.ecartes, repris: rep.dossier });
+          ecrireFichier(`planche-${l.key}-1-relecture-verdict-recalcule.json`, json({ verdict: rep.verdict, raisons: lu.raisons, ecartes: lu.ecartes, gardee: !lu.raisons.length, repris: rep.dossier }));
+        }
+        try {
+          const r = await T.plancheDeLaRoute({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, round: 1, valeurs: res.valeurs, logoAssetId: a.id, personnes, ...(l.phrase ? { phrase: l.phrase } : {}) });
+          const pl = r.route.board.planche;
+          p.notes = r.notes; p.issues = r.issues;
+          p.gardee = !!pl?.image; p.note = pl?.note;
+          if (pl?.image) { const dernier = p.essais.at(-1); if (dernier?.brut) p.fichierGarde = ecrireFichier(`planche-${l.key}-gardee.png`, fs.readFileSync(path.join(o.sortie, dernier.brut))); }
+          else p.raison = typeof pl?.raison === "string" ? pl.raison : "non faite";
+          ecrireFichier(`planche-${l.key}-resultat.json`, json({ nom: client.nom, disposition: P.laDisposition(res.valeurs?.ok ? res.valeurs.valeurs.metier : client.metier).laquelle, logo: { fichier: l.fichier, sha256: crypto.createHash("sha256").update(l.png).digest("hex") }, phrase: l.phrase ?? null, planche: pl ?? null, notes: r.notes, issues: r.issues }));
+        } catch (e) { erreur ??= e; p.gardee = false; p.raison = "arrêtée en erreur"; }
         const parLEssai = arretParLEssai(jobId);
         if (parLEssai) { res.arret = raisonDeLArret(parLEssai, `planche ${l.key}`); break; }
+        if (erreur instanceof PlafondDeLEssaiAtteint) { res.arret = raisonDeLArret(erreur, `planche ${l.key}`); break; }
+        // Une autre erreur (panne, texte refusé avant l'envoi, plafond de la tâche) : cette planche seule s'arrête.
+        if (erreur) { p.erreur = raisonDeLArret(erreur, `planche ${l.key}`); (res.erreurs ??= []).push(`planche ${l.key} : ${p.erreur}`); }
       }
       const parLEssai = arretParLEssai(jobId);
       if (parLEssai && !res.arret) res.arret = raisonDeLArret(parLEssai, "fin de l'essai");
       return ecrire();
     })));
-  } finally { T.plancheDeps.domaines = domainesAvant; }
+  } finally { T.plancheDeps.domaines = domainesAvant; T.signalement.auStudio = signalementAvant; }
 }

@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -50,7 +50,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026"]).toContain(r.decision);
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus)/);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables)/);
       // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
@@ -1511,7 +1511,9 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     expect(P.raisonsDuRefusDeLaPlanche(bon("Tenon", "tenon.fr — disponible"), { nom: "Tenon", annee: 2026, domaine: { domaine: "tenon.fr", statut: "a_verifier" }, personnes: true, animaux: false }).join(" ")).toMatch(/« tenon.fr — à vérifier »/);
   });
 
-  epreuve("relecteur-de-planche-texte-lisible-et-promesses-mesurables", async () => {
+  // Les rejeux des deux épreuves remplacées par planche-phrase-par-lignes-et-reprise-qui-part-toujours (essai réel d'Écume,
+  // étape 3) : inchangés, rejoués par l'épreuve qui les remplace.
+  const rejeuLisible = async () => {
     const R = P.RELECTEUR_DE_LA_PLANCHE;
     // 1. La consigne : les micro-textes à part, les promesses mesurables seules, le repère mot pour mot, sans image d'essai.
     expect(R).toContain("- fautes : chaque faute d'orthographe ou mot mal écrit dans un texte lisible à taille normale (le nom, les accroches, les titres des blocs, les mentions, le domaine, l'année), recopié ;");
@@ -1590,7 +1592,8 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     const I = await import("@/lib/syna-agent/tools/identity");
     expect(I.finirPlanchesGardees(j as never, ["A"], ["planche"])).toBe(true);
     expect(I.devisDesImages(j as never, ["A"], ["planche"])).toMatchObject({ studio: true });
-  });
+  };
+  epreuve("relecteur-de-planche-texte-lisible-et-promesses-mesurables", rejeuLisible);
 
   epreuve("planche-refusee-deux-fois-jamais-montree", async () => {
     const une = await tache({ verdicts: (_d, n) => (n === 1 ? { ...bon("Tenon", "tenon.fr — disponible"), copies: ["le harnais de la disposition"] } : bon("Tenon", "tenon.fr — disponible")) });
@@ -1610,7 +1613,7 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     expect(I.devisDesImages(j as never, ["A"], ["planche"])).toMatchObject({ studio: true });
   });
 
-  epreuve("planche-reprend-la-phrase-du-logo", async () => {
+  const rejeuPhrase = async () => {
     const DEUX = ["SAVONNERIE ARTISANALE", "SAVONS · SHAMPOINGS · BAUMES"];
     const lue = (l: string[]) => ({ phrasesLues: [l.join(" / ")] });
     // 1. Le Studio retrouve la phrase choisie pour CE logo fini (par le numéro de son esquisse) ; « aucune » : aucune.
@@ -1651,6 +1654,73 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     const src = fs.readFileSync("scripts/syna-recette/essai-planches-outil.ts", "utf8");
     expect(src).toContain("`${m[1]}-phrase-du-logo.txt`");
     expect(src).toContain("...(l.phrase ? { phrase: l.phrase } : {}) });");
+  };
+  epreuve("planche-reprend-la-phrase-du-logo", rejeuPhrase);
+
+  epreuve("planche-phrase-par-lignes-et-reprise-qui-part-toujours", async () => {
+    // 1. Tout ce que demandaient les deux épreuves remplacées reste vrai.
+    await rejeuLisible();
+    await rejeuPhrase();
+    const E = "tests/fixtures/ecume-planches", PH = ["SAVONNERIE ARTISANALE", "BULLES DE SOIN AU NATUREL"];
+    const ECUME = { nom: "Écume", annee: 2026, domaine: { domaine: "ecumefrance.fr", statut: "disponible" as const }, personnes: false, animaux: false, phrase: PH };
+    // 2. Le verdict réel de la planche A d'Écume (premier essai), copié tel quel : plus aucun des quinze refus faux.
+    const brut = JSON.parse(fs.readFileSync(`${E}/planche-A-1-relecture-verdict.json`, "utf8"));
+    expect(brut.raisons.filter((x: string) => x.startsWith("la phrase choisie par le client est mal écrite"))).toHaveLength(16);
+    const lu = P.lectureDeLaPlanche(P.VerdictRangeDeLaPlancheSchema.parse(brut.verdict), ECUME);
+    expect(lu.raisons).toEqual([
+      "la phrase choisie par le client est mal écrite (« 09 Sac en tissu : [1re ligne masquée par l'étiquette] / [illisible] AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL »)",
+      "fautes : « Dites-le nous ! (il faut « Dites-le-nous ! ») », « Sac en tissu (bloc 09) : la 2e ligne de la phrase sous le logo est déformée, « BULLES DE SOIN » illisible, la 1re ligne est masquée par l'étiquette »",
+      "une personne est visible sans l'accord du client",
+      "à retirer, aucune personne ni partie du corps : une main est visible dans l'image de référence « Mousse délicate » alors qu'aucune personne ne doit apparaître",
+      "elle n'est pas au niveau (5/10, il faut 8)",
+    ]);
+    // 3. La forme structurée : seules les lignes comptent ; cachée en partie par un objet, seuls les mots visibles.
+    expect(P.raisonsDuRefusDeLaPlanche({ ...bon("Écume", "ecumefrance.fr — disponible"), copyrightLu: "© 2026 Écume", phrasesLues: [{ emplacement: "01 Logo principal", lignes: PH, cachee: false }, { emplacement: "09 Support", lignes: ["…", "BULLES DE SOIN AU NATUREL"], cachee: true }] }, ECUME)).toEqual([]);
+    expect(P.raisonsDuRefusDeLaPlanche({ ...bon("Écume", "ecumefrance.fr — disponible"), copyrightLu: "© 2026 Écume", phrasesLues: [{ emplacement: "09 Support", lignes: ["…", "BULES DE SOIN AU NATUREL"], cachee: true }] }, ECUME).join(" ")).toMatch(/la phrase choisie par le client est mal écrite/);
+    const consigne = P.demandeAuRelecteurDeLaPlanche({ ...ECUME, texte: "t" });
+    expect(consigne).toContain("Une partie seulement cachée ne va jamais dans fautes.");
+    expect(`${consigne}\n${P.RELECTEUR_DE_LA_PLANCHE}`).not.toMatch(/sac|étiquette|tissu|mousse délicate|Dites-le/i);
+    // 4. La reprise part toujours : le texte de la reprise réelle de A, puis 30 raisons, sous la taille permise.
+    const valeurs = JSON.parse(fs.readFileSync(`${E}/valeurs-du-metier.json`, "utf8")).valeurs;
+    const donnees = { nom: "Écume", valeurs, annee: 2026, domaine: ECUME.domaine, personnes: false, phrase: PH };
+    expect(P.texteDeLaPlanche(donnees)).toBe(fs.readFileSync(`${E}/planche-A-1-texte-envoye.txt`, "utf8"));
+    expect(Buffer.byteLength(fs.readFileSync(`${E}/planche-A-2-texte-envoye.txt`, "utf8"))).toBeGreaterThan(mp.PLANCHE_TEXTE_MAX_OCTETS);
+    expect(Buffer.byteLength(P.texteDeLaPlanche({ ...donnees, raisons: lu.raisons }))).toBeLessThanOrEqual(mp.PLANCHE_TEXTE_MAX_OCTETS);
+    const trente = Array.from({ length: 30 }, (_x, i) => `fautes : « un long texte relevé numéro ${i} ${"encore ".repeat(20)}»`);
+    expect(Buffer.byteLength(P.texteDeLaPlanche({ ...donnees, raisons: trente }))).toBeLessThanOrEqual(mp.PLANCHE_TEXTE_MAX_OCTETS);
+    expect(P.TEXTE_DE_LA_PLANCHE_MAX_OCTETS).toBe(mp.PLANCHE_TEXTE_MAX_OCTETS);
+    // 5. Chaque planche est indépendante : A en erreur (signalée au Studio, jamais montrée), B faite.
+    const signales: string[] = [];
+    T.signalement.auStudio = (x) => { signales.push(x.key); };
+    try {
+      let n = 0;
+      const ai = {
+        valeurs: async () => { throw new Error("aucun appel attendu"); },
+        dessiner: async () => { n += 1; if (n === 1) throw new Error("Texte de la planche trop long : rien n'est envoyé."); return { png: await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#EEE" } }).png().toBuffer(), recu: null }; },
+        relire: async () => ({ ...bon("Tenon", "tenon.fr — disponible") }),
+      };
+      const u = await account(), pid = project(u, "services") as string;
+      const logo = await saveAsset({ projectId: pid, userId: u.id, data: await sharp({ create: { width: 256, height: 256, channels: 3, background: "#FFFFFF" } }).png().toBuffer(), name: "logo-fini.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready" });
+      T.plancheDeps.domaines = async () => ({ taken: [], free: ["tenon.fr"], unknown: [], at: 1 });
+      T.plancheDeps.annee = () => 2026;
+      const faire = (key: string) => fr(() => T.plancheDeLaRoute({ ctx: { step: async (_k: string, fn: () => Promise<any>) => fn() }, ai, who: { userId: u.id, projectId: pid }, route: { ...route(key as never), name: "Tenon" } as never, round: 1, valeurs: { ok: true, valeurs: TENON }, logoAssetId: logo.id, personnes: false }));
+      const a = await faire("A"), b = await faire("B");
+      expect(a.route.board.planche).toMatchObject({ erreur: true });
+      expect(a.route.board.planche!.image).toBeUndefined();
+      expect(b.route.board.planche!.image).toBeTruthy();
+      expect(signales).toEqual(["A"]);
+    } finally { T.signalement.auStudio = undefined; T.plancheDeps.domaines = undefined; T.plancheDeps.annee = undefined; }
+    expect(fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8")).toContain("if (!plafond) await T.signalerAuStudio({ userId: p.userId, projectId: p.id, key: x.key, nom: x.name, message, e });");
+    // 6. Le script d'essai : planches indépendantes, reprise d'une planche déjà payée, devis de ce chemin.
+    const outil = fs.readFileSync("scripts/syna-recette/essai-planches-outil.ts", "utf8"), script = fs.readFileSync("scripts/syna-recette/essai-planches.mts", "utf8");
+    expect(outil).toContain("if (erreur instanceof PlafondDeLEssaiAtteint) { res.arret = raisonDeLArret(erreur, `planche ${l.key}`); break; }");
+    expect(outil).toContain("reprises.set(T.clesDeLaPlanche.relecture(1, l.key, 1), rep.verdict);");
+    expect(outil).toContain("if (dejaEcrites) reprises.set(T.clesDeLaPlanche.valeurs(client.nom), dejaEcrites);");
+    expect(script).toContain("process.env[`REPRENDRE_${k}`]");
+    const { devisDeLEssai } = await import("../scripts/syna-recette/essai-planches-outil");
+    const d = await devisDeLEssai(2, { valeursFaites: true, reprises: [1] });
+    expect(d.lignes.filter((l) => l.planche === 1).map((l) => l.charge)).toEqual(["Studio", "Studio"]);
+    expect(d.lignes.some((l) => l.planche == null)).toBe(false);
   });
 });
 

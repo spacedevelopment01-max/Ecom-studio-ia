@@ -251,13 +251,68 @@ export function phraseDesDonneesVerifiees(o: { nom: string; annee: number; domai
  */
 export function texteDeLaPlanche(o: { nom: string; valeurs: ValeursDuMetier; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; raisons?: readonly string[]; phrase?: readonly string[] }): string {
   const base = `${texteDesPreuves(o.nom, o.valeurs, o.phrase)}\n${phraseDesDonneesVerifiees(o)}`;
-  const t = o.raisons?.length ? `${base}\n\n${finDeReprise(o.raisons)}` : base;
+  // La reprise part toujours (essai réel d'Écume, 25 novembre 2026 : 18 raisons, 8 939 octets, rien n'était parti) : ses
+  // raisons sont dédoublonnées, rangées des plus graves aux moins graves et bornées à la place qui reste.
+  const raisons = o.raisons?.length ? raisonsDeLaReprise(o.raisons, TEXTE_DE_LA_PLANCHE_MAX_OCTETS - octets(`${base}\n\n`)) : [];
+  const t = raisons.length ? `${base}\n\n${finDeReprise(raisons)}` : base;
   const fautes = controleDeLaPhrase(t, o.phrase);
   if (fautes.length) throw new Error(`${fautes.join(" ; ")}. Rien n'est envoyé.`);
   return t;
 }
 /** Les raisons du refus, ajoutées à la toute fin du texte pour la reprise unique. */
 export const finDeReprise = (raisons: readonly string[]) => `À corriger : ${raisons.join(" ; ")}.`;
+
+/**
+ * La taille permise du texte d'une planche, en octets : la même que celle de l'appel d'image (`PLANCHE_TEXTE_MAX_OCTETS`,
+ * media-providers.ts ; un test vérifie qu'elles sont égales). Un texte plus long n'est jamais envoyé.
+ */
+export const TEXTE_DE_LA_PLANCHE_MAX_OCTETS = 7000;
+const octets = (t: string) => Buffer.byteLength(t, "utf8");
+/** Une raison est coupée à cette taille (octets), jamais au milieu d'une lettre. */
+const RAISON_MAX_OCTETS = 600;
+const couper = (t: string, max: number): string => {
+  if (octets(t) <= max) return t;
+  let out = "";
+  for (const c of t) { if (octets(`${out}${c}…`) > max) break; out += c; }
+  return `${out.trimEnd()}…`;
+};
+/**
+ * Le rang d'une raison, du plus grave au moins grave (25 novembre 2026) : une personne visible sans accord, le nom, la
+ * phrase choisie par le client, l'année (le copyright), le domaine, puis le reste, la note en dernier.
+ */
+export function gravite(r: string): number {
+  if (/personne|visage|\bmains?\b/iu.test(r)) return 0;
+  if (/^le nom\b/iu.test(r)) return 1;
+  if (/phrase choisie par le client/iu.test(r)) return 2;
+  if (/copyright/iu.test(r)) return 3;
+  if (/bloc 10/iu.test(r)) return 4;
+  if (/n'est pas au niveau/iu.test(r)) return 6;
+  return 5;
+}
+/**
+ * LES RAISONS DE LA REPRISE, qui part toujours (essai réel d'Écume, 25 novembre 2026 : « Texte de la planche trop long »,
+ * la reprise n'était jamais partie) : dédoublonnées (casse et espaces mis à part), rangées des plus graves aux moins graves
+ * (`gravite`, l'ordre d'arrivée gardé à rang égal), chacune coupée à 600 octets au plus, et gardées tant qu'elles tiennent
+ * dans `place` octets avec « À corriger : … ». Ce qui ne tient pas est compté à la fin, si la place le permet.
+ */
+export function raisonsDeLaReprise(raisons: readonly string[], place: number): string[] {
+  const vues = new Set<string>(), uniques: string[] = [];
+  for (const r of raisons) {
+    const t = r.normalize("NFC").replace(/\s+/g, " ").trim(), k = t.toLocaleLowerCase("fr");
+    if (t && !vues.has(k)) { vues.add(k); uniques.push(t); }
+  }
+  const rangees = uniques.map((r, i) => ({ r: couper(r, RAISON_MAX_OCTETS), g: gravite(r), i })).sort((a, b) => a.g - b.g || a.i - b.i).map((x) => x.r);
+  const gardees: string[] = [];
+  for (const r of rangees) if (octets(finDeReprise([...gardees, r])) <= place) gardees.push(r);
+  // Jamais une reprise sans raison : la plus grave, coupée à la place qui reste.
+  if (!gardees.length && rangees.length && place > octets(finDeReprise([""])) + 8) gardees.push(couper(rangees[0], place - octets(finDeReprise([""]))));
+  const restent = rangees.length - gardees.length;
+  if (restent && gardees.length) {
+    const fin = `et ${restent} autre${restent > 1 ? "s" : ""} défaut${restent > 1 ? "s" : ""} relevé${restent > 1 ? "s" : ""} par la relecture`;
+    if (octets(finDeReprise([...gardees, fin])) <= place) gardees.push(fin);
+  }
+  return gardees;
+}
 
 // ---------------------------------------------------------------- 4. les valeurs du métier (un appel, contrôlé)
 
@@ -376,6 +431,8 @@ export const RelectureDeLaPlancheSchema = z.object({
   microTextes: z.array(z.string().max(200)).max(20).catch([]),
   promesses: z.array(z.string().max(200)).max(20).catch([]),
   personnes: z.boolean().catch(true),
+  /** Où le relecteur voit une personne, un visage ou une main (25 novembre 2026), pour que la reprise sache quoi retirer. */
+  personnesVues: z.array(z.string().max(200)).max(10).catch([]),
   logoFonceSurFondSombre: z.boolean().catch(true),
   motMaquette: z.boolean().catch(true),
   /** Ce qui est recopié de la disposition : ses produits, ses photos, son emballage, son nom ou son logo. */
@@ -384,18 +441,38 @@ export const RelectureDeLaPlancheSchema = z.object({
   pourquoi: z.string().max(600).default(""),
 });
 /**
+ * UN ENDROIT OÙ LA PHRASE EST LUE, sous forme structurée (essai réel d'Écume, 25 novembre 2026 : le relecteur écrivait
+ * « 01 Logo principal : LIGNE 1 / LIGNE 2 », le code comparait toute la chaîne, emplacement et « / » compris, et refusait
+ * quinze fois une phrase juste). `emplacement` : où elle est écrite ; `lignes` : ce qui se lit vraiment, ligne par ligne,
+ * dans l'ordre ; `cachee` : une partie est cachée par un objet de la scène (seuls les mots visibles sont comparés).
+ */
+export const PhraseLueSchema = z.object({
+  emplacement: z.string().max(160).catch(""),
+  lignes: z.array(z.string().max(200)).max(8).catch([]),
+  cachee: z.boolean().catch(false),
+});
+/** Un endroit lu : la forme structurée, ou la forme d'avant (une chaîne « emplacement : ligne 1 / ligne 2 »). */
+export type PhraseLue = string | { emplacement?: string; lignes: string[]; cachee?: boolean };
+/**
  * La réponse du relecteur quand le client a choisi une phrase sous le logo (25 novembre 2026) : en plus, chaque endroit
- * de la planche où elle est écrite, recopié lettre pour lettre, ses lignes séparées par « / ». Sans phrase, la réponse
- * demandée reste celle d'avant (`RelectureDeLaPlancheSchema`).
+ * de la planche où elle est écrite, sous forme structurée (`PhraseLueSchema`). Sans phrase, la réponse demandée reste
+ * celle d'avant (`RelectureDeLaPlancheSchema`).
  */
 export const RelectureAvecPhraseSchema = RelectureDeLaPlancheSchema.extend({
-  phrasesLues: z.array(z.string().max(400)).max(20).catch([]),
+  phrasesLues: z.array(PhraseLueSchema).max(20).catch([]),
 });
 /**
- * Un verdict du relecteur ; `microTextes` est absent d'un verdict d'avant le 25 novembre 2026 ; `phrasesLues` n'existe
- * que quand le client a choisi une phrase sous le logo.
+ * Pour relire un verdict déjà rangé (fichier d'un essai, point de reprise) : `phrasesLues` y est sous la forme structurée
+ * ou sous la forme d'avant (des chaînes). Jamais envoyé au relecteur.
  */
-export type RelectureDeLaPlanche = Omit<z.infer<typeof RelectureDeLaPlancheSchema>, "microTextes"> & { microTextes?: string[]; phrasesLues?: string[] };
+export const VerdictRangeDeLaPlancheSchema = RelectureDeLaPlancheSchema.extend({
+  phrasesLues: z.array(z.union([z.string().max(400), PhraseLueSchema])).max(20).catch([]),
+});
+/**
+ * Un verdict du relecteur ; `microTextes` est absent d'un verdict d'avant le 25 novembre 2026, `personnesVues` d'un
+ * verdict d'avant l'essai d'Écume ; `phrasesLues` n'existe que quand le client a choisi une phrase sous le logo.
+ */
+export type RelectureDeLaPlanche = Omit<z.infer<typeof RelectureDeLaPlancheSchema>, "microTextes" | "personnesVues"> & { microTextes?: string[]; personnesVues?: string[]; phrasesLues?: PhraseLue[] };
 
 /**
  * Le repère du propriétaire, mot pour mot (25 novembre 2026) : devant les planches A-2 et B-2 de l'essai réel de Racine
@@ -438,6 +515,7 @@ export const RELECTEUR_DE_LA_PLANCHE = `Tu es le relecteur le plus exigeant d'un
 - microTextes : les micro-textes décoratifs, illisibles à taille normale, que tu ne juges pas : les lignes d'alphabet des spécimens de polices, le petit texte circulaire d'un badge, l'heure de la barre d'état d'un téléphone ; recopiés s'ils sont déformés, jamais mis dans fautes ;
 - promesses : chaque promesse mesurable ou garantie inventée (gratuit, offert, délai, montant, prix, remboursement, garantie, chiffre, note, avis, nombre de clients…), recopiée ; un mot qualitatif ordinaire (soigné, sélectionné, conseils, qualité) n'est pas une promesse ;
 - personnes : une personne, un visage ou une main est visible ;
+- personnesVues : pour chaque personne, visage ou main visible, où tu la vois, en quelques mots (le bloc et l'image) ; vide s'il n'y en a pas ;
 - logoFonceSurFondSombre : un logo foncé posé sur un fond sombre (il doit y être clair) ;
 - motMaquette : le mot « maquette » ou « mockup » est écrit sur la planche ;
 - copies : chaque élément recopié de la disposition (ses produits, ses photos, son emballage, son nom ou son logo) ;
@@ -449,7 +527,8 @@ Ne juge que ce que tu vois.`;
 export type AttenduDeLaPlanche = { nom: string; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; animaux: boolean; phrase?: readonly string[] };
 /** Ce que la demande au relecteur dit de la phrase choisie sous le logo (vide sans phrase). */
 export const demandeDeLaPhrase = (phrase: readonly string[] | undefined): string[] => !phrase?.length ? [] : [
-  `Le client a choisi la phrase écrite sous son logo${phrase.length > 1 ? `, en ${phrase.length} lignes, dans cet ordre` : ""} : ${lignesDites(phrase)}. Elle n'est pas inventée, et ce n'est jamais un micro-texte décoratif : vérifie qu'elle est écrite exactement, lettre pour lettre, partout où elle apparaît sur la planche (sous le logo et ses variantes, comme slogan, ailleurs), et recopie dans « phrasesLues » chaque endroit où elle apparaît, ce que tu lis vraiment, ${phrase.length > 1 ? "toutes ses lignes dans l'ordre, séparées par « / »" : "sans rien corriger"} ; une faute dans cette phrase va aussi dans fautes.`,
+  `Le client a choisi la phrase écrite sous son logo${phrase.length > 1 ? `, en ${phrase.length} lignes, dans cet ordre` : ""} : ${lignesDites(phrase)}. Elle n'est pas inventée, et ce n'est jamais un micro-texte décoratif : vérifie qu'elle est écrite exactement, lettre pour lettre, partout où elle apparaît sur la planche (sous le logo et ses variantes, comme slogan, ailleurs).`,
+  `Dans « phrasesLues », un élément pour chaque endroit où elle apparaît : « emplacement », où elle est écrite, en quelques mots ; « lignes », ce que tu lis vraiment, ${phrase.length > 1 ? "une ligne par élément, toutes dans l'ordre" : "sans rien corriger"}, sans l'emplacement ni aucun séparateur ; « cachee », vrai seulement si un objet de la scène (un autre objet posé devant, un pli, le bord d'une image) recouvre une partie de la phrase. Quand elle est cachée en partie, recopie seulement les mots que tu vois, dans l'ordre, et écris « … » à la place de ce qui est caché : ce n'est pas une faute. Une lettre que tu vois mais qui est fausse, déformée ou illisible en est une : recopie-la telle quelle, ou écris « [illisible] » à sa place, et mets-la aussi dans fautes. Une partie seulement cachée ne va jamais dans fautes.`,
 ];
 export function demandeAuRelecteurDeLaPlanche(o: AttenduDeLaPlanche & { texte: string }): string {
   return [
@@ -483,6 +562,89 @@ export function touchePhrase(f: string, phrase: readonly string[] | undefined): 
   const dans = motsDe(f);
   return phrase.some((l) => { const m = motsDe(l); return m.length > 0 && m.filter((w) => dans.some((d) => ressemble(d, w))).length * 2 >= m.length; });
 }
+// ---------------------------------------------------------------- 5 bis. la phrase lue, endroit par endroit
+
+/** Un crochet qui dit une partie cachée par un objet de la scène (forme d'avant : « [1re ligne masquée par …] »). */
+const CACHE = /masqu|cach[ée]|recouv|couvert|hors (?:du )?(?:cadre|champ)|invisible|derri[eè]re/iu;
+/** Un crochet ou un mot qui dit des lettres visibles mais fausses : déformées, illisibles, floues, effacées. */
+const DEFORME = /illisible|d[ée]form|flou|brouill|effac|mal [ée]crit|tordu/iu;
+const motPlat = (m: string) => m.normalize("NFC").replace(/[’ʼ]/g, "'").replace(/[«»"“”]/g, "").replace(/\.+$/u, "").toLocaleLowerCase("fr");
+const ligneJuste = (lignes: readonly string[], phrase: readonly string[]) => {
+  const c = comparerLesLignes(lignes.join("\n"), phrase);
+  return !c.manquantes.length && !c.malEcrites.length && !c.enTrop.length && !c.desordre;
+};
+/**
+ * Les mots VISIBLES d'une phrase cachée en partie (25 novembre 2026, point 2 de l'essai d'Écume) : chaque mot visible doit
+ * être juste et l'ordre tenu ; « … » (ou un crochet qui dit « masqué », « caché ») marque ce qui est caché ; un mot collé à
+ * « … » est un morceau (le début ou la fin d'un mot de la phrase). Un crochet qui dit « illisible », « déformé », ou un
+ * crochet inconnu, est une lettre visible fausse : refusée.
+ */
+function motsVisiblesJustes(lignes: readonly string[], phrase: readonly string[]): { juste: boolean; cache: boolean } {
+  let cache = false, deforme = false;
+  const texte = lignes.map((l) => l.replace(/\[([^\]]*)\]/gu, (_m, dedans: string) => {
+    if (DEFORME.test(dedans) || !CACHE.test(dedans)) deforme = true; else cache = true;
+    return " … ";
+  })).join(" ");
+  if (deforme || /[?\uFFFD]/u.test(texte)) return { juste: false, cache };
+  const voulus = phrase.flatMap((l) => l.split(/\s+/u)).map(motPlat).filter(Boolean);
+  const vus = texte.replace(/\.\.\./gu, "…").split(/\s+/u).filter(Boolean);
+  let j = 0;
+  for (const brut of vus) {
+    if (/^…+$/u.test(brut)) { cache = true; continue; }
+    const debut = brut.endsWith("…"), fin = brut.startsWith("…");
+    if (debut || fin) cache = true;
+    const m = motPlat(brut.replace(/^…+|…+$/gu, ""));
+    if (!m) continue;
+    const ok = (v: string) => (debut && fin ? v.includes(m) : debut ? v.startsWith(m) : fin ? v.endsWith(m) : v === m);
+    while (j < voulus.length && !ok(voulus[j])) j++;
+    if (j >= voulus.length) return { juste: false, cache };
+    j++;
+  }
+  return { juste: true, cache };
+}
+/**
+ * UN ENDROIT OÙ LA PHRASE EST LUE, jugé par le code lettre pour lettre (25 novembre 2026). Forme structurée : seules les
+ * lignes sont comparées (jamais l'emplacement) ; `cachee` : seuls les mots visibles. Forme d'avant (une chaîne) : comparée
+ * entière, puis sans l'emplacement (ce qui précède le premier « : »), ses lignes coupées sur « / ». `texte` : ce qui est
+ * dit dans la raison d'un refus.
+ */
+export function jugerLaPhraseLue(lue: PhraseLue, phrase: readonly string[]): { juste: boolean; cachee: boolean; texte: string; emplacement: string } {
+  const juger = (lignes: string[], cachee: boolean) => {
+    const marques = lignes.some((l) => /\[[^\]]*\]|…|\.\.\./u.test(l));
+    if (!cachee && !marques) return { juste: ligneJuste(lignes, phrase), cache: false };
+    const v = motsVisiblesJustes(lignes, phrase);
+    // Des marques sans rien de caché (« [illisible] ») : des lettres visibles fausses.
+    return { juste: v.juste && (cachee || v.cache), cache: cachee || v.cache };
+  };
+  if (typeof lue !== "string") {
+    const lignes = lue.lignes.flatMap((l) => l.split(/\r?\n/u)).map((l) => l.trim()).filter(Boolean), emplacement = (lue.emplacement ?? "").trim();
+    const r = juger(lignes, !!lue.cachee);
+    return { juste: r.juste, cachee: r.cache, texte: `${emplacement ? `${emplacement} : ` : ""}${lignes.join(" / ")}`, emplacement };
+  }
+  const coupe = (t: string) => t.split(/\s*[\r\n]+\s*|\s+\/\s*|\s*\/\s+/u).map((l) => l.trim()).filter(Boolean);
+  const entiere = juger(coupe(lue), false);
+  if (entiere.juste) return { juste: true, cachee: entiere.cache, texte: lue, emplacement: "" };
+  // L'emplacement peut lui-même porter un « : » (« 07 Format 1:1 : … ») : chaque « : » est essayé, dans l'ordre.
+  const deuxPoints = [...lue.matchAll(/:/gu)].map((m) => m.index!);
+  if (!deuxPoints.length) return { juste: false, cachee: entiere.cache, texte: lue, emplacement: "" };
+  let dernier = { juste: false, cache: entiere.cache }, emplacement = "";
+  for (const i of deuxPoints) {
+    dernier = juger(coupe(lue.slice(i + 1)), false);
+    emplacement = lue.slice(0, i).trim();
+    if (dernier.juste) break;
+  }
+  return { juste: dernier.juste, cachee: dernier.cache, texte: lue, emplacement };
+}
+/** Une faute relevée qui dit seulement que la phrase est cachée en partie par un objet (aucune lettre fausse) : pas une faute. */
+const seulementCachee = (f: string, phrase: readonly string[] | undefined) => touchePhrase(f, phrase) && CACHE.test(f) && !DEFORME.test(f) && !/au lieu|faute|il faut|manque|en trop/iu.test(f);
+/** Où le relecteur a vu une personne : `personnesVues`, sinon le passage de `pourquoi` qui le dit (verdicts d'avant). */
+function ouSontLesPersonnes(v: RelectureDeLaPlanche): string[] {
+  if (v.personnesVues?.length) return v.personnesVues.map((x) => x.trim()).filter(Boolean);
+  const PERSONNE = /(?<![\p{L}])(mains?|visages?|personnes?|silhouettes?|bras|doigts?|corps|enfants?|femmes?|hommes?)(?![\p{L}])/iu;
+  const passage = v.pourquoi.split(/(?<=[.!?])\s+|,\s*mais\s+|;\s*/u).map((x) => x.trim().replace(/[.]+$/u, "")).find((x) => PERSONNE.test(x) && /visible|appara|se voit|on voit|montre/iu.test(x));
+  return passage ? [passage] : [];
+}
+
 const lettreALettre = (t: string) => t.normalize("NFC").replace(/\s+/g, " ").replace(/\s*[—–-]\s*(?=disponible|à vérifier)/u, " — ").trim();
 /**
  * Les raisons du refus d'une planche : le code compare le nom, le copyright (l'année) et le domaine lettre pour lettre ; le
@@ -510,24 +672,37 @@ export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanch
   if (lettreALettre(v.copyrightLu) !== lettreALettre(c)) r.push(`le copyright doit être exactement « ${c} »${v.copyrightLu ? ` (lu : « ${v.copyrightLu} »)` : ""}`);
   const m = mentionDuDomaine(o.domaine);
   if (lettreALettre(v.domaineLu) !== lettreALettre(m)) r.push(`le bloc 10 doit dire exactement « ${m} »${v.domaineLu ? ` (lu : « ${v.domaineLu} »)` : ""}`);
+  const cachees: string[] = [];
   if (phrase) {
-    // La phrase choisie par le client, comparée lettre pour lettre par le code à chaque endroit où le relecteur la lit.
+    // La phrase choisie par le client, comparée lettre pour lettre par le code à chaque endroit où le relecteur la lit :
+    // ses lignes seulement, jamais l'emplacement ; cachée en partie par un objet, ses seuls mots visibles.
     const dite = phrase.map((l) => `« ${l} »`).join(" / ");
-    const lues = (v.phrasesLues ?? []).map((x) => x.trim()).filter((x) => x && !/^(aucune|aucun|none|rien)\.?$/iu.test(x));
+    const lues = (v.phrasesLues ?? []).filter((x) => (typeof x === "string" ? x.trim() && !/^(aucune|aucun|none|rien)\.?$/iu.test(x.trim()) : x.lignes.some((l) => l.trim()) || x.cachee));
     if (!lues.length) r.push(`la phrase choisie par le client (${dite}) n'est lue nulle part sur la planche`);
-    for (const lue of [...new Set(lues)]) {
-      const c = comparerLesLignes(lue, phrase);
-      if (c.manquantes.length || c.malEcrites.length || c.enTrop.length || c.desordre) r.push(`la phrase choisie par le client est mal écrite (« ${lue} » au lieu de ${dite})`);
+    const vus = new Set<string>();
+    for (const lue of lues) {
+      const j = jugerLaPhraseLue(typeof lue === "string" ? lue.trim() : lue, phrase);
+      if (vus.has(j.texte)) continue;
+      vus.add(j.texte);
+      if (!j.juste) r.push(`la phrase choisie par le client est mal écrite (« ${j.texte} » au lieu de ${dite})`);
+      else if (j.cachee) cachees.push(`phrase cachée en partie par un objet de la scène, mots visibles justes : « ${j.texte} »`);
     }
     const microSurLaPhrase = (v.microTextes ?? []).filter((f) => touchePhrase(f, phrase));
     if (microSurLaPhrase.length) r.push(`la phrase choisie par le client est mal écrite : ${microSurLaPhrase.map((f) => `« ${f} »`).join(", ")}`);
   }
-  const fautes = v.fautes.filter((f) => !decoratif(f)), promesses = v.promesses.filter(promesseMesurable);
+  const cacheeSeulement = (f: string) => !!phrase && seulementCachee(f, phrase);
+  const fautes = v.fautes.filter((f) => !decoratif(f) && !cacheeSeulement(f)), promesses = v.promesses.filter(promesseMesurable);
   const ecartes = [...(v.microTextes ?? []).filter((f) => !touchePhrase(f, phrase)), ...v.fautes.filter(decoratif)].map((f) => `micro-texte décoratif, non jugé : « ${f} »`)
-    .concat(v.promesses.filter((p) => !promesseMesurable(p)).map((p) => `mot qualitatif, pas une promesse : « ${p} »`));
+    .concat(v.promesses.filter((p) => !promesseMesurable(p)).map((p) => `mot qualitatif, pas une promesse : « ${p} »`))
+    .concat(cachees, v.fautes.filter((f) => !decoratif(f) && cacheeSeulement(f)).map((f) => `phrase seulement cachée en partie par un objet, pas une faute : « ${f} »`));
   if (fautes.length) r.push(`fautes : ${fautes.map((f) => `« ${f} »`).join(", ")}`);
   if (promesses.length) r.push(`promesses ou chiffres inventés : ${promesses.map((f) => `« ${f} »`).join(", ")}`);
-  if (v.personnes && !o.personnes) r.push("une personne est visible sans l'accord du client");
+  if (v.personnes && !o.personnes) {
+    r.push("une personne est visible sans l'accord du client");
+    // Où elle est vue, pour que la reprise sache quoi retirer (essai réel d'Écume : une main dans une image de référence).
+    const ou = ouSontLesPersonnes(v);
+    if (ou.length) r.push(`à retirer, aucune personne ni partie du corps : ${ou.join(" ; ")}`);
+  }
   if (v.logoFonceSurFondSombre) r.push("un logo foncé est posé sur un fond sombre : il doit y être clair");
   if (v.motMaquette) r.push("le mot « maquette » ou « mockup » est écrit");
   if (v.copies.length) r.push(`éléments recopiés de la disposition : ${v.copies.join(", ")}`);

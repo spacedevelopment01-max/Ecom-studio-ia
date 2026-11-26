@@ -208,3 +208,42 @@ phrase des données vérifiées », et la phrase entre dans l'une de ces six par
 
 **Ce qui n'est pas vérifié.** Aucun essai réel : on ne sait pas encore si le modèle d'images écrit la phrase exactement
 sur la planche, ni ce que le vrai relecteur relèvera.
+
+## L'essai réel d'Écume, étape 3 : ce qui a tout bloqué, et ce qui change (25 novembre)
+
+L'essai s'est arrêté en erreur après 0,23 €. Le constat du chef d'orchestre : « Écume, étape 3 : arrêt en erreur, 0,23 €
+dépensés. La planche A est très belle, mais trois défauts […] ont tout bloqué. » Preuves : branche
+`claude/essais-complets`, `docs/studio/essais-complets/images/ecume/3-planches/` ; le verdict réel est copié tel quel dans
+`tests/fixtures/ecume-planches/`.
+
+1. **La phrase est comparée par ses lignes seulement.** Le relecteur écrivait « 01 Logo principal : SAVONNERIE
+   ARTISANALE / BULLES DE SOIN AU NATUREL » et le code comparait toute la chaîne : quinze refus faux, la phrase était
+   juste partout. Le relecteur répond maintenant, pour chaque endroit, `{ emplacement, lignes, cachee }` ; le code ne
+   compare que les lignes, lettre pour lettre. Un verdict d'avant (une chaîne) se lit sans l'emplacement (ce qui précède
+   un « : », même quand l'emplacement en porte un, comme « Format 1:1 »), ses lignes coupées sur « / ».
+2. **Une phrase cachée en partie par un objet de la scène n'est pas mal écrite.** Le relecteur le dit (`cachee`) et écrit
+   « … » à la place de ce qui est caché ; le code compare les seuls mots visibles, chacun juste et dans l'ordre. Un mot
+   visible faux, déformé ou « [illisible] » fait refuser. Une faute relevée qui ne dit que la partie cachée n'en est pas
+   une. La consigne porte la règle en termes généraux, sans nom ni exemple d'essai.
+3. **La reprise part toujours.** Elle n'était jamais partie : 8 939 octets pour 7 000 permis, à cause de 18 raisons. Les
+   raisons sont dédoublonnées, rangées des plus graves aux moins graves (une personne visible sans accord, le nom, la
+   phrase choisie, l'année, le domaine, puis le reste, la note en dernier), chacune coupée à 600 octets au plus, et
+   gardées tant que le texte tient ; ce qui ne tient pas est compté à la fin. Le relecteur dit aussi où il voit une
+   personne (`personnesVues`), pour que la reprise sache quoi retirer ; pour un verdict d'avant, le code le prend dans son
+   « pourquoi ».
+4. **L'échec d'une planche n'empêche jamais les autres.** La planche B n'avait jamais été lancée. Dans le Studio comme
+   dans le script, chaque planche est indépendante : une planche en erreur n'est jamais relancée ni montrée, elle est
+   signalée au Studio (journal des erreurs et notification de l'administration, jamais au client), et les autres sont
+   faites. Les règles restent : refusée deux fois, elle n'est pas montrée ; avec moins de deux planches montrées, le
+   choix attend.
+
+**Rejoué par le code sur le verdict réel de A** (sans aucun appel) : plus aucun des quinze refus faux. Restent : la main
+visible dans l'image de référence « Mousse délicate » (avec l'endroit) ; « Dites-le nous ! » au lieu de « Dites-le-nous ! » ;
+la phrase déformée sur le sac en tissu (la 2e ligne est dite « déformée », « [illisible] », donc refusée même avec la
+1re ligne cachée par l'étiquette) ; la note de 5. Le texte de la reprise fait 6 062 octets.
+
+**Les épreuves.** `planche-phrase-par-lignes-et-reprise-qui-part-toujours` est ajoutée et scellée. Elle contredit deux
+épreuves scellées, marquées remplacées, avec l'accord écrit du propriétaire encore à recevoir :
+`relecteur-de-planche-texte-lisible-et-promesses-mesurables` (« avec toutes ses raisons à la fin du texte ») et
+`planche-reprend-la-phrase-du-logo` (« une ligne manquante » fait refuser). Leurs rejeux sont gardés tels quels et rejoués
+par la nouvelle épreuve.
