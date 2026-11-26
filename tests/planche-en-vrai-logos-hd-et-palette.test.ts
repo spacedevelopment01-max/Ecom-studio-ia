@@ -170,10 +170,10 @@ describe("1. les quatre petites versions du logo en haute définition", async ()
     const logoF = path.join(dir, "logo-10.png"); fs.copyFileSync(`${F}/esquisse-10-logo-garde-512.png`, logoF);
     const sansAppel = { inventaire: async () => { throw new Error("aucun appel"); }, refaire: async () => { throw new Error("aucun appel"); }, relire: async () => { throw new Error("aucun appel"); } };
     const s = simule();
-    // Sous le plafond minimal exact (la somme des maxima, reprise comprise) : rien ne part.
+    // Sous la somme des maxima (reprise comprise), l'essai part quand même depuis le 26 novembre 2026 : plus aucun refus.
     const c = await chiffresDuReassemblage([], { logoHd: true });
     expect(c.maxMicro).toBe(T.devisDesLogosEnHd().maxMicro);
-    await expect(reassemblerLEssaiEnVrai({ dossier: essai, sortie: path.join(dir, "refus"), planche, logo: logoF, logoHd: true, plafondEuros: "0.69", ai: () => sansAppel as never, aiLogos: () => s.ai })).rejects.toThrow(/sous le plafond minimal exact/);
+    expect(fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai-outil.ts", "utf8")).not.toMatch(/est sous le plafond minimal exact/);
     expect(s.demandes).toHaveLength(0);
     const sortie = path.join(dir, "4c");
     const r = await reassemblerLEssaiEnVrai({ dossier: essai, sortie, planche, logo: logoF, logoHd: true, plafondEuros: (c.maxMicro / 1e6 + 0.01).toFixed(2), ai: () => sansAppel as never, aiLogos: () => s.ai });

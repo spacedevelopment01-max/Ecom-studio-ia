@@ -33,7 +33,7 @@ export type TraceScope = {
   stepId?: string;
   routing?: { reason: string; fallback: boolean; escalation: boolean };
   /**
-   * Plafond du CLIENT pour la tâche (micro-euros) : le « au plus » de sa carte d'accord. Il ne couvre que ce qu'il paie ;
+   * Plafond du CLIENT pour la tâche (micro-euros) : celui de sa carte d'accord, jamais montré (26 novembre 2026). Il ne couvre que ce qu'il paie ;
    * aucune dépense comptée au client ne part au-delà (benchmark --max-cost).
    */
   costCapMicro?: number;
@@ -42,6 +42,12 @@ export type TraceScope = {
    * 23 novembre 2026). Sans elle, elle se calcule sur le plafond du client (`borneDuStudio`).
    */
   studioCapMicro?: number;
+  /**
+   * La dépense ANNONCÉE au client pour la tâche (micro-euros) : le coût probable de sa carte d'accord, le seul chiffre
+   * qu'il voit (26 novembre 2026). Avant chaque appel compté au client, si la tâche allait dépasser le double de ce
+   * chiffre, elle s'arrête et le Studio lui demande s'il veut continuer (`DepassementDeLAnnonce`).
+   */
+  annonceMicro?: number;
   /** Historique de qualité de l'étape du plan en cours (reprise) : transmis au Router V2. */
   history?: { attempt?: number; lastScore?: number | null; lastVerdict?: "FINAL" | "RETRY" | "PROVISIONAL" | "REJECTED"; lastProvider?: string; lastModel?: string; failure?: "quality" | "provider_error" | "parse" | "refusal" };
 };
@@ -97,6 +103,46 @@ export class CostCapReached extends Error {
 }
 
 /**
+ * LA DÉPENSE ANNONCÉE (26 novembre 2026, ses mots : « Il faut arrêter de montrer des plafond aussi haut ça va faire peur
+ * aux clients »). La carte n'annonce plus que le coût probable ; le plafond reste en coulisses (la réservation de chaque
+ * appel). En échange, SINA ne dépasse jamais en silence : si la part du client, déjà engagée, plus le maximum de l'appel
+ * suivant dépassait le double de ce qui a été annoncé, l'appel ne part pas, la tâche s'arrête et attend l'accord du client
+ * (le worker la met en attente, `mettreEnAttenteDAccord`). Le premier appel d'une tâche part toujours (rien n'est encore
+ * dépensé) ; une fois arrêtée, plus aucun appel de la tâche ne part, même à la charge du Studio, jusqu'à son accord.
+ */
+export const SEUIL_DE_L_ANNONCE = 2;
+
+/** La tâche allait dépasser le double de la dépense annoncée : l'appel n'est pas envoyé, rien de plus n'est payé. */
+export class DepassementDeLAnnonce extends CostCapReached {
+  constructor(spentMicro: number, estimateMicro: number, public annonceMicro: number) {
+    super(spentMicro, estimateMicro, Math.floor(annonceMicro * SEUIL_DE_L_ANNONCE));
+    this.name = "DepassementDeLAnnonce";
+    this.message = "pause avant l'appel suivant : la tâche allait dépasser le double de la dépense annoncée au client. L'appel n'a pas été envoyé (rien de plus n'est décompté) ; la tâche attend son accord pour continuer.";
+  }
+}
+
+/** Les tâches arrêtées par la dépense annoncée (dans ce processus, celui qui les exécute), jusqu'à leur mise en attente. */
+const tachesArreteesParLAnnonce = new Map<string, DepassementDeLAnnonce>();
+/** La tâche est-elle arrêtée par la dépense annoncée ? (sans l'oublier : les points de reprise ne s'enregistrent plus) */
+export const arreteeParLAnnonce = (jobId: string): DepassementDeLAnnonce | null => tachesArreteesParLAnnonce.get(jobId) ?? null;
+/** Le worker, à la fin d'une tâche : l'arrêt par la dépense annoncée, lu une fois puis oublié. */
+export function arretParLAnnonce(jobId: string): DepassementDeLAnnonce | null {
+  const e = tachesArreteesParLAnnonce.get(jobId) ?? null;
+  tachesArreteesParLAnnonce.delete(jobId);
+  return e;
+}
+
+/** Le contrôle de la dépense annoncée, pour une dépense comptée au client (sans annonce ni tâche : rien ne change). */
+export function assertSousLeDoubleDeLAnnonce(dejaClientMicro: number, estimateMicro: number, annonceMicro: number | undefined, jobId: string | null | undefined): void {
+  if (!jobId || !(annonceMicro != null && Number.isFinite(annonceMicro) && annonceMicro > 0)) return;
+  if (!(dejaClientMicro > 0)) return;
+  if (dejaClientMicro + estimateMicro <= Math.floor(annonceMicro * SEUIL_DE_L_ANNONCE)) return;
+  const e = new DepassementDeLAnnonce(dejaClientMicro, estimateMicro, annonceMicro);
+  tachesArreteesParLAnnonce.set(jobId, e);
+  throw e;
+}
+
+/**
  * Ce qu'une tâche a engagé (micro-euros) : en tout, et la part à la charge du Studio (réservations marquées « studio »,
  * réglées ou non) ; le reste est la part du client. Les règlements liés à usage_events ne sont comptés qu'une fois. Les
  * coûts incertains et les appels encore réservés sont des engagements, même sans trace finale ai_calls. Les anciennes
@@ -126,7 +172,8 @@ export function depensesDeLaTache(jobId: string): { total: number; studio: numbe
 /**
  * Garde-fou de dépense RÉEL, avec DEUX plafonds (23 novembre 2026) : avant chaque appel payant, ce que la tâche a déjà
  * engagé plus l'estimation de l'appel.
- *  - Une dépense comptée au client ne regarde que le plafond du client (le « au plus » de sa carte), sur sa seule part.
+ *  - Une dépense comptée au client ne regarde que le plafond du client (celui de sa carte, gardé en coulisses depuis le
+ *    26 novembre 2026 : il ne voit que le coût probable), sur sa seule part, et le double de la dépense annoncée.
  *  - Une reprise à la charge du Studio (`studio`) ne regarde que la borne du Studio, sur la seule part du Studio.
  *  - La tâche s'arrête toujours à la somme des deux : aucune dépense sans fin possible.
  * Sans borne du Studio donnée (ancienne tâche, portée sans devis), elle se calcule sur le plafond du client
@@ -134,10 +181,15 @@ export function depensesDeLaTache(jobId: string): { total: number; studio: numbe
  */
 export function assertUnderCostCap(estimateMicro: number, studio: boolean = chargeDuStudio()) {
   const t = currentTrace();
+  // Une tâche arrêtée par la dépense annoncée n'envoie plus rien, jusqu'à l'accord du client.
+  const arretee = t.jobId ? arreteeParLAnnonce(t.jobId) : null;
+  if (arretee) throw arretee;
   const cap = t.costCapMicro;
   const borne = t.studioCapMicro ?? (cap != null ? borneDuStudio(cap) : undefined);
-  if (cap == null && borne == null) return;
+  const annonce = t.annonceMicro != null && t.annonceMicro > 0 ? t.annonceMicro : undefined;
+  if (cap == null && borne == null && annonce == null) return;
   const d = t.jobId ? depensesDeLaTache(t.jobId) : { total: 0, studio: 0, client: 0 };
+  if (!studio) assertSousLeDoubleDeLAnnonce(d.client, estimateMicro, annonce, t.jobId);
   if (studio) { if (borne != null && d.studio + estimateMicro > borne) throw new CostCapReached(d.studio, estimateMicro, borne, true); }
   else if (cap != null && d.client + estimateMicro > cap) throw new CostCapReached(d.client, estimateMicro, cap);
   if (cap != null && borne != null && d.total + estimateMicro > cap + borne) throw new CostCapReached(d.total, estimateMicro, cap + borne, studio);

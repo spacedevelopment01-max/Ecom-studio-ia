@@ -69,11 +69,25 @@ l'adresse de chaque nom vérifié par les annuaires publics des registres (la m�
 l'adresse que la planche écrirait.
 
 ```
-DEBUT PLAFOND_ESSAI_EUR=9.85 \
+DEBUT PLAFOND_ESSAI_EUR=3 \
   node_modules/.bin/tsx scripts/syna-recette/essai-noms.mts data/essai-torrefacteur/1-noms
 ```
 
-Le script refuse de partir sous le plafond minimal exact (9,8495 €) et refuse un client qui a déjà un nom.
+Depuis le 26 novembre 2026 (« Il faut arrêter de montrer des plafond aussi haut ça va faire peur aux clients »), le plafond
+de l'essai peut être proche du probable : 3 € est deux fois le probable (1,45 €), arrondi. Le script part sous la somme des
+maxima (9,8495 €) et le dit ; il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses
+fichiers et les points de reprise de la tâche, écrit ce qui est fait et ce qu'il faudrait au plus pour finir. Pour
+reprendre là, sans refaire ni repayer les étapes finies : la même commande, même dossier, avec `REPRENDRE=1`. Il refuse
+toujours un client qui a déjà un nom.
+
+**Où il risque de s'arrêter à 3 €** (ordre des appels et leurs maxima, devis gratuit du 26 novembre 2026) : dès le départ.
+Les trois recherches sur le web partent en même temps, chacune réservée à son pire cas (1,0786 €) : 3,2357 € > 3 €, la
+troisième est refusée avant de partir. Les deux premières sont payées (environ 0,24 € d'habitude) et perdues : l'étude
+n'est pas faite, l'étape se refait à la reprise. Passé ce départ, et si chaque appel coûte son probable, le moment le plus
+serré est la recherche des noms gardés (1,0786 € au pire) : 2,37 € sur le déroulé habituel, 2,65 € avec le second tour
+d'idées, 2,90 € avec le second tour de noms, tous sous 3 € ; avec les deux seconds tours, 3,18 € : là, il s'arrêterait
+avant cette recherche. Avec 3,50 €, l'essai passe le départ et va au bout dans tous ces cas, sauf réponses coupées en
+série (les reprises courtes des équipes, 0,13 € au plus chacune).
 
 Probable 1,45 € (2,26 € avec le second tour d'idées et le second tour de noms) ; plafond minimal exact 9,85 €. Le plafond est
 haut parce que chaque recherche sur le web est comptée à son maximum (1,08 € chacune, quatre recherches), alors qu'une
@@ -82,6 +96,10 @@ recherche coûte en général 0,12 €.
 À savoir : dans le Studio, l'accord de l'étape ne donne à cette tâche que 8,66 € au plus : il ne compte pas la vérification
 des noms gardés. Le Studio compte sur ce que chaque appel rend de sa réservation pour la payer. L'essai prend la somme des
 maxima comme plafond de la tâche, pour aller au bout à coup sûr. Je n'ai rien changé dans le Studio.
+Corrigé après e4ba3c1c (26 novembre 2026) : l'accord du Studio donne maintenant à la tâche des noms la somme des maxima de
+tous ses appels, vérification des noms gardés comprise (9,85 €), calculée par la même fonction que le plafond minimal de
+l'essai (`devisDesNomsVerifies`). L'essai lui-même ne change pas : mêmes commandes, même devis (le refus sous 9,85 € est
+retiré le 26 novembre 2026, voir plus haut).
 
 **Pause.** Montrer au propriétaire `data/essai-torrefacteur/1-noms/rapport.txt` : les noms vérifiés, numérotés, avec pour
 chacun ce que SINA dit de son adresse (« … est déjà pris ; libre aujourd'hui : … ») et l'adresse que la planche écrirait.

@@ -9,6 +9,7 @@
  * tactile dédiée — canevas plein écran, barre d'outils en bas, panneaux en tiroirs, poignées agrandies, double-tap
  * pour modifier un texte au clavier.
  */
+import { coutProbableTexte } from "@/lib/budget-pct";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ChevronLeft, Circle, Download, Hand, History as HistoryIcon, ImagePlus, Layers, Maximize2, Minus, MoreHorizontal, Plus, Redo2, Save, Send, SlidersHorizontal, Square, Type, Undo2, X, Copy, Ratio, PenLine, Play, Sparkles } from "lucide-react";
 import { api, Button, cx, Modal, Spinner, useToast } from "../../ui";
@@ -305,9 +306,11 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       const r = quote.jobId?{jobId:quote.jobId}:await api<{ jobId: string }>(`/api/projects/${projectId}/images/v2`, { body: { action:'generate',operationId,request,approvalToken:quote.approvalToken,confirmation:true } });
       for (let i = 0; i < 300; i++) {
         await new Promise((res) => setTimeout(res, 2000));
-        const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.v2`);
+        const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null; message?: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.v2`);
         const j = jobs.jobs.find((x) => x.id === r.jobId);
         if (!j || j.status === "queued" || j.status === "running") continue;
+        // Arrêtée avant de dépasser le double du coût annoncé : la phrase de SINA, et « Reprendre » dans le suivi des tâches.
+        if (j.status === "paused") { toast("ok", `${j.message ?? ""} ${t("Pour continuer : « Reprendre » dans le suivi des tâches.", "To continue: \"Resume\" in task tracking.")}`.trim()); return; }
         const asset = j.result?.outcomes?.find((o: { assetId: string | null }) => o.assetId)?.assetId;
         if (j.status !== "done" || !asset) throw new Error(j.error || t("Aucune image retenue par le contrôle de qualité.", "No image passed the quality check."));
         const target = photoLayer();
@@ -345,9 +348,11 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       const r=quote.jobId?{jobId:quote.jobId}:await api<{jobId:string}>(`/api/projects/${projectId}/images/v2`,{body:{action:'edit',operationId,...request,confirmation:true,approvalToken:quote.approvalToken}});
       for (let i = 0; i < 300; i++) {
         await new Promise((res) => setTimeout(res, 2000));
-        const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.edit`);
+        const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null; message?: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.edit`);
         const j = jobs.jobs.find((x) => x.id === r.jobId);
         if (!j || j.status === "queued" || j.status === "running") continue;
+        // Arrêtée avant de dépasser le double du coût annoncé : la phrase de SINA, et « Reprendre » dans le suivi des tâches.
+        if (j.status === "paused") { toast("ok", `${j.message ?? ""} ${t("Pour continuer : « Reprendre » dans le suivi des tâches.", "To continue: \"Resume\" in task tracking.")}`.trim()); return; }
         if (j.status !== "done" || !j.result?.assetId) throw new Error(j.error || t("La retouche n'a pas abouti.", "The edit did not complete."));
         apply({ op: "image", id: target.id, assetId: j.result.assetId });
         editOperation.current=null;
@@ -382,8 +387,9 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     if (r.paid?.kind === "creative") {
       try {
         const result=await requestCreativeVersion(body=>api(`/api/projects/${projectId}/campaigns/v2`,{body}),quote=>{
-          const pct=(n:number)=>new Intl.NumberFormat(undefined,{maximumSignificantDigits:6}).format(n);
-          return window.confirm(t(`Une nouvelle proposition s’ajoutera sans modifier cette création. Devis : estimation ${pct(quote.estimatePct!)} % ; plafond ${pct(quote.maximumPct!)} % du budget IA, pour ${quote.concepts} concept(s) et ${quote.images} image(s). Les reprises restent plafonnées. Continuer ?`,`A new proposal will be added without changing this creative. Quote: estimate ${pct(quote.estimatePct!)}%; cap ${pct(quote.maximumPct!)}% of the AI budget, for ${quote.concepts} concept(s) and ${quote.images} image(s). Retries stay capped. Continue?`));
+          // Le coût probable seul (26 novembre 2026 : « Il faut arrêter de montrer des plafond aussi haut ça va faire peur aux
+          // clients ») : la borne de la demande reste en coulisses, dans sa réservation.
+          return window.confirm(t(`Une nouvelle proposition s’ajoutera sans modifier cette création, pour ${quote.concepts} concept(s) et ${quote.images} image(s). Coût probable : ${coutProbableTexte(quote.estimatePct!, "fr")}. Continuer ?`,`A new proposal will be added without changing this creative, for ${quote.concepts} concept(s) and ${quote.images} image(s). Likely cost: ${coutProbableTexte(quote.estimatePct!, "en")}. Continue?`));
         },creativeOperation);
         if(!result)return;
         toast("ok", t("Nouvelle proposition en préparation : elle apparaîtra dans vos créations.", "New proposal in progress: it will appear in your creatives."));

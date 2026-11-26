@@ -23,7 +23,7 @@ import { devisDesPlanchesDeMarque } from "../planche-de-marque-tache";
 import { devisDeLaPlancheEnVrai, devisDesProduitsEnVrai, enVraiOuArretee, produitsImagines } from "../planche-en-vrai-tache";
 import { photosDuProduitIds } from "../brand-images";
 import { phraseDuMelangeRefuse, plancheEnVraiActive } from "../planche-en-vrai";
-import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, namesPreviewQuote, routeCountOfProject, type ChainQuote } from "../brand-chain";
+import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, devisDesNomsVerifies, finishQuote, namesPreviewQuote, routeCountOfProject, type ChainQuote } from "../brand-chain";
 import { borneDuStudio, probableDuStudio } from "../../ai/borne-du-studio";
 import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, type ImageSlot } from "../brand-images";
 import { finishSlots } from "../brand-finish";
@@ -109,7 +109,7 @@ function relanceMarque(ctx: ToolContext): ToolResult {
   run("UPDATE jobs SET payload = ? WHERE id = ? AND status IN ('failed','cancelled')", JSON.stringify(payload), c.id);
   retryJob(c.id);
   updateJourney(ctx.conversationId, (x) => setStep(x, c.payload.finish ? 2 : 1, "doing"));
-  return { ok: true, jobs: [c.id], data: { plafondMicro: q.maxMicro },
+  return { ok: true, jobs: [c.id], data: {},
     summary: L(`Création de ta marque relancée, là où elle s'était arrêtée (${marqueOuArretee(c.etapes)}) : ce qui était déjà fait est repris sans être repayé. Je reprends quand c'est prêt.`, "Your brand creation was restarted from where it stopped."),
     hint: "Dis-lui que ce qui était fait est repris sans être repayé. N'annonce jamais que sa marque est prête avant la fin de la tâche." };
 }
@@ -146,12 +146,18 @@ export function accordGraphistes(count: number, fresh = true) {
   // LA PLANCHE DE MARQUE PAR OPENAI (accord écrit du propriétaire du 24 novembre 2026) : une par logo choisi.
   const planches = devisDesPlanchesDeMarque(count);
   const recherche = devisDeLaRecherche(), finalisations = devisDesFinalisations(count);
-  const nomsMicro = Math.max(0, entier.maxMicro - textes.maxMicro);
-  return { count, nomsMicro, rechercheMicro: recherche.maxMicro, finalisationsMicro: finalisations.maxMicro, planchesMicro: textes.maxMicro + planches.maxMicro,
+  // La tâche des noms, jusqu'aux noms VÉRIFIÉS (décision du 26 novembre 2026) : la somme des maxima de tous ses appels,
+  // seconds tours, reprises courtes, recherche sur le web des noms gardés et vérification compris. Avant, elle valait
+  // « entier moins textes », qui retirait la vérification (comptée aussi par les planches, qui revérifient le nom
+  // choisi) : le Studio comptait sur ce que les appels précédents n'avaient pas dépensé pour la payer.
+  const noms = devisDesNomsVerifies({ fresh });
+  // La vérification des noms gardés s'ajoute à celle des planches : la chaîne entière n'en comptait qu'une.
+  const verification = noms.lignes.filter((l) => l.id === "recherche:verify" || l.id === "verify").reduce((t, l) => t + l.probableMicro, 0);
+  return { count, nomsMicro: noms.maxMicro, rechercheMicro: recherche.maxMicro, finalisationsMicro: finalisations.maxMicro, planchesMicro: textes.maxMicro + planches.maxMicro,
     // La borne du Studio des planches : une reprise par planche et une réécriture des valeurs du métier.
     planchesStudioMicro: planches.studioMaxMicro,
-    maxMicro: entier.maxMicro + planches.maxMicro + recherche.maxMicro + finalisations.maxMicro + laFin().maxMicro,
-    probableMicro: (entier.probableMicro ?? entier.maxMicro) + planches.probableMicro + recherche.probableMicro + finalisations.probableMicro + laFin().probableMicro };
+    maxMicro: noms.maxMicro + textes.maxMicro + planches.maxMicro + recherche.maxMicro + finalisations.maxMicro + laFin().maxMicro,
+    probableMicro: Math.ceil((entier.probableMicro ?? entier.maxMicro) + verification) + planches.probableMicro + recherche.probableMicro + finalisations.probableMicro + laFin().probableMicro };
 }
 /**
  * La marque finie d'un nouveau projet (planche de marque) : sa grande scène n'existe pas encore (la planche de marque a
@@ -212,7 +218,7 @@ function proposeByChain(ctx: ToolContext, a: ProposeArgs) {
   });
   updateJourney(ctx.conversationId, (x) => setStep(x, 1, "doing"));
   return {
-    ok: true, jobs: [job.id], data: { identites: w.count, plafondMicro: quote.maxMicro },
+    ok: true, jobs: [job.id], data: { identites: w.count },
     summary: L(`Création de ${w.routes === w.count ? `tes ${w.count} identités de marque` : `${w.routes} identité${w.routes > 1 ? "s" : ""}`} lancée (plusieurs minutes : ${w.fresh ? "j'étudie ton marché, je cherche l'idée et les noms, puis " : ""}je prépare les planches et je relis tout). Je reprends quand c'est prêt.`, "Creating your brand identities (several minutes)."),
   };
 }
@@ -235,7 +241,7 @@ function proposeParLesGraphistes(ctx: ToolContext, w: ReturnType<typeof chainWor
     payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: g.nomsMicro, count: w.count, jusquAuxNoms: true, ...(a.guidance ? { guidance: a.guidance } : {}) },
     maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand:noms`,
   });
-  return { ok: true, jobs: [job.id], data: { identites: w.count, plafondMicro: g.maxMicro },
+  return { ok: true, jobs: [job.id], data: { identites: w.count },
     summary: L("C'est parti : j'étudie ton marché, je cherche l'idée et les noms, puis je vérifie qu'ils sont libres. Tu choisis ensuite ton nom, puis les pistes de ton logo.", "Starting: market study, idea and names, then you choose your name and logo directions.") };
 }
 
@@ -493,7 +499,7 @@ const imagesTool: AgentTool<ImagesArgs> = {
       maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-images:${keys.join("")}:${images.join("+")}`,
     });
     return {
-      ok: true, jobs: [job.id], data: { planches: keys, images, plafondMicro: d.maxMicro },
+      ok: true, jobs: [job.id], data: { planches: keys, images },
       summary: L(`Je refais ${images.length} image${images.length > 1 ? "s" : ""} sur ${keys.map((k) => `« ${list.find((x) => x.key === k)?.name ?? k} »`).join(" et ")} (quelques minutes) ; le reste des planches ne bouge pas.`, "Redoing the board images."),
     };
   },

@@ -802,7 +802,7 @@ const codeTool: AgentTool<CodeArgs> = {
     try { updateJourney(ctx.conversationId, (j) => setStep(j, 7, "doing")); } catch { /* fil sans parcours */ }
     // Prix exacts dans le résultat (essai réel du 8 novembre : SINA a annoncé « au plus 0,4 % » au lieu de ~9 %).
     const pct = (m: number) => budgetPctText(ctx.user.id, m, p.id).replace(/de votre budget/, "de ton budget");
-    return { ok: true, summary: L(`Codage ${a.pages?.length ? `des pages ${a.pages.join(", ")}` : "du site"} d'après la maquette ${d.key} lancé${est.probableMicro ? ` (coût probable ${pct(est.probableMicro)}, plafond ${pct(est.maxMicro)})` : ` (plafond ${pct(est.maxMicro)})`} ; SINA relira le rapport page par page.`, `Coding the site from mockup ${d.key} started.`), jobs: [job.id], data: { maquette: d.key, plafondMicro: est.maxMicro, probableMicro: est.probableMicro ?? null } };
+    return { ok: true, summary: L(`Codage ${a.pages?.length ? `des pages ${a.pages.join(", ")}` : "du site"} d'après la maquette ${d.key} lancé (coût probable ${pct(est.probableMicro && est.probableMicro > 0 ? Math.min(est.probableMicro, est.maxMicro) : est.maxMicro)}) ; SINA relira le rapport page par page.`, `Coding the site from mockup ${d.key} started.`), jobs: [job.id], data: { maquette: d.key, probableMicro: est.probableMicro ?? null } };
   },
 };
 

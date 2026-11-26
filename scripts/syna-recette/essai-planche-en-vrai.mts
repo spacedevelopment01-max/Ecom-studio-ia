@@ -51,8 +51,8 @@
  * sa tuile, logo officiel joint, relues en un appel, une reprise des refusées ; une refusée deux fois garde son
  * agrandissement, et SINA le dit. Leurs fichiers remplacent les agrandissements (logos/, zip) ; sur la planche, chacune
  * n'est posée que si elle ne change pas visiblement sa case. Ordre : c), d), puis a) et l'enregistrement.
- * Un seul plafond pour c) et d), vérifié avant tout appel : sous le plafond minimal exact (somme des maxima, reprises
- * comprises), rien ne part. Sans REPRENDRE ni LOGO_HD, aucun appel ni clé. Devis de c) et d), sans appel :
+ * Un seul plafond pour c) et d) ; sous la somme des maxima (reprises comprises), l'essai part quand même et s'arrête
+ * proprement avant l'appel dont le pire cas dépasserait ce qui reste (26 novembre 2026). Sans REPRENDRE ni LOGO_HD, aucun appel ni clé. Devis de c) et d), sans appel :
  * DEVIS_SEULEMENT=1 REPRENDRE=… LOGO_HD=1 (même commande).
  *
  * LOGO_HD SUR LE CHEMIN NORMAL (26 novembre 2026), sans REASSEMBLER : LOGO_HD=1 sur la commande de l'étape 4. Après la
@@ -60,7 +60,8 @@
  * définition par la fonction du Studio (`refaireLesLogosEnHdEnVrai`), à la charge du Studio : leurs appels sont écrits dans
  * logos-hd/, puis les logos et la planche sont refaits par le code avec les versions gardées, avant etat.json et le
  * parcours. Avec un symbole séparable, rien n'est repris de l'aperçu : aucun appel de plus. Un seul plafond pour la planche
- * et les logos, vérifié avant tout appel : sous le plafond minimal exact (la somme des deux), rien ne part. Devis seul :
+ * et les logos ; sous la somme des maxima des deux, l'essai part quand même et s'arrête proprement avant l'appel qui la
+ * dépasserait (26 novembre 2026). Devis seul :
  * DEVIS_SEULEMENT=1 LOGO_HD=1. METIER_COURT : le métier court de la recherche du logo (esquisses.json, « metier.court »),
  * le bas du badge quand le logo n'a pas de phrase, comme dans le Studio.
  */
@@ -96,7 +97,8 @@ import path from "node:path";
       const { chiffresDuReassemblage } = await import("./essai-planche-en-vrai-outil");
       const c = await chiffresDuReassemblage(reprendre, { logoHd });
       const plafond = Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000);
-      if (!(plafond >= c.maxMicro)) { console.error(`Le plafond ${euros(Number.isFinite(plafond) ? plafond : 0)} est sous le plafond minimal exact ${euros(c.maxMicro)} (somme des maxima, reprises comprises ; probable ${euros(c.probableMicro)}) : rien n'est lancé.`); process.exit(1); }
+      // Sous la somme des maxima, l'essai part quand même (26 novembre 2026) et s'arrête proprement avant l'appel qui pourrait la dépasser.
+      if (Number.isFinite(plafond) && plafond > 0 && plafond < c.maxMicro) console.log(`Le plafond ${euros(plafond)} est sous la somme des maxima ${euros(c.maxMicro)} (probable ${euros(c.probableMicro)}) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.`);
       if (!process.env.STUDIO_ANTHROPIC_KEY) { console.error("STUDIO_ANTHROPIC_KEY absente : la relecture de la reprise ne peut pas être faite. Rien n'est lancé."); process.exit(1); }
       const { setSetting } = await import("../../src/lib/settings");
       setSetting("provider.anthropic.apiKey", process.env.STUDIO_ANTHROPIC_KEY.trim(), true);
@@ -132,16 +134,16 @@ import path from "node:path";
 
   const plafond = Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000);
   if (logoHd) {
-    // LOGO_HD sur le chemin normal : un seul plafond pour la planche en vrai et les logos en haute définition, vérifié avant
-    // tout appel ; sous le plafond minimal exact (somme des maxima, reprises comprises), rien ne part.
+    // LOGO_HD sur le chemin normal : un seul plafond pour la planche en vrai et les logos en haute définition ; sous la somme
+    // des maxima (reprises comprises), l'essai part quand même et s'arrête proprement avant l'appel qui la dépasserait.
     const { devisDuCheminNormal } = await import("./essai-planche-en-vrai-outil");
     const d = await devisDuCheminNormal({ logoHd });
     console.log(d.texte.join("\n"));
-    if (!(plafond >= d.plafondMinimalMicro)) { console.error(`Le plafond ${euros(Number.isFinite(plafond) ? plafond : 0)} est sous le plafond minimal exact ${euros(d.plafondMinimalMicro)} (planche en vrai et LOGO_HD, somme des maxima, reprises comprises ; probable ${euros(d.probableMicro)}) : rien n'est lancé.`); process.exit(1); }
+    if (plafond < d.plafondMinimalMicro) console.log(`Le plafond ${euros(plafond)} est sous la somme des maxima ${euros(d.plafondMinimalMicro)} (planche en vrai et LOGO_HD ; probable ${euros(d.probableMicro)}) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.`);
   } else {
     const devis = await devisDeLEssaiEnVrai();
     console.log(devisEnTexteEnVrai(devis).join("\n"));
-    if (plafond < devis.plafondMinimalMicro) console.log(`Attention : le plafond ${euros(plafond)} est sous le plafond minimal ${euros(devis.plafondMinimalMicro)} ; le garde-fou peut arrêter l'essai avant la fin (sans rien dépenser de plus).`);
+    if (plafond < devis.plafondMinimalMicro) console.log(`Le plafond ${euros(plafond)} est sous la somme des maxima ${euros(devis.plafondMinimalMicro)} (probable ${euros(devis.probableMicro)}) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.`);
   }
   const sortie = path.resolve(sortieArg);
   const r = await essaiDeLaPlancheEnVrai({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, planche: path.resolve(planche), logo: path.resolve(logo), client, donnees, logoHd, metierCourt: process.env.METIER_COURT ?? null });

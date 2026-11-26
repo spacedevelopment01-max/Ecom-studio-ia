@@ -11,6 +11,7 @@ import type { GraphistesAi } from "../../src/lib/syna-agent/logo-graphistes";
 import type { RelectureDuLogo } from "../../src/lib/syna-agent/logo-finalisation";
 import { phraseDeLEsquisse, type PhraseDeLEsquisse, type PhraseVoulue } from "../../src/lib/syna-agent/phrase-sous-le-nom";
 import { clientDeLEssai, euros, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
 
 export { clientDeLEssai, euros };
 export type { ClientDeLEssai };
@@ -359,6 +360,13 @@ export async function essaiDeFinalisation(o: {
       ...(res.appels.length ? res.appels.map((a) => `- ${a.cle ?? a.task ?? "?"} · ${a.modele ?? "?"} · ${a.studio ? "charge du Studio" : "charge du client"} · réservé ${euros(a.reserveMicro)} → réglé ${a.reelMicro == null ? "—" : euros(a.reelMicro)} (${a.statut})${a.appel ? ` · jetons ${a.appel.jetonsEntree} en entrée, ${a.appel.jetonsSortie} en sortie` : ""}`) : ["- aucun appel"]),
       "", `Dépense réelle comptée par le Studio : ${euros(res.depenseMicro)}`, "Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).");
     if (res.arret) lignes.push("", `ARRÊT : ${res.arret}`);
+    // Arrêté par le plafond de l'essai (26 novembre 2026) : les logos finis sont gardés ; on reprend avec les autres esquisses.
+    if (res.arret?.startsWith("le garde-fou de l'essai a refusé")) {
+      const finis = res.logos.filter((l) => l.ok), restent = res.logos.filter((l) => !l.ok);
+      lignes.push("", ...lignesDeLArret({ depenseMicro: res.depenseMicro, plafondMicro: Math.floor(plafond * 1_000_000), plafondMinimalMicro: devis.plafondMinimalMicro,
+        fait: finis.map((l) => `logo fini et gardé de l'esquisse ${l.numero} (${l.fichier})`),
+        reprendre: restent.length ? `relance la même commande avec seulement l'esquisse${restent.length > 1 ? "s" : ""} ${restent.map((l) => l.numero).join(", ")} (les logos déjà gardés ne sont ni refaits ni repayés).` : "tous les logos donnés sont finis." }));
+    }
     ecrireFichier("rapport.txt", `${lignes.join("\n")}\n`);
     return res;
   };

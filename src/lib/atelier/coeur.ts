@@ -11,7 +11,7 @@
  */
 import { HttpError, type User } from "../auth";
 import { one } from "../db";
-import { enqueue } from "../jobs";
+import { avecLaDepenseAnnoncee, enqueue } from "../jobs";
 import { L } from "../i18n-server";
 import { checkedNativePhotoEdit, nativeEditJobKey, nativeEditRequestHash, quoteNativePhotoEdit, signedNativePhotoEdit } from "../image-v2/native-edit-approval";
 import { checkedNativeImageApproval, nativeImageJobKey, quoteNativeImageGeneration, signedNativeImageApproval, type NativeImageRequest } from "../image-v2/native-approval";
@@ -52,7 +52,8 @@ export async function lancerRetouche(user: User, projectId: string, operationId:
   const deja = tacheRetouche(user.id, projectId, operationId, r);
   if (deja) return { jobId: deja.id };
   const approval = await checkedNativePhotoEdit(user, projectId, operationId, r, approvalToken);
-  const job = enqueue({ userId: user.id, projectId, type: "image.edit", idempotencyKey: nativeEditJobKey(user.id, projectId, operationId, r), maxAttempts: 1, label: L("Retouche confirmée de la photo", "Confirmed photo edit"), payload: { projectId, ...r, costCapMicro: approval.capMicro, nativeEditQuote: { operationId, requestHash: nativeEditRequestHash(r), token: approvalToken } } });
+  // La dépense annoncée (le coût montré, ici un seul appel) voyage avec la tâche (26 novembre 2026).
+  const job = avecLaDepenseAnnoncee(approval.capMicro, () => enqueue({ userId: user.id, projectId, type: "image.edit", idempotencyKey: nativeEditJobKey(user.id, projectId, operationId, r), maxAttempts: 1, label: L("Retouche confirmée de la photo", "Confirmed photo edit"), payload: { projectId, ...r, costCapMicro: approval.capMicro, nativeEditQuote: { operationId, requestHash: nativeEditRequestHash(r), token: approvalToken } } }));
   return { jobId: job.id };
 }
 
@@ -80,6 +81,7 @@ export async function lancerScene(user: User, projectId: string, operationId: st
   const deja = tacheScene(user.id, projectId, operationId, r);
   if (deja) return { jobId: deja.id, deja: true };
   const approval = await checkedNativeImageApproval(user, projectId, operationId, r, approvalToken, true);
-  const job = enqueue({ userId: user.id, projectId, type: "image.v2", idempotencyKey: nativeImageJobKey(user.id, projectId, operationId, r), maxAttempts: 1, label: L("Images : création confirmée", "Images: confirmed creation"), payload: { projectId, request: r, costCapMicro: approval.cost.capMicro, nativeImageQuote: { operationId, requestHash: imageBindingHash(r), token: approvalToken } } });
+  // Le coût probable montré est la dépense annoncée : la tâche s'arrête et le demande avant d'en dépasser le double.
+  const job = avecLaDepenseAnnoncee(approval.cost.estimateMicro, () => enqueue({ userId: user.id, projectId, type: "image.v2", idempotencyKey: nativeImageJobKey(user.id, projectId, operationId, r), maxAttempts: 1, label: L("Images : création confirmée", "Images: confirmed creation"), payload: { projectId, request: r, costCapMicro: approval.cost.capMicro, nativeImageQuote: { operationId, requestHash: imageBindingHash(r), token: approvalToken } } }));
   return { jobId: job.id, deja: false };
 }

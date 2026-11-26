@@ -20,7 +20,7 @@ import { palette } from "../engine/images";
 import type { Project } from "../projects";
 import { GESTES, LOT_MAX } from "./gestes";
 import { OUTILS, outil, outilsPour, type GesteId } from "./outils";
-import { auPlusTexte, chaineGeste, plafondTexte, plafondVideos, prixTexte, SOUS_LE_PRIX, type PlafondVideos } from "./prix";
+import { chaineGeste, plafondTexte, plafondVideos, prixTexte, SOUS_LE_PRIX, type PlafondVideos } from "./prix";
 import { devisVideoGuidee } from "../video-v2/guided-quote";
 import { accordValide, CONDITIONS, CONDITIONS_VERSION, controlePersonnes, modererEntree, PHRASE_ACCORD, type AccordPersonne } from "./garde-fous";
 import { MODES, conseilOutil } from "./conseil";
@@ -65,8 +65,9 @@ export function prixDuGeste(userId: string, projectId: string, geste: GesteId, o
 
 /**
  * Le prix d'un modèle de vidéo : le devis de la vidéo guidée qu'il ouvre (une seule façon de calculer, la même que la
- * page de réglage et que SINA). `prix` : le coût probable ; `auPlus` : la borne haute de l'accord ; `raison` : pourquoi
- * il n'est pas ouvert. Le modèle gratuit (avant-après) n'a pas de devis.
+ * page de réglage et que SINA). `prix` : le coût probable, seul chiffre montré ; `auPlus` : toujours vide depuis le
+ * 26 novembre 2026 (« Il faut arrêter de montrer des plafond aussi haut ça va faire peur aux clients ») : la borne haute
+ * reste en coulisses, dans `capMicro` ; `raison` : pourquoi il n'est pas ouvert. Le modèle gratuit (avant-après) n'a pas de devis.
  */
 export function prixModeleVideo(userId: string, p: Project, m: ModeleVideo): { estimateMicro: number; capMicro: number; prix: string | null; auPlus: string | null; outil: string | null; raison: string | null; planSur: string | null; dureeS: number; secondesFilmees: number } {
   const lg = lang();
@@ -81,7 +82,7 @@ export function prixModeleVideo(userId: string, p: Project, m: ModeleVideo): { e
   if (!q.allowed) return { estimateMicro: 0, capMicro: 0, prix: null, auPlus: null, outil: null, raison: q.reason ?? null, planSur: null, dureeS, secondesFilmees };
   const base = pctBaseFor(userId, p.id), route = q.routes?.clip;
   // Sans modèle vidéo utilisable : le plan sûr (vrai produit détouré, caméra au montage), dit au client en clair.
-  return { estimateMicro: q.estimateMicro, capMicro: q.capMicro, prix: q.estimateMicro > 0 ? prixTexte(q.estimateMicro, base, lg) : lg === "fr" ? "Gratuit" : "Free", auPlus: q.capMicro > q.estimateMicro ? auPlusTexte(q.capMicro, base, lg) : null, outil: route ? `${route.provider}:${route.model}` : null, raison: null, planSur: q.planSur ?? null, dureeS, secondesFilmees };
+  return { estimateMicro: q.estimateMicro, capMicro: q.capMicro, prix: q.estimateMicro > 0 ? prixTexte(q.estimateMicro, base, lg) : lg === "fr" ? "Gratuit" : "Free", auPlus: null, outil: route ? `${route.provider}:${route.model}` : null, raison: null, planSur: q.planSur ?? null, dureeS, secondesFilmees };
 }
 
 /** Le plafond des vidéos de l'atelier ce mois-ci, pour ce projet. */

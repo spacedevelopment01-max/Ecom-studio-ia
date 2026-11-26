@@ -270,7 +270,7 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
       run("UPDATE jobs SET payload = ? WHERE id = ? AND status = 'failed'", JSON.stringify(payload), c.id);
       retryJob(c.id);
       updateJourney(ctx.conversationId, (x) => setStep(x, 6, "doing"));
-      return { ok: true, jobs: [c.id], data: { plafondMicro: q.maxMicro },
+      return { ok: true, jobs: [c.id], data: {},
         summary: L("Création de ton site relancée, là où elle s'était arrêtée : ce qui était déjà fait est repris sans être repayé. Je reprends quand c'est prêt.", "Your site creation was restarted from where it stopped."),
         hint: "Dis-lui que ce qui était fait est repris sans être repayé. N'annonce jamais que le site est prêt avant la fin de la tâche." };
     }
@@ -284,7 +284,7 @@ export const siteCreateTool: AgentTool<CreateArgs> = {
     const payload: SitePayload = { projectId: p.id, userId: ctx.user.id, conversationId: ctx.conversationId, runId: ctx.runId, capMicro: quote.maxMicro, consigne };
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: SINA_SITE_JOB, label: L("Ton site (SINA)", "Your site (SINA)"), payload, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:site:${round}` });
     updateJourney(ctx.conversationId, (x) => setStep(x, 6, "doing"));
-    return { ok: true, jobs: [job.id], data: { plafondMicro: quote.maxMicro },
+    return { ok: true, jobs: [job.id], data: {},
       summary: L("Création de ton site lancée (20 à 40 minutes : je le conçois pour ta marque, j'écris et je relis chaque page, je crée les photos qui manquent, puis je regarde le résultat sur téléphone). Je reprends quand c'est prêt.", "Creating your site (20 to 40 minutes)."),
       hint: "Pendant la création, reste disponible : réponds au client, et profite de l'attente pour lui demander ce qui manquerait à son site (une information encore inconnue : un prix, un délai, ses horaires, sa zone). N'annonce jamais que le site est prêt avant la fin de la tâche." };
   },

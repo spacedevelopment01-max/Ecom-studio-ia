@@ -12,6 +12,7 @@ import type { PlancheAi } from "../../src/lib/syna-agent/planche-de-marque-tache
 import type { RelectureDeLaPlanche, ValeursDuMetier } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
 import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
 
 // Le client inventé de l'essai (client-de-l-essai.ts) : aucun client n'est pris par défaut.
 export { clientDeLEssai, euros, ficheDuClient };
@@ -98,15 +99,17 @@ export async function devisDeLEssai(n: number, o: { valeursFaites?: boolean; rep
 }
 
 /**
- * Le plafond de l'essai est-il assez haut ? Sous le plafond minimal (la somme des maxima, reprises comprises), l'essai
- * pourrait s'arrêter avant la fin : le script refuse de partir. Rend la raison du refus, ou null.
+ * Le plafond de l'essai est-il lisible ? Seul un plafond absent ou illisible fait refuser de partir. Sous la somme des
+ * maxima (reprises comprises), l'essai part quand même depuis le 26 novembre 2026 (« Il faut arrêter de montrer des
+ * plafond aussi haut ça va faire peur aux clients ») : il s'arrête proprement avant l'appel dont le pire cas dépasserait
+ * ce qui reste (`avisDuPlafond` le dit avant de partir). Rend la raison du refus, ou null.
  */
-export function refusDuPlafond(plafondEuros: string, d: Pick<DevisDeLEssai, "plafondMinimalMicro">): string | null {
+export function refusDuPlafond(plafondEuros: string, _d?: Pick<DevisDeLEssai, "plafondMinimalMicro">): string | null {
   const plafond = Number(plafondEuros.replace(",", "."));
   if (!Number.isFinite(plafond) || plafond <= 0) return "PLAFOND_ESSAI_EUR manquant ou illisible : rien n'est lancé.";
-  const micro = Math.floor(plafond * 1_000_000);
-  return micro < d.plafondMinimalMicro ? `Le plafond ${euros(micro)} est sous le plafond minimal ${euros(d.plafondMinimalMicro)} (somme des maxima, reprises à la charge du Studio comprises) : rien n'est lancé.` : null;
+  return null;
 }
+export { avisDuPlafond };
 
 // ---------------------------------------------------------------- la phrase de chaque logo
 
@@ -464,6 +467,13 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
       "", `Dépense réelle comptée par le Studio : ${euros(res.depenseMicro)}`, "Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).");
     if (res.erreurs?.length) lignes.push("", ...res.erreurs.map((x) => `PLANCHE EN ERREUR : ${x}`));
     if (res.arret) lignes.push("", `ARRÊT : ${res.arret}`);
+    // Arrêté par le plafond de l'essai (26 novembre 2026) : les planches gardées le restent ; on reprend avec les autres.
+    if (res.arret?.startsWith("le garde-fou de l'essai a refusé")) {
+      const gardees = res.planches.filter((p) => p.gardee), payees = res.planches.filter((p) => !p.gardee && p.essais.length);
+      lignes.push("", ...lignesDeLArret({ depenseMicro: res.depenseMicro, plafondMicro: Math.floor(plafond * 1_000_000), plafondMinimalMicro: devis.plafondMinimalMicro,
+        fait: [...(res.valeurs?.ok ? ["valeurs du métier écrites (valeurs-du-metier.json, jamais refaites)"] : []), ...gardees.map((p) => `planche ${p.key} gardée (${p.fichierGarde ?? "planche-" + p.key + "-gardee.png"})`), ...payees.map((p) => `planche ${p.key} : premier essai payé, pas encore gardée`)],
+        reprendre: `relance la même commande avec seulement les logos des planches qui restent${payees.length ? ` ; ${payees.map((p) => `REPRENDRE_${p.key}=<ce dossier>`).join(", ")} reprend une planche à partir de son premier essai déjà payé` : ""}.` }));
+    }
     ecrireFichier("rapport.txt", `${lignes.join("\n")}\n`);
     return res;
   };

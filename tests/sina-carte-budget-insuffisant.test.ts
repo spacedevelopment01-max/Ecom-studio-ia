@@ -31,7 +31,7 @@ describe("la carte de prix : le budget du mois doit couvrir le plafond", async (
 
   it("la vérification passe avant la carte de prix, pour tout travail payant", () => {
     const src = fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8");
-    const i = src.indexOf("const manque = budgetInsuffisant(r.user_id, r.project_id, est.maxMicro);"), j = src.indexOf('return askConfirmation(r, t, parsed.data, tctx, "cost", est.maxMicro, est);');
+    const i = src.indexOf("const manque = budgetInsuffisant(r.user_id, r.project_id, est.maxMicro, annonceDuDevis(est));"), j = src.indexOf('return askConfirmation(r, t, parsed.data, tctx, "cost", est.maxMicro, est);');
     expect(i).toBeGreaterThan(0);
     expect(i).toBeLessThan(j);
   });

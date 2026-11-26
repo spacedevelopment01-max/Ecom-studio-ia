@@ -570,7 +570,9 @@ describe("thème sur mesure : outils de SINA", async () => {
     const { confirmationText } = await import("@/lib/syna-agent/loop");
     const text = await fr(() => confirmationText(getTool("custom.build")!, { photos: true, images: "sina" }, ctx, ctx.user.id, pid, { label: "thème sur mesure monté à ta marque : 34 sections écrites, 48 photos créées", probableMicro: 6_330_000, maxMicro: 10_460_000 }));
     expect(text).toMatch(/^Thème sur mesure monté à ta marque : 34 sections écrites, 48 photos créées\./);
-    expect(text).toMatch(/Coût probable : .*%.* ; au plus .*%/);
+    // Le coût probable seul (26 novembre 2026 : « Il faut arrêter de montrer des plafond aussi haut ça va faire peur aux clients »).
+    expect(text).toMatch(/Coût probable : environ .*% de ton budget IA du mois\./);
+    expect(text).not.toMatch(/au plus|plafond/i);
     expect(text).not.toMatch(/custom\.build|\{|€/);
   });
 });

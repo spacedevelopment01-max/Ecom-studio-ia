@@ -67,6 +67,16 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   sur 9 € accordés, et 1,07 € pour l'essai sur le nouvel écran, sur 1,50 €). Essai du lot 2, au 16 novembre 2026 :
   40,06 €, pour 25 € accordés au départ (le dépassement vient d'essais qu'il a demandés). Essais du lot 3 : 8,36 €.
 - **Le client ne voit jamais d'euros pour l'IA** : tout coût est un pourcentage du budget d'IA de son mois.
+- **Le coût probable seul** (26 novembre 2026 : « Il faut arrêter de montrer des plafond aussi haut ça va faire peur aux
+  clients », puis son accord écrit) : la carte de dépense, les écrans et les phrases de SINA n'annoncent que le coût
+  probable (« environ 18 % de ton budget IA du mois ») ; jamais « au plus », ni fourchette, ni pire cas. Le plafond reste
+  en coulisses : chaque appel est réservé avant de partir. SINA ne dépasse jamais en silence : avant l'appel qui ferait
+  dépasser le double de ce qui a été annoncé, la tâche s'arrête, SINA dit en une phrase où elle en est et demande s'il veut
+  continuer ; oui, elle reprend là où elle s'est arrêtée (`depense-annoncee.ts`, aussi pour les publicités et les
+  créations lancées hors de SINA).
+- **Les essais du propriétaire** : le plafond donné peut être proche du probable (deux fois, arrondi) ; sous la somme des
+  maxima, l'essai part, s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers
+  et dit ce qui est fait, ce qu'il faudrait pour finir et comment reprendre (`plafond-des-essais.ts`).
 - **Forfaits validés** (« Oui je valide comme ça ») : 69 €, 99 € et 169 € par mois, sans prix de création ni
   engagement ; budget d'IA à 50 % du prix hors taxes le premier mois, puis 40 % ; par forfait : 2, 3 et 4 identités
   proposées, 1, 2 et 3 publications en images par jour, 0, 3 et 6 vidéos par mois, 0, 1 et 2 campagnes préparées. Le

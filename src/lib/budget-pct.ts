@@ -22,6 +22,19 @@ export function formatPct(pct: number, lang: "fr" | "en"): string {
   return `${Math.round(pct)}${sp}%`;
 }
 
+/**
+ * LE COÛT PROBABLE, SEUL CHIFFRE MONTRÉ AU CLIENT (26 novembre 2026, ses mots : « Il faut arrêter de montrer des plafond
+ * aussi haut ça va faire peur aux clients ») : « environ 18 % de ton budget IA du mois », « moins de 0,1 % de ton budget IA
+ * du mois ». Ni « au plus », ni fourchette, ni pire cas. Part inconnue : « une part de ton budget IA du mois ».
+ */
+export function coutProbableTexte(pct: number | null | undefined, lang: "fr" | "en"): string {
+  const fr = lang === "fr";
+  if (pct == null || !Number.isFinite(pct)) return fr ? "une part de ton budget IA du mois" : "part of your monthly AI budget";
+  const v = formatPct(pct, lang);
+  if (v.startsWith("<")) return fr ? `moins de ${v.slice(2)} de ton budget IA du mois` : `less than ${v.slice(2)} of your monthly AI budget`;
+  return fr ? `environ ${v} de ton budget IA du mois` : `about ${v} of your monthly AI budget`;
+}
+
 /** « ≈ 3 % de votre budget IA », « < 0,1 % de votre budget IA » ; sans budget connu : « sur votre budget IA ». */
 export function formatBudgetPct(pct: number | null, lang: "fr" | "en"): string {
   if (pct == null) return lang === "fr" ? "sur votre budget IA" : "from your AI budget";

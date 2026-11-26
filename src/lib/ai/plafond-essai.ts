@@ -72,6 +72,9 @@ export function assertSousLePlafondDeLEssai(maxMicro: number, jobId?: string | n
   if (deja + Math.ceil(maxMicro) > r.plafondMicro) refus(new PlafondDeLEssaiAtteint(deja, Math.ceil(maxMicro), r.plafondMicro));
 }
 
+/** La tâche a-t-elle un appel refusé par le plafond de l'essai ? (sans l'oublier : ses points de reprise ne s'enregistrent plus) */
+export const arreteeParLEssai = (jobId: string): PlafondDeLEssaiAtteint | null => tachesArretees.get(jobId) ?? null;
+
 /**
  * Le worker, à la fin d'une tâche : si un de ses appels a été refusé par le plafond de l'essai, la tâche s'arrête
  * (échec définitif, jamais relancée), même si sa chaîne a continué sans cet appel. Lu une fois, puis oublié.

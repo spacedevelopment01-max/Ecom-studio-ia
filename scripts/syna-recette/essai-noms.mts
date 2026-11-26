@@ -5,8 +5,11 @@
  *
  *  1. un compte et un projet fictifs pour le client inventé donné, SANS nom (client-de-l-essai.ts : CLIENT_JSON, ou
  *     CLIENT_METIER, CLIENT_TYPE, CLIENT_PRODUITS ; aucun client par défaut ; un client qui a déjà un nom est refusé) ;
- *  2. le garde-fou de dépense de l'essai allumé avec PLAFOND_ESSAI_EUR (src/lib/ai/plafond-essai.ts) ; sous le plafond
- *     minimal exact (la somme des maxima, seconds tours compris), rien ne part ;
+ *  2. le garde-fou de dépense de l'essai allumé avec PLAFOND_ESSAI_EUR (src/lib/ai/plafond-essai.ts). Le plafond peut être
+ *     proche du probable (deux fois, arrondi, est conseillé) : sous la somme des maxima, l'essai part quand même et
+ *     s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste ; il garde alors ses fichiers et la
+ *     tâche ses points de reprise, et dit ce qu'il faudrait pour finir (26 novembre 2026). REPRENDRE=1, dans le même
+ *     dossier de sortie, reprend là, sans refaire ni repayer les étapes faites ;
  *  3. la tâche des noms du Studio : recherches et étude, idées, équipes de noms, juge, second tour si besoin, vérification
  *     des noms gardés sur le web ; 4. l'adresse de chaque nom vérifié (annuaires publics des registres, gratuit).
  * Aucun appel n'est relancé tout seul : une panne arrête l'essai et est écrite comme telle (code de sortie 2).
@@ -36,6 +39,7 @@ import path from "node:path";
   const { appliquerTarifsVerifies } = await import("./tarifs-verifies");
   await appliquerTarifsVerifies();
   const { clientDeLEssai, devisDesNoms, devisDesNomsEnTexte, essaiDesNoms, euros } = await import("./essai-noms-outil");
+  const { avisDuPlafond, plafondLu } = await import("./plafond-des-essais");
   if (devisSeul) { console.log(devisDesNomsEnTexte(await devisDesNoms()).join("\n")); process.exit(0); }
 
   const sortieArg = process.argv[2] ?? process.env.SORTIE;
@@ -45,8 +49,10 @@ import path from "node:path";
   try { client = clientDeLEssai(process.env, { sansNom: true }); } catch (e) { console.error((e as Error).message); process.exit(1); }
   const devis = await devisDesNoms();
   console.log(devisDesNomsEnTexte(devis).join("\n"));
-  const plafond = Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000);
-  if (!(plafond >= devis.plafondMinimalMicro)) { console.error(`Le plafond ${euros(Number.isFinite(plafond) ? plafond : 0)} est sous le plafond minimal exact ${euros(devis.plafondMinimalMicro)} (somme des maxima, seconds tours compris ; probable ${euros(devis.probableMicro)}) : rien n'est lancé.`); process.exit(1); }
+  const plafond = plafondLu(process.env.PLAFOND_ESSAI_EUR);
+  if (plafond == null) { console.error("PLAFOND_ESSAI_EUR illisible : rien n'est lancé."); process.exit(1); }
+  const avis = avisDuPlafond(plafond, devis);
+  if (avis) console.log(avis);
   // Le studio privé d'essai, comme lancer-agent.mts : clé Anthropic chiffrée depuis l'environnement.
   if (process.env.STUDIO_ANTHROPIC_KEY) {
     const { setSetting } = await import("../../src/lib/settings");
@@ -54,10 +60,10 @@ import path from "node:path";
   } else { console.error("STUDIO_ANTHROPIC_KEY absente : les noms ne peuvent pas être cherchés. Rien n'est lancé."); process.exit(1); }
   const sortie = path.resolve(sortieArg);
   try {
-    const r = await essaiDesNoms({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, client });
+    const r = await essaiDesNoms({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, client, reprendre: process.env.REPRENDRE === "1" });
     console.log(`${r.noms.length} nom(s) vérifié(s) proposé(s)${r.verifies ? "" : " (sans vérification sur le web, et c'est dit)"}, dépense comptée ${euros(r.depenseMicro)}. Rapport : ${path.join(sortie, "rapport.txt")}`);
     for (const n of r.noms) console.log(`${n.numero}. ${n.nom} — ${n.adresseDeLaPlanche.mention}`);
-    if (r.arret) { console.log(`Arrêt : ${r.arret}`); process.exit(2); }
+    if (r.arret) { console.log(`Arrêt : ${r.arret}`); if (r.arretPropre) console.log(r.arretPropre.join("\n")); process.exit(2); }
   } catch (e) { console.error((e as Error).message); process.exit(1); }
   process.exit(0);
 }

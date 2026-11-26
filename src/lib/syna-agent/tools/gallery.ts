@@ -9,7 +9,7 @@ import { enqueue, pendingJob } from "../../jobs";
 import { listProducts } from "../../products/catalog";
 import { loadGalleries } from "../../products/gallery-store";
 import { REGLE_PERSONNES, peopleAllowed } from "../../people-policy";
-import { budgetPctTu } from "../../ai/budget-pct";
+import { budgetPctTu, coutProbableTu } from "../../ai/budget-pct";
 import { ditParLeClient } from "../verrous";
 import type { AgentTool } from "../types";
 import { project } from "./common";
@@ -40,7 +40,7 @@ const planTool: AgentTool<Record<string, never>> = {
         genres: GALLERY_ORDER.map((k) => ({ genre: k, image: GALLERY_KINDS[k].label, textes: GALLERY_KINDS[k].texts })),
         personnesDejaAutorisees: peopleAllowed(p.id),
         // Le client ne voit jamais d'euros pour l'IA : le prix est dit en part du budget d'IA de son mois.
-        prixParProduit: est ? `${GALLERY_ADVISED} images : au plus ${budgetPctTu(ctx.user.id, est.maxMicro, p.id)} du mois (outil de devis du Studio)` : null,
+        prixParProduit: est ? `${GALLERY_ADVISED} images : coût probable ${coutProbableTu(ctx.user.id, est.probableMicro && est.probableMicro > 0 ? Math.min(est.probableMicro, est.maxMicro) : est.maxMicro, p.id)} (outil de devis du Studio)` : null,
       },
     };
   },
