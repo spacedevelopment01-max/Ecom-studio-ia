@@ -4,10 +4,10 @@ import minutage from './minutage.json';
 import plan from './plan.json';
 
 const FPS = 30;
-const FIN = 67.0;
+const FIN = 63.7;
 export const DUREE = Math.round(FIN * FPS);
 const fr = (s: number) => Math.round(s * FPS);
-const VOIX = 3.5;
+const VOIX = 0.2;
 type P = {debut: number; fin: number; fichier: string; type: 'photo' | 'video'};
 const PLAN = plan as P[];
 const CADRAGE: Record<string, string> = {'img_console_': '50% 50%', 'telephone_': '35% 50%', 'radio_': '62% 50%', 'rdv_8812': '45% 50%', 'parents_38045': '62% 50%'};
@@ -60,7 +60,7 @@ const Cassette: React.FC = () => {
 	const graine = f % 9;
 	const piste = (f * 7) % 2200 - 200;
 	const bande = Math.floor(t / 4.3) % 3 === 0 && (f % 129) < 10;
-	const neige = interpolate(t, [62.2, 63.0, FIN - 0.4, FIN], [0, 0.85, 0.85, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+	const neige = interpolate(t, [58.9, 59.7, FIN - 0.4, FIN], [0, 0.85, 0.85, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
 	const date = `JUIL. 1996`;
 	const heure = `${String(18 + Math.floor((t + 37) / 60)).padStart(2, '0')}:${String(Math.floor(t + 37) % 60).padStart(2, '0')}`;
 	return (
@@ -85,6 +85,30 @@ const Cassette: React.FC = () => {
 	);
 };
 
+const Connexion: React.FC = () => {
+	const f = useCurrentFrame();
+	if (f > fr(2.7)) return null;
+	const k = interpolate(f, [0, fr(2.3)], [0, 1], {extrapolateRight: 'clamp'});
+	const sortie = interpolate(f, [fr(2.3), fr(2.7)], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+	const titre = interpolate(f, [0, 6], [1.08, 1], {extrapolateRight: 'clamp', easing: Easing.out(Easing.back(2))});
+	return (
+		<AbsoluteFill style={{opacity: sortie}}>
+			<div style={{position: 'absolute', top: 330, width: '100%', textAlign: 'center', transform: `scale(${titre})`}}>
+				<span style={{fontFamily: 'Lilita', fontSize: 112, color: '#FFE27A', WebkitTextStroke: '18px #1a0f08', paintOrder: 'stroke fill', lineHeight: 1.1}}>TU RECONNAIS<br />CE BRUIT ? 🔊</span>
+			</div>
+			<div style={{position: 'absolute', left: 140, top: 900, width: 800, background: '#c0c0c0', border: '6px solid #fff', borderRightColor: '#404040', borderBottomColor: '#404040', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', fontFamily: 'monospace'}}>
+				<div style={{background: 'linear-gradient(90deg,#000080,#1084d0)', color: '#fff', fontSize: 34, fontWeight: 900, padding: '10px 18px'}}>Connexion à Internet</div>
+				<div style={{padding: 26, fontSize: 34, color: '#000'}}>
+					<div>{k < 0.35 ? 'Numérotation…' : k < 0.75 ? 'Vérification…' : 'Connexion à 56 000 bit/s…'}</div>
+					<div style={{marginTop: 22, height: 44, border: '4px solid #808080', background: '#fff', padding: 4}}>
+						<div style={{display: 'flex', gap: 6, height: '100%'}}>{Array.from({length: Math.floor(k * 16)}).map((_, i) => <div key={i} style={{width: 38, height: '100%', background: '#000080'}} />)}</div>
+					</div>
+				</div>
+			</div>
+		</AbsoluteFill>
+	);
+};
+
 export const Film: React.FC = () => {
 	const [h] = useState(() => delayRender('police'));
 	useEffect(() => {
@@ -100,12 +124,13 @@ export const Film: React.FC = () => {
 					</Sequence>
 				))}
 			</AbsoluteFill>
+			<Connexion />
 			<Cassette />
 			<SousTitres />
-			<Audio src={staticFile('modem.wav')} volume={0.55} />
+			<Audio src={staticFile('modem.wav')} volume={(f) => interpolate(f, [0, fr(0.2), fr(0.5)], [0.6, 0.6, 0.2], {extrapolateRight: 'clamp'})} />
 			<Sequence from={fr(VOIX)}><Audio src={staticFile('voix.wav')} /></Sequence>
-			<Audio src={staticFile('piano.wav')} volume={(f) => interpolate(f, [0, fr(3.2), fr(3.6), fr(62.5), fr(64)], [0, 0, 0.17, 0.17, 0.26], {extrapolateRight: 'clamp'})} />
-			<Sequence from={fr(63.4)}><Audio src={staticFile('modem.wav')} volume={0.5} /></Sequence>
+			<Audio src={staticFile('piano.wav')} volume={(f) => interpolate(f, [0, fr(0.1), fr(0.4), fr(59.2), fr(60.7)], [0, 0, 0.17, 0.17, 0.26], {extrapolateRight: 'clamp'})} />
+			<Sequence from={fr(60.1)}><Audio src={staticFile('modem.wav')} volume={0.5} /></Sequence>
 		</AbsoluteFill>
 	);
 };
