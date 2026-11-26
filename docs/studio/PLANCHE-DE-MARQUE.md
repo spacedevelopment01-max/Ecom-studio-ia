@@ -247,3 +247,39 @@ la phrase déformée sur le sac en tissu (la 2e ligne est dite « déformée »,
 `relecteur-de-planche-texte-lisible-et-promesses-mesurables` (« avec toutes ses raisons à la fin du texte ») et
 `planche-reprend-la-phrase-du-logo` (« une ligne manquante » fait refuser). Leurs rejeux sont gardés tels quels et rejoués
 par la nouvelle épreuve.
+
+## Les produits de la fiche seulement, et le signe déclaré isolé (26 novembre 2026)
+
+Essai réel du torréfacteur, étape 4 (deux planches, 0,76 €) : la planche A est gardée à 9/10 ; la planche B est refusée
+deux fois. Constat du chef d'orchestre : « Plus grave, et pas vu par le relecteur : la planche B invente des produits. »
+Elle montre « Brésil Sul de Minas », « Éthiopie Yirgacheffe », « Guatemala Antigua », « Colombie », que le client n'a jamais
+donnés. Règle : « SINA n'invente jamais l'équipe ni les biens à vendre ». Ce qui change, sans aucun appel payant :
+
+1. **Le texte de la planche** (partie « produits », l'une des six parties du métier) : pour une boutique, juste après la
+   liste, une ligne dit en positif que les étiquettes, les emballages, les fiches produits et le site ne portent que les
+   noms du client (« Cafés en grains », « Cafés moulus », « Coffrets »). Le texte des preuves (Tenon, Racine) ne change pas ;
+   un site de marque non plus. Un ancien premier essai d'une boutique ne se reprend plus tel quel : son texte n'est plus
+   celui que le Studio enverrait.
+2. **Le contrôle gratuit des valeurs** refuse (une réécriture à la charge du Studio) toute origine, variété, gamme, tout
+   pays ou nom propre absents de la fiche, dans les produits, les images, l'émotion et les traits.
+3. **Le relecteur** reçoit la liste des produits du client et relève à part (`produitsInventes`) chaque nom de produit
+   lisible qui n'en est pas un. Le code compare : un nom de la fiche (singulier ou pluriel) est permis ; tout autre fait
+   refuser, avec une raison claire pour la reprise.
+4. **Le signe isolé** : le relecteur avait écrit « un petit crochet en forme de « ? » égaré, hors des mots », que le code ne
+   reconnaissait pas. Il le déclare maintenant lui-même à part (`signesIsoles`) ; le code le range en petite finition, sauf
+   s'il touche une lettre, un mot, le nom, la phrase du logo, l'adresse ou l'année.
+5. « 100% Arabica » reste refusé : un fait chiffré inventé sur le produit.
+
+Sur la planche A, à l'œil : « Café en grains », « Café moulu », « Cafés en grains », « Cafés moulus », « Coffrets café ».
+Une petite ligne « L'ESSENTIEL » sous « CAFÉ EN GRAINS » sur le sachet de la publication 4:5 ressemble à un nom de gamme
+que le client n'a pas donné ; le relecteur a rangé les petites lignes sous les noms des paquets dans les micro-textes illisibles. Le sondage de la story (« Café noir », « Café au
+lait », « Cappuccino ») nomme des boissons, pas des produits vendus.
+
+Épreuves ajoutées et scellées : `planche-produits-de-la-fiche-seulement`, `planche-signe-isole-declare-par-le-relecteur`.
+Verdicts réels copiés tels quels : `tests/fixtures/torrefacteur-planches`.
+
+**Correction (même jour).** La reprise renvoyait au dessinateur le nom inventé, recopié de l'emplacement du relecteur
+(« sachet Éthiopie »). Désormais, les raisons envoyées pour la reprise ne recopient jamais un nom inventé : la raison des
+produits inventés dit seulement où, en termes neutres, et rappelle les noms du client ; dans les autres raisons, les noms
+inventés, les pays et les mots d'origine, de variété ou de gamme absents de la fiche sont retirés. Le compte rendu garde
+les noms exacts. L'épreuve `planche-produits-de-la-fiche-seulement`, jamais envoyée, est corrigée et rescellée.

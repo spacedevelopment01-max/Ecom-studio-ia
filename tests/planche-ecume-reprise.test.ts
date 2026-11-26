@@ -17,6 +17,14 @@ import { afterEach, describe, expect, it } from "vitest";
 const F = "tests/fixtures/ecume-planches";
 const PHRASE = ["SAVONNERIE ARTISANALE", "BULLES DE SOIN AU NATUREL"];
 const reel = () => JSON.parse(fs.readFileSync(`${F}/planche-A-1-relecture-verdict.json`, "utf8"));
+/**
+ * Le texte réel du premier essai de A, tel que le Studio l'enverrait aujourd'hui : depuis le 26 novembre 2026 (essai réel du
+ * torréfacteur), la partie « produits » d'une boutique porte en plus la ligne des noms des produits ; le reste est mot pour mot.
+ */
+const texteA1DAujourdhui = async () => {
+  const P = await import("@/lib/syna-agent/planche-de-marque");
+  return P.texteAvecLesNomsDesProduits(fs.readFileSync(`${F}/planche-A-1-texte-envoye.txt`, "utf8"), JSON.parse(fs.readFileSync(`${F}/valeurs-du-metier.json`, "utf8")).valeurs);
+};
 
 describe("Écume, étape 3 : la relecture de la planche A recalculée par le code corrigé", async () => {
   const P = await import("@/lib/syna-agent/planche-de-marque");
@@ -40,13 +48,13 @@ describe("Écume, étape 3 : la relecture de la planche A recalculée par le cod
     for (const x of v.verdict.phrasesLues.slice(0, 15)) expect(P.jugerLaPhraseLue(x, PHRASE).juste, x).toBe(true);
   });
 
-  it("la reprise de A part : ses raisons tiennent sous la limite, les plus graves d'abord", () => {
+  it("la reprise de A part : ses raisons tiennent sous la limite, les plus graves d'abord", async () => {
     const v = JSON.parse(fs.readFileSync(`${F}/valeurs-du-metier.json`, "utf8")).valeurs;
     const t = P.texteDeLaPlanche({ nom: "Écume", valeurs: v, annee: 2026, domaine: ATTENDU.domaine, personnes: false, phrase: PHRASE, raisons: lu().raisons });
     // L'ancien texte de la reprise (8 939 octets) n'était jamais parti.
     expect(Buffer.byteLength(fs.readFileSync(`${F}/planche-A-2-texte-envoye.txt`, "utf8"))).toBeGreaterThan(mp.PLANCHE_TEXTE_MAX_OCTETS);
     expect(Buffer.byteLength(t)).toBeLessThanOrEqual(mp.PLANCHE_TEXTE_MAX_OCTETS);
-    expect(t.startsWith(fs.readFileSync(`${F}/planche-A-1-texte-envoye.txt`, "utf8"))).toBe(true);
+    expect(t.startsWith(await texteA1DAujourdhui())).toBe(true);
     const fin = t.slice(t.lastIndexOf("À corriger : "));
     expect(fin.indexOf("une personne est visible")).toBeLessThan(fin.indexOf("la phrase choisie"));
     expect(fin.indexOf("la phrase choisie")).toBeLessThan(fin.indexOf("Dites-le nous"));
@@ -262,7 +270,8 @@ describe("le script d'essai des planches : planches indépendantes, et le chemin
     fs.writeFileSync(logos[1], await sharp({ create: { width: 300, height: 300, channels: 3, background: "#8A5A44" } }).png().toBuffer());
     fs.writeFileSync(path.join(etape2, "esquisse-06-phrase-du-logo.txt"), "SAVONNERIE ARTISANALE / BULLES DE SOIN AU NATUREL");
     fs.writeFileSync(path.join(etape2, "esquisse-10-phrase-du-logo.txt"), "SAVONNERIE / ARTISANALE");
-    for (const f of ["valeurs-du-metier.json", "domaine.json", "planche-A-1-relecture-verdict.json", "planche-A-1-texte-envoye.txt"]) fs.copyFileSync(path.join(F, f), path.join(sortie, f));
+    for (const f of ["valeurs-du-metier.json", "domaine.json", "planche-A-1-relecture-verdict.json"]) fs.copyFileSync(path.join(F, f), path.join(sortie, f));
+    fs.writeFileSync(path.join(sortie, "planche-A-1-texte-envoye.txt"), await texteA1DAujourdhui());
     if (o.reprise) fs.writeFileSync(path.join(sortie, "planche-A-1-brute.png"), await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#EDE6DA" } }).png().toBuffer());
     return { sortie, logos };
   }
@@ -295,7 +304,7 @@ describe("le script d'essai des planches : planches indépendantes, et le chemin
     expect(r.erreurs).toBeUndefined();
     expect(appels).toEqual(["image:A-1-2", "relecture:A-1-2-relecture", "image:B-1-1", "relecture:B-1-1-relecture"]);
     // Le texte du premier essai, refait par le Studio d'aujourd'hui, est exactement celui qui était parti.
-    expect(textes["A-1-2"].startsWith(fs.readFileSync(path.join(F, "planche-A-1-texte-envoye.txt"), "utf8"))).toBe(true);
+    expect(textes["A-1-2"].startsWith(await texteA1DAujourdhui())).toBe(true);
     expect(Buffer.byteLength(textes["A-1-2"])).toBeLessThanOrEqual(7000);
     expect(textes["A-1-2"]).toContain("À corriger : une personne est visible sans l'accord du client ; à retirer, aucune personne ni partie du corps : une main est visible dans l'image de référence « Mousse délicate »");
     expect(textes["A-1-2"]).toContain("« Dites-le nous ! (il faut « Dites-le-nous ! ») »");

@@ -1685,7 +1685,9 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     // 4. La reprise part toujours : le texte de la reprise réelle de A, puis 30 raisons, sous la taille permise.
     const valeurs = JSON.parse(fs.readFileSync(`${E}/valeurs-du-metier.json`, "utf8")).valeurs;
     const donnees = { nom: "Écume", valeurs, annee: 2026, domaine: ECUME.domaine, personnes: false, phrase: PH };
-    expect(P.texteDeLaPlanche(donnees)).toBe(fs.readFileSync(`${E}/planche-A-1-texte-envoye.txt`, "utf8"));
+    // Le texte réel du premier essai, mot pour mot ; depuis le 26 novembre 2026 (essai réel du torréfacteur), la partie
+    // « produits » d'une boutique, l'une des six parties du métier, porte en plus la ligne des noms des produits.
+    expect(P.texteDeLaPlanche(donnees)).toBe(P.texteAvecLesNomsDesProduits(fs.readFileSync(`${E}/planche-A-1-texte-envoye.txt`, "utf8"), valeurs));
     expect(Buffer.byteLength(fs.readFileSync(`${E}/planche-A-2-texte-envoye.txt`, "utf8"))).toBeGreaterThan(mp.PLANCHE_TEXTE_MAX_OCTETS);
     expect(Buffer.byteLength(P.texteDeLaPlanche({ ...donnees, raisons: lu.raisons }))).toBeLessThanOrEqual(mp.PLANCHE_TEXTE_MAX_OCTETS);
     const trente = Array.from({ length: 30 }, (_x, i) => `fautes : « un long texte relevé numéro ${i} ${"encore ".repeat(20)}»`);
@@ -2443,5 +2445,123 @@ describe("l'épreuve du coût probable seul et de l'arrêt au double (26 novembr
     expect(worker).toContain("attendreLAccordDeLaTache(jobId)");
     expect(pub).toContain('if (j.status === "paused") { toast("ok", `${j.message ?? ""}');
     for (const f of ["tests/depense-annoncee-ecran-images.test.ts", "tests/depense-annoncee-ecran-publicites.test.ts"]) expect(fs.existsSync(f), f).toBe(true);
+  });
+});
+
+describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produits de la fiche seulement, le signe déclaré isolé (26 novembre 2026, aucun appel)", async () => {
+  const P = await import("@/lib/syna-agent/planche-de-marque");
+  const { aLaChargeDuStudio } = await import("@/lib/billing");
+  const Fx = "tests/fixtures/torrefacteur-planches", PH = ["TORRÉFACTEUR PASSIONNÉ"];
+  const valeurs = JSON.parse(fs.readFileSync(`${Fx}/valeurs-du-metier.json`, "utf8")).valeurs;
+  const fiche = fs.readFileSync(`${Fx}/fiche-du-client.txt`, "utf8");
+  const B2 = JSON.parse(fs.readFileSync(`${Fx}/planche-B-2-relecture-verdict.json`, "utf8"));
+  const v = P.VerdictRangeDeLaPlancheSchema.parse(B2.verdict);
+  const DOM = { domaine: "mouturefrance.fr", statut: "disponible" as const };
+  const MOUTURE = { nom: "Mouture", annee: 2026, domaine: DOM, personnes: false, animaux: false, phrase: PH, texte: fs.readFileSync(`${Fx}/planche-B-2-texte-envoye.txt`, "utf8"), produits: valeurs.produits as string[] };
+  const VIRGULE = "Bloc 09, boîte kraft : « Le bon café, commence ici. » : virgule fautive entre le sujet et le verbe";
+  const SIGNE = "Bloc 09, boîte kraft : signe parasite sous « commence ici. », un petit crochet en forme de « ? » égaré, hors des mots";
+  const ARABICA = "promesses ou chiffres inventés : « Bloc 09, sachet Éthiopie : « 100% Arabica » »";
+
+  // Les points 1 à 4 du rejeu de planche-produits-de-la-fiche-seulement.
+  const rejeuProduits = async () => {
+    // 1. Le texte envoyé : la ligne des noms, en positif, dans la partie « produits » ; aucune origine ni variété nommée.
+    const t = P.texteDeLaPlanche({ nom: "Mouture", valeurs, annee: 2026, domaine: DOM, personnes: false, phrase: PH });
+    const ligne = "Sur les étiquettes, les emballages, les fiches produits et le site, chaque produit porte seulement l'un de ces noms, ceux du client, au singulier pour un seul article : « Cafés en grains », « Cafés moulus », « Coffrets ».";
+    expect(t).toContain(`Montrer clairement :\n- cafés en grains\n- cafés moulus\n- coffrets\n${ligne}\nLes visuels doivent être propres`);
+    expect(t.replace(`${ligne}\n`, "")).toBe(MOUTURE.texte.split("\n\nÀ corriger : ")[0]);
+    expect(t).not.toMatch(/origine|variété|gamme|arabica|éthiopie|brésil/i);
+    // Le texte des preuves refait toujours Tenon et Racine à l'identique ; un site de marque ne change pas.
+    expect(P.texteAvecLesNomsDesProduits("x", { site: "marque", produits: ["cuisines"] })).toBe("x");
+    // 2. Le contrôle gratuit des valeurs : les valeurs réelles passent ; une origine, une variété, une gamme absentes non.
+    const ecrites = { nom: "Mouture", traits: valeurs.traits, emotion: valeurs.emotion, images: valeurs.images, produits: valeurs.produits, appel: "devis" as const };
+    const o = { nom: "Mouture", metier: valeurs.metier, fiche, personnes: false, kind: "produits" as const };
+    expect(P.controleDesValeurs(ecrites, o).fautes).toEqual([]);
+    for (const x of [{ produits: ["cafés en grains d'éthiopie yirgacheffe", "cafés moulus", "coffrets"] }, { images: [...valeurs.images.slice(0, 5), "sachets brésil sul de minas"] }, { images: [...valeurs.images.slice(0, 5), "sachets de Guatemala Antigua"] }, { images: [...valeurs.images.slice(0, 5), "paquets de différentes origines"] }, { emotion: "le goût de nos variétés rares" }, { produits: ["cafés en grains", "cafés moulus", "coffret gamme prestige"] }]) {
+      expect(P.controleDesValeurs({ ...ecrites, ...x }, o).fautes.join(" "), JSON.stringify(x)).toMatch(/rien que le client n'a pas donné/);
+    }
+    expect(P.controleDesValeurs({ ...ecrites, traits: ["artisanale", "chaleureuse", "haut de gamme"] }, o).fautes).toEqual([]);
+    // 3. La consigne et la demande au relecteur : en termes généraux ; la liste des produits du client dans la demande.
+    expect(P.RELECTEUR_DE_LA_PLANCHE).toContain("- produitsInventes : chaque nom de produit lisible qui n'est pas l'un des produits de la marque donnés dans la demande");
+    expect(P.RELECTEUR_DE_LA_PLANCHE).not.toMatch(/mouture|torréf|arabica|éthiopie|brésil|yirgacheffe|guatemala|colombie|crochet|kraft|écume|racine|tenon|SEO|sac/i);
+    expect(P.demandeAuRelecteurDeLaPlanche({ ...MOUTURE, texte: "t" })).toContain("Les produits que la marque vend, donnés par le client : « cafés en grains », « cafés moulus », « coffrets ».");
+    // 4. Le verdict réel de B-2, plus le relecteur qui relève « Éthiopie Yirgacheffe » : refusée, la raison claire.
+    const sans = { ...v, fautes: [], promesses: [] };
+    expect(P.lectureDeLaPlanche({ ...sans, produitsInventes: [{ ou: "Bloc 06, sachet de café moulu", texte: "Éthiopie Yirgacheffe" }] }, MOUTURE).raisons).toEqual(["produits inventés, absents de la fiche du client : « Éthiopie Yirgacheffe » (Bloc 06, sachet de café moulu) ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits, avec ses noms : « Cafés en grains », « Cafés moulus », « Coffrets »"]);
+    for (const x of ["Brésil Sul de Minas", "Guatemala Antigua", "Colombie"]) expect(P.lectureDeLaPlanche({ ...sans, produitsInventes: [{ ou: "Bloc 06", texte: x }] }, MOUTURE).raisons.join(" "), x).toMatch(/^produits inventés/);
+    for (const x of ["Café en grains", "Cafés moulus", "Coffret"]) expect(P.lectureDeLaPlanche({ ...sans, produitsInventes: [{ ou: "Bloc 06", texte: x }] }, MOUTURE).raisons, x).toEqual([]);
+    expect(P.lectureDeLaPlanche({ ...sans, produitsInventes: [{ ou: "Bloc 06", texte: "Café en grains" }] }, { ...MOUTURE, produits: undefined }).raisons.join(" ")).toMatch(/^produits inventés/);
+    // « 100% Arabica » reste refusé.
+    expect(P.lectureDeLaPlanche({ ...v, fautes: [] }, MOUTURE).raisons).toEqual([ARABICA]);
+  };
+  const ORIGINES = [
+    { ou: "Bloc 06, sachet Brésil", texte: "Brésil Sul de Minas" }, { ou: "Bloc 06, sachet Éthiopie", texte: "Éthiopie Yirgacheffe" },
+    { ou: "Bloc 07, publication 4:5, sachet Guatemala", texte: "Guatemala Antigua" }, { ou: "Bloc 08, site, fiche Colombie", texte: "Colombie" },
+  ];
+  const INTERDITS = /brésil|bresil|éthiopie|ethiopie|guatemala|colombie|yirgacheffe|sul de minas|antigua/i;
+
+  epreuve("planche-produits-de-la-fiche-seulement", async () => {
+    // 1. Le texte, le contrôle des valeurs, la consigne, la lecture du verdict réel de B-2 (points 1 à 4).
+    await rejeuProduits();
+    // 2. Le verdict réel de B-2, avec les quatre origines relevées : refusée ; le compte rendu garde les noms exacts.
+    const avec = { ...v, produitsInventes: ORIGINES };
+    const lu = P.lectureDeLaPlanche(avec, MOUTURE);
+    for (const o of ORIGINES) expect(lu.raisons.join(" ")).toContain(`« ${o.texte} » (${o.ou})`);
+    expect(lu.raisons).toContain(ARABICA);
+    // 3. Le texte de la reprise ne contient aucun des noms d'origine, ni dans le texte relevé, ni dans l'emplacement, ni
+    //    dans une autre raison (« sachet Éthiopie » de « 100% Arabica ») ; il rappelle les noms permis.
+    const envoyees = P.raisonsPourLeDessinateur(lu.raisons, avec, MOUTURE);
+    const reprise = P.texteDeLaPlanche({ nom: "Mouture", valeurs, annee: 2026, domaine: DOM, personnes: false, phrase: PH, raisons: envoyees });
+    expect(reprise.slice(reprise.lastIndexOf("À corriger : "))).not.toMatch(INTERDITS);
+    expect(reprise).not.toMatch(INTERDITS);
+    expect(envoyees).toContain("un nom de produit absent de la fiche du client est écrit (Bloc 06, sachet ; Bloc 07, publication 4:5, sachet ; Bloc 08, site, fiche) : remplace-le ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits, avec ses noms : « Cafés en grains », « Cafés moulus », « Coffrets »");
+    expect(envoyees).toContain("promesses ou chiffres inventés : « Bloc 09, sachet : « 100% Arabica » »");
+    // 4. La vraie chaîne : la reprise part sans aucun nom inventé ; le compte rendu de la planche les garde.
+    const png = await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#FFFFFF" } }).png().toBuffer();
+    const textes: string[] = [];
+    const r = await P.dessinerLaPlanche({ dessiner: async (_l, _d, x) => { textes.push(x); return png; }, relire: async () => avec, aLaChargeDuStudio }, { nom: "Mouture", annee: 2026, domaine: DOM, personnes: false, animaux: false, phrase: PH, valeurs, logo: png, disposition: png });
+    expect(r.ok).toBe(false);
+    expect(textes).toHaveLength(2);
+    expect(textes[1]).not.toMatch(INTERDITS);
+    expect(textes[1]).toContain("« Cafés en grains », « Cafés moulus », « Coffrets »");
+    expect(r.essais[0].raisons.join(" ")).toContain("« Éthiopie Yirgacheffe » (Bloc 06, sachet Éthiopie)");
+    // 5. La planche entière : le relecteur reçoit les produits ; refusée une fois, refaite sans le nom inventé, gardée.
+    const bon = { nomLu: "MOUTURE", logoFidele: true, copyrightLu: "© 2026 Mouture", domaineLu: "mouturefrance.fr — disponible", fautes: [], promesses: [], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [], note: 9, pourquoi: "", phrasesLues: [{ emplacement: "logo", lignes: PH, cachee: false }] };
+    const textes2: string[] = [], demandes: string[] = [];
+    const r2 = await P.dessinerLaPlanche({
+      dessiner: async (_l, _d, x) => { textes2.push(x); return png; },
+      relire: async (_b, _l, _d, d, tour) => { demandes.push(d); return tour === 1 ? { ...bon, produitsInventes: [{ ou: "Bloc 09, sachet", texte: "Éthiopie Yirgacheffe" }] } : bon; },
+      aLaChargeDuStudio,
+    }, { nom: "Mouture", annee: 2026, domaine: DOM, personnes: false, animaux: false, phrase: PH, valeurs, logo: png, disposition: png });
+    expect(r2.ok).toBe(true);
+    expect(demandes[0]).toContain("« cafés en grains », « cafés moulus », « coffrets »");
+    expect(textes2[1]).toContain("À corriger : un nom de produit absent de la fiche du client est écrit (Bloc 09, sachet) : remplace-le ;");
+    expect(textes2[1]).not.toMatch(INTERDITS);
+  });
+
+  epreuve("planche-signe-isole-declare-par-le-relecteur", () => {
+    // 1. Le verdict réel de B-2, tel quel : le signe reste dans fautes (il n'est pas recopié entre deux espaces).
+    expect(B2.gardee).toBe(false);
+    expect(v.fautes).toEqual([VIRGULE, SIGNE]);
+    expect(P.signeParasiteIsole(SIGNE, MOUTURE)).toBeNull();
+    // 2. Déclaré par le relecteur dans signesIsoles, avec ses mots : une petite finition, sans guillemets ; la virgule et
+    //    « 100% Arabica » font toujours refuser.
+    const declare = { ...v, fautes: [VIRGULE], signesIsoles: [{ ou: "Bloc 09, boîte kraft, sous « commence ici. »", description: "un petit crochet en forme de « ? » égaré, hors des mots" }] };
+    const lu = P.lectureDeLaPlanche(declare, MOUTURE);
+    expect(lu.finitions).toEqual(["signe isolé hors des mots : Bloc 09, boîte kraft, sous “commence ici.” : un petit crochet en forme de “?” égaré, hors des mots"]);
+    expect(lu.raisons).toEqual([`fautes : « ${VIRGULE} »`, ARABICA]);
+    expect(P.texteDeLaFinition(lu.finitions[0])).toBeNull();
+    expect(P.lectureDeLaPlanche({ ...declare, fautes: [], promesses: [] }, MOUTURE).raisons).toEqual([]);
+    expect(P.lectureDeLaPlanche({ ...declare, fautes: [], promesses: [], note: 7 }, MOUTURE).raisons).toEqual([]);
+    // 3. Toujours des fautes : une lettre, un mot, le nom, la phrase du logo, l'adresse, l'année.
+    for (const s of [{ ou: "Bloc 08", description: "un accent collé au mot « caractère »" }, { ou: "Bloc 06", description: "un trait dans le mot « moulus »" }, { ou: "Ouverture, à côté du nom Mouture", description: "un point égaré" }, { ou: "Bloc 01, sous le logo", description: "un accent égaré" }, { ou: "Bloc 07, à côté de « TORRÉFACTEUR PASSIONNÉ »", description: "un trait égaré" }, { ou: "Bloc 10, après mouturefrance.fr", description: "un point égaré" }, { ou: "Bloc 10, copyright", description: "un accent égaré" }, { ou: "Bloc 10, après « 2026 »", description: "un point égaré" }]) {
+      expect(P.lectureDeLaPlanche({ ...declare, fautes: [], promesses: [], signesIsoles: [s] }, MOUTURE).raisons.join(" "), s.ou).toMatch(/^fautes : « signe déclaré isolé, mais qui touche/);
+    }
+    // 4. La consigne, en termes généraux : dans signesIsoles, jamais dans fautes ; la règle d'avant gardée mot pour mot.
+    expect(P.RELECTEUR_DE_LA_PLANCHE).toContain(P.PETITE_FINITION_DE_LA_PLANCHE);
+    expect(P.PETITE_FINITION_DE_LA_PLANCHE).toMatch(/^Un signe parasite isolé, hors des mots, qui ne change aucun mot \(un accent, un trait, une barre ou un point égaré\) est une petite finition : il ne fait jamais descendre la note sous 8/);
+    expect(P.PETITE_FINITION_DE_LA_PLANCHE).toContain("Mets-le dans signesIsoles, jamais dans fautes");
+    expect(P.PETITE_FINITION_DE_LA_PLANCHE).toContain("Un accent ou une lettre faux dans un mot reste une faute.");
+    expect(P.RELECTEUR_DE_LA_PLANCHE).toContain("- signesIsoles : chaque petit signe égaré hors des mots");
+    expect(P.RELECTEUR_DE_LA_PLANCHE).not.toMatch(/crochet|commence ici|kraft|mouture|torréf/i);
   });
 });

@@ -241,7 +241,8 @@ export async function rejugerUnePlanche(o: { dossier: string; key: string; clien
   const phrase: string[] | undefined = Array.isArray(resultat.phrase) && resultat.phrase.length ? resultat.phrase : undefined;
   const personnes = /Le client a donné son accord pour des personnes\./u.test(demande);
   const d = P.laDisposition(valeurs?.valeurs?.metier ?? o.client.metier);
-  const attendu = { nom: o.client.nom, annee, domaine: domaine as never, personnes, animaux: d.animaux && d.laquelle === "standard", ...(phrase ? { phrase } : {}), texte };
+  const produits: string[] | undefined = Array.isArray(valeurs?.valeurs?.produits) ? valeurs.valeurs.produits : undefined;
+  const attendu = { nom: o.client.nom, annee, domaine: domaine as never, personnes, animaux: d.animaux && d.laquelle === "standard", ...(phrase ? { phrase } : {}), texte, ...(produits ? { produits } : {}) };
   const lu = P.lectureDeLaPlanche(verdict, attendu);
   const gardee = !lu.raisons.length;
   const fichiers: string[] = [];
@@ -385,7 +386,7 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
       if (res.domaine && res.valeurs?.ok) {
         const d = P.laDisposition(res.valeurs.valeurs.metier);
         const phrase = logos.find((l) => l.key === key)?.phrase;
-        const lu = P.lectureDeLaPlanche(v, { nom: client.nom, annee, domaine: { domaine: res.domaine.domaine, statut: res.domaine.statut as never }, personnes, animaux: d.animaux && d.laquelle === "standard", ...(phrase ? { phrase } : {}) });
+        const lu = P.lectureDeLaPlanche(v, { nom: client.nom, annee, domaine: { domaine: res.domaine.domaine, statut: res.domaine.statut as never }, personnes, animaux: d.animaux && d.laquelle === "standard", ...(phrase ? { phrase } : {}), produits: res.valeurs.valeurs.produits });
         e.raisons = lu.raisons; e.ecartes = lu.ecartes;
       }
       ecrireFichier(`planche-${key}-${tour}-relecture-verdict.json`, json({ verdict: v, raisons: e.raisons ?? null, ecartes: e.ecartes ?? [], gardee: e.raisons ? !e.raisons.length : null }));
@@ -516,7 +517,7 @@ export async function essaiDesPlanches(o: { sortie: string; plafondEuros: string
           reprises.set(T.clesDeLaPlanche.image(1, l.key, 1), { id: im.id, w: m.width ?? 1536, h: m.height ?? 2304 });
           reprises.set(T.clesDeLaPlanche.relecture(1, l.key, 1), rep.verdict);
           const d = P.laDisposition(res.valeurs.valeurs.metier);
-          const lu = P.lectureDeLaPlanche(rep.verdict, { nom: client.nom, annee, domaine: dp, personnes, animaux: d.animaux && d.laquelle === "standard", ...(l.phrase ? { phrase: l.phrase } : {}) });
+          const lu = P.lectureDeLaPlanche(rep.verdict, { nom: client.nom, annee, domaine: dp, personnes, animaux: d.animaux && d.laquelle === "standard", ...(l.phrase ? { phrase: l.phrase } : {}), produits: res.valeurs.valeurs.produits });
           const brutLocal = path.resolve(rep.fichierPng) === path.resolve(o.sortie, `planche-${l.key}-1-brute.png`) ? `planche-${l.key}-1-brute.png` : ecrireFichier(`planche-${l.key}-1-brute.png`, rep.png);
           if (rep.texte == null) ecrireFichier(`planche-${l.key}-1-texte-envoye.txt`, texte1);
           p.essais.push({ tour: 1, texte: `planche-${l.key}-1-texte-envoye.txt`, brut: brutLocal, verdict: rep.verdict, raisons: lu.raisons, ecartes: lu.ecartes, repris: rep.dossier });

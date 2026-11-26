@@ -305,7 +305,27 @@ export type ResultatEnVrai = {
    * aucune version reprise de l'aperçu (symbole séparable), rien à refaire.
    */
   logosEnHd?: { versions: VersionEnHd[]; gardees: VersionEnHd[]; refusees: VersionEnHd[]; surLaPlanche?: string[]; devis: { maxMicro: number; probableMicro: number } };
+  /**
+   * REPRENDRE=1 : la passe reprise (son numéro, archivée dans passe-N/), ce qui a été repris sans appel, les appels partis
+   * sans réponse à la passe d'avant et refaits parce que le propriétaire a relancé, les écarts notés, la dépense d'avant.
+   */
+  reprise?: { passe: number; reprises: string[]; refaits: string[]; ecarts: string[]; depensePrecedenteMicro: number; incertainMicro: number; sansReponse: string[] };
 };
+/**
+ * Comment reprendre un essai arrêté, en lignes pour le rapport et la console : la même commande, même dossier de sortie, avec
+ * REPRENDRE=1. Ce qui est reçu est gardé, jamais redemandé ; un appel au résultat incertain n'est jamais relancé tout seul.
+ */
+export function lignesPourReprendre(res: Pick<ResultatEnVrai, "arret" | "inventaire" | "cases" | "relectures">, noms: readonly NomElement[], o: { incertain: boolean }): string[] {
+  const recues = res.cases.filter((c) => c.essais.some((e) => e.brute)).map((c) => c.element);
+  const sansReponse = res.cases.filter((c) => c.essais.some((e) => e.texte && !e.brute)).map((c) => c.element);
+  const restent = noms.filter((n) => !recues.includes(n));
+  return [
+    "Comment reprendre : la même commande, même dossier de sortie, avec REPRENDRE=1 en plus (et un plafond pour ce qui reste ; devis gratuit : DEVIS_SEULEMENT=1 REPRENDRE=1, même commande).",
+    `  Gardé, jamais redemandé ni repayé : ${[res.inventaire ? "l'inventaire" : null, ...recues.map((n) => `l'image ${n}`), ...res.relectures.map((r) => `la relecture ${r.groupe} (essai ${r.tour})`)].filter(Boolean).join(", ") || "rien encore"}.`,
+    `  Fait à la reprise : ${restent.length ? `les images ${restent.join(", ")}, ` : ""}les relectures qui manquent, les reprises éventuelles, LOGO_HD s'il est demandé, puis les logos, la palette, les polices, l'assemblage, etat.json, essai.json et le parcours.`,
+    ...(o.incertain && sansReponse.length ? [`  Résultat incertain : l'appel de ${sansReponse.join(", ")} est parti sans réponse ; son coût maximal est retenu. Il n'est jamais relancé tout seul : il ne sera refait que si tu relances toi-même avec REPRENDRE=1, après avoir vérifié la consommation chez le fournisseur.`] : []),
+  ];
+}
 /**
  * Le devis du chemin normal avec LOGO_HD (aucun appel) : la planche en vrai, puis les quatre petites versions du logo en
  * haute définition, à la charge du Studio, reprise des refusées comprise. Le plafond minimal exact est la somme des deux.
@@ -323,6 +343,117 @@ export async function devisDuCheminNormal(o: { logoHd?: boolean } = {}): Promise
     ] : [])],
   };
 }
+// ---------------------------------------------------------------- la reprise d'une première passe interrompue
+
+/**
+ * LA REPRISE D'UNE PREMIÈRE PASSE INTERROMPUE (REPRENDRE=1, 26 novembre 2026 ; essai réel de Mouture arrêté à la sixième
+ * image sur une erreur de connexion du fournisseur). Ce que la passe d'avant a écrit dans le dossier de sortie, relu sans
+ * aucun appel : l'inventaire reçu, chaque image reçue (cases/<case>-<tour>-hd.png, avec son texte envoyé et son reçu), chaque
+ * relecture reçue (relectures/<groupe>-<tour>-verdict.json) et, avec LOGO_HD, chaque logo reçu et sa relecture (logos-hd/).
+ * Ce qui est déjà reçu et payé n'est jamais redemandé : la même commande avec REPRENDRE=1, même dossier de sortie, le
+ * reprend tel quel. Un appel parti sans réponse (texte envoyé, aucune image : un résultat incertain, coût maximal retenu)
+ * n'est jamais relancé tout seul : il n'est refait que parce que le propriétaire relance lui-même avec REPRENDRE=1.
+ */
+export type PassePrecedente = {
+  /** Le numéro de cette passe archivée (passe-N/ : son rapport, sa dépense, ses appels sans réponse). */
+  numero: number;
+  inventaire: Inventaire | null;
+  /** La demande de l'inventaire telle qu'elle est partie (sans les empreintes des images). */
+  demandeDeLInventaire: string | null;
+  /** Les images reçues, par « case-tour ». */
+  images: Map<string, { png: Buffer; texte: string | null; recu: unknown; fichier: string; jointes: Map<string, string> }>;
+  /** Les relectures reçues, par « groupe-tour ». */
+  relectures: Map<string, RelectureDuGroupe>;
+  /** LOGO_HD : les images reçues et les relectures reçues, par clé d'appel (logo-hd-badge, relecture-logos-hd, -r1). */
+  logosHd: { images: Map<string, Buffer>; relectures: Map<string, unknown> };
+  /** Les appels partis sans réponse reçue (« case-tour ») : résultat incertain ou échec. */
+  sansReponse: string[];
+  /** Les empreintes de la planche choisie et du logo fini de la passe d'avant (lues dans son rapport). */
+  plancheSha: string | null; logoSha: string | null;
+  /** Ce que la passe d'avant a compté (réglé, plus les coûts maximaux retenus des résultats incertains). */
+  depenseMicro: number; incertainMicro: number;
+};
+
+const lireJson = (f: string): unknown => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return null; } };
+/** La partie d'une demande écrite qui ne dépend pas des octets des images (la consigne, la demande et les libellés joints). */
+const demandeSansEmpreintes = (s: string) => s.replace(/ \(\d+ octets, sha256 [0-9a-f]+\)/g, "");
+
+/** Ce que la passe d'avant a laissé dans le dossier de sortie ; null s'il n'y a rien à reprendre. */
+export function passePrecedente(sortie: string): PassePrecedente | null {
+  if (!fs.existsSync(sortie)) return null;
+  const f = (...p: string[]) => path.join(sortie, ...p);
+  const liste = (d: string) => (fs.existsSync(f(d)) ? fs.readdirSync(f(d)) : []);
+  const inventaire = fs.existsSync(f("inventaire-reponse.json")) ? (lireJson(f("inventaire-reponse.json")) as Inventaire | null) : null;
+  const demandeDeLInventaire = inventaire && fs.existsSync(f("inventaire-demande.txt")) ? demandeSansEmpreintes(fs.readFileSync(f("inventaire-demande.txt"), "utf8")) : null;
+  const images: PassePrecedente["images"] = new Map(), sansReponse: string[] = [];
+  const cases = liste("cases");
+  for (const nom of cases) {
+    const m = /^(.+-\d)-texte-envoye\.txt$/.exec(nom);
+    if (!m) continue;
+    const base = m[1];
+    if (!cases.includes(`${base}-hd.png`)) { sansReponse.push(base); continue; }
+    const jointes = new Map<string, string>();
+    for (const j of cases) { const mj = new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}-jointe-\\d+-(.+)\\.png$`).exec(j); if (mj) jointes.set(mj[1], crypto.createHash("sha256").update(fs.readFileSync(f("cases", j))).digest("hex")); }
+    images.set(base, { png: fs.readFileSync(f("cases", `${base}-hd.png`)), texte: fs.readFileSync(f("cases", nom), "utf8"), recu: cases.includes(`${base}-recu.json`) ? lireJson(f("cases", `${base}-recu.json`)) : null, fichier: `cases/${base}-hd.png`, jointes });
+  }
+  const relectures: PassePrecedente["relectures"] = new Map();
+  for (const nom of liste("relectures")) {
+    const m = /^(.+-\d)-verdict\.json$/.exec(nom);
+    const v = m ? (lireJson(f("relectures", nom)) as { verdict?: RelectureDuGroupe } | null)?.verdict : null;
+    if (m && v) relectures.set(m[1], v);
+  }
+  const logosHd: PassePrecedente["logosHd"] = { images: new Map(), relectures: new Map() };
+  for (const nom of liste("logos-hd")) {
+    const mi = /^(.+)-recue\.png$/.exec(nom), mv = /^(.+)-verdict\.json$/.exec(nom);
+    if (mi) logosHd.images.set(mi[1], fs.readFileSync(f("logos-hd", nom)));
+    if (mv) { const v = lireJson(f("logos-hd", nom)); if (v) logosHd.relectures.set(mv[1], v); }
+  }
+  const rapport = fs.existsSync(f("rapport.txt")) ? fs.readFileSync(f("rapport.txt"), "utf8") : "";
+  const plancheSha = /^Planche choisie : .*\(sha256 ([0-9a-f]{64})\)/m.exec(rapport)?.[1] ?? null;
+  const logoSha = /^Logo fini : .*\(sha256 ([0-9a-f]{64})\)/m.exec(rapport)?.[1] ?? null;
+  const depense = (lireJson(f("depense.json")) as { reelMicro?: number | null; reserveMicro?: number; statut?: string }[] | null) ?? [];
+  const depenseMicro = depense.reduce((s, a) => s + (a.reelMicro ?? a.reserveMicro ?? 0), 0);
+  const incertainMicro = depense.filter((a) => a.statut === "uncertain").reduce((s, a) => s + (a.reelMicro ?? a.reserveMicro ?? 0), 0);
+  if (!inventaire && !images.size && !relectures.size && !sansReponse.length && !rapport) return null;
+  const numero = 1 + liste(".").filter((d) => /^passe-\d+$/.test(d)).length;
+  return { numero, inventaire, demandeDeLInventaire, images, relectures, logosHd, sansReponse: sansReponse.sort(), plancheSha, logoSha, depenseMicro, incertainMicro };
+}
+
+/**
+ * Le devis de ce qui reste après la passe d'avant (aucun appel), avec la fonction du devis du Studio (`devisDeLaPlancheEnVrai`
+ * avec ses points de reprise faits) : l'inventaire et les images reçues ne sont pas repayés. Les reprises à la charge du
+ * Studio restent toutes possibles (une image reçue peut être refusée à sa relecture), LOGO_HD est compté en entier.
+ */
+export async function devisDeLaReprise(prec: PassePrecedente, o: { logoHd?: boolean } = {}): Promise<{ faits: string[]; probableMicro: number; probableAvecReprisesMicro: number; plafondMinimalMicro: number; plafondConseilleMicro: number; texte: string[] }> {
+  const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
+  const P = await import("../../src/lib/syna-agent/planche-en-vrai");
+  const { plafondConseilleMicro } = await import("./plafond-des-essais");
+  const faits = [
+    ...(prec.inventaire ? ["brand:envrai:inventaire"] : []),
+    ...P.NOMS_DES_ELEMENTS.filter((n) => prec.images.has(`${n}-1`)).map((n) => `brand:envrai:${n}`),
+    ...P.GROUPES.filter((g) => prec.relectures.has(`${g}-1`)).map((g) => `brand:envrai:relecture:${g}`),
+  ];
+  const plein = await devisDeLEssaiEnVrai(), tout = T.devisDeLaPlancheEnVrai(), reste = T.devisDeLaPlancheEnVrai(faits);
+  const logos = o.logoHd ? T.devisDesLogosEnHd() : null;
+  const plafondMinimalMicro = plein.plafondMinimalMicro - (tout.maxMicro - reste.maxMicro) + (logos?.maxMicro ?? 0);
+  const probableMicro = reste.probableMicro + (logos?.probableMicro ?? 0);
+  const probableAvecReprisesMicro = probableMicro + reste.repriseProbableMicro + (logos ? logos.siToutEstRefaitMicro - logos.probableMicro : 0);
+  const restent = P.NOMS_DES_ELEMENTS.filter((n) => !prec.images.has(`${n}-1`));
+  return {
+    faits, probableMicro, probableAvecReprisesMicro, plafondMinimalMicro, plafondConseilleMicro: plafondConseilleMicro(probableMicro),
+    texte: [
+      `Reprise de la passe ${prec.numero} (REPRENDRE=1, devis du Studio, aucun appel) : déjà reçus et payés, jamais redemandés : ${[prec.inventaire ? "l'inventaire" : null, ...P.NOMS_DES_ELEMENTS.filter((n) => prec.images.has(`${n}-1`))].filter(Boolean).join(", ") || "rien"}.`,
+      `Restent : ${restent.length} image(s) (${restent.join(", ") || "aucune"}), ${P.GROUPES.length - P.GROUPES.filter((g) => prec.relectures.has(`${g}-1`)).length} relecture(s)${logos ? ", puis LOGO_HD (4 images et 1 relecture, à la charge du Studio)" : ""}.`,
+      ...(prec.sansReponse.length ? [`Appel(s) parti(s) sans réponse à la passe ${prec.numero} (résultat incertain, coût maximal retenu : ${euros(prec.incertainMicro)}) : ${prec.sansReponse.join(", ")}. Jamais relancé tout seul : refait seulement parce que tu relances toi-même avec REPRENDRE=1.`] : []),
+      `Probable de ce qui reste : ${euros(probableMicro)} (si chaque image est refaite une fois : ${euros(probableAvecReprisesMicro)}) ; somme des maxima de ce qui reste, reprises comprises : ${euros(plafondMinimalMicro)}.`,
+      `Plafond conseillé : ${euros(plafondConseilleMicro(probableMicro))} (deux fois le probable, arrondi). Déjà compté à la passe ${prec.numero} : ${euros(prec.depenseMicro)}.`,
+    ],
+  };
+}
+
+/** La reprise refusée avant tout appel (la planche, le logo ou une demande ont changé depuis la passe d'avant). */
+export class RepriseRefusee extends Error { constructor(m: string) { super(m); this.name = "RepriseRefusee"; } }
+
 type Qui = { userId: string; projectId: string; jobId: string };
 
 const png = (f: string, quoi: string) => {
@@ -343,11 +474,29 @@ export async function essaiDeLaPlancheEnVrai(o: {
   logoHd?: boolean; aiLogos?: (q: Qui) => LogosEnHdAi;
   /** Le métier court de la recherche du logo (esquisses.json, « metier.court ») : le bas du badge sans phrase, comme dans le Studio. */
   metierCourt?: string | null;
+  /**
+   * REPRENDRE=1 : la reprise d'une première passe interrompue, même dossier de sortie (`passePrecedente`). L'inventaire, les
+   * images et les relectures déjà reçus sont repris tels quels, sans appel ; le reste est fait normalement.
+   */
+  reprendre?: boolean;
 }): Promise<ResultatEnVrai> {
   const plafond = Number(o.plafondEuros.replace(",", "."));
   if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible : rien n'est lancé.");
   const demo = png(o.planche, "Planche choisie"), logoFini = png(o.logo, "Logo fini");
   const client = o.client, donnees = o.donnees;
+  // La reprise : la passe d'avant relue, la même planche et le même logo exigés, puis son rapport et sa dépense archivés.
+  const prec = o.reprendre ? passePrecedente(o.sortie) : null;
+  if (o.reprendre && !prec) throw new Error(`REPRENDRE=1 : rien à reprendre dans ${o.sortie} (ni inventaire, ni image reçue, ni rapport). Rien n'est lancé.`);
+  if (prec) {
+    const shaDe = (b: Buffer) => crypto.createHash("sha256").update(b).digest("hex");
+    if (prec.plancheSha && prec.plancheSha !== shaDe(demo)) throw new Error(`REPRENDRE=1 : la planche donnée n'est pas celle de la passe d'avant (sha256 ${prec.plancheSha}). Rien n'est lancé.`);
+    if (prec.logoSha && prec.logoSha !== shaDe(logoFini)) throw new Error(`REPRENDRE=1 : le logo donné n'est pas celui de la passe d'avant (sha256 ${prec.logoSha}). Rien n'est lancé.`);
+    const archive = path.join(o.sortie, `passe-${prec.numero}`);
+    fs.mkdirSync(path.join(archive, "cases"), { recursive: true });
+    for (const nom of ["rapport.txt", "depense.json", "usage.json", "etat.json", "essai.json"]) if (fs.existsSync(path.join(o.sortie, nom))) fs.copyFileSync(path.join(o.sortie, nom), path.join(archive, nom));
+    // Les appels partis sans réponse : leur texte et leurs images jointes, tels qu'ils étaient partis (ils seront réécrits).
+    for (const nom of fs.readdirSync(path.join(o.sortie, "cases"))) if (prec.sansReponse.some((b) => nom.startsWith(`${b}-`))) fs.copyFileSync(path.join(o.sortie, "cases", nom), path.join(archive, "cases", nom));
+  }
   // Le garde-fou de l'essai, compté depuis le début du script.
   process.env.STUDIO_ESSAI_PLAFOND_EUROS = String(plafond);
   const debut = Date.now();
@@ -393,7 +542,8 @@ export async function essaiDeLaPlancheEnVrai(o: {
   const route = { key: "A", name: client.nom, slogan: donnees.phrase, palette, board: { planche: { image: { id: demoAsset.id, w: 1536, h: 2304 }, logo: logoAsset.id, domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: debut, ...(donnees.finitions?.length ? { finitions: donnees.finitions } : {}) } } };
 
   const brut: PlancheEnVraiAi = o.ai ? o.ai(qui) : T.plancheEnVraiDeps.ai ? T.plancheEnVraiDeps.ai(jobId) : T.vraisAppelsEnVrai(qui);
-  const res: ResultatEnVrai = { client, donnees, apercus: [], refusALaDecoupe: [], cases: [], relectures: [], logos: [], depenseMicro: 0, appels: [], devis };
+  const res: ResultatEnVrai = { client, donnees, apercus: [], refusALaDecoupe: [], cases: [], relectures: [], logos: [], depenseMicro: 0, appels: [], devis, ...(prec ? { reprise: { passe: prec.numero, reprises: [], refaits: [], ecarts: [], depensePrecedenteMicro: prec.depenseMicro, incertainMicro: prec.incertainMicro, sansReponse: prec.sansReponse } } : {}) };
+  const repris = (quoi: string) => res.reprise?.reprises.push(quoi);
   const ecrireFichier = (nom: string, contenu: string | Buffer) => { fs.writeFileSync(path.join(o.sortie, nom), contenu); return nom; };
   const json = (v: unknown) => `${JSON.stringify(v, (_k, x) => (Buffer.isBuffer(x) ? `[image de ${x.length} octets]` : x && typeof x === "object" && x.type === "Buffer" && Array.isArray(x.data) ? `[image de ${x.data.length} octets]` : x), 2)}\n`;
   const sha = (b: Buffer) => crypto.createHash("sha256").update(b).digest("hex");
@@ -412,7 +562,15 @@ export async function essaiDeLaPlancheEnVrai(o: {
   // 2. Les appels du Studio, tels quels, avec ce qui part et ce qui revient écrit tout de suite (un arrêt ne perd rien).
   const ai: PlancheEnVraiAi = {
     inventaire: async (images, demande) => {
-      ecrireFichier("inventaire-demande.txt", `${P.INVENTAIRE_SYSTEM}\n\n--- demande ---\n${demande}\n\n--- images jointes, dans l'ordre (${images.length}) ---\n${images.map((im, i) => `${i + 1}. ${im.label} (${im.data.length} octets, sha256 ${sha(im.data)})`).join("\n")}\n`);
+      const ecrit = `${P.INVENTAIRE_SYSTEM}\n\n--- demande ---\n${demande}\n\n--- images jointes, dans l'ordre (${images.length}) ---\n${images.map((im, i) => `${i + 1}. ${im.label} (${im.data.length} octets, sha256 ${sha(im.data)})`).join("\n")}\n`;
+      // Reprise : l'inventaire reçu à la passe d'avant est repris tel quel, jamais redemandé ; sa demande doit être la même.
+      if (prec?.inventaire) {
+        if (prec.demandeDeLInventaire != null && prec.demandeDeLInventaire !== demandeSansEmpreintes(ecrit)) throw (erreur ??= new RepriseRefusee("la demande de l'inventaire n'est plus celle de la passe d'avant (le code a changé) : l'inventaire reçu ne correspondrait plus ; rien n'est lancé"));
+        if (prec.demandeDeLInventaire != null && fs.readFileSync(path.join(o.sortie, "inventaire-demande.txt"), "utf8") !== ecrit) res.reprise!.ecarts.push("inventaire : mêmes demande et images jointes, empreintes des octets différentes (même contenu attendu)");
+        res.inventaire = prec.inventaire; repris("l'inventaire");
+        return prec.inventaire;
+      }
+      ecrireFichier("inventaire-demande.txt", ecrit);
       ecrireFichier("inventaire-logo-joint.png", images.at(-1)!.data);
       const v = await garder(() => brut.inventaire(images, demande));
       res.inventaire = v;
@@ -421,6 +579,20 @@ export async function essaiDeLaPlancheEnVrai(o: {
     },
     refaire: async (d, cle) => {
       const tour = cle.endsWith("-r1") ? 2 : 1, e = essaiDe(d.element, tour), base = `cases/${d.element}-${tour}`;
+      // Reprise : l'image reçue à la passe d'avant est reprise telle quelle, jamais redemandée ; son texte doit être le même.
+      const recue = prec?.images.get(`${d.element}-${tour}`);
+      if (recue) {
+        if (recue.texte != null && recue.texte !== d.texte) throw (erreur ??= new RepriseRefusee(`le texte de ${d.element} (essai ${tour}) n'est plus celui de la passe d'avant : l'image reçue ne correspondrait plus ; rien de plus n'est lancé`));
+        const differentes = d.jointes.filter((j) => recue.jointes.get(j.role) && recue.jointes.get(j.role) !== sha(j.data)).map((j) => j.role);
+        if (differentes.length) res.reprise!.ecarts.push(`${d.element} (essai ${tour}) : image(s) jointe(s) ${differentes.join(", ")} aux octets différents de la passe d'avant`);
+        e.texte = `${base}-texte-envoye.txt`;
+        e.jointes = d.jointes.map((j, i) => ({ role: j.role, fichier: `${base}-jointe-${i + 1}-${j.role}.png` }));
+        e.brute = recue.fichier;
+        if (fs.existsSync(path.join(o.sortie, `${base}-recu.json`))) e.recu = `${base}-recu.json`;
+        repris(`${d.element}${tour > 1 ? " (reprise)" : ""}`);
+        return { png: recue.png, recu: recue.recu };
+      }
+      if (prec?.sansReponse.includes(`${d.element}-${tour}`)) res.reprise!.refaits.push(d.element);
       e.texte = ecrireFichier(`${base}-texte-envoye.txt`, d.texte);
       e.jointes = d.jointes.map((j, i) => ({ role: j.role, fichier: ecrireFichier(`${base}-jointe-${i + 1}-${j.role}.png`, j.data) }));
       const r = await garder(() => brut.refaire(d, cle));
@@ -430,21 +602,29 @@ export async function essaiDeLaPlancheEnVrai(o: {
     },
     relire: async (images, demande, cle) => {
       const tour = cle.endsWith("-r1") ? 2 : 1, groupe = cle.replace(/^relecture-/, "").replace(/-r1$/, ""), base = `relectures/${groupe}-${tour}`;
+      // Reprise : la relecture reçue à la passe d'avant est reprise telle quelle (ses raisons sont recomptées par le code).
+      const relue = prec?.relectures.get(`${groupe}-${tour}`);
+      if (relue) { repris(`relecture ${groupe}${tour > 1 ? " (reprise)" : ""}`); return comptee(images, relue, cle, groupe, tour, base, false); }
       ecrireFichier(`${base}-demande.txt`, `${P.RELECTEUR_EN_VRAI}\n\n--- demande ---\n${demande}\n\n--- images jointes, dans l'ordre (${images.length}) ---\n${images.map((im, i) => `${i + 1}. ${im.label} (${im.data.length} octets, sha256 ${sha(im.data)})`).join("\n")}\n`);
       const v = await garder(() => brut.relire(images, demande, cle));
-      // Les raisons du refus, comptées par le code du Studio comme dans la tâche (raisonsDuRefusEnVrai).
-      const relues = images.filter((im) => im.label.endsWith(" refaite")).map((im) => im.label.replace(/ refaite$/, "") as NomElement);
-      const raisons: Record<string, string[]> = {};
-      for (const n of relues) {
-        const photo = images.some((im) => im.label === `${n} produit`);
-        raisons[n] = P.raisonsDuRefusEnVrai(v.images.find((x) => x.case === n), { inventaire: P.caseLue(res.inventaire, n), personnes, photo });
-        const e = essaiDe(n, tour);
-        e.raisons = raisons[n]; e.verdict = v.images.find((x) => x.case === n) ?? null;
-      }
-      res.relectures.push({ cle, groupe, tour, verdict: v, fichier: ecrireFichier(`${base}-verdict.json`, json({ verdict: v, raisons, gardees: Object.entries(raisons).filter(([, r]) => !r.length).map(([n]) => n) })) });
-      return v;
+      return comptee(images, v, cle, groupe, tour, base, true);
     },
   };
+  // Les raisons du refus, comptées par le code du Studio comme dans la tâche (raisonsDuRefusEnVrai).
+  // `ecrire` faux : une relecture reprise de la passe d'avant, dont le fichier reçu est gardé tel quel.
+  function comptee(images: { data: Buffer; label: string }[], v: RelectureDuGroupe, cle: string, groupe: string, tour: number, base: string, ecrire: boolean): RelectureDuGroupe {
+    const relues = images.filter((im) => im.label.endsWith(" refaite")).map((im) => im.label.replace(/ refaite$/, "") as NomElement);
+    const raisons: Record<string, string[]> = {};
+    for (const n of relues) {
+      const photo = images.some((im) => im.label === `${n} produit`);
+      raisons[n] = P.raisonsDuRefusEnVrai(v.images.find((x) => x.case === n), { inventaire: P.caseLue(res.inventaire, n), personnes, photo });
+      const e = essaiDe(n, tour);
+      e.raisons = raisons[n]; e.verdict = v.images.find((x) => x.case === n) ?? null;
+    }
+    const fichier = ecrire ? ecrireFichier(`${base}-verdict.json`, json({ verdict: v, raisons, gardees: Object.entries(raisons).filter(([, r]) => !r.length).map(([n]) => n) })) : `${base}-verdict.json`;
+    res.relectures.push({ cle, groupe, tour, verdict: v, fichier });
+    return v;
+  }
   // Les points de reprise de la tâche, en mémoire (une seule exécution).
   const reprises = new Map<string, unknown>();
   const journal: string[] = [];
@@ -516,18 +696,28 @@ export async function essaiDeLaPlancheEnVrai(o: {
     lignes.push("", "Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :",
       ...(res.appels.length ? res.appels.map((a) => `- ${a.cle ?? a.task ?? "?"} · ${a.modele ?? "?"} · ${a.studio ? "charge du Studio" : "charge du client"} · réservé ${euros(a.reserveMicro)} → réglé ${a.reelMicro == null ? "—" : euros(a.reelMicro)} (${a.statut})${a.appel ? ` · jetons ${a.appel.jetonsEntree} en entrée, ${a.appel.jetonsSortie} en sortie` : ""}`) : ["- aucun appel"]),
       "", `Dépense réelle comptée par le Studio : ${euros(res.depenseMicro)}`, "Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).");
-    if (res.arret) lignes.push("", `ARRÊT : ${res.arret}`);
-    // Arrêté par le plafond de l'essai (26 novembre 2026) : les cases refaites sont gardées ; on reprend par REASSEMBLER.
-    if (res.arret?.startsWith("le garde-fou de l'essai a refusé")) {
-      const faites = res.cases.filter((c) => c.gardee), restent = res.cases.filter((c) => !c.gardee).map((c) => c.element);
-      lignes.push("", ...lignesDeLArret({ depenseMicro: res.depenseMicro, plafondMicro: Math.floor(plafond * 1_000_000), plafondMinimalMicro: devis.plafondMinimalMicro,
-        fait: [...(res.inventaire ? ["inventaire de la planche (jamais refait)"] : []), ...faites.map((c) => `case ${c.element} refaite en vrai et gardée${c.fichierHd ? ` (${c.fichierHd})` : ""}`)],
-        reprendre: restent.length ? `REASSEMBLER=<ce dossier> REPRENDRE=${restent.join(",")} et un plafond pour ce qui reste : les cases gardées ne sont ni refaites ni repayées.` : "toutes les cases sont refaites." }));
+    if (res.reprise) {
+      const r = res.reprise;
+      lignes.push("", `REPRISE de la passe ${r.passe} (REPRENDRE=1 ; son rapport et sa dépense sont dans passe-${r.passe}/) :`,
+        `  repris tels quels, sans appel : ${r.reprises.join(", ") || "rien"}`,
+        ...(r.sansReponse.length ? [`  appel(s) parti(s) sans réponse à la passe ${r.passe} (résultat incertain, coût maximal retenu : ${euros(r.incertainMicro)}) : ${r.sansReponse.join(", ")} ; refait(s) cette fois : ${r.refaits.join(", ") || "aucun"}, seulement parce que le propriétaire a relancé lui-même avec REPRENDRE=1 (jamais tout seul)`] : []),
+        ...r.ecarts.map((x) => `  écart noté : ${x}`),
+        `  dépense comptée à la passe ${r.passe} : ${euros(r.depensePrecedenteMicro)} ; à cette passe : ${euros(res.depenseMicro)} ; en tout : ${euros(r.depensePrecedenteMicro + res.depenseMicro)}`);
     }
+    if (res.arret) lignes.push("", `ARRÊT : ${res.arret}`);
+    // Arrêté par le plafond de l'essai (26 novembre 2026) : ce qui est fait et ce qu'il faudrait au plus pour finir.
+    if (res.arret?.startsWith("le garde-fou de l'essai a refusé")) {
+      const faites = res.cases.filter((c) => c.essais.some((e) => e.brute));
+      lignes.push("", ...lignesDeLArret({ depenseMicro: res.depenseMicro, plafondMicro: Math.floor(plafond * 1_000_000), plafondMinimalMicro: devis.plafondMinimalMicro + (devisLogos?.maxMicro ?? 0),
+        fait: [...(res.inventaire ? ["inventaire de la planche (jamais refait)"] : []), ...faites.map((c) => `case ${c.element} : image reçue${c.gardee ? ` et gardée (${c.fichierHd})` : ""}`)],
+        reprendre: "voir « Comment reprendre » ci-dessous." }));
+    }
+    // Tout arrêt (plafond, panne, résultat incertain) dit comment reprendre sans redemander ce qui est reçu.
+    if (res.arret) lignes.push("", ...lignesPourReprendre(res, P.NOMS_DES_ELEMENTS, { incertain: !res.arret.startsWith("le garde-fou") && !res.arret.startsWith("le plafond de la tâche") && !res.arret.startsWith("reprise refusée") }));
     ecrireFichier("rapport.txt", `${lignes.join("\n")}\n`);
     return res;
   };
-  const raisonDeLArret = (e: unknown) => e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}`
+  const raisonDeLArret = (e: unknown) => e instanceof RepriseRefusee ? `reprise refusée avant tout appel : ${e.message}` : e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}`
     : e instanceof CostCapReached ? `le plafond de la tâche (celui du Studio) a refusé un appel : ${e.message}`
       : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
 
@@ -554,6 +744,14 @@ export async function essaiDeLaPlancheEnVrai(o: {
         const brutL: LogosEnHdAi = o.aiLogos ? o.aiLogos(qui) : T.logosEnHdDeps.ai ? T.logosEnHdDeps.ai(jobId) : T.vraisAppelsDesLogosEnHd(qui);
         const aiL: LogosEnHdAi = {
           refaire: async (d, cle) => {
+            // Reprise : le logo reçu à la passe d'avant est repris tel quel, jamais redemandé ; son texte doit être le même.
+            const recu = prec?.logosHd.images.get(cle);
+            if (recu) {
+              const avant = fs.existsSync(path.join(o.sortie, `logos-hd/${cle}-texte-envoye.txt`)) ? fs.readFileSync(path.join(o.sortie, `logos-hd/${cle}-texte-envoye.txt`), "utf8") : null;
+              if (avant != null && avant !== d.texte) throw new RepriseRefusee(`le texte de ${cle} n'est plus celui de la passe d'avant : le logo reçu ne correspondrait plus ; rien de plus n'est lancé`);
+              repris(cle);
+              return { png: recu, recu: lireJson(path.join(o.sortie, `logos-hd/${cle}-recu.json`)) };
+            }
             ecrireFichier(`logos-hd/${cle}-texte-envoye.txt`, d.texte);
             d.jointes.forEach((j, i) => ecrireFichier(`logos-hd/${cle}-jointe-${i + 1}-${j.role}.png`, j.data));
             const r = await brutL.refaire(d, cle);
@@ -562,6 +760,8 @@ export async function essaiDeLaPlancheEnVrai(o: {
             return r;
           },
           relire: async (images, demande, cle) => {
+            const relue = prec?.logosHd.relectures.get(cle);
+            if (relue) { repris(cle); return relue as Awaited<ReturnType<LogosEnHdAi["relire"]>>; }
             ecrireFichier(`logos-hd/${cle}-demande.txt`, demande);
             const v = await brutL.relire(images, demande, cle);
             ecrireFichier(`logos-hd/${cle}-verdict.json`, json(v));

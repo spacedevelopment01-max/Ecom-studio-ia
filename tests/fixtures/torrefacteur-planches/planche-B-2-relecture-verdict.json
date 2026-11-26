@@ -1,0 +1,186 @@
+{
+  "verdict": {
+    "nomLu": "MOUTURE",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Mouture",
+    "domaineLu": "mouturefrance.fr — disponible",
+    "fautes": [
+      "Bloc 09, boîte kraft : « Le bon café, commence ici. » : virgule fautive entre le sujet et le verbe",
+      "Bloc 09, boîte kraft : signe parasite sous « commence ici. », un petit crochet en forme de « ? » égaré, hors des mots"
+    ],
+    "microTextes": [
+      "Bloc 03, spécimen Nunito : « ABCDEFGAJLLLMMNOCEPETTVWXYZ »",
+      "Bloc 03, spécimen Nunito : « abcdefgnjiulinhoppottvyvxyz »",
+      "Bloc 03, spécimen Caveat : « ABCDEFFCJGJLLMAQQMTOVWXYZ »",
+      "Bloc 03, spécimen Caveat : « abcdefghijkfmnapaaganlwvyz »",
+      "Bloc 06 et 07, petites mentions des étiquettes des sachets, déformées (« ANTICHUA », lignes de détails)",
+      "Bloc 05, carte du coffret : « Lcok Toujours café. », déformée"
+    ],
+    "promesses": [
+      "Bloc 09, sachet Éthiopie : « 100% Arabica »"
+    ],
+    "personnes": false,
+    "personnesVues": [],
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "note": 8,
+    "pourquoi": "Planche complète et soignée : le logo est fidèle, la phrase « TORRÉFACTEUR PASSIONNÉ » est juste partout où elle est lisible et le bloc 10 est conforme. Il reste une virgule fautive et un signe parasite sur la boîte du bloc 09, ainsi que la mention chiffrée « 100% Arabica » sur le sachet.",
+    "phrasesLues": [
+      {
+        "emplacement": "Ouverture, sous le logo principal",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Ouverture, sous l'accroche",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo principal",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo horizontal",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo empilé",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome foncé",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, inversé sur fond sombre",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, badge / sceau, texte circulaire",
+        "lignes": [
+          "TORRÉFACTEUR",
+          "PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 04, titre du slogan",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 06, sachet Brésil, sous le logo",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 06, sachet Éthiopie, sous le logo",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1, sous le logo",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1, sous l'accroche",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 4:5, sous le logo",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, story 9:16, sous le logo",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, site ordinateur, sous l'accroche",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, site téléphone, sous l'accroche",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, boîte kraft, sous le logo",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, sachet Éthiopie, sous le logo",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, tasse émaillée, sous le logo",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      }
+    ]
+  },
+  "raisons": [
+    "fautes : « Bloc 09, boîte kraft : « Le bon café, commence ici. » : virgule fautive entre le sujet et le verbe », « Bloc 09, boîte kraft : signe parasite sous « commence ici. », un petit crochet en forme de « ? » égaré, hors des mots »",
+    "promesses ou chiffres inventés : « Bloc 09, sachet Éthiopie : « 100% Arabica » »"
+  ],
+  "ecartes": [
+    "micro-texte décoratif, non jugé : « Bloc 03, spécimen Nunito : « ABCDEFGAJLLLMMNOCEPETTVWXYZ » »",
+    "micro-texte décoratif, non jugé : « Bloc 03, spécimen Nunito : « abcdefgnjiulinhoppottvyvxyz » »",
+    "micro-texte décoratif, non jugé : « Bloc 03, spécimen Caveat : « ABCDEFFCJGJLLMAQQMTOVWXYZ » »",
+    "micro-texte décoratif, non jugé : « Bloc 03, spécimen Caveat : « abcdefghijkfmnapaaganlwvyz » »",
+    "micro-texte décoratif, non jugé : « Bloc 06 et 07, petites mentions des étiquettes des sachets, déformées (« ANTICHUA », lignes de détails) »",
+    "micro-texte décoratif, non jugé : « Bloc 05, carte du coffret : « Lcok Toujours café. », déformée »"
+  ],
+  "gardee": false
+}
