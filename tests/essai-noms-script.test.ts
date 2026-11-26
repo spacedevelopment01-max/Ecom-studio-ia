@@ -160,6 +160,94 @@ describe("le script de l'essai des noms (appels simulés)", async () => {
     expect(r.noms).toEqual([]);
   });
 
+  it("les noms écartés à chaque tour sont écrits avec leur raison et leur note (contrôles gratuits, juge, vérification), puis relus dans les traces d'un essai déjà fait", async () => {
+    // Premier tour : le juge n'en garde qu'un (le second tour part), en met un « presque » avec sa note, et rend un nom
+    // qui n'est pas dans la liste. Les contrôles gratuits écartent un concurrent et un nom trop long. Second tour : il garde
+    // Braise, que la vérification trouve déjà porté.
+    const PREMIER = ["Fournée", "Torréfaction Lointaine", "Un Nom Bien Trop Long Pour Une Marque", "Mouture", "Grain Franc", "Tasse Claire"];
+    const SECOND = ["Braise", "Fournée", "Cerise Rouge", "Torréfie", "Moulin Doux"];
+    const simule2 = (q: { userId: string; projectId: string; jobId: string }) => ({
+      ...simule(q),
+      ask: async (id: string, c: { kind: string; system: string; prompt: string; schema: { parse: (v: unknown) => unknown } }) => {
+        appels.push(id); envoyes.push(c.prompt); await paye(q, "strategy");
+        const equipe = (noms: string[]) => ({ names: noms.map((name) => ({ name, detail: "le grain torréfié", second: "aucune", idea: "i1" })) });
+        const r: Record<string, unknown> = {
+          study: { quotes: [{ text: "Le café frais moulu change tout le matin.", url: PAGE }], competitors: [{ name: "Torréfaction Lointaine", url: "" }], mould: "des paquets kraft" },
+          strategy: { job: "boire un café frais", confessions: [{ text: "je ne sais jamais quand mon café a été torréfié", quotes: [0] }], ideas: [1, 2, 3, 4].map((i) => ({ id: `i${i}`, belief: `idée ${i}`, enemy: "le café rassis", proof: "la date", cost: "torréfier chaque semaine", strong: true })) },
+          team: equipe(/-2$/.test(id) ? SECOND : PREMIER),
+          judge: /-2$/.test(id)
+            ? { kept: [{ name: "Braise", seen: "la chaleur du feu", why: "il dit le métier", note: 9 }, { name: "Cerise Rouge", seen: "le fruit du café", why: "il est beau", note: "8,5" }], almost: [{ name: "Torréfie", why: "un verbe, pas un nom", note: 7 }] }
+            : { kept: [{ name: "Mouture", seen: "le moulu", why: "un mot du métier", note: 8 }, { name: "Mouturre", seen: "", why: "recopié de travers" }], almost: [{ name: "Grain Franc", why: "il ne dit pas assez le café", note: 6.5 }] },
+          verify: { checks: [{ name: "Braise", taken: true, url: "https://annuaire.example/cafes", note: "déjà un torréfacteur à Lyon." }] },
+        };
+        return c.schema.parse(r[c.kind]);
+      },
+    });
+    const dir = sortie();
+    const r = await essaiDesNoms({ sortie: dir, plafondEuros: "20", client: clientDeLEssai({ CLIENT_JSON: FICHIER }, { sansNom: true }), ai: simule2 as never, lirePage: async () => "<p>« Le café frais moulu change tout le matin. »</p>", trouverLesAdresses: adresses });
+    expect(r.arret).toBeUndefined();
+    expect(appels).toEqual(expect.arrayContaining(["judge-1", "team-langue-2", "judge-1-2", "verify-noms-1"]));
+    // Ce que voit le client ne change pas : Mouture et Cerise Rouge ; Braise est pris.
+    expect(r.noms.map((n) => n.nom)).toEqual(["Mouture", "Cerise Rouge"]);
+    const e = r.ecartes!;
+    expect(e.permis).toEqual(["Mouture", "Braise", "Cerise Rouge"]);
+    expect(e.libres).toEqual(r.noms.map((n) => n.nom));
+    const trouve = (nom: string) => e.ecartes.find((x) => x.nom === nom);
+    expect(trouve("Torréfaction Lointaine")).toMatchObject({ tour: 1, etape: "controle", raison: "nom d'un concurrent trouvé par l'étude" });
+    expect(trouve("Un Nom Bien Trop Long Pour Une Marque")).toMatchObject({ tour: 1, etape: "controle", raison: expect.stringMatching(/nom mal formé : .*trop long/) });
+    expect(trouve("Grain Franc")).toMatchObject({ tour: 1, etape: "juge", verdict: "presque", note: 6.5, raison: "il ne dit pas assez le café" });
+    expect(trouve("Fournée")).toMatchObject({ tour: 1, etape: "juge", verdict: "refuse", note: null, raison: expect.stringMatching(/refusé par le juge, sans raison écrite/) });
+    expect(trouve("Mouturre")).toMatchObject({ tour: 1, etape: "juge", verdict: "ignore" });
+    expect(e.ecartes.filter((x) => x.nom === "Fournée").map((x) => [x.tour, x.etape, x.raison])).toContainEqual([2, "controle", "déjà trouvé au premier tour"]);
+    expect(trouve("Torréfie")).toMatchObject({ tour: 2, etape: "juge", verdict: "presque", note: 7 });
+    expect(trouve("Braise")).toMatchObject({ tour: 2, etape: "verification", raison: "déjà porté par une marque du même secteur : déjà un torréfacteur à Lyon (https://annuaire.example/cafes)" });
+    expect(e.tours).toEqual([
+      { tour: 1, trouves: 6, ecartesParLeCode: 2, juges: 4, gardesParLeJuge: 1 },
+      { tour: 2, trouves: 5, ecartesParLeCode: 1, juges: 4, gardesParLeJuge: 2 },
+    ]);
+    // Le rapport et noms.json les écrivent, tour par tour, avec la raison et la note.
+    const rapport = fs.readFileSync(path.join(dir, "rapport.txt"), "utf8");
+    expect(rapport).toContain("Noms écartés par SINA, et pourquoi (pour toi seulement : le client ne les voit pas) :");
+    expect(rapport).toContain("Premier tour : 6 nom(s) différent(s) trouvé(s) par les équipes ; 2 écarté(s) par les contrôles gratuits du Studio ; 4 envoyé(s) au juge, qui en garde 1.");
+    expect(rapport).toContain("  - Torréfaction Lointaine (équipe « langue ») : nom d'un concurrent trouvé par l'étude");
+    expect(rapport).toContain("  - Grain Franc (équipe « langue »), note 6,5/10 : il ne dit pas assez le café");
+    expect(rapport).toContain("  Refusés par le juge (2), sans raison écrite : il n'écrit une raison et une note que pour les noms presque gardés.\n  - équipe « langue » : Fournée, Tasse Claire");
+    expect(rapport).toContain("  - Torréfie (équipe « langue »), note 7/10 : un verbe, pas un nom");
+    expect(rapport).toContain("Vérification des noms gardés (3 vérifié(s)) : 1 écarté(s) :\n  - Braise (équipe « langue ») : déjà porté par une marque du même secteur : déjà un torréfacteur à Lyon (https://annuaire.example/cafes)");
+    const noms = JSON.parse(fs.readFileSync(path.join(dir, "noms.json"), "utf8"));
+    expect(noms.ecartes.ecartes).toEqual(e.ecartes);
+    // Le résultat de la tâche, que SINA relit, ne les porte pas : ils sont dans l'état de la tâche seulement.
+    const { one, run } = await import("@/lib/db");
+    const rp = JSON.parse(fs.readFileSync(path.join(dir, "reprise.json"), "utf8"));
+    const cp = JSON.parse(one<{ checkpoint: string }>("SELECT checkpoint FROM jobs WHERE id=?", rp.jobId)!.checkpoint);
+    expect(cp["ecartes:noms:1"].ecartes).toEqual(e.ecartes);
+    // Un essai d'avant (sans les noms écartés gardés, sans la partie du rapport) : relu dans ses traces, sans aucun appel,
+    // il donne les mêmes noms écartés ; le reste du rapport ne change pas.
+    delete cp["ecartes:noms:1"];
+    for (const k of Object.keys(cp)) if (k.startsWith("brand:verify:noms:")) delete cp[k].preuves;
+    run("UPDATE jobs SET checkpoint=? WHERE id=?", JSON.stringify(cp), rp.jobId);
+    const sansEcartes = rapport.slice(0, rapport.indexOf("\nNoms écartés par SINA")) + rapport.slice(rapport.indexOf("Fin des noms écartés.") + "Fin des noms écartés.".length);
+    fs.writeFileSync(path.join(dir, "rapport.txt"), sansEcartes);
+    appels.length = 0;
+    const { reecrireLesEcartesDesNoms } = await import("../scripts/syna-recette/essai-noms-outil");
+    const re = await reecrireLesEcartesDesNoms({ sortie: dir });
+    expect(appels).toEqual([]);
+    expect(re.ecartes.ecartes.map((x) => [x.tour, x.etape, x.nom, x.note ?? null])).toEqual(e.ecartes.map((x) => [x.tour, x.etape, x.nom, x.note ?? null]));
+    // Sans la preuve gardée, la raison de la vérification le dit autrement, sans rien inventer.
+    expect(re.ecartes.ecartes.find((x) => x.nom === "Braise")?.raison).toBe("déjà porté par une marque du même secteur (page trouvée par la recherche)");
+    const reecrit = fs.readFileSync(path.join(dir, "rapport.txt"), "utf8");
+    expect(reecrit).toContain("  - Grain Franc (équipe « langue »), note 6,5/10 : il ne dit pas assez le café");
+    expect(reecrit.startsWith(sansEcartes.slice(0, sansEcartes.indexOf("\nLe nom choisi")))).toBe(true);
+    expect(reecrit).toContain("Dépense réelle comptée par le Studio :");
+    // Réécrit deux fois : une seule partie des noms écartés.
+    await reecrireLesEcartesDesNoms({ sortie: dir });
+    expect(fs.readFileSync(path.join(dir, "rapport.txt"), "utf8").split("Noms écartés par SINA").length).toBe(2);
+    // Sans la base de l'essai, rien n'est réécrit, et c'est dit.
+    const vide = sortie();
+    fs.writeFileSync(path.join(vide, "reprise.json"), JSON.stringify({ ...rp, jobId: "tache-absente" }));
+    await expect(reecrireLesEcartesDesNoms({ sortie: vide })).rejects.toThrow(/n'est pas dans ce studio d'essai/);
+  });
+
   it("le script n'écrit jamais une clé et ne passe que par la tâche du Studio", () => {
     const src = fs.readFileSync("scripts/syna-recette/essai-noms.mts", "utf8") + fs.readFileSync("scripts/syna-recette/essai-noms-outil.ts", "utf8");
     expect(src).not.toMatch(/sk-ant|sk-[A-Za-z0-9]{20}/);

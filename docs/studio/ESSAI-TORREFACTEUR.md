@@ -103,7 +103,15 @@ retiré le 26 novembre 2026, voir plus haut).
 
 **Pause.** Montrer au propriétaire `data/essai-torrefacteur/1-noms/rapport.txt` : les noms vérifiés, numérotés, avec pour
 chacun ce que SINA dit de son adresse (« … est déjà pris ; libre aujourd'hui : … ») et l'adresse que la planche écrirait.
-Le détail est dans `noms.json`.
+Le détail est dans `noms.json`. Depuis le 26 novembre 2026, le rapport dit aussi, tour par tour, les noms que SINA écarte
+et pourquoi : les contrôles gratuits du Studio (concurrent, nom mal formé, déjà montré…), le juge (sa raison et sa note pour
+les presque gardés ; il n'écrit rien pour un nom refusé, et c'est dit), puis la vérification ; ils sont aussi dans
+`noms.json` (`ecartes`). Le client ne les voit jamais. Pour un essai déjà fait, sans rien refaire ni payer, si sa base
+d'essai est encore là :
+
+```
+DATA_DIR=data/essai-torrefacteur/studio node_modules/.bin/tsx scripts/syna-recette/essai-noms-ecartes.mts data/essai-torrefacteur/1-noms
+```
 
 **Son choix** : un nom, écrit exactement comme dans le rapport. Il part ensuite partout par `CLIENT_NOM="<le nom>"`.
 

@@ -12,7 +12,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import type { ChainAi } from "../../src/lib/syna-agent/brand-chain";
+import type { ChainAi, NomsEcartes } from "../../src/lib/syna-agent/brand-chain";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
 import { clientDeLEssai, euros, reponsesFacultatives, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 import { attendreLesAppelsEnCours, avisDuPlafond, lignesDeLArret, plafondConseilleMicro } from "./plafond-des-essais";
@@ -130,11 +130,105 @@ export type ResultatDesNoms = { arret?: string; noms: NomPropose[]; verifies: bo
   arretPropre?: string[];
   /** Les étapes de la tâche déjà faites (ses points de reprise), dans l'ordre. */
   etapesFaites?: string[];
+  /** Les noms écartés à chaque tour, avec la raison et la note du juge (null : les équipes n'ont rien rendu). */
+  ecartes?: NomsEcartes | null;
 };
 
 /** Ce qu'il faut pour reprendre l'essai des noms là où il s'est arrêté : la tâche du Studio et ses points de reprise. */
 export type RepriseDesNoms = { userId: string; projectId: string; conversationId: string; jobId: string; count: number };
 export const FICHIER_DE_REPRISE = "reprise.json";
+
+// ---------------------------------------------------------------- les noms écartés, et pourquoi
+
+const TITRE_DES_ECARTES = "Noms écartés par SINA, et pourquoi (pour toi seulement : le client ne les voit pas) :";
+const FIN_DES_ECARTES = "Fin des noms écartés.";
+const etiquetteDEquipe = (id?: string) => (id ? ` (équipe « ${id} »)` : "");
+
+/**
+ * Les noms écartés en texte, tour par tour (26 novembre 2026 : le propriétaire veut toujours voir ce que SINA écarte, et
+ * pourquoi) : les contrôles gratuits du code, le juge (sa raison et sa note pour les presque gardés ; il n'en écrit pas
+ * pour un nom refusé, et c'est dit), puis la vérification des noms gardés.
+ */
+export function lignesDesNomsEcartes(e: NomsEcartes | null | undefined, count: number): string[] {
+  if (!e) return [TITRE_DES_ECARTES, "- aucun : les équipes de noms n'ont rien rendu de lisible (ou l'essai s'est arrêté avant).", FIN_DES_ECARTES];
+  const lignes = [TITRE_DES_ECARTES];
+  const nomDuTour = (t: 1 | 2) => (t === 1 ? "Premier tour" : "Second tour");
+  for (const t of e.tours) {
+    lignes.push(`${nomDuTour(t.tour)} : ${t.trouves} nom(s) différent(s) trouvé(s) par les équipes ; ${t.ecartesParLeCode} écarté(s) par les contrôles gratuits du Studio ; ${t.juges} envoyé(s) au juge, qui en garde ${t.gardesParLeJuge}.`);
+    const du = e.ecartes.filter((x) => x.tour === t.tour);
+    const code = du.filter((x) => x.etape === "controle"), presque = du.filter((x) => x.verdict === "presque"), refuses = du.filter((x) => x.verdict === "refuse"), ignores = du.filter((x) => x.verdict === "ignore");
+    if (code.length) lignes.push(`  Écartés par les contrôles gratuits du Studio (${code.length}) :`, ...code.map((x) => `  - ${x.nom}${etiquetteDEquipe(x.equipe)} : ${x.raison}`));
+    if (presque.length) lignes.push(`  Presque gardés par le juge (${presque.length}) :`, ...presque.map((x) => `  - ${x.nom}${etiquetteDEquipe(x.equipe)}, note ${x.note == null ? "non donnée" : `${String(x.note).replace(".", ",")}/10`} : ${x.raison}`));
+    if (refuses.length) {
+      lignes.push(/^refusé par le juge/.test(refuses[0].raison) ? `  Refusés par le juge (${refuses.length}), sans raison écrite : il n'écrit une raison et une note que pour les noms presque gardés.` : `  Pas jugés (${refuses.length}) : ${refuses[0].raison}.`);
+      const parEquipe = new Map<string, string[]>();
+      for (const x of refuses) parEquipe.set(x.equipe ?? "?", [...(parEquipe.get(x.equipe ?? "?") ?? []), x.nom]);
+      for (const [equipe, noms] of parEquipe) lignes.push(`  - équipe « ${equipe} » : ${noms.join(", ")}`);
+    }
+    if (ignores.length) lignes.push(`  Rendus par le juge sans être dans la liste reçue, donc ignorés (${ignores.length}) :`, ...ignores.map((x) => `  - ${x.nom}`));
+  }
+  if (!e.tours.some((t) => t.tour === 2)) {
+    const gardes = e.tours[0]?.gardesParLeJuge ?? 0;
+    lignes.push(`Second tour : pas fait (il ne part que si le juge garde moins de ${count} nom(s), un par identité ; il en a gardé ${gardes}).`);
+  }
+  const verif = e.ecartes.filter((x) => x.etape === "verification");
+  lignes.push(e.verificationFaite === false ? "Vérification des noms gardés : pas faite (la recherche sur le web n'a pas pu se faire) ; aucun nom écarté par elle."
+    : e.verificationFaite == null ? "Vérification des noms gardés : pas encore faite."
+    : verif.length ? `Vérification des noms gardés (${e.verifies.length} vérifié(s)) : ${verif.length} écarté(s) :` : `Vérification des noms gardés (${e.verifies.length} vérifié(s)) : aucun écarté.`);
+  lignes.push(...verif.map((x) => `  - ${x.nom}${etiquetteDEquipe(x.equipe)} : ${x.raison}`));
+  lignes.push(FIN_DES_ECARTES);
+  return lignes;
+}
+
+/** Le rapport avec sa partie des noms écartés remplacée (ou ajoutée avant la dépense) : rien d'autre ne change. */
+export function rapportAvecLesEcartes(rapport: string, lignes: string[]): string {
+  const debut = rapport.indexOf(TITRE_DES_ECARTES);
+  if (debut >= 0) {
+    const fin = rapport.indexOf(FIN_DES_ECARTES, debut);
+    return `${rapport.slice(0, debut)}${lignes.join("\n")}${fin >= 0 ? rapport.slice(fin + FIN_DES_ECARTES.length) : "\n"}`;
+  }
+  const ancre = rapport.indexOf("\nLe nom choisi part aux étapes suivantes");
+  if (ancre < 0) return `${rapport.replace(/\n*$/, "\n")}\n${lignes.join("\n")}\n`;
+  const finDeLigne = rapport.indexOf("\n", ancre + 1);
+  const coupe = finDeLigne < 0 ? rapport.length : finDeLigne + 1;
+  return `${rapport.slice(0, coupe)}\n${lignes.join("\n")}\n${rapport.slice(coupe)}`;
+}
+
+/** Les noms écartés de la tâche des noms, relus dans son état (aucun appel). */
+async function ecartesDeLaTache(jobId: string, o: { kind: "produits" | "services"; count: number }): Promise<NomsEcartes | null> {
+  const { one } = await import("../../src/lib/db");
+  const { nomsEcartesDuPointDeReprise } = await import("../../src/lib/syna-agent/brand-chain");
+  const cp = one<{ checkpoint: string | null }>("SELECT checkpoint FROM jobs WHERE id=?", jobId)?.checkpoint;
+  let etat: Record<string, unknown> = {};
+  try { etat = JSON.parse(cp || "{}") ?? {}; } catch { return null; }
+  const e = nomsEcartesDuPointDeReprise(etat, o);
+  if (!e) return null;
+  const { relu: _relu, ...reste } = e;
+  return reste;
+}
+
+/**
+ * Réécrit le rapport d'un essai des noms déjà fait avec ses noms écartés, sans aucun appel ni dépense : la tâche est
+ * retrouvée par `reprise.json` dans la base du studio d'essai (DATA_DIR), et ses noms écartés sont relus dans son état
+ * (ses points de reprise : ce que les équipes, le juge et la vérification ont rendu). Le rapport garde tout le reste ;
+ * noms.json reçoit `ecartes`. Refuse s'il manque le dossier, la reprise ou la tâche.
+ */
+export async function reecrireLesEcartesDesNoms(o: { sortie: string }): Promise<{ ecartes: NomsEcartes; lignes: string[] }> {
+  const fichierDeReprise = path.join(o.sortie, FICHIER_DE_REPRISE), fichierDesNoms = path.join(o.sortie, "noms.json"), fichierDuRapport = path.join(o.sortie, "rapport.txt");
+  if (!fs.existsSync(fichierDeReprise)) throw new Error(`${fichierDeReprise} n'existe pas : aucun essai des noms dans ce dossier. Rien n'est réécrit.`);
+  const rp = JSON.parse(fs.readFileSync(fichierDeReprise, "utf8")) as RepriseDesNoms;
+  const { one } = await import("../../src/lib/db");
+  if (!one<{ id: string }>("SELECT id FROM jobs WHERE id=?", rp.jobId)) throw new Error(`La tâche ${rp.jobId} de ${fichierDeReprise} n'est pas dans ce studio d'essai (DATA_DIR) : ses traces n'y sont pas. Rien n'est réécrit.`);
+  const noms = fs.existsSync(fichierDesNoms) ? (JSON.parse(fs.readFileSync(fichierDesNoms, "utf8")) as Record<string, any>) : {};
+  const kind = noms?.client?.kind === "services" ? "services" : "produits";
+  const ecartes = await ecartesDeLaTache(rp.jobId, { kind, count: rp.count });
+  if (!ecartes) throw new Error(`La tâche ${rp.jobId} n'a gardé aucune réponse des équipes de noms : rien à relire. Rien n'est réécrit.`);
+  const lignes = lignesDesNomsEcartes(ecartes, rp.count);
+  if (fs.existsSync(fichierDuRapport)) fs.writeFileSync(fichierDuRapport, rapportAvecLesEcartes(fs.readFileSync(fichierDuRapport, "utf8"), lignes));
+  else fs.writeFileSync(fichierDuRapport, `${lignes.join("\n")}\n`);
+  fs.writeFileSync(fichierDesNoms, `${JSON.stringify({ ...noms, ecartes }, null, 2)}\n`);
+  return { ecartes, lignes };
+}
 
 /**
  * L'essai lui-même. `ai` : les appels de la chaîne (par défaut les vrais appels du Studio, sous le plafond de la tâche) ;
@@ -268,10 +362,13 @@ export async function essaiDesNoms(o: {
     if (o.ai) C.brandChainDeps.ai = undefined;
     if (o.lirePage) C.brandPageDeps.read = undefined;
   }
-  ecrireFichier("noms.json", json({ client: { metier: o.client.metier, kind: o.client.kind, produits: o.client.produits }, verifies: res.verifies, noms: res.noms, notes: res.notes }));
+  // Les noms écartés à chaque tour, relus dans l'état de la tâche (aucun appel), même après un arrêt.
+  try { res.ecartes = await ecartesDeLaTache(jobId, { kind: o.client.kind === "services" ? "services" : "produits", count }); } catch { res.ecartes = null; }
+  ecrireFichier("noms.json", json({ client: { metier: o.client.metier, kind: o.client.kind, produits: o.client.produits }, verifies: res.verifies, noms: res.noms, notes: res.notes, ecartes: res.ecartes ?? null }));
   lignes.push(`Noms vérifiés proposés au client : ${res.noms.length}${res.verifies ? "" : " (la vérification sur le web n'a pas pu se faire : ils sont montrés sans être vérifiés, et c'est dit)"}`,
     ...res.noms.map((n) => `${n.numero}. ${n.nom}${n.doute ? ` (avec un doute : ${n.doute})` : ""} — ${n.pourquoi || n.detail}\n   ${n.phraseDeLAdresse}\n   La planche écrirait : « ${n.adresseDeLaPlanche.mention} »`),
-    "", "Le nom choisi part aux étapes suivantes par CLIENT_NOM=\"<le nom, tel qu'il est écrit ci-dessus>\".");
+    "", "Le nom choisi part aux étapes suivantes par CLIENT_NOM=\"<le nom, tel qu'il est écrit ci-dessus>\".",
+    "", ...lignesDesNomsEcartes(res.ecartes, count));
   if (!res.arret) res.etapesFaites = etapesFaites();
   return ecrire();
 }
