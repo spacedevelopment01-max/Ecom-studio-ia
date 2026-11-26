@@ -1,0 +1,43 @@
+Réassemblage de la planche en vrai de « Écume » à partir de l'essai /home/user/Ecom-studio-ia/data/essai-ecume/4-planche-en-vrai (aucun appel pour a) et b))
+Images gardées : 15 sur 17
+  publication-1x1 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  publication-4x5 : l'aperçu garde sa case — aperçu de l'essai dans la bande d'un titre
+    essai 1 (note 6) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8) → aujourd'hui un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (note 7) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8) → aujourd'hui un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  publication-9x16 : GARDÉE (essai 1) — aperçu de l'essai dans la bande d'un titre
+    essai 1 (note 8) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « en ») → aujourd'hui gardée
+    essai 2 (note 6) : avant elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « au ») ; sa fidélité n'est pas au niveau (6/10, il faut 8) → aujourd'hui elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « au ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  ouverture-site : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  ouverture-planche : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  site-ordinateur : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  site-telephone : GARDÉE (essai 2)
+    essai 1 (note 7) : avant elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous ») (en trop ou mal écrits : « 12.01 ») ; sa fidélité n'est pas au niveau (7/10, il faut 8) → aujourd'hui elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+    essai 2 (note 8.5) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « 9:41 ») → aujourd'hui gardée
+  produit-1 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  produit-2 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  produit-3 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  emballage : l'aperçu garde sa case
+    essai 1 (note 6) : avant un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8) → aujourd'hui un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (note 7) : avant ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « our ») (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) ») ; sa fidélité n'est pas au niveau (7/10, il faut 8) → aujourd'hui ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  reference-1 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  reference-2 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  reference-3 : GARDÉE (essai 1)
+    essai 1 (note 8) : avant gardée → aujourd'hui gardée
+  reference-4 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+  reference-5 : GARDÉE (essai 1)
+    essai 1 (note 8) : avant gardée → aujourd'hui gardée
+  reference-6 : GARDÉE (essai 1)
+    essai 1 (note 9) : avant gardée → aujourd'hui gardée
+Logos repris de l'aperçu : logo-compact, icone, favicon, badge ; séparation du symbole non fiable (aucune séparation nette entre un symbole et le nom)
+Palette : #C44912 Orange Écume ; #D97A52 Terracotta ; #F6E8DA Sable ; #A7B89B Sauge ; #8C6F4E Brun naturel
+  note : palette : #C44912 (écrit sur l'aperçu, mesuré #C7470C, écart 0.7) ; #D97A52 (écrit sur l'aperçu, mesuré #E37C52, écart 1.9) ; #F6E8DA (écrit sur l'aperçu, mesuré #F2E1D1, écart 1.9) ; #A7B89B (écrit sur l'aperçu, mesuré #AAB599, écart 2.1) ; #8C6F4E (écrit sur l'aperçu, mesuré #977450, écart 3.2)

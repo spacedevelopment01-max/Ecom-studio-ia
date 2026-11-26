@@ -1,0 +1,55 @@
+{
+  "couleurs": [
+    {
+      "hex": "#C44912",
+      "nom": "Orange Écume",
+      "mots": [
+        "Chaleur",
+        "énergie",
+        "bienveillance"
+      ]
+    },
+    {
+      "hex": "#D97A52",
+      "nom": "Terracotta",
+      "mots": [
+        "Authenticité",
+        "naturel",
+        "terre"
+      ]
+    },
+    {
+      "hex": "#F6E8DA",
+      "nom": "Sable",
+      "mots": [
+        "Douceur",
+        "pureté"
+      ]
+    },
+    {
+      "hex": "#A7B89B",
+      "nom": "Sauge",
+      "mots": [
+        "Nature",
+        "fraîcheur",
+        "équilibre"
+      ]
+    },
+    {
+      "hex": "#8C6F4E",
+      "nom": "Brun naturel",
+      "mots": [
+        "Matière",
+        "artisanat",
+        "confiance"
+      ]
+    }
+  ],
+  "roles": {
+    "light": "#F6E8DA",
+    "dark": "#1C2A24",
+    "primary": "#C44912",
+    "secondary": "#A7B89B",
+    "accent": "#D97A52"
+  }
+}

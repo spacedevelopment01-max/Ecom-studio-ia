@@ -1,0 +1,22 @@
+{
+  "titres": {
+    "cle": "poppins",
+    "famille": "Poppins",
+    "fichier": "Poppins-700.ttf",
+    "poids": 700,
+    "handle": "poppins_n7",
+    "lue": "Poppins",
+    "remplacee": false
+  },
+  "textes": {
+    "cle": "sacramento",
+    "famille": "Sacramento",
+    "fichier": "Sacramento-400.ttf",
+    "poids": 400,
+    "handle": "sacramento_n4",
+    "lue": "Nunito",
+    "remplacee": true,
+    "pourquoi": "genre",
+    "genreLu": "manuscrite"
+  }
+}

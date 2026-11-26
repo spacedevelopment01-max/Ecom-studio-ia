@@ -1,0 +1,329 @@
+{
+  "cases": [
+    {
+      "element": "publication-1x1",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "publication-4x5",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 6,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille »)",
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 7,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille »)",
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ]
+        }
+      ],
+      "gardee": null,
+      "deborde": true
+    },
+    {
+      "element": "publication-9x16",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 8,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « en »)"
+          ],
+          "raisonsApres": []
+        },
+        {
+          "tour": 2,
+          "note": 6,
+          "raisonsAvant": [
+            "elle n'est pas identique à son aperçu",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « au »)",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "elle n'est pas identique à son aperçu",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « au »)",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ]
+        }
+      ],
+      "gardee": 1,
+      "deborde": true
+    },
+    {
+      "element": "ouverture-site",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "ouverture-planche",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "site-ordinateur",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "site-telephone",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 7,
+          "raisonsAvant": [
+            "elle n'est pas identique à son aperçu",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous ») (en trop ou mal écrits : « 12.01 »)",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "elle n'est pas identique à son aperçu",
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous »)",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 8.5,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « 9:41 »)"
+          ],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 2,
+      "deborde": false
+    },
+    {
+      "element": "produit-1",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "produit-2",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "produit-3",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "emballage",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 6,
+          "raisonsAvant": [
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "un texte est coupé ou collé au bord",
+            "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+          ]
+        },
+        {
+          "tour": 2,
+          "note": 7,
+          "raisonsAvant": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « our ») (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) »)",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ],
+          "raisonsApres": [
+            "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) »)",
+            "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+          ]
+        }
+      ],
+      "gardee": null,
+      "deborde": false
+    },
+    {
+      "element": "reference-1",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "reference-2",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "reference-3",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 8,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "reference-4",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "reference-5",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 8,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    },
+    {
+      "element": "reference-6",
+      "essais": [
+        {
+          "tour": 1,
+          "note": 9,
+          "raisonsAvant": [],
+          "raisonsApres": []
+        }
+      ],
+      "gardee": 1,
+      "deborde": false
+    }
+  ],
+  "gardees": 15,
+  "planche": "planche-en-vrai.png",
+  "comparaison": "comparaison-apercu-et-reassemblee.jpg",
+  "palette": [
+    {
+      "hex": "#C44912",
+      "nom": "Orange Écume"
+    },
+    {
+      "hex": "#D97A52",
+      "nom": "Terracotta"
+    },
+    {
+      "hex": "#F6E8DA",
+      "nom": "Sable"
+    },
+    {
+      "hex": "#A7B89B",
+      "nom": "Sauge"
+    },
+    {
+      "hex": "#8C6F4E",
+      "nom": "Brun naturel"
+    }
+  ],
+  "logosDeLApercu": [
+    "logo-compact",
+    "icone",
+    "favicon",
+    "badge"
+  ],
+  "notes": [
+    "palette : #C44912 (écrit sur l'aperçu, mesuré #C7470C, écart 0.7) ; #D97A52 (écrit sur l'aperçu, mesuré #E37C52, écart 1.9) ; #F6E8DA (écrit sur l'aperçu, mesuré #F2E1D1, écart 1.9) ; #A7B89B (écrit sur l'aperçu, mesuré #AAB599, écart 2.1) ; #8C6F4E (écrit sur l'aperçu, mesuré #977450, écart 3.2)"
+  ]
+}
