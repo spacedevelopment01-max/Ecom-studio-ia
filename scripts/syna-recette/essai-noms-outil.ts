@@ -73,6 +73,7 @@ export async function devisDesNoms(count = IDENTITES_DE_L_ESSAI): Promise<DevisD
     "teamShort:2": { appel: "reprise courte du second tour", quand: "si une réponse du second tour est coupée" },
     "judge:2": { appel: "juge du second tour", quand: "si le juge garde trop peu de noms" },
     "recherche:verify": { appel: "recherche sur le web des noms gardés", quand: "toujours" },
+    "recherche:verify:2": { appel: "même recherche des noms gardés, autrement formulée", quand: "si la première recherche ne rend aucune page" },
     verify: { appel: "vérification des noms gardés", quand: "toujours" },
   };
   const lignes: LigneDuDevisDesNoms[] = devis.lignes.map((l) => ({
@@ -120,12 +121,16 @@ export function devisDesNomsEnTexte(d: DevisDesNoms): string[] {
 
 export type NomPropose = {
   numero: number; nom: string; pourquoi: string; detail: string; doute: string | null;
+  /** « verifie » : comparé à des pages trouvées sur le web ; « non_verifie » : rien n'a été comparé (jamais dit vérifié). */
+  verification: "verifie" | "non_verifie";
   /** Ce que l'annuaire des registres a répondu à l'instant (pris, libres, pas vérifiés). */
   adresses: NameDomains | null;
   /** Ce que SINA en dit (`domainLine`), et l'adresse que la planche de marque écrirait (`domaineDeLaPlanche`). */
   phraseDeLAdresse: string; adresseDeLaPlanche: { domaine: string | null; statut: string; mention: string };
 };
 export type ResultatDesNoms = { arret?: string; noms: NomPropose[]; verifies: boolean; notes: string[]; depenseMicro: number; projectId?: string;
+  /** L'état de la vérification des noms (« non_verifie » : rien n'a été comparé) et la phrase que SINA dit alors au client. */
+  verification?: "verifie" | "non_verifie"; aDireAuClient?: string | null;
   /** Arrêté par le plafond de l'essai : ce qui est fait, ce qu'il faudrait pour finir, comment reprendre. */
   arretPropre?: string[];
   /** Les étapes de la tâche déjà faites (ses points de reprise), dans l'ordre. */
@@ -172,7 +177,9 @@ export function lignesDesNomsEcartes(e: NomsEcartes | null | undefined, count: n
     lignes.push(`Second tour : pas fait (il ne part que si le juge garde moins de ${count} nom(s), un par identité ; il en a gardé ${gardes}).`);
   }
   const verif = e.ecartes.filter((x) => x.etape === "verification");
-  lignes.push(e.verificationFaite === false ? "Vérification des noms gardés : pas faite (la recherche sur le web n'a pas pu se faire) ; aucun nom écarté par elle."
+  lignes.push(e.verificationFaite === false ? (e.pourquoiNonVerifie === "rien_trouve"
+    ? "Vérification des noms gardés : rien n'a été comparé (deux recherches sur le web, la seconde autrement formulée, sans aucune page) ; les noms sont gardés, marqués « non vérifiés », et SINA le dit au client."
+    : "Vérification des noms gardés : pas faite (la recherche sur le web n'a pas pu se faire) ; les noms sont marqués « non vérifiés » ; aucun nom écarté par elle.")
     : e.verificationFaite == null ? "Vérification des noms gardés : pas encore faite."
     : verif.length ? `Vérification des noms gardés (${e.verifies.length} vérifié(s)) : ${verif.length} écarté(s) :` : `Vérification des noms gardés (${e.verifies.length} vérifié(s)) : aucun écarté.`);
   lignes.push(...verif.map((x) => `  - ${x.nom}${etiquetteDEquipe(x.equipe)} : ${x.raison}`));
@@ -333,15 +340,17 @@ export async function essaiDesNoms(o: {
   if (o.lirePage) C.brandPageDeps.read = o.lirePage;
   try {
     const sortie = await runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: capMicro }, () => C.runSinaBrandJob(ctx))));
-    const r = sortie as { noms?: { name: string; why: string; detail: string; doute: string | null }[]; verifies?: boolean; notes?: string[] };
+    const r = sortie as { noms?: { name: string; why: string; detail: string; doute: string | null; verification?: "verifie" | "non_verifie" }[]; verifies?: boolean; verification?: "verifie" | "non_verifie"; aDireAuClient?: string; notes?: string[] };
     res.verifies = !!r.verifies; res.notes = r.notes ?? [];
+    // Jamais « vérifié » si rien n'a été comparé : l'état de la tâche, et la phrase que SINA dit alors au client.
+    res.verification = r.verification ?? (r.verifies ? "verifie" : "non_verifie"); res.aDireAuClient = r.aDireAuClient ?? null;
     // 3. L'adresse de chaque nom vérifié, gratuite, comme la planche la lira.
     const trouver = o.trouverLesAdresses ?? findDomains;
     for (const [i, n] of (r.noms ?? []).entries()) {
       let adresses: NameDomains | null = null;
       try { adresses = await trouver(n.name, o.client.descripteur ?? null); } catch { /* contrôle impossible : rien n'est affirmé */ }
       const d = domaineDeLaPlanche(adresses, n.name);
-      res.noms.push({ numero: i + 1, nom: n.name, pourquoi: n.why, detail: n.detail, doute: n.doute, adresses, phraseDeLAdresse: domainLine(adresses) || "Nom de domaine : pas pu vérifier.", adresseDeLaPlanche: { ...d, mention: mentionDuDomaine(d) } });
+      res.noms.push({ numero: i + 1, nom: n.name, pourquoi: n.why, detail: n.detail, doute: n.doute, verification: n.verification ?? res.verification, adresses, phraseDeLAdresse: domainLine(adresses) || "Nom de domaine : pas pu vérifier.", adresseDeLaPlanche: { ...d, mention: mentionDuDomaine(d) } });
     }
   } catch (e) {
     const p = arretParLEssai(jobId) ?? (e instanceof PlafondDeLEssaiAtteint ? e : null);
@@ -364,9 +373,11 @@ export async function essaiDesNoms(o: {
   }
   // Les noms écartés à chaque tour, relus dans l'état de la tâche (aucun appel), même après un arrêt.
   try { res.ecartes = await ecartesDeLaTache(jobId, { kind: o.client.kind === "services" ? "services" : "produits", count }); } catch { res.ecartes = null; }
-  ecrireFichier("noms.json", json({ client: { metier: o.client.metier, kind: o.client.kind, produits: o.client.produits }, verifies: res.verifies, noms: res.noms, notes: res.notes, ecartes: res.ecartes ?? null }));
-  lignes.push(`Noms vérifiés proposés au client : ${res.noms.length}${res.verifies ? "" : " (la vérification sur le web n'a pas pu se faire : ils sont montrés sans être vérifiés, et c'est dit)"}`,
-    ...res.noms.map((n) => `${n.numero}. ${n.nom}${n.doute ? ` (avec un doute : ${n.doute})` : ""} — ${n.pourquoi || n.detail}\n   ${n.phraseDeLAdresse}\n   La planche écrirait : « ${n.adresseDeLaPlanche.mention} »`),
+  ecrireFichier("noms.json", json({ client: { metier: o.client.metier, kind: o.client.kind, produits: o.client.produits }, verifies: res.verifies, verification: res.verification ?? null, aDireAuClient: res.aDireAuClient ?? null, noms: res.noms, notes: res.notes, ecartes: res.ecartes ?? null }));
+  const nonVerifies = res.verification === "non_verifie" && res.noms.length > 0;
+  lignes.push(nonVerifies ? `Noms NON VÉRIFIÉS proposés au client : ${res.noms.length} (rien n'a été comparé sur le web : ils sont gardés, marqués « non vérifiés », jamais « vérifiés »)` : `Noms vérifiés proposés au client : ${res.noms.length}`,
+    ...(nonVerifies && res.aDireAuClient ? [`Ce que SINA dit au client : « ${res.aDireAuClient} »`] : []),
+    ...res.noms.map((n) => `${n.numero}. ${n.nom} [${n.verification === "verifie" ? "vérifié" : "non vérifié"}]${n.doute ? ` (avec un doute : ${n.doute})` : ""} — ${n.pourquoi || n.detail}\n   ${n.phraseDeLAdresse}\n   La planche écrirait : « ${n.adresseDeLaPlanche.mention} »`),
     "", "Le nom choisi part aux étapes suivantes par CLIENT_NOM=\"<le nom, tel qu'il est écrit ci-dessus>\".",
     "", ...lignesDesNomsEcartes(res.ecartes, count));
   if (!res.arret) res.etapesFaites = etapesFaites();

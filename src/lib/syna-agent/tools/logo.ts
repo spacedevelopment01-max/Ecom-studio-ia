@@ -206,11 +206,11 @@ export const outilsDuLogo = (): AgentTool[] => [nomTool, ...logoTools];
  */
 export const nomTool: AgentTool<{ nom: string }> = {
   name: "identity.nom", module: "marque", kind: "write", needsProject: true,
-  description: "Le nom choisi PAR LE CLIENT parmi les noms vérifiés montrés ; lance la recherche de son logo. Gratuit.",
+  description: "Le nom choisi PAR LE CLIENT parmi les noms montrés ; lance la recherche de son logo. Gratuit.",
   args: z.object({ nom: z.string().min(1).max(60) }).strict(),
   run: (ctx, a) => {
     const nom = a.nom.trim(), noms = journeyOf(ctx.conversationId).nomsVerifies ?? [];
-    if (!noms.some((n) => n.normalize("NFC").toLowerCase() === nom.normalize("NFC").toLowerCase())) return { ok: false, summary: L("Ce nom n'est pas parmi ceux que je t'ai montrés, vérifiés.", "This name is not among the verified names shown.") };
+    if (!noms.some((n) => n.normalize("NFC").toLowerCase() === nom.normalize("NFC").toLowerCase())) return { ok: false, summary: L("Ce nom n'est pas parmi ceux que je t'ai montrés.", "This name is not among the names shown.") };
     const p = project(ctx), j = journeyOf(ctx.conversationId), n = j.accordGraphistes?.count ?? esquissesAChoisir(planOfProject(p.id));
     // Le nom exact montré (sa casse, ses accents), jamais une autre écriture.
     const exact = noms.find((x) => x.normalize("NFC").toLowerCase() === nom.normalize("NFC").toLowerCase()) ?? nom;

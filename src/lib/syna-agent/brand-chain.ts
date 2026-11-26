@@ -38,7 +38,7 @@ import * as P from "./brand-prompts";
 import { NAME_REFUSALS } from "./brand-references";
 import { RouteSchema, clientFacts, isReferenceName, nameIssues, routeCountFor, routeIssues, routeKeys, safeWordmark, withHonestProofs, type Route, type RouteKey } from "./brand-routes";
 import { FONT_CHARACTER, IdentitySchema, briefFromJourney, keepConstraints, nameKindsFor, normText, prepareIdentities } from "./identities";
-import { journeyOf, planchesIncompletes, setStep, updateJourney, type Journey } from "./journey";
+import { journeyOf, phraseDesNomsNonVerifies, planchesIncompletes, setStep, updateJourney, type Journey, type PourquoiNonVerifie, type VerificationDesNomsMontres } from "./journey";
 import { marquesRecentes, varierIdentites, varieteMarquesBrief } from "./variete-marques";
 import { consigneDeLaPoliceDuLogo, ligneDesCouleursDuLogo, remettreLesCouleursDuLogo } from "./couleurs-du-logo";
 import sharp from "sharp";
@@ -154,6 +154,9 @@ export function chainQuote(o: { routes: number; fresh?: boolean; settings?: Chai
   // Second tour de noms (une fois au plus, quand trop peu de noms passent le juge) : compté dans le plafond seulement.
   let second = { team: o.imposed ? 0 : s.teams, teamShort: o.imposed ? 0 : s.teams, judge: o.imposed ? 0 : 1 };
   let searches = (fresh ? RESEARCHES : 0) + 1;
+  // La recherche des noms refaite une fois, autrement formulée, quand la première ne rend aucune page (`verifierLesNoms`,
+  // 26 novembre 2026) : comptée au plafond seulement.
+  let rechercheRefaite = 1;
   const done = o.done ?? [];
   if (done.length) {
     const has = (re: RegExp) => fait(done, re) > 0;
@@ -166,7 +169,7 @@ export function chainQuote(o: { routes: number; fresh?: boolean; settings?: Chai
     second = { team: Math.max(0, second.team - equipes2), teamShort: Math.max(0, second.teamShort - equipes2), judge: has(/^brand:judge:\d+:2$/) ? 0 : second.judge };
     if (has(/^brand:judge:\d+$/)) n.judge = 0;
     if (has(/^brand:shortlist:/)) n.shortlist = 0;
-    if (has(/^brand:verify:/)) { n.verify = 0; searches -= 1; }
+    if (has(/^brand:verify:/)) { n.verify = 0; searches -= 1; rechercheRefaite = 0; }
     n.direction = Math.max(0, n.direction - fait(done, /^brand:direction:/));
     if (has(/^brand:review:/)) n.review = 0;
     n.fix = Math.max(0, n.fix - fait(done, /^brand:(fix|replace):/));
@@ -174,7 +177,7 @@ export function chainQuote(o: { routes: number; fresh?: boolean; settings?: Chai
     if (has(/^brand:reader:/)) n.reader = 0;
   }
   const web = webSearchQuote(s.craft, { maxSearches: BRAND_SEARCHES });
-  let max = web.maxMicro * searches, probable: number | null = web.probableMicro * searches;
+  let max = web.maxMicro * (searches + rechercheRefaite), probable: number | null = web.probableMicro * searches;
   const boundOf = {} as Record<CallId, number>;
   for (const id of Object.keys(CALLS) as CallId[]) {
     const c = CALLS[id], m = modelOf(s, id);
@@ -218,7 +221,7 @@ export function namesPreviewQuote(settings?: ChainSettings): ChainQuote {
 
 /** Une ligne du devis des noms vérifiés : un appel (ou une recherche sur le web), combien de fois, sa borne et son probable. */
 export type LigneDesNomsVerifies = {
-  /** recherches (les trois de l'étude), study, strategy, strategy:2, team, teamShort, judge, team:2, teamShort:2, judge:2, recherche:verify, verify. */
+  /** recherches (les trois de l'étude), study, strategy, strategy:2, team, teamShort, judge, team:2, teamShort:2, judge:2, recherche:verify, recherche:verify:2 (la même recherche autrement formulée, quand la première ne rend aucune page), verify. */
   id: string;
   appel: CallId | "web";
   modele: ChainModel;
@@ -231,7 +234,7 @@ export type LigneDesNomsVerifies = {
 /**
  * LE devis de la tâche des noms (méthode des graphistes : `runSinaBrandJob` avec `jusquAuxNoms`), appel par appel, jusqu'aux
  * noms VÉRIFIÉS : les trois recherches et l'étude, les deux tours d'idées, les équipes et leur reprise courte, le juge, le
- * second tour des équipes (et sa reprise) et son juge, puis la recherche sur le web des noms gardés et leur vérification.
+ * second tour des équipes (et sa reprise) et son juge, puis la recherche sur le web des noms gardés (refaite une fois, autrement formulée, si elle ne rend aucune page) et leur vérification.
  * Son plafond est la somme des maxima de TOUS ces appels : il ne compte jamais sur ce qu'un appel précédent n'a pas
  * dépensé (décision du 26 novembre 2026 : l'accord de l'étape ne donnait que 8,66 € à la tâche, sans la vérification).
  * Une seule source pour l'accord du Studio (`accordGraphistes`) et le script d'essai des noms.
@@ -243,7 +246,7 @@ export function devisDesNomsVerifies(o: { settings?: ChainSettings; fresh?: bool
   const s = o.settings ?? chainSettings(), fresh = o.fresh !== false;
   const web = o.web ?? webSearchQuote(s.craft, { maxSearches: BRAND_SEARCHES });
   const lignes: LigneDesNomsVerifies[] = [];
-  const recherche = (id: string, fois: number) => lignes.push({ id, appel: "web", modele: s.craft, fois, toujours: true, maxMicro: web.maxMicro * fois, probableMicro: web.probableMicro * fois });
+  const recherche = (id: string, fois: number, toujours = true) => lignes.push({ id, appel: "web", modele: s.craft, fois, toujours, maxMicro: web.maxMicro * fois, probableMicro: web.probableMicro * fois });
   const appel = (id: string, call: CallId, fois: number, toujours: boolean) => {
     const c = CALLS[call], m = modelOf(s, call);
     const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output) ?? 0;
@@ -262,6 +265,8 @@ export function devisDesNomsVerifies(o: { settings?: ChainSettings; fresh?: bool
   appel("teamShort:2", "teamShort", s.teams, false);
   appel("judge:2", "judge", 1, false);
   recherche("recherche:verify", 1);
+  // Refaite une fois, autrement formulée, quand la première ne rend aucune page (26 novembre 2026) : au plafond seulement.
+  recherche("recherche:verify:2", 1, false);
   appel("verify", "verify", 1, true);
   const somme = (k: "maxMicro" | "probableMicro", f: (l: LigneDesNomsVerifies) => boolean = () => true) => lignes.filter(f).reduce((t, l) => t + l[k], 0);
   return { lignes, maxMicro: Math.ceil(somme("maxMicro")), probableMicro: Math.ceil(somme("probableMicro", (l) => l.toujours)) };
@@ -658,11 +663,49 @@ export type NomsEcartes = {
   ecartes: NomEcarte[];
   /** Les noms permis après le juge (doutes compris), puis ceux envoyés à la vérification et ceux qu'elle laisse. */
   permis: string[]; verifies: string[]; libres: string[];
-  /** La vérification sur le web a-t-elle eu lieu (false : les noms sont montrés sans être vérifiés). */
+  /**
+   * La vérification sur le web a-t-elle comparé des pages aux noms (false : les noms sont montrés comme non vérifiés,
+   * jamais « vérifiés » ; null : pas encore faite). `pourquoiNonVerifie` dit pourquoi rien n'a été comparé.
+   */
   verificationFaite: boolean | null;
+  pourquoiNonVerifie?: PourquoiNonVerifie | null;
 };
 type EquipesDeNoms = { team: string; names: z.infer<typeof TeamSchema>["names"] }[];
-type VerificationDesNoms = { done: boolean; taken: string[]; preuves?: { name: string; url: string; note: string }[] };
+/**
+ * Ce que la vérification des noms gardés a rendu. `compare` : des pages trouvées sur le web ont été comparées aux noms
+ * (une tâche d'avant le 26 novembre 2026 ne l'a pas : la comparaison se lit alors à `preuves`, posé seulement après elle,
+ * ou à un nom trouvé pris ; sans l'un ni l'autre, rien ne prouve qu'une page ait été comparée : non vérifié).
+ */
+type VerificationDesNoms = { done: boolean; compare?: boolean; taken: string[]; preuves?: { name: string; url: string; note: string }[] };
+
+/**
+ * L'état de la vérification des noms : « verifie » seulement si des pages ont été comparées aux noms (décision du
+ * 26 novembre 2026 : un nom n'est jamais marqué « vérifié » si rien n'a été comparé) ; sinon « non_verifie », avec la raison.
+ */
+export function etatDeLaVerification(v: VerificationDesNoms | null | undefined): { verification: VerificationDesNomsMontres; pourquoi: PourquoiNonVerifie | null } {
+  if (!v || !v.done) return { verification: "non_verifie", pourquoi: "recherche_impossible" };
+  return (v.compare ?? (Array.isArray(v.preuves) || v.taken.length > 0)) ? { verification: "verifie", pourquoi: null } : { verification: "non_verifie", pourquoi: "rien_trouve" };
+}
+
+/**
+ * LA vérification des noms sur le web, la seule (la tâche des noms et l'ancien chemin des routes l'appellent toutes les
+ * deux) : une recherche des noms ; sans aucune page, elle est refaite UNE fois, autrement formulée (essai réel du
+ * torréfacteur, 26 novembre 2026 : les noms étaient dits vérifiés après une seule recherche vide), comptée au devis ;
+ * toujours rien, rien n'est comparé et les noms seront dits « non vérifiés » (`etatDeLaVerification`). Avec des pages, le
+ * vérificateur les compare ; un nom n'est dit « pris » que sur une page réellement trouvée. `id` : celui des appels
+ * (la recherche refaite prend `${id}-2`). Une recherche impossible : `done` faux (le plafond atteint arrête la tâche).
+ */
+export async function verifierLesNoms(ai: { research: ChainAi["research"]; ask: ChainAi["ask"] }, id: string, noms: string[], brief: string): Promise<VerificationDesNoms> {
+  try {
+    let findings = await ai.research(id, P.verifyQuery(noms, brief), "competitors");
+    if (!findings.length) findings = await ai.research(`${id}-2`, P.verifyQueryAutrement(noms, brief), "competitors");
+    if (!findings.length) return { done: true, compare: false, taken: [] };
+    const r = await ai.ask(id, { kind: "verify", system: P.VERIFY_SYSTEM, schema: VerifySchema, prompt: `# Noms à vérifier\n${noms.map((n) => `- ${n}`).join("\n")}\n\n# Pages trouvées\n${findings.map((f) => `${f.url}\n${f.title}\n${f.excerpt}`).join("\n\n")}` });
+    // `preuves` : ce que la vérification a vu, et où (le compte rendu des noms écartés, les noms pris des routes).
+    const preuves = r.checks.filter((c) => c.taken && findings.some((f) => sameUrl(f.url, c.url))).map((c) => ({ name: c.name, url: c.url, note: c.note }));
+    return { done: true, compare: true, taken: preuves.map((c) => c.name), preuves };
+  } catch (e) { if (e instanceof CostCapReached) throw e; return { done: false, compare: false, taken: [] }; }
+}
 
 /**
  * Les noms écartés à chaque tour, avec la raison et, quand le juge en donne une, la note (26 novembre 2026 : le
@@ -710,7 +753,8 @@ export function nomsEcartes(o: { equipes1: EquipesDeNoms; equipes2?: EquipesDeNo
   // Dans l'ordre du travail : tour par tour, les contrôles, puis le juge ; la vérification à la fin.
   const rang = (x: NomEcarte) => (x.etape === "verification" ? 10 : x.tour * 2 + (x.etape === "juge" ? 1 : 0));
   ecartes.sort((a, b) => rang(a) - rang(b));
-  return { tours, ecartes, permis: allowed.map((n) => n.name), verifies: candidats, libres: candidats.filter((n) => !pris(n)), verificationFaite: v ? v.done : null };
+  const etat = v ? etatDeLaVerification(v) : null;
+  return { tours, ecartes, permis: allowed.map((n) => n.name), verifies: candidats, libres: candidats.filter((n) => !pris(n)), verificationFaite: etat ? etat.verification === "verifie" : null, ...(etat ? { pourquoiNonVerifie: etat.pourquoi } : {}) };
 }
 
 /**
@@ -1118,17 +1162,10 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // client choisit son nom (identity.nom) ; la recherche de son logo part pour ce nom, puis ses identités le partagent.
   if (a.jusquAuxNoms) {
     const candidats = allowed.map((n) => n.name).slice(0, 12);
-    const pris = await ctx.step(`brand:verify:noms:${round}`, async () => {
-      try {
-        const findings = await ai.research(`verify-noms-${round}`, P.verifyQuery(candidats, briefFromJourney(j)), "competitors");
-        if (!findings.length) return { done: true, taken: [] as string[] };
-        const r = await ai.ask(`verify-noms-${round}`, { kind: "verify", system: P.VERIFY_SYSTEM, schema: VerifySchema, prompt: `# Noms à vérifier\n${candidats.map((n) => `- ${n}`).join("\n")}\n\n# Pages trouvées\n${findings.map((f) => `${f.url}\n${f.title}\n${f.excerpt}`).join("\n\n")}` });
-        const preuves = r.checks.filter((c) => c.taken && findings.some((f) => sameUrl(f.url, c.url))).map((c) => ({ name: c.name, url: c.url, note: c.note }));
-        // `preuves` ne sert qu'au compte rendu des noms écartés (ce que la vérification a vu, et où).
-        return { done: true, taken: preuves.map((c) => c.name), preuves };
-      } catch (e) { if (e instanceof CostCapReached) throw e; return { done: false, taken: [] as string[] }; }
-    });
+    const pris = await ctx.step(`brand:verify:noms:${round}`, () => verifierLesNoms(ai, `verify-noms-${round}`, candidats, briefFromJourney(j)));
+    const etat = etatDeLaVerification(pris);
     if (!pris.done) notes.push("vérification des noms sur le web impossible : les noms sont montrés sans être vérifiés, et c'est dit");
+    else if (etat.verification === "non_verifie") notes.push("vérification des noms sur le web : deux recherches sans aucune page, rien n'a été comparé ; les noms sont montrés comme non vérifiés, et c'est dit");
     // Les noms écartés à chaque tour, avec la raison et la note du juge (le propriétaire veut toujours voir ce que SINA
     // écarte, et pourquoi, 26 novembre 2026) : gardés dans l'état de la tâche (ses points de reprise), jamais dans son
     // résultat, que SINA relit : ni elle ni le client ne les voient. Le script d'essai des noms les écrit au rapport.
@@ -1139,9 +1176,12 @@ export async function runSinaBrandJob(ctx: JobContext) {
     }
     const libres = candidats.filter((n) => !pris.taken.some((t) => normText(t) === normText(n)));
     if (!libres.length) throw new UserFacingError(L("Aucun des noms gardés n'est libre : dis-moi ce que tu veux de différent et je recommence.", "None of the kept names is free."));
-    const avecPourquoi = libres.map((name) => { const k = judged.find((x) => normText(x.name) === normText(name)); const n = allowed.find((x) => normText(x.name) === normText(name)); return { name, why: k?.why ?? doubts.get(normText(name)) ?? "", detail: n?.detail ?? "", doute: doubts.get(normText(name)) ?? null }; });
-    updateJourney(a.conversationId, (x) => { x.nomsVerifies = libres; x.nomsDeLaMarque = { list: avecPourquoi, verifies: pris.done, atelier: ctx.job.id, count: a.count, at: Date.now() }; });
-    return { noms: avecPourquoi, verifies: pris.done, notes };
+    const avecPourquoi = libres.map((name) => { const k = judged.find((x) => normText(x.name) === normText(name)); const n = allowed.find((x) => normText(x.name) === normText(name)); return { name, why: k?.why ?? doubts.get(normText(name)) ?? "", detail: n?.detail ?? "", doute: doubts.get(normText(name)) ?? null, verification: etat.verification }; });
+    const verifies = etat.verification === "verifie";
+    updateJourney(a.conversationId, (x) => { x.nomsVerifies = libres; x.nomsDeLaMarque = { list: avecPourquoi, verifies, verification: etat.verification, ...(etat.pourquoi ? { pourquoiNonVerifie: etat.pourquoi } : {}), atelier: ctx.job.id, count: a.count, at: Date.now() }; });
+    // La phrase à dire au client vient en tête du résultat (SINA le relit, raccourci) : jamais « vérifié » sans comparaison.
+    const aDire = etat.pourquoi ? phraseDesNomsNonVerifies(etat.pourquoi) : null;
+    return { ...(aDire ? { aDireAuClient: aDire } : {}), verification: etat.verification, verifies, noms: avecPourquoi, notes };
   }
   // Aperçu des noms seuls : rien n'est vérifié, aucune planche n'est faite, le parcours ne change pas.
   if (a.namesPreview) {
@@ -1181,19 +1221,23 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // 5. Vérifier les noms : une marque du même secteur porte-t-elle déjà ce nom ? (web seulement, dit au client)
   ctx.progress(0.62, L("Je vérifie que les noms sont libres", "Checking the names are free"));
   let nameCheck: Board["nameCheck"] = "rien_trouve";
+  let aDireDesNoms: string | null = null;
   const taken = new Map<string, string>();
   if (!j.keep.includes("nom")) {
     const candidates = [...picks, ...reserves].map((r) => r.name);
-    const check = await ctx.step(`brand:verify:${round}`, async () => {
-      let findings: WebFinding[];
-      try { findings = await ai.research(`verify-${round}`, P.verifyQuery(candidates, briefFromJourney(j)), "competitors"); } catch (e) { if (e instanceof CostCapReached) throw e; return { done: false as const, checks: [] }; }
-      if (!findings.length) return { done: true as const, checks: [] };
-      const r = await ai.ask(`verify-${round}`, { kind: "verify", system: P.VERIFY_SYSTEM, schema: VerifySchema, prompt: `# Noms à vérifier\n${candidates.map((n) => `- ${n}`).join("\n")}\n\n# Pages trouvées\n${findings.map((f) => `${f.url}\n${f.title}\n${f.excerpt}`).join("\n\n")}` });
-      // Un nom n'est dit « pris » que sur une page réellement trouvée.
-      return { done: true as const, checks: r.checks.filter((c) => c.taken && findings.some((f) => sameUrl(f.url, c.url))) };
-    });
-    if (!check.done) { nameCheck = "non_verifie"; notes.push("vérification des noms sur le web impossible"); }
-    for (const c of check.checks) taken.set(normText(c.name), c.url);
+    // La même vérification que la tâche des noms (`verifierLesNoms`) : une seule façon de faire. Une tâche d'avant le
+    // 26 novembre 2026 a gardé `checks` : relue telle quelle, sans comparaison prouvée si elle n'a rien trouvé de pris.
+    const lu = await ctx.step(`brand:verify:${round}`, () => verifierLesNoms(ai, `verify-${round}`, candidates, briefFromJourney(j)));
+    const ancien = (lu as { checks?: { name: string; url: string; note?: string }[] }).checks;
+    const check: VerificationDesNoms = Array.isArray(ancien) ? { done: lu.done, taken: ancien.map((c) => c.name), ...(ancien.length ? { preuves: ancien.map((c) => ({ name: c.name, url: c.url, note: c.note ?? "" })) } : {}) } : lu;
+    const etat = etatDeLaVerification(check);
+    if (etat.verification === "non_verifie") {
+      // Un nom n'est jamais dit « vérifié » si rien n'a été comparé (26 novembre 2026) : SINA le dit au client.
+      nameCheck = "non_verifie";
+      aDireDesNoms = phraseDesNomsNonVerifies(etat.pourquoi ?? "recherche_impossible");
+      notes.push(check.done ? "vérification des noms sur le web : deux recherches sans aucune page, rien n'a été comparé ; les noms sont montrés comme non vérifiés, et c'est dit" : "vérification des noms sur le web impossible");
+    }
+    for (const c of check.preuves ?? []) taken.set(normText(c.name), c.url);
     // Un nom déjà pris est écarté : une réserve libre prend sa place et garde le fond, la teinte et la police prévus.
     picks = picks.map((r) => {
       if (!taken.has(normText(r.name))) return r;
@@ -1436,7 +1480,7 @@ export async function runSinaBrandJob(ctx: JobContext) {
     // dépendait (images de la marque, logo, charte) repart ; la marque du projet reste jusqu'au nouveau choix.
     if (x.identityChoice) { x.identityChoice = undefined; x.brandFinish = { prepaidMicro: 0 }; x.logos = undefined; x.logoChoice = undefined; x.brandKit = undefined; if (x.steps[2]?.status !== "skipped") setStep(x, 2, "todo"); setStep(x, 3, "todo"); }
   });
-  return { routes: list.map((x) => ({ key: x.key, name: x.name, slogan: x.slogan })), issues, notes, quotes: study.quotes.length, sources: study.sources, facts: clientFacts(j).length > 0 };
+  return { ...(aDireDesNoms ? { aDireAuClient: aDireDesNoms } : {}), routes: list.map((x) => ({ key: x.key, name: x.name, slogan: x.slogan })), issues, notes, quotes: study.quotes.length, sources: study.sources, facts: clientFacts(j).length > 0 };
 }
 
 /**

@@ -40,8 +40,9 @@ describe("l'accord du Studio pour la tâche des noms", async () => {
     borne("judge"),
     ...Array.from({ length: s.teams }, () => [borne("team"), borne("teamShort")]).flat(),
     borne("judge"),
-    // La vérification des noms gardés : sa recherche sur le web, puis son appel.
-    web, borne("verify"),
+    // La vérification des noms gardés : sa recherche sur le web, refaite une fois autrement si elle ne rend aucune page,
+    // puis son appel.
+    web, web, borne("verify"),
   ];
   const somme = (v: number[]) => v.reduce((t, x) => t + x, 0);
 
@@ -59,6 +60,28 @@ describe("l'accord du Studio pour la tâche des noms", async () => {
     const d = C.devisDesNomsVerifies();
     expect(d.lignes.map((l) => l.id)).toEqual(expect.arrayContaining(["strategy:2", "team:2", "teamShort:2", "judge:2", "recherche:verify", "verify"]));
     expect(I.accordGraphistes(3).nomsMicro).toBe(d.maxMicro);
+  });
+
+  it("le devis compte la recherche des noms gardés refaite autrement (au plafond seulement : le probable ne bouge pas)", () => {
+    const d = C.devisDesNomsVerifies();
+    const bis = d.lignes.find((l) => l.id === "recherche:verify:2");
+    expect(bis).toMatchObject({ appel: "web", fois: 1, toujours: false, maxMicro: web });
+    // Sans elle, le plafond serait plus bas d'une recherche, et le probable le même.
+    const sans = d.lignes.filter((l) => l.id !== "recherche:verify:2");
+    expect(d.maxMicro).toBe(Math.ceil(sans.reduce((t, l) => t + l.maxMicro, 0) + web));
+    expect(d.probableMicro).toBe(Math.ceil(sans.filter((l) => l.toujours).reduce((t, l) => t + l.probableMicro, 0)));
+    // Atelier repris : elle reste comptée.
+    expect(C.devisDesNomsVerifies({ fresh: false }).lignes.map((l) => l.id)).toContain("recherche:verify:2");
+  });
+
+  it("l'ancien chemin des routes (chainQuote) compte lui aussi la recherche refaite, au plafond seulement ; plus rien une fois la vérification faite", () => {
+    const q = C.chainQuote({ routes: 3, images: false }), fait = C.chainQuote({ routes: 3, images: false, done: ["brand:verify:1"] });
+    const probableDuWeb = webSearchQuote(s.craft, { maxSearches: C.BRAND_SEARCHES }).probableMicro;
+    // Ce que la vérification coûte au plus : deux recherches (la seconde, refaite autrement) et l'appel de vérification.
+    expect(web).toBeGreaterThan(0);
+    expect(Math.abs(q.maxMicro - fait.maxMicro - (2 * web + borne("verify")))).toBeLessThanOrEqual(2);
+    // Le probable ne compte qu'une recherche.
+    expect(q.probableMicro! - fait.probableMicro!).toBeLessThanOrEqual(probableDuWeb + borne("verify") + 2);
   });
 
   it("le plafond de la tâche (costCapMicro) n'est jamais inférieur à ce qu'il faut pour aller jusqu'aux noms vérifiés, même si chaque appel dépense son maximum", async () => {
