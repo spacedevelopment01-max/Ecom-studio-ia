@@ -210,3 +210,6 @@ Montage :
 9. Un bruitage sur chaque chute ; sous-titres mot par mot (déjà fait).
 Mesure : relever la courbe de rétention de chaque vidéo (TikTok Studio) et noter où les gens partent. Les chiffres trouvés en ligne
 (blogs de créateurs) ne sont pas fiables ; seules nos courbes comptent.
+
+## Règle (26 novembre 2026) : la première seconde
+Dès la première image : voix ou texte fort à l'écran. Jamais d'introduction (bruit seul, image seule) avant la voix. La voix démarre avant 0,5 s.
