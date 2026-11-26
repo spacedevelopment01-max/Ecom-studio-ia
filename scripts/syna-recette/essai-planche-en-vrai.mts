@@ -42,7 +42,9 @@
  * logo fini. a) le code refait les logos, la palette, les polices, les textes et l'assemblage, gratuit ; b) chaque image
  * de l'essai est rejugée sur son verdict réel par le code d'aujourd'hui, gratuit ; c) avec REPRENDRE=<case>,<case> et
  * PLAFOND_ESSAI_EUR, les cases nommées encore refusées sont reprises une fois, à la charge du Studio (vrais appels).
- * Sans REPRENDRE, aucun appel ni clé. Devis de c), sans appel : DEVIS_SEULEMENT=1 REPRENDRE=… (même commande).
+ * Sans REPRENDRE, aucun appel ni clé. Devis de c), sans appel : DEVIS_SEULEMENT=1 REPRENDRE=… (même commande) ; avec
+ * LOGO_HD=1, le devis compte aussi les quatre petites versions du logo en haute définition (option pas encore construite :
+ * sans DEVIS_SEULEMENT, LOGO_HD=1 ne lance rien).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -61,8 +63,10 @@ import path from "node:path";
   const { clientDeLEssai, donneesVerifiees, devisDeLEssaiEnVrai, devisEnTexteEnVrai, essaiDeLaPlancheEnVrai, euros, logoDeLaPlancheVerifie } = await import("./essai-planche-en-vrai-outil");
 
   const reprendre = (process.env.REPRENDRE ?? "").split(",").map((x) => x.trim()).filter(Boolean) as import("../../src/lib/syna-agent/planche-en-vrai").NomElement[];
-  if (devisSeul && (process.env.REASSEMBLER || reprendre.length)) { const { devisDuReassemblage } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuReassemblage(reprendre)).join("\n")); process.exit(0); }
+  const logoHd = process.env.LOGO_HD === "1";
+  if (devisSeul && (process.env.REASSEMBLER || reprendre.length || logoHd)) { const { devisDuReassemblage } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuReassemblage(reprendre, { logoHd })).join("\n")); process.exit(0); }
   if (devisSeul) { console.log(devisEnTexteEnVrai(await devisDeLEssaiEnVrai()).join("\n")); process.exit(0); }
+  if (logoHd) { console.error("LOGO_HD : les quatre petites versions du logo en haute définition ne sont pas encore construites ; rien n'est lancé (devis seul : DEVIS_SEULEMENT=1)."); process.exit(1); }
   if (process.env.REASSEMBLER) {
     const { reassemblerLEssaiEnVrai } = await import("./essai-planche-en-vrai-outil");
     const [sortie0, planche0, logo0] = process.argv.slice(2);

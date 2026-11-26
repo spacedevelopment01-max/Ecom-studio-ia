@@ -1944,6 +1944,24 @@ describe("les épreuves de la planche en vrai (25 novembre 2026, aucun appel)", 
     expect(src).toContain("T.reprendreDesCasesEnVrai(");
     expect(src).toContain("process.env.REASSEMBLER");
     expect(T.devisDUneReprise(["publication-4x5", "emballage"]).maxMicro).toBeGreaterThan(0);
+    // Les retouches gratuites : le recalage élargi (la story ne cache plus le sous-titre du bloc 07, le portrait n'est plus coupé).
+    const story = d.boites.get("publication-9x16")!;
+    expect(story[0] - cases["publication-9x16"][0]).toBeGreaterThanOrEqual(30);
+    expect(d.boites.get("publication-4x5")![2]).toBeGreaterThanOrEqual(1328);
+    // Le fond de l'aperçu gardé : une ombre douce n'est pas de l'encre, l'orange du logo l'est.
+    expect(C.estEncre(0xC8, 0xBC, 0xAE, [0xF6, 0xEB, 0xDD], 40)).toBe(false);
+    expect(C.estEncre(0xC4, 0x49, 0x12, [0xF6, 0xEB, 0xDD], 40)).toBe(true);
+    // Les trois mots de chaque couleur.
+    expect(C.lignesDesMots(createCanvas(10, 10).getContext("2d"), ["Chaleur", "énergie", "bienveillance"], C.fonteDeMiseEnPage(23, 400), 211).join(" ")).toBe("Chaleur, énergie, bienveillance");
+    // Le site en une seule image, à la place des deux images séparées ; le rognage au contenu.
+    const ev = { key: "B", demo: "d", logo: "l", laquelle: "standard", at: 1, planche: { id: "pl", w: 3072, h: 4608 }, logos: [], palette: [], symboleComplet: false, publications: [], issues: [], notes: [], siteEntier: { id: "site", w: 1698, h: 940 },
+      elements: V.NOMS_DES_ELEMENTS.map((n) => ({ element: n, id: `id-${n}`, essais: 1 })) } as never;
+    expect(V.imagesMontrees(ev).map((m) => m.element).filter((e) => e.startsWith("site"))).toEqual(["site"]);
+    expect(Object.keys((await import("@/lib/syna-agent/brand-zip")).fichiersDeLaMarque(ev, "Écume", (id) => Buffer.from(id), () => null))).toContain("images/site-ordinateur-et-telephone.png");
+    const cadre = await sharp({ create: { width: 400, height: 300, channels: 3, background: "#F6F2EC" } }).composite([{ input: await uni(150, 120, "#30485A"), left: 100, top: 80 }]).png().toBuffer();
+    expect([(await sharp(await C.rognerAuContenu(cadre, 6)).metadata()).width, (await sharp(await C.rognerAuContenu(cadre, 6)).metadata()).height]).toEqual([162, 132]);
+    expect(fs.readFileSync("src/components/studio/tab-marque.tsx", "utf8")).toContain('className="columns-2 gap-3 md:columns-3 lg:columns-4" data-brand-envrai-images');
+    expect(T.devisDesLogosEnHd().maxMicro).toBeGreaterThan(0);
   });
 });
 

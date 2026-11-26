@@ -288,19 +288,47 @@ gratuit ; c) avec `REPRENDRE` et un plafond, les cases nommées encore refusées
 (`reprendreDesCasesEnVrai`, devis `devisDUneReprise`). Sur Écume, a) + b) : **15 images gardées sur 17** (la story et le
 téléphone en plus) ; comparaison : `comparaison-apercu-et-reassemblee.jpg` du dossier de sortie.
 
+Les retouches gratuites du même jour (chef d'orchestre, puis le propriétaire devant l'onglet Marque d'Écume, mot pour mot :
+« L'ordi et le téléphone ne sont pas obligés d'être découpés si ? Sinon c'est pas trop mal juste mieux découper les
+images ») :
+
+- **Le recalage élargi** (`ajusterAuxGouttieres`, `RECALAGE_ELARGI` = 60) : après le recalage à 30 pixels, chaque bord
+  d'une photo ou d'une publication est cherché jusqu'à 60 pixels sur les gouttières de la page (colonnes ou lignes claires
+  et unies). Une gouttière d'au moins 8 pixels dans la case, entre une autre image coupée et l'image, ramène le bord à
+  elle ; une image coupée par le bord le pousse jusqu'à la gouttière suivante, jamais dans la bande d'un titre. Sur Écume,
+  la story commence 32 pixels plus à droite que sa case fixe et ne cache plus le sous-titre du bloc 07 ; la publication
+  portrait n'est plus coupée à droite (1334 au lieu de 1296). Sur la planche A d'Écume, la première référence et le
+  premier produit ne prennent plus leur titre de bloc, l'emballage n'est plus coupé à gauche. Les planches fabriquées, où
+  tout est à sa place, ne bougent pas.
+- **Le fond de l'aperçu est gardé** (`fondSansEncre`, `estEncre`) : là où le code efface (le haut, les titres, les blocs),
+  seule l'encre est retirée (un point loin du fond, d'une autre vivacité ou nettement plus foncé ou plus clair), remplacée
+  par le fond voisin ; les ombres de feuillage du haut restent, le logo et le texte redessinés se posent dessus.
+- **La palette** écrit les trois mots de l'aperçu sous chaque couleur, à la suite (« Chaleur, énergie, bienveillance »).
+- **Le spécimen** garde le vrai nom de la police utilisée, « Sacramento » (inchangé).
+- **Le site en une seule image** (`imageDuSite`) : « Le site sur ordinateur et téléphone », tout le bloc du site sans son
+  titre (l'ordinateur, le téléphone, la phrase manuscrite), pris sur la planche assemblée et rogné au contenu. C'est elle
+  que l'onglet Marque montre et que le zip donne (`images/site-ordinateur-et-telephone.png`) ; les deux images séparées
+  restent en coulisses, pour le site (`elements`).
+- **Le rognage au contenu** (`rognerAuContenu`) : chaque image montrée et téléchargée perd le fond mesuré autour d'elle (la
+  couleur qui domine son pourtour), avec une marge de 6 pixels ; une photo pleine ne change pas ; les publications et
+  l'ouverture du site gardent leur format exact. La planche pose l'image d'avant le rognage (`idPlanche`), pour rester
+  identique à l'aperçu.
+- **La grille de l'onglet Marque** : chaque vignette montre l'image entière à sa vraie proportion, en colonnes, sans case
+  de proportion imposée ni fond gris. Vérifié en captures (rendu du composant, Playwright, 1440 et 390 pixels de large).
+
 Ce qui reste différent de l'aperçu, dit franchement :
 - la publication portrait et l'emballage gardent leur aperçu agrandi (refusés pour de vraies raisons) ;
-- la story est posée dans sa case fixe, qui commence 36 pixels trop à gauche sur cette planche : elle recouvre la fin du
-  sous-titre du bloc 07 (« quotidi… ») ; le recalage ne cherche qu'à 30 pixels ;
-- le haut perd les ombres de feuillage de l'aperçu (fond uni) ; le spécimen montre « Sacramento », la police réelle la
-  plus proche, au lieu du mot « Nunito » écrit en manuscrite ; la palette garde deux mots par couleur (l'aperçu en
-  montre trois sur deux lignes) ;
+- la story refaite est au format 9:16 alors que la story de l'aperçu est plus étroite : posée entière dans sa case, elle
+  y paraît un peu plus petite, avec un peu de fond au-dessus et au-dessous (jamais rognée) ;
+- dans le haut, une trace très légère de l'ancien logo peut rester sous le nouveau, au cœur des grandes lettres ;
+- le spécimen montre « Sacramento », la police réelle la plus proche, au lieu du mot « Nunito » écrit en manuscrite ;
 - les quatre tuiles reprises de l'aperçu sont nettes à la taille de la planche, mais leurs fichiers à télécharger sont
   des agrandissements (environ 460 pixels de côté), pas de la haute définition.
 
 Le prix d'une option qui refait le bloc 01 en haute définition (non construite) : les quatre cases (compact, icône,
 favicon, badge) refaites par le modèle d'images des logos à partir de leur tuile, logo joint, au prix des images de la
-planche en vrai (1088 × 1088, qualité haute), relues en un appel : probable 0,35 €, au plus 0,80 €.
+planche en vrai (1088 × 1088, qualité haute), relues en un appel : probable 0,3547 €, au plus 0,8040 €
+(`devisDesLogosEnHd`, `LOGO_HD=1` avec `DEVIS_SEULEMENT=1` ; sans devis, `LOGO_HD=1` ne lance rien).
 
 Épreuve : `planche-en-vrai-identique-a-l-apercu` (scellée) ; `planche-en-vrai-a-l-identique` (la palette mesurée) et
 `planche-en-vrai-symbole-seul-et-bandeau-sans-marges` (sans séparation, le logo complet) sont marquées remplacées, accord

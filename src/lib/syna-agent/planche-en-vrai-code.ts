@@ -631,13 +631,56 @@ export function lettresDuTitre(data: Buffer, W: number, z: Boite, fond: string):
   for (let i = 0; i <= dense.length; i++) { if (i < dense.length && dense[i]) { if (deb < 0) deb = i; } else if (deb >= 0) { if (i - deb > best[1] - best[0] || best[1] - best[0] === compte.length) best = [deb, i]; deb = -1; } }
   return { haut: z[1] + best[0], bas: z[1] + best[1] };
 }
+/**
+ * LE FOND DE L'APERÇU, SANS SON ENCRE (26 novembre 2026, essai réel d'Écume : le haut effacé en aplat perdait les ombres de
+ * feuillage). Une zone de l'aperçu à nettoyer garde son fond : les points d'encre (à plus de `seuil` niveaux du fond, élargis
+ * de 4 pixels) sont remplacés par le fond voisin (moyenne floue des seuls points de fond, rayon d'une douzaine de pixels, puis d'une quarantaine au cœur des grandes lettres) ;
+ * les autres points restent ceux de l'aperçu. Rend la zone agrandie deux fois (PNG), prête à poser.
+ */
+/**
+ * UN POINT D'ENCRE sur le fond d'une case de l'aperçu : loin du fond (plus de `seuil` niveaux) ET d'une autre couleur (la
+ * vivacité, écart entre le plus fort et le plus faible canal, différente de plus de 60) ou nettement plus foncé ou plus
+ * clair (plus de 120 niveaux de luminosité). Une ombre douce de feuillage, de la même couleur que le fond en plus sombre,
+ * n'est pas de l'encre : elle reste.
+ */
+export function estEncre(r: number, g: number, b: number, f: readonly number[], seuil: number): boolean {
+  if (Math.max(Math.abs(r - f[0]), Math.abs(g - f[1]), Math.abs(b - f[2])) <= seuil) return false;
+  const viv = Math.max(r, g, b) - Math.min(r, g, b), vivF = Math.max(f[0], f[1], f[2]) - Math.min(f[0], f[1], f[2]);
+  const lum = 0.299 * r + 0.587 * g + 0.114 * b, lumF = 0.299 * f[0] + 0.587 * f[1] + 0.114 * f[2];
+  return Math.abs(viv - vivF) > 60 || Math.abs(lum - lumF) > 120;
+}
+export async function fondSansEncre(data: Buffer, W: number, b: Boite, fond: string, seuil = 40): Promise<Buffer> {
+  const w = b[2] - b[0], h = b[3] - b[1], f = rgbDe(fond), n = w * h;
+  const px = Buffer.alloc(n * 3), encre = new Uint8Array(n);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = ((b[1] + y) * W + b[0] + x) * 3, j = y * w + x;
+    px[j * 3] = data[i]; px[j * 3 + 1] = data[i + 1]; px[j * 3 + 2] = data[i + 2];
+    encre[j] = estEncre(data[i], data[i + 1], data[i + 2], f, seuil) ? 1 : 0;
+  }
+  const masque = new Uint8Array(n);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (encre[y * w + x]) for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const yy = y + dy, xx = x + dx; if (yy >= 0 && yy < h && xx >= 0 && xx < w) masque[yy * w + xx] = 1; }
+  const connu = Buffer.alloc(n * 3), poids = Buffer.alloc(n * 3);
+  for (let j = 0; j < n; j++) if (!masque[j]) { connu[j * 3] = px[j * 3]; connu[j * 3 + 1] = px[j * 3 + 1]; connu[j * 3 + 2] = px[j * 3 + 2]; poids.fill(255, j * 3, j * 3 + 3); }
+  const flou = async (buf: Buffer, sigma: number) => { const r = await sharp(buf, { raw: { width: w, height: h, channels: 3 } }).blur(sigma).raw().toBuffer({ resolveWithObject: true }); if (r.info.channels !== 3) throw new Error("flou : 3 canaux attendus"); return r.data; };
+  // Deux rayons : le proche (une douzaine de pixels), puis le large (une quarantaine) au cœur des grandes lettres.
+  const A = await flou(connu, 12), K = await flou(poids, 12), A2 = await flou(connu, 40), K2 = await flou(poids, 40);
+  const out = Buffer.alloc(n * 3);
+  for (let j = 0; j < n; j++) for (let k = 0; k < 3; k++) out[j * 3 + k] = !masque[j] ? px[j * 3 + k] : K[j * 3] > 24 ? Math.min(255, Math.round((A[j * 3 + k] * 255) / K[j * 3])) : K2[j * 3] > 2 ? Math.min(255, Math.round((A2[j * 3 + k] * 255) / K2[j * 3])) : f[k];
+  return sharp(out, { raw: { width: w, height: h, channels: 3 } }).resize(w * S, h * S, { kernel: "lanczos3" }).png().toBuffer();
+}
+/** Pose le fond de l'aperçu sans son encre sur une zone de la planche en vrai. */
+async function nettoyer(x: SKRSContext2D, data: Buffer, W: number, b: Boite, fond: string, seuil?: number) {
+  const z: Boite = [Math.max(0, Math.round(b[0])), Math.max(0, Math.round(b[1])), Math.min(W, Math.round(b[2])), Math.round(b[3])];
+  if (z[2] - z[0] < 2 || z[3] - z[1] < 2) return;
+  x.drawImage(await img(await fondSansEncre(data, W, z, fond, seuil)), z[0] * S, z[1] * S, (z[2] - z[0]) * S, (z[3] - z[1]) * S);
+}
 /** La boîte de l'encre d'une case de l'aperçu (un point à plus de 60 niveaux de son fond) ; null si presque rien. */
 function boiteDEncreDeLApercu(data: Buffer, W: number, b: Boite, fond: string): Boite | null {
   const f = rgbDe(fond);
   let a = b[2], c = b[3], d = -1, e = -1;
   for (let y = b[1]; y < b[3]; y++) for (let x = b[0]; x < b[2]; x++) {
     const i = (y * W + x) * 3;
-    if (Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])) > 60) { if (x < a) a = x; if (y < c) c = y; if (x > d) d = x; if (y > e) e = y; }
+    if (estEncre(data[i], data[i + 1], data[i + 2], f, 60)) { if (x < a) a = x; if (y < c) c = y; if (x > d) d = x; if (y > e) e = y; }
   }
   return d < 0 ? null : [a, c, d + 1, e + 1];
 }
@@ -689,6 +732,16 @@ async function couvrir(x: SKRSContext2D, png: Buffer, b: Boite, rayon = 14 * S) 
 export const coupeDuPleinCadre = (w: number, h: number, W: number, H: number) => { const k = Math.max(W / w, H / h); return Math.max(1 - W / k / w, 1 - H / k / h) / 2; };
 /** Le bandeau d'ouverture n'est posé en plein cadre que s'il n'y perd pas plus de 1,5 % de chaque côté. */
 export const COUPE_MAX_DU_BANDEAU = 0.015;
+/** Les mots d'une couleur, séparés par des virgules, renvoyés à la ligne pour tenir dans la largeur donnée (trois lignes au plus). */
+export function lignesDesMots(x: SKRSContext2D, mots: readonly string[], f: string, largeur: number): string[] {
+  x.font = f;
+  const out: string[] = [];
+  for (const [i, m] of mots.map((w) => w.trim()).filter(Boolean).entries()) {
+    const suite = i < mots.length - 1 ? `${m},` : m, cur = out.at(-1);
+    if (cur != null && x.measureText(`${cur} ${suite}`).width <= largeur) out[out.length - 1] = `${cur} ${suite}`; else out.push(suite);
+  }
+  return out.slice(0, 3).map((l, i, a) => (i === a.length - 1 ? l.replace(/,$/, "") : l));
+}
 function texte(x: SKRSContext2D, t: string, px: number, py: number, f: string, couleur: string, align: CanvasTextAlign = "left", maxW?: number) {
   x.font = f; x.fillStyle = couleur; x.textAlign = align; x.textBaseline = "middle";
   if (maxW) x.fillText(t, px, py, maxW); else x.fillText(t, px, py);
@@ -706,6 +759,7 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   const demoPng = (await sharp(o.demo).metadata()).width === TAILLE_DEMO.w ? o.demo : await sharp(o.demo).resize(TAILLE_DEMO.w, TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
   const { data: d0, info } = await sharp(demoPng).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const fond = (b: Boite) => fondDe(d0, info.width, b);
+  const fondAutour = (b: Boite) => fondDe(d0, info.width, [Math.max(0, b[0] - 5), Math.max(0, b[1] - 5), Math.min(info.width, b[2] + 5), Math.min(info.height, b[3] + 5)]);
   const grand = await sharp(demoPng).resize(TAILLE_EN_VRAI.w, TAILLE_EN_VRAI.h, { kernel: "lanczos3" }).png().toBuffer();
   const c = createCanvas(TAILLE_EN_VRAI.w, TAILLE_EN_VRAI.h), x = c.getContext("2d");
   x.drawImage(await img(grand), 0, 0);
@@ -722,7 +776,8 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     // quelle (jamais une case vidée de son texte). Quand tous les textes du haut sont portés par le logo, le haut est
     // effacé en entier et le logo est posé à la place exacte du logo de l'aperçu (la boîte de son encre) : rien ne s'ajoute.
     const ink = o.hautDansLeLogo && !signature.length ? boiteDEncreDeLApercu(d0, info.width, haut, f) : null;
-    x.fillStyle = f; x.fillRect(h[0], h[1], W, signature.length || o.hautDansLeLogo ? H : H * HAUT_DU_LOGO);
+    // Le fond de l'aperçu (ses ombres de feuillage) est gardé : seule l'encre de l'ancien logo et de ses lignes est retirée.
+    await nettoyer(x, d0, info.width, [haut[0], haut[1], haut[2], haut[1] + (signature.length || o.hautDansLeLogo ? haut[3] - haut[1] : (haut[3] - haut[1]) * HAUT_DU_LOGO)], f);
     const plausible = ink && (ink[2] - ink[0]) * (ink[3] - ink[1]) >= (haut[2] - haut[0]) * (haut[3] - haut[1]) * 0.1;
     await poser(x, o.versions["logo-principal"], plausible ? X(ink!) : [h[0] + W * 0.146, h[1] + H * 0.078, h[2] - W * 0.142, h[1] + H * 0.727]);
     signature.slice(0, 2).forEach((l, i) => texte(x, l, h[0] + W / 2, h[1] + H * (0.794 + i * 0.067), mp(H * 0.044, G.code), o.encre, "center", W * 0.9));
@@ -772,7 +827,8 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
       if (luminance(p.hex) > 0.9) { x.strokeStyle = "#E4E0D8"; x.lineWidth = 2; x.stroke(); }
       if (p.nom) texte(x, p.nom, cx * S, (cy + 68) * S, mp(26, G.nom), o.encre, "center", r * 2.4 * S);
       texte(x, p.hex, cx * S, (cy + 89) * S, mp(24, G.code), gris, "center");
-      p.mots.slice(0, 2).forEach((m, k) => texte(x, m, cx * S, (cy + 112 + k * 18) * S, mp(23, G.legende), gris, "center", r * 2.4 * S));
+      // Les mots de l'aperçu, tous (« Chaleur, énergie, bienveillance »), à la suite, renvoyés à la ligne comme sur l'aperçu.
+      lignesDesMots(x, p.mots, mp(23, G.legende), r * 2.4 * S).forEach((m, k) => texte(x, m, cx * S, (cy + 112 + k * 18) * S, mp(23, G.legende), gris, "center", r * 2.4 * S));
     });
   }
   // Les typographies, avec les vraies polices du catalogue.
@@ -799,7 +855,8 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     const b = B(n), im = o.images.get(n);
     if (!b || !im) continue;
     const bb = X(b);
-    x.fillStyle = fond(b); arrondi(x, bb[0], bb[1], bb[2] - bb[0], bb[3] - bb[1], 18); x.fill();
+    // Le fond de la case : celui qui l'entoure sur l'aperçu (la page ou le panneau), jamais une couleur prise dans l'image.
+    x.fillStyle = fondAutour(b); arrondi(x, bb[0], bb[1], bb[2] - bb[0], bb[3] - bb[1], 18); x.fill();
     await poser(x, im, bb);
   }
   // Les titres, redessinés avec les textes de l'inventaire.
@@ -820,7 +877,7 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     if (largeur > place) taille *= place / largeur;
     // La zone de l'ancien titre, mesurée sur l'aperçu, et sa case sont effacées en entier (2 pixels de marge) avant d'écrire.
     const zz = X([Math.min(z[0], b[0]) - 2, Math.min(z[1], b[1]) - 2, Math.max(z[2], b[2]) + 2, Math.max(z[3], b[3]) + 2]);
-    x.fillStyle = f; x.fillRect(zz[0], zz[1], zz[2] - zz[0], zz[3] - zz[1]);
+    await nettoyer(x, d0, info.width, [zz[0] / S, zz[1] / S, zz[2] / S, zz[3] / S], f, 50);
     x.font = mp(taille, G.titre); x.fillStyle = o.encre; x.textAlign = "left"; x.textBaseline = "alphabetic";
     x.fillText(T, z[0] * S, l.bas * S, (z[2] - z[0]) * S);
   }
@@ -831,11 +888,64 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     // Un bloc sans aucune ligne n'est jamais effacé : le décor de la démonstration reste.
     if (!b || !lignes.length) continue;
     const bb = X(b), W = bb[2] - bb[0], H = bb[3] - bb[1];
-    x.fillStyle = fond(b); x.fillRect(bb[0], bb[1], W, H);
+    await nettoyer(x, d0, info.width, b, fond(b), 50);
     const pas = Math.min(H / (lignes.length + 1), 34 * S);
     lignes.forEach((l, i) => texte(x, l, bb[0] + 20 * S, bb[1] + pas * (i + 0.9), i === 0 ? mp(pas * 0.62, G.titre) : mp(pas * 0.5, G.legende), i === 0 ? o.encre : gris, "left", W - 40 * S));
   }
   return c.encode("png");
+}
+
+/**
+ * LE ROGNAGE AU CONTENU (26 novembre 2026, onglet Marque d'Écume ; le propriétaire : « Sinon c'est pas trop mal juste mieux
+ * découper les images ») : une image à télécharger ou à montrer est découpée au plus juste de son contenu. Le fond est mesuré
+ * (la couleur médiane du pourtour) ; les lignes et les colonnes du bord qui n'ont que ce fond (à 14 niveaux près sur 98 % de
+ * leurs points) partent, jamais une ligne du milieu ; il reste une marge minime (`marge` pixels, de son vrai fond). Une
+ * image sans fond autour (une photo pleine) ne change pas.
+ */
+export async function rognerAuContenu(png: Buffer, marge = 6): Promise<Buffer> {
+  const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height;
+  // Le fond mesuré : la couleur la plus fréquente du pourtour (par paliers de 8 niveaux), puis la médiane de ses points.
+  const compte = new Map<number, number[][]>();
+  const add = (x: number, y: number) => { const i = (y * W + x) * 3, k = ((data[i] >> 3) << 10) | ((data[i + 1] >> 3) << 5) | (data[i + 2] >> 3); const l = compte.get(k) ?? []; l.push([data[i], data[i + 1], data[i + 2]]); compte.set(k, l); };
+  for (let x = 0; x < W; x += 2) { add(x, 0); add(x, 1); add(x, H - 1); add(x, H - 2); }
+  for (let y = 0; y < H; y += 2) { add(0, y); add(1, y); add(W - 1, y); add(W - 2, y); }
+  const dominante = [...compte.values()].sort((a, b) => b.length - a.length)[0] ?? [[255, 255, 255]];
+  const pourtour = [...compte.values()].reduce((n, l) => n + l.length, 0);
+  // Une image pleine (aucune couleur ne domine son pourtour) ne change pas.
+  if (dominante.length < pourtour * 0.25) return png;
+  const f = [0, 1, 2].map((k) => mediane(dominante.map((p) => p[k])));
+  // Le contenu : un point à plus de 24 niveaux du fond (un léger changement de teinte, la page autour d'un panneau, n'en est pas).
+  const contenu = (x: number, y: number) => { const i = (y * W + x) * 3; return Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])) > 24; };
+  const parLigne = new Array<number>(H).fill(0), parColonne = new Array<number>(W).fill(0);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (contenu(x, y)) { parLigne[y]++; parColonne[x]++; }
+  // Une ligne ou une colonne ne compte que si elle porte au moins 3 points de contenu (un grain isolé n'en est pas).
+  const y0 = parLigne.findIndex((n) => n >= 3), x0 = parColonne.findIndex((n) => n >= 3);
+  if (y0 < 0 || x0 < 0) return png;
+  const y1 = H - [...parLigne].reverse().findIndex((n) => n >= 3), x1 = W - [...parColonne].reverse().findIndex((n) => n >= 3);
+  if (y0 === 0 && x0 === 0 && y1 === H && x1 === W) return png;
+  const a = Math.max(0, x0 - marge), b = Math.max(0, y0 - marge), r = Math.min(W, x1 + marge), d = Math.min(H, y1 + marge);
+  if (r - a < 8 || d - b < 8) return png;
+  return sharp(png).extract({ left: a, top: b, width: r - a, height: d - b }).png().toBuffer();
+}
+/**
+ * LE SITE EN UNE SEULE IMAGE (26 novembre 2026, le propriétaire devant l'onglet Marque d'Écume : « L'ordi et le téléphone
+ * ne sont pas obligés d'être découpés si ? ») : tout le contenu du bloc du site, l'ordinateur, le téléphone et ce qui les
+ * accompagne, pris sur la planche en vrai assemblée, sans son titre ; puis rogné au contenu. Null sans les deux cases.
+ */
+export async function imageDuSite(planche: Buffer, boites: ReadonlyMap<string, Boite>, titre?: Boite | null, voisins: { droite?: Boite | null; dessous?: Boite | null } = {}): Promise<Buffer | null> {
+  const o = boites.get("site-ordinateur"), t = boites.get("site-telephone");
+  if (!o || !t) return null;
+  const m = await sharp(planche).metadata(), k = (m.width ?? TAILLE_EN_VRAI.w) / TAILLE_DEMO.w;
+  // Le bloc du site : sous la ligne de son titre et de sa pastille (12 pixels), jusqu'au bloc voisin à droite et au titre du
+  // bloc suivant en dessous, sinon 40 pixels autour des deux cases ; puis rogné au contenu.
+  const haut = titre ? titre[3] + 12 : Math.min(o[1], t[1]) - 40;
+  const droite = voisins.droite ? voisins.droite[0] - 4 : Math.max(o[2], t[2]) + 40, bas = voisins.dessous ? voisins.dessous[1] - 8 : Math.max(o[3], t[3]) + 40;
+  const b: Boite = [Math.max(0, Math.min(o[0], t[0]) - 20), Math.max(0, Math.min(haut, Math.min(o[1], t[1]))), Math.max(droite, Math.max(o[2], t[2])), Math.max(bas, Math.max(o[3], t[3]))];
+  const z = b.map((v) => Math.round(v * k)) as Boite;
+  const W = m.width ?? 0, H = m.height ?? 0;
+  const [a, c, r, d] = [Math.max(0, z[0]), Math.max(0, z[1]), Math.min(W, z[2]), Math.min(H, z[3])];
+  return rognerAuContenu(await sharp(planche).extract({ left: a, top: c, width: r - a, height: d - c }).png().toBuffer());
 }
 
 /** Une petite planche de test, fabriquée par le code (pour les essais) : un fond, des pastilles aux couleurs données. */

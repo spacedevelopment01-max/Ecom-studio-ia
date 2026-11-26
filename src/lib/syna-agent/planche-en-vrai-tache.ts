@@ -33,7 +33,7 @@ import {
 } from "./planche-en-vrai";
 import {
   GRAISSE_DE_MISE_EN_PAGE, POLICE_DE_MISE_EN_PAGE, VERSIONS_DU_LOGO, assemblerLaPlanche, catalogueDesPolicesParGenre, codesEcritsDeLaPalette, couleurDuLogo, faviconsEtAvatar, luminance,
-  mesurerLaPalette, monoClairDe, paletteRetenue, policeDuCatalogue, rolesDeLaPalette, separerSymbole, texteDuBasDuBadge, versionsDuLogo, type BlocDeTexte, type Separation, type VersionDuLogo,
+  imageDuSite, mesurerLaPalette, monoClairDe, paletteRetenue, rognerAuContenu, policeDuCatalogue, rolesDeLaPalette, separerSymbole, texteDuBasDuBadge, versionsDuLogo, type BlocDeTexte, type Separation, type VersionDuLogo,
 } from "./planche-en-vrai-code";
 
 // ---------------------------------------------------------------- le devis
@@ -206,11 +206,14 @@ export async function plancheEnVrai(o: {
     for (const e of r.essais) if (e.raisons.length) notes.push(`${n}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
     if (!r.ok || !r.png) { refusees.push(n); elements.push({ element: n, id: null, essais: r.essais.length, raison: r.raison }); continue; }
     const fmt = n === "publication-1x1" ? "1080x1080" : n === "publication-4x5" ? "1080x1350" : n === "publication-9x16" ? "1080x1920" : null;
-    const a = await saveAsset({ ...o.who, data: r.png, name: `planche-en-vrai-${n}.png`, mime: "image/png", role: "brand-envrai", origin: "generated", status: "ready",
+    // L'image montrée et téléchargée est rognée au contenu ; celle de la planche reste telle quelle, en coulisses.
+    const net = await imageMontree(n, r.png), mn = await sharp(net).metadata();
+    const surPlanche = net === r.png ? null : (await saveAsset({ ...o.who, data: r.png, name: `planche-en-vrai-${n}-planche.png`, mime: "image/png", role: "planche-en-vrai-brut", origin: "generated", status: "ready", meta: { plancheEnVrai: { element: n, surLaPlanche: true } } })).id;
+    const a = await saveAsset({ ...o.who, data: net, name: `planche-en-vrai-${n}.png`, mime: "image/png", role: "brand-envrai", origin: "generated", status: "ready",
       meta: { plancheEnVrai: { element: n, tour: r.essais.length, texteEnvoye: r.essais.at(-1)!.texte, verdict: r.essais.at(-1)!.verdict ?? null, ...(ambiance ? { ambiance: true, etiquette: ETIQUETTE_AMBIANCE } : {}) }, ...(fmt ? { publicationMethode: { formatFinal: fmt, planche: "planche-en-vrai" } } : {}) } });
     images.set(n, r.png);
     const description = caseLue(inventaire, n)?.description?.trim();
-    elements.push({ element: n, id: a.id, w: r.w, h: r.h, essais: r.essais.length, ...(ambiance ? { ambiance: true } : {}), ...(description ? { description } : {}) });
+    elements.push({ element: n, id: a.id, w: mn.width ?? r.w, h: mn.height ?? r.h, essais: r.essais.length, ...(ambiance ? { ambiance: true } : {}), ...(description ? { description } : {}), ...(surPlanche ? { idPlanche: surPlanche } : {}) });
   }
   if (refusees.length) issues.push(phraseDeLImageGardeeEnApercu(refusees));
   if (elements.some((e) => e.ambiance && e.id)) issues.push(phraseDuProduitImagine());
@@ -222,7 +225,7 @@ export async function plancheEnVrai(o: {
   notes.push(retenue.note);
   const encre = route.palette.dark && luminance(route.palette.dark) < 0.35 ? route.palette.dark : "#1C2A24";
   const roles = rolesDeLaPalette(palette0, encre);
-  const palette = palette0.map((hex, i) => ({ hex, nom: inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 2) }));
+  const palette = palette0.map((hex, i) => ({ hex, nom: inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 3) }));
   const titres = policeDuCatalogue(inventaire.polices.titres, 700), textes = policeDuCatalogue(inventaire.polices.textes, 400);
   for (const p of [titres, textes]) if (p.remplacee && p.lue) issues.push(p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : p.pourquoi === "apercu" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, undefined, true) : phraseDeLaPoliceRemplacee(p.lue, p.famille));
   const couleur = await couleurDuLogo(logo);
@@ -264,7 +267,7 @@ export async function plancheEnVrai(o: {
   };
   const t = textesDeLaPlanche(inventaire, route);
   notes.push(...t.notes);
-  return { ...etat, planche: await assemblerEtRanger({ who: o.who, route, etat, demo, boites: decoupe.boites, images, versions: v.versions, encre }) };
+  return { ...etat, ...(await placerLaPlanche({ who: o.who, route, etat, demo, boites: decoupe.boites, images, versions: v.versions, encre })) };
 }
 
 /**
@@ -380,15 +383,37 @@ export function paletteDeLaPlanche(mesurees: readonly string[], inventaire: Inve
 }
 
 /** L'assemblage (gratuit, se refait) et le rangement de la planche en vrai comme planche de marque, mention « planche-en-vrai ». */
-async function assemblerEtRanger(o: { who: { userId: string; projectId: string }; route: Route; etat: EtatPlancheEnVrai; demo: Buffer; boites: ReadonlyMap<string, [number, number, number, number]>; images: ReadonlyMap<NomElement, Buffer>; versions: Record<VersionDuLogo, Buffer>; encre: string }): Promise<NonNullable<EtatPlancheEnVrai["planche"]>> {
+async function assemblerEtRanger(o: { who: { userId: string; projectId: string }; route: Route; etat: EtatPlancheEnVrai; demo: Buffer; boites: ReadonlyMap<string, [number, number, number, number]>; images: ReadonlyMap<NomElement, Buffer>; versions: Record<VersionDuLogo, Buffer>; encre: string }): Promise<NonNullable<EtatPlancheEnVrai["planche"]> & { siteEntier?: EtatPlancheEnVrai["siteEntier"] }> {
   const t = textesDeLaPlanche(o.etat.inventaire!, o.route);
   const png = await assemblerLaPlanche({ demo: o.demo, boites: o.boites, pastilles: lesCases(o.etat.laquelle).pastilles, images: o.images, versions: o.versions, palette: o.etat.palette, polices: o.etat.polices!, signature: t.haut, titres: t.titres, blocs: t.blocs, encre: o.encre,
     hautDansLeLogo: t.hautDansLeLogo, typos: phrasesDesPolices(o.etat.inventaire!), tuilesDeLApercu: o.etat.logosDeLApercu ?? [] });
   const m = await sharp(png).metadata();
   const pa = await saveAsset({ ...o.who, data: png, name: "planche-en-vrai.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready",
     meta: { mention: "planche-en-vrai", plancheEnVrai: { key: o.etat.key, demo: o.etat.demo, laquelle: o.etat.laquelle, refusees: o.etat.elements.filter((e) => !e.id).map((e) => e.element), symboleComplet: o.etat.symboleComplet } } });
-  return { id: pa.id, w: m.width ?? 3072, h: m.height ?? 4608 };
+  // Le site en une seule image, prise sur la planche assemblée (tout le bloc du site, sans son titre).
+  const site = await imageDuSite(png, o.boites, lesCases(o.etat.laquelle).cases["titre-08"] ?? null, { droite: o.boites.get("emballage") ?? null, dessous: lesCases(o.etat.laquelle).cases["titre-10"] ?? null });
+  let siteEntier: EtatPlancheEnVrai["siteEntier"];
+  if (site) {
+    const ms = await sharp(site).metadata();
+    const sa = await saveAsset({ ...o.who, data: site, name: "planche-en-vrai-site.png", mime: "image/png", role: "brand-envrai", origin: "generated", status: "ready", meta: { plancheEnVrai: { element: "site", surLaPlanche: true } } });
+    siteEntier = { id: sa.id, w: ms.width ?? 0, h: ms.height ?? 0 };
+  }
+  return { id: pa.id, w: m.width ?? 3072, h: m.height ?? 4608, ...(siteEntier ? { siteEntier } : {}) };
 }
+/** La planche assemblée et rangée, et le site en une seule image, à poser dans l'état. */
+async function placerLaPlanche(o: Parameters<typeof assemblerEtRanger>[0]): Promise<Pick<EtatPlancheEnVrai, "planche" | "siteEntier">> {
+  const { siteEntier, ...planche } = await assemblerEtRanger(o);
+  return { planche, ...(siteEntier ? { siteEntier } : {}) };
+}
+/**
+ * L'image montrée et téléchargée d'une case : rognée au contenu (`rognerAuContenu`), sauf les publications et l'ouverture
+ * du site, pleines par construction et à leurs formats exacts.
+ */
+export async function imageMontree(n: NomElement, png: Buffer): Promise<Buffer> {
+  return n.startsWith("publication-") || n === "ouverture-site" ? png : rognerAuContenu(png);
+}
+/** L'image d'une case telle qu'elle est posée sur la planche (avant le rognage au contenu). */
+const surLaPlanche = (e: EtatPlancheEnVrai["elements"][number]) => e.idPlanche ?? e.id;
 
 // ---------------------------------------------------------------- les produits refaits avec ses photos
 
@@ -410,6 +435,15 @@ export function devisDUneReprise(elements: readonly NomElement[]): { maxMicro: n
   const max = elements.reduce((s, n) => s + elementDeLaPlancheMaxMicro(ELEMENTS[n].taille, 3), 0) + groupes.size * rel.max;
   const probable = elements.reduce((s, n) => s + Math.round(PRIX_MESURES[n] * EUR), 0) + groupes.size * rel.probable;
   return { maxMicro: Math.ceil(max), probableMicro: Math.ceil(probable), images: elements.length, relectures: groupes.size };
+}
+/**
+ * LE DEVIS DES QUATRE PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION (option non construite, 26 novembre 2026) : le compact,
+ * l'icône, le favicon et le badge refaits à partir de leur tuile de l'aperçu, logo joint, au tarif d'une image carrée de
+ * la planche en vrai (1088 × 1088, qualité haute, trois images jointes au plus), relus en un appel. Aucun appel.
+ */
+export function devisDesLogosEnHd(): { maxMicro: number; probableMicro: number; images: number; relectures: number } {
+  const rel = appel("relecture"), taille = ELEMENTS["publication-1x1"].taille;
+  return { maxMicro: Math.ceil(4 * elementDeLaPlancheMaxMicro(taille, 3) + rel.max), probableMicro: Math.ceil(4 * Math.round(PRIX_MESURES["publication-1x1"] * EUR) + rel.probable), images: 4, relectures: 1 };
 }
 /**
  * QUAND LE CLIENT ENVOIE SES PHOTOS : les cases des produits imaginés sont refaites avec sa photo jointe (mise en scène
@@ -442,10 +476,10 @@ export async function refaireLesProduitsEnVrai(o: { ctx: Etape; ai: PlancheEnVra
   }
   const etat: EtatPlancheEnVrai = { ...ev, elements, issues: [...ev.issues.filter((l) => !/image d'ambiance|mood image/.test(l)), ...issues], at: Date.now() };
   const images = new Map<NomElement, Buffer>();
-  for (const e of elements) if (e.id && getAsset(e.id)) images.set(e.element, assetData(getAsset(e.id)!));
+  for (const e of elements) { const id = surLaPlanche(e); if (id && getAsset(id)) images.set(e.element, assetData(getAsset(id)!)); }
   const versions = Object.fromEntries(ev.logos.map((l) => [l.version, assetData(getAsset(l.id)!)])) as Record<VersionDuLogo, Buffer>;
   const encre = o.route.palette.dark && luminance(o.route.palette.dark) < 0.35 ? o.route.palette.dark : "#1C2A24";
-  return { ...etat, planche: await assemblerEtRanger({ who: o.who, route: o.route, etat, demo, boites: decoupe.boites, images, versions, encre }) };
+  return { ...etat, ...(await placerLaPlanche({ who: o.who, route: o.route, etat, demo, boites: decoupe.boites, images, versions, encre })) };
 }
 
 /** Ce qui est déjà fait dans une planche en vrai coupée, dit simplement (lu par `marqueOuArretee`). */
@@ -498,8 +532,8 @@ export async function refaireLesLogosEnVrai(o: { who: { userId: string; projectI
   if (!ev.inventaire || !o.route.board.planche || !getAsset(ev.demo)) return { ...etat, notes: [...notes, "planche gardée telle quelle : sans l'inventaire, elle n'est pas réassemblée"] };
   const demo = assetData(getAsset(ev.demo)!), decoupe = decoupe0 ?? await decouperLesApercus(demo, ev.laquelle);
   const images = new Map<NomElement, Buffer>();
-  for (const e of ev.elements) if (e.id && getAsset(e.id)) images.set(e.element, assetData(getAsset(e.id)!));
-  return { ...etat, planche: await assemblerEtRanger({ who: o.who, route: o.route, etat, demo, boites: decoupe.boites, images, versions: v.versions, encre }) };
+  for (const e of ev.elements) { const id = surLaPlanche(e); if (id && getAsset(id)) images.set(e.element, assetData(getAsset(id)!)); }
+  return { ...etat, ...(await placerLaPlanche({ who: o.who, route: o.route, etat, demo, boites: decoupe.boites, images, versions: v.versions, encre })) };
 }
 
 // ---------------------------------------------------------------- le réassemblage sans appel (26 novembre 2026)
@@ -516,7 +550,7 @@ export async function plancheEnVraiParLeCode(o: { demo: Buffer; laquelle: Laquel
   notes.push(ret.note);
   const encre = o.route.palette.dark && luminance(o.route.palette.dark) < 0.35 ? o.route.palette.dark : "#1C2A24";
   const roles = rolesDeLaPalette(ret.hex, encre);
-  const palette = ret.hex.map((hex, i) => ({ hex, nom: o.inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (o.inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 2) }));
+  const palette = ret.hex.map((hex, i) => ({ hex, nom: o.inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (o.inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 3) }));
   const polices = { titres: policeDuCatalogue(o.inventaire.polices.titres, 700), textes: policeDuCatalogue(o.inventaire.polices.textes, 400) };
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase ?? o.route.slogan ?? "" });
   const v = await versionsDuLogo({ logo: o.logo, separation, couleur: await couleurDuLogo(o.logo), sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(ret.hex), nom: o.route.name.trim(), bas, police: POLICE_DU_BADGE, tuiles: decoupe.apercus });
@@ -524,7 +558,11 @@ export async function plancheEnVraiParLeCode(o: { demo: Buffer; laquelle: Laquel
   notes.push(...t.notes);
   const planche = await assemblerLaPlanche({ demo: o.demo, boites: decoupe.boites, pastilles: lesCases(o.laquelle).pastilles, images: o.images, versions: v.versions, palette, polices, signature: t.haut, titres: t.titres, blocs: t.blocs, encre,
     hautDansLeLogo: t.hautDansLeLogo, typos: phrasesDesPolices(o.inventaire), tuilesDeLApercu: v.depuisLApercu });
-  return { planche, versions: v.versions, depuisLApercu: v.depuisLApercu, symboleComplet: v.symboleComplet, separation, palette, roles, polices, notes, decoupe };
+  // Le site en une seule image et les images montrées, rognées au contenu, comme dans la tâche.
+  const site = await imageDuSite(planche, decoupe.boites, lesCases(o.laquelle).cases["titre-08"] ?? null, { droite: decoupe.boites.get("emballage") ?? null, dessous: lesCases(o.laquelle).cases["titre-10"] ?? null });
+  const montrees = new Map<NomElement, Buffer>();
+  for (const [n, png] of o.images) montrees.set(n, await imageMontree(n, png));
+  return { planche, site, montrees, versions: v.versions, depuisLApercu: v.depuisLApercu, symboleComplet: v.symboleComplet, separation, palette, roles, polices, notes, decoupe };
 }
 
 /**

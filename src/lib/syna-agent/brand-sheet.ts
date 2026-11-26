@@ -12,7 +12,7 @@ import { vueDesEsquisses, type VueDesEsquisses } from "./logo-graphistes";
 import { planchesMontrees } from "./journey";
 import { caseDuDomaine } from "./planche-de-marque";
 import { L } from "../i18n-server";
-import { ETIQUETTE_AMBIANCE, type EtatPlancheEnVrai } from "./planche-en-vrai";
+import { ETIQUETTE_AMBIANCE, LIBELLE_DU_SITE, imagesMontrees, type EtatPlancheEnVrai } from "./planche-en-vrai";
 import { LIBELLE_DES_VERSIONS } from "./planche-en-vrai-code";
 import { libelleDeLElement, sansIdentifiantsDeCase } from "./planche-en-vrai-libelles";
 
@@ -65,8 +65,8 @@ export function vueEnVrai(ev: EtatPlancheEnVrai | undefined, projectId: string, 
     logos: ev.logos.map((x) => ({ version: x.version, label: L(LIBELLE_DES_VERSIONS[x.version].fr, LIBELLE_DES_VERSIONS[x.version].en), url: url(x.id), download: url(x.id, true) })),
     couleurs: ev.palette.map((c) => ({ hex: c.hex, nom: c.nom, roles: [] })),
     polices: ev.polices ? (["titres", "textes"] as const).map((role) => { const p = ev.polices![role]; return { role, famille: p.famille, fichier: p.fichier, url: `/api/syna/fonts/${p.fichier}`, lue: p.lue, remplacee: p.remplacee }; }) : [],
-    images: ev.elements.filter((e) => e.id).map((e) => ({ element: e.element, label: e.ambiance ? `${libelle(e.element)} — ${L(ETIQUETTE_AMBIANCE.fr, ETIQUETTE_AMBIANCE.en)}` : libelle(e.element), url: url(e.id!), download: url(e.id!, true), w: e.w ?? 0, h: e.h ?? 0, ambiance: !!e.ambiance })),
-    sansFichier: ev.elements.filter((e) => !e.id).map((e) => libelle(e.element)),
+    images: imagesMontrees(ev).map((e) => ({ element: e.element, label: e.ambiance ? `${libelle(e.element)} — ${L(ETIQUETTE_AMBIANCE.fr, ETIQUETTE_AMBIANCE.en)}` : e.element === "site" ? L(LIBELLE_DU_SITE.fr, LIBELLE_DU_SITE.en) : libelle(e.element as never), url: url(e.id!), download: url(e.id!, true), w: e.w ?? 0, h: e.h ?? 0, ambiance: !!e.ambiance })),
+    sansFichier: ev.elements.filter((e) => !e.id && !(ev.siteEntier && e.element.startsWith("site-"))).map((e) => libelle(e.element)),
     zip: `/api/projects/${projectId}/brand/zip`,
   };
 }

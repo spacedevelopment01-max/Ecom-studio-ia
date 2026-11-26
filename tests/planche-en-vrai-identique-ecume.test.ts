@@ -74,12 +74,13 @@ describe("2. rien ne s'ajoute sous le logo du haut qui ne soit pas sur l'aperçu
     // Une vraie ligne de signature, absente du logo, reste écrite.
     const autre = P.InventaireSchema.parse({ ...inventaire, cases: inventaire.cases.map((c) => (c.case === "haut" ? { ...c, textes: [...c.textes, "Depuis 2019 à Lyon"] } : c)) });
     expect(T.textesDeLaPlanche(autre, route()).haut).toEqual(["Depuis 2019 à Lyon"]);
-    // L'assemblage : le haut effacé en entier, un logo vide posé, aucun texte ajouté (le haut est uni).
+    // L'assemblage : l'encre du haut retirée en entier (son fond d'ombres gardé), un logo vide posé, aucun texte ajouté :
+    // plus aucun point de l'orange du logo dans le haut (les ombres brunes du fond restent).
     const demo = fs.readFileSync(`${F}/planche-B-gardee.jpg`), cases = P.lesCases("standard").cases;
     const png = await C.assemblerLaPlanche({ demo, boites: new Map([["haut", cases.haut]]), pastilles: [], images: new Map(), versions: await versionsVides(), palette: [], polices: { titres: police("poppins", "Poppins", 700), textes: police("sacramento", "Sacramento", 400) }, signature: t.haut, titres: new Map(), blocs: new Map(), encre: "#1C2A24", hautDansLeLogo: true });
-    const { data, info } = await sharp(png).extract({ left: 0, top: 0, width: cases.haut[2] * 2, height: cases.haut[3] * 2 }).greyscale().raw().toBuffer({ resolveWithObject: true });
-    let min = 255, max = 0; for (let i = 0; i < info.width * info.height; i++) { min = Math.min(min, data[i]); max = Math.max(max, data[i]); }
-    expect(max - min).toBeLessThanOrEqual(2);
+    const { data, info } = await sharp(png).extract({ left: 0, top: 0, width: cases.haut[2] * 2, height: cases.haut[3] * 2 }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    let vives = 0; for (let i = 0; i < info.width * info.height; i++) { const p = data.subarray(i * 3, i * 3 + 3); if (p[0] - p[2] > 120) vives++; }
+    expect(vives).toBe(0);
   });
 });
 
@@ -200,5 +201,90 @@ describe("6. deux refus faux du relecteur, sur les verdicts réels", () => {
   it("un mot coupé par le bord de l'aperçu va avec le mot entier lu ; aucun autre mot n'est excusé", () => {
     expect(P.comparerLesTextes(["Des soins vraiment nature", "our une peau"], ["Des soins vraiment naturels", "pour une peau"])).toEqual({ manquants: [], enTrop: [] });
     expect(P.comparerLesTextes(["Et si vous passiez au solide ?"], ["Et si vous passiez en solide ?"])).toEqual({ manquants: ["au"], enTrop: ["en"] });
+  });
+});
+
+/**
+ * LES RETOUCHES GRATUITES DU 26 NOVEMBRE 2026 (chef d'orchestre, puis le propriétaire devant l'onglet Marque d'Écume :
+ * « L'ordi et le téléphone ne sont pas obligés d'être découpés si ? Sinon c'est pas trop mal juste mieux découper les
+ * images »).
+ */
+describe("7. les retouches gratuites : recalage élargi, fond du haut gardé, palette entière, site en une image, rognage", () => {
+  const demo = fs.readFileSync(`${F}/planche-B-gardee.jpg`);
+  it("le recalage élargi : la story, 36 pixels plus à droite que sa case fixe, ne cache plus le sous-titre du bloc 07 ; la publication portrait n'est plus coupée", async () => {
+    const d = await P.decouperLesApercus(demo, "standard");
+    const story = d.boites.get("publication-9x16")!, portrait = d.boites.get("publication-4x5")!, fixe = P.lesCases("standard").cases["publication-9x16"];
+    expect(story[0] - fixe[0]).toBeGreaterThanOrEqual(30);
+    expect(story[0] - fixe[0]).toBeLessThanOrEqual(40);
+    expect(portrait[2]).toBeGreaterThanOrEqual(1328);
+    expect(portrait[2]).toBeLessThan(story[0]);
+    // Aucune case d'image n'entre dans la bande d'un titre là où la page porte le titre ou son sous-titre.
+    const { data, info } = await sharp(demo).greyscale().raw().toBuffer({ resolveWithObject: true });
+    for (const n of P.NOMS_DES_ELEMENTS) expect(P.bandeDeTitreTouchee({ data, w: info.width, h: info.height }, "standard", d.boites.get(n)!), n).toBeNull();
+    // Une planche fabriquée où tout est à sa place ne bouge pas.
+    const anim = await P.decouperLesApercus(fs.readFileSync("assets/planche-de-marque/disposition-animaux.png"), "animaux");
+    for (const n of P.NOMS_DES_ELEMENTS) expect(anim.boites.get(n)!.every((v, i) => Math.abs(v - P.lesCases("animaux").cases[n][i]) <= P.RECALAGE_MAX), n).toBe(true);
+  });
+  it("le haut : le fond de l'aperçu (une ombre douce) est gardé, seule l'encre vive est retirée", async () => {
+    const c = createCanvas(300, 200), x = c.getContext("2d");
+    x.fillStyle = "#F6EBDD"; x.fillRect(0, 0, 300, 200);
+    x.fillStyle = "#C8BCAE"; x.beginPath(); x.ellipse(60, 100, 50, 80, 0, 0, Math.PI * 2); x.fill();
+    x.fillStyle = "#C44912"; x.fillRect(150, 70, 100, 60);
+    const raw = await sharp(await c.encode("png")).removeAlpha().raw().toBuffer();
+    const net = await C.fondSansEncre(raw, 300, [0, 0, 300, 200], "#F6EBDD");
+    const { data, info } = await sharp(net).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    expect([info.width, info.height]).toEqual([600, 400]);
+    const px = (X: number, Y: number) => [...data.subarray((Y * info.width + X) * 3, (Y * info.width + X) * 3 + 3)];
+    // L'ombre est restée (plus sombre que le fond) ; l'encre orange est partie (plus de couleur vive).
+    expect(px(120, 200)[1]).toBeLessThan(0xEB - 30);
+    const centre = px(400, 200);
+    expect(Math.max(...centre) - Math.min(...centre)).toBeLessThan(40);
+    expect(C.estEncre(0xC8, 0xBC, 0xAE, [0xF6, 0xEB, 0xDD], 40)).toBe(false);
+    expect(C.estEncre(0xC4, 0x49, 0x12, [0xF6, 0xEB, 0xDD], 40)).toBe(true);
+  });
+  it("la palette : les trois mots de l'aperçu sous chaque couleur, à la suite (« Chaleur, énergie, bienveillance »)", () => {
+    const x = createCanvas(10, 10).getContext("2d");
+    const l = C.lignesDesMots(x, ["Chaleur", "énergie", "bienveillance"], C.fonteDeMiseEnPage(23, 400), 211);
+    expect(l.join(" ")).toBe("Chaleur, énergie, bienveillance");
+    expect(l.length).toBeLessThanOrEqual(3);
+    expect(fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8").match(/\.filter\(Boolean\)\.slice\(0, 3\) \}\)\);/g)).toHaveLength(2);
+  });
+  it("le rognage au contenu : le fond mesuré autour part, une marge minime reste ; une photo pleine ne change pas", async () => {
+    const img = await sharp({ create: { width: 400, height: 300, channels: 3, background: "#F6F2EC" } }).composite([{ input: await sharp({ create: { width: 150, height: 120, channels: 3, background: "#30485A" } }).png().toBuffer(), left: 100, top: 80 }]).png().toBuffer();
+    const r = await sharp(await C.rognerAuContenu(img, 6)).metadata();
+    expect([r.width, r.height]).toEqual([162, 132]);
+    const pleine = await sharp({ create: { width: 64, height: 48, channels: 3, background: "#30485A" } }).png().toBuffer();
+    expect((await C.rognerAuContenu(pleine)).equals(pleine)).toBe(true);
+    // Les publications et l'ouverture du site gardent leur format exact.
+    expect((await T.imageMontree("publication-1x1", img)).equals(img)).toBe(true);
+    expect((await sharp(await T.imageMontree("site-ordinateur", img)).metadata()).width).toBe(162);
+  });
+  it("le site en une seule image : l'onglet Marque et le zip la montrent à la place de l'ordinateur et du téléphone, qui restent en coulisses", async () => {
+    const ev = { key: "B", demo: "d", logo: "l", laquelle: "standard", at: 1, planche: { id: "pl", w: 3072, h: 4608 }, logos: [], palette: [], symboleComplet: false, publications: [], issues: [], notes: [],
+      elements: P.NOMS_DES_ELEMENTS.map((n) => ({ element: n, id: n === "site-telephone" ? null : `id-${n}`, essais: 1, w: 10, h: 10 })), siteEntier: { id: "site", w: 1698, h: 940 } } as P.EtatPlancheEnVrai;
+    const m = P.imagesMontrees(ev);
+    expect(m.filter((x) => x.element.startsWith("site"))).toEqual([{ element: "site", id: "site", w: 1698, h: 940 }]);
+    expect(m.findIndex((x) => x.element === "site")).toBe(P.NOMS_DES_ELEMENTS.indexOf("site-ordinateur"));
+    const { vueEnVrai } = await import("@/lib/syna-agent/brand-sheet");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const v = runWithLang({ ui: "fr", content: "fr" }, () => vueEnVrai(ev, "p", (id) => `/f/${id}`))!;
+    expect(v.images.find((x) => x.element === "site")!.label).toBe("Le site sur ordinateur et téléphone");
+    expect(v.sansFichier.join(" ")).not.toMatch(/téléphone/);
+    const { fichiersDeLaMarque } = await import("@/lib/syna-agent/brand-zip");
+    const z = Object.keys(fichiersDeLaMarque(ev, "Écume", (id) => Buffer.from(id), () => null));
+    expect(z).toContain("images/site-ordinateur-et-telephone.png");
+    expect(z.filter((f) => /site-ordinateur\.png|site-telephone\.png/.test(f))).toEqual([]);
+    // En coulisses, le site garde ses deux images séparées (`elements`) ; la planche pose l'image d'avant le rognage.
+    expect(ev.elements.find((e) => e.element === "site-ordinateur")!.id).toBe("id-site-ordinateur");
+  });
+  it("sur les vrais fichiers d'Écume, le code seul fait la planche, le site entier (sans titre ni coupure) et les images montrées", async () => {
+    const det = await (await import("@/lib/syna-agent/brand-images")).logoDetoure(fs.readFileSync(`${F}/esquisse-10-logo-garde-512.png`), "#C14706");
+    const r = await T.plancheEnVraiParLeCode({ demo, laquelle: "standard", inventaire, route: route(), logo: det.ok ? det.png : Buffer.alloc(0), images: new Map() });
+    expect(r.palette[0].mots).toEqual(["Chaleur", "énergie", "bienveillance"]);
+    const s = await sharp(r.site!).metadata();
+    // Tout le bloc du site : plus large que haut, sans le titre (sa hauteur reste sous celle du bloc).
+    expect(s.width! / s.height!).toBeGreaterThan(1.5);
+    expect(s.height!).toBeLessThan((2119 - 1641) * 2);
+    expect(s.height!).toBeGreaterThan((2079 - 1655) * 2 * 0.95);
   });
 });

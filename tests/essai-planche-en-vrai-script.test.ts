@@ -319,7 +319,10 @@ describe("le script de l'essai de la planche en vrai (appels simulés)", async (
     expect(s.enVrai?.logos.map((l) => l.version)).toEqual([...VERSIONS_DU_LOGO, "symbole", "favicon-32", "icone-512", "avatar"]);
     expect(s.enVrai?.couleurs.map((c) => c.hex)).toEqual(r.etat!.palette.map((p) => p.hex));
     expect(s.enVrai?.polices.map((p) => p.famille)).toEqual(["Playfair Display", "Montserrat"]);
-    expect(s.enVrai?.images).toHaveLength(17);
+    // 17 images refaites, montrées en 16 : l'ordinateur et le téléphone en une seule, « Le site sur ordinateur et téléphone ».
+    expect(s.enVrai?.images).toHaveLength(16);
+    expect(s.enVrai?.images.filter((i) => i.element.startsWith("site")).map((i) => i.label)).toEqual(["Le site sur ordinateur et téléphone"]);
+    expect(r.etat!.elements).toHaveLength(17);
     expect(s.planches.map((p) => p.key)).toEqual(["A"]);
     // La marque du projet porte la palette mesurée et les polices lues ; ses couleurs s'affichent.
     expect(s.colors.length).toBe(5);

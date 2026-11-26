@@ -326,7 +326,9 @@ DATA_DIR=data/essai-ecume/studio REASSEMBLER=data/essai-ecume/4-planche-en-vrai 
   data/essai-ecume/3-planches-2/planche-B-gardee.png data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png
 ```
 
-Fait le 26 novembre 2026 sur les vrais fichiers : **15 images gardées sur 17**. La story (premier essai, note 8) était
+Fait le 26 novembre 2026 sur les vrais fichiers (puis refait après les retouches gratuites du même jour : recalage élargi,
+fond du haut gardé, trois mots par couleur, site en une seule image et images rognées au contenu dans `montrees/`) :
+**15 images gardées sur 17**. La story (premier essai, note 8) était
 refusée pour le seul « en » de « quotidien », venu du sous-titre du bloc 07 : gardée. Le téléphone (reprise, note 8,5)
 était refusé pour la seule heure « 9:41 » : gardé. Restent refusées, pour de vraies raisons : la publication portrait
 (texte collé au bord droit, notes 6 et 7) et l'emballage (texte illisible sur le couvercle et le flanc, note 7 ; le « our »
@@ -335,8 +337,16 @@ compact, icône, favicon et badge repris de l'aperçu ; l'horizontal avec la phr
 logo du haut. Rapport : `rapport.txt`, détail : `rejugement.json`, comparaison : `comparaison-apercu-et-reassemblee.jpg`.
 
 c) Seulement si le propriétaire le veut, la reprise des deux images encore refusées, une fois, à la charge du Studio,
-avec leurs raisons d'aujourd'hui (devis gratuit avec `DEVIS_SEULEMENT=1` sur la même commande) : **probable 0,34 €, plafond
-minimal exact 0,7904 €** (publication portrait seule : 0,17 € / 0,3974 € ; emballage seul : 0,17 € / 0,3930 €).
+avec leurs raisons d'aujourd'hui. Devis gratuit (`DEVIS_SEULEMENT=1` sur la même commande), probable / plafond minimal
+exact :
+
+| Variante | Probable | Plafond minimal exact |
+|---|---|---|
+| `REPRENDRE=publication-4x5,emballage` | 0,3367 € | 0,7904 € |
+| `REPRENDRE=publication-4x5` | 0,1679 € | 0,3974 € |
+| `REPRENDRE=emballage` | 0,1688 € | 0,3930 € |
+| `REPRENDRE=publication-4x5,emballage LOGO_HD=1` (devis seul : l'option du logo n'est pas construite) | 0,6915 € | 1,5944 € |
+| `LOGO_HD=1` seul (devis seul) | 0,3547 € | 0,8040 € |
 
 ```
 NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \

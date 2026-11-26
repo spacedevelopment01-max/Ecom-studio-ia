@@ -75,9 +75,11 @@ export function PlancheEnVrai({ v, charte }: { v: VueEnVrai; charte?: { book: st
     </div>}
     {!!v.images.length && <div>
       <SectionTitle title={t("Tes images en haute définition", "Your high-definition images")} />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4" data-brand-envrai-images>
-        {v.images.map((x) => <figure key={x.element} className={cx("overflow-hidden rounded-2xl border border-line", x.w && x.h && x.w / x.h >= 2 ? "col-span-2" : "")} data-image-entiere={x.element}>
-          <a href={x.url} target="_blank" rel="noreferrer" className={cx("flex items-center justify-center bg-[#ECECEA] p-2", x.w && x.h && x.w / x.h >= 2 ? "aspect-[8/3]" : "aspect-[4/5]")}><img src={x.url} alt={x.label} {...(x.w && x.h ? { width: x.w, height: x.h } : {})} className="block h-auto max-h-full w-auto max-w-full object-contain" loading="lazy" /></a>
+      {/* Chaque vignette montre l'image entière, à sa vraie proportion (sa hauteur suit sa largeur) : rien n'est rogné, aucun
+          cadre vide autour (26 novembre 2026, onglet Marque d'Écume). Les images se rangent en colonnes. */}
+      <div className="columns-2 gap-3 md:columns-3 lg:columns-4" data-brand-envrai-images>
+        {v.images.map((x) => <figure key={x.element} className="mb-3 break-inside-avoid overflow-hidden rounded-2xl border border-line" data-image-entiere={x.element}>
+          <a href={x.url} target="_blank" rel="noreferrer" className="block"><img src={x.url} alt={x.label} {...(x.w && x.h ? { width: x.w, height: x.h } : {})} className="block h-auto w-full object-contain" loading="lazy" /></a>
           <figcaption className="flex items-center justify-between gap-2 border-t border-line bg-card px-3 py-2 text-xs"><span>{x.label}</span><a href={x.download} className="underline" aria-label={`${t("Télécharger", "Download")} : ${x.label}`}><Download className="size-3.5" /></a></figcaption>
         </figure>)}
       </div>

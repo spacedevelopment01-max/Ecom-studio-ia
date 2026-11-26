@@ -552,14 +552,16 @@ export type ResultatDuReassemblage = {
   arret?: string; notes: string[];
 };
 /** Le devis de la reprise de quelques cases (aucun appel), avec le plafond minimal exact. */
-export async function devisDuReassemblage(elements: readonly NomElement[]): Promise<string[]> {
+export async function devisDuReassemblage(elements: readonly NomElement[], o: { logoHd?: boolean } = {}): Promise<string[]> {
   const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
-  const d = T.devisDUneReprise(elements);
+  const d = elements.length ? T.devisDUneReprise(elements) : { maxMicro: 0, probableMicro: 0, images: 0, relectures: 0 }, l = T.devisDesLogosEnHd();
   return [
     "Devis du réassemblage (fonctions du devis du Studio, aucun appel) :",
     "- a) réassemblage par le code : 0 € ; b) rejugement des images de l'essai : 0 €",
     `- c) reprise à la charge du Studio de ${elements.join(", ") || "aucune case"} : ${d.images} image(s), ${d.relectures} relecture(s) ; probable ${euros(d.probableMicro)}, au plus ${euros(d.maxMicro)}`,
-    `Plafond minimal exact pour la reprise (somme des maxima) : ${euros(d.maxMicro)}`,
+    ...(o.logoHd ? [`- option LOGO_HD (pas encore construite : rien ne part) : les quatre petites versions du logo en haute définition, ${l.images} images, ${l.relectures} relecture ; probable ${euros(l.probableMicro)}, au plus ${euros(l.maxMicro)}`] : []),
+    `Plafond minimal exact pour la reprise (somme des maxima) : ${euros(d.maxMicro + (o.logoHd ? l.maxMicro : 0))}`,
+    `Probable en tout : ${euros(d.probableMicro + (o.logoHd ? l.probableMicro : 0))}`,
   ];
 }
 
@@ -640,6 +642,9 @@ export async function reassemblerLEssaiEnVrai(o: { dossier: string; sortie: stri
   ecrire("palette.json", `${JSON.stringify({ couleurs: code.palette, roles: code.roles }, null, 2)}\n`);
   ecrire("polices.json", `${JSON.stringify(code.polices, null, 2)}\n`);
   ecrire("planche-en-vrai.png", code.planche);
+  // Ce que l'onglet Marque montre et que le zip donne : chaque image rognée au contenu, le site en une seule image.
+  for (const [n, b] of code.montrees) ecrire(`montrees/${n}.png`, b);
+  if (code.site) ecrire("montrees/site-ordinateur-et-telephone.png", code.site);
   // La comparaison : l'aperçu choisi à gauche, la planche réassemblée à droite, à la même taille.
   const W = 1000, H = 1500, titre = (t0: string) => Buffer.from(`<svg width="${W}" height="44"><rect width="100%" height="100%" fill="#ffffff"/><text x="8" y="30" font-family="sans-serif" font-size="26" font-weight="700" fill="#111">${t0}</text></svg>`);
   const gauche = await sharp(demo).resize(W, H, { fit: "fill" }).png().toBuffer(), droite = await sharp(code.planche).resize(W, H, { fit: "fill", kernel: "lanczos3" }).png().toBuffer();

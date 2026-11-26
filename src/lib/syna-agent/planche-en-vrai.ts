@@ -116,6 +116,63 @@ export const TAILLES_DE_LA_PLANCHE_EN_VRAI: readonly string[] = [...new Set(NOMS
  * luminosité moyenne ; sans saut net, le bord mesuré reste.
  */
 export const RECALAGE_MAX = 30;
+/**
+ * LA RECHERCHE ÉLARGIE (essai réel d'Écume, 26 novembre 2026 : la story commençait 36 pixels plus à droite que sa case fixe,
+ * la publication portrait finissait 38 pixels plus loin ; la case de la story prenait la fin du sous-titre du bloc 07 et le
+ * bord de la publication voisine, celle de la publication portrait coupait ses textes). Après le recalage, chaque bord d'une
+ * photo ou d'une publication est cherché jusqu'à RECALAGE_ELARGI pixels : une gouttière de la page (au moins 3 colonnes,
+ * ou lignes, de la couleur de la page à 4 niveaux près sur 95 % de leurs points) à l'intérieur de la case ramène le bord
+ * à elle ; une image coupée par le bord (la colonne juste dehors est texturée, pas la page) le pousse jusqu'à la
+ * gouttière suivante. Sans gouttière nette dans la recherche, le bord ne bouge pas.
+ */
+export const RECALAGE_ELARGI = 60;
+/** La couleur de la page de la planche : le gris le plus fréquent. */
+export function couleurDeLaPage(g: Gris): number {
+  const h = new Array(256).fill(0);
+  for (let i = 0; i < g.data.length; i += 7) h[g.data[i]]++;
+  return h.indexOf(Math.max(...h));
+}
+export function ajusterAuxGouttieres(g: Gris, b: Boite, page: number, r = RECALAGE_ELARGI, bandes: readonly Boite[] = []): Boite {
+  const [x0, y0, x1, y1] = b;
+  const iy0 = Math.round(y0 + (y1 - y0) / 5), iy1 = Math.round(y1 - (y1 - y0) / 5), ix0 = Math.round(x0 + (x1 - x0) / 5), ix1 = Math.round(x1 - (x1 - x0) / 5);
+  const ligneDe = (vertical: boolean, v: number) => { const out: number[] = []; if (vertical) { if (v < 0 || v >= g.w) return out; for (let y = iy0; y < iy1; y++) out.push(g.data[y * g.w + v]); } else { if (v < 0 || v >= g.h) return out; for (let x = ix0; x < ix1; x++) out.push(g.data[v * g.w + x]); } return out; };
+  // Une gouttière : une colonne (ou ligne) claire et unie, la page ou le fond d'un panneau (écart type de 3 au plus, moyenne
+  // de 235 au moins, ou la couleur de la page à 4 niveaux près sur 95 % de ses points).
+  const estPage = (vertical: boolean, v: number) => {
+    const l = ligneDe(vertical, v);
+    if (!l.length) return false;
+    const m = l.reduce((a, c) => a + c, 0) / l.length, et = Math.sqrt(l.reduce((a, c) => a + (c - m) ** 2, 0) / l.length);
+    return (et <= 3 && m >= 235) || l.filter((p) => Math.abs(p - page) <= 4).length >= l.length * 0.95;
+  };
+  const texturee = (vertical: boolean, v: number) => { const l = ligneDe(vertical, v); if (!l.length) return false; const m = l.reduce((a, c) => a + c, 0) / l.length; return Math.sqrt(l.reduce((a, c) => a + (c - m) ** 2, 0) / l.length) > 8 && !estPage(vertical, v); };
+  /** Un bord : `pas` vaut +1 quand l'intérieur est vers les valeurs croissantes (bord gauche ou haut). */
+  const bord = (vertical: boolean, c: number, pas: 1 | -1, max: number) => {
+    const dedans = (v: number) => (pas === 1 ? v : v - 1), dehors = (v: number) => (pas === 1 ? v - 1 : v);
+    // Une gouttière dans la case, près du bord : le bord va au bout de la gouttière, côté image.
+    for (let d = 0; d <= r; d++) {
+      const v = dedans(c + pas * d);
+      if (v < 0 || v >= max || !estPage(vertical, v)) continue;
+      let n = 0; while (n < r && estPage(vertical, v + pas * n)) n++;
+      const apres = v + pas * n;
+      // Une vraie séparation entre deux images : une gouttière d'au moins 8 colonnes, la partie coupée texturée (une autre
+      // image) sur au moins la moitié de ses colonnes, et l'image juste après (une colonne de transition permise).
+      const coupees = Array.from({ length: Math.abs(v - c) + (pas === 1 ? 0 : 0) }, (_, k) => c + pas * k).map((u) => dedans(u));
+      const autreImage = coupees.length >= 3 && coupees.filter((u) => texturee(vertical, u)).length >= coupees.length / 2;
+      if (n >= 8 && autreImage && [0, 1, 2].some((k) => texturee(vertical, apres + pas * k))) return pas === 1 ? apres : apres + 1;
+      break;
+    }
+    // Une image coupée par le bord : le bord va jusqu'à la gouttière suivante, dehors, jamais dans la bande d'un titre.
+    if (estPage(vertical, dehors(c)) || !texturee(vertical, dehors(c))) return c;
+    const dansUneBande = (v: number) => bandes.some((t) => (vertical ? v >= t[0] && v < t[2] && y1 > t[1] && y0 < t[3] : v >= t[1] && v < t[3] && x1 > t[0] && x0 < t[2]));
+    for (let d = 1; d <= r; d++) {
+      const v = dehors(c - pas * d + (pas === 1 ? 0 : 0));
+      if (v < 0 || v >= max || dansUneBande(v)) return c;
+      if (estPage(vertical, v) && estPage(vertical, v - pas) && estPage(vertical, v - 2 * pas)) return pas === 1 ? v + 1 : v;
+    }
+    return c;
+  };
+  return [bord(true, x0, 1, g.w), bord(false, y0, 1, g.h), bord(true, x1, -1, g.w), bord(false, y1, -1, g.h)];
+}
 type Gris = { data: Buffer; w: number; h: number };
 const gris = async (png: Buffer): Promise<Gris> => { const { data, info } = await sharp(png).greyscale().raw().toBuffer({ resolveWithObject: true }); return { data, w: info.width, h: info.height }; };
 
@@ -219,7 +276,7 @@ export type Decoupe = { apercus: Map<string, Buffer>; boites: Map<string, Boite>
 export async function decouperLesApercus(planche: Buffer, laquelle: Laquelle, noms?: readonly string[]): Promise<Decoupe> {
   const m = await sharp(planche).metadata();
   const png = m.width === TAILLE_DEMO.w && m.height === TAILLE_DEMO.h ? planche : await sharp(planche).resize(TAILLE_DEMO.w, TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
-  const g = await gris(png), c = lesCases(laquelle);
+  const g = await gris(png), c = lesCases(laquelle), page = couleurDeLaPage(g);
   const apercus = new Map<string, Buffer>(), boites = new Map<string, Boite>(), refus: Decoupe["refus"] = [], debordes: string[] = [];
   for (const [nom, mesuree] of Object.entries(c.cases)) {
     if (noms && !noms.includes(nom)) continue;
@@ -229,6 +286,8 @@ export async function decouperLesApercus(planche: Buffer, laquelle: Laquelle, no
     const image = !TITRES.includes(nom) && !(CASES_DU_CODE as readonly string[]).includes(nom) && !nom.startsWith("logo-");
     const bande = image ? bandeDeTitreTouchee(g, laquelle, b) : null;
     if (bande) b = [b[0], bande[3] + 1, b[2], b[3]];
+    // Puis la recherche élargie, sur les gouttières de la page, jamais dans la bande d'un titre.
+    if (RECALEES.has(nom)) b = ajusterAuxGouttieres(g, b, page, RECALAGE_ELARGI, [...bandesDesTitres(laquelle).values()]);
     if (image && entreDansUneBandeDeTitre(laquelle, b)) debordes.push(nom);
     const r = await refusDUneCase(g, b, mesuree, { auBord: AU_BORD.has(nom) });
     if (r) { refus.push({ case: nom, raison: r }); continue; }
@@ -638,7 +697,15 @@ export type EtatPlancheEnVrai = {
   /** La planche en vrai entière (3072 × 4608), rangée comme planche de marque (« brand-board », mention « planche-en-vrai »). */
   planche?: { id: string; w: number; h: number };
   /** Chaque image : son fichier en haute définition (null : refusée deux fois, l'aperçu agrandi garde sa case). */
-  elements: { element: NomElement; id: string | null; w?: number; h?: number; ambiance?: boolean; raison?: string; essais: number; description?: string }[];
+  elements: { element: NomElement; id: string | null; w?: number; h?: number; ambiance?: boolean; raison?: string; essais: number; description?: string;
+    /** L'image telle qu'elle est posée sur la planche (avant le rognage au contenu de `id`, qui est montrée et téléchargée). */
+    idPlanche?: string }[];
+  /**
+   * Le site en une seule image (l'ordinateur et le téléphone, tout le bloc du site sans son titre), prise sur la planche en
+   * vrai assemblée : c'est elle que l'onglet Marque montre et que le zip donne, à la place des deux images séparées, qui
+   * restent en coulisses pour le site.
+   */
+  siteEntier?: { id: string; w: number; h: number };
   logos: { version: import("./planche-en-vrai-code").VersionDuLogo; id: string }[];
   favicons?: { f32: string; f64: string; f512: string; avatar: string };
   palette: { hex: string; nom: string; mots: string[] }[];
@@ -652,3 +719,20 @@ export type EtatPlancheEnVrai = {
   /** Les versions du logo reprises de leur tuile de l'aperçu (sans symbole séparable) : leur case garde l'aperçu agrandi. */
   logosDeLApercu?: import("./planche-en-vrai-code").VersionDuLogo[];
 };
+
+/** Le site en une seule image (26 novembre 2026, le propriétaire : « L'ordi et le téléphone ne sont pas obligés d'être découpés si ? »). */
+export const LIBELLE_DU_SITE = { fr: "Le site sur ordinateur et téléphone", en: "The site on desktop and phone" } as const;
+/**
+ * Les images montrées dans l'onglet Marque et données dans le zip : avec le site en une seule image, l'ordinateur et le
+ * téléphone séparés n'y sont plus (ils restent en coulisses pour le site) ; le site entier prend la place de l'ordinateur.
+ */
+export function imagesMontrees(ev: EtatPlancheEnVrai): { element: string; id: string; w?: number; h?: number; ambiance?: boolean }[] {
+  const out: { element: string; id: string; w?: number; h?: number; ambiance?: boolean }[] = [];
+  const site = () => { if (ev.siteEntier && !out.some((x) => x.element === "site")) out.push({ element: "site", id: ev.siteEntier.id, w: ev.siteEntier.w, h: ev.siteEntier.h }); };
+  for (const e of ev.elements) {
+    if (ev.siteEntier && (e.element === "site-ordinateur" || e.element === "site-telephone")) { site(); continue; }
+    if (e.id) out.push({ element: e.element, id: e.id, w: e.w, h: e.h, ...(e.ambiance ? { ambiance: true } : {}) });
+  }
+  site();
+  return out;
+}
