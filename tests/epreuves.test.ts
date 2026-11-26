@@ -2565,3 +2565,105 @@ describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produi
     expect(P.RELECTEUR_DE_LA_PLANCHE).not.toMatch(/crochet|commence ici|kraft|mouture|torréf/i);
   });
 });
+
+describe("l'épreuve des noms jamais dits vérifiés sans comparaison (tâche des noms, appels simulés, aucun appel payant)", async () => {
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const billing = await import("@/lib/billing");
+  const { withTrace } = await import("@/lib/ai/trace");
+  const J = await import("@/lib/syna-agent/journey");
+  const B = await import("@/lib/syna-agent/brand-chain");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const { clientDeLEssai, essaiDesNoms, FICHIER_DE_REPRISE } = await import("../scripts/syna-recette/essai-noms-outil");
+  await (await import("../scripts/syna-recette/tarifs-verifies")).appliquerTarifsVerifies();
+  const PHRASE = "Je n'ai rien trouvé sur Internet pour vérifier que personne n'utilise déjà ces noms dans ton métier : regarde de ton côté avant de choisir le tien.";
+  const PAGE = "https://avis.example/cafe", ANNUAIRE = "https://annuaire.example/cafes";
+  type Page = { url: string; title: string; category: "competitors"; excerpt: string };
+  /** La tâche des noms avec des appels simulés ; `pages` dit ce que rend chaque recherche des noms gardés. */
+  const essai = async (pages: (id: string) => Page[]) => {
+    const appels: string[] = [], envoyes: string[] = [];
+    const paye = (q: { userId: string; jobId: string }) => withTrace({ jobId: q.jobId }, async () => { const rid = billing.reserve(q.userId, 30_000, { task: "strategy", provider: "anthropic", model: "simule", jobId: q.jobId }); billing.settle(rid, 15_000, null, "strategy"); });
+    const ai = (q: { userId: string; projectId: string; jobId: string }) => ({
+      research: async (id: string, query: string) => { appels.push(`web:${id}`); envoyes.push(query); await paye(q); return id.startsWith("verify") ? pages(id) : [{ url: PAGE, title: "Avis sur le café", category: "customers" as const, excerpt: "« Le café frais moulu change tout le matin. »" }]; },
+      ask: async (id: string, c: { kind: string; schema: { parse: (v: unknown) => unknown } }) => {
+        appels.push(id); await paye(q);
+        const r: Record<string, unknown> = {
+          study: { quotes: [{ text: "Le café frais moulu change tout le matin.", url: PAGE }], competitors: [], mould: "des paquets kraft" },
+          strategy: { job: "boire un café frais chez soi", confessions: [{ text: "je ne sais jamais quand mon café a été torréfié", quotes: [0] }], ideas: [1, 2, 3, 4].map((i) => ({ id: `i${i}`, belief: `idée ${i}`, enemy: "le café rassis", proof: "la date", cost: "torréfier chaque semaine", strong: true })) },
+          team: { names: ["Fournée", "Braise", "Mouture", "Grain Franc", "Torréfie", "Cerise Rouge", "Tasse Claire"].map((name) => ({ name, detail: "le grain torréfié", second: "aucune", idea: "i1" })) },
+          judge: { kept: ["Fournée", "Braise", "Mouture", "Grain Franc"].map((name) => ({ name, seen: "un grain torréfié", why: "il dit le métier" })) },
+          verify: { checks: [{ name: "Braise", taken: true, url: ANNUAIRE, note: "déjà un torréfacteur" }] },
+        };
+        return c.schema.parse(r[c.kind]);
+      },
+      draw: async () => { throw new Error("interdit"); },
+      look: async () => { throw new Error("interdit"); },
+    });
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "epreuve-noms-"));
+    try {
+      const r = await essaiDesNoms({ sortie: dir, plafondEuros: "20", client: clientDeLEssai({ CLIENT_JSON: "scripts/syna-recette/clients/torrefacteur.json" }, { sansNom: true }), ai: ai as never, lirePage: async () => "<p>« Le café frais moulu change tout le matin. »</p>", trouverLesAdresses: async () => null as never });
+      const lire = (f: string) => fs.readFileSync(path.join(dir, f), "utf8");
+      const cid = JSON.parse(lire(FICHIER_DE_REPRISE)).conversationId as string;
+      return { r, appels, envoyes, rapport: lire("rapport.txt"), noms: JSON.parse(lire("noms.json")), cid };
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  };
+  const ANNUAIRE_DES_CAFES: Page = { url: ANNUAIRE, title: "Annuaire des cafés", category: "competitors", excerpt: "Braise, torréfacteur." };
+
+  epreuve("nom-jamais-verifie-sans-comparaison", async () => {
+    // 1. Deux recherches vides : refaite une fois, autrement formulée ; aucune vérification ; « non vérifiés », jamais « vérifiés ».
+    const vide = await essai(() => []);
+    expect(vide.r.arret, vide.r.arret).toBeUndefined();
+    expect(vide.appels.filter((a) => /verify/.test(a))).toEqual(["web:verify-noms-1", "web:verify-noms-1-2"]);
+    expect(vide.envoyes.at(-1)).not.toBe(vide.envoyes.at(-2));
+    expect(vide.envoyes.at(-1)).toMatch(/entre guillemets suivi du métier du client/);
+    expect(vide.envoyes.at(-1)).toMatch(/suivi du mot « marque »/);
+    expect(vide.r).toMatchObject({ verifies: false, verification: "non_verifie", aDireAuClient: PHRASE });
+    expect(vide.r.noms.length).toBe(4);
+    expect(vide.r.noms.every((n) => n.verification === "non_verifie")).toBe(true);
+    expect(vide.noms).toMatchObject({ verifies: false, verification: "non_verifie", aDireAuClient: PHRASE });
+    expect(vide.rapport).toContain("Noms NON VÉRIFIÉS proposés au client : 4");
+    expect(vide.rapport).not.toContain("Noms vérifiés proposés au client");
+    expect(vide.rapport).toContain(`Ce que SINA dit au client : « ${PHRASE} »`);
+    expect(vide.rapport).toContain("1. Fournée [non vérifié]");
+    // Le parcours : l'état distinct, et ce que SINA lit de l'étape (la phrase mot pour mot, l'adresse jamais promise).
+    const n = J.journeyOf(vide.cid).nomsDeLaMarque!;
+    expect(n).toMatchObject({ verifies: false, verification: "non_verifie", pourquoiNonVerifie: "rien_trouve" });
+    expect(n.list.every((x) => x.verification === "non_verifie")).toBe(true);
+    J.updateJourney(vide.cid, (x) => { J.setStep(x, 0, "done"); J.setStep(x, 1, "doing"); });
+    const contexte = await runWithLang({ ui: "fr", content: "fr" }, async () => J.journeyContext(J.journeyOf(vide.cid)));
+    expect(contexte).toContain(`dis-lui, mot pour mot : « ${PHRASE} »`);
+    expect(contexte).toContain("ne dis jamais que ces noms sont vérifiés ni libres");
+    expect(contexte).toContain("L'adresse sur Internet n'est jamais promise");
+
+    // 2. Une page trouvée la seconde fois : la vérification habituelle ; le nom pris est écarté ; les autres sont vérifiés.
+    const seconde = await essai((id) => (id === "verify-noms-1-2" ? [ANNUAIRE_DES_CAFES] : []));
+    expect(seconde.appels.filter((a) => /verify/.test(a))).toEqual(["web:verify-noms-1", "web:verify-noms-1-2", "verify-noms-1"]);
+    expect(seconde.r).toMatchObject({ verifies: true, verification: "verifie", aDireAuClient: null });
+    expect(seconde.r.noms.map((x) => x.nom)).toEqual(["Fournée", "Mouture", "Grain Franc"]);
+    // 3. Une page trouvée dès la première fois : une seule recherche, puis la vérification habituelle.
+    const premiere = await essai(() => [ANNUAIRE_DES_CAFES]);
+    expect(premiere.appels.filter((a) => /verify/.test(a))).toEqual(["web:verify-noms-1", "verify-noms-1"]);
+    expect(premiere.rapport).toContain("1. Fournée [vérifié]");
+
+    // 4. Le devis de la tâche des noms compte la recherche refaite dans son maximum, pas dans le probable ; l'accord la couvre.
+    const d = B.devisDesNomsVerifies();
+    expect(d.lignes.find((l) => l.id === "recherche:verify:2")).toMatchObject({ appel: "web", fois: 1, toujours: false });
+    expect(d.maxMicro).toBe(Math.ceil(d.lignes.reduce((t, l) => t + l.maxMicro, 0)));
+    expect(d.probableMicro).toBe(Math.ceil(d.lignes.filter((l) => l.toujours).reduce((t, l) => t + l.probableMicro, 0)));
+    expect((await import("@/lib/syna-agent/tools/identity")).accordGraphistes(3).nomsMicro).toBe(d.maxMicro);
+    // 5. L'ancien chemin des routes suit la même règle, par la même fonction (une seule façon de faire).
+    const cherchees: string[] = [];
+    const faux = { research: async (id: string) => { cherchees.push(id); return []; }, ask: async () => { throw new Error("aucune vérification sans page"); } };
+    expect(await B.verifierLesNoms(faux as never, "verify-1", ["Fournée"], "fiche")).toEqual({ done: true, compare: false, taken: [] });
+    expect(cherchees).toEqual(["verify-1", "verify-1-2"]);
+    const chaine = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
+    expect(chaine.match(/verifierLesNoms\(ai, `verify-/g)).toHaveLength(2);
+    expect(chaine).not.toMatch(/ai\.research\(`verify/);
+    expect(chaine).toContain('nameCheck = "non_verifie";\n      aDireDesNoms = phraseDesNomsNonVerifies(');
+    const routes = B.chainQuote({ routes: 3, images: false }), verifiees = B.chainQuote({ routes: 3, images: false, done: ["brand:verify:1"] });
+    expect(routes.maxMicro - verifiees.maxMicro).toBeGreaterThan(routes.probableMicro! - verifiees.probableMicro!);
+    // 6. Une tâche d'avant, sans comparaison gardée, n'est jamais relue comme vérifiée.
+    expect(B.etatDeLaVerification({ done: true, taken: [] }).verification).toBe("non_verifie");
+    expect(J.phraseDesNomsMontres({ verifies: true })).toBeNull();
+  });
+});

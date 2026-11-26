@@ -177,7 +177,7 @@ import path from "node:path";
   if (r.logosEnHd) console.log(`Logos en haute définition : ${r.logosEnHd.versions.length ? `gardés ${r.logosEnHd.gardees.join(", ") || "aucun"} ; refusés deux fois ${r.logosEnHd.refusees.join(", ") || "aucun"}` : "aucune version reprise de l'aperçu (symbole séparable), rien à refaire"}`);
   console.log(`${r.cases.filter((c) => c.gardee).length} image(s) gardée(s) sur 17, planche ${r.planche ? `${r.planche.w} × ${r.planche.h}` : "non assemblée"}, dépense comptée ${euros(r.depenseMicro)}. Rapport : ${path.join(sortie, "rapport.txt")}`);
   if (r.projectId) console.log(`Projet de l'essai : ${r.projectId} (essai.json et etat.json dans ${sortie}, pour ecran-planche-en-vrai.mts).`);
-  if (r.reprise) console.log(`Reprise de la passe ${r.reprise.passe} : repris sans appel ${r.reprise.reprises.join(", ") || "rien"}${r.reprise.refaits.length ? ` ; refait(s) parce que tu as relancé : ${r.reprise.refaits.join(", ")}` : ""} ; dépense en tout ${euros(r.reprise.depensePrecedenteMicro + r.depenseMicro)}.`);
+  if (r.reprise) console.log(`Reprise de la passe ${r.reprise.passe} : repris sans appel ${r.reprise.reprises.join(", ") || "rien"}${r.reprise.refaits.length ? ` ; refait(s) parce que tu as relancé : ${r.reprise.refaits.join(", ")}` : ""} ; dépense en tout ${euros(r.reprise.depenseDesPassesArchiveesMicro + r.reprise.depensePrecedenteMicro + r.depenseMicro)}.`);
   if (r.arret) {
     console.log(`Arrêt : ${r.arret}`);
     const { lignesPourReprendre } = await import("./essai-planche-en-vrai-outil");

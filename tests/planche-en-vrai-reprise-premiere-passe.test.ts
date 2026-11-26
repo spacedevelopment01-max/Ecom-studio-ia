@@ -118,6 +118,43 @@ describe("la reprise d'une première passe interrompue de la planche en vrai (ap
     expect(rapport2).toMatch(/refait\(s\) cette fois : site-ordinateur, seulement parce que le propriétaire a relancé lui-même avec REPRENDRE=1 \(jamais tout seul\)/);
   }, 300_000);
 
+  it("une deuxième reprise sur une reprise déjà interrompue (Mouture, 26 novembre 2026) : passe-1 gardée, passe-2 archivée, seule l'image sans réponse est redemandée, la dépense « en tout » compte les trois passes", async () => {
+    const e = await preparer();
+    const base = { sortie: e.sortie, plafondEuros: "10", planche: e.planche, logo: e.logo, client: ECUME, donnees: donnees(), logoHd: true, aiLogos: logos as never };
+    const r1 = await O.essaiDeLaPlancheEnVrai({ ...base, ai: simule("site-ordinateur") as never });
+    expect(r1.arret).toMatch(/Résultat incertain/);
+    const passe1 = fs.readFileSync(path.join(e.sortie, "rapport.txt"));
+    // La première reprise s'arrête à son tour, sur la dernière image (reference-6).
+    appels.length = 0;
+    const r2 = await O.essaiDeLaPlancheEnVrai({ ...base, ai: simule("reference-6") as never, reprendre: true });
+    expect(r2.arret).toMatch(/^un appel a échoué, jamais relancé : Résultat incertain/);
+    expect(appels.filter((a) => a.startsWith("image:")).at(-1)).toBe("image:reference-6");
+    expect(appels.some((a) => a.startsWith("relecture:"))).toBe(false);
+    const prec = O.passePrecedente(e.sortie)!;
+    expect(prec.numero).toBe(2);
+    expect(prec.images.size).toBe(16);
+    expect(prec.sansReponse).toEqual(["reference-6-1"]);
+    expect(prec.depenseDesPassesArchiveesMicro).toBe(r1.depenseMicro);
+    const d = await O.devisDeLaReprise(prec, { logoHd: true });
+    expect(d.texte.join("\n")).toMatch(/Restent : 1 image\(s\) \(reference-6\), 4 relecture\(s\)/);
+    expect(d.texte.join("\n")).toMatch(/avec les passes d'avant, en tout : /);
+    const recues = new Map([...prec.images].map(([k, v]) => [k, v.png]));
+    // La deuxième reprise : seule reference-6 est redemandée ; les 16 images reçues sont relues telles quelles.
+    appels.length = 0;
+    const r3 = await O.essaiDeLaPlancheEnVrai({ ...base, ai: simule() as never, reprendre: true });
+    expect(r3.arret).toBeUndefined();
+    expect(appels).not.toContain("inventaire");
+    expect(appels.filter((a) => a.startsWith("image:"))).toEqual(["image:reference-6"]);
+    expect(appels.filter((a) => a.startsWith("relecture:"))).toHaveLength(4);
+    expect(r3.reprise).toMatchObject({ passe: 2, refaits: ["reference-6"], sansReponse: ["reference-6-1"], depensePrecedenteMicro: r2.depenseMicro, depenseDesPassesArchiveesMicro: r1.depenseMicro });
+    for (const [k, png] of recues) expect(fs.readFileSync(path.join(e.sortie, "cases", `${k}-hd.png`)).equals(png), k).toBe(true);
+    expect(fs.readFileSync(path.join(e.sortie, "passe-1/rapport.txt")).equals(passe1)).toBe(true);
+    for (const f of ["passe-2/rapport.txt", "passe-2/depense.json", "passe-2/cases/reference-6-1-texte-envoye.txt", "etat.json", "planche-en-vrai.png"]) expect(fs.existsSync(path.join(e.sortie, f)), f).toBe(true);
+    expect(r3.etat!.elements.filter((x) => !x.id).map((x) => x.element)).toEqual([]);
+    const euros = (m: number) => `${(m / 1e6).toFixed(4).replace(".", ",")} €`;
+    expect(fs.readFileSync(path.join(e.sortie, "rapport.txt"), "utf8")).toContain(`aux passes d'avant (passe-1/) : ${euros(r1.depenseMicro)} ; en tout : ${euros(r1.depenseMicro + r2.depenseMicro + r3.depenseMicro)}`);
+  }, 300_000);
+
   it("REPRENDRE=1 refuse, avant tout appel, une autre planche que celle de la passe d'avant, ou un dossier sans rien à reprendre", async () => {
     const e = await preparer();
     await expect(O.essaiDeLaPlancheEnVrai({ sortie: e.sortie, plafondEuros: "10", planche: e.planche, logo: e.logo, client: ECUME, donnees: donnees(), ai: simule() as never, reprendre: true })).rejects.toThrow(/rien à reprendre/);

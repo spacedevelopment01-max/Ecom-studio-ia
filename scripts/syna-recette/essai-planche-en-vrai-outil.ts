@@ -13,6 +13,7 @@ import type { StatutDuDomaine } from "../../src/lib/syna-agent/planche-de-marque
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
 import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
+import { messageAvecCause } from "../../src/lib/ai/erreur-reseau";
 import type { LigneDeDepense } from "./essai-planches-outil";
 import { SEPARATEUR_DES_LIGNES, lignesDuTexte } from "../../src/lib/syna-agent/phrase-sous-le-nom";
 
@@ -309,7 +310,7 @@ export type ResultatEnVrai = {
    * REPRENDRE=1 : la passe reprise (son numéro, archivée dans passe-N/), ce qui a été repris sans appel, les appels partis
    * sans réponse à la passe d'avant et refaits parce que le propriétaire a relancé, les écarts notés, la dépense d'avant.
    */
-  reprise?: { passe: number; reprises: string[]; refaits: string[]; ecarts: string[]; depensePrecedenteMicro: number; incertainMicro: number; sansReponse: string[] };
+  reprise?: { passe: number; reprises: string[]; refaits: string[]; ecarts: string[]; depensePrecedenteMicro: number; depenseDesPassesArchiveesMicro: number; incertainMicro: number; sansReponse: string[] };
 };
 /**
  * Comment reprendre un essai arrêté, en lignes pour le rapport et la console : la même commande, même dossier de sortie, avec
@@ -372,6 +373,8 @@ export type PassePrecedente = {
   plancheSha: string | null; logoSha: string | null;
   /** Ce que la passe d'avant a compté (réglé, plus les coûts maximaux retenus des résultats incertains). */
   depenseMicro: number; incertainMicro: number;
+  /** Ce que les passes déjà archivées (passe-1/, passe-2/…) ont compté : une deuxième reprise les compte aussi dans « en tout ». */
+  depenseDesPassesArchiveesMicro: number;
 };
 
 const lireJson = (f: string): unknown => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return null; } };
@@ -415,8 +418,10 @@ export function passePrecedente(sortie: string): PassePrecedente | null {
   const depenseMicro = depense.reduce((s, a) => s + (a.reelMicro ?? a.reserveMicro ?? 0), 0);
   const incertainMicro = depense.filter((a) => a.statut === "uncertain").reduce((s, a) => s + (a.reelMicro ?? a.reserveMicro ?? 0), 0);
   if (!inventaire && !images.size && !relectures.size && !sansReponse.length && !rapport) return null;
-  const numero = 1 + liste(".").filter((d) => /^passe-\d+$/.test(d)).length;
-  return { numero, inventaire, demandeDeLInventaire, images, relectures, logosHd, sansReponse: sansReponse.sort(), plancheSha, logoSha, depenseMicro, incertainMicro };
+  const archivees = liste(".").filter((d) => /^passe-\d+$/.test(d));
+  const numero = 1 + archivees.length;
+  const depenseDesPassesArchiveesMicro = archivees.reduce((s, d) => s + ((lireJson(f(d, "depense.json")) as { reelMicro?: number | null; reserveMicro?: number }[] | null) ?? []).reduce((t, a) => t + (a.reelMicro ?? a.reserveMicro ?? 0), 0), 0);
+  return { numero, inventaire, demandeDeLInventaire, images, relectures, logosHd, sansReponse: sansReponse.sort(), plancheSha, logoSha, depenseMicro, incertainMicro, depenseDesPassesArchiveesMicro };
 }
 
 /**
@@ -446,7 +451,7 @@ export async function devisDeLaReprise(prec: PassePrecedente, o: { logoHd?: bool
       `Restent : ${restent.length} image(s) (${restent.join(", ") || "aucune"}), ${P.GROUPES.length - P.GROUPES.filter((g) => prec.relectures.has(`${g}-1`)).length} relecture(s)${logos ? ", puis LOGO_HD (4 images et 1 relecture, à la charge du Studio)" : ""}.`,
       ...(prec.sansReponse.length ? [`Appel(s) parti(s) sans réponse à la passe ${prec.numero} (résultat incertain, coût maximal retenu : ${euros(prec.incertainMicro)}) : ${prec.sansReponse.join(", ")}. Jamais relancé tout seul : refait seulement parce que tu relances toi-même avec REPRENDRE=1.`] : []),
       `Probable de ce qui reste : ${euros(probableMicro)} (si chaque image est refaite une fois : ${euros(probableAvecReprisesMicro)}) ; somme des maxima de ce qui reste, reprises comprises : ${euros(plafondMinimalMicro)}.`,
-      `Plafond conseillé : ${euros(plafondConseilleMicro(probableMicro))} (deux fois le probable, arrondi). Déjà compté à la passe ${prec.numero} : ${euros(prec.depenseMicro)}.`,
+      `Plafond conseillé : ${euros(plafondConseilleMicro(probableMicro))} (deux fois le probable, arrondi). Déjà compté à la passe ${prec.numero} : ${euros(prec.depenseMicro)}${prec.depenseDesPassesArchiveesMicro ? ` ; avec les passes d'avant, en tout : ${euros(prec.depenseDesPassesArchiveesMicro + prec.depenseMicro)}` : ""}.`,
     ],
   };
 }
@@ -542,7 +547,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
   const route = { key: "A", name: client.nom, slogan: donnees.phrase, palette, board: { planche: { image: { id: demoAsset.id, w: 1536, h: 2304 }, logo: logoAsset.id, domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: debut, ...(donnees.finitions?.length ? { finitions: donnees.finitions } : {}) } } };
 
   const brut: PlancheEnVraiAi = o.ai ? o.ai(qui) : T.plancheEnVraiDeps.ai ? T.plancheEnVraiDeps.ai(jobId) : T.vraisAppelsEnVrai(qui);
-  const res: ResultatEnVrai = { client, donnees, apercus: [], refusALaDecoupe: [], cases: [], relectures: [], logos: [], depenseMicro: 0, appels: [], devis, ...(prec ? { reprise: { passe: prec.numero, reprises: [], refaits: [], ecarts: [], depensePrecedenteMicro: prec.depenseMicro, incertainMicro: prec.incertainMicro, sansReponse: prec.sansReponse } } : {}) };
+  const res: ResultatEnVrai = { client, donnees, apercus: [], refusALaDecoupe: [], cases: [], relectures: [], logos: [], depenseMicro: 0, appels: [], devis, ...(prec ? { reprise: { passe: prec.numero, reprises: [], refaits: [], ecarts: [], depensePrecedenteMicro: prec.depenseMicro, depenseDesPassesArchiveesMicro: prec.depenseDesPassesArchiveesMicro, incertainMicro: prec.incertainMicro, sansReponse: prec.sansReponse } } : {}) };
   const repris = (quoi: string) => res.reprise?.reprises.push(quoi);
   const ecrireFichier = (nom: string, contenu: string | Buffer) => { fs.writeFileSync(path.join(o.sortie, nom), contenu); return nom; };
   const json = (v: unknown) => `${JSON.stringify(v, (_k, x) => (Buffer.isBuffer(x) ? `[image de ${x.length} octets]` : x && typeof x === "object" && x.type === "Buffer" && Array.isArray(x.data) ? `[image de ${x.data.length} octets]` : x), 2)}\n`;
@@ -655,9 +660,9 @@ export async function essaiDeLaPlancheEnVrai(o: {
       if (!c) return undefined;
       let details: unknown = c.details;
       try { details = c.details ? JSON.parse(c.details) : null; } catch { /* tel quel */ }
-      return { etape: c.step, fournisseur: c.provider, modeleDemande: c.requested_model, modeleServi: c.served_model, unite: c.unit, jetonsEntree: c.input_tokens, jetonsCacheLus: c.cache_read_tokens, jetonsCacheEcrits: c.cache_write_tokens, jetonsSortie: c.output_tokens, quantite: c.quantity, effort: c.effort, fin: c.stop_reason, dureeMs: c.latency_ms, coutMicro: c.cost, estime: !!c.estimated, statut: c.status, cle: c.usage_key, details };
+      return { etape: c.step, fournisseur: c.provider, modeleDemande: c.requested_model, modeleServi: c.served_model, unite: c.unit, jetonsEntree: c.input_tokens, jetonsCacheLus: c.cache_read_tokens, jetonsCacheEcrits: c.cache_write_tokens, jetonsSortie: c.output_tokens, quantite: c.quantity, effort: c.effort, fin: c.stop_reason, dureeMs: c.latency_ms, coutMicro: c.cost, estime: !!c.estimated, statut: c.status, cle: c.usage_key, heure: c.created_at ?? null, ...(c.error_kind ? { erreur: c.error_kind } : {}), details };
     };
-    res.appels = reservations.map((r) => ({ cle: r.operation_key ?? appelDe(r)?.usage_key ?? null, task: r.task ?? null, modele: r.model ? `${r.provider ?? ""}:${r.model}` : null, studio: !!r.studio, reserveMicro: r.amount, reelMicro: r.actual ?? null, statut: r.status, ...(appelDe(r) ? { appel: detail(appelDe(r)) } : {}) }));
+    res.appels = reservations.map((r) => ({ cle: r.operation_key ?? appelDe(r)?.usage_key ?? null, task: r.task ?? null, modele: r.model ? `${r.provider ?? ""}:${r.model}` : null, studio: !!r.studio, reserveMicro: r.amount, reelMicro: r.actual ?? null, statut: r.status, heure: r.created_at ?? null, ...(r.note ? { raison: r.note } : {}), ...(appelDe(r) ? { appel: detail(appelDe(r)) } : {}) }));
     ecrireFichier("depense.json", json(res.appels));
     ecrireFichier("usage.json", json(appels.map(detail)));
   };
@@ -702,7 +707,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
         `  repris tels quels, sans appel : ${r.reprises.join(", ") || "rien"}`,
         ...(r.sansReponse.length ? [`  appel(s) parti(s) sans réponse à la passe ${r.passe} (résultat incertain, coût maximal retenu : ${euros(r.incertainMicro)}) : ${r.sansReponse.join(", ")} ; refait(s) cette fois : ${r.refaits.join(", ") || "aucun"}, seulement parce que le propriétaire a relancé lui-même avec REPRENDRE=1 (jamais tout seul)`] : []),
         ...r.ecarts.map((x) => `  écart noté : ${x}`),
-        `  dépense comptée à la passe ${r.passe} : ${euros(r.depensePrecedenteMicro)} ; à cette passe : ${euros(res.depenseMicro)} ; en tout : ${euros(r.depensePrecedenteMicro + res.depenseMicro)}`);
+        `  dépense comptée à la passe ${r.passe} : ${euros(r.depensePrecedenteMicro)} ; à cette passe : ${euros(res.depenseMicro)}${r.depenseDesPassesArchiveesMicro ? ` ; aux passes d'avant (${Array.from({ length: r.passe - 1 }, (_, i) => `passe-${i + 1}/`).join(", ")}) : ${euros(r.depenseDesPassesArchiveesMicro)}` : ""} ; en tout : ${euros(r.depenseDesPassesArchiveesMicro + r.depensePrecedenteMicro + res.depenseMicro)}`);
     }
     if (res.arret) lignes.push("", `ARRÊT : ${res.arret}`);
     // Arrêté par le plafond de l'essai (26 novembre 2026) : ce qui est fait et ce qu'il faudrait au plus pour finir.
@@ -719,7 +724,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
   };
   const raisonDeLArret = (e: unknown) => e instanceof RepriseRefusee ? `reprise refusée avant tout appel : ${e.message}` : e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}`
     : e instanceof CostCapReached ? `le plafond de la tâche (celui du Studio) a refusé un appel : ${e.message}`
-      : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
+      : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;
 
   ecrireFichier("fiche-du-client.txt", `${fiche}\n`);
   // LOGO_HD : la borne du Studio couvre aussi les quatre petites versions en haute définition (reprise comprise).
@@ -1093,7 +1098,7 @@ async function repriseDesCases(o: {
       const res = await T.reprendreDesCasesEnVrai({ ai, nom: o.nom, personnes: o.personnes, logo: o.logo, separation: o.separation, inventaire: o.inventaire, decoupe: o.decoupe, elements: o.elements, raisons: o.raisons, debordes: o.debordes });
       for (const [n, r] of res) { o.ecrire(`reprise/${n}-raisons.json`, `${JSON.stringify(r.essais.map((e) => e.raisons), null, 2)}\n`); if (r.ok && r.png) gardees.set(n, r.png); }
     } catch (e) {
-      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
+      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;
     }
   })));
   return { devis, depenseMicro: depensesDeLaTache(jobId).total, gardees, ...(arret ? { arret } : {}) };
@@ -1150,7 +1155,7 @@ async function logosEnHdDeLEssai(o: {
         if (r.ok && r.png) { gardees.set(v, r.png); o.ecrire(`logos-hd/${v}-gardee-sans-fond.png`, r.png); }
       }
     } catch (e) {
-      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
+      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;
     }
   })));
   return { devis, depenseMicro: depensesDeLaTache(jobId).total, gardees, tentees, ...(arret ? { arret } : {}) };
