@@ -206,7 +206,7 @@ export const outilsDuLogo = (): AgentTool[] => [nomTool, ...logoTools];
  */
 export const nomTool: AgentTool<{ nom: string }> = {
   name: "identity.nom", module: "marque", kind: "write", needsProject: true,
-  description: "Le nom choisi PAR LE CLIENT parmi les noms montrés (non vérifiés quand le Studio le dit) ; lance la recherche de son logo. Gratuit.",
+  description: "Le nom choisi PAR LE CLIENT parmi les noms montrés ; lance la recherche de son logo. Gratuit.",
   args: z.object({ nom: z.string().min(1).max(60) }).strict(),
   run: (ctx, a) => {
     const nom = a.nom.trim(), noms = journeyOf(ctx.conversationId).nomsVerifies ?? [];
