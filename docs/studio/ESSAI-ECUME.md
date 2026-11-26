@@ -359,16 +359,68 @@ La reprise de l'emballage a moins de chances : ses deux essais ont été notés 
 que l'aperçu porte déjà. Le bloc 01 en haute définition n'est pas construit (probable 0,35 €, au plus 0,80 €, voir
 `PLANCHE-EN-VRAI.md`).
 
+### 4b refait : le spécimen mesuré, et l'écran qui suit (26 novembre 2026, gratuit)
+
+Constat du chef d'orchestre sur 4b et ses captures (`5b-ecran`) : « Le spécimen du bloc 03 est trop pâle. Sacramento est
+presque illisible, et les lignes sous Poppins sont plus pâles et plus petites que sur l'aperçu. Le spécimen doit avoir la
+couleur, la taille et le contraste de l'aperçu. » et « L'écran ne suit pas le réassemblage. » Les deux sont corrigés sans
+dépense (détail : `PLANCHE-EN-VRAI.md`, partie « Le spécimen mesuré et l'écran qui suit le réassemblage »). Le
+réassemblage écrit maintenant `etat.json` et `essai.json` dans son dossier, range tout dans le projet de l'essai et
+réécrit son parcours : l'écran se lance sur le `etat.json` de `4b-reassemblee`, plus sur celui de l'étape 4.
+
+Copier les fichiers depuis la branche des essais s'ils manquent (depuis la racine du dépôt ; aucun appel) :
+
+```
+git fetch origin claude/essais-complets
+for d in 2-finalisation 3-planches-2 4-planche-en-vrai; do
+  mkdir -p data/essai-ecume/$d
+  git archive -o data/essai-ecume/$d.tar FETCH_HEAD docs/studio/essais-complets/images/ecume/$d
+  tar -x --strip-components=6 -C data/essai-ecume/$d -f data/essai-ecume/$d.tar
+  rm data/essai-ecume/$d.tar
+done
+```
+
+Refaire 4b, gratuit (aucun appel, aucune clé ; dans la base de l'essai, le projet de l'essai est repris) :
+
+```
+DATA_DIR=data/essai-ecume/studio REASSEMBLER=data/essai-ecume/4-planche-en-vrai \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-ecume/4b-reassemblee \
+  data/essai-ecume/3-planches-2/planche-B-gardee.png data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png
+```
+
+Puis l'écran, gratuit, sur le nouvel état :
+
+```
+DATA_DIR=data/essai-ecume/studio node_modules/.bin/tsx scripts/syna-recette/ecran-planche-en-vrai.mts data/essai-ecume/4b-reassemblee/etat.json
+```
+
+Il affiche l'adresse de la page Marque et le compte fictif. Puis lancer le studio privé sur la même base (étape 5) et
+prendre les captures dans `data/essai-ecume/5c-ecran/`, par exemple, avec l'identifiant du projet affiché :
+
+```
+ENTIER=1 node scripts/syna-recette/capture.cjs planche-en-vrai@example.com /studio/<projet>/marque data/essai-ecume/5c-ecran/ordinateur-page-entiere.png
+node scripts/syna-recette/capture.cjs planche-en-vrai@example.com /studio/<projet>/marque data/essai-ecume/5c-ecran/ordinateur-data-brand-envrai-planche.png "[data-brand-envrai-planche]"
+ENTIER=1 node scripts/syna-recette/capture.cjs planche-en-vrai@example.com /studio/<projet>/marque data/essai-ecume/5c-ecran/telephone-page-entiere.png "" 390
+```
+
+Essayé par Claude le 26 novembre 2026 sur les vrais fichiers copiés de la branche des essais, sans aucun appel, dans une
+base d'essai neuve (le projet de l'essai n'y était pas : un projet fictif a été créé, et c'est dit ; l'écran a donc été
+lancé avec `EMAIL=ecume-4b@example.com`, l'adresse par défaut étant déjà prise dans cette base par un essai précédent).
+Résultat : 15 images gardées sur 17, comme avant ; le spécimen a l'encre, la taille et le trait de l'aperçu ; `etat.json`
+porte la story et le site sur téléphone ; l'onglet Marque (studio privé construit et lancé sans aucune clé, captures 1440
+et 390) montre la planche réassemblée, la story, le site en une seule image, et dit que seules la publication portrait et
+l'emballage gardent leur aperçu. Dans la vraie base de l'essai, le projet de l'essai est repris : rien n'est créé.
+
 ## Étape 5 — l'onglet Marque, en captures (gratuit)
 
 ```
-DATA_DIR=data/essai-ecume/studio node_modules/.bin/tsx scripts/syna-recette/ecran-planche-en-vrai.mts data/essai-ecume/4-planche-en-vrai/etat.json
+DATA_DIR=data/essai-ecume/studio node_modules/.bin/tsx scripts/syna-recette/ecran-planche-en-vrai.mts data/essai-ecume/4b-reassemblee/etat.json
 ```
 
-Il relit le client et le projet dans `essai.json`, écrit le parcours et donne l'adresse de la page Marque et le compte
-fictif. Puis lancer le studio privé sur la même base (`lancer-agent.mts`, après une construction du Studio si elle
-n'est pas faite) et prendre les captures avec `capture.cjs` (ordinateur 1440 de large, téléphone 390), dans
-`data/essai-ecume/5-ecran/`.
+(Avant le réassemblage : `data/essai-ecume/4-planche-en-vrai/etat.json`.) Il relit le client et le projet dans
+`essai.json`, écrit le parcours et donne l'adresse de la page Marque et le compte fictif. Puis lancer le studio privé sur
+la même base (`lancer-agent.mts`, après une construction du Studio si elle n'est pas faite) et prendre les captures avec
+`capture.cjs` (ordinateur 1440 de large, téléphone 390), dans `data/essai-ecume/5-ecran/` (`5c-ecran/` après 4b refait).
 
 ## Les prix
 

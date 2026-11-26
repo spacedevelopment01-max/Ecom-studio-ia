@@ -2126,3 +2126,62 @@ describe("l'épreuve de la planche en vrai identique en visuel (essai d'Écume, 
     expect(T.APPELS_EN_VRAI.inventaire.input).toBe(32_000 + Math.ceil(Buffer.byteLength(liste) / 3));
   });
 });
+
+describe("l'épreuve du spécimen mesuré et de l'écran qui suit le réassemblage (essai d'Écume, 26 novembre 2026, aucun appel)", async () => {
+  const V = await import("@/lib/syna-agent/planche-en-vrai");
+  const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+  const Fx = "tests/fixtures/ecume-planche-en-vrai";
+
+  epreuve("planche-en-vrai-specimen-mesure-et-ecran-du-reassemblage", async () => {
+    const os = await import("node:os"), path = await import("node:path");
+    // 1. Le spécimen du bloc 03, sur l'aperçu réel de B : l'encre, la hauteur et le trait de l'aperçu.
+    const demo = fs.readFileSync(`${Fx}/planche-B-gardee.jpg`), cases = V.lesCases("standard");
+    const pol = (cle: string, famille: string, poids: number) => ({ cle, famille, fichier: "", poids, handle: `${cle}_n${String(poids)[0]}`, lue: famille, remplacee: false });
+    const png = await C.assemblerLaPlanche({ demo, boites: new Map([["palette", cases.cases.palette], ["typographies", cases.cases.typographies]]), pastilles: cases.pastilles, images: new Map(), versions: {} as never,
+      palette: [{ hex: "#C44912", nom: "Orange Écume", mots: [] }], polices: { titres: pol("poppins", "Poppins", 700), textes: pol("sacramento", "Sacramento", 400) }, signature: [], titres: new Map(), blocs: new Map(), encre: "#1C2A24", typos: ["Moderne, ronde, accessible.", "Chaleureuse, humaine, naturelle."] });
+    const lum = (hx: string) => { const c = C.rgbDe(hx).map((v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+    const contraste = (a: string, b: string) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+    const lignes = async (p: Buffer, k: number) => {
+      const { data, info } = await sharp(p).removeAlpha().raw().toBuffer({ resolveWithObject: true }), b = cases.cases.typographies.map((v) => v * k) as import("@/lib/syna-agent/planche-en-vrai").Boite, fond = C.fondDe(data, info.width, b);
+      return { fond, l: C.lignesDuSpecimen(data, info.width, b, fond)!.map((c) => c!) };
+    };
+    const a = await lignes(demo, 1), b = await lignes(png, 2);
+    for (const k of [0, 1]) for (let i = 0; i < 5; i++) {
+      const x = a.l[k][i], y = b.l[k][i];
+      expect(contraste(y.couleur, b.fond), `${k}:${i}`).toBeGreaterThanOrEqual(contraste(x.couleur, a.fond) * 0.98);
+      expect(Math.abs((y.bas - y.haut) / 2 - (x.bas - x.haut)) / (x.bas - x.haut), `${k}:${i}`).toBeLessThanOrEqual(0.15);
+      expect(y.epaisseur / 2, `${k}:${i}`).toBeGreaterThanOrEqual(x.epaisseur * 0.85);
+    }
+    // 2. L'écran suit le réassemblage : etat.json et le parcours portent les images regagnées et la nouvelle planche.
+    const { reassemblerLEssaiEnVrai } = await import("../scripts/syna-recette/essai-planche-en-vrai-outil");
+    const { ECUME } = await import("./clients-d-essai");
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "epreuve-ecran-")), essai = path.join(dir, "essai");
+    for (const d of ["apercus", "cases", "relectures"]) fs.mkdirSync(path.join(essai, d), { recursive: true });
+    fs.writeFileSync(path.join(essai, "essai.json"), JSON.stringify({ client: ECUME, donnees: { domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, disposition: "standard", phrase: "SAVONNERIE / ARTISANALE" } }));
+    fs.copyFileSync(`${Fx}/inventaire-reponse.json`, path.join(essai, "inventaire-reponse.json"));
+    fs.copyFileSync(`${Fx}/cases-de-l-essai.json`, path.join(essai, "apercus", "cases.json"));
+    for (const [f, g] of [["publications-1-verdict.json", "publications-1"], ["publications-2-verdict.json", "publications-2"], ["site-2-verdict.json", "site-2"]]) fs.copyFileSync(`${Fx}/${f}`, path.join(essai, "relectures", `${g}-verdict.json`));
+    const uni = (w: number, hh: number) => sharp({ create: { width: w, height: hh, channels: 3, background: "#8899AA" } }).png().toBuffer();
+    for (const [n, t, w, hh] of [["publication-1x1", 1, 1088, 1088], ["publication-4x5", 1, 1088, 1360], ["publication-4x5", 2, 1088, 1360], ["publication-9x16", 1, 1088, 1936], ["publication-9x16", 2, 1088, 1936], ["site-telephone", 2, 1024, 1536]] as const)
+      fs.writeFileSync(path.join(essai, "cases", `${n}-${t}-hd.png`), await uni(w, hh));
+    const planche = path.join(dir, "planche-B.png"); fs.writeFileSync(planche, await sharp(demo).png().toBuffer());
+    const logo = path.join(dir, "logo-10.png"); fs.copyFileSync(`${Fx}/esquisse-10-logo-garde-512.png`, logo);
+    const sansAppel = { inventaire: async () => { throw new Error("aucun appel"); }, refaire: async () => { throw new Error("aucun appel"); }, relire: async () => { throw new Error("aucun appel"); } };
+    const sortie = path.join(dir, "4b"), r = await reassemblerLEssaiEnVrai({ dossier: essai, sortie, planche, logo, ai: () => sansAppel as never });
+    const etat = JSON.parse(fs.readFileSync(path.join(sortie, "etat.json"), "utf8")) as import("@/lib/syna-agent/planche-en-vrai").EtatPlancheEnVrai, el = (n: string) => etat.elements.find((e) => e.element === n)!;
+    for (const n of ["publication-9x16", "site-telephone"]) expect(el(n).id, n).toBeTruthy();
+    expect(el("publication-4x5").id).toBeNull();
+    const { journeyOfProject } = await import("@/lib/syna-agent/construction");
+    const j = journeyOfProject(r.projectId)!;
+    expect(j.plancheEnVrai?.planche?.id).toBe(etat.planche!.id);
+    expect(j.plancheEnVrai?.elements.map((e) => e.id)).toEqual(etat.elements.map((e) => e.id));
+    const { brandSheetOf } = await import("@/lib/syna-agent/brand-sheet");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const s = runWithLang({ ui: "fr", content: "fr" }, () => brandSheetOf(r.projectId));
+    expect(s.enVrai?.planche?.url).toContain(etat.planche!.id);
+    expect(s.enVrai?.images.some((i) => i.url.includes(el("publication-9x16").id!))).toBe(true);
+    // La tâche et le réassemblage rangent par les mêmes fonctions du Studio.
+    const src = fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8");
+    for (const f of ["rangerLesImages(", "rangerLesLogos(", "marqueRelueSurLaPlanche(", "publicationsDeLaPlanche("]) expect(src.split(f).length, f).toBeGreaterThanOrEqual(4);
+  });
+});

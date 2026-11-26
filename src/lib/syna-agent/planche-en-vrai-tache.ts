@@ -198,25 +198,13 @@ export async function plancheEnVrai(o: {
   }, { nom, personnes: o.personnes, logo: logoSurBlanc, symbole: symboleSurBlanc, photo, apercus: decoupe.apercus, inventaire, debordes: decoupe.debordes });
 
   // Les images gardées, rangées en haute définition ; les produits sans photo du client sont marqués « image d'ambiance ».
-  const elements: EtatPlancheEnVrai["elements"] = [], images = new Map<NomElement, Buffer>(), refusees: string[] = [];
-  for (const n of NOMS_DES_ELEMENTS) {
+  for (const n of NOMS_DES_ELEMENTS) for (const e of res.get(n)?.essais ?? []) if (e.raisons.length) notes.push(`${n}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
+  const rangees = await rangerLesImages(o.who, inventaire, new Map(NOMS_DES_ELEMENTS.flatMap((n) => {
     const r = res.get(n);
-    const ambiance = n.startsWith("produit-") && !r?.photo;
-    if (!r) { elements.push({ element: n, id: null, essais: 0, raison: "case non découpée" }); continue; }
-    for (const e of r.essais) if (e.raisons.length) notes.push(`${n}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
-    if (!r.ok || !r.png) { refusees.push(n); elements.push({ element: n, id: null, essais: r.essais.length, raison: r.raison }); continue; }
-    const fmt = n === "publication-1x1" ? "1080x1080" : n === "publication-4x5" ? "1080x1350" : n === "publication-9x16" ? "1080x1920" : null;
-    // L'image montrée et téléchargée est rognée au contenu ; celle de la planche reste telle quelle, en coulisses.
-    const net = await imageMontree(n, r.png), mn = await sharp(net).metadata();
-    const surPlanche = net === r.png ? null : (await saveAsset({ ...o.who, data: r.png, name: `planche-en-vrai-${n}-planche.png`, mime: "image/png", role: "planche-en-vrai-brut", origin: "generated", status: "ready", meta: { plancheEnVrai: { element: n, surLaPlanche: true } } })).id;
-    const a = await saveAsset({ ...o.who, data: net, name: `planche-en-vrai-${n}.png`, mime: "image/png", role: "brand-envrai", origin: "generated", status: "ready",
-      meta: { plancheEnVrai: { element: n, tour: r.essais.length, texteEnvoye: r.essais.at(-1)!.texte, verdict: r.essais.at(-1)!.verdict ?? null, ...(ambiance ? { ambiance: true, etiquette: ETIQUETTE_AMBIANCE } : {}) }, ...(fmt ? { publicationMethode: { formatFinal: fmt, planche: "planche-en-vrai" } } : {}) } });
-    images.set(n, r.png);
-    const description = caseLue(inventaire, n)?.description?.trim();
-    elements.push({ element: n, id: a.id, w: mn.width ?? r.w, h: mn.height ?? r.h, essais: r.essais.length, ...(ambiance ? { ambiance: true } : {}), ...(description ? { description } : {}), ...(surPlanche ? { idPlanche: surPlanche } : {}) });
-  }
-  if (refusees.length) issues.push(phraseDeLImageGardeeEnApercu(refusees));
-  if (elements.some((e) => e.ambiance && e.id)) issues.push(phraseDuProduitImagine());
+    return r ? [[n, { png: r.ok ? r.png ?? null : null, essais: r.essais.length, texte: r.essais.at(-1)?.texte, verdict: r.essais.at(-1)?.verdict ?? null, photo: !!r.photo, raison: r.raison }] as const] : [];
+  })));
+  const { elements, images } = rangees;
+  issues.push(...rangees.issues);
 
   // 4. Le code seul : logos, palette, polices, textes.
   ctx.progress?.(0.85, L("Je prépare tes logos, tes couleurs et tes polices", "Preparing your logos, colours and fonts"));
@@ -227,36 +215,20 @@ export async function plancheEnVrai(o: {
   const roles = rolesDeLaPalette(palette0, encre);
   const palette = palette0.map((hex, i) => ({ hex, nom: inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 3) }));
   const titres = policeDuCatalogue(inventaire.polices.titres, 700), textes = policeDuCatalogue(inventaire.polices.textes, 400);
-  for (const p of [titres, textes]) if (p.remplacee && p.lue) issues.push(p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : p.pourquoi === "apercu" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, undefined, true) : phraseDeLaPoliceRemplacee(p.lue, p.famille));
+  issues.push(...phrasesDesPolicesRemplacees({ titres, textes }));
   const couleur = await couleurDuLogo(logo);
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase });
   const v = await versionsDuLogo({ logo, separation, couleur, sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(palette0), nom, bas, police: POLICE_DU_BADGE, tuiles: decoupe.apercus });
-  if (v.depuisLApercu.length) issues.push(phraseDesLogosDeLApercu(v.depuisLApercu));
-  else if (v.symboleComplet) issues.push(phraseDuSymboleComplet());
-  const logos: EtatPlancheEnVrai["logos"] = [];
-  for (const version of VERSIONS_DU_LOGO) {
-    const a = await saveAsset({ ...o.who, data: v.versions[version], name: `logo-${version}.png`, mime: "image/png", role: "logo-version", folderKey: "brand.logos", origin: "generated", sourceAssetId: o.logoAssetId, meta: { plancheEnVrai: { version } } });
-    logos.push({ version, id: a.id });
-  }
-  const fav = await faviconsEtAvatar(v.versions.favicon, v.symbole, roles.light);
-  const ranger = async (role: string, name: string, data: Buffer) => (await saveAsset({ ...o.who, data, name, mime: "image/png", role, folderKey: "brand.logos", origin: "generated", sourceAssetId: o.logoAssetId, meta: { engine: "syna-planche-en-vrai" } })).id;
-  const symboleId = await ranger("logo-mark", "symbole.png", v.symbole);
-  const favicons = { f32: await ranger("favicon-32", "favicon-32.png", fav.f32), f64: await ranger("favicon-64", "favicon-64.png", fav.f64), f512: await ranger("favicon-512", "icone-512.png", fav.f512), avatar: await ranger("social-avatar", "avatar-reseaux.png", fav.avatar) };
+  issues.push(...phrasesDesLogos(v));
+  const { logos, favicons, symboleId } = await rangerLesLogos({ who: o.who, logoAssetId: o.logoAssetId, versions: v.versions, symbole: v.symbole, clair: roles.light });
 
   // La marque du projet lit la palette mesurée et les polices lues sur la planche choisie (le site, la charte, les publications).
-  const b = loadProject(o.who.projectId).brand;
-  if (b) saveBrand(o.who.projectId, { ...b, palette: { ...b.palette, ...roles }, fonts: { heading: titres.handle, body: textes.handle }, logo: { ...b.logo, markAssetId: symboleId } });
-
+  marqueRelueSurLaPlanche(o.who.projectId, roles, { titres, textes }, symboleId);
 
   // Les publications : celles que l'inventaire juge compréhensibles par un inconnu vont au calendrier.
-  const publications: EtatPlancheEnVrai["publications"] = [];
-  for (const [i, n] of (["publication-1x1", "publication-4x5", "publication-9x16"] as const).entries()) {
-    const e = elements.find((x) => x.element === n);
-    if (!e?.id) continue;
-    const cl = caseLue(inventaire, n), comprehensible = cl?.comprehensible !== false;
-    if (!comprehensible) issues.push(phraseDeLaPublicationIncomprehensible(i + 1));
-    publications.push({ element: n, id: e.id, texte: (cl?.textes ?? []).join(" ").trim(), comprehensible, format: i === 0 ? "1:1" : i === 1 ? "4:5" : "9:16" });
-  }
+  const pubs = publicationsDeLaPlanche(elements, inventaire);
+  const publications = pubs.publications;
+  issues.push(...pubs.issues);
 
   // 5. L'assemblage en 3072 × 4608 (gratuit, se refait).
   ctx.progress?.(0.92, L("J'assemble ta planche en vrai", "Assembling your full-resolution board"));
@@ -387,7 +359,14 @@ async function assemblerEtRanger(o: { who: { userId: string; projectId: string }
   const t = textesDeLaPlanche(o.etat.inventaire!, o.route);
   const png = await assemblerLaPlanche({ demo: o.demo, boites: o.boites, pastilles: lesCases(o.etat.laquelle).pastilles, images: o.images, versions: o.versions, palette: o.etat.palette, polices: o.etat.polices!, signature: t.haut, titres: t.titres, blocs: t.blocs, encre: o.encre,
     hautDansLeLogo: t.hautDansLeLogo, typos: phrasesDesPolices(o.etat.inventaire!), tuilesDeLApercu: o.etat.logosDeLApercu ?? [] });
-  const m = await sharp(png).metadata();
+  return rangerLaPlanche({ who: o.who, etat: o.etat, png, boites: o.boites });
+}
+/**
+ * Le rangement d'une planche en vrai déjà assemblée : comme planche de marque (« brand-board », mention « planche-en-vrai »),
+ * puis le site en une seule image, pris sur elle. Sert à l'assemblage de la tâche et au réassemblage.
+ */
+async function rangerLaPlanche(o: { who: { userId: string; projectId: string }; etat: EtatPlancheEnVrai; png: Buffer; boites: ReadonlyMap<string, [number, number, number, number]> }): Promise<NonNullable<EtatPlancheEnVrai["planche"]> & { siteEntier?: EtatPlancheEnVrai["siteEntier"] }> {
+  const png = o.png, m = await sharp(png).metadata();
   const pa = await saveAsset({ ...o.who, data: png, name: "planche-en-vrai.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready",
     meta: { mention: "planche-en-vrai", plancheEnVrai: { key: o.etat.key, demo: o.etat.demo, laquelle: o.etat.laquelle, refusees: o.etat.elements.filter((e) => !e.id).map((e) => e.element), symboleComplet: o.etat.symboleComplet } } });
   // Le site en une seule image, prise sur la planche assemblée (tout le bloc du site, sans son titre).
@@ -404,6 +383,108 @@ async function assemblerEtRanger(o: { who: { userId: string; projectId: string }
 async function placerLaPlanche(o: Parameters<typeof assemblerEtRanger>[0]): Promise<Pick<EtatPlancheEnVrai, "planche" | "siteEntier">> {
   const { siteEntier, ...planche } = await assemblerEtRanger(o);
   return { planche, ...(siteEntier ? { siteEntier } : {}) };
+}
+
+// ---------------------------------------------------------------- le rangement, commun à la tâche et au réassemblage
+
+/** Une image de la planche en vrai à ranger : au format final si elle est gardée (sinon null), avec son nombre d'essais. */
+export type ImageARanger = { png: Buffer | null; essais: number; texte?: string; verdict?: unknown; photo?: boolean; raison?: string };
+/**
+ * Les images gardées, rangées en haute définition (l'image montrée et téléchargée, rognée au contenu ; celle de la planche,
+ * telle quelle, en coulisses) ; les produits sans photo du client sont marqués « image d'ambiance ». Une case absente n'a
+ * pas été découpée ; une case sans image garde l'aperçu agrandi. Rend les cases de l'état, les images posées sur la planche
+ * et ce que SINA dit (les cases gardées en aperçu, les produits imaginés).
+ */
+export async function rangerLesImages(who: { userId: string; projectId: string }, inventaire: Inventaire, a: ReadonlyMap<NomElement, ImageARanger>): Promise<{ elements: EtatPlancheEnVrai["elements"]; images: Map<NomElement, Buffer>; issues: string[] }> {
+  const elements: EtatPlancheEnVrai["elements"] = [], images = new Map<NomElement, Buffer>(), refusees: string[] = [], issues: string[] = [];
+  for (const n of NOMS_DES_ELEMENTS) {
+    const r = a.get(n);
+    const ambiance = n.startsWith("produit-") && !r?.photo;
+    if (!r) { elements.push({ element: n, id: null, essais: 0, raison: "case non découpée" }); continue; }
+    if (!r.png) { refusees.push(n); elements.push({ element: n, id: null, essais: r.essais, raison: r.raison }); continue; }
+    const fmt = n === "publication-1x1" ? "1080x1080" : n === "publication-4x5" ? "1080x1350" : n === "publication-9x16" ? "1080x1920" : null;
+    // L'image montrée et téléchargée est rognée au contenu ; celle de la planche reste telle quelle, en coulisses.
+    const net = await imageMontree(n, r.png), mn = await sharp(net).metadata();
+    const surPlanche = net === r.png ? null : (await saveAsset({ ...who, data: r.png, name: `planche-en-vrai-${n}-planche.png`, mime: "image/png", role: "planche-en-vrai-brut", origin: "generated", status: "ready", meta: { plancheEnVrai: { element: n, surLaPlanche: true } } })).id;
+    const s = await saveAsset({ ...who, data: net, name: `planche-en-vrai-${n}.png`, mime: "image/png", role: "brand-envrai", origin: "generated", status: "ready",
+      meta: { plancheEnVrai: { element: n, tour: r.essais, texteEnvoye: r.texte ?? null, verdict: r.verdict ?? null, ...(ambiance ? { ambiance: true, etiquette: ETIQUETTE_AMBIANCE } : {}) }, ...(fmt ? { publicationMethode: { formatFinal: fmt, planche: "planche-en-vrai" } } : {}) } });
+    images.set(n, r.png);
+    const description = caseLue(inventaire, n)?.description?.trim();
+    elements.push({ element: n, id: s.id, w: mn.width ?? 0, h: mn.height ?? 0, essais: r.essais, ...(ambiance ? { ambiance: true } : {}), ...(description ? { description } : {}), ...(surPlanche ? { idPlanche: surPlanche } : {}) });
+  }
+  if (refusees.length) issues.push(phraseDeLImageGardeeEnApercu(refusees));
+  if (elements.some((e) => e.ambiance && e.id)) issues.push(phraseDuProduitImagine());
+  return { elements, images, issues };
+}
+/** Ce que SINA dit des polices remplacées par la plus proche du catalogue. */
+export const phrasesDesPolicesRemplacees = (polices: NonNullable<EtatPlancheEnVrai["polices"]>): string[] => [polices.titres, polices.textes].filter((p) => p.remplacee && p.lue)
+  .map((p) => (p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : p.pourquoi === "apercu" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, undefined, true) : phraseDeLaPoliceRemplacee(p.lue, p.famille)));
+/** Ce que SINA dit des versions du logo : reprises de l'aperçu, ou le symbole complet faute de séparation fiable. */
+export const phrasesDesLogos = (v: { depuisLApercu: readonly VersionDuLogo[]; symboleComplet: boolean }): string[] => (v.depuisLApercu.length ? [phraseDesLogosDeLApercu([...v.depuisLApercu])] : v.symboleComplet ? [phraseDuSymboleComplet()] : []);
+/** Les dix versions du logo, le symbole, les favicons et l'avatar, rangés dans les logos de la marque. */
+export async function rangerLesLogos(o: { who: { userId: string; projectId: string }; logoAssetId: string; versions: Record<VersionDuLogo, Buffer>; symbole: Buffer; clair: string; refaitParLeCode?: boolean }): Promise<{ logos: EtatPlancheEnVrai["logos"]; favicons: NonNullable<EtatPlancheEnVrai["favicons"]>; symboleId: string }> {
+  const logos: EtatPlancheEnVrai["logos"] = [];
+  for (const version of VERSIONS_DU_LOGO) {
+    const a = await saveAsset({ ...o.who, data: o.versions[version], name: `logo-${version}.png`, mime: "image/png", role: "logo-version", folderKey: "brand.logos", origin: "generated", sourceAssetId: o.logoAssetId, meta: { plancheEnVrai: { version, ...(o.refaitParLeCode ? { refaitParLeCode: true } : {}) } } });
+    logos.push({ version, id: a.id });
+  }
+  const fav = await faviconsEtAvatar(o.versions.favicon, o.symbole, o.clair);
+  const ranger = async (role: string, name: string, data: Buffer) => (await saveAsset({ ...o.who, data, name, mime: "image/png", role, folderKey: "brand.logos", origin: "generated", sourceAssetId: o.logoAssetId, meta: { engine: "syna-planche-en-vrai" } })).id;
+  const symboleId = await ranger("logo-mark", "symbole.png", o.symbole);
+  const favicons = { f32: await ranger("favicon-32", "favicon-32.png", fav.f32), f64: await ranger("favicon-64", "favicon-64.png", fav.f64), f512: await ranger("favicon-512", "icone-512.png", fav.f512), avatar: await ranger("social-avatar", "avatar-reseaux.png", fav.avatar) };
+  return { logos, favicons, symboleId };
+}
+/** La marque du projet relue sur la planche en vrai : la palette mesurée, les polices lues, le symbole. */
+export function marqueRelueSurLaPlanche(projectId: string, roles: Partial<Route["palette"]>, polices: NonNullable<EtatPlancheEnVrai["polices"]>, symboleId?: string | null): void {
+  const b = loadProject(projectId).brand;
+  if (b) saveBrand(projectId, { ...b, palette: { ...b.palette, ...roles }, fonts: { heading: polices.titres.handle, body: polices.textes.handle }, logo: { ...b.logo, ...(symboleId ? { markAssetId: symboleId } : {}) } });
+}
+/** Les publications : celles que l'inventaire juge compréhensibles par un inconnu vont au calendrier ; les autres sont dites. */
+export function publicationsDeLaPlanche(elements: EtatPlancheEnVrai["elements"], inventaire: Inventaire): { publications: EtatPlancheEnVrai["publications"]; issues: string[] } {
+  const publications: EtatPlancheEnVrai["publications"] = [], issues: string[] = [];
+  for (const [i, n] of (["publication-1x1", "publication-4x5", "publication-9x16"] as const).entries()) {
+    const e = elements.find((x) => x.element === n);
+    if (!e?.id) continue;
+    const cl = caseLue(inventaire, n), comprehensible = cl?.comprehensible !== false;
+    if (!comprehensible) issues.push(phraseDeLaPublicationIncomprehensible(i + 1));
+    publications.push({ element: n, id: e.id, texte: (cl?.textes ?? []).join(" ").trim(), comprehensible, format: i === 0 ? "1:1" : i === 1 ? "4:5" : "9:16" });
+  }
+  return { publications, issues };
+}
+
+/**
+ * LE RÉASSEMBLAGE ET LE REJUGEMENT ENREGISTRÉS (26 novembre 2026 ; constat du chef d'orchestre devant l'écran d'Écume :
+ * « L'écran ne suit pas le réassemblage. »). Dans le Studio comme dans l'essai, une planche en vrai refaite par le code
+ * (`plancheEnVraiParLeCode`), avec les images gardées au rejugement, met à jour l'état et le projet de la même façon que la
+ * tâche : les images gardées rangées en haute définition, les dix versions du logo, le symbole et les favicons, la marque
+ * du projet relue sur la planche (palette, polices, symbole), les publications, ce que SINA dit, puis la planche assemblée
+ * et le site en une seule image. Rend le nouvel état, à poser dans le parcours (`plancheEnVrai`) : l'onglet Marque montre
+ * alors exactement la planche réassemblée et ses images gardées. Aucun appel.
+ */
+export async function enregistrerLaPlancheReassemblee(o: {
+  who: { userId: string; projectId: string };
+  /** L'état d'avant (la démonstration, le logo, la disposition, la clé de l'identité) ; ses notes sont gardées. */
+  avant: Pick<EtatPlancheEnVrai, "key" | "demo" | "logo" | "laquelle"> & Partial<Pick<EtatPlancheEnVrai, "notes">>;
+  inventaire: Inventaire;
+  code: Awaited<ReturnType<typeof plancheEnVraiParLeCode>>;
+  /** Chaque case : son image gardée au format final (null : l'aperçu garde sa case) et le nombre d'essais. */
+  images: ReadonlyMap<NomElement, ImageARanger>;
+  notes?: string[];
+}): Promise<EtatPlancheEnVrai> {
+  const rangees = await rangerLesImages(o.who, o.inventaire, o.images);
+  const issues = [...rangees.issues, ...phrasesDesPolicesRemplacees(o.code.polices), ...phrasesDesLogos(o.code)];
+  const { logos, favicons, symboleId } = await rangerLesLogos({ who: o.who, logoAssetId: o.avant.logo, versions: o.code.versions, symbole: o.code.symbole, clair: o.code.roles.light });
+  marqueRelueSurLaPlanche(o.who.projectId, o.code.roles, o.code.polices, symboleId);
+  const pubs = publicationsDeLaPlanche(rangees.elements, o.inventaire);
+  issues.push(...pubs.issues);
+  const etat: EtatPlancheEnVrai = {
+    key: o.avant.key, demo: o.avant.demo, logo: o.avant.logo, laquelle: o.avant.laquelle, at: Date.now(),
+    elements: rangees.elements, logos, favicons, palette: o.code.palette, polices: o.code.polices, symboleComplet: o.code.symboleComplet,
+    publications: pubs.publications, issues: [...new Set(issues)], notes: [...(o.avant.notes ?? []), ...o.code.notes, ...(o.notes ?? []), "planche réassemblée par le code, sans appel"], inventaire: o.inventaire,
+    ...(o.code.depuisLApercu.length ? { logosDeLApercu: o.code.depuisLApercu } : {}),
+  };
+  const { siteEntier, ...planche } = await rangerLaPlanche({ who: o.who, etat, png: o.code.planche, boites: o.code.decoupe.boites });
+  return { ...etat, planche, ...(siteEntier ? { siteEntier } : {}) };
 }
 /**
  * L'image montrée et téléchargée d'une case : rognée au contenu (`rognerAuContenu`), sauf les publications et l'ouverture
@@ -513,15 +594,7 @@ export async function refaireLesLogosEnVrai(o: { who: { userId: string; projectI
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase ?? o.route.slogan ?? "" });
   const decoupe0 = getAsset(ev.demo) ? await decouperLesApercus(assetData(getAsset(ev.demo)!), ev.laquelle) : null;
   const v = await versionsDuLogo({ logo, separation, couleur: await couleurDuLogo(logo), sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(hex), nom, bas, police: POLICE_DU_BADGE, tuiles: decoupe0?.apercus });
-  const logos: EtatPlancheEnVrai["logos"] = [];
-  for (const version of VERSIONS_DU_LOGO) {
-    const a = await saveAsset({ ...o.who, data: v.versions[version], name: `logo-${version}.png`, mime: "image/png", role: "logo-version", folderKey: "brand.logos", origin: "generated", sourceAssetId: ev.logo, meta: { plancheEnVrai: { version, refaitParLeCode: true } } });
-    logos.push({ version, id: a.id });
-  }
-  const fav = await faviconsEtAvatar(v.versions.favicon, v.symbole, roles.light);
-  const ranger = async (role: string, name: string, data: Buffer) => (await saveAsset({ ...o.who, data, name, mime: "image/png", role, folderKey: "brand.logos", origin: "generated", sourceAssetId: ev.logo, meta: { engine: "syna-planche-en-vrai" } })).id;
-  const symboleId = await ranger("logo-mark", "symbole.png", v.symbole);
-  const favicons = { f32: await ranger("favicon-32", "favicon-32.png", fav.f32), f64: await ranger("favicon-64", "favicon-64.png", fav.f64), f512: await ranger("favicon-512", "icone-512.png", fav.f512), avatar: await ranger("social-avatar", "avatar-reseaux.png", fav.avatar) };
+  const { logos, favicons, symboleId } = await rangerLesLogos({ who: o.who, logoAssetId: ev.logo, versions: v.versions, symbole: v.symbole, clair: roles.light, refaitParLeCode: true });
   const b = loadProject(o.who.projectId).brand;
   if (b) saveBrand(o.who.projectId, { ...b, logo: { ...b.logo, markAssetId: symboleId } });
   const dejaDites = ev.issues.filter((l) => !/séparer proprement le symbole|separate your logo.s symbol|repris de ta planche choisie|taken from your chosen board/.test(l));
@@ -562,7 +635,7 @@ export async function plancheEnVraiParLeCode(o: { demo: Buffer; laquelle: Laquel
   const site = await imageDuSite(planche, decoupe.boites, lesCases(o.laquelle).cases["titre-08"] ?? null, { droite: decoupe.boites.get("emballage") ?? null, dessous: lesCases(o.laquelle).cases["titre-10"] ?? null });
   const montrees = new Map<NomElement, Buffer>();
   for (const [n, png] of o.images) montrees.set(n, await imageMontree(n, png));
-  return { planche, site, montrees, versions: v.versions, depuisLApercu: v.depuisLApercu, symboleComplet: v.symboleComplet, separation, palette, roles, polices, notes, decoupe };
+  return { planche, site, montrees, versions: v.versions, symbole: v.symbole, depuisLApercu: v.depuisLApercu, symboleComplet: v.symboleComplet, separation, palette, roles, polices, notes, decoupe };
 }
 
 /**

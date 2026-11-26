@@ -42,6 +42,10 @@
  * logo fini. a) le code refait les logos, la palette, les polices, les textes et l'assemblage, gratuit ; b) chaque image
  * de l'essai est rejugée sur son verdict réel par le code d'aujourd'hui, gratuit ; c) avec REPRENDRE=<case>,<case> et
  * PLAFOND_ESSAI_EUR, les cases nommées encore refusées sont reprises une fois, à la charge du Studio (vrais appels).
+ * Comme l'étape 4 normale, le réassemblage met à jour l'état et le projet (`enregistrerLaPlancheReassemblee`) : les images
+ * gardées, les logos, la marque et la planche réassemblée sont rangés dans le projet de l'essai (essai.json du dossier de
+ * l'essai, dans la base DATA_DIR ; s'il n'y est pas, un projet fictif est créé et c'est dit), etat.json et essai.json sont
+ * écrits dans le dossier de sortie, le parcours est réécrit : ecran-planche-en-vrai.mts se lance sur ce nouvel etat.json.
  * Sans REPRENDRE, aucun appel ni clé. Devis de c), sans appel : DEVIS_SEULEMENT=1 REPRENDRE=… (même commande) ; avec
  * LOGO_HD=1, le devis compte aussi les quatre petites versions du logo en haute définition (option pas encore construite :
  * sans DEVIS_SEULEMENT, LOGO_HD=1 ne lance rien).
@@ -80,6 +84,7 @@ import path from "node:path";
     try {
       const r = await reassemblerLEssaiEnVrai({ dossier: path.resolve(process.env.REASSEMBLER), sortie: path.resolve(sortie0), planche: path.resolve(planche0), logo: path.resolve(logo0), reprendre, plafondEuros: process.env.PLAFOND_ESSAI_EUR });
       console.log(`${r.gardees} image(s) gardée(s) sur 17 ; planche réassemblée : ${path.join(path.resolve(sortie0), r.planche)} ; comparaison : ${path.join(path.resolve(sortie0), r.comparaison)}${r.reprise ? ` ; reprise : dépense comptée ${euros(r.reprise.depenseMicro)}` : ""}`);
+      console.log(`État et projet mis à jour : ${path.join(path.resolve(sortie0), r.etat)} (projet ${r.projectId}${r.projetCree ? ", créé dans cette base" : ""}) ; pour l'écran : DATA_DIR=… node_modules/.bin/tsx scripts/syna-recette/ecran-planche-en-vrai.mts ${path.join(sortie0, r.etat)}`);
       if (r.arret) { console.log(`Arrêt de la reprise : ${r.arret}`); process.exit(2); }
     } catch (e) { console.error((e as Error).message); process.exit(1); }
     process.exit(0);
