@@ -2246,3 +2246,29 @@ describe("l'épreuve de la palette mesurée et des quatre petites versions du lo
     expect(src.indexOf("const r = await logosEnHdDeLEssai(")).toBeLessThan(src.indexOf("const code = await T.plancheEnVraiParLeCode("));
   });
 });
+
+describe("l'épreuve de l'accord de la tâche des noms (devis seul, aucun appel)", async () => {
+  const C = await import("@/lib/syna-agent/brand-chain");
+  const I = await import("@/lib/syna-agent/tools/identity");
+  const { callCostBoundMicro, estimateCallMicro } = await import("@/lib/ai/llm");
+  const { webSearchQuote } = await import("@/lib/ai/web-search");
+
+  epreuve("accord-des-noms-compte-la-verification", () => {
+    const s = C.chainSettings();
+    // Chaque borne recalculée ici, sans le devis du Studio (même formule que la réservation de l'appel).
+    const borne = (id: keyof typeof C.BRAND_CALLS) => {
+      const c: { tier: "strong" | "craft"; effort?: string; input: number; output: number; max: number } = C.BRAND_CALLS[id], m = { ...s[c.tier], ...(c.effort ? { effort: c.effort } : {}) };
+      return callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort) ?? (estimateCallMicro(m.provider, m.model, c.input, c.output) ?? 0) * 4;
+    };
+    const web = webSearchQuote(s.craft, { maxSearches: C.BRAND_SEARCHES }).maxMicro;
+    const equipe = borne("team") + borne("teamShort");
+    // Tous les appels possibles jusqu'aux noms vérifiés, chacun à son maximum ; la vérification compte sa recherche et son appel.
+    const tous = 3 * web + borne("study") + 2 * borne("strategy") + s.teams * equipe + borne("judge") + s.teams * equipe + borne("judge") + web + borne("verify");
+    expect(borne("verify")).toBeGreaterThan(0);
+    for (const count of [2, 3, 4]) {
+      const g = I.accordGraphistes(count);
+      expect(g.nomsMicro, `${count} identités`).toBeGreaterThanOrEqual(Math.ceil(tous));
+      expect(g.nomsMicro + g.rechercheMicro + g.finalisationsMicro + g.planchesMicro).toBeLessThanOrEqual(g.maxMicro);
+    }
+  });
+});

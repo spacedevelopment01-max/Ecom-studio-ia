@@ -97,6 +97,10 @@ describe("le script de l'essai des noms (appels simulés)", async () => {
   it("sous le plafond minimal exact, rien ne part ; un client qui a déjà un nom est refusé", async () => {
     const d = await devisDesNoms();
     expect(d.plafondMinimalMicro).toBe(Math.ceil(d.lignes.reduce((t, l) => t + l.maxMicro, 0)));
+    // Une seule source : le plafond minimal de l'essai est le devis des noms vérifiés du Studio, et l'accord du Studio le
+    // couvre (vérification des noms gardés comprise, décision du 26 novembre 2026).
+    expect(d.lignes.map((l) => l.appel)).toEqual(expect.arrayContaining(["recherche sur le web des noms gardés", "vérification des noms gardés"]));
+    expect(d.plafondDuStudioMicro).toBeGreaterThanOrEqual(d.plafondMinimalMicro);
     expect(d.probableMicro).toBeLessThan(d.probableAvecReprisesMicro);
     expect(d.probableAvecReprisesMicro).toBeLessThan(d.plafondMinimalMicro);
     const c = clientDeLEssai({ CLIENT_JSON: FICHIER }, { sansNom: true });

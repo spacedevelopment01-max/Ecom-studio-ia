@@ -35,8 +35,8 @@ export type DevisDesNoms = {
   plafondMinimalMicro: number;
   /**
    * Le plafond que le Studio donne à cette tâche dans l'accord unique de l'étape (`accordGraphistes(n).nomsMicro`, compté
-   * avec la clé du fournisseur) : tout sauf la vérification des noms gardés (sa recherche et son appel), que l'accord compte
-   * avec les planches. Le Studio compte sur ce que chaque appel rend de sa réservation pour la payer.
+   * avec la clé du fournisseur) : la somme des maxima de tous ses appels, vérification des noms gardés comprise
+   * (`devisDesNomsVerifies`, la même fonction que le plafond minimal). Il ne compte jamais sur ce qu'un appel n'a pas dépensé.
    */
   plafondDuStudioMicro: number;
   /** En plus, au pire, si une réponse de texte mal formée doit être réparée (une fois par appel de texte). */
@@ -49,44 +49,52 @@ export type DevisDesNoms = {
  */
 export async function devisDesNoms(count = IDENTITES_DE_L_ESSAI): Promise<DevisDesNoms> {
   const C = await import("../../src/lib/syna-agent/brand-chain");
-  const { callCostBoundMicro, estimateCallMicro, jsonCallMaxMicro } = await import("../../src/lib/ai/llm");
+  const { callCostBoundMicro, jsonCallMaxMicro } = await import("../../src/lib/ai/llm");
   const { webSearchMaxMicro, webSearchProbableMicro } = await import("../../src/lib/ai/web-search");
   const { accordGraphistes } = await import("../../src/lib/syna-agent/tools/identity");
   const s = C.chainSettings();
   type Id = keyof typeof C.BRAND_CALLS;
-  const modele = (id: Id) => { const c: { tier: "strong" | "craft"; effort?: string } = C.BRAND_CALLS[id]; return { ...s[c.tier], ...(c.effort ? { effort: c.effort } : {}) }; };
   const nomDe = (m: { provider: string; model: string; effort?: string }) => `${m.provider}:${m.model}${m.effort ? ` (effort ${m.effort})` : ""}`;
-  const appel = (id: Id) => {
-    const c = C.BRAND_CALLS[id], m = modele(id);
-    const borne = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usuel = estimateCallMicro(m.provider, m.model, c.input, c.output) ?? 0;
-    return { modele: nomDe(m), maxMicro: borne ?? usuel * 4, probableMicro: usuel, reparation: Math.max(0, (jsonCallMaxMicro(m.provider, m.model, c.input * 1.5, c.max, c.max, m.effort || null)?.maxMicro ?? 0) - (borne ?? 0)) };
+  // La recherche sur le web comptée sans clé (`webSearchMaxMicro`), comme le Studio la compte avec la clé.
+  const web = { maxMicro: webSearchMaxMicro(s.craft.provider as "anthropic", s.craft.model, 4000, C.BRAND_SEARCHES), probableMicro: webSearchProbableMicro({ provider: s.craft.provider, model: s.craft.model }) };
+  // LE devis de la tâche des noms du Studio (`devisDesNomsVerifies`, brand-chain.ts) : une seule source, celle de l'accord
+  // du Studio. L'essai n'y ajoute que les mots de chaque ligne.
+  const devis = C.devisDesNomsVerifies({ settings: s, web });
+  const MOTS: Record<string, { appel: string; quand: string }> = {
+    recherches: { appel: "recherches sur le web (paroles de clients, concurrents, usages)", quand: "toujours" },
+    study: { appel: "étude du marché", quand: "toujours" },
+    strategy: { appel: "idées de la marque", quand: "toujours" },
+    "strategy:2": { appel: "second tour d'idées", quand: "si trop peu d'idées passent les deux épreuves" },
+    team: { appel: "équipes de noms (une par chemin)", quand: "toujours" },
+    teamShort: { appel: "reprise courte d'une équipe coupée", quand: "si une réponse est coupée" },
+    judge: { appel: "juge des noms", quand: "toujours" },
+    "team:2": { appel: "second tour des équipes", quand: "si le juge garde trop peu de noms" },
+    "teamShort:2": { appel: "reprise courte du second tour", quand: "si une réponse du second tour est coupée" },
+    "judge:2": { appel: "juge du second tour", quand: "si le juge garde trop peu de noms" },
+    "recherche:verify": { appel: "recherche sur le web des noms gardés", quand: "toujours" },
+    verify: { appel: "vérification des noms gardés", quand: "toujours" },
   };
-  const web = { modele: `${s.craft.provider}:${s.craft.model} (recherche sur le web, ${C.BRAND_SEARCHES} recherches au plus)`, maxMicro: webSearchMaxMicro(s.craft.provider as "anthropic", s.craft.model, 4000, C.BRAND_SEARCHES), probableMicro: webSearchProbableMicro({ provider: s.craft.provider, model: s.craft.model }) };
-  const equipes = s.teams;
-  const lignes: LigneDuDevisDesNoms[] = [];
-  const ajouter = (nom: string, a: { modele: string; maxMicro: number; probableMicro: number }, fois: number, quand: string) => lignes.push({ appel: nom, modele: a.modele, fois, quand, probableMicro: a.probableMicro * fois, maxMicro: a.maxMicro * fois });
-  ajouter("recherches sur le web (paroles de clients, concurrents, usages)", web, 3, "toujours");
-  ajouter("étude du marché", appel("study"), 1, "toujours");
-  ajouter("idées de la marque", appel("strategy"), 1, "toujours");
-  ajouter("second tour d'idées", appel("strategy"), 1, "si trop peu d'idées passent les deux épreuves");
-  ajouter(`équipes de noms (une par chemin)`, appel("team"), equipes, "toujours");
-  ajouter("reprise courte d'une équipe coupée", appel("teamShort"), equipes, "si une réponse est coupée");
-  ajouter("juge des noms", appel("judge"), 1, "toujours");
-  ajouter("second tour des équipes", appel("team"), equipes, "si le juge garde trop peu de noms");
-  ajouter("reprise courte du second tour", appel("teamShort"), equipes, "si une réponse du second tour est coupée");
-  ajouter("juge du second tour", appel("judge"), 1, "si le juge garde trop peu de noms");
-  ajouter("recherche sur le web des noms gardés", web, 1, "toujours");
-  ajouter("vérification des noms gardés", appel("verify"), 1, "toujours");
+  const lignes: LigneDuDevisDesNoms[] = devis.lignes.map((l) => ({
+    appel: MOTS[l.id]?.appel ?? l.id,
+    modele: l.appel === "web" ? `${l.modele.provider}:${l.modele.model} (recherche sur le web, ${C.BRAND_SEARCHES} recherches au plus)` : nomDe(l.modele),
+    fois: l.fois, quand: MOTS[l.id]?.quand ?? (l.toujours ? "toujours" : "si besoin"), probableMicro: l.probableMicro, maxMicro: l.maxMicro,
+  }));
   const somme = (f: (l: LigneDuDevisDesNoms) => boolean, k: "probableMicro" | "maxMicro") => lignes.filter(f).reduce((t, l) => t + l[k], 0);
   const avec = new Set(["toujours", "si trop peu d'idées passent les deux épreuves", "si le juge garde trop peu de noms"]);
-  const rep = (id: Id) => appel(id).reparation;
+  // Hors plafond : la réparation d'une réponse mal formée, au plus une par appel de texte.
+  const rep = (id: Id) => {
+    const c: { tier: "strong" | "craft"; effort?: string; input: number; max: number } = C.BRAND_CALLS[id], m = { ...s[c.tier], ...(c.effort ? { effort: c.effort } : {}) };
+    return Math.max(0, (jsonCallMaxMicro(m.provider, m.model, c.input * 1.5, c.max, c.max, m.effort || null)?.maxMicro ?? 0) - (callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort) ?? 0));
+  };
+  const equipes = s.teams;
   return {
     lignes,
     probableMicro: Math.ceil(somme((l) => l.quand === "toujours", "probableMicro")),
     probableAvecReprisesMicro: Math.ceil(somme((l) => avec.has(l.quand), "probableMicro")),
-    plafondMinimalMicro: Math.ceil(somme(() => true, "maxMicro")),
-    // Sans clé (devis seul), le devis du Studio ne sait pas compter les recherches sur le web : elles sont ajoutées ici.
-    plafondDuStudioMicro: Math.max(accordGraphistes(count).nomsMicro, Math.ceil(somme((l) => !/noms gardés/.test(l.appel), "maxMicro"))),
+    plafondMinimalMicro: devis.maxMicro,
+    // Sans clé (devis seul), le devis du Studio compte les recherches sur le web à 0 : la même fonction les compte ici
+    // avec la recherche bornée sans clé.
+    plafondDuStudioMicro: Math.max(accordGraphistes(count).nomsMicro, devis.maxMicro),
     reparationsMicro: Math.ceil(rep("study") + 2 * rep("strategy") + 2 * equipes * (rep("team") + rep("teamShort")) + 2 * rep("judge") + rep("verify")),
   };
 }
@@ -99,7 +107,7 @@ export function devisDesNomsEnTexte(d: DevisDesNoms): string[] {
     `Probable, déroulé habituel : ${euros(d.probableMicro)}`,
     `Probable, avec le second tour d'idées et le second tour de noms : ${euros(d.probableAvecReprisesMicro)}`,
     `Plafond minimal pour aller au bout à coup sûr (somme des maxima, seconds tours et reprises courtes compris) : ${euros(d.plafondMinimalMicro)}`,
-    `Plafond que le Studio donne à cette tâche dans l'accord de l'étape (accordGraphistes, part des noms) : ${euros(d.plafondDuStudioMicro)}${d.plafondDuStudioMicro < d.plafondMinimalMicro ? " (sans la vérification des noms gardés, plus bas que la somme des maxima : chaque appel réserve son maximum et rend ce qu'il n'a pas dépensé, le Studio compte sur ce reste pour la vérification ; l'essai prend la somme des maxima comme plafond de la tâche, pour aller au bout à coup sûr)" : ""}`,
+    `Plafond que le Studio donne à cette tâche dans l'accord de l'étape (accordGraphistes, part des noms) : ${euros(d.plafondDuStudioMicro)}${d.plafondDuStudioMicro < d.plafondMinimalMicro ? " (plus bas que la somme des maxima : l'essai prend la somme des maxima comme plafond de la tâche, pour aller au bout à coup sûr)" : " (la somme des maxima de tous ses appels, vérification des noms gardés comprise)"}`,
     `Hors plafond : une réponse de texte mal formée à réparer coûterait au plus ${euros(d.reparationsMicro)} de plus en tout.`,
     "L'adresse de chaque nom (annuaires publics des registres) : gratuite.",
   ];

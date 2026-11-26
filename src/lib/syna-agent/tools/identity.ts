@@ -23,7 +23,7 @@ import { devisDesPlanchesDeMarque } from "../planche-de-marque-tache";
 import { devisDeLaPlancheEnVrai, devisDesProduitsEnVrai, enVraiOuArretee, produitsImagines } from "../planche-en-vrai-tache";
 import { photosDuProduitIds } from "../brand-images";
 import { phraseDuMelangeRefuse, plancheEnVraiActive } from "../planche-en-vrai";
-import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, finishQuote, namesPreviewQuote, routeCountOfProject, type ChainQuote } from "../brand-chain";
+import { SINA_BRAND_JOB, boardImagesQuote, chainQuote, devisDesNomsVerifies, finishQuote, namesPreviewQuote, routeCountOfProject, type ChainQuote } from "../brand-chain";
 import { borneDuStudio, probableDuStudio } from "../../ai/borne-du-studio";
 import { CREATED_SLOTS, FINISH_SLOTS, PROPOSAL_SLOTS, type ImageSlot } from "../brand-images";
 import { finishSlots } from "../brand-finish";
@@ -146,12 +146,18 @@ export function accordGraphistes(count: number, fresh = true) {
   // LA PLANCHE DE MARQUE PAR OPENAI (accord écrit du propriétaire du 24 novembre 2026) : une par logo choisi.
   const planches = devisDesPlanchesDeMarque(count);
   const recherche = devisDeLaRecherche(), finalisations = devisDesFinalisations(count);
-  const nomsMicro = Math.max(0, entier.maxMicro - textes.maxMicro);
-  return { count, nomsMicro, rechercheMicro: recherche.maxMicro, finalisationsMicro: finalisations.maxMicro, planchesMicro: textes.maxMicro + planches.maxMicro,
+  // La tâche des noms, jusqu'aux noms VÉRIFIÉS (décision du 26 novembre 2026) : la somme des maxima de tous ses appels,
+  // seconds tours, reprises courtes, recherche sur le web des noms gardés et vérification compris. Avant, elle valait
+  // « entier moins textes », qui retirait la vérification (comptée aussi par les planches, qui revérifient le nom
+  // choisi) : le Studio comptait sur ce que les appels précédents n'avaient pas dépensé pour la payer.
+  const noms = devisDesNomsVerifies({ fresh });
+  // La vérification des noms gardés s'ajoute à celle des planches : la chaîne entière n'en comptait qu'une.
+  const verification = noms.lignes.filter((l) => l.id === "recherche:verify" || l.id === "verify").reduce((t, l) => t + l.probableMicro, 0);
+  return { count, nomsMicro: noms.maxMicro, rechercheMicro: recherche.maxMicro, finalisationsMicro: finalisations.maxMicro, planchesMicro: textes.maxMicro + planches.maxMicro,
     // La borne du Studio des planches : une reprise par planche et une réécriture des valeurs du métier.
     planchesStudioMicro: planches.studioMaxMicro,
-    maxMicro: entier.maxMicro + planches.maxMicro + recherche.maxMicro + finalisations.maxMicro + laFin().maxMicro,
-    probableMicro: (entier.probableMicro ?? entier.maxMicro) + planches.probableMicro + recherche.probableMicro + finalisations.probableMicro + laFin().probableMicro };
+    maxMicro: noms.maxMicro + textes.maxMicro + planches.maxMicro + recherche.maxMicro + finalisations.maxMicro + laFin().maxMicro,
+    probableMicro: Math.ceil((entier.probableMicro ?? entier.maxMicro) + verification) + planches.probableMicro + recherche.probableMicro + finalisations.probableMicro + laFin().probableMicro };
 }
 /**
  * La marque finie d'un nouveau projet (planche de marque) : sa grande scène n'existe pas encore (la planche de marque a

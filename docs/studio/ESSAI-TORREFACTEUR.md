@@ -82,6 +82,9 @@ recherche coûte en général 0,12 €.
 À savoir : dans le Studio, l'accord de l'étape ne donne à cette tâche que 8,66 € au plus : il ne compte pas la vérification
 des noms gardés. Le Studio compte sur ce que chaque appel rend de sa réservation pour la payer. L'essai prend la somme des
 maxima comme plafond de la tâche, pour aller au bout à coup sûr. Je n'ai rien changé dans le Studio.
+Corrigé après e4ba3c1c (26 novembre 2026) : l'accord du Studio donne maintenant à la tâche des noms la somme des maxima de
+tous ses appels, vérification des noms gardés comprise (9,85 €), calculée par la même fonction que le plafond minimal de
+l'essai (`devisDesNomsVerifies`). L'essai lui-même ne change pas : mêmes commandes, même devis, même refus sous 9,85 €.
 
 **Pause.** Montrer au propriétaire `data/essai-torrefacteur/1-noms/rapport.txt` : les noms vérifiés, numérotés, avec pour
 chacun ce que SINA dit de son adresse (« … est déjà pris ; libre aujourd'hui : … ») et l'adresse que la planche écrirait.

@@ -216,6 +216,57 @@ export function namesPreviewQuote(settings?: ChainSettings): ChainQuote {
   return { maxMicro: Math.ceil(max), ...(probable ? { probableMicro: Math.ceil(probable) } : {}) };
 }
 
+/** Une ligne du devis des noms vérifiés : un appel (ou une recherche sur le web), combien de fois, sa borne et son probable. */
+export type LigneDesNomsVerifies = {
+  /** recherches (les trois de l'étude), study, strategy, strategy:2, team, teamShort, judge, team:2, teamShort:2, judge:2, recherche:verify, verify. */
+  id: string;
+  appel: CallId | "web";
+  modele: ChainModel;
+  fois: number;
+  /** Toujours fait dans le déroulé habituel (sinon : un second tour ou une reprise, comptés au plafond). */
+  toujours: boolean;
+  maxMicro: number;
+  probableMicro: number;
+};
+/**
+ * LE devis de la tâche des noms (méthode des graphistes : `runSinaBrandJob` avec `jusquAuxNoms`), appel par appel, jusqu'aux
+ * noms VÉRIFIÉS : les trois recherches et l'étude, les deux tours d'idées, les équipes et leur reprise courte, le juge, le
+ * second tour des équipes (et sa reprise) et son juge, puis la recherche sur le web des noms gardés et leur vérification.
+ * Son plafond est la somme des maxima de TOUS ces appels : il ne compte jamais sur ce qu'un appel précédent n'a pas
+ * dépensé (décision du 26 novembre 2026 : l'accord de l'étape ne donnait que 8,66 € à la tâche, sans la vérification).
+ * Une seule source pour l'accord du Studio (`accordGraphistes`) et le script d'essai des noms.
+ *
+ * `web` : la borne et le probable d'une recherche sur le web ; par défaut ceux du Studio (`webSearchQuote`, 0 sans clé).
+ * `fresh` à faux (atelier repris) : ni recherches de l'étude, ni étude, ni idées, ni premier tour des équipes.
+ */
+export function devisDesNomsVerifies(o: { settings?: ChainSettings; fresh?: boolean; web?: { maxMicro: number; probableMicro: number } } = {}): { lignes: LigneDesNomsVerifies[]; maxMicro: number; probableMicro: number } {
+  const s = o.settings ?? chainSettings(), fresh = o.fresh !== false;
+  const web = o.web ?? webSearchQuote(s.craft, { maxSearches: BRAND_SEARCHES });
+  const lignes: LigneDesNomsVerifies[] = [];
+  const recherche = (id: string, fois: number) => lignes.push({ id, appel: "web", modele: s.craft, fois, toujours: true, maxMicro: web.maxMicro * fois, probableMicro: web.probableMicro * fois });
+  const appel = (id: string, call: CallId, fois: number, toujours: boolean) => {
+    const c = CALLS[call], m = modelOf(s, call);
+    const bound = callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort), usual = estimateCallMicro(m.provider, m.model, c.input, c.output) ?? 0;
+    lignes.push({ id, appel: call, modele: m, fois, toujours, maxMicro: (bound ?? usual * 4) * fois, probableMicro: usual * fois });
+  };
+  if (fresh) {
+    recherche("recherches", RESEARCHES);
+    appel("study", "study", 1, true);
+    appel("strategy", "strategy", 1, true);
+    appel("strategy:2", "strategy", 1, false);
+    appel("team", "team", s.teams, true);
+    appel("teamShort", "teamShort", s.teams, false);
+  }
+  appel("judge", "judge", 1, true);
+  appel("team:2", "team", s.teams, false);
+  appel("teamShort:2", "teamShort", s.teams, false);
+  appel("judge:2", "judge", 1, false);
+  recherche("recherche:verify", 1);
+  appel("verify", "verify", 1, true);
+  const somme = (k: "maxMicro" | "probableMicro", f: (l: LigneDesNomsVerifies) => boolean = () => true) => lignes.filter(f).reduce((t, l) => t + l[k], 0);
+  return { lignes, maxMicro: Math.ceil(somme("maxMicro")), probableMicro: Math.ceil(somme("probableMicro", (l) => l.toujours)) };
+}
+
 /**
  * Borne d'UNE image de planche : la formule de sa réservation (tarif inconnu : une erreur, jamais un prix deviné). Le
  * logo (et le symbole tiré du logo) au prix du modèle des logos (logo-policy.ts), les autres images à celui des images de SINA.
