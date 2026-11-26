@@ -1,0 +1,30 @@
+{
+  "nom": "Mouture",
+  "disposition": "standard",
+  "logo": {
+    "fichier": "/home/user/Ecom-studio-ia/data/essai-torrefacteur/3-finalisation/esquisse-11-logo-garde.png",
+    "sha256": "83a13c64a6eda4b43e5a84c42e9f1e8e17bea6fde6deec588350566029347f48"
+  },
+  "phrase": [
+    "TORRÉFACTION ARTISANALE"
+  ],
+  "planche": {
+    "logo": "4wwvp18cfaszw4d3",
+    "domaine": "mouturefrance.fr",
+    "statut": "disponible",
+    "annee": 2026,
+    "phrase": [
+      "TORRÉFACTION ARTISANALE"
+    ],
+    "at": 1795726508777,
+    "image": {
+      "id": "61m8pzzy0f7foy6y",
+      "w": 1536,
+      "h": 2304
+    },
+    "essais": 1,
+    "note": 9
+  },
+  "notes": [],
+  "issues": []
+}

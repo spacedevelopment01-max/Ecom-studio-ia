@@ -1050,6 +1050,24 @@ const borneElement = (texte: string, taille: string, jointes: number): number =>
 /** Coût MAXIMAL d'une image de la planche en vrai (même calcul que sa réservation, marge comprise), au texte le plus long. */
 export const elementDeLaPlancheMaxMicro = (taille: string, jointes = 3): number => mediaReservationMaxMicro(borneElement("x".repeat(ELEMENT_TEXTE_MAX_OCTETS), taille, jointes));
 
+/**
+ * UNE IMAGE JOINTE ALLÉGÉE SANS PERTE (26 novembre 2026, essai réel du torréfacteur, étape 5 : trois coupures de connexion
+ * dans le conteneur d'essai, envois de 0,87 à 1,12 Mo, dont 0,72 Mo pour le logo joint à 13 images sur 17). Le PNG est
+ * réécrit en compression la plus forte ; il n'est gardé que si chaque point est identique à l'original (même taille, mêmes
+ * canaux, mêmes valeurs) et s'il est plus léger. Sinon, l'original part tel quel. Ce que voit le dessinateur ne change pas :
+ * seuls les octets envoyés diminuent (de 20 à 35 % mesurés sur les jointes de l'essai). Une image qui n'est pas un PNG part
+ * telle quelle.
+ */
+export async function jointeAllegeeSansPerte(data: Buffer): Promise<Buffer> {
+  if (data.length < 8 || data[0] !== 137 || data[1] !== 80) return data;
+  try {
+    const legere = await sharp(data).png({ compressionLevel: 9, adaptiveFiltering: true, palette: false }).toBuffer();
+    if (legere.length >= data.length) return data;
+    const [a, b] = await Promise.all([sharp(data).raw().toBuffer({ resolveWithObject: true }), sharp(legere).raw().toBuffer({ resolveWithObject: true })]);
+    const memes = a.info.width === b.info.width && a.info.height === b.info.height && a.info.channels === b.info.channels && a.data.equals(b.data);
+    return memes ? legere : data;
+  } catch { return data; }
+}
 type JointeDElement = { role: "apercu" | "logo" | "symbole" | "produit"; assetId: string | null; data: Buffer };
 async function elementDeLaPlancheImpl(ctx: Ctx, input: { element: string; texte: string; taille: string; jointes: JointeDElement[] }): Promise<Buffer> {
   const { provider, model, chemin } = PERMISSION_DE_LA_PLANCHE_EN_VRAI;
@@ -1064,14 +1082,16 @@ async function elementDeLaPlancheImpl(ctx: Ctx, input: { element: string; texte:
   if (t) t.usage = "logo";
   const corps = champsDElementDeLaPlanche(input.texte, input.taille);
   gate(ctx, borneElement(input.texte, input.taille, input.jointes.length), "image", provider, model);
-  const files = await Promise.all(input.jointes.map((im) => toFile(im.data, `${im.role}.png`, { type: im.data[0] === 137 ? "image/png" : "image/jpeg" })));
+  // Les jointes allégées sans perte (mêmes points, moins d’octets) : ce sont elles qui partent et qui sont comptées au reçu.
+  const envoyees = await Promise.all(input.jointes.map(async (im) => ({ ...im, avant: im.data.length, data: await jointeAllegeeSansPerte(im.data) })));
+  const files = await Promise.all(envoyees.map((im) => toFile(im.data, `${im.role}.png`, { type: im.data[0] === 137 ? "image/png" : "image/jpeg" })));
   let res: Awaited<ReturnType<typeof openaiImageSansFlux>>;
   // Sans flux, une seule image, aucune reprise automatique (une panne n'est jamais relancée), aucun secours.
   try { res = await openaiImageSansFlux(openaiClient(key), "edit", { ...corps, image: files }, sent); } catch (e) { return erreurOpenAI(e); }
   if (!res.b64) throw new Error(L("OpenAI n'a pas renvoyé d'image.", "OpenAI returned no image."));
   const u = res.usage ?? {};
   const billed = cost("openai", model, { input: u.input_tokens_details?.text_tokens ?? 0, imageIn: u.input_tokens_details?.image_tokens ?? 0, imageOut: u.output_tokens ?? 0 }).micro;
-  const jointes = input.jointes.map((im) => ({ role: im.role, assetId: im.assetId, sha256: createHash("sha256").update(im.data).digest("hex"), octets: im.data.length }));
+  const jointes = envoyees.map((im) => ({ role: im.role, assetId: im.assetId, sha256: createHash("sha256").update(im.data).digest("hex"), octets: im.data.length, ...(im.avant !== im.data.length ? { octetsAvantAllegement: im.avant } : {}) }));
   const { prompt: _p, ...reglages } = corps;
   recordMedia({ userId: ctx.userId, projectId: ctx.projectId, jobId: ctx.jobId, task: "image_generation", provider, model, unit: "tokens", inputUnits: u.input_tokens ?? 0, outputUnits: u.output_tokens ?? 0, quantity: 1, costMicro: billed, estimated: !res.usage, idempotencyKey: ctx.usageKey,
     details: { methode: "planche-en-vrai", element: input.element, texteEnvoye: input.texte, requestId: res.requestId, reglages, jointes, usage: res.usage ?? null, renvoye: res.renvoye } });

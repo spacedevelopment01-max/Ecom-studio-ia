@@ -452,3 +452,30 @@ exact (la somme des maxima, reprises comprises), rien ne part. Devis : `DEVIS_SE
 
 Épreuve ajoutée et scellée : `planche-en-vrai-palette-mesuree-et-logos-en-hd`. Tests :
 `tests/planche-en-vrai-logos-hd-et-palette.test.ts` (l'aperçu réel de B, le vrai logo 10, appels simulés).
+
+## Les textes du logo, les étiquettes sans invention et le rejugement gratuit (26 novembre 2026, essai de Mouture)
+
+Constats du chef d'orchestre sur l'étape 5 de l'essai du torréfacteur, mot pour mot : « Faux refus « en trop : TORRÉFACTION,
+ARTISANALE ». C'est la phrase du logo, imprimée sous le logo sur les sachets. » et « Produits et faits inventés dans les
+images refaites en HD. On y lit « L'ARABY DE PÉROU », « 100% ARABICA », des origines Brésil et Pérou, et « CAFÉ DEPUIS
+1928 ». L'aperçu A n'en avait pas. »
+
+- **Les textes du logo** (`sansLesTextesDuLogo`, `raisonsDuRefusEnVrai`) : là où le logo est, son nom et sa phrase, toutes
+  ses lignes, sont attendus et jamais comptés en trop ; la casse ne compte pas, chaque lettre et chaque accent si.
+- **Un mot entier perdu au bord gauche** du bandeau de la planche (« la tasse, » pour « à la tasse, ») n'est plus reproché.
+- **Les étiquettes** (`ligneDesTextesEnVrai`) : la règle des preuves reste mot pour mot ; la ligne qui dit l'élément ajoute
+  que les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom, la phrase du logo et les noms des
+  produits de la fiche, sans date, origine ni chiffre. Les produits viennent de la fiche (gardés avec la planche de marque,
+  `produitsDeLaPlanche` ; pour une planche d'avant, sa liste « Montrer clairement »).
+- **Le relecteur** reçoit la fiche et la phrase du logo, et relève à part (`inventes`) tout nom de produit, origine, date,
+  année ou chiffre absent de l'aperçu ; le code refuse pour eux et pour toute ligne lue absente de l'aperçu qui porte un
+  chiffre, un pays, une origine, une variété ou une gamme (`faitsInventesEnVrai`, `motQuiDitUnFait`).
+- **La reprise** (`raisonsPourLeDessinateurEnVrai`) ne recopie jamais un texte inventé ni un mot en trop : elle dit qu'un
+  texte absent de l'aperçu est écrit et rappelle les noms de la fiche ; le compte rendu garde les mots exacts.
+- **Les images jointes** partent allégées sans perte (`jointeAllegeeSansPerte`, media-providers.ts) : chaque point
+  identique, sinon l'original part.
+- **Le rejugement gratuit de l'essai** (`REJUGER=1`, `rejugerLEssaiEnVrai`) : voir `docs/studio/ESSAI-TORREFACTEUR.md`.
+
+Épreuve ajoutée et scellée : `planche-en-vrai-textes-du-logo-et-faits-inventes`. Tests :
+`tests/planche-en-vrai-torrefacteur-etape-5.test.ts` et `tests/planche-en-vrai-rejuger-puis-reprendre.test.ts`
+(inventaire et verdicts réels de Mouture, appels simulés).

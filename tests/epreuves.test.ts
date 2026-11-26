@@ -2667,3 +2667,43 @@ describe("l'épreuve des noms jamais dits vérifiés sans comparaison (tâche de
     expect(J.phraseDesNomsMontres({ verifies: true })).toBeNull();
   });
 });
+
+describe("l'épreuve de la planche en vrai de Mouture, étape 5 (verdicts réels, aucun appel)", async () => {
+  const P = await import("@/lib/syna-agent/planche-en-vrai");
+  const F = "tests/fixtures/torrefacteur-planche-en-vrai";
+  const PRODUITS = ["cafés en grains", "cafés moulus", "coffrets"], LOGO = { nom: "Mouture", phrase: ["TORRÉFACTION ARTISANALE"] };
+  const inventaire = P.InventaireSchema.parse(JSON.parse(fs.readFileSync(`${F}/inventaire-reponse.json`, "utf8")));
+  const verdict = (n: string) => (JSON.parse(fs.readFileSync(`${F}/${P.def(n as never).groupe}-1-verdict.json`, "utf8")).verdict as { images: { case: string }[] }).images.find((x) => x.case === n) as never as import("@/lib/syna-agent/planche-en-vrai").ImageRelue;
+  const raisons = (n: string) => P.raisonsDuRefusEnVrai(verdict(n), { inventaire: P.caseLue(inventaire, n), personnes: false, photo: false, element: n, logo: LOGO, produits: PRODUITS });
+
+  epreuve("planche-en-vrai-textes-du-logo-et-faits-inventes", async () => {
+    // Les textes du logo, jamais en trop là où est le logo ; un mot du logo mal écrit le reste.
+    for (const n of ["publication-1x1", "publication-9x16", "site-ordinateur"]) expect(raisons(n), n).toEqual([]);
+    for (const n of ["produit-1", "produit-2", "reference-4"]) expect(raisons(n).join(" "), n).not.toMatch(/« TORRÉFACTION »|« ARTISANALE »|« MOUTURE »/);
+    expect(P.sansLesTextesDuLogo(["TORÉFACTION", "ARTISANALE", "MOUTURE"], LOGO)).toEqual(["TORÉFACTION"]);
+    // La consigne de reprise en HD : la règle des preuves mot pour mot, puis la ligne des étiquettes, en positif.
+    const t = P.texteDeLElement({ element: "produit-3", nom: "Mouture", logo: true, photo: false, personnes: false, produits: PRODUITS });
+    expect(t.startsWith(`${P.REGLE_APERCU} ${P.regleDuLogo("Mouture")} `)).toBe(true);
+    expect(t).toContain("Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : « Cafés en grains », « Cafés moulus », « Coffrets » ; aucune date, aucune origine, aucun chiffre n'y est ajouté.");
+    // Le relecteur reçoit la fiche et la phrase, relève les inventions à part ; sa consigne ne nomme aucun client d'essai.
+    const d = P.demandeAuRelecteurEnVrai({ nom: "Mouture", personnes: false, groupe: "produits", cases: [{ element: "produit-3", photo: false }], produits: PRODUITS, phrase: LOGO.phrase });
+    expect(d).toMatch(/« cafés en grains », « cafés moulus », « coffrets »/);
+    expect(P.RELECTEUR_EN_VRAI).toMatch(/- inventes : /);
+    expect(P.RELECTEUR_EN_VRAI).not.toMatch(/Mouture|ARABICA|PÉROU/);
+    // Les faits et les produits inventés font refuser, cités au compte rendu.
+    expect(raisons("produit-3")[0]).toBe(`${P.DEBUT_FAITS_INVENTES_EN_VRAI}« L'ARABY DE PÉROU », « 100% ARABICA »`);
+    expect(raisons("reference-5")[0]).toMatch(/« DEPUIS 1928 »/);
+    expect(raisons("reference-6")[0]).toMatch(/« L'ARABICA PUR BRÉSIL »/);
+    const base = { ...verdict("produit-2"), textesLus: ["MOUTURE", "TORRÉFACTION ARTISANALE", "CAFÉ MOULU"] };
+    const o = { inventaire: P.caseLue(inventaire, "produit-2"), personnes: false, photo: false, element: "produit-2", logo: LOGO, produits: PRODUITS };
+    expect(P.raisonsDuRefusEnVrai({ ...base, inventes: [{ ou: "étiquette", texte: "Café moulu" }] }, o)).toEqual([]);
+    expect(P.raisonsDuRefusEnVrai({ ...base, inventes: [{ ou: "étiquette", texte: "Grand cru" }] }, o)[0]).toMatch(/^faits ou produits inventés/);
+    // La reprise ne renvoie jamais un texte inventé ni un mot en trop ; elle rappelle les noms de la fiche.
+    for (const n of ["produit-3", "reference-5", "reference-6"]) {
+      const r = P.texteDeLElement({ element: n as never, nom: "Mouture", logo: true, photo: false, personnes: false, produits: PRODUITS, raisons: P.raisonsPourLeDessinateurEnVrai(raisons(n), { produits: PRODUITS }) });
+      const reprise = r.slice(r.indexOf("À corriger"));
+      for (const x of ["PÉROU", "BRÉSIL", "100%", "ARABICA", "1928"]) expect(reprise, `${n} : ${x}`).not.toContain(x);
+      expect(reprise).toContain("« Cafés en grains », « Cafés moulus », « Coffrets »");
+    }
+  });
+});

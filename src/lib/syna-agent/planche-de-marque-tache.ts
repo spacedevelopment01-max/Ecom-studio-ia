@@ -167,7 +167,7 @@ export async function plancheDeLaRoute(o: {
   const ranger = async (png: Buffer, tour: number, gardee: boolean, texte: string, recu: RecuDeLaPlanche | null, verdict?: RelectureDeLaPlanche) => {
     const m = await sharp(png).metadata();
     const a = await saveAsset({ ...o.who, data: png, name: `planche-de-marque-${key}-${tour}.png`, mime: "image/png", role: gardee ? "brand-board" : "planche-refusee", origin: "generated", status: "ready",
-      meta: { plancheDeMarque: { key, tour, nom: x.name, texteEnvoye: texte, recu, disposition: disposition.laquelle, verdict: verdict ?? null }, synaBoard: { key, slot: "planche", round: o.round, name: x.name } } });
+      meta: { plancheDeMarque: { key, tour, nom: x.name, texteEnvoye: texte, recu, disposition: disposition.laquelle, verdict: verdict ?? null, produits: valeurs.produits }, synaBoard: { key, slot: "planche", round: o.round, name: x.name } } });
     return { id: a.id, w: m.width ?? DISPOSITION.largeur, h: m.height ?? DISPOSITION.hauteur };
   };
   const ids = new Map<number, { id: string; w: number; h: number }>();

@@ -1,0 +1,592 @@
+{
+  "cases": [
+    {
+      "case": "publication-1x1",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Plus",
+        "qu'un café,",
+        "un moment",
+        "à vous.",
+        "MOUTURE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": true,
+      "description": "Une tasse de café fumante posée sur une table en bois parmi des grains, avec un titre en haut et le logo en bas."
+    },
+    {
+      "case": "publication-4x5",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Un café",
+        "de caractère,",
+        "au quotidien.",
+        "Torréfaction",
+        "artisanale",
+        "Origines",
+        "sélectionnées",
+        "Saveurs",
+        "intenses",
+        "Découvrir",
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "CAFÉ EN GRAINS",
+        "L'ESSENTIEL"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": true,
+      "description": "Un sachet kraft de café en grains Mouture à côté d'un titre, de trois atouts avec icônes et d'un bouton « Découvrir »."
+    },
+    {
+      "case": "publication-9x16",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Votre",
+        "rituel café",
+        "du jour ?",
+        "Café noir",
+        "Café au lait",
+        "Cappuccino",
+        "Autre",
+        "MOUTURE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": true,
+      "description": "Un sondage vertical sur fond de grains et de café moulu, avec quatre choix de boissons et le logo en bas."
+    },
+    {
+      "case": "ouverture-site",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Des cafés",
+        "de caractère,",
+        "pour tous",
+        "vos moments.",
+        "TORRÉFACTION ARTISANALE",
+        "Découvrir nos cafés →"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Une bannière avec un sac en toile de jute renversant des grains de café, un titre et un bouton cuivré."
+    },
+    {
+      "case": "ouverture-planche",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "u grain",
+        "la tasse,",
+        "e goût du vrai.",
+        "RRÉFACTION ARTISANALE",
+        "DES CAFÉS",
+        "DE CARACTÈRE",
+        "POUR TOUS",
+        "VOS MOMENTS."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Une large bannière avec une tasse de café fumante, des grains et un sac de jute, encadrée de textes coupés sur les bords."
+    },
+    {
+      "case": "site-ordinateur",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "MOUTURE",
+        "Cafés",
+        "Collections",
+        "Coffrets",
+        "Notre histoire",
+        "Des cafés",
+        "de caractère,",
+        "pour tous",
+        "vos moments.",
+        "TORRÉFACTION ARTISANALE",
+        "Découvrir nos cafés →",
+        "Cafés d'origine",
+        "sélectionnés",
+        "Torréfaction",
+        "artisanale",
+        "Paiement sécurisé",
+        "Livraison soignée"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un ordinateur portable affichant la page d'accueil du site Mouture avec menu, bannière de grains de café et quatre garanties."
+    },
+    {
+      "case": "site-telephone",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Une boutiq",
+        "toujours avec vous",
+        "MOUTURE",
+        "Des cafés",
+        "de caractère,",
+        "pour tous",
+        "vos moments.",
+        "TORRÉFACTION ARTISANALE",
+        "Découvrir →",
+        "Nos cafés"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un smartphone affichant le site mobile Mouture avec une bannière de café et le début de la liste des sachets."
+    },
+    {
+      "case": "produit-1",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "MOUTURE",
+        "CAFÉ EN GRAINS"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un sachet kraft de café en grains Mouture à côté d'un bol rempli de grains."
+    },
+    {
+      "case": "produit-2",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "MOUTURE",
+        "CAFÉ MOULU"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un sachet kraft de café moulu Mouture posé sur une table en bois avec un petit tas de mouture."
+    },
+    {
+      "case": "produit-3",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "MOUTURE",
+        "MOUTURE",
+        "MOUTURE"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un coffret en carton contenant deux sachets de café Mouture et une tasse blanche au logo, sur lit de frisures."
+    },
+    {
+      "case": "emballage",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "TORRÉFACTION ARTISANALE",
+        "MOUTURE",
+        "MOUTURE",
+        "TORRÉFACTION",
+        "ARTISANALE"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Une boîte en carton illustrée de montagnes, un sachet, une tasse émaillée et une carte, tous aux couleurs de Mouture."
+    },
+    {
+      "case": "reference-1",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Des grains de café en cours de torréfaction dans un brûloir en métal."
+    },
+    {
+      "case": "reference-2",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un sac de jute ouvert rempli de grains de café verts."
+    },
+    {
+      "case": "reference-3",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Une tasse de café fumante sur une planche en bois entourée de grains."
+    },
+    {
+      "case": "reference-4",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "MOUTURE",
+        "CAFÉ EN GRAINS",
+        "CAFÉ EN GRAINS"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Une rangée de sachets kraft de café Mouture alignés sur une étagère en bois."
+    },
+    {
+      "case": "reference-5",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un moulin à café manuel ancien en bois rempli de grains, avec du café moulu au pied."
+    },
+    {
+      "case": "reference-6",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "MOUTURE",
+        "MOUTURE"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un coffret en carton ouvert contenant deux sachets de café Mouture sur des frisures de papier."
+    },
+    {
+      "case": "haut",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE",
+        "D",
+        "à",
+        "le",
+        "TO"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Le logo hexagonal brun de Mouture avec la flamme et le grain, et à droite le début d'un titre coupé."
+    },
+    {
+      "case": "palette",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Brun café",
+        "#2E1A12",
+        "Authenticité",
+        "Profondeur",
+        "Cuivre",
+        "#A86B3A",
+        "Chaleur",
+        "Artisanat",
+        "Caramel",
+        "#C89B6B",
+        "Gourmandise",
+        "Convivialité",
+        "Crème",
+        "#F6E9D7",
+        "Douceur",
+        "Équilibre",
+        "Sauge",
+        "#7B8470",
+        "Nature",
+        "Élégance"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Cinq pastilles de couleur, du brun foncé au vert sauge, avec leur nom, leur code et deux mots."
+    },
+    {
+      "case": "typographies",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Montserrat",
+        "Moderne, lisible, polyvalente.",
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "abcdefghijklmnopqrstuvwxyz",
+        "0123456789",
+        "Playfair Display",
+        "Élégante, authentique, chaleureuse.",
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "abcdefghijklmnopqrstuvwxyz",
+        "0123456789"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Deux spécimens de polices côte à côte, une sans empattement et une à empattements, avec alphabets et chiffres."
+    },
+    {
+      "case": "ton",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "—TORRÉFACTION ARTISANALE",
+        "Authenticité",
+        "Un savoir-faire artisanal et passionné.",
+        "Partage",
+        "Des cafés qui rassemblent.",
+        "Qualité",
+        "Une sélection exigeante et responsable.",
+        "Évasion",
+        "Des saveurs qui font voyager."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Le slogan suivi de quatre valeurs illustrées par des icônes : grain, cœur, feuille et montagnes."
+    },
+    {
+      "case": "seo",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Titre SEO",
+        "Mouture | Cafés en grains et moulus |",
+        "Torréfaction artisanale",
+        "Méta-description",
+        "Mouture propose des cafés en grains et moulus, torréfiés artisanalement,",
+        "ainsi que des coffrets, pour tous vos moments et toutes vos méthodes de",
+        "dégustation.",
+        "Nom de domaine suggéré",
+        "mouturefrance.fr — disponible",
+        "© 2026 Mouture",
+        "Tous droits réservés.",
+        "Une marque pensée pour les amateurs",
+        "de bon café, simplement."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Quatre encadrés : titre SEO, méta-description, nom de domaine suggéré et mention de copyright avec un grain de café."
+    },
+    {
+      "case": "logos : icône seule",
+      "logo": true,
+      "logoVu": "symbole",
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Une flamme crème sur un carré brun foncé aux coins arrondis."
+    },
+    {
+      "case": "logos : favicon",
+      "logo": true,
+      "logoVu": "symbole",
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Une petite flamme crème sur un carré brun foncé aux coins arrondis."
+    },
+    {
+      "case": "titre-01",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "SYSTÈME DE LOGOS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires."
+    },
+    {
+      "case": "titre-02",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "PALETTE DE COULEURS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires, légèrement coupé à droite."
+    },
+    {
+      "case": "titre-03",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "TYPOGRAPHIES"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires."
+    },
+    {
+      "case": "titre-04",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "TON, SLOGAN, VALEUR"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires."
+    },
+    {
+      "case": "titre-05",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "IMAGES DE RÉFÉRENCE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires, coupé en haut."
+    },
+    {
+      "case": "titre-06",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "PRODUITS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires."
+    },
+    {
+      "case": "titre-07",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "RÉSEAUX SOCIAUX"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires, légèrement coupé à droite."
+    },
+    {
+      "case": "titre-08",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "SITE WEB"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires."
+    },
+    {
+      "case": "titre-09",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "PACKAGING & SUPPORT"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires, coupé à droite."
+    },
+    {
+      "case": "titre-10",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "SEO / NOM DE DOMAINE / COPYRIGH"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Un titre de section en capitales noires, coupé à droite."
+    },
+    {
+      "case": "logo",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "MOUTURE",
+        "TORRÉFACTION ARTISANALE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Le logo officiel : un hexagone brun foncé liseré de cuivre avec une flamme, le nom, un grain de café et la signature."
+    }
+  ],
+  "polices": {
+    "titres": {
+      "nom": "Playfair Display",
+      "genre": "serif",
+      "procheDuCatalogue": "Playfair Display"
+    },
+    "textes": {
+      "nom": "Montserrat",
+      "genre": "sans",
+      "procheDuCatalogue": "Nunito"
+    }
+  },
+  "couleurs": [
+    {
+      "nom": "Brun café",
+      "mots": [
+        "Authenticité",
+        "Profondeur"
+      ]
+    },
+    {
+      "nom": "Cuivre",
+      "mots": [
+        "Chaleur",
+        "Artisanat"
+      ]
+    },
+    {
+      "nom": "Caramel",
+      "mots": [
+        "Gourmandise",
+        "Convivialité"
+      ]
+    },
+    {
+      "nom": "Crème",
+      "mots": [
+        "Douceur",
+        "Équilibre"
+      ]
+    },
+    {
+      "nom": "Sauge",
+      "mots": [
+        "Nature",
+        "Élégance"
+      ]
+    }
+  ],
+  "icone": "Flamme crème sur carré brun foncé aux coins arrondis",
+  "favicon": "Petite flamme crème sur carré brun foncé aux coins arrondis",
+  "iconeReprendLeLogo": true
+}

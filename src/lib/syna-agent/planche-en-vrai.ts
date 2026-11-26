@@ -27,7 +27,7 @@ import { z } from "zod";
 import { L } from "../i18n-server";
 import { getJsonSetting } from "../settings";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
-import { DOSSIER_DE_LA_PLANCHE } from "./planche-de-marque";
+import { DOSSIER_DE_LA_PLANCHE, motQuiDitUnFait, nomDeProduitPermis, nomDuProduitALEcran } from "./planche-de-marque";
 import { libelleDeLElement } from "./planche-en-vrai-libelles";
 
 // ---------------------------------------------------------------- 0. le réglage
@@ -319,19 +319,38 @@ export const regleDuSymbole = (nom: string) => `La deuxième image est le symbol
 const RANG = ["première", "deuxième", "troisième"];
 export const phraseDuProduit = (rang: number) => `La ${RANG[rang - 1]} image est la photo du vrai produit du client : remplace le produit par celui de la photo jointe, garde la mise en scène à l'identique.`;
 export const SANS_PERSONNE_EN_VRAI = "Aucune personne n'apparaît.";
-/** La ligne qui dit ce qu'est l'élément (marge des formats larges ; sans accord du client, aucune personne). */
-export function ligneDeLElement(n: NomElement, personnes: boolean): string {
+/**
+ * LES TEXTES DES ÉTIQUETTES (26 novembre 2026, essai réel du torréfacteur, étape 5 ; constat du chef d'orchestre : « Produits
+ * et faits inventés dans les images refaites en HD. On y lit « L'ARABY DE PÉROU », « 100% ARABICA », des origines Brésil et
+ * Pérou, et « CAFÉ DEPUIS 1928 ». L'aperçu A n'en avait pas. »). Sur l'aperçu, les petites étiquettes sont illisibles ; en
+ * haute définition, le dessinateur les remplissait de noms, d'origines, de dates et de chiffres. La règle du propriétaire :
+ * « SINA n'invente jamais les biens à vendre ». Dite en positif, dans la ligne qui dit l'élément (la règle des preuves reste
+ * mot pour mot) : les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de
+ * son logo et les noms des produits de la fiche ; rien n'y est ajouté qui dise une date, une origine ou un chiffre.
+ */
+export const ligneDesTextesEnVrai = (produits: readonly string[]): string =>
+  `Les étiquettes et les emballages ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client : ${produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")} ; aucune date, aucune origine, aucun chiffre n'y est ajouté.`;
+/** La ligne qui dit ce qu'est l'élément (marge des formats larges ; textes des étiquettes ; sans accord du client, aucune personne). */
+export function ligneDeLElement(n: NomElement, personnes: boolean, produits?: readonly string[]): string {
   const d = def(n);
-  return [d.quoi, d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
+  return [d.quoi, d.large && !/marges généreuses/.test(d.quoi) ? MARGE_LARGE : "", produits?.length ? ligneDesTextesEnVrai(produits) : "", personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
 }
+/**
+ * Le texte d'une image envoyé AVANT la ligne des étiquettes (une passe d'essai reçue avant cette correction) : le même texte,
+ * cette ligne retirée. Sert seulement à reconnaître une image déjà reçue et payée, jamais à envoyer.
+ */
+export const texteSansLaLigneDesTextes = (texte: string, produits: readonly string[] | undefined): string =>
+  produits?.length ? texte.replace(` ${ligneDesTextesEnVrai(produits)}`, "") : texte;
 export const finDeRepriseEnVrai = (raisons: readonly string[]) => `À corriger : ${raisons.join(" ; ")}.`;
 /** LE TEXTE ENVOYÉ : REGLE mot pour mot (sa phrase du logo seulement si le logo est joint), la photo du produit, la ligne. */
-export function texteDeLElement(o: { element: NomElement; nom: string; logo: boolean; photo: boolean; personnes: boolean; raisons?: readonly string[]; /** Le symbole seul est joint (jamais avec le logo complet). */ symbole?: boolean }): string {
+export function texteDeLElement(o: { element: NomElement; nom: string; logo: boolean; photo: boolean; personnes: boolean; raisons?: readonly string[]; /** Le symbole seul est joint (jamais avec le logo complet). */ symbole?: boolean;
+  /** Les produits de la fiche du client : la ligne des étiquettes s'ajoute à la ligne de l'élément (`ligneDesTextesEnVrai`). */
+  produits?: readonly string[] }): string {
   const parts = [REGLE_APERCU];
   if (o.logo) parts.push(regleDuLogo(o.nom));
   else if (o.symbole) parts.push(regleDuSymbole(o.nom));
   if (o.photo) parts.push(phraseDuProduit(o.logo || o.symbole ? 3 : 2));
-  parts.push(ligneDeLElement(o.element, o.personnes));
+  parts.push(ligneDeLElement(o.element, o.personnes, o.produits));
   const t = parts.join(" ");
   return o.raisons?.length ? `${t}\n\n${finDeRepriseEnVrai(o.raisons)}` : t;
 }
@@ -485,6 +504,12 @@ export const ImageRelueSchema = z.object({
   /** La note de fidélité à l'aperçu, de 0 à 10. */
   note: z.number().min(0).max(10).catch(0),
   pourquoi: z.string().max(500).catch(""),
+  /**
+   * Les textes inventés relevés à part (26 novembre 2026, essai réel du torréfacteur, étape 5) : un nom de produit, une
+   * origine, une date, une année ou un chiffre lisibles, absents de l'aperçu et des produits de la fiche. Le code les
+   * compare à la fiche (`faitsInventesEnVrai`). Absent d'un verdict d'avant ce champ.
+   */
+  inventes: z.array(z.object({ ou: z.string().max(200).catch(""), texte: z.string().max(200).catch("") })).max(20).optional().catch(undefined),
 });
 export type ImageRelue = z.infer<typeof ImageRelueSchema>;
 export const RelectureDuGroupeSchema = z.object({ images: z.array(ImageRelueSchema).max(20).catch([]) });
@@ -499,13 +524,16 @@ export const RELECTEUR_EN_VRAI = `Tu es le relecteur le plus exigeant d'un studi
 - produitFidele : seulement si la photo du produit est jointe : le produit montré est le sien, reconnaissable au premier regard (même forme, même contenant, même matière) ; null sinon ;
 - texteCoupe : un texte est coupé, ou collé au bord de l'image ;
 - note : ta note de fidélité à l'aperçu, de 0 à 10 ; une image fidèle, nette, sans défaut visible vaut 8 ou plus ;
-- pourquoi : une ou deux phrases simples.
+- pourquoi : une ou deux phrases simples ;
+- inventes : chaque texte lisible de l'image refaite qui donne un nom de produit, une origine, une date, une année ou un chiffre absents de son aperçu et des produits de la marque donnés dans la demande (sur une étiquette, un emballage, une plaque, partout) ; pour chacun, « ou » (l'objet qui le porte) et « texte » (recopié lettre pour lettre) ; vide s'il n'y en a pas. Le nom de la marque et la phrase de son logo ne sont jamais inventés.
 Ne juge que ce que tu vois.`;
 
-export function demandeAuRelecteurEnVrai(o: { nom: string; personnes: boolean; groupe: Groupe; cases: { element: NomElement; photo: boolean }[] }): string {
+export function demandeAuRelecteurEnVrai(o: { nom: string; personnes: boolean; groupe: Groupe; cases: { element: NomElement; photo: boolean }[]; produits?: readonly string[]; phrase?: readonly string[] }): string {
   return [
     `Marque : « ${o.nom.trim()} ». Groupe : ${NOM_DU_GROUPE[o.groupe]}.`,
     o.personnes ? "Le client a donné son accord pour des personnes." : "Le client n'a donné ni photo de personne ni accord : aucune personne ne doit être visible.",
+    ...(o.phrase?.length ? [`Le logo porte le nom « ${o.nom.trim()} » et la phrase ${o.phrase.map((l) => `« ${l} »`).join(" puis ")} : partout où le logo apparaît, ces textes sont attendus.`] : []),
+    ...(o.produits?.length ? [`Les produits que la marque vend, donnés par le client : ${o.produits.map((p) => `« ${p.trim()} »`).join(", ")}. Tout autre nom de produit, toute origine, date, année ou chiffre lisible absent de l'aperçu va dans inventes.`] : []),
     `Cases : ${o.cases.map((c) => `${c.element}${c.photo ? " (photo du produit jointe)" : ""}`).join(", ")}.`,
   ].join("\n");
 }
@@ -556,14 +584,62 @@ export function textesDeLaZone(attendus: readonly string[], lus: readonly string
     while (a.length && /^\s*\p{Ll}/u.test(a[0]) && !motsDe(a[0]).some((w) => vus.has(w))) a = a.slice(1);
   }
   if (o.element && CASES_AVEC_BARRE_D_ETAT.has(o.element)) { a = a.filter((t) => !estUneHeure(t)); l = l.filter((t) => !estUneHeure(t)); }
+  // UN MOT ENTIER PERDU AU BORD GAUCHE (essai réel du torréfacteur, 26 novembre 2026) : le bandeau de la planche est découpé
+  // au bord de la page, et l'aperçu y perd parfois un mot entier (« la tasse, » pour « à la tasse, »). Une ligne refaite qui
+  // est exactement une ligne attendue précédée d'un seul mot n'est pas reprochée, dans ces cases seulement.
+  if (o.element && AU_BORD.has(o.element)) {
+    const lignes = new Set(a.map((t) => motsDe(t).join(" ")));
+    l = l.map((t) => { const m = motsDe(t); return m.length > 1 && lignes.has(m.slice(1).join(" ")) ? m.slice(1).join(" ") : t; });
+  }
   return { attendus: a, lus: l };
 }
-export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire: CaseLue | undefined; personnes: boolean; photo: boolean; element?: string; deborde?: boolean }): string[] {
+
+/** Le logo de la marque : son nom et sa phrase, toutes ses lignes (les textes que le logo porte, partout où il apparaît). */
+export type TextesDuLogo = { nom: string; phrase?: readonly string[] };
+const enCapitales = (w: string) => w.toLocaleUpperCase("fr");
+/**
+ * LES TEXTES DU LOGO NE SONT JAMAIS EN TROP (26 novembre 2026, essai réel du torréfacteur, étape 5 ; constat du chef
+ * d'orchestre : « Faux refus « en trop : TORRÉFACTION, ARTISANALE ». C'est la phrase du logo, imprimée sous le logo sur les
+ * sachets. »). L'inventaire ne relève pas toujours la phrase écrite en petit sous le logo de l'aperçu ; l'image refaite
+ * l'écrit nettement. Là où le logo est (dans l'aperçu ou dans l'image refaite), les mots du nom et de la phrase, écrits
+ * exactement, sont attendus : ils sont retirés des mots en trop, un pour un. Un mot mal écrit reste en trop.
+ */
+export function sansLesTextesDuLogo(enTrop: readonly string[], logo: TextesDuLogo | undefined): string[] {
+  if (!logo) return [...enTrop];
+  // Les lettres du logo sont souvent dessinées en capitales : la casse ne compte pas ici, chaque lettre et chaque accent, si.
+  const permis = new Set([logo.nom, ...(logo.phrase ?? [])].flatMap(motsDe).map(enCapitales));
+  return enTrop.filter((w) => !permis.has(enCapitales(w)));
+}
+/**
+ * LES FAITS ET LES PRODUITS INVENTÉS d'une image refaite (26 novembre 2026, essai réel du torréfacteur, étape 5) : les lignes
+ * lues qui ne sont pas dans l'aperçu et qui donnent un chiffre, un pays, une origine, une variété ou une gamme (reconnus par
+ * le code, `motQuiDitUnFait`), plus celles que le relecteur a relevées dans `inventes`, sauf le nom d'un produit de la fiche,
+ * un texte de l'aperçu ou un texte du logo. Rend les lignes, telles qu'elles sont lues.
+ */
+export function faitsInventesEnVrai(v: ImageRelue, o: { attendus: readonly string[]; lus: readonly string[]; produits?: readonly string[]; logo?: TextesDuLogo }): string[] {
+  const attendus = new Set(o.attendus.flatMap(motsDe));
+  const duLogo = new Set(o.logo ? [o.logo.nom, ...(o.logo.phrase ?? [])].flatMap(motsDe).map(enCapitales) : []);
+  const nouveau = (w: string) => !attendus.has(w) && !duLogo.has(enCapitales(w));
+  const lignes = o.lus.filter((t) => motsDe(t).some((w) => nouveau(w) && motQuiDitUnFait(w)));
+  const aPart = (v.inventes ?? []).map((x) => x.texte.trim()).filter((t) => t && motsDe(t).some(nouveau) && !nomDeProduitPermis(t, o.produits));
+  return [...new Set([...lignes, ...aPart])];
+}
+/** Le début de la raison des faits inventés (le compte rendu garde les textes exacts ; le dessinateur ne les reçoit jamais). */
+export const DEBUT_FAITS_INVENTES_EN_VRAI = "faits ou produits inventés, absents de l'aperçu et de la fiche du client : ";
+export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire: CaseLue | undefined; personnes: boolean; photo: boolean; element?: string; deborde?: boolean;
+  /** Le nom et la phrase du logo : jamais en trop là où le logo est. */ logo?: TextesDuLogo;
+  /** Les produits de la fiche du client : les seuls noms de produits permis. */ produits?: readonly string[] }): string[] {
   if (!v) return ["le relecteur ne l'a pas relue"];
   const r: string[] = [];
   if (!v.identique) r.push("elle n'est pas identique à son aperçu");
   const z = textesDeLaZone(o.inventaire?.textes ?? [], v.textesLus, { element: o.element ?? o.inventaire?.case, deborde: o.deborde });
-  const t = comparerLesTextes(z.attendus, z.lus);
+  const c = comparerLesTextes(z.attendus, z.lus);
+  const logoLa = o.logo && (v.logoPresent || o.inventaire?.logo) ? o.logo : undefined;
+  const inventes = faitsInventesEnVrai(v, { attendus: z.attendus, lus: z.lus, produits: o.produits, logo: logoLa });
+  // Les mots des lignes inventées sont dits dans leur propre raison, pas deux fois.
+  const dansLesInventes = new Set(inventes.flatMap(motsDe));
+  const t = { manquants: c.manquants, enTrop: sansLesTextesDuLogo(c.enTrop, logoLa).filter((w) => !dansLesInventes.has(w)) };
+  if (inventes.length) r.push(`${DEBUT_FAITS_INVENTES_EN_VRAI}${inventes.map((l) => `« ${l} »`).join(", ")}`);
   if (t.manquants.length || t.enTrop.length) r.push(`ses textes ne sont pas ceux de l'aperçu, lettre pour lettre${t.manquants.length ? ` (manquent : ${t.manquants.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}${t.enTrop.length ? ` (en trop ou mal écrits : ${t.enTrop.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}`);
   if (v.logoPresent && !o.inventaire?.logo) r.push("un logo a été ajouté là où l'aperçu n'en a pas");
   if (v.personne && !o.personnes) r.push("une personne est visible sans l'accord du client");
@@ -572,6 +648,21 @@ export function raisonsDuRefusEnVrai(v: ImageRelue | undefined, o: { inventaire:
   if (v.texteCoupe) r.push("un texte est coupé ou collé au bord");
   if (v.note < NOTE_DU_PROPRIETAIRE) r.push(`sa fidélité n'est pas au niveau (${v.note}/10, il faut ${NOTE_DU_PROPRIETAIRE})`);
   return r;
+}
+
+/**
+ * LES RAISONS ENVOYÉES AU DESSINATEUR POUR LA REPRISE D'UNE IMAGE EN VRAI (26 novembre 2026, sur le principe de la planche
+ * de marque, `raisonsPourLeDessinateur`) : un texte inventé n'y est jamais recopié. La raison des faits inventés dit
+ * seulement qu'un texte absent de l'aperçu et de la fiche est écrit, et rappelle les noms permis. Les mots en trop ne sont
+ * jamais recopiés non plus (un nom inventé sans chiffre ni pays, « L'ARABICA SIGNATURE », n'est reconnu par aucun code) :
+ * la raison des textes garde les mots qui manquent, ceux de l'aperçu, et dit seulement que des mots absents de l'aperçu
+ * sont écrits. Le compte rendu garde les raisons exactes.
+ */
+export function raisonsPourLeDessinateurEnVrai(raisons: readonly string[], o: { produits?: readonly string[] } = {}): string[] {
+  const ses = o.produits?.length ? ` : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : "";
+  return raisons.map((r) => r.startsWith(DEBUT_FAITS_INVENTES_EN_VRAI)
+    ? `un texte absent de l'aperçu est écrit sur une étiquette, un emballage ou un objet : retire-le ; les étiquettes ne portent que les textes de l'aperçu, le nom de la marque, la phrase de son logo et les noms des produits du client${ses}`
+    : r.replace(/\(en trop ou mal écrits : [^)]*\)/u, "(des mots absents de l'aperçu sont écrits : garde seulement ses textes, lettre pour lettre)"));
 }
 
 // ---------------------------------------------------------------- 8. les 17 images : refaites, relues, une reprise
@@ -594,7 +685,9 @@ export type ResultatDElement = { element: NomElement; ok: boolean; png: Buffer |
  * relancée toute seule : l'erreur remonte.
  */
 export async function refaireLesElements(deps: ElementsDeps, o: {
-  nom: string; personnes: boolean; logo: Buffer; photo: Buffer | null; apercus: Map<string, Buffer>; inventaire: Inventaire; elements?: readonly NomElement[];
+  nom: string; personnes: boolean; logo: Buffer; photo: Buffer | null;
+  /** Les produits de la fiche du client (la ligne des étiquettes, la relecture des faits inventés) ; la phrase du logo, toutes ses lignes. */
+  produits?: readonly string[]; phrase?: readonly string[]; apercus: Map<string, Buffer>; inventaire: Inventaire; elements?: readonly NomElement[];
   /** Le symbole seul, sur fond blanc (séparation fiable du code), joint là où l'inventaire ne voit que lui ; null : jamais joint. */
   symbole?: Buffer | null;
   /** Les cases dont l'aperçu touche la bande d'un titre de bloc (`Decoupe.debordes`). */
@@ -610,7 +703,7 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
   const demande = (n: NomElement, raisons?: string[]): DemandeDElement => {
     const inv = caseLue(o.inventaire, n), jointes = jointesDeLElement({ apercu: o.apercus.get(n)!, logo: o.logo, photo: o.photo, inventaire: inv, symbole: o.symbole ?? null });
     const logo = jointes.some((j) => j.role === "logo"), symbole = jointes.some((j) => j.role === "symbole"), photo = jointes.some((j) => j.role === "produit");
-    return { element: n, texte: texteDeLElement({ element: n, nom: o.nom, logo, photo, personnes: o.personnes, raisons, symbole }), taille: def(n).taille, jointes };
+    return { element: n, texte: texteDeLElement({ element: n, nom: o.nom, logo, photo, personnes: o.personnes, raisons: raisons && raisonsPourLeDessinateurEnVrai(raisons, { produits: o.produits }), symbole, produits: o.produits }), taille: def(n).taille, jointes };
   };
   const unTour = async (liste: NomElement[], tour: number, raisonsDe: (n: NomElement) => string[] | undefined) => {
     const faits = new Map<NomElement, { d: DemandeDElement; png: Buffer | null; raison?: string }>();
@@ -626,11 +719,11 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
     for (const g of GROUPES) {
       const items = liste.filter((n) => def(n).groupe === g && faits.get(n)?.png);
       const verdicts = items.length ? await deps.relire(g, items.map((n) => ({ element: n, apercu: o.apercus.get(n)!, image: faits.get(n)!.png!, photo: faits.get(n)!.d.jointes.some((j) => j.role === "produit") ? o.photo : null })),
-        demandeAuRelecteurEnVrai({ nom: o.nom, personnes: o.personnes, groupe: g, cases: items.map((n) => ({ element: n, photo: faits.get(n)!.d.jointes.some((j) => j.role === "produit") })) }), tour) : { images: [] };
+        demandeAuRelecteurEnVrai({ nom: o.nom, personnes: o.personnes, groupe: g, cases: items.map((n) => ({ element: n, photo: faits.get(n)!.d.jointes.some((j) => j.role === "produit") })), produits: o.produits, phrase: o.phrase }), tour) : { images: [] };
       for (const n of liste.filter((x) => def(x).groupe === g)) {
         const f = faits.get(n)!, photo = f.d.jointes.some((j) => j.role === "produit");
         const v = verdicts.images.find((x) => x.case === n);
-        const raisons = f.png ? raisonsDuRefusEnVrai(v, { inventaire: caseLue(o.inventaire, n), personnes: o.personnes, photo, element: n, deborde: o.debordes?.includes(n) }) : [f.raison ?? "image illisible"];
+        const raisons = f.png ? raisonsDuRefusEnVrai(v, { inventaire: caseLue(o.inventaire, n), personnes: o.personnes, photo, element: n, deborde: o.debordes?.includes(n), logo: { nom: o.nom, phrase: o.phrase }, produits: o.produits }) : [f.raison ?? "image illisible"];
         const avant = res.get(n);
         const essai: EssaiDElement = { tour, texte: f.d.texte, png: f.png, raisons, ...(v ? { verdict: v } : {}) };
         const m = f.png ? await sharp(f.png).metadata() : null;

@@ -46,6 +46,13 @@
  * coût maximal retenu) est refait parce que le propriétaire relance lui-même : jamais tout seul. Tout arrêt écrit, au rapport
  * et à la console, comment reprendre. Devis de ce qui reste, sans appel : DEVIS_SEULEMENT=1 REPRENDRE=1 (même commande).
  *
+ * LE REJUGEMENT GRATUIT (REJUGER=1, 26 novembre 2026, `rejugerLEssaiEnVrai`) : la même commande avec REJUGER=1, sans
+ * plafond ni clé. Aucun appel : les images et les verdicts déjà reçus sont jugés de nouveau par le code d'aujourd'hui ;
+ * rejugement.json et rejugement.txt disent les images gardées, celles à refaire avec leurs raisons, et les reprises reçues
+ * avec la consigne d'avant, jamais relues, déclarées périmées. A_REFAIRE="case:texte inventé lu;…" marque à refaire une
+ * image vue au contrôle. Puis REPRENDRE=1 : les images gardées ne sont jamais redemandées ; les périmées sont rangées dans
+ * passe-N/cases-perimees/ et refaites, avec les autres images à refaire, parce que le propriétaire relance lui-même.
+ *
  * LE RÉASSEMBLAGE D'UN ESSAI DÉJÀ FAIT (26 novembre 2026, `reassemblerLEssaiEnVrai`) : REASSEMBLER=<dossier de l'essai>
  * (essai.json, inventaire-reponse.json, apercus/, cases/, relectures/), puis le dossier de sortie, la planche choisie et le
  * logo fini. a) le code refait les logos, la palette, les polices, les textes et l'assemblage, gratuit ; b) chaque image
@@ -134,7 +141,7 @@ import path from "node:path";
   const [sortieArg, planche, logo] = process.argv.slice(2);
   if (!sortieArg) { console.error("Dossier de sortie manquant (premier paramètre)."); process.exit(1); }
   if (!planche || !logo) { console.error("Il faut la planche choisie (PNG) puis le logo fini (PNG), après le dossier de sortie."); process.exit(1); }
-  if (!process.env.PLAFOND_ESSAI_EUR) { console.error("PLAFOND_ESSAI_EUR manquant : rien n'est lancé."); process.exit(1); }
+  if (!process.env.PLAFOND_ESSAI_EUR && process.env.REJUGER !== "1") { console.error("PLAFOND_ESSAI_EUR manquant : rien n'est lancé."); process.exit(1); }
   let client: ReturnType<typeof clientDeLEssai>, donnees: Awaited<ReturnType<typeof donneesVerifiees>>["donnees"];
   try {
     client = clientDeLEssai(process.env);
@@ -144,6 +151,16 @@ import path from "node:path";
     if (v.verifie) console.log(`Domaine vérifié par le Studio (findDomains, gratuit) : libres ${v.verifie.free.join(", ") || "aucun"} ; pris ${v.verifie.taken.join(", ") || "aucun"} ; à vérifier ${v.verifie.unknown.join(", ") || "aucun"}.`);
     console.log(`Données de la planche : domaine ${donnees.domaine ?? "à choisir"} (${donnees.statut}), année ${donnees.annee}, disposition ${donnees.disposition}, phrase ${donnees.phrase ? donnees.phrase.split(" / ").map((l) => `« ${l} »`).join(" puis ") : "aucune"}.`);
   } catch (e) { console.error((e as Error).message); process.exit(1); }
+  // REJUGER=1 : le rejugement gratuit de la passe gardée dans le dossier de sortie (aucun appel, aucune clé) ; voir l'en-tête.
+  if (process.env.REJUGER === "1") {
+    const { rejugerLEssaiEnVrai, lireALOeil } = await import("./essai-planche-en-vrai-outil");
+    try {
+      const r = await rejugerLEssaiEnVrai({ sortie: path.resolve(sortieArg), client, donnees, logoHd, aLOeil: lireALOeil(process.env.A_REFAIRE) });
+      console.log(r.texte.join("\n"));
+      console.log(`Écrit : ${path.join(sortieArg, "rejugement.json")} et rejugement.txt. Puis, pour finir : la même commande avec REPRENDRE=1 (devis gratuit : DEVIS_SEULEMENT=1 REPRENDRE=1).`);
+    } catch (e) { console.error((e as Error).message); process.exit(1); }
+    process.exit(0);
+  }
   if (/d[ée]tour/i.test(path.basename(logo))) console.log(`Attention : ${logo} semble être la version détourée ; le Studio prend le logo fini sur fond blanc et retire le fond lui-même.`);
   // Le studio privé d'essai, comme lancer-agent.mts : clé Anthropic (inventaire et relectures) chiffrée depuis l'environnement.
   if (process.env.STUDIO_ANTHROPIC_KEY) {

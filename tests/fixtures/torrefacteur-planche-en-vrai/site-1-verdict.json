@@ -1,0 +1,123 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "ouverture-site",
+        "identique": true,
+        "textesLus": [
+          "Des cafés",
+          "de caractère,",
+          "pour tous",
+          "vos moments.",
+          "TORRÉFACTION ARTISANALE",
+          "Découvrir nos cafés →"
+        ],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Même composition que l'aperçu (sac de toile, grains, titre blanc à gauche, bouton cuivré), image nette et textes bien placés. Le bout de logo visible en haut de l'aperçu vient du découpage de la planche."
+      },
+      {
+        "case": "ouverture-planche",
+        "identique": true,
+        "textesLus": [
+          "Du grain",
+          "à la tasse,",
+          "le goût du vrai.",
+          "TORRÉFACTION ARTISANALE",
+          "DES CAFÉS",
+          "DE CARACTÈRE",
+          "POUR TOUS",
+          "VOS MOMENTS."
+        ],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Fidèle à l'aperçu : tasse fumante, grains, sac de toile et mêmes textes. Le titre, coupé à gauche dans l'aperçu à cause du découpage, est ici entier avec une bonne marge."
+      },
+      {
+        "case": "site-ordinateur",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "Cafés",
+          "Collections",
+          "Coffrets",
+          "Notre histoire",
+          "Des cafés",
+          "de caractère,",
+          "pour tous",
+          "vos moments.",
+          "TORRÉFACTION ARTISANALE",
+          "Découvrir nos cafés →",
+          "Cafés d’origine",
+          "sélectionnés",
+          "Torréfaction",
+          "artisanale",
+          "Paiement sécurisé",
+          "Livraison soignée"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Maquette d'ordinateur conforme à l'aperçu : même en-tête avec le logo Mouture sur fond blanc, même bandeau et mêmes quatre atouts. Seule la flèche dessinée à droite de l'aperçu a disparu, ce qui reste mineur."
+      },
+      {
+        "case": "site-telephone",
+        "identique": true,
+        "textesLus": [
+          "Une boutiq",
+          "toujours avec vous",
+          "10:05",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "Des cafés",
+          "de caractère,",
+          "pour tous",
+          "vos moments.",
+          "TORRÉFACTION ARTISANALE",
+          "Découvrir →",
+          "Nos cafés",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": true,
+        "note": 7,
+        "pourquoi": "La mise en page reprend l'aperçu, mais la phrase manuscrite du haut est coupée (« Une boutiq… »). La tasse en bas du bandeau a une forme étrange, sans anse visible et avec un grain incrusté, ce qui la rend peu crédible."
+      }
+    ]
+  },
+  "raisons": {
+    "ouverture-site": [],
+    "ouverture-planche": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « à »)"
+    ],
+    "site-ordinateur": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)"
+    ],
+    "site-telephone": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE », « MOUTURE », « TORRÉFACTION », « ARTISANALE »)",
+      "un texte est coupé ou collé au bord",
+      "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    ]
+  },
+  "gardees": [
+    "ouverture-site"
+  ]
+}

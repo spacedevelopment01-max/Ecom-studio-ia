@@ -1,0 +1,88 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "publication-1x1",
+        "identique": true,
+        "textesLus": [
+          "Plus",
+          "qu’un café,",
+          "un moment",
+          "à vous.",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Même composition que l'aperçu : titre en haut à gauche, tasse fumante à droite, grains et badge clair sur bois. L'anse de la tasse touche le bord droit, comme sur l'aperçu, mais aucun texte n'est coupé."
+      },
+      {
+        "case": "publication-4x5",
+        "identique": true,
+        "textesLus": [
+          "Un café",
+          "de caractère,",
+          "au quotidien.",
+          "Torréfaction",
+          "artisanale",
+          "Origines",
+          "sélectionnées",
+          "Saveurs",
+          "intenses",
+          "Découvrir",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉ EN GRAINS",
+          "L’ESSENTIEL",
+          "Une torréfaction de caractère",
+          "ÉQUILIBRE & INTENSITÉ"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "Fidèle à l'aperçu : titre, trois arguments, bouton et sachet kraft aux mêmes places. Le point de « quotidien. » frôle le sachet et l'icône « Saveurs intenses » est un peu étrange."
+      },
+      {
+        "case": "publication-9x16",
+        "identique": true,
+        "textesLus": [
+          "Votre",
+          "rituel café",
+          "du jour ?",
+          "Café noir",
+          "Café au lait",
+          "Cappuccino",
+          "Autre",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Reprend fidèlement l'aperçu : question manuscrite, quatre choix en pastilles, café moulu et grains, badge en bas au centre. L'ensemble est net et bien lisible."
+      }
+    ]
+  },
+  "raisons": {
+    "publication-1x1": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)"
+    ],
+    "publication-4x5": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « Une », « torréfaction », « de », « caractère », « ÉQUILIBRE », « & », « INTENSITÉ »)"
+    ],
+    "publication-9x16": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE »)"
+    ]
+  },
+  "gardees": []
+}
