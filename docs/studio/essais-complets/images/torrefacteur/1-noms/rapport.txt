@@ -34,6 +34,27 @@ Noms vérifiés proposés au client : 2
 
 Le nom choisi part aux étapes suivantes par CLIENT_NOM="<le nom, tel qu'il est écrit ci-dessus>".
 
+Noms écartés par SINA, et pourquoi (pour toi seulement : le client ne les voit pas) :
+Premier tour : 127 nom(s) différent(s) trouvé(s) par les équipes ; 2 écarté(s) par les contrôles gratuits du Studio ; 125 envoyé(s) au juge, qui en garde 2.
+  Écartés par les contrôles gratuits du Studio (2) :
+  - À Doser à la Main (équipe « verite ») : nom mal formé : « À Doser à la Main » : nom trop long (4 mots et 40 caractères au plus)
+  - Un Café, Une Tasse (équipe « verite ») : nom mal formé : « Un Café, Une Tasse » : une marque n'est pas une phrase (pas de ponctuation)
+  Presque gardés par le juge (6) :
+  - Chaud Devant (équipe « langue »), note non donnée : Il est vivant et rappelle la fraîcheur, comme le cri du serveur qui passe avec un plat brûlant. Mais c'est une tournure de conversation qui fait penser au restaurant plus qu'à ton atelier : il échoue à l'épreuve du fondateur.
+  - Tour de Chauffe (équipe « univers »), note non donnée : Il part bien de la torréfaction, où le grain est chauffé et tourné. Mais c'est un jeu sur une expression sportive : il vaut 6 sur 10 et ne passe pas l'épreuve du fondateur.
+  - Foyer (équipe « mots »), note non donnée : Le mot réunit la maison et le feu, en accord avec ton image chaleureuse. Il échoue à l'épreuve du sous-entendu : un foyer, c'est aussi un centre d'hébergement ou un foyer d'infection, et il ne parle pas de café.
+  - Grain Entier (équipe « verite »), note non donnée : Il dit la matière, simplement et avec force. Mais il échoue à l'épreuve du nom seul : il laisse de côté le moulu, que tu vends au même prix, et ressemble un peu à une mention d'étiquette.
+  - Bien Tassé (équipe « langue »), note non donnée : Il fait penser à un café serré, plein de caractère. Mais il échoue au sous-entendu : on dit aussi « bien tassé » d'un verre d'alcool, et on dirait une tournure de comptoir plus qu'une marque.
+  - Fournée (équipe « mots »), note non donnée : Le mot est chaud et dit la petite quantité tout juste sortie du feu. Il échoue de peu à l'épreuve du nom seul : on pense d'abord au pain, et le lien avec le café passe par l'explication.
+  Refusés par le juge (117), sans raison écrite : il n'écrit une raison et une note que pour les noms presque gardés.
+  - équipe « mots » : Aurore, Moulin, Fournil, Réveil, Écrin, Présent, Ruban, Offrande, Arôme, Tison, Cocon, Tablée, Veillée, Lueur, Ambre, Étamine, Brasier, Aubade, Matinée, Rituel, Fumet, Torrée, Graine, Cadeau, Chaleur, Tamis, Manivelle, Cendrée, Havane
+  - équipe « verite » : Pas de Moulin, Déjà Moulu, Arôme Fragile, À Boire Vite, Ne Se Garde Pas, Le Paquet du Matin, Pas Que Les Fêtes, Sans Grands Mots, Prêt à Boire, Coffret Sans Moulin, Verser Sans Moudre, Bien Refermé, Le Même Prix, Grain ou Moulu, Café Sans Mystère, Tout Simple, Torréfié Puis Posté, Sans Odeur En Ligne, Hésitant, Le Café Prévenu, Fraîchement Dit, Rien de Rare, Cadeau à Boire, Trois Façons, Café à Garder Court, Moulin en Option, Petit Paquet, Au Moulin du Voisin, Jamais Trop Tard, Le Café du Jour
+  - équipe « langue » : Avoir un Grain, Jamais Deux Sans Trois, Fin Prêt, Coup de Fouet, À Chacun son Grain, Tout Feu Tout Flamme, Bonne Pioche, Frais et Dispos, Aux Petits Soins, Avoir du Nez, Au Coin du Feu, Grain de Sel, Du Bon Pied, Un Coup de Main, Grain de Beauté, Point du Jour, Les Petits Cadeaux, Au Quart de Tour, À Point, Sans Chichis, De Bon Cœur, Pas Piqué des Hannetons, Aux Anges, Bonne Mesure, Coup de Cœur, Tour de Main, À la Bonne Heure, Comme à la Maison, Au Jour le Jour
+  - équipe « univers » : Grand Beau, Établi, Carte Postale, Coup de Main, Récré, Accord, Premier Service, Escale, Bon Vent, Lever de Rideau, Premier Rôle, Ciel Dégagé, Fin de Nuit, Petites Heures, Mi Temps, Coup d'Envoi, Mise en Place, Juste Mesure, Haute Mer, Cap au Matin, Presto, Bonne Note, Rentrée, Pause Cuisine, Gros Temps, Bon Quart, Plein Cadre, Prêt à Partir, Grand Large
+Second tour : pas fait (il ne part que si le juge garde moins de 2 nom(s), un par identité ; il en a gardé 2).
+Vérification des noms gardés (2 vérifié(s)) : aucun écarté.
+Fin des noms écartés.
+
 Notes de la tâche :
 - 2 parole(s) réelle(s) de clients trouvée(s) : moins de dix
 
