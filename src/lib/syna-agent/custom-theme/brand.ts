@@ -43,6 +43,7 @@ import { LOOK_PAGES_MAX, LOOK_SYSTEM, LookSchema, lookProblems, lookPrompt, type
 import { educated } from "./knowledge";
 import { riskCount } from "./risk";
 import { allSections, deadLinks, loadCustomTheme, pushCustomThemeHistory, replaceOnce, saveCustomTheme, sectionHtml, type CustomTheme } from "./theme";
+import { causePourLeClient } from "../../ai/phrase-pour-le-client";
 
 export const CUSTOM_BRAND_JOB = "syna.custom.brand";
 /**
@@ -1065,7 +1066,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
           : SitePlanSchema.parse(await withTrace({ jobId: ctx.job.id, projectId: p.id, step: "custom-text-plan", costCapMicro: a.capMicro }, () =>
               llmJson({ nouvelleSiChangee: true, task: "strategy", userId: p.userId, projectId: p.id, jobId: ctx.job.id, teteUnique: true, system: educated(SITE_PLAN_SYSTEM, "redacteur"), promptKey: "syna-custom-plan-2", prompt, maxTokens: SITE_PLAN_OUTPUT_TOKENS, maxOutputTokens: SITE_PLAN_OUTPUT_TOKENS * 1.5, usageKey, routing: { difficulty: "complex", prefer: siteCopyModel() } }, SitePlanSchema, { strict: true })));
       });
-    } catch (e) { report.problems.push(`plan des textes non fait (${(e as Error).message.slice(0, 120)}) : sections écrites sans plan`); }
+    } catch (e) { report.problems.push(`plan des textes non fait (${causePourLeClient(e).slice(0, 120)}) : sections écrites sans plan`); }
     // Référencement de chaque page, gardé dans le thème (titre de l'onglet et description pour Google).
     if (sitePlan?.seo?.length) {
       t = loadCustomTheme(p.id)!;
@@ -1093,7 +1094,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
         const t2 = loadCustomTheme(p.id)!;
         for (const pg of t2.pages) { const s = seo.seo.find((x) => x.page === pg.key); if (!pg.seo && s) pg.seo = { title: s.titre, description: s.description }; }
         saveCustomTheme(p.id, t2, { history: false });
-      } catch (e) { report.problems.push(`référencement non écrit (${(e as Error).message.slice(0, 120)})`); }
+      } catch (e) { report.problems.push(`référencement non écrit (${causePourLeClient(e).slice(0, 120)})`); }
     }
   }
 
@@ -1255,7 +1256,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
       const left = allSections(loadCustomTheme(p.id)!).map((x) => ({ x, claims: unconfirmedClaims(p, shown(x), known1) })).filter((y) => y.claims.length);
       for (const y of left.slice(0, 6)) report.problems.push(`${libSection(y.x.s.id)?.title ?? y.x.s.id} (${y.x.page?.label ?? y.x.place}) : à confirmer par toi ou à retirer : ${y.claims.join(" ; ")}`);
       if (left.length > 6) report.problems.push(`${left.length - 6} autre(s) section(s) avec une promesse à confirmer`);
-    } catch (e) { report.problems.push(`relecture des textes non faite (${(e as Error).message.slice(0, 120)}) : les textes n'ont pas été relus`); }
+    } catch (e) { report.problems.push(`relecture des textes non faite (${causePourLeClient(e).slice(0, 120)}) : les textes n'ont pas été relus`); }
   }
 
   // 1 ter) Contrôle des faits, sans IA, sur les textes tels qu'ils restent (avec ou sans relecture) : un nombre qui
@@ -1429,7 +1430,7 @@ export async function runCustomBrandJob(ctx: JobContext) {
           }
           for (const uid of uids.slice(MAX_PHOTO_FIXES)) { const rest = refused.filter((f) => f.uid === uid && !sansPersonne.has(`${f.uid}|${f.find}`)); if (rest.length) report.problems.push(`${seen.find((z) => z.y.s.uid === uid)!.ly.title} : photo à revoir (${rest[0].fixes[0].slice(0, 140)})`); }
           report.relecturePhotos = { reprises: redone, refusees: refused.length, avis: review.site };
-        } catch (e) { report.problems.push(`relecture des photos non faite (${(e as Error).message.slice(0, 120)}) : les descriptions n'ont pas été relues`); }
+        } catch (e) { report.problems.push(`relecture des photos non faite (${causePourLeClient(e).slice(0, 120)}) : les descriptions n'ont pas été relues`); }
       }
     }
     const pageOfUid = new Map(allSections(loadCustomTheme(p.id)!).map((y) => [y.s.uid, y] as const));

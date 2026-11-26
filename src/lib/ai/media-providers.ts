@@ -141,14 +141,16 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
 
 /**
  * Erreur définitive d'une génération au résultat incertain : le coût maximal est retenu, aucune nouvelle tentative
- * automatique (ni par la file de tâches, ni par un secours). Le client sait quoi faire.
+ * automatique (ni par la file de tâches, ni par un secours). Ce texte reste au Studio ; le client lit la phrase de SINA
+ * (`phrase-pour-le-client.ts`), sans fournisseur, modèle ni consigne.
  */
-export function uncertainMediaError(e: unknown, t: Pick<MediaTrace, "provider" | "model">): PermanentError {
+export function uncertainMediaError(e: unknown, t: Pick<MediaTrace, "provider" | "model"> & Partial<Pick<MediaTrace, "task">>): PermanentError {
   const why = redact(String((e as Error)?.message ?? e)).slice(0, 200);
   const who = t.provider ? `${t.provider}${t.model ? `:${t.model}` : ""}` : "fournisseur";
   const out = new PermanentError(L(`Résultat incertain chez ${who} (${why}) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.`, `Uncertain result at ${who} (${why}): maximum cost kept as a precaution, no automatic retry. Check the provider's usage before trying again.`));
   const status = (e as { status?: unknown })?.status;
-  return Object.assign(out, { cause: e, uncertain: true, ...(typeof status === "number" ? { status } : {}) });
+  // La nature de l'appel (image ou vidéo) : la phrase de SINA au client le dit, sans rien de technique.
+  return Object.assign(out, { cause: e, uncertain: true, nature: t.task === "video_generation" ? "video" : "image", ...(typeof status === "number" ? { status } : {}) });
 }
 
 /** Refus net du fournisseur (4xx hors délai) : rien n'a été produit ni facturé. 5xx, 408 et coupures : incertain. */

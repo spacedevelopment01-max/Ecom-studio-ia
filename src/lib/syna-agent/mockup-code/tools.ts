@@ -51,6 +51,7 @@ import { sectionSchema, type ThemeSpec } from "../../theme/spec";
 import { checkMaxMicro, mockupCheckCall, MockupCheckSchema, mockupCheckVerdict, type MockupCheck } from "./check";
 import { llmJson } from "../../ai/llm";
 import { blackShare, boxesOf, composeEdit, exactTexts, isRemoval, missingTexts, removeBand, locateCall, locateMaxMicro, LocateSchema, mockupEditPrompt, type Box, type EditChange, type Locate } from "./edit";
+import { causePourLeClient } from "../../ai/phrase-pour-le-client";
 
 /** Remplaçables par les tests : coût d'une image de maquette et coût maximal des appels de l'étape 7. */
 export const mockupToolDeps: { imageMaxMicro?: (references: number) => number | null; callMaxMicro?: typeof step7CallMaxMicro; callTypicalMicro?: typeof step7CallTypicalMicro; generateImage?: (prompt: string, refs: { logo: Buffer | null; product: Buffer | null }) => Promise<Buffer>; checkImage?: (data: Buffer, img: { viewport: "desktop" | "phone"; pages: string[] }) => Promise<MockupCheck>; locate?: (image: Buffer, changes: EditChange[]) => Promise<Locate>; maskEdit?: (image: Buffer, mask: Buffer | null, prompt: string) => Promise<Buffer> } = {};
@@ -568,7 +569,7 @@ async function runCodeEdit(ctx: ToolContext, a: EditArgs, pageKey: string) {
   const deps = codeBuildDeps.deps ?? realBuildDeps({ userId: ctx.user.id, projectId: p.id, jobId, capMicro: () => cap, spentMicro: () => (jobId ? jobSpentMicro(jobId) : 0) }, async () => { throw new Error("aucune photo nouvelle dans une retouche"); });
   const spent = () => budgetPctText(ctx.user.id, all<{ c: number | null }>("SELECT SUM(cost) c FROM ai_calls WHERE project_id=? AND usage_key LIKE ?", p.id, `${usageKey}%`)[0]?.c ?? 0, p.id).replace(/de votre budget/, "de ton budget");
   let edits;
-  try { edits = await deps.fixEdits(editCodePrompt(src, a.changes, copyLines(copy), photoChoices(p, a.direction, pageKey, src)), usageKey); } catch (e) { return { ok: false, summary: L(`Retouche impossible, rien n'a changé : ${(e as Error).message.slice(0, 160)}. Coût réel : ${spent()}.`, "Edit failed.") }; }
+  try { edits = await deps.fixEdits(editCodePrompt(src, a.changes, copyLines(copy), photoChoices(p, a.direction, pageKey, src)), usageKey); } catch (e) { return { ok: false, summary: L(`Retouche impossible, rien n'a changé : ${causePourLeClient(e).slice(0, 160)}. Coût réel : ${spent()}.`, "Edit failed.") }; }
   const before = d.images.filter((i) => i.pages.includes(pageKey)).flatMap((i) => i.check?.problems ?? []).length;
   const r = await retouchCodePage(p, a.direction, page, copy, edits, deps.inspect, (problems) => problems.length <= before);
   if (r.failed.length) return { ok: false, summary: L(`Retouche non appliquée, la page reste comme avant (${r.failed[0]}). Coût réel : ${spent()}.`, "Edit not applied."), hint: "Dis-le au client honnêtement ; ne relance rien sans son accord écrit." };
@@ -632,7 +633,7 @@ const editTool: AgentTool<EditArgs> = {
       located = await locate(original, "locate");
       // Repérage manqué par hasard (essai réel : carte introuvable puis trouvée au second repérage) : un second essai.
       if (boxesOf(located, a.changes.length, w, h).some((b) => !b)) located = await locate(original, "locate2");
-    } catch (e) { return { ok: false, summary: L(`Zones non repérées, rien n'a été retouché : ${(e as Error).message.slice(0, 160)}`, "Areas not located.") }; }
+    } catch (e) { return { ok: false, summary: L(`Zones non repérées, rien n'a été retouché : ${causePourLeClient(e).slice(0, 160)}`, "Areas not located.") }; }
     const boxes = boxesOf(located, a.changes.length, w, h);
     const missing = a.changes.filter((_, i) => !boxes[i]).map((c) => c.zone);
     if (missing.length) return { ok: false, summary: L(`Zone introuvable sur l'image, rien n'a été retouché : ${missing.join(" ; ")}.`, "Area not found."), hint: "Demande au client de préciser où se trouve cette zone ; aucune retouche n'a été payée." };
@@ -659,7 +660,7 @@ const editTool: AgentTool<EditArgs> = {
       edited = mockupToolDeps.maskEdit ? await mockupToolDeps.maskEdit(original, null, prompt)
         : await withQuotedImageRoute(route, () => mockupMaskEdit({ userId: ctx.user.id, projectId: p.id, jobId, usageKey: key("paint") }, { image: original, prompt, model: route.model, size }));
       edited = await sharp(edited).resize(w, h, { fit: "fill" }).png().toBuffer();
-    } catch (e) { return { ok: false, summary: L(`Retouche impossible : ${(e as Error).message.slice(0, 200)}`, "Edit failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit." }; }
+    } catch (e) { return { ok: false, summary: L(`Retouche impossible : ${causePourLeClient(e).slice(0, 200)}`, "Edit failed."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit." }; }
     // Zone rendue noire (essai réel du 8 novembre) : la retouche est ratée, l'image d'avant reste en place.
     const black: string[] = [];
     if (!removed) for (const [i, b] of okBoxes.entries()) if ((await blackShare(edited, b)) > 0.2) black.push(a.changes[i].zone);

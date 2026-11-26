@@ -8,6 +8,7 @@ import { cancelJob, enqueue } from "@/lib/jobs";
 import { all, json, one } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
+import { erreurTechniqueDeLIA } from "@/lib/ai/phrase-pour-le-client";
 import { recordLogoRouteRejection } from "@/lib/brain/rejections";
 import { loadProject } from "@/lib/projects";
 import { aiActiveFor } from "@/lib/ai/access";
@@ -29,8 +30,11 @@ function progressView(projectId: string) {
     projectId,
   );
   const live = readLive(projectId);
-  const applicationJob = one<{ id: string; status: string; error: string | null }>("SELECT id,status,error FROM jobs WHERE project_id=? AND type='brand.logo.v2.choose' ORDER BY created_at DESC,rowid DESC LIMIT 1", projectId);
-  return { applicationJob, job: job ? { ...job, error: job.error ? job.error.slice(0, 600) : null, stalled: logoJobStalled(job) } : null, live: live && (!job || live.jobId === job.id) ? live : null };
+  const choix = one<{ id: string; status: string; error: string | null; message: string }>("SELECT id,status,error,message FROM jobs WHERE project_id=? AND type='brand.logo.v2.choose' ORDER BY created_at DESC,rowid DESC LIMIT 1", projectId);
+  // Le texte technique d'un appel à l'IA reste au Studio : le client lit la phrase de SINA (le message de la tâche).
+  const pourLeClient = (j: { error: string | null; message: string }) => j.error ? (erreurTechniqueDeLIA(j.error) ? j.message : j.error).slice(0, 600) : null;
+  const applicationJob = choix ? { id: choix.id, status: choix.status, error: pourLeClient(choix) } : null;
+  return { applicationJob, job: job ? { ...job, error: pourLeClient(job), stalled: logoJobStalled(job) } : null, live: live && (!job || live.jobId === job.id) ? live : null };
 }
 
 export const runtime = "nodejs";

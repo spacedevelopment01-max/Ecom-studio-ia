@@ -65,6 +65,7 @@ import {
   layoutPrompt,
   type GenerationBrief,
 } from "../image-v2/art-direction";
+import { causePourLeClient } from "../ai/phrase-pour-le-client";
 
 export const AiPostReviewSchema = z.object({
   /** Textes lus dans l'image, recopiés lettre pour lettre (comparés ensuite par le studio, pas par l'IA). */
@@ -445,7 +446,7 @@ async function designPostInScope(p:Project,post:PostBrief,o:Parameters<typeof de
   if(post.format!=="carousel" || o.as==="ad") return designSinglePostWithAi(p,post,o,deps);
   let pages:ReturnType<typeof editorialPages>;
   try {pages=editorialPages(post); if(pages.length>platformSpec(post.network).carouselMax)throw new Error("Ce réseau ne permet pas ce nombre de pages de carrousel ; choisissez un réseau compatible.");}
-  catch(e){return {assetId:null,costMicro:0,by:"image_v2",note:String((e as Error).message)};}
+  catch(e){return {assetId:null,costMicro:0,by:"image_v2",note:causePourLeClient(e)};}
   const ids:string[]=[],group=stableHash("editorial-series-1",{project:p.id,post,aspect:o.aspect});let cost=0,attempts=0;let family:unknown;
   for(const [index,page] of pages.entries()) {
     const r=await designSinglePostWithAi(p,{...post,id:`${post.id}:page:${index+1}`,format:"image",headline:page.title,title:page.title,
@@ -479,7 +480,7 @@ async function designSinglePostWithAi(
     people = peopleAllowedFor(p);
   let creative:CreativeContract;
   try {creative=creativeContract(post,isAd?"ad":"organic");}
-  catch(e){return {assetId:null,costMicro:0,by:"image_v2",note:(e as Error).message};}
+  catch(e){return {assetId:null,costMicro:0,by:"image_v2",note:causePourLeClient(e)};}
   const capMicro = Math.round(o.maxCostEur * 1e6);
   const stage=<T,>(key:string,fn:()=>Promise<T>,replaySafe=false)=>publicationStage(p.id,key,fn,replaySafe,deps.beforeDispatch);
   const imageStage=(key:string,prompt:string,fn:()=>Promise<Buffer>)=>publicationImageStage(p,key,prompt,fn,deps.beforeDispatch);
