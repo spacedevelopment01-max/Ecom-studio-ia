@@ -1,0 +1,196 @@
+{
+  "nom": "Mouture",
+  "metier": {
+    "metier": "une petite entreprise qui torréfie elle-même son café de façon artisanale et vend en ligne des cafés en grains ou moulus, ainsi que des coffrets",
+    "court": "la torréfaction du café",
+    "piste": "savoir-faire"
+  },
+  "compte": {
+    "voulues": 12,
+    "correctesDesLesPlanches": 12,
+    "remplacees": 0,
+    "lesquelles": [],
+    "toursDeRemplacement": 0,
+    "complete": true
+  },
+  "gardees": [
+    {
+      "numero": 1,
+      "fichier": "esquisse-01.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 1,
+      "piste": "un grain de café surmonté d'une volute de fumée",
+      "pourquoi": "Composition élégante et lisible : le grain fumant au-dessus d'un nom en capitales fines évoque clairement le café haut de gamme.",
+      "phrase": {
+        "texte": "CAFÉS DE CARACTÈRE / TORRÉFIÉS ARTISANALEMENT",
+        "lignes": [
+          "CAFÉS DE CARACTÈRE",
+          "TORRÉFIÉS ARTISANALEMENT"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 2,
+      "fichier": "esquisse-02.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 2,
+      "piste": "un badge rond avec un grain de café sur des vagues de café moulu",
+      "pourquoi": "Badge circulaire net et équilibré : le grain posé sur des vagues brunes rappelle les couches de mouture.",
+      "phrase": {
+        "texte": "TORRÉFACTION ARTISANALE / CAFÉS D’EXCEPTION",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉS D’EXCEPTION"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 3,
+      "fichier": "esquisse-03.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 3,
+      "piste": "un O remplacé par un grain de café",
+      "pourquoi": "Idée simple et efficace : le O remplacé par un grain de café, dans un nom très lisible.",
+      "phrase": {
+        "texte": "LE CAFÉ AUTREMENT",
+        "ok": true
+      }
+    },
+    {
+      "numero": 4,
+      "fichier": "esquisse-04.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 4,
+      "piste": "une trace de tasse de café encadrant un nom écrit au pinceau",
+      "pourquoi": "La trace de tasse et l'écriture au pinceau donnent un ton artisanal chaleureux et immédiatement compréhensible.",
+      "phrase": {
+        "texte": "TORRÉFACTEUR PASSIONNÉ",
+        "ok": true
+      }
+    },
+    {
+      "numero": 5,
+      "fichier": "esquisse-05.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 5,
+      "piste": "un M massif dont le creux accueille un grain de café",
+      "pourquoi": "Le M qui enserre un grain forme un monogramme fort, mais la phrase « depuis aujourd’hui » est étrange pour une marque.",
+      "phrase": {
+        "texte": "CAFÉS ARTISANAUX / DEPUIS AUJOURD’HUI",
+        "lignes": [
+          "CAFÉS ARTISANAUX",
+          "DEPUIS AUJOURD’HUI"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 6,
+      "fichier": "esquisse-06.png",
+      "modele": "gpt-image-2.5-sunburst",
+      "tour": 1,
+      "case": 6,
+      "piste": "une volute de fumée qui se referme en grain de café",
+      "pourquoi": "La fumée qui se prolonge en grain crée un symbole fluide et raffiné, bien lisible.",
+      "phrase": {
+        "texte": "L’ART DU CAFÉ / TORRÉFIÉ AVEC SENS",
+        "lignes": [
+          "L’ART DU CAFÉ",
+          "TORRÉFIÉ AVEC SENS"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 7,
+      "fichier": "esquisse-07.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 1,
+      "piste": "un M dessiné par deux moitiés de grain de café fumant",
+      "pourquoi": "Le M formé de deux moitiés de grain, surmonté de fumée, est un monogramme clair et mémorisable.",
+      "phrase": {
+        "texte": "CAFÉS TORRÉFIÉS ARTISANALEMENT",
+        "ok": true
+      }
+    },
+    {
+      "numero": 8,
+      "fichier": "esquisse-08.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 2,
+      "piste": "un cadran de torréfaction avec une flamme au-dessus d'un o en grain de café",
+      "pourquoi": "Le grain dans le o et l'arc de cadran évoquent le degré de torréfaction ; un peu chargé mais lisible.",
+      "phrase": {
+        "texte": "CAFÉS DE CARACTÈRE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 9,
+      "fichier": "esquisse-09.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 3,
+      "piste": "un grain de café dans un cercle gradué posé sur une vague",
+      "pourquoi": "Emblème rond net et nom en minuscules solide, même si les graduations du cercle restent un peu confuses.",
+      "phrase": {
+        "texte": "TORRÉFACTION ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 10,
+      "fichier": "esquisse-10.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 4,
+      "piste": "un nom en écriture cursive sous des volutes de fumée",
+      "pourquoi": "Écriture manuscrite élégante et fumée stylisée : une signature chaleureuse et lisible.",
+      "phrase": {
+        "texte": "CAFÉS EN GRAINS / OU MOULUS",
+        "lignes": [
+          "CAFÉS EN GRAINS",
+          "OU MOULUS"
+        ],
+        "ok": true
+      }
+    },
+    {
+      "numero": 11,
+      "fichier": "esquisse-11.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 5,
+      "piste": "un écusson hexagonal avec une flamme et un grain de café",
+      "pourquoi": "Écusson hexagonal contrasté, très lisible, idéal pour un sachet ou un tampon.",
+      "phrase": {
+        "texte": "TORRÉFACTION ARTISANALE",
+        "ok": true
+      }
+    },
+    {
+      "numero": 12,
+      "fichier": "esquisse-12.png",
+      "modele": "gpt-image-2.6-flare",
+      "tour": 1,
+      "case": 6,
+      "piste": "un nom coupé sur deux lignes avec un O en grain fumant",
+      "pourquoi": "Bloc compact et percutant avec le O en grain, mais la coupure MOU / TURE fait lire le mot « mou ».",
+      "phrase": {
+        "texte": "CAFÉS D’EXCEPTION",
+        "ok": true
+      }
+    }
+  ],
+  "ecartees": [],
+  "reprise": false
+}
