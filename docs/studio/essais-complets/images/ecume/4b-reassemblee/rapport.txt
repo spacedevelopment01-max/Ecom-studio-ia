@@ -40,4 +40,5 @@ Images gardées : 15 sur 17
     essai 1 (note 9) : avant gardée → aujourd'hui gardée
 Logos repris de l'aperçu : logo-compact, icone, favicon, badge ; séparation du symbole non fiable (aucune séparation nette entre un symbole et le nom)
 Palette : #C44912 Orange Écume ; #D97A52 Terracotta ; #F6E8DA Sable ; #A7B89B Sauge ; #8C6F4E Brun naturel
+État et projet mis à jour : etat.json et essai.json (projet yp27mhi7lwit5n1p) ; l'onglet Marque montre la planche réassemblée et ses 15 images gardées
   note : palette : #C44912 (écrit sur l'aperçu, mesuré #C7470C, écart 0.7) ; #D97A52 (écrit sur l'aperçu, mesuré #E37C52, écart 1.9) ; #F6E8DA (écrit sur l'aperçu, mesuré #F2E1D1, écart 1.9) ; #A7B89B (écrit sur l'aperçu, mesuré #AAB599, écart 2.1) ; #8C6F4E (écrit sur l'aperçu, mesuré #977450, écart 3.2)

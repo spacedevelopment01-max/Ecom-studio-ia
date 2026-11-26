@@ -1,0 +1,314 @@
+{
+  "key": "A",
+  "demo": "b2v1xu62ierk47vk",
+  "logo": "4i3llqfbmrm1yt87",
+  "laquelle": "standard",
+  "at": 1795697731261,
+  "elements": [
+    {
+      "element": "publication-1x1",
+      "id": "d6wu5t2uvrvmi5hv",
+      "w": 1080,
+      "h": 1080,
+      "essais": 1,
+      "description": "Deux pains de savon artisanal posés sur un filet en coton, avec le logo en haut et un slogan en bas."
+    },
+    {
+      "element": "publication-4x5",
+      "id": null,
+      "essais": 2,
+      "raison": "refusée au rejugement : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    },
+    {
+      "element": "publication-9x16",
+      "id": "d0kqdt6x7s4z2v9z",
+      "w": 1080,
+      "h": 1920,
+      "essais": 1,
+      "description": "Pains de savon couverts de mousse dans une coupe, avec un titre manuscrit, une question et un bouton orange."
+    },
+    {
+      "element": "ouverture-site",
+      "id": "c4vkml3zq1an49g3",
+      "w": 1920,
+      "h": 720,
+      "essais": 1,
+      "description": "Bannière d'accueil du site avec deux savons et des branches d'olivier, un titre et un bouton orange."
+    },
+    {
+      "element": "ouverture-planche",
+      "id": "z7vtcneqhnf3kwp3",
+      "w": 2304,
+      "h": 768,
+      "essais": 1,
+      "description": "Bannière avec une pile de savons moussants, une branche d'olivier, un titre et une mention manuscrite avec un cœur."
+    },
+    {
+      "element": "site-ordinateur",
+      "id": "syf3pi93apxv80t6",
+      "w": 1507,
+      "h": 1003,
+      "essais": 1,
+      "description": "Ordinateur portable affichant la page d'accueil du site avec menu, bannière de savons et quatre engagements.",
+      "idPlanche": "5qcyxc5befn6x9h5"
+    },
+    {
+      "element": "site-telephone",
+      "id": "n66xgbjq8oiozehs",
+      "w": 768,
+      "h": 1712,
+      "essais": 2,
+      "description": "Smartphone affichant la version mobile du site avec logo, titre, bouton et savons."
+    },
+    {
+      "element": "produit-1",
+      "id": "vuhq9toa6zn74uja",
+      "w": 912,
+      "h": 1088,
+      "essais": 1,
+      "ambiance": true,
+      "description": "Pain de savon gravé du symbole É, devant un savon vert, avec des brins de lavande."
+    },
+    {
+      "element": "produit-2",
+      "id": "740qmwrvj2ecahr2",
+      "w": 912,
+      "h": 1088,
+      "essais": 1,
+      "ambiance": true,
+      "description": "Deux shampoings solides ronds empilés sur une pierre, devant des feuilles."
+    },
+    {
+      "element": "produit-3",
+      "id": "p3d9ig45qe5bosfl",
+      "w": 912,
+      "h": 1088,
+      "essais": 1,
+      "ambiance": true,
+      "description": "Boîte métallique de baume ouverte, couvercle marqué du symbole É, posée sur une pierre."
+    },
+    {
+      "element": "emballage",
+      "id": null,
+      "essais": 2,
+      "raison": "refusée au rejugement : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    },
+    {
+      "element": "reference-1",
+      "id": "y0l0yazj37d4jip0",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Pile de trois pains de savon mouchetés sur une pierre, avec une branche d'olivier."
+    },
+    {
+      "element": "reference-2",
+      "id": "htqt7kgv9zlkytuh",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Gros plan de mousse de savon crémeuse."
+    },
+    {
+      "element": "reference-3",
+      "id": "b7us7mqf63zyfk0l",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Deux shampoings solides ronds sur une pierre, devant des feuilles d'eucalyptus."
+    },
+    {
+      "element": "reference-4",
+      "id": "sbwl83cla44a1ph9",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Boîte de baume crémeux avec une spatule en bois, posée sur un tissu tricoté."
+    },
+    {
+      "element": "reference-5",
+      "id": "j5uyae2j0vxaxk2t",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Savon gravé et brosse en bois sur le bord d'une vasque, avec une robinetterie dorée."
+    },
+    {
+      "element": "reference-6",
+      "id": "ycauogxbk9hpd8yj",
+      "w": 1024,
+      "h": 912,
+      "essais": 1,
+      "description": "Ombres de feuillage sur un mur clair, avec une plante et un tissu ajouré."
+    }
+  ],
+  "logos": [
+    {
+      "version": "logo-principal",
+      "id": "bbzodu9sbkmm6vm1"
+    },
+    {
+      "version": "logo-horizontal",
+      "id": "b8pwxl1gcr1ntps0"
+    },
+    {
+      "version": "logo-empile",
+      "id": "rukv3esox79cwhl0"
+    },
+    {
+      "version": "logo-compact",
+      "id": "o862kmeajwmozwmw"
+    },
+    {
+      "version": "icone",
+      "id": "vk3gi7f64u0llp5w"
+    },
+    {
+      "version": "favicon",
+      "id": "qgitmr1slvnw7zh0"
+    },
+    {
+      "version": "monochrome-fonce",
+      "id": "74zstnaqj1jsud8r"
+    },
+    {
+      "version": "monochrome-clair",
+      "id": "09c34mhg7yutsg0r"
+    },
+    {
+      "version": "inverse",
+      "id": "kl8t6umxzil025f0"
+    },
+    {
+      "version": "badge",
+      "id": "5ggiwxwz27pqcsgm"
+    }
+  ],
+  "favicons": {
+    "f32": "9dyl571e3mhsd0cz",
+    "f64": "bn0wnv5ay0aapys6",
+    "f512": "bcbqt4p76ds0b9o1",
+    "avatar": "iiyo37n3sbmiiak4"
+  },
+  "palette": [
+    {
+      "hex": "#C44912",
+      "nom": "Orange Écume",
+      "mots": [
+        "Chaleur",
+        "énergie",
+        "bienveillance"
+      ]
+    },
+    {
+      "hex": "#D97A52",
+      "nom": "Terracotta",
+      "mots": [
+        "Authenticité",
+        "naturel",
+        "terre"
+      ]
+    },
+    {
+      "hex": "#F6E8DA",
+      "nom": "Sable",
+      "mots": [
+        "Douceur",
+        "pureté"
+      ]
+    },
+    {
+      "hex": "#A7B89B",
+      "nom": "Sauge",
+      "mots": [
+        "Nature",
+        "fraîcheur",
+        "équilibre"
+      ]
+    },
+    {
+      "hex": "#8C6F4E",
+      "nom": "Brun naturel",
+      "mots": [
+        "Matière",
+        "artisanat",
+        "confiance"
+      ]
+    }
+  ],
+  "polices": {
+    "titres": {
+      "cle": "poppins",
+      "famille": "Poppins",
+      "fichier": "Poppins-700.ttf",
+      "poids": 700,
+      "handle": "poppins_n7",
+      "lue": "Poppins",
+      "remplacee": false
+    },
+    "textes": {
+      "cle": "sacramento",
+      "famille": "Sacramento",
+      "fichier": "Sacramento-400.ttf",
+      "poids": 400,
+      "handle": "sacramento_n4",
+      "lue": "Nunito",
+      "remplacee": true,
+      "pourquoi": "genre",
+      "genreLu": "manuscrite"
+    }
+  },
+  "symboleComplet": true,
+  "publications": [
+    {
+      "element": "publication-1x1",
+      "id": "d6wu5t2uvrvmi5hv",
+      "texte": "Écume SAVONNERIE ARTISANALE Un rituel doux pour une peau plus heureuse.",
+      "comprehensible": true,
+      "format": "1:1"
+    },
+    {
+      "element": "publication-9x16",
+      "id": "d0kqdt6x7s4z2v9z",
+      "texte": "en Petits gestes, grands bienfaits Et si vous passiez au solide ? Rejoignez-nous →",
+      "comprehensible": true,
+      "format": "9:16"
+    }
+  ],
+  "issues": [
+    "Sur ta planche en vrai, 2 images n'ont pas passé ma relecture, même refaites (Publication portrait, Emballage et supports) : leurs cases gardent l'aperçu de ta planche choisie, sans fichier en haute définition. Je peux les refaire à ma charge : rien n'est compté sur ton budget.",
+    "Tes produits sur la planche en vrai sont des images d'ambiance (« image d'ambiance, ce n'est pas ton produit ») : ils ne vont jamais sur les emplacements produit de ton site, où « Ta photo ici » attend tes photos. Quand tu m'envoies tes photos, je peux refaire ces cases avec ton vrai produit, je t'annonce le prix avant.",
+    "Sur ta planche, la police nommée « Nunito » était montrée en écriture manuscrite : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Sacramento ».",
+    "Ton logo ne se sépare pas proprement en un symbole et un nom : ces versions sont reprises de ta planche choisie, agrandies, telles que tu les as vues (le logo compact, l'icône, le favicon, le badge). Je peux les refaire en haute définition, je t'annonce le prix avant."
+  ],
+  "notes": [
+    "publication-4x5, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)",
+    "publication-4x5, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "publication-9x16, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « en »)",
+    "publication-9x16, essai 2 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « au ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)",
+    "site-telephone, essai 1 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous ») (en trop ou mal écrits : « 12.01 ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "site-telephone, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « 9:41 »)",
+    "emballage, essai 1 refusé : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)",
+    "emballage, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « our ») (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)",
+    "logos refaits par le code (séparation non fiable : aucune séparation nette entre un symbole et le nom)",
+    "palette : #C44912 (écrit sur l'aperçu, mesuré #C7470C, écart 0.7) ; #D97A52 (écrit sur l'aperçu, mesuré #E37C52, écart 1.9) ; #F6E8DA (écrit sur l'aperçu, mesuré #F2E1D1, écart 1.9) ; #A7B89B (écrit sur l'aperçu, mesuré #AAB599, écart 2.1) ; #8C6F4E (écrit sur l'aperçu, mesuré #977450, écart 3.2)",
+    "réassemblage de l'essai 4-planche-en-vrai : 15 image(s) gardée(s) sur 17 au rejugement",
+    "planche réassemblée par le code, sans appel"
+  ],
+  "logosDeLApercu": [
+    "logo-compact",
+    "icone",
+    "favicon",
+    "badge"
+  ],
+  "planche": {
+    "id": "hb3xhawn7zfceikr",
+    "w": 3072,
+    "h": 4608
+  },
+  "siteEntier": {
+    "id": "ul0h1euq08hq72r7",
+    "w": 1698,
+    "h": 940
+  }
+}
