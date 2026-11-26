@@ -1609,6 +1609,29 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
       expect(contexte).not.toContain("mot pour mot : « Je n'ai rien trouvé");
     });
 
+    it("l'ancien chemin des routes suit la même règle, par la même fonction : refaite une fois, puis « non vérifié » avec la phrase de SINA", async () => {
+      // Deux recherches vides : aucune vérification ; chaque planche dit son nom non vérifié ; la phrase en tête du résultat.
+      const t = await thread();
+      const { out, log } = await chain(t, {}, { fix: () => FIXED_LINE, web: (id) => (id.startsWith("verify") ? [] : pages(id)) });
+      expect(log.ids.filter((i) => /verify/.test(i))).toEqual(["web:verify-1", "web:verify-1-2"]);
+      expect(log.prompts["web:verify-1-2"]).toMatch(/entre guillemets suivi du métier du client/);
+      expect(log.prompts["web:verify-1-2"]).not.toBe(log.prompts["web:verify-1"]);
+      const o = out as any;
+      expect(o.aDireAuClient).toBe(PHRASE);
+      expect(Object.keys(o)[0]).toBe("aDireAuClient");
+      const list = J.journeyOf(t.cid).identities!.list as any[];
+      expect(list.length).toBeGreaterThan(0);
+      expect(list.every((x) => x.board.nameCheck === "non_verifie")).toBe(true);
+      // Une page trouvée la seconde fois : la vérification habituelle, le nom pris remplacé par une réserve.
+      const t2 = await thread();
+      const deux = await chain(t2, {}, { fix: () => FIXED_LINE, web: (id) => (id === "verify-1" ? [] : id === "verify-1-2" ? [PAGE_DES_NOMS] : pages(id)), taken: [{ name: route("A").name, url: PAGE_DES_NOMS.url }] });
+      expect(deux.log.ids.filter((i) => /verify/.test(i))).toEqual(["web:verify-1", "web:verify-1-2", "verify-1"]);
+      expect((deux.out as any).aDireAuClient).toBeUndefined();
+      const list2 = J.journeyOf(t2.cid).identities!.list as any[];
+      expect(list2.every((x) => x.board.nameCheck === "rien_trouve")).toBe(true);
+      expect(list2.map((x) => x.name)).not.toContain(route("A").name);
+    });
+
     it("une tâche d'avant (aucune comparaison gardée) n'est jamais relue comme « vérifiée »", () => {
       expect(C.etatDeLaVerification({ done: true, taken: [] })).toEqual({ verification: "non_verifie", pourquoi: "rien_trouve" });
       expect(C.etatDeLaVerification({ done: true, taken: [], preuves: [] })).toEqual({ verification: "verifie", pourquoi: null });

@@ -74,6 +74,16 @@ describe("l'accord du Studio pour la tâche des noms", async () => {
     expect(C.devisDesNomsVerifies({ fresh: false }).lignes.map((l) => l.id)).toContain("recherche:verify:2");
   });
 
+  it("l'ancien chemin des routes (chainQuote) compte lui aussi la recherche refaite, au plafond seulement ; plus rien une fois la vérification faite", () => {
+    const q = C.chainQuote({ routes: 3, images: false }), fait = C.chainQuote({ routes: 3, images: false, done: ["brand:verify:1"] });
+    const probableDuWeb = webSearchQuote(s.craft, { maxSearches: C.BRAND_SEARCHES }).probableMicro;
+    // Ce que la vérification coûte au plus : deux recherches (la seconde, refaite autrement) et l'appel de vérification.
+    expect(web).toBeGreaterThan(0);
+    expect(Math.abs(q.maxMicro - fait.maxMicro - (2 * web + borne("verify")))).toBeLessThanOrEqual(2);
+    // Le probable ne compte qu'une recherche.
+    expect(q.probableMicro! - fait.probableMicro!).toBeLessThanOrEqual(probableDuWeb + borne("verify") + 2);
+  });
+
   it("le plafond de la tâche (costCapMicro) n'est jamais inférieur à ce qu'il faut pour aller jusqu'aux noms vérifiés, même si chaque appel dépense son maximum", async () => {
     const u = await account();
     const cap = I.accordGraphistes(3).nomsMicro;

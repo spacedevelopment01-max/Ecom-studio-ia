@@ -2531,7 +2531,18 @@ describe("l'épreuve des noms jamais dits vérifiés sans comparaison (tâche de
     expect(d.maxMicro).toBe(Math.ceil(d.lignes.reduce((t, l) => t + l.maxMicro, 0)));
     expect(d.probableMicro).toBe(Math.ceil(d.lignes.filter((l) => l.toujours).reduce((t, l) => t + l.probableMicro, 0)));
     expect((await import("@/lib/syna-agent/tools/identity")).accordGraphistes(3).nomsMicro).toBe(d.maxMicro);
-    // 5. Une tâche d'avant, sans comparaison gardée, n'est jamais relue comme vérifiée.
+    // 5. L'ancien chemin des routes suit la même règle, par la même fonction (une seule façon de faire).
+    const cherchees: string[] = [];
+    const faux = { research: async (id: string) => { cherchees.push(id); return []; }, ask: async () => { throw new Error("aucune vérification sans page"); } };
+    expect(await B.verifierLesNoms(faux as never, "verify-1", ["Fournée"], "fiche")).toEqual({ done: true, compare: false, taken: [] });
+    expect(cherchees).toEqual(["verify-1", "verify-1-2"]);
+    const chaine = fs.readFileSync("src/lib/syna-agent/brand-chain.ts", "utf8");
+    expect(chaine.match(/verifierLesNoms\(ai, `verify-/g)).toHaveLength(2);
+    expect(chaine).not.toMatch(/ai\.research\(`verify/);
+    expect(chaine).toContain('nameCheck = "non_verifie";\n      aDireDesNoms = phraseDesNomsNonVerifies(');
+    const routes = B.chainQuote({ routes: 3, images: false }), verifiees = B.chainQuote({ routes: 3, images: false, done: ["brand:verify:1"] });
+    expect(routes.maxMicro - verifiees.maxMicro).toBeGreaterThan(routes.probableMicro! - verifiees.probableMicro!);
+    // 6. Une tâche d'avant, sans comparaison gardée, n'est jamais relue comme vérifiée.
     expect(B.etatDeLaVerification({ done: true, taken: [] }).verification).toBe("non_verifie");
     expect(J.phraseDesNomsMontres({ verifies: true })).toBeNull();
   });
