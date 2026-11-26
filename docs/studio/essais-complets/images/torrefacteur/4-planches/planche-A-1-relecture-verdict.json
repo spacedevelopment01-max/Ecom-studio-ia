@@ -1,0 +1,174 @@
+{
+  "verdict": {
+    "nomLu": "MOUTURE",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Mouture",
+    "domaineLu": "mouturefrance.fr — disponible",
+    "fautes": [],
+    "microTextes": [
+      "Lignes d'alphabet des spécimens Montserrat et Playfair Display déformées (« ABCDEFCHJIJLIMMGÐETTWWXYZ », « abcdefgǰiiltnnpopqsutyvxyz »)",
+      "Heure de la barre d'état du téléphone (« 10:05 » approximatif)",
+      "Petites étiquettes des paquets (sous « CAFÉ MOULU », « CAFÉ EN GRAINS ») et lignes minuscules des coffrets, illisibles"
+    ],
+    "promesses": [],
+    "personnes": false,
+    "personnesVues": [],
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "note": 9,
+    "pourquoi": "Planche complète et soignée : le logo est repris fidèlement, la phrase « TORRÉFACTION ARTISANALE » est juste partout où elle est lisible, le bloc 10 suit la consigne, sans personne ni promesse inventée. Seuls les alphabets des spécimens et quelques micro-étiquettes sont déformés, ce qui reste décoratif.",
+    "phrasesLues": [
+      {
+        "emplacement": "Ouverture, sous le logo principal",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Ouverture, sous l'accroche « Du grain à la tasse »",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo principal",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo horizontal",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo empilé",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome foncé",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome clair",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, inversé sur fond sombre",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, badge / sceau circulaire",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 04, slogan",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 05, légende de la première image",
+        "lignes": [
+          "Torréfaction artisanale"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 4:5, liste des bénéfices",
+        "lignes": [
+          "Torréfaction",
+          "artisanale"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, ordinateur, sous le titre du hero",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, ordinateur, bandeau de réassurance",
+        "lignes": [
+          "Torréfaction",
+          "artisanale"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, téléphone, sous le titre du hero",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, logo sur le carton",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, texte imprimé sur le flanc du carton",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, carte kraft",
+        "lignes": [
+          "TORRÉFACTION",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, logo sur le mug",
+        "lignes": [
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 10, titre SEO",
+        "lignes": [
+          "Torréfaction artisanale"
+        ],
+        "cachee": false
+      }
+    ]
+  },
+  "raisons": [],
+  "ecartes": [
+    "micro-texte décoratif, non jugé : « Lignes d'alphabet des spécimens Montserrat et Playfair Display déformées (« ABCDEFCHJIJLIMMGÐETTWWXYZ », « abcdefgǰiiltnnpopqsutyvxyz ») »",
+    "micro-texte décoratif, non jugé : « Heure de la barre d'état du téléphone (« 10:05 » approximatif) »",
+    "micro-texte décoratif, non jugé : « Petites étiquettes des paquets (sous « CAFÉ MOULU », « CAFÉ EN GRAINS ») et lignes minuscules des coffrets, illisibles »"
+  ],
+  "gardee": true
+}

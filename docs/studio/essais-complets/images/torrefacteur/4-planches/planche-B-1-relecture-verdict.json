@@ -1,0 +1,187 @@
+{
+  "verdict": {
+    "nomLu": "MOUTURE",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Mouture",
+    "domaineLu": "mouturefrance.fr — disponible",
+    "fautes": [
+      "Bloc 08, site ordinateur : « Des cafés de caractere, » — il manque l'accent grave de « caractère »",
+      "Bloc 09, tasse émaillée : « ÉORCTOIDE. », un mot déformé sous le logo",
+      "Bloc 09, tasse émaillée : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible]",
+      "Bloc 09, sachet Éthiopie : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible]",
+      "Bloc 09, sachet Éthiopie : les notes du sachet sont déformées (« [illisible] »)",
+      "Bloc 07, publication 1:1 : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible]"
+    ],
+    "microTextes": [
+      "ABCDEFGHIJLLIMUNRIOCTOUVWXYZ",
+      "abcdefghijklnlnopoqgtivvwxyz",
+      "ABCDEPFGUILLINUNMOCTEIVWXYZ",
+      "abcdefghijiklnlnopopqtuvwxyz"
+    ],
+    "promesses": [],
+    "personnes": false,
+    "personnesVues": [],
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "note": 6.5,
+    "pourquoi": "La planche est complète, fidèle au logo et sans personne ni promesse. En revanche, « caractere » sans accent dans l'accroche du site et plusieurs textes déformés sur la tasse et le sachet du bloc 09 (dont la phrase sous le logo) la rendent non montrable telle quelle.",
+    "phrasesLues": [
+      {
+        "emplacement": "Ouverture, sous le grand logo",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Ouverture, sous l'accroche",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Ouverture, logo sur la tasse",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo principal et logo horizontal",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo empilé",
+        "lignes": [
+          "TORRÉFACTEUR",
+          "PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochromes foncé et clair",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, version inversée sur fond sombre",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, badge / sceau circulaire",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 04, slogan",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 06, sachet Brésil",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 06, sachet Éthiopie",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1, sous le logo",
+        "lignes": [
+          "[illisible]"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1, en bas",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 4:5, sachet Colombie",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, story 9:16, en bas",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, site ordinateur, sous l'accroche",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, site mobile, sous l'accroche",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, carton d'expédition",
+        "lignes": [
+          "TORRÉFACTEUR PASSIONNÉ"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, tasse émaillée, sous le logo",
+        "lignes": [
+          "[illisible]"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, sachet Éthiopie, sous le logo",
+        "lignes": [
+          "[illisible]"
+        ],
+        "cachee": false
+      }
+    ]
+  },
+  "raisons": [
+    "la phrase choisie par le client est mal écrite (« Bloc 07, publication 1:1, sous le logo : [illisible] » au lieu de « TORRÉFACTEUR PASSIONNÉ »)",
+    "la phrase choisie par le client est mal écrite (« Bloc 09, tasse émaillée, sous le logo : [illisible] » au lieu de « TORRÉFACTEUR PASSIONNÉ »)",
+    "la phrase choisie par le client est mal écrite (« Bloc 09, sachet Éthiopie, sous le logo : [illisible] » au lieu de « TORRÉFACTEUR PASSIONNÉ »)",
+    "fautes : « Bloc 08, site ordinateur : « Des cafés de caractere, » — il manque l'accent grave de « caractère » », « Bloc 09, tasse émaillée : « ÉORCTOIDE. », un mot déformé sous le logo », « Bloc 09, tasse émaillée : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible] », « Bloc 09, sachet Éthiopie : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible] », « Bloc 09, sachet Éthiopie : les notes du sachet sont déformées (« [illisible] ») », « Bloc 07, publication 1:1 : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible] »",
+    "elle n'est pas au niveau (6.5/10, il faut 8)"
+  ],
+  "ecartes": [
+    "micro-texte décoratif, non jugé : « ABCDEFGHIJLLIMUNRIOCTOUVWXYZ »",
+    "micro-texte décoratif, non jugé : « abcdefghijklnlnopoqgtivvwxyz »",
+    "micro-texte décoratif, non jugé : « ABCDEPFGUILLINUNMOCTEIVWXYZ »",
+    "micro-texte décoratif, non jugé : « abcdefghijiklnlnopopqtuvwxyz »"
+  ],
+  "gardee": false
+}

@@ -1,0 +1,31 @@
+{
+  "nom": "Mouture",
+  "disposition": "standard",
+  "logo": {
+    "fichier": "/home/user/Ecom-studio-ia/data/essai-torrefacteur/3-finalisation/esquisse-04-logo-garde.png",
+    "sha256": "399ec63a8043c911187b5bc28cfce34e5c57ce95655c0fc9dfa899c153193968"
+  },
+  "phrase": [
+    "TORRÉFACTEUR PASSIONNÉ"
+  ],
+  "planche": {
+    "logo": "4ib1v9neazwy0xg6",
+    "domaine": "mouturefrance.fr",
+    "statut": "disponible",
+    "annee": 2026,
+    "phrase": [
+      "TORRÉFACTEUR PASSIONNÉ"
+    ],
+    "at": 1795726611767,
+    "essais": 2,
+    "note": 8,
+    "raison": "refusée deux fois (fautes : « Bloc 09, boîte kraft : « Le bon café, commence ici. » : virgule fautive entre le sujet et le verbe », « Bloc 09, boîte kraft : signe parasite sous « commence ici. », un petit crochet en forme de « ? » égaré, hors des mots » ; promesses ou chiffres inventés : « Bloc 09, sachet Éthiopie : « 100% Arabica » »)"
+  },
+  "notes": [
+    "planche B, essai 1 refusé : la phrase choisie par le client est mal écrite (« Bloc 07, publication 1:1, sous le logo : [illisible] » au lieu de « TORRÉFACTEUR PASSIONNÉ ») ; la phrase choisie par le client est mal écrite (« Bloc 09, tasse émaillée, sous le logo : [illisible] » au lieu de « TORRÉFACTEUR PASSIONNÉ ») ; la phrase choisie par le client est mal écrite (« Bloc 09, sachet Éthiopie, sous le logo : [illisible] » au lieu de « TORRÉFACTEUR PASSIONNÉ ») ; fautes : « Bloc 08, site ordinateur : « Des cafés de caractere, » — il manque l'accent grave de « caractère » », « Bloc 09, tasse émaillée : « ÉORCTOIDE. », un mot déformé sous le logo », « Bloc 09, tasse émaillée : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible] », « Bloc 09, sachet Éthiopie : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible] », « Bloc 09, sachet Éthiopie : les notes du sachet sont déformées (« [illisible] ») », « Bloc 07, publication 1:1 : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible] » ; elle n'est pas au niveau (6.5/10, il faut 8)",
+    "planche B, essai 2 refusé : fautes : « Bloc 09, boîte kraft : « Le bon café, commence ici. » : virgule fautive entre le sujet et le verbe », « Bloc 09, boîte kraft : signe parasite sous « commence ici. », un petit crochet en forme de « ? » égaré, hors des mots » ; promesses ou chiffres inventés : « Bloc 09, sachet Éthiopie : « 100% Arabica » »"
+  ],
+  "issues": [
+    "Identité B « Mouture » : je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite. Je peux la refaire à ma charge : rien n'est compté sur ton budget."
+  ]
+}

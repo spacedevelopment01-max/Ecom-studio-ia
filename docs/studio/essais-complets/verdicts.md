@@ -64,6 +64,9 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 26/11 | Mouture | 12 esquisses de logo | 12 correctes dès les deux planches, aucune remplacée ; toutes les phrases jugées proposables, dont « CAFÉS ARTISANAUX / DEPUIS AUJOURD'HUI » (esquisse 5) | 12 sur 12 | [en attente] |
 | 26/11 | Mouture | Logo fini de l'esquisse 11, phrase « TORRÉFACTION ARTISANALE » | 9/10, petites finitions : lettres de la mention en courbe un peu inégales, fente du grain d'un bord à l'autre | Oui | [en attente] |
 | 26/11 | Mouture | Logo fini de l'esquisse 4, phrase « TORRÉFACTEUR PASSIONNÉ » | 9/10, petites finitions : boucle du O un peu détachée, bords des arcs un peu ondulés | Oui | [en attente] |
+| 26/11 | Mouture | Planche A (logo 11, hexagone) | 9/10 : « Planche complète et soignée … Seuls les alphabets des spécimens et quelques micro-étiquettes sont déformés, ce qui reste décoratif » | Oui | [en attente] |
+| 26/11 | Mouture | Planche B (logo 4, tasse), 1er essai | 6,5/10 : « caractere » sans accent, phrase du logo déformée sur la tasse, le sachet et la publication | Non | [en attente] |
+| 26/11 | Mouture | Planche B, reprise à la charge du Studio | 8/10 mais refusée : virgule fautive « Le bon café, commence ici. », un signe parasite (compté comme faute), « 100% Arabica » compté comme chiffre inventé | Non | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 

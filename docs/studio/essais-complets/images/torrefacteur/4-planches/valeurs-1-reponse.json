@@ -1,0 +1,24 @@
+{
+  "nom": "Mouture",
+  "traits": [
+    "artisanale",
+    "chaleureuse",
+    "simple",
+    "authentique"
+  ],
+  "emotion": "l'arôme d'un café fraîchement moulu chez soi",
+  "images": [
+    "grains fraîchement torréfiés dans le bac de refroidissement",
+    "sacs de toile de jute remplis de café vert",
+    "paquets en papier kraft alignés sur une étagère en bois",
+    "tasse fumante dans la lumière douce du matin",
+    "vieux moulin à café sur un plan de travail en bois",
+    "coffret en carton kraft garni de paquets de café"
+  ],
+  "produits": [
+    "cafés en grains",
+    "cafés moulus",
+    "coffrets"
+  ],
+  "appel": "devis"
+}

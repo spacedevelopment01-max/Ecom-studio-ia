@@ -1,0 +1,352 @@
+[
+  {
+    "cle": "a6fc6643189ff1c28a69cc81e14a79b179405c1847641e2b48b2caebadc25675",
+    "task": "strategy",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 157858,
+    "reelMicro": 16772,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-valeurs-1",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 463,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 1634,
+      "jetonsSortie": 474,
+      "quantite": 0,
+      "effort": "medium",
+      "fin": "end_turn",
+      "dureeMs": 5990,
+      "coutMicro": 16772,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-jp4ktip8y5gmmmxp:planche:valeurs-1",
+      "details": {
+        "placeDemandee": 8000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "3fb6c8a5b89e13c8be64cb9fe2dab2654f3457bc59d6adcc976183991ff478c6",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 195144,
+    "reelMicro": 124813,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-A-1-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 4326,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 3811,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 65852,
+      "coutMicro": 124813,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-jp4ktip8y5gmmmxp:planche:A-1-1",
+      "details": {
+        "methode": "planche-de-marque",
+        "texteEnvoye": "La première image est le logo Mouture : il sert de base à tout le système de logos et ne doit pas être redessiné. Construis l'univers graphique de la marque à partir de ce logo.\n\nLa deuxième image montre la disposition obligatoire de la planche : reprends exactement le même emplacement, le même ordre et les mêmes proportions pour chaque bloc (l'ouverture en haut, puis les blocs 01 à 10 aux mêmes places et avec les mêmes formats d'aperçus). N'en reprends ni les couleurs, ni le logo, ni les photographies, ni les textes : l'identité vient uniquement du logo de la première image.\n\nMouture — Planche d’identité visuelle\n\nCrée la planche complète d’identité visuelle de Mouture, avec une structure, une cohérence et une lisibilité fortes.\n\nObjectif :\nCréer une planche d’identité visuelle premium, moderne, commerciale et très propre, digne d’une vraie agence de branding, avec une hiérarchie forte et des éléments bien présentés.\n\nImportant :\n- Mouture, petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets : marque artisanale, chaleureuse, simple et authentique. Sa phrase, choisie par le client et écrite sous le logo : « TORRÉFACTION ARTISANALE » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, sans en changer une lettre ni un accent.\n- Ne pas revenir à une charte austère ou trop scolaire.\n- Garder une présentation immersive et désirable.\n\nContenu obligatoire\n\n1. Système de logos plus complet\nJe veux un vrai système de logo avec davantage de variantes :\n- logo principal\n- logo secondaire horizontal\n- logo empilé\n- logo compact\n- icône seule\n- favicon\n- version monochrome foncée\n- version monochrome claire\n- version inversée sur fond sombre\n- version badge / sceau\nToutes les variantes doivent rester cohérentes entre elles.\n\n2. Réseaux sociaux : vrais formats\nJe veux 3 publications montrées dans leurs vrais formats visuels, et pas comme de petites vignettes approximatives.\nFormats exacts :\n- 1:1 feed carré\n- 4:5 publication portrait\n- 9:16 story / reel\nChaque publication doit avoir :\n- un objectif différent,\n- une composition différente,\n- une vraie accroche,\n- un vrai rôle marketing.\nExemples :\n- 1:1 = émotion / l'arôme d'un café fraîchement moulu chez soi\n- 4:5 = focus produit / bénéfices\n- 9:16 = contenu communauté / engagement / story\nLes trois doivent être lisibles et paraître publiables telles quelles.\n\n3. Site web : mockups réellement crédibles\nJe veux deux mockups distincts :\n- un mockup ordinateur réaliste, au bon ratio d’écran, large et lisible\n- un mockup téléphone réaliste, vertical, avec un vrai ratio mobile\nLes deux doivent montrer le même univers de site Mouture, avec adaptation responsive réelle :\n- même DA,\n- même palette,\n- même logo,\n- même ton,\n- mais mise en page adaptée à chaque support.\nLe site doit sembler être une vraie boutique e-commerce :\n- header\n- hero\n- accroche\n- CTA\n- produits / collections\n- éléments de réassurance\n\n4. Ajouter une section “Images de référence”\nJe veux une vraie section de direction visuelle / inspiration photo.\nCette section doit montrer 4 à 6 petites images de référence cohérentes, par exemple :\n- grains fraîchement torréfiés dans le bac de refroidissement\n- sacs de toile de jute remplis de café vert\n- paquets en papier kraft alignés sur une étagère en bois\n- tasse fumante dans la lumière douce du matin\n- vieux moulin à café sur un plan de travail en bois\n- coffret en carton kraft garni de paquets de café\nBut :\nmontrer l’univers photographique et émotionnel de la marque.\nAttention :\nce sont des images de référence d’univers, pas des logos supplémentaires.\n\n5. Produits\nLa section produits doit être mieux mise en scène et plus premium.\nMontrer clairement :\n- cafés en grains\n- cafés moulus\n- coffrets\nLes visuels doivent être propres, désirables, e-commerce, avec une sensation plus “marque” et moins “simple catalogue”.\n\n6. Structure générale de la planche\nLa planche doit rester dense mais plus claire.\nJe veux une hiérarchie visuelle très lisible avec ces blocs :\n1. titre / identité\n2. système de logos\n3. palette + typographies\n4. ton / slogan / valeurs\n5. images de référence\n6. produits\n7. 3 publications réseaux\n8. site web desktop + mobile\n9. packaging / supports de marque\n10. SEO / nom de domaine / copyright\n\n7. SEO / domaine / mentions\nConserver un bloc avec :\n- titre SEO\n- méta-description\n- nom de domaine suggéré\n- mention “disponibilité à vérifier”\n- copyright\nNe pas inventer de disponibilité comme un fait certain si elle n’est pas vérifiée.\n\n8. Niveau graphique attendu\nJe veux une planche :\n- plus forte graphiquement,\n- plus structurée,\n- plus moderne,\n- plus cohérente,\n- plus proche d’une vraie présentation de studio de branding.\nLa planche ne doit pas ressembler à un simple tableau d’éléments posés.\nJe veux quelque chose que l’on regarde en se disant :\n“oui, cette marque existe déjà”.\n\nDans le bloc 10, à la place de la mention « disponibilité à vérifier », écris exactement « mouturefrance.fr — disponible » et « © 2026 Mouture » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.",
+        "requestId": "req_76849af8bb9a425d9a0feece847399f8",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "logo",
+            "assetId": "4wwvp18cfaszw4d3",
+            "sha256": "83a13c64a6eda4b43e5a84c42e9f1e8e17bea6fde6deec588350566029347f48",
+            "octets": 1220668
+          },
+          {
+            "role": "disposition",
+            "assetId": "disposition:standard",
+            "sha256": "b4e2e0438d9467ffecfef30d450617299b5d547ff35b01d8e7b049f537e152f5",
+            "octets": 4685578
+          }
+        ],
+        "usage": {
+          "input_tokens": 4326,
+          "input_tokens_details": {
+            "image_tokens": 3057,
+            "text_tokens": 1269
+          },
+          "output_tokens": 3811,
+          "output_tokens_details": {
+            "image_tokens": 3811,
+            "text_tokens": 0
+          },
+          "total_tokens": 8137
+        },
+        "renvoye": {
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "74844726bb9e14f98ce041343fe7ec53f07eb923bfe5ba6a9276cdd4e242322c",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 250118,
+    "reelMicro": 121113,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-A-1-1-relecture",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 10411,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 3277,
+      "jetonsSortie": 4140,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 35744,
+      "coutMicro": 121113,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-jp4ktip8y5gmmmxp:planche:A-1-1-relecture",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "39bbe455fb4fe2caa51e14c5072cba7e409a39dbd2203c6ec2b93dc05bf3e313",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 195144,
+    "reelMicro": 124813,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-B-1-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 4326,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 3811,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 72607,
+      "coutMicro": 124813,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-jp4ktip8y5gmmmxp:planche:B-1-1",
+      "details": {
+        "methode": "planche-de-marque",
+        "texteEnvoye": "La première image est le logo Mouture : il sert de base à tout le système de logos et ne doit pas être redessiné. Construis l'univers graphique de la marque à partir de ce logo.\n\nLa deuxième image montre la disposition obligatoire de la planche : reprends exactement le même emplacement, le même ordre et les mêmes proportions pour chaque bloc (l'ouverture en haut, puis les blocs 01 à 10 aux mêmes places et avec les mêmes formats d'aperçus). N'en reprends ni les couleurs, ni le logo, ni les photographies, ni les textes : l'identité vient uniquement du logo de la première image.\n\nMouture — Planche d’identité visuelle\n\nCrée la planche complète d’identité visuelle de Mouture, avec une structure, une cohérence et une lisibilité fortes.\n\nObjectif :\nCréer une planche d’identité visuelle premium, moderne, commerciale et très propre, digne d’une vraie agence de branding, avec une hiérarchie forte et des éléments bien présentés.\n\nImportant :\n- Mouture, petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets : marque artisanale, chaleureuse, simple et authentique. Sa phrase, choisie par le client et écrite sous le logo : « TORRÉFACTEUR PASSIONNÉ » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, sans en changer une lettre ni un accent.\n- Ne pas revenir à une charte austère ou trop scolaire.\n- Garder une présentation immersive et désirable.\n\nContenu obligatoire\n\n1. Système de logos plus complet\nJe veux un vrai système de logo avec davantage de variantes :\n- logo principal\n- logo secondaire horizontal\n- logo empilé\n- logo compact\n- icône seule\n- favicon\n- version monochrome foncée\n- version monochrome claire\n- version inversée sur fond sombre\n- version badge / sceau\nToutes les variantes doivent rester cohérentes entre elles.\n\n2. Réseaux sociaux : vrais formats\nJe veux 3 publications montrées dans leurs vrais formats visuels, et pas comme de petites vignettes approximatives.\nFormats exacts :\n- 1:1 feed carré\n- 4:5 publication portrait\n- 9:16 story / reel\nChaque publication doit avoir :\n- un objectif différent,\n- une composition différente,\n- une vraie accroche,\n- un vrai rôle marketing.\nExemples :\n- 1:1 = émotion / l'arôme d'un café fraîchement moulu chez soi\n- 4:5 = focus produit / bénéfices\n- 9:16 = contenu communauté / engagement / story\nLes trois doivent être lisibles et paraître publiables telles quelles.\n\n3. Site web : mockups réellement crédibles\nJe veux deux mockups distincts :\n- un mockup ordinateur réaliste, au bon ratio d’écran, large et lisible\n- un mockup téléphone réaliste, vertical, avec un vrai ratio mobile\nLes deux doivent montrer le même univers de site Mouture, avec adaptation responsive réelle :\n- même DA,\n- même palette,\n- même logo,\n- même ton,\n- mais mise en page adaptée à chaque support.\nLe site doit sembler être une vraie boutique e-commerce :\n- header\n- hero\n- accroche\n- CTA\n- produits / collections\n- éléments de réassurance\n\n4. Ajouter une section “Images de référence”\nJe veux une vraie section de direction visuelle / inspiration photo.\nCette section doit montrer 4 à 6 petites images de référence cohérentes, par exemple :\n- grains fraîchement torréfiés dans le bac de refroidissement\n- sacs de toile de jute remplis de café vert\n- paquets en papier kraft alignés sur une étagère en bois\n- tasse fumante dans la lumière douce du matin\n- vieux moulin à café sur un plan de travail en bois\n- coffret en carton kraft garni de paquets de café\nBut :\nmontrer l’univers photographique et émotionnel de la marque.\nAttention :\nce sont des images de référence d’univers, pas des logos supplémentaires.\n\n5. Produits\nLa section produits doit être mieux mise en scène et plus premium.\nMontrer clairement :\n- cafés en grains\n- cafés moulus\n- coffrets\nLes visuels doivent être propres, désirables, e-commerce, avec une sensation plus “marque” et moins “simple catalogue”.\n\n6. Structure générale de la planche\nLa planche doit rester dense mais plus claire.\nJe veux une hiérarchie visuelle très lisible avec ces blocs :\n1. titre / identité\n2. système de logos\n3. palette + typographies\n4. ton / slogan / valeurs\n5. images de référence\n6. produits\n7. 3 publications réseaux\n8. site web desktop + mobile\n9. packaging / supports de marque\n10. SEO / nom de domaine / copyright\n\n7. SEO / domaine / mentions\nConserver un bloc avec :\n- titre SEO\n- méta-description\n- nom de domaine suggéré\n- mention “disponibilité à vérifier”\n- copyright\nNe pas inventer de disponibilité comme un fait certain si elle n’est pas vérifiée.\n\n8. Niveau graphique attendu\nJe veux une planche :\n- plus forte graphiquement,\n- plus structurée,\n- plus moderne,\n- plus cohérente,\n- plus proche d’une vraie présentation de studio de branding.\nLa planche ne doit pas ressembler à un simple tableau d’éléments posés.\nJe veux quelque chose que l’on regarde en se disant :\n“oui, cette marque existe déjà”.\n\nDans le bloc 10, à la place de la mention « disponibilité à vérifier », écris exactement « mouturefrance.fr — disponible » et « © 2026 Mouture » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.",
+        "requestId": "req_da632f109c2145588dcc219ec32ba212",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "logo",
+            "assetId": "4ib1v9neazwy0xg6",
+            "sha256": "399ec63a8043c911187b5bc28cfce34e5c57ce95655c0fc9dfa899c153193968",
+            "octets": 1187399
+          },
+          {
+            "role": "disposition",
+            "assetId": "disposition:standard",
+            "sha256": "b4e2e0438d9467ffecfef30d450617299b5d547ff35b01d8e7b049f537e152f5",
+            "octets": 4685578
+          }
+        ],
+        "usage": {
+          "input_tokens": 4326,
+          "input_tokens_details": {
+            "image_tokens": 3057,
+            "text_tokens": 1269
+          },
+          "output_tokens": 3811,
+          "output_tokens_details": {
+            "image_tokens": 3811,
+            "text_tokens": 0
+          },
+          "total_tokens": 8137
+        },
+        "renvoye": {
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "7d7783c9fc73a75d09818ab815b36230862090822bfda68441b7e2d40db6a7ef",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 250159,
+    "reelMicro": 110692,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-B-1-1-relecture",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 10419,
+      "jetonsCacheLus": 3277,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 4319,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 35265,
+      "coutMicro": 110692,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-jp4ktip8y5gmmmxp:planche:B-1-1-relecture",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "ffa70d22e4eafe830bab55a0e365aa06f888f78cfcdd81b0d9ce266ed3601e86",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": true,
+    "reserveMicro": 201494,
+    "reelMicro": 126300,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-B-1-2",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 4672,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 3811,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 74047,
+      "coutMicro": 126300,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-jp4ktip8y5gmmmxp:planche:B-1-2",
+      "details": {
+        "methode": "planche-de-marque",
+        "texteEnvoye": "La première image est le logo Mouture : il sert de base à tout le système de logos et ne doit pas être redessiné. Construis l'univers graphique de la marque à partir de ce logo.\n\nLa deuxième image montre la disposition obligatoire de la planche : reprends exactement le même emplacement, le même ordre et les mêmes proportions pour chaque bloc (l'ouverture en haut, puis les blocs 01 à 10 aux mêmes places et avec les mêmes formats d'aperçus). N'en reprends ni les couleurs, ni le logo, ni les photographies, ni les textes : l'identité vient uniquement du logo de la première image.\n\nMouture — Planche d’identité visuelle\n\nCrée la planche complète d’identité visuelle de Mouture, avec une structure, une cohérence et une lisibilité fortes.\n\nObjectif :\nCréer une planche d’identité visuelle premium, moderne, commerciale et très propre, digne d’une vraie agence de branding, avec une hiérarchie forte et des éléments bien présentés.\n\nImportant :\n- Mouture, petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets : marque artisanale, chaleureuse, simple et authentique. Sa phrase, choisie par le client et écrite sous le logo : « TORRÉFACTEUR PASSIONNÉ » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, sans en changer une lettre ni un accent.\n- Ne pas revenir à une charte austère ou trop scolaire.\n- Garder une présentation immersive et désirable.\n\nContenu obligatoire\n\n1. Système de logos plus complet\nJe veux un vrai système de logo avec davantage de variantes :\n- logo principal\n- logo secondaire horizontal\n- logo empilé\n- logo compact\n- icône seule\n- favicon\n- version monochrome foncée\n- version monochrome claire\n- version inversée sur fond sombre\n- version badge / sceau\nToutes les variantes doivent rester cohérentes entre elles.\n\n2. Réseaux sociaux : vrais formats\nJe veux 3 publications montrées dans leurs vrais formats visuels, et pas comme de petites vignettes approximatives.\nFormats exacts :\n- 1:1 feed carré\n- 4:5 publication portrait\n- 9:16 story / reel\nChaque publication doit avoir :\n- un objectif différent,\n- une composition différente,\n- une vraie accroche,\n- un vrai rôle marketing.\nExemples :\n- 1:1 = émotion / l'arôme d'un café fraîchement moulu chez soi\n- 4:5 = focus produit / bénéfices\n- 9:16 = contenu communauté / engagement / story\nLes trois doivent être lisibles et paraître publiables telles quelles.\n\n3. Site web : mockups réellement crédibles\nJe veux deux mockups distincts :\n- un mockup ordinateur réaliste, au bon ratio d’écran, large et lisible\n- un mockup téléphone réaliste, vertical, avec un vrai ratio mobile\nLes deux doivent montrer le même univers de site Mouture, avec adaptation responsive réelle :\n- même DA,\n- même palette,\n- même logo,\n- même ton,\n- mais mise en page adaptée à chaque support.\nLe site doit sembler être une vraie boutique e-commerce :\n- header\n- hero\n- accroche\n- CTA\n- produits / collections\n- éléments de réassurance\n\n4. Ajouter une section “Images de référence”\nJe veux une vraie section de direction visuelle / inspiration photo.\nCette section doit montrer 4 à 6 petites images de référence cohérentes, par exemple :\n- grains fraîchement torréfiés dans le bac de refroidissement\n- sacs de toile de jute remplis de café vert\n- paquets en papier kraft alignés sur une étagère en bois\n- tasse fumante dans la lumière douce du matin\n- vieux moulin à café sur un plan de travail en bois\n- coffret en carton kraft garni de paquets de café\nBut :\nmontrer l’univers photographique et émotionnel de la marque.\nAttention :\nce sont des images de référence d’univers, pas des logos supplémentaires.\n\n5. Produits\nLa section produits doit être mieux mise en scène et plus premium.\nMontrer clairement :\n- cafés en grains\n- cafés moulus\n- coffrets\nLes visuels doivent être propres, désirables, e-commerce, avec une sensation plus “marque” et moins “simple catalogue”.\n\n6. Structure générale de la planche\nLa planche doit rester dense mais plus claire.\nJe veux une hiérarchie visuelle très lisible avec ces blocs :\n1. titre / identité\n2. système de logos\n3. palette + typographies\n4. ton / slogan / valeurs\n5. images de référence\n6. produits\n7. 3 publications réseaux\n8. site web desktop + mobile\n9. packaging / supports de marque\n10. SEO / nom de domaine / copyright\n\n7. SEO / domaine / mentions\nConserver un bloc avec :\n- titre SEO\n- méta-description\n- nom de domaine suggéré\n- mention “disponibilité à vérifier”\n- copyright\nNe pas inventer de disponibilité comme un fait certain si elle n’est pas vérifiée.\n\n8. Niveau graphique attendu\nJe veux une planche :\n- plus forte graphiquement,\n- plus structurée,\n- plus moderne,\n- plus cohérente,\n- plus proche d’une vraie présentation de studio de branding.\nLa planche ne doit pas ressembler à un simple tableau d’éléments posés.\nJe veux quelque chose que l’on regarde en se disant :\n“oui, cette marque existe déjà”.\n\nDans le bloc 10, à la place de la mention « disponibilité à vérifier », écris exactement « mouturefrance.fr — disponible » et « © 2026 Mouture » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.\n\nÀ corriger : la phrase choisie par le client est mal écrite (« Bloc 07, publication 1:1, sous le logo : [illisible] » au lieu de « TORRÉFACTEUR PASSIONNÉ ») ; la phrase choisie par le client est mal écrite (« Bloc 09, tasse émaillée, sous le logo : [illisible] » au lieu de « TORRÉFACTEUR PASSIONNÉ ») ; la phrase choisie par le client est mal écrite (« Bloc 09, sachet Éthiopie, sous le logo : [illisible] » au lieu de « TORRÉFACTEUR PASSIONNÉ ») ; fautes : « Bloc 08, site ordinateur : « Des cafés de caractere, » — il manque l'accent grave de « caractère » », « Bloc 09, tasse émaillée : « ÉORCTOIDE. », un mot déformé sous le logo », « Bloc 09, tasse émaillée : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible] », « Bloc 09, sachet Éthiopie : la ligne « TORRÉFACTEUR PASSIONNÉ » sous le logo est déformée, [illisible] », « Bloc 09, sachet Éthiopie : les notes du sachet sont déformées (« [illisible] ») », « Bloc 07, publication 1:1 : la ligne « TORRÉFACTEUR PASSIONNÉ… ; elle n'est pas au niveau (6.5/10, il faut 8).",
+        "requestId": "req_6ee2a8a6d3994cb5909f4c69b996eacd",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "logo",
+            "assetId": "4ib1v9neazwy0xg6",
+            "sha256": "399ec63a8043c911187b5bc28cfce34e5c57ce95655c0fc9dfa899c153193968",
+            "octets": 1187399
+          },
+          {
+            "role": "disposition",
+            "assetId": "disposition:standard",
+            "sha256": "b4e2e0438d9467ffecfef30d450617299b5d547ff35b01d8e7b049f537e152f5",
+            "octets": 4685578
+          }
+        ],
+        "usage": {
+          "input_tokens": 4672,
+          "input_tokens_details": {
+            "image_tokens": 3057,
+            "text_tokens": 1615
+          },
+          "output_tokens": 3811,
+          "output_tokens_details": {
+            "image_tokens": 3811,
+            "text_tokens": 0
+          },
+          "total_tokens": 8483
+        },
+        "renvoye": {
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "8ed2b8f70b79d667b8bdf8964adfd8cf3d5f484c87567ac8ff28d0a8ab45c074",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": true,
+    "reserveMicro": 252673,
+    "reelMicro": 133231,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-B-1-2-relecture",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 10966,
+      "jetonsCacheLus": 3277,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 5520,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 47332,
+      "coutMicro": 133231,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-jp4ktip8y5gmmmxp:planche:B-1-2-relecture",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  }
+]

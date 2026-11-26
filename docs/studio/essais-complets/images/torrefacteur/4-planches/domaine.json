@@ -1,0 +1,22 @@
+{
+  "nom": "Mouture",
+  "descripteur": "café",
+  "verifie": {
+    "taken": [
+      "mouture.fr",
+      "mouture.com"
+    ],
+    "free": [
+      "mouturefrance.fr",
+      "mouture-cafe.fr"
+    ],
+    "unknown": [
+      "mouturefrance.com"
+    ],
+    "at": 1795726497262
+  },
+  "domaine": "mouturefrance.fr",
+  "statut": "disponible",
+  "mention": "mouturefrance.fr — disponible",
+  "caseSousLaPlanche": "mouturefrance.fr : libre aujourd'hui, seule la réservation le garantit."
+}
