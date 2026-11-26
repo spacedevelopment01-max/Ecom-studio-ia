@@ -148,14 +148,11 @@ const SANS_ARCHE = { decision: "25 novembre 2026", mots: "« Oui, marque relecte
  */
 const ECUME_ETAPE_3 = { decision: "25 novembre 2026", mots: "« Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables et planche-reprend-la-phrase-du-logo comme remplacées par ma décision du 25 novembre, ajoute et scelle planche-phrase-par-lignes-et-reprise-qui-part-toujours (la phrase comparée par ses seules lignes, une phrase cachée en partie par un objet jugée sur ses mots visibles, la reprise qui part toujours avec ses raisons les plus graves d'abord, et chaque planche indépendante), et mets à jour la partie Identité de CLAUDE.md. »" };
 /**
- * L'ACCORD ÉCRIT ENCORE À RECEVOIR (26 novembre 2026). La décision du chef d'orchestre sur l'essai réel d'Écume, étape 3
- * reprise (le signe parasite isolé, une petite finition), contredit planche-phrase-par-lignes-et-reprise-qui-part-toujours
- * (« Tout texte lisible reste juste : une faute dans […] une mention […] fait refuser »). Elle est marquée remplacée ; la
- * phrase d'accord écrite du propriétaire, mot pour mot, n'est pas encore là : `ACCORD_A_COMPLETER` tient sa place ; le banc
- * n'accepte ce manque que pour cette épreuve, et la phrase d'accord le remplacera à son arrivée.
+ * Le signe parasite isolé, une petite finition (26 novembre 2026, après l'essai réel d'Écume, étape 3 reprise), remplace
+ * planche-phrase-par-lignes-et-reprise-qui-part-toujours. Son accord écrit, mot pour mot (26 novembre 2026, écrit dans la
+ * conversation de construction).
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-const SIGNE_PARASITE = { decision: "26 novembre 2026", mots: ACCORD_A_COMPLETER };
+const SIGNE_PARASITE = { decision: "26 novembre 2026", mots: "« Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours comme remplacée par ma décision du 26 novembre, ajoute et scelle planche-signe-parasite-petite-finition (un signe parasite isolé hors des mots, qui ne change aucun mot, est une petite finition notée sans refus ; un mot mal écrit, le nom, la phrase du logo, l'adresse et l'année font toujours refuser), et mets à jour la partie Identité de CLAUDE.md. »" };
 const SOURCE_EN_VRAI_IDENTIQUE = "docs/studio/PLANCHE-EN-VRAI.md (partie « Identique en visuel : les finitions nettoyées et la police de l'aperçu (26 novembre 2026) » ; essai réel d'Écume, étape 3 reprise : docs/studio/essais-complets/images/ecume/3-planches-2, branche claude/essais-complets ; verdicts réels de A-2 et B-2 copiés tels quels dans tests/fixtures/ecume-planches-2 ; mots du chef d'orchestre)";
 const SOURCE_SIGNE_PARASITE = "docs/studio/ESSAI-ECUME.md (essai réel d'Écume du 26 novembre 2026, étape 3 reprise, 0,67 € : docs/studio/essais-complets/images/ecume/3-planches-2, branche claude/essais-complets ; verdict réel de A-2 copié tel quel dans tests/fixtures/ecume-planches-2 ; constat et décision du chef d'orchestre)";
 const SOURCE_ECUME_ETAPE_3 = "docs/studio/ESSAI-ECUME.md (essai réel d'Écume du 25 novembre 2026, étape 3, arrêté en erreur après 0,23 € : docs/studio/essais-complets/images/ecume/3-planches, branche claude/essais-complets ; verdict réel copié tel quel dans tests/fixtures/ecume-planches ; constat du chef d'orchestre)";

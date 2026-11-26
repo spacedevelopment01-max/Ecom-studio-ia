@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { ACCORD_A_COMPLETER, EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -50,12 +50,9 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026"]).toContain(r.decision);
-      // L'accord écrit encore à recevoir (« [À compléter : …] ») ne vaut que pour planche-phrase-par-lignes-et-reprise-qui-part-toujours,
-      // contredite par la décision du 26 novembre 2026 sur le signe parasite isolé ; à son arrivée, il remplace ce manque.
-      if (r.mots === ACCORD_A_COMPLETER) { expect(e.id).toBe("planche-phrase-par-lignes-et-reprise-qui-part-toujours"); expect(r.epreuve).toBe("planche-signe-parasite-petite-finition"); expect(r.decision).toBe("26 novembre 2026"); continue; }
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables)/);
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours)/);
       // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
-      if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
+      if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
   });
   it("chaque épreuve gratuite est rejouée ci-dessous", () => {
