@@ -185,7 +185,7 @@ export function controleDeLaPhrase(texte: string, phrase: readonly string[] | un
  * référence, les produits). Refait exactement les prompt.txt de Tenon et de Racine (tests/planche-de-marque.test.ts).
  * `phrase` : les lignes de la phrase choisie sous le logo, posées par le code dans la ligne de la marque (`ligneDeLaMarque`).
  */
-export function texteDesPreuves(nom: string, v: ValeursDuMetier, phrase?: readonly string[]): string {
+export function texteDesPreuves(nom: string, v: ValeursDuMetier, phrase?: readonly string[], o?: { nomsDesProduits?: boolean }): string {
   const n = nom.trim();
   let t = texteDeBase();
   const b = partiesDeBase(t);
@@ -206,8 +206,30 @@ export function texteDesPreuves(nom: string, v: ValeursDuMetier, phrase?: readon
   t = remplacer(t, `par exemple :\n${b.images.map((x) => `${x}\n`).join("")}`, `par exemple :\n${v.images.map((x) => `- ${x.trim()}\n`).join("")}`);
   // 6. Les produits ou les prestations.
   t = remplacer(t, `Montrer clairement :\n${b.produits.map((x) => `${x}\n`).join("")}`, `Montrer clairement :\n${v.produits.map((x) => `- ${x.trim()}\n`).join("")}`);
-  return t;
+  //    Pour une boutique, dans le texte envoyé au dessinateur, la ligne des noms des produits s'ajoute dans cette même
+  //    partie (`texteAvecLesNomsDesProduits`) ; le texte des preuves, lui, reste celui de Tenon et de Racine.
+  return o?.nomsDesProduits ? texteAvecLesNomsDesProduits(t, v) : t;
 }
+/**
+ * La partie « produits » d'un texte de planche, complétée pour une boutique par la ligne des noms des produits, juste après
+ * la liste (`ligneDesNomsDesProduits`). Un site de marque (des prestations) ne change pas. Une forme inattendue arrête tout.
+ */
+export function texteAvecLesNomsDesProduits(t: string, v: Pick<ValeursDuMetier, "site" | "produits">): string {
+  if (v.site !== "boutique") return t;
+  const liste = `Montrer clairement :\n${v.produits.map((x) => `- ${x.trim()}\n`).join("")}`;
+  return remplacer(t, liste, `${liste}${ligneDesNomsDesProduits(v.produits)}\n`);
+}
+
+/**
+ * LES NOMS DES PRODUITS (26 novembre 2026, essai réel du torréfacteur, étape 4 ; constat du chef d'orchestre : « Plus
+ * grave, et pas vu par le relecteur : la planche B invente des produits. »). La règle du propriétaire : « SINA n'invente
+ * jamais l'équipe ni les biens à vendre ». Dite en positif, dans la partie « produits » du texte (l'une des six parties du
+ * métier) : les étiquettes, les emballages, les fiches produits et le site ne portent que les produits du client, avec ses
+ * mots. Le nom d'un produit à l'écran : ses mots, la première lettre en capitale.
+ */
+export const nomDuProduitALEcran = (p: string): string => { const t = p.trim().replace(/\s+/g, " "); return t ? t[0].toLocaleUpperCase("fr") + t.slice(1) : t; };
+export const ligneDesNomsDesProduits = (produits: readonly string[]): string =>
+  `Sur les étiquettes, les emballages, les fiches produits et le site, chaque produit porte seulement l'un de ces noms, ceux du client, au singulier pour un seul article : ${produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}.`;
 
 // ---------------------------------------------------------------- 3. la phrase des données vérifiées
 
@@ -250,7 +272,7 @@ export function phraseDesDonneesVerifiees(o: { nom: string; annee: number; domai
  * n'est envoyé.
  */
 export function texteDeLaPlanche(o: { nom: string; valeurs: ValeursDuMetier; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; raisons?: readonly string[]; phrase?: readonly string[] }): string {
-  const base = `${texteDesPreuves(o.nom, o.valeurs, o.phrase)}\n${phraseDesDonneesVerifiees(o)}`;
+  const base = `${texteDesPreuves(o.nom, o.valeurs, o.phrase, { nomsDesProduits: true })}\n${phraseDesDonneesVerifiees(o)}`;
   // La reprise part toujours (essai réel d'Écume, 25 novembre 2026 : 18 raisons, 8 939 octets, rien n'était parti) : ses
   // raisons sont dédoublonnées, rangées des plus graves aux moins graves et bornées à la place qui reste.
   const raisons = o.raisons?.length ? raisonsDeLaReprise(o.raisons, TEXTE_DE_LA_PLANCHE_MAX_OCTETS - octets(`${base}\n\n`)) : [];
@@ -335,6 +357,7 @@ export const VALEURS_SYSTEM = `Tu prépares, en français simple, les mots d'une
 - emotion : en quelques mots, le moment ou la sensation que vit son client (par exemple « le plaisir de recevoir chez soi »), sans verbe à l'impératif ;
 - images : six images de référence de l'univers photo de la marque, quelques mots chacune (lieux, matières, gestes, lumière) ;
 - produits : les trois produits ou prestations principaux du client, pris dans ses mots, au pluriel s'il en vend plusieurs ; jamais un produit qu'il n'a pas cité ;
+- partout : seulement ce que le client a donné ; une origine, une variété, une gamme ou un nom de produit ne s'écrit que s'il est dans ses mots ;
 - appel : « devis », « rendez-vous » ou « réservation » : ce que son client demande d'abord.
 Chaque valeur en minuscules, sans point final, sans guillemets. Aucun chiffre, aucune promesse (prix, délai, garantie, « le meilleur »), aucun avis.`;
 
@@ -357,6 +380,30 @@ export function produitDansLaFiche(produit: string, fiche: string): boolean {
   if (!mots.length) return false;
   const dansFiche = new Set(plat(fiche).split(/[^a-z0-9]+/).filter(Boolean).map(racine));
   return mots.every((m) => dansFiche.has(m));
+}
+/**
+ * CE QUI DIT UN BIEN À VENDRE PRÉCIS (26 novembre 2026, essai réel du torréfacteur : la planche B montrait des origines et
+ * des variétés que le client n'avait jamais données). Les mots qui annoncent une origine, une variété ou une gamme, et les
+ * pays (écrits en français, sans accents) : chacun n'est permis que s'il est dans la fiche du client.
+ */
+const MOTS_DE_GAMME = /(?<![a-z])(origines?|variete\w*|(?<!(?:haut|bas|milieu|entree) de )gammes?|cepages?|provenances?|grands? crus?|appellations?|editions? limitee\w*|single origin|monovariet\w*|cuvees?)(?![a-z])/u;
+const PAYS = "afghanistan afrique allemagne algerie amerique andorre angola antigua arabie argentine armenie australie autriche bali bangladesh belgique belize benin bhoutan bolivie bresil bulgarie burundi cambodge cameroun canada chili chine chypre colombie congo coree costa rica croatie cuba danemark ecosse egypte equateur espagne estonie etats unis ethiopie finlande france gabon georgie ghana grece guadeloupe guatemala guinee haiti hawai honduras hongrie inde indonesie irak iran irlande islande israel italie jamaique japon java jordanie kenya laos liban liberia lituanie luxembourg madagascar malaisie malawi mali maroc martinique mexique monaco mongolie mozambique myanmar namibie nepal nicaragua niger nigeria norvege nouvelle zelande ouganda panama papouasie paraguay pays bas perou philippines pologne portugal roumanie royaume uni russie rwanda salvador senegal serbie sri lanka suede suisse sumatra tanzanie tchad thailande togo tunisie turquie ukraine uruguay venezuela vietnam yemen zambie zimbabwe".split(" ");
+const PAYS_COMPOSES = ["costa rica", "etats unis", "nouvelle zelande", "pays bas", "royaume uni", "sri lanka"];
+/**
+ * Les inventions d'un texte écrit par l'appel des valeurs : un mot d'origine, de variété ou de gamme, un pays, ou un nom
+ * propre (une capitale au milieu d'une valeur, qui doit être en minuscules), absents de la fiche du client et du nom de la
+ * marque. Rend les mots trouvés, tels qu'ils sont écrits.
+ */
+export function inventionsDuTexte(texte: string, o: { fiche: string; nom: string }): string[] {
+  const enMots = (t: string) => plat(t).replace(/[^a-z0-9]+/g, " ").trim();
+  const fiche = ` ${enMots(`${o.fiche} ${o.nom}`)} `, racines = new Set(fiche.trim().split(" ").filter(Boolean).map(racine));
+  const absent = (m: string) => !!m && !racines.has(racine(m));
+  const mots = ` ${enMots(texte)} `, out: string[] = [];
+  for (const g of mots.matchAll(new RegExp(MOTS_DE_GAMME.source, "gu"))) if (g[1].split(" ").some(absent)) out.push(g[1]);
+  for (const c of PAYS_COMPOSES) if (mots.includes(` ${c} `) && !fiche.includes(` ${c} `)) out.push(c);
+  for (const w of mots.trim().split(" ")) if (PAYS.includes(w) && !PAYS_COMPOSES.some((c) => c.split(" ").includes(w)) && absent(w)) out.push(w);
+  for (const m of texte.matchAll(/(?<=\S\s+)(\p{Lu}[\p{L}'’-]*)/gu)) if (enMots(m[1]).split(" ").some(absent)) out.push(m[1]);
+  return [...new Set(out)];
 }
 /** Les personnes que la règle des personnes interdit sans accord (en plus des mots du corps : mains, visages…). */
 const PERSONNES = /(?<![\p{L}])(familles?|couples?|clients?|clientes?|amis?|amies?|équipes?|artisans?|artisanes?|parents?|papas?|mamans?|grands-parents|invités?|propriétaires?|maîtres?|hôtes?|hôtesses?)(?![\p{L}])/iu;
@@ -384,6 +431,9 @@ export function controleDesValeurs(v: ValeursEcrites, o: { nom: string; metier: 
   if (chiffres.length) fautes.push(`aucun chiffre : ${chiffres.map((t) => `« ${t} »`).join(", ")}`);
   const promesses = textes.filter((t) => PROMESSE.test(t));
   if (promesses.length) fautes.push(`aucune promesse ni avis : ${promesses.map((t) => `« ${t} »`).join(", ")}`);
+  // Aucune origine, variété, gamme ou nom de produit absent de la fiche, même dans un produit retiré (26 novembre 2026).
+  const inventes = [...traits, propre(v.emotion), ...images, ...v.produits.map(propre)].flatMap((t) => inventionsDuTexte(t, o).map((m) => `« ${m} » (dans « ${t} »)`));
+  if (inventes.length) fautes.push(`rien que le client n'a pas donné, ni origine, ni variété, ni gamme, ni nom de produit : retire ${[...new Set(inventes)].join(", ")} ; ses produits, avec ses mots : ${produits.length ? produits.map((p) => `« ${p} »`).join(", ") : "ceux de sa fiche"}`);
   const site: SiteDeLaPlanche = o.kind === "produits" ? "boutique" : "marque";
   return { valeurs: { metier: o.metier.trim().replace(/[.]+$/, ""), traits: traits.slice(0, 4), emotion: propre(v.emotion), site, ...(site === "marque" ? { appel: v.appel } : {}), images, produits }, fautes, retires };
 }
@@ -438,6 +488,17 @@ export const RelectureDeLaPlancheSchema = z.object({
   motMaquette: z.boolean().catch(true),
   /** Ce qui est recopié de la disposition : ses produits, ses photos, son emballage, son nom ou son logo. */
   copies: z.array(z.string().max(200)).max(20).catch([]),
+  /**
+   * Les signes isolés hors des mots, déclarés par le relecteur lui-même (26 novembre 2026, essai réel du torréfacteur : un
+   * crochet égaré qu'il ne pouvait pas recopier entre deux espaces). Le code les range en petites finitions, sauf s'ils
+   * touchent une lettre, un mot, le nom, la phrase du logo, l'adresse ou l'année (`lectureDesSignesIsoles`).
+   */
+  signesIsoles: z.array(z.object({ ou: z.string().max(200).catch(""), description: z.string().max(200).catch("") })).max(10).catch([]),
+  /**
+   * Les noms de produits lisibles absents de la liste du client : une origine, une variété, une gamme, un nom de produit
+   * (26 novembre 2026, essai réel du torréfacteur). Le code les compare aux produits de la fiche (`lectureDesProduits`).
+   */
+  produitsInventes: z.array(z.object({ ou: z.string().max(200).catch(""), texte: z.string().max(160).catch("") })).max(20).catch([]),
   note: z.number().min(0).max(10).catch(0),
   pourquoi: z.string().max(600).default(""),
 });
@@ -473,7 +534,13 @@ export const VerdictRangeDeLaPlancheSchema = RelectureDeLaPlancheSchema.extend({
  * Un verdict du relecteur ; `microTextes` est absent d'un verdict d'avant le 25 novembre 2026, `personnesVues` d'un
  * verdict d'avant l'essai d'Écume ; `phrasesLues` n'existe que quand le client a choisi une phrase sous le logo.
  */
-export type RelectureDeLaPlanche = Omit<z.infer<typeof RelectureDeLaPlancheSchema>, "microTextes" | "personnesVues"> & { microTextes?: string[]; personnesVues?: string[]; phrasesLues?: PhraseLue[] };
+export type RelectureDeLaPlanche = Omit<z.infer<typeof RelectureDeLaPlancheSchema>, "microTextes" | "personnesVues" | "signesIsoles" | "produitsInventes"> & {
+  microTextes?: string[]; personnesVues?: string[]; phrasesLues?: PhraseLue[];
+  /** Absents d'un verdict d'avant le 26 novembre 2026 (essai réel du torréfacteur). */
+  signesIsoles?: SigneIsole[]; produitsInventes?: ProduitInvente[];
+};
+export type SigneIsole = { ou: string; description: string };
+export type ProduitInvente = { ou: string; texte: string };
 
 /**
  * Le repère du propriétaire, mot pour mot (25 novembre 2026) : devant les planches A-2 et B-2 de l'essai réel de Racine
@@ -512,7 +579,7 @@ export const promesseMesurable = (p: string): boolean => {
  * parasite isolé hors des mots reste relevé dans les fautes, le texte lu entre « », pour que le code le vérifie
  * (`signeParasiteIsole`) ; il ne fait jamais descendre la note sous 8.
  */
-export const PETITE_FINITION_DE_LA_PLANCHE = "Un signe parasite isolé, hors des mots, qui ne change aucun mot (un accent, un trait, une barre ou un point égaré) est une petite finition : il ne fait jamais descendre la note sous 8 ; relève-le quand même dans fautes, avec le texte lu recopié entre « », en disant que c'est un signe parasite. Un accent ou une lettre faux dans un mot reste une faute.";
+export const PETITE_FINITION_DE_LA_PLANCHE = "Un signe parasite isolé, hors des mots, qui ne change aucun mot (un accent, un trait, une barre ou un point égaré) est une petite finition : il ne fait jamais descendre la note sous 8 ; il en va de même pour tout autre petit signe égaré hors des mots (une virgule, un guillemet, une petite marque). Mets-le dans signesIsoles, jamais dans fautes : « ou », le bloc, l'image et le texte voisin ; « description », le signe que tu vois. Un accent ou une lettre faux dans un mot reste une faute. Un signe collé à un mot, ou posé sur le nom, la phrase sous le logo, le domaine ou l'année, en est une aussi.";
 export const RELECTEUR_DE_LA_PLANCHE = `Tu es le relecteur le plus exigeant d'un studio de création de marques. On te montre une planche d'identité visuelle découpée en bandes, de haut en bas (« bande 1 » à « bande 4 », elles se chevauchent un peu), le logo de la marque (« logo ») et la disposition imposée (« disposition », celle d'une AUTRE marque, qui ne donne que l'emplacement des blocs). Réponds en JSON :
 - nomLu : le nom de la marque tel qu'il est écrit en grand sur la planche, lettre pour lettre ;
 - logoFidele : le logo de la planche est exactement celui de l'image « logo » (même dessin, mêmes lettres), jamais redessiné ;
@@ -526,6 +593,8 @@ export const RELECTEUR_DE_LA_PLANCHE = `Tu es le relecteur le plus exigeant d'un
 - logoFonceSurFondSombre : un logo foncé posé sur un fond sombre (il doit y être clair) ;
 - motMaquette : le mot « maquette » ou « mockup » est écrit sur la planche ;
 - copies : chaque élément recopié de la disposition (ses produits, ses photos, son emballage, son nom ou son logo) ;
+- signesIsoles : chaque petit signe égaré hors des mots, qui ne change aucun mot (voir la note) ; vide s'il n'y en a pas ;
+- produitsInventes : chaque nom de produit lisible qui n'est pas l'un des produits de la marque donnés dans la demande, où qu'il soit écrit (emballage, carte ou fiche produit, site, publication) : une origine, une variété, une gamme, un nom de produit ou de collection ; pour chacun, « ou » (le bloc et l'image) et « texte » (recopié lettre pour lettre). Le nom d'un produit de la marque, au singulier ou au pluriel, n'en est pas un. Un produit inventé fait refuser la planche, comme une promesse : la marque ne vend que ce que le client a donné ;
 - note : ta note de 0 à 10. Une planche complète, juste dans ses textes lisibles et soignée vaut 8 ou plus ; un micro-texte décoratif ou un mot qualitatif ne fait jamais descendre la note sous 8. ${PETITE_FINITION_DE_LA_PLANCHE} Ton repère : à la question « ${QUESTION_DU_REPERE_DE_PLANCHE} », posée devant deux planches dont seuls les alphabets des spécimens, le petit texte circulaire du badge et des mots qualitatifs de réassurance étaient reprochés, le propriétaire du Studio a répondu : « ${REPONSE_DU_PROPRIETAIRE_PLANCHE} » ;
 - pourquoi : une ou deux phrases simples.
 Ne juge que ce que tu vois.`;
@@ -535,7 +604,15 @@ Ne juge que ce que tu vois.`;
  * envoyé au dessinateur, où le code retrouve les mots attendus d'un texte lu (absent : seulement le nom, la phrase et les
  * données vérifiées, par prudence).
  */
-export type AttenduDeLaPlanche = { nom: string; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; animaux: boolean; phrase?: readonly string[]; texte?: string };
+export type AttenduDeLaPlanche = {
+  nom: string; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; animaux: boolean; phrase?: readonly string[]; texte?: string;
+  /** Les produits ou prestations de la fiche du client (les valeurs du métier, contrôlées) : les seuls noms de produits permis. */
+  produits?: readonly string[];
+};
+/** Ce que la demande au relecteur dit des produits du client (vide sans liste). */
+export const demandeDesProduits = (produits: readonly string[] | undefined): string[] => !produits?.length ? [] : [
+  `Les produits que la marque vend, donnés par le client : ${produits.map((p) => `« ${p.trim()} »`).join(", ")}. Sur la planche, un nom de produit lisible ne peut être que l'un d'eux, au singulier ou au pluriel ; toute origine, variété, gamme ou autre nom de produit lisible va dans produitsInventes.`,
+];
 /** Ce que la demande au relecteur dit de la phrase choisie sous le logo (vide sans phrase). */
 export const demandeDeLaPhrase = (phrase: readonly string[] | undefined): string[] => !phrase?.length ? [] : [
   `Le client a choisi la phrase écrite sous son logo${phrase.length > 1 ? `, en ${phrase.length} lignes, dans cet ordre` : ""} : ${lignesDites(phrase)}. Elle n'est pas inventée, et ce n'est jamais un micro-texte décoratif : vérifie qu'elle est écrite exactement, lettre pour lettre, partout où elle apparaît sur la planche (sous le logo et ses variantes, comme slogan, ailleurs).`,
@@ -546,6 +623,7 @@ export function demandeAuRelecteurDeLaPlanche(o: AttenduDeLaPlanche & { texte: s
     `Marque : « ${o.nom} ».`,
     o.personnes ? "Le client a donné son accord pour des personnes." : "Le client n'a donné ni photo de personne ni accord : aucune personne ne doit être visible.",
     ...demandeDeLaPhrase(o.phrase),
+    ...demandeDesProduits(o.produits),
     ...(o.animaux ? ["La marque travaille, comme celle de la disposition, autour des animaux : sois particulièrement attentif à toute copie de la disposition (ses produits, ses photos, son emballage, son nom, son logo)."] : []),
     `Le texte envoyé au dessinateur : « ${o.texte} »`,
   ].join("\n");
@@ -743,6 +821,61 @@ export const finitionNotee = (f: string) => `petite finition, notée sans refus 
 /** La même finition, transmise comme correction quand la planche est reprise pour une autre raison. */
 export const finitionACorriger = (f: string) => `petite finition à nettoyer : « ${f} »`;
 
+// ---------------------------------------------------------------- 5 quater. les signes déclarés isolés, les produits inventés
+
+const sansGuillemets = (t: string) => t.replace(/«\s*/gu, "“").replace(/\s*»/gu, "”");
+/** Le nom de la marque est-il dit dans ce texte (tous ses mots) ? */
+const nomDans = (t: string, nom: string) => { const n = motsDuTexte(nom), m = new Set(motsDuTexte(t)); return n.length > 0 && n.every((w) => m.has(w)); };
+const DANS_UN_MOT = /dans (?:le|un|ce|chaque) mot|coll[ée]|sur (?:la|une) lettre|entre deux lettres|à l'intérieur d/iu;
+/**
+ * UN SIGNE ISOLÉ DÉCLARÉ PAR LE RELECTEUR (26 novembre 2026, essai réel du torréfacteur, étape 4 : « un petit crochet en
+ * forme de « ? » égaré, hors des mots », que le code ne reconnaissait pas, faute de pouvoir le recopier entre deux espaces).
+ * Rend null quand c'est une petite finition ; sinon la faute à compter : un signe qui touche une lettre ou un mot (dans un
+ * mot, collé, sur une lettre), ou qui touche le nom, la phrase du logo, l'adresse ou l'année, fait toujours refuser.
+ */
+export function signeDeclareQuiCompte(s: SigneIsole, o: AttenduDeLaPlanche): string | null {
+  const ou = s.ou.trim(), description = s.description.trim(), t = `${ou} ${description}`, dit = [ou, description].filter(Boolean).join(" : ");
+  if (DIT_UN_MOT.test(t) || DANS_UN_MOT.test(t)) return `signe déclaré isolé, mais qui touche une lettre ou un mot : ${dit}`;
+  const domaine = o.domaine.domaine?.toLocaleLowerCase("fr");
+  if (DIT_UNE_DONNEE.test(t) || /\b(19|20)\d\d\b/u.test(t) || (domaine && t.toLocaleLowerCase("fr").includes(domaine)) || touchePhrase(t, o.phrase) || nomDans(t, o.nom)) return `signe déclaré isolé, mais qui touche le nom, la phrase du logo, l'adresse ou l'année : ${dit}`;
+  return null;
+}
+/** Les signes déclarés isolés : les petites finitions (sans guillemets, pour qu'aucun texte n'en soit repris) et les fautes. */
+export function lectureDesSignesIsoles(v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): { finitions: string[]; fautes: string[] } {
+  const finitions: string[] = [], fautes: string[] = [];
+  for (const s of v.signesIsoles ?? []) {
+    if (!s.ou.trim() && !s.description.trim()) continue;
+    const f = signeDeclareQuiCompte(s, o);
+    if (f) fautes.push(f); else finitions.push(`signe isolé hors des mots : ${sansGuillemets([s.ou.trim(), s.description.trim()].filter(Boolean).join(" : "))}`);
+  }
+  return { finitions, fautes };
+}
+const motsDuProduit = (t: string) => plat(t).split(/[^a-z0-9]+/).filter((w) => w.length >= 3 && !MOTS_VIDES.has(w)).map(racine);
+/**
+ * Un nom lu sur la planche est-il celui d'un produit de la fiche ? Chacun de ses vrais mots est un mot des produits du client
+ * (singulier ou pluriel, accents et capitales mis à part) : « Café en grains », « Coffrets » sont permis pour « cafés en
+ * grains » et « coffrets » ; une origine, une variété ou une gamme ne l'est jamais.
+ */
+export function nomDeProduitPermis(texte: string, produits: readonly string[] | undefined): boolean {
+  const m = motsDuProduit(texte);
+  if (!m.length || !produits?.length) return false;
+  const permis = new Set(produits.flatMap(motsDuProduit));
+  return m.every((w) => permis.has(w));
+}
+/**
+ * LES PRODUITS INVENTÉS (26 novembre 2026, essai réel du torréfacteur, étape 4 : des origines et des variétés que le client
+ * n'avait jamais données, sur les sachets et le site). Le relecteur relève chaque nom de produit lisible ; le code le compare
+ * aux produits de la fiche : un nom permis est écarté (écrit au compte rendu), tout autre fait refuser, comme une promesse.
+ */
+export function lectureDesProduits(v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): { raison: string | null; permis: string[] } {
+  const releves = (v.produitsInventes ?? []).filter((p) => p.texte.trim());
+  const inventes = releves.filter((p) => !nomDeProduitPermis(p.texte, o.produits));
+  const permis = releves.filter((p) => nomDeProduitPermis(p.texte, o.produits)).map((p) => `nom d'un produit de la fiche, permis : « ${p.texte.trim()} »`);
+  if (!inventes.length) return { raison: null, permis };
+  const ses = o.produits?.length ? `, avec ses noms : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : "";
+  return { raison: `produits inventés, absents de la fiche du client : ${inventes.map((p) => `« ${p.texte.trim()} »${p.ou.trim() ? ` (${p.ou.trim()})` : ""}`).join(", ")} ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits${ses}`, permis };
+}
+
 /** Une faute relevée qui dit seulement que la phrase est cachée en partie par un objet (aucune lettre fausse) : pas une faute. */
 const seulementCachee = (f: string, phrase: readonly string[] | undefined) => touchePhrase(f, phrase) && CACHE.test(f) && !DEFORME.test(f) && !/au lieu|faute|il faut|manque|en trop/iu.test(f);
 /** Où le relecteur a vu une personne : `personnesVues`, sinon le passage de `pourquoi` qui le dit (verdicts d'avant). */
@@ -804,14 +937,20 @@ export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanch
   const cacheeSeulement = (f: string) => !!phrase && seulementCachee(f, phrase);
   // Un signe parasite isolé hors des mots : une petite finition, notée, jamais une raison de refus.
   const finition = (f: string) => !decoratif(f) && !cacheeSeulement(f) && signeParasiteIsole(f, o) != null;
-  const finitions = v.fautes.filter(finition);
-  const fautes = v.fautes.filter((f) => !decoratif(f) && !cacheeSeulement(f) && !finition(f)), promesses = v.promesses.filter(promesseMesurable);
+  // Les signes que le relecteur déclare lui-même isolés hors des mots (26 novembre 2026) : petites finitions, sauf ceux qui
+  // touchent une lettre, un mot, le nom, la phrase du logo, l'adresse ou l'année, comptés comme des fautes.
+  const declares = lectureDesSignesIsoles(v, o);
+  const finitions = [...v.fautes.filter(finition), ...declares.finitions];
+  const fautes = [...v.fautes.filter((f) => !decoratif(f) && !cacheeSeulement(f) && !finition(f)), ...declares.fautes], promesses = v.promesses.filter(promesseMesurable);
+  const produits = lectureDesProduits(v, o);
   const ecartes = [...(v.microTextes ?? []).filter((f) => !touchePhrase(f, phrase)), ...v.fautes.filter(decoratif)].map((f) => `micro-texte décoratif, non jugé : « ${f} »`)
     .concat(v.promesses.filter((p) => !promesseMesurable(p)).map((p) => `mot qualitatif, pas une promesse : « ${p} »`))
     .concat(cachees, v.fautes.filter((f) => !decoratif(f) && cacheeSeulement(f)).map((f) => `phrase seulement cachée en partie par un objet, pas une faute : « ${f} »`))
     .concat(finitions.map(finitionNotee));
   if (fautes.length) r.push(`fautes : ${fautes.map((f) => `« ${f} »`).join(", ")}`);
   if (promesses.length) r.push(`promesses ou chiffres inventés : ${promesses.map((f) => `« ${f} »`).join(", ")}`);
+  // Les produits inventés (26 novembre 2026) : comparés aux produits de la fiche par le code ; un seul fait refuser.
+  if (produits.raison) r.push(produits.raison);
   if (v.personnes && !o.personnes) {
     r.push("une personne est visible sans l'accord du client");
     // Où elle est vue, pour que la reprise sache quoi retirer (essai réel d'Écume : une main dans une image de référence).
@@ -825,6 +964,8 @@ export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanch
     if (r.length || !ecartes.length) r.push(`elle n'est pas au niveau (${v.note}/10, il faut ${NOTE_DU_PROPRIETAIRE})`);
     else ecartes.push(`note de ${v.note}/10 non comptée : elle ne tenait qu'à des micro-textes décoratifs, à des mots qualitatifs ou à de petites finitions`);
   }
+  // Les noms de produits de la fiche relevés à tort : écrits au compte rendu, jamais une excuse pour une note sous 8.
+  ecartes.push(...produits.permis);
   return { raisons: r, ecartes, finitions };
 }
 
@@ -851,6 +992,8 @@ export type ResultatDeLaPlanche = { ok: true; png: Buffer; texte: string; essais
  */
 export async function dessinerLaPlanche(deps: PlancheDeps, o: AttenduDeLaPlanche & { valeurs: ValeursDuMetier; logo: Buffer; disposition: Buffer }): Promise<ResultatDeLaPlanche> {
   const essais: EssaiDePlanche[] = [];
+  // Les seuls noms de produits permis sur la planche : ceux des valeurs du métier, retrouvés dans la fiche du client.
+  o = { ...o, produits: o.produits ?? o.valeurs.produits };
   const essai = async (tour: number, raisons?: readonly string[]): Promise<EssaiDePlanche> => {
     const texte = texteDeLaPlanche({ ...o, raisons });
     const png = await deps.dessiner(o.logo, o.disposition, texte, tour);
