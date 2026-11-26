@@ -192,12 +192,9 @@ const SOURCE_EN_VRAI = "docs/studio/PLANCHE-EN-VRAI.md (demande du propriétaire
  * proprement. Cela contredit planche-en-vrai-palette-mesuree-et-logos-en-hd (« refuse de partir sous le plafond minimal
  * exact ») et accord-des-noms-compte-la-verification (« Le « au plus » de la carte couvre cette part »).
  *
- * L'ACCORD ÉCRIT ENCORE À RECEVOIR : sa phrase d'accord, mot pour mot, n'est pas encore là. `ACCORD_A_COMPLETER` tient sa
- * place ; le banc n'accepte ce manque que pour les épreuves nommées dans son test, et la phrase d'accord le remplacera à
- * son arrivée.
+ * Son accord écrit, mot pour mot (26 novembre 2026, écrit dans la conversation de construction).
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-const COUT_PROBABLE_SEUL = { decision: "26 novembre 2026", mots: ACCORD_A_COMPLETER, epreuve: "cout-probable-seul-et-arret-au-double" };
+const COUT_PROBABLE_SEUL = { decision: "26 novembre 2026", mots: "« Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd et accord-des-noms-compte-la-verification comme remplacées par ma décision du 26 novembre, ajoute et scelle cout-probable-seul-et-arret-au-double (« Il faut arrêter de montrer des plafond aussi haut ça va faire peur aux clients » : la carte n'annonce que le coût probable, SINA s'arrête et demande avant de dépasser le double, les essais partent sous la somme des maxima et s'arrêtent proprement), et mets à jour la partie Son argent de CLAUDE.md. »", epreuve: "cout-probable-seul-et-arret-au-double" };
 const SOURCE_COUT_PROBABLE = "docs/studio/ESSAI-TORREFACTEUR.md (étape 1, les noms à 3 € ; décision du propriétaire du 26 novembre 2026, ses mots relayés par le chef d'orchestre : la carte au coût probable seul, l'arrêt au double, les essais sous la somme des maxima ; code : src/lib/syna-agent/depense-annoncee.ts, src/lib/ai/trace.ts, scripts/syna-recette/plafond-des-essais.ts)";
 
 export const EPREUVES: Epreuve[] = [
