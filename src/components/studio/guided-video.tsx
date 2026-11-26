@@ -12,7 +12,7 @@ import { useLang, useT } from "../i18n";
 import { useProject } from "./project-context";
 import { JobProgress, SectionTitle, useActive,MediaPicker } from "./common";
 import { useBudgetPct } from "../billing-client";
-import { auPlusTexte, prixTexte } from "@/lib/atelier/prix";
+import { prixTexte } from "@/lib/atelier/prix";
 import { SubjectPicker, subjectChoice, type SubjectView } from "./subject-picker";
 import { MusicChoice } from "./music-choice";
 import type { ThreeScenesRequest } from "@/lib/video-v2/three-scenes";
@@ -209,7 +209,8 @@ export function GuidedVideo({ as,initialSlot }: { as: "post" | "ad";initialSlot?
             {!quote ? t("Calcul du prix…", "Calculating the price…") : !quote.allowed ? <span className="text-warn">{quote.reason}</span> : quote.estimateMicro === 0 ? <span className="font-medium text-ok">{quote.safePlan ? t("Gratuit : plans montés par le Studio avec la vraie photo de ton produit.", "Free: shots edited by the Studio from the real photo of your product.") : t("Gratuit : des plans libres de droits de ton métier, montés par le Studio.", "Free: royalty-free footage of your trade, edited by the Studio.")}</span> : t(<>Prix probable : <strong>{prixTexte(quote.estimateMicro, budget.base, "fr")}</strong> ({quote.mode === "ai" ? detailPlans(quote, "fr") : "vérification des plans"}). Un plan refusé par le contrôle ne t’est jamais compté.</>, <>Likely price: <strong>{prixTexte(quote.estimateMicro, budget.base, "en")}</strong> ({quote.mode === "ai" ? detailPlans(quote, "en") : "shot checks"}). A shot rejected by the check is never charged to you.</>)}
           </p>
           {quote?.allowed&&quote.planSur&&<p className="text-sm" data-video-plan-sur>{quote.planSur}</p>}
-          {quote?.allowed&&quote.capMicro!=null&&quote.capMicro>quote.estimateMicro&&auPlusTexte(quote.capMicro,budget.base,lang==="en"?"en":"fr")&&<p className="text-sm" data-video-cap>{majuscule(auPlusTexte(quote.capMicro,budget.base,lang==="en"?"en":"fr")!)}{t(", si tu demandes de refaire un plan. Rien n’est refait sans ta demande.",", if you ask to redo one shot. Nothing is redone without your request.")}</p>}
+          {/* Le coût probable seul (26 novembre 2026) : la borne haute d'une reprise de plan reste en coulisses. */}
+          {quote?.allowed&&quote.capMicro!=null&&quote.capMicro>quote.estimateMicro&&<p className="text-sm" data-video-cap>{t("Rien n’est refait sans ta demande.","Nothing is redone without your request.")}</p>}
           {generation==="reference"&&scenario?.approvalToken&&<label className="flex items-start gap-2 text-sm" data-video-rights><input type="checkbox" className="mt-1" checked={rights} onChange={e=>setRights(e.target.checked)}/><span>{t("J'ai les droits sur cette photo (je l'ai prise, ou j'ai l'accord de son auteur et des personnes qu'elle montre).","I own the rights to this photo (I took it, or I have the consent of its author and of the people shown).")}</span></label>}
           <Button className="min-w-0 max-w-full py-2 text-center [&>svg]:shrink-0" style={{whiteSpace:"normal",height:"auto"}} onClick={create} loading={busy} disabled={busy || running || !quote?.allowed || !subjects.length || (generation==="reference"&&!!scenario?.approvalToken&&!rights)} icon={<Wand2 className="size-4" />} data-guided-video-submit>
             <span className="min-w-0">{scenario?.approvalToken?t("Valider et créer la vidéo","Approve and create video"):t("Préparer le scénario","Prepare scenario")}{!scenario?.approvalToken && (quote?.scriptMicro??0)>0?` (${t("écriture","writing")} : ${prixTexte(quote!.scriptMicro!, budget.base, lang==="en"?"en":"fr").replace(/ de ton budget du mois$| of your monthly budget$/,"")})`:""}

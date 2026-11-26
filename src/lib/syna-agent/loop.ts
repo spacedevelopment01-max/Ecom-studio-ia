@@ -19,12 +19,13 @@ import { SINA_DESSIN_JOB } from "./dessin/job";
 import { z } from "zod";
 import { HttpError, type User } from "../auth";
 import { one, all, json, run as sql, id as newId, tx } from "../db";
-import { budgetPctTu } from "../ai/budget-pct";
+import { budgetPctTu, coutProbableTu } from "../ai/budget-pct";
 import { balance } from "../billing";
 import { activityGaps, COMPANY_FIELDS } from "./activity";
 import { loadSiteCopy } from "./mockup-code/copy";
 import { loadMockupSet } from "./mockup-code/mockup-set";
-import { enqueue, getJob, type JobContext } from "../jobs";
+import { attenteDAccordDe, avecLaDepenseAnnoncee, cancelJob, enqueue, getJob, leverLAttenteDAccord, resumeJob, type JobContext } from "../jobs";
+import { phraseDuDepassement, TRAVAIL_CONTINUER, previewDeLaSuite } from "./depense-annoncee";
 import { llmJson, type LlmCall, type LlmImage } from "../ai/llm";
 import { withTrace, CostCapReached } from "../ai/trace";
 import { PlafondDeLEssaiAtteint } from "../ai/plafond-essai";
@@ -160,7 +161,7 @@ const BACKGROUND_NOTE = "# Une création est en cours en arrière-plan\nTu as la
 async function waitForJobs(jobs: string[], maxMs = 45_000) {
   const t0 = Date.now();
   for (;;) {
-    if (!jobs.some((j) => ACTIVE_JOB.includes(getJob(j)?.status ?? ""))) return true;
+    if (!jobs.some((j) => { const g = getJob(j); return ACTIVE_JOB.includes(g?.status ?? "") && !attenteDAccordDe(g); })) return true;
     if (Date.now() - t0 > maxMs) return false;
     await new Promise((res) => setTimeout(res, 3000));
   }
@@ -173,7 +174,7 @@ export function decidePending(user: User, cid: string, input: { pendingId: strin
   const p = pendingOf(r);
   if (!p || p.id !== input.pendingId) throw new HttpError(409, L("Cette proposition a changé. Relis la conversation.", "This proposal changed. Reload the conversation."));
   // Budget des réponses de SINA atteint : il se relève avec le réglage du budget, pas par un accord sur une action.
-  if (input.approve && !getTool(p.tool)) throw new HttpError(409, L("Augmente le budget autorisé, puis demande à SINA de continuer.", "Raise the authorised budget, then ask SINA to continue."));
+  if (input.approve && !getTool(p.tool) && p.tool !== TRAVAIL_CONTINUER) throw new HttpError(409, L("Augmente le budget autorisé, puis demande à SINA de continuer.", "Raise the authorised budget, then ask SINA to continue."));
   addMessage(cid, "event", { kind: input.approve ? "approved" : "declined", pendingId: p.id, tool: p.tool }, r.id);
   if (!input.approve) {
     addMessage(cid, "tool", { key: `pending:${p.id}`, tool: p.tool, ok: false, summary: L("Le client a refusé cette action. Rien n'a été modifié.", "The client declined this action. Nothing was changed.") }, r.id);
@@ -225,11 +226,35 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
     return { runId, failed: msg };
   }
   try {
+    // 0. Sa réponse à « je continue ? » (une tâche arrêtée avant de dépasser le double de la dépense annoncée) : oui, elle
+    // reprend là où elle s'est arrêtée ; non, elle est arrêtée, ce qui est fait est gardé, et SINA le lui dit.
+    {
+      const p0 = pendingOf(r) as (PendingAction & { approved?: boolean; declined?: boolean }) | null;
+      if (p0?.tool === TRAVAIL_CONTINUER && (p0.approved || p0.declined)) {
+        const jid = String((p0.args as { job?: unknown } | null)?.job ?? "");
+        updateRun(r.id, { pending_json: null });
+        if (p0.approved && getJob(jid)) {
+          leverLAttenteDAccord(jid);
+          resumeJob(jid);
+          addMessage(r.conversation_id, "tool", { key: `pending:${p0.id}`, tool: TRAVAIL_CONTINUER, ok: true, summary: L("Le client a dit oui : la tâche reprend là où elle s'était arrêtée.", "The client said yes: the task resumes where it stopped.") }, r.id);
+          return suspend(getRun(runId)!, [jid]);
+        }
+        if (getJob(jid)) cancelJob(jid);
+        addMessage(r.conversation_id, "tool", { key: `pending:${p0.id}:arret`, tool: TRAVAIL_CONTINUER, ok: true, summary: L("Le client a choisi d'arrêter là : la tâche est arrêtée, rien de plus n'est dépensé.", "The client chose to stop: the task is stopped."), hint: "Dis-lui simplement ce qui est fait et gardé, et ce qu'il faudrait pour finir plus tard, sans jamais donner de plafond ni de pire cas." }, r.id);
+        r = getRun(runId)!;
+      }
+    }
     // 1. Résultats des créations natives attendues (images, vidéos, thème…).
     const waited = json<string[]>(r.waiting_jobs, []);
     if (waited.length && !(await waitForJobs(waited))) { schedule(r, waited, 10_000); return { runId, waiting: waited }; }
     // La création est finie, mais SINA répond en ce moment à un message du client : elle présente le résultat juste après.
     if (waited.length && otherRunBusy(r)) { schedule(r, waited, 4000); return { runId, waiting: waited }; }
+    // Une tâche s'est arrêtée avant de dépasser le double de ce qui avait été annoncé : SINA ne dépasse jamais en silence.
+    // Le Studio écrit lui-même sa phrase (aucun appel payant) et demande au client s'il veut continuer.
+    {
+      const enAttente = waited.find((jid) => attenteDAccordDe(getJob(jid)));
+      if (enAttente) return demanderDeContinuer(r, enAttente);
+    }
     if (waited.length) updateRun(r.id, { status: "running" });
     if (waited.length) {
       // Coût RÉEL de chaque tâche (appels enregistrés), même en échec : SINA ne dit jamais « rien n'a été débité » sans ce
@@ -259,7 +284,8 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
     const pending = pendingOf(r) as (PendingAction & { approved?: boolean; declined?: boolean }) | null;
     if (pending?.approved) {
       const t = getTool(pending.tool)!;
-      const out = await execute(t, pending.args, tctx, `pending:${pending.id}`, r);
+      const rApprouve = r;
+      const out = await avecLaDepenseAnnoncee(pending.reason === "cost" ? pending.costProbableMicro : null, () => execute(t, pending.args, tctx, `pending:${pending.id}`, rApprouve));
       updateRun(r.id, { pending_json: null });
       if (out.jobs?.length) return suspend(r, out.jobs);
     } else if (pending?.declined) updateRun(r.id, { pending_json: null });
@@ -358,7 +384,7 @@ export async function runAgent(runId: string, jobId: string, deps: AgentDeps = {
           // lancé ni payé ; SINA le dit au client, qui peut recharger l'IA de son projet.
           if (est.maxMicro > 0) {
             // Une reprise à la charge du Studio ne dépend pas du budget du client ; son accord est quand même demandé.
-            const manque = budgetInsuffisant(r.user_id, r.project_id, est.maxMicro);
+            const manque = budgetInsuffisant(r.user_id, r.project_id, est.maxMicro, annonceDuDevis(est));
             if (manque && !est.studio) { addMessage(r.conversation_id, "tool", { key, tool: a.tool, args: parsed.data, ok: false, summary: manque }, r.id); stepFailed = true; continue; }
             return askConfirmation(r, t, parsed.data, tctx, "cost", est.maxMicro, est);
           }
@@ -452,38 +478,62 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
 }
 
 /**
+ * La dépense annoncée d'un devis : son coût probable (jamais au-dessus du plafond), sinon le plafond lui-même, le seul
+ * chiffre que l'outil connaisse (26 novembre 2026).
+ */
+export const annonceDuDevis = (est: { maxMicro: number; probableMicro?: number }) => (est.probableMicro && est.probableMicro > 0 ? Math.min(est.probableMicro, est.maxMicro) : est.maxMicro);
+
+/**
  * Texte de la carte d'accord (essai réel du 9 novembre 2026 : elle montrait « custom.build {…} » au client). Une action
- * se présente toujours en clair : ce qui sera fait, puis pour une dépense le coût probable et le plafond, en % du budget
- * IA du mois (jamais en euros, jamais le nom technique de l'outil).
+ * se présente toujours en clair : ce qui sera fait, puis pour une dépense son coût probable seul, en % du budget IA du
+ * mois (jamais en euros, jamais le nom technique de l'outil). Le 26 novembre 2026, ses mots : « Il faut arrêter de montrer
+ * des plafond aussi haut ça va faire peur aux clients » : ni « au plus », ni fourchette, ni pire cas. Le plafond reste en
+ * coulisses (chaque appel est réservé avant de partir), et la tâche s'arrête pour lui demander avant de dépasser le double
+ * de ce qui est annoncé.
  */
 export async function confirmationText(t: AgentTool, args: unknown, ctx: ToolContext, userId: string, projectId: string | null, est?: { label: string; probableMicro?: number; maxMicro: number; studio?: boolean }): Promise<string> {
-  const pct = (m: number) => budgetPctTu(userId, m, projectId);
   // Une reprise du travail de SINA : son prix pour le client est nul, et c'est dit tel quel (partie 13).
-  const price = est?.studio ? L("À ma charge : 0 % de ton budget, rien n'est compté pour toi.", "At my expense: 0% of your budget, nothing is charged to you.") : est && est.maxMicro > 0 ? (est.probableMicro ? L(`Coût probable : ${pct(est.probableMicro)} ; au plus ${pct(est.maxMicro)}.`, `Likely cost: ${pct(est.probableMicro)}; at most ${pct(est.maxMicro)}.`) : L(`Au plus ${pct(est.maxMicro)}.`, `At most ${pct(est.maxMicro)}.`)) : "";
+  const price = est?.studio ? L("À ma charge : 0 % de ton budget, rien n'est compté pour toi.", "At my expense: 0% of your budget, nothing is charged to you.") : est && est.maxMicro > 0 ? L(`Coût probable : ${coutProbableTu(userId, annonceDuDevis(est), projectId)}. Si ça devait coûter bien plus, je m'arrête avant et je te demande.`, `Likely cost: ${coutProbableTu(userId, annonceDuDevis(est), projectId)}. If it were to cost much more, I stop first and ask you.`) : "";
   const what = t.preview ? await t.preview(ctx, args) : est?.label ? est.label.charAt(0).toUpperCase() + est.label.slice(1) + "." : t.description.split(/(?<=[.:])\s/)[0];
   return [what, price].filter(Boolean).join("\n");
 }
 
 /**
  * Le budget d'IA restant du client ne couvre pas le plafond d'un travail payant : la phrase que SINA lit (en pourcentages,
- * jamais en euros), ou null s'il le couvre. Sans IA.
+ * jamais en euros), ou null s'il le couvre. Sans IA. Le plafond reste en coulisses (26 novembre 2026) : la phrase ne dit
+ * jamais ce que le travail « peut coûter jusqu'à » ; seulement ce qui reste, et le coût probable quand il dépasse ce reste.
  */
-export function budgetInsuffisant(userId: string, projectId: string | null, maxMicro: number): string | null {
+export function budgetInsuffisant(userId: string, projectId: string | null, maxMicro: number, probableMicro?: number): string | null {
   let b: ReturnType<typeof balance>;
   try { b = balance(userId, projectId); } catch { return null; }
   if (b.available >= maxMicro) return null;
   const pct = (m: number) => budgetPctTu(userId, m, projectId);
   const fin = new Date(b.periodEnd).toLocaleDateString(L("fr-FR", "en-GB"), { day: "numeric", month: "long" });
-  return L(`Pas lancé, rien n'est payé : ce travail peut coûter jusqu'à ${pct(maxMicro)}, et il ne reste que ${pct(b.available)} pour ce mois. Dis-le simplement au client : il peut recharger l'IA de son projet (Mon compte), puis te redemander ; sinon, son budget repart le ${fin}.`,
-    `Not started, nothing paid: this may cost up to ${pct(maxMicro)} and only ${pct(b.available)} is left this month. Tell the client: they can top up the project's AI (My account), or wait until ${fin}.`);
+  const probable = probableMicro != null && probableMicro > b.available ? L(` (il coûte ${coutProbableTu(userId, probableMicro, projectId)})`, ` (it costs ${coutProbableTu(userId, probableMicro, projectId)})`) : "";
+  return L(`Pas lancé, rien n'est payé : il ne reste que ${pct(b.available)} pour ce mois, pas assez pour mener ce travail jusqu'au bout${probable}. Dis-le simplement au client, sans jamais lui donner de plafond ni de pire cas : il peut recharger l'IA de son projet (Mon compte), puis te redemander ; sinon, son budget repart le ${fin}.`,
+    `Not started, nothing paid: only ${pct(b.available)} is left this month, not enough to see this work through${probable}. Tell the client, never giving a cap or worst case: they can top up the project's AI (My account), or wait until ${fin}.`);
 }
 
 export async function askConfirmation(r: SynaRun, t: AgentTool, args: unknown, ctx: ToolContext, reason: "sensitive" | "cost", costMaxMicro?: number, est?: { label: string; probableMicro?: number; maxMicro: number; studio?: boolean }) {
   const preview = await confirmationText(t, args, ctx, r.user_id, r.project_id, est);
-  const p: PendingAction = { id: newId(), tool: t.name, args, reason, preview, costMaxMicro, createdAt: Date.now() };
+  const p: PendingAction = { id: newId(), tool: t.name, args, reason, preview, costMaxMicro, ...(reason === "cost" && est && !est.studio ? { costProbableMicro: annonceDuDevis(est) } : {}), createdAt: Date.now() };
   updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p) });
   addMessage(r.conversation_id, "event", { kind: "confirmation", pending: p, budget: budgetState(r.user_id, r.project_id, r.conversation_id) }, r.id);
   return { runId: r.id, waiting: "confirmation" };
+}
+
+/**
+ * La tâche s'est arrêtée avant de dépasser le double de ce qui avait été annoncé (26 novembre 2026) : SINA le dit en une
+ * phrase claire, écrite par le Studio (aucun appel payant), puis une carte lui demande s'il veut continuer. Oui : elle
+ * reprend là où elle s'est arrêtée ; non : elle est arrêtée, ce qui est fait est gardé.
+ */
+function demanderDeContinuer(r: SynaRun, jobId: string) {
+  const a = attenteDAccordDe(getJob(jobId))!;
+  addMessage(r.conversation_id, "assistant", { message: phraseDuDepassement(r.user_id, r.project_id, a), actions: [], done: false, depassement: { job: jobId } }, r.id);
+  const p: PendingAction = { id: newId(), tool: TRAVAIL_CONTINUER, args: { job: jobId }, reason: "cost", preview: previewDeLaSuite(), createdAt: Date.now() };
+  updateRun(r.id, { status: "waiting_confirmation", pending_json: JSON.stringify(p) });
+  addMessage(r.conversation_id, "event", { kind: "confirmation", pending: p, budget: budgetState(r.user_id, r.project_id, r.conversation_id) }, r.id);
+  return { runId: r.id, waiting: "confirmation" as const };
 }
 
 /**
@@ -637,9 +687,8 @@ export async function stepQuote(user: User, r: SynaRun): Promise<string> {
   try {
     const est = prixJuste(name!, await t.estimate(toolContext(user, r), {} as never));
     if (!est.maxMicro) return "";
-    // Coût probable annoncé quand l'outil le donne (étape 7 : le plafond au pire n'a pas de sens pour le client).
-    if (est.probableMicro) return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${budgetPctTu(user.id, est.probableMicro, r.project_id)} ; plafond ${budgetPctTu(user.id, est.maxMicro, r.project_id)} (la tâche s'arrête et le dit si elle l'atteint). Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
-    return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : au plus ${budgetPctTu(user.id, est.maxMicro, r.project_id)}. Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre.`;
+    // Le coût probable seul (26 novembre 2026) : jamais de plafond, de « au plus » ni de pire cas, ni pour SINA ni pour le client.
+    return `\n\n# Prix de la prochaine action payante de l'étape\n${name} (${est.label}) : coût probable ${coutProbableTu(user.id, annonceDuDevis(est), r.project_id)}. Le Studio montre ce prix au client sur la carte d'accord quand tu appelles l'outil ; tu peux le citer tel quel, sans jamais en inventer un autre, ni dire un plafond, un « au plus » ou un pire cas. Si le travail devait coûter plus du double, le Studio s'arrête avant et lui demande s'il veut continuer.`;
   } catch { return ""; }
 }
 

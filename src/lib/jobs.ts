@@ -19,7 +19,8 @@ import { jobEstimate } from "./job-estimate";
 import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
 import { pick } from "./i18n";
 import { friendlyToolError } from "./tool-errors";
-import { withTrace } from "./ai/trace";
+import { arreteeParLAnnonce, withTrace } from "./ai/trace";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { assertJobScope } from "./project-security";
 import { accessScope } from "./access-scope";
 import { HttpError } from "./auth";
@@ -66,8 +67,34 @@ export type EnqueueInput = {
   dependsOn?: string[];
 };
 
+/**
+ * LA DÉPENSE ANNONCÉE VOYAGE AVEC LA TÂCHE (26 novembre 2026) : le coût probable que la carte d'accord a montré au client.
+ * Une tâche payante (avec son plafond) lancée sous `avecLaDepenseAnnoncee` le reçoit dans sa demande (`annonceMicro`) ; le
+ * worker la suit avec (src/lib/ai/trace.ts, `DepassementDeLAnnonce`).
+ */
+const depenseAnnoncee = new AsyncLocalStorage<number>();
+export const avecLaDepenseAnnoncee = <T>(annonceMicro: number | null | undefined, fn: () => T): T =>
+  annonceMicro != null && Number.isFinite(annonceMicro) && annonceMicro > 0 ? depenseAnnoncee.run(Math.ceil(annonceMicro), fn) : fn();
+/** La dépense annoncée enregistrée dans une tâche, sinon aucune. */
+export function annonceDe(payload: unknown): number | undefined {
+  const a = (payload as { annonceMicro?: unknown } | null)?.annonceMicro;
+  return typeof a === "number" && Number.isFinite(a) && a > 0 ? a : undefined;
+}
+/** Une tâche arrêtée par la dépense annoncée, qui attend l'accord du client pour continuer. */
+export type AttenteDAccord = { depenseMicro: number; annonceMicro: number; at: number };
+export function attenteDAccordDe(job: Pick<Job, "status" | "payload"> | null | undefined): AttenteDAccord | null {
+  if (!job || job.status !== "paused") return null;
+  const a = json<{ attenteAccord?: AttenteDAccord }>(job.payload, {}).attenteAccord;
+  return a && typeof a.depenseMicro === "number" && typeof a.annonceMicro === "number" ? a : null;
+}
+
 export function enqueue(input: EnqueueInput): Job {
   assertJobScope(input);
+  {
+    const annonce = depenseAnnoncee.getStore(), pl = input.payload as { costCapMicro?: unknown; capMicro?: unknown; annonceMicro?: unknown } | null | undefined;
+    const cap = pl?.costCapMicro ?? pl?.capMicro;
+    if (annonce && pl && typeof pl === "object" && typeof cap === "number" && cap > 0 && pl.annonceMicro == null) input = { ...input, payload: { ...pl, annonceMicro: annonce } };
+  }
   // La langue des contenus voyage avec la tâche (et ses sous-tâches) : choisie pour l'action ou celle du projet.
   if (input.projectId && hasLangContext() && !(input.payload && typeof input.payload === "object" && "lang" in (input.payload as object))) {
     input = { ...input, payload: { ...((input.payload as object) ?? {}), lang: contentLang() } };
@@ -252,6 +279,10 @@ export class JobContext {
     if (key in cp) return cp[key] as T;
     // Les appels aux fournisseurs faits pendant l'étape lui sont rattachés (trace des coûts par étape).
     const v = await withTrace({ jobId: this.job.id, projectId: this.job.project_id, step: key }, fn);
+    // Arrêtée par la dépense annoncée pendant l'étape : son résultat, peut-être incomplet, n'est jamais gardé comme point
+    // de reprise ; l'étape se refait quand le client dit oui (les étapes finies avant restent gardées).
+    const arret = arreteeParLAnnonce(this.job.id);
+    if (arret) throw arret;
     this.save(key, v);
     return v;
   }
@@ -361,8 +392,37 @@ export function pauseJob(jid: string) {
   run("UPDATE jobs SET status='paused', message=?, updated_at=? WHERE (id=? OR parent_id=?) AND user_id=? AND project_id IS ? AND status IN ('queued','blocked')", paused, t, jid, jid,job.user_id,job.project_id);
 }
 
+/**
+ * Le worker met en attente une tâche arrêtée par la dépense annoncée (26 novembre 2026) : en pause, avec ce qu'elle a déjà
+ * coûté au client et ce qui lui avait été annoncé ; ses étapes finies restent gardées. Rien ne repart sans son accord.
+ */
+export function mettreEnAttenteDAccord(jid: string, a: { depenseMicro: number; annonceMicro: number }) {
+  const job = getJob(jid);
+  if (!job) return;
+  const payload = { ...json<Record<string, unknown>>(job.payload, {}), attenteAccord: { depenseMicro: Math.max(0, Math.round(a.depenseMicro)), annonceMicro: Math.round(a.annonceMicro), at: now() } };
+  run("UPDATE jobs SET status='paused', payload=?, message=?, attempts=MAX(0, attempts-1), locked_by=NULL, locked_until=NULL, updated_at=? WHERE id=? AND status IN ('running','queued','paused')", JSON.stringify(payload), L("En attente de ton accord pour continuer", "Waiting for your approval to continue"), now(), jid);
+}
+
+/**
+ * Le client dit oui : la tâche continue là où elle s'est arrêtée. La nouvelle dépense annoncée est ce qui est déjà dépensé
+ * plus l'annonce d'origine (la suite ne devrait pas coûter plus que tout le travail annoncé) ; si elle allait encore en
+ * dépasser le double, la tâche s'arrête de nouveau et le redemande. Le plafond de la tâche ne bouge pas.
+ */
+export function leverLAttenteDAccord(jid: string): boolean {
+  const job = getJob(jid), a = attenteDAccordDe(job);
+  if (!job || !a) return false;
+  const p = json<Record<string, unknown>>(job.payload, {});
+  const origine = typeof p.annonceDOrigineMicro === "number" && p.annonceDOrigineMicro > 0 ? p.annonceDOrigineMicro : a.annonceMicro;
+  const { attenteAccord: _a, ...reste } = p;
+  const payload = { ...reste, annonceDOrigineMicro: origine, annonceMicro: Math.ceil(a.depenseMicro + origine), accordsPourContinuer: (typeof p.accordsPourContinuer === "number" ? p.accordsPourContinuer : 0) + 1 };
+  run("UPDATE jobs SET payload=? WHERE id=?", JSON.stringify(payload), jid);
+  return true;
+}
+
 /** Reprise après une pause : repart du dernier point de reprise. */
 export function resumeJob(jid: string) {
+  // Une tâche qui attendait l'accord du client pour continuer : « Reprendre » est ce oui.
+  if (attenteDAccordDe(controlledJob(jid))) leverLAttenteDAccord(jid);
   const job=controlledJob(jid);if(!job)return;const payload=json<any>(job.payload,{});
   assertJobScope({userId:job.user_id,projectId:job.project_id,payload,parentId:job.parent_id,dependsOn:json<string[]>(job.depends_on,[])});
   if(job?.project_id && payload.strategyAwaitingChoice){const stamp=strategyStamp(job.project_id);if(!stamp)throw new UserFacingError(L("Choisissez d’abord votre angle marketing dans Marque.","First choose your marketing angle in Brand."));run("UPDATE jobs SET payload=? WHERE id=?",JSON.stringify({...payload,strategyAwaitingChoice:false,strategyVersion:stamp.id,strategyInputDigest:currentStrategyInputDigest(job.project_id)}),jid);}

@@ -4,7 +4,7 @@
  */
 import { aiPctBaseMicro } from "../billing";
 import { accountKeyFor } from "../project-billing";
-import { formatBudgetPct, pctOfBudget, pctToMicro } from "../budget-pct";
+import { formatBudgetPct, formatPct, pctOfBudget, pctToMicro } from "../budget-pct";
 import { L } from "../i18n-server";
 
 /** Base des % pour ce compte (abonnement du projet s'il y en a un). */
@@ -21,6 +21,19 @@ export const budgetPctText = (userId: string, micro: number, projectId?: string 
  * (essai réel « Les essais complets », Nadia, 22 novembre 2026 : la carte de dépense vouvoyait).
  */
 export const budgetPctTu = (userId: string, micro: number, projectId?: string | null) => tutoie(budgetPctText(userId, micro, projectId));
+/**
+ * LE COÛT PROBABLE, SEUL CHIFFRE MONTRÉ AU CLIENT (26 novembre 2026, ses mots : « Il faut arrêter de montrer des plafond
+ * aussi haut ça va faire peur aux clients ») : « environ 18 % de ton budget IA du mois », en tutoyant. Ni « au plus », ni
+ * fourchette, ni pire cas. Sans budget connu : « une part de ton budget IA du mois ».
+ */
+export function coutProbableTu(userId: string, micro: number, projectId?: string | null): string {
+  const pct = budgetPctOf(userId, micro, projectId), fr = L("fr", "en") === "fr";
+  if (pct == null) return fr ? "une part de ton budget IA du mois" : "part of your monthly AI budget";
+  const v = formatPct(pct, fr ? "fr" : "en");
+  if (v.startsWith("<")) return fr ? `moins de ${v.slice(2)} de ton budget IA du mois` : `less than ${v.slice(2)} of your monthly AI budget`;
+  return fr ? `environ ${v} de ton budget IA du mois` : `about ${v} of your monthly AI budget`;
+}
+
 /** Les mots du budget dits en tutoyant. */
 export const tutoie = (t: string) => t.replace(/\bde votre budget\b/g, "de ton budget").replace(/\bsur votre budget\b/g, "sur ton budget");
 

@@ -6,7 +6,7 @@
 import "./env";
 import os from "node:os";
 import { arretParLEssai } from "../src/lib/ai/plafond-essai";
-import { claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, LeaseLost, WORKER_ID, getJob, releaseJob, LEASE_RENEW_MS, markFinished, markRunning, renewLease } from "../src/lib/jobs";
+import { annonceDe, claimNext, completeJob, failJob, mettreEnAttenteDAccord, JobContext, JobCancelled, JobPaused, LeaseLost, WORKER_ID, getJob, releaseJob, LEASE_RENEW_MS, markFinished, markRunning, renewLease } from "../src/lib/jobs";
 import { stopInterruptedPaidJob } from "../src/lib/job-recovery";
 import { retryStripeCancellations } from "../src/lib/payments";
 import { db, logError, now, run } from "../src/lib/db";
@@ -16,7 +16,7 @@ import { runDueAutomations } from "../src/lib/social-v2/automations";
 import { runDueAutopilots } from "../src/lib/social-v2/autopilot";
 import { handlers, HANDLER_TYPES } from "./handlers";
 import { aiActiveFor, runForUser, withAiDisabled } from "../src/lib/ai/access";
-import { selonLaCharge, withTrace } from "../src/lib/ai/trace";
+import { arretParLAnnonce, depensesDeLaTache, selonLaCharge, withTrace } from "../src/lib/ai/trace";
 import { borneDuStudioDe } from "../src/lib/ai/borne-du-studio";
 import { intentsFromAction } from "../src/lib/orchestrator/intent";
 
@@ -34,6 +34,17 @@ const relanceOf = (payload: unknown) => {
   const n = (payload as { relance?: unknown } | null)?.relance;
   return typeof n === "number" && Number.isInteger(n) && n > 0 ? n : undefined;
 };
+
+/**
+ * La tâche s'est arrêtée avant un appel qui lui aurait fait dépasser le double de la dépense annoncée au client
+ * (src/lib/ai/trace.ts) : elle est mise en attente de son accord, avec ce qu'elle lui a déjà coûté (26 novembre 2026).
+ */
+function attendreLAccord(jobId: string): boolean {
+  const e = arretParLAnnonce(jobId);
+  if (!e) return false;
+  mettreEnAttenteDAccord(jobId, { depenseMicro: depensesDeLaTache(jobId).client, annonceMicro: e.annonceMicro });
+  return true;
+}
 
 /** Intention d'une tâche de fond, sans IA (trace : chaque appel est rattaché à ce que le client a demandé). */
 const jobIntent = (type: string, payload: unknown) => intentsFromAction(type, payload as { regenerate?: boolean })?.join("+");
@@ -95,10 +106,12 @@ async function runOne() {
       const guarded = (ctx.payload as { aiOff?: boolean })?.aiOff ? () => withAiDisabled("demande lancée sans devis payant accepté", exec) : exec;
       // Seul le rattachement serveur persistant définit la demande commune ; jamais un ID libre du payload.
       const agentBound=one<{bound_id:string}>('SELECT bound_id FROM agent_request_jobs WHERE job_id=?',job.id);
-      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload), studioCapMicro: borneDuStudioDe(ctx.payload), relance: relanceOf(ctx.payload),...(agentBound?{agentBoundId:agentBound.bound_id}:{}) }, guarded), "normal", job.project_id ?? null));
+      const result = await runWithLang(jobLangs(job), () => runForUser(job.user_id, () => withTrace({ jobId: job.id, projectId: job.project_id, intent: jobIntent(job.type, ctx.payload), costCapMicro: capOf(ctx.payload), studioCapMicro: borneDuStudioDe(ctx.payload), annonceMicro: annonceDe(ctx.payload), relance: relanceOf(ctx.payload),...(agentBound?{agentBoundId:agentBound.bound_id}:{}) }, guarded), "normal", job.project_id ?? null));
       // Essai réel : un appel refusé par le plafond de l'essai arrête la tâche (échec définitif, jamais relancée).
       const arret = arretParLEssai(job.id);
       if (arret) throw arret;
+      // Elle allait dépasser le double de la dépense annoncée au client : en attente de son accord, rien n'est terminé.
+      if (attendreLAccord(job.id)) return;
       // Écriture du résultat : en cas d'échec (base occupée…), nouvel essai — jamais une relance du traitement,
       // qui referait (et repaierait) ce qui vient d'être fait.
       for (let i = 0; ; i++) {
@@ -121,6 +134,8 @@ async function runOne() {
       } else if (e instanceof JobPaused) {
         releaseJob(job.id);
         console.log(`[worker] ❚❚ ${job.type} ${job.id} en pause`);
+      } else if (attendreLAccord(job.id)) {
+        console.log(`[worker] ❚❚ ${job.type} ${job.id} : en attente de l'accord du client (dépense annoncée doublée)`);
       } else {
         const fresh = getJob(job.id) ?? job;
         // Mise en pause ou annulée pendant un appel : l'erreur qui suit ne la remet jamais en file.
