@@ -331,7 +331,8 @@ describe("le script d'essai des planches : planches indépendantes, et le chemin
     const image = plein.lignes.find((l) => l.appel === "planche, 1er essai")!, relecture = plein.lignes.find((l) => l.appel === "relecture du 1er essai")!;
     expect(d.plafondMinimalMicro).toBe(3 * (image.maxMicro + relecture.maxMicro));
     expect(d.probableMicro).toBe(2 * (image.probableMicro + relecture.probableMicro));
-    expect(refusDuPlafond(((d.plafondMinimalMicro - 10_000) / 1_000_000).toFixed(2), d)).toMatch(/rien n'est lancé/);
+    // Sous la somme des maxima, l'essai part quand même depuis le 26 novembre 2026 (il s'arrête proprement s'il le faut).
+    expect(refusDuPlafond(((d.plafondMinimalMicro - 10_000) / 1_000_000).toFixed(2), d)).toBeNull();
     const src = fs.readFileSync("scripts/syna-recette/essai-planches.mts", "utf8");
     expect(src).toContain("process.env[`REPRENDRE_${k}`]");
     expect(src).toContain("const devis = await devisDeLEssai(logos.length, optionsDuDevis());");

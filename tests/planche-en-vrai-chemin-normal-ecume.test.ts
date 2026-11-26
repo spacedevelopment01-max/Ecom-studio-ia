@@ -141,10 +141,11 @@ describe("le chemin normal de la planche en vrai, sur les vrais fichiers d'Écum
     expect(d.texte.join("\n")).toMatch(/Plafond minimal exact de la commande/);
   }, 240_000);
 
-  it("le script accepte LOGO_HD sans REASSEMBLER, et refuse sous le plafond minimal exact de la commande", () => {
+  it("le script accepte LOGO_HD sans REASSEMBLER ; sous la somme des maxima de la commande, il part quand même et le dit", () => {
     const src = fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai.mts", "utf8");
     expect(src).not.toMatch(/LOGO_HD ne vaut qu'avec REASSEMBLER/);
-    expect(src).toMatch(/planche en vrai et LOGO_HD, somme des maxima, reprises comprises/);
+    expect(src).toMatch(/planche en vrai et LOGO_HD ; probable/);
+    expect(src).not.toMatch(/est sous le plafond minimal exact/);
     expect(src).toMatch(/logoHd, metierCourt: process\.env\.METIER_COURT/);
     const outil = fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai-outil.ts", "utf8");
     expect(outil).toContain("T.refaireLesLogosEnHdEnVrai(");

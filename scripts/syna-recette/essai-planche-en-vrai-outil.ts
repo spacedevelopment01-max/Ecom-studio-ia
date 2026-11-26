@@ -12,6 +12,7 @@ import type { EtatPlancheEnVrai, Inventaire, Laquelle, NomElement, RelectureDuGr
 import type { StatutDuDomaine } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
 import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
 import type { LigneDeDepense } from "./essai-planches-outil";
 import { SEPARATEUR_DES_LIGNES, lignesDuTexte } from "../../src/lib/syna-agent/phrase-sous-le-nom";
 
@@ -516,6 +517,13 @@ export async function essaiDeLaPlancheEnVrai(o: {
       ...(res.appels.length ? res.appels.map((a) => `- ${a.cle ?? a.task ?? "?"} · ${a.modele ?? "?"} · ${a.studio ? "charge du Studio" : "charge du client"} · réservé ${euros(a.reserveMicro)} → réglé ${a.reelMicro == null ? "—" : euros(a.reelMicro)} (${a.statut})${a.appel ? ` · jetons ${a.appel.jetonsEntree} en entrée, ${a.appel.jetonsSortie} en sortie` : ""}`) : ["- aucun appel"]),
       "", `Dépense réelle comptée par le Studio : ${euros(res.depenseMicro)}`, "Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).");
     if (res.arret) lignes.push("", `ARRÊT : ${res.arret}`);
+    // Arrêté par le plafond de l'essai (26 novembre 2026) : les cases refaites sont gardées ; on reprend par REASSEMBLER.
+    if (res.arret?.startsWith("le garde-fou de l'essai a refusé")) {
+      const faites = res.cases.filter((c) => c.gardee), restent = res.cases.filter((c) => !c.gardee).map((c) => c.element);
+      lignes.push("", ...lignesDeLArret({ depenseMicro: res.depenseMicro, plafondMicro: Math.floor(plafond * 1_000_000), plafondMinimalMicro: devis.plafondMinimalMicro,
+        fait: [...(res.inventaire ? ["inventaire de la planche (jamais refait)"] : []), ...faites.map((c) => `case ${c.element} refaite en vrai et gardée${c.fichierHd ? ` (${c.fichierHd})` : ""}`)],
+        reprendre: restent.length ? `REASSEMBLER=<ce dossier> REPRENDRE=${restent.join(",")} et un plafond pour ce qui reste : les cases gardées ne sont ni refaites ni repayées.` : "toutes les cases sont refaites." }));
+    }
     ecrireFichier("rapport.txt", `${lignes.join("\n")}\n`);
     return res;
   };
@@ -712,8 +720,8 @@ export async function reassemblerLEssaiEnVrai(o: {
   const route = { key: "A", name: nom, slogan: donnees.phrase, palette: palette0, board: { planche: { image: { id: "", w: 1536, h: 2304 }, logo: "", domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: 0, ...(donnees.finitions?.length ? { finitions: donnees.finitions } : {}) } } } as unknown as import("../../src/lib/syna-agent/brand-routes").Route;
 
   // c) La reprise, seulement si elle est demandée, pour les cases encore refusées ; d) les quatre petites versions du logo en
-  // haute définition, seulement avec LOGO_HD. Un seul plafond pour les deux, vérifié avant tout appel : sous le plafond
-  // minimal exact (la somme des maxima, reprises comprises), rien ne part.
+  // haute définition, seulement avec LOGO_HD. Un seul plafond pour les deux ; sous la somme des maxima (reprises comprises),
+  // l'essai part quand même et s'arrête proprement avant l'appel dont le pire cas dépasserait ce qui reste.
   let reprise: ResultatDuReassemblage["reprise"], logosEnHd: ResultatDuReassemblage["logosEnHd"], arret: string | undefined;
   const aReprendre = (o.reprendre ?? []).filter((n) => !images.has(n) && cases.find((c) => c.element === n)?.essais.length);
   const { separerSymbole } = await import("../../src/lib/syna-agent/planche-en-vrai-code");
@@ -724,7 +732,10 @@ export async function reassemblerLEssaiEnVrai(o: {
     const maxMicro = (aReprendre.length ? T.devisDUneReprise(aReprendre).maxMicro : 0) + (versionsHd.length ? T.devisDesLogosEnHd(versionsHd.length).maxMicro : 0);
     const plafond = Number(String(o.plafondEuros ?? "").replace(",", "."));
     if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible pour la reprise : rien n'est lancé.");
-    if (Math.floor(plafond * 1_000_000) < maxMicro) throw new Error(`Le plafond ${euros(Math.floor(plafond * 1_000_000))} est sous le plafond minimal exact ${euros(maxMicro)} (somme des maxima, reprises comprises) : rien n'est lancé.`);
+    // Sous la somme des maxima, l'essai part quand même (26 novembre 2026) : il s'arrête proprement avant l'appel dont le
+    // pire cas dépasserait ce qui reste, et le dit.
+    const avisHd = avisDuPlafond(Math.floor(plafond * 1_000_000), { plafondMinimalMicro: maxMicro });
+    if (avisHd) console.log(avisHd);
     // Le garde-fou de l'essai : un seul plafond, un seul début, pour la reprise et les logos.
     process.env.STUDIO_ESSAI_PLAFOND_EUROS = String(plafond);
     process.env.STUDIO_ESSAI_DEBUT = String(Date.now());

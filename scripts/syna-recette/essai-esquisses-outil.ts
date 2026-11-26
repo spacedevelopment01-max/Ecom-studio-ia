@@ -16,6 +16,7 @@ import type { GraphistesAi } from "../../src/lib/syna-agent/logo-graphistes";
 import type { RelectureEsquisses } from "../../src/lib/syna-agent/esquisses";
 import type { PhraseDeLEsquisse } from "../../src/lib/syna-agent/phrase-sous-le-nom";
 import { clientDeLEssai, euros, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
+import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
 
 export { clientDeLEssai, euros };
 export type { ClientDeLEssai };
@@ -220,7 +221,8 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
     },
   };
 
-  const lignes: string[] = [`Essai des esquisses de logo — client « ${CLIENT.nom} » (${CLIENT.activite}), type « ${CLIENT.kind} »`, `Plafond de l'essai : ${euros(Math.floor(plafond * 1_000_000))}`, "", ...devisDesEsquissesEnTexte(devis), ""];
+  const avis = avisDuPlafond(Math.floor(plafond * 1_000_000), devis);
+  const lignes: string[] = [`Essai des esquisses de logo — client « ${CLIENT.nom} » (${CLIENT.activite}), type « ${CLIENT.kind} »`, `Plafond de l'essai : ${euros(Math.floor(plafond * 1_000_000))}`, ...(avis ? [avis] : []), "", ...devisDesEsquissesEnTexte(devis), ""];
   const lireLaDepense = () => {
     const reservations = all<Record<string, any>>("SELECT * FROM ai_reservations WHERE job_id=? ORDER BY created_at, rowid", jobId);
     const appels = reservations.map((r) => ({ cle: r.operation_key ?? null, task: r.task ?? null, modele: r.model ? `${r.provider ?? ""}:${r.model}` : null, studio: !!r.studio, reserveMicro: r.amount, reelMicro: r.actual ?? null, statut: r.status }));
@@ -236,6 +238,10 @@ export async function essaiDesEsquisses(o: { sortie: string; plafondEuros: strin
       ...(appels.length ? appels.map((a) => `- ${a.cle ?? a.task ?? "?"} · ${a.modele ?? "?"} · ${a.studio ? "charge du Studio" : "charge du client"} · réservé ${euros(a.reserveMicro)} → réglé ${a.reelMicro == null ? "—" : euros(a.reelMicro)} (${a.statut})`) : ["- aucun appel"]),
       "", `Dépense réelle comptée par le Studio : ${euros(res.depenseMicro)}`);
     if (res.arret) lignes.push("", `ARRÊT : ${res.arret}`);
+    // Arrêté par le plafond de l'essai (26 novembre 2026) : ce qui est fait, ce qu'il faudrait pour finir, comment reprendre.
+    if (res.arret?.startsWith("le garde-fou de l'essai a refusé")) lignes.push("", ...lignesDeLArret({ depenseMicro: res.depenseMicro, plafondMicro: Math.floor(plafond * 1_000_000), plafondMinimalMicro: devis.plafondMinimalMicro,
+      fait: [...res.planches.map((f) => `planche reçue : ${f}`), ...(res.metier ? [`métier écrit et contrôlé : « ${res.metier} »`] : [])],
+      reprendre: "la recherche n'a pas de point de reprise : relance la même commande dans un nouveau dossier, avec un plafond plus haut ; les fichiers de ce dossier restent pour comparer." }));
     ecrireFichier("rapport.txt", `${lignes.join("\n")}\n`);
     return res;
   };

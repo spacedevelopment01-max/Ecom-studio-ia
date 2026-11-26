@@ -3,7 +3,9 @@
  * Chaque appel simulé passe par la réservation du Studio, comme les vrais, pour que le garde-fou de l'essai le voie. La
  * tâche est celle du parcours (`runSinaBrandJob` avec `jusquAuxNoms`) : recherches, étude, idées, équipes, juge, puis la
  * vérification des noms gardés ; l'adresse de chaque nom vérifié (annuaires simulés). Le client n'a pas de nom ; un client
- * qui en a un est refusé ; sous le plafond minimal exact, rien ne part.
+ * qui en a un est refusé. Depuis le 26 novembre 2026 (« Il faut arrêter de montrer des plafond aussi haut ça va faire peur
+ * aux clients »), un plafond sous la somme des maxima est permis : l'essai s'arrête proprement avant l'appel dont le pire
+ * cas dépasserait ce qui reste, garde ses fichiers et ses points de reprise, et REPRENDRE=1 le reprend là.
  */
 import fs from "node:fs";
 import os from "node:os";
@@ -94,7 +96,7 @@ describe("le script de l'essai des noms (appels simulés)", async () => {
     expect(tout).not.toMatch(/Écume|savonnerie|toiletteuse/i);
   });
 
-  it("sous le plafond minimal exact, rien ne part ; un client qui a déjà un nom est refusé", async () => {
+  it("la somme des maxima reste comptée ; un client qui a déjà un nom est refusé", async () => {
     const d = await devisDesNoms();
     expect(d.plafondMinimalMicro).toBe(Math.ceil(d.lignes.reduce((t, l) => t + l.maxMicro, 0)));
     // Une seule source : le plafond minimal de l'essai est le devis des noms vérifiés du Studio, et l'accord du Studio le
@@ -104,9 +106,49 @@ describe("le script de l'essai des noms (appels simulés)", async () => {
     expect(d.probableMicro).toBeLessThan(d.probableAvecReprisesMicro);
     expect(d.probableAvecReprisesMicro).toBeLessThan(d.plafondMinimalMicro);
     const c = clientDeLEssai({ CLIENT_JSON: FICHIER }, { sansNom: true });
-    await expect(essaiDesNoms({ sortie: sortie(), plafondEuros: String((d.plafondMinimalMicro - 1) / 1_000_000), client: c, ai: simule as never })).rejects.toThrow(/sous le plafond minimal exact/);
     await expect(essaiDesNoms({ sortie: sortie(), plafondEuros: "20", client: { ...c, nom: "Fournée" }, ai: simule as never })).rejects.toThrow(/déjà un nom/);
     expect(appels).toEqual([]);
+  });
+
+  it("un plafond proche du probable : l'essai part, s'arrête proprement avant l'appel qui pourrait le dépasser, dit ce qui est fait et ce qu'il faut pour finir ; REPRENDRE=1 finit sans rien refaire", async () => {
+    const d = await devisDesNoms();
+    const { plafondConseilleMicro, avisDuPlafond } = await import("../scripts/syna-recette/plafond-des-essais");
+    expect(plafondConseilleMicro(1_450_000)).toBe(3_000_000);
+    expect(plafondConseilleMicro(d.probableMicro)).toBeLessThan(d.plafondMinimalMicro);
+    expect(avisDuPlafond(1_000_000, d)).toMatch(/l'essai part quand même/);
+    expect(avisDuPlafond(d.plafondMinimalMicro, d)).toBeNull();
+    const dir = sortie(), c = clientDeLEssai({ CLIENT_JSON: FICHIER }, { sansNom: true });
+    const lire = async () => "<p>« Le café frais moulu change tout le matin. »</p>";
+    // 0,10 € : chaque appel simulé réserve 0,03 € et en coûte 0,015 € ; le sixième ne tiendrait plus au pire.
+    const r = await essaiDesNoms({ sortie: dir, plafondEuros: "0.10", client: c, ai: simule as never, lirePage: lire, trouverLesAdresses: adresses });
+    expect(r.arret).toMatch(/garde-fou de l'essai a refusé un appel/);
+    // Les quatre équipes partent en même temps : chacune est refusée par le garde-fou avant de partir, rien n'est payé.
+    expect(appels).toEqual(["web:paroles", "web:concurrents", "web:usages", "study", "strategy", "team-langue", "team-mots", "team-univers", "team-verite"]);
+    expect(r.depenseMicro).toBe(5 * APPEL / 2);
+    expect(r.etapesFaites).toEqual(expect.arrayContaining(["brand:study", "brand:strategy"]));
+    const rapport = fs.readFileSync(path.join(dir, "rapport.txt"), "utf8");
+    expect(rapport).toContain("l'essai part quand même");
+    expect(rapport).toContain("Arrêt propre");
+    expect(rapport).toContain("étape brand:study (point de reprise");
+    expect(rapport).toMatch(/Pour finir : au plus [\d,]+ € de plus, au pire/);
+    expect(rapport).toContain("REPRENDRE=1");
+    expect(fs.existsSync(path.join(dir, "reprise.json"))).toBe(true);
+    // La reprise : la même tâche, ses étapes finies ni refaites ni repayées.
+    appels.length = 0;
+    const r2 = await essaiDesNoms({ sortie: dir, plafondEuros: "20", client: c, ai: simule as never, lirePage: lire, trouverLesAdresses: adresses, reprendre: true });
+    expect(r2.arret).toBeUndefined();
+    expect(appels).toEqual(["team-langue", "team-mots", "team-univers", "team-verite", "judge-1", "web:verify-noms-1", "verify-noms-1"]);
+    expect(r2.noms.map((n) => n.nom)).toEqual(["Fournée", "Mouture", "Grain Franc"]);
+    // À 3 € pour le torréfacteur : les trois recherches partent ensemble, chacune réservée à son pire cas ; la dernière
+    // serait refusée. Le script le dit dans son devis, et attend que les appels déjà partis se règlent avant d'écrire.
+    const { devisDesNomsEnTexte } = await import("../scripts/syna-recette/essai-noms-outil");
+    expect(devisDesNomsEnTexte(d).join("\n")).toMatch(/Attention au départ : les 3 recherches sur le web partent en même temps, chacune réservée à son pire cas ; sous [\d,]+ €, la dernière est refusée/);
+    expect(d.lignes[0].fois).toBe(3);
+    // Sans essai à reprendre dans le dossier : rien ne part.
+    await expect(essaiDesNoms({ sortie: sortie(), plafondEuros: "1", client: c, ai: simule as never, reprendre: true })).rejects.toThrow(/aucun essai des noms à reprendre/);
+    // Le script ne refuse plus de partir sous la somme des maxima.
+    const src = fs.readFileSync("scripts/syna-recette/essai-noms.mts", "utf8") + fs.readFileSync("scripts/syna-recette/essai-noms-outil.ts", "utf8");
+    expect(src).not.toMatch(/est sous le plafond minimal exact/);
   });
 
   it("le garde-fou de l'essai refuse un appel au-dessus du plafond : l'essai s'arrête et le dit, rien n'est relancé", async () => {

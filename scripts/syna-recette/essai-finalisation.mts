@@ -81,7 +81,7 @@ import path from "node:path";
   const devis = await devisDeLEssai(esquisses.map(numeroDe));
   console.log(devisEnTexte(devis).join("\n"));
   const plafond = Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000);
-  if (plafond < devis.plafondMinimalMicro) console.log(`Attention : le plafond ${euros(plafond)} est sous le plafond minimal ${euros(devis.plafondMinimalMicro)} ; le garde-fou peut arrêter l'essai avant la fin (sans rien dépenser de plus).`);
+  if (plafond < devis.plafondMinimalMicro) console.log(`Le plafond ${euros(plafond)} est sous la somme des maxima ${euros(devis.plafondMinimalMicro)} (probable ${euros(devis.probableMicro)}) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.`);
   const sortie = path.resolve(sortieArg);
   const r = await essaiDeFinalisation({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, esquisses: esquisses.map((e) => path.resolve(e)), metier, client, phrases });
   console.log(`${r.logos.filter((l) => l.ok).length} logo(s) gardé(s) sur ${r.logos.length}, dépense comptée ${euros(r.depenseMicro)}. Rapport : ${path.join(sortie, "rapport.txt")}`);

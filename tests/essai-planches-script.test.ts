@@ -153,12 +153,14 @@ describe("le script de l'essai des planches de marque (appels simulés)", async 
     expect(await phraseDuLogoDeLEssai(logos[1])).toEqual({ fichier: path.join(etape2, "esquisse-10-phrase-du-logo.txt") });
   });
 
-  it("le plafond sous le plafond minimal du devis : le script refuse de partir", async () => {
-    const { refusDuPlafond } = await import("../scripts/syna-recette/essai-planches-outil");
+  it("le plafond sous la somme des maxima du devis : le script part quand même et le dit (26 novembre 2026) ; illisible, il refuse", async () => {
+    const { refusDuPlafond, avisDuPlafond } = await import("../scripts/syna-recette/essai-planches-outil");
     const d = await devisDeLEssai(2);
-    const juste = (Math.ceil(d.plafondMinimalMicro / 10_000) / 100).toFixed(2);
+    const juste = (Math.ceil(d.plafondMinimalMicro / 10_000) / 100).toFixed(2), bas = ((Math.ceil(d.plafondMinimalMicro / 10_000) - 1) / 100).toFixed(2);
     expect(refusDuPlafond(juste, d)).toBeNull();
-    expect(refusDuPlafond(((Math.ceil(d.plafondMinimalMicro / 10_000) - 1) / 100).toFixed(2), d)).toMatch(/sous le plafond minimal .* rien n'est lancé/);
+    expect(refusDuPlafond(bas, d)).toBeNull();
+    expect(avisDuPlafond(Math.floor(Number(bas) * 1_000_000), d)).toMatch(/l'essai part quand même\. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste/);
+    expect(avisDuPlafond(Math.floor(Number(juste) * 1_000_000), d)).toBeNull();
     expect(refusDuPlafond("abc", d)).toMatch(/illisible/);
     const src = fs.readFileSync("scripts/syna-recette/essai-planches.mts", "utf8");
     expect(src).toContain("const refus = refusDuPlafond(process.env.PLAFOND_ESSAI_EUR, devis);");

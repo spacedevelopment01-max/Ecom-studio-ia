@@ -37,7 +37,9 @@
  * version détourée), dans l'ordre des identités A, B, C, D. La phrase de chaque logo est lue à côté de lui, dans
  * esquisse-NN-phrase-du-logo.txt (écrit par l'essai de finalisation ; vide : aucune) : elle est reprise mot pour mot sur sa
  * planche, toutes ses lignes dans l'ordre, et relue lettre pour lettre. Le fichier manque : rien n'est lancé.
- * Le plafond : PLAFOND_ESSAI_EUR sous le plafond minimal du devis (somme des maxima, reprises comprises) : rien n'est lancé.
+ * Le plafond : PLAFOND_ESSAI_EUR peut être sous la somme des maxima du devis (reprises comprises), par exemple deux fois le
+ * probable : l'essai part quand même, s'arrête proprement avant l'appel dont le pire cas dépasserait ce qui reste, garde
+ * ses fichiers et dit ce qu'il faudrait pour finir (26 novembre 2026). Illisible ou absent : rien n'est lancé.
  *
  * Ce qu'il écrit dans le dossier de sortie : fiche-du-client.txt ; valeurs-N-demande.txt, valeurs-N-reponse.json et
  * valeurs-du-metier.json ; domaine.json ; disposition-*.png ; pour chaque planche X et chaque essai N, le texte envoyé, la
@@ -71,7 +73,7 @@ import path from "node:path";
   Object.assign(process.env, { DATA_DIR: dir, APP_SECRET: fs.readFileSync(secretFile, "utf8").trim(), OPENAI_API_KEY: "sk-proxy-injected", DASHSCOPE_API_KEY: "sk-proxy-injected", FAL_KEY: "proxy-injected", ANTHROPIC_API_KEY: "", GOOGLE_API_KEY: "" });
   const { appliquerTarifsVerifies } = await import("./tarifs-verifies");
   await appliquerTarifsVerifies();
-  const { clientDeLEssai, devisDeLEssai, devisEnTexte, essaiDesPlanches, euros, refusDuPlafond, rejugerUnePlanche } = await import("./essai-planches-outil");
+  const { avisDuPlafond, clientDeLEssai, devisDeLEssai, devisEnTexte, essaiDesPlanches, euros, refusDuPlafond, rejugerUnePlanche } = await import("./essai-planches-outil");
 
   // Rejuger une planche déjà payée, sans aucun appel (ni clé, ni plafond, ni réseau) : REJUGER=<dossier>, REJUGER_PLANCHE=<lettre>.
   if (process.env.REJUGER?.trim()) {
@@ -114,6 +116,7 @@ import path from "node:path";
   console.log(devisEnTexte(devis).join("\n"));
   const refus = refusDuPlafond(process.env.PLAFOND_ESSAI_EUR, devis);
   if (refus) { console.error(refus); process.exit(1); }
+  { const avis = avisDuPlafond(Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000), devis); if (avis) console.log(avis); }
   const sortie = path.resolve(sortieArg);
   let r: Awaited<ReturnType<typeof essaiDesPlanches>>;
   try { r = await essaiDesPlanches({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, logos: logos.map((l) => path.resolve(l)), client, reprendre }); } catch (e) { console.error((e as Error).message); process.exit(1); }

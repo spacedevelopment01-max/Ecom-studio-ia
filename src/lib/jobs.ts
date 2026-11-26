@@ -20,6 +20,7 @@ import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
 import { pick } from "./i18n";
 import { friendlyToolError } from "./tool-errors";
 import { arreteeParLAnnonce, withTrace } from "./ai/trace";
+import { arreteeParLEssai } from "./ai/plafond-essai";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { assertJobScope } from "./project-security";
 import { accessScope } from "./access-scope";
@@ -279,9 +280,10 @@ export class JobContext {
     if (key in cp) return cp[key] as T;
     // Les appels aux fournisseurs faits pendant l'étape lui sont rattachés (trace des coûts par étape).
     const v = await withTrace({ jobId: this.job.id, projectId: this.job.project_id, step: key }, fn);
-    // Arrêtée par la dépense annoncée pendant l'étape : son résultat, peut-être incomplet, n'est jamais gardé comme point
-    // de reprise ; l'étape se refait quand le client dit oui (les étapes finies avant restent gardées).
-    const arret = arreteeParLAnnonce(this.job.id);
+    // Arrêtée par la dépense annoncée (ou, dans un essai, par son plafond) pendant l'étape : son résultat, peut-être
+    // incomplet, n'est jamais gardé comme point de reprise ; l'étape se refait à la reprise (les étapes finies avant
+    // restent gardées).
+    const arret = arreteeParLAnnonce(this.job.id) ?? arreteeParLEssai(this.job.id);
     if (arret) throw arret;
     this.save(key, v);
     return v;
