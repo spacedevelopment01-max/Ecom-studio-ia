@@ -334,3 +334,47 @@ planche en vrai (1088 × 1088, qualité haute), relues en un appel : probable 0,
 `planche-en-vrai-symbole-seul-et-bandeau-sans-marges` (sans séparation, le logo complet) sont marquées remplacées, accord
 écrit à compléter. Tests : `tests/planche-en-vrai-identique-ecume.test.ts` et le réassemblage dans
 `tests/essai-planche-en-vrai-script.test.ts`, sur les vrais fichiers de l'essai (`tests/fixtures/ecume-planche-en-vrai`).
+
+## Le spécimen mesuré et l'écran qui suit le réassemblage (26 novembre 2026)
+
+Constat du chef d'orchestre sur le réassemblage gratuit d'Écume (preuves : `docs/studio/essais-complets/images/ecume/4b-reassemblee`
+et `5b-ecran`, branche `claude/essais-complets`), mot pour mot : « Le spécimen du bloc 03 est trop pâle. Sacramento est
+presque illisible, et les lignes sous Poppins sont plus pâles et plus petites que sur l'aperçu. Le spécimen doit avoir la
+couleur, la taille et le contraste de l'aperçu. » et « L'écran ne suit pas le réassemblage. » Corrigé sans aucun appel.
+
+**Le spécimen du bloc 03 est mesuré sur l'aperçu** (`lignesDuSpecimen`, `planche-en-vrai-code.ts`). Avant, il était posé à
+des places, des tailles et des couleurs fixes : la phrase de chaque police en gris pâle (#5A605C), les alphabets en petit,
+et la police manuscrite, au trait très fin, devenait presque invisible. Maintenant, dans chaque colonne (la police des
+titres à gauche du filet, celle des textes à droite), le code lit les cinq lignes de l'aperçu : le nom, sa phrase, les
+capitales, les minuscules, les chiffres. Pour chacune : sa place, la hauteur de ses lettres, son encre (la couleur pleine
+des lettres, prise sur leurs points les plus foncés) et l'épaisseur de son trait. Chaque ligne est redessinée à sa place,
+à la hauteur de ses lettres, dans cette encre ; quand le trait rendu est plus fin que celui de l'aperçu, il est épaissi
+d'un contour de la même encre (8 % de la hauteur de la ligne au plus). Une colonne sans ses cinq lignes garde la mise en
+page d'avant. Sur la planche B d'Écume, mesuré sur le résultat : chaque ligne a l'encre de l'aperçu (à 2 % près pour
+l'adoucissement des bords), sa hauteur à 15 % près (écarts mesurés de 0 à 6 %) et un trait au moins aussi épais à 15 % près. Une faute
+trouvée en route : la mesure dépendait de l'alignement laissé par la palette, dessinée juste avant (le nom « Poppins »
+partait à droite) ; elle est maintenant toujours faite à gauche, sur la ligne de base.
+
+**Le réassemblage et le rejugement mettent à jour l'état et le projet**, comme l'étape 4 normale. La fonction du Studio
+`enregistrerLaPlancheReassemblee` (`planche-en-vrai-tache.ts`) range les images gardées en haute définition, les dix
+versions du logo, le symbole et les favicons, relit la marque du projet sur la planche (palette, polices, symbole), dit ce
+que SINA dit, puis range la planche réassemblée et le site en une seule image. Elle passe par les mêmes fonctions que la
+tâche (`rangerLesImages`, `rangerLesLogos`, `marqueRelueSurLaPlanche`, `publicationsDeLaPlanche`, `rangerLaPlanche`),
+sorties de `plancheEnVrai` pour que les deux chemins rangent de la même façon. Dans l'essai, `reassemblerLEssaiEnVrai`
+l'appelle dans le projet de l'essai (l'essai.json du dossier, dans la base DATA_DIR ; s'il n'y est pas, un projet fictif
+est créé comme dans l'essai, et c'est dit), écrit `etat.json` et `essai.json` à côté de la planche réassemblée, et réécrit
+le parcours (`enregistrerLeParcours`). L'écran se lance ensuite sur ce nouvel `etat.json`. Dans le Studio, l'autre chemin
+de réassemblage (les produits refaits avec ses photos) enregistrait déjà le nouvel état dans le parcours ; il n'y a pas
+d'autre rejugement dans le Studio.
+
+Corrigé en passant : la phrase des logos repris de l'aperçu disait « telles que tu lesas vues » ; elle dit « telles que tu
+les as vues ».
+
+Vérifié sans aucun appel, sur les vrais fichiers de l'essai copiés en local (base d'essai neuve, donc projet fictif
+créé) : 15 images gardées sur 17, la story et le site sur téléphone dans `etat.json` et dans le parcours ; l'onglet Marque,
+lancé dans le Studio privé et capturé (1440 et 390 pixels de large), montre la planche réassemblée, la story, le site en
+une seule image, et dit que seules la publication portrait et l'emballage gardent leur aperçu.
+
+Épreuve ajoutée et scellée : `planche-en-vrai-specimen-mesure-et-ecran-du-reassemblage` (aucune épreuve scellée n'est
+contredite). Tests : `tests/planche-en-vrai-specimen-et-ecran.test.ts` (l'aperçu réel de B ; un réassemblage simulé puis
+l'onglet Marque rendu ; un second réassemblage dans le même projet).

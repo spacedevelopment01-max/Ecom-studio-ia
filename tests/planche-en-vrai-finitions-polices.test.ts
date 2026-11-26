@@ -88,7 +88,10 @@ describe("la planche en vrai : la police suit l'aperçu que le client a vu", asy
     expect(C.genreDu(p.cle)).toBe("manuscrite");
     expect(await fr(() => P.phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu))).toBe("Sur ta planche, la police nommée « Nunito » était montrée en écriture manuscrite : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Dancing Script ».");
     // La tâche le dit au client avec la phrase des polices remplacées.
-    expect(fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8")).toContain('issues.push(p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : p.pourquoi === "apercu" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, undefined, true) : phraseDeLaPoliceRemplacee(p.lue, p.famille));');
+    // La phrase des polices remplacées, dite par la tâche et par le réassemblage (`phrasesDesPolicesRemplacees`).
+    const tache = fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8");
+    expect(tache).toContain('.map((p) => (p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : p.pourquoi === "apercu" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, undefined, true) : phraseDeLaPoliceRemplacee(p.lue, p.famille)));');
+    expect(tache).toContain("issues.push(...phrasesDesPolicesRemplacees({ titres, textes }));");
   });
 
   it("le genre concorde : rien ne change ; une police d'affiche lue en empattements ou sans : pas de contradiction", async () => {

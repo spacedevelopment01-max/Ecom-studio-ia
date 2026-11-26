@@ -687,7 +687,7 @@ function boiteDEncreDeLApercu(data: Buffer, W: number, b: Boite, fond: string): 
 const S = ECHELLE;
 const X = (b: Boite): Boite => [b[0] * S, b[1] * S, b[2] * S, b[3] * S];
 /** La couleur médiane du pourtour intérieur d'une case : le fond de son panneau. */
-function fondDe(data: Buffer, W: number, b: Boite): string {
+export function fondDe(data: Buffer, W: number, b: Boite): string {
   const c: number[][] = [[], [], []], add = (x: number, y: number) => { const i = (y * W + x) * 3; c[0].push(data[i]); c[1].push(data[i + 1]); c[2].push(data[i + 2]); };
   for (let x = b[0] + 2; x < b[2] - 2; x += 2) { add(x, b[1] + 2); add(x, b[3] - 3); }
   for (let y = b[1] + 2; y < b[3] - 2; y += 2) { add(b[0] + 2, y); add(b[2] - 3, y); }
@@ -745,6 +745,114 @@ export function lignesDesMots(x: SKRSContext2D, mots: readonly string[], f: stri
 function texte(x: SKRSContext2D, t: string, px: number, py: number, f: string, couleur: string, align: CanvasTextAlign = "left", maxW?: number) {
   x.font = f; x.fillStyle = couleur; x.textAlign = align; x.textBaseline = "middle";
   if (maxW) x.fillText(t, px, py, maxW); else x.fillText(t, px, py);
+}
+
+/**
+ * LE SPÉCIMEN DU BLOC 03 MESURÉ SUR L'APERÇU (essai réel d'Écume, 26 novembre 2026 ; constat du chef d'orchestre : « Le
+ * spécimen du bloc 03 est trop pâle. Sacramento est presque illisible, et les lignes sous Poppins sont plus pâles et plus
+ * petites que sur l'aperçu. Le spécimen doit avoir la couleur, la taille et le contraste de l'aperçu. »). Chaque colonne
+ * de la case (la police des titres à gauche du filet, à 51,9 % de la largeur ; celle des textes à droite) est lue ligne à
+ * ligne : un point d'encre est à plus de 60 niveaux du fond ; une ligne d'encre en porte au moins 2 ; les bandes séparées
+ * de plus de 2 lignes vides sont des lignes de texte. Il en faut exactement cinq (le nom, sa phrase, les capitales, les
+ * minuscules, les chiffres), sinon la colonne n'est pas lue (null) et garde la mise en page d'avant. Pour chaque ligne : sa
+ * place (haut, bas, gauche, en pixels de l'aperçu), son encre (la médiane des 10 % de points les plus foncés : la couleur
+ * pleine des lettres, pas leur bord adouci) et son épaisseur de trait (deux fois l'aire de l'encre sur son pourtour).
+ */
+export type LigneDuSpecimen = { haut: number; bas: number; gauche: number; couleur: string; epaisseur: number };
+export const SEUIL_D_ENCRE_DU_SPECIMEN = 60;
+/**
+ * L'épaisseur moyenne d'un trait, en pixels : `part(x, y)` dit combien un point est couvert d'encre (0 le fond, 1 l'encre
+ * pleine). L'aire est la somme des parts (un bord adouci compte pour sa part) ; le pourtour est le nombre de côtés entre un
+ * point d'encre (part d'au moins 0,35) et un point qui n'en est pas ; un trait de longueur L et d'épaisseur e a une aire de
+ * e × L et un pourtour de 2 × L : l'épaisseur vaut deux fois l'aire sur le pourtour (un filet d'un pixel vaut 1).
+ */
+export function epaisseurDuTrait(part: (x: number, y: number) => number, x0: number, y0: number, x1: number, y1: number): number {
+  let aire = 0, bord = 0;
+  const dedans = (x: number, y: number) => x >= x0 && y >= y0 && x < x1 && y < y1 && part(x, y) >= 0.35;
+  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+    const p = part(x, y);
+    if (p >= 0.1) aire += Math.min(1, p);
+    if (p < 0.35) continue;
+    for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]] as const) if (!dedans(u, v)) bord++;
+  }
+  return bord ? (2 * aire) / bord : 0;
+}
+export function lignesDuSpecimen(data: Buffer, W: number, b: Boite, fond: string): [LigneDuSpecimen[] | null, LigneDuSpecimen[] | null] | null {
+  const f = rgbDe(fond), ecart = (x: number, y: number) => { const i = (y * W + x) * 3; return Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])); };
+  const encre = (x: number, y: number) => ecart(x, y) > SEUIL_D_ENCRE_DU_SPECIMEN;
+  const filet = Math.round(b[0] + (b[2] - b[0]) * 0.519);
+  const colonne = (a: number, z: number): LigneDuSpecimen[] | null => {
+    const bandes: [number, number][] = [];
+    let debut = -1, vide = 0;
+    for (let y = b[1] + 3; y <= b[3] - 3; y++) {
+      let n = 0;
+      if (y < b[3] - 3) for (let x = a; x < z; x++) if (encre(x, y)) n++;
+      if (n >= 2) { if (debut < 0) debut = y; vide = 0; } else if (debut >= 0 && ++vide > 2) { bandes.push([debut, y - vide + 1]); debut = -1; vide = 0; }
+    }
+    if (debut >= 0) bandes.push([debut, b[3] - 3]);
+    // Un grain isolé (une bande de moins de 3 lignes) n'est pas une ligne de texte.
+    const lignes = bandes.filter(([h, d]) => d - h >= 3);
+    if (lignes.length !== 5) return null;
+    return lignes.map(([haut, bas]) => {
+      const pts: [number, number, number, number][] = [];
+      let gauche = z;
+      for (let y = haut; y < bas; y++) for (let x = a; x < z; x++) if (encre(x, y)) { const i = (y * W + x) * 3; pts.push([data[i], data[i + 1], data[i + 2], 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]]); if (x < gauche) gauche = x; }
+      pts.sort((p, q) => p[3] - q[3]);
+      const fonce = pts.slice(0, Math.max(1, Math.round(pts.length * 0.1)));
+      const couleur = hexDe([0, 1, 2].map((k) => mediane(fonce.map((p) => p[k])))), c = rgbDe(couleur);
+      const plein = Math.max(1, Math.abs(c[0] - f[0]), Math.abs(c[1] - f[1]), Math.abs(c[2] - f[2]));
+      return { haut, bas, gauche, couleur, epaisseur: epaisseurDuTrait((u, v) => ecart(u, v) / plein, a, haut, z, bas) };
+    });
+  };
+  const g = colonne(b[0] + 4, filet - 4), d = colonne(filet + 4, b[2] - 4);
+  return g || d ? [g, d] : null;
+}
+/** L'épaisseur ajoutée au trait au plus, en part de la hauteur de la ligne (une écriture fine épaissie, jamais en pâté). */
+export const EPAISSISSEMENT_MAX = 0.08;
+/** La place d'une ligne du spécimen à une police : la taille donne la hauteur voulue, le contour déborde de sa moitié. */
+type PoseDeLigne = { font: string; px: number; py: number; ajout: number };
+function poseDeLigne(x: SKRSContext2D, t: string, aLaTaille: (h: number) => string, gauche: number, haut: number, H: number, ajout: number): PoseDeLigne {
+  // Le contour déborde de la moitié de son épaisseur de chaque côté : les lettres sont réduites d'autant, la hauteur totale
+  // reste celle de l'aperçu.
+  const epais = ajout > 0.3, font = aLaTaille(epais ? H - ajout : H);
+  x.textAlign = "left"; x.textBaseline = "alphabetic";
+  x.font = font;
+  const mm = x.measureText(t), d = epais ? ajout / 2 : 0;
+  return { font, px: gauche + mm.actualBoundingBoxLeft + d, py: haut + mm.actualBoundingBoxAscent + d, ajout: epais ? ajout : 0 };
+}
+function dessinerLigne(x: SKRSContext2D, t: string, p: PoseDeLigne, couleur: string, largeur: number) {
+  x.font = p.font; x.fillStyle = couleur; x.textAlign = "left"; x.textBaseline = "alphabetic";
+  x.fillText(t, p.px, p.py, largeur);
+  if (p.ajout) { x.strokeStyle = couleur; x.lineWidth = p.ajout; x.lineJoin = "round"; x.strokeText(t, p.px, p.py, largeur); }
+}
+/**
+ * Une ligne du spécimen redessinée sur sa ligne mesurée : la taille donne aux lettres la hauteur de l'aperçu (de l'encre la
+ * plus haute à la plus basse de ce texte-là), posée au même haut et au même bord gauche, dans l'encre mesurée. Quand son
+ * trait rendu à sa taille finale est plus fin que celui de l'aperçu agrandi deux fois (une écriture manuscrite déliée devient
+ * presque invisible), il est épaissi d'un contour de la même encre, du manque (mesuré sur la ligne rendue à part, en noir sur
+ * blanc, trois fois de suite pour tenir compte du contour), sans dépasser EPAISSISSEMENT_MAX de la hauteur. Trop large
+ * pour sa colonne, elle est resserrée, jamais rapetissée.
+ */
+function ligneDuSpecimen(x: SKRSContext2D, t: string, f100: string, l: LigneDuSpecimen, limite: number) {
+  // Les mesures dépendent de l'alignement du contexte (la palette écrit centré, au milieu) : toujours à gauche, sur la ligne de base.
+  x.textAlign = "left"; x.textBaseline = "alphabetic"; x.font = f100;
+  const m = x.measureText(t), h100 = Math.max(1, m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
+  const H = (l.bas - l.haut) * S, largeur = Math.max(8, (limite - l.gauche) * S), voulu = l.epaisseur * S;
+  const aLaTaille = (h: number) => f100.replace(/\b100px\b/, `${(Math.round(((100 * h) / h100) * 10) / 10).toString()}px`);
+  // Le trait rendu, mesuré à part : la ligne seule, en noir sur blanc, avec son contour.
+  const trait = (ajout: number) => {
+    const p = poseDeLigne(x, t, aLaTaille, 4, 4, H, ajout), w = Math.ceil(largeur + 8), hh = Math.ceil(H + 8), c = createCanvas(w, hh), cx = c.getContext("2d");
+    cx.fillStyle = "#FFFFFF"; cx.fillRect(0, 0, w, hh); dessinerLigne(cx, t, p, "#000000", largeur);
+    const px = cx.getImageData(0, 0, w, hh).data;
+    return epaisseurDuTrait((a, b) => (255 - px[(b * w + a) * 4]) / 255, 0, 0, w, hh);
+  };
+  let ajout = 0;
+  for (let k = 0; k < 3; k++) {
+    const manque = voulu - trait(ajout);
+    if (manque <= 0.15) break;
+    ajout = Math.min(H * EPAISSISSEMENT_MAX, ajout + manque);
+  }
+  dessinerLigne(x, t, poseDeLigne(x, t, aLaTaille, l.gauche * S, l.haut * S, H, ajout), l.couleur, largeur);
 }
 
 /**
@@ -834,9 +942,24 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   // Les typographies, avec les vraies polices du catalogue.
   const ty = B("typographies");
   if (ty) {
-    const b = X(ty), W = b[2] - b[0], H = b[3] - b[1];
-    x.fillStyle = fond(ty); x.fillRect(b[0], b[1], W, H);
+    const b = X(ty), W = b[2] - b[0], H = b[3] - b[1], fTy = fond(ty);
+    // Les lignes du spécimen mesurées sur l'aperçu (place, hauteur des lettres, encre, épaisseur), avant d'effacer.
+    const mesure = lignesDuSpecimen(d0, info.width, ty, fTy);
+    x.fillStyle = fTy; x.fillRect(b[0], b[1], W, H);
     for (const [k, p] of [[0, pT], [1, pX]] as const) {
+      const lignes = mesure?.[k];
+      if (lignes) {
+        // Les cinq lignes de l'aperçu (le nom, sa phrase, capitales, minuscules, chiffres), chacune redessinée à sa place,
+        // à la hauteur de ses lettres, dans l'encre et l'épaisseur mesurées.
+        const desc = o.typos?.[k]?.trim();
+        const textes: [string | undefined, string][] = [
+          [p.famille, fonte(p, 100, k === 0 ? p.poids : 500)], [desc, mp(100, G.legende)],
+          ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", fonte(p, 100, 400)], ["abcdefghijklmnopqrstuvwxyz", fonte(p, 100, 400)], ["0123456789", fonte(p, 100, 400)],
+        ];
+        const limite = k === 0 ? ty[0] + (ty[2] - ty[0]) * 0.519 - 8 : ty[2] - 8;
+        textes.forEach(([t, f100], i) => { if (t) ligneDuSpecimen(x, t, f100, lignes[i], limite); });
+        continue;
+      }
       const x0 = b[0] + (k === 0 ? 22 * S : W * 0.567);
       texte(x, p.famille, x0, b[1] + 30 * S, fonte(p, 64, k === 0 ? p.poids : 500), o.encre, "left", W * 0.42);
       // Sa phrase de présentation, comme sur l'aperçu, en police de mise en page.

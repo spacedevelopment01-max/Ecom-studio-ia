@@ -550,6 +550,8 @@ export type ResultatDuReassemblage = {
   palette: { hex: string; nom: string }[]; logosDeLApercu: string[];
   reprise?: { elements: NomElement[]; devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: NomElement[] };
   arret?: string; notes: string[];
+  /** Le projet de la base d'essai où le réassemblage est enregistré, son fil, l'etat.json écrit (relu par l'écran). */
+  projectId: string; conversationId: string; etat: string; projetCree: boolean;
 };
 /** Le devis de la reprise de quelques cases (aucun appel), avec le plafond minimal exact. */
 export async function devisDuReassemblage(elements: readonly NomElement[], o: { logoHd?: boolean } = {}): Promise<string[]> {
@@ -651,7 +653,12 @@ export async function reassemblerLEssaiEnVrai(o: { dossier: string; sortie: stri
   const comparaison = await sharp({ create: { width: 2 * W + 20, height: H + 44, channels: 3, background: "#ffffff" } })
     .composite([{ input: titre("Planche choisie (aperçu)"), left: 0, top: 0 }, { input: titre("Planche en vrai réassemblée (3072 × 4608)"), left: W + 20, top: 0 }, { input: gauche, left: 0, top: 44 }, { input: droite, left: W + 20, top: 44 }]).jpeg({ quality: 88 }).toBuffer();
   ecrire("comparaison-apercu-et-reassemblee.jpg", comparaison);
-  const res: ResultatDuReassemblage = { cases, gardees: images.size, planche: "planche-en-vrai.png", comparaison: "comparaison-apercu-et-reassemblee.jpg", palette: code.palette.map((p) => ({ hex: p.hex, nom: p.nom })), logosDeLApercu: code.depuisLApercu, ...(reprise ? { reprise } : {}), ...(arret ? { arret } : {}), notes: code.notes };
+  // L'état et le projet mis à jour, comme après l'étape 4 normale (26 novembre 2026, « L'écran ne suit pas le
+  // réassemblage. ») : les images gardées, les logos, la marque, la planche réassemblée, rangés dans le projet de l'essai
+  // par la fonction du Studio (`enregistrerLaPlancheReassemblee`) ; etat.json et essai.json écrits dans le dossier de
+  // sortie ; le parcours du projet réécrit : l'onglet Marque montre la planche réassemblée et ses images gardées.
+  const enregistre = await enregistrerLeReassemblage({ dossier: o.dossier, sortie: o.sortie, client, donnees, demo, logoFini, inventaire, code, cases, images, ecrire });
+  const res: ResultatDuReassemblage = { cases, gardees: images.size, planche: "planche-en-vrai.png", comparaison: "comparaison-apercu-et-reassemblee.jpg", palette: code.palette.map((p) => ({ hex: p.hex, nom: p.nom })), logosDeLApercu: code.depuisLApercu, ...(reprise ? { reprise } : {}), ...(arret ? { arret } : {}), notes: code.notes, ...enregistre };
   ecrire("rejugement.json", `${JSON.stringify(res, null, 2)}\n`);
   const lignes = [
     `Réassemblage de la planche en vrai de « ${nom} » à partir de l'essai ${o.dossier} (aucun appel pour a) et b))`,
@@ -661,10 +668,66 @@ export async function reassemblerLEssaiEnVrai(o: { dossier: string; sortie: stri
     `Palette : ${code.palette.map((p) => `${p.hex} ${p.nom}`).join(" ; ")}`,
     ...(reprise ? [`Reprise : ${reprise.elements.join(", ")} ; devis probable ${euros(reprise.devis.probableMicro)}, au plus ${euros(reprise.devis.maxMicro)} ; dépense comptée ${euros(reprise.depenseMicro)} ; gardées : ${reprise.gardees.join(", ") || "aucune"}`] : []),
     ...(arret ? [`ARRÊT de la reprise : ${arret}`] : []),
+    `État et projet mis à jour : etat.json et essai.json (projet ${enregistre.projectId}${enregistre.projetCree ? ", créé dans cette base : celui de l'essai n'y était pas" : ""}) ; l'onglet Marque montre la planche réassemblée et ses ${images.size} images gardées`,
     ...code.notes.map((n) => `  note : ${n}`),
   ];
   ecrire("rapport.txt", `${lignes.join("\n")}\n`);
   return res;
+}
+
+/**
+ * L'enregistrement d'un réassemblage dans la base de l'essai (DATA_DIR), comme l'étape 4 normale : le projet de l'essai
+ * (essai.json du dossier de l'essai) s'il est dans cette base avec sa planche choisie et son logo fini ; sinon un projet
+ * fictif est créé comme dans l'essai (le client de l'essai, sans photo de produit), avec la planche choisie et le logo fini
+ * donnés, et c'est dit. Puis la fonction du Studio (`enregistrerLaPlancheReassemblee`), etat.json (sans l'inventaire, comme
+ * l'essai ; inventaire-reponse.json copié à côté) et essai.json, et le parcours (`enregistrerLeParcours`). Aucun appel.
+ */
+async function enregistrerLeReassemblage(o: {
+  dossier: string; sortie: string; client: ClientDeLEssai; donnees: DonneesDeLaPlanche; demo: Buffer; logoFini: Buffer; inventaire: Inventaire;
+  code: Awaited<ReturnType<typeof import("../../src/lib/syna-agent/planche-en-vrai-tache").plancheEnVraiParLeCode>>;
+  cases: RejugementDeCase[]; images: ReadonlyMap<NomElement, Buffer>; ecrire: (f: string, c: string | Buffer) => string;
+}): Promise<{ projectId: string; conversationId: string; etat: string; projetCree: boolean }> {
+  const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
+  const P = await import("../../src/lib/syna-agent/planche-en-vrai");
+  const { one, run } = await import("../../src/lib/db");
+  const { getAsset, saveAsset } = await import("../../src/lib/library");
+  const { runWithLang } = await import("../../src/lib/i18n-server");
+  const { setJsonSetting } = await import("../../src/lib/settings");
+  const lireJson = <X>(f: string): X | null => { const p = path.join(o.dossier, f); try { return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8")) as X : null; } catch { return null; } };
+  const essai = lireJson<{ projectId?: string }>("essai.json"), avant = lireJson<EtatPlancheEnVrai>("etat.json");
+  const existe = (id: string | undefined) => !!id && !!getAsset(id);
+  let p = essai?.projectId ? one<{ id: string; user_id: string }>("SELECT id, user_id FROM projects WHERE id=?", essai.projectId) : undefined;
+  let demoId = avant?.demo, logoId = avant?.logo, projetCree = false;
+  if (!p || !existe(demoId) || !existe(logoId)) {
+    // Le projet de l'essai n'est pas dans cette base : un projet fictif, comme dans l'essai.
+    setJsonSetting(P.REGLAGE_PLANCHE_EN_VRAI, true);
+    const { account, project } = await import("../../tests/conversation209-fixtures");
+    const u = await account();
+    const projectId = project(u, typeDuProjet(o.client)) as string;
+    run("UPDATE projects SET name=? WHERE id=?", o.client.nom, projectId);
+    demoId = (await saveAsset({ userId: u.id, projectId, data: o.demo, name: "planche-choisie.png", mime: "image/png", role: "brand-board", origin: "generated", status: "ready", meta: { plancheDeMarque: { key: "A", tour: 1, nom: o.client.nom, disposition: o.donnees.disposition } } })).id;
+    logoId = (await saveAsset({ userId: u.id, projectId, data: o.logoFini, name: "logo-fini.png", mime: "image/png", role: "logo", origin: "generated", status: "ready" })).id;
+    p = { id: projectId, user_id: u.id };
+    projetCree = true;
+  }
+  const who = { userId: p.user_id, projectId: p.id };
+  const aRanger = new Map<NomElement, import("../../src/lib/syna-agent/planche-en-vrai-tache").ImageARanger>();
+  for (const c of o.cases) {
+    const png = o.images.get(c.element) ?? null;
+    const garde = typeof c.gardee === "number" ? c.essais.find((e) => e.tour === c.gardee) : null;
+    aRanger.set(c.element, png
+      ? { png, essais: c.gardee === "reprise" ? c.essais.length + 1 : Number(c.gardee), verdict: garde ? { note: garde.note, rejuge: true } : null }
+      : { png: null, essais: c.essais.length, raison: c.essais.length ? `refusée au rejugement : ${c.essais.at(-1)!.raisonsApres.join(" ; ")}` : "aucune image dans l'essai" });
+  }
+  const etat = await runWithLang({ ui: "fr", content: "fr" }, () => T.enregistrerLaPlancheReassemblee({
+    who, avant: { key: avant?.key ?? "A", demo: demoId!, logo: logoId!, laquelle: o.donnees.disposition, notes: avant?.notes ?? [] }, inventaire: o.inventaire, code: o.code, images: aRanger,
+    notes: [`réassemblage de l'essai ${path.basename(o.dossier)} : ${o.images.size} image(s) gardée(s) sur 17 au rejugement`],
+  }));
+  const fichierEtat = o.ecrire("etat.json", `${JSON.stringify({ ...etat, inventaire: undefined }, null, 2)}\n`);
+  o.ecrire("inventaire-reponse.json", `${JSON.stringify(o.inventaire, null, 2)}\n`);
+  const { conversationId } = await runWithLang({ ui: "fr", content: "fr" }, () => enregistrerLeParcours({ userId: who.userId, projectId: who.projectId, nom: o.client.nom, etat, donnees: o.donnees }));
+  o.ecrire("essai.json", `${JSON.stringify({ client: o.client, donnees: o.donnees, projectId: who.projectId, conversationId }, null, 2)}\n`);
+  return { projectId: who.projectId, conversationId, etat: fichierEtat, projetCree };
 }
 
 /** La reprise de quelques cases, à la charge du Studio (c) du réassemblage), par `reprendreDesCasesEnVrai`. */
