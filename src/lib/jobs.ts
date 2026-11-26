@@ -398,11 +398,11 @@ export function pauseJob(jid: string) {
  * Le worker met en attente une tâche arrêtée par la dépense annoncée (26 novembre 2026) : en pause, avec ce qu'elle a déjà
  * coûté au client et ce qui lui avait été annoncé ; ses étapes finies restent gardées. Rien ne repart sans son accord.
  */
-export function mettreEnAttenteDAccord(jid: string, a: { depenseMicro: number; annonceMicro: number }) {
+export function mettreEnAttenteDAccord(jid: string, a: { depenseMicro: number; annonceMicro: number }, phrase?: string) {
   const job = getJob(jid);
   if (!job) return;
   const payload = { ...json<Record<string, unknown>>(job.payload, {}), attenteAccord: { depenseMicro: Math.max(0, Math.round(a.depenseMicro)), annonceMicro: Math.round(a.annonceMicro), at: now() } };
-  run("UPDATE jobs SET status='paused', payload=?, message=?, attempts=MAX(0, attempts-1), locked_by=NULL, locked_until=NULL, updated_at=? WHERE id=? AND status IN ('running','queued','paused')", JSON.stringify(payload), L("En attente de ton accord pour continuer", "Waiting for your approval to continue"), now(), jid);
+  run("UPDATE jobs SET status='paused', payload=?, message=?, attempts=MAX(0, attempts-1), locked_by=NULL, locked_until=NULL, updated_at=? WHERE id=? AND status IN ('running','queued','paused')", JSON.stringify(payload), phrase ?? L("En attente de ton accord pour continuer", "Waiting for your approval to continue"), now(), jid);
 }
 
 /**

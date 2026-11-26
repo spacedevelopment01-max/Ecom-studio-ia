@@ -6,7 +6,7 @@
 import "./env";
 import os from "node:os";
 import { arretParLEssai } from "../src/lib/ai/plafond-essai";
-import { annonceDe, claimNext, completeJob, failJob, mettreEnAttenteDAccord, JobContext, JobCancelled, JobPaused, LeaseLost, WORKER_ID, getJob, releaseJob, LEASE_RENEW_MS, markFinished, markRunning, renewLease } from "../src/lib/jobs";
+import { annonceDe, claimNext, completeJob, failJob, JobContext, JobCancelled, JobPaused, LeaseLost, WORKER_ID, getJob, releaseJob, LEASE_RENEW_MS, markFinished, markRunning, renewLease } from "../src/lib/jobs";
 import { stopInterruptedPaidJob } from "../src/lib/job-recovery";
 import { retryStripeCancellations } from "../src/lib/payments";
 import { db, logError, now, run } from "../src/lib/db";
@@ -16,9 +16,10 @@ import { runDueAutomations } from "../src/lib/social-v2/automations";
 import { runDueAutopilots } from "../src/lib/social-v2/autopilot";
 import { handlers, HANDLER_TYPES } from "./handlers";
 import { aiActiveFor, runForUser, withAiDisabled } from "../src/lib/ai/access";
-import { arretParLAnnonce, depensesDeLaTache, selonLaCharge, withTrace } from "../src/lib/ai/trace";
+import { selonLaCharge, withTrace } from "../src/lib/ai/trace";
 import { borneDuStudioDe } from "../src/lib/ai/borne-du-studio";
 import { intentsFromAction } from "../src/lib/orchestrator/intent";
+import { attendreLAccordDeLaTache } from "../src/lib/syna-agent/depense-annoncee";
 
 /**
  * Plafond de dépense accepté par le client pour cette tâche (création lancée par une demande), sinon aucun. La borne des
@@ -39,12 +40,7 @@ const relanceOf = (payload: unknown) => {
  * La tâche s'est arrêtée avant un appel qui lui aurait fait dépasser le double de la dépense annoncée au client
  * (src/lib/ai/trace.ts) : elle est mise en attente de son accord, avec ce qu'elle lui a déjà coûté (26 novembre 2026).
  */
-function attendreLAccord(jobId: string): boolean {
-  const e = arretParLAnnonce(jobId);
-  if (!e) return false;
-  mettreEnAttenteDAccord(jobId, { depenseMicro: depensesDeLaTache(jobId).client, annonceMicro: e.annonceMicro });
-  return true;
-}
+const attendreLAccord = (jobId: string): boolean => attendreLAccordDeLaTache(jobId);
 
 /** Intention d'une tâche de fond, sans IA (trace : chaque appel est rattaché à ce que le client a demandé). */
 const jobIntent = (type: string, payload: unknown) => intentsFromAction(type, payload as { regenerate?: boolean })?.join("+");

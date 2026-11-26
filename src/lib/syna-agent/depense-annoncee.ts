@@ -9,7 +9,9 @@
  * où elle s'est arrêtée (jobs.ts, `leverLAttenteDAccord`). Non : elle est arrêtée, ce qui est fait est gardé.
  */
 import { coutProbableTu } from "../ai/budget-pct";
-import { L } from "../i18n-server";
+import { arretParLAnnonce, depensesDeLaTache } from "../ai/trace";
+import { getJob, mettreEnAttenteDAccord } from "../jobs";
+import { L, runWithLang, userLang } from "../i18n-server";
 
 /** L'action de la carte « je continue ? » : réservée au Studio, jamais un outil que SINA peut appeler elle-même. */
 export const TRAVAIL_CONTINUER = "travail.continuer";
@@ -32,4 +34,19 @@ export function previewDeLaSuite(): string {
     "Continuer ce travail là où je me suis arrêtée. Ce qui est fait est gardé ; si la suite devait encore coûter bien plus que prévu, je m'arrête de nouveau et je te demande.",
     "Continue this work where I stopped. What is done is kept; if the rest were to cost much more again, I stop again and ask you.",
   );
+}
+
+/**
+ * Le worker, à la fin d'une tâche arrêtée avant de dépasser le double de la dépense annoncée : elle est mise en attente de
+ * l'accord du client, avec ce qu'elle lui a déjà coûté, et la phrase de SINA dans son message. C'est la même pour toutes
+ * les tâches, celles de SINA comme celles des écrans (publicités, créations confirmées) : l'écran qui la suit et le suivi
+ * des tâches la montrent, et « Reprendre » est son oui. Rend vrai si la tâche est mise en attente.
+ */
+export function attendreLAccordDeLaTache(jobId: string): boolean {
+  const e = arretParLAnnonce(jobId);
+  if (!e) return false;
+  const job = getJob(jobId), a = { depenseMicro: depensesDeLaTache(jobId).client, annonceMicro: e.annonceMicro };
+  const phrase = job ? runWithLang({ ui: userLang(job.user_id) }, () => phraseDuDepassement(job.user_id, job.project_id ?? null, a)) : undefined;
+  mettreEnAttenteDAccord(jobId, a, phrase);
+  return true;
 }

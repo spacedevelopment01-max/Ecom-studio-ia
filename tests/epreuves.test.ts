@@ -2433,6 +2433,18 @@ describe("l'épreuve du coût probable seul et de l'arrêt au double (26 novembr
       // Le maximum reste dans le devis reçu (la réservation en coulisses), jamais dans le texte montré.
       expect(src, f).not.toMatch(/\(quote\.maximumPct|\$\{[^}]*maximumPct|Plafond de cette demande|plafond \$\{|Au plus \$\{|estimation \$\{|reprises restent plafonnées/);
     }
-    expect(fs.readFileSync("src/components/studio/social-autopilot.tsx", "utf8")).toContain("data-paid-cap");
+    const auto = fs.readFileSync("src/components/studio/social-autopilot.tsx", "utf8");
+    expect(auto).toContain("data-paid-cap");
+    expect(auto).toContain("Plafond par semaine pour ces visuels (% de ton budget IA du mois)");
+
+    // 7. Les tâches de ces écrans emportent le coût probable montré et s'arrêtent de même ; la phrase est dans leur message.
+    const campagnes = fs.readFileSync("src/app/api/projects/[id]/campaigns/v2/route.ts", "utf8"), coeur = fs.readFileSync("src/lib/atelier/coeur.ts", "utf8");
+    expect(campagnes).toContain("avecLaDepenseAnnoncee(quote, () => enqueue(");
+    expect(campagnes).toContain("avecLaDepenseAnnoncee(campaignPrice.estimateMicro, () => enqueue(");
+    expect(coeur).toContain("avecLaDepenseAnnoncee(approval.cost.estimateMicro, () => enqueue(");
+    expect(coeur).toContain("avecLaDepenseAnnoncee(approval.capMicro, () => enqueue(");
+    expect(worker).toContain("attendreLAccordDeLaTache(jobId)");
+    expect(pub).toContain('if (j.status === "paused") { toast("ok", `${j.message ?? ""}');
+    for (const f of ["tests/depense-annoncee-ecran-images.test.ts", "tests/depense-annoncee-ecran-publicites.test.ts"]) expect(fs.existsSync(f), f).toBe(true);
   });
 });

@@ -8,7 +8,7 @@ import { publicationReadiness } from "@/lib/social-v2/ai-post";
 import { z } from "zod";
 import { HttpError } from "@/lib/auth";
 import { body, handle, ok } from "@/lib/http";
-import { enqueue, publicJob, type Job } from "@/lib/jobs";
+import { avecLaDepenseAnnoncee, enqueue, publicJob, type Job } from "@/lib/jobs";
 import { all, json, one, run } from "@/lib/db";
 import { projectFromCtx, type Ctx } from "@/lib/route-helpers";
 import { L } from "@/lib/i18n-server";
@@ -111,7 +111,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
     if (b.approvedEstimateMicro == null || b.approvedEstimateMicro < quote) throw new HttpError(409, L("Prix à accepter avant de lancer (il a pu changer) : vérifiez-le puis relancez.", "Price to accept before starting (it may have changed): check it and start again."));
     const subject = b.subject ? resolveSubject(p, b.subject) : null;
     if (b.subject && (!subject || subject.kind !== b.subject.kind || subject.key !== (b.subject.kind === "service" ? b.subject.name.trim() : b.subject.key))) throw new HttpError(400, L("Produit ou service introuvable dans ce projet.", "Product or service not found in this project."));
-    const job = enqueue({ userId: user.id, projectId: p.id, type: "image.ai_post", idempotencyKey:b.operationId?`ad-create:${p.id}:${b.operationId}:${stableHash("ad-intent",{subject:b.subject,request:b.request,aspect:b.aspect})}`:undefined, label: L("Publicité conçue par l'IA", "Ad designed by AI"), payload: { projectId: p.id, costCapMicro: aiPostCapMicro(), request: { entryPoint:"ads-guided", as: "ad", kind: "ad", format: b.aspect ?? "4:5", subject: b.subject, request: b.request?.trim() || undefined } } });
+    // Le coût probable montré est la dépense annoncée : la tâche s'arrête et le demande avant d'en dépasser le double.
+    const job = avecLaDepenseAnnoncee(quote, () => enqueue({ userId: user.id, projectId: p.id, type: "image.ai_post", idempotencyKey:b.operationId?`ad-create:${p.id}:${b.operationId}:${stableHash("ad-intent",{subject:b.subject,request:b.request,aspect:b.aspect})}`:undefined, label: L("Publicité conçue par l'IA", "Ad designed by AI"), payload: { projectId: p.id, costCapMicro: aiPostCapMicro(), request: { entryPoint:"ads-guided", as: "ad", kind: "ad", format: b.aspect ?? "4:5", subject: b.subject, request: b.request?.trim() || undefined } } }));
     return ok({ jobId: job.id, estimateMicro: quote });
   }
   const campaignPrice=campaignEstimate(p,b);
@@ -120,7 +121,8 @@ export const POST = handle(async (req: Request, ctx: Ctx) => {
   if(!readiness.ready)throw new HttpError(409,readiness.reason!);
   if(b.approvedEstimateMicro==null || b.approvedEstimateMicro<campaignPrice.estimateMicro)throw new HttpError(409,L("Vérifiez et acceptez le devis de cette campagne avant de lancer.","Review and accept this campaign quote before starting."));
   if (one("SELECT 1 FROM jobs WHERE project_id = ? AND type = 'ads.v2' AND status IN ('queued','running','paused')", p.id)) throw new HttpError(409, L("Des publicités sont déjà en préparation.", "Ads are already being prepared."));
-  const job = enqueue({ userId: user.id, projectId: p.id, type: "ads.v2", idempotencyKey:b.operationId?`campaign-create:${p.id}:${b.operationId}:${stableHash("campaign-intent",{count:b.count,platforms:b.platforms,aspects:b.aspects,offer:b.offer,audience:b.audience,objective:b.objective})}`:undefined, label: L("Publicités : angles, textes et créations", "Ads: angles, copy and creatives"), payload: { projectId: p.id, costCapMicro:campaignPrice.capMicro, request: { count: b.count, platforms: b.platforms, objective: b.objective, audience: b.audience, offer: b.offer, aspects: b.aspects } } });
+  // Le coût probable montré est la dépense annoncée : la tâche s'arrête et le demande avant d'en dépasser le double.
+  const job = avecLaDepenseAnnoncee(campaignPrice.estimateMicro, () => enqueue({ userId: user.id, projectId: p.id, type: "ads.v2", idempotencyKey:b.operationId?`campaign-create:${p.id}:${b.operationId}:${stableHash("campaign-intent",{count:b.count,platforms:b.platforms,aspects:b.aspects,offer:b.offer,audience:b.audience,objective:b.objective})}`:undefined, label: L("Publicités : angles, textes et créations", "Ads: angles, copy and creatives"), payload: { projectId: p.id, costCapMicro:campaignPrice.capMicro, request: { count: b.count, platforms: b.platforms, objective: b.objective, audience: b.audience, offer: b.offer, aspects: b.aspects } } }));
   return ok({ jobId: job.id, ...view(p.id) });
   },["ai_create", "generate"]);
 });

@@ -306,9 +306,11 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       const r = quote.jobId?{jobId:quote.jobId}:await api<{ jobId: string }>(`/api/projects/${projectId}/images/v2`, { body: { action:'generate',operationId,request,approvalToken:quote.approvalToken,confirmation:true } });
       for (let i = 0; i < 300; i++) {
         await new Promise((res) => setTimeout(res, 2000));
-        const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.v2`);
+        const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null; message?: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.v2`);
         const j = jobs.jobs.find((x) => x.id === r.jobId);
         if (!j || j.status === "queued" || j.status === "running") continue;
+        // Arrêtée avant de dépasser le double du coût annoncé : la phrase de SINA, et « Reprendre » dans le suivi des tâches.
+        if (j.status === "paused") { toast("ok", `${j.message ?? ""} ${t("Pour continuer : « Reprendre » dans le suivi des tâches.", "To continue: \"Resume\" in task tracking.")}`.trim()); return; }
         const asset = j.result?.outcomes?.find((o: { assetId: string | null }) => o.assetId)?.assetId;
         if (j.status !== "done" || !asset) throw new Error(j.error || t("Aucune image retenue par le contrôle de qualité.", "No image passed the quality check."));
         const target = photoLayer();
@@ -346,9 +348,11 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
       const r=quote.jobId?{jobId:quote.jobId}:await api<{jobId:string}>(`/api/projects/${projectId}/images/v2`,{body:{action:'edit',operationId,...request,confirmation:true,approvalToken:quote.approvalToken}});
       for (let i = 0; i < 300; i++) {
         await new Promise((res) => setTimeout(res, 2000));
-        const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.edit`);
+        const jobs = await api<{ jobs: { id: string; status: string; result: any; error: string | null; message?: string | null }[] }>(`/api/projects/${projectId}/jobs?type=image.edit`);
         const j = jobs.jobs.find((x) => x.id === r.jobId);
         if (!j || j.status === "queued" || j.status === "running") continue;
+        // Arrêtée avant de dépasser le double du coût annoncé : la phrase de SINA, et « Reprendre » dans le suivi des tâches.
+        if (j.status === "paused") { toast("ok", `${j.message ?? ""} ${t("Pour continuer : « Reprendre » dans le suivi des tâches.", "To continue: \"Resume\" in task tracking.")}`.trim()); return; }
         if (j.status !== "done" || !j.result?.assetId) throw new Error(j.error || t("La retouche n'a pas abouti.", "The edit did not complete."));
         apply({ op: "image", id: target.id, assetId: j.result.assetId });
         editOperation.current=null;
