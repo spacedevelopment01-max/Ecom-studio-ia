@@ -58,7 +58,7 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 25/11 | Écume | Planche A (logo 6), 1er essai | 5/10 : « une main est visible dans l'image de référence « Mousse délicate » … S'y ajoutent la faute « Dites-le nous ! » et la phrase du client déformée sur le sac en tissu » ; plus 15 refus de la phrase où le relecteur avait ajouté l'emplacement devant (« 01 Logo principal : … ») ; reprise jamais envoyée (« Texte de la planche trop long ») ; planche B jamais lancée | Non | [en attente] |
 | 26/11 | Écume | Planche A (logo 6), reprise à la charge du Studio | 8/10 mais refusée : « Seul un accent parasite traîne dans le titre SEO, à nettoyer ; le reste est complet, soigné et montrable » | Non | [en attente] |
 | 26/11 | Écume | Planche B (logo 10), 1er essai | 7/10 : bloc Produits numéroté 05 au lieu de 06, mots déformés sur le site (« Écumee », « Fabrmotion », « Ingrédieeement ») | Non | [en attente] |
-| 26/11 | Écume | Planche B (logo 10), reprise à la charge du Studio | 8,5/10 : « Planche complète et soignée … Seul petit écart : la police « Nunito » est présentée en écriture manuscrite » | Oui | [en attente] |
+| 26/11 | Écume | Planche B (logo 10), reprise à la charge du Studio | 8,5/10 : « Planche complète et soignée … Seul petit écart : la police « Nunito » est présentée en écriture manuscrite » | Oui | choisie par le propriétaire (rapporté par le chef d'orchestre le 26/11) |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 
