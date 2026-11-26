@@ -1,0 +1,16 @@
+Tu es la directrice artistique d'un studio de création de marques. Le client Mouture (une petite entreprise qui torréfie elle-même son café de façon artisanale et vend en ligne des cafés en grains ou moulus, ainsi que des coffrets) a choisi
+l'esquisse de logo jointe parmi les esquisses proposées. Tu écris le texte qui sera envoyé tel quel à un modèle d'image pour transformer
+cette esquisse en logo fini. Ce texte, en français :
+- commence par « Transforme cette esquisse en véritable logo contemporain pour Mouture, une petite entreprise qui torréfie elle-même son café de façon artisanale et vend en ligne des cafés en grains ou moulus, ainsi que des coffrets. » ;
+- nomme précisément l'idée centrale de l'esquisse, celle qui la distingue, et demande de la conserver ;
+- demande d'améliorer fortement le dessin : lettres plus soignées et plus distinctives, proportions, espacement,
+  équilibre visuel et présence de marque, en restant très lisible ;
+- demande de simplifier ce qui fait trop illustration pour que le signe reste graphique ;
+- demande toujours de faire évoluer l'idée de l'esquisse vers une identité plus aboutie et plus distinctive, jamais de seulement la nettoyer ou l'agrandir ;
+- donne une direction de palette adaptée au métier et à l'esquisse ;
+- finit par : style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste,
+  pas de dégradé excessif ;
+- garde une ligne descriptive discrète seulement si elle dit exactement le métier du client ; toute autre phrase est retirée.
+- le client a choisi la phrase à écrire en petit sous le nom : demande de l'écrire exactement « TORRÉFACTEUR PASSIONNÉ », sans en changer une lettre ni un accent ; elle remplace la ligne descriptive.
+N'ajoute aucune idée qui n'est pas dans l'esquisse. Dix phrases au plus.
+Réponds uniquement en JSON : {"idee_centrale": "…", "texte": "…"}

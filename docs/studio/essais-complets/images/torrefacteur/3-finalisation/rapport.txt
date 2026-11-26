@@ -1,0 +1,52 @@
+Essai de la finalisation des logos — client « Mouture » (petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets), type « produits »
+Plafond de l'essai : 1,5000 €
+Phrase du métier (essai des esquisses, jamais réécrite) : une petite entreprise qui torréfie elle-même son café de façon artisanale et vend en ligne des cafés en grains ou moulus, ainsi que des coffrets
+Esquisses : 11 (/home/user/Ecom-studio-ia/data/essai-torrefacteur/2-esquisses/esquisse-11.png), 4 (/home/user/Ecom-studio-ia/data/essai-torrefacteur/2-esquisses/esquisse-04.png)
+Phrase sous le nom du logo 11 : « TORRÉFACTION ARTISANALE », mot pour mot
+Phrase sous le nom du logo 4 : « TORRÉFACTEUR PASSIONNÉ », mot pour mot
+
+Devis de l'essai (fonctions du devis du Studio, aucun appel) :
+- esquisse 11 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 11 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 11 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 11 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 11 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 11 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 4 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 4 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 4 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 4 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 4 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 4 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+Probable, sans refus : 0,1927 € (devis du Studio : 0,1927 €)
+Probable, si chaque logo est refait une fois et son texte réécrit : 0,3854 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima) : 2,1906 €
+  dont plafond du client de la tâche 1,0953 € et borne du Studio 1,0953 € (devisDesFinalisations)
+Écart entre le probable et ce plafond : 1,9979 €
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 2,1529 € de plus en tout ; la tâche du parcours ne la couvre pas (elle s'arrêterait sur sa propre borne).
+
+
+Esquisse 4 : logo GARDÉ par le relecteur
+  essai 1 : texte esquisse-04-logo-1-texte-envoye.txt ; image jointe esquisse-04-logo-1-image-jointe.png ; logo brut esquisse-04-logo-1-brut.png ; détouré esquisse-04-logo-1-detoure.png
+    verdict : note 9/10, nom lu « MOUTURE », idée conservée oui, phrase « TORRÉFACTEUR PASSIONNÉ », défauts graves aucun, petites finitions « La petite boucle en haut du O est un peu détachée de la lettre ; la raccorder plus nettement pour un rendu plus propre. ; Les arcs supérieur et inférieur ont des bords un peu ondulés par endroits ; adoucir légèrement ces creux pour un tracé plus régulier. » —Le nom et la phrase sont écrits exactement. L'empreinte circulaire de tasse ouverte sur les côtés est bien gardée et nettement redessinée, sur un fond blanc uni. Seules deux petites finitions restent possibles.
+    raisons du refus : aucune
+  phrase portée par le logo gardé : « TORRÉFACTEUR PASSIONNÉ » (esquisse-04-phrase-du-logo.txt, à redonner en PHRASE à la planche en vrai)
+  note : logo 1 : petites finitions notées, sans refus : La petite boucle en haut du O est un peu détachée de la lettre ; la raccorder plus nettement pour un rendu plus propre. ; Les arcs supérieur et inférieur ont des bords un peu ondulés par endroits ; adoucir légèrement ces creux pour un tracé plus régulier.
+
+Esquisse 11 : logo GARDÉ par le relecteur
+  essai 1 : texte esquisse-11-logo-1-texte-envoye.txt ; image jointe esquisse-11-logo-1-image-jointe.png ; logo brut esquisse-11-logo-1-brut.png ; détouré esquisse-11-logo-1-detoure.png
+    verdict : note 9/10, nom lu « MOUTURE », idée conservée oui, phrase « TORRÉFACTION ARTISANALE », défauts graves aucun, petites finitions « Les petites lettres de la mention en courbe sont un peu inégales dans leur inclinaison et leur espacement, surtout dans « TORRÉFACTION ». ; La fente du grain de café traverse le grain d'un bord à l'autre et le coupe en deux : une fente arrêtée avant les bords serait plus nette. » —Le nom et la mention sont écrits exactement, accents compris. L'écusson hexagonal à double contour, avec la flamme, le nom et le grain fendu alignés, est bien conservé, sur un fond blanc uni. Seules deux petites finitions sont à reprendre.
+    raisons du refus : aucune
+  phrase portée par le logo gardé : « TORRÉFACTION ARTISANALE » (esquisse-11-phrase-du-logo.txt, à redonner en PHRASE à la planche en vrai)
+  note : logo 1 : petites finitions notées, sans refus : Les petites lettres de la mention en courbe sont un peu inégales dans leur inclinaison et leur espacement, surtout dans « TORRÉFACTION ». ; La fente du grain de café traverse le grain d'un bord à l'autre et le coupe en deux : une fente arrêtée avant les bords serait plus nette.
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- f08e67610c2276cd7f84b46b5d0bbf020116fa66102209cd5af06ed54ac42d91 · openai:gpt-6.2-astra · charge du client · réservé 0,2315 € → réglé 0,0215 € (settled) · jetons 1177 en entrée, 390 en sortie
+- 451607b19f8612266f2651ff4b7ba2472d38850e09e2ee789845854c940291ab · openai:gpt-image-2.6-sunburst · charge du client · réservé 0,0815 € → réglé 0,0617 € (settled) · jetons 1376 en entrée, 2058 en sortie
+- f59406500ea454b7393a163f2cdf350134888ab9d744a8269d4ed9c87f0acdbd · anthropic:claude-opus-5-5 · charge du client · réservé 0,2031 € → réglé 0,0250 € (settled) · jetons 2937 en entrée, 504 en sortie
+- e76c460e2aa4ffda8c668588798eb0c51169911a2e16b4234eef282a7781ec19 · openai:gpt-6.2-astra · charge du client · réservé 0,2315 € → réglé 0,0215 € (settled) · jetons 1177 en entrée, 390 en sortie
+- c50f9666129be3622aa92ef3efb5ff4448472be205bdd2791cc691136652ec48 · openai:gpt-image-2.6-sunburst · charge du client · réservé 0,0811 € → réglé 0,0616 € (settled) · jetons 1372 en entrée, 2058 en sortie
+- 3e52d13e1ac72bef7af5b01b819c638158e16dc762ae0fe597b559b4d62f6670 · anthropic:claude-opus-5-5 · charge du client · réservé 0,2022 € → réglé 0,0218 € (settled) · jetons 2757 en entrée, 701 en sortie
+
+Dépense réelle comptée par le Studio : 0,2131 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).

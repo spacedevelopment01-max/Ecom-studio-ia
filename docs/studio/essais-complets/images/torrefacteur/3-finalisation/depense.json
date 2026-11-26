@@ -1,0 +1,248 @@
+[
+  {
+    "cle": "f08e67610c2276cd7f84b46b5d0bbf020116fa66102209cd5af06ed54ac42d91",
+    "task": "quality_control",
+    "modele": "openai:gpt-6.2-astra",
+    "studio": false,
+    "reserveMicro": 231530,
+    "reelMicro": 21514,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e4-texte-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-6.2-astra",
+      "modeleServi": "gpt-6.2-astra",
+      "unite": "tokens",
+      "jetonsEntree": 1177,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 390,
+      "quantite": 0,
+      "effort": "medium",
+      "fin": "end_turn",
+      "dureeMs": 10174,
+      "coutMicro": 21514,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-xvzdxn6okll1uh0m:logo:e4-texte-1",
+      "details": {
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "451607b19f8612266f2651ff4b7ba2472d38850e09e2ee789845854c940291ab",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.6-sunburst",
+    "studio": false,
+    "reserveMicro": 81462,
+    "reelMicro": 61655,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e4-logo-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.6-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1376,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 2058,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 30387,
+      "coutMicro": 61655,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-xvzdxn6okll1uh0m:logo:e4-logo-1",
+      "details": {
+        "temps": "finalisation",
+        "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Mouture, une petite entreprise qui torréfie elle-même son café de façon artisanale et vend en ligne des cafés en grains ou moulus, ainsi que des coffrets. Conserve l’idée centrale : l’empreinte circulaire d’une tasse de café, ouverte sur les côtés pour laisser passer le nom MOUTURE. Redessine les capitales à la main avec des courbes plus soignées, des terminaisons distinctives et un espacement optique précis, sans perdre la spontanéité du trait ni la lisibilité du nom en petit format. Réduis l’empreinte à deux arcs francs d’épaisseur légèrement variable : garde leur irrégularité caractéristique, mais retire les taches et les détails d’aquarelle. Ajuste la portée des arcs, la hauteur des lettres et les blancs autour du nom pour donner à l’ensemble plus d’équilibre et de présence : fais évoluer l’esquisse vers une identité aboutie et distinctive plutôt que de simplement la nettoyer ou l’agrandir. Écris exactement « TORRÉFACTEUR PASSIONNÉ » en petit sous le nom, dans des capitales sobres et légèrement espacées, sans changer une lettre ni un accent ; cette mention remplace la ligne descriptive et aucune autre phrase ne doit apparaître. Choisis un brun espresso profond pour le lettrage et un brun caramel chaud pour l’empreinte. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+        "requestId": "req_c25b872780874009a772cb9af6925ac6",
+        "reglages": {
+          "model": "gpt-image-2.6-sunburst",
+          "quality": "high",
+          "size": "auto",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": 1,
+        "usage": {
+          "input_tokens": 1376,
+          "input_tokens_details": {
+            "image_tokens": 1024,
+            "text_tokens": 352
+          },
+          "output_tokens": 2058,
+          "output_tokens_details": {
+            "image_tokens": 2058,
+            "text_tokens": 0
+          },
+          "total_tokens": 3434
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1254x1254",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "f59406500ea454b7393a163f2cdf350134888ab9d744a8269d4ed9c87f0acdbd",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 203076,
+    "reelMicro": 24968,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e4-relecture-1",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 2937,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 1441,
+      "jetonsSortie": 504,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 5313,
+      "coutMicro": 24968,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-xvzdxn6okll1uh0m:logo:e4-relecture-1",
+      "details": {
+        "placeDemandee": 10000
+      }
+    }
+  },
+  {
+    "cle": "e76c460e2aa4ffda8c668588798eb0c51169911a2e16b4234eef282a7781ec19",
+    "task": "quality_control",
+    "modele": "openai:gpt-6.2-astra",
+    "studio": false,
+    "reserveMicro": 231530,
+    "reelMicro": 21514,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e11-texte-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-6.2-astra",
+      "modeleServi": "gpt-6.2-astra",
+      "unite": "tokens",
+      "jetonsEntree": 1177,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 390,
+      "quantite": 0,
+      "effort": "medium",
+      "fin": "end_turn",
+      "dureeMs": 8840,
+      "coutMicro": 21514,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-xvzdxn6okll1uh0m:logo:e11-texte-1",
+      "details": {
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "c50f9666129be3622aa92ef3efb5ff4448472be205bdd2791cc691136652ec48",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.6-sunburst",
+    "studio": false,
+    "reserveMicro": 81146,
+    "reelMicro": 61638,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e11-logo-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.6-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1372,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 2058,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 33955,
+      "coutMicro": 61638,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-xvzdxn6okll1uh0m:logo:e11-logo-1",
+      "details": {
+        "temps": "finalisation",
+        "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Mouture, une petite entreprise qui torréfie elle-même son café de façon artisanale et vend en ligne des cafés en grains ou moulus, ainsi que des coffrets. Conserve l’idée centrale : un écusson hexagonal à double contour où la flamme, le nom MOUTURE et le grain fendu s’alignent de haut en bas. Fais évoluer cette composition vers une identité plus aboutie et plus distinctive, sans te limiter à nettoyer ou à agrandir le dessin. Redessine les capitales de MOUTURE : garde leur silhouette haute, affine la pointe intérieure du M et la jambe du R, puis règle l’espacement lettre à lettre pour donner au nom une présence forte sans sacrifier sa lisibilité. Simplifie la flamme et le grain en silhouettes graphiques franches, en conservant la fente oblique du grain. Allège les filets horizontaux et ajuste les proportions du cadre pour équilibrer les espaces autour du nom. Sous le nom, inscris en petit, selon la courbe de l’esquisse, exactement « TORRÉFACTION ARTISANALE », sans en changer une lettre ni un accent ; cette mention remplace toute autre ligne descriptive. Privilégie un brun café presque noir pour l’écusson, un ivoire chaud pour les lettres et une teinte caramel discrète pour le filet intérieur. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+        "requestId": "req_894d7b2328d344c0b79ec763c0f827c8",
+        "reglages": {
+          "model": "gpt-image-2.6-sunburst",
+          "quality": "high",
+          "size": "auto",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": 1,
+        "usage": {
+          "input_tokens": 1372,
+          "input_tokens_details": {
+            "image_tokens": 1024,
+            "text_tokens": 348
+          },
+          "output_tokens": 2058,
+          "output_tokens_details": {
+            "image_tokens": 2058,
+            "text_tokens": 0
+          },
+          "total_tokens": 3430
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1254x1254",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "3e52d13e1ac72bef7af5b01b819c638158e16dc762ae0fe597b559b4d62f6670",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 202245,
+    "reelMicro": 21789,
+    "statut": "settled",
+    "appel": {
+      "etape": "logo-e11-relecture-1",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 2757,
+      "jetonsCacheLus": 1441,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 701,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 7023,
+      "coutMicro": 21789,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-finalisation-xvzdxn6okll1uh0m:logo:e11-relecture-1",
+      "details": {
+        "placeDemandee": 10000
+      }
+    }
+  }
+]

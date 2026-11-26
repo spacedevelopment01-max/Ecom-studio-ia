@@ -1,0 +1,35 @@
+{
+  "endpoint": "POST /v1/images/edits (multipart, image[])",
+  "modele": "gpt-image-2.6-sunburst",
+  "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Mouture, une petite entreprise qui torréfie elle-même son café de façon artisanale et vend en ligne des cafés en grains ou moulus, ainsi que des coffrets. Conserve l’idée centrale : un écusson hexagonal à double contour où la flamme, le nom MOUTURE et le grain fendu s’alignent de haut en bas. Fais évoluer cette composition vers une identité plus aboutie et plus distinctive, sans te limiter à nettoyer ou à agrandir le dessin. Redessine les capitales de MOUTURE : garde leur silhouette haute, affine la pointe intérieure du M et la jambe du R, puis règle l’espacement lettre à lettre pour donner au nom une présence forte sans sacrifier sa lisibilité. Simplifie la flamme et le grain en silhouettes graphiques franches, en conservant la fente oblique du grain. Allège les filets horizontaux et ajuste les proportions du cadre pour équilibrer les espaces autour du nom. Sous le nom, inscris en petit, selon la courbe de l’esquisse, exactement « TORRÉFACTION ARTISANALE », sans en changer une lettre ni un accent ; cette mention remplace toute autre ligne descriptive. Privilégie un brun café presque noir pour l’écusson, un ivoire chaud pour les lettres et une teinte caramel discrète pour le filet intérieur. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+  "reglages": {
+    "model": "gpt-image-2.6-sunburst",
+    "quality": "high",
+    "size": "auto",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "requestId": "req_894d7b2328d344c0b79ec763c0f827c8",
+  "usage": {
+    "input_tokens": 1372,
+    "input_tokens_details": {
+      "image_tokens": 1024,
+      "text_tokens": 348
+    },
+    "output_tokens": 2058,
+    "output_tokens_details": {
+      "image_tokens": 2058,
+      "text_tokens": 0
+    },
+    "total_tokens": 3430
+  },
+  "coutMicro": 61638,
+  "dureeMs": 33953,
+  "renvoye": {
+    "quality": "high",
+    "size": "1254x1254",
+    "background": "opaque",
+    "output_format": "png"
+  }
+}
