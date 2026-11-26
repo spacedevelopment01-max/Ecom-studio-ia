@@ -1,0 +1,110 @@
+[
+  {
+    "cle": "88b23546dcb82bf3d089c9d97481417d8b6736bd6ff9b41a3648cc1a1686f0c2",
+    "task": "strategy",
+    "modele": "anthropic:claude-sonnet-5-5",
+    "studio": false,
+    "reserveMicro": 1096737,
+    "reelMicro": 89492,
+    "statut": "settled"
+  },
+  {
+    "cle": "65449948eb34e83c6c8b93dcfee5a30834932f6ef2fa23ea86be062e47085afc",
+    "task": "strategy",
+    "modele": "anthropic:claude-sonnet-5-5",
+    "studio": false,
+    "reserveMicro": 1096371,
+    "reelMicro": 90828,
+    "statut": "settled"
+  },
+  {
+    "cle": "98b9d06b73af1313f6943cf842362579f4881e24a52b85777e3f8e0e390bb083",
+    "task": "strategy",
+    "modele": "anthropic:claude-sonnet-5-5",
+    "studio": false,
+    "reserveMicro": 1096364,
+    "reelMicro": 103180,
+    "statut": "settled"
+  },
+  {
+    "cle": "ee3496774700885141e3c0f6e14589af65b80a3d076e5a3d907eaf1da395b6cb",
+    "task": "strategy",
+    "modele": "anthropic:claude-sonnet-5-5",
+    "studio": false,
+    "reserveMicro": 214614,
+    "reelMicro": 13292,
+    "statut": "settled"
+  },
+  {
+    "cle": "6daf26f0f94aee5a054a252222fb9992608b9d1b5ba76be1302f73d9169aba0a",
+    "task": "strategy",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 556566,
+    "reelMicro": 79156,
+    "statut": "settled"
+  },
+  {
+    "cle": "6b6242d04d0d6660ea7771e07e50f1f5bdba13cdd25d45b95d99fe6d332d1169",
+    "task": "strategy",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 561052,
+    "reelMicro": 51131,
+    "statut": "settled"
+  },
+  {
+    "cle": "e90856f9da5f1642e18e07011c83e9b65cf2bc3994b60202f9e354f647808edc",
+    "task": "strategy",
+    "modele": "anthropic:claude-sonnet-5-5",
+    "studio": false,
+    "reserveMicro": 264291,
+    "reelMicro": 36894,
+    "statut": "settled"
+  },
+  {
+    "cle": "a66469bb06dddaaa9aea364e3aface05b4f20785f2f6707e10f5daf238747177",
+    "task": "strategy",
+    "modele": "anthropic:claude-sonnet-5-5",
+    "studio": false,
+    "reserveMicro": 264327,
+    "reelMicro": 37492,
+    "statut": "settled"
+  },
+  {
+    "cle": "65f0ac879e8fa4c108b747da6d2be22c49edd21cca12322a0463eb9f67503c82",
+    "task": "strategy",
+    "modele": "anthropic:claude-sonnet-5-5",
+    "studio": false,
+    "reserveMicro": 264305,
+    "reelMicro": 21538,
+    "statut": "settled"
+  },
+  {
+    "cle": "f437e1cfeda81c7ebd103571666b89d6268fc4e7447b85eb117ddaf69431c974",
+    "task": "strategy",
+    "modele": "anthropic:claude-sonnet-5-5",
+    "studio": false,
+    "reserveMicro": 264327,
+    "reelMicro": 21233,
+    "statut": "settled"
+  },
+  {
+    "cle": "93dcf3281bd2c87549b72b1daa5d78023bd5a81295e6dadc74a71cdb08c3474c",
+    "task": "strategy",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 378509,
+    "reelMicro": 51380,
+    "statut": "settled"
+  },
+  {
+    "cle": "98e694c80597aacbf601c1d1d5af1cd9c75e8b091449ba589bce88395782e6bd",
+    "task": "strategy",
+    "modele": "anthropic:claude-sonnet-5-5",
+    "studio": false,
+    "reserveMicro": 1096561,
+    "reelMicro": 75505,
+    "statut": "settled"
+  }
+]

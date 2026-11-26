@@ -1,0 +1,54 @@
+Essai des noms — client sans nom (petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets), type « produits », 2 identités
+Plafond de l'essai : 3,5000 € ; plafond de la tâche : 9,8495 €
+Le plafond 3,5000 € est sous la somme des maxima 9,8495 € (probable 1,4492 €) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.
+
+Devis de l'essai des noms (fonctions du devis du Studio, aucun appel) :
+- recherches sur le web (paroles de clients, concurrents, usages) (3 fois) · anthropic:claude-sonnet-5-5 (recherche sur le web, 5 recherches au plus) · toujours · probable 0,3600 € · au plus 3,2357 €
+- étude du marché · anthropic:claude-sonnet-5-5 (effort medium) · toujours · probable 0,1118 € · au plus 0,3034 €
+- idées de la marque · anthropic:claude-opus-5-5 (effort medium) · toujours · probable 0,2821 € · au plus 0,6238 €
+- second tour d'idées · anthropic:claude-opus-5-5 (effort medium) · si trop peu d'idées passent les deux épreuves · probable 0,2821 € · au plus 0,6238 €
+- équipes de noms (une par chemin) (4 fois) · anthropic:claude-sonnet-5-5 (effort medium) · toujours · probable 0,4266 € · au plus 1,0373 €
+- reprise courte d'une équipe coupée (4 fois) · anthropic:claude-sonnet-5-5 (effort low) · si une réponse est coupée · probable 0,2546 € · au plus 0,5316 €
+- juge des noms · anthropic:claude-opus-5-5 (effort medium) · toujours · probable 0,1066 € · au plus 0,3657 €
+- second tour des équipes (4 fois) · anthropic:claude-sonnet-5-5 (effort medium) · si le juge garde trop peu de noms · probable 0,4266 € · au plus 1,0373 €
+- reprise courte du second tour (4 fois) · anthropic:claude-sonnet-5-5 (effort low) · si une réponse du second tour est coupée · probable 0,2546 € · au plus 0,5316 €
+- juge du second tour · anthropic:claude-opus-5-5 (effort medium) · si le juge garde trop peu de noms · probable 0,1066 € · au plus 0,3657 €
+- recherche sur le web des noms gardés · anthropic:claude-sonnet-5-5 (recherche sur le web, 5 recherches au plus) · toujours · probable 0,1200 € · au plus 1,0786 €
+- vérification des noms gardés · anthropic:claude-sonnet-5-5 (effort medium) · toujours · probable 0,0421 € · au plus 0,1148 €
+Probable, déroulé habituel : 1,4492 €
+Probable, avec le second tour d'idées et le second tour de noms : 2,2645 €
+Plafond conseillé pour l'essai (deux fois le probable, arrondi) : 3,0000 €
+Attention au départ : les 3 recherches sur le web partent en même temps, chacune réservée à son pire cas ; sous 3,2357 €, la dernière est refusée et l'essai s'arrête dès le départ (les recherches déjà parties sont payées et se refont à la reprise).
+Somme des maxima (seconds tours et reprises courtes compris), pour aller au bout à coup sûr : 9,8495 € ; un plafond plus bas est permis : l'essai s'arrête alors proprement avant l'appel qui pourrait le dépasser
+Plafond que le Studio donne à cette tâche dans l'accord de l'étape (accordGraphistes, part des noms) : 9,8495 € (la somme des maxima de tous ses appels, vérification des noms gardés comprise)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 6,6349 € de plus en tout.
+L'adresse de chaque nom (annuaires publics des registres) : gratuite.
+
+Noms vérifiés proposés au client : 2
+1. Braise — Le mot dit ton métier, griller le café à la chaleur, et ton image chaleureuse, simple et artisanale. Il est court, beau à dire et tiendrait en grand sur ton site comme sur un sachet.
+   Nom de domaine : braise.fr et braise.com sont déjà pris ; libres aujourd'hui : braisefrance.fr et braisefrance.com (à réserver vite : seule la réservation le garantit).
+   La planche écrirait : « braisefrance.fr — disponible »
+2. Mouture — C'est un mot du métier que tout amateur connaît. Il vaut pour le moulu comme pour le grain qu'on moud chez soi, et il sonne sérieux et artisanal sans faire expert.
+   Nom de domaine : mouture.fr et mouture.com sont déjà pris ; libres aujourd'hui : mouturefrance.fr et mouturefrance.com (à réserver vite : seule la réservation le garantit).
+   La planche écrirait : « mouturefrance.fr — disponible »
+
+Le nom choisi part aux étapes suivantes par CLIENT_NOM="<le nom, tel qu'il est écrit ci-dessus>".
+
+Notes de la tâche :
+- 2 parole(s) réelle(s) de clients trouvée(s) : moins de dix
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 88b23546dcb82bf3d089c9d97481417d8b6736bd6ff9b41a3648cc1a1686f0c2 · anthropic:claude-sonnet-5-5 · charge du client · réservé 1,0967 € → réglé 0,0895 € (settled)
+- 65449948eb34e83c6c8b93dcfee5a30834932f6ef2fa23ea86be062e47085afc · anthropic:claude-sonnet-5-5 · charge du client · réservé 1,0964 € → réglé 0,0908 € (settled)
+- 98b9d06b73af1313f6943cf842362579f4881e24a52b85777e3f8e0e390bb083 · anthropic:claude-sonnet-5-5 · charge du client · réservé 1,0964 € → réglé 0,1032 € (settled)
+- ee3496774700885141e3c0f6e14589af65b80a3d076e5a3d907eaf1da395b6cb · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2146 € → réglé 0,0133 € (settled)
+- 6daf26f0f94aee5a054a252222fb9992608b9d1b5ba76be1302f73d9169aba0a · anthropic:claude-opus-5-5 · charge du client · réservé 0,5566 € → réglé 0,0792 € (settled)
+- 6b6242d04d0d6660ea7771e07e50f1f5bdba13cdd25d45b95d99fe6d332d1169 · anthropic:claude-opus-5-5 · charge du client · réservé 0,5611 € → réglé 0,0511 € (settled)
+- e90856f9da5f1642e18e07011c83e9b65cf2bc3994b60202f9e354f647808edc · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2643 € → réglé 0,0369 € (settled)
+- a66469bb06dddaaa9aea364e3aface05b4f20785f2f6707e10f5daf238747177 · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2643 € → réglé 0,0375 € (settled)
+- 65f0ac879e8fa4c108b747da6d2be22c49edd21cca12322a0463eb9f67503c82 · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2643 € → réglé 0,0215 € (settled)
+- f437e1cfeda81c7ebd103571666b89d6268fc4e7447b85eb117ddaf69431c974 · anthropic:claude-sonnet-5-5 · charge du client · réservé 0,2643 € → réglé 0,0212 € (settled)
+- 93dcf3281bd2c87549b72b1daa5d78023bd5a81295e6dadc74a71cdb08c3474c · anthropic:claude-opus-5-5 · charge du client · réservé 0,3785 € → réglé 0,0514 € (settled)
+- 98e694c80597aacbf601c1d1d5af1cd9c75e8b091449ba589bce88395782e6bd · anthropic:claude-sonnet-5-5 · charge du client · réservé 1,0966 € → réglé 0,0755 € (settled)
+
+Dépense réelle comptée par le Studio : 0,6711 €

@@ -1,0 +1,67 @@
+{
+  "client": {
+    "metier": "petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets",
+    "kind": "produits",
+    "produits": [
+      "cafés en grains",
+      "cafés moulus",
+      "coffrets"
+    ]
+  },
+  "verifies": true,
+  "noms": [
+    {
+      "numero": 1,
+      "nom": "Braise",
+      "pourquoi": "Le mot dit ton métier, griller le café à la chaleur, et ton image chaleureuse, simple et artisanale. Il est court, beau à dire et tiendrait en grand sur ton site comme sur un sachet.",
+      "detail": "Ton café est torréfié par un artisan, et la torréfaction se fait à la chaleur.",
+      "doute": null,
+      "adresses": {
+        "taken": [
+          "braise.fr",
+          "braise.com"
+        ],
+        "free": [
+          "braisefrance.fr",
+          "braisefrance.com"
+        ],
+        "unknown": [],
+        "at": 1795722582919
+      },
+      "phraseDeLAdresse": "Nom de domaine : braise.fr et braise.com sont déjà pris ; libres aujourd'hui : braisefrance.fr et braisefrance.com (à réserver vite : seule la réservation le garantit).",
+      "adresseDeLaPlanche": {
+        "domaine": "braisefrance.fr",
+        "statut": "disponible",
+        "mention": "braisefrance.fr — disponible"
+      }
+    },
+    {
+      "numero": 2,
+      "nom": "Mouture",
+      "pourquoi": "C'est un mot du métier que tout amateur connaît. Il vaut pour le moulu comme pour le grain qu'on moud chez soi, et il sonne sérieux et artisanal sans faire expert.",
+      "detail": "Tu vends des cafés moulus au même prix que les grains, environ 9 € les 250 g.",
+      "doute": null,
+      "adresses": {
+        "taken": [
+          "mouture.fr",
+          "mouture.com"
+        ],
+        "free": [
+          "mouturefrance.fr",
+          "mouturefrance.com"
+        ],
+        "unknown": [],
+        "at": 1795722584105
+      },
+      "phraseDeLAdresse": "Nom de domaine : mouture.fr et mouture.com sont déjà pris ; libres aujourd'hui : mouturefrance.fr et mouturefrance.com (à réserver vite : seule la réservation le garantit).",
+      "adresseDeLaPlanche": {
+        "domaine": "mouturefrance.fr",
+        "statut": "disponible",
+        "mention": "mouturefrance.fr — disponible"
+      }
+    }
+  ],
+  "notes": [
+    "2 parole(s) réelle(s) de clients trouvée(s) : moins de dix"
+  ]
+}
