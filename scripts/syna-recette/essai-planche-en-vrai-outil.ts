@@ -533,3 +533,190 @@ export async function essaiDeLaPlancheEnVrai(o: { sortie: string; plafondEuros: 
     return ecrire();
   })));
 }
+
+// ---------------------------------------------------------------- le réassemblage d'un essai (26 novembre 2026)
+
+/** Une case de l'essai, rejugée par le code corrigé : chaque essai avec ses raisons d'alors et celles d'aujourd'hui. */
+export type RejugementDeCase = {
+  element: NomElement;
+  essais: { tour: number; note: number | null; raisonsAvant: string[]; raisonsApres: string[] }[];
+  /** Le tour gardé (1 ou 2), ou « reprise » ; null : l'aperçu garde sa case. */
+  gardee: number | "reprise" | null;
+  /** L'aperçu de l'essai touchait la bande d'un titre de bloc (boîtes de l'essai). */
+  deborde: boolean;
+};
+export type ResultatDuReassemblage = {
+  cases: RejugementDeCase[]; gardees: number; planche: string; comparaison: string;
+  palette: { hex: string; nom: string }[]; logosDeLApercu: string[];
+  reprise?: { elements: NomElement[]; devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: NomElement[] };
+  arret?: string; notes: string[];
+};
+/** Le devis de la reprise de quelques cases (aucun appel), avec le plafond minimal exact. */
+export async function devisDuReassemblage(elements: readonly NomElement[], o: { logoHd?: boolean } = {}): Promise<string[]> {
+  const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
+  const d = elements.length ? T.devisDUneReprise(elements) : { maxMicro: 0, probableMicro: 0, images: 0, relectures: 0 }, l = T.devisDesLogosEnHd();
+  return [
+    "Devis du réassemblage (fonctions du devis du Studio, aucun appel) :",
+    "- a) réassemblage par le code : 0 € ; b) rejugement des images de l'essai : 0 €",
+    `- c) reprise à la charge du Studio de ${elements.join(", ") || "aucune case"} : ${d.images} image(s), ${d.relectures} relecture(s) ; probable ${euros(d.probableMicro)}, au plus ${euros(d.maxMicro)}`,
+    ...(o.logoHd ? [`- option LOGO_HD (pas encore construite : rien ne part) : les quatre petites versions du logo en haute définition, ${l.images} images, ${l.relectures} relecture ; probable ${euros(l.probableMicro)}, au plus ${euros(l.maxMicro)}`] : []),
+    `Plafond minimal exact pour la reprise (somme des maxima) : ${euros(d.maxMicro + (o.logoHd ? l.maxMicro : 0))}`,
+    `Probable en tout : ${euros(d.probableMicro + (o.logoHd ? l.probableMicro : 0))}`,
+  ];
+}
+
+/**
+ * LE RÉASSEMBLAGE D'UN ESSAI DE LA PLANCHE EN VRAI, à partir de ses fichiers (dossier de l'essai : essai.json,
+ * inventaire-reponse.json, apercus/cases.json, cases/, relectures/), de la planche choisie et du logo fini, uniquement par
+ * les fonctions du Studio :
+ *  a) gratuit, sans aucun appel : les logos, la palette, les polices, les textes et l'assemblage refaits par le code
+ *     d'aujourd'hui (`plancheEnVraiParLeCode`) ;
+ *  b) gratuit, sans aucun appel : chaque image refaite de l'essai rejugée sur son verdict réel par le code d'aujourd'hui
+ *     (`raisonsDuRefusEnVrai`, avec la zone de la case lue sur les boîtes de l'essai) ; le premier essai qui passe est
+ *     gardé, mis à son format comme dans la tâche ;
+ *  c) seulement pour les cases de `reprendre` encore refusées : UNE reprise à la charge du Studio
+ *     (`reprendreDesCasesEnVrai`), avec leurs raisons d'aujourd'hui, relue, sous la borne `devisDUneReprise` et le plafond
+ *     de l'essai.
+ * Rien n'est relancé tout seul ; une panne arrête la reprise et le réassemblage se fait sans elle.
+ */
+export async function reassemblerLEssaiEnVrai(o: { dossier: string; sortie: string; planche: string; logo: string; reprendre?: NomElement[]; plafondEuros?: string; ai?: (q: Qui) => PlancheEnVraiAi }): Promise<ResultatDuReassemblage> {
+  const sharp = (await import("sharp")).default;
+  const P = await import("../../src/lib/syna-agent/planche-en-vrai");
+  const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
+  const { logoDetoure } = await import("../../src/lib/syna-agent/brand-images");
+  const { couleursDuLogo } = await import("../../src/lib/syna-agent/couleurs-du-logo");
+  const lire = (f: string) => { const p = path.join(o.dossier, f); if (!fs.existsSync(p)) throw new Error(`${f} introuvable dans ${o.dossier} : rien n'est fait.`); return fs.readFileSync(p); };
+  const essai = JSON.parse(String(lire("essai.json"))) as { client: ClientDeLEssai; donnees: DonneesDeLaPlanche };
+  const inventaire = P.InventaireSchema.parse(JSON.parse(String(lire("inventaire-reponse.json"))));
+  const anciennes = JSON.parse(String(lire("apercus/cases.json"))) as { boites: Record<string, [number, number, number, number]> };
+  const demo = png(o.planche, "Planche choisie"), logoFini = png(o.logo, "Logo fini");
+  const { client, donnees } = essai, laquelle = donnees.disposition, nom = client.nom.trim(), personnes = false;
+  fs.mkdirSync(path.join(o.sortie, "cases"), { recursive: true }); fs.mkdirSync(path.join(o.sortie, "logos"), { recursive: true });
+  const ecrire = (f: string, c: string | Buffer) => { fs.mkdirSync(path.dirname(path.join(o.sortie, f)), { recursive: true }); fs.writeFileSync(path.join(o.sortie, f), c); return f; };
+  const decoupe = await P.decouperLesApercus(demo, laquelle);
+
+  // b) Le rejugement, sans appel.
+  const cases: RejugementDeCase[] = [], images = new Map<NomElement, Buffer>();
+  const formater = async (n: NomElement, brut: Buffer) => { const f = await P.auFormatFinal(n, brut); return f.ok ? (P.def(n).sansMargesBlanches ? await P.rognerLesMargesBlanches(f.png, decoupe.apercus.get(n)) : f.png) : null; };
+  for (const n of P.NOMS_DES_ELEMENTS) {
+    const ancienne = anciennes.boites[n], deborde = !!ancienne && P.entreDansUneBandeDeTitre(laquelle, ancienne);
+    const c: RejugementDeCase = { element: n, essais: [], gardee: null, deborde };
+    for (const tour of [1, 2]) {
+      const hd = path.join(o.dossier, "cases", `${n}-${tour}-hd.png`), rel = path.join(o.dossier, "relectures", `${P.def(n).groupe}-${tour}-verdict.json`);
+      if (!fs.existsSync(hd) || !fs.existsSync(rel)) continue;
+      const r = JSON.parse(fs.readFileSync(rel, "utf8")) as { verdict: RelectureDuGroupe; raisons?: Record<string, string[]> };
+      const v = r.verdict.images.find((x) => x.case === n);
+      if (!v && !r.raisons?.[n]) continue;
+      const photo = fs.readdirSync(path.join(o.dossier, "cases")).some((f) => f.startsWith(`${n}-${tour}-jointe-`) && f.endsWith("-produit.png"));
+      const apres = P.raisonsDuRefusEnVrai(v, { inventaire: P.caseLue(inventaire, n), personnes, photo, element: n, deborde });
+      c.essais.push({ tour, note: v?.note ?? null, raisonsAvant: r.raisons?.[n] ?? [], raisonsApres: apres });
+      if (!apres.length && c.gardee == null) {
+        const p = await formater(n, fs.readFileSync(hd));
+        if (p) { images.set(n, p); c.gardee = tour; ecrire(`cases/${n}-gardee-hd.png`, p); }
+      }
+    }
+    cases.push(c);
+  }
+
+  // Le logo et la route, comme dans l'essai.
+  const det = await logoDetoure(logoFini);
+  const couleurs = det.ok ? (await couleursDuLogo(det.png).catch(() => null))?.palette ?? null : null;
+  const palette0 = { dark: "#1C2A24", primary: "#1C2A24", secondary: "#E8E4DC", accent: "#1C2A24", light: "#F9F8F4", ...(couleurs ?? {}) };
+  const det2 = await logoDetoure(logoFini, palette0.dark), logo = det2.ok ? det2.png : logoFini;
+  const route = { key: "A", name: nom, slogan: donnees.phrase, palette: palette0, board: { planche: { image: { id: "", w: 1536, h: 2304 }, logo: "", domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: 0, ...(donnees.finitions?.length ? { finitions: donnees.finitions } : {}) } } } as unknown as import("../../src/lib/syna-agent/brand-routes").Route;
+
+  // c) La reprise, seulement si elle est demandée, pour les cases encore refusées.
+  let reprise: ResultatDuReassemblage["reprise"], arret: string | undefined;
+  const aReprendre = (o.reprendre ?? []).filter((n) => !images.has(n) && cases.find((c) => c.element === n)?.essais.length);
+  if (aReprendre.length) {
+    const { separerSymbole } = await import("../../src/lib/syna-agent/planche-en-vrai-code");
+    const r = await repriseDesCases({ client, inventaire, decoupe, logo, separation: await separerSymbole(logo), nom, personnes, elements: aReprendre, raisons: new Map(aReprendre.map((n) => [n, cases.find((c) => c.element === n)!.essais.at(-1)!.raisonsApres])), debordes: cases.filter((c) => c.deborde).map((c) => c.element), plafondEuros: o.plafondEuros, ai: o.ai, ecrire });
+    reprise = { elements: aReprendre, devis: r.devis, depenseMicro: r.depenseMicro, gardees: [...r.gardees.keys()] };
+    arret = r.arret;
+    for (const [n, p] of r.gardees) { images.set(n, p); cases.find((c) => c.element === n)!.gardee = "reprise"; ecrire(`cases/${n}-gardee-hd.png`, p); }
+  }
+
+  // a) Le code seul, puis l'assemblage.
+  const code = await T.plancheEnVraiParLeCode({ demo, laquelle, inventaire, route, logo, images, phrase: donnees.phrase });
+  for (const [k, b] of Object.entries(code.versions)) ecrire(`logos/${k}.png`, b);
+  ecrire("palette.json", `${JSON.stringify({ couleurs: code.palette, roles: code.roles }, null, 2)}\n`);
+  ecrire("polices.json", `${JSON.stringify(code.polices, null, 2)}\n`);
+  ecrire("planche-en-vrai.png", code.planche);
+  // Ce que l'onglet Marque montre et que le zip donne : chaque image rognée au contenu, le site en une seule image.
+  for (const [n, b] of code.montrees) ecrire(`montrees/${n}.png`, b);
+  if (code.site) ecrire("montrees/site-ordinateur-et-telephone.png", code.site);
+  // La comparaison : l'aperçu choisi à gauche, la planche réassemblée à droite, à la même taille.
+  const W = 1000, H = 1500, titre = (t0: string) => Buffer.from(`<svg width="${W}" height="44"><rect width="100%" height="100%" fill="#ffffff"/><text x="8" y="30" font-family="sans-serif" font-size="26" font-weight="700" fill="#111">${t0}</text></svg>`);
+  const gauche = await sharp(demo).resize(W, H, { fit: "fill" }).png().toBuffer(), droite = await sharp(code.planche).resize(W, H, { fit: "fill", kernel: "lanczos3" }).png().toBuffer();
+  const comparaison = await sharp({ create: { width: 2 * W + 20, height: H + 44, channels: 3, background: "#ffffff" } })
+    .composite([{ input: titre("Planche choisie (aperçu)"), left: 0, top: 0 }, { input: titre("Planche en vrai réassemblée (3072 × 4608)"), left: W + 20, top: 0 }, { input: gauche, left: 0, top: 44 }, { input: droite, left: W + 20, top: 44 }]).jpeg({ quality: 88 }).toBuffer();
+  ecrire("comparaison-apercu-et-reassemblee.jpg", comparaison);
+  const res: ResultatDuReassemblage = { cases, gardees: images.size, planche: "planche-en-vrai.png", comparaison: "comparaison-apercu-et-reassemblee.jpg", palette: code.palette.map((p) => ({ hex: p.hex, nom: p.nom })), logosDeLApercu: code.depuisLApercu, ...(reprise ? { reprise } : {}), ...(arret ? { arret } : {}), notes: code.notes };
+  ecrire("rejugement.json", `${JSON.stringify(res, null, 2)}\n`);
+  const lignes = [
+    `Réassemblage de la planche en vrai de « ${nom} » à partir de l'essai ${o.dossier} (aucun appel pour a) et b))`,
+    `Images gardées : ${images.size} sur 17`,
+    ...cases.map((c) => `  ${c.element} : ${c.gardee == null ? "l'aperçu garde sa case" : c.gardee === "reprise" ? "GARDÉE (reprise)" : `GARDÉE (essai ${c.gardee})`}${c.deborde ? " — aperçu de l'essai dans la bande d'un titre" : ""}${c.essais.map((e) => `\n    essai ${e.tour} (note ${e.note ?? "—"}) : avant ${e.raisonsAvant.length ? e.raisonsAvant.join(" ; ") : "gardée"} → aujourd'hui ${e.raisonsApres.length ? e.raisonsApres.join(" ; ") : "gardée"}`).join("")}`),
+    `Logos repris de l'aperçu : ${code.depuisLApercu.join(", ") || "aucun"} ; séparation du symbole ${code.separation.fiable ? "fiable" : `non fiable (${code.separation.raison})`}`,
+    `Palette : ${code.palette.map((p) => `${p.hex} ${p.nom}`).join(" ; ")}`,
+    ...(reprise ? [`Reprise : ${reprise.elements.join(", ")} ; devis probable ${euros(reprise.devis.probableMicro)}, au plus ${euros(reprise.devis.maxMicro)} ; dépense comptée ${euros(reprise.depenseMicro)} ; gardées : ${reprise.gardees.join(", ") || "aucune"}`] : []),
+    ...(arret ? [`ARRÊT de la reprise : ${arret}`] : []),
+    ...code.notes.map((n) => `  note : ${n}`),
+  ];
+  ecrire("rapport.txt", `${lignes.join("\n")}\n`);
+  return res;
+}
+
+/** La reprise de quelques cases, à la charge du Studio (c) du réassemblage), par `reprendreDesCasesEnVrai`. */
+async function repriseDesCases(o: {
+  client: ClientDeLEssai; inventaire: Inventaire; decoupe: import("../../src/lib/syna-agent/planche-en-vrai").Decoupe; logo: Buffer;
+  separation: import("../../src/lib/syna-agent/planche-en-vrai-code").Separation; nom: string; personnes: boolean; elements: NomElement[];
+  raisons: Map<NomElement, string[]>; debordes: string[]; plafondEuros?: string; ai?: (q: Qui) => PlancheEnVraiAi; ecrire: (f: string, c: string | Buffer) => string;
+}): Promise<{ devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: Map<NomElement, Buffer>; arret?: string }> {
+  const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
+  const { id } = await import("../../src/lib/db");
+  const { account, project } = await import("../../tests/conversation209-fixtures");
+  const { CostCapReached, depensesDeLaTache, withTrace } = await import("../../src/lib/ai/trace");
+  const { PlafondDeLEssaiAtteint } = await import("../../src/lib/ai/plafond-essai");
+  const { runForUser } = await import("../../src/lib/ai/access");
+  const { runWithLang } = await import("../../src/lib/i18n-server");
+  const devis = T.devisDUneReprise(o.elements);
+  const plafond = Number(String(o.plafondEuros ?? "").replace(",", "."));
+  if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible pour la reprise : rien n'est lancé.");
+  if (Math.floor(plafond * 1_000_000) < devis.maxMicro) throw new Error(`Le plafond ${euros(Math.floor(plafond * 1_000_000))} est sous le plafond minimal de la reprise ${euros(devis.maxMicro)} : rien n'est lancé.`);
+  process.env.STUDIO_ESSAI_PLAFOND_EUROS = String(plafond);
+  process.env.STUDIO_ESSAI_DEBUT = String(Date.now());
+  const u = await account();
+  const projectId = project(u, typeDuProjet(o.client)) as string;
+  const jobId = `reassemblage-en-vrai-${id()}`, qui: Qui = { userId: u.id, projectId, jobId };
+  const brut = o.ai ? o.ai(qui) : T.vraisAppelsEnVrai(qui);
+  // Les appels du Studio, tels quels, avec ce qui part et ce qui revient écrit tout de suite (un arrêt ne perd rien).
+  const ai: PlancheEnVraiAi = {
+    inventaire: brut.inventaire,
+    refaire: async (d, cle) => {
+      o.ecrire(`reprise/${d.element}-texte-envoye.txt`, d.texte);
+      d.jointes.forEach((j, i) => o.ecrire(`reprise/${d.element}-jointe-${i + 1}-${j.role}.png`, j.data));
+      const r = await brut.refaire(d, cle);
+      o.ecrire(`reprise/${d.element}-hd.png`, r.png);
+      if (r.recu) o.ecrire(`reprise/${d.element}-recu.json`, `${JSON.stringify(r.recu, null, 2)}\n`);
+      return r;
+    },
+    relire: async (images, demande, cle) => {
+      o.ecrire(`reprise/${cle}-demande.txt`, demande);
+      const v = await brut.relire(images, demande, cle);
+      o.ecrire(`reprise/${cle}-verdict.json`, `${JSON.stringify(v, null, 2)}\n`);
+      return v;
+    },
+  };
+  const gardees = new Map<NomElement, Buffer>();
+  let arret: string | undefined;
+  await runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: 0, studioCapMicro: devis.maxMicro }, async () => {
+    try {
+      const res = await T.reprendreDesCasesEnVrai({ ai, nom: o.nom, personnes: o.personnes, logo: o.logo, separation: o.separation, inventaire: o.inventaire, decoupe: o.decoupe, elements: o.elements, raisons: o.raisons, debordes: o.debordes });
+      for (const [n, r] of res) { o.ecrire(`reprise/${n}-raisons.json`, `${JSON.stringify(r.essais.map((e) => e.raisons), null, 2)}\n`); if (r.ok && r.png) gardees.set(n, r.png); }
+    } catch (e) {
+      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
+    }
+  })));
+  return { devis, depenseMicro: depensesDeLaTache(jobId).total, gardees, ...(arret ? { arret } : {}) };
+}

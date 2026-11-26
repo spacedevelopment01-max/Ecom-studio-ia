@@ -117,7 +117,7 @@ describe("l'onglet Marque avec la planche en vrai", () => {
     expect(html).not.toContain("data-brand-envrai");
   });
 
-  it("« Tes images en haute définition » : chaque image entière, à ses proportions, sur un fond neutre ; aucun recadrage ni étirement", () => {
+  it("« Tes images en haute définition » : chaque vignette montre l'image entière, à sa vraie proportion, sans cadre vide autour ; aucun recadrage ni étirement", () => {
     etatDeLEcran.sheet = runWithLang({ ui: "fr", content: "fr" }, () => feuille(true));
     const html = rendu(h(TabMarque));
     const bloc = html.slice(html.indexOf("data-brand-envrai-images"));
@@ -125,15 +125,18 @@ describe("l'onglet Marque avec la planche en vrai", () => {
     expect(imgs.length).toBe(14);
     for (const i of imgs) {
       expect(i).toContain("object-contain");
-      expect(i).toMatch(/max-h-full/);
-      expect(i).toMatch(/max-w-full/);
+      expect(i).toMatch(/h-auto w-full/);
       expect(i).not.toMatch(/object-cover|aspect-square|object-fill/);
       expect(i).toMatch(/width="\d+" height="\d+"/);
     }
     // Les vraies proportions sont données à l'image : l'ouverture du site en 1920 × 720, la story en 1080 × 1920.
     expect(bloc).toMatch(/width="1920" height="720"/);
     expect(bloc).toMatch(/width="1080" height="1920"/);
-    expect(bloc).toContain("bg-[#ECECEA]");
+    // Aucune case de proportion imposée ni fond gris : la vignette a la hauteur de son image (26 novembre 2026, Écume).
+    const grille = bloc.slice(0, bloc.indexOf("</section>"));
+    expect(grille).not.toMatch(/bg-\[#ECECEA\]|aspect-\[/);
+    expect(html).toMatch(/class="columns-2[^"]*" data-brand-envrai-images/);
+    expect(grille).toContain("break-inside-avoid");
   });
 
   it("avec la planche en vrai, une seule section des logos : le symbole, le favicon 32, l'icône 512 et l'avatar y sont, chacun à télécharger seul ; la charte à côté de « Tout télécharger »", () => {

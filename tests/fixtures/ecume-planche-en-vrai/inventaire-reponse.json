@@ -1,0 +1,549 @@
+{
+  "cases": [
+    {
+      "case": "publication-1x1",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Écume",
+        "SAVONNERIE ARTISANALE",
+        "Un rituel doux pour une peau plus heureuse."
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": true,
+      "description": "Deux pains de savon artisanal posés sur un filet en coton, avec le logo en haut et un slogan en bas."
+    },
+    {
+      "case": "publication-4x5",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "s contenus qui inspirent au quoti",
+        "Des soins vraiment nature",
+        "Sans plastique",
+        "Ingrédients simples",
+        "Fabriqués à la main",
+        "Adaptés à toute la fa",
+        "Découvrir la collection →"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": true,
+      "description": "Savons et shampoings solides posés sur une pierre, avec une liste d'avantages cochés et un bouton orange."
+    },
+    {
+      "case": "publication-9x16",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "en",
+        "Petits gestes, grands bienfaits",
+        "Et si vous passiez au solide ?",
+        "Rejoignez-nous →"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": true,
+      "description": "Pains de savon couverts de mousse dans une coupe, avec un titre manuscrit, une question et un bouton orange."
+    },
+    {
+      "case": "ouverture-site",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Écume",
+        "SAVONNERIE ARTISANALE",
+        "Des soins naturels pour une peau plus douce, chaque jour.",
+        "Découvrir nos savons →"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Bannière d'accueil du site avec deux savons et des branches d'olivier, un titre et un bouton orange."
+    },
+    {
+      "case": "ouverture-planche",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Des soins naturels pour une peau plus douce, chaque jour.",
+        "SAVONNERIE ARTISANALE",
+        "Naturellement essentiel"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Bannière avec une pile de savons moussants, une branche d'olivier, un titre et une mention manuscrite avec un cœur."
+    },
+    {
+      "case": "site-ordinateur",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Écume",
+        "SAVONNERIE ARTISANALE",
+        "Savons",
+        "Shampoings",
+        "Baumes",
+        "Notre histoire",
+        "Des soins naturels pour une peau plus douce, chaque jour.",
+        "Découvrir nos savons →",
+        "Ingrédients naturels",
+        "Fabrication artisanale",
+        "Emballages sans plastique",
+        "Paiement sécurisé"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Ordinateur portable affichant la page d'accueil du site avec menu, bannière de savons et quatre engagements."
+    },
+    {
+      "case": "site-telephone",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Une boutique toujours avec vous",
+        "Écume",
+        "SAVONNERIE ARTISANALE",
+        "Des soins naturels pour une peau plus douce, chaque jour.",
+        "Voir la collection →",
+        "Naturel",
+        "Artisanal",
+        "Sans",
+        "Paiement"
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Smartphone affichant la version mobile du site avec logo, titre, bouton et savons."
+    },
+    {
+      "case": "produit-1",
+      "logo": true,
+      "logoVu": "symbole",
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Pain de savon gravé du symbole É, devant un savon vert, avec des brins de lavande."
+    },
+    {
+      "case": "produit-2",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Deux shampoings solides ronds empilés sur une pierre, devant des feuilles."
+    },
+    {
+      "case": "produit-3",
+      "logo": true,
+      "logoVu": "symbole",
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Boîte métallique de baume ouverte, couvercle marqué du symbole É, posée sur une pierre."
+    },
+    {
+      "case": "emballage",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Écume",
+        "SAVONNERIE ARTISANALE",
+        "Des soins naturels",
+        "our une peau plus douce,",
+        "chaque jour.",
+        "Écume",
+        "SAVONNERIE ARTISANALE",
+        "Écume",
+        "SAVONNERIE ARTISANALE",
+        "Merci",
+        "de faire partie de l'aventure Écume."
+      ],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Boîte en carton, pochon en tissu et savon emballé portant le logo, avec une carte de remerciement."
+    },
+    {
+      "case": "reference-1",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Pile de trois pains de savon mouchetés sur une pierre, avec une branche d'olivier."
+    },
+    {
+      "case": "reference-2",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Gros plan de mousse de savon crémeuse."
+    },
+    {
+      "case": "reference-3",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Deux shampoings solides ronds sur une pierre, devant des feuilles d'eucalyptus."
+    },
+    {
+      "case": "reference-4",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Boîte de baume crémeux avec une spatule en bois, posée sur un tissu tricoté."
+    },
+    {
+      "case": "reference-5",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": true,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Savon gravé et brosse en bois sur le bord d'une vasque, avec une robinetterie dorée."
+    },
+    {
+      "case": "reference-6",
+      "logo": false,
+      "logoVu": null,
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Ombres de feuillage sur un mur clair, avec une plante et un tissu ajouré."
+    },
+    {
+      "case": "haut",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Écume",
+        "SAVONNERIE ARTISANALE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Logo Écume orange sur fond crème avec des ombres de feuillage."
+    },
+    {
+      "case": "palette",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Orange Écume",
+        "#C44912",
+        "Chaleur, énergie",
+        "bienveillance",
+        "Terracotta",
+        "#D97A52",
+        "Authenticité",
+        "naturel, terre",
+        "Sable",
+        "#F6E8DA",
+        "Douceur",
+        "pureté",
+        "Sauge",
+        "#A7B89B",
+        "Nature, fraîcheur",
+        "équilibre",
+        "Brun naturel",
+        "#8C6F4E",
+        "Matière, artisanat",
+        "confiance"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Cinq pastilles de couleur avec leur nom, leur code et leurs mots-clés."
+    },
+    {
+      "case": "typographies",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Poppins",
+        "Moderne, ronde, accessible.",
+        "ABCDEFFGOIŁLIMMMOBCRTOYWXYZ",
+        "abcdefgejinklnnoppottvvwxyz",
+        "0123456789",
+        "Nunito",
+        "Chaleureuse, humaine, naturelle.",
+        "ABCDEFQGIJLMAPQRSTUVWXYZ",
+        "abcdefghijklmnopqrstuvwxyz",
+        "0123456789"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Deux spécimens de police : une linéale grasse nommée Poppins et une écriture manuscrite nommée Nunito."
+    },
+    {
+      "case": "ton",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Des soins naturels pour une peau plus douce, chaque jour.",
+        "Naturalité",
+        "Des ingrédients simples et respectueux.",
+        "Bien-être",
+        "Des soins doux pour votre peau.",
+        "Authenticité",
+        "Une savonnerie artisanale, à taille humaine.",
+        "Simplicité",
+        "Des essentiels pour un quotidien plus doux."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Slogan en orange suivi de quatre valeurs illustrées par des pictogrammes."
+    },
+    {
+      "case": "seo",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "Titre SEO",
+        "Écume – Savonnerie artisanale | Savons solides, shampoings et baumes naturels",
+        "Méta-description",
+        "Découvrez les savons solides, shampoings et baumes Écume, fabriqués artisanalement avec des ingrédients naturels pour une peau plus douce au quotidien.",
+        "Nom de domaine suggéré",
+        "ecumefrance.fr — disponible",
+        "© 2026 Écume",
+        "Tous droits réservés.",
+        "Une marque pensée avec soin, pour tous ceux qui aiment le naturel."
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Quatre encarts : titre SEO, méta-description, nom de domaine et mention de copyright."
+    },
+    {
+      "case": "logos : icône seule",
+      "logo": true,
+      "logoVu": "symbole",
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Symbole orange : une vague et deux bulles sur fond crème."
+    },
+    {
+      "case": "logos : favicon",
+      "logo": true,
+      "logoVu": "symbole",
+      "textes": [],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Lettre É blanche avec des bulles sur un carré orange arrondi."
+    },
+    {
+      "case": "titre-01",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "SYSTÈME DE LOGOS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section."
+    },
+    {
+      "case": "titre-02",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "PALETTE DE COULEURS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section."
+    },
+    {
+      "case": "titre-03",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "TYPOGRAPHIES"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section."
+    },
+    {
+      "case": "titre-04",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "TON, SLOGAN, VALEURS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section."
+    },
+    {
+      "case": "titre-05",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "IMAGES DE RÉFÉRENCE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section, coupé en bas."
+    },
+    {
+      "case": "titre-06",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "PRODUITS"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section."
+    },
+    {
+      "case": "titre-07",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "RÉSEAUX SOCIAUX"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section."
+    },
+    {
+      "case": "titre-08",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "SITE WEB"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section, coupé en haut."
+    },
+    {
+      "case": "titre-09",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "PACKAGING & SUPPORT"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section, coupé à droite."
+    },
+    {
+      "case": "titre-10",
+      "logo": false,
+      "logoVu": null,
+      "textes": [
+        "SEO / NOM DE DOMAINE / COPYRIGHT"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Titre de section."
+    },
+    {
+      "case": "logo",
+      "logo": true,
+      "logoVu": "complet",
+      "textes": [
+        "Écume",
+        "SAVONNERIE ARTISANALE"
+      ],
+      "produit": false,
+      "personne": false,
+      "comprehensible": null,
+      "description": "Logo officiel : le mot Écume en lettres rondes orange, une vague, des bulles et la mention Savonnerie artisanale."
+    }
+  ],
+  "polices": {
+    "titres": {
+      "nom": "Poppins",
+      "genre": "sans",
+      "procheDuCatalogue": "Poppins"
+    },
+    "textes": {
+      "nom": "Nunito",
+      "genre": "manuscrite",
+      "procheDuCatalogue": "Sacramento"
+    }
+  },
+  "couleurs": [
+    {
+      "nom": "Orange Écume",
+      "mots": [
+        "Chaleur",
+        "énergie",
+        "bienveillance"
+      ]
+    },
+    {
+      "nom": "Terracotta",
+      "mots": [
+        "Authenticité",
+        "naturel",
+        "terre"
+      ]
+    },
+    {
+      "nom": "Sable",
+      "mots": [
+        "Douceur",
+        "pureté"
+      ]
+    },
+    {
+      "nom": "Sauge",
+      "mots": [
+        "Nature",
+        "fraîcheur",
+        "équilibre"
+      ]
+    },
+    {
+      "nom": "Brun naturel",
+      "mots": [
+        "Matière",
+        "artisanat",
+        "confiance"
+      ]
+    }
+  ],
+  "icone": "Une vague orange surmontée de deux bulles, sur fond crème",
+  "favicon": "Lettre É blanche avec des bulles sur un carré orange arrondi",
+  "iconeReprendLeLogo": true
+}

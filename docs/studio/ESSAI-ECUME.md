@@ -300,6 +300,65 @@ planche assemblée.
 Probable 1,50 € (2,78 € si chaque image est refaite une fois) ; plafond minimal 6,70 € (7,60 € conseillé, qui couvre
 aussi une réponse mal formée à réparer).
 
+### Étape 4 faite (1,28 €), puis le réassemblage (26 novembre 2026)
+
+L'essai réel a gardé 13 images sur 17 pour 1,28 € comptés par le Studio (preuves : `docs/studio/essais-complets/images/ecume/4-planche-en-vrai/`,
+branche `claude/essais-complets`). Constat du chef d'orchestre : « Les images sont belles, mais la planche en vrai n'est
+pas identique à l'aperçu. Les défauts viennent surtout de l'assemblage par le code. » Les six défauts sont corrigés sans
+dépense (détail : `PLANCHE-EN-VRAI.md`, partie « Identique à l'aperçu »). Le chemin pour Écume :
+
+Copier les fichiers de l'essai depuis la branche des essais (depuis la racine du dépôt) :
+
+```
+git fetch origin claude/essais-complets
+mkdir -p data/essai-ecume/4-planche-en-vrai
+git archive -o data/essai-ecume/4.tar FETCH_HEAD docs/studio/essais-complets/images/ecume/4-planche-en-vrai
+tar -x --strip-components=6 -C data/essai-ecume/4-planche-en-vrai -f data/essai-ecume/4.tar
+rm data/essai-ecume/4.tar
+```
+
+a) et b), gratuits (aucun appel, aucune clé) : le code d'aujourd'hui refait les logos, la palette, les polices, les
+textes et l'assemblage, et rejuge chaque image de l'essai sur son verdict réel :
+
+```
+DATA_DIR=data/essai-ecume/studio REASSEMBLER=data/essai-ecume/4-planche-en-vrai \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-ecume/4b-reassemblee \
+  data/essai-ecume/3-planches-2/planche-B-gardee.png data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png
+```
+
+Fait le 26 novembre 2026 sur les vrais fichiers (puis refait après les retouches gratuites du même jour : recalage élargi,
+fond du haut gardé, trois mots par couleur, site en une seule image et images rognées au contenu dans `montrees/`) :
+**15 images gardées sur 17**. La story (premier essai, note 8) était
+refusée pour le seul « en » de « quotidien », venu du sous-titre du bloc 07 : gardée. Le téléphone (reprise, note 8,5)
+était refusé pour la seule heure « 9:41 » : gardé. Restent refusées, pour de vraies raisons : la publication portrait
+(texte collé au bord droit, notes 6 et 7) et l'emballage (texte illisible sur le couvercle et le flanc, note 7 ; le « our »
+de l'aperçu n'est plus reproché). Palette : les cinq codes écrits sur l'aperçu, gardés (écarts de 0,7 à 3,2). Bloc 01 :
+compact, icône, favicon et badge repris de l'aperçu ; l'horizontal avec la phrase à droite. Rien n'est écrit sous le
+logo du haut. Rapport : `rapport.txt`, détail : `rejugement.json`, comparaison : `comparaison-apercu-et-reassemblee.jpg`.
+
+c) Seulement si le propriétaire le veut, la reprise des deux images encore refusées, une fois, à la charge du Studio,
+avec leurs raisons d'aujourd'hui. Devis gratuit (`DEVIS_SEULEMENT=1` sur la même commande), probable / plafond minimal
+exact :
+
+| Variante | Probable | Plafond minimal exact |
+|---|---|---|
+| `REPRENDRE=publication-4x5,emballage` | 0,3367 € | 0,7904 € |
+| `REPRENDRE=publication-4x5` | 0,1679 € | 0,3974 € |
+| `REPRENDRE=emballage` | 0,1688 € | 0,3930 € |
+| `REPRENDRE=publication-4x5,emballage LOGO_HD=1` (devis seul : l'option du logo n'est pas construite) | 0,6915 € | 1,5944 € |
+| `LOGO_HD=1` seul (devis seul) | 0,3547 € | 0,8040 € |
+
+```
+NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
+  PLAFOND_ESSAI_EUR=0.80 REASSEMBLER=data/essai-ecume/4-planche-en-vrai REPRENDRE=publication-4x5,emballage \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-ecume/4c-reprise \
+  data/essai-ecume/3-planches-2/planche-B-gardee.png data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png
+```
+
+La reprise de l'emballage a moins de chances : ses deux essais ont été notés 6 et 7 pour de petits textes illisibles
+que l'aperçu porte déjà. Le bloc 01 en haute définition n'est pas construit (probable 0,35 €, au plus 0,80 €, voir
+`PLANCHE-EN-VRAI.md`).
+
 ## Étape 5 — l'onglet Marque, en captures (gratuit)
 
 ```
@@ -320,7 +379,9 @@ n'est pas faite) et prendre les captures avec `capture.cjs` (ordinateur 1440 de 
 | 3. Deux planches (avec la phrase de chaque logo) | 0,43 € | 0,86 € | 2,14 € |
 | 3 bis. Reprise de A et planche B (après l'arrêt du premier passage) | 0,40 € | 0,59 € | 1,35 € |
 | 3 ter. Rejugement de A, sans appel | 0 € | 0 € | 0 € |
-| 4. Planche en vrai | 1,50 € | 2,78 € | 6,70 € |
+| 4. Planche en vrai (faite : 1,28 €) | 1,50 € | 2,78 € | 6,70 € |
+| 4 bis. Réassemblage et rejugement, sans appel | 0 € | 0 € | 0 € |
+| 4 ter. Reprise de la publication portrait et de l'emballage (si accord) | 0,34 € | 0,34 € | 0,79 € |
 | 5. Écran | 0 € | 0 € | 0 € |
 | **Total** | **2,27 €** | **4,32 €** | **12,87 €** |
 

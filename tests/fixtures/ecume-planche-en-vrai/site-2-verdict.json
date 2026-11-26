@@ -1,0 +1,40 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "site-telephone",
+        "identique": true,
+        "textesLus": [
+          "Une boutique",
+          "toujours avec vous",
+          "9:41",
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Des soins naturels",
+          "pour une peau",
+          "plus douce,",
+          "chaque jour.",
+          "Voir la collection →",
+          "Naturel",
+          "Artisanal",
+          "Sans",
+          "Paiement"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8.5,
+        "pourquoi": "La version refaite reprend fidèlement l'aperçu : même accroche manuscrite, même écran avec le logo Écume, le titre, le bouton et les savons, et même barre d'icônes. L'image est nette et sans personne ; seule l'étiquette « Sans », déjà présente dans l'aperçu, reste incomplète."
+      }
+    ]
+  },
+  "raisons": {
+    "site-telephone": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « 9:41 »)"
+    ]
+  },
+  "gardees": []
+}

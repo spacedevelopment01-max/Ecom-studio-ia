@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { strToU8, zipSync } from "fflate";
 import { FONT_DIR } from "../media/fonts";
-import type { EtatPlancheEnVrai } from "./planche-en-vrai";
+import { imagesMontrees, type EtatPlancheEnVrai } from "./planche-en-vrai";
 
 /** Les fichiers du zip, par chemin. `lire` rend les octets d'un fichier rangé (null : introuvable, il est omis). */
 export function fichiersDeLaMarque(ev: EtatPlancheEnVrai, nom: string, lire: (id: string) => Buffer | null, lirePolice: (fichier: string) => Buffer | null = lirePoliceLocale): Record<string, Uint8Array> {
@@ -16,7 +16,8 @@ export function fichiersDeLaMarque(ev: EtatPlancheEnVrai, nom: string, lire: (id
   const mettre = (chemin: string, id: string | null | undefined) => { if (!id) return; const b = lire(id); if (b) out[chemin] = new Uint8Array(b); };
   for (const l of ev.logos) mettre(`logos/${l.version}.png`, l.id);
   if (ev.favicons) { mettre("logos/favicon-32.png", ev.favicons.f32); mettre("logos/favicon-64.png", ev.favicons.f64); mettre("logos/favicon-512.png", ev.favicons.f512); mettre("logos/avatar.png", ev.favicons.avatar); }
-  for (const e of ev.elements) mettre(`images/${e.element}${e.ambiance ? "-image-d-ambiance" : ""}.png`, e.id);
+  // Les images montrées dans l'onglet Marque, rognées au contenu ; le site en une seule image quand il y est.
+  for (const e of imagesMontrees(ev)) mettre(`images/${e.element === "site" ? "site-ordinateur-et-telephone" : e.element}${e.ambiance ? "-image-d-ambiance" : ""}.png`, e.id);
   mettre("planche-en-vrai.png", ev.planche?.id);
   out["couleurs.txt"] = strToU8([`Couleurs de ${nom}`, "", ...ev.palette.map((c) => `${c.hex}${c.nom ? `  ${c.nom}` : ""}`), ""].join("\n"));
   if (ev.polices) {

@@ -1,0 +1,44 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "emballage",
+        "identique": true,
+        "textesLus": [
+          "SAVONNERIE",
+          "ƎKꓤIE (texte déformé sur le dessus du couvercle)",
+          "ARTISANALE",
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Des soins naturels",
+          "pour une peau plus douce,",
+          "chaque jour.",
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Merci",
+          "de faire partie",
+          "de l’aventure Écume."
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 7,
+        "pourquoi": "La composition, les couleurs et les textes principaux reprennent fidèlement l'aperçu, sans aucune personne visible. Le petit texte sur le dessus du couvercle est déformé et illisible au milieu, et le texte vertical sur le flanc gauche est brouillé, ce qui fait baisser la note."
+      }
+    ]
+  },
+  "raisons": {
+    "emballage": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « our ») (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) »)",
+      "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    ]
+  },
+  "gardees": []
+}

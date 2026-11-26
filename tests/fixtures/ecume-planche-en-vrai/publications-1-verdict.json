@@ -1,0 +1,77 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "publication-1x1",
+        "identique": true,
+        "textesLus": [
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Un rituel doux",
+          "pour une peau",
+          "plus heureuse."
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "L'image refaite reprend fidèlement l'aperçu : même logo, mêmes savons, même accroche et mêmes placements, le tout net. Seul petit défaut : le motif gravé sur le savon reste un peu confus."
+      },
+      {
+        "case": "publication-4x5",
+        "identique": true,
+        "textesLus": [
+          "Des soins",
+          "vraiment naturels",
+          "Sans plastique",
+          "Ingrédients simples",
+          "Fabriqués à la main",
+          "Adaptés à toute la famille",
+          "Découvrir la collection →"
+        ],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": true,
+        "note": 6,
+        "pourquoi": "La composition est fidèle à l'aperçu, mais « naturels » et « famille » touchent le bord droit de l'image et la dernière lettre de chacun est coupée. Il faut décaler le texte vers la gauche ou réduire sa taille."
+      },
+      {
+        "case": "publication-9x16",
+        "identique": true,
+        "textesLus": [
+          "Petits gestes,",
+          "grands bienfaits",
+          "Et si vous passiez",
+          "au solide ?",
+          "Rejoignez-nous →"
+        ],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "L'image est fidèle et nette : même savon moussant dans son bac en marbre, mêmes textes et même bouton. Des bouts de feuilles coupés en bas à gauche sont un léger reste de la planche."
+      }
+    ]
+  },
+  "raisons": {
+    "publication-1x1": [],
+    "publication-4x5": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille »)",
+      "un texte est coupé ou collé au bord",
+      "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+    ],
+    "publication-9x16": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « en »)"
+    ]
+  },
+  "gardees": [
+    "publication-1x1"
+  ]
+}
