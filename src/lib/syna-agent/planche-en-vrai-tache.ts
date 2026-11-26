@@ -32,7 +32,7 @@ import {
   type DemandeDElement, type EtatPlancheEnVrai, type Groupe, type Inventaire, type Laquelle, type NomElement, type RelectureDuGroupe,
 } from "./planche-en-vrai";
 import {
-  VERSIONS_DU_LOGO, assemblerLaPlanche, couleurDuLogo, faviconsEtAvatar, luminance, mesurerLaPalette, monoClairDe, policeDuCatalogue, rolesDeLaPalette,
+  VERSIONS_DU_LOGO, assemblerLaPlanche, catalogueDesPolicesParGenre, couleurDuLogo, faviconsEtAvatar, luminance, mesurerLaPalette, monoClairDe, policeDuCatalogue, rolesDeLaPalette,
   separerSymbole, texteDuBasDuBadge, versionsDuLogo, type BlocDeTexte, type VersionDuLogo,
 } from "./planche-en-vrai-code";
 
@@ -41,7 +41,8 @@ import {
 /** Les appels de texte de la planche en vrai, en jetons (entrée habituelle, sortie habituelle, limite de sortie), et leur effort. */
 export const APPELS_EN_VRAI = {
   // L'inventaire : 17 aperçus, les blocs du code, la rangée des logos, les titres et le logo ; une réponse longue. Effort élevé.
-  inventaire: { input: 32_000, output: 6_000, max: 16_000, effort: "high" },
+  // Plus la liste des polices du catalogue par genre (26 novembre 2026), comptée large : un jeton pour trois octets.
+  inventaire: { input: 32_000 + Math.ceil(Buffer.byteLength(catalogueDesPolicesParGenre()) / 3), output: 6_000, max: 16_000, effort: "high" },
   // Une relecture de groupe : jusqu'à 6 paires (aperçu et image refaite), une photo du produit. Effort élevé.
   relecture: { input: 18_000, output: 3_000, max: 8_000, effort: "high" },
 } as const;
@@ -174,7 +175,7 @@ export async function plancheEnVrai(o: {
   // 2. L'inventaire : un seul appel, avant toute retouche.
   ctx.progress?.(0.18, L("Je fais l'inventaire de ta planche", "Taking stock of your board"));
   const vues = [...NOMS_DES_ELEMENTS, ...CASES_DU_CODE, ...TUILES_DU_LOGO.filter((t) => t === "logo-5" || t === "logo-6"), ...TITRES].filter((n) => decoupe.apercus.has(n));
-  const inventaire = await ctx.step("brand:envrai:inventaire", () => ai.inventaire([...vues.map((n) => ({ data: decoupe.apercus.get(n)!, label: n === "logo-5" ? "logos : icône seule" : n === "logo-6" ? "logos : favicon" : n })), { data: logoSurBlanc, label: "logo" }], demandeDeLInventaire(nom)));
+  const inventaire = await ctx.step("brand:envrai:inventaire", () => ai.inventaire([...vues.map((n) => ({ data: decoupe.apercus.get(n)!, label: n === "logo-5" ? "logos : icône seule" : n === "logo-6" ? "logos : favicon" : n })), { data: logoSurBlanc, label: "logo" }], demandeDeLInventaire(nom, catalogueDesPolicesParGenre())));
   const manquent = inventaireIncomplet(inventaire, NOMS_DES_ELEMENTS.filter((n) => decoupe.apercus.has(n)));
   if (manquent.length) notes.push(`inventaire sans ${manquent.join(", ")} : ces cases sont relues sans texte ni logo attendu`);
 
@@ -221,7 +222,7 @@ export async function plancheEnVrai(o: {
   const roles = rolesDeLaPalette(palette0, encre);
   const palette = palette0.map((hex, i) => ({ hex, nom: inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 2) }));
   const titres = policeDuCatalogue(inventaire.polices.titres, 700), textes = policeDuCatalogue(inventaire.polices.textes, 400);
-  for (const p of [titres, textes]) if (p.remplacee && p.lue) issues.push(p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : phraseDeLaPoliceRemplacee(p.lue, p.famille));
+  for (const p of [titres, textes]) if (p.remplacee && p.lue) issues.push(p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : p.pourquoi === "apercu" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, undefined, true) : phraseDeLaPoliceRemplacee(p.lue, p.famille));
   const couleur = await couleurDuLogo(logo);
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase });
   const v = await versionsDuLogo({ logo, separation, couleur, sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(palette0), nom, bas, police: textes });

@@ -197,7 +197,7 @@ function enregistrerLesPolices() {
  * « genre » (nommée, mais son spécimen montrait un autre genre d'écriture : la police suit l'aperçu que le client a vu).
  * `genreLu` : le genre lu sur le spécimen, quand il contredit la police nommée.
  */
-export type PoliceChoisie = { cle: string; famille: string; fichier: string; poids: number; handle: string; lue: string; remplacee: boolean; pourquoi?: "absente" | "genre"; genreLu?: PoliceDeLInventaire["genre"] };
+export type PoliceChoisie = { cle: string; famille: string; fichier: string; poids: number; handle: string; lue: string; remplacee: boolean; pourquoi?: "absente" | "genre" | "apercu"; genreLu?: PoliceDeLInventaire["genre"] };
 const plat = (t: string) => t.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 const AFFICHE = new Set(["anton", "bebas_neue", "archivo_black", "alfa_slab_one", "abril_fatface", "righteous", "unbounded", "oswald", "yeseva_one"]);
 /**
@@ -209,6 +209,15 @@ export function genreDu(cle: string): PoliceDeLInventaire["genre"] {
   if (AFFICHE.has(cle)) return "affiche";
   const fb = FONT_FILES[cle]?.fallback;
   return fb === "serif" ? "serif" : fb === "cursive" ? "manuscrite" : fb === "monospace" ? "chasse-fixe" : "sans";
+}
+const GENRES: PoliceDeLInventaire["genre"][] = ["serif", "sans", "manuscrite", "chasse-fixe", "affiche"];
+/**
+ * LA LISTE DES POLICES DU CATALOGUE, PAR GENRE, donnée à l'inventaire (26 novembre 2026) : seulement les noms des
+ * polices, rangés par genre ; aucun exemple d'essai.
+ */
+export function catalogueDesPolicesParGenre(): string {
+  const parGenre = GENRES.map((g) => `${g} : ${Object.keys(FONT_FILES).filter((k) => genreDu(k) === g).map((k) => FONT_FILES[k].family).join(", ")}`);
+  return `Les polices du catalogue du Studio, par genre (pour procheDuCatalogue) :\n${parGenre.join("\n")}`;
 }
 /** Quelques polices courantes hors du catalogue, et la plus proche du catalogue (dessin voisin). */
 const VOISINES: Record<string, string> = {
@@ -245,7 +254,16 @@ const dice = (a: string, b: string) => { const A = trigrammes(a), B = trigrammes
  */
 export function policeDuCatalogue(lue: PoliceDeLInventaire, poidsVoulu: number): PoliceChoisie {
   const n = plat(lue.nom);
-  let cle = Object.keys(FONT_FILES).find((k) => plat(FONT_FILES[k].family) === n);
+  const nommee = Object.keys(FONT_FILES).find((k) => plat(FONT_FILES[k].family) === n);
+  // LE CHOIX DE L'INVENTAIRE (26 novembre 2026, « identique en visuel ») : la police de la liste du catalogue qui ressemble
+  // le plus au spécimen montré. Pris seulement s'il est dans le catalogue et dans le genre lu ; sinon, la règle d'avant.
+  const choisie = lue.procheDuCatalogue ? Object.keys(FONT_FILES).find((k) => plat(FONT_FILES[k].family) === plat(lue.procheDuCatalogue!)) : undefined;
+  if (choisie && !genresContradictoires(lue.genre, genreDu(choisie))) {
+    const pourquoiChoix: PoliceChoisie["pourquoi"] = !nommee ? "absente" : genresContradictoires(lue.genre, genreDu(nommee)) ? "genre" : choisie !== nommee ? "apercu" : undefined;
+    const fc = FONT_FILES[choisie], pc = Object.keys(fc.files).map(Number).sort((a, b) => Math.abs(a - poidsVoulu) - Math.abs(b - poidsVoulu))[0];
+    return { cle: choisie, famille: fc.family, fichier: fc.files[pc], poids: pc, handle: `${choisie}_n${String(pc)[0]}`, lue: lue.nom.trim(), remplacee: !!pourquoiChoix, ...(pourquoiChoix === "genre" ? { pourquoi: pourquoiChoix, genreLu: lue.genre } : pourquoiChoix ? { pourquoi: pourquoiChoix } : {}) };
+  }
+  let cle = nommee;
   let pourquoi: PoliceChoisie["pourquoi"] = cle ? undefined : "absente";
   if (cle && genresContradictoires(lue.genre, genreDu(cle))) { cle = undefined; pourquoi = "genre"; }
   if (!cle && pourquoi === "absente") {

@@ -223,7 +223,14 @@ l'identique en visuel »). Deux écarts vus sur l'essai réel d'Écume (étape 3
   `genreDu`), la planche en vrai prend la police du catalogue la plus proche du spécimen dans le genre lu, affiche son vrai
   nom, la compte remplacée, et SINA le dit : « Sur ta planche, la police nommée « Nunito » était montrée en écriture
   manuscrite : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Dancing Script ». » Le
-  genre concorde : rien ne change. Le choix se fait par le nom le plus proche dans le genre lu, sinon par la police de base
-  du genre (Dancing Script pour l'écriture manuscrite) : le code ne voit pas le dessin du spécimen.
+  genre concorde : rien ne change.
+- **La police la plus proche du spécimen est choisie par l'inventaire**, dans le même appel, avant toute retouche : il
+  reçoit la liste des polices du catalogue par genre (`catalogueDesPolicesParGenre`, des noms seulement) et dit, pour
+  chaque police de la case typographies, laquelle ressemble le plus au spécimen (`procheDuCatalogue`). Le code prend ce
+  choix s'il est dans le catalogue et dans le genre lu ; sinon il garde la règle d'avant (le nom le plus proche dans le
+  genre lu, sinon la police de base du genre, Dancing Script pour l'écriture manuscrite). Un choix différent de la police
+  nommée est compté remplacé, et SINA dit le nom de la police retenue ; le genre concorde et l'inventaire choisit la police
+  nommée : rien ne change. La liste allonge la demande de l'inventaire : le devis la compte (plafond minimal de l'essai :
+  6,6978 €).
 
 Épreuve : `planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu`.

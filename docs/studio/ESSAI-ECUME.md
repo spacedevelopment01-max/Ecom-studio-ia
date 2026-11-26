@@ -262,10 +262,10 @@ tar -x --strip-components=6 -C data/essai-ecume/2-finalisation -f data/essai-ecu
 rm data/essai-ecume/2-finalisation.tar
 ```
 
-Le devis, gratuit (`DEVIS_SEULEMENT=1`, aucun appel), calculé le 26 novembre 2026 : **probable 1,4972 €** sans refus
-(2,7810 € si chaque image est refaite une fois) ; **plafond minimal exact 6,6960 €** (3,6042 € pour le client et
-3,0918 € de borne du Studio) ; hors plafond, une réponse de texte mal formée à réparer coûterait au plus 3,0747 € de
-plus ; plafond conseillé 7,60 €. Le devis ne dépend pas de la planche choisie.
+Le devis, gratuit (`DEVIS_SEULEMENT=1`, aucun appel), recalculé le 26 novembre 2026 avec la liste des polices du
+catalogue donnée à l'inventaire : **probable 1,4980 €** sans refus (2,7819 € si chaque image est refaite une fois) ;
+**plafond minimal exact 6,6978 €** (3,6059 € pour le client et 3,0918 € de borne du Studio) ; hors plafond, une réponse de
+texte mal formée à réparer coûterait au plus 3,0764 € de plus ; plafond conseillé 7,60 €, inchangé. Le devis ne dépend pas de la planche choisie.
 
 ```
 NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
@@ -279,7 +279,8 @@ Vérifié sans dépense le 26 novembre 2026, avec des appels simulés sur les vr
 script accepte la planche B, son résultat (domaine, année, disposition), le logo 10 (empreinte reconnue) et sa phrase ;
 la phrase est lue par ses lignes, « SAVONNERIE » puis « ARTISANALE » (le « / » du fichier n'est jamais écrit : le bas du
 badge porte « SAVONNERIE ARTISANALE ») ; si l'inventaire lit « Nunito » en écriture manuscrite, comme le relecteur l'a
-vu, la police des textes devient Dancing Script et SINA le dit. La planche est assemblée en 3072 × 4608. La phrase donnée
+vu, la police des textes devient la manuscrite du catalogue que l'inventaire juge la plus proche du spécimen (Dancing
+Script s'il n'en choisit aucune valable), et SINA dit son nom. La planche est assemblée en 3072 × 4608. La phrase donnée
 par `PHRASE` doit dire les mêmes lignes que le résultat de la planche, sinon rien n'est lancé ; sans `PHRASE`, ce sont
 celles du résultat.
 

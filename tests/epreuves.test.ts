@@ -2033,5 +2033,17 @@ describe("l'épreuve de la planche en vrai identique en visuel (essai d'Écume, 
     expect(C.policeDuCatalogue({ nom: "Nunito", genre: "sans" }, 400)).toMatchObject({ cle: "nunito", remplacee: false });
     expect(C.policeDuCatalogue({ nom: "Abril Fatface", genre: "serif" }, 400)).toMatchObject({ remplacee: false });
     expect(await runWithLang({ ui: "fr", content: "fr" }, async () => V.phraseDeLaPoliceRemplacee("Helvetica Neue", "Inter"))).toBe("La police « Helvetica Neue » de ta planche n'est pas dans le catalogue du Studio : j'ai pris la plus proche, « Inter ».");
+    // 4. Le choix de l'inventaire, dans le même appel : la liste des polices du catalogue par genre, des noms seulement.
+    const liste = C.catalogueDesPolicesParGenre();
+    expect(fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8")).toContain("demandeDeLInventaire(nom, catalogueDesPolicesParGenre())");
+    expect(V.INVENTAIRE_SYSTEM).toContain("procheDuCatalogue");
+    expect(liste).not.toMatch(/écume|savonnerie|racine|tenon|nunito montr/i);
+    // Retenu s'il est au catalogue et dans le genre lu ; sinon la règle d'avant.
+    expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "Caveat" }, 400)).toMatchObject({ famille: "Caveat", remplacee: true, pourquoi: "genre" });
+    for (const x of ["Brush Script MT", "Inter", "Nunito"]) expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: x }, 400).famille, x).toBe("Dancing Script");
+    expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Poppins" }, 400)).toMatchObject({ famille: "Poppins", remplacee: true, pourquoi: "apercu" });
+    expect(C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Montserrat" }, 400)).toMatchObject({ famille: "Montserrat", remplacee: false });
+    // Le devis de l'inventaire compte la liste.
+    expect(T.APPELS_EN_VRAI.inventaire.input).toBe(32_000 + Math.ceil(Buffer.byteLength(liste) / 3));
   });
 });

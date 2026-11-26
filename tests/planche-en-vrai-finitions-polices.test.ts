@@ -88,7 +88,7 @@ describe("la planche en vrai : la police suit l'aperçu que le client a vu", asy
     expect(C.genreDu(p.cle)).toBe("manuscrite");
     expect(await fr(() => P.phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu))).toBe("Sur ta planche, la police nommée « Nunito » était montrée en écriture manuscrite : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Dancing Script ».");
     // La tâche le dit au client avec la phrase des polices remplacées.
-    expect(fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8")).toContain('issues.push(p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : phraseDeLaPoliceRemplacee(p.lue, p.famille));');
+    expect(fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8")).toContain('issues.push(p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : p.pourquoi === "apercu" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, undefined, true) : phraseDeLaPoliceRemplacee(p.lue, p.famille));');
   });
 
   it("le genre concorde : rien ne change ; une police d'affiche lue en empattements ou sans : pas de contradiction", async () => {
@@ -104,5 +104,42 @@ describe("la planche en vrai : la police suit l'aperçu que le client a vu", asy
     expect(C.policeDuCatalogue({ nom: "Helvetica", genre: "manuscrite" }, 400)).toMatchObject({ remplacee: true, cle: "dancing_script" });
     // Un spécimen à empattements sous un nom sans empattements : la police à empattements la plus proche.
     expect(C.genreDu(C.policeDuCatalogue({ nom: "Inter", genre: "serif" }, 400).cle)).toBe("serif");
+  });
+
+  it("l'inventaire choisit dans la liste du catalogue la police qui ressemble le plus au spécimen : retenue si elle est au catalogue et dans le genre lu", async () => {
+    // La liste donnée à l'inventaire, dans le même appel : les noms des polices du catalogue, par genre.
+    const liste = C.catalogueDesPolicesParGenre();
+    expect(liste).toMatch(/^Les polices du catalogue du Studio, par genre \(pour procheDuCatalogue\) :\nserif : /);
+    expect(liste).toMatch(/\nmanuscrite : .*Caveat.*Dancing Script.*Allura/);
+    expect(P.demandeDeLInventaire("Aplomb", liste)).toBe(`Marque : « Aplomb ». Relève chaque case, mot pour mot.\n${liste}`);
+    expect(P.INVENTAIRE_SYSTEM).toContain("procheDuCatalogue : le nom exact, recopié de la liste des polices du catalogue donnée dans la demande");
+    expect(fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8")).toContain("demandeDeLInventaire(nom, catalogueDesPolicesParGenre())");
+    // B d'Écume : l'inventaire simulé choisit une manuscrite du catalogue, elle est retenue, comptée remplacée et dite.
+    const inv = P.InventaireSchema.parse({ polices: { titres: { nom: "Playfair Display", genre: "serif", procheDuCatalogue: "Playfair Display" }, textes: { nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "Caveat" } } });
+    const t = C.policeDuCatalogue(inv.polices.textes, 400);
+    expect(t).toMatchObject({ cle: "caveat", famille: "Caveat", remplacee: true, pourquoi: "genre", genreLu: "manuscrite", lue: "Nunito" });
+    expect(await fr(() => P.phraseDeLaPoliceRemplacee(t.lue, t.famille, t.genreLu))).toContain("« Caveat »");
+    // Le genre concorde et l'inventaire choisit la police nommée : rien ne change.
+    expect(C.policeDuCatalogue(inv.polices.titres, 700)).toEqual(C.policeDuCatalogue({ nom: "Playfair Display", genre: "serif" }, 700));
+    expect(C.policeDuCatalogue(inv.polices.titres, 700).remplacee).toBe(false);
+    // Le genre concorde, mais l'inventaire voit une autre police : la sienne, comptée remplacée, son nom dit au client.
+    const autre = C.policeDuCatalogue({ nom: "Montserrat", genre: "sans", procheDuCatalogue: "Poppins" }, 400);
+    expect(autre).toMatchObject({ famille: "Poppins", remplacee: true, pourquoi: "apercu" });
+    expect(await fr(() => P.phraseDeLaPoliceRemplacee(autre.lue, autre.famille, undefined, true))).toBe("Sur ta planche, la police nommée « Montserrat » n'avait pas tout à fait le dessin montré : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Poppins ».");
+    // Absente du catalogue, l'inventaire choisit dans la liste : retenue, la phrase d'avant.
+    expect(C.policeDuCatalogue({ nom: "Gotham Rounded", genre: "sans", procheDuCatalogue: "Nunito" }, 400)).toMatchObject({ cle: "nunito", remplacee: true, pourquoi: "absente" });
+  });
+
+  it("un choix hors catalogue ou hors genre est ignoré : la règle d'avant s'applique", () => {
+    const avant = C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite" }, 400);
+    expect(avant.famille).toBe("Dancing Script");
+    // Hors catalogue.
+    expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "Brush Script MT" }, 400)).toEqual(avant);
+    // Hors du genre lu (une police sans empattements pour un spécimen manuscrit).
+    expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "Nunito" }, 400)).toEqual(avant);
+    expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "Inter" }, 400)).toEqual(avant);
+    // Vide : la règle d'avant.
+    expect(C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite", procheDuCatalogue: "" }, 400)).toEqual(avant);
+    expect(C.policeDuCatalogue({ nom: "Nunito", genre: "sans", procheDuCatalogue: "Courier Imaginaire" }, 400)).toMatchObject({ cle: "nunito", remplacee: false });
   });
 });
