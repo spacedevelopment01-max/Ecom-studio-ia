@@ -13,6 +13,7 @@ import type { StatutDuDomaine } from "../../src/lib/syna-agent/planche-de-marque
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
 import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 import { lignesDeLArret, avisDuPlafond } from "./plafond-des-essais";
+import { messageAvecCause } from "../../src/lib/ai/erreur-reseau";
 import type { LigneDeDepense } from "./essai-planches-outil";
 import { SEPARATEUR_DES_LIGNES, lignesDuTexte } from "../../src/lib/syna-agent/phrase-sous-le-nom";
 
@@ -655,9 +656,9 @@ export async function essaiDeLaPlancheEnVrai(o: {
       if (!c) return undefined;
       let details: unknown = c.details;
       try { details = c.details ? JSON.parse(c.details) : null; } catch { /* tel quel */ }
-      return { etape: c.step, fournisseur: c.provider, modeleDemande: c.requested_model, modeleServi: c.served_model, unite: c.unit, jetonsEntree: c.input_tokens, jetonsCacheLus: c.cache_read_tokens, jetonsCacheEcrits: c.cache_write_tokens, jetonsSortie: c.output_tokens, quantite: c.quantity, effort: c.effort, fin: c.stop_reason, dureeMs: c.latency_ms, coutMicro: c.cost, estime: !!c.estimated, statut: c.status, cle: c.usage_key, details };
+      return { etape: c.step, fournisseur: c.provider, modeleDemande: c.requested_model, modeleServi: c.served_model, unite: c.unit, jetonsEntree: c.input_tokens, jetonsCacheLus: c.cache_read_tokens, jetonsCacheEcrits: c.cache_write_tokens, jetonsSortie: c.output_tokens, quantite: c.quantity, effort: c.effort, fin: c.stop_reason, dureeMs: c.latency_ms, coutMicro: c.cost, estime: !!c.estimated, statut: c.status, cle: c.usage_key, heure: c.created_at ?? null, ...(c.error_kind ? { erreur: c.error_kind } : {}), details };
     };
-    res.appels = reservations.map((r) => ({ cle: r.operation_key ?? appelDe(r)?.usage_key ?? null, task: r.task ?? null, modele: r.model ? `${r.provider ?? ""}:${r.model}` : null, studio: !!r.studio, reserveMicro: r.amount, reelMicro: r.actual ?? null, statut: r.status, ...(appelDe(r) ? { appel: detail(appelDe(r)) } : {}) }));
+    res.appels = reservations.map((r) => ({ cle: r.operation_key ?? appelDe(r)?.usage_key ?? null, task: r.task ?? null, modele: r.model ? `${r.provider ?? ""}:${r.model}` : null, studio: !!r.studio, reserveMicro: r.amount, reelMicro: r.actual ?? null, statut: r.status, heure: r.created_at ?? null, ...(r.note ? { raison: r.note } : {}), ...(appelDe(r) ? { appel: detail(appelDe(r)) } : {}) }));
     ecrireFichier("depense.json", json(res.appels));
     ecrireFichier("usage.json", json(appels.map(detail)));
   };
@@ -719,7 +720,7 @@ export async function essaiDeLaPlancheEnVrai(o: {
   };
   const raisonDeLArret = (e: unknown) => e instanceof RepriseRefusee ? `reprise refusée avant tout appel : ${e.message}` : e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}`
     : e instanceof CostCapReached ? `le plafond de la tâche (celui du Studio) a refusé un appel : ${e.message}`
-      : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
+      : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;
 
   ecrireFichier("fiche-du-client.txt", `${fiche}\n`);
   // LOGO_HD : la borne du Studio couvre aussi les quatre petites versions en haute définition (reprise comprise).
@@ -1093,7 +1094,7 @@ async function repriseDesCases(o: {
       const res = await T.reprendreDesCasesEnVrai({ ai, nom: o.nom, personnes: o.personnes, logo: o.logo, separation: o.separation, inventaire: o.inventaire, decoupe: o.decoupe, elements: o.elements, raisons: o.raisons, debordes: o.debordes });
       for (const [n, r] of res) { o.ecrire(`reprise/${n}-raisons.json`, `${JSON.stringify(r.essais.map((e) => e.raisons), null, 2)}\n`); if (r.ok && r.png) gardees.set(n, r.png); }
     } catch (e) {
-      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
+      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;
     }
   })));
   return { devis, depenseMicro: depensesDeLaTache(jobId).total, gardees, ...(arret ? { arret } : {}) };
@@ -1150,7 +1151,7 @@ async function logosEnHdDeLEssai(o: {
         if (r.ok && r.png) { gardees.set(v, r.png); o.ecrire(`logos-hd/${v}-gardee-sans-fond.png`, r.png); }
       }
     } catch (e) {
-      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
+      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${messageAvecCause(e).slice(0, 700)}`;
     }
   })));
   return { devis, depenseMicro: depensesDeLaTache(jobId).total, gardees, tentees, ...(arret ? { arret } : {}) };

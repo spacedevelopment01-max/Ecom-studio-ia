@@ -4,15 +4,16 @@
  *  - réponse EN FLUX avec 2 images partielles quand le modèle le permet (catalogue `caps.stream`) : la connexion
  *    reçoit des données pendant la génération au lieu de rester muette 1 à 2 minutes (un proxy ou un hébergeur
  *    coupe une connexion muette : « 502 upstream request failed ») ;
- *  - proxy HTTPS de l'environnement respecté (HTTPS_PROXY / NO_PROXY), même quand Node n'a pas été lancé avec
- *    NODE_USE_ENV_PROXY=1 : Claude Cloud (proxy obligatoire), Codespace et serveur de production (sans proxy) ;
+ *  - proxy HTTPS de l'environnement respecté (HTTPS_PROXY / NO_PROXY), avec ou sans NODE_USE_ENV_PROXY=1 : Claude
+ *    Cloud (proxy obligatoire), Codespace et serveur de production (sans proxy) ;
+ *  - une connexion neuve par image et 10 minutes de délai (`REGLAGES_DU_CLIENT_DES_IMAGES`) ;
  *  - AUCUNE nouvelle tentative du client (maxRetries 0) : une génération coupée a pu être facturée ;
  *  - progression transmise à la tâche en cours (demande envoyée, aperçus reçus, image reçue).
  * La clé n'est jamais écrite dans les journaux.
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI from "openai";
-import { EnvHttpProxyAgent } from "undici";
+import { Agent, EnvHttpProxyAgent, type Dispatcher } from "undici";
 import { getJsonSetting } from "../settings";
 import { isGatewayKey } from "./gateway";
 import { mediaModel } from "./media-models";
@@ -40,20 +41,51 @@ export function openaiStreams(model: string): boolean {
   return !!mediaModel("openai", model)?.caps.stream && getJsonSetting<boolean>("ai.media.openaiStream", true) !== false;
 }
 
-/** Proxy de l'environnement, si Node ne l'applique pas déjà de lui-même. */
-function proxyOptions(): Pick<ConstructorParameters<typeof OpenAI>[0] & object, "fetch" | "fetchOptions"> {
-  const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
-  if (!proxy || process.env.NODE_USE_ENV_PROXY === "1") return {};
-  // Délais larges : une image haute qualité prend 1 à 2 minutes (les données arrivent en flux entre-temps).
-  const dispatcher = new EnvHttpProxyAgent({ headersTimeout: 300_000, bodyTimeout: 300_000 });
-  // Garder fetch et FormData du même environnement. Le fetch de l'autre copie d'undici
-  // sérialise le FormData global en « [object FormData] » : le SDK refuse alors tout fichier.
-  // Le dispatcher natif conserve le proxy, NO_PROXY et les délais sans changer le codec multipart.
-  return { fetchOptions: { dispatcher } as any };
+/**
+ * LE DÉLAI D'UN APPEL D'IMAGES : 10 minutes, au SDK comme au client HTTP (en-têtes et corps de la réponse). Une image en
+ * qualité haute avec des images jointes, sans flux, reste muette tant qu'elle n'est pas finie : 18 à 38 s mesurées pour la
+ * planche en vrai de Mouture (26 novembre 2026), plus pour une grande planche ; 10 minutes laissent de la marge sans jamais
+ * attendre sans fin. Un délai dépassé reste un résultat incertain, jamais relancé tout seul.
+ */
+export const DELAI_DES_IMAGES_MS = 10 * 60_000;
+
+/**
+ * UNE CONNEXION NEUVE PAR IMAGE (26 novembre 2026, essai Mouture) : deux images sont tombées sur « Connection error. »
+ * 0,5 s et 8,5 s après l'envoi, alors que les autres prenaient 18 à 38 s. Ce n'était pas un délai (le SDK aurait dit
+ * « Request timed out. ») : la demande partait sur la connexion gardée ouverte par l'image d'avant, fermée entre-temps par
+ * l'autre bout (proxy du conteneur d'essai, ou serveur). Une demande POST n'est jamais rejouée par le client HTTP, et c'est
+ * bien ainsi (règle du propriétaire) ; on évite donc de l'envoyer sur une connexion qui a déjà servi : `pipelining: 0`
+ * coupe la connexion après chaque réponse (une poignée de main de plus, quelques dixièmes de seconde, sur une image de
+ * 20 s et plus). Le proxy de l'environnement (HTTPS_PROXY, NO_PROXY) reste respecté, avec ou sans NODE_USE_ENV_PROXY.
+ */
+export const REGLAGES_DU_CLIENT_DES_IMAGES = { headersTimeout: DELAI_DES_IMAGES_MS, bodyTimeout: DELAI_DES_IMAGES_MS, pipelining: 0 } as const;
+
+let dispatcherEnCache: { cle: string; d: Dispatcher } | null = null;
+/** Le client HTTP des images, un seul par réglage du proxy (relu à chaque appel : un essai peut le changer). */
+export function dispatcherDesImages(): Dispatcher {
+  const env = process.env;
+  const proxy = env.HTTPS_PROXY || env.https_proxy || env.HTTP_PROXY || env.http_proxy || "";
+  const cle = [env.HTTPS_PROXY, env.https_proxy, env.HTTP_PROXY, env.http_proxy, env.NO_PROXY, env.no_proxy].map((v) => v ?? "").join("|");
+  if (dispatcherEnCache?.cle !== cle) {
+    // L'ancien client n'est plus servi ; aucune de ses connexions n'est gardée ouverte (pipelining 0).
+    dispatcherEnCache = { cle, d: proxy ? new EnvHttpProxyAgent(REGLAGES_DU_CLIENT_DES_IMAGES) : new Agent(REGLAGES_DU_CLIENT_DES_IMAGES) };
+  }
+  return dispatcherEnCache.d;
 }
 
+/**
+ * Le client HTTP des images, passé au fetch natif. Garder fetch et FormData du même environnement : le fetch de l'autre
+ * copie d'undici sérialise le FormData global en « [object FormData] » et le SDK refuse alors tout fichier. Le dispatcher
+ * passé au fetch natif garde le proxy, NO_PROXY, les délais et la connexion neuve sans changer le codec multipart.
+ */
+function proxyOptions(): Pick<ConstructorParameters<typeof OpenAI>[0] & object, "fetch" | "fetchOptions"> {
+  return { fetchOptions: { dispatcher: dispatcherDesImages() } as any };
+}
+
+export { messageAvecCause } from "./erreur-reseau";
+
 export function openaiClient(apiKey: string): OpenAI {
-  if (!isGatewayKey(apiKey)) return new OpenAI({ apiKey, maxRetries: 0, timeout: 300_000, ...proxyOptions() });
+  if (!isGatewayKey(apiKey)) return new OpenAI({ apiKey, maxRetries: 0, timeout: DELAI_DES_IMAGES_MS, ...proxyOptions() });
   // Clé injectée par la passerelle : l'en-tête d'autorisation du client est retiré avant l'envoi.
   const opts = proxyOptions();
   const base = (opts.fetch ?? fetch) as typeof fetch;
@@ -62,7 +94,7 @@ export function openaiClient(apiKey: string): OpenAI {
     headers.delete("authorization");
     return base(input, { ...init, headers });
   };
-  return new OpenAI({ apiKey, maxRetries: 0, timeout: 300_000, ...opts, fetch: strip });
+  return new OpenAI({ apiKey, maxRetries: 0, timeout: DELAI_DES_IMAGES_MS, ...opts, fetch: strip });
 }
 
 /**
