@@ -141,16 +141,12 @@ const REPRISE_DU_REFUSE = { decision: "25 novembre 2026", mots: "« Oui, marque 
  */
 const SANS_ARCHE = { decision: "25 novembre 2026", mots: "« Oui, marque relecteur-petites-finitions-sans-refus comme remplacée par ma décision du 25 novembre, ajoute et scelle relecteur-du-logo-sans-arche (une arche, un médaillon ou un badge rond ne font plus écarter une esquisse ni refuser un logo fini ; la règle sans arche reste pour les photos du site), et mets à jour la partie Logo de CLAUDE.md. »" };
 /**
- * L'ACCORD ÉCRIT ENCORE À RECEVOIR (25 novembre 2026). Les corrections de l'essai réel d'Écume, étape 3, demandées par le
- * chef d'orchestre, contredisent deux épreuves scellées : relecteur-de-planche-texte-lisible-et-promesses-mesurables (« avec
- * toutes ses raisons à la fin du texte » : les raisons de la reprise sont maintenant bornées) et
- * planche-reprend-la-phrase-du-logo (« une ligne manquante » fait refuser : une ligne cachée en partie par un objet de la
- * scène ne fait plus refuser). Elles sont marquées remplacées, et la phrase d'accord écrite du propriétaire, mot pour mot,
- * n'est pas encore là : `ACCORD_A_COMPLETER` tient sa place ; le banc n'accepte ce manque que pour ces deux épreuves, et la
- * phrase d'accord le remplacera à son arrivée.
+ * Les corrections de l'essai réel d'Écume, étape 3 (25 novembre 2026), demandées par le chef d'orchestre, remplacent
+ * relecteur-de-planche-texte-lisible-et-promesses-mesurables (les raisons de la reprise sont maintenant bornées) et
+ * planche-reprend-la-phrase-du-logo (une ligne cachée en partie par un objet de la scène ne fait plus refuser). Son accord
+ * écrit, mot pour mot (25 novembre 2026, écrit dans la conversation de construction).
  */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-const ECUME_ETAPE_3 = { decision: "25 novembre 2026", mots: ACCORD_A_COMPLETER };
+const ECUME_ETAPE_3 = { decision: "25 novembre 2026", mots: "« Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables et planche-reprend-la-phrase-du-logo comme remplacées par ma décision du 25 novembre, ajoute et scelle planche-phrase-par-lignes-et-reprise-qui-part-toujours (la phrase comparée par ses seules lignes, une phrase cachée en partie par un objet jugée sur ses mots visibles, la reprise qui part toujours avec ses raisons les plus graves d'abord, et chaque planche indépendante), et mets à jour la partie Identité de CLAUDE.md. »" };
 const SOURCE_ECUME_ETAPE_3 = "docs/studio/ESSAI-ECUME.md (essai réel d'Écume du 25 novembre 2026, étape 3, arrêté en erreur après 0,23 € : docs/studio/essais-complets/images/ecume/3-planches, branche claude/essais-complets ; verdict réel copié tel quel dans tests/fixtures/ecume-planches ; constat du chef d'orchestre)";
 const SOURCE_ESSAI_ECUME = "docs/studio/ESSAI-ECUME.md (essai réel d'Écume du 25 novembre 2026, étape 1 : docs/studio/essais-complets/images/ecume/1-esquisses, branche claude/essais-complets ; décisions du propriétaire relayées mot pour mot par le chef d'orchestre)";
 const SOURCE_PETITES_FINITIONS = "docs/studio/LOGO-METHODE-DES-GRAPHISTES.md (partie « Les petites finitions ne font pas refuser (25 novembre au soir) » ; preuves : docs/studio/essais-complets/images/racine/finalisation-execution/esquisse-04-logo-2-brut.png, branche claude/essais-complets, commit 06750e4 ; ses mots relayés par le chef d'orchestre)";

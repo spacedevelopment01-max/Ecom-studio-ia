@@ -181,7 +181,7 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   « aucune personne visible » sans son accord. Le relecteur le plus fort, effort élevé, la relit en bandes ; le code
   compare le nom, l'année et le domaine lettre pour lettre ; **la phrase choisie sous le logo est reprise mot pour mot sur
   sa planche** (25 novembre 2026), toutes ses lignes, posée par le code dans la ligne de la marque après l'appel des
-  valeurs, relue et comparée lettre pour lettre comme le nom, jamais prise pour un micro-texte ; **il ne juge pas les
+  valeurs, relue et comparée lettre pour lettre comme le nom, par ses seules lignes (jamais avec l'emplacement que le relecteur écrit), jamais prise pour un micro-texte ; cachée en partie par un objet de la scène, elle est jugée sur ses mots visibles, et seul un mot visible faux, déformé ou illisible fait refuser (accord écrit du 25 novembre 2026, après l'essai réel d'Écume) ; la reprise d'une planche part toujours, ses raisons dédoublonnées, les plus graves d'abord, dans une taille bornée ; chaque planche est indépendante : une planche en erreur est signalée au Studio, jamais montrée au client, et les autres se font quand même ; **il ne juge pas les
   micro-textes décoratifs**, illisibles à
   taille normale (les lignes d'alphabet des spécimens de polices, le petit texte circulaire d'un badge, l'heure d'une
   barre d'état), mais tout texte lisible reste juste ; **seules les promesses mesurables ou les garanties font refuser**
