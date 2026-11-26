@@ -198,6 +198,29 @@ Le script refuse de partir sous le plafond minimal exact de la commande, 8,3057 
 LOGO_HD, 1,6080 €). Probable 1,85 € (3,49 € si tout est refait une fois). Hors plafond, une réponse de texte mal formée à
 réparer coûterait au plus 3,08 € de plus ; elle n'est pas couverte, l'essai s'arrêterait en le disant.
 
+**La reprise d'une passe interrompue** (construite le 26 novembre 2026, après l'arrêt de la première passe de Mouture à la
+sixième image sur une erreur de connexion du fournisseur : résultat incertain, 0,0873 € retenus ; l'inventaire et cinq
+images reçus, rien relu) : la même commande, même dossier de sortie, avec `REPRENDRE=1` en plus. L'inventaire, les images,
+les relectures et les logos déjà reçus sont repris tels quels, jamais redemandés ni repayés ; la planche et le logo doivent
+être ceux de la passe d'avant. Le rapport et la dépense d'avant vont dans `passe-1/`. Le reste est fait normalement, puis
+LOGO_HD, l'assemblage, `etat.json`, `essai.json` et le parcours. L'appel au résultat incertain n'est refait que parce que
+le propriétaire relance lui-même : jamais tout seul. Tout arrêt écrit désormais « Comment reprendre ». Pour Mouture
+(planche A, logo de l'esquisse 11, plafond donné à la première passe : 4 €) :
+
+```
+DEBUT CLIENT_NOM="Mouture" PLAFOND_ESSAI_EUR=3 LOGO_HD=1 REPRENDRE=1 \
+  RESULTAT_PLANCHE=data/essai-torrefacteur/4-planches/planche-A-resultat.json \
+  PHRASE="$(cat data/essai-torrefacteur/3-finalisation/esquisse-11-phrase-du-logo.txt)" \
+  METIER_COURT="$(node -p "require('./data/essai-torrefacteur/2-esquisses/esquisses.json').metier.court")" \
+  node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-torrefacteur/5-planche-en-vrai \
+  data/essai-torrefacteur/4-planches/planche-A-gardee.png data/essai-torrefacteur/3-finalisation/esquisse-11-logo-garde.png
+```
+
+Devis gratuit de ce qui reste (même début, `DEVIS_SEULEMENT=1`) : 12 images (dont celle de l'appel incertain), 4
+relectures, puis LOGO_HD ; probable 1,41 € (3,05 € si chaque image est refaite une fois), somme des maxima de ce qui reste
+7,22 € ; plafond conseillé 3 € (deux fois le probable, arrondi). Aucun appel isolé ne demande plus : le plus cher qui
+reste est une relecture, 0,27 € au plus.
+
 Ce qu'elle écrit en plus dans `5-planche-en-vrai` : `logos-hd/` (pour chaque version et chaque tour : le texte envoyé, la
 tuile et le logo joints, l'image reçue, la demande et le verdict de la relecture).
 
