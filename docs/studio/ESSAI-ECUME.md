@@ -196,8 +196,57 @@ script reprend A (logo et texte reconnus), n'appelle ni les mots du métier ni l
 octets) puis fait B. Le rapport et `depense.json` de ce passage remplacent ceux du premier : les premiers restent sur la
 branche des essais.
 
+**Second passage (26 novembre 2026) : 0,67 € dépensés** (0,6685 € comptés). Fichiers : branche `claude/essais-complets`,
+`docs/studio/essais-complets/images/ecume/3-planches-2/`. La planche B est gardée à 8,5/10 (refusée à 7 au premier essai,
+reprise à la charge du Studio). La planche A, reprise et notée 8/10, que le relecteur juge « montrable », était pourtant
+refusée, pour une seule raison : un accent parasite isolé, « Écume – Savonnerie artisanale |´ », dans le titre de
+référencement du bloc 10.
+
+**Décision, sans dépense (26 novembre 2026)** : la règle du propriétaire, déjà scellée pour les logos, « les petites
+finitions ne font pas refuser ». Un signe parasite isolé, hors des mots, qui ne change aucun mot (un accent, un trait, une
+barre ou un point égaré) est une petite finition : noté au compte rendu, jamais une raison de refus ; une note sous 8 qui
+ne tient qu'à des finitions ne compte pas. Le code le vérifie lui-même (`signeParasiteIsole`, `planche-de-marque.ts`) : le
+texte lu, sans ces signes, doit être exactement le texte attendu. Un accent ou un signe dans un mot ou collé à un mot, une
+lettre fausse, un mot mal écrit, le nom, la phrase du logo, l'adresse et l'année font toujours refuser. Épreuve :
+`planche-signe-parasite-petite-finition`.
+
+**Attention, la planche en vrai ne corrige pas cet accent d'elle-même.** Son bloc 10 n'est redessiné par le code que si le
+copyright ou la mention du domaine sont faux, ou s'il porte une promesse (`textesDeLaPlanche`,
+`planche-en-vrai-tache.ts`) ; sinon le décor de la planche choisie est gardé tel quel, accent compris. Et redessiné, il
+reprend les lignes lues par l'inventaire, telles qu'elles sont écrites.
+
+### Rejuger A sans aucun appel
+
+Le script des planches relit une planche à partir de son image et de son verdict déjà payés, avec le code d'aujourd'hui
+(`REJUGER=<dossier>`, `REJUGER_PLANCHE=<lettre>`, `REJUGER_ESSAI=<numéro>` sinon le dernier). Aucune clé, aucun plafond,
+aucun appel. Si `data/essai-ecume/3-planches-2` n'existe pas, copier d'abord le dossier de la branche des essais (depuis la
+racine du dépôt) :
+
+```
+git fetch origin claude/essais-complets
+mkdir -p data/essai-ecume/3-planches-2
+git archive -o data/essai-ecume/3-planches-2.tar FETCH_HEAD docs/studio/essais-complets/images/ecume/3-planches-2
+tar -x --strip-components=6 -C data/essai-ecume/3-planches-2 -f data/essai-ecume/3-planches-2.tar
+rm data/essai-ecume/3-planches-2.tar
+```
+
+Puis :
+
+```
+NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
+  REJUGER=data/essai-ecume/3-planches-2 REJUGER_PLANCHE=A node_modules/.bin/tsx scripts/syna-recette/essai-planches.mts
+```
+
+Essayé le 26 novembre 2026 sur une copie des vrais fichiers : **A, essai 2, gardée (note 8/10)**, aucune raison de refus ;
+l'accent écrit en petite finition ; les alphabets des spécimens non comptés, comme avant. Le script écrit
+`planche-A-2-relecture-verdict-rejuge.json` (l'original n'est jamais réécrit), `planche-A-gardee.png` (l'image payée,
+telle quelle), `planche-A-resultat.json` qui dit la planche gardée (l'ancien est gardé dans
+`planche-A-resultat-avant-rejugement.json`), et ajoute au rapport le rejugement et la ligne « Planches gardées, prêtes
+pour le choix : A, B ». Dépense : 0 €. Code de sortie 0 si elle est gardée, 2 si elle reste refusée.
+
 **Pause.** Montrer `planche-A-gardee.png` (le logo 6) et `planche-B-gardee.png` (le logo 10), seules les gardées, en
-entier. Le domaine écrit est dans `domaine.json`. Il choisit **sa planche** : A ou B.
+entier. Le domaine écrit est dans `domaine.json`. Il choisit **sa planche** : A ou B. Pour l'étape 4, le dossier est
+`data/essai-ecume/3-planches-2`.
 
 ## Étape 4 — la planche choisie, refaite en vrai
 
@@ -236,6 +285,7 @@ n'est pas faite) et prendre les captures avec `capture.cjs` (ordinateur 1440 de 
 | 2. Deux logos finis | 0,19 € | 0,39 € | 2,20 € |
 | 3. Deux planches (avec la phrase de chaque logo) | 0,43 € | 0,86 € | 2,14 € |
 | 3 bis. Reprise de A et planche B (après l'arrêt du premier passage) | 0,40 € | 0,59 € | 1,35 € |
+| 3 ter. Rejugement de A, sans appel | 0 € | 0 € | 0 € |
 | 4. Planche en vrai | 1,50 € | 2,78 € | 6,70 € |
 | 5. Écran | 0 € | 0 € | 0 € |
 | **Total** | **2,27 €** | **4,32 €** | **12,87 €** |

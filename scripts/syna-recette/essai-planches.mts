@@ -25,6 +25,12 @@
  * raisons à partir du verdict (planche-A-1-relecture-verdict-recalcule.json) et seule la reprise unique part, à la charge
  * du Studio. Les valeurs du métier ne sont jamais refaites quand valeurs-du-metier.json est déjà dans le dossier de sortie.
  *
+ * REJUGER UNE PLANCHE DÉJÀ PAYÉE, SANS AUCUN APPEL (REJUGER=<dossier de l'essai des planches>, REJUGER_PLANCHE=<lettre>,
+ * REJUGER_ESSAI=<numéro> sinon le dernier) : son image et son verdict, déjà payés, sont relus par le code d'aujourd'hui
+ * (`rejugerUnePlanche`, essai-planches-outil.ts). Aucune clé, aucun plafond, aucun réseau. Gardée : planche-X-gardee.png et
+ * planche-X-resultat.json la disent gardée (l'ancien résultat est gardé à côté), le rapport le dit ; code de sortie 0.
+ * Toujours refusée : code de sortie 2. Seul CLIENT_JSON (ou CLIENT_NOM…) est demandé, pour vérifier le client.
+ *
  * Le client : CLIENT_JSON (un fichier { nom, metier, kind, produits, descripteur }) ou CLIENT_NOM, CLIENT_METIER,
  * CLIENT_TYPE (« produits » ou « services »), CLIENT_PRODUITS (séparés par « ; »), CLIENT_DESCRIPTEUR ; rien d'autre.
  * Les logos : les logos finis gardés par l'essai de finalisation (esquisse-NN-logo-garde.png, sur fond blanc, pas la
@@ -65,7 +71,23 @@ import path from "node:path";
   Object.assign(process.env, { DATA_DIR: dir, APP_SECRET: fs.readFileSync(secretFile, "utf8").trim(), OPENAI_API_KEY: "sk-proxy-injected", DASHSCOPE_API_KEY: "sk-proxy-injected", FAL_KEY: "proxy-injected", ANTHROPIC_API_KEY: "", GOOGLE_API_KEY: "" });
   const { appliquerTarifsVerifies } = await import("./tarifs-verifies");
   await appliquerTarifsVerifies();
-  const { clientDeLEssai, devisDeLEssai, devisEnTexte, essaiDesPlanches, euros, refusDuPlafond } = await import("./essai-planches-outil");
+  const { clientDeLEssai, devisDeLEssai, devisEnTexte, essaiDesPlanches, euros, refusDuPlafond, rejugerUnePlanche } = await import("./essai-planches-outil");
+
+  // Rejuger une planche déjà payée, sans aucun appel (ni clé, ni plafond, ni réseau) : REJUGER=<dossier>, REJUGER_PLANCHE=<lettre>.
+  if (process.env.REJUGER?.trim()) {
+    let client: ReturnType<typeof clientDeLEssai>;
+    try { client = clientDeLEssai(process.env); } catch (e) { console.error((e as Error).message); process.exit(1); }
+    const key = process.env.REJUGER_PLANCHE?.trim();
+    if (!key) { console.error("REJUGER_PLANCHE manquant (la lettre de la planche à rejuger : A, B, C ou D) : rien n'est écrit."); process.exit(1); }
+    const tour = process.env.REJUGER_ESSAI?.trim() ? Number(process.env.REJUGER_ESSAI) : undefined;
+    try {
+      const r = await rejugerUnePlanche({ dossier: process.env.REJUGER.trim(), key, client, ...(tour ? { tour } : {}) });
+      console.log(`Planche ${r.key}, essai ${r.tour}, rejugée sans aucun appel : ${r.gardee ? `GARDÉE (note ${r.note}/10)` : `toujours refusée (${r.raisons.join(" ; ")})`}.`);
+      if (r.finitions.length) console.log(`Petites finitions notées, sans refus : ${r.finitions.join(" ; ")}`);
+      console.log(`Fichiers écrits dans ${r.dossier} : ${r.fichiers.join(", ")}`);
+      process.exit(r.gardee ? 0 : 2);
+    } catch (e) { console.error((e as Error).message); process.exit(1); }
+  }
 
   const [sortieArg, ...logos] = process.argv.slice(2);
   // Les planches à reprendre à partir de leur premier essai déjà payé (REPRENDRE_A … REPRENDRE_D).

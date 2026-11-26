@@ -184,6 +184,8 @@ export async function plancheDeLaRoute(o: {
     }, { nom: x.name, annee, domaine: dom, personnes: o.personnes, animaux: disposition.animaux && disposition.laquelle === "standard", valeurs, logo, disposition: disposition.png, ...(phrase ? { phrase } : {}) });
     const dernier = r.essais.at(-1)!;
     for (const e of r.essais) if (e.raisons.length) notes.push(`planche ${key}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
+    // Les petites finitions (un signe parasite isolé hors des mots) : notées au compte rendu, jamais une raison de refus.
+    for (const e of r.essais) if (e.finitions?.length) notes.push(`planche ${key}, essai ${e.tour} : petites finitions notées, sans refus : ${e.finitions.join(" ; ")}`);
     if (!r.ok) {
       issues.push(phraseDeLaPlancheNonMontree(x.name, key));
       return { route: avec({ ...base, essais: r.essais.length, note: dernier.verdict.note, raison: r.raison }), issues, notes };

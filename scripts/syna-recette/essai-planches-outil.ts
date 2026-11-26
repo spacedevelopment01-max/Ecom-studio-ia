@@ -185,6 +185,90 @@ export async function lireLaReprise(dossier: string, key: string): Promise<Repri
     : fs.existsSync(fres) ? JSON.parse(fs.readFileSync(fres, "utf8")).logo?.sha256 ?? null : null;
   return { dossier, key, png, fichierPng, verdict, texte: fs.existsSync(ft) ? fs.readFileSync(ft, "utf8") : null, logoSha, domaine: { verifie: d.verifie, domaine: d.domaine ?? null, statut: d.statut, mention: d.mention } };
 }
+// ---------------------------------------------------------------- rejuger une planche déjà payée, sans aucun appel
+
+export type RejugementDePlanche = {
+  key: string; tour: number; dossier: string; gardee: boolean; note: number;
+  raisons: string[]; ecartes: string[]; finitions: string[];
+  /** Les raisons d'avant, telles que l'essai payé les avait écrites. */
+  raisonsAvant: string[] | null;
+  /** Les fichiers écrits dans le dossier. */
+  fichiers: string[];
+};
+
+/**
+ * REJUGER UNE PLANCHE (REJUGER=<dossier>, REJUGER_PLANCHE=<lettre>), à partir de son image et de son verdict déjà payés,
+ * avec le code d'aujourd'hui, SANS AUCUN APPEL (essai réel d'Écume, 26 novembre 2026 : la planche A, reprise à 8/10 et
+ * jugée « montrable », refusée pour un seul accent parasite isolé). On lit, dans le dossier de l'essai des planches, le
+ * dernier essai de la planche : planche-X-N-brute.png, planche-X-N-relecture-verdict.json, planche-X-N-texte-envoye.txt et
+ * planche-X-N-relecture-demande.txt (l'accord pour des personnes y est écrit), avec planche-X-resultat.json (le nom, la
+ * phrase, l'année, le domaine, le logo) et valeurs-du-metier.json (la disposition). Un fichier qui manque, un autre client,
+ * une année ou un domaine qui ne sont pas ceux écrits dans le texte envoyé : une erreur, rien n'est écrit.
+ *
+ * Le code recalcule les raisons (`lectureDeLaPlanche`, le texte envoyé comme texte attendu) et écrit
+ * planche-X-N-relecture-verdict-rejuge.json (l'original n'est jamais réécrit). Gardée : planche-X-gardee.png (l'image
+ * payée, telle quelle), planche-X-resultat.json dit la planche gardée (l'ancien est gardé à côté,
+ * planche-X-resultat-avant-rejugement.json), prête pour le choix et pour la planche en vrai ; le rapport reçoit, à la fin,
+ * le rejugement et les planches gardées. Refusée : rien n'est changé que le verdict rejugé et le rapport.
+ */
+export async function rejugerUnePlanche(o: { dossier: string; key: string; client: ClientDeLEssai; tour?: number }): Promise<RejugementDePlanche> {
+  const P = await import("../../src/lib/syna-agent/planche-de-marque");
+  const key = o.key.trim().toUpperCase();
+  if (!(KEYS as readonly string[]).includes(key)) throw new Error(`Planche à rejuger inconnue (« ${o.key} ») : A, B, C ou D. Rien n'est écrit.`);
+  const dossier = path.resolve(o.dossier), f = (n: string) => path.join(dossier, n);
+  if (!fs.existsSync(dossier)) throw new Error(`Dossier à rejuger introuvable : ${dossier}. Rien n'est écrit.`);
+  const tours = fs.readdirSync(dossier).map((n) => new RegExp(`^planche-${key}-(\\d+)-relecture-verdict\\.json$`).exec(n)).filter(Boolean).map((m) => Number(m![1]));
+  const tour = o.tour ?? Math.max(0, ...tours);
+  if (!tour || !tours.includes(tour)) throw new Error(`Aucun verdict de la planche ${key}${o.tour ? ` (essai ${o.tour})` : ""} dans ${dossier}. Rien n'est écrit.`);
+  const lire = (n: string) => { if (!fs.existsSync(f(n))) throw new Error(`Rejugement de la planche ${key} : ${f(n)} manque. Rien n'est écrit.`); return fs.readFileSync(f(n)); };
+  const png = lire(`planche-${key}-${tour}-brute.png`);
+  if (png[0] !== 137 || png[1] !== 80) throw new Error(`Rejugement de la planche ${key} : planche-${key}-${tour}-brute.png n'est pas un PNG. Rien n'est écrit.`);
+  const brut = JSON.parse(lire(`planche-${key}-${tour}-relecture-verdict.json`).toString("utf8"));
+  const verdict = P.VerdictRangeDeLaPlancheSchema.parse(brut.verdict ?? brut) as RelectureDeLaPlanche;
+  const texte = lire(`planche-${key}-${tour}-texte-envoye.txt`).toString("utf8");
+  const demande = lire(`planche-${key}-${tour}-relecture-demande.txt`).toString("utf8");
+  const resultat = JSON.parse(lire(`planche-${key}-resultat.json`).toString("utf8"));
+  const valeurs = JSON.parse(lire("valeurs-du-metier.json").toString("utf8"));
+  const pl = resultat.planche ?? {};
+  if (resultat.nom !== o.client.nom) throw new Error(`La planche ${key} de ${dossier} est celle de « ${resultat.nom} », pas de « ${o.client.nom} ». Rien n'est écrit.`);
+  const annee = Number(pl.annee), domaine = { domaine: (pl.domaine ?? null) as string | null, statut: pl.statut };
+  if (!Number.isInteger(annee) || !["disponible", "a_verifier", "adresse_a_choisir"].includes(domaine.statut)) throw new Error(`planche-${key}-resultat.json ne dit pas l'année et le domaine de la planche. Rien n'est écrit.`);
+  // L'année et le domaine sont ceux que le texte payé a demandé d'écrire, lettre pour lettre.
+  if (!texte.includes(`« ${P.mentionDuDomaine(domaine as never)} »`) || !texte.includes(`« ${P.copyright(annee, o.client.nom)} »`)) throw new Error(`Le texte envoyé de la planche ${key} ne porte pas « ${P.mentionDuDomaine(domaine as never)} » et « ${P.copyright(annee, o.client.nom)} » : rien n'est écrit.`);
+  const phrase: string[] | undefined = Array.isArray(resultat.phrase) && resultat.phrase.length ? resultat.phrase : undefined;
+  const personnes = /Le client a donné son accord pour des personnes\./u.test(demande);
+  const d = P.laDisposition(valeurs?.valeurs?.metier ?? o.client.metier);
+  const attendu = { nom: o.client.nom, annee, domaine: domaine as never, personnes, animaux: d.animaux && d.laquelle === "standard", ...(phrase ? { phrase } : {}), texte };
+  const lu = P.lectureDeLaPlanche(verdict, attendu);
+  const gardee = !lu.raisons.length;
+  const fichiers: string[] = [];
+  const ecrire = (n: string, c: string | Buffer) => { fs.writeFileSync(f(n), c); fichiers.push(n); };
+  const maintenant = new Date().toISOString();
+  ecrire(`planche-${key}-${tour}-relecture-verdict-rejuge.json`, `${JSON.stringify({ verdict, raisons: lu.raisons, ecartes: lu.ecartes, finitions: lu.finitions, gardee, rejuge: maintenant, aucunAppel: true, raisonsAvant: brut.raisons ?? null }, null, 2)}\n`);
+  if (gardee) {
+    ecrire(`planche-${key}-gardee.png`, png);
+    if (!fs.existsSync(f(`planche-${key}-resultat-avant-rejugement.json`))) ecrire(`planche-${key}-resultat-avant-rejugement.json`, `${JSON.stringify(resultat, null, 2)}\n`);
+    const m = await sharp(png).metadata();
+    const { raison: _raison, ...reste } = pl;
+    const notes = [...(resultat.notes ?? []), `planche ${key}, essai ${tour} rejugé sans aucun appel par le code d'aujourd'hui (${maintenant}) : gardée${lu.finitions.length ? ` ; petites finitions notées, sans refus : ${lu.finitions.join(" ; ")}` : ""}`];
+    ecrire(`planche-${key}-resultat.json`, `${JSON.stringify({ ...resultat, planche: { ...reste, image: { fichier: `planche-${key}-gardee.png`, w: m.width ?? 1536, h: m.height ?? 2304, rejugee: true }, note: verdict.note, essais: Math.max(Number(pl.essais) || 0, tour) }, notes, issues: [] }, null, 2)}\n`);
+  }
+  // Le compte rendu : le rejugement, puis les planches gardées du dossier, prêtes pour le choix.
+  const gardees = KEYS.filter((k) => { try { return !!JSON.parse(fs.readFileSync(f(`planche-${k}-resultat.json`), "utf8")).planche?.image; } catch { return false; } });
+  const rapport = fs.existsSync(f("rapport.txt")) ? fs.readFileSync(f("rapport.txt"), "utf8") : "";
+  ecrire("rapport.txt", `${rapport.trimEnd()}\n\n${[
+    `REJUGEMENT SANS AUCUN APPEL (${maintenant}) — planche ${key}, essai ${tour}, à partir de son image et de son verdict déjà payés, avec le code d'aujourd'hui :`,
+    `  Planche ${key} : ${gardee ? `GARDÉE (planche-${key}-gardee.png, note ${verdict.note}/10)` : `toujours NON gardée, jamais montrée (${lu.raisons.join(" ; ")})`}`,
+    `  raisons du refus d'avant : ${Array.isArray(brut.raisons) && brut.raisons.length ? brut.raisons.join(" ; ") : "aucune"}`,
+    `  raisons du refus aujourd'hui : ${lu.raisons.length ? lu.raisons.join(" ; ") : "aucune"}`,
+    ...(lu.finitions.length ? [`  petites finitions notées, sans refus : ${lu.finitions.join(" ; ")}`] : []),
+    ...(lu.ecartes.length ? [`  non compté : ${lu.ecartes.join(" ; ")}`] : []),
+    `  dépense de ce rejugement : 0 € (aucun appel)`,
+    `Planches gardées, prêtes pour le choix : ${gardees.length ? gardees.join(", ") : "aucune"}`,
+  ].join("\n")}\n`);
+  return { key, tour, dossier, gardee, note: verdict.note, raisons: lu.raisons, ecartes: lu.ecartes, finitions: lu.finitions, raisonsAvant: Array.isArray(brut.raisons) ? brut.raisons : null, fichiers };
+}
+
 export type LigneDeDepense = { cle: string | null; task: string | null; modele: string | null; studio: boolean; reserveMicro: number; reelMicro: number | null; statut: string; appel?: Record<string, unknown> };
 export type ResultatDesPlanches = {
   arret?: string; client: ClientDeLEssai; fiche: string;

@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { ACCORD_A_COMPLETER, EPREUVES, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -49,7 +49,10 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       expect(par && SCEAUX[par.id], `${e.id} → ${r.epreuve}`).toBeTruthy();
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
-      expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026"]).toContain(r.decision);
+      expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026"]).toContain(r.decision);
+      // L'accord écrit encore à recevoir (« [À compléter : …] ») ne vaut que pour planche-phrase-par-lignes-et-reprise-qui-part-toujours,
+      // contredite par la décision du 26 novembre 2026 sur le signe parasite isolé ; à son arrivée, il remplace ce manque.
+      if (r.mots === ACCORD_A_COMPLETER) { expect(e.id).toBe("planche-phrase-par-lignes-et-reprise-qui-part-toujours"); expect(r.epreuve).toBe("planche-signe-parasite-petite-finition"); expect(r.decision).toBe("26 novembre 2026"); continue; }
       expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables)/);
       // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
@@ -1657,7 +1660,9 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
   };
   epreuve("planche-reprend-la-phrase-du-logo", rejeuPhrase);
 
-  epreuve("planche-phrase-par-lignes-et-reprise-qui-part-toujours", async () => {
+  // Le rejeu de planche-phrase-par-lignes-et-reprise-qui-part-toujours, remplacée le 26 novembre 2026 par
+  // planche-signe-parasite-petite-finition : inchangé, rejoué par l'épreuve qui la remplace.
+  const rejeuLignes = async () => {
     // 1. Tout ce que demandaient les deux épreuves remplacées reste vrai.
     await rejeuLisible();
     await rejeuPhrase();
@@ -1721,6 +1726,54 @@ describe("les épreuves de la planche de marque par OpenAI (24 novembre 2026, fa
     const d = await devisDeLEssai(2, { valeursFaites: true, reprises: [1] });
     expect(d.lignes.filter((l) => l.planche === 1).map((l) => l.charge)).toEqual(["Studio", "Studio"]);
     expect(d.lignes.some((l) => l.planche == null)).toBe(false);
+  };
+  epreuve("planche-phrase-par-lignes-et-reprise-qui-part-toujours", rejeuLignes);
+
+  epreuve("planche-signe-parasite-petite-finition", async () => {
+    // 1. Tout ce que demandait l'épreuve remplacée reste vrai.
+    await rejeuLignes();
+    const E2 = "tests/fixtures/ecume-planches-2", PH = ["SAVONNERIE ARTISANALE", "BULLES DE SOIN AU NATUREL"];
+    const FAUTE = "Titre SEO (bloc 10) : « Écume – Savonnerie artisanale |´ » — accent parasite après la barre de séparation";
+    const texte = fs.readFileSync(`${E2}/planche-A-2-texte-envoye.txt`, "utf8");
+    const ECUME = { nom: "Écume", annee: 2026, domaine: { domaine: "ecumefrance.fr", statut: "disponible" as const }, personnes: false, animaux: false, phrase: PH, texte };
+    // 2. Le verdict réel de A-2 d'Écume, copié tel quel : refusé pour ce seul accent ; aujourd'hui gardé, la finition notée.
+    const brut = JSON.parse(fs.readFileSync(`${E2}/planche-A-2-relecture-verdict.json`, "utf8"));
+    expect(brut.gardee).toBe(false);
+    expect(brut.raisons).toEqual([`fautes : « ${FAUTE} »`]);
+    const v = P.VerdictRangeDeLaPlancheSchema.parse(brut.verdict);
+    expect([v.note, v.fautes]).toEqual([8, [FAUTE]]);
+    expect(v.pourquoi).toMatch(/montrable/);
+    const lu = P.lectureDeLaPlanche(v, ECUME);
+    expect(lu.raisons).toEqual([]);
+    expect(lu.finitions).toEqual([FAUTE]);
+    expect(lu.ecartes).toContain(`petite finition, notée sans refus : « ${FAUTE} »`);
+    // 3. Toujours des refus : un accent dans un mot ou collé à un mot, une lettre fausse, un mot mal écrit.
+    for (const f of ["Titre SEO (bloc 10) : « Écume – Savonne´rie artisanale » — accent parasite dans le mot", "Titre SEO (bloc 10) : « Écume – Savonnerie artisanale´ » — accent parasite collé au mot", "Titre SEO (bloc 10) : « Écume – Savonerie artisanale |´ » — accent parasite après la barre", "Titre SEO (bloc 10) : « Écume – Savonnerie artisanale | » — lettre en trop et barre parasite"]) expect(P.lectureDeLaPlanche({ ...v, fautes: [f] }, ECUME).raisons.join(" "), f).toMatch(/^fautes : /);
+    // Le nom, la phrase du logo, l'adresse et l'année : comparés lettre pour lettre, jamais rangés en finition.
+    expect(P.lectureDeLaPlanche({ ...v, nomLu: "Écume´" }, ECUME).raisons.join(" ")).toMatch(/le nom est mal écrit/);
+    expect(P.lectureDeLaPlanche({ ...v, copyrightLu: "© 2025 Écume" }, ECUME).raisons.join(" ")).toMatch(/copyright/);
+    expect(P.lectureDeLaPlanche({ ...v, domaineLu: "ecumefrance.fr ´ — disponible" }, ECUME).raisons.join(" ")).toMatch(/bloc 10 doit dire exactement/);
+    expect(P.lectureDeLaPlanche({ ...v, phrasesLues: [{ emplacement: "slogan", lignes: ["SAVONNERIE ARTISANALE ´", PH[1]], cachee: false }] }, ECUME).raisons.join(" ")).toMatch(/la phrase choisie par le client est mal écrite/);
+    for (const f of ["Titre : « Écume ´ » — accent parasite", "Bloc 10 : « ecumefrance.fr ´ — disponible » — accent parasite", "Bloc 10 : « © 2026 Écume . » — point parasite", "Bloc 04 : « SAVONNERIE ARTISANALE ´ » — accent parasite"]) expect(P.signeParasiteIsole(f, ECUME), f).toBeNull();
+    // 4. La note sous 8 qui ne tient qu'à des finitions ne compte pas ; avec une autre raison, elle compte.
+    expect(P.lectureDeLaPlanche({ ...v, note: 7 }, ECUME).raisons).toEqual([]);
+    expect(P.lectureDeLaPlanche({ ...v, note: 7, copies: ["le harnais"] }, ECUME).raisons).toHaveLength(2);
+    // 5. La consigne, en termes généraux, sans nom ni exemple d'essai.
+    expect(P.RELECTEUR_DE_LA_PLANCHE).toContain(P.PETITE_FINITION_DE_LA_PLANCHE);
+    expect(P.PETITE_FINITION_DE_LA_PLANCHE).toMatch(/^Un signe parasite isolé, hors des mots, qui ne change aucun mot \(un accent, un trait, une barre ou un point égaré\) est une petite finition : il ne fait jamais descendre la note sous 8/);
+    expect(P.RELECTEUR_DE_LA_PLANCHE).not.toMatch(/écume|savonnerie|SEO|référencement|\|´|séparation|racine|tenon/i);
+    // 6. Le script des planches rejuge A-2 à partir de son image et de son verdict déjà payés, sans aucun appel.
+    const os = await import("node:os"), path = await import("node:path");
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "epreuve-rejuger-"));
+    for (const n of ["planche-A-2-relecture-verdict.json", "planche-A-2-texte-envoye.txt", "planche-A-2-relecture-demande.txt", "planche-A-resultat.json", "valeurs-du-metier.json"]) fs.copyFileSync(`${E2}/${n}`, path.join(dir, n));
+    fs.writeFileSync(path.join(dir, "planche-A-2-brute.png"), await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#F4EFE6" } }).png().toBuffer());
+    const { rejugerUnePlanche } = await import("../scripts/syna-recette/essai-planches-outil");
+    const { ECUME: client } = await import("./clients-d-essai");
+    const r = await rejugerUnePlanche({ dossier: dir, key: "A", client });
+    expect(r).toMatchObject({ gardee: true, note: 8, raisons: [], finitions: [FAUTE] });
+    expect(JSON.parse(fs.readFileSync(path.join(dir, "planche-A-resultat.json"), "utf8")).planche.image).toBeTruthy();
+    expect(fs.readFileSync(path.join(dir, "rapport.txt"), "utf8")).toContain("dépense de ce rejugement : 0 € (aucun appel)");
+    expect(fs.readFileSync("scripts/syna-recette/essai-planches.mts", "utf8")).toContain("if (process.env.REJUGER?.trim())");
   });
 });
 
