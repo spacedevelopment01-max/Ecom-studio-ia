@@ -109,7 +109,7 @@ function relanceMarque(ctx: ToolContext): ToolResult {
   run("UPDATE jobs SET payload = ? WHERE id = ? AND status IN ('failed','cancelled')", JSON.stringify(payload), c.id);
   retryJob(c.id);
   updateJourney(ctx.conversationId, (x) => setStep(x, c.payload.finish ? 2 : 1, "doing"));
-  return { ok: true, jobs: [c.id], data: { plafondMicro: q.maxMicro },
+  return { ok: true, jobs: [c.id], data: {},
     summary: L(`Création de ta marque relancée, là où elle s'était arrêtée (${marqueOuArretee(c.etapes)}) : ce qui était déjà fait est repris sans être repayé. Je reprends quand c'est prêt.`, "Your brand creation was restarted from where it stopped."),
     hint: "Dis-lui que ce qui était fait est repris sans être repayé. N'annonce jamais que sa marque est prête avant la fin de la tâche." };
 }
@@ -218,7 +218,7 @@ function proposeByChain(ctx: ToolContext, a: ProposeArgs) {
   });
   updateJourney(ctx.conversationId, (x) => setStep(x, 1, "doing"));
   return {
-    ok: true, jobs: [job.id], data: { identites: w.count, plafondMicro: quote.maxMicro },
+    ok: true, jobs: [job.id], data: { identites: w.count },
     summary: L(`Création de ${w.routes === w.count ? `tes ${w.count} identités de marque` : `${w.routes} identité${w.routes > 1 ? "s" : ""}`} lancée (plusieurs minutes : ${w.fresh ? "j'étudie ton marché, je cherche l'idée et les noms, puis " : ""}je prépare les planches et je relis tout). Je reprends quand c'est prêt.`, "Creating your brand identities (several minutes)."),
   };
 }
@@ -241,7 +241,7 @@ function proposeParLesGraphistes(ctx: ToolContext, w: ReturnType<typeof chainWor
     payload: { projectId: p.id, conversationId: ctx.conversationId, capMicro: g.nomsMicro, count: w.count, jusquAuxNoms: true, ...(a.guidance ? { guidance: a.guidance } : {}) },
     maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand:noms`,
   });
-  return { ok: true, jobs: [job.id], data: { identites: w.count, plafondMicro: g.maxMicro },
+  return { ok: true, jobs: [job.id], data: { identites: w.count },
     summary: L("C'est parti : j'étudie ton marché, je cherche l'idée et les noms, puis je vérifie qu'ils sont libres. Tu choisis ensuite ton nom, puis les pistes de ton logo.", "Starting: market study, idea and names, then you choose your name and logo directions.") };
 }
 
@@ -499,7 +499,7 @@ const imagesTool: AgentTool<ImagesArgs> = {
       maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:brand-images:${keys.join("")}:${images.join("+")}`,
     });
     return {
-      ok: true, jobs: [job.id], data: { planches: keys, images, plafondMicro: d.maxMicro },
+      ok: true, jobs: [job.id], data: { planches: keys, images },
       summary: L(`Je refais ${images.length} image${images.length > 1 ? "s" : ""} sur ${keys.map((k) => `« ${list.find((x) => x.key === k)?.name ?? k} »`).join(" et ")} (quelques minutes) ; le reste des planches ne bouge pas.`, "Redoing the board images."),
     };
   },

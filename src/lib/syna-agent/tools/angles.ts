@@ -67,7 +67,7 @@ const proposeTool: AgentTool<ProposeArgs> = {
       maxAttempts: 1, idempotencyKey: `syna:${ctx.runId}:angles:${round}`,
     });
     updateJourney(ctx.conversationId, (x) => setStep(x, 4, "doing"));
-    return { ok: true, jobs: [job.id], data: { plafondMicro: quote.maxMicro }, summary: L("Création de tes trois angles lancée (quelques minutes : je relis ce que disent tes acheteurs, j'écris les angles, puis je les relis un par un). Je reprends quand c'est prêt.", "Creating your three angles (a few minutes).") };
+    return { ok: true, jobs: [job.id], data: {}, summary: L("Création de tes trois angles lancée (quelques minutes : je relis ce que disent tes acheteurs, j'écris les angles, puis je les relis un par un). Je reprends quand c'est prêt.", "Creating your three angles (a few minutes).") };
   },
 };
 

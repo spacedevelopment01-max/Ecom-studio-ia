@@ -70,14 +70,14 @@ export const dessinTool: AgentTool<DessinArgs> = {
       const payload: DessinPayload = { ...c.payload, conversationId: ctx.conversationId, runId: ctx.runId, relance: (c.payload.relance ?? 0) + 1, capMicro: jobSpentMicro(c.id) + q.maxMicro };
       runSql("UPDATE jobs SET payload = ? WHERE id = ? AND status = 'failed'", JSON.stringify(payload), c.id);
       retryJob(c.id);
-      return { ok: true, jobs: [c.id], data: { plafondMicro: q.maxMicro },
+      return { ok: true, jobs: [c.id], data: {},
         summary: L("Création de ton accueil relancée, là où elle s'était arrêtée : ce qui était déjà fait est repris sans être repayé. Je reprends quand c'est prêt.", "Your home page creation was restarted from where it stopped."),
         hint: `Reprise : ${ouArrete(c.etapes)}. Dis-lui que ce qui était fait est repris sans être repayé. À la fin, montre-lui le résultat avec site.dessin.voir.` };
     }
     const q = dessinQuote(photosACreer(p.id, p.business));
     const payload: DessinPayload = { projectId: p.id, userId: ctx.user.id, conversationId: ctx.conversationId, runId: ctx.runId, capMicro: q.maxMicro, consigne: a.consigne?.trim() || null };
     const job = enqueue({ userId: ctx.user.id, projectId: p.id, type: SINA_DESSIN_JOB, label: L("Ton accueil, dessiné puis codé (SINA)", "Your home page, drawn then coded"), payload, maxAttempts: 2, idempotencyKey: `syna:${ctx.runId}:dessin` });
-    return { ok: true, jobs: [job.id], data: { plafondMicro: q.maxMicro },
+    return { ok: true, jobs: [job.id], data: {},
       summary: L("Création de ton accueil lancée (10 à 15 minutes : je réfléchis à la page, je fais relire chaque fait, je la dessine sur ordinateur et sur téléphone, je la code, puis je vérifie l'affichage). Je reprends quand c'est prêt.", "Creating your home page."),
       hint: "À la fin de la tâche, appelle site.dessin.voir pour lui montrer les dessins et le code affiché, puis dis honnêtement ce qui est réussi et ce qui ne l'est pas (contrôle de Shopify, débordements, faits corrigés par le juge)." };
   },
