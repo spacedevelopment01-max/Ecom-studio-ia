@@ -1,0 +1,155 @@
+{
+  "verdict": {
+    "nomLu": "Écume",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Écume",
+    "domaineLu": "ecumefrance.fr — disponible",
+    "fautes": [],
+    "microTextes": [
+      "ABCDEFFGOIJLLIMMMOBRTÜVWXYZ",
+      "abcdefgjinklnnoppotbvwxyz",
+      "ABCDEFGGIJIJLAAAAOTUVWXYZ (alphabet manuscrit Nunito)",
+      "abcdefulyljdmapaagerhxyz (alphabet manuscrit Nunito)",
+      "D.01 (heure de la barre d'état du téléphone)"
+    ],
+    "promesses": [],
+    "personnes": false,
+    "personnesVues": [],
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "note": 8.5,
+    "pourquoi": "Planche complète et soignée : logo fidèle, phrase « SAVONNERIE / ARTISANALE » juste partout, numéros de blocs corrigés, aucune faute ni personne visible. Seul petit écart : la police « Nunito » est présentée en écriture manuscrite.",
+    "phrasesLues": [
+      {
+        "emplacement": "Ouverture, sous le grand logo",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Ouverture, sous l'accroche principale",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo principal",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo horizontal",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo empilé",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome foncé",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome clair",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, inversé sur fond sombre",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, badge / sceau circulaire",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1, logo en haut",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, en-tête du site sur ordinateur",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, en-tête du site mobile",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, logo sur la boîte en carton",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, étiquette du savon emballé",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, pochon en tissu",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      }
+    ]
+  },
+  "raisons": [],
+  "ecartes": [
+    "micro-texte décoratif, non jugé : « ABCDEFFGOIJLLIMMMOBRTÜVWXYZ »",
+    "micro-texte décoratif, non jugé : « abcdefgjinklnnoppotbvwxyz »",
+    "micro-texte décoratif, non jugé : « ABCDEFGGIJIJLAAAAOTUVWXYZ (alphabet manuscrit Nunito) »",
+    "micro-texte décoratif, non jugé : « abcdefulyljdmapaagerhxyz (alphabet manuscrit Nunito) »",
+    "micro-texte décoratif, non jugé : « D.01 (heure de la barre d'état du téléphone) »"
+  ],
+  "gardee": true
+}

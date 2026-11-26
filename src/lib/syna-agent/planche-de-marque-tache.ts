@@ -184,6 +184,8 @@ export async function plancheDeLaRoute(o: {
     }, { nom: x.name, annee, domaine: dom, personnes: o.personnes, animaux: disposition.animaux && disposition.laquelle === "standard", valeurs, logo, disposition: disposition.png, ...(phrase ? { phrase } : {}) });
     const dernier = r.essais.at(-1)!;
     for (const e of r.essais) if (e.raisons.length) notes.push(`planche ${key}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
+    // Les petites finitions (un signe parasite isolé hors des mots) : notées au compte rendu, jamais une raison de refus.
+    for (const e of r.essais) if (e.finitions?.length) notes.push(`planche ${key}, essai ${e.tour} : petites finitions notées, sans refus : ${e.finitions.join(" ; ")}`);
     if (!r.ok) {
       issues.push(phraseDeLaPlancheNonMontree(x.name, key));
       return { route: avec({ ...base, essais: r.essais.length, note: dernier.verdict.note, raison: r.raison }), issues, notes };
@@ -193,7 +195,7 @@ export async function plancheDeLaRoute(o: {
     const { run } = await import("../db");
     // Le verdict du relecteur est gardé comme celui de toute image de planche : c'est ce que SINA en dit (sa note, ses mots).
     run("UPDATE assets SET role='brand-board', meta=json_set(COALESCE(meta,'{}'),'$.plancheDeMarque.verdict',json(?),'$.synaBoard.review',json(?)) WHERE id=?", JSON.stringify(dernier.verdict), JSON.stringify({ status: "ready", score: dernier.verdict.note, words: dernier.verdict.pourquoi }), im.id);
-    return { route: avec({ ...base, image: im, essais: r.essais.length, note: dernier.verdict.note }), issues, notes };
+    return { route: avec({ ...base, image: im, essais: r.essais.length, note: dernier.verdict.note, ...(dernier.finitions?.length ? { finitions: dernier.finitions } : {}) }), issues, notes };
   } catch (e) {
     if (e instanceof CostCapReached) { issues.push(phraseDeLaPlancheNonMontree(x.name, key)); return { route: avec({ ...base, essais: ids.size, raison: L("le plafond annoncé a été atteint avant la fin de la planche", "the announced cap was reached before the board was finished") }), issues, notes }; }
     // Une panne n'est jamais relancée toute seule : la planche manque, c'est dit. Elle ne retient jamais les autres planches

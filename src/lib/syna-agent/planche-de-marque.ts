@@ -281,6 +281,7 @@ const couper = (t: string, max: number): string => {
  * phrase choisie par le client, l'année (le copyright), le domaine, puis le reste, la note en dernier.
  */
 export function gravite(r: string): number {
+  if (/^petite finition/iu.test(r)) return 7;
   if (/personne|visage|\bmains?\b/iu.test(r)) return 0;
   if (/^le nom\b/iu.test(r)) return 1;
   if (/phrase choisie par le client/iu.test(r)) return 2;
@@ -506,6 +507,12 @@ export const promesseMesurable = (p: string): boolean => {
   return MESURABLE.test(t) || t.split(/\s+/).filter(Boolean).length > 6;
 };
 
+/**
+ * La petite finition, dite au relecteur en termes généraux, sans nom ni exemple d'essai (26 novembre 2026) : un signe
+ * parasite isolé hors des mots reste relevé dans les fautes, le texte lu entre « », pour que le code le vérifie
+ * (`signeParasiteIsole`) ; il ne fait jamais descendre la note sous 8.
+ */
+export const PETITE_FINITION_DE_LA_PLANCHE = "Un signe parasite isolé, hors des mots, qui ne change aucun mot (un accent, un trait, une barre ou un point égaré) est une petite finition : il ne fait jamais descendre la note sous 8 ; relève-le quand même dans fautes, avec le texte lu recopié entre « », en disant que c'est un signe parasite. Un accent ou une lettre faux dans un mot reste une faute.";
 export const RELECTEUR_DE_LA_PLANCHE = `Tu es le relecteur le plus exigeant d'un studio de création de marques. On te montre une planche d'identité visuelle découpée en bandes, de haut en bas (« bande 1 » à « bande 4 », elles se chevauchent un peu), le logo de la marque (« logo ») et la disposition imposée (« disposition », celle d'une AUTRE marque, qui ne donne que l'emplacement des blocs). Réponds en JSON :
 - nomLu : le nom de la marque tel qu'il est écrit en grand sur la planche, lettre pour lettre ;
 - logoFidele : le logo de la planche est exactement celui de l'image « logo » (même dessin, mêmes lettres), jamais redessiné ;
@@ -519,12 +526,16 @@ export const RELECTEUR_DE_LA_PLANCHE = `Tu es le relecteur le plus exigeant d'un
 - logoFonceSurFondSombre : un logo foncé posé sur un fond sombre (il doit y être clair) ;
 - motMaquette : le mot « maquette » ou « mockup » est écrit sur la planche ;
 - copies : chaque élément recopié de la disposition (ses produits, ses photos, son emballage, son nom ou son logo) ;
-- note : ta note de 0 à 10. Une planche complète, juste dans ses textes lisibles et soignée vaut 8 ou plus ; un micro-texte décoratif ou un mot qualitatif ne fait jamais descendre la note sous 8. Ton repère : à la question « ${QUESTION_DU_REPERE_DE_PLANCHE} », posée devant deux planches dont seuls les alphabets des spécimens, le petit texte circulaire du badge et des mots qualitatifs de réassurance étaient reprochés, le propriétaire du Studio a répondu : « ${REPONSE_DU_PROPRIETAIRE_PLANCHE} » ;
+- note : ta note de 0 à 10. Une planche complète, juste dans ses textes lisibles et soignée vaut 8 ou plus ; un micro-texte décoratif ou un mot qualitatif ne fait jamais descendre la note sous 8. ${PETITE_FINITION_DE_LA_PLANCHE} Ton repère : à la question « ${QUESTION_DU_REPERE_DE_PLANCHE} », posée devant deux planches dont seuls les alphabets des spécimens, le petit texte circulaire du badge et des mots qualitatifs de réassurance étaient reprochés, le propriétaire du Studio a répondu : « ${REPONSE_DU_PROPRIETAIRE_PLANCHE} » ;
 - pourquoi : une ou deux phrases simples.
 Ne juge que ce que tu vois.`;
 
-/** `phrase` : les lignes de la phrase choisie sous le logo, dans l'ordre (absente : aucune phrase choisie). */
-export type AttenduDeLaPlanche = { nom: string; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; animaux: boolean; phrase?: readonly string[] };
+/**
+ * `phrase` : les lignes de la phrase choisie sous le logo, dans l'ordre (absente : aucune phrase choisie). `texte` : le texte
+ * envoyé au dessinateur, où le code retrouve les mots attendus d'un texte lu (absent : seulement le nom, la phrase et les
+ * données vérifiées, par prudence).
+ */
+export type AttenduDeLaPlanche = { nom: string; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; animaux: boolean; phrase?: readonly string[]; texte?: string };
 /** Ce que la demande au relecteur dit de la phrase choisie sous le logo (vide sans phrase). */
 export const demandeDeLaPhrase = (phrase: readonly string[] | undefined): string[] => !phrase?.length ? [] : [
   `Le client a choisi la phrase écrite sous son logo${phrase.length > 1 ? `, en ${phrase.length} lignes, dans cet ordre` : ""} : ${lignesDites(phrase)}. Elle n'est pas inventée, et ce n'est jamais un micro-texte décoratif : vérifie qu'elle est écrite exactement, lettre pour lettre, partout où elle apparaît sur la planche (sous le logo et ses variantes, comme slogan, ailleurs).`,
@@ -635,6 +646,103 @@ export function jugerLaPhraseLue(lue: PhraseLue, phrase: readonly string[]): { j
   }
   return { juste: dernier.juste, cachee: dernier.cache, texte: lue, emplacement };
 }
+// ---------------------------------------------------------------- 5 ter. le signe parasite isolé, une petite finition
+
+/** Un mot entre deux espaces fait seulement de signes (aucune lettre, aucun chiffre) : un accent, un trait, une barre, un point… */
+const SIGNES_SEULS = /^[^\p{L}\p{N}]+$/u;
+/** Un mot du texte, une fois ôtée la ponctuation ordinaire collée à ses bords : des lettres et des chiffres, un trait d'union ou une apostrophe entre eux. */
+const MOT_PROPRE = /^[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*$/u;
+const PONCTUATION_DES_BORDS = /^[«»"“”'’(\[]+|[«»"“”'’)\].,;:!?…]+$/gu;
+/** Le texte sans ses signes isolés (ceux qui sont seuls entre deux espaces), espaces ramenés à un seul. */
+export const sansSignesIsoles = (t: string): string => t.normalize("NFC").split(/\s+/u).filter((m) => m && !SIGNES_SEULS.test(m)).join(" ");
+const motsDuTexte = (t: string) => t.normalize("NFC").split(/[^\p{L}\p{N}]+/u).filter(Boolean).map((m) => m.toLocaleLowerCase("fr"));
+/** La faute porte-t-elle sur un signe (et non sur une lettre, un mot, l'orthographe) ? */
+const DIT_UN_SIGNE = /accent|trait|tiret|barre|point|signe|virgule|apostrophe|caract[eè]re|symbole|ponctuation|guillemet|ast[ée]risque|slash/iu;
+const DIT_PARASITE = /parasite|[ée]gar[ée]|en trop|isol[ée]|tra[iî]n|superflu|orphelin|perdu|inutile|ajout[ée]|parasit/iu;
+const DIT_UN_MOT = /lettre|orthograph|mal [ée]crit|illisible|d[ée]form|coup[ée]|manqu|accord|conjug|pluriel|singulier|majuscule|minuscule|faute d/iu;
+/** Ce qui touche les données vérifiées ou la phrase du client : jamais une petite finition (le code les compare à part). */
+const DIT_UNE_DONNEE = /domaine|copyright|©|ann[ée]e|phrase|slogan|sous le logo|nom de la marque/iu;
+
+/**
+ * UN SIGNE PARASITE ISOLÉ, UNE PETITE FINITION (26 novembre 2026, essai réel d'Écume, étape 3 : la planche A, reprise à
+ * 8/10 et jugée « montrable », refusée pour un seul accent égaré après une barre de séparation). La règle du propriétaire,
+ * déjà scellée pour les logos : « les petites finitions ne font pas refuser ». Une faute du relecteur est une petite
+ * finition seulement si TOUT ceci est vrai :
+ * - elle recopie le texte lu entre « » et dit qu'il s'agit d'un signe parasite (un accent, un trait, une barre ou un point
+ *   égaré), sans parler d'une lettre, d'un mot mal écrit ni de l'orthographe ;
+ * - le texte lu porte au moins un signe isolé, seul entre deux espaces, hors de tout mot ; chacun de ses autres mots est
+ *   propre (un signe collé à un mot, un accent dans un mot, n'est jamais isolé) ;
+ * - après avoir retiré ces signes, le texte lu est exactement le texte attendu : celui que le relecteur donne (« au lieu
+ *   de », « il faut »), sinon chacun de ses mots se retrouve, lettre pour lettre et accent pour accent, dans le texte envoyé
+ *   au dessinateur, le nom, la phrase choisie, le copyright ou la mention du domaine ;
+ * - elle ne touche ni le nom seul, ni la phrase choisie par le client, ni le domaine, ni le copyright, ni l'année.
+ * Rend le texte lu sans ses signes, ou null (la faute compte).
+ */
+export function signeParasiteIsole(f: string, o: AttenduDeLaPlanche): string | null {
+  const citations = [...f.matchAll(/«\s*([^«»]*?)\s*»/gu)].map((m) => m[1]);
+  if (!citations.length) return null;
+  const lu = citations[0].normalize("NFC"), hors = f.replace(/«[^«»]*»/gu, " ");
+  if (!DIT_UN_SIGNE.test(hors) || !DIT_PARASITE.test(hors) || DIT_UN_MOT.test(hors) || DIT_UNE_DONNEE.test(hors)) return null;
+  const mots = lu.split(/\s+/u).filter(Boolean);
+  if (!mots.some((m) => SIGNES_SEULS.test(m))) return null;
+  if (!mots.filter((m) => !SIGNES_SEULS.test(m)).every((m) => MOT_PROPRE.test(m.replace(PONCTUATION_DES_BORDS, "")))) return null;
+  const propre = sansSignesIsoles(lu);
+  if (!propre || /©|\b(19|20)\d\d\b/u.test(propre)) return null;
+  const domaine = o.domaine.domaine?.toLocaleLowerCase("fr");
+  if (domaine && propre.toLocaleLowerCase("fr").includes(domaine)) return null;
+  const plat = (t: string) => motsDuTexte(t).join(" ");
+  if (plat(propre) === plat(o.nom)) return null;
+  const phrase = o.phrase?.length ? motsDuTexte(o.phrase.join(" ")) : [];
+  const motsLus = motsDuTexte(propre);
+  if (phrase.length && motsLus.every((m) => phrase.includes(m))) return null;
+  // Le texte attendu : celui que le relecteur donne, sinon les mots que le Studio a écrits.
+  const attendu = /au lieu|il faut|attendu|devrait/iu.test(f) ? citations.slice(1).find((c) => c.trim()) : undefined;
+  if (attendu != null) return plat(attendu) === plat(propre) ? propre : null;
+  const connus = new Set(motsDuTexte([o.texte ?? "", o.nom, ...(o.phrase ?? []), copyright(o.annee, o.nom), mentionDuDomaine(o.domaine)].join(" ")));
+  return motsLus.length && motsLus.every((m) => connus.has(m)) ? propre : null;
+}
+/** Les séparateurs ordinaires d'une ligne, permis seuls entre deux espaces (jamais au bout d'une ligne). */
+const SEPARATEURS = new Set(["–", "—", "-", "|", "·", "•", "/"]);
+/** Un signe sûrement parasite : un accent seul, un signe de modification, un tilde, un soulignement, une barre brisée. */
+const SIGNE_SUREMENT_PARASITE = /[\p{Sk}\p{M}~_¦]/u;
+/**
+ * LA LIGNE NETTOYÉE DE SES SIGNES PARASITES (26 novembre 2026, planche en vrai) : chaque texte que le code écrit dans la
+ * planche en vrai passe par ici. Est retiré un signe seul entre deux espaces qui est sûrement parasite (un accent seul, un
+ * tilde, un soulignement, une suite de signes qui n'est ni « … » ni une ponctuation double, un point ou une virgule seuls),
+ * puis un séparateur resté au bout de la ligne ou doublé. La ponctuation française ordinaire (« ! », « ? », « : », « ; »,
+ * les guillemets) et les séparateurs entre deux mots restent. Une ligne sans signe parasite revient telle quelle.
+ */
+export function nettoyerLesSignesIsoles(ligne: string): string {
+  const mots = ligne.normalize("NFC").split(/\s+/u).filter(Boolean);
+  const parasite = (m: string) => SIGNES_SEULS.test(m) && !SEPARATEURS.has(m) && (SIGNE_SUREMENT_PARASITE.test(m) || m === "." || m === "," || ([...m].length > 1 && !/^(\.\.\.|…|!!|\?!|!\?|\?\?|«|»|--)$/u.test(m)));
+  const gardes = mots.filter((m) => !parasite(m));
+  if (gardes.length === mots.length) return ligne;
+  const sep = (m: string | undefined) => !!m && SEPARATEURS.has(m);
+  const propres = gardes.filter((m, i) => !(sep(m) && sep(gardes[i - 1])));
+  while (sep(propres.at(-1))) propres.pop();
+  while (sep(propres[0])) propres.shift();
+  return propres.join(" ");
+}
+/** La ligne porte-t-elle un signe parasite que le nettoyage retire ? */
+export const porteUnSigneParasite = (ligne: string): boolean => nettoyerLesSignesIsoles(ligne) !== ligne;
+/** Le texte lu d'une petite finition (sa première citation « … »), nettoyé de ses signes parasites ; null sans citation. */
+export function texteDeLaFinition(f: string): string | null {
+  const c = /«\s*([^«»]*?)\s*»/u.exec(f)?.[1];
+  return c ? nettoyerLesSignesIsoles(c) : null;
+}
+/** Le bloc de la planche où une petite finition est notée : le bloc 10 (référencement, mentions), le ton (bloc 04), sinon un autre. */
+export function blocDeLaFinition(f: string): "seo" | "ton" | "autre" {
+  const hors = f.replace(/«[^«»]*»/gu, " ");
+  if (/bloc\s*10\b|\bseo\b|r[ée]f[ée]rencement|m[ée]ta|mentions?|copyright|nom de domaine/iu.test(hors)) return "seo";
+  if (/bloc\s*0?4\b|\bton\b|slogan|valeurs/iu.test(hors)) return "ton";
+  return "autre";
+}
+
+/** La ligne du compte rendu pour une petite finition : notée, jamais une raison de refus. */
+export const finitionNotee = (f: string) => `petite finition, notée sans refus : « ${f} »`;
+/** La même finition, transmise comme correction quand la planche est reprise pour une autre raison. */
+export const finitionACorriger = (f: string) => `petite finition à nettoyer : « ${f} »`;
+
 /** Une faute relevée qui dit seulement que la phrase est cachée en partie par un objet (aucune lettre fausse) : pas une faute. */
 const seulementCachee = (f: string, phrase: readonly string[] | undefined) => touchePhrase(f, phrase) && CACHE.test(f) && !DEFORME.test(f) && !/au lieu|faute|il faut|manque|en trop/iu.test(f);
 /** Où le relecteur a vu une personne : `personnesVues`, sinon le passage de `pourquoi` qui le dit (verdicts d'avant). */
@@ -657,11 +765,14 @@ export function raisonsDuRefusDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeL
 
 /**
  * Ce que le code retient du verdict (25 novembre 2026) : les raisons du refus, et ce qu'il écarte (les micro-textes
- * décoratifs et les mots qualitatifs pris pour des promesses), pour le compte rendu. Une note sous 8 ne compte pas quand
+ * décoratifs, les mots qualitatifs pris pour des promesses et, depuis le 26 novembre 2026, les petites finitions : un
+ * signe parasite isolé hors des mots, `signeParasiteIsole`), pour le compte rendu. Une note sous 8 ne compte pas quand
  * elle ne tenait qu'à ce qui est écarté (rien d'autre n'est reproché) ; sans rien d'écrit, elle reste un refus, par
- * prudence. Le nom, l'année et le domaine sont toujours comparés lettre pour lettre.
+ * prudence. Le nom, l'année et le domaine sont toujours comparés lettre pour lettre. `finitions` : les fautes rangées en
+ * petites finitions, telles que le relecteur les a écrites ; elles ne deviennent des corrections que si la planche est
+ * reprise pour une autre raison.
  */
-export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): { raisons: string[]; ecartes: string[] } {
+export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): { raisons: string[]; ecartes: string[]; finitions: string[] } {
   const r: string[] = [];
   const phrase = o.phrase?.length ? [...o.phrase] : undefined;
   // Ce qui touche la phrase choisie n'est jamais un micro-texte décoratif à ignorer.
@@ -691,10 +802,14 @@ export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanch
     if (microSurLaPhrase.length) r.push(`la phrase choisie par le client est mal écrite : ${microSurLaPhrase.map((f) => `« ${f} »`).join(", ")}`);
   }
   const cacheeSeulement = (f: string) => !!phrase && seulementCachee(f, phrase);
-  const fautes = v.fautes.filter((f) => !decoratif(f) && !cacheeSeulement(f)), promesses = v.promesses.filter(promesseMesurable);
+  // Un signe parasite isolé hors des mots : une petite finition, notée, jamais une raison de refus.
+  const finition = (f: string) => !decoratif(f) && !cacheeSeulement(f) && signeParasiteIsole(f, o) != null;
+  const finitions = v.fautes.filter(finition);
+  const fautes = v.fautes.filter((f) => !decoratif(f) && !cacheeSeulement(f) && !finition(f)), promesses = v.promesses.filter(promesseMesurable);
   const ecartes = [...(v.microTextes ?? []).filter((f) => !touchePhrase(f, phrase)), ...v.fautes.filter(decoratif)].map((f) => `micro-texte décoratif, non jugé : « ${f} »`)
     .concat(v.promesses.filter((p) => !promesseMesurable(p)).map((p) => `mot qualitatif, pas une promesse : « ${p} »`))
-    .concat(cachees, v.fautes.filter((f) => !decoratif(f) && cacheeSeulement(f)).map((f) => `phrase seulement cachée en partie par un objet, pas une faute : « ${f} »`));
+    .concat(cachees, v.fautes.filter((f) => !decoratif(f) && cacheeSeulement(f)).map((f) => `phrase seulement cachée en partie par un objet, pas une faute : « ${f} »`))
+    .concat(finitions.map(finitionNotee));
   if (fautes.length) r.push(`fautes : ${fautes.map((f) => `« ${f} »`).join(", ")}`);
   if (promesses.length) r.push(`promesses ou chiffres inventés : ${promesses.map((f) => `« ${f} »`).join(", ")}`);
   if (v.personnes && !o.personnes) {
@@ -708,9 +823,9 @@ export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanch
   if (v.copies.length) r.push(`éléments recopiés de la disposition : ${v.copies.join(", ")}`);
   if (v.note < NOTE_DU_PROPRIETAIRE) {
     if (r.length || !ecartes.length) r.push(`elle n'est pas au niveau (${v.note}/10, il faut ${NOTE_DU_PROPRIETAIRE})`);
-    else ecartes.push(`note de ${v.note}/10 non comptée : elle ne tenait qu'à des micro-textes décoratifs ou à des mots qualitatifs`);
+    else ecartes.push(`note de ${v.note}/10 non comptée : elle ne tenait qu'à des micro-textes décoratifs, à des mots qualitatifs ou à de petites finitions`);
   }
-  return { raisons: r, ecartes };
+  return { raisons: r, ecartes, finitions };
 }
 
 // ---------------------------------------------------------------- 6. la planche entière : dessin, relecture, reprise unique
@@ -726,7 +841,7 @@ export type PlancheDeps = {
   aLaChargeDuStudio: <T>(fn: () => Promise<T>) => Promise<T>;
 };
 /** `ecartes` : ce que le code n'a pas compté (micro-textes décoratifs, mots qualitatifs, note qui n'y tenait), pour le compte rendu. */
-export type EssaiDePlanche = { tour: number; texte: string; png: Buffer; verdict: RelectureDeLaPlanche; raisons: string[]; ecartes?: string[] };
+export type EssaiDePlanche = { tour: number; texte: string; png: Buffer; verdict: RelectureDeLaPlanche; raisons: string[]; ecartes?: string[]; finitions?: string[] };
 export type ResultatDeLaPlanche = { ok: true; png: Buffer; texte: string; essais: EssaiDePlanche[] } | { ok: false; raison: string; essais: EssaiDePlanche[] };
 
 /**
@@ -742,13 +857,14 @@ export async function dessinerLaPlanche(deps: PlancheDeps, o: AttenduDeLaPlanche
     const bandes = await bandesDeLaPlanche(png), demande = demandeAuRelecteurDeLaPlanche({ ...o, texte });
     // Sans phrase, l'appel est exactement celui d'avant (cinq paramètres).
     const verdict = o.phrase?.length ? await deps.relire(bandes, o.logo, o.disposition, demande, tour, true) : await deps.relire(bandes, o.logo, o.disposition, demande, tour);
-    const lu = lectureDeLaPlanche(verdict, o);
-    return { tour, texte, png, verdict, raisons: lu.raisons, ...(lu.ecartes.length ? { ecartes: lu.ecartes } : {}) };
+    const lu = lectureDeLaPlanche(verdict, { ...o, texte });
+    return { tour, texte, png, verdict, raisons: lu.raisons, ...(lu.ecartes.length ? { ecartes: lu.ecartes } : {}), ...(lu.finitions.length ? { finitions: lu.finitions } : {}) };
   };
   const premier = await essai(1);
   essais.push(premier);
   if (!premier.raisons.length) return { ok: true, png: premier.png, texte: premier.texte, essais };
-  const second = await deps.aLaChargeDuStudio(() => essai(2, premier.raisons));
+  // Reprise pour une autre raison : les petites finitions du premier essai s'ajoutent aux corrections, en dernier.
+  const second = await deps.aLaChargeDuStudio(() => essai(2, [...premier.raisons, ...(premier.finitions ?? []).map(finitionACorriger)]));
   essais.push(second);
   if (!second.raisons.length) return { ok: true, png: second.png, texte: second.texte, essais };
   return { ok: false, raison: `refusée deux fois (${second.raisons.join(" ; ")})`, essais };

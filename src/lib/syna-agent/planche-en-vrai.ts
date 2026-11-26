@@ -322,7 +322,11 @@ export const CaseLueSchema = z.object({
   description: z.string().max(300).catch(""),
 });
 export type CaseLue = z.infer<typeof CaseLueSchema>;
-const PoliceLue = z.object({ nom: z.string().max(80).catch(""), genre: z.enum(["serif", "sans", "manuscrite", "chasse-fixe", "affiche"]).catch("sans") });
+/**
+ * `procheDuCatalogue` (26 novembre 2026, « identique en visuel ») : la police de la liste du catalogue du Studio qui
+ * ressemble le plus au spécimen montré, choisie par l'inventaire ; vide si elle n'est pas dite (un verdict d'avant).
+ */
+const PoliceLue = z.object({ nom: z.string().max(80).catch(""), genre: z.enum(["serif", "sans", "manuscrite", "chasse-fixe", "affiche"]).catch("sans"), procheDuCatalogue: z.string().max(80).optional().catch(undefined) });
 export const InventaireSchema = z.object({
   cases: z.array(CaseLueSchema).max(40).catch([]),
   polices: z.object({ titres: PoliceLue, textes: PoliceLue }),
@@ -342,13 +346,13 @@ export type PoliceDeLInventaire = Inventaire["polices"]["titres"];
 
 export const INVENTAIRE_SYSTEM = `Tu fais l'inventaire d'une planche d'identité visuelle, découpée en cases, AVANT qu'elle soit refaite en haute définition. Chaque image porte le nom de sa case ; la dernière, « logo », est le logo officiel de la marque. Ne juge rien : relève ce que tu vois. Réponds en JSON :
 - cases : pour chaque case (son nom exact) : logo (le logo de la marque y apparaît), logoVu (seulement quand le logo y apparaît : « complet » si on y voit le symbole et le nom de la marque, « symbole » si on n'y voit que le symbole, sans le nom écrit à côté ; null sinon), textes (chaque texte lisible, mot pour mot, une ligne par élément, sans rien corriger), produit (un produit de la marque est visible), personne (une personne, un visage ou une main est visible), comprehensible (seulement pour les cases « publication-… » : quelqu'un qui ne connaît pas la marque comprend ce qu'elle propose ; null pour les autres cases), description (ce que montre l'image, en une phrase simple) ;
-- polices : le nom de la police des titres et celui de la police des textes, tels qu'ils sont écrits dans la case « typographies », avec leur genre (serif, sans, manuscrite, chasse-fixe ou affiche) ;
+- polices : le nom de la police des titres et celui de la police des textes, tels qu'ils sont écrits dans la case « typographies », avec leur genre (serif, sans, manuscrite, chasse-fixe ou affiche) tel que le montre le dessin du spécimen, et procheDuCatalogue : le nom exact, recopié de la liste des polices du catalogue donnée dans la demande, de celle qui ressemble le plus au dessin du spécimen montré, dans le genre que tu as lu (la police nommée si elle est dans la liste et que son dessin est bien celui du spécimen) ;
 - couleurs : pour chaque pastille de la case « palette », de gauche à droite, son nom et les mots écrits dessous (sans le code de la couleur) ;
 - icone et favicon : ce que montrent l'icône seule et le favicon de la case « logos », en quelques mots ;
 - iconeReprendLeLogo : l'icône et le favicon montrent le symbole du logo (ou une lettre dessinée comme dans le logo).`;
 
 /** Les cases relues par l'inventaire : les 17 aperçus, puis les blocs du code, puis la rangée des logos et les titres. */
-export const demandeDeLInventaire = (nom: string) => `Marque : « ${nom.trim()} ». Relève chaque case, mot pour mot.`;
+export const demandeDeLInventaire = (nom: string, catalogue?: string) => `Marque : « ${nom.trim()} ». Relève chaque case, mot pour mot.${catalogue ? `\n${catalogue}` : ""}`;
 
 /** Ce qui manque à un inventaire : une case d'image qui n'y est pas relue est une faute (rien ne part sans elle). */
 export function inventaireIncomplet(inv: Inventaire, attendues: readonly string[]): string[] {
@@ -500,7 +504,16 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
 export const phraseDeLImageGardeeEnApercu = (cases: readonly string[]) => { const elements = cases.map(libelleDeLElement); return L(
   `Sur ta planche en vrai, ${elements.length > 1 ? `${elements.length} images n'ont pas passé ma relecture, même refaites` : "une image n'a pas passé ma relecture, même refaite"} (${elements.join(", ")}) : ${elements.length > 1 ? "leurs cases gardent" : "sa case garde"} l'aperçu de ta planche choisie, sans fichier en haute définition. Je peux ${elements.length > 1 ? "les" : "la"} refaire à ma charge : rien n'est compté sur ton budget.`,
   `On your full-resolution board, ${elements.length} image(s) did not pass my review, even redone (${elements.join(", ")}): their slot keeps the preview of your chosen board. I can redo them at my expense.`); };
-export const phraseDeLaPoliceRemplacee = (lue: string, prise: string) => L(
+const GENRE_DIT: Record<string, [string, string]> = { manuscrite: ["écriture manuscrite", "handwriting"], serif: ["écriture à empattements", "a serif type"], sans: ["écriture sans empattements", "a sans-serif type"], "chasse-fixe": ["écriture à chasse fixe", "a monospaced type"], affiche: ["écriture d'affiche", "a display type"] };
+/**
+ * La police remplacée, dite au client : absente du catalogue (deux paramètres, la phrase d'avant), ou, avec `genreLu`,
+ * nommée sur la planche mais montrée dans un autre genre d'écriture (26 novembre 2026) : la police suit ce qu'il a vu.
+ */
+export const phraseDeLaPoliceRemplacee = (lue: string, prise: string, genreLu?: string, apercu?: boolean) => apercu ? L(
+  `Sur ta planche, la police nommée « ${lue} » n'avait pas tout à fait le dessin montré : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « ${prise} ».`,
+  `On your board, the font named “${lue}” did not quite match the type shown: I used the Studio catalogue font closest to what you saw, “${prise}”.`) : genreLu ? L(
+  `Sur ta planche, la police nommée « ${lue} » était montrée en ${GENRE_DIT[genreLu]?.[0] ?? genreLu} : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « ${prise} ».`,
+  `On your board, the font named “${lue}” was shown as ${GENRE_DIT[genreLu]?.[1] ?? genreLu}: I used the Studio catalogue font closest to what you saw, “${prise}”.`) : L(
   `La police « ${lue} » de ta planche n'est pas dans le catalogue du Studio : j'ai pris la plus proche, « ${prise} ».`,
   `The “${lue}” font of your board is not in the Studio catalogue: I used the closest one, “${prise}”.`);
 export const phraseDuSymboleComplet = () => L(

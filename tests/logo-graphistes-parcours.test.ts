@@ -395,7 +395,9 @@ describe("les consignes des relecteurs ne portent aucun nom ni exemple d'un proj
   it("la planche en vrai : la règle, les lignes des 17 images, l'inventaire et les relectures ne portent ni nom, ni exemple d'essai", async () => {
     const V = await import("@/lib/syna-agent/planche-en-vrai");
     const consignes: Record<string, string> = {
-      inventaire: V.INVENTAIRE_SYSTEM, "demande de l'inventaire": V.demandeDeLInventaire("Aplomb"), relecteur: V.RELECTEUR_EN_VRAI,
+      inventaire: V.INVENTAIRE_SYSTEM, "demande de l'inventaire": V.demandeDeLInventaire("Aplomb", (await import("@/lib/syna-agent/planche-en-vrai-code")).catalogueDesPolicesParGenre()), relecteur: V.RELECTEUR_EN_VRAI,
+      // La liste des polices du catalogue donnée à l'inventaire : seulement des noms de polices (26 novembre 2026).
+      "liste des polices": (await import("@/lib/syna-agent/planche-en-vrai-code")).catalogueDesPolicesParGenre(),
       ...Object.fromEntries(V.GROUPES.map((g) => [`relecture ${g}`, V.demandeAuRelecteurEnVrai({ nom: "Aplomb", personnes: false, groupe: g, cases: [{ element: "produit-1", photo: true }] })])),
       ...Object.fromEntries(V.NOMS_DES_ELEMENTS.map((n) => [n, V.texteDeLElement({ element: n, nom: "Aplomb", logo: true, photo: true, personnes: false, raisons: ["une raison"] })])),
     };

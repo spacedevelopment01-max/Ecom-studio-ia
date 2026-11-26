@@ -13,6 +13,7 @@ import type { StatutDuDomaine } from "../../src/lib/syna-agent/planche-de-marque
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
 import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
 import type { LigneDeDepense } from "./essai-planches-outil";
+import { SEPARATEUR_DES_LIGNES, lignesDuTexte } from "../../src/lib/syna-agent/phrase-sous-le-nom";
 
 export { clientDeLEssai, euros };
 export type { ClientDeLEssai };
@@ -20,10 +21,12 @@ export type { ClientDeLEssai };
 // ---------------------------------------------------------------- les entrées
 
 /** Ce que la planche choisie porte déjà (son bloc 10) et ce que le code en garde : le domaine, l'année, la disposition, la phrase. */
-export type DonneesDeLaPlanche = { domaine: string | null; statut: StatutDuDomaine; annee: number; disposition: Laquelle; phrase: string };
+/** `finitions` : les petites finitions notées par le relecteur sur la planche choisie (nettoyées par le code dans la planche en vrai). */
+export type DonneesDeLaPlanche = { domaine: string | null; statut: StatutDuDomaine; annee: number; disposition: Laquelle; phrase: string; finitions?: string[] };
 
 /** Ce que l'essai des planches a écrit pour la planche choisie (planche-X-resultat.json). */
-export type ResultatDeLaPlanche = { nom: string; domaine: string | null; statut: StatutDuDomaine; annee: number; disposition?: Laquelle; logo?: { fichier: string; sha256: string } };
+/** `phrase` : les lignes de la phrase du logo de cette planche (planche-X-resultat.json), dans l'ordre. */
+export type ResultatDeLaPlanche = { nom: string; domaine: string | null; statut: StatutDuDomaine; annee: number; disposition?: Laquelle; logo?: { fichier: string; sha256: string }; finitions?: string[]; phrase?: string[] };
 
 /**
  * Le résultat de la planche choisie, écrit par l'essai des planches (RESULTAT_PLANCHE, planche-X-resultat.json) : le
@@ -32,12 +35,12 @@ export type ResultatDeLaPlanche = { nom: string; domaine: string | null; statut:
  */
 export function resultatDeLaPlanche(fichier: string): ResultatDeLaPlanche {
   if (!fs.existsSync(fichier)) throw new Error(`Résultat de la planche choisie introuvable (RESULTAT_PLANCHE) : ${fichier}. Rien n'est lancé.`);
-  let r: { nom?: string; disposition?: Laquelle; logo?: { fichier: string; sha256: string }; planche?: { image?: unknown; domaine?: string | null; statut?: StatutDuDomaine; annee?: number } | null };
+  let r: { nom?: string; phrase?: unknown; disposition?: Laquelle; logo?: { fichier: string; sha256: string }; planche?: { image?: unknown; domaine?: string | null; statut?: StatutDuDomaine; annee?: number; finitions?: string[] } | null };
   try { r = JSON.parse(fs.readFileSync(fichier, "utf8")); } catch { throw new Error(`Résultat de la planche choisie illisible (RESULTAT_PLANCHE) : ${fichier}. Rien n'est lancé.`); }
   if (!r?.planche) throw new Error(`${fichier} n'est pas le résultat d'une planche de l'essai des planches : rien n'est lancé.`);
   if (!r.planche.image) throw new Error(`La planche de ${fichier} n'a pas été gardée par le relecteur : elle n'est jamais montrée, ni refaite en vrai. Rien n'est lancé.`);
   if (!r.planche.statut || !r.planche.annee) throw new Error(`${fichier} ne dit pas le domaine et l'année de la planche : rien n'est lancé.`);
-  return { nom: String(r.nom ?? ""), domaine: r.planche.domaine ?? null, statut: r.planche.statut, annee: r.planche.annee, ...(r.disposition ? { disposition: r.disposition } : {}), ...(r.logo ? { logo: r.logo } : {}) };
+  return { nom: String(r.nom ?? ""), domaine: r.planche.domaine ?? null, statut: r.planche.statut, annee: r.planche.annee, ...(r.disposition ? { disposition: r.disposition } : {}), ...(r.logo ? { logo: r.logo } : {}), ...(Array.isArray(r.planche.finitions) && r.planche.finitions.length ? { finitions: r.planche.finitions.map(String) } : {}), ...(Array.isArray(r.phrase) && r.phrase.length ? { phrase: r.phrase.map(String) } : {}) };
 }
 
 /**
@@ -61,7 +64,12 @@ export function donneesDeLaPlanche(client: ClientDeLEssai, env: Record<string, s
   if (!Number.isInteger(annee) || annee < 2000 || annee > 2200) throw new Error("Année de la planche manquante ou fausse (RESULTAT_PLANCHE, ou ANNEE, celle du « © » de la planche choisie) : rien n'est lancé.");
   const disposition = (donne("DISPOSITION") || lu?.disposition || "standard") as Laquelle;
   if (disposition !== "standard" && disposition !== "animaux") throw new Error("Disposition fausse (DISPOSITION : « standard » ou « animaux ») : rien n'est lancé.");
-  return { domaine: statut === "adresse_a_choisir" ? null : domaine, statut, annee, disposition, phrase: env.PHRASE?.normalize("NFC").trim() ?? "" };
+  // La phrase du logo : comparée par ses lignes, jamais par le « / » qui les sépare. PHRASE et le résultat de la planche
+  // doivent dire les mêmes lignes ; sans PHRASE, celles du résultat.
+  const donnee = lignesDuTexte(env.PHRASE ?? ""), duResultat = lu?.phrase?.flatMap((l) => lignesDuTexte(l)) ?? [];
+  if (lu && env.PHRASE?.trim() && duResultat.length && donnee.join("\n") !== duResultat.join("\n")) throw new Error(`PHRASE (${donnee.map((l) => `« ${l} »`).join(" puis ")}) contredit la phrase de la planche choisie (${duResultat.map((l) => `« ${l} »`).join(" puis ")}) : rien n'est lancé.`);
+  const lignes = donnee.length ? donnee : duResultat;
+  return { domaine: statut === "adresse_a_choisir" ? null : domaine, statut, annee, disposition, phrase: lignes.join(SEPARATEUR_DES_LIGNES), ...(lu?.finitions?.length ? { finitions: lu.finitions } : {}) };
 }
 
 /**
@@ -240,7 +248,7 @@ export async function enregistrerLeParcours(o: { userId: string; projectId: stri
   const at = etat.at || Date.now();
   const identite = {
     key: "A" as const, name: o.nom, nameStyle: "", nameWhy: "", nameAnchor: "", nameTest: "", nameExpression: "", nameCandidates: [],
-    slogan: o.donnees.phrase, sloganTone: "", promise: "", territory: "", ground: "blanc" as const, palette: roles, paletteFamily: "",
+    slogan: lignesDuTexte(o.donnees.phrase).join(" "), sloganTone: "", promise: "", territory: "", ground: "blanc" as const, palette: roles, paletteFamily: "",
     fonts: { heading: etat.polices?.titres.handle ?? "inter_n7", body: etat.polices?.textes.handle ?? "inter_n4" }, fontStyle: "",
     tone: { adjectives: [], avoid: [] }, logoStyle: "lettrage" as const, logoIdea: "", why: "",
     board: {
@@ -249,7 +257,7 @@ export async function enregistrerLeParcours(o: { userId: string; projectId: stri
       wordmark: { case: "asis" as const, tracking: 0, align: "gauche" as const, dot: false, symbolPlace: "gauche" as const },
       object: { kind: "carte" as const, front: [o.nom], back: [] },
       images: { logo: logoFini },
-      planche: { image: dims, logo: etat.logo, domaine: o.donnees.domaine, statut: o.donnees.statut, annee: o.donnees.annee, essais: 1, at },
+      planche: { image: dims, logo: etat.logo, domaine: o.donnees.domaine, statut: o.donnees.statut, annee: o.donnees.annee, essais: 1, at, ...(o.donnees.finitions?.length ? { finitions: o.donnees.finitions } : {}) },
     },
   } as unknown as import("../../src/lib/syna-agent/identities").Identity;
 
@@ -352,7 +360,7 @@ export async function essaiDeLaPlancheEnVrai(o: { sortie: string; plafondEuros: 
   const det = await logoDetoure(logoFini);
   const couleurs = det.ok ? (await couleursDuLogo(det.png).catch(() => null))?.palette ?? null : null;
   const palette = { dark: "#1C2A24", primary: "#1C2A24", secondary: "#E8E4DC", accent: "#1C2A24", light: "#F9F8F4", ...(couleurs ?? {}) };
-  const route = { key: "A", name: client.nom, slogan: donnees.phrase, palette, board: { planche: { image: { id: demoAsset.id, w: 1536, h: 2304 }, logo: logoAsset.id, domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: debut } } };
+  const route = { key: "A", name: client.nom, slogan: donnees.phrase, palette, board: { planche: { image: { id: demoAsset.id, w: 1536, h: 2304 }, logo: logoAsset.id, domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: debut, ...(donnees.finitions?.length ? { finitions: donnees.finitions } : {}) } } };
 
   const brut: PlancheEnVraiAi = o.ai ? o.ai(qui) : T.plancheEnVraiDeps.ai ? T.plancheEnVraiDeps.ai(jobId) : T.vraisAppelsEnVrai(qui);
   const res: ResultatEnVrai = { client, donnees, apercus: [], refusALaDecoupe: [], cases: [], relectures: [], logos: [], depenseMicro: 0, appels: [], devis };
@@ -423,7 +431,7 @@ export async function essaiDeLaPlancheEnVrai(o: { sortie: string; plafondEuros: 
     `Personnes permises : ${personnes ? "oui" : "non (aucune photo de personne ni accord)"}`,
     `Planche choisie : ${o.planche} (sha256 ${sha(demo)}) ; disposition ${donnees.disposition}`,
     `Logo fini : ${o.logo} (sha256 ${sha(logoFini)})`,
-    `Données de la planche : ${copyright(donnees.annee, client.nom)} ; ${mentionDuDomaine({ domaine: donnees.domaine, statut: donnees.statut })} ; phrase sous le nom : ${donnees.phrase ? `« ${donnees.phrase} »` : "aucune"}`,
+    `Données de la planche : ${copyright(donnees.annee, client.nom)} ; ${mentionDuDomaine({ domaine: donnees.domaine, statut: donnees.statut })} ; phrase sous le nom : ${donnees.phrase ? lignesDuTexte(donnees.phrase).map((l) => `« ${l} »`).join(" puis ") : "aucune"}`,
     `Couleurs tirées du logo par le Studio : ${couleurs ? Object.entries(couleurs).map(([k, v]) => `${k} ${v}`).join(", ") : `non tirées (${det.ok ? "aucune couleur lue" : det.why}) : encre par défaut`}`,
     `Réglage ${P.REGLAGE_PLANCHE_EN_VRAI} : allumé dans la base de l'essai seulement`,
     "", ...devisEnTexteEnVrai(devis), "",

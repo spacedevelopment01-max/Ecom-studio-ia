@@ -1,0 +1,21 @@
+{
+  "nom": "Écume",
+  "descripteur": "savonnerie",
+  "verifie": {
+    "taken": [
+      "ecume.fr",
+      "ecume.com"
+    ],
+    "free": [
+      "ecumefrance.fr",
+      "ecumefrance.com"
+    ],
+    "unknown": [],
+    "at": 1795648402951
+  },
+  "domaine": "ecumefrance.fr",
+  "statut": "disponible",
+  "mention": "ecumefrance.fr — disponible",
+  "caseSousLaPlanche": "ecumefrance.fr : libre aujourd'hui, seule la réservation le garantit.",
+  "repris": "/home/user/Ecom-studio-ia/data/essai-ecume/3-planches"
+}
