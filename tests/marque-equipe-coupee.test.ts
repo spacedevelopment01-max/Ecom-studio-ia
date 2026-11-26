@@ -199,9 +199,10 @@ describe("le devis de la recherche sur le web (une seule fonction pour tous les 
     const sans = C.chainQuote({ routes: 3, images: false, settings: s });
     setJsonSetting("ai.prices", {});
     const zero = C.chainQuote({ routes: 3, images: false, settings: s });
-    // Quatre recherches (trois pour l'étude, une pour vérifier les noms), chacune à son prix mesuré.
+    // Quatre recherches au probable (trois pour l'étude, une pour vérifier les noms), chacune à son prix mesuré ; au plafond,
+    // une cinquième : la recherche des noms refaite autrement quand la première ne rend aucune page (26 novembre 2026).
     expect(sans.probableMicro! - zero.probableMicro!).toBeLessThanOrEqual(4 * web.probableMicro + 4);
-    expect(sans.maxMicro - zero.maxMicro).toBeLessThanOrEqual(4 * web.maxMicro + 4);
+    expect(sans.maxMicro - zero.maxMicro).toBeLessThanOrEqual(5 * web.maxMicro + 5);
     expect(fs.readFileSync("src/lib/syna-agent/angles-chain.ts", "utf8")).toContain("const search = webSearchQuote(s.craft);");
     expect(fs.readFileSync("src/lib/syna-agent/angles-chain.ts", "utf8")).not.toMatch(/search \/ 2/);
     expect(A.anglesQuote({ listen: true }).probableMicro).toBeGreaterThan(0);
