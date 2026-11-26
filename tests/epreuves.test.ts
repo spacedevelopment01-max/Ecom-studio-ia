@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { ACCORD_A_COMPLETER, EPREUVES, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -50,7 +50,10 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026"]).toContain(r.decision);
-      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique)/);
+      // L'accord écrit encore à recevoir (« [À compléter : …] ») ne vaut que pour les deux épreuves contredites par la décision
+      // du 26 novembre 2026 sur le coût probable seul ; à son arrivée, sa phrase d'accord remplace ce manque.
+      if (r.mots === ACCORD_A_COMPLETER) { expect(["planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification"]).toContain(e.id); expect(r.epreuve).toBe("cout-probable-seul-et-arret-au-double"); expect(r.decision).toBe("26 novembre 2026"); continue; }
+      expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd)/);
       // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
     }
@@ -2270,5 +2273,151 @@ describe("l'épreuve de l'accord de la tâche des noms (devis seul, aucun appel)
       expect(g.nomsMicro, `${count} identités`).toBeGreaterThanOrEqual(Math.ceil(tous));
       expect(g.nomsMicro + g.rechercheMicro + g.finalisationsMicro + g.planchesMicro).toBeLessThanOrEqual(g.maxMicro);
     }
+  });
+});
+
+describe("l'épreuve du coût probable seul et de l'arrêt au double (26 novembre 2026, aucun appel)", async () => {
+  const V = await import("@/lib/syna-agent/planche-en-vrai");
+  const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+  const T = await import("@/lib/syna-agent/planche-en-vrai-tache");
+  const B = await import("@/lib/syna-agent/brand-chain");
+  const I = await import("@/lib/syna-agent/tools/identity");
+  const { callCostBoundMicro, estimateCallMicro } = await import("@/lib/ai/llm");
+  const { webSearchQuote } = await import("@/lib/ai/web-search");
+  const billing = await import("@/lib/billing");
+  const jobs = await import("@/lib/jobs");
+  const { withTrace, CostCapReached, DepassementDeLAnnonce, arretParLAnnonce, depensesDeLaTache } = await import("@/lib/ai/trace");
+  const { confirmationText, budgetInsuffisant } = await import("@/lib/syna-agent/loop");
+  const { phraseDuDepassement, previewDeLaSuite } = await import("@/lib/syna-agent/depense-annoncee");
+  const { coutProbableTu } = await import("@/lib/ai/budget-pct");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const { account, project } = await import("./conversation209-fixtures");
+  const { id, json, run } = await import("@/lib/db");
+  const E = await import("../scripts/syna-recette/plafond-des-essais");
+  const fr = <R,>(fn: () => R) => runWithLang({ ui: "fr", content: "fr" }, async () => fn());
+  const Fx = "tests/fixtures/ecume-planche-en-vrai";
+  const PIRE = /au plus|at most|jusqu'à|fourchette|pire|plafond/i;
+
+  epreuve("cout-probable-seul-et-arret-au-double", async () => {
+    // 1. Ce qui reste vrai de planche-en-vrai-palette-mesuree-et-logos-en-hd (palette, versions HD, ordre du script).
+    const demo = fs.readFileSync(`${Fx}/planche-B-gardee.jpg`), cases = V.lesCases("standard");
+    const inv = V.InventaireSchema.parse(JSON.parse(fs.readFileSync(`${Fx}/inventaire-reponse.json`, "utf8")));
+    const pol = (cle: string, famille: string, poids: number) => ({ cle, famille, fichier: "", poids, handle: `${cle}_n${String(poids)[0]}`, lue: famille, remplacee: false });
+    const palette = ["#C44912", "#D97A52", "#F6E8DA", "#A7B89B", "#8C6F4E"].map((hex, i) => ({ hex, nom: inv.couleurs[i].nom, mots: inv.couleurs[i].mots }));
+    const png = await C.assemblerLaPlanche({ demo, boites: new Map([["palette", cases.cases.palette]]), pastilles: cases.pastilles, images: new Map(), versions: {} as never, palette,
+      polices: { titres: pol("poppins", "Poppins", 700), textes: pol("sacramento", "Sacramento", 400) }, signature: [], titres: new Map(), blocs: new Map(), encre: "#1C2A24", motsLus: T.lignesDesMotsLues(inv) });
+    const lum = (hx: string) => { const c = C.rgbDe(hx).map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+    const contraste = (a: string, b: string) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+    const lignes = async (p: Buffer, k: number) => {
+      const { data, info } = await sharp(p).removeAlpha().raw().toBuffer({ resolveWithObject: true }), b = cases.cases.palette.map((v) => v * k) as import("@/lib/syna-agent/planche-en-vrai").Boite, fond = C.fondDe(data, info.width, b);
+      return { fond, l: C.lignesSousLesPastilles(data, info.width, b, cases.pastilles.map(([x, y, r]) => [x * k, y * k, r * k] as [number, number, number]), fond) };
+    };
+    const a = await lignes(demo, 1), b = await lignes(png, 2);
+    for (let i = 0; i < 5; i++) {
+      expect(b.l[i]?.length, `pastille ${i + 1}`).toBe(a.l[i]?.length);
+      for (let k = 0; k < a.l[i]!.length; k++) {
+        const x = a.l[i]![k], y = b.l[i]![k];
+        expect(contraste(y.couleur, b.fond), `${i}:${k}`).toBeGreaterThanOrEqual(contraste(x.couleur, a.fond) * 0.98);
+        expect(Math.abs((y.bas - y.haut) / 2 - (x.bas - x.haut)) / (x.bas - x.haut), `${i}:${k}`).toBeLessThanOrEqual(0.15);
+      }
+    }
+    expect(V.texteDuLogoEnHd({ version: "badge", nom: "Écume", personnes: false })).toBe(`${V.REGLE_APERCU} ${V.regleDuLogo("Écume")} C'est le badge rond. ${V.SANS_PERSONNE_EN_VRAI}`);
+    expect(V.TAILLE_DES_LOGOS_EN_HD).toBe("1088x1088");
+    const ok = { version: "badge", memeForme: true, memesLettres: true, texteCirculaire: "illisible-sur-l-apercu" as const, textesDeLApercu: [], textesLus: [], memesCouleurs: true, ajout: false, texteCoupe: false, note: 8, pourquoi: "" };
+    expect(V.raisonsDuRefusDuLogoEnHd(ok)).toEqual([]);
+    const tuiles = (await V.decouperLesApercus(demo, "standard")).apercus, tours: number[] = [];
+    const res = await V.refaireLesLogosEnHd({
+      refaire: async (d, tour) => { tours.push(tour); return sharp(d.jointes[0].data).resize(1088, 1088, { fit: "contain", background: "#F8F7F2" }).png().toBuffer(); },
+      relire: async (items, _d, tour) => ({ versions: items.map((it) => ({ ...ok, version: it.version, note: tour === 1 && it.version === "badge" ? 7 : 9 })) }),
+      aLaChargeDuStudio: (fn) => fn(), sansFond: T.sansFondDuLogoEnHd,
+    }, { nom: "Écume", personnes: false, logo: Buffer.alloc(0), tuiles });
+    expect(tours).toEqual([1, 1, 1, 1, 2]);
+    expect([...res.values()].every((r) => r.ok)).toBe(true);
+    const d = T.devisDesLogosEnHd();
+    expect(d.maxMicro).toBe(2 * d.repriseMicro);
+    const enVrai = fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai.mts", "utf8") + fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai-outil.ts", "utf8");
+    expect(enVrai).toContain("T.refaireLesLogosEnHdDeLaPlanche(");
+    expect(enVrai.indexOf("const r = await repriseDesCases(")).toBeLessThan(enVrai.indexOf("const r = await logosEnHdDeLEssai("));
+    expect(enVrai.indexOf("const r = await logosEnHdDeLEssai(")).toBeLessThan(enVrai.indexOf("const code = await T.plancheEnVraiParLeCode("));
+    // L'exception : il ne refuse plus de partir sous la somme des maxima.
+    expect(enVrai).not.toContain("est sous le plafond minimal exact");
+
+    // 2. Ce qui reste vrai de accord-des-noms-compte-la-verification : la part des noms couvre la somme des maxima.
+    const s = B.chainSettings();
+    const borne = (k: keyof typeof B.BRAND_CALLS) => {
+      const c: { tier: "strong" | "craft"; effort?: string; input: number; output: number; max: number } = B.BRAND_CALLS[k], m = { ...s[c.tier], ...(c.effort ? { effort: c.effort } : {}) };
+      return callCostBoundMicro(m.provider, m.model, c.input * 1.5, c.max, m.effort) ?? (estimateCallMicro(m.provider, m.model, c.input, c.output) ?? 0) * 4;
+    };
+    const web = webSearchQuote(s.craft, { maxSearches: B.BRAND_SEARCHES }).maxMicro, equipe = borne("team") + borne("teamShort");
+    const tous = 3 * web + borne("study") + 2 * borne("strategy") + s.teams * equipe + borne("judge") + s.teams * equipe + borne("judge") + web + borne("verify");
+    for (const count of [2, 3, 4]) {
+      const g = I.accordGraphistes(count);
+      expect(g.nomsMicro, `${count} identités`).toBeGreaterThanOrEqual(Math.ceil(tous));
+      expect(g.nomsMicro + g.rechercheMicro + g.finalisationsMicro + g.planchesMicro).toBeLessThanOrEqual(g.maxMicro);
+    }
+
+    // 3. La carte : le coût probable seul, en tutoyant ; jamais de pire cas ; le budget qui manque, sans pire cas.
+    const u = await account(), pid = project(u) as string;
+    const t: any = { name: "essai.payant", description: "Essai." };
+    const carte = await fr(() => confirmationText(t, {}, {} as never, u.id, pid, { label: "tes trois identités", probableMicro: 1_000_000, maxMicro: 3_000_000 }));
+    expect(carte).toContain(`Coût probable : ${await fr(() => coutProbableTu(u.id, 1_000_000, pid))}.`);
+    expect(carte).toMatch(/environ [\d,]+\u00a0% de ton budget IA du mois/);
+    expect(carte).not.toMatch(PIRE);
+    expect(await fr(() => confirmationText(t, {}, {} as never, u.id, pid, { label: "x", maxMicro: 3_000_000 }))).not.toMatch(PIRE);
+    run("UPDATE wallets SET monthly_allowance = 43000000, monthly_used = 37000000, topup_balance = 0, reserved = 0, reserved_topup = 0 WHERE user_id = ?", u.id);
+    const manque = await fr(() => budgetInsuffisant(u.id, null, 16_000_000, 8_000_000))!;
+    expect(manque).toMatch(/^Pas lancé, rien n'est payé : il ne reste que/);
+    expect(manque).toContain("(il coûte environ");
+    expect(manque).not.toMatch(/peut coûter|jusqu'à/);
+    for (const f of ["src/lib/syna-agent/loop.ts", "src/lib/syna-agent/prompt.ts", "src/lib/syna-agent/journey.ts", "src/lib/syna-agent/tools/gallery.ts", "src/lib/syna-agent/tools/atelier.ts", "src/components/studio/guided-video.tsx"]) {
+      const src = fs.readFileSync(f, "utf8");
+      expect(src, f).not.toMatch(/; au plus \$\{|au plus \$\{budgetPctTu|ce travail peut coûter jusqu'à \$\{|le coût probable et le plafond|coût probable et plafond|et « au plus » quand il est donné|auPlusTexte\(/);
+    }
+
+    // 4. L'arrêt au double : le premier appel part toujours ; l'appel qui ferait dépasser deux fois l'annonce ne part pas.
+    const meta = { task: "image_generation", provider: "openai", model: "gpt-image-2.6-flare" };
+    const appel = (max: number, cout = max) => { const rid = billing.reserve(u.id, max, meta); billing.settle(rid, cout, null, "image"); };
+    run("UPDATE wallets SET monthly_allowance = 430000000, monthly_used = 0 WHERE user_id = ?", u.id);
+    const j = jobs.avecLaDepenseAnnoncee(1_000_000, () => jobs.enqueue({ userId: u.id, projectId: pid, type: B.SINA_BRAND_JOB, payload: { projectId: pid, capMicro: 5_000_000 } }));
+    expect(jobs.annonceDe(json(j.payload, {}))).toBe(1_000_000);
+    const ctx = new jobs.JobContext(jobs.getJob(j.id)!);
+    await withTrace({ jobId: j.id, costCapMicro: 5_000_000, annonceMicro: 1_000_000 }, async () => {
+      await ctx.step("une", async () => { appel(1_200_000, 900_000); return 1; });
+      await expect(ctx.step("deux", async () => { try { appel(1_200_000); } catch (e) { if (!(e instanceof CostCapReached)) throw e; } return 2; })).rejects.toBeInstanceOf(DepassementDeLAnnonce);
+      expect(() => billing.aLaChargeDuStudio(() => billing.reserve(u.id, 1000, meta))).toThrow(DepassementDeLAnnonce);
+    });
+    expect(Object.keys(json<Record<string, unknown>>(jobs.getJob(j.id)!.checkpoint ?? "{}", {}))).toEqual(["une"]);
+    expect(depensesDeLaTache(j.id).client).toBe(900_000);
+    expect(arretParLAnnonce(j.id)).toBeInstanceOf(DepassementDeLAnnonce);
+    jobs.mettreEnAttenteDAccord(j.id, { depenseMicro: 900_000, annonceMicro: 1_000_000 });
+    expect(jobs.getJob(j.id)!.status).toBe("paused");
+    const phrase = await fr(() => phraseDuDepassement(u.id, pid, { depenseMicro: 2_100_000, annonceMicro: 1_000_000 }));
+    expect(phrase.split(/(?<=[.!?])\s/).length).toBe(1);
+    expect(phrase).toMatch(/tu veux que je continue \?$/);
+    expect(phrase).toMatch(/ce qui est fait est gardé/);
+    expect(phrase).not.toMatch(/€|plafond|tâche|appel|\b(vous|votre)\b/i);
+    expect(await fr(() => previewDeLaSuite())).not.toMatch(PIRE);
+    // Oui (« Reprendre ») : elle reprend, l'annonce relevée à ce qui est dépensé plus l'annonce d'origine.
+    jobs.resumeJob(j.id);
+    expect(jobs.getJob(j.id)!.status).toBe("queued");
+    expect(json<any>(jobs.getJob(j.id)!.payload, {}).annonceMicro).toBe(1_900_000);
+    const loop = fs.readFileSync("src/lib/syna-agent/loop.ts", "utf8"), worker = fs.readFileSync("worker/index.ts", "utf8");
+    expect(loop).toContain("if (enAttente) return demanderDeContinuer(r, enAttente);");
+    expect(loop).toContain("if (getJob(jid)) cancelJob(jid);");
+    expect(worker).toContain("annonceMicro: annonceDe(ctx.payload)");
+    expect(worker).toContain("if (attendreLAccord(job.id)) return;");
+    void id;
+
+    // 5. Les essais du propriétaire : sous la somme des maxima, ils partent, s'arrêtent proprement et disent la suite.
+    expect(E.plafondConseilleMicro(1_450_000)).toBe(3_000_000);
+    expect(E.avisDuPlafond(3_000_000, { plafondMinimalMicro: 9_850_000, probableMicro: 1_450_000 })).toMatch(/l'essai part quand même/);
+    expect(E.lignesDeLArret({ depenseMicro: 1, plafondMicro: 2, plafondMinimalMicro: 3, fait: [], reprendre: "REPRENDRE=1." }).join("\n")).toMatch(/Arrêt propre[\s\S]*Ce qui est fait[\s\S]*Pour finir : au plus/);
+    for (const k of ["essai-noms", "essai-esquisses", "essai-finalisation", "essai-planches", "essai-planche-en-vrai"]) {
+      const src = fs.readFileSync(`scripts/syna-recette/${k}.mts`, "utf8") + fs.readFileSync(`scripts/syna-recette/${k}-outil.ts`, "utf8");
+      expect(src, k).not.toMatch(/est sous le plafond minimal( exact)?[^`]*rien n'est lancé/);
+      expect(src, k).toMatch(/lignesDeLArret\(|arretPropre/);
+    }
+    expect(fs.readFileSync("scripts/syna-recette/essai-noms-outil.ts", "utf8")).toContain("REPRENDRE=1");
+    expect(fs.readFileSync("src/lib/jobs.ts", "utf8")).toContain("arreteeParLAnnonce(this.job.id) ?? arreteeParLEssai(this.job.id)");
   });
 });
