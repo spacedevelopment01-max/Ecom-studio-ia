@@ -1,0 +1,43 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est le bandeau d'ouverture de la planche ; garde des marges généreuses en haut et en bas, rien ne touche les bords. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « à »).",
+    "quality": "high",
+    "size": "2304x768",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "10c2d735aef252d57cc0f76126b95e0d55646200aa03921f031e64773369239c",
+      "octets": 671223
+    }
+  ],
+  "tailleRecue": "2304x768",
+  "requestId": "req_28b6c6957ac748b4b0292b421f57fbf1",
+  "usage": {
+    "input_tokens": 525,
+    "input_tokens_details": {
+      "image_tokens": 363,
+      "text_tokens": 162
+    },
+    "output_tokens": 724,
+    "output_tokens_details": {
+      "image_tokens": 724,
+      "text_tokens": 0
+    },
+    "total_tokens": 1249
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "2304x768",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 21873,
+  "dureeMs": 17696
+}

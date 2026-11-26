@@ -1,0 +1,139 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "reference-1",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "Même torréfacteur, même axe métallique et mêmes grains, avec un cadrage et des tons fidèles. La forme floue en haut à droite reste indistincte, comme sur l'aperçu."
+      },
+      {
+        "case": "reference-2",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Le sac de jute ouvert sur les grains verts reprend fidèlement l'aperçu, avec plus de netteté et sans défaut visible."
+      },
+      {
+        "case": "reference-3",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La tasse fumante, les grains et le fond boisé correspondent à l'aperçu. Le rendu est net et chaleureux."
+      },
+      {
+        "case": "reference-4",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉ ERRANO",
+          "100% ARABICA",
+          "CHOCOLAT - NOISETTE",
+          "250G e",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉ DE CERROAZUL",
+          "100% ARABICA",
+          "AGRUMES - CARAMEL",
+          "250G e",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉ DU CHALNC",
+          "100% ARABICA",
+          "FRUITS ROUGES - ÉPICES",
+          "250G e",
+          "MOUT",
+          "CAFÉ CA",
+          "100% ARAI",
+          "CACAO - C",
+          "250"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": true,
+        "note": 6,
+        "pourquoi": "La composition correspond à l'aperçu, mais plusieurs textes sont fautifs (« CAFÉ DU CHALNC », « 250G e »). Le sachet de droite est coupé par le bord, ce qui tronque le logo et l'étiquette."
+      },
+      {
+        "case": "reference-5",
+        "identique": true,
+        "textesLus": [
+          "CAFÉ",
+          "DEPUIS 1928"
+        ],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "Le moulin en bois, le bol métallique, les grains et la mouture sont fidèles à l'aperçu. La plaque affiche désormais un texte lisible et cohérent."
+      },
+      {
+        "case": "reference-6",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "L'ARABICA PUR BRÉSIL",
+          "ARÔMES DOUX ET ÉQUILIBRÉS",
+          "TORRÉFIÉ EN FRANCE",
+          "250 G",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "LE MOKA ÉTHIOPIE - BIO",
+          "NOTES FRUITÉES ET FLORALES",
+          "TORRÉFIÉ EN FRANCE",
+          "250 G"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Le coffret avec ses deux sachets kraft reprend l'aperçu à l'identique. Le logo Mouture est net sur fond clair et les textes sont corrects."
+      }
+    ]
+  },
+  "raisons": {
+    "reference-1": [],
+    "reference-2": [],
+    "reference-3": [],
+    "reference-4": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « EN », « EN », « GRAINS », « GRAINS ») (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ERRANO », « 100% », « ARABICA », « CHOCOLAT », « - », « NOISETTE »)",
+      "un texte est coupé ou collé au bord",
+      "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+    ],
+    "reference-5": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « CAFÉ », « DEPUIS », « 1928 »)"
+    ],
+    "reference-6": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABICA », « PUR », « BRÉSIL », « ARÔMES », « DOUX », « ET »)"
+    ]
+  },
+  "gardees": [
+    "reference-1",
+    "reference-2",
+    "reference-3"
+  ]
+}

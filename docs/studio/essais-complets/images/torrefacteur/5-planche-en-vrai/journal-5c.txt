@@ -1,0 +1,21 @@
+(node:164) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:175) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Données de la planche : domaine mouturefrance.fr (disponible), année 2026, disposition standard, phrase « TORRÉFACTION ARTISANALE ».
+Reprise de la passe 2 (REPRENDRE=1, devis du Studio, aucun appel) : déjà reçus et payés, jamais redemandés : l'inventaire, publication-1x1, publication-4x5, publication-9x16, ouverture-site, ouverture-planche, site-ordinateur, site-telephone, produit-1, produit-2, produit-3, emballage, reference-1, reference-2, reference-3, reference-4, reference-5.
+Restent : 1 image(s) (reference-6), 4 relecture(s), puis LOGO_HD (4 images et 1 relecture, à la charge du Studio).
+Appel(s) parti(s) sans réponse à la passe 2 (résultat incertain, coût maximal retenu : 0,0904 €) : reference-6-1. Jamais relancé tout seul : refait seulement parce que tu relances toi-même avec REPRENDRE=1.
+Probable de ce qui reste : 0,8604 € (si chaque image est refaite une fois : 2,4990 €) ; somme des maxima de ce qui reste, reprises comprises : 5,9068 €.
+Plafond conseillé : 2,0000 € (deux fois le probable, arrondi). Déjà compté à la passe 2 : 0,5828 € ; avec les passes d'avant, en tout : 1,0293 €.
+Le plafond 2,0000 € est sous la somme des maxima de ce qui reste 5,9068 € (probable 0,8604 €) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.
+(node:175) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+0 image(s) gardée(s) sur 17, planche non assemblée, dépense comptée 0,7392 €. Rapport : /home/user/Ecom-studio-ia/data/essai-torrefacteur/5-planche-en-vrai/rapport.txt
+Reprise de la passe 2 : repris sans appel l'inventaire, publication-1x1, publication-4x5, publication-9x16, ouverture-site, ouverture-planche, site-ordinateur, site-telephone, produit-1, produit-2, produit-3, emballage, reference-1, reference-2, reference-3, reference-4, reference-5 ; refait(s) parce que tu as relancé : reference-6 ; dépense en tout 1,7685 €.
+Arrêt : un appel a échoué, jamais relancé : Résultat incertain chez openai:gpt-image-2.5-sunburst (Connection error.) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer. ← cause : Connection error. ← cause : TypeError: fetch failed ← cause : read ECONNRESET [ECONNRESET]
+Comment reprendre : la même commande, même dossier de sortie, avec REPRENDRE=1 en plus (et un plafond pour ce qui reste ; devis gratuit : DEVIS_SEULEMENT=1 REPRENDRE=1, même commande).
+  Gardé, jamais redemandé ni repayé : l'inventaire, l'image publication-1x1, l'image publication-4x5, l'image publication-9x16, l'image ouverture-site, l'image ouverture-planche, l'image site-ordinateur, l'image site-telephone, l'image produit-1, l'image produit-2, l'image produit-3, l'image emballage, l'image reference-1, l'image reference-2, l'image reference-3, l'image reference-4, l'image reference-5, l'image reference-6, la relecture publications (essai 1), la relecture site (essai 1), la relecture produits (essai 1), la relecture references (essai 1).
+  Fait à la reprise : les relectures qui manquent, les reprises éventuelles, LOGO_HD s'il est demandé, puis les logos, la palette, les polices, l'assemblage, etat.json, essai.json et le parcours.
+  Résultat incertain : l'appel de produit-3 est parti sans réponse ; son coût maximal est retenu. Il n'est jamais relancé tout seul : il ne sera refait que si tu relances toi-même avec REPRENDRE=1, après avoir vérifié la consommation chez le fournisseur.
+code 2

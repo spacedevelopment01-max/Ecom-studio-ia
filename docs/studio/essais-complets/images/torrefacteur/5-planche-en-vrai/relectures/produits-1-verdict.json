@@ -1,0 +1,115 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "produit-1",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉ EN GRAINS",
+          "L'EXCELLENCE",
+          "ARABICA SÉLECTIONNÉ AVEC PASSION",
+          "TORRÉFIÉ EN PETITES QUANTITÉS",
+          "CLASSÉ | 500 g | 100% ARABICA"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8.5,
+        "pourquoi": "L'image reprend fidèlement l'aperçu : sachet kraft, logo, étiquette, bol et grains. Elle est nette. Seul le mot « CLASSÉ » sur l'étiquette sonne un peu étrange."
+      },
+      {
+        "case": "produit-2",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "CAFÉ MOULU",
+          "ÉQUILIBRÉ",
+          "DES ARÔMES RICHES ET GÉNÉREUX",
+          "POUR UN CAFÉ D'EXCEPTION",
+          "ARABICA SÉLECTION"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Composition, couleurs et mise en scène identiques à l'aperçu, avec le sachet et le tas de café moulu. Les textes sont propres et sans faute visible."
+      },
+      {
+        "case": "produit-3",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "L'ARABY DE PÉROU",
+          "100% ARABICA",
+          "NOTES CHOCOLATÉES",
+          "ET FRUITÉES",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "L'ARABICA SIGNATURE",
+          "100% ARABICA",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 6,
+        "pourquoi": "La mise en scène du coffret est fidèle à l'aperçu. En revanche, l'étiquette de gauche porte une faute visible (« L'ARABY DE PÉROU »), et la mention « 100% ARABICA » du second sachet est en partie masquée par la tasse."
+      },
+      {
+        "case": "emballage",
+        "identique": true,
+        "textesLus": [
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "TORRÉFACTION ARTISANALE",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE",
+          "L'Instart franc",
+          "— MÉLANGE",
+          "Notes de chocolat noir, noix et caramel",
+          "Grains | 250 g",
+          "TORRÉFACTION",
+          "ARTISANALE",
+          "MOUTURE",
+          "TORRÉFACTION ARTISANALE"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": true,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 6,
+        "pourquoi": "La scène est fidèle à l'aperçu, mais l'étiquette du sachet contient une faute (« L'Instart franc ») et des inscriptions illisibles apparaissent sur le dessus et le flanc de la boîte. Le logo brun foncé de la tasse se fond dans l'émail sombre : il faudrait y mettre une version claire."
+      }
+    ]
+  },
+  "raisons": {
+    "produit-1": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'EXCELLENCE », « ARABICA », « SÉLECTIONNÉ », « AVEC », « PASSION », « TORRÉFIÉ »)"
+    ],
+    "produit-2": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « ÉQUILIBRÉ », « DES », « ARÔMES », « RICHES », « ET », « GÉNÉREUX »)"
+    ],
+    "produit-3": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « TORRÉFACTION », « ARTISANALE », « L'ARABY », « DE », « PÉROU », « 100% », « ARABICA », « NOTES »)",
+      "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+    ],
+    "emballage": [
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « L'Instart », « franc », « - », « MÉLANGE », « Notes », « de », « chocolat », « noir »)",
+      "un logo foncé est posé sur un fond sombre : il doit y être clair",
+      "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+    ]
+  },
+  "gardees": []
+}
