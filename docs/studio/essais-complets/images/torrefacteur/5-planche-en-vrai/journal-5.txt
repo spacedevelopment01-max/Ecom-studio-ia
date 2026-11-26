@@ -1,0 +1,37 @@
+(node:327) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:338) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Données de la planche : domaine mouturefrance.fr (disponible), année 2026, disposition standard, phrase « TORRÉFACTION ARTISANALE ».
+Devis de l'essai de la planche en vrai (fonctions du devis du Studio, aucun appel) :
+- inventaire · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,2141 € · au plus 0,5141 €
+- retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1622 € · au plus 0,3757 €
+- retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1530 € · au plus 0,4125 €
+- retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,2050 € · au plus 0,4849 €
+- retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,3096 € · au plus 0,7343 €
+- relecture · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- reprise d'une retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1622 € · au plus 0,3757 €
+- reprise d'une retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1530 € · au plus 0,4125 €
+- reprise d'une retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,2050 € · au plus 0,4849 €
+- reprise d'une retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,3096 € · au plus 0,7343 €
+- relecture de la reprise · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+Probable, sans refus : 1,4980 € (devis du Studio : 1,4980 €)
+Probable, si chaque image est refaite une fois : 2,7819 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 6,6978 €
+  dont plafond du client de la tâche 3,6059 € et borne du Studio 3,0918 € (devisDeLaPlancheEnVrai)
+Hors plafond minimal : une réponse de texte mal formée à réparer coûterait au plus 3,0764 € de plus en tout.
+Plafond conseillé (plafond minimal, une réparation de l'inventaire et une de relecture, arrondi) : 7,6000 €
+LOGO_HD, sur le chemin normal, à la charge du Studio : les quatre petites versions du logo (compact, icône, favicon, badge), seulement celles reprises de l'aperçu, 4 images et 1 relecture, puis une reprise des refusées ; probable 0,3547 € (si tout est refait une fois : 0,7094 €), au plus 1,6080 €
+Plafond minimal exact de la commande (planche en vrai et LOGO_HD, somme des maxima, reprises comprises) : 8,3057 € ; probable 1,8527 € (si tout est refait une fois : 3,4914 €)
+Le plafond 4,0000 € est sous la somme des maxima 8,3057 € (planche en vrai et LOGO_HD ; probable 1,8527 €) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.
+(node:338) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+0 image(s) gardée(s) sur 17, planche non assemblée, dépense comptée 0,4465 €. Rapport : /home/user/Ecom-studio-ia/data/essai-torrefacteur/5-planche-en-vrai/rapport.txt
+Arrêt : un appel a échoué, jamais relancé : Résultat incertain chez openai:gpt-image-2.5-sunburst (Connection error.) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.
+code 2

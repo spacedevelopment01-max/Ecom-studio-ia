@@ -1,0 +1,49 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une publication portrait pour les réseaux sociaux, 1080 × 1350. Aucune personne n'apparaît.",
+    "quality": "high",
+    "size": "1088x1360",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "cc71d9ab7898baae9f33cebee49983d6334c64e05a8e453fff72498db549db3d",
+      "octets": 215870
+    },
+    {
+      "role": "logo",
+      "assetId": null,
+      "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
+      "octets": 718173
+    }
+  ],
+  "tailleRecue": "1088x1360",
+  "requestId": "req_001e36273c7d49ef96fc6130fd4fb57a",
+  "usage": {
+    "input_tokens": 1720,
+    "input_tokens_details": {
+      "image_tokens": 1564,
+      "text_tokens": 156
+    },
+    "output_tokens": 1587,
+    "output_tokens_details": {
+      "image_tokens": 1587,
+      "text_tokens": 0
+    },
+    "total_tokens": 3307
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "1088x1360",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 52376,
+  "dureeMs": 32419
+}
