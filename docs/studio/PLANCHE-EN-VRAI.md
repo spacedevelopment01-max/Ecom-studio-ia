@@ -204,3 +204,26 @@ Marque (`/studio/<projet>/marque`).
   client, puis viennent les angles et le site. Le parcours écrit par les scripts d'essai suit maintenant la vraie tâche :
   la charte préparée, l'étape de la marque « à valider », la suite à faire.
 - `REFAIRE_LOGOS=1` (gratuit) refait les logos d'une base d'essai avec le code corrigé, à partir du logo fini.
+
+## Identique en visuel : les finitions nettoyées et la police de l'aperçu (26 novembre 2026)
+
+Les mots du chef d'orchestre : « la planche en vrai est identique en visuel » (la règle du propriétaire, « ça doit être à
+l'identique en visuel »). Deux écarts vus sur l'essai réel d'Écume (étape 3 reprise), corrigés sans dépense :
+
+- **Une petite finition notée n'arrive jamais dans le Studio du client.** Sur la planche A, l'accent parasite isolé
+  « Écume – Savonnerie artisanale |´ » du titre de référencement du bloc 10, noté en petite finition par le relecteur,
+  serait resté : le bloc 10 était gardé tel quel quand le copyright et le domaine sont justes. Maintenant, les finitions
+  de la planche gardée voyagent avec elle (`planche.finitions`) ; tout texte que le code écrit (titres, haut, ton,
+  bloc 10) est nettoyé de ses signes parasites isolés (`nettoyerLesSignesIsoles`) ; le bloc 10 et le ton sont redessinés
+  par le code dès qu'une finition y est notée, au verdict ou à l'inventaire. Le texte nettoyé de la finition tient la
+  place de sa ligne si l'inventaire ne l'a pas lue. Sans finition, rien ne change.
+- **La police suit l'aperçu que le client a vu.** Sur la planche B, « Nunito » était écrite sous un spécimen en écriture
+  manuscrite (le relecteur l'a relevé). La planche en vrai posait la vraie Nunito, ronde et sans empattements. Maintenant,
+  quand le genre lu sur le spécimen contredit celui de la police nommée (le genre de chaque police est tiré du catalogue,
+  `genreDu`), la planche en vrai prend la police du catalogue la plus proche du spécimen dans le genre lu, affiche son vrai
+  nom, la compte remplacée, et SINA le dit : « Sur ta planche, la police nommée « Nunito » était montrée en écriture
+  manuscrite : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Dancing Script ». » Le
+  genre concorde : rien ne change. Le choix se fait par le nom le plus proche dans le genre lu, sinon par la police de base
+  du genre (Dancing Script pour l'écriture manuscrite) : le code ne voit pas le dessin du spécimen.
+
+Épreuve : `planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu`.

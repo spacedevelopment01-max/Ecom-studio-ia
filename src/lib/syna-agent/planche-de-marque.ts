@@ -701,6 +701,43 @@ export function signeParasiteIsole(f: string, o: AttenduDeLaPlanche): string | n
   const connus = new Set(motsDuTexte([o.texte ?? "", o.nom, ...(o.phrase ?? []), copyright(o.annee, o.nom), mentionDuDomaine(o.domaine)].join(" ")));
   return motsLus.length && motsLus.every((m) => connus.has(m)) ? propre : null;
 }
+/** Les séparateurs ordinaires d'une ligne, permis seuls entre deux espaces (jamais au bout d'une ligne). */
+const SEPARATEURS = new Set(["–", "—", "-", "|", "·", "•", "/"]);
+/** Un signe sûrement parasite : un accent seul, un signe de modification, un tilde, un soulignement, une barre brisée. */
+const SIGNE_SUREMENT_PARASITE = /[\p{Sk}\p{M}~_¦]/u;
+/**
+ * LA LIGNE NETTOYÉE DE SES SIGNES PARASITES (26 novembre 2026, planche en vrai) : chaque texte que le code écrit dans la
+ * planche en vrai passe par ici. Est retiré un signe seul entre deux espaces qui est sûrement parasite (un accent seul, un
+ * tilde, un soulignement, une suite de signes qui n'est ni « … » ni une ponctuation double, un point ou une virgule seuls),
+ * puis un séparateur resté au bout de la ligne ou doublé. La ponctuation française ordinaire (« ! », « ? », « : », « ; »,
+ * les guillemets) et les séparateurs entre deux mots restent. Une ligne sans signe parasite revient telle quelle.
+ */
+export function nettoyerLesSignesIsoles(ligne: string): string {
+  const mots = ligne.normalize("NFC").split(/\s+/u).filter(Boolean);
+  const parasite = (m: string) => SIGNES_SEULS.test(m) && !SEPARATEURS.has(m) && (SIGNE_SUREMENT_PARASITE.test(m) || m === "." || m === "," || ([...m].length > 1 && !/^(\.\.\.|…|!!|\?!|!\?|\?\?|«|»|--)$/u.test(m)));
+  const gardes = mots.filter((m) => !parasite(m));
+  if (gardes.length === mots.length) return ligne;
+  const sep = (m: string | undefined) => !!m && SEPARATEURS.has(m);
+  const propres = gardes.filter((m, i) => !(sep(m) && sep(gardes[i - 1])));
+  while (sep(propres.at(-1))) propres.pop();
+  while (sep(propres[0])) propres.shift();
+  return propres.join(" ");
+}
+/** La ligne porte-t-elle un signe parasite que le nettoyage retire ? */
+export const porteUnSigneParasite = (ligne: string): boolean => nettoyerLesSignesIsoles(ligne) !== ligne;
+/** Le texte lu d'une petite finition (sa première citation « … »), nettoyé de ses signes parasites ; null sans citation. */
+export function texteDeLaFinition(f: string): string | null {
+  const c = /«\s*([^«»]*?)\s*»/u.exec(f)?.[1];
+  return c ? nettoyerLesSignesIsoles(c) : null;
+}
+/** Le bloc de la planche où une petite finition est notée : le bloc 10 (référencement, mentions), le ton (bloc 04), sinon un autre. */
+export function blocDeLaFinition(f: string): "seo" | "ton" | "autre" {
+  const hors = f.replace(/«[^«»]*»/gu, " ");
+  if (/bloc\s*10\b|\bseo\b|r[ée]f[ée]rencement|m[ée]ta|mentions?|copyright|nom de domaine/iu.test(hors)) return "seo";
+  if (/bloc\s*0?4\b|\bton\b|slogan|valeurs/iu.test(hors)) return "ton";
+  return "autre";
+}
+
 /** La ligne du compte rendu pour une petite finition : notée, jamais une raison de refus. */
 export const finitionNotee = (f: string) => `petite finition, notée sans refus : « ${f} »`;
 /** La même finition, transmise comme correction quand la planche est reprise pour une autre raison. */

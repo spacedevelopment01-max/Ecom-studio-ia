@@ -135,7 +135,10 @@ describe("le script des planches : rejuger une planche déjà payée, sans aucun
     expect(rapport).toContain("Planches gardées, prêtes pour le choix : A");
     // La planche en vrai accepte ce résultat (gardée, domaine et année relus).
     const { resultatDeLaPlanche } = await import("../scripts/syna-recette/essai-planche-en-vrai-outil");
-    expect(resultatDeLaPlanche(path.join(dir, "planche-A-resultat.json"))).toMatchObject({ nom: "Écume", domaine: "ecumefrance.fr", statut: "disponible", annee: 2026 });
+    expect(resultatDeLaPlanche(path.join(dir, "planche-A-resultat.json"))).toMatchObject({ nom: "Écume", domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, finitions: [FAUTE_REELLE] });
+    // La finition arrive jusqu'à la planche en vrai (les données de la planche choisie).
+    const { donneesDeLaPlanche } = await import("../scripts/syna-recette/essai-planche-en-vrai-outil");
+    expect(donneesDeLaPlanche(ECUME, { RESULTAT_PLANCHE: path.join(dir, "planche-A-resultat.json") }).finitions).toEqual([FAUTE_REELLE]);
   });
 
   it("un verdict qui refuse encore reste refusé ; un autre client, une année qui n'est pas celle du texte : rien n'est écrit", async () => {

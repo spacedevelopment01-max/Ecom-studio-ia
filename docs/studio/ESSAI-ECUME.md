@@ -210,10 +210,11 @@ texte lu, sans ces signes, doit être exactement le texte attendu. Un accent ou 
 lettre fausse, un mot mal écrit, le nom, la phrase du logo, l'adresse et l'année font toujours refuser. Épreuve :
 `planche-signe-parasite-petite-finition`.
 
-**Attention, la planche en vrai ne corrige pas cet accent d'elle-même.** Son bloc 10 n'est redessiné par le code que si le
-copyright ou la mention du domaine sont faux, ou s'il porte une promesse (`textesDeLaPlanche`,
-`planche-en-vrai-tache.ts`) ; sinon le décor de la planche choisie est gardé tel quel, accent compris. Et redessiné, il
-reprend les lignes lues par l'inventaire, telles qu'elles sont écrites.
+**La planche en vrai nettoie cet accent** (26 novembre 2026, sans dépense) : la finition notée voyage avec la planche
+gardée (`planche.finitions`, écrite aussi par le rejugement dans `planche-A-resultat.json`) ; le bloc 10 est alors
+redessiné par le code, ses lignes nettoyées des signes isolés, même quand le copyright et le domaine sont justes. Si B est
+choisie, sa police « Nunito », montrée en écriture manuscrite, est remplacée par la manuscrite du catalogue la plus
+proche, Dancing Script, et SINA le dit. Détail : `docs/studio/PLANCHE-EN-VRAI.md`, dernière partie.
 
 ### Rejuger A sans aucun appel
 

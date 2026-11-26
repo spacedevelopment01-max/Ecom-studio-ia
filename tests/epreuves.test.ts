@@ -1989,3 +1989,49 @@ describe("l'épreuve des 12 esquisses toujours correctes (essai d'Écume)", asyn
     expect(src).toContain('ecrireFichier("planche-contact-complete.png", await plancheContactComplete(cases))');
   });
 });
+
+describe("l'épreuve de la planche en vrai identique en visuel (essai d'Écume, 26 novembre 2026, aucun appel)", async () => {
+  const PM = await import("@/lib/syna-agent/planche-de-marque");
+  const V = await import("@/lib/syna-agent/planche-en-vrai");
+  const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+  const T = await import("@/lib/syna-agent/planche-en-vrai-tache");
+  const { BoardSchema } = await import("@/lib/syna-agent/brand-board");
+  const { runWithLang } = await import("@/lib/i18n-server");
+  const F2 = "tests/fixtures/ecume-planches-2";
+
+  epreuve("planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu", async () => {
+    // 1. La finition de A-2, notée au verdict réel, voyage avec la planche gardée.
+    const texte = fs.readFileSync(`${F2}/planche-A-2-texte-envoye.txt`, "utf8");
+    const v = PM.VerdictRangeDeLaPlancheSchema.parse(JSON.parse(fs.readFileSync(`${F2}/planche-A-2-relecture-verdict.json`, "utf8")).verdict);
+    const { finitions } = PM.lectureDeLaPlanche(v, { nom: "Écume", annee: 2026, domaine: { domaine: "ecumefrance.fr", statut: "disponible" }, personnes: false, animaux: false, phrase: ["SAVONNERIE ARTISANALE", "BULLES DE SOIN AU NATUREL"], texte });
+    expect(finitions).toHaveLength(1);
+    expect(BoardSchema.shape.planche.parse({ logo: "lg01", domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, essais: 2, at: 1, finitions })!.finitions).toEqual(finitions);
+    expect(fs.readFileSync("src/lib/syna-agent/planche-de-marque-tache.ts", "utf8")).toContain("...(dernier.finitions?.length ? { finitions: dernier.finitions } : {})");
+    // 2. Le bloc 10 juste, avec la finition notée : redessiné par le code, l'accent « ´ » n'y est plus ; sans elle, le décor gardé.
+    const route = (pl: Record<string, unknown> = {}) => ({ key: "A", name: "Écume", slogan: "", palette: {}, board: { planche: { image: { id: "pl", w: 1536, h: 2304 }, logo: "lg", domaine: "ecumefrance.fr", statut: "disponible", annee: 2026, essais: 2, at: 1, ...pl } } }) as any;
+    const inv = (cases: Record<string, string[]>) => V.InventaireSchema.parse({ cases: Object.entries(cases).map(([c, textes]) => ({ case: c, textes })), polices: { titres: { nom: "Playfair Display", genre: "serif" }, textes: { nom: "Montserrat", genre: "sans" } } });
+    const juste = ["Écume – Savonnerie artisanale", "ecumefrance.fr — disponible", "© 2026 Écume"];
+    expect(T.textesDeLaPlanche(inv({ seo: juste }), route()).blocs.get("seo")).toBeNull();
+    for (const seo of [juste, ["Écume – Savonnerie artisanale |´", ...juste.slice(1)], juste.slice(1), []]) {
+      const bloc = T.textesDeLaPlanche(inv({ seo }), route({ finitions })).blocs.get("seo")!;
+      expect(bloc.lignes.join(" "), seo.join(" / ")).not.toMatch(/´/);
+      expect(bloc.lignes).toEqual(expect.arrayContaining(juste));
+    }
+    // À l'inventaire seulement, et dans les autres textes écrits par le code : nettoyés aussi ; la ponctuation reste.
+    const t = T.textesDeLaPlanche(inv({ seo: ["Écume – Savonnerie artisanale |´", ...juste.slice(1)], ton: ["Douce ´"], haut: ["Planche ¨"] }), route());
+    expect([t.blocs.get("seo")!.lignes, t.blocs.get("ton"), t.haut]).toEqual([juste, { lignes: ["Douce"] }, ["Planche"]]);
+    expect(PM.nettoyerLesSignesIsoles("Dites-le-nous !")).toBe("Dites-le-nous !");
+    expect(PM.nettoyerLesSignesIsoles("Écume | Savonnerie")).toBe("Écume | Savonnerie");
+    // 3. La police suit l'aperçu : B d'Écume, « Nunito » montrée en manuscrite (verdict réel de B-2).
+    expect(JSON.parse(fs.readFileSync(`${F2}/planche-B-2-relecture-verdict.json`, "utf8")).verdict.pourquoi).toContain("la police « Nunito » est présentée en écriture manuscrite");
+    const p = C.policeDuCatalogue({ nom: "Nunito", genre: "manuscrite" }, 400);
+    expect(p).toMatchObject({ famille: "Dancing Script", remplacee: true, pourquoi: "genre", lue: "Nunito" });
+    expect(C.genreDu(p.cle)).toBe("manuscrite");
+    expect(await runWithLang({ ui: "fr", content: "fr" }, async () => V.phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu))).toContain("la police nommée « Nunito » était montrée en écriture manuscrite");
+    expect(fs.readFileSync("src/lib/syna-agent/planche-en-vrai-tache.ts", "utf8")).toContain('p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu)');
+    // Le genre concorde : rien ne change ; absente du catalogue : la phrase d'avant.
+    expect(C.policeDuCatalogue({ nom: "Nunito", genre: "sans" }, 400)).toMatchObject({ cle: "nunito", remplacee: false });
+    expect(C.policeDuCatalogue({ nom: "Abril Fatface", genre: "serif" }, 400)).toMatchObject({ remplacee: false });
+    expect(await runWithLang({ ui: "fr", content: "fr" }, async () => V.phraseDeLaPoliceRemplacee("Helvetica Neue", "Inter"))).toBe("La police « Helvetica Neue » de ta planche n'est pas dans le catalogue du Studio : j'ai pris la plus proche, « Inter ».");
+  });
+});

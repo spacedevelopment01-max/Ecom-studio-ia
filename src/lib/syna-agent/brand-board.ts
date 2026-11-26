@@ -227,6 +227,12 @@ export const BoardSchema = z.object({
     /** Les essais faits (1 ou 2 : une reprise au plus, à la charge du Studio). */
     essais: z.number().int().min(0).max(2),
     note: z.number().min(0).max(10).optional(),
+    /**
+     * Les petites finitions notées par le relecteur sur la planche gardée (26 novembre 2026 : un signe parasite isolé hors
+     * des mots), telles qu'il les a écrites : jamais une raison de refus ; la planche en vrai les nettoie dans ce que le code
+     * y écrit (le bloc 10 et le ton redessinés).
+     */
+    finitions: z.array(z.string().max(400)).max(20).optional(),
     /** Pourquoi elle n'est pas montrée (refusée deux fois, valeurs du métier impossibles, panne). */
     raison: z.string().max(800).optional(),
     /** Arrêtée en erreur (panne, texte refusé avant l'envoi) : signalée au Studio, jamais montrée ; les autres planches continuent. */

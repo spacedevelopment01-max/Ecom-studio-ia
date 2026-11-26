@@ -20,10 +20,11 @@ export type { ClientDeLEssai };
 // ---------------------------------------------------------------- les entrées
 
 /** Ce que la planche choisie porte déjà (son bloc 10) et ce que le code en garde : le domaine, l'année, la disposition, la phrase. */
-export type DonneesDeLaPlanche = { domaine: string | null; statut: StatutDuDomaine; annee: number; disposition: Laquelle; phrase: string };
+/** `finitions` : les petites finitions notées par le relecteur sur la planche choisie (nettoyées par le code dans la planche en vrai). */
+export type DonneesDeLaPlanche = { domaine: string | null; statut: StatutDuDomaine; annee: number; disposition: Laquelle; phrase: string; finitions?: string[] };
 
 /** Ce que l'essai des planches a écrit pour la planche choisie (planche-X-resultat.json). */
-export type ResultatDeLaPlanche = { nom: string; domaine: string | null; statut: StatutDuDomaine; annee: number; disposition?: Laquelle; logo?: { fichier: string; sha256: string } };
+export type ResultatDeLaPlanche = { nom: string; domaine: string | null; statut: StatutDuDomaine; annee: number; disposition?: Laquelle; logo?: { fichier: string; sha256: string }; finitions?: string[] };
 
 /**
  * Le résultat de la planche choisie, écrit par l'essai des planches (RESULTAT_PLANCHE, planche-X-resultat.json) : le
@@ -32,12 +33,12 @@ export type ResultatDeLaPlanche = { nom: string; domaine: string | null; statut:
  */
 export function resultatDeLaPlanche(fichier: string): ResultatDeLaPlanche {
   if (!fs.existsSync(fichier)) throw new Error(`Résultat de la planche choisie introuvable (RESULTAT_PLANCHE) : ${fichier}. Rien n'est lancé.`);
-  let r: { nom?: string; disposition?: Laquelle; logo?: { fichier: string; sha256: string }; planche?: { image?: unknown; domaine?: string | null; statut?: StatutDuDomaine; annee?: number } | null };
+  let r: { nom?: string; disposition?: Laquelle; logo?: { fichier: string; sha256: string }; planche?: { image?: unknown; domaine?: string | null; statut?: StatutDuDomaine; annee?: number; finitions?: string[] } | null };
   try { r = JSON.parse(fs.readFileSync(fichier, "utf8")); } catch { throw new Error(`Résultat de la planche choisie illisible (RESULTAT_PLANCHE) : ${fichier}. Rien n'est lancé.`); }
   if (!r?.planche) throw new Error(`${fichier} n'est pas le résultat d'une planche de l'essai des planches : rien n'est lancé.`);
   if (!r.planche.image) throw new Error(`La planche de ${fichier} n'a pas été gardée par le relecteur : elle n'est jamais montrée, ni refaite en vrai. Rien n'est lancé.`);
   if (!r.planche.statut || !r.planche.annee) throw new Error(`${fichier} ne dit pas le domaine et l'année de la planche : rien n'est lancé.`);
-  return { nom: String(r.nom ?? ""), domaine: r.planche.domaine ?? null, statut: r.planche.statut, annee: r.planche.annee, ...(r.disposition ? { disposition: r.disposition } : {}), ...(r.logo ? { logo: r.logo } : {}) };
+  return { nom: String(r.nom ?? ""), domaine: r.planche.domaine ?? null, statut: r.planche.statut, annee: r.planche.annee, ...(r.disposition ? { disposition: r.disposition } : {}), ...(r.logo ? { logo: r.logo } : {}), ...(Array.isArray(r.planche.finitions) && r.planche.finitions.length ? { finitions: r.planche.finitions.map(String) } : {}) };
 }
 
 /**
@@ -61,7 +62,7 @@ export function donneesDeLaPlanche(client: ClientDeLEssai, env: Record<string, s
   if (!Number.isInteger(annee) || annee < 2000 || annee > 2200) throw new Error("Année de la planche manquante ou fausse (RESULTAT_PLANCHE, ou ANNEE, celle du « © » de la planche choisie) : rien n'est lancé.");
   const disposition = (donne("DISPOSITION") || lu?.disposition || "standard") as Laquelle;
   if (disposition !== "standard" && disposition !== "animaux") throw new Error("Disposition fausse (DISPOSITION : « standard » ou « animaux ») : rien n'est lancé.");
-  return { domaine: statut === "adresse_a_choisir" ? null : domaine, statut, annee, disposition, phrase: env.PHRASE?.normalize("NFC").trim() ?? "" };
+  return { domaine: statut === "adresse_a_choisir" ? null : domaine, statut, annee, disposition, phrase: env.PHRASE?.normalize("NFC").trim() ?? "", ...(lu?.finitions?.length ? { finitions: lu.finitions } : {}) };
 }
 
 /**
@@ -249,7 +250,7 @@ export async function enregistrerLeParcours(o: { userId: string; projectId: stri
       wordmark: { case: "asis" as const, tracking: 0, align: "gauche" as const, dot: false, symbolPlace: "gauche" as const },
       object: { kind: "carte" as const, front: [o.nom], back: [] },
       images: { logo: logoFini },
-      planche: { image: dims, logo: etat.logo, domaine: o.donnees.domaine, statut: o.donnees.statut, annee: o.donnees.annee, essais: 1, at },
+      planche: { image: dims, logo: etat.logo, domaine: o.donnees.domaine, statut: o.donnees.statut, annee: o.donnees.annee, essais: 1, at, ...(o.donnees.finitions?.length ? { finitions: o.donnees.finitions } : {}) },
     },
   } as unknown as import("../../src/lib/syna-agent/identities").Identity;
 
@@ -352,7 +353,7 @@ export async function essaiDeLaPlancheEnVrai(o: { sortie: string; plafondEuros: 
   const det = await logoDetoure(logoFini);
   const couleurs = det.ok ? (await couleursDuLogo(det.png).catch(() => null))?.palette ?? null : null;
   const palette = { dark: "#1C2A24", primary: "#1C2A24", secondary: "#E8E4DC", accent: "#1C2A24", light: "#F9F8F4", ...(couleurs ?? {}) };
-  const route = { key: "A", name: client.nom, slogan: donnees.phrase, palette, board: { planche: { image: { id: demoAsset.id, w: 1536, h: 2304 }, logo: logoAsset.id, domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: debut } } };
+  const route = { key: "A", name: client.nom, slogan: donnees.phrase, palette, board: { planche: { image: { id: demoAsset.id, w: 1536, h: 2304 }, logo: logoAsset.id, domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: debut, ...(donnees.finitions?.length ? { finitions: donnees.finitions } : {}) } } };
 
   const brut: PlancheEnVraiAi = o.ai ? o.ai(qui) : T.plancheEnVraiDeps.ai ? T.plancheEnVraiDeps.ai(jobId) : T.vraisAppelsEnVrai(qui);
   const res: ResultatEnVrai = { client, donnees, apercus: [], refusALaDecoupe: [], cases: [], relectures: [], logos: [], depenseMicro: 0, appels: [], devis };

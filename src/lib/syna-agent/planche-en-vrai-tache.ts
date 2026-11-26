@@ -23,7 +23,7 @@ import { loadProject, saveBrand } from "../projects";
 import { DEFAULT_MODELS } from "./models";
 import { logoDetoure, photosDuProduitIds } from "./brand-images";
 import type { Route } from "./brand-routes";
-import { copyright, mentionDuDomaine } from "./planche-de-marque";
+import { blocDeLaFinition, copyright, mentionDuDomaine, nettoyerLesSignesIsoles, porteUnSigneParasite, texteDeLaFinition } from "./planche-de-marque";
 import {
   CASES_DU_CODE, ELEMENTS, GROUPES, INVENTAIRE_SYSTEM, InventaireSchema, NOMS_DES_ELEMENTS, RELECTEUR_EN_VRAI, RelectureDuGroupeSchema, TITRES, TUILES_DU_LOGO,
   caseLue, decouperLesApercus, demandeDeLInventaire, inventaireIncomplet, lesCases, phraseDeLaPoliceRemplacee, phraseDeLaPublicationIncomprehensible,
@@ -220,7 +220,7 @@ export async function plancheEnVrai(o: {
   const roles = rolesDeLaPalette(palette0, encre);
   const palette = palette0.map((hex, i) => ({ hex, nom: inventaire.couleurs[i]?.nom?.trim() ?? "", mots: (inventaire.couleurs[i]?.mots ?? []).map((m) => m.trim()).filter(Boolean).slice(0, 2) }));
   const titres = policeDuCatalogue(inventaire.polices.titres, 700), textes = policeDuCatalogue(inventaire.polices.textes, 400);
-  for (const p of [titres, textes]) if (p.remplacee && p.lue) issues.push(phraseDeLaPoliceRemplacee(p.lue, p.famille));
+  for (const p of [titres, textes]) if (p.remplacee && p.lue) issues.push(p.pourquoi === "genre" ? phraseDeLaPoliceRemplacee(p.lue, p.famille, p.genreLu) : phraseDeLaPoliceRemplacee(p.lue, p.famille));
   const couleur = await couleurDuLogo(logo);
   const bas = texteDuBasDuBadge({ ligneDuLogo: o.ligneDuLogo, metierCourt: o.metierCourt, signature: o.phrase });
   const v = await versionsDuLogo({ logo, separation, couleur, sombre: luminance(roles.primary) < 0.45 ? roles.primary : roles.dark, clair: roles.light, monoClair: monoClairDe(palette0), nom, bas, police: textes });
@@ -272,28 +272,61 @@ export async function plancheEnVrai(o: {
  * et la mention du domaine. Un bloc redessiné a toujours au moins une ligne : le bloc 10 porte toujours le copyright et la
  * mention vérifiés ; le ton dont toutes les lignes sont des promesses prend la phrase de la marque sans promesse, sinon
  * son nom.
+ *
+ * UNE FINITION NOTÉE N'ARRIVE JAMAIS DANS LE STUDIO DU CLIENT (chef d'orchestre, 26 novembre 2026, essai réel d'Écume : un
+ * accent parasite isolé dans le titre de référencement du bloc 10 de la planche A). Tout texte que le code écrit (les
+ * titres, le haut, le ton, le bloc 10) est nettoyé de ses signes parasites isolés (`nettoyerLesSignesIsoles`). Le bloc 10
+ * et le ton sont redessinés par le code dès qu'une petite finition y est notée : au verdict de la planche choisie
+ * (`planche.finitions`), ou à l'inventaire (une ligne lue qui porte un signe parasite). Le texte de la finition, nettoyé,
+ * remplace sa ligne quand l'inventaire ne l'a pas lue.
  */
 export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titres: Map<string, string>; blocs: Map<"ton" | "seo", BlocDeTexte | null>; haut: string[]; notes: string[] } {
   const pl = route.board.planche!, nom = route.name.trim(), notes: string[] = [];
-  const lignes = (n: string) => caseLue(inventaire, n)?.textes.map((t) => t.trim()).filter(Boolean) ?? [];
+  const brutes = (n: string) => caseLue(inventaire, n)?.textes.map((t) => t.trim()).filter(Boolean) ?? [];
+  const lignes = (n: string) => brutes(n).map(nettoyerLesSignesIsoles).filter(Boolean);
+  // Les petites finitions notées au verdict de la planche choisie, rangées par bloc ; et celles que l'inventaire a lues.
+  const finitions = (pl.finitions ?? []).filter(Boolean);
+  const notees = (b: "seo" | "ton") => finitions.filter((f) => blocDeLaFinition(f) === b);
+  const luesAvecUnSigne = (n: string) => brutes(n).filter(porteUnSigneParasite);
+  const plat = (t: string) => t.normalize("NFC").toLocaleLowerCase("fr").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  /** Les lignes du bloc, avec le texte nettoyé de chaque finition notée que l'inventaire n'a pas lu. */
+  const avecLesFinitions = (l: string[], f: string[]) => {
+    const out = [...l];
+    for (const x of f) { const t = texteDeLaFinition(x); if (t && !out.some((y) => plat(y) === plat(t))) out.unshift(t); }
+    return out;
+  };
+  const dire = (b: string, n: string, f: string[]) => { const lues = luesAvecUnSigne(n); if (f.length || lues.length) notes.push(`${b} : petite finition nettoyée par le code (${[...f, ...lues.map((x) => `lu à l'inventaire : « ${x} »`)].join(" ; ")})`); };
+  for (const n of ["haut", ...TITRES]) if (luesAvecUnSigne(n).length) dire(n === "haut" ? "haut de la planche" : `titre ${n}`, n, []);
   const titres = new Map<string, string>();
   for (const t of TITRES) { const l = lignes(t).join(" "); if (l && !promessesDuBloc([l]).length) titres.set(t, l); }
   const mention = mentionDuDomaine({ domaine: pl.domaine, statut: pl.revu?.statut ?? pl.statut }), droit = copyright(pl.annee, nom);
   const blocs = new Map<"ton" | "seo", BlocDeTexte | null>();
-  // Le ton : rien lu ou aucune promesse, le décor est gardé ; sinon redessiné sans les promesses, jamais vide.
-  const ton = lignes("ton"), promesses = promessesDuBloc(ton);
-  if (promesses.length) {
-    const reste = ton.filter((l) => !promesses.includes(l)), slogan = (route.slogan ?? "").trim();
+  // Le ton : rien lu ou aucune promesse ni finition, le décor est gardé ; sinon redessiné sans elles, jamais vide.
+  const ton = lignes("ton"), promesses = promessesDuBloc(ton), finitionsDuTon = notees("ton"), tonANettoyer = finitionsDuTon.length > 0 || luesAvecUnSigne("ton").length > 0;
+  if (promesses.length || tonANettoyer) {
+    const reste = avecLesFinitions(ton.filter((l) => !promesses.includes(l)), finitionsDuTon).filter((l) => !promessesDuBloc([l]).length), slogan = (route.slogan ?? "").trim();
     blocs.set("ton", { lignes: reste.length ? reste : [slogan && !promessesDuBloc([slogan]).length ? slogan : nom] });
-    notes.push(`bloc du ton redessiné sans : ${promesses.join(" ; ")}`);
+    if (promesses.length) notes.push(`bloc du ton redessiné sans : ${promesses.join(" ; ")}`);
+    if (tonANettoyer) dire("bloc du ton redessiné", "ton", finitionsDuTon);
   } else blocs.set("ton", null);
-  if (!ton.length) notes.push("bloc du ton : l'inventaire n'y a rien lu ; l'aperçu de la démonstration est gardé tel quel");
+  if (!ton.length && !tonANettoyer) notes.push("bloc du ton : l'inventaire n'y a rien lu ; l'aperçu de la démonstration est gardé tel quel");
   // Le bloc 10.
   const tiret = (l: string) => l.replace(/\s*[—–-]\s*/g, " — ");
   const porteLaMention = (l: string) => tiret(l).includes(tiret(mention));
   const seo = lignes("seo"), domaineRevuChange = !!pl.revu && pl.revu.statut !== pl.statut;
+  const finitionsDuSeo = notees("seo"), seoANettoyer = finitionsDuSeo.length > 0 || luesAvecUnSigne("seo").length > 0;
+  /** Le bloc 10 redessiné : les lignes (sans promesse), le copyright et la mention vérifiés toujours là. */
+  const redessiner = (l0: string[], seoPromesses: string[]) => {
+    const l = avecLesFinitions(l0.filter((x) => !seoPromesses.includes(x)), finitionsDuSeo).map((x) => (/©/.test(x) ? droit : pl.domaine && x.includes(pl.domaine) ? mention : x));
+    if (!l.some((x) => x.includes(droit))) l.push(droit);
+    if (!l.some(porteLaMention)) l.push(mention);
+    blocs.set("seo", { lignes: [...new Set(l)] });
+    notes.push(`bloc 10 redessiné avec « ${droit} » et « ${mention} »`);
+    if (seoANettoyer) dire("bloc 10 redessiné", "seo", finitionsDuSeo);
+  };
   if (!seo.length) {
-    if (domaineRevuChange) {
+    if (seoANettoyer) redessiner([], []);
+    else if (domaineRevuChange) {
       blocs.set("seo", { lignes: [droit, mention] });
       notes.push(`bloc 10 : l'inventaire n'y a rien lu, mais le domaine revérifié a changé depuis la démonstration : redessiné avec « ${droit} » et « ${mention} »`);
     } else {
@@ -303,15 +336,8 @@ export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titre
   } else {
     const seoJuste = seo.some((l) => l.includes(droit)) && seo.some(porteLaMention);
     const seoPromesses = promessesDuBloc(seo, [droit, mention, String(pl.annee)]);
-    if (seoJuste && !seoPromesses.length) blocs.set("seo", null);
-    else {
-      const l = seo.filter((x) => !seoPromesses.includes(x)).map((x) => (/©/.test(x) ? droit : pl.domaine && x.includes(pl.domaine) ? mention : x));
-      // Le bloc redessiné porte toujours les données vérifiées, même quand l'inventaire ne les a pas lues.
-      if (!l.some((x) => x.includes(droit))) l.push(droit);
-      if (!l.some(porteLaMention)) l.push(mention);
-      blocs.set("seo", { lignes: [...new Set(l)] });
-      notes.push(`bloc 10 redessiné avec « ${droit} » et « ${mention} »`);
-    }
+    if (seoJuste && !seoPromesses.length && !seoANettoyer) blocs.set("seo", null);
+    else redessiner(seo, seoPromesses);
   }
   return { titres, blocs, haut: lignes("haut").filter((l) => l.toLowerCase() !== nom.toLowerCase()), notes };
 }

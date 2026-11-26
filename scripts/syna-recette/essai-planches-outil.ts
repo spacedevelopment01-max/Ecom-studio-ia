@@ -251,7 +251,7 @@ export async function rejugerUnePlanche(o: { dossier: string; key: string; clien
     const m = await sharp(png).metadata();
     const { raison: _raison, ...reste } = pl;
     const notes = [...(resultat.notes ?? []), `planche ${key}, essai ${tour} rejugé sans aucun appel par le code d'aujourd'hui (${maintenant}) : gardée${lu.finitions.length ? ` ; petites finitions notées, sans refus : ${lu.finitions.join(" ; ")}` : ""}`];
-    ecrire(`planche-${key}-resultat.json`, `${JSON.stringify({ ...resultat, planche: { ...reste, image: { fichier: `planche-${key}-gardee.png`, w: m.width ?? 1536, h: m.height ?? 2304, rejugee: true }, note: verdict.note, essais: Math.max(Number(pl.essais) || 0, tour) }, notes, issues: [] }, null, 2)}\n`);
+    ecrire(`planche-${key}-resultat.json`, `${JSON.stringify({ ...resultat, planche: { ...reste, image: { fichier: `planche-${key}-gardee.png`, w: m.width ?? 1536, h: m.height ?? 2304, rejugee: true }, note: verdict.note, essais: Math.max(Number(pl.essais) || 0, tour), ...(lu.finitions.length ? { finitions: lu.finitions } : {}) }, notes, issues: [] }, null, 2)}\n`);
   }
   // Le compte rendu : le rejugement, puis les planches gardées du dossier, prêtes pour le choix.
   const gardees = KEYS.filter((k) => { try { return !!JSON.parse(fs.readFileSync(f(`planche-${k}-resultat.json`), "utf8")).planche?.image; } catch { return false; } });

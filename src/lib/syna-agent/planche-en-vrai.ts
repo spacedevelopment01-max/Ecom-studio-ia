@@ -500,7 +500,14 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
 export const phraseDeLImageGardeeEnApercu = (cases: readonly string[]) => { const elements = cases.map(libelleDeLElement); return L(
   `Sur ta planche en vrai, ${elements.length > 1 ? `${elements.length} images n'ont pas passé ma relecture, même refaites` : "une image n'a pas passé ma relecture, même refaite"} (${elements.join(", ")}) : ${elements.length > 1 ? "leurs cases gardent" : "sa case garde"} l'aperçu de ta planche choisie, sans fichier en haute définition. Je peux ${elements.length > 1 ? "les" : "la"} refaire à ma charge : rien n'est compté sur ton budget.`,
   `On your full-resolution board, ${elements.length} image(s) did not pass my review, even redone (${elements.join(", ")}): their slot keeps the preview of your chosen board. I can redo them at my expense.`); };
-export const phraseDeLaPoliceRemplacee = (lue: string, prise: string) => L(
+const GENRE_DIT: Record<string, [string, string]> = { manuscrite: ["écriture manuscrite", "handwriting"], serif: ["écriture à empattements", "a serif type"], sans: ["écriture sans empattements", "a sans-serif type"], "chasse-fixe": ["écriture à chasse fixe", "a monospaced type"], affiche: ["écriture d'affiche", "a display type"] };
+/**
+ * La police remplacée, dite au client : absente du catalogue (deux paramètres, la phrase d'avant), ou, avec `genreLu`,
+ * nommée sur la planche mais montrée dans un autre genre d'écriture (26 novembre 2026) : la police suit ce qu'il a vu.
+ */
+export const phraseDeLaPoliceRemplacee = (lue: string, prise: string, genreLu?: string) => genreLu ? L(
+  `Sur ta planche, la police nommée « ${lue} » était montrée en ${GENRE_DIT[genreLu]?.[0] ?? genreLu} : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « ${prise} ».`,
+  `On your board, the font named “${lue}” was shown as ${GENRE_DIT[genreLu]?.[1] ?? genreLu}: I used the Studio catalogue font closest to what you saw, “${prise}”.`) : L(
   `La police « ${lue} » de ta planche n'est pas dans le catalogue du Studio : j'ai pris la plus proche, « ${prise} ».`,
   `The “${lue}” font of your board is not in the Studio catalogue: I used the closest one, “${prise}”.`);
 export const phraseDuSymboleComplet = () => L(
