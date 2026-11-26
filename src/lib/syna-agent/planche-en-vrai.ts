@@ -649,6 +649,146 @@ export async function refaireLesElements(deps: ElementsDeps, o: {
   return res;
 }
 
+// ---------------------------------------------------------------- 8 bis. les quatre petites versions du logo en HD
+
+/**
+ * LES QUATRE PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION (26 novembre 2026 ; décision du propriétaire relayée par le chef
+ * d'orchestre : oui pour les refaire en haute définition, identiques à l'aperçu). Sans symbole séparable, le compact,
+ * l'icône, le favicon et le badge sont repris de leur tuile de l'aperçu, agrandis quatre fois (`versionDepuisLApercu`) :
+ * c'est la règle de base, gratuite. En option payante, chacune est refaite en haute définition à partir de sa tuile, avec
+ * le logo officiel joint (le logo fini choisi), par le modèle d'images des logos, comme les autres images de la planche
+ * en vrai : la règle des preuves mot pour mot (REGLE_APERCU et la phrase du logo), plus une ligne qui dit l'élément ; la
+ * taille carrée, la plus grande des tailles permises (1088 × 1088). Relue face à sa tuile ; refusée, refaite une fois à la
+ * charge du Studio avec ses raisons ; refusée deux fois, l'agrandissement de l'aperçu est gardé, et SINA le dit.
+ */
+export const LOGOS_EN_HD = {
+  "logo-compact": { tuile: "logo-4", quoi: "C'est la version compacte du logo.", libelle: ["la version compacte du logo", "the compact logo"] },
+  icone: { tuile: "logo-5", quoi: "C'est l'icône seule.", libelle: ["l'icône seule", "the icon"] },
+  favicon: { tuile: "logo-6", quoi: "C'est le favicon.", libelle: ["le favicon", "the favicon"] },
+  badge: { tuile: "logo-10", quoi: "C'est le badge rond.", libelle: ["le badge rond", "the round badge"] },
+} as const;
+export type VersionEnHd = keyof typeof LOGOS_EN_HD;
+export const VERSIONS_EN_HD = Object.keys(LOGOS_EN_HD) as VersionEnHd[];
+/** Carrée, la plus grande des tailles permises de la planche en vrai (media-providers.ts, TAILLES_DE_LA_PLANCHE_EN_VRAI). */
+export const TAILLE_DES_LOGOS_EN_HD = "1088x1088";
+/** LE TEXTE ENVOYÉ : REGLE mot pour mot (l'aperçu, puis le logo officiel joint), puis la ligne qui dit l'élément. */
+export function texteDuLogoEnHd(o: { version: VersionEnHd; nom: string; personnes: boolean; raisons?: readonly string[] }): string {
+  const t = [REGLE_APERCU, regleDuLogo(o.nom), LOGOS_EN_HD[o.version].quoi, o.personnes ? "" : SANS_PERSONNE_EN_VRAI].filter(Boolean).join(" ");
+  return o.raisons?.length ? `${t}\n\n${finDeRepriseEnVrai(o.raisons)}` : t;
+}
+export type DemandeDeLogoEnHd = { element: VersionEnHd; texte: string; taille: string; jointes: { role: "apercu" | "logo"; data: Buffer }[] };
+/** La demande d'une version : sa tuile de l'aperçu d'abord, puis le logo officiel ; le texte ; la taille carrée. */
+export const demandeDuLogoEnHd = (o: { version: VersionEnHd; nom: string; personnes: boolean; tuile: Buffer; logo: Buffer; raisons?: readonly string[] }): DemandeDeLogoEnHd => ({
+  element: o.version, texte: texteDuLogoEnHd(o), taille: TAILLE_DES_LOGOS_EN_HD, jointes: [{ role: "apercu", data: o.tuile }, { role: "logo", data: o.logo }],
+});
+
+export const LogoEnHdReluSchema = z.object({
+  version: z.string().max(40),
+  /** Même forme que l'aperçu (silhouette, cadre, proportions, placement). */
+  memeForme: z.boolean().catch(false),
+  /** Mêmes lettres, dessinées comme sur l'aperçu. */
+  memesLettres: z.boolean().catch(false),
+  /** Le texte circulaire : identique, différent, illisible sur l'aperçu (un micro-texte décoratif, jamais jugé), ou aucun. */
+  texteCirculaire: z.enum(["identique", "different", "illisible-sur-l-apercu", "aucun"]).catch("different"),
+  /** Les textes lisibles sur l'aperçu, mot pour mot (sans le texte circulaire illisible). */
+  textesDeLApercu: z.array(z.string().max(200)).max(12).catch([]),
+  /** Les textes lisibles de la version refaite, mot pour mot (sans le texte circulaire quand il est illisible sur l'aperçu). */
+  textesLus: z.array(z.string().max(200)).max(12).catch([]),
+  memesCouleurs: z.boolean().catch(false),
+  /** Quelque chose a été ajouté qui n'est pas sur l'aperçu (un élément, un texte, un cadre, une ombre, un décor). */
+  ajout: z.boolean().catch(true),
+  texteCoupe: z.boolean().catch(true),
+  note: z.number().min(0).max(10).catch(0),
+  pourquoi: z.string().max(500).catch(""),
+});
+export type LogoEnHdRelu = z.infer<typeof LogoEnHdReluSchema>;
+export const RelectureDesLogosEnHdSchema = z.object({ versions: z.array(LogoEnHdReluSchema).max(8).catch([]) });
+export type RelectureDesLogosEnHd = z.infer<typeof RelectureDesLogosEnHdSchema>;
+
+export const RELECTEUR_DES_LOGOS_EN_HD = `Tu es le relecteur le plus exigeant d'un studio de création de marques. Chaque petite version d'un logo refaite en haute définition (« <version> refaite ») est jugée face à son aperçu (« <version> aperçu »), découpé sur la planche que le client a choisie. Elle doit rester identique à l'aperçu : seule la netteté change. Réponds en JSON, une entrée par version :
+- memeForme : même forme que l'aperçu (silhouette, cadre, proportions, placement des éléments) ;
+- memesLettres : mêmes lettres, dessinées comme sur l'aperçu (aucune lettre fausse, manquante ou ajoutée) ;
+- texteCirculaire : « identique » si l'aperçu porte un texte circulaire lisible et que la version refaite porte le même ; « different » s'il est lisible sur l'aperçu et que la version refaite en porte un autre, ou aucun ; « illisible-sur-l-apercu » si le texte circulaire de l'aperçu ne se lit pas (un micro-texte décoratif : ne le juge pas) ; « aucun » si l'aperçu n'a pas de texte circulaire ;
+- textesDeLApercu : chaque texte lisible de l'aperçu, mot pour mot, une ligne par élément (sans un texte circulaire illisible) ;
+- textesLus : chaque texte lisible de la version refaite, mot pour mot, une ligne par élément, sans rien corriger (sans le texte circulaire quand il est illisible sur l'aperçu) ;
+- memesCouleurs : mêmes couleurs que l'aperçu ;
+- ajout : quelque chose a été ajouté qui n'est pas sur l'aperçu (un élément, un texte, un cadre, une ombre, un décor) ;
+- texteCoupe : un texte ou une forme est coupé, ou collé au bord de l'image ;
+- note : ta note de fidélité à l'aperçu, de 0 à 10 ; une version fidèle, nette, sans défaut visible vaut 8 ou plus ;
+- pourquoi : une ou deux phrases simples.
+Ne juge que ce que tu vois.`;
+export const demandeAuRelecteurDesLogosEnHd = (o: { nom: string; versions: readonly VersionEnHd[] }) =>
+  `Marque : « ${o.nom.trim()} ».\nVersions : ${o.versions.map((v) => `${v} (${LOGOS_EN_HD[v].libelle[0]})`).join(", ")}.`;
+
+/**
+ * Les raisons du refus d'une version refaite (vide : gardée) : pas la même forme, pas les mêmes lettres, un texte circulaire
+ * lisible sur l'aperçu qui n'est plus le même, des textes qui ne sont pas ceux de l'aperçu lettre pour lettre (comparés par
+ * le code), d'autres couleurs, un ajout, un texte coupé, une note sous 8. Un texte circulaire illisible sur l'aperçu est un
+ * micro-texte décoratif : jamais jugé.
+ */
+export function raisonsDuRefusDuLogoEnHd(v: LogoEnHdRelu | undefined): string[] {
+  if (!v) return ["le relecteur ne l'a pas relue"];
+  const r: string[] = [];
+  if (!v.memeForme) r.push("sa forme n'est pas celle de l'aperçu");
+  if (!v.memesLettres) r.push("ses lettres ne sont pas celles de l'aperçu");
+  if (v.texteCirculaire === "different") r.push("son texte circulaire n'est pas celui de l'aperçu");
+  const t = comparerLesTextes(v.textesDeLApercu, v.textesLus);
+  if (t.manquants.length || t.enTrop.length) r.push(`ses textes ne sont pas ceux de l'aperçu, lettre pour lettre${t.manquants.length ? ` (manquent : ${t.manquants.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}${t.enTrop.length ? ` (en trop ou mal écrits : ${t.enTrop.slice(0, 8).map((w) => `« ${w} »`).join(", ")})` : ""}`);
+  if (!v.memesCouleurs) r.push("ses couleurs ne sont pas celles de l'aperçu");
+  if (v.ajout) r.push("quelque chose a été ajouté qui n'est pas sur l'aperçu");
+  if (v.texteCoupe) r.push("un texte ou une forme est coupé ou collé au bord");
+  if (v.note < NOTE_DU_PROPRIETAIRE) r.push(`sa fidélité n'est pas au niveau (${v.note}/10, il faut ${NOTE_DU_PROPRIETAIRE})`);
+  return r;
+}
+
+export type LogosEnHdDeps = {
+  /** POST /v1/images/edits : image[] = la tuile de l'aperçu, puis le logo officiel ; le texte tel quel. Rend l'image brute. */
+  refaire: (d: DemandeDeLogoEnHd, tour: number) => Promise<Buffer>;
+  /** Le relecteur des images de la planche en vrai : un appel pour toutes les versions d'un tour. */
+  relire: (items: { version: VersionEnHd; apercu: Buffer; image: Buffer }[], demande: string, tour: number) => Promise<RelectureDesLogosEnHd>;
+  aLaChargeDuStudio: <T>(fn: () => Promise<T>) => Promise<T>;
+  /** Le fond retiré par le code, creux compris (`detourerLeLogo`) ; rend la raison quand il ne sait pas le retirer. */
+  sansFond: (png: Buffer) => Promise<{ ok: true; png: Buffer } | { ok: false; raison: string }>;
+};
+export type EssaiDuLogoEnHd = { tour: number; texte: string; brute: Buffer | null; raisons: string[]; verdict?: LogoEnHdRelu };
+/** Le résultat d'une version : gardée (`png`, fond retiré) ou non (l'agrandissement de l'aperçu reste). */
+export type ResultatDuLogoEnHd = { version: VersionEnHd; ok: boolean; png: Buffer | null; essais: EssaiDuLogoEnHd[]; raison?: string };
+
+/**
+ * LES VERSIONS EN HAUTE DÉFINITION : chacune refaite à partir de sa tuile (logo officiel joint), son fond retiré par le
+ * code, relues ensemble face à leur tuile ; une refusée est refaite UNE fois, à la charge du Studio, avec ses raisons au
+ * début de son texte, puis relue ; refusée deux fois, elle n'est pas gardée (l'agrandissement de l'aperçu reste). Une
+ * version sans tuile n'est pas tentée. Une panne n'est jamais relancée toute seule : l'erreur remonte.
+ */
+export async function refaireLesLogosEnHd(deps: LogosEnHdDeps, o: { nom: string; personnes: boolean; logo: Buffer; tuiles: ReadonlyMap<string, Buffer>; versions?: readonly VersionEnHd[] }): Promise<Map<VersionEnHd, ResultatDuLogoEnHd>> {
+  const res = new Map<VersionEnHd, ResultatDuLogoEnHd>();
+  const versions = (o.versions ?? VERSIONS_EN_HD).filter((v) => o.tuiles.has(LOGOS_EN_HD[v].tuile));
+  const unTour = async (liste: VersionEnHd[], tour: number) => {
+    const faites = new Map<VersionEnHd, { texte: string; brute: Buffer; png: Buffer | null; raison?: string }>();
+    for (const v of liste) {
+      const raisons = tour > 1 ? res.get(v)?.essais.at(-1)?.raisons : undefined;
+      const d = demandeDuLogoEnHd({ version: v, nom: o.nom, personnes: o.personnes, tuile: o.tuiles.get(LOGOS_EN_HD[v].tuile)!, logo: o.logo, raisons });
+      const brute = await deps.refaire(d, tour);
+      const f = await deps.sansFond(brute);
+      faites.set(v, f.ok ? { texte: d.texte, brute, png: f.png } : { texte: d.texte, brute, png: null, raison: `son fond ne peut pas être retiré proprement (${f.raison})` });
+    }
+    // Relue sur l'image reçue (avec son fond, comme la tuile de l'aperçu) ; une version sans fond retirable n'est pas relue.
+    const items = liste.filter((v) => faites.get(v)!.png);
+    const verdicts = items.length ? await deps.relire(items.map((v) => ({ version: v, apercu: o.tuiles.get(LOGOS_EN_HD[v].tuile)!, image: faites.get(v)!.brute })), demandeAuRelecteurDesLogosEnHd({ nom: o.nom, versions: items }), tour) : { versions: [] };
+    for (const v of liste) {
+      const f = faites.get(v)!, verdict = verdicts.versions.find((x) => x.version === v);
+      const raisons = f.png ? raisonsDuRefusDuLogoEnHd(verdict) : [f.raison!];
+      const essai: EssaiDuLogoEnHd = { tour, texte: f.texte, brute: f.brute, raisons, ...(verdict ? { verdict } : {}) };
+      res.set(v, { version: v, ok: !raisons.length, png: raisons.length ? null : f.png, essais: [...(res.get(v)?.essais ?? []), essai], ...(raisons.length ? { raison: raisons.join(" ; ") } : {}) });
+    }
+  };
+  if (!versions.length) return res;
+  await unTour(versions, 1);
+  const refusees = versions.filter((v) => !res.get(v)!.ok);
+  if (refusees.length) await deps.aLaChargeDuStudio(() => unTour(refusees, 2));
+  return res;
+}
+
 // ---------------------------------------------------------------- 9. ce que SINA dit
 
 export const phraseDeLImageGardeeEnApercu = (cases: readonly string[]) => { const elements = cases.map(libelleDeLElement); return L(
@@ -671,6 +811,17 @@ export const phraseDesLogosDeLApercu = (versions: readonly string[]) => L(
   `Ton logo ne se sépare pas proprement en un symbole et un nom : ${versions.length > 1 ? "ces versions sont reprises" : "cette version est reprise"} de ta planche choisie, agrandie${versions.length > 1 ? "s" : ""}, telle${versions.length > 1 ? "s" : ""} que tu ${versions.length > 1 ? "les " : "l'"}as vue${versions.length > 1 ? "s" : ""} (${versions.map((v) => LIBELLE_VERSION_FR[v] ?? v).join(", ")}). Je peux ${versions.length > 1 ? "les" : "la"} refaire en haute définition, je t'annonce le prix avant.`,
   `Your logo does not split cleanly into a symbol and a name: ${versions.length > 1 ? "these versions are" : "this version is"} taken from your chosen board, enlarged, as you saw ${versions.length > 1 ? "them" : "it"} (${versions.join(", ")}). I can redo ${versions.length > 1 ? "them" : "it"} in high definition; I give you the price first.`);
 const LIBELLE_VERSION_FR: Record<string, string> = { "logo-compact": "le logo compact", icone: "l'icône", favicon: "le favicon", badge: "le badge" };
+const LIBELLE_VERSION_EN: Record<string, string> = { "logo-compact": "the compact logo", icone: "the icon", favicon: "the favicon", badge: "the badge" };
+/**
+ * Les versions refaites en haute définition qui n'ont pas passé la relecture, même refaites : leur agrandissement de
+ * l'aperçu est gardé, et c'est dit simplement (aucune promesse de plus).
+ */
+export const phraseDesLogosEnHdRefuses = (versions: readonly string[]) => {
+  const n = versions.length, liste = versions.map((v) => LIBELLE_VERSION_FR[v] ?? v).join(", ");
+  return L(
+    `J'ai refait en haute définition ${liste}, mais ${n > 1 ? "ces versions n'ont" : "cette version n'a"} pas passé ma relecture, même refaite${n > 1 ? "s" : ""} : ${n > 1 ? "elles ne sont" : "elle n'est"} pas identique${n > 1 ? "s" : ""} à ta planche choisie. Je garde donc ${n > 1 ? "celles de ta planche, agrandies, telles que tu les as vues" : "celle de ta planche, agrandie, telle que tu l'as vue"}.`,
+    `I redid ${versions.map((v) => LIBELLE_VERSION_EN[v] ?? v).join(", ")} in high definition, but ${n > 1 ? "they" : "it"} did not pass my review, even redone: not identical to your chosen board. I keep the enlarged version${n > 1 ? "s" : ""} from your board, as you saw ${n > 1 ? "them" : "it"}.`);
+};
 export const phraseDuSymboleComplet = () => L(
   "Je n'ai pas pu séparer proprement le symbole et le nom de ton logo : ton icône et ton favicon reprennent ton logo complet.",
   "I could not cleanly separate your logo's symbol from its name: your icon and favicon use your full logo.");
@@ -718,6 +869,10 @@ export type EtatPlancheEnVrai = {
   inventaire?: Inventaire;
   /** Les versions du logo reprises de leur tuile de l'aperçu (sans symbole séparable) : leur case garde l'aperçu agrandi. */
   logosDeLApercu?: import("./planche-en-vrai-code").VersionDuLogo[];
+  /** Les versions refaites en haute définition et gardées : leur fichier (téléchargement, zip, favicons) est celui-là. */
+  logosEnHd?: import("./planche-en-vrai-code").VersionDuLogo[];
+  /** Les versions refaites en haute définition refusées deux fois : l'agrandissement de l'aperçu est gardé, et c'est dit. */
+  logosEnHdRefuses?: import("./planche-en-vrai-code").VersionDuLogo[];
 };
 
 /** Le site en une seule image (26 novembre 2026, le propriétaire : « L'ordi et le téléphone ne sont pas obligés d'être découpés si ? »). */

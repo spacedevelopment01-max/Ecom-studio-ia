@@ -325,7 +325,7 @@ Ce qui reste différent de l'aperçu, dit franchement :
 - les quatre tuiles reprises de l'aperçu sont nettes à la taille de la planche, mais leurs fichiers à télécharger sont
   des agrandissements (environ 460 pixels de côté), pas de la haute définition.
 
-Le prix d'une option qui refait le bloc 01 en haute définition (non construite) : les quatre cases (compact, icône,
+Le prix d'une option qui refait le bloc 01 en haute définition (non construite ce jour-là ; construite ensuite : voir « La palette mesurée et les quatre petites versions du logo en haute définition ») : les quatre cases (compact, icône,
 favicon, badge) refaites par le modèle d'images des logos à partir de leur tuile, logo joint, au prix des images de la
 planche en vrai (1088 × 1088, qualité haute), relues en un appel : probable 0,3547 €, au plus 0,8040 €
 (`devisDesLogosEnHd`, `LOGO_HD=1` avec `DEVIS_SEULEMENT=1` ; sans devis, `LOGO_HD=1` ne lance rien).
@@ -378,3 +378,77 @@ une seule image, et dit que seules la publication portrait et l'emballage garden
 Épreuve ajoutée et scellée : `planche-en-vrai-specimen-mesure-et-ecran-du-reassemblage` (aucune épreuve scellée n'est
 contredite). Tests : `tests/planche-en-vrai-specimen-et-ecran.test.ts` (l'aperçu réel de B ; un réassemblage simulé puis
 l'onglet Marque rendu ; un second réassemblage dans le même projet).
+
+## La palette mesurée et les quatre petites versions du logo en haute définition (26 novembre 2026)
+
+Constat du chef d'orchestre sur la planche en vrai réassemblée d'Écume, mot pour mot : « les petits textes sous les
+couleurs de la palette sont plus pâles que sur l'aperçu ». Puis la décision du propriétaire, relayée par lui : oui pour
+refaire les quatre petites versions du logo (compact, icône, favicon, badge) en haute définition, identiques à l'aperçu,
+pour 0,69 € à la charge du Studio sur l'essai d'Écume.
+
+**La palette, mesurée sur l'aperçu** (gratuit ; `lignesSousLesPastilles`, `planche-en-vrai-code.ts`). Avant, le code et
+les mots étaient écrits en gris pâle fixe (#5A605C), à des tailles fixes. Maintenant, sous chaque pastille (sa colonne va
+jusqu'à mi-chemin des pastilles voisines), le code lit les lignes de l'aperçu comme pour le spécimen (même mesure,
+`lignesDUneColonne`) : le nom, le code de la couleur, puis une à trois lignes de mots. Chaque ligne est redessinée à sa
+place, centrée sur son milieu mesuré, le bas de ses lettres sur son bas mesuré, dans son encre, en Nunito Sans. La
+taille : une par rôle (le nom, le code, les mots), la médiane des tailles mesurées, car l'aperçu écrit chaque rôle à une
+seule taille et la mesure d'une petite ligne varie d'un pixel ; elle ne s'écarte jamais de plus de 5 % de la taille que la
+ligne demande. Les mots sont coupés comme sur l'aperçu (« Chaleur, énergie » puis « bienveillance » : les lignes lues à
+l'inventaire, `lignesDesMotsLues`). Sur la planche B d'Écume, mesuré sur le résultat : chaque ligne a au moins le contraste
+de l'aperçu (à 2 % près) et sa hauteur à 10 % près au plus. Regardé en image : les noms sont presque noirs, les codes et
+les mots gris très foncé, comme sur l'aperçu ; plus rien n'est pâle. Sans lignes lisibles sous les pastilles, la mise en
+page d'avant est gardée.
+
+**Les quatre petites versions du logo en haute définition** (option payante ; `planche-en-vrai.ts`, partie 8 bis ;
+`planche-en-vrai-tache.ts` ; `planche-en-vrai-code.ts`). La règle de base ne change pas : sans symbole séparable, le
+compact, l'icône, le favicon et le badge sont repris de leur tuile de l'aperçu, agrandis, gratuits, et SINA propose de les
+refaire en haute définition, prix annoncé avant. L'option :
+
+- **La demande** (`texteDuLogoEnHd`, `demandeDuLogoEnHd`) : chaque version refaite à partir de sa tuile (logo-4, logo-5,
+  logo-6, logo-10), le logo fini choisi joint en deuxième image, par le modèle d'images des logos (le même appel que les
+  autres images de la planche en vrai, `aiElementDeLaPlanche`). Le texte : la règle des preuves mot pour mot
+  (`REGLE_APERCU`, puis « La deuxième image est le logo officiel de … »), puis la ligne de l'élément (« C'est la version
+  compacte du logo. », « C'est l'icône seule. », « C'est le favicon. », « C'est le badge rond. ») et, sans accord,
+  « Aucune personne n'apparaît. ». La taille : 1088 × 1088, la seule taille carrée permise, donc la plus grande.
+- **Le fond** est retiré par le code, creux compris (`detourerLeLogo`, comme le logo fini). Un fond qu'il ne sait pas
+  retirer fait refuser la version, sans la relire. Conséquence connue, la même que pour le logo fini : une partie du dessin
+  exactement de la couleur du fond (le « É » blanc du favicon sur un fond crème) devient transparente, « en réserve ».
+- **La relecture** (`RELECTEUR_DES_LOGOS_EN_HD`, `raisonsDuRefusDuLogoEnHd`) : le relecteur des images de la planche en
+  vrai (le plus fort, effort élevé), en un appel pour les quatre, chacune face à sa tuile : même forme, mêmes lettres, même
+  texte circulaire s'il est lisible sur l'aperçu (sinon c'est un micro-texte décoratif, jamais jugé), mêmes couleurs, rien
+  d'ajouté, aucun texte coupé, une note de 8 au moins ; les textes lisibles sont comparés lettre pour lettre par le code.
+- **La reprise** : une version refusée est refaite une fois, à la charge du Studio, avec ses raisons au début du texte
+  (« À corriger : … »), puis relue. Refusée deux fois, l'agrandissement est gardé, et SINA le dit : « J'ai refait en haute
+  définition le badge, mais cette version n'a pas passé ma relecture, même refaite : elle n'est pas identique à ta planche
+  choisie. Je garde donc celle de ta planche, agrandie, telle que tu l'as vue. » (`phraseDesLogosEnHdRefuses`). La
+  proposition de les refaire n'est plus dite pour une version déjà tentée.
+- **Les fichiers** : une version gardée remplace l'agrandissement partout où l'on télécharge (les dix versions du logo,
+  donc le zip), dans les favicons et l'avatar, et dans le symbole de la marque (le compact). L'état le garde
+  (`logosEnHd`, `logosEnHdRefuses`) ; une réfection des logos par le code (`refaireLesLogosEnVrai`) ne le perd jamais.
+- **Sur la planche** (`caseDuLogoEnHd`, `tuilesDuBloc01`) : choix fait et pourquoi. La planche en vrai doit rester
+  identique à l'aperçu. Une version gardée n'est posée dans sa tuile que si elle ne change pas visiblement la case : posée
+  sur le fond de la tuile sans son encre, la boîte de son encre calée sur celle de l'aperçu, la tuile composée est ramenée
+  à la taille de l'aperçu et comparée à lui (les deux adoucis d'un flou de 0,8 pixel) ; elle est gardée sur la planche si
+  ses proportions sont celles de l'encre de l'aperçu à 8 % près et si au plus 5 % des points changent de plus de 48
+  niveaux. Sinon la tuile garde l'aperçu agrandi, et la haute définition ne sert qu'aux fichiers à télécharger. Pourquoi :
+  à la taille de la planche, l'aperçu agrandi deux fois est déjà net ; une version refaite qui déplacerait, agrandirait ou
+  recolorerait le dessin se verrait davantage que le gain de netteté. Vérifié : une version fidèle change 0 à 0,4 % des
+  points (gardée) ; la même recolorée ou étirée est refusée.
+- **Le devis** (`devisDesLogosEnHd`) : le premier tour, quatre images carrées au prix mesuré de la publication carrée et
+  une relecture : probable 0,3547 € ; si tout est refait une fois, 0,7094 € ; au plus, reprise des quatre comprise,
+  1,6080 €, qui entre dans le plafond minimal exact.
+- **Dans le Studio** : `refaireLesLogosEnHdEnVrai` refait les quatre versions d'une planche en vrai déjà faite, chaque
+  appel avec son point de reprise (`brand:envrai:logo-hd-<version>`, `brand:envrai:relecture-logos-hd`, « -r1 » pour la
+  reprise), chaque image reçue gardée comme média, puis refait les logos et la planche. **Aucune porte côté client ne
+  l'appelle encore** : SINA dit seulement « Je peux les refaire en haute définition, je t'annonce le prix avant », et aucun
+  outil ne le propose avec une carte de dépense. La brancher (sur `brand.finish`, comme les produits refaits avec ses
+  photos) demande de décider qui paie le premier tour (le budget du client, avec sa carte, ou le Studio).
+
+Dans le script d'essai, une seule commande pour Écume : `REASSEMBLER=… REPRENDRE=publication-4x5,emballage LOGO_HD=1`,
+dans l'ordre : c) la reprise des cases nommées ; d) les quatre versions du logo (`logosEnHdDeLEssai`, tout à la charge
+du Studio, ce qui part et revient écrit dans `logos-hd/`) ; a) le réassemblage ; puis l'état et le projet mis à jour
+(etat.json, essai.json, le parcours). Un seul plafond pour c) et d), vérifié avant tout appel : sous le plafond minimal
+exact (la somme des maxima, reprises comprises), rien ne part. Devis : `DEVIS_SEULEMENT=1` sur la même commande.
+
+Épreuve ajoutée et scellée : `planche-en-vrai-palette-mesuree-et-logos-en-hd`. Tests :
+`tests/planche-en-vrai-logos-hd-et-palette.test.ts` (l'aperçu réel de B, le vrai logo 10, appels simulés).
