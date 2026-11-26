@@ -345,19 +345,51 @@ exact :
 | `REPRENDRE=publication-4x5,emballage` | 0,3367 € | 0,7904 € |
 | `REPRENDRE=publication-4x5` | 0,1679 € | 0,3974 € |
 | `REPRENDRE=emballage` | 0,1688 € | 0,3930 € |
-| `REPRENDRE=publication-4x5,emballage LOGO_HD=1` (devis seul : l'option du logo n'est pas construite) | 0,6915 € | 1,5944 € |
-| `LOGO_HD=1` seul (devis seul) | 0,3547 € | 0,8040 € |
+| `REPRENDRE=publication-4x5,emballage LOGO_HD=1` (la commande accordée) | 0,6915 € (1,0462 € si tout est refait une fois) | 2,3984 € |
+| `LOGO_HD=1` seul | 0,3547 € (0,7094 € si tout est refait une fois) | 1,6080 € |
+
+Le plafond minimal de `LOGO_HD` compte maintenant la reprise des quatre versions, à la charge du Studio (au plus quatre
+images et une relecture de plus) : 1,6080 € au lieu de 0,8040 €. Le probable ne change pas.
+
+c) + d), la commande accordée par le propriétaire (0,69 € probable, à la charge du Studio), une seule commande qui fait,
+dans l'ordre : la reprise de la publication portrait et de l'emballage ; les quatre petites versions du logo en haute
+définition (compact, icône, favicon, badge ; une reprise des refusées ; refusée deux fois, une version garde son
+agrandissement et SINA le dit) ; le réassemblage ; la mise à jour de l'état et du projet (etat.json, essai.json, le
+parcours). Le script refuse de partir sous le plafond minimal exact, 2,3984 €, sans rien dépenser : avec
+`PLAFOND_ESSAI_EUR=0.69`, rien ne part.
 
 ```
-NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json \
-  PLAFOND_ESSAI_EUR=0.80 REASSEMBLER=data/essai-ecume/4-planche-en-vrai REPRENDRE=publication-4x5,emballage \
+NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt DATA_DIR=data/essai-ecume/studio CLIENT_JSON=scripts/syna-recette/clients/ecume.json PLAFOND_ESSAI_EUR=2.40 \
+  REASSEMBLER=data/essai-ecume/4-planche-en-vrai REPRENDRE=publication-4x5,emballage LOGO_HD=1 \
   node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts data/essai-ecume/4c-reprise \
   data/essai-ecume/3-planches-2/planche-B-gardee.png data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png
 ```
 
+Devis seul, sans appel ni clé : la même commande avec `DEVIS_SEULEMENT=1`. Puis l'écran, gratuit, sur le nouvel état :
+
+```
+DATA_DIR=data/essai-ecume/studio node_modules/.bin/tsx scripts/syna-recette/ecran-planche-en-vrai.mts data/essai-ecume/4c-reprise/etat.json
+```
+
+Ce qu'elle écrit en plus dans `4c-reprise` : `reprise/` (la publication portrait et l'emballage : texte envoyé, images
+jointes, image reçue, verdict) ; `logos-hd/` (pour chaque version et chaque tour : le texte envoyé, la tuile et le logo
+joints, l'image reçue, son reçu ; la demande et le verdict de chaque relecture ; les raisons ; la version gardée, sans
+fond) ; `logos/` (les dix versions, les quatre petites en haute définition quand elles sont gardées). Le rapport dit
+quelles versions sont gardées, refusées deux fois, et posées sur la planche (une version n'y est posée que si elle ne
+change pas visiblement sa case ; sinon la planche garde l'aperçu et la haute définition sert aux fichiers à télécharger).
+
 La reprise de l'emballage a moins de chances : ses deux essais ont été notés 6 et 7 pour de petits textes illisibles
-que l'aperçu porte déjà. Le bloc 01 en haute définition n'est pas construit (probable 0,35 €, au plus 0,80 €, voir
-`PLANCHE-EN-VRAI.md`).
+que l'aperçu porte déjà.
+
+Essayé par Claude le 26 novembre 2026, avec des appels simulés (aucun appel payant ; les réservations passent par le
+Studio, le garde-fou les voit), sur les vrais fichiers d'Écume copiés de la branche des essais (boucle ci-dessous), dans
+une base d'essai neuve : la commande va jusqu'au bout. Dans l'ordre : la reprise des deux cases (deux images, deux
+relectures), les quatre versions (quatre images, une relecture), la reprise du badge refusé au premier tour (une image,
+une relecture), le réassemblage, etat.json et essai.json écrits, le parcours réécrit ; puis l'écran s'ouvre sur ce
+nouvel état. Les images simulées étant l'aperçu agrandi, les quatre versions sont posées sur la planche (0 à 0,4 % des
+points changés) ; avec les vraies images, c'est la mesure qui décidera. Le refus sous le plafond a été essayé avec le
+vrai script (`PLAFOND_ESSAI_EUR=0.69`) : « Le plafond 0,6900 € est sous le plafond minimal exact 2,3984 € […] : rien n'est
+lancé. » Rien n'a été essayé avec les vrais appels.
 
 ### 4b refait : le spécimen mesuré, et l'écran qui suit (26 novembre 2026, gratuit)
 
@@ -433,7 +465,7 @@ la même base (`lancer-agent.mts`, après une construction du Studio si elle n'e
 | 3 ter. Rejugement de A, sans appel | 0 € | 0 € | 0 € |
 | 4. Planche en vrai (faite : 1,28 €) | 1,50 € | 2,78 € | 6,70 € |
 | 4 bis. Réassemblage et rejugement, sans appel | 0 € | 0 € | 0 € |
-| 4 ter. Reprise de la publication portrait et de l'emballage (si accord) | 0,34 € | 0,34 € | 0,79 € |
+| 4 ter. Reprise de la publication portrait et de l'emballage, et les quatre versions du logo en haute définition (accordé, à la charge du Studio) | 0,69 € | 1,05 € | 2,40 € |
 | 5. Écran | 0 € | 0 € | 0 € |
 | **Total** | **2,27 €** | **4,32 €** | **12,87 €** |
 

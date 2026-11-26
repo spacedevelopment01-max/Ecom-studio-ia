@@ -46,9 +46,14 @@
  * gardées, les logos, la marque et la planche réassemblée sont rangés dans le projet de l'essai (essai.json du dossier de
  * l'essai, dans la base DATA_DIR ; s'il n'y est pas, un projet fictif est créé et c'est dit), etat.json et essai.json sont
  * écrits dans le dossier de sortie, le parcours est réécrit : ecran-planche-en-vrai.mts se lance sur ce nouvel etat.json.
- * Sans REPRENDRE, aucun appel ni clé. Devis de c), sans appel : DEVIS_SEULEMENT=1 REPRENDRE=… (même commande) ; avec
- * LOGO_HD=1, le devis compte aussi les quatre petites versions du logo en haute définition (option pas encore construite :
- * sans DEVIS_SEULEMENT, LOGO_HD=1 ne lance rien).
+ * d) avec LOGO_HD=1 et PLAFOND_ESSAI_EUR, les quatre petites versions du logo reprises de l'aperçu (compact, icône, favicon,
+ * badge) sont refaites en haute définition, à la charge du Studio (`refaireLesLogosEnHdDeLaPlanche`) : chacune à partir de
+ * sa tuile, logo officiel joint, relues en un appel, une reprise des refusées ; une refusée deux fois garde son
+ * agrandissement, et SINA le dit. Leurs fichiers remplacent les agrandissements (logos/, zip) ; sur la planche, chacune
+ * n'est posée que si elle ne change pas visiblement sa case. Ordre : c), d), puis a) et l'enregistrement.
+ * Un seul plafond pour c) et d), vérifié avant tout appel : sous le plafond minimal exact (somme des maxima, reprises
+ * comprises), rien ne part. Sans REPRENDRE ni LOGO_HD, aucun appel ni clé. Devis de c) et d), sans appel :
+ * DEVIS_SEULEMENT=1 REPRENDRE=… LOGO_HD=1 (même commande).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -70,20 +75,25 @@ import path from "node:path";
   const logoHd = process.env.LOGO_HD === "1";
   if (devisSeul && (process.env.REASSEMBLER || reprendre.length || logoHd)) { const { devisDuReassemblage } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuReassemblage(reprendre, { logoHd })).join("\n")); process.exit(0); }
   if (devisSeul) { console.log(devisEnTexteEnVrai(await devisDeLEssaiEnVrai()).join("\n")); process.exit(0); }
-  if (logoHd) { console.error("LOGO_HD : les quatre petites versions du logo en haute définition ne sont pas encore construites ; rien n'est lancé (devis seul : DEVIS_SEULEMENT=1)."); process.exit(1); }
+  if (logoHd && !process.env.REASSEMBLER) { console.error("LOGO_HD ne vaut qu'avec REASSEMBLER (un essai de la planche en vrai déjà fait) : rien n'est lancé."); process.exit(1); }
   if (process.env.REASSEMBLER) {
     const { reassemblerLEssaiEnVrai } = await import("./essai-planche-en-vrai-outil");
     const [sortie0, planche0, logo0] = process.argv.slice(2);
     if (!sortie0 || !planche0 || !logo0) { console.error("Il faut le dossier de sortie, la planche choisie (PNG) puis le logo fini (PNG)."); process.exit(1); }
-    if (reprendre.length) {
+    if (reprendre.length || logoHd) {
       if (!process.env.PLAFOND_ESSAI_EUR) { console.error("PLAFOND_ESSAI_EUR manquant pour la reprise : rien n'est lancé."); process.exit(1); }
+      const { chiffresDuReassemblage } = await import("./essai-planche-en-vrai-outil");
+      const c = await chiffresDuReassemblage(reprendre, { logoHd });
+      const plafond = Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000);
+      if (!(plafond >= c.maxMicro)) { console.error(`Le plafond ${euros(Number.isFinite(plafond) ? plafond : 0)} est sous le plafond minimal exact ${euros(c.maxMicro)} (somme des maxima, reprises comprises ; probable ${euros(c.probableMicro)}) : rien n'est lancé.`); process.exit(1); }
       if (!process.env.STUDIO_ANTHROPIC_KEY) { console.error("STUDIO_ANTHROPIC_KEY absente : la relecture de la reprise ne peut pas être faite. Rien n'est lancé."); process.exit(1); }
       const { setSetting } = await import("../../src/lib/settings");
       setSetting("provider.anthropic.apiKey", process.env.STUDIO_ANTHROPIC_KEY.trim(), true);
     }
     try {
-      const r = await reassemblerLEssaiEnVrai({ dossier: path.resolve(process.env.REASSEMBLER), sortie: path.resolve(sortie0), planche: path.resolve(planche0), logo: path.resolve(logo0), reprendre, plafondEuros: process.env.PLAFOND_ESSAI_EUR });
+      const r = await reassemblerLEssaiEnVrai({ dossier: path.resolve(process.env.REASSEMBLER), sortie: path.resolve(sortie0), planche: path.resolve(planche0), logo: path.resolve(logo0), reprendre, plafondEuros: process.env.PLAFOND_ESSAI_EUR, logoHd });
       console.log(`${r.gardees} image(s) gardée(s) sur 17 ; planche réassemblée : ${path.join(path.resolve(sortie0), r.planche)} ; comparaison : ${path.join(path.resolve(sortie0), r.comparaison)}${r.reprise ? ` ; reprise : dépense comptée ${euros(r.reprise.depenseMicro)}` : ""}`);
+      if (r.logosEnHd) console.log(`Logos en haute définition : gardés ${r.logosEnHd.gardees.join(", ") || "aucun"} ; refusés deux fois ${r.logosEnHd.refusees.join(", ") || "aucun"} ; posés sur la planche ${r.logosEnHd.surLaPlanche.join(", ") || "aucun"} ; dépense comptée ${euros(r.logosEnHd.depenseMicro)}`);
       console.log(`État et projet mis à jour : ${path.join(path.resolve(sortie0), r.etat)} (projet ${r.projectId}${r.projetCree ? ", créé dans cette base" : ""}) ; pour l'écran : DATA_DIR=… node_modules/.bin/tsx scripts/syna-recette/ecran-planche-en-vrai.mts ${path.join(sortie0, r.etat)}`);
       if (r.arret) { console.log(`Arrêt de la reprise : ${r.arret}`); process.exit(2); }
     } catch (e) { console.error((e as Error).message); process.exit(1); }

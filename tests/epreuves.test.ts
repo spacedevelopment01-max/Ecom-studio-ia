@@ -2185,3 +2185,64 @@ describe("l'épreuve du spécimen mesuré et de l'écran qui suit le réassembla
     for (const f of ["rangerLesImages(", "rangerLesLogos(", "marqueRelueSurLaPlanche(", "publicationsDeLaPlanche("]) expect(src.split(f).length, f).toBeGreaterThanOrEqual(4);
   });
 });
+
+describe("l'épreuve de la palette mesurée et des quatre petites versions du logo en haute définition (essai d'Écume, 26 novembre 2026, aucun appel)", async () => {
+  const V = await import("@/lib/syna-agent/planche-en-vrai");
+  const C = await import("@/lib/syna-agent/planche-en-vrai-code");
+  const T = await import("@/lib/syna-agent/planche-en-vrai-tache");
+  const Fx = "tests/fixtures/ecume-planche-en-vrai";
+
+  epreuve("planche-en-vrai-palette-mesuree-et-logos-en-hd", async () => {
+    const demo = fs.readFileSync(`${Fx}/planche-B-gardee.jpg`), cases = V.lesCases("standard");
+    const inv = V.InventaireSchema.parse(JSON.parse(fs.readFileSync(`${Fx}/inventaire-reponse.json`, "utf8")));
+    // 1. La palette, sur l'aperçu réel de B : chaque ligne au moins aussi contrastée, à sa hauteur à ±15 %.
+    const pol = (cle: string, famille: string, poids: number) => ({ cle, famille, fichier: "", poids, handle: `${cle}_n${String(poids)[0]}`, lue: famille, remplacee: false });
+    const palette = ["#C44912", "#D97A52", "#F6E8DA", "#A7B89B", "#8C6F4E"].map((hex, i) => ({ hex, nom: inv.couleurs[i].nom, mots: inv.couleurs[i].mots }));
+    const png = await C.assemblerLaPlanche({ demo, boites: new Map([["palette", cases.cases.palette]]), pastilles: cases.pastilles, images: new Map(), versions: {} as never, palette,
+      polices: { titres: pol("poppins", "Poppins", 700), textes: pol("sacramento", "Sacramento", 400) }, signature: [], titres: new Map(), blocs: new Map(), encre: "#1C2A24", motsLus: T.lignesDesMotsLues(inv) });
+    const lum = (hx: string) => { const c = C.rgbDe(hx).map((v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+    const contraste = (a: string, b: string) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+    const lignes = async (p: Buffer, k: number) => {
+      const { data, info } = await sharp(p).removeAlpha().raw().toBuffer({ resolveWithObject: true }), b = cases.cases.palette.map((v) => v * k) as import("@/lib/syna-agent/planche-en-vrai").Boite, fond = C.fondDe(data, info.width, b);
+      return { fond, l: C.lignesSousLesPastilles(data, info.width, b, cases.pastilles.map(([x, y, r]) => [x * k, y * k, r * k] as [number, number, number]), fond) };
+    };
+    const a = await lignes(demo, 1), b = await lignes(png, 2);
+    for (let i = 0; i < 5; i++) {
+      expect(b.l[i]?.length, `pastille ${i + 1}`).toBe(a.l[i]?.length);
+      for (let k = 0; k < a.l[i]!.length; k++) {
+        const x = a.l[i]![k], y = b.l[i]![k];
+        expect(contraste(y.couleur, b.fond), `${i}:${k}`).toBeGreaterThanOrEqual(contraste(x.couleur, a.fond) * 0.98);
+        expect(Math.abs((y.bas - y.haut) / 2 - (x.bas - x.haut)) / (x.bas - x.haut), `${i}:${k}`).toBeLessThanOrEqual(0.15);
+      }
+    }
+    // 2. Les quatre versions en haute définition : le texte, les jointes et la taille ; le relecteur ; la reprise ; le repli.
+    expect(V.texteDuLogoEnHd({ version: "badge", nom: "Écume", personnes: false })).toBe(`${V.REGLE_APERCU} ${V.regleDuLogo("Écume")} C'est le badge rond. ${V.SANS_PERSONNE_EN_VRAI}`);
+    expect(V.TAILLE_DES_LOGOS_EN_HD).toBe("1088x1088");
+    expect(V.demandeDuLogoEnHd({ version: "icone", nom: "Écume", personnes: false, tuile: Buffer.from("t"), logo: Buffer.from("l") }).jointes.map((j) => j.role)).toEqual(["apercu", "logo"]);
+    const ok = { version: "badge", memeForme: true, memesLettres: true, texteCirculaire: "illisible-sur-l-apercu" as const, textesDeLApercu: [], textesLus: [], memesCouleurs: true, ajout: false, texteCoupe: false, note: 8, pourquoi: "" };
+    expect(V.raisonsDuRefusDuLogoEnHd(ok)).toEqual([]);
+    expect(V.raisonsDuRefusDuLogoEnHd({ ...ok, texteCirculaire: "different" })).toEqual(["son texte circulaire n'est pas celui de l'aperçu"]);
+    expect(V.raisonsDuRefusDuLogoEnHd({ ...ok, ajout: true, memesCouleurs: false })).toEqual(["ses couleurs ne sont pas celles de l'aperçu", "quelque chose a été ajouté qui n'est pas sur l'aperçu"]);
+    const tuiles = (await V.decouperLesApercus(demo, "standard")).apercus, tours: number[] = [];
+    const res = await V.refaireLesLogosEnHd({
+      refaire: async (d, tour) => { tours.push(tour); return sharp(d.jointes[0].data).resize(1088, 1088, { fit: "contain", background: "#F8F7F2" }).png().toBuffer(); },
+      relire: async (items, _d, tour) => ({ versions: items.map((it) => ({ ...ok, version: it.version, note: tour === 1 && it.version === "badge" ? 7 : 9 })) }),
+      aLaChargeDuStudio: (fn) => fn(), sansFond: T.sansFondDuLogoEnHd,
+    }, { nom: "Écume", personnes: false, logo: Buffer.alloc(0), tuiles });
+    expect(tours).toEqual([1, 1, 1, 1, 2]);
+    expect([...res.values()].every((r) => r.ok)).toBe(true);
+    const { runWithLang } = await import("@/lib/i18n-server");
+    expect(runWithLang({ ui: "fr", content: "fr" }, () => V.phraseDesLogosEnHdRefuses(["badge"]))).toBe("J'ai refait en haute définition le badge, mais cette version n'a pas passé ma relecture, même refaite : elle n'est pas identique à ta planche choisie. Je garde donc celle de ta planche, agrandie, telle que tu l'as vue.");
+    // Sur la planche : une version fidèle prend sa case.
+    const { data, info } = await sharp(demo).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    expect((await C.caseDuLogoEnHd(data, info.width, cases.cases["logo-5"], res.get("icone")!.png!)).garde).toBe(true);
+    // Le devis : la reprise des quatre dans le plafond minimal ; le script les enchaîne et refuse sous le plafond minimal.
+    const d = T.devisDesLogosEnHd();
+    expect(d.maxMicro).toBe(2 * d.repriseMicro);
+    const src = fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai.mts", "utf8") + fs.readFileSync("scripts/syna-recette/essai-planche-en-vrai-outil.ts", "utf8");
+    expect(src).toContain("T.refaireLesLogosEnHdDeLaPlanche(");
+    expect(src).toContain("est sous le plafond minimal exact");
+    expect(src.indexOf("const r = await repriseDesCases(")).toBeLessThan(src.indexOf("const r = await logosEnHdDeLEssai("));
+    expect(src.indexOf("const r = await logosEnHdDeLEssai(")).toBeLessThan(src.indexOf("const code = await T.plancheEnVraiParLeCode("));
+  });
+});

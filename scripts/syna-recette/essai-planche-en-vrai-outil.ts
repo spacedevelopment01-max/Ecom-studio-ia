@@ -7,8 +7,8 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import type { PlancheEnVraiAi } from "../../src/lib/syna-agent/planche-en-vrai-tache";
-import type { EtatPlancheEnVrai, Inventaire, Laquelle, NomElement, RelectureDuGroupe } from "../../src/lib/syna-agent/planche-en-vrai";
+import type { LogosEnHdAi, PlancheEnVraiAi } from "../../src/lib/syna-agent/planche-en-vrai-tache";
+import type { EtatPlancheEnVrai, Inventaire, Laquelle, NomElement, RelectureDuGroupe, VersionEnHd } from "../../src/lib/syna-agent/planche-en-vrai";
 import type { StatutDuDomaine } from "../../src/lib/syna-agent/planche-de-marque";
 import type { NameDomains } from "../../src/lib/syna-agent/brand-domains";
 import { clientDeLEssai, euros, ficheDuClient, typeDuProjet, type ClientDeLEssai } from "./client-de-l-essai";
@@ -549,21 +549,28 @@ export type ResultatDuReassemblage = {
   cases: RejugementDeCase[]; gardees: number; planche: string; comparaison: string;
   palette: { hex: string; nom: string }[]; logosDeLApercu: string[];
   reprise?: { elements: NomElement[]; devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: NomElement[] };
+  /** Les quatre petites versions du logo refaites en haute définition (LOGO_HD) : gardées, refusées deux fois, posées sur la planche. */
+  logosEnHd?: { versions: VersionEnHd[]; devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: VersionEnHd[]; refusees: VersionEnHd[]; surLaPlanche: string[] };
   arret?: string; notes: string[];
   /** Le projet de la base d'essai où le réassemblage est enregistré, son fil, l'etat.json écrit (relu par l'écran). */
   projectId: string; conversationId: string; etat: string; projetCree: boolean;
 };
-/** Le devis de la reprise de quelques cases (aucun appel), avec le plafond minimal exact. */
-export async function devisDuReassemblage(elements: readonly NomElement[], o: { logoHd?: boolean } = {}): Promise<string[]> {
+/** Le devis chiffré du réassemblage (aucun appel) : la reprise des cases, l'option des logos en haute définition, le total. */
+export async function chiffresDuReassemblage(elements: readonly NomElement[], o: { logoHd?: boolean } = {}) {
   const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
-  const d = elements.length ? T.devisDUneReprise(elements) : { maxMicro: 0, probableMicro: 0, images: 0, relectures: 0 }, l = T.devisDesLogosEnHd();
+  const d = elements.length ? T.devisDUneReprise(elements) : { maxMicro: 0, probableMicro: 0, images: 0, relectures: 0 }, l = o.logoHd ? T.devisDesLogosEnHd() : null;
+  return { reprise: d, logos: l, maxMicro: d.maxMicro + (l?.maxMicro ?? 0), probableMicro: d.probableMicro + (l?.probableMicro ?? 0), siToutEstRefaitMicro: d.probableMicro + (l?.siToutEstRefaitMicro ?? 0) };
+}
+/** Le devis de la reprise de quelques cases et des logos en haute définition (aucun appel), avec le plafond minimal exact. */
+export async function devisDuReassemblage(elements: readonly NomElement[], o: { logoHd?: boolean } = {}): Promise<string[]> {
+  const c = await chiffresDuReassemblage(elements, o), d = c.reprise, l = c.logos;
   return [
-    "Devis du réassemblage (fonctions du devis du Studio, aucun appel) :",
+    "Devis du réassemblage (fonctions du devis du Studio, aucun appel ; tout à la charge du Studio) :",
     "- a) réassemblage par le code : 0 € ; b) rejugement des images de l'essai : 0 €",
-    `- c) reprise à la charge du Studio de ${elements.join(", ") || "aucune case"} : ${d.images} image(s), ${d.relectures} relecture(s) ; probable ${euros(d.probableMicro)}, au plus ${euros(d.maxMicro)}`,
-    ...(o.logoHd ? [`- option LOGO_HD (pas encore construite : rien ne part) : les quatre petites versions du logo en haute définition, ${l.images} images, ${l.relectures} relecture ; probable ${euros(l.probableMicro)}, au plus ${euros(l.maxMicro)}`] : []),
-    `Plafond minimal exact pour la reprise (somme des maxima) : ${euros(d.maxMicro + (o.logoHd ? l.maxMicro : 0))}`,
-    `Probable en tout : ${euros(d.probableMicro + (o.logoHd ? l.probableMicro : 0))}`,
+    `- c) reprise de ${elements.join(", ") || "aucune case"} : ${d.images} image(s), ${d.relectures} relecture(s) ; probable ${euros(d.probableMicro)}, au plus ${euros(d.maxMicro)}`,
+    ...(l ? [`- d) LOGO_HD, les quatre petites versions du logo en haute définition (compact, icône, favicon, badge) : ${l.images} images et ${l.relectures} relecture, puis une reprise des refusées (au plus ${l.images} images et ${l.relectures} relecture) ; probable ${euros(l.probableMicro)} (si tout est refait une fois : ${euros(l.siToutEstRefaitMicro)}), au plus ${euros(l.maxMicro)}`] : []),
+    `Plafond minimal exact pour la reprise${l ? " et les logos" : ""} (somme des maxima, reprises comprises) : ${euros(c.maxMicro)}`,
+    `Probable en tout : ${euros(c.probableMicro)}${l ? ` (si tout est refait une fois : ${euros(c.siToutEstRefaitMicro)})` : ""}`,
   ];
 }
 
@@ -581,7 +588,11 @@ export async function devisDuReassemblage(elements: readonly NomElement[], o: { 
  *     de l'essai.
  * Rien n'est relancé tout seul ; une panne arrête la reprise et le réassemblage se fait sans elle.
  */
-export async function reassemblerLEssaiEnVrai(o: { dossier: string; sortie: string; planche: string; logo: string; reprendre?: NomElement[]; plafondEuros?: string; ai?: (q: Qui) => PlancheEnVraiAi }): Promise<ResultatDuReassemblage> {
+export async function reassemblerLEssaiEnVrai(o: {
+  dossier: string; sortie: string; planche: string; logo: string; reprendre?: NomElement[]; plafondEuros?: string; ai?: (q: Qui) => PlancheEnVraiAi;
+  /** d) Les quatre petites versions du logo en haute définition, à la charge du Studio (LOGO_HD=1). */
+  logoHd?: boolean; aiLogos?: (q: Qui) => LogosEnHdAi;
+}): Promise<ResultatDuReassemblage> {
   const sharp = (await import("sharp")).default;
   const P = await import("../../src/lib/syna-agent/planche-en-vrai");
   const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
@@ -627,19 +638,42 @@ export async function reassemblerLEssaiEnVrai(o: { dossier: string; sortie: stri
   const det2 = await logoDetoure(logoFini, palette0.dark), logo = det2.ok ? det2.png : logoFini;
   const route = { key: "A", name: nom, slogan: donnees.phrase, palette: palette0, board: { planche: { image: { id: "", w: 1536, h: 2304 }, logo: "", domaine: donnees.domaine, statut: donnees.statut, annee: donnees.annee, essais: 1, at: 0, ...(donnees.finitions?.length ? { finitions: donnees.finitions } : {}) } } } as unknown as import("../../src/lib/syna-agent/brand-routes").Route;
 
-  // c) La reprise, seulement si elle est demandée, pour les cases encore refusées.
-  let reprise: ResultatDuReassemblage["reprise"], arret: string | undefined;
+  // c) La reprise, seulement si elle est demandée, pour les cases encore refusées ; d) les quatre petites versions du logo en
+  // haute définition, seulement avec LOGO_HD. Un seul plafond pour les deux, vérifié avant tout appel : sous le plafond
+  // minimal exact (la somme des maxima, reprises comprises), rien ne part.
+  let reprise: ResultatDuReassemblage["reprise"], logosEnHd: ResultatDuReassemblage["logosEnHd"], arret: string | undefined;
   const aReprendre = (o.reprendre ?? []).filter((n) => !images.has(n) && cases.find((c) => c.element === n)?.essais.length);
+  const { separerSymbole } = await import("../../src/lib/syna-agent/planche-en-vrai-code");
+  const separation = await separerSymbole(logo);
+  // Les versions reprises de l'aperçu (sans symbole séparable) : ce sont elles que LOGO_HD refait.
+  const versionsHd = o.logoHd && !separation.fiable ? P.VERSIONS_EN_HD.filter((v) => decoupe.apercus.has(P.LOGOS_EN_HD[v].tuile)) : [];
+  if (aReprendre.length || versionsHd.length) {
+    const maxMicro = (aReprendre.length ? T.devisDUneReprise(aReprendre).maxMicro : 0) + (versionsHd.length ? T.devisDesLogosEnHd(versionsHd.length).maxMicro : 0);
+    const plafond = Number(String(o.plafondEuros ?? "").replace(",", "."));
+    if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible pour la reprise : rien n'est lancé.");
+    if (Math.floor(plafond * 1_000_000) < maxMicro) throw new Error(`Le plafond ${euros(Math.floor(plafond * 1_000_000))} est sous le plafond minimal exact ${euros(maxMicro)} (somme des maxima, reprises comprises) : rien n'est lancé.`);
+    // Le garde-fou de l'essai : un seul plafond, un seul début, pour la reprise et les logos.
+    process.env.STUDIO_ESSAI_PLAFOND_EUROS = String(plafond);
+    process.env.STUDIO_ESSAI_DEBUT = String(Date.now());
+  }
   if (aReprendre.length) {
-    const { separerSymbole } = await import("../../src/lib/syna-agent/planche-en-vrai-code");
-    const r = await repriseDesCases({ client, inventaire, decoupe, logo, separation: await separerSymbole(logo), nom, personnes, elements: aReprendre, raisons: new Map(aReprendre.map((n) => [n, cases.find((c) => c.element === n)!.essais.at(-1)!.raisonsApres])), debordes: cases.filter((c) => c.deborde).map((c) => c.element), plafondEuros: o.plafondEuros, ai: o.ai, ecrire });
+    const r = await repriseDesCases({ client, inventaire, decoupe, logo, separation, nom, personnes, elements: aReprendre, raisons: new Map(aReprendre.map((n) => [n, cases.find((c) => c.element === n)!.essais.at(-1)!.raisonsApres])), debordes: cases.filter((c) => c.deborde).map((c) => c.element), ai: o.ai, ecrire });
     reprise = { elements: aReprendre, devis: r.devis, depenseMicro: r.depenseMicro, gardees: [...r.gardees.keys()] };
     arret = r.arret;
     for (const [n, p] of r.gardees) { images.set(n, p); cases.find((c) => c.element === n)!.gardee = "reprise"; ecrire(`cases/${n}-gardee-hd.png`, p); }
   }
+  const gardesHd = new Map<VersionEnHd, Buffer>(), refusesHd: VersionEnHd[] = [];
+  if (versionsHd.length && !arret) {
+    const r = await logosEnHdDeLEssai({ client, decoupe, logo, nom, personnes, versions: versionsHd, aiLogos: o.aiLogos, ecrire });
+    for (const [v, p] of r.gardees) gardesHd.set(v, p);
+    refusesHd.push(...versionsHd.filter((v) => !r.gardees.has(v) && r.tentees.includes(v)));
+    logosEnHd = { versions: versionsHd, devis: r.devis, depenseMicro: r.depenseMicro, gardees: [...r.gardees.keys()], refusees: refusesHd, surLaPlanche: [] };
+    arret = r.arret;
+  }
 
   // a) Le code seul, puis l'assemblage.
-  const code = await T.plancheEnVraiParLeCode({ demo, laquelle, inventaire, route, logo, images, phrase: donnees.phrase });
+  const code = await T.plancheEnVraiParLeCode({ demo, laquelle, inventaire, route, logo, images, phrase: donnees.phrase, ...(versionsHd.length ? { logosEnHd: { gardes: gardesHd, refuses: refusesHd } } : {}) });
+  if (logosEnHd) logosEnHd.surLaPlanche = code.surLaPlancheEnHd;
   for (const [k, b] of Object.entries(code.versions)) ecrire(`logos/${k}.png`, b);
   ecrire("palette.json", `${JSON.stringify({ couleurs: code.palette, roles: code.roles }, null, 2)}\n`);
   ecrire("polices.json", `${JSON.stringify(code.polices, null, 2)}\n`);
@@ -658,7 +692,7 @@ export async function reassemblerLEssaiEnVrai(o: { dossier: string; sortie: stri
   // par la fonction du Studio (`enregistrerLaPlancheReassemblee`) ; etat.json et essai.json écrits dans le dossier de
   // sortie ; le parcours du projet réécrit : l'onglet Marque montre la planche réassemblée et ses images gardées.
   const enregistre = await enregistrerLeReassemblage({ dossier: o.dossier, sortie: o.sortie, client, donnees, demo, logoFini, inventaire, code, cases, images, ecrire });
-  const res: ResultatDuReassemblage = { cases, gardees: images.size, planche: "planche-en-vrai.png", comparaison: "comparaison-apercu-et-reassemblee.jpg", palette: code.palette.map((p) => ({ hex: p.hex, nom: p.nom })), logosDeLApercu: code.depuisLApercu, ...(reprise ? { reprise } : {}), ...(arret ? { arret } : {}), notes: code.notes, ...enregistre };
+  const res: ResultatDuReassemblage = { cases, gardees: images.size, planche: "planche-en-vrai.png", comparaison: "comparaison-apercu-et-reassemblee.jpg", palette: code.palette.map((p) => ({ hex: p.hex, nom: p.nom })), logosDeLApercu: code.depuisLApercu, ...(reprise ? { reprise } : {}), ...(logosEnHd ? { logosEnHd } : {}), ...(arret ? { arret } : {}), notes: code.notes, ...enregistre };
   ecrire("rejugement.json", `${JSON.stringify(res, null, 2)}\n`);
   const lignes = [
     `Réassemblage de la planche en vrai de « ${nom} » à partir de l'essai ${o.dossier} (aucun appel pour a) et b))`,
@@ -667,7 +701,8 @@ export async function reassemblerLEssaiEnVrai(o: { dossier: string; sortie: stri
     `Logos repris de l'aperçu : ${code.depuisLApercu.join(", ") || "aucun"} ; séparation du symbole ${code.separation.fiable ? "fiable" : `non fiable (${code.separation.raison})`}`,
     `Palette : ${code.palette.map((p) => `${p.hex} ${p.nom}`).join(" ; ")}`,
     ...(reprise ? [`Reprise : ${reprise.elements.join(", ")} ; devis probable ${euros(reprise.devis.probableMicro)}, au plus ${euros(reprise.devis.maxMicro)} ; dépense comptée ${euros(reprise.depenseMicro)} ; gardées : ${reprise.gardees.join(", ") || "aucune"}`] : []),
-    ...(arret ? [`ARRÊT de la reprise : ${arret}`] : []),
+    ...(logosEnHd ? [`Logos en haute définition : ${logosEnHd.versions.join(", ")} ; devis probable ${euros(logosEnHd.devis.probableMicro)}, au plus ${euros(logosEnHd.devis.maxMicro)} ; dépense comptée ${euros(logosEnHd.depenseMicro)} ; gardées : ${logosEnHd.gardees.join(", ") || "aucune"} ; refusées deux fois (l'agrandissement de l'aperçu reste) : ${logosEnHd.refusees.join(", ") || "aucune"} ; posées sur la planche : ${logosEnHd.surLaPlanche.join(", ") || "aucune (la planche garde l'aperçu, la haute définition sert aux fichiers)"}`] : []),
+    ...(arret ? [`ARRÊT : ${arret}`] : []),
     `État et projet mis à jour : etat.json et essai.json (projet ${enregistre.projectId}${enregistre.projetCree ? ", créé dans cette base : celui de l'essai n'y était pas" : ""}) ; l'onglet Marque montre la planche réassemblée et ses ${images.size} images gardées`,
     ...code.notes.map((n) => `  note : ${n}`),
   ];
@@ -734,7 +769,7 @@ async function enregistrerLeReassemblage(o: {
 async function repriseDesCases(o: {
   client: ClientDeLEssai; inventaire: Inventaire; decoupe: import("../../src/lib/syna-agent/planche-en-vrai").Decoupe; logo: Buffer;
   separation: import("../../src/lib/syna-agent/planche-en-vrai-code").Separation; nom: string; personnes: boolean; elements: NomElement[];
-  raisons: Map<NomElement, string[]>; debordes: string[]; plafondEuros?: string; ai?: (q: Qui) => PlancheEnVraiAi; ecrire: (f: string, c: string | Buffer) => string;
+  raisons: Map<NomElement, string[]>; debordes: string[]; ai?: (q: Qui) => PlancheEnVraiAi; ecrire: (f: string, c: string | Buffer) => string;
 }): Promise<{ devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: Map<NomElement, Buffer>; arret?: string }> {
   const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
   const { id } = await import("../../src/lib/db");
@@ -743,12 +778,8 @@ async function repriseDesCases(o: {
   const { PlafondDeLEssaiAtteint } = await import("../../src/lib/ai/plafond-essai");
   const { runForUser } = await import("../../src/lib/ai/access");
   const { runWithLang } = await import("../../src/lib/i18n-server");
+  // Le plafond de l'essai est vérifié et posé par l'appelant (`reassemblerLEssaiEnVrai`), une seule fois.
   const devis = T.devisDUneReprise(o.elements);
-  const plafond = Number(String(o.plafondEuros ?? "").replace(",", "."));
-  if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible pour la reprise : rien n'est lancé.");
-  if (Math.floor(plafond * 1_000_000) < devis.maxMicro) throw new Error(`Le plafond ${euros(Math.floor(plafond * 1_000_000))} est sous le plafond minimal de la reprise ${euros(devis.maxMicro)} : rien n'est lancé.`);
-  process.env.STUDIO_ESSAI_PLAFOND_EUROS = String(plafond);
-  process.env.STUDIO_ESSAI_DEBUT = String(Date.now());
   const u = await account();
   const projectId = project(u, typeDuProjet(o.client)) as string;
   const jobId = `reassemblage-en-vrai-${id()}`, qui: Qui = { userId: u.id, projectId, jobId };
@@ -782,4 +813,61 @@ async function repriseDesCases(o: {
     }
   })));
   return { devis, depenseMicro: depensesDeLaTache(jobId).total, gardees, ...(arret ? { arret } : {}) };
+}
+
+/**
+ * d) LES QUATRE PETITES VERSIONS DU LOGO EN HAUTE DÉFINITION, à la charge du Studio (LOGO_HD=1), par la fonction du Studio
+ * (`refaireLesLogosEnHdDeLaPlanche`) : chacune refaite à partir de sa tuile de l'aperçu, logo officiel joint, relues en un
+ * appel, une reprise des refusées ; sous la borne `devisDesLogosEnHd` et le plafond de l'essai (posé par l'appelant). Ce qui
+ * part et ce qui revient est écrit tout de suite dans logos-hd/ (un arrêt ne perd rien). Une panne arrête, jamais relancée.
+ */
+async function logosEnHdDeLEssai(o: {
+  client: ClientDeLEssai; decoupe: import("../../src/lib/syna-agent/planche-en-vrai").Decoupe; logo: Buffer; nom: string; personnes: boolean;
+  versions: VersionEnHd[]; aiLogos?: (q: Qui) => LogosEnHdAi; ecrire: (f: string, c: string | Buffer) => string;
+}): Promise<{ devis: { maxMicro: number; probableMicro: number }; depenseMicro: number; gardees: Map<VersionEnHd, Buffer>; tentees: VersionEnHd[]; arret?: string }> {
+  const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
+  const { id } = await import("../../src/lib/db");
+  const { account, project } = await import("../../tests/conversation209-fixtures");
+  const { CostCapReached, depensesDeLaTache, withTrace } = await import("../../src/lib/ai/trace");
+  const { PlafondDeLEssaiAtteint } = await import("../../src/lib/ai/plafond-essai");
+  const { runForUser } = await import("../../src/lib/ai/access");
+  const { runWithLang } = await import("../../src/lib/i18n-server");
+  const { aLaChargeDuStudio } = await import("../../src/lib/billing");
+  const devis = T.devisDesLogosEnHd(o.versions.length);
+  const u = await account();
+  const projectId = project(u, typeDuProjet(o.client)) as string;
+  const jobId = `logos-hd-en-vrai-${id()}`, qui: Qui = { userId: u.id, projectId, jobId };
+  const brut = o.aiLogos ? o.aiLogos(qui) : T.vraisAppelsDesLogosEnHd(qui);
+  const ai: LogosEnHdAi = {
+    refaire: async (d, cle) => {
+      o.ecrire(`logos-hd/${cle}-texte-envoye.txt`, d.texte);
+      d.jointes.forEach((j, i) => o.ecrire(`logos-hd/${cle}-jointe-${i + 1}-${j.role}.png`, j.data));
+      const r = await brut.refaire(d, cle);
+      o.ecrire(`logos-hd/${cle}-recue.png`, r.png);
+      if (r.recu) o.ecrire(`logos-hd/${cle}-recu.json`, `${JSON.stringify(r.recu, null, 2)}\n`);
+      return r;
+    },
+    relire: async (images, demande, cle) => {
+      o.ecrire(`logos-hd/${cle}-demande.txt`, demande);
+      const v = await brut.relire(images, demande, cle);
+      o.ecrire(`logos-hd/${cle}-verdict.json`, `${JSON.stringify(v, null, 2)}\n`);
+      return v;
+    },
+  };
+  const gardees = new Map<VersionEnHd, Buffer>(), tentees: VersionEnHd[] = [];
+  let arret: string | undefined;
+  await runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: 0, studioCapMicro: devis.maxMicro }, async () => {
+    try {
+      // Tout à la charge du Studio (accord du propriétaire pour l'essai d'Écume) : le premier tour comme la reprise.
+      const res = await aLaChargeDuStudio(() => T.refaireLesLogosEnHdDeLaPlanche({ ai, nom: o.nom, personnes: o.personnes, logo: o.logo, tuiles: o.decoupe.apercus, versions: o.versions }));
+      for (const [v, r] of res) {
+        tentees.push(v);
+        o.ecrire(`logos-hd/${v}-raisons.json`, `${JSON.stringify(r.essais.map((e) => ({ tour: e.tour, raisons: e.raisons })), null, 2)}\n`);
+        if (r.ok && r.png) { gardees.set(v, r.png); o.ecrire(`logos-hd/${v}-gardee-sans-fond.png`, r.png); }
+      }
+    } catch (e) {
+      arret = e instanceof PlafondDeLEssaiAtteint ? `le garde-fou de l'essai a refusé un appel : ${e.message}` : e instanceof CostCapReached ? `la borne du Studio a refusé un appel : ${e.message}` : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
+    }
+  })));
+  return { devis, depenseMicro: depensesDeLaTache(jobId).total, gardees, tentees, ...(arret ? { arret } : {}) };
 }

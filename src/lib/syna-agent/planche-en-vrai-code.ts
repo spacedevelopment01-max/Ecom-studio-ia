@@ -192,6 +192,69 @@ export const VERSIONS_DE_L_APERCU = ["logo-compact", "icone", "favicon", "badge"
 type VersionDuLogoPre = "logo-compact" | "icone" | "favicon" | "badge";
 export const TUILE_DE_LA_VERSION: Record<VersionDuLogoPre, string> = { "logo-compact": "logo-4", icone: "logo-5", favicon: "logo-6", badge: "logo-10" };
 
+/**
+ * UNE VERSION EN HAUTE DÉFINITION SUR LA PLANCHE (26 novembre 2026) : la planche en vrai reste identique à l'aperçu. La
+ * version refaite (fond retiré) est posée dans sa tuile comme le dessin de l'aperçu : sur le fond de la tuile sans son encre
+ * (`fondSansEncre`), la boîte de son encre (même critère, `estEncre` à 60 niveaux, sur le fond de la tuile) calée sur celle
+ * de l'aperçu. Puis la tuile composée, ramenée à la taille de l'aperçu, est comparée à l'aperçu (les deux adoucis d'un
+ * flou de 0,8 pixel, pour ne pas compter le grain ni l'adoucissement des bords) : un point changé l'est de plus de
+ * SEUIL_DE_LA_CASE_EN_HD.niveaux sur un canal. La version n'est gardée sur la planche que si ses proportions sont celles
+ * de l'encre de l'aperçu (à 8 % près) et que la part de points changés ne dépasse pas SEUIL_DE_LA_CASE_EN_HD.part ;
+ * sinon la tuile garde l'aperçu agrandi, et la haute définition ne sert qu'aux fichiers à télécharger. Pourquoi : à la
+ * taille de la planche, l'aperçu agrandi deux fois est déjà net ; une version refaite qui changerait la case (un dessin
+ * déplacé, agrandi, d'une autre couleur) se verrait davantage que le gain de netteté.
+ */
+export const SEUIL_DE_LA_CASE_EN_HD = { niveaux: 48, part: 0.05, proportions: 0.08 } as const;
+export async function caseDuLogoEnHd(d0: Buffer, W: number, t: Boite, hd: Buffer): Promise<{ png: Buffer; part: number; garde: boolean; raison: string | null }> {
+  const f = fondDe(d0, W, t), fr = rgbDe(f), tw = t[2] - t[0], th = t[3] - t[1];
+  const ink = boiteDEncreDeLApercu(d0, W, t, f) ?? t;
+  // La boîte de l'encre de la version, posée sur le fond de la tuile, au même critère que l'aperçu.
+  const r = await rgba(hd);
+  let a = r.w, c = r.h, dd = -1, e = -1;
+  for (let y = 0; y < r.h; y++) for (let x = 0; x < r.w; x++) {
+    const i = (y * r.w + x) * 4, al = r.data[i + 3] / 255;
+    const px = [0, 1, 2].map((k) => Math.round(r.data[i + k] * al + fr[k] * (1 - al)));
+    if (estEncre(px[0], px[1], px[2], fr, 60)) { if (x < a) a = x; if (y < c) c = y; if (x > dd) dd = x; if (y > e) e = y; }
+  }
+  const fondPng = await fondSansEncre(d0, W, t, f);
+  const cv = createCanvas(tw * S, th * S), x = cv.getContext("2d");
+  x.drawImage(await img(fondPng), 0, 0, tw * S, th * S);
+  if (dd < 0) return { png: await cv.encode("png"), part: 1, garde: false, raison: "aucune encre dans la version refaite" };
+  const hw = dd + 1 - a, hh = e + 1 - c, iw = ink[2] - ink[0], ih = ink[3] - ink[1];
+  // La version entière, à l'échelle où son encre couvre celle de l'aperçu (contenue, centrée), jamais déformée.
+  const k = Math.min((iw * S) / hw, (ih * S) / hh);
+  const ox = ((ink[0] + ink[2]) / 2 - t[0]) * S - ((a + dd + 1) / 2) * k, oy = ((ink[1] + ink[3]) / 2 - t[1]) * S - ((c + e + 1) / 2) * k;
+  x.drawImage(await img(hd), ox, oy, r.w * k, r.h * k);
+  const png = await cv.encode("png");
+  const ecartDesProportions = Math.abs(hw / hh - iw / ih) / (iw / ih);
+  const nous = await sharp(png).resize(tw, th, { kernel: "lanczos3" }).removeAlpha().blur(0.8).raw().toBuffer();
+  const eux = await sharp(d0, { raw: { width: W, height: d0.length / 3 / W, channels: 3 } }).extract({ left: t[0], top: t[1], width: tw, height: th }).blur(0.8).raw().toBuffer();
+  let n = 0;
+  for (let i = 0; i < tw * th; i++) if (Math.max(Math.abs(nous[i * 3] - eux[i * 3]), Math.abs(nous[i * 3 + 1] - eux[i * 3 + 1]), Math.abs(nous[i * 3 + 2] - eux[i * 3 + 2])) > SEUIL_DE_LA_CASE_EN_HD.niveaux) n++;
+  const part = n / (tw * th);
+  const raison = ecartDesProportions > SEUIL_DE_LA_CASE_EN_HD.proportions ? `ses proportions changent la case (écart ${Math.round(ecartDesProportions * 100)} %)` : part > SEUIL_DE_LA_CASE_EN_HD.part ? `elle change visiblement la case (${Math.round(part * 1000) / 10} % des points)` : null;
+  return { png, part, garde: !raison, raison };
+}
+/**
+ * Les tuiles du bloc 01 posées en haute définition sur la planche (`caseDuLogoEnHd`) et celles qui gardent l'aperçu agrandi
+ * (les versions reprises de l'aperçu, et les versions en haute définition qui changeraient visiblement leur case). Rend
+ * aussi une note par version en haute définition.
+ */
+export async function tuilesDuBloc01(o: { demo: Buffer; boites: ReadonlyMap<string, Boite>; versions: Record<VersionDuLogo, Buffer>; depuisLApercu: readonly VersionDuLogo[]; enHd?: readonly VersionDuLogo[] }): Promise<{ tuilesDeLApercu: VersionDuLogo[]; tuilesEnHd: Map<VersionDuLogo, Buffer>; notes: string[] }> {
+  const tuilesDeLApercu = [...o.depuisLApercu], tuilesEnHd = new Map<VersionDuLogo, Buffer>(), notes: string[] = [];
+  if (!o.enHd?.length) return { tuilesDeLApercu, tuilesEnHd, notes };
+  const demoPng = (await sharp(o.demo).metadata()).width === TAILLE_DEMO.w ? o.demo : await sharp(o.demo).resize(TAILLE_DEMO.w, TAILLE_DEMO.h, { fit: "fill" }).png().toBuffer();
+  const { data, info } = await sharp(demoPng).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (const v of o.enHd) {
+    const t = o.boites.get(TUILE_DE_LA_VERSION[v as VersionDuLogoPre] ?? "");
+    if (!t) { tuilesDeLApercu.push(v); continue; }
+    const c = await caseDuLogoEnHd(data, info.width, t, o.versions[v]);
+    if (c.garde) tuilesEnHd.set(v, c.png); else tuilesDeLApercu.push(v);
+    notes.push(`${v} en haute définition : ${c.garde ? `posé sur la planche (${Math.round(c.part * 1000) / 10} % des points changés)` : `la planche garde l'aperçu agrandi (${c.raison}) ; la haute définition sert aux fichiers à télécharger`}`);
+  }
+  return { tuilesDeLApercu, tuilesEnHd, notes };
+}
+
 /** La couleur du logo : la médiane de ses pixels opaques (son encre principale). */
 export async function couleurDuLogo(logo: Buffer): Promise<string> {
   const r = await rgba(logo), c: number[][] = [[], [], []];
@@ -425,7 +488,12 @@ export async function versionsDuLogo(o: {
   logo: Buffer; separation: Separation; couleur: string; sombre: string; clair: string; monoClair: string; nom: string; bas: string; police: Pick<PoliceChoisie, "cle" | "poids">;
   /** Les tuiles du bloc 01 de l'aperçu (logo-1 à logo-10) : sans symbole séparable, le compact, l'icône, le favicon et le badge en sont repris. */
   tuiles?: ReadonlyMap<string, Buffer>;
-}): Promise<{ versions: Record<VersionDuLogo, Buffer>; symboleComplet: boolean; symbole: Buffer; depuisLApercu: VersionDuLogo[] }> {
+  /**
+   * Les versions refaites en haute définition et gardées (fond retiré) : elles remplacent l'agrandissement de leur tuile
+   * (26 novembre 2026, option des quatre petites versions en haute définition).
+   */
+  hd?: ReadonlyMap<VersionDuLogo, Buffer>;
+}): Promise<{ versions: Record<VersionDuLogo, Buffer>; symboleComplet: boolean; symbole: Buffer; depuisLApercu: VersionDuLogo[]; enHd: VersionDuLogo[] }> {
   const sep = o.separation.fiable && o.separation.nom ? o.separation : null;
   const r = await rgba(o.logo), bb = boiteOpaque(r), logo = bb ? await versPng(decouper(r, bb)) : o.logo;
   const symbole = sep ? sep.symbole : logo, nom = sep?.nom ?? null;
@@ -433,10 +501,13 @@ export async function versionsDuLogo(o: {
   // Sans symbole séparable : la marque et sa phrase pour l'horizontal ; le compact, l'icône, le favicon et le badge repris
   // de leur tuile de l'aperçu (jamais le logo entier en tout petit).
   const phrase = sep ? null : await separerLaPhrase(o.logo);
-  const depuisLApercu: VersionDuLogo[] = [];
+  const depuisLApercu: VersionDuLogo[] = [], enHd: VersionDuLogo[] = [];
   const apercu = async (v: VersionDuLogoPre, sinon: () => Promise<Buffer>) => {
     const t = sep ? undefined : o.tuiles?.get(TUILE_DE_LA_VERSION[v]);
     if (!t) return sinon();
+    // Refaite en haute définition et gardée : son fichier est celui-là, jamais l'agrandissement.
+    const h = o.hd?.get(v);
+    if (h) { enHd.push(v); return h; }
     depuisLApercu.push(v);
     return versionDepuisLApercu(t);
   };
@@ -454,7 +525,7 @@ export async function versionsDuLogo(o: {
     badge: await apercu("badge", async () => badge(symbole, o.couleur, o.nom, o.bas, o.police)),
   };
   // Le symbole de la marque (le site, l'avatar) : le compact repris de l'aperçu quand il l'est.
-  return { versions, symboleComplet: !sep, symbole: depuisLApercu.includes("logo-compact") ? versions["logo-compact"] : symbole, depuisLApercu };
+  return { versions, symboleComplet: !sep, symbole: depuisLApercu.includes("logo-compact") || enHd.includes("logo-compact") ? versions["logo-compact"] : symbole, depuisLApercu, enHd };
 }
 
 /** Les favicons 32, 64 et 512, et l'avatar des réseaux (le symbole sur le fond clair de la marque). */
@@ -593,6 +664,13 @@ export type AssemblageEntree = {
   hautDansLeLogo?: boolean;
   /** Les phrases de présentation des deux polices, lues sous leur nom dans le spécimen de l'aperçu (titres, textes). */
   typos?: readonly [string | null | undefined, string | null | undefined];
+  /** Les lignes de mots lues sous chaque pastille de l'aperçu (`lignesDesMotsLues`), dans l'ordre des pastilles. */
+  motsLus?: readonly (readonly string[] | null)[];
+  /**
+   * Les quatre petites versions du logo refaites en haute définition et gardées sur la planche (`caseDuLogoEnHd`) : leur
+   * tuile, déjà composée à la taille de la planche en vrai, remplace l'aperçu agrandi.
+   */
+  tuilesEnHd?: ReadonlyMap<VersionDuLogo, Buffer>;
 };
 /**
  * LA ZONE D'UN TITRE À REDESSINER, mesurée sur l'aperçu (essai réel d'Écume, 26 novembre 2026 : aux blocs 08 et 09,
@@ -777,35 +855,96 @@ export function epaisseurDuTrait(part: (x: number, y: number) => number, x0: num
   }
   return bord ? (2 * aire) / bord : 0;
 }
-export function lignesDuSpecimen(data: Buffer, W: number, b: Boite, fond: string): [LigneDuSpecimen[] | null, LigneDuSpecimen[] | null] | null {
+/**
+ * LES LIGNES DE TEXTE D'UNE COLONNE DE L'APERÇU (commun au spécimen et aux textes sous la palette) : un point d'encre est
+ * à plus de SEUIL_D_ENCRE_DU_SPECIMEN niveaux du fond ; une ligne d'encre en porte au moins 2 ; les bandes séparées de plus
+ * de 2 lignes vides sont des lignes de texte ; un grain isolé (une bande de moins de 3 lignes) n'en est pas une. Pour
+ * chaque ligne : sa place (haut, bas, gauche, droite), son encre (la médiane des 10 % de points les plus foncés) et son
+ * épaisseur de trait.
+ */
+export function lignesDUneColonne(data: Buffer, W: number, fond: string, a: number, z: number, y0: number, y1: number): (LigneDuSpecimen & { droite: number })[] {
   const f = rgbDe(fond), ecart = (x: number, y: number) => { const i = (y * W + x) * 3; return Math.max(Math.abs(data[i] - f[0]), Math.abs(data[i + 1] - f[1]), Math.abs(data[i + 2] - f[2])); };
   const encre = (x: number, y: number) => ecart(x, y) > SEUIL_D_ENCRE_DU_SPECIMEN;
+  const bandes: [number, number][] = [];
+  let debut = -1, vide = 0;
+  for (let y = y0; y <= y1; y++) {
+    let n = 0;
+    if (y < y1) for (let x = a; x < z; x++) if (encre(x, y)) n++;
+    if (n >= 2) { if (debut < 0) debut = y; vide = 0; } else if (debut >= 0 && ++vide > 2) { bandes.push([debut, y - vide + 1]); debut = -1; vide = 0; }
+  }
+  if (debut >= 0) bandes.push([debut, y1]);
+  return bandes.filter(([h, d]) => d - h >= 3).map(([haut, bas]) => {
+    const pts: [number, number, number, number][] = [];
+    let gauche = z, droite = a;
+    for (let y = haut; y < bas; y++) for (let x = a; x < z; x++) if (encre(x, y)) { const i = (y * W + x) * 3; pts.push([data[i], data[i + 1], data[i + 2], 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]]); if (x < gauche) gauche = x; if (x + 1 > droite) droite = x + 1; }
+    pts.sort((p, q) => p[3] - q[3]);
+    const fonce = pts.slice(0, Math.max(1, Math.round(pts.length * 0.1)));
+    const couleur = hexDe([0, 1, 2].map((k) => mediane(fonce.map((p) => p[k])))), c = rgbDe(couleur);
+    const plein = Math.max(1, Math.abs(c[0] - f[0]), Math.abs(c[1] - f[1]), Math.abs(c[2] - f[2]));
+    return { haut, bas, gauche, droite, couleur, epaisseur: epaisseurDuTrait((u, v) => ecart(u, v) / plein, a, haut, z, bas) };
+  });
+}
+export function lignesDuSpecimen(data: Buffer, W: number, b: Boite, fond: string): [LigneDuSpecimen[] | null, LigneDuSpecimen[] | null] | null {
   const filet = Math.round(b[0] + (b[2] - b[0]) * 0.519);
   const colonne = (a: number, z: number): LigneDuSpecimen[] | null => {
-    const bandes: [number, number][] = [];
-    let debut = -1, vide = 0;
-    for (let y = b[1] + 3; y <= b[3] - 3; y++) {
-      let n = 0;
-      if (y < b[3] - 3) for (let x = a; x < z; x++) if (encre(x, y)) n++;
-      if (n >= 2) { if (debut < 0) debut = y; vide = 0; } else if (debut >= 0 && ++vide > 2) { bandes.push([debut, y - vide + 1]); debut = -1; vide = 0; }
-    }
-    if (debut >= 0) bandes.push([debut, b[3] - 3]);
-    // Un grain isolé (une bande de moins de 3 lignes) n'est pas une ligne de texte.
-    const lignes = bandes.filter(([h, d]) => d - h >= 3);
-    if (lignes.length !== 5) return null;
-    return lignes.map(([haut, bas]) => {
-      const pts: [number, number, number, number][] = [];
-      let gauche = z;
-      for (let y = haut; y < bas; y++) for (let x = a; x < z; x++) if (encre(x, y)) { const i = (y * W + x) * 3; pts.push([data[i], data[i + 1], data[i + 2], 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]]); if (x < gauche) gauche = x; }
-      pts.sort((p, q) => p[3] - q[3]);
-      const fonce = pts.slice(0, Math.max(1, Math.round(pts.length * 0.1)));
-      const couleur = hexDe([0, 1, 2].map((k) => mediane(fonce.map((p) => p[k])))), c = rgbDe(couleur);
-      const plein = Math.max(1, Math.abs(c[0] - f[0]), Math.abs(c[1] - f[1]), Math.abs(c[2] - f[2]));
-      return { haut, bas, gauche, couleur, epaisseur: epaisseurDuTrait((u, v) => ecart(u, v) / plein, a, haut, z, bas) };
-    });
+    const lignes = lignesDUneColonne(data, W, fond, a, z, b[1] + 3, b[3] - 3);
+    return lignes.length === 5 ? lignes.map(({ droite: _d, ...l }) => l) : null;
   };
   const g = colonne(b[0] + 4, filet - 4), d = colonne(filet + 4, b[2] - 4);
   return g || d ? [g, d] : null;
+}
+
+/**
+ * LES PETITS TEXTES SOUS LES PASTILLES, MESURÉS SUR L'APERÇU (26 novembre 2026 ; constat du chef d'orchestre sur Écume :
+ * « les petits textes sous les couleurs de la palette sont plus pâles que sur l'aperçu »). Avant, le code et les mots
+ * étaient écrits en gris pâle fixe (#5A605C) à des tailles fixes. Maintenant, sous chaque pastille (sa colonne va jusqu'à
+ * mi-chemin des pastilles voisines), le code lit les lignes de l'aperçu, comme pour le spécimen : le nom, le code de la
+ * couleur, puis une à trois lignes de mots. Pour chacune : sa place (haut, bas, gauche, droite), son encre et sa hauteur.
+ * Moins de trois lignes, ou plus de cinq : la colonne n'est pas lue (null) et garde la mise en page d'avant.
+ */
+export type LigneDeLaPalette = { haut: number; bas: number; gauche: number; droite: number; couleur: string };
+export function lignesSousLesPastilles(data: Buffer, W: number, b: Boite, pastilles: readonly [number, number, number][], fond: string): (LigneDeLaPalette[] | null)[] {
+  return pastilles.map(([cx, cy, r], i) => {
+    const prec = pastilles[i - 1], suiv = pastilles[i + 1];
+    const a = Math.max(b[0] + 2, Math.round(prec ? (prec[0] + cx) / 2 : cx - (suiv ? (suiv[0] - cx) / 2 : r * 1.3)));
+    const z = Math.min(b[2] - 2, Math.round(suiv ? (suiv[0] + cx) / 2 : cx + (prec ? (cx - prec[0]) / 2 : r * 1.3)));
+    const l = lignesDUneColonne(data, W, fond, a + 1, z - 1, Math.round(cy + r + 6), b[3] - 2);
+    return l.length >= 3 && l.length <= 5 ? l.map(({ haut, bas, gauche, droite, couleur }) => ({ haut, bas, gauche, droite, couleur })) : null;
+  });
+}
+/** La taille (en pixels de la planche en vrai) qui donne au texte `t` la hauteur d'encre de sa ligne mesurée. */
+function tailleDeLaLigne(x: SKRSContext2D, t: string, f100: string, l: LigneDeLaPalette): number {
+  x.textAlign = "left"; x.textBaseline = "alphabetic"; x.font = f100;
+  const m = x.measureText(t);
+  return (100 * (l.bas - l.haut) * S) / Math.max(1, m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
+}
+/**
+ * Une ligne sous une pastille redessinée sur sa ligne mesurée, à la taille donnée (la même pour toutes les lignes du même
+ * rôle, comme sur l'aperçu : la médiane des tailles mesurées) : centrée sur le milieu mesuré, le bas de ses lettres sur le
+ * bas mesuré, dans l'encre mesurée. Trop large pour sa colonne, elle est resserrée.
+ */
+function ligneDeLaPalette(x: SKRSContext2D, t: string, f100: string, l: LigneDeLaPalette, largeur: number, taille: number) {
+  x.textAlign = "left"; x.textBaseline = "alphabetic";
+  x.font = f100.replace(/\b100px\b/, `${(Math.round(taille * 10) / 10).toString()}px`);
+  const mm = x.measureText(t), w = mm.actualBoundingBoxLeft + mm.actualBoundingBoxRight, k = w > largeur ? largeur / w : 1;
+  const milieu = ((l.gauche + l.droite) / 2) * S;
+  x.fillStyle = l.couleur;
+  const px = milieu - (w * k) / 2 + mm.actualBoundingBoxLeft * k, py = l.bas * S - mm.actualBoundingBoxDescent;
+  if (k < 1) x.fillText(t, px, py, mm.width * k); else x.fillText(t, px, py);
+}
+/**
+ * Les mots d'une couleur répartis sur `n` lignes, comme sur l'aperçu : les lignes lues à l'inventaire quand elles sont
+ * `n` ; sinon renvoyés à la ligne par la largeur, et, si cela ne donne pas `n` lignes, répartis à parts égales.
+ */
+export function motsSurNLignes(mots: readonly string[], n: number, lues?: readonly string[] | null, aLaLargeur?: readonly string[]): string[] {
+  if (lues && lues.length === n) return [...lues];
+  if (aLaLargeur && aLaLargeur.length === n) return [...aLaLargeur];
+  const m = mots.map((w) => w.trim()).filter(Boolean), out: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const part = m.slice(Math.round((i * m.length) / n), Math.round(((i + 1) * m.length) / n));
+    if (part.length) out.push(part.join(", ") + (i < n - 1 ? "," : ""));
+  }
+  return out;
 }
 /** L'épaisseur ajoutée au trait au plus, en part de la hauteur de la ligne (une écriture fine épaissie, jamais en pâté). */
 export const EPAISSISSEMENT_MAX = 0.08;
@@ -919,6 +1058,9 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
     const f = fond(t), b = X(t);
     // Une version reprise de l'aperçu : sa tuile agrandie, telle que le client l'a vue.
     if (grandImg && o.tuilesDeLApercu!.includes(v)) { x.drawImage(grandImg, b[0], b[1], b[2] - b[0], b[3] - b[1], b[0], b[1], b[2] - b[0], b[3] - b[1]); continue; }
+    // Une version refaite en haute définition, gardée sur la planche : sa tuile composée (`caseDuLogoEnHd`).
+    const enHd = o.tuilesEnHd?.get(v);
+    if (enHd) { x.drawImage(await img(enHd), b[0], b[1], b[2] - b[0], b[3] - b[1]); continue; }
     x.fillStyle = f; arrondi(x, b[0], b[1], b[2] - b[0], b[3] - b[1], 20 * S); x.fill();
     // Chaque version tient entière dans sa tuile, avec sa marge : réduite si besoin, jamais déformée ni coupée.
     await poserDansLaTuile(x, o.versions[v], b, MARGES[v] ?? 0.14);
@@ -926,13 +1068,33 @@ export async function assemblerLaPlanche(o: AssemblageEntree): Promise<Buffer> {
   // La palette, couleurs mesurées sur la planche.
   const pal = B("palette");
   if (pal) {
-    const b = X(pal);
-    x.fillStyle = fond(pal); x.fillRect(b[0], b[1], b[2] - b[0], b[3] - b[1]);
+    const b = X(pal), fPal = fond(pal);
+    // Les lignes sous chaque pastille, mesurées sur l'aperçu avant d'effacer (place, hauteur des lettres, encre).
+    const mesurees = lignesSousLesPastilles(d0, info.width, pal, o.pastilles, fPal);
+    // Ce que chaque ligne mesurée porte : le nom, le code, puis les mots (répartis comme sur l'aperçu).
+    const textesDes = o.pastilles.map(([, , r], i) => {
+      const p = o.palette[i], l = mesurees[i];
+      if (!p?.nom || !l) return null;
+      const mots = motsSurNLignes(p.mots, l.length - 2, o.motsLus?.[i], lignesDesMots(x, p.mots, mp(23, G.legende), r * 2.4 * S));
+      return [[p.nom, mp(100, G.nom)], [p.hex, mp(100, G.code)], ...mots.map((m) => [m, mp(100, G.legende)])] as [string, string][];
+    });
+    // Une taille par rôle (le nom, le code, les mots) : la médiane des tailles mesurées, car l'aperçu écrit chaque rôle à
+    // une seule taille.
+    const tailles = [0, 1, 2].map((role) => mediane(textesDes.flatMap((t, i) => (t ?? []).flatMap(([s0, f], k) => (Math.min(k, 2) === role ? [tailleDeLaLigne(x, s0, f, mesurees[i]![k])] : [])))));
+    x.fillStyle = fPal; x.fillRect(b[0], b[1], b[2] - b[0], b[3] - b[1]);
     o.pastilles.forEach(([cx, cy, r], i) => {
       const p = o.palette[i];
       if (!p) return;
       x.beginPath(); x.arc(cx * S, cy * S, r * S, 0, Math.PI * 2); x.fillStyle = p.hex; x.fill();
       if (luminance(p.hex) > 0.9) { x.strokeStyle = "#E4E0D8"; x.lineWidth = 2; x.stroke(); }
+      const l = mesurees[i], t = textesDes[i];
+      if (l && t) {
+        // Le nom, le code et les lignes de mots, chacun à sa place, à la hauteur des lettres et dans l'encre de l'aperçu.
+        // La taille du rôle, sans s'écarter de plus de 5 % de celle que la ligne mesurée demande (la mesure d'une petite
+        // ligne de l'aperçu varie d'un pixel).
+        t.forEach(([s0, f], k) => { const m = tailles[Math.min(k, 2)]; ligneDeLaPalette(x, s0, f, l[k], (r * 2.4 - 2) * S, Math.min(m * 1.05, Math.max(m * 0.95, tailleDeLaLigne(x, s0, f, l[k])))); });
+        return;
+      }
       if (p.nom) texte(x, p.nom, cx * S, (cy + 68) * S, mp(26, G.nom), o.encre, "center", r * 2.4 * S);
       texte(x, p.hex, cx * S, (cy + 89) * S, mp(24, G.code), gris, "center");
       // Les mots de l'aperçu, tous (« Chaleur, énergie, bienveillance »), à la suite, renvoyés à la ligne comme sur l'aperçu.
