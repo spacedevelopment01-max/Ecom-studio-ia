@@ -16,7 +16,7 @@ import { LOGO_MODELS, modelePermisPour, PERMISSION_DE_LA_PLANCHE, PERMISSION_DE_
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import OpenAI, { toFile } from "openai";
-import { emitMediaProgress, openaiBackground, openaiClient, openaiImage, openaiImageSansFlux, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
+import { emitMediaProgress, messageAvecCause, openaiBackground, openaiClient, openaiImage, openaiImageSansFlux, openaiStreams, OPENAI_PARTIAL_IMAGES, OPENAI_PARTIAL_TOKENS } from "./openai-images";
 import {photoEditRequest,type PhotoEditInput} from "../image-v2/edit-request";
 export {photoEditRequest,editPhotoPrompt,type PhotoEditInput} from "../image-v2/edit-request";
 import sharp from "sharp";
@@ -125,8 +125,10 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
         }
         // Échec après le départ de la demande au fournisseur : l'appel a eu lieu, il est tracé (coût inconnu = 0, signalé).
         if (t.provider && !t.recorded) {
-          const msg = String((e0 as Error)?.message ?? e0);
-          recordCall({ userId: t.ctx!.userId, projectId: t.ctx!.projectId, jobId: t.ctx!.jobId, task, provider: t.provider, requestedModel: t.model ?? "", unit: t.unit ?? "image", latencyMs: t.started ? Date.now() - t.started : null, usageKey: t.ctx!.usageKey ?? null, estimated: true, status: /délai|timeout|timed out/i.test(msg) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(msg).slice(0, 200)}` , ...brainCols(t.ctx), ...routingCols(t) });
+          // Le journal de l'appel garde la cause du réseau (« Connection error. » seul ne dit pas ce qui a coupé) ; le
+          // message montré au client, lui, ne change pas.
+          const msg = messageAvecCause(e0);
+          recordCall({ userId: t.ctx!.userId, projectId: t.ctx!.projectId, jobId: t.ctx!.jobId, task, provider: t.provider, requestedModel: t.model ?? "", unit: t.unit ?? "image", latencyMs: t.started ? Date.now() - t.started : null, usageKey: t.ctx!.usageKey ?? null, estimated: true, status: /délai|timeout|timed out/i.test(msg) ? "timeout" : "error", errorKind: `${(e as Error)?.name ?? "Error"}: ${redact(msg).slice(0, 400)}` , ...brainCols(t.ctx), ...routingCols(t) });
         }
         throw e;
       } finally {
