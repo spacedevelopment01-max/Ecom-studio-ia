@@ -1,0 +1,89 @@
+Essai de la planche en vrai — client « Mouture » (petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets), type « produits »
+Produits ou prestations de sa fiche : cafés en grains ; cafés moulus ; coffrets
+Photos de produit du client : 0 (les produits de la planche restent des images d'ambiance sans elles)
+Plafond de l'essai : 4,0000 €
+Personnes permises : non (aucune photo de personne ni accord)
+Planche choisie : /home/user/Ecom-studio-ia/data/essai-torrefacteur/4-planches/planche-A-gardee.png (sha256 856a34f62b55ceb914abda84e5c349d71eaf4f5daa823d3de475865d0cbd8ce7) ; disposition standard
+Logo fini : /home/user/Ecom-studio-ia/data/essai-torrefacteur/3-finalisation/esquisse-11-logo-garde.png (sha256 83a13c64a6eda4b43e5a84c42e9f1e8e17bea6fde6deec588350566029347f48)
+Données de la planche : © 2026 Mouture ; mouturefrance.fr — disponible ; phrase sous le nom : « TORRÉFACTION ARTISANALE »
+Couleurs tirées du logo par le Studio : dark #2B140E, primary #CA9460, secondary #F8F0E9, accent #FCF2D6, light #FCFAF7
+Réglage sina.planche.envrai : allumé dans la base de l'essai seulement
+
+Devis de l'essai de la planche en vrai (fonctions du devis du Studio, aucun appel) :
+- inventaire · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,2141 € · au plus 0,5141 €
+- retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1622 € · au plus 0,3757 €
+- retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1530 € · au plus 0,4125 €
+- retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,2050 € · au plus 0,4849 €
+- retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,3096 € · au plus 0,7343 €
+- relecture · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- reprise d'une retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1622 € · au plus 0,3757 €
+- reprise d'une retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1530 € · au plus 0,4125 €
+- reprise d'une retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,2050 € · au plus 0,4849 €
+- reprise d'une retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,3096 € · au plus 0,7343 €
+- relecture de la reprise · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+Probable, sans refus : 1,4980 € (devis du Studio : 1,4980 €)
+Probable, si chaque image est refaite une fois : 2,7819 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 6,6978 €
+  dont plafond du client de la tâche 3,6059 € et borne du Studio 3,0918 € (devisDeLaPlancheEnVrai)
+Hors plafond minimal : une réponse de texte mal formée à réparer coûterait au plus 3,0764 € de plus en tout.
+Plafond conseillé (plafond minimal, une réparation de l'inventaire et une de relecture, arrondi) : 7,6000 €
+
+Découpe : 42 aperçus (apercus/) ; aucune case refusée
+
+Inventaire (inventaire-demande.txt, inventaire-reponse.json) :
+  polices lues : titres « Playfair Display » (serif), textes « Montserrat » (sans)
+  couleurs lues : Brun café (Authenticité, Profondeur) ; Cuivre (Chaleur, Artisanat) ; Caramel (Gourmandise, Convivialité) ; Crème (Douceur, Équilibre) ; Sauge (Nature, Élégance)
+  icône : Flamme crème sur carré brun foncé aux coins arrondis ; favicon : Petite flamme crème sur carré brun foncé aux coins arrondis ; reprennent le logo : oui
+  publication-1x1 : logo oui, produit non, personne non, compréhensible oui ; textes : « Plus » « qu'un café, » « un moment » « à vous. » « MOUTURE »
+  publication-4x5 : logo oui, produit oui, personne non, compréhensible oui ; textes : « Un café » « de caractère, » « au quotidien. » « Torréfaction » « artisanale » « Origines » « sélectionnées » « Saveurs » « intenses » « Découvrir » « MOUTURE » « TORRÉFACTION ARTISANALE » « CAFÉ EN GRAINS » « L'ESSENTIEL »
+  publication-9x16 : logo oui, produit non, personne non, compréhensible oui ; textes : « Votre » « rituel café » « du jour ? » « Café noir » « Café au lait » « Cappuccino » « Autre » « MOUTURE »
+  ouverture-site : logo non, produit non, personne non ; textes : « Des cafés » « de caractère, » « pour tous » « vos moments. » « TORRÉFACTION ARTISANALE » « Découvrir nos cafés → »
+  ouverture-planche : logo non, produit non, personne non ; textes : « u grain » « la tasse, » « e goût du vrai. » « RRÉFACTION ARTISANALE » « DES CAFÉS » « DE CARACTÈRE » « POUR TOUS » « VOS MOMENTS. »
+  site-ordinateur : logo oui, produit non, personne non ; textes : « MOUTURE » « Cafés » « Collections » « Coffrets » « Notre histoire » « Des cafés » « de caractère, » « pour tous » « vos moments. » « TORRÉFACTION ARTISANALE » « Découvrir nos cafés → » « Cafés d'origine » « sélectionnés » « Torréfaction » « artisanale » « Paiement sécurisé » « Livraison soignée »
+  site-telephone : logo oui, produit oui, personne non ; textes : « Une boutiq » « toujours avec vous » « MOUTURE » « Des cafés » « de caractère, » « pour tous » « vos moments. » « TORRÉFACTION ARTISANALE » « Découvrir → » « Nos cafés »
+  produit-1 : logo oui, produit oui, personne non ; textes : « MOUTURE » « CAFÉ EN GRAINS »
+  produit-2 : logo oui, produit oui, personne non ; textes : « MOUTURE » « CAFÉ MOULU »
+  produit-3 : logo oui, produit oui, personne non ; textes : « MOUTURE » « MOUTURE » « MOUTURE »
+  emballage : logo oui, produit oui, personne non ; textes : « MOUTURE » « TORRÉFACTION ARTISANALE » « TORRÉFACTION ARTISANALE » « MOUTURE » « MOUTURE » « TORRÉFACTION » « ARTISANALE »
+  reference-1 : logo non, produit non, personne non ; textes : aucun
+  reference-2 : logo non, produit non, personne non ; textes : aucun
+  reference-3 : logo non, produit non, personne non ; textes : aucun
+  reference-4 : logo oui, produit oui, personne non ; textes : « MOUTURE » « CAFÉ EN GRAINS » « CAFÉ EN GRAINS »
+  reference-5 : logo non, produit non, personne non ; textes : aucun
+  reference-6 : logo oui, produit oui, personne non ; textes : « MOUTURE » « MOUTURE »
+
+Les images, case par case (cases/ : texte envoyé, images jointes, image HD reçue, refusées comprises) :
+  publication-1x1 : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/publication-1x1-1-hd.png
+  publication-4x5 : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/publication-4x5-1-hd.png
+  publication-9x16 : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/publication-9x16-1-hd.png
+  ouverture-site : non terminée
+    essai 1 : jointes apercu ; image HD cases/ouverture-site-1-hd.png
+  ouverture-planche : non terminée
+    essai 1 : jointes apercu ; image HD cases/ouverture-planche-1-hd.png
+  site-ordinateur : non terminée
+    essai 1 : jointes apercu, logo ; image HD —
+
+Étapes : Je découpe ta planche choisie → Je fais l'inventaire de ta planche → Je refais chaque image de ta planche en haute définition
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- cbcb073473c8e45a1f0a6745436b55f0469c9e00fc02c44c38262dd52ee153ad · anthropic:claude-opus-5-5 · charge du client · réservé 0,3362 € → réglé 0,1570 € (settled) · jetons 6069 en entrée, 7214 en sortie
+- 38e9e5630873ad9eb526e0bc70b38fc399a330d8704f8b40c9af6eca7ddc47b9 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,1014 € → réglé 0,0586 € (settled) · jetons 1704 en entrée, 1834 en sortie
+- ea15db0271f8b8964e04ab3406d36f06f8e13ba326b0797adcd65b85f07b1f36 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0945 € → réglé 0,0524 € (settled) · jetons 1720 en entrée, 1587 en sortie
+- eb35b0bdb783dbb107486e01b0326796a5d4fa2fd2e0b30b24f0af4fc8624175 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0843 € → réglé 0,0453 € (settled) · jetons 1657 en entrée, 1331 en sortie
+- be4b7b820c9541e3ee092d0b93d593e96765985f4c7b2a74e1ea104b40bd5a86 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0473 € → réglé 0,0241 € (settled) · jetons 656 en entrée, 772 en sortie
+- 8bbc0112ec88f8f14e4c3c0f05e3b2df37e863fdcd6cc523f47b19655d2cfea5 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0454 € → réglé 0,0217 € (settled) · jetons 494 en entrée, 724 en sortie
+- 18603fdd9d23198c5a783c2c1b8b5b40ac931c8cb478e9941214e91fbafee512 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0873 € → réglé 0,0873 € (uncertain)
+
+Dépense réelle comptée par le Studio : 0,4465 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).
+
+ARRÊT : un appel a échoué, jamais relancé : Résultat incertain chez openai:gpt-image-2.5-sunburst (Connection error.) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.

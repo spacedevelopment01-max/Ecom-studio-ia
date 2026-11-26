@@ -1,0 +1,406 @@
+[
+  {
+    "cle": "cbcb073473c8e45a1f0a6745436b55f0469c9e00fc02c44c38262dd52ee153ad",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 336165,
+    "reelMicro": 156964,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-inventaire",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 6069,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 2792,
+      "jetonsSortie": 7214,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 54836,
+      "coutMicro": 156964,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-c5ihnd68nx1oh98n:envrai:inventaire",
+      "details": {
+        "placeDemandee": 16000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "38e9e5630873ad9eb526e0bc70b38fc399a330d8704f8b40c9af6eca7ddc47b9",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 101424,
+    "reelMicro": 58636,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-publication-1x1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1704,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1834,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 37660,
+      "coutMicro": 58636,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-c5ihnd68nx1oh98n:envrai:publication-1x1",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "publication-1x1",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une publication carrée pour les réseaux sociaux, 1080 × 1080. Aucune personne n'apparaît.",
+        "requestId": "req_c392d0bd333a4751a6750965aac66f1b",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1088x1088",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "52fc7abc7b06d545ade290b8de019cf153e9cbf2fe365208332fb999e0e7bb68",
+            "octets": 197895
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
+            "octets": 718173
+          }
+        ],
+        "usage": {
+          "input_tokens": 1704,
+          "input_tokens_details": {
+            "image_tokens": 1547,
+            "text_tokens": 157
+          },
+          "output_tokens": 1834,
+          "output_tokens_details": {
+            "image_tokens": 1834,
+            "text_tokens": 0
+          },
+          "total_tokens": 3538
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1088x1088",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "ea15db0271f8b8964e04ab3406d36f06f8e13ba326b0797adcd65b85f07b1f36",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 94489,
+    "reelMicro": 52376,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-publication-4x5",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1720,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1587,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 32422,
+      "coutMicro": 52376,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-c5ihnd68nx1oh98n:envrai:publication-4x5",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "publication-4x5",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une publication portrait pour les réseaux sociaux, 1080 × 1350. Aucune personne n'apparaît.",
+        "requestId": "req_001e36273c7d49ef96fc6130fd4fb57a",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1088x1360",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "cc71d9ab7898baae9f33cebee49983d6334c64e05a8e453fff72498db549db3d",
+            "octets": 215870
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
+            "octets": 718173
+          }
+        ],
+        "usage": {
+          "input_tokens": 1720,
+          "input_tokens_details": {
+            "image_tokens": 1564,
+            "text_tokens": 156
+          },
+          "output_tokens": 1587,
+          "output_tokens_details": {
+            "image_tokens": 1587,
+            "text_tokens": 0
+          },
+          "total_tokens": 3307
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1088x1360",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "eb35b0bdb783dbb107486e01b0326796a5d4fa2fd2e0b30b24f0af4fc8624175",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 84313,
+    "reelMicro": 45340,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-publication-9x16",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1657,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1331,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 26908,
+      "coutMicro": 45340,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-c5ihnd68nx1oh98n:envrai:publication-9x16",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "publication-9x16",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Mouture : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une story pour les réseaux sociaux, 1080 × 1920. Aucune personne n'apparaît.",
+        "requestId": "req_a18e943afde547ccb3ba5f59a66f11b3",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1088x1936",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "40a83ccf7df1409405cd568c5776e37ec98a0047455444b8d052503bf4329c80",
+            "octets": 165749
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "eaa188c7e9639535b9a1b117d5dd5629030e1158da6b841f14c228222e146ec2",
+            "octets": 718173
+          }
+        ],
+        "usage": {
+          "input_tokens": 1657,
+          "input_tokens_details": {
+            "image_tokens": 1502,
+            "text_tokens": 155
+          },
+          "output_tokens": 1331,
+          "output_tokens_details": {
+            "image_tokens": 1331,
+            "text_tokens": 0
+          },
+          "total_tokens": 2988
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1088x1936",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "be4b7b820c9541e3ee092d0b93d593e96765985f4c7b2a74e1ea104b40bd5a86",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 47317,
+    "reelMicro": 24059,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-ouverture-site",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 656,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 772,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 17888,
+      "coutMicro": 24059,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-c5ihnd68nx1oh98n:envrai:ouverture-site",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "ouverture-site",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est la grande image d'ouverture du site, au format bandeau 1920 × 720 ; garde chaque élément à sa place. Garde des marges généreuses : aucun texte ne touche les bords. Aucune personne n'apparaît.",
+        "requestId": "req_23ff47a617244cb3b7ead3b9d6a26344",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "2048x768",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "86f5c22fa809ec1dadbc56e73eea0cce2de6d8703774a589b51c064d2f21bd8b",
+            "octets": 270921
+          }
+        ],
+        "usage": {
+          "input_tokens": 656,
+          "input_tokens_details": {
+            "image_tokens": 512,
+            "text_tokens": 144
+          },
+          "output_tokens": 772,
+          "output_tokens_details": {
+            "image_tokens": 772,
+            "text_tokens": 0
+          },
+          "total_tokens": 1428
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "2048x768",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "8bbc0112ec88f8f14e4c3c0f05e3b2df37e863fdcd6cc523f47b19655d2cfea5",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 45376,
+    "reelMicro": 21740,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-ouverture-planche",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 494,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 724,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 18484,
+      "coutMicro": 21740,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-c5ihnd68nx1oh98n:envrai:ouverture-planche",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "ouverture-planche",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est le bandeau d'ouverture de la planche ; garde des marges généreuses en haut et en bas, rien ne touche les bords. Aucune personne n'apparaît.",
+        "requestId": "req_7e495e642a3741c981cb40773dcfa3b3",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "2304x768",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "10c2d735aef252d57cc0f76126b95e0d55646200aa03921f031e64773369239c",
+            "octets": 671223
+          }
+        ],
+        "usage": {
+          "input_tokens": 494,
+          "input_tokens_details": {
+            "image_tokens": 363,
+            "text_tokens": 131
+          },
+          "output_tokens": 724,
+          "output_tokens_details": {
+            "image_tokens": 724,
+            "text_tokens": 0
+          },
+          "total_tokens": 1218
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "2304x768",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "18603fdd9d23198c5a783c2c1b8b5b40ac931c8cb478e9941214e91fbafee512",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 87338,
+    "reelMicro": 87338,
+    "statut": "uncertain"
+  }
+]

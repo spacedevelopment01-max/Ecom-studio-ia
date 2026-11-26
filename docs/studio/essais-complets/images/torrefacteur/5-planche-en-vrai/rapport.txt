@@ -1,7 +1,7 @@
 Essai de la planche en vrai — client « Mouture » (petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets), type « produits »
 Produits ou prestations de sa fiche : cafés en grains ; cafés moulus ; coffrets
 Photos de produit du client : 0 (les produits de la planche restent des images d'ambiance sans elles)
-Plafond de l'essai : 4,0000 €
+Plafond de l'essai : 3,0000 €
 Personnes permises : non (aucune photo de personne ni accord)
 Planche choisie : /home/user/Ecom-studio-ia/data/essai-torrefacteur/4-planches/planche-A-gardee.png (sha256 856a34f62b55ceb914abda84e5c349d71eaf4f5daa823d3de475865d0cbd8ce7) ; disposition standard
 Logo fini : /home/user/Ecom-studio-ia/data/essai-torrefacteur/3-finalisation/esquisse-11-logo-garde.png (sha256 83a13c64a6eda4b43e5a84c42e9f1e8e17bea6fde6deec588350566029347f48)
@@ -70,20 +70,57 @@ Les images, case par case (cases/ : texte envoyé, images jointes, image HD reç
   ouverture-planche : non terminée
     essai 1 : jointes apercu ; image HD cases/ouverture-planche-1-hd.png
   site-ordinateur : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/site-ordinateur-1-hd.png
+  site-telephone : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/site-telephone-1-hd.png
+  produit-1 : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/produit-1-1-hd.png
+  produit-2 : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/produit-2-1-hd.png
+  produit-3 : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/produit-3-1-hd.png
+  emballage : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/emballage-1-hd.png
+  reference-1 : non terminée
+    essai 1 : jointes apercu ; image HD cases/reference-1-1-hd.png
+  reference-2 : non terminée
+    essai 1 : jointes apercu ; image HD cases/reference-2-1-hd.png
+  reference-3 : non terminée
+    essai 1 : jointes apercu ; image HD cases/reference-3-1-hd.png
+  reference-4 : non terminée
+    essai 1 : jointes apercu, logo ; image HD cases/reference-4-1-hd.png
+  reference-5 : non terminée
+    essai 1 : jointes apercu ; image HD cases/reference-5-1-hd.png
+  reference-6 : non terminée
     essai 1 : jointes apercu, logo ; image HD —
 
 Étapes : Je découpe ta planche choisie → Je fais l'inventaire de ta planche → Je refais chaque image de ta planche en haute définition
 
 Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
-- cbcb073473c8e45a1f0a6745436b55f0469c9e00fc02c44c38262dd52ee153ad · anthropic:claude-opus-5-5 · charge du client · réservé 0,3362 € → réglé 0,1570 € (settled) · jetons 6069 en entrée, 7214 en sortie
-- 38e9e5630873ad9eb526e0bc70b38fc399a330d8704f8b40c9af6eca7ddc47b9 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,1014 € → réglé 0,0586 € (settled) · jetons 1704 en entrée, 1834 en sortie
-- ea15db0271f8b8964e04ab3406d36f06f8e13ba326b0797adcd65b85f07b1f36 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0945 € → réglé 0,0524 € (settled) · jetons 1720 en entrée, 1587 en sortie
-- eb35b0bdb783dbb107486e01b0326796a5d4fa2fd2e0b30b24f0af4fc8624175 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0843 € → réglé 0,0453 € (settled) · jetons 1657 en entrée, 1331 en sortie
-- be4b7b820c9541e3ee092d0b93d593e96765985f4c7b2a74e1ea104b40bd5a86 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0473 € → réglé 0,0241 € (settled) · jetons 656 en entrée, 772 en sortie
-- 8bbc0112ec88f8f14e4c3c0f05e3b2df37e863fdcd6cc523f47b19655d2cfea5 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0454 € → réglé 0,0217 € (settled) · jetons 494 en entrée, 724 en sortie
-- 18603fdd9d23198c5a783c2c1b8b5b40ac931c8cb478e9941214e91fbafee512 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0873 € → réglé 0,0873 € (uncertain)
+- 16f61d117e836fc86811b0f45851b4e8431aee35de17bd5e25a83edc95cbaf77 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0873 € → réglé 0,0490 € (settled) · jetons 2060 en entrée, 1366 en sortie
+- 8314a0dcd03b85340eac2361c6a8d8abdec749b59007de3db473285d80a2f068 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0692 € → réglé 0,0337 € (settled) · jetons 1679 en entrée, 876 en sortie
+- 7d9ca354181ff8bcbbcadffe2dbbfc0110f0330a7d514ec7f54e2454f4f34e68 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0890 € → réglé 0,0478 € (settled) · jetons 1607 en entrée, 1437 en sortie
+- 248be2bba1d691e06f8bb7d74e9ecaa771d2548d5fec8f99d3d8e94e11fde95c · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0890 € → réglé 0,0478 € (settled) · jetons 1607 en entrée, 1437 en sortie
+- d3ada0c0cd9e024e2adb76256499d116e219e573424311b3ab7a92dbd67aeb0d · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0890 € → réglé 0,0478 € (settled) · jetons 1607 en entrée, 1437 en sortie
+- 6e49df1df2be2f964d778a3a52f6e1197465ec8b84e9761d782c49bcfcb27987 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0902 € → réglé 0,0531 € (settled) · jetons 2154 en entrée, 1500 en sortie
+- eb7f42d717119a168f5237c69ae6f27f03c4e6eca5f328fd530d24f15653d0b9 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0411 € (settled) · jetons 335 en entrée, 1514 en sortie
+- 0af5b0530600275958382ea1115eac94aa69423fbf7ffac9dba42b41824e331f · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- fbf18da26387c7b20af1484aab04c3162389d991b9006ce9a2e1bcc2fda5ba36 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- 9fb9e35ca1bfc9c225e9bf658b09edd91c9ef4ce49255c3472a5e44078c1a110 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0904 € → réglé 0,0493 € (settled) · jetons 1549 en entrée, 1514 en sortie
+- 412ea8b1c9c1752099b1211dfd5b8e91542d4519b5489a9b77c8443cf0670e59 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- 78946ebe46d0383efd2c48636c467d19b3ccaa729303cd7e60d02626b28f439a · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0904 € → réglé 0,0904 € (uncertain)
 
-Dépense réelle comptée par le Studio : 0,4465 €
+Dépense réelle comptée par le Studio : 0,5828 €
 Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).
 
+REPRISE de la passe 1 (REPRENDRE=1 ; son rapport et sa dépense sont dans passe-1/) :
+  repris tels quels, sans appel : l'inventaire, publication-1x1, publication-4x5, publication-9x16, ouverture-site, ouverture-planche
+  appel(s) parti(s) sans réponse à la passe 1 (résultat incertain, coût maximal retenu : 0,0873 €) : site-ordinateur-1 ; refait(s) cette fois : site-ordinateur, seulement parce que le propriétaire a relancé lui-même avec REPRENDRE=1 (jamais tout seul)
+  dépense comptée à la passe 1 : 0,4465 € ; à cette passe : 0,5828 € ; en tout : 1,0293 €
+
 ARRÊT : un appel a échoué, jamais relancé : Résultat incertain chez openai:gpt-image-2.5-sunburst (Connection error.) : coût maximal retenu par prudence, aucune relance automatique. Vérifiez la consommation chez le fournisseur avant de recommencer.
+
+Comment reprendre : la même commande, même dossier de sortie, avec REPRENDRE=1 en plus (et un plafond pour ce qui reste ; devis gratuit : DEVIS_SEULEMENT=1 REPRENDRE=1, même commande).
+  Gardé, jamais redemandé ni repayé : l'inventaire, l'image publication-1x1, l'image publication-4x5, l'image publication-9x16, l'image ouverture-site, l'image ouverture-planche, l'image site-ordinateur, l'image site-telephone, l'image produit-1, l'image produit-2, l'image produit-3, l'image emballage, l'image reference-1, l'image reference-2, l'image reference-3, l'image reference-4, l'image reference-5.
+  Fait à la reprise : les images reference-6, les relectures qui manquent, les reprises éventuelles, LOGO_HD s'il est demandé, puis les logos, la palette, les polices, l'assemblage, etat.json, essai.json et le parcours.
+  Résultat incertain : l'appel de reference-6 est parti sans réponse ; son coût maximal est retenu. Il n'est jamais relancé tout seul : il ne sera refait que si tu relances toi-même avec REPRENDRE=1, après avoir vérifié la consommation chez le fournisseur.
