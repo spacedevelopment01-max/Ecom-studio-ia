@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { EPREUVES, type Epreuve } from "./epreuves/catalogue";
+import { ACCORD_A_COMPLETER, EPREUVES, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -34,7 +34,7 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
   });
   it("une épreuve remplacée par une décision datée garde son sceau à jamais et ne se rescelle pas", () => {
     const remplacees = EPREUVES.filter((e) => e.remplaceePar);
-    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification"].sort());
+    expect(remplacees.map((e) => e.id).sort()).toEqual(["logo-goutte-refusee", "consigne-de-sina-au-dessinateur", "logos-de-la-serie-trop-proches", "trait-sous-le-nom-repete", "ligne-la-marque-sans-idee-de-dessin", "serie-compte-les-logos-refuses", "refus-du-logo-une-seule-fois", "refus-du-client-toutes-tournures", "logo-demande-nue", "trait-pres-du-nom-un-par-serie-au-relecteur", "refus-et-consigne-apres-la-demande-nue", "serie-logo-completement-different", "trois-fois-le-meme-dessin", "logos-de-la-serie-dans-l-ordre", "pas-de-consigne-de-style-pour-un-logo", "demande-du-logo-couleurs-typo-fond", "relecteur-du-logo-qualite-seule", "planches-de-recherche-demande-exacte", "relecteur-du-logo-fini", "finalisation-ecrite-par-le-plus-fort", "relecteur-sans-refus-pour-trop-proche", "logo-refait-une-fois-avec-ses-raisons", "relecteur-juge-l-execution-pas-l-idee", "planche-refusee-deux-fois-jamais-montree", "vrai-produit-du-client-joint", "relecteur-petites-finitions-sans-refus", "planche-phrase-par-lignes-et-reprise-qui-part-toujours", "relecteur-de-planche-texte-lisible-et-promesses-mesurables", "planche-reprend-la-phrase-du-logo", "planche-en-vrai-a-l-identique", "planche-en-vrai-symbole-seul-et-bandeau-sans-marges", "planche-en-vrai-palette-mesuree-et-logos-en-hd", "accord-des-noms-compte-la-verification", "planche-produits-de-la-fiche-seulement"].sort());
     for (const e of remplacees) {
       const r = e.remplaceePar!;
       // Le sceau ne change pas : celui du catalogue, celui de sceaux.json et celui figé au jour du remplacement.
@@ -50,6 +50,8 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026"]).toContain(r.decision);
+      // L'accord écrit encore à recevoir : accepté seulement pour l'épreuve nommée ici ; la phrase le remplacera à son arrivée.
+      if (r.mots === ACCORD_A_COMPLETER) { expect(e.id).toBe("planche-produits-de-la-fiche-seulement"); expect(r.epreuve).toBe("planche-reprise-sans-nom-invente"); expect(r.decision).toBe("26 novembre 2026"); continue; }
       expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd)/);
       // Les accords écrits du 24 et du 25 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
@@ -2462,7 +2464,9 @@ describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produi
   const SIGNE = "Bloc 09, boîte kraft : signe parasite sous « commence ici. », un petit crochet en forme de « ? » égaré, hors des mots";
   const ARABICA = "promesses ou chiffres inventés : « Bloc 09, sachet Éthiopie : « 100% Arabica » »";
 
-  epreuve("planche-produits-de-la-fiche-seulement", async () => {
+  // Le rejeu de planche-produits-de-la-fiche-seulement (points 1 à 4), remplacée le 26 novembre 2026 par
+  // planche-reprise-sans-nom-invente : inchangé, rejoué par l'épreuve qui la remplace.
+  const rejeuProduits = async () => {
     // 1. Le texte envoyé : la ligne des noms, en positif, dans la partie « produits » ; aucune origine ni variété nommée.
     const t = P.texteDeLaPlanche({ nom: "Mouture", valeurs, annee: 2026, domaine: DOM, personnes: false, phrase: PH });
     const ligne = "Sur les étiquettes, les emballages, les fiches produits et le site, chaque produit porte seulement l'un de ces noms, ceux du client, au singulier pour un seul article : « Cafés en grains », « Cafés moulus », « Coffrets ».";
@@ -2491,6 +2495,42 @@ describe("les épreuves de l'essai réel du torréfacteur, étape 4 : les produi
     expect(P.lectureDeLaPlanche({ ...sans, produitsInventes: [{ ou: "Bloc 06", texte: "Café en grains" }] }, { ...MOUTURE, produits: undefined }).raisons.join(" ")).toMatch(/^produits inventés/);
     // « 100% Arabica » reste refusé.
     expect(P.lectureDeLaPlanche({ ...v, fautes: [] }, MOUTURE).raisons).toEqual([ARABICA]);
+  };
+  const ORIGINES = [
+    { ou: "Bloc 06, sachet Brésil", texte: "Brésil Sul de Minas" }, { ou: "Bloc 06, sachet Éthiopie", texte: "Éthiopie Yirgacheffe" },
+    { ou: "Bloc 07, publication 4:5, sachet Guatemala", texte: "Guatemala Antigua" }, { ou: "Bloc 08, site, fiche Colombie", texte: "Colombie" },
+  ];
+  const INTERDITS = /brésil|bresil|éthiopie|ethiopie|guatemala|colombie|yirgacheffe|sul de minas|antigua/i;
+
+  epreuve("planche-reprise-sans-nom-invente", async () => {
+    // 1. Tout ce que demandait l'épreuve remplacée reste vrai (points 1 à 4).
+    await rejeuProduits();
+    // 2. Le verdict réel de B-2, avec les quatre origines relevées : refusée ; le compte rendu garde les noms exacts.
+    const avec = { ...v, produitsInventes: ORIGINES };
+    const lu = P.lectureDeLaPlanche(avec, MOUTURE);
+    for (const o of ORIGINES) expect(lu.raisons.join(" ")).toContain(`« ${o.texte} » (${o.ou})`);
+    expect(lu.raisons).toContain(ARABICA);
+    // 3. Le texte de la reprise ne contient aucun des noms d'origine, ni dans le texte relevé, ni dans l'emplacement, ni
+    //    dans une autre raison (« sachet Éthiopie » de « 100% Arabica ») ; il rappelle les noms permis.
+    const envoyees = P.raisonsPourLeDessinateur(lu.raisons, avec, MOUTURE);
+    const reprise = P.texteDeLaPlanche({ nom: "Mouture", valeurs, annee: 2026, domaine: DOM, personnes: false, phrase: PH, raisons: envoyees });
+    expect(reprise.slice(reprise.lastIndexOf("À corriger : "))).not.toMatch(INTERDITS);
+    expect(reprise).not.toMatch(INTERDITS);
+    expect(envoyees).toContain("un nom de produit absent de la fiche du client est écrit (Bloc 06, sachet ; Bloc 07, publication 4:5, sachet ; Bloc 08, site, fiche) : remplace-le ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits, avec ses noms : « Cafés en grains », « Cafés moulus », « Coffrets »");
+    expect(envoyees).toContain("promesses ou chiffres inventés : « Bloc 09, sachet : « 100% Arabica » »");
+    // 4. La vraie chaîne : la reprise part sans aucun nom inventé ; le compte rendu de la planche les garde.
+    const png = await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#FFFFFF" } }).png().toBuffer();
+    const textes: string[] = [];
+    const r = await P.dessinerLaPlanche({ dessiner: async (_l, _d, x) => { textes.push(x); return png; }, relire: async () => avec, aLaChargeDuStudio }, { nom: "Mouture", annee: 2026, domaine: DOM, personnes: false, animaux: false, phrase: PH, valeurs, logo: png, disposition: png });
+    expect(r.ok).toBe(false);
+    expect(textes).toHaveLength(2);
+    expect(textes[1]).not.toMatch(INTERDITS);
+    expect(textes[1]).toContain("« Cafés en grains », « Cafés moulus », « Coffrets »");
+    expect(r.essais[0].raisons.join(" ")).toContain("« Éthiopie Yirgacheffe » (Bloc 06, sachet Éthiopie)");
+  });
+
+  epreuve("planche-produits-de-la-fiche-seulement", async () => {
+    await rejeuProduits();
     // 5. La planche entière : le relecteur reçoit les produits ; la reprise reçoit la raison à la fin de son texte.
     const png = await sharp({ create: { width: 1536, height: 2304, channels: 3, background: "#FFFFFF" } }).png().toBuffer();
     const bon = { nomLu: "MOUTURE", logoFidele: true, copyrightLu: "© 2026 Mouture", domaineLu: "mouturefrance.fr — disponible", fautes: [], promesses: [], personnes: false, logoFonceSurFondSombre: false, motMaquette: false, copies: [], note: 9, pourquoi: "", phrasesLues: [{ emplacement: "logo", lignes: PH, cachee: false }] };

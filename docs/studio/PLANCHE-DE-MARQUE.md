@@ -277,3 +277,10 @@ lait », « Cappuccino ») nomme des boissons, pas des produits vendus.
 
 Épreuves ajoutées et scellées : `planche-produits-de-la-fiche-seulement`, `planche-signe-isole-declare-par-le-relecteur`.
 Verdicts réels copiés tels quels : `tests/fixtures/torrefacteur-planches`.
+
+**Correction (même jour).** La reprise renvoyait au dessinateur le nom inventé, recopié de l'emplacement du relecteur
+(« sachet Éthiopie »). Désormais, les raisons envoyées pour la reprise ne recopient jamais un nom inventé : la raison des
+produits inventés dit seulement où, en termes neutres, et rappelle les noms du client ; dans les autres raisons, les noms
+inventés, les pays et les mots d'origine, de variété ou de gamme absents de la fiche sont retirés. Le compte rendu garde
+les noms exacts. `planche-produits-de-la-fiche-seulement` est marquée remplacée par `planche-reprise-sans-nom-invente`,
+avec l'accord écrit du propriétaire encore à recevoir.

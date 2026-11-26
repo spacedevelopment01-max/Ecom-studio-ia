@@ -175,6 +175,23 @@ describe("point 3 : le texte de la planche, le contrôle gratuit des valeurs, la
     expect(r.ok).toBe(true);
     expect(textes).toHaveLength(2);
     expect(demandes[0]).toContain("« cafés en grains », « cafés moulus », « coffrets »");
-    expect(textes[1]).toMatch(/À corriger : produits inventés, absents de la fiche du client : « Éthiopie Yirgacheffe » \(Bloc 09, sachet\)/);
+    // La reprise dit où, en termes neutres, et rappelle les noms permis ; elle ne recopie jamais le nom inventé.
+    expect(textes[1]).toContain("À corriger : un nom de produit absent de la fiche du client est écrit (Bloc 09, sachet) : remplace-le ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits, avec ses noms : « Cafés en grains », « Cafés moulus », « Coffrets ».");
+    expect(textes[1]).not.toMatch(/éthiopie|yirgacheffe/i);
+    // Le compte rendu garde le nom exact.
+    expect(r.essais[0].raisons.join(" ")).toContain("« Éthiopie Yirgacheffe » (Bloc 09, sachet)");
+  });
+
+  it("la reprise ne contient aucun des quatre noms d'origine, même dans l'emplacement ou une autre raison ; le compte rendu les garde", () => {
+    const B2 = JSON.parse(fs.readFileSync(`${F}/planche-B-2-relecture-verdict.json`, "utf8"));
+    const v = { ...P.VerdictRangeDeLaPlancheSchema.parse(B2.verdict), produitsInventes: [{ ou: "Bloc 06, sachet Brésil", texte: "Brésil Sul de Minas" }, { ou: "Bloc 06, sachet Éthiopie", texte: "Éthiopie Yirgacheffe" }, { ou: "Bloc 07, sachet Guatemala", texte: "Guatemala Antigua" }, { ou: "Bloc 08, fiche Colombie", texte: "Colombie" }] };
+    const attendu = { nom: "Mouture", annee: 2026, domaine: { domaine: "mouturefrance.fr", statut: "disponible" as const }, personnes: false, animaux: false, phrase: PHRASE, produits: valeurs.produits };
+    const lu = P.lectureDeLaPlanche(v, attendu);
+    expect(lu.raisons.join(" ")).toMatch(/Brésil Sul de Minas.*Éthiopie Yirgacheffe.*Guatemala Antigua.*Colombie/);
+    const reprise = P.texteDeLaPlanche({ nom: "Mouture", valeurs, annee: 2026, domaine: attendu.domaine, personnes: false, phrase: PHRASE, raisons: P.raisonsPourLeDessinateur(lu.raisons, v, attendu) });
+    expect(reprise).not.toMatch(/brésil|bresil|éthiopie|ethiopie|guatemala|colombie|yirgacheffe|sul de minas|antigua/i);
+    expect(reprise).toContain("« Bloc 09, sachet : « 100% Arabica » »");
+    // Sans produit inventé relevé, les raisons partent telles quelles (à part les pays et mots d'origine absents de la fiche).
+    expect(P.raisonsPourLeDessinateur(["fautes : « Bloc 08 : « caractere » sans accent »"], { ...v, produitsInventes: [] }, attendu)).toEqual(["fautes : « Bloc 08 : « caractere » sans accent »"]);
   });
 });

@@ -873,7 +873,38 @@ export function lectureDesProduits(v: RelectureDeLaPlanche, o: AttenduDeLaPlanch
   const permis = releves.filter((p) => nomDeProduitPermis(p.texte, o.produits)).map((p) => `nom d'un produit de la fiche, permis : « ${p.texte.trim()} »`);
   if (!inventes.length) return { raison: null, permis };
   const ses = o.produits?.length ? `, avec ses noms : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : "";
-  return { raison: `produits inventés, absents de la fiche du client : ${inventes.map((p) => `« ${p.texte.trim()} »${p.ou.trim() ? ` (${p.ou.trim()})` : ""}`).join(", ")} ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits${ses}`, permis };
+  return { raison: `${DEBUT_PRODUITS_INVENTES}${inventes.map((p) => `« ${p.texte.trim()} »${p.ou.trim() ? ` (${p.ou.trim()})` : ""}`).join(", ")} ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits${ses}`, permis };
+}
+
+const DEBUT_PRODUITS_INVENTES = "produits inventés, absents de la fiche du client : ";
+/**
+ * LES RAISONS ENVOYÉES AU DESSINATEUR POUR LA REPRISE (26 novembre 2026, essai réel du torréfacteur : les raisons de la
+ * reprise recopiaient l'emplacement du relecteur, « sachet Éthiopie », et renvoyaient le nom inventé au dessinateur). Un
+ * nom inventé n'y est jamais recopié, ni comme texte relevé, ni dans un emplacement : la raison des produits inventés dit
+ * seulement où, en termes neutres, et rappelle les noms permis ; dans toute autre raison, les noms relevés comme inventés,
+ * les pays et les mots d'origine, de variété ou de gamme absents des produits, du nom et de la phrase sont retirés. Le
+ * compte rendu, lui, garde les raisons exactes (`lectureDeLaPlanche`).
+ */
+export function raisonsPourLeDessinateur(raisons: readonly string[], v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): string[] {
+  const permis = new Set([...(o.produits ?? []), o.nom, ...(o.phrase ?? [])].flatMap(motsDuProduit));
+  const inventes = (v.produitsInventes ?? []).map((p) => p.texte.trim()).filter((t) => t && !nomDeProduitPermis(t, o.produits));
+  const interdits = new Set(inventes.flatMap(motsDuProduit).filter((w) => !permis.has(w)));
+  const interdit = (mot: string) => { const w = racine(plat(mot)); return w.length >= 3 && !permis.has(w) && (interdits.has(w) || PAYS.includes(plat(mot)) || MOTS_DE_GAMME.test(plat(mot))); };
+  const echapper = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const nettoyer = (t: string) => {
+    let s = t;
+    for (const n of [...inventes].sort((a, b) => b.length - a.length)) s = s.replace(new RegExp(echapper(n), "giu"), " ");
+    s = s.replace(/[\p{L}][\p{L}'’-]*/gu, (m) => (interdit(m) ? " " : m));
+    // Rien de retiré : la raison part telle quelle, à la lettre près.
+    if (s === t) return t;
+    return s.replace(/«\s*»/gu, " ").replace(/\(\s*\)/gu, " ").replace(/\s+([,)])/gu, "$1").replace(/,\s*,/gu, ",").replace(/\s{2,}/gu, " ").trim();
+  };
+  const ses = o.produits?.length ? `, avec ses noms : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : "";
+  return raisons.map((r) => {
+    if (!r.startsWith(DEBUT_PRODUITS_INVENTES)) return nettoyer(r);
+    const lieux = [...new Set((v.produitsInventes ?? []).filter((p) => p.texte.trim() && !nomDeProduitPermis(p.texte, o.produits)).map((p) => nettoyer(p.ou)).filter(Boolean))];
+    return `un nom de produit absent de la fiche du client est écrit${lieux.length ? ` (${lieux.join(" ; ")})` : ""} : remplace-le ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits${ses}`;
+  });
 }
 
 /** Une faute relevée qui dit seulement que la phrase est cachée en partie par un objet (aucune lettre fausse) : pas une faute. */
@@ -1007,7 +1038,9 @@ export async function dessinerLaPlanche(deps: PlancheDeps, o: AttenduDeLaPlanche
   essais.push(premier);
   if (!premier.raisons.length) return { ok: true, png: premier.png, texte: premier.texte, essais };
   // Reprise pour une autre raison : les petites finitions du premier essai s'ajoutent aux corrections, en dernier.
-  const second = await deps.aLaChargeDuStudio(() => essai(2, [...premier.raisons, ...(premier.finitions ?? []).map(finitionACorriger)]));
+  // Les raisons envoyées au dessinateur ne recopient jamais un nom inventé (`raisonsPourLeDessinateur`) ; le compte rendu
+  // (`premier.raisons`) garde les noms exacts.
+  const second = await deps.aLaChargeDuStudio(() => essai(2, raisonsPourLeDessinateur([...premier.raisons, ...(premier.finitions ?? []).map(finitionACorriger)], premier.verdict, o)));
   essais.push(second);
   if (!second.raisons.length) return { ok: true, png: second.png, texte: second.texte, essais };
   return { ok: false, raison: `refusée deux fois (${second.raisons.join(" ; ")})`, essais };
