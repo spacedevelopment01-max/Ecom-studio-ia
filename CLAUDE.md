@@ -207,9 +207,17 @@ d'eux ne doit se retrouver dans une consigne envoyée à l'IA ni peser sur une d
   1080 × 1920, ouverture réduite en 1920 × 720, jamais rognée. Chaque image est relue face à son aperçu (textes comparés
   lettre pour lettre par le code, aucun logo ajouté, aucune personne sans accord, logo clair sur fond sombre, produit
   comparé, note de 8 au moins) ; une reprise à la charge du Studio ; refusée deux fois, l'aperçu agrandi garde sa case et
-  SINA propose de la refaire à sa charge. **Après le choix, la palette et les polices sont mesurées et lues sur la planche
-  choisie** (médiane de chaque pastille, ces codes font foi ; polices du catalogue du Studio, la plus proche sinon, et
-  c'est dit) ; les dix versions du logo, les favicons, l'avatar et le badge sont faits par le code ; l'assemblage se fait
+  SINA propose de la refaire à sa charge. **Après le choix, la palette et les polices sont lues sur la planche choisie** (accord
+  écrit du 26 novembre 2026, après l'essai réel d'Écume) : sous chaque pastille, le code écrit sur l'aperçu est gardé quand
+  la couleur peinte en est proche (écart perceptuel de 10 au plus) et la pastille est peinte de ce code, sinon la médiane
+  mesurée ; ces codes font foi (marque, site, onglet Marque) ; polices du catalogue du Studio, la plus proche du spécimen
+  montré sinon, et c'est dit ; elles ne servent que dans leur spécimen : titres de blocs, libellés, codes, légendes et
+  badge gardent la police de mise en page de l'aperçu ; rien ne s'ajoute qui ne soit pas sur l'aperçu, et un titre
+  redessiné efface toute la zone de l'ancien ; les dix versions du logo, les favicons, l'avatar et le badge sont faits par
+  le code ; sans symbole séparable, le compact, l'icône, le favicon et le badge sont repris de leur case de l'aperçu ; une
+  image est jugée sur les textes de sa seule zone, jamais sur l'heure d'un téléphone ; dans l'onglet Marque, le site est
+  une seule image, « Le site sur ordinateur et téléphone », et chaque image est découpée au plus juste de son contenu,
+  montrée entière à sa vraie proportion ; l'assemblage se fait
   en 3072 × 4608, publications entières. Sans photo de son produit, les produits restent des images d'ambiance (« image
   d'ambiance, ce n'est pas ton produit »), jamais sur les emplacements produit ni posés comme son produit. Une fois la
   planche de marque faite, le mélange de deux identités n'est plus proposé. L'onglet Marque donne tout à télécharger

@@ -153,15 +153,8 @@ const ECUME_ETAPE_3 = { decision: "25 novembre 2026", mots: "« Oui, marque rele
  * conversation de construction).
  */
 const SIGNE_PARASITE = { decision: "26 novembre 2026", mots: "« Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours comme remplacée par ma décision du 26 novembre, ajoute et scelle planche-signe-parasite-petite-finition (un signe parasite isolé hors des mots, qui ne change aucun mot, est une petite finition notée sans refus ; un mot mal écrit, le nom, la phrase du logo, l'adresse et l'année font toujours refuser), et mets à jour la partie Identité de CLAUDE.md. »" };
-/**
- * L'ACCORD ÉCRIT ENCORE À RECEVOIR (26 novembre 2026). Une décision du propriétaire, relayée par le chef d'orchestre,
- * contredit une épreuve scellée : l'épreuve est marquée remplacée, et sa phrase d'accord écrite, mot pour mot, n'est pas
- * encore là. `ACCORD_A_COMPLETER` tient sa place ; le banc n'accepte ce manque que pour les épreuves nommées dans son
- * test, et la phrase d'accord le remplacera à son arrivée.
- */
-export const ACCORD_A_COMPLETER = "[À compléter : phrase d'accord écrite du propriétaire]";
-/** La planche en vrai identique à l'aperçu (essai réel d'Écume, étape 4, 26 novembre 2026 ; constat du chef d'orchestre). */
-const EN_VRAI_IDENTIQUE_A_L_APERCU = { decision: "26 novembre 2026", mots: ACCORD_A_COMPLETER };
+/** La planche en vrai identique à l'aperçu (essai réel d'Écume, étape 4, 26 novembre 2026 ; constat du chef d'orchestre ; son accord écrit, mot pour mot, le 26 novembre 2026 dans la conversation de construction). */
+const EN_VRAI_IDENTIQUE_A_L_APERCU = { decision: "26 novembre 2026", mots: "« Oui, marque planche-en-vrai-a-l-identique et planche-en-vrai-symbole-seul-et-bandeau-sans-marges comme remplacées par ma décision du 26 novembre, ajoute et scelle planche-en-vrai-identique-a-l-apercu (les codes couleur écrits sur l'aperçu gardés quand la couleur peinte en est proche, sinon la mesure ; sans symbole séparable, le compact, l'icône, le favicon et le badge repris de l'aperçu ; la police de mise en page partout sauf dans le spécimen ; rien d'ajouté sous le logo ; les titres nettoyés en entier ; les textes attendus pris dans la zone de la case et l'heure du téléphone jamais reprochée), et mets à jour la partie Identité de CLAUDE.md. »" };
 const SOURCE_EN_VRAI_ECUME_4 = "docs/studio/PLANCHE-EN-VRAI.md (partie « Identique à l'aperçu : l'assemblage corrigé après l'étape 4 d'Écume (26 novembre 2026) » ; essai réel : docs/studio/essais-complets/images/ecume/4-planche-en-vrai, branche claude/essais-complets ; planche B, logo 10, inventaire et verdicts réels copiés dans tests/fixtures/ecume-planche-en-vrai ; constat du chef d'orchestre)";
 const SOURCE_EN_VRAI_IDENTIQUE = "docs/studio/PLANCHE-EN-VRAI.md (partie « Identique en visuel : les finitions nettoyées et la police de l'aperçu (26 novembre 2026) » ; essai réel d'Écume, étape 3 reprise : docs/studio/essais-complets/images/ecume/3-planches-2, branche claude/essais-complets ; verdicts réels de A-2 et B-2 copiés tels quels dans tests/fixtures/ecume-planches-2 ; mots du chef d'orchestre)";
 const SOURCE_SIGNE_PARASITE = "docs/studio/ESSAI-ECUME.md (essai réel d'Écume du 26 novembre 2026, étape 3 reprise, 0,67 € : docs/studio/essais-complets/images/ecume/3-planches-2, branche claude/essais-complets ; verdict réel de A-2 copié tel quel dans tests/fixtures/ecume-planches-2 ; constat et décision du chef d'orchestre)";
