@@ -1,0 +1,49 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.\n\nÀ corriger : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous ») (en trop ou mal écrits : « 12.01 ») ; sa fidélité n'est pas au niveau (7/10, il faut 8).",
+    "quality": "high",
+    "size": "768x1712",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "5ba2b63261976d7b9f97eb34f9e42d8c4ce58427c4ad30b9f86049b3116d9a4a",
+      "octets": 154512
+    },
+    {
+      "role": "logo",
+      "assetId": null,
+      "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+      "octets": 310250
+    }
+  ],
+  "tailleRecue": "768x1712",
+  "requestId": "req_f02d2624caa3471d80d51bbaf113e974",
+  "usage": {
+    "input_tokens": 1760,
+    "input_tokens_details": {
+      "image_tokens": 1512,
+      "text_tokens": 248
+    },
+    "output_tokens": 876,
+    "output_tokens_details": {
+      "image_tokens": 876,
+      "text_tokens": 0
+    },
+    "total_tokens": 2636
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "768x1712",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 34070,
+  "dureeMs": 28679
+}

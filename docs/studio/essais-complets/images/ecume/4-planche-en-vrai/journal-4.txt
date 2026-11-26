@@ -1,0 +1,34 @@
+(node:532) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:548) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Données de la planche : domaine ecumefrance.fr (disponible), année 2026, disposition standard, phrase « SAVONNERIE » puis « ARTISANALE ».
+Devis de l'essai de la planche en vrai (fonctions du devis du Studio, aucun appel) :
+- inventaire · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,2141 € · au plus 0,5141 €
+- retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1622 € · au plus 0,3757 €
+- retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1530 € · au plus 0,4125 €
+- retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,2050 € · au plus 0,4849 €
+- retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,3096 € · au plus 0,7343 €
+- relecture · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- reprise d'une retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1622 € · au plus 0,3757 €
+- reprise d'une retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1530 € · au plus 0,4125 €
+- reprise d'une retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,2050 € · au plus 0,4849 €
+- reprise d'une retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,3096 € · au plus 0,7343 €
+- relecture de la reprise · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+Probable, sans refus : 1,4980 € (devis du Studio : 1,4980 €)
+Probable, si chaque image est refaite une fois : 2,7819 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 6,6978 €
+  dont plafond du client de la tâche 3,6059 € et borne du Studio 3,0918 € (devisDeLaPlancheEnVrai)
+Hors plafond minimal : une réponse de texte mal formée à réparer coûterait au plus 3,0764 € de plus en tout.
+Plafond conseillé (plafond minimal, une réparation de l'inventaire et une de relecture, arrondi) : 7,6000 €
+(node:548) [UNDICI-EHPA] Warning: EnvHttpProxyAgent is experimental, expect them to change at any time.
+(Use `node --trace-warnings ...` to show where the warning was created)
+13 image(s) gardée(s) sur 17, planche 3072 × 4608, dépense comptée 1,2766 €. Rapport : /home/user/Ecom-studio-ia/data/essai-ecume/4-planche-en-vrai/rapport.txt
+Projet de l'essai : yp27mhi7lwit5n1p (essai.json et etat.json dans /home/user/Ecom-studio-ia/data/essai-ecume/4-planche-en-vrai, pour ecran-planche-en-vrai.mts).
+code 0

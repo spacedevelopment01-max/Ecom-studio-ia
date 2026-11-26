@@ -59,6 +59,7 @@ du propriétaire, mot pour mot. Ce carnet servira à régler les juges.
 | 26/11 | Écume | Planche A (logo 6), reprise à la charge du Studio | 8/10 mais refusée : « Seul un accent parasite traîne dans le titre SEO, à nettoyer ; le reste est complet, soigné et montrable » | Non | [en attente] |
 | 26/11 | Écume | Planche B (logo 10), 1er essai | 7/10 : bloc Produits numéroté 05 au lieu de 06, mots déformés sur le site (« Écumee », « Fabrmotion », « Ingrédieeement ») | Non | [en attente] |
 | 26/11 | Écume | Planche B (logo 10), reprise à la charge du Studio | 8,5/10 : « Planche complète et soignée … Seul petit écart : la police « Nunito » est présentée en écriture manuscrite » | Oui | choisie par le propriétaire (rapporté par le chef d'orchestre le 26/11) |
+| 26/11 | Écume | Planche B en vrai, 17 images refaites en grand | 13 gardées (8 à 9/10) ; refusées deux fois : publication portrait (texte collé au bord, plus des mots attendus pris au titre du bloc), Story (« au solide ? » devenu « en solide ? »), site sur téléphone (seulement l'heure « 9:41 »), emballage (« our » repris de l'aperçu, petit texte déformé) ; police manuscrite « Nunito » remplacée par « Sacramento », reprise aussi sur les titres de blocs et la palette, devenus difficiles à lire ; symbole et nom non séparés | 13 sur 17 | [en attente] |
 
 ## Photos de départ des clients inventés (pas des images de SINA)
 

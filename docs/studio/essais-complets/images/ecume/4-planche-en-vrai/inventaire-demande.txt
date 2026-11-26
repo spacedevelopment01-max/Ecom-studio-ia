@@ -1,0 +1,52 @@
+Tu fais l'inventaire d'une planche d'identité visuelle, découpée en cases, AVANT qu'elle soit refaite en haute définition. Chaque image porte le nom de sa case ; la dernière, « logo », est le logo officiel de la marque. Ne juge rien : relève ce que tu vois. Réponds en JSON :
+- cases : pour chaque case (son nom exact) : logo (le logo de la marque y apparaît), logoVu (seulement quand le logo y apparaît : « complet » si on y voit le symbole et le nom de la marque, « symbole » si on n'y voit que le symbole, sans le nom écrit à côté ; null sinon), textes (chaque texte lisible, mot pour mot, une ligne par élément, sans rien corriger), produit (un produit de la marque est visible), personne (une personne, un visage ou une main est visible), comprehensible (seulement pour les cases « publication-… » : quelqu'un qui ne connaît pas la marque comprend ce qu'elle propose ; null pour les autres cases), description (ce que montre l'image, en une phrase simple) ;
+- polices : le nom de la police des titres et celui de la police des textes, tels qu'ils sont écrits dans la case « typographies », avec leur genre (serif, sans, manuscrite, chasse-fixe ou affiche) tel que le montre le dessin du spécimen, et procheDuCatalogue : le nom exact, recopié de la liste des polices du catalogue donnée dans la demande, de celle qui ressemble le plus au dessin du spécimen montré, dans le genre que tu as lu (la police nommée si elle est dans la liste et que son dessin est bien celui du spécimen) ;
+- couleurs : pour chaque pastille de la case « palette », de gauche à droite, son nom et les mots écrits dessous (sans le code de la couleur) ;
+- icone et favicon : ce que montrent l'icône seule et le favicon de la case « logos », en quelques mots ;
+- iconeReprendLeLogo : l'icône et le favicon montrent le symbole du logo (ou une lettre dessinée comme dans le logo).
+
+--- demande ---
+Marque : « Écume ». Relève chaque case, mot pour mot.
+Les polices du catalogue du Studio, par genre (pour procheDuCatalogue) :
+serif : Newsreader, Instrument Serif, Cormorant, Lora, Libre Baskerville, Playfair Display, Cormorant Garamond, Bodoni Moda, DM Serif Display, Prata, Merriweather, Fraunces
+sans : Nunito, Lato, Inter, Jost, DM Sans, Archivo, Chivo, Work Sans, Space Grotesk, Montserrat, Karla, Poppins, Manrope, Plus Jakarta Sans, Outfit, Sora, Urbanist, Figtree, Geist, Raleway, Nunito Sans, Open Sans, Source Sans 3, Rubik, Barlow, Syne
+manuscrite : Caveat, Dancing Script, Pacifico, Sacramento, Satisfy, Allura
+chasse-fixe : Space Mono, IBM Plex Mono, JetBrains Mono, Roboto Mono
+affiche : Anton, Oswald, Bebas Neue, Archivo Black, Unbounded, Righteous, Abril Fatface, Alfa Slab One, Yeseva One
+
+--- images jointes, dans l'ordre (35) ---
+1. publication-1x1 (186667 octets, sha256 f310c00df4f98252975547a2c7d44f957597f89dd9f05959eba2ddc2311685cc)
+2. publication-4x5 (180688 octets, sha256 f8886991e6938884014a50c9c0bd969925ecd155b150e41f09fb22873e8370f2)
+3. publication-9x16 (159356 octets, sha256 16e93e2046249c69ef09d49327b49119e13962dec88e0476cfbc98cf29dc6582)
+4. ouverture-site (262152 octets, sha256 83518c61d14d97b2fc2dee63ac1e2e0545d0d5cb0c2a97c4545d6743b98b4d9e)
+5. ouverture-planche (631560 octets, sha256 675d7f109e340ae264fccb0472033e0d3bc18e4bed2a61af2394abc93b8c9624)
+6. site-ordinateur (412548 octets, sha256 f7b58babc6c1c2f26b26b6c413ac546d5bbbcb937a4e495687db5f22ee53432f)
+7. site-telephone (154512 octets, sha256 5ba2b63261976d7b9f97eb34f9e42d8c4ce58427c4ad30b9f86049b3116d9a4a)
+8. produit-1 (165933 octets, sha256 88e32c778a41a28b0843496b17a5d4904cfa6b8a92d1bb4eeb7b05b312ca925d)
+9. produit-2 (159010 octets, sha256 c00477a24d6b2d60bfd95ba0d0698165f5d1d40841040f17d6d082516a6b3580)
+10. produit-3 (138614 octets, sha256 747fbde1f1451c6505662a07c5767bf0a8d7f9191f43b4a437805590bd062626)
+11. emballage (687171 octets, sha256 751db01bc226023c34c63d74436316f70e7edbbdd375c15b211aa4f67bc3d36c)
+12. reference-1 (151053 octets, sha256 89a03834eb94c9b5f79c0dab3f29f7c93f518b173e18188281e90fcfe31e8412)
+13. reference-2 (125717 octets, sha256 14fa1d5f2fac42e440fcf198eab297273cd112374d85b8cf0c181d8df697ddfc)
+14. reference-3 (143852 octets, sha256 2fdffa0edad40ae97d3b65f7d893228212eccc1582c2955c009edf5f6d429e31)
+15. reference-4 (143450 octets, sha256 e36c6332c735b580de53ab3d746dc6f5b99507d323cd6195353542605be6edb6)
+16. reference-5 (137180 octets, sha256 f1ab08d6bc31966e74506fea4aa683743df2200f369e6dbd6d740194b2858a9d)
+17. reference-6 (125074 octets, sha256 8b777ca749746b5fc99938f9af9b00bf7cc05b304c9108b791648485c40b248d)
+18. haut (193499 octets, sha256 d3b90522e215f9e80e7c69c39c6ef3641bd568de38e3fbfc2845676d6d36ab18)
+19. palette (120385 octets, sha256 ed747734a1b549338b27a082e3def5228e0496418e2685c55eceef8aed7a3199)
+20. typographies (129313 octets, sha256 9c20d4c18d5b0782b57860d0967efaa75304eefdb9138c9b2abc5bc59082bcf8)
+21. ton (128795 octets, sha256 e39465525c491b95b680d41835ed5868198cb4d44a2b04e3c40dc6c07b438a33)
+22. seo (182193 octets, sha256 24e80b246db551db6c2abff94ec42948c7662ae4b15e38adf8587f879a7ec229)
+23. logos : icône seule (13814 octets, sha256 5f3500dcac143e2309a06e6aeb1d8b9be3c4d77f1e16ba1c81b5b73ddebfc012)
+24. logos : favicon (17409 octets, sha256 82c182ee6079127327ecac9edd319db2a861a4769b1686e8e347c843f8a00330)
+25. titre-01 (8996 octets, sha256 a8f16b88262633049b5297f5782cc6ac19e37d3b3d1f972a5017829cb3aec84f)
+26. titre-02 (11893 octets, sha256 a8bee21eff2de1c9f8739ea9bc34b005e4340050e0f4ae570d0ebd955429122a)
+27. titre-03 (8225 octets, sha256 ceee4ecea34c6f5754adc42d9010f56295190986a979a9a58a8f9eb7ff0f6faa)
+28. titre-04 (12665 octets, sha256 1e0714428eccdc1f41019543f0ec839fc01283b9dd2a942829d54f7f3709584e)
+29. titre-05 (10054 octets, sha256 80c13f0ffc714a3353d7109bb598484d497067c5a2341501c3bdd178d9e0041a)
+30. titre-06 (5248 octets, sha256 56cbe506383bfec8054c33348b3d76432b23003616c64e7511a614054607a1ea)
+31. titre-07 (8405 octets, sha256 fdc1f98bba456921a142d0428f337065ca28394466c88f6afb5d1c3f83cb6e6a)
+32. titre-08 (4281 octets, sha256 f823beb1b115e316e0a1353de7cd6d88ee75f87635eb2a4d181c3f5563786ac6)
+33. titre-09 (9727 octets, sha256 863e19f8c57c2173d23154a3453523be3e23829135b1b67658fcef2c7a69b0d6)
+34. titre-10 (16759 octets, sha256 a2759e6eefe1454c54c6369e07b2cc0c8996edd280a257cb6284c12ab2cf12cc)
+35. logo (310250 octets, sha256 70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819)

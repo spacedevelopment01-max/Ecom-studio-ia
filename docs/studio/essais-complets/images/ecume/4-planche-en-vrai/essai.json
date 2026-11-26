@@ -1,0 +1,22 @@
+{
+  "client": {
+    "nom": "Écume",
+    "metier": "savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes",
+    "kind": "produits",
+    "produits": [
+      "savons solides",
+      "shampoings solides",
+      "baumes"
+    ],
+    "descripteur": "savonnerie"
+  },
+  "donnees": {
+    "domaine": "ecumefrance.fr",
+    "statut": "disponible",
+    "annee": 2026,
+    "disposition": "standard",
+    "phrase": "SAVONNERIE / ARTISANALE"
+  },
+  "projectId": "yp27mhi7lwit5n1p",
+  "conversationId": "4kbp6wz2l7g3vvu7"
+}

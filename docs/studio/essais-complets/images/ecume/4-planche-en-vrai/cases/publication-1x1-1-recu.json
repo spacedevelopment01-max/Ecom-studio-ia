@@ -1,0 +1,49 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une publication carrée pour les réseaux sociaux, 1080 × 1080. Aucune personne n'apparaît.",
+    "quality": "high",
+    "size": "1088x1088",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "f310c00df4f98252975547a2c7d44f957597f89dd9f05959eba2ddc2311685cc",
+      "octets": 186667
+    },
+    {
+      "role": "logo",
+      "assetId": null,
+      "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+      "octets": 310250
+    }
+  ],
+  "tailleRecue": "1088x1088",
+  "requestId": "req_372d67323d12433c9f49177193a68f47",
+  "usage": {
+    "input_tokens": 1651,
+    "input_tokens_details": {
+      "image_tokens": 1494,
+      "text_tokens": 157
+    },
+    "output_tokens": 1834,
+    "output_tokens_details": {
+      "image_tokens": 1834,
+      "text_tokens": 0
+    },
+    "total_tokens": 3485
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "1088x1088",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 58271,
+  "dureeMs": 44041
+}

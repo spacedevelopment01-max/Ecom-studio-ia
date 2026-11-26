@@ -1,0 +1,43 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une story pour les réseaux sociaux, 1080 × 1920. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « en »).",
+    "quality": "high",
+    "size": "1088x1936",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "16e93e2046249c69ef09d49327b49119e13962dec88e0476cfbc98cf29dc6582",
+      "octets": 159356
+    }
+  ],
+  "tailleRecue": "1088x1936",
+  "requestId": "req_c9912e16c08a4bba8d18ca55e16e6e57",
+  "usage": {
+    "input_tokens": 443,
+    "input_tokens_details": {
+      "image_tokens": 299,
+      "text_tokens": 144
+    },
+    "output_tokens": 1331,
+    "output_tokens_details": {
+      "image_tokens": 1331,
+      "text_tokens": 0
+    },
+    "total_tokens": 1774
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "1088x1936",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 37016,
+  "dureeMs": 27726
+}

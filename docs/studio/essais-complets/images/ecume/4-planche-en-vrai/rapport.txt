@@ -1,0 +1,199 @@
+Essai de la planche en vrai — client « Écume » (savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes), type « produits »
+Produits ou prestations de sa fiche : savons solides ; shampoings solides ; baumes
+Photos de produit du client : 0 (les produits de la planche restent des images d'ambiance sans elles)
+Plafond de l'essai : 7,6000 €
+Personnes permises : non (aucune photo de personne ni accord)
+Planche choisie : /home/user/Ecom-studio-ia/data/essai-ecume/3-planches-2/planche-B-gardee.png (sha256 66c0191983515b055f365152c11ec5bc07974dd2b12630555e6ff0ecf43ca600) ; disposition standard
+Logo fini : /home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png (sha256 9bd4cefbb9df27e2b2b4f41ad3f289f1a6f7841664460b88ea853299b749fd0b)
+Données de la planche : © 2026 Écume ; ecumefrance.fr — disponible ; phrase sous le nom : « SAVONNERIE » puis « ARTISANALE »
+Couleurs tirées du logo par le Studio : dark #C14706, primary #C14706, secondary #F6E5DC, accent #C14706, light #FCF6F3
+Réglage sina.planche.envrai : allumé dans la base de l'essai seulement
+
+Devis de l'essai de la planche en vrai (fonctions du devis du Studio, aucun appel) :
+- inventaire · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,2141 € · au plus 0,5141 €
+- retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1622 € · au plus 0,3757 €
+- retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,1530 € · au plus 0,4125 €
+- retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,2050 € · au plus 0,4849 €
+- retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · toujours · charge client · probable 0,3096 € · au plus 0,7343 €
+- relecture · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- relecture · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,1135 € · au plus 0,2711 €
+- reprise d'une retouche · publications · 3 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1622 € · au plus 0,3757 €
+- reprise d'une retouche · ouvertures et site · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,1530 € · au plus 0,4125 €
+- reprise d'une retouche · produits et emballage · 4 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,2050 € · au plus 0,4849 €
+- reprise d'une retouche · références · 6 appels · openai:gpt-image-2.5-sunburst (high) · si le relecteur refuse · charge Studio · probable 0,3096 € · au plus 0,7343 €
+- relecture de la reprise · publications · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · ouvertures et site · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · produits et emballage · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+- relecture de la reprise · références · 1 appel · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse · charge Studio · probable 0,1135 € · au plus 0,2711 €
+Probable, sans refus : 1,4980 € (devis du Studio : 1,4980 €)
+Probable, si chaque image est refaite une fois : 2,7819 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 6,6978 €
+  dont plafond du client de la tâche 3,6059 € et borne du Studio 3,0918 € (devisDeLaPlancheEnVrai)
+Hors plafond minimal : une réponse de texte mal formée à réparer coûterait au plus 3,0764 € de plus en tout.
+Plafond conseillé (plafond minimal, une réparation de l'inventaire et une de relecture, arrondi) : 7,6000 €
+
+Découpe : 42 aperçus (apercus/) ; aucune case refusée
+
+Inventaire (inventaire-demande.txt, inventaire-reponse.json) :
+  polices lues : titres « Poppins » (sans), textes « Nunito » (manuscrite)
+  couleurs lues : Orange Écume (Chaleur, énergie, bienveillance) ; Terracotta (Authenticité, naturel, terre) ; Sable (Douceur, pureté) ; Sauge (Nature, fraîcheur, équilibre) ; Brun naturel (Matière, artisanat, confiance)
+  icône : Une vague orange surmontée de deux bulles, sur fond crème ; favicon : Lettre É blanche avec des bulles sur un carré orange arrondi ; reprennent le logo : oui
+  publication-1x1 : logo oui, produit oui, personne non, compréhensible oui ; textes : « Écume » « SAVONNERIE ARTISANALE » « Un rituel doux pour une peau plus heureuse. »
+  publication-4x5 : logo non, produit oui, personne non, compréhensible oui ; textes : « s contenus qui inspirent au quoti » « Des soins vraiment nature » « Sans plastique » « Ingrédients simples » « Fabriqués à la main » « Adaptés à toute la fa » « Découvrir la collection → »
+  publication-9x16 : logo non, produit oui, personne non, compréhensible oui ; textes : « en » « Petits gestes, grands bienfaits » « Et si vous passiez au solide ? » « Rejoignez-nous → »
+  ouverture-site : logo oui, produit oui, personne non ; textes : « Écume » « SAVONNERIE ARTISANALE » « Des soins naturels pour une peau plus douce, chaque jour. » « Découvrir nos savons → »
+  ouverture-planche : logo non, produit oui, personne non ; textes : « Des soins naturels pour une peau plus douce, chaque jour. » « SAVONNERIE ARTISANALE » « Naturellement essentiel »
+  site-ordinateur : logo oui, produit oui, personne non ; textes : « Écume » « SAVONNERIE ARTISANALE » « Savons » « Shampoings » « Baumes » « Notre histoire » « Des soins naturels pour une peau plus douce, chaque jour. » « Découvrir nos savons → » « Ingrédients naturels » « Fabrication artisanale » « Emballages sans plastique » « Paiement sécurisé »
+  site-telephone : logo oui, produit oui, personne non ; textes : « Une boutique toujours avec vous » « Écume » « SAVONNERIE ARTISANALE » « Des soins naturels pour une peau plus douce, chaque jour. » « Voir la collection → » « Naturel » « Artisanal » « Sans » « Paiement »
+  produit-1 : logo oui, produit oui, personne non ; textes : aucun
+  produit-2 : logo non, produit oui, personne non ; textes : aucun
+  produit-3 : logo oui, produit oui, personne non ; textes : aucun
+  emballage : logo oui, produit oui, personne non ; textes : « Écume » « SAVONNERIE ARTISANALE » « Des soins naturels » « our une peau plus douce, » « chaque jour. » « Écume » « SAVONNERIE ARTISANALE » « Écume » « SAVONNERIE ARTISANALE » « Merci » « de faire partie de l'aventure Écume. »
+  reference-1 : logo non, produit oui, personne non ; textes : aucun
+  reference-2 : logo non, produit non, personne non ; textes : aucun
+  reference-3 : logo non, produit oui, personne non ; textes : aucun
+  reference-4 : logo non, produit oui, personne non ; textes : aucun
+  reference-5 : logo non, produit oui, personne non ; textes : aucun
+  reference-6 : logo non, produit non, personne non ; textes : aucun
+
+Les images, case par case (cases/ : texte envoyé, images jointes, image HD reçue, refusées comprises) :
+  publication-1x1 : GARDÉE (cases/publication-1x1-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/publication-1x1-1-hd.png
+      relecture : note 9/10 — L'image refaite reprend fidèlement l'aperçu : même logo, mêmes savons, même accroche et mêmes placements, le tout net. Seul petit défaut : le motif gravé sur le savon reste un peu confus.
+      raisons du refus : aucune
+  publication-4x5 : NON gardée, l'aperçu garde sa case (ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8))
+    essai 1 : jointes apercu ; image HD cases/publication-4x5-1-hd.png
+      relecture : note 6/10 — La composition est fidèle à l'aperçu, mais « naturels » et « famille » touchent le bord droit de l'image et la dernière lettre de chacun est coupée. Il faut décaler le texte vers la gauche ou réduire sa taille.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu ; image HD cases/publication-4x5-2-hd.png
+      relecture : note 7/10 — L'image reprend fidèlement l'aperçu (feuillage, savons sur pierre, liste cochée, bouton) et elle est nette. En revanche, « Adaptés à toute la famille » touche presque le bord droit, et le logo Écume n'apparaît pas.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  publication-9x16 : NON gardée, l'aperçu garde sa case (elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « au ») ; sa fidélité n'est pas au niveau (6/10, il faut 8))
+    essai 1 : jointes apercu ; image HD cases/publication-9x16-1-hd.png
+      relecture : note 8/10 — L'image est fidèle et nette : même savon moussant dans son bac en marbre, mêmes textes et même bouton. Des bouts de feuilles coupés en bas à gauche sont un léger reste de la planche.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « en »)
+    essai 2 (reprise à la charge du Studio) : jointes apercu ; image HD cases/publication-9x16-2-hd.png
+      relecture : note 6/10 — La scène (savon mousseux dans une vasque en marbre, titre manuscrit, cœur, bouton) correspond bien à l'aperçu. Mais le texte a changé : « au solide ? » est devenu « en solide ? », et le logo Écume est absent.
+      raisons du refus : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « au ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  ouverture-site : GARDÉE (cases/ouverture-site-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/ouverture-site-1-hd.png
+      relecture : note 9/10 — La composition, les couleurs, le texte et les savons reprennent fidèlement l'aperçu. Le logo, coupé dans l'aperçu, est ici complet et net.
+      raisons du refus : aucune
+  ouverture-planche : GARDÉE (cases/ouverture-planche-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/ouverture-planche-1-hd.png
+      relecture : note 9/10 — Fidèle à l'aperçu : même pile de savons moussants, même titre, même mention manuscrite avec un cœur. Comme dans l'aperçu, le logo Écume n'y figure pas.
+      raisons du refus : aucune
+  site-ordinateur : GARDÉE (cases/site-ordinateur-gardee-hd.png)
+    essai 1 : jointes apercu, logo ; image HD cases/site-ordinateur-1-hd.png
+      relecture : note 9/10 — L'ordinateur et la page d'accueil reprennent l'aperçu à l'identique, avec des textes nets et sans faute. Seuls les éléments décoratifs de la planche (flèche orange) ont disparu, sans gêne.
+      raisons du refus : aucune
+  site-telephone : NON gardée, l'aperçu garde sa case (ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « 9:41 »))
+    essai 1 : jointes apercu, logo ; image HD cases/site-telephone-1-hd.png
+      relecture : note 7/10 — L'écran du téléphone suit bien l'aperçu, mais la phrase manuscrite « Une boutique toujours avec vous » placée au-dessus a disparu et le second savon est plus gris. L'intitulé « Sans », tronqué et sans sens, est repris tel quel.
+      raisons du refus : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous ») (en trop ou mal écrits : « 12.01 ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/site-telephone-2-hd.png
+      relecture : note 8.5/10 — La version refaite reprend fidèlement l'aperçu : même accroche manuscrite, même écran avec le logo Écume, le titre, le bouton et les savons, et même barre d'icônes. L'image est nette et sans personne ; seule l'étiquette « Sans », déjà présente dans l'aperçu, reste incomplète.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « 9:41 »)
+  produit-1 : GARDÉE (cases/produit-1-gardee-hd.png) — image d'ambiance, ce n'est pas son produit
+    essai 1 : jointes apercu ; image HD cases/produit-1-1-hd.png
+      relecture : note 9/10 — L'image reprend fidèlement l'aperçu : les deux savons, le logo Ɛ gravé, la lavande et le tissu. Le rendu est net, sans défaut visible.
+      raisons du refus : aucune
+  produit-2 : GARDÉE (cases/produit-2-gardee-hd.png) — image d'ambiance, ce n'est pas son produit
+    essai 1 : jointes apercu ; image HD cases/produit-2-1-hd.png
+      relecture : note 9/10 — On retrouve les mêmes pains de shampoing empilés sur le travertin, avec l'eucalyptus et la même lumière. La version haute définition est nette et fidèle.
+      raisons du refus : aucune
+  produit-3 : GARDÉE (cases/produit-3-gardee-hd.png) — image d'ambiance, ce n'est pas son produit
+    essai 1 : jointes apercu ; image HD cases/produit-3-1-hd.png
+      relecture : note 9/10 — La boîte métal ouverte, le baume et le logo taupe sur le couvercle argenté reprennent bien l'aperçu. La composition et les couleurs sont fidèles, sans défaut notable.
+      raisons du refus : aucune
+  emballage : NON gardée, l'aperçu garde sa case (ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « our ») (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) ») ; sa fidélité n'est pas au niveau (7/10, il faut 8))
+    essai 1 : jointes apercu, logo ; image HD cases/emballage-1-hd.png
+      relecture : note 6/10 — La composition est fidèle à l'aperçu, mais la phrase de la boîte affiche « our » au lieu de « pour », un défaut repris de l'aperçu. Le rabat du carton porte aussi un petit texte illisible qui ne veut rien dire.
+      raisons du refus : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+    essai 2 (reprise à la charge du Studio) : jointes apercu, logo ; image HD cases/emballage-2-hd.png
+      relecture : note 7/10 — La composition, les couleurs et les textes principaux reprennent fidèlement l'aperçu, sans aucune personne visible. Le petit texte sur le dessus du couvercle est déformé et illisible au milieu, et le texte vertical sur le flanc gauche est brouillé, ce qui fait baisser la note.
+      raisons du refus : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « our ») (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  reference-1 : GARDÉE (cases/reference-1-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-1-1-hd.png
+      relecture : note 9/10 — Même pile de trois savons (crème, vert, orangé), même branche d'olivier à gauche et même socle en pierre. L'image est nette et sans défaut visible.
+      raisons du refus : aucune
+  reference-2 : GARDÉE (cases/reference-2-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-2-1-hd.png
+      relecture : note 9/10 — Même gros plan de mousse crème, avec la même diagonale et les mêmes grosses bulles. Le rendu est net et fidèle à l'aperçu.
+      raisons du refus : aucune
+  reference-3 : GARDÉE (cases/reference-3-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-3-1-hd.png
+      relecture : note 8/10 — Même composition : pain vert à gauche, pain beige rond devant, eucalyptus et pierre. Seul le relief décoratif du pain beige est moins marqué que sur l'aperçu.
+      raisons du refus : aucune
+  reference-4 : GARDÉE (cases/reference-4-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-4-1-hd.png
+      relecture : note 9/10 — Même boîte en métal remplie de crème, même spatule en bois et même fond tricoté. Les couleurs et le cadrage sont respectés.
+      raisons du refus : aucune
+  reference-5 : GARDÉE (cases/reference-5-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-5-1-hd.png
+      relecture : note 8/10 — Même salle de bain avec robinetterie dorée, brosse, serviette au crochet et savon estampé. Le tampon du savon reste un motif illisible, comme sur l'aperçu.
+      raisons du refus : aucune
+  reference-6 : GARDÉE (cases/reference-6-gardee-hd.png)
+    essai 1 : jointes apercu ; image HD cases/reference-6-1-hd.png
+      relecture : note 9/10 — Même branche à gauche, mêmes ombres de feuillage sur le mur, même tissu au crochet à droite et même table en bois. L'image est nette et fidèle.
+      raisons du refus : aucune
+
+Relectures : publications (essai 1, relectures/publications-1-verdict.json) ; site (essai 1, relectures/site-1-verdict.json) ; produits (essai 1, relectures/produits-1-verdict.json) ; references (essai 1, relectures/references-1-verdict.json) ; publications (essai 2, relectures/publications-2-verdict.json) ; site (essai 2, relectures/site-2-verdict.json) ; produits (essai 2, relectures/produits-2-verdict.json)
+
+Logos (logos/) : logos/logo-principal.png, logos/logo-horizontal.png, logos/logo-empile.png, logos/logo-compact.png, logos/icone.png, logos/favicon.png, logos/monochrome-fonce.png, logos/monochrome-clair.png, logos/inverse.png, logos/badge.png, logos/favicon-32.png, logos/favicon-64.png, logos/icone-512.png, logos/avatar-reseaux.png, logos/symbole.png — symbole complet (séparation non fiable ou icône qui ne reprend pas le logo)
+Palette mesurée (palette.json) : #C7470C Orange Écume ; #E37C52 Terracotta ; #F2E1D1 Sable ; #AAB599 Sauge ; #977450 Brun naturel
+Police des titres (polices.json) : lue « Poppins », prise « Poppins » (Poppins-700.ttf, 700)
+Police des textes (polices.json) : lue « Nunito », prise « Sacramento » (Sacramento-400.ttf, 400) — REMPLACÉE par la plus proche du catalogue
+Publications pour le calendrier : publication-1x1 (compréhensible)
+  note : publication-4x5, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  note : publication-4x5, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : publication-9x16, essai 1 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « en »)
+  note : publication-9x16, essai 2 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « au ») ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  note : site-telephone, essai 1 refusé : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous ») (en trop ou mal écrits : « 12.01 ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  note : site-telephone, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (en trop ou mal écrits : « 9:41 »)
+  note : emballage, essai 1 refusé : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8)
+  note : emballage, essai 2 refusé : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « our ») (en trop ou mal écrits : « ƎKꓤIE », « (texte », « déformé », « sur », « le », « dessus », « du », « couvercle) ») ; sa fidélité n'est pas au niveau (7/10, il faut 8)
+  SINA dirait : Sur ta planche en vrai, 4 images n'ont pas passé ma relecture, même refaites (Publication portrait, Story, Site sur téléphone, Emballage et supports) : leurs cases gardent l'aperçu de ta planche choisie, sans fichier en haute définition. Je peux les refaire à ma charge : rien n'est compté sur ton budget.
+  SINA dirait : Tes produits sur la planche en vrai sont des images d'ambiance (« image d'ambiance, ce n'est pas ton produit ») : ils ne vont jamais sur les emplacements produit de ton site, où « Ta photo ici » attend tes photos. Quand tu m'envoies tes photos, je peux refaire ces cases avec ton vrai produit, je t'annonce le prix avant.
+  SINA dirait : Sur ta planche, la police nommée « Nunito » était montrée en écriture manuscrite : j'ai pris celle du catalogue du Studio qui ressemble le plus à ce que tu as vu, « Sacramento ».
+  SINA dirait : Je n'ai pas pu séparer proprement le symbole et le nom de ton logo : ton icône et ton favicon reprennent ton logo complet.
+
+Planche assemblée : planche-en-vrai.png (3072 × 4608)
+
+Étapes : Je découpe ta planche choisie → Je fais l'inventaire de ta planche → Je refais chaque image de ta planche en haute définition → Je prépare tes logos, tes couleurs et tes polices → J'assemble ta planche en vrai
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- c910538f5ae0bbe1e470a455f36507e80b246b4d214da851cccac9e93139dcd0 · anthropic:claude-opus-5-5 · charge du client · réservé 0,3358 € → réglé 0,1501 € (settled) · jetons 5999 en entrée, 6831 en sortie
+- 8e45a2ac12fe8fdd1b1a683aa20deeb575b1714b134cc5769ea5e6c317a34164 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,1014 € → réglé 0,0583 € (settled) · jetons 1651 en entrée, 1834 en sortie
+- 059892d87fc86936ad3aa5ea58531bf9ff7e0ba14720cd99846b351c653354b1 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0758 € → réglé 0,0437 € (settled) · jetons 448 en entrée, 1587 en sortie
+- 1000546b6524d4064749463a0f7238afe2fe8299bb7f9130c2d9e60c21bc1fc2 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0656 € → réglé 0,0369 € (settled) · jetons 416 en entrée, 1331 en sortie
+- 5119996e5920e12004cfc4a441d0292bdad543439bb620cf196c0a9b1c111d51 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0660 € → réglé 0,0324 € (settled) · jetons 1882 en entrée, 772 en sortie
+- 0e5f4fe298626f576b8e72292f5fb3100ef34cbb783398e67da91974c0c90a4b · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0454 € → réglé 0,0217 € (settled) · jetons 494 en entrée, 724 en sortie
+- e801d1abb1b495e0249d08ba96b7f053fd55306a5f7952e17844ba4f3f982ec1 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0873 € → réglé 0,0490 € (settled) · jetons 2058 en entrée, 1366 en sortie
+- 33fd9066184f946fd799684945914759763fecf02165f4b4b74e7962427d5df4 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0692 € → réglé 0,0337 € (settled) · jetons 1677 en entrée, 876 en sortie
+- 4f8e82801acecbf3e400a416c7da0733c2204fd98b5e5afdafcc8482f3b82be1 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0703 € → réglé 0,0394 € (settled) · jetons 379 en entrée, 1437 en sortie
+- 6a4156bac768873d15ce9f11e8971799688d2a9bdae1064bdbbbcf888e9dd1f1 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0703 € → réglé 0,0394 € (settled) · jetons 379 en entrée, 1437 en sortie
+- 1b678f50eadf31ee8caa25eb691d31c7357280989b4ee9fc35ec10d54c65f371 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0703 € → réglé 0,0393 € (settled) · jetons 361 en entrée, 1437 en sortie
+- 3b6459c9bd6edfc210e9e29affbc104e4c8d6e13a22540a64252ac6dd17b1a7d · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0902 € → réglé 0,0531 € (settled) · jetons 2152 en entrée, 1500 en sortie
+- fc50841197c41270c708207bfec16f8644c1f86cd06a0f871904a0158952dc18 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- 51a298deab9f7f534619bfa0cd53087636f74e07f2710b4baab9e6c454c37238 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- 84bd5b4897f464ac7c695cf33d00b30f85741db9ab3372782866cb4aa58dccaa · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0411 € (settled) · jetons 335 en entrée, 1514 en sortie
+- c4aff6656f96bcc7df16a93d4870fa1c8b4492ecb2ce1398cb002e6a607e1411 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- 6dcd80d38fb22ee8c2f4380ae97bd72aebcfc1a246f3f3d03d5fb40b3300c425 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- fcc4f00505e7e2004dc139248b0762ee8ce8aa03d349c6198b0af41933a69115 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,0717 € → réglé 0,0410 € (settled) · jetons 321 en entrée, 1514 en sortie
+- 4621a09887a9c45153c37c233991ed9e90523aa3b0ad6f5ce964ee8d692412af · anthropic:claude-opus-5-5 · charge du client · réservé 0,1841 € → réglé 0,0471 € (settled) · jetons 5766 en entrée, 1115 en sortie
+- a1841a8682bc5d5b6b99888f1ef5d93ece8de71a69e7db46faa71f660d203a7b · anthropic:claude-opus-5-5 · charge du client · réservé 0,1900 € → réglé 0,0537 € (settled) · jetons 7056 en entrée, 1690 en sortie
+- bdb8051ee399110a79243786840456f2b505c26a54eccca8f5c78512bb29d29e · anthropic:claude-opus-5-5 · charge du client · réservé 0,1875 € → réglé 0,0473 € (settled) · jetons 6501 en entrée, 1431 en sortie
+- 57ff1b474a6accaffc1ca6b0fe7be377153aa0a65ecc946b9febe36089bc6e22 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1947 € → réglé 0,0504 € (settled) · jetons 8084 en entrée, 1292 en sortie
+- a368e93c8c47f825a5d35772cc8829ff96725f23a9651bcc3aa6541a394cf4c0 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0777 € → réglé 0,0441 € (settled) · jetons 543 en entrée, 1587 en sortie
+- fca8d5988174512da76fb45774889159d3fac9295f802ae8397fdad9dfdbfe1f · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0661 € → réglé 0,0370 € (settled) · jetons 443 en entrée, 1331 en sortie
+- 8d308e4d24e4d4cafdcc30a1dcba635a57fe8a4668e9a7e0fc03ddc9ad580427 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0709 € → réglé 0,0341 € (settled) · jetons 1760 en entrée, 876 en sortie
+- 64f8a56dcf1761406f0a65315034446785f2f4bcc0c85d41fc29e7b209f8c059 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,0908 € → réglé 0,0532 € (settled) · jetons 2185 en entrée, 1500 en sortie
+- 84269c848746a92d8ef199fd0dc5f38a5d43116c75fc7dbfc4f2f4467d87896e · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1764 € → réglé 0,0287 € (settled) · jetons 4095 en entrée, 833 en sortie
+- 41a404b70c38bb36574f06974d7440347180c0cde4268fb406090bc9ee79b1b4 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1652 € → réglé 0,0172 € (settled) · jetons 1674 en entrée, 648 en sortie
+- abfbb6b9ad70be566cb167e78e082c475d59a8174e488a390c9961538f65bed6 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,1678 € → réglé 0,0208 € (settled) · jetons 2239 en entrée, 742 en sortie
+
+Dépense réelle comptée par le Studio : 1,2766 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).

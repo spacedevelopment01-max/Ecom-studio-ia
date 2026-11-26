@@ -1,0 +1,49 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un ordinateur portable ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.",
+    "quality": "high",
+    "size": "1520x1024",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "f7b58babc6c1c2f26b26b6c413ac546d5bbbcb937a4e495687db5f22ee53432f",
+      "octets": 412548
+    },
+    {
+      "role": "logo",
+      "assetId": null,
+      "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+      "octets": 310250
+    }
+  ],
+  "tailleRecue": "1520x1024",
+  "requestId": "req_acbd43c1802047e0a60ae6135970f3b2",
+  "usage": {
+    "input_tokens": 2058,
+    "input_tokens_details": {
+      "image_tokens": 1892,
+      "text_tokens": 166
+    },
+    "output_tokens": 1366,
+    "output_tokens_details": {
+      "image_tokens": 1366,
+      "text_tokens": 0
+    },
+    "total_tokens": 3424
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "1520x1024",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 48974,
+  "dureeMs": 33540
+}

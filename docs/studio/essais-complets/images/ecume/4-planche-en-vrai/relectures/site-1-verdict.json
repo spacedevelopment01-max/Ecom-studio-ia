@@ -1,0 +1,116 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "ouverture-site",
+        "identique": true,
+        "textesLus": [
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Des soins naturels",
+          "pour une peau plus douce,",
+          "chaque jour.",
+          "Découvrir nos savons →"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La composition, les couleurs, le texte et les savons reprennent fidèlement l'aperçu. Le logo, coupé dans l'aperçu, est ici complet et net."
+      },
+      {
+        "case": "ouverture-planche",
+        "identique": true,
+        "textesLus": [
+          "Des soins",
+          "naturels pour",
+          "une peau plus",
+          "douce, chaque jour.",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Naturellement",
+          "essentiel"
+        ],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Fidèle à l'aperçu : même pile de savons moussants, même titre, même mention manuscrite avec un cœur. Comme dans l'aperçu, le logo Écume n'y figure pas."
+      },
+      {
+        "case": "site-ordinateur",
+        "identique": true,
+        "textesLus": [
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Savons",
+          "Shampoings",
+          "Baumes",
+          "Notre histoire",
+          "Des soins naturels",
+          "pour une peau plus douce,",
+          "chaque jour.",
+          "Découvrir nos savons →",
+          "Ingrédients naturels",
+          "Fabrication artisanale",
+          "Emballages sans plastique",
+          "Paiement sécurisé"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "L'ordinateur et la page d'accueil reprennent l'aperçu à l'identique, avec des textes nets et sans faute. Seuls les éléments décoratifs de la planche (flèche orange) ont disparu, sans gêne."
+      },
+      {
+        "case": "site-telephone",
+        "identique": false,
+        "textesLus": [
+          "12.01",
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Des soins naturels",
+          "pour une peau",
+          "plus douce,",
+          "chaque jour.",
+          "Voir la collection →",
+          "Naturel",
+          "Artisanal",
+          "Sans",
+          "Paiement"
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 7,
+        "pourquoi": "L'écran du téléphone suit bien l'aperçu, mais la phrase manuscrite « Une boutique toujours avec vous » placée au-dessus a disparu et le second savon est plus gris. L'intitulé « Sans », tronqué et sans sens, est repris tel quel."
+      }
+    ]
+  },
+  "raisons": {
+    "ouverture-site": [],
+    "ouverture-planche": [],
+    "site-ordinateur": [],
+    "site-telephone": [
+      "elle n'est pas identique à son aperçu",
+      "ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous ») (en trop ou mal écrits : « 12.01 »)",
+      "sa fidélité n'est pas au niveau (7/10, il faut 8)"
+    ]
+  },
+  "gardees": [
+    "ouverture-site",
+    "ouverture-planche",
+    "site-ordinateur"
+  ]
+}

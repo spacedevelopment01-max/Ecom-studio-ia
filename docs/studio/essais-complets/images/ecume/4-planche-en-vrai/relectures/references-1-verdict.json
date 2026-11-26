@@ -1,0 +1,94 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "reference-1",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Même pile de trois savons (crème, vert, orangé), même branche d'olivier à gauche et même socle en pierre. L'image est nette et sans défaut visible."
+      },
+      {
+        "case": "reference-2",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Même gros plan de mousse crème, avec la même diagonale et les mêmes grosses bulles. Le rendu est net et fidèle à l'aperçu."
+      },
+      {
+        "case": "reference-3",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "Même composition : pain vert à gauche, pain beige rond devant, eucalyptus et pierre. Seul le relief décoratif du pain beige est moins marqué que sur l'aperçu."
+      },
+      {
+        "case": "reference-4",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Même boîte en métal remplie de crème, même spatule en bois et même fond tricoté. Les couleurs et le cadrage sont respectés."
+      },
+      {
+        "case": "reference-5",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 8,
+        "pourquoi": "Même salle de bain avec robinetterie dorée, brosse, serviette au crochet et savon estampé. Le tampon du savon reste un motif illisible, comme sur l'aperçu."
+      },
+      {
+        "case": "reference-6",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "Même branche à gauche, mêmes ombres de feuillage sur le mur, même tissu au crochet à droite et même table en bois. L'image est nette et fidèle."
+      }
+    ]
+  },
+  "raisons": {
+    "reference-1": [],
+    "reference-2": [],
+    "reference-3": [],
+    "reference-4": [],
+    "reference-5": [],
+    "reference-6": []
+  },
+  "gardees": [
+    "reference-1",
+    "reference-2",
+    "reference-3",
+    "reference-4",
+    "reference-5",
+    "reference-6"
+  ]
+}

@@ -1,0 +1,1749 @@
+[
+  {
+    "cle": "c910538f5ae0bbe1e470a455f36507e80b246b4d214da851cccac9e93139dcd0",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 335844,
+    "reelMicro": 150135,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-inventaire",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 5999,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 2792,
+      "jetonsSortie": 6831,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 54873,
+      "coutMicro": 150135,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:inventaire",
+      "details": {
+        "placeDemandee": 16000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "8e45a2ac12fe8fdd1b1a683aa20deeb575b1714b134cc5769ea5e6c317a34164",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 101419,
+    "reelMicro": 58271,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-publication-1x1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1651,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1834,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 44048,
+      "coutMicro": 58271,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:publication-1x1",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "publication-1x1",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est une publication carrée pour les réseaux sociaux, 1080 × 1080. Aucune personne n'apparaît.",
+        "requestId": "req_372d67323d12433c9f49177193a68f47",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1088x1088",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "f310c00df4f98252975547a2c7d44f957597f89dd9f05959eba2ddc2311685cc",
+            "octets": 186667
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+            "octets": 310250
+          }
+        ],
+        "usage": {
+          "input_tokens": 1651,
+          "input_tokens_details": {
+            "image_tokens": 1494,
+            "text_tokens": 157
+          },
+          "output_tokens": 1834,
+          "output_tokens_details": {
+            "image_tokens": 1834,
+            "text_tokens": 0
+          },
+          "total_tokens": 3485
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1088x1088",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "059892d87fc86936ad3aa5ea58531bf9ff7e0ba14720cd99846b351c653354b1",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 75751,
+    "reelMicro": 43722,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-publication-4x5",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 448,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1587,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 36519,
+      "coutMicro": 43722,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:publication-4x5",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "publication-4x5",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une publication portrait pour les réseaux sociaux, 1080 × 1350. Aucune personne n'apparaît.",
+        "requestId": "req_128d1c39311b4041972b8ea502e65cbe",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1088x1360",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "f8886991e6938884014a50c9c0bd969925ecd155b150e41f09fb22873e8370f2",
+            "octets": 180688
+          }
+        ],
+        "usage": {
+          "input_tokens": 448,
+          "input_tokens_details": {
+            "image_tokens": 330,
+            "text_tokens": 118
+          },
+          "output_tokens": 1587,
+          "output_tokens_details": {
+            "image_tokens": 1587,
+            "text_tokens": 0
+          },
+          "total_tokens": 2035
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1088x1360",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "1000546b6524d4064749463a0f7238afe2fe8299bb7f9130c2d9e60c21bc1fc2",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 65576,
+    "reelMicro": 36900,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-publication-9x16",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 416,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1331,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 32575,
+      "coutMicro": 36900,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:publication-9x16",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "publication-9x16",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une story pour les réseaux sociaux, 1080 × 1920. Aucune personne n'apparaît.",
+        "requestId": "req_68ddb3a5da4049d5a677db48fbade1e5",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1088x1936",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "16e93e2046249c69ef09d49327b49119e13962dec88e0476cfbc98cf29dc6582",
+            "octets": 159356
+          }
+        ],
+        "usage": {
+          "input_tokens": 416,
+          "input_tokens_details": {
+            "image_tokens": 299,
+            "text_tokens": 117
+          },
+          "output_tokens": 1331,
+          "output_tokens_details": {
+            "image_tokens": 1331,
+            "text_tokens": 0
+          },
+          "total_tokens": 1747
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1088x1936",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "5119996e5920e12004cfc4a441d0292bdad543439bb620cf196c0a9b1c111d51",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 66049,
+    "reelMicro": 32396,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-ouverture-site",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1882,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 772,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 24529,
+      "coutMicro": 32396,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:ouverture-site",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "ouverture-site",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la grande image d'ouverture du site, au format bandeau 1920 × 720 ; garde chaque élément à sa place. Garde des marges généreuses : aucun texte ne touche les bords. Aucune personne n'apparaît.",
+        "requestId": "req_8754a40d8ac241a9a3aa3c575c8e8d0e",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "2048x768",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "83518c61d14d97b2fc2dee63ac1e2e0545d0d5cb0c2a97c4545d6743b98b4d9e",
+            "octets": 262152
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+            "octets": 310250
+          }
+        ],
+        "usage": {
+          "input_tokens": 1882,
+          "input_tokens_details": {
+            "image_tokens": 1700,
+            "text_tokens": 182
+          },
+          "output_tokens": 772,
+          "output_tokens_details": {
+            "image_tokens": 772,
+            "text_tokens": 0
+          },
+          "total_tokens": 2654
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "2048x768",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "0e5f4fe298626f576b8e72292f5fb3100ef34cbb783398e67da91974c0c90a4b",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 45376,
+    "reelMicro": 21740,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-ouverture-planche",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 494,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 724,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 23386,
+      "coutMicro": 21740,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:ouverture-planche",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "ouverture-planche",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est le bandeau d'ouverture de la planche ; garde des marges généreuses en haut et en bas, rien ne touche les bords. Aucune personne n'apparaît.",
+        "requestId": "req_52fa573da4c74dcca088ba6e30ca1cb1",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "2304x768",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "675d7f109e340ae264fccb0472033e0d3bc18e4bed2a61af2394abc93b8c9624",
+            "octets": 631560
+          }
+        ],
+        "usage": {
+          "input_tokens": 494,
+          "input_tokens_details": {
+            "image_tokens": 363,
+            "text_tokens": 131
+          },
+          "output_tokens": 724,
+          "output_tokens_details": {
+            "image_tokens": 724,
+            "text_tokens": 0
+          },
+          "total_tokens": 1218
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "2304x768",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "e801d1abb1b495e0249d08ba96b7f053fd55306a5f7952e17844ba4f3f982ec1",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 87332,
+    "reelMicro": 48974,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-site-ordinateur",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 2058,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1366,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 33548,
+      "coutMicro": 48974,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:site-ordinateur",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "site-ordinateur",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un ordinateur portable ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.",
+        "requestId": "req_acbd43c1802047e0a60ae6135970f3b2",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1520x1024",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "f7b58babc6c1c2f26b26b6c413ac546d5bbbcb937a4e495687db5f22ee53432f",
+            "octets": 412548
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+            "octets": 310250
+          }
+        ],
+        "usage": {
+          "input_tokens": 2058,
+          "input_tokens_details": {
+            "image_tokens": 1892,
+            "text_tokens": 166
+          },
+          "output_tokens": 1366,
+          "output_tokens_details": {
+            "image_tokens": 1366,
+            "text_tokens": 0
+          },
+          "total_tokens": 3424
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1520x1024",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "33fd9066184f946fd799684945914759763fecf02165f4b4b74e7962427d5df4",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 69237,
+    "reelMicro": 33713,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-site-telephone",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1677,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 876,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 26561,
+      "coutMicro": 33713,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:site-telephone",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "site-telephone",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.",
+        "requestId": "req_5e906280faf046c3bf2ad6fa6963c533",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "768x1712",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "5ba2b63261976d7b9f97eb34f9e42d8c4ce58427c4ad30b9f86049b3116d9a4a",
+            "octets": 154512
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+            "octets": 310250
+          }
+        ],
+        "usage": {
+          "input_tokens": 1677,
+          "input_tokens_details": {
+            "image_tokens": 1512,
+            "text_tokens": 165
+          },
+          "output_tokens": 876,
+          "output_tokens_details": {
+            "image_tokens": 876,
+            "text_tokens": 0
+          },
+          "total_tokens": 2553
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "768x1712",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "4f8e82801acecbf3e400a416c7da0733c2204fd98b5e5afdafcc8482f3b82be1",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 70277,
+    "reelMicro": 39401,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-produit-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 379,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1437,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 38628,
+      "coutMicro": 39401,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:produit-1",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "produit-1",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo produit de la marque. Aucune personne n'apparaît.",
+        "requestId": "req_e12f64081dc44ffe85b67e78d0fc972b",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "912x1088",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "88e32c778a41a28b0843496b17a5d4904cfa6b8a92d1bb4eeb7b05b312ca925d",
+            "octets": 165933
+          }
+        ],
+        "usage": {
+          "input_tokens": 379,
+          "input_tokens_details": {
+            "image_tokens": 270,
+            "text_tokens": 109
+          },
+          "output_tokens": 1437,
+          "output_tokens_details": {
+            "image_tokens": 1437,
+            "text_tokens": 0
+          },
+          "total_tokens": 1816
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "912x1088",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "6a4156bac768873d15ce9f11e8971799688d2a9bdae1064bdbbbcf888e9dd1f1",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 70277,
+    "reelMicro": 39401,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-produit-2",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 379,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1437,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 35746,
+      "coutMicro": 39401,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:produit-2",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "produit-2",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo produit de la marque. Aucune personne n'apparaît.",
+        "requestId": "req_3e449bef48934930a8885505144c83b2",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "912x1088",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "c00477a24d6b2d60bfd95ba0d0698165f5d1d40841040f17d6d082516a6b3580",
+            "octets": 159010
+          }
+        ],
+        "usage": {
+          "input_tokens": 379,
+          "input_tokens_details": {
+            "image_tokens": 270,
+            "text_tokens": 109
+          },
+          "output_tokens": 1437,
+          "output_tokens_details": {
+            "image_tokens": 1437,
+            "text_tokens": 0
+          },
+          "total_tokens": 1816
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "912x1088",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "1b678f50eadf31ee8caa25eb691d31c7357280989b4ee9fc35ec10d54c65f371",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 70277,
+    "reelMicro": 39277,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-produit-3",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 361,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1437,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 35005,
+      "coutMicro": 39277,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:produit-3",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "produit-3",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo produit de la marque. Aucune personne n'apparaît.",
+        "requestId": "req_41f6bb2115594b628d18159d8b389c01",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "912x1088",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "747fbde1f1451c6505662a07c5767bf0a8d7f9191f43b4a437805590bd062626",
+            "octets": 138614
+          }
+        ],
+        "usage": {
+          "input_tokens": 361,
+          "input_tokens_details": {
+            "image_tokens": 252,
+            "text_tokens": 109
+          },
+          "output_tokens": 1437,
+          "output_tokens_details": {
+            "image_tokens": 1437,
+            "text_tokens": 0
+          },
+          "total_tokens": 1798
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "912x1088",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "3b6459c9bd6edfc210e9e29affbc104e4c8d6e13a22540a64252ac6dd17b1a7d",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 90227,
+    "reelMicro": 53083,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-emballage",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 2152,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1500,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 38465,
+      "coutMicro": 53083,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:emballage",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "emballage",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la photo des supports de marque (carton, sac, ruban adhésif, carte de remerciement). Aucune personne n'apparaît.",
+        "requestId": "req_7980fa2a4e6446fb85857e27b9a6b6c0",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1344x1024",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "751db01bc226023c34c63d74436316f70e7edbbdd375c15b211aa4f67bc3d36c",
+            "octets": 687171
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+            "octets": 310250
+          }
+        ],
+        "usage": {
+          "input_tokens": 2152,
+          "input_tokens_details": {
+            "image_tokens": 1988,
+            "text_tokens": 164
+          },
+          "output_tokens": 1500,
+          "output_tokens_details": {
+            "image_tokens": 1500,
+            "text_tokens": 0
+          },
+          "total_tokens": 3652
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1344x1024",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "fc50841197c41270c708207bfec16f8644c1f86cd06a0f871904a0158952dc18",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 71681,
+    "reelMicro": 40983,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-reference-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 321,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1514,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 37885,
+      "coutMicro": 40983,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:reference-1",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "reference-1",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+        "requestId": "req_4b4a4d8fa54e419d8e9b2972b70dddec",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "89a03834eb94c9b5f79c0dab3f29f7c93f518b173e18188281e90fcfe31e8412",
+            "octets": 151053
+          }
+        ],
+        "usage": {
+          "input_tokens": 321,
+          "input_tokens_details": {
+            "image_tokens": 210,
+            "text_tokens": 111
+          },
+          "output_tokens": 1514,
+          "output_tokens_details": {
+            "image_tokens": 1514,
+            "text_tokens": 0
+          },
+          "total_tokens": 1835
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "51a298deab9f7f534619bfa0cd53087636f74e07f2710b4baab9e6c454c37238",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 71681,
+    "reelMicro": 40983,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-reference-2",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 321,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1514,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 36082,
+      "coutMicro": 40983,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:reference-2",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "reference-2",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+        "requestId": "req_ac80ef8ceae443ea8d16c8c13511364d",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "14fa1d5f2fac42e440fcf198eab297273cd112374d85b8cf0c181d8df697ddfc",
+            "octets": 125717
+          }
+        ],
+        "usage": {
+          "input_tokens": 321,
+          "input_tokens_details": {
+            "image_tokens": 210,
+            "text_tokens": 111
+          },
+          "output_tokens": 1514,
+          "output_tokens_details": {
+            "image_tokens": 1514,
+            "text_tokens": 0
+          },
+          "total_tokens": 1835
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "84bd5b4897f464ac7c695cf33d00b30f85741db9ab3372782866cb4aa58dccaa",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 71681,
+    "reelMicro": 41080,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-reference-3",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 335,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1514,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 38351,
+      "coutMicro": 41080,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:reference-3",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "reference-3",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+        "requestId": "req_c3683a200c984f2b8d829c527c41821b",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "2fdffa0edad40ae97d3b65f7d893228212eccc1582c2955c009edf5f6d429e31",
+            "octets": 143852
+          }
+        ],
+        "usage": {
+          "input_tokens": 335,
+          "input_tokens_details": {
+            "image_tokens": 224,
+            "text_tokens": 111
+          },
+          "output_tokens": 1514,
+          "output_tokens_details": {
+            "image_tokens": 1514,
+            "text_tokens": 0
+          },
+          "total_tokens": 1849
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "c4aff6656f96bcc7df16a93d4870fa1c8b4492ecb2ce1398cb002e6a607e1411",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 71681,
+    "reelMicro": 40983,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-reference-4",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 321,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1514,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 35475,
+      "coutMicro": 40983,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:reference-4",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "reference-4",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+        "requestId": "req_a28e4fa19c0548c7a55a591ecc6d8e17",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "e36c6332c735b580de53ab3d746dc6f5b99507d323cd6195353542605be6edb6",
+            "octets": 143450
+          }
+        ],
+        "usage": {
+          "input_tokens": 321,
+          "input_tokens_details": {
+            "image_tokens": 210,
+            "text_tokens": 111
+          },
+          "output_tokens": 1514,
+          "output_tokens_details": {
+            "image_tokens": 1514,
+            "text_tokens": 0
+          },
+          "total_tokens": 1835
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "6dcd80d38fb22ee8c2f4380ae97bd72aebcfc1a246f3f3d03d5fb40b3300c425",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 71681,
+    "reelMicro": 40983,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-reference-5",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 321,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1514,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 36508,
+      "coutMicro": 40983,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:reference-5",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "reference-5",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+        "requestId": "req_d1550d7bd0f940728f0c56329fec9b50",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "f1ab08d6bc31966e74506fea4aa683743df2200f369e6dbd6d740194b2858a9d",
+            "octets": 137180
+          }
+        ],
+        "usage": {
+          "input_tokens": 321,
+          "input_tokens_details": {
+            "image_tokens": 210,
+            "text_tokens": 111
+          },
+          "output_tokens": 1514,
+          "output_tokens_details": {
+            "image_tokens": 1514,
+            "text_tokens": 0
+          },
+          "total_tokens": 1835
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "fcc4f00505e7e2004dc139248b0762ee8ce8aa03d349c6198b0af41933a69115",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 71681,
+    "reelMicro": 40983,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-reference-6",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 321,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1514,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 36134,
+      "coutMicro": 40983,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:reference-6",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "reference-6",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une photo d'ambiance de la marque. Aucune personne n'apparaît.",
+        "requestId": "req_0fcf7dd68126465f95eb18a203af7bfa",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "8b777ca749746b5fc99938f9af9b00bf7cc05b304c9108b791648485c40b248d",
+            "octets": 125074
+          }
+        ],
+        "usage": {
+          "input_tokens": 321,
+          "input_tokens_details": {
+            "image_tokens": 210,
+            "text_tokens": 111
+          },
+          "output_tokens": 1514,
+          "output_tokens_details": {
+            "image_tokens": 1514,
+            "text_tokens": 0
+          },
+          "total_tokens": 1835
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1024x912",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "4621a09887a9c45153c37c233991ed9e90523aa3b0ad6f5ce964ee8d692412af",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 184068,
+    "reelMicro": 47071,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-relecture-publications",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 5766,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 1874,
+      "jetonsSortie": 1115,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 11692,
+      "coutMicro": 47071,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:relecture-publications",
+      "details": {
+        "placeDemandee": 8000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "a1841a8682bc5d5b6b99888f1ef5d93ece8de71a69e7db46faa71f660d203a7b",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 190010,
+    "reelMicro": 53663,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-relecture-site",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 7056,
+      "jetonsCacheLus": 1874,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1690,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 15383,
+      "coutMicro": 53663,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:relecture-site",
+      "details": {
+        "placeDemandee": 8000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "bdb8051ee399110a79243786840456f2b505c26a54eccca8f5c78512bb29d29e",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 187454,
+    "reelMicro": 47299,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-relecture-produits",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 6501,
+      "jetonsCacheLus": 1874,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1431,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 14182,
+      "coutMicro": 47299,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:relecture-produits",
+      "details": {
+        "placeDemandee": 8000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "57ff1b474a6accaffc1ca6b0fe7be377153aa0a65ecc946b9febe36089bc6e22",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 194746,
+    "reelMicro": 50354,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-relecture-references",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 8084,
+      "jetonsCacheLus": 1874,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1292,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 11522,
+      "coutMicro": 50354,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:relecture-references",
+      "details": {
+        "placeDemandee": 8000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "a368e93c8c47f825a5d35772cc8829ff96725f23a9651bcc3aa6541a394cf4c0",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": true,
+    "reserveMicro": 77670,
+    "reelMicro": 44131,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-publication-4x5-r1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 543,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1587,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 35391,
+      "coutMicro": 44131,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:publication-4x5-r1",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "publication-4x5",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une publication portrait pour les réseaux sociaux, 1080 × 1350. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8).",
+        "requestId": "req_90e2a2dcd2464f2088eb1dc44a3dbf23",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1088x1360",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "f8886991e6938884014a50c9c0bd969925ecd155b150e41f09fb22873e8370f2",
+            "octets": 180688
+          }
+        ],
+        "usage": {
+          "input_tokens": 543,
+          "input_tokens_details": {
+            "image_tokens": 330,
+            "text_tokens": 213
+          },
+          "output_tokens": 1587,
+          "output_tokens_details": {
+            "image_tokens": 1587,
+            "text_tokens": 0
+          },
+          "total_tokens": 2130
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1088x1360",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "fca8d5988174512da76fb45774889159d3fac9295f802ae8397fdad9dfdbfe1f",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": true,
+    "reserveMicro": 66133,
+    "reelMicro": 37016,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-publication-9x16-r1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 443,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1331,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 27727,
+      "coutMicro": 37016,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:publication-9x16-r1",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "publication-9x16",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une story pour les réseaux sociaux, 1080 × 1920. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « en »).",
+        "requestId": "req_c9912e16c08a4bba8d18ca55e16e6e57",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1088x1936",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "16e93e2046249c69ef09d49327b49119e13962dec88e0476cfbc98cf29dc6582",
+            "octets": 159356
+          }
+        ],
+        "usage": {
+          "input_tokens": 443,
+          "input_tokens_details": {
+            "image_tokens": 299,
+            "text_tokens": 144
+          },
+          "output_tokens": 1331,
+          "output_tokens_details": {
+            "image_tokens": 1331,
+            "text_tokens": 0
+          },
+          "total_tokens": 1774
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1088x1936",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "8d308e4d24e4d4cafdcc30a1dcba635a57fe8a4668e9a7e0fc03ddc9ad580427",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": true,
+    "reserveMicro": 70881,
+    "reelMicro": 34070,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-site-telephone-r1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 1760,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 876,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 28682,
+      "coutMicro": 34070,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:site-telephone-r1",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "site-telephone",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la page d'accueil du site, montrée sur un téléphone ; tous les textes de l'écran restent nets et lisibles. Aucune personne n'apparaît.\n\nÀ corriger : elle n'est pas identique à son aperçu ; ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « Une », « boutique », « toujours », « avec », « vous ») (en trop ou mal écrits : « 12.01 ») ; sa fidélité n'est pas au niveau (7/10, il faut 8).",
+        "requestId": "req_f02d2624caa3471d80d51bbaf113e974",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "768x1712",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "5ba2b63261976d7b9f97eb34f9e42d8c4ce58427c4ad30b9f86049b3116d9a4a",
+            "octets": 154512
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+            "octets": 310250
+          }
+        ],
+        "usage": {
+          "input_tokens": 1760,
+          "input_tokens_details": {
+            "image_tokens": 1512,
+            "text_tokens": 248
+          },
+          "output_tokens": 876,
+          "output_tokens_details": {
+            "image_tokens": 876,
+            "text_tokens": 0
+          },
+          "total_tokens": 2636
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "768x1712",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "64f8a56dcf1761406f0a65315034446785f2f4bcc0c85d41fc29e7b209f8c059",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": true,
+    "reserveMicro": 90837,
+    "reelMicro": 53225,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-emballage-r1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 2185,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 1500,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 38328,
+      "coutMicro": 53225,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:emballage-r1",
+      "details": {
+        "methode": "planche-en-vrai",
+        "element": "emballage",
+        "texteEnvoye": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. La deuxième image est le logo officiel de Écume : là où il apparaît, reproduis-le exactement, sans le redessiner. C'est la photo des supports de marque (carton, sac, ruban adhésif, carte de remerciement). Aucune personne n'apparaît.\n\nÀ corriger : un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8).",
+        "requestId": "req_8590d665ea664cd7a42ecc2437290478",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "high",
+          "size": "1344x1024",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "apercu",
+            "assetId": null,
+            "sha256": "751db01bc226023c34c63d74436316f70e7edbbdd375c15b211aa4f67bc3d36c",
+            "octets": 687171
+          },
+          {
+            "role": "logo",
+            "assetId": null,
+            "sha256": "70ea57d23f20727b9bc2f5795ae473348c15591f6ca559551eef769426f91819",
+            "octets": 310250
+          }
+        ],
+        "usage": {
+          "input_tokens": 2185,
+          "input_tokens_details": {
+            "image_tokens": 1988,
+            "text_tokens": 197
+          },
+          "output_tokens": 1500,
+          "output_tokens_details": {
+            "image_tokens": 1500,
+            "text_tokens": 0
+          },
+          "total_tokens": 3685
+        },
+        "renvoye": {
+          "quality": "high",
+          "size": "1344x1024",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "84269c848746a92d8ef199fd0dc5f38a5d43116c75fc7dbfc4f2f4467d87896e",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": true,
+    "reserveMicro": 176374,
+    "reelMicro": 28737,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-relecture-publications-r1",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 4095,
+      "jetonsCacheLus": 1874,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 833,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 8617,
+      "coutMicro": 28737,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:relecture-publications-r1",
+      "details": {
+        "placeDemandee": 8000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "41a404b70c38bb36574f06974d7440347180c0cde4268fb406090bc9ee79b1b4",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": true,
+    "reserveMicro": 165227,
+    "reelMicro": 17226,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-relecture-site-r1",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 1674,
+      "jetonsCacheLus": 1874,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 648,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 6369,
+      "coutMicro": 17226,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:relecture-site-r1",
+      "details": {
+        "placeDemandee": 8000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "abfbb6b9ad70be566cb167e78e082c475d59a8174e488a390c9961538f65bed6",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": true,
+    "reserveMicro": 167828,
+    "reelMicro": 20787,
+    "statut": "settled",
+    "appel": {
+      "etape": "envrai-relecture-produits-r1",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 2239,
+      "jetonsCacheLus": 1874,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 742,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 7241,
+      "coutMicro": 20787,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planche-en-vrai-kejri9uc8mtnz9fm:envrai:relecture-produits-r1",
+      "details": {
+        "placeDemandee": 8000,
+        "sortie": "stricte"
+      }
+    }
+  }
+]

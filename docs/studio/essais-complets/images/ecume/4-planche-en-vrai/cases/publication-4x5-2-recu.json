@@ -1,0 +1,43 @@
+{
+  "adresse": "POST https://api.openai.com/v1/images/edits (multipart)",
+  "champs": {
+    "model": "gpt-image-2.5-sunburst",
+    "prompt": "La première image est un aperçu en petit, découpé sur la planche d'identité que le client a choisie. Refais-la à l'identique, en haute définition et à son vrai format : même composition, mêmes couleurs, même photographie, mêmes textes au mot près, même typographie, mêmes placements. Améliore seulement la netteté et les détails. C'est une publication portrait pour les réseaux sociaux, 1080 × 1350. Aucune personne n'apparaît.\n\nÀ corriger : ses textes ne sont pas ceux de l'aperçu, lettre pour lettre (manquent : « s », « contenus », « qui », « inspirent », « au », « quoti », « nature », « fa ») (en trop ou mal écrits : « naturels », « famille ») ; un texte est coupé ou collé au bord ; sa fidélité n'est pas au niveau (6/10, il faut 8).",
+    "quality": "high",
+    "size": "1088x1360",
+    "background": "opaque",
+    "output_format": "png",
+    "n": 1
+  },
+  "jointes": [
+    {
+      "role": "apercu",
+      "assetId": null,
+      "sha256": "f8886991e6938884014a50c9c0bd969925ecd155b150e41f09fb22873e8370f2",
+      "octets": 180688
+    }
+  ],
+  "tailleRecue": "1088x1360",
+  "requestId": "req_90e2a2dcd2464f2088eb1dc44a3dbf23",
+  "usage": {
+    "input_tokens": 543,
+    "input_tokens_details": {
+      "image_tokens": 330,
+      "text_tokens": 213
+    },
+    "output_tokens": 1587,
+    "output_tokens_details": {
+      "image_tokens": 1587,
+      "text_tokens": 0
+    },
+    "total_tokens": 2130
+  },
+  "renvoye": {
+    "quality": "high",
+    "size": "1088x1360",
+    "background": "opaque",
+    "output_format": "png"
+  },
+  "coutMicro": 44131,
+  "dureeMs": 35388
+}

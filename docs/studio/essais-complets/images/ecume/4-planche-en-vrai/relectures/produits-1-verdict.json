@@ -1,0 +1,84 @@
+{
+  "verdict": {
+    "images": [
+      {
+        "case": "produit-1",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "L'image reprend fidèlement l'aperçu : les deux savons, le logo Ɛ gravé, la lavande et le tissu. Le rendu est net, sans défaut visible."
+      },
+      {
+        "case": "produit-2",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": false,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "On retrouve les mêmes pains de shampoing empilés sur le travertin, avec l'eucalyptus et la même lumière. La version haute définition est nette et fidèle."
+      },
+      {
+        "case": "produit-3",
+        "identique": true,
+        "textesLus": [],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": false,
+        "note": 9,
+        "pourquoi": "La boîte métal ouverte, le baume et le logo taupe sur le couvercle argenté reprennent bien l'aperçu. La composition et les couleurs sont fidèles, sans défaut notable."
+      },
+      {
+        "case": "emballage",
+        "identique": true,
+        "textesLus": [
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Des soins naturels",
+          "our une peau plus douce,",
+          "chaque jour.",
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Écume",
+          "SAVONNERIE",
+          "ARTISANALE",
+          "Merci",
+          "de faire partie",
+          "de l'aventure Écume."
+        ],
+        "logoPresent": true,
+        "personne": false,
+        "logoFonceSurFondSombre": false,
+        "produitFidele": null,
+        "texteCoupe": true,
+        "note": 6,
+        "pourquoi": "La composition est fidèle à l'aperçu, mais la phrase de la boîte affiche « our » au lieu de « pour », un défaut repris de l'aperçu. Le rabat du carton porte aussi un petit texte illisible qui ne veut rien dire."
+      }
+    ]
+  },
+  "raisons": {
+    "produit-1": [],
+    "produit-2": [],
+    "produit-3": [],
+    "emballage": [
+      "un texte est coupé ou collé au bord",
+      "sa fidélité n'est pas au niveau (6/10, il faut 8)"
+    ]
+  },
+  "gardees": [
+    "produit-1",
+    "produit-2",
+    "produit-3"
+  ]
+}
