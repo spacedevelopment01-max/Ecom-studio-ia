@@ -37,6 +37,15 @@
  *     data/essai-ecume/3-planches/planche-X-gardee.png data/essai-ecume/2-finalisation/esquisse-NN-logo-garde.png
  * Devis seul, sans aucun appel ni clé : DEVIS_SEULEMENT=1 DATA_DIR=… node_modules/.bin/tsx scripts/syna-recette/essai-planche-en-vrai.mts
  *
+ * LA REPRISE D'UNE PREMIÈRE PASSE INTERROMPUE (REPRENDRE=1, 26 novembre 2026 ; Mouture, arrêtée à la sixième image sur une
+ * erreur de connexion du fournisseur) : la même commande, même dossier de sortie, avec REPRENDRE=1 en plus. Ce que la passe
+ * d'avant a reçu (l'inventaire, les images de cases/, les relectures de relectures/, les logos de logos-hd/) est repris tel
+ * quel, sans appel, jamais redemandé ni repayé ; la planche et le logo doivent être les mêmes (empreintes du rapport). Son
+ * rapport et sa dépense sont archivés dans passe-N/. Le reste est fait normalement : les images restantes, les relectures,
+ * les reprises, LOGO_HD, l'assemblage, etat.json, essai.json et le parcours. Un appel parti sans réponse (résultat incertain,
+ * coût maximal retenu) est refait parce que le propriétaire relance lui-même : jamais tout seul. Tout arrêt écrit, au rapport
+ * et à la console, comment reprendre. Devis de ce qui reste, sans appel : DEVIS_SEULEMENT=1 REPRENDRE=1 (même commande).
+ *
  * LE RÉASSEMBLAGE D'UN ESSAI DÉJÀ FAIT (26 novembre 2026, `reassemblerLEssaiEnVrai`) : REASSEMBLER=<dossier de l'essai>
  * (essai.json, inventaire-reponse.json, apercus/, cases/, relectures/), puis le dossier de sortie, la planche choisie et le
  * logo fini. a) le code refait les logos, la palette, les polices, les textes et l'assemblage, gratuit ; b) chaque image
@@ -81,8 +90,18 @@ import path from "node:path";
   await appliquerTarifsVerifies();
   const { clientDeLEssai, donneesVerifiees, devisDeLEssaiEnVrai, devisEnTexteEnVrai, essaiDeLaPlancheEnVrai, euros, logoDeLaPlancheVerifie } = await import("./essai-planche-en-vrai-outil");
 
-  const reprendre = (process.env.REPRENDRE ?? "").split(",").map((x) => x.trim()).filter(Boolean) as import("../../src/lib/syna-agent/planche-en-vrai").NomElement[];
+  // REPRENDRE=1 sans REASSEMBLER : la reprise d'une première passe interrompue, même dossier de sortie (voir l'en-tête).
+  const reprisePasse = process.env.REPRENDRE?.trim() === "1" && !process.env.REASSEMBLER;
+  const reprendre = (reprisePasse ? "" : process.env.REPRENDRE ?? "").split(",").map((x) => x.trim()).filter(Boolean) as import("../../src/lib/syna-agent/planche-en-vrai").NomElement[];
   const logoHd = process.env.LOGO_HD === "1";
+  if (devisSeul && reprisePasse) {
+    const { passePrecedente, devisDeLaReprise } = await import("./essai-planche-en-vrai-outil");
+    const sortie0 = process.argv[2];
+    const prec = sortie0 ? passePrecedente(path.resolve(sortie0)) : null;
+    if (!prec) { console.error(`REPRENDRE=1 : rien à reprendre${sortie0 ? ` dans ${sortie0}` : " (dossier de sortie manquant)"}.`); process.exit(1); }
+    console.log((await devisDeLaReprise(prec, { logoHd })).texte.join("\n"));
+    process.exit(0);
+  }
   if (devisSeul && (process.env.REASSEMBLER || reprendre.length)) { const { devisDuReassemblage } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuReassemblage(reprendre, { logoHd })).join("\n")); process.exit(0); }
   // Le chemin normal avec LOGO_HD : la planche en vrai, puis les quatre petites versions du logo en haute définition.
   if (devisSeul && logoHd) { const { devisDuCheminNormal } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuCheminNormal({ logoHd })).texte.join("\n")); process.exit(0); }
@@ -133,7 +152,15 @@ import path from "node:path";
   } else { console.error("STUDIO_ANTHROPIC_KEY absente : l'inventaire et les relectures ne peuvent pas être faits. Rien n'est lancé."); process.exit(1); }
 
   const plafond = Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000);
-  if (logoHd) {
+  if (reprisePasse) {
+    // La reprise : seul ce qui reste est compté ; ce qui est reçu et payé n'est jamais redemandé.
+    const { passePrecedente, devisDeLaReprise } = await import("./essai-planche-en-vrai-outil");
+    const prec = passePrecedente(path.resolve(sortieArg));
+    if (!prec) { console.error(`REPRENDRE=1 : rien à reprendre dans ${sortieArg}. Rien n'est lancé.`); process.exit(1); }
+    const d = await devisDeLaReprise(prec, { logoHd });
+    console.log(d.texte.join("\n"));
+    if (plafond < d.plafondMinimalMicro) console.log(`Le plafond ${euros(plafond)} est sous la somme des maxima de ce qui reste ${euros(d.plafondMinimalMicro)} (probable ${euros(d.probableMicro)}) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.`);
+  } else if (logoHd) {
     // LOGO_HD sur le chemin normal : un seul plafond pour la planche en vrai et les logos en haute définition ; sous la somme
     // des maxima (reprises comprises), l'essai part quand même et s'arrête proprement avant l'appel qui la dépasserait.
     const { devisDuCheminNormal } = await import("./essai-planche-en-vrai-outil");
@@ -146,10 +173,17 @@ import path from "node:path";
     if (plafond < devis.plafondMinimalMicro) console.log(`Le plafond ${euros(plafond)} est sous la somme des maxima ${euros(devis.plafondMinimalMicro)} (probable ${euros(devis.probableMicro)}) : l'essai part quand même. Il s'arrête proprement avant tout appel dont le pire cas dépasserait ce qui reste, garde ses fichiers et dit ce qu'il faudrait pour finir.`);
   }
   const sortie = path.resolve(sortieArg);
-  const r = await essaiDeLaPlancheEnVrai({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, planche: path.resolve(planche), logo: path.resolve(logo), client, donnees, logoHd, metierCourt: process.env.METIER_COURT ?? null });
+  const r = await essaiDeLaPlancheEnVrai({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, planche: path.resolve(planche), logo: path.resolve(logo), client, donnees, logoHd, metierCourt: process.env.METIER_COURT ?? null, reprendre: reprisePasse }).catch((e) => { console.error((e as Error).message); process.exit(1); });
   if (r.logosEnHd) console.log(`Logos en haute définition : ${r.logosEnHd.versions.length ? `gardés ${r.logosEnHd.gardees.join(", ") || "aucun"} ; refusés deux fois ${r.logosEnHd.refusees.join(", ") || "aucun"}` : "aucune version reprise de l'aperçu (symbole séparable), rien à refaire"}`);
   console.log(`${r.cases.filter((c) => c.gardee).length} image(s) gardée(s) sur 17, planche ${r.planche ? `${r.planche.w} × ${r.planche.h}` : "non assemblée"}, dépense comptée ${euros(r.depenseMicro)}. Rapport : ${path.join(sortie, "rapport.txt")}`);
   if (r.projectId) console.log(`Projet de l'essai : ${r.projectId} (essai.json et etat.json dans ${sortie}, pour ecran-planche-en-vrai.mts).`);
-  if (r.arret) { console.log(`Arrêt : ${r.arret}`); process.exit(2); }
+  if (r.reprise) console.log(`Reprise de la passe ${r.reprise.passe} : repris sans appel ${r.reprise.reprises.join(", ") || "rien"}${r.reprise.refaits.length ? ` ; refait(s) parce que tu as relancé : ${r.reprise.refaits.join(", ")}` : ""} ; dépense en tout ${euros(r.reprise.depensePrecedenteMicro + r.depenseMicro)}.`);
+  if (r.arret) {
+    console.log(`Arrêt : ${r.arret}`);
+    const { lignesPourReprendre } = await import("./essai-planche-en-vrai-outil");
+    const { NOMS_DES_ELEMENTS } = await import("../../src/lib/syna-agent/planche-en-vrai");
+    console.log(lignesPourReprendre(r, NOMS_DES_ELEMENTS, { incertain: r.arret.startsWith("un appel a échoué") }).join("\n"));
+    process.exit(2);
+  }
   process.exit(0);
 }
