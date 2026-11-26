@@ -121,7 +121,7 @@ describe("SINA — chaîne de création de la marque", async () => {
     posts: [{ index: 0, svg: '<svg viewBox="0 0 100 92"><circle cx="70" cy="24" r="14" fill="#FFE98A"/></svg>', ground: "dark" }],
   };
   const fakeAi = (log: { ids: string[]; prompts: Record<string, string>; systems: Record<string, string> }, s: Script = {}) => () => ({
-    research: async (id: string, _query: string, famille?: string) => { log.ids.push(`web:${id}`); (log as any).familles = { ...((log as any).familles ?? {}), [id]: famille }; return s.web ? s.web(id) : id.startsWith("verify") ? [{ url: "https://annuaire.example/boissons", title: "Marques de boissons", category: "competitors", excerpt: "Annuaire des marques de boissons aux fruits." }] : pages(id); },
+    research: async (id: string, query: string, famille?: string) => { log.ids.push(`web:${id}`); log.prompts[`web:${id}`] = query; (log as any).familles = { ...((log as any).familles ?? {}), [id]: famille }; return s.web ? s.web(id) : id.startsWith("verify") ? [{ url: "https://annuaire.example/boissons", title: "Marques de boissons", category: "competitors", excerpt: "Annuaire des marques de boissons aux fruits." }] : pages(id); },
     ask: async (id: string, c: any) => {
       // Le lecteur qui ne sait rien : par défaut il comprend tout, et son appel n'encombre pas les suites d'appels vérifiées.
       if (c.kind === "reader" && !(s as any).reader) return c.schema.parse({ texts: [] });
@@ -1547,6 +1547,74 @@ const REVIEW_ORDER = ["logo", "hero", "object", "signs", "site", "post0", "post1
       expect(J.journeyOf(t.cid).nomsVerifies).toEqual(noms);
       expect(J.journeyOf(t.cid).identities).toBeUndefined();
     } finally { setJsonSetting("sina.logo.graphistes", false); }
+  });
+
+  // ---------------------------------------------------------------- un nom n'est jamais « vérifié » si rien n'a été comparé
+
+  describe("vérification des noms gardés (26 novembre 2026, après l'essai réel du torréfacteur)", () => {
+    const PAGE_DES_NOMS = { url: "https://annuaire.example/boissons", title: "Marques de boissons", category: "competitors", excerpt: "Trempette, boissons aux fruits." };
+    const PHRASE = "Je n'ai rien trouvé sur Internet pour vérifier que personne n'utilise déjà ces noms dans ton métier : regarde de ton côté avant de choisir le tien.";
+
+    it("une recherche vide est refaite UNE fois, autrement formulée ; une page trouvée la seconde fois passe par la vérification habituelle", async () => {
+      const t = await thread();
+      const { out, log } = await chain(t, { jusquAuxNoms: true }, { web: (id) => (id === "verify-noms-1" ? [] : id === "verify-noms-1-2" ? [PAGE_DES_NOMS] : pages(id)), taken: [{ name: "Trempette", url: PAGE_DES_NOMS.url }] });
+      expect(log.ids.slice(-4)).toEqual(["judge-1", "web:verify-noms-1", "web:verify-noms-1-2", "verify-noms-1"]);
+      // Une autre formulation : le nom seul entre guillemets suivi du métier, puis le nom suivi de « marque ».
+      expect(log.prompts["web:verify-noms-1-2"]).not.toBe(log.prompts["web:verify-noms-1"]);
+      expect(log.prompts["web:verify-noms-1-2"]).toMatch(/entre guillemets suivi du métier du client/);
+      expect(log.prompts["web:verify-noms-1-2"]).toMatch(/suivi du mot « marque »/);
+      expect((out as any).verification).toBe("verifie");
+      expect((out as any).verifies).toBe(true);
+      expect((out as any).aDireAuClient).toBeUndefined();
+      expect((out as any).noms.map((n: any) => n.name)).not.toContain("Trempette");
+      expect(J.journeyOf(t.cid).nomsDeLaMarque).toMatchObject({ verifies: true, verification: "verifie" });
+    });
+
+    it("deux recherches vides : les noms sont gardés, « non vérifiés », jamais « vérifiés », et SINA le dit au client", async () => {
+      const t = await thread();
+      const { out, log } = await chain(t, { jusquAuxNoms: true }, { web: (id) => (id.startsWith("verify") ? [] : pages(id)) });
+      // Deux recherches, aucune vérification : rien à comparer.
+      expect(log.ids.filter((i) => /verify/.test(i))).toEqual(["web:verify-noms-1", "web:verify-noms-1-2"]);
+      const o = out as any;
+      expect(o.verification).toBe("non_verifie");
+      expect(o.verifies).toBe(false);
+      expect(o.noms.length).toBeGreaterThan(0);
+      expect(o.noms.every((n: any) => n.verification === "non_verifie")).toBe(true);
+      expect(o.aDireAuClient).toBe(PHRASE);
+      // La phrase vient en tête du résultat, que SINA relit raccourci.
+      expect(Object.keys(o)[0]).toBe("aDireAuClient");
+      const j = J.journeyOf(t.cid);
+      expect(j.nomsVerifies).toEqual(o.noms.map((n: any) => n.name));
+      expect(j.nomsDeLaMarque).toMatchObject({ verifies: false, verification: "non_verifie", pourquoiNonVerifie: "rien_trouve" });
+      expect(J.phraseDesNomsMontres(j.nomsDeLaMarque)).toBe(PHRASE);
+      // Ce que SINA lit de l'étape : les noms montrés, la phrase mot pour mot, jamais « vérifiés ».
+      J.updateJourney(t.cid, (x) => J.setStep(x, 1, "doing"));
+      const contexte = await fr(() => J.journeyContext(J.journeyOf(t.cid)));
+      expect(contexte).toContain(`dis-lui, mot pour mot : « ${PHRASE} »`);
+      expect(contexte).toContain("les noms trouvés sont montrés au client");
+      expect(contexte).not.toContain("les noms vérifiés sont montrés");
+      expect(contexte).toContain("L'adresse sur Internet n'est jamais promise");
+    });
+
+    it("une recherche qui trouve une page dès la première fois : une seule recherche, puis la vérification habituelle", async () => {
+      const t = await thread();
+      const { out, log } = await chain(t, { jusquAuxNoms: true }, { taken: [{ name: "Trempette", url: "https://annuaire.example/boissons" }] });
+      expect(log.ids.filter((i) => /verify/.test(i))).toEqual(["web:verify-noms-1", "verify-noms-1"]);
+      expect((out as any).verification).toBe("verifie");
+      const j = J.journeyOf(t.cid);
+      expect(J.phraseDesNomsMontres(j.nomsDeLaMarque)).toBeNull();
+      J.updateJourney(t.cid, (x) => J.setStep(x, 1, "doing"));
+      const contexte = await fr(() => J.journeyContext(J.journeyOf(t.cid)));
+      expect(contexte).toContain("les noms vérifiés sont montrés au client");
+      expect(contexte).not.toContain("mot pour mot : « Je n'ai rien trouvé");
+    });
+
+    it("une tâche d'avant (aucune comparaison gardée) n'est jamais relue comme « vérifiée »", () => {
+      expect(C.etatDeLaVerification({ done: true, taken: [] })).toEqual({ verification: "non_verifie", pourquoi: "rien_trouve" });
+      expect(C.etatDeLaVerification({ done: true, taken: [], preuves: [] })).toEqual({ verification: "verifie", pourquoi: null });
+      expect(C.etatDeLaVerification({ done: false, taken: [] })).toEqual({ verification: "non_verifie", pourquoi: "recherche_impossible" });
+      expect(C.etatDeLaVerification({ done: true, compare: false, taken: [] }).verification).toBe("non_verifie");
+    });
   });
 
   it("méthode des graphistes : les identités partagent le nom choisi, chacune avec son logo fini posé tel quel ; ses couleurs imposées, le logo joint à la direction ; aucun logo redessiné", async () => {

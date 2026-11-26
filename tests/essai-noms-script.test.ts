@@ -94,6 +94,43 @@ describe("le script de l'essai des noms (appels simulés)", async () => {
     expect(tout).toMatch(/torréfacteur artisanal/);
     expect(sansRacine(tout)).toBe(true);
     expect(tout).not.toMatch(/Écume|savonnerie|toiletteuse/i);
+    // Des pages comparées aux noms : chacun est « vérifié », dans le rapport et dans noms.json.
+    expect(r.verification).toBe("verifie");
+    expect(rapport).toContain("Noms vérifiés proposés au client : 3");
+    expect(rapport).toContain("1. Fournée [vérifié]");
+    const json = JSON.parse(fs.readFileSync(path.join(dir, "noms.json"), "utf8"));
+    expect(json).toMatchObject({ verifies: true, verification: "verifie", aDireAuClient: null });
+    expect(json.noms.map((n: { verification: string }) => n.verification)).toEqual(["verifie", "verifie", "verifie"]);
+  });
+
+  it("deux recherches des noms gardés sans aucune page : les noms sont « non vérifiés », jamais « vérifiés », écrit dans rapport.txt et noms.json avec la phrase de SINA", async () => {
+    const dir = sortie();
+    const vide = (q: { userId: string; projectId: string; jobId: string }) => {
+      const s = simule(q);
+      return { ...s, research: async (id: string, query: string) => (id.startsWith("verify") ? (appels.push(`web:${id}`), envoyes.push(query), await paye(q, "strategy"), []) : s.research(id, query)) };
+    };
+    const r = await essaiDesNoms({ sortie: dir, plafondEuros: "20", client: clientDeLEssai({ CLIENT_JSON: FICHIER }, { sansNom: true }), ai: vide as never, lirePage: async () => "<p>« Le café frais moulu change tout le matin. »</p>", trouverLesAdresses: adresses });
+    expect(r.arret).toBeUndefined();
+    // La recherche refaite une fois, autrement formulée ; aucune vérification, rien à comparer.
+    expect(appels.slice(-3)).toEqual(["judge-1", "web:verify-noms-1", "web:verify-noms-1-2"]);
+    expect(envoyes.at(-1)).not.toBe(envoyes.at(-2));
+    expect(r.verifies).toBe(false);
+    expect(r.verification).toBe("non_verifie");
+    expect(r.noms.map((n) => n.nom)).toEqual(["Fournée", "Braise", "Mouture", "Grain Franc"]);
+    const PHRASE = "Je n'ai rien trouvé sur Internet pour vérifier que personne n'utilise déjà ces noms dans ton métier : regarde de ton côté avant de choisir le tien.";
+    const rapport = fs.readFileSync(path.join(dir, "rapport.txt"), "utf8");
+    expect(rapport).toContain("Noms NON VÉRIFIÉS proposés au client : 4");
+    expect(rapport).not.toContain("Noms vérifiés proposés au client");
+    expect(rapport).toContain(`Ce que SINA dit au client : « ${PHRASE} »`);
+    expect(rapport).toContain("1. Fournée [non vérifié]");
+    expect(rapport).toContain("Vérification des noms gardés : rien n'a été comparé (deux recherches sur le web, la seconde autrement formulée, sans aucune page)");
+    const json = JSON.parse(fs.readFileSync(path.join(dir, "noms.json"), "utf8"));
+    expect(json).toMatchObject({ verifies: false, verification: "non_verifie", aDireAuClient: PHRASE });
+    expect(json.noms.every((n: { verification: string }) => n.verification === "non_verifie")).toBe(true);
+    // Le devis de l'essai prend celui du Studio tel quel : la recherche refaite y est, au plafond seulement.
+    const d = await devisDesNoms();
+    expect(d.lignes.find((l) => l.appel === "même recherche des noms gardés, autrement formulée")).toMatchObject({ fois: 1, quand: "si la première recherche ne rend aucune page" });
+    expect(d.plafondMinimalMicro).toBe(d.lignes.reduce((t, l) => t + l.maxMicro, 0));
   });
 
   it("la somme des maxima reste comptée ; un client qui a déjà un nom est refusé", async () => {

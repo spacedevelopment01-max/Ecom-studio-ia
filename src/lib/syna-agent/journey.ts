@@ -27,6 +27,28 @@ import { ANGLE_ROLE_LABEL, roleOf, shownAngles } from "./angle-roles";
 import type { ActivityPlan } from "./activity";
 import type { SinaThemes } from "./themes";
 
+/**
+ * L'état de la vérification des noms montrés au client (décision du 26 novembre 2026, après l'essai réel du
+ * torréfacteur : « Un nom n'est jamais marqué « vérifié » si rien n'a été comparé. »). « verifie » : des pages trouvées sur
+ * le web ont été comparées aux noms ; « non_verifie » : rien n'a été comparé (deux recherches sans aucune page, ou une
+ * recherche impossible). L'adresse sur Internet n'en dépend pas et n'est jamais promise.
+ */
+export type VerificationDesNomsMontres = "verifie" | "non_verifie";
+/** Pourquoi rien n'a été comparé : deux recherches sans aucune page, ou une recherche qui n'a pas pu se faire. */
+export type PourquoiNonVerifie = "rien_trouve" | "recherche_impossible";
+/** La phrase que SINA dit au client quand ses noms n'ont été comparés à rien (tutoyée, sans mot technique). */
+export function phraseDesNomsNonVerifies(pourquoi: PourquoiNonVerifie): string {
+  return pourquoi === "rien_trouve"
+    ? L("Je n'ai rien trouvé sur Internet pour vérifier que personne n'utilise déjà ces noms dans ton métier : regarde de ton côté avant de choisir le tien.", "I found nothing online to check that no one in your trade already uses these names: look on your side before you choose yours.")
+    : L("Je n'ai pas pu chercher sur Internet si quelqu'un utilise déjà ces noms dans ton métier : regarde de ton côté avant de choisir le tien.", "I could not search online whether someone in your trade already uses these names: look on your side before you choose yours.");
+}
+/** La phrase à dire au client pour les noms montrés, ou null s'ils ont été vérifiés (ancien projet : lu d'après `verifies`). */
+export function phraseDesNomsMontres(n: { verifies: boolean; verification?: VerificationDesNomsMontres; pourquoiNonVerifie?: PourquoiNonVerifie } | null | undefined): string | null {
+  if (!n) return null;
+  const etat = n.verification ?? (n.verifies ? "verifie" : "non_verifie");
+  return etat === "verifie" ? null : phraseDesNomsNonVerifies(n.pourquoiNonVerifie ?? "recherche_impossible");
+}
+
 export const JOURNEY_STEPS = [
   { n: 0, fr: "Questions de départ", en: "Getting started" },
   // Depuis le 12 novembre 2026 : 2, 3 ou 4 identités selon le forfait, puis UN logo pour l'identité choisie.
@@ -167,8 +189,13 @@ export type Journey = {
    * recherche du logo, les N logos finis, les planches et la marque finie). Les morceaux partent sans nouvelle carte.
    */
   accordGraphistes?: { count: number; nomsMicro: number; rechercheMicro: number; finalisationsMicro: number; planchesMicro: number; /** La borne du Studio des planches de marque (une reprise par planche, une réécriture des valeurs). */ planchesStudioMicro?: number; at: number };
-  /** Les noms vérifiés montrés au client, avec ce qu'en dit le juge, et la tâche dont l'atelier sera repris (méthode des graphistes). */
-  nomsDeLaMarque?: { list: { name: string; why: string; detail: string; doute: string | null }[]; verifies: boolean; atelier: string; count: number; at: number; choisi?: string };
+  /**
+   * Les noms montrés au client, avec ce qu'en dit le juge, et la tâche dont l'atelier sera repris (méthode des graphistes).
+   * `verifies` n'est vrai que si des pages trouvées sur le web ont été comparées aux noms ; `verification` le dit en clair
+   * (« non_verifie » : rien n'a été comparé, et SINA le dit au client, `phraseDesNomsMontres`). Un ancien projet n'a pas
+   * `verification` : il se lit d'après `verifies`.
+   */
+  nomsDeLaMarque?: { list: { name: string; why: string; detail: string; doute: string | null; verification?: VerificationDesNomsMontres }[]; verifies: boolean; verification?: VerificationDesNomsMontres; pourquoiNonVerifie?: PourquoiNonVerifie; atelier: string; count: number; at: number; choisi?: string };
   /** Le logo de la marque, adopté par la fin de marque (`brand-finish.ts`) : celui de la planche, ou le nom dessiné en secours. */
   logos?: { list: SinaLogo[]; at: number; round: number; notes?: string[] };
   logoChoice?: { source: "A" | "B" | "C"; assetId: string; at: number };
@@ -592,6 +619,13 @@ function identityStepContext(j: Journey, count?: number): string[] {
   const id = j.identities;
   // Le nombre exact d'identités de CE client (essai réel du 14 novembre 2026 : SINA annonçait « deux à quatre »).
   const how = count ? `${count} identités pour ce client (son forfait) : annonce ${count}, jamais « deux à quatre »` : "2, 3 ou 4 selon le forfait du client, le Studio le sait";
+  // Méthode des graphistes : les noms sont montrés et le client n'a pas encore choisi le sien. Un nom n'est jamais dit
+  // « vérifié » si rien n'a été comparé (26 novembre 2026) : SINA le dit alors au client, avec la phrase du Studio.
+  const noms = j.nomsDeLaMarque;
+  if (!id?.list.length && noms && !noms.choisi && noms.list.length) {
+    const phrase = phraseDesNomsMontres(noms);
+    return [`Étape 1 (identités de marque : ${how}) : les noms ${phrase ? "trouvés" : "vérifiés"} sont montrés au client : ${noms.list.map((n) => `« ${n.name} »`).join(", ")}. Il choisit le sien (identity.nom, d'après ses mots) ; ne choisis jamais à sa place. L'adresse sur Internet n'est jamais promise.${phrase ? ` Rien n'a pu être comparé sur Internet : ne dis jamais que ces noms sont vérifiés ni libres ; dis-lui, mot pour mot : « ${phrase} »` : ""}`];
+  }
   if (!id?.list.length) return [
     `Étape 1 (identités de marque : ${how}) : rien n'est encore proposé. Si le client est prêt (il dit oui, on continue, vas-y…), dis-lui en une phrase ce que tu vas faire (étudier son marché, chercher l'idée et les noms, lui montrer chaque identité en planche de marque), puis appelle identity.propose (sans guidance) : la création prend plusieurs minutes, en arrière-plan. Le prix affiché couvre toute l'étape : ses identités, puis la marque complète de celle qu'il choisira (un seul accord). S'il pose une question, réponds-y d'abord. N'invente aucune identité toi-même : seul identity.propose les crée. Tu es la seule à parler au client : dis « j'étudie », « je cherche », jamais « mon équipe » ni « ma stratège ».`,
   ];
