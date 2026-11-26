@@ -1,0 +1,169 @@
+{
+  "verdict": {
+    "nomLu": "Écume",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Écume",
+    "domaineLu": "ecumefrance.fr — disponible",
+    "fautes": [
+      "05 PRODUITS (numéro de bloc en double après 05 IMAGES DE RÉFÉRENCE, il devrait être 06)",
+      "Écumee (réassurance du site sur ordinateur)",
+      "Fabrmotion (réassurance du site sur ordinateur)",
+      "Ingrédieeement (réassurance du site sur ordinateur)",
+      "selectionnés (réassurance du site mobile, au lieu de sélectionnés)"
+    ],
+    "microTextes": [
+      "ABCDEFF.CJLLMMBOHRUTVWXYZ",
+      "abcdefgljıtulmopotuyrwxz",
+      "ABCDEFFCJLLNMBOHRUTVWXYZ",
+      "abcdefgluiknnpolrgtvwxyz"
+    ],
+    "promesses": [],
+    "personnes": false,
+    "personnesVues": [],
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "note": 7,
+    "pourquoi": "La planche est complète et soignée, avec un logo fidèle et une phrase « SAVONNERIE / ARTISANALE » exacte partout. Le bloc Produits porte à tort le numéro 05 et les libellés de réassurance du site sont déformés (« Écumee », « Fabrmotion », « Ingrédieeement », « selectionnés »).",
+    "phrasesLues": [
+      {
+        "emplacement": "Ouverture, sous le grand logo",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Ouverture, sous l'accroche",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo principal",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo horizontal",
+        "lignes": [
+          "SAVONNERIE ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo empilé",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome foncé",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome clair",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, inversé sur fond sombre",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, badge / sceau circulaire",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 04, sous le slogan",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1, logo",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 4:5, logo",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, story 9:16, logo",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, boîte en carton",
+        "lignes": [
+          "SAVONNERIE",
+          "ARTISANALE"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, pochon en tissu",
+        "lignes": [
+          "SAVONNERIE",
+          "…"
+        ],
+        "cachee": true
+      },
+      {
+        "emplacement": "Bloc 10, titre SEO",
+        "lignes": [
+          "SAVONNERIE ARTISANALE"
+        ],
+        "cachee": false
+      }
+    ]
+  },
+  "raisons": [
+    "fautes : « 05 PRODUITS (numéro de bloc en double après 05 IMAGES DE RÉFÉRENCE, il devrait être 06) », « Écumee (réassurance du site sur ordinateur) », « Fabrmotion (réassurance du site sur ordinateur) », « Ingrédieeement (réassurance du site sur ordinateur) », « selectionnés (réassurance du site mobile, au lieu de sélectionnés) »",
+    "elle n'est pas au niveau (7/10, il faut 8)"
+  ],
+  "ecartes": [
+    "micro-texte décoratif, non jugé : « ABCDEFF.CJLLMMBOHRUTVWXYZ »",
+    "micro-texte décoratif, non jugé : « abcdefgljıtulmopotuyrwxz »",
+    "micro-texte décoratif, non jugé : « ABCDEFFCJLLNMBOHRUTVWXYZ »",
+    "micro-texte décoratif, non jugé : « abcdefgluiknnpolrgtvwxyz »",
+    "phrase cachée en partie par un objet de la scène, mots visibles justes : « Bloc 09, pochon en tissu : SAVONNERIE / … »"
+  ],
+  "gardee": false
+}

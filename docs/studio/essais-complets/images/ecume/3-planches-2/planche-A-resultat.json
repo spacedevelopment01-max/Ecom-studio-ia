@@ -1,0 +1,33 @@
+{
+  "nom": "Écume",
+  "disposition": "standard",
+  "logo": {
+    "fichier": "/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-06-logo-garde.png",
+    "sha256": "aef4c142653308da4d028f919767728f451be67a787add3cd2c6fc295936112e"
+  },
+  "phrase": [
+    "SAVONNERIE ARTISANALE",
+    "BULLES DE SOIN AU NATUREL"
+  ],
+  "planche": {
+    "logo": "5u7424722wn8yjix",
+    "domaine": "ecumefrance.fr",
+    "statut": "disponible",
+    "annee": 2026,
+    "phrase": [
+      "SAVONNERIE ARTISANALE",
+      "BULLES DE SOIN AU NATUREL"
+    ],
+    "at": 1795655299698,
+    "essais": 2,
+    "note": 8,
+    "raison": "refusée deux fois (fautes : « Titre SEO (bloc 10) : « Écume – Savonnerie artisanale |´ » — accent parasite après la barre de séparation »)"
+  },
+  "notes": [
+    "planche A, essai 1 refusé : la phrase choisie par le client est mal écrite (« 09 Sac en tissu : [1re ligne masquée par l'étiquette] / [illisible] AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; fautes : « Dites-le nous ! (il faut « Dites-le-nous ! ») », « Sac en tissu (bloc 09) : la 2e ligne de la phrase sous le logo est déformée, « BULLES DE SOIN » illisible, la 1re ligne est masquée par l'étiquette » ; une personne est visible sans l'accord du client ; à retirer, aucune personne ni partie du corps : une main est visible dans l'image de référence « Mousse délicate » alors qu'aucune personne ne doit apparaître ; elle n'est pas au niveau (5/10, il faut 8)",
+    "planche A, essai 2 refusé : fautes : « Titre SEO (bloc 10) : « Écume – Savonnerie artisanale |´ » — accent parasite après la barre de séparation »"
+  ],
+  "issues": [
+    "Identité A « Écume » : je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite. Je peux la refaire à ma charge : rien n'est compté sur ton budget."
+  ]
+}

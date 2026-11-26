@@ -1,0 +1,68 @@
+Essai des planches de marque — client « Écume » (savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes), type « produits »
+Produits ou prestations de sa fiche : savons solides ; shampoings solides ; baumes
+Plafond de l'essai : 1,3500 €
+Personnes permises : non (aucune photo de personne ni accord)
+Logos finis : A (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-06-logo-garde.png), B (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png)
+Phrase sous le logo A : « SAVONNERIE ARTISANALE » puis « BULLES DE SOIN AU NATUREL », reprise mot pour mot sur la planche (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-06-phrase-du-logo.txt)
+Phrase sous le logo B : « SAVONNERIE » puis « ARTISANALE », reprise mot pour mot sur la planche (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-10-phrase-du-logo.txt)
+
+Devis de l'essai pour 2 planches (fonctions du devis du Studio, aucun appel) :
+- les valeurs du métier sont déjà écrites (valeurs-du-metier.json du dossier d'essai) : aucun appel
+- reprise à partir du premier essai déjà payé : planche A (seule sa reprise unique part, à la charge du Studio)
+- planche 1 · planche, reprise unique · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · toujours (son premier essai, déjà payé, est refusé) · charge Studio · probable 0,1241 € · au plus 0,2047 €
+- planche 1 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · toujours (son premier essai, déjà payé, est refusé) · charge Studio · probable 0,0740 € · au plus 0,2451 €
+- planche 2 · planche, 1er essai · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · toujours · charge client · probable 0,1241 € · au plus 0,2047 €
+- planche 2 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0740 € · au plus 0,2451 €
+- planche 2 · planche, reprise unique · openai:gpt-image-2.5-sunburst (xhigh, 1536 × 2304) · si le relecteur refuse la planche · charge Studio · probable 0,1241 € · au plus 0,2047 €
+- planche 2 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse la planche · charge Studio · probable 0,0740 € · au plus 0,2451 €
+Probable, sans refus : 0,3961 € (devis du Studio : 0,4322 €)
+Probable, si chaque planche refaite une fois : 0,5942 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima, reprises comprises) : 1,3493 €
+  dont plafond du client de la tâche 1,0670 € et borne du Studio 1,0670 € (devisDesPlanchesDeMarque)
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 0,8817 € de plus en tout ; la tâche ne la couvre pas (elle s'arrêterait sur sa propre borne).
+
+Valeurs du métier (contrôlées) :
+  métier : savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes
+  traits : artisanale, douce, naturelle, soignée
+  émotion : la douceur d'un moment de soin au quotidien
+  site : boutique
+  images : savons solides posés sur une pierre claire ; mousse légère sur un fond de lin blanc ; lumière du matin dans une salle de bain épurée ; copeaux de savon sur une planche de bois brut ; baumes ouverts aux textures crémeuses ; shampoings solides alignés près d'une fenêtre
+  produits : savons solides ; shampoings solides ; baumes
+  note : valeurs reprises de valeurs-du-metier.json (déjà écrites et payées), aucun appel
+Domaine vérifié avant le dessin : ecumefrance.fr — disponible (libres : ecumefrance.fr, ecumefrance.com ; pris : ecume.fr, ecume.com ; à vérifier : aucun) ; année 2026
+Disposition jointe : standard
+
+Planche A (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-06-logo-garde.png) : NON gardée, jamais montrée (refusée deux fois (fautes : « Titre SEO (bloc 10) : « Écume – Savonnerie artisanale |´ » — accent parasite après la barre de séparation »))
+  essai 1 (déjà payé, repris de /home/user/Ecom-studio-ia/data/essai-ecume/3-planches : aucun appel ; raisons recalculées par le code) : texte planche-A-1-texte-envoye.txt ; planche brute planche-A-1-brute.png ; bandes —
+    verdict : note 5/10, nom lu « écume », copyright lu « © 2026 Écume », domaine lu « ecumefrance.fr — disponible », logo fidèle oui — Planche complète, soignée et fidèle au logo, mais une main est visible dans l'image de référence « Mousse délicate » alors qu'aucune personne ne doit apparaître. S'y ajoutent la faute « Dites-le nous ! » et la phrase du client déformée sur le sac en tissu.
+    raisons du refus : la phrase choisie par le client est mal écrite (« 09 Sac en tissu : [1re ligne masquée par l'étiquette] / [illisible] AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; fautes : « Dites-le nous ! (il faut « Dites-le-nous ! ») », « Sac en tissu (bloc 09) : la 2e ligne de la phrase sous le logo est déformée, « BULLES DE SOIN » illisible, la 1re ligne est masquée par l'étiquette » ; une personne est visible sans l'accord du client ; à retirer, aucune personne ni partie du corps : une main est visible dans l'image de référence « Mousse délicate » alors qu'aucune personne ne doit apparaître ; elle n'est pas au niveau (5/10, il faut 8)
+    non compté : micro-texte décoratif, non jugé : « ABCDEFRỊÇUᒧLLNMΩPRRTOVWXYZ (alphabet Playfair Display) » ; micro-texte décoratif, non jugé : « abcdefgliiıııımopoptuvwxyz (alphabet Playfair Display) » ; micro-texte décoratif, non jugé : « ABCDEFRỊÇUᒧLLNMΩPRRTOVWYZ (alphabet Montserrat) » ; micro-texte décoratif, non jugé : « abcdeffgliıdınidmopoptuvwxyz (alphabet Montserrat) » ; micro-texte décoratif, non jugé : « S:61 (heure de la barre d'état du téléphone) »
+  essai 2 (reprise à la charge du Studio) : texte planche-A-2-texte-envoye.txt ; planche brute planche-A-2-brute.png ; bandes planche-A-2-bande-1.png, planche-A-2-bande-2.png, planche-A-2-bande-3.png, planche-A-2-bande-4.png
+    verdict : note 8/10, nom lu « écume », copyright lu « © 2026 Écume », domaine lu « ecumefrance.fr — disponible », logo fidèle oui — La main a disparu de « Mousse délicate », « Dites-le-nous ! » est corrigé et la phrase du client est juste partout, y compris sur le sac en tissu. Seul un accent parasite traîne dans le titre SEO, à nettoyer ; le reste est complet, soigné et montrable.
+    raisons du refus : fautes : « Titre SEO (bloc 10) : « Écume – Savonnerie artisanale |´ » — accent parasite après la barre de séparation »
+    non compté : micro-texte décoratif, non jugé : « Spécimen Playfair Display : « ABCDEFCRRJLKMONPEOUWXYZ » » ; micro-texte décoratif, non jugé : « Spécimen Playfair Display : « abcdefgjiäklmapoprqepuvwxyz » » ; micro-texte décoratif, non jugé : « Spécimen Montserrat : « ABCDEFGHIJLKMONTFPUWXYZ » » ; micro-texte décoratif, non jugé : « Spécimen Montserrat : « abcdefgĥijäklmnpopoqenjuvwxyz » »
+  note : planche A, essai 1 refusé : la phrase choisie par le client est mal écrite (« 09 Sac en tissu : [1re ligne masquée par l'étiquette] / [illisible] AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; fautes : « Dites-le nous ! (il faut « Dites-le-nous ! ») », « Sac en tissu (bloc 09) : la 2e ligne de la phrase sous le logo est déformée, « BULLES DE SOIN » illisible, la 1re ligne est masquée par l'étiquette » ; une personne est visible sans l'accord du client ; à retirer, aucune personne ni partie du corps : une main est visible dans l'image de référence « Mousse délicate » alors qu'aucune personne ne doit apparaître ; elle n'est pas au niveau (5/10, il faut 8)
+  note : planche A, essai 2 refusé : fautes : « Titre SEO (bloc 10) : « Écume – Savonnerie artisanale |´ » — accent parasite après la barre de séparation »
+  SINA dirait : Identité A « Écume » : je ne te montre pas cette planche, elle n'a pas passé ma relecture, même refaite. Je peux la refaire à ma charge : rien n'est compté sur ton budget.
+
+Planche B (/home/user/Ecom-studio-ia/data/essai-ecume/2-finalisation/esquisse-10-logo-garde.png) : GARDÉE par le relecteur (planche-B-gardee.png, note 8.5/10)
+  essai 1 : texte planche-B-1-texte-envoye.txt ; planche brute planche-B-1-brute.png ; bandes planche-B-1-bande-1.png, planche-B-1-bande-2.png, planche-B-1-bande-3.png, planche-B-1-bande-4.png
+    verdict : note 7/10, nom lu « Écume », copyright lu « © 2026 Écume », domaine lu « ecumefrance.fr — disponible », logo fidèle oui — La planche est complète et soignée, avec un logo fidèle et une phrase « SAVONNERIE / ARTISANALE » exacte partout. Le bloc Produits porte à tort le numéro 05 et les libellés de réassurance du site sont déformés (« Écumee », « Fabrmotion », « Ingrédieeement », « selectionnés »).
+    raisons du refus : fautes : « 05 PRODUITS (numéro de bloc en double après 05 IMAGES DE RÉFÉRENCE, il devrait être 06) », « Écumee (réassurance du site sur ordinateur) », « Fabrmotion (réassurance du site sur ordinateur) », « Ingrédieeement (réassurance du site sur ordinateur) », « selectionnés (réassurance du site mobile, au lieu de sélectionnés) » ; elle n'est pas au niveau (7/10, il faut 8)
+    non compté : micro-texte décoratif, non jugé : « ABCDEFF.CJLLMMBOHRUTVWXYZ » ; micro-texte décoratif, non jugé : « abcdefgljıtulmopotuyrwxz » ; micro-texte décoratif, non jugé : « ABCDEFFCJLLNMBOHRUTVWXYZ » ; micro-texte décoratif, non jugé : « abcdefgluiknnpolrgtvwxyz » ; phrase cachée en partie par un objet de la scène, mots visibles justes : « Bloc 09, pochon en tissu : SAVONNERIE / … »
+  essai 2 (reprise à la charge du Studio) : texte planche-B-2-texte-envoye.txt ; planche brute planche-B-2-brute.png ; bandes planche-B-2-bande-1.png, planche-B-2-bande-2.png, planche-B-2-bande-3.png, planche-B-2-bande-4.png
+    verdict : note 8.5/10, nom lu « Écume », copyright lu « © 2026 Écume », domaine lu « ecumefrance.fr — disponible », logo fidèle oui — Planche complète et soignée : logo fidèle, phrase « SAVONNERIE / ARTISANALE » juste partout, numéros de blocs corrigés, aucune faute ni personne visible. Seul petit écart : la police « Nunito » est présentée en écriture manuscrite.
+    raisons du refus : aucune
+    non compté : micro-texte décoratif, non jugé : « ABCDEFFGOIJLLIMMMOBRTÜVWXYZ » ; micro-texte décoratif, non jugé : « abcdefgjinklnnoppotbvwxyz » ; micro-texte décoratif, non jugé : « ABCDEFGGIJIJLAAAAOTUVWXYZ (alphabet manuscrit Nunito) » ; micro-texte décoratif, non jugé : « abcdefulyljdmapaagerhxyz (alphabet manuscrit Nunito) » ; micro-texte décoratif, non jugé : « D.01 (heure de la barre d'état du téléphone) »
+  note : planche B, essai 1 refusé : fautes : « 05 PRODUITS (numéro de bloc en double après 05 IMAGES DE RÉFÉRENCE, il devrait être 06) », « Écumee (réassurance du site sur ordinateur) », « Fabrmotion (réassurance du site sur ordinateur) », « Ingrédieeement (réassurance du site sur ordinateur) », « selectionnés (réassurance du site mobile, au lieu de sélectionnés) » ; elle n'est pas au niveau (7/10, il faut 8)
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 39b04ad3875d3eb7438603c9e34fb44aa108789afa0b539c7ceb16d404b257fc · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,1994 € → réglé 0,1257 € (settled) · jetons 4533 en entrée, 3811 en sortie
+- 11c5c30380230ea4a168155ad2dfed2b088aea8859a5643ded8c68b0003df145 · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,2512 € → réglé 0,1082 € (settled) · jetons 10792 en entrée, 3349 en sortie
+- e63d2d5f9a30fe1e27c2ae47778facc33a6e935e6dee018de924e45b96c20d93 · openai:gpt-image-2.5-sunburst · charge du client · réservé 0,1952 € → réglé 0,1248 € (settled) · jetons 4321 en entrée, 3811 en sortie
+- 4deeab9efbc1ffdbdbe7cf633cf4591bc83145061478d721c9d0abc40f24ae74 · anthropic:claude-opus-5-5 · charge du client · réservé 0,2496 € → réglé 0,1011 € (settled) · jetons 10442 en entrée, 3760 en sortie
+- 10ff76fcec01c9cae80c89e4426fb62d68b38e03a88675ef501cfbdb3f533c63 · openai:gpt-image-2.5-sunburst · charge du Studio · réservé 0,1975 € → réglé 0,1253 € (settled) · jetons 4438 en entrée, 3811 en sortie
+- b1389625d25e40c0e0245584290b0074254aeab28cb7b1d4e27be5bd2a2d355e · anthropic:claude-opus-5-5 · charge du Studio · réservé 0,2505 € → réglé 0,0833 € (settled) · jetons 10627 en entrée, 2688 en sortie
+
+Dépense réelle comptée par le Studio : 0,6685 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).

@@ -1,0 +1,320 @@
+[
+  {
+    "cle": "39b04ad3875d3eb7438603c9e34fb44aa108789afa0b539c7ceb16d404b257fc",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": true,
+    "reserveMicro": 199382,
+    "reelMicro": 125703,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-A-1-2",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 4533,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 3811,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 62724,
+      "coutMicro": 125703,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-uvvo5ckjj27p69hk:planche:A-1-2",
+      "details": {
+        "methode": "planche-de-marque",
+        "texteEnvoye": "La première image est le logo Écume : il sert de base à tout le système de logos et ne doit pas être redessiné. Construis l'univers graphique de la marque à partir de ce logo.\n\nLa deuxième image montre la disposition obligatoire de la planche : reprends exactement le même emplacement, le même ordre et les mêmes proportions pour chaque bloc (l'ouverture en haut, puis les blocs 01 à 10 aux mêmes places et avec les mêmes formats d'aperçus). N'en reprends ni les couleurs, ni le logo, ni les photographies, ni les textes : l'identité vient uniquement du logo de la première image.\n\nÉcume — Planche d’identité visuelle\n\nCrée la planche complète d’identité visuelle de Écume, avec une structure, une cohérence et une lisibilité fortes.\n\nObjectif :\nCréer une planche d’identité visuelle premium, moderne, commerciale et très propre, digne d’une vraie agence de branding, avec une hiérarchie forte et des éléments bien présentés.\n\nImportant :\n- Écume, savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes : marque artisanale, douce, naturelle et soignée. Sa phrase, choisie par le client et écrite sous le logo, en 2 lignes, dans cet ordre : « SAVONNERIE ARTISANALE » puis « BULLES DE SOIN AU NATUREL » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, toutes ses lignes dans cet ordre, sans en changer une lettre ni un accent.\n- Ne pas revenir à une charte austère ou trop scolaire.\n- Garder une présentation immersive et désirable.\n\nContenu obligatoire\n\n1. Système de logos plus complet\nJe veux un vrai système de logo avec davantage de variantes :\n- logo principal\n- logo secondaire horizontal\n- logo empilé\n- logo compact\n- icône seule\n- favicon\n- version monochrome foncée\n- version monochrome claire\n- version inversée sur fond sombre\n- version badge / sceau\nToutes les variantes doivent rester cohérentes entre elles.\n\n2. Réseaux sociaux : vrais formats\nJe veux 3 publications montrées dans leurs vrais formats visuels, et pas comme de petites vignettes approximatives.\nFormats exacts :\n- 1:1 feed carré\n- 4:5 publication portrait\n- 9:16 story / reel\nChaque publication doit avoir :\n- un objectif différent,\n- une composition différente,\n- une vraie accroche,\n- un vrai rôle marketing.\nExemples :\n- 1:1 = émotion / la douceur d'un moment de soin au quotidien\n- 4:5 = focus produit / bénéfices\n- 9:16 = contenu communauté / engagement / story\nLes trois doivent être lisibles et paraître publiables telles quelles.\n\n3. Site web : mockups réellement crédibles\nJe veux deux mockups distincts :\n- un mockup ordinateur réaliste, au bon ratio d’écran, large et lisible\n- un mockup téléphone réaliste, vertical, avec un vrai ratio mobile\nLes deux doivent montrer le même univers de site Écume, avec adaptation responsive réelle :\n- même DA,\n- même palette,\n- même logo,\n- même ton,\n- mais mise en page adaptée à chaque support.\nLe site doit sembler être une vraie boutique e-commerce :\n- header\n- hero\n- accroche\n- CTA\n- produits / collections\n- éléments de réassurance\n\n4. Ajouter une section “Images de référence”\nJe veux une vraie section de direction visuelle / inspiration photo.\nCette section doit montrer 4 à 6 petites images de référence cohérentes, par exemple :\n- savons solides posés sur une pierre claire\n- mousse légère sur un fond de lin blanc\n- lumière du matin dans une salle de bain épurée\n- copeaux de savon sur une planche de bois brut\n- baumes ouverts aux textures crémeuses\n- shampoings solides alignés près d'une fenêtre\nBut :\nmontrer l’univers photographique et émotionnel de la marque.\nAttention :\nce sont des images de référence d’univers, pas des logos supplémentaires.\n\n5. Produits\nLa section produits doit être mieux mise en scène et plus premium.\nMontrer clairement :\n- savons solides\n- shampoings solides\n- baumes\nLes visuels doivent être propres, désirables, e-commerce, avec une sensation plus “marque” et moins “simple catalogue”.\n\n6. Structure générale de la planche\nLa planche doit rester dense mais plus claire.\nJe veux une hiérarchie visuelle très lisible avec ces blocs :\n1. titre / identité\n2. système de logos\n3. palette + typographies\n4. ton / slogan / valeurs\n5. images de référence\n6. produits\n7. 3 publications réseaux\n8. site web desktop + mobile\n9. packaging / supports de marque\n10. SEO / nom de domaine / copyright\n\n7. SEO / domaine / mentions\nConserver un bloc avec :\n- titre SEO\n- méta-description\n- nom de domaine suggéré\n- mention “disponibilité à vérifier”\n- copyright\nNe pas inventer de disponibilité comme un fait certain si elle n’est pas vérifiée.\n\n8. Niveau graphique attendu\nJe veux une planche :\n- plus forte graphiquement,\n- plus structurée,\n- plus moderne,\n- plus cohérente,\n- plus proche d’une vraie présentation de studio de branding.\nLa planche ne doit pas ressembler à un simple tableau d’éléments posés.\nJe veux quelque chose que l’on regarde en se disant :\n“oui, cette marque existe déjà”.\n\nDans le bloc 10, à la place de la mention « disponibilité à vérifier », écris exactement « ecumefrance.fr — disponible » et « © 2026 Écume » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.\n\nÀ corriger : une personne est visible sans l'accord du client ; à retirer, aucune personne ni partie du corps : une main est visible dans l'image de référence « Mousse délicate » alors qu'aucune personne ne doit apparaître ; la phrase choisie par le client est mal écrite (« 09 Sac en tissu : [1re ligne masquée par l'étiquette] / [illisible] AU NATUREL » au lieu de « SAVONNERIE ARTISANALE » / « BULLES DE SOIN AU NATUREL ») ; fautes : « Dites-le nous ! (il faut « Dites-le-nous ! ») », « Sac en tissu (bloc 09) : la 2e ligne de la phrase sous le logo est déformée, « BULLES DE SOIN » illisible, la 1re ligne est masquée par l'étiquette » ; elle n'est pas au niveau (5/10, il faut 8).",
+        "requestId": "req_46d5e2e1b0e140bdb15add850314c552",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "logo",
+            "assetId": "5u7424722wn8yjix",
+            "sha256": "aef4c142653308da4d028f919767728f451be67a787add3cd2c6fc295936112e",
+            "octets": 1116645
+          },
+          {
+            "role": "disposition",
+            "assetId": "disposition:standard",
+            "sha256": "b4e2e0438d9467ffecfef30d450617299b5d547ff35b01d8e7b049f537e152f5",
+            "octets": 4685578
+          }
+        ],
+        "usage": {
+          "input_tokens": 4533,
+          "input_tokens_details": {
+            "image_tokens": 3057,
+            "text_tokens": 1476
+          },
+          "output_tokens": 3811,
+          "output_tokens_details": {
+            "image_tokens": 3811,
+            "text_tokens": 0
+          },
+          "total_tokens": 8344
+        },
+        "renvoye": {
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "11c5c30380230ea4a168155ad2dfed2b088aea8859a5643ded8c68b0003df145",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": true,
+    "reserveMicro": 251238,
+    "reelMicro": 108225,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-A-1-2-relecture",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 10792,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 3139,
+      "jetonsSortie": 3349,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 28425,
+      "coutMicro": 108225,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-uvvo5ckjj27p69hk:planche:A-1-2-relecture",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "e63d2d5f9a30fe1e27c2ae47778facc33a6e935e6dee018de924e45b96c20d93",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": false,
+    "reserveMicro": 195195,
+    "reelMicro": 124791,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-B-1-1",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 4321,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 3811,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 62999,
+      "coutMicro": 124791,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-uvvo5ckjj27p69hk:planche:B-1-1",
+      "details": {
+        "methode": "planche-de-marque",
+        "texteEnvoye": "La première image est le logo Écume : il sert de base à tout le système de logos et ne doit pas être redessiné. Construis l'univers graphique de la marque à partir de ce logo.\n\nLa deuxième image montre la disposition obligatoire de la planche : reprends exactement le même emplacement, le même ordre et les mêmes proportions pour chaque bloc (l'ouverture en haut, puis les blocs 01 à 10 aux mêmes places et avec les mêmes formats d'aperçus). N'en reprends ni les couleurs, ni le logo, ni les photographies, ni les textes : l'identité vient uniquement du logo de la première image.\n\nÉcume — Planche d’identité visuelle\n\nCrée la planche complète d’identité visuelle de Écume, avec une structure, une cohérence et une lisibilité fortes.\n\nObjectif :\nCréer une planche d’identité visuelle premium, moderne, commerciale et très propre, digne d’une vraie agence de branding, avec une hiérarchie forte et des éléments bien présentés.\n\nImportant :\n- Écume, savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes : marque artisanale, douce, naturelle et soignée. Sa phrase, choisie par le client et écrite sous le logo, en 2 lignes, dans cet ordre : « SAVONNERIE » puis « ARTISANALE » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, toutes ses lignes dans cet ordre, sans en changer une lettre ni un accent.\n- Ne pas revenir à une charte austère ou trop scolaire.\n- Garder une présentation immersive et désirable.\n\nContenu obligatoire\n\n1. Système de logos plus complet\nJe veux un vrai système de logo avec davantage de variantes :\n- logo principal\n- logo secondaire horizontal\n- logo empilé\n- logo compact\n- icône seule\n- favicon\n- version monochrome foncée\n- version monochrome claire\n- version inversée sur fond sombre\n- version badge / sceau\nToutes les variantes doivent rester cohérentes entre elles.\n\n2. Réseaux sociaux : vrais formats\nJe veux 3 publications montrées dans leurs vrais formats visuels, et pas comme de petites vignettes approximatives.\nFormats exacts :\n- 1:1 feed carré\n- 4:5 publication portrait\n- 9:16 story / reel\nChaque publication doit avoir :\n- un objectif différent,\n- une composition différente,\n- une vraie accroche,\n- un vrai rôle marketing.\nExemples :\n- 1:1 = émotion / la douceur d'un moment de soin au quotidien\n- 4:5 = focus produit / bénéfices\n- 9:16 = contenu communauté / engagement / story\nLes trois doivent être lisibles et paraître publiables telles quelles.\n\n3. Site web : mockups réellement crédibles\nJe veux deux mockups distincts :\n- un mockup ordinateur réaliste, au bon ratio d’écran, large et lisible\n- un mockup téléphone réaliste, vertical, avec un vrai ratio mobile\nLes deux doivent montrer le même univers de site Écume, avec adaptation responsive réelle :\n- même DA,\n- même palette,\n- même logo,\n- même ton,\n- mais mise en page adaptée à chaque support.\nLe site doit sembler être une vraie boutique e-commerce :\n- header\n- hero\n- accroche\n- CTA\n- produits / collections\n- éléments de réassurance\n\n4. Ajouter une section “Images de référence”\nJe veux une vraie section de direction visuelle / inspiration photo.\nCette section doit montrer 4 à 6 petites images de référence cohérentes, par exemple :\n- savons solides posés sur une pierre claire\n- mousse légère sur un fond de lin blanc\n- lumière du matin dans une salle de bain épurée\n- copeaux de savon sur une planche de bois brut\n- baumes ouverts aux textures crémeuses\n- shampoings solides alignés près d'une fenêtre\nBut :\nmontrer l’univers photographique et émotionnel de la marque.\nAttention :\nce sont des images de référence d’univers, pas des logos supplémentaires.\n\n5. Produits\nLa section produits doit être mieux mise en scène et plus premium.\nMontrer clairement :\n- savons solides\n- shampoings solides\n- baumes\nLes visuels doivent être propres, désirables, e-commerce, avec une sensation plus “marque” et moins “simple catalogue”.\n\n6. Structure générale de la planche\nLa planche doit rester dense mais plus claire.\nJe veux une hiérarchie visuelle très lisible avec ces blocs :\n1. titre / identité\n2. système de logos\n3. palette + typographies\n4. ton / slogan / valeurs\n5. images de référence\n6. produits\n7. 3 publications réseaux\n8. site web desktop + mobile\n9. packaging / supports de marque\n10. SEO / nom de domaine / copyright\n\n7. SEO / domaine / mentions\nConserver un bloc avec :\n- titre SEO\n- méta-description\n- nom de domaine suggéré\n- mention “disponibilité à vérifier”\n- copyright\nNe pas inventer de disponibilité comme un fait certain si elle n’est pas vérifiée.\n\n8. Niveau graphique attendu\nJe veux une planche :\n- plus forte graphiquement,\n- plus structurée,\n- plus moderne,\n- plus cohérente,\n- plus proche d’une vraie présentation de studio de branding.\nLa planche ne doit pas ressembler à un simple tableau d’éléments posés.\nJe veux quelque chose que l’on regarde en se disant :\n“oui, cette marque existe déjà”.\n\nDans le bloc 10, à la place de la mention « disponibilité à vérifier », écris exactement « ecumefrance.fr — disponible » et « © 2026 Écume » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.",
+        "requestId": "req_6b9520a0821b41a7ad868c31b8ac7b9f",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "logo",
+            "assetId": "qoj5x6u2ufhx3l4a",
+            "sha256": "9bd4cefbb9df27e2b2b4f41ad3f289f1a6f7841664460b88ea853299b749fd0b",
+            "octets": 1111246
+          },
+          {
+            "role": "disposition",
+            "assetId": "disposition:standard",
+            "sha256": "b4e2e0438d9467ffecfef30d450617299b5d547ff35b01d8e7b049f537e152f5",
+            "octets": 4685578
+          }
+        ],
+        "usage": {
+          "input_tokens": 4321,
+          "input_tokens_details": {
+            "image_tokens": 3057,
+            "text_tokens": 1264
+          },
+          "output_tokens": 3811,
+          "output_tokens_details": {
+            "image_tokens": 3811,
+            "text_tokens": 0
+          },
+          "total_tokens": 8132
+        },
+        "renvoye": {
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "4deeab9efbc1ffdbdbe7cf633cf4591bc83145061478d721c9d0abc40f24ae74",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": false,
+    "reserveMicro": 249626,
+    "reelMicro": 101132,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-B-1-1-relecture",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 10442,
+      "jetonsCacheLus": 3139,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 3760,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 33321,
+      "coutMicro": 101132,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-uvvo5ckjj27p69hk:planche:B-1-1-relecture",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  },
+  {
+    "cle": "10ff76fcec01c9cae80c89e4426fb62d68b38e03a88675ef501cfbdb3f533c63",
+    "task": "image_generation",
+    "modele": "openai:gpt-image-2.5-sunburst",
+    "studio": true,
+    "reserveMicro": 197549,
+    "reelMicro": 125294,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-B-1-2",
+      "fournisseur": "openai",
+      "modeleDemande": "gpt-image-2.5-sunburst",
+      "modeleServi": null,
+      "unite": "tokens",
+      "jetonsEntree": 4438,
+      "jetonsCacheLus": 0,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 3811,
+      "quantite": 1,
+      "effort": null,
+      "fin": null,
+      "dureeMs": 62934,
+      "coutMicro": 125294,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-uvvo5ckjj27p69hk:planche:B-1-2",
+      "details": {
+        "methode": "planche-de-marque",
+        "texteEnvoye": "La première image est le logo Écume : il sert de base à tout le système de logos et ne doit pas être redessiné. Construis l'univers graphique de la marque à partir de ce logo.\n\nLa deuxième image montre la disposition obligatoire de la planche : reprends exactement le même emplacement, le même ordre et les mêmes proportions pour chaque bloc (l'ouverture en haut, puis les blocs 01 à 10 aux mêmes places et avec les mêmes formats d'aperçus). N'en reprends ni les couleurs, ni le logo, ni les photographies, ni les textes : l'identité vient uniquement du logo de la première image.\n\nÉcume — Planche d’identité visuelle\n\nCrée la planche complète d’identité visuelle de Écume, avec une structure, une cohérence et une lisibilité fortes.\n\nObjectif :\nCréer une planche d’identité visuelle premium, moderne, commerciale et très propre, digne d’une vraie agence de branding, avec une hiérarchie forte et des éléments bien présentés.\n\nImportant :\n- Écume, savonnerie artisanale qui vend en ligne des savons solides, des shampoings solides et des baumes : marque artisanale, douce, naturelle et soignée. Sa phrase, choisie par le client et écrite sous le logo, en 2 lignes, dans cet ordre : « SAVONNERIE » puis « ARTISANALE » ; c'est aussi son slogan : partout où la planche l'écrit, écris-la exactement, toutes ses lignes dans cet ordre, sans en changer une lettre ni un accent.\n- Ne pas revenir à une charte austère ou trop scolaire.\n- Garder une présentation immersive et désirable.\n\nContenu obligatoire\n\n1. Système de logos plus complet\nJe veux un vrai système de logo avec davantage de variantes :\n- logo principal\n- logo secondaire horizontal\n- logo empilé\n- logo compact\n- icône seule\n- favicon\n- version monochrome foncée\n- version monochrome claire\n- version inversée sur fond sombre\n- version badge / sceau\nToutes les variantes doivent rester cohérentes entre elles.\n\n2. Réseaux sociaux : vrais formats\nJe veux 3 publications montrées dans leurs vrais formats visuels, et pas comme de petites vignettes approximatives.\nFormats exacts :\n- 1:1 feed carré\n- 4:5 publication portrait\n- 9:16 story / reel\nChaque publication doit avoir :\n- un objectif différent,\n- une composition différente,\n- une vraie accroche,\n- un vrai rôle marketing.\nExemples :\n- 1:1 = émotion / la douceur d'un moment de soin au quotidien\n- 4:5 = focus produit / bénéfices\n- 9:16 = contenu communauté / engagement / story\nLes trois doivent être lisibles et paraître publiables telles quelles.\n\n3. Site web : mockups réellement crédibles\nJe veux deux mockups distincts :\n- un mockup ordinateur réaliste, au bon ratio d’écran, large et lisible\n- un mockup téléphone réaliste, vertical, avec un vrai ratio mobile\nLes deux doivent montrer le même univers de site Écume, avec adaptation responsive réelle :\n- même DA,\n- même palette,\n- même logo,\n- même ton,\n- mais mise en page adaptée à chaque support.\nLe site doit sembler être une vraie boutique e-commerce :\n- header\n- hero\n- accroche\n- CTA\n- produits / collections\n- éléments de réassurance\n\n4. Ajouter une section “Images de référence”\nJe veux une vraie section de direction visuelle / inspiration photo.\nCette section doit montrer 4 à 6 petites images de référence cohérentes, par exemple :\n- savons solides posés sur une pierre claire\n- mousse légère sur un fond de lin blanc\n- lumière du matin dans une salle de bain épurée\n- copeaux de savon sur une planche de bois brut\n- baumes ouverts aux textures crémeuses\n- shampoings solides alignés près d'une fenêtre\nBut :\nmontrer l’univers photographique et émotionnel de la marque.\nAttention :\nce sont des images de référence d’univers, pas des logos supplémentaires.\n\n5. Produits\nLa section produits doit être mieux mise en scène et plus premium.\nMontrer clairement :\n- savons solides\n- shampoings solides\n- baumes\nLes visuels doivent être propres, désirables, e-commerce, avec une sensation plus “marque” et moins “simple catalogue”.\n\n6. Structure générale de la planche\nLa planche doit rester dense mais plus claire.\nJe veux une hiérarchie visuelle très lisible avec ces blocs :\n1. titre / identité\n2. système de logos\n3. palette + typographies\n4. ton / slogan / valeurs\n5. images de référence\n6. produits\n7. 3 publications réseaux\n8. site web desktop + mobile\n9. packaging / supports de marque\n10. SEO / nom de domaine / copyright\n\n7. SEO / domaine / mentions\nConserver un bloc avec :\n- titre SEO\n- méta-description\n- nom de domaine suggéré\n- mention “disponibilité à vérifier”\n- copyright\nNe pas inventer de disponibilité comme un fait certain si elle n’est pas vérifiée.\n\n8. Niveau graphique attendu\nJe veux une planche :\n- plus forte graphiquement,\n- plus structurée,\n- plus moderne,\n- plus cohérente,\n- plus proche d’une vraie présentation de studio de branding.\nLa planche ne doit pas ressembler à un simple tableau d’éléments posés.\nJe veux quelque chose que l’on regarde en se disant :\n“oui, cette marque existe déjà”.\n\nDans le bloc 10, à la place de la mention « disponibilité à vérifier », écris exactement « ecumefrance.fr — disponible » et « © 2026 Écume » ; n'ajoute aucune promesse, aucun chiffre ni aucun avis ; aucune personne visible.\n\nÀ corriger : fautes : « 05 PRODUITS (numéro de bloc en double après 05 IMAGES DE RÉFÉRENCE, il devrait être 06) », « Écumee (réassurance du site sur ordinateur) », « Fabrmotion (réassurance du site sur ordinateur) », « Ingrédieeement (réassurance du site sur ordinateur) », « selectionnés (réassurance du site mobile, au lieu de sélectionnés) » ; elle n'est pas au niveau (7/10, il faut 8).",
+        "requestId": "req_f1510ccf985b4b299f39ed9f4c1cf1b4",
+        "reglages": {
+          "model": "gpt-image-2.5-sunburst",
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png",
+          "n": 1
+        },
+        "jointes": [
+          {
+            "role": "logo",
+            "assetId": "qoj5x6u2ufhx3l4a",
+            "sha256": "9bd4cefbb9df27e2b2b4f41ad3f289f1a6f7841664460b88ea853299b749fd0b",
+            "octets": 1111246
+          },
+          {
+            "role": "disposition",
+            "assetId": "disposition:standard",
+            "sha256": "b4e2e0438d9467ffecfef30d450617299b5d547ff35b01d8e7b049f537e152f5",
+            "octets": 4685578
+          }
+        ],
+        "usage": {
+          "input_tokens": 4438,
+          "input_tokens_details": {
+            "image_tokens": 3057,
+            "text_tokens": 1381
+          },
+          "output_tokens": 3811,
+          "output_tokens_details": {
+            "image_tokens": 3811,
+            "text_tokens": 0
+          },
+          "total_tokens": 8249
+        },
+        "renvoye": {
+          "quality": "xhigh",
+          "size": "1536x2304",
+          "background": "opaque",
+          "output_format": "png"
+        }
+      }
+    }
+  },
+  {
+    "cle": "b1389625d25e40c0e0245584290b0074254aeab28cb7b1d4e27be5bd2a2d355e",
+    "task": "quality_control",
+    "modele": "anthropic:claude-opus-5-5",
+    "studio": true,
+    "reserveMicro": 250479,
+    "reelMicro": 83330,
+    "statut": "settled",
+    "appel": {
+      "etape": "planche-B-1-2-relecture",
+      "fournisseur": "anthropic",
+      "modeleDemande": "claude-opus-5-5",
+      "modeleServi": "claude-opus-5-5",
+      "unite": "tokens",
+      "jetonsEntree": 10627,
+      "jetonsCacheLus": 3139,
+      "jetonsCacheEcrits": 0,
+      "jetonsSortie": 2688,
+      "quantite": 0,
+      "effort": "high",
+      "fin": "end_turn",
+      "dureeMs": 22914,
+      "coutMicro": 83330,
+      "estime": false,
+      "statut": "ok",
+      "cle": "essai-planches-uvvo5ckjj27p69hk:planche:B-1-2-relecture",
+      "details": {
+        "placeDemandee": 10000,
+        "sortie": "stricte"
+      }
+    }
+  }
+]

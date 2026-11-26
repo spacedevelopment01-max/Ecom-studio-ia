@@ -1,0 +1,181 @@
+{
+  "verdict": {
+    "nomLu": "écume",
+    "logoFidele": true,
+    "copyrightLu": "© 2026 Écume",
+    "domaineLu": "ecumefrance.fr — disponible",
+    "fautes": [
+      "Titre SEO (bloc 10) : « Écume – Savonnerie artisanale |´ » — accent parasite après la barre de séparation"
+    ],
+    "microTextes": [
+      "Spécimen Playfair Display : « ABCDEFCRRJLKMONPEOUWXYZ »",
+      "Spécimen Playfair Display : « abcdefgjiäklmapoprqepuvwxyz »",
+      "Spécimen Montserrat : « ABCDEFGHIJLKMONTFPUWXYZ »",
+      "Spécimen Montserrat : « abcdefgĥijäklmnpopoqenjuvwxyz »"
+    ],
+    "promesses": [],
+    "personnes": false,
+    "personnesVues": [],
+    "logoFonceSurFondSombre": false,
+    "motMaquette": false,
+    "copies": [],
+    "note": 8,
+    "pourquoi": "La main a disparu de « Mousse délicate », « Dites-le-nous ! » est corrigé et la phrase du client est juste partout, y compris sur le sac en tissu. Seul un accent parasite traîne dans le titre SEO, à nettoyer ; le reste est complet, soigné et montrable.",
+    "phrasesLues": [
+      {
+        "emplacement": "Ouverture, sous le grand logo à gauche",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Ouverture, sous l'accroche du visuel",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo principal",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo horizontal",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, logo empilé",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome foncé",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, monochrome clair",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, inversé sur fond sombre",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 01, badge / sceau (texte circulaire)",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 04, slogan",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 05, couvercle de la boîte « Textures naturelles »",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 06, couvercle du baume",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 1:1",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, publication 4:5",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 07, story 9:16",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 08, hero du site ordinateur",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, boîte en carton",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      },
+      {
+        "emplacement": "Bloc 09, sac en tissu",
+        "lignes": [
+          "SAVONNERIE ARTISANALE",
+          "BULLES DE SOIN AU NATUREL"
+        ],
+        "cachee": false
+      }
+    ]
+  },
+  "raisons": [
+    "fautes : « Titre SEO (bloc 10) : « Écume – Savonnerie artisanale |´ » — accent parasite après la barre de séparation »"
+  ],
+  "ecartes": [
+    "micro-texte décoratif, non jugé : « Spécimen Playfair Display : « ABCDEFCRRJLKMONPEOUWXYZ » »",
+    "micro-texte décoratif, non jugé : « Spécimen Playfair Display : « abcdefgjiäklmapoprqepuvwxyz » »",
+    "micro-texte décoratif, non jugé : « Spécimen Montserrat : « ABCDEFGHIJLKMONTFPUWXYZ » »",
+    "micro-texte décoratif, non jugé : « Spécimen Montserrat : « abcdefgĥijäklmnpopoqenjuvwxyz » »"
+  ],
+  "gardee": false
+}
