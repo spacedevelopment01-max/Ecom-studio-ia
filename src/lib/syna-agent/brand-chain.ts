@@ -355,10 +355,20 @@ const ShortlistSchema = z.object({
   })).min(1).max(10),
 });
 type Pick = z.infer<typeof ShortlistSchema>["routes"][number];
-const JudgeSchema = z.object({
-  kept: z.array(z.object({ name: z.string().min(1).max(60), seen: z.string().max(260).default(""), why: z.string().max(260).default("") })).max(12).default([]),
-  almost: z.array(z.object({ name: z.string().min(1).max(60), why: z.string().max(260).default("") })).max(6).default([]),
+/**
+ * La note sur 10 que le juge donne à un nom gardé ou presque gardé (26 novembre 2026 : le propriétaire veut toujours voir
+ * ce que SINA écarte, et pourquoi). Elle n'est qu'écrite au compte rendu, jamais utilisée pour trier : une note absente
+ * ou illisible (« 8/10 », un mot) ne fait jamais refuser la réponse du juge.
+ */
+const NoteDuJuge = z.preprocess((v) => {
+  const n = typeof v === "string" ? Number.parseFloat(v.replace(",", ".")) : v;
+  return typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= 10 ? n : undefined;
+}, z.number().min(0).max(10).optional());
+export const JudgeSchema = z.object({
+  kept: z.array(z.object({ name: z.string().min(1).max(60), seen: z.string().max(260).default(""), why: z.string().max(260).default(""), note: NoteDuJuge })).max(12).default([]),
+  almost: z.array(z.object({ name: z.string().min(1).max(60), why: z.string().max(260).default(""), note: NoteDuJuge })).max(6).default([]),
 });
+export type VerdictDuJuge = z.infer<typeof JudgeSchema>;
 
 const VerifySchema = z.object({ checks: z.array(z.object({ name: z.string().max(60), taken: z.boolean().default(false), url: z.string().max(2000).default(""), note: z.string().max(300).default("") })).max(12).default([]) });
 
@@ -554,19 +564,184 @@ export function builtOnShown(name: string, shown: string[]): boolean {
 
 /** Réserve de noms : toutes les équipes réunies, sans les noms mal formés, recopiés, déjà montrés ou d'un concurrent. */
 export function namePool(teams: { team: string; names: z.infer<typeof TeamSchema>["names"] }[], opts: { competitors?: string[]; shown?: string[] } = {}): PoolName[] {
+  return namePoolDetaille(teams, opts).pool;
+}
+
+/** Un nom écarté par un contrôle gratuit du code, avec la raison dite en clair (compte rendu, jamais montré au client). */
+export type NomEcarteParLeCode = { nom: string; equipe: string; raison: string };
+
+/**
+ * La réserve de noms ET ce qu'elle écarte, avec la raison (26 novembre 2026 : le propriétaire veut toujours voir ce que
+ * SINA écarte, et pourquoi). Le tri est exactement celui de `namePool`, dont c'est le seul code. Un nom donné deux fois
+ * n'est pas écarté (il reste une fois dans la réserve) ; `premierTour` ne sert qu'à écrire « déjà trouvé au premier
+ * tour » au lieu de « déjà montré au client ».
+ */
+export function namePoolDetaille(teams: { team: string; names: z.infer<typeof TeamSchema>["names"] }[], opts: { competitors?: string[]; shown?: string[]; premierTour?: string[] } = {}): { pool: PoolName[]; ecartes: NomEcarteParLeCode[] } {
+  const concurrents = new Set((opts.competitors ?? []).map(normText)), premier = new Set((opts.premierTour ?? []).map(normText));
   const banned = new Set([...(opts.competitors ?? []), ...(opts.shown ?? [])].map(normText));
-  const seen = new Set<string>(), out: PoolName[] = [];
+  const seen = new Set<string>(), dejaEcartes = new Set<string>(), out: PoolName[] = [], ecartes: NomEcarteParLeCode[] = [];
+  const montre = (cle: string) => (premier.has(cle) ? "déjà trouvé au premier tour" : "déjà montré au client");
   // Une équipe après l'autre, à tour de rôle : aucune ne remplit la réserve à elle seule.
   const longest = Math.max(0, ...teams.map((t) => t.names.length));
   for (let i = 0; i < longest; i++) for (const t of teams) {
     const n = t.names[i];
     if (!n) continue;
     const key = normText(n.name);
-    if (!key || seen.has(key) || banned.has(key) || builtOnShown(n.name, opts.shown ?? []) || nameIssues(n.name).length || isReferenceName(n.name)) continue;
+    if (key && seen.has(key)) continue;
+    const raison = !key ? "nom vide"
+      : banned.has(key) ? (concurrents.has(key) ? "nom d'un concurrent trouvé par l'étude" : montre(key))
+      : builtOnShown(n.name, opts.shown ?? []) ? (() => { const base = (opts.shown ?? []).find((x) => builtOnShown(n.name, [x])) ?? ""; return `construit sur « ${base} », ${montre(normText(base))}`; })()
+      : nameIssues(n.name).length ? `nom mal formé : ${nameIssues(n.name)[0].replace(/\.$/, "")}`
+      : isReferenceName(n.name) ? "un des noms d'exemple du cahier de SINA, jamais recopié"
+      : null;
+    if (raison) { if (!dejaEcartes.has(key)) { dejaEcartes.add(key); ecartes.push({ nom: n.name.trim(), equipe: t.team, raison }); } continue; }
     seen.add(key);
     out.push({ ...n, name: n.name.trim(), team: t.team });
   }
-  return out.slice(0, 240);
+  for (const n of out.slice(240)) ecartes.push({ nom: n.name, equipe: n.team, raison: "au-delà des 240 premiers noms de la réserve (la liste est bornée)" });
+  return { pool: out.slice(0, 240), ecartes };
+}
+
+/**
+ * Ce que le juge garde d'une liste : seuls des noms réellement présents dans la liste comptent (le juge ne trouve pas de
+ * noms, il trie), chacun une fois. Rend aussi les noms qu'il a rendus sans qu'ils soient dans la liste : ils sont ignorés.
+ */
+export function verdictSurLaListe(list: PoolName[], r: VerdictDuJuge, judged: VerdictDuJuge["kept"], almost: VerdictDuJuge["almost"]): { inconnus: string[] } {
+  const known = (name: string) => list.some((n) => normText(n.name) === normText(name));
+  judged.push(...r.kept.filter((k) => known(k.name) && !judged.some((x) => normText(x.name) === normText(k.name))));
+  almost.push(...r.almost.filter((k) => known(k.name) && !almost.some((x) => normText(x.name) === normText(k.name))));
+  return { inconnus: [...r.kept, ...r.almost].map((k) => k.name).filter((name) => !known(name)) };
+}
+
+/**
+ * Les noms permis après le juge : ceux qu'il garde ; trop peu, même après le second tour : les « presque », puis les
+ * premiers trouvés, avec le doute dit.
+ */
+export function nomsPermisApresLeJuge(o: { first: PoolName[]; second: PoolName[]; judged: VerdictDuJuge["kept"]; almost: VerdictDuJuge["almost"]; todo: number }): { allowed: PoolName[]; doubts: Map<string, string> } {
+  const doubts = new Map<string, string>();
+  const found = (name: string) => [...o.first, ...o.second].find((n) => normText(n.name) === normText(name));
+  const allowed = o.judged.map((k) => found(k.name)).filter((n): n is PoolName => !!n);
+  for (const k of o.almost) { if (allowed.length >= o.todo) break; const n = found(k.name); if (n && !allowed.includes(n)) { allowed.push(n); doubts.set(normText(n.name), k.why.replace(/\.+$/, "")); } }
+  for (const n of o.first) { if (allowed.length >= o.todo) break; if (!allowed.includes(n)) { allowed.push(n); doubts.set(normText(n.name), L("il n'a pas passé mon contrôle le plus sévère", "it did not pass my strictest check")); } }
+  return { allowed, doubts };
+}
+
+/**
+ * Pourquoi un nom de la réserve n'est pas envoyé au juge (null : il l'est). Le contrôle gratuit d'avant le juge : un nom
+ * mal formé, recopié des exemples, déjà refusé par le propriétaire, ou bâti sur un nom déjà montré.
+ */
+export function raisonDuNomPasLibre(name: string, shown: string[]): string | null {
+  const issues = nameIssues(name);
+  if (issues.length) return `nom mal formé : ${issues[0].replace(/\.$/, "")}`;
+  if (isReferenceName(name)) return "un des noms d'exemple du cahier de SINA, jamais recopié";
+  if (NAME_REFUSALS.some((r) => normText(r.name) === normText(name))) return "un nom que le propriétaire a déjà refusé";
+  if (builtOnShown(name, shown)) return "construit sur un nom déjà montré au client";
+  return null;
+}
+
+/** La clé, dans l'état de la tâche des noms, de ses noms écartés (suivie du numéro de la proposition). */
+export const CLE_DES_NOMS_ECARTES = "ecartes:noms";
+
+/** Un nom écarté, à quel tour, à quelle étape, et pourquoi (compte rendu pour le propriétaire, jamais montré au client). */
+export type NomEcarte = {
+  tour: 1 | 2;
+  /** « controle » : les contrôles gratuits du code ; « juge » : le juge des noms ; « verification » : la vérification. */
+  etape: "controle" | "juge" | "verification";
+  nom: string; equipe?: string; raison: string;
+  /** La note sur 10 du juge, quand il en a donné une (seulement pour les noms presque gardés). */
+  note?: number | null;
+  /** « presque » : presque gardé par le juge, avec sa raison ; « refuse » : refusé sans raison écrite ; « ignore » : rendu par le juge sans être dans la liste. */
+  verdict?: "presque" | "refuse" | "ignore";
+};
+export type NomsEcartes = {
+  tours: { tour: 1 | 2; trouves: number; ecartesParLeCode: number; juges: number; gardesParLeJuge: number }[];
+  ecartes: NomEcarte[];
+  /** Les noms permis après le juge (doutes compris), puis ceux envoyés à la vérification et ceux qu'elle laisse. */
+  permis: string[]; verifies: string[]; libres: string[];
+  /** La vérification sur le web a-t-elle eu lieu (false : les noms sont montrés sans être vérifiés). */
+  verificationFaite: boolean | null;
+};
+type EquipesDeNoms = { team: string; names: z.infer<typeof TeamSchema>["names"] }[];
+type VerificationDesNoms = { done: boolean; taken: string[]; preuves?: { name: string; url: string; note: string }[] };
+
+/**
+ * Les noms écartés à chaque tour, avec la raison et, quand le juge en donne une, la note (26 novembre 2026 : le
+ * propriétaire veut toujours voir ce que SINA écarte, et pourquoi). Refait exactement le tri de la tâche des noms avec ses
+ * propres morceaux (`namePoolDetaille`, `raisonDuNomPasLibre`, `verdictSurLaListe`, `nomsPermisApresLeJuge`), à partir de
+ * ce que les équipes, le juge et la vérification ont rendu : aucun appel, aucune dépense.
+ */
+export function nomsEcartes(o: { equipes1: EquipesDeNoms; equipes2?: EquipesDeNoms | null; concurrents: string[]; dejaMontres: string[]; juge1?: VerdictDuJuge | null; juge2?: VerdictDuJuge | null; todo: number; verification?: VerificationDesNoms | null }): NomsEcartes {
+  const ecartes: NomEcarte[] = [], tours: NomsEcartes["tours"] = [];
+  const judged: VerdictDuJuge["kept"] = [], almost: VerdictDuJuge["almost"] = [];
+  const unTour = (tour: 1 | 2, equipes: EquipesDeNoms, shown: string[], premierTour?: string[], juge?: VerdictDuJuge | null) => {
+    const { pool, ecartes: parLeCode } = namePoolDetaille(equipes, { competitors: o.concurrents, shown, ...(premierTour ? { premierTour } : {}) });
+    ecartes.push(...parLeCode.map((e) => ({ tour, etape: "controle" as const, nom: e.nom, equipe: e.equipe, raison: e.raison })));
+    const liste: PoolName[] = [];
+    for (const n of pool) { const raison = raisonDuNomPasLibre(n.name, o.dejaMontres); if (raison) ecartes.push({ tour, etape: "controle", nom: n.name, equipe: n.team, raison }); else liste.push(n); }
+    const avant = judged.length;
+    if (liste.length && juge) for (const nom of verdictSurLaListe(liste, juge, judged, almost).inconnus) ecartes.push({ tour, etape: "juge", nom, raison: "rendu par le juge alors qu'il n'est pas dans la liste reçue (recopié de travers ?) : ignoré", verdict: "ignore" });
+    tours.push({ tour, trouves: pool.length + parLeCode.length, ecartesParLeCode: parLeCode.length + pool.length - liste.length, juges: liste.length, gardesParLeJuge: judged.length - avant });
+    return { pool, liste, jugee: !!juge };
+  };
+  const t1 = unTour(1, o.equipes1, o.dejaMontres, undefined, o.juge1);
+  const t2 = o.equipes2 ? unTour(2, o.equipes2, [...o.dejaMontres, ...t1.pool.map((n) => n.name)], t1.pool.map((n) => n.name), o.juge2) : null;
+  const { allowed } = nomsPermisApresLeJuge({ first: t1.liste, second: t2?.liste ?? [], judged, almost, todo: o.todo });
+  const permis = new Set(allowed.map((n) => normText(n.name)));
+  for (const [tour, t] of [[1, t1], [2, t2]] as const) {
+    if (!t) continue;
+    for (const n of t.liste) {
+      if (permis.has(normText(n.name))) continue;
+      const presque = almost.find((k) => normText(k.name) === normText(n.name));
+      ecartes.push(presque
+        ? { tour, etape: "juge", nom: n.name, equipe: n.team, raison: presque.why || "presque gardé, sans raison écrite", note: presque.note ?? null, verdict: "presque" }
+        : { tour, etape: "juge", nom: n.name, equipe: n.team, raison: t.jugee ? "refusé par le juge, sans raison écrite (il n'écrit une raison et une note que pour les noms presque gardés)" : "pas jugé (le juge n'a pas rendu de réponse pour ce tour)", note: null, verdict: "refuse" });
+    }
+  }
+  const tourDe = (name: string): 1 | 2 => (t1.liste.some((n) => normText(n.name) === normText(name)) ? 1 : 2);
+  const candidats = allowed.map((n) => n.name).slice(0, 12);
+  for (const n of allowed.slice(12)) ecartes.push({ tour: tourDe(n.name), etape: "verification", nom: n.name, equipe: n.team, raison: "au-delà des 12 noms envoyés à la vérification" });
+  const v = o.verification ?? null;
+  const pris = (name: string) => !!v?.taken.some((t) => normText(t) === normText(name));
+  for (const name of candidats) {
+    if (!pris(name)) continue;
+    const p = v?.preuves?.find((x) => normText(x.name) === normText(name));
+    ecartes.push({ tour: tourDe(name), etape: "verification", nom: name, equipe: allowed.find((n) => n.name === name)?.team, raison: `déjà porté par une marque du même secteur${p?.note ? ` : ${p.note.replace(/\.+$/, "")}` : ""}${p?.url ? ` (${p.url})` : " (page trouvée par la recherche)"}` });
+  }
+  // Dans l'ordre du travail : tour par tour, les contrôles, puis le juge ; la vérification à la fin.
+  const rang = (x: NomEcarte) => (x.etape === "verification" ? 10 : x.tour * 2 + (x.etape === "juge" ? 1 : 0));
+  ecartes.sort((a, b) => rang(a) - rang(b));
+  return { tours, ecartes, permis: allowed.map((n) => n.name), verifies: candidats, libres: candidats.filter((n) => !pris(n)), verificationFaite: v ? v.done : null };
+}
+
+/**
+ * Les noms écartés d'une tâche des noms déjà faite, relus dans son état (ses points de reprise), sans aucun appel :
+ * d'abord ce que la tâche a gardé (`CLE_DES_NOMS_ECARTES`), sinon refait à partir de ce que les équipes, le juge et la
+ * vérification ont rendu (une tâche d'avant le 26 novembre 2026). null : les équipes n'y sont pas.
+ */
+export function nomsEcartesDuPointDeReprise(cp: Record<string, unknown>, o: { kind: "produits" | "services"; count: number }): (NomsEcartes & { relu: "garde" | "refait" }) | null {
+  const round = typeof cp["brand:round"] === "number" ? (cp["brand:round"] as number) : 1;
+  const garde = cp[`${CLE_DES_NOMS_ECARTES}:${round}`] as NomsEcartes | undefined;
+  if (garde && Array.isArray(garde.ecartes)) return { ...garde, relu: "garde" };
+  const lire = (cle: string) => { const r = TeamSchema.safeParse(cp[cle]); return r.success ? r.data.names : null; };
+  // Les équipes dans l'ordre de leurs chemins (celui de la tâche), puis toute autre équipe trouvée dans l'état.
+  const ordre = P.teamPathsFor(o.kind, 6).map((p) => p.id);
+  const ids = [...new Set(Object.keys(cp).map((k) => /^brand:team:([a-z]+)(?::court)?$/.exec(k)?.[1]).filter((x): x is string => !!x))].sort((a, b) => (ordre.indexOf(a) + 99 * Number(!ordre.includes(a))) - (ordre.indexOf(b) + 99 * Number(!ordre.includes(b))));
+  const equipes = (suffixe: string) => ids.flatMap((id) => { const names = lire(`brand:team:${id}${suffixe}`) ?? lire(`brand:team:${id}${suffixe}:court`); return names ? [{ team: id, names }] : []; });
+  const equipes1 = equipes("");
+  if (!equipes1.length) return null;
+  const second = Object.keys(cp).some((k) => new RegExp(`^brand:team:[a-z]+:${round}:2(:court)?$`).test(k));
+  const juge = (cle: string) => { const r = JudgeSchema.safeParse(cp[cle]); return r.success ? r.data : null; };
+  const etude = cp["brand:study"] as { competitors?: { name?: string }[] } | undefined;
+  const v = cp[`brand:verify:noms:${round}`] as VerificationDesNoms | undefined;
+  return {
+    ...nomsEcartes({
+      equipes1, equipes2: second ? equipes(`:${round}:2`) : null,
+      concurrents: (etude?.competitors ?? []).map((c) => c?.name ?? "").filter(Boolean), dejaMontres: Array.isArray(cp["brand:shown"]) ? (cp["brand:shown"] as string[]) : [],
+      juge1: juge(`brand:judge:${round}`), juge2: juge(`brand:judge:${round}:2`), todo: o.count,
+      verification: v && typeof v.done === "boolean" && Array.isArray(v.taken) ? v : null,
+    }),
+    relu: "refait",
+  };
 }
 
 /** Brouillon de la direction artistique → route complète et sûre (clé, pictogrammes nettoyés, lignes d'honnêteté). */
@@ -897,10 +1072,11 @@ export async function runSinaBrandJob(ctx: JobContext) {
   // équipes AVANT qu'une route soit composée (essai réel : jugé après la composition, il ne voyait que 7 noms sur 178,
   // et de meilleurs noms n'arrivaient jamais devant lui). Les routes ne se composent qu'avec les noms qu'il garde ; si
   // trop peu tiennent, les équipes repartent chercher UNE fois ; un nom pris faute de mieux l'est avec le doute dit.
-  const refusedBefore = (name: string) => NAME_REFUSALS.some((r) => normText(r.name) === normText(name));
-  const freeName = (name: string) => !nameIssues(name).length && !isReferenceName(name) && !refusedBefore(name) && !builtOnShown(name, shown);
-  const doubts = new Map<string, string>();
-  const judged: { name: string; seen: string; why: string }[] = [], almost: { name: string; why: string }[] = [];
+  const freeName = (name: string) => !raisonDuNomPasLibre(name, shown);
+  let doubts = new Map<string, string>();
+  const judged: VerdictDuJuge["kept"] = [], almost: VerdictDuJuge["almost"] = [];
+  // Ce que chaque tour a rendu, gardé pour le compte rendu des noms écartés (jamais montré au client).
+  const verdicts: { juge1?: VerdictDuJuge; juge2?: VerdictDuJuge; equipes2?: typeof teams } = {};
   let allowed: PoolName[] = pool, searched = 0;
   // Noms choisis par le client : ce sont les seuls noms permis, sans passer par le juge (il a déjà choisi).
   if (imposed.length) allowed = imposed.map((name) => pool.find((n) => normText(n.name) === normText(name)) ?? { name, detail: "", second: "", idea: "", team: "client" });
@@ -912,10 +1088,9 @@ export async function runSinaBrandJob(ctx: JobContext) {
     const judge = async (tag: string, list: PoolName[]) => {
       if (!list.length) return;
       const r = tag === "" && verdictsAvant.length ? { kept: verdictsAvant.flatMap((v) => v.kept), almost: verdictsAvant.flatMap((v) => v.almost) } : await ctx.step(`brand:judge:${round}${tag}`, () => ai.ask(`judge-${round}${tag.replace(":", "-")}`, { kind: "judge", system: P.nameJudgeSystem(kind), schema: JudgeSchema, prompt: `${brief}\n\n# Noms trouvés par les équipes (${list.length})\n${list.map((n) => `- ${n.name} | détail réel : ${n.detail} | deuxième lecture : ${n.second}`).join("\n")}` }));
+      if (tag === "") verdicts.juge1 = r; else verdicts.juge2 = r;
       // Seuls des noms réellement présents dans la liste comptent : le juge ne trouve pas de noms, il trie.
-      const known = (name: string) => list.some((n) => normText(n.name) === normText(name));
-      judged.push(...r.kept.filter((k) => known(k.name) && !judged.some((x) => normText(x.name) === normText(k.name))));
-      almost.push(...r.almost.filter((k) => known(k.name) && !almost.some((x) => normText(x.name) === normText(k.name))));
+      verdictSurLaListe(list, r, judged, almost);
     };
     ctx.progress(0.52, L("Je passe tous les noms à mon contrôle le plus sévère", "Putting every name through my strictest check"));
     const first = pool.filter((n) => freeName(n.name));
@@ -931,15 +1106,13 @@ export async function runSinaBrandJob(ctx: JobContext) {
       for (const [i, path] of paths.entries()) { const names = again[i]; if (names) more.push({ team: path.id, names }); }
       // Second tour sans aucune réponse lisible : on garde les noms du premier tour (les « presque », puis les premiers trouvés).
       if (!more.length) notes.push("second tour de noms sans réponse lisible : je garde les meilleurs noms du premier tour");
+      verdicts.equipes2 = more;
       second = namePool(more, { competitors: study.competitors.map((c) => c.name), shown: [...shown, ...pool.map((n) => n.name)] }).filter((n) => freeName(n.name));
       searched += second.length;
       await judge(":2", second);
     }
-    const found = (name: string) => [...first, ...second].find((n) => normText(n.name) === normText(name));
-    allowed = judged.map((k) => found(k.name)).filter((n): n is PoolName => !!n);
     // Trop peu de noms gardés, même après le second tour : les « presque », puis les premiers trouvés, avec le doute dit.
-    for (const k of almost) { if (allowed.length >= todo.length) break; const n = found(k.name); if (n && !allowed.includes(n)) { allowed.push(n); doubts.set(normText(n.name), k.why.replace(/\.+$/, "")); } }
-    for (const n of first) { if (allowed.length >= todo.length) break; if (!allowed.includes(n)) { allowed.push(n); doubts.set(normText(n.name), L("il n'a pas passé mon contrôle le plus sévère", "it did not pass my strictest check")); } }
+    ({ allowed, doubts } = nomsPermisApresLeJuge({ first, second, judged, almost, todo: todo.length }));
   }
   // Méthode des graphistes : la chaîne s'arrête après les noms VÉRIFIÉS (point 0, « Oui » du 24 novembre 2026). Le
   // client choisit son nom (identity.nom) ; la recherche de son logo part pour ce nom, puis ses identités le partagent.
@@ -950,10 +1123,20 @@ export async function runSinaBrandJob(ctx: JobContext) {
         const findings = await ai.research(`verify-noms-${round}`, P.verifyQuery(candidats, briefFromJourney(j)), "competitors");
         if (!findings.length) return { done: true, taken: [] as string[] };
         const r = await ai.ask(`verify-noms-${round}`, { kind: "verify", system: P.VERIFY_SYSTEM, schema: VerifySchema, prompt: `# Noms à vérifier\n${candidats.map((n) => `- ${n}`).join("\n")}\n\n# Pages trouvées\n${findings.map((f) => `${f.url}\n${f.title}\n${f.excerpt}`).join("\n\n")}` });
-        return { done: true, taken: r.checks.filter((c) => c.taken && findings.some((f) => sameUrl(f.url, c.url))).map((c) => c.name) };
+        const preuves = r.checks.filter((c) => c.taken && findings.some((f) => sameUrl(f.url, c.url))).map((c) => ({ name: c.name, url: c.url, note: c.note }));
+        // `preuves` ne sert qu'au compte rendu des noms écartés (ce que la vérification a vu, et où).
+        return { done: true, taken: preuves.map((c) => c.name), preuves };
       } catch (e) { if (e instanceof CostCapReached) throw e; return { done: false, taken: [] as string[] }; }
     });
     if (!pris.done) notes.push("vérification des noms sur le web impossible : les noms sont montrés sans être vérifiés, et c'est dit");
+    // Les noms écartés à chaque tour, avec la raison et la note du juge (le propriétaire veut toujours voir ce que SINA
+    // écarte, et pourquoi, 26 novembre 2026) : gardés dans l'état de la tâche (ses points de reprise), jamais dans son
+    // résultat, que SINA relit : ni elle ni le client ne les voient. Le script d'essai des noms les écrit au rapport.
+    // Un compte rendu : il ne fait jamais tomber la tâche.
+    if (!j.keep.includes("nom") && !imposed.length && typeof ctx.save === "function") {
+      try { ctx.save(`${CLE_DES_NOMS_ECARTES}:${round}`, nomsEcartes({ equipes1: teams, equipes2: verdicts.equipes2 ?? null, concurrents: study.competitors.map((c) => c.name), dejaMontres: shown, juge1: verdicts.juge1 ?? null, juge2: verdicts.juge2 ?? null, todo: todo.length, verification: pris })); }
+      catch { /* rien : seul le compte rendu manque */ }
+    }
     const libres = candidats.filter((n) => !pris.taken.some((t) => normText(t) === normText(n)));
     if (!libres.length) throw new UserFacingError(L("Aucun des noms gardés n'est libre : dis-moi ce que tu veux de différent et je recommence.", "None of the kept names is free."));
     const avecPourquoi = libres.map((name) => { const k = judged.find((x) => normText(x.name) === normText(name)); const n = allowed.find((x) => normText(x.name) === normText(name)); return { name, why: k?.why ?? doubts.get(normText(name)) ?? "", detail: n?.detail ?? "", doute: doubts.get(normText(name)) ?? null }; });

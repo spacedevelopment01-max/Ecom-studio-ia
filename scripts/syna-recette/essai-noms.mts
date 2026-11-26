@@ -15,7 +15,9 @@
  * Aucun appel n'est relancé tout seul : une panne arrête l'essai et est écrite comme telle (code de sortie 2).
  *
  * Ce qu'il écrit dans le dossier de sortie : fiche-du-client.txt ; noms.json (les noms vérifiés, numérotés, avec leur
- * adresse) ; depense.json ; rapport.txt. Le nom choisi par le propriétaire part ensuite aux autres scripts par CLIENT_NOM.
+ * adresse, et `ecartes`) ; depense.json ; rapport.txt. Le rapport dit aussi, tour par tour, les noms que SINA écarte et
+ * pourquoi (contrôles gratuits du code, juge avec sa raison et sa note, vérification), relus dans l'état de la tâche, sans
+ * aucun appel ; pour un essai déjà fait : essai-noms-ecartes.mts. Le nom choisi part ensuite aux autres scripts par CLIENT_NOM.
  *
  * Usage (depuis la racine du dépôt ; clé Anthropic par STUDIO_ANTHROPIC_KEY dans les réglages de l'environnement, jamais
  * dans le code ni dans la commande) :

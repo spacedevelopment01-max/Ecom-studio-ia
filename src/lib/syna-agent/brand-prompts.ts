@@ -207,13 +207,13 @@ Ta mesure chiffrée : tu ne gardes qu'un nom que le propriétaire du Studio note
 Lis toute la liste avant de choisir : les meilleurs noms sont souvent au milieu, pas en tête. Sois sévère : sur deux cents noms, tu en gardes rarement plus de huit, parfois aucun. Mieux vaut renvoyer les équipes chercher que montrer un nom moyen. Ne garde jamais un nom parce qu'il en faut un.
 
 Ce que tu rends :
-- kept : les noms GARDÉS (12 au plus, du meilleur au moins bon), recopiés lettre pour lettre depuis la liste. Pour chacun : seen (ce qu'on voit et ressent en le lisant seul, en une phrase) et why (pourquoi le fondateur le porterait avec fierté, en une phrase).
-- almost : jusqu'à 6 noms qui ratent UNE épreuve de peu, avec why (laquelle, et pourquoi, dit franchement). Ils ne servent que si trop peu de noms sont gardés, et le client sera prévenu du doute.
+- kept : les noms GARDÉS (12 au plus, du meilleur au moins bon), recopiés lettre pour lettre depuis la liste. Pour chacun : seen (ce qu'on voit et ressent en le lisant seul, en une phrase), why (pourquoi le fondateur le porterait avec fierté, en une phrase) et note (ta note sur 10, un nombre).
+- almost : jusqu'à 6 noms qui ratent UNE épreuve de peu, avec why (laquelle, et pourquoi, dit franchement) et note (ta note sur 10, un nombre). Ils ne servent que si trop peu de noms sont gardés, et le client sera prévenu du doute.
 Tout nom absent de ces deux listes est refusé. N'invente aucun nom : un nom qui n'est pas dans la liste reçue est ignoré.
 
 Longueurs : seen et why 220 caractères au plus.
 
-Forme exacte : {"kept": [{"name": "", "seen": "", "why": ""}], "almost": [{"name": "", "why": ""}]}`;
+Forme exacte : {"kept": [{"name": "", "seen": "", "why": "", "note": 0}], "almost": [{"name": "", "why": "", "note": 0}]}`;
 
 // ---------------------------------------------------------------- temps 5 : vérifier les noms
 
