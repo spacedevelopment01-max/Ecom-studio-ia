@@ -298,7 +298,30 @@ export type ResultatEnVrai = {
   depenseMicro: number; appels: LigneDeDepense[]; devis: DevisDeLEssaiEnVrai;
   /** Le projet de l'essai et le fil où son parcours est enregistré (l'onglet Marque le lit). */
   projectId?: string; conversationId?: string;
+  /**
+   * LOGO_HD sur le chemin normal : les quatre petites versions du logo reprises de l'aperçu (sans symbole séparable),
+   * refaites en haute définition après la planche en vrai, à la charge du Studio (`refaireLesLogosEnHdEnVrai`). Vide :
+   * aucune version reprise de l'aperçu (symbole séparable), rien à refaire.
+   */
+  logosEnHd?: { versions: VersionEnHd[]; gardees: VersionEnHd[]; refusees: VersionEnHd[]; surLaPlanche?: string[]; devis: { maxMicro: number; probableMicro: number } };
 };
+/**
+ * Le devis du chemin normal avec LOGO_HD (aucun appel) : la planche en vrai, puis les quatre petites versions du logo en
+ * haute définition, à la charge du Studio, reprise des refusées comprise. Le plafond minimal exact est la somme des deux.
+ */
+export async function devisDuCheminNormal(o: { logoHd?: boolean } = {}): Promise<{ planche: DevisDeLEssaiEnVrai; logos: ReturnType<typeof import("../../src/lib/syna-agent/planche-en-vrai-tache").devisDesLogosEnHd> | null; plafondMinimalMicro: number; probableMicro: number; probableAvecReprisesMicro: number; texte: string[] }> {
+  const T = await import("../../src/lib/syna-agent/planche-en-vrai-tache");
+  const planche = await devisDeLEssaiEnVrai(), logos = o.logoHd ? T.devisDesLogosEnHd() : null;
+  const plafondMinimalMicro = planche.plafondMinimalMicro + (logos?.maxMicro ?? 0);
+  const probableMicro = planche.probableMicro + (logos?.probableMicro ?? 0), probableAvecReprisesMicro = planche.probableAvecReprisesMicro + (logos?.siToutEstRefaitMicro ?? 0);
+  return {
+    planche, logos, plafondMinimalMicro, probableMicro, probableAvecReprisesMicro,
+    texte: [...devisEnTexteEnVrai(planche), ...(logos ? [
+      `LOGO_HD, sur le chemin normal, à la charge du Studio : les quatre petites versions du logo (compact, icône, favicon, badge), seulement celles reprises de l'aperçu, ${logos.images} images et ${logos.relectures} relecture, puis une reprise des refusées ; probable ${euros(logos.probableMicro)} (si tout est refait une fois : ${euros(logos.siToutEstRefaitMicro)}), au plus ${euros(logos.maxMicro)}`,
+      `Plafond minimal exact de la commande (planche en vrai et LOGO_HD, somme des maxima, reprises comprises) : ${euros(plafondMinimalMicro)} ; probable ${euros(probableMicro)} (si tout est refait une fois : ${euros(probableAvecReprisesMicro)})`,
+    ] : [])],
+  };
+}
 type Qui = { userId: string; projectId: string; jobId: string };
 
 const png = (f: string, quoi: string) => {
@@ -313,7 +336,13 @@ const png = (f: string, quoi: string) => {
  * `vraisAppelsEnVrai`, sous le plafond du client et la borne du Studio du devis, comme dans la tâche). Le plafond, en euros,
  * allume le garde-fou de l'essai pour toute la durée du script.
  */
-export async function essaiDeLaPlancheEnVrai(o: { sortie: string; plafondEuros: string; planche: string; logo: string; client: ClientDeLEssai; donnees: DonneesDeLaPlanche; ai?: (q: Qui) => PlancheEnVraiAi }): Promise<ResultatEnVrai> {
+export async function essaiDeLaPlancheEnVrai(o: {
+  sortie: string; plafondEuros: string; planche: string; logo: string; client: ClientDeLEssai; donnees: DonneesDeLaPlanche; ai?: (q: Qui) => PlancheEnVraiAi;
+  /** LOGO_HD=1 : les quatre petites versions du logo en haute définition, à la charge du Studio, après la planche en vrai. */
+  logoHd?: boolean; aiLogos?: (q: Qui) => LogosEnHdAi;
+  /** Le métier court de la recherche du logo (esquisses.json, « metier.court ») : le bas du badge sans phrase, comme dans le Studio. */
+  metierCourt?: string | null;
+}): Promise<ResultatEnVrai> {
   const plafond = Number(o.plafondEuros.replace(",", "."));
   if (!Number.isFinite(plafond) || plafond <= 0) throw new Error("PLAFOND_ESSAI_EUR manquant ou illisible : rien n'est lancé.");
   const demo = png(o.planche, "Planche choisie"), logoFini = png(o.logo, "Logo fini");
@@ -495,11 +524,55 @@ export async function essaiDeLaPlancheEnVrai(o: { sortie: string; plafondEuros: 
       : `un appel a échoué, jamais relancé : ${String((e as Error)?.message ?? e).slice(0, 400)}`;
 
   ecrireFichier("fiche-du-client.txt", `${fiche}\n`);
-  return runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: devis.devisDuStudio.maxMicro, studioCapMicro: devis.devisDuStudio.studioMaxMicro }, async () => {
+  // LOGO_HD : la borne du Studio couvre aussi les quatre petites versions en haute définition (reprise comprise).
+  const devisLogos = o.logoHd ? T.devisDesLogosEnHd() : null;
+  // Comme dans le Studio (brand-finish.ts) : la phrase choisie sous le logo est la ligne du logo ; sans elle, le métier court.
+  const ligneDuLogo = donnees.phrase || null, metierCourt = o.metierCourt?.trim() || null;
+  return runWithLang({ ui: "fr", content: "fr" }, () => runForUser(u.id, () => withTrace({ jobId, projectId, costCapMicro: devis.devisDuStudio.maxMicro, studioCapMicro: devis.devisDuStudio.studioMaxMicro + (devisLogos?.maxMicro ?? 0) }, async () => {
     let etat: EtatPlancheEnVrai;
     try {
-      etat = await T.plancheEnVrai({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, logoAssetId: logoAsset.id, personnes, phrase: donnees.phrase });
+      etat = await T.plancheEnVrai({ ctx, ai, who: { userId: u.id, projectId }, route: route as never, logoAssetId: logoAsset.id, personnes, phrase: donnees.phrase, ligneDuLogo, metierCourt });
     } catch (e) { res.arret = raisonDeLArret(erreur ?? e); return ecrire(); }
+    // LOGO_HD sur le chemin normal (26 novembre 2026) : après la planche en vrai, les versions reprises de l'aperçu sont
+    // refaites en haute définition par la fonction du Studio (`refaireLesLogosEnHdEnVrai`), à la charge du Studio, chaque
+    // appel écrit tout de suite dans logos-hd/ ; puis les logos et la planche sont refaits par le code avec les versions
+    // gardées. Une panne arrête les logos en haute définition, jamais relancée : la planche en vrai reste celle d'avant.
+    if (o.logoHd && devisLogos) {
+      const versions = P.VERSIONS_EN_HD.filter((v) => etat.logosDeLApercu?.includes(v));
+      res.logosEnHd = { versions, gardees: [], refusees: [], devis: { maxMicro: devisLogos.maxMicro, probableMicro: devisLogos.probableMicro } };
+      if (!versions.length) lignes.push("", "LOGO_HD : le symbole du logo est séparable, aucune petite version n'est reprise de l'aperçu ; rien à refaire en haute définition, aucun appel.");
+      else {
+        fs.mkdirSync(path.join(o.sortie, "logos-hd"), { recursive: true });
+        const brutL: LogosEnHdAi = o.aiLogos ? o.aiLogos(qui) : T.logosEnHdDeps.ai ? T.logosEnHdDeps.ai(jobId) : T.vraisAppelsDesLogosEnHd(qui);
+        const aiL: LogosEnHdAi = {
+          refaire: async (d, cle) => {
+            ecrireFichier(`logos-hd/${cle}-texte-envoye.txt`, d.texte);
+            d.jointes.forEach((j, i) => ecrireFichier(`logos-hd/${cle}-jointe-${i + 1}-${j.role}.png`, j.data));
+            const r = await brutL.refaire(d, cle);
+            ecrireFichier(`logos-hd/${cle}-recue.png`, r.png);
+            if (r.recu) ecrireFichier(`logos-hd/${cle}-recu.json`, json(r.recu));
+            return r;
+          },
+          relire: async (images, demande, cle) => {
+            ecrireFichier(`logos-hd/${cle}-demande.txt`, demande);
+            const v = await brutL.relire(images, demande, cle);
+            ecrireFichier(`logos-hd/${cle}-verdict.json`, json(v));
+            return v;
+          },
+        };
+        const { aLaChargeDuStudio } = await import("../../src/lib/billing");
+        try {
+          const avant = etat;
+          etat = await aLaChargeDuStudio(() => T.refaireLesLogosEnHdEnVrai({ ctx, ai: aiL, who: { userId: u.id, projectId }, route: route as never, etat: avant, personnes, phrase: donnees.phrase, ligneDuLogo, metierCourt }));
+          res.logosEnHd.gardees = (etat.logosEnHd ?? []) as VersionEnHd[];
+          res.logosEnHd.refusees = (etat.logosEnHdRefuses ?? []) as VersionEnHd[];
+          lignes.push("", `LOGO_HD (à la charge du Studio) : ${versions.join(", ")} ; gardées en haute définition : ${res.logosEnHd.gardees.join(", ") || "aucune"} ; refusées deux fois (l'agrandissement de l'aperçu reste, et SINA le dit) : ${res.logosEnHd.refusees.join(", ") || "aucune"} ; détail dans logos-hd/`);
+        } catch (e) {
+          res.arret = raisonDeLArret(e);
+          lignes.push("", `LOGO_HD arrêté : ${res.arret} ; la planche en vrai reste celle d'avant, avec les agrandissements de l'aperçu.`);
+        }
+      }
+    }
     res.etat = etat;
     // Ce qui est gardé : chaque image en haute définition, marquée image d'ambiance pour un produit sans photo du client.
     for (const e of etat.elements) {

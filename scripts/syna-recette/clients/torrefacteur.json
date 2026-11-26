@@ -1,0 +1,9 @@
+{
+  "metier": "petit torréfacteur artisanal qui vend en ligne des cafés en grains et moulus, et des coffrets",
+  "kind": "produits",
+  "produits": ["cafés en grains", "cafés moulus", "coffrets"],
+  "prix": "environ 9 € le paquet de 250 g, en grains ou moulu ; environ 30 € le coffret de trois cafés",
+  "clientele": "des gens qui aiment le bon café et veulent le boire frais chez eux, et des gens qui cherchent un cadeau",
+  "gouts": "chaleureux, simple et artisanal",
+  "descripteur": "café"
+}

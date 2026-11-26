@@ -54,6 +54,15 @@
  * Un seul plafond pour c) et d), vérifié avant tout appel : sous le plafond minimal exact (somme des maxima, reprises
  * comprises), rien ne part. Sans REPRENDRE ni LOGO_HD, aucun appel ni clé. Devis de c) et d), sans appel :
  * DEVIS_SEULEMENT=1 REPRENDRE=… LOGO_HD=1 (même commande).
+ *
+ * LOGO_HD SUR LE CHEMIN NORMAL (26 novembre 2026), sans REASSEMBLER : LOGO_HD=1 sur la commande de l'étape 4. Après la
+ * planche en vrai, les quatre petites versions du logo reprises de l'aperçu (sans symbole séparable) sont refaites en haute
+ * définition par la fonction du Studio (`refaireLesLogosEnHdEnVrai`), à la charge du Studio : leurs appels sont écrits dans
+ * logos-hd/, puis les logos et la planche sont refaits par le code avec les versions gardées, avant etat.json et le
+ * parcours. Avec un symbole séparable, rien n'est repris de l'aperçu : aucun appel de plus. Un seul plafond pour la planche
+ * et les logos, vérifié avant tout appel : sous le plafond minimal exact (la somme des deux), rien ne part. Devis seul :
+ * DEVIS_SEULEMENT=1 LOGO_HD=1. METIER_COURT : le métier court de la recherche du logo (esquisses.json, « metier.court »),
+ * le bas du badge quand le logo n'a pas de phrase, comme dans le Studio.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -73,9 +82,11 @@ import path from "node:path";
 
   const reprendre = (process.env.REPRENDRE ?? "").split(",").map((x) => x.trim()).filter(Boolean) as import("../../src/lib/syna-agent/planche-en-vrai").NomElement[];
   const logoHd = process.env.LOGO_HD === "1";
-  if (devisSeul && (process.env.REASSEMBLER || reprendre.length || logoHd)) { const { devisDuReassemblage } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuReassemblage(reprendre, { logoHd })).join("\n")); process.exit(0); }
+  if (devisSeul && (process.env.REASSEMBLER || reprendre.length)) { const { devisDuReassemblage } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuReassemblage(reprendre, { logoHd })).join("\n")); process.exit(0); }
+  // Le chemin normal avec LOGO_HD : la planche en vrai, puis les quatre petites versions du logo en haute définition.
+  if (devisSeul && logoHd) { const { devisDuCheminNormal } = await import("./essai-planche-en-vrai-outil"); console.log((await devisDuCheminNormal({ logoHd })).texte.join("\n")); process.exit(0); }
   if (devisSeul) { console.log(devisEnTexteEnVrai(await devisDeLEssaiEnVrai()).join("\n")); process.exit(0); }
-  if (logoHd && !process.env.REASSEMBLER) { console.error("LOGO_HD ne vaut qu'avec REASSEMBLER (un essai de la planche en vrai déjà fait) : rien n'est lancé."); process.exit(1); }
+  if (reprendre.length && !process.env.REASSEMBLER) { console.error("REPRENDRE ne vaut qu'avec REASSEMBLER (un essai de la planche en vrai déjà fait) : rien n'est lancé."); process.exit(1); }
   if (process.env.REASSEMBLER) {
     const { reassemblerLEssaiEnVrai } = await import("./essai-planche-en-vrai-outil");
     const [sortie0, planche0, logo0] = process.argv.slice(2);
@@ -119,12 +130,22 @@ import path from "node:path";
     setSetting("provider.anthropic.apiKey", process.env.STUDIO_ANTHROPIC_KEY.trim(), true);
   } else { console.error("STUDIO_ANTHROPIC_KEY absente : l'inventaire et les relectures ne peuvent pas être faits. Rien n'est lancé."); process.exit(1); }
 
-  const devis = await devisDeLEssaiEnVrai();
-  console.log(devisEnTexteEnVrai(devis).join("\n"));
   const plafond = Math.floor(Number(process.env.PLAFOND_ESSAI_EUR.replace(",", ".")) * 1_000_000);
-  if (plafond < devis.plafondMinimalMicro) console.log(`Attention : le plafond ${euros(plafond)} est sous le plafond minimal ${euros(devis.plafondMinimalMicro)} ; le garde-fou peut arrêter l'essai avant la fin (sans rien dépenser de plus).`);
+  if (logoHd) {
+    // LOGO_HD sur le chemin normal : un seul plafond pour la planche en vrai et les logos en haute définition, vérifié avant
+    // tout appel ; sous le plafond minimal exact (somme des maxima, reprises comprises), rien ne part.
+    const { devisDuCheminNormal } = await import("./essai-planche-en-vrai-outil");
+    const d = await devisDuCheminNormal({ logoHd });
+    console.log(d.texte.join("\n"));
+    if (!(plafond >= d.plafondMinimalMicro)) { console.error(`Le plafond ${euros(Number.isFinite(plafond) ? plafond : 0)} est sous le plafond minimal exact ${euros(d.plafondMinimalMicro)} (planche en vrai et LOGO_HD, somme des maxima, reprises comprises ; probable ${euros(d.probableMicro)}) : rien n'est lancé.`); process.exit(1); }
+  } else {
+    const devis = await devisDeLEssaiEnVrai();
+    console.log(devisEnTexteEnVrai(devis).join("\n"));
+    if (plafond < devis.plafondMinimalMicro) console.log(`Attention : le plafond ${euros(plafond)} est sous le plafond minimal ${euros(devis.plafondMinimalMicro)} ; le garde-fou peut arrêter l'essai avant la fin (sans rien dépenser de plus).`);
+  }
   const sortie = path.resolve(sortieArg);
-  const r = await essaiDeLaPlancheEnVrai({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, planche: path.resolve(planche), logo: path.resolve(logo), client, donnees });
+  const r = await essaiDeLaPlancheEnVrai({ sortie, plafondEuros: process.env.PLAFOND_ESSAI_EUR, planche: path.resolve(planche), logo: path.resolve(logo), client, donnees, logoHd, metierCourt: process.env.METIER_COURT ?? null });
+  if (r.logosEnHd) console.log(`Logos en haute définition : ${r.logosEnHd.versions.length ? `gardés ${r.logosEnHd.gardees.join(", ") || "aucun"} ; refusés deux fois ${r.logosEnHd.refusees.join(", ") || "aucun"}` : "aucune version reprise de l'aperçu (symbole séparable), rien à refaire"}`);
   console.log(`${r.cases.filter((c) => c.gardee).length} image(s) gardée(s) sur 17, planche ${r.planche ? `${r.planche.w} × ${r.planche.h}` : "non assemblée"}, dépense comptée ${euros(r.depenseMicro)}. Rapport : ${path.join(sortie, "rapport.txt")}`);
   if (r.projectId) console.log(`Projet de l'essai : ${r.projectId} (essai.json et etat.json dans ${sortie}, pour ecran-planche-en-vrai.mts).`);
   if (r.arret) { console.log(`Arrêt : ${r.arret}`); process.exit(2); }
