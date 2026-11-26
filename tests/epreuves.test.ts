@@ -2419,5 +2419,20 @@ describe("l'épreuve du coût probable seul et de l'arrêt au double (26 novembr
     }
     expect(fs.readFileSync("scripts/syna-recette/essai-noms-outil.ts", "utf8")).toContain("REPRENDRE=1");
     expect(fs.readFileSync("src/lib/jobs.ts", "utf8")).toContain("arreteeParLAnnonce(this.job.id) ?? arreteeParLEssai(this.job.id)");
+
+    // 6. Les anciens écrans : le coût probable seul, dit de la même façon ; le plafond par semaine choisi par le client reste.
+    const { coutProbableTexte } = await import("@/lib/budget-pct");
+    expect(coutProbableTexte(18.2, "fr")).toBe("environ 18\u00a0% de ton budget IA du mois");
+    expect(coutProbableTexte(0.05, "fr")).toBe("moins de 0,1\u00a0% de ton budget IA du mois");
+    expect(coutProbableTexte(null, "fr")).toBe("une part de ton budget IA du mois");
+    expect(coutProbableTexte(4.2, "en")).toBe("about 4.2% of your monthly AI budget");
+    const pub = fs.readFileSync("src/components/studio/ad-editor/ad-editor.tsx", "utf8"), conf = fs.readFileSync("src/components/studio/cost-confirm.tsx", "utf8");
+    expect(pub).toContain("Coût probable : ${coutProbableTexte(quote.estimatePct!, \"fr\")}. Continuer ?");
+    expect(conf).toContain("Coût probable : ${coutProbableTexte(s.quote.estimatePct, \"fr\")}.");
+    for (const [f, src] of [["ad-editor.tsx", pub], ["cost-confirm.tsx", conf]] as const) {
+      // Le maximum reste dans le devis reçu (la réservation en coulisses), jamais dans le texte montré.
+      expect(src, f).not.toMatch(/\(quote\.maximumPct|\$\{[^}]*maximumPct|Plafond de cette demande|plafond \$\{|Au plus \$\{|estimation \$\{|reprises restent plafonnées/);
+    }
+    expect(fs.readFileSync("src/components/studio/social-autopilot.tsx", "utf8")).toContain("data-paid-cap");
   });
 });

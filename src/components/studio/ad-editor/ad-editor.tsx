@@ -9,6 +9,7 @@
  * tactile dédiée — canevas plein écran, barre d'outils en bas, panneaux en tiroirs, poignées agrandies, double-tap
  * pour modifier un texte au clavier.
  */
+import { coutProbableTexte } from "@/lib/budget-pct";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ChevronLeft, Circle, Download, Hand, History as HistoryIcon, ImagePlus, Layers, Maximize2, Minus, MoreHorizontal, Plus, Redo2, Save, Send, SlidersHorizontal, Square, Type, Undo2, X, Copy, Ratio, PenLine, Play, Sparkles } from "lucide-react";
 import { api, Button, cx, Modal, Spinner, useToast } from "../../ui";
@@ -382,8 +383,9 @@ export function AdEditor({ projectId, docKey: initialKey, onClose }: { projectId
     if (r.paid?.kind === "creative") {
       try {
         const result=await requestCreativeVersion(body=>api(`/api/projects/${projectId}/campaigns/v2`,{body}),quote=>{
-          const pct=(n:number)=>new Intl.NumberFormat(undefined,{maximumSignificantDigits:6}).format(n);
-          return window.confirm(t(`Une nouvelle proposition s’ajoutera sans modifier cette création. Devis : estimation ${pct(quote.estimatePct!)} % ; plafond ${pct(quote.maximumPct!)} % du budget IA, pour ${quote.concepts} concept(s) et ${quote.images} image(s). Les reprises restent plafonnées. Continuer ?`,`A new proposal will be added without changing this creative. Quote: estimate ${pct(quote.estimatePct!)}%; cap ${pct(quote.maximumPct!)}% of the AI budget, for ${quote.concepts} concept(s) and ${quote.images} image(s). Retries stay capped. Continue?`));
+          // Le coût probable seul (26 novembre 2026 : « Il faut arrêter de montrer des plafond aussi haut ça va faire peur aux
+          // clients ») : la borne de la demande reste en coulisses, dans sa réservation.
+          return window.confirm(t(`Une nouvelle proposition s’ajoutera sans modifier cette création, pour ${quote.concepts} concept(s) et ${quote.images} image(s). Coût probable : ${coutProbableTexte(quote.estimatePct!, "fr")}. Continuer ?`,`A new proposal will be added without changing this creative, for ${quote.concepts} concept(s) and ${quote.images} image(s). Likely cost: ${coutProbableTexte(quote.estimatePct!, "en")}. Continue?`));
         },creativeOperation);
         if(!result)return;
         toast("ok", t("Nouvelle proposition en préparation : elle apparaîtra dans vos créations.", "New proposal in progress: it will appear in your creatives."));

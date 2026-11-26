@@ -5,6 +5,7 @@
  * consommés, affiché en %) compte. Budget épuisé : recharger l'IA du projet (10 €) ou continuer avec le moteur
  * local, sans IA. Découverte (sans forfait) : moteur local, rien à confirmer. Le serveur contrôle le budget de toute façon.
  */
+import { coutProbableTexte } from "@/lib/budget-pct";
 import { useCallback, useState } from "react";
 import { Gauge, Sparkles, TriangleAlert } from "lucide-react";
 import { api, Button, formatDate, Modal, useToast } from "../ui";
@@ -71,7 +72,6 @@ export function useCostConfirm() {
   const left = ai ? aiLeftPct(ai) : 0;
   const renews = s ? formatDate(s.sub.aiRenewsAt ?? s.sub.periodEnd ?? Date.now(), { day: "numeric", month: "long" }) : "";
   const canTopUp = !!s && (s.sub.status === "active" || s.sub.status === "manual");
-  const quotePct=(value:number)=>new Intl.NumberFormat(lang,{maximumSignificantDigits:6}).format(value);
   const title = !s ? "" : s.kind === "empty" ? left > 0 ? t("Budget IA disponible insuffisant", "Insufficient available AI budget") : t("Budget IA du projet épuisé", "Project AI budget used up") : t("Avant de lancer", "Before you start");
   const dialog = (
     <Modal open={!!s} onClose={() => close(false)} title={title}>
@@ -87,7 +87,8 @@ export function useCostConfirm() {
                     : t("Cette création utilise une part du budget IA de ce projet.", "This uses part of this project's AI budget.")}
                 </span>
               </p>
-              {s.quote&&<p data-exact-image-quote>{s.quote.retriesIncluded ? t(`Plafond de cette demande : ${quotePct(s.quote.maximumPct)} % du budget IA. Les contrôles et reprises éventuelles restent dans ce plafond.`,`Request cap: ${quotePct(s.quote.maximumPct)}% of the AI budget. Checks and any retries stay within this cap.`) : t(`Devis de cette demande : estimation ${quotePct(s.quote.estimatePct)} % ; plafond ${quotePct(s.quote.maximumPct)} % du budget IA. Au plus ${s.quote.maximumCalls} appels, sans relance automatique.`,`Quote for this request: estimate ${quotePct(s.quote.estimatePct)}%; cap ${quotePct(s.quote.maximumPct)}% of the AI budget. At most ${s.quote.maximumCalls} calls, without automatic retry.`)}</p>}
+              {/* Le coût probable seul (26 novembre 2026 : « Il faut arrêter de montrer des plafond aussi haut ça va faire peur aux clients ») : la borne de la demande reste en coulisses, dans sa réservation. */}
+              {s.quote&&<p data-exact-image-quote>{t(`Coût probable : ${coutProbableTexte(s.quote.estimatePct, "fr")}.`,`Likely cost: ${coutProbableTexte(s.quote.estimatePct, "en")}.`)}</p>}
               <div>
                 <p className="flex items-center justify-between gap-3 text-xs text-ink-2">
                   <span className="inline-flex items-center gap-1.5"><Gauge className="size-3.5" aria-hidden />{t("Budget IA du projet", "Project AI budget")}</span>
