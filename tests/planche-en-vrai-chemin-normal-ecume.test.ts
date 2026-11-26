@@ -63,8 +63,11 @@ describe("le chemin normal de la planche en vrai, sur les vrais fichiers d'Écum
       return { versions: images.filter((i) => i.label.endsWith(" refaite")).map((i) => ({ version: i.label.replace(/ refaite$/, ""), memeForme: true, memesLettres: true, texteCirculaire: "aucun", textesDeLApercu: [], textesLus: [], memesCouleurs: true, ajout: false, texteCoupe: false, note: 9, pourquoi: "" })) };
     },
   });
+  /** Les dossiers de l'essai (une centaine de mégaoctets chacun) : retirés après chaque essai. */
+  const dossiers: string[] = [];
   const preparer = async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "chemin-normal-"));
+    dossiers.push(dir);
     const planche = path.join(dir, "planche-B-gardee.png");
     fs.writeFileSync(planche, await sharp(`${F}/planche-B-gardee.jpg`).png().toBuffer());
     const logo = path.join(dir, "esquisse-10-logo-garde.png");
@@ -73,7 +76,7 @@ describe("le chemin normal de la planche en vrai, sur les vrais fichiers d'Écum
   };
   /** La planche B d'Écume, sa phrase sur deux lignes, et une petite finition notée dans son bloc 10 (un accent isolé). */
   const donnees = () => ({ ...donneesDeLaPlanche(ECUME, { RESULTAT_PLANCHE: "tests/fixtures/ecume-planches-2/planche-B-resultat.json" }), finitions: ["accent parasite isolé dans le titre de référencement du bloc 10 : « Écume – Savonnerie artisanale |´ »"] });
-  afterEach(() => { appels.length = 0; for (const k of Object.keys(studio)) delete studio[k]; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; setJsonSetting(P.REGLAGE_PLANCHE_EN_VRAI, false); });
+  afterEach(() => { for (const d of dossiers.splice(0)) fs.rmSync(d, { recursive: true, force: true }); appels.length = 0; for (const k of Object.keys(studio)) delete studio[k]; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; setJsonSetting(P.REGLAGE_PLANCHE_EN_VRAI, false); });
 
   it("sans REASSEMBLER : les 17 images gardées (zone de la case, heure du téléphone), la palette écrite, la police du spécimen, le bloc 01 de l'aperçu, la finition nettoyée, le site en une image ; la planche est celle du réassemblage", async () => {
     const e = await preparer();

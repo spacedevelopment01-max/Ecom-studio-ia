@@ -48,8 +48,9 @@ describe("le script de l'essai des noms (appels simulés)", async () => {
     look: async () => { appels.push("look"); throw new Error("interdit"); },
   });
   const adresses = async (nom: string) => ({ taken: [`${nom.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z]/g, "")}.fr`], free: [`${nom.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z]/g, "")}france.fr`], unknown: [], at: Date.now() });
-  const sortie = () => fs.mkdtempSync(path.join(os.tmpdir(), "essai-noms-"));
-  afterEach(() => { appels.length = 0; envoyes.length = 0; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; });
+  const dossiers: string[] = [];
+  const sortie = () => { const d = fs.mkdtempSync(path.join(os.tmpdir(), "essai-noms-")); dossiers.push(d); return d; };
+  afterEach(() => { for (const d of dossiers.splice(0)) fs.rmSync(d, { recursive: true, force: true }); appels.length = 0; envoyes.length = 0; delete process.env.STUDIO_ESSAI_PLAFOND_EUROS; delete process.env.STUDIO_ESSAI_DEBUT; });
 
   it("la fiche du torréfacteur : un client sans nom, ses prix, sa clientèle et ses goûts ; les autres scripts exigent le nom choisi (CLIENT_NOM)", () => {
     const c = clientDeLEssai({ CLIENT_JSON: FICHIER }, { sansNom: true });
