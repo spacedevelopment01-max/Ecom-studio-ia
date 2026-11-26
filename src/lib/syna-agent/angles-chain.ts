@@ -38,6 +38,7 @@ import * as P from "./angles-prompts";
 import { anglesKnowledgeReady, withAnglesLesson } from "./angles-knowledge";
 import { ANGLE_ROLES, type AngleRole } from "./angles-prompts";
 import { angleFacts, brandStudyOf, type SinaAngle, type SinaAngles } from "./angles";
+import { causePourLeClient } from "../ai/phrase-pour-le-client";
 
 export const SINA_ANGLES_JOB = "syna.angles";
 
@@ -363,7 +364,7 @@ export async function runSinaAnglesJob(ctx: JobContext) {
   let judged: "juges" | "non_juges" = "juges";
   let verdict: Judge | null = null;
   try { verdict = await ctx.step(`angles:judge:${round}`, () => ai.ask(`judge-${round}`, { kind: "judge", system: withAnglesLesson(P.JUDGE_SYSTEM), schema: JudgeSchema, prompt: judgeFile(all) })); }
-  catch (e) { if (e instanceof CostCapReached) throw e; judged = "non_juges"; notes.push(`juge sans réponse : ${String((e as Error)?.message ?? e).slice(0, 120)}`); }
+  catch (e) { if (e instanceof CostCapReached) throw e; judged = "non_juges"; notes.push(`juge sans réponse : ${causePourLeClient(e).slice(0, 120)}`); }
 
   const notesOf = verdict ? verdictsOf(verdict, all) : new Map<string, Verdict>();
   let picked = new Map<AngleRole, Candidate>();

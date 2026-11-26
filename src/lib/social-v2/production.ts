@@ -27,6 +27,7 @@ import type { MediaResult, PostBrief, SocialCostKind, SocialDeps } from "./deps"
 import { budgetPctText, retryNotice } from "../ai/budget-pct";
 import { creativeContract, publicationUnits, type Editorial } from "./creative-contract";
 import { stableHash } from "../brain/hash";
+import { causePourLeClient } from "../ai/phrase-pour-le-client";
 
 export type ProduceMethod = "library" | "local" | "image_v2" | "ads_v2" | "video_v2" | "ai_post" | "none";
 /** Coût probable d'une production (devis montré au client) ; à défaut, le plafond. */
@@ -253,7 +254,7 @@ export async function produceBatch(p: Project, ids: string[], deps: SocialDeps, 
       afterEdit(r.id);
       run("UPDATE posts SET user_edited = ? WHERE id = ?", r.user_edited, r.id);
       strategyContent(p.id, "post", r.id,own?{stamp:own}:{});
-    });}catch(error){if(error instanceof JobCancelled||error instanceof JobPaused)throw error;res.failed++;notes.push((error as Error).message);continue;}
+    });}catch(error){if(error instanceof JobCancelled||error instanceof JobPaused)throw error;res.failed++;notes.push(causePourLeClient(error));continue;}
     res.produced++;
     res.byMethod[out.by] = (res.byMethod[out.by] ?? 0) + 1;
     // Reprise payée (1er essai refusé par le contrôle) : annoncée au client, jamais en silence.

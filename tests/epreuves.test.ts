@@ -2667,3 +2667,41 @@ describe("l'épreuve des noms jamais dits vérifiés sans comparaison (tâche de
     expect(J.phraseDesNomsMontres({ verifies: true })).toBeNull();
   });
 });
+
+describe("l'épreuve des erreurs techniques (une tâche au résultat incertain, sans aucun appel à l'IA)", () => {
+  epreuve("erreur-technique-jamais-montree-au-client", async () => {
+    const { createUser } = await import("@/lib/auth");
+    const { all, one, run: sql, id: newId, now } = await import("@/lib/db");
+    const { claimNext, enqueue, failJob, getJob, publicJob } = await import("@/lib/jobs");
+    const { uncertainMediaError } = await import("@/lib/ai/media-providers");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const TECHNIQUE = /gpt-image|sunburst|openai|fournisseur|provider|Connection error|fetch failed|incertain|uncertain|Vérifiez|consommation|coût maximal/i;
+    const coupure = () => uncertainMediaError(Object.assign(new Error("Connection error."), { name: "APIConnectionError", cause: new Error("fetch failed") }), { provider: "openai", model: "gpt-image-2.5-sunburst", task: "image_generation" });
+    const essai = async (avant?: (jobId: string, userId: string) => void, lang: "fr" | "en" = "fr") => {
+      const u = await createUser(`ep${Date.now()}${Math.random().toString(36).slice(2, 7)}@test.fr`, "motdepasse-test", "T");
+      const type = `epreuve.panne.${Math.random().toString(36).slice(2, 7)}`;
+      const j = enqueue({ userId: u.id, type, label: "Planche en vrai", payload: {} });
+      claimNext([type]);
+      avant?.(j.id, u.id);
+      runWithLang({ ui: lang }, () => failJob(getJob(j.id)!, coupure()));
+      const fin = getJob(j.id)!;
+      return { fin, type, u, notes: all<{ title: string; body: string }>("SELECT title, body FROM notifications WHERE user_id = ?", u.id) };
+    };
+    // 1. Une image : la phrase de SINA, partout où le client lit la tâche ; rien de technique.
+    const une = await essai();
+    const PHRASE = "J'ai gardé tout ce qui est fait. Une image n'a pas pu être créée, à cause d'un problème de connexion : je peux la refaire quand tu veux.";
+    expect(une.fin.message).toBe(PHRASE);
+    expect(publicJob(une.fin).error).toBe(PHRASE);
+    expect(une.notes.map((n) => n.body)).toEqual([PHRASE]);
+    for (const t of [une.fin.message, publicJob(une.fin).error, ...une.notes.flatMap((n) => [n.title, n.body])]) expect(String(t)).not.toMatch(TECHNIQUE);
+    // 2. Le détail reste au Studio : la tâche (page d'administration) et le journal des erreurs.
+    expect(une.fin.error).toMatch(/Résultat incertain chez openai:gpt-image-2\.5-sunburst \(Connection error\.\).*fetch failed/);
+    expect(one<{ message: string }>("SELECT message FROM error_log WHERE user_id = ? AND scope = ?", une.u.id, `tache:${une.type}`)?.message).toMatch(/openai:gpt-image-2\.5-sunburst/);
+    // 3. Plusieurs images : au pluriel. En anglais : la même phrase, traduite.
+    const deux = await essai((jid, uid) => { for (let i = 0; i < 2; i++) sql("INSERT INTO ai_reservations (id, user_id, amount, status, task, job_id, created_at, settled_at) VALUES (?,?,?,?,?,?,?,?)", newId(), uid, 1000, "uncertain", "image_generation", jid, now(), now()); });
+    expect(deux.fin.message).toBe("J'ai gardé tout ce qui est fait. 2 images n'ont pas pu être créées, à cause d'un problème de connexion : je peux les refaire quand tu veux.");
+    const en = await essai(undefined, "en");
+    expect(en.fin.message).toBe("I kept everything that's done. One image couldn't be created because of a connection problem: I can redo it whenever you like.");
+    expect(en.fin.message).not.toMatch(TECHNIQUE);
+  });
+});

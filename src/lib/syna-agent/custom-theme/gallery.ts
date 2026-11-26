@@ -23,6 +23,7 @@ import { listProducts, type StudioProduct } from "../../products/catalog";
 import { loadGalleries, saveGallery, type GalleryImage } from "../../products/gallery-store";
 import { mockupImageRoute } from "../mockup-code/tools";
 import { TEXT_MODEL_BY_TIER } from "../../orchestrator/policy";
+import { causePourLeClient } from "../../ai/phrase-pour-le-client";
 
 export const GALLERY_JOB = "syna.product.gallery";
 
@@ -253,7 +254,7 @@ export async function runGalleryJob(ctx: JobContext) {
       });
       const problems = galleryVerdict(check, { person, texts });
       done.push({ assetId: img, kind: spec.kind, ok: !problems.length, problems });
-    } catch (e) { done.push({ assetId: "", kind: spec.kind, ok: false, problems: [`image non créée (${(e as Error).message.slice(0, 120)})`] }); }
+    } catch (e) { done.push({ assetId: "", kind: spec.kind, ok: false, problems: [`image non créée (${causePourLeClient(e).slice(0, 120)})`] }); }
   }
   const before = loadGalleries(p.id)[prod.id];
   const images = [...(a.add && before ? before.images : []), ...done.filter((x) => x.assetId)];

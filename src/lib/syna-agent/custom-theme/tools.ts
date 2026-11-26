@@ -71,6 +71,7 @@ import { galleryCheckMaxMicro } from "./gallery";
 import { designPhotos, lignePhotosDeLaPlanche, photoBudgetBrief, photoBudgetGaps } from "./photo-budget";
 import { briefUsable, misplacedProductPhotos, productSlotSection, showsProductAlone } from "./brand";
 import { clientImages, CUSTOM_BRAND_JOB, examplePhotoCount, productImageIds, photoSlots, photosToCreate, COPY_REVIEW_CAP_MICRO, MAX_COPY_FIXES, MAX_PHOTO_FIXES, MIN_PHOTOS_TO_REVIEW, PHOTO_REVIEW_CAP_MICRO, SECTION_TEXT_CAP_MICRO, SITE_PLAN_CAP_MICRO, siteArtDirection, sitePhotoName, textPlacementLine, type ImagesMode } from "./brand";
+import { causePourLeClient } from "../../ai/phrase-pour-le-client";
 
 /** Ce que le client voit dans le fil : l'aperçu vivant de son thème et sa composition. */
 /** La carte du site dans le fil après une modification : l'aperçu et ses pages, sans le détail (custom.show le donne). */
@@ -590,11 +591,11 @@ export async function runDesign(ctx: ToolContext, a: DesignArgs, mode: DesignMod
         try {
           const v = await judge(dj, `${base}-judge`);
           if (v.verdict === "reprendre" && v.fixes.length) refused = v; else originality = { status: "garde", why: v.why };
-        } catch (e) { originality = { status: "non_juge", why: (e as Error).message.slice(0, 160) }; }
+        } catch (e) { originality = { status: "non_juge", why: causePourLeClient(e).slice(0, 160) }; }
       })() : null,
       regard ? (async () => {
         try { second = secondRegardRefus(await regard(dj, `${base}-second`)); }
-        catch (e) { secondLeft = [`second regard sur l'ordre des pages non fait (${(e as Error).message.slice(0, 120)})`]; }
+        catch (e) { secondLeft = [`second regard sur l'ordre des pages non fait (${causePourLeClient(e).slice(0, 120)})`]; }
       })() : null,
     ]);
     // 4) UNE seule reprise, par le CONCEPTEUR, si le contrôle du Studio, le juge de l'originalité ou le second regard
@@ -1125,7 +1126,7 @@ const photoTool: AgentTool<PhotoArgs> = {
     try {
       data = customPhotoDeps.make ? await customPhotoDeps.make(prompt, { product: refs.product }, a.ratio)
         : await withQuotedImageRoute(mockupImageRoute(), () => aiSiteImageHd({ userId: ctx.user.id, projectId: p.id, jobId, usageKey }, { prompt, product: a.product ? refs.product : null, aspect: hdAspect(a.ratio) }));
-    } catch (e) { return { ok: false, summary: L(`Photo non créée : ${(e as Error).message.slice(0, 200)}.`, "Photo not created."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
+    } catch (e) { return { ok: false, summary: L(`Photo non créée : ${causePourLeClient(e).slice(0, 200)}.`, "Photo not created."), hint: "Dis-le au client avec le coût réel ; ne relance rien sans son accord écrit (jamais après une erreur 5xx)." }; }
     let cutProblem: string | undefined;
     if (cut) { const done = await cutoutPhoto(data); data = done.data; cutProblem = done.problem; }
     const asset = await saveAsset({ projectId: p.id, userId: ctx.user.id, data, name: sitePhotoName(x.page?.label ?? x.place, a.description), mime: "image/png", role: "site", origin: "generated", meta: { synaPhoto: { description: a.description, ratio: a.ratio, page: x.place, direction: "custom", background: a.background ?? null, product: !!a.product } } });

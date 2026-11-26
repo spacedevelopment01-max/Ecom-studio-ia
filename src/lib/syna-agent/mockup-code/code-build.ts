@@ -34,6 +34,7 @@ import {
   applyEdits, autoTagProducts, CODE_MOCKUP_SYSTEM as CODE_SYSTEM_TEXT, codeMockupPrompt, duplicatePhotos, photoUses, continuationPrompt, expectedTexts, fontOf, fontsCss, inspectCodeMockup, isComplete, joinContinuation,
   parseCodeMockup, resolvePhotos, shellOf, splitBaseCss, stripFences, type CodeEdit, type CodePhoto, type InspectResult, type LibraryPhoto, type MockupFiles,
 } from "./code-mockup";
+import { causePourLeClient } from "../../ai/phrase-pour-le-client";
 
 /** Modèle des maquettes en code : Claude Opus, réflexion moyenne (essai réel du 8 novembre : réflexion haute coupée avant la fin). */
 export const CODE_MODEL = { provider: "anthropic" as const, model: "claude-opus-5-5", effort: "medium" };
@@ -320,7 +321,7 @@ export async function buildCodePage(p: Project, d: Pick<MockupDirection, "key" |
         // La correction n'est gardée que si elle réduit les défauts (jamais une page pire que la première).
         if (again.problems.length < r.problems.length) { full = applied.html; r = again; res.fixed = true; }
       } else if (applied.failed.length) res.toVerify.push(`correction automatique non appliquée (${applied.failed[0]})`);
-    } catch (e) { res.toVerify.push(`correction automatique impossible : ${(e as Error).message.slice(0, 120)}`); }
+    } catch (e) { res.toVerify.push(`correction automatique impossible : ${causePourLeClient(e).slice(0, 120)}`); }
   }
   res.shots = r.shots;
   res.problems = [...new Set([...res.problems, ...r.problems])];
@@ -375,7 +376,7 @@ export async function completeCodePhotos(p: Project, direction: string, page: Mo
         const again = await deps.inspect(mockupFiles(p, applied.html, base), expect);
         if (again.problems.length < r.problems.length) { full = applied.html; r = again; res.fixed = true; }
       }
-    } catch (e) { res.toVerify.push(`correction automatique impossible : ${(e as Error).message.slice(0, 120)}`); }
+    } catch (e) { res.toVerify.push(`correction automatique impossible : ${causePourLeClient(e).slice(0, 120)}`); }
   }
   res.shots = r.shots;
   res.problems = r.problems;

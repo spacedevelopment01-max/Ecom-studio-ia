@@ -270,7 +270,7 @@ export async function webResearch(call: { userId: string; projectId: string | nu
     else settleUncertain(reservation, why.slice(0, 160));
     recordCall({ ...trace, latencyMs: Date.now() - started, httpAttempts: 1, status: "error", errorKind: why });
     if (refused) throw new PermanentError(L(`Recherche web refusée par le fournisseur : ${why}`, `Web search rejected by the provider: ${why}`));
-    throw Object.assign(new PermanentError(L(`Résultat incertain de la recherche web (${why}) : coût maximal retenu par prudence, aucune relance automatique.`, `Uncertain web search result (${why}): maximum cost kept, no automatic retry.`)), { uncertain: true as const });
+    throw Object.assign(new PermanentError(L(`Résultat incertain de la recherche web (${why}) : coût maximal retenu par prudence, aucune relance automatique.`, `Uncertain web search result (${why}): maximum cost kept, no automatic retry.`)), { uncertain: true as const, nature: "texte" as const });
   }
   // Facturation exacte : jetons (contenu de recherche compris dans l'entrée) + recherches.
   let costMicro: number;
@@ -285,7 +285,7 @@ export async function webResearch(call: { userId: string; projectId: string | nu
     recordCall({ ...trace, servedModel: r.model, inputTokens: Math.max(0, r.usage.input - r.usage.cached), cacheReadTokens: r.usage.cached, cacheWriteTokens: r.usage.written ?? 0, outputTokens: r.usage.output, quantity: r.searches, latencyMs: Date.now() - started, httpAttempts: 1, stopReason: r.stop, costMicro, estimated: false, usageEventId: b.eventId, billingDedup: b.dedup, status: r.refused ? "refused" : "ok" });
   } catch (e) {
     settleUncertain(reservation, `comptabilisation impossible : ${String((e as Error)?.message ?? e).slice(0, 120)}`);
-    throw Object.assign(new PermanentError(redact(String((e as Error)?.message ?? e))), { uncertain: true as const });
+    throw Object.assign(new PermanentError(redact(String((e as Error)?.message ?? e))), { uncertain: true as const, nature: "texte" as const });
   }
   if (r.refused) throw new PermanentError(L("Le modèle a décliné la recherche web : aucune étude locale de remplacement.", "The model declined the web search: no local replacement."));
   // Liens réellement renvoyés par l'outil : résultats des recherches et citations.

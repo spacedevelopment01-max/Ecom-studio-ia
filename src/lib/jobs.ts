@@ -13,12 +13,15 @@ import { jobStrategy, strategyStamp } from "./strategy-consumption";
 import os from "node:os";
 import { createHash } from "node:crypto";
 import { assertJobEntitlements } from "./job-entitlements";
-import { all, id, json, now, one, run, tx } from "./db";
+import { all, id, json, logError, now, one, run, tx } from "./db";
+import { redact } from "./redact";
 import { jobLiveness } from "./job-liveness";
 import { jobEstimate } from "./job-estimate";
 import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
 import { pick } from "./i18n";
 import { friendlyToolError } from "./tool-errors";
+import { erreurTechniqueDeLIA, phraseDeNouvelleTentative, phraseDeSinaApresUnePanne, type NatureDeLAppel } from "./ai/phrase-pour-le-client";
+import { messageAvecCause } from "./ai/erreur-reseau";
 import { arreteeParLAnnonce, withTrace } from "./ai/trace";
 import { arreteeParLEssai } from "./ai/plafond-essai";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -319,7 +322,12 @@ export function completeJob(jid: string, result: unknown) {
 
 /** Échec : nouvelle tentative avec attente exponentielle, sauf erreur définitive. */
 export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = {}) {
-  const message = friendlyToolError(err instanceof Error ? err.message : String(err));
+  // Erreur d'un appel à l'IA au résultat incertain ou coupée par le réseau (26 novembre 2026) : le texte technique
+  // (fournisseur, modèle, cause, réservation retenue) reste au Studio — colonne `error`, journal des erreurs ; le client ne
+  // lit que la phrase de SINA, dans le suivi de la tâche comme dans sa notification.
+  const technique = erreurTechniqueDeLIA(err);
+  const detail = technique ? redact(messageAvecCause(err)) : null;
+  const message = detail ?? friendlyToolError(err instanceof Error ? err.message : String(err));
   const code=err instanceof UserFacingError && typeof err.code==="string" && /^[A-Z_]{3,80}$/.test(err.code)?err.code:null;
   const permanent = opts.permanent || (err as any)?.permanent === true || job.attempts >= job.max_attempts;
   // Seule une tâche encore tenue (ni annulée, ni mise en pause entre-temps) change d'état : une tâche annulée
@@ -327,10 +335,11 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
   // Jamais celle qu'un autre worker a reprise entre-temps (bail expiré) : elle ne revient pas en file sous lui.
   const held = "((status='running' AND (locked_by IS NULL OR locked_by=?)) OR (status='queued' AND locked_by=?))";
   if (permanent) {
+    const auClient = technique ? phraseDeSinaApresUnePanne(technique, imagesTouchees(job, technique.nature)) : message;
     const r = run(
       `UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=?, checkpoint=CASE WHEN ? IS NULL THEN json_remove(checkpoint,'$.failureCode') ELSE json_set(checkpoint,'$.failureCode',?) END WHERE id=? AND ${held}`,
       message.slice(0, 4000),
-      message.slice(0, 300),
+      auClient.slice(0, 300),
       now(),
       now(),
       code,
@@ -349,17 +358,18 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
         job.user_id,
         job.project_id,
         "error",
-        L(`Échec : ${name}`, `Failed: ${name}`).slice(0, 200),
-        message.slice(0, 600),
+        technique ? L(`Pas tout à fait fini : ${name}`, `Not quite finished: ${name}`).slice(0, 200) : L(`Échec : ${name}`, `Failed: ${name}`).slice(0, 200),
+        auClient.slice(0, 600),
         now(),
       );
     }
+    if (r.changes && detail) logError(`tache:${job.type}`, new Error(detail), { userId: job.user_id, projectId: job.project_id ?? undefined, details: { tache: job.id, nature: technique!.nature } });
   } else {
     const delay = Math.min(15 * 60_000, 20_000 * 2 ** (job.attempts - 1));
     run(
       `UPDATE jobs SET status='queued', error=?, message=?, run_at=?, locked_by=NULL, locked_until=NULL, updated_at=? WHERE id=? AND ${held}`,
       message.slice(0, 4000),
-      L(`Nouvelle tentative dans ${Math.round(delay / 1000)} s : ${message.slice(0, 200)}`, `Retrying in ${Math.round(delay / 1000)} s: ${message.slice(0, 200)}`),
+      technique ? phraseDeNouvelleTentative(Math.round(delay / 1000)) : L(`Nouvelle tentative dans ${Math.round(delay / 1000)} s : ${message.slice(0, 200)}`, `Retrying in ${Math.round(delay / 1000)} s: ${message.slice(0, 200)}`),
       now() + delay,
       now(),
       job.id,
@@ -367,6 +377,15 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
       WORKER_ID,
     );
   }
+}
+
+/** Combien d'images (ou de vidéos) de cette tentative sont restées au résultat incertain : au moins une. */
+function imagesTouchees(job: Job, nature: NatureDeLAppel): number {
+  if (nature === "texte") return 1;
+  try {
+    const n = one<{ n: number }>("SELECT COUNT(*) AS n FROM ai_reservations WHERE job_id = ? AND status = 'uncertain' AND task = ? AND COALESCE(settled_at, created_at) >= ?", job.id, nature === "video" ? "video_generation" : "image_generation", Math.max(job.created_at, job.run_at ?? 0))?.n ?? 0;
+    return Math.max(1, n);
+  } catch { return 1; }
 }
 
 export function cancelJob(jid: string) {
@@ -478,7 +497,8 @@ export function publicJob(j: Job) {
     status: j.status,
     progress: j.progress,
     message: j.message,
-    error: j.status === "failed" ? j.error : null,
+    // Le texte technique d'un appel à l'IA reste au Studio : le client lit la phrase de SINA (le message de la tâche).
+    error: j.status === "failed" ? (erreurTechniqueDeLIA(j.error) ? j.message : j.error) : null,
     ...(typeof failureCode==="string" && /^[A-Z_]{3,80}$/.test(failureCode)?{failureCode}:{}),
     attempts: j.attempts,
     parentId: j.parent_id,
