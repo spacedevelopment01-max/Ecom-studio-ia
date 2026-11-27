@@ -36,7 +36,7 @@ import { getJsonSetting } from "../settings";
 import { allTools, getTool, isSensitive, toolCatalog, toolEntry, toolVisible, type ToolScope } from "./registry";
 import { noterTravail, prixJuste } from "./travaux";
 import { defautsDuMessage, noteDeControle } from "./controle-message";
-import { conversationSettings, keyMoment, momentDeLEtape, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
+import { conversationSettings, keyMoment, PREFIXE_ECHEC_EN, PREFIXE_ECHEC_FR, momentDeLEtape, REPLY_REVIEW_SYSTEM, ReplyReviewSchema, replyReviewPrompt, reviewNote, routedCatalog, routedStep, shouldReview, type KeyMoment } from "./conversation";
 import { loadWordingRules, wordingPromptLine } from "../client-wording";
 import type { AgentTool, ToolContext, ToolResult } from "./types";
 import { planOfProject } from "../plan-gates";
@@ -479,7 +479,7 @@ async function execute(t: AgentTool, args: unknown, ctx: ToolContext, key: strin
     const msg = e instanceof HttpError || e instanceof Error ? e.message : String(e);
     // Un appel à l'IA tombé sur un résultat incertain ou une coupure : la phrase de SINA, le détail au journal du Studio.
     if (erreurTechniqueDeLIA(e)) { logError(`sina:outil:${t.name}`, e, { userId: r.user_id, projectId: r.project_id ?? undefined }); res = { ok: false, summary: pourLeClient(e) }; }
-    else res = { ok: false, summary: L("Échec de l'outil : ", "Tool failed: ") + clip(msg, 600) };
+    else res = { ok: false, summary: L(PREFIXE_ECHEC_FR, PREFIXE_ECHEC_EN) + clip(msg, 600) };
   }
   // Après une validation réussie et confirmée par le parcours relu, le Studio pose le verrou lui-même.
   if (!locked) { try { apresValidation(r.conversation_id, t.name, res); } catch { /* registre illisible : rien n'est verrouillé */ } }

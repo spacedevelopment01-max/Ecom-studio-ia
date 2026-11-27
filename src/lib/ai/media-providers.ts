@@ -23,7 +23,7 @@ import sharp from "sharp";
 import { claimOperationRecovery, cleDeRelance, EUR, existingOperation, operationReceipt, finishOperationRecovery, operationPending, recordUsage, reconcileReservation, release, requestHash, reserve, saveOperationResult, saveProviderReceipt, settleUncertain } from "../billing";
 import { assertAiAllowed, currentAiUser, currentQuotaScope, currentUserHasAiCredits } from "./access";
 import { assertQuota, consumeQuota, refundQuota, userPlan } from "../quotas";
-import { all } from "../db";
+import { all, logError } from "../db";
 import { PLANS } from "../plans";
 import { PermanentError, UserFacingError } from "../jobs";
 import { noteImageModel } from "./media-alerts";
@@ -90,7 +90,11 @@ function traced<A extends [Ctx, ...any[]], R>(task: MediaTrace["task"], fn: (...
           else if (previous.status === "uncertain" || previous.status === "held") operationPending();
           else t.recorded = true;
           const response = await publicDownload(receipt.downloadUrl);
-          if (!response.ok) throw new PermanentError(L("Le média acquis n'a pas pu être récupéré. Il est conservé chez le fournisseur ; aucune nouvelle génération lancée.", "The acquired media could not be retrieved. It is kept at the provider; no new generation was started."));
+          // Le client lit la phrase de SINA ; le détail (téléchargement refusé, reçu gardé) reste au journal du Studio.
+          if (!response.ok) {
+            logError(`media:recuperation:${task}`, new Error(`Média acquis non récupéré (réponse ${response.status}) ; reçu gardé, aucune nouvelle création lancée.`), { userId: ctx.userId, projectId: ctx.projectId ?? undefined, details: { reservation: previous.id } });
+            throw new PermanentError(L("Ta création est bien faite, mais je n'ai pas pu la récupérer pour l'instant. Je ne la refais pas, pour ne rien compter deux fois sur ton budget IA : dis-moi quand tu veux que je réessaie de la récupérer.", "Your creation is done, but I couldn't retrieve it for now. I won't make it again, so nothing is counted twice on your AI budget: tell me whenever you want me to try fetching it again."));
+          }
           const file = `ai-results/${previous.id}.bin`, data = Buffer.from(await response.arrayBuffer());
           putFile(file, data);
           saveOperationResult(previous.id, { file });

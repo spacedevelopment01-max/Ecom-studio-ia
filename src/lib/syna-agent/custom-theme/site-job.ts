@@ -23,7 +23,7 @@ import { z } from "zod";
 import { one, run } from "../../db";
 import type { User } from "../../auth";
 import { L } from "../../i18n-server";
-import { enqueue, pendingJob, retryJob, UserFacingError, type JobContext } from "../../jobs";
+import { CODES_DE_COUPURE, enqueue, pendingJob, retryJob, UserFacingError, type JobContext } from "../../jobs";
 import { listProducts } from "../../products/catalog";
 import { loadProject, notify } from "../../projects";
 import { CostCapReached } from "../../ai/trace";
@@ -189,19 +189,29 @@ export function produitsSansPhoto(projectId: string, business?: string | null): 
 export function refusPhotosProduits(ctx: ToolContext): string | null {
   try { const p = project(ctx); return refusSansPhotosProduits({ sans: produitsSansPhoto(p.id, p.business), repondu: photosProduitsRepondu(clientNotes(p.id)) }); } catch { return null; }
 }
-/** Une création coupée se relance pendant sept jours ; après, elle se refait. */
+/**
+ * Une création coupée se relance pendant sept jours ; après, elle se refait. Elle se reconnaît par le code de son échec
+ * (`CODES_DE_COUPURE` : étape déjà lancée, tâche coupée en route, appel au résultat incertain), jamais par le texte lu
+ * par le client (aligné le 26 novembre 2026 : tutoyé, sans mot technique). `COUPURE_RX` ne sert plus qu'aux créations
+ * enregistrées avant ces codes, ou au détail technique gardé par le Studio (colonne `error`).
+ */
 export const COUPURE_RX = /Interrompue|interrompu|déjà été envoyée|incertain|already been sent|uncertain|interrupted/;
+/** Le code d'échec d'une tâche, s'il en a un (`checkpoint.failureCode`). */
+function codeDEchec(checkpoint: string | null): string | null {
+  try { const c = JSON.parse(checkpoint ?? "{}") as { failureCode?: unknown }; return typeof c.failureCode === "string" ? c.failureCode : null; } catch { return null; }
+}
 export const RELANCE_JOURS = 7;
 /**
  * La dernière création du site du projet, si elle s'est arrêtée en route (essai réel du 19 novembre 2026, Bécane : le
  * serveur a redémarré en plein appel payant ; la nouvelle création a tout repayé, conception comprise). Sans IA.
  */
 export function creationCoupee(projectId: string): { id: string; payload: SitePayload } | null {
-  const j = one<{ id: string; status: string; payload: string; finished_at: number | null; error: string | null; message: string }>("SELECT id, status, payload, finished_at, error, message FROM jobs WHERE project_id = ? AND type = ? ORDER BY created_at DESC LIMIT 1", projectId, SINA_SITE_JOB);
+  const j = one<{ id: string; status: string; payload: string; finished_at: number | null; error: string | null; message: string; checkpoint: string | null }>("SELECT id, status, payload, finished_at, error, message, checkpoint FROM jobs WHERE project_id = ? AND type = ? ORDER BY created_at DESC LIMIT 1", projectId, SINA_SITE_JOB);
   if (!j || j.status !== "failed" || !j.finished_at || Date.now() - j.finished_at > RELANCE_JOURS * 86_400_000) return null;
   // Seulement une création COUPÉE (arrêt en plein travail, appel au résultat incertain) : une création refusée pour une
   // autre raison referait la même chose ; elle se relance par une nouvelle création.
-  if (!COUPURE_RX.test(`${j.error ?? ""} ${j.message}`)) return null;
+  const code = codeDEchec(j.checkpoint);
+  if (!(code ? CODES_DE_COUPURE.has(code) : COUPURE_RX.test(`${j.error ?? ""} ${j.message}`))) return null;
   try { return { id: j.id, payload: JSON.parse(j.payload) as SitePayload }; } catch { return null; }
 }
 /** Ce que la création coupée a déjà payé et dont la réponse est gardée : repris sans repayer à la relance. */

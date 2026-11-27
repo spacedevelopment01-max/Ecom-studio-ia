@@ -7,7 +7,7 @@ import { createUser } from "@/lib/auth";
 import { all, now, one, run } from "@/lib/db";
 import * as billing from "@/lib/billing";
 import { alignPeriod, reserve, syncAllowance } from "@/lib/billing";
-import { cancelJob, claimNext, completeJob, enqueue, failJob, getJob, JobContext, LeaseLost, pauseJob, retryJob, WORKER_ID } from "@/lib/jobs";
+import { cancelJob, claimNext, completeJob, enqueue, failJob, getJob, JobContext, LeaseLost, pauseJob, publicJob, retryJob, WORKER_ID } from "@/lib/jobs";
 import { stopInterruptedPaidJob } from "@/lib/job-recovery";
 
 const user = async () => createUser(`tf${Date.now()}${Math.random().toString(36).slice(2, 7)}@test.fr`, "motdepasse-test", "T");
@@ -39,6 +39,8 @@ describe("Tâches de fond : robustesse", () => {
     const after = getJob(j.id)!;
     expect(after.status).toBe("failed");
     expect(after.error).toMatch(/Interrompue à répétition/);
+    // Reconnue par son code (reprise d'une création coupée), jamais par son texte.
+    expect(JSON.parse(after.checkpoint).failureCode).toBe("TACHE_COUPEE");
     // Sous la limite : reprise normale, marquée comme reprise.
     const k = enqueue({ userId: u.id, type: T("crash"), payload: {}, maxAttempts: 3 });
     run("UPDATE jobs SET status='running', attempts=1, locked_by='mort', locked_until=? WHERE id=?", now() - 1000, k.id);
@@ -65,6 +67,10 @@ describe("Tâches de fond : robustesse", () => {
     const after = getJob(j.id)!;
     expect(after.status).toBe("failed");
     expect(after.error).toMatch(/Interrompue pendant un appel IA payant/);
+    // Le détail (coût maximal, facture du fournisseur) reste au Studio ; le client lit la phrase de SINA, tutoyée.
+    expect(after.message).toMatch(/^Je me suis arrêtée avant la fin d'une étape/);
+    expect(after.message).not.toMatch(/fournisseur|\b(vous|votre)\b|€/);
+    expect(publicJob(after)).toMatchObject({ error: after.message, failureCode: "TACHE_COUPEE" });
     expect(all<{ title: string; level: string }>("SELECT title, level FROM notifications WHERE user_id = ?", u.id)).toEqual([{ title: "Échec : Logo", level: "error" }]);
     // Sans réservation ouverte : reprise normale.
     const k = enqueue({ userId: u.id, type: T("paid"), payload: {} });

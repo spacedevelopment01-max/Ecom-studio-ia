@@ -19,7 +19,7 @@ import { jobLiveness } from "./job-liveness";
 import { jobEstimate } from "./job-estimate";
 import { contentLang, hasLangContext, L, userLang } from "./i18n-server";
 import { pick } from "./i18n";
-import { friendlyToolError } from "./tool-errors";
+import { detailOutilManquant, friendlyToolError, outilManquant } from "./tool-errors";
 import { erreurTechniqueDeLIA, phraseDeNouvelleTentative, phraseDeSinaApresUnePanne, type NatureDeLAppel } from "./ai/phrase-pour-le-client";
 import { messageAvecCause } from "./ai/erreur-reseau";
 import { arreteeParLAnnonce, withTrace } from "./ai/trace";
@@ -208,7 +208,7 @@ export function claimNext(types?: string[]): (Job & { recovered?: boolean }) | n
       // worker à chaque fois (mémoire…) finit en échec visible au lieu de tourner en boucle « en cours » à jamais.
       if (recovered && j.attempts >= j.max_attempts) {
         const msg = pick(userLang(j.user_id), "Interrompue à répétition (le traitement s'est arrêté plusieurs fois avant la fin). Les étapes terminées sont gardées : « Réessayer » reprend à partir de là.", "Interrupted repeatedly (processing stopped several times before finishing). Completed steps are kept: \"Retry\" resumes from there.");
-        run("UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=? WHERE id=?", msg, msg.slice(0, 300), t, t, j.id);
+        run("UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=?, checkpoint=json_set(CASE WHEN json_valid(checkpoint) THEN checkpoint ELSE '{}' END,'$.failureCode',?) WHERE id=?", msg, msg.slice(0, 300), t, t, CODE_TACHE_COUPEE, j.id);
         continue;
       }
       run(
@@ -326,16 +326,20 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
   // (fournisseur, modèle, cause, réservation retenue) reste au Studio — colonne `error`, journal des erreurs ; le client ne
   // lit que la phrase de SINA, dans le suivi de la tâche comme dans sa notification.
   const technique = erreurTechniqueDeLIA(err);
-  const detail = technique ? redact(messageAvecCause(err)) : null;
-  const message = detail ?? friendlyToolError(err instanceof Error ? err.message : String(err));
-  const code=err instanceof UserFacingError && typeof err.code==="string" && /^[A-Z_]{3,80}$/.test(err.code)?err.code:null;
+  const brut = err instanceof Error ? err.message : String(err);
+  // Outil du Studio manquant (ffmpeg) : la marche à suivre pour l'installer reste au Studio ; le client lit une phrase simple.
+  const outil = !technique && outilManquant(brut);
+  const detail = technique ? redact(messageAvecCause(err)) : outil ? detailOutilManquant(brut) : null;
+  const message = detail ?? brut;
+  const code=err instanceof UserFacingError && typeof err.code==="string" && /^[A-Z_]{3,80}$/.test(err.code)?err.code:technique?CODE_APPEL_INCERTAIN:outil?CODE_OUTIL_MANQUANT:null;
+  const phrase = err instanceof ErreurAuDetailDuStudio ? err.auClient : outil ? friendlyToolError(brut) : message;
   const permanent = opts.permanent || (err as any)?.permanent === true || job.attempts >= job.max_attempts;
   // Seule une tâche encore tenue (ni annulée, ni mise en pause entre-temps) change d'état : une tâche annulée
   // pendant un appel puis interrompue par une erreur ne revient jamais en file.
   // Jamais celle qu'un autre worker a reprise entre-temps (bail expiré) : elle ne revient pas en file sous lui.
   const held = "((status='running' AND (locked_by IS NULL OR locked_by=?)) OR (status='queued' AND locked_by=?))";
   if (permanent) {
-    const auClient = technique ? phraseDeSinaApresUnePanne(technique, imagesTouchees(job, technique.nature)) : message;
+    const auClient = technique ? phraseDeSinaApresUnePanne(technique, imagesTouchees(job, technique.nature)) : phrase;
     const r = run(
       `UPDATE jobs SET status='failed', error=?, message=?, locked_by=NULL, locked_until=NULL, finished_at=?, updated_at=?, checkpoint=CASE WHEN ? IS NULL THEN json_remove(checkpoint,'$.failureCode') ELSE json_set(checkpoint,'$.failureCode',?) END WHERE id=? AND ${held}`,
       message.slice(0, 4000),
@@ -363,13 +367,13 @@ export function failJob(job: Job, err: unknown, opts: { permanent?: boolean } = 
         now(),
       );
     }
-    if (r.changes && detail) logError(`tache:${job.type}`, new Error(detail), { userId: job.user_id, projectId: job.project_id ?? undefined, details: { tache: job.id, nature: technique!.nature } });
+    if (r.changes && detail) logError(`tache:${job.type}`, new Error(detail), { userId: job.user_id, projectId: job.project_id ?? undefined, details: { tache: job.id, ...(technique ? { nature: technique.nature } : { outil: true }) } });
   } else {
     const delay = Math.min(15 * 60_000, 20_000 * 2 ** (job.attempts - 1));
     run(
       `UPDATE jobs SET status='queued', error=?, message=?, run_at=?, locked_by=NULL, locked_until=NULL, updated_at=? WHERE id=? AND ${held}`,
       message.slice(0, 4000),
-      technique ? phraseDeNouvelleTentative(Math.round(delay / 1000)) : L(`Nouvelle tentative dans ${Math.round(delay / 1000)} s : ${message.slice(0, 200)}`, `Retrying in ${Math.round(delay / 1000)} s: ${message.slice(0, 200)}`),
+      technique ? phraseDeNouvelleTentative(Math.round(delay / 1000)) : L(`Nouvelle tentative dans ${Math.round(delay / 1000)} s : ${phrase.slice(0, 200)}`, `Retrying in ${Math.round(delay / 1000)} s: ${phrase.slice(0, 200)}`),
       now() + delay,
       now(),
       job.id,
@@ -487,6 +491,24 @@ export class UserFacingError extends PermanentError {
   constructor(message:string,public readonly code?:string){super(message);}
 }
 
+/**
+ * Les codes d'une tâche COUPÉE en route (arrêt en plein travail, étape déjà lancée, appel au résultat incertain) : la
+ * reprise d'une création coupée (site compris) les reconnaît par ce code, jamais par le texte lu par le client, qui peut
+ * changer (décision du chef d'orchestre du 26 novembre 2026 : textes du client alignés, tutoyés, sans mot technique).
+ */
+export const CODE_DEJA_LANCEE = "OPERATION_DEJA_LANCEE";
+export const CODE_TACHE_COUPEE = "TACHE_COUPEE";
+export const CODE_APPEL_INCERTAIN = "APPEL_IA_INCERTAIN";
+export const CODE_OUTIL_MANQUANT = "OUTIL_MANQUANT";
+export const CODES_DE_COUPURE: ReadonlySet<string> = new Set([CODE_DEJA_LANCEE, CODE_TACHE_COUPEE, CODE_APPEL_INCERTAIN]);
+/** Codes dont le détail (colonne `error`) reste au Studio : le client lit la phrase de SINA (colonne `message`). */
+const CODES_DETAIL_AU_STUDIO: ReadonlySet<string> = new Set([CODE_TACHE_COUPEE, CODE_APPEL_INCERTAIN, CODE_OUTIL_MANQUANT]);
+
+/** Erreur dont le détail reste au Studio (colonne `error`, journal) ; le client ne lit que `auClient`, la phrase de SINA. */
+export class ErreurAuDetailDuStudio extends UserFacingError {
+  constructor(detail: string, public readonly auClient: string, code: string) { super(detail, code); }
+}
+
 export function publicJob(j: Job) {
   const failure=j.status==="failed"?json<Record<string,any>>(j.checkpoint,{}):null;
   const failureCode=failure?.failureCode??failure?.["ai-post"]?.code;
@@ -498,7 +520,8 @@ export function publicJob(j: Job) {
     progress: j.progress,
     message: j.message,
     // Le texte technique d'un appel à l'IA reste au Studio : le client lit la phrase de SINA (le message de la tâche).
-    error: j.status === "failed" ? (erreurTechniqueDeLIA(j.error) ? j.message : j.error) : null,
+    // Même chose pour une tâche coupée en route ou un outil du Studio manquant (reconnus par leur code).
+    error: j.status === "failed" ? (erreurTechniqueDeLIA(j.error) || (typeof failureCode === "string" && CODES_DETAIL_AU_STUDIO.has(failureCode)) || outilManquant(j.error ?? "") ? j.message : j.error) : null,
     ...(typeof failureCode==="string" && /^[A-Z_]{3,80}$/.test(failureCode)?{failureCode}:{}),
     attempts: j.attempts,
     parentId: j.parent_id,

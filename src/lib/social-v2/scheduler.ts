@@ -61,7 +61,7 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
   if (!owner) return { outcome: "skipped", detail: "publication supprimée" };
   // Publication réservée aux forfaits : revérifiée au moment de l'envoi (forfait résilié depuis la programmation).
   if (!planOfUserId(owner.user_id, owner.project_id)) {
-    const msg = L("Publication non envoyée : la publication sur les réseaux est réservée aux forfaits. Choisissez un forfait dans « Mon compte », puis reprogrammez-la.", "Post not sent: publishing to social networks is included in the plans. Choose a plan in \"My account\", then reschedule it.");
+    const msg = L("Publication non envoyée : la publication sur les réseaux est réservée aux forfaits. Choisis un forfait dans « Mon compte », puis reprogramme-la.", "Post not sent: publishing to social networks is included in the plans. Choose a plan in \"My account\", then reschedule it.");
     const moved = run("UPDATE posts SET status = 'review', error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", msg, now(), postId);
     if (moved.changes) notify(owner.user_id, owner.project_id, L("Une publication n'a pas été envoyée", "A post was not sent"), msg, "error");
     return { outcome: "skipped", detail: "sans forfait" };
@@ -74,7 +74,7 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
   // Project Brain : produit retiré ou prix modifié depuis l'approbation — jamais envoyée, remise en relecture.
   const brain = pre.status === "scheduled" ? brainIssues(loadProject(owner.project_id), (pre as Full & { brief?: string }).brief) : { removed: [], priceChanged: [] };
   if (brain.removed.length || brain.priceChanged.length) {
-    const msg = brain.removed.length ? L(`Produit retiré du catalogue (${brain.removed.join(", ")}) : publication non envoyée, à revoir.`, `Product removed from the catalog (${brain.removed.join(", ")}): post not sent, to review.`) : L(`Prix modifié (${brain.priceChanged.join(", ")}) : publication non envoyée, relisez-la puis validez-la.`, `Price changed (${brain.priceChanged.join(", ")}): post not sent, review and approve it again.`);
+    const msg = brain.removed.length ? L(`Produit retiré du catalogue (${brain.removed.join(", ")}) : publication non envoyée, à revoir.`, `Product removed from the catalog (${brain.removed.join(", ")}): post not sent, to review.`) : L(`Prix modifié (${brain.priceChanged.join(", ")}) : publication non envoyée, relis-la puis valide-la.`, `Price changed (${brain.priceChanged.join(", ")}): post not sent, review and approve it again.`);
     const moved = run("UPDATE posts SET status = 'review', approved_hash = NULL, error = ?, updated_at = ? WHERE id = ? AND status = 'scheduled'", msg, now(), postId);
     if (moved.changes) notify(owner.user_id, owner.project_id, L("Une publication a été retenue", "A post was held back"), msg, "warning");
     return { outcome: "skipped", detail: "catalogue modifié" };
@@ -101,7 +101,7 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
     }
     const plan=planOfUserId(owner.user_id,owner.project_id);
     if(!plan||dispatchedPostsOn(owner.project_id,now(),postId,pre.timezone??'Europe/Paris')>=PLANS[plan].postsPerDay){
-      const msg=L('Limite quotidienne du forfait atteinte : publication conservée, choisissez un autre jour.','Daily plan limit reached: post kept, choose another day.');
+      const msg=L('Limite quotidienne du forfait atteinte : publication gardée, choisis un autre jour.','Daily plan limit reached: post kept, choose another day.');
       run("UPDATE posts SET status='review',error=?,updated_at=? WHERE id=? AND status='scheduled'",msg,now(),postId);return {changes:0};
     }
     return run("UPDATE posts SET status = 'publishing', lock_token = ?, locked_at = ?, attempts = attempts + 1, updated_at = ? WHERE id = ? AND status = 'scheduled'",token,now(),now(),postId);
@@ -122,7 +122,7 @@ export async function publishOne(postId: string, publisher: Publisher, o: { time
     return { outcome: "failed", detail: msg };
   }
   if (platformSpec(post.network).level !== "ready_to_connect") {
-    const msg = L("Ce réseau n'a pas de publication directe depuis le studio : publiez-la à la main (export).", "This network has no direct publishing from the studio: post it manually (export).");
+    const msg = L("Ce réseau n'a pas de publication directe depuis le Studio : publie-la toi-même, avec le fichier prêt à télécharger.", "This network has no direct publishing from the Studio: post it yourself, with the file ready to download.");
     finish("approved", { error: msg });
     closeAttempt(aid, "skipped", msg);
     return { outcome: "skipped", detail: msg };
@@ -186,7 +186,7 @@ async function resolveUnknown(post: Full, c: NonNullable<ReturnType<typeof conne
       return { outcome: "retry", detail: msg };
     }
   }
-  const why = L(`État incertain après « ${msg} » : vérifiez sur ${platformSpec(post.network).label} si la publication existe, puis indiquez-le dans le studio. Aucun nouvel envoi automatique.`, `Uncertain state after "${msg}": check on ${platformSpec(post.network).label} whether the post exists, then confirm it in the studio. No automatic resend.`);
+  const why = L(`Je ne sais pas si la publication est bien partie : regarde sur ${platformSpec(post.network).label} si elle y est, puis dis-le-moi dans le Studio. Je ne la renvoie pas d'office.`, `I don't know whether the post went out: check on ${platformSpec(post.network).label} whether it's there, then tell me in the Studio. I won't resend it on my own.`);
   set("uncertain", { error: why });
   closeAttempt(aid, "uncertain", msg);
   notify(post.user_id, post.project_id, L("Publication à vérifier", "Post to verify"), why, "error");
@@ -203,7 +203,7 @@ export async function recoverStale(publisher: Publisher, staleMs = STALE_LOCK_MS
     const aid = open?.id ?? logAttempt(post.id, post.attempts, token, "sending", "reprise");
     const c = connectionFor(post.connection_id, post.user_id);
     if (!c) {
-      run("UPDATE posts SET status = 'uncertain', lock_token = NULL, locked_at = NULL, error = ?, updated_at = ? WHERE id = ?", L("Envoi interrompu et compte introuvable : vérifiez sur la plateforme.", "Sending interrupted and account not found: check on the platform."), now(), post.id);
+      run("UPDATE posts SET status = 'uncertain', lock_token = NULL, locked_at = NULL, error = ?, updated_at = ? WHERE id = ?", L("L'envoi s'est arrêté et je ne retrouve plus le compte relié : regarde sur le réseau si la publication y est, puis dis-le-moi dans le Studio.", "Sending stopped and I can't find the linked account anymore: check on the network whether the post is there, then tell me in the Studio."), now(), post.id);
       closeAttempt(aid, "uncertain", "worker interrompu, compte introuvable");
       continue;
     }
@@ -217,7 +217,7 @@ export function confirmUncertain(postId: string, published: boolean, remoteUrl?:
   const r = one<{ status: string }>("SELECT status FROM posts WHERE id = ?", postId);
   if (r?.status !== "uncertain") throw new Error("publication non incertaine");
   if (published) run("UPDATE posts SET status = 'published', remote_url = COALESCE(?, remote_url), published_at = COALESCE(published_at, ?), error = NULL, updated_at = ? WHERE id = ?", remoteUrl ?? null, now(), now(), postId);
-  else run("UPDATE posts SET status = 'review', error = ?, updated_at = ? WHERE id = ?", L("Non publiée (confirmé par vous) : reprogrammez-la si besoin.", "Not published (confirmed by you): reschedule it if needed."), now(), postId);
+  else run("UPDATE posts SET status = 'review', error = ?, updated_at = ? WHERE id = ?", L("Non publiée (tu l'as confirmé) : reprogramme-la si besoin.", "Not published (you confirmed it): reschedule it if needed."), now(), postId);
   logAttempt(postId, 0, "client", published ? "published" : "failed", published ? "confirmé publié par le client" : "confirmé non publié par le client");
 }
 

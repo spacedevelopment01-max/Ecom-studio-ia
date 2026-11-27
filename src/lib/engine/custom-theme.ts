@@ -403,15 +403,15 @@ export type CustomThemeResult = { versionId: string; number: number; written: nu
 export async function buildCustomTheme(ctx: JobContext, projectId: string, opts: { review?: boolean } = {}): Promise<CustomThemeResult> {
   const p = loadProject(projectId);
   const start = currentTheme(projectId);
-  if (!start) throw new UserFacingError(L("Créez d'abord la boutique : le thème sur mesure part de votre marque et de vos textes.", "Build the store first: the custom theme starts from your brand and copy."));
+  if (!start) throw new UserFacingError(L("Crée d'abord la boutique : le thème sur mesure part de ta marque et de tes textes.", "Build the store first: the custom theme starts from your brand and copy."));
   // Thème de départ figé au lancement (une reprise repart du même).
   const baseId = await ctx.step("base", async () => start.version.id);
   const base = themeVersion(projectId, baseId)?.spec ?? start.spec;
-  if (base.imported) throw new UserFacingError(L("Votre thème importé est conservé tel quel : le thème entièrement sur mesure se crée à partir d'un thème du studio. Choisissez d'abord un thème dans « Thèmes ».", "Your imported theme is kept as is: the fully custom theme is built from a studio theme. Pick a theme in “Themes” first."));
-  if (!llmConfigured()) throw new UserFacingError(L("Le thème entièrement sur mesure est écrit par l'IA, indisponible pour le moment. Réessayez un peu plus tard ; votre thème actuel n'a pas changé.", "The fully custom theme is written by AI, which is unavailable right now. Try again a little later; your current theme hasn't changed."));
+  if (base.imported) throw new UserFacingError(L("Ton thème importé reste tel quel : le thème entièrement sur mesure se crée à partir d'un thème du Studio. Choisis d'abord un thème dans « Thèmes ».", "Your imported theme is kept as is: the fully custom theme is built from a studio theme. Pick a theme in “Themes” first."));
+  if (!llmConfigured()) throw new UserFacingError(L("Le thème entièrement sur mesure est écrit par l'IA, indisponible pour le moment. Réessaie un peu plus tard ; ton thème actuel n'a pas changé.", "The fully custom theme is written by AI, which is unavailable right now. Try again a little later; your current theme hasn't changed."));
   const key = (suffix: string): Base => ({ userId: p.userId, projectId, jobId: ctx.job.id, usageKey: `${ctx.job.id}:${suffix}` });
 
-  ctx.progress(0.03, L("Conception du plan de la page pour votre marque", "Designing the page plan for your brand"));
+  ctx.progress(0.03, L("Conception du plan de la page pour ta marque", "Designing the page plan for your brand"));
   const rawPlan = await ctx.step("plan", () => aiCustomThemePlan(key("plan"), p, base));
   const plan = normalizePlan(rawPlan, base);
 
@@ -426,7 +426,7 @@ export async function buildCustomTheme(ctx: JobContext, projectId: string, opts:
     console.warn("[custom-theme] aucune section écrite :", failures.map((o) => `${o.type}: ${o.reason}`).join(" | ").slice(0, 2000));
     const userMessage = failures.find((o) => o.userMessage)?.userMessage;
     const why = userMessage ?? L("l'IA n'a pas produit de section qui passe tous les contrôles (Shopify, véracité)", "the AI didn't produce a section that passes every check (Shopify, accuracy)");
-    throw new UserFacingError(L(`Aucune section n'a pu être écrite : ${why}. Votre thème actuel n'a pas changé ; réessayez plus tard.`, `No section could be written: ${why}. Your current theme hasn't changed; try again later.`));
+    throw new UserFacingError(L(`Aucune section n'a pu être écrite : ${why}. Ton thème actuel n'a pas changé ; réessaie plus tard.`, `No section could be written: ${why}. Your current theme hasn't changed; try again later.`));
   }
 
   // Theme Check sur le thème complet : une correction ciblée par section en défaut, sinon la bibliothèque à cet endroit.
@@ -491,7 +491,7 @@ export async function buildCustomTheme(ctx: JobContext, projectId: string, opts:
   // Relecture sévère (note sous 5 : défauts visibles) : le thème n'est pas présenté comme prêt ; le thème actuel reste en place.
   if (score !== null && score < MIN_REVIEW_SCORE) {
     throw new UserFacingError(L(
-      `Le thème sur mesure n'a pas atteint le niveau attendu à la relecture visuelle (${score}/10) : il n'a pas été appliqué et votre thème actuel n'a pas changé. Relancez la création pour obtenir une autre proposition.`,
+      `Le thème sur mesure n'a pas atteint le niveau attendu à la relecture visuelle (${score}/10) : il n'a pas été appliqué et ton thème actuel n'a pas changé. Relance la création pour obtenir une autre proposition.`,
       `The custom theme didn't reach the expected standard in the visual review (${score}/10): it wasn't applied and your current theme hasn't changed. Run the creation again to get another proposal.`,
     ));
   }
@@ -513,7 +513,7 @@ export async function buildCustomTheme(ctx: JobContext, projectId: string, opts:
   });
   // Compte rendu honnête dans la discussion de la boutique.
   const note = [
-    L(`Votre thème entièrement sur mesure est prêt (version ${v.number}). ${written} section${written > 1 ? "s ont été écrites" : " a été écrite"} pour votre marque : ${built.written.join(", ")}.`, `Your fully custom theme is ready (version ${v.number}). ${written} section${written > 1 ? "s were" : " was"} written for your brand: ${built.written.join(", ")}.`),
+    L(`Ton thème entièrement sur mesure est prêt (version ${v.number}). ${written} section${written > 1 ? "s ont été écrites" : " a été écrite"} pour ta marque : ${built.written.join(", ")}.`, `Your fully custom theme is ready (version ${v.number}). ${written} section${written > 1 ? "s were" : " was"} written for your brand: ${built.written.join(", ")}.`),
     quality.verdict === "PROVISIONAL" ? L(` Niveau provisoire, à améliorer : relecture visuelle à ${score}/10 (le niveau final attendu est 8/10).`, ` Provisional level, needs improvement: visual review at ${score}/10 (the expected final level is 8/10).`) : quality.verdict === "FINAL" ? "" : L(" Niveau non contrôlé (relecture visuelle indisponible).", " Level not checked (visual review unavailable)."),
     rawPlan.reasoning ? `\n\n${rawPlan.reasoning.slice(0, 600)}` : "",
     built.fallbacks.length
@@ -522,10 +522,10 @@ export async function buildCustomTheme(ctx: JobContext, projectId: string, opts:
           `\n\nPlease note: ${built.fallbacks.map((f) => (f.replacement ? `“${f.name}” didn't pass the checks despite the automatic fixes, so the library section “${f.replacement}” is kept in its place` : `“${f.name}” didn't pass the checks and was left out`)).join("; ")}.`,
         )
       : "",
-    L(`\n\nLa page d'achat (formulaire d'ajout au panier) reste celle du thème, éprouvée. Votre thème précédent est conservé dans les versions.`, `\n\nThe buy form on the product page stays the theme's proven one. Your previous theme is kept in the versions.`),
+    L(`\n\nLa page d'achat (formulaire d'ajout au panier) reste celle du thème, éprouvée. Ton thème précédent est gardé dans les versions.`, `\n\nThe buy form on the product page stays the theme's proven one. Your previous theme is kept in the versions.`),
   ].join("");
   run("INSERT INTO chat_messages (id, project_id, thread, role, content, theme_version_id, job_id, created_at) VALUES (?,?,?,?,?,?,?,?)", newId(), projectId, "shop", "assistant", note, v.id, ctx.job.id, now());
-  notify(p.userId, projectId, L("Votre thème sur mesure est prêt", "Your custom theme is ready"), summary.slice(0, 200), "success");
+  notify(p.userId, projectId, L("Ton thème sur mesure est prêt", "Your custom theme is ready"), summary.slice(0, 200), "success");
   ctx.progress(0.99, L("Thème sur mesure enregistré", "Custom theme saved"));
   return { versionId: v.id, number: v.number, written, total, fallbacks: built.fallbacks, themeCheck: tc.available ? "ok" : "unavailable", reasoning: rawPlan.reasoning.slice(0, 600) };
 }

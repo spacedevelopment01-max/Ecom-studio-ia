@@ -172,7 +172,7 @@ describe("Mission 142 : frontières de comptabilisation", () => {
   it("un usage payé avant migration ne déclenche pas une nouvelle génération masquée par déduplication", async () => {
     const uid = await client();
     recordUsage(usage(uid,"paid-before-migration"));
-    expect(()=>reserve(uid,100_000,{...meta,usageKey:"paid-before-migration"})).toThrow(/déjà été envoyée/);
+    expect(()=>reserve(uid,100_000,{...meta,usageKey:"paid-before-migration"})).toThrow(/déjà été lancée/);
     expect(balance(uid).reserved).toBe(0);
     expect(wallet(uid).monthly_used).toBe(80_000);
   });

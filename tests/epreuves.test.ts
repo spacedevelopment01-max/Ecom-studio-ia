@@ -2745,3 +2745,67 @@ describe("l'épreuve des erreurs techniques (une tâche au résultat incertain, 
     expect(en.fin.message).not.toMatch(TECHNIQUE);
   });
 });
+
+describe("l'épreuve des textes du client alignés (tutoiement, aucun mot technique, aucun euro pour l'IA ; sans aucun appel à l'IA)", () => {
+  epreuve("textes-du-client-alignes", async () => {
+    const { createUser } = await import("@/lib/auth");
+    const { all, id: newId, now, run: sql } = await import("@/lib/db");
+    const J = await import("@/lib/jobs");
+    const { operationPending } = await import("@/lib/billing");
+    const { friendlyToolError } = await import("@/lib/tool-errors");
+    const { runWithLang } = await import("@/lib/i18n-server");
+    const { PREFIXE_ECHEC_FR, PREFIXE_ECHEC_EN, vraiEchec } = await import("@/lib/syna-agent/conversation");
+    const S = await import("@/lib/syna-agent/custom-theme/site-job");
+    const INTERDIT = /\b(vous|votre|vos|vôtre)\b|fournisseur|\bprovider\b|\bAPI\b|moteur local|local engine|erreur \d{3}|error \d{3}|Codespace|sudo|ffmpeg|ENOENT|\bgpt-|dall-?e|\d\s?€|€\s?\d|faites vérifier|résultat incertain|uncertain outcome|coût maximal/i;
+    // 1. L'étape déjà lancée et l'outil absent : la phrase de SINA, en français et en anglais.
+    for (const ui of ["fr", "en"] as const) {
+      let deja: unknown; try { runWithLang({ ui, content: ui }, () => operationPending()); } catch (e) { deja = e; }
+      expect((deja as InstanceType<typeof J.UserFacingError>).code).toBe(J.CODE_DEJA_LANCEE);
+      expect((deja as Error).message).not.toMatch(INTERDIT);
+      expect(runWithLang({ ui, content: ui }, () => friendlyToolError("spawn ffmpeg ENOENT"))).not.toMatch(INTERDIT);
+    }
+    // 2. Le site coupé en route, une tâche réelle : le client lit la phrase de SINA, le détail reste au Studio, et la
+    // reprise reconnaît la coupure par son code (étape déjà lancée comme tâche coupée), jamais par le texte.
+    const u = await createUser(`ep${Date.now()}${Math.random().toString(36).slice(2, 7)}@test.fr`, "motdepasse-test", "T");
+    const coupe = (err: unknown) => {
+      const projet = `p-${newId()}`, t = now(), job = newId();
+      sql("INSERT INTO jobs (id, user_id, project_id, type, payload, status, run_at, created_at, updated_at, attempts, max_attempts) VALUES (?,?,?,?,?,?,?,?,?,?,?)", job, u.id, projet, S.SINA_SITE_JOB, JSON.stringify({ projectId: projet, consigne: "Franc", capMicro: 1_000_000 }), "running", t, t, t, 1, 3);
+      J.failJob(J.getJob(job)!, err, { permanent: true });
+      return { projet, job, fin: J.getJob(job)! };
+    };
+    let deja: unknown; try { operationPending(); } catch (e) { deja = e; }
+    const a = coupe(deja);
+    expect(S.creationCoupee(a.projet)).toMatchObject({ id: a.job });
+    const b = coupe(new J.ErreurAuDetailDuStudio("Interrompue pendant un appel IA payant ; coût maximal compté, rendu après la facture du fournisseur.", "J'ai gardé tout ce qui est fait et je ne relance rien d'office. Dis-moi quand tu veux que je reprenne.", J.CODE_TACHE_COUPEE));
+    expect(S.creationCoupee(b.projet)).toMatchObject({ id: b.job });
+    expect(b.fin.error).toMatch(/fournisseur/);
+    for (const x of [a.fin.message, J.publicJob(a.fin).error, b.fin.message, J.publicJob(b.fin).error]) expect(String(x)).not.toMatch(INTERDIT);
+    for (const n of all<{ title: string; body: string }>("SELECT title, body FROM notifications WHERE user_id = ?", u.id)) expect(`${n.title} ${n.body}`).not.toMatch(INTERDIT);
+    // Un autre refus, même avec « incertain » dans son texte : il se refait.
+    expect(S.creationCoupee(coupe(new J.UserFacingError("Résultat incertain du contrôle", "COPY_FACTS_REJECTED")).projet)).toBeNull();
+    // 3. Le fil de SINA : une panne se dit comme SINA la dirait ; reconnue comme panne, anciens résumés compris.
+    expect(vraiEchec({ tool: "catalogue.update", summary: `${PREFIXE_ECHEC_FR}base indisponible` })).toBe(true);
+    expect(vraiEchec({ tool: "catalogue.update", summary: `${PREFIXE_ECHEC_EN}base unavailable` })).toBe(true);
+    expect(vraiEchec({ tool: "catalogue.update", summary: "Échec de l'outil : base indisponible" })).toBe(true);
+    const fil = fs.readFileSync("src/components/studio/syna-thread.tsx", "utf8");
+    expect(fil).not.toMatch(/t\("Erreur : "|L'exécution s'est arrêtée/);
+    // 4. Les textes relevés : plus aucun ne vouvoie, ne parle technique ni n'affiche d'euros pour l'IA.
+    const relevees: [string, RegExp][] = [
+      ["src/lib/billing.ts", /faites vérifier le résultat incertain/],
+      ["src/lib/ai/media-providers.ts", /conservé chez le fournisseur/],
+      ["src/lib/social-v2/autopilot.ts", /recharge de 10 €|€10 top-up/],
+      ["src/lib/social-v2/scheduler.ts", /vérifiez sur/],
+      ["src/lib/social-v2/automations.ts", /votre (accord|validation)/],
+      ["src/lib/engine/cutouts.ts", /au vôtre|Ajoutez une photo/],
+      ["src/lib/engine/images.ts", /votre photo/],
+      ["src/lib/engine/custom-theme.ts", /\bVotre thème/],
+      ["src/lib/syna-agent/mockup-code/job.ts", /\bVotre site/],
+      ["src/lib/tool-errors.ts", /redémarrez-le|tapez dans le terminal/],
+      ["src/lib/http.ts", /réessayez dans un instant/],
+      ["src/components/billing-client.tsx", /moteur local/],
+      ["src/components/studio/cost-confirm.tsx", /moteur local du studio/],
+      ["src/app/syna-fondations/vitrine.tsx", /erreur 503|Qwen-Image/],
+    ];
+    for (const [f, rx] of relevees) expect(fs.readFileSync(f, "utf8"), f).not.toMatch(rx);
+  });
+});

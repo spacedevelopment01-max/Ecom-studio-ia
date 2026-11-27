@@ -49,7 +49,7 @@ const STATE_TONE: Record<string, "ok" | "info" | "warn" | "bad" | "neutral" | "s
 const ACTIONS: Record<string, [string, string]> = {
   settings: ["Réglages enregistrés", "Settings saved"], consent: ["Pilote automatique activé (accord donné)", "Autopilot enabled (consent given)"], autopilot_off: ["Pilote automatique désactivé", "Autopilot disabled"],
   pause_all: ["Tout mis en pause", "Everything paused"], resume_all: ["Reprise", "Resumed"], produce: ["Visuels préparés (gratuits)", "Visuals prepared (free)"], paid_job: ["Visuels par l'IA lancés (dans le plafond)", "AI visuals started (within the cap)"],
-  budget_low: ["Budget IA épuisé : visuels gratuits", "AI budget used up: free visuals"], to_review: ["Publications à valider signalées", "Posts to approve flagged"], auto_approve: ["Approbation par le pilote", "Autopilot approval"], run: ["Passage du pilote", "Autopilot run"],
+  budget_low: ["Budget IA du mois utilisé : images en attente", "Monthly AI budget used up: images waiting"], to_review: ["Publications à valider signalées", "Posts to approve flagged"], auto_approve: ["Approbation par le pilote", "Autopilot approval"], run: ["Passage du pilote", "Autopilot run"],
 };
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
