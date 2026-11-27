@@ -39,6 +39,7 @@ import {
   type BlocDeTexte, type Separation, type VersionDuLogo,
 } from "./planche-en-vrai-code";
 import { detourerLeLogo } from "../media/detourage-logo";
+import { faitsPermisDuProjet, type FaitsPermis } from "./faits-a-montrer";
 
 // ---------------------------------------------------------------- le devis
 
@@ -248,8 +249,11 @@ export async function plancheEnVrai(o: {
   metierCourt?: string | null;
   /** Les produits de la fiche du client ; sans eux, ceux gardés avec la planche choisie (`produitsDeLaPlanche`). */
   produits?: readonly string[] | null;
+  /** Les faits à montrer de sa fiche (27 novembre 2026) ; sans eux, ceux de son projet (`faitsPermisDuProjet`). */
+  faits?: FaitsPermis | null;
 }): Promise<EtatPlancheEnVrai> {
   const { ctx, ai, route } = o, pl = route.board.planche;
+  const faits = o.faits ?? faitsPermisDuProjet(o.who.projectId);
   if (!pl?.image) throw new Error("Aucune planche de démonstration choisie.");
   const demo = assetData(getAsset(pl.image.id)!), laquelle = dispositionDe(pl.image.id), cases = lesCases(laquelle);
   const issues: string[] = [], notes: string[] = [];
@@ -298,7 +302,7 @@ export async function plancheEnVrai(o: {
       demande, `relecture-${groupe}${tour > 1 ? "-r1" : ""}`)),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
   }, { nom, personnes: o.personnes, logo: logoSurBlanc, symbole: symboleSurBlanc, photo, apercus: decoupe.apercus, inventaire, debordes: decoupe.debordes,
-    produits: o.produits?.length ? o.produits : produitsDeLaPlanche(pl.image.id), phrase: lignesDeLaPhrase(o.ligneDuLogo) });
+    produits: o.produits?.length ? o.produits : produitsDeLaPlanche(pl.image.id), phrase: lignesDeLaPhrase(o.ligneDuLogo), ...(faits.mentions.length || faits.interdits.length ? { faits } : {}) });
 
   // Les images gardées, rangées en haute définition ; les produits sans photo du client sont marqués « image d'ambiance ».
   for (const n of NOMS_DES_ELEMENTS) for (const e of res.get(n)?.essais ?? []) if (e.raisons.length) notes.push(`${n}, essai ${e.tour} refusé : ${e.raisons.join(" ; ")}`);
@@ -341,7 +345,7 @@ export async function plancheEnVrai(o: {
     elements, logos, favicons, palette, polices: { titres, textes }, symboleComplet: v.symboleComplet, publications, issues: [...new Set(issues)], notes, inventaire,
     ...(v.depuisLApercu.length ? { logosDeLApercu: v.depuisLApercu } : {}),
   };
-  const t = textesDeLaPlanche(inventaire, route);
+  const t = textesDeLaPlanche(inventaire, route, faits);
   notes.push(...t.notes);
   return { ...etat, ...(await placerLaPlanche({ who: o.who, route, etat, demo, boites: decoupe.boites, images, versions: v.versions, encre })) };
 }
@@ -365,7 +369,7 @@ export async function plancheEnVrai(o: {
  * (`planche.finitions`), ou à l'inventaire (une ligne lue qui porte un signe parasite). Le texte de la finition, nettoyé,
  * remplace sa ligne quand l'inventaire ne l'a pas lue.
  */
-export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titres: Map<string, string>; blocs: Map<"ton" | "seo", BlocDeTexte | null>; haut: string[]; hautDansLeLogo: boolean; notes: string[] } {
+export function textesDeLaPlanche(inventaire: Inventaire, route: Route, /** Les mentions vraies de sa fiche (27 novembre 2026) : jamais prises pour des promesses. */ faits?: FaitsPermis): { titres: Map<string, string>; blocs: Map<"ton" | "seo", BlocDeTexte | null>; haut: string[]; hautDansLeLogo: boolean; notes: string[] } {
   const pl = route.board.planche!, nom = route.name.trim(), notes: string[] = [];
   const brutes = (n: string) => caseLue(inventaire, n)?.textes.map((t) => t.trim()).filter(Boolean) ?? [];
   const lignes = (n: string) => brutes(n).map(nettoyerLesSignesIsoles).filter(Boolean);
@@ -383,11 +387,11 @@ export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titre
   const dire = (b: string, n: string, f: string[]) => { const lues = luesAvecUnSigne(n); if (f.length || lues.length) notes.push(`${b} : petite finition nettoyée par le code (${[...f, ...lues.map((x) => `lu à l'inventaire : « ${x} »`)].join(" ; ")})`); };
   for (const n of ["haut", ...TITRES]) if (luesAvecUnSigne(n).length) dire(n === "haut" ? "haut de la planche" : `titre ${n}`, n, []);
   const titres = new Map<string, string>();
-  for (const t of TITRES) { const l = lignes(t).join(" "); if (l && !promessesDuBloc([l]).length) titres.set(t, l); }
+  for (const t of TITRES) { const l = lignes(t).join(" "); if (l && !promessesDuBloc([l], [], faits).length) titres.set(t, l); }
   const mention = mentionDuDomaine({ domaine: pl.domaine, statut: pl.revu?.statut ?? pl.statut }), droit = copyright(pl.annee, nom);
   const blocs = new Map<"ton" | "seo", BlocDeTexte | null>();
   // Le ton : rien lu ou aucune promesse ni finition, le décor est gardé ; sinon redessiné sans elles, jamais vide.
-  const ton = lignes("ton"), promesses = promessesDuBloc(ton), finitionsDuTon = notees("ton"), tonANettoyer = finitionsDuTon.length > 0 || luesAvecUnSigne("ton").length > 0;
+  const ton = lignes("ton"), promesses = promessesDuBloc(ton, [], faits), finitionsDuTon = notees("ton"), tonANettoyer = finitionsDuTon.length > 0 || luesAvecUnSigne("ton").length > 0;
   if (promesses.length || tonANettoyer) {
     // La phrase de la marque, par ses lignes (jamais le « / » qui les sépare dans le texte enregistré).
     const reste = avecLesFinitions(ton.filter((l) => !promesses.includes(l)), finitionsDuTon).filter((l) => !promessesDuBloc([l]).length), slogan = lignesDuTexte(route.slogan ?? "");
@@ -421,7 +425,7 @@ export function textesDeLaPlanche(inventaire: Inventaire, route: Route): { titre
     }
   } else {
     const seoJuste = seo.some((l) => l.includes(droit)) && seo.some(porteLaMention);
-    const seoPromesses = promessesDuBloc(seo, [droit, mention, String(pl.annee)]);
+    const seoPromesses = promessesDuBloc(seo, [droit, mention, String(pl.annee)], faits);
     if (seoJuste && !seoPromesses.length && !seoANettoyer) blocs.set("seo", null);
     else redessiner(seo, seoPromesses);
   }
@@ -485,7 +489,7 @@ export function paletteDeLaPlanche(mesurees: readonly string[], inventaire: Inve
 
 /** L'assemblage (gratuit, se refait) et le rangement de la planche en vrai comme planche de marque, mention « planche-en-vrai ». */
 async function assemblerEtRanger(o: { who: { userId: string; projectId: string }; route: Route; etat: EtatPlancheEnVrai; demo: Buffer; boites: ReadonlyMap<string, [number, number, number, number]>; images: ReadonlyMap<NomElement, Buffer>; versions: Record<VersionDuLogo, Buffer>; encre: string }): Promise<NonNullable<EtatPlancheEnVrai["planche"]> & { siteEntier?: EtatPlancheEnVrai["siteEntier"] }> {
-  const t = textesDeLaPlanche(o.etat.inventaire!, o.route);
+  const t = textesDeLaPlanche(o.etat.inventaire!, o.route, faitsPermisDuProjet(o.who.projectId));
   const tu = await tuilesDuBloc01({ demo: o.demo, boites: o.boites, versions: o.versions, depuisLApercu: o.etat.logosDeLApercu ?? [], enHd: o.etat.logosEnHd });
   const png = await assemblerLaPlanche({ demo: o.demo, boites: o.boites, pastilles: lesCases(o.etat.laquelle).pastilles, images: o.images, versions: o.versions, palette: o.etat.palette, polices: o.etat.polices!, signature: t.haut, titres: t.titres, blocs: t.blocs, encre: o.encre,
     hautDansLeLogo: t.hautDansLeLogo, typos: phrasesDesPolices(o.etat.inventaire!), motsLus: lignesDesMotsLues(o.etat.inventaire!), tuilesDeLApercu: tu.tuilesDeLApercu, tuilesEnHd: tu.tuilesEnHd });
@@ -690,7 +694,7 @@ export async function refaireLesProduitsEnVrai(o: { ctx: Etape; ai: PlancheEnVra
     },
     relire: (groupe, items, demande, tour) => o.ctx.step(`brand:envrai:relecture:${groupe}:photo${tour > 1 ? ":r1" : ""}`, () => o.ai.relire(items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]), demande, `relecture-${groupe}-photo`)),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom: o.route.name.trim(), personnes: o.personnes, logo, photo, apercus: decoupe.apercus, inventaire, elements: aRefaire, debordes: decoupe.debordes, produits: produitsDeLaPlanche(ev.demo) });
+  }, { nom: o.route.name.trim(), personnes: o.personnes, logo, photo, apercus: decoupe.apercus, inventaire, elements: aRefaire, debordes: decoupe.debordes, produits: produitsDeLaPlanche(ev.demo), ...((f) => (f.mentions.length || f.interdits.length ? { faits: f } : {}))(faitsPermisDuProjet(o.who.projectId)) });
   const elements = [...ev.elements], issues: string[] = [];
   for (const n of aRefaire) {
     const r = res.get(n);
@@ -846,6 +850,8 @@ export async function reprendreDesCasesEnVrai(o: {
   elements: readonly NomElement[]; raisons: ReadonlyMap<NomElement, readonly string[]>;
   /** Les produits de la fiche et la phrase du logo (la ligne des étiquettes, les textes du logo jamais en trop). */
   produits?: readonly string[]; phrase?: readonly string[];
+  /** Les faits à montrer de la fiche (27 novembre 2026). */
+  faits?: FaitsPermis;
   /** Les cases dont l'aperçu LU PAR L'INVENTAIRE touchait la bande d'un titre (sinon, celles de la découpe d'aujourd'hui). */
   debordes?: readonly string[];
 }) {
@@ -855,5 +861,5 @@ export async function reprendreDesCasesEnVrai(o: {
     refaire: async (d) => (await o.ai.refaire(d, `${d.element}-reprise`)).png,
     relire: (g, items, demande) => o.ai.relire(items.flatMap((it) => [{ data: it.apercu, label: `${it.element} aperçu` }, { data: it.image, label: `${it.element} refaite` }, ...(it.photo ? [{ data: it.photo, label: `${it.element} produit` }] : [])]), demande, `relecture-${g}-reprise`),
     aLaChargeDuStudio: (fn) => aLaChargeDuStudio(fn),
-  }, { nom: o.nom, personnes: o.personnes, logo: logoSurBlanc, symbole, photo: null, apercus: o.decoupe.apercus, inventaire: o.inventaire, debordes: o.debordes ?? o.decoupe.debordes, elements: o.elements, reprise: o.raisons, produits: o.produits, phrase: o.phrase });
+  }, { nom: o.nom, personnes: o.personnes, logo: logoSurBlanc, symbole, photo: null, apercus: o.decoupe.apercus, inventaire: o.inventaire, debordes: o.debordes ?? o.decoupe.debordes, elements: o.elements, reprise: o.raisons, produits: o.produits, phrase: o.phrase, ...(o.faits ? { faits: o.faits } : {}) });
 }

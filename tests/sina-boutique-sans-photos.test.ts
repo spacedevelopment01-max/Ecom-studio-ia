@@ -62,7 +62,7 @@ describe("boutique sans photos du client", async () => {
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "2 produits" }, { field: "market", value: "France." },
       { field: "price", value: "120 €" }, { field: "difference", value: "Tourné à la main." }, { field: "taste", status: "none" }, { field: "photos", value: "Pas encore." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     ctx.projectId = pid;
     // Le catalogue du test : ces deux produits seulement.

@@ -507,6 +507,42 @@ Branché pendant cette préparation : `LOGO_HD` sur le chemin normal (avant, le 
 ligne du logo et le métier court donnés à la planche en vrai comme dans le Studio (avant, le bas du badge d'un logo sans
 phrase restait vide dans l'essai, alors que le Studio y met le métier court).
 
+## Les faits à montrer : le chef d'orchestre répond comme le client (27 novembre 2026, gratuit)
+
+Demande du propriétaire : « Et bien c'est le but de poser des questions au client avant de démarrer le projet afin de
+savoir ce que peux être générer en image ce qui peux être générer en texte sans que sa porte défaut ». Dans le Studio,
+SINA pose ces questions pendant « Faire connaissance », avant le résumé (`start.fait`, cahier
+`docs/sina-savoir/questions-avant-la-marque.md`). Les scripts d'essai partent de la fiche du fichier du client : c'est là
+que le chef d'orchestre, qui joue le client, donne ses réponses, une à la fois, avec les mots du client.
+
+Le mécanisme, sans aucun appel ni clé :
+
+```
+# 1. Les questions que SINA poserait encore, dans l'ordre, et ce qui est déjà répondu
+CLIENT_JSON=scripts/syna-recette/clients/torrefacteur.json node_modules/.bin/tsx scripts/syna-recette/faits-de-l-essai.mts
+
+# 2. Une réponse (ou une liste entre crochets), enregistrée dans le champ « faits » du fichier du client
+CLIENT_JSON=scripts/syna-recette/clients/torrefacteur.json REPONSE='{"sujet":"noms","noms":["…","…"]}' node_modules/.bin/tsx scripts/syna-recette/faits-de-l-essai.mts
+CLIENT_JSON=scripts/syna-recette/clients/torrefacteur.json REPONSE='{"sujet":"formats","produit":"…","valeur":"…"}' node_modules/.bin/tsx scripts/syna-recette/faits-de-l-essai.mts
+CLIENT_JSON=scripts/syna-recette/clients/torrefacteur.json REPONSE='{"sujet":"ville","etat":"ne_montre_pas"}' node_modules/.bin/tsx scripts/syna-recette/faits-de-l-essai.mts
+```
+
+- « etat » : `donne` (par défaut ; la valeur, mot pour mot), `ne_sait_pas` ou `ne_montre_pas`. Une réponse sans
+  « produit » vaut pour tous les produits. Le sujet « noms » prend la liste des noms exacts ; tant qu'il n'est pas donné,
+  les sujets « pour chacun » attendent. Les contrôles sont ceux du Studio : un sujet du métier, un produit parmi les noms
+  donnés, une valeur non vide.
+- Pour le torréfacteur, le cahier choisit les parties « une boutique », « le café » et « la marque ». Les questions, dans
+  l'ordre : le nom exact de chaque produit ; puis, pour chacun, ses formats ou poids, son origine ou sa provenance, ses
+  mentions et labels, où il est torréfié, son degré de torréfaction, ses notes de goût ; l'année de création ; la ville,
+  et s'il veut qu'elle apparaisse.
+- Ensuite, les scripts d'essai (`essai-planches.mts`, `essai-planche-en-vrai.mts`) lisent ces faits comme la fiche du
+  Studio : la fiche du client les porte, les mentions vraies peuvent s'écrire sur les étiquettes et ne sont jamais prises
+  pour des inventions, ce qui n'est pas donné reste sans mot lisible, ce qu'il ne veut pas montrer fait refuser. Une
+  image ou une planche déjà reçue avant les faits est reconnue par son texte d'alors (`texteSansLesMentionsVraies` pour
+  la planche en vrai, le texte sans la ligne des mentions pour la planche de marque) : elle n'est jamais repayée.
+- Le fichier du client est dans le dépôt : ses réponses s'y enregistrent comme ses autres réponses de départ (prix,
+  clientèle, goûts). Rien n'est payé tant que le propriétaire n'a pas dit oui au prix d'une étape.
+
 ## Les prix
 
 | Étape | Son choix | Probable | Si tout est refait une fois | Plafond minimal exact |

@@ -30,7 +30,7 @@ describe("SINA — thème du Studio monté à la marque", async () => {
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes débutants." }, { field: "image", value: "Chaleureux." }, { field: "setup", value: "3 formules" }, { field: "market", value: "Lyon." },
       { field: "price", value: "45 € la séance" }, { field: "difference", value: "Petits groupes." }, { field: "taste", status: "none" }, { field: "photos", value: "Quelques-unes." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     // Garde de l'étape 8 (audit du 10 novembre 2026) : rien tant que le client n'a pas choisi un thème du Studio.
     expect((await call("theme.images", ctx, {})).summary).toMatch(/n'a pas choisi de thème du Studio/);
@@ -86,7 +86,7 @@ describe("SINA — thème du Studio monté à la marque", async () => {
       { field: "existing", value: "Rien." }, { field: "audience", value: "Particuliers." }, { field: "image", value: "Sobre." }, { field: "setup", value: "2 prestations" }, { field: "market", value: "Nantes." },
       { field: "price", value: "Sur devis" }, { field: "difference", value: "Finitions soignées." }, { field: "taste", status: "none" }, { field: "photos", value: "Non." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     const { loadProject, saveBrand } = await import("@/lib/projects");
     const { localBrand } = await import("@/lib/engine/local");
@@ -146,7 +146,7 @@ describe("SINA — thème du Studio monté à la marque", async () => {
       { field: "existing", value: "Rien." }, { field: "audience", value: "Familles." }, { field: "image", value: "Sobre." }, { field: "setup", value: "Demande de visite" }, { field: "market", value: "Aix." },
       { field: "price", value: "Selon le bien" }, { field: "difference", value: "Réponse en 24 h." }, { field: "taste", status: "none" }, { field: "photos", value: "Non." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     const { loadProject, saveBrand, currentTheme } = await import("@/lib/projects");
     const { localBrand } = await import("@/lib/engine/local");

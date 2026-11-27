@@ -19,6 +19,7 @@ import { L } from "../i18n-server";
 import { loadWordingRules } from "../client-wording";
 import { memory } from "../projects";
 import { FIELD_LABEL, START_FIELDS, journeyOf, updateJourney, type Journey } from "./journey";
+import { ETAT_LABEL, faitsDeLaFiche, faitsDuProjet, enregistrerLesFaits, libelleDuSujet, nomsDonnes, type EtatDuFait, type FaitAMontrer } from "./faits-a-montrer";
 
 export const GENRES = ["fait", "aime", "refuse"] as const;
 export type Genre = (typeof GENRES)[number];
@@ -51,7 +52,8 @@ export type FicheNote = {
   /** Corrigée par le client lui-même, sur sa fiche. */
   corrigeLe?: number;
 };
-export type Fiche = { version: 1; notes: FicheNote[] };
+/** `faits` : les faits à montrer (27 novembre 2026, `faits-a-montrer.ts`) ; un ancien fil n'en a pas. */
+export type Fiche = { version: 1; notes: FicheNote[]; faits?: FaitAMontrer[] };
 export const NOTES_MAX = 80;
 
 const stateOf = (cid: string) => one<{ state_json: string | null }>("SELECT state_json FROM agent_conversations WHERE id=?", cid);
@@ -62,7 +64,8 @@ export function ficheOf(cid: string): Fiche {
   if (!row) throw new HttpError(404, L("Conversation introuvable.", "Conversation not found."));
   const st = json<any>(row.state_json ?? "{}", {});
   const notes = Array.isArray(st.fiche?.notes) ? st.fiche.notes : Array.isArray(st.parcours?.notes) ? st.parcours.notes : [];
-  return { version: 1, notes: notes.filter((n: any) => n && typeof n.sujet === "string" && typeof n.value === "string") };
+  const faits = Array.isArray(st.fiche?.faits) ? st.fiche.faits : undefined;
+  return { version: 1, notes: notes.filter((n: any) => n && typeof n.sujet === "string" && typeof n.value === "string"), ...(faits ? { faits } : {}) };
 }
 
 /** Mise à jour atomique de la fiche. */
@@ -170,7 +173,7 @@ export function choixDuClient(j: Journey): string[] {
  * La fiche entière, telle qu'elle est relue avant chaque création et à chaque pas de SINA. Rien n'y est résumé ni
  * reformulé : ses mots sont entre guillemets.
  */
-export function ficheTexte(o: { j: Journey; notes: FicheNote[]; projectId?: string | null }): string {
+export function ficheTexte(o: { j: Journey; notes: FicheNote[]; projectId?: string | null; /** Ses faits à montrer (`faits-a-montrer.ts`). */ faits?: readonly FaitAMontrer[] }): string {
   const { j, notes } = o;
   const lines: string[] = ["# La fiche du client (tout ce qu'il a dit, avec ses mots ; relue en entier)"];
   const start = START_FIELDS.filter((f) => j.start[f]).map((f) => {
@@ -179,6 +182,16 @@ export function ficheTexte(o: { j: Journey; notes: FicheNote[]; projectId?: stri
     return `- ${FIELD_LABEL[f].fr} : ${v} (${dateFr(a.at)}${a.source !== "client" ? `, source : ${a.source === "site" ? "son site" : a.source === "photo" ? "ses photos" : "formulaire"}` : ""})`;
   });
   if (start.length) lines.push("## Ses réponses", ...start);
+  // Les faits à montrer (27 novembre 2026) : seuls ceux qu'il a donnés, mot pour mot ; ce qu'il ne veut pas montrer est dit
+  // par son sujet, jamais par sa valeur ; « je ne sais pas » n'y est pas (le parcours le dit à SINA).
+  if (o.faits?.length) {
+    const noms = nomsDonnes(o.faits);
+    const vivant = (x: FaitAMontrer) => !x.produit || noms.some((n) => n.trim().toLowerCase() === x.produit!.trim().toLowerCase());
+    const donnes = o.faits.filter((x) => x.etat === "donne" && vivant(x)).map((x) => `- ${libelleDuSujet(x.sujet)}${x.produit ? ` de « ${x.produit} »` : ""} : ${x.sujet === "noms" ? (x.noms ?? []).map((n) => `« ${n} »`).join(", ") : `« ${x.valeur ?? ""} »`}`);
+    const caches = o.faits.filter((x) => x.etat === "ne_montre_pas" && vivant(x)).map((x) => `- ${libelleDuSujet(x.sujet)}${x.produit ? ` de « ${x.produit} »` : ""}`);
+    if (donnes.length) lines.push("## Ce qui peut s'écrire sur ses images et son site (mentions vraies, mot pour mot ; rien d'autre)", ...donnes);
+    if (caches.length) lines.push("## Ce qu'il ne veut pas montrer (jamais écrit ni montré)", ...caches);
+  }
   for (const g of GENRES) {
     const list = notes.filter((n) => genreOf(n) === g);
     if (list.length) lines.push(`## ${GENRE_LABEL[g].fr}`, ...list.map((n) => `- ${n.sujet} : « ${n.value} » (${PORTEE_LABEL[porteeOf(n)].fr}, ${dateFr(n.corrigeLe ?? n.at)}${n.corrigeLe ? ", corrigé par lui" : ""})`));
@@ -197,12 +210,12 @@ export function ficheTexte(o: { j: Journey; notes: FicheNote[]; projectId?: stri
 /** La fiche entière d'un fil. */
 export function ficheDuFil(cid: string, projectId?: string | null): string {
   const j = journeyOf(cid);
-  return ficheTexte({ j, notes: projectId ? notesDuProjet(projectId) : ficheOf(cid).notes, projectId });
+  return ficheTexte({ j, notes: projectId ? notesDuProjet(projectId) : ficheOf(cid).notes, projectId, faits: projectId ? faitsDuProjet(projectId) : faitsDeLaFiche(ficheOf(cid)) });
 }
 /** La fiche entière d'un projet (fil du parcours, notes de tous ses fils). */
 export function ficheDuProjet(projectId: string): string {
   const jp = journeyDuProjet(projectId);
-  return ficheTexte({ j: jp?.j ?? journeyOf(threadsOf(projectId)[0] ?? ""), notes: notesDuProjet(projectId), projectId });
+  return ficheTexte({ j: jp?.j ?? journeyOf(threadsOf(projectId)[0] ?? ""), notes: notesDuProjet(projectId), projectId, faits: faitsDuProjet(projectId) });
 }
 
 /** Ce que le client voit sur sa fiche (« Ce que SINA sait de toi »). */
@@ -210,6 +223,8 @@ export type FicheVue = {
   reponses: { champ: string; label: string; value: string; status: string; at: number }[];
   notes: (FicheNote & { genre: Genre; portee: Portee; genreLabel: string; porteeLabel: string })[];
   choix: string[]; mots: { avoid: string; use: string }[]; garde: string[];
+  /** Les faits à montrer, qu'il corrige lui-même (sa valeur, ou « à ne pas montrer »). */
+  faits: { sujet: string; label: string; produit?: string; value: string; etat: EtatDuFait; etatLabel: string; at: number; corrigeLe?: number }[];
 };
 export function ficheVue(cid: string, projectId: string | null, lang: "fr" | "en" = "fr"): FicheVue {
   const j = journeyOf(cid);
@@ -220,13 +235,19 @@ export function ficheVue(cid: string, projectId: string | null, lang: "fr" | "en
     choix: choixDuClient(j),
     mots: projectId ? (() => { try { return loadWordingRules(projectId).map((r) => ({ avoid: r.avoid, use: r.use })); } catch { return []; } })() : [],
     garde: j.keep,
+    faits: (projectId ? faitsDuProjet(projectId) : faitsDeLaFiche(ficheOf(cid))).map((x) => ({
+      sujet: x.sujet, label: libelleDuSujet(x.sujet, lang), ...(x.produit ? { produit: x.produit } : {}),
+      value: x.sujet === "noms" ? (x.noms ?? []).join(" ; ") : x.etat === "donne" ? x.valeur ?? "" : "", etat: x.etat, etatLabel: ETAT_LABEL[x.etat][lang], at: x.at, ...(x.corrigeLe ? { corrigeLe: x.corrigeLe } : {}),
+    })),
   };
 }
 
 /** Ce que le client corrige lui-même sur sa fiche : une note (changée ou effacée) ou une de ses réponses de départ. */
 export type Correction =
   | { type: "note"; sujet: string; value: string | null; genre?: Genre; portee?: Portee }
-  | { type: "reponse"; champ: (typeof START_FIELDS)[number]; value: string };
+  | { type: "reponse"; champ: (typeof START_FIELDS)[number]; value: string }
+  /** Un fait à montrer : sa valeur corrigée (donné), ou « à ne pas montrer » (value null). */
+  | { type: "fait"; sujet: string; produit?: string; value: string | null };
 
 /**
  * Le client corrige sa fiche (« Ce que SINA sait de toi ») : sa correction remplace ce qui était noté, datée et marquée
@@ -235,6 +256,14 @@ export type Correction =
 export function corrigerFiche(projectId: string, c: Correction): void {
   const jp = journeyDuProjet(projectId), cids = threadsOf(projectId), home = jp?.cid ?? cids[0];
   if (!home) throw new HttpError(404, L("Aucune conversation avec SINA pour ce projet.", "No conversation with SINA for this project."));
+  if (c.type === "fait") {
+    const etat: EtatDuFait = c.value == null ? "ne_montre_pas" : "donne";
+    if (etat === "donne" && !c.value!.trim()) throw new HttpError(400, L("Réponse vide.", "Empty answer."));
+    const avant = faitsDuProjet(projectId).find((x) => x.sujet === c.sujet && (x.produit ?? "") === (c.produit ?? ""));
+    const noms = c.sujet === "noms" && etat === "donne" ? c.value!.split(/\s*[;\n]\s*/u).map((x) => x.trim()).filter(Boolean) : undefined;
+    enregistrerLesFaits(home, [{ sujet: c.sujet, ...(c.produit ? { produit: c.produit } : {}), etat, ...(noms ? { noms } : {}), ...(etat === "donne" && !noms ? { valeur: c.value!.trim() } : avant?.valeur ? { valeur: avant.valeur } : {}), corrigeLe: Date.now() }]);
+    return;
+  }
   if (c.type === "reponse") {
     if (c.champ === "business" || c.champ === "keep") throw new HttpError(400, L("Cette réponse ne se corrige pas ici : demande-le à SINA.", "Ask SINA to change this."));
     if (!c.value.trim()) throw new HttpError(400, L("Réponse vide.", "Empty answer."));

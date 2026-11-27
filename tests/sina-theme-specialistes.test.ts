@@ -121,7 +121,7 @@ describe("le juge de l'originalité (séparé du concepteur)", async () => {
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 produit" }, { field: "market", value: "France." },
       { field: "price", value: "8 €" }, { field: "difference", value: "Bio." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     await call("theme.family", ctx, { family: "classique" });
     await call("theme.ambiance", ctx, { ambiance: "clair" });
     return ctx;

@@ -35,6 +35,7 @@ import sharp from "sharp";
 import { z } from "zod";
 import { L } from "../i18n-server";
 import { parleDePersonnes } from "./fiche";
+import { RAISON_FAIT_NON_MONTRE, chiffresPermis, demandeDesMentionsVraies, interditsDans, ligneDesMentionsVraies, mentionPermise, mentionsDites, type FaitsPermis } from "./faits-a-montrer";
 import { nomExact } from "./esquisses";
 import { NOTE_DU_PROPRIETAIRE } from "./note-du-proprietaire";
 import { comparerLesLignes, lignesDe, lignesDuTexte, phraseVoulue, type PhraseChoisie } from "./phrase-sous-le-nom";
@@ -231,6 +232,18 @@ export const nomDuProduitALEcran = (p: string): string => { const t = p.trim().r
 export const ligneDesNomsDesProduits = (produits: readonly string[]): string =>
   `Sur les étiquettes, les emballages, les fiches produits et le site, chaque produit porte seulement l'un de ces noms, ceux du client, au singulier pour un seul article : ${produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}.`;
 
+/**
+ * LES MENTIONS VRAIES (27 novembre 2026, `faits-a-montrer.ts`) : dans la partie « produits » du texte envoyé, après la liste
+ * (et après la ligne des noms des produits d'une boutique), la ligne des mentions que le client a données et accepte de
+ * montrer (`ligneDesMentionsVraies`) ; tout le reste reste sans mot lisible. Sans fait donné, le texte ne change pas.
+ */
+export function texteAvecLesMentionsVraies(t: string, v: Pick<ValeursDuMetier, "site" | "produits">, faits: FaitsPermis | undefined): string {
+  const ligne = ligneDesMentionsVraies(faits);
+  if (!ligne) return t;
+  const liste = `Montrer clairement :\n${v.produits.map((x) => `- ${x.trim()}\n`).join("")}${v.site === "boutique" ? `${ligneDesNomsDesProduits(v.produits)}\n` : ""}`;
+  return remplacer(t, liste, `${liste}${ligne}\n`);
+}
+
 // ---------------------------------------------------------------- 3. la phrase des données vérifiées
 
 export type StatutDuDomaine = "disponible" | "a_verifier" | "adresse_a_choisir";
@@ -271,8 +284,8 @@ export function phraseDesDonneesVerifiees(o: { nom: string; annee: number; domai
  * vérifiées, puis (reprise) les raisons du refus. La phrase est contrôlée mot pour mot avant l'envoi : absente, rien
  * n'est envoyé.
  */
-export function texteDeLaPlanche(o: { nom: string; valeurs: ValeursDuMetier; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; raisons?: readonly string[]; phrase?: readonly string[] }): string {
-  const base = `${texteDesPreuves(o.nom, o.valeurs, o.phrase, { nomsDesProduits: true })}\n${phraseDesDonneesVerifiees(o)}`;
+export function texteDeLaPlanche(o: { nom: string; valeurs: ValeursDuMetier; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; raisons?: readonly string[]; phrase?: readonly string[]; /** Les faits à montrer (27 novembre 2026) : la ligne des mentions vraies, seulement quand il en a donné. */ faits?: FaitsPermis }): string {
+  const base = `${texteAvecLesMentionsVraies(texteDesPreuves(o.nom, o.valeurs, o.phrase, { nomsDesProduits: true }), o.valeurs, o.faits)}\n${phraseDesDonneesVerifiees(o)}`;
   // La reprise part toujours (essai réel d'Écume, 25 novembre 2026 : 18 raisons, 8 939 octets, rien n'était parti) : ses
   // raisons sont dédoublonnées, rangées des plus graves aux moins graves et bornées à la place qui reste.
   const raisons = o.raisons?.length ? raisonsDeLaReprise(o.raisons, TEXTE_DE_LA_PLANCHE_MAX_OCTETS - octets(`${base}\n\n`)) : [];
@@ -361,11 +374,12 @@ export const VALEURS_SYSTEM = `Tu prépares, en français simple, les mots d'une
 - appel : « devis », « rendez-vous » ou « réservation » : ce que son client demande d'abord.
 Chaque valeur en minuscules, sans point final, sans guillemets. Aucun chiffre, aucune promesse (prix, délai, garantie, « le meilleur »), aucun avis.`;
 
-export const demandeDesValeurs = (o: { nom: string; metier: string; fiche: string; personnes: boolean; kind: "produits" | "services" }) => [
+export const demandeDesValeurs = (o: { nom: string; metier: string; fiche: string; personnes: boolean; kind: "produits" | "services"; /** Les faits à montrer (`faits-a-montrer.ts`) : sans fait donné, la demande reste celle d'avant. */ faits?: FaitsPermis }) => [
   `Le nom de la marque : « ${o.nom} ».`,
   `Son métier, déjà écrit : ${o.metier}.`,
   `Elle vend surtout ${o.kind === "produits" ? "des produits (boutique en ligne)" : "des prestations (site de marque)"}.`,
   o.personnes ? "Le client a donné une photo de personne ou son accord : une personne peut apparaître." : "Aucune personne n'apparaît : ni dans l'émotion, ni dans les images (pas de famille, de client, de main, de visage).",
+  ...(o.faits?.mentions.length ? [`Les mentions vraies qu'il accepte de montrer, mot pour mot (seules permises, en plus de ses mots) : ${mentionsDites(o.faits)}.`] : []),
   "Ce que le client a dit de son entreprise et de ses produits, avec ses mots :",
   o.fiche.trim().slice(0, 4000),
 ].join("\n");
@@ -426,7 +440,7 @@ const PROMESSE = /(?<![\p{L}])(garanti\p{L}*|meilleur\p{L}*|n°\s*1|numéro un|l
  * est retiré : moins de 3, jamais inventé ; aucun : une faute), aucune personne sans accord, aucun chiffre ni promesse.
  * Rend les valeurs gardées (le métier et le type de site sont posés par le code) et les fautes (pour la réécriture).
  */
-export function controleDesValeurs(v: ValeursEcrites, o: { nom: string; metier: string; fiche: string; personnes: boolean; kind: "produits" | "services" }): { valeurs: ValeursDuMetier; fautes: string[]; retires: string[] } {
+export function controleDesValeurs(v: ValeursEcrites, o: { nom: string; metier: string; fiche: string; personnes: boolean; kind: "produits" | "services"; /** Les faits à montrer : leurs chiffres et leurs mots sont permis ; ce qu'il ne veut pas montrer ne l'est jamais. */ faits?: FaitsPermis }): { valeurs: ValeursDuMetier; fautes: string[]; retires: string[] } {
   const fautes: string[] = [];
   const propre = (t: string) => t.trim().replace(/[.;:!?]+$/, "").replace(/[«»"“”]/g, "").replace(/\s+/g, " ");
   if (v.nom.trim() !== o.nom.trim()) fautes.push(`le nom recopié (« ${v.nom.trim()} ») n'est pas exactement « ${o.nom.trim()} »`);
@@ -439,9 +453,12 @@ export function controleDesValeurs(v: ValeursEcrites, o: { nom: string; metier: 
   if (!produits.length) fautes.push(`aucun produit n'est pris dans les mots du client (${retires.map((p) => `« ${p} »`).join(", ") || "aucun"} n'y figure pas) : reprends ses produits ou ses prestations tels qu'il les cite`);
   const textes = [...traits, propre(v.emotion), ...images, ...produits];
   if (!o.personnes) { const p = textes.filter((t) => parleDePersonnes(t) || PERSONNES.test(t)); if (p.length) fautes.push(`aucune personne sans l'accord du client : retire ${p.map((t) => `« ${t} »`).join(", ")}`); }
-  const chiffres = textes.filter((t) => /\p{N}/u.test(t));
+  // Un chiffre d'une mention vraie donnée par le client (un poids, une année) est permis (27 novembre 2026).
+  const chiffres = textes.filter((t) => /\p{N}/u.test(t) && !chiffresPermis(t, o.faits));
   if (chiffres.length) fautes.push(`aucun chiffre : ${chiffres.map((t) => `« ${t} »`).join(", ")}`);
-  const promesses = textes.filter((t) => PROMESSE.test(t));
+  const nonMontres = textes.filter((t) => interditsDans(t, o.faits).length);
+  if (nonMontres.length) fautes.push(`${RAISON_FAIT_NON_MONTRE} (dans ${nonMontres.length > 1 ? `${nonMontres.length} valeurs` : "une valeur"})`);
+  const promesses = textes.filter((t) => PROMESSE.test(t) && !mentionPermise(t, o.faits, [o.nom, ...produits]));
   if (promesses.length) fautes.push(`aucune promesse ni avis : ${promesses.map((t) => `« ${t} »`).join(", ")}`);
   // Aucune origine, variété, gamme ou nom de produit absent de la fiche, même dans un produit retiré (26 novembre 2026).
   const inventes = [...traits, propre(v.emotion), ...images, ...v.produits.map(propre)].flatMap((t) => inventionsDuTexte(t, o).map((m) => `« ${m} » (dans « ${t} »)`));
@@ -620,6 +637,8 @@ export type AttenduDeLaPlanche = {
   nom: string; annee: number; domaine: DomaineDeLaPlanche; personnes: boolean; animaux: boolean; phrase?: readonly string[]; texte?: string;
   /** Les produits ou prestations de la fiche du client (les valeurs du métier, contrôlées) : les seuls noms de produits permis. */
   produits?: readonly string[];
+  /** Les faits à montrer (27 novembre 2026) : les mentions vraies permises, et ce qu'il ne veut pas montrer (comparé par le code). */
+  faits?: FaitsPermis;
 };
 /** Ce que la demande au relecteur dit des produits du client (vide sans liste). */
 export const demandeDesProduits = (produits: readonly string[] | undefined): string[] => !produits?.length ? [] : [
@@ -636,6 +655,7 @@ export function demandeAuRelecteurDeLaPlanche(o: AttenduDeLaPlanche & { texte: s
     o.personnes ? "Le client a donné son accord pour des personnes." : "Le client n'a donné ni photo de personne ni accord : aucune personne ne doit être visible.",
     ...demandeDeLaPhrase(o.phrase),
     ...demandeDesProduits(o.produits),
+    ...demandeDesMentionsVraies(o.faits),
     ...(o.animaux ? ["La marque travaille, comme celle de la disposition, autour des animaux : sois particulièrement attentif à toute copie de la disposition (ses produits, ses photos, son emballage, son nom, son logo)."] : []),
     `Le texte envoyé au dessinateur : « ${o.texte} »`,
   ].join("\n");
@@ -879,10 +899,14 @@ export function nomDeProduitPermis(texte: string, produits: readonly string[] | 
  * n'avait jamais données, sur les sachets et le site). Le relecteur relève chaque nom de produit lisible ; le code le compare
  * aux produits de la fiche : un nom permis est écarté (écrit au compte rendu), tout autre fait refuser, comme une promesse.
  */
+/** Un texte relevé est-il une mention vraie donnée par le client (27 novembre 2026) ? Jamais s'il porte ce qu'il ne veut pas montrer. */
+export const mentionVraieDeLaPlanche = (t: string, o: Pick<AttenduDeLaPlanche, "faits" | "nom" | "phrase" | "produits">): boolean =>
+  !interditsDans(t, o.faits).length && mentionPermise(t, o.faits, [o.nom, ...(o.phrase ?? []), ...(o.produits ?? [])]) && chiffresPermis(t, o.faits);
 export function lectureDesProduits(v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): { raison: string | null; permis: string[] } {
   const releves = (v.produitsInventes ?? []).filter((p) => p.texte.trim());
-  const inventes = releves.filter((p) => !nomDeProduitPermis(p.texte, o.produits));
-  const permis = releves.filter((p) => nomDeProduitPermis(p.texte, o.produits)).map((p) => `nom d'un produit de la fiche, permis : « ${p.texte.trim()} »`);
+  const ok = (t: string) => nomDeProduitPermis(t, o.produits) || mentionVraieDeLaPlanche(t, o);
+  const inventes = releves.filter((p) => !ok(p.texte));
+  const permis = releves.filter((p) => ok(p.texte)).map((p) => nomDeProduitPermis(p.texte, o.produits) ? `nom d'un produit de la fiche, permis : « ${p.texte.trim()} »` : `mention vraie donnée par le client, permise : « ${p.texte.trim()} »`);
   if (!inventes.length) return { raison: null, permis };
   const ses = o.produits?.length ? `, avec ses noms : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : "";
   return { raison: `${DEBUT_PRODUITS_INVENTES}${inventes.map((p) => `« ${p.texte.trim()} »${p.ou.trim() ? ` (${p.ou.trim()})` : ""}`).join(", ")} ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits${ses}`, permis };
@@ -899,7 +923,7 @@ const DEBUT_PRODUITS_INVENTES = "produits inventés, absents de la fiche du clie
  */
 export function raisonsPourLeDessinateur(raisons: readonly string[], v: RelectureDeLaPlanche, o: AttenduDeLaPlanche): string[] {
   const permis = new Set([...(o.produits ?? []), o.nom, ...(o.phrase ?? [])].flatMap(motsDuProduit));
-  const inventes = (v.produitsInventes ?? []).map((p) => p.texte.trim()).filter((t) => t && !nomDeProduitPermis(t, o.produits));
+  const inventes = (v.produitsInventes ?? []).map((p) => p.texte.trim()).filter((t) => t && !nomDeProduitPermis(t, o.produits) && !mentionVraieDeLaPlanche(t, o));
   const interdits = new Set(inventes.flatMap(motsDuProduit).filter((w) => !permis.has(w)));
   const interdit = (mot: string) => { const w = racine(plat(mot)); return w.length >= 3 && !permis.has(w) && (interdits.has(w) || PAYS.includes(plat(mot)) || MOTS_DE_GAMME.test(plat(mot))); };
   const echapper = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -914,7 +938,7 @@ export function raisonsPourLeDessinateur(raisons: readonly string[], v: Relectur
   const ses = o.produits?.length ? `, avec ses noms : ${o.produits.map((p) => `« ${nomDuProduitALEcran(p)} »`).join(", ")}` : "";
   return raisons.map((r) => {
     if (!r.startsWith(DEBUT_PRODUITS_INVENTES)) return nettoyer(r);
-    const lieux = [...new Set((v.produitsInventes ?? []).filter((p) => p.texte.trim() && !nomDeProduitPermis(p.texte, o.produits)).map((p) => nettoyer(p.ou)).filter(Boolean))];
+    const lieux = [...new Set((v.produitsInventes ?? []).filter((p) => p.texte.trim() && !nomDeProduitPermis(p.texte, o.produits) && !mentionVraieDeLaPlanche(p.texte, o)).map((p) => nettoyer(p.ou)).filter(Boolean))];
     return `un nom de produit absent de la fiche du client est écrit${lieux.length ? ` (${lieux.join(" ; ")})` : ""} : remplace-le ; sur les étiquettes, les emballages, les fiches produits et le site, seulement ses produits${ses}`;
   });
 }
@@ -984,16 +1008,21 @@ export function lectureDeLaPlanche(v: RelectureDeLaPlanche, o: AttenduDeLaPlanch
   // touchent une lettre, un mot, le nom, la phrase du logo, l'adresse ou l'année, comptés comme des fautes.
   const declares = lectureDesSignesIsoles(v, o);
   const finitions = [...v.fautes.filter(finition), ...declares.finitions];
-  const fautes = [...v.fautes.filter((f) => !decoratif(f) && !cacheeSeulement(f) && !finition(f)), ...declares.fautes], promesses = v.promesses.filter(promesseMesurable);
+  // Une mention vraie donnée par le client (un poids, une origine, une année) n'est jamais une promesse (27 novembre 2026).
+  const vraie = (p: string) => mentionVraieDeLaPlanche(p, o);
+  const fautes = [...v.fautes.filter((f) => !decoratif(f) && !cacheeSeulement(f) && !finition(f)), ...declares.fautes], promesses = v.promesses.filter((p) => promesseMesurable(p) && !vraie(p));
   const produits = lectureDesProduits(v, o);
   const ecartes = [...(v.microTextes ?? []).filter((f) => !touchePhrase(f, phrase)), ...v.fautes.filter(decoratif)].map((f) => `micro-texte décoratif, non jugé : « ${f} »`)
     .concat(v.promesses.filter((p) => !promesseMesurable(p)).map((p) => `mot qualitatif, pas une promesse : « ${p} »`))
+    .concat(v.promesses.filter((p) => promesseMesurable(p) && vraie(p)).map((p) => `mention vraie donnée par le client, pas une promesse : « ${p} »`))
     .concat(cachees, v.fautes.filter((f) => !decoratif(f) && cacheeSeulement(f)).map((f) => `phrase seulement cachée en partie par un objet, pas une faute : « ${f} »`))
     .concat(finitions.map(finitionNotee));
   if (fautes.length) r.push(`fautes : ${fautes.map((f) => `« ${f} »`).join(", ")}`);
   if (promesses.length) r.push(`promesses ou chiffres inventés : ${promesses.map((f) => `« ${f} »`).join(", ")}`);
   // Les produits inventés (26 novembre 2026) : comparés aux produits de la fiche par le code ; un seul fait refuser.
   if (produits.raison) r.push(produits.raison);
+  // Ce que le client ne veut pas montrer, lu n'importe où sur la planche (27 novembre 2026) : toujours refusé.
+  if ([...v.fautes, ...v.promesses, ...(v.produitsInventes ?? []).map((p) => p.texte), ...(v.microTextes ?? [])].some((t) => interditsDans(t, o.faits).length)) r.push(RAISON_FAIT_NON_MONTRE);
   if (v.personnes && !o.personnes) {
     r.push("une personne est visible sans l'accord du client");
     // Où elle est vue, pour que la reprise sache quoi retirer (essai réel d'Écume : une main dans une image de référence).

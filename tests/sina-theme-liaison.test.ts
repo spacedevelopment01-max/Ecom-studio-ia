@@ -118,7 +118,7 @@ describe("thème sur mesure : une fiche par produit, les prestations, la rupture
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Calme." }, { field: "setup", value: "3 produits" }, { field: "market", value: "France." },
       { field: "price", value: "à définir" }, { field: "difference", value: "Bien fait." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     saveBrand(pid, F.FAUTEUIL_BRAND as any);
     const names = [["Fauteuil Alcôve terracotta", "Fauteuils"], ["Repose-pieds Alcôve", "Accessoires"], ["Coussin Alcôve", "Accessoires"]] as const;

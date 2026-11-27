@@ -49,7 +49,7 @@ describe("SINA — étape des angles : trois stratèges, un juge, trois angles",
       { field: "setup", value: "5 produits" }, { field: "market", value: "En ligne, France." }, { field: "price", value: "32 € la tasse" }, { field: "difference", value: "Chaque tasse est tournée à la main ; l'anse laisse passer trois doigts." },
       { field: "taste", status: "none" }, { field: "photos", value: "Pas de photos pour l'instant." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    expect((await call("start.confirm", ctx, {})).ok).toBe(true);
+    expect((await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}))).ok).toBe(true);
     J.updateJourney(cid, (x) => {
       x.identities = { list: series(3), issues: [], comparison: "", at: Date.now(), round: 1, study: study(quotes) };
       x.identityChoice = { key: "A", mix: {}, at: Date.now() };

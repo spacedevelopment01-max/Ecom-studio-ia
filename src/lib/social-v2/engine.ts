@@ -17,6 +17,7 @@ import { addUsage, getAsset, removeUsages } from "../library";
 import type { Project } from "../projects";
 import { createHash } from "node:crypto";
 import { lintClaims } from "../ai/tasks";
+import { extraDesFaits } from "../syna-agent/faits-a-montrer";
 import { EUR } from "../billing";
 import { budgetPctOf, budgetPctText } from "../ai/budget-pct";
 import { enqueue } from "../jobs";
@@ -231,8 +232,10 @@ export async function applySocialEdit(p: Project, text: string, deps: SocialDeps
     const out = await deps.rewrite(p, { ...r, headline: json<{ headline?: string }>(r.brief, {}).headline ?? r.title }, plan.instruction, `social2:rewrite:${pid}:${now()}`);
     spent += out.costMicro;
     // Une réécriture qui ajoute une affirmation non confirmée est refusée (le texte actuel reste).
-    const before = lintClaims(`${r.title}\n${r.caption}`, p).length;
-    if (lintClaims(`${out.title}\n${out.caption}`, p).length > before) {
+    // Ses mentions vraies (faits à montrer, 27 novembre 2026) sont des faits confirmés ; ce qu'il ne veut pas montrer, jamais.
+    const faits = extraDesFaits(p.id);
+    const before = lintClaims(`${r.title}\n${r.caption}`, p, faits).length;
+    if (lintClaims(`${out.title}\n${out.caption}`, p, faits).length > before) {
       refused.push(`${pid} : affirmation non confirmée ajoutée, texte conservé`);
       continue;
     }

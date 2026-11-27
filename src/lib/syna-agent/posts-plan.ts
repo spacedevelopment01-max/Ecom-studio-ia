@@ -23,6 +23,7 @@ import { UserFacingError, type JobContext } from "../jobs";
 import { loadProject, type Project } from "../projects";
 import { llmJson } from "../ai/llm";
 import { lintClaims } from "../ai/tasks";
+import { extraDesFaits } from "./faits-a-montrer";
 import { withTrace } from "../ai/trace";
 import { listProducts } from "../products/catalog";
 import { peopleAllowed } from "../people-policy";
@@ -191,7 +192,8 @@ export function planIssues(p: Project, groups: PostGroup[], o: { angleIds: strin
     const empty = tags.filter((t) => EMPTY_TAGS.has(tagKey(t)));
     if (empty.length) out.push({ index: i, issue: `hashtags génériques vides à remplacer : ${empty.join(" ")}` });
     if (g.product && !o.products.some((x) => x.trim().toLowerCase() === g.product!.trim().toLowerCase())) out.push({ index: i, issue: `produit « ${g.product} » absent du catalogue : le nom exact d'un produit du client, ou null` });
-    const claims = lintClaims({ title: g.title, points: g.points, caption: g.caption, cta: g.cta }, p);
+    // Ses mentions vraies (faits à montrer, 27 novembre 2026) sont des faits confirmés ; ce qu'il ne veut pas montrer, jamais.
+    const claims = lintClaims({ title: g.title, points: g.points, caption: g.caption, cta: g.cta }, p, extraDesFaits(p.id));
     if (claims.length) out.push({ index: i, issue: `promesse non confirmée par la fiche du client : ${claims.slice(0, 3).map((c) => `« ${c.term} » (${c.label})`).join(" ; ")}` });
     if (!o.people && /(?<![\p{L}])(personne|femme|homme|mannequin|visage|enfant|client(?:e)?s? (?:qui|souriant))(?![\p{L}])/iu.test(g.visual) && !/(aucune|sans) personne/i.test(g.visual)) out.push({ index: i, issue: "la photo décrit une personne : le client ne l'a pas autorisé, décris la scène sans personne (la trace d'un geste suffit)" });
   });

@@ -48,7 +48,7 @@ describe("SINA — chaîne de création de la marque", async () => {
       { field: "taste", status: "none" }, { field: "photos", value: "Pas de photos pour l'instant." }, { field: "language", value: "Français seulement" },
       { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    expect((await call("start.confirm", ctx, {})).ok).toBe(true);
+    expect((await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}))).ok).toBe(true);
     return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 

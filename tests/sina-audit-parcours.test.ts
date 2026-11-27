@@ -34,7 +34,7 @@ describe("SINA — déroulement du parcours (audit du 10 novembre 2026)", async 
       { field: "taste", status: "none" }, { field: "photos", value: "Pas encore." }, { field: "language", value: extra.language ?? "Français seulement" },
       { field: "contact", value: extra.contact ?? "Plus tard" }, ...(business === "products" ? [{ field: "platform", value: extra.platform ?? "shopify" }] : []),
     ] });
-    expect((await call("start.confirm", ctx, {})).ok).toBe(true);
+    expect((await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}))).ok).toBe(true);
     return { user, cid, ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 

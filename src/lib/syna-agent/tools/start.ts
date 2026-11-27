@@ -23,6 +23,10 @@ import { short } from "./common";
 import { companyFromText, saveCompany } from "../activity";
 import { addWordingRule, loadWordingRules } from "../../client-wording";
 import { GENRES, PORTEES, addNotes, ficheOf, type Genre, type Portee } from "../fiche";
+import {
+  CHOIX_DES_FAITS, DIT_NE_MONTRE_PAS, DIT_NE_SAIT_PAS, ETATS_DU_FAIT, SUJET_MAX, enregistrerLesFaits, faitsAAborder, faitsDuFil, libelleDuSujet, lignesDesFaits,
+  nomsDonnes, plat, sujetsDuParcours, type EtatDuFait, type FaitAMontrer,
+} from "../faits-a-montrer";
 
 const words = (t: string) => new Set(t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().match(/[a-z]{4,}|\d+/g) ?? []);
 /** Ce que le client a écrit depuis la dernière réponse de SINA, et le sujet que cette réponse demandait. */
@@ -40,6 +44,8 @@ function lastSaid(conversationId: string): { said: string; askField?: string } |
  * demander, et le genre d'activité (produits ou services), qu'elle déduit. Sinon, un mot au moins de la valeur doit se
  * trouver dans ce que le client vient d'écrire. Rend les valeurs refusées.
  */
+/** Ce que le client a écrit depuis la dernière réponse de SINA (null : rien encore, aucun message du client). */
+export const lastSaidText = (conversationId: string): string | null => lastSaid(conversationId)?.said ?? null;
 export function unsaid<T extends { value: string }>(conversationId: string, items: T[], allowed: (x: T, askField?: string) => boolean = () => false): T[] {
   const last = lastSaid(conversationId);
   if (!last) return [];
@@ -56,6 +62,8 @@ const view = (j: Journey, cid: string) => ({
   fiche: Object.fromEntries(START_FIELDS.filter((f) => j.start[f]).map((f) => [f, j.start[f]])),
   sujetsPasEncoreAbordes: missingFields(j).map((f) => ({ champ: f, aApprendre: TOPICS[f](j).fr })),
   notes: ficheOf(cid).notes,
+  faitsAMontrer: faitsDuFil(cid),
+  faitsPasEncoreDemandes: faitsAAborder(j, faitsDuFil(cid)).map((x) => ({ sujet: x.sujet, aDemander: x.question, ...(x.produits ? { pour: x.produits } : {}) })),
   mode: j.mode, aGarder: j.keep,
   existantLu: j.imported,
 });
@@ -154,6 +162,57 @@ const noteTool: AgentTool<any> = {
     if (refused.length) return { ok: false, internal: true, summary: L(`${refused.map((x) => `« ${x.sujet} »`).join(", ")} : le client ne l'a pas dit dans son dernier message. Note seulement ce qu'il a dit, avec ses mots.`, "The client did not say this.") };
     const f = addNotes(ctx.conversationId, a.notes.map((n) => ({ ...n, value: withoutIds(n.value) })));
     return { ok: true, summary: L(`Noté dans sa fiche : ${a.notes.map((n) => n.sujet).join(", ")}.`, "Noted."), data: { notes: f.notes.length }, changes: a.notes.map((n) => ({ module: "parcours", object: `fiche · ${n.sujet}`, summary: short(n.value, 160), after: { value: n.value, genre: n.genre, portee: n.portee }, verified: true })) };
+  },
+};
+
+/**
+ * LES FAITS À MONTRER (27 novembre 2026, `faits-a-montrer.ts`) : ce que le client vient de dire d'un fait que ses images et
+ * son site peuvent écrire. Le même garde-fou que ses autres réponses : rien qui ne soit dans son dernier message ;
+ * « je ne sais pas » et « je préfère ne pas le montrer » ne s'enregistrent que s'il les a dits (ou cliqués).
+ */
+const faitTool: AgentTool<any> = {
+  name: "start.fait", module: "parcours", kind: "write",
+  description: `Enregistre un fait à montrer (sujets : « Faits à montrer pas encore demandés » du parcours). sujet : sa clé ; noms (sujet « noms ») : ses noms exacts, un par élément ; produit : le nom exact concerné (absent : vaut pour tous) ; valeur : ses mots exacts ; etat : « donne » (pour la ville : il accepte de la montrer), « ne_sait_pas » (« ${CHOIX_DES_FAITS.ne_sait_pas} ») ou « ne_montre_pas » (« ${CHOIX_DES_FAITS.ne_montre_pas} »). Refusé s'il ne l'a pas dit dans son dernier message. Gratuit.`,
+  args: z.object({ faits: z.array(z.object({
+    sujet: z.string().min(2).max(SUJET_MAX),
+    produit: z.string().min(1).max(120).optional(),
+    valeur: z.string().max(600).optional(),
+    noms: z.array(z.string().min(1).max(120)).max(30).optional(),
+    etat: z.enum(ETATS_DU_FAIT).default("donne"),
+  })).min(1).max(12) }).strict(),
+  run: (ctx, a: { faits: { sujet: string; produit?: string; valeur?: string; noms?: string[]; etat: EtatDuFait }[] }) => {
+    const j = journeyOf(ctx.conversationId), sujets = sujetsDuParcours(j);
+    if (!sujets.length) return { ok: false, internal: true, summary: L("Les faits à montrer se demandent une fois son activité et son offre connues.", "Ask these once the business and offer are known.") };
+    const avant = faitsDuFil(ctx.conversationId);
+    const nomsApres = a.faits.find((x) => x.sujet === "noms" && x.etat === "donne")?.noms ?? nomsDonnes(avant);
+    for (const x of a.faits) {
+      const s = sujets.find((y) => y.sujet === x.sujet);
+      if (!s) return { ok: false, internal: true, summary: L(`« ${x.sujet} » n'est pas un sujet de son métier : ${sujets.map((y) => y.sujet).join(", ")}.`, "Unknown subject.") };
+      if (x.sujet === "noms" && x.etat === "donne" && !(x.noms ?? []).some((n) => n.trim())) return { ok: false, internal: true, summary: L("noms : donne la liste de ses noms exacts, un par élément.", "Give the exact names.") };
+      if (x.etat === "donne" && x.sujet !== "noms" && !x.valeur?.trim()) return { ok: false, internal: true, summary: L(`« ${libelleDuSujet(x.sujet)} » : sa réponse est vide.`, "Empty answer.") };
+      if (s.portee === "marque" && x.produit) return { ok: false, internal: true, summary: L(`« ${libelleDuSujet(x.sujet)} » vaut pour la marque : sans produit.`, "Brand-level subject: no product.") };
+      if (x.produit && !nomsApres.some((n) => plat(n.trim()) === plat(x.produit!.trim()))) return { ok: false, internal: true, summary: L(`« ${x.produit} » n'est pas l'un de ses noms donnés (${nomsApres.map((n) => `« ${n} »`).join(", ") || "aucun encore"}) : demande d'abord les noms exacts.`, "Unknown product.") };
+    }
+    // Le garde-fou : ses mots, dans son dernier message.
+    const dit = lastSaidText(ctx.conversationId);
+    if (dit != null) {
+      const refuses = a.faits.filter((x) => x.etat === "ne_sait_pas" ? !DIT_NE_SAIT_PAS.test(dit) : x.etat === "ne_montre_pas" ? !DIT_NE_MONTRE_PAS.test(dit) : false);
+      const valeurs = a.faits.filter((x) => x.etat === "donne").flatMap((x) => (x.sujet === "noms" ? (x.noms ?? []) : [x.valeur ?? ""]).map((value) => ({ value, sujet: x.sujet })));
+      const pasDits = unsaid(ctx.conversationId, valeurs);
+      if (refuses.length || pasDits.length) return { ok: false, internal: true, summary: L(`${[...new Set([...refuses.map((x) => x.sujet), ...pasDits.map((x) => x.sujet)])].map((x) => `« ${libelleDuSujet(x)} »`).join(", ")} : le client ne l'a pas dit dans son dernier message. Pose-lui la question, et n'enregistre que ce qu'il a dit, avec ses mots.`, "The client did not say this.") };
+    }
+    const apres = enregistrerLesFaits(ctx.conversationId, a.faits.map((x) => ({
+      sujet: x.sujet, ...(x.produit ? { produit: x.produit.trim() } : {}), etat: x.etat,
+      ...(x.sujet === "noms" && x.etat === "donne" ? { noms: (x.noms ?? []).map((n) => withoutIds(n).trim()).filter(Boolean) } : {}),
+      ...(x.valeur?.trim() ? { valeur: withoutIds(x.valeur).trim() } : {}),
+    } as Omit<FaitAMontrer, "at">)));
+    const reste = lignesDesFaits(j, apres).restent;
+    return {
+      ok: true,
+      summary: L(`Noté dans sa fiche : ${a.faits.map((x) => `${libelleDuSujet(x.sujet)}${x.produit ? ` de « ${x.produit} »` : ""}`).join(", ")}.${reste.length ? "" : " Tous les faits à montrer sont demandés."}`, "Noted."),
+      data: { faitsPasEncoreDemandes: reste.map((x) => ({ sujet: x.sujet, ...(x.produits ? { pour: x.produits } : {}) })) },
+      changes: a.faits.map((x) => ({ module: "parcours", object: `fiche · fait à montrer · ${libelleDuSujet(x.sujet)}${x.produit ? ` · ${x.produit}` : ""}`, summary: x.etat === "donne" ? short(x.sujet === "noms" ? (x.noms ?? []).join(" ; ") : x.valeur ?? "", 160) : x.etat === "ne_sait_pas" ? "il ne sait pas" : "à ne pas montrer", after: x, verified: true })),
+    };
   },
 };
 
@@ -315,6 +374,9 @@ const confirmTool: AgentTool<{}> = {
     if (missing.length) return { ok: false, summary: L(`Il manque encore : ${missing.map((f) => FIELD_LABEL[f].fr).join(", ")}.`, `Still missing: ${missing.join(", ")}.`) };
     const open = missingFields(j0);
     if (open.length) return { ok: false, summary: L(`Sujets pas encore abordés avec lui : ${open.map((f) => FIELD_LABEL[f].fr).join(", ")}. Aborde-les (il peut répondre « plus tard »).`, "Some topics were not covered yet.") };
+    // Les faits à montrer, avant le résumé et avant la planche de marque (27 novembre 2026) : chacun demandé une fois.
+    const faits = faitsAAborder(j0, faitsDuFil(ctx.conversationId));
+    if (faits.length) return { ok: false, internal: true, summary: L(`Faits à montrer pas encore demandés : ${faits.map((x) => `${x.libelle}${x.produits ? ` (pour ${x.produits.map((p) => `« ${p} »`).join(", ")})` : ""}`).join(", ")}. Demande-les un par un (il peut répondre « ${CHOIX_DES_FAITS.ne_sait_pas} » ou « ${CHOIX_DES_FAITS.ne_montre_pas} ») et enregistre-les avec start.fait.`, "Some facts were not asked yet.") };
     const pid = await ensureProject(ctx, j0);
     if (!pid) return { ok: false, summary: L("Le projet n'a pas pu être créé (aucun abonnement libre ?).", "Project could not be created.") };
     const p = loadProject(pid);
@@ -375,4 +437,4 @@ const confirmTool: AgentTool<{}> = {
   },
 };
 
-export const startTools: AgentTool[] = [stateTool, answerTool, noteTool, wordingTool, importTool, keepTool, confirmTool];
+export const startTools: AgentTool[] = [stateTool, answerTool, noteTool, faitTool, wordingTool, importTool, keepTool, confirmTool];

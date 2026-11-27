@@ -305,7 +305,7 @@ describe("thème sur mesure : outils de SINA", async () => {
       { field: "setup", value: "4 produits" }, { field: "market", value: "En ligne, France." }, { field: "price", value: "50 à 130 €" }, { field: "difference", value: "Faits main." },
       { field: "taste", status: "none" }, { field: "photos", value: "Pas encore." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     return { ctx, pid: one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string };
   }
 
@@ -601,7 +601,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "3 bougies" }, { field: "market", value: "France." },
       { field: "price", value: "25 €" }, { field: "difference", value: "Cire de colza." }, { field: "taste", status: "none" }, { field: "photos", value: "Non." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     expect((await call("custom.build", ctx, {})).summary).toMatch(/conçois d'abord toutes les pages/); // lot 4 : plus de question de famille
     await call("theme.family", ctx, { family: "classique" });
@@ -842,7 +842,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "3 savons" }, { field: "market", value: "France." },
       { field: "price", value: "8 €" }, { field: "difference", value: "Saponification à froid." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     await call("theme.family", ctx, { family: "classique" });
     expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
@@ -896,7 +896,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "6 thés" }, { field: "market", value: "France." },
       { field: "price", value: "8 €" }, { field: "difference", value: "Bio." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     await call("theme.family", ctx, { family: "classique" });
     expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
@@ -941,7 +941,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 thé" }, { field: "market", value: "France." },
       { field: "price", value: "8 €" }, { field: "difference", value: "Bio." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     await call("theme.family", ctx, { family: "classique" });
     expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
@@ -1056,7 +1056,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 thé" }, { field: "market", value: "France." },
       { field: "price", value: "8 €" }, { field: "difference", value: "Bio." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     await call("theme.family", ctx, { family: "classique" });
     expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);
@@ -1105,7 +1105,7 @@ describe("thème sur mesure : montage à la marque (textes et photos), sans aucu
       { field: "existing", value: "Rien." }, { field: "audience", value: "Adultes." }, { field: "image", value: "Doux." }, { field: "setup", value: "1 thé" }, { field: "market", value: "France." },
       { field: "price", value: "8 €" }, { field: "difference", value: "Bio." }, { field: "taste", status: "none" }, { field: "photos", value: "Oui." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    await call("start.confirm", ctx, {});
+    await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}));
     const pid = one<any>("SELECT project_id FROM agent_conversations WHERE id=?", cid).project_id as string;
     await call("theme.family", ctx, { family: "classique" });
     expect((await call("custom.compose", ctx, fullSite("classique"))).ok).toBe(true);

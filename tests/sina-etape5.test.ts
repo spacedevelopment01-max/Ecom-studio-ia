@@ -34,7 +34,7 @@ describe("SINA — étape 5 : l'activité complète", async () => {
       { field: "setup", value: "4 parfums et un coffret" }, { field: "market", value: "En ligne, France." }, { field: "price", value: "7,90 € le pot, coffret de 3 pots à 22 €" }, { field: "difference", value: "65 % de fruits." },
       { field: "taste", status: "none" }, { field: "photos", value: "Pas encore." }, { field: "language", value: "Français seulement" }, { field: "contact", status: "later" }, { field: "platform", value: "shopify" },
     ] });
-    expect((await call("start.confirm", ctx, {})).ok).toBe(true);
+    expect((await (await import("./faits-fixtures")).avecLesFaitsDemandes(ctx, () => call("start.confirm", ctx, {}))).ok).toBe(true);
     J.updateJourney(cid, (x) => {
       for (const n of [1, 2, 3, 4]) J.setStep(x, n, "done");
       J.setStep(x, 5, "todo");
