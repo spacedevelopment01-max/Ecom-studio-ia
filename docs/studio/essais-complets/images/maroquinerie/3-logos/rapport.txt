@@ -1,0 +1,52 @@
+Essai de la finalisation des logos — client « Havane » (maroquinerie artisanale qui fabrique et vend en ligne des sacs, des portefeuilles et des ceintures en cuir), type « produits »
+Plafond de l'essai : 0,5000 €
+Phrase du métier (essai des esquisses, jamais réécrite) : un atelier de maroquinerie qui fabrique et vend en ligne des articles en cuir faits main : sacs, portefeuilles et ceintures
+Esquisses : 2 (/home/user/Ecom-studio-ia/data/essai-maroquinerie/2-esquisses/esquisse-02.png), 5 (/home/user/Ecom-studio-ia/data/essai-maroquinerie/2-esquisses/esquisse-05.png)
+Phrase sous le nom du logo 2 : « SACS · PORTEFEUILLES · CEINTURES », mot pour mot
+Phrase sous le nom du logo 5 : « MAROQUINERIE ARTISANALE », mot pour mot
+
+Devis de l'essai (fonctions du devis du Studio, aucun appel) :
+- esquisse 2 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 2 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 2 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 2 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 2 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 2 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 5 · texte de finalisation · openai:gpt-6.2-astra (effort medium) · toujours · charge client · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 5 · texte réécrit (une fois) · openai:gpt-6.2-astra (effort medium) · si le contrôle refuse le texte · charge Studio · probable 0,0150 € · au plus 0,2337 € · écart 0,2187 €
+- esquisse 5 · logo fini, 1er essai · openai:gpt-image-2.6-sunburst · toujours · charge client · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 5 · relecture du 1er essai · anthropic:claude-opus-5-5 (effort high) · toujours · charge client · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+- esquisse 5 · logo fini, reprise unique · openai:gpt-image-2.6-sunburst · si le relecteur refuse le logo · charge Studio · probable 0,0435 € · au plus 0,1069 € · écart 0,0634 €
+- esquisse 5 · relecture de la reprise · anthropic:claude-opus-5-5 (effort high) · si le relecteur refuse le logo · charge Studio · probable 0,0378 € · au plus 0,2071 € · écart 0,1693 €
+Probable, sans refus : 0,1927 € (devis du Studio : 0,1927 €)
+Probable, si chaque logo est refait une fois et son texte réécrit : 0,3854 €
+Plafond minimal pour aller au bout à coup sûr (somme des maxima) : 2,1906 €
+  dont plafond du client de la tâche 1,0953 € et borne du Studio 1,0953 € (devisDesFinalisations)
+Écart entre le probable et ce plafond : 1,9979 €
+Hors plafond : une réponse de texte mal formée à réparer coûterait au plus 2,1529 € de plus en tout ; la tâche du parcours ne la couvre pas (elle s'arrêterait sur sa propre borne).
+
+
+Esquisse 2 : logo GARDÉ par le relecteur
+  essai 1 : texte esquisse-02-logo-1-texte-envoye.txt ; image jointe esquisse-02-logo-1-image-jointe.png ; logo brut esquisse-02-logo-1-brut.png ; détouré esquisse-02-logo-1-detoure.png
+    verdict : note 9/10, nom lu « HAVANE », idée conservée oui, phrase « SACS · PORTEFEUILLES · CEINTURES », défauts graves aucun, petites finitions « Le premier A et son trait cognac paraissent un peu plus étroits que le second A : on peut élargir légèrement le chevron pour mieux équilibrer le mot. » —Le nom et la phrase sont écrits exactement, et l'idée de l'esquisse est bien gardée : un chevron sans traverse souligné d'un trait cognac détaché, le second A avec sa traverse. Le dessin est net, lisible et posé sur un fond blanc uni.
+    raisons du refus : aucune
+  phrase portée par le logo gardé : « SACS · PORTEFEUILLES · CEINTURES » (esquisse-02-phrase-du-logo.txt, à redonner en PHRASE à la planche en vrai)
+  note : logo 1 : petites finitions notées, sans refus : Le premier A et son trait cognac paraissent un peu plus étroits que le second A : on peut élargir légèrement le chevron pour mieux équilibrer le mot.
+
+Esquisse 5 : logo GARDÉ par le relecteur
+  essai 1 : texte esquisse-05-logo-1-texte-envoye.txt ; image jointe esquisse-05-logo-1-image-jointe.png ; logo brut esquisse-05-logo-1-brut.png ; détouré esquisse-05-logo-1-detoure.png
+    verdict : note 9/10, nom lu « HAVANE », idée conservée oui, phrase « MAROQUINERIE ARTISANALE », défauts graves aucun, petites finitions « Le bout fin de la courbe au-dessus du N devient très mince et risque de disparaître en petit format. ; L'empattement en haut à gauche du N a une forme un peu molle par rapport aux autres lettres. » —Le nom HAVANE et la phrase sont écrits exactement. La courbe qui part du premier A, passe sous le V et remonte au-dessus du second A est bien gardée, avec un tracé net. Le fond est blanc uni et il ne reste que de petites finitions.
+    raisons du refus : aucune
+  phrase portée par le logo gardé : « MAROQUINERIE ARTISANALE » (esquisse-05-phrase-du-logo.txt, à redonner en PHRASE à la planche en vrai)
+  note : logo 1 : petites finitions notées, sans refus : Le bout fin de la courbe au-dessus du N devient très mince et risque de disparaître en petit format. ; L'empattement en haut à gauche du N a une forme un peu molle par rapport aux autres lettres.
+
+Dépense réelle comptée par le Studio, appel par appel (réservé au plus → réglé) :
+- 0d871ffda7634174d192921972a14390ef0ffd5179c9c1120ff478b904b9fa0a · openai:gpt-6.2-astra · charge du client · réservé 0,2315 € → réglé 0,0212 € (settled) · jetons 1176 en entrée, 382 en sortie
+- fb433e5a81832c27dba73b05ecf352c0868ac1411bdd72352f6f584909948e34 · openai:gpt-image-2.6-sunburst · charge du client · réservé 0,0809 € → réglé 0,0616 € (settled) · jetons 1359 en entrée, 2058 en sortie
+- 2094ce6e950df8a766796e4922f2aed95ad8a9753b5809d96ca221d5940f9b71 · anthropic:claude-opus-5-5 · charge du client · réservé 0,1976 € → réglé 0,0210 € (settled) · jetons 1745 en entrée, 511 en sortie
+- 2bf9d51965b312b270ab5f7803b09fe9ea309a62f84cecd39fafdb72e65253bf · openai:gpt-6.2-astra · charge du client · réservé 0,2315 € → réglé 0,0209 € (settled) · jetons 1174 en entrée, 374 en sortie
+- 2d6bac99fd8bb557e5610538bb6c7dc925a601e7fdde936da01dd3e674bd7eb3 · openai:gpt-image-2.6-sunburst · charge du client · réservé 0,0806 € → réglé 0,0350 € (settled) · jetons 1352 en entrée, 1030 en sortie
+- 40362ee6167533d9fa03c7d39a2271030726871a73f54358e27ea1a91f0d9f52 · anthropic:claude-opus-5-5 · charge du client · réservé 0,2010 € → réglé 0,0249 € (settled) · jetons 2486 en entrée, 935 en sortie
+
+Dépense réelle comptée par le Studio : 0,1847 €
+Détail complet : depense.json (appel par appel), usage.json (jetons, qualité, taille, fond, format renvoyés).

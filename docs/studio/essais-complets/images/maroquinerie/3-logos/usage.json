@@ -1,0 +1,194 @@
+[
+  {
+    "etape": "logo-e2-texte-1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-6.2-astra",
+    "modeleServi": "gpt-6.2-astra",
+    "unite": "tokens",
+    "jetonsEntree": 1176,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 382,
+    "quantite": 0,
+    "effort": "medium",
+    "fin": "end_turn",
+    "dureeMs": 10224,
+    "coutMicro": 21232,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-finalisation-bm0dlkqbwd171x5q:logo:e2-texte-1",
+    "details": {
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "logo-e2-logo-1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.6-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1359,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 2058,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 32146,
+    "coutMicro": 61582,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-finalisation-bm0dlkqbwd171x5q:logo:e2-logo-1",
+    "details": {
+      "temps": "finalisation",
+      "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Havane, un atelier de maroquinerie qui fabrique et vend en ligne des articles en cuir faits main : sacs, portefeuilles et ceintures. Conserve le principe distinctif du mot HAVANE en capitales : le premier A est un chevron sans traverse, souligné à sa base par un trait cognac qui ne touche pas ses branches, tandis que le second A garde sa traverse. Fais de cette différence le point d’appui d’une identité plus aboutie et plus distinctive : redessine les lettres au lieu de simplement nettoyer ou agrandir l’esquisse. Affine leurs proportions et leurs terminaisons, accorde les angles du chevron à ceux du V et ajuste l’espacement lettre par lettre pour donner au nom une présence équilibrée sans rien perdre en lisibilité, même en petit. Simplifie tout détail qui ferait trop illustration et garde un signe strictement graphique. Utilise un vert encre presque noir pour le lettrage et réserve le brun cognac, évocateur du cuir, au seul trait sous le premier A. Sous le nom, remplace la ligne descriptive par la mention discrète et centrée « SACS · PORTEFEUILLES · CEINTURES », à reproduire exactement, sans en changer une lettre ni un accent et sans ajouter d’autre phrase. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+      "requestId": "req_d50beec7fbd24439a2813b1f565560c2",
+      "reglages": {
+        "model": "gpt-image-2.6-sunburst",
+        "quality": "high",
+        "size": "auto",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": 1,
+      "usage": {
+        "input_tokens": 1359,
+        "input_tokens_details": {
+          "image_tokens": 1024,
+          "text_tokens": 335
+        },
+        "output_tokens": 2058,
+        "output_tokens_details": {
+          "image_tokens": 2058,
+          "text_tokens": 0
+        },
+        "total_tokens": 3417
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1254x1254",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "logo-e2-relecture-1",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 1745,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 1441,
+    "jetonsSortie": 511,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 5393,
+    "coutMicro": 20988,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-finalisation-bm0dlkqbwd171x5q:logo:e2-relecture-1",
+    "details": {
+      "placeDemandee": 10000
+    }
+  },
+  {
+    "etape": "logo-e5-texte-1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-6.2-astra",
+    "modeleServi": "gpt-6.2-astra",
+    "unite": "tokens",
+    "jetonsEntree": 1174,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 374,
+    "quantite": 0,
+    "effort": "medium",
+    "fin": "end_turn",
+    "dureeMs": 8524,
+    "coutMicro": 20943,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-finalisation-bm0dlkqbwd171x5q:logo:e5-texte-1",
+    "details": {
+      "sortie": "stricte"
+    }
+  },
+  {
+    "etape": "logo-e5-logo-1",
+    "fournisseur": "openai",
+    "modeleDemande": "gpt-image-2.6-sunburst",
+    "modeleServi": null,
+    "unite": "tokens",
+    "jetonsEntree": 1352,
+    "jetonsCacheLus": 0,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 1030,
+    "quantite": 1,
+    "effort": null,
+    "fin": null,
+    "dureeMs": 21400,
+    "coutMicro": 35030,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-finalisation-bm0dlkqbwd171x5q:logo:e5-logo-1",
+    "details": {
+      "temps": "finalisation",
+      "texteEnvoye": "Transforme cette esquisse en véritable logo contemporain pour Havane, un atelier de maroquinerie qui fabrique et vend en ligne des articles en cuir faits main : sacs, portefeuilles et ceintures. Conserve le geste qui distingue HAVANE : la jambe du premier A se prolonge en une courbe qui passe sous le V, puis remonte en un trait fin au-dessus du second A. Fais évoluer ce geste pour en faire une signature typographique plus aboutie et plus distinctive, sans te limiter à nettoyer ou à agrandir le dessin. Redessine avec soin les six capitales à empattements : affine leurs proportions, précise le contraste entre pleins et déliés et ajuste l’espacement de chaque paire pour donner au nom davantage de présence tout en le gardant très lisible. Simplifie la courbe en un tracé net et continu, sans fioriture illustrative, et règle son amplitude pour équilibrer la composition. Privilégie le bleu encre profond de l’esquisse, en aplat, pour une expression sobre du savoir-faire de l’atelier. Sous le nom, écris exactement « MAROQUINERIE ARTISANALE », en petites capitales discrètement espacées, sans changer une lettre ni un accent ; cette mention remplace toute autre ligne descriptive. style vectoriel, fond blanc uni, pas de maquette, pas d'ombre, pas d'effet 3D, pas de texture réaliste, pas de dégradé excessif",
+      "requestId": "req_e7bb4aad2c9f4dbbb70a5f12d2bbff7d",
+      "reglages": {
+        "model": "gpt-image-2.6-sunburst",
+        "quality": "high",
+        "size": "auto",
+        "background": "opaque",
+        "output_format": "png",
+        "n": 1
+      },
+      "jointes": 1,
+      "usage": {
+        "input_tokens": 1352,
+        "input_tokens_details": {
+          "image_tokens": 1024,
+          "text_tokens": 328
+        },
+        "output_tokens": 1030,
+        "output_tokens_details": {
+          "image_tokens": 1030,
+          "text_tokens": 0
+        },
+        "total_tokens": 2382
+      },
+      "renvoye": {
+        "quality": "high",
+        "size": "1774x887",
+        "background": "opaque",
+        "output_format": "png"
+      }
+    }
+  },
+  {
+    "etape": "logo-e5-relecture-1",
+    "fournisseur": "anthropic",
+    "modeleDemande": "claude-opus-5-5",
+    "modeleServi": "claude-opus-5-5",
+    "unite": "tokens",
+    "jetonsEntree": 2486,
+    "jetonsCacheLus": 1441,
+    "jetonsCacheEcrits": 0,
+    "jetonsSortie": 935,
+    "quantite": 0,
+    "effort": "high",
+    "fin": "end_turn",
+    "dureeMs": 10831,
+    "coutMicro": 24882,
+    "estime": false,
+    "statut": "ok",
+    "cle": "essai-finalisation-bm0dlkqbwd171x5q:logo:e5-relecture-1",
+    "details": {
+      "placeDemandee": 10000
+    }
+  }
+]
