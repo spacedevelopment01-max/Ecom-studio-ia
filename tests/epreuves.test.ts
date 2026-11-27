@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { ACCORD_A_COMPLETER, EPREUVES, PHRASE_D_ACCORD_PREVUE, VERSIONS_IDENTIQUES, phraseDeLaVersionIdentique, type Epreuve } from "./epreuves/catalogue";
+import { ACCORD_NI_COMPACT_NI_EMPILE, EPREUVES, VERSIONS_IDENTIQUES, phraseDeLaVersionIdentique, type Epreuve } from "./epreuves/catalogue";
 import { route } from "./sina-routes-fixtures";
 
 process.env.STUDIO_SYNA_AGENT = "1";
@@ -50,15 +50,6 @@ describe("le banc d'épreuves : les verdicts du propriétaire ne se réécrivent
       while (par?.remplaceePar) { expect(vus.has(par.id), `boucle : ${par.id}`).toBe(false); vus.add(par.id); par = EPREUVES.find((x) => x.id === par!.remplaceePar!.epreuve); }
       expect(par && SCEAUX[par.id] && par.rejeu === "gratuit", `${e.id} → ${par?.id}`).toBeTruthy();
       expect(["23 novembre 2026", "24 novembre 2026", "25 novembre 2026", "26 novembre 2026", "27 novembre 2026"]).toContain(r.decision);
-      // L'accord écrit encore à recevoir (« [À compléter : …] ») ne vaut que pour les six épreuves contredites par le retrait
-      // du logo compact et du logo empilé (27 novembre 2026), remplacées par ni-logo-compact-ni-logo-empile ; à son arrivée,
-      // la phrase du propriétaire, mot pour mot, remplace ce manque.
-      if (r.mots === ACCORD_A_COMPLETER) {
-        expect(["planche-de-marque-openai", "planche-signe-parasite-petite-finition", "faits-a-montrer-demandes-avant-la-marque", "planche-en-vrai-specimen-mesure-et-ecran-du-reassemblage", "cout-probable-seul-et-arret-au-double", "planche-en-vrai-reprise-hd-petits-textes-logo-et-coupe"]).toContain(e.id);
-        expect(r.epreuve).toBe(`${e.id}-v2`);
-        expect(r.decision).toBe("27 novembre 2026");
-        continue;
-      }
       expect(r.mots).toMatch(/^« (je pense qu'il ne faut pas donner d'informations sauf fait moi un logo pour une marque de bougies|En même temps il fallait garder la règle de le premier logo est fait|Et si on enlevait mes 50 logos de démo|Oui, marque trois-fois-le-meme-dessin|Oui, marque planches-de-recherche-demande-exacte|Oui, marque finalisation-ecrite-par-le-plus-fort|Oui, marque relecteur-sans-refus-pour-trop-proche|Oui, marque logo-refait-une-fois-avec-ses-raisons|Oui, marque vrai-produit-du-client-joint|Oui, marque relecteur-petites-finitions-sans-refus|Oui, marque relecteur-de-planche-texte-lisible-et-promesses-mesurables|Oui, marque planche-phrase-par-lignes-et-reprise-qui-part-toujours|Oui, marque planche-en-vrai-a-l-identique|Oui, marque planche-en-vrai-palette-mesuree-et-logos-en-hd|Oui, marque planche-en-vrai-finitions-nettoyees-et-police-de-l-apercu|Oui, marque planche-en-vrai-pas-identique-a-l-apercu-mouture|Oui, marque planche-produits-de-la-fiche-seulement|Oui, marque planche-de-marque-openai)/);
       // Les accords écrits du 24 au 27 novembre 2026 nomment chaque épreuve qu'il remplace, et celle qui la remplace.
       if (r.decision === "24 novembre 2026" || r.decision === "25 novembre 2026" || r.decision === "26 novembre 2026" || r.decision === "27 novembre 2026") { expect(r.mots, e.id).toContain(e.id); expect(r.mots, r.epreuve).toContain(r.epreuve); }
@@ -3252,18 +3243,20 @@ describe("les versions identiques sans logo compact ni logo empilé : aucune aut
     expect(corps("rejeuIdentiqueALApercu")).toContain("await rejeuSymboleSeulEtBandeau(o);");
   });
 
-  it("la phrase d'accord prévue passe le banc : son début est reconnu ; elle nomme chaque épreuve remplacée, sa version identique et ni-logo-compact-ni-logo-empile", () => {
-    expect(PHRASE_D_ACCORD_PREVUE).toMatch(/^« (Oui, marque planche-de-marque-openai)/);
+  it("l'accord écrit du propriétaire (27 novembre 2026) : son début est reconnu ; il nomme chaque épreuve remplacée, sa version identique et ni-logo-compact-ni-logo-empile", () => {
+    expect(ACCORD_NI_COMPACT_NI_EMPILE).toMatch(/^« (Oui, marque planche-de-marque-openai)/);
     expect(src).toContain("|Oui, marque planche-de-marque-openai)/);");
     for (const v of VERSIONS_IDENTIQUES) {
-      expect(PHRASE_D_ACCORD_PREVUE, v.id).toContain(`${v.id},`.replace(/,$/, ""));
-      expect(PHRASE_D_ACCORD_PREVUE, v.id).toContain(`${v.id}-v2`);
+      expect(ACCORD_NI_COMPACT_NI_EMPILE, v.id).toContain(`${v.id},`.replace(/,$/, ""));
+      expect(ACCORD_NI_COMPACT_NI_EMPILE, v.id).toContain(`${v.id}-v2`);
     }
-    expect(PHRASE_D_ACCORD_PREVUE).toContain("ni-logo-compact-ni-logo-empile");
-    expect(PHRASE_D_ACCORD_PREVUE).toContain("comme remplacées par ma décision du 27 novembre, chacune par sa version identique sans logo compact ni logo empilé");
-    // Les contrôles du banc sur un accord écrit, rejoués sur la phrase prévue.
-    for (const e of EPREUVES.filter((x) => x.remplaceePar?.mots === ACCORD_A_COMPLETER)) {
-      const r = { ...e.remplaceePar!, mots: PHRASE_D_ACCORD_PREVUE };
+    expect(ACCORD_NI_COMPACT_NI_EMPILE).toContain("ni-logo-compact-ni-logo-empile");
+    expect(ACCORD_NI_COMPACT_NI_EMPILE).toContain("comme remplacées par ma décision du 27 novembre, chacune par sa version identique sans logo compact ni logo empilé");
+    // Les six épreuves sont remplacées avec cet accord, mot pour mot.
+    const six = EPREUVES.filter((x) => x.remplaceePar?.mots === ACCORD_NI_COMPACT_NI_EMPILE);
+    expect(six.map((x) => x.id).sort()).toEqual(VERSIONS_IDENTIQUES.map((v) => v.id).sort());
+    for (const e of six) {
+      const r = e.remplaceePar!;
       expect(r.mots, e.id).toContain(e.id);
       expect(r.mots, r.epreuve).toContain(r.epreuve);
       expect(r.mots).toMatch(/^« (Oui, marque planche-de-marque-openai)/);
